@@ -1,14 +1,17 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 29FFEB6F70
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jul 2011 21:38:00 +1000 (EST)
-Message-ID: <4E11A611.3010904@redhat.com>
-Date: Mon, 04 Jul 2011 14:37:53 +0300
-From: Avi Kivity <avi@redhat.com>
-MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 32A7EB6F76
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jul 2011 21:41:27 +1000 (EST)
 Subject: Re: [RFC PATCH 17/17] KVM: PPC: Add an ioctl for userspace to select
 	which platform to emulate
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <4E11A611.3010904@redhat.com>
+Date: Mon, 4 Jul 2011 13:41:20 +0200
+Message-Id: <ACE6741B-F502-4426-8940-1FDDCCB2AD52@suse.de>
 References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
 	<20110629104103.GR25406@bloggs.ozlabs.ibm.com>
 	<4E0C9077.2060608@suse.de> <4E0C9339.2080601@redhat.com>
@@ -24,8 +27,8 @@ References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
 	<40F62A22-6A47-4414-8FF9-0534568353DA@suse.de>
 	<4E11A293.2010505@redhat.com>
 	<BC4ECEFA-15A4-49A9-AE53-9635F3F6F996@suse.de>
-In-Reply-To: <BC4ECEFA-15A4-49A9-AE53-9635F3F6F996@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<4E11A611.3010904@redhat.com>
+To: Avi Kivity <avi@redhat.com>
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
@@ -40,16 +43,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/04/2011 02:36 PM, Alexander Graf wrote:
-> >
-> >  What intermediate steps?  We can't add fields to the structure before we get the extensibility infrastructure, but that's all.
->
-> If we add it now without extensibility code, we will have a kernel that only knows the ioctl with the size as it is now. If we later add another field, the ioctl size changes which would render new user space running on that particular kernel to fail, because it doesn't have the "just truncate the ioctl param to the size" logic yet.
 
-You're right.  So let's add the padding now, and only use the great new 
-stuff after it's actually in.
+On 04.07.2011, at 13:37, Avi Kivity wrote:
 
-Working ugly is better than broken pretty.
+> On 07/04/2011 02:36 PM, Alexander Graf wrote:
+>> >
+>> >  What intermediate steps?  We can't add fields to the structure =
+before we get the extensibility infrastructure, but that's all.
+>>=20
+>> If we add it now without extensibility code, we will have a kernel =
+that only knows the ioctl with the size as it is now. If we later add =
+another field, the ioctl size changes which would render new user space =
+running on that particular kernel to fail, because it doesn't have the =
+"just truncate the ioctl param to the size" logic yet.
+>=20
+> You're right.  So let's add the padding now, and only use the great =
+new stuff after it's actually in.
+>=20
+> Working ugly is better than broken pretty.
 
--- 
-error compiling committee.c: too many arguments to function
+Hrm. Too bad :).
+
+
+Alex
