@@ -1,39 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 32A7EB6F76
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jul 2011 21:41:27 +1000 (EST)
-Subject: Re: [RFC PATCH 17/17] KVM: PPC: Add an ioctl for userspace to select
-	which platform to emulate
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <4E11A611.3010904@redhat.com>
-Date: Mon, 4 Jul 2011 13:41:20 +0200
-Message-Id: <ACE6741B-F502-4426-8940-1FDDCCB2AD52@suse.de>
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 4 Jul 2011 21:51:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 10/17] KVM: PPC: Add support for Book3S processors in
+	hypervisor mode
+Message-ID: <20110704115108.GA2607@bloggs.ozlabs.ibm.com>
 References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
-	<20110629104103.GR25406@bloggs.ozlabs.ibm.com>
-	<4E0C9077.2060608@suse.de> <4E0C9339.2080601@redhat.com>
-	<4E0C94A0.3090301@suse.de> <4E0C9D98.5000904@redhat.com>
-	<2EDDAC02-4BDC-4007-82E1-2C6D732C24D5@suse.de>
-	<4E102516.1040805@redhat.com>
-	<70A08140-B592-4B2F-985B-D8E5C78C743B@suse.de>
-	<4E102ECE.1060004@redhat.com>
-	<CBE84140-B1FC-48B6-A000-77CB58C5F928@suse.de>
-	<4E1030E1.6070101@redhat.com>
-	<77E6DEE3-F00A-46EA-B8AF-58BC62A8143D@suse.de>
-	<4E103270.4040506@redhat.com>
-	<40F62A22-6A47-4414-8FF9-0534568353DA@suse.de>
-	<4E11A293.2010505@redhat.com>
-	<BC4ECEFA-15A4-49A9-AE53-9635F3F6F996@suse.de>
-	<4E11A611.3010904@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>
+	<20110629102134.GK25406@bloggs.ozlabs.ibm.com>
+	<1309545462.16582.12.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1309545462.16582.12.camel@nimitz>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+	Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,26 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jul 01, 2011 at 11:37:42AM -0700, Dave Hansen wrote:
+> On Wed, 2011-06-29 at 20:21 +1000, Paul Mackerras wrote: 
+> > +struct kvmppc_pginfo {
+> > +	unsigned long pfn;
+> > +	atomic_t refcnt;
+> > +};
+> 
+> I only see this refcnt inc'd in one spot and never decremented or read.
+> Is the refcnt just the number of hptes we have for this particular page
+> at the moment?  
 
-On 04.07.2011, at 13:37, Avi Kivity wrote:
+It's redundant at present, because the guest physical memory is all
+large pages and we don't hand any pages back until the guest quits.
 
-> On 07/04/2011 02:36 PM, Alexander Graf wrote:
->> >
->> >  What intermediate steps?  We can't add fields to the structure =
-before we get the extensibility infrastructure, but that's all.
->>=20
->> If we add it now without extensibility code, we will have a kernel =
-that only knows the ioctl with the size as it is now. If we later add =
-another field, the ioctl size changes which would render new user space =
-running on that particular kernel to fail, because it doesn't have the =
-"just truncate the ioctl param to the size" logic yet.
->=20
-> You're right.  So let's add the padding now, and only use the great =
-new stuff after it's actually in.
->=20
-> Working ugly is better than broken pretty.
+We're going to have to keep some sort of list of HPTEs for each
+guest-physical page and we will probably need this refcnt then.
 
-Hrm. Too bad :).
+> > +static unsigned long user_page_size(unsigned long addr)
+> > +{
+> > +	struct vm_area_struct *vma;
+> > +	unsigned long size = PAGE_SIZE;
+> > +
+> > +	down_read(&current->mm->mmap_sem);
+> > +	vma = find_vma(current->mm, addr);
+> > +	if (vma)
+> > +		size = vma_kernel_pagesize(vma);
+> > +	up_read(&current->mm->mmap_sem);
+> > +	return size;
+> > +}
+> 
+> That one looks pretty arch-independent and like it could use some
+> consolidation with: virt/kvm/kvm_main.c::kvm_host_page_size()
 
+Actually, it goes away again in patch 14. :)
 
-Alex
+> > +	/* VRMA can't be > 1TB */
+> > +	if (npages > 1ul << (40 - kvm->arch.ram_porder))
+> > +		npages = 1ul << (40 - kvm->arch.ram_porder);
+> 
+> Is that because it can only be a single segment?  Does that mean that we
+> can't ever have guests larger than 1TB?  Or just that they have to live
+> with 1TB until they get their own page tables up?
+
+It can only be a single segment, and that's because that's how the
+hardware works.
+
+It means that the when running in real mode the guest can access at
+most the first 1TB of physical memory.  Real mode is used early in the
+boot process and also in the early stages of exception/interrupt
+processing.  (Under pHyp we typically only get to access the first
+128MB or 256MB of memory in real mode.)
+
+> > +	/* Can't use more than 1 HPTE per HPTEG */
+> > +	if (npages > HPT_NPTEG)
+> > +		npages = HPT_NPTEG;
+> > +
+> > +	for (i = 0; i < npages; ++i) {
+> > +		pfn = pginfo[i].pfn;
+> > +		/* can't use hpt_hash since va > 64 bits */
+> > +		hash = (i ^ (VRMA_VSID ^ (VRMA_VSID << 25))) & HPT_HASH_MASK;
+> 
+> Is that because 'i' could potentially have a very large pfn?  Nish
+> thought it might have something to do with the hpte entries being larger
+> than 64-bits themselves with the vsid included, but we got thoroughly
+> confused. :)
+
+It's because VRMA_VSID (which is set by hardware, we don't control it)
+is larger than 2^24.  The hpt_hash() function takes a 64-bit VA
+composed of a 24-bit VSID and 40 bits of segment offset (for addresses
+in 1TB segments).
+
+Paul.
