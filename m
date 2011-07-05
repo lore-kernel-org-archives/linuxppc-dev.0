@@ -1,14 +1,14 @@
 Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 5 Jul 2011 14:36:57 +1000
+Date: Tue, 5 Jul 2011 14:38:03 +1000
 From: Tony Breeds <tony@bakeyournoodle.com>
 To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
 	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/3] powerpc/47x: allow kernel to be loaded in higher
-	physical memory
-Message-ID: <20110705043657.GF13483@ozlabs.org>
+Subject: [PATCH 2/3] powerpc/44x: don't use tlbivax on AMP systems
+Message-ID: <20110705043803.GG13483@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20110705043657.GF13483@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,206 +20,106 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-The 44x code (which is shared by 47x) assumes the available physical memory
-begins at 0x00000000.  This is not necessarily the case in an AMP
-environment.
+Since other OS's may be running on the other cores don't use tlbivax
 
-Support CONFIG_RELOCATABLE for 476 in order to allow the kernel to be
-loaded into a higher memory range.
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/Kconfig                          |    2 +-
- arch/powerpc/configs/44x/iss476-smp_defconfig |    6 ++--
- arch/powerpc/kernel/head_44x.S                |   42 ++++++++++++++++++++-----
- arch/powerpc/mm/44x_mmu.c                     |   13 ++++++--
- 4 files changed, 48 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/mmu.h |    7 ++++++-
+ arch/powerpc/kernel/setup_32.c |    2 ++
+ arch/powerpc/mm/tlb_hash32.c   |    4 ++++
+ arch/powerpc/mm/tlb_nohash.c   |   19 +++++++++++++++++++
+ 4 files changed, 31 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2729c66..7cef1fc 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -841,7 +841,7 @@ config LOWMEM_CAM_NUM
- 
- config RELOCATABLE
- 	bool "Build a relocatable kernel (EXPERIMENTAL)"
--	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
-+	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && (FSL_BOOKE || PPC_47x)
- 	help
- 	  This builds a kernel image that is capable of running at the
- 	  location the kernel is loaded at (some alignment restrictions may
-diff --git a/arch/powerpc/configs/44x/iss476-smp_defconfig b/arch/powerpc/configs/44x/iss476-smp_defconfig
-index 92f863a..a6eb6ad 100644
---- a/arch/powerpc/configs/44x/iss476-smp_defconfig
-+++ b/arch/powerpc/configs/44x/iss476-smp_defconfig
-@@ -3,8 +3,8 @@ CONFIG_SMP=y
- CONFIG_EXPERIMENTAL=y
- CONFIG_SYSVIPC=y
- CONFIG_POSIX_MQUEUE=y
-+CONFIG_SPARSE_IRQ=y
- CONFIG_LOG_BUF_SHIFT=14
--CONFIG_SYSFS_DEPRECATED_V2=y
- CONFIG_BLK_DEV_INITRD=y
- # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
- CONFIG_EXPERT=y
-@@ -21,10 +21,11 @@ CONFIG_ISS4xx=y
- CONFIG_HZ_100=y
- CONFIG_MATH_EMULATION=y
- CONFIG_IRQ_ALL_CPUS=y
--CONFIG_SPARSE_IRQ=y
- CONFIG_CMDLINE_BOOL=y
- CONFIG_CMDLINE="root=/dev/issblk0"
- # CONFIG_PCI is not set
-+CONFIG_ADVANCED_OPTIONS=y
-+CONFIG_RELOCATABLE=y
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
-@@ -67,7 +68,6 @@ CONFIG_EXT3_FS=y
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
- CONFIG_EXT3_FS_POSIX_ACL=y
- CONFIG_EXT3_FS_SECURITY=y
--CONFIG_INOTIFY=y
- CONFIG_PROC_KCORE=y
- CONFIG_TMPFS=y
- CONFIG_CRAMFS=y
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 5e12b74..f8e971b 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -93,6 +93,30 @@ _ENTRY(_start);
- 
- 	bl	early_init
- 
-+#ifdef CONFIG_RELOCATABLE
-+	/*
-+	 * r25 will contain RPN/ERPN for the start address of memory
-+	 *
-+	 * Add the difference between KERNELBASE and PAGE_OFFSET to the
-+	 * start of physical memory to get kernstart_addr.
-+	 */
-+	lis	r3,kernstart_addr@ha
-+	la	r3,kernstart_addr@l(r3)
-+
-+	lis	r4,KERNELBASE@h
-+	ori	r4,r4,KERNELBASE@l
-+	lis	r5,PAGE_OFFSET@h
-+	ori	r5,r5,PAGE_OFFSET@l
-+	subf	r4,r5,r4
-+
-+	rlwinm	r6,r25,0,28,31	/* ERPN */
-+	rlwinm	r7,r25,0,0,3	/* RPN - assuming 256 MB page size */
-+	add	r7,r7,r4
-+
-+	stw	r6,0(r3)
-+	stw	r7,4(r3)
-+#endif
-+
- /*
-  * Decide what sort of machine this is and initialize the MMU.
-  */
-@@ -1001,9 +1025,6 @@ clear_utlb_entry:
- 	lis	r3,PAGE_OFFSET@h
- 	ori	r3,r3,PAGE_OFFSET@l
- 
--	/* Kernel is at the base of RAM */
--	li r4, 0			/* Load the kernel physical address */
--
- 	/* Load the kernel PID = 0 */
- 	li	r0,0
- 	mtspr	SPRN_PID,r0
-@@ -1013,9 +1034,8 @@ clear_utlb_entry:
- 	clrrwi	r3,r3,12		/* Mask off the effective page number */
- 	ori	r3,r3,PPC47x_TLB0_VALID | PPC47x_TLB0_256M
- 
--	/* Word 1 */
--	clrrwi	r4,r4,12		/* Mask off the real page number */
--					/* ERPN is 0 for first 4GB page */
-+	/* Word 1 - use r25.  RPN is the same as the original entry */
-+
- 	/* Word 2 */
- 	li	r5,0
- 	ori	r5,r5,PPC47x_TLB2_S_RWX
-@@ -1026,7 +1046,7 @@ clear_utlb_entry:
- 	/* We write to way 0 and bolted 0 */
- 	lis	r0,0x8800
- 	tlbwe	r3,r0,0
--	tlbwe	r4,r0,1
-+	tlbwe	r25,r0,1
- 	tlbwe	r5,r0,2
- 
- /*
-@@ -1124,7 +1144,13 @@ head_start_common:
- 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
- 	mtspr	SPRN_IVPR,r4
- 
--	addis	r22,r22,KERNELBASE@h
-+	/*
-+	 * If the kernel was loaded at a non-zero 256 MB page, we need to
-+	 * mask off the most significant 4 bits to get the relative address
-+	 * from the start of physical memory
-+	 */
-+	rlwinm	r22,r22,0,4,31
-+	addis	r22,r22,PAGE_OFFSET@h
- 	mtlr	r22
- 	isync
- 	blr
-diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
-index 024acab..f60e006 100644
---- a/arch/powerpc/mm/44x_mmu.c
-+++ b/arch/powerpc/mm/44x_mmu.c
-@@ -186,10 +186,11 @@ void __init MMU_init_hw(void)
- unsigned long __init mmu_mapin_ram(unsigned long top)
- {
- 	unsigned long addr;
-+	unsigned long memstart = memstart_addr & ~(PPC_PIN_SIZE - 1);
- 
- 	/* Pin in enough TLBs to cover any lowmem not covered by the
- 	 * initial 256M mapping established in head_44x.S */
--	for (addr = PPC_PIN_SIZE; addr < lowmem_end_addr;
-+	for (addr = memstart + PPC_PIN_SIZE; addr < lowmem_end_addr;
- 	     addr += PPC_PIN_SIZE) {
- 		if (mmu_has_feature(MMU_FTR_TYPE_47x))
- 			ppc47x_pin_tlb(addr + PAGE_OFFSET, addr);
-@@ -218,19 +219,25 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
- void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 				phys_addr_t first_memblock_size)
- {
-+	u64 size;
-+
-+#ifndef CONFIG_RELOCATABLE
- 	/* We don't currently support the first MEMBLOCK not mapping 0
- 	 * physical on those processors
- 	 */
- 	BUG_ON(first_memblock_base != 0);
-+#endif
- 
- 	/* 44x has a 256M TLB entry pinned at boot */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, PPC_PIN_SIZE));
-+	size = (min_t(u64, first_memblock_size, PPC_PIN_SIZE));
-+	memblock_set_current_limit(first_memblock_base + size);
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 4138b21..bb5591f 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -120,9 +120,14 @@ static inline int mmu_has_feature(unsigned long feature)
+ 	return (cur_cpu_spec->mmu_features & feature);
  }
  
- #ifdef CONFIG_SMP
- void __cpuinit mmu_init_secondary(int cpu)
- {
- 	unsigned long addr;
-+	unsigned long memstart = memstart_addr & ~(PPC_PIN_SIZE - 1);
++static inline void mmu_clear_feature(unsigned long feature)
++{
++	cur_cpu_spec->mmu_features &= ~feature;
++}
++
+ extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
  
- 	/* Pin in enough TLBs to cover any lowmem not covered by the
- 	 * initial 256M mapping established in head_44x.S
-@@ -241,7 +248,7 @@ void __cpuinit mmu_init_secondary(int cpu)
- 	 * stack. current (r2) isn't initialized, smp_processor_id()
- 	 * will not work, current thread info isn't accessible, ...
- 	 */
--	for (addr = PPC_PIN_SIZE; addr < lowmem_end_addr;
-+	for (addr = memstart + PPC_PIN_SIZE; addr < lowmem_end_addr;
- 	     addr += PPC_PIN_SIZE) {
- 		if (mmu_has_feature(MMU_FTR_TYPE_47x))
- 			ppc47x_pin_tlb(addr + PAGE_OFFSET, addr);
+-/* MMU initialization (64-bit only fo now) */
++/* MMU initialization */
+ extern void early_init_mmu(void);
+ extern void early_init_mmu_secondary(void);
+ 
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 620d792..6bae164 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -127,6 +127,8 @@ notrace void __init machine_init(unsigned long dt_ptr)
+ 	/* Do some early initialization based on the flat device tree */
+ 	early_init_devtree(__va(dt_ptr));
+ 
++	early_init_mmu();
++
+ 	probe_machine();
+ 
+ 	setup_kdump_trampoline();
+diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
+index 27b863c..9a445f6 100644
+--- a/arch/powerpc/mm/tlb_hash32.c
++++ b/arch/powerpc/mm/tlb_hash32.c
+@@ -177,3 +177,7 @@ void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 	flush_range(vma->vm_mm, start, end);
+ }
+ EXPORT_SYMBOL(flush_tlb_range);
++
++void __init early_init_mmu(void)
++{
++}
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index 0bdad3a..04990b9 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -35,6 +35,7 @@
+ #include <linux/preempt.h>
+ #include <linux/spinlock.h>
+ #include <linux/memblock.h>
++#include <linux/of_fdt.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
+@@ -266,6 +267,17 @@ EXPORT_SYMBOL(flush_tlb_page);
+ 
+ #endif /* CONFIG_SMP */
+ 
++#ifdef CONFIG_PPC_47x
++void __init early_init_mmu_47x(void)
++{
++#ifdef CONFIG_SMP
++	unsigned long root = of_get_flat_dt_root();
++	if (of_get_flat_dt_prop(root, "cooperative-partition", NULL))
++		mmu_clear_feature(MMU_FTR_USE_TLBIVAX_BCAST);
++#endif /* CONFIG_SMP */
++}
++#endif /* CONFIG_PPC_47x */
++
+ /*
+  * Flush kernel TLB entries in the given range
+  */
+@@ -584,4 +596,11 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	/* Finally limit subsequent allocations */
+ 	memblock_set_current_limit(first_memblock_base + ppc64_rma_size);
+ }
++#else /* ! CONFIG_PPC64 */
++void __init early_init_mmu(void)
++{
++#ifdef CONFIG_PPC_47x
++	early_init_mmu_47x();
++#endif
++}
+ #endif /* CONFIG_PPC64 */
 -- 
 1.7.4.4
