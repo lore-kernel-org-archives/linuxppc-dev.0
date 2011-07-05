@@ -1,40 +1,23 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9F945B6F7A
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 59EEBB6F67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Jul 2011 08:36:29 +1000 (EST)
-Message-ID: <4E1391C2.2090904@zytor.com>
-Date: Tue, 05 Jul 2011 15:35:46 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Wed,  6 Jul 2011 09:01:47 +1000 (EST)
+Date: Tue, 5 Jul 2011 18:01:38 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Matthew L. Creech" <mlcreech@gmail.com>
+Subject: Re: [PATCH v2] mtd: eLBC NAND: remove elbc_fcm_ctrl->oob_poi
+Message-ID: <20110705180138.469f34d1@schlenkerla.am.freescale.net>
+In-Reply-To: <1309905302-1990-1-git-send-email-mlcreech@gmail.com>
+References: <20110705151525.438e87dc@schlenkerla.am.freescale.net>
+	<1309905302-1990-1-git-send-email-mlcreech@gmail.com>
 MIME-Version: 1.0
-To: Ohad Ben-Cohen <ohad@wizery.com>
-Subject: Re: [RFC] virtio: expose for non-virtualization users too
-References: <1309874774-31689-1-git-send-email-ohad@wizery.com>
-In-Reply-To: <1309874774-31689-1-git-send-email-ohad@wizery.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Carsten Otte <cotte@de.ibm.com>, linux-ia64@vger.kernel.org,
-	kvm@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
-	linux-mips@linux-mips.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
-	virtualization@lists.linux-foundation.org,
-	Paul Mackerras <paulus@samba.org>, linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org, x86@kernel.org, Alexander Graf <agraf@suse.de>,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Ingo Molnar <mingo@redhat.com>, Avi Kivity <avi@redhat.com>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	Xiantao Zhang <xiantao.zhang@intel.com>,
-	Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
-	Rusty Russell <rusty@rustcorp.com.au>, Chris Metcalf <cmetcalf@tilera.com>,
-	John Stultz <john.stultz@linaro.org>, kvm-ppc@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	Tony Luck <tony.luck@intel.com>, kvm-ia64@vger.kernel.org,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org,
+	rick22@wi.rr.com, mhench@elutions.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,16 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/05/2011 07:06 AM, Ohad Ben-Cohen wrote:
-> virtio has been so far used only in the context of virtualization,
-> and the virtio Kconfig was sourced directly by the relevant arch
-> Kconfigs when VIRTUALIZATION was selected.
-> 
-> Now that we start using virtio for inter-processor communications,
-> we need to source the virtio Kconfig outside of the virtualization
-> scope too.
-> 
+On Tue, 5 Jul 2011 18:35:02 -0400
+"Matthew L. Creech" <mlcreech@gmail.com> wrote:
 
-Seems reasonable to me.
+> From: Mike Hench <mhench@elutions.com>
+> 
+> The eLBC NAND driver currently follows up each program/write operation with a
+> read-back of the page, in order to [ostensibly] fill in ECC data for the
+> caller. However, the page address used for this read is always -1, so the read
+> will never work correctly.  Remove this useless (and potentially problematic)
+> block of code.
+> 
+> v2: elbc_fcm_ctrl->oob_poi is removed entirely, since this code block was the
+> only place it was actually used.
 
-	-hpa
+Just noticed, full_page can come out as well.
+
+Otherwise, ACK
+
+-Scott
