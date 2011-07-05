@@ -1,28 +1,31 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 84149B6F6F
+	by ozlabs.org (Postfix) with ESMTPS id 0CC12B6F6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jul 2011 20:18:10 +1000 (EST)
-Received: by bwa18 with SMTP id 18so5228741bwa.38
+	Tue,  5 Jul 2011 23:49:34 +1000 (EST)
+Received: by vxb40 with SMTP id 40so4635082vxb.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 05 Jul 2011 03:18:05 -0700 (PDT)
-Date: Tue, 5 Jul 2011 14:18:01 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH 3/3] eSDHC: fix incorrect default value of the
-	capabilities register on P4080
-Message-ID: <20110705101801.GA13052@oksana.dev.rtsoft.ru>
-References: <1309839543-6031-1-git-send-email-tie-fei.zang@freescale.com>
-	<1309839543-6031-2-git-send-email-tie-fei.zang@freescale.com>
-	<1309839543-6031-3-git-send-email-tie-fei.zang@freescale.com>
+	Tue, 05 Jul 2011 06:49:30 -0700 (PDT)
+Date: Tue, 5 Jul 2011 15:49:25 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/6] hw_breakpoints: Migrate breakpoint conditional build
+	under new config
+Message-ID: <20110705134920.GF5551@somewhere>
+References: <1306273947-8410-1-git-send-email-fweisbec@gmail.com>
+	<1306273947-8410-3-git-send-email-fweisbec@gmail.com>
+	<20110704132746.GA2963@in.ibm.com>
+	<20110704132912.GB5551@somewhere>
+	<20110704174416.GA2166@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1309839543-6031-3-git-send-email-tie-fei.zang@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
-	linux-mmc@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110704174416.GA2166@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mundt <lethal@linux-sh.org>,
+	linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,40 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 05, 2011 at 12:19:03PM +0800, Roy Zang wrote:
-> P4080 eSDHC errata 12 describes incorrect default value of the
-> the host controller capabilities register.
+On Mon, Jul 04, 2011 at 11:14:16PM +0530, K.Prasad wrote:
+> On Mon, Jul 04, 2011 at 03:29:14PM +0200, Frederic Weisbecker wrote:
+> > On Mon, Jul 04, 2011 at 06:57:46PM +0530, K.Prasad wrote:
+> > > On Tue, May 24, 2011 at 11:52:23PM +0200, Frederic Weisbecker wrote:
+> > > > Migrate conditional hw_breakpoint code compilation under
+> > > > the new config to prepare for letting the user chose whether
+> > > > or not to build this feature
+> > > > 
+> > > 
+> > > Making the hardware breakpoint patches modular has always been a goal.
+> > > I've looked at the PowerPC parts of the code and they look harmless.
+> > > 
+> > > Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > 
+> > Great!
+> > 
+> > I'll push that soon, thanks guys for your acks!
 > 
-> The default value of the VS18 and VS30 fields in the host controller
-> capabilities register (HOSTCAPBLT) are incorrect. The default of these bits
-> should be zero instead of one in the eSDHC logic.
+> Meanwhile, I was testing hardware breakpoints through perf and found
+> that monitoring a given address fails when using 'perf record' (returns
+> -ENOSPC) while 'perf stat' and watchpoint through gdb works fine (see
+> logs below).
 > 
-> This patch adds the workaround for these errata.
-> 
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> ---
->  drivers/mmc/host/sdhci-of-core.c |    3 +++
->  drivers/mmc/host/sdhci.c         |    6 ++++++
->  include/linux/mmc/sdhci.h        |    4 ++++
->  3 files changed, 13 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of-core.c b/drivers/mmc/host/sdhci-of-core.c
-> index fede43d..9bdd30d 100644
-> --- a/drivers/mmc/host/sdhci-of-core.c
-> +++ b/drivers/mmc/host/sdhci-of-core.c
-> @@ -182,6 +182,9 @@ static int __devinit sdhci_of_probe(struct platform_device *ofdev)
->  	if (of_device_is_compatible(np, "fsl,esdhc"))
->  		host->quirks |= SDHCI_QUIRK_QORIQ_PROCTL_WEIRD;
->  
-> +	if (of_device_is_compatible(np, "fsl,p4080-esdhc"))
-> +		host->quirks |= SDHCI_QUIRK_QORIQ_HOSTCAPBLT_ONLY_VS33;
+> Has this behaviour been reported for other perf counters?
 
-Should really use voltage-ranges, not quirks.
+Nope I haven't anything like that. What I reported privately to you a
+few ago was actually due to a mistake of mine. Otherwise I haven't seen
+other problems.
 
-http://www.spinics.net/lists/linux-mmc/msg02785.html
-
-Thanks,
-
--- 
-Anton Vorontsov
-Email: cbouatmailru@gmail.com
+-ENOSPC is likely related to the breakpoint slot reservation, in kernel/events/hw_breakpoint.c
