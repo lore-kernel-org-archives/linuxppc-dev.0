@@ -1,26 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <mlcreech@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 382B2B6F6F
+	by ozlabs.org (Postfix) with ESMTPS id 1B31AB6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Jul 2011 04:01:12 +1000 (EST)
-Received: by mail-iy0-f179.google.com with SMTP id 35so6014871iyn.38
+	Wed,  6 Jul 2011 05:58:50 +1000 (EST)
+Received: by vxb40 with SMTP id 40so4934743vxb.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 05 Jul 2011 11:01:11 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Tue, 5 Jul 2011 12:00:46 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Holger Brunck <holger.brunck@keymile.com>
-Subject: Re: [PATCH] spi/fsl_spi: fix CPM spi driver
-Message-ID: <20110705180046.GB7393@ponder.secretlab.ca>
-References: <1308587517-20640-1-git-send-email-holger.brunck@keymile.com>
-	<4E132056.4000301@keymile.com>
+	Tue, 05 Jul 2011 12:58:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E132056.4000301@keymile.com>
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20110617163442.204348a0@schlenkerla.am.freescale.net>
+References: <BANLkTikyKObukzVw+c10HyDz+Q=PH4jozA@mail.gmail.com>
+	<20110617163442.204348a0@schlenkerla.am.freescale.net>
+Date: Tue, 5 Jul 2011 15:58:46 -0400
+Message-ID: <CAPBSBxqRywJjCfk_iuDLxn1HbuqPjJRJS=SkRQ3-Ge7SinbSBg@mail.gmail.com>
+Subject: Re: NAND BBT corruption on MPC83xx
+From: "Matthew L. Creech" <mlcreech@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,100 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 05, 2011 at 04:31:50PM +0200, Holger Brunck wrote:
-> Hi Grant,
-> is this patch in your eyes ok to be scheduled for the next linux merge window or
-> is something missing? Or should it go through the powerpc tree and not through
-> your spi tree?
+On Fri, Jun 17, 2011 at 5:34 PM, Scott Wood <scottwood@freescale.com> wrote=
+:
+>
+> It seems that the generic code always passes -1 with PAGEPROG, and only
+> provides the actual page address on SEQIN.
+>
+> I don't think the ECC readback is needed, and the fact that it looks like
+> it has always been broken would seem to confirm that. =A0It's broken in
+> other ways, too -- it assumes a particular ECC layout. =A0Let's get rid o=
+f it.
+>
+> As for the corruption, could it be degradation from repeated reads of tha=
+t
+> one page?
+>
 
-No, I just hadn't gotten to it yet.  Sometimes I need to be pinged.
-I've merged it.
+I modified nanddump to do repeated reads, and compare the data
+obtained from the first iteration with that obtained later (to detect
+bit-flips).  I tried 3 different variations:
 
-g.
+- one which reads the first page (2k) of the last block
+- one which reads the second page (2k) of the last block
+- one which reads the entire last block (128k), just for comparison
 
-> 
-> Please let me know your opinion.
-> 
-> Best regards
-> Holger Brunck
-> 
-> On 06/20/2011 06:31 PM, Holger Brunck wrote:
-> > This patch fixes the freescale spi driver for CPM. Without this
-> > patch SPI on CPM failed because cpm_muram_alloc_fixed tries to
-> > allocate muram in an preserved area. The error reported was:
-> > 
-> > mpc8xxx_spi f0011a80.spi: can't allocate spi parameter ram
-> > mpc8xxx_spi: probe of f0011a80.spi failed with error -12
-> > 
-> > Now the driver uses of_iomap to get access to this area
-> > similar to i2c driver driver in the i2c-cpm.c which has a
-> > similar device tree node. This is tested on a MPC8247 with CPM2.
-> > 
-> > Signed-off-by: Holger Brunck <holger.brunck@keymile.com>
-> > cc: Grant Likely <grant.likely@secretlab.ca>
-> > cc: spi-devel-general@lists.sourceforge.net
-> > ---
-> > This was the same problem reported and discussed on ppc-dev for CPM1:
-> > http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-September/085739.html
-> > 
-> >  drivers/spi/spi_fsl_spi.c |   28 +++++++++++-----------------
-> >  1 files changed, 11 insertions(+), 17 deletions(-)
-> > 
-> > diff --git a/drivers/spi/spi_fsl_spi.c b/drivers/spi/spi_fsl_spi.c
-> > index 7963c9b..ca57edf 100644
-> > --- a/drivers/spi/spi_fsl_spi.c
-> > +++ b/drivers/spi/spi_fsl_spi.c
-> > @@ -684,7 +684,7 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
-> >  	struct device_node *np = dev->of_node;
-> >  	const u32 *iprop;
-> >  	int size;
-> > -	unsigned long spi_base_ofs;
-> > +	void __iomem *spi_base;
-> >  	unsigned long pram_ofs = -ENOMEM;
-> >  
-> >  	/* Can't use of_address_to_resource(), QE muram isn't at 0. */
-> > @@ -702,33 +702,27 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
-> >  		return pram_ofs;
-> >  	}
-> >  
-> > -	/* CPM1 and CPM2 pram must be at a fixed addr. */
-> > -	if (!iprop || size != sizeof(*iprop) * 4)
-> > -		return -ENOMEM;
-> > -
-> > -	spi_base_ofs = cpm_muram_alloc_fixed(iprop[2], 2);
-> > -	if (IS_ERR_VALUE(spi_base_ofs))
-> > -		return -ENOMEM;
-> > +	spi_base = of_iomap(np, 1);
-> > +	if (spi_base == NULL)
-> > +		return -EINVAL;
-> >  
-> >  	if (mspi->flags & SPI_CPM2) {
-> >  		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
-> > -		if (!IS_ERR_VALUE(pram_ofs)) {
-> > -			u16 __iomem *spi_base = cpm_muram_addr(spi_base_ofs);
-> > -
-> > -			out_be16(spi_base, pram_ofs);
-> > -		}
-> > +		out_be16(spi_base, pram_ofs);
-> >  	} else {
-> > -		struct spi_pram __iomem *pram = cpm_muram_addr(spi_base_ofs);
-> > +		struct spi_pram __iomem *pram = spi_base;
-> >  		u16 rpbase = in_be16(&pram->rpbase);
-> >  
-> >  		/* Microcode relocation patch applied? */
-> >  		if (rpbase)
-> >  			pram_ofs = rpbase;
-> > -		else
-> > -			return spi_base_ofs;
-> > +		else {
-> > +			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
-> > +			out_be16(spi_base, pram_ofs);
-> > +		}
-> >  	}
-> >  
-> > -	cpm_muram_free(spi_base_ofs);
-> > +	iounmap(spi_base);
-> >  	return pram_ofs;
-> >  }
-> >  
-> 
+As I understand it, read-disturb would primarily come into play when
+the second page is read, since it's adjacent to the first page (please
+correct me if I'm wrong there).  Anyway, all 3 of these tests were run
+for at least 50 million read cycles, with no bit-flips detected.  So
+I'm somewhat doubtful that this is the cause of the BBT corruption
+I've been seeing.
+
+=3D=3D=3D=3D
+
+Separately, I set up 2 test devices to run while I was away last week.
+ One of them contained 2 patches:
+
+- Mike Hench's patch which eliminates this block of code in fsl_elbc_nand.c
+- Adam Thomson's patch
+(http://lists.infradead.org/pipermail/linux-mtd/2011-June/036427.html)
+which initializes oob_poi correctly
+
+Upon my return, the device with these patches saw no problems at all,
+and had no additional bad blocks.  The device without these patches
+had some 200+ blocks which had been newly marked as bad in the BBT
+over the course of 10 days.  After rebooting, this latter device then
+failed to boot, as shown here:
+
+http://mcreech.com/work/bbt-ecc-error4.txt
+
+I'm currently running another test to verify which of the two patches
+actually fixed this problem (which might take a few days), but it
+seems like removing that block of code in fsl_elbc_nand.c is a good
+idea.
+
+--=20
+Matthew L. Creech
