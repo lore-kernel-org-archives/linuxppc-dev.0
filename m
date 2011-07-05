@@ -1,31 +1,29 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0CC12B6F6F
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
+	[213.199.154.139])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E5DC3B6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jul 2011 23:49:34 +1000 (EST)
-Received: by vxb40 with SMTP id 40so4635082vxb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 05 Jul 2011 06:49:30 -0700 (PDT)
-Date: Tue, 5 Jul 2011 15:49:25 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/6] hw_breakpoints: Migrate breakpoint conditional build
-	under new config
-Message-ID: <20110705134920.GF5551@somewhere>
-References: <1306273947-8410-1-git-send-email-fweisbec@gmail.com>
-	<1306273947-8410-3-git-send-email-fweisbec@gmail.com>
-	<20110704132746.GA2963@in.ibm.com>
-	<20110704132912.GB5551@somewhere>
-	<20110704174416.GA2166@in.ibm.com>
+	Tue,  5 Jul 2011 23:51:24 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: hvc_console change results in corrupt oops output
+Date: Tue, 5 Jul 2011 13:51:09 +0000
+Message-ID: <4E1316CC.9090000@freescale.com>
+References: <20110704205738.742e56d0@kryten>
+	<1309787787.14501.268.camel@pasglop>
+	<20110704142429.GA2147@linux.vnet.ibm.com>
+	<CAOZdJXW0Lota0ZuEnOHhsU93v7WmvYztEMyfg+UsMKxFdoXNXQ@mail.gmail.com>
+	<1309846963.14501.270.camel@pasglop>
+In-Reply-To: <1309846963.14501.270.camel@pasglop>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110704174416.GA2166@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mundt <lethal@linux-sh.org>,
-	linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
+	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,33 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 04, 2011 at 11:14:16PM +0530, K.Prasad wrote:
-> On Mon, Jul 04, 2011 at 03:29:14PM +0200, Frederic Weisbecker wrote:
-> > On Mon, Jul 04, 2011 at 06:57:46PM +0530, K.Prasad wrote:
-> > > On Tue, May 24, 2011 at 11:52:23PM +0200, Frederic Weisbecker wrote:
-> > > > Migrate conditional hw_breakpoint code compilation under
-> > > > the new config to prepare for letting the user chose whether
-> > > > or not to build this feature
-> > > > 
-> > > 
-> > > Making the hardware breakpoint patches modular has always been a goal.
-> > > I've looked at the PowerPC parts of the code and they look harmless.
-> > > 
-> > > Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > 
-> > Great!
-> > 
-> > I'll push that soon, thanks guys for your acks!
-> 
-> Meanwhile, I was testing hardware breakpoints through perf and found
-> that monitoring a given address fails when using 'perf record' (returns
-> -ENOSPC) while 'perf stat' and watchpoint through gdb works fine (see
-> logs below).
-> 
-> Has this behaviour been reported for other perf counters?
+Benjamin Herrenschmidt wrote:
 
-Nope I haven't anything like that. What I reported privately to you a
-few ago was actually due to a mistake of mine. Otherwise I haven't seen
-other problems.
+> That is a fun conclusion considering that hvc has been written for the
+> pseries hypervisor which ... can return BUSY on writes :-)
 
--ENOSPC is likely related to the breakpoint slot reservation, in kernel/events/hw_breakpoint.c
+Go read the original thread.  The problem is that tty writes and console=20
+writes are treated the same by the hvc client driver.  If a client driver=20
+detects that the hypervisor is busy, it has the choice of either spinning=20
+or returning right away.  Spinning is not acceptable for tty output, so=20
+all drivers return right away.  hvc then drops the unwritten characters.
+
+According to Hendrik, this is still happening.
+
+> We just need to fix HVC properly.
+
+Where were you two years ago?  I complained about the problem, and even=20
+posted a hackish "fix".  The response I got was tepid -- some=20
+acknowledgement that the problem exists, but no real desire to fix it by=20
+anyone.
+
+So I had no choice but to abandon hvc.  And frankly, I still don't=20
+understand why it exists.  Since then, I wrote a very nice console/tty=20
+driver, and I have no plans to return to hvc even if the problem is fixed.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
