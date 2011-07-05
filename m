@@ -1,34 +1,26 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95F2B1007D1
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0A1871007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jul 2011 16:19:04 +1000 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id p656CovL009164
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2011 16:12:50 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p656Ha6w1003556
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2011 16:17:36 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p656J2dH019561
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2011 16:19:02 +1000
-Message-ID: <4E12ACD2.9050305@in.ibm.com>
-Date: Tue, 05 Jul 2011 11:48:58 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-MIME-Version: 1.0
-To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc/47x: allow kernel to be loaded in higher
-	physical memory
-References: <20110705043657.GF13483@ozlabs.org>
-In-Reply-To: <20110705043657.GF13483@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue,  5 Jul 2011 16:23:05 +1000 (EST)
+Subject: Re: hvc_console change results in corrupt oops output
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+In-Reply-To: <CAOZdJXW0Lota0ZuEnOHhsU93v7WmvYztEMyfg+UsMKxFdoXNXQ@mail.gmail.com>
+References: <20110704205738.742e56d0@kryten>
+	<1309787787.14501.268.camel@pasglop>
+	<20110704142429.GA2147@linux.vnet.ibm.com>
+	<CAOZdJXW0Lota0ZuEnOHhsU93v7WmvYztEMyfg+UsMKxFdoXNXQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Jul 2011 16:22:43 +1000
+Message-ID: <1309846963.14501.270.camel@pasglop>
+Mime-Version: 1.0
+Cc: "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
+	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,18 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/05/11 10:06, Tony Breeds wrote:
-> From: Dave Kleikamp<shaggy@linux.vnet.ibm.com>
->
-> The 44x code (which is shared by 47x) assumes the available physical memory
-> begins at 0x00000000.  This is not necessarily the case in an AMP
-> environment.
->
-> Support CONFIG_RELOCATABLE for 476 in order to allow the kernel to be
-> loaded into a higher memory range.
+On Tue, 2011-07-05 at 04:17 +0000, Tabi Timur-B04825 wrote:
+> On Mon, Jul 4, 2011 at 9:24 AM, Hendrik Brueckner
+> <brueckner@linux.vnet.ibm.com> wrote:
+> 
+> > I will check this again for my hvc_iucv back-end.  Meanwhile a found
+> > an old thread discussing the same issue.  It covers some differences
+> > between console and ttys which actually does not matter for hvc-backend
+> > because of the shared put_chars() routine.
+> >
+> > You can read the thread on lkml.org: http://lkml.org/lkml/2009/10/15/149
+> 
+> I started that thread.  After much soul searching, we came to the
+> conclusion that HVC is not compatible with hypervisors that return
+> BUSY on writes. 
 
-I think the code assumes, the kernel is loaded in 256M aligned page. You may
-want to mention that in the description here.
+That is a fun conclusion considering that hvc has been written for the
+pseries hypervisor which ... can return BUSY on writes :-)
 
-Thanks
-Suzuki
+> So I threw out my HVC driver and rewrote it as a
+> standard console and TTY driver.  That driver is waiting to be
+> included in the 3.1 kernel.
+
+Sucktastic.
+
+We just need to fix HVC properly.
+
+Cheers,
+Ben.
