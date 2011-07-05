@@ -1,15 +1,12 @@
 Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 5 Jul 2011 14:38:17 +1000
+Date: Tue, 5 Jul 2011 14:44:19 +1000
 From: Tony Breeds <tony@bakeyournoodle.com>
 To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc/44x: boot wrapper: allow kernel to load into
-	non-zero address
-Message-ID: <20110705043817.GH13483@ozlabs.org>
+Subject: [PATCH] mm: Fix output of total_ram.
+Message-ID: <20110705044419.GA20597@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20110705043657.GF13483@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,63 +16,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+On 32bit platforms that support >= 4GB memory total_ram was truncated.
+This creates a confusing printk:
+	Top of RAM: 0x100000000, Total RAM: 0x0
+Fix that:
+	Top of RAM: 0x100000000, Total RAM: 0x100000000
 
-For AMP, different kernel instances load into separate memory regions.
-Read the start of memory from the device tree and limit the memory to what's
-specified in the device tree.
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/boot/treeboot-iss4xx.c |   23 ++++++++++++++++++++++-
- 1 files changed, 22 insertions(+), 1 deletions(-)
+ arch/powerpc/mm/mem.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/treeboot-iss4xx.c b/arch/powerpc/boot/treeboot-iss4xx.c
-index fcc4495..329e710 100644
---- a/arch/powerpc/boot/treeboot-iss4xx.c
-+++ b/arch/powerpc/boot/treeboot-iss4xx.c
-@@ -34,9 +34,29 @@
- 
- BSS_STACK(4096);
- 
-+static u32 ibm4xx_memstart;
-+
- static void iss_4xx_fixups(void)
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 29d4dde..ac1c3d3 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -249,7 +249,7 @@ static int __init mark_nonram_nosave(void)
+  */
+ void __init paging_init(void)
  {
--	ibm4xx_sdram_fixup_memsize();
-+	void *memory;
-+	u32 reg[3];
-+
-+	memory = finddevice("/memory");
-+	if (!memory)
-+		fatal("Can't find memory node\n");
-+	/* This assumes #address-cells = 2, #size-cells =1 and that */
-+	getprop(memory, "reg", reg, sizeof(reg));
-+	if (reg[2])
-+		/* If the device tree specifies the memory range, use it */
-+		ibm4xx_memstart = reg[1];
-+	else
-+		/* othersize, read it from the SDRAM controller */
-+		ibm4xx_sdram_fixup_memsize();
-+}
-+
-+static void *iss_4xx_vmlinux_alloc(unsigned long size)
-+{
-+	return (void *)ibm4xx_memstart;
- }
+-	unsigned long total_ram = memblock_phys_mem_size();
++	unsigned long long total_ram = memblock_phys_mem_size();
+ 	phys_addr_t top_of_ram = memblock_end_of_DRAM();
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
  
- #define SPRN_PIR	0x11E	/* Processor Indentification Register */
-@@ -48,6 +68,7 @@ void platform_init(void)
+@@ -269,7 +269,7 @@ void __init paging_init(void)
+ 	kmap_prot = PAGE_KERNEL;
+ #endif /* CONFIG_HIGHMEM */
  
- 	simple_alloc_init(_end, avail_ram, 128, 64);
- 	platform_ops.fixups = iss_4xx_fixups;
-+	platform_ops.vmlinux_alloc = iss_4xx_vmlinux_alloc;
- 	platform_ops.exit = ibm44x_dbcr_reset;
- 	pir_reg = mfspr(SPRN_PIR);
- 	fdt_set_boot_cpuid_phys(_dtb_start, pir_reg);
+-	printk(KERN_DEBUG "Top of RAM: 0x%llx, Total RAM: 0x%lx\n",
++	printk(KERN_DEBUG "Top of RAM: 0x%llx, Total RAM: 0x%llx\n",
+ 	       (unsigned long long)top_of_ram, total_ram);
+ 	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+ 	       (long int)((top_of_ram - total_ram) >> 20));
 -- 
 1.7.4.4
