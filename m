@@ -1,25 +1,14 @@
-Return-Path: <B04825@freescale.com>
-Received: from CH1EHSOBE017.bigfish.com (ch1ehsobe003.messaging.microsoft.com
-	[216.32.181.183]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B7209B6F7A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jul 2011 14:17:39 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Subject: Re: hvc_console change results in corrupt oops output
-Date: Tue, 5 Jul 2011 04:17:32 +0000
-Message-ID: <CAOZdJXW0Lota0ZuEnOHhsU93v7WmvYztEMyfg+UsMKxFdoXNXQ@mail.gmail.com>
-References: <20110704205738.742e56d0@kryten>
-	<1309787787.14501.268.camel@pasglop>
-	<20110704142429.GA2147@linux.vnet.ibm.com>
-In-Reply-To: <20110704142429.GA2147@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <tony@bakeyournoodle.com>
+Date: Tue, 5 Jul 2011 14:36:57 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/3] powerpc/47x: allow kernel to be loaded in higher
+	physical memory
+Message-ID: <20110705043657.GF13483@ozlabs.org>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Anton Blanchard <anton@samba.org>,
-	"borntraeger@de.ibm.com" <borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +18,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 4, 2011 at 9:24 AM, Hendrik Brueckner
-<brueckner@linux.vnet.ibm.com> wrote:
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-> I will check this again for my hvc_iucv back-end. =A0Meanwhile a found
-> an old thread discussing the same issue. =A0It covers some differences
-> between console and ttys which actually does not matter for hvc-backend
-> because of the shared put_chars() routine.
->
-> You can read the thread on lkml.org: http://lkml.org/lkml/2009/10/15/149
+The 44x code (which is shared by 47x) assumes the available physical memory
+begins at 0x00000000.  This is not necessarily the case in an AMP
+environment.
 
-I started that thread.  After much soul searching, we came to the
-conclusion that HVC is not compatible with hypervisors that return
-BUSY on writes.  So I threw out my HVC driver and rewrote it as a
-standard console and TTY driver.  That driver is waiting to be
-included in the 3.1 kernel.
+Support CONFIG_RELOCATABLE for 476 in order to allow the kernel to be
+loaded into a higher memory range.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/Kconfig                          |    2 +-
+ arch/powerpc/configs/44x/iss476-smp_defconfig |    6 ++--
+ arch/powerpc/kernel/head_44x.S                |   42 ++++++++++++++++++++-----
+ arch/powerpc/mm/44x_mmu.c                     |   13 ++++++--
+ 4 files changed, 48 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2729c66..7cef1fc 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -841,7 +841,7 @@ config LOWMEM_CAM_NUM
+ 
+ config RELOCATABLE
+ 	bool "Build a relocatable kernel (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
++	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && (FSL_BOOKE || PPC_47x)
+ 	help
+ 	  This builds a kernel image that is capable of running at the
+ 	  location the kernel is loaded at (some alignment restrictions may
+diff --git a/arch/powerpc/configs/44x/iss476-smp_defconfig b/arch/powerpc/configs/44x/iss476-smp_defconfig
+index 92f863a..a6eb6ad 100644
+--- a/arch/powerpc/configs/44x/iss476-smp_defconfig
++++ b/arch/powerpc/configs/44x/iss476-smp_defconfig
+@@ -3,8 +3,8 @@ CONFIG_SMP=y
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_SPARSE_IRQ=y
+ CONFIG_LOG_BUF_SHIFT=14
+-CONFIG_SYSFS_DEPRECATED_V2=y
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+ CONFIG_EXPERT=y
+@@ -21,10 +21,11 @@ CONFIG_ISS4xx=y
+ CONFIG_HZ_100=y
+ CONFIG_MATH_EMULATION=y
+ CONFIG_IRQ_ALL_CPUS=y
+-CONFIG_SPARSE_IRQ=y
+ CONFIG_CMDLINE_BOOL=y
+ CONFIG_CMDLINE="root=/dev/issblk0"
+ # CONFIG_PCI is not set
++CONFIG_ADVANCED_OPTIONS=y
++CONFIG_RELOCATABLE=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+@@ -67,7 +68,6 @@ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+ CONFIG_EXT3_FS_POSIX_ACL=y
+ CONFIG_EXT3_FS_SECURITY=y
+-CONFIG_INOTIFY=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_CRAMFS=y
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 5e12b74..f8e971b 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -93,6 +93,30 @@ _ENTRY(_start);
+ 
+ 	bl	early_init
+ 
++#ifdef CONFIG_RELOCATABLE
++	/*
++	 * r25 will contain RPN/ERPN for the start address of memory
++	 *
++	 * Add the difference between KERNELBASE and PAGE_OFFSET to the
++	 * start of physical memory to get kernstart_addr.
++	 */
++	lis	r3,kernstart_addr@ha
++	la	r3,kernstart_addr@l(r3)
++
++	lis	r4,KERNELBASE@h
++	ori	r4,r4,KERNELBASE@l
++	lis	r5,PAGE_OFFSET@h
++	ori	r5,r5,PAGE_OFFSET@l
++	subf	r4,r5,r4
++
++	rlwinm	r6,r25,0,28,31	/* ERPN */
++	rlwinm	r7,r25,0,0,3	/* RPN - assuming 256 MB page size */
++	add	r7,r7,r4
++
++	stw	r6,0(r3)
++	stw	r7,4(r3)
++#endif
++
+ /*
+  * Decide what sort of machine this is and initialize the MMU.
+  */
+@@ -1001,9 +1025,6 @@ clear_utlb_entry:
+ 	lis	r3,PAGE_OFFSET@h
+ 	ori	r3,r3,PAGE_OFFSET@l
+ 
+-	/* Kernel is at the base of RAM */
+-	li r4, 0			/* Load the kernel physical address */
+-
+ 	/* Load the kernel PID = 0 */
+ 	li	r0,0
+ 	mtspr	SPRN_PID,r0
+@@ -1013,9 +1034,8 @@ clear_utlb_entry:
+ 	clrrwi	r3,r3,12		/* Mask off the effective page number */
+ 	ori	r3,r3,PPC47x_TLB0_VALID | PPC47x_TLB0_256M
+ 
+-	/* Word 1 */
+-	clrrwi	r4,r4,12		/* Mask off the real page number */
+-					/* ERPN is 0 for first 4GB page */
++	/* Word 1 - use r25.  RPN is the same as the original entry */
++
+ 	/* Word 2 */
+ 	li	r5,0
+ 	ori	r5,r5,PPC47x_TLB2_S_RWX
+@@ -1026,7 +1046,7 @@ clear_utlb_entry:
+ 	/* We write to way 0 and bolted 0 */
+ 	lis	r0,0x8800
+ 	tlbwe	r3,r0,0
+-	tlbwe	r4,r0,1
++	tlbwe	r25,r0,1
+ 	tlbwe	r5,r0,2
+ 
+ /*
+@@ -1124,7 +1144,13 @@ head_start_common:
+ 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+ 	mtspr	SPRN_IVPR,r4
+ 
+-	addis	r22,r22,KERNELBASE@h
++	/*
++	 * If the kernel was loaded at a non-zero 256 MB page, we need to
++	 * mask off the most significant 4 bits to get the relative address
++	 * from the start of physical memory
++	 */
++	rlwinm	r22,r22,0,4,31
++	addis	r22,r22,PAGE_OFFSET@h
+ 	mtlr	r22
+ 	isync
+ 	blr
+diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+index 024acab..f60e006 100644
+--- a/arch/powerpc/mm/44x_mmu.c
++++ b/arch/powerpc/mm/44x_mmu.c
+@@ -186,10 +186,11 @@ void __init MMU_init_hw(void)
+ unsigned long __init mmu_mapin_ram(unsigned long top)
+ {
+ 	unsigned long addr;
++	unsigned long memstart = memstart_addr & ~(PPC_PIN_SIZE - 1);
+ 
+ 	/* Pin in enough TLBs to cover any lowmem not covered by the
+ 	 * initial 256M mapping established in head_44x.S */
+-	for (addr = PPC_PIN_SIZE; addr < lowmem_end_addr;
++	for (addr = memstart + PPC_PIN_SIZE; addr < lowmem_end_addr;
+ 	     addr += PPC_PIN_SIZE) {
+ 		if (mmu_has_feature(MMU_FTR_TYPE_47x))
+ 			ppc47x_pin_tlb(addr + PAGE_OFFSET, addr);
+@@ -218,19 +219,25 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
+ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 				phys_addr_t first_memblock_size)
+ {
++	u64 size;
++
++#ifndef CONFIG_RELOCATABLE
+ 	/* We don't currently support the first MEMBLOCK not mapping 0
+ 	 * physical on those processors
+ 	 */
+ 	BUG_ON(first_memblock_base != 0);
++#endif
+ 
+ 	/* 44x has a 256M TLB entry pinned at boot */
+-	memblock_set_current_limit(min_t(u64, first_memblock_size, PPC_PIN_SIZE));
++	size = (min_t(u64, first_memblock_size, PPC_PIN_SIZE));
++	memblock_set_current_limit(first_memblock_base + size);
+ }
+ 
+ #ifdef CONFIG_SMP
+ void __cpuinit mmu_init_secondary(int cpu)
+ {
+ 	unsigned long addr;
++	unsigned long memstart = memstart_addr & ~(PPC_PIN_SIZE - 1);
+ 
+ 	/* Pin in enough TLBs to cover any lowmem not covered by the
+ 	 * initial 256M mapping established in head_44x.S
+@@ -241,7 +248,7 @@ void __cpuinit mmu_init_secondary(int cpu)
+ 	 * stack. current (r2) isn't initialized, smp_processor_id()
+ 	 * will not work, current thread info isn't accessible, ...
+ 	 */
+-	for (addr = PPC_PIN_SIZE; addr < lowmem_end_addr;
++	for (addr = memstart + PPC_PIN_SIZE; addr < lowmem_end_addr;
+ 	     addr += PPC_PIN_SIZE) {
+ 		if (mmu_has_feature(MMU_FTR_TYPE_47x))
+ 			ppc47x_pin_tlb(addr + PAGE_OFFSET, addr);
+-- 
+1.7.4.4
