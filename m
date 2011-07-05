@@ -1,39 +1,21 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A8DCBB6F6C
+Return-Path: <r61911@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+	[213.199.154.143])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 03D06B6F54
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jul 2011 03:44:32 +1000 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp05.in.ibm.com (8.14.4/8.13.1) with ESMTP id p64HiLJO007991
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2011 23:14:21 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p64HiLQn3641444
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2011 23:14:21 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p64HiKGQ024553
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2011 03:44:21 +1000
-Date: Mon, 4 Jul 2011 23:14:16 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 2/6] hw_breakpoints: Migrate breakpoint conditional build
-	under new config
-Message-ID: <20110704174416.GA2166@in.ibm.com>
-References: <1306273947-8410-1-git-send-email-fweisbec@gmail.com>
-	<1306273947-8410-3-git-send-email-fweisbec@gmail.com>
-	<20110704132746.GA2963@in.ibm.com>
-	<20110704132912.GB5551@somewhere>
+	Tue,  5 Jul 2011 13:40:51 +1000 (EST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: <linux-mmc@vger.kernel.org>
+Subject: [PATCH 1/3] eSDHC: Access Freescale eSDHC registers by 32-bit
+Date: Tue, 5 Jul 2011 12:19:01 +0800
+Message-ID: <1309839543-6031-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110704132912.GB5551@somewhere>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mundt <lethal@linux-sh.org>,
-	linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
-Reply-To: prasad@linux.vnet.ibm.com
+Content-Type: text/plain
+Cc: Xu lei <B33228@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,61 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 04, 2011 at 03:29:14PM +0200, Frederic Weisbecker wrote:
-> On Mon, Jul 04, 2011 at 06:57:46PM +0530, K.Prasad wrote:
-> > On Tue, May 24, 2011 at 11:52:23PM +0200, Frederic Weisbecker wrote:
-> > > Migrate conditional hw_breakpoint code compilation under
-> > > the new config to prepare for letting the user chose whether
-> > > or not to build this feature
-> > > 
-> > 
-> > Making the hardware breakpoint patches modular has always been a goal.
-> > I've looked at the PowerPC parts of the code and they look harmless.
-> > 
-> > Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> 
-> Great!
-> 
-> I'll push that soon, thanks guys for your acks!
+From: Xu lei <B33228@freescale.com>
 
-Meanwhile, I was testing hardware breakpoints through perf and found
-that monitoring a given address fails when using 'perf record' (returns
--ENOSPC) while 'perf stat' and watchpoint through gdb works fine (see
-logs below).
+For Freescale eSDHC registers only support 32-bit accesses,
+this patch ensure that all Freescale eSDHC register accesses
+are 32-bit.
 
-Has this behaviour been reported for other perf counters?
+Signed-off-by: Xu lei <B33228@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/mmc/host/sdhci-of-esdhc.c |   18 ++++++++++++++----
+ 1 files changed, 14 insertions(+), 4 deletions(-)
 
-Thanks,
-K.Prasad
-
-# tools/perf/perf --version
-perf version 3.0.0-rc5
-# 
-# grep pid_max /proc/kallsyms 
-ffffffff81a25010 D pid_max
-ffffffff81a25014 D pid_max_min
-ffffffff81a25018 D pid_max_max
-# 
-# uname -a
-Linux llm37.in.ibm.com 3.0.0-rc5 #1 SMP Mon Jul 4 22:24:02 IST 2011
-x86_64 x86_64 x86_64 GNU/Linux
-# 
-# tools/perf/perf stat -e mem:0xffffffff81a25010:rw make kernel/futex.o
-  CHK     include/linux/version.h
-  CHK     include/generated/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-make[1]: `kernel/futex.o' is up to date.
-
- Performance counter stats for 'make kernel/futex.o':
-
-               188 mem:0xffffffff81a25010:rw                                   
-
-      10.734957333 seconds time elapsed
-
-# tools/perf/perf record -e
-mem:0xffffffff81a25010:rw make kernel/futex.o
-
-  Error: sys_perf_event_open() syscall returned with 28 (No space left
-on device).  /bin/dmesg may provide additional information.
-
-  Fatal: No CONFIG_PERF_EVENTS=y kernel support configured?
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index ba40d6d..c9a8519 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -1,7 +1,7 @@
+ /*
+  * Freescale eSDHC controller driver.
+  *
+- * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ * Copyright (c) 2007, 2010 Freescale Semiconductor, Inc.
+  * Copyright (c) 2009 MontaVista Software, Inc.
+  *
+  * Authors: Xiaobo Xie <X.Xie@freescale.com>
+@@ -23,11 +23,21 @@
+ static u16 esdhc_readw(struct sdhci_host *host, int reg)
+ {
+ 	u16 ret;
++	int base = reg & ~0x3;
++	int shift = (reg & 0x2) * 8;
+ 
+ 	if (unlikely(reg == SDHCI_HOST_VERSION))
+-		ret = in_be16(host->ioaddr + reg);
++		ret = in_be32(host->ioaddr + base) & 0xffff;
+ 	else
+-		ret = sdhci_be32bs_readw(host, reg);
++		ret = (in_be32(host->ioaddr + base) >> shift) & 0xffff;
++	return ret;
++}
++
++static u8 esdhc_readb(struct sdhci_host *host, int reg)
++{
++	int base = reg & ~0x3;
++	int shift = (reg & 0x3) * 8;
++	u8 ret = (in_be32(host->ioaddr + base) >> shift) & 0xff;
+ 	return ret;
+ }
+ 
+@@ -79,7 +89,7 @@ struct sdhci_of_data sdhci_esdhc = {
+ 	.ops = {
+ 		.read_l = sdhci_be32bs_readl,
+ 		.read_w = esdhc_readw,
+-		.read_b = sdhci_be32bs_readb,
++		.read_b = esdhc_readb,
+ 		.write_l = sdhci_be32bs_writel,
+ 		.write_w = esdhc_writew,
+ 		.write_b = esdhc_writeb,
+-- 
+1.6.0.6
