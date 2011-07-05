@@ -1,41 +1,21 @@
-Return-Path: <ohad@wizery.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C5F06B6F71
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Jul 2011 00:07:06 +1000 (EST)
-Received: by wwj40 with SMTP id 40so4757098wwj.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 05 Jul 2011 07:07:02 -0700 (PDT)
-From: Ohad Ben-Cohen <ohad@wizery.com>
-To: Rusty Russell <rusty@rustcorp.com.au>,
-	virtualization@lists.linux-foundation.org
-Subject: [RFC] virtio: expose for non-virtualization users too
-Date: Tue,  5 Jul 2011 17:06:14 +0300
-Message-Id: <1309874774-31689-1-git-send-email-ohad@wizery.com>
-Cc: Carsten Otte <cotte@de.ibm.com>, linux-ia64@vger.kernel.org,
-	kvm@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
-	linux-mips@linux-mips.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org, x86@kernel.org, Alexander Graf <agraf@suse.de>,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Ingo Molnar <mingo@redhat.com>, Avi Kivity <avi@redhat.com>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	Xiantao Zhang <xiantao.zhang@intel.com>, Ohad Ben-Cohen <ohad@wizery.com>,
-	Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
-	Chris Metcalf <cmetcalf@tilera.com>,
-	John Stultz <john.stultz@linaro.org>, kvm-ppc@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	Tony Luck <tony.luck@intel.com>, kvm-ia64@vger.kernel.org,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 44898B6F6B
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jul 2011 00:19:55 +1000 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	p65EJoHR012939
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Jul 2011 16:19:51 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@ozlabs.org
+Subject: Analysing a kernel panic
+Date: Tue, 5 Jul 2011 16:19:50 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <201107051619.50548.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,182 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-virtio has been so far used only in the context of virtualization,
-and the virtio Kconfig was sourced directly by the relevant arch
-Kconfigs when VIRTUALIZATION was selected.
+Hello all,
+one of my drivers is causing a kernel panic and I _think_ it happens in the 1st call to the interrupt routine.
+What kind of information can I extract from the following ?
+Is it like a core dump that I can load with the executable in the debugger to know exactly what happened (I doubt it) ?
 
-Now that we start using virtio for inter-processor communications,
-we need to source the virtio Kconfig outside of the virtualization
-scope too.
+Oops: Exception in kernel mode, sig: 4 [#1]
+Xilinx Virtex
+last sysfs file:
+Modules linked in: xad
+NIP: c0002328 LR: c0011de8 CTR: c001d77c
+REGS: c778de20 TRAP: 0700   Not tainted  (2.6.34)
+MSR: 00021030 <ME,CE,IR,DR>  CR: 24000044  XER: 00000000
+TASK = c6ce80a0[241] 'SoftNoy' THREAD: c778c000
+GPR00: 00000000 c778ded0 c6ce80a0 00000026 c6dbe000 00000000 e146dcab 00000000
+GPR08: 02134be0 00000000 000020e7 00000001 000020e6 100265d8 00000000 1007c600
+GPR16: 100acd0c 100822e4 1009024d bfa39a48 c7452080 c05bf0e8 c05bf02c c0207d6c
+GPR24: c778c03c 00000004 c6cc7040 c05c1b88 00000001 00000004 c6cc73c0 00000026
+NIP [c0002328] set_context+0x0/0x10
+LR [c0011de8] switch_mmu_context+0x194/0x1b8
+Call Trace:
+[c778ded0] [c001a810] pick_next_task_fair+0xec/0x130 (unreliable)
+[c778def0] [c0203514] schedule+0x300/0x394
+[c778df40] [c000f63c] recheck+0x0/0x24
+Instruction dump:
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+00000000 00000000 00000000 00000000 <00000000> 00000000 00000000 00000000
+Kernel stack overflow in process c6ce80a0, r1=c778c070
+NIP: c000d270 LR: c000f3c8 CTR: c0017fd0
+REGS: c778bfc0 TRAP: 0501   Tainted: G      D     (2.6.34)
+MSR: 00029030 <EE,ME,CE,IR,DR>  CR: 24000048  XER: 00000000
+TASK = c6ce80a0[241] 'SoftNoy' THREAD: c778c000
+GPR00: 00029030 c778c070 c6ce80a0 c778c090 08000000 ffff32d8 00000001 00000001
+GPR08: ffff32da 00000000 00021032 c000d110 06ce82a8
+NIP [c000d270] program_check_exception+0x160/0x228
+LR [c000f3c8] ret_from_except_full+0x0/0x4c
+Call Trace:
+Instruction dump:
+38090004 901f0080 480000d8 3ca00003 7fe4fb78 80df0080 60a50001 38600005
+480000a8 7c0000a6 60008000 7c000124 <77c00c04> 41a20068 4bffef89 2f83fff2
+Kernel panic - not syncing: kernel stack overflow
+Call Trace:
+Rebooting in 180 seconds..
 
-Moreover, some architectures might use virtio for both virtualization
-and inter-processor communications, so directly sourcing virtio
-might yield unexpected results due to conflicting selections.
+My driver is xad.ko, though /dev/xps-acqui-data. The user program is SoftNoy.
+The code for the ISR (note that this code works fine on the same driver for a slightly different piece of custom 
+hardware):
 
-The simple solution offered by this patch is to always source virtio's
-Kconfig in drivers/Kconfig, and remove it from the appropriate arch
-Kconfigs. Additionally, a virtio menu entry has been added so virtio
-drivers don't show up in the general drivers menu.
+static irqreturn_t XadIsr(int irq, void *dev_id) {
+	Xad.control_reg->fin_in = 0;		
+	Xad.interrupt_reg->ISR  = 1;		
+	Xad.interrupt_IPIF_reg->ISR = 4;
 
-This way anyone can use virtio, though it's arguably less accessible
-(and neat!) for virtualization users now.
+	Xad.control_reg->flux_address[0] = BUFFER_PHY_BASE + BUF_SZ*(++Xad.Icnt % BUF_NB); 
+	Xad.control_reg->flux_address[1] = Xad.control_reg->flux_address[0] + BUF_SZ/2;
 
-Note: some architectures (mips and sh) seem to have a VIRTUALIZATION
-menu merely for sourcing virtio's Kconfig, so that menu is removed too.
+	if (Xad.Icnt<Xad.Rcnt+BUF_NB) 
+		Xad.control_reg->flux_start=255;	// Arm the next interrupt
+	else {
+		// There aren't any buffers available for the next read. We'll do the start in the read routine
+		Xad.Suspended=1;
+		Xad.OverflowsSinceLastRead++;
+		Xad.Overflow++;
+		DBG_ADD_CHAR('*');
+		if (Verbose) printk(KERN_WARNING SD "%dth buffer overflow: %d-%d=%d>=%d\n" FL, 
+			Xad.Overflow, Xad.Icnt, Xad.Rcnt, Xad.Icnt-Xad.Rcnt, BUF_NB);
+	}
 
-Signed-off-by: Ohad Ben-Cohen <ohad@wizery.com>
----
-The motivation behind this patch is: https://lkml.org/lkml/2011/6/21/47
+	wake_up_interruptible(&Xad.wait);
+	return IRQ_HANDLED;
+}
 
-If the general approach is agreed upon, we can either merge the patch
-independently, or add it to the AMP patch set.
-
- arch/ia64/kvm/Kconfig    |    1 -
- arch/mips/Kconfig        |   16 ----------------
- arch/powerpc/kvm/Kconfig |    1 -
- arch/s390/kvm/Kconfig    |    1 -
- arch/sh/Kconfig          |   16 ----------------
- arch/tile/kvm/Kconfig    |    1 -
- arch/x86/kvm/Kconfig     |    1 -
- drivers/Kconfig          |    2 ++
- drivers/virtio/Kconfig   |    3 +++
- 9 files changed, 5 insertions(+), 37 deletions(-)
-
-diff --git a/arch/ia64/kvm/Kconfig b/arch/ia64/kvm/Kconfig
-index fa4d1e5..9806e55 100644
---- a/arch/ia64/kvm/Kconfig
-+++ b/arch/ia64/kvm/Kconfig
-@@ -49,6 +49,5 @@ config KVM_INTEL
- 	  extensions.
- 
- source drivers/vhost/Kconfig
--source drivers/virtio/Kconfig
- 
- endif # VIRTUALIZATION
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 653da62..a627a2c 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -2489,20 +2489,4 @@ source "security/Kconfig"
- 
- source "crypto/Kconfig"
- 
--menuconfig VIRTUALIZATION
--	bool "Virtualization"
--	default n
--	---help---
--	  Say Y here to get to see options for using your Linux host to run other
--	  operating systems inside virtual machines (guests).
--	  This option alone does not add any kernel code.
--
--	  If you say N, all options in this submenu will be skipped and disabled.
--
--if VIRTUALIZATION
--
--source drivers/virtio/Kconfig
--
--endif # VIRTUALIZATION
--
- source "lib/Kconfig"
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index b7baff7..105b691 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -99,6 +99,5 @@ config KVM_E500
- 	  If unsure, say N.
- 
- source drivers/vhost/Kconfig
--source drivers/virtio/Kconfig
- 
- endif # VIRTUALIZATION
-diff --git a/arch/s390/kvm/Kconfig b/arch/s390/kvm/Kconfig
-index f66a1bd..a216341 100644
---- a/arch/s390/kvm/Kconfig
-+++ b/arch/s390/kvm/Kconfig
-@@ -37,6 +37,5 @@ config KVM
- # OK, it's a little counter-intuitive to do this, but it puts it neatly under
- # the virtualization menu.
- source drivers/vhost/Kconfig
--source drivers/virtio/Kconfig
- 
- endif # VIRTUALIZATION
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index bbdeb48..748ff19 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -897,20 +897,4 @@ source "security/Kconfig"
- 
- source "crypto/Kconfig"
- 
--menuconfig VIRTUALIZATION
--	bool "Virtualization"
--	default n
--	---help---
--	  Say Y here to get to see options for using your Linux host to run other
--	  operating systems inside virtual machines (guests).
--	  This option alone does not add any kernel code.
--
--	  If you say N, all options in this submenu will be skipped and disabled.
--
--if VIRTUALIZATION
--
--source drivers/virtio/Kconfig
--
--endif # VIRTUALIZATION
--
- source "lib/Kconfig"
-diff --git a/arch/tile/kvm/Kconfig b/arch/tile/kvm/Kconfig
-index b88f9c0..669fcdb 100644
---- a/arch/tile/kvm/Kconfig
-+++ b/arch/tile/kvm/Kconfig
-@@ -33,6 +33,5 @@ config KVM
- 	  If unsure, say N.
- 
- source drivers/vhost/Kconfig
--source drivers/virtio/Kconfig
- 
- endif # VIRTUALIZATION
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index 50f6364..65cf823 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -76,6 +76,5 @@ config KVM_MMU_AUDIT
- # the virtualization menu.
- source drivers/vhost/Kconfig
- source drivers/lguest/Kconfig
--source drivers/virtio/Kconfig
- 
- endif # VIRTUALIZATION
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 3bb154d..795218e 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -114,6 +114,8 @@ source "drivers/uio/Kconfig"
- 
- source "drivers/vlynq/Kconfig"
- 
-+source "drivers/virtio/Kconfig"
-+
- source "drivers/xen/Kconfig"
- 
- source "drivers/staging/Kconfig"
-diff --git a/drivers/virtio/Kconfig b/drivers/virtio/Kconfig
-index 3dd6294..57e493b 100644
---- a/drivers/virtio/Kconfig
-+++ b/drivers/virtio/Kconfig
-@@ -7,6 +7,8 @@ config VIRTIO_RING
- 	tristate
- 	depends on VIRTIO
- 
-+menu "Virtio drivers"
-+
- config VIRTIO_PCI
- 	tristate "PCI driver for virtio devices (EXPERIMENTAL)"
- 	depends on PCI && EXPERIMENTAL
-@@ -33,3 +35,4 @@ config VIRTIO_BALLOON
- 
- 	 If unsure, say M.
- 
-+endmenu
 -- 
-1.7.1
+Guillaume Dargaud
+http://www.gdargaud.net/
