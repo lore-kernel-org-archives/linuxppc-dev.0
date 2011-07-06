@@ -1,17 +1,16 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id CE6BBB6F7B
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 3EFA8B6F7B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Jul 2011 19:46:29 +1000 (EST)
-Date: Wed, 6 Jul 2011 11:46:27 +0200
+	Wed,  6 Jul 2011 19:51:06 +1000 (EST)
+Date: Wed, 6 Jul 2011 11:51:02 +0200
 From: Anatolij Gustschin <agust@denx.de>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH] powerpc/5200: dts: digsy_mtc.dts: add timer0 and timer1
-	gpio properties
-Message-ID: <20110706114627.56388c2e@wker>
-In-Reply-To: <1307399225-15882-1-git-send-email-agust@denx.de>
-References: <1305561764-5942-1-git-send-email-agust@denx.de>
-	<1307399225-15882-1-git-send-email-agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/5200: add GPIO functions for simple interrupt
+	GPIOs
+Message-ID: <20110706115102.1b6d421f@wker>
+In-Reply-To: <1306142730-7528-1-git-send-email-agust@denx.de>
+References: <1306142730-7528-1-git-send-email-agust@denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -26,41 +25,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Grant,
 
-Can you please pick this patch for 3.1 ?
+Ping.
 
-On Tue,  7 Jun 2011 00:27:05 +0200
+On Mon, 23 May 2011 11:25:30 +0200
 Anatolij Gustschin <agust@denx.de> wrote:
 
-> timer0 and timer1 pins are used as simple GPIO on this board.
-> Add gpio-controller and #gpio-cells properties to timer nodes
-> so that we can control gpio lines using available MPC52xx
-> GPT driver.
+> The mpc52xx_gpio driver currently supports 8 wakeup GPIOs and 32
+> simple GPIOs. Extend it to also support GPIO function of 8 simple
+> interrupt GPIOs controlled in the standard GPIO register module.
 > 
 > Signed-off-by: Anatolij Gustschin <agust@denx.de>
 > ---
->  arch/powerpc/boot/dts/digsy_mtc.dts |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
-> index e205d17..2aad7ae 100644
-> --- a/arch/powerpc/boot/dts/digsy_mtc.dts
-> +++ b/arch/powerpc/boot/dts/digsy_mtc.dts
-> @@ -23,7 +23,14 @@
->  
->  	soc5200@f0000000 {
->  		timer@600 {	// General Purpose Timer
-> +			#gpio-cells = <2>;
->  			fsl,has-wdt;
-> +			gpio-controller;
-> +		};
-> +
-> +		timer@610 {
-> +			#gpio-cells = <2>;
-> +			gpio-controller;
->  		};
->  
->  		rtc@800 {
-
+>  arch/powerpc/platforms/52xx/mpc52xx_gpio.c |  117 ++++++++++++++++++++++++++++
+>  1 files changed, 117 insertions(+), 0 deletions(-)
+...
 
 Thanks,
 Anatolij
