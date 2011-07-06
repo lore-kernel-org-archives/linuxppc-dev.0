@@ -1,23 +1,26 @@
 Return-Path: <dedekind1@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 82648B6F76
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jul 2011 16:45:38 +1000 (EST)
-Received: by iwn36 with SMTP id 36so7140665iwn.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 05 Jul 2011 23:45:34 -0700 (PDT)
-Subject: Re: [PATCH 1/2] mtd/nand : don't free the global data
-	fsl_lbc_ctrl_dev->nand in fsl_elbc_chip_remove()
+	by ozlabs.org (Postfix) with ESMTPS id B4B78B6F74
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  6 Jul 2011 17:22:20 +1000 (EST)
+Received: by iyn35 with SMTP id 35so6510251iyn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 06 Jul 2011 00:22:17 -0700 (PDT)
+Subject: Re: [PATCH v3] mtd: eLBC NAND: remove elbc_fcm_ctrl->oob_poi
 From: Artem Bityutskiy <dedekind1@gmail.com>
-To: b35362@freescale.com
-Date: Wed, 06 Jul 2011 09:46:34 +0300
-In-Reply-To: <1309225852-1664-1-git-send-email-b35362@freescale.com>
-References: <1309225852-1664-1-git-send-email-b35362@freescale.com>
+To: "Matthew L. Creech" <mlcreech@gmail.com>
+Date: Wed, 06 Jul 2011 10:23:13 +0300
+In-Reply-To: <1309907688-8235-1-git-send-email-mlcreech@gmail.com>
+References: <1309905302-1990-1-git-send-email-mlcreech@gmail.com>
+	<1309907688-8235-1-git-send-email-mlcreech@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1309934799.3149.69.camel@sauron>
+Message-ID: <1309937003.3149.83.camel@sauron>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+	linux-mtd@lists.infradead.org, mhench@elutions.com, rick22@wi.rr.com
 Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,17 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-06-28 at 09:50 +0800, b35362@freescale.com wrote:
-> From: Liu Shuo <b35362@freescale.com>
+On Tue, 2011-07-05 at 19:14 -0400, Matthew L. Creech wrote:
+> From: Mike Hench <mhench@elutions.com>
 > 
-> The global data fsl_lbc_ctrl_dev->nand don't have to be freed in
-> fsl_elbc_chip_remove(). The right place to do that is in fsl_elbc_nand_remove()
-> if elbc_fcm_ctrl->counter is zero.
-> 
-> Signed-off-by: Liu Shuo <b35362@freescale.com>
+> The eLBC NAND driver currently follows up each program/write operation with a
+> read-back of the page, in order to [ostensibly] fill in ECC data for the
+> caller. However, the page address used for this read is always -1, so the read
+> will never work correctly.  Remove this useless (and potentially problematic)
+> block of code.
 
-Changed the subject to something shorted and pushed to l2-mtd-2.6.git,
-thanks.
+Pushed to l2-mtd-2.6.git, thanks!
 
 -- 
 Best Regards,
