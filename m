@@ -1,15 +1,20 @@
 Return-Path: <agust@denx.de>
-Date: Wed, 6 Jul 2011 11:43:19 +0200
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id CE6BBB6F7B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  6 Jul 2011 19:46:29 +1000 (EST)
+Date: Wed, 6 Jul 2011 11:46:27 +0200
 From: Anatolij Gustschin <agust@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] powerpc/5200: mpc5200b.dtsi: add spi node address-
-	and size-cells properties
-Message-ID: <20110706114319.17af93a3@wker>
-In-Reply-To: <1305561764-5942-1-git-send-email-agust@denx.de>
+To: grant.likely@secretlab.ca
+Subject: Re: [PATCH] powerpc/5200: dts: digsy_mtc.dts: add timer0 and timer1
+	gpio properties
+Message-ID: <20110706114627.56388c2e@wker>
+In-Reply-To: <1307399225-15882-1-git-send-email-agust@denx.de>
 References: <1305561764-5942-1-git-send-email-agust@denx.de>
+	<1307399225-15882-1-git-send-email-agust@denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +26,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Grant,
 
-can you please pick these patches for 3.1 ?
+Can you please pick this patch for 3.1 ?
 
-On Mon, 16 May 2011 18:02:43 +0200
+On Tue,  7 Jun 2011 00:27:05 +0200
 Anatolij Gustschin <agust@denx.de> wrote:
 
-> Both, #address-cells and #size-cells properties are required
-> for spi bus node, so add them.
+> timer0 and timer1 pins are used as simple GPIO on this board.
+> Add gpio-controller and #gpio-cells properties to timer nodes
+> so that we can control gpio lines using available MPC52xx
+> GPT driver.
 > 
 > Signed-off-by: Anatolij Gustschin <agust@denx.de>
 > ---
->  arch/powerpc/boot/dts/mpc5200b.dtsi |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+>  arch/powerpc/boot/dts/digsy_mtc.dts |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/powerpc/boot/dts/mpc5200b.dtsi b/arch/powerpc/boot/dts/mpc5200b.dtsi
-> index bc27548..7ab286a 100644
-> --- a/arch/powerpc/boot/dts/mpc5200b.dtsi
-> +++ b/arch/powerpc/boot/dts/mpc5200b.dtsi
-> @@ -147,6 +147,8 @@
+> diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
+> index e205d17..2aad7ae 100644
+> --- a/arch/powerpc/boot/dts/digsy_mtc.dts
+> +++ b/arch/powerpc/boot/dts/digsy_mtc.dts
+> @@ -23,7 +23,14 @@
+>  
+>  	soc5200@f0000000 {
+>  		timer@600 {	// General Purpose Timer
+> +			#gpio-cells = <2>;
+>  			fsl,has-wdt;
+> +			gpio-controller;
+> +		};
+> +
+> +		timer@610 {
+> +			#gpio-cells = <2>;
+> +			gpio-controller;
 >  		};
 >  
->  		spi@f00 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
->  			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
->  			reg = <0xf00 0x20>;
->  			interrupts = <2 13 0 2 14 0>;
+>  		rtc@800 {
+
 
 Thanks,
 Anatolij
