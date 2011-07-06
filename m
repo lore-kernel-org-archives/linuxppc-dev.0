@@ -1,15 +1,15 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 6 Jul 2011 17:55:29 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc/kdump: Fix timeout in crash_kexec_wait_realmode
-Message-ID: <20110706175529.5cdacb17@kryten>
-In-Reply-To: <29259.1309848010@neuling.org>
-References: <20110705161202.62dc7d24@kryten>
-	<29259.1309848010@neuling.org>
+Return-Path: <agust@denx.de>
+Date: Wed, 6 Jul 2011 11:43:19 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/2] powerpc/5200: mpc5200b.dtsi: add spi node address-
+	and size-cells properties
+Message-ID: <20110706114319.17af93a3@wker>
+In-Reply-To: <1305561764-5942-1-git-send-email-agust@denx.de>
+References: <1305561764-5942-1-git-send-email-agust@denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,42 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 05 Jul 2011 16:40:10 +1000
-Michael Neuling <mikey@neuling.org> wrote:
+Hi Grant,
 
-> The existing code it pretty ugly.  How about we clean it up even more
-> like this?
+can you please pick these patches for 3.1 ?
 
-Looks good and it passed my kdump test cases.
+On Mon, 16 May 2011 18:02:43 +0200
+Anatolij Gustschin <agust@denx.de> wrote:
 
-Anton
- 
-> From: Anton Blanchard <anton@samba.org>
+> Both, #address-cells and #size-cells properties are required
+> for spi bus node, so add them.
 > 
-> We check for timeout expiry in the outer loop, but we also need to
-> check it in the inner loop or we can lock up forever waiting for a
-> CPU to hit real mode.
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> ---
+>  arch/powerpc/boot/dts/mpc5200b.dtsi |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Cc: <stable@kernel.org>
-> 
-> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-> index 4e6ee94..cc6a9d5 100644
-> --- a/arch/powerpc/kernel/crash.c
-> +++ b/arch/powerpc/kernel/crash.c
-> @@ -242,12 +242,8 @@ static void crash_kexec_wait_realmode(int cpu)
+> diff --git a/arch/powerpc/boot/dts/mpc5200b.dtsi b/arch/powerpc/boot/dts/mpc5200b.dtsi
+> index bc27548..7ab286a 100644
+> --- a/arch/powerpc/boot/dts/mpc5200b.dtsi
+> +++ b/arch/powerpc/boot/dts/mpc5200b.dtsi
+> @@ -147,6 +147,8 @@
+>  		};
 >  
->  		while (paca[i].kexec_state < KEXEC_STATE_REAL_MODE) {
->  			barrier();
-> -			if (!cpu_possible(i)) {
-> +			if (!cpu_possible(i) || !cpu_online(i) ||
-> (msecs <= 0)) break;
-> -			}
-> -			if (!cpu_online(i)) {
-> -				break;
-> -			}
->  			msecs--;
->  			mdelay(1);
->  		}
-> 
+>  		spi@f00 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+>  			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+>  			reg = <0xf00 0x20>;
+>  			interrupts = <2 13 0 2 14 0>;
+
+Thanks,
+Anatolij
