@@ -1,32 +1,22 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from casper.infradead.org (casper.infradead.org
+	[IPv6:2001:770:15f::2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp07.in.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B54D0B6F77
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7DE2FB6F76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Jul 2011 20:22:42 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp07.in.ibm.com (8.14.4/8.13.1) with ESMTP id p67AMYVM023725
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2011 15:52:34 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p67AMXoH4374602
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2011 15:52:33 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
-	by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p67AMWhf019066
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2011 20:22:33 +1000
-Date: Thu, 7 Jul 2011 15:52:32 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [regression] 3.0-rc boot failure -- bisected to cd4ea6ae3982
-Message-ID: <20110707102107.GA16666@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-	anton@samba.org
-Reply-To: mahesh@linux.vnet.ibm.com
+	Thu,  7 Jul 2011 20:59:56 +1000 (EST)
+Subject: Re: [regression] 3.0-rc boot failure -- bisected to cd4ea6ae3982
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: mahesh@linux.vnet.ibm.com
+In-Reply-To: <20110707102107.GA16666@in.ibm.com>
+References: <20110707102107.GA16666@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 07 Jul 2011 12:59:35 +0200
+Message-ID: <1310036375.3282.509.camel@twins>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	anton@samba.org, mingo@elte.hu, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,90 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 2011-07-07 at 15:52 +0530, Mahesh J Salgaonkar wrote:
+>=20
+> 2.6.39 booted fine on the system and a git bisect shows commit cd4ea6ae -
+> "sched: Change NODE sched_domain group creation" as the cause.
 
-linux-3.0-rc fails to boot on a power7 system with 1TB ram and 896 CPUs.
-While the initial boot log shows a soft-lockup [1], the machine is hung after.
-Dropping into xmon shows the cpus are all struck at:
---------------------
-cpu 0xa: Vector: 100 (System Reset) at [c000000fae51fae0]
-    pc: c0000000000596b8: .plpar_hcall_norets+0x80/0xd0
-    lr: c00000000005b9a4: .pseries_dedicated_idle_sleep+0x194/0x210
-    sp: c000000fae51fd60
-   msr: 8000000000089032
-  current = 0xc000000fae49d990
-  paca    = 0xc00000000ebb1900
-    pid   = 0, comm = kworker/0:1
-cpu 0x41: Vector: 100 (System Reset) at [c000000fac01bae0]
-    pc: c0000000000596b8: .plpar_hcall_norets+0x80/0xd0
-    lr: c00000000005b9a4: .pseries_dedicated_idle_sleep+0x194/0x210
-    sp: c000000fac01bd60
-   msr: 8000000000089032
-  current = 0xc000000faefbf210
-  paca    = 0xc00000000ebba280
-    pid   = 0, comm = kworker/0:1
-cpu 0x21: Vector: 100 (System Reset) at [c000000fae9abae0]
-    pc: c0000000000596b8: .plpar_hcall_norets+0x80/0xd0
-    lr: c00000000005b9a4: .pseries_dedicated_idle_sleep+0x194/0x210
-    sp: c000000fae9abd60
-   msr: 8000000000089032
-  current = 0xc000000fae998590
-  paca    = 0xc00000000ebb5280
-    pid   = 0, comm = kworker/0:1
-cpu 0xb8: Vector: 100 (System Reset) at [c000000fab3dbae0]
-    pc: c0000000000596b8: .plpar_hcall_norets+0x80/0xd0
-    lr: c00000000005b9a4: .pseries_dedicated_idle_sleep+0x194/0x210
-    sp: c000000fab3dbd60
-   msr: 8000000000089032
-  current = 0xc000000fab3a2710
-  paca    = 0xc00000000ebccc00
-    pid   = 0, comm = kworker/0:1
-......
-......
-And shows same for all the CPUs.
-a:mon> t
-[link register   ] c00000000005b9a4 .pseries_dedicated_idle_sleep+0x194/0x210
-[c000000fae51fd60] 00000000134d0000 (unreliable)
-[c000000fae51fe20] c000000000018b64 .cpu_idle+0x164/0x210
-[c000000fae51fed0] c0000000005d55b0 .start_secondary+0x348/0x354
-[c000000fae51ff90] c000000000009268 .start_secondary_prolog+0x10/0x14
-a:mon> S
-msr  = 8000000000001032  sprg0= 0000000000000000
-pvr  = 00000000003f0201  sprg1= c00000000ebb1900
-dec  = 0000000030fb5b4f  sprg2= c00000000ebb1900
-sp   = c000000fae51f440  sprg3= 000000000000000a
-toc  = c000000000e21f90  dar  = c000011aee0c20e8
-a:mon>
---------------------
+Weird, there's no locking anywhere around there. The typical problems
+with this patch-set were massive explosions due to bad pointers etc..
+But not silent hangs.
 
-2.6.39 booted fine on the system and a git bisect shows commit cd4ea6ae -
-"sched: Change NODE sched_domain group creation" as the cause.
+The code its stuck at:
 
-Thanks,
--Mahesh.
+> [1]:
+> POWER7 performance monitor hardware support registered
+> Brought up 896 CPUs
+> Enabling Asymmetric SMT scheduling
+> BUG: soft lockup - CPU#0 stuck for 22s! [swapper:1]
+> Modules linked in:
+> NIP: c000000000074b90 LR: c00000000008a1c4 CTR: 0000000000000000
+> REGS: c000000fae25f9c0 TRAP: 0901   Not tainted  (3.0.0-rc6)
+> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24000088  XER: 00000004
+> TASK =3D c000000fae248490[1] 'swapper' THREAD: c000000fae25c000 CPU: 0
+> GPR00: 0000e2a55cbeec50 c000000fae25fc40 c000000000e21f90 c000007b2b34cb0=
+0
+> GPR04: 0000000000000100 0000000000000100 c000011adcf23418 000000000000000=
+0
+> GPR08: 0000000000000000 c000008b2b7d4480 c000007b2b35ef80 00000000000024a=
+c
+> GPR12: 0000000044000042 c00000000ebb0000
+> NIP [c000000000074b90] .update_group_power+0x50/0x190
+> LR [c00000000008a1c4] .build_sched_domains+0x434/0x490
+> Call Trace:
+> [c000000fae25fc40] [c000000fae25fce0] 0xc000000fae25fce0 (unreliable)
+> [c000000fae25fce0] [c00000000008a1c4] .build_sched_domains+0x434/0x490
+> [c000000fae25fdd0] [c000000000867370] .sched_init_smp+0xa8/0x224
+> [c000000fae25fee0] [c000000000850274] .kernel_init+0x10c/0x1fc
+> [c000000fae25ff90] [c000000000023884] .kernel_thread+0x54/0x70
+> Instruction dump:
+> f821ff61 ebc2b1a0 7c7f1b78 7c9c2378 e9230008 eba30010 2fa90000 419e0054
+> e9490010 38000000 7d495378 60000000 <8169000c> e9290000 7faa4800 7c005a14
 
-[1]:
-POWER7 performance monitor hardware support registered
-Brought up 896 CPUs
-Enabling Asymmetric SMT scheduling
-BUG: soft lockup - CPU#0 stuck for 22s! [swapper:1]
-Modules linked in:
-NIP: c000000000074b90 LR: c00000000008a1c4 CTR: 0000000000000000
-REGS: c000000fae25f9c0 TRAP: 0901   Not tainted  (3.0.0-rc6)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24000088  XER: 00000004
-TASK = c000000fae248490[1] 'swapper' THREAD: c000000fae25c000 CPU: 0
-GPR00: 0000e2a55cbeec50 c000000fae25fc40 c000000000e21f90 c000007b2b34cb00
-GPR04: 0000000000000100 0000000000000100 c000011adcf23418 0000000000000000
-GPR08: 0000000000000000 c000008b2b7d4480 c000007b2b35ef80 00000000000024ac
-GPR12: 0000000044000042 c00000000ebb0000
-NIP [c000000000074b90] .update_group_power+0x50/0x190
-LR [c00000000008a1c4] .build_sched_domains+0x434/0x490
-Call Trace:
-[c000000fae25fc40] [c000000fae25fce0] 0xc000000fae25fce0 (unreliable)
-[c000000fae25fce0] [c00000000008a1c4] .build_sched_domains+0x434/0x490
-[c000000fae25fdd0] [c000000000867370] .sched_init_smp+0xa8/0x224
-[c000000fae25fee0] [c000000000850274] .kernel_init+0x10c/0x1fc
-[c000000fae25ff90] [c000000000023884] .kernel_thread+0x54/0x70
-Instruction dump:
-f821ff61 ebc2b1a0 7c7f1b78 7c9c2378 e9230008 eba30010 2fa90000 419e0054
-e9490010 38000000 7d495378 60000000 <8169000c> e9290000 7faa4800 7c005a14
+doesn't contains any locks, its simply looping over all the cpus, and
+with that many I can imagine it takes a while, but getting 'stuck' there
+is unexpected to say the least.
+
+Surely this isn't the first multi-node P7 to boot a kernel with this
+patch? If my git foo is any good it hit -next on 23rd of May.
+
+I guess I'm asking is, do smaller P7 machines boot? And if so, is there
+any difference except size?
+
+How many nodes does the thing have anyway, 28? Hmm, that could mean its
+the first machine with >16 nodes to boot this, which would make it
+trigger the magic ALL_NODES crap.
+
+Let me dig around there.
