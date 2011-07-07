@@ -1,15 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 846701007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Jul 2011 22:49:59 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: grant.likely@secretlab.ca,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/5200: dts: digsy_mtc.dts: enable both MSCAN nodes
-Date: Thu,  7 Jul 2011 14:49:50 +0200
-Message-Id: <1310042990-21666-1-git-send-email-agust@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 36A7BB6F6B
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jul 2011 23:55:54 +1000 (EST)
+Subject: Re: [PATCH v3 1/3] driver core: Add ability for arch code to setup
+	pdev_archdata
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20110701220900.GA28971@kroah.com>
+Date: Thu, 7 Jul 2011 08:55:44 -0500
+Message-Id: <597354F4-D1D4-4BC0-9251-FDDC31B1E2A1@kernel.crashing.org>
+References: <1308744176-24491-1-git-send-email-galak@kernel.crashing.org>
+	<1308828839-27349-1-git-send-email-galak@kernel.crashing.org>
+	<20110701220900.GA28971@kroah.com>
+To: Greg KH <greg@kroah.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,32 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use both MSCAN controllers on this board, so do not disable
-them in the device tree.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/boot/dts/digsy_mtc.dts |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+On Jul 1, 2011, at 5:09 PM, Greg KH wrote:
 
-diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
-index 2aad7ae..a7511f2 100644
---- a/arch/powerpc/boot/dts/digsy_mtc.dts
-+++ b/arch/powerpc/boot/dts/digsy_mtc.dts
-@@ -37,14 +37,6 @@
- 			status = "disabled";
- 		};
- 
--		can@900 {
--			status = "disabled";
--		};
--
--		can@980 {
--			status = "disabled";
--		};
--
- 		spi@f00 {
- 			msp430@0 {
- 				compatible = "spidev";
--- 
-1.7.1
+> On Thu, Jun 23, 2011 at 06:33:57AM -0500, Kumar Gala wrote:
+>> On some architectures we need to setup pdev_archdata before we add =
+the
+>> device.  Waiting til a bus_notifier is too late since we might need =
+the
+>> pdev_archdata in the bus notifier.  One example is setting up of =
+dma_mask
+>> pointers such that it can be used in a bus_notifier.
+>>=20
+>> We add noop version of arch_setup_pdev_archdata() in
+>> <asm-generic/platform_device.h> and allow the arch code to override =
+with
+>> access the full definitions of struct device, struct platform_device, =
+and
+>> struct pdev_archdata.
+>=20
+> Isn't there some way to use "weak" symbols to keep us from having to
+> create this .h file in every single arch and then if the arch wants to
+> define it, it does so?
+>=20
+> That should make this patch simpler, right?
+>=20
+> thanks,
+>=20
+> greg k-h
+
+Changing to weak should be doable if we are ok with the additional =
+function call always happening.
+
+- k
