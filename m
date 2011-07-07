@@ -1,26 +1,24 @@
-Return-Path: <b10716@udp157453uds.ea.freescale.net>
-Received: from CH1EHSOBE015.bigfish.com (ch1ehsobe006.messaging.microsoft.com
-	[216.32.181.186]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 72BC7B6F00
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 00:03:42 +1000 (EST)
-Received: from mail116-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail116-ch1-R.bigfish.com (Postfix) with ESMTP id 1E7A56082DE	for
-	<linuxppc-dev@ozlabs.org>; Thu,  7 Jul 2011 14:03:39 +0000 (UTC)
-Received: from CH1EHSMHS007.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.243])	by mail116-ch1.bigfish.com (Postfix) with ESMTP id
-	C4CA4A2004B	for <linuxppc-dev@ozlabs.org>;
-	Thu,  7 Jul 2011 14:03:38 +0000 (UTC)
-From: Laurentiu TUDOR <Laurentiu.Tudor@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Remove a BUG_ON that triggered when running under FSL
-	Hypervisor
-Date: Thu, 7 Jul 2011 16:44:30 +0300
-Message-ID: <1310046270-6654-1-git-send-email-Laurentiu.Tudor@freescale.com>
+Return-Path: <greg@kroah.com>
+Received: from out5.smtp.messagingengine.com (out5.smtp.messagingengine.com
+	[66.111.4.29])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 57DAAB6F67
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 00:11:49 +1000 (EST)
+Date: Thu, 7 Jul 2011 07:11:25 -0700
+From: Greg KH <greg@kroah.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 1/3] driver core: Add ability for arch code to setup
+	pdev_archdata
+Message-ID: <20110707141125.GE27648@kroah.com>
+References: <1308744176-24491-1-git-send-email-galak@kernel.crashing.org>
+	<1308828839-27349-1-git-send-email-galak@kernel.crashing.org>
+	<20110701220900.GA28971@kroah.com>
+	<597354F4-D1D4-4BC0-9251-FDDC31B1E2A1@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Laurentiu TUDOR <Laurentiu.Tudor@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <597354F4-D1D4-4BC0-9251-FDDC31B1E2A1@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpc85xx_smp_init platform init function assumed that smp_ops.message_pass
-was set to default arch dependent smp_muxed_ipi_message_pass.
-However this does not seem to happen. Moreover, the arch specific code
-in arch/powerpc/kernel/smp.c handles smp_ops.message_pass == NULL and if so
-calls the default implementation.
+On Thu, Jul 07, 2011 at 08:55:44AM -0500, Kumar Gala wrote:
+> 
+> On Jul 1, 2011, at 5:09 PM, Greg KH wrote:
+> 
+> > On Thu, Jun 23, 2011 at 06:33:57AM -0500, Kumar Gala wrote:
+> >> On some architectures we need to setup pdev_archdata before we add the
+> >> device.  Waiting til a bus_notifier is too late since we might need the
+> >> pdev_archdata in the bus notifier.  One example is setting up of dma_mask
+> >> pointers such that it can be used in a bus_notifier.
+> >> 
+> >> We add noop version of arch_setup_pdev_archdata() in
+> >> <asm-generic/platform_device.h> and allow the arch code to override with
+> >> access the full definitions of struct device, struct platform_device, and
+> >> struct pdev_archdata.
+> > 
+> > Isn't there some way to use "weak" symbols to keep us from having to
+> > create this .h file in every single arch and then if the arch wants to
+> > define it, it does so?
+> > 
+> > That should make this patch simpler, right?
+> > 
+> > thanks,
+> > 
+> > greg k-h
+> 
+> Changing to weak should be doable if we are ok with the additional
+> function call always happening.
 
-Signed-off-by: Laurentiu TUDOR <Laurentiu.Tudor@freescale.com>
----
- arch/powerpc/platforms/85xx/smp.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+Given that this is not a fast path, and the function call for the
+"normal" case would do nothing, it should be fine, right?
 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index f5aa619..5b9b901 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -2,7 +2,7 @@
-  * Author: Andy Fleming <afleming@freescale.com>
-  * 	   Kumar Gala <galak@kernel.crashing.org>
-  *
-- * Copyright 2006-2008 Freescale Semiconductor Inc.
-+ * Copyright 2006-2008, 2011 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -239,12 +239,13 @@ void __init mpc85xx_smp_init(void)
- 	}
- 
- 	if (cpu_has_feature(CPU_FTR_DBELL)) {
--		/* .message_pass defaults to smp_muxed_ipi_message_pass */
-+		/*
-+		 * If left NULL, .message_pass defaults to
-+		 * smp_muxed_ipi_message_pass
-+		 */
- 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
- 	}
- 
--	BUG_ON(!smp_85xx_ops.message_pass);
--
- 	smp_ops = &smp_85xx_ops;
- 
- #ifdef CONFIG_KEXEC
--- 
-1.6.6
+greg k-h
