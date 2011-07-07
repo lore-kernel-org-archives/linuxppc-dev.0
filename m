@@ -1,16 +1,23 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BDE07B6F6F
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jul 2011 17:38:00 +1000 (EST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/p1022ds: Remove fixed-link property from ethernet
-	nodes.
-Date: Thu,  7 Jul 2011 10:37:50 +0300
-Message-Id: <1310024270-2675-1-git-send-email-felix@embedded-sol.com>
-Cc: Felix Radensky <felix@embedded-sol.com>, B04825@freescale.com
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id 0BC49B6F6F
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jul 2011 17:48:39 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP id 02544-09 for <linuxppc-dev@ozlabs.org>;
+	Thu,  7 Jul 2011 08:48:33 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 4/4] powerpc: Enable lockup and hung task detectors in
+	pseriesand ppc64 defeconfigs
+Date: Thu, 7 Jul 2011 08:46:30 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ADE3@saturn3.aculab.com>
+In-Reply-To: <20110706231337.327165192@samba.org>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Anton Blanchard" <anton@samba.org>,
+	<benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On P1022DS both ethernet controllers are connected to RGMII PHYs
-accessible via MDIO bus. Remove fixed-link property from ethernet
-nodes as they only required when fixed link PHYs without MDIO bus
-are used.
+=20
+> As a result of changes to Kconfig files, we no longer enable
+> the lockup and hung task detectors. Both are very light weight
+> and provide useful information in the event of a hang, so
+> reenable them.
+...
+> +CONFIG_LOCKUP_DETECTOR=3Dy
+> +CONFIG_DETECT_HUNG_TASK=3Dy
 
-Signed-off-by: Felix Radensky <felix@embedded-sol.com>
----
- arch/powerpc/boot/dts/p1022ds.dts |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Is one of thise responsible for generating a kernel stack traceback
+when a process has been sleeping uninterruptably for a 'long' time?
 
-diff --git a/arch/powerpc/boot/dts/p1022ds.dts b/arch/powerpc/boot/dts/p1022ds.dts
-index 98d9426..1be9743 100644
---- a/arch/powerpc/boot/dts/p1022ds.dts
-+++ b/arch/powerpc/boot/dts/p1022ds.dts
-@@ -412,7 +412,6 @@
- 			fsl,magic-packet;
- 			fsl,wake-on-filer;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
--			fixed-link = <1 1 1000 0 0>;
- 			phy-handle = <&phy0>;
- 			phy-connection-type = "rgmii-id";
- 			queue-group@0{
-@@ -439,7 +438,6 @@
- 			fsl,num_rx_queues = <0x8>;
- 			fsl,num_tx_queues = <0x8>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
--			fixed-link = <1 1 1000 0 0>;
- 			phy-handle = <&phy1>;
- 			phy-connection-type = "rgmii-id";
- 			queue-group@0{
--- 
-1.7.4.4
+We have a kernel subsystem that has several 'worker' threads,
+these always sleep uninterruptable (they are shut down by explicit
+request) and, at times, can be idle for long periods.
+
+Perhaps it should be possible to disable the check either on
+a per-process of per sleep basis?
+
+	David
