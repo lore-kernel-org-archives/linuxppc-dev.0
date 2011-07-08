@@ -1,21 +1,23 @@
-Return-Path: <greg@kroah.com>
-Received: from out5.smtp.messagingengine.com (out5.smtp.messagingengine.com
-	[66.111.4.29])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ACE0E1007D2
+Return-Path: <B04825@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+	[213.199.154.206])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6E1BDB6F76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Jul 2011 08:08:41 +1000 (EST)
-Date: Fri, 8 Jul 2011 15:06:54 -0700
-From: Greg KH <greg@kroah.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: tty/powerpc: introduce the ePAPR embedded hypervisor byte
-	channel driver
-Message-ID: <20110708220654.GA19146@kroah.com>
-References: <1305830092-20104-1-git-send-email-timur@freescale.com>
+	Sat,  9 Jul 2011 08:12:56 +1000 (EST)
+Message-ID: <4E1780DA.3090800@freescale.com>
+Date: Fri, 8 Jul 2011 17:12:42 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1305830092-20104-1-git-send-email-timur@freescale.com>
+To: Greg KH <greg@kroah.com>
+Subject: Re: tty/powerpc: introduce the ePAPR embedded hypervisor byte channel
+	driver
+References: <1305830092-20104-1-git-send-email-timur@freescale.com>
+	<20110708220654.GA19146@kroah.com>
+In-Reply-To: <20110708220654.GA19146@kroah.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: arnd@arndb.de, kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
 	akpm@kernel.org, linux-console@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, alan@lxorguk.ukuu.org.uk
@@ -28,23 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2011 at 08:34:52AM -0000, Timur Tabi wrote:
-> The ePAPR embedded hypervisor specification provides an API for "byte
-> channels", which are serial-like virtual devices for sending and receiving
-> streams of bytes.  This driver provides Linux kernel support for byte
-> channels via three distinct interfaces:
-> 
-> 1) An early-console (udbg) driver.  This provides early console output
-> through a byte channel.  The byte channel handle must be specified in a
-> Kconfig option.
-> 
-> 2) A normal console driver.  Output is sent to the byte channel designated
-> for stdout in the device tree.  The console driver is for handling kernel
-> printk calls.
-> 
-> 3) A tty driver, which is used to handle user-space input and output.  The
-> byte channel used for the console is designated as the default tty.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+Greg KH wrote:
+>> > 3) A tty driver, which is used to handle user-space input and output.  The
+>> > byte channel used for the console is designated as the default tty.
+>> > 
+>> > Signed-off-by: Timur Tabi <timur@freescale.com>
+> Doesn't apply at all to the tty-next tree, so I can't apply it here :(
 
-Doesn't apply at all to the tty-next tree, so I can't apply it here :(
+I shall take care of that right now.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
