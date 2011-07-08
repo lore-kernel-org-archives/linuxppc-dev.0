@@ -1,21 +1,16 @@
-Return-Path: <mikey@neuling.org>
-Received: from localhost.localdomain (localhost [127.0.0.1])
-	by ozlabs.org (Postfix) with ESMTP id CEE39B6F76
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 11:51:09 +1000 (EST)
-To: divya <dipraksh@linux.vnet.ibm.com>
-Subject: Re: {PATCH] Firmware update using the update_flash -f <filename>
-	results to soft lockup BUG
-In-reply-to: <4E155F15.1030805@linux.vnet.ibm.com>
-References: <4E1543B6.9060800@linux.vnet.ibm.com> <6426.1310019149@neuling.org>
-	<4E155F15.1030805@linux.vnet.ibm.com>
-From: Michael Neuling <mikey@neuling.org>
-Date: Fri, 08 Jul 2011 11:51:09 +1000
-Message-ID: <10345.1310089869@neuling.org>
-Cc: antonb@au1.ibm.com, naveedaus@in.ibm.com, suzukikp@in.ibm.com,
-	chavez@us.ibm.com, arunbal@in.ibm.com, srikar@linux.vnet.ibm.com,
-	linuxppc-dev@ozlabs.org, jlarrew@us.ibm.com, lxie@us.ibm.com,
-	mahesh.salgaonkar@in.ibm.com,
-	Subrata Modak <subrata@linux.vnet.ibm.com>, kenistoj@us.ibm.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9E73EB6F54
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 14:00:51 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH v4 1/3] driver core: Add ability for arch code to setup
+	pdev_archdata
+Date: Thu,  7 Jul 2011 23:00:41 -0500
+Message-Id: <1310097643-8414-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,114 +20,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <4E155F15.1030805@linux.vnet.ibm.com> you wrote:
-> This is a multi-part message in MIME format.
-> --===============3790206687486290502==
-> Content-Type: multipart/alternative;
->  boundary="------------080309090408040507080807"
-> 
-> This is a multi-part message in MIME format.
-> --------------080309090408040507080807
-> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-> Content-Transfer-Encoding: 7bit
-> 
-> On Thursday 07 July 2011 11:42 AM, Michael Neuling wrote:
-> > In message<4E1543B6.9060800@linux.vnet.ibm.com>  you wrote:
-> >    
-> >> Hi ,
-> >>
-> >> Problem Description:
-> >> Firmware update using the update_flash -f<filename>   results to soft lock
-up
-> >> BUG
-> >> FLASH: preparing saved firmware image for flash
-> >> FLASH: flash image is 50141296 bytes
-> >> FLASH: performing flash and reboot
-> >> FLASH: this will take several minutes.  Do not power off!
-> >> BUG: soft lockup - CPU#1 stuck for 67s! [events/1:36]
-> >>
-> >> Steps to reproduce:
-> >> 1. Check the firmware information on the machine (using ASM or lsmcode)
-> >> 2. Update the system firmware with the update_flash command
-> >> update_flash -f 01FL350_039_038.img
-> >> info: Temporary side will be updated with a newer or
-> >> identical image
-> >>
-> >> Projected Flash Update Results:
-> >> Current T Image: FL350_039
-> >> Current P Image: FL350_039
-> >> New T Image:     FL350_039
-> >> New P Image:     FL350_039
-> >> Flash image ready...rebooting the system...
-> >>
-> >> Broadcast message from root@abc
-> >> (/dev/hvc0) at 5:25 ...
-> >>
-> >> The system is going down for reboot NOW!
-> >> [root@abc /]# Stopping rhsmcertd[  OK  ]
-> >> Stopping atd: [  OK  ]
-> >> Stopping cups: [  OK  ]
-> >> Stopping abrt daemon: [  OK  ]
-> >> Stopping sshd: [  OK  ]
-> >> Shutting down postfix: [  OK  ]
-> >> Stopping rtas_errd (platform error handling) daemon: [  OK  ]
-> >> Stopping crond: [  OK  ]
-> >> Stopping automount: [  OK  ]
-> >> Stopping HAL daemon: [  OK  ]
-> >> Stopping iprdump: [  OK  ]
-> >> Killing mdmonitor: [  OK  ]]
-> >> Stopping system message bus: [  OK  ]
-> >> Stopping rpcbind: [  OK  ]
-> >> Stopping auditd: [  OK  ]
-> >> Shutting down interface eth0:  [  OK  ]
-> >> Shutting down loopback interface:  [  OK  ]
-> >> ip6tables: Flushing firewall rules: [  OK  ]
-> >> ip6tables: Setting chains to policy ACCEPT: filter [  OK  ]
-> >> ip6tables: Unloading modules: [  OK  ]
-> >> iptables: Flushing firewall rules: [  OK  ]
-> >> iptables: Setting chains to policy ACCEPT: filter [  OK  ]
-> >> iptables: Unloading modules: [  OK  ]
-> >> Sending all processes the TERM signal... [  OK  ]
-> >> Sending all processes the KILL signal... [  OK  ]
-> >> Saving random seed:  [  OK  ]
-> >> Turning off swap:  [  OK  ]
-> >> Turning off quotas:  [  OK  ]
-> >> Unmounting pipe file systems:  [  OK  ]
-> >> Unmounting file systems:  [  OK  ]
-> >> init: Re-executing /sbin/init
-> >> Please stand by while rebooting the system...
-> >> Restarting system.
-> >> FLASH: preparing saved firmware image for flash
-> >> FLASH: flash image is 50141296 bytes
-> >> FLASH: performing flash and reboot
-> >> FLASH: this will take several minutes.  Do not power off!
-> >> BUG: soft lockup - CPU#1 stuck for 67s! [events/1:36]
-> >>
-> >> This is solved by the following patch
-> >>      
-> > Can you please explain how it fixes it?
-> >    
-> The flash update is conducted with an RTAS call. The RTAS calls are
-> serialized by lock_rtas() which uses a spin_lock.
-> 
-> Now there is rtasd which keeps scanning for the RTAS events generated
-> on the machine. This is performed via workqueue mechanism. The
-> rtas_event_scan() also uses an RTAS call to scan the events,
-> eventually taking the lock_rtas() before it issues the request.
->
-> The flash update is an operation which takes long time, and hence
-> while we are at it, anyboy else who wants to make an RTAS call will
-> have to wait until the update is completed. Now in this case, the
-> rtas_event_scan() is being kicked in to check for events and it waits
-> a long time on the spin_lock, getting us a SOFT Lockup.
+On some architectures we need to setup pdev_archdata before we add the
+device.  Waiting til a bus_notifier is too late since we might need the
+pdev_archdata in the bus notifier.  One example is setting up of dma_mask
+pointers such that it can be used in a bus_notifier.
 
-What other RTAS calls are going on at this point?  It worries me we are
-stopping a CPU that's doing RTAS calls.  Your solution would seem to be
-papering over a more serious problem.
+We add weak noop version of arch_setup_pdev_archdata() and allow the arch
+code to override with access the full definitions of struct device,
+struct platform_device, and struct pdev_archdata.
 
-> Before the rtas firmware update starts, all other CPUs should be
-> stopped. Which means no other CPU should be in lock_rtas(). We do not
-> want other CPUs execute while FW update is in progress and the system
-> will be rebooted anyway after the update.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+v4:
+* Move to use a weak function based on comments from Greg
+v3:
+* Add more comments and add missing call to arch_setup_pdev_archdata in
+  platform_device_register
+v2:
+* Added license, and comments about arch_setup_pdev_archdata()
+  per Mike's comments
 
-Mikey
+ drivers/base/platform.c         |   22 ++++++++++++++++++++++
+ include/linux/platform_device.h |    1 +
+ 2 files changed, 23 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 1c291af..060686d 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -32,6 +32,26 @@ struct device platform_bus = {
+ EXPORT_SYMBOL_GPL(platform_bus);
+ 
+ /**
++ * arch_setup_pdev_archdata - Allow manipulation of archdata before its used
++ * @dev: platform device
++ *
++ * This is called before platform_device_add() such that any pdev_archdata may
++ * be setup before the platform_notifier is called.  So if a user needs to
++ * manipulate any relevant information in the pdev_archdata they can do:
++ *
++ * 	platform_devic_alloc()
++ * 	... manipulate ...
++ * 	platform_device_add()
++ *
++ * And if they don't care they can just call platform_device_register() and
++ * everything will just work out.
++ */
++void __weak arch_setup_pdev_archdata(struct platform_device *pdev)
++{
++	return ;
++}
++
++/**
+  * platform_get_resource - get a resource for a device
+  * @dev: platform device
+  * @type: resource type
+@@ -173,6 +193,7 @@ struct platform_device *platform_device_alloc(const char *name, int id)
+ 		pa->pdev.id = id;
+ 		device_initialize(&pa->pdev.dev);
+ 		pa->pdev.dev.release = platform_device_release;
++		arch_setup_pdev_archdata(&pa->pdev);
+ 	}
+ 
+ 	return pa ? &pa->pdev : NULL;
+@@ -334,6 +355,7 @@ EXPORT_SYMBOL_GPL(platform_device_del);
+ int platform_device_register(struct platform_device *pdev)
+ {
+ 	device_initialize(&pdev->dev);
++	arch_setup_pdev_archdata(pdev);
+ 	return platform_device_add(pdev);
+ }
+ EXPORT_SYMBOL_GPL(platform_device_register);
+diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
+index ede1a80..27bb05a 100644
+--- a/include/linux/platform_device.h
++++ b/include/linux/platform_device.h
+@@ -42,6 +42,7 @@ extern void platform_device_unregister(struct platform_device *);
+ extern struct bus_type platform_bus_type;
+ extern struct device platform_bus;
+ 
++extern void arch_setup_pdev_archdata(struct platform_device *);
+ extern struct resource *platform_get_resource(struct platform_device *, unsigned int, unsigned int);
+ extern int platform_get_irq(struct platform_device *, unsigned int);
+ extern struct resource *platform_get_resource_byname(struct platform_device *, unsigned int, const char *);
+-- 
+1.7.3.4
