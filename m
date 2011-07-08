@@ -1,14 +1,13 @@
 Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
-	[213.199.154.206])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE007.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6E1BDB6F76
+	by ozlabs.org (Postfix) with ESMTPS id 472E2B6F76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Jul 2011 08:12:56 +1000 (EST)
-Message-ID: <4E1780DA.3090800@freescale.com>
-Date: Fri, 8 Jul 2011 17:12:42 -0500
+	Sat,  9 Jul 2011 08:16:03 +1000 (EST)
+Message-ID: <4E178193.2090905@freescale.com>
+Date: Fri, 8 Jul 2011 17:15:47 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: Greg KH <greg@kroah.com>
@@ -31,13 +30,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Greg KH wrote:
->> > 3) A tty driver, which is used to handle user-space input and output.  The
->> > byte channel used for the console is designated as the default tty.
->> > 
->> > Signed-off-by: Timur Tabi <timur@freescale.com>
 > Doesn't apply at all to the tty-next tree, so I can't apply it here :(
 
-I shall take care of that right now.
+Um, where exactly is the tty-next tree?  The only thing I see that looks like it
+is this:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty-2.6.git
+
+But the description of this tree says, "junk tree, please ignore".
 
 -- 
 Timur Tabi
