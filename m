@@ -1,21 +1,23 @@
-Return-Path: <B08248@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
-	[213.199.154.140])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CBB871007D1
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jul 2011 04:43:57 +1000 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>, Gala Kumar-B11780 <B11780@freescale.com>
-Subject: RFC:  top level compatibles for virtual platforms
-Date: Fri, 8 Jul 2011 18:43:47 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+	by ozlabs.org (Postfix) with ESMTPS id EF0B61007D2
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jul 2011 07:15:12 +1000 (EST)
+Received: from mail55-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail55-tx2-R.bigfish.com (Postfix) with ESMTP id 3D194C384F6	for
+	<linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 21:15:08 +0000 (UTC)
+Received: from TX2EHSMHS026.bigfish.com (unknown [10.9.14.246])	by
+	mail55-tx2.bigfish.com (Postfix) with ESMTP id E2CCC7600F3	for
+	<linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 21:12:47 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/mpic: add support for discontiguous cores
+Date: Fri, 8 Jul 2011 16:12:42 -0500
+Message-ID: <1310159562-13492-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +27,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With KVM on Freescale booke parts we have currently two general types of
-virtual platforms-- 1) an 85xx-like platform with e500v2 cpus,
-etc, and 2) a P4080-like platform with a corenet based bus.
+There is one place in the MPIC driver that assumes that the cores are numbered
+from 0 to n-1.  However, this is not true if the CPUs are not numbered
+sequentially.  This can happen on a eight-core SOC where cores two and three
+are removed in the device tree.  So instead of blindly looping, we iterate
+over the discovered CPUs and use the SMP ID as the index.
 
-Today QEMU passes through to the guest a device tree with
-a top level compatible of either "MPC8544DS", or "fsl,P4080DS".
-These work but neither is quite accurate this is used on all targets
-regardless of the underlying physical hardware.  Also, the guest
-device tree represents virtual devices as well as a subset of the
-cpus, memory, and devices on the hardware platform.
+This means that we no longer ask the MPIC how many CPUs there are, so
+we also delete mpic->num_cpus.
 
-So continuing to use "MPC8544DS" or "fsl,P4080DS" compatible for all QEMU/K=
-VM
-created virtual machines is misleading and seems hackish.  They are
-compatible to a degree, but the virtual platform would typically
-be quite different.
+We also catch if the number of CPUs in the SOC exceeds the number that the
+MPIC supports.  This should never happen, of course, but it's good to be
+sure.
 
-What do you all think about creating some new somewhat generic=20
-machine types in Linux to represent these 2 types of virtual
-platforms.  Perhaps:
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/include/asm/mpic.h |    2 --
+ arch/powerpc/sysdev/mpic.c      |   24 +++++++++++++++---------
+ 2 files changed, 15 insertions(+), 11 deletions(-)
 
-   "MPC85xxDS" - for a virtual machine for the e500v2 type platforms
-                 and would support 85xx targets, plus P2020, P1022,etc
-
-   "corenet-32-ds" - for a virtual machine similar to the 32-bit P4080
-                     platforms
-
-   "corenet-64-ds" - for a virtual machine based on a 64-bit corenet
-                     platform
-
-
-Thoughts?
-
-Thanks,
-Stuart Yoder
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index df18989..c447025 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -273,8 +273,6 @@ struct mpic
+ 	unsigned int		irq_count;
+ 	/* Number of sources */
+ 	unsigned int		num_sources;
+-	/* Number of CPUs */
+-	unsigned int		num_cpus;
+ 	/* default senses array */
+ 	unsigned char		*senses;
+ 	unsigned int		senses_count;
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 58d7a53..5d80573 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1321,13 +1321,11 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
+ 			   | MPIC_GREG_GCONF_MCK);
+ 
+-	/* Read feature register, calculate num CPUs and, for non-ISU
+-	 * MPICs, num sources as well. On ISU MPICs, sources are counted
+-	 * as ISUs are added
++	/*
++	 * Read feature register.  For non-ISU MPICs, num sources as well. On
++	 * ISU MPICs, sources are counted as ISUs are added
+ 	 */
+ 	greg_feature = mpic_read(mpic->gregs, MPIC_INFO(GREG_FEATURE_0));
+-	mpic->num_cpus = ((greg_feature & MPIC_GREG_FEATURE_LAST_CPU_MASK)
+-			  >> MPIC_GREG_FEATURE_LAST_CPU_SHIFT) + 1;
+ 	if (isu_size == 0) {
+ 		if (flags & MPIC_BROKEN_FRR_NIRQS)
+ 			mpic->num_sources = mpic->irq_count;
+@@ -1337,10 +1335,18 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 				 >> MPIC_GREG_FEATURE_LAST_SRC_SHIFT) + 1;
+ 	}
+ 
++	/*
++	 * The MPIC driver will crash if there are more cores than we
++	 * can initialize, so we may as well catch that problem here.
++	 */
++	BUG_ON(num_possible_cpus() > MPIC_MAX_CPUS);
++
+ 	/* Map the per-CPU registers */
+-	for (i = 0; i < mpic->num_cpus; i++) {
+-		mpic_map(mpic, node, paddr, &mpic->cpuregs[i],
+-			 MPIC_INFO(CPU_BASE) + i * MPIC_INFO(CPU_STRIDE),
++	for_each_possible_cpu(i) {
++		unsigned int cpu = get_hard_smp_processor_id(i);
++
++		mpic_map(mpic, node, paddr, &mpic->cpuregs[cpu],
++			 MPIC_INFO(CPU_BASE) + cpu * MPIC_INFO(CPU_STRIDE),
+ 			 0x1000);
+ 	}
+ 
+@@ -1379,7 +1385,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	}
+ 	printk(KERN_INFO "mpic: Setting up MPIC \"%s\" version %s at %llx,"
+ 	       " max %d CPUs\n",
+-	       name, vers, (unsigned long long)paddr, mpic->num_cpus);
++	       name, vers, (unsigned long long)paddr, num_possible_cpus());
+ 	printk(KERN_INFO "mpic: ISU size: %d, shift: %d, mask: %x\n",
+ 	       mpic->isu_size, mpic->isu_shift, mpic->isu_mask);
+ 
+-- 
+1.7.3.4
