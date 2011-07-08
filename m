@@ -1,17 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from mail1.matrix-vision.com (mail1.matrix-vision.com [78.47.19.71])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8506CB6F7A
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 22:58:38 +1000 (EST)
-Date: Fri, 8 Jul 2011 07:58:31 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git next branch
-Message-ID: <alpine.LFD.2.00.1107080758020.28136@right.am.freescale.net>
+	(Client CN "localhost", Issuer "localhost" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 52B42B6F18
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jul 2011 00:01:45 +1000 (EST)
+Received: from mail1.matrix-vision.com (localhost [127.0.0.1])
+	by mail1.matrix-vision.com (Postfix) with ESMTP id 477DB722B1
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 15:55:27 +0200 (CEST)
+Received: from erinome (g2.matrix-vision.com [80.152.136.245])
+	by mail1.matrix-vision.com (Postfix) with ESMTPA id DED8F720FC
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 15:55:26 +0200 (CEST)
+Received: from erinome (localhost [127.0.0.1])
+	by erinome (Postfix) with ESMTP id F403F6F9B
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 15:55:25 +0200 (CEST)
+Received: from [192.168.65.238] (host65-238.intern.matrix-vision.de
+	[192.168.65.238]) by erinome (Postfix) with ESMTPA id D7E906F9B
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2011 15:55:25 +0200 (CEST)
+Message-ID: <4E170C4D.50508@matrix-vision.de>
+Date: Fri, 08 Jul 2011 15:55:25 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: LinuxPPC List <linuxppc-dev@ozlabs.org>
+Subject: SRAM @ FSL eLBC
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,72 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit af9719c3062dfe216a0c3de3fa52be6d22b4456c:
+Hi,
 
-  powerpc: Use -mtraceback=no (2011-07-01 13:49:27 +1000)
+I'd like to use a SRAM device (512K*8) connected to a MPC8377 localbus.
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
+What's a decent way to do this (mmap'ed access) running v2.6.34 ?
 
-Becky Bruce (1):
-      powerpc: Create next_tlbcam_idx percpu variable for FSL_BOOKE
+Is platform RAM (drivers/mtd/maps/plat-ram.c) a good starting point ?
 
-Felix Radensky (1):
-      powerpc/p1022ds: Remove fixed-link property from ethernet nodes.
 
-Kumar Gala (5):
-      powerpc/85xx: Add P3041 SoC device tree include stub
-      powerpc/85xx: Add P5020 SoC device tree include stub
-      driver core: Add ability for arch code to setup pdev_archdata
-      powerpc: implement arch_setup_pdev_archdata
-      powerpc: Dont require a dma_ops struct to set dma mask
+Any hints are welcome.
 
-Laurentiu TUDOR (1):
-      powerpc/85xx: Remove stale BUG_ON in mpc85xx_smp_init
+-- 
 
-Mingkai Hu (1):
-      powerpc/85xx: Add p2040 RDB board support
+Regards,
+Andre
 
-Timur Tabi (2):
-      drivers/virt: introduce Freescale hypervisor management driver
-      powerpc/85xx: add hypervisor config entries to corenet_smp_defconfig
 
- Documentation/ioctl/ioctl-number.txt         |    1 +
- arch/powerpc/boot/dts/p1022ds.dts            |    2 -
- arch/powerpc/boot/dts/p2040rdb.dts           |  166 +++++
- arch/powerpc/boot/dts/p2040si.dtsi           |  623 +++++++++++++++++
- arch/powerpc/boot/dts/p3041ds.dts            |  579 +----------------
- arch/powerpc/boot/dts/p3041si.dtsi           |  660 ++++++++++++++++++
- arch/powerpc/boot/dts/p5020ds.dts            |  571 +----------------
- arch/powerpc/boot/dts/p5020si.dtsi           |  652 ++++++++++++++++++
- arch/powerpc/configs/corenet32_smp_defconfig |    4 +
- arch/powerpc/include/asm/mmu.h               |    5 +
- arch/powerpc/kernel/dma.c                    |    4 +-
- arch/powerpc/kernel/setup-common.c           |   28 +-
- arch/powerpc/kernel/smp.c                    |    4 +
- arch/powerpc/mm/mem.c                        |    9 +
- arch/powerpc/mm/tlb_nohash.c                 |    6 +
- arch/powerpc/platforms/85xx/Kconfig          |   12 +
- arch/powerpc/platforms/85xx/Makefile         |    1 +
- arch/powerpc/platforms/85xx/p2040_rdb.c      |   88 +++
- arch/powerpc/platforms/85xx/smp.c            |    9 +-
- drivers/Kconfig                              |    2 +
- drivers/Makefile                             |    3 +
- drivers/base/platform.c                      |   21 +
- drivers/of/platform.c                        |    4 +-
- drivers/virt/Kconfig                         |   32 +
- drivers/virt/Makefile                        |    5 +
- drivers/virt/fsl_hypervisor.c                |  937 ++++++++++++++++++++++++++
- include/linux/Kbuild                         |    1 +
- include/linux/fsl_hypervisor.h               |  241 +++++++
- include/linux/platform_device.h              |    1 +
- 29 files changed, 3488 insertions(+), 1183 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p2040rdb.dts
- create mode 100644 arch/powerpc/boot/dts/p2040si.dtsi
- create mode 100644 arch/powerpc/boot/dts/p3041si.dtsi
- create mode 100644 arch/powerpc/boot/dts/p5020si.dtsi
- create mode 100644 arch/powerpc/platforms/85xx/p2040_rdb.c
- create mode 100644 drivers/virt/Kconfig
- create mode 100644 drivers/virt/Makefile
- create mode 100644 drivers/virt/fsl_hypervisor.c
- create mode 100644 include/linux/fsl_hypervisor.h
+
+MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Erhard Meier
