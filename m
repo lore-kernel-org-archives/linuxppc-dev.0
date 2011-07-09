@@ -1,26 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
-	[209.85.161.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 876C81007D4
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jul 2011 12:42:32 +1000 (EST)
-Received: by gxk27 with SMTP id 27so1396605gxk.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 08 Jul 2011 19:42:29 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
-References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
-	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
-Date: Fri, 8 Jul 2011 20:42:29 -0600
-Message-ID: <CACxGe6v_xr=1ro+g=CaAqZNd5sF0+V55gtOjVJa1dw=W6WUYMg@mail.gmail.com>
-Subject: Re: RFC: top level compatibles for virtual platforms
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alexander Graf <agraf@suse.de>, Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 7088B1007D4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  9 Jul 2011 20:14:18 +1000 (EST)
+Date: Sat, 9 Jul 2011 12:14:09 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/5200: add GPIO functions for simple interrupt
+	GPIOs
+Message-ID: <20110709121409.4ee9249e@wker>
+In-Reply-To: <20110706175245.GL5805@ponder.secretlab.ca>
+References: <1306142730-7528-1-git-send-email-agust@denx.de>
+	<20110706175245.GL5805@ponder.secretlab.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, July 8, 2011, Tabi Timur-B04825 <B04825@freescale.com> wrote:
-> On Fri, Jul 8, 2011 at 1:43 PM, Yoder Stuart-B08248
-> <B08248@freescale.com> wrote:
->
->> =A0 "MPC85xxDS" - for a virtual machine for the e500v2 type platforms
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 and would support 85xx targets, plus P20=
-20, P1022,etc
->>
->> =A0 "corenet-32-ds" - for a virtual machine similar to the 32-bit P4080
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platforms
->>
->> =A0 "corenet-64-ds" - for a virtual machine based on a 64-bit corenet
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platform
->
-> I think we should drop the "DS" because that's a name applied to
-> certain Freescale reference boards.
->
-> Is being a CoreNet board really something meaningful with respect to
-> KVM? =A0I don't see the connection.
->
-> Also, if these are KVM creations, shouldn't there be a "kvm" in the
-> compatible string somewhere?
+On Wed, 6 Jul 2011 11:52:45 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-I would say so. That would accurately describe the execution environment.
+> On Mon, May 23, 2011 at 11:25:30AM +0200, Anatolij Gustschin wrote:
+> > The mpc52xx_gpio driver currently supports 8 wakeup GPIOs and 32
+> > simple GPIOs. Extend it to also support GPIO function of 8 simple
+> > interrupt GPIOs controlled in the standard GPIO register module.
+> > 
+> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> > ---
+> >  arch/powerpc/platforms/52xx/mpc52xx_gpio.c |  117 ++++++++++++++++++++++++++++
+> 
+> I don't want to merge more open coded MMIO gpio driver code.  This whole driver really needs to be converted to use GENERIC_GPIO.
 
->
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
->
+I'm not sure I understand what you mean. Do you mean
+the conversion to drop of_mm_* stuff?
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks,
+Anatolij
