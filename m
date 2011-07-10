@@ -1,22 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79F0AB70F5
+Return-Path: <baltoo@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7AD12B70FE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 10 Jul 2011 09:16:44 +1000 (EST)
-Subject: Re: Analysing a kernel panic
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201107080926.47588.dargaud@lpsc.in2p3.fr>
-References: <201107051619.50548.dargaud@lpsc.in2p3.fr>
-	<1310079493.14501.313.camel@pasglop>
-	<201107080926.47588.dargaud@lpsc.in2p3.fr>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 10 Jul 2011 09:16:35 +1000
-Message-ID: <1310253395.8267.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon, 11 Jul 2011 04:55:36 +1000 (EST)
+Received: by vxb40 with SMTP id 40so2565585vxb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 10 Jul 2011 11:55:32 -0700 (PDT)
+MIME-Version: 1.0
+Sender: baltoo@gmail.com
+Date: Sun, 10 Jul 2011 20:55:32 +0200
+Message-ID: <CABkP77e6vLmLxk3wCP39GJ7+yKnJZFc7BPUZ1OkdA8d7KkBCiw@mail.gmail.com>
+Subject: [PATCH] powerpc/85xx: fix mpic configuration in CAMP mode
+From: Fabio Baltieri <fabio.baltieri@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+	Fabio Baltieri <fabio.baltieri@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-07-08 at 09:26 +0200, Guillaume Dargaud wrote:
-> > What is "Xad." ? (btw, coding style FAIL !)
-> 
-> That's the struct I use to access the control registers of the hardware.
-> About the coding style, don't worry it's never going to make it into mainstream as there's only one piece of that 
-> hardware ever built ! (which is also why I didn't respect things like allowing multiple devices, please don't nail me to 
-> the cross for that). And it's only my 2nd real Linux driver...
-> 
-> > Are you trying to write to HW registers using a structure like that
-> > without using the appropriate MMIO register accessors ?
-> > In that case, your accesses may happen our of order since you don't have
-> > memory barriers (among other potential problems).
-> 
-> Yes. I discovered the out() functions afterwards. But I insert asm(eieio) to avoid 'out of order' problems.
+Change the string to check for CAMP mode boot on MPC85xx (eg. P2020) to match
+the one in the corresponding dts files (p2020rdb_camp_core{0,1}.dts).
 
-Yeah well, you may have the compiler playing tricks too. Use
-{read,write}{b,w,l} instead, or the _be variants to avoid byteswap.
+Without this fix the mpic is configured as in the SMP boot mode, which causes
+the first core to report a protected source interrupt error for devices
+of the other core and lock up.
 
-> > The crash looks like you aren't properly clearing the interrupt
-> > condition on the HW, it remains asserted, tho it shouldn't overflow like
-> > that, something seems wrong with your PIC.
-> 
-> Is there some constraints I should tell the electronics guys ? Should the interrupt be raised for less than some max 
-> duration ? It's on a raising signal, so I don't see why that should be an issue.
+Signed-off-by: Fabio Baltieri <fabio.baltieri@gmail.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-What do you mean by "raising signal" ? It's meant to be positive edge
-sensitive ? Maybe that's your problem, ie, maybe you haven't configued
-the interrupt controller for edge trigger but for level trigger
-instead ?
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index 088f30b..a1e5e70 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -58,7 +58,7 @@ void __init mpc85xx_rdb_pic_init(void)
+ 		return;
+ 	}
 
-> > What HW is this ? What PIC ? It looks like the interrupt source isn't
-> > masked on the PIC itself while it's being handled or something...
-> 
-> The hardware is a heavily modified Xilinx ML405 derivative.
-> The PIC is a XPS_INTC (in VHDL)
-
-Ok, I'm not familiar with that PIC. You need to check what's going on
-between the PIC, your interrupt source and the kernel.
-
-Normally, if it's an edge interrupt,  it's a single event that gets
-latched by the PIC. The kernel will then call ack() on that PIC driver
-(irq_chip) which should clear that latch -before- getting into your
-device driver for processing.
-
-Also, the interrupt shall either be masked while processing or if it
-re-enters, the PIC code shall try to mask it (lazy masking) until the
-original handler completes at which point it gets unmasked. That shall
-be handled by the standard flow handlers, so it really depends on how
-you hookup your PIC in SW.
-
-It looks like one of these things isn't happening, but it's hard to tell
-without seeing more of the code & vhdl
-
-Cheers,
-Ben.
+-	if (of_flat_dt_is_compatible(root, "fsl,85XXRDB-CAMP")) {
++	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
+ 		mpic = mpic_alloc(np, r.start,
+ 			MPIC_PRIMARY |
+ 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
+-- 
+1.7.5.1
