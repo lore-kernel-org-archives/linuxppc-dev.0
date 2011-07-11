@@ -1,14 +1,13 @@
 Return-Path: <matt@ozlabs.org>
-Message-ID: <4E1A967E.50908@ozlabs.org>
-Date: Mon, 11 Jul 2011 16:21:50 +1000
+Message-ID: <4E1A97CF.80509@ozlabs.org>
+Date: Mon, 11 Jul 2011 16:27:27 +1000
 From: Matt Evans <matt@ozlabs.org>
 MIME-Version: 1.0
-To: Ben Hutchings <bhutchings@solarflare.com>
+To: Andreas Schwab <schwab@linux-m68k.org>
 Subject: Re: [RFC PATCH 1/1] BPF JIT for PPC64
-References: <4E04288F.4090201@ozlabs.org>
-	<1308967114.3093.1379.camel@localhost>
-In-Reply-To: <1308967114.3093.1379.camel@localhost>
-Content-Type: text/plain; charset=UTF-8
+References: <4E04288F.4090201@ozlabs.org> <m2boxmxt45.fsf@igel.home>
+In-Reply-To: <m2boxmxt45.fsf@igel.home>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,40 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25/06/11 11:58, Ben Hutchings wrote:
-> On Fri, 2011-06-24 at 16:02 +1000, Matt Evans wrote:
-> [...]
->> +		case BPF_S_ALU_ADD_K: /* A += K; */
->> +			if (!K)
->> +				break;
->> +			if (K < 32768)
->> +				PPC_ADDI(r_A, r_A, K);
->> +			else
->> +				PPC_ADDI(r_A, r_A, IMM_L(K));
->> +				PPC_ADDIS(r_A, r_A, IMM_HA(K));
->> +			break;
+On 25/06/11 17:33, Andreas Schwab wrote:
+> Matt Evans <matt@ozlabs.org> writes:
 > 
-> Missing braces.
+>> +	stdu	r1, -128(r1);					\
 > 
->> +		case BPF_S_ALU_SUB_X: /* A -= X; */
->> +			ctx->seen |= SEEN_XREG;
->> +			PPC_SUB(r_A, r_A, r_X);
->> +			break;
->> +		case BPF_S_ALU_SUB_K: /* A -= K */
->> +			if (!K)
->> +				break;
->> +			if (K < 32768)
->> +				PPC_ADDI(r_A, r_A, -K);
->> +			else
->> +				PPC_ADDI(r_A, r_A, IMM_L(-K));
->> +				PPC_ADDIS(r_A, r_A, IMM_HA(-K));
->> +			break;
-> [...]
+>> +	addi	r5, r1, 128+BPF_PPC_STACK_BASIC+(2*8);		\
 > 
-> Here as well.
+>> +	addi	r1, r1, 128;					\
+> 
+>> +					PPC_STD(r_M + i, 1, -128 + (8*i));
+> 
+>> +					PPC_LD(r_M + i, 1, -128 + (8*i));
+> 
+> s/128/BPF_PPC_STACK_SAVE/?
 
-Thanks, Ben -- oops! :)  Really, just the ADDISes need to be conditional, too.
-
+Actually, that's a different 128, but that nicely illustrates that I should've
+#defined something more recognisable :-) The second set, with -128, is actually
+in the save area for non-volatile regs, whereas the first is just a stackframe
+size.
 
 Cheers,
 
