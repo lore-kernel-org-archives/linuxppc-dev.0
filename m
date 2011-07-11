@@ -1,27 +1,24 @@
-Return-Path: <mlcreech@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8EFFBB6F18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jul 2011 01:30:50 +1000 (EST)
-Received: by vws20 with SMTP id 20so3114104vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Jul 2011 08:30:46 -0700 (PDT)
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8CFF6B6F7A
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 01:45:54 +1000 (EST)
+Message-ID: <4E1B1AAB.8010301@freescale.com>
+Date: Mon, 11 Jul 2011 10:45:47 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <CAPBSBxqRywJjCfk_iuDLxn1HbuqPjJRJS=SkRQ3-Ge7SinbSBg@mail.gmail.com>
-References: <BANLkTikyKObukzVw+c10HyDz+Q=PH4jozA@mail.gmail.com>
-	<20110617163442.204348a0@schlenkerla.am.freescale.net>
-	<CAPBSBxqRywJjCfk_iuDLxn1HbuqPjJRJS=SkRQ3-Ge7SinbSBg@mail.gmail.com>
-Date: Mon, 11 Jul 2011 11:30:44 -0400
-Message-ID: <CAPBSBxoOkWTAr3ry6xU4kuNdyuff8WTr7X14y2g7QVx_TtXsMA@mail.gmail.com>
-Subject: Re: NAND BBT corruption on MPC83xx
-From: "Matthew L. Creech" <mlcreech@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	rick22@wi.rr.com, Mike Hench <mhench@elutions.com>
+To: Yoder Stuart-B08248 <B08248@freescale.com>
+Subject: Re: RFC: top level compatibles for virtual platforms
+References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
+	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
+	<9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>
+In-Reply-To: <9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 5, 2011 at 3:58 PM, Matthew L. Creech <mlcreech@gmail.com> wrot=
-e:
->
-> Separately, I set up 2 test devices to run while I was away last week.
-> =A0One of them contained 2 patches:
->
-> - Mike Hench's patch which eliminates this block of code in fsl_elbc_nand=
-.c
-> - Adam Thomson's patch
-> (http://lists.infradead.org/pipermail/linux-mtd/2011-June/036427.html)
-> which initializes oob_poi correctly
->
-> Upon my return, the device with these patches saw no problems at all,
-> and had no additional bad blocks. =A0The device without these patches
-> had some 200+ blocks which had been newly marked as bad in the BBT
-> over the course of 10 days. =A0After rebooting, this latter device then
-> failed to boot, as shown here:
->
-> http://mcreech.com/work/bbt-ecc-error4.txt
->
-> I'm currently running another test to verify which of the two patches
-> actually fixed this problem (which might take a few days), but it
-> seems like removing that block of code in fsl_elbc_nand.c is a good
-> idea.
->
+Yoder Stuart-B08248 wrote:
 
-Just an update: my tests confirmed that the patch to fsl_elbc_nand.c
-(http://lists.infradead.org/pipermail/linux-mtd/2011-July/036893.html)
-seems to have fixed these BBT corruption problems.
+> We're talking about what would be meaningful to Linux as a guest on
+> this platform here--  Corenet-based SoCs are similar 
+> in various ways, like using msgsnd for IPIs, having external proxy
+> support, etc.
+> 
+> A corenet platform created by a QEMU/KVM looks similar
+> to other corenet SoCs.   So, I'm trying to find some generic
+> compatible string that describes this platform.
 
-I ran a torture test on 2 devices for several days: the one which had
-only that patch had no further issues, while the one which didn't have
-it (but did have the other oob_poi patch from Adam) experienced BBT
-corruption.
+Is there a list of these features that are 100% guaranteed to belong to a
+corenet platform?
 
-Thanks everyone
+I'm just not comfortable using "corenet" as a basis for a feature set that has
+nothing to do with coherency.
 
---=20
-Matthew L. Creech
+>> Also, if these are KVM creations, shouldn't there be a "kvm" in the compatible string
+>> somewhere?
+> 
+> There is nothing KVM specific about these platforms.  Any hypervisor
+> could create a similar virtual machine.
+
+True, but I think we're on a slippery slope, here.  Virtualization allows us to
+create "virtual platforms" that are not well defined.  Linux requires a unique
+compatible string for each platform.  That's easy when we ship a reference board
+that has a unique name and a fixed, well-defined set of features.  But with
+these virtual platforms, what does the name mean?
+
+I guess my point is back to the name "corenet".  That just doesn't mean anything
+to me, and I don't think it means much to anyone else, either.  That's why I
+think that maybe "kvm" should be in the string, to at least indicate that it's a
+virtualized environment.
+
+> A guest OS can determine specific info about the hypervisor it is
+> running on by looking at the /hypervisor node on the device
+> tree.
+> 
+> We could put a generic -hv extension to indicate that this is
+> a virtual platform.
+> 
+>  "mpc85xx-hv"
+>  "corenet-32-hv"
+>  "corenet-64-hv"
+
+That's an improvement, but I wonder if we should just keep doing what we do with
+Topaz: take the actual hardware platform and add -hv to it.  Of course, that
+conflicts with Topaz at the moment.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
