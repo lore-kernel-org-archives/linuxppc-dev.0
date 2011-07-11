@@ -1,26 +1,27 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B3DB1B6F7C
+Return-Path: <mlcreech@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8EFFBB6F18
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jul 2011 00:38:24 +1000 (EST)
-Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
-	p6BEcJ4G013462
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2011 16:38:19 +0200
-From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Analysing a kernel panic
-Date: Mon, 11 Jul 2011 16:38:18 +0200
-References: <201107051619.50548.dargaud@lpsc.in2p3.fr>
-	<201107080926.47588.dargaud@lpsc.in2p3.fr>
-	<1310253395.8267.7.camel@pasglop>
-In-Reply-To: <1310253395.8267.7.camel@pasglop>
+	Tue, 12 Jul 2011 01:30:50 +1000 (EST)
+Received: by vws20 with SMTP id 20so3114104vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 11 Jul 2011 08:30:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201107111638.18950.dargaud@lpsc.in2p3.fr>
+In-Reply-To: <CAPBSBxqRywJjCfk_iuDLxn1HbuqPjJRJS=SkRQ3-Ge7SinbSBg@mail.gmail.com>
+References: <BANLkTikyKObukzVw+c10HyDz+Q=PH4jozA@mail.gmail.com>
+	<20110617163442.204348a0@schlenkerla.am.freescale.net>
+	<CAPBSBxqRywJjCfk_iuDLxn1HbuqPjJRJS=SkRQ3-Ge7SinbSBg@mail.gmail.com>
+Date: Mon, 11 Jul 2011 11:30:44 -0400
+Message-ID: <CAPBSBxoOkWTAr3ry6xU4kuNdyuff8WTr7X14y2g7QVx_TtXsMA@mail.gmail.com>
+Subject: Re: NAND BBT corruption on MPC83xx
+From: "Matthew L. Creech" <mlcreech@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	rick22@wi.rr.com, Mike Hench <mhench@elutions.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Ok, I'm not familiar with that PIC. You need to check what's going on
-> between the PIC, your interrupt source and the kernel.
-> 
-> Normally, if it's an edge interrupt,  it's a single event that gets
-> latched by the PIC. The kernel will then call ack() on that PIC driver
-> (irq_chip) which should clear that latch -before- getting into your
-> device driver for processing.
-> 
-> Also, the interrupt shall either be masked while processing or if it
-> re-enters, the PIC code shall try to mask it (lazy masking) until the
-> original handler completes at which point it gets unmasked. That shall
-> be handled by the standard flow handlers, so it really depends on how
-> you hookup your PIC in SW.
+On Tue, Jul 5, 2011 at 3:58 PM, Matthew L. Creech <mlcreech@gmail.com> wrot=
+e:
+>
+> Separately, I set up 2 test devices to run while I was away last week.
+> =A0One of them contained 2 patches:
+>
+> - Mike Hench's patch which eliminates this block of code in fsl_elbc_nand=
+.c
+> - Adam Thomson's patch
+> (http://lists.infradead.org/pipermail/linux-mtd/2011-June/036427.html)
+> which initializes oob_poi correctly
+>
+> Upon my return, the device with these patches saw no problems at all,
+> and had no additional bad blocks. =A0The device without these patches
+> had some 200+ blocks which had been newly marked as bad in the BBT
+> over the course of 10 days. =A0After rebooting, this latter device then
+> failed to boot, as shown here:
+>
+> http://mcreech.com/work/bbt-ecc-error4.txt
+>
+> I'm currently running another test to verify which of the two patches
+> actually fixed this problem (which might take a few days), but it
+> seems like removing that block of code in fsl_elbc_nand.c is a good
+> idea.
+>
 
-This should be all this:
+Just an update: my tests confirmed that the patch to fsl_elbc_nand.c
+(http://lists.infradead.org/pipermail/linux-mtd/2011-July/036893.html)
+seems to have fixed these BBT corruption problems.
 
-static int xad_driver_probe(struct of_device* dev, const struct of_device_id *match) {
-	struct device_node *dn = dev->node;
-	Xad.irq = irq_of_parse_and_map(dn, 0);
-	rc=request_irq(Xad.irq, XadIsr, IRQF_TRIGGER_RISING  | IRQF_DISABLED | IRQF_SHARED /*| IRQF_SAMPLE_RANDOM*/, 
-"XadIsr", &Xad);
+I ran a torture test on 2 devices for several days: the one which had
+only that patch had no further issues, while the one which didn't have
+it (but did have the other oob_poi patch from Adam) experienced BBT
+corruption.
 
-IIRC IRQF_DISABLED is obsolete (I've tried without).
+Thanks everyone
 
-
-What mystifies me is that:
-- my same code on slightly different hardware works perfectly (the differences are not relevant to the driver but to the 
-user application).
-- a simplified standalone code works (so, non-linux).
-
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+--=20
+Matthew L. Creech
