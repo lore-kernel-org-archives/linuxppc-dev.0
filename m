@@ -1,19 +1,24 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4CDF0B6F81
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2011 21:33:08 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [v3 PATCH 1/1] booke/kprobe: make program exception to use one
-	dedicated exception stack
-Date: Mon, 11 Jul 2011 19:31:54 +0800
-Message-ID: <1310383915-30543-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <B08248@freescale.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E6E11B6F68
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 00:34:52 +1000 (EST)
+From: Yoder Stuart-B08248 <B08248@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: RE: RFC: top level compatibles for virtual platforms
+Date: Mon, 11 Jul 2011 14:34:44 +0000
+Message-ID: <9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
+	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
+In-Reply-To: <CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,194 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When kprobe these operations such as store-and-update-word for SP(r1),
 
-stwu r1, -A(r1)
 
-The program exception is triggered, and PPC always allocate an exception frame
-as shown as the follows:
+> -----Original Message-----
+> From: Tabi Timur-B04825
+> Sent: Friday, July 08, 2011 8:39 PM
+> To: Yoder Stuart-B08248
+> Cc: Grant Likely; Benjamin Herrenschmidt; Gala Kumar-B11780; Wood Scott-B=
+07421; Alexander
+> Graf; linuxppc-dev@ozlabs.org
+> Subject: Re: RFC: top level compatibles for virtual platforms
+>=20
+> On Fri, Jul 8, 2011 at 1:43 PM, Yoder Stuart-B08248 <B08248@freescale.com=
+> wrote:
+>=20
+> > =A0 "MPC85xxDS" - for a virtual machine for the e500v2 type platforms
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 and would support 85xx targets, plus P2=
+020, P1022,etc
+> >
+> > =A0 "corenet-32-ds" - for a virtual machine similar to the 32-bit P4080
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platforms
+> >
+> > =A0 "corenet-64-ds" - for a virtual machine based on a 64-bit corenet
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platform
+>=20
+> I think we should drop the "DS" because that's a name applied to certain =
+Freescale reference
+> boards.
+>=20
+> Is being a CoreNet board really something meaningful with respect to KVM?=
+  I don't see the
+> connection.
 
-old r1 ----------
-         ...
-         nip
-         gpr[2] ~ gpr[31]
-         gpr[1] <--------- old r1 is stored.
-         gpr[0]
-       -------- <--------- pr_regs @offset 16 bytes
-       padding
-       STACK_FRAME_REGS_MARKER
-       LR
-       back chain
-new r1 ----------
-Then emulate_step() will emulate this instruction, 'stwu'. Actually its
-equivalent to:
-1> Update pr_regs->gpr[1] = mem[old r1 + (-A)]
-2> stw [old r1], mem[old r1 + (-A)]
+We're talking about what would be meaningful to Linux as a guest on
+this platform here--  Corenet-based SoCs are similar=20
+in various ways, like using msgsnd for IPIs, having external proxy
+support, etc.
 
-Please notice the stack based on new r1 may be covered with mem[old r1
-+(-A)] when addr[old r1 + (-A)] < addr[old r1 + sizeof(an exception frame0].
-So the above 2# operation will overwirte something to break this exception
-frame then unexpected kernel problem will be issued.
+A corenet platform created by a QEMU/KVM looks similar
+to other corenet SoCs.   So, I'm trying to find some generic
+compatible string that describes this platform.
 
-So looks we have to implement independed interrupt stack for PPC program
-exception when CONFIG_BOOKE is enabled. Here we can use
-EXC_LEVEL_EXCEPTION_PROLOG to replace original NORMAL_EXCEPTION_PROLOG
-for program exception if CONFIG_BOOKE. Then its always safe for kprobe
-with independed exc stack from one pre-allocated and dedicated thread_info.
-Actually this is just waht we did for critical/machine check exceptions
-on PPC.
+> Also, if these are KVM creations, shouldn't there be a "kvm" in the compa=
+tible string
+> somewhere?
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/include/asm/irq.h   |    3 +++
- arch/powerpc/include/asm/reg.h   |    4 ++++
- arch/powerpc/kernel/entry_32.S   |   15 +++++++++++++++
- arch/powerpc/kernel/head_booke.h |   15 +++++++++++++--
- arch/powerpc/kernel/irq.c        |   11 +++++++++++
- arch/powerpc/kernel/setup_32.c   |    4 ++++
- 6 files changed, 50 insertions(+), 2 deletions(-)
+There is nothing KVM specific about these platforms.  Any hypervisor
+could create a similar virtual machine.
 
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index 1bff591..6d12169 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -313,6 +313,9 @@ struct pt_regs;
- extern struct thread_info *critirq_ctx[NR_CPUS];
- extern struct thread_info *dbgirq_ctx[NR_CPUS];
- extern struct thread_info *mcheckirq_ctx[NR_CPUS];
-+#if defined(CONFIG_KPROBES) && defined(CONFIG_BOOKE)
-+extern struct thread_info *pgirq_ctx[NR_CPUS];
-+#endif
- extern void exc_lvl_ctx_init(void);
- #else
- #define exc_lvl_ctx_init()
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index c5cae0d..34d6178 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -885,6 +885,10 @@
- #endif
- #define SPRN_SPRG_RVCPU		SPRN_SPRG1
- #define SPRN_SPRG_WVCPU		SPRN_SPRG1
-+#ifdef	CONFIG_KPROBES
-+#define	SPRN_SPRG_RSCRATCH_PG	SPRN_SPRG0
-+#define	SPRN_SPRG_WSCRATCH_PG	SPRN_SPRG0
-+#endif
- #endif
- 
- #ifdef CONFIG_8xx
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 56212bc..a99e209 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -1122,6 +1122,21 @@ ret_from_mcheck_exc:
- 	RESTORE_xSRR(DSRR0,DSRR1);
- 	RESTORE_MMU_REGS;
- 	RET_FROM_EXC_LEVEL(SPRN_MCSRR0, SPRN_MCSRR1, PPC_RFMCI)
-+
-+	.globl	ret_from_prog_exc
-+ret_from_prog_exc:
-+	mfspr	r9,SPRN_SPRG_THREAD
-+	lwz	r10,SAVED_KSP_LIMIT(r1)
-+	stw	r10,KSP_LIMIT(r9)
-+	lwz	r9,THREAD_INFO-THREAD(r9)
-+	rlwinm	r10,r1,0,0,(31-THREAD_SHIFT)
-+	lwz	r10,TI_PREEMPT(r10)
-+	stw	r10,TI_PREEMPT(r9)
-+	RESTORE_xSRR(SRR0,SRR1);
-+	RESTORE_xSRR(CSRR0,CSRR1);
-+	RESTORE_xSRR(DSRR0,DSRR1);
-+	RESTORE_MMU_REGS;
-+	RET_FROM_EXC_LEVEL(SPRN_SRR0, SPRN_SRR1, rfi)
- #endif /* CONFIG_BOOKE */
- 
- /*
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index a0bf158..941be40 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -79,6 +79,10 @@
- /* only on e500mc/e200 */
- #define DBG_STACK_BASE		dbgirq_ctx
- 
-+#if defined(CONFIG_KPROBES)
-+#define PG_STACK_BASE		pgirq_ctx
-+#endif
-+
- #define EXC_LVL_FRAME_OVERHEAD	(THREAD_SIZE - INT_FRAME_SIZE - EXC_LVL_SIZE)
- 
- #ifdef CONFIG_SMP
-@@ -158,6 +162,12 @@
- 		EXC_LEVEL_EXCEPTION_PROLOG(DBG, SPRN_DSRR0, SPRN_DSRR1)
- #define MCHECK_EXCEPTION_PROLOG \
- 		EXC_LEVEL_EXCEPTION_PROLOG(MC, SPRN_MCSRR0, SPRN_MCSRR1)
-+#if defined(CONFIG_KPROBES)
-+#define	PROGRAM_EXCEPTION_PROLOG \
-+		EXC_LEVEL_EXCEPTION_PROLOG(PG, SPRN_SRR0, SPRN_SRR1)
-+#else
-+#define	PROGRAM_EXCEPTION_PROLOG	NORMAL_EXCEPTION_PROLOG
-+#endif
- 
- /*
-  * Exception vectors.
-@@ -370,11 +380,12 @@ label:
- 
- #define PROGRAM_EXCEPTION						      \
- 	START_EXCEPTION(Program)					      \
--	NORMAL_EXCEPTION_PROLOG;					      \
-+	PROGRAM_EXCEPTION_PROLOG;					      \
- 	mfspr	r4,SPRN_ESR;		/* Grab the ESR and save it */	      \
- 	stw	r4,_ESR(r11);						      \
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
--	EXC_XFER_STD(0x0700, program_check_exception)
-+	EXC_XFER_TEMPLATE(program_check_exception, 0x0700, MSR_KERNEL, NOCOPY,\
-+		transfer_to_handler_full, ret_from_prog_exc)
- 
- #define DECREMENTER_EXCEPTION						      \
- 	START_EXCEPTION(Decrementer)					      \
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 5b428e3..ff5b8dd 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -397,6 +397,10 @@ struct thread_info   *critirq_ctx[NR_CPUS] __read_mostly;
- struct thread_info    *dbgirq_ctx[NR_CPUS] __read_mostly;
- struct thread_info *mcheckirq_ctx[NR_CPUS] __read_mostly;
- 
-+#if defined(CONFIG_KPROBES) && defined(CONFIG_BOOKE)
-+struct thread_info    *pgirq_ctx[NR_CPUS] __read_mostly;
-+#endif
-+
- void exc_lvl_ctx_init(void)
- {
- 	struct thread_info *tp;
-@@ -423,6 +427,13 @@ void exc_lvl_ctx_init(void)
- 		tp = mcheckirq_ctx[cpu_nr];
- 		tp->cpu = cpu_nr;
- 		tp->preempt_count = HARDIRQ_OFFSET;
-+
-+#if defined(CONFIG_KPROBES)
-+		memset((void *)pgirq_ctx[i], 0, THREAD_SIZE);
-+		tp = pgirq_ctx[i];
-+		tp->cpu = i;
-+		tp->preempt_count = 0;
-+#endif
- #endif
- 	}
- }
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 620d792..b872564 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -272,6 +272,10 @@ static void __init exc_lvl_early_init(void)
- 			__va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
- 		mcheckirq_ctx[hw_cpu] = (struct thread_info *)
- 			__va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
-+#ifdef CONFIG_KPROBES
-+		pgirq_ctx[hw_cpu] = (struct thread_info *)
-+			__va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
-+#endif
- #endif
- 	}
- }
--- 
-1.5.6
+A guest OS can determine specific info about the hypervisor it is
+running on by looking at the /hypervisor node on the device
+tree.
+
+We could put a generic -hv extension to indicate that this is
+a virtual platform.
+
+ "mpc85xx-hv"
+ "corenet-32-hv"
+ "corenet-64-hv"
+
+Stuart
