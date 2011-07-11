@@ -1,23 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8484EB6F75
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jul 2011 05:39:16 +1000 (EST)
-Date: Mon, 11 Jul 2011 14:38:59 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Fabio Baltieri <fabio.baltieri@gmail.com>
-Subject: Re: [PATCH] powerpc/85xx: fix mpic configuration in CAMP mode
-Message-ID: <20110711143859.0e6c95d8@schlenkerla.am.freescale.net>
-In-Reply-To: <CABkP77e6vLmLxk3wCP39GJ7+yKnJZFc7BPUZ1OkdA8d7KkBCiw@mail.gmail.com>
-References: <CABkP77e6vLmLxk3wCP39GJ7+yKnJZFc7BPUZ1OkdA8d7KkBCiw@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2C2B6B6F7B
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 05:59:56 +1000 (EST)
+Received: by gyb13 with SMTP id 13so2342280gyb.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2011 12:59:53 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
+	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
+	<9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 12 Jul 2011 04:59:33 +0900
+Message-ID: <CACxGe6sRjGzk2iVDXCMZS=AZk8mc_CtGp7CSqnO2WY-yih1Q8A@mail.gmail.com>
+Subject: Re: RFC: top level compatibles for virtual platforms
+To: Yoder Stuart-B08248 <B08248@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	Tabi Timur-B04825 <B04825@freescale.com>, Alexander Graf <agraf@suse.de>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 10 Jul 2011 20:55:32 +0200
-Fabio Baltieri <fabio.baltieri@gmail.com> wrote:
+On Mon, Jul 11, 2011 at 11:34 PM, Yoder Stuart-B08248
+<B08248@freescale.com> wrote:
+>
+>
+>> -----Original Message-----
+>> From: Tabi Timur-B04825
+>> Sent: Friday, July 08, 2011 8:39 PM
+>> To: Yoder Stuart-B08248
+>> Cc: Grant Likely; Benjamin Herrenschmidt; Gala Kumar-B11780; Wood Scott-=
+B07421; Alexander
+>> Graf; linuxppc-dev@ozlabs.org
+>> Subject: Re: RFC: top level compatibles for virtual platforms
+>>
+>> On Fri, Jul 8, 2011 at 1:43 PM, Yoder Stuart-B08248 <B08248@freescale.co=
+m> wrote:
+>>
+>> > =A0 "MPC85xxDS" - for a virtual machine for the e500v2 type platforms
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 and would support 85xx targets, plus P=
+2020, P1022,etc
+>> >
+>> > =A0 "corenet-32-ds" - for a virtual machine similar to the 32-bit P408=
+0
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platforms
+>> >
+>> > =A0 "corenet-64-ds" - for a virtual machine based on a 64-bit corenet
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platform
+>>
+>> I think we should drop the "DS" because that's a name applied to certain=
+ Freescale reference
+>> boards.
+>>
+>> Is being a CoreNet board really something meaningful with respect to KVM=
+? =A0I don't see the
+>> connection.
+>
+> We're talking about what would be meaningful to Linux as a guest on
+> this platform here-- =A0Corenet-based SoCs are similar
+> in various ways, like using msgsnd for IPIs, having external proxy
+> support, etc.
+>
+> A corenet platform created by a QEMU/KVM looks similar
+> to other corenet SoCs. =A0 So, I'm trying to find some generic
+> compatible string that describes this platform.
+>
+>> Also, if these are KVM creations, shouldn't there be a "kvm" in the comp=
+atible string
+>> somewhere?
+>
+> There is nothing KVM specific about these platforms. =A0Any hypervisor
+> could create a similar virtual machine.
+>
+> A guest OS can determine specific info about the hypervisor it is
+> running on by looking at the /hypervisor node on the device
+> tree.
+>
+> We could put a generic -hv extension to indicate that this is
+> a virtual platform.
+>
+> =A0"mpc85xx-hv"
+> =A0"corenet-32-hv"
+> =A0"corenet-64-hv"
 
-> Change the string to check for CAMP mode boot on MPC85xx (eg. P2020) to match
-> the one in the corresponding dts files (p2020rdb_camp_core{0,1}.dts).
-> 
-> Without this fix the mpic is configured as in the SMP boot mode, which causes
-> the first core to report a protected source interrupt error for devices
-> of the other core and lock up.
-> 
-> Signed-off-by: Fabio Baltieri <fabio.baltieri@gmail.com>
-> ---
->  arch/powerpc/platforms/85xx/mpc85xx_rdb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-> b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-> index 088f30b..a1e5e70 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-> @@ -58,7 +58,7 @@ void __init mpc85xx_rdb_pic_init(void)
->  		return;
->  	}
-> 
-> -	if (of_flat_dt_is_compatible(root, "fsl,85XXRDB-CAMP")) {
-> +	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
->  		mpic = mpic_alloc(np, r.start,
->  			MPIC_PRIMARY |
->  			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
+However, compatible values are cheap and while theoretically any
+hypervisor could create a similar machine, the reality is probably
+subtle difference between the implementations.  I'd rather see the
+compatible reflect the specific implementation.
 
-Shouldn't we be setting MPIC_SINGLE_DEST_CPU in this case (as we do for
-the other case)?
-
-Or just drop this and specify pic-no-reset in the mpic node.
-
--Scott
+g.
