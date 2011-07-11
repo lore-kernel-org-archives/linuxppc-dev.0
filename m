@@ -1,25 +1,26 @@
-Return-Path: <B08248@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 779FBB6F7C
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 00:36:42 +1000 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>, Tabi Timur-B04825
-	<B04825@freescale.com>
-Subject: RE: RFC: top level compatibles for virtual platforms
-Date: Mon, 11 Jul 2011 14:36:36 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E150316F9A0@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
-	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
-	<CACxGe6v_xr=1ro+g=CaAqZNd5sF0+V55gtOjVJa1dw=W6WUYMg@mail.gmail.com>
-In-Reply-To: <CACxGe6v_xr=1ro+g=CaAqZNd5sF0+V55gtOjVJa1dw=W6WUYMg@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3DB1B6F7C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jul 2011 00:38:24 +1000 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	p6BEcJ4G013462
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2011 16:38:19 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Analysing a kernel panic
+Date: Mon, 11 Jul 2011 16:38:18 +0200
+References: <201107051619.50548.dargaud@lpsc.in2p3.fr>
+	<201107080926.47588.dargaud@lpsc.in2p3.fr>
+	<1310253395.8267.7.camel@pasglop>
+In-Reply-To: <1310253395.8267.7.camel@pasglop>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Gala Kumar-B11780 <B11780@freescale.com>, Alexander Graf <agraf@suse.de>,
-	Wood Scott-B07421 <B07421@freescale.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201107111638.18950.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> Ok, I'm not familiar with that PIC. You need to check what's going on
+> between the PIC, your interrupt source and the kernel.
+> 
+> Normally, if it's an edge interrupt,  it's a single event that gets
+> latched by the PIC. The kernel will then call ack() on that PIC driver
+> (irq_chip) which should clear that latch -before- getting into your
+> device driver for processing.
+> 
+> Also, the interrupt shall either be masked while processing or if it
+> re-enters, the PIC code shall try to mask it (lazy masking) until the
+> original handler completes at which point it gets unmasked. That shall
+> be handled by the standard flow handlers, so it really depends on how
+> you hookup your PIC in SW.
+
+This should be all this:
+
+static int xad_driver_probe(struct of_device* dev, const struct of_device_id *match) {
+	struct device_node *dn = dev->node;
+	Xad.irq = irq_of_parse_and_map(dn, 0);
+	rc=request_irq(Xad.irq, XadIsr, IRQF_TRIGGER_RISING  | IRQF_DISABLED | IRQF_SHARED /*| IRQF_SAMPLE_RANDOM*/, 
+"XadIsr", &Xad);
+
+IIRC IRQF_DISABLED is obsolete (I've tried without).
 
 
-> -----Original Message-----
-> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of Gra=
-nt Likely
-> Sent: Friday, July 08, 2011 9:42 PM
-> To: Tabi Timur-B04825
-> Cc: Yoder Stuart-B08248; Grant Likely; Benjamin Herrenschmidt; Gala Kumar=
--B11780; Wood Scott-
-> B07421; Alexander Graf; linuxppc-dev@ozlabs.org
-> Subject: Re: RFC: top level compatibles for virtual platforms
->=20
-> On Friday, July 8, 2011, Tabi Timur-B04825 <B04825@freescale.com> wrote:
-> > On Fri, Jul 8, 2011 at 1:43 PM, Yoder Stuart-B08248
-> > <B08248@freescale.com> wrote:
-> >
-> >> =A0 "MPC85xxDS" - for a virtual machine for the e500v2 type platforms
-> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 and would support 85xx targets, plus P=
-2020, P1022,etc
-> >>
-> >> =A0 "corenet-32-ds" - for a virtual machine similar to the 32-bit P408=
-0
-> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platforms
-> >>
-> >> =A0 "corenet-64-ds" - for a virtual machine based on a 64-bit corenet
-> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 platform
-> >
-> > I think we should drop the "DS" because that's a name applied to
-> > certain Freescale reference boards.
-> >
-> > Is being a CoreNet board really something meaningful with respect to
-> > KVM? =A0I don't see the connection.
-> >
-> > Also, if these are KVM creations, shouldn't there be a "kvm" in the
-> > compatible string somewhere?
->=20
-> I would say so. That would accurately describe the execution environment.
+What mystifies me is that:
+- my same code on slightly different hardware works perfectly (the differences are not relevant to the driver but to the 
+user application).
+- a simplified standalone code works (so, non-linux).
 
-As I mentioned to Timur, there is nothing KVM specific about
-the execution environment.   The /hypervisor node (as per=20
-ePAPR 1.1) describes hypervisor specific info.
-
-Stuart
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
