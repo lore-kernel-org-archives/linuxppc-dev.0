@@ -1,24 +1,28 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
-	[213.199.154.140])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B07421@freescale.com>
+Received: from CH1EHSOBE009.bigfish.com (ch1ehsobe001.messaging.microsoft.com
+	[216.32.181.181]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CB4A4B6F75
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 03:54:32 +1000 (EST)
-Message-ID: <4E1B38CF.2050408@freescale.com>
-Date: Mon, 11 Jul 2011 12:54:23 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id ED210B6F77
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 04:04:41 +1000 (EST)
+Date: Mon, 11 Jul 2011 13:04:30 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Yoder Stuart-B08248 <B08248@freescale.com>
 Subject: Re: RFC: top level compatibles for virtual platforms
-References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>	<9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>	<4E1B1AAB.8010301@freescale.com>
+Message-ID: <20110711130430.4b3036f6@schlenkerla.am.freescale.net>
+In-Reply-To: <9F6FE96B71CF29479FF1CDC8046E150316FBA5@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
+	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
+	<9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>
+	<4E1B1AAB.8010301@freescale.com>
 	<20110711112418.4db9f41e@schlenkerla.am.freescale.net>
-In-Reply-To: <20110711112418.4db9f41e@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="ISO-8859-1"
+	<9F6FE96B71CF29479FF1CDC8046E150316FBA5@039-SN1MPN1-003.039d.mgd.msft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	Tabi Timur-B04825 <B04825@freescale.com>, Alexander Graf <agraf@suse.de>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alexander Graf <agraf@suse.de>, Gala Kumar-B11780 <B11780@freescale.com>
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> The device tree is supposed to describe the hardware (virtual or
-> otherwise), not just supply what Linux wants.  Perhaps there simply
-> shouldn't be a toplevel compatible if there's nothing appropriate to
-> describe there -- and fix whatever issues Linux has with that.
+On Mon, 11 Jul 2011 12:41:20 -0500
+Yoder Stuart-B08248 <B08248@freescale.com> wrote:
 
-That might be the way to go.  I wonder if we can get rid of the platform file
-altogether, at least in some situations.
+> 
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Monday, July 11, 2011 11:24 AM
+> > To: Tabi Timur-B04825
+> > Cc: Yoder Stuart-B08248; Grant Likely; Benjamin Herrenschmidt; Gala Kumar-B11780; Wood Scott-
+> > B07421; Alexander Graf; linuxppc-dev@ozlabs.org
+> > Subject: Re: RFC: top level compatibles for virtual platforms
+> > 
+> > On Mon, 11 Jul 2011 10:45:47 -0500
+> > Timur Tabi <timur@freescale.com> wrote:
+> > 
+> > > >> Also, if these are KVM creations, shouldn't there be a "kvm" in the
+> > > >> compatible string somewhere?
+> > > >
+> > > > There is nothing KVM specific about these platforms.  Any hypervisor
+> > > > could create a similar virtual machine.
+> > >
+> > > True, but I think we're on a slippery slope, here.  Virtualization
+> > > allows us to create "virtual platforms" that are not well defined.
+> > > Linux requires a unique compatible string for each platform.
+> > 
+> > The device tree is supposed to describe the hardware (virtual or otherwise), not just supply
+> > what Linux wants.  Perhaps there simply shouldn't be a toplevel compatible if there's nothing
+> > appropriate to describe there -- and fix whatever issues Linux has with that.
+> 
+> But there is a concept in Linux of a platform 'machine':
 
-> But what about this is specific to kvm (the actual hypervisor info is
-> already described in /hypervisor)?  Then we'll have to add a platform match
-> for every other hypervisor out there that does the same thing.
+So have a Linux "machine" that is used when no other one matches.  That
+doesn't justify making something up in the device tree.
 
-I don't know enough about KVM to answer that question.
+> define_machine(p4080_ds) {
+>         .name                   = "P4080 DS",
+>         .probe                  = p4080_ds_probe,
+>         .setup_arch             = corenet_ds_setup_arch,
+>         .init_IRQ               = corenet_ds_pic_init,
+> #ifdef CONFIG_PCI
+>         .pcibios_fixup_bus      = fsl_pcibios_fixup_bus,
+> #endif
+>         .get_irq                = mpic_get_coreint_irq,
+>         .restart                = fsl_rstcr_restart,
+>         .calibrate_decr         = generic_calibrate_decr,
+>         .progress               = udbg_progress,
+> };
+> 
+> Right now p4080_ds_probe needs something to match on to determine
+> whether this is the machine type.   How would it work if 
+> there was no top level compatible to match on?   Some 
+> platforms (e.g. e500v2-type) need mpc85xx_ds_pic_init(),
+> others need corenet_ds_pic_init().
 
-Frankly, I like the approach that Topaz takes -- add a "-hv" to the real
-hardware platform.  The only drawback is that each platform needs to add support
-for virtualization, but we already have this problem with Topaz today.
+Just because Linux does it that way now doesn't mean it needs to.  The
+interrupt controller has a compatible property.  Match on it like any other
+device.  You can find which one is the root interrupt controller by looking
+for nodes with the interrupt-controller property that doesn't have an
+explicit interrupt-parent (or an interrupts property?  seems to be a
+conflict between ePAPR and the original interrupt mapping document).
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Scott
