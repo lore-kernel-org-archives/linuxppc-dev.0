@@ -3,16 +3,16 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail.windriver.com",
 	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7147AB702E
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2011 12:36:30 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 63E5FB7203
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2011 12:36:33 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v2 PATCH 2/2] booke/kprobe: remove unnecessary
-	preempt_enable_no_resched
-Date: Mon, 11 Jul 2011 10:39:35 +0800
-Message-ID: <1310351976-24078-2-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1310351976-24078-1-git-send-email-tiejun.chen@windriver.com>
+Subject: v2 booke/kprobe: Fix stack corrupt issue when kprobe 'stwu'
+Date: Mon, 11 Jul 2011 10:39:36 +0800
+Message-ID: <1310351976-24078-3-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1310351976-24078-2-git-send-email-tiejun.chen@windriver.com>
 References: <1310351976-24078-1-git-send-email-tiejun.chen@windriver.com>
+	<1310351976-24078-2-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@ozlabs.org
@@ -25,45 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When enable CONFIG_PREEMPT we will trigger the following call trace:
+v1 -> v2: when allocate pgirq_ctx, use 'hw_cpu' to identify cpu ID in exc_lvl_early_init().
 
-BUG: scheduling while atomic: swapper/1/0x10000000
-...
+BTW, I already validated these patches on fsl mpc8536 by kprobe do_fork() and show_interrupts().
 
-krpobe always goes through the following path:
+Note this bug I fixed is from another email thread, "[BUG?]3.0-rc4+ftrace+kprobe: 
+set kprobe at instruction 'stwu' lead to system crash/freeze", Yong Zhang, <yong.zhang0@gmail.com>
+previously reported.
 
-program_check_exception()
-        |
-        + notify_die(DIE_BPT, "breakpoint",...)
-                |
-                + kprobe_handler()
-                        |
-                        + preempt_disable();
-                        + break_handler() <- preempt_enable_no_resched()
-                        + emulate_step()
-                        + preempt_enable_no_resched()
-                        ...
-        exit
-
-We should remove unnecessary preempt_enable_no_resched() inside of break_handler()
-since looks longjmp_break_handler() always go the above path.
-
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/kernel/kprobes.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index bc47352..a8a2a4d 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -552,7 +552,6 @@ int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
- 	 * saved regs...
- 	 */
- 	memcpy(regs, &kcb->jprobe_saved_regs, sizeof(struct pt_regs));
--	preempt_enable_no_resched();
- 	return 1;
- }
- 
--- 
-1.5.6
+Tiejun
