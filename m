@@ -1,20 +1,34 @@
-Return-Path: <baruch@tkos.co.il>
-Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F2646B6F70
+	(Client CN "e28smtp01.in.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 52A4BB6F74
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jul 2011 14:15:52 +1000 (EST)
-Date: Tue, 12 Jul 2011 07:15:02 +0300
-From: Baruch Siach <baruch@tkos.co.il>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC PATCH] powerpc: 85xx: Make e500/e500v2 depend on !E500MC
-Message-ID: <20110712041502.GA24957@sapphire.tkos.co.il>
-References: <fef1cfc9a418ec5aa3302915dcb392882f7dd5d2.1308545584.git.baruch@tkos.co.il>
+	Tue, 12 Jul 2011 14:50:54 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp01.in.ibm.com (8.14.4/8.13.1) with ESMTP id p6C4oSTt021939
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 10:20:28 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p6C4oS244137206
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 10:20:28 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p6C4oRLE011694
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 10:20:28 +0530
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [PATCH v2] kexec-tools: ppc32: Fixup the ThreadPointer for purgatory
+	code.
+To: Simon Horman<horms@verge.net.au>
+Date: Tue, 12 Jul 2011 10:20:26 +0530
+Message-ID: <20110712044950.9474.92777.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fef1cfc9a418ec5aa3302915dcb392882f7dd5d2.1308545584.git.baruch@tkos.co.il>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: "Suzuki K. Poulose" <suzuki@in.ibm.com>, kexec <kexec@lists.infradead.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
+	Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +38,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+PPC32 ELF ABI expects r2 to be loaded with Thread Pointer, which is 0x7000
+bytes past the end of TCB. Though the purgatory is single threaded, it uses
+TCB scratch space in vsnprintf(). This patch allocates a 1024byte TCB
+and populates the TP with the address accordingly.
 
-On Mon, Jun 20, 2011 at 07:56:10AM +0300, Baruch Siach wrote:
-> CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
-> breaking clear_pages(), probably others too.
+Changes from V1: Fixed the addr calculation for uImage support.
 
-Ping?
-Ack/Nack?
 
-baruch
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Cc: Ryan S. Arnold <rsa@us.ibm.com>
+---
 
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> ---
-> Is this the right approach?
-> 
->  arch/powerpc/platforms/85xx/Kconfig |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-> index b6976e1..5b8546d 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
->  
->  if PPC32
->  
-> +if !PPC_E500MC
-> +
->  config MPC8540_ADS
->  	bool "Freescale MPC8540 ADS"
->  	select DEFAULT_UIMAGE
-> @@ -155,6 +157,8 @@ config SBC8560
->  	help
->  	  This option enables support for the Wind River SBC8560 board
->  
-> +endif # !PPC_E500MC
-> +
->  config P3041_DS
->  	bool "Freescale P3041 DS"
->  	select DEFAULT_UIMAGE
-> -- 
-> 1.7.5.3
+ kexec/arch/ppc/kexec-elf-ppc.c     |    9 +++++++++
+ kexec/arch/ppc/kexec-uImage-ppc.c  |    8 ++++++++
+ purgatory/arch/ppc/purgatory-ppc.c |    2 +-
+ purgatory/arch/ppc/v2wrap_32.S     |    4 ++++
+ 4 files changed, 22 insertions(+), 1 deletions(-)
 
--- 
-                                                     ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+diff --git a/kexec/arch/ppc/kexec-elf-ppc.c b/kexec/arch/ppc/kexec-elf-ppc.c
+index f4443b4..3a4b59b 100644
+--- a/kexec/arch/ppc/kexec-elf-ppc.c
++++ b/kexec/arch/ppc/kexec-elf-ppc.c
+@@ -414,6 +414,15 @@ int elf_ppc_load(int argc, char **argv,	const char *buf, off_t len,
+ 	elf_rel_set_symbol(&info->rhdr, "stack", &addr, sizeof(addr));
+ #undef PUL_STACK_SIZE
+ 
++#define TCB_SIZE 1024
++#define TCB_TP_OFFSET 0x7000	/* PPC32 ELF ABI */
++
++	addr = locate_hole(info, TCB_SIZE, 0, 0, elf_max_addr(&ehdr), 1);
++	addr += TCB_SIZE + TCB_TP_OFFSET;
++	elf_rel_set_symbol(&info->rhdr, "my_thread_ptr", &addr, sizeof(addr));
++#undef TCB_SIZE
++#undef TCB_TP_OFFSET
++
+ 	addr = elf_rel_get_addr(&info->rhdr, "purgatory_start");
+ 	info->entry = (void *)addr;
+ #endif
+diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
+index 1d71374..4923c83 100644
+--- a/kexec/arch/ppc/kexec-uImage-ppc.c
++++ b/kexec/arch/ppc/kexec-uImage-ppc.c
+@@ -228,6 +228,14 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
+ 	/* No allocation past here in order not to overwrite the stack */
+ #undef PUL_STACK_SIZE
+ 
++#define TCB_SIZE 	1024
++#define TCB_TP_OFFSET 	0x7000
++	addr = locate_hole(info, TCB_SIZE, 0, 0, -1, 1);
++	addr += TCB_SIZE + TCB_TP_OFFSET;
++	elf_rel_set_symbol(&info->rhdr, "my_thread_ptr", &addr, sizeof(addr));
++#undef TCB_TP_OFFSET
++#undef TCB_SIZE
++
+ 	addr = elf_rel_get_addr(&info->rhdr, "purgatory_start");
+ 	info->entry = (void *)addr;
+ 
+diff --git a/purgatory/arch/ppc/purgatory-ppc.c b/purgatory/arch/ppc/purgatory-ppc.c
+index 349e750..3e6b354 100644
+--- a/purgatory/arch/ppc/purgatory-ppc.c
++++ b/purgatory/arch/ppc/purgatory-ppc.c
+@@ -26,7 +26,7 @@ unsigned int panic_kernel = 0;
+ unsigned long backup_start = 0;
+ unsigned long stack = 0;
+ unsigned long dt_offset = 0;
+-unsigned long my_toc = 0;
++unsigned long my_thread_ptr = 0;
+ unsigned long kernel = 0;
+ 
+ void setup_arch(void)
+diff --git a/purgatory/arch/ppc/v2wrap_32.S b/purgatory/arch/ppc/v2wrap_32.S
+index 8442d16..8b60677 100644
+--- a/purgatory/arch/ppc/v2wrap_32.S
++++ b/purgatory/arch/ppc/v2wrap_32.S
+@@ -56,6 +56,10 @@ master:
+ 	mr      17,3            # save cpu id to r17
+ 	mr      15,4            # save physical address in reg15
+ 
++	lis	6,my_thread_ptr@h
++	ori	6,6,my_thread_ptr@l
++	lwz	2,0(6)		# setup ThreadPointer(TP)
++
+ 	lis	6,stack@h
+ 	ori	6,6,stack@l
+ 	lwz     1,0(6)          #setup stack
