@@ -1,25 +1,39 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-ww0-f52.google.com (mail-ww0-f52.google.com [74.125.82.52])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DCA68B6F7B
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 20:10:26 +1000 (EST)
-Received: by wwf10 with SMTP id 10so4102338wwf.21
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 03:10:21 -0700 (PDT)
-Subject: Re: softirqs are invoked while bottom halves are masked (was: Re:
-	[PATCH] [PATCH] Fix deadlock in af_packet while stressing raw ethernet
-	socket interface)
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
-In-Reply-To: <CAAXf6LXHeiCT+n=Wpdf=QfUXUHUSd7fmx9y3kB7te8N3ON1fTg@mail.gmail.com>
-References: <CAAXf6LXHeiCT+n=Wpdf=QfUXUHUSd7fmx9y3kB7te8N3ON1fTg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jul 2011 12:10:11 +0200
-Message-ID: <1310465411.3314.6.camel@edumazet-HP-Compaq-6005-Pro-SFF-PC>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
-	Ronny Meeus <ronny.meeus@gmail.com>, David Miller <davem@davemloft.net>
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp05.in.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1BA81B6F77
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 21:10:22 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp05.in.ibm.com (8.14.4/8.13.1) with ESMTP id p6CB9rm8012498
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 16:39:53 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p6CB9rDP3334264
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 16:39:53 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+	by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p6CB9qsh014608
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 21:09:53 +1000
+Message-ID: <4E1C2B80.1090908@in.ibm.com>
+Date: Tue, 12 Jul 2011 16:39:52 +0530
+From: Suzuki Poulose <suzuki@in.ibm.com>
+MIME-Version: 1.0
+To: Michal Simek <monstr@monstr.eu>
+Subject: Re: [RFC PATCH 7/7] powerpc: Support RELOCATABLE kernel for PPC44x
+References: <1308233668-24166-1-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-2-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-3-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-4-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-5-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-6-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-7-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-8-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1308233668-24166-8-git-send-email-monstr@monstr.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tmarri@apm.com, linuxppc-dev@ozlabs.org, john.williams@petalogix.com,
+	arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,80 +43,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le mardi 12 juillet 2011 à 11:23 +0200, Thomas De Schampheleire a
-écrit :
-> Hi,
-> 
-> I'm adding the linuxppc-dev mailing list since this may be pointing to
-> an irq/softirq problem in the powerpc architecture-specific code...
+On 06/16/11 19:44, Michal Simek wrote:
+> Changes:
+> - Find out address where kernel runs
+> - Create the first 256MB TLB from online detected address
+>
+> Limitations:
+> - Kernel must be aligned to 256MB
+>
+> Backport:
+> - Changes in page.h are backported from newer kernel version
+>
+> mmu_mapin_ram function has to reflect offset in memory start.
+> memstart_addr and kernstart_addr are setup directly from asm
+> code to ensure that only ppc44x is affected.
+>
+> Signed-off-by: Michal Simek<monstr@monstr.eu>
+> ---
+>   arch/powerpc/Kconfig            |    3 ++-
+>   arch/powerpc/include/asm/page.h |    7 ++++++-
+>   arch/powerpc/kernel/head_44x.S  |   28 ++++++++++++++++++++++++++++
+>   arch/powerpc/mm/44x_mmu.c       |    6 +++++-
+>   4 files changed, 41 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 45c9683..34c521e 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -796,7 +796,8 @@ config LOWMEM_CAM_NUM
+>
+>   config RELOCATABLE
+>   	bool "Build a relocatable kernel (EXPERIMENTAL)"
+> -	depends on EXPERIMENTAL&&  ADVANCED_OPTIONS&&  FLATMEM&&  FSL_BOOKE
+> +	depends on EXPERIMENTAL&&  ADVANCED_OPTIONS&&  FLATMEM
+> +	depends on FSL_BOOKE || (44x&&  !SMP)
+>   	help
+>   	  This builds a kernel image that is capable of running at the
+>   	  location the kernel is loaded at (some alignment restrictions may
+> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+> index 4940662..e813cc2 100644
+> --- a/arch/powerpc/include/asm/page.h
+> +++ b/arch/powerpc/include/asm/page.h
+> @@ -108,8 +108,13 @@ extern phys_addr_t kernstart_addr;
+>   #define pfn_to_kaddr(pfn)	__va((pfn)<<  PAGE_SHIFT)
+>   #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr)>>  PAGE_SHIFT)
+>
+> -#define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET - MEMORY_START))
+> +#ifdef CONFIG_BOOKE
+> +#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + KERNELBASE))
+> +#define __pa(x) ((unsigned long)(x) + PHYSICAL_START - KERNELBASE)
+> +#else
+> +#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + PAGE_OFFSET - MEMORY_START))
+>   #define __pa(x) ((unsigned long)(x) - PAGE_OFFSET + MEMORY_START)
+> +#endif
+>
+>   /*
+>    * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+> diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+> index d80ce05..6a63d32 100644
+> --- a/arch/powerpc/kernel/head_44x.S
+> +++ b/arch/powerpc/kernel/head_44x.S
+> @@ -59,6 +59,17 @@ _ENTRY(_start);
+>   	 * of abatron_pteptrs
+>   	 */
+>   	nop
+> +
+> +#ifdef CONFIG_RELOCATABLE
+> +	bl	jump                            /* Find our address */
+> +	nop
+> +jump:	mflr	r25                              /* Make it accessible */
+> +	/* just for and */
+> +	lis     r26, 0xfffffff0@h
+> +	ori     r26, r26, 0xfffffff0@l
+> +	and.	r21, r25, r26
+> +#endif
 
-> 
-> Note that the reason we are seeing this problem, may be because the
-> kernel we are using contains some patches from Freescale.
-> Specifically, in dev_queue_xmit(), support is added for hardware queue
-> handling, just before entering the rcu_read_lock_bh():
-> 
-
-Oh well, what a mess.
-
->         if (dev->features & NETIF_F_HW_QDISC) {
->                 txq = dev_pick_tx(dev, skb);
+Hmm. So we are assuming we are running from a 1:1 mapping at the entry.
+It is much more safe to read our tlb entry and use the RPN instead.
 
 
+> +#ifdef CONFIG_RELOCATABLE
+> +	/* load physical address where kernel runs */
+> +	mr	r4,r21
+> +#else
+>   	/* Kernel is at PHYSICAL_START */
+>   	lis	r4,PHYSICAL_START@h
+>   	ori	r4,r4,PHYSICAL_START@l
+> +#endif
+>
+>   	/* Load the kernel PID = 0 */
+>   	li	r0,0
+> @@ -258,6 +274,18 @@ skpinv:	addi	r4,r4,1				/* Increment */
+>   	mr	r5,r29
+>   	mr	r6,r28
+>   	mr	r7,r27
+> +
+> +#ifdef CONFIG_RELOCATABLE
+> +	/* save kernel and memory start */
+> +	lis	r25,kernstart_addr@h
+> +	ori	r25,r25,kernstart_addr@l
+> +	stw	r21,4(r25)
 
->                 return dev_hard_start_xmit(skb, dev, txq);
-	This need to be :
-		local_bh_disable();
-		rc = dev_hard_start_xmit(skb, dev, txq);
-		local_bh_enable();
-		return rc;
+1) You have to use ERPN value in the higher word of kernel_start_addr.
+2) You have to account for the (KERNEL_BASE - PAGE_OFFSET) shift for kernel_start_addr.
 
+> +
+> +	lis	r25,memstart_addr@h
+> +	ori	r25,r25,memstart_addr@l
+> +	stw	r21,4(r25)
 
->         }
-> 
->         /* Disable soft irqs for various locks below. Also
->          * stops preemption for RCU.
->          */
->         rcu_read_lock_bh();
-> 
-> We just tried moving the escaping to dev_hard_start_xmit() after
-> taking the lock, but this gives a large number of other problems, e.g.
-> 
-> [   78.662428] BUG: sleeping function called from invalid context at
-> mm/slab.c:3101
-> [   78.751004] in_atomic(): 1, irqs_disabled(): 0, pid: 1908, name:
-> send_eth_socket
-> [   78.839582] Call Trace:
-> [   78.868784] [ec537b70] [c000789c] show_stack+0x78/0x18c (unreliable)
-> [   78.944905] [ec537bb0] [c0022900] __might_sleep+0x100/0x118
-> [   79.011636] [ec537bc0] [c00facc4] kmem_cache_alloc+0x48/0x118
-> [   79.080446] [ec537be0] [c02cd0e8] __alloc_skb+0x50/0x130
-> [   79.144047] [ec537c00] [c02cdf5c] skb_copy+0x44/0xc8
-> [   79.203478] [ec537c20] [c029f904] dpa_tx+0x154/0x758
+> +#endif
+> +
 
-doing GFP_KERNEL allocations in dpa_tx() is wrong, for sure.
-
-
-> [   79.262907] [ec537c80] [c02d78ec] dev_hard_start_xmit+0x424/0x588
-> [   79.335878] [ec537cc0] [c02d7aac] dev_queue_xmit+0x5c/0x3a4
-> [   79.402602] [ec537cf0] [c0338d4c] packet_sendmsg+0x8c4/0x988
-> [   79.470363] [ec537d70] [c02c3838] sock_sendmsg+0x90/0xb4
-> [   79.533960] [ec537e40] [c02c4420] sys_sendto+0xdc/0x120
-> [   79.596514] [ec537f10] [c02c57d0] sys_socketcall+0x148/0x210
-> [   79.664287] [ec537f40] [c001084c] ret_from_syscall+0x0/0x3c
-> [   79.731015] --- Exception: c01 at 0x48051f00
-> [   79.731019]     LR = 0x4808e030
-> 
-> 
-> Note that this may just be the cause for us seeing this problem. If
-> indeed the main problem is irq_exit() invoking softirqs in a locked
-> context, then this patch adding hardware queue support is not really
-> relevant.
-
-irq_exit() is fine. This is because BH are not masked because of the
-Freescale patches.
-
-Really, suggesting an af_packet patch to solve a problem introduced in
-an out of tree patch is insane.
-
-You guys hould have clearly stated you were using an alien kernel.
+Suzuki
