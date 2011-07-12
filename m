@@ -1,34 +1,21 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 52A4BB6F74
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jul 2011 14:50:54 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp01.in.ibm.com (8.14.4/8.13.1) with ESMTP id p6C4oSTt021939
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 10:20:28 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p6C4oS244137206
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 10:20:28 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p6C4oRLE011694
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 10:20:28 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH v2] kexec-tools: ppc32: Fixup the ThreadPointer for purgatory
-	code.
-To: Simon Horman<horms@verge.net.au>
-Date: Tue, 12 Jul 2011 10:20:26 +0530
-Message-ID: <20110712044950.9474.92777.stgit@suzukikp.in.ibm.com>
+Return-Path: <B35362@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+	[213.199.154.143])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4ED6CB6F75
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 15:44:43 +1000 (EST)
+From: <b35362@freescale.com>
+To: <dwmw2@infradead.org>
+Subject: [PATCH v2] mtd/nand : workaround for Freescale FCM to support
+	large-page Nand chip
+Date: Tue, 12 Jul 2011 12:48:42 +0800
+Message-ID: <1310446122-18050-1-git-send-email-b35362@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: "Suzuki K. Poulose" <suzuki@in.ibm.com>, kexec <kexec@lists.infradead.org>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
-	Vivek Goyal <vgoyal@redhat.com>
+Content-Type: text/plain
+Cc: Liu Shuo <b35362@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,88 +25,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PPC32 ELF ABI expects r2 to be loaded with Thread Pointer, which is 0x7000
-bytes past the end of TCB. Though the purgatory is single threaded, it uses
-TCB scratch space in vsnprintf(). This patch allocates a 1024byte TCB
-and populates the TP with the address accordingly.
+From: Liu Shuo <b35362@freescale.com>
 
-Changes from V1: Fixed the addr calculation for uImage support.
+Freescale FCM controller has a 2K size limitation of buffer RAM. In order
+to support the Nand flash chip whose page size is larger than 2K bytes,
+we divide a page into multi-2K pages for MTD layer driver. In that case,
+we force to set the page size to 2K bytes. We convert the page address of
+MTD layer driver to a real page address in flash chips and a column index
+in fsl_elbc driver. We can issue any column address by UA instruction of
+elbc controller.
 
-
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Cc: Ryan S. Arnold <rsa@us.ibm.com>
+Signed-off-by: Liu Shuo <b35362@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
+ drivers/mtd/nand/fsl_elbc_nand.c |   66 ++++++++++++++++++++++++++++++-------
+ 1 files changed, 53 insertions(+), 13 deletions(-)
 
- kexec/arch/ppc/kexec-elf-ppc.c     |    9 +++++++++
- kexec/arch/ppc/kexec-uImage-ppc.c  |    8 ++++++++
- purgatory/arch/ppc/purgatory-ppc.c |    2 +-
- purgatory/arch/ppc/v2wrap_32.S     |    4 ++++
- 4 files changed, 22 insertions(+), 1 deletions(-)
-
-diff --git a/kexec/arch/ppc/kexec-elf-ppc.c b/kexec/arch/ppc/kexec-elf-ppc.c
-index f4443b4..3a4b59b 100644
---- a/kexec/arch/ppc/kexec-elf-ppc.c
-+++ b/kexec/arch/ppc/kexec-elf-ppc.c
-@@ -414,6 +414,15 @@ int elf_ppc_load(int argc, char **argv,	const char *buf, off_t len,
- 	elf_rel_set_symbol(&info->rhdr, "stack", &addr, sizeof(addr));
- #undef PUL_STACK_SIZE
- 
-+#define TCB_SIZE 1024
-+#define TCB_TP_OFFSET 0x7000	/* PPC32 ELF ABI */
+diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
+index a212116..884a9f1 100644
+--- a/drivers/mtd/nand/fsl_elbc_nand.c
++++ b/drivers/mtd/nand/fsl_elbc_nand.c
+@@ -76,6 +76,13 @@ struct fsl_elbc_fcm_ctrl {
+ 	unsigned int oob;        /* Non zero if operating on OOB data     */
+ 	unsigned int counter;	 /* counter for the initializations	  */
+ 	char *oob_poi;           /* Place to write ECC after read back    */
 +
-+	addr = locate_hole(info, TCB_SIZE, 0, 0, elf_max_addr(&ehdr), 1);
-+	addr += TCB_SIZE + TCB_TP_OFFSET;
-+	elf_rel_set_symbol(&info->rhdr, "my_thread_ptr", &addr, sizeof(addr));
-+#undef TCB_SIZE
-+#undef TCB_TP_OFFSET
++	/*
++	 * If writesize > 2048, these two members are used to calculate
++	 * the real page address and real column address.
++	 */
++	int subpage_shift;
++	int subpage_mask;
+ };
+ 
+ /* These map to the positions used by the FCM hardware ECC generator */
+@@ -164,18 +171,27 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
+ 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+ 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
+ 	int buf_num;
++	u32 real_ca = column;
+ 
+-	elbc_fcm_ctrl->page = page_addr;
++	if (priv->page_size && elbc_fcm_ctrl->subpage_shift) {
++		real_ca = (page_addr & elbc_fcm_ctrl->subpage_mask) * 2112;
++		page_addr >>= elbc_fcm_ctrl->subpage_shift;
++	}
+ 
+-	out_be32(&lbc->fbar,
+-	         page_addr >> (chip->phys_erase_shift - chip->page_shift));
++	elbc_fcm_ctrl->page = page_addr;
+ 
+ 	if (priv->page_size) {
++		real_ca += (oob ? 2048 : 0);
++		elbc_fcm_ctrl->use_mdr = 1;
++		elbc_fcm_ctrl->mdr = real_ca;
 +
- 	addr = elf_rel_get_addr(&info->rhdr, "purgatory_start");
- 	info->entry = (void *)addr;
- #endif
-diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
-index 1d71374..4923c83 100644
---- a/kexec/arch/ppc/kexec-uImage-ppc.c
-+++ b/kexec/arch/ppc/kexec-uImage-ppc.c
-@@ -228,6 +228,14 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
- 	/* No allocation past here in order not to overwrite the stack */
- #undef PUL_STACK_SIZE
++		out_be32(&lbc->fbar, page_addr >> 6);
+ 		out_be32(&lbc->fpar,
+ 		         ((page_addr << FPAR_LP_PI_SHIFT) & FPAR_LP_PI) |
+ 		         (oob ? FPAR_LP_MS : 0) | column);
+ 		buf_num = (page_addr & 1) << 2;
+ 	} else {
++		out_be32(&lbc->fbar, page_addr >> 5);
+ 		out_be32(&lbc->fpar,
+ 		         ((page_addr << FPAR_SP_PI_SHIFT) & FPAR_SP_PI) |
+ 		         (oob ? FPAR_SP_MS : 0) | column);
+@@ -256,10 +272,11 @@ static void fsl_elbc_do_read(struct nand_chip *chip, int oob)
+ 	if (priv->page_size) {
+ 		out_be32(&lbc->fir,
+ 		         (FIR_OP_CM0 << FIR_OP0_SHIFT) |
+-		         (FIR_OP_CA  << FIR_OP1_SHIFT) |
+-		         (FIR_OP_PA  << FIR_OP2_SHIFT) |
+-		         (FIR_OP_CM1 << FIR_OP3_SHIFT) |
+-		         (FIR_OP_RBW << FIR_OP4_SHIFT));
++		         (FIR_OP_UA  << FIR_OP1_SHIFT) |
++		         (FIR_OP_UA  << FIR_OP2_SHIFT) |
++		         (FIR_OP_PA  << FIR_OP3_SHIFT) |
++		         (FIR_OP_CM1 << FIR_OP4_SHIFT) |
++		         (FIR_OP_RBW << FIR_OP5_SHIFT));
  
-+#define TCB_SIZE 	1024
-+#define TCB_TP_OFFSET 	0x7000
-+	addr = locate_hole(info, TCB_SIZE, 0, 0, -1, 1);
-+	addr += TCB_SIZE + TCB_TP_OFFSET;
-+	elf_rel_set_symbol(&info->rhdr, "my_thread_ptr", &addr, sizeof(addr));
-+#undef TCB_TP_OFFSET
-+#undef TCB_SIZE
+ 		out_be32(&lbc->fcr, (NAND_CMD_READ0 << FCR_CMD0_SHIFT) |
+ 		                    (NAND_CMD_READSTART << FCR_CMD1_SHIFT));
+@@ -399,12 +416,13 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 		if (priv->page_size) {
+ 			out_be32(&lbc->fir,
+ 			         (FIR_OP_CM2 << FIR_OP0_SHIFT) |
+-			         (FIR_OP_CA  << FIR_OP1_SHIFT) |
+-			         (FIR_OP_PA  << FIR_OP2_SHIFT) |
+-			         (FIR_OP_WB  << FIR_OP3_SHIFT) |
+-			         (FIR_OP_CM3 << FIR_OP4_SHIFT) |
+-			         (FIR_OP_CW1 << FIR_OP5_SHIFT) |
+-			         (FIR_OP_RS  << FIR_OP6_SHIFT));
++			         (FIR_OP_UA  << FIR_OP1_SHIFT) |
++			         (FIR_OP_UA  << FIR_OP2_SHIFT) |
++			         (FIR_OP_PA  << FIR_OP3_SHIFT) |
++			         (FIR_OP_WB  << FIR_OP4_SHIFT) |
++			         (FIR_OP_CM3 << FIR_OP5_SHIFT) |
++			         (FIR_OP_CW1 << FIR_OP6_SHIFT) |
++			         (FIR_OP_RS  << FIR_OP7_SHIFT));
+ 		} else {
+ 			out_be32(&lbc->fir,
+ 			         (FIR_OP_CM0 << FIR_OP0_SHIFT) |
+@@ -453,6 +471,9 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 			full_page = 1;
+ 		}
+ 
++		if (priv->page_size)
++			elbc_fcm_ctrl->use_mdr = 1;
 +
- 	addr = elf_rel_get_addr(&info->rhdr, "purgatory_start");
- 	info->entry = (void *)addr;
+ 		fsl_elbc_run_command(mtd);
  
-diff --git a/purgatory/arch/ppc/purgatory-ppc.c b/purgatory/arch/ppc/purgatory-ppc.c
-index 349e750..3e6b354 100644
---- a/purgatory/arch/ppc/purgatory-ppc.c
-+++ b/purgatory/arch/ppc/purgatory-ppc.c
-@@ -26,7 +26,7 @@ unsigned int panic_kernel = 0;
- unsigned long backup_start = 0;
- unsigned long stack = 0;
- unsigned long dt_offset = 0;
--unsigned long my_toc = 0;
-+unsigned long my_thread_ptr = 0;
- unsigned long kernel = 0;
+ 		/* Read back the page in order to fill in the ECC for the
+@@ -654,9 +675,28 @@ static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
+ 	struct nand_chip *chip = mtd->priv;
+ 	struct fsl_elbc_mtd *priv = chip->priv;
+ 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
++	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
+ 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+ 	unsigned int al;
  
- void setup_arch(void)
-diff --git a/purgatory/arch/ppc/v2wrap_32.S b/purgatory/arch/ppc/v2wrap_32.S
-index 8442d16..8b60677 100644
---- a/purgatory/arch/ppc/v2wrap_32.S
-+++ b/purgatory/arch/ppc/v2wrap_32.S
-@@ -56,6 +56,10 @@ master:
- 	mr      17,3            # save cpu id to r17
- 	mr      15,4            # save physical address in reg15
- 
-+	lis	6,my_thread_ptr@h
-+	ori	6,6,my_thread_ptr@l
-+	lwz	2,0(6)		# setup ThreadPointer(TP)
++	/*
++	 * Hack for supporting the flash chip whose writesize is
++	 * larger than 2K bytes.
++	 */
++	if (mtd->writesize > 2048) {
++		elbc_fcm_ctrl->subpage_shift = ffs(mtd->writesize >> 11) - 1;
++		elbc_fcm_ctrl->subpage_mask =
++			(1 << elbc_fcm_ctrl->subpage_shift) - 1;
++		/*
++		 * Rewrite mtd->writesize, mtd->oobsize, chip->page_shift
++		 * and chip->pagemask.
++		 */
++		mtd->writesize = 2048;
++		mtd->oobsize = 64;
++		chip->page_shift = ffs(mtd->writesize) - 1;
++		chip->pagemask = (chip->chipsize >> chip->page_shift) - 1;
++	}
 +
- 	lis	6,stack@h
- 	ori	6,6,stack@l
- 	lwz     1,0(6)          #setup stack
+ 	/* calculate FMR Address Length field */
+ 	al = 0;
+ 	if (chip->pagemask & 0xffff0000)
+-- 
+1.7.1
