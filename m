@@ -1,23 +1,25 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A2C81B6F7C
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 22:14:23 +1000 (EST)
-Date: Tue, 12 Jul 2011 05:13:16 -0700 (PDT)
-Message-Id: <20110712.051316.1963034055315982365.davem@davemloft.net>
-To: ronny.meeus@gmail.com
-Subject: Re: softirqs are invoked while bottom halves are masked
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20110712.050817.1253941735409335652.davem@davemloft.net>
-References: <1310465411.3314.6.camel@edumazet-HP-Compaq-6005-Pro-SFF-PC>
-	<CAMJ=MEeC1hoqufs7AfFRn3yJoC8mdw7v+14N+7e=wQuJefm4_w@mail.gmail.com>
-	<20110712.050817.1253941735409335652.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com,
-	patrickdepinguin+linuxppc@gmail.com, eric.dumazet@gmail.com,
-	netdev@vger.kernel.org
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D6C221007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jul 2011 22:35:39 +1000 (EST)
+Received: by vws20 with SMTP id 20so3814533vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jul 2011 05:35:33 -0700 (PDT)
+MIME-Version: 1.0
+Sender: jwboyer@gmail.com
+In-Reply-To: <20110705044419.GA20597@ozlabs.org>
+References: <20110705044419.GA20597@ozlabs.org>
+Date: Tue, 12 Jul 2011 08:35:33 -0400
+Message-ID: <CA+5PVA7fz9Y=3K=3z2q9x78jCt14umwNtXiRVjFarKLxdxWf6A@mail.gmail.com>
+Subject: Re: [PATCH] mm: Fix output of total_ram.
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 12 Jul 2011 05:08:17 -0700 (PDT)
+On Tue, Jul 5, 2011 at 12:44 AM, Tony Breeds <tony@bakeyournoodle.com> wrot=
+e:
+> On 32bit platforms that support >=3D 4GB memory total_ram was truncated.
+> This creates a confusing printk:
+> =A0 =A0 =A0 =A0Top of RAM: 0x100000000, Total RAM: 0x0
+> Fix that:
+> =A0 =A0 =A0 =A0Top of RAM: 0x100000000, Total RAM: 0x100000000
+>
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-> From: Ronny Meeus <ronny.meeus@gmail.com>
-> Date: Tue, 12 Jul 2011 14:03:04 +0200
-> 
->> but we still see the issue "BUG: sleeping function called from invalid context":
->> 
->> [   91.015989] BUG: sleeping function called from invalid context at
->> include/linux/skbuff.h:786
->> [   91.117096] in_atomic(): 1, irqs_disabled(): 0, pid: 1865, name: NMTX_T1842
->> [   91.200461] Call Trace:
->> [   91.229672] [ec58bbd0] [c000789c] show_stack+0x78/0x18c (unreliable)
->> [   91.305791] [ec58bc10] [c0022900] __might_sleep+0x100/0x118
->> [   91.372524] [ec58bc20] [c029f8d8] dpa_tx+0x128/0x758
-> 
-> Because this dpa driver's transmit method is doing something else that
-> is not allowed in software interrupt context.
-> 
-> You must remove all things that might sleep in this driver's
-> ->ndo_start_xmit method, and I do mean everything.
-
-Also this whole HW QOS feature bit facility is beyond bogus.
-
-What if the user enables a qdisc that the hardware can't handle, or a
-configuration of a hw supported qdisc that the hardware can't support?
-
-What if I have packet classification and packet actions enabled in the
-packet scheduler?
-
-These changes are terrible, and we really need you guys to sort out
-your problems with these changes yoursleves because your wounds are
-entirely self-inflicted and totally not our problem.
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
