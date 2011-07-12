@@ -1,25 +1,33 @@
-Return-Path: <patrickdepinguin@gmail.com>
-Received: from mail-yw0-f42.google.com (mail-yw0-f42.google.com
-	[209.85.213.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6EA47B6F74
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 19:23:32 +1000 (EST)
-Received: by ywb6 with SMTP id 6so2309320ywb.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 02:23:28 -0700 (PDT)
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D35E4B6F7D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jul 2011 19:50:58 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp08.in.ibm.com (8.14.4/8.13.1) with ESMTP id p6C9WixV006944
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 15:02:44 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p6C9ofSg1503354
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 15:20:41 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p6C9oeAM008583
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 19:50:41 +1000
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [PATCH] [v3] kexec-tools: ppc32: Fixup ThreadPointer for purgatory
+	code
+To: Simon Horman<horms@verge.net.au>
+Date: Tue, 12 Jul 2011 15:20:40 +0530
+Message-ID: <20110712095029.18466.30735.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
-Sender: patrickdepinguin@gmail.com
-Date: Tue, 12 Jul 2011 11:23:28 +0200
-Message-ID: <CAAXf6LXHeiCT+n=Wpdf=QfUXUHUSd7fmx9y3kB7te8N3ON1fTg@mail.gmail.com>
-Subject: softirqs are invoked while bottom halves are masked (was: Re: [PATCH]
-	[PATCH] Fix deadlock in af_packet while stressing raw ethernet socket
-	interface)
-From: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, Ronny Meeus <ronny.meeus@gmail.com>,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset="utf-8"
+Cc: "Suzuki K. Poulose" <suzuki@in.ibm.com>, kexec <kexec@lists.infradead.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
+	Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,185 +37,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+PPC32 ELF ABI expects r2 to be loaded with Thread Pointer, which is 0x7000
+bytes past the end of TCB. Though the purgatory is single threaded, it uses
+TCB scratch space in vsnprintf(). This patch allocates a 1024byte TCB
+and populates the TP with the address accordingly.
 
-I'm adding the linuxppc-dev mailing list since this may be pointing to
-an irq/softirq problem in the powerpc architecture-specific code...
-
-On Tue, Jul 12, 2011 at 8:58 AM, Eric Dumazet <eric.dumazet@gmail.com> wrot=
-e:
-> Le mardi 12 juillet 2011 =E0 08:38 +0200, Ronny Meeus a =E9crit :
->> On Tue, Jul 12, 2011 at 5:27 AM, David Miller <davem@davemloft.net> wrot=
-e:
->> > From: Ronny Meeus <ronny.meeus@gmail.com>
->> > Date: Sat, 11 Jun 2011 07:04:09 +0200
->> >
->> >> I was running a test: 1 application was sending raw Ethernet packets
->> >> on a physical looped interface while a second application was
->> >> receiving packets, so the latter application receives each packet 2
->> >> times (once while sending from the context of the first application
->> >> and a second time while receiving from the hardware). =A0After some
->> >> time, the test blocks due to a spinlock reentrance issue in
->> >> af_packet. Both the sending application and the softIRQ receiving
->> >> packets enter the spinlock code. After applying the patch below, the
->> >> issue is resolved.
->> >>
->> >> Signed-off-by: Ronny Meeus <ronny.meeus@gmail.com>
->> >
->> > The packet receive hooks should always be called with software
->> > interrupts disabled, it is a bug if this is not happening. =A0Your
->> > patch should not be necessary at all.
->> >
->> >
->>
->> Can you be a bit more specific on where the software interrupts should
->> be disabled?
->>
->> Below you find the information I get after switching on the spin_lock
->> issue detection in the kernel.
->> In this run also I-PIPE was active but this issue is also seen with
->> I-PIPE disabled.
->>
->
-> This seems a bug, but in softirq handling in your arch
->
->> [ =A0 96.450034] BUG: spinlock recursion on CPU#0, send_eth_socket/1907
->> [ =A0 96.540451] =A0lock: eaeb8c9c, .magic: dead4ead, .owner:
->> send_eth_socket/1907, .owner_cpu: 0
->> [ =A0 96.656060] Call Trace: (unreliable)0161000 success=3D90] [c000789c=
-]
->> show_stack+0x78/0x18c160001
->> [ =A0 96.827988] [efff3dd0] [c01e2a50] spin_bug+0xa8/0xc0=3D0000162000 s=
-ucc
->> [ =A0 96.920712] [efff3df0] [c01e2b9c] do_raw_spin_lock+0x70/0x1c4ount=
-=3D0000163000
->> [ =A0 97.022823] [efff3e20] [c0388d88] _raw_spin_lock+0x10/0x2001
->> [ =A0 97.121800] [efff3e30] [c03391a0] tpacket_rcv+0x274/0x61c164001
->> [ =A0 97.219733] [efff3e80] [c02d5970] __netif_receive_skb+0x1a8/0x36c00=
-00165001
->> [ =A0 97.326001] [efff3eb0] [c02d6234] netif_receive_skb+0x98/0xacess=3D=
-0000166001
->> [ =A0 97.427060] [efff3ee0] [c029e6c4] ingress_rx_default_dqrr+0x42c/0x4=
-b8
->> [ =A0 97.504194] [efff3f10] [c02ba524] qman_poll_dqrr+0x1e0/0x284
->> [ =A0 97.571948] [efff3f50] [c029ff3c] dpaa_eth_poll+0x34/0xd0
->> [ =A0 97.636579] [efff3f70] [c02d6514] net_rx_action+0xc0/0x1e8
->> [ =A0 97.702256] [efff3fa0] [c0034d28] __do_softirq+0x138/0x210
->> [ =A0 97.767928] [efff3ff0] [c0010128] call_do_softirq+0x14/0x24
->> [ =A0 97.834641] [ec479a90] [c0004a00] do_softirq+0xb4/0xec
->
-> We got an IRQ, and we start do_softirq() from irq_exit()
->
->> [ =A0 97.896148] [ec479ab0] [c0034a44] irq_exit+0x60/0xb8
->> [ =A0 97.955573] [ec479ac0] [c000a490] __ipipe_do_IRQ+0x88/0xc0
->> [ =A0 98.021253] [ec479ae0] [c0070214] __ipipe_sync_stage+0x1f0/0x27c
->> [ =A0 98.093176] [ec479b20] [c0009f28] __ipipe_handle_irq+0x1b8/0x1e8
->> [ =A0 98.165106] [ec479b50] [c000a210] __ipipe_grab_irq+0x18c/0x1bc
->> [ =A0 98.234947] [ec479b80] [c0011520] __ipipe_ret_from_except+0x0/0xc
->> [ =A0 98.307915] --- Exception: 501 at __packet_get_status+0x48/0x70
->> [ =A0 98.307920] =A0 =A0 LR =3D __packet_get_status+0x44/0x70
->> [ =A0 98.436082] [ec479c40] [00000578] 0x578 (unreliable)
->> [ =A0 98.495524] [ec479c50] [c0338360] packet_lookup_frame+0x48/0x70
->> [ =A0 98.566405] [ec479c60] [c03391b4] tpacket_rcv+0x288/0x61c
->
-> Here we were in BH disabled section, since dev_queue_xmit() contains :
->
-> =A0 =A0 =A0 =A0rcu_read_lock_bh()
->
->
->> [ =A0 98.631037] [ec479cb0] [c02d762c] dev_hard_start_xmit+0x164/0x588
->> [ =A0 98.704003] [ec479cf0] [c0338d6c] packet_sendmsg+0x8c4/0x988
->> [ =A0 98.771758] [ec479d70] [c02c3838] sock_sendmsg+0x90/0xb4
->> [ =A0 98.835348] [ec479e40] [c02c4420] sys_sendto+0xdc/0x120
->> [ =A0 98.897891] [ec479f10] [c02c57d0] sys_socketcall+0x148/0x210
->> [ =A0 98.965648] [ec479f40] [c001084c] ret_from_syscall+0x0/0x3c
->> [ =A0 99.032361] --- Exception: c01 at 0x48051f00
->> [ =A0 99.032365] =A0 =A0 LR =3D 0x4808e030
->> [ =A0100.563009] BUG: spinlock lockup on CPU#0, send_eth_socket/1907, ea=
-eb8c9c
->> [ =A0100.644283] Call Trace:
->> [ =A0100.673480] [efff3db0] [c000789c] show_stack+0x78/0x18c (unreliable=
-)
->> [ =A0100.749589] [efff3df0] [c01e2c94] do_raw_spin_lock+0x168/0x1c4
->> [ =A0100.819430] [efff3e20] [c0388d88] _raw_spin_lock+0x10/0x20
->> [ =A0100.885102] [efff3e30] [c03391a0] tpacket_rcv+0x274/0x61c
->> [ =A0100.949733] [efff3e80] [c02d5970] __netif_receive_skb+0x1a8/0x36c
->> [ =A0101.022699] [efff3eb0] [c02d6234] netif_receive_skb+0x98/0xac
->> [ =A0101.091497] [efff3ee0] [c029e6c4] ingress_rx_default_dqrr+0x42c/0x4=
-b8
->> [ =A0101.168628] [efff3f10] [c02ba524] qman_poll_dqrr+0x1e0/0x284
->> [ =A0101.236385] [efff3f50] [c029ff3c] dpaa_eth_poll+0x34/0xd0
->> [ =A0101.301016] [efff3f70] [c02d6514] net_rx_action+0xc0/0x1e8
->> [ =A0101.366692] [efff3fa0] [c0034d28] __do_softirq+0x138/0x210
->> [ =A0101.432364] [efff3ff0] [c0010128] call_do_softirq+0x14/0x24
->> [ =A0101.499078] [ec479a90] [c0004a00] do_softirq+0xb4/0xec
->> [ =A0101.560585] [ec479ab0] [c0034a44] irq_exit+0x60/0xb8
->> [ =A0101.620003] [ec479ac0] [c000a490] __ipipe_do_IRQ+0x88/0xc0
->> [ =A0101.685678] [ec479ae0] [c0070214] __ipipe_sync_stage+0x1f0/0x27c
->> [ =A0101.757601] [ec479b20] [c0009f28] __ipipe_handle_irq+0x1b8/0x1e8
->> [ =A0101.829523] [ec479b50] [c000a210] __ipipe_grab_irq+0x18c/0x1bc
->> [ =A0101.899363] [ec479b80] [c0011520] __ipipe_ret_from_except+0x0/0xc
->> [ =A0101.972333] --- Exception: 501 at __packet_get_status+0x48/0x70
->> [ =A0101.972338] =A0 =A0 LR =3D __packet_get_status+0x44/0x70
->> [ =A0102.100490] [ec479c40] [00000578] 0x578 (unreliable)
->> [ =A0102.159929] [ec479c50] [c0338360] packet_lookup_frame+0x48/0x70
->> [ =A0102.230810] [ec479c60] [c03391b4] tpacket_rcv+0x288/0x61c
->> [ =A0102.295442] [ec479cb0] [c02d762c] dev_hard_start_xmit+0x164/0x588
->> [ =A0102.368407] [ec479cf0] [c0338d6c] packet_sendmsg+0x8c4/0x988
->> [ =A0102.436162] [ec479d70] [c02c3838] sock_sendmsg+0x90/0xb4
->> [ =A0102.499747] [ec479e40] [c02c4420] sys_sendto+0xdc/0x120
->> [ =A0102.562296] [ec479f10] [c02c57d0] sys_socketcall+0x148/0x210
->> [ =A0102.630052] [ec479f40] [c001084c] ret_from_syscall+0x0/0x3c
->> [ =A0102.696773] --- Exception: c01 at 0x48051f00
->> [ =A0102.696777] =A0 =A0 LR =3D 0x4808e030
->>
+Changes from V2: Avoid address overflow in TP allocation.
+Changes from V1: Fixed the addr calculation for uImage support.
 
 
-Note that the reason we are seeing this problem, may be because the
-kernel we are using contains some patches from Freescale.
-Specifically, in dev_queue_xmit(), support is added for hardware queue
-handling, just before entering the rcu_read_lock_bh():
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Cc: Ryan S. Arnold <rsa@us.ibm.com>
+---
 
-        if (dev->features & NETIF_F_HW_QDISC) {
-                txq =3D dev_pick_tx(dev, skb);
-                return dev_hard_start_xmit(skb, dev, txq);
-        }
+ kexec/arch/ppc/kexec-elf-ppc.c     |   19 +++++++++++++++++++
+ kexec/arch/ppc/kexec-uImage-ppc.c  |   17 +++++++++++++++++
+ purgatory/arch/ppc/purgatory-ppc.c |    2 +-
+ purgatory/arch/ppc/v2wrap_32.S     |    4 ++++
+ 4 files changed, 41 insertions(+), 1 deletions(-)
 
-        /* Disable soft irqs for various locks below. Also
-         * stops preemption for RCU.
-         */
-        rcu_read_lock_bh();
-
-We just tried moving the escaping to dev_hard_start_xmit() after
-taking the lock, but this gives a large number of other problems, e.g.
-
-[   78.662428] BUG: sleeping function called from invalid context at
-mm/slab.c:3101
-[   78.751004] in_atomic(): 1, irqs_disabled(): 0, pid: 1908, name:
-send_eth_socket
-[   78.839582] Call Trace:
-[   78.868784] [ec537b70] [c000789c] show_stack+0x78/0x18c (unreliable)
-[   78.944905] [ec537bb0] [c0022900] __might_sleep+0x100/0x118
-[   79.011636] [ec537bc0] [c00facc4] kmem_cache_alloc+0x48/0x118
-[   79.080446] [ec537be0] [c02cd0e8] __alloc_skb+0x50/0x130
-[   79.144047] [ec537c00] [c02cdf5c] skb_copy+0x44/0xc8
-[   79.203478] [ec537c20] [c029f904] dpa_tx+0x154/0x758
-[   79.262907] [ec537c80] [c02d78ec] dev_hard_start_xmit+0x424/0x588
-[   79.335878] [ec537cc0] [c02d7aac] dev_queue_xmit+0x5c/0x3a4
-[   79.402602] [ec537cf0] [c0338d4c] packet_sendmsg+0x8c4/0x988
-[   79.470363] [ec537d70] [c02c3838] sock_sendmsg+0x90/0xb4
-[   79.533960] [ec537e40] [c02c4420] sys_sendto+0xdc/0x120
-[   79.596514] [ec537f10] [c02c57d0] sys_socketcall+0x148/0x210
-[   79.664287] [ec537f40] [c001084c] ret_from_syscall+0x0/0x3c
-[   79.731015] --- Exception: c01 at 0x48051f00
-[   79.731019]     LR =3D 0x4808e030
-
-
-Note that this may just be the cause for us seeing this problem. If
-indeed the main problem is irq_exit() invoking softirqs in a locked
-context, then this patch adding hardware queue support is not really
-relevant.
-
-Any suggestions from the developers at linuxppc-dev are very welcome...
-
-Thomas
+diff --git a/kexec/arch/ppc/kexec-elf-ppc.c b/kexec/arch/ppc/kexec-elf-ppc.c
+index f4443b4..ecbbbeb 100644
+--- a/kexec/arch/ppc/kexec-elf-ppc.c
++++ b/kexec/arch/ppc/kexec-elf-ppc.c
+@@ -414,6 +414,25 @@ int elf_ppc_load(int argc, char **argv,	const char *buf, off_t len,
+ 	elf_rel_set_symbol(&info->rhdr, "stack", &addr, sizeof(addr));
+ #undef PUL_STACK_SIZE
+ 
++	/*
++	 * Fixup ThreadPointer(r2) for purgatory.
++	 * PPC32 ELF ABI expects : 
++	 * ThreadPointer (TP) = TCB + 0x7000
++	 * We manually allocate a TCB space and set the TP
++	 * accordingly.
++	 */
++#define TCB_SIZE 1024
++#define TCB_TP_OFFSET 0x7000	/* PPC32 ELF ABI */
++
++	addr = locate_hole(info, TCB_SIZE, 0, 0,
++				((unsigned long)elf_max_addr(&ehdr) - TCB_TP_OFFSET),
++				1);
++	addr += TCB_SIZE + TCB_TP_OFFSET;
++	elf_rel_set_symbol(&info->rhdr, "my_thread_ptr", &addr, sizeof(addr));
++
++#undef TCB_SIZE
++#undef TCB_TP_OFFSET
++
+ 	addr = elf_rel_get_addr(&info->rhdr, "purgatory_start");
+ 	info->entry = (void *)addr;
+ #endif
+diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
+index 1d71374..216c82d 100644
+--- a/kexec/arch/ppc/kexec-uImage-ppc.c
++++ b/kexec/arch/ppc/kexec-uImage-ppc.c
+@@ -228,6 +228,23 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
+ 	/* No allocation past here in order not to overwrite the stack */
+ #undef PUL_STACK_SIZE
+ 
++	/*
++	 * Fixup ThreadPointer(r2) for purgatory.
++	 * PPC32 ELF ABI expects : 
++	 * ThreadPointer (TP) = TCB + 0x7000
++	 * We manually allocate a TCB space and set the TP
++	 * accordingly.
++	 */
++#define TCB_SIZE 	1024
++#define TCB_TP_OFFSET 	0x7000	/* PPC32 ELF ABI */
++	addr = locate_hole(info, TCB_SIZE, 0, 0,
++				((unsigned long)-1 - TCB_TP_OFFSET),
++				1);
++	addr += TCB_SIZE + TCB_TP_OFFSET;
++	elf_rel_set_symbol(&info->rhdr, "my_thread_ptr", &addr, sizeof(addr));
++#undef TCB_TP_OFFSET
++#undef TCB_SIZE
++
+ 	addr = elf_rel_get_addr(&info->rhdr, "purgatory_start");
+ 	info->entry = (void *)addr;
+ 
+diff --git a/purgatory/arch/ppc/purgatory-ppc.c b/purgatory/arch/ppc/purgatory-ppc.c
+index 349e750..3e6b354 100644
+--- a/purgatory/arch/ppc/purgatory-ppc.c
++++ b/purgatory/arch/ppc/purgatory-ppc.c
+@@ -26,7 +26,7 @@ unsigned int panic_kernel = 0;
+ unsigned long backup_start = 0;
+ unsigned long stack = 0;
+ unsigned long dt_offset = 0;
+-unsigned long my_toc = 0;
++unsigned long my_thread_ptr = 0;
+ unsigned long kernel = 0;
+ 
+ void setup_arch(void)
+diff --git a/purgatory/arch/ppc/v2wrap_32.S b/purgatory/arch/ppc/v2wrap_32.S
+index 8442d16..8b60677 100644
+--- a/purgatory/arch/ppc/v2wrap_32.S
++++ b/purgatory/arch/ppc/v2wrap_32.S
+@@ -56,6 +56,10 @@ master:
+ 	mr      17,3            # save cpu id to r17
+ 	mr      15,4            # save physical address in reg15
+ 
++	lis	6,my_thread_ptr@h
++	ori	6,6,my_thread_ptr@l
++	lwz	2,0(6)		# setup ThreadPointer(TP)
++
+ 	lis	6,stack@h
+ 	ori	6,6,stack@l
+ 	lwz     1,0(6)          #setup stack
