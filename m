@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <baruch@tkos.co.il>
+Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 39599B6F70
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 14:12:17 +1000 (EST)
-Subject: Re: [PATCH] powerpc: add denormalisation exception handling for
-	POWER6/7
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id F2646B6F70
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jul 2011 14:15:52 +1000 (EST)
+Date: Tue, 12 Jul 2011 07:15:02 +0300
+From: Baruch Siach <baruch@tkos.co.il>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <9875FD87-1762-4CCE-8A34-7BAC2C42E9A6@kernel.crashing.org>
-References: <11738.1310363538@neuling.org>
-	<9875FD87-1762-4CCE-8A34-7BAC2C42E9A6@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jul 2011 14:12:04 +1000
-Message-ID: <1310443924.4968.20.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Paul Mackerras <paulus@samba.org>, miltonm@bga.com
+Subject: Re: [RFC PATCH] powerpc: 85xx: Make e500/e500v2 depend on !E500MC
+Message-ID: <20110712041502.GA24957@sapphire.tkos.co.il>
+References: <fef1cfc9a418ec5aa3302915dcb392882f7dd5d2.1308545584.git.baruch@tkos.co.il>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fef1cfc9a418ec5aa3302915dcb392882f7dd5d2.1308545584.git.baruch@tkos.co.il>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-07-11 at 22:51 -0500, Kumar Gala wrote:
-> On Jul 11, 2011, at 12:52 AM, Michael Neuling wrote:
-> 
-> > On POWER6 and POWER7 if the input operand to an instruction is a
-> > denormalised single precision binary floating we can take a
-> > denormalisation exception where it's expected that the hypervisor (HV=1)
-> > will fix up the inputs before the instruction is run.
-> > 
-> > This adds code to handle this denormalisation exception for POWER6 and
-> > POWER7.
-> > 
-> > It also add a CONFIG_PPC_DENORMALISATION option and sets it in
-> > pseries/ppc64_defconfig. 
-> > 
-> > This is useful on bare metal systems only.  Based on patch from Milton
-> > Miller.
-> > 
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > 
-> > ---
-> > arch/powerpc/Kconfig                   |    7 +
-> > arch/powerpc/configs/ppc64_defconfig   |    1 
-> > arch/powerpc/configs/pseries_defconfig |    1 
-> > arch/powerpc/include/asm/ppc-opcode.h  |    2 
-> > arch/powerpc/include/asm/reg.h         |    1 
-> > arch/powerpc/kernel/exceptions-64s.S   |  125 +++++++++++++++++++++++++++++++++
-> > 6 files changed, 137 insertions(+)
-> 
-> Is it possible to run POWER6/7 systems in baremetal if you are not IBM?
-> 
-> Just wondering if this is useful to anyone but IBM.
+Hi Kumar,
 
-While I cannot obviously comment on unreleased systems, the fact that
-we've been contributing all sort of patches to run P7 in "HV" mode and
-KVM on them should be enough of a hint :-)
+On Mon, Jun 20, 2011 at 07:56:10AM +0300, Baruch Siach wrote:
+> CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
+> breaking clear_pages(), probably others too.
 
-Cheers,
-Ben.
+Ping?
+Ack/Nack?
+
+baruch
+
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+> ---
+> Is this the right approach?
+> 
+>  arch/powerpc/platforms/85xx/Kconfig |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+> index b6976e1..5b8546d 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
+>  
+>  if PPC32
+>  
+> +if !PPC_E500MC
+> +
+>  config MPC8540_ADS
+>  	bool "Freescale MPC8540 ADS"
+>  	select DEFAULT_UIMAGE
+> @@ -155,6 +157,8 @@ config SBC8560
+>  	help
+>  	  This option enables support for the Wind River SBC8560 board
+>  
+> +endif # !PPC_E500MC
+> +
+>  config P3041_DS
+>  	bool "Freescale P3041 DS"
+>  	select DEFAULT_UIMAGE
+> -- 
+> 1.7.5.3
+
+-- 
+                                                     ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
