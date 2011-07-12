@@ -1,30 +1,29 @@
-Return-Path: <B08248@freescale.com>
-Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3C375B6F74
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jul 2011 00:21:00 +1000 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: RFC: top level compatibles for virtual platforms
-Date: Tue, 12 Jul 2011 14:20:54 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E150317061A@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <9F6FE96B71CF29479FF1CDC8046E150316EAB6@039-SN1MPN1-003.039d.mgd.msft.net>
-	<CAOZdJXVp5LHqYEMoqpnKEkuWyuE6kwU+Z9VwUYLPcz-+h_gqfw@mail.gmail.com>
-	<9F6FE96B71CF29479FF1CDC8046E150316F97F@039-SN1MPN1-003.039d.mgd.msft.net>
-	<4E1B1AAB.8010301@freescale.com>
-	<20110711112418.4db9f41e@schlenkerla.am.freescale.net>
-	<9F6FE96B71CF29479FF1CDC8046E150316FBA5@039-SN1MPN1-003.039d.mgd.msft.net>
-	<20110711130430.4b3036f6@schlenkerla.am.freescale.net>
-	<9F6FE96B71CF29479FF1CDC8046E150316FF6B@039-SN1MPN1-003.039d.mgd.msft.net>
-	<20110711160646.291e977e@schlenkerla.am.freescale.net>
-In-Reply-To: <20110711160646.291e977e@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Tabi Timur-B04825 <B04825@freescale.com>, Alexander Graf <agraf@suse.de>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-ww0-f52.google.com (mail-ww0-f52.google.com [74.125.82.52])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9CFCCB6F7A
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jul 2011 01:28:09 +1000 (EST)
+Received: by wwf10 with SMTP id 10so4358442wwf.21
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 08:28:05 -0700 (PDT)
+Subject: Re: softirqs are invoked while bottom halves are masked (was: Re:
+	[PATCH] [PATCH] Fix deadlock in af_packet while stressing raw ethernet
+	socket interface)
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Ronny Meeus <ronny.meeus@gmail.com>
+In-Reply-To: <CAMJ=MEeC1hoqufs7AfFRn3yJoC8mdw7v+14N+7e=wQuJefm4_w@mail.gmail.com>
+References: <CAAXf6LXHeiCT+n=Wpdf=QfUXUHUSd7fmx9y3kB7te8N3ON1fTg@mail.gmail.com>
+	<1310465411.3314.6.camel@edumazet-HP-Compaq-6005-Pro-SFF-PC>
+	<CAMJ=MEeC1hoqufs7AfFRn3yJoC8mdw7v+14N+7e=wQuJefm4_w@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 12 Jul 2011 17:27:54 +0200
+Message-ID: <1310484474.2871.14.camel@edumazet-HP-Compaq-6005-Pro-SFF-PC>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+	afleming@freescale.com,
+	Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,73 +33,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Le mardi 12 juillet 2011 à 14:03 +0200, Ronny Meeus a écrit :
+
+> Sorry for not mentioning we were using a patched kernel.
+> I was not aware that the code involved was patched by the FreeScale
+> patches we applied. The code found in the stack dumps is not
+> implemented in FSL specific files.
+> 
+> While reading the code of af_packet I saw that the spin_lock_bh is
+> used in several places while this is not the case in the tpacket_rcv
+> function. Since we had a locking issue in that code, I thought that my
+> patch would be OK.
+> I was not aware that for that specific function (tpacket_rcv) a
+> different lock primitive must be used. A suggestion for improvement:
+> it would be better to document this pre-condition in the code.
+> 
+> After doing the change you proposed our code now looks like:
+> 
+> >---if (dev->features & NETIF_F_HW_QDISC) {
+> >--->---txq = dev_pick_tx(dev, skb);
+> >--->---local_bh_disable();
+> >--->---rc = dev_hard_start_xmit(skb, dev, txq);
+> >--->---local_bh_enable();
+> >--->---return rc;
+> >---}
+> 
+> >---/* Disable soft irqs for various locks below. Also
+> >--- * stops preemption for RCU.
+> >--- */
+> >---rcu_read_lock_bh();
+> 
+> but we still see the issue "BUG: sleeping function called from invalid context":
+
+Of course you are if this is the only change you did.
+
+> 
+> [   91.015989] BUG: sleeping function called from invalid context at
+> include/linux/skbuff.h:786
+> [   91.117096] in_atomic(): 1, irqs_disabled(): 0, pid: 1865, name: NMTX_T1842
+> [   91.200461] Call Trace:
+> [   91.229672] [ec58bbd0] [c000789c] show_stack+0x78/0x18c (unreliable)
+> [   91.305791] [ec58bc10] [c0022900] __might_sleep+0x100/0x118
+> [   91.372524] [ec58bc20] [c029f8d8] dpa_tx+0x128/0x758
 
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Monday, July 11, 2011 4:07 PM
-> To: Yoder Stuart-B08248
-> Cc: Wood Scott-B07421; Tabi Timur-B04825; Grant Likely; Benjamin Herrensc=
-hmidt; Gala Kumar-
-> B11780; Alexander Graf; linuxppc-dev@ozlabs.org
-> Subject: Re: RFC: top level compatibles for virtual platforms
->=20
-> On Mon, 11 Jul 2011 15:41:35 -0500
-> Yoder Stuart-B08248 <B08248@freescale.com> wrote:
->=20
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Monday, July 11, 2011 1:05 PM
-> > >
-> > > Just because Linux does it that way now doesn't mean it needs to.
-> > > The interrupt controller has a compatible property.  Match on it
-> > > like any other device.  You can find which one is the root interrupt
-> > > controller by looking for nodes with the interrupt-controller
-> > > property that doesn't have an explicit interrupt-parent (or an interr=
-upts property?  seems
-> to be a conflict between ePAPR and the original interrupt mapping documen=
-t).
-> >
-> > This may be the right long term thing to do, but restructuring how
-> > Linux powerpc platforms work is a bigger effort.  I was looking for an
-> > incremental improvement over what we do now, which is pass a
-> > compatible of MPC8544DS and P4080DS for these virtual platforms.
->=20
-> A hack is usually easier than doing it right. :-)
->=20
-> Though often the effort required for the latter is overstated, and the "r=
-ight long term thing"
-> never makes the jump to "short term plan".
->=20
-> There are a few things that need to be driven off the device tree that cu=
-rrently aren't --
-> using some mechanism other than the standard device model, if necessary (=
-or as a first step) -
-> - and then we need a does-nothing default platform as the match of last r=
-esort.
->=20
-> > However, they _are_ compatible with MPC8544DS and P4080DS so maybe
-> > leaving the compatible string alone is ok for now.
->=20
-> The virtual platforms are not compatible with MPC8544DS or P4080DS.  Only=
- a subset of what is
-> on those boards is provided.  And in the case of direct device assignment=
-, often the things
-> that are present are incompatible (e.g.
-> different type of eTSEC).
+Please read again my mail : 
 
-Hmm.  Perhaps what we need is a real binding that defines specifically
-what those compatibles mean.   While not identical, a KVM
-virtual machine is compatible in certain areas with those
-boards.
+I said : "doing GFP_KERNEL allocations in dpa_tx() is wrong, for sure."
 
-The ePAPR defines the top level compatible as:
+I dont have this code, but I suspect it's using : skb_copy(skb,
+GFP_KERNEL)
 
-    Specifies a list of platform architectures with which this
-    platform is compatible. This property can be used by
-    operating systems in selecting platform specific code.
+Just say no, use GFP_ATOMIC instead.
 
-1275 doesn't mention compatible on the root from what I can
-see.
+Real question is : why skb_copy() is done, since its slow as hell.
 
-Stuart
+> [   91.431957] [ec58bc80] [c02d78ec] dev_hard_start_xmit+0x424/0x588
+> [   91.504952] [ec58bcc0] [c02d7ab0] dev_queue_xmit+0x60/0x3ac
+> [   91.571692] [ec58bcf0] [c0338d54] packet_sendmsg+0x8c4/0x988
+> [   91.639457] [ec58bd70] [c02c3838] sock_sendmsg+0x90/0xb4
+> [   91.703066] [ec58be40] [c02c4420] sys_sendto+0xdc/0x120
+> [   91.765646] [ec58bf10] [c02c57d0] sys_socketcall+0x148/0x210
+> [   91.833420] [ec58bf40] [c001084c] ret_from_syscall+0x0/0x3c
+> [   91.900153] --- Exception: c01 at 0x4824df00
+> [   91.900157]     LR = 0x4828a030
+> 
