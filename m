@@ -1,21 +1,36 @@
-Return-Path: <B35362@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
-	[213.199.154.143])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4ED6CB6F75
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2011 15:44:43 +1000 (EST)
-From: <b35362@freescale.com>
-To: <dwmw2@infradead.org>
-Subject: [PATCH v2] mtd/nand : workaround for Freescale FCM to support
-	large-page Nand chip
-Date: Tue, 12 Jul 2011 12:48:42 +0800
-Message-ID: <1310446122-18050-1-git-send-email-b35362@freescale.com>
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp05.in.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9050DB6F77
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jul 2011 16:44:24 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp05.in.ibm.com (8.14.4/8.13.1) with ESMTP id p6C6iHej016669
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 12:14:17 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p6C6iH2Y1491108
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 12:14:17 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p6C6iGYZ009940
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2011 16:44:17 +1000
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [PATCH v2] powerpc32: Kexec support for PPC440X chipsets
+To: Benjammin Herrenschmidt<benh@kernel.crashing.org>,
+	Kumar Gala <galak@kernel.crashing.org>
+Date: Tue, 12 Jul 2011 12:14:16 +0530
+Message-ID: <20110712064356.28567.48722.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Liu Shuo <b35362@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Suzuki Poulose <suzuki@in.ibm.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	kexec <kexec@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
+	Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,145 +40,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Liu Shuo <b35362@freescale.com>
+Changes from V1: Uses a tmp mapping in the other address space to setup
+		 the 1:1 mapping (suggested by Sebastian Andrzej Siewior).
 
-Freescale FCM controller has a 2K size limitation of buffer RAM. In order
-to support the Nand flash chip whose page size is larger than 2K bytes,
-we divide a page into multi-2K pages for MTD layer driver. In that case,
-we force to set the page size to 2K bytes. We convert the page address of
-MTD layer driver to a real page address in flash chips and a column index
-in fsl_elbc driver. We can issue any column address by UA instruction of
-elbc controller.
+Note: Should we do the same for kernel entry code for PPC44x ?
 
-Signed-off-by: Liu Shuo <b35362@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
+This patch adds kexec support for PPC440 based chipsets.This work is based
+on the KEXEC patches for FSL BookE.
+
+The FSL BookE patch and the code flow could be found at the link below:
+
+	http://patchwork.ozlabs.org/patch/49359/
+
+Steps:
+
+1) Invalidate all the TLB entries except the one this code is run from
+2) Create a tmp mapping for our code in the other address space and jump to it
+3) Invalidate the entry we used
+4) Create a 1:1 mapping for 0-2GiB in blocks of 256M
+5) Jump to the new 1:1 mapping and invalidate the tmp mapping
+
+I have tested this patches on Ebony, Sequoia boards and Virtex on QEMU.
+It would be great if somebody could test this on the other boards.
+
+Signed-off-by: 	Suzuki Poulose <suzuki@in.ibm.com>
+Cc:	Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/mtd/nand/fsl_elbc_nand.c |   66 ++++++++++++++++++++++++++++++-------
- 1 files changed, 53 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index a212116..884a9f1 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -76,6 +76,13 @@ struct fsl_elbc_fcm_ctrl {
- 	unsigned int oob;        /* Non zero if operating on OOB data     */
- 	unsigned int counter;	 /* counter for the initializations	  */
- 	char *oob_poi;           /* Place to write ECC after read back    */
+ arch/powerpc/Kconfig             |    2 
+ arch/powerpc/include/asm/kexec.h |    2 
+ arch/powerpc/kernel/misc_32.S    |  170 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 172 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 423145a6..d04fae0 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -349,7 +349,7 @@ config ARCH_ENABLE_MEMORY_HOTREMOVE
+ 
+ config KEXEC
+ 	bool "kexec system call (EXPERIMENTAL)"
+-	depends on (PPC_BOOK3S || FSL_BOOKE) && EXPERIMENTAL
++	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP && !47x)) && EXPERIMENTAL
+ 	help
+ 	  kexec is a system call that implements the ability to shutdown your
+ 	  current kernel, and to start another kernel.  It is like a reboot
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 8a33698..f921eb1 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -2,7 +2,7 @@
+ #define _ASM_POWERPC_KEXEC_H
+ #ifdef __KERNEL__
+ 
+-#ifdef CONFIG_FSL_BOOKE
++#if defined(CONFIG_FSL_BOOKE) || defined(CONFIG_44x)
+ 
+ /*
+  * On FSL-BookE we setup a 1:1 mapping which covers the first 2GiB of memory
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 998a100..a7881ab 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -8,6 +8,7 @@
+  * kexec bits:
+  * Copyright (C) 2002-2003 Eric Biederman  <ebiederm@xmission.com>
+  * GameCube/ppc32 port Copyright (C) 2004 Albert Herranz
++ * PPC440x port  Copyright (C) 2011 Suzuki Poulose <suzuki@in.ibm.com>
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -736,6 +737,175 @@ relocate_new_kernel:
+ 	mr      r5, r31
+ 
+ 	li	r0, 0
++#elif defined(CONFIG_44x)  && !defined(CONFIG_47x)
++
++/*
++ * Code for setting up 1:1 mapping for PPC440x for KEXEC
++ *
++ * We cannot switch off the MMU on PPC44x.
++ * So we:
++ * 1) Invalidate all the mappings except the one we are running from.
++ * 2) Create a tmp mapping for our code in the other address space(TS) and
++ *    jump to it. Invalidate the entry we started in.
++ * 3) Create a 1:1 mapping for 0-2GiB in chunks of 256M in original TS.
++ * 4) Jump to the 1:1 mapping in original TS.
++ * 5) Invalidate the tmp mapping.
++ *
++ * - Based on the kexec support code for FSL BookE
++ * - Doesn't support 47x yet.
++ *
++ */
++	/* Save our parameters */
++	mr	r29, r3
++	mr	r30, r4
++	mr	r31, r5
++
++	/* Load our MSR_IS and TID to MMUCR for TLB search */
++	mfspr	r3,SPRN_PID
++	mfmsr	r4
++	andi.	r4,r4,MSR_IS@l
++	beq	wmmucr
++	oris	r3,r3,PPC44x_MMUCR_STS@h
++wmmucr:
++	mtspr	SPRN_MMUCR,r3
++	sync
 +
 +	/*
-+	 * If writesize > 2048, these two members are used to calculate
-+	 * the real page address and real column address.
++	 * Invalidate all the TLB entries except the current entry
++	 * where we are running from
 +	 */
-+	int subpage_shift;
-+	int subpage_mask;
- };
- 
- /* These map to the positions used by the FCM hardware ECC generator */
-@@ -164,18 +171,27 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
- 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
- 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
- 	int buf_num;
-+	u32 real_ca = column;
- 
--	elbc_fcm_ctrl->page = page_addr;
-+	if (priv->page_size && elbc_fcm_ctrl->subpage_shift) {
-+		real_ca = (page_addr & elbc_fcm_ctrl->subpage_mask) * 2112;
-+		page_addr >>= elbc_fcm_ctrl->subpage_shift;
-+	}
- 
--	out_be32(&lbc->fbar,
--	         page_addr >> (chip->phys_erase_shift - chip->page_shift));
-+	elbc_fcm_ctrl->page = page_addr;
- 
- 	if (priv->page_size) {
-+		real_ca += (oob ? 2048 : 0);
-+		elbc_fcm_ctrl->use_mdr = 1;
-+		elbc_fcm_ctrl->mdr = real_ca;
++	bl	0f				/* Find our address */
++0:	mflr	r5				/* Make it accessible */
++	tlbsx	r23,0,r5			/* Find entry we are in */
++	li	r4,0				/* Start at TLB entry 0 */
++	li	r3,0				/* Set PAGEID inval value */
++1:	cmpw	r23,r4				/* Is this our entry? */
++	beq	skip				/* If so, skip the inval */
++	tlbwe	r3,r4,PPC44x_TLB_PAGEID		/* If not, inval the entry */
++skip:
++	addi	r4,r4,1				/* Increment */
++	cmpwi	r4,64				/* Are we done?	*/
++	bne	1b				/* If not, repeat */
++	isync
 +
-+		out_be32(&lbc->fbar, page_addr >> 6);
- 		out_be32(&lbc->fpar,
- 		         ((page_addr << FPAR_LP_PI_SHIFT) & FPAR_LP_PI) |
- 		         (oob ? FPAR_LP_MS : 0) | column);
- 		buf_num = (page_addr & 1) << 2;
- 	} else {
-+		out_be32(&lbc->fbar, page_addr >> 5);
- 		out_be32(&lbc->fpar,
- 		         ((page_addr << FPAR_SP_PI_SHIFT) & FPAR_SP_PI) |
- 		         (oob ? FPAR_SP_MS : 0) | column);
-@@ -256,10 +272,11 @@ static void fsl_elbc_do_read(struct nand_chip *chip, int oob)
- 	if (priv->page_size) {
- 		out_be32(&lbc->fir,
- 		         (FIR_OP_CM0 << FIR_OP0_SHIFT) |
--		         (FIR_OP_CA  << FIR_OP1_SHIFT) |
--		         (FIR_OP_PA  << FIR_OP2_SHIFT) |
--		         (FIR_OP_CM1 << FIR_OP3_SHIFT) |
--		         (FIR_OP_RBW << FIR_OP4_SHIFT));
-+		         (FIR_OP_UA  << FIR_OP1_SHIFT) |
-+		         (FIR_OP_UA  << FIR_OP2_SHIFT) |
-+		         (FIR_OP_PA  << FIR_OP3_SHIFT) |
-+		         (FIR_OP_CM1 << FIR_OP4_SHIFT) |
-+		         (FIR_OP_RBW << FIR_OP5_SHIFT));
- 
- 		out_be32(&lbc->fcr, (NAND_CMD_READ0 << FCR_CMD0_SHIFT) |
- 		                    (NAND_CMD_READSTART << FCR_CMD1_SHIFT));
-@@ -399,12 +416,13 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		if (priv->page_size) {
- 			out_be32(&lbc->fir,
- 			         (FIR_OP_CM2 << FIR_OP0_SHIFT) |
--			         (FIR_OP_CA  << FIR_OP1_SHIFT) |
--			         (FIR_OP_PA  << FIR_OP2_SHIFT) |
--			         (FIR_OP_WB  << FIR_OP3_SHIFT) |
--			         (FIR_OP_CM3 << FIR_OP4_SHIFT) |
--			         (FIR_OP_CW1 << FIR_OP5_SHIFT) |
--			         (FIR_OP_RS  << FIR_OP6_SHIFT));
-+			         (FIR_OP_UA  << FIR_OP1_SHIFT) |
-+			         (FIR_OP_UA  << FIR_OP2_SHIFT) |
-+			         (FIR_OP_PA  << FIR_OP3_SHIFT) |
-+			         (FIR_OP_WB  << FIR_OP4_SHIFT) |
-+			         (FIR_OP_CM3 << FIR_OP5_SHIFT) |
-+			         (FIR_OP_CW1 << FIR_OP6_SHIFT) |
-+			         (FIR_OP_RS  << FIR_OP7_SHIFT));
- 		} else {
- 			out_be32(&lbc->fir,
- 			         (FIR_OP_CM0 << FIR_OP0_SHIFT) |
-@@ -453,6 +471,9 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 			full_page = 1;
- 		}
- 
-+		if (priv->page_size)
-+			elbc_fcm_ctrl->use_mdr = 1;
++	/* Create a temp mapping and jump to it */
++	andi.	r6, r23, 1		/* Find the index to use */
++	addi	r24, r6, 1		/* r24 will contain 1 or 2 */
 +
- 		fsl_elbc_run_command(mtd);
- 
- 		/* Read back the page in order to fill in the ECC for the
-@@ -654,9 +675,28 @@ static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
- 	struct nand_chip *chip = mtd->priv;
- 	struct fsl_elbc_mtd *priv = chip->priv;
- 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
-+	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
- 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
- 	unsigned int al;
- 
++	mfmsr	r9			/* get the MSR */
++	rlwinm	r5, r9, 27, 31, 31	/* Extract the MSR[IS] */
++	xori	r7, r5, 1		/* Use the other address space */
++
++	/* Read the current mapping entries */
++	tlbre	r3, r23, PPC44x_TLB_PAGEID
++	tlbre	r4, r23, PPC44x_TLB_XLAT
++	tlbre	r5, r23, PPC44x_TLB_ATTRIB
++
++	/* Save our current XLAT entry */
++	mr	r25, r4
++
++	/* Extract the TLB PageSize */
++	li	r10, 1 			/* r10 will hold PageSize */
++	rlwinm	r11, r3, 0, 24, 27	/* bits 24-27 */
++
++	/* XXX: As of now we use 256M, 4K pages */
++	cmpwi	r11, PPC44x_TLB_256M
++	bne	tlb_4k
++	rotlwi	r10, r10, 28		/* r10 = 256M */
++	b	write_out
++tlb_4k:
++	cmpwi	r11, PPC44x_TLB_4K
++	bne	default
++	rotlwi	r10, r10, 12		/* r10 = 4K */
++	b	write_out
++default:
++	rotlwi	r10, r10, 10		/* r10 = 1K */
++
++write_out:
 +	/*
-+	 * Hack for supporting the flash chip whose writesize is
-+	 * larger than 2K bytes.
++	 * Write out the tmp 1:1 mapping for this code in other address space
++	 * Fixup  EPN = RPN , TS=other address space
 +	 */
-+	if (mtd->writesize > 2048) {
-+		elbc_fcm_ctrl->subpage_shift = ffs(mtd->writesize >> 11) - 1;
-+		elbc_fcm_ctrl->subpage_mask =
-+			(1 << elbc_fcm_ctrl->subpage_shift) - 1;
-+		/*
-+		 * Rewrite mtd->writesize, mtd->oobsize, chip->page_shift
-+		 * and chip->pagemask.
-+		 */
-+		mtd->writesize = 2048;
-+		mtd->oobsize = 64;
-+		chip->page_shift = ffs(mtd->writesize) - 1;
-+		chip->pagemask = (chip->chipsize >> chip->page_shift) - 1;
-+	}
++	insrwi	r3, r7, 1, 23		/* Bit 23 is TS for PAGEID field */
 +
- 	/* calculate FMR Address Length field */
- 	al = 0;
- 	if (chip->pagemask & 0xffff0000)
--- 
-1.7.1
++	/* Write out the tmp mapping entries */
++	tlbwe	r3, r24, PPC44x_TLB_PAGEID
++	tlbwe	r4, r24, PPC44x_TLB_XLAT
++	tlbwe	r5, r24, PPC44x_TLB_ATTRIB
++
++	subi	r11, r10, 1		/* PageOffset Mask = PageSize - 1 */
++	not	r10, r11		/* Mask for PageNum */
++
++	/* Switch to other address space in MSR */
++	insrwi	r9, r7, 1, 26		/* Set MSR[IS] = r7 */
++
++	bl	1f
++1:	mflr	r8
++	addi	r8, r8, (2f-1b)		/* Find the target offset */
++
++	/* Jump to the tmp mapping */
++	mtspr	SPRN_SRR0, r8
++	mtspr	SPRN_SRR1, r9
++	rfi
++
++2:
++	/* Invalidate the entry we were executing from */
++	li	r3, 0
++	tlbwe	r3, r23, PPC44x_TLB_PAGEID
++
++	/* attribute fields. rwx for SUPERVISOR mode */
++	li	r5, 0
++	ori	r5, r5, (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G)
++
++	/* Create 1:1 mapping in 256M pages */
++	xori	r7, r7, 1			/* Revert back to Original TS */
++
++	li	r8, 0				/* PageNumber */
++	li	r6, 3				/* TLB Index, start at 3  */
++
++next_tlb:
++	rotlwi	r3, r8, 28			/* Create EPN (bits 0-3) */
++	mr	r4, r3				/* RPN = EPN  */
++	ori	r3, r3, (PPC44x_TLB_VALID | PPC44x_TLB_256M) /* SIZE = 256M, Valid */
++	insrwi	r3, r7, 1, 23			/* Set TS from r7 */
++
++	tlbwe	r3, r6, PPC44x_TLB_PAGEID	/* PageID field : EPN, V, SIZE */
++	tlbwe	r4, r6, PPC44x_TLB_XLAT		/* Address translation : RPN   */
++	tlbwe	r5, r6, PPC44x_TLB_ATTRIB	/* Attributes */
++
++	addi	r8, r8, 1			/* Increment PN */
++	addi	r6, r6, 1			/* Increment TLB Index */
++	cmpwi	r8, 8				/* Are we done ? */
++	bne	next_tlb
++	isync
++
++	/* Jump to the new mapping 1:1 */
++	li	r9,0
++	insrwi	r9, r7, 1, 26			/* Set MSR[IS] = r7 */
++
++	bl	1f
++1:	mflr	r8
++	and	r8, r8, r11			/* Get our offset within page */
++	addi	r8, r8, (2f-1b)
++
++	and	r5, r25, r10			/* Get our target PageNum */
++	or	r8, r8, r5			/* Target jump address */
++
++	mtspr	SPRN_SRR0, r8
++	mtspr	SPRN_SRR1, r9
++	rfi
++2:
++	/* Invalidate the tmp entry we used */
++	li	r3, 0
++	tlbwe	r3, r24, PPC44x_TLB_PAGEID
++	sync
++
++	/* Restore the parameters */
++	mr	r3, r29
++	mr	r4, r30
++	mr	r5, r31
++
++	li	r0, 0
+ #else
+ 	li	r0, 0
+ 
