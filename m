@@ -1,23 +1,34 @@
-Return-Path: <vneethv@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 886211007D1
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 06359B6F65
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Jul 2011 00:19:12 +1000 (EST)
-Received: by bwa18 with SMTP id 18so5410825bwa.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Jul 2011 07:19:07 -0700 (PDT)
+	Thu, 14 Jul 2011 04:06:28 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp05.au.ibm.com (8.14.4/8.13.1) with ESMTP id p6DI02NZ014058
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2011 04:00:02 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p6DI6NVH1343696
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2011 04:06:23 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p6DI6NWF008900
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2011 04:06:23 +1000
+Subject: [RFC PATCH 00/10] fadump: Firmware-assisted dump support for Powerpc.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Wed, 13 Jul 2011 23:36:19 +0530
+Message-ID: <20110713180252.6210.34810.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAFbQSaAG+pJ0FBodZrM_pejH6RVWJnzyp1+boKfo5pgUOGC_+g@mail.gmail.com>
-References: <CAFbQSaAG+pJ0FBodZrM_pejH6RVWJnzyp1+boKfo5pgUOGC_+g@mail.gmail.com>
-From: Vineeth <vneethv@gmail.com>
-Date: Wed, 13 Jul 2011 19:48:47 +0530
-Message-ID: <CAFbQSaBf04W5jd2VF+DeYanen0O6k9amtYe3=+FYcnR5OXj7tg@mail.gmail.com>
-Subject: Fwd: MPC7410 BAT Issue
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=0016e6da7b1c6df6ed04a7f419ae
+Content-Type: text/plain; charset="utf-8"
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+	Anton Blanchard <anton@samba.org>, Milton Miller <miltonm@bga.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,74 +38,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e6da7b1c6df6ed04a7f419ae
-Content-Type: text/plain; charset=ISO-8859-1
+Hi All,
 
-Hi,
+Please find the series of the patchset that implements firmware-assisted
+dump mechanism to capture kernel crash dump for Powerpc architecture. The
+firmware-assisted dump is a robust mechanism to get reliable kernel crash
+dump with assistance from firmware. This approach does not use kexec, instead
+firmware assists in booting the kdump kernel while preserving memory contents.
 
-We have a MPC7410 based board and we are trying to port Linux on the same.
+The most of the code implementation has been adapted from phyp assisted dump
+implementation written by Linas Vepstas and Manish Ahuja.
 
-the Board Architecture/UART connection is as follows
+The first patch is a documentation that talks about firmware-assisted dump
+mechanism, implementation details and TODO list.
 
-*MPC7410 ---> MPC107(PCI Bridge) ---> PLX9052(PCI->Local Bus Bridge) --->
-UART*
-The address mapping is as follows
+One of the important item from TODO list where I am looking forward for more
+ideas/suggestions is regarding fadump crash info structure in the scratch
+area before the ELF core header (see patch 4/10 and 5/10). The idea of
+introducing this structure is to pass some important crash info data to the
+second kernel which will help second kernel to populate ELF core header with
+correct data before it gets exported through /proc/vmcore. The current design
+implementation does not address the possibility of introducing additional
+fields (in future) to this structure without affecting compatibility.
+Following are the possible approaches I have in mind:
+    1. Introduce version field for version tracking, bump up the version
+       whenever a new field is added to the structure in future. The version
+       field can be used to find out what fields are valid for the current
+       version of the structure.
+    2. Reserve the area of predefined size (say PAGE_SIZE) for this
+       structure and have unused area as reserved (initialized to zero)
+       for future field additions.
+The advantage of the approach 1 over 2 is, we don't need to reserve extra
+space.
+Please let me know if there is better solution available.
 
-PLX9052 @       0xDB00_0000
-UART @           0xDB00_0100
-FLASH @         0xFF00_0000
-RAM @            0x0
+I have tested the patches on following system configuration:
+1. LPAR on Power6 with 4GB RAM and 8 CPUs
+2. LPAR on Power7 with 2GB RAM and 20 CPUs
+3. LPAR on Power7 with 1TB RAM and 896 CPUs
 
-We have to port Linux 2.6.24( default one with ELDK4.2).
+These patches cleanly apply on commit 8d86e5f91440aa56a5df516bf58fe3883552ad56
+in linux-2.6 git tree.
 
-as we don't have a debugger, we are using (my_reset) function which simply
-resets the board.
+Please review the patchset and let me know your comments.
 
+Thanks,
+-Mahesh.
+---
 
-We have uboot up and running. we are downloading uImage to RAM location
-@0x800000 and JMP to 0x80000
-
-Linux is executing till setup_arch() call in the start_kernel() function.
-
-We are facing some issue in page_init() call; also on setting the BAT
-registers.(which is done at platform_init)
-
-Anyone got any clue how to set the BAT for MPC7410 ?
-
---0016e6da7b1c6df6ed04a7f419ae
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<br><div class=3D"gmail_quote">Hi,<br><br>We have a MPC7410 based board and=
- we are trying to port Linux on the same.<br><br>the Board Architecture/UAR=
-T connection is as follows<br><br><b><span style=3D"color:rgb(153, 0, 0)">M=
-PC7410 ---&gt; MPC107(PCI Bridge) ---&gt; PLX9052(PCI-&gt;Local Bus Bridge)=
- ---&gt; UART</span></b><br>
-
-
-
-The address mapping is as follows<br><br>PLX9052 @=A0=A0=A0=A0=A0=A0 0xDB00=
-_0000<br>UART @ =A0 =A0 =A0 =A0 =A0 0xDB00_0100<br>FLASH @=A0=A0=A0=A0=A0=
-=A0=A0=A0 0xFF00_0000<br>RAM @=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 0x0<br><br>=
-We have to port Linux 2.6.24( default one with ELDK4.2).<br>
-
-
-
-<br>as we don&#39;t have a debugger, we are using (<span style=3D"color:rgb=
-(255, 0, 0)">my_reset</span>) function which simply resets the board.<br><b=
-r><br>We have uboot up and running. we are downloading uImage to RAM locati=
-on @0x800000 and JMP to 0x80000<br>
-
-
-
-<br>Linux is executing till setup_arch() call in the start_kernel() functio=
-n.<br><br>We are facing some issue in page_init() call; also on setting the=
- BAT registers.(which is done at platform_init)<br><br>Anyone got any clue =
-how to set the BAT for MPC7410 ? <br>
+Mahesh Salgaonkar (10):
+      fadump: Add documentation for firmware-assisted dump.
+      fadump: Reserve the memory for firmware assisted dump.
+      fadump: Register for firmware assisted dump.
+      fadump: Initialize elfcore header and add PT_LOAD program headers.
+      fadump: Convert firmware-assisted cpu state dump data into elf notes.
+      fadump: Add PT_NOTE program header for vmcoreinfo
+      fadump: Introduce cleanup routine to invalidate /proc/vmcore.
+      fadump: Invalidate registration and release reserved memory for general use.
+      fadump: Invalidate the fadump registration during machine shutdown.
+      fadump: Introduce config option for firmware assisted dump feature
 
 
+ Documentation/powerpc/firmware-assisted-dump.txt |  231 ++++
+ arch/powerpc/Kconfig                             |   13 
+ arch/powerpc/include/asm/fadump.h                |  194 +++
+ arch/powerpc/kernel/Makefile                     |    1 
+ arch/powerpc/kernel/fadump.c                     | 1228 ++++++++++++++++++++++
+ arch/powerpc/kernel/prom.c                       |   15 
+ arch/powerpc/kernel/setup-common.c               |    9 
+ arch/powerpc/kernel/setup_64.c                   |    8 
+ arch/powerpc/kernel/traps.c                      |    5 
+ arch/powerpc/mm/hash_utils_64.c                  |   11 
+ fs/proc/vmcore.c                                 |   20 
+ include/linux/crash_dump.h                       |    1 
+ include/linux/memblock.h                         |    1 
+ kernel/crash_dump.c                              |   33 +
+ kernel/panic.c                                   |   16 
+ 15 files changed, 1785 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/powerpc/firmware-assisted-dump.txt
+ create mode 100644 arch/powerpc/include/asm/fadump.h
+ create mode 100644 arch/powerpc/kernel/fadump.c
 
-<br>
-</div><br>
-
---0016e6da7b1c6df6ed04a7f419ae--
+-- 
+Signature
