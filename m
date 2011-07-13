@@ -1,21 +1,15 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ww0-f52.google.com (mail-ww0-f52.google.com [74.125.82.52])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7C230B6F65
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jul 2011 23:20:12 +1000 (EST)
-Received: by wwf10 with SMTP id 10so5131253wwf.21
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jul 2011 06:20:08 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20110713130208.GA15267@crust.elkhashab.com>
-References: <20110713130208.GA15267@crust.elkhashab.com>
-Date: Wed, 13 Jul 2011 09:20:08 -0400
-Message-ID: <CA+5PVA4DZ6EfuO7_dQ-zc5=xBs14G8hHV4rm=c=G91pfuvMANQ@mail.gmail.com>
-Subject: Re: grasping why mpt2sas fails with BITS_PER_LONG conditional
-From: Josh Boyer <jwboyer@gmail.com>
-To: Ayman El-Khashab <ayman@elkhashab.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8930EB6F67
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jul 2011 01:00:47 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/64: Make server perfmon only built on ppc64 server
+	devices
+Date: Wed, 13 Jul 2011 10:00:41 -0500
+Message-Id: <1310569241-18267-1-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,27 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2011 at 9:02 AM, Ayman El-Khashab <ayman@elkhashab.com> wro=
-te:
-> I've had problems with the mpt2sas driver
-> (drivers/scsi/mpt2sas/mpt2sas_base.c) when using it on my
-> ppc44x. =A0Basically, there is a check in the code for
-> BITS_PER_LONG and certain code is executed if it is 64 vs 32
-> bit. =A0I am guessing it is a problem with the driver but it
-> only shows up on powerpc. =A0If i force it to take the 64 bit
-> path it works fine, but if I let the preprocessor decide it
-> will take the 32 bit path and fail later. =A0I am not
-> configuring my kernel as 64 bit, but I am guessing this has
-> to do with the 36 bit plb bus on these parts.
+The 64-bit Book-E parts (to date) dont utilize the 'server' class
+perfmon.  So building or depending on it makes no sense (and does break
+FSL Book-E 64-bit support).  Move the selection of PPC_HAVE_PMU_SUPPORT
+to be based on PPC_BOOK3S_64.
 
-That seems like a good theory to me.
+Based on a patch from Scott Wood.
 
-> can somebody enlighten me as to what the right thing to do
-> here is?
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/platforms/Kconfig.cputype |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I'd suggest changing the check in the driver away from BITS_PER_LONG
-and try making the conditionals based on CONFIG_ARCH_DMA_ADDR_T_64BIT
-instead.  On machines with 36-bit physical addressing, that gets set
-and it should fall into the code paths you say work.
-
-josh
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 9abc655..50cc4d3 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -1,7 +1,6 @@
+ config PPC64
+ 	bool "64-bit kernel"
+ 	default n
+-	select PPC_HAVE_PMU_SUPPORT
+ 	help
+ 	  This option selects whether a 32-bit or a 64-bit kernel
+ 	  will be built.
+@@ -70,6 +69,7 @@ config PPC_BOOK3S_64
+ 	bool "Server processors"
+ 	select PPC_FPU
+ 	select SYS_SUPPORTS_HUGETLBFS
++	select PPC_HAVE_PMU_SUPPORT
+ 
+ config PPC_BOOK3E_64
+ 	bool "Embedded processors"
+-- 
+1.7.3.4
