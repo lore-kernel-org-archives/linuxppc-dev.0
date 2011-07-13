@@ -1,20 +1,13 @@
-Return-Path: <bounces@nabble.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 580781007D3
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jul 2011 14:13:22 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by sam.nabble.com with esmtp (Exim 4.72)
-	(envelope-from <bounces@nabble.com>) id 1Qgqp5-0008Vz-5w
-	for linuxppc-dev@ozlabs.org; Tue, 12 Jul 2011 21:13:19 -0700
-Message-ID: <32050889.post@talk.nabble.com>
-Date: Tue, 12 Jul 2011 21:13:19 -0700 (PDT)
-From: ps2k <ps2kumar@yahoo.com>
-To: linuxppc-dev@ozlabs.org
-Subject: MPC8360RDK: Badness at kernel/softirq.c:122
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <anton@samba.org>
+Date: Wed, 13 Jul 2011 15:19:57 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/pseries: Fix hvterm_raw_get_chars to accept < 16
+	chars, fixing xmon
+Message-ID: <20110713151957.593494f8@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,71 +18,130 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Hi,
-When we are writing to the flash while data traffic is on we do see the
-target rebooting with the following messages. Could some body please explain
-what's going on here?
+commit 4d2bb3f50036 (powerpc/pseries: Re-implement HVSI as part of
+hvc_vio) changed udbg_getc to be based on hvterm_raw_get_chars.
+Unfortunately hvterm_raw_get_chars returns -EAGAIN if you ask
+for anything less than 16 characters. As a result xmon no longer
+accepts input and prints a stream of junk to the screen.
 
-Any help is greatly appreciated.
+The recent change highlights a problem that xmon on pseries VIO 
+has had all along, that it can drop input characters. The issue
+is the hypervisor call does not take a count argument and can
+return up to 16 characters.
 
-Regards
-psk
+This patch adds a per vterm buffer that we copy input data into
+and give it out as requested.
 
-Call Trace:"
-LR [c0005ea4] do_softirq+0x58/0x5c"
-Badness at c0051360 [verbose debug info unavailable]"
-NIP [c0051360] _local_bh_enable+0x40/0x84"
-TASK = d772d430[1343] 'cp' THREAD: dc916000"
-MSR: 00021032 <ME,IR,DR>  CR: 44242482  XER: 20000000"
-REGS: dc916860 TRAP: 0700   Not tainted  (2.6.24-pwn-0.5.0.XXXX)"
-NIP: c0051360 LR: c0005ea4 CTR: c01c0098"
-------------[ cut here ]------------"
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-----------------------------------------
-
-[d715c900] [c00060c0] do_softirq+0x58/0x5c"
-Badness at net/core/skbuff.c:317"
-[d715c8e0] [c0052670] __do_softirq+0x84/0xf8"
-[d715c8c0] [c01c36fc] net_tx_action+0x84/0x17c"
-[d715c8b0] [c01b9b2c] __kfree_skb+0x18/0xe8"
-[d715c8a0] [0000012c] 0x12c (unreliable)"
-Call Trace:"
-LR [c01b9b2c] __kfree_skb+0x18/0xe8"
-NIP [c01ba584] skb_release_all+0x68/0x124"
-TASK = dc54c850[856] 'cp' THREAD: d715c000"
-MSR: 00029032 <EE,ME,IR,DR>  CR: 24242488  XER: 20000000"
-REGS: d715c7f0 TRAP: 0700   Not tainted  (2.6.24-pwn-0.5.0.XXXX)"
-NIP: c01ba584 LR: c01b9b2c CTR: c01c3678"
-------------[ cut here ]------------"
-
-
------------------------
-
-Badness at kernel/softirq.c:122"
-Call Trace:"
-LR [c00060c0] do_softirq+0x58/0x5c"
-NIP [c0051f78] _local_bh_enable+0x40/0x84"
-TASK = dc5587d0[1763] 'cp' THREAD: dc7ee000"
-MSR: 00021032 <ME,IR,DR>  CR: 44242482  XER: 00000000"
-REGS: dc7ee850 TRAP: 0700   Not tainted  (2.6.24-pwn-0.5.0.XXXX)"
-NIP: c0051f78 LR: c00060c0 CTR: c0062040"
-------------[ cut here ]------------"
-
-
--------------------------
-Badness at kernel/softirq.c:122"
-[d7114930] [c001108c] ret_from_except+0x0/0x14"
-[d7114920] [c00065d4] do_IRQ+0xa8/0xc8"
-[d7114910] [c0052190] irq_exit+0x60/0x80"
-[d7114900] [c00060c0] do_softirq+0x58/0x5c (unreliable)"
-Call Trace:"
-LR [c00060c0] do_softirq+0x58/0x5c"
-NIP [c0051f78] _local_bh_enable+0x40/0x84"
-TASK = dc01c430[2468] 'cp' THREAD: d7114000"
-MSR: 00021032 <ME,IR,DR>  CR: 44242482  XER: 20000000"
-REGS: d7114850 TRAP: 0700   Tainted: G      D  (2.6.24-pwn-0.5.0.XXXX)"
-NIP: c0051f78 LR: c00060c0 CTR: c016b7f4"
-------------[ cut here ]------------"
--- 
-View this message in context: http://old.nabble.com/MPC8360RDK%3A-Badness-at-kernel-softirq.c%3A122-tp32050889p32050889.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Index: linux-powerpc/drivers/tty/hvc/hvc_vio.c
+===================================================================
+--- linux-powerpc.orig/drivers/tty/hvc/hvc_vio.c	2011-07-13 14:37:16.251635811 +1000
++++ linux-powerpc/drivers/tty/hvc/hvc_vio.c	2011-07-13 14:48:33.843356126 +1000
+@@ -71,41 +71,53 @@ struct hvterm_priv {
+ 	u32			termno;	/* HV term number */
+ 	hv_protocol_t		proto;	/* Raw data or HVSI packets */
+ 	struct hvsi_priv	hvsi;	/* HVSI specific data */
++	spinlock_t		buf_lock;
++	char			buf[SIZE_VIO_GET_CHARS];
++	int			left;
++	int			offset;
+ };
+ static struct hvterm_priv *hvterm_privs[MAX_NR_HVC_CONSOLES];
+-
+ /* For early boot console */
+ static struct hvterm_priv hvterm_priv0;
+ 
+ static int hvterm_raw_get_chars(uint32_t vtermno, char *buf, int count)
+ {
+ 	struct hvterm_priv *pv = hvterm_privs[vtermno];
+-	unsigned long got, i;
++	unsigned long i;
++	unsigned long flags;
++	int got;
+ 
+ 	if (WARN_ON(!pv))
+ 		return 0;
+ 
+-	/*
+-	 * Vio firmware will read up to SIZE_VIO_GET_CHARS at its own discretion
+-	 * so we play safe and avoid the situation where got > count which could
+-	 * overload the flip buffer.
+-	 */
+-	if (count < SIZE_VIO_GET_CHARS)
+-		return -EAGAIN;
+-
+-	got = hvc_get_chars(pv->termno, buf, count);
++	spin_lock_irqsave(&pv->buf_lock, flags);
+ 
+-	/*
+-	 * Work around a HV bug where it gives us a null
+-	 * after every \r.  -- paulus
+-	 */
+-	for (i = 1; i < got; ++i) {
+-		if (buf[i] == 0 && buf[i-1] == '\r') {
+-			--got;
+-			if (i < got)
+-				memmove(&buf[i], &buf[i+1], got - i);
++	if (pv->left == 0) {
++		pv->offset = 0;
++		pv->left = hvc_get_chars(pv->termno, pv->buf, count);
++
++		/*
++		 * Work around a HV bug where it gives us a null
++		 * after every \r.  -- paulus
++		 */
++		for (i = 1; i < pv->left; ++i) {
++			if (pv->buf[i] == 0 && pv->buf[i-1] == '\r') {
++				--pv->left;
++				if (i < pv->left) {
++					memmove(&pv->buf[i], &pv->buf[i+1],
++						pv->left - i);
++				}
++			}
+ 		}
+ 	}
++
++	got = min(count, pv->left);
++	memcpy(buf, &pv->buf[pv->offset], got);
++	pv->offset += got;
++	pv->left -= got;
++
++	spin_unlock_irqrestore(&pv->buf_lock, flags);
++
+ 	return got;
+ }
+ 
+@@ -266,6 +278,7 @@ static int __devinit hvc_vio_probe(struc
+ 			return -ENOMEM;
+ 		pv->termno = vdev->unit_address;
+ 		pv->proto = proto;
++		spin_lock_init(&pv->buf_lock);
+ 		hvterm_privs[termno] = pv;
+ 		hvsilib_init(&pv->hvsi, hvc_get_chars, hvc_put_chars,
+ 			     pv->termno, 0);
+@@ -406,6 +419,7 @@ void __init hvc_vio_init_early(void)
+ 	if (termno == NULL)
+ 		goto out;
+ 	hvterm_priv0.termno = *termno;
++	spin_lock_init(&hvterm_priv0.buf_lock);
+ 	hvterm_privs[0] = &hvterm_priv0;
+ 
+ 	/* Check the protocol */
+@@ -447,6 +461,7 @@ void __init udbg_init_debug_lpar(void)
+ 	hvterm_privs[0] = &hvterm_priv0;
+ 	hvterm_priv0.termno = 0;
+ 	hvterm_priv0.proto = HV_PROTOCOL_RAW;
++	spin_lock_init(&hvterm_priv0.buf_lock)
+ 	udbg_putc = udbg_hvc_putc;
+ 	udbg_getc = udbg_hvc_getc;
+ 	udbg_getc_poll = udbg_hvc_getc_poll;
+@@ -459,6 +474,7 @@ void __init udbg_init_debug_lpar_hvsi(vo
+ 	hvterm_privs[0] = &hvterm_priv0;
+ 	hvterm_priv0.termno = CONFIG_PPC_EARLY_DEBUG_HVSI_VTERMNO;
+ 	hvterm_priv0.proto = HV_PROTOCOL_HVSI;
++	spin_lock_init(&hvterm_priv0.buf_lock)
+ 	udbg_putc = udbg_hvc_putc;
+ 	udbg_getc = udbg_hvc_getc;
+ 	udbg_getc_poll = udbg_hvc_getc_poll;
