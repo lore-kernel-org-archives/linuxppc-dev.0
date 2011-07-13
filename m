@@ -1,25 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 66635B6F70
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Jul 2011 21:24:25 +1000 (EST)
-Received: by vws20 with SMTP id 20so4612021vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Jul 2011 04:24:21 -0700 (PDT)
+Return-Path: <ayman@elkhashab.com>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 2E784B6F75
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jul 2011 23:02:12 +1000 (EST)
+Received: from crust.elkhashab.com (localhost [127.0.0.1])
+	by crust.elkhashab.com (8.14.3/8.14.3/Debian-5) with ESMTP id
+	p6DD286I015549
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jul 2011 08:02:08 -0500
+Received: (from ayman@localhost)
+	by crust.elkhashab.com (8.14.3/8.14.3/Submit) id p6DD28vR015548
+	for linuxppc-dev@ozlabs.org; Wed, 13 Jul 2011 08:02:08 -0500
+Date: Wed, 13 Jul 2011 08:02:08 -0500
+From: Ayman El-Khashab <ayman@elkhashab.com>
+To: linuxppc-dev@ozlabs.org
+Subject: grasping why mpt2sas fails with BITS_PER_LONG conditional
+Message-ID: <20110713130208.GA15267@crust.elkhashab.com>
 MIME-Version: 1.0
-In-Reply-To: <20110713154405.297f828d@kryten>
-References: <20110713154405.297f828d@kryten>
-Date: Wed, 13 Jul 2011 07:24:21 -0400
-Message-ID: <CA+5PVA7cGL+f94T3VL4NRvMSLD4L5mWn=iYAPujqYcH9aHhOVQ@mail.gmail.com>
-Subject: Re: [PATCH] hvc_console: Add kdb support
-From: Josh Boyer <jwboyer@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: kgdb-bugreport@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
-	jason.wessel@windriver.com
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2011 at 1:44 AM, Anton Blanchard <anton@samba.org> wrote:
->
-> Add poll_get_char and poll_put_char for kdb. Enable kdb at boot with:
+I've had problems with the mpt2sas driver
+(drivers/scsi/mpt2sas/mpt2sas_base.c) when using it on my
+ppc44x.  Basically, there is a check in the code for
+BITS_PER_LONG and certain code is executed if it is 64 vs 32
+bit.  I am guessing it is a problem with the driver but it
+only shows up on powerpc.  If i force it to take the 64 bit
+path it works fine, but if I let the preprocessor decide it
+will take the 32 bit path and fail later.  I am not
+configuring my kernel as 64 bit, but I am guessing this has
+to do with the 36 bit plb bus on these parts.
 
-Did you mean "...for kgdb.  Enable kgdb at boot.." ?
+can somebody enlighten me as to what the right thing to do
+here is?
 
-I thought kdb and kgdb shared some infrastructure now, but your patch
-and comments seem to be all about kgdb.
-
-josh
+thanks
+ayman
