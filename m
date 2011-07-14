@@ -1,18 +1,17 @@
-Return-Path: <ayman@elkhashab.com>
-Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [207.114.241.63])
-	by ozlabs.org (Postfix) with ESMTP id 639D1B6F70
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Jul 2011 10:45:54 +1000 (EST)
-From: Ayman El-Khashab <ayman@elkhashab.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Tony Breeds <tony@bakeyournoodle.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/1] powerpc/4xx: enable and fix pcie gen1/gen2 on the 460sx
-Date: Wed, 13 Jul 2011 19:33:30 -0500
-Message-Id: <1310603611-8960-1-git-send-email-ayman@elkhashab.com>
-In-Reply-To: <y>
-References: <y>
-Cc: Ayman El-Khashab <ayman@elkhashab.com>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Thu, 14 Jul 2011 11:16:27 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Ayman El-Khashab <ayman@elkhashab.com>
+Subject: Re: [PATCH 1/1] powerpc/4xx: enable and fix pcie gen1/gen2 on the
+	460sx
+Message-ID: <20110714011627.GJ20597@ozlabs.org>
+References: <y> <1310603611-8960-1-git-send-email-ayman@elkhashab.com>
+	<1310603611-8960-2-git-send-email-ayman@elkhashab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1310603611-8960-2-git-send-email-ayman@elkhashab.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +21,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Old code didn't check the proper registers for the 460sx and so the link check
-would always fail.  This changes the link check to use the config space reg and
-adds the definition for the register.  Also changes the vc0 to a pll check.  
-Sets up the port for gen2 speeds.
+On Wed, Jul 13, 2011 at 07:33:31PM -0500, Ayman El-Khashab wrote:
+> Adds a register to the config space for the 460sx.  Changes the vc0
+> detect to a pll detect.  maps configuration space to test the link
+> status.  changes the setup to enable gen2 devices to operate at gen2
+> speeds.  fixes mapping that was not correct for the 460sx.
+> 
+> tested on the 460sx eiger and custom board
 
-This uses the check_link function to specialize the link detect for the 460sx.
-Tested on an eiger and custom board.  Note that is swaps the order of the link
-check and dcr initialization since the config space needs the DCRs setup before
-it can be mapped and used to check the link.
+Hi Ayman.
+	Just a few comments.
+ 
+<snip>
 
+> +static void __init ppc460sx_pciex_check_link(struct ppc4xx_pciex_port *port)
+> +{
+> +	void __iomem *mbase;
+> +	int attempt = 50;
+> +
+> +	port->link = 0;
+> +
+> +	mbase = ioremap(port->cfg_space.start + 0x00000000, 0x1000);
 
-Ayman El-Khashab (1):
-  powerpc/4xx: enable and fix pcie gen1/gen2 on the 460sx
+Why + 0x00000000 ? ppc4xx_pciex_port_setup_hose() does:
+mbase = ioremap(port->cfg_space.start + 0x10000000, 0x1000);
+so isn't one of these statements is wrong?
 
- arch/powerpc/sysdev/ppc4xx_pci.c |   83 +++++++++++++++++++++++++++++--------
- arch/powerpc/sysdev/ppc4xx_pci.h |    3 +
- 2 files changed, 68 insertions(+), 18 deletions(-)
+> +	if (mbase == NULL) {
+> +		printk(KERN_ERR "%s: Can't map internal config space !",
+> +			port->node->full_name);
+> +		goto done;
+> +	}
+> +
+> +	while (attempt && (0 == (in_le32(mbase + PECFG_460SX_DLLSTA)
+> +			& 0x00000010))) {
 
--- 
-1.7.4.3
+Nitpicking, I think it'd be nice if there was #define for 0x00000010
+perhaps: #define PECFG_460SX_DLLSTA_LINKUP 0x00000010
+
+> +		attempt--;
+> +		mdelay(10);
+> +	}
+> +	if (attempt)
+> +		port->link = 1;
+> +done:
+> +	iounmap(mbase);
+> +
+> +}
+> +
+>  static struct ppc4xx_pciex_hwops ppc460sx_pcie_hwops __initdata = {
+>  	.core_init	= ppc460sx_pciex_core_init,
+>  	.port_init_hw	= ppc460sx_pciex_init_port_hw,
+>  	.setup_utl	= ppc460sx_pciex_init_utl,
+> -	.check_link	= ppc4xx_pciex_check_link_sdr,
+> +	.check_link	= ppc460sx_pciex_check_link,
+>  };
+>  
+>  #endif /* CONFIG_44x */
+> @@ -1338,15 +1367,15 @@ static int __init ppc4xx_pciex_port_init(struct ppc4xx_pciex_port *port)
+>  	if (rc != 0)
+>  		return rc;
+>  
+> -	if (ppc4xx_pciex_hwops->check_link)
+> -		ppc4xx_pciex_hwops->check_link(port);
+> -
+>  	/*
+>  	 * Initialize mapping: disable all regions and configure
+>  	 * CFG and REG regions based on resources in the device tree
+>  	 */
+>  	ppc4xx_pciex_port_init_mapping(port);
+>  
+> +	if (ppc4xx_pciex_hwops->check_link)
+> +		ppc4xx_pciex_hwops->check_link(port);
+> +
+
+Why move this?  You already iorempat the cfg space.
+>  	/*
+>  	 * Map UTL
+>  	 */
+> @@ -1360,13 +1389,23 @@ static int __init ppc4xx_pciex_port_init(struct ppc4xx_pciex_port *port)
+>  		ppc4xx_pciex_hwops->setup_utl(port);
+>  
+>  	/*
+> -	 * Check for VC0 active and assert RDY.
+> +	 * Check for VC0 active or PLL Locked and assert RDY.
+>  	 */
+>  	if (port->sdr_base) {
+> -		if (port->link &&
+> -		    ppc4xx_pciex_wait_on_sdr(port, PESDRn_RCSSTS,
+> -					     1 << 16, 1 << 16, 5000)) {
+> -			printk(KERN_INFO "PCIE%d: VC0 not active\n", port->index);
+> +		if (of_device_is_compatible(port->node,
+> +				"ibm,plb-pciex-460sx")){
+> +			if (port->link && ppc4xx_pciex_wait_on_sdr(port,
+> +					PESDRn_RCSSTS,
+> +					1 << 12, 1 << 12, 5000)) {
+> +				printk(KERN_INFO "PCIE%d: PLL not locked\n",
+> +						port->index);
+> +				port->link = 0;
+> +			}
+> +		} else if (port->link &&
+> +			ppc4xx_pciex_wait_on_sdr(port, PESDRn_RCSSTS,
+> +				1 << 16, 1 << 16, 5000)) {
+> +			printk(KERN_INFO "PCIE%d: VC0 not active\n",
+> +					port->index);
+>  			port->link = 0;
+>  		}
+>  
+> @@ -1565,6 +1604,10 @@ static int __init ppc4xx_setup_one_pciex_POM(struct ppc4xx_pciex_port	*port,
+>  	pcial = RES_TO_U32_LOW(pci_addr);
+>  	sa = (0xffffffffu << ilog2(size)) | 0x1;
+>  
+> +	/* Enabled and single region */
+> +	sa |= (of_device_is_compatible(port->node, "ibm,plb-pciex-460sx")) ?
+> +			0x5 : 0x3;
+> +
+>  	/* Program register values */
+>  	switch (index) {
+>  	case 0:
+> @@ -1573,8 +1616,7 @@ static int __init ppc4xx_setup_one_pciex_POM(struct ppc4xx_pciex_port	*port,
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR1BAH, lah);
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR1BAL, lal);
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKH, 0x7fffffff);
+> -		/* Note that 3 here means enabled | single region */
+> -		dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKL, sa | 3);
+> +		dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKL, sa);
+>  		break;
+>  	case 1:
+>  		out_le32(mbase + PECFG_POM1LAH, pciah);
+> @@ -1582,8 +1624,7 @@ static int __init ppc4xx_setup_one_pciex_POM(struct ppc4xx_pciex_port	*port,
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR2BAH, lah);
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR2BAL, lal);
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKH, 0x7fffffff);
+> -		/* Note that 3 here means enabled | single region */
+> -		dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKL, sa | 3);
+> +		dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKL, sa);
+>  		break;
+>  	case 2:
+>  		out_le32(mbase + PECFG_POM2LAH, pciah);
+> @@ -1591,8 +1632,7 @@ static int __init ppc4xx_setup_one_pciex_POM(struct ppc4xx_pciex_port	*port,
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR3BAH, lah);
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR3BAL, lal);
+>  		dcr_write(port->dcrs, DCRO_PEGPL_OMR3MSKH, 0x7fffffff);
+> -		/* Note that 3 here means enabled | IO space !!! */
+> -		dcr_write(port->dcrs, DCRO_PEGPL_OMR3MSKL, sa | 3);
+> +		dcr_write(port->dcrs, DCRO_PEGPL_OMR3MSKL, sa);
+>  		break;
+>  	}
+
+I think you really want to check the definitions for OMRs 2 and 3 to verify that this is right.
+  
+Yours Tony
