@@ -1,23 +1,16 @@
-Return-Path: <B21989@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
-	[213.199.154.139])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E7661007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Jul 2011 12:58:11 +1000 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] Correct offset_in_page mask bits in function
-	edac_mc_handle_ce.
-Date: Thu, 14 Jul 2011 10:01:42 +0800
-Message-ID: <1310608902-14221-1-git-send-email-Shaohui.Xie@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kumar.gala@freescale.com, "Kai.Jiang" <Kai.Jiang@freescale.com>,
-	djiang@mvista.com, ptyser@xes-inc.com, dougthompson@xmission.com,
-	scottwood@freescale.com, akpm@linux-foundation.org
+Return-Path: <anton@samba.org>
+Date: Thu, 14 Jul 2011 14:35:21 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [regression] 3.0-rc boot failure -- bisected to cd4ea6ae3982
+Message-ID: <20110714143521.5fe4fab6@kryten>
+In-Reply-To: <20110714103418.7ef25b68@kryten>
+References: <20110707102107.GA16666@in.ibm.com>
+	<1310036375.3282.509.camel@twins> <20110714103418.7ef25b68@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +20,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Kai.Jiang <Kai.Jiang@freescale.com>
 
-Parameter offset_in_page in function edac_mc_handle_ce should be masked
-the higher bits above the page size, not the lower bits. The original input
-sometimes causes crash.
+> I took a quick look and we are stuck in update_group_power:
+> 
+>         do {
+>                 power += group->cpu_power;
+>                 group = group->next;
+>         } while (group != child->groups);
+> 
+> I looked at the linked list:
+> 
+> child->groups = c000007b2f74ff00
+> 
+> and dumping group as we go:
+> 
+> c000007b2f74ff00 c000007b2f760000 c000007b2fb60000 c000007b2ff60000
+> 
+> at this point we end up in a cycle and never make it back to
+> child->groups:
+> 
+> c000008b2e68ff00 c000008b2e6a0000 c000008b2eaa0000 c000008b2eea0000
+> c000009aee77ff00 c000009aee790000 c000009aeeb90000 c000009aeef90000
+> c00000bafde91800 c00000dafdf81800 c00000fafce81800 c000011afdf71800
+> c00001226e70ff00 c00001226e720000 c00001226eb20000 c00001226ef20000
+> c000008b2e68ff00
 
-Signed-off-by: Kai.Jiang <Kai.Jiang@freescale.com>
----
- drivers/edac/mpc85xx_edac.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+It looks like the group ends up in two lists. I added a BUG_ON to
+ensure we never link a group twice, and it hits.
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 38ab8e2..b048a5f 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -854,11 +854,11 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
- 		mpc85xx_mc_printk(mci, KERN_ERR, "PFN out of range!\n");
+I also printed out the cpu spans as we walk through build_sched_groups:
+
+0 1 2 3
+0 4 8 12 16 20 24 28
+0 32 64 96 128 160 192 224 256 288 320 352 384 416 448 480
+0 128 256 384
+4 5 6 7
+8 9 10 11
+12 13 14 15
+16 17 18 19
+20 21 22 23
+24 25 26 27
+28 29 30 31
+32 33 34 35
+32 36 40 44 48 52 56 60
+36 37 38 39
+40 41 42 43
+44 45 46 47
+48 49 50 51
+52 53 54 55
+56 57 58 59
+60 61 62 63
+64 65 66 67
+64 68 72 76 80 84 88 92
+68 69 70 71
+72 73 74 75
+76 77 78 79
+80 81 82 83
+84 85 86 87
+88 89 90 91
+92 93 94 95
+96 97 98 99
+96 100 104 108 112 116 120 124
+100 101 102 103
+104 105 106 107
+108 109 110 111
+112 113 114 115
+116 117 118 119
+120 121 122 123
+124 125 126 127
+128 129 130 131
+128 132 136 140 144 148 152 156
+
+Duplicates start appearing in this span:
+128 160 192 224 256 288 320 352 384 416 448 480 512 544 576 608
+
+So it looks like the overlap of the 16 entry spans
+(SD_NODES_PER_DOMAIN) is causing our problem.
+
+Anton
+
+Index: linux-2.6-work/kernel/sched.c
+===================================================================
+--- linux-2.6-work.orig/kernel/sched.c	2011-07-11
+12:48:48.251087767 +1000 +++ linux-2.6-work/kernel/sched.c
+2011-07-14 14:19:45.867094044 +1000 @@ -7021,6 +7021,7 @@
+build_sched_groups(struct sched_domain * 
+ 		cpumask_clear(sched_group_cpus(sg));
+ 		sg->cpu_power = 0;
++		BUG_ON(sg->next);
  
- 	if (err_detect & DDR_EDE_SBE)
--		edac_mc_handle_ce(mci, pfn, err_addr & PAGE_MASK,
-+		edac_mc_handle_ce(mci, pfn, err_addr & ~PAGE_MASK,
- 				  syndrome, row_index, 0, mci->ctl_name);
- 
- 	if (err_detect & DDR_EDE_MBE)
--		edac_mc_handle_ue(mci, pfn, err_addr & PAGE_MASK,
-+		edac_mc_handle_ue(mci, pfn, err_addr & ~PAGE_MASK,
- 				  row_index, mci->ctl_name);
- 
- 	out_be32(pdata->mc_vbase + MPC85XX_MC_ERR_DETECT, err_detect);
--- 
-1.6.4
+ 		for_each_cpu(j, span) {
+ 			if (get_group(j, sdd, NULL) != group)
+
+
+Anton
