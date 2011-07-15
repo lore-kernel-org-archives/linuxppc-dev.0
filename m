@@ -1,24 +1,23 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from merlin.infradead.org (merlin.infradead.org
-	[IPv6:2001:4978:20e::2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B81B6B6F62
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jul 2011 04:24:44 +1000 (EST)
-Subject: RE: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Laight <David.Laight@ACULAB.COM>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jul 2011 12:39:30 +0200
-Message-ID: <1310726370.2586.312.camel@twins>
-Mime-Version: 1.0
-Cc: tony.luck@intel.com, Shan Hai <haishan.bai@gmail.com>,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
-	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE010.bigfish.com (va3ehsobe010.messaging.microsoft.com
+	[216.32.180.30]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 68C97B6F18
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jul 2011 04:42:47 +1000 (EST)
+Date: Fri, 15 Jul 2011 13:42:32 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
+Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program exception to use one
+	dedicated exception stack
+Message-ID: <20110715134232.56373e03@schlenkerla.am.freescale.net>
+In-Reply-To: <4E1FCFEF.7070702@windriver.com>
+References: <1310383915-30543-1-git-send-email-tiejun.chen@windriver.com>
+	<CC4F4DC6-0682-4FC6-8D89-CE9AFEA7AD85@kernel.crashing.org>
+	<4E1FCFEF.7070702@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-07-15 at 11:32 +0100, David Laight wrote:
-> > The fault causing futex_atomic_cmpxchg_inatomic() is
-> > protected by pagefault_disable(), so the page fault handler has
-> > no chance to toggle the SW dirty/young tracking.
->=20
-> Perhaps that is the bug!
-> Whatever pagefault_disable() does, it shouldn't disable the
-> SW dirty/young tracking - which should only needs bits moving
-> in the page table itself (and TLB update??) rather than any
-> operations on the rest of the data areas.
->=20
-> It looks to me as though this could happen any time a page
-> is marked inaccessible by the dirty/young tracking.
-> Not just as a result of COW.
+On Fri, 15 Jul 2011 13:28:15 +0800
+tiejun.chen <tiejun.chen@windriver.com> wrote:
 
-I've thought of that as well, but couldn't find the actual code in the
-ppc fault bits. It could be it relies on vma information to know what it
-should allow due to lack of bits in the pte.
+> Kumar Gala wrote:
+> > I'm still very confused why we need a unique stack frame for kprobe/program exceptions on book-e devices.
+> 
+> Its a bug at least for Book-E.
 
-If it requires the vma, it requires mmap_sem and it thus has to avoid
-the whole thing when pagefault_disabled().
+But why only booke?  There's nothing booke-specific about the stwu
+instruction.
+
+> And if you'd like to check another topic thread,
+> "[BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu' lead to system
+> crash/freeze", you can know this story completely :)
+> 
+> This bug should not be reproduced on PPC64 with the exception prolog/endlog
+> dedicated to PPC64.
+
+What if the function you're stepping through is creating a stack frame that
+is larger than the 288 bytes that get skipped?
+
+> But I have no enough time to check other PPC32 & !BOOKE so
+> I'm not sure if we should extend this modification.
+
+Someone should.
+
+-Scott
