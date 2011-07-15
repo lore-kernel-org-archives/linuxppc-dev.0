@@ -1,14 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 15 Jul 2011 23:57:32 +1000
+Date: Fri, 15 Jul 2011 23:57:55 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] dtc: Remove unused check variable
-Message-ID: <20110715135732.GC4368@yookeroo.fritz.box>
-References: <20110628124709.GC10237@zod.rchland.ibm.com>
+Subject: Re: [PATCH v2] dtc: Remove unused variable in flat_read_mem_reserve
+Message-ID: <20110715135755.GD4368@yookeroo.fritz.box>
+References: <20110628134711.GF10237@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110628124709.GC10237@zod.rchland.ibm.com>
-Cc: Jon Loeliger <jdl@jdl.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20110628134711.GF10237@zod.rchland.ibm.com>
+Cc: jdl@jdl.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,18 +18,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 28, 2011 at 08:47:09AM -0400, Josh Boyer wrote:
-> Commit 376ab6f2 removed the old style check functionality from DTC,
-> however the check option and variable were not removed.  This leads to
-> build failures when -Werror=unused-but-set-variable is specified:
+On Tue, Jun 28, 2011 at 09:47:11AM -0400, Josh Boyer wrote:
+> The *p variable is declared and used to save inb->ptr, however p is
+> later never used.  This has been the case since commit 6c0f3676 and can
+> lead to build failures with -Werror=unused-but-set-variable:
 > 
-> 	dtc.c: In function 'main':
-> 	dtc.c:102:17: error: variable 'check' set but not used [-Werror=unused-but-set-variable]
+> 	flattree.c: In function 'flat_read_mem_reserve':
+> 	flattree.c:700:14: error: variable 'p' set but not used [-Werror=unused-but-set-variable]
 > 	cc1: all warnings being treated as errors
-> 	make: *** [dtc.o] Error 1
-> 	make: *** Waiting for unfinished jobs....
+> 	make: *** [flattree.o] Error 1
 > 
-> Remove the check variable.
+> Remove the variable.
 > 
 > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
