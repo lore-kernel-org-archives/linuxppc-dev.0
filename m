@@ -1,26 +1,21 @@
-Return-Path: <haishan.bai@gmail.com>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6E586B6F54
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from merlin.infradead.org (merlin.infradead.org
+	[IPv6:2001:4978:20e::2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A4AC21007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 20:04:59 +1000 (EST)
-Received: by qwf7 with SMTP id 7so564245qwf.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 03:04:56 -0700 (PDT)
-Message-ID: <4E20112C.6040307@gmail.com>
-Date: Fri, 15 Jul 2011 18:06:36 +0800
-From: Shan Hai <haishan.bai@gmail.com>
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
-References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	
-	<1310718056.2586.275.camel@twins> <4E1FFC7B.4000209@gmail.com>	
-	<1310719445.2586.288.camel@twins> <4E20037C.5070506@gmail.com>
-	<1310723441.2586.291.camel@twins>
-In-Reply-To: <1310723441.2586.291.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 15 Jul 2011 20:23:56 +1000 (EST)
+Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Shan Hai <haishan.bai@gmail.com>
+In-Reply-To: <1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jul 2011 12:23:38 +0200
+Message-ID: <1310725418.2586.309.camel@twins>
+Mime-Version: 1.0
 Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
 	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
 	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
@@ -33,32 +28,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2011 05:50 PM, Peter Zijlstra wrote:
-> On Fri, 2011-07-15 at 17:08 +0800, Shan Hai wrote:
->> The whole scenario should be,
->> - the child process triggers a page fault at the first time access to
->>       the lock, and it got its own writable page, but its *clean* for
->>       the reason just for checking the status of the lock.
->>       I am sorry for above "unbreakable COW".
->> - the futex_lock_pi() is invoked because of the lock contention,
->>       and the futex_atomic_cmpxchg_inatomic() tries to get the lock,
->>       it found out the lock is free so tries to write to the lock for
->>       reservation, a page fault occurs, because the page is read only
->>       for kernel(e500 specific), and returns -EFAULT to the caller
->> - the fault_in_user_writeable() tries to fix the fault,
->>       but from the get_user_pages() view everything is ok, because
->>       the COW was already broken, retry futex_lock_pi_atomic()
-> but that's a bug right there, gup(.write=1) _should_ be a complete write
-> fault, and as such toggle your sw dirty/young tracking.
->
+On Fri, 2011-07-15 at 16:07 +0800, Shan Hai wrote:
+> The kernel has no write permission on COW pages by default on e500 core, =
+this
+> will cause endless loop in futex_lock_pi, because futex code assumes the =
+kernel
+> has write permission on COW pages. Grant write permission to the kernel o=
+n COW
+> pages when access violation page fault occurs.
+>=20
+> Signed-off-by: Shan Hai <haishan.bai@gmail.com>
+> ---
+>  arch/powerpc/include/asm/futex.h |   11 ++++++++++-
+>  arch/powerpc/include/asm/tlb.h   |   25 +++++++++++++++++++++++++
+>  2 files changed, 35 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/futex.h b/arch/powerpc/include/asm/=
+futex.h
+> index c94e4a3..54c3e74 100644
+> --- a/arch/powerpc/include/asm/futex.h
+> +++ b/arch/powerpc/include/asm/futex.h
+> @@ -8,6 +8,7 @@
+>  #include <asm/errno.h>
+>  #include <asm/synch.h>
+>  #include <asm/asm-compat.h>
+> +#include <asm/tlb.h>
+> =20
+>  #define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
+>    __asm__ __volatile ( \
+> @@ -113,7 +114,15 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user =
+*uaddr,
+>          : "cc", "memory");
+> =20
+>  	*uval =3D prev;
+> -        return ret;
+> +
+> +	/* Futex assumes the kernel has permission to write to
+> +	 * COW pages, grant the kernel write permission on COW
+> +	 * pages because it has none by default.
+> +	 */
+> +	if (ret =3D=3D -EFAULT)
+> +		__tlb_fixup_write_permission(current->mm, (unsigned long)uaddr);
+> +
+> +	return ret;
+>  }
+> =20
+>  #endif /* __KERNEL__ */
+> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tl=
+b.h
+> index e2b428b..3863c6a 100644
+> --- a/arch/powerpc/include/asm/tlb.h
+> +++ b/arch/powerpc/include/asm/tlb.h
+> @@ -45,5 +45,30 @@ static inline void __tlb_remove_tlb_entry(struct mmu_g=
+ather *tlb, pte_t *ptep,
+>  #endif
+>  }
+> =20
+> +/* Grant write permission to the kernel on a page. */
+> +static inline void __tlb_fixup_write_permission(struct mm_struct *mm,
+> +						unsigned long address)
+> +{
+> +#if defined(CONFIG_FSL_BOOKE)
+> +	/* Grant write permission to the kernel on a page by setting TLB.SW
+> +	 * bit, the bit setting operation is tricky here, calling
+> +	 * handle_mm_fault with FAULT_FLAG_WRITE causes _PAGE_DIRTY bit of
+> +	 * the pte to be set, the _PAGE_DIRTY of the pte is translated into
+> +	 * TLB.SW on Powerpc e500 core.
+> +	 */
+> +
+> +	struct vm_area_struct *vma;
+> +
+> +	vma =3D find_vma(mm, address);
 
-The fault causing futex_atomic_cmpxchg_inatomic() is
-protected by pagefault_disable(), so the page fault handler has
-no chance to toggle the SW dirty/young tracking.
+Uhm, find_vma() needs mmap_sem, and futex_atomic_cmpxchg_inatomic() is
+most certainly not called with that lock held.
 
-Thanks
-Shan Hai
+> +	if (likely(vma)) {
+> +		/* only fixup present page */
+> +		if (follow_page(vma, address, FOLL_WRITE)) {
+> +			handle_mm_fault(mm, vma, address, FAULT_FLAG_WRITE);
 
->> - futex_lock_pi_atomic() -->  futex_atomic_cmpxchg_inatomic(),
->>       another write protection page fault
->> - infinite loop
+So how can this toggle your sw dirty/young tracking, that's pretty much
+what gup(.write=3D1) does too!
+
+> +			flush_tlb_page(vma, address);
+> +		}
+> +	}
+> +#endif
+> +}
+> +
+>  #endif /* __KERNEL__ */
+>  #endif /* __ASM_POWERPC_TLB_H */
