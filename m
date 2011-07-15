@@ -1,25 +1,22 @@
-Return-Path: <haishan.bai@gmail.com>
-Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
-	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0592B100873
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from merlin.infradead.org (merlin.infradead.org
+	[IPv6:2001:4978:20e::2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 63547B6F62
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 18:05:56 +1000 (EST)
-Received: by qyk29 with SMTP id 29so715828qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 01:05:53 -0700 (PDT)
-From: Shan Hai <haishan.bai@gmail.com>
-To: benh@kernel.crashing.org,
-	paulus@samba.org
-Subject: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
-Date: Fri, 15 Jul 2011 16:07:18 +0800
-Message-Id: <1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+	Fri, 15 Jul 2011 18:21:18 +1000 (EST)
+Subject: Re: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Shan Hai <haishan.bai@gmail.com>
 In-Reply-To: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
 References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
-Cc: tony.luck@intel.com, a.p.zijlstra@chello.nl,
-	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
-	cmetcalf@tilera.com, dhowells@redhat.com, tglx@linutronix.de,
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jul 2011 10:20:56 +0200
+Message-ID: <1310718056.2586.275.camel@twins>
+Mime-Version: 1.0
+Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
 	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,80 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel has no write permission on COW pages by default on e500 core, this
-will cause endless loop in futex_lock_pi, because futex code assumes the kernel
-has write permission on COW pages. Grant write permission to the kernel on COW
-pages when access violation page fault occurs.
+On Fri, 2011-07-15 at 16:07 +0800, Shan Hai wrote:
+>=20
+> The following test case could reveal a bug in the futex_lock_pi()
+>=20
+> BUG: On FUTEX_LOCK_PI, there is a infinite loop in the futex_lock_pi()=
+=20
+>         on Powerpc e500 core.
+> Cause: The linux kernel on the e500 core has no write permission on
+>         the COW page, refer the head comment of the following test code.
+> =20
+> ftrace on test case:
+> [000]   353.990181: futex_lock_pi_atomic <-futex_lock_pi
+> [000]   353.990185: cmpxchg_futex_value_locked <-futex_lock_pi_atomic
+> [snip]
+> [000]   353.990191: do_page_fault <-handle_page_fault
+> [000]   353.990192: bad_page_fault <-handle_page_fault
+> [000]   353.990193: search_exception_tables <-bad_page_fault
+> [snip]
+> [000]   353.990199: get_user_pages <-fault_in_user_writeable
+> [snip]
+> [000]   353.990208: mark_page_accessed <-follow_page
+> [000]   353.990222: futex_lock_pi_atomic <-futex_lock_pi
+> [snip]
+> [000]   353.990230: cmpxchg_futex_value_locked <-futex_lock_pi_atomic
+> [ a loop occures here ]
+>=20
 
-Signed-off-by: Shan Hai <haishan.bai@gmail.com>
----
- arch/powerpc/include/asm/futex.h |   11 ++++++++++-
- arch/powerpc/include/asm/tlb.h   |   25 +++++++++++++++++++++++++
- 2 files changed, 35 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/futex.h b/arch/powerpc/include/asm/futex.h
-index c94e4a3..54c3e74 100644
---- a/arch/powerpc/include/asm/futex.h
-+++ b/arch/powerpc/include/asm/futex.h
-@@ -8,6 +8,7 @@
- #include <asm/errno.h>
- #include <asm/synch.h>
- #include <asm/asm-compat.h>
-+#include <asm/tlb.h>
- 
- #define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
-   __asm__ __volatile ( \
-@@ -113,7 +114,15 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
-         : "cc", "memory");
- 
- 	*uval = prev;
--        return ret;
-+
-+	/* Futex assumes the kernel has permission to write to
-+	 * COW pages, grant the kernel write permission on COW
-+	 * pages because it has none by default.
-+	 */
-+	if (ret == -EFAULT)
-+		__tlb_fixup_write_permission(current->mm, (unsigned long)uaddr);
-+
-+	return ret;
- }
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-index e2b428b..3863c6a 100644
---- a/arch/powerpc/include/asm/tlb.h
-+++ b/arch/powerpc/include/asm/tlb.h
-@@ -45,5 +45,30 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
- #endif
- }
- 
-+/* Grant write permission to the kernel on a page. */
-+static inline void __tlb_fixup_write_permission(struct mm_struct *mm,
-+						unsigned long address)
-+{
-+#if defined(CONFIG_FSL_BOOKE)
-+	/* Grant write permission to the kernel on a page by setting TLB.SW
-+	 * bit, the bit setting operation is tricky here, calling
-+	 * handle_mm_fault with FAULT_FLAG_WRITE causes _PAGE_DIRTY bit of
-+	 * the pte to be set, the _PAGE_DIRTY of the pte is translated into
-+	 * TLB.SW on Powerpc e500 core.
-+	 */
-+
-+	struct vm_area_struct *vma;
-+
-+	vma = find_vma(mm, address);
-+	if (likely(vma)) {
-+		/* only fixup present page */
-+		if (follow_page(vma, address, FOLL_WRITE)) {
-+			handle_mm_fault(mm, vma, address, FAULT_FLAG_WRITE);
-+			flush_tlb_page(vma, address);
-+		}
-+	}
-+#endif
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_TLB_H */
--- 
-1.7.1
+But but but but, that get_user_pages(.write=3D1, .force=3D0) should result
+in a COW break, getting our own writable page.
+
+What is this e500 thing smoking that this doesn't work?
