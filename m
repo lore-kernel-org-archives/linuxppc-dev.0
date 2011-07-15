@@ -3,24 +3,23 @@ Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
 	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 365EDB6F54
+	by ozlabs.org (Postfix) with ESMTPS id 44C49B6F00
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jul 2011 01:19:16 +1000 (EST)
-Received: by iwg8 with SMTP id 8so1226303iwg.38
+	Sat, 16 Jul 2011 01:32:53 +1000 (EST)
+Received: by iwg8 with SMTP id 8so1236537iwg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 08:19:13 -0700 (PDT)
-Message-ID: <4E205A63.90401@gmail.com>
-Date: Fri, 15 Jul 2011 11:18:59 -0400
+	Fri, 15 Jul 2011 08:32:50 -0700 (PDT)
+Message-ID: <4E205D96.7010109@gmail.com>
+Date: Fri, 15 Jul 2011 11:32:38 -0400
 From: Shan Hai <haishan.bai@gmail.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
-References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	
-	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
-	<1310725418.2586.309.camel@twins>
-In-Reply-To: <1310725418.2586.309.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
 	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
 	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,99 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2011 06:23 AM, Peter Zijlstra wrote:
-> On Fri, 2011-07-15 at 16:07 +0800, Shan Hai wrote:
->> The kernel has no write permission on COW pages by default on e500 core, this
->> will cause endless loop in futex_lock_pi, because futex code assumes the kernel
->> has write permission on COW pages. Grant write permission to the kernel on COW
->> pages when access violation page fault occurs.
->>
->> Signed-off-by: Shan Hai<haishan.bai@gmail.com>
->> ---
->>   arch/powerpc/include/asm/futex.h |   11 ++++++++++-
->>   arch/powerpc/include/asm/tlb.h   |   25 +++++++++++++++++++++++++
->>   2 files changed, 35 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/futex.h b/arch/powerpc/include/asm/futex.h
->> index c94e4a3..54c3e74 100644
->> --- a/arch/powerpc/include/asm/futex.h
->> +++ b/arch/powerpc/include/asm/futex.h
->> @@ -8,6 +8,7 @@
->>   #include<asm/errno.h>
->>   #include<asm/synch.h>
->>   #include<asm/asm-compat.h>
->> +#include<asm/tlb.h>
->>
->>   #define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
->>     __asm__ __volatile ( \
->> @@ -113,7 +114,15 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
->>           : "cc", "memory");
->>
->>   	*uval = prev;
->> -        return ret;
->> +
->> +	/* Futex assumes the kernel has permission to write to
->> +	 * COW pages, grant the kernel write permission on COW
->> +	 * pages because it has none by default.
->> +	 */
->> +	if (ret == -EFAULT)
->> +		__tlb_fixup_write_permission(current->mm, (unsigned long)uaddr);
->> +
->> +	return ret;
->>   }
->>
->>   #endif /* __KERNEL__ */
->> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
->> index e2b428b..3863c6a 100644
->> --- a/arch/powerpc/include/asm/tlb.h
->> +++ b/arch/powerpc/include/asm/tlb.h
->> @@ -45,5 +45,30 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
->>   #endif
->>   }
->>
->> +/* Grant write permission to the kernel on a page. */
->> +static inline void __tlb_fixup_write_permission(struct mm_struct *mm,
->> +						unsigned long address)
->> +{
->> +#if defined(CONFIG_FSL_BOOKE)
->> +	/* Grant write permission to the kernel on a page by setting TLB.SW
->> +	 * bit, the bit setting operation is tricky here, calling
->> +	 * handle_mm_fault with FAULT_FLAG_WRITE causes _PAGE_DIRTY bit of
->> +	 * the pte to be set, the _PAGE_DIRTY of the pte is translated into
->> +	 * TLB.SW on Powerpc e500 core.
->> +	 */
->> +
->> +	struct vm_area_struct *vma;
->> +
->> +	vma = find_vma(mm, address);
-> Uhm, find_vma() needs mmap_sem, and futex_atomic_cmpxchg_inatomic() is
-> most certainly not called with that lock held.
+On 07/15/2011 06:32 AM, David Laight wrote:
+>
+>> The fault causing futex_atomic_cmpxchg_inatomic() is
+>> protected by pagefault_disable(), so the page fault handler has
+>> no chance to toggle the SW dirty/young tracking.
+> Perhaps that is the bug!
+> Whatever pagefault_disable() does, it shouldn't disable the
+> SW dirty/young tracking - which should only needs bits moving
+> in the page table itself (and TLB update??) rather than any
+> operations on the rest of the data areas.
+>
+> It looks to me as though this could happen any time a page
+> is marked inaccessible by the dirty/young tracking.
+> Not just as a result of COW.
 >
 
-My fault, that will be fixed in the V2 patch.
+I agree with you, the problem could be triggered by accessing
+any user space page which has kernel read only permission
+in the page fault disabled context, the problem also affects
+architectures which depend on SW dirty/young tracking as
+stated by Benjamin in this thread.
 
->> +	if (likely(vma)) {
->> +		/* only fixup present page */
->> +		if (follow_page(vma, address, FOLL_WRITE)) {
->> +			handle_mm_fault(mm, vma, address, FAULT_FLAG_WRITE);
-> So how can this toggle your sw dirty/young tracking, that's pretty much
-> what gup(.write=1) does too!
->
-
-because of the kernel read only permission of the page is transparent
-to the follow_page(),  the handle_mm_fault() is not to be activated
-in the __get_use_pages(), so the gup(.write=1) could not help to fixup
-the write permission.
+In the e500 case, the commit 6cfd8990e27d3a491c1c605d6cbc18a46ae51fef
+removed the write permission fixup from TLB miss handlers and left it to
+generic code, so it might be right time to fixup the write permission here
+in the generic code.
 
 
 Thanks
 Shan Hai
 
->> +			flush_tlb_page(vma, address);
->> +		}
->> +	}
->> +#endif
->> +}
->> +
->>   #endif /* __KERNEL__ */
->>   #endif /* __ASM_POWERPC_TLB_H */
+> 	David
+>
+>
