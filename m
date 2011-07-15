@@ -1,29 +1,23 @@
-Return-Path: <B21989@freescale.com>
-Received: from VA3EHSOBE007.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 322761007D1
+Return-Path: <haishan.bai@gmail.com>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F270B6F67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 16:23:58 +1000 (EST)
-From: Xie Shaohui-B21989 <B21989@freescale.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: RE: [PATCH] Correct offset_in_page mask bits in function
-	edac_mc_handle_ce.
-Date: Fri, 15 Jul 2011 06:21:24 +0000
-Message-ID: <267A3B246C22C34A8E574051858E0770107372@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1310608902-14221-1-git-send-email-Shaohui.Xie@freescale.com>
-	<20110714145042.9d2e88de.akpm@linux-foundation.org>
-In-Reply-To: <20110714145042.9d2e88de.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"djiang@mvista.com" <djiang@mvista.com>,
-	"ptyser@xes-inc.com" <ptyser@xes-inc.com>,
-	Jiang Kai-B18973 <B18973@freescale.com>,
-	"dougthompson@xmission.com" <dougthompson@xmission.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	Fri, 15 Jul 2011 18:05:48 +1000 (EST)
+Received: by qwf7 with SMTP id 7so524685qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Jul 2011 01:05:45 -0700 (PDT)
+From: Shan Hai <haishan.bai@gmail.com>
+To: benh@kernel.crashing.org,
+	paulus@samba.org
+Subject: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
+Date: Fri, 15 Jul 2011 16:07:17 +0800
+Message-Id: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
+Cc: tony.luck@intel.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+	cmetcalf@tilera.com, dhowells@redhat.com, tglx@linutronix.de,
+	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,70 +27,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The following test case could reveal a bug in the futex_lock_pi()
+
+BUG: On FUTEX_LOCK_PI, there is a infinite loop in the futex_lock_pi() 
+	on Powerpc e500 core.
+Cause: The linux kernel on the e500 core has no write permission on
+	the COW page, refer the head comment of the following test code.
+ 
+ftrace on test case:
+[000]   353.990181: futex_lock_pi_atomic <-futex_lock_pi
+[000]   353.990185: cmpxchg_futex_value_locked <-futex_lock_pi_atomic
+[snip]
+[000]   353.990191: do_page_fault <-handle_page_fault
+[000]   353.990192: bad_page_fault <-handle_page_fault
+[000]   353.990193: search_exception_tables <-bad_page_fault
+[snip]
+[000]   353.990199: get_user_pages <-fault_in_user_writeable
+[snip]
+[000]   353.990208: mark_page_accessed <-follow_page
+[000]   353.990222: futex_lock_pi_atomic <-futex_lock_pi
+[snip]
+[000]   353.990230: cmpxchg_futex_value_locked <-futex_lock_pi_atomic
+[ a loop occures here ]
 
 
->-----Original Message-----
->From: Andrew Morton [mailto:akpm@linux-foundation.org]
->Sent: Friday, July 15, 2011 5:51 AM
->To: Xie Shaohui-B21989
->Cc: linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Wood Scott-B07421;
->ptyser@xes-inc.com; djiang@mvista.com; dougthompson@xmission.com; Jiang
->Kai-B18973
->Subject: Re: [PATCH] Correct offset_in_page mask bits in function
->edac_mc_handle_ce.
->
->On Thu, 14 Jul 2011 10:01:42 +0800
->Shaohui Xie <Shaohui.Xie@freescale.com> wrote:
->
->> From: Kai.Jiang <Kai.Jiang@freescale.com>
->>
->> Parameter offset_in_page in function edac_mc_handle_ce should be
->> masked the higher bits above the page size, not the lower bits. The
->> original input sometimes causes crash.
->>
->> Signed-off-by: Kai.Jiang <Kai.Jiang@freescale.com>
->> ---
->>  drivers/edac/mpc85xx_edac.c |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
->> index 38ab8e2..b048a5f 100644
->> --- a/drivers/edac/mpc85xx_edac.c
->> +++ b/drivers/edac/mpc85xx_edac.c
->> @@ -854,11 +854,11 @@ static void mpc85xx_mc_check(struct mem_ctl_info
->*mci)
->>  		mpc85xx_mc_printk(mci, KERN_ERR, "PFN out of range!\n");
->>
->>  	if (err_detect & DDR_EDE_SBE)
->> -		edac_mc_handle_ce(mci, pfn, err_addr & PAGE_MASK,
->> +		edac_mc_handle_ce(mci, pfn, err_addr & ~PAGE_MASK,
->>  				  syndrome, row_index, 0, mci->ctl_name);
->>
->>  	if (err_detect & DDR_EDE_MBE)
->> -		edac_mc_handle_ue(mci, pfn, err_addr & PAGE_MASK,
->> +		edac_mc_handle_ue(mci, pfn, err_addr & ~PAGE_MASK,
->>  				  row_index, mci->ctl_name);
->>
->>  	out_be32(pdata->mc_vbase + MPC85XX_MC_ERR_DETECT, err_detect);
->
->The patch should have had your Signed-off-by:, as described in
->Documentation/SubmittingPatches.  I added your s-o-b to my copy - please
->ack this.
-[Xie Shaohui] OK, thank you.
+/* 
+ * A test case for revealing an infinite loop in the futex_lock_pi().
+ * - there are 2 processes, parent and a child
+ * - the parent process allocates and initializes a pthread_mutex MUTEX in a 
+ *	shared memory region
+ * - the parent process holds the MUTEX and do long time computing
+ * - the child process tries to hold the MUTEX during the parent holding it and 
+ *	traps into the kernel for waiting on the MUTEX because of contention
+ * - the kernel loops in futex_lock_pi()
+ * - result of 'top' command reveals that the system usage of CPU is 100%
+ */
 
->
->From the description it appears to me that this fix should be backported
->into 2.6.39.x and earlier.  Do you agree?
-[Xie Shaohui] Actually this patch was created based on 2.6.32, it can be ap=
-plied=20
-to 2.6.39 and 3.0 without any change.
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
+#include <pthread.h>
+#include <string.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/mman.h>
 
->
->The way to indicate this intention is to add "Cc: <stable@kernel.org>"
->to the changelog.  I added that tag to my copy of this patch.
+enum { SHM_INIT, SHM_GET };
+enum { PARENT, CHILD };
 
-[Xie Shaohui] OK, thank you.
+#define FIXED_MMAP_ADDR 0x20000000
+#define MMAP_SIZE	0x2000000
 
+static int shmid;
+static char shm_name[100];
+static int sleep_period = 100000;
 
-Best Regards,=20
-Shaohui Xie
+void * shmem_init(int flag)
+{
+	int start = FIXED_MMAP_ADDR;
+	int memory_size = MMAP_SIZE;
+	int mode = 0666;
+	void *addr;
+	int ret;
+
+	sprintf(shm_name, "/shmem_1234");
+
+	shmid = shm_open (shm_name, O_RDWR | O_EXCL | O_CREAT | O_TRUNC, mode);
+
+	if (shmid < 0) {
+    		if (errno == EEXIST) {
+			printf ("shm_open: %s\n", strerror(errno)); 
+      			shmid = shm_open (shm_name, O_RDWR, mode);
+		} else {
+    			printf("failed to shm_open, err=%s\n", strerror(errno));
+			return NULL;
+  		}
+	}
+
+  	ret = fcntl (shmid, F_SETFD, FD_CLOEXEC);
+  	if (ret < 0) {
+    		printf("fcntl: %s\n", strerror(errno));
+		return NULL;
+  	}
+
+	ret = ftruncate (shmid, memory_size);
+	if (ret < 0) {
+    		printf("ftruncate: %s\n", strerror(errno));
+		return NULL;
+  	}
+
+	addr = mmap ((void *)start, memory_size, PROT_READ | PROT_WRITE, 
+			MAP_SHARED | MAP_FIXED, shmid, 0);
+
+  	if (addr == MAP_FAILED) {
+		printf ("mmap: %s\n", strerror(errno)); 
+    		close (shmid);
+    		shm_unlink (shm_name);
+		return NULL;
+  	}
+	
+	if (flag == SHM_INIT)
+		memset(addr, 0, memory_size);
+	
+	return (void *)start;
+}
+
+pthread_mutex_t * shmem_mutex_init(int flag)
+{
+	pthread_mutex_t * pmutex = (pthread_mutex_t *)shmem_init(flag);
+	pthread_mutexattr_t attr;
+
+	if (flag == SHM_INIT) {
+		pthread_mutexattr_init (&attr);
+		pthread_mutexattr_setpshared (&attr, PTHREAD_PROCESS_SHARED);
+		pthread_mutexattr_setprotocol (&attr, PTHREAD_PRIO_INHERIT);
+		pthread_mutexattr_setrobust_np (&attr, 
+						PTHREAD_MUTEX_STALLED_NP);
+		pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_ERRORCHECK);
+		if (pthread_mutex_init (pmutex, &attr) != 0) {
+    			printf("Init mutex failed, err=%s\n", strerror(errno));
+			pthread_mutexattr_destroy (&attr);
+			return NULL;
+		}
+	}
+
+	return pmutex;
+}
+
+void long_running_task(int flag)
+{
+	static int counter = 0;
+
+	if (flag == PARENT) 
+		usleep(5*sleep_period);
+	else
+		usleep(3*sleep_period);
+
+	counter = (counter + 1) % 100;
+	printf("%d: completed %d computing\n", getpid(), counter);
+}
+
+void sig_handler(int signum)
+{
+	close(shmid);
+	shm_unlink(shm_name);
+	
+	exit(0);
+}
+
+int main(int argc, char *argv[])
+{
+	pthread_mutex_t *mutex_parent, *mutex_child;
+
+	signal(SIGUSR1, sig_handler);
+
+	if (fork()) { /* parent process */
+		if ((mutex_parent = shmem_mutex_init(SHM_INIT)) == NULL) {
+			printf("failed to get the shmem_mutex\n");
+			exit(-1);
+		}
+	
+		while (1) {
+			printf("%d: try to hold the lock\n", getpid()); 
+			pthread_mutex_lock(mutex_parent);
+			printf("%d: got the lock\n", getpid()); 
+			long_running_task(PARENT);
+			pthread_mutex_unlock(mutex_parent);
+			printf("%d: released the lock\n", getpid());
+		}
+	} else { /* child process */
+		usleep(sleep_period);
+		if ((mutex_child = shmem_mutex_init(SHM_GET)) == NULL) {
+			printf("failed to get the shmem_mutex\n");
+			exit(-1);
+		}
+	
+		while (1) {
+			printf("%d: try to hold the lock\n", getpid()); 
+			pthread_mutex_lock(mutex_child);
+			printf("%d: got the lock\n", getpid()); 
+			long_running_task(CHILD);
+			pthread_mutex_unlock(mutex_child);
+			printf("%d: released the lock\n", getpid());
+		}
+	}	
+
+	return 0;
+}
+
+---
+ arch/powerpc/include/asm/futex.h |   11 ++++++++++-
+ arch/powerpc/include/asm/tlb.h   |   25 +++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 1 deletions(-)
