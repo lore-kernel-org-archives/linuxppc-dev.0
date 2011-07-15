@@ -1,21 +1,24 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 190D7B6F68
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 87C47B6F00
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jul 2011 08:29:49 +1000 (EST)
-Received: by vws20 with SMTP id 20so1306975vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 15:29:45 -0700 (PDT)
-MIME-Version: 1.0
-Date: Fri, 15 Jul 2011 17:29:45 -0500
-Message-ID: <CAKTLLVSZ1ju5e-_Hqi9i4bYMsd1nxS3gTP9Q8ecoe-zxdZDOAA@mail.gmail.com>
-Subject: Powermac11,2
-From: kevin diggs <diggskevin38@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 16 Jul 2011 09:47:51 +1000 (EST)
+Subject: RE: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Laight <David.Laight@ACULAB.COM>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 16 Jul 2011 09:47:09 +1000
+Message-ID: <1310773629.25044.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
+	cmetcalf@tilera.com, dhowells@redhat.com, paulus@samba.org,
+	tglx@linutronix.de, walken@google.com,
+	linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,14 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, 2011-07-15 at 11:32 +0100, David Laight wrote:
+> > The fault causing futex_atomic_cmpxchg_inatomic() is
+> > protected by pagefault_disable(), so the page fault handler has
+> > no chance to toggle the SW dirty/young tracking.
+> 
+> Perhaps that is the bug!
+> Whatever pagefault_disable() does, it shouldn't disable the
+> SW dirty/young tracking - which should only needs bits moving
+> in the page table itself (and TLB update??) rather than any
+> operations on the rest of the data areas.
+> 
+> It looks to me as though this could happen any time a page
+> is marked inaccessible by the dirty/young tracking.
+> Not just as a result of COW.
 
-Anyone know what it means when a dual core dual cpu (total 4 cores)
-beeps three times on startup? The white power led also blinks 3 times
-every few seconds.
+Except that for many architectures, there's a hard wired assumption that
+the state of the PTEs won't change at interrupt time.
 
-The machine in question is a recent acquisition. I have got it to boot once.
+If we allow the "atomic" user accesses, we'll break that rule (think
+about perf backtraces for example), and so would have to at -least-
+disable interrupts around all the PTE accessors, or use atomic ops,
+which will slow things down all over the place.
 
-Thanks!
-
-kevin
+Cheers,
+Ben.
