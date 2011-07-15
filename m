@@ -1,23 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE010.bigfish.com (va3ehsobe010.messaging.microsoft.com
-	[216.32.180.30]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 68C97B6F18
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jul 2011 04:42:47 +1000 (EST)
-Date: Fri, 15 Jul 2011 13:42:32 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program exception to use one
-	dedicated exception stack
-Message-ID: <20110715134232.56373e03@schlenkerla.am.freescale.net>
-In-Reply-To: <4E1FCFEF.7070702@windriver.com>
-References: <1310383915-30543-1-git-send-email-tiejun.chen@windriver.com>
-	<CC4F4DC6-0682-4FC6-8D89-CE9AFEA7AD85@kernel.crashing.org>
-	<4E1FCFEF.7070702@windriver.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
+	[74.125.83.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 81104B6F54
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 16 Jul 2011 06:08:06 +1000 (EST)
+Received: by pvg18 with SMTP id 18so1639802pvg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Jul 2011 13:08:03 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Fri, 15 Jul 2011 14:08:01 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] powerpc/5200: add GPIO functions for simple interrupt
+	GPIOs
+Message-ID: <20110715200801.GJ2833@ponder.secretlab.ca>
+References: <1306142730-7528-1-git-send-email-agust@denx.de>
+	<20110706175245.GL5805@ponder.secretlab.ca>
+	<20110709121409.4ee9249e@wker>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110709121409.4ee9249e@wker>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Jul 2011 13:28:15 +0800
-tiejun.chen <tiejun.chen@windriver.com> wrote:
-
-> Kumar Gala wrote:
-> > I'm still very confused why we need a unique stack frame for kprobe/program exceptions on book-e devices.
+On Sat, Jul 09, 2011 at 12:14:09PM +0200, Anatolij Gustschin wrote:
+> On Wed, 6 Jul 2011 11:52:45 -0600
+> Grant Likely <grant.likely@secretlab.ca> wrote:
 > 
-> Its a bug at least for Book-E.
-
-But why only booke?  There's nothing booke-specific about the stwu
-instruction.
-
-> And if you'd like to check another topic thread,
-> "[BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu' lead to system
-> crash/freeze", you can know this story completely :)
+> > On Mon, May 23, 2011 at 11:25:30AM +0200, Anatolij Gustschin wrote:
+> > > The mpc52xx_gpio driver currently supports 8 wakeup GPIOs and 32
+> > > simple GPIOs. Extend it to also support GPIO function of 8 simple
+> > > interrupt GPIOs controlled in the standard GPIO register module.
+> > > 
+> > > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> > > ---
+> > >  arch/powerpc/platforms/52xx/mpc52xx_gpio.c |  117 ++++++++++++++++++++++++++++
+> > 
+> > I don't want to merge more open coded MMIO gpio driver code.  This whole driver really needs to be converted to use GENERIC_GPIO.
 > 
-> This bug should not be reproduced on PPC64 with the exception prolog/endlog
-> dedicated to PPC64.
+> I'm not sure I understand what you mean. Do you mean
+> the conversion to drop of_mm_* stuff?
 
-What if the function you're stepping through is creating a stack frame that
-is larger than the 288 bytes that get skipped?
+No, I mean conversion to use the generic gpio register access
+functions instead of creating new ones.
 
-> But I have no enough time to check other PPC32 & !BOOKE so
-> I'm not sure if we should extend this modification.
-
-Someone should.
-
--Scott
+g.
