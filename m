@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8E55B6F67
+	by ozlabs.org (Postfix) with ESMTPS id 2552AB6F18
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jul 2011 19:07:37 +1000 (EST)
+	Fri, 15 Jul 2011 19:13:50 +1000 (EST)
 Subject: Re: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: MailingLists <haishan.bai@gmail.com>
-In-Reply-To: <4E1FFC7B.4000209@gmail.com>
+To: Shan Hai <haishan.bai@gmail.com>
+In-Reply-To: <4E20037C.5070506@gmail.com>
 References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
 	<1310718056.2586.275.camel@twins>  <4E1FFC7B.4000209@gmail.com>
+	<1310719445.2586.288.camel@twins>  <4E20037C.5070506@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jul 2011 19:07:15 +1000
-Message-ID: <1310720835.4968.311.camel@pasglop>
+Date: Fri, 15 Jul 2011 19:12:56 +1000
+Message-ID: <1310721176.4968.316.camel@pasglop>
 Mime-Version: 1.0
 Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
@@ -28,26 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-07-15 at 16:38 +0800, MailingLists wrote:
-> A page could be set to read only by the kernel (supervisor in the
-> powerpc
-> literature) on the e500, and that's what the kernel do. Set
-> SW(supervisor
-> write) bit in the TLB entry to grant write permission to the kernel on
-> a
-> page.
-> 
-> And further the SW bit is set according to the DIRTY flag of the PTE,
-> PTE.DIRTY is set in the do_page_fault(), the futex_lock_pi() disabled
-> page fault, the PTE.DIRTY never can be set, so do the SW bit,
-> unbreakable
-> COW occurred, infinite loop followed. 
+On Fri, 2011-07-15 at 17:08 +0800, Shan Hai wrote:
+> The whole scenario should be,
+> - the child process triggers a page fault at the first time access to
+>      the lock, and it got its own writable page, but its *clean* for
+>      the reason just for checking the status of the lock.
+>      I am sorry for above "unbreakable COW".
+> - the futex_lock_pi() is invoked because of the lock contention,
+>      and the futex_atomic_cmpxchg_inatomic() tries to get the lock,
+>      it found out the lock is free so tries to write to the lock for
+>      reservation, a page fault occurs, because the page is read only
+>      for kernel(e500 specific), and returns -EFAULT to the caller
 
-That would be it ... the SW dirty and young tracking relies on faults to
-fixup things in handle_pte_fault(). If the "disable page fault" thingy
-happens before we get there, then we have a pretty nasty bug. Note that
-this will hit more than just e500 (and in fact any architecture that
-relies on SW to do dirty and young tracking).
+There is nothing e500 specific about user read only pages being read
+only for kernel. All architectures behave the same way here afaik.
+
+_However_ there is something not totally x86-like in the fact that we
+require handle_mm_fault() to deal with dirty and young tracking, which
+means that we -will- fault for a non-dirty writeable page or for any
+non-young page. It's quite possible that the page fault disabling occurs
+before that and thus breaks those architectures (it's not only e500 and
+afaik not only powerpc) while x86 works fine due to HW update of dirty
+and young.
+
+It might be something to look into.
 
 Cheers,
 Ben.
+
+> - the fault_in_user_writeable() tries to fix the fault,
+>      but from the get_user_pages() view everything is ok, because
+>      the COW was already broken, retry futex_lock_pi_atomic()
+> - futex_lock_pi_atomic() --> futex_atomic_cmpxchg_inatomic(),
+>      another write protection page fault
+> - infinite loop
+> 
+> 
