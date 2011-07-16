@@ -1,29 +1,29 @@
 Return-Path: <haishan.bai@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EABB1B6F7E
+	by ozlabs.org (Postfix) with ESMTPS id AA093B6F82
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 17 Jul 2011 01:03:43 +1000 (EST)
-Received: by iwg8 with SMTP id 8so1913810iwg.38
+	Sun, 17 Jul 2011 01:36:35 +1000 (EST)
+Received: by iyn35 with SMTP id 35so1945131iyn.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jul 2011 08:03:40 -0700 (PDT)
-Message-ID: <4E21A841.9010005@gmail.com>
-Date: Sat, 16 Jul 2011 11:03:29 -0400
+	Sat, 16 Jul 2011 08:36:32 -0700 (PDT)
+Message-ID: <4E21AFF3.20607@gmail.com>
+Date: Sat, 16 Jul 2011 11:36:19 -0400
 From: Shan Hai <haishan.bai@gmail.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>	
-	<4E205D96.7010109@gmail.com> <1310775649.25044.5.camel@pasglop>
-In-Reply-To: <1310775649.25044.5.camel@pasglop>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
+References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>	
+	<1310725418.2586.309.camel@twins> <4E205A63.90401@gmail.com>
+	<1310743477.2586.358.camel@twins>
+In-Reply-To: <1310743477.2586.358.camel@twins>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	dhowells@redhat.com, David Laight <David.Laight@ACULAB.COM>,
-	paulus@samba.org, tglx@linutronix.de, walken@google.com,
-	linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
+	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,56 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2011 08:20 PM, Benjamin Herrenschmidt wrote:
-> On Fri, 2011-07-15 at 11:32 -0400, Shan Hai wrote:
->> I agree with you, the problem could be triggered by accessing
->> any user space page which has kernel read only permission
->> in the page fault disabled context, the problem also affects
->> architectures which depend on SW dirty/young tracking as
->> stated by Benjamin in this thread.
->>
->> In the e500 case, the commit 6cfd8990e27d3a491c1c605d6cbc18a46ae51fef
->> removed the write permission fixup from TLB miss handlers and left it to
->> generic code, so it might be right time to fixup the write permission here
->> in the generic code.
-> But we can't. The must not modify the PTE from an interrupt context and
-> the "atomic" variants of user accesses can be called in such contexts.
+On 07/15/2011 11:24 AM, Peter Zijlstra wrote:
+> On Fri, 2011-07-15 at 11:18 -0400, Shan Hai wrote:
 >
-> I think the problem is that we try to actually do things other than just
-> "peek" at user memory (for backtraces etc...) but actually useful things
-> in page fault disabled contexts. That's bad and various archs mm were
-> designed with the assumption that this never happens.
+>>>> +	vma = find_vma(mm, address);
+>>> Uhm, find_vma() needs mmap_sem, and futex_atomic_cmpxchg_inatomic() is
+>>> most certainly not called with that lock held.
+>>>
+>> My fault, that will be fixed in the V2 patch.
+> But you cannot, the function isn't called _atomic_ just for kicks, its
+> used while holding spinlocks.
 >
 
-Yes I understood, the *here* above means 'generic code' like futex code,
-I am sorry for my ambiguous description.
+Yes we can do that, _atomic_ here is just atomic for cmpxchg
+implemented by the combination of 'lwarx' and 'stwcx.' instructions
+as done in the spin lock implementation, so even we hold the
+mmap_sem that has no impact on the _atomic_ feature of the
+futex_atomic_cmpxchg_inatomic().
 
-> If the futex case is seldom here, we could probably find a way to work
-> around in that specific case.
+>>>> +	if (likely(vma)) {
+>>>> +		/* only fixup present page */
+>>>> +		if (follow_page(vma, address, FOLL_WRITE)) {
+>>>> +			handle_mm_fault(mm, vma, address, FAULT_FLAG_WRITE);
+>>> So how can this toggle your sw dirty/young tracking, that's pretty much
+>>> what gup(.write=1) does too!
+>>>
+>> because of the kernel read only permission of the page is transparent
+>> to the follow_page(),  the handle_mm_fault() is not to be activated
+>> in the __get_use_pages(), so the gup(.write=1) could not help to fixup
+>> the write permission.
+> So why do you need the vma? Is it like I wrote earlier that you don't
+> have spare PTE bits and need the vma flags to see if it may become
+> writable?
 >
 
-That's what my patch wants to do.
+Need vma for the reason to call handle_mm_fault(), that's all.
 
-> However, I -still- don't understand why gup didn't fixup the write
-> permission. gup doesn't set dirty ?
->
+> gup(.write=1) not triggering this is a serious problem though, not
+> something you can just paper over. I wouldn't be at all surprised to
+> find there's more things broken because of that.
 
-Yep, gup doesn't set dirty, because when the page fault
-occurs on the kernel accessing a user page which is
-read only to the kernel the following conditions hold,
-- the page is present, because its a shared page
-- the page is writable, because demand paging
-     sets up the pte for the current  process to so
-
-The follow_page() called in the __get_user_page()
-returns non NULL to its caller on the above mentioned
-present and writable page, so the gup(.write=1) has no
-chance to set pte dirty by calling handle_mm_fault
+In my opinion another solution might be check the read only for kernel
+feature of a page in the follow_page() on gup(.write=1) to avoid this
+problem on all architectures.
 
 Thanks
 Shan Hai
-s
-> Cheers,
-> Ben.
->
->
