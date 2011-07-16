@@ -2,22 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87C47B6F00
+	by ozlabs.org (Postfix) with ESMTPS id CD4BC1007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jul 2011 09:47:51 +1000 (EST)
-Subject: RE: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
+	Sat, 16 Jul 2011 10:21:17 +1000 (EST)
+Subject: Re: [PATCH 0/1] Fixup write permission of TLB on powerpc e500 core
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Laight <David.Laight@ACULAB.COM>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
+To: Shan Hai <haishan.bai@gmail.com>
+In-Reply-To: <4E205D96.7010109@gmail.com>
 References: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFC@saturn3.aculab.com>
+	<4E205D96.7010109@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 16 Jul 2011 09:47:09 +1000
-Message-ID: <1310773629.25044.2.camel@pasglop>
+Date: Sat, 16 Jul 2011 10:20:49 +1000
+Message-ID: <1310775649.25044.5.camel@pasglop>
 Mime-Version: 1.0
 Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
-	cmetcalf@tilera.com, dhowells@redhat.com, paulus@samba.org,
-	tglx@linutronix.de, walken@google.com,
+	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	dhowells@redhat.com, David Laight <David.Laight@ACULAB.COM>,
+	paulus@samba.org, tglx@linutronix.de, walken@google.com,
 	linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,28 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-07-15 at 11:32 +0100, David Laight wrote:
-> > The fault causing futex_atomic_cmpxchg_inatomic() is
-> > protected by pagefault_disable(), so the page fault handler has
-> > no chance to toggle the SW dirty/young tracking.
+On Fri, 2011-07-15 at 11:32 -0400, Shan Hai wrote:
 > 
-> Perhaps that is the bug!
-> Whatever pagefault_disable() does, it shouldn't disable the
-> SW dirty/young tracking - which should only needs bits moving
-> in the page table itself (and TLB update??) rather than any
-> operations on the rest of the data areas.
+> I agree with you, the problem could be triggered by accessing
+> any user space page which has kernel read only permission
+> in the page fault disabled context, the problem also affects
+> architectures which depend on SW dirty/young tracking as
+> stated by Benjamin in this thread.
 > 
-> It looks to me as though this could happen any time a page
-> is marked inaccessible by the dirty/young tracking.
-> Not just as a result of COW.
+> In the e500 case, the commit 6cfd8990e27d3a491c1c605d6cbc18a46ae51fef
+> removed the write permission fixup from TLB miss handlers and left it to
+> generic code, so it might be right time to fixup the write permission here
+> in the generic code.
 
-Except that for many architectures, there's a hard wired assumption that
-the state of the PTEs won't change at interrupt time.
+But we can't. The must not modify the PTE from an interrupt context and
+the "atomic" variants of user accesses can be called in such contexts.
 
-If we allow the "atomic" user accesses, we'll break that rule (think
-about perf backtraces for example), and so would have to at -least-
-disable interrupts around all the PTE accessors, or use atomic ops,
-which will slow things down all over the place.
+I think the problem is that we try to actually do things other than just
+"peek" at user memory (for backtraces etc...) but actually useful things
+in page fault disabled contexts. That's bad and various archs mm were
+designed with the assumption that this never happens.
+
+If the futex case is seldom here, we could probably find a way to work
+around in that specific case.
+
+However, I -still- don't understand why gup didn't fixup the write
+permission. gup doesn't set dirty ?
 
 Cheers,
 Ben.
