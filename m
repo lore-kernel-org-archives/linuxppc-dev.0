@@ -1,19 +1,28 @@
-Return-Path: <Andrew_Gabbasov@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "relay1.mentorg.com",
-	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 100C4B6F77
+Return-Path: <haishan.bai@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6CF6AB6F7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jul 2011 23:55:10 +1000 (EST)
-Message-ID: <4E219085.8000709@mentor.com>
-Date: Sat, 16 Jul 2011 17:22:13 +0400
-From: Andrew Gabbasov <andrew_gabbasov@mentor.com>
+	Sun, 17 Jul 2011 00:50:30 +1000 (EST)
+Received: by iyn35 with SMTP id 35so1924116iyn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 16 Jul 2011 07:50:27 -0700 (PDT)
+Message-ID: <4E21A526.8010904@gmail.com>
+Date: Sat, 16 Jul 2011 10:50:14 -0400
+From: Shan Hai <haishan.bai@gmail.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Exporting boot_cpuid_phys
-Content-Type: text/plain; charset=UTF-8
-Cc: openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
+References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+	<1310725418.2586.309.camel@twins>
+In-Reply-To: <1310725418.2586.309.camel@twins>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
+	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +32,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kernel loadable module can use hard_smp_processor_id() if building with SMP
-kernel. In order to make it work for UP kernels too, boot_cpuid_phys
-symbol (which is what hard_smp_processor_id() macro resolves to
-in non-SMP configuration) must be exported.
+On 07/15/2011 06:23 AM, Peter Zijlstra wrote:
+> On Fri, 2011-07-15 at 16:07 +0800, Shan Hai wrote:
+>> The kernel has no write permission on COW pages by default on e500 core, this
+>> will cause endless loop in futex_lock_pi, because futex code assumes the kernel
+>> has write permission on COW pages. Grant write permission to the kernel on COW
+>> pages when access violation page fault occurs.
+>>
+>> Signed-off-by: Shan Hai<haishan.bai@gmail.com>
+>> ---
+>>   arch/powerpc/include/asm/futex.h |   11 ++++++++++-
+>>   arch/powerpc/include/asm/tlb.h   |   25 +++++++++++++++++++++++++
+>>   2 files changed, 35 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/futex.h b/arch/powerpc/include/asm/futex.h
+>> index c94e4a3..54c3e74 100644
+>> --- a/arch/powerpc/include/asm/futex.h
+>> +++ b/arch/powerpc/include/asm/futex.h
+>> @@ -8,6 +8,7 @@
+>>   #include<asm/errno.h>
+>>   #include<asm/synch.h>
+>>   #include<asm/asm-compat.h>
+>> +#include<asm/tlb.h>
+>>
+>>   #define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
+>>     __asm__ __volatile ( \
+>> @@ -113,7 +114,15 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
+>>           : "cc", "memory");
+>>
+>>   	*uval = prev;
+>> -        return ret;
+>> +
+>> +	/* Futex assumes the kernel has permission to write to
+>> +	 * COW pages, grant the kernel write permission on COW
+>> +	 * pages because it has none by default.
+>> +	 */
+>> +	if (ret == -EFAULT)
+>> +		__tlb_fixup_write_permission(current->mm, (unsigned long)uaddr);
+>> +
+>> +	return ret;
+>>   }
+>>
+>>   #endif /* __KERNEL__ */
+>> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+>> index e2b428b..3863c6a 100644
+>> --- a/arch/powerpc/include/asm/tlb.h
+>> +++ b/arch/powerpc/include/asm/tlb.h
+>> @@ -45,5 +45,30 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
+>>   #endif
+>>   }
+>>
+>> +/* Grant write permission to the kernel on a page. */
+>> +static inline void __tlb_fixup_write_permission(struct mm_struct *mm,
+>> +						unsigned long address)
+>> +{
+>> +#if defined(CONFIG_FSL_BOOKE)
+>> +	/* Grant write permission to the kernel on a page by setting TLB.SW
+>> +	 * bit, the bit setting operation is tricky here, calling
+>> +	 * handle_mm_fault with FAULT_FLAG_WRITE causes _PAGE_DIRTY bit of
+>> +	 * the pte to be set, the _PAGE_DIRTY of the pte is translated into
+>> +	 * TLB.SW on Powerpc e500 core.
+>> +	 */
+>> +
+>> +	struct vm_area_struct *vma;
+>> +
+>> +	vma = find_vma(mm, address);
+> Uhm, find_vma() needs mmap_sem, and futex_atomic_cmpxchg_inatomic() is
+> most certainly not called with that lock held.
+>
+>> +	if (likely(vma)) {
+>> +		/* only fixup present page */
+>> +		if (follow_page(vma, address, FOLL_WRITE)) {
+>> +			handle_mm_fault(mm, vma, address, FAULT_FLAG_WRITE);
+> So how can this toggle your sw dirty/young tracking, that's pretty much
+> what gup(.write=1) does too!
+>
 
-Signed-off-by: Andrew Gabbasov <andrew_gabbasov@mentor.com>
----
- arch/powerpc/kernel/setup_32.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+That's right the gup(.write=1) want to do the same thing as the
+above code snippet, but it failed for the following reason:
+because the get_user_pages() would not dirty pte for the reason
+the follow_page() returns not NULL on *present* and *writable*
+page, the page which holds the lock is present because its a shared page,
+writable because demand paging set that up so for shared
+writable page, so the handle_mm_fault() in the __get_user_page()
+could not be called.
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 1d2fbc9..3dffce6 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -49,6 +49,7 @@ extern void bootx_init(unsigned long r4, unsigned long phys);
- int boot_cpuid = -1;
- EXPORT_SYMBOL_GPL(boot_cpuid);
- int boot_cpuid_phys;
-+EXPORT_SYMBOL_GPL(boot_cpuid_phys);
- 
- int smp_hw_index[NR_CPUS];
- 
+Why the above code could do the same task, because by calling
+handle_mm_fault() will set pte dirty by
+[do_annonymous_page(), memory.c]
+if (vma->vm_flags & VM_WRITE)
+                 entry = pte_mkwrite(pte_mkdirty(entry));
+
+Thanks
+Shan Hai
+
+>> +			flush_tlb_page(vma, address);
+>> +		}
+>> +	}
+>> +#endif
+>> +}
+>> +
+>>   #endif /* __KERNEL__ */
+>>   #endif /* __ASM_POWERPC_TLB_H */
