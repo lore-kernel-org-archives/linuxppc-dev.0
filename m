@@ -1,30 +1,28 @@
-Return-Path: <haishan.bai@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 22905B6F00
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 910C6B6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 17 Jul 2011 23:33:50 +1000 (EST)
-Received: by iyn35 with SMTP id 35so2371350iyn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 17 Jul 2011 06:33:48 -0700 (PDT)
-Message-ID: <4E22E4AC.7040600@gmail.com>
-Date: Sun, 17 Jul 2011 21:33:32 +0800
-From: Shan Hai <haishan.bai@gmail.com>
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Mon, 18 Jul 2011 00:37:41 +1000 (EST)
 Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
-References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	
-	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>	
-	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>	
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
+References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>
 	<1310860194.25044.17.camel@pasglop>
-	<1310900561.13765.22.camel@twins>
-In-Reply-To: <1310900561.13765.22.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
-	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jul 2011 00:29:50 +1000
+Message-ID: <1310912990.25044.203.camel@pasglop>
+Mime-Version: 1.0
+Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
+	cmetcalf@tilera.com, dhowells@redhat.com, paulus@samba.org,
+	tglx@linutronix.de, walken@google.com,
+	linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,48 +32,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/17/2011 07:02 PM, Peter Zijlstra wrote:
-> On Sun, 2011-07-17 at 09:49 +1000, Benjamin Herrenschmidt wrote:
->> In the meantime, other than rewriting the futex code to not require
->> those in-atomic accesses (can't it just access the pages via the linear
->> mapping and/or kmap after the gup ?),
-> That'll wreck performance on things like ARM and SPARC that have to deal
-> with cache aliasing.
->
->>   all I see would be a way to force
->> dirty and young after gup, with appropriate locks, or a variant of gup
->> (via a flag ?) to require it to do so.
-> Again, _WHY_ isn't gup(.write=1) a complete write fault? Its supposed to
-> be, it needs to break COW, do dirty page tracking and call page_mkwrite.
-> I'm still thinking this e500 stuff is smoking crack.
->
-> ARM has no hardware dirty bit either, and yet it works for them. I can't
-> exactly tell how because I got lost in there, but it does, again,
-> suggest e500 is on crack.
+On Sun, 2011-07-17 at 11:38 +0200, Peter Zijlstra wrote:
 
-Ok, the following feature of the architecture causes failure of
-gup(.write=1) on dirtying pages,
-- allows pages to be protected from supervisor-mode writes
+> Whats this talk about interrup context? There is non of that involved.
 
-On ARM you could not protect pages from supervisor-mode writes,
-isn't it?  That means, all writable user pages are writable for
-supervisor too, but its not hold for at least x86 and powerpc,
-x86 and powerpc can be configured to protect pages from
-supervisor-mode writes.
+Ok, let's not mix things here. I was going to fast and may have murkied
+the waters. First let's get back to the futex code issue with gup:
 
-Think about the following situation,
-a page fault occurs on the kernel trying to write to a writable shared
-user page which is read only to the kernel, the following conditions hold,
-- the page is *present*, because its a shared page
-- the page is *writable*, because demand paging sets up the pte for
-     the current process to so
+> Furthermore, I still dont see the problem. The futex code is
+> optimistically trying to poke at user memory while holding spinlocks.
+> 
+> We fully expect that to fail, hence the error path that drops all
+> locks and does the gup(.write=1) to fix up the mapping after which we
+> try again.
 
-The follow_page() called in the __get_user_page() returns non NULL
-to its caller on the above mentioned *present* and *writable* page,
-so the gup(.write=1) has no chance to set pte dirty by calling 
-handle_mm_fault,
-the follow_page() has no knowledge of supervisor-mode write protected pages,
-that's the culprit in the bug discussed here.
+See below
 
-Thanks
-Shan Hai
+> This has worked for years, its by no means new code. Nor do I see how
+> its broken.
+
+No it hasn't worked for years, it's been broken for years on some archs
+but nobody noticed :-)
+
+The problem I see is that gup doesn't set dirty (or young) itself. It
+requires the caller to set dirty before releasing the pages basically
+and there's no provision for young. Afaik, callers set it directly in
+the struct page and not the PTE too (which means a spurrious fault on
+subsequent access for archs that do dirty tracking).
+
+On archs where dirty and young are SW tracked, pages that don't have
+them set in the PTE will fault on access. The lack of dirty means the
+page is effectively going to be read-only and the lack of young means
+the page will be inaccessible.
+
+gup itself isn't mean to fix those, at least the way it's been used so
+far, the caller of gup is.
+
+Thus the only "proper" way to fix that is to have the futex code itself
+perform dirty and accessed updates, which sucks (means going back down
+the page tables, taking the PTL and doing the deed).
+
+Having the actual fault handlers do the fixup even when in atomic isn't
+a good option for us:
+
+I don't know what other archs that rely on that SW tracking do, but in
+the case of powerpc, that would be problematic due to the fact that
+those archs have been written with the assumption that all changes to
+PTEs are done under the PTL (which allows to simplify code and thus make
+things faster).
+
+Among others, that also means no changes at interrupt time. Enabling our
+fault handlers to update the dirty & young bits even while in "atomic"
+context would potentially open the door to things like interrupt-time
+perf backtraces to cause PTE updates, etc... (in addition to generally
+breaking the locking rules for PTE modifications).
+
+Now, I suppose we -could- differentiate preempt disabled from real
+interrupt time in the fault handlers, tho that's somewhat sucky. It
+might require moving the dirty/young updates from generic code to arch
+code, I suppose.
+
+I'm also not sure how risky it would be to take the PTL in that case...
+code doing user accesses within pagefault_disable() might be written
+with the assumption that the PTL won't be taken (it might be already
+held ? I don't know what all the users are at this point, too late to
+grep, I can have a look tomorrow). It makes me a bit nervous too.
+
+A better approach might be a flag to pass to gup (via the "write"
+argument ? top bits ?) to tell it to immediately perform dirty/young
+updates.
+
+Cheers,
+Ben.
