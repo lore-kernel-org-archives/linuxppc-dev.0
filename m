@@ -1,16 +1,24 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob6.rzone.de (mo-p05-ob6.rzone.de
-	[IPv6:2a01:238:20a:202:53f5::1])
+Return-Path: <mgarcia@rossvideo.com>
+Received: from mail1.rossvideo.com (mail1.rossvideo.com [72.1.218.231])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC5BAB6F18
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2011 00:02:49 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/44x: Add NOR flash device to Yosemite dts
-Date: Mon, 18 Jul 2011 15:49:14 +0200
-Message-Id: <1310996954-25246-1-git-send-email-sr@denx.de>
-Cc: jwboyer@linux.vnet.ibm.com
+	(Client CN "*.rossvideo.com",
+	Issuer "DigiCert High Assurance CA-3" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EE00DB6F70
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 19 Jul 2011 01:51:11 +1000 (EST)
+Received: from mail3.rossvideo.com (server16.rossvideo.com [10.0.0.16]) by
+	mail1.rossvideo.com with ESMTP id KB2NE2Wk1pRsmG7q for
+	<linuxppc-dev@lists.ozlabs.org>;
+	Mon, 18 Jul 2011 11:35:58 -0400 (EDT)
+Subject: Busy waits take much longer in driver code vs. application code
+From: Matias Garcia <mgarcia@rossvideo.com>
+To: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CAKTLLVSZ1ju5e-_Hqi9i4bYMsd1nxS3gTP9Q8ecoe-zxdZDOAA@mail.gmail.com>
+References: <CAKTLLVSZ1ju5e-_Hqi9i4bYMsd1nxS3gTP9Q8ecoe-zxdZDOAA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jul 2011 11:35:58 -0400
+Message-ID: <1311003358.1851.14.camel@matias-lnx-host>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,57 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/boot/dts/yosemite.dts |   36 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 36 insertions(+), 0 deletions(-)
+Not sure if this is arch-dependant. If not, I'll register on the kernel
+mailing list.
 
-diff --git a/arch/powerpc/boot/dts/yosemite.dts b/arch/powerpc/boot/dts/yosemite.dts
-index 6492324..30bb475 100644
---- a/arch/powerpc/boot/dts/yosemite.dts
-+++ b/arch/powerpc/boot/dts/yosemite.dts
-@@ -138,6 +138,42 @@
- 				clock-frequency = <0>; /* Filled in by zImage */
- 				interrupts = <0x5 0x1>;
- 				interrupt-parent = <&UIC1>;
-+
-+				nor_flash@0,0 {
-+					compatible = "amd,s29gl256n", "cfi-flash";
-+					bank-width = <2>;
-+					reg = <0x00000000 0x00000000 0x04000000>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					partition@0 {
-+						label = "kernel";
-+						reg = <0x00000000 0x001e0000>;
-+					};
-+					partition@1e0000 {
-+						label = "dtb";
-+						reg = <0x001e0000 0x00020000>;
-+					};
-+					partition@200000 {
-+						label = "ramdisk";
-+						reg = <0x00200000 0x01400000>;
-+					};
-+					partition@1600000 {
-+						label = "jffs2";
-+						reg = <0x01600000 0x00400000>;
-+					};
-+					partition@1a00000 {
-+						label = "user";
-+						reg = <0x01a00000 0x02540000>;
-+					};
-+					partition@3f40000 {
-+						label = "env";
-+						reg = <0x03f40000 0x00040000>;
-+					};
-+					partition@3f80000 {
-+						label = "u-boot";
-+						reg = <0x03f80000 0x00080000>;
-+					};
-+				};
- 			};
- 
- 			UART0: serial@ef600300 {
--- 
-1.7.6
+I'm working with some legacy driver code (an IOCTL) that busy waits
+after requesting an operation from an FPGA. It reads a register in a
+loop until the FPGA has finished the operation. The operation is
+supposed to take about 1ms, but the driver code is returning after 11ms
+or more. If I instead run the same busy loop inside the application that
+calls the IOCTL, it takes <1ms. Instrumenting the driver loop shows that
+the loop is only executed a couple of times about 5ms apart (though
+printk may skew this slightly). The application loop is run MUCH more
+often.
+
+Platform is P2020 with kernel 2.6.37 running two applications. The one
+in question is run with FIFO scheduler at priority 10, the other one is
+run with FIFO scheduler at priority 50. All other processes are
+regular/default priority.
+
+The only difference in interface between calling the IOCTL and
+reading/writing registers through the device file is that read/writes
+use copy to/from user while the IOCTL calls io[read|write]32be. No data
+needs to go to user-space for this operation.
+
+A couple of questions:
+
+1. Why is the application code running WAY faster than the IOCTL call? I
+thought driver code was executed in process context at the same priority
+as the calling process.
+
+2. Can you suggest a better way to implement the busy wait in the driver
+code if I can get the priorities right? Should I even leave it in there?
+I'm doing a lot of reading, but could really use an expert opinion.
+
+Any light shed will be toasted heartily.
+
+Thanks,
+Matias Garcia
