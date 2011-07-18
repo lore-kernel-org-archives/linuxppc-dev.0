@@ -1,22 +1,16 @@
-Return-Path: <ayman@elkhashab.com>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id C053AB6F18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jul 2011 23:31:05 +1000 (EST)
-Date: Mon, 18 Jul 2011 08:31:01 -0500
-From: Ayman El-Khashab <ayman@elkhashab.com>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [v2 PATCH 1/1] powerpc/4xx: enable and fix pcie gen1/gen2 on
-	the 460sx
-Message-ID: <20110718133101.GB26701@crust.elkhashab.com>
-References: <1310603611-8960-2-git-send-email-ayman@elkhashab.com>
-	<1310748027-31956-1-git-send-email-aymane@elkhashab.com>
-	<20110718040115.GK20597@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110718040115.GK20597@ozlabs.org>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob6.rzone.de (mo-p05-ob6.rzone.de
+	[IPv6:2a01:238:20a:202:53f5::1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CC5BAB6F18
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2011 00:02:49 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/44x: Add NOR flash device to Yosemite dts
+Date: Mon, 18 Jul 2011 15:49:14 +0200
+Message-Id: <1310996954-25246-1-git-send-email-sr@denx.de>
+Cc: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 18, 2011 at 02:01:15PM +1000, Tony Breeds wrote:
-> On Fri, Jul 15, 2011 at 11:40:27AM -0500, Ayman Elkhashab wrote:
-> 
-> > @@ -1582,8 +1628,8 @@ static int __init ppc4xx_setup_one_pciex_POM(struct ppc4xx_pciex_port	*port,
-> >  		dcr_write(port->dcrs, DCRO_PEGPL_OMR2BAH, lah);
-> >  		dcr_write(port->dcrs, DCRO_PEGPL_OMR2BAL, lal);
-> >  		dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKH, 0x7fffffff);
-> > -		/* Note that 3 here means enabled | single region */
-> > -		dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKL, sa | 3);
-> > +		dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKL,
-> > +				sa | DCRO_PEGPL_OMRxMSKL_VAL);
-> 
-> Didn't you just change "sa | 3" to "sa | 1" ?
-> 
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/boot/dts/yosemite.dts |   36 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 36 insertions(+), 0 deletions(-)
 
-Yes, but I think that is correct for it to be "1".  The data
-sheets for these parts that I checked had bit 1 marked as
-reserved.  Only OMR1MSKL and OMR3MSKL had extra definitions
-such as the _IO and _UOT.  The parts I checked which were
-the sheets for the EX and SX (which cover another 6 or 7
-parts) all had it with just a single bit defined on that
-register.
-
-Ayman
+diff --git a/arch/powerpc/boot/dts/yosemite.dts b/arch/powerpc/boot/dts/yosemite.dts
+index 6492324..30bb475 100644
+--- a/arch/powerpc/boot/dts/yosemite.dts
++++ b/arch/powerpc/boot/dts/yosemite.dts
+@@ -138,6 +138,42 @@
+ 				clock-frequency = <0>; /* Filled in by zImage */
+ 				interrupts = <0x5 0x1>;
+ 				interrupt-parent = <&UIC1>;
++
++				nor_flash@0,0 {
++					compatible = "amd,s29gl256n", "cfi-flash";
++					bank-width = <2>;
++					reg = <0x00000000 0x00000000 0x04000000>;
++					#address-cells = <1>;
++					#size-cells = <1>;
++					partition@0 {
++						label = "kernel";
++						reg = <0x00000000 0x001e0000>;
++					};
++					partition@1e0000 {
++						label = "dtb";
++						reg = <0x001e0000 0x00020000>;
++					};
++					partition@200000 {
++						label = "ramdisk";
++						reg = <0x00200000 0x01400000>;
++					};
++					partition@1600000 {
++						label = "jffs2";
++						reg = <0x01600000 0x00400000>;
++					};
++					partition@1a00000 {
++						label = "user";
++						reg = <0x01a00000 0x02540000>;
++					};
++					partition@3f40000 {
++						label = "env";
++						reg = <0x03f40000 0x00040000>;
++					};
++					partition@3f80000 {
++						label = "u-boot";
++						reg = <0x03f80000 0x00080000>;
++					};
++				};
+ 			};
+ 
+ 			UART0: serial@ef600300 {
+-- 
+1.7.6
