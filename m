@@ -1,31 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 952B3B6F85
+Return-Path: <r61911@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 666D1B6F76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jul 2011 14:07:47 +1000 (EST)
-Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1310961196.25044.266.camel@pasglop>
-References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
-	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
-	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>
-	<1310860194.25044.17.camel@pasglop>
-	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
-	<1310912990.25044.203.camel@pasglop>
-	<1310944453.25044.262.camel@pasglop>
-	<1310961196.25044.266.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jul 2011 14:02:23 +1000
-Message-ID: <1310961743.25044.275.camel@pasglop>
-Mime-Version: 1.0
-Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
-	cmetcalf@tilera.com, dhowells@redhat.com, paulus@samba.org,
-	tglx@linutronix.de, walken@google.com,
-	linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+	Mon, 18 Jul 2011 15:01:26 +1000 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Anton Vorontsov <avorontsov@mvista.com>
+Subject: RE: [PATCH 3/3] eSDHC: fix incorrect default value of the
+	capabilities register on P4080
+Date: Mon, 18 Jul 2011 05:01:15 +0000
+Message-ID: <2239AC579C7D3646A720227A37E0268116E809@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1309839543-6031-1-git-send-email-tie-fei.zang@freescale.com>
+	<1309839543-6031-2-git-send-email-tie-fei.zang@freescale.com>
+	<1309839543-6031-3-git-send-email-tie-fei.zang@freescale.com>
+	<20110705101801.GA13052@oksana.dev.rtsoft.ru>
+In-Reply-To: <20110705101801.GA13052@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-07-18 at 13:53 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2011-07-18 at 09:14 +1000, Benjamin Herrenschmidt wrote:
-> 
-> > In fact, with such a flag, we could probably avoid the ifdef entirely, and
-> > always go toward the PTE fixup path when called in such a fixup case, my gut
-> > feeling is that this is going to be seldom enough not to hurt x86 measurably
-> > but we'll have to try it out.
-> > 
-> > That leads to that even less tested patch:
-> 
->  And here's a version that builds (still not tested :-)
-> 
-> Shan, can you verify whether that fixes the problem for you ?
-> 
-> I also had a cursory glance at the ARM code and it seems to rely on the
-> same stuff as embedded powerpc does for dirty/young updates, so in
-> theory it should exhibit the same problem.
-> 
-> I suspect the scenario is rare enough in practice in embedded workloads
-> that nobody noticed until now.
-
-Ignore that bogus send, I sent a proper one immediately after (evolution
-FAIL, sorry about that)
-
-Cheers,
-Ben.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW50b24gVm9yb250c292
+IFttYWlsdG86YXZvcm9udHNvdkBtdmlzdGEuY29tXQ0KPiBTZW50OiBUdWVzZGF5LCBKdWx5IDA1
+LCAyMDExIDE4OjE4IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IGxpbnV4LW1tY0B2
+Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBha3BtQGxpbnV4
+LQ0KPiBmb3VuZGF0aW9uLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMvM10gZVNESEM6IGZp
+eCBpbmNvcnJlY3QgZGVmYXVsdCB2YWx1ZSBvZiB0aGUNCj4gY2FwYWJpbGl0aWVzIHJlZ2lzdGVy
+IG9uIFA0MDgwDQo+IA0KPiBPbiBUdWUsIEp1bCAwNSwgMjAxMSBhdCAxMjoxOTowM1BNICswODAw
+LCBSb3kgWmFuZyB3cm90ZToNCj4gPiBQNDA4MCBlU0RIQyBlcnJhdGEgMTIgZGVzY3JpYmVzIGlu
+Y29ycmVjdCBkZWZhdWx0IHZhbHVlIG9mIHRoZQ0KPiA+IHRoZSBob3N0IGNvbnRyb2xsZXIgY2Fw
+YWJpbGl0aWVzIHJlZ2lzdGVyLg0KPiA+DQo+ID4gVGhlIGRlZmF1bHQgdmFsdWUgb2YgdGhlIFZT
+MTggYW5kIFZTMzAgZmllbGRzIGluIHRoZSBob3N0IGNvbnRyb2xsZXINCj4gPiBjYXBhYmlsaXRp
+ZXMgcmVnaXN0ZXIgKEhPU1RDQVBCTFQpIGFyZSBpbmNvcnJlY3QuIFRoZSBkZWZhdWx0IG9mIHRo
+ZXNlIGJpdHMNCj4gPiBzaG91bGQgYmUgemVybyBpbnN0ZWFkIG9mIG9uZSBpbiB0aGUgZVNESEMg
+bG9naWMuDQo+ID4NCj4gPiBUaGlzIHBhdGNoIGFkZHMgdGhlIHdvcmthcm91bmQgZm9yIHRoZXNl
+IGVycmF0YS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFJveSBaYW5nIDx0aWUtZmVpLnphbmdA
+ZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1vZi1j
+b3JlLmMgfCAgICAzICsrKw0KPiA+ICBkcml2ZXJzL21tYy9ob3N0L3NkaGNpLmMgICAgICAgICB8
+ICAgIDYgKysrKysrDQo+ID4gIGluY2x1ZGUvbGludXgvbW1jL3NkaGNpLmggICAgICAgIHwgICAg
+NCArKysrDQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlv
+bnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL21tYy9ob3N0L3NkaGNpLW9mLWNv
+cmUuYyBiL2RyaXZlcnMvbW1jL2hvc3Qvc2RoY2ktb2YtDQo+IGNvcmUuYw0KPiA+IGluZGV4IGZl
+ZGU0M2QuLjliZGQzMGQgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1v
+Zi1jb3JlLmMNCj4gPiArKysgYi9kcml2ZXJzL21tYy9ob3N0L3NkaGNpLW9mLWNvcmUuYw0KPiA+
+IEBAIC0xODIsNiArMTgyLDkgQEAgc3RhdGljIGludCBfX2RldmluaXQgc2RoY2lfb2ZfcHJvYmUo
+c3RydWN0DQo+IHBsYXRmb3JtX2RldmljZSAqb2ZkZXYpDQo+ID4gIAlpZiAob2ZfZGV2aWNlX2lz
+X2NvbXBhdGlibGUobnAsICJmc2wsZXNkaGMiKSkNCj4gPiAgCQlob3N0LT5xdWlya3MgfD0gU0RI
+Q0lfUVVJUktfUU9SSVFfUFJPQ1RMX1dFSVJEOw0KPiA+DQo+ID4gKwlpZiAob2ZfZGV2aWNlX2lz
+X2NvbXBhdGlibGUobnAsICJmc2wscDQwODAtZXNkaGMiKSkNCj4gPiArCQlob3N0LT5xdWlya3Mg
+fD0gU0RIQ0lfUVVJUktfUU9SSVFfSE9TVENBUEJMVF9PTkxZX1ZTMzM7DQo+IA0KPiBTaG91bGQg
+cmVhbGx5IHVzZSB2b2x0YWdlLXJhbmdlcywgbm90IHF1aXJrcy4NCj4gDQo+IGh0dHA6Ly93d3cu
+c3Bpbmljcy5uZXQvbGlzdHMvbGludXgtbW1jL21zZzAyNzg1Lmh0bWwNCk1ha2Ugc2Vuc2UgdG8g
+bWUuIFRoYW5rcy4NClJveQ0K
