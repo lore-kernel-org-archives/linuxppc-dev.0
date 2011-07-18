@@ -1,26 +1,24 @@
 Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-pz0-f48.google.com (mail-pz0-f48.google.com
+	[209.85.210.48]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 13196B6F89
+	by ozlabs.org (Postfix) with ESMTPS id 88E35B7480
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jul 2011 11:14:33 +1000 (EST)
-Received: by pvg18 with SMTP id 18so2987773pvg.38
+	Mon, 18 Jul 2011 11:14:43 +1000 (EST)
+Received: by pzk32 with SMTP id 32so3925982pzk.21
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 17 Jul 2011 18:14:30 -0700 (PDT)
+	Sun, 17 Jul 2011 18:14:39 -0700 (PDT)
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	akpm@linux-foundation.org
-Subject: [PATCH v2 1/5] fault-injection: notifier error injection
-Date: Mon, 18 Jul 2011 10:16:02 +0900
-Message-Id: <1310951766-3840-2-git-send-email-akinobu.mita@gmail.com>
+Subject: [PATCH v2 5/5] powerpc: pSeries reconfig notifier error injection
+Date: Mon, 18 Jul 2011 10:16:06 +0900
+Message-Id: <1310951766-3840-6-git-send-email-akinobu.mita@gmail.com>
 In-Reply-To: <1310951766-3840-1-git-send-email-akinobu.mita@gmail.com>
 References: <1310951766-3840-1-git-send-email-akinobu.mita@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Akinobu Mita <akinobu.mita@gmail.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
-	Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
-	linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Akinobu Mita <akinobu.mita@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,182 +28,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The notifier error injection provides the ability to inject artifical
-errors to specified notifier chain callbacks. It is useful to test
-the error handling of notifier call chain failures.
+This provides the ability to inject artifical errors to pSeries reconfig
+notifier chain callbacks.  It is controlled through debugfs interface
+under /sys/kernel/debug/pSeries-reconfig-notifier-error-inject/
 
-This adds common basic functions to define which type of events can be
-fail and to initialize the debugfs interface to control what error code
-should be returned and which event should be failed.
+Each of the files in the directory represents an event which can be
+failed and contains the error code.  If the notifier call chain should
+be failed with some events notified, write the error code to the files.
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-mm@kvack.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
-* v2
-- put a comment in err_inject_notifier_block_init()
-- only allow valid errno to be injected (-MAX_ERRNO <= errno <= 0)
+- Nothing changed from v1
 
- include/linux/notifier.h |   25 ++++++++++++++
- kernel/notifier.c        |   81 ++++++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig.debug        |   11 ++++++
- 3 files changed, 117 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/reconfig.c |   31 +++++++++++++++++++++++++++++
+ lib/Kconfig.debug                         |    9 ++++++++
+ 2 files changed, 40 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-index c0688b0..51882d6 100644
---- a/include/linux/notifier.h
-+++ b/include/linux/notifier.h
-@@ -278,5 +278,30 @@ extern struct blocking_notifier_head reboot_notifier_list;
- #define VT_UPDATE		0x0004 /* A bigger update occurred */
- #define VT_PREWRITE		0x0005 /* A char is about to be written to the console */
- 
-+#ifdef CONFIG_NOTIFIER_ERROR_INJECTION
-+
-+struct err_inject_notifier_action {
-+	unsigned long val;
-+	int error;
-+	const char *name;
-+};
-+
-+#define ERR_INJECT_NOTIFIER_ACTION(action)	\
-+	.name = #action, .val = (action),
-+
-+struct err_inject_notifier_block {
-+	struct notifier_block nb;
-+	struct dentry *dir;
-+	struct err_inject_notifier_action actions[];
-+	/* The last slot must be terminated with zero sentinel */
-+};
-+
-+extern int err_inject_notifier_block_init(struct err_inject_notifier_block *enb,
-+				const char *name, int priority);
-+extern void err_inject_notifier_block_cleanup(
-+				struct err_inject_notifier_block *enb);
-+
-+#endif /* CONFIG_NOTIFIER_ERROR_INJECTION */
-+
- #endif /* __KERNEL__ */
- #endif /* _LINUX_NOTIFIER_H */
-diff --git a/kernel/notifier.c b/kernel/notifier.c
-index 2488ba7..8824ae3 100644
---- a/kernel/notifier.c
-+++ b/kernel/notifier.c
-@@ -5,6 +5,7 @@
- #include <linux/rcupdate.h>
- #include <linux/vmalloc.h>
- #include <linux/reboot.h>
-+#include <linux/debugfs.h>
- 
- /*
-  *	Notifier list for kernel code which wants to be called
-@@ -584,3 +585,83 @@ int unregister_die_notifier(struct notifier_block *nb)
- 	return atomic_notifier_chain_unregister(&die_chain, nb);
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 168651a..31d9b0f 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -117,6 +117,37 @@ int pSeries_reconfig_notify(unsigned long action, void *p)
+ 	return notifier_to_errno(err);
  }
- EXPORT_SYMBOL_GPL(unregister_die_notifier);
+ 
++#ifdef CONFIG_PSERIES_RECONFIG_NOTIFIER_ERROR_INJECTION
 +
-+#ifdef CONFIG_NOTIFIER_ERROR_INJECTION
-+
-+static int debugfs_errno_set(void *data, u64 val)
-+{
-+	*(int *)data = clamp_t(int, val, -MAX_ERRNO, 0);
-+	return 0;
-+}
-+
-+static int debugfs_errno_get(void *data, u64 *val)
-+{
-+	*val = *(int *)data;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_errno, debugfs_errno_get, debugfs_errno_set,
-+			"%lld\n");
-+
-+static struct dentry *debugfs_create_errno(const char *name, mode_t mode,
-+				struct dentry *parent, int *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_errno);
-+}
-+
-+static int err_inject_notifier_callback(struct notifier_block *nb,
-+				unsigned long val, void *p)
-+{
-+	int err = 0;
-+	struct err_inject_notifier_block *enb =
-+		container_of(nb, struct err_inject_notifier_block, nb);
-+	struct err_inject_notifier_action *action;
-+
-+	for (action = enb->actions; action->name; action++) {
-+		if (action->val == val) {
-+			err = action->error;
-+			break;
-+		}
++static struct err_inject_notifier_block err_inject_reconfig_nb = {
++	.actions = {
++		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_RECONFIG_ADD) },
++		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_RECONFIG_REMOVE) },
++		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_DRCONF_MEM_ADD) },
++		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_DRCONF_MEM_REMOVE) },
++		{}
 +	}
-+	if (err) {
-+		printk(KERN_INFO "Injecting error (%d) to %s\n",
-+			err, action->name);
-+	}
++};
 +
-+	return notifier_from_errno(err);
-+}
-+
-+int err_inject_notifier_block_init(struct err_inject_notifier_block *enb,
-+				const char *name, int priority)
++static int __init err_inject_reconfig_notifier_init(void)
 +{
-+	struct err_inject_notifier_action *action;
-+	mode_t mode = S_IFREG | S_IRUSR | S_IWUSR;
++	int err;
 +
-+	enb->nb.notifier_call = err_inject_notifier_callback;
-+	enb->nb.priority = priority;
++	err = err_inject_notifier_block_init(&err_inject_reconfig_nb,
++			"pSeries-reconfig-notifier-error-inject", -1);
++	if (err)
++		return err;
 +
-+	enb->dir = debugfs_create_dir(name, NULL);
-+	if (!enb->dir)
-+		return -ENOMEM;
++	err = pSeries_reconfig_notifier_register(&err_inject_reconfig_nb.nb);
++	if (err)
++		err_inject_notifier_block_cleanup(&err_inject_reconfig_nb);
 +
-+	for (action = enb->actions; action->name; action++) {
-+		/*
-+		 * Create debugfs r/w file containing action->error. If
-+		 * notifier call chain is called with action->val, it will
-+		 * fail with the error code
-+		 */
-+		if (!debugfs_create_errno(action->name, mode, enb->dir,
-+					&action->error)) {
-+			debugfs_remove_recursive(enb->dir);
-+			return -ENOMEM;
-+		}
-+	}
-+	return 0;
++	return err;
 +}
++late_initcall(err_inject_reconfig_notifier_init);
 +
-+void err_inject_notifier_block_cleanup(struct err_inject_notifier_block *enb)
-+{
-+	debugfs_remove_recursive(enb->dir);
-+}
++#endif /* CONFIG_PSERIES_RECONFIG_NOTIFIER_ERROR_INJECTION */
 +
-+#endif /* CONFIG_NOTIFIER_ERROR_INJECTION */
+ static int pSeries_reconfig_add_node(const char *path, struct property *proplist)
+ {
+ 	struct device_node *np;
 diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index dd373c8..8c6ce7e 100644
+index 8f5c380..d713000 100644
 --- a/lib/Kconfig.debug
 +++ b/lib/Kconfig.debug
-@@ -1018,6 +1018,17 @@ config LKDTM
- 	Documentation on how to use the module can be found in
- 	Documentation/fault-injection/provoke-crashes.txt
+@@ -1080,6 +1080,15 @@ config MEMORY_NOTIFIER_ERROR_INJECTION
+ 	  # echo offline > /sys/devices/system/memory/memoryXXX/state
+ 	  bash: echo: write error: Cannot allocate memory
  
-+config NOTIFIER_ERROR_INJECTION
-+	bool "Notifier error injection"
-+	depends on DEBUG_KERNEL
-+	select DEBUG_FS
++config PSERIES_RECONFIG_NOTIFIER_ERROR_INJECTION
++	bool "pSeries reconfig notifier error injection"
++	depends on PPC_PSERIES && NOTIFIER_ERROR_INJECTION
 +	help
 +	  This option provides the ability to inject artifical errors to
-+	  specified notifier chain callbacks. It is useful to test the error
-+	  handling of notifier call chain failures.
-+
-+	  Say N if unsure.
++	  pSeries reconfig notifier chain callbacks.  It is controlled
++	  through debugfs interface under
++	  /sys/kernel/debug/pSeries-reconfig-notifier-error-inject/
 +
  config CPU_NOTIFIER_ERROR_INJECT
  	tristate "CPU notifier error injection module"
