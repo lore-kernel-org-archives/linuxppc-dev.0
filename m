@@ -1,24 +1,26 @@
-Return-Path: <mgarcia@rossvideo.com>
-Received: from mail1.rossvideo.com (mail1.rossvideo.com [72.1.218.231])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.rossvideo.com",
-	Issuer "DigiCert High Assurance CA-3" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EE00DB6F70
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jul 2011 01:51:11 +1000 (EST)
-Received: from mail3.rossvideo.com (server16.rossvideo.com [10.0.0.16]) by
-	mail1.rossvideo.com with ESMTP id KB2NE2Wk1pRsmG7q for
-	<linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jul 2011 11:35:58 -0400 (EDT)
-Subject: Busy waits take much longer in driver code vs. application code
-From: Matias Garcia <mgarcia@rossvideo.com>
-To: linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <CAKTLLVSZ1ju5e-_Hqi9i4bYMsd1nxS3gTP9Q8ecoe-zxdZDOAA@mail.gmail.com>
-References: <CAKTLLVSZ1ju5e-_Hqi9i4bYMsd1nxS3gTP9Q8ecoe-zxdZDOAA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jul 2011 11:35:58 -0400
-Message-ID: <1311003358.1851.14.camel@matias-lnx-host>
-Mime-Version: 1.0
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+	[213.199.154.143])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E80CB6F72
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2011 01:56:37 +1000 (EST)
+Date: Mon, 18 Jul 2011 10:56:27 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
+Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program exception to use one
+	dedicated exception stack
+Message-ID: <20110718105627.245c9fa4@schlenkerla.am.freescale.net>
+In-Reply-To: <82C960D7DF4A1F47B94FC1C67A29BEE384D577@ALA-MBA.corp.ad.wrs.com>
+References: <1310383915-30543-1-git-send-email-tiejun.chen@windriver.com>
+	<CC4F4DC6-0682-4FC6-8D89-CE9AFEA7AD85@kernel.crashing.org>
+	<4E1FCFEF.7070702@windriver.com>
+	<20110715134232.56373e03@schlenkerla.am.freescale.net>
+	<82C960D7DF4A1F47B94FC1C67A29BEE384D577@ALA-MBA.corp.ad.wrs.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Not sure if this is arch-dependant. If not, I'll register on the kernel
-mailing list.
+On Sat, 16 Jul 2011 03:25:47 +0000
+"Chen, Tiejun" <Tiejun.Chen@windriver.com> wrote:
 
-I'm working with some legacy driver code (an IOCTL) that busy waits
-after requesting an operation from an FPGA. It reads a register in a
-loop until the FPGA has finished the operation. The operation is
-supposed to take about 1ms, but the driver code is returning after 11ms
-or more. If I instead run the same busy loop inside the application that
-calls the IOCTL, it takes <1ms. Instrumenting the driver loop shows that
-the loop is only executed a couple of times about 5ms apart (though
-printk may skew this slightly). The application loop is run MUCH more
-often.
+> > -----Original Message-----
+> > From: Scott Wood [mailto:scottwood@freescale.com] 
+> > Sent: Saturday, July 16, 2011 2:43 AM
+> > To: Chen, Tiejun
+> > Cc: Kumar Gala; linuxppc-dev@ozlabs.org
+> > Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program 
+> > exception to use one dedicated exception stack
+> > 
+> > On Fri, 15 Jul 2011 13:28:15 +0800
+> > tiejun.chen <tiejun.chen@windriver.com> wrote:
+> > 
+> > > Kumar Gala wrote:
+> > > > I'm still very confused why we need a unique stack frame 
+> > for kprobe/program exceptions on book-e devices.
+> > > 
+> > > Its a bug at least for Book-E.
+> > 
+> > But why only booke?  There's nothing booke-specific about the 
+> 
+> I don't mean this is reproduced only on booke, so I use 'at least' carefully to notice we really see this problem on booke.
+> 
+> > stwu instruction.
+> 
+> Please note this root cause to this bug is not related to how to emulate stwu instruction. That should be issued from the overlap between an exception frame and the kprobed function stack frame on booke. Would you like to see that example I showed?
 
-Platform is P2020 with kernel 2.6.37 running two applications. The one
-in question is run with FIFO scheduler at priority 10, the other one is
-run with FIFO scheduler at priority 50. All other processes are
-regular/default priority.
+As I understand it, the problem comes from the fact that stwu combines the
+creation of a stack frame with storing into that stack frame.  If they were
+separate instructions you'd have a new exception frame at a lower address
+by the time you actually store to the non-exception frame.
 
-The only difference in interface between calling the IOCTL and
-reading/writing registers through the device file is that read/writes
-use copy to/from user while the IOCTL calls io[read|write]32be. No data
-needs to go to user-space for this operation.
-
-A couple of questions:
-
-1. Why is the application code running WAY faster than the IOCTL call? I
-thought driver code was executed in process context at the same priority
-as the calling process.
-
-2. Can you suggest a better way to implement the busy wait in the driver
-code if I can get the priorities right? Should I even leave it in there?
-I'm doing a lot of reading, but could really use an expert opinion.
-
-Any light shed will be toasted heartily.
-
-Thanks,
-Matias Garcia
+-Scott
