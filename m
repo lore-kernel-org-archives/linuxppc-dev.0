@@ -1,16 +1,16 @@
 Return-Path: <haishan.bai@gmail.com>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
+	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6AAA2B6F87
+	by ozlabs.org (Postfix) with ESMTPS id 75E4AB6F80
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jul 2011 14:52:32 +1000 (EST)
-Received: by qwf7 with SMTP id 7so2031132qwf.38
+	Tue, 19 Jul 2011 15:14:53 +1000 (EST)
+Received: by qyk29 with SMTP id 29so2663453qyk.17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jul 2011 21:52:28 -0700 (PDT)
-Message-ID: <4E250E28.2020108@gmail.com>
-Date: Tue, 19 Jul 2011 12:55:04 +0800
+	Mon, 18 Jul 2011 22:14:50 -0700 (PDT)
+Message-ID: <4E251365.9090004@gmail.com>
+Date: Tue, 19 Jul 2011 13:17:25 +0800
 From: Shan Hai <haishan.bai@gmail.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -71,17 +71,20 @@ On 07/19/2011 12:29 PM, Benjamin Herrenschmidt wrote:
 > but let us know anyway.
 >
 
-Ok, I will test the patch, I think this should work, because
-it's similar to my first posted patch, the difference is that
-I tried to do it in the futex_atomic_cmpxchg_inatomic() in
-the ppc specific path, lower level than yours as in
-fault_in_user_writable :-)
-
-Anyway, I will notify you on the test result.
+The patch works, but I have certain confusions,
+- Do we want to handle_mm_fault on each futex_lock_pi
+     even though in most cases there is no write permission
+     fixup's needed?
+- How about let the archs do their own write permission
+     fixup as what I did in my original
+     "[PATCH 1/1] Fixup write permission of TLB on powerpc e500 core"?
+     (I will fix the stupid errors in my original patch if the concept 
+is acceptable)
+     in this way we could decrease the overhead of handle_mm_fault
+     in the path which does not need write permission fixup.
 
 Thanks
 Shan Hai
-
 > Cheers,
 > Ben.
 >
