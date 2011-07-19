@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 96F9DB71DF
+	by ozlabs.org (Postfix) with ESMTPS id 7BE43B76EF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jul 2011 00:19:09 +1000 (EST)
-Subject: Re: [PATCH 07/14] 85xx/ksi8560: declare that localbus is compatbile
+	Wed, 20 Jul 2011 00:19:15 +1000 (EST)
+Subject: Re: [PATCH 08/14] 85xx/sbc8560: declare that localbus is compatbile
 	with simple-bus
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1311065631-3429-8-git-send-email-dbaryshkov@gmail.com>
-Date: Tue, 19 Jul 2011 09:19:03 -0500
-Message-Id: <9AC23984-5829-4AF7-869D-20121C4AF2E3@kernel.crashing.org>
+In-Reply-To: <1311065631-3429-9-git-send-email-dbaryshkov@gmail.com>
+Date: Tue, 19 Jul 2011 09:19:09 -0500
+Message-Id: <BA0AD038-B674-4EEE-ADC5-B39789AA0D4F@kernel.crashing.org>
 References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
-	<1311065631-3429-8-git-send-email-dbaryshkov@gmail.com>
+	<1311065631-3429-9-git-send-email-dbaryshkov@gmail.com>
 To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: Linux PPC Development <linuxppc-dev@lists.ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
@@ -32,7 +32,7 @@ On Jul 19, 2011, at 3:53 AM, Dmitry Eremin-Solenikov wrote:
 
 > Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 > ---
-> arch/powerpc/boot/dts/ksi8560.dts |    2 +-
+> arch/powerpc/boot/dts/sbc8560.dts |    2 +-
 > 1 files changed, 1 insertions(+), 1 deletions(-)
 
 applied to next-3.2
