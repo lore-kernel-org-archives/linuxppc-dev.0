@@ -3,18 +3,18 @@ Received: from mail-ey0-f177.google.com (mail-ey0-f177.google.com
 	[209.85.215.177]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EBBC8B7497
+	by ozlabs.org (Postfix) with ESMTPS id 999F1B752F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jul 2011 18:55:00 +1000 (EST)
-Received: by eyh6 with SMTP id 6so2714358eyh.36
+	Tue, 19 Jul 2011 18:55:02 +1000 (EST)
+Received: by mail-ey0-f177.google.com with SMTP id 6so2714299eyh.36
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jul 2011 01:54:56 -0700 (PDT)
+	Tue, 19 Jul 2011 01:55:02 -0700 (PDT)
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: Linux PPC Development <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 07/14] 85xx/ksi8560: declare that localbus is compatbile with
-	simple-bus
-Date: Tue, 19 Jul 2011 12:53:44 +0400
-Message-Id: <1311065631-3429-8-git-send-email-dbaryshkov@gmail.com>
+Subject: [PATCH 10/14] 85xx/mpc85xx_rdb: merge p1020_rdb and p2020_rdb machine
+	entries
+Date: Tue, 19 Jul 2011 12:53:47 +0400
+Message-Id: <1311065631-3429-11-git-send-email-dbaryshkov@gmail.com>
 In-Reply-To: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
 References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
 Cc: Paul Mackerras <paulus@samba.org>
@@ -27,23 +27,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+p1020_rdb and p2020_rdb machine entries bear no in-kernel differencies
+other than dt compatible strings. Merge them into single machine entry
+named mpc85xx_rdb
+
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- arch/powerpc/boot/dts/ksi8560.dts |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   40 ++++++----------------------
+ 1 files changed, 9 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/ksi8560.dts b/arch/powerpc/boot/dts/ksi8560.dts
-index bdb7fc0..296c572 100644
---- a/arch/powerpc/boot/dts/ksi8560.dts
-+++ b/arch/powerpc/boot/dts/ksi8560.dts
-@@ -306,7 +306,7 @@
- 	localbus@fdf05000 {
- 		#address-cells = <2>;
- 		#size-cells = <1>;
--		compatible = "fsl,mpc8560-localbus";
-+		compatible = "fsl,mpc8560-localbus", "simple-bus";
- 		reg = <0xfdf05000 0x68>;
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index 088f30b..7a3a37b 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -120,47 +120,25 @@ static int __init mpc85xxrdb_publish_devices(void)
+ {
+ 	return of_platform_bus_probe(NULL, mpc85xxrdb_ids, NULL);
+ }
+-machine_device_initcall(p2020_rdb, mpc85xxrdb_publish_devices);
+-machine_device_initcall(p1020_rdb, mpc85xxrdb_publish_devices);
++machine_device_initcall(mpc85xx_rdb, mpc85xxrdb_publish_devices);
  
- 		ranges = <0x0 0x0 0xe0000000 0x00800000
+ /*
+  * Called very early, device-tree isn't unflattened
+  */
+-static int __init p2020_rdb_probe(void)
++static int __init mpc85xx_rdb_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "fsl,P2020RDB"))
++	if (of_flat_dt_is_compatible(root, "fsl,P1020RDB") ||
++	    of_flat_dt_is_compatible(root, "fsl,P2020RDB")) {
+ 		return 1;
+-	return 0;
++	} else
++		return 0;
+ }
+ 
+-static int __init p1020_rdb_probe(void)
+-{
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if (of_flat_dt_is_compatible(root, "fsl,P1020RDB"))
+-		return 1;
+-	return 0;
+-}
+-
+-define_machine(p2020_rdb) {
+-	.name			= "P2020 RDB",
+-	.probe			= p2020_rdb_probe,
+-	.setup_arch		= mpc85xx_rdb_setup_arch,
+-	.init_IRQ		= mpc85xx_rdb_pic_init,
+-#ifdef CONFIG_PCI
+-	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+-#endif
+-	.get_irq		= mpic_get_irq,
+-	.restart		= fsl_rstcr_restart,
+-	.calibrate_decr		= generic_calibrate_decr,
+-	.progress		= udbg_progress,
+-};
+-
+-define_machine(p1020_rdb) {
+-	.name			= "P1020 RDB",
+-	.probe			= p1020_rdb_probe,
++define_machine(mpc85xx_rdb) {
++	.name			= "MPC85xx RDB",
++	.probe			= mpc85xx_rdb_probe,
+ 	.setup_arch		= mpc85xx_rdb_setup_arch,
+ 	.init_IRQ		= mpc85xx_rdb_pic_init,
+ #ifdef CONFIG_PCI
 -- 
 1.7.2.5
