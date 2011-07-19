@@ -1,22 +1,35 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+	[IPv6:2001:4978:20e::2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 643E4B6F77
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2011 20:53:08 +1000 (EST)
-Message-ID: <4E2561F0.5040701@windriver.com>
-Date: Tue, 19 Jul 2011 18:52:32 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program exception to use one
-	dedicated exception stack
-References: <1310383915-30543-1-git-send-email-tiejun.chen@windriver.com>	<CC4F4DC6-0682-4FC6-8D89-CE9AFEA7AD85@kernel.crashing.org>	<4E1FCFEF.7070702@windriver.com>	<20110715134232.56373e03@schlenkerla.am.freescale.net>	<82C960D7DF4A1F47B94FC1C67A29BEE384D577@ALA-MBA.corp.ad.wrs.com>
-	<20110718105627.245c9fa4@schlenkerla.am.freescale.net>
-In-Reply-To: <20110718105627.245c9fa4@schlenkerla.am.freescale.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2641CB6F00
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 19 Jul 2011 21:10:50 +1000 (EST)
+Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW
+	tracking of dirty & young
+From: Peter Zijlstra <peterz@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1311049762.25044.392.camel@pasglop>
+References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>
+	<1310860194.25044.17.camel@pasglop>
+	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
+	<1310912990.25044.203.camel@pasglop>
+	<1310944453.25044.262.camel@pasglop>
+	<1310961691.25044.274.camel@pasglop>  <4E23D728.7090406@gmail.com>
+	<1310972462.25044.292.camel@pasglop>  <4E23E02C.8090401@gmail.com>
+	<1310974591.25044.298.camel@pasglop>  <4E24FA51.70602@gmail.com>
+	<1311049762.25044.392.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Tue, 19 Jul 2011 13:10:24 +0200
+Message-ID: <1311073824.13765.195.camel@twins>
+Mime-Version: 1.0
+Cc: tony.luck@intel.com, Shan Hai <haishan.bai@gmail.com>,
+	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
+	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Sat, 16 Jul 2011 03:25:47 +0000
-> "Chen, Tiejun" <Tiejun.Chen@windriver.com> wrote:
-> 
->>> -----Original Message-----
->>> From: Scott Wood [mailto:scottwood@freescale.com] 
->>> Sent: Saturday, July 16, 2011 2:43 AM
->>> To: Chen, Tiejun
->>> Cc: Kumar Gala; linuxppc-dev@ozlabs.org
->>> Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program 
->>> exception to use one dedicated exception stack
->>>
->>> On Fri, 15 Jul 2011 13:28:15 +0800
->>> tiejun.chen <tiejun.chen@windriver.com> wrote:
->>>
->>>> Kumar Gala wrote:
->>>>> I'm still very confused why we need a unique stack frame 
->>> for kprobe/program exceptions on book-e devices.
->>>> Its a bug at least for Book-E.
->>> But why only booke?  There's nothing booke-specific about the 
->> I don't mean this is reproduced only on booke, so I use 'at least' carefully to notice we really see this problem on booke.
->>
->>> stwu instruction.
->> Please note this root cause to this bug is not related to how to emulate stwu instruction. That should be issued from the overlap between an exception frame and the kprobed function stack frame on booke. Would you like to see that example I showed?
-> 
-> As I understand it, the problem comes from the fact that stwu combines the
-> creation of a stack frame with storing into that stack frame.  If they were
+On Tue, 2011-07-19 at 14:29 +1000, Benjamin Herrenschmidt wrote:
+> The futex code currently attempts to write to user memory within
+> a pagefault disabled section, and if that fails, tries to fix it
+> up using get_user_pages().
+>=20
+> This doesn't work on archs where the dirty and young bits are
+> maintained by software, since they will gate access permission
+> in the TLB, and will not be updated by gup().
+>=20
+> In addition, there's an expectation on some archs that a
+> spurious write fault triggers a local TLB flush, and that is
+> missing from the picture as well.
+>=20
+> I decided that adding those "features" to gup() would be too much
+> for this already too complex function, and instead added a new
+> simpler fixup_user_fault() which is essentially a wrapper around
+> handle_mm_fault() which the futex code can call.
+>=20
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>=20
 
-Yes.
-
-> separate instructions you'd have a new exception frame at a lower address
-> by the time you actually store to the non-exception frame.
-
-So when kprobe we should use a unique stack frame to skip that stack frame the
-kprobed stwu want to create.
-
-Tiejun
-
-> 
-> -Scott
-> 
-> 
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
