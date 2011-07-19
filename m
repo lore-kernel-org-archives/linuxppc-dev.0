@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 042C6B6F81
+	by ozlabs.org (Postfix) with ESMTPS id 96F9DB71DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jul 2011 00:19:05 +1000 (EST)
-Subject: Re: [PATCH 06/14] 85xx/sbc8560: correct compilation if
-	CONFIG_PHYS_ADDR_T_64BIT is set
+	Wed, 20 Jul 2011 00:19:09 +1000 (EST)
+Subject: Re: [PATCH 07/14] 85xx/ksi8560: declare that localbus is compatbile
+	with simple-bus
 Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1311065631-3429-7-git-send-email-dbaryshkov@gmail.com>
-Date: Tue, 19 Jul 2011 09:18:59 -0500
-Message-Id: <DF566035-7DE4-4AD1-9E79-DF5A8813AC86@kernel.crashing.org>
+In-Reply-To: <1311065631-3429-8-git-send-email-dbaryshkov@gmail.com>
+Date: Tue, 19 Jul 2011 09:19:03 -0500
+Message-Id: <9AC23984-5829-4AF7-869D-20121C4AF2E3@kernel.crashing.org>
 References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
-	<1311065631-3429-7-git-send-email-dbaryshkov@gmail.com>
+	<1311065631-3429-8-git-send-email-dbaryshkov@gmail.com>
 To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: Linux PPC Development <linuxppc-dev@lists.ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
@@ -30,23 +30,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Jul 19, 2011, at 3:53 AM, Dmitry Eremin-Solenikov wrote:
 
-> If CONFIG_PHYS_ADDR_T_64BIT is set, compilation of sbc8560 fails with
-> the following error:
->=20
-> arch/powerpc/platforms/85xx/sbc8560.c: In function =
-=91sbc8560_bdrstcr_init=92:
-> arch/powerpc/platforms/85xx/sbc8560.c:286: error: format =91%x=92 =
-expects type =91unsigned int=92, but argument 2 has type =
-=91resource_size_t=92
->=20
-> Fix that by using %pR format instead of just printing the start of
-> resource.
->=20
 > Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 > ---
-> arch/powerpc/platforms/85xx/sbc8560.c |    2 +-
+> arch/powerpc/boot/dts/ksi8560.dts |    2 +-
 > 1 files changed, 1 insertions(+), 1 deletions(-)
 
 applied to next-3.2
 
-- k=
+- k
