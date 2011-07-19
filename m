@@ -1,22 +1,29 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 968DBB6F80
+Return-Path: <haishan.bai@gmail.com>
+Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
+	[209.85.216.172]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3D52DB6F80
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jul 2011 18:39:19 +1000 (EST)
-Date: Tue, 19 Jul 2011 10:39:17 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc/5200: add GPIO functions for simple interrupt
-	GPIOs
-Message-ID: <20110719103917.7ece50c4@wker>
-In-Reply-To: <20110715200801.GJ2833@ponder.secretlab.ca>
-References: <1306142730-7528-1-git-send-email-agust@denx.de>
-	<20110706175245.GL5805@ponder.secretlab.ca>
-	<20110709121409.4ee9249e@wker>
-	<20110715200801.GJ2833@ponder.secretlab.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Detlev Zundel <dzu@denx.de>
+	Tue, 19 Jul 2011 18:42:58 +1000 (EST)
+Received: by qyk9 with SMTP id 9so2368443qyk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 19 Jul 2011 01:42:55 -0700 (PDT)
+Message-ID: <4E25442F.4080609@gmail.com>
+Date: Tue, 19 Jul 2011 16:45:35 +0800
+From: Shan Hai <haishan.bai@gmail.com>
+MIME-Version: 1.0
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW trackingof
+	dirty & young
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFF@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ADFF@saturn3.aculab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
+	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Jul 2011 14:08:01 -0600
-Grant Likely <grant.likely@secretlab.ca> wrote:
+On 07/19/2011 04:26 PM, David Laight wrote:
+>
+>> Got it, if the fault_in_user_writeable() is designed to catch the
+>> exact same write permission fault problem we discuss here, so
+>> your patch fixed that very nicely, we should fixup it by directly
+>> calling handle_mm_fault like what you did because we are for sure
+>> to know what just happened(permission violation), its not necessary
+>> to check what's happened by calling gup-->follow_page, and
+>> further the follow_page failed to report the fault :-)
+> One thought I've had - and I don't know enough about the data
+> area in use to know if it is a problem - is what happens if
+> a different cpu faults on the same user page and has already
+> marked it 'valid' between the fault happening and the fault
+> handler looking at the page tables to find out why.
+> If any of the memory areas are shared, it might be that the
+> PTE (etc) might already show the page a writable by the
+> time the fault handler is looking at them - this might confuse it!
+>
 
-> On Sat, Jul 09, 2011 at 12:14:09PM +0200, Anatolij Gustschin wrote:
-> > On Wed, 6 Jul 2011 11:52:45 -0600
-> > Grant Likely <grant.likely@secretlab.ca> wrote:
-> > 
-> > > On Mon, May 23, 2011 at 11:25:30AM +0200, Anatolij Gustschin wrote:
-> > > > The mpc52xx_gpio driver currently supports 8 wakeup GPIOs and 32
-> > > > simple GPIOs. Extend it to also support GPIO function of 8 simple
-> > > > interrupt GPIOs controlled in the standard GPIO register module.
-> > > > 
-> > > > Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> > > > ---
-> > > >  arch/powerpc/platforms/52xx/mpc52xx_gpio.c |  117 ++++++++++++++++++++++++++++
-> > > 
-> > > I don't want to merge more open coded MMIO gpio driver code.  This whole driver really needs to be converted to use GENERIC_GPIO.
-> > 
-> > I'm not sure I understand what you mean. Do you mean
-> > the conversion to drop of_mm_* stuff?
-> 
-> No, I mean conversion to use the generic gpio register access
-> functions instead of creating new ones.
+There is no problem at all if you mean *valid* by page present
+and writable, because when the fault_in_user_writeable()
+is called, the pte to the shared page was already setup by
+demand paging and pte.present and pte.write was set, and the
+reason why the fault was taken is that because of violation of
+permission on present and writable user page occurred on sw
+dirty/young tracking architectures.
 
-Could you please explain which functions exactly should be
-generalized? All functions (32-bit gpio register access and
-8-bit gpio register access for wakeup and simple interrupt gpio
-registers) by providing an access function and doing all
-simple/wakeup/simple-interrupt gpio specific stuff in it? Or only
-providing generic functions for 8-bit gpio registers and use them
-for both wakeup and simple-interrupt gpios? Which struct should be
-used for register offset calculation in accessors then? Should a
-generic 8-bit gpio register description struct be added for this
-purpose? Or some defines for generic register offsets? How to
-differentiate between shadow registers for wakeup and simple-
-interrupt gpios in generic accessors? By adding a type field
-to mpc52xx_gpiochip struct and checking for it in generic
-accessors?
+Thanks
+Shan Hai
 
-Thanks,
-Anatolij
+> 	David
+>
+>
