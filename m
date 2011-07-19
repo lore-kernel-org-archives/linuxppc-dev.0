@@ -1,32 +1,28 @@
-Return-Path: <haishan.bai@gmail.com>
-Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
-	[209.85.216.172]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AAB5CB6F00
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7AA2DB6F77
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jul 2011 13:27:53 +1000 (EST)
-Received: by qyk9 with SMTP id 9so2243139qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jul 2011 20:27:49 -0700 (PDT)
-Message-ID: <4E24FA51.70602@gmail.com>
-Date: Tue, 19 Jul 2011 11:30:25 +0800
-From: Shan Hai <haishan.bai@gmail.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Tue, 19 Jul 2011 14:21:10 +1000 (EST)
 Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
-References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	
-	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>	
-	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>	
-	<1310860194.25044.17.camel@pasglop>	
-	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>	
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Shan Hai <haishan.bai@gmail.com>
+In-Reply-To: <4E24FA51.70602@gmail.com>
+References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>
+	<1310860194.25044.17.camel@pasglop>
+	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
 	<1310912990.25044.203.camel@pasglop>
-	<1310944453.25044.262.camel@pasglop>	
-	<1310961691.25044.274.camel@pasglop> <4E23D728.7090406@gmail.com>	
-	<1310972462.25044.292.camel@pasglop> <4E23E02C.8090401@gmail.com>
-	<1310974591.25044.298.camel@pasglop>
-In-Reply-To: <1310974591.25044.298.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	<1310944453.25044.262.camel@pasglop>
+	<1310961691.25044.274.camel@pasglop>  <4E23D728.7090406@gmail.com>
+	<1310972462.25044.292.camel@pasglop>  <4E23E02C.8090401@gmail.com>
+	<1310974591.25044.298.camel@pasglop>  <4E24FA51.70602@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 19 Jul 2011 14:20:28 +1000
+Message-ID: <1311049228.25044.383.camel@pasglop>
+Mime-Version: 1.0
 Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Peter Zijlstra <peterz@infradead.org>,
 	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
@@ -41,167 +37,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/18/2011 03:36 PM, Benjamin Herrenschmidt wrote:
-> On Mon, 2011-07-18 at 15:26 +0800, Shan Hai wrote:
->> I am sorry I hadn't tried your newer patch, I tried it but it still
->> could not work in my test environment, I will dig into and tell you
->> why that failed later.
-> Ok, please let me know what you find !
->
+On Tue, 2011-07-19 at 11:30 +0800, Shan Hai wrote:
+> On 07/18/2011 03:36 PM, Benjamin Herrenschmidt wrote:
+> > On Mon, 2011-07-18 at 15:26 +0800, Shan Hai wrote:
+> >> I am sorry I hadn't tried your newer patch, I tried it but it still
+> >> could not work in my test environment, I will dig into and tell you
+> >> why that failed later.
+> > Ok, please let me know what you find !
+> >
+> 
+> Have not been finding out the reason why failed,
+> I tried the following based on your code,
 
-Have not been finding out the reason why failed,
-I tried the following based on your code,
-(1)
-diff --git a/kernel/futex.c b/kernel/futex.c
-index fe28dc2..820556d 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -353,10 +353,11 @@ static int fault_in_user_writeable(u32 __user *uaddr)
-  {
-         struct mm_struct *mm = current->mm;
-         int ret;
-+       int flags = FOLL_TOUCH | FOLL_GET | FOLL_WRITE | FOLL_FIXFAULT;
+Ok, looks like we'll need to dig more, though the original findings
+still stand, which means we might be chasing two different bugs :-)
 
-         down_read(&mm->mmap_sem);
--       ret = get_user_pages(current, mm, (unsigned long)uaddr,
--                            1, 1, 0, NULL, NULL);
-+       ret = __get_user_pages(current, mm, (unsigned long)uaddr, 1,
-+                              flags, NULL, NULL, NULL);
-         up_read(&mm->mmap_sem);
+I haven't had time to try to reproduce today and may not this week,
+so I'll have to let you toy around with it until I get a chance to
+try to track it down myself unless somebody else gets into it... Kumar ?
+Anybody on FSL side feels like having a look ?
+ 
+> How about the following one?
+> the write permission fixup behaviour is triggered explicitly by
+> the trouble making parts like futex as you suggested.
+> 
+> In this way, the follow_page() mimics exactly how the MMU
+> faults on atomic access to the user pages, and we could handle
+> the fault by already existing handle_mm_fault which also do
+> the dirty/young tracking properly.
 
-         return ret < 0 ? ret : 0;
+So you say this still doesn't fix your problem right ?
 
-(2)
-diff --git a/mm/memory.c b/mm/memory.c
-index 9b8a01d..f7ba26e 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-...
-+
-+       if ((flags & (FOLL_WRITE | FOLL_FIXFAULT)) && !pte_dirty(pte))
-+               handle_pte_sw_young_dirty(vma, address, ptep,
-+                                          FAULT_FLAG_WRITE);
-...
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 9670f71..8a76694 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1546,6 +1546,7 @@ struct page *follow_page(struct vm_area_struct *, 
+> unsigned long address,
+>   #define FOLL_MLOCK    0x40    /* mark page as mlocked */
+>   #define FOLL_SPLIT    0x80    /* don't return transhuge pages, split 
+> them */
+>   #define FOLL_HWPOISON    0x100    /* check page is hwpoisoned */
+> +#define FOLL_FIXFAULT    0x200    /* fixup after a fault (PTE 
+> dirty/young upd) */
 
-And everything lookes good, but still couldn't work, need more 
-investigation.
+Badly wrapped it seems :-) And totally whitespace damaged...
 
->> Yep, I know holding lots of ifdef's everywhere is not so good,
->> but if we have some other way(I don't know how till now) to
->> figure out the arch has the need to fixup up the write permission
->> we could eradicate the ugly ifdef's here.
->>
->> I think the handle_mm_fault could do all dirty/young tracking,
->> because the purpose of making follow_page return NULL to
->> its caller is that want to the handle_mm_fault to be called
->> on write permission protection fault.
-> I see your point. Rather than factoring the fixup code out, we could
-> force gup to call handle_mm_fault()... that makes sense.
->
-> However, I don't think we should special case archs. There's plenty of
-> cases where we don't care about this fixup even on archs that do SW
-> tracking of dirty and young. For example when gup is using for
-> subsequent DMA.
->
-> Only the (rare ?) cases where it's used as a mean to fixup a failing
-> "atomic" user access are relevant.
->
-> So I believe we should still pass an explicit flag to __get_user_pages()
-> as I propose to activate that behaviour.
->
+>   typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
+>               void *data);
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index fe28dc2..820556d 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -353,10 +353,11 @@ static int fault_in_user_writeable(u32 __user *uaddr)
+>   {
+>       struct mm_struct *mm = current->mm;
+>       int ret;
+> +    int flags = FOLL_TOUCH | FOLL_GET | FOLL_WRITE | FOLL_FIXFAULT;
 
-How about the following one?
-the write permission fixup behaviour is triggered explicitly by
-the trouble making parts like futex as you suggested.
+You don't want TOUCH -and- FIXFAULT do you ? Also you don't want GET
+since you aren't passing a page array or vma array anyway.
 
-In this way, the follow_page() mimics exactly how the MMU
-faults on atomic access to the user pages, and we could handle
-the fault by already existing handle_mm_fault which also do
-the dirty/young tracking properly.
+>       down_read(&mm->mmap_sem);
+> -    ret = get_user_pages(current, mm, (unsigned long)uaddr,
+> -                 1, 1, 0, NULL, NULL);
+> +    ret = __get_user_pages(current, mm, (unsigned long)uaddr, 1,
+> +                   flags, NULL, NULL, NULL);
+>       up_read(&mm->mmap_sem);
+> 
+>       return ret < 0 ? ret : 0;
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 9b8a01d..5682501 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1442,6 +1442,7 @@ struct page *follow_page(struct vm_area_struct 
+> *vma, unsigned long address,
+>       spinlock_t *ptl;
+>       struct page *page;
+>       struct mm_struct *mm = vma->vm_mm;
+> +    int fix_write_permission = 0;
 
+Don't do that.
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 9670f71..8a76694 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1546,6 +1546,7 @@ struct page *follow_page(struct vm_area_struct *, 
-unsigned long address,
-  #define FOLL_MLOCK    0x40    /* mark page as mlocked */
-  #define FOLL_SPLIT    0x80    /* don't return transhuge pages, split 
-them */
-  #define FOLL_HWPOISON    0x100    /* check page is hwpoisoned */
-+#define FOLL_FIXFAULT    0x200    /* fixup after a fault (PTE 
-dirty/young upd) */
+>       page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
+>       if (!IS_ERR(page)) {
+> @@ -1519,6 +1520,9 @@ split_fallthrough:
+>           if ((flags & FOLL_WRITE) &&
+>               !pte_dirty(pte) && !PageDirty(page))
+>               set_page_dirty(page);
+> +
+> +        if ((flags & (FOLL_WRITE | FOLL_FIXFAULT)) && !pte_dirty(pte))
+> +            fix_write_permission = 1;
 
-  typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
-              void *data);
-diff --git a/kernel/futex.c b/kernel/futex.c
-index fe28dc2..820556d 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -353,10 +353,11 @@ static int fault_in_user_writeable(u32 __user *uaddr)
-  {
-      struct mm_struct *mm = current->mm;
-      int ret;
-+    int flags = FOLL_TOUCH | FOLL_GET | FOLL_WRITE | FOLL_FIXFAULT;
+No, you missed my point completely. If FOLL_FIXFAULT is set, you don't
+even need to call follow_page() to begin with... you -always- want to
+force a call to handle_mm_fault (and only one, no loop), regardless
+of whether the PTE is dirty or not, since you need to also address
+the lack of a young bit.
 
-      down_read(&mm->mmap_sem);
--    ret = get_user_pages(current, mm, (unsigned long)uaddr,
--                 1, 1, 0, NULL, NULL);
-+    ret = __get_user_pages(current, mm, (unsigned long)uaddr, 1,
-+                   flags, NULL, NULL, NULL);
-      up_read(&mm->mmap_sem);
+(That might explain why your patch doesn't work if your problem is
+caused by a missing young bit).
 
-      return ret < 0 ? ret : 0;
-diff --git a/mm/memory.c b/mm/memory.c
-index 9b8a01d..5682501 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1442,6 +1442,7 @@ struct page *follow_page(struct vm_area_struct 
-*vma, unsigned long address,
-      spinlock_t *ptl;
-      struct page *page;
-      struct mm_struct *mm = vma->vm_mm;
-+    int fix_write_permission = 0;
+What about the patch in my next email...
 
-      page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
-      if (!IS_ERR(page)) {
-@@ -1519,6 +1520,9 @@ split_fallthrough:
-          if ((flags & FOLL_WRITE) &&
-              !pte_dirty(pte) && !PageDirty(page))
-              set_page_dirty(page);
-+
-+        if ((flags & (FOLL_WRITE | FOLL_FIXFAULT)) && !pte_dirty(pte))
-+            fix_write_permission = 1;
-          /*
-           * pte_mkyoung() would be more correct here, but atomic care
-           * is needed to avoid losing the dirty bit: it is easier to use
-@@ -1551,7 +1555,7 @@ split_fallthrough:
-  unlock:
-      pte_unmap_unlock(ptep, ptl);
-  out:
--    return page;
-+    return (fix_write_permission) ? NULL : page;
-
-  bad_page:
-      pte_unmap_unlock(ptep, ptl);
-
-> At this point, since we have isolated the special case callers, I think
-> we are pretty much in a situation where there's no point trying to
-> optimize the x86 case more, it's a fairly slow path anyway, and so no
-> ifdef should be needed (and x86 already #define out the TLB flush for
-> spurious faults in handle_pte_fault today).
->
-> We don't even need to change follow_page()... we just don't call it the
-> first time around.
->
-> I'll cook up another patch later but first we need to find out why the
-> one you have doesn't work. There might be another problem lurking (or I
-> just made a stupid mistake).
->
-> BTW. Can you give me some details about how you reproduce the problem ?
-> I should setup something on a booke machine here to verify things.
->
-> Cheers,
-> Ben.
->
+Ben.
