@@ -1,18 +1,39 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 19 Jul 2011 14:44:51 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [regression] 3.0-rc boot failure -- bisected to cd4ea6ae3982
-Message-ID: <20110719144451.79bc69ab@kryten>
-In-Reply-To: <1311024956.2309.22.camel@laptop>
-References: <20110707102107.GA16666@in.ibm.com>
-	<1310036375.3282.509.camel@twins> <20110714103418.7ef25b68@kryten>
-	<20110714143521.5fe4fab6@kryten> <1310649379.2586.273.camel@twins>
-	<20110715104547.29c3c509@kryten> <1311024956.2309.22.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org
+Return-Path: <haishan.bai@gmail.com>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6AAA2B6F87
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 19 Jul 2011 14:52:32 +1000 (EST)
+Received: by qwf7 with SMTP id 7so2031132qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 18 Jul 2011 21:52:28 -0700 (PDT)
+Message-ID: <4E250E28.2020108@gmail.com>
+Date: Tue, 19 Jul 2011 12:55:04 +0800
+From: Shan Hai <haishan.bai@gmail.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW tracking
+	of dirty & young
+References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>	
+	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>	
+	<1310860194.25044.17.camel@pasglop>	
+	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>	
+	<1310912990.25044.203.camel@pasglop>
+	<1310944453.25044.262.camel@pasglop>	
+	<1310961691.25044.274.camel@pasglop> <4E23D728.7090406@gmail.com>	
+	<1310972462.25044.292.camel@pasglop> <4E23E02C.8090401@gmail.com>	
+	<1310974591.25044.298.camel@pasglop> <4E24FA51.70602@gmail.com>
+	<1311049762.25044.392.camel@pasglop>
+In-Reply-To: <1311049762.25044.392.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
+	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,87 +43,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 18 Jul 2011 23:35:56 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On 07/19/2011 12:29 PM, Benjamin Herrenschmidt wrote:
+> The futex code currently attempts to write to user memory within
+> a pagefault disabled section, and if that fails, tries to fix it
+> up using get_user_pages().
+>
+> This doesn't work on archs where the dirty and young bits are
+> maintained by software, since they will gate access permission
+> in the TLB, and will not be updated by gup().
+>
+> In addition, there's an expectation on some archs that a
+> spurious write fault triggers a local TLB flush, and that is
+> missing from the picture as well.
+>
+> I decided that adding those "features" to gup() would be too much
+> for this already too complex function, and instead added a new
+> simpler fixup_user_fault() which is essentially a wrapper around
+> handle_mm_fault() which the futex code can call.
+>
+> Signed-off-by: Benjamin Herrenschmidt<benh@kernel.crashing.org>
+> ---
+>
+> Shan, can you test this ? It might not fix the problem since I'm
+> starting to have the nasty feeling that you are hitting what is
+> somewhat a subtly different issue or my previous patch should
+> have worked (but then I might have done a stupid mistake as well)
+> but let us know anyway.
+>
 
-> Anton, could you test the below two patches on that machine?
-> 
-> It should make things boot again, while I don't have a machine nearly
-> big enough to trigger any of this, I tested the new code paths by
-> setting FORCE_SD_OVERLAP in /debug/sched_features. Although any review
-> of the error paths would be much appreciated.
+Ok, I will test the patch, I think this should work, because
+it's similar to my first posted patch, the difference is that
+I tried to do it in the futex_atomic_cmpxchg_inatomic() in
+the ppc specific path, lower level than yours as in
+fault_in_user_writable :-)
 
-I get an oops in slub code:
+Anyway, I will notify you on the test result.
 
-NIP [c000000000197d30] .deactivate_slab+0x1b0/0x200
-LR [c000000000199d94] .__slab_alloc+0xb4/0x5a0
-[c000000000199d94] .__slab_alloc+0xb4/0x5a0
-[c00000000019ac98] .kmem_cache_alloc_node_trace+0xa8/0x260
-[c00000000007eb70] .build_sched_domains+0xa60/0xb90
-[c000000000a16a98] .sched_init_smp+0xa8/0x228
-[c000000000a00274] .kernel_init+0x10c/0x1fc
-[c00000000002324c] .kernel_thread+0x54/0x70
+Thanks
+Shan Hai
 
-I'm guessing it's a result of some nodes not having any local memory.
-but a bit surprised I'm not seeing it elsewhere.
-
-Investigating.
-
-> Also, could you send me the node_distance table for that machine? I'm
-> curious what the interconnects look like on that thing.
-
-Our node distances are a bit arbitrary (I make them up based on
-information given to us in the device tree). In terms of memory we have
-a maximum of three levels. To give some gross estimates, on chip memory
-might be 30GB/sec, on node memory 10-15GB/sec and off node memory
-5GB/sec.
-
-The only thing we tweak with node distances is to make sure we go into
-node reclaim before going off node:
-
-/*
- * Before going off node we want the VM to try and reclaim from the local
- * node. It does this if the remote distance is larger than RECLAIM_DISTANCE.
- * With the default REMOTE_DISTANCE of 20 and the default RECLAIM_DISTANCE of
- * 20, we never reclaim and go off node straight away.
- *
- * To fix this we choose a smaller value of RECLAIM_DISTANCE.
- */
-#define RECLAIM_DISTANCE 10
-
-Anton
-
-node distances:
-node   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31 
-  0:  10  20  20  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  1:  20  10  20  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  2:  20  20  10  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  3:  20  20  20  10  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  4:  40  40  40  40  10  20  20  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  5:  40  40  40  40  20  10  20  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  6:  40  40  40  40  20  20  10  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  7:  40  40  40  40  20  20  20  10  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  8:  40  40  40  40  40  40  40  40  10  20  20  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
-  9:  40  40  40  40  40  40  40  40  20  10  20  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
- 10:  40  40  40  40  40  40  40  40  20  20  10  20  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
- 11:  40  40  40  40  40  40  40  40  20  20  20  10  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
- 12:  40  40  40  40  40  40  40  40  40  40  40  40  10  20  20  20  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
- 13:  40  40  40  40  40  40  40  40  40  40  40  40  20  10  20  20  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
- 14:  40  40  40  40  40  40  40  40  40  40  40  40  20  20  10  20  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
- 15:  40  40  40  40  40  40  40  40  40  40  40  40  20  20  20  10  40  40  40  40  40  40  40  40  40  40  40  40   0   0   0   0 
- 16:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  10  20  20  20  40  40  40  40  40  40  40  40   0   0   0   0 
- 17:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  10  20  20  40  40  40  40  40  40  40  40   0   0   0   0 
- 18:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  20  10  20  40  40  40  40  40  40  40  40   0   0   0   0 
- 19:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  20  20  10  40  40  40  40  40  40  40  40   0   0   0   0 
- 20:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  10  20  20  20  40  40  40  40   0   0   0   0 
- 21:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  10  20  20  40  40  40  40   0   0   0   0 
- 22:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  20  10  20  40  40  40  40   0   0   0   0 
- 23:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  20  20  10  40  40  40  40   0   0   0   0 
- 24:   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
- 25:   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
- 26:   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
- 27:   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
- 28:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  10  20  20  20   0   0   0   0 
- 29:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  10  20  20   0   0   0   0 
- 30:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  20  10  20   0   0   0   0 
- 31:  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  40  20  20  20  10   0   0   0   0 
+> Cheers,
+> Ben.
+>
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 9670f71..1036614 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -985,6 +985,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>   int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+>   			struct page **pages);
+>   struct page *get_dump_page(unsigned long addr);
+> +extern int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
+> +			    unsigned long address, unsigned int fault_flags);
+>
+>   extern int try_to_release_page(struct page * page, gfp_t gfp_mask);
+>   extern void do_invalidatepage(struct page *page, unsigned long offset);
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index fe28dc2..7a0a4ed 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -355,8 +355,8 @@ static int fault_in_user_writeable(u32 __user *uaddr)
+>   	int ret;
+>
+>   	down_read(&mm->mmap_sem);
+> -	ret = get_user_pages(current, mm, (unsigned long)uaddr,
+> -			     1, 1, 0, NULL, NULL);
+> +	ret = fixup_user_fault(current, mm, (unsigned long)uaddr,
+> +			       FAULT_FLAG_WRITE);
+>   	up_read(&mm->mmap_sem);
+>
+>   	return ret<  0 ? ret : 0;
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 40b7531..b967fb0 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1815,7 +1815,64 @@ next_page:
+>   }
+>   EXPORT_SYMBOL(__get_user_pages);
+>
+> -/**
+> +/*
+> + * fixup_user_fault() - manually resolve a user page  fault
+> + * @tsk:	the task_struct to use for page fault accounting, or
+> + *		NULL if faults are not to be recorded.
+> + * @mm:		mm_struct of target mm
+> + * @address:	user address
+> + * @fault_flags:flags to pass down to handle_mm_fault()
+> + *
+> + * This is meant to be called in the specific scenario where for
+> + * locking reasons we try to access user memory in atomic context
+> + * (within a pagefault_disable() section), this returns -EFAULT,
+> + * and we want to resolve the user fault before trying again.
+> + *
+> + * Typically this is meant to be used by the futex code.
+> + *
+> + * The main difference with get_user_pages() is that this function
+> + * will unconditionally call handle_mm_fault() which will in turn
+> + * perform all the necessary SW fixup of the dirty and young bits
+> + * in the PTE, while handle_mm_fault() only guarantees to update
+> + * these in the struct page.
+> + *
+> + * This is important for some architectures where those bits also
+> + * gate the access permission to the page because their are
+> + * maintained in software. On such architecture, gup() will not
+> + * be enough to make a subsequent access succeed.
+> + *
+> + * This should be called with the mm_sem held for read.
+> + */
+> +int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
+> +		     unsigned long address, unsigned int fault_flags)
+> +{
+> +	struct vm_area_struct *vma;
+> +	int ret;
+> +
+> +	vma = find_extend_vma(mm, address);
+> +	if (!vma || address<  vma->vm_start)
+> +		return -EFAULT;
+> +	
+> +	ret = handle_mm_fault(mm, vma, address, fault_flags);
+> +	if (ret&  VM_FAULT_ERROR) {
+> +		if (ret&  VM_FAULT_OOM)
+> +			return -ENOMEM;
+> +		if (ret&  (VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE))
+> +			return -EHWPOISON;
+> +		if (ret&  VM_FAULT_SIGBUS)
+> +			return -EFAULT;
+> +		BUG();
+> +	}
+> +	if (tsk) {
+> +		if (ret&  VM_FAULT_MAJOR)
+> +			tsk->maj_flt++;
+> +		else
+> +			tsk->min_flt++;
+> +	}
+> +	return 0;
+> +}
+> +
+> +/*
+>    * get_user_pages() - pin user pages in memory
+>    * @tsk:	the task_struct to use for page fault accounting, or
+>    *		NULL if faults are not to be recorded.
+>
+>
