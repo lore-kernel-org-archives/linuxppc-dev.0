@@ -2,10 +2,11 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7AA2DB6F77
+	by ozlabs.org (Postfix) with ESMTPS id 7A7BDB6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jul 2011 14:21:10 +1000 (EST)
-Subject: Re: [PATCH 1/1] Fixup write permission of TLB on powerpc e500 core
+	Tue, 19 Jul 2011 14:29:58 +1000 (EST)
+Subject: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW tracking
+	of dirty & young
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Shan Hai <haishan.bai@gmail.com>
 In-Reply-To: <4E24FA51.70602@gmail.com>
@@ -20,8 +21,8 @@ References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
 	<1310972462.25044.292.camel@pasglop>  <4E23E02C.8090401@gmail.com>
 	<1310974591.25044.298.camel@pasglop>  <4E24FA51.70602@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Jul 2011 14:20:28 +1000
-Message-ID: <1311049228.25044.383.camel@pasglop>
+Date: Tue, 19 Jul 2011 14:29:22 +1000
+Message-ID: <1311049762.25044.392.camel@pasglop>
 Mime-Version: 1.0
 Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Peter Zijlstra <peterz@infradead.org>,
@@ -37,107 +38,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-07-19 at 11:30 +0800, Shan Hai wrote:
-> On 07/18/2011 03:36 PM, Benjamin Herrenschmidt wrote:
-> > On Mon, 2011-07-18 at 15:26 +0800, Shan Hai wrote:
-> >> I am sorry I hadn't tried your newer patch, I tried it but it still
-> >> could not work in my test environment, I will dig into and tell you
-> >> why that failed later.
-> > Ok, please let me know what you find !
-> >
-> 
-> Have not been finding out the reason why failed,
-> I tried the following based on your code,
+The futex code currently attempts to write to user memory within
+a pagefault disabled section, and if that fails, tries to fix it
+up using get_user_pages().
 
-Ok, looks like we'll need to dig more, though the original findings
-still stand, which means we might be chasing two different bugs :-)
+This doesn't work on archs where the dirty and young bits are
+maintained by software, since they will gate access permission
+in the TLB, and will not be updated by gup().
 
-I haven't had time to try to reproduce today and may not this week,
-so I'll have to let you toy around with it until I get a chance to
-try to track it down myself unless somebody else gets into it... Kumar ?
-Anybody on FSL side feels like having a look ?
- 
-> How about the following one?
-> the write permission fixup behaviour is triggered explicitly by
-> the trouble making parts like futex as you suggested.
-> 
-> In this way, the follow_page() mimics exactly how the MMU
-> faults on atomic access to the user pages, and we could handle
-> the fault by already existing handle_mm_fault which also do
-> the dirty/young tracking properly.
+In addition, there's an expectation on some archs that a
+spurious write fault triggers a local TLB flush, and that is
+missing from the picture as well.
 
-So you say this still doesn't fix your problem right ?
+I decided that adding those "features" to gup() would be too much
+for this already too complex function, and instead added a new
+simpler fixup_user_fault() which is essentially a wrapper around
+handle_mm_fault() which the futex code can call.
 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 9670f71..8a76694 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1546,6 +1546,7 @@ struct page *follow_page(struct vm_area_struct *, 
-> unsigned long address,
->   #define FOLL_MLOCK    0x40    /* mark page as mlocked */
->   #define FOLL_SPLIT    0x80    /* don't return transhuge pages, split 
-> them */
->   #define FOLL_HWPOISON    0x100    /* check page is hwpoisoned */
-> +#define FOLL_FIXFAULT    0x200    /* fixup after a fault (PTE 
-> dirty/young upd) */
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Badly wrapped it seems :-) And totally whitespace damaged...
+Shan, can you test this ? It might not fix the problem since I'm
+starting to have the nasty feeling that you are hitting what is
+somewhat a subtly different issue or my previous patch should
+have worked (but then I might have done a stupid mistake as well)
+but let us know anyway.
 
->   typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
->               void *data);
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index fe28dc2..820556d 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -353,10 +353,11 @@ static int fault_in_user_writeable(u32 __user *uaddr)
->   {
->       struct mm_struct *mm = current->mm;
->       int ret;
-> +    int flags = FOLL_TOUCH | FOLL_GET | FOLL_WRITE | FOLL_FIXFAULT;
-
-You don't want TOUCH -and- FIXFAULT do you ? Also you don't want GET
-since you aren't passing a page array or vma array anyway.
-
->       down_read(&mm->mmap_sem);
-> -    ret = get_user_pages(current, mm, (unsigned long)uaddr,
-> -                 1, 1, 0, NULL, NULL);
-> +    ret = __get_user_pages(current, mm, (unsigned long)uaddr, 1,
-> +                   flags, NULL, NULL, NULL);
->       up_read(&mm->mmap_sem);
-> 
->       return ret < 0 ? ret : 0;
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 9b8a01d..5682501 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1442,6 +1442,7 @@ struct page *follow_page(struct vm_area_struct 
-> *vma, unsigned long address,
->       spinlock_t *ptl;
->       struct page *page;
->       struct mm_struct *mm = vma->vm_mm;
-> +    int fix_write_permission = 0;
-
-Don't do that.
-
->       page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
->       if (!IS_ERR(page)) {
-> @@ -1519,6 +1520,9 @@ split_fallthrough:
->           if ((flags & FOLL_WRITE) &&
->               !pte_dirty(pte) && !PageDirty(page))
->               set_page_dirty(page);
-> +
-> +        if ((flags & (FOLL_WRITE | FOLL_FIXFAULT)) && !pte_dirty(pte))
-> +            fix_write_permission = 1;
-
-No, you missed my point completely. If FOLL_FIXFAULT is set, you don't
-even need to call follow_page() to begin with... you -always- want to
-force a call to handle_mm_fault (and only one, no loop), regardless
-of whether the PTE is dirty or not, since you need to also address
-the lack of a young bit.
-
-(That might explain why your patch doesn't work if your problem is
-caused by a missing young bit).
-
-What about the patch in my next email...
-
+Cheers,
 Ben.
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 9670f71..1036614 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -985,6 +985,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages);
+ struct page *get_dump_page(unsigned long addr);
++extern int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
++			    unsigned long address, unsigned int fault_flags);
+ 
+ extern int try_to_release_page(struct page * page, gfp_t gfp_mask);
+ extern void do_invalidatepage(struct page *page, unsigned long offset);
+diff --git a/kernel/futex.c b/kernel/futex.c
+index fe28dc2..7a0a4ed 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -355,8 +355,8 @@ static int fault_in_user_writeable(u32 __user *uaddr)
+ 	int ret;
+ 
+ 	down_read(&mm->mmap_sem);
+-	ret = get_user_pages(current, mm, (unsigned long)uaddr,
+-			     1, 1, 0, NULL, NULL);
++	ret = fixup_user_fault(current, mm, (unsigned long)uaddr,
++			       FAULT_FLAG_WRITE);
+ 	up_read(&mm->mmap_sem);
+ 
+ 	return ret < 0 ? ret : 0;
+diff --git a/mm/memory.c b/mm/memory.c
+index 40b7531..b967fb0 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1815,7 +1815,64 @@ next_page:
+ }
+ EXPORT_SYMBOL(__get_user_pages);
+ 
+-/**
++/*
++ * fixup_user_fault() - manually resolve a user page  fault
++ * @tsk:	the task_struct to use for page fault accounting, or
++ *		NULL if faults are not to be recorded.
++ * @mm:		mm_struct of target mm
++ * @address:	user address
++ * @fault_flags:flags to pass down to handle_mm_fault()
++ *
++ * This is meant to be called in the specific scenario where for
++ * locking reasons we try to access user memory in atomic context
++ * (within a pagefault_disable() section), this returns -EFAULT,
++ * and we want to resolve the user fault before trying again.
++ *
++ * Typically this is meant to be used by the futex code.
++ *
++ * The main difference with get_user_pages() is that this function
++ * will unconditionally call handle_mm_fault() which will in turn
++ * perform all the necessary SW fixup of the dirty and young bits
++ * in the PTE, while handle_mm_fault() only guarantees to update
++ * these in the struct page.
++ *
++ * This is important for some architectures where those bits also
++ * gate the access permission to the page because their are
++ * maintained in software. On such architecture, gup() will not
++ * be enough to make a subsequent access succeed.
++ *
++ * This should be called with the mm_sem held for read.
++ */
++int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
++		     unsigned long address, unsigned int fault_flags)
++{
++	struct vm_area_struct *vma;
++	int ret;
++
++	vma = find_extend_vma(mm, address);
++	if (!vma || address < vma->vm_start)
++		return -EFAULT;
++	
++	ret = handle_mm_fault(mm, vma, address, fault_flags);
++	if (ret & VM_FAULT_ERROR) {
++		if (ret & VM_FAULT_OOM)
++			return -ENOMEM;
++		if (ret & (VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE))
++			return -EHWPOISON;
++		if (ret & VM_FAULT_SIGBUS)
++			return -EFAULT;
++		BUG();
++	}
++	if (tsk) {
++		if (ret & VM_FAULT_MAJOR)
++			tsk->maj_flt++;
++		else
++			tsk->min_flt++;
++	}
++	return 0;
++}
++
++/*
+  * get_user_pages() - pin user pages in memory
+  * @tsk:	the task_struct to use for page fault accounting, or
+  *		NULL if faults are not to be recorded.
