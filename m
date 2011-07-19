@@ -1,24 +1,20 @@
 Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
-	[213.199.154.207])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 01563B6F18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jul 2011 03:54:58 +1000 (EST)
-Date: Tue, 19 Jul 2011 12:54:47 -0500
+	by ozlabs.org (Postfix) with ESMTPS id DCF62B6F75
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jul 2011 04:24:38 +1000 (EST)
+Date: Tue, 19 Jul 2011 13:24:30 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 13/14] 85xx: consolidate of_platform_bus_probe calls
-Message-ID: <20110719125447.19c964d1@schlenkerla.am.freescale.net>
-In-Reply-To: <1311065631-3429-14-git-send-email-dbaryshkov@gmail.com>
-References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
-	<1311065631-3429-14-git-send-email-dbaryshkov@gmail.com>
+To: Daniel Ng2 <daniel.ng1234@gmail.com>
+Subject: Re: setbat() in udbg_init_cpm() required to avoid driver lockup
+Message-ID: <20110719132430.5b6bfe95@schlenkerla.am.freescale.net>
+In-Reply-To: <32088424.post@talk.nabble.com>
+References: <32088424.post@talk.nabble.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
-Cc: Paul Mackerras <paulus@samba.org>,
-	Linux PPC Development <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 19 Jul 2011 12:53:50 +0400
-Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+On Mon, 18 Jul 2011 22:39:01 -0700
+Daniel Ng2 <daniel.ng1234@gmail.com> wrote:
 
-> +static struct of_device_id __initdata mpc85xx_common_ids[] = {
-> +	{ .type = "soc", },
-> +	{ .compatible = "soc", },
-> +	{ .compatible = "simple-bus", },
-> +	{ .compatible = "gianfar", },
-> +	{ .compatible = "fsl,qe", },
-> +	{ .compatible = "fsl,cpm2", },
-> +	{},
-> +};
+> 
+> Our USB Device Controller (UDC) driver seems to get stuck in a loop waiting
+> for the CPM Command Register to indicate that the CPM has finished executing
+> a command. (It should do this by setting the cpmcr 'Command Done' bit).
+>
+> This only happens if I disable the 'Early Debug' Kernel Hacking .config
+> parameter. If Early Debug is enabled, then the problem goes away.
+> 
+> I've narrowed it down to this line in udbg_init_cpm(void):
+> 
+> setbat(1, 0xf0000000, 0xf0000000, 0x40000, PAGE_KERNEL_NCG);
+> 
+> -without this line, the driver gets stuck in the loop.
+> 
+> Can anyone suggest why?
 
-Same comment as for 83xx regarding localbus and compatibility with old
-device trees.
+Is your USB driver accessing effective addresses from 0xf0000000 to
+0xf0040000?  It should be using ioremap().
+
+> Also, what undesireable effects might there be of keeping the above call to
+> setbat()?
+
+It's squatting on a chunk of virtual address space without properly
+reserving it.  This is bad enough for a debug hack (and should be fixed).
+Don't extend it to normal operation -- especially not as a substitute for
+understanding the root cause of your problem.
 
 -Scott
