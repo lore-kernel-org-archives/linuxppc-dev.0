@@ -1,20 +1,18 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 20 Jul 2011 22:14:20 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [regression] 3.0-rc boot failure -- bisected to cd4ea6ae3982
-Message-ID: <20110720221420.153b0830@kryten>
-In-Reply-To: <1311158708.5345.12.camel@twins>
-References: <20110707102107.GA16666@in.ibm.com>
-	<1310036375.3282.509.camel@twins> <20110714103418.7ef25b68@kryten>
-	<20110714143521.5fe4fab6@kryten> <1310649379.2586.273.camel@twins>
-	<20110715104547.29c3c509@kryten> <1311024956.2309.22.camel@laptop>
-	<20110719144451.79bc69ab@kryten> <1311070894.13765.180.camel@twins>
-	<20110720201436.19e9689a@kryten> <1311158708.5345.12.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org
+Return-Path: <aymane@elkhashab.com>
+Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [207.114.241.63])
+	by ozlabs.org (Postfix) with ESMTP id 48E0AB6F68
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 20 Jul 2011 23:02:42 +1000 (EST)
+From: Ayman Elkhashab <aymane@elkhashab.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Tony Breeds <tony@bakeyournoodle.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [v3 PATCH 0/1] powerpc/4xx: enable and fix pcie gen1/gen2 on the 460sx
+Date: Wed, 20 Jul 2011 08:02:28 -0500
+Message-Id: <1311166949-2543-1-git-send-email-aymane@elkhashab.com>
+In-Reply-To: <1310603611-8960-2-git-send-email-ayman@elkhashab.com>
+References: <1310603611-8960-2-git-send-email-ayman@elkhashab.com>
+Cc: Ayman El-Khashab <ayman@elkhashab.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,11 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Ayman El-Khashab <ayman@elkhashab.com>
 
-Hi Peter,
+Changes from v1->v2
+Added definitions for the bits in the OMRxMSKL registers
+Refactored the setting of the OMRxMSKL registers for the 460SX
+Added bit defines for the PECFG_460SX_DLLSTA register
 
-> So with that fix the patch makes the machine happy again?
+Changes from v2->v3
+Fixed commit message to be more clear as to what was done
 
-Yes, the machine looks fine with the patches applied. Thanks!
+Ayman El-Khashab (1):
+  powerpc/4xx: enable and fix pcie gen1/gen2 on the 460sx
 
-Anton
+ arch/powerpc/sysdev/ppc4xx_pci.c |   89 ++++++++++++++++++++++++++++++-------
+ arch/powerpc/sysdev/ppc4xx_pci.h |   12 +++++
+ 2 files changed, 84 insertions(+), 17 deletions(-)
+
+-- 
+1.7.4.3
