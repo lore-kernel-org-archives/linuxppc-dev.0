@@ -1,19 +1,24 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 20 Jul 2011 12:03:26 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [regression] 3.0-rc boot failure -- bisected to cd4ea6ae3982
-Message-ID: <20110720120326.093d9045@kryten>
-In-Reply-To: <1311070894.13765.180.camel@twins>
-References: <20110707102107.GA16666@in.ibm.com>
-	<1310036375.3282.509.camel@twins> <20110714103418.7ef25b68@kryten>
-	<20110714143521.5fe4fab6@kryten> <1310649379.2586.273.camel@twins>
-	<20110715104547.29c3c509@kryten> <1311024956.2309.22.camel@laptop>
-	<20110719144451.79bc69ab@kryten> <1311070894.13765.180.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob6.rzone.de (mo-p05-ob6.rzone.de
+	[IPv6:2a01:238:20a:202:53f5::1])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 19956B6F75
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jul 2011 17:18:51 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] net: ibm_newemac: Don't start autonegotiation when
+	disabled in BMCR (genmii)
+Date: Wed, 20 Jul 2011 09:18:34 +0200
+References: <1311072604-24840-1-git-send-email-sr@denx.de>
+	<201107191359.57421.sr@denx.de>
+	<1311078570.25044.421.camel@pasglop>
+In-Reply-To: <1311078570.25044.421.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201107200918.34873.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,61 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi,
-
-> That looks very strange indeed.. up to node 23 there is the normal
-> symmetric matrix with all the trace elements on 10 (as we would expect
-> for local access), and some 4x4 sub-matrix stacked around the trace
-> with 20, suggesting a single hop distance, and the rest on 40 being
-> out-there.
+On Tuesday 19 July 2011 14:29:30 Benjamin Herrenschmidt wrote:
+> > I feel that this BMCR_ANENABLE bit should be evaluated, but I have no
+> > strong preference here. If you prefer that this should be handled via a
+> > new dt property (phy-aneg = "disabled" ?), I can implement it this way.
+> > Just let me know.
 > 
-> But row 24-27 and column 28-31 are way weird, how can that ever be?
-> Aren't the inter-connects symmetric and thus mandating a fully
-> symmetric matrix? That is, how can traffic from node 23 (row) to node
-> 28 (column) have inf bandwidth (0) yet traffic from node 28 (row) to
-> node 23 (column) have a multi-hop distance of 40.
+> Don't we already have some bindings for PHY with a fixed setting ? I
+> don't remember off hand, we need to dbl check.
 
-Good point, it definitely makes no sense. It looks like a bug in
-numactl, the raw data looks reasonable:
+The only related PHY property I found is "fixed-link" used in fs_enet-main.c. 
+None in the emac driver. Here the description for "fixed-link":
 
-# cat /sys/devices/system/node/node?/distance node??/distance
-10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20
-40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10
+Documentation/devicetree/bindings/net/fsl-tsec-phy.txt:
 
-Yet another bug to track down :(
+  - fixed-link : <a b c d e> where a is emulated phy id - choose any,
+    but unique to the all specified fixed-links, b is duplex - 0 half,
+    1 full, c is link speed - d#10/d#100/d#1000, d is pause - 0 no
+    pause, 1 pause, e is asym_pause - 0 no asym_pause, 1 asym_pause.
 
-> So the idea I had to generate numa sched domains from the node
-> distance ( http://marc.info/?l=linux-kernel&m=130218515520540 ),
-> would that still work for you? [it does assume a symmetric matrix ]
+But what I really want to achieve, is to skip auto-negotiation (use the 
+strapped configuration). And not to define this fixed configuration (again) in 
+the device-tree. So I would prefer something like phy-aneg = "disabled".
 
-It should work for us and it makes our NUMA memory and scheduler
-domains more consistent. Nice!
+What do you think?
 
-Anton
+Thanks,
+Stefan
