@@ -1,16 +1,19 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 20 Jul 2011 09:46:40 +1000
+Date: Wed, 20 Jul 2011 12:03:26 +1000
 From: Anton Blanchard <anton@samba.org>
-To: "David Laight" <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH 4/4] powerpc: Enable lockup and hung task detectors in
-	pseriesand ppc64 defeconfigs
-Message-ID: <20110720094640.5c2145a5@kryten>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ADE3@saturn3.aculab.com>
-References: <20110706231337.327165192@samba.org>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8ADE3@saturn3.aculab.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [regression] 3.0-rc boot failure -- bisected to cd4ea6ae3982
+Message-ID: <20110720120326.093d9045@kryten>
+In-Reply-To: <1311070894.13765.180.camel@twins>
+References: <20110707102107.GA16666@in.ibm.com>
+	<1310036375.3282.509.camel@twins> <20110714103418.7ef25b68@kryten>
+	<20110714143521.5fe4fab6@kryten> <1310649379.2586.273.camel@twins>
+	<20110715104547.29c3c509@kryten> <1311024956.2309.22.camel@laptop>
+	<20110719144451.79bc69ab@kryten> <1311070894.13765.180.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,28 +24,60 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Hi David,
+Hi,
 
-> > As a result of changes to Kconfig files, we no longer enable
-> > the lockup and hung task detectors. Both are very light weight
-> > and provide useful information in the event of a hang, so
-> > reenable them.
-> ...
-> > +CONFIG_LOCKUP_DETECTOR=y
-> > +CONFIG_DETECT_HUNG_TASK=y
+> That looks very strange indeed.. up to node 23 there is the normal
+> symmetric matrix with all the trace elements on 10 (as we would expect
+> for local access), and some 4x4 sub-matrix stacked around the trace
+> with 20, suggesting a single hop distance, and the rest on 40 being
+> out-there.
 > 
-> Is one of thise responsible for generating a kernel stack traceback
-> when a process has been sleeping uninterruptably for a 'long' time?
-> 
-> We have a kernel subsystem that has several 'worker' threads,
-> these always sleep uninterruptable (they are shut down by explicit
-> request) and, at times, can be idle for long periods.
-> 
-> Perhaps it should be possible to disable the check either on
-> a per-process of per sleep basis?
+> But row 24-27 and column 28-31 are way weird, how can that ever be?
+> Aren't the inter-connects symmetric and thus mandating a fully
+> symmetric matrix? That is, how can traffic from node 23 (row) to node
+> 28 (column) have inf bandwidth (0) yet traffic from node 28 (row) to
+> node 23 (column) have a multi-hop distance of 40.
 
-I don't see any runtime options other than disabling it completely via:
+Good point, it definitely makes no sense. It looks like a bug in
+numactl, the raw data looks reasonable:
 
-/proc/sys/kernel/hung_task_timeout_secs
+# cat /sys/devices/system/node/node?/distance node??/distance
+10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10 40 40 40 40
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 10 20 20 20
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 10 20 20
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 10 20
+40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 20 20 20 10
+
+Yet another bug to track down :(
+
+> So the idea I had to generate numa sched domains from the node
+> distance ( http://marc.info/?l=linux-kernel&m=130218515520540 ),
+> would that still work for you? [it does assume a symmetric matrix ]
+
+It should work for us and it makes our NUMA memory and scheduler
+domains more consistent. Nice!
 
 Anton
