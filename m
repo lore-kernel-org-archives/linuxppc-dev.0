@@ -1,15 +1,21 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 8DC54B6F71
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9C7EFB6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Jul 2011 15:04:44 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] MAINTAINERS: change maintainership of mpc5xxx
-Date: Thu, 21 Jul 2011 07:04:25 +0200
-Message-Id: <1311224665-19159-1-git-send-email-agust@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>
+	Thu, 21 Jul 2011 19:22:50 +1000 (EST)
+Subject: Re: Please pull 'next' branch of 4xx tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+In-Reply-To: <CA+5PVA6TqGQT57_=4vqT9KOdH0sSLiB8zcYtVsoR_=7dtXv5QA@mail.gmail.com>
+References: <20110712204156.GD4203@zod.rchland.ibm.com>
+	<CA+5PVA6TqGQT57_=4vqT9KOdH0sSLiB8zcYtVsoR_=7dtXv5QA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 21 Jul 2011 19:22:39 +1000
+Message-ID: <1311240159.25044.505.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,29 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant intends to hand over maintainership of mpc5xxx
-to me. Change MPC5XXX entry in MAINTAINERS accordingly.
+On Wed, 2011-07-20 at 09:18 -0400, Josh Boyer wrote:
+> On Tue, Jul 12, 2011 at 4:41 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > Hi Ben,
+> >
+> > A few fixes from Tony/Dave, a DTS update from Stefan, and a MAINTAINERS
+> > update.
+> >
+> > josh
+> >
+> > The following changes since commit af9719c3062dfe216a0c3de3fa52be6d22b4456c:
+> >
+> >  powerpc: Use -mtraceback=no (2011-07-01 13:49:27 +1000)
+> >
+> > are available in the git repository at:
+> >  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+> 
+> Ben, ping?
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- MAINTAINERS |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Yup, I'll get to it :-) Hopefully tomorrow.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 187282d..323208d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3878,9 +3878,9 @@ F:	arch/powerpc/platforms/powermac/
- F:	drivers/macintosh/
- 
- LINUX FOR POWERPC EMBEDDED MPC5XXX
--M:	Grant Likely <grant.likely@secretlab.ca>
-+M:	Anatolij Gustschin <agust@denx.de>
- L:	linuxppc-dev@lists.ozlabs.org
--T:	git git://git.secretlab.ca/git/linux-2.6.git
-+T:	git git://git.denx.de/linux-2.6-agust.git
- S:	Maintained
- F:	arch/powerpc/platforms/512x/
- F:	arch/powerpc/platforms/52xx/
--- 
-1.7.1
+Cheers,
+Ben.
