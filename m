@@ -1,30 +1,21 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE010.bigfish.com (va3ehsobe010.messaging.microsoft.com
-	[216.32.180.30]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9E045B6F64
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1543DB6F6B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 01:58:51 +1000 (EST)
-Received: from mail163-va3 (localhost.localdomain [127.0.0.1])	by
-	mail163-va3-R.bigfish.com (Postfix) with ESMTP id B6B73400323	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2011 15:58:46 +0000 (UTC)
-Received: from VA3EHSMHS003.bigfish.com (unknown [10.7.14.239])	by
-	mail163-va3.bigfish.com (Postfix) with ESMTP id 8200DBA0050	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2011 15:58:42 +0000 (UTC)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Xie Shaohui-B21989 <B21989@freescale.com>
-Subject: Re: [PATCH 3/4] powerpc/85xx: Merge PCI/PCI Express error
-	management registers
-Date: Thu, 21 Jul 2011 15:58:33 +0000
-Message-ID: <CAOZdJXVFakNCpQk6CPB_V7WVtkfREwuUMqs31XfjuKZnc3-ARA@mail.gmail.com>
-References: <1311244195-4418-1-git-send-email-Shaohui.Xie@freescale.com>
-In-Reply-To: <1311244195-4418-1-git-send-email-Shaohui.Xie@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Jiang Kai-B18973 <B18973@freescale.com>
+	Fri, 22 Jul 2011 05:50:02 +1000 (EST)
+Date: Thu, 21 Jul 2011 12:47:57 -0700 (PDT)
+Message-Id: <20110721.124757.1998243180954846915.davem@davemloft.net>
+To: matt@ozlabs.org
+Subject: Re: [PATCH v3] net: filter: BPF 'JIT' compiler for PPC64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4E278604.5080605@ozlabs.org>
+References: <4E23E5C3.1070209@ozlabs.org> <4E24E867.9050909@ozlabs.org>
+	<4E278604.5080605@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 21, 2011 at 5:29 AM, Shaohui Xie <Shaohui.Xie@freescale.com> wr=
-ote:
+From: Matt Evans <matt@ozlabs.org>
+Date: Thu, 21 Jul 2011 11:51:00 +1000
 
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 /* - PCIE has no this register */
+> An implementation of a code generator for BPF programs to speed up packet
+> filtering on PPC64, inspired by Eric Dumazet's x86-64 version.
+> 
+> Filter code is generated as an ABI-compliant function in module_alloc()'d mem
+> with stackframe & prologue/epilogue generated if required (simple filters don't
+> need anything more than an li/blr).  The filter's local variables, M[], live in
+> registers.  Supports all BPF opcodes, although "complicated" loads from negative
+> packet offsets (e.g. SKF_LL_OFF) are not yet supported.
+> 
+> There are a couple of further optimisations left for future work; many-pass
+> assembly with branch-reach reduction and a register allocator to push M[]
+> variables into volatile registers would improve the code quality further.
+> 
+> This currently supports big-endian 64-bit PowerPC only (but is fairly simple
+> to port to PPC32 or LE!).
+> 
+> Enabled in the same way as x86-64:
+> 
+> 	echo 1 > /proc/sys/net/core/bpf_jit_enable
+> 
+> Or, enabled with extra debug output:
+> 
+> 	echo 2 > /proc/sys/net/core/bpf_jit_enable
+> 
+> Signed-off-by: Matt Evans <matt@ozlabs.org>
 
-I don't understand this sentence.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Applied.
