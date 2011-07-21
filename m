@@ -4,34 +4,22 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 86BBBB6F6F
+	by ozlabs.org (Postfix) with ESMTPS id AE349B6F70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 08:36:31 +1000 (EST)
-Date: Thu, 21 Jul 2011 15:36:06 -0700
+	Fri, 22 Jul 2011 08:44:32 +1000 (EST)
+Date: Thu, 21 Jul 2011 15:44:27 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW
-	tracking of dirty & young
-Message-Id: <20110721153606.37e6f432.akpm@linux-foundation.org>
-In-Reply-To: <1311049762.25044.392.camel@pasglop>
-References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
-	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
-	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>
-	<1310860194.25044.17.camel@pasglop>
-	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
-	<1310912990.25044.203.camel@pasglop>
-	<1310944453.25044.262.camel@pasglop>
-	<1310961691.25044.274.camel@pasglop> <4E23D728.7090406@gmail.com>
-	<1310972462.25044.292.camel@pasglop> <4E23E02C.8090401@gmail.com>
-	<1310974591.25044.298.camel@pasglop> <4E24FA51.70602@gmail.com>
-	<1311049762.25044.392.camel@pasglop>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] hugetlb: add phys addr to struct huge_bootmem_page
+Message-Id: <20110721154427.53e8fd5b.akpm@linux-foundation.org>
+In-Reply-To: <13092910103675-git-send-email-beckyb@kernel.crashing.org>
+References: <1309290888309-git-send-email-beckyb@kernel.crashing.org>
+	<13092909493748-git-send-email-beckyb@kernel.crashing.org>
+	<13092910103675-git-send-email-beckyb@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Shan Hai <haishan.bai@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
-	walken@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,42 +29,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 19 Jul 2011 14:29:22 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, 28 Jun 2011 14:54:45 -0500
+Becky Bruce <beckyb@kernel.crashing.org> wrote:
 
-> The futex code currently attempts to write to user memory within
-> a pagefault disabled section, and if that fails, tries to fix it
-> up using get_user_pages().
+> From: Becky Bruce <beckyb@kernel.crashing.org>
 > 
-> This doesn't work on archs where the dirty and young bits are
-> maintained by software, since they will gate access permission
-> in the TLB, and will not be updated by gup().
+> This is needed on HIGHMEM systems - we don't always have a virtual
+> address so store the physical address and map it in as needed.
 > 
-> In addition, there's an expectation on some archs that a
-> spurious write fault triggers a local TLB flush, and that is
-> missing from the picture as well.
-> 
-> I decided that adding those "features" to gup() would be too much
-> for this already too complex function, and instead added a new
-> simpler fixup_user_fault() which is essentially a wrapper around
-> handle_mm_fault() which the futex code can call.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
 > ---
+>  include/linux/hugetlb.h |    3 +++
+>  mm/hugetlb.c            |    8 +++++++-
+>  2 files changed, 10 insertions(+), 1 deletions(-)
 > 
-> Shan, can you test this ? It might not fix the problem
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index 59225ef..19644e0 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -231,6 +231,9 @@ struct hstate {
+>  struct huge_bootmem_page {
+>  	struct list_head list;
+>  	struct hstate *hstate;
+> +#ifdef CONFIG_HIGHMEM
+> +	phys_addr_t phys;
+> +#endif
+>  };
+>  
+>  struct page *alloc_huge_page_node(struct hstate *h, int nid);
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 6402458..2db81ea 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -1105,8 +1105,14 @@ static void __init gather_bootmem_prealloc(void)
+>  	struct huge_bootmem_page *m;
+>  
+>  	list_for_each_entry(m, &huge_boot_pages, list) {
+> -		struct page *page = virt_to_page(m);
+>  		struct hstate *h = m->hstate;
+> +#ifdef CONFIG_HIGHMEM
+> +		struct page *page = pfn_to_page(m->phys >> PAGE_SHIFT);
+> +		free_bootmem_late((unsigned long)m,
+> +				  sizeof(struct huge_bootmem_page));
+> +#else
+> +		struct page *page = virt_to_page(m);
+> +#endif
+>  		__ClearPageReserved(page);
+>  		WARN_ON(page_count(page) != 1);
+>  		prep_compound_huge_page(page, h->order);
 
-um, what problem.  There's no description here of the user-visible
-effects of the bug hence it's hard to work out what kernel version(s)
-should receive this patch.
+nit: wrapping both definitions and statements in an ifdef like this is
+a bit nasty from a readability and maintainability point of view - it's
+inviting people to later make changes which fail to compile when the
+config option is flipped.
 
-What kernel version(s) should receive this patch?
+This is better:
 
-> since I'm
-> starting to have the nasty feeling that you are hitting what is
-> somewhat a subtly different issue or my previous patch should
-> have worked (but then I might have done a stupid mistake as well)
-> but let us know anyway.
-
-I assume that Shan reported the secret problem so I added the
-reported-by to the changelog.
+--- a/mm/hugetlb.c~hugetlb-add-phys-addr-to-struct-huge_bootmem_page-fix
++++ a/mm/hugetlb.c
+@@ -1106,12 +1106,14 @@ static void __init gather_bootmem_preall
+ 
+ 	list_for_each_entry(m, &huge_boot_pages, list) {
+ 		struct hstate *h = m->hstate;
++		struct page *page;
++
+ #ifdef CONFIG_HIGHMEM
+-		struct page *page = pfn_to_page(m->phys >> PAGE_SHIFT);
++		page = pfn_to_page(m->phys >> PAGE_SHIFT);
+ 		free_bootmem_late((unsigned long)m,
+ 				  sizeof(struct huge_bootmem_page));
+ #else
+-		struct page *page = virt_to_page(m);
++		page = virt_to_page(m);
+ #endif
+ 		__ClearPageReserved(page);
+ 		WARN_ON(page_count(page) != 1);
+_
