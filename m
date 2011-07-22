@@ -1,24 +1,29 @@
-Return-Path: <beckyb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26F99B6F68
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 91ECCB6F6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 07:09:04 +1000 (EST)
-Subject: Re: [PATCH 2/5] hugetlb: add phys addr to struct huge_bootmem_page
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Becky Bruce <beckyb@kernel.crashing.org>
-In-Reply-To: <20110721154427.53e8fd5b.akpm@linux-foundation.org>
-Date: Fri, 22 Jul 2011 16:08:58 -0500
-Message-Id: <A8DD821C-06F9-462C-8037-28AC17C00F7B@kernel.crashing.org>
-References: <1309290888309-git-send-email-beckyb@kernel.crashing.org>
-	<13092909493748-git-send-email-beckyb@kernel.crashing.org>
-	<13092910103675-git-send-email-beckyb@kernel.crashing.org>
-	<20110721154427.53e8fd5b.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	david@gibson.dropbear.id.au
+	Sat, 23 Jul 2011 07:45:57 +1000 (EST)
+Received: by vxi32 with SMTP id 32so2070230vxi.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Jul 2011 14:45:54 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20110722152911.364d75dd@schlenkerla.am.freescale.net>
+References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
+	<1311065631-3429-14-git-send-email-dbaryshkov@gmail.com>
+	<20110719125447.19c964d1@schlenkerla.am.freescale.net>
+	<CALT56yMxttzC+WZMhja3-PqneMMba5rs9j25RiSAUrwEA_jyaw@mail.gmail.com>
+	<20110722152911.364d75dd@schlenkerla.am.freescale.net>
+Date: Sat, 23 Jul 2011 01:45:53 +0400
+Message-ID: <CALT56yOZkLW=AmkyX77g5agxfBb0h7Fz8Q_enth-CJycJ3SkFA@mail.gmail.com>
+Subject: Re: [PATCH 13/14] 85xx: consolidate of_platform_bus_probe calls
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Mackerras <paulus@samba.org>,
+	Linux PPC Development <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,97 +33,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 7/23/11, Scott Wood <scottwood@freescale.com> wrote:
+> On Fri, 22 Jul 2011 23:44:01 +0400
+> Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+>
+>> On 7/19/11, Scott Wood <scottwood@freescale.com> wrote:
+>> > On Tue, 19 Jul 2011 12:53:50 +0400
+>> > Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+>> >
+>> >> +static struct of_device_id __initdata mpc85xx_common_ids[] = {
+>> >> +	{ .type = "soc", },
+>> >> +	{ .compatible = "soc", },
+>> >> +	{ .compatible = "simple-bus", },
+>> >> +	{ .compatible = "gianfar", },
+>> >> +	{ .compatible = "fsl,qe", },
+>> >> +	{ .compatible = "fsl,cpm2", },
+>> >> +	{},
+>> >> +};
+>> >
+>> > Same comment as for 83xx regarding localbus and compatibility with old
+>> > device trees.
+>>
+>> I checked for in-kernel device trees. Unless I miss something, there are
+>> no
+>> leftovers from this list. (83xx provided no simple-bus property for
+>> localbus,
+>> so your argument is valid there). If we should care about strange cases,
+>> not even blessed by kernel trees, I can add some of the old probes back.
+>
+> I see simple-bus missing in sbc8560 and ksi8560 -- were these included in
+> the consolidation?  Plus some of the others may have had simple-bus added
+> after their initial version.
 
-On Jul 21, 2011, at 5:44 PM, Andrew Morton wrote:
+Patches for those are included in the patch serie. Kumar has applied them
+to next-3.2.
 
-> On Tue, 28 Jun 2011 14:54:45 -0500
-> Becky Bruce <beckyb@kernel.crashing.org> wrote:
->=20
->> From: Becky Bruce <beckyb@kernel.crashing.org>
->>=20
->> This is needed on HIGHMEM systems - we don't always have a virtual
->> address so store the physical address and map it in as needed.
->>=20
->> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
->> ---
->> include/linux/hugetlb.h |    3 +++
->> mm/hugetlb.c            |    8 +++++++-
->> 2 files changed, 10 insertions(+), 1 deletions(-)
->>=20
->> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
->> index 59225ef..19644e0 100644
->> --- a/include/linux/hugetlb.h
->> +++ b/include/linux/hugetlb.h
->> @@ -231,6 +231,9 @@ struct hstate {
->> struct huge_bootmem_page {
->> 	struct list_head list;
->> 	struct hstate *hstate;
->> +#ifdef CONFIG_HIGHMEM
->> +	phys_addr_t phys;
->> +#endif
->> };
->>=20
->> struct page *alloc_huge_page_node(struct hstate *h, int nid);
->> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
->> index 6402458..2db81ea 100644
->> --- a/mm/hugetlb.c
->> +++ b/mm/hugetlb.c
->> @@ -1105,8 +1105,14 @@ static void __init =
-gather_bootmem_prealloc(void)
->> 	struct huge_bootmem_page *m;
->>=20
->> 	list_for_each_entry(m, &huge_boot_pages, list) {
->> -		struct page *page =3D virt_to_page(m);
->> 		struct hstate *h =3D m->hstate;
->> +#ifdef CONFIG_HIGHMEM
->> +		struct page *page =3D pfn_to_page(m->phys >> =
-PAGE_SHIFT);
->> +		free_bootmem_late((unsigned long)m,
->> +				  sizeof(struct huge_bootmem_page));
->> +#else
->> +		struct page *page =3D virt_to_page(m);
->> +#endif
->> 		__ClearPageReserved(page);
->> 		WARN_ON(page_count(page) !=3D 1);
->> 		prep_compound_huge_page(page, h->order);
->=20
-> nit: wrapping both definitions and statements in an ifdef like this is
-> a bit nasty from a readability and maintainability point of view - =
-it's
-> inviting people to later make changes which fail to compile when the
-> config option is flipped.
->=20
-> This is better:
->=20
-> --- =
-a/mm/hugetlb.c~hugetlb-add-phys-addr-to-struct-huge_bootmem_page-fix
-> +++ a/mm/hugetlb.c
-> @@ -1106,12 +1106,14 @@ static void __init gather_bootmem_preall
->=20
-> 	list_for_each_entry(m, &huge_boot_pages, list) {
-> 		struct hstate *h =3D m->hstate;
-> +		struct page *page;
-> +
-> #ifdef CONFIG_HIGHMEM
-> -		struct page *page =3D pfn_to_page(m->phys >> =
-PAGE_SHIFT);
-> +		page =3D pfn_to_page(m->phys >> PAGE_SHIFT);
-> 		free_bootmem_late((unsigned long)m,
-> 				  sizeof(struct huge_bootmem_page));
-> #else
-> -		struct page *page =3D virt_to_page(m);
-> +		page =3D virt_to_page(m);
-> #endif
-> 		__ClearPageReserved(page);
-> 		WARN_ON(page_count(page) !=3D 1);
+> As for out-of-tree trees (which could include trees dynamically
+> generated/augmented by firmware, as well as device trees for custom boards
+> that forked off of an old reference board tree), it's still nice to not
+> break them as long as they stick to the binding.
 
-Andrew,
+I see your point. I just wasn't thinking too much about ot-of-tree trees.
+My thought was that if someone updates the kernel, he can also update the dtb.
 
-I totally agree, this is better, thanks.   I see you've put my original =
-patch and your fix into -mm;  I'd like it to percolate there for a bit =
-before it goes to Linus to be sure I haven't broken anything.  It should =
-be safe, as I don't think this particular function was ever expected to =
-work on highmem platforms, but it's possible I'm overlooking something.
+> While the localbus binding is deficient regarding the compatible property,
+> IIRC localbus preceded the introduction of simple-bus, which appears to be
+> defined only in ePAPR (not in Linux or on devicetree.org).  The ePAPR
+> language does not suggest that it's mandatory for all buses that don't need
+> special handling -- in fact, the language could be read as suggesting that
+> it's only applicable to the "internal I/O bus" on an SoC (whereas this
+> is an external bus), though that wasn't the intent behind it.
 
-Cheers,
--Becky
+Could you please update the lbc.txt suggesting the compatibility
+with simple-bus for lbc? Or you thing that it would be wrong?
+
+I think we should define compatibility list as "fsl,mpcXXXX-localbus",
+"fsl,pqXXXXX-localbus", "simple-bus", noting that by default new
+platforms/boards should only use "simple-bus" internally. Does this
+look reasonable for you? I can then try to provide a patch.
+
+> The notion of probing buses isn't really a part of the device tree specs;
+> they're more concerned with binding the devices themselves.  In theory
+> Linux should probably be probing everything that a driver will match,
+> regardless of where in the tree it is, except where an ancestor node is
+> diasbled, has matched a driver that wants to do things differently, or is
+> on a blacklist.  Of course, that's somewhat of a philosophical question on
+> whether it's better to risk probing someting that shouldn't be, or not
+> probing something that should be.  The former is often nastier but more
+> obvious, the latter is more likely until simple-bus is more widely used,
+> and either one results in something not working.
+
+> Leaving the localbus in may help someone, and it shouldn't hurt anything.
+
+What do you suggest/prefer? To add .name="localbus" to generic code
+or to have board-specific hooks (like one for mpc834xemitx)?
+
+So,
+
+>
+> -Scott
+>
+>
+
+
+-- 
+With best wishes
+Dmitry
