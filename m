@@ -1,26 +1,20 @@
-Return-Path: <highguy@gmail.com>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <michaelhench@gmail.com>
+Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
+	[209.85.216.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 05E93B6F71
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 21:23:09 +1000 (EST)
-Received: by qwf7 with SMTP id 7so1128780qwf.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 04:23:06 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTPS id DE881B6F64
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jul 2011 23:06:56 +1000 (EST)
+Received: by qwi4 with SMTP id 4so1192754qwi.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jul 2011 06:06:53 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1311244404-4463-1-git-send-email-Shaohui.Xie@freescale.com>
-References: <1311244404-4463-1-git-send-email-Shaohui.Xie@freescale.com>
-Date: Fri, 22 Jul 2011 13:23:05 +0200
-Message-ID: <CAOY=C6GD6e3FWWNALaHXwr-32+0BWVXtKbSZ6ZZdZ1FsQE2+2Q@mail.gmail.com>
-Subject: Re: [PATCH 4/4] edac/85xx: PCI/PCIE error interrupt edac support.
-From: Stijn Devriendt <highguy@gmail.com>
-To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Date: Fri, 22 Jul 2011 08:06:53 -0500
+Message-ID: <CAHyXW60RcO4poP8VXkm5Q0+9ACui1i_og2kDis8RKs=pxKB18w@mail.gmail.com>
+Subject: RFC fsl_elbc_nand.c does not update mtd->ecc_stats
+From: Michael Hench <michaelhench@gmail.com>
+To: linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: mm-commits@vger.kernel.org, kumar.gala@freescale.com, avorontsov@mvista.com,
-	"Kai.Jiang" <Kai.Jiang@freescale.com>, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: MatthewLCreech@eaton.com, mhench@elutions.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 21, 2011 at 12:33 PM, Shaohui Xie <Shaohui.Xie@freescale.com> wrote:
-> From: Kai.Jiang <Kai.Jiang@freescale.com>
->
-> Add pcie error interrupt edac support for mpc85xx and p4080.
-> mpc85xx uses the legacy interrupt report mechanism - the error
-> interrupts are reported directly to mpic. While, p4080 attaches
-> most of error interrupts to interrupt 0. And report error interrupt
-> to mpic via interrupt 0. This patch can handle both of them.
->
-> Due to the error management register offset and definition
->
-> difference between pci and pcie, use ccsr_pci structure to merge
-> pci and pcie edac code into one.
->
+when using the fsl_elbc_nand driver, mtd->ecc_stats does not appear to
+get updated
+UBI uses this to determine when to scrub blocks
+the patch below appears to fix this (draft 0)
+am I missing anything?
+does this look reasonable?
 
-This code has been posted a couple of months ago, if I'm not mistaken.
-I'm currently testing it on a P2020 based design.
 
-One of the failures I'm trying to cope with is a PCIe device that does not
-send back a completion with data. e.g. a userspace process reads memory
-through a memory map, but the PCIe device is not responding.
-In this case the P2020 will stall due to the core_fault_in being asserted.
 
-If configured, this interrupt will be called, but it does nothing to cure the
-root cause (e.g. kill the process). End result is that the processor still
-hangs.
-I've been hacking my way around the kernel for a while and ended up a lot
-closer to a working solution to recover from such a failure.
+diff -purN orig/drivers/mtd/nand/fsl_elbc_nand.c
+linux-3.0-rc7/drivers/mtd/nand/fsl_elbc_nand.c
+--- orig/drivers/mtd/nand/fsl_elbc_nand.c	2011-07-22 07:02:37.908778052 -0500
++++ linux-3.0-rc7/drivers/mtd/nand/fsl_elbc_nand.c	2011-07-22
+06:56:09.655002047 -0500
+@@ -748,12 +748,43 @@ static int fsl_elbc_read_page(struct mtd
+ 			      uint8_t *buf,
+ 			      int page)
+ {
++	struct fsl_elbc_mtd *priv = chip->priv;
++	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
++	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
++	uint32_t lteccr;
++
+ 	fsl_elbc_read_buf(mtd, buf, mtd->writesize);
+ 	fsl_elbc_read_buf(mtd, chip->oob_poi, mtd->oobsize);
 
-The issue I'm facing now is that the PIC can be configured to send the
-interrupt as a critical interrupt to one of both cores, but that may not
-be the core that is running the process that initiated the read.
-I've done 2 test-runs and both killed the right process, but I'd like to make
-sure that it's not by accident.
-Bottom-line: what mechanisms are in place (or are required) to ensure
-that the the right process (on the same core or on another core) is killed
-regardless of how the PIC is configured?
+ 	if (fsl_elbc_wait(mtd, chip) & NAND_STATUS_FAIL)
+ 		mtd->ecc_stats.failed++;
 
-Regards,
-Stijn
++	if(chip->ecc.mode != NAND_ECC_HW)
++		return(0);
++
++	/* get the hardware ECC results */
++	lteccr = in_be32(&lbc->lteccr);
++	if(lteccr & 0x000F000F) {
++		int i;
++
++		out_be32(&lbc->lteccr, -1); /* clear lteccr */
++		printk(KERN_ERR "ECC RESULT %x n=%d",
++			lteccr, mtd->ecc_stats.corrected);
++		/*
++		 * 4 bits, one for each 512 byte subpage
++		 * 12-15 (ppc order) are for successfully corrected
++		 * 28-31 are for failed
++		 * small page nand has 3 bits set to zero in each field
++		 */
++		for(i=0; i < 4; i++) {
++			if(lteccr & 0x10000)
++				mtd->ecc_stats.corrected++;
++			if(lteccr & 0x1)
++				mtd->ecc_stats.failed++;
++			lteccr >>= 1;
++		}
++	}
++
+ 	return 0;
+ }
