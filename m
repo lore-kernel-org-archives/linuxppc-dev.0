@@ -1,21 +1,28 @@
 Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-ey0-f177.google.com (mail-ey0-f177.google.com
-	[209.85.215.177]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1B285B731B
+	by ozlabs.org (Postfix) with ESMTPS id 5BDB8B6F74
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 05:56:41 +1000 (EST)
-Received: by eyh6 with SMTP id 6so2595633eyh.36
+	Sat, 23 Jul 2011 06:08:47 +1000 (EST)
+Received: by vxi32 with SMTP id 32so2031667vxi.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 12:56:37 -0700 (PDT)
+	Fri, 22 Jul 2011 13:08:44 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <C7DEE4D7-9707-4A18-A3D7-BECDEC29A258@kernel.crashing.org>
+References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
+	<1311065631-3429-13-git-send-email-dbaryshkov@gmail.com>
+	<C7DEE4D7-9707-4A18-A3D7-BECDEC29A258@kernel.crashing.org>
+Date: Sat, 23 Jul 2011 00:08:42 +0400
+Message-ID: <CALT56yMDT3UC7W3kJt110QSkjcURemjK0Y_Bysw3O+F7QK4uNQ@mail.gmail.com>
+Subject: Re: [PATCH 12/14] 85xx/mpc85xx_ds,ads,cds: move .pci_exclude_device
+	setting to machine definitions
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Linux PPC Development <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH V2 3/3] powerpc/83xx: headers cleanup
-Date: Fri, 22 Jul 2011 23:55:44 +0400
-Message-Id: <1311364544-9413-4-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1311364544-9413-1-git-send-email-dbaryshkov@gmail.com>
-References: <1311364544-9413-1-git-send-email-dbaryshkov@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@lists.ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,494 +32,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drop lots of unused headers after board files merge/splitup
+On 7/19/11, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Jul 19, 2011, at 3:53 AM, Dmitry Eremin-Solenikov wrote:
+>
+>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> ---
+>> arch/powerpc/platforms/85xx/mpc85xx_ads.c |    5 +++--
+>> arch/powerpc/platforms/85xx/mpc85xx_cds.c |    5 ++---
+>> arch/powerpc/platforms/85xx/mpc85xx_ds.c  |    5 +++--
+>> 3 files changed, 8 insertions(+), 7 deletions(-)
+>
+> I believe these are done this way for a reason (its been some time).  I
+> can't remember if it maters or not, but having pci_exclude_device() means
+> that any code in fsl_add_bridge() would not be impacted by the exclude
+> function.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- arch/powerpc/platforms/83xx/asp834x.c          |    2 -
- arch/powerpc/platforms/83xx/km83xx.c           |   24 +------------------
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |    5 ----
- arch/powerpc/platforms/83xx/misc.c             |    1 -
- arch/powerpc/platforms/83xx/mpc830x_rdb.c      |    5 +--
- arch/powerpc/platforms/83xx/mpc831x_rdb.c      |    2 -
- arch/powerpc/platforms/83xx/mpc832x_mds.c      |   30 ------------------------
- arch/powerpc/platforms/83xx/mpc832x_rdb.c      |   11 --------
- arch/powerpc/platforms/83xx/mpc834x_itx.c      |   20 ----------------
- arch/powerpc/platforms/83xx/mpc834x_mds.c      |   20 ----------------
- arch/powerpc/platforms/83xx/mpc836x_mds.c      |   29 -----------------------
- arch/powerpc/platforms/83xx/mpc836x_rdk.c      |    8 +-----
- arch/powerpc/platforms/83xx/mpc837x_mds.c      |    4 ---
- arch/powerpc/platforms/83xx/mpc837x_rdb.c      |    2 -
- arch/powerpc/platforms/83xx/sbc834x.c          |   20 ----------------
- arch/powerpc/platforms/83xx/suspend.c          |    8 ------
- arch/powerpc/platforms/83xx/usb.c              |    8 ------
- 17 files changed, 4 insertions(+), 195 deletions(-)
+Hmm. I have to check this.
 
-diff --git a/arch/powerpc/platforms/83xx/asp834x.c b/arch/powerpc/platforms/83xx/asp834x.c
-index 464ea8e..a7c0188 100644
---- a/arch/powerpc/platforms/83xx/asp834x.c
-+++ b/arch/powerpc/platforms/83xx/asp834x.c
-@@ -14,10 +14,8 @@
-  * option) any later version.
-  */
- 
--#include <linux/pci.h>
- #include <linux/of_platform.h>
- 
--#include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
- 
-diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
-index f82001e..032cf37 100644
---- a/arch/powerpc/platforms/83xx/km83xx.c
-+++ b/arch/powerpc/platforms/83xx/km83xx.c
-@@ -11,35 +11,13 @@
-  * option) any later version.
-  */
- 
--#include <linux/stddef.h>
- #include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
- #include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/major.h>
--#include <linux/console.h>
--#include <linux/delay.h>
--#include <linux/seq_file.h>
--#include <linux/root_dev.h>
--#include <linux/initrd.h>
--#include <linux/of_platform.h>
--#include <linux/of_device.h>
--
--#include <asm/system.h>
--#include <asm/atomic.h>
--#include <asm/time.h>
--#include <asm/io.h>
--#include <asm/machdep.h>
-+
- #include <asm/ipic.h>
--#include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/udbg.h>
--#include <sysdev/fsl_soc.h>
--#include <sysdev/fsl_pci.h>
- #include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
- 
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index 70798ac..f47aac2 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -11,17 +11,12 @@
-  * (at your option) any later version.
-  */
- 
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/device.h>
--#include <linux/mutex.h>
- #include <linux/i2c.h>
--#include <linux/gpio.h>
- #include <linux/of.h>
- #include <linux/of_gpio.h>
- #include <linux/slab.h>
--#include <asm/prom.h>
- #include <asm/machdep.h>
- 
- /*
-diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
-index ee4de77..96418d3 100644
---- a/arch/powerpc/platforms/83xx/misc.c
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -9,7 +9,6 @@
-  * option) any later version.
-  */
- 
--#include <linux/stddef.h>
- #include <linux/kernel.h>
- #include <linux/of_platform.h>
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-index ef595f1..6e4783d 100644
---- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-@@ -14,12 +14,11 @@
-  */
- 
- #include <linux/pci.h>
--#include <linux/of_platform.h>
--#include <asm/time.h>
-+
- #include <asm/ipic.h>
- #include <asm/udbg.h>
- #include <sysdev/fsl_pci.h>
--#include <sysdev/fsl_soc.h>
-+
- #include "mpc83xx.h"
- 
- /*
-diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-index ce87406..ac38b14 100644
---- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-@@ -14,9 +14,7 @@
-  */
- 
- #include <linux/pci.h>
--#include <linux/of_platform.h>
- 
--#include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
- #include <sysdev/fsl_pci.h>
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 668b58e..50e6963 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -10,45 +10,15 @@
-  * option) any later version.
-  */
- 
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
- #include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/major.h>
--#include <linux/console.h>
--#include <linux/delay.h>
--#include <linux/seq_file.h>
--#include <linux/root_dev.h>
--#include <linux/initrd.h>
--#include <linux/of_platform.h>
--#include <linux/of_device.h>
--
--#include <asm/system.h>
--#include <asm/atomic.h>
--#include <asm/time.h>
--#include <asm/io.h>
--#include <asm/machdep.h>
-+
- #include <asm/ipic.h>
--#include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/udbg.h>
--#include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/qe.h>
--#include <asm/qe_ic.h>
- 
- #include "mpc83xx.h"
- 
--#undef DEBUG
--#ifdef DEBUG
--#define DBG(fmt...) udbg_printf(fmt)
--#else
--#define DBG(fmt...)
--#endif
--
- /* ************************************************************************
-  *
-  * Setup the architecture
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index e4c7c64..358a71c 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -15,30 +15,19 @@
-  */
- 
- #include <linux/pci.h>
--#include <linux/interrupt.h>
- #include <linux/spi/spi.h>
- #include <linux/spi/mmc_spi.h>
- #include <linux/mmc/host.h>
--#include <linux/of_platform.h>
- #include <linux/fsl_devices.h>
- 
--#include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
- #include <asm/qe.h>
--#include <asm/qe_ic.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
- 
--#undef DEBUG
--#ifdef DEBUG
--#define DBG(fmt...) udbg_printf(fmt)
--#else
--#define DBG(fmt...)
--#endif
--
- #ifdef CONFIG_QUICC_ENGINE
- static int __init of_fsl_spi_probe(char *type, char *compatible, u32 sysclk,
- 				   struct spi_board_info *board_infos,
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-index c853f66..97d179a 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-@@ -11,30 +11,10 @@
-  * option) any later version.
-  */
- 
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
- #include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/major.h>
--#include <linux/console.h>
--#include <linux/delay.h>
--#include <linux/seq_file.h>
--#include <linux/root_dev.h>
--#include <linux/of_platform.h>
- 
--#include <asm/system.h>
--#include <asm/atomic.h>
--#include <asm/time.h>
--#include <asm/io.h>
--#include <asm/machdep.h>
- #include <asm/ipic.h>
--#include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/udbg.h>
--#include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-index 381e94e..6aedff9 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-@@ -11,30 +11,10 @@
-  * option) any later version.
-  */
- 
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
- #include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/major.h>
--#include <linux/console.h>
--#include <linux/delay.h>
--#include <linux/seq_file.h>
--#include <linux/root_dev.h>
--#include <linux/of_platform.h>
- 
--#include <asm/system.h>
--#include <asm/atomic.h>
--#include <asm/time.h>
--#include <asm/io.h>
--#include <asm/machdep.h>
- #include <asm/ipic.h>
--#include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/udbg.h>
--#include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 2d7437c..490574c 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -16,31 +16,9 @@
-  * option) any later version.
-  */
- 
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/compiler.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
- #include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/major.h>
--#include <linux/console.h>
--#include <linux/delay.h>
--#include <linux/seq_file.h>
--#include <linux/root_dev.h>
--#include <linux/initrd.h>
--#include <linux/of_platform.h>
--#include <linux/of_device.h>
--
--#include <asm/system.h>
--#include <asm/atomic.h>
--#include <asm/time.h>
--#include <asm/io.h>
--#include <asm/machdep.h>
-+
- #include <asm/ipic.h>
--#include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/udbg.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -50,13 +28,6 @@
- 
- #include "mpc83xx.h"
- 
--#undef DEBUG
--#ifdef DEBUG
--#define DBG(fmt...) udbg_printf(fmt)
--#else
--#define DBG(fmt...)
--#endif
--
- /* ************************************************************************
-  *
-  * Setup the architecture
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-index fd6f730..11342ad 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-@@ -12,17 +12,11 @@
-  * option) any later version.
-  */
- 
--#include <linux/kernel.h>
- #include <linux/pci.h>
--#include <linux/of_platform.h>
--#include <linux/io.h>
--#include <asm/prom.h>
--#include <asm/time.h>
-+
- #include <asm/ipic.h>
- #include <asm/udbg.h>
- #include <asm/qe.h>
--#include <asm/qe_ic.h>
--#include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index 7463183..fe76bd7 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -12,13 +12,9 @@
-  */
- 
- #include <linux/pci.h>
--#include <linux/of.h>
--#include <linux/of_platform.h>
- 
--#include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
--#include <asm/prom.h>
- #include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-index a4a5336..a6e649e 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-@@ -12,9 +12,7 @@
-  */
- 
- #include <linux/pci.h>
--#include <linux/of_platform.h>
- 
--#include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
- #include <sysdev/fsl_soc.h>
-diff --git a/arch/powerpc/platforms/83xx/sbc834x.c b/arch/powerpc/platforms/83xx/sbc834x.c
-index 3d98bd9..ea02022 100644
---- a/arch/powerpc/platforms/83xx/sbc834x.c
-+++ b/arch/powerpc/platforms/83xx/sbc834x.c
-@@ -13,30 +13,10 @@
-  * option) any later version.
-  */
- 
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
- #include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/major.h>
--#include <linux/console.h>
--#include <linux/delay.h>
--#include <linux/seq_file.h>
--#include <linux/root_dev.h>
--#include <linux/of_platform.h>
- 
--#include <asm/system.h>
--#include <asm/atomic.h>
--#include <asm/time.h>
--#include <asm/io.h>
--#include <asm/machdep.h>
- #include <asm/ipic.h>
--#include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/udbg.h>
--#include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index 104faa8..d0c814a 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -10,21 +10,13 @@
-  * by the Free Software Foundation.
-  */
- 
--#include <linux/init.h>
--#include <linux/pm.h>
--#include <linux/types.h>
--#include <linux/ioport.h>
- #include <linux/interrupt.h>
- #include <linux/wait.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
- #include <linux/suspend.h>
--#include <linux/fsl_devices.h>
- #include <linux/of_platform.h>
- 
--#include <asm/reg.h>
--#include <asm/io.h>
--#include <asm/time.h>
- #include <asm/mpc6xx.h>
- 
- #include <sysdev/fsl_soc.h>
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index 2c64164..b2fda49 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -10,14 +10,6 @@
-  * option) any later version.
-  */
- 
--
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/of.h>
--
--#include <asm/io.h>
--#include <asm/prom.h>
- #include <sysdev/fsl_soc.h>
- 
- #include "mpc83xx.h"
+BTW: what is the point in disabling access to bus == 0 && PCI_SLOT == 0 on some
+of those boards (esp. ads)? Other boards lack this check/exclude. Does it mean
+something historical (and so can be dropped), is it some workaround/bugfix
+(then it should be propagated to other boards??) or something else?
+
+>
+> Not sure what value making this change has at this point.
+
+One of my big goals is to drop most of differencies from setup_arch functions
+(one simple function can handle all things like PCI, SWIOTLB, etc).
+Not yet ready
+for submission though (not enough time to clean all the things). And moving
+this assignment to static code would allow me to drop setup_arch()
+function completely
+(more or less) on these boards.
+
+>
+> - k
+>
+>>
+>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+>> b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+>> index 3b2c9bb..2483929 100644
+>> --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+>> @@ -200,8 +200,6 @@ static void __init mpc85xx_ads_setup_arch(void)
+>> #ifdef CONFIG_PCI
+>> 	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
+>> 		fsl_add_bridge(np, 1);
+>> -
+>> -	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+>> #endif
+>> }
+>>
+>> @@ -254,6 +252,9 @@ define_machine(mpc85xx_ads) {
+>> 	.probe			= mpc85xx_ads_probe,
+>> 	.setup_arch		= mpc85xx_ads_setup_arch,
+>> 	.init_IRQ		= mpc85xx_ads_pic_init,
+>> +#ifdef CONFIG_PCI
+>> +	.pci_exclude_device	= mpc85xx_exclude_device,
+>> +#endif
+>> 	.show_cpuinfo		= mpc85xx_ads_show_cpuinfo,
+>> 	.get_irq		= mpic_get_irq,
+>> 	.restart		= fsl_rstcr_restart,
+>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+>> b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+>> index 6299a2a..e209c23 100644
+>> --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+>> @@ -297,9 +297,6 @@ static void __init mpc85xx_cds_setup_arch(void)
+>> 				fsl_add_bridge(np, 0);
+>> 		}
+>> 	}
+>> -
+>> -	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
+>> -	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+>> #endif
+>> }
+>>
+>> @@ -355,6 +352,8 @@ define_machine(mpc85xx_cds) {
+>> #ifdef CONFIG_PCI
+>> 	.restart	= mpc85xx_cds_restart,
+>> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>> +	.pci_irq_fixup	= mpc85xx_cds_pci_irq_fixup,
+>> +	.pci_exclude_device	= mpc85xx_exclude_device,
+>> #else
+>> 	.restart	= fsl_rstcr_restart,
+>> #endif
+>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> index c7b97f7..53bf07d 100644
+>> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> @@ -182,8 +182,6 @@ static void __init mpc85xx_ds_setup_arch(void)
+>> 					hose->dma_window_size);
+>> 		}
+>> 	}
+>> -
+>> -	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+>> #endif
+>>
+>> #ifdef CONFIG_SMP
+>> @@ -279,6 +277,7 @@ define_machine(mpc8544_ds) {
+>> 	.init_IRQ		= mpc85xx_ds_pic_init,
+>> #ifdef CONFIG_PCI
+>> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>> +	.pci_exclude_device	= mpc85xx_exclude_device,
+>> #endif
+>> 	.get_irq		= mpic_get_irq,
+>> 	.restart		= fsl_rstcr_restart,
+>> @@ -293,6 +292,7 @@ define_machine(mpc8572_ds) {
+>> 	.init_IRQ		= mpc85xx_ds_pic_init,
+>> #ifdef CONFIG_PCI
+>> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>> +	.pci_exclude_device	= mpc85xx_exclude_device,
+>> #endif
+>> 	.get_irq		= mpic_get_irq,
+>> 	.restart		= fsl_rstcr_restart,
+>> @@ -307,6 +307,7 @@ define_machine(p2020_ds) {
+>> 	.init_IRQ		= mpc85xx_ds_pic_init,
+>> #ifdef CONFIG_PCI
+>> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>> +	.pci_exclude_device	= mpc85xx_exclude_device,
+>> #endif
+>> 	.get_irq		= mpic_get_irq,
+>> 	.restart		= fsl_rstcr_restart,
+>> --
+>> 1.7.2.5
+>
+>
+
+
 -- 
-1.7.2.5
+With best wishes
+Dmitry
