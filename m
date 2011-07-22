@@ -1,29 +1,31 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3E1B6B6F77
+Return-Path: <B21989@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 08399B6F6B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 11:59:16 +1000 (EST)
-Received: by fxe23 with SMTP id 23so4019320fxe.15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Jul 2011 18:59:12 -0700 (PDT)
+	Fri, 22 Jul 2011 12:04:25 +1000 (EST)
+Received: from mail80-ch1 (localhost.localdomain [127.0.0.1])	by
+	mail80-ch1-R.bigfish.com (Postfix) with ESMTP id E6BFF1A044C	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2011 02:04:18 +0000 (UTC)
+Received: from CH1EHSMHS032.bigfish.com (snatpool1.int.messaging.microsoft.com
+	[10.43.68.250])	by mail80-ch1.bigfish.com (Postfix) with ESMTP id
+	C8B451498050	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Jul 2011 02:04:18 +0000 (UTC)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>
+Subject: RE: [PATCH 1/4] powerpc/85xx: fix interrupt number of
+	memory-controller for P4080
+Date: Fri, 22 Jul 2011 02:04:10 +0000
+Message-ID: <267A3B246C22C34A8E574051858E077010E0F7@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1311243889-4316-1-git-send-email-Shaohui.Xie@freescale.com>
+	<65C49D37-A103-494D-AD8E-7C8FC6E3716E@freescale.com>
+In-Reply-To: <65C49D37-A103-494D-AD8E-7C8FC6E3716E@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <EBAEF199-2D62-477F-BD40-861149AB1CFA@kernel.crashing.org>
-References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
-	<1311065631-3429-10-git-send-email-dbaryshkov@gmail.com>
-	<EBAEF199-2D62-477F-BD40-861149AB1CFA@kernel.crashing.org>
-Date: Thu, 21 Jul 2011 21:59:11 -0400
-Message-ID: <CAP=VYLqdBUjZz7gcuiEfGZ+pLkxz+Hk9DBxD7J4UUrpaD66mGA@mail.gmail.com>
-Subject: Re: [PATCH 09/14] 85xx/sbc8548: read hardware revision when it's
-	required for first time
-From: Paul Gortmaker <paul.gortmaker@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux PPC Development <linuxppc-dev@lists.ozlabs.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,77 +35,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 19, 2011 at 10:12 AM, Kumar Gala <galak@kernel.crashing.org> wr=
-ote:
+
+
+
+>-----Original Message-----
+>From: Gala Kumar-B11780
+>Sent: Thursday, July 21, 2011 8:13 PM
+>To: Xie Shaohui-B21989
+>Cc: linuxppc-dev@lists.ozlabs.org
+>Subject: Re: [PATCH 1/4] powerpc/85xx: fix interrupt number of memory-
+>controller for P4080
 >
-> On Jul 19, 2011, at 3:53 AM, Dmitry Eremin-Solenikov wrote:
 >
->> Currently sbc8548 reads hardware revision during bootup. To simplify
->> things read it when it's first required when the kernel is up and
->> running.
->>
->> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>On Jul 21, 2011, at 5:24 AM, Shaohui Xie wrote:
+>
+>> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 >> ---
->> arch/powerpc/platforms/85xx/sbc8548.c | =A0 =A08 +++++---
->> 1 files changed, 5 insertions(+), 3 deletions(-)
->
-> How is this simplifying things, seems more complicated to add an addition=
-al if() check.
-
-Agreed -- I don't see what this is meant to achieve.
-
-Paul.
-
->
-> - k
->
+>> arch/powerpc/boot/dts/p4080ds.dts |    4 ++--
+>> 1 files changed, 2 insertions(+), 2 deletions(-)
 >>
->> diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platfo=
-rms/85xx/sbc8548.c
->> index ecdd8c0..2eeb376 100644
->> --- a/arch/powerpc/platforms/85xx/sbc8548.c
->> +++ b/arch/powerpc/platforms/85xx/sbc8548.c
->> @@ -49,7 +49,7 @@
->> #include <sysdev/fsl_soc.h>
->> #include <sysdev/fsl_pci.h>
+>> diff --git a/arch/powerpc/boot/dts/p4080ds.dts
+>b/arch/powerpc/boot/dts/p4080ds.dts
+>> index 927f94d..9c37a85 100644
+>> --- a/arch/powerpc/boot/dts/p4080ds.dts
+>> +++ b/arch/powerpc/boot/dts/p4080ds.dts
+>> @@ -131,14 +131,14 @@
+>> 			compatible =3D "fsl,p4080-memory-controller";
+>> 			reg =3D <0x8000 0x1000>;
+>> 			interrupt-parent =3D <&mpic>;
+>> -			interrupts =3D <0x12 2>;
+>> +			interrupts =3D <16 2>;
+>> 		};
 >>
->> -static int sbc_rev;
->> +static int sbc_rev =3D -EINVAL;
+>> 		memory-controller@9000 {
+>> 			compatible =3D "fsl,p4080-memory-controller";
+>> 			reg =3D <0x9000 0x1000>;
+>> 			interrupt-parent =3D <&mpic>;
+>> -			interrupts =3D <0x12 2>;
+>> +			interrupts =3D <16 2>;
+>> 		};
 >>
->> static void __init sbc8548_pic_init(void)
->> {
->> @@ -82,7 +82,7 @@ static void __init sbc8548_pic_init(void)
->> }
->>
->> /* Extract the HW Rev from the EPLD on the board */
->> -static int __init sbc8548_hw_rev(void)
->> +static int sbc8548_hw_rev(void)
->> {
->> =A0 =A0 =A0 struct device_node *np;
->> =A0 =A0 =A0 struct resource res;
->> @@ -130,7 +130,6 @@ static void __init sbc8548_setup_arch(void)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
->> =A0 =A0 =A0 }
->> #endif
->> - =A0 =A0 sbc_rev =3D sbc8548_hw_rev();
->> }
->>
->> static void sbc8548_show_cpuinfo(struct seq_file *m)
->> @@ -140,6 +139,9 @@ static void sbc8548_show_cpuinfo(struct seq_file *m)
->> =A0 =A0 =A0 pvid =3D mfspr(SPRN_PVR);
->> =A0 =A0 =A0 svid =3D mfspr(SPRN_SVR);
->>
->> + =A0 =A0 if (sbc_rev =3D=3D -EINVAL)
->> + =A0 =A0 =A0 =A0 =A0 =A0 sbc_rev =3D sbc8548_hw_rev();
->> +
->> =A0 =A0 =A0 seq_printf(m, "Vendor\t\t: Wind River\n");
->> =A0 =A0 =A0 seq_printf(m, "Machine\t\t: SBC8548 v%d\n", sbc_rev);
->> =A0 =A0 =A0 seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
+>> 		corenet-cf@18000 {
 >> --
->> 1.7.2.5
+>> 1.6.4
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>What code base / tree is this against?
 >
+
+[Xie Shaohui] This patch is based on v3.0-rc7.
+
+
+Best Regards,=20
+Shaohui Xie
