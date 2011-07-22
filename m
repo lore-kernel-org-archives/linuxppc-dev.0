@@ -3,20 +3,20 @@ Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
 	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B7859B6F69
+	by ozlabs.org (Postfix) with ESMTPS id 2F5B9B6F18
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 05:41:28 +1000 (EST)
-Received: by vxi32 with SMTP id 32so2019571vxi.38
+	Sat, 23 Jul 2011 05:44:04 +1000 (EST)
+Received: by vxi32 with SMTP id 32so2020761vxi.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 12:41:25 -0700 (PDT)
+	Fri, 22 Jul 2011 12:44:01 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20110719115545.52efca3d@schlenkerla.am.freescale.net>
+In-Reply-To: <20110719125447.19c964d1@schlenkerla.am.freescale.net>
 References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
-	<1311065631-3429-5-git-send-email-dbaryshkov@gmail.com>
-	<20110719115545.52efca3d@schlenkerla.am.freescale.net>
-Date: Fri, 22 Jul 2011 23:41:24 +0400
-Message-ID: <CALT56yMwL1B7D1xi-Sq7z7pLjJ1TP3-h9MQC==-MJnZwPF_T5w@mail.gmail.com>
-Subject: Re: [PATCH 04/14] 83xx/mpc834x_itx: drop pq2pro-localbus-specific code
+	<1311065631-3429-14-git-send-email-dbaryshkov@gmail.com>
+	<20110719125447.19c964d1@schlenkerla.am.freescale.net>
+Date: Fri, 22 Jul 2011 23:44:01 +0400
+Message-ID: <CALT56yMxttzC+WZMhja3-PqneMMba5rs9j25RiSAUrwEA_jyaw@mail.gmail.com>
+Subject: Re: [PATCH 13/14] 85xx: consolidate of_platform_bus_probe calls
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -32,20 +32,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 7/19/11, Scott Wood <scottwood@freescale.com> wrote:
-> On Tue, 19 Jul 2011 12:53:41 +0400
+> On Tue, 19 Jul 2011 12:53:50 +0400
 > Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
 >
->> As localbus on mpc8349e-mitx now provides simple-bus compatibility, we
->> can drop code asking for pq2pro-localbus devices on mpc834x_itx boards.
+>> +static struct of_device_id __initdata mpc85xx_common_ids[] = {
+>> +	{ .type = "soc", },
+>> +	{ .compatible = "soc", },
+>> +	{ .compatible = "simple-bus", },
+>> +	{ .compatible = "gianfar", },
+>> +	{ .compatible = "fsl,qe", },
+>> +	{ .compatible = "fsl,cpm2", },
+>> +	{},
+>> +};
 >
-> Do we have a good reason for breaking compatibility with older device trees?
+> Same comment as for 83xx regarding localbus and compatibility with old
+> device trees.
 
-Hmm. No real reason if you look from this POV. Just didn't thought in
-this direction.
+I checked for in-kernel device trees. Unless I miss something, there are no
+leftovers from this list. (83xx provided no simple-bus property for localbus,
+so your argument is valid there). If we should care about strange cases,
+not even blessed by kernel trees, I can add some of the old probes back.
 
-BTW: Documentation/devicetree/fsl/lbc.txt doesn't talk at all about "compatible"
-property. Maybe one can add there something (like asking to add simple-bus
-for new platforms). I feel myself too unexperienced to fix that.
+What do you thing?
 
 -- 
 With best wishes
