@@ -1,19 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D29A7B6F74
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jul 2011 13:46:05 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git of-pci branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 22 Jul 2011 13:44:13 +1000
-Message-ID: <1311306253.25044.568.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id 85DB7B6F6B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Jul 2011 16:01:00 +1000 (EST)
+Subject: Re: [PATCH 1/4] powerpc/85xx: fix interrupt number of
+	memory-controller for P4080
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <267A3B246C22C34A8E574051858E077010E0F7@039-SN1MPN1-003.039d.mgd.msft.net>
+Date: Fri, 22 Jul 2011 01:00:48 -0500
+Message-Id: <D1A417CC-2514-4103-8D0E-96F16724BCEF@kernel.crashing.org>
+References: <1311243889-4316-1-git-send-email-Shaohui.Xie@freescale.com>
+	<65C49D37-A103-494D-AD8E-7C8FC6E3716E@freescale.com>
+	<267A3B246C22C34A8E574051858E077010E0F7@039-SN1MPN1-003.039d.mgd.msft.net>
+To: Xie Shaohui-B21989 <B21989@freescale.com>
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
 
-This branch contains some rework and consolidation of the code
-to establish the mapping between device-tree nodes for PCI 
-devices (if they exist) and the corresponding Linux struct device.
+On Jul 21, 2011, at 9:04 PM, Xie Shaohui-B21989 wrote:
 
-It moves it all to generic code in a way that is a lot cleaner
-than any of the previous implementations. It specifically allows
-me to get rid of a two subtly different ways of doing the same
-thing I had in powerpc between 32-bit and 64-bit, and updates
-microblaze and x86 to use that common code as well.
+>=20
+>=20
+>=20
+>> -----Original Message-----
+>> From: Gala Kumar-B11780
+>> Sent: Thursday, July 21, 2011 8:13 PM
+>> To: Xie Shaohui-B21989
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Subject: Re: [PATCH 1/4] powerpc/85xx: fix interrupt number of =
+memory-
+>> controller for P4080
+>>=20
+>>=20
+>> On Jul 21, 2011, at 5:24 AM, Shaohui Xie wrote:
+>>=20
+>>> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+>>> ---
+>>> arch/powerpc/boot/dts/p4080ds.dts |    4 ++--
+>>> 1 files changed, 2 insertions(+), 2 deletions(-)
+>>>=20
+>>> diff --git a/arch/powerpc/boot/dts/p4080ds.dts
+>> b/arch/powerpc/boot/dts/p4080ds.dts
+>>> index 927f94d..9c37a85 100644
+>>> --- a/arch/powerpc/boot/dts/p4080ds.dts
+>>> +++ b/arch/powerpc/boot/dts/p4080ds.dts
+>>> @@ -131,14 +131,14 @@
+>>> 			compatible =3D "fsl,p4080-memory-controller";
+>>> 			reg =3D <0x8000 0x1000>;
+>>> 			interrupt-parent =3D <&mpic>;
+>>> -			interrupts =3D <0x12 2>;
+>>> +			interrupts =3D <16 2>;
+>>> 		};
+>>>=20
+>>> 		memory-controller@9000 {
+>>> 			compatible =3D "fsl,p4080-memory-controller";
+>>> 			reg =3D <0x9000 0x1000>;
+>>> 			interrupt-parent =3D <&mpic>;
+>>> -			interrupts =3D <0x12 2>;
+>>> +			interrupts =3D <16 2>;
+>>> 		};
+>>>=20
+>>> 		corenet-cf@18000 {
+>>> --
+>>> 1.6.4
+>>=20
+>> What code base / tree is this against?
+>>=20
+>=20
+> [Xie Shaohui] This patch is based on v3.0-rc7.
 
-This has been in -next for a while with no complaints so far
-and is completely orthogonal to the powerpc changes I will send
-you in a couple of days (I want to wait for some other trees
-to go in first to address a couple of known collisions).
+Please use galak/powerpc.git 'next' branch.
 
-Cheers,
-Ben.
+It has the following:
 
-The following changes since commit 620917de59eeb934b9f8cf35cc2d95c1ac8ed0fc:
+=
+http://git.kernel.org/?p=3Dlinux/kernel/git/galak/powerpc.git;a=3Dblob;f=3D=
+arch/powerpc/boot/dts/p4080si.dtsi;h=3Db71051f506c1763fbb911a0df62b58577ed=
+a2ce0;hb=3Drefs/heads/next
 
-  Linux 3.0-rc7 (2011-07-11 16:51:52 -0700)
-
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git of-pci
-
-Benjamin Herrenschmidt (6):
-      pci/of: Match PCI devices to OF nodes dynamically
-      microblaze/pci: Remove powermac originated cruft
-      microblaze/pci: Move the remains of pci_32.c to pci-common.c
-      x86/devicetree: Use generic PCI <-> OF matching
-      pci/of: Consolidate pci_device_to_OF_node()
-      pci/of: Consolidate pci_bus_to_OF_node()
-
- arch/microblaze/include/asm/pci-bridge.h |   13 -
- arch/microblaze/include/asm/pci.h        |    3 +-
- arch/microblaze/include/asm/prom.h       |   15 -
- arch/microblaze/pci/Makefile             |    2 +-
- arch/microblaze/pci/pci-common.c         |  112 ++++++++
- arch/microblaze/pci/pci_32.c             |  432 ------------------------------
- arch/powerpc/include/asm/pci-bridge.h    |   29 +--
- arch/powerpc/include/asm/pci.h           |    3 +-
- arch/powerpc/include/asm/prom.h          |   14 -
- arch/powerpc/kernel/pci-common.c         |   11 +-
- arch/powerpc/kernel/pci_32.c             |  150 +----------
- arch/powerpc/kernel/pci_dn.c             |   47 ----
- arch/powerpc/kernel/pci_of_scan.c        |    9 +-
- arch/powerpc/platforms/powermac/pci.c    |    3 +-
- arch/sparc/include/asm/pci_32.h          |    3 -
- arch/sparc/include/asm/pci_64.h          |    3 -
- arch/sparc/kernel/pci.c                  |    8 +-
- arch/sparc/kernel/pcic.c                 |    8 -
- arch/x86/include/asm/prom.h              |   11 -
- arch/x86/kernel/devicetree.c             |   60 ++---
- drivers/of/Kconfig                       |    8 +-
- drivers/of/Makefile                      |    1 +
- drivers/of/of_pci.c                      |  112 ++------
- drivers/of/of_pci_irq.c                  |   92 +++++++
- drivers/pci/Makefile                     |    2 +
- drivers/pci/hotplug/rpadlpar_core.c      |    2 +-
- drivers/pci/of.c                         |   61 +++++
- drivers/pci/probe.c                      |    7 +-
- include/linux/of_pci.h                   |    5 +
- include/linux/pci.h                      |   28 ++
- 30 files changed, 395 insertions(+), 859 deletions(-)
- delete mode 100644 arch/microblaze/pci/pci_32.c
- create mode 100644 drivers/of/of_pci_irq.c
- create mode 100644 drivers/pci/of.c
+- k=
