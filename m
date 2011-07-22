@@ -1,23 +1,28 @@
-Return-Path: <r61911@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B21989@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7A891B6F71
+	by ozlabs.org (Postfix) with ESMTPS id 9B9BCB6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 19:37:20 +1000 (EST)
-From: Roy Zang <tie-fei.zang@freescale.com>
-To: <linux-mmc@vger.kernel.org>
-Subject: [PATCH 2/2 v2] eSDHC: Fix errors when booting kernel with fsl esdhc
-Date: Fri, 22 Jul 2011 18:15:17 +0800
-Message-ID: <1311329717-13954-2-git-send-email-tie-fei.zang@freescale.com>
-In-Reply-To: <1311329717-13954-1-git-send-email-tie-fei.zang@freescale.com>
-References: <1311329717-13954-1-git-send-email-tie-fei.zang@freescale.com>
+	Fri, 22 Jul 2011 20:10:11 +1000 (EST)
+Received: from mail23-va3 (localhost.localdomain [127.0.0.1])	by
+	mail23-va3-R.bigfish.com (Postfix) with ESMTP id 1AE7B1080330	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2011 10:10:06 +0000 (UTC)
+Received: from VA3EHSMHS013.bigfish.com (unknown [10.7.14.247])	by
+	mail23-va3.bigfish.com (Postfix) with ESMTP id F2F2ECE8083	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2011 10:10:05 +0000 (UTC)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>
+Subject: RE: [PATCH 2/4] powerpc/85xx: enable pcie initialization for P4080
+Date: Fri, 22 Jul 2011 10:09:53 +0000
+Message-ID: <267A3B246C22C34A8E574051858E077010E32F@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1311243914-4349-1-git-send-email-Shaohui.Xie@freescale.com>
+	<D08A7FEC-DF4F-4EF3-B064-13E91242EF91@freescale.com>
+In-Reply-To: <D08A7FEC-DF4F-4EF3-B064-13E91242EF91@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Xu lei <B33228@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	akpm@linux-foundation.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,186 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xu lei <B33228@freescale.com>
 
-When esdhc module was enabled in p5020, there were following errors:
 
-mmc0: Timeout waiting for hardware interrupt.
-mmc0: error -110 whilst initialising SD card
-mmc0: Unexpected interrupt 0x02000000.
-mmc0: Timeout waiting for hardware interrupt.
-mmc0: error -110 whilst initialising SD card
-mmc0: Unexpected interrupt 0x02000000.
+>-----Original Message-----
+>From: Gala Kumar-B11780
+>Sent: Friday, July 22, 2011 2:06 PM
+>To: Xie Shaohui-B21989
+>Cc: linuxppc-dev@lists.ozlabs.org
+>Subject: Re: [PATCH 2/4] powerpc/85xx: enable pcie initialization for
+>P4080
+>
+>
+>On Jul 21, 2011, at 5:25 AM, Shaohui Xie wrote:
+>
+>> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+>> ---
+>> arch/powerpc/platforms/85xx/corenet_ds.c |    3 +++
+>> 1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c
+>b/arch/powerpc/platforms/85xx/corenet_ds.c
+>> index 2ab338c..15247b0 100644
+>> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
+>> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+>> @@ -114,6 +114,9 @@ static const struct of_device_id of_device_ids[]
+>__devinitconst =3D {
+>> 		.compatible	=3D "simple-bus"
+>> 	},
+>> 	{
+>> +		.compatible	=3D "fsl,p4080-pcie"
+>> +	},
+>> +	{
+>> 		.compatible	=3D "fsl,rapidio-delta",
+>> 	},
+>> 	{}
+>> --
+>> 1.6.4
+>>
+>
+>What about p204x, p3041 & p5020 boards?
+>
 
-It is because ESDHC controller has different bit setting for PROCTL
-register, when kernel sets Power Control Register by method for standard
-SD Host Specification, it would overwritten FSL ESDHC PROCTL[DMAS];
-when it set Host Control Registers[DMAS], it sets PROCTL[EMODE] and
-PROCTL[D3CD]. These operations will set bad bits for PROCTL Register
-on FSL ESDHC Controller and cause errors, so this patch will make esdhc
-driver access FSL PROCTL Register according to block guide instead of
-standard SD Host Specification.
+[Xie Shaohui] I've check the galak/powerpc.git 'next' branch, this patch is=
+ not needed, please ignore it.
 
-For some FSL chips, such as MPC8536/P2020, PROCTL[VOLT_SEL] and PROCTL[DMAS]
-bits are reserved and even if they are set to wrong bits there is no error.
-But considering that all FSL ESDHC Controller register map is not fully
-compliant to standard SD Host Specification, we put the patch to all of
-FSL ESDHC Controllers.
 
-Signed-off-by: Lei Xu <B33228@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-v2:v1 some minor code style fix according to Venkatraman's comment.
-
- drivers/mmc/host/sdhci-of-core.c |    3 ++
- drivers/mmc/host/sdhci.c         |   64 ++++++++++++++++++++++++++++++-------
- include/linux/mmc/sdhci.h        |    6 ++-
- 3 files changed, 59 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci-of-core.c b/drivers/mmc/host/sdhci-of-core.c
-index 60e4186..fede43d 100644
---- a/drivers/mmc/host/sdhci-of-core.c
-+++ b/drivers/mmc/host/sdhci-of-core.c
-@@ -179,6 +179,9 @@ static int __devinit sdhci_of_probe(struct platform_device *ofdev)
- 	if (sdhci_of_wp_inverted(np))
- 		host->quirks |= SDHCI_QUIRK_INVERTED_WRITE_PROTECT;
- 
-+	if (of_device_is_compatible(np, "fsl,esdhc"))
-+		host->quirks |= SDHCI_QUIRK_QORIQ_PROCTL_WEIRD;
-+
- 	clk = of_get_property(np, "clock-frequency", &size);
- 	if (clk && size == sizeof(*clk) && *clk)
- 		of_host->clock = be32_to_cpup(clk);
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 58d5436..855fbe8 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -674,7 +674,7 @@ static void sdhci_set_transfer_irqs(struct sdhci_host *host)
- static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_command *cmd)
- {
- 	u8 count;
--	u8 ctrl;
-+	u32 ctrl;
- 	struct mmc_data *data = cmd->data;
- 	int ret;
- 
-@@ -807,14 +807,28 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_command *cmd)
- 	 * is ADMA.
- 	 */
- 	if (host->version >= SDHCI_SPEC_200) {
--		ctrl = sdhci_readb(host, SDHCI_HOST_CONTROL);
--		ctrl &= ~SDHCI_CTRL_DMA_MASK;
--		if ((host->flags & SDHCI_REQ_USE_DMA) &&
--			(host->flags & SDHCI_USE_ADMA))
--			ctrl |= SDHCI_CTRL_ADMA32;
--		else
--			ctrl |= SDHCI_CTRL_SDMA;
--		sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
-+		if (host->quirks & SDHCI_QUIRK_QORIQ_PROCTL_WEIRD) {
-+#define ESDHCI_PROCTL_DMAS_MASK		0x00000300
-+#define ESDHCI_PROCTL_ADMA32		0x00000200
-+#define ESDHCI_PROCTL_SDMA		0x00000000
-+			ctrl = sdhci_readl(host, SDHCI_HOST_CONTROL);
-+			ctrl &= ~ESDHCI_PROCTL_DMAS_MASK;
-+			if ((host->flags & SDHCI_REQ_USE_DMA) &&
-+				(host->flags & SDHCI_USE_ADMA))
-+				ctrl |= ESDHCI_PROCTL_ADMA32;
-+			else
-+				ctrl |= ESDHCI_PROCTL_SDMA;
-+			sdhci_writel(host, ctrl, SDHCI_HOST_CONTROL);
-+		} else {
-+			ctrl = sdhci_readb(host, SDHCI_HOST_CONTROL);
-+			ctrl &= ~SDHCI_CTRL_DMA_MASK;
-+			if ((host->flags & SDHCI_REQ_USE_DMA) &&
-+				(host->flags & SDHCI_USE_ADMA))
-+				ctrl |= SDHCI_CTRL_ADMA32;
-+			else
-+				ctrl |= SDHCI_CTRL_SDMA;
-+			sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
-+		}
- 	}
- 
- 	if (!(host->flags & SDHCI_REQ_USE_DMA)) {
-@@ -1138,19 +1152,32 @@ out:
- static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
- {
- 	u8 pwr = 0;
-+	u8 volt = 0;
- 
- 	if (power != (unsigned short)-1) {
- 		switch (1 << power) {
-+#define	ESDHCI_FSL_POWER_MASK	0x40
-+#define	ESDHCI_FSL_POWER_180	0x00
-+#define	ESDHCI_FSL_POWER_300	0x40
- 		case MMC_VDD_165_195:
--			pwr = SDHCI_POWER_180;
-+			if (host->quirks & SDHCI_QUIRK_QORIQ_PROCTL_WEIRD)
-+				pwr = ESDHCI_FSL_POWER_180;
-+			else
-+				pwr = SDHCI_POWER_180;
- 			break;
- 		case MMC_VDD_29_30:
- 		case MMC_VDD_30_31:
--			pwr = SDHCI_POWER_300;
-+			if (host->quirks & SDHCI_QUIRK_QORIQ_PROCTL_WEIRD)
-+				pwr = ESDHCI_FSL_POWER_300;
-+			else
-+				pwr = SDHCI_POWER_300;
- 			break;
- 		case MMC_VDD_32_33:
- 		case MMC_VDD_33_34:
--			pwr = SDHCI_POWER_330;
-+			if (host->quirks & SDHCI_QUIRK_QORIQ_PROCTL_WEIRD)
-+				pwr = ESDHCI_FSL_POWER_300;
-+			else
-+				pwr = SDHCI_POWER_330;
- 			break;
- 		default:
- 			BUG();
-@@ -1162,6 +1189,19 @@ static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
- 
- 	host->pwr = pwr;
- 
-+	/* 
-+	 * FSL ESDHC Controller has no Bus Power bit,
-+	 * and PROCTL[21] bit is for voltage selection.
-+	 */
-+	if (host->quirks & SDHCI_QUIRK_QORIQ_PROCTL_WEIRD) {
-+		volt = sdhci_readb(host, SDHCI_POWER_CONTROL);
-+		volt &= ~ESDHCI_FSL_POWER_MASK;
-+		volt |= pwr;
-+		sdhci_writeb(host, volt, SDHCI_POWER_CONTROL);
-+
-+		return;
-+	}
-+
- 	if (pwr == 0) {
- 		sdhci_writeb(host, 0, SDHCI_POWER_CONTROL);
- 		return;
-diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
-index 6a68c4e..d87abc7 100644
---- a/include/linux/mmc/sdhci.h
-+++ b/include/linux/mmc/sdhci.h
-@@ -21,7 +21,7 @@ struct sdhci_host {
- 	/* Data set by hardware interface driver */
- 	const char *hw_name;	/* Hardware bus name */
- 
--	unsigned int quirks;	/* Deviations from spec. */
-+	u64 quirks;	/* Deviations from spec. */
- 
- /* Controller doesn't honor resets unless we touch the clock register */
- #define SDHCI_QUIRK_CLOCK_BEFORE_RESET			(1<<0)
-@@ -86,7 +86,9 @@ struct sdhci_host {
- /* Controller treats ADMA descriptors with length 0000h incorrectly */
- #define SDHCI_QUIRK_BROKEN_ADMA_ZEROLEN_DESC		(1<<30)
- /* The read-only detection via SDHCI_PRESENT_STATE register is unstable */
--#define SDHCI_QUIRK_UNSTABLE_RO_DETECT			(1<<31)
-+#define SDHCI_QUIRK_UNSTABLE_RO_DETECT			(1U<<31)
-+/* Controller has weird bit setting for Protocol Control Register */
-+#define SDHCI_QUIRK_QORIQ_PROCTL_WEIRD			(0x100000000U)
- 
- 	int irq;		/* Device IRQ */
- 	void __iomem *ioaddr;	/* Mapped address */
--- 
-1.6.0.6
+Best Regards,=20
+Shaohui Xie
