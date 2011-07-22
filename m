@@ -1,30 +1,29 @@
-Return-Path: <haishan.bai@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BC65DB6F76
+	by ozlabs.org (Postfix) with ESMTPS id 3E1B6B6F77
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 11:56:36 +1000 (EST)
-Received: by wwj40 with SMTP id 40so1444565wwj.14
+	Fri, 22 Jul 2011 11:59:16 +1000 (EST)
+Received: by fxe23 with SMTP id 23so4019320fxe.15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Jul 2011 18:56:32 -0700 (PDT)
-Message-ID: <4E28D85F.5000009@gmail.com>
-Date: Fri, 22 Jul 2011 09:54:39 +0800
-From: Shan Hai <haishan.bai@gmail.com>
+	Thu, 21 Jul 2011 18:59:12 -0700 (PDT)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW tracking
-	of dirty & young
-References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>	<1310725418.2586.309.camel@twins>	<4E21A526.8010904@gmail.com>	<1310860194.25044.17.camel@pasglop>	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>	<1310912990.25044.203.camel@pasglop>	<1310944453.25044.262.camel@pasglop>	<1310961691.25044.274.camel@pasglop>	<4E23D728.7090406@gmail.com>	<1310972462.25044.292.camel@pasglop>	<4E23E02C.8090401@gmail.com>	<1310974591.25044.298.camel@pasglop>	<4E24FA51.70602@gmail.com>	<1311049762.25044.392.camel@pasglop>	<20110721153606.37e6f432.akpm@linux-foundation.org>	<1311288726.25044.545.camel@pasglop>
-	<20110721155938.2ff2dab5.akpm@linux-foundation.org>
-In-Reply-To: <20110721155938.2ff2dab5.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Peter Zijlstra <peterz@infradead.org>,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	dhowells@redhat.com, paulus@samba.org, tglx@linutronix.de,
-	walken@google.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <EBAEF199-2D62-477F-BD40-861149AB1CFA@kernel.crashing.org>
+References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
+	<1311065631-3429-10-git-send-email-dbaryshkov@gmail.com>
+	<EBAEF199-2D62-477F-BD40-861149AB1CFA@kernel.crashing.org>
+Date: Thu, 21 Jul 2011 21:59:11 -0400
+Message-ID: <CAP=VYLqdBUjZz7gcuiEfGZ+pLkxz+Hk9DBxD7J4UUrpaD66mGA@mail.gmail.com>
+Subject: Re: [PATCH 09/14] 85xx/sbc8548: read hardware revision when it's
+	required for first time
+From: Paul Gortmaker <paul.gortmaker@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux PPC Development <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,80 +33,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2011 06:59 AM, Andrew Morton wrote:
-> On Fri, 22 Jul 2011 08:52:06 +1000
-> Benjamin Herrenschmidt<benh@kernel.crashing.org>  wrote:
+On Tue, Jul 19, 2011 at 10:12 AM, Kumar Gala <galak@kernel.crashing.org> wr=
+ote:
 >
->> On Thu, 2011-07-21 at 15:36 -0700, Andrew Morton wrote:
->>> On Tue, 19 Jul 2011 14:29:22 +1000
->>> Benjamin Herrenschmidt<benh@kernel.crashing.org>  wrote:
->>>
->>>> The futex code currently attempts to write to user memory within
->>>> a pagefault disabled section, and if that fails, tries to fix it
->>>> up using get_user_pages().
->>>>
->>>> This doesn't work on archs where the dirty and young bits are
->>>> maintained by software, since they will gate access permission
->>>> in the TLB, and will not be updated by gup().
->>>>
->>>> In addition, there's an expectation on some archs that a
->>>> spurious write fault triggers a local TLB flush, and that is
->>>> missing from the picture as well.
->>>>
->>>> I decided that adding those "features" to gup() would be too much
->>>> for this already too complex function, and instead added a new
->>>> simpler fixup_user_fault() which is essentially a wrapper around
->>>> handle_mm_fault() which the futex code can call.
->>>>
->>>> Signed-off-by: Benjamin Herrenschmidt<benh@kernel.crashing.org>
->>>> ---
->>>>
->>>> Shan, can you test this ? It might not fix the problem
->>> um, what problem.  There's no description here of the user-visible
->>> effects of the bug hence it's hard to work out what kernel version(s)
->>> should receive this patch.
->> Shan could give you an actual example (it was in the previous thread),
->> but basically, livelock as the kernel keeps trying and trying the
->> in_atomic op and never resolves it.
+> On Jul 19, 2011, at 3:53 AM, Dmitry Eremin-Solenikov wrote:
+>
+>> Currently sbc8548 reads hardware revision during bootup. To simplify
+>> things read it when it's first required when the kernel is up and
+>> running.
 >>
->>> What kernel version(s) should receive this patch?
->> I haven't dug. Probably anything it applies on as far as we did that
->> trick of atomic + gup() for futex.
-> You're not understanding me.
+>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> ---
+>> arch/powerpc/platforms/85xx/sbc8548.c | =A0 =A08 +++++---
+>> 1 files changed, 5 insertions(+), 3 deletions(-)
 >
-> I need a good reason to merge this into 3.0.
->
-> The -stable maintainers need even better reasons to merge this into
-> earlier kernels.
->
-> Please provide those reasons!
->
+> How is this simplifying things, seems more complicated to add an addition=
+al if() check.
 
-Summary:
-- Encountered a 100% CPU system usage problem on pthread_mutex allocated 
-in a
-     shared memory region, and the problem occurs only on setting 
-PRIORITY_INHERITANCE
-     to the pthread_mutex.
-- ftrace result reveals that an infinite loop in the futex_lock_pi 
-caused high CPU usage.
-- The powerpc e500 was affected but the x86 was not.
-     I have not tested on other archs so I am not sure whether the other 
-archs are attacked
-     by the problem.
-- Tested it on 2.6.34 and 3.0-rc7, both are affected, earlier versions 
-might be affected.
+Agreed -- I don't see what this is meant to achieve.
 
-Please refer the threads "[PATCH 0/1] Fixup write permission of TLB on 
-powerpc e500 core"
-and "[PATCH 1/1] Fixup write permission of TLB on powerpc e500 core" for 
-the whole story.
-Provided the test case code in the [PATH 0/1].
+Paul.
 
-Thanks
-Shan Hai
-
-> (Documentation/stable_kernel_rules.txt, 4th bullet)
 >
-> (And it's not just me and -stable maintainers.  Distro maintainers will
-> also look at this patch and wonder whether they should merge it)
+> - k
+>
+>>
+>> diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platfo=
+rms/85xx/sbc8548.c
+>> index ecdd8c0..2eeb376 100644
+>> --- a/arch/powerpc/platforms/85xx/sbc8548.c
+>> +++ b/arch/powerpc/platforms/85xx/sbc8548.c
+>> @@ -49,7 +49,7 @@
+>> #include <sysdev/fsl_soc.h>
+>> #include <sysdev/fsl_pci.h>
+>>
+>> -static int sbc_rev;
+>> +static int sbc_rev =3D -EINVAL;
+>>
+>> static void __init sbc8548_pic_init(void)
+>> {
+>> @@ -82,7 +82,7 @@ static void __init sbc8548_pic_init(void)
+>> }
+>>
+>> /* Extract the HW Rev from the EPLD on the board */
+>> -static int __init sbc8548_hw_rev(void)
+>> +static int sbc8548_hw_rev(void)
+>> {
+>> =A0 =A0 =A0 struct device_node *np;
+>> =A0 =A0 =A0 struct resource res;
+>> @@ -130,7 +130,6 @@ static void __init sbc8548_setup_arch(void)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+>> =A0 =A0 =A0 }
+>> #endif
+>> - =A0 =A0 sbc_rev =3D sbc8548_hw_rev();
+>> }
+>>
+>> static void sbc8548_show_cpuinfo(struct seq_file *m)
+>> @@ -140,6 +139,9 @@ static void sbc8548_show_cpuinfo(struct seq_file *m)
+>> =A0 =A0 =A0 pvid =3D mfspr(SPRN_PVR);
+>> =A0 =A0 =A0 svid =3D mfspr(SPRN_SVR);
+>>
+>> + =A0 =A0 if (sbc_rev =3D=3D -EINVAL)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 sbc_rev =3D sbc8548_hw_rev();
+>> +
+>> =A0 =A0 =A0 seq_printf(m, "Vendor\t\t: Wind River\n");
+>> =A0 =A0 =A0 seq_printf(m, "Machine\t\t: SBC8548 v%d\n", sbc_rev);
+>> =A0 =A0 =A0 seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
+>> --
+>> 1.7.2.5
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
