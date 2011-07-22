@@ -1,23 +1,23 @@
 Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-vw0-f43.google.com (mail-vw0-f43.google.com
+	[209.85.212.43]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5BDB8B6F74
+	by ozlabs.org (Postfix) with ESMTPS id 354ACB6F62
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 06:08:47 +1000 (EST)
-Received: by vxi32 with SMTP id 32so2031667vxi.38
+	Sat, 23 Jul 2011 06:11:16 +1000 (EST)
+Received: by vws10 with SMTP id 10so3142934vws.16
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 13:08:44 -0700 (PDT)
+	Fri, 22 Jul 2011 13:11:14 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <C7DEE4D7-9707-4A18-A3D7-BECDEC29A258@kernel.crashing.org>
+In-Reply-To: <276D152E-9A93-448C-BB1B-D749697FF4F0@kernel.crashing.org>
 References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
-	<1311065631-3429-13-git-send-email-dbaryshkov@gmail.com>
-	<C7DEE4D7-9707-4A18-A3D7-BECDEC29A258@kernel.crashing.org>
-Date: Sat, 23 Jul 2011 00:08:42 +0400
-Message-ID: <CALT56yMDT3UC7W3kJt110QSkjcURemjK0Y_Bysw3O+F7QK4uNQ@mail.gmail.com>
-Subject: Re: [PATCH 12/14] 85xx/mpc85xx_ds,ads,cds: move .pci_exclude_device
-	setting to machine definitions
+	<1311065631-3429-11-git-send-email-dbaryshkov@gmail.com>
+	<276D152E-9A93-448C-BB1B-D749697FF4F0@kernel.crashing.org>
+Date: Sat, 23 Jul 2011 00:11:13 +0400
+Message-ID: <CALT56yMseM-2kcuszcVPJq_o3O1Mb4dSsgrMY_rHQD-2Q50D-A@mail.gmail.com>
+Subject: Re: [PATCH 10/14] 85xx/mpc85xx_rdb: merge p1020_rdb and p2020_rdb
+	machine entries
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -36,126 +36,85 @@ On 7/19/11, Kumar Gala <galak@kernel.crashing.org> wrote:
 >
 > On Jul 19, 2011, at 3:53 AM, Dmitry Eremin-Solenikov wrote:
 >
+>> p1020_rdb and p2020_rdb machine entries bear no in-kernel differencies
+>> other than dt compatible strings. Merge them into single machine entry
+>> named mpc85xx_rdb
+>>
 >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 >> ---
->> arch/powerpc/platforms/85xx/mpc85xx_ads.c |    5 +++--
->> arch/powerpc/platforms/85xx/mpc85xx_cds.c |    5 ++---
->> arch/powerpc/platforms/85xx/mpc85xx_ds.c  |    5 +++--
->> 3 files changed, 8 insertions(+), 7 deletions(-)
->
-> I believe these are done this way for a reason (its been some time).  I
-> can't remember if it maters or not, but having pci_exclude_device() means
-> that any code in fsl_add_bridge() would not be impacted by the exclude
-> function.
-
-Hmm. I have to check this.
-
-BTW: what is the point in disabling access to bus == 0 && PCI_SLOT == 0 on some
-of those boards (esp. ads)? Other boards lack this check/exclude. Does it mean
-something historical (and so can be dropped), is it some workaround/bugfix
-(then it should be propagated to other boards??) or something else?
-
->
-> Not sure what value making this change has at this point.
-
-One of my big goals is to drop most of differencies from setup_arch functions
-(one simple function can handle all things like PCI, SWIOTLB, etc).
-Not yet ready
-for submission though (not enough time to clean all the things). And moving
-this assignment to static code would allow me to drop setup_arch()
-function completely
-(more or less) on these boards.
-
->
-> - k
->
+>> arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   40
+>> ++++++----------------------
+>> 1 files changed, 9 insertions(+), 31 deletions(-)
 >>
->> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
->> b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
->> index 3b2c9bb..2483929 100644
->> --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
->> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
->> @@ -200,8 +200,6 @@ static void __init mpc85xx_ads_setup_arch(void)
->> #ifdef CONFIG_PCI
->> 	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
->> 		fsl_add_bridge(np, 1);
->> -
->> -	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
->> #endif
+>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+>> b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+>> index 088f30b..7a3a37b 100644
+>> --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+>> @@ -120,47 +120,25 @@ static int __init mpc85xxrdb_publish_devices(void)
+>> {
+>> 	return of_platform_bus_probe(NULL, mpc85xxrdb_ids, NULL);
+>> }
+>> -machine_device_initcall(p2020_rdb, mpc85xxrdb_publish_devices);
+>> -machine_device_initcall(p1020_rdb, mpc85xxrdb_publish_devices);
+>> +machine_device_initcall(mpc85xx_rdb, mpc85xxrdb_publish_devices);
+>>
+>> /*
+>>  * Called very early, device-tree isn't unflattened
+>>  */
+>> -static int __init p2020_rdb_probe(void)
+>> +static int __init mpc85xx_rdb_probe(void)
+>> {
+>> 	unsigned long root = of_get_flat_dt_root();
+>>
+>> -	if (of_flat_dt_is_compatible(root, "fsl,P2020RDB"))
+>> +	if (of_flat_dt_is_compatible(root, "fsl,P1020RDB") ||
+>> +	    of_flat_dt_is_compatible(root, "fsl,P2020RDB")) {
+>> 		return 1;
+>> -	return 0;
+>> +	} else
+>> +		return 0;
 >> }
 >>
->> @@ -254,6 +252,9 @@ define_machine(mpc85xx_ads) {
->> 	.probe			= mpc85xx_ads_probe,
->> 	.setup_arch		= mpc85xx_ads_setup_arch,
->> 	.init_IRQ		= mpc85xx_ads_pic_init,
->> +#ifdef CONFIG_PCI
->> +	.pci_exclude_device	= mpc85xx_exclude_device,
->> +#endif
->> 	.show_cpuinfo		= mpc85xx_ads_show_cpuinfo,
->> 	.get_irq		= mpic_get_irq,
->> 	.restart		= fsl_rstcr_restart,
->> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
->> b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
->> index 6299a2a..e209c23 100644
->> --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
->> +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
->> @@ -297,9 +297,6 @@ static void __init mpc85xx_cds_setup_arch(void)
->> 				fsl_add_bridge(np, 0);
->> 		}
->> 	}
+>> -static int __init p1020_rdb_probe(void)
+>> -{
+>> -	unsigned long root = of_get_flat_dt_root();
 >> -
->> -	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
->> -	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
->> #endif
->> }
->>
->> @@ -355,6 +352,8 @@ define_machine(mpc85xx_cds) {
->> #ifdef CONFIG_PCI
->> 	.restart	= mpc85xx_cds_restart,
->> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
->> +	.pci_irq_fixup	= mpc85xx_cds_pci_irq_fixup,
->> +	.pci_exclude_device	= mpc85xx_exclude_device,
->> #else
->> 	.restart	= fsl_rstcr_restart,
->> #endif
->> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> index c7b97f7..53bf07d 100644
->> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> @@ -182,8 +182,6 @@ static void __init mpc85xx_ds_setup_arch(void)
->> 					hose->dma_window_size);
->> 		}
->> 	}
+>> -	if (of_flat_dt_is_compatible(root, "fsl,P1020RDB"))
+>> -		return 1;
+>> -	return 0;
+>> -}
 >> -
->> -	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
->> #endif
->>
->> #ifdef CONFIG_SMP
->> @@ -279,6 +277,7 @@ define_machine(mpc8544_ds) {
->> 	.init_IRQ		= mpc85xx_ds_pic_init,
+>> -define_machine(p2020_rdb) {
+>> -	.name			= "P2020 RDB",
+>> -	.probe			= p2020_rdb_probe,
+>> -	.setup_arch		= mpc85xx_rdb_setup_arch,
+>> -	.init_IRQ		= mpc85xx_rdb_pic_init,
+>> -#ifdef CONFIG_PCI
+>> -	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>> -#endif
+>> -	.get_irq		= mpic_get_irq,
+>> -	.restart		= fsl_rstcr_restart,
+>> -	.calibrate_decr		= generic_calibrate_decr,
+>> -	.progress		= udbg_progress,
+>> -};
+>> -
+>> -define_machine(p1020_rdb) {
+>> -	.name			= "P1020 RDB",
+>> -	.probe			= p1020_rdb_probe,
+>> +define_machine(mpc85xx_rdb) {
+>> +	.name			= "MPC85xx RDB",
+>
+> breaking 'name' this way isn't acceptable.
+
+BTW: what is so special in p1010rdb, so it's not
+merged into this file, but exists as a separate .c file?
+
+>
+>> +	.probe			= mpc85xx_rdb_probe,
+>> 	.setup_arch		= mpc85xx_rdb_setup_arch,
+>> 	.init_IRQ		= mpc85xx_rdb_pic_init,
 >> #ifdef CONFIG_PCI
->> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
->> +	.pci_exclude_device	= mpc85xx_exclude_device,
->> #endif
->> 	.get_irq		= mpic_get_irq,
->> 	.restart		= fsl_rstcr_restart,
->> @@ -293,6 +292,7 @@ define_machine(mpc8572_ds) {
->> 	.init_IRQ		= mpc85xx_ds_pic_init,
->> #ifdef CONFIG_PCI
->> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
->> +	.pci_exclude_device	= mpc85xx_exclude_device,
->> #endif
->> 	.get_irq		= mpic_get_irq,
->> 	.restart		= fsl_rstcr_restart,
->> @@ -307,6 +307,7 @@ define_machine(p2020_ds) {
->> 	.init_IRQ		= mpc85xx_ds_pic_init,
->> #ifdef CONFIG_PCI
->> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
->> +	.pci_exclude_device	= mpc85xx_exclude_device,
->> #endif
->> 	.get_irq		= mpic_get_irq,
->> 	.restart		= fsl_rstcr_restart,
 >> --
 >> 1.7.2.5
 >
