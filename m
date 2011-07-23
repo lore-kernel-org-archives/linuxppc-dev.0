@@ -1,30 +1,12 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1CBBEB6F74
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 08:34:55 +1000 (EST)
-Received: by vxi32 with SMTP id 32so2089229vxi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Jul 2011 15:34:52 -0700 (PDT)
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 23 Jul 2011 17:41:11 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org,
+	Alexander Graf <agraf@suse.de>
+Subject: [PATCH 1/3] KVM: PPC: Assemble book3s{,_hv}_rmhandlers.S separately
+Message-ID: <20110723074111.GA17927@bloggs.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1311372381.25044.578.camel@pasglop>
-References: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
-	<1308315107-29182-3-git-send-email-dbaryshkov@gmail.com>
-	<1309318559.32158.521.camel@pasglop>
-	<CALT56yNrCwvBuu+rLgryf4XwA22Qz5-ntQ=rBv056ayT8F-oVw@mail.gmail.com>
-	<1311372381.25044.578.camel@pasglop>
-Date: Sat, 23 Jul 2011 02:34:52 +0400
-Message-ID: <CALT56yMcW5pT9sMz0_83JTFTr5ehvB4pa8TBdgThAQPLighEoA@mail.gmail.com>
-Subject: Re: [PATCH V3 2/2] cpc925_edac: support single-processor
-	configurations
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org, Doug Thompson <dougthompson@xmission.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +16,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/23/11, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Sat, 2011-07-23 at 01:56 +0400, Dmitry Eremin-Solenikov wrote:
->> On 6/29/11, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->> > On Fri, 2011-06-17 at 16:51 +0400, Dmitry Eremin-Solenikov wrote:
->> >> If second CPU is not enabled, CPC925 EDAC driver will spill out
->> >> warnings
->> >> about errors on second Processor Interface. Support masking that out,
->> >> by detecting at runtime which CPUs are present in device tree.
->> >
->> > Doug ? Are you going to carry this or should I via powerpc.git ? There's
->> > a dependency on another patch that's going into powerpc-next ...
->>
->> I'm sorry. It's been a month ago. Is there any consensus regarding these
->> two
->> patches? Are they going in in the 3.1 merge window?
->
-> There have been no response from the Doug, but I just realized we
-> haven't CCing their mailing list... oh well, I'll probably send them to
-> Linux myself some time next week.
+This makes arch/powerpc/kvm/book3s_rmhandlers.S and
+arch/powerpc/kvm/book3s_hv_rmhandlers.S be assembled as
+separate compilation units rather than having them #included in
+arch/powerpc/kernel/exceptions-64s.S.  We no longer have any
+conditional branches between the exception prologs in
+exceptions-64s.S and the KVM handlers, so there is no need to
+keep their contents close together in the vmlinux image.
 
-Thank you very much!
+In their current location, they are using up part of the limited
+space between the first-level interrupt handlers and the firmware
+NMI data area at offset 0x7000, and with some kernel configurations
+this area will overflow (e.g. allyesconfig), leading to an
+"attempt to .org backwards" error when compiling exceptions-64s.S.
 
+Moving them out requires that we add some #includes that the
+book3s_{,hv_}rmhandlers.S code was previously getting implicitly
+via exceptions-64s.S.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/exceptions-64s.S    |   10 ----------
+ arch/powerpc/kvm/Makefile               |    3 +++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |    3 +++
+ arch/powerpc/kvm/book3s_rmhandlers.S    |    3 +++
+ 4 files changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 41b02c7..29ddd8b 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -427,16 +427,6 @@ slb_miss_user_pseries:
+ 	b	.				/* prevent spec. execution */
+ #endif /* __DISABLED__ */
+ 
+-/* KVM's trampoline code needs to be close to the interrupt handlers */
+-
+-#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+-#ifdef CONFIG_KVM_BOOK3S_PR
+-#include "../kvm/book3s_rmhandlers.S"
+-#else
+-#include "../kvm/book3s_hv_rmhandlers.S"
+-#endif
+-#endif
+-
+ 	.align	7
+ 	.globl	__end_interrupts
+ __end_interrupts:
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 08428e2..e161680 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -49,12 +49,15 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
+ 	book3s_64_mmu_host.o \
+ 	book3s_64_mmu.o \
+ 	book3s_32_mmu.o
++kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
++	book3s_rmhandlers.o
+ 
+ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
+ 	book3s_hv.o \
+ 	book3s_hv_interrupts.o \
+ 	book3s_64_mmu_hv.o
+ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
++	book3s_hv_rmhandlers.o \
+ 	book3s_hv_rm_mmu.o \
+ 	book3s_64_vio_hv.o \
+ 	book3s_hv_builtin.o
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 6dd3358..543ee50 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -20,7 +20,10 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/kvm_asm.h>
+ #include <asm/reg.h>
++#include <asm/mmu.h>
+ #include <asm/page.h>
++#include <asm/ptrace.h>
++#include <asm/hvcall.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/exception-64s.h>
+ 
+diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
+index c1f877c..5ee66ed 100644
+--- a/arch/powerpc/kvm/book3s_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_rmhandlers.S
+@@ -20,6 +20,7 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/kvm_asm.h>
+ #include <asm/reg.h>
++#include <asm/mmu.h>
+ #include <asm/page.h>
+ #include <asm/asm-offsets.h>
+ 
+@@ -39,6 +40,7 @@
+ #define MSR_NOIRQ		MSR_KERNEL & ~(MSR_IR | MSR_DR)
+ #define FUNC(name) 		GLUE(.,name)
+ 
++	.globl	kvmppc_skip_interrupt
+ kvmppc_skip_interrupt:
+ 	/*
+ 	 * Here all GPRs are unchanged from when the interrupt happened
+@@ -51,6 +53,7 @@ kvmppc_skip_interrupt:
+ 	rfid
+ 	b	.
+ 
++	.globl	kvmppc_skip_Hinterrupt
+ kvmppc_skip_Hinterrupt:
+ 	/*
+ 	 * Here all GPRs are unchanged from when the interrupt happened
 -- 
-With best wishes
-Dmitry
+1.7.5.4
