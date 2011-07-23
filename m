@@ -3,23 +3,28 @@ Received: from mail-pz0-f43.google.com (mail-pz0-f43.google.com
 	[209.85.210.43]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E5A59B738F
+	by ozlabs.org (Postfix) with ESMTPS id 6E35BB6F87
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 18:49:40 +1000 (EST)
+	Sat, 23 Jul 2011 18:49:44 +1000 (EST)
 Received: by mail-pz0-f43.google.com with SMTP id 1so3972714pzk.2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 01:49:40 -0700 (PDT)
+	Sat, 23 Jul 2011 01:49:44 -0700 (PDT)
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	akpm@linux-foundation.org
-Subject: [PATCH v3 5/6] powerpc: pSeries reconfig notifier error injection
-	module
-Date: Sat, 23 Jul 2011 17:50:59 +0900
-Message-Id: <1311411060-30124-6-git-send-email-akinobu.mita@gmail.com>
+Subject: [PATCH v3 6/6] fault-injection: add notifier error injection testing
+	scripts
+Date: Sat, 23 Jul 2011 17:51:00 +0900
+Message-Id: <1311411060-30124-7-git-send-email-akinobu.mita@gmail.com>
 In-Reply-To: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
 References: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Akinobu Mita <akinobu.mita@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
+	Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+	=?UTF-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
+	linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,143 +34,374 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This provides the ability to inject artifical errors to pSeries reconfig
-notifier chain callbacks.  It is controlled through debugfs interface
-under /sys/kernel/debug/pSeries-reconfig-notifier-error-inject/
+* tools/testing/fault-injection/cpu-notifier.sh is testing script for
+CPU notifier error handling by using cpu-notifier-error-inject.ko.
 
-Each of the files in the directory represents an event which can be failed
-and contains the error code.  If the notifier call chain should be failed
-with some events notified, write the error code to the files.
+1. Offline all hot-pluggable CPUs in preparation for testing
+2. Test CPU hot-add error handling by injecting notifier errors
+3. Online all hot-pluggable CPUs in preparation for testing
+4. Test CPU hot-remove error handling by injecting notifier errors
 
-This module needs pSeries_reconfig_notifier_{,un}register symbols to be
-exported.
+* tools/testing/fault-injection/memory-notifier.sh is doing the same thing
+for memory hotplug notifier.
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Suggested-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Greg KH <greg@kroah.com>
+Cc: linux-mm@kvack.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Américo Wang <xiyou.wangcong@gmail.com>
 ---
 * v3
-- rewrite to be kernel modules instead of initializing at late_initcall()s
-- export pSeries_reconfig_notifier_{,un}register symbols for this module
-- notifier priority can be specified as a module parameter
+- new patch
 
- arch/powerpc/platforms/pseries/reconfig.c    |    2 +
- lib/Kconfig.debug                            |   14 +++++++
- lib/Makefile                                 |    2 +
- lib/pSeries-reconfig-notifier-error-inject.c |   48 ++++++++++++++++++++++++++
- 4 files changed, 66 insertions(+), 0 deletions(-)
- create mode 100644 lib/pSeries-reconfig-notifier-error-inject.c
+ tools/testing/fault-injection/cpu-notifier.sh    |  162 +++++++++++++++++++++
+ tools/testing/fault-injection/memory-notifier.sh |  163 ++++++++++++++++++++++
+ 2 files changed, 325 insertions(+), 0 deletions(-)
+ create mode 100755 tools/testing/fault-injection/cpu-notifier.sh
+ create mode 100755 tools/testing/fault-injection/memory-notifier.sh
 
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 168651a..b9808e9 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -103,11 +103,13 @@ int pSeries_reconfig_notifier_register(struct notifier_block *nb)
- {
- 	return blocking_notifier_chain_register(&pSeries_reconfig_chain, nb);
- }
-+EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_register);
- 
- void pSeries_reconfig_notifier_unregister(struct notifier_block *nb)
- {
- 	blocking_notifier_chain_unregister(&pSeries_reconfig_chain, nb);
- }
-+EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_unregister);
- 
- int pSeries_reconfig_notify(unsigned long action, void *p)
- {
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index a2b0856..46298d7 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1099,6 +1099,20 @@ config MEMORY_NOTIFIER_ERROR_INJECT
- 
- 	  If unsure, say N.
- 
-+config PSERIES_RECONFIG_NOTIFIER_ERROR_INJECT
-+	tristate "pSeries reconfig notifier error injection module"
-+	depends on PPC_PSERIES && NOTIFIER_ERROR_INJECTION
-+	help
-+	  This option provides the ability to inject artifical errors to
-+	  pSeries reconfig notifier chain callbacks.  It is controlled
-+	  through debugfs interface under
-+	  /sys/kernel/debug/pSeries-reconfig-notifier-error-inject/
-+
-+	  To compile this code as a module, choose M here: the module will
-+	  be called memory-notifier-error-inject.
-+
-+	  If unsure, say N.
-+
- config FAULT_INJECTION
- 	bool "Fault-injection framework"
- 	depends on DEBUG_KERNEL
-diff --git a/lib/Makefile b/lib/Makefile
-index f28914b..e68cea7 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -92,6 +92,8 @@ obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- obj-$(CONFIG_CPU_NOTIFIER_ERROR_INJECT) += cpu-notifier-error-inject.o
- obj-$(CONFIG_PM_NOTIFIER_ERROR_INJECT) += pm-notifier-error-inject.o
- obj-$(CONFIG_MEMORY_NOTIFIER_ERROR_INJECT) += memory-notifier-error-inject.o
-+obj-$(CONFIG_PSERIES_RECONFIG_NOTIFIER_ERROR_INJECT) += \
-+	pSeries-reconfig-notifier-error-inject.o
- 
- lib-$(CONFIG_GENERIC_BUG) += bug.o
- 
-diff --git a/lib/pSeries-reconfig-notifier-error-inject.c b/lib/pSeries-reconfig-notifier-error-inject.c
-new file mode 100644
-index 0000000..f4ed2b3
+diff --git a/tools/testing/fault-injection/cpu-notifier.sh b/tools/testing/fault-injection/cpu-notifier.sh
+new file mode 100755
+index 0000000..be02a85
 --- /dev/null
-+++ b/lib/pSeries-reconfig-notifier-error-inject.c
-@@ -0,0 +1,48 @@
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/notifier.h>
++++ b/tools/testing/fault-injection/cpu-notifier.sh
+@@ -0,0 +1,162 @@
++#!/bin/bash
 +
-+#include <asm/pSeries_reconfig.h>
-+
-+static int priority;
-+module_param(priority, int, 0);
-+MODULE_PARM_DESC(priority, "specify pSeries reconfig notifier priority");
-+
-+static struct err_inject_notifier_block err_inject_reconfig_nb = {
-+	.actions = {
-+		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_RECONFIG_ADD) },
-+		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_RECONFIG_REMOVE) },
-+		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_DRCONF_MEM_ADD) },
-+		{ ERR_INJECT_NOTIFIER_ACTION(PSERIES_DRCONF_MEM_REMOVE) },
-+		{}
-+	}
-+};
-+
-+static int err_inject_init(void)
++#
++# list all hot-pluggable CPUs
++#
++hotpluggable_cpus()
 +{
-+	int err;
++	local state=${1:-.\*}
 +
-+	err = err_inject_notifier_block_init(&err_inject_reconfig_nb,
-+			"pSeries-reconfig-notifier-error-inject", priority);
-+	if (err)
-+		return err;
-+
-+	err = pSeries_reconfig_notifier_register(&err_inject_reconfig_nb.nb);
-+	if (err)
-+		err_inject_notifier_block_cleanup(&err_inject_reconfig_nb);
-+
-+	return err;
++	for cpu in /sys/devices/system/cpu/cpu*; do
++		if [ -f $cpu/online ] && grep -q $state $cpu/online; then
++			echo ${cpu##/*/cpu}
++		fi
++	done
 +}
 +
-+static void err_inject_exit(void)
++hotplaggable_offline_cpus()
 +{
-+	pSeries_reconfig_notifier_unregister(&err_inject_reconfig_nb.nb);
-+	err_inject_notifier_block_cleanup(&err_inject_reconfig_nb);
++	hotpluggable_cpus 0
 +}
 +
-+module_init(err_inject_init);
-+module_exit(err_inject_exit);
++hotpluggable_online_cpus()
++{
++	hotpluggable_cpus 1
++}
 +
-+MODULE_DESCRIPTION("pSeries reconfig notifier error injection module");
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Akinobu Mita <akinobu.mita@gmail.com>");
++cpu_is_online()
++{
++	grep -q 1 /sys/devices/system/cpu/cpu$1/online
++}
++
++cpu_is_offline()
++{
++	grep -q 0 /sys/devices/system/cpu/cpu$1/online
++}
++
++add_cpu()
++{
++	echo 1 > /sys/devices/system/cpu/cpu$1/online
++}
++
++remove_cpu()
++{
++	echo 0 > /sys/devices/system/cpu/cpu$1/online
++}
++
++add_cpu_expect_success()
++{
++	local cpu=$1
++
++	if ! add_cpu $cpu; then
++		echo $FUNCNAME $cpu: unexpected fail >&2
++	elif ! cpu_is_online $cpu; then
++		echo $FUNCNAME $cpu: unexpected offline >&2
++	fi
++}
++
++add_cpu_expect_fail()
++{
++	local cpu=$1
++
++	if add_cpu $cpu 2> /dev/null; then
++		echo $FUNCNAME $cpu: unexpected success >&2
++	elif ! cpu_is_offline $cpu; then
++		echo $FUNCNAME $cpu: unexpected online >&2
++	fi
++}
++
++remove_cpu_expect_success()
++{
++	local cpu=$1
++
++	if ! remove_cpu $cpu; then
++		echo $FUNCNAME $cpu: unexpected fail >&2
++	elif ! cpu_is_offline $cpu; then
++		echo $FUNCNAME $cpu: unexpected offline >&2
++	fi
++}
++
++remove_cpu_expect_fail()
++{
++	local cpu=$1
++
++	if remove_cpu $cpu 2> /dev/null; then
++		echo $FUNCNAME $cpu: unexpected success >&2
++	elif ! cpu_is_online $cpu; then
++		echo $FUNCNAME $cpu: unexpected offline >&2
++	fi
++}
++
++if [ $UID != 0 ]; then
++	echo must be run as root >&2
++	exit 1
++fi
++
++error=-12
++priority=0
++
++while getopts e:p: opt; do
++	case $opt in
++	e)
++		error=$OPTARG
++		;;
++	p)
++		priority=$OPTARG
++		;;
++	esac
++done
++
++if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
++	echo "error code must be -4095 <= errno < 0" >&2
++	exit 1
++fi
++
++DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
++
++if [ ! -d "$DEBUGFS" ]; then
++	echo debugfs is not mounted >&2
++	exit 1
++fi
++
++/sbin/modprobe -r cpu-notifier-error-inject
++/sbin/modprobe -q cpu-notifier-error-inject priority=$priority
++
++if [ ! -d $DEBUGFS/cpu-notifier-error-inject ]; then
++	echo cpu-notifier-error-inject module is not available >&2
++	exit 1
++fi
++
++#
++# Offline all hot-pluggable CPUs
++#
++echo 0 > $DEBUGFS/cpu-notifier-error-inject/CPU_DOWN_PREPARE
++for cpu in `hotpluggable_online_cpus`; do
++	remove_cpu_expect_success $cpu
++done
++
++#
++# Test CPU hot-add error handling (offline => online)
++#
++echo $error > $DEBUGFS/cpu-notifier-error-inject/CPU_UP_PREPARE
++for cpu in `hotplaggable_offline_cpus`; do
++	add_cpu_expect_fail $cpu
++done
++
++#
++# Online all hot-pluggable CPUs
++#
++echo 0 > $DEBUGFS/cpu-notifier-error-inject/CPU_UP_PREPARE
++for cpu in `hotplaggable_offline_cpus`; do
++	add_cpu_expect_success $cpu
++done
++
++#
++# Test CPU hot-remove error handling (online => offline)
++#
++echo $error > $DEBUGFS/cpu-notifier-error-inject/CPU_DOWN_PREPARE
++for cpu in `hotpluggable_online_cpus`; do
++	remove_cpu_expect_fail $cpu
++done
++
++/sbin/modprobe -r cpu-notifier-error-inject
+diff --git a/tools/testing/fault-injection/memory-notifier.sh b/tools/testing/fault-injection/memory-notifier.sh
+new file mode 100755
+index 0000000..b7e7fa5
+--- /dev/null
++++ b/tools/testing/fault-injection/memory-notifier.sh
+@@ -0,0 +1,163 @@
++#!/bin/bash
++
++#
++# list all hot-pluggable memory
++#
++hotpluggable_memory()
++{
++	local state=${1:-.\*}
++
++	for memory in /sys/devices/system/memory/memory*; do
++		if grep -q 1 $memory/removable &&
++		   grep -q $state $memory/state; then
++			echo ${memory##/*/memory}
++		fi
++	done
++}
++
++hotplaggable_offline_memory()
++{
++	hotpluggable_memory offline
++}
++
++hotpluggable_online_memory()
++{
++	hotpluggable_memory online
++}
++
++memory_is_online()
++{
++	grep -q online /sys/devices/system/memory/memory$1/state
++}
++
++memory_is_offline()
++{
++	grep -q offline /sys/devices/system/memory/memory$1/state
++}
++
++add_memory()
++{
++	echo online > /sys/devices/system/memory/memory$1/state
++}
++
++remove_memory()
++{
++	echo offline > /sys/devices/system/memory/memory$1/state
++}
++
++add_memory_expect_success()
++{
++	local memory=$1
++
++	if ! add_memory $memory; then
++		echo $FUNCNAME $memory: unexpected fail >&2
++	elif ! memory_is_online $memory; then
++		echo $FUNCNAME $memory: unexpected offline >&2
++	fi
++}
++
++add_memory_expect_fail()
++{
++	local memory=$1
++
++	if add_memory $memory 2> /dev/null; then
++		echo $FUNCNAME $memory: unexpected success >&2
++	elif ! memory_is_offline $memory; then
++		echo $FUNCNAME $memory: unexpected online >&2
++	fi
++}
++
++remove_memory_expect_success()
++{
++	local memory=$1
++
++	if ! remove_memory $memory; then
++		echo $FUNCNAME $memory: unexpected fail >&2
++	elif ! memory_is_offline $memory; then
++		echo $FUNCNAME $memory: unexpected offline >&2
++	fi
++}
++
++remove_memory_expect_fail()
++{
++	local memory=$1
++
++	if remove_memory $memory 2> /dev/null; then
++		echo $FUNCNAME $memory: unexpected success >&2
++	elif ! memory_is_online $memory; then
++		echo $FUNCNAME $memory: unexpected offline >&2
++	fi
++}
++
++if [ $UID != 0 ]; then
++	echo must be run as root >&2
++	exit 1
++fi
++
++error=-12
++priority=0
++
++while getopts e:p: opt; do
++	case $opt in
++	e)
++		error=$OPTARG
++		;;
++	p)
++		priority=$OPTARG
++		;;
++	esac
++done
++
++if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
++	echo "error code must be -4095 <= errno < 0" >&2
++	exit 1
++fi
++
++DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
++
++if [ ! -d "$DEBUGFS" ]; then
++	echo debugfs is not mounted >&2
++	exit 1
++fi
++
++/sbin/modprobe -r memory-notifier-error-inject
++/sbin/modprobe -q memory-notifier-error-inject priority=$priority
++
++if [ ! -d $DEBUGFS/memory-notifier-error-inject ]; then
++	echo memory-notifier-error-inject module is not available >&2
++	exit 1
++fi
++
++#
++# Offline all hot-pluggable memory
++#
++echo 0 > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_OFFLINE
++for memory in `hotpluggable_online_memory`; do
++	remove_memory_expect_success $memory
++done
++
++#
++# Test memory hot-add error handling (offline => online)
++#
++echo $error > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_ONLINE
++for memory in `hotplaggable_offline_memory`; do
++	add_memory_expect_fail $memory
++done
++
++#
++# Online all hot-pluggable memory
++#
++echo 0 > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_ONLINE
++for memory in `hotplaggable_offline_memory`; do
++	add_memory_expect_success $memory
++done
++
++#
++# Test memory hot-remove error handling (online => offline)
++#
++echo $error > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_OFFLINE
++for memory in `hotpluggable_online_memory`; do
++	remove_memory_expect_fail $memory
++done
++
++/sbin/modprobe -r memory-notifier-error-inject
 -- 
 1.7.4.4
