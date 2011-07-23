@@ -1,30 +1,24 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pz0-f43.google.com (mail-pz0-f43.google.com
-	[209.85.210.43]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6E35BB6F87
+	by ozlabs.org (Postfix) with ESMTPS id EFDCCB6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 18:49:44 +1000 (EST)
-Received: by mail-pz0-f43.google.com with SMTP id 1so3972714pzk.2
+	Sat, 23 Jul 2011 23:32:55 +1000 (EST)
+Received: by fxe23 with SMTP id 23so6007187fxe.15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jul 2011 01:49:44 -0700 (PDT)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-Subject: [PATCH v3 6/6] fault-injection: add notifier error injection testing
-	scripts
-Date: Sat, 23 Jul 2011 17:51:00 +0900
-Message-Id: <1311411060-30124-7-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
-References: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
+	Sat, 23 Jul 2011 06:32:50 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Sat, 23 Jul 2011 15:32:44 +0200
+From: Tejun Heo <tj@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH tip:x86/memblock RFC] powerpc: Use HAVE_MEMBLOCK_NODE_MAP
+Message-ID: <20110723133244.GA28497@mtj.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
-	Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
-	=?UTF-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
-	linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,374 +28,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* tools/testing/fault-injection/cpu-notifier.sh is testing script for
-CPU notifier error handling by using cpu-notifier-error-inject.ko.
+powerpc doesn't access early_node_map[] directly and enabling
+HAVE_MEMBLOCK_NODE_MAP is trivial - replacing add_active_range() calls
+with memblock_set_node() and selecting HAVE_MEMBLOCK_NODE_MAP is
+enough.
 
-1. Offline all hot-pluggable CPUs in preparation for testing
-2. Test CPU hot-add error handling by injecting notifier errors
-3. Online all hot-pluggable CPUs in preparation for testing
-4. Test CPU hot-remove error handling by injecting notifier errors
-
-* tools/testing/fault-injection/memory-notifier.sh is doing the same thing
-for memory hotplug notifier.
-
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Suggested-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Greg KH <greg@kroah.com>
-Cc: linux-mm@kvack.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Américo Wang <xiyou.wangcong@gmail.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
-* v3
-- new patch
+benh, the proposed memblock changes are now in tip:x86/memblock, which
+is probably scheduled for the next merge window.  This patch converts
+powerpc to drop early_node_map[] and put NUMA information in memblock.
+I'm planning on converting all early_node_map[] users and dropping the
+code.  I don't have access to ppc NUMA machine so the patch is tested
+only on a non-NUMA SMP machine.  It builds fine for all valid
+combinations of of 32/64 [!]SMP [!]NUMA.
 
- tools/testing/fault-injection/cpu-notifier.sh    |  162 +++++++++++++++++++++
- tools/testing/fault-injection/memory-notifier.sh |  163 ++++++++++++++++++++++
- 2 files changed, 325 insertions(+), 0 deletions(-)
- create mode 100755 tools/testing/fault-injection/cpu-notifier.sh
- create mode 100755 tools/testing/fault-injection/memory-notifier.sh
+If this change is okay, how should this patch be routed?  ppc tree
+pulls from x86/memblock and puts this patch on top of it?
 
-diff --git a/tools/testing/fault-injection/cpu-notifier.sh b/tools/testing/fault-injection/cpu-notifier.sh
-new file mode 100755
-index 0000000..be02a85
---- /dev/null
-+++ b/tools/testing/fault-injection/cpu-notifier.sh
-@@ -0,0 +1,162 @@
-+#!/bin/bash
-+
-+#
-+# list all hot-pluggable CPUs
-+#
-+hotpluggable_cpus()
-+{
-+	local state=${1:-.\*}
-+
-+	for cpu in /sys/devices/system/cpu/cpu*; do
-+		if [ -f $cpu/online ] && grep -q $state $cpu/online; then
-+			echo ${cpu##/*/cpu}
-+		fi
-+	done
-+}
-+
-+hotplaggable_offline_cpus()
-+{
-+	hotpluggable_cpus 0
-+}
-+
-+hotpluggable_online_cpus()
-+{
-+	hotpluggable_cpus 1
-+}
-+
-+cpu_is_online()
-+{
-+	grep -q 1 /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+cpu_is_offline()
-+{
-+	grep -q 0 /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+add_cpu()
-+{
-+	echo 1 > /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+remove_cpu()
-+{
-+	echo 0 > /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+add_cpu_expect_success()
-+{
-+	local cpu=$1
-+
-+	if ! add_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+add_cpu_expect_fail()
-+{
-+	local cpu=$1
-+
-+	if add_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected online >&2
-+	fi
-+}
-+
-+remove_cpu_expect_success()
-+{
-+	local cpu=$1
-+
-+	if ! remove_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+remove_cpu_expect_fail()
-+{
-+	local cpu=$1
-+
-+	if remove_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+if [ $UID != 0 ]; then
-+	echo must be run as root >&2
-+	exit 1
-+fi
-+
-+error=-12
-+priority=0
-+
-+while getopts e:p: opt; do
-+	case $opt in
-+	e)
-+		error=$OPTARG
-+		;;
-+	p)
-+		priority=$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <= errno < 0" >&2
-+	exit 1
-+fi
-+
-+DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+
-+if [ ! -d "$DEBUGFS" ]; then
-+	echo debugfs is not mounted >&2
-+	exit 1
-+fi
-+
-+/sbin/modprobe -r cpu-notifier-error-inject
-+/sbin/modprobe -q cpu-notifier-error-inject priority=$priority
-+
-+if [ ! -d $DEBUGFS/cpu-notifier-error-inject ]; then
-+	echo cpu-notifier-error-inject module is not available >&2
-+	exit 1
-+fi
-+
-+#
-+# Offline all hot-pluggable CPUs
-+#
-+echo 0 > $DEBUGFS/cpu-notifier-error-inject/CPU_DOWN_PREPARE
-+for cpu in `hotpluggable_online_cpus`; do
-+	remove_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-add error handling (offline => online)
-+#
-+echo $error > $DEBUGFS/cpu-notifier-error-inject/CPU_UP_PREPARE
-+for cpu in `hotplaggable_offline_cpus`; do
-+	add_cpu_expect_fail $cpu
-+done
-+
-+#
-+# Online all hot-pluggable CPUs
-+#
-+echo 0 > $DEBUGFS/cpu-notifier-error-inject/CPU_UP_PREPARE
-+for cpu in `hotplaggable_offline_cpus`; do
-+	add_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-remove error handling (online => offline)
-+#
-+echo $error > $DEBUGFS/cpu-notifier-error-inject/CPU_DOWN_PREPARE
-+for cpu in `hotpluggable_online_cpus`; do
-+	remove_cpu_expect_fail $cpu
-+done
-+
-+/sbin/modprobe -r cpu-notifier-error-inject
-diff --git a/tools/testing/fault-injection/memory-notifier.sh b/tools/testing/fault-injection/memory-notifier.sh
-new file mode 100755
-index 0000000..b7e7fa5
---- /dev/null
-+++ b/tools/testing/fault-injection/memory-notifier.sh
-@@ -0,0 +1,163 @@
-+#!/bin/bash
-+
-+#
-+# list all hot-pluggable memory
-+#
-+hotpluggable_memory()
-+{
-+	local state=${1:-.\*}
-+
-+	for memory in /sys/devices/system/memory/memory*; do
-+		if grep -q 1 $memory/removable &&
-+		   grep -q $state $memory/state; then
-+			echo ${memory##/*/memory}
-+		fi
-+	done
-+}
-+
-+hotplaggable_offline_memory()
-+{
-+	hotpluggable_memory offline
-+}
-+
-+hotpluggable_online_memory()
-+{
-+	hotpluggable_memory online
-+}
-+
-+memory_is_online()
-+{
-+	grep -q online /sys/devices/system/memory/memory$1/state
-+}
-+
-+memory_is_offline()
-+{
-+	grep -q offline /sys/devices/system/memory/memory$1/state
-+}
-+
-+add_memory()
-+{
-+	echo online > /sys/devices/system/memory/memory$1/state
-+}
-+
-+remove_memory()
-+{
-+	echo offline > /sys/devices/system/memory/memory$1/state
-+}
-+
-+add_memory_expect_success()
-+{
-+	local memory=$1
-+
-+	if ! add_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+add_memory_expect_fail()
-+{
-+	local memory=$1
-+
-+	if add_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected online >&2
-+	fi
-+}
-+
-+remove_memory_expect_success()
-+{
-+	local memory=$1
-+
-+	if ! remove_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+remove_memory_expect_fail()
-+{
-+	local memory=$1
-+
-+	if remove_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+if [ $UID != 0 ]; then
-+	echo must be run as root >&2
-+	exit 1
-+fi
-+
-+error=-12
-+priority=0
-+
-+while getopts e:p: opt; do
-+	case $opt in
-+	e)
-+		error=$OPTARG
-+		;;
-+	p)
-+		priority=$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <= errno < 0" >&2
-+	exit 1
-+fi
-+
-+DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+
-+if [ ! -d "$DEBUGFS" ]; then
-+	echo debugfs is not mounted >&2
-+	exit 1
-+fi
-+
-+/sbin/modprobe -r memory-notifier-error-inject
-+/sbin/modprobe -q memory-notifier-error-inject priority=$priority
-+
-+if [ ! -d $DEBUGFS/memory-notifier-error-inject ]; then
-+	echo memory-notifier-error-inject module is not available >&2
-+	exit 1
-+fi
-+
-+#
-+# Offline all hot-pluggable memory
-+#
-+echo 0 > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_OFFLINE
-+for memory in `hotpluggable_online_memory`; do
-+	remove_memory_expect_success $memory
-+done
-+
-+#
-+# Test memory hot-add error handling (offline => online)
-+#
-+echo $error > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_ONLINE
-+for memory in `hotplaggable_offline_memory`; do
-+	add_memory_expect_fail $memory
-+done
-+
-+#
-+# Online all hot-pluggable memory
-+#
-+echo 0 > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_ONLINE
-+for memory in `hotplaggable_offline_memory`; do
-+	add_memory_expect_success $memory
-+done
-+
-+#
-+# Test memory hot-remove error handling (online => offline)
-+#
-+echo $error > $DEBUGFS/memory-notifier-error-inject/MEM_GOING_OFFLINE
-+for memory in `hotpluggable_online_memory`; do
-+	remove_memory_expect_fail $memory
-+done
-+
-+/sbin/modprobe -r memory-notifier-error-inject
--- 
-1.7.4.4
+Thanks.
+
+ arch/powerpc/Kconfig   |    1 +
+ arch/powerpc/mm/mem.c  |    2 +-
+ arch/powerpc/mm/numa.c |   10 ++++------
+ 3 files changed, 6 insertions(+), 7 deletions(-)
+
+Index: work/arch/powerpc/Kconfig
+===================================================================
+--- work.orig/arch/powerpc/Kconfig
++++ work/arch/powerpc/Kconfig
+@@ -117,6 +117,7 @@ config PPC
+ 	select HAVE_KRETPROBES
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_MEMBLOCK
++	select HAVE_MEMBLOCK_NODE_MAP
+ 	select HAVE_DMA_ATTRS
+ 	select HAVE_DMA_API_DEBUG
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+Index: work/arch/powerpc/mm/mem.c
+===================================================================
+--- work.orig/arch/powerpc/mm/mem.c
++++ work/arch/powerpc/mm/mem.c
+@@ -197,7 +197,7 @@ void __init do_init_bootmem(void)
+ 		unsigned long start_pfn, end_pfn;
+ 		start_pfn = memblock_region_memory_base_pfn(reg);
+ 		end_pfn = memblock_region_memory_end_pfn(reg);
+-		add_active_range(0, start_pfn, end_pfn);
++		memblock_set_node(0, (phys_addr_t)ULLONG_MAX, 0);
+ 	}
+ 
+ 	/* Add all physical memory to the bootmem map, mark each area
+Index: work/arch/powerpc/mm/numa.c
+===================================================================
+--- work.orig/arch/powerpc/mm/numa.c
++++ work/arch/powerpc/mm/numa.c
+@@ -680,9 +680,7 @@ static void __init parse_drconf_memory(s
+ 			node_set_online(nid);
+ 			sz = numa_enforce_memory_limit(base, size);
+ 			if (sz)
+-				add_active_range(nid, base >> PAGE_SHIFT,
+-						 (base >> PAGE_SHIFT)
+-						 + (sz >> PAGE_SHIFT));
++				memblock_set_node(base, sz, nid);
+ 		} while (--ranges);
+ 	}
+ }
+@@ -772,8 +770,7 @@ new_range:
+ 				continue;
+ 		}
+ 
+-		add_active_range(nid, start >> PAGE_SHIFT,
+-				(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
++		memblock_set_node(start, size, nid);
+ 
+ 		if (--ranges)
+ 			goto new_range;
+@@ -808,7 +805,8 @@ static void __init setup_nonnuma(void)
+ 		end_pfn = memblock_region_memory_end_pfn(reg);
+ 
+ 		fake_numa_create_new_node(end_pfn, &nid);
+-		add_active_range(nid, start_pfn, end_pfn);
++		memblock_set_node(PFN_PHYS(start_pfn),
++				  PFN_PHYS(end_pfn - start_pfn), nid);
+ 		node_set_online(nid);
+ 	}
+ }
