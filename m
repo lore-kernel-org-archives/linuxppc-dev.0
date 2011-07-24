@@ -1,19 +1,20 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id B28C0B6F6F
+Return-Path: <m@bues.ch>
+Received: from bues.ch (bues.ch [80.190.117.144])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 60603B6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 24 Jul 2011 18:06:08 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michael =?utf-8?Q?B=C3=BCsch?= <m@bues.ch>
+	Sun, 24 Jul 2011 20:37:48 +1000 (EST)
+Date: Sun, 24 Jul 2011 12:37:39 +0200
+From: Michael =?UTF-8?B?QsO8c2No?= <m@bues.ch>
+To: Andreas Schwab <schwab@linux-m68k.org>
 Subject: Re: Linux 3.0 boot failure on the Powerbook G4
+Message-ID: <20110724123739.2beb8964@maggie>
+In-Reply-To: <m2tyacdrx0.fsf@igel.home>
 References: <20110723222034.6757604b__32574.6897528463$1311473425$gmane$org@maggie>
-Date: Sun, 24 Jul 2011 10:06:03 +0200
-In-Reply-To: <20110723222034.6757604b__32574.6897528463$1311473425$gmane$org@maggie>
-	("Michael =?utf-8?Q?B=C3=BCsch=22's?= message of "Sat,
-	23 Jul 2011 22:20:34 +0200")
-Message-ID: <m2tyacdrx0.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	<m2tyacdrx0.fsf@igel.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,20 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Büsch <m@bues.ch> writes:
+On Sun, 24 Jul 2011 10:06:03 +0200
+Andreas Schwab <schwab@linux-m68k.org> wrote:
 
-> Linux 3.0 fails to boot _very_ early on my Powerbook G4. See the
-> yaboot/OF screenshot:
-> http://bues.ch/misc/linux-3.0-pbook.jpg
->
-> Linux 2.6.39.2 boots fine.
-> Does somebody have an idea?
+> Michael B=C3=BCsch <m@bues.ch> writes:
+>=20
+> > Linux 3.0 fails to boot _very_ early on my Powerbook G4. See the
+> > yaboot/OF screenshot:
+> > http://bues.ch/misc/linux-3.0-pbook.jpg
+> >
+> > Linux 2.6.39.2 boots fine.
+> > Does somebody have an idea?
+>=20
+> Perhaps your image is getting too large?
 
-Perhaps your image is getting too large?
+I reduced the image size, so that it's way less than the
+2.6.39 kernel size (old is 2.6.39. a is 3.0)
+-rwxr-xr-x 1 root root 5.6M Jul 24 12:16 /boot/linux.a
+-rwxr-xr-x 1 root root 6.3M Jul 23 20:50 /boot/linux.old
 
-Andreas.
+But that didn't help. :(
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I'm currently trying to bisect it, but that turns out to be hard
+due to various compile issues and stuff like that...
+
+--=20
+Greetings, Michael.
