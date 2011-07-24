@@ -1,20 +1,20 @@
-Return-Path: <m@bues.ch>
-Received: from bues.ch (bues.ch [80.190.117.144])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E239B6F77
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id B28C0B6F6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 24 Jul 2011 06:57:31 +1000 (EST)
-Received: by bues.ch with esmtpsa (Exim 4.69) (envelope-from <m@bues.ch>)
-	id 1Qkigk-0007Sj-Gf
-	for linuxppc-dev@lists.ozlabs.org; Sat, 23 Jul 2011 22:20:42 +0200
-Date: Sat, 23 Jul 2011 22:20:34 +0200
-From: Michael =?UTF-8?B?QsO8c2No?= <m@bues.ch>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Linux 3.0 boot failure on the Powerbook G4
-Message-ID: <20110723222034.6757604b@maggie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 24 Jul 2011 18:06:08 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael =?utf-8?Q?B=C3=BCsch?= <m@bues.ch>
+Subject: Re: Linux 3.0 boot failure on the Powerbook G4
+References: <20110723222034.6757604b__32574.6897528463$1311473425$gmane$org@maggie>
+Date: Sun, 24 Jul 2011 10:06:03 +0200
+In-Reply-To: <20110723222034.6757604b__32574.6897528463$1311473425$gmane$org@maggie>
+	("Michael =?utf-8?Q?B=C3=BCsch=22's?= message of "Sat,
+	23 Jul 2011 22:20:34 +0200")
+Message-ID: <m2tyacdrx0.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linux 3.0 fails to boot _very_ early on my Powerbook G4. See the
-yaboot/OF screenshot:
-http://bues.ch/misc/linux-3.0-pbook.jpg
+Michael Büsch <m@bues.ch> writes:
 
-Linux 2.6.39.2 boots fine.
-Does somebody have an idea?
+> Linux 3.0 fails to boot _very_ early on my Powerbook G4. See the
+> yaboot/OF screenshot:
+> http://bues.ch/misc/linux-3.0-pbook.jpg
+>
+> Linux 2.6.39.2 boots fine.
+> Does somebody have an idea?
 
-The config can be found here:
-http://bues.ch/misc/linux-3.0-ppc-config
-It's mostly equivalent to the working 2.6.39 config. I enabled
-early OF console, but that didn't help to show better error messages.
+Perhaps your image is getting too large?
 
-The machine is a:
-
-cpu             : 7447A, altivec supported
-clock           : 1499.999000MHz
-revision        : 1.2 (pvr 8003 0102)
-platform        : PowerMac
-motherboard     : PowerBook5,6 MacRISC3 Power Macintosh 
-detected as     : 287 (PowerBook G4 15")
-pmac-generation : NewWorld
+Andreas.
 
 -- 
-Greetings, Michael.
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
