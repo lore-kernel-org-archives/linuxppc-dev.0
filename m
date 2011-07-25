@@ -1,16 +1,23 @@
-Return-Path: <anton@samba.org>
-Date: Mon, 25 Jul 2011 10:05:26 +1000
-From: Anton Blanchard <anton@samba.org>
-To: David Ahern <dsahern@gmail.com>
-Subject: [PATCH] perf: powerpc: Disable pagefaults during callchain stack read
-Message-ID: <20110725100526.4d0ee274@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7AA52B6F7D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 25 Jul 2011 11:57:04 +1000 (EST)
+Subject: Re: perf PPC: kernel panic with callchains and context switch events
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Ahern <dsahern@gmail.com>, Kumar Gala <galak@kernel.crashing.org>,
+	Becky Bruce <beckyb@kernel.crashing.org>
 In-Reply-To: <4E2C53E0.3020400@gmail.com>
-References: <4E274F5F.7000604@gmail.com>
-	<4E2C53E0.3020400@gmail.com>
+References: <4E274F5F.7000604@gmail.com>  <4E2C53E0.3020400@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 25 Jul 2011 11:55:49 +1000
+Message-ID: <1311558949.25044.614.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
-
-> > I am hoping someone familiar with PPC can help understand a panic
-> > that is generated when capturing callchains with context switch
-> > events.
+On Sun, 2011-07-24 at 11:18 -0600, David Ahern wrote:
+> On 07/20/2011 03:57 PM, David Ahern wrote:
+> > I am hoping someone familiar with PPC can help understand a panic that
+> > is generated when capturing callchains with context switch events.
 > > 
 > > Call trace is below. The short of it is that walking the callchain
-> > generates a page fault. To handle the page fault the mmap_sem is
-> > needed, but it is currently held by setup_arg_pages.
-> > setup_arg_pages calls shift_arg_pages with the mmap_sem held.
-> > shift_arg_pages then calls move_page_tables which has a
-> > cond_resched at the top of its for loop. If the cond_resched() is
-> > removed from move_page_tables everything works beautifully - no
-> > panics.
+> > generates a page fault. To handle the page fault the mmap_sem is needed,
+> > but it is currently held by setup_arg_pages. setup_arg_pages calls
+> > shift_arg_pages with the mmap_sem held. shift_arg_pages then calls
+> > move_page_tables which has a cond_resched at the top of its for loop. If
+> > the cond_resched() is removed from move_page_tables everything works
+> > beautifully - no panics.
 > > 
-> > So, the question: is it normal for walking the stack to trigger a
-> > page fault on PPC? The panic is not seen on x86 based systems.
+> > So, the question: is it normal for walking the stack to trigger a page
+> > fault on PPC? The panic is not seen on x86 based systems.
 > 
 > Can anyone confirm whether page faults while walking the stack are
 > normal for PPC? We really want to use the context switch event with
@@ -44,54 +49,104 @@ Hi David,
 > course if it is normal, a way to address the problem without a panic
 > will be needed.
 
-I talked to Ben about this last week and he pointed me at
-pagefault_disable/enable. Untested patch below.
+Now that leads to interesting discoveries :-) Becky, can you read all
+the way and let me know what you think ?
 
-Anton
+So, trying to walk the user stack directly will potentially cause page
+faults if it's done by direct access. So if you're going to do it in a
+spot where you can't afford it, you need to pagefault_disable() I
+suppose. I think the problem with our existing code is that it's missing
+those around __get_user_inatomic().
 
---
+In fact, arguably, we don't want the hash code from modifying the hash
+either (or even hashing things in). Our 64-bit code handles it today in
+perf_callchain.c in a way that involves pretty much duplicating the
+functionality of __get_user_pages_fast() as used by x86 (see below), but
+as a fallback from a direct access which misses the pagefault_disable()
+as well.
 
-We need to disable pagefaults when reading the stack otherwise
-we can lock up trying to take the mmap_sem when the code we are
-profiling already has a write lock taken.
+I think it comes from an old assumption that this would always be called
+from an nmi, and the explicit tracepoints broke that assumption.
 
-This will not happen for hardware events, but could for software
-events.
+In fact we probably want to bump the NMI count, not just the IRQ count
+as pagefault_disable() does, to make sure we prevent hashing. 
 
-Reported-by: David Ahern <dsahern@gmail.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: <stable@kernel.org>
----
+x86 does things differently, using __get_user_pages_fast() (a variant of
+get_user_page_fast() that doesn't fallback to normal get_user_pages()).
 
-Index: linux-powerpc/arch/powerpc/kernel/perf_callchain.c
-===================================================================
---- linux-powerpc.orig/arch/powerpc/kernel/perf_callchain.c	2011-07-25 09:54:27.296757427 +1000
-+++ linux-powerpc/arch/powerpc/kernel/perf_callchain.c	2011-07-25 09:56:08.828367882 +1000
-@@ -154,8 +154,12 @@ static int read_user_stack_64(unsigned l
- 	    ((unsigned long)ptr & 7))
- 		return -EFAULT;
- 
--	if (!__get_user_inatomic(*ret, ptr))
-+	pagefault_disable();
-+	if (!__get_user_inatomic(*ret, ptr)) {
-+		pagefault_enable();
- 		return 0;
-+	}
-+	pagefault_enable();
- 
- 	return read_user_stack_slow(ptr, ret, 8);
- }
-@@ -166,8 +170,12 @@ static int read_user_stack_32(unsigned i
- 	    ((unsigned long)ptr & 3))
- 		return -EFAULT;
- 
--	if (!__get_user_inatomic(*ret, ptr))
-+	pagefault_disable();
-+	if (!__get_user_inatomic(*ret, ptr)) {
-+		pagefault_enable();
- 		return 0;
-+	}
-+	pagefault_enable();
- 
- 	return read_user_stack_slow(ptr, ret, 4);
- }
+Now, we could do the same (use __gup_fast too), but I can see a
+potential issue with ppc 32-bit platforms that have 64-bit PTEs, since
+we could end up GUP'ing in the middle of the two accesses.
+
+Becky: I think gup_fast is generally broken on 32-bit with 64-bit PTE
+because of that, the problem isn't specific to perf backtraces, I'll
+propose a solution further down.
+
+Now, on x86, there is a similar problem with PAE, which is handled by
+
+ - having gup disable IRQs
+ - rely on the fact that to change from a valid value to another valid
+   value, the PTE will first get invalidated, which requires an IPI
+   and thus will be blocked by our interrupts being off
+
+We do the first part, but the second part will break if we use HW TLB
+invalidation broadcast (yet another reason why those are bad, I think I
+will write a blog entry about it one of these days).
+
+I think we can work around this while keeping our broadcast TLB
+invalidations by having the invalidation code also increment a global
+generation count (using the existing lock used by the invalidation code,
+all 32-bit platforms have such a lock).
+
+>From there, gup_fast can be changed to, with proper ordering, check the
+generation count around the loading of the PTE and loop if it has
+changed, kind-of a seqlock.
+
+We also need the NMI count bump if we are going to try to keep the
+attempt at doing a direct access first for perfs.
+
+Becky, do you feel like giving that a shot or should I find another
+victim ? (Or even do it myself ... ) :-)
+
+Cheers,
+Ben.
+
+> Thanks,
+> David
+> 
+> > 
+> >  [<b0180e00>]rb_erase+0x1b4/0x3e8
+> >  [<b00430f4>]__dequeue_entity+0x50/0xe8
+> >  [<b0043304>]set_next_entity+0x178/0x1bc
+> >  [<b0043440>]pick_next_task_fair+0xb0/0x118
+> >  [<b02ada80>]schedule+0x500/0x614
+> >  [<b02afaa8>]rwsem_down_failed_common+0xf0/0x264
+> >  [<b02afca0>]rwsem_down_read_failed+0x34/0x54
+> >  [<b02aed4c>]down_read+0x3c/0x54
+> >  [<b0023b58>]do_page_fault+0x114/0x5e8
+> >  [<b001e350>]handle_page_fault+0xc/0x80
+> >  [<b0022dec>]perf_callchain+0x224/0x31c
+> >  [<b009ba70>]perf_prepare_sample+0x240/0x2fc
+> >  [<b009d760>]__perf_event_overflow+0x280/0x398
+> >  [<b009d914>]perf_swevent_overflow+0x9c/0x10c
+> >  [<b009db54>]perf_swevent_ctx_event+0x1d0/0x230
+> >  [<b009dc38>]do_perf_sw_event+0x84/0xe4
+> >  [<b009dde8>]perf_sw_event_context_switch+0x150/0x1b4
+> >  [<b009de90>]perf_event_task_sched_out+0x44/0x2d4
+> >  [<b02ad840>]schedule+0x2c0/0x614
+> >  [<b0047dc0>]__cond_resched+0x34/0x90
+> >  [<b02adcc8>]_cond_resched+0x4c/0x68
+> >  [<b00bccf8>]move_page_tables+0xb0/0x418
+> >  [<b00d7ee0>]setup_arg_pages+0x184/0x2a0
+> >  [<b0110914>]load_elf_binary+0x394/0x1208
+> >  [<b00d6e28>]search_binary_handler+0xe0/0x2c4
+> >  [<b00d834c>]do_execve+0x1bc/0x268
+> >  [<b0015394>]sys_execve+0x84/0xc8
+> >  [<b001df10>]ret_from_syscall+0x0/0x3c
+> > 
+> > Thanks,
+> > David
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
