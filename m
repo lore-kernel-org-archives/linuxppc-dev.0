@@ -1,21 +1,25 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
-	[IPv6:2001:4978:20e::2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <m@bues.ch>
+Received: from bues.ch (bues.ch [80.190.117.144])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5641BB6F83
+	by ozlabs.org (Postfix) with ESMTPS id B559DB6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 25 Jul 2011 22:42:00 +1000 (EST)
-Subject: Re: [PATCH 0/5] ppc64 scheduler fixes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20110725023311.175792493@samba.org>
-References: <20110725023311.175792493@samba.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 25 Jul 2011 14:41:42 +0200
-Message-ID: <1311597702.24752.1.camel@twins>
+	Mon, 25 Jul 2011 23:03:15 +1000 (EST)
+Date: Mon, 25 Jul 2011 15:03:04 +0200
+From: Michael =?UTF-8?B?QsO8c2No?= <m@bues.ch>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Linux 3.0 boot failure on the Powerbook G4
+Message-ID: <20110725150304.095a64bc@maggie>
+In-Reply-To: <1311549818.25044.587.camel@pasglop>
+References: <20110723222034.6757604b@maggie>
+	<1311509250.25044.583.camel@pasglop>
+	<20110724141051.771d6492@maggie>
+	<1311509614.25044.585.camel@pasglop>
+	<20110724143729.49c69ce8@maggie>
+	<1311549818.25044.587.camel@pasglop>
 Mime-Version: 1.0
-Cc: mingo@elte.hu, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,12 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-07-25 at 12:33 +1000, Anton Blanchard wrote:
-> Here are a set of ppc64 scheduler fixes that help with some
-> multi node performance issues.
+On Mon, 25 Jul 2011 09:23:38 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> Hrm.. the faulting address is outside of the zImage. Odd.
+> 
+> Can you try loading a plain vmlinux instead ? (feel free to strip it).
 
-They look fine to me. I'll probably ping you when I'll rip out all that
-SD_NODES_PER_DOMAIN crap for good, but until then I'm fine with you
-fiddling it for ppc64.
+The plain unstripped vmlinux boots fine:
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+mb@maggie:~$ uname -a
+Linux maggie 3.0.0 #3 PREEMPT Sun Jul 24 11:51:30 CEST 2011 ppc GNU/Linux
+
+Is there something going wrong in the uncompress trampoline?
+
+-- 
+Greetings, Michael.
