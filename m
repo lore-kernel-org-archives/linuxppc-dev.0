@@ -1,27 +1,28 @@
-Return-Path: <dsahern@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D2CF5B6FD7
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+	[213.199.154.206])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CD1A0B6F8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jul 2011 01:38:13 +1000 (EST)
-Received: by yxm34 with SMTP id 34so2369798yxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 25 Jul 2011 08:38:10 -0700 (PDT)
-Message-ID: <4E2D8DE1.6030604@gmail.com>
-Date: Mon, 25 Jul 2011 09:38:09 -0600
-From: David Ahern <dsahern@gmail.com>
+	Tue, 26 Jul 2011 01:41:10 +1000 (EST)
+Date: Mon, 25 Jul 2011 10:40:56 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 13/14] 85xx: consolidate of_platform_bus_probe calls
+Message-ID: <20110725104056.6f338eec@schlenkerla.am.freescale.net>
+In-Reply-To: <CALT56yOZkLW=AmkyX77g5agxfBb0h7Fz8Q_enth-CJycJ3SkFA@mail.gmail.com>
+References: <1311065631-3429-1-git-send-email-dbaryshkov@gmail.com>
+	<1311065631-3429-14-git-send-email-dbaryshkov@gmail.com>
+	<20110719125447.19c964d1@schlenkerla.am.freescale.net>
+	<CALT56yMxttzC+WZMhja3-PqneMMba5rs9j25RiSAUrwEA_jyaw@mail.gmail.com>
+	<20110722152911.364d75dd@schlenkerla.am.freescale.net>
+	<CALT56yOZkLW=AmkyX77g5agxfBb0h7Fz8Q_enth-CJycJ3SkFA@mail.gmail.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Anton Blanchard <anton@samba.org>
-Subject: Re: perf PPC: kernel panic with callchains and context switch events
-References: <4E274F5F.7000604@gmail.com> <4E2C53E0.3020400@gmail.com>
-	<1311558949.25044.614.camel@pasglop>
-In-Reply-To: <1311558949.25044.614.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-perf-users@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Paul Mackerras <paulus@samba.org>,
+	Linux PPC Development <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,137 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben:
+On Sat, 23 Jul 2011 01:45:53 +0400
+Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
 
-On 07/24/2011 07:55 PM, Benjamin Herrenschmidt wrote:
-> On Sun, 2011-07-24 at 11:18 -0600, David Ahern wrote:
->> On 07/20/2011 03:57 PM, David Ahern wrote:
->>> I am hoping someone familiar with PPC can help understand a panic that
->>> is generated when capturing callchains with context switch events.
->>>
->>> Call trace is below. The short of it is that walking the callchain
->>> generates a page fault. To handle the page fault the mmap_sem is needed,
->>> but it is currently held by setup_arg_pages. setup_arg_pages calls
->>> shift_arg_pages with the mmap_sem held. shift_arg_pages then calls
->>> move_page_tables which has a cond_resched at the top of its for loop. If
->>> the cond_resched() is removed from move_page_tables everything works
->>> beautifully - no panics.
->>>
->>> So, the question: is it normal for walking the stack to trigger a page
->>> fault on PPC? The panic is not seen on x86 based systems.
->>
->> Can anyone confirm whether page faults while walking the stack are
->> normal for PPC? We really want to use the context switch event with
->> callchains and need to understand whether this behavior is normal. Of
->> course if it is normal, a way to address the problem without a panic
->> will be needed.
-> 
-> Now that leads to interesting discoveries :-) Becky, can you read all
-> the way and let me know what you think ?
-> 
-> So, trying to walk the user stack directly will potentially cause page
-> faults if it's done by direct access. So if you're going to do it in a
-> spot where you can't afford it, you need to pagefault_disable() I
-> suppose. I think the problem with our existing code is that it's missing
-> those around __get_user_inatomic().
-> 
-> In fact, arguably, we don't want the hash code from modifying the hash
-> either (or even hashing things in). Our 64-bit code handles it today in
-> perf_callchain.c in a way that involves pretty much duplicating the
-> functionality of __get_user_pages_fast() as used by x86 (see below), but
-> as a fallback from a direct access which misses the pagefault_disable()
-> as well.
-> 
-> I think it comes from an old assumption that this would always be called
-> from an nmi, and the explicit tracepoints broke that assumption.
-> 
-> In fact we probably want to bump the NMI count, not just the IRQ count
-> as pagefault_disable() does, to make sure we prevent hashing. 
-> 
-> x86 does things differently, using __get_user_pages_fast() (a variant of
-> get_user_page_fast() that doesn't fallback to normal get_user_pages()).
-> 
-> Now, we could do the same (use __gup_fast too), but I can see a
-> potential issue with ppc 32-bit platforms that have 64-bit PTEs, since
-> we could end up GUP'ing in the middle of the two accesses.
-> 
-> Becky: I think gup_fast is generally broken on 32-bit with 64-bit PTE
-> because of that, the problem isn't specific to perf backtraces, I'll
-> propose a solution further down.
-> 
-> Now, on x86, there is a similar problem with PAE, which is handled by
-> 
->  - having gup disable IRQs
->  - rely on the fact that to change from a valid value to another valid
->    value, the PTE will first get invalidated, which requires an IPI
->    and thus will be blocked by our interrupts being off
-> 
-> We do the first part, but the second part will break if we use HW TLB
-> invalidation broadcast (yet another reason why those are bad, I think I
-> will write a blog entry about it one of these days).
-> 
-> I think we can work around this while keeping our broadcast TLB
-> invalidations by having the invalidation code also increment a global
-> generation count (using the existing lock used by the invalidation code,
-> all 32-bit platforms have such a lock).
-> 
-> From there, gup_fast can be changed to, with proper ordering, check the
-> generation count around the loading of the PTE and loop if it has
-> changed, kind-of a seqlock.
-> 
-> We also need the NMI count bump if we are going to try to keep the
-> attempt at doing a direct access first for perfs.
-> 
-> Becky, do you feel like giving that a shot or should I find another
-> victim ? (Or even do it myself ... ) :-)
+> I see your point. I just wasn't thinking too much about ot-of-tree trees.
+> My thought was that if someone updates the kernel, he can also update the dtb.
 
-Did you have something in mind besides the patch Anton sent? We'll give
-that one a try and see how it works. (Thanks, Anton!)
+Sometimes there are firmware dependencies that make that difficult.  And
+even if it's just user laziness/forgetfulness, that still translates to
+extra support requests.
 
-David
+> Could you please update the lbc.txt suggesting the compatibility
+> with simple-bus for lbc? Or you thing that it would be wrong?
+>
+> I think we should define compatibility list as "fsl,mpcXXXX-localbus",
+> "fsl,pqXXXXX-localbus", "simple-bus", noting that by default new
+> platforms/boards should only use "simple-bus" internally. Does this
+> look reasonable for you? I can then try to provide a patch.
 
-> 
-> Cheers,
-> Ben.
-> 
->> Thanks,
->> David
->>
->>>
->>>  [<b0180e00>]rb_erase+0x1b4/0x3e8
->>>  [<b00430f4>]__dequeue_entity+0x50/0xe8
->>>  [<b0043304>]set_next_entity+0x178/0x1bc
->>>  [<b0043440>]pick_next_task_fair+0xb0/0x118
->>>  [<b02ada80>]schedule+0x500/0x614
->>>  [<b02afaa8>]rwsem_down_failed_common+0xf0/0x264
->>>  [<b02afca0>]rwsem_down_read_failed+0x34/0x54
->>>  [<b02aed4c>]down_read+0x3c/0x54
->>>  [<b0023b58>]do_page_fault+0x114/0x5e8
->>>  [<b001e350>]handle_page_fault+0xc/0x80
->>>  [<b0022dec>]perf_callchain+0x224/0x31c
->>>  [<b009ba70>]perf_prepare_sample+0x240/0x2fc
->>>  [<b009d760>]__perf_event_overflow+0x280/0x398
->>>  [<b009d914>]perf_swevent_overflow+0x9c/0x10c
->>>  [<b009db54>]perf_swevent_ctx_event+0x1d0/0x230
->>>  [<b009dc38>]do_perf_sw_event+0x84/0xe4
->>>  [<b009dde8>]perf_sw_event_context_switch+0x150/0x1b4
->>>  [<b009de90>]perf_event_task_sched_out+0x44/0x2d4
->>>  [<b02ad840>]schedule+0x2c0/0x614
->>>  [<b0047dc0>]__cond_resched+0x34/0x90
->>>  [<b02adcc8>]_cond_resched+0x4c/0x68
->>>  [<b00bccf8>]move_page_tables+0xb0/0x418
->>>  [<b00d7ee0>]setup_arg_pages+0x184/0x2a0
->>>  [<b0110914>]load_elf_binary+0x394/0x1208
->>>  [<b00d6e28>]search_binary_handler+0xe0/0x2c4
->>>  [<b00d834c>]do_execve+0x1bc/0x268
->>>  [<b0015394>]sys_execve+0x84/0xc8
->>>  [<b001df10>]ret_from_syscall+0x0/0x3c
->>>
->>> Thanks,
->>> David
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
+I'm OK with saying that localbus nodes should have simple-bus in new trees,
+and defining canonical compatible values (chips with eLBC should be
+"fsl,XXXX-elbc", "fsl,elbc", "simple-bus").  I'm not sure what you mean by
+"should only use simple-bus internally", especially in the context of the
+binding.
+
+> What do you suggest/prefer? To add .name="localbus" to generic code
+> or to have board-specific hooks (like one for mpc834xemitx)?
+
+Just add localbus to the generic table.
+
+-Scott
