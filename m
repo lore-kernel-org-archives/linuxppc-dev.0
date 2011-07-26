@@ -1,22 +1,12 @@
-Return-Path: <B21989@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CF448B70B1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jul 2011 16:44:48 +1000 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx: fix memory controller compatible for edac
-Date: Tue, 26 Jul 2011 13:46:33 +0800
-Message-ID: <1311659193-694-1-git-send-email-Shaohui.Xie@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mm-commits@vger.kernel.org, Shaohui Xie <Shaohui.Xie@freescale.com>,
-	kumar.gala@freescale.com, avorontsov@mvista.com,
-	akpm@linux-foundation.org, davem@davemloft.net
+Return-Path: <anton@samba.org>
+Date: Tue, 26 Jul 2011 16:47:07 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Fix device tree claim code
+Message-ID: <20110726164707.238bfec0@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +16,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-compatible in dts has been changed, so driver need to update accordingly.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+I have a box that fails in OF during boot with:
+
+DEFAULT CATCH!, exception-handler=fff00400 
+at   %SRR0: 49424d2c4c6f6768   %SRR1: 800000004000b002 
+
+ie "IBM,Logh". OF got corrupted with a device tree string.
+
+Looking at make_room and alloc_up, we claim the first chunk (1 MB)
+but we never claim any more. mem_end is always set to alloc_top
+which is the top of our available address space, guaranteeing we will
+never call alloc_up and claim more memory.
+
+Also alloc_up wasn't setting alloc_bottom to the bottom of the
+available address space.
+
+This doesn't help the box to boot, but we at least fail with
+an obvious error. We could relocate the device tree in a future
+patch.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: <stable@kernel.org>
 ---
-apply for http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-'next' branch.
 
- drivers/edac/mpc85xx_edac.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 13f6cc5..94c064a 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -1253,7 +1253,7 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
- 	{ .compatible = "fsl,p1020-memory-controller", },
- 	{ .compatible = "fsl,p1021-memory-controller", },
- 	{ .compatible = "fsl,p2020-memory-controller", },
--	{ .compatible = "fsl,p4080-memory-controller", },
-+	{ .compatible = "fsl,qoriq-memory-controller", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, mpc85xx_mc_err_of_match);
--- 
-1.6.4
+Index: linux-powerpc/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/kernel/prom_init.c	2011-07-26 12:37:56.142915032 +1000
++++ linux-powerpc/arch/powerpc/kernel/prom_init.c	2011-07-26 16:31:31.481793248 +1000
+@@ -1020,7 +1020,7 @@ static unsigned long __init alloc_up(uns
+ 	}
+ 	if (addr == 0)
+ 		return 0;
+-	RELOC(alloc_bottom) = addr;
++	RELOC(alloc_bottom) = addr + size;
+ 
+ 	prom_debug(" -> %x\n", addr);
+ 	prom_debug("  alloc_bottom : %x\n", RELOC(alloc_bottom));
+@@ -1834,7 +1834,7 @@ static void __init *make_room(unsigned l
+ 		chunk = alloc_up(room, 0);
+ 		if (chunk == 0)
+ 			prom_panic("No memory for flatten_device_tree (claim failed)");
+-		*mem_end = RELOC(alloc_top);
++		*mem_end = chunk + room;
+ 	}
+ 
+ 	ret = (void *)*mem_start;
+@@ -2053,7 +2053,7 @@ static void __init flatten_device_tree(v
+ 	mem_start = (unsigned long)alloc_up(room, PAGE_SIZE);
+ 	if (mem_start == 0)
+ 		prom_panic("Can't allocate initial device-tree chunk\n");
+-	mem_end = RELOC(alloc_top);
++	mem_end = mem_start + room;
+ 
+ 	/* Get root of tree */
+ 	root = call_prom("peer", 1, 1, (phandle)0);
