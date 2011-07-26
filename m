@@ -1,19 +1,19 @@
 Return-Path: <hs@denx.de>
 Received: from b.relay.invitel.net (b.relay.invitel.net [62.77.203.4])
-	by ozlabs.org (Postfix) with ESMTP id B96B7B708F
+	by ozlabs.org (Postfix) with ESMTP id B5B1CB702E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jul 2011 14:52:47 +1000 (EST)
-Date: Tue, 26 Jul 2011 06:52:37 +0200
+	Tue, 26 Jul 2011 14:55:08 +1000 (EST)
+Date: Tue, 26 Jul 2011 06:55:04 +0200
 From: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH v2 2/4] powerpc, mpc52xx: add a4m072 board support
-In-reply-to: <1308739150-31527-1-git-send-email-hs@denx.de>
+Subject: Re: [PATCH 1/4] net, phy: am79c874 support
+In-reply-to: <1308729311-15375-2-git-send-email-hs@denx.de>
 To: linuxppc-dev@lists.ozlabs.org
-Message-id: <4E2E4815.5050504@denx.de>
+Message-id: <4E2E48A8.6070108@denx.de>
 MIME-version: 1.0
 Content-type: text/plain; charset=ISO-8859-15
-References: <1308729311-15375-3-git-send-email-hs@denx.de>
-	<1308739150-31527-1-git-send-email-hs@denx.de>
-Cc: devicetree-discuss@ozlabs.org, Wolfgang Denk <wd@denx.de>
+References: <1308729311-15375-1-git-send-email-hs@denx.de>
+	<1308729311-15375-2-git-send-email-hs@denx.de>
+Cc: linux-netdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>
 Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,27 +28,16 @@ Hello,
 
 Heiko Schocher wrote:
 > Signed-off-by: Heiko Schocher <hs@denx.de>
-> cc: Grant Likely <grant.likely@secretlab.ca>
-> cc: devicetree-discuss@ozlabs.org
+> cc: linux-netdev@vger.kernel.org
 > cc: Wolfgang Denk <wd@denx.de>
-> cc: Wolfram Sang <w.sang@pengutronix.de>
 > ---
-> For this patchseries following patch is needed:
-> 
-> http://patchwork.ozlabs.org/patch/91919/
-> 
-> Grant? Do you have some comments on that patch?
-> 
-> changes for v2:
->   add comment from Wolfram Sang:
->   use mpc5200.dtsi
-> 
->  arch/powerpc/boot/dts/a4m072.dts             |  172 ++++++++++++++++++++++++++
->  arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
->  2 files changed, 173 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/a4m072.dts
+>  drivers/net/phy/Kconfig  |    5 ++
+>  drivers/net/phy/Makefile |    1 +
+>  drivers/net/phy/amd79.c  |  109 ++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 115 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/net/phy/amd79.c
 
-Are there some more comments or is this ready for going
+Are there some more comments or is this patch ready for going
 to mainline?
 
 bye,
