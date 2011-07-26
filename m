@@ -1,28 +1,22 @@
-Return-Path: <r61911@freescale.com>
-Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2CFF3B70BB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jul 2011 20:32:39 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: RE: [PATCH 2/2 v2] eSDHC: Fix errors when booting kernel with fsl
-	esdhc
-Date: Tue, 26 Jul 2011 10:29:55 +0000
-Message-ID: <2239AC579C7D3646A720227A37E026811736AE@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1311329717-13954-1-git-send-email-tie-fei.zang@freescale.com>
-	<1311329717-13954-2-git-send-email-tie-fei.zang@freescale.com>
-	<20110722101512.GA1576@oksana.dev.rtsoft.ru>
-In-Reply-To: <20110722101512.GA1576@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <michaelhench@gmail.com>
+Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
+	[209.85.216.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7D28DB7090
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jul 2011 23:45:46 +1000 (EST)
+Received: by qwi4 with SMTP id 4so223041qwi.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jul 2011 06:45:43 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	Xu Lei-B33228 <B33228@freescale.com>,
-	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 26 Jul 2011 08:45:42 -0500
+Message-ID: <CAHyXW61fOhuDcxCVQQ6inO_Uoz6m+hN_eB0pQ-rW0c=miJC=3w@mail.gmail.com>
+Subject: [PATCH] mtd: eLBC NAND: update ecc_stats.corrected when lteccr
+	available
+From: Michael Hench <michaelhench@gmail.com>
+To: scottwood@freescale.com, linux-mtd@lists.infradead.org,
+	linuxppc-dev@ozlabs.org, mhench@elutions.com, mlcreech@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: MichaelHench@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtbW1jLW93bmVy
-QHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LW1tYy1vd25lckB2Z2VyLmtlcm5lbC5vcmdd
-DQo+IE9uIEJlaGFsZiBPZiBBbnRvbiBWb3JvbnRzb3YNCj4gU2VudDogRnJpZGF5LCBKdWx5IDIy
-LCAyMDExIDE4OjE1IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IGxpbnV4LW1tY0B2
-Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBha3BtQGxpbnV4
-LQ0KPiBmb3VuZGF0aW9uLm9yZzsgWHUgTGVpLUIzMzIyODsgS3VtYXIgR2FsYQ0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIIDIvMiB2Ml0gZVNESEM6IEZpeCBlcnJvcnMgd2hlbiBib290aW5nIGtlcm5l
-bCB3aXRoIGZzbCBlc2RoYw0KPiANCj4gT24gRnJpLCBKdWwgMjIsIDIwMTEgYXQgMDY6MTU6MTdQ
-TSArMDgwMCwgUm95IFphbmcgd3JvdGU6DQo+IFsuLi5dDQo+ID4gIAlpZiAoaG9zdC0+dmVyc2lv
-biA+PSBTREhDSV9TUEVDXzIwMCkgew0KPiA+IC0JCWN0cmwgPSBzZGhjaV9yZWFkYihob3N0LCBT
-REhDSV9IT1NUX0NPTlRST0wpOw0KPiA+IC0JCWN0cmwgJj0gflNESENJX0NUUkxfRE1BX01BU0s7
-DQo+ID4gLQkJaWYgKChob3N0LT5mbGFncyAmIFNESENJX1JFUV9VU0VfRE1BKSAmJg0KPiA+IC0J
-CQkoaG9zdC0+ZmxhZ3MgJiBTREhDSV9VU0VfQURNQSkpDQo+ID4gLQkJCWN0cmwgfD0gU0RIQ0lf
-Q1RSTF9BRE1BMzI7DQo+ID4gLQkJZWxzZQ0KPiA+IC0JCQljdHJsIHw9IFNESENJX0NUUkxfU0RN
-QTsNCj4gPiAtCQlzZGhjaV93cml0ZWIoaG9zdCwgY3RybCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsN
-Cj4gPiArCQlpZiAoaG9zdC0+cXVpcmtzICYgU0RIQ0lfUVVJUktfUU9SSVFfUFJPQ1RMX1dFSVJE
-KSB7DQo+ID4gKyNkZWZpbmUgRVNESENJX1BST0NUTF9ETUFTX01BU0sJCTB4MDAwMDAzMDANCj4g
-PiArI2RlZmluZSBFU0RIQ0lfUFJPQ1RMX0FETUEzMgkJMHgwMDAwMDIwMA0KPiA+ICsjZGVmaW5l
-IEVTREhDSV9QUk9DVExfU0RNQQkJMHgwMDAwMDAwMA0KPiA+ICsJCQljdHJsID0gc2RoY2lfcmVh
-ZGwoaG9zdCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsNCj4gPiArCQkJY3RybCAmPSB+RVNESENJX1BS
-T0NUTF9ETUFTX01BU0s7DQo+ID4gKwkJCWlmICgoaG9zdC0+ZmxhZ3MgJiBTREhDSV9SRVFfVVNF
-X0RNQSkgJiYNCj4gPiArCQkJCShob3N0LT5mbGFncyAmIFNESENJX1VTRV9BRE1BKSkNCj4gPiAr
-CQkJCWN0cmwgfD0gRVNESENJX1BST0NUTF9BRE1BMzI7DQo+ID4gKwkJCWVsc2UNCj4gPiArCQkJ
-CWN0cmwgfD0gRVNESENJX1BST0NUTF9TRE1BOw0KPiA+ICsJCQlzZGhjaV93cml0ZWwoaG9zdCwg
-Y3RybCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsNCj4gPiArCQl9IGVsc2Ugew0KPiA+ICsJCQljdHJs
-ID0gc2RoY2lfcmVhZGIoaG9zdCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsNCj4gPiArCQkJY3RybCAm
-PSB+U0RIQ0lfQ1RSTF9ETUFfTUFTSzsNCj4gPiArCQkJaWYgKChob3N0LT5mbGFncyAmIFNESENJ
-X1JFUV9VU0VfRE1BKSAmJg0KPiA+ICsJCQkJKGhvc3QtPmZsYWdzICYgU0RIQ0lfVVNFX0FETUEp
-KQ0KPiA+ICsJCQkJY3RybCB8PSBTREhDSV9DVFJMX0FETUEzMjsNCj4gPiArCQkJZWxzZQ0KPiA+
-ICsJCQkJY3RybCB8PSBTREhDSV9DVFJMX1NETUE7DQo+ID4gKwkJCXNkaGNpX3dyaXRlYihob3N0
-LCBjdHJsLCBTREhDSV9IT1NUX0NPTlRST0wpOw0KPiANCj4gV2UgdHJ5IHRvIG5vdCBwb2xsdXRl
-IGdlbmVyaWMgc2RoY2kuYyBkcml2ZXIgd2l0aCBjaGlwLXNwZWNpZmljDQo+IHF1aXJrcy4NCj4g
-DQo+IE1heWJlIHlvdSBjYW4gZG8gdGhlIGZpeHVwcyB2aWEgSU8gYWNjZXNzb3JzPyBPciBieSBp
-bnRyb2R1Y2luZw0KPiBzb21lIGFkZGl0aW9uYWwgc2RoY2kgb3A/DQo+IA0KPiBbLi4uXQ0KPiA+
-ICAJaWYgKHBvd2VyICE9ICh1bnNpZ25lZCBzaG9ydCktMSkgew0KPiA+ICAJCXN3aXRjaCAoMSA8
-PCBwb3dlcikgew0KPiA+ICsjZGVmaW5lCUVTREhDSV9GU0xfUE9XRVJfTUFTSwkweDQwDQo+ID4g
-KyNkZWZpbmUJRVNESENJX0ZTTF9QT1dFUl8xODAJMHgwMA0KPiA+ICsjZGVmaW5lCUVTREhDSV9G
-U0xfUE9XRVJfMzAwCTB4NDANCj4gDQo+IFNhbWUgaGVyZS4gVGhlIGRyaXZlciB3aWxsIHJvdCBx
-dWlja2x5IGlmIGV2ZXJ5b25lIHdvdWxkIHN0YXJ0DQo+IHB1dHRpbmcgY2hpcC1zcGVjaWZpYyBx
-dWlya3MgaW50byBzZGhjaS5jLiBQbGVhc2UgZG9uJ3QuDQpJTyBhY2Nlc3NvcnMgb3Igc2RoY2kg
-b3AgbWlnaHQgd29yaywgYnV0IGl0IHdpbGwgbG9vayB1Z2x5IA0KYW5kIGxlc3MgcGVyZm9ybWFu
-Y2UgZWZmaWNpZW50IGZvciBpbyBhY2Nlc3MuDQoNCklmIHlvdSBzZWFyY2ggc2RoY2kuYywgeW91
-IHdpbGwgc2VlIG90aGVyIGJvYXJkIHNwZWNpZmljIHF1aXJrcy4NClRoYW5rcy4NClJveQ0K
+update ecc_stats.corrected if LTECCR register is available.
+
+Signed-off-by: Michael Hench <MichaelHench@gmail.com>
+---
+diff -purN orig/drivers/mtd/nand/fsl_elbc_nand.c
+linux-3.0/drivers/mtd/nand/fsl_elbc_nand.c
+--- orig/drivers/mtd/nand/fsl_elbc_nand.c	2011-07-25 14:50:56.838326055 -0500
++++ linux-3.0/drivers/mtd/nand/fsl_elbc_nand.c	2011-07-25
+14:48:35.680940052 -0500
+@@ -256,6 +256,25 @@ static int fsl_elbc_run_command(struct m
+ 		return -EIO;
+ 	}
+
++	if(chip->ecc.mode != NAND_ECC_HW)
++		return(0);
++
++	if(elbc_fcm_ctrl->read_bytes == mtd->writesize + mtd->oobsize) {
++		uint32_t lteccr = in_be32(&lbc->lteccr);
++		/*
++		 * if command was a full page read and the ELBC
++		 * has the LTECCR register, then bits 12-15 (ppc order) of
++		 * LTECCR indicate which 512 byte sub-pages had corrected errors.
++		 * bits 28-31 are uncorrectable errors, marked elsewhere.
++		 * for small page nand only 1 bit is used.
++		 * if the ELBC doesn't have the lteccr register it reads 0
++		 */
++		if(lteccr & 0x000F000F)
++			out_be32(&lbc->lteccr, 0x000F000F); /* clear lteccr */
++		if(lteccr & 0x000F0000)
++			mtd->ecc_stats.corrected++;
++	}
++
+ 	return 0;
+ }
+
+--
