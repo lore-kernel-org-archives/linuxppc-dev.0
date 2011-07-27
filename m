@@ -1,15 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+	[IPv6:2001:4978:20e::2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B36B7B6F62
+	by ozlabs.org (Postfix) with ESMTPS id 22903B6F8F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jul 2011 17:59:52 +1000 (EST)
+	Wed, 27 Jul 2011 19:00:22 +1000 (EST)
 Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW
 	tracking of dirty & young
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-In-Reply-To: <CAMjpGUdxpaYBFfKjBEPFOJohnKoXfagLUHvhrst+NembeabxcA@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1311753513.25044.663.camel@pasglop>
 References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
 	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
 	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>
@@ -22,14 +23,14 @@ References: <1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
 	<1310974591.25044.298.camel@pasglop> <4E24FA51.70602@gmail.com>
 	<1311049762.25044.392.camel@pasglop>
 	<CAMjpGUdxpaYBFfKjBEPFOJohnKoXfagLUHvhrst+NembeabxcA@mail.gmail.com>
+	<1311753513.25044.663.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jul 2011 17:58:33 +1000
-Message-ID: <1311753513.25044.663.camel@pasglop>
+Date: Wed, 27 Jul 2011 10:59:50 +0200
+Message-ID: <1311757190.24752.406.camel@twins>
 Mime-Version: 1.0
-Cc: tony.luck@intel.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Shan Hai <haishan.bai@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	dhowells@redhat.com, paulus@samba.org,
+Cc: tony.luck@intel.com, Mike Frysinger <vapier.adi@gmail.com>,
+	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
+	cmetcalf@tilera.com, dhowells@redhat.com, paulus@samba.org,
 	uclinux-dist-devel@blackfin.uclinux.org, tglx@linutronix.de,
 	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,33 +42,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-07-26 at 23:50 -0700, Mike Frysinger wrote:
-> On Mon, Jul 18, 2011 at 21:29, Benjamin Herrenschmidt wrote:
-> > The futex code currently attempts to write to user memory within
-> > a pagefault disabled section, and if that fails, tries to fix it
-> > up using get_user_pages().
-> >
-> > This doesn't work on archs where the dirty and young bits are
-> > maintained by software, since they will gate access permission
-> > in the TLB, and will not be updated by gup().
-> >
-> > In addition, there's an expectation on some archs that a
-> > spurious write fault triggers a local TLB flush, and that is
-> > missing from the picture as well.
-> >
-> > I decided that adding those "features" to gup() would be too much
-> > for this already too complex function, and instead added a new
-> > simpler fixup_user_fault() which is essentially a wrapper around
-> > handle_mm_fault() which the futex code can call.
-> 
-> unfortunately, this breaks all nommu ports.  you added
-> fixup_user_fault() to mm/memory.c only which is not used by nommu
+On Wed, 2011-07-27 at 17:58 +1000, Benjamin Herrenschmidt wrote:
 
-Argh. Andrew, do you want to send a fix ? I won't be able to do that
-tonight, I have to go.
+> What should nommu do anyways ? it's not like there's much it can do
+> right ? It should never even hit the fault path to start with ...
 
-What should nommu do anyways ? it's not like there's much it can do
-right ? It should never even hit the fault path to start with ...
+Something like the below makes a nommu arm config build.. David, is this
+indeed the correct thing to do for nommu?
 
-Cheers,
-Ben.
+---
+Index: linux-2.6/mm/nommu.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/mm/nommu.c
++++ linux-2.6/mm/nommu.c
+@@ -190,6 +190,12 @@ int get_user_pages(struct task_struct *t
+ }
+ EXPORT_SYMBOL(get_user_pages);
+=20
++int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
++		     unsigned long address, unsigned int fault_flags)
++{
++	BUG(); /* nommu should never call this */
++}
++
+ /**
+  * follow_pfn - look up PFN at a user virtual address
+  * @vma: memory mapping
