@@ -1,20 +1,24 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
-	[IPv6:2001:4978:20e::2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8A4FFB6F6B
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
+	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7120FB6F00
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Jul 2011 03:27:45 +1000 (EST)
-Subject: [PATCH] ppc: Remove duplicate definition of PV_POWER7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jul 2011 19:27:21 +0200
-Message-ID: <1311787641.5890.185.camel@twins>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Anton Blanchard <anton@samba.org>
+	Thu, 28 Jul 2011 06:27:52 +1000 (EST)
+Received: from mail138-va3 (localhost.localdomain [127.0.0.1])	by
+	mail138-va3-R.bigfish.com (Postfix) with ESMTP id BFCABA500BD	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 20:27:47 +0000 (UTC)
+Date: Wed, 27 Jul 2011 15:27:41 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <naresh.kamboju@wipro.com>
+Subject: Re: HELP:PowerPc-Linux kernel
+Message-ID: <20110727152741.5975ad71@schlenkerla.am.freescale.net>
+In-Reply-To: <35CC4C9595855B43903A67B297EFA8E3C544FD@HYD-MKD-MBX01.wipro.com>
+References: <35CC4C9595855B43903A67B297EFA8E3C544FD@HYD-MKD-MBX01.wipro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-One definition of PV_POWER7 seems enough to me.
+On Wed, 27 Jul 2011 20:33:54 +0530
+<naresh.kamboju@wipro.com> wrote:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/powerpc/include/asm/reg.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> Hi,
+> 
+>  
+> 
+> I have take up the new assignment  Board bring up activity with Linux
+> kernel on PowerPC MPC8272.
+> 
+> I have been searching Linux bring up on PowerPC processor in Google and
+> IBM wiki and not found good stuff.
+> 
+> It would be more helpful for me if you could share related documents.
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.=
-h
-index c5cae0d..fedf93b 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -986,7 +986,6 @@
- #define PV_970		0x0039
- #define PV_POWER5	0x003A
- #define PV_POWER5p	0x003B
--#define PV_POWER7	0x003F
- #define PV_970FX	0x003C
- #define PV_POWER6	0x003E
- #define PV_POWER7	0x003F
+Look at the support in current kernels for 82xx-based boards such as
+mpc8272ads.  Read the documentation on device trees
+(Documentation/devicetree, devicetree.org, ePAPR).
+
+-Scott
