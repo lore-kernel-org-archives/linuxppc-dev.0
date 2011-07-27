@@ -1,24 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7120FB6F00
+Return-Path: <ak@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+	by ozlabs.org (Postfix) with ESMTP id 6B965B6EE8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Jul 2011 06:27:52 +1000 (EST)
-Received: from mail138-va3 (localhost.localdomain [127.0.0.1])	by
-	mail138-va3-R.bigfish.com (Postfix) with ESMTP id BFCABA500BD	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 20:27:47 +0000 (UTC)
-Date: Wed, 27 Jul 2011 15:27:41 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <naresh.kamboju@wipro.com>
-Subject: Re: HELP:PowerPc-Linux kernel
-Message-ID: <20110727152741.5975ad71@schlenkerla.am.freescale.net>
-In-Reply-To: <35CC4C9595855B43903A67B297EFA8E3C544FD@HYD-MKD-MBX01.wipro.com>
-References: <35CC4C9595855B43903A67B297EFA8E3C544FD@HYD-MKD-MBX01.wipro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu, 28 Jul 2011 07:58:16 +1000 (EST)
+From: Andi Kleen <andi@firstfloor.org>
+References: <20110727247.325703029@firstfloor.org>
+In-Reply-To: <20110727247.325703029@firstfloor.org>
+To: miltonm@bga.com, linuxppc-dev@lists.ozlabs.org,
+	torvalds@linux-foundation.org, andi@firstfloor.org,
+	npiggin@kernel.dk, benh@kernel.crashing.org, anton@samba.org,
+	paulmck@linux.vnet.ibm.com, eric.dumazet@gmail.com,
+	ak@linux.intel.com, tglx@linutronix.de, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, stable@kernel.org, tim.bird@am.sony.com
+Subject: [PATCH] [6/99] seqlock: Don't smp_rmb in seqlock reader spin loop
+Message-Id: <20110727214804.6E36E2403FF@tassilo.jf.intel.com>
+Date: Wed, 27 Jul 2011 14:48:04 -0700 (PDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 27 Jul 2011 20:33:54 +0530
-<naresh.kamboju@wipro.com> wrote:
+2.6.35-longterm review patch.  If anyone has any objections, please let me know.
 
-> Hi,
-> 
->  
-> 
-> I have take up the new assignment  Board bring up activity with Linux
-> kernel on PowerPC MPC8272.
-> 
-> I have been searching Linux bring up on PowerPC processor in Google and
-> IBM wiki and not found good stuff.
-> 
-> It would be more helpful for me if you could share related documents.
+------------------
+From: Milton Miller <miltonm@bga.com>
 
-Look at the support in current kernels for 82xx-based boards such as
-mpc8272ads.  Read the documentation on device trees
-(Documentation/devicetree, devicetree.org, ePAPR).
+commit 5db1256a5131d3b133946fa02ac9770a784e6eb2 upstream.
 
--Scott
+Move the smp_rmb after cpu_relax loop in read_seqlock and add
+ACCESS_ONCE to make sure the test and return are consistent.
+
+A multi-threaded core in the lab didn't like the update
+from 2.6.35 to 2.6.36, to the point it would hang during
+boot when multiple threads were active.  Bisection showed
+af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
+Remove the per cpu tick skew) as the culprit and it is
+supported with stack traces showing xtime_lock waits including
+tick_do_update_jiffies64 and/or update_vsyscall.
+
+Experimentation showed the combination of cpu_relax and smp_rmb
+was significantly slowing the progress of other threads sharing
+the core, and this patch is effective in avoiding the hang.
+
+A theory is the rmb is affecting the whole core while the
+cpu_relax is causing a resource rebalance flush, together they
+cause an interfernce cadance that is unbroken when the seqlock
+reader has interrupts disabled.
+
+At first I was confused why the refactor in
+3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
+seqlock) didn't affect this patch application, but after some
+study that affected seqcount not seqlock. The new seqcount was
+not factored back into the seqlock.  I defer that the future.
+
+While the removal of the timer interrupt offset created
+contention for the xtime lock while a cpu does the
+additonal work to update the system clock, the seqlock
+implementation with the tight rmb spin loop goes back much
+further, and is just waiting for the right trigger.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Nick Piggin <npiggin@kernel.dk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Link: http://lkml.kernel.org/r/%3Cseqlock-rmb%40mdm.bga.com%3E
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ include/linux/seqlock.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.35.y/include/linux/seqlock.h
+===================================================================
+--- linux-2.6.35.y.orig/include/linux/seqlock.h
++++ linux-2.6.35.y/include/linux/seqlock.h
+@@ -88,12 +88,12 @@ static __always_inline unsigned read_seq
+ 	unsigned ret;
+ 
+ repeat:
+-	ret = sl->sequence;
+-	smp_rmb();
++	ret = ACCESS_ONCE(sl->sequence);
+ 	if (unlikely(ret & 1)) {
+ 		cpu_relax();
+ 		goto repeat;
+ 	}
++	smp_rmb();
+ 
+ 	return ret;
+ }
