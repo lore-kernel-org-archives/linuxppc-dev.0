@@ -1,40 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ravi.nittala@in.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5EA52B6F77
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A3582B6F62
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jul 2011 20:22:11 +1000 (EST)
-Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW
-	tracking of dirty & young
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1311761831.24752.413.camel@twins>
-References: <1311757190.24752.406.camel@twins>
-	<1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
-	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
-	<1310725418.2586.309.camel@twins> <4E21A526.8010904@gmail.com>
-	<1310860194.25044.17.camel@pasglop>
-	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
-	<1310912990.25044.203.camel@pasglop>
-	<1310944453.25044.262.camel@pasglop>
-	<1310961691.25044.274.camel@pasglop> <4E23D728.7090406@gmail.com>
-	<1310972462.25044.292.camel@pasglop> <4E23E02C.8090401@gmail.com>
-	<1310974591.25044.298.camel@pasglop> <4E24FA51.70602@gmail.com>
-	<1311049762.25044.392.camel@pasglop>
-	<CAMjpGUdxpaYBFfKjBEPFOJohnKoXfagLUHvhrst+NembeabxcA@mail.gmail.com>
-	<1311753513.25044.663.camel@pasglop>   <20368.1311761379@redhat.com>
-	<1311761831.24752.413.camel@twins>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jul 2011 20:20:43 +1000
-Message-ID: <1311762043.25044.679.camel@pasglop>
-Mime-Version: 1.0
-Cc: tony.luck@intel.com, Mike Frysinger <vapier.adi@gmail.com>,
-	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
-	cmetcalf@tilera.com, David Howells <dhowells@redhat.com>,
-	paulus@samba.org, uclinux-dist-devel@blackfin.uclinux.org,
-	tglx@linutronix.de, walken@google.com,
-	linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+	Wed, 27 Jul 2011 22:09:35 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id p6RC4LB8029011
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 22:04:21 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p6RC9OV81011800
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 22:09:29 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p6RC9N4I004367
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 22:09:24 +1000
+Subject: [PATCH] PSeries: Cancel RTAS event scan before firmware flash
+To: linuxppc-dev@lists.ozlabs.org
+From: "Ravi K. Nittala" <ravi.nittala@in.ibm.com>
+Date: Wed, 27 Jul 2011 17:39:20 +0530
+Message-ID: <20110727120801.10429.7276.stgit@localhost6.localdomain6>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: antonb@au1.ibm.com, subrata.modak@in.ibm.com, mikey@neuling.org,
+	sbest@us.ibm.com, suzuki@in.ibm.com, ranittal@linux.vnet.ibm.com,
+	divya.vikas@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,70 +35,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-07-27 at 12:17 +0200, Peter Zijlstra wrote:
-> On Wed, 2011-07-27 at 11:09 +0100, David Howells wrote:
-> > Can you inline this for the NOMMU case please?
-> 
-> ---
-> Subject: mm: Fix fixup_user_fault() for MMU=n 
-> 
-> In commit 2efaca927 ("mm/futex: fix futex writes on archs with SW
-> tracking of dirty & young") we forgot about MMU=n. This patch fixes
-> that.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+The firmware flash update is conducted using an RTAS call, that is serialized
+by lock_rtas() which uses spin_lock. rtasd keeps scanning for the RTAS events
+generated on the machine. This is performed via a delayed workqueue, invoking
+an RTAS call to scan the events.
 
-Hoping the BUG() isn't trippable by userspace but then it's no mmu, it's
-not like we care what userspace can do right :-)
+The flash update takes a while to complete and during this time, any other
+RTAS call has to wait. In this case, rtas_event_scan() waits for a long time
+on the spin_lock resulting in a soft lockup.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Approaches to fix the issue :
 
-Thanks !
+Approach 1: Stop all the other CPUs before we start flashing the firmware.
 
-Cheers,
-Ben.
+Before the rtas firmware update starts, all other CPUs should be stopped.
+Which means no other CPU should be in lock_rtas(). We do not want other CPUs
+execute while FW update is in progress and the system will be rebooted anyway
+after the update.
 
-> ---
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h
-> +++ linux-2.6/include/linux/mm.h
-> @@ -962,6 +962,8 @@ int invalidate_inode_page(struct page *p
->  #ifdef CONFIG_MMU
->  extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
->  			unsigned long address, unsigned int flags);
-> +extern int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
-> +			    unsigned long address, unsigned int fault_flags);
->  #else
->  static inline int handle_mm_fault(struct mm_struct *mm,
->  			struct vm_area_struct *vma, unsigned long address,
-> @@ -971,6 +973,14 @@ static inline int handle_mm_fault(struct
->  	BUG();
->  	return VM_FAULT_SIGBUS;
->  }
-> +static inline int fixup_user_fault(struct task_struct *tsk, 
-> +		struct mm_struct *mm, unsigned long address,
-> +		unsigned int fault_flags)
-> +{
-> +	/* should never happen if there's no MMU */
-> +	BUG();
-> +	return -EFAULT;
-> +}
->  #endif
->  
->  extern int make_pages_present(unsigned long addr, unsigned long end);
-> @@ -988,8 +998,6 @@ int get_user_pages(struct task_struct *t
->  int get_user_pages_fast(unsigned long start, int nr_pages, int write,
->  			struct page **pages);
->  struct page *get_dump_page(unsigned long addr);
-> -extern int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
-> -			    unsigned long address, unsigned int fault_flags);
->  
->  extern int try_to_release_page(struct page * page, gfp_t gfp_mask);
->  extern void do_invalidatepage(struct page *page, unsigned long offset);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--- arch/powerpc/kernel/setup-common.c.orig    2011-07-01 22:41:12.952507971 -0400
++++ arch/powerpc/kernel/setup-common.c    2011-07-01 22:48:31.182507915 -0400
+@@ -109,11 +109,12 @@ void machine_shutdown(void)
+  void machine_restart(char *cmd)
+  {
+      machine_shutdown();
+-    if (ppc_md.restart)
+-        ppc_md.restart(cmd);
+  #ifdef CONFIG_SMP
+-    smp_send_stop();
++        smp_send_stop();
+  #endif
++    if (ppc_md.restart)
++        ppc_md.restart(cmd);
++
+      printk(KERN_EMERG "System Halted, OK to turn off power\n");
+      local_irq_disable();
+      while (1) ;
+
+Problems with this approach:
+Stopping the CPUs suddenly may cause other serious problems depending on what
+was running on them. Hence, this approach cannot be considered.
+
+
+Approach 2: Cancel the rtas_scan_event work before starting the firmware flash.
+
+Just before the flash update is performed, the queued rtas_event_scan() work
+item is cancelled from the work queue so that there is no other RTAS call
+issued while the flash is in progress. After the flash completes, the system
+reboots and the rtas_event_scan() is rescheduled.
+
+Approach 2 looks to be a better solution than Approach 1. Kindly let us know
+your thoughts. Patch attached.
+
+
+Signed-off-by: Suzuki Poulose <suzuki@in.ibm.com>
+Signed-off-by: Ravi Nittala <ravi.nittala@in.ibm.com>
+
+
+---
+ arch/powerpc/include/asm/rtas.h  |    2 ++
+ arch/powerpc/kernel/rtas_flash.c |    6 ++++++
+ arch/powerpc/kernel/rtasd.c      |    6 ++++++
+ 3 files changed, 14 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 58625d1..3f26f87 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -245,6 +245,8 @@ extern int early_init_dt_scan_rtas(unsigned long node,
+ 
+ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+ 
++extern bool rtas_cancel_event_scan(void);
++
+ /* Error types logged.  */
+ #define ERR_FLAG_ALREADY_LOGGED	0x0
+ #define ERR_FLAG_BOOT		0x1 	/* log was pulled from NVRAM on boot */
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index e037c74..4174b4b 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -568,6 +568,12 @@ static void rtas_flash_firmware(int reboot_type)
+ 	}
+ 
+ 	/*
++	 * Just before starting the firmware flash, cancel the event scan work
++	 * to avoid any soft lockup issues.
++	 */
++	rtas_cancel_event_scan();
++
++	/*
+ 	 * NOTE: the "first" block must be under 4GB, so we create
+ 	 * an entry with no data blocks in the reserved buffer in
+ 	 * the kernel data segment.
+diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+index 481ef06..e8f03fa 100644
+--- a/arch/powerpc/kernel/rtasd.c
++++ b/arch/powerpc/kernel/rtasd.c
+@@ -472,6 +472,12 @@ static void start_event_scan(void)
+ 				 &event_scan_work, event_scan_delay);
+ }
+ 
++/* Cancel the rtas event scan work */
++bool rtas_cancel_event_scan(void)
++{
++	return cancel_delayed_work_sync(&event_scan_work);
++}
++
+ static int __init rtas_init(void)
+ {
+ 	struct proc_dir_entry *entry;
