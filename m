@@ -1,10 +1,16 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 7B1E4B6F6F
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+	[IPv6:2001:770:15f::2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 18355B6F6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jul 2011 20:10:42 +1000 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1311757190.24752.406.camel@twins>
+	Wed, 27 Jul 2011 20:17:43 +1000 (EST)
+Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW
+	tracking of dirty & young
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Howells <dhowells@redhat.com>
+In-Reply-To: <20368.1311761379@redhat.com>
 References: <1311757190.24752.406.camel@twins>
 	<1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
 	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
@@ -18,16 +24,14 @@ References: <1311757190.24752.406.camel@twins>
 	<1310974591.25044.298.camel@pasglop> <4E24FA51.70602@gmail.com>
 	<1311049762.25044.392.camel@pasglop>
 	<CAMjpGUdxpaYBFfKjBEPFOJohnKoXfagLUHvhrst+NembeabxcA@mail.gmail.com>
-	<1311753513.25044.663.camel@pasglop>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW tracking
-	of dirty & young
-Date: Wed, 27 Jul 2011 11:09:39 +0100
-Message-ID: <20368.1311761379@redhat.com>
-Sender: dhowells@redhat.com
+	<1311753513.25044.663.camel@pasglop>   <20368.1311761379@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jul 2011 12:17:11 +0200
+Message-ID: <1311761831.24752.413.camel@twins>
+Mime-Version: 1.0
 Cc: tony.luck@intel.com, Mike Frysinger <vapier.adi@gmail.com>,
 	Shan Hai <haishan.bai@gmail.com>, linux-kernel@vger.kernel.org,
-	cmetcalf@tilera.com, dhowells@redhat.com, paulus@samba.org,
+	cmetcalf@tilera.com, paulus@samba.org,
 	uclinux-dist-devel@blackfin.uclinux.org, tglx@linutronix.de,
 	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,35 +43,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Wed, 2011-07-27 at 11:09 +0100, David Howells wrote:
+> Can you inline this for the NOMMU case please?
 
-> > What should nommu do anyways ? it's not like there's much it can do
-> > right ? It should never even hit the fault path to start with ...
-> 
-> Something like the below makes a nommu arm config build.. David, is this
-> indeed the correct thing to do for nommu?
-> 
-> ---
-> Index: linux-2.6/mm/nommu.c
-> ===================================================================
-> --- linux-2.6.orig/mm/nommu.c
-> +++ linux-2.6/mm/nommu.c
-> @@ -190,6 +190,12 @@ int get_user_pages(struct task_struct *t
->  }
->  EXPORT_SYMBOL(get_user_pages);
->  
-> +int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
-> +		     unsigned long address, unsigned int fault_flags)
-> +{
-> +	BUG(); /* nommu should never call this */
-> +}
-> +
->  /**
->   * follow_pfn - look up PFN at a user virtual address
->   * @vma: memory mapping
+---
+Subject: mm: Fix fixup_user_fault() for MMU=3Dn=20
 
-Or perhaps send SEGV?  Can 'address' be bad at this point?
+In commit 2efaca927 ("mm/futex: fix futex writes on archs with SW
+tracking of dirty & young") we forgot about MMU=3Dn. This patch fixes
+that.
 
-Can you inline this for the NOMMU case please?
-
-David
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+Index: linux-2.6/include/linux/mm.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/include/linux/mm.h
++++ linux-2.6/include/linux/mm.h
+@@ -962,6 +962,8 @@ int invalidate_inode_page(struct page *p
+ #ifdef CONFIG_MMU
+ extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vm=
+a,
+ 			unsigned long address, unsigned int flags);
++extern int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
++			    unsigned long address, unsigned int fault_flags);
+ #else
+ static inline int handle_mm_fault(struct mm_struct *mm,
+ 			struct vm_area_struct *vma, unsigned long address,
+@@ -971,6 +973,14 @@ static inline int handle_mm_fault(struct
+ 	BUG();
+ 	return VM_FAULT_SIGBUS;
+ }
++static inline int fixup_user_fault(struct task_struct *tsk,=20
++		struct mm_struct *mm, unsigned long address,
++		unsigned int fault_flags)
++{
++	/* should never happen if there's no MMU */
++	BUG();
++	return -EFAULT;
++}
+ #endif
+=20
+ extern int make_pages_present(unsigned long addr, unsigned long end);
+@@ -988,8 +998,6 @@ int get_user_pages(struct task_struct *t
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages);
+ struct page *get_dump_page(unsigned long addr);
+-extern int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
+-			    unsigned long address, unsigned int fault_flags);
+=20
+ extern int try_to_release_page(struct page * page, gfp_t gfp_mask);
+ extern void do_invalidatepage(struct page *page, unsigned long offset);
