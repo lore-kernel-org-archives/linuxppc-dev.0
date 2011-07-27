@@ -1,31 +1,20 @@
-Return-Path: <ravi.nittala@in.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <naresh.kamboju@wipro.com>
+Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
+	[203.91.198.74])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A3582B6F62
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D13DCB6F18
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jul 2011 22:09:35 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id p6RC4LB8029011
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 22:04:21 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p6RC9OV81011800
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 22:09:29 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p6RC9N4I004367
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2011 22:09:24 +1000
-Subject: [PATCH] PSeries: Cancel RTAS event scan before firmware flash
-To: linuxppc-dev@lists.ozlabs.org
-From: "Ravi K. Nittala" <ravi.nittala@in.ibm.com>
-Date: Wed, 27 Jul 2011 17:39:20 +0530
-Message-ID: <20110727120801.10429.7276.stgit@localhost6.localdomain6>
+	Thu, 28 Jul 2011 01:19:29 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: antonb@au1.ibm.com, subrata.modak@in.ibm.com, mikey@neuling.org,
-	sbest@us.ibm.com, suzuki@in.ibm.com, ranittal@linux.vnet.ibm.com,
-	divya.vikas@in.ibm.com
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CC4C6E.670728E7"
+Subject: HELP:PowerPc-Linux kernel
+Date: Wed, 27 Jul 2011 20:33:54 +0530
+Message-ID: <35CC4C9595855B43903A67B297EFA8E3C544FD@HYD-MKD-MBX01.wipro.com>
+From: <naresh.kamboju@wipro.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Cc: cort@fsmlabs.com, linas@austin.ibm.com, hollis@austin.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,113 +24,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The firmware flash update is conducted using an RTAS call, that is serialized
-by lock_rtas() which uses spin_lock. rtasd keeps scanning for the RTAS events
-generated on the machine. This is performed via a delayed workqueue, invoking
-an RTAS call to scan the events.
+This is a multi-part message in MIME format.
 
-The flash update takes a while to complete and during this time, any other
-RTAS call has to wait. In this case, rtas_event_scan() waits for a long time
-on the spin_lock resulting in a soft lockup.
+------_=_NextPart_001_01CC4C6E.670728E7
+Content-Type: text/plain;
+	charset="us-ascii"
+content-transfer-encoding: quoted-printable
 
-Approaches to fix the issue :
+Hi,
 
-Approach 1: Stop all the other CPUs before we start flashing the firmware.
-
-Before the rtas firmware update starts, all other CPUs should be stopped.
-Which means no other CPU should be in lock_rtas(). We do not want other CPUs
-execute while FW update is in progress and the system will be rebooted anyway
-after the update.
-
---- arch/powerpc/kernel/setup-common.c.orig    2011-07-01 22:41:12.952507971 -0400
-+++ arch/powerpc/kernel/setup-common.c    2011-07-01 22:48:31.182507915 -0400
-@@ -109,11 +109,12 @@ void machine_shutdown(void)
-  void machine_restart(char *cmd)
-  {
-      machine_shutdown();
--    if (ppc_md.restart)
--        ppc_md.restart(cmd);
-  #ifdef CONFIG_SMP
--    smp_send_stop();
-+        smp_send_stop();
-  #endif
-+    if (ppc_md.restart)
-+        ppc_md.restart(cmd);
-+
-      printk(KERN_EMERG "System Halted, OK to turn off power\n");
-      local_irq_disable();
-      while (1) ;
-
-Problems with this approach:
-Stopping the CPUs suddenly may cause other serious problems depending on what
-was running on them. Hence, this approach cannot be considered.
-
-
-Approach 2: Cancel the rtas_scan_event work before starting the firmware flash.
-
-Just before the flash update is performed, the queued rtas_event_scan() work
-item is cancelled from the work queue so that there is no other RTAS call
-issued while the flash is in progress. After the flash completes, the system
-reboots and the rtas_event_scan() is rescheduled.
-
-Approach 2 looks to be a better solution than Approach 1. Kindly let us know
-your thoughts. Patch attached.
-
-
-Signed-off-by: Suzuki Poulose <suzuki@in.ibm.com>
-Signed-off-by: Ravi Nittala <ravi.nittala@in.ibm.com>
-
-
----
- arch/powerpc/include/asm/rtas.h  |    2 ++
- arch/powerpc/kernel/rtas_flash.c |    6 ++++++
- arch/powerpc/kernel/rtasd.c      |    6 ++++++
- 3 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 58625d1..3f26f87 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -245,6 +245,8 @@ extern int early_init_dt_scan_rtas(unsigned long node,
  
- extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+
+I have take up the new assignment  Board bring up activity with Linux
+kernel on PowerPC MPC8272.
+
+I have been searching Linux bring up on PowerPC processor in Google and
+IBM wiki and not found good stuff.
+
+It would be more helpful for me if you could share related documents.
+
  
-+extern bool rtas_cancel_event_scan(void);
-+
- /* Error types logged.  */
- #define ERR_FLAG_ALREADY_LOGGED	0x0
- #define ERR_FLAG_BOOT		0x1 	/* log was pulled from NVRAM on boot */
-diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
-index e037c74..4174b4b 100644
---- a/arch/powerpc/kernel/rtas_flash.c
-+++ b/arch/powerpc/kernel/rtas_flash.c
-@@ -568,6 +568,12 @@ static void rtas_flash_firmware(int reboot_type)
- 	}
+
+Best regards
+
+Naresh Kamboju
+
  
- 	/*
-+	 * Just before starting the firmware flash, cancel the event scan work
-+	 * to avoid any soft lockup issues.
-+	 */
-+	rtas_cancel_event_scan();
-+
-+	/*
- 	 * NOTE: the "first" block must be under 4GB, so we create
- 	 * an entry with no data blocks in the reserved buffer in
- 	 * the kernel data segment.
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 481ef06..e8f03fa 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -472,6 +472,12 @@ static void start_event_scan(void)
- 				 &event_scan_work, event_scan_delay);
- }
- 
-+/* Cancel the rtas event scan work */
-+bool rtas_cancel_event_scan(void)
-+{
-+	return cancel_delayed_work_sync(&event_scan_work);
-+}
-+
- static int __init rtas_init(void)
- {
- 	struct proc_dir_entry *entry;
+
+
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
+
+------_=_NextPart_001_01CC4C6E.670728E7
+Content-Type: text/html;
+	charset="us-ascii"
+content-transfer-encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micro=
+soft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" xm=
+lns:x=3D"urn:schemas-microsoft-com:office:excel" xmlns:p=3D"urn:schemas-micr=
+osoft-com:office:powerpoint" xmlns:a=3D"urn:schemas-microsoft-com:office:acc=
+ess" xmlns:dt=3D"uuid:C2F41010-65B3-11d1-A29F-00AA00C14882" xmlns:s=3D"uuid:=
+BDC6E3F0-6DA3-11d1-A2A3-00AA00C14882" xmlns:rs=3D"urn:schemas-microsoft-com:=
+rowset" xmlns:z=3D"#RowsetSchema" xmlns:b=3D"urn:schemas-microsoft-com:offic=
+e:publisher" xmlns:ss=3D"urn:schemas-microsoft-com:office:spreadsheet" xmlns=
+:c=3D"urn:schemas-microsoft-com:office:component:spreadsheet" xmlns:odc=3D"u=
+rn:schemas-microsoft-com:office:odc" xmlns:oa=3D"urn:schemas-microsoft-com:o=
+ffice:activation" xmlns:html=3D"http://www.w3.org/TR/REC-html40" xmlns:q=3D"=
+http://schemas.xmlsoap.org/soap/envelope/" xmlns:rtc=3D"http://microsoft.com=
+/officenet/conferencing" xmlns:D=3D"DAV:" xmlns:Repl=3D"http://schemas.micro=
+soft.com/repl/" xmlns:mt=3D"http://schemas.microsoft.com/sharepoint/soap/mee=
+tings/" xmlns:x2=3D"http://schemas.microsoft.com/office/excel/2003/xml" xmln=
+s:ppda=3D"http://www.passport.com/NameSpace.xsd" xmlns:ois=3D"http://schemas=
+.microsoft.com/sharepoint/soap/ois/" xmlns:dir=3D"http://schemas.microsoft.c=
+om/sharepoint/soap/directory/" xmlns:ds=3D"http://www.w3.org/2000/09/xmldsig=
+#" xmlns:dsp=3D"http://schemas.microsoft.com/sharepoint/dsp" xmlns:udc=3D"ht=
+tp://schemas.microsoft.com/data/udc" xmlns:xsd=3D"http://www.w3.org/2001/XML=
+Schema" xmlns:sub=3D"http://schemas.microsoft.com/sharepoint/soap/2002/1/ale=
+rts/" xmlns:ec=3D"http://www.w3.org/2001/04/xmlenc#" xmlns:sp=3D"http://sche=
+mas.microsoft.com/sharepoint/" xmlns:sps=3D"http://schemas.microsoft.com/sha=
+repoint/soap/" xmlns:xsi=3D"http://www.w3.org/2001/XMLSchema-instance" xmlns=
+:udcs=3D"http://schemas.microsoft.com/data/udc/soap" xmlns:udcxf=3D"http://s=
+chemas.microsoft.com/data/udc/xmlfile" xmlns:udcp2p=3D"http://schemas.micros=
+oft.com/data/udc/parttopart" xmlns:wf=3D"http://schemas.microsoft.com/sharep=
+oint/soap/workflow/" xmlns:dsss=3D"http://schemas.microsoft.com/office/2006/=
+digsig-setup" xmlns:dssi=3D"http://schemas.microsoft.com/office/2006/digsig"=
+ xmlns:mdssi=3D"http://schemas.openxmlformats.org/package/2006/digital-signa=
+ture" xmlns:mver=3D"http://schemas.openxmlformats.org/markup-compatibility/2=
+006" xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns:mrel=
+s=3D"http://schemas.openxmlformats.org/package/2006/relationships" xmlns:spw=
+p=3D"http://microsoft.com/sharepoint/webpartpages" xmlns:ex12t=3D"http://sch=
+emas.microsoft.com/exchange/services/2006/types" xmlns:ex12m=3D"http://schem=
+as.microsoft.com/exchange/services/2006/messages" xmlns:pptsl=3D"http://sche=
+mas.microsoft.com/sharepoint/soap/SlideLibrary/" xmlns:spsl=3D"http://micros=
+oft.com/webservices/SharePointPortalServer/PublishedLinksService" xmlns:Z=3D=
+"urn:schemas-microsoft-com:" xmlns:st=3D"&#1;" xmlns=3D"http://www.w3.org/TR=
+/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DWordSection1>
+
+<p class=3DMsoNormal>Hi,<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>I have take up the new assignment &nbsp;Board bring up
+activity with Linux kernel on PowerPC MPC8272.<o:p></o:p></p>
+
+<p class=3DMsoNormal>I have been searching Linux bring up on PowerPC process=
+or in
+Google and IBM wiki and not found good stuff.<o:p></o:p></p>
+
+<p class=3DMsoNormal>It would be more helpful for me if you could share rela=
+ted
+documents.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>Best regards<o:p></o:p></p>
+
+<p class=3DMsoNormal>Naresh Kamboju<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+<P><strong><span style=3D'font-size:10.0pt;font-family:=0A=
+"Palatino Linotype","serif";color:green'> Please do not print this email unl=
+ess it is absolutely necessary. </span></strong><span style=3D'font-family:"=
+Arial","sans-serif"'><o:p></o:p></span></p>=0A=
+=0A=
+=0A=
+<p> The information contained in this electronic message and any attachments=
+ to this message are intended for the exclusive use of the addressee(s) and=
+ may contain proprietary, confidential or privileged information. If you are=
+ not the intended recipient, you should not disseminate, distribute or copy=
+ this e-mail. Please notify the sender immediately and destroy all copies of=
+ this message and any attachments. </p>=0A=
+=0A=
+<p>WARNING: Computer viruses can be transmitted via email. The recipient sho=
+uld check this email and any attachments for the presence of viruses. The co=
+mpany accepts no liability for any damage caused by any virus transmitted by=
+ this email. </p>=0A=
+<p>=0A=
+www.wipro.com=0A=
+</p>
+</body>
+
+</html>
+
+------_=_NextPart_001_01CC4C6E.670728E7--
