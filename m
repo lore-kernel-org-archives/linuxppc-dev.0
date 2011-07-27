@@ -1,21 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05722B6F89
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jul 2011 08:24:33 +1000 (EST)
-Subject: Re: [PATCH RFC] perf event: Torrent,
-	add support for the various PMUs on the Torrent chip.
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1311698974.28685.4.camel@oc5652146517.ibm.com>
-Date: Tue, 26 Jul 2011 17:24:30 -0500
-Message-Id: <D2D2FD5D-3E1B-43D9-B02D-60DBE33EC322@kernel.crashing.org>
-References: <1311698974.28685.4.camel@oc5652146517.ibm.com>
-To: "Carl E. Love" <cel@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, ltc-interlock@lists.ibm.com
+Return-Path: <anton@samba.org>
+Date: Wed, 27 Jul 2011 10:11:50 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au
+Subject: [PATCH] powerpc: Jump label misalignment causes oops at boot
+Message-ID: <20110727101150.449574ef@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,125 +17,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 26, 2011, at 11:49 AM, Carl E. Love wrote:
+I hit an oops at boot on the first instruction of timer_cpu_notify:
 
->=20
->=20
-> We are requesting your help to review the following patch prior to =
-posting it=20
-> upstream. The patch is against the 2.6.39 tree (which is already out =
-of date).
-> Thank your for your help and input.
->=20
->                       Carl Love
-> =
---------------------------------------------------------------------------=
+Oops: Exception in kernel mode, sig: 4 [#1]
+...
+NIP [c000000000722f88] .timer_cpu_notify+0x0/0x388
 
-> [PATCH RFC] perf event: Torrent, add support for the various PMUs on =
-the Torrent chip.
->=20
-> Support for the Torrent hardware performance monitor units (PMU) on =
-the LL
-> link, WXYZ links, MCD bus, and CAU units is added.  These PMUs are =
-specific
-> to the Torrent system which is built using POWER7 processors.  These =
-PMUs
-> are specifc to the IBM P7IH system's Torrent chips, which are used to
-> interconnect POWER7 processors.  Hence the platform specific files to
-> support these PMUs are in the platform-specific directory
-> arch/powerpc/platforms/torrent.  The include files are added to the
-> standard powerpc include directory.  The Torrent PMU support uses the
-> multiple PMU perf_events support.  A single perf_events PMU type is
-> created to cover all of the various Torrent hardware PMUs.  The =
-generic
-> Torrent PMU type allows all of the specific Torrent hardware PMU =
-events to
-> be included into a group of events within the perf_events Torrent PMU =
-type.
-> The advantage of this model is that all of the events for the various
-> links are guaranteed to be measured at the same time, providing good
-> correlation between the activity on each of the different Torrent =
-links.
->=20
-> This patch is a forward port of the initial Torrent PMU patch for =
-2.6.32
-> that was done as part of the development effort on Torrent and never =
-pushed
-> upstream.
->=20
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> ---
-> arch/powerpc/include/asm/cau_pmu.h                 |   39 +
-> arch/powerpc/include/asm/hvcall.h                  |   14 +
-> arch/powerpc/include/asm/mmu_pmu.h                 |   39 +
-> arch/powerpc/include/asm/power_torrent_events.h    |  106 ++
-> arch/powerpc/include/asm/powerbus_bus_util_pmu.h   |   39 +
-> arch/powerpc/include/asm/powerbus_ll_pmu.h         |   39 +
-> arch/powerpc/include/asm/powerbus_mcd_pmu.h        |   44 +
-> arch/powerpc/include/asm/powerbus_wxyz_pmu.h       |   38 +
-> arch/powerpc/include/asm/torrent_nest_pmu.h        |  192 +++
+The code should look like:
 
-Seems like a lot of these headers could move to plarforms/p7ih/
+c000000000722f78:       eb e9 00 30     ld      r31,48(r9)
+c000000000722f7c:       2f bf 00 00     cmpdi   cr7,r31,0
+c000000000722f80:       40 9e ff 44     bne+    cr7,c000000000722ec4 
+c000000000722f84:       4b ff ff 74     b       c000000000722ef8 
 
-> arch/powerpc/kernel/perf_event.c                   |    4 +
-> arch/powerpc/platforms/Makefile                    |    1 +
-> arch/powerpc/platforms/p7ih/Makefile               |   10 +
-> arch/powerpc/platforms/p7ih/cau_pmu.c              |  160 ++
-> arch/powerpc/platforms/p7ih/mmu_pmu.c              |  156 ++
-> .../powerpc/platforms/p7ih/powerbus_bus_util_pmu.c |  410 +++++
-> arch/powerpc/platforms/p7ih/powerbus_ll_pmu.c      |  273 ++++
-> arch/powerpc/platforms/p7ih/powerbus_mcd_pmu.c     |  492 ++++++
-> arch/powerpc/platforms/p7ih/powerbus_wxyz_pmu.c    |  244 +++
-> arch/powerpc/platforms/p7ih/torrent_pmu.c          | 1582 =
-++++++++++++++++++++
-> arch/powerpc/platforms/pseries/Kconfig             |    5 +
-> 20 files changed, 3887 insertions(+), 0 deletions(-)
+c000000000722f88 <.timer_cpu_notify>:
+c000000000722f88:       7c 08 02 a6     mflr    r0
+c000000000722f8c:       2f a4 00 07     cmpdi   cr7,r4,7
+c000000000722f90:       fb c1 ff f0     std     r30,-16(r1)
+c000000000722f94:       fb 61 ff d8     std     r27,-40(r1)
 
+But the oops output shows these instructions:
 
+eb61ffd8 eb81ffe0 eba1ffe8 ebc1fff0 7c0803a6 ebe1fff8 4e800020 00000000
+ebe90030 c0000000 00ad0a28 00000000 2fa40007 fbc1fff0 fb61ffd8
 
->=20
-> +#define PMU_SPACE_MASK		0xFF000000
-> +#define POWERPC_CORE_SPACE	0x00000000
-> +#define TORRENT_SPACE		0x01000000
-> +#define IS_CORE_EVENT(x)	((x & PMU_SPACE_MASK) =3D=3D =
-POWERPC_CORE_SPACE)
-> +#define IS_TORRENT_EVENT(x)	((x & PMU_SPACE_MASK) =3D=3D =
-TORRENT_SPACE)
+So we scribbled over our instructions with c000000000ad0a28 which
+is an address inside the jump_table ELF section.
 
+It turns out the jump_table section is only aligned to 8 bytes but
+we are aligning our entries within the section to 16 bytes. This
+means our entries can be offset from the table:
 
+c000000000acd4a8 <__start___jump_table>:
+        ...
+c000000000ad0a10:       c0 00 00 00     lfs     f0,0(0)
+c000000000ad0a14:       00 70 cd 5c     .long 0x70cd5c
+c000000000ad0a18:       c0 00 00 00     lfs     f0,0(0)
+c000000000ad0a1c:       00 70 cd 90     .long 0x70cd90
+c000000000ad0a20:       c0 00 00 00     lfs     f0,0(0)
+c000000000ad0a24:       00 ac a4 20     .long 0xaca420
 
->=20
-> diff --git a/arch/powerpc/kernel/perf_event.c =
-b/arch/powerpc/kernel/perf_event.c
-> index 822f630..aa1eb43 100644
-> --- a/arch/powerpc/kernel/perf_event.c
-> +++ b/arch/powerpc/kernel/perf_event.c
-> @@ -19,6 +19,8 @@
-> #include <asm/firmware.h>
-> #include <asm/ptrace.h>
->=20
-> +#include <asm/torrent_nest_pmu.h>
-> +
-> struct cpu_hw_events {
-> 	int n_events;
-> 	int n_percpu;
-> @@ -1092,6 +1094,8 @@ static int power_pmu_event_init(struct =
-perf_event *event)
-> 		break;
-> 	case PERF_TYPE_RAW:
-> 		ev =3D event->attr.config;
-> +		if (!IS_CORE_EVENT(ev))
-> +			return -ENOENT;
+And the jump table sort code gets very confused and writes into the
+wrong spot. Remove the alignment and also remove the padding since
+we it saves some space and we shouldn't need it.
 
-seems like we should put what is needed for IS_CORE_EVENT() into =
-asm/pmc.h if we believe its reasonable..
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-pulling in <asm/torrent_nest_pmu.h> seems the torrent support is pretty =
-specific.
-
-> 		break;
-> 	default:
-> 		return -ENOENT;
-
-
-- k=
+Index: linux-powerpc/arch/powerpc/include/asm/jump_label.h
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/include/asm/jump_label.h
+2011-07-27 09:35:04.266872078 +1000 +++
+linux-powerpc/arch/powerpc/include/asm/jump_label.h	2011-07-27
+09:39:32.581719669 +1000 @@ -22,7 +22,6 @@ static __always_inline bool
+arch_static_ asm goto("1:\n\t" "nop\n\t"
+ 		 ".pushsection __jump_table,  \"aw\"\n\t"
+-		 ".align 4\n\t"
+ 		 JUMP_ENTRY_TYPE "1b, %l[l_yes], %c0\n\t"
+ 		 ".popsection \n\t"
+ 		 : :  "i" (key) : : l_yes);
+@@ -41,7 +40,6 @@ struct jump_entry {
+ 	jump_label_t code;
+ 	jump_label_t target;
+ 	jump_label_t key;
+-	jump_label_t pad;
+ };
+ 
+ #endif /* _ASM_POWERPC_JUMP_LABEL_H */
