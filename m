@@ -1,20 +1,44 @@
-Return-Path: <ak@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-	by ozlabs.org (Postfix) with ESMTP id 6B965B6EE8
+Return-Path: <vapier.adi@gmail.com>
+Received: from mail-gw0-f44.google.com (mail-gw0-f44.google.com [74.125.83.44])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 94027B6F6B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Jul 2011 07:58:16 +1000 (EST)
-From: Andi Kleen <andi@firstfloor.org>
-References: <20110727247.325703029@firstfloor.org>
-In-Reply-To: <20110727247.325703029@firstfloor.org>
-To: miltonm@bga.com, linuxppc-dev@lists.ozlabs.org,
-	torvalds@linux-foundation.org, andi@firstfloor.org,
-	npiggin@kernel.dk, benh@kernel.crashing.org, anton@samba.org,
-	paulmck@linux.vnet.ibm.com, eric.dumazet@gmail.com,
-	ak@linux.intel.com, tglx@linutronix.de, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, stable@kernel.org, tim.bird@am.sony.com
-Subject: [PATCH] [6/99] seqlock: Don't smp_rmb in seqlock reader spin loop
-Message-Id: <20110727214804.6E36E2403FF@tassilo.jf.intel.com>
-Date: Wed, 27 Jul 2011 14:48:04 -0700 (PDT)
+	Thu, 28 Jul 2011 10:12:55 +1000 (EST)
+Received: by gwb20 with SMTP id 20so2214581gwb.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 27 Jul 2011 17:12:52 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1311762043.25044.679.camel@pasglop>
+References: <1311757190.24752.406.camel@twins>
+	<1310717238-13857-1-git-send-email-haishan.bai@gmail.com>
+	<1310717238-13857-2-git-send-email-haishan.bai@gmail.com>
+	<1310725418.2586.309.camel@twins>
+	<4E21A526.8010904@gmail.com> <1310860194.25044.17.camel@pasglop>
+	<4b337921-d430-4b63-bc36-ad31753cf800@email.android.com>
+	<1310912990.25044.203.camel@pasglop>
+	<1310944453.25044.262.camel@pasglop>
+	<1310961691.25044.274.camel@pasglop>
+	<4E23D728.7090406@gmail.com> <1310972462.25044.292.camel@pasglop>
+	<4E23E02C.8090401@gmail.com> <1310974591.25044.298.camel@pasglop>
+	<4E24FA51.70602@gmail.com> <1311049762.25044.392.camel@pasglop>
+	<CAMjpGUdxpaYBFfKjBEPFOJohnKoXfagLUHvhrst+NembeabxcA@mail.gmail.com>
+	<1311753513.25044.663.camel@pasglop> <20368.1311761379@redhat.com>
+	<1311761831.24752.413.camel@twins> <1311762043.25044.679.camel@pasglop>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 27 Jul 2011 17:12:32 -0700
+Message-ID: <CAMjpGUdXfzt5HuDgspf6Bijm3xOPcck_JR38-AV2FSK0t99MTQ@mail.gmail.com>
+Subject: Re: [RFC/PATCH] mm/futex: Fix futex writes on archs with SW tracking
+	of dirty & young
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: tony.luck@intel.com, Shan Hai <haishan.bai@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	David Howells <dhowells@redhat.com>, paulus@samba.org,
+	uclinux-dist-devel@blackfin.uclinux.org, tglx@linutronix.de,
+	walken@google.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,79 +48,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.35-longterm review patch.  If anyone has any objections, please let me know.
+On Wed, Jul 27, 2011 at 03:20, Benjamin Herrenschmidt wrote:
+> Hoping the BUG() isn't trippable by userspace but then it's no mmu, it's
+> not like we care what userspace can do right :-)
 
-------------------
-From: Milton Miller <miltonm@bga.com>
+side note ... common misconception that "no mmu" == "no memory
+protection".  a few of the nommu processors have memory protection,
+just no virtual<->physical translation.
 
-commit 5db1256a5131d3b133946fa02ac9770a784e6eb2 upstream.
-
-Move the smp_rmb after cpu_relax loop in read_seqlock and add
-ACCESS_ONCE to make sure the test and return are consistent.
-
-A multi-threaded core in the lab didn't like the update
-from 2.6.35 to 2.6.36, to the point it would hang during
-boot when multiple threads were active.  Bisection showed
-af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
-Remove the per cpu tick skew) as the culprit and it is
-supported with stack traces showing xtime_lock waits including
-tick_do_update_jiffies64 and/or update_vsyscall.
-
-Experimentation showed the combination of cpu_relax and smp_rmb
-was significantly slowing the progress of other threads sharing
-the core, and this patch is effective in avoiding the hang.
-
-A theory is the rmb is affecting the whole core while the
-cpu_relax is causing a resource rebalance flush, together they
-cause an interfernce cadance that is unbroken when the seqlock
-reader has interrupts disabled.
-
-At first I was confused why the refactor in
-3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
-seqlock) didn't affect this patch application, but after some
-study that affected seqcount not seqlock. The new seqcount was
-not factored back into the seqlock.  I defer that the future.
-
-While the removal of the timer interrupt offset created
-contention for the xtime lock while a cpu does the
-additonal work to update the system clock, the seqlock
-implementation with the tight rmb spin loop goes back much
-further, and is just waiting for the right trigger.
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@kernel.dk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Link: http://lkml.kernel.org/r/%3Cseqlock-rmb%40mdm.bga.com%3E
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- include/linux/seqlock.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.35.y/include/linux/seqlock.h
-===================================================================
---- linux-2.6.35.y.orig/include/linux/seqlock.h
-+++ linux-2.6.35.y/include/linux/seqlock.h
-@@ -88,12 +88,12 @@ static __always_inline unsigned read_seq
- 	unsigned ret;
- 
- repeat:
--	ret = sl->sequence;
--	smp_rmb();
-+	ret = ACCESS_ONCE(sl->sequence);
- 	if (unlikely(ret & 1)) {
- 		cpu_relax();
- 		goto repeat;
- 	}
-+	smp_rmb();
- 
- 	return ret;
- }
+thanks for the patch !
+-mike
