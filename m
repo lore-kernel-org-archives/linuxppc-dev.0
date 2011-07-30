@@ -2,9 +2,9 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1AE5CB6F7A
+	by ozlabs.org (Postfix) with ESMTPS id E72D5B71E2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 31 Jul 2011 09:56:02 +1000 (EST)
+	Sun, 31 Jul 2011 09:56:06 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alex Williamson <alex.williamson@redhat.com>
@@ -12,8 +12,8 @@ In-Reply-To: <1312050011.2265.185.camel@x201.home>
 References: <1311983933.8793.42.camel@pasglop>
 	<1312050011.2265.185.camel@x201.home>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 31 Jul 2011 09:54:57 +1000
-Message-ID: <1312070097.8793.786.camel@pasglop>
+Date: Sun, 31 Jul 2011 09:55:23 +1000
+Message-ID: <1312070123.8793.787.camel@pasglop>
 Mime-Version: 1.0
 Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
 	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
