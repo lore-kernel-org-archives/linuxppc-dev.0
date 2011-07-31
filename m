@@ -1,20 +1,18 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6C91B6F8C
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Aug 2011 00:56:42 +1000 (EST)
-Message-ID: <4E356D28.3010309@embedded-sol.com>
-Date: Sun, 31 Jul 2011 17:56:40 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id BC36AB6F98
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Aug 2011 01:19:38 +1000 (EST)
+Message-ID: <4E357285.8080708@grandegger.com>
+Date: Sun, 31 Jul 2011 17:19:33 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Tabi Timur-B04825 <B04825@freescale.com>
+To: Felix Radensky <felix@embedded-sol.com>
 Subject: Re: GPIO IRQ on P1022
 References: <4E35309E.4000202@embedded-sol.com>
-	<4E355FB7.3030904@freescale.com>
-In-Reply-To: <4E355FB7.3030904@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <4E35309E.4000202@embedded-sol.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Tabi Timur-B04825 <B04825@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Timur,
+On 07/31/2011 12:38 PM, Felix Radensky wrote:
+> Hi,
+> 
+> I'm running kernel 3.0 on a custom board based on Freescale P1022.
+> The interrupt line of on-board FPGA is connected to GPIO2_9. FPGA
+> IRQ is level, active low. The GPIOs are mapped like this:
+> 
+> GPIOs 160-191, /soc@ffe00000/gpio-controller@f200:
+> 
+> GPIOs 192-223, /soc@ffe00000/gpio-controller@f100:
+> 
+> GPIOs 224-255, /soc@ffe00000/gpio-controller@f000:
+> 
+> I've verified that pin mixing is done correctly, and the
+> FPGA IRQ line is indeed configured as GPIO.
+> 
+> I have the following code in my driver:
+> 
+>     #define FPGA_IRQ_GPIO 169
+> 
+>     err = gpio_request(FPGA_IRQ_GPIO, "FPGA IRQ");
+>     if (err) {
+>         printk(KERN_ERR "Failed to request FPGA IRQ GPIO, err=%d\n", err);
+>         goto out;
+>     }
+> 
+>     gpio_direction_input(FPGA_IRQ_GPIO);
+> 
+>     irq = gpio_to_irq(FPGA_IRQ_GPIO);
+>     if (irq < 0) {
+>         printk(KERN_ERR "Failed to map FPGA GPIO to IRQ\n");
+>         goto out;
+>     }
+> 
+>     err = request_irq(irq, gsat_interrupt,
+>               IRQF_TRIGGER_FALLING, DRVNAME, priv);
+> 
+>     Interrupt handler reads FPGA interrupt status register to clear
+> interrupt
+>     and exits.
+> 
+>     What happens when I load my driver is single execution of interrupt
+> handler
+>     followed by system freeze. Even if I call disable_irq() in interrupt
+> handler the
+>     system still freezes.
 
-On 07/31/2011 04:59 PM, Tabi Timur-B04825 wrote:
-> Felix Radensky wrote:
->>       What happens when I load my driver is single execution of interrupt
->> handler
->>       followed by system freeze. Even if I call disable_irq() in interrupt
->> handler the
->>       system still freezes.
-> I don't know anything about the GPIO layer, but I think you're going to
-> need to debug this a little more.  Where exactly is the freeze?  Are you
-> sure the interrupt handler is being called only once?  Perhaps you're not
-> clearing the interrupt status and your handler is being called repeatedly?
->
+Try disable_irq_nosync() instead.
 
-It was verified with oscilloscope that interrupt handler clears the
-interrupt. The interrupt line goes from low to high and stays there.
-I have prints in interrupt handler, they appear only once.
-
-It's difficult to say where it freezes. I've tried magic sysrq on serial
-console, but got nothing.
-
-
-Felix.
+Wolfgang.
