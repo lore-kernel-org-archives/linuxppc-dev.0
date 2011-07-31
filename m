@@ -1,27 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 847D4B7091
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Aug 2011 00:26:35 +1000 (EST)
-Received: by mail-ww0-f45.google.com with SMTP id 40so3795542wwj.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 31 Jul 2011 07:26:34 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Sat, 30 Jul 2011 22:03:28 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Shaohui Xie <Shaohui.Xie@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: fix memory controller compatible for edac
-Message-ID: <20110731040328.GK24334@ponder.secretlab.ca>
-References: <1311659193-694-1-git-send-email-Shaohui.Xie@freescale.com>
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6C91B6F8C
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Aug 2011 00:56:42 +1000 (EST)
+Message-ID: <4E356D28.3010309@embedded-sol.com>
+Date: Sun, 31 Jul 2011 17:56:40 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1311659193-694-1-git-send-email-Shaohui.Xie@freescale.com>
-Cc: mm-commits@vger.kernel.org, kumar.gala@freescale.com, avorontsov@mvista.com,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-	davem@davemloft.net
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: Re: GPIO IRQ on P1022
+References: <4E35309E.4000202@embedded-sol.com>
+	<4E355FB7.3030904@freescale.com>
+In-Reply-To: <4E355FB7.3030904@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 26, 2011 at 01:46:33PM +0800, Shaohui Xie wrote:
-> compatible in dts has been changed, so driver need to update accordingly.
-> 
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> ---
-> apply for http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-> 'next' branch.
-> 
->  drivers/edac/mpc85xx_edac.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-> index 13f6cc5..94c064a 100644
-> --- a/drivers/edac/mpc85xx_edac.c
-> +++ b/drivers/edac/mpc85xx_edac.c
-> @@ -1253,7 +1253,7 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
->  	{ .compatible = "fsl,p1020-memory-controller", },
->  	{ .compatible = "fsl,p1021-memory-controller", },
->  	{ .compatible = "fsl,p2020-memory-controller", },
-> -	{ .compatible = "fsl,p4080-memory-controller", },
-> +	{ .compatible = "fsl,qoriq-memory-controller", },
+Hi Timur,
 
-Are there any implementations in the field that depend on the p4080 value?
+On 07/31/2011 04:59 PM, Tabi Timur-B04825 wrote:
+> Felix Radensky wrote:
+>>       What happens when I load my driver is single execution of interrupt
+>> handler
+>>       followed by system freeze. Even if I call disable_irq() in interrupt
+>> handler the
+>>       system still freezes.
+> I don't know anything about the GPIO layer, but I think you're going to
+> need to debug this a little more.  Where exactly is the freeze?  Are you
+> sure the interrupt handler is being called only once?  Perhaps you're not
+> clearing the interrupt status and your handler is being called repeatedly?
+>
 
-g.
+It was verified with oscilloscope that interrupt handler clears the
+interrupt. The interrupt line goes from low to high and stays there.
+I have prints in interrupt handler, they appear only once.
+
+It's difficult to say where it freezes. I've tried magic sysrq on serial
+console, but got nothing.
+
+
+Felix.
