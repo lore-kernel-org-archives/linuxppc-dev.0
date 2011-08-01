@@ -2,21 +2,18 @@ Return-Path: <baruch@tkos.co.il>
 Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8792FB6FD7
+	by ozlabs.org (Postfix) with ESMTPS id CD701B7091
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Aug 2011 15:03:27 +1000 (EST)
-Date: Mon, 1 Aug 2011 08:02:51 +0300
+	Mon,  1 Aug 2011 15:13:34 +1000 (EST)
 From: Baruch Siach <baruch@tkos.co.il>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [RFC PATCH] powerpc: 85xx: Make e500/e500v2 depend on !E500MC
-Message-ID: <20110801050251.GB5716@sapphire.tkos.co.il>
-References: <fef1cfc9a418ec5aa3302915dcb392882f7dd5d2.1308545584.git.baruch@tkos.co.il>
-	<CAOZdJXVsJUrCaNVHjhLkL=-GwAr79S9xQdoRLvjFG--k1jdRvw@mail.gmail.com>
-	<4E31C04D.7040700@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E31C04D.7040700@freescale.com>
-Cc: Kumar Gala <kumar.gala@freescale.com>, linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: 85xx: separate e500 from e500mc
+Date: Mon,  1 Aug 2011 08:12:36 +0300
+Message-Id: <1fb57aeaeefcc40f6646d026caba8d40371d18fb.1312175199.git.baruch@tkos.co.il>
+In-Reply-To: <20110801045938.GA5716@sapphire.tkos.co.il>
+References: <20110801045938.GA5716@sapphire.tkos.co.il>
+Cc: Scott Wood <scottwood@freescale.com>, Baruch Siach <baruch@tkos.co.il>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +23,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Timur,
+CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
+breaking clear_pages(), probably others too.
 
-On Thu, Jul 28, 2011 at 03:02:21PM -0500, Timur Tabi wrote:
->  wrote:
-> > On Sun, Jun 19, 2011 at 11:56 PM, Baruch Siach <baruch@tkos.co.il> wrote:
-> >> CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
-> >> breaking clear_pages(), probably others too.
-> >>
-> >> Cc: Kumar Gala <galak@kernel.crashing.org>
-> >> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> >> ---
-> >> Is this the right approach?
-> > 
-> > It doesn't work for me.
-> 
-> I also get this error if I try to build corenet32_smp_defconfig:
-> 
-> arch/powerpc/platforms/Kconfig.cputype:136:error: recursive dependency detected!
-> arch/powerpc/platforms/Kconfig.cputype:136:	symbol PPC_E500MC is selected by
-> P2040_RDB
-> arch/powerpc/platforms/85xx/Kconfig:176:	symbol P2040_RDB depends on PPC_E500MC
+This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
+depend on PPC_E500.
 
-Thanks for reporting. Where can I get this corenet32_smp_defconfig for 
-testing?
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+---
 
-baruch
+Sending again with the correct list address. Sorry for the noise.
 
+ arch/powerpc/platforms/85xx/Kconfig    |   12 +++++++++---
+ arch/powerpc/platforms/Kconfig.cputype |   27 +++++++++++++++------------
+ 2 files changed, 24 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index b6976e1..9530fca 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
+ 
+ if PPC32
+ 
++if PPC_E500
++
+ config MPC8540_ADS
+ 	bool "Freescale MPC8540 ADS"
+ 	select DEFAULT_UIMAGE
+@@ -155,10 +157,13 @@ config SBC8560
+ 	help
+ 	  This option enables support for the Wind River SBC8560 board
+ 
++endif # PPC_E500
++
++if PPC_E500MC
++
+ config P3041_DS
+ 	bool "Freescale P3041 DS"
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+@@ -169,7 +174,6 @@ config P3041_DS
+ config P4080_DS
+ 	bool "Freescale P4080 DS"
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+@@ -177,13 +181,15 @@ config P4080_DS
+ 	help
+ 	  This option enables support for the P4080 DS board
+ 
++endif # PPC_E500MC
++
+ endif # PPC32
+ 
+ config P5020_DS
+ 	bool "Freescale P5020 DS"
++	depends on PPC_E500MC
+ 	select DEFAULT_UIMAGE
+ 	select E500
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 2165b65..71e3cfb 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -11,13 +11,13 @@ choice
+ 	prompt "Processor Type"
+ 	depends on PPC32
+ 	help
+-	  There are five families of 32 bit PowerPC chips supported.
++	  There are six families of 32 bit PowerPC chips supported.
+ 	  The most common ones are the desktop and server CPUs (601, 603,
+ 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
+ 	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
+-	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
+-	  (85xx) each form a family of their own that is not compatible
+-	  with the others.
++	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx), e500
++	  (85xx), and e500mc each form a family of their own that is not
++	  compatible with the others.
+ 
+ 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
+ 
+@@ -25,10 +25,15 @@ config PPC_BOOK3S_32
+ 	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
+ 	select PPC_FPU
+ 
+-config PPC_85xx
+-	bool "Freescale 85xx"
++config PPC_E500
++	bool "Freescale e500v1/e500v2 (85xx, P10xx, P20xx)"
++	select PPC_85xx
+ 	select E500
+ 
++config PPC_E500MC
++	bool "Freescale e500mc/e5500 (P30xx, P40xx, P50xx)"
++	select PPC_85xx
++
+ config PPC_8xx
+ 	bool "Freescale 8xx"
+ 	select FSL_SOC
+@@ -128,15 +133,13 @@ config TUNE_CELL
+ config 8xx
+ 	bool
+ 
+-config E500
++config PPC_85xx
++	bool
+ 	select FSL_EMB_PERFMON
+ 	select PPC_FSL_BOOK3E
+-	bool
+ 
+-config PPC_E500MC
+-	bool "e500mc Support"
+-	select PPC_FPU
+-	depends on E500
++config E500
++	bool
+ 
+ config PPC_FPU
+ 	bool
 -- 
-                                                     ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+1.7.5.4
