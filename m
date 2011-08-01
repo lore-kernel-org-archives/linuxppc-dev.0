@@ -1,23 +1,27 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 986BBB6F6F
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Aug 2011 05:28:33 +1000 (EST)
-Message-ID: <4E35ACE0.3020908@embedded-sol.com>
-Date: Sun, 31 Jul 2011 22:28:32 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <B21989@freescale.com>
+Received: from VA3EHSOBE007.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 45CA5B6FD1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Aug 2011 12:45:09 +1000 (EST)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: RE: [PATCH] powerpc/85xx: fix memory controller compatible for edac
+Date: Mon, 1 Aug 2011 02:44:53 +0000
+Message-ID: <267A3B246C22C34A8E574051858E0770110F6C@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1311659193-694-1-git-send-email-Shaohui.Xie@freescale.com>
+	<20110731040328.GK24334@ponder.secretlab.ca>
+In-Reply-To: <20110731040328.GK24334@ponder.secretlab.ca>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: GPIO IRQ on P1022
-References: <4E35309E.4000202@embedded-sol.com>
-	<4E357285.8080708@grandegger.com>
-	<4E357A1A.1080606@embedded-sol.com>
-	<4E3595B6.4010406@grandegger.com>
-In-Reply-To: <4E3595B6.4010406@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Tabi Timur-B04825 <B04825@freescale.com>
+Cc: "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"avorontsov@mvista.com" <avorontsov@mvista.com>,
+	Gala Kumar-B11780 <B11780@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wolfgang,
-
-On 07/31/2011 08:49 PM, Wolfgang Grandegger wrote:
-> Hi Felix,
+>From: Grant Likely [mailto:glikely@secretlab.ca] On Behalf Of Grant Likely
+>Sent: Sunday, July 31, 2011 12:03 PM
+>To: Xie Shaohui-B21989
+>Cc: linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; mm-
+>commits@vger.kernel.org; avorontsov@mvista.com; davem@davemloft.net;
+>akpm@linux-foundation.org
+>Subject: Re: [PATCH] powerpc/85xx: fix memory controller compatible for
+>edac
 >
-> On 07/31/2011 05:51 PM, Felix Radensky wrote:
->> Hi Wolfgang,
+>On Tue, Jul 26, 2011 at 01:46:33PM +0800, Shaohui Xie wrote:
+>> compatible in dts has been changed, so driver need to update accordingly=
+.
 >>
->> On 07/31/2011 06:19 PM, Wolfgang Grandegger wrote:
->>> On 07/31/2011 12:38 PM, Felix Radensky wrote:
->>>> Hi,
->>>>
->>>> I'm running kernel 3.0 on a custom board based on Freescale P1022.
->>>> The interrupt line of on-board FPGA is connected to GPIO2_9. FPGA
->>>> IRQ is level, active low. The GPIOs are mapped like this:
-> Here you say that it's a level sensitive interrupt but ...
+>> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+>> ---
+>> apply for
+>> http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+>> 'next' branch.
+>>
+>>  drivers/edac/mpc85xx_edac.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+>> index 13f6cc5..94c064a 100644
+>> --- a/drivers/edac/mpc85xx_edac.c
+>> +++ b/drivers/edac/mpc85xx_edac.c
+>> @@ -1253,7 +1253,7 @@ static struct of_device_id
+>mpc85xx_mc_err_of_match[] =3D {
+>>  	{ .compatible =3D "fsl,p1020-memory-controller", },
+>>  	{ .compatible =3D "fsl,p1021-memory-controller", },
+>>  	{ .compatible =3D "fsl,p2020-memory-controller", },
+>> -	{ .compatible =3D "fsl,p4080-memory-controller", },
+>> +	{ .compatible =3D "fsl,qoriq-memory-controller", },
 >
->>>> GPIOs 160-191, /soc@ffe00000/gpio-controller@f200:
->>>>
->>>> GPIOs 192-223, /soc@ffe00000/gpio-controller@f100:
->>>>
->>>> GPIOs 224-255, /soc@ffe00000/gpio-controller@f000:
->>>>
->>>> I've verified that pin mixing is done correctly, and the
->>>> FPGA IRQ line is indeed configured as GPIO.
->>>>
->>>> I have the following code in my driver:
->>>>
->>>>       #define FPGA_IRQ_GPIO 169
->>>>
->>>>       err = gpio_request(FPGA_IRQ_GPIO, "FPGA IRQ");
->>>>       if (err) {
->>>>           printk(KERN_ERR "Failed to request FPGA IRQ GPIO, err=%d\n",
->>>> err);
->>>>           goto out;
->>>>       }
->>>>
->>>>       gpio_direction_input(FPGA_IRQ_GPIO);
->>>>
->>>>       irq = gpio_to_irq(FPGA_IRQ_GPIO);
->>>>       if (irq<   0) {
->>>>           printk(KERN_ERR "Failed to map FPGA GPIO to IRQ\n");
->>>>           goto out;
->>>>       }
->>>>
->>>>       err = request_irq(irq, gsat_interrupt,
->>>>                 IRQF_TRIGGER_FALLING, DRVNAME, priv);
-> .. you request here an edge triggered interrupt.
+>Are there any implementations in the field that depend on the p4080 value?
+>
 
-Yes, that is is correct. mpc8xxx_gpio.c driver does not allow
-level sensitive interrupts, so I had no choice but to specify
-IRQF_TRIGGER_FALLING.
+[Xie Shaohui] The 'p4080' is introduced by commit cd1542c8197
 
-Felix.
+edac: mpc85xx: add support for new MPCxxx/Pxxxx EDAC controllers
+
+Simply add proper IDs into the device table.
+
+
+My patch intended for fix the compliance of dts and driver.
+
+
+
+Best Regards,=20
+Shaohui Xie
