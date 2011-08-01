@@ -1,12 +1,13 @@
 Return-Path: <geert.uytterhoeven@gmail.com>
 MIME-Version: 1.0
 Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1312228986-32307-7-git-send-email-a.heider@gmail.com>
+In-Reply-To: <1312228986-32307-10-git-send-email-a.heider@gmail.com>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1312228986-32307-7-git-send-email-a.heider@gmail.com>
-Date: Mon, 1 Aug 2011 22:29:23 +0200
-Message-ID: <CAMuHMdUgK7ZkaNA+DVg0_TL8fz+AfEOTZqW5WdOY5ybwSP=hcA@mail.gmail.com>
-Subject: Re: [Cbe-oss-dev] [PATCH 06/15] ps3flash: Fix region align checks
+	<1312228986-32307-10-git-send-email-a.heider@gmail.com>
+Date: Mon, 1 Aug 2011 22:30:39 +0200
+Message-ID: <CAMuHMdVq+WSjZKVZk1riEFX6NgW6Y+8EhCc0MqMtuDK5KAD7dw@mail.gmail.com>
+Subject: Re: [Cbe-oss-dev] [PATCH 09/15] ps3: Limit the number of regions per
+	storage device
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Andre Heider <a.heider@gmail.com>
 Content-Type: text/plain; charset=UTF-8
@@ -21,87 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 1, 2011 at 22:02, Andre Heider <a.heider@gmail.com> wrote:
-> The region fields used by the align checks are set in
-> ps3stor_setup(), so move those after that call.
+On Mon, Aug 1, 2011 at 22:03, Andre Heider <a.heider@gmail.com> wrote:
+> There can be only 8 regions, add a sanity check
 
-Are you sure?
-Aren't they set in
-arch/powerpc/platforms/ps3/device-init.c:ps3_setup_storage_dev()?
+Why can there be only 8 regions?
 
 > Signed-off-by: Andre Heider <a.heider@gmail.com>
 > ---
-> =C2=A0drivers/char/ps3flash.c | =C2=A0 30 +++++++++++++++---------------
-> =C2=A01 files changed, 15 insertions(+), 15 deletions(-)
+> =C2=A0arch/powerpc/include/asm/ps3stor.h =C2=A0 =C2=A0 =C2=A0 | =C2=A0 =
+=C2=A01 +
+> =C2=A0arch/powerpc/platforms/ps3/device-init.c | =C2=A0 =C2=A08 ++++++++
+> =C2=A02 files changed, 9 insertions(+), 0 deletions(-)
 >
-> diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
-> index 85c004a..69c734a 100644
-> --- a/drivers/char/ps3flash.c
-> +++ b/drivers/char/ps3flash.c
-> @@ -360,21 +360,6 @@ static int __devinit ps3flash_probe(struct ps3_syste=
-m_bus_device *_dev)
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0int error;
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned long tmp;
+> diff --git a/arch/powerpc/include/asm/ps3stor.h b/arch/powerpc/include/as=
+m/ps3stor.h
+> index 6fcaf71..d51e53c 100644
+> --- a/arch/powerpc/include/asm/ps3stor.h
+> +++ b/arch/powerpc/include/asm/ps3stor.h
+> @@ -25,6 +25,7 @@
 >
-> - =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].start*dev->b=
-lk_size;
-> - =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
-,
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 "%s:%u region start %lu is not aligned\n", __func__,
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 __LINE__, tmp);
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
-> - =C2=A0 =C2=A0 =C2=A0 }
-> - =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].size*dev->bl=
-k_size;
-> - =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
-,
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 "%s:%u region size %lu is not aligned\n", __func__,
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 __LINE__, tmp);
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
-> - =C2=A0 =C2=A0 =C2=A0 }
-> -
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0/* use static buffer, kmalloc cannot allocate =
-256 KiB */
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (!ps3flash_bounce_buffer.address)
+> =C2=A0#include <asm/ps3.h>
+>
+> +#define PS3_STORAGE_MAX_REGIONS =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0(8)
+>
+> =C2=A0struct ps3_storage_region {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int id;
+> diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/plat=
+forms/ps3/device-init.c
+> index 6c4b583..830d741 100644
+> --- a/arch/powerpc/platforms/ps3/device-init.c
+> +++ b/arch/powerpc/platforms/ps3/device-init.c
+> @@ -349,6 +349,14 @@ static int ps3_setup_storage_dev(const struct ps3_re=
+pository_device *repo,
 > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV;
-> @@ -405,6 +390,21 @@ static int __devinit ps3flash_probe(struct ps3_syste=
-m_bus_device *_dev)
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (error)
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0goto fail_free_pri=
-v;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0}
 >
-> + =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].start*dev->b=
-lk_size;
-> + =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
-,
+> + =C2=A0 =C2=A0 =C2=A0 if (num_regions > PS3_STORAGE_MAX_REGIONS) {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 pr_warning("%s:%u: dev=
+ice %u:%u reported %u regions, "
 > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 "%s:%u region start %lu is not aligned\n", __func__,
+=C2=A0 =C2=A0 =C2=A0"limiting to %u\n", __func__, __LINE__,
 > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 __LINE__, tmp);
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
-> + =C2=A0 =C2=A0 =C2=A0 }
-> + =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].size*dev->bl=
-k_size;
-> + =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
-,
+=C2=A0 =C2=A0 =C2=A0num_regions, repo->bus_index, repo->dev_index,
 > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 "%s:%u region size %lu is not aligned\n", __func__,
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 __LINE__, tmp);
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
+=C2=A0 =C2=A0 =C2=A0PS3_STORAGE_MAX_REGIONS);
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 num_regions =3D PS3_ST=
+ORAGE_MAX_REGIONS;
 > + =C2=A0 =C2=A0 =C2=A0 }
 > +
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0ps3flash_misc.parent =3D &dev->sbd.core;
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0error =3D misc_register(&ps3flash_misc);
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (error) {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_debug("%s:%u: (%u:%u:%u): port %llu blk_siz=
+e %llu num_blocks %llu "
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 "num_regions %u\n=
+", __func__, __LINE__, repo->bus_index,
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 repo->dev_index, =
+repo->dev_type, port, blk_size, num_blocks,
 
 Gr{oetje,eeting}s,
 
