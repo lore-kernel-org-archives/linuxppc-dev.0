@@ -1,12 +1,24 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Lack! of! ibm,io-events! not! that! important!
-In-reply-to: <20110801153004.0e8af5df@kryten>
-References: <20110801153004.0e8af5df@kryten>
-Date: Mon, 01 Aug 2011 20:29:12 +1000
-Message-ID: <21003.1312194552@neuling.org>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 598BDB6F98
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Aug 2011 20:39:56 +1000 (EST)
+Subject: Re: [PATCH] perf: powerpc: Disable pagefaults during callchain
+	stack read
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <1312192792.2617.381.camel@laptop>
+References: <1312059200-11563-1-git-send-email-dsahern@gmail.com>
+	<1312192792.2617.381.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Aug 2011 20:39:07 +1000
+Message-ID: <1312195147.8793.794.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, anton@samba.org,
+	acme@ghostprotocols.net, David Ahern <dsahern@gmail.com>,
+	mingo@elte.hu, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,52 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <20110801153004.0e8af5df@kryten> you wrote:
+On Mon, 2011-08-01 at 11:59 +0200, Peter Zijlstra wrote:
+> > Signed-off-by: David Ahern <dsahern@gmail.com>
+> > CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > CC: Anton Blanchard <anton@samba.org> 
 > 
-> The ibm,io-events code is a bit verbose with its error messages.
-> Reverse the reporting so we only print when we successfully enable
-> I/O event interrupts.
+> Hmm, Paul, didn't you fix something like this early on? Anyway, I've
+> no
+> objections since I'm really not familiar enough with the PPC side of
+> things. 
 
-NAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+I'm travelling so I haven't had a chance to review properly or even test
+but it looks like an ad-hoc fix for the immediate problem.
 
-Mikey
+Ultimately, I want to rework that stuff to do a __gup_fast like x86 does
+(maybe as a fallback from an attempt at access first) so we work around
+access permissions blocked by lack of dirty/accessed bits but in the
+meantime, this should fix the immediate issue.
 
-PS :-)
-PPS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: linux-powerpc/arch/powerpc/platforms/pseries/io_event_irq.c
-> ===================================================================
-> --- linux-powerpc.orig/arch/powerpc/platforms/pseries/io_event_irq.c	2011-07
--26 08:50:11.291231586 +1000
-> +++ linux-powerpc/arch/powerpc/platforms/pseries/io_event_irq.c	2011-07
--26 08:51:39.992772071 +1000
-> @@ -212,17 +212,15 @@ static int __init ioei_init(void)
->  	struct device_node *np;
->  
->  	ioei_check_exception_token = rtas_token("check-exception");
-> -	if (ioei_check_exception_token == RTAS_UNKNOWN_SERVICE) {
-> -		pr_warning("IO Event IRQ not supported on this system !\n");
-> +	if (ioei_check_exception_token == RTAS_UNKNOWN_SERVICE)
->  		return -ENODEV;
-> -	}
-> +
->  	np = of_find_node_by_path("/event-sources/ibm,io-events");
->  	if (np) {
->  		request_event_sources_irqs(np, ioei_interrupt, "IO_EVENT");
-> +		pr_info("IBM I/O event interrupts enabled\n");
->  		of_node_put(np);
->  	} else {
-> -		pr_err("io_event_irq: No ibm,io-events on system! "
-> -		       "IO Event interrupt disabled.\n");
->  		return -ENODEV;
->  	}
->  	return 0;
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Cheers,
+Ben.
