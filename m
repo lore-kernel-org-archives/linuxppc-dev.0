@@ -1,22 +1,17 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 64F70B70B7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Aug 2011 06:28:02 +1000 (EST)
-Subject: Re: kvm PCI assignment & VFIO ramblings
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Date: Mon, 01 Aug 2011 14:27:36 -0600
-In-Reply-To: <4E356221.6010302@redhat.com>
-References: <1311983933.8793.42.camel@pasglop> <4E356221.6010302@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1312230476.2653.395.camel@bling.home>
-Mime-Version: 1.0
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
-	Paul Mackerras <pmac@au1.ibm.com>, David Gibson <dwg@au1.ibm.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <geert.uytterhoeven@gmail.com>
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1312228986-32307-7-git-send-email-a.heider@gmail.com>
+References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
+	<1312228986-32307-7-git-send-email-a.heider@gmail.com>
+Date: Mon, 1 Aug 2011 22:29:23 +0200
+Message-ID: <CAMuHMdUgK7ZkaNA+DVg0_TL8fz+AfEOTZqW5WdOY5ybwSP=hcA@mail.gmail.com>
+Subject: Re: [Cbe-oss-dev] [PATCH 06/15] ps3flash: Fix region align checks
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andre Heider <a.heider@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geoff Levand <geoff@infradead.org>, cbe-oss-dev@lists.ozlabs.org,
+	Hector Martin <hector@marcansoft.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +21,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-07-31 at 17:09 +0300, Avi Kivity wrote:
-> On 07/30/2011 02:58 AM, Benjamin Herrenschmidt wrote:
-> > Due to our paravirt nature, we don't need to masquerade the MSI-X table
-> > for example. At all. If the guest configures crap into it, too bad, it
-> > can only shoot itself in the foot since the host bridge enforce
-> > validation anyways as I explained earlier. Because it's all paravirt, we
-> > don't need to "translate" the interrupt vectors&  addresses, the guest
-> > will call hyercalls to configure things anyways.
-> 
-> So, you have interrupt redirection?  That is, MSI-x table values encode 
-> the vcpu, not pcpu?
-> 
-> Alex, with interrupt redirection, we can skip this as well?  Perhaps 
-> only if the guest enables interrupt redirection?
+On Mon, Aug 1, 2011 at 22:02, Andre Heider <a.heider@gmail.com> wrote:
+> The region fields used by the align checks are set in
+> ps3stor_setup(), so move those after that call.
 
-It's not clear to me how we could skip it.  With VT-d, we'd have to
-implement an emulated interrupt remapper and hope that the guest picks
-unused indexes in the host interrupt remapping table before it could do
-anything useful with direct access to the MSI-X table.  Maybe AMD IOMMU
-makes this easier?  Thanks,
+Are you sure?
+Aren't they set in
+arch/powerpc/platforms/ps3/device-init.c:ps3_setup_storage_dev()?
 
-Alex
+> Signed-off-by: Andre Heider <a.heider@gmail.com>
+> ---
+> =C2=A0drivers/char/ps3flash.c | =C2=A0 30 +++++++++++++++---------------
+> =C2=A01 files changed, 15 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+> index 85c004a..69c734a 100644
+> --- a/drivers/char/ps3flash.c
+> +++ b/drivers/char/ps3flash.c
+> @@ -360,21 +360,6 @@ static int __devinit ps3flash_probe(struct ps3_syste=
+m_bus_device *_dev)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0int error;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned long tmp;
+>
+> - =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].start*dev->b=
+lk_size;
+> - =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
+,
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 "%s:%u region start %lu is not aligned\n", __func__,
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 __LINE__, tmp);
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
+> - =C2=A0 =C2=A0 =C2=A0 }
+> - =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].size*dev->bl=
+k_size;
+> - =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
+,
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 "%s:%u region size %lu is not aligned\n", __func__,
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 __LINE__, tmp);
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
+> - =C2=A0 =C2=A0 =C2=A0 }
+> -
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0/* use static buffer, kmalloc cannot allocate =
+256 KiB */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (!ps3flash_bounce_buffer.address)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV;
+> @@ -405,6 +390,21 @@ static int __devinit ps3flash_probe(struct ps3_syste=
+m_bus_device *_dev)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (error)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0goto fail_free_pri=
+v;
+>
+> + =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].start*dev->b=
+lk_size;
+> + =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
+,
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 "%s:%u region start %lu is not aligned\n", __func__,
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 __LINE__, tmp);
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
+> + =C2=A0 =C2=A0 =C2=A0 }
+> + =C2=A0 =C2=A0 =C2=A0 tmp =3D dev->regions[dev->region_idx].size*dev->bl=
+k_size;
+> + =C2=A0 =C2=A0 =C2=A0 if (tmp % FLASH_BLOCK_SIZE) {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(&dev->sbd.core=
+,
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 "%s:%u region size %lu is not aligned\n", __func__,
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 __LINE__, tmp);
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINVAL;
+> + =C2=A0 =C2=A0 =C2=A0 }
+> +
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0ps3flash_misc.parent =3D &dev->sbd.core;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0error =3D misc_register(&ps3flash_misc);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (error) {
+
+Gr{oetje,eeting}s,
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
