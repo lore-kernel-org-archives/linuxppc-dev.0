@@ -1,9 +1,9 @@
 Return-Path: <a.heider@gmail.com>
 From: Andre Heider <a.heider@gmail.com>
 To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 03/15] [PS3] Add region 1 memory early
-Date: Mon,  1 Aug 2011 22:02:54 +0200
-Message-Id: <1312228986-32307-4-git-send-email-a.heider@gmail.com>
+Subject: [PATCH 06/15] ps3flash: Fix region align checks
+Date: Mon,  1 Aug 2011 22:02:57 +0200
+Message-Id: <1312228986-32307-7-git-send-email-a.heider@gmail.com>
 In-Reply-To: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
@@ -17,94 +17,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hector Martin <hector@marcansoft.com>
+The region fields used by the align checks are set in
+ps3stor_setup(), so move those after that call.
 
-Signed-off-by: Hector Martin <hector@marcansoft.com>
-[a.heider: Various cleanups to make checkpatch.pl happy]
 Signed-off-by: Andre Heider <a.heider@gmail.com>
 ---
- arch/powerpc/platforms/ps3/mm.c |   62 +++++++--------------------------------
- 1 files changed, 11 insertions(+), 51 deletions(-)
+ drivers/char/ps3flash.c |   30 +++++++++++++++---------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index 30bb096..15876d6 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -331,57 +331,6 @@ static int ps3_mm_get_devtree_highmem(struct mem_region *r)
- 	}
- }
+diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+index 85c004a..69c734a 100644
+--- a/drivers/char/ps3flash.c
++++ b/drivers/char/ps3flash.c
+@@ -360,21 +360,6 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
+ 	int error;
+ 	unsigned long tmp;
  
--/**
-- * ps3_mm_add_memory - hot add memory
-- */
--
--static int __init ps3_mm_add_memory(void)
--{
--	int result;
--	unsigned long start_addr;
--	unsigned long start_pfn;
--	unsigned long nr_pages;
--
--	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
--		return -ENODEV;
--
--	BUG_ON(!mem_init_done);
--
--	if (!map.r1.size) {
--		DBG("%s:%d: no region 1, not adding memory\n",
--		    __func__, __LINE__);
--		return 0;
+-	tmp = dev->regions[dev->region_idx].start*dev->blk_size;
+-	if (tmp % FLASH_BLOCK_SIZE) {
+-		dev_err(&dev->sbd.core,
+-			"%s:%u region start %lu is not aligned\n", __func__,
+-			__LINE__, tmp);
+-		return -EINVAL;
+-	}
+-	tmp = dev->regions[dev->region_idx].size*dev->blk_size;
+-	if (tmp % FLASH_BLOCK_SIZE) {
+-		dev_err(&dev->sbd.core,
+-			"%s:%u region size %lu is not aligned\n", __func__,
+-			__LINE__, tmp);
+-		return -EINVAL;
 -	}
 -
--	start_addr = map.rm.size;
--	start_pfn = start_addr >> PAGE_SHIFT;
--	nr_pages = (map.r1.size + PAGE_SIZE - 1) >> PAGE_SHIFT;
--
--	DBG("%s:%d: start_addr %lxh, start_pfn %lxh, nr_pages %lxh\n",
--		__func__, __LINE__, start_addr, start_pfn, nr_pages);
--
--	result = add_memory(0, start_addr, map.r1.size);
--
--	if (result) {
--		pr_err("%s:%d: add_memory failed: (%d)\n",
--			__func__, __LINE__, result);
--		return result;
--	}
--
--	memblock_add(start_addr, map.r1.size);
--	memblock_analyze();
--
--	result = online_pages(start_pfn, nr_pages);
--
--	if (result)
--		pr_err("%s:%d: online_pages failed: (%d)\n",
--			__func__, __LINE__, result);
--
--	return result;
--}
--
--device_initcall(ps3_mm_add_memory);
--
- /*============================================================================*/
- /* dma routines                                                               */
- /*============================================================================*/
-@@ -1280,6 +1229,17 @@ void __init ps3_mm_init(void)
- 	/* correct map.total for the real total amount of memory we use */
- 	map.total = map.rm.size + map.r1.size;
+ 	/* use static buffer, kmalloc cannot allocate 256 KiB */
+ 	if (!ps3flash_bounce_buffer.address)
+ 		return -ENODEV;
+@@ -405,6 +390,21 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
+ 	if (error)
+ 		goto fail_free_priv;
  
-+	if (!map.r1.size) {
-+		DBG("%s:%d: no region 1, not adding memory\n",
-+			__func__, __LINE__);
-+	} else {
-+		DBG("%s:%d: adding memory: start %llxh, size %llxh\n",
-+			__func__, __LINE__, map.rm.size, map.r1.size);
-+
-+		memblock_add(map.rm.size, map.r1.size);
-+		memblock_analyze();
++	tmp = dev->regions[dev->region_idx].start*dev->blk_size;
++	if (tmp % FLASH_BLOCK_SIZE) {
++		dev_err(&dev->sbd.core,
++			"%s:%u region start %lu is not aligned\n", __func__,
++			__LINE__, tmp);
++		return -EINVAL;
++	}
++	tmp = dev->regions[dev->region_idx].size*dev->blk_size;
++	if (tmp % FLASH_BLOCK_SIZE) {
++		dev_err(&dev->sbd.core,
++			"%s:%u region size %lu is not aligned\n", __func__,
++			__LINE__, tmp);
++		return -EINVAL;
 +	}
 +
- 	DBG(" <- %s:%d\n", __func__, __LINE__);
- }
- 
+ 	ps3flash_misc.parent = &dev->sbd.core;
+ 	error = misc_register(&ps3flash_misc);
+ 	if (error) {
 -- 
 1.7.5.4
