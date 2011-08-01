@@ -1,9 +1,10 @@
 Return-Path: <a.heider@gmail.com>
 From: Andre Heider <a.heider@gmail.com>
 To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 09/15] ps3: Limit the number of regions per storage device
-Date: Mon,  1 Aug 2011 22:03:00 +0200
-Message-Id: <1312228986-32307-10-git-send-email-a.heider@gmail.com>
+Subject: [PATCH 08/15] ps3: Only prealloc the flash bounce buffer for the
+	OtherOS lpar
+Date: Mon,  1 Aug 2011 22:02:59 +0200
+Message-Id: <1312228986-32307-9-git-send-email-a.heider@gmail.com>
 In-Reply-To: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
@@ -17,44 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There can be only 8 regions, add a sanity check
+It's only used by the ps3flash driver, which only supports the
+OtherOS lpar.
 
 Signed-off-by: Andre Heider <a.heider@gmail.com>
 ---
- arch/powerpc/include/asm/ps3stor.h       |    1 +
- arch/powerpc/platforms/ps3/device-init.c |    8 ++++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/ps3/setup.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ps3stor.h b/arch/powerpc/include/asm/ps3stor.h
-index 6fcaf71..d51e53c 100644
---- a/arch/powerpc/include/asm/ps3stor.h
-+++ b/arch/powerpc/include/asm/ps3stor.h
-@@ -25,6 +25,7 @@
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index f430279..923be8a 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -233,7 +233,10 @@ static void __init ps3_setup_arch(void)
+ #endif
  
- #include <asm/ps3.h>
- 
-+#define PS3_STORAGE_MAX_REGIONS		(8)
- 
- struct ps3_storage_region {
- 	unsigned int id;
-diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
-index 6c4b583..830d741 100644
---- a/arch/powerpc/platforms/ps3/device-init.c
-+++ b/arch/powerpc/platforms/ps3/device-init.c
-@@ -349,6 +349,14 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
- 		return -ENODEV;
- 	}
- 
-+	if (num_regions > PS3_STORAGE_MAX_REGIONS) {
-+		pr_warning("%s:%u: device %u:%u reported %u regions, "
-+			   "limiting to %u\n", __func__, __LINE__,
-+			   num_regions, repo->bus_index, repo->dev_index,
-+			   PS3_STORAGE_MAX_REGIONS);
-+		num_regions = PS3_STORAGE_MAX_REGIONS;
-+	}
+ 	prealloc_ps3fb_videomemory();
+-	prealloc_ps3flash_bounce_buffer();
 +
- 	pr_debug("%s:%u: (%u:%u:%u): port %llu blk_size %llu num_blocks %llu "
- 		 "num_regions %u\n", __func__, __LINE__, repo->bus_index,
- 		 repo->dev_index, repo->dev_type, port, blk_size, num_blocks,
++	/* the ps3flash driver only works for OtherOS */
++	if (ps3_get_ss_laid() == PS3_SS_LAID_OTHEROS)
++		prealloc_ps3flash_bounce_buffer();
+ 
+ 	ppc_md.power_save = ps3_power_save;
+ 	ps3_os_area_init();
 -- 
 1.7.5.4
