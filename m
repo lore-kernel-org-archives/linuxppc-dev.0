@@ -1,19 +1,13 @@
-Return-Path: <baruch@tkos.co.il>
-Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD701B7091
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Aug 2011 15:13:34 +1000 (EST)
-From: Baruch Siach <baruch@tkos.co.il>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: 85xx: separate e500 from e500mc
-Date: Mon,  1 Aug 2011 08:12:36 +0300
-Message-Id: <1fb57aeaeefcc40f6646d026caba8d40371d18fb.1312175199.git.baruch@tkos.co.il>
-In-Reply-To: <20110801045938.GA5716@sapphire.tkos.co.il>
-References: <20110801045938.GA5716@sapphire.tkos.co.il>
-Cc: Scott Wood <scottwood@freescale.com>, Baruch Siach <baruch@tkos.co.il>,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <anton@samba.org>
+Date: Mon, 1 Aug 2011 15:27:35 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Move kdump default base address to half RMO size
+	on 64bit
+Message-ID: <20110801152735.509ac873@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,134 +17,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
-breaking clear_pages(), probably others too.
 
-This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
-depend on PPC_E500.
+We are seeing boot failures on some very large boxes even with
+commit b5416ca9f824 (powerpc: Move kdump default base address to
+64MB on 64bit).
 
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+This patch halves the RMO so both kernels get about the same
+amount of RMO memory. On large machines this region will be
+at least 256MB, so each kernel will get 128MB.
+
+We cap it at 256MB (small SLB size) since some early allocations need
+to be in the bolted SLB region. We could relax this on machines with
+1TB SLBs in a future patch.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Sending again with the correct list address. Sorry for the noise.
-
- arch/powerpc/platforms/85xx/Kconfig    |   12 +++++++++---
- arch/powerpc/platforms/Kconfig.cputype |   27 +++++++++++++++------------
- 2 files changed, 24 insertions(+), 15 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index b6976e1..9530fca 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
+Index: linux-powerpc/arch/powerpc/include/asm/kdump.h
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/include/asm/kdump.h	2011-07-26 11:11:35.583436932 +1000
++++ linux-powerpc/arch/powerpc/include/asm/kdump.h	2011-07-26 11:17:13.159317079 +1000
+@@ -3,17 +3,7 @@
  
- if PPC32
+ #include <asm/page.h>
  
-+if PPC_E500
-+
- config MPC8540_ADS
- 	bool "Freescale MPC8540 ADS"
- 	select DEFAULT_UIMAGE
-@@ -155,10 +157,13 @@ config SBC8560
- 	help
- 	  This option enables support for the Wind River SBC8560 board
+-/*
+- * If CONFIG_RELOCATABLE is enabled we can place the kdump kernel anywhere.
+- * To keep enough space in the RMO for the first stage kernel on 64bit, we
+- * place it at 64MB. If CONFIG_RELOCATABLE is not enabled we must place
+- * the second stage at 32MB.
+- */
+-#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_PPC64)
+-#define KDUMP_KERNELBASE	0x4000000
+-#else
+ #define KDUMP_KERNELBASE	0x2000000
+-#endif
  
-+endif # PPC_E500
-+
-+if PPC_E500MC
-+
- config P3041_DS
- 	bool "Freescale P3041 DS"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-@@ -169,7 +174,6 @@ config P3041_DS
- config P4080_DS
- 	bool "Freescale P4080 DS"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-@@ -177,13 +181,15 @@ config P4080_DS
- 	help
- 	  This option enables support for the P4080 DS board
+ /* How many bytes to reserve at zero for kdump. The reserve limit should
+  * be greater or equal to the trampoline's end address.
+Index: linux-powerpc/arch/powerpc/kernel/machine_kexec.c
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/kernel/machine_kexec.c	2011-07-26 11:10:27.932259619 +1000
++++ linux-powerpc/arch/powerpc/kernel/machine_kexec.c	2011-07-26 11:18:17.830444562 +1000
+@@ -136,12 +136,16 @@ void __init reserve_crashkernel(void)
+ 	crashk_res.start = KDUMP_KERNELBASE;
+ #else
+ 	if (!crashk_res.start) {
++#ifdef CONFIG_PPC64
+ 		/*
+-		 * unspecified address, choose a region of specified size
+-		 * can overlap with initrd (ignoring corruption when retained)
+-		 * ppc64 requires kernel and some stacks to be in first segemnt
++		 * On 64bit we split the RMO in half but cap it at half of
++		 * a small SLB (128MB) since the crash kernel needs to place
++		 * itself and some stacks to be in the first segment.
+ 		 */
++		crashk_res.start = min(0x80000000ULL, (ppc64_rma_size / 2));
++#else
+ 		crashk_res.start = KDUMP_KERNELBASE;
++#endif
+ 	}
  
-+endif # PPC_E500MC
-+
- endif # PPC32
- 
- config P5020_DS
- 	bool "Freescale P5020 DS"
-+	depends on PPC_E500MC
- 	select DEFAULT_UIMAGE
- 	select E500
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 2165b65..71e3cfb 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -11,13 +11,13 @@ choice
- 	prompt "Processor Type"
- 	depends on PPC32
- 	help
--	  There are five families of 32 bit PowerPC chips supported.
-+	  There are six families of 32 bit PowerPC chips supported.
- 	  The most common ones are the desktop and server CPUs (601, 603,
- 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
- 	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
--	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
--	  (85xx) each form a family of their own that is not compatible
--	  with the others.
-+	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx), e500
-+	  (85xx), and e500mc each form a family of their own that is not
-+	  compatible with the others.
- 
- 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
- 
-@@ -25,10 +25,15 @@ config PPC_BOOK3S_32
- 	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
- 	select PPC_FPU
- 
--config PPC_85xx
--	bool "Freescale 85xx"
-+config PPC_E500
-+	bool "Freescale e500v1/e500v2 (85xx, P10xx, P20xx)"
-+	select PPC_85xx
- 	select E500
- 
-+config PPC_E500MC
-+	bool "Freescale e500mc/e5500 (P30xx, P40xx, P50xx)"
-+	select PPC_85xx
-+
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
-@@ -128,15 +133,13 @@ config TUNE_CELL
- config 8xx
- 	bool
- 
--config E500
-+config PPC_85xx
-+	bool
- 	select FSL_EMB_PERFMON
- 	select PPC_FSL_BOOK3E
--	bool
- 
--config PPC_E500MC
--	bool "e500mc Support"
--	select PPC_FPU
--	depends on E500
-+config E500
-+	bool
- 
- config PPC_FPU
- 	bool
--- 
-1.7.5.4
+ 	crash_base = PAGE_ALIGN(crashk_res.start);
