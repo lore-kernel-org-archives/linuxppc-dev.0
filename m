@@ -1,9 +1,9 @@
 Return-Path: <a.heider@gmail.com>
 From: Andre Heider <a.heider@gmail.com>
 To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 06/15] ps3flash: Fix region align checks
-Date: Mon,  1 Aug 2011 22:02:57 +0200
-Message-Id: <1312228986-32307-7-git-send-email-a.heider@gmail.com>
+Subject: [PATCH 07/15] ps3flash: Refuse to work in lpars other than OtherOS
+Date: Mon,  1 Aug 2011 22:02:58 +0200
+Message-Id: <1312228986-32307-8-git-send-email-a.heider@gmail.com>
 In-Reply-To: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
@@ -17,61 +17,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The region fields used by the align checks are set in
-ps3stor_setup(), so move those after that call.
+The driver implements a character and misc device, meant for the
+axed OtherOS to exchange various settings with GameOS.
+Since Firmware 3.21 there is no GameOS support anymore to write these
+settings, so limit the driver to the OtherOS environment.
 
 Signed-off-by: Andre Heider <a.heider@gmail.com>
 ---
- drivers/char/ps3flash.c |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/ps3/Kconfig |    1 +
+ drivers/char/ps3flash.c            |    7 +++++++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
+index 84df5c8..5eb956a 100644
+--- a/arch/powerpc/platforms/ps3/Kconfig
++++ b/arch/powerpc/platforms/ps3/Kconfig
+@@ -121,6 +121,7 @@ config PS3_FLASH
+ 
+ 	  This support is required to access the PS3 FLASH ROM, which
+ 	  contains the boot loader and some boot options.
++	  This driver only supports the deprecated OtherOS LPAR.
+ 	  In general, all users will say Y or M.
+ 
+ 	  As this driver needs a fixed buffer of 256 KiB of memory, it can
 diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
-index 85c004a..69c734a 100644
+index 69c734a..b1e8659 100644
 --- a/drivers/char/ps3flash.c
 +++ b/drivers/char/ps3flash.c
-@@ -360,21 +360,6 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
- 	int error;
- 	unsigned long tmp;
+@@ -25,6 +25,7 @@
  
--	tmp = dev->regions[dev->region_idx].start*dev->blk_size;
--	if (tmp % FLASH_BLOCK_SIZE) {
--		dev_err(&dev->sbd.core,
--			"%s:%u region start %lu is not aligned\n", __func__,
--			__LINE__, tmp);
--		return -EINVAL;
--	}
--	tmp = dev->regions[dev->region_idx].size*dev->blk_size;
--	if (tmp % FLASH_BLOCK_SIZE) {
--		dev_err(&dev->sbd.core,
--			"%s:%u region size %lu is not aligned\n", __func__,
--			__LINE__, tmp);
--		return -EINVAL;
--	}
--
- 	/* use static buffer, kmalloc cannot allocate 256 KiB */
- 	if (!ps3flash_bounce_buffer.address)
- 		return -ENODEV;
-@@ -405,6 +390,21 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
- 	if (error)
- 		goto fail_free_priv;
+ #include <asm/lv1call.h>
+ #include <asm/ps3stor.h>
++#include <asm/firmware.h>
  
-+	tmp = dev->regions[dev->region_idx].start*dev->blk_size;
-+	if (tmp % FLASH_BLOCK_SIZE) {
-+		dev_err(&dev->sbd.core,
-+			"%s:%u region start %lu is not aligned\n", __func__,
-+			__LINE__, tmp);
-+		return -EINVAL;
-+	}
-+	tmp = dev->regions[dev->region_idx].size*dev->blk_size;
-+	if (tmp % FLASH_BLOCK_SIZE) {
-+		dev_err(&dev->sbd.core,
-+			"%s:%u region size %lu is not aligned\n", __func__,
-+			__LINE__, tmp);
-+		return -EINVAL;
-+	}
+ 
+ #define DEVICE_NAME		"ps3flash"
+@@ -455,6 +456,12 @@ static struct ps3_system_bus_driver ps3flash = {
+ 
+ static int __init ps3flash_init(void)
+ {
++	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
++		return -ENODEV;
 +
- 	ps3flash_misc.parent = &dev->sbd.core;
- 	error = misc_register(&ps3flash_misc);
- 	if (error) {
++	if (ps3_get_ss_laid() != PS3_SS_LAID_OTHEROS)
++		return -ENODEV;
++
+ 	return ps3_system_bus_driver_register(&ps3flash);
+ }
+ 
 -- 
 1.7.5.4
