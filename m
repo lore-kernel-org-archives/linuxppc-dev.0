@@ -1,24 +1,22 @@
-Return-Path: <avi@redhat.com>
+Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id D3572B71D3
+	by ozlabs.org (Postfix) with ESMTP id 88FA1B71D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Aug 2011 23:39:46 +1000 (EST)
-Message-ID: <4E37FE18.6080503@redhat.com>
-Date: Tue, 02 Aug 2011 16:39:36 +0300
-From: Avi Kivity <avi@redhat.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Wed,  3 Aug 2011 00:39:47 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
-References: <1311983933.8793.42.camel@pasglop> <4E356221.6010302@redhat.com>	
-	<1312248479.8793.827.camel@pasglop> <4E37BF62.2060809@redhat.com>
-	<1312289929.8793.890.camel@pasglop>
-In-Reply-To: <1312289929.8793.890.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 02 Aug 2011 08:39:37 -0600
+In-Reply-To: <1312248479.8793.827.camel@pasglop>
+References: <1311983933.8793.42.camel@pasglop> <4E356221.6010302@redhat.com>
+	<1312248479.8793.827.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1312295979.2653.408.camel@bling.home>
+Mime-Version: 1.0
 Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
 	Paul Mackerras <pmac@au1.ibm.com>,
 	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	David Gibson <dwg@au1.ibm.com>,
-	Alex Williamson <alex.williamson@redhat.com>,
+	David Gibson <dwg@au1.ibm.com>, Avi Kivity <avi@redhat.com>,
 	Anthony Liguori <anthony@codemonkey.ws>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,88 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/02/2011 03:58 PM, Benjamin Herrenschmidt wrote:
-> >  >
-> >  >  What you mean 2-level is two passes through two trees (ie 6 or 8 levels
-> >  >  right ?).
-> >
-> >  (16 or 25)
->
-> 25 levels ? You mean 25 loads to get to a translation ? And you get any
-> kind of performance out of that ? :-)
->
+On Tue, 2011-08-02 at 11:27 +1000, Benjamin Herrenschmidt wrote:
+> It's a shared address space. With a basic configuration on p7ioc for
+> example we have MMIO going from 3G to 4G (PCI side addresses). BARs
+> contain the normal PCI address there. But that 1G is divided in 128
+> segments of equal size which can separately be assigned to PE#'s.
+> 
+> So BARs are allocated by firmware or the kernel PCI code so that devices
+> in different PEs don't share segments.
+> 
+> Of course there's always the risk that a device can be hacked via a
+> sideband access to BARs to move out of it's allocated segment. That
+> means that the guest owning that device won't be able to access it
+> anymore and can potentially disturb a guest or host owning whatever is
+> in that other segment.
 
-Aggressive partial translation caching.  Even then, performance does 
-suffer on memory intensive workloads.  The fix was transparent 
-hugepages; that makes the page table walks much faster since they're 
-fully cached, the partial translation caches become more effective, and 
-the tlb itself becomes more effective.  On some workloads, THP on both 
-guest and host was faster than no-THP on bare metal.
+Wait, what?  I thought the MMIO segments were specifically so that if
+the device BARs moved out of the segment the guest only hurts itself and
+not the new segments overlapped.
 
-> >  >
-> >  >  Not sure what you mean... the guest calls h-calls for every iommu page
-> >  >  mapping/unmapping, yes. So the performance of these is critical. So yes,
-> >  >  we'll eventually do it in kernel. We just haven't yet.
-> >
-> >  I see.  x86 traditionally doesn't do it for every request.  We had some
-> >  proposals to do a pviommu that does map every request, but none reached
-> >  maturity.
->
-> It's quite performance critical, you don't want to go anywhere near a
-> full exit. On POWER we plan to handle that in "real mode" (ie MMU off)
-> straight off the interrupt handlers, with the CPU still basically
-> operating in guest context with HV permission. That is basically do the
-> permission check, translation and whack the HW iommu immediately. If for
-> some reason one step fails (!present PTE or something like that), we'd
-> then fallback to an exit to Linux to handle it in a more "common"
-> environment where we can handle page faults etc...
+> The only way to enforce isolation here is to ensure that PE# are
+> entirely behind P2P bridges, since those would then ensure that even if
+> you put crap into your BARs you won't be able to walk over a neighbour.
 
-I guess we can hack some kind of private interface, though I'd hoped to 
-avoid it (and so far we succeeded - we can even get vfio to inject 
-interrupts into kvm from the kernel without either knowing anything 
-about the other).
+Ok, so the MMIO segments are really just a configuration nuance of the
+platform and being behind a P2P bridge is what allows you to hand off
+BARs to a guest (which needs to know the bridge window to do anything
+useful with them).  Is that right?
 
-> >  >  >   Does the BAR value contain the segment base address?  Or is that added
-> >  >  >   later?
-> >  >
-> >  >  It's a shared address space. With a basic configuration on p7ioc for
-> >  >  example we have MMIO going from 3G to 4G (PCI side addresses). BARs
-> >  >  contain the normal PCI address there. But that 1G is divided in 128
-> >  >  segments of equal size which can separately be assigned to PE#'s.
-> >  >
-> >  >  So BARs are allocated by firmware or the kernel PCI code so that devices
-> >  >  in different PEs don't share segments.
-> >
-> >  Okay, and config space virtualization ensures that the guest can't remap?
->
-> Well, so it depends :-)
->
-> With KVM we currently use whatever config space virtualization you do
-> and so we somewhat rely on this but it's not very fool proof.
->
-> I believe pHyp doesn't even bother filtering config space. As I said in
-> another note, you can't trust adapters anyway. Plenty of them (video
-> cards come to mind) have ways to get to their own config space via MMIO
-> registers for example.
+> I believe pHyp enforces that, for example, if you have a slot, all
+> devices & functions behind that slot pertain to the same PE# under pHyp.
+> 
+> That means you cannot put individual functions of a device into
+> different PE# with pHyp.
+> 
+> We plan to be a bit less restrictive here for KVM, assuming that if you
+> use a device that allows such a back-channel to the BARs, then it's your
+> problem to not trust such a device for virtualization. And most of the
+> time, you -will- have a P2P to protect you anyways.
+> 
+> The problem doesn't exist (or is assumed as non-existing) for SR-IOV
+> since in that case, the VFs are meant to be virtualized, so pHyp assumes
+> there is no such back-channel and it can trust them to be in different
+> PE#.
 
-Yes, we've seen that.
+But you still need the P2P bridge to protect MMIO segments?  Or do
+SR-IOV BARs need to be virtualized?  I'm having trouble with the mental
+model of how you can do both.  Thanks,
 
-> So what pHyp does is that it always create PE's (aka groups) that are
-> below a bridge. With PCIe, everything mostly is below a bridge so that's
-> easy, but that does mean that you always have all functions of a device
-> in the same PE (and thus in the same partition). SR-IOV is an exception
-> to this rule since in that case the HW is designed to be trusted.
->
-> That way, being behind a bridge, the bridge windows are going to define
-> what can be forwarded to the device, and thus the system is immune to
-> the guest putting crap into the BARs. It can't be remapped to overlap a
-> neighbouring device.
->
-> Note that the bridge itself isn't visible to the guest, so yes, config
-> space is -somewhat- virtualized, typically pHyp make every pass-through
-> PE look like a separate PCI host bridge with the devices below it.
-
-I think I see, yes.
-
--- 
-error compiling committee.c: too many arguments to function
+Alex
