@@ -1,18 +1,19 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id F2045B71CC
+	by ozlabs.org (Postfix) with ESMTP id 7EA66B71CE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  3 Aug 2011 04:15:07 +1000 (EST)
+	Wed,  3 Aug 2011 04:35:58 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
 From: Alex Williamson <alex.williamson@redhat.com>
 To: David Gibson <dwg@au1.ibm.com>
-Date: Tue, 02 Aug 2011 12:14:05 -0600
-In-Reply-To: <20110802082848.GD29719@yookeroo.fritz.box>
+Date: Tue, 02 Aug 2011 12:35:19 -0600
+In-Reply-To: <1312308847.2653.467.camel@bling.home>
 References: <1311983933.8793.42.camel@pasglop>
 	<1312050011.2265.185.camel@x201.home>
 	<20110802082848.GD29719@yookeroo.fritz.box>
+	<1312308847.2653.467.camel@bling.home>
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1312308847.2653.467.camel@bling.home>
+Message-ID: <1312310121.2653.470.camel@bling.home>
 Mime-Version: 1.0
 Cc: aafabbri <aafabbri@cisco.com>, Alexey Kardashevskiy <aik@au1.ibm.com>,
 	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
@@ -30,163 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-08-02 at 18:28 +1000, David Gibson wrote:
-> On Sat, Jul 30, 2011 at 12:20:08PM -0600, Alex Williamson wrote:
-> > On Sat, 2011-07-30 at 09:58 +1000, Benjamin Herrenschmidt wrote:
-> [snip]
-> > On x86, the USB controllers don't typically live behind a PCIe-to-PCI
-> > bridge, so don't suffer the source identifier problem, but they do often
-> > share an interrupt.  But even then, we can count on most modern devices
-> > supporting PCI2.3, and thus the DisINTx feature, which allows us to
-> > share interrupts.  In any case, yes, it's more rare but we need to know
-> > how to handle devices behind PCI bridges.  However I disagree that we
-> > need to assign all the devices behind such a bridge to the guest.
-> > There's a difference between removing the device from the host and
-> > exposing the device to the guest.
-> 
-> I think you're arguing only over details of what words to use for
-> what, rather than anything of substance here.  The point is that an
-> entire partitionable group must be assigned to "host" (in which case
-> kernel drivers may bind to it) or to a particular guest partition (or
-> at least to a single UID on the host).  Which of the assigned devices
-> the partition actually uses is another matter of course, as is at
-> exactly which level they become "de-exposed" if you don't want to use
-> all of then.
-
-Well first we need to define what a partitionable group is, whether it's
-based on hardware requirements or user policy.  And while I agree that
-we need unique ownership of a partition, I disagree that qemu is
-necessarily the owner of the entire partition vs individual devices.
-But feel free to dismiss it as unsubstantial.
-
-> [snip]
-> > > Maybe something like /sys/devgroups ? This probably warrants involving
-> > > more kernel people into the discussion.
+On Tue, 2011-08-02 at 12:14 -0600, Alex Williamson wrote:
+> On Tue, 2011-08-02 at 18:28 +1000, David Gibson wrote:
+> > On Sat, Jul 30, 2011 at 12:20:08PM -0600, Alex Williamson wrote:
+> > > On Sat, 2011-07-30 at 09:58 +1000, Benjamin Herrenschmidt wrote:
+> > [snip]
+> > > On x86, the USB controllers don't typically live behind a PCIe-to-PCI
+> > > bridge, so don't suffer the source identifier problem, but they do often
+> > > share an interrupt.  But even then, we can count on most modern devices
+> > > supporting PCI2.3, and thus the DisINTx feature, which allows us to
+> > > share interrupts.  In any case, yes, it's more rare but we need to know
+> > > how to handle devices behind PCI bridges.  However I disagree that we
+> > > need to assign all the devices behind such a bridge to the guest.
+> > > There's a difference between removing the device from the host and
+> > > exposing the device to the guest.
 > > 
-> > I don't yet buy into passing groups to qemu since I don't buy into the
-> > idea of always exposing all of those devices to qemu.  Would it be
-> > sufficient to expose iommu nodes in sysfs that link to the devices
-> > behind them and describe properties and capabilities of the iommu
-> > itself?  More on this at the end.
+> > I think you're arguing only over details of what words to use for
+> > what, rather than anything of substance here.  The point is that an
+> > entire partitionable group must be assigned to "host" (in which case
+> > kernel drivers may bind to it) or to a particular guest partition (or
+> > at least to a single UID on the host).  Which of the assigned devices
+> > the partition actually uses is another matter of course, as is at
+> > exactly which level they become "de-exposed" if you don't want to use
+> > all of then.
 > 
-> Again, I don't think you're making a distinction of any substance.
-> Ben is saying the group as a whole must be set to allow partition
-> access, whether or not you call that "assigning".  There's no reason
-> that passing a sysfs descriptor to qemu couldn't be the qemu
-> developer's quick-and-dirty method of putting the devices in, while
-> also allowing full assignment of the devices within the groups by
-> libvirt.
+> Well first we need to define what a partitionable group is, whether it's
+> based on hardware requirements or user policy.  And while I agree that
+> we need unique ownership of a partition, I disagree that qemu is
+> necessarily the owner of the entire partition vs individual devices.
 
-Well, there is a reason for not passing a sysfs descriptor to qemu if
-qemu isn't the one defining the policy about how the members of that
-group are exposed.  I tend to envision a userspace entity defining
-policy and granting devices to qemu.  Do we really want separate
-developer vs production interfaces?
-
-> [snip]
-> > > Now some of this can be fixed with tweaks, and we've started doing it
-> > > (we have a working pass-through using VFIO, forgot to mention that, it's
-> > > just that we don't like what we had to do to get there).
-> > 
-> > This is a result of wanting to support *unmodified* x86 guests.  We
-> > don't have the luxury of having a predefined pvDMA spec that all x86
-> > OSes adhere to.  The 32bit problem is unfortunate, but the priority use
-> > case for assigning devices to guests is high performance I/O, which
-> > usually entails modern, 64bit hardware.  I'd like to see us get to the
-> > point of having emulated IOMMU hardware on x86, which could then be
-> > backed by VFIO, but for now guest pinning is the most practical and
-> > useful.
-> 
-> No-one's suggesting that this isn't a valid mode of operation.  It's
-> just that right now conditionally disabling it for us is fairly ugly
-> because of the way the qemu code is structured.
-
-It really shouldn't be any more than skipping the
-cpu_register_phys_memory_client() and calling the map/unmap routines
-elsewhere.
-
-> [snip]
-> > >  - I don't like too much the fact that VFIO provides yet another
-> > > different API to do what we already have at least 2 kernel APIs for, ie,
-> > > BAR mapping and config space access. At least it should be better at
-> > > using the backend infrastructure of the 2 others (sysfs & procfs). I
-> > > understand it wants to filter in some case (config space) and -maybe-
-> > > yet another API is the right way to go but allow me to have my doubts.
-> > 
-> > The use of PCI sysfs is actually one of my complaints about current
-> > device assignment.  To do assignment with an unprivileged guest we need
-> > to open the PCI sysfs config file for it, then change ownership on a
-> > handful of other PCI sysfs files, then there's this other pci-stub thing
-> > to maintain ownership, but the kvm ioctls don't actually require it and
-> > can grab onto any free device...  We are duplicating some of that in
-> > VFIO, but we also put the ownership of the device behind a single device
-> > file.  We do have the uiommu problem that we can't give an unprivileged
-> > user ownership of that, but your usage model may actually make that
-> > easier.  More below...
-> 
-> Hrm.  I was assuming that a sysfs groups interface would provide a
-> single place to set the ownership of the whole group.  Whether that's
-> a echoing a uid to a magic file or doing or chown on the directory or
-> whatever is a matter of details.
-
-Except one of those details is whether we manage the group in sysfs or
-just expose enough information in sysfs for another userspace entity to
-manage the devices.  Where do we manage enforcement of hardware policy
-vs userspace policy?
-
-> [snip]
-> > I spent a lot of time looking for an architecture neutral solution here,
-> > but I don't think it exists.  Please prove me wrong.  The problem is
-> > that we have to disable INTx on an assigned device after it fires (VFIO
-> > does this automatically).  If we don't do this, a non-responsive or
-> > malicious guest could sit on the interrupt, causing it to fire
-> > repeatedly as a DoS on the host.  The only indication that we can rely
-> > on to re-enable INTx is when the guest CPU writes an EOI to the APIC.
-> > We can't just wait for device accesses because a) the device CSRs are
-> > (hopefully) direct mapped and we'd have to slow map them or attempt to
-> > do some kind of dirty logging to detect when they're accesses b) what
-> > constitutes an interrupt service is device specific.
-> > 
-> > That means we need to figure out how PCI interrupt 'A' (or B...)
-> > translates to a GSI (Global System Interrupt - ACPI definition, but
-> > hopefully a generic concept).  That GSI identifies a pin on an IOAPIC,
-> > which will also see the APIC EOI.  And just to spice things up, the
-> > guest can change the PCI to GSI mappings via ACPI.  I think the set of
-> > callbacks I've added are generic (maybe I left ioapic in the name), but
-> > yes they do need to be implemented for other architectures.  Patches
-> > appreciated from those with knowledge of the systems and/or access to
-> > device specs.  This is the only reason that I make QEMU VFIO only build
-> > for x86.
-> 
-> There will certainly need to be some arch hooks here, but it can be
-> made less intrusively x86 specific without too much difficulty.
-> e.g. Create an EOF notifier chain in qemu - the master PICs (APIC for
-> x86, XICS for pSeries) for all vfio capable machines need to kick it,
-> and vfio subscribes.
-
-Am I the only one that sees ioapic_add/remove_gsi_eoi_notifier() in the
-qemu/vfio patch series?  Shoot me for using ioapic in the name, but it's
-exactly what you ask for.  It just needs to be made a common service and
-implemented for power.
-
-> [snip]
-> > Rather than your "groups" idea, I've been mulling over whether we can
-> > just expose the dependencies, configuration, and capabilities in sysfs
-> > and build qemu commandlines to describe it.  For instance, if we simply
-> > start with creating iommu nodes in sysfs, we could create links under
-> > each iommu directory to the devices behind them.  Some kind of
-> > capability file could define properties like whether it's page table
-> > based or fixed iova window or the granularity of mapping the devices
-> > behind it.  Once we have that, we could probably make uiommu attach to
-> > each of those nodes.
-> 
-> Well, that would address our chief concern that inherently tying the
-> lifetime of a domain to an fd is problematic.  In fact, I don't really
-> see how this differs from the groups proposal except in the details of
-> how you inform qemu of the group^H^H^H^H^Hiommu domain.
-
-One implies group policy, configuration and management in sysfs, the
-other exposes the hardware dependencies in sysfs and leaves the rest for
-someone else (libvirt).  Thanks,
+Sorry, I didn't intend to have such circular logic.  "... I disagree
+that qemu is necessarily the owner of the entire partition vs granted
+access to devices within the partition".  Thanks,
 
 Alex
