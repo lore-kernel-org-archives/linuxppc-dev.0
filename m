@@ -1,25 +1,29 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id E37DCB71C2
+Return-Path: <vneethv@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2FF14B71C4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Aug 2011 19:12:13 +1000 (EST)
-Message-ID: <4E37BF62.2060809@redhat.com>
-Date: Tue, 02 Aug 2011 12:12:02 +0300
-From: Avi Kivity <avi@redhat.com>
+	Tue,  2 Aug 2011 19:03:59 +1000 (EST)
+Received: by fxh10 with SMTP id 10so5835799fxh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 02 Aug 2011 02:03:55 -0700 (PDT)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: kvm PCI assignment & VFIO ramblings
-References: <1311983933.8793.42.camel@pasglop> <4E356221.6010302@redhat.com>
-	<1312248479.8793.827.camel@pasglop>
-In-Reply-To: <1312248479.8793.827.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
-	Paul Mackerras <pmac@au1.ibm.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	David Gibson <dwg@au1.ibm.com>,
-	Alex Williamson <alex.williamson@redhat.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <4E37AB04.9070409@windriver.com>
+References: <OFABB45B91.59E6539A-ONCA2578CC.006F5FB7-CA2578CC.0070CFA6@csc.com>
+	<CAFbQSaDaL0UaiY4r+u=a72mmsCHxs7O5Z82MESrXXcWj2tNvbQ@mail.gmail.com>
+	<OF7A7D0C50.273D2A69-ONCA2578CD.001B5783-CA2578CD.001D9FFE@csc.com>
+	<CAFbQSaAhXUrb1peJ2E3Kkp1gd16JSn9OjneO826q_aMz+yzAqg@mail.gmail.com>
+	<CAFbQSaC6BkZj+a4=-9Q2Cyj7w=4y5QYM22kaK1O=Uz5KW9iiuQ@mail.gmail.com>
+	<4E37AB04.9070409@windriver.com>
+From: Vineeth <vneethv@gmail.com>
+Date: Tue, 2 Aug 2011 14:33:35 +0530
+Message-ID: <CAFbQSaDhEpSqX4GQHjSTsmpwv3a36RE7WrXbn7ni=NVcTtVyiw@mail.gmail.com>
+Subject: Re: Fwd: MPC7410 Linux Kernel
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Content-Type: multipart/alternative; boundary=bcaec52c5c73ffba2a04a98206ca
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,163 +33,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/02/2011 04:27 AM, Benjamin Herrenschmidt wrote:
+--bcaec52c5c73ffba2a04a98206ca
+Content-Type: text/plain; charset=ISO-8859-1
+
+Thanks for the reply.
+
+We were referring kuroboxHG.dts which uses Sandpoint architecture; which is
+almost same as ours.
+
+1. one doubt in kuroboxHG is the ranges property in SOC node says EUMB is at
+0xFC00_0000; and as per the datasheet of mpc107, the open pic address will
+be EUMB_BASE + 0x40000; but in kurobox its given as 0x80040000;
+
+2. We know that our UART is mapped at address 0xDB00_0100; which is
+connected in a PCI-LOCAL bridge whose base is at 0xDB00_0000
+How can i represent these things in dts ? Can the RANGES property of PCI
+node can mention this ?
+
+
+
+
+
+
+
+On Tue, Aug 2, 2011 at 1:15 PM, tiejun.chen <tiejun.chen@windriver.com>wrote:
+
+> Vineeth wrote:
+> > Hi,
 > >
-> >  I have a feeling you'll be getting the same capabilities sooner or
-> >  later, or you won't be able to make use of S/R IOV VFs.
->
-> I'm not sure why you mean. We can do SR/IOV just fine (well, with some
-> limitations due to constraints with how our MMIO segmenting works and
-> indeed some of those are being lifted in our future chipsets but
-> overall, it works).
-
-Don't those limitations include "all VFs must be assigned to the same 
-guest"?
-
-PCI on x86 has function granularity, SRIOV reduces this to VF 
-granularity, but I thought power has partition or group granularity 
-which is much coarser?
-
-> In -theory-, one could do the grouping dynamically with some kind of API
-> for us as well. However the constraints are such that it's not
-> practical. Filtering on RID is based on number of bits to match in the
-> bus number and whether to match the dev and fn. So it's not arbitrary
-> (but works fine for SR-IOV).
->
-> The MMIO segmentation is a bit special too. There is a single MMIO
-> region in 32-bit space (size is configurable but that's not very
-> practical so for now we stick it to 1G) which is evenly divided into N
-> segments (where N is the number of PE# supported by the host bridge,
-> typically 128 with the current bridges).
->
-> Each segment goes through a remapping table to select the actual PE# (so
-> large BARs use consecutive segments mapped to the same PE#).
->
-> For SR-IOV we plan to not use the M32 region. We also have 64-bit MMIO
-> regions which act as some kind of "accordions", they are evenly divided
-> into segments in different PE# and there's several of them which we can
-> "move around" and typically use to map VF BARs.
-
-So, SRIOV VFs *don't* have the group limitation?  Sorry, I'm deluged by 
-technical details with no ppc background to put them to, I can't say I'm 
-making any sense of this.
-
-> >  >
-> >  >  VFIO here is basically designed for one and only one thing: expose the
-> >  >  entire guest physical address space to the device more/less 1:1.
+> > We are trying to port  linux 2.6.38 on MPC7410 based board (This is a
+> > preparatory design by our customer)
 > >
-> >  A single level iommu cannot be exposed to guests.  Well, it can be
-> >  exposed as an iommu that does not provide per-device mapping.
->
-> Well, x86 ones can't maybe but on POWER we can and must thanks to our
-> essentially paravirt model :-) Even if it' wasn't and we used trapping
-> of accesses to the table, it would work because in practice, even with
-> filtering, what we end up having is a per-device (or rather per-PE#
-> table).
->
-> >  A two level iommu can be emulated and exposed to the guest.  See
-> >  http://support.amd.com/us/Processor_TechDocs/48882.pdf for an example.
->
-> What you mean 2-level is two passes through two trees (ie 6 or 8 levels
-> right ?).
-
-(16 or 25)
-
-> We don't have that and probably never will. But again, because
-> we have a paravirt interface to the iommu, it's less of an issue.
-
-Well, then, I guess we need an additional interface to expose that to 
-the guest.
-
-> >  >  This means:
-> >  >
-> >  >     - It only works with iommu's that provide complete DMA address spaces
-> >  >  to devices. Won't work with a single 'segmented' address space like we
-> >  >  have on POWER.
-> >  >
-> >  >     - It requires the guest to be pinned. Pass-through ->   no more swap
+> > System architecture is as follows,
 > >
-> >  Newer iommus (and devices, unfortunately) (will) support I/O page faults
-> >  and then the requirement can be removed.
+> > MPC7410 <=> MPC107 <=> PCI_to_LOCAL(plx9052) <=> UART
 >
-> No. -Some- newer devices will. Out of these, a bunch will have so many
-> bugs in it it's not usable. Some never will. It's a mess really and I
-> wouldn't design my stuff based on those premises just yet. Making it
-> possible to support it for sure, having it in mind, but not making it
-> the fundation on which the whole API is designed.
-
-The API is not designed around pinning.  It's a side effect of how the 
-IOMMU works.  If your IOMMU only maps pages which are under active DMA, 
-then it would only pin those pages.
-
-But I see what you mean, the API is designed around up-front 
-specification of all guest memory.
-
-> >  >     - It doesn't work for POWER server anyways because of our need to
-> >  >  provide a paravirt iommu interface to the guest since that's how pHyp
-> >  >  works today and how existing OSes expect to operate.
+> MPCXXX should be compatible with TSIXXX. So you can refer to mpc7448_hpc2.
+>
 > >
-> >  Then you need to provide that same interface, and implement it using the
-> >  real iommu.
->
-> Yes. Working on it. It's not very practical due to how VFIO interacts in
-> terms of APIs but solvable. Eventually, we'll make the iommu Hcalls
-> almost entirely real-mode for performance reasons.
-
-The original kvm device assignment code was (and is) part of kvm 
-itself.  We're trying to move to vfio to allow sharing with non-kvm 
-users, but it does reduce flexibility.  We can have an internal vfio-kvm 
-interface to update mappings in real time.
-
-> >  >  - Performance sucks of course, the vfio map ioctl wasn't mean for that
-> >  >  and has quite a bit of overhead. However we'll want to do the paravirt
-> >  >  call directly in the kernel eventually ...
+> > Previously we were using ppc architecture and we had some issues with
+> > page_init() functions; which may be because of our configuration.As we
+> didnt
+> > get much support on ppc architecture we moved to powerpc.
 > >
-> >  Does the guest iomap each request?  Why?
->
-> Not sure what you mean... the guest calls h-calls for every iommu page
-> mapping/unmapping, yes. So the performance of these is critical. So yes,
-> we'll eventually do it in kernel. We just haven't yet.
-
-I see.  x86 traditionally doesn't do it for every request.  We had some 
-proposals to do a pviommu that does map every request, but none reached 
-maturity.
-
+> > Now we moved to powerpc architecture. We have some doubts on writing the
+> dts
+> > file. Please find the dts file attached.
 > >
-> >  So, you have interrupt redirection?  That is, MSI-x table values encode
-> >  the vcpu, not pcpu?
+> > when we checked the legacy_serial.c file, we found that
+> > legacy_serial_parents not expecting a pci-local or a pci bridge as
+> parent.
+> > is our understanding correct ? should we introduce a new pci parent in
+> that
+> > structure ?
 >
-> Not exactly. The MSI-X address is a real PCI address to an MSI port and
-> the value is a real interrupt number in the PIC.
+> So you can understand this after refer to the file,
+> arch/powerpc/boot/dts/mpc7448hpc2.dts.
 >
-> However, the MSI port filters by RID (using the same matching as PE#) to
-> ensure that only allowed devices can write to it, and the PIC has a
-> matching PE# information to ensure that only allowed devices can trigger
-> the interrupt.
+> Tiejun
 >
-> As for the guest knowing what values to put in there (what port address
-> and interrupt source numbers to use), this is part of the paravirt APIs.
->
-> So the paravirt APIs handles the configuration and the HW ensures that
-> the guest cannot do anything else than what it's allowed to.
-
-Okay, this is something that x86 doesn't have.  Strange that it can 
-filter DMA at a fine granularity but not MSI, which is practically the 
-same thing.
-
 > >
-> >  Does the BAR value contain the segment base address?  Or is that added
-> >  later?
+> >  We are confused about writing the ranges property of PCI node.we were
+> > referring booting_without_of doc but didnt get much info. Is there any
+> file
+> > which gives better idea about the ranges property ?
+> >
+> > Thanks
+> >  Vineeth
 >
-> It's a shared address space. With a basic configuration on p7ioc for
-> example we have MMIO going from 3G to 4G (PCI side addresses). BARs
-> contain the normal PCI address there. But that 1G is divided in 128
-> segments of equal size which can separately be assigned to PE#'s.
 >
-> So BARs are allocated by firmware or the kernel PCI code so that devices
-> in different PEs don't share segments.
 
-Okay, and config space virtualization ensures that the guest can't remap?
+--bcaec52c5c73ffba2a04a98206ca
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
--- 
-error compiling committee.c: too many arguments to function
+Thanks for the reply.<br><br>We were referring kuroboxHG.dts which uses San=
+dpoint architecture; which is almost same as ours.<br><br>1. one doubt in k=
+uroboxHG is the ranges property in SOC node says EUMB is at 0xFC00_0000; an=
+d as per the datasheet of mpc107, the open pic address will be EUMB_BASE + =
+0x40000; but in kurobox its given as 0x80040000; <br>
+
+<br>2. We know that our UART is mapped at address 0xDB00_0100; which is con=
+nected in a PCI-LOCAL bridge whose base is at 0xDB00_0000<br>How can i repr=
+esent these things in dts ? Can the RANGES property of PCI node can mention=
+ this ?<br>
+
+<br><br><br><br><br>=A0<br><br><div class=3D"gmail_quote">On Tue, Aug 2, 20=
+11 at 1:15 PM, tiejun.chen <span dir=3D"ltr">&lt;<a href=3D"mailto:tiejun.c=
+hen@windriver.com">tiejun.chen@windriver.com</a>&gt;</span> wrote:<br><bloc=
+kquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #cc=
+c solid;padding-left:1ex;">
+
+<div class=3D"im">Vineeth wrote:<br>
+&gt; Hi,<br>
+&gt;<br>
+&gt; We are trying to port =A0linux 2.6.38 on MPC7410 based board (This is =
+a<br>
+&gt; preparatory design by our customer)<br>
+&gt;<br>
+&gt; System architecture is as follows,<br>
+&gt;<br>
+&gt; MPC7410 &lt;=3D&gt; MPC107 &lt;=3D&gt; PCI_to_LOCAL(plx9052) &lt;=3D&g=
+t; UART<br>
+<br>
+</div>MPCXXX should be compatible with TSIXXX. So you can refer to mpc7448_=
+hpc2.<br>
+<div class=3D"im"><br>
+&gt;<br>
+&gt; Previously we were using ppc architecture and we had some issues with<=
+br>
+&gt; page_init() functions; which may be because of our configuration.As we=
+ didnt<br>
+&gt; get much support on ppc architecture we moved to powerpc.<br>
+&gt;<br>
+&gt; Now we moved to powerpc architecture. We have some doubts on writing t=
+he dts<br>
+&gt; file. Please find the dts file attached.<br>
+&gt;<br>
+&gt; when we checked the legacy_serial.c file, we found that<br>
+&gt; legacy_serial_parents not expecting a pci-local or a pci bridge as par=
+ent.<br>
+&gt; is our understanding correct ? should we introduce a new pci parent in=
+ that<br>
+&gt; structure ?<br>
+<br>
+</div>So you can understand this after refer to the file,<br>
+arch/powerpc/boot/dts/mpc7448hpc2.dts.<br>
+<font color=3D"#888888"><br>
+Tiejun<br>
+</font><div><div></div><div class=3D"h5"><br>
+&gt;<br>
+&gt; =A0We are confused about writing the ranges property of PCI node.we we=
+re<br>
+&gt; referring booting_without_of doc but didnt get much info. Is there any=
+ file<br>
+&gt; which gives better idea about the ranges property ?<br>
+&gt;<br>
+&gt; Thanks<br>
+&gt; =A0Vineeth<br>
+<br>
+</div></div></blockquote></div><br>
+
+--bcaec52c5c73ffba2a04a98206ca--
