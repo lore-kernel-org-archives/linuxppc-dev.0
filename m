@@ -1,34 +1,15 @@
-Return-Path: <konrad@dumpdata.com>
-Received: from acsinet14.oracle.com (acsinet14.oracle.com [141.146.126.236])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "acsinet14.oracle.com",
-	Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B639BB71CE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  3 Aug 2011 07:37:39 +1000 (EST)
-Received: from acsinet15.oracle.com (acsinet15.oracle.com [141.146.126.227])
-	by acsinet14.oracle.com (Switch-3.4.4/Switch-3.4.1) with ESMTP id
-	p72LUCDV025132
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2011 21:30:13 GMT
-Date: Tue, 2 Aug 2011 17:29:49 -0400
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110802212949.GB18496@dumpdata.com>
-References: <1311983933.8793.42.camel@pasglop> <4E356221.6010302@redhat.com>
-	<1312248479.8793.827.camel@pasglop> <4E37BF62.2060809@redhat.com>
-	<1312289929.8793.890.camel@pasglop>
-	<1312299299.2653.429.camel@bling.home>
+Return-Path: <dm@m-200.ru>
+From: <dm@m-200.ru>
+To: "'Duait'" <hvlp@hvlp.ru>
+Subject: RE: [Cbe-oss-dev] [PATCH 09/15] ps3: Limit theb number of regions
+	per	storage device
+Date: Tue, 2 Aug 2011 23:55:04 +0400
+Message-ID: <002801cc514e$13943240$3abc96c0$@ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1312299299.2653.429.camel@bling.home>
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
-	Paul Mackerras <pmac@au1.ibm.com>,
-	David Gibson <dwg@au1.ibm.com>, Avi Kivity <avi@redhat.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain;
+	charset="utf-8"
+Cc: 'Geoff Levand' <geoff@infradead.org>, cbe-oss-dev@lists.ozlabs.org,
+	'Hector Martin' <hector@marcansoft.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,48 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 02, 2011 at 09:34:58AM -0600, Alex Williamson wrote:
-> On Tue, 2011-08-02 at 22:58 +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > Don't worry, it took me a while to get my head around the HW :-) SR-IOV
-> > VFs will generally not have limitations like that no, but on the other
-> > hand, they -will- still require 1 VF = 1 group, ie, you won't be able to
-> > take a bunch of VFs and put them in the same 'domain'.
-> > 
-> > I think the main deal is that VFIO/qemu sees "domains" as "guests" and
-> > tries to put all devices for a given guest into a "domain".
-> 
-> Actually, that's only a recent optimization, before that each device got
-> it's own iommu domain.  It's actually completely configurable on the
-> qemu command line which devices get their own iommu and which share.
-> The default optimizes the number of domains (one) and thus the number of
-> mapping callbacks since we pin the entire guest.
-> 
-> > On POWER, we have a different view of things were domains/groups are
-> > defined to be the smallest granularity we can (down to a single VF) and
-> > we give several groups to a guest (ie we avoid sharing the iommu in most
-> > cases)
-> > 
-> > This is driven by the HW design but that design is itself driven by the
-> > idea that the domains/group are also error isolation groups and we don't
-> > want to take all of the IOs of a guest down if one adapter in that guest
-> > is having an error.
-> > 
-> > The x86 domains are conceptually different as they are about sharing the
-> > iommu page tables with the clear long term intent of then sharing those
-> > page tables with the guest CPU own. We aren't going in that direction
-> > (at this point at least) on POWER..
-> 
-> Yes and no.  The x86 domains are pretty flexible and used a few
-> different ways.  On the host we do dynamic DMA with a domain per device,
-> mapping only the inflight DMA ranges.  In order to achieve the
-> transparent device assignment model, we have to flip that around and map
-> the entire guest.  As noted, we can continue to use separate domains for
-> this, but since each maps the entire guest, it doesn't add a lot of
-> value and uses more resources and requires more mapping callbacks (and
-> x86 doesn't have the best error containment anyway).  If we had a well
-> supported IOMMU model that we could adapt for pvDMA, then it would make
-> sense to keep each device in it's own domain again.  Thanks,
 
-Could you have an PV IOMMU (in the guest) that would set up those
-maps?
+
+Sent from my HTC Touch HD
+
+-----Original Message-----
+From: linuxppc-dev-bounces+dm=3Dmdtech.ru@lists.ozlabs.org =
+<linuxppc-dev-bounces+dm=3Dmdtech.ru@lists.ozlabs.org>
+Sent: 01 =D0=B0=D0=B2=D0=B3=D1=83=D1=81=D1=82=D0=B0 2011 23:58
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geoff Levand <geoff@infradead.org>; cbe-oss-dev@lists.ozlabs.org =
+<cbe-oss-dev@lists.ozlabs.org>; Hector Martin <hector@marcansoft.com>; =
+linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [Cbe-oss-dev] [PATCH 09/15] ps3: Limit the number of =
+regions per	storage device
+
+On Mon, Aug 1, 2011 at 10:30 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Mon, Aug 1, 2011 at 22:03, Andre Heider <a.heider@gmail.com> wrote:
+>> There can be only 8 regions, add a sanity check
+>
+> Why can there be only 8 regions?
+
+I believe lv1 limits it to 8? I might be mistaken here, it mostly is a
+check for the patches after this one
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@lists.ozlabs.org
+https://lists.ozlabs.org/listinfo/linuxppc-d
