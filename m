@@ -1,27 +1,27 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC401B712A
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Aug 2011 12:27:08 +1000 (EST)
-Date: Tue, 2 Aug 2011 11:26:59 +0900
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: [PATCH] drivers/misc: introduce Freescale Data Collection
-	Manager driver
-Message-ID: <20110802022655.GA11282@opensource.wolfsonmicro.com>
-References: <1312235334-15036-1-git-send-email-timur@freescale.com>
-	<20110801234645.GA15792@sirena.org.uk>
-	<4E373D88.80006@freescale.com>
-	<20110802015050.GA17286@opensource.wolfsonmicro.com>
-	<4E375998.1020901@freescale.com>
+Return-Path: <pratyush.linux@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D9E18B71AB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Aug 2011 14:25:23 +1000 (EST)
+Received: by vxi32 with SMTP id 32so5159120vxi.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 01 Aug 2011 21:25:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E375998.1020901@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"arnd@arndb.de" <arnd@arndb.de>
+In-Reply-To: <1301684732-17603-1-git-send-email-tmarri@apm.com>
+References: <1301684732-17603-1-git-send-email-tmarri@apm.com>
+Date: Tue, 2 Aug 2011 09:55:19 +0530
+Message-ID: <CABw=1MfB3_-LKhzmrZ5DHnQ_cX5s7c=0gLXPc7n+nAbo_vnd0g@mail.gmail.com>
+Subject: Re: [PATCH v11 08/10] USB ppc4xx: Add Synopsys DWC OTG PCD interrupt
+	function
+From: Pratyush Anand <pratyush.linux@gmail.com>
+To: tmarri@apm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,38 +31,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 02, 2011 at 01:57:45AM +0000, Tabi Timur-B04825 wrote:
-> Mark Brown wrote:
+Is somebody working on these patches?
+If not, then is it possible to share last modification, so that I can
+start work from there.
+If this v11 was the last modification, and noone is working further,
+then just confirm it. I will start working from here.
 
-> > I'd expect that things like the _lowest, _highest and _average
-> > attributes which a number of drivers have are what you're looking for.
-
-> Yes, but then all I'm doing is presenting numbers that don't change to an 
-> interface, simply on the basis that the numbers represent sensor values.
-
-> If I'm running a sensor application, I'm doing it to get real-time 
-> monitoring of the sensors in my system.  The DCM on our boards is not 
-> capable of real-time results.  So you're not actually "monitoring" the 
-> hardware.  The data from the DCM is available only *after* you stop 
-> running the background process.
-
-Right, that seems to fit reasonably well with things like averages and
-extremes.
-
-> > At the very least it seems obvious how you might extend the interface if
-> > some features you need are missing.  The subsystem has fairly extensive
-> > documentation in Documentation/hwmon.
-
-> I just don't see how it fits.  Yes, I could do it, but then I'd end up 
-> with something that doesn't make any sense.  I would have to use a custom 
-> interface to start monitoring and then another interface to stop it.  Then 
-
-The most obvious thing seems to be to use the existing _reset_history
-stuff to trigger a restart.  If the hardware is so incapable that it
-can't cope with reads while active and needs to be reset to even pause
-that's seems pretty rubbish, I'd have expected you could at least pause
-measurement momentarily to do a read.
-
-Perhaps integration as a PMU may make more sense?  The general point
-here is that this doesn't sound like it's doing something so odd that it
-shouldn't even be trying to work within any sort of framework.
+Regards
+Pratyush
