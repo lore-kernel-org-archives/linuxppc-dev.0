@@ -1,19 +1,20 @@
 Return-Path: <pratyush.linux@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D9E18B71AB
+	by ozlabs.org (Postfix) with ESMTPS id A95DEB71BD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Aug 2011 14:25:23 +1000 (EST)
-Received: by vxi32 with SMTP id 32so5159120vxi.38
+	Tue,  2 Aug 2011 14:46:40 +1000 (EST)
+Received: by vws20 with SMTP id 20so5462709vws.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 01 Aug 2011 21:25:19 -0700 (PDT)
+	Mon, 01 Aug 2011 21:46:36 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1301684732-17603-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <CABw=1MfB3_-LKhzmrZ5DHnQ_cX5s7c=0gLXPc7n+nAbo_vnd0g@mail.gmail.com>
 References: <1301684732-17603-1-git-send-email-tmarri@apm.com>
-Date: Tue, 2 Aug 2011 09:55:19 +0530
-Message-ID: <CABw=1MfB3_-LKhzmrZ5DHnQ_cX5s7c=0gLXPc7n+nAbo_vnd0g@mail.gmail.com>
+	<CABw=1MfB3_-LKhzmrZ5DHnQ_cX5s7c=0gLXPc7n+nAbo_vnd0g@mail.gmail.com>
+Date: Tue, 2 Aug 2011 10:16:36 +0530
+Message-ID: <CABw=1MdfmRq_Q_ut4SZAVjC0ZNhLW60bU0vfn8ra1Lyxr13nuA@mail.gmail.com>
 Subject: Re: [PATCH v11 08/10] USB ppc4xx: Add Synopsys DWC OTG PCD interrupt
 	function
 From: Pratyush Anand <pratyush.linux@gmail.com>
@@ -31,11 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Is somebody working on these patches?
-If not, then is it possible to share last modification, so that I can
-start work from there.
-If this v11 was the last modification, and noone is working further,
-then just confirm it. I will start working from here.
+I can see v13 as the last modifications at following link.
+http://patchwork.ozlabs.org/patch/89560/
+
+Is there any work after it?
 
 Regards
 Pratyush
+
+On Tue, Aug 2, 2011 at 9:55 AM, Pratyush Anand <pratyush.linux@gmail.com> wrote:
+> Is somebody working on these patches?
+> If not, then is it possible to share last modification, so that I can
+> start work from there.
+> If this v11 was the last modification, and noone is working further,
+> then just confirm it. I will start working from here.
+>
+> Regards
+> Pratyush
+>
