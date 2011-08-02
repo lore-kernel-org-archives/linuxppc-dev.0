@@ -1,38 +1,20 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 52B96B71C0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Aug 2011 20:30:47 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id p72APYJP018365
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2011 20:25:34 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p72AUgsx405726
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2011 20:30:42 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p72AUfSW021464
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2011 20:30:42 +1000
-Date: Tue, 2 Aug 2011 18:28:48 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110802082848.GD29719@yookeroo.fritz.box>
-References: <1311983933.8793.42.camel@pasglop>
-	<1312050011.2265.185.camel@x201.home>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4EA97B71C0
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Aug 2011 20:47:56 +1000 (EST)
+Message-ID: <4E37D5D9.7070001@embedded-sol.com>
+Date: Tue, 02 Aug 2011 13:47:53 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1312050011.2265.185.camel@x201.home>
-Cc: aafabbri <aafabbri@cisco.com>, Alexey Kardashevskiy <aik@au1.ibm.com>,
-	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
-	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
-	iommu <iommu@lists.linux-foundation.org>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: Re: GPIO IRQ on P1022
+References: <4E35309E.4000202@embedded-sol.com>
+	<4E355FB7.3030904@freescale.com>
+In-Reply-To: <4E355FB7.3030904@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,162 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 30, 2011 at 12:20:08PM -0600, Alex Williamson wrote:
-> On Sat, 2011-07-30 at 09:58 +1000, Benjamin Herrenschmidt wrote:
-[snip]
-> On x86, the USB controllers don't typically live behind a PCIe-to-PCI
-> bridge, so don't suffer the source identifier problem, but they do often
-> share an interrupt.  But even then, we can count on most modern devices
-> supporting PCI2.3, and thus the DisINTx feature, which allows us to
-> share interrupts.  In any case, yes, it's more rare but we need to know
-> how to handle devices behind PCI bridges.  However I disagree that we
-> need to assign all the devices behind such a bridge to the guest.
-> There's a difference between removing the device from the host and
-> exposing the device to the guest.
+Hi,
 
-I think you're arguing only over details of what words to use for
-what, rather than anything of substance here.  The point is that an
-entire partitionable group must be assigned to "host" (in which case
-kernel drivers may bind to it) or to a particular guest partition (or
-at least to a single UID on the host).  Which of the assigned devices
-the partition actually uses is another matter of course, as is at
-exactly which level they become "de-exposed" if you don't want to use
-all of then.
+On 07/31/2011 04:59 PM, Tabi Timur-B04825 wrote:
+> Felix Radensky wrote:
+>>       What happens when I load my driver is single execution of interrupt
+>> handler
+>>       followed by system freeze. Even if I call disable_irq() in interrupt
+>> handler the
+>>       system still freezes.
+> I don't know anything about the GPIO layer, but I think you're going to
+> need to debug this a little more.  Where exactly is the freeze?  Are you
+> sure the interrupt handler is being called only once?  Perhaps you're not
+> clearing the interrupt status and your handler is being called repeatedly?
+>
 
-[snip]
-> > Maybe something like /sys/devgroups ? This probably warrants involving
-> > more kernel people into the discussion.
-> 
-> I don't yet buy into passing groups to qemu since I don't buy into the
-> idea of always exposing all of those devices to qemu.  Would it be
-> sufficient to expose iommu nodes in sysfs that link to the devices
-> behind them and describe properties and capabilities of the iommu
-> itself?  More on this at the end.
+I'm trying to debug this problem, without much luck so far.
+I've enabled hard and soft lock-up detection and various
+locking debugging options in kernel configuration but nothing
+shows up. I've also tried KGDB over serial line, and was able
+to hit the breakpoint in mpc8xxx_gpio code, but was unable
+to step through the code, gdb just freezes.
 
-Again, I don't think you're making a distinction of any substance.
-Ben is saying the group as a whole must be set to allow partition
-access, whether or not you call that "assigning".  There's no reason
-that passing a sysfs descriptor to qemu couldn't be the qemu
-developer's quick-and-dirty method of putting the devices in, while
-also allowing full assignment of the devices within the groups by
-libvirt.
+I'm getting the following after system locks up:
 
-[snip]
-> > Now some of this can be fixed with tweaks, and we've started doing it
-> > (we have a working pass-through using VFIO, forgot to mention that, it's
-> > just that we don't like what we had to do to get there).
-> 
-> This is a result of wanting to support *unmodified* x86 guests.  We
-> don't have the luxury of having a predefined pvDMA spec that all x86
-> OSes adhere to.  The 32bit problem is unfortunate, but the priority use
-> case for assigning devices to guests is high performance I/O, which
-> usually entails modern, 64bit hardware.  I'd like to see us get to the
-> point of having emulated IOMMU hardware on x86, which could then be
-> backed by VFIO, but for now guest pinning is the most practical and
-> useful.
+nfs: server 10.0.0.10 not responding, still trying
+NETDEV WATCHDOG: eth0 (fsl-gianfar): transmit queue 0 timed out
+------------[ cut here ]------------
+WARNING: at net/sched/sch_generic.c:255
+Modules linked in: gsat hal
+NIP: c01a5e9c LR: c01a5e9c CTR: c01576bc
+REGS: dfff1e90 TRAP: 0700   Not tainted  (3.0.0)
+MSR: 00029000 <EE,ME,CE>  CR: 24044082  XER: 20000000
+TASK = c02df3b8[0] 'swapper' THREAD: c02ee000
+GPR00: c01a5e9c dfff1f40 c02df3b8 00000046 00003d04 ffffffff c01546e4 
+00003d04
+GPR08: c02e0000 c02ed710 00003d04 00000002 84044042 7dcac9f0 00000000 
+00000000
+GPR16: 1ff8c184 1ffa95e0 c0284070 c02f9dc0 c02fabec c02fa9ec c02fa7ec 
+c02fa5ec
+GPR24: 00200200 dfff1f68 c02e0000 dfff0000 c034c138 c02e0000 df011000 
+00000000
+NIP [c01a5e9c] dev_watchdog+0x298/0x2a8
+LR [c01a5e9c] dev_watchdog+0x298/0x2a8
+Call Trace:
+[dfff1f40] [c01a5e9c] dev_watchdog+0x298/0x2a8 (unreliable)
+[dfff1f60] [c00434e8] run_timer_softirq+0x1a4/0x1e0
+[dfff1fb0] [c003cf20] __do_softirq+0x9c/0x114
+[dfff1ff0] [c000c8a0] call_do_softirq+0x14/0x24
+[c02efe90] [c00049ec] do_softirq+0x74/0x80
+[c02efeb0] [c003d174] irq_exit+0x98/0x9c
+[c02efec0] [c0009944] timer_interrupt+0xb4/0x118
+[c02efed0] [c000e018] ret_from_except+0x0/0x18
+--- Exception: 901 at cpu_idle+0x98/0xd8
+     LR = cpu_idle+0x98/0xd8
+[c02eff90] [c0008238] cpu_idle+0x50/0xd8 (unreliable)
+[c02effb0] [c00022e4] rest_init+0x64/0x78
+[c02effc0] [c02bb86c] start_kernel+0x244/0x2c0
+[c02efff0] [c00003a0] skpinv+0x2b8/0x2f4
+Instruction dump:
+38000001 7c0903a6 4bfffe40 7fc3f378 4bfe7045 7fe6fb78 7c651b78 3c60c02a
+7fc4f378 38639ac4 4cc63182 4be921dd <0fe00000> 38000001 981c0001 4bffff9c
+---[ end trace 5d45e0fe33774f9c ]---
 
-No-one's suggesting that this isn't a valid mode of operation.  It's
-just that right now conditionally disabling it for us is fairly ugly
-because of the way the qemu code is structured.
 
-[snip]
-> > The above means we need arch specific APIs. So arch specific vfio
-> > ioctl's, either that or kvm ones going to vfio or something ... the
-> > current structure of vfio/kvm interaction doesn't make it easy.
-> 
-> FYI, we also have large page support for x86 VT-d, but it seems to only
-> be opportunistic right now.  I'll try to come back to the rest of this
-> below.
+What else can be done to find the problem. ?
 
-Incidentally there seems to be a hugepage leak bug in the current
-kernel code (which I haven't had a chance to track down yet).  Our
-qemu code currently has bugs (working on it..) which means it has
-unbalanced maps and unmaps of the pages.  But when qemu quits they
-should all be released but somehow they're not.
+Thanks a lot in advance.
 
-[snip]
-> >  - I don't like too much the fact that VFIO provides yet another
-> > different API to do what we already have at least 2 kernel APIs for, ie,
-> > BAR mapping and config space access. At least it should be better at
-> > using the backend infrastructure of the 2 others (sysfs & procfs). I
-> > understand it wants to filter in some case (config space) and -maybe-
-> > yet another API is the right way to go but allow me to have my doubts.
-> 
-> The use of PCI sysfs is actually one of my complaints about current
-> device assignment.  To do assignment with an unprivileged guest we need
-> to open the PCI sysfs config file for it, then change ownership on a
-> handful of other PCI sysfs files, then there's this other pci-stub thing
-> to maintain ownership, but the kvm ioctls don't actually require it and
-> can grab onto any free device...  We are duplicating some of that in
-> VFIO, but we also put the ownership of the device behind a single device
-> file.  We do have the uiommu problem that we can't give an unprivileged
-> user ownership of that, but your usage model may actually make that
-> easier.  More below...
-
-Hrm.  I was assuming that a sysfs groups interface would provide a
-single place to set the ownership of the whole group.  Whether that's
-a echoing a uid to a magic file or doing or chown on the directory or
-whatever is a matter of details.
-
-[snip]
-> I spent a lot of time looking for an architecture neutral solution here,
-> but I don't think it exists.  Please prove me wrong.  The problem is
-> that we have to disable INTx on an assigned device after it fires (VFIO
-> does this automatically).  If we don't do this, a non-responsive or
-> malicious guest could sit on the interrupt, causing it to fire
-> repeatedly as a DoS on the host.  The only indication that we can rely
-> on to re-enable INTx is when the guest CPU writes an EOI to the APIC.
-> We can't just wait for device accesses because a) the device CSRs are
-> (hopefully) direct mapped and we'd have to slow map them or attempt to
-> do some kind of dirty logging to detect when they're accesses b) what
-> constitutes an interrupt service is device specific.
-> 
-> That means we need to figure out how PCI interrupt 'A' (or B...)
-> translates to a GSI (Global System Interrupt - ACPI definition, but
-> hopefully a generic concept).  That GSI identifies a pin on an IOAPIC,
-> which will also see the APIC EOI.  And just to spice things up, the
-> guest can change the PCI to GSI mappings via ACPI.  I think the set of
-> callbacks I've added are generic (maybe I left ioapic in the name), but
-> yes they do need to be implemented for other architectures.  Patches
-> appreciated from those with knowledge of the systems and/or access to
-> device specs.  This is the only reason that I make QEMU VFIO only build
-> for x86.
-
-There will certainly need to be some arch hooks here, but it can be
-made less intrusively x86 specific without too much difficulty.
-e.g. Create an EOF notifier chain in qemu - the master PICs (APIC for
-x86, XICS for pSeries) for all vfio capable machines need to kick it,
-and vfio subscribes.
-
-[snip]
-> Rather than your "groups" idea, I've been mulling over whether we can
-> just expose the dependencies, configuration, and capabilities in sysfs
-> and build qemu commandlines to describe it.  For instance, if we simply
-> start with creating iommu nodes in sysfs, we could create links under
-> each iommu directory to the devices behind them.  Some kind of
-> capability file could define properties like whether it's page table
-> based or fixed iova window or the granularity of mapping the devices
-> behind it.  Once we have that, we could probably make uiommu attach to
-> each of those nodes.
-
-Well, that would address our chief concern that inherently tying the
-lifetime of a domain to an fd is problematic.  In fact, I don't really
-see how this differs from the groups proposal except in the details of
-how you inform qemu of the group^H^H^H^H^Hiommu domain.
-
-[snip]
-> Today we do DMA mapping via the VFIO device because the capabilities of
-> the IOMMU domains change depending on which devices are connected (for
-> VT-d, the least common denominator of the IOMMUs in play).  Forcing the
-> DMA mappings through VFIO naturally forces the call order.  If we moved
-> to something like above, we could switch the DMA mapping to the uiommu
-> device, since the IOMMU would have fixed capabilities.
-
-Ah, that's why you have the map and unmap on the vfio fd,
-necessitating the ugly "pick the first vfio fd from the list" thing.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Felix.
