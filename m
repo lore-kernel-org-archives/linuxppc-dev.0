@@ -1,23 +1,27 @@
-Return-Path: <r58472@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 705A3B71CE
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Aug 2011 16:16:01 +1000 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Liu Shuo-B35362 <B35362@freescale.com>, "dwmw2@infradead.org"
-	<dwmw2@infradead.org>, "dedekind1@gmail.com" <dedekind1@gmail.com>
-Subject: RE: [PATCH v2] mtd/nand : workaround for Freescale FCM to support
-	large-page Nand chip
-Date: Wed, 3 Aug 2011 06:15:56 +0000
-Message-ID: <3F607A5180246847A760FD34122A1E051BC8DF@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1310446122-18050-1-git-send-email-b35362@freescale.com>
-In-Reply-To: <1310446122-18050-1-git-send-email-b35362@freescale.com>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DA56DB71DB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  3 Aug 2011 16:42:30 +1000 (EST)
+Message-ID: <4E38EDD4.1040809@windriver.com>
+Date: Wed, 3 Aug 2011 14:42:28 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+To: Vineeth <vneethv@gmail.com>
+Subject: Re: Fwd: MPC7410 Linux Kernel
+References: <OFABB45B91.59E6539A-ONCA2578CC.006F5FB7-CA2578CC.0070CFA6@csc.com>
+	<CAFbQSaDaL0UaiY4r+u=a72mmsCHxs7O5Z82MESrXXcWj2tNvbQ@mail.gmail.com>
+	<OF7A7D0C50.273D2A69-ONCA2578CD.001B5783-CA2578CD.001D9FFE@csc.com>
+	<CAFbQSaAhXUrb1peJ2E3Kkp1gd16JSn9OjneO826q_aMz+yzAqg@mail.gmail.com>
+	<CAFbQSaC6BkZj+a4=-9Q2Cyj7w=4y5QYM22kaK1O=Uz5KW9iiuQ@mail.gmail.com>
+	<4E37AB04.9070409@windriver.com>
+	<CAFbQSaDhEpSqX4GQHjSTsmpwv3a36RE7WrXbn7ni=NVcTtVyiw@mail.gmail.com>
+In-Reply-To: <CAFbQSaDhEpSqX4GQHjSTsmpwv3a36RE7WrXbn7ni=NVcTtVyiw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +31,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->-----Original Message-----
->From: Liu Shuo-B35362
->Sent: Tuesday, July 12, 2011 12:49 PM
->To: dwmw2@infradead.org
->Cc: linux-mtd@lists.infradead.org; linuxppc-dev@ozlabs.org; Liu Shuo-
->B35362; Li Yang-R58472
->Subject: [PATCH v2] mtd/nand : workaround for Freescale FCM to support
->large-page Nand chip
->
->From: Liu Shuo <b35362@freescale.com>
->
->Freescale FCM controller has a 2K size limitation of buffer RAM. In order
->to support the Nand flash chip whose page size is larger than 2K bytes, we
->divide a page into multi-2K pages for MTD layer driver. In that case, we
->force to set the page size to 2K bytes. We convert the page address of MTD
->layer driver to a real page address in flash chips and a column index in
->fsl_elbc driver. We can issue any column address by UA instruction of elbc
->controller.
->
->Signed-off-by: Liu Shuo <b35362@freescale.com>
->Signed-off-by: Li Yang <leoli@freescale.com>
->---
+Vineeth wrote:
+> Thanks for the reply.
+> 
+> We were referring kuroboxHG.dts which uses Sandpoint architecture; which is
+> almost same as ours.
+> 
+> 1. one doubt in kuroboxHG is the ranges property in SOC node says EUMB is at
+> 0xFC00_0000; and as per the datasheet of mpc107, the open pic address will
+	
+And for powerpc looks u-boot should initialize MPC107 and EUMB_ADDR should be
+configured as well. And kernel doesn't reconfigure EUMB again. This is different
+from original ppc implementation.
 
-Hi David and Artem,
+So I think you should check how u-boot did. Note not all targets use 0xfc000000
+as EUMB_ADDR. At least for linkstation 0x8000000 is set as EUMB_ADDR. And so
+maybe this value, 0xFC000000, should be one typo since kernel don't use this
+node property as I previously said.
 
-We have fixed the multi-line comment style problem.  Could you help to pick=
- the patch?
+> be EUMB_BASE + 0x40000; but in kurobox its given as 0x80040000;
+> 
+> 2. We know that our UART is mapped at address 0xDB00_0100; which is
+> connected in a PCI-LOCAL bridge whose base is at 0xDB00_0000
+> How can i represent these things in dts ? Can the RANGES property of PCI
+> node can mention this ?
 
-- Leo
+How do u-boot resided on your target set EUMB_ADDR? Then you can migrate
+kuroboxHG.dts with this base address.
+
+Tiejun
+
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> On Tue, Aug 2, 2011 at 1:15 PM, tiejun.chen <tiejun.chen@windriver.com>wrote:
+> 
+>> Vineeth wrote:
+>>> Hi,
+>>>
+>>> We are trying to port  linux 2.6.38 on MPC7410 based board (This is a
+>>> preparatory design by our customer)
+>>>
+>>> System architecture is as follows,
+>>>
+>>> MPC7410 <=> MPC107 <=> PCI_to_LOCAL(plx9052) <=> UART
+>> MPCXXX should be compatible with TSIXXX. So you can refer to mpc7448_hpc2.
+>>
+>>> Previously we were using ppc architecture and we had some issues with
+>>> page_init() functions; which may be because of our configuration.As we
+>> didnt
+>>> get much support on ppc architecture we moved to powerpc.
+>>>
+>>> Now we moved to powerpc architecture. We have some doubts on writing the
+>> dts
+>>> file. Please find the dts file attached.
+>>>
+>>> when we checked the legacy_serial.c file, we found that
+>>> legacy_serial_parents not expecting a pci-local or a pci bridge as
+>> parent.
+>>> is our understanding correct ? should we introduce a new pci parent in
+>> that
+>>> structure ?
+>> So you can understand this after refer to the file,
+>> arch/powerpc/boot/dts/mpc7448hpc2.dts.
+>>
+>> Tiejun
+>>
+>>>  We are confused about writing the ranges property of PCI node.we were
+>>> referring booting_without_of doc but didnt get much info. Is there any
+>> file
+>>> which gives better idea about the ranges property ?
+>>>
+>>> Thanks
+>>>  Vineeth
+>>
+> 
