@@ -1,13 +1,14 @@
 Return-Path: <geoff@infradead.org>
-Message-ID: <4E39CC54.7030705@infradead.org>
-Date: Wed, 3 Aug 2011 15:31:48 -0700
+Message-ID: <4E39CC67.2060606@infradead.org>
+Date: Wed, 3 Aug 2011 15:32:07 -0700
 From: Geoff Levand <geoff@infradead.org>
 MIME-Version: 1.0
 To: Andre Heider <a.heider@gmail.com>
-Subject: Re: [PATCH 05/15] ps3: Detect the current lpar environment
+Subject: Re: [PATCH 01/15] [PS3] Add udbg driver using the PS3 gelic Ethernet
+	device
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1312228986-32307-6-git-send-email-a.heider@gmail.com>
-In-Reply-To: <1312228986-32307-6-git-send-email-a.heider@gmail.com>
+	<1312228986-32307-2-git-send-email-a.heider@gmail.com>
+In-Reply-To: <1312228986-32307-2-git-send-email-a.heider@gmail.com>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
 	linuxppc-dev@lists.ozlabs.org
@@ -21,131 +22,84 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 08/01/2011 01:02 PM, Andre Heider wrote:
-> ---
->  arch/powerpc/include/asm/ps3.h          |    7 +++++++
->  arch/powerpc/platforms/ps3/platform.h   |    4 ++++
->  arch/powerpc/platforms/ps3/repository.c |   19 +++++++++++++++++++
->  arch/powerpc/platforms/ps3/setup.c      |   22 ++++++++++++++++++++++
->  4 files changed, 52 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
-> index 7f065e1..136354a 100644
-> --- a/arch/powerpc/include/asm/ps3.h
-> +++ b/arch/powerpc/include/asm/ps3.h
-> @@ -39,6 +39,13 @@ union ps3_firmware_version {
->  void ps3_get_firmware_version(union ps3_firmware_version *v);
->  int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev);
->  
-> +enum ps3_ss_laid {
-> +	PS3_SS_LAID_GAMEOS = 0x1070000002000001UL,
-> +	PS3_SS_LAID_OTHEROS = 0x1080000004000001UL,
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/ps3/gelic_udbg.c
+> @@ -0,0 +1,272 @@
+> +/*
+> + * arch/powerpc/platforms/ps3/gelic_udbg.c
 
-Only PS3_SS_LAID_OTHEROS is used for anything outside ps3_setup_arch(),
-so I think it makes sense to split this into two patches with one adding
-just PS3_SS_LAID_OTHEROS and ps3_get_ss_laid() with a comment that
-it adds the ps3_get_ss_laid routine.
+Don't put file names in files.  When the file gets moved, then this will
+no longer be correct.
 
-> +};
-> +
-> +enum ps3_ss_laid ps3_get_ss_laid(void);
-> +
->  /* 'Other OS' area */
->  
->  enum ps3_param_av_multi_out {
-> diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
-> index 9a196a8..1ba15b8 100644
-> --- a/arch/powerpc/platforms/ps3/platform.h
-> +++ b/arch/powerpc/platforms/ps3/platform.h
-> @@ -232,4 +232,8 @@ int ps3_repository_read_spu_resource_id(unsigned int res_index,
->  int ps3_repository_read_vuart_av_port(unsigned int *port);
->  int ps3_repository_read_vuart_sysmgr_port(unsigned int *port);
->  
-> +/* repository ss info */
-> +
-> +int ps3_repository_read_ss_laid(enum ps3_ss_laid *laid);
-> +
->  #endif
-> diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-> index 5e304c2..6fa3e96 100644
-> --- a/arch/powerpc/platforms/ps3/repository.c
-> +++ b/arch/powerpc/platforms/ps3/repository.c
-> @@ -1002,6 +1002,25 @@ int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
->  			    lpar, rights);
->  }
->  
-> +/**
-> + * ps3_repository_read_ss_laid - Read the lpar auth id
+> + *
+> + * udbg debug output routine via GELIC UDP broadcasts
+> + * Copyright (C) 2010 Hector Martin <hector@marcansoft.com>
+> + * Copyright (C) 2011 Andre Heider <a.heider@gmail.com>
+
+Some of this seems to be taken from the gelic driver, so shouldn't
+the copyright info from there be included here?
+
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version 2
+> + * of the License, or (at your option) any later version.
+> + *
 > + */
 > +
-> +int ps3_repository_read_ss_laid(enum ps3_ss_laid *laid)
+> +#include <asm/io.h>
+> +#include <asm/udbg.h>
+> +#include <asm/lv1call.h>
+> +
+> +#define GELIC_BUS_ID 1
+> +#define GELIC_DEVICE_ID 0
+> +#define GELIC_DEBUG_PORT 18194
+> +#define GELIC_MAX_MESSAGE_SIZE 1000
+> +
+> +#define GELIC_LV1_GET_MAC_ADDRESS 1
+> +#define GELIC_LV1_GET_VLAN_ID 4
+> +#define GELIC_LV1_VLAN_TX_ETHERNET_0 2
+> +
+> +#define GELIC_DESCR_DMA_STAT_MASK 0xf0000000
+> +#define GELIC_DESCR_DMA_CARDOWNED 0xa0000000
+> +
+> +#define GELIC_DESCR_TX_DMA_IKE 0x00080000
+> +#define GELIC_DESCR_TX_DMA_NO_CHKSUM 0x00000000
+> +#define GELIC_DESCR_TX_DMA_FRAME_TAIL 0x00040000
+> +
+> +#define GELIC_DESCR_DMA_CMD_NO_CHKSUM (GELIC_DESCR_DMA_CARDOWNED | \
+> +				       GELIC_DESCR_TX_DMA_IKE | \
+> +				       GELIC_DESCR_TX_DMA_NO_CHKSUM)
+> +
+> +static u64 bus_addr;
+> +
+> +struct gelic_descr {
+> +	/* as defined by the hardware */
+
+These are BE from the hardware, so should be __beXX types.
+
+> +	u32 buf_addr;
+> +	u32 buf_size;
+> +	u32 next_descr_addr;
+> +	u32 dmac_cmd_status;
+> +	u32 result_size;
+> +	u32 valid_size;	/* all zeroes for tx */
+> +	u32 data_status;
+> +	u32 data_error;	/* all zeroes for tx */
+> +} __attribute__((aligned(32)));
+
+...
+
+> +static void gelic_debug_init(void)
 > +{
-> +	int result;
-> +	u64 id, v1;
-> +
-> +	lv1_get_logical_partition_id(&id);
-> +	result = read_node(PS3_LPAR_ID_PME,
-> +			   make_first_field("ss", 0),
-> +			   make_field("laid", 0),
-> +			   id, 0,
-> +			   &v1, NULL);
-> +	*laid = v1;
-> +	return result;
-> +}
-> +
->  #if defined(DEBUG)
->  
->  int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
-> diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-> index 149bea2..f430279 100644
-> --- a/arch/powerpc/platforms/ps3/setup.c
-> +++ b/arch/powerpc/platforms/ps3/setup.c
-> @@ -47,6 +47,7 @@ DEFINE_MUTEX(ps3_gpu_mutex);
->  EXPORT_SYMBOL_GPL(ps3_gpu_mutex);
->  
->  static union ps3_firmware_version ps3_firmware_version;
-> +static enum ps3_ss_laid ps3_ss_laid;
->  
->  void ps3_get_firmware_version(union ps3_firmware_version *v)
->  {
-> @@ -68,6 +69,12 @@ int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
->  }
->  EXPORT_SYMBOL_GPL(ps3_compare_firmware_version);
->  
-> +enum ps3_ss_laid ps3_get_ss_laid(void)
-> +{
-> +	return ps3_ss_laid;
-> +}
-> +EXPORT_SYMBOL_GPL(ps3_get_ss_laid);
-> +
->  static void ps3_power_save(void)
->  {
->  	/*
-> @@ -192,6 +199,7 @@ static int ps3_set_dabr(unsigned long dabr)
->  
->  static void __init ps3_setup_arch(void)
->  {
-> +	const char *laid_str;
->  
->  	DBG(" -> %s:%d\n", __func__, __LINE__);
->  
-> @@ -200,6 +208,20 @@ static void __init ps3_setup_arch(void)
->  	       ps3_firmware_version.major, ps3_firmware_version.minor,
->  	       ps3_firmware_version.rev);
->  
-> +	ps3_repository_read_ss_laid(&ps3_ss_laid);
-> +	switch (ps3_ss_laid) {
-> +	case PS3_SS_LAID_GAMEOS:
-> +		laid_str = "GameOS";
-> +		break;
-> +	case PS3_SS_LAID_OTHEROS:
-> +		laid_str = "OtherOS";
-> +		break;
-> +	default:
-> +		laid_str = "unknown";
-> +		break;
-> +	}
-> +	printk(KERN_INFO "Running in %s lpar\n", laid_str);
-> +
->  	ps3_spu_set_platform();
->  
->  #ifdef CONFIG_SMP
+
+...
+
+> +	result = lv1_net_control(GELIC_BUS_ID, GELIC_DEVICE_ID,
+> +				 GELIC_LV1_GET_VLAN_ID,
+> +				 GELIC_LV1_VLAN_TX_ETHERNET_0, 0, 0,
+> +				 &vlan_id, &v2);
+> +	if (result == 0) {
+
+This should be 'if (!result)'
+
+-Geoff
