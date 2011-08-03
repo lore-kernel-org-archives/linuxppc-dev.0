@@ -1,24 +1,31 @@
-Return-Path: <lenb@kernel.org>
-Received: from vms173017pub.verizon.net (vms173017pub.verizon.net
-	[206.46.173.17]) by ozlabs.org (Postfix) with ESMTP id BBF94B71D4
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2011 04:46:00 +1000 (EST)
-Received: from localhost.localdomain ([unknown] [65.175.195.226])
-	by vms173017.mailsrvcs.net
-	(Sun Java(tm) System Messaging Server 7u2-7.02 32bit (built Apr 16
-	2009)) with ESMTPA id <0LPD007825BYOOD1@vms173017.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Wed, 03 Aug 2011 12:45:41 -0500 (CDT)
-Date: Wed, 03 Aug 2011 13:45:32 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH V1 3/7] cpuidle: stop using pm_idle
-In-reply-to: <20110607162947.6848.79430.stgit@tringupt.in.ibm.com>
-Message-id: <alpine.LFD.2.02.1108031341200.22067@x980>
-References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
-	<20110607162947.6848.79430.stgit@tringupt.in.ibm.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <nacc@us.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 81927B71E3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  4 Aug 2011 04:57:26 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p73IgQhA012637
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2011 12:42:26 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p73Iu0l6154282
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2011 12:56:00 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p73Itwg8020045
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2011 12:55:59 -0600
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/kvm: fix build errors with older toolchains
+Date: Wed,  3 Aug 2011 11:55:54 -0700
+Message-Id: <1312397755-15737-1-git-send-email-nacc@us.ibm.com>
+Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+	Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,274 +35,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 7 Jun 2011, Trinabh Gupta wrote:
+On a box with gcc 4.3.2, I see errors like:
 
-> From: Len Brown <len.brown@intel.com>
-> 
-> pm_idle does not scale as an idle handler registration mechanism.
-> Don't use it for cpuidle.  Instead, call cpuidle directly, and
-> allow architectures to use pm_idle as an arch-specific default
-> if they need it.  ie.
-> 
-> cpu_idle()
-> 	...
-> 	if(cpuidle_call_idle())
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1254: Error: Unrecognized opcode: stxvd2x
+arch/powerpc/kvm/book3s_hv_rmhandlers.S:1316: Error: Unrecognized opcode: lxvd2x
 
-Looks like you forgot to correct my typo that you pointed out earlier,
-s/cpuidle_call_idle/cpuidle_idle_call/
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-both in the comment here and for arm and sh below.
-
-Thanks for including the From: above, that is correct form.
-But note in the future that when you modify somebody else's patch,
-you should append a note about what you changed,
-and also add your signed-off-by, so we can
-track the changes.
-
-thanks,
--Len
-
-> 		pm_idle();
-> 
-> cc: x86@kernel.org
-> cc: Kevin Hilman <khilman@deeprootsystems.com>
-> cc: Paul Mundt <lethal@linux-sh.org>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> ---
-> 
->  arch/arm/kernel/process.c    |    4 +++-
->  arch/sh/kernel/idle.c        |    6 ++++--
->  arch/x86/kernel/process_32.c |    4 +++-
->  arch/x86/kernel/process_64.c |    4 +++-
->  drivers/cpuidle/cpuidle.c    |   39 ++++++++++++++++++---------------------
->  include/linux/cpuidle.h      |    2 ++
->  6 files changed, 33 insertions(+), 26 deletions(-)
-> 
-> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-> index 5e1e541..d7ee0d4 100644
-> --- a/arch/arm/kernel/process.c
-> +++ b/arch/arm/kernel/process.c
-> @@ -30,6 +30,7 @@
->  #include <linux/uaccess.h>
->  #include <linux/random.h>
->  #include <linux/hw_breakpoint.h>
-> +#include <linux/cpuidle.h>
->  
->  #include <asm/cacheflush.h>
->  #include <asm/leds.h>
-> @@ -196,7 +197,8 @@ void cpu_idle(void)
->  				cpu_relax();
->  			} else {
->  				stop_critical_timings();
-> -				pm_idle();
-> +				if (cpuidle_call_idle())
-> +					pm_idle();
->  				start_critical_timings();
->  				/*
->  				 * This will eventually be removed - pm_idle
-> diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
-> index 425d604..9c7099e 100644
-> --- a/arch/sh/kernel/idle.c
-> +++ b/arch/sh/kernel/idle.c
-> @@ -16,12 +16,13 @@
->  #include <linux/thread_info.h>
->  #include <linux/irqflags.h>
->  #include <linux/smp.h>
-> +#include <linux/cpuidle.h>
->  #include <asm/pgalloc.h>
->  #include <asm/system.h>
->  #include <asm/atomic.h>
->  #include <asm/smp.h>
->  
-> -void (*pm_idle)(void) = NULL;
-> +static void (*pm_idle)(void);
->  
->  static int hlt_counter;
->  
-> @@ -100,7 +101,8 @@ void cpu_idle(void)
->  			local_irq_disable();
->  			/* Don't trace irqs off for idle */
->  			stop_critical_timings();
-> -			pm_idle();
-> +			if (cpuidle_call_idle())
-> +				pm_idle();
->  			/*
->  			 * Sanity check to ensure that pm_idle() returns
->  			 * with IRQs enabled
-> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> index 8d12878..61fadbe 100644
-> --- a/arch/x86/kernel/process_32.c
-> +++ b/arch/x86/kernel/process_32.c
-> @@ -38,6 +38,7 @@
->  #include <linux/uaccess.h>
->  #include <linux/io.h>
->  #include <linux/kdebug.h>
-> +#include <linux/cpuidle.h>
->  
->  #include <asm/pgtable.h>
->  #include <asm/system.h>
-> @@ -109,7 +110,8 @@ void cpu_idle(void)
->  			local_irq_disable();
->  			/* Don't trace irqs off for idle */
->  			stop_critical_timings();
-> -			pm_idle();
-> +			if (cpuidle_idle_call())
-> +				pm_idle();
->  			start_critical_timings();
->  		}
->  		tick_nohz_restart_sched_tick();
-> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-> index 6c9dd92..62c219a 100644
-> --- a/arch/x86/kernel/process_64.c
-> +++ b/arch/x86/kernel/process_64.c
-> @@ -37,6 +37,7 @@
->  #include <linux/uaccess.h>
->  #include <linux/io.h>
->  #include <linux/ftrace.h>
-> +#include <linux/cpuidle.h>
->  
->  #include <asm/pgtable.h>
->  #include <asm/system.h>
-> @@ -136,7 +137,8 @@ void cpu_idle(void)
->  			enter_idle();
->  			/* Don't trace irqs off for idle */
->  			stop_critical_timings();
-> -			pm_idle();
-> +			if (cpuidle_idle_call())
-> +				pm_idle();
->  			start_critical_timings();
->  
->  			/* In many cases the interrupt that ended idle
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 8d7303b..304e378 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -25,10 +25,10 @@ DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
->  
->  DEFINE_MUTEX(cpuidle_lock);
->  LIST_HEAD(cpuidle_detected_devices);
-> -static void (*pm_idle_old)(void);
->  
->  static int enabled_devices;
->  static int off __read_mostly;
-> +static int initialized __read_mostly;
->  
->  int cpuidle_disabled(void)
->  {
-> @@ -56,27 +56,24 @@ static int __cpuidle_register_device(struct cpuidle_device *dev);
->   * cpuidle_idle_call - the main idle loop
->   *
->   * NOTE: no locks or semaphores should be used here
-> + * return non-zero on failure
->   */
-> -static void cpuidle_idle_call(void)
-> +int cpuidle_idle_call(void)
->  {
->  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
->  	struct cpuidle_driver *drv = cpuidle_get_driver();
->  	struct cpuidle_state *target_state;
->  	int next_state, entered_state;
->  
-> -	/* check if the device is ready */
-> -	if (!dev || !dev->enabled) {
-> -		if (pm_idle_old)
-> -			pm_idle_old();
-> -		else
-> -#if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
-> -			default_idle();
-> -#else
-> -			local_irq_enable();
-> -#endif
-> -		return;
-> -	}
-> +	if (off)
-> +		return -ENODEV;
-> +
-> +	if (!initialized)
-> +		return -ENODEV;
->  
-> +	/* check if the device is ready */
-> +	if (!dev || !dev->enabled)
-> +		return -EBUSY;
->  #if 0
->  	/* shows regressions, re-enable for 2.6.29 */
->  	/*
-> @@ -90,7 +87,7 @@ static void cpuidle_idle_call(void)
->  	next_state = cpuidle_curr_governor->select(drv, dev);
->  	if (need_resched()) {
->  		local_irq_enable();
-> -		return;
-> +		return 0;
->  	}
->  
->  	target_state = &drv->states[next_state];
-> @@ -116,6 +113,8 @@ static void cpuidle_idle_call(void)
->  	/* give the governor an opportunity to reflect on the outcome */
->  	if (cpuidle_curr_governor->reflect)
->  		cpuidle_curr_governor->reflect(dev, entered_state);
-> +
-> +	return 0;
->  }
->  
->  /**
-> @@ -123,10 +122,10 @@ static void cpuidle_idle_call(void)
->   */
->  void cpuidle_install_idle_handler(void)
->  {
-> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-> +	if (enabled_devices) {
->  		/* Make sure all changes finished before we switch to new idle */
->  		smp_wmb();
-> -		pm_idle = cpuidle_idle_call;
-> +		initialized = 1;
->  	}
->  }
->  
-> @@ -135,8 +134,8 @@ void cpuidle_install_idle_handler(void)
->   */
->  void cpuidle_uninstall_idle_handler(void)
->  {
-> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
-> -		pm_idle = pm_idle_old;
-> +	if (enabled_devices) {
-> +		initialized = 0;
->  		cpuidle_kick_cpus();
->  	}
->  }
-> @@ -410,8 +409,6 @@ static int __init cpuidle_init(void)
->  	if (cpuidle_disabled())
->  		return -ENODEV;
->  
-> -	pm_idle_old = pm_idle;
-> -
->  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
->  	if (ret)
->  		return ret;
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 2786787..c904188 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -128,6 +128,7 @@ struct cpuidle_driver {
->  
->  #ifdef CONFIG_CPU_IDLE
->  extern void disable_cpuidle(void);
-> +extern int cpuidle_idle_call(void);
->  
->  extern int cpuidle_register_driver(struct cpuidle_driver *drv);
->  struct cpuidle_driver *cpuidle_get_driver(void);
-> @@ -142,6 +143,7 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
->  
->  #else
->  static inline void disable_cpuidle(void) { }
-> +static inline int cpuidle_idle_call(void) { return -ENODEV; }
->  
->  static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
->  {return -ENODEV; }
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 6dd3358..de29501 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1251,7 +1251,7 @@ BEGIN_FTR_SECTION
+ 	reg = 0
+ 	.rept	32
+ 	li	r6,reg*16+VCPU_VSRS
+-	stxvd2x	reg,r6,r3
++	STXVD2X(reg,r6,r3)
+ 	reg = reg + 1
+ 	.endr
+ FTR_SECTION_ELSE
+@@ -1313,7 +1313,7 @@ BEGIN_FTR_SECTION
+ 	reg = 0
+ 	.rept	32
+ 	li	r7,reg*16+VCPU_VSRS
+-	lxvd2x	reg,r7,r4
++	LXVD2X(reg,r7,r4)
+ 	reg = reg + 1
+ 	.endr
+ FTR_SECTION_ELSE
+-- 
+1.7.4.1
