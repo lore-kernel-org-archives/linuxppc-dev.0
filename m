@@ -1,27 +1,42 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id BC1BAB71CF
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09DD2B71D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  3 Aug 2011 11:02:40 +1000 (EST)
+	Wed,  3 Aug 2011 12:21:20 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id p732KDlE017884
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2011 12:20:13 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p732KCNC1032372
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2011 12:20:12 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p732L0Nu009393
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2011 12:21:02 +1000
+Date: Wed, 3 Aug 2011 12:04:22 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>
 Subject: Re: kvm PCI assignment & VFIO ramblings
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Date: Tue, 02 Aug 2011 19:02:31 -0600
-In-Reply-To: <20110802212949.GB18496@dumpdata.com>
-References: <1311983933.8793.42.camel@pasglop> <4E356221.6010302@redhat.com>
-	<1312248479.8793.827.camel@pasglop> <4E37BF62.2060809@redhat.com>
-	<1312289929.8793.890.camel@pasglop>
-	<1312299299.2653.429.camel@bling.home>
-	<20110802212949.GB18496@dumpdata.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1312333352.2653.503.camel@bling.home>
-Mime-Version: 1.0
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
-	Paul Mackerras <pmac@au1.ibm.com>,
-	David Gibson <dwg@au1.ibm.com>, Avi Kivity <avi@redhat.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
+Message-ID: <20110803020422.GF29719@yookeroo.fritz.box>
+References: <1311983933.8793.42.camel@pasglop>
+	<1312050011.2265.185.camel@x201.home>
+	<20110802082848.GD29719@yookeroo.fritz.box>
+	<1312308847.2653.467.camel@bling.home>
+	<1312310121.2653.470.camel@bling.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1312310121.2653.470.camel@bling.home>
+Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
 	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	qemu-devel <qemu-devel@nongnu.org>, aafabbri <aafabbri@cisco.com>,
+	iommu <iommu@lists.linux-foundation.org>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +46,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-08-02 at 17:29 -0400, Konrad Rzeszutek Wilk wrote:
-> On Tue, Aug 02, 2011 at 09:34:58AM -0600, Alex Williamson wrote:
-> > On Tue, 2011-08-02 at 22:58 +1000, Benjamin Herrenschmidt wrote:
+On Tue, Aug 02, 2011 at 12:35:19PM -0600, Alex Williamson wrote:
+> On Tue, 2011-08-02 at 12:14 -0600, Alex Williamson wrote:
+> > On Tue, 2011-08-02 at 18:28 +1000, David Gibson wrote:
+> > > On Sat, Jul 30, 2011 at 12:20:08PM -0600, Alex Williamson wrote:
+> > > > On Sat, 2011-07-30 at 09:58 +1000, Benjamin Herrenschmidt wrote:
+> > > [snip]
+> > > > On x86, the USB controllers don't typically live behind a PCIe-to-PCI
+> > > > bridge, so don't suffer the source identifier problem, but they do often
+> > > > share an interrupt.  But even then, we can count on most modern devices
+> > > > supporting PCI2.3, and thus the DisINTx feature, which allows us to
+> > > > share interrupts.  In any case, yes, it's more rare but we need to know
+> > > > how to handle devices behind PCI bridges.  However I disagree that we
+> > > > need to assign all the devices behind such a bridge to the guest.
+> > > > There's a difference between removing the device from the host and
+> > > > exposing the device to the guest.
 > > > 
-> > > Don't worry, it took me a while to get my head around the HW :-) SR-IOV
-> > > VFs will generally not have limitations like that no, but on the other
-> > > hand, they -will- still require 1 VF = 1 group, ie, you won't be able to
-> > > take a bunch of VFs and put them in the same 'domain'.
-> > > 
-> > > I think the main deal is that VFIO/qemu sees "domains" as "guests" and
-> > > tries to put all devices for a given guest into a "domain".
+> > > I think you're arguing only over details of what words to use for
+> > > what, rather than anything of substance here.  The point is that an
+> > > entire partitionable group must be assigned to "host" (in which case
+> > > kernel drivers may bind to it) or to a particular guest partition (or
+> > > at least to a single UID on the host).  Which of the assigned devices
+> > > the partition actually uses is another matter of course, as is at
+> > > exactly which level they become "de-exposed" if you don't want to use
+> > > all of then.
 > > 
-> > Actually, that's only a recent optimization, before that each device got
-> > it's own iommu domain.  It's actually completely configurable on the
-> > qemu command line which devices get their own iommu and which share.
-> > The default optimizes the number of domains (one) and thus the number of
-> > mapping callbacks since we pin the entire guest.
-> > 
-> > > On POWER, we have a different view of things were domains/groups are
-> > > defined to be the smallest granularity we can (down to a single VF) and
-> > > we give several groups to a guest (ie we avoid sharing the iommu in most
-> > > cases)
-> > > 
-> > > This is driven by the HW design but that design is itself driven by the
-> > > idea that the domains/group are also error isolation groups and we don't
-> > > want to take all of the IOs of a guest down if one adapter in that guest
-> > > is having an error.
-> > > 
-> > > The x86 domains are conceptually different as they are about sharing the
-> > > iommu page tables with the clear long term intent of then sharing those
-> > > page tables with the guest CPU own. We aren't going in that direction
-> > > (at this point at least) on POWER..
-> > 
-> > Yes and no.  The x86 domains are pretty flexible and used a few
-> > different ways.  On the host we do dynamic DMA with a domain per device,
-> > mapping only the inflight DMA ranges.  In order to achieve the
-> > transparent device assignment model, we have to flip that around and map
-> > the entire guest.  As noted, we can continue to use separate domains for
-> > this, but since each maps the entire guest, it doesn't add a lot of
-> > value and uses more resources and requires more mapping callbacks (and
-> > x86 doesn't have the best error containment anyway).  If we had a well
-> > supported IOMMU model that we could adapt for pvDMA, then it would make
-> > sense to keep each device in it's own domain again.  Thanks,
+> > Well first we need to define what a partitionable group is, whether it's
+> > based on hardware requirements or user policy.  And while I agree that
+> > we need unique ownership of a partition, I disagree that qemu is
+> > necessarily the owner of the entire partition vs individual devices.
 > 
-> Could you have an PV IOMMU (in the guest) that would set up those
-> maps?
+> Sorry, I didn't intend to have such circular logic.  "... I disagree
+> that qemu is necessarily the owner of the entire partition vs granted
+> access to devices within the partition".  Thanks,
 
-Yep, definitely.  That's effectively what power wants to do.  We could
-do it on x86, but as others have noted, the map/unmap interface isn't
-tuned to do this at that granularity and our target guest OS audience is
-effectively reduced to Linux.  Thanks,
+I still don't understand the distinction you're making.  We're saying
+the group is "owned" by a given user or guest in the sense that no-one
+else may use anything in the group (including host drivers).  At that
+point none, some or all of the devices in the group may actually be
+used by the guest.
 
-Alex
+You seem to be making a distinction between "owned by" and "assigned
+to" and "used by" and I really don't see what it is.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
