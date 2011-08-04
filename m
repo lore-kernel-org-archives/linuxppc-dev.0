@@ -1,24 +1,16 @@
-Return-Path: <joro@8bytes.org>
-Received: from 8bytes.org (8bytes.org [88.198.83.132])
-	by ozlabs.org (Postfix) with ESMTP id 41D3CB6F84
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  4 Aug 2011 20:41:07 +1000 (EST)
-Date: Thu, 4 Aug 2011 12:41:05 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110804104105.GC22329@8bytes.org>
-References: <1311983933.8793.42.camel@pasglop> <4E356221.6010302@redhat.com>
-	<1312230476.2653.395.camel@bling.home>
+Return-Path: <a.heider@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1312230476.2653.395.camel@bling.home>
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
-	Paul Mackerras <pmac@au1.ibm.com>,
-	David Gibson <dwg@au1.ibm.com>, Avi Kivity <avi@redhat.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <4E39CA6C.3000202@infradead.org>
+References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
+	<4E39CA6C.3000202@infradead.org>
+Date: Thu, 4 Aug 2011 18:31:57 +0200
+Message-ID: <CAHsu+b_cwoKNtovjLbDwf3OQssD6Dp-2EARdRJxO23PQguyQJA@mail.gmail.com>
+Subject: Re: [PATCH 00/15] ps3: Support more than the OtherOS lpar
+From: Andre Heider <a.heider@gmail.com>
+To: Geoff Levand <geoff@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 01, 2011 at 02:27:36PM -0600, Alex Williamson wrote:
-> It's not clear to me how we could skip it.  With VT-d, we'd have to
-> implement an emulated interrupt remapper and hope that the guest picks
-> unused indexes in the host interrupt remapping table before it could do
-> anything useful with direct access to the MSI-X table.  Maybe AMD IOMMU
-> makes this easier?
+Hi Geoff,
 
-AMD IOMMU provides remapping tables per-device, and not a global one.
-But that does not make direct guest-access to the MSI-X table safe. The
-table contains the table contains the interrupt-type and the vector
-which is used as an index into the remapping table by the IOMMU. So when
-the guest writes into its MSI-X table the remapping-table in the host
-needs to be updated too.
+On Thu, Aug 4, 2011 at 12:23 AM, Geoff Levand <geoff@infradead.org> wrote:
+> Hi Andre,
+>
+> On 08/01/2011 01:02 PM, Andre Heider wrote:
+>> This series addresses various issues and extends support when running
+>> in lpars like GameOS. Included are some patches from Hector Martin, whic=
+h
+>> I found useful.
+>
+> Much of this is just general fixups and improvements to the existing PS3
+> support. =A0I think you should separate those changes out and work to get
+> them included, then consider others. =A0If I give some comment, then
+> I consider that part worth pursuing at the present time.
 
-	Joerg
+Sounds like a good approach to me.
+
+> I have limited time to review the patches, so it will take me a while to
+> get through them.
+
+No problem at all, it will probably take some time to resolve all the
+details anyway.
+
+>> Patches are based on 2.6.39 since master doesn't boot with smp on my
+>> console. =A0I wasn't able to pinpoint the cause so far (not that I tried
+>> too hard).
+>
+> I'm looking into this problem, but it will take some time.
+
+Just for the record: I didn't mean to push ;)
+
+Thanks,
+Andre
