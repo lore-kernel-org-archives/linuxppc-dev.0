@@ -1,13 +1,12 @@
 Return-Path: <a.heider@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <4E39CC67.2060606@infradead.org>
+In-Reply-To: <4E39CCF3.7000406@infradead.org>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1312228986-32307-2-git-send-email-a.heider@gmail.com>
-	<4E39CC67.2060606@infradead.org>
-Date: Thu, 4 Aug 2011 18:35:53 +0200
-Message-ID: <CAHsu+b9a9ffYb6XSTCoveSv+QEtDe_8qdA1pxfhMf2z3Z=LoMg@mail.gmail.com>
-Subject: Re: [PATCH 01/15] [PS3] Add udbg driver using the PS3 gelic Ethernet
-	device
+	<1312228986-32307-8-git-send-email-a.heider@gmail.com>
+	<4E39CCF3.7000406@infradead.org>
+Date: Thu, 4 Aug 2011 18:40:36 +0200
+Message-ID: <CAHsu+b8iEA53gq45Dyv-n+9X8ZG97xTTp50JQxGxVLA_UUppBw@mail.gmail.com>
+Subject: Re: [PATCH 07/15] ps3flash: Refuse to work in lpars other than OtherOS
 From: Andre Heider <a.heider@gmail.com>
 To: Geoff Levand <geoff@infradead.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -22,92 +21,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 4, 2011 at 12:32 AM, Geoff Levand <geoff@infradead.org> wrote:
+On Thu, Aug 4, 2011 at 12:34 AM, Geoff Levand <geoff@infradead.org> wrote:
 > On 08/01/2011 01:02 PM, Andre Heider wrote:
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/ps3/gelic_udbg.c
->> @@ -0,0 +1,272 @@
->> +/*
->> + * arch/powerpc/platforms/ps3/gelic_udbg.c
+>> The driver implements a character and misc device, meant for the
+>> axed OtherOS to exchange various settings with GameOS.
+>> Since Firmware 3.21 there is no GameOS support anymore to write these
+>> settings, so limit the driver to the OtherOS environment.
 >
-> Don't put file names in files. =A0When the file gets moved, then this wil=
-l
-> no longer be correct.
->
->> + *
->> + * udbg debug output routine via GELIC UDP broadcasts
->> + * Copyright (C) 2010 Hector Martin <hector@marcansoft.com>
->> + * Copyright (C) 2011 Andre Heider <a.heider@gmail.com>
->
-> Some of this seems to be taken from the gelic driver, so shouldn't
-> the copyright info from there be included here?
->
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version 2
->> + * of the License, or (at your option) any later version.
->> + *
->> + */
->> +
->> +#include <asm/io.h>
->> +#include <asm/udbg.h>
->> +#include <asm/lv1call.h>
->> +
->> +#define GELIC_BUS_ID 1
->> +#define GELIC_DEVICE_ID 0
->> +#define GELIC_DEBUG_PORT 18194
->> +#define GELIC_MAX_MESSAGE_SIZE 1000
->> +
->> +#define GELIC_LV1_GET_MAC_ADDRESS 1
->> +#define GELIC_LV1_GET_VLAN_ID 4
->> +#define GELIC_LV1_VLAN_TX_ETHERNET_0 2
->> +
->> +#define GELIC_DESCR_DMA_STAT_MASK 0xf0000000
->> +#define GELIC_DESCR_DMA_CARDOWNED 0xa0000000
->> +
->> +#define GELIC_DESCR_TX_DMA_IKE 0x00080000
->> +#define GELIC_DESCR_TX_DMA_NO_CHKSUM 0x00000000
->> +#define GELIC_DESCR_TX_DMA_FRAME_TAIL 0x00040000
->> +
->> +#define GELIC_DESCR_DMA_CMD_NO_CHKSUM (GELIC_DESCR_DMA_CARDOWNED | \
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0GELIC_DESCR_TX_DMA_IKE | \
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0GELIC_DESCR_TX_DMA_NO_CHKSUM)
->> +
->> +static u64 bus_addr;
->> +
->> +struct gelic_descr {
->> + =A0 =A0 /* as defined by the hardware */
->
-> These are BE from the hardware, so should be __beXX types.
->
->> + =A0 =A0 u32 buf_addr;
->> + =A0 =A0 u32 buf_size;
->> + =A0 =A0 u32 next_descr_addr;
->> + =A0 =A0 u32 dmac_cmd_status;
->> + =A0 =A0 u32 result_size;
->> + =A0 =A0 u32 valid_size; /* all zeroes for tx */
->> + =A0 =A0 u32 data_status;
->> + =A0 =A0 u32 data_error; /* all zeroes for tx */
->> +} __attribute__((aligned(32)));
->
-> ...
->
->> +static void gelic_debug_init(void)
->> +{
->
-> ...
->
->> + =A0 =A0 result =3D lv1_net_control(GELIC_BUS_ID, GELIC_DEVICE_ID,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0GELIC_LV1_G=
-ET_VLAN_ID,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0GELIC_LV1_V=
-LAN_TX_ETHERNET_0, 0, 0,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&vlan_id, &=
-v2);
->> + =A0 =A0 if (result =3D=3D 0) {
->
-> This should be 'if (!result)'
+> This is really a test if running on the PS3 OtherOS, so this
+> comment should state that.
 
-Ack on all points.
+Ok.
+
+>
+>>
+>> Signed-off-by: Andre Heider <a.heider@gmail.com>
+>> ---
+>> =A0arch/powerpc/platforms/ps3/Kconfig | =A0 =A01 +
+>> =A0drivers/char/ps3flash.c =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A07 +++++++
+>> =A02 files changed, 8 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms=
+/ps3/Kconfig
+>> index 84df5c8..5eb956a 100644
+>> --- a/arch/powerpc/platforms/ps3/Kconfig
+>> +++ b/arch/powerpc/platforms/ps3/Kconfig
+>> @@ -121,6 +121,7 @@ config PS3_FLASH
+>>
+>> =A0 =A0 =A0 =A0 This support is required to access the PS3 FLASH ROM, wh=
+ich
+>> =A0 =A0 =A0 =A0 contains the boot loader and some boot options.
+>> + =A0 =A0 =A0 This driver only supports the deprecated OtherOS LPAR.
+>
+> This will be confusing for OtherOS users, so should be removed.
+
+Ok.
+
+>
+>> =A0 =A0 =A0 =A0 In general, all users will say Y or M.
+>
+>
+> This could be changed to: 'In general, all PS3 OtherOS users will say Y o=
+r M.'
+
+Yeah, you're right, that's much better
+
+>
+>>
+>> =A0 =A0 =A0 =A0 As this driver needs a fixed buffer of 256 KiB of memory=
+, it can
+>> diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+>> index 69c734a..b1e8659 100644
+>> --- a/drivers/char/ps3flash.c
+>> +++ b/drivers/char/ps3flash.c
+>> @@ -25,6 +25,7 @@
+>>
+>> =A0#include <asm/lv1call.h>
+>> =A0#include <asm/ps3stor.h>
+>> +#include <asm/firmware.h>
+>>
+>>
+>> =A0#define DEVICE_NAME =A0 =A0 =A0 =A0 =A0"ps3flash"
+>> @@ -455,6 +456,12 @@ static struct ps3_system_bus_driver ps3flash =3D {
+>>
+>> =A0static int __init ps3flash_init(void)
+>> =A0{
+>> + =A0 =A0 if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+>
+> Is this needed? =A0Won't this driver only be loaded on PS3 hardware?
+>
+
+The same code is in drivers/block/ps3disk.c, I wasn't sure if it is
+missing here or redundant there.
+Should I remove it here?
+
+>> +
+>> + =A0 =A0 if (ps3_get_ss_laid() !=3D PS3_SS_LAID_OTHEROS)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+>> +
+>> =A0 =A0 =A0 return ps3_system_bus_driver_register(&ps3flash);
+>> =A0}
+>>
+>
+> -Geoff
+>
+>
