@@ -1,23 +1,23 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 36D59B6F18
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 80F26B6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Aug 2011 03:34:40 +1000 (EST)
-Received: by vxh2 with SMTP id 2so1756681vxh.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 05 Aug 2011 10:34:36 -0700 (PDT)
+	Sat,  6 Aug 2011 04:12:23 +1000 (EST)
+Received: from mail52-va3 (localhost.localdomain [127.0.0.1])	by
+	mail52-va3-R.bigfish.com (Postfix) with ESMTP id D1101E9840C	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2011 18:12:17 +0000 (UTC)
+Message-ID: <4E3C3270.2010705@freescale.com>
+Date: Fri, 5 Aug 2011 13:12:00 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <F0034E2F-AAAD-4DAC-A35A-E532B05B3210@skynet.be>
-References: <F0034E2F-AAAD-4DAC-A35A-E532B05B3210@skynet.be>
-Date: Fri, 5 Aug 2011 12:34:36 -0500
-Message-ID: <CAKTLLVQ3n-NvOhN0GhNiVcDpc6kJFHG9=80B9xOftD=0umydLQ@mail.gmail.com>
-Subject: Re: MESH SCSI driver not working
-From: kevin diggs <diggskevin38@gmail.com>
-To: Pol Vangheluwe <pol.vangheluwe@skynet.be>
-Content-Type: text/plain; charset=ISO-8859-1
+To: <smitha.vanga@wipro.com>
+Subject: Re: FW: Ethernet driver WR linux
+References: <07ACDFB8ECA8EF47863A613BC01BBB220344E2AB@HYD-MKD-MBX02.wipro.com>
+In-Reply-To: <07ACDFB8ECA8EF47863A613BC01BBB220344E2AB@HYD-MKD-MBX02.wipro.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,11 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 08/05/2011 12:31 AM, smitha.vanga@wipro.com wrote:
+> Hi
+>  
+> I have bringup WR linux 2.6.38 on a custom mpc8247 board. Not able to
+> configure the ipaddress.  When I boot my linux kernel I get the below
+> message.
+> Also I am using the fec 1.  The fec is not getting initialized. 
+> fs_enet.c:v1.0 (Aug 8, 2005)
+> BB MII Bus: Cannot register as MDIO bus
+> fsl-bb-mdio: probe of fsl-bb-mdio.0 failed with error -1
+> BB MII Bus: Cannot register as MDIO bus
+> fsl-bb-mdio: probe of fsl-bb-mdio.1 failed with error -1
+> I have enabled the following:
+>  
+> 
+> CONFIG_NET_ETHERNET=y
+> 
+> CONFIG_MII=y
+> 
+> CONFIG_FS_ENET=y
+> 
+> # CONFIG_FS_ENET_HAS_SCC is not set
+> 
+> CONFIG_FS_ENET_HAS_FCC=y
 
-I'll add some noise to this. I have a PowerMac8600 (with a 750GX in it
-(in case that makes a difference)) and I can't boot 2.6.36 if it is
-compiled with a gcc version newer than 4.1.2. Both 4.2.4 and 4.3.5
-will hang. 4.1.2 seems ok.
+Can you attach your device tree?  What sort of mdio do you have on your
+board?
 
-kevin
+> *Please do not print this email unless it is absolutely necessary. *
+> 
+> The information contained in this electronic message and any attachments
+> to this message are intended for the exclusive use of the addressee(s)
+> and may contain proprietary, confidential or privileged information. If
+> you are not the intended recipient, you should not disseminate,
+> distribute or copy this e-mail. Please notify the sender immediately and
+> destroy all copies of this message and any attachments.
+> 
+> WARNING: Computer viruses can be transmitted via email. The recipient
+> should check this email and any attachments for the presence of viruses.
+> The company accepts no liability for any damage caused by any virus
+> transmitted by this email.
+> 
+> www.wipro.com
+
+Is there any way you can turn this crud off?
+
+-Scott
