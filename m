@@ -1,24 +1,24 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 46AEAB6F7A
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 36D59B6F18
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Aug 2011 01:10:20 +1000 (EST)
-Subject: Re: kvm PCI assignment & VFIO ramblings
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 05 Aug 2011 09:10:09 -0600
-In-Reply-To: <1312540958.8598.46.camel@pasglop>
-References: <1311983933.8793.42.camel@pasglop>
-	<20110804102752.GA22329@8bytes.org> <1312540958.8598.46.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1312557012.2559.34.camel@x201.home>
-Mime-Version: 1.0
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
-	Paul Mackerras <pmac@au1.ibm.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	Joerg Roedel <joro@8bytes.org>, David Gibson <dwg@au1.ibm.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Sat,  6 Aug 2011 03:34:40 +1000 (EST)
+Received: by vxh2 with SMTP id 2so1756681vxh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 05 Aug 2011 10:34:36 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <F0034E2F-AAAD-4DAC-A35A-E532B05B3210@skynet.be>
+References: <F0034E2F-AAAD-4DAC-A35A-E532B05B3210@skynet.be>
+Date: Fri, 5 Aug 2011 12:34:36 -0500
+Message-ID: <CAKTLLVQ3n-NvOhN0GhNiVcDpc6kJFHG9=80B9xOftD=0umydLQ@mail.gmail.com>
+Subject: Re: MESH SCSI driver not working
+From: kevin diggs <diggskevin38@gmail.com>
+To: Pol Vangheluwe <pol.vangheluwe@skynet.be>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-08-05 at 20:42 +1000, Benjamin Herrenschmidt wrote:
-> Right. In fact to try to clarify the problem for everybody, I think we
-> can distinguish two different classes of "constraints" that can
-> influence the grouping of devices:
-> 
->  1- Hard constraints. These are typically devices using the same RID or
-> where the RID cannot be reliably guaranteed (the later is the case with
-> some PCIe-PCIX bridges which will take ownership of "some" transactions
-> such as split but not all). Devices like that must be in the same
-> domain. This is where PowerPC adds to what x86 does today the concept
-> that the domains are pre-existing, since we use the RID for error
-> isolation & MMIO segmenting as well. so we need to create those domains
-> at boot time.
-> 
->  2- Softer constraints. Those constraints derive from the fact that not
-> applying them risks enabling the guest to create side effects outside of
-> its "sandbox". To some extent, there can be "degrees" of badness between
-> the various things that can cause such constraints. Examples are shared
-> LSIs (since trusting DisINTx can be chancy, see earlier discussions),
-> potentially any set of functions in the same device can be problematic
-> due to the possibility to get backdoor access to the BARs etc...
+Hi,
 
-This is what I've been trying to get to, hardware constraints vs system
-policy constraints.
+I'll add some noise to this. I have a PowerMac8600 (with a 750GX in it
+(in case that makes a difference)) and I can't boot 2.6.36 if it is
+compiled with a gcc version newer than 4.1.2. Both 4.2.4 and 4.3.5
+will hang. 4.1.2 seems ok.
 
-> Now, what I derive from the discussion we've had so far, is that we need
-> to find a proper fix for #1, but Alex and Avi seem to prefer that #2
-> remains a matter of libvirt/user doing the right thing (basically
-> keeping a loaded gun aimed at the user's foot with a very very very
-> sweet trigger but heh, let's not start a flamewar here :-)
-
-Doesn't your own uncertainty of whether or not to allow this lead to the
-same conclusion, that it belongs in userspace policy?  I don't think we
-want to make white lists of which devices we trust to do DisINTx
-correctly part of the kernel interface, do we?  Thanks,
-
-Alex
+kevin
