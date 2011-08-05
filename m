@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
-	by ozlabs.org (Postfix) with ESMTP id 833B8B6EE8
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
+	[203.91.198.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C6417B6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  5 Aug 2011 17:37:07 +1000 (EST)
-Date: Fri, 5 Aug 2011 17:37:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc: Fix build without CONFIG_PCI
-Message-Id: <20110805173700.19310798b5a30bfb666d7031@canb.auug.org.au>
-In-Reply-To: <1312524247.8598.25.camel@pasglop>
-References: <1312524247.8598.25.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__5_Aug_2011_17_37_00_+1000_wY2NK2K.QIPWNPp5"
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Fri,  5 Aug 2011 15:45:14 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CC5330.EF8B1672"
+Subject: FW: Ethernet driver WR linux
+Date: Fri, 5 Aug 2011 11:01:32 +0530
+Message-ID: <07ACDFB8ECA8EF47863A613BC01BBB220344E2AB@HYD-MKD-MBX02.wipro.com>
+From: <smitha.vanga@wipro.com>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +23,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__5_Aug_2011_17_37_00_+1000_wY2NK2K.QIPWNPp5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is a multi-part message in MIME format.
 
-Hi Ben,
+------_=_NextPart_001_01CC5330.EF8B1672
+Content-Type: text/plain;
+	charset="us-ascii"
+content-transfer-encoding: quoted-printable
 
-On Fri, 05 Aug 2011 16:04:07 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> Commit fea80311a939a746533a6d7e7c3183729d6a3faf
-> "iomap: make IOPORT/PCI mapping functions conditional"
->=20
-> Broke powerpc build without CONFIG_PCI as we would still define
-> pci_iomap(), which overlaps with the new empty inline in the headers.
+Hi
+ 
+I have bringup WR linux 2.6.38 on a custom mpc8247 board. Not able to
+configure the ipaddress.  When I boot my linux kernel I get the below
+message.
+Also I am using the fec 1.  The fec is not getting initialized. 
+fs_enet.c:v1.0 (Aug 8, 2005)
+BB MII Bus: Cannot register as MDIO bus
+fsl-bb-mdio: probe of fsl-bb-mdio.0 failed with error -1
+BB MII Bus: Cannot register as MDIO bus
+fsl-bb-mdio: probe of fsl-bb-mdio.1 failed with error -1
 
-If we are using a static inline implementation for !CONFIG_PCI, then we
-should probably not EXPORT it in that case either ...
+I have enabled the following:
+ 
+CONFIG_NET_ETHERNET=3Dy
 
-> @@ -143,6 +144,7 @@ void pci_iounmap(struct pci_dev *dev, void __iomem *a=
-ddr)
->  		return;
->  	iounmap(addr);
->  }
-> +#endif /* CONFIG_PCI */
-> =20
->  EXPORT_SYMBOL(pci_iomap);
->  EXPORT_SYMBOL(pci_iounmap);
+CONFIG_MII=3Dy
 
+CONFIG_FS_ENET=3Dy
 
---=20
-Stephen Rothwell <sfr@canb.auug.org.au>
+# CONFIG_FS_ENET_HAS_SCC is not set
 
---Signature=_Fri__5_Aug_2011_17_37_00_+1000_wY2NK2K.QIPWNPp5
-Content-Type: application/pgp-signature
+CONFIG_FS_ENET_HAS_FCC=3Dy
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+ 
+Regards,
+Smitha
 
-iQEcBAEBAgAGBQJOO52cAAoJEDMEi1NhKgbsnaUIAKL1FuGsLODiXfLdbNYw8pTQ
-BKMnXwl3cCHM0KgvbqHsTq6O55qAZJqaRnbJHlsdjYrPE0sdTIa98wXyE9kz0ghb
-FuouXwv0147ZWuaJmUaQzDmjXdv8cC+0Jg8sLm/3shNjjt7FwR698qZI/1BepPaJ
-2t6rJAng5lI66IgF8P9fxT17+ItDIxcX5kuWWPT6RFXhY+IfmvZ/HLwl39bSeGRs
-aUGWXMJEw8lm+iliEf59LkRDTwUy6jdzKQ84mS3uVf9c/bQJcfv47lWHcwxBzA5C
-aNLl1IIXilZqPSJIyXIRP0fXW2UOPTMozOjiBQkogr2xX9KLScsX3QrxJ1Dgiyo=
-=laoI
------END PGP SIGNATURE-----
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
 
---Signature=_Fri__5_Aug_2011_17_37_00_+1000_wY2NK2K.QIPWNPp5--
+------_=_NextPart_001_01CC5330.EF8B1672
+Content-Type: text/html;
+	charset="us-ascii"
+content-transfer-encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3698" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV dir=3Dltr align=3Dleft><FONT face=3DArial size=3D2><SPAN 
+class=3D443520516-04082011>Hi</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN 
+class=3D443520516-04082011></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D443520516-04082011>I have 
+bringup&nbsp;WR linux 2.6.38 on a custom mpc8247 board.&nbsp;Not able to 
+configure the ipaddress. &nbsp;When I boot my linux kernel I get the below 
+message.</SPAN></FONT></DIV>
+<DIV><SPAN class=3D443520516-04082011><FONT face=3DArial><FONT size=3D2>Also=
+ I am 
+using the fec 1.<SPAN class=3D599103705-05082011>&nbsp; The fec is not 
+getting&nbsp;initialized.&nbsp;</SPAN></FONT></FONT></SPAN></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D443520516-04082011>fs_enet.c:=
+v1.0 (Aug 
+8, 2005)<BR>BB MII Bus: Cannot register as MDIO bus<BR>fsl-bb-mdio: probe of=
+ 
+fsl-bb-mdio.0 failed with error -1<BR>BB MII Bus: Cannot register as MDIO 
+bus<BR>fsl-bb-mdio: probe of fsl-bb-mdio.1 failed with error 
+-1<BR></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D443520516-04082011>I have ena=
+bled the 
+following:</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN 
+class=3D443520516-04082011></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D443520516-04082011><SPAN lang=
+=3DEN>
+<P>CONFIG_NET_ETHERNET=3Dy</P>
+<P>CONFIG_MII=3Dy</P>
+<P>CONFIG_FS_ENET=3Dy</P>
+<P># CONFIG_FS_ENET_HAS_SCC is not set</P>
+<P>CONFIG_FS_ENET_HAS_FCC=3Dy</P></SPAN></DIV></SPAN></FONT>
+<DIV><FONT face=3DArial size=3D2><SPAN 
+class=3D443520516-04082011></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN 
+class=3D443520516-04082011>Regards,<BR>Smitha</DIV></SPAN></FONT><P><strong>=
+<span style=3D'font-size:10.0pt;font-family:=0A=
+"Palatino Linotype","serif";color:green'> Please do not print this email unl=
+ess it is absolutely necessary. </span></strong><span style=3D'font-family:"=
+Arial","sans-serif"'><o:p></o:p></span></p>=0A=
+=0A=
+=0A=
+<p> The information contained in this electronic message and any attachments=
+ to this message are intended for the exclusive use of the addressee(s) and=
+ may contain proprietary, confidential or privileged information. If you are=
+ not the intended recipient, you should not disseminate, distribute or copy=
+ this e-mail. Please notify the sender immediately and destroy all copies of=
+ this message and any attachments. </p>=0A=
+=0A=
+<p>WARNING: Computer viruses can be transmitted via email. The recipient sho=
+uld check this email and any attachments for the presence of viruses. The co=
+mpany accepts no liability for any damage caused by any virus transmitted by=
+ this email. </p>=0A=
+<p>=0A=
+www.wipro.com=0A=
+</p>
+</BODY></HTML>
+
+------_=_NextPart_001_01CC5330.EF8B1672--
