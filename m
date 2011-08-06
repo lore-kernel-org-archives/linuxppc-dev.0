@@ -1,14 +1,15 @@
 Return-Path: <a.heider@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAHsu+b_zsBeK1JcNA2XsB+Hh9+eYxAkuMU_4hWZ-Q5zEs_Vcug@mail.gmail.com>
+In-Reply-To: <CAMuHMdVe9+Y4Xn24BpR+1zFF3Wes6uvwx-EA3A2jASyoA66Vjg@mail.gmail.com>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1312228986-32307-10-git-send-email-a.heider@gmail.com>
-	<CAMuHMdVq+WSjZKVZk1riEFX6NgW6Y+8EhCc0MqMtuDK5KAD7dw@mail.gmail.com>
-	<CAHsu+b_zsBeK1JcNA2XsB+Hh9+eYxAkuMU_4hWZ-Q5zEs_Vcug@mail.gmail.com>
-Date: Sat, 6 Aug 2011 14:28:08 +0200
-Message-ID: <CAHsu+b9hLnhoCOH5jj3SmZWp+jZdCWTN74nbMkyqDNKkDpdnMA@mail.gmail.com>
-Subject: Re: [Cbe-oss-dev] [PATCH 09/15] ps3: Limit the number of regions per
-	storage device
+	<1312228986-32307-8-git-send-email-a.heider@gmail.com>
+	<4E39CCF3.7000406@infradead.org>
+	<CAHsu+b8iEA53gq45Dyv-n+9X8ZG97xTTp50JQxGxVLA_UUppBw@mail.gmail.com>
+	<CAMuHMdVe9+Y4Xn24BpR+1zFF3Wes6uvwx-EA3A2jASyoA66Vjg@mail.gmail.com>
+Date: Sat, 6 Aug 2011 14:40:20 +0200
+Message-ID: <CAHsu+b9Yt_c65O4Hx6zhkKTtQ-meHVUrDuGY6T07DQJuHOeGEw@mail.gmail.com>
+Subject: Re: [Cbe-oss-dev] [PATCH 07/15] ps3flash: Refuse to work in lpars
+	other than OtherOS
 From: Andre Heider <a.heider@gmail.com>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -23,29 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 1, 2011 at 10:58 PM, Andre Heider <a.heider@gmail.com> wrote:
-> On Mon, Aug 1, 2011 at 10:30 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Mon, Aug 1, 2011 at 22:03, Andre Heider <a.heider@gmail.com> wrote:
->>> There can be only 8 regions, add a sanity check
+On Thu, Aug 4, 2011 at 9:27 PM, Geert Uytterhoeven <geert@linux-m68k.org> w=
+rote:
+> On Thu, Aug 4, 2011 at 18:40, Andre Heider <a.heider@gmail.com> wrote:
+>> On Thu, Aug 4, 2011 at 12:34 AM, Geoff Levand <geoff@infradead.org> wrot=
+e:
+>>> On 08/01/2011 01:02 PM, Andre Heider wrote:
+>>>> --- a/drivers/char/ps3flash.c
+>>>> +++ b/drivers/char/ps3flash.c
+>>>> @@ -25,6 +25,7 @@
+>>>>
+>>>> =A0#include <asm/lv1call.h>
+>>>> =A0#include <asm/ps3stor.h>
+>>>> +#include <asm/firmware.h>
+>>>>
+>>>>
+>>>> =A0#define DEVICE_NAME =A0 =A0 =A0 =A0 =A0"ps3flash"
+>>>> @@ -455,6 +456,12 @@ static struct ps3_system_bus_driver ps3flash =3D =
+{
+>>>>
+>>>> =A0static int __init ps3flash_init(void)
+>>>> =A0{
+>>>> + =A0 =A0 if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
+>>>> + =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+>>>
+>>> Is this needed? =A0Won't this driver only be loaded on PS3 hardware?
+>>>
 >>
->> Why can there be only 8 regions?
+>> The same code is in drivers/block/ps3disk.c, I wasn't sure if it is
+>> missing here or redundant there.
+>> Should I remove it here?
+>>
+>>>> +
+>>>> + =A0 =A0 if (ps3_get_ss_laid() !=3D PS3_SS_LAID_OTHEROS)
+>>>> + =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+>>>> +
+>>>> =A0 =A0 =A0 return ps3_system_bus_driver_register(&ps3flash);
+>>>> =A0}
 >
-> I believe lv1 limits it to 8? I might be mistaken here, it mostly is a
-> check for the patches after this one
+> ps3flash_init() is called straight from module_init(), so it could be
+> called on non-PS3.
+> ps3_system_bus_driver_register() has the firmware_has_feature_check(),
+> so it will
+> reject non-PS3.
+>
+> But if your *_init() does any processing before calling
+> ps3_system_bus_driver_register()
+> (like ps3disk_init() does, and ps3flash_init() now does due to your
+> patch), you have to
+> do the check yourself, to make sure it returns early on non-PS3.
 
-Small follow-up:
-While the repository contains ("bus", "dev", "n_regs") to describe the
-actual number of regions, it also contains ("bus", "dev", "region", [
-"id" | "start" | "size" ]) for always exactly 8 regions (with a value
-of 0xdeadbeef for invalid regions).
+Aha, makes perfect sense.
 
-I added this check for the storage drivers, which contain:
-  for (region_idx = 0; region_idx < dev->num_regions; region_idx++) {
-    ...
-    gendisk->first_minor = devidx * PS3DISK_MINORS + region_idx;
-
-But that limit might be raised in future hypervisor versions.
-Maybe a
-  BUG_ON(dev->num_regions <= PS3DISK_MINORS);
-is more appropriate?
+Thanks Geert
