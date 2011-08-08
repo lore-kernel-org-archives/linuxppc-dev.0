@@ -1,21 +1,35 @@
-Return-Path: <smitha.vanga@wipro.com>
-Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
-	[203.91.198.75])
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0328FB6F62
+	(Client CN "e23smtp04.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B8C40B6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Aug 2011 15:53:11 +1000 (EST)
+	Mon,  8 Aug 2011 16:46:47 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id p786eMtP011400
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2011 16:40:22 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p786jqck1200380
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2011 16:45:52 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p786kk4x028574
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2011 16:46:46 +1000
+Message-ID: <4E3F8652.7060802@in.ibm.com>
+Date: Mon, 08 Aug 2011 12:16:42 +0530
+From: Suzuki Poulose <suzuki@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: FW: Ethernet driver WR linux
-Date: Mon, 8 Aug 2011 11:23:02 +0530
-Message-ID: <07ACDFB8ECA8EF47863A613BC01BBB220344E6CD@HYD-MKD-MBX02.wipro.com>
-In-Reply-To: <4E3C3270.2010705@freescale.com>
-From: <smitha.vanga@wipro.com>
-To: <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PSeries: Cancel RTAS event scan before firmware flash
+References: <20110727120801.10429.7276.stgit@localhost6.localdomain6>
+In-Reply-To: <20110727120801.10429.7276.stgit@localhost6.localdomain6>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: mikey@neuling.org, sbest@us.ibm.com,
+	"Ravi K. Nittala" <ravi.nittala@in.ibm.com>, antonb@au1.ibm.com,
+	subrata.modak@in.ibm.com, ranittal@linux.vnet.ibm.com,
+	linuxppc-dev@lists.ozlabs.org, divya.vikas@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,190 +39,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi Scott,
 
-Below is the .dts file. My board is based on mpc8247. Currently using
-FCC1.
+On 07/27/11 17:39, Ravi K. Nittala wrote:
+> The firmware flash update is conducted using an RTAS call, that is serialized
+> by lock_rtas() which uses spin_lock. rtasd keeps scanning for the RTAS events
+> generated on the machine. This is performed via a delayed workqueue, invoking
+> an RTAS call to scan the events.
+>
+> The flash update takes a while to complete and during this time, any other
+> RTAS call has to wait. In this case, rtas_event_scan() waits for a long time
+> on the spin_lock resulting in a soft lockup.
+>
+> Approaches to fix the issue :
+>
+> Approach 1: Stop all the other CPUs before we start flashing the firmware.
+>
+> Before the rtas firmware update starts, all other CPUs should be stopped.
+> Which means no other CPU should be in lock_rtas(). We do not want other CPUs
+> execute while FW update is in progress and the system will be rebooted anyway
+> after the update.
+>
+> --- arch/powerpc/kernel/setup-common.c.orig    2011-07-01 22:41:12.952507971 -0400
+> +++ arch/powerpc/kernel/setup-common.c    2011-07-01 22:48:31.182507915 -0400
+> @@ -109,11 +109,12 @@ void machine_shutdown(void)
+>    void machine_restart(char *cmd)
+>    {
+>        machine_shutdown();
+> -    if (ppc_md.restart)
+> -        ppc_md.restart(cmd);
+>    #ifdef CONFIG_SMP
+> -    smp_send_stop();
+> +        smp_send_stop();
+>    #endif
+> +    if (ppc_md.restart)
+> +        ppc_md.restart(cmd);
+> +
+>        printk(KERN_EMERG "System Halted, OK to turn off power\n");
+>        local_irq_disable();
+>        while (1) ;
+>
+> Problems with this approach:
+> Stopping the CPUs suddenly may cause other serious problems depending on what
+> was running on them. Hence, this approach cannot be considered.
+>
+>
+> Approach 2: Cancel the rtas_scan_event work before starting the firmware flash.
+>
+> Just before the flash update is performed, the queued rtas_event_scan() work
+> item is cancelled from the work queue so that there is no other RTAS call
+> issued while the flash is in progress. After the flash completes, the system
+> reboots and the rtas_event_scan() is rescheduled.
+>
+> Approach 2 looks to be a better solution than Approach 1. Kindly let us know
+> your thoughts. Patch attached.
+>
 
-/*
- * MPC8272 EPN412 Device Tree Source
- *
- * Copyright 2005 Freescale Semiconductor Inc.
- *
- * This program is free software; you can redistribute  it and/or modify
-it
- * under  the terms of  the GNU General  Public License as published by
-the
- * Free Software Foundation;  either version 2 of the  License, or (at
-your
- * option) any later version.
- */
+Ben,
 
-/ {
-       model =3D "MPC8247 EPN412";
-       compatible =3D "MPC82XX";
-       #address-cells =3D <1>;
-       #size-cells =3D <1>;
-       linux,phandle =3D <100>;
+Could you please let us know your thoughts about the following patch ?
 
-       cpus {
-               #cpus =3D <1>;
-               #address-cells =3D <1>;
-               #size-cells =3D <0>;
-               linux,phandle =3D <200>;
-
-               PowerPC,8247@0 {
-                       device_type =3D "cpu";
-                       reg =3D <0>;
-                       d-cache-line-size =3D <20>;       // 32 bytes
-                       i-cache-line-size =3D <20>;       // 32 bytes
-                       d-cache-size =3D <4000>;          // L1, 16K
-                       i-cache-size =3D <4000>;          // L1, 16K
-                       timebase-frequency =3D <0>;
-                       bus-frequency =3D <0>;
-                       clock-frequency =3D <0>;
-                       32-bit;
-                       linux,phandle =3D <201>;
-               };
-       };
-
-       interrupt-controller@f8200000 {
-               linux,phandle =3D <f8200000>;
-               #address-cells =3D <0>;
-               #interrupt-cells =3D <2>;
-               interrupt-controller;
-               reg =3D <f8200000 f8200004>;
-               built-in;
-               device_type =3D "pci-pic";
-       };
-
-       memory {
-               device_type =3D "memory";
-               linux,phandle =3D <300>;
-               reg =3D <00000000 4000000>;
-       };
+Thanks
+Suzuki
 
 
-       soc8272@f0000000 {
-               #address-cells =3D <1>;
-               #size-cells =3D <1>;
-               #interrupt-cells =3D <2>;
-               device_type =3D "soc";
-               ranges =3D <00000000 f0000000 00053000>;
-               reg =3D <f0000000 10000>;
-
-               cpm@119c0{
-                       linux,phandle =3D <f0000000>;
-                       #address-cells =3D <1>;
-                       #size-cells =3D <1>;
-                       #interrupt-cells =3D <2>;
-                       device_type =3D "cpm";
-                       model =3D "CPM2";
-                       ranges =3D <00000000 00000000 20000>;
-                       reg =3D <0 20000>;
-                       command-proc =3D <119c0>;
-                       brg-frequency =3D <FE70B8>;
-                       cpm_clk =3D <7F385C0>;
-
-                       scc@11a00 {
-                               device_type =3D "serial";
-                               compatible =3D "cpm_uart";
-                               model =3D "SCC";
-                               device-id =3D <1>;
-                               reg =3D <11a00 20 8000 100>;
-                               current-speed =3D <2580>;
-                               interrupts =3D <28 2>;
-                               interrupt-parent =3D <10c00>;
-                               clock-setup =3D <0 00ffffff>;
-                               rx-clock =3D <1>;
-                               tx-clock =3D <1>;
-                       };
-
-			mdio@10d40 {
-                       device_type =3D "mdio";
-                       compatible =3D "fs_enet";
-                       reg =3D <0 0>;
-                       linux,phandle =3D <24520>;
-                       #address-cells =3D <1>;
-                       #size-cells =3D <0>;
-                       ethernet-phy@0 {
-                               linux,phandle =3D <2452000>;
-                               interrupt-parent =3D <10c00>;
-                               interrupts =3D <17 4>;
-                               reg =3D <0>;
-                               bitbang =3D [ 12 12 13 02 02 01 ];
-                               device_type =3D "ethernet-phy";
-                       };
-                      
-               };
-			ethernet@11300 {
-                       #address-cells =3D <1>;
-                       #size-cells =3D <0>;
-                       device_type =3D "network";
-                       device-id =3D <1>;
-                       compatible =3D "fs_enet";
-                       model =3D "FCC";
-                       reg =3D <11300 20 8400 100 11380 30>;
-                       mac-address =3D [ 00 e0 ee 00 05 2e ];
-                       interrupts =3D <20 2>;
-                       interrupt-parent =3D <10c00>;
-                       phy-handle =3D <2452000>;
-                       rx-clock =3D <13>;
-                       tx-clock =3D <12>;
-               };
-
-
- 			                      
-
-               };
-               interrupt-controller@10c00 {
-                       linux,phandle =3D <10c00>;
-                       #address-cells =3D <0>;
-                       #interrupt-cells =3D <2>;
-                       interrupt-controller;
-                       reg =3D <10c00 80>;
-                       built-in;
-                       device_type =3D "cpm-pic";
-		       compatible =3D "CPM2";
-               };
-
-               flash@fe000000 {
-			                device_type =3D "rom";
-			                compatible =3D "direct-mapped";
-			                probe-type =3D "CFI";
-			                reg =3D <fe000000 00800000>;
-			                bank-width =3D <1>;
-			                partitions =3D <00780000 00080000
-			                              00770000 00010000
-			                              00760000 00010000
-			                              00750000
-00010000>;
-			                partition-names =3D
-"u-boot\0u-boot env1\0u-boot env2\0id data";
-		};
-
-               
-
-
-       };
-};
-
-Regards,
-Smitha
-
-Please do not print this email unless it is absolutely necessary. =0A=
-=0A=
-The information contained in this electronic message and any attachments to=
- this message are intended for the exclusive use of the addressee(s) and may=
- contain proprietary, confidential or privileged information. If you are not=
- the intended recipient, you should not disseminate, distribute or copy this=
- e-mail. Please notify the sender immediately and destroy all copies of this=
- message and any attachments. =0A=
-=0A=
-WARNING: Computer viruses can be transmitted via email. The recipient should=
- check this email and any attachments for the presence of viruses. The compa=
-ny accepts no liability for any damage caused by any virus transmitted by th=
-is email. =0A=
-=0A=
-www.wipro.com
+>
+> Signed-off-by: Suzuki Poulose<suzuki@in.ibm.com>
+> Signed-off-by: Ravi Nittala<ravi.nittala@in.ibm.com>
+>
+>
+> ---
+>   arch/powerpc/include/asm/rtas.h  |    2 ++
+>   arch/powerpc/kernel/rtas_flash.c |    6 ++++++
+>   arch/powerpc/kernel/rtasd.c      |    6 ++++++
+>   3 files changed, 14 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 58625d1..3f26f87 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -245,6 +245,8 @@ extern int early_init_dt_scan_rtas(unsigned long node,
+>
+>   extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+>
+> +extern bool rtas_cancel_event_scan(void);
+> +
+>   /* Error types logged.  */
+>   #define ERR_FLAG_ALREADY_LOGGED	0x0
+>   #define ERR_FLAG_BOOT		0x1 	/* log was pulled from NVRAM on boot */
+> diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+> index e037c74..4174b4b 100644
+> --- a/arch/powerpc/kernel/rtas_flash.c
+> +++ b/arch/powerpc/kernel/rtas_flash.c
+> @@ -568,6 +568,12 @@ static void rtas_flash_firmware(int reboot_type)
+>   	}
+>
+>   	/*
+> +	 * Just before starting the firmware flash, cancel the event scan work
+> +	 * to avoid any soft lockup issues.
+> +	 */
+> +	rtas_cancel_event_scan();
+> +
+> +	/*
+>   	 * NOTE: the "first" block must be under 4GB, so we create
+>   	 * an entry with no data blocks in the reserved buffer in
+>   	 * the kernel data segment.
+> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> index 481ef06..e8f03fa 100644
+> --- a/arch/powerpc/kernel/rtasd.c
+> +++ b/arch/powerpc/kernel/rtasd.c
+> @@ -472,6 +472,12 @@ static void start_event_scan(void)
+>   				&event_scan_work, event_scan_delay);
+>   }
+>
+> +/* Cancel the rtas event scan work */
+> +bool rtas_cancel_event_scan(void)
+> +{
+> +	return cancel_delayed_work_sync(&event_scan_work);
+> +}
+> +
+>   static int __init rtas_init(void)
+>   {
+>   	struct proc_dir_entry *entry;
+>
