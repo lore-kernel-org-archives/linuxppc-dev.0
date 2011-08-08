@@ -1,23 +1,25 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
 	(using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 13715B6F69
+	by ozlabs.org (Postfix) with ESMTPS id B9FE7B6F76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Aug 2011 05:43:02 +1000 (EST)
-Message-ID: <4E403C3C.1050001@freescale.com>
-Date: Mon, 8 Aug 2011 14:42:52 -0500
+	Tue,  9 Aug 2011 06:56:06 +1000 (EST)
+Received: from mail40-am1 (localhost.localdomain [127.0.0.1])	by
+	mail40-am1-R.bigfish.com (Postfix) with ESMTP id EF98BE681EA	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2011 20:55:57 +0000 (UTC)
+Message-ID: <4E404D1F.6020503@freescale.com>
+Date: Mon, 8 Aug 2011 15:54:55 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Baruch Siach <baruch@tkos.co.il>
-Subject: Re: [PATCH v2] powerpc: 85xx: separate e500 from e500mc
-References: <1fb57aeaeefcc40f6646d026caba8d40371d18fb.1312175199.git.baruch@tkos.co.il>
-	<029dda0b5fef124811bd4c577bdade25d7f93fba.1312794031.git.baruch@tkos.co.il>
-In-Reply-To: <029dda0b5fef124811bd4c577bdade25d7f93fba.1312794031.git.baruch@tkos.co.il>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+To: <smitha.vanga@wipro.com>
+Subject: Re: FW: Ethernet driver WR linux
+References: <07ACDFB8ECA8EF47863A613BC01BBB220344E6CD@HYD-MKD-MBX02.wipro.com>
+In-Reply-To: <07ACDFB8ECA8EF47863A613BC01BBB220344E6CD@HYD-MKD-MBX02.wipro.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/08/2011 04:07 AM, Baruch Siach wrote:
-> CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
-> breaking clear_pages(), probably others too.
+On 08/08/2011 12:53 AM, smitha.vanga@wipro.com wrote:
+>  
+> Hi Scott,
 > 
-> This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
-> depend on PPC_E500.
+> Below is the .dts file. My board is based on mpc8247. Currently using
+> FCC1.
 
-I can see confusion coming from having CONFIG_E500 and CONFIG_PPC_E500...
-
-Maybe CONFIG_PPC_E500V1_2?  Or CONFIG_PPC_E500V2, with a note in the
-kconfig help that it supports e500v1 as well.
+This device tree is based on something very short-lived when 82xx
+support was first being worked on for 82xx, around 2.6.24 or so.  Please
+redo it from scratch based on what is in the current kernel.
 
 -Scott
