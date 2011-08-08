@@ -1,19 +1,31 @@
-Return-Path: <baruch@tkos.co.il>
-Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B244AB6F64
+	by ozlabs.org (Postfix) with ESMTPS id 10B90B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Aug 2011 19:08:43 +1000 (EST)
-From: Baruch Siach <baruch@tkos.co.il>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc: 85xx: separate e500 from e500mc
-Date: Mon,  8 Aug 2011 12:07:44 +0300
-Message-Id: <029dda0b5fef124811bd4c577bdade25d7f93fba.1312794031.git.baruch@tkos.co.il>
-In-Reply-To: <1fb57aeaeefcc40f6646d026caba8d40371d18fb.1312175199.git.baruch@tkos.co.il>
-References: <1fb57aeaeefcc40f6646d026caba8d40371d18fb.1312175199.git.baruch@tkos.co.il>
-Cc: Scott Wood <scottwood@freescale.com>, Baruch Siach <baruch@tkos.co.il>,
-	Timur Tabi <timur@freescale.com>
+	Mon,  8 Aug 2011 19:33:12 +1000 (EST)
+Message-ID: <4E3FAD41.1030404@pengutronix.de>
+Date: Mon, 08 Aug 2011 11:32:49 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [RFC 4/4] [powerpc] Implement a p1010rdb clock source.
+References: <1312603504-30282-1-git-send-email-holt@sgi.com>
+	<1312603504-30282-5-git-send-email-holt@sgi.com>
+	<4E3D4875.30707@pengutronix.de>
+	<39414D86-7822-4B92-B005-351890A2A167@kernel.crashing.org>
+	<20110806205010.GQ4926@sgi.com>
+	<3C4B6145-5C75-4A3C-B504-DA32E0D2EC8A@kernel.crashing.org>
+	<4E3FA301.4050005@grandegger.com>
+In-Reply-To: <4E3FA301.4050005@grandegger.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig1D62CFCFD655DC236D061506"
+Cc: Netdev <netdev@vger.kernel.org>, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
+	"linuxppc-dev@lists.ozlabs.org Development" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,147 +35,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
-breaking clear_pages(), probably others too.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig1D62CFCFD655DC236D061506
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
-depend on PPC_E500.
+On 08/08/2011 10:49 AM, Wolfgang Grandegger wrote:
+> On 08/06/2011 10:59 PM, Kumar Gala wrote:
+>>
+>> On Aug 6, 2011, at 3:50 PM, Robin Holt wrote:
+>>
+>>> On Sat, Aug 06, 2011 at 11:52:45AM -0500, Kumar Gala wrote:
+>>>>
+>>>> On Aug 6, 2011, at 8:58 AM, Marc Kleine-Budde wrote:
+>>>>
+>>>>> On 08/06/2011 06:05 AM, Robin Holt wrote:
+>>>>>> flexcan driver needs the clk_get, clk_get_rate, etc functions
+>>>>>> to work.  This patch provides the minimum functionality.
+>>>>>
+>>>>> This patch has to go via the powerpc git tree. Added
+>>>>> linuxppc-dev@lists.ozlabs.org on CC.
+>>>>>
+>>>>>> Signed-off-by: Robin Holt <holt@sgi.com>
+>>>>>> To: Marc Kleine-Budde <mkl@pengutronix.de>
+>>>>>> To: Wolfgang Grandegger <wg@grandegger.com>
+>>>>>> To: U Bhaskar-B22300 <B22300@freescale.com>
+>>>>>> Cc: socketcan-core@lists.berlios.de
+>>>>>> Cc: netdev@vger.kernel.org
+>>>>>> ---
+>>>>>> arch/powerpc/platforms/85xx/p1010rdb.c |   78 ++++++++++++++++++++=
+++++++++++++
+>>>>>> 1 files changed, 78 insertions(+), 0 deletions(-)
+>>>>
+>>>> NAK.
+>>>>
+>>>> This doesn't look right at all.  We should be doing something based =
+on the device tree node that isn't board specific.
+>>>>
+>>>> I believe Bhaskar has a version of flexcan support that he's been wo=
+rking on cleanup up for upstream.
+>>>
+>>> That version may be similar to what is in the freescale BSP which put=
+s
+>>> the clock functions inside flexcan.c
+>>>
+>>> The powerpc arch already provides a means for individual boards to pr=
+ovide
+>>> the clock functions.  I am not posting this patch here for acceptance=
 
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
-Changes from v1:
+>>> for powerpc and I am sure I will get feedback there when I post to
+>>> their mailing list.  I am posting it here only to show that the flexc=
+an
+>>> developers earlier assertion that this can and should be done in the =
+arch
+>>> tree is correct and will work for the p1010 assuming we can get chang=
+es
+>>> into the arch/powerpc directory to implement these clk_* functions.
+>>
+>> My point is that I don't think they should live in the arch code.  The=
+ clk_* functions you want to implement are tied more the FlexCAN IP than =
+anything arch specific.  As such I believe they should be in the driver.
+>>
+>> For example when FSL has a P9999 with FlexCAN on it, we should NOT hav=
+e to add any arch code to support it.
+>=20
+> The Flexcan is found on ARM and now also on PowerPC SOCs. My current
+> understanding is that the ability to set the clock source and divider i=
+s
+> only available on PowerPC SOCs and therefore it's clearly arch specific=
 
-	* Rebase on 3.1-rc1
+> and should go to arch/powerpc/sysdev/fsl_soc.c if it's common for all
+> PowerPC platforms. What do you think?
 
-	* Remove the list of processor families from the PPC_E500 and 
-	  PPC_E500MC options description. The P20xx can be either e500v2 or 
-	  e500mc.
+There is a bit in the CAN-Controller that selects the clock (at least on
+arm). The current driver just supports the bus clock. Support for the
+other, the oscillator clock, has not been implemented so far.
 
- arch/powerpc/platforms/85xx/Kconfig    |   13 +++++++++----
- arch/powerpc/platforms/Kconfig.cputype |   27 +++++++++++++++------------
- 2 files changed, 24 insertions(+), 16 deletions(-)
+IIRC the oscillator clock has a frequency that results in worse standard
+timing than the bus clock.
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 498534c..0132b21 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
- 
- if PPC32
- 
-+if PPC_E500
-+
- config MPC8540_ADS
- 	bool "Freescale MPC8540 ADS"
- 	select DEFAULT_UIMAGE
-@@ -171,10 +173,13 @@ config SBC8560
- 	help
- 	  This option enables support for the Wind River SBC8560 board
- 
-+endif # PPC_E500
-+
-+if PPC_E500MC
-+
- config P2040_RDB
- 	bool "Freescale P2040 RDB"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-@@ -186,7 +191,6 @@ config P2040_RDB
- config P3041_DS
- 	bool "Freescale P3041 DS"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-@@ -198,7 +202,6 @@ config P3041_DS
- config P4080_DS
- 	bool "Freescale P4080 DS"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-@@ -207,13 +210,15 @@ config P4080_DS
- 	help
- 	  This option enables support for the P4080 DS board
- 
-+endif # PPC_E500MC
-+
- endif # PPC32
- 
- config P5020_DS
- 	bool "Freescale P5020 DS"
-+	depends on PPC_E500MC
- 	select DEFAULT_UIMAGE
- 	select E500
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index e06e395..8f9bd9f 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -10,13 +10,13 @@ choice
- 	prompt "Processor Type"
- 	depends on PPC32
- 	help
--	  There are five families of 32 bit PowerPC chips supported.
-+	  There are six families of 32 bit PowerPC chips supported.
- 	  The most common ones are the desktop and server CPUs (601, 603,
- 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
- 	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
--	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
--	  (85xx) each form a family of their own that is not compatible
--	  with the others.
-+	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx), e500
-+	  (85xx), and e500mc each form a family of their own that is not
-+	  compatible with the others.
- 
- 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
- 
-@@ -24,10 +24,15 @@ config PPC_BOOK3S_32
- 	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
- 	select PPC_FPU
- 
--config PPC_85xx
--	bool "Freescale 85xx"
-+config PPC_E500
-+	bool "Freescale e500v1/e500v2"
-+	select PPC_85xx
- 	select E500
- 
-+config PPC_E500MC
-+	bool "Freescale e500mc/e5500"
-+	select PPC_85xx
-+
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
-@@ -128,15 +133,13 @@ config TUNE_CELL
- config 8xx
- 	bool
- 
--config E500
-+config PPC_85xx
-+	bool
- 	select FSL_EMB_PERFMON
- 	select PPC_FSL_BOOK3E
--	bool
- 
--config PPC_E500MC
--	bool "e500mc Support"
--	select PPC_FPU
--	depends on E500
-+config E500
-+	bool
- 
- config PPC_FPU
- 	bool
--- 
-1.7.5.4
+cheers, Marc
+
+--=20
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
+
+
+--------------enig1D62CFCFD655DC236D061506
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAk4/rUQACgkQjTAFq1RaXHPmsACfYBw3LrMEt377WElOQC1ZKkZO
+b20An0Vbo87boZNDuvE1r5+zow2zBPGl
+=UmJn
+-----END PGP SIGNATURE-----
+
+--------------enig1D62CFCFD655DC236D061506--
