@@ -1,39 +1,21 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
+	[203.91.198.75])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 35A13B6F62
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0328FB6F62
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Aug 2011 16:07:27 +1000 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p78625IP024973
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2011 16:02:05 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p7866Pwe1048812
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2011 16:06:25 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p7867L7b018472
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2011 16:07:22 +1000
-Date: Mon, 8 Aug 2011 16:07:18 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110808060718.GC20120@yookeroo.fritz.box>
-References: <1311983933.8793.42.camel@pasglop>
-	<20110804102752.GA22329@8bytes.org>
-	<1312540958.8598.46.camel@pasglop>
-	<1312557012.2559.34.camel@x201.home>
+	Mon,  8 Aug 2011 15:53:11 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1312557012.2559.34.camel@x201.home>
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
-	Paul Mackerras <pmac@au1.ibm.com>, Joerg Roedel <joro@8bytes.org>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: FW: Ethernet driver WR linux
+Date: Mon, 8 Aug 2011 11:23:02 +0530
+Message-ID: <07ACDFB8ECA8EF47863A613BC01BBB220344E6CD@HYD-MKD-MBX02.wipro.com>
+In-Reply-To: <4E3C3270.2010705@freescale.com>
+From: <smitha.vanga@wipro.com>
+To: <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,52 +25,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 05, 2011 at 09:10:09AM -0600, Alex Williamson wrote:
-> On Fri, 2011-08-05 at 20:42 +1000, Benjamin Herrenschmidt wrote:
-> > Right. In fact to try to clarify the problem for everybody, I think we
-> > can distinguish two different classes of "constraints" that can
-> > influence the grouping of devices:
-> > 
-> >  1- Hard constraints. These are typically devices using the same RID or
-> > where the RID cannot be reliably guaranteed (the later is the case with
-> > some PCIe-PCIX bridges which will take ownership of "some" transactions
-> > such as split but not all). Devices like that must be in the same
-> > domain. This is where PowerPC adds to what x86 does today the concept
-> > that the domains are pre-existing, since we use the RID for error
-> > isolation & MMIO segmenting as well. so we need to create those domains
-> > at boot time.
-> > 
-> >  2- Softer constraints. Those constraints derive from the fact that not
-> > applying them risks enabling the guest to create side effects outside of
-> > its "sandbox". To some extent, there can be "degrees" of badness between
-> > the various things that can cause such constraints. Examples are shared
-> > LSIs (since trusting DisINTx can be chancy, see earlier discussions),
-> > potentially any set of functions in the same device can be problematic
-> > due to the possibility to get backdoor access to the BARs etc...
-> 
-> This is what I've been trying to get to, hardware constraints vs system
-> policy constraints.
-> 
-> > Now, what I derive from the discussion we've had so far, is that we need
-> > to find a proper fix for #1, but Alex and Avi seem to prefer that #2
-> > remains a matter of libvirt/user doing the right thing (basically
-> > keeping a loaded gun aimed at the user's foot with a very very very
-> > sweet trigger but heh, let's not start a flamewar here :-)
-> 
-> Doesn't your own uncertainty of whether or not to allow this lead to the
-> same conclusion, that it belongs in userspace policy?  I don't think we
-> want to make white lists of which devices we trust to do DisINTx
-> correctly part of the kernel interface, do we?  Thanks,
+ 
+Hi Scott,
 
-Yes, but the overall point is that both the hard and soft constraints
-are much easier to handle if a group or iommu domain or whatever is a
-persistent entity that can be set up once-per-boot by the admin with
-whatever degree of safety they want, rather than a transient entity
-tied to an fd's lifetime, which must be set up correctly, every time,
-by the thing establishing it.
+Below is the .dts file. My board is based on mpc8247. Currently using
+FCC1.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+/*
+ * MPC8272 EPN412 Device Tree Source
+ *
+ * Copyright 2005 Freescale Semiconductor Inc.
+ *
+ * This program is free software; you can redistribute  it and/or modify
+it
+ * under  the terms of  the GNU General  Public License as published by
+the
+ * Free Software Foundation;  either version 2 of the  License, or (at
+your
+ * option) any later version.
+ */
+
+/ {
+       model =3D "MPC8247 EPN412";
+       compatible =3D "MPC82XX";
+       #address-cells =3D <1>;
+       #size-cells =3D <1>;
+       linux,phandle =3D <100>;
+
+       cpus {
+               #cpus =3D <1>;
+               #address-cells =3D <1>;
+               #size-cells =3D <0>;
+               linux,phandle =3D <200>;
+
+               PowerPC,8247@0 {
+                       device_type =3D "cpu";
+                       reg =3D <0>;
+                       d-cache-line-size =3D <20>;       // 32 bytes
+                       i-cache-line-size =3D <20>;       // 32 bytes
+                       d-cache-size =3D <4000>;          // L1, 16K
+                       i-cache-size =3D <4000>;          // L1, 16K
+                       timebase-frequency =3D <0>;
+                       bus-frequency =3D <0>;
+                       clock-frequency =3D <0>;
+                       32-bit;
+                       linux,phandle =3D <201>;
+               };
+       };
+
+       interrupt-controller@f8200000 {
+               linux,phandle =3D <f8200000>;
+               #address-cells =3D <0>;
+               #interrupt-cells =3D <2>;
+               interrupt-controller;
+               reg =3D <f8200000 f8200004>;
+               built-in;
+               device_type =3D "pci-pic";
+       };
+
+       memory {
+               device_type =3D "memory";
+               linux,phandle =3D <300>;
+               reg =3D <00000000 4000000>;
+       };
+
+
+       soc8272@f0000000 {
+               #address-cells =3D <1>;
+               #size-cells =3D <1>;
+               #interrupt-cells =3D <2>;
+               device_type =3D "soc";
+               ranges =3D <00000000 f0000000 00053000>;
+               reg =3D <f0000000 10000>;
+
+               cpm@119c0{
+                       linux,phandle =3D <f0000000>;
+                       #address-cells =3D <1>;
+                       #size-cells =3D <1>;
+                       #interrupt-cells =3D <2>;
+                       device_type =3D "cpm";
+                       model =3D "CPM2";
+                       ranges =3D <00000000 00000000 20000>;
+                       reg =3D <0 20000>;
+                       command-proc =3D <119c0>;
+                       brg-frequency =3D <FE70B8>;
+                       cpm_clk =3D <7F385C0>;
+
+                       scc@11a00 {
+                               device_type =3D "serial";
+                               compatible =3D "cpm_uart";
+                               model =3D "SCC";
+                               device-id =3D <1>;
+                               reg =3D <11a00 20 8000 100>;
+                               current-speed =3D <2580>;
+                               interrupts =3D <28 2>;
+                               interrupt-parent =3D <10c00>;
+                               clock-setup =3D <0 00ffffff>;
+                               rx-clock =3D <1>;
+                               tx-clock =3D <1>;
+                       };
+
+			mdio@10d40 {
+                       device_type =3D "mdio";
+                       compatible =3D "fs_enet";
+                       reg =3D <0 0>;
+                       linux,phandle =3D <24520>;
+                       #address-cells =3D <1>;
+                       #size-cells =3D <0>;
+                       ethernet-phy@0 {
+                               linux,phandle =3D <2452000>;
+                               interrupt-parent =3D <10c00>;
+                               interrupts =3D <17 4>;
+                               reg =3D <0>;
+                               bitbang =3D [ 12 12 13 02 02 01 ];
+                               device_type =3D "ethernet-phy";
+                       };
+                      
+               };
+			ethernet@11300 {
+                       #address-cells =3D <1>;
+                       #size-cells =3D <0>;
+                       device_type =3D "network";
+                       device-id =3D <1>;
+                       compatible =3D "fs_enet";
+                       model =3D "FCC";
+                       reg =3D <11300 20 8400 100 11380 30>;
+                       mac-address =3D [ 00 e0 ee 00 05 2e ];
+                       interrupts =3D <20 2>;
+                       interrupt-parent =3D <10c00>;
+                       phy-handle =3D <2452000>;
+                       rx-clock =3D <13>;
+                       tx-clock =3D <12>;
+               };
+
+
+ 			                      
+
+               };
+               interrupt-controller@10c00 {
+                       linux,phandle =3D <10c00>;
+                       #address-cells =3D <0>;
+                       #interrupt-cells =3D <2>;
+                       interrupt-controller;
+                       reg =3D <10c00 80>;
+                       built-in;
+                       device_type =3D "cpm-pic";
+		       compatible =3D "CPM2";
+               };
+
+               flash@fe000000 {
+			                device_type =3D "rom";
+			                compatible =3D "direct-mapped";
+			                probe-type =3D "CFI";
+			                reg =3D <fe000000 00800000>;
+			                bank-width =3D <1>;
+			                partitions =3D <00780000 00080000
+			                              00770000 00010000
+			                              00760000 00010000
+			                              00750000
+00010000>;
+			                partition-names =3D
+"u-boot\0u-boot env1\0u-boot env2\0id data";
+		};
+
+               
+
+
+       };
+};
+
+Regards,
+Smitha
+
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
