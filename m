@@ -1,25 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
-	[213.199.154.207])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B9FE7B6F76
+Return-Path: <xenidis@gmail.com>
+Received: from mail-pz0-f46.google.com (mail-pz0-f46.google.com
+	[209.85.210.46]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6DC51B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Aug 2011 06:56:06 +1000 (EST)
-Received: from mail40-am1 (localhost.localdomain [127.0.0.1])	by
-	mail40-am1-R.bigfish.com (Postfix) with ESMTP id EF98BE681EA	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2011 20:55:57 +0000 (UTC)
-Message-ID: <4E404D1F.6020503@freescale.com>
-Date: Mon, 8 Aug 2011 15:54:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: <smitha.vanga@wipro.com>
-Subject: Re: FW: Ethernet driver WR linux
-References: <07ACDFB8ECA8EF47863A613BC01BBB220344E6CD@HYD-MKD-MBX02.wipro.com>
-In-Reply-To: <07ACDFB8ECA8EF47863A613BC01BBB220344E6CD@HYD-MKD-MBX02.wipro.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+	Tue,  9 Aug 2011 07:08:55 +1000 (EST)
+Received: by pzk32 with SMTP id 32so4967361pzk.33
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 08 Aug 2011 14:08:51 -0700 (PDT)
+Sender: "xenidis@gmail.com" <xenidis@gmail.com>
+From: Jimi Xenidis <jimix@pobox.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: Fix xmon for systems without MSR[RI]
+Date: Mon,  8 Aug 2011 16:25:39 -0500
+Message-Id: <1312838739-20660-1-git-send-email-jimix@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/08/2011 12:53 AM, smitha.vanga@wipro.com wrote:
->  
-> Hi Scott,
-> 
-> Below is the .dts file. My board is based on mpc8247. Currently using
-> FCC1.
+From: David Gibson <dwg@au1.ibm.com>
 
-This device tree is based on something very short-lived when 82xx
-support was first being worked on for 82xx, around 2.6.24 or so.  Please
-redo it from scratch based on what is in the current kernel.
+Based on patch by David Gibson <dwg@au1.ibm.com>
 
--Scott
+xmon has a longstanding bug on systems which are SMP-capable but lack
+the MSR[RI] bit.  In these cases, xmon invoked by IPI on secondary
+CPUs will not properly keep quiet, but will print stuff, thereby
+garbling the primary xmon's output.  This patch fixes it, by ignoring
+the RI bit if the processor does not support it.
+
+There's already a version of this for 4xx upstream, which we'll need
+to extend to other RI-lacking CPUs at some point.  For now this adds
+BookE processors to the mix.
+
+Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+---
+ arch/powerpc/xmon/xmon.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 42541bb..fdb2f7e 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -340,8 +340,8 @@ int cpus_are_in_xmon(void)
+ 
+ static inline int unrecoverable_excp(struct pt_regs *regs)
+ {
+-#ifdef CONFIG_4xx
+-	/* We have no MSR_RI bit on 4xx, so we simply return false */
++#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
++	/* We have no MSR_RI bit on 4xx or Book3e, so we simply return false */
+ 	return 0;
+ #else
+ 	return ((regs->msr & MSR_RI) == 0);
+-- 
+1.7.0.4
