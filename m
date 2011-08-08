@@ -1,21 +1,21 @@
 Return-Path: <xenidis@gmail.com>
-Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
-	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-pz0-f46.google.com (mail-pz0-f46.google.com
+	[209.85.210.46]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C0C1EB6F71
+	by ozlabs.org (Postfix) with ESMTPS id F101BB6F7B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Aug 2011 07:17:00 +1000 (EST)
-Received: by qyk35 with SMTP id 35so3403298qyk.17
+	Tue,  9 Aug 2011 08:10:15 +1000 (EST)
+Received: by pzk32 with SMTP id 32so5053812pzk.33
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 08 Aug 2011 14:16:57 -0700 (PDT)
+	Mon, 08 Aug 2011 15:10:12 -0700 (PDT)
 Sender: "xenidis@gmail.com" <xenidis@gmail.com>
 From: Jimi Xenidis <jimix@pobox.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: wsp: Fix Wire Speed Processor platform configs
-Date: Mon,  8 Aug 2011 16:33:16 -0500
-Message-Id: <1312839196-20782-1-git-send-email-jimix@pobox.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
+Subject: powerpc: Get icswx to work on both Book3s and Book3e platforms
+Date: Mon,  8 Aug 2011 17:26:45 -0500
+Message-Id: <1312842408-21482-1-git-send-email-jimix@pobox.com>
+Cc: Ian Munsie <imunsie@au1.ibm.com>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +25,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some config selections were applied to the platform (reference board)
-when they actuall apply to the chip.
+The following patches deal with the fact that Book3e parts already
+have a PID register that is managed by the system.  Currently an ICSWX
+not in the ACOP will get rejected as specified by both architectures.
 
-Signed-off-by: Jimi Xenidis <jimix@pobox.com>
----
- arch/powerpc/platforms/wsp/Kconfig |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
-index c3c48eb..d051581 100644
---- a/arch/powerpc/platforms/wsp/Kconfig
-+++ b/arch/powerpc/platforms/wsp/Kconfig
-@@ -1,5 +1,9 @@
- config PPC_WSP
- 	bool
-+	select PPC_A2
-+	select PPC_SCOM
-+	select PPC_XICS
-+	select PPC_ICP_NATIVE
- 	default n
- 
- menu "WSP platform selection"
-@@ -7,13 +11,9 @@ menu "WSP platform selection"
- 
- config PPC_PSR2
- 	bool "PSR-2 platform"
--	select PPC_A2
- 	select GENERIC_TBSYNC
--	select PPC_SCOM
- 	select EPAPR_BOOT
- 	select PPC_WSP
--	select PPC_XICS
--	select PPC_ICP_NATIVE
- 	default y
- 
- endmenu
--- 
-1.7.0.4
+-JX
