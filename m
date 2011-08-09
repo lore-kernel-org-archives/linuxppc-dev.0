@@ -1,18 +1,21 @@
 Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
-	by ozlabs.org (Postfix) with ESMTP id 1A2FDB7D3C
+Received: from relay.sgi.com (relay3.sgi.com [192.48.152.1])
+	by ozlabs.org (Postfix) with ESMTP id 35AC7B6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Aug 2011 00:44:56 +1000 (EST)
+	Wed, 10 Aug 2011 00:55:09 +1000 (EST)
+Date: Tue, 9 Aug 2011 09:55:07 -0500
 From: Robin Holt <holt@sgi.com>
-To: Robin Holt <holt@sgi.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
-	Wolfgang Grandegger <wg@grandegger.com>,
-	U Bhaskar-B22300 <B22300@freescale.com>
-Subject: [PATCH 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
-Date: Tue,  9 Aug 2011 09:43:51 -0500
-Message-Id: <1312901031-29887-6-git-send-email-holt@sgi.com>
-In-Reply-To: <1312901031-29887-1-git-send-email-holt@sgi.com>
-References: <1312901031-29887-1-git-send-email-holt@sgi.com>
-Cc: , netdev@vger.kernel.org, socketcan-core@lists.berlios.de,
+To: U Bhaskar-B22300 <B22300@freescale.com>
+Subject: Re: [PATCH 4/4] [powerpc] Add flexcan device support for p1010rdb.
+Message-ID: <20110809145507.GY4926@sgi.com>
+References: <1312892907-20419-1-git-send-email-holt@sgi.com>
+	<1312892907-20419-5-git-send-email-holt@sgi.com>
+	<9C64B7751C3BCA41B64A68E23005A7BE1C4A88@039-SN1MPN1-002.039d.mgd.msft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9C64B7751C3BCA41B64A68E23005A7BE1C4A88@039-SN1MPN1-002.039d.mgd.msft.net>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"socketcan-core@lists.berlios.de" <socketcan-core@lists.berlios.de>,
 	Robin Holt <holt@sgi.com>, PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,138 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In working with the socketcan developers, we have come to the conclusion
-the fsl-flexcan device tree bindings need to be cleaned up.  The driver
-does not depend upon any properties other than the required properties
-so we are removing the file.  Additionally, the p1010*dts files are not
-following the standard for node naming in that they have a trailing -v1.0.
+On Tue, Aug 09, 2011 at 02:45:58PM +0000, U Bhaskar-B22300 wrote:
+> Hi Robin,
+> 	Where are you doing the irq handling ie request_irq() for the powerpc based P1010.
+> 	Or the existing code of ARM based FlexCAN will work for P1010 ??
 
-Signed-off-by: Robin Holt <holt@sgi.com>
-To: Marc Kleine-Budde <mkl@pengutronix.de>,
-To: Wolfgang Grandegger <wg@grandegger.com>,
-To: U Bhaskar-B22300 <B22300@freescale.com>
-Cc: socketcan-core@lists.berlios.de,
-Cc: netdev@vger.kernel.org,
-Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>
----
- .../devicetree/bindings/net/can/fsl-flexcan.txt    |   61 --------------------
- arch/powerpc/boot/dts/p1010rdb.dts                 |    8 ---
- arch/powerpc/boot/dts/p1010si.dtsi                 |    6 +-
- 3 files changed, 2 insertions(+), 73 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+It appears that the of_device stuff got moved under the struct device
+and that allows the request_irq() to just magically work.
 
-diff --git a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
-deleted file mode 100644
-index 1a729f0..0000000
---- a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
-+++ /dev/null
-@@ -1,61 +0,0 @@
--CAN Device Tree Bindings
--------------------------
--2011 Freescale Semiconductor, Inc.
--
--fsl,flexcan-v1.0 nodes
-------------------------
--In addition to the required compatible-, reg- and interrupt-properties, you can
--also specify which clock source shall be used for the controller.
--
--CPI Clock- Can Protocol Interface Clock
--	This CLK_SRC bit of CTRL(control register) selects the clock source to
--	the CAN Protocol Interface(CPI) to be either the peripheral clock
--	(driven by the PLL) or the crystal oscillator clock. The selected clock
--	is the one fed to the prescaler to generate the Serial Clock (Sclock).
--	The PRESDIV field of CTRL(control register) controls a prescaler that
--	generates the Serial Clock (Sclock), whose period defines the
--	time quantum used to compose the CAN waveform.
--
--Can Engine Clock Source
--	There are two sources for CAN clock
--	- Platform Clock  It represents the bus clock
--	- Oscillator Clock
--
--	Peripheral Clock (PLL)
--	--------------
--		     |
--		    ---------		      -------------
--		    |       |CPI Clock	      | Prescaler |       Sclock
--		    |       |---------------->| (1.. 256) |------------>
--		    ---------		      -------------
--                     |  |
--	--------------  ---------------------CLK_SRC
--	Oscillator Clock
--
--- fsl,flexcan-clock-source : CAN Engine Clock Source.This property selects
--			     the peripheral clock. PLL clock is fed to the
--			     prescaler to generate the Serial Clock (Sclock).
--			     Valid values are "oscillator" and "platform"
--			     "oscillator": CAN engine clock source is oscillator clock.
--			     "platform" The CAN engine clock source is the bus clock
--		             (platform clock).
--
--- fsl,flexcan-clock-divider : for the reference and system clock, an additional
--			      clock divider can be specified.
--- clock-frequency: frequency required to calculate the bitrate for FlexCAN.
--
--Note:
--	- v1.0 of flexcan-v1.0 represent the IP block version for P1010 SOC.
--	- P1010 does not have oscillator as the Clock Source.So the default
--	  Clock Source is platform clock.
--Examples:
--
--	can0@1c000 {
--		compatible = "fsl,flexcan-v1.0";
--		reg = <0x1c000 0x1000>;
--		interrupts = <48 0x2>;
--		interrupt-parent = <&mpic>;
--		fsl,flexcan-clock-source = "platform";
--		fsl,flexcan-clock-divider = <2>;
--		clock-frequency = <fixed by u-boot>;
--	};
-diff --git a/arch/powerpc/boot/dts/p1010rdb.dts b/arch/powerpc/boot/dts/p1010rdb.dts
-index 6b33b73..d6a0bb2 100644
---- a/arch/powerpc/boot/dts/p1010rdb.dts
-+++ b/arch/powerpc/boot/dts/p1010rdb.dts
-@@ -169,14 +169,6 @@
- 			};
- 		};
- 
--		can0@1c000 {
--			fsl,flexcan-clock-source = "platform";
--		};
--
--		can1@1d000 {
--			fsl,flexcan-clock-source = "platform";
--		};
--
- 		usb@22000 {
- 			phy_type = "utmi";
- 		};
-diff --git a/arch/powerpc/boot/dts/p1010si.dtsi b/arch/powerpc/boot/dts/p1010si.dtsi
-index 7f51104..37e47cd 100644
---- a/arch/powerpc/boot/dts/p1010si.dtsi
-+++ b/arch/powerpc/boot/dts/p1010si.dtsi
-@@ -141,19 +141,17 @@
- 		};
- 
- 		can0@1c000 {
--			compatible = "fsl,flexcan-v1.0";
-+			compatible = "fsl,flexcan";
- 			reg = <0x1c000 0x1000>;
- 			interrupts = <48 0x2>;
- 			interrupt-parent = <&mpic>;
--			fsl,flexcan-clock-divider = <2>;
- 		};
- 
- 		can1@1d000 {
--			compatible = "fsl,flexcan-v1.0";
-+			compatible = "fsl,flexcan";
- 			reg = <0x1d000 0x1000>;
- 			interrupts = <61 0x2>;
- 			interrupt-parent = <&mpic>;
--			fsl,flexcan-clock-divider = <2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--- 
-1.7.2.1
+Robin
