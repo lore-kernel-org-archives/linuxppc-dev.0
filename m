@@ -1,16 +1,17 @@
 Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay3.sgi.com [192.48.152.1])
-	by ozlabs.org (Postfix) with ESMTP id 61DA8B6F76
+Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
+	by ozlabs.org (Postfix) with ESMTP id CC68DB7010
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Aug 2011 00:44:18 +1000 (EST)
+	Wed, 10 Aug 2011 00:44:28 +1000 (EST)
 From: Robin Holt <holt@sgi.com>
 To: Robin Holt <holt@sgi.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
 	Wolfgang Grandegger <wg@grandegger.com>,
 	U Bhaskar-B22300 <B22300@freescale.com>
-Subject: [Patch 0/5] [flexcan/powerpc] Add support for powerpc flexcan
-	(freescale p1010) -V9
-Date: Tue,  9 Aug 2011 09:43:46 -0500
-Message-Id: <1312901031-29887-1-git-send-email-holt@sgi.com>
+Subject: [PATCH 1/5] [flexcan] Remove #include <mach/clock.h>
+Date: Tue,  9 Aug 2011 09:43:47 -0500
+Message-Id: <1312901031-29887-2-git-send-email-holt@sgi.com>
+In-Reply-To: <1312901031-29887-1-git-send-email-holt@sgi.com>
+References: <1312901031-29887-1-git-send-email-holt@sgi.com>
 Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
 	PPC list <linuxppc-dev@lists.ozlabs.org>, Robin Holt <holt@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,27 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Marc, Wolfgang or U Bhaskar,
+powerpc does not have a mach-####/clock.h.  When testing, I found neither
+arm nor powerpc needed the mach/clock.h at all so I removed it.
 
-This patch set should have all your comments included.  It is based on
-the David S. Miller net-next-2.6 tree commit 19fd617.
+Signed-off-by: Robin Holt <holt@sgi.com>
+To: Marc Kleine-Budde <mkl@pengutronix.de>
+Acked-by: Wolfgang Grandegger <wg@grandegger.com>
+To: U Bhaskar-B22300 <B22300@freescale.com>
+Cc: socketcan-core@lists.berlios.de
+Cc: netdev@vger.kernel.org
+Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+---
+ drivers/net/can/flexcan.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-This series adds a fifth patch which cleans up and corrects the device
-bindigs for the fsl-flexcan nodes.
-
-I have compiled each patch in the series individually for both arm and
-powerpc (cheated on ppc and reordered them with the last patch first so
-I could select CAN_FLEXCAN.
-
-With all the patches applied, my p1010rdb works for communicating between
-its two can ports and also can communicate with an external PSOC.  I have
-done no testing beyond compile testing on an arm system as I have no
-access to an arm based system.
-
-For the first three patches in the series, I believe they are all ready
-for forwarding to David S. Miller for the netdev tree.  I think patch
-4 is ready for submission to the PPC85xx maintainer.  This is the
-first submission of patch 5.
-
-Thanks,
-Robin Holt
+diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
+index 1767811..586b2cd 100644
+--- a/drivers/net/can/flexcan.c
++++ b/drivers/net/can/flexcan.c
+@@ -35,8 +35,6 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ 
+-#include <mach/clock.h>
+-
+ #define DRV_NAME			"flexcan"
+ 
+ /* 8 for RX fifo and 2 error handling */
+-- 
+1.7.2.1
