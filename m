@@ -1,22 +1,20 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CA9CEB6F67
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Aug 2011 22:48:19 +1000 (EST)
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 37D38B6F98
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  9 Aug 2011 23:00:17 +1000 (EST)
+Message-ID: <4E412F5C.7030802@grandegger.com>
+Date: Tue, 09 Aug 2011 15:00:12 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] rio: Use discovered bit to test if enumeration is complete
-Date: Tue, 9 Aug 2011 05:36:06 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552020244E5@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <1312856226-3695-1-git-send-email-b34182@freescale.com>
-References: <1312856226-3695-1-git-send-email-b34182@freescale.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Liu Gang" <b34182@freescale.com>, <linux-kernel@vger.kernel.org>
-Cc: r58472@freescale.com, r61911@freescale.com, linuxppc-dev@ozlabs.org,
-	Liu Gang <Gang.Liu@freescale.com>, B11780@freescale.com,
-	akpm@linux-foundation.org
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH 4/4] [powerpc] Add flexcan device support for p1010rdb.
+References: <1312892907-20419-1-git-send-email-holt@sgi.com>
+	<1312892907-20419-5-git-send-email-holt@sgi.com>
+In-Reply-To: <1312892907-20419-5-git-send-email-holt@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: socketcan-core@lists.berlios.de, U Bhaskar-B22300 <B22300@freescale.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, August 08, 2011 at 10:17 PM, Liu Gang wrote:
-> Subject: [PATCH] rio: Use discovered bit to test if enumeration is
-> complete
->=20
-> The discovered bit in PGCCSR register indicates if the device has
-> been discovered by system host. In Rapidio system, some agent devices
-> can also be master devices. They can issue requests into the system.
->=20
-> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
-> ---
->  drivers/rapidio/rio-scan.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+Hi Robin,
 
-Acked-by: Alexandre Bounine <alexandre.bounine@idt.com>
+On 08/09/2011 02:28 PM, Robin Holt wrote:
+> I added a simple clock source for the p1010rdb so the flexcan driver
+> could determine a clock frequency.  The p1010 can device only has an
+> oscillator of system bus frequency divided by 2.
+> 
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> To: Marc Kleine-Budde <mkl@pengutronix.de>,
+> To: Wolfgang Grandegger <wg@grandegger.com>,
+> To: U Bhaskar-B22300 <B22300@freescale.com>
+> Cc: socketcan-core@lists.berlios.de,
+> Cc: netdev@vger.kernel.org,
+> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+> ---
+>  arch/powerpc/platforms/85xx/Kconfig    |    2 +
+>  arch/powerpc/platforms/85xx/Makefile   |    2 +
+>  arch/powerpc/platforms/85xx/clock.c    |   42 ++++++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/85xx/p1010rdb.c |    8 ++++++
+>  4 files changed, 54 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/85xx/clock.c
+> 
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+> index 498534c..c4304ae 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -70,6 +70,8 @@ config MPC85xx_RDB
+>  config P1010_RDB
+>  	bool "Freescale P1010RDB"
+>  	select DEFAULT_UIMAGE
+> +	select HAVE_CAN_FLEXCAN if NET && CAN
+> +	select PPC_CLOCK if CAN_FLEXCAN
+>  	help
+>  	  This option enables support for the MPC85xx RDB (P1010 RDB) board
+>  
+> diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+> index a971b32..cc7f381 100644
+> --- a/arch/powerpc/platforms/85xx/Makefile
+> +++ b/arch/powerpc/platforms/85xx/Makefile
+> @@ -3,6 +3,8 @@
+>  #
+>  obj-$(CONFIG_SMP) += smp.o
+>  
+> +obj-$(CONFIG_PPC_CLOCK)   += clock.o
+> +
+>  obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
+>  obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
+>  obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
+> diff --git a/arch/powerpc/platforms/85xx/clock.c b/arch/powerpc/platforms/85xx/clock.c
+> new file mode 100644
+> index 0000000..a6fd2c8
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/clock.c
+> @@ -0,0 +1,42 @@
+> +
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +
+> +#include <asm/clk_interface.h>
+> +
+> +#include <sysdev/fsl_soc.h>
+> +
+> +/*
+> + * p1010 needs to provide a clock source for the flexcan driver. The
+> + * oscillator for the p1010 processor is only ever the system clock / 2.
+> + */
+> +
+> +static struct clk *mpc85xx_clk_get(struct device *dev, const char *id)
+> +{
+> +	if (!dev)
+> +		return ERR_PTR(-ENOENT);
+> +
+
+Ah, I think you removed too much code here. I obviously did not
+understand what the device node check is good for, sorry. The clock is
+only implemented for the Flexcan and therefore we should add a check here:
+
+	if (!dev->of_node ||
+	    !of_device_is_compatible(dev->of_node, "fsl,flexcan"))
+		return ERR_PTR(-ENOENT);
+
+Something like that should work. For the next version you can then add
+my "Acked-by: Wolfgang Grandegger <wg@grandegger.com" to all patches.
+
+Wolfgang.
