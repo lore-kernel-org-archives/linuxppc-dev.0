@@ -1,22 +1,24 @@
-Return-Path: <holt@sgi.com>
-Date: Tue, 9 Aug 2011 15:59:00 -0500
-From: Robin Holt <holt@sgi.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
-Message-ID: <20110809205900.GC4926@sgi.com>
-References: <1312901031-29887-1-git-send-email-holt@sgi.com>
-	<1312901031-29887-6-git-send-email-holt@sgi.com>
-	<4E4179CB.6030101@freescale.com> <20110809184524.GB4926@sgi.com>
-	<4E4186BD.5000602@freescale.com> <4E418F2D.4060504@grandegger.com>
-	<4E419180.3090507@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E419180.3090507@freescale.com>
-Cc: netdev@vger.kernel.org, "devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	U Bhaskar-B22300 <B22300@freescale.com>,
-	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 403F3B70C6
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 08:10:04 +1000 (EST)
+Subject: Re: [PATCH 07/10] KVM: PPC: Add PAPR hypercall code for PR mode
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Avi Kivity <avi@redhat.com>
+In-Reply-To: <4E4167F9.5090305@redhat.com>
+References: <1312907508-14599-1-git-send-email-agraf@suse.de>
+	<1312907508-14599-8-git-send-email-agraf@suse.de>
+	<4E416315.2080800@redhat.com> <4E41646C.1070500@suse.de>
+	<4E41651C.7050709@redhat.com> <4E4165AB.8030704@suse.de>
+	<4E4167F9.5090305@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Aug 2011 17:02:00 -0500
+Message-ID: <1312927320.29273.19.camel@pasglop>
+Mime-Version: 1.0
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I guess my poor wording may have gotten me in trouble.  I am getting
-ready to repost this patch, but I want to ensure I am getting it as
-right as possible.
+On Tue, 2011-08-09 at 20:01 +0300, Avi Kivity wrote:
+> On 08/09/2011 07:51 PM, Alexander Graf wrote:
+> >> Just put your own (or your employers').  If someone contributed to 
+> >> the code they can add their copyrights (or ask you do do it before 
+> >> inclusion).
+> >>
+> >> It would be good to get Paul's or Ben's so that the unimportant 
+> >> characters between the whitespace get some braintime.
+> >
+> >
+> > So you mean I just put both copyright statements there? That's a nice 
+> > idea!
+> >
+> >
+> 
+> I meant Paul's or Ben's *review*.
 
-I think I should reword the commit message to indicate we are removing
-the Documentation/.../fsl-flexcan.txt file which has essentially become
-empty and change the p1010si.dtsi file's can nodes to "fsl,p1010-flexcan",
-"fsl,flexcan".  Is that correct?
+Ben's currently travelling doing some bringup :-) I will try to have a
+look but I can't promise anything for the next 2 weeks.
 
-Thanks,
-Robin
-
-On Tue, Aug 09, 2011 at 02:58:56PM -0500, Scott Wood wrote:
-> On 08/09/2011 02:49 PM, Wolfgang Grandegger wrote:
-> > Yes. The doc for the bindings we speak about
-> > 
-> > http://lxr.linux.no/#linux+v3.0.1/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
-> > 
-> > sneaked into the kernel without been presented on any mailing list and
-> > without the corresponding driver patch.
-> 
-> It was posted on linuxppc-dev:
-> http://patchwork.ozlabs.org/patch/91980/
-> 
-> Though I agree it should have been posted more widely.
-> 
-> > OK, just
-> > 
-> >   "fsl,p1010-flexcan"
-> > 
-> > or
-> > 
-> >   "fsl,p1010-flexcan", "fsl,flexcan"
-> 
-> I'm ok with the latter, if there's enough in common that it's
-> conceivable that a driver wouldn't care.  The more specific compatible
-> will be there if the driver wants to make use of it later.
-> 
-> -Scot
+Cheers,
+Ben.
