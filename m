@@ -1,24 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 403F3B70C6
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 08:10:04 +1000 (EST)
-Subject: Re: [PATCH 07/10] KVM: PPC: Add PAPR hypercall code for PR mode
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 2EDB5B70C3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Aug 2011 09:24:29 +1000 (EST)
+Subject: Re: kvm PCI assignment & VFIO ramblings
+From: Alex Williamson <alex.williamson@redhat.com>
 To: Avi Kivity <avi@redhat.com>
-In-Reply-To: <4E4167F9.5090305@redhat.com>
-References: <1312907508-14599-1-git-send-email-agraf@suse.de>
-	<1312907508-14599-8-git-send-email-agraf@suse.de>
-	<4E416315.2080800@redhat.com> <4E41646C.1070500@suse.de>
-	<4E41651C.7050709@redhat.com> <4E4165AB.8030704@suse.de>
-	<4E4167F9.5090305@redhat.com>
+Date: Tue, 09 Aug 2011 17:24:15 -0600
+In-Reply-To: <4E3F9E33.5000706@redhat.com>
+References: <1311983933.8793.42.camel@pasglop>
+	<1312050011.2265.185.camel@x201.home>
+	<20110802082848.GD29719@yookeroo.fritz.box>
+	<1312308847.2653.467.camel@bling.home>
+	<1312310121.2653.470.camel@bling.home>
+	<20110803020422.GF29719@yookeroo.fritz.box>
+	<4E3F9E33.5000706@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Aug 2011 17:02:00 -0500
-Message-ID: <1312927320.29273.19.camel@pasglop>
+Message-ID: <1312932258.4524.55.camel@bling.home>
 Mime-Version: 1.0
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org
+Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>, aafabbri <aafabbri@cisco.com>,
+	iommu <iommu@lists.linux-foundation.org>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-08-09 at 20:01 +0300, Avi Kivity wrote:
-> On 08/09/2011 07:51 PM, Alexander Graf wrote:
-> >> Just put your own (or your employers').  If someone contributed to 
-> >> the code they can add their copyrights (or ask you do do it before 
-> >> inclusion).
-> >>
-> >> It would be good to get Paul's or Ben's so that the unimportant 
-> >> characters between the whitespace get some braintime.
+On Mon, 2011-08-08 at 11:28 +0300, Avi Kivity wrote:
+> On 08/03/2011 05:04 AM, David Gibson wrote:
+> > I still don't understand the distinction you're making.  We're saying
+> > the group is "owned" by a given user or guest in the sense that no-one
+> > else may use anything in the group (including host drivers).  At that
+> > point none, some or all of the devices in the group may actually be
+> > used by the guest.
 > >
-> >
-> > So you mean I just put both copyright statements there? That's a nice 
-> > idea!
-> >
+> > You seem to be making a distinction between "owned by" and "assigned
+> > to" and "used by" and I really don't see what it is.
 > >
 > 
-> I meant Paul's or Ben's *review*.
+> Alex (and I) think that we should work with device/function granularity, 
+> as is common with other archs, and that the group thing is just a 
+> constraint on which functions may be assigned where, while you think 
+> that we should work at group granularity, with 1-function groups for 
+> archs which don't have constraints.
+> 
+> Is this an accurate way of putting it?
 
-Ben's currently travelling doing some bringup :-) I will try to have a
-look but I can't promise anything for the next 2 weeks.
+Mostly correct, yes.  x86 isn't immune to the group problem, it shows up
+for us any time there's a PCIe-to-PCI bridge in the device hierarchy.
+We lose resolution of devices behind the bridge.  As you state though, I
+think of this as only a constraint on what we're able to do with those
+devices.
 
-Cheers,
-Ben.
+Perhaps part of the differences is that on x86 the constraints don't
+really effect how we expose devices to the guest.  We need to hold
+unused devices in the group hostage and use the same iommu domain for
+any devices assigned, but that's not visible to the guest.  AIUI, POWER
+probably needs to expose the bridge (or at least an emulated bridge) to
+the guest, any devices in the group need to show up behind that bridge,
+some kind of pvDMA needs to be associated with that group, there might
+be MMIO segments and IOVA windows, etc.  Effectively you want to
+transplant the entire group into the guest.  Is that right?  Thanks,
+
+Alex
