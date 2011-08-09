@@ -1,17 +1,22 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A5F00B6F67
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Aug 2011 18:14:44 +1000 (EST)
-Message-ID: <4E40EC6F.30601@embedded-sol.com>
-Date: Tue, 09 Aug 2011 11:14:39 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <holt@sgi.com>
+Received: from relay.sgi.com (relay3.sgi.com [192.48.152.1])
+	by ozlabs.org (Postfix) with ESMTP id 58F7EB6F7E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  9 Aug 2011 21:40:45 +1000 (EST)
+Date: Tue, 9 Aug 2011 06:40:43 -0500
+From: Robin Holt <holt@sgi.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [RFC 4/4] [powerpc] Add flexcan device support for p1010rdb.
+Message-ID: <20110809114043.GN4926@sgi.com>
+References: <1312869313-22434-1-git-send-email-holt@sgi.com>
+	<1312869313-22434-5-git-send-email-holt@sgi.com>
+	<20110809063319.GK4926@sgi.com> <4E40DDA5.1050004@grandegger.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"jacmet@sunsite.dk" <jacmet@sunsite.dk>, grant.likely@secretlab.ca
-Subject: GPIO IRQ dts bindings for MPC85xx and QorIQ
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4E40DDA5.1050004@grandegger.com>
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,59 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Aug 09, 2011 at 09:11:33AM +0200, Wolfgang Grandegger wrote:
+> > +	return &p1010_rdb_system_clock;
+> 
+> Just returning fsl_get_sys_freq() here would already be fine. I'm also
+> missing the factor of two here:
+> 
+>         return fsl_get_sys_freq() / 2; ????
 
-DTS bindings document for mpc8xxx GPIOs implies that to use GPIO as IRQ
-one should specify GPIO controller node and GPIO number in device tree 
-node,
-like this:
+I am working on the other comments right now as well, but this one
+brought up a good question.  The old algorithm in the original freescale
+patches I started with actually did, essentially:
 
-     funkyfpga@0 {
-         compatible = "funky-fpga";
-         ...
-         interrupts = <9 2>;
-         interrupt-parent = <&gpio2>;
-     };
+	...clock.freq = DIV_ROUND_CLOSEST(fsl_get_sys_freq() / 2, 1000) * 1000
 
-I suppose the intention here is to do the following in driver code:
+The end result was before:
+	...clock.freq=0x0bebc200
+After:
+	...clock.freq=0x0bebc1fe
 
-int irq;
-struct device node *np;
+Is that rounding relavent?
 
-np = of_find_compatible_node((NULL, NULL, "funky-fpga");
-irq = irq_of_parse_and_map(np, 0);
-request_irq(irq, ...);
-
-However this doesn't work as expected.  The resulting virq
-is connected to real interrupt controller, mpic, and not to
-GPIO controller. As a result, interrupt handler is never invoked.
-
-This is what /proc/interrupts shows:
-
-  20:          0    OpenPIC         Edge         funky-fpga
-
-
-On the other hand, when using
-
-#define FPGA_IRQ_GPIO    169
-
-request_gpio(FPGA_IRQ_GPIO);
-gpio_direction_input(FPGA_IRQ_GPIO);
-irq = gpio_to_irq(FPGA_IRQ_GPIO);
-request_irq(irq, ...);
-
-the connection to GPIO controller is created properly,
-/proc/interrupts shows
-
-20:          0    mpc8xxx_gpio         Edge         funky-fpga
-
-The drawback of this approach is that GPIO IRQ cannot
-be naturally specified in device tree by GPIO controller number
-and GPIO pin number.
-
-So what is the correct way to refer to 85XX GPIO IRQs in driver
-code ?
-
-Thanks.
-
-Felix.
+Thanks,
+Robin
