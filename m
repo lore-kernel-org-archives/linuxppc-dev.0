@@ -2,17 +2,19 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 60B0BB71E4
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 02:49:41 +1000 (EST)
-Message-ID: <4E41651F.7010508@suse.de>
-Date: Tue, 09 Aug 2011 18:49:35 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 298ADB723B
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 02:52:01 +1000 (EST)
+Message-ID: <4E4165AB.8030704@suse.de>
+Date: Tue, 09 Aug 2011 18:51:55 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 00/10] PAPR virtualization on PR KVM
+Subject: Re: [PATCH 07/10] KVM: PPC: Add PAPR hypercall code for PR mode
 References: <1312907508-14599-1-git-send-email-agraf@suse.de>
-	<4E41638A.2010707@redhat.com>
-In-Reply-To: <4E41638A.2010707@redhat.com>
+	<1312907508-14599-8-git-send-email-agraf@suse.de>
+	<4E416315.2080800@redhat.com> <4E41646C.1070500@suse.de>
+	<4E41651C.7050709@redhat.com>
+In-Reply-To: <4E41651C.7050709@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
@@ -25,43 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2011 06:42 PM, Avi Kivity wrote:
-> On 08/09/2011 07:31 PM, Alexander Graf wrote:
->> In KVM for Book3S PPC we currently have 2 implementations. There
->> is the PR based implementation which works on any POWER system
->> you pass in and the super fast HV implementation which requires
->> libre firmware (so almost nobody can use it).
->
-> Did you mean, non-libre?
-
-No, I did mean libre :). Usually firmware on IBM POWER systems already 
-uses the hypervisor mode for itself, so we can't leverage it. The only 
-system that is publicly available and can run HV KVM is the YDL 
-PowerStation which is running SLOF, an open source firmware.
-
->
+On 08/09/2011 06:49 PM, Avi Kivity wrote:
+> On 08/09/2011 07:46 PM, Alexander Graf wrote:
+>> On 08/09/2011 06:40 PM, Avi Kivity wrote:
+>>> On 08/09/2011 07:31 PM, Alexander Graf wrote:
+>>>> When running a PAPR guest, we need to handle a few hypercalls in 
+>>>> kernel space,
+>>>> most prominently the page table invalidation (to sync the shadows).
+>>>>
+>>>> So this patch adds handling for a few PAPR hypercalls to PR mode 
+>>>> KVM. I tried
+>>>> to share the code with HV mode, but it ended up being a lot easier 
+>>>> this way
+>>>> around, as the two differ too much in those details.
+>>>>
+>>>>
+>>>> +++ b/arch/powerpc/kvm/book3s_pr_papr.c
+>>>> @@ -0,0 +1,158 @@
+>>>> +/*
+>>>> + * Copyright (C) 2011. Freescale Inc. All rights reserved.
+>>>> + *
+>>>> + * Authors:
+>>>> + *    Alexander Graf<agraf@suse.de>
+>>>> + *    Paul Mackerras<paulus@samba.org>
+>>>> + *
+>>>> + * Description:
+>>>> + *
+>>>> + * Hypercall handling for running PAPR guests in PR KVM on Book 3S
+>>>> + * processors.
+>>>> + *
+>>>> + * This program is free software; you can redistribute it and/or 
+>>>> modify
+>>>> + * it under the terms of the GNU General Public License, version 
+>>>> 2, as
+>>>> + * published by the Free Software Foundation.
+>>>> + */
+>>>
+>>> Copyright freescale, authors Paul and yourself?
 >>
->> Currently, the two target two different machine types, with PR KVM
->> being used for bare metal system virtualization, while the HV KVM
->> is used to virtualize PAPR.
->>
->> In an effort to make things more cozy and transparent to the user,
->> this patch set implements PAPR capabilities to the PR KVM side, so
->> a user doesn't have to worry what the respective kernel module
->> supports. Any machine he's virtualizing "just works".
->>
+>> Yeah, I'm reasonably clueless when it comes to legal stuff. This code 
+>> is inspired by Paul's, but is mostly rewritten since it's so tied 
+>> into the virtual MMU. What would the copyright be in that case?
 >
-> Nice.  I went though it and nothing shouted "I'm wrong, kill me 
-> please", though I don't claim to understand more than 5% of it.
+> Just put your own (or your employers').  If someone contributed to the 
+> code they can add their copyrights (or ask you do do it before 
+> inclusion).
+>
+> It would be good to get Paul's or Ben's so that the unimportant 
+> characters between the whitespace get some braintime.
 
-Heh :). The thing giving me the most headaches here is the ENABLE_CAP 
-part on PAPR. I'd love to have a more flexible framework there that can 
-configure kvm into the right mode of operation completely, so we get the 
-chance of passing back "Sorry, that mode doesn't work for me" at the end 
-of the day.
-
-But I guess we can just do that with the cap enablings too. It's just 
-slightly more icky.
+So you mean I just put both copyright statements there? That's a nice idea!
 
 
 Alex
