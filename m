@@ -1,22 +1,22 @@
-Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
-	by ozlabs.org (Postfix) with ESMTP id B82C2B6F67
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Aug 2011 22:40:43 +1000 (EST)
-Date: Tue, 9 Aug 2011 07:40:42 -0500
-From: Robin Holt <holt@sgi.com>
-To: Marc Kleine-Budde <mkl@pengutronix.de>
-Subject: Re: [RFC 4/4] [powerpc] Add flexcan device support for p1010rdb.
-Message-ID: <20110809124042.GR4926@sgi.com>
-References: <1312869313-22434-1-git-send-email-holt@sgi.com>
-	<1312869313-22434-5-git-send-email-holt@sgi.com>
-	<4E41291B.3020001@pengutronix.de>
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id CA9CEB6F67
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Aug 2011 22:48:19 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E41291B.3020001@pengutronix.de>
-Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
-	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] rio: Use discovered bit to test if enumeration is complete
+Date: Tue, 9 Aug 2011 05:36:06 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552020244E5@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1312856226-3695-1-git-send-email-b34182@freescale.com>
+References: <1312856226-3695-1-git-send-email-b34182@freescale.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Liu Gang" <b34182@freescale.com>, <linux-kernel@vger.kernel.org>
+Cc: r58472@freescale.com, r61911@freescale.com, linuxppc-dev@ozlabs.org,
+	Liu Gang <Gang.Liu@freescale.com>, B11780@freescale.com,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 09, 2011 at 02:33:31PM +0200, Marc Kleine-Budde wrote:
-> On 08/09/2011 07:55 AM, Robin Holt wrote:
-> > I added a clock source for the p1010rdb so the flexcan driver
-> > could find its clock frequency.
-> > 
-> > Signed-off-by: Robin Holt <holt@sgi.com>
-> > To: Marc Kleine-Budde <mkl@pengutronix.de>,
-> > To: Wolfgang Grandegger <wg@grandegger.com>,
-> > To: U Bhaskar-B22300 <B22300@freescale.com>
-> > Cc: socketcan-core@lists.berlios.de,
-> > Cc: netdev@vger.kernel.org,
-> > Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-> 
-> After fixing Wolfgangs remarks add by Acked-by, for what it's worth in
-> the ppc-world :)
+On Monday, August 08, 2011 at 10:17 PM, Liu Gang wrote:
+> Subject: [PATCH] rio: Use discovered bit to test if enumeration is
+> complete
+>=20
+> The discovered bit in PGCCSR register indicates if the device has
+> been discovered by system host. In Rapidio system, some agent devices
+> can also be master devices. They can issue requests into the system.
+>=20
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+>  drivers/rapidio/rio-scan.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
-Does that go for the other two patches in the series you have not
-commented on in many revs as well?
-
-Robin
+Acked-by: Alexandre Bounine <alexandre.bounine@idt.com>
