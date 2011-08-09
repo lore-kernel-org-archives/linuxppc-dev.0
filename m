@@ -1,26 +1,24 @@
-Return-Path: <B22300@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 50576B6F65
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 48036B6F6B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Aug 2011 00:46:20 +1000 (EST)
-From: U Bhaskar-B22300 <B22300@freescale.com>
-To: Robin Holt <holt@sgi.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
-	Wolfgang Grandegger <wg@grandegger.com>
-Subject: RE: [PATCH 4/4] [powerpc] Add flexcan device support for p1010rdb.
-Date: Tue, 9 Aug 2011 14:45:58 +0000
-Message-ID: <9C64B7751C3BCA41B64A68E23005A7BE1C4A88@039-SN1MPN1-002.039d.mgd.msft.net>
+	Wed, 10 Aug 2011 01:10:37 +1000 (EST)
+Message-ID: <4E414DE8.4050909@grandegger.com>
+Date: Tue, 09 Aug 2011 17:10:32 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH 4/4] [powerpc] Add flexcan device support for p1010rdb.
 References: <1312892907-20419-1-git-send-email-holt@sgi.com>
 	<1312892907-20419-5-git-send-email-holt@sgi.com>
-In-Reply-To: <1312892907-20419-5-git-send-email-holt@sgi.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	<9C64B7751C3BCA41B64A68E23005A7BE1C4A88@039-SN1MPN1-002.039d.mgd.msft.net>
+	<20110809145507.GY4926@sgi.com>
+In-Reply-To: <20110809145507.GY4926@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: "socketcan-core@lists.berlios.de" <socketcan-core@lists.berlios.de>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+	U Bhaskar-B22300 <B22300@freescale.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,140 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Robin,
-	Where are you doing the irq handling ie request_irq() for the powerpc base=
-d P1010.
-	Or the existing code of ARM based FlexCAN will work for P1010 ??
---Bhaskar
+On 08/09/2011 04:55 PM, Robin Holt wrote:
+> On Tue, Aug 09, 2011 at 02:45:58PM +0000, U Bhaskar-B22300 wrote:
+>> Hi Robin,
+>> 	Where are you doing the irq handling ie request_irq() for the powerpc based P1010.
+>> 	Or the existing code of ARM based FlexCAN will work for P1010 ??
+> 
+> It appears that the of_device stuff got moved under the struct device
+> and that allows the request_irq() to just magically work.
 
-> -----Original Message-----
-> From: Robin Holt [mailto:holt@sgi.com]
-> Sent: Tuesday, August 09, 2011 5:58 PM
-> To: Robin Holt; Marc Kleine-Budde; Wolfgang Grandegger; U Bhaskar-B22300
-> Cc: Robin Holt; socketcan-core@lists.berlios.de; netdev@vger.kernel.org;
-> PPC list
-> Subject: [PATCH 4/4] [powerpc] Add flexcan device support for p1010rdb.
->=20
-> I added a simple clock source for the p1010rdb so the flexcan driver
-> could determine a clock frequency.  The p1010 can device only has an
-> oscillator of system bus frequency divided by 2.
->=20
-> Signed-off-by: Robin Holt <holt@sgi.com>
-> To: Marc Kleine-Budde <mkl@pengutronix.de>,
-> To: Wolfgang Grandegger <wg@grandegger.com>,
-> To: U Bhaskar-B22300 <B22300@freescale.com>
-> Cc: socketcan-core@lists.berlios.de,
-> Cc: netdev@vger.kernel.org,
-> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-> ---
->  arch/powerpc/platforms/85xx/Kconfig    |    2 +
->  arch/powerpc/platforms/85xx/Makefile   |    2 +
->  arch/powerpc/platforms/85xx/clock.c    |   42
-> ++++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/85xx/p1010rdb.c |    8 ++++++
->  4 files changed, 54 insertions(+), 0 deletions(-)  create mode 100644
-> arch/powerpc/platforms/85xx/clock.c
->=20
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig
-> b/arch/powerpc/platforms/85xx/Kconfig
-> index 498534c..c4304ae 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -70,6 +70,8 @@ config MPC85xx_RDB
->  config P1010_RDB
->  	bool "Freescale P1010RDB"
->  	select DEFAULT_UIMAGE
-> +	select HAVE_CAN_FLEXCAN if NET && CAN
-> +	select PPC_CLOCK if CAN_FLEXCAN
->  	help
->  	  This option enables support for the MPC85xx RDB (P1010 RDB) board
->=20
-> diff --git a/arch/powerpc/platforms/85xx/Makefile
-> b/arch/powerpc/platforms/85xx/Makefile
-> index a971b32..cc7f381 100644
-> --- a/arch/powerpc/platforms/85xx/Makefile
-> +++ b/arch/powerpc/platforms/85xx/Makefile
-> @@ -3,6 +3,8 @@
->  #
->  obj-$(CONFIG_SMP) +=3D smp.o
->=20
-> +obj-$(CONFIG_PPC_CLOCK)   +=3D clock.o
-> +
->  obj-$(CONFIG_MPC8540_ADS) +=3D mpc85xx_ads.o
->  obj-$(CONFIG_MPC8560_ADS) +=3D mpc85xx_ads.o
->  obj-$(CONFIG_MPC85xx_CDS) +=3D mpc85xx_cds.o diff --git
-> a/arch/powerpc/platforms/85xx/clock.c
-> b/arch/powerpc/platforms/85xx/clock.c
-> new file mode 100644
-> index 0000000..a6fd2c8
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/85xx/clock.c
-> @@ -0,0 +1,42 @@
-> +
-> +#include <linux/device.h>
-> +#include <linux/err.h>
-> +
-> +#include <asm/clk_interface.h>
-> +
-> +#include <sysdev/fsl_soc.h>
-> +
-> +/*
-> + * p1010 needs to provide a clock source for the flexcan driver. The
-> + * oscillator for the p1010 processor is only ever the system clock / 2.
-> + */
-> +
-> +static struct clk *mpc85xx_clk_get(struct device *dev, const char *id)
-> +{
-> +	if (!dev)
-> +		return ERR_PTR(-ENOENT);
-> +
-> +	return NULL;
-> +}
-> +
-> +static void mpc85xx_clk_put(struct clk *clk) {
-> +	return;
-> +}
-> +
-> +static unsigned long mpc85xx_clk_get_rate(struct clk *clk) {
-> +	return fsl_get_sys_freq() / 2;
-> +}
-> +
-> +static struct clk_interface mpc85xx_clk_functions =3D {
-> +	.clk_get		=3D mpc85xx_clk_get,
-> +	.clk_get_rate		=3D mpc85xx_clk_get_rate,
-> +	.clk_put		=3D mpc85xx_clk_put,
-> +};
-> +
-> +void __init mpc85xx_clk_init(void)
-> +{
-> +	clk_functions =3D mpc85xx_clk_functions; }
-> +
-> diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c
-> b/arch/powerpc/platforms/85xx/p1010rdb.c
-> index d7387fa..5e52122 100644
-> --- a/arch/powerpc/platforms/85xx/p1010rdb.c
-> +++ b/arch/powerpc/platforms/85xx/p1010rdb.c
-> @@ -81,6 +81,13 @@ static void __init p1010_rdb_setup_arch(void)
->  	printk(KERN_INFO "P1010 RDB board from Freescale Semiconductor\n");
-> }
->=20
-> +extern void mpc85xx_clk_init(void);
-> +
-> +static void __init p1010_rdb_init(void) {
-> +	mpc85xx_clk_init();
-> +}
-> +
->  static struct of_device_id __initdata p1010rdb_ids[] =3D {
->  	{ .type =3D "soc", },
->  	{ .compatible =3D "soc", },
-> @@ -111,6 +118,7 @@ define_machine(p1010_rdb) {
->  	.name			=3D "P1010 RDB",
->  	.probe			=3D p1010_rdb_probe,
->  	.setup_arch		=3D p1010_rdb_setup_arch,
-> +	.init			=3D p1010_rdb_init,
->  	.init_IRQ		=3D p1010_rdb_pic_init,
->  #ifdef CONFIG_PCI
->  	.pcibios_fixup_bus	=3D fsl_pcibios_fixup_bus,
-> --
-> 1.7.2.1
->=20
+Cool! Actually I was also missing of_address_to_resource (or of_iomap)
+and irq_of_parse_and_map(). But the resources seem to be filled in here:
+
+  http://lxr.linux.no/#linux+v3.0.1/drivers/of/platform.c#L121
+
+Wolfgang.
