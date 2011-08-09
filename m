@@ -1,20 +1,17 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7F369B6F81
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Aug 2011 17:11:51 +1000 (EST)
-Message-ID: <4E40DDA5.1050004@grandegger.com>
-Date: Tue, 09 Aug 2011 09:11:33 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A5F00B6F67
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Aug 2011 18:14:44 +1000 (EST)
+Message-ID: <4E40EC6F.30601@embedded-sol.com>
+Date: Tue, 09 Aug 2011 11:14:39 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [RFC 4/4] [powerpc] Add flexcan device support for p1010rdb.
-References: <1312869313-22434-1-git-send-email-holt@sgi.com>	<1312869313-22434-5-git-send-email-holt@sgi.com>
-	<20110809063319.GK4926@sgi.com>
-In-Reply-To: <20110809063319.GK4926@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: socketcan-core@lists.berlios.de, U Bhaskar-B22300 <B22300@freescale.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>, netdev@vger.kernel.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"jacmet@sunsite.dk" <jacmet@sunsite.dk>, grant.likely@secretlab.ca
+Subject: GPIO IRQ dts bindings for MPC85xx and QorIQ
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,192 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2011 08:33 AM, Robin Holt wrote:
-> Argh.  I sent an earlier (non-working) version of this patch.  Here is
-> the correct one.
+Hi,
 
-Please always resend the complete series of patches with an incremented
-version number. Furthermore, this is not an RFC any more. A prefix
-similar to [PATCH nfsl_get_sys_freq() et-next-2.6 v2] would be perfect.
+DTS bindings document for mpc8xxx GPIOs implies that to use GPIO as IRQ
+one should specify GPIO controller node and GPIO number in device tree 
+node,
+like this:
 
-> I added a clock source for the p1010rdb so the flexcan driver
-> could find its clock frequency.
-> 
-> Signed-off-by: Robin Holt <holt@sgi.com>
-> To: Marc Kleine-Budde <mkl@pengutronix.de>,
-> To: Wolfgang Grandegger <wg@grandegger.com>,
-> To: U Bhaskar-B22300 <B22300@freescale.com>
-> Cc: socketcan-core@lists.berlios.de,
-> Cc: netdev@vger.kernel.org,
-> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-> ---
->  arch/powerpc/platforms/85xx/Kconfig    |    6 +++
->  arch/powerpc/platforms/85xx/Makefile   |    1 +
->  arch/powerpc/platforms/85xx/clock.c    |   59 ++++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/85xx/p1010rdb.c |   10 +++++
->  4 files changed, 76 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/platforms/85xx/clock.c
-> 
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-> index 498534c..ed4cf92 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -26,6 +26,10 @@ config MPC8560_ADS
->  	help
->  	  This option enables support for the MPC 8560 ADS board
->  
-> +config 85xx_HAVE_CAN_FLEXCAN
-> +	bool
-> +	select HAVE_CAN_FLEXCAN if NET && CAN
-> +
+     funkyfpga@0 {
+         compatible = "funky-fpga";
+         ...
+         interrupts = <9 2>;
+         interrupt-parent = <&gpio2>;
+     };
 
-Why do you need that? More below...
+I suppose the intention here is to do the following in driver code:
 
->  config MPC85xx_CDS
->  	bool "Freescale MPC85xx CDS"
->  	select DEFAULT_UIMAGE
-> @@ -70,6 +74,8 @@ config MPC85xx_RDB
->  config P1010_RDB
->  	bool "Freescale P1010RDB"
->  	select DEFAULT_UIMAGE
-> +	select 85xx_HAVE_CAN_FLEXCAN
-> +	select PPC_CLOCK if CAN_FLEXCAN
+int irq;
+struct device node *np;
 
-	select HAVE_CAN_FLEXCAN
-	select PPC_CLOCK
+np = of_find_compatible_node((NULL, NULL, "funky-fpga");
+irq = irq_of_parse_and_map(np, 0);
+request_irq(irq, ...);
 
-Should just be fine, or have I missed something.
+However this doesn't work as expected.  The resulting virq
+is connected to real interrupt controller, mpic, and not to
+GPIO controller. As a result, interrupt handler is never invoked.
 
->  	help
->  	  This option enables support for the MPC85xx RDB (P1010 RDB) board
->  
-> diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-> index a971b32..64ad7a4 100644
-> --- a/arch/powerpc/platforms/85xx/Makefile
-> +++ b/arch/powerpc/platforms/85xx/Makefile
-> @@ -11,6 +11,7 @@ obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o
->  obj-$(CONFIG_MPC85xx_MDS) += mpc85xx_mds.o
->  obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o
->  obj-$(CONFIG_P1010_RDB)   += p1010rdb.o
-> +obj-$(CONFIG_PPC_CLOCK)   += clock.o
+This is what /proc/interrupts shows:
 
-I would put that to the beginning or before the board settings.
+  20:          0    OpenPIC         Edge         funky-fpga
 
->  obj-$(CONFIG_P1022_DS)    += p1022_ds.o
->  obj-$(CONFIG_P1023_RDS)   += p1023_rds.o
->  obj-$(CONFIG_P2040_RDB)   += p2040_rdb.o corenet_ds.o
-> diff --git a/arch/powerpc/platforms/85xx/clock.c b/arch/powerpc/platforms/85xx/clock.c
-> new file mode 100644
-> index 0000000..a25cbf3
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/85xx/clock.c
-> @@ -0,0 +1,59 @@
-> +
-> +#include <linux/device.h>
-> +#include <linux/err.h>
-> +
-> +#include <asm/clk_interface.h>
-> +
-> +#include <sysdev/fsl_soc.h>
-> +
-> +/*
-> + * p1010rdb needs to provide a clock source for the flexcan driver.
-> + */
-> +struct clk {
-> +	unsigned long rate;
-> +} p1010_rdb_system_clock;
-> +
-> +static struct clk *p1010_rdb_clk_get(struct device *dev, const char *id)
-> +{
-> +	const char *dev_init_name;
-> +
-> +	if (!dev)
-> +		return ERR_PTR(-ENOENT);
-> +
-> +	/*
-> +	 * The can devices are named ffe1c000.can0 and ffe1d000.can1 on
-> +	 * the p1010rdb.  Check for the "can" portion of that name before
-> +	 * returning a clock source.
-> +	 */
-> +	dev_init_name = dev_name(dev);
-> +	if (strlen(dev_init_name) != 13)
-> +		return ERR_PTR(-ENOENT);
-> +	dev_init_name += 9;
-> +	if (strncmp(dev_init_name, "can", 3))
-> +		return ERR_PTR(-ENOENT);
 
-What's that good for? Also it's wrong to rely on the special name of the
-node. I think it can be removed.
+On the other hand, when using
 
-> +	return &p1010_rdb_system_clock;
+#define FPGA_IRQ_GPIO    169
 
-Just returning fsl_get_sys_freq() here would already be fine. I'm also
-missing the factor of two here:
+request_gpio(FPGA_IRQ_GPIO);
+gpio_direction_input(FPGA_IRQ_GPIO);
+irq = gpio_to_irq(FPGA_IRQ_GPIO);
+request_irq(irq, ...);
 
-        return fsl_get_sys_freq() / 2; ????
+the connection to GPIO controller is created properly,
+/proc/interrupts shows
 
-> +}
-> +
-> +static void p1010_rdb_clk_put(struct clk *clk)
-> +{
-> +	return;
-> +}
-> +
-> +static unsigned long p1010_rdb_clk_get_rate(struct clk *clk)
-> +{
-> +	return clk->rate;
-> +}
-> +
-> +static struct clk_interface p1010_rdb_clk_functions = {
-> +	.clk_get		= p1010_rdb_clk_get,
-> +	.clk_get_rate		= p1010_rdb_clk_get_rate,
-> +	.clk_put		= p1010_rdb_clk_put,
-> +};
-> +
-> +void __init p1010_rdb_clk_init(void)
-> +{
-> +	p1010_rdb_system_clock.rate = fsl_get_sys_freq();
+20:          0    mpc8xxx_gpio         Edge         funky-fpga
 
-> +	clk_functions = p1010_rdb_clk_functions;
-> +}
+The drawback of this approach is that GPIO IRQ cannot
+be naturally specified in device tree by GPIO controller number
+and GPIO pin number.
 
-The name is too specific. The idea is that the interface could be used
-for other 85xx processors as well, not only the p1010. The prefix
-"mpc85xx_" instead of "p1010_rdb" seems more appropriate to me.
+So what is the correct way to refer to 85XX GPIO IRQs in driver
+code ?
 
-> diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
-> index d7387fa..d0afbf9 100644
-> --- a/arch/powerpc/platforms/85xx/p1010rdb.c
-> +++ b/arch/powerpc/platforms/85xx/p1010rdb.c
-> @@ -81,6 +81,15 @@ static void __init p1010_rdb_setup_arch(void)
->  	printk(KERN_INFO "P1010 RDB board from Freescale Semiconductor\n");
->  }
->  
-> +extern void p1010_rdb_clk_init(void);
-> +
-> +static void __init p1010_rdb_init(void)
-> +{
-> +#ifdef CONFIG_PPC_CLOCK
-> +	p1010_rdb_clk_init();
-> +#endif
-> +}
+Thanks.
 
-The #ifdef's are not needed if CONFIG_PPC_CLOCK is selected in the Kconfig.
-
->  static struct of_device_id __initdata p1010rdb_ids[] = {
->  	{ .type = "soc", },
->  	{ .compatible = "soc", },
-> @@ -111,6 +120,7 @@ define_machine(p1010_rdb) {
->  	.name			= "P1010 RDB",
->  	.probe			= p1010_rdb_probe,
->  	.setup_arch		= p1010_rdb_setup_arch,
-> +	.init			= p1010_rdb_init,
->  	.init_IRQ		= p1010_rdb_pic_init,
->  #ifdef CONFIG_PCI
->  	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-
-We also need cleanup patches for the Freescale stuff.
-
-Thanks,
-
-Wolfgang.
+Felix.
