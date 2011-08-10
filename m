@@ -1,24 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
-	[213.199.154.205])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9CA7FB6F8B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Aug 2011 02:02:01 +1000 (EST)
-Message-ID: <4E42AB6F.1050900@freescale.com>
-Date: Wed, 10 Aug 2011 11:01:51 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <holt@sgi.com>
+Date: Wed, 10 Aug 2011 11:16:15 -0500
+From: Robin Holt <holt@sgi.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
+Message-ID: <20110810161615.GU4926@sgi.com>
+References: <1312901031-29887-1-git-send-email-holt@sgi.com>
+	<1312901031-29887-6-git-send-email-holt@sgi.com>
+	<4E4179CB.6030101@freescale.com> <20110809184524.GB4926@sgi.com>
+	<4E4186BD.5000602@freescale.com> <4E418F2D.4060504@grandegger.com>
+	<4E419180.3090507@freescale.com> <20110809205900.GC4926@sgi.com>
+	<97251371-2772-42A5-A959-D9F7A8D0A65B@kernel.crashing.org>
 MIME-Version: 1.0
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH v3] powerpc: 85xx: separate e500 from e500mc
-References: <20110810044307.GA2804@sapphire.tkos.co.il>	<b965536bbd0457ab9614777dc00fc0dd22cf1d47.1312953203.git.baruch@tkos.co.il>
-	<CAP=VYLoNSaVyfLyKDun-aBEQy+UzKJNwphs2U_74AhKAHgch_Q@mail.gmail.com>
-In-Reply-To: <CAP=VYLoNSaVyfLyKDun-aBEQy+UzKJNwphs2U_74AhKAHgch_Q@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Baruch Siach <baruch@tkos.co.il>, linuxppc-dev@lists.ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <97251371-2772-42A5-A959-D9F7A8D0A65B@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, "devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
+	Scott Wood <scottwood@freescale.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2011 10:39 AM, Paul Gortmaker wrote:
-> On Wed, Aug 10, 2011 at 1:21 AM, Baruch Siach <baruch@tkos.co.il> wrote:
->> CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
->> breaking clear_pages(), probably others too.
->>
->> This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
->> depend on PPC_E500_V1_V2.
+On Wed, Aug 10, 2011 at 09:52:07AM -0500, Kumar Gala wrote:
 > 
-> Isn't the original invalid configuration still possible, i.e. I can
-> choose E500_V1_V2
-> and also E500MC at the same time, unless you add something like a
-> "depends !E500MC" to  your new V1_V2 option?
+> On Aug 9, 2011, at 3:59 PM, Robin Holt wrote:
+> 
+> > I guess my poor wording may have gotten me in trouble.  I am getting
+> > ready to repost this patch, but I want to ensure I am getting it as
+> > right as possible.
+> > 
+> > I think I should reword the commit message to indicate we are removing
+> > the Documentation/.../fsl-flexcan.txt file which has essentially become
+> > empty and change the p1010si.dtsi file's can nodes to "fsl,p1010-flexcan",
+> > "fsl,flexcan".  Is that correct?
+> > 
+> > Thanks,
+> > Robin
+> 
+> This is wrong.  Again, what binding covers "fsl,flexcan" if you remove fsl-flexcan.txt:
+> 
+> [galak@right powerpc]$ git grep flexcan Documentation/devicetree/bindings
+> Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:fsl,flexcan-v1.0 nodes
+> Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:- fsl,flexcan-clock-source : CAN Engine Clock Source.This property selects
+> Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:- fsl,flexcan-clock-divider : for the reference and system clock, an additional
+> Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:      - v1.0 of flexcan-v1.0 represent the IP block version for P1010 SOC.
+> Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              compatible = "fsl,flexcan-v1.0";
+> Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              fsl,flexcan-clock-source = "platform";
+> Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              fsl,flexcan-clock-divider = <2>;
+> 
+> Not seeing anything that covers it.
+> 
+> I think the issue should be resolved by patching fsl-flexcan.txt to remove wording or update it.
 
-They're members of a "choice", not standalone bools -- so they're
-mutually exclusive.
+Done.
 
-> Alternatively, you could treat it like using i386 kernel on a modern
-> core by taking
-> the LCD for the L1_CACHE_SHIFT of the configured in platforms. 
-
-For alignment you want to err on the high side, but for invalidation you
-want to err on the low side.  For dcbz you can't err at all.
-
-And there are other issues than cache size with combining e500v2 and e500mc.
-
-Could it be done with sufficient hoop-jumping?  Probably.  Is it worth
-it?  No.  These chips don't even have compatible userspace, unless you
-use soft-float.
-
-> I have booted
-> a kernel built for an mpc8548 core on a P4080 CPU, so that does work (with only
-> minimal dts fiddling).
-
-The opposite direction does not work, and simply booting doesn't mean
-there wouldn't be issues in running that kernel on a p4080 (floating
-point?  bad cache size information being given to userspace?  emulation
-of non-cacheable dcbz?  performance?).
-
-What dts fiddling?
-
-> And it keeps the ability to boot one kernel on several
-> platforms open (one of the reasons for the ppc --> powerpc shuffle a couple
-> of years ago...)
-
-It's much better than the arch/ppc way of a separate kernel build for
-every board.  Beyond a certain point there are diminishing returns on
-the effort.
-
--Scott
+Robin
