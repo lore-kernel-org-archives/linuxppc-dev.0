@@ -1,22 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 64180B6F8D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Aug 2011 00:46:11 +1000 (EST)
-Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
+Subject: Re: [PATCH 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4E42987F.9040304@grandegger.com>
-Date: Wed, 10 Aug 2011 09:46:02 -0500
-Message-Id: <9E280B21-544B-47AD-8FE2-34F969461129@kernel.crashing.org>
-References: <1312945564-6626-1-git-send-email-holt@sgi.com>	<1312945564-6626-6-git-send-email-holt@sgi.com>	<4E428BFF.7060402@grandegger.com>
-	<20110810141550.GQ4926@sgi.com> <4E42987F.9040304@grandegger.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
-	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
+In-Reply-To: <20110809205900.GC4926@sgi.com>
+Date: Wed, 10 Aug 2011 09:52:07 -0500
+Message-Id: <97251371-2772-42A5-A959-D9F7A8D0A65B@kernel.crashing.org>
+References: <1312901031-29887-1-git-send-email-holt@sgi.com>
+	<1312901031-29887-6-git-send-email-holt@sgi.com>
+	<4E4179CB.6030101@freescale.com> <20110809184524.GB4926@sgi.com>
+	<4E4186BD.5000602@freescale.com> <4E418F2D.4060504@grandegger.com>
+	<4E419180.3090507@freescale.com> <20110809205900.GC4926@sgi.com>
+To: Robin Holt <holt@sgi.com>
+Cc: netdev@vger.kernel.org, "devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	U Bhaskar-B22300 <B22300@freescale.com>, socketcan-core@lists.berlios.de,
 	Scott Wood <scottwood@freescale.com>,
 	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,47 +27,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 10, 2011, at 9:41 AM, Wolfgang Grandegger wrote:
+On Aug 9, 2011, at 3:59 PM, Robin Holt wrote:
 
-> On 08/10/2011 04:15 PM, Robin Holt wrote:
->> On Wed, Aug 10, 2011 at 03:47:43PM +0200, Wolfgang Grandegger wrote:
-> ...
->> Done, except the
->>>          compatible = "fsl,p1010-flexcan", "fsl,flexcan";
->> 
->> line is
->> 	compatible = "fsl,flexcan", "fsl,flexcan-p1010";
-> 
-> IIRC, there order is more to less specific, e.g. for I2C:
-> 
->  compatible = "fsl,mpc5200-i2c", "fsl-i2c"
-> 
-> ...
-> 
->>> Please also correct the node names (not using the number suffix).
->> 
->> So the node names should be
->> 		can@1c000 {
->> 		can@1d000 {
->> correct?
-> 
-> Yes, just have a look how other node names are constructed, e.g. for
-> sata, serial, rtc, etc.:
-> 
->  $ grep serial@ *.dts
->  ...
->  pdm360ng.dts:		serial@11000 {
->  pdm360ng.dts:		serial@11100 {
->  pdm360ng.dts:		serial@11200 {
->  pdm360ng.dts:		serial@11300 {
->  pdm360ng.dts:		serial@11400 {
->  pdm360ng.dts:		serial@11600 {
->  pdm360ng.dts:		serial@11800 {
->  pdm360ng.dts:		serial@11B00 {
->  ...
-> 
-> Wolfgang.
+> I guess my poor wording may have gotten me in trouble.  I am getting
+> ready to repost this patch, but I want to ensure I am getting it as
+> right as possible.
+>=20
+> I think I should reword the commit message to indicate we are removing
+> the Documentation/.../fsl-flexcan.txt file which has essentially =
+become
+> empty and change the p1010si.dtsi file's can nodes to =
+"fsl,p1010-flexcan",
+> "fsl,flexcan".  Is that correct?
+>=20
+> Thanks,
+> Robin
 
-Agree w/Wolfgang here, can@1c000, can@1d000 is what we should use.
+This is wrong.  Again, what binding covers "fsl,flexcan" if you remove =
+fsl-flexcan.txt:
 
-- k
+[galak@right powerpc]$ git grep flexcan =
+Documentation/devicetree/bindings
+=
+Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:fsl,flexcan-v1.0=
+ nodes
+Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:- =
+fsl,flexcan-clock-source : CAN Engine Clock Source.This property selects
+Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:- =
+fsl,flexcan-clock-divider : for the reference and system clock, an =
+additional
+Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:      - v1.0 =
+of flexcan-v1.0 represent the IP block version for P1010 SOC.
+Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              =
+compatible =3D "fsl,flexcan-v1.0";
+Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              =
+fsl,flexcan-clock-source =3D "platform";
+Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              =
+fsl,flexcan-clock-divider =3D <2>;
+
+Not seeing anything that covers it.
+
+I think the issue should be resolved by patching fsl-flexcan.txt to =
+remove wording or update it.
+
+- k=
