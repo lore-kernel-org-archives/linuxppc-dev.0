@@ -1,18 +1,22 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4E42B83C.2040705@freescale.com>
-Date: Wed, 10 Aug 2011 11:56:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH v11 5/5] powerpc: Fix up fsl-flexcan device tree binding.
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E7959B6F76
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Aug 2011 03:02:00 +1000 (EST)
+Subject: Re: [PATCH v11 4/5] powerpc: Add flexcan device support for p1010rdb.
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1312993670-23999-5-git-send-email-holt@sgi.com>
+Date: Wed, 10 Aug 2011 12:01:51 -0500
+Message-Id: <8E5FA886-038D-4DF4-8A54-DD60188A21A2@kernel.crashing.org>
 References: <1312993670-23999-1-git-send-email-holt@sgi.com>
-	<1312993670-23999-6-git-send-email-holt@sgi.com>
-In-Reply-To: <1312993670-23999-6-git-send-email-holt@sgi.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	U Bhaskar-B22300 <B22300@freescale.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+	<1312993670-23999-5-git-send-email-holt@sgi.com>
+To: Robin Holt <holt@sgi.com>
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2011 11:27 AM, Robin Holt wrote:
-> -CPI Clock- Can Protocol Interface Clock
-> -	This CLK_SRC bit of CTRL(control register) selects the clock source to
-> -	the CAN Protocol Interface(CPI) to be either the peripheral clock
-> -	(driven by the PLL) or the crystal oscillator clock. The selected clock
-> -	is the one fed to the prescaler to generate the Serial Clock (Sclock).
-> -	The PRESDIV field of CTRL(control register) controls a prescaler that
-> -	generates the Serial Clock (Sclock), whose period defines the
-> -	time quantum used to compose the CAN waveform.
-> +- compatible : Should be "fsl,flexcan" and optionally
-> +               "fsl,flexcan-<processor>"
 
-fsl,<processor>-flexcan, and it should not be optional, and should come
-before "fsl,flexcan".
+On Aug 10, 2011, at 11:27 AM, Robin Holt wrote:
 
-Also may want to list fsl,p1010-rdb as a "canonical compatible" for
-anything which is backwards compatible with p1010's implementation.
+> I added a simple clock source for the p1010rdb so the flexcan driver
+> could determine a clock frequency.  The p1010 flexcan device only has
+> an oscillator of system bus frequency divided by 2.
+>=20
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>,
+> Acked-by: Wolfgang Grandegger <wg@grandegger.com>,
+> Cc: U Bhaskar-B22300 <B22300@freescale.com>
+> Cc: socketcan-core@lists.berlios.de,
+> Cc: netdev@vger.kernel.org,
+> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> arch/powerpc/platforms/85xx/Kconfig    |    2 +
+> arch/powerpc/platforms/85xx/Makefile   |    2 +
+> arch/powerpc/platforms/85xx/clock.c    |   52 =
+++++++++++++++++++++++++++++++++
+> arch/powerpc/platforms/85xx/p1010rdb.c |    8 +++++
+> 4 files changed, 64 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/platforms/85xx/clock.c
 
--Scott
+I dont understand how mpc85xx_clk_functions() ends up being associated =
+with the frequency the flexcan is running at.
+
+This either seems to global or I'm missing something.
+
+I still think the clk / freq info should be in the device tree and =
+handled in the driver and NOT arch/powerpc platform code.
+
+- k=
