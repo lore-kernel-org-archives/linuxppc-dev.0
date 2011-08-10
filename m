@@ -1,31 +1,21 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6D9BDB700E
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 04:07:55 +1000 (EST)
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) (authenticated bits=0)
-	by smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with
-	ESMTP id p7AI7OWL009849
-	(version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 11:07:25 -0700
-Received: by wyf23 with SMTP id 23so951611wyf.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 11:07:23 -0700 (PDT)
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 32C74B6F84
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Aug 2011 04:16:39 +1000 (EST)
+Message-ID: <4E42CB01.7030700@grandegger.com>
+Date: Wed, 10 Aug 2011 20:16:33 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-In-Reply-To: <1312990072.1674.5.camel@pasglop>
-References: <1312990072.1674.5.camel@pasglop>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 10 Aug 2011 11:07:03 -0700
-Message-ID: <CA+55aFxbjN3y3Wg193C2qDLbv+AeuR0=23p-r38jB19WbbRa-g@mail.gmail.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v11 4/5] powerpc: Add flexcan device support for p1010rdb.
+References: <1312993670-23999-1-git-send-email-holt@sgi.com>	<1312993670-23999-5-git-send-email-holt@sgi.com>
+	<8E5FA886-038D-4DF4-8A54-DD60188A21A2@kernel.crashing.org>
+In-Reply-To: <8E5FA886-038D-4DF4-8A54-DD60188A21A2@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 10, 2011 at 8:27 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
-> Here are a few fixes for powerpc. Mostly innocuous stuff, in fact most of
-> it has been in my tree for a while, I just hadn't got a chance to actuall=
-y
-> send it as I was travelling.
->
-> Cheers,
-> Ben.
->
-> The following changes since commit 53d1e658df6e26d62500410719aaee2b82067c=
-03:
->
-> =A0Merge branch 'devicetree/merge' of git://git.secretlab.ca/git/linux-2.=
-6 (2011-08-04 06:37:07 -1000)
->
-> are available in the git repository at:
->
-> =A0git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git ..BRANC=
-H.NOT.VERIFIED..
+On 08/10/2011 07:01 PM, Kumar Gala wrote:
+> 
+> On Aug 10, 2011, at 11:27 AM, Robin Holt wrote:
+> 
+>> I added a simple clock source for the p1010rdb so the flexcan driver
+>> could determine a clock frequency.  The p1010 flexcan device only has
+>> an oscillator of system bus frequency divided by 2.
+>>
+>> Signed-off-by: Robin Holt <holt@sgi.com>
+>> Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>,
+>> Acked-by: Wolfgang Grandegger <wg@grandegger.com>,
+>> Cc: U Bhaskar-B22300 <B22300@freescale.com>
+>> Cc: socketcan-core@lists.berlios.de,
+>> Cc: netdev@vger.kernel.org,
+>> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+>> Cc: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>> arch/powerpc/platforms/85xx/Kconfig    |    2 +
+>> arch/powerpc/platforms/85xx/Makefile   |    2 +
+>> arch/powerpc/platforms/85xx/clock.c    |   52 ++++++++++++++++++++++++++++++++
+>> arch/powerpc/platforms/85xx/p1010rdb.c |    8 +++++
+>> 4 files changed, 64 insertions(+), 0 deletions(-)
+>> create mode 100644 arch/powerpc/platforms/85xx/clock.c
+> 
+> I dont understand how mpc85xx_clk_functions() ends up being associated with the frequency the flexcan is running at.
 
-What branch?
+The function mpc85xx_clk_get_rate() returns "fsl_get_sys_freq() / 2" for
+Flexcan devices.
 
-                        Linus
+> This either seems to global or I'm missing something.
+
+This patch extends the existing Flexcan platform driver for ARM for the
+PowerPC using the device tree. Due to the nice integration of the device
+tree (of-platform) into the platform driver and devices, the difference
+are quite small (see patches 1..3). Apart from the endianess issue, only
+the clock needs to be handled in a common way. As ARM already uses the
+clk interface, we found it straight-forward to implement it for the
+P1010, or more general for the 85xx, as well, instead of using an
+additional helper function.
+
+> I still think the clk / freq info should be in the device tree and handled in the driver and NOT arch/powerpc platform code.
+
+If I understand you correctly, you want the boot-loader to provide the
+relevant information by fixing up the device tree, which then can be
+handled arch-independently by the driver, right?
+
+Wolfgang.
