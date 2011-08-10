@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20110809205900.GC4926@sgi.com>
-Date: Wed, 10 Aug 2011 09:52:07 -0500
-Message-Id: <97251371-2772-42A5-A959-D9F7A8D0A65B@kernel.crashing.org>
-References: <1312901031-29887-1-git-send-email-holt@sgi.com>
-	<1312901031-29887-6-git-send-email-holt@sgi.com>
-	<4E4179CB.6030101@freescale.com> <20110809184524.GB4926@sgi.com>
-	<4E4186BD.5000602@freescale.com> <4E418F2D.4060504@grandegger.com>
-	<4E419180.3090507@freescale.com> <20110809205900.GC4926@sgi.com>
-To: Robin Holt <holt@sgi.com>
-Cc: netdev@vger.kernel.org, "devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	U Bhaskar-B22300 <B22300@freescale.com>, socketcan-core@lists.berlios.de,
-	Scott Wood <scottwood@freescale.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3D1FDB6F68
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Aug 2011 00:59:03 +1000 (EST)
+Message-ID: <4E429CAD.5050000@suse.de>
+Date: Wed, 10 Aug 2011 16:58:53 +0200
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: Re: [PATCH] powerpc/kvm: fix build errors with older toolchains
+References: <1312397755-15737-1-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1312397755-15737-1-git-send-email-nacc@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+	linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Avi Kivity <avi@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 08/03/2011 08:55 PM, Nishanth Aravamudan wrote:
+> On a box with gcc 4.3.2, I see errors like:
+>
+> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1254: Error: Unrecognized opcode: stxvd2x
+> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1316: Error: Unrecognized opcode: lxvd2x
 
-On Aug 9, 2011, at 3:59 PM, Robin Holt wrote:
+Paul, mind to ack?
 
-> I guess my poor wording may have gotten me in trouble.  I am getting
-> ready to repost this patch, but I want to ensure I am getting it as
-> right as possible.
->=20
-> I think I should reword the commit message to indicate we are removing
-> the Documentation/.../fsl-flexcan.txt file which has essentially =
-become
-> empty and change the p1010si.dtsi file's can nodes to =
-"fsl,p1010-flexcan",
-> "fsl,flexcan".  Is that correct?
->=20
-> Thanks,
-> Robin
 
-This is wrong.  Again, what binding covers "fsl,flexcan" if you remove =
-fsl-flexcan.txt:
+Alex
 
-[galak@right powerpc]$ git grep flexcan =
-Documentation/devicetree/bindings
-=
-Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:fsl,flexcan-v1.0=
- nodes
-Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:- =
-fsl,flexcan-clock-source : CAN Engine Clock Source.This property selects
-Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:- =
-fsl,flexcan-clock-divider : for the reference and system clock, an =
-additional
-Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:      - v1.0 =
-of flexcan-v1.0 represent the IP block version for P1010 SOC.
-Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              =
-compatible =3D "fsl,flexcan-v1.0";
-Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              =
-fsl,flexcan-clock-source =3D "platform";
-Documentation/devicetree/bindings/net/can/fsl-flexcan.txt:              =
-fsl,flexcan-clock-divider =3D <2>;
-
-Not seeing anything that covers it.
-
-I think the issue should be resolved by patching fsl-flexcan.txt to =
-remove wording or update it.
-
-- k=
+> Signed-off-by: Nishanth Aravamudan<nacc@us.ibm.com>
+> ---
+>   arch/powerpc/kvm/book3s_hv_rmhandlers.S |    4 ++--
+>   1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 6dd3358..de29501 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1251,7 +1251,7 @@ BEGIN_FTR_SECTION
+>   	reg = 0
+>   	.rept	32
+>   	li	r6,reg*16+VCPU_VSRS
+> -	stxvd2x	reg,r6,r3
+> +	STXVD2X(reg,r6,r3)
+>   	reg = reg + 1
+>   	.endr
+>   FTR_SECTION_ELSE
+> @@ -1313,7 +1313,7 @@ BEGIN_FTR_SECTION
+>   	reg = 0
+>   	.rept	32
+>   	li	r7,reg*16+VCPU_VSRS
+> -	lxvd2x	reg,r7,r4
+> +	LXVD2X(reg,r7,r4)
+>   	reg = reg + 1
+>   	.endr
+>   FTR_SECTION_ELSE
