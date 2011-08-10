@@ -1,11 +1,24 @@
-Return-Path: <anton@samba.org>
-Message-Id: <20110810064937.568361503@samba.org>
-Date: Wed, 10 Aug 2011 16:49:36 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 3/3] powerpc: Coding style cleanups
-References: <20110810064937.424887717@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D3301B70B9
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 18:00:08 +1000 (EST)
+References: <1312907508-14599-1-git-send-email-agraf@suse.de>
+	<1312907508-14599-11-git-send-email-agraf@suse.de>
+	<20110810044215.GA5404@drongo>
+In-Reply-To: <20110810044215.GA5404@drongo>
+Mime-Version: 1.0 (iPhone Mail 8G4)
+Content-Type: text/plain;
+	charset=us-ascii
+Message-Id: <0B73DEC7-C430-43D7-8095-D3D0BEDA27AA@suse.de>
+From: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 10/10] KVM: PPC: Enable the PAPR CAP for Book3S
+Date: Wed, 10 Aug 2011 09:59:41 +0200
+To: Paul Mackerras <paulus@samba.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,91 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While converting code to use for_each_node_by_type I noticed a
-number of coding style issues.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Am 10.08.2011 um 06:42 schrieb Paul Mackerras <paulus@samba.org>:
 
-Index: linux-powerpc/arch/powerpc/kernel/setup_64.c
-===================================================================
---- linux-powerpc.orig/arch/powerpc/kernel/setup_64.c	2011-08-10 16:19:00.629356097 +1000
-+++ linux-powerpc/arch/powerpc/kernel/setup_64.c	2011-08-10 16:21:31.642031299 +1000
-@@ -281,11 +281,11 @@ static void __init initialize_cache_info
- 	for_each_node_by_type(np, "cpu") {
- 		num_cpus += 1;
- 
--		/* We're assuming *all* of the CPUs have the same
-+		/*
-+		 * We're assuming *all* of the CPUs have the same
- 		 * d-cache and i-cache sizes... -Peter
- 		 */
--
--		if ( num_cpus == 1 ) {
-+		if (num_cpus == 1) {
- 			const u32 *sizep, *lsizep;
- 			u32 size, lsize;
- 
-@@ -294,10 +294,13 @@ static void __init initialize_cache_info
- 			sizep = of_get_property(np, "d-cache-size", NULL);
- 			if (sizep != NULL)
- 				size = *sizep;
--			lsizep = of_get_property(np, "d-cache-block-size", NULL);
-+			lsizep = of_get_property(np, "d-cache-block-size",
-+						 NULL);
- 			/* fallback if block size missing */
- 			if (lsizep == NULL)
--				lsizep = of_get_property(np, "d-cache-line-size", NULL);
-+				lsizep = of_get_property(np,
-+							 "d-cache-line-size",
-+							 NULL);
- 			if (lsizep != NULL)
- 				lsize = *lsizep;
- 			if (sizep == 0 || lsizep == 0)
-@@ -314,9 +317,12 @@ static void __init initialize_cache_info
- 			sizep = of_get_property(np, "i-cache-size", NULL);
- 			if (sizep != NULL)
- 				size = *sizep;
--			lsizep = of_get_property(np, "i-cache-block-size", NULL);
-+			lsizep = of_get_property(np, "i-cache-block-size",
-+						 NULL);
- 			if (lsizep == NULL)
--				lsizep = of_get_property(np, "i-cache-line-size", NULL);
-+				lsizep = of_get_property(np,
-+							 "i-cache-line-size",
-+							 NULL);
- 			if (lsizep != NULL)
- 				lsize = *lsizep;
- 			if (sizep == 0 || lsizep == 0)
-Index: linux-powerpc/arch/powerpc/mm/numa.c
-===================================================================
---- linux-powerpc.orig/arch/powerpc/mm/numa.c	2011-08-10 16:19:57.080356036 +1000
-+++ linux-powerpc/arch/powerpc/mm/numa.c	2011-08-10 16:20:46.981240046 +1000
-@@ -709,7 +709,6 @@ static void __init parse_drconf_memory(s
- 
- static int __init parse_numa_properties(void)
- {
--	struct device_node *cpu = NULL;
- 	struct device_node *memory;
- 	int default_nid = 0;
- 	unsigned long i;
-@@ -732,6 +731,7 @@ static int __init parse_numa_properties(
- 	 * each node to be onlined must have NODE_DATA etc backing it.
- 	 */
- 	for_each_present_cpu(i) {
-+		struct device_node *cpu;
- 		int nid;
- 
- 		cpu = of_get_cpu_node(i, NULL);
-@@ -800,8 +800,9 @@ new_range:
- 	}
- 
- 	/*
--	 * Now do the same thing for each MEMBLOCK listed in the ibm,dynamic-memory
--	 * property in the ibm,dynamic-reconfiguration-memory node.
-+	 * Now do the same thing for each MEMBLOCK listed in the
-+	 * ibm,dynamic-memory property in the
-+	 * ibm,dynamic-reconfiguration-memory node.
- 	 */
- 	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (memory)
+> On Tue, Aug 09, 2011 at 06:31:48PM +0200, Alexander Graf wrote:
+>=20
+>> Now that Book3S PV mode can also run PAPR guests, we can add a PAPR cap a=
+nd
+>> enable it for all Book3S targets. Enabling that CAP switches KVM into PAP=
+R
+>> mode.
+>=20
+> Don't we want to enable it only for 64-bit hosts?  Trying to run a
+> PAPR guest on a 32-bit Book 3S host won't work very well, unless I am
+> missing something...
+
+I agree that it doesn't make sense, but if anything we should restrict it to=
+ 64-bit _guests_. you can also run 32-bit guests on 64-bit hosts.
+
+And so far, we don't have a single interface setting PVR and PAPR mode at th=
+e same time, so you could still enable PAPR with a 64-bit guest CPU and then=
+ switch to a 32-bit CPU.
+
+It'd be a nightmare to check all configurations on every setter function.
+
+Unless...
+
+We could introduce a sanity check function that gets executed every time we c=
+hange PVR or enable PAPR. That could set a variable in the vcpu struct to in=
+dicate that the config is ok. We could then check that on vcpu_run.
+
+
+Alex
+
+>=20
