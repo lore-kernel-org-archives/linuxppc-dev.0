@@ -1,30 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 22CC4B6FD7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Aug 2011 03:17:57 +1000 (EST)
-Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
-Mime-Version: 1.0 (Apple Message framework v1084)
+Return-Path: <holt@sgi.com>
+Date: Wed, 10 Aug 2011 12:19:33 -0500
+From: Robin Holt <holt@sgi.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v11 5/5] powerpc: Fix up fsl-flexcan device tree binding.
+Message-ID: <20110810171933.GW4926@sgi.com>
+References: <1312993670-23999-1-git-send-email-holt@sgi.com>
+	<1312993670-23999-6-git-send-email-holt@sgi.com>
+	<4E42B83C.2040705@freescale.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20110810171600.GV4926@sgi.com>
-Date: Wed, 10 Aug 2011 12:17:45 -0500
-Message-Id: <8C9817C6-735D-4B7C-A03B-5661C04C725A@kernel.crashing.org>
-References: <1312945564-6626-1-git-send-email-holt@sgi.com>
-	<1312945564-6626-6-git-send-email-holt@sgi.com>
-	<4E428BFF.7060402@grandegger.com> <20110810141550.GQ4926@sgi.com>
-	<9C64B7751C3BCA41B64A68E23005A7BE1C6A21@039-SN1MPN1-002.039d.mgd.msft.net>
-	<20110810160054.GT4926@sgi.com>
-	<63306A24-3FBF-4DAA-A0B9-6005F56BB76F@kernel.crashing.org>
-	<20110810171600.GV4926@sgi.com>
-To: Robin Holt <holt@sgi.com>
-Cc: "socketcan-core@lists.berlios.de" <socketcan-core@lists.berlios.de>,
-	Wood Scott-B07421 <B07421@freescale.com>,
-	U Bhaskar-B22300 <B22300@freescale.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>
+In-Reply-To: <4E42B83C.2040705@freescale.com>
+Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org,
+	U Bhaskar-B22300 <B22300@freescale.com>, Robin Holt <holt@sgi.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,292 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Aug 10, 2011 at 11:56:28AM -0500, Scott Wood wrote:
+> On 08/10/2011 11:27 AM, Robin Holt wrote:
+> > -CPI Clock- Can Protocol Interface Clock
+> > -	This CLK_SRC bit of CTRL(control register) selects the clock source to
+> > -	the CAN Protocol Interface(CPI) to be either the peripheral clock
+> > -	(driven by the PLL) or the crystal oscillator clock. The selected clock
+> > -	is the one fed to the prescaler to generate the Serial Clock (Sclock).
+> > -	The PRESDIV field of CTRL(control register) controls a prescaler that
+> > -	generates the Serial Clock (Sclock), whose period defines the
+> > -	time quantum used to compose the CAN waveform.
+> > +- compatible : Should be "fsl,flexcan" and optionally
+> > +               "fsl,flexcan-<processor>"
+> 
+> fsl,<processor>-flexcan, and it should not be optional, and should come
+> before "fsl,flexcan".
+> 
+> Also may want to list fsl,p1010-rdb as a "canonical compatible" for
+> anything which is backwards compatible with p1010's implementation.
 
-On Aug 10, 2011, at 12:16 PM, Robin Holt wrote:
+How do I specify 'canonical compatible'?  What would be the use of it
+in that implementation?
 
-> On Wed, Aug 10, 2011 at 11:53:15AM -0500, Kumar Gala wrote:
->>=20
->> On Aug 10, 2011, at 11:00 AM, Robin Holt wrote:
->>=20
->>> On Wed, Aug 10, 2011 at 02:36:20PM +0000, U Bhaskar-B22300 wrote:
->>>>=20
->>>>=20
->>>>> -----Original Message-----
->>>>> From: Robin Holt [mailto:holt@sgi.com]
->>>>> Sent: Wednesday, August 10, 2011 7:46 PM
->>>>> To: Wolfgang Grandegger
->>>>> Cc: Robin Holt; Marc Kleine-Budde; U Bhaskar-B22300; Wood =
-Scott-B07421;
->>>>> netdev@vger.kernel.org; Kumar Gala; =
-socketcan-core@lists.berlios.de; PPC
->>>>> list
->>>>> Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device =
-tree
->>>>> binding.
->>>>>=20
->>>>> On Wed, Aug 10, 2011 at 03:47:43PM +0200, Wolfgang Grandegger =
-wrote:
->>>>>> Hi Robin,
->>>>>>=20
->>>>>> On 08/10/2011 05:06 AM, Robin Holt wrote:
->>>>>>> In working with the socketcan developers, we have come to the
->>>>>>> conclusion the Documentation...fsl-flexcan.txt device tree
->>>>>>> documentation needs to be cleaned up.  The driver does not =
-depend
->>>>>>> upon any properties other
->>>>>>=20
->>>>>> Your first sentence could be misleading. Please just describe =
-what the
->>>>>> patch does and why, something like:
->>>>>>=20
->>>>>> "This patch cleans up the documentation of the device-tree =
-binding for
->>>>>> the Flexcan devices on Freescale's PowerPC and ARM cores. Extra
->>>>>> properties are not needed as the frequency of the source clock is
->>>>>> fixed..." and so on.
->>>>>=20
->>>>> I borrowed heavily from your message. ;)
->>>>>=20
->>>>>>> than the required properties so we are removing the file.
->>>>>>> Additionally, the p1010*dts* files are not following the =
-standard
->>>>>>> for node naming in that they have a trailing -v1.0.
->>>>>>=20
->>>>>>> Signed-off-by: Robin Holt <holt@sgi.com>
->>>>>>> To: Marc Kleine-Budde <mkl@pengutronix.de>,
->>>>>>> To: Wolfgang Grandegger <wg@grandegger.com>,
->>>>>>> To: U Bhaskar-B22300 <B22300@freescale.com>
->>>>>>> To: Scott Wood <scottwood@freescale.com>
->>>>>>> Cc: socketcan-core@lists.berlios.de,
->>>>>>> Cc: netdev@vger.kernel.org,
->>>>>>> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
->>>>>>> Cc: Kumar Gala <galak@kernel.crashing.org>
->>>>>>> ---
->>>>>>> .../devicetree/bindings/net/can/fsl-flexcan.txt    |   61 =
-----------
->>>>> ----------
->>>>>>> arch/powerpc/boot/dts/p1010rdb.dts                 |    8 ---
->>>>>>> arch/powerpc/boot/dts/p1010si.dtsi                 |    8 +-
->>>>>>> 3 files changed, 4 insertions(+), 73 deletions(-)  delete mode
->>>>>>> 100644 Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
->>>>>>>=20
->>>>>>> diff --git
->>>>>>> a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
->>>>>>> b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
->>>>>>> deleted file mode 100644
->>>>>>> index 1a729f0..0000000
->>>>>>> --- a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
->>>>>>> +++ /dev/null
->>>>>>> @@ -1,61 +0,0 @@
->>>>>>> -CAN Device Tree Bindings
->>>>>>> -------------------------
->>>>>>> -2011 Freescale Semiconductor, Inc.
->>>>>>> -
->>>>>>> -fsl,flexcan-v1.0 nodes
->>>>>>> ------------------------
->>>>>>> -In addition to the required compatible-, reg- and
->>>>>>> interrupt-properties, you can -also specify which clock source =
-shall
->>>>> be used for the controller.
->>>>>>> -
->>>>>>> -CPI Clock- Can Protocol Interface Clock
->>>>>>> -	This CLK_SRC bit of CTRL(control register) selects the =
-clock source
->>>>> to
->>>>>>> -	the CAN Protocol Interface(CPI) to be either the =
-peripheral clock
->>>>>>> -	(driven by the PLL) or the crystal oscillator clock. The =
-selected
->>>>> clock
->>>>>>> -	is the one fed to the prescaler to generate the Serial =
-Clock
->>>>> (Sclock).
->>>>>>> -	The PRESDIV field of CTRL(control register) controls a =
-prescaler
->>>>> that
->>>>>>> -	generates the Serial Clock (Sclock), whose period =
-defines the
->>>>>>> -	time quantum used to compose the CAN waveform.
->>>>>>> -
->>>>>>> -Can Engine Clock Source
->>>>>>> -	There are two sources for CAN clock
->>>>>>> -	- Platform Clock  It represents the bus clock
->>>>>>> -	- Oscillator Clock
->>>>>>> -
->>>>>>> -	Peripheral Clock (PLL)
->>>>>>> -	--------------
->>>>>>> -		     |
->>>>>>> -		    ---------		      -------------
->>>>>>> -		    |       |CPI Clock	      | Prescaler |      =
- Sclock
->>>>>>> -		    |       |---------------->| (1.. 256) =
-|------------>
->>>>>>> -		    ---------		      -------------
->>>>>>> -                     |  |
->>>>>>> -	--------------  ---------------------CLK_SRC
->>>>>>> -	Oscillator Clock
->>>>>>> -
->>>>>>> -- fsl,flexcan-clock-source : CAN Engine Clock Source.This =
-property
->>>>> selects
->>>>>>> -			     the peripheral clock. PLL clock is =
-fed to the
->>>>>>> -			     prescaler to generate the Serial =
-Clock (Sclock).
->>>>>>> -			     Valid values are "oscillator" and =
-"platform"
->>>>>>> -			     "oscillator": CAN engine clock =
-source is
->>>>> oscillator clock.
->>>>>>> -			     "platform" The CAN engine clock =
-source is the bus
->>>>> clock
->>>>>>> -		             (platform clock).
->>>>>>> -
->>>>>>> -- fsl,flexcan-clock-divider : for the reference and system =
-clock, an
->>>>> additional
->>>>>>> -			      clock divider can be specified.
->>>>>>> -- clock-frequency: frequency required to calculate the bitrate =
-for
->>>>> FlexCAN.
->>>>>>> -
->>>>>>> -Note:
->>>>>>> -	- v1.0 of flexcan-v1.0 represent the IP block version =
-for P1010
->>>>> SOC.
->>>>>>> -	- P1010 does not have oscillator as the Clock Source.So =
-the default
->>>>>>> -	  Clock Source is platform clock.
->>>>>>> -Examples:
->>>>>>> -
->>>>>>> -	can0@1c000 {
->>>>>>> -		compatible =3D "fsl,flexcan-v1.0";
->>>>>>> -		reg =3D <0x1c000 0x1000>;
->>>>>>> -		interrupts =3D <48 0x2>;
->>>>>>> -		interrupt-parent =3D <&mpic>;
->>>>>>> -		fsl,flexcan-clock-source =3D "platform";
->>>>>>> -		fsl,flexcan-clock-divqider =3D <2>;
->>>>>>> -		clock-frequency =3D <fixed by u-boot>;
->>>>>>> -	};
->>>>>>=20
->>>>>> Do we really want to drop the documentation for that binding. I =
-think
->>>>>> something like the following text would be still useful:
->>>>>>=20
->>>>>> ------------------------
->>>>>> Flexcan CAN contoller on Freescale's ARM and PowerPC processors
->>>>>>=20
->>>>>> Required properties:
->>>>>>=20
->>>>>> - compatible : Should be "fsl,flexcan" and optionally
->>>>>>              "fsl,flexcan-<processor>"
->>>>>> - reg : Offset and length of the register set for this device
->>>>>> - interrupts : Interrupt tuple for this device
->>>>>>=20
->>>>>> Example:
->>>>>>=20
->>>>>> can@1c000 {
->>>>>>         compatible =3D "fsl,p1010-flexcan", "fsl,flexcan";
->>>>>>         reg =3D <0x1c000 0x1000>;
->>>>>>         interrupts =3D <48 0x2>;
->>>>>>         interrupt-parent =3D <&mpic>;
->>>>>> };
->>>>>> -------------------------
->>>>>=20
->>>>> Done, except the
->>>>>>         compatible =3D "fsl,p1010-flexcan", "fsl,flexcan";
->>>>>=20
->>>>> line is
->>>>> 	compatible =3D "fsl,flexcan", "fsl,flexcan-p1010";
->>>>>=20
->>>>>>=20
->>>>>> What do you think?
->>>>>>=20
->>>>>>> diff --git a/arch/powerpc/boot/dts/p1010rdb.dts
->>>>>>> b/arch/powerpc/boot/dts/p1010rdb.dts
->>>>>>> index 6b33b73..d6a0bb2 100644
->>>>>>> --- a/arch/powerpc/boot/dts/p1010rdb.dts
->>>>>>> +++ b/arch/powerpc/boot/dts/p1010rdb.dts
->>>>>>> @@ -169,14 +169,6 @@
->>>>>>> 			};
->>>>>>> 		};
->>>>>>>=20
->>>>>>> -		can0@1c000 {
->>>>>>> -			fsl,flexcan-clock-source =3D "platform";
->>>>>>> -		};
->>>>>>> -
->>>>>>> -		can1@1d000 {
->>>>>>> -			fsl,flexcan-clock-source =3D "platform";
->>>>>>> -		};
->>>>>>> -
->>>>>>> 		usb@22000 {
->>>>>>> 			phy_type =3D "utmi";
->>>>>>> 		};
->>>>>>> diff --git a/arch/powerpc/boot/dts/p1010si.dtsi
->>>>>>> b/arch/powerpc/boot/dts/p1010si.dtsi
->>>>>>> index 7f51104..20c396d 100644
->>>>>>> --- a/arch/powerpc/boot/dts/p1010si.dtsi
->>>>>>> +++ b/arch/powerpc/boot/dts/p1010si.dtsi
->>>>>>> @@ -141,19 +141,19 @@
->>>>>>> 		};
->>>>>>>=20
->>>>>>> 		can0@1c000 {
->>>>>>> -			compatible =3D "fsl,flexcan-v1.0";
->>>>>>> +			compatible =3D "fsl,p1010-flexcan",
->>>>>>> +					"fsl,flexcan";
->>>>>>=20
->>>>>> Does fit on one line.
->>>>>>=20
->>>>>>> 			reg =3D <0x1c000 0x1000>;
->>>>>>> 			interrupts =3D <48 0x2>;
->>>>>>> 			interrupt-parent =3D <&mpic>;
->>>>>>> -			fsl,flexcan-clock-divider =3D <2>;
->>>>>>> 		};
->>>>>>>=20
->>>>>>> 		can1@1d000 {
->>>>>>> -			compatible =3D "fsl,flexcan-v1.0";
->>>>>>> +			compatible =3D "fsl,p1010-flexcan",
->>>>>>> +					"fsl,flexcan";
->>>>>>=20
->>>>>> Ditto
->>>>>>=20
->>>>>>> 			reg =3D <0x1d000 0x1000>;
->>>>>>> 			interrupts =3D <61 0x2>;
->>>>>>> 			interrupt-parent =3D <&mpic>;
->>>>>>> -			fsl,flexcan-clock-divider =3D <2>;
->>>>>>> 		};
->>>>>>>=20
->>>>>>> 		L2: l2-cache-controller@20000 {
->>>>>>=20
->>>>>> Please also correct the node names (not using the number suffix).
->>>>>=20
->>>>> So the node names should be
->>>>> 		can@1c000 {
->>>>> 		can@1d000 {
->>>>> correct?
->>>>>=20
->>>> [Bhaskar] As there are two CAN controllers on P1010,So won't it be =
-better
->>>> 	    to distinguish it by can0 and can1 instead by simple "can" ?
->>>=20
->>> It looks like the way to do that is to assign a label to those =
-devices
->>> and then associate the label with an alias.  I have no idea how that
->>> works under the hood, but it is the way other files are set up.  =
-Take a
->>> look at arch/powerpc/boot/dts/bamboo.dts for how they define the =
-serial
->>> interfaces.
->>>=20
->>> Grant or Wolfgang, is that the right way to handle the concern about
->>> names or does it have no practical effect with the Linux kernel?
->>=20
->> It has not effect.  The label is just if you need to reference it via =
-some other means.
->=20
-> Does the alias have an effect?
-
-nope
-
-- k
+Robin
