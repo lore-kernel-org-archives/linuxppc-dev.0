@@ -1,24 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id DB1FFB6F6B
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DAA36B6F57
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Aug 2011 04:23:48 +1000 (EST)
-Message-ID: <4E42CCB0.8090803@grandegger.com>
-Date: Wed, 10 Aug 2011 20:23:44 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+	Thu, 11 Aug 2011 04:26:36 +1000 (EST)
+Received: by vxh2 with SMTP id 2so1148209vxh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Aug 2011 11:26:33 -0700 (PDT)
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
-References: <1312945564-6626-1-git-send-email-holt@sgi.com>	<1312945564-6626-6-git-send-email-holt@sgi.com>	<4E428BFF.7060402@grandegger.com>
-	<20110810141550.GQ4926@sgi.com>	<9C64B7751C3BCA41B64A68E23005A7BE1C6A21@039-SN1MPN1-002.039d.mgd.msft.net>
-	<20110810160054.GT4926@sgi.com>
-In-Reply-To: <20110810160054.GT4926@sgi.com>
+Date: Wed, 10 Aug 2011 14:26:33 -0400
+Message-ID: <CA+5PVA6mHk+vGsY0OibzJs27rpaKjGgaCEJVpJe4fKqrtBEmSA@mail.gmail.com>
+Subject: Please pull 'next' branch of 4xx tree
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	U Bhaskar-B22300 <B22300@freescale.com>,
-	"socketcan-core@lists.berlios.de" <socketcan-core@lists.berlios.de>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2011 06:00 PM, Robin Holt wrote:
-> On Wed, Aug 10, 2011 at 02:36:20PM +0000, U Bhaskar-B22300 wrote:
-...
-> It looks like the way to do that is to assign a label to those devices
-> and then associate the label with an alias.  I have no idea how that
-> works under the hood, but it is the way other files are set up.  Take a
-> look at arch/powerpc/boot/dts/bamboo.dts for how they define the serial
-> interfaces.
+Hi Ben,
 
-With a label you mean "label:" at the beginning of a node. Such labels
-are translated by the device tree compiler in node handles, which can be
-referenced within nodes by using <&label>, e.g.:
+Finally somewhat caught up.  Now that -rc1 is out, here are some
+patches for the next merge window.
 
-UIC0: interrupt-controller0 {
-	...
-};
-UIC1: interrupt-controller1 {
-	...
-	interrupt-parent = <&UIC0>;
-	...
-};
+josh
 
-It has nothing to do with the name of the node.
+The following changes since commit 53d1e658df6e26d62500410719aaee2b82067c03:
 
-Wolfgang.
+  Merge branch 'devicetree/merge' of
+git://git.secretlab.ca/git/linux-2.6 (2011-08-04 06:37:07 -1000)
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+
+Ayman El-Khashab (1):
+      powerpc/4xx: enable and fix pcie gen1/gen2 on the 460sx
+
+Josh Boyer (1):
+      powerpc/40x: Remove obsolete HCU4 board
+
+Mike Williams (1):
+      powerpc/4xx: edac: Add comma to fix build error
+
+Stefan Roese (1):
+      powerpc/44x: Add NOR flash device to Yosemite dts
+
+Suzuki Poulose (1):
+      powerpc/44x: Kexec support for PPC440X chipsets
+
+ arch/powerpc/Kconfig                    |    2 +-
+ arch/powerpc/boot/dts/hcu4.dts          |  168 ------------------------------
+ arch/powerpc/boot/dts/yosemite.dts      |   36 +++++++
+ arch/powerpc/configs/40x/hcu4_defconfig |   80 --------------
+ arch/powerpc/configs/ppc40x_defconfig   |    1 -
+ arch/powerpc/include/asm/kexec.h        |    2 +-
+ arch/powerpc/kernel/misc_32.S           |  171 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/40x/Kconfig      |    8 --
+ arch/powerpc/platforms/40x/Makefile     |    1 -
+ arch/powerpc/platforms/40x/hcu4.c       |   61 -----------
+ arch/powerpc/sysdev/ppc4xx_pci.c        |   89 +++++++++++++---
+ arch/powerpc/sysdev/ppc4xx_pci.h        |   12 ++
+ drivers/edac/ppc4xx_edac.c              |    2 +-
+ 13 files changed, 294 insertions(+), 339 deletions(-)
+ delete mode 100644 arch/powerpc/boot/dts/hcu4.dts
+ delete mode 100644 arch/powerpc/configs/40x/hcu4_defconfig
+ delete mode 100644 arch/powerpc/platforms/40x/hcu4.c
