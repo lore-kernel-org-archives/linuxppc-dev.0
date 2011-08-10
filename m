@@ -1,24 +1,21 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4BFE5B7199
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
+	by ozlabs.org (Postfix) with ESMTP id B632BB71CE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Aug 2011 18:15:41 +1000 (EST)
-Date: Wed, 10 Aug 2011 10:15:26 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
-Message-ID: <20110810081526.GW31398@pengutronix.de>
-References: <1312945564-6626-1-git-send-email-holt@sgi.com>
-	<1312945564-6626-6-git-send-email-holt@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1312945564-6626-6-git-send-email-holt@sgi.com>
-Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
-	socketcan-core@lists.berlios.de, Scott Wood <scottwood@freescale.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+	Wed, 10 Aug 2011 18:33:37 +1000 (EST)
+Date: Wed, 10 Aug 2011 18:33:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/3] powerpc: numa: Remove double of_node_put in
+	hot_add_node_scn_to_nid
+Message-Id: <20110810183328.cfdfeec82b0d9eb0721687a8@canb.auug.org.au>
+In-Reply-To: <20110810064937.424887717@samba.org>
+References: <20110810064937.424887717@samba.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__10_Aug_2011_18_33_28_+1000_rfCKpOUiTUuU8yTy"
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Robin,
+--Signature=_Wed__10_Aug_2011_18_33_28_+1000_rfCKpOUiTUuU8yTy
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 09, 2011 at 10:06:04PM -0500, Robin Holt wrote:
-> In working with the socketcan developers, we have come to the conclusion
-> the Documentation...fsl-flexcan.txt device tree documentation needs to
-> be cleaned up.  The driver does not depend upon any properties other
-> than the required properties so we are removing the file.  Additionally,
-> the p1010*dts* files are not following the standard for node naming in
-> that they have a trailing -v1.0.
+Hi Anton,
+
+On Wed, 10 Aug 2011 16:49:34 +1000 Anton Blanchard <anton@samba.org> wrote:
 >
-> Signed-off-by: Robin Holt <holt@sgi.com>
-> To: Marc Kleine-Budde <mkl@pengutronix.de>,
-> To: Wolfgang Grandegger <wg@grandegger.com>,
-> To: U Bhaskar-B22300 <B22300@freescale.com>
-> To: Scott Wood <scottwood@freescale.com>
-> Cc: socketcan-core@lists.berlios.de,
-> Cc: netdev@vger.kernel.org,
-> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
+> During memory hotplug testing, I got the following warning:
+>=20
+>=20
+> ERROR: Bad of_node_put() on /memory@0
+>=20
+> of_find_node_by_type() loop does of_node_put for us so remove the
+> duplicate one inside the loop.
+
+But does an of_node_get() on its return value ..
+
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Cc: stable@kernel.org
 > ---
->  .../devicetree/bindings/net/can/fsl-flexcan.txt    |   61 --------------------
->  arch/powerpc/boot/dts/p1010rdb.dts                 |    8 ---
->  arch/powerpc/boot/dts/p1010si.dtsi                 |    8 +-
->  3 files changed, 4 insertions(+), 73 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+>=20
+> Index: linux-powerpc/arch/powerpc/mm/numa.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-powerpc.orig/arch/powerpc/mm/numa.c	2011-06-06 08:07:35.1487080=
+89 +1000
+> +++ linux-powerpc/arch/powerpc/mm/numa.c	2011-08-10 11:31:59.723379868 +1=
+000
+> @@ -1214,7 +1214,6 @@ int hot_add_node_scn_to_nid(unsigned lon
+>  			break;
+>  		}
+> =20
+> -		of_node_put(memory);
+>  		if (nid >=3D 0)
+>  			break;
+>  	}
 
-I suggest that you set devicetree-discuss@lists.ozlabs.org and Grant
-Likely on Cc: for this patch.
+Won't that need an of_node_put(memory) after the loop if (nid >=3D 0) ?  In
+fact you should be able to just move the of_node_put(memory) to after the
+loop since of_node_put(NULL) is fine.
 
-rsc
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__10_Aug_2011_18_33_28_+1000_rfCKpOUiTUuU8yTy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJOQkJYAAoJEDMEi1NhKgbso7IIAIxL4b/OE5SuXVJTigQTc1C9
+7vUtL0UuG9DwfIQk6zAJfDNq3+VqCR0pRyHUtO5uWzy17rCq0oajoeBFq85M6RO7
+wfc37aYHnw66cV7pT9jB/0ZFLCfU5gRky9H+w7XVrojVYL8Z/RKb60YhE9lFMdId
+i2VQbYSKabGDlqfxWExgKd039u1yY5+BdcbAnIGw0V1Yva4760Fa+BuqTViRAM4T
+s8csMaiPmK1Y61Cip2T4ci+svPn0BtPVW0dpR9H5iURiI5rmbX7RpgUhLljcJJmn
+Q4AGokjPkdUXVVzs2h3fu6EsH+IcTHSdi638cv6i2Pp3hB3yQvkDz5w+IYiUiF4=
+=mJz2
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Aug_2011_18_33_28_+1000_rfCKpOUiTUuU8yTy--
