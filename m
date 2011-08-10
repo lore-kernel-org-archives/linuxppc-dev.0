@@ -1,19 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4E42C196.7030708@freescale.com>
-Date: Wed, 10 Aug 2011 12:36:22 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B6368B6F83
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Aug 2011 03:38:18 +1000 (EST)
+Message-ID: <4E42B477.80706@windriver.com>
+Date: Wed, 10 Aug 2011 12:40:23 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH v11 5/5] powerpc: Fix up fsl-flexcan device tree binding.
-References: <1312993670-23999-1-git-send-email-holt@sgi.com>
-	<1312993670-23999-6-git-send-email-holt@sgi.com>
-	<4E42B83C.2040705@freescale.com> <20110810171933.GW4926@sgi.com>
-In-Reply-To: <20110810171933.GW4926@sgi.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3] powerpc: 85xx: separate e500 from e500mc
+References: <20110810044307.GA2804@sapphire.tkos.co.il>	<b965536bbd0457ab9614777dc00fc0dd22cf1d47.1312953203.git.baruch@tkos.co.il>
+	<CAP=VYLoNSaVyfLyKDun-aBEQy+UzKJNwphs2U_74AhKAHgch_Q@mail.gmail.com>
+	<4E42AB6F.1050900@freescale.com>
+In-Reply-To: <4E42AB6F.1050900@freescale.com>
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	U Bhaskar-B22300 <B22300@freescale.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+Cc: Baruch Siach <baruch@tkos.co.il>, linuxppc-dev@lists.ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2011 12:19 PM, Robin Holt wrote:
-> On Wed, Aug 10, 2011 at 11:56:28AM -0500, Scott Wood wrote:
->> On 08/10/2011 11:27 AM, Robin Holt wrote:
->>> -CPI Clock- Can Protocol Interface Clock
->>> -	This CLK_SRC bit of CTRL(control register) selects the clock source to
->>> -	the CAN Protocol Interface(CPI) to be either the peripheral clock
->>> -	(driven by the PLL) or the crystal oscillator clock. The selected clock
->>> -	is the one fed to the prescaler to generate the Serial Clock (Sclock).
->>> -	The PRESDIV field of CTRL(control register) controls a prescaler that
->>> -	generates the Serial Clock (Sclock), whose period defines the
->>> -	time quantum used to compose the CAN waveform.
->>> +- compatible : Should be "fsl,flexcan" and optionally
->>> +               "fsl,flexcan-<processor>"
+On 11-08-10 12:01 PM, Scott Wood wrote:
+> On 08/10/2011 10:39 AM, Paul Gortmaker wrote:
+>> On Wed, Aug 10, 2011 at 1:21 AM, Baruch Siach <baruch@tkos.co.il> wrote:
+>>> CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
+>>> breaking clear_pages(), probably others too.
+>>>
+>>> This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
+>>> depend on PPC_E500_V1_V2.
 >>
->> fsl,<processor>-flexcan, and it should not be optional, and should come
->> before "fsl,flexcan".
->>
->> Also may want to list fsl,p1010-rdb as a "canonical compatible" for
->> anything which is backwards compatible with p1010's implementation.
+>> Isn't the original invalid configuration still possible, i.e. I can
+>> choose E500_V1_V2
+>> and also E500MC at the same time, unless you add something like a
+>> "depends !E500MC" to  your new V1_V2 option?
 > 
-> How do I specify 'canonical compatible'?
+> They're members of a "choice", not standalone bools -- so they're
+> mutually exclusive.
 
-Something like:
+OK, I missed that.
 
-  compatible: Should be "fsl,<processor>-flexcan" and "fsl,flexcan".
+> 
+>> Alternatively, you could treat it like using i386 kernel on a modern
+>> core by taking
+>> the LCD for the L1_CACHE_SHIFT of the configured in platforms. 
+> 
+> For alignment you want to err on the high side, but for invalidation you
+> want to err on the low side.  For dcbz you can't err at all.
+> 
+> And there are other issues than cache size with combining e500v2 and e500mc.
+> 
+> Could it be done with sufficient hoop-jumping?  Probably.  Is it worth
+> it?  No.  These chips don't even have compatible userspace, unless you
+> use soft-float.
 
-  An implementation should also claim any of the following compatibles
-  that it is fully backwards compatible with:
+Yeah, if there are lots of other issues and the value return is low,
+then I can't argue with that.  And yes I did use soft float in the
+thing I was meddling with.
 
-  - fsl,p1010-rdb
+> 
+>> I have booted
+>> a kernel built for an mpc8548 core on a P4080 CPU, so that does work (with only
+>> minimal dts fiddling).
+> 
+> The opposite direction does not work, and simply booting doesn't mean
+> there wouldn't be issues in running that kernel on a p4080 (floating
+> point?  bad cache size information being given to userspace?  emulation
+> of non-cacheable dcbz?  performance?).
+> 
+> What dts fiddling?
 
-> What would be the use of it in that implementation?
+Just making sure that the 8548 dts had the right address to
+find the uart on the actual p4080 platform.
 
-It limits the number of compatibles a driver has to care about, so you
-don't need a huge ID table just to be able to figure out whether this is
-a p1010-style flexcan or ARM-style.
+> 
+>> And it keeps the ability to boot one kernel on several
+>> platforms open (one of the reasons for the ppc --> powerpc shuffle a couple
+>> of years ago...)
+> 
+> It's much better than the arch/ppc way of a separate kernel build for
+> every board.  Beyond a certain point there are diminishing returns on
+> the effort.
 
--Scott
+Given the extra info you list above, I agree.  I just thought it worth
+a mention since I had happened to boot the 8548 kernel on a p4080 as
+part of something else I was experimenting with, and it didn't totally
+catch fire (which somewhat surprised me).
+
+P.
+
+> 
+> -Scott
+> 
