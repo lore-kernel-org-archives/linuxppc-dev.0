@@ -1,21 +1,22 @@
-Return-Path: <holt@sgi.com>
-Date: Wed, 10 Aug 2011 13:45:38 -0500
-From: Robin Holt <holt@sgi.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v11 5/5] powerpc: Fix up fsl-flexcan device tree binding.
-Message-ID: <20110810184538.GA4926@sgi.com>
-References: <1312993670-23999-1-git-send-email-holt@sgi.com>
-	<1312993670-23999-6-git-send-email-holt@sgi.com>
-	<4E42B83C.2040705@freescale.com> <20110810171933.GW4926@sgi.com>
-	<4E42C196.7030708@freescale.com> <20110810183016.GY4926@sgi.com>
-	<4E42D09E.4080405@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E42D09E.4080405@freescale.com>
-Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	U Bhaskar-B22300 <B22300@freescale.com>, Robin Holt <holt@sgi.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6BB25B6F68
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 04:56:13 +1000 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <CA+55aFxbjN3y3Wg193C2qDLbv+AeuR0=23p-r38jB19WbbRa-g@mail.gmail.com>
+References: <1312990072.1674.5.camel@pasglop>
+	<CA+55aFxbjN3y3Wg193C2qDLbv+AeuR0=23p-r38jB19WbbRa-g@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 10 Aug 2011 13:55:35 -0500
+Message-ID: <1313002535.1674.12.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 10, 2011 at 01:40:30PM -0500, Scott Wood wrote:
-> On 08/10/2011 01:30 PM, Robin Holt wrote:
-> > On Wed, Aug 10, 2011 at 12:36:22PM -0500, Scott Wood wrote:
-> >> On 08/10/2011 12:19 PM, Robin Holt wrote:
-> >>> On Wed, Aug 10, 2011 at 11:56:28AM -0500, Scott Wood wrote:
-> >>>> Also may want to list fsl,p1010-rdb as a "canonical compatible" for
-> >>>> anything which is backwards compatible with p1010's implementation.
-> >>>
-> >>> How do I specify 'canonical compatible'?
-> >>
-> >> Something like:
-> >>
-> >>   compatible: Should be "fsl,<processor>-flexcan" and "fsl,flexcan".
-> >>
-> >>   An implementation should also claim any of the following compatibles
-> >>   that it is fully backwards compatible with:
-> >>
-> >>   - fsl,p1010-rdb
+On Wed, 2011-08-10 at 11:07 -0700, Linus Torvalds wrote:
+> On Wed, Aug 10, 2011 at 8:27 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> >
+> > Here are a few fixes for powerpc. Mostly innocuous stuff, in fact most of
+> > it has been in my tree for a while, I just hadn't got a chance to actually
+> > send it as I was travelling.
+> >
+> > Cheers,
+> > Ben.
+> >
+> > The following changes since commit 53d1e658df6e26d62500410719aaee2b82067c03:
+> >
+> >  Merge branch 'devicetree/merge' of git://git.secretlab.ca/git/linux-2.6 (2011-08-04 06:37:07 -1000)
+> >
+> > are available in the git repository at:
+> >
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git ..BRANCH.NOT.VERIFIED..
 > 
-> Gah, I don't know how "rdb" replaced "flexcan" in the above.  Sorry for
-> any confusion.
-> 
-> > I am so confused.  fsl,p1010-flexcan refers, in my mind at least, to
-> > a particular chiplet on the p1010 freescale processor. 
-> 
-> It refers to a particular version of the flexcan logic, for which the
-> hardware doc people weren't kind enough to give us a public version number.
-> 
-> It has been common and recommended practice in such cases, when there
-> are multiple chips containing the same device, to pick a canonical chip
-> (such as the first one to have the device or to be supported) and have
-> others claim compatibility with it.
-> 
-> > fsl,p1010-rdb
-> > would mean nothing to me as that is a p1010 processor with two flexcan
-> > chiplets wired to a pair of DB-9 jacks.  For the driver, what additional
-> > information is being conveyed?
-> 
-> The programming model of the flexcan chiplet.
-> 
-> > Let's cut to the chase.  Here is what I have after incorporating your
-> > earlier comment about the compatible line.  Please mark this up to
-> > exactly what you are asking for.
-> > 
-> > Thanks,
-> > Robin
-> > ------------------------------------------------------------------------
-> > Flexcan CAN contoller on Freescale's ARM and PowerPC processors
-> > 
-> > Required properties:
-> > 
-> > - compatible : Should be "fsl,<processor>-flexcan" and "fsl,flexcan"
-> 
->    An implementation should also claim any of the following compatibles
->    that it is fully backwards compatible with:
-> 
->    - fsl,p1010-flexcan
+> What branch?
 
-Ah, there is my confusion.  I did not realize you were saying the
-entire preceeding 4 lines should be included.  I thought you were
-making a comment which I did not understand.
+Heh oops, sorry, the mirror hadn't caught up. It's in the subject of the
+email tho :-) "merge" is the branch.
 
-Thank you for your patience with my ignorance,
-Robin
+Cheers,
+Ben.
