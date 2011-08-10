@@ -1,17 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6D88DB71D0
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 22:31:35 +1000 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 11/10] KVM: PPC: Add sanity checking to vcpu_run
-Date: Wed, 10 Aug 2011 14:31:29 +0200
-Message-Id: <1312979489-17234-1-git-send-email-agraf@suse.de>
-In-Reply-To: <1312907508-14599-1-git-send-email-agraf@suse.de>
-References: <1312907508-14599-1-git-send-email-agraf@suse.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kvm@vger.kernel.org
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 019E5B6F71
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Aug 2011 23:47:52 +1000 (EST)
+Message-ID: <4E428BFF.7060402@grandegger.com>
+Date: Wed, 10 Aug 2011 15:47:43 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
+References: <1312945564-6626-1-git-send-email-holt@sgi.com>
+	<1312945564-6626-6-git-send-email-holt@sgi.com>
+In-Reply-To: <1312945564-6626-6-git-send-email-holt@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Scott Wood <scottwood@freescale.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,239 +25,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are multiple features in PowerPC KVM that can now be enabled
-depending on the user's wishes. Some of the combinations don't make
-sense or don't work though.
+Hi Robin,
 
-So this patch adds a way to check if the executing environment would
-actually be able to run the guest properly. It also adds sanity
-checks if PVR is set (should always be true given the current code
-flow), if PAPR is only used with book3s_64 where it works and that
-HV KVM is only used in PAPR mode.
+On 08/10/2011 05:06 AM, Robin Holt wrote:
+> In working with the socketcan developers, we have come to the conclusion
+> the Documentation...fsl-flexcan.txt device tree documentation needs to
+> be cleaned up.  The driver does not depend upon any properties other
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/include/asm/kvm.h      |    5 +++++
- arch/powerpc/include/asm/kvm_host.h |    2 ++
- arch/powerpc/include/asm/kvm_ppc.h  |    1 +
- arch/powerpc/kvm/44x.c              |    2 ++
- arch/powerpc/kvm/book3s_hv.c        |    8 ++++++++
- arch/powerpc/kvm/book3s_pr.c        |   10 ++++++++++
- arch/powerpc/kvm/booke.c            |   10 +++++++++-
- arch/powerpc/kvm/e500.c             |    2 ++
- arch/powerpc/kvm/powerpc.c          |   28 ++++++++++++++++++++++++++++
- 9 files changed, 67 insertions(+), 1 deletions(-)
+Your first sentence could be misleading. Please just describe what the
+patch does and why, something like:
 
-diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/asm/kvm.h
-index a6a253e..08fe69e 100644
---- a/arch/powerpc/include/asm/kvm.h
-+++ b/arch/powerpc/include/asm/kvm.h
-@@ -284,6 +284,11 @@ struct kvm_guest_debug_arch {
- #define KVM_INTERRUPT_UNSET	-2U
- #define KVM_INTERRUPT_SET_LEVEL	-3U
- 
-+#define KVM_CPU_440		1
-+#define KVM_CPU_E500V2		2
-+#define KVM_CPU_3S_32		3
-+#define KVM_CPU_3S_64		4
-+
- /* for KVM_CAP_SPAPR_TCE */
- struct kvm_create_spapr_tce {
- 	__u64 liobn;
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index e681302..2b8284f 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -390,6 +390,8 @@ struct kvm_vcpu_arch {
- 	u8 osi_needed;
- 	u8 osi_enabled;
- 	u8 papr_enabled;
-+	u8 sane;
-+	u8 cpu_type;
- 	u8 hcall_needed;
- 
- 	u32 cpr0_cfgaddr; /* holds the last set cpr0_cfgaddr */
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index d121f49..46efd1a 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -66,6 +66,7 @@ extern int kvmppc_emulate_instruction(struct kvm_run *run,
- extern int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu);
- extern void kvmppc_emulate_dec(struct kvm_vcpu *vcpu);
- extern u32 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb);
-+extern int kvmppc_sanity_check(struct kvm_vcpu *vcpu);
- 
- /* Core-specific hooks */
- 
-diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index da3a122..ca1f88b 100644
---- a/arch/powerpc/kvm/44x.c
-+++ b/arch/powerpc/kvm/44x.c
-@@ -78,6 +78,8 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
- 	for (i = 0; i < ARRAY_SIZE(vcpu_44x->shadow_refs); i++)
- 		vcpu_44x->shadow_refs[i].gtlb_index = -1;
- 
-+	vcpu->arch.cpu_type = KVM_CPU_440;
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index cc0d7f1..830e07a 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -510,6 +510,9 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	spin_unlock(&vcore->lock);
- 	vcpu->arch.vcore = vcore;
- 
-+	vcpu->arch.cpu_type = KVM_CPU_3S_64;
-+	kvmppc_sanity_check(vcpu);
-+
- 	return vcpu;
- 
- free_vcpu:
-@@ -800,6 +803,11 @@ int kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu)
- {
- 	int r;
- 
-+	if (!vcpu->arch.sane) {
-+		kvm_run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
-+		return -EINVAL;
-+	}
-+
- 	do {
- 		r = kvmppc_run_vcpu(run, vcpu);
- 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 48558f6..6e3488b 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -153,6 +153,7 @@ void kvmppc_set_pvr(struct kvm_vcpu *vcpu, u32 pvr)
- 		if (!to_book3s(vcpu)->hior_sregs)
- 			to_book3s(vcpu)->hior = 0xfff00000;
- 		to_book3s(vcpu)->msr_mask = 0xffffffffffffffffULL;
-+		vcpu->arch.cpu_type = KVM_CPU_3S_64;
- 	} else
- #endif
- 	{
-@@ -160,8 +161,11 @@ void kvmppc_set_pvr(struct kvm_vcpu *vcpu, u32 pvr)
- 		if (!to_book3s(vcpu)->hior_sregs)
- 			to_book3s(vcpu)->hior = 0;
- 		to_book3s(vcpu)->msr_mask = 0xffffffffULL;
-+		vcpu->arch.cpu_type = KVM_CPU_3S_32;
- 	}
- 
-+	kvmppc_sanity_check(vcpu);
-+
- 	/* If we are in hypervisor level on 970, we can tell the CPU to
- 	 * treat DCBZ as 32 bytes store */
- 	vcpu->arch.hflags &= ~BOOK3S_HFLAG_DCBZ32;
-@@ -938,6 +942,12 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- #endif
- 	ulong ext_msr;
- 
-+	/* Check if we can run the vcpu at all */
-+	if (!vcpu->arch.sane) {
-+		kvm_run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
-+		return -EINVAL;
-+	}
-+
- 	/* No need to go into the guest when all we do is going out */
- 	if (signal_pending(current)) {
- 		kvm_run->exit_reason = KVM_EXIT_INTR;
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index ee45fa0..bb6c988 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -316,6 +316,11 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- {
- 	int ret;
- 
-+	if (!vcpu->arch.sane) {
-+		kvm_run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
-+		return -EINVAL;
-+	}
-+
- 	local_irq_disable();
- 	kvm_guest_enter();
- 	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
-@@ -618,6 +623,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
- {
- 	int i;
-+	int r;
- 
- 	vcpu->arch.pc = 0;
- 	vcpu->arch.shared->msr = 0;
-@@ -634,7 +640,9 @@ int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
- 
- 	kvmppc_init_timing_stats(vcpu);
- 
--	return kvmppc_core_vcpu_setup(vcpu);
-+	r = kvmppc_core_vcpu_setup(vcpu);
-+	kvmppc_sanity_check(vcpu);
-+	return r;
- }
- 
- int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 797a744..26d2090 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -73,6 +73,8 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
- 	/* Since booke kvm only support one core, update all vcpus' PIR to 0 */
- 	vcpu->vcpu_id = 0;
- 
-+	vcpu->arch.cpu_type = KVM_CPU_E500V2;
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 13bc798..a8000ce 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -95,6 +95,31 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 	return r;
- }
- 
-+int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
-+{
-+	int r = false;
-+
-+	/* We have to know what CPU to virtualize */
-+	if (!vcpu->arch.pvr)
-+		goto out;
-+
-+	/* PAPR only works with book3s_64 */
-+	if ((vcpu->arch.cpu_type != KVM_CPU_3S_64) && vcpu->arch.papr_enabled)
-+		goto out;
-+
-+#ifdef CONFIG_KVM_BOOK3S_64_HV
-+	/* HV KVM can only do PAPR mode for now */
-+	if (!vcpu->arch.papr_enabled)
-+		goto out;
-+#endif
-+
-+	r = true;
-+
-+out:
-+	vcpu->arch.sane = r;
-+	return r ? 0 : -EINVAL;
-+}
-+
- int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
- {
- 	enum emulation_result er;
-@@ -582,6 +607,9 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
- 		break;
- 	}
- 
-+	if (!r)
-+		r = kvmppc_sanity_check(vcpu);
-+
- 	return r;
- }
- 
--- 
-1.6.0.2
+"This patch cleans up the documentation of the device-tree binding for
+ the Flexcan devices on Freescale's PowerPC and ARM cores. Extra
+ properties are not needed as the frequency of the source clock is
+ fixed..." and so on.
+
+> than the required properties so we are removing the file.  Additionally,
+> the p1010*dts* files are not following the standard for node naming in
+> that they have a trailing -v1.0.
+
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> To: Marc Kleine-Budde <mkl@pengutronix.de>,
+> To: Wolfgang Grandegger <wg@grandegger.com>,
+> To: U Bhaskar-B22300 <B22300@freescale.com>
+> To: Scott Wood <scottwood@freescale.com>
+> Cc: socketcan-core@lists.berlios.de,
+> Cc: netdev@vger.kernel.org,
+> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  .../devicetree/bindings/net/can/fsl-flexcan.txt    |   61 --------------------
+>  arch/powerpc/boot/dts/p1010rdb.dts                 |    8 ---
+>  arch/powerpc/boot/dts/p1010si.dtsi                 |    8 +-
+>  3 files changed, 4 insertions(+), 73 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+> deleted file mode 100644
+> index 1a729f0..0000000
+> --- a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+> +++ /dev/null
+> @@ -1,61 +0,0 @@
+> -CAN Device Tree Bindings
+> -------------------------
+> -2011 Freescale Semiconductor, Inc.
+> -
+> -fsl,flexcan-v1.0 nodes
+> ------------------------
+> -In addition to the required compatible-, reg- and interrupt-properties, you can
+> -also specify which clock source shall be used for the controller.
+> -
+> -CPI Clock- Can Protocol Interface Clock
+> -	This CLK_SRC bit of CTRL(control register) selects the clock source to
+> -	the CAN Protocol Interface(CPI) to be either the peripheral clock
+> -	(driven by the PLL) or the crystal oscillator clock. The selected clock
+> -	is the one fed to the prescaler to generate the Serial Clock (Sclock).
+> -	The PRESDIV field of CTRL(control register) controls a prescaler that
+> -	generates the Serial Clock (Sclock), whose period defines the
+> -	time quantum used to compose the CAN waveform.
+> -
+> -Can Engine Clock Source
+> -	There are two sources for CAN clock
+> -	- Platform Clock  It represents the bus clock
+> -	- Oscillator Clock
+> -
+> -	Peripheral Clock (PLL)
+> -	--------------
+> -		     |
+> -		    ---------		      -------------
+> -		    |       |CPI Clock	      | Prescaler |       Sclock
+> -		    |       |---------------->| (1.. 256) |------------>
+> -		    ---------		      -------------
+> -                     |  |
+> -	--------------  ---------------------CLK_SRC
+> -	Oscillator Clock
+> -
+> -- fsl,flexcan-clock-source : CAN Engine Clock Source.This property selects
+> -			     the peripheral clock. PLL clock is fed to the
+> -			     prescaler to generate the Serial Clock (Sclock).
+> -			     Valid values are "oscillator" and "platform"
+> -			     "oscillator": CAN engine clock source is oscillator clock.
+> -			     "platform" The CAN engine clock source is the bus clock
+> -		             (platform clock).
+> -
+> -- fsl,flexcan-clock-divider : for the reference and system clock, an additional
+> -			      clock divider can be specified.
+> -- clock-frequency: frequency required to calculate the bitrate for FlexCAN.
+> -
+> -Note:
+> -	- v1.0 of flexcan-v1.0 represent the IP block version for P1010 SOC.
+> -	- P1010 does not have oscillator as the Clock Source.So the default
+> -	  Clock Source is platform clock.
+> -Examples:
+> -
+> -	can0@1c000 {
+> -		compatible = "fsl,flexcan-v1.0";
+> -		reg = <0x1c000 0x1000>;
+> -		interrupts = <48 0x2>;
+> -		interrupt-parent = <&mpic>;
+> -		fsl,flexcan-clock-source = "platform";
+> -		fsl,flexcan-clock-divqider = <2>;
+> -		clock-frequency = <fixed by u-boot>;
+> -	};
+
+Do we really want to drop the documentation for that binding. I think
+something like the following text would be still useful:
+
+------------------------
+Flexcan CAN contoller on Freescale's ARM and PowerPC processors
+
+Required properties:
+
+- compatible : Should be "fsl,flexcan" and optionally
+               "fsl,flexcan-<processor>"
+- reg : Offset and length of the register set for this device
+- interrupts : Interrupt tuple for this device
+
+Example:
+
+  can@1c000 {
+          compatible = "fsl,p1010-flexcan", "fsl,flexcan";
+          reg = <0x1c000 0x1000>;
+          interrupts = <48 0x2>;
+          interrupt-parent = <&mpic>;
+  };
+-------------------------
+
+What do you think?
+
+> diff --git a/arch/powerpc/boot/dts/p1010rdb.dts b/arch/powerpc/boot/dts/p1010rdb.dts
+> index 6b33b73..d6a0bb2 100644
+> --- a/arch/powerpc/boot/dts/p1010rdb.dts
+> +++ b/arch/powerpc/boot/dts/p1010rdb.dts
+> @@ -169,14 +169,6 @@
+>  			};
+>  		};
+>  
+> -		can0@1c000 {
+> -			fsl,flexcan-clock-source = "platform";
+> -		};
+> -
+> -		can1@1d000 {
+> -			fsl,flexcan-clock-source = "platform";
+> -		};
+> -
+>  		usb@22000 {
+>  			phy_type = "utmi";
+>  		};
+> diff --git a/arch/powerpc/boot/dts/p1010si.dtsi b/arch/powerpc/boot/dts/p1010si.dtsi
+> index 7f51104..20c396d 100644
+> --- a/arch/powerpc/boot/dts/p1010si.dtsi
+> +++ b/arch/powerpc/boot/dts/p1010si.dtsi
+> @@ -141,19 +141,19 @@
+>  		};
+>  
+>  		can0@1c000 {
+> -			compatible = "fsl,flexcan-v1.0";
+> +			compatible = "fsl,p1010-flexcan",
+> +					"fsl,flexcan";
+
+Does fit on one line.
+
+>  			reg = <0x1c000 0x1000>;
+>  			interrupts = <48 0x2>;
+>  			interrupt-parent = <&mpic>;
+> -			fsl,flexcan-clock-divider = <2>;
+>  		};
+>  
+>  		can1@1d000 {
+> -			compatible = "fsl,flexcan-v1.0";
+> +			compatible = "fsl,p1010-flexcan",
+> +					"fsl,flexcan";
+
+Ditto
+
+>  			reg = <0x1d000 0x1000>;
+>  			interrupts = <61 0x2>;
+>  			interrupt-parent = <&mpic>;
+> -			fsl,flexcan-clock-divider = <2>;
+>  		};
+>  
+>  		L2: l2-cache-controller@20000 {
+
+Please also correct the node names (not using the number suffix).
+
+Wolfgang.
