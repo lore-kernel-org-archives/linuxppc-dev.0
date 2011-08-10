@@ -1,20 +1,18 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-pz0-f44.google.com (mail-pz0-f44.google.com
-	[209.85.210.44]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B765DB70C3
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 03:21:27 +1000 (EST)
-Received: by pzk36 with SMTP id 36so2280026pzk.3
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 10:21:25 -0700 (PDT)
-Sender: "xenidis@gmail.com" <xenidis@gmail.com>
-From: Jimi Xenidis <jimix@pobox.com>
-Content-Type: text/plain; charset=us-ascii
-Subject: union/struct representations for MAS Registers
-Date: Wed, 10 Aug 2011 12:21:21 -0500
-Message-Id: <B952E5AF-98EF-46CE-B30F-7E1EA55C33AC@pobox.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 47B28B6F70
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 03:25:24 +1000 (EST)
+Subject: Re: union/struct representations for MAS Registers
 Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <B952E5AF-98EF-46CE-B30F-7E1EA55C33AC@pobox.com>
+Date: Wed, 10 Aug 2011 12:25:14 -0500
+Message-Id: <9FE83BDE-592D-42FC-B2B4-A2B6E7E49206@kernel.crashing.org>
+References: <B952E5AF-98EF-46CE-B30F-7E1EA55C33AC@pobox.com>
+To: Jimi Xenidis <jimix@pobox.com>
 Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,24 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have some and use them in some code, they represent ISA 2.06 MAVN=3D1 =
+
+On Aug 10, 2011, at 12:21 PM, Jimi Xenidis wrote:
+
+> I have some and use them in some code, they represent ISA 2.06 MAVN=3D1 =
 (version 2)
-Can I keep them?
-if so, should I put them somewhere useful to others?
+> Can I keep them?
+> if so, should I put them somewhere useful to others?
+>=20
+> Examples:
+> union mas1 {
+> 	u32 _val;
+> 	struct {
+> 		u32 v:1;
+> 		u32 iprot:1;
+> 		u32 tid:14;
+> 		u32 _reserved_1:2;
+> 		u32 ind:1;
+> 		u32 ts:1;
+> 		u32 tsize:4;
+> 		u32 _reserved_2:8;
+> 	};
+> };
 
-Examples:
-union mas1 {
-	u32 _val;
-	struct {
-		u32 v:1;
-		u32 iprot:1;
-		u32 tid:14;
-		u32 _reserved_1:2;
-		u32 ind:1;
-		u32 ts:1;
-		u32 tsize:4;
-		u32 _reserved_2:8;
-	};
-};
+Uugh, we really have avoided unions for such things and it would be nice =
+to keep it that way.
 
--jx
+- k=
