@@ -1,16 +1,19 @@
 Return-Path: <holt@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.179.29])
+	by ozlabs.org (Postfix) with ESMTP id 3F0F4B76E1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Aug 2011 02:28:46 +1000 (EST)
 From: Robin Holt <holt@sgi.com>
 To: Robin Holt <holt@sgi.com>, Kumar Gala <galak@kernel.crashing.org>,
 	Wolfgang Grandegger <wg@grandegger.com>,
 	U Bhaskar-B22300 <B22300@freescale.com>
-Subject: [PATCH v11 3/5] flexcan: Add of_match to platform_device definition.
-Date: Wed, 10 Aug 2011 11:27:48 -0500
-Message-Id: <1312993670-23999-4-git-send-email-holt@sgi.com>
+Subject: [PATCH v11 4/5] powerpc: Add flexcan device support for p1010rdb.
+Date: Wed, 10 Aug 2011 11:27:49 -0500
+Message-Id: <1312993670-23999-5-git-send-email-holt@sgi.com>
 In-Reply-To: <1312993670-23999-1-git-send-email-holt@sgi.com>
 References: <1312993670-23999-1-git-send-email-holt@sgi.com>
-Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	U Bhaskar-B22300 <B22300@freescale.com>, Robin Holt <holt@sgi.com>,
+Cc: , netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
 	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,47 +24,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc, the OpenFirmware devices are not matched without specifying
-an of_match array.  Introduce that array as that is used for matching
-on the Freescale P1010 processor.
+I added a simple clock source for the p1010rdb so the flexcan driver
+could determine a clock frequency.  The p1010 flexcan device only has
+an oscillator of system bus frequency divided by 2.
 
 Signed-off-by: Robin Holt <holt@sgi.com>
-Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>
-Acked-by: Wolfgang Grandegger <wg@grandegger.com>
+Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>,
+Acked-by: Wolfgang Grandegger <wg@grandegger.com>,
 Cc: U Bhaskar-B22300 <B22300@freescale.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: socketcan-core@lists.berlios.de
-Cc: netdev@vger.kernel.org
+Cc: socketcan-core@lists.berlios.de,
+Cc: netdev@vger.kernel.org,
 Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-Cc: devicetree-discuss@lists.ozlabs.org
+Cc: Kumar Gala <galak@kernel.crashing.org>
 ---
- drivers/net/can/flexcan.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/85xx/Kconfig    |    2 +
+ arch/powerpc/platforms/85xx/Makefile   |    2 +
+ arch/powerpc/platforms/85xx/clock.c    |   52 ++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/p1010rdb.c |    8 +++++
+ 4 files changed, 64 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/clock.c
 
-diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
-index 68cbe52..662f832 100644
---- a/drivers/net/can/flexcan.c
-+++ b/drivers/net/can/flexcan.c
-@@ -1027,8 +1027,19 @@ static int __devexit flexcan_remove(struct platform_device *pdev)
- 	return 0;
- }
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 498534c..c4304ae 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -70,6 +70,8 @@ config MPC85xx_RDB
+ config P1010_RDB
+ 	bool "Freescale P1010RDB"
+ 	select DEFAULT_UIMAGE
++	select HAVE_CAN_FLEXCAN if NET && CAN
++	select PPC_CLOCK if CAN_FLEXCAN
+ 	help
+ 	  This option enables support for the MPC85xx RDB (P1010 RDB) board
  
-+static struct of_device_id flexcan_of_match[] = {
-+	{
-+		.compatible = "fsl,flexcan",
-+	},
-+	{},
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index a971b32..cc7f381 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -3,6 +3,8 @@
+ #
+ obj-$(CONFIG_SMP) += smp.o
+ 
++obj-$(CONFIG_PPC_CLOCK)   += clock.o
++
+ obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
+ obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
+ obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
+diff --git a/arch/powerpc/platforms/85xx/clock.c b/arch/powerpc/platforms/85xx/clock.c
+new file mode 100644
+index 0000000..0b6db1d
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/clock.c
+@@ -0,0 +1,52 @@
++/*
++ * Copyright 2011 SGI, inc.
++ *
++ * This code is licensed for use under the GPL V2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/of.h>
++
++#include <asm/clk_interface.h>
++
++#include <sysdev/fsl_soc.h>
++
++/*
++ * p1010 needs to provide a clock source for the flexcan driver. The
++ * oscillator for the p1010 processor is only ever the system clock / 2.
++ */
++
++static struct clk *mpc85xx_clk_get(struct device *dev, const char *id)
++{
++	if (!dev)
++		return ERR_PTR(-ENOENT);
++
++	if (!dev->of_node ||
++	    !of_device_is_compatible(dev->of_node, "fsl,flexcan"))
++		return ERR_PTR(-ENOENT);
++
++	return NULL;
++}
++
++static void mpc85xx_clk_put(struct clk *clk)
++{
++	return;
++}
++
++static unsigned long mpc85xx_clk_get_rate(struct clk *clk)
++{
++	return fsl_get_sys_freq() / 2;
++}
++
++static struct clk_interface mpc85xx_clk_functions = {
++	.clk_get = mpc85xx_clk_get,
++	.clk_get_rate = mpc85xx_clk_get_rate,
++	.clk_put = mpc85xx_clk_put,
 +};
 +
- static struct platform_driver flexcan_driver = {
--	.driver.name = DRV_NAME,
-+	.driver = {
-+		.name = DRV_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = flexcan_of_match,
-+	},
- 	.probe = flexcan_probe,
- 	.remove = __devexit_p(flexcan_remove),
- };
++void __init mpc85xx_clk_init(void)
++{
++	clk_functions = mpc85xx_clk_functions;
++}
+diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
+index d7387fa..5e52122 100644
+--- a/arch/powerpc/platforms/85xx/p1010rdb.c
++++ b/arch/powerpc/platforms/85xx/p1010rdb.c
+@@ -81,6 +81,13 @@ static void __init p1010_rdb_setup_arch(void)
+ 	printk(KERN_INFO "P1010 RDB board from Freescale Semiconductor\n");
+ }
+ 
++extern void mpc85xx_clk_init(void);
++
++static void __init p1010_rdb_init(void)
++{
++	mpc85xx_clk_init();
++}
++
+ static struct of_device_id __initdata p1010rdb_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+@@ -111,6 +118,7 @@ define_machine(p1010_rdb) {
+ 	.name			= "P1010 RDB",
+ 	.probe			= p1010_rdb_probe,
+ 	.setup_arch		= p1010_rdb_setup_arch,
++	.init			= p1010_rdb_init,
+ 	.init_IRQ		= p1010_rdb_pic_init,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
 -- 
 1.7.2.1
