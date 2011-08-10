@@ -1,24 +1,16 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3BF60B6F7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Aug 2011 07:47:29 +1000 (EST)
-Subject: Re: [PATCH] powerpc/kvm: fix build errors with older toolchains
-Mime-Version: 1.0 (Apple Message framework v1084)
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 11 Aug 2011 09:58:18 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 1/3] KVM: PPC: Assemble book3s{,_hv}_rmhandlers.S
+	separately
+Message-ID: <20110810235818.GC5536@bloggs.ozlabs.ibm.com>
+References: <20110723074111.GA17927@bloggs.ozlabs.ibm.com>
+	<4E37EB8C.8040408@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1313002585.1674.13.camel@pasglop>
-Date: Wed, 10 Aug 2011 23:46:56 +0200
-Message-Id: <329D535D-4A7C-4EE8-9342-EFE2D0EEBE81@suse.de>
-References: <1312397755-15737-1-git-send-email-nacc@us.ibm.com>
-	<4E429CAD.5050000@suse.de> <1313002585.1674.13.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
-	linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Avi Kivity <avi@redhat.com>,
-	Nishanth Aravamudan <nacc@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4E37EB8C.8040408@suse.de>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Aug 02, 2011 at 02:20:28PM +0200, Alexander Graf wrote:
+> On 07/23/2011 09:41 AM, Paul Mackerras wrote:
+> >This makes arch/powerpc/kvm/book3s_rmhandlers.S and
+> >arch/powerpc/kvm/book3s_hv_rmhandlers.S be assembled as
+> >separate compilation units rather than having them #included in
+> >arch/powerpc/kernel/exceptions-64s.S.  We no longer have any
+> >conditional branches between the exception prologs in
+> >exceptions-64s.S and the KVM handlers, so there is no need to
+> >keep their contents close together in the vmlinux image.
+> >
+> >In their current location, they are using up part of the limited
+> >space between the first-level interrupt handlers and the firmware
+> >NMI data area at offset 0x7000, and with some kernel configurations
+> >this area will overflow (e.g. allyesconfig), leading to an
+> >"attempt to .org backwards" error when compiling exceptions-64s.S.
+> >
+> >Moving them out requires that we add some #includes that the
+> >book3s_{,hv_}rmhandlers.S code was previously getting implicitly
+> >via exceptions-64s.S.
+> 
+> So what if your kernel binary is bigger than the 24 bits we can jump
+> and the KVM code happens to be at the end? Or do we just not care
+> here?
 
-On 10.08.2011, at 20:56, Benjamin Herrenschmidt wrote:
+Actually we can jump +/- 32MB (26 bits).  I believe that the linker
+inserts trampolines if the branch target is more than 32MB away, so it
+should still work if the kernel is really large and the KVM code
+happens to be at the end.
 
-> On Wed, 2011-08-10 at 16:58 +0200, Alexander Graf wrote:
->> On 08/03/2011 08:55 PM, Nishanth Aravamudan wrote:
->>> On a box with gcc 4.3.2, I see errors like:
->>>=20
->>> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1254: Error: Unrecognized =
-opcode: stxvd2x
->>> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1316: Error: Unrecognized =
-opcode: lxvd2x
->>=20
->> Paul, mind to ack?
->=20
-> I merged it already :-) It was trivial & annoying enough.
+Stephen Rothwell has been asking me about this patch.  He wants it in
+(or something like it) so that he can get his daily linux-next powerpc
+allyesconfig builds to stop failing.
 
-Alright then, I won't touch it :)
-
-
-Alex
+Paul.
