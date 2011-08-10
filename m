@@ -1,27 +1,24 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D47D8B6F6B
+Return-Path: <holt@sgi.com>
+Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
+	by ozlabs.org (Postfix) with ESMTP id F32DAB6F8D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Aug 2011 01:39:23 +1000 (EST)
-Received: by fxh10 with SMTP id 10so1082799fxh.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Aug 2011 08:39:18 -0700 (PDT)
+	Thu, 11 Aug 2011 02:00:56 +1000 (EST)
+Date: Wed, 10 Aug 2011 11:00:54 -0500
+From: Robin Holt <holt@sgi.com>
+To: U Bhaskar-B22300 <B22300@freescale.com>
+Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
+Message-ID: <20110810160054.GT4926@sgi.com>
+References: <1312945564-6626-1-git-send-email-holt@sgi.com>
+	<1312945564-6626-6-git-send-email-holt@sgi.com>
+	<4E428BFF.7060402@grandegger.com> <20110810141550.GQ4926@sgi.com>
+	<9C64B7751C3BCA41B64A68E23005A7BE1C6A21@039-SN1MPN1-002.039d.mgd.msft.net>
 MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <b965536bbd0457ab9614777dc00fc0dd22cf1d47.1312953203.git.baruch@tkos.co.il>
-References: <20110810044307.GA2804@sapphire.tkos.co.il>
-	<b965536bbd0457ab9614777dc00fc0dd22cf1d47.1312953203.git.baruch@tkos.co.il>
-Date: Wed, 10 Aug 2011 11:39:18 -0400
-Message-ID: <CAP=VYLoNSaVyfLyKDun-aBEQy+UzKJNwphs2U_74AhKAHgch_Q@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc: 85xx: separate e500 from e500mc
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Baruch Siach <baruch@tkos.co.il>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9C64B7751C3BCA41B64A68E23005A7BE1C6A21@039-SN1MPN1-002.039d.mgd.msft.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"socketcan-core@lists.berlios.de" <socketcan-core@lists.berlios.de>,
+	Robin Holt <holt@sgi.com>, PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,196 +28,246 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 10, 2011 at 1:21 AM, Baruch Siach <baruch@tkos.co.il> wrote:
-> CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6,=
- thus
-> breaking clear_pages(), probably others too.
->
-> This patch adds a new "Processor Type" entry for e500mc, and makes e500 s=
-ystems
-> depend on PPC_E500_V1_V2.
+On Wed, Aug 10, 2011 at 02:36:20PM +0000, U Bhaskar-B22300 wrote:
+> 
+> 
+> > -----Original Message-----
+> > From: Robin Holt [mailto:holt@sgi.com]
+> > Sent: Wednesday, August 10, 2011 7:46 PM
+> > To: Wolfgang Grandegger
+> > Cc: Robin Holt; Marc Kleine-Budde; U Bhaskar-B22300; Wood Scott-B07421;
+> > netdev@vger.kernel.org; Kumar Gala; socketcan-core@lists.berlios.de; PPC
+> > list
+> > Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree
+> > binding.
+> > 
+> > On Wed, Aug 10, 2011 at 03:47:43PM +0200, Wolfgang Grandegger wrote:
+> > > Hi Robin,
+> > >
+> > > On 08/10/2011 05:06 AM, Robin Holt wrote:
+> > > > In working with the socketcan developers, we have come to the
+> > > > conclusion the Documentation...fsl-flexcan.txt device tree
+> > > > documentation needs to be cleaned up.  The driver does not depend
+> > > > upon any properties other
+> > >
+> > > Your first sentence could be misleading. Please just describe what the
+> > > patch does and why, something like:
+> > >
+> > > "This patch cleans up the documentation of the device-tree binding for
+> > > the Flexcan devices on Freescale's PowerPC and ARM cores. Extra
+> > > properties are not needed as the frequency of the source clock is
+> > > fixed..." and so on.
+> > 
+> > I borrowed heavily from your message. ;)
+> > 
+> > > > than the required properties so we are removing the file.
+> > > > Additionally, the p1010*dts* files are not following the standard
+> > > > for node naming in that they have a trailing -v1.0.
+> > >
+> > > > Signed-off-by: Robin Holt <holt@sgi.com>
+> > > > To: Marc Kleine-Budde <mkl@pengutronix.de>,
+> > > > To: Wolfgang Grandegger <wg@grandegger.com>,
+> > > > To: U Bhaskar-B22300 <B22300@freescale.com>
+> > > > To: Scott Wood <scottwood@freescale.com>
+> > > > Cc: socketcan-core@lists.berlios.de,
+> > > > Cc: netdev@vger.kernel.org,
+> > > > Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+> > > > Cc: Kumar Gala <galak@kernel.crashing.org>
+> > > > ---
+> > > >  .../devicetree/bindings/net/can/fsl-flexcan.txt    |   61 ----------
+> > ----------
+> > > >  arch/powerpc/boot/dts/p1010rdb.dts                 |    8 ---
+> > > >  arch/powerpc/boot/dts/p1010si.dtsi                 |    8 +-
+> > > >  3 files changed, 4 insertions(+), 73 deletions(-)  delete mode
+> > > > 100644 Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+> > > >
+> > > > diff --git
+> > > > a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+> > > > b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+> > > > deleted file mode 100644
+> > > > index 1a729f0..0000000
+> > > > --- a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
+> > > > +++ /dev/null
+> > > > @@ -1,61 +0,0 @@
+> > > > -CAN Device Tree Bindings
+> > > > -------------------------
+> > > > -2011 Freescale Semiconductor, Inc.
+> > > > -
+> > > > -fsl,flexcan-v1.0 nodes
+> > > > ------------------------
+> > > > -In addition to the required compatible-, reg- and
+> > > > interrupt-properties, you can -also specify which clock source shall
+> > be used for the controller.
+> > > > -
+> > > > -CPI Clock- Can Protocol Interface Clock
+> > > > -	This CLK_SRC bit of CTRL(control register) selects the clock source
+> > to
+> > > > -	the CAN Protocol Interface(CPI) to be either the peripheral clock
+> > > > -	(driven by the PLL) or the crystal oscillator clock. The selected
+> > clock
+> > > > -	is the one fed to the prescaler to generate the Serial Clock
+> > (Sclock).
+> > > > -	The PRESDIV field of CTRL(control register) controls a prescaler
+> > that
+> > > > -	generates the Serial Clock (Sclock), whose period defines the
+> > > > -	time quantum used to compose the CAN waveform.
+> > > > -
+> > > > -Can Engine Clock Source
+> > > > -	There are two sources for CAN clock
+> > > > -	- Platform Clock  It represents the bus clock
+> > > > -	- Oscillator Clock
+> > > > -
+> > > > -	Peripheral Clock (PLL)
+> > > > -	--------------
+> > > > -		     |
+> > > > -		    ---------		      -------------
+> > > > -		    |       |CPI Clock	      | Prescaler |       Sclock
+> > > > -		    |       |---------------->| (1.. 256) |------------>
+> > > > -		    ---------		      -------------
+> > > > -                     |  |
+> > > > -	--------------  ---------------------CLK_SRC
+> > > > -	Oscillator Clock
+> > > > -
+> > > > -- fsl,flexcan-clock-source : CAN Engine Clock Source.This property
+> > selects
+> > > > -			     the peripheral clock. PLL clock is fed to the
+> > > > -			     prescaler to generate the Serial Clock (Sclock).
+> > > > -			     Valid values are "oscillator" and "platform"
+> > > > -			     "oscillator": CAN engine clock source is
+> > oscillator clock.
+> > > > -			     "platform" The CAN engine clock source is the bus
+> > clock
+> > > > -		             (platform clock).
+> > > > -
+> > > > -- fsl,flexcan-clock-divider : for the reference and system clock, an
+> > additional
+> > > > -			      clock divider can be specified.
+> > > > -- clock-frequency: frequency required to calculate the bitrate for
+> > FlexCAN.
+> > > > -
+> > > > -Note:
+> > > > -	- v1.0 of flexcan-v1.0 represent the IP block version for P1010
+> > SOC.
+> > > > -	- P1010 does not have oscillator as the Clock Source.So the default
+> > > > -	  Clock Source is platform clock.
+> > > > -Examples:
+> > > > -
+> > > > -	can0@1c000 {
+> > > > -		compatible = "fsl,flexcan-v1.0";
+> > > > -		reg = <0x1c000 0x1000>;
+> > > > -		interrupts = <48 0x2>;
+> > > > -		interrupt-parent = <&mpic>;
+> > > > -		fsl,flexcan-clock-source = "platform";
+> > > > -		fsl,flexcan-clock-divqider = <2>;
+> > > > -		clock-frequency = <fixed by u-boot>;
+> > > > -	};
+> > >
+> > > Do we really want to drop the documentation for that binding. I think
+> > > something like the following text would be still useful:
+> > >
+> > > ------------------------
+> > > Flexcan CAN contoller on Freescale's ARM and PowerPC processors
+> > >
+> > > Required properties:
+> > >
+> > > - compatible : Should be "fsl,flexcan" and optionally
+> > >                "fsl,flexcan-<processor>"
+> > > - reg : Offset and length of the register set for this device
+> > > - interrupts : Interrupt tuple for this device
+> > >
+> > > Example:
+> > >
+> > >   can@1c000 {
+> > >           compatible = "fsl,p1010-flexcan", "fsl,flexcan";
+> > >           reg = <0x1c000 0x1000>;
+> > >           interrupts = <48 0x2>;
+> > >           interrupt-parent = <&mpic>;
+> > >   };
+> > > -------------------------
+> > 
+> > Done, except the
+> > >           compatible = "fsl,p1010-flexcan", "fsl,flexcan";
+> > 
+> > line is
+> > 	compatible = "fsl,flexcan", "fsl,flexcan-p1010";
+> > 
+> > >
+> > > What do you think?
+> > >
+> > > > diff --git a/arch/powerpc/boot/dts/p1010rdb.dts
+> > > > b/arch/powerpc/boot/dts/p1010rdb.dts
+> > > > index 6b33b73..d6a0bb2 100644
+> > > > --- a/arch/powerpc/boot/dts/p1010rdb.dts
+> > > > +++ b/arch/powerpc/boot/dts/p1010rdb.dts
+> > > > @@ -169,14 +169,6 @@
+> > > >  			};
+> > > >  		};
+> > > >
+> > > > -		can0@1c000 {
+> > > > -			fsl,flexcan-clock-source = "platform";
+> > > > -		};
+> > > > -
+> > > > -		can1@1d000 {
+> > > > -			fsl,flexcan-clock-source = "platform";
+> > > > -		};
+> > > > -
+> > > >  		usb@22000 {
+> > > >  			phy_type = "utmi";
+> > > >  		};
+> > > > diff --git a/arch/powerpc/boot/dts/p1010si.dtsi
+> > > > b/arch/powerpc/boot/dts/p1010si.dtsi
+> > > > index 7f51104..20c396d 100644
+> > > > --- a/arch/powerpc/boot/dts/p1010si.dtsi
+> > > > +++ b/arch/powerpc/boot/dts/p1010si.dtsi
+> > > > @@ -141,19 +141,19 @@
+> > > >  		};
+> > > >
+> > > >  		can0@1c000 {
+> > > > -			compatible = "fsl,flexcan-v1.0";
+> > > > +			compatible = "fsl,p1010-flexcan",
+> > > > +					"fsl,flexcan";
+> > >
+> > > Does fit on one line.
+> > >
+> > > >  			reg = <0x1c000 0x1000>;
+> > > >  			interrupts = <48 0x2>;
+> > > >  			interrupt-parent = <&mpic>;
+> > > > -			fsl,flexcan-clock-divider = <2>;
+> > > >  		};
+> > > >
+> > > >  		can1@1d000 {
+> > > > -			compatible = "fsl,flexcan-v1.0";
+> > > > +			compatible = "fsl,p1010-flexcan",
+> > > > +					"fsl,flexcan";
+> > >
+> > > Ditto
+> > >
+> > > >  			reg = <0x1d000 0x1000>;
+> > > >  			interrupts = <61 0x2>;
+> > > >  			interrupt-parent = <&mpic>;
+> > > > -			fsl,flexcan-clock-divider = <2>;
+> > > >  		};
+> > > >
+> > > >  		L2: l2-cache-controller@20000 {
+> > >
+> > > Please also correct the node names (not using the number suffix).
+> > 
+> > So the node names should be
+> > 		can@1c000 {
+> > 		can@1d000 {
+> > correct?
+> > 
+> [Bhaskar] As there are two CAN controllers on P1010,So won't it be better
+> 	    to distinguish it by can0 and can1 instead by simple "can" ?
 
-Isn't the original invalid configuration still possible, i.e. I can
-choose E500_V1_V2
-and also E500MC at the same time, unless you add something like a
-"depends !E500MC" to  your new V1_V2 option?
+It looks like the way to do that is to assign a label to those devices
+and then associate the label with an alias.  I have no idea how that
+works under the hood, but it is the way other files are set up.  Take a
+look at arch/powerpc/boot/dts/bamboo.dts for how they define the serial
+interfaces.
 
-Alternatively, you could treat it like using i386 kernel on a modern
-core by taking
-the LCD for the L1_CACHE_SHIFT of the configured in platforms.  I have boot=
-ed
-a kernel built for an mpc8548 core on a P4080 CPU, so that does work (with =
-only
-minimal dts fiddling).  And it keeps the ability to boot one kernel on seve=
-ral
-platforms open (one of the reasons for the ppc --> powerpc shuffle a couple
-of years ago...)
+Grant or Wolfgang, is that the right way to handle the concern about
+names or does it have no practical effect with the Linux kernel?
 
-Paul.
-
->
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> ---
->
-> Changes from v2:
->
-> =A0 =A0 =A0 =A0* s/CONFIG_PPC_E500/CONFIG_PPC_E500_V1_V2/ to avoid confus=
-ion as
-> =A0 =A0 =A0 =A0 =A0noted by Scott Wood
->
-> Changes from v1:
->
-> =A0 =A0 =A0 =A0* Rebase on 3.1-rc1
->
-> =A0 =A0 =A0 =A0* Remove the list of processor families from the PPC_E500 =
-and
-> =A0 =A0 =A0 =A0 =A0PPC_E500MC options description. The P20xx can be eithe=
-r e500v2 or
-> =A0 =A0 =A0 =A0 =A0e500mc.
->
-> =A0arch/powerpc/platforms/85xx/Kconfig =A0 =A0| =A0 13 +++++++++----
-> =A0arch/powerpc/platforms/Kconfig.cputype | =A0 27 +++++++++++++++-------=
------
-> =A02 files changed, 24 insertions(+), 16 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms=
-/85xx/Kconfig
-> index 498534c..00d4720 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
->
-> =A0if PPC32
->
-> +if PPC_E500_V1_V2
-> +
-> =A0config MPC8540_ADS
-> =A0 =A0 =A0 =A0bool "Freescale MPC8540 ADS"
-> =A0 =A0 =A0 =A0select DEFAULT_UIMAGE
-> @@ -171,10 +173,13 @@ config SBC8560
-> =A0 =A0 =A0 =A0help
-> =A0 =A0 =A0 =A0 =A0This option enables support for the Wind River SBC8560=
- board
->
-> +endif # PPC_E500_V1_V2
-> +
-> +if PPC_E500MC
-> +
-> =A0config P2040_RDB
-> =A0 =A0 =A0 =A0bool "Freescale P2040 RDB"
-> =A0 =A0 =A0 =A0select DEFAULT_UIMAGE
-> - =A0 =A0 =A0 select PPC_E500MC
-> =A0 =A0 =A0 =A0select PHYS_64BIT
-> =A0 =A0 =A0 =A0select SWIOTLB
-> =A0 =A0 =A0 =A0select MPC8xxx_GPIO
-> @@ -186,7 +191,6 @@ config P2040_RDB
-> =A0config P3041_DS
-> =A0 =A0 =A0 =A0bool "Freescale P3041 DS"
-> =A0 =A0 =A0 =A0select DEFAULT_UIMAGE
-> - =A0 =A0 =A0 select PPC_E500MC
-> =A0 =A0 =A0 =A0select PHYS_64BIT
-> =A0 =A0 =A0 =A0select SWIOTLB
-> =A0 =A0 =A0 =A0select MPC8xxx_GPIO
-> @@ -198,7 +202,6 @@ config P3041_DS
-> =A0config P4080_DS
-> =A0 =A0 =A0 =A0bool "Freescale P4080 DS"
-> =A0 =A0 =A0 =A0select DEFAULT_UIMAGE
-> - =A0 =A0 =A0 select PPC_E500MC
-> =A0 =A0 =A0 =A0select PHYS_64BIT
-> =A0 =A0 =A0 =A0select SWIOTLB
-> =A0 =A0 =A0 =A0select MPC8xxx_GPIO
-> @@ -207,13 +210,15 @@ config P4080_DS
-> =A0 =A0 =A0 =A0help
-> =A0 =A0 =A0 =A0 =A0This option enables support for the P4080 DS board
->
-> +endif # PPC_E500MC
-> +
-> =A0endif # PPC32
->
-> =A0config P5020_DS
-> =A0 =A0 =A0 =A0bool "Freescale P5020 DS"
-> + =A0 =A0 =A0 depends on PPC_E500MC
-> =A0 =A0 =A0 =A0select DEFAULT_UIMAGE
-> =A0 =A0 =A0 =A0select E500
-> - =A0 =A0 =A0 select PPC_E500MC
-> =A0 =A0 =A0 =A0select PHYS_64BIT
-> =A0 =A0 =A0 =A0select SWIOTLB
-> =A0 =A0 =A0 =A0select MPC8xxx_GPIO
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platfo=
-rms/Kconfig.cputype
-> index e06e395..e6cb00c 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -10,13 +10,13 @@ choice
-> =A0 =A0 =A0 =A0prompt "Processor Type"
-> =A0 =A0 =A0 =A0depends on PPC32
-> =A0 =A0 =A0 =A0help
-> - =A0 =A0 =A0 =A0 There are five families of 32 bit PowerPC chips support=
-ed.
-> + =A0 =A0 =A0 =A0 There are six families of 32 bit PowerPC chips supporte=
-d.
-> =A0 =A0 =A0 =A0 =A0The most common ones are the desktop and server CPUs (=
-601, 603,
-> =A0 =A0 =A0 =A0 =A0604, 740, 750, 74xx) CPUs from Freescale and IBM, with=
- their
-> =A0 =A0 =A0 =A0 =A0embedded 512x/52xx/82xx/83xx/86xx counterparts.
-> - =A0 =A0 =A0 =A0 The other embeeded parts, namely 4xx, 8xx, e200 (55xx) =
-and e500
-> - =A0 =A0 =A0 =A0 (85xx) each form a family of their own that is not comp=
-atible
-> - =A0 =A0 =A0 =A0 with the others.
-> + =A0 =A0 =A0 =A0 The other embeeded parts, namely 4xx, 8xx, e200 (55xx),=
- e500
-> + =A0 =A0 =A0 =A0 (85xx), and e500mc each form a family of their own that=
- is not
-> + =A0 =A0 =A0 =A0 compatible with the others.
->
-> =A0 =A0 =A0 =A0 =A0If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
->
-> @@ -24,10 +24,15 @@ config PPC_BOOK3S_32
-> =A0 =A0 =A0 =A0bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
-> =A0 =A0 =A0 =A0select PPC_FPU
->
-> -config PPC_85xx
-> - =A0 =A0 =A0 bool "Freescale 85xx"
-> +config PPC_E500_V1_V2
-> + =A0 =A0 =A0 bool "Freescale e500v1/e500v2"
-> + =A0 =A0 =A0 select PPC_85xx
-> =A0 =A0 =A0 =A0select E500
->
-> +config PPC_E500MC
-> + =A0 =A0 =A0 bool "Freescale e500mc/e5500"
-> + =A0 =A0 =A0 select PPC_85xx
-> +
-> =A0config PPC_8xx
-> =A0 =A0 =A0 =A0bool "Freescale 8xx"
-> =A0 =A0 =A0 =A0select FSL_SOC
-> @@ -128,15 +133,13 @@ config TUNE_CELL
-> =A0config 8xx
-> =A0 =A0 =A0 =A0bool
->
-> -config E500
-> +config PPC_85xx
-> + =A0 =A0 =A0 bool
-> =A0 =A0 =A0 =A0select FSL_EMB_PERFMON
-> =A0 =A0 =A0 =A0select PPC_FSL_BOOK3E
-> - =A0 =A0 =A0 bool
->
-> -config PPC_E500MC
-> - =A0 =A0 =A0 bool "e500mc Support"
-> - =A0 =A0 =A0 select PPC_FPU
-> - =A0 =A0 =A0 depends on E500
-> +config E500
-> + =A0 =A0 =A0 bool
->
-> =A0config PPC_FPU
-> =A0 =A0 =A0 =A0bool
-> --
-> 1.7.5.4
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+Thanks,
+Robin
