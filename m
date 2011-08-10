@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 47B28B6F70
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 03:25:24 +1000 (EST)
-Subject: Re: union/struct representations for MAS Registers
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id CE036B6F8C
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 03:26:00 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP id 27200-02 for <linuxppc-dev@ozlabs.org>;
+	Wed, 10 Aug 2011 18:25:55 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: union/struct representations for MAS Registers
+Date: Wed, 10 Aug 2011 18:25:57 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AE25@saturn3.aculab.com>
 In-Reply-To: <B952E5AF-98EF-46CE-B30F-7E1EA55C33AC@pobox.com>
-Date: Wed, 10 Aug 2011 12:25:14 -0500
-Message-Id: <9FE83BDE-592D-42FC-B2B4-A2B6E7E49206@kernel.crashing.org>
-References: <B952E5AF-98EF-46CE-B30F-7E1EA55C33AC@pobox.com>
-To: Jimi Xenidis <jimix@pobox.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Jimi Xenidis" <jimix@pobox.com>, "Kumar Gala" <galak@kernel.crashing.org>
 Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,11 +25,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Aug 10, 2011, at 12:21 PM, Jimi Xenidis wrote:
-
-> I have some and use them in some code, they represent ISA 2.06 MAVN=3D1 =
-(version 2)
+=20
+> I have some and use them in some code, they represent ISA=20
+> 2.06 MAVN=3D1 (version 2)
 > Can I keep them?
 > if so, should I put them somewhere useful to others?
 >=20
@@ -46,7 +46,8 @@ On Aug 10, 2011, at 12:21 PM, Jimi Xenidis wrote:
 > 	};
 > };
 
-Uugh, we really have avoided unions for such things and it would be nice =
-to keep it that way.
+Bitfields are rather non-portable, the compiler has a lot of choice
+about how to align the bits in memory.
+Their use to map anything physical is doomed to portabilily issues.
 
-- k=
+	David
