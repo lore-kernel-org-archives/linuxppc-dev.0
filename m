@@ -1,24 +1,24 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D3301B70B9
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2011 18:00:08 +1000 (EST)
-References: <1312907508-14599-1-git-send-email-agraf@suse.de>
-	<1312907508-14599-11-git-send-email-agraf@suse.de>
-	<20110810044215.GA5404@drongo>
-In-Reply-To: <20110810044215.GA5404@drongo>
-Mime-Version: 1.0 (iPhone Mail 8G4)
-Content-Type: text/plain;
-	charset=us-ascii
-Message-Id: <0B73DEC7-C430-43D7-8095-D3D0BEDA27AA@suse.de>
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 10/10] KVM: PPC: Enable the PAPR CAP for Book3S
-Date: Wed, 10 Aug 2011 09:59:41 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4BFE5B7199
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Aug 2011 18:15:41 +1000 (EST)
+Date: Wed, 10 Aug 2011 10:15:26 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH v10 5/5] [powerpc] Fix up fsl-flexcan device tree binding.
+Message-ID: <20110810081526.GW31398@pengutronix.de>
+References: <1312945564-6626-1-git-send-email-holt@sgi.com>
+	<1312945564-6626-6-git-send-email-holt@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1312945564-6626-6-git-send-email-holt@sgi.com>
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Scott Wood <scottwood@freescale.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Robin,
 
-Am 10.08.2011 um 06:42 schrieb Paul Mackerras <paulus@samba.org>:
+On Tue, Aug 09, 2011 at 10:06:04PM -0500, Robin Holt wrote:
+> In working with the socketcan developers, we have come to the conclusion
+> the Documentation...fsl-flexcan.txt device tree documentation needs to
+> be cleaned up.  The driver does not depend upon any properties other
+> than the required properties so we are removing the file.  Additionally,
+> the p1010*dts* files are not following the standard for node naming in
+> that they have a trailing -v1.0.
+>
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> To: Marc Kleine-Budde <mkl@pengutronix.de>,
+> To: Wolfgang Grandegger <wg@grandegger.com>,
+> To: U Bhaskar-B22300 <B22300@freescale.com>
+> To: Scott Wood <scottwood@freescale.com>
+> Cc: socketcan-core@lists.berlios.de,
+> Cc: netdev@vger.kernel.org,
+> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  .../devicetree/bindings/net/can/fsl-flexcan.txt    |   61 --------------------
+>  arch/powerpc/boot/dts/p1010rdb.dts                 |    8 ---
+>  arch/powerpc/boot/dts/p1010si.dtsi                 |    8 +-
+>  3 files changed, 4 insertions(+), 73 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
 
-> On Tue, Aug 09, 2011 at 06:31:48PM +0200, Alexander Graf wrote:
->=20
->> Now that Book3S PV mode can also run PAPR guests, we can add a PAPR cap a=
-nd
->> enable it for all Book3S targets. Enabling that CAP switches KVM into PAP=
-R
->> mode.
->=20
-> Don't we want to enable it only for 64-bit hosts?  Trying to run a
-> PAPR guest on a 32-bit Book 3S host won't work very well, unless I am
-> missing something...
+I suggest that you set devicetree-discuss@lists.ozlabs.org and Grant
+Likely on Cc: for this patch.
 
-I agree that it doesn't make sense, but if anything we should restrict it to=
- 64-bit _guests_. you can also run 32-bit guests on 64-bit hosts.
-
-And so far, we don't have a single interface setting PVR and PAPR mode at th=
-e same time, so you could still enable PAPR with a 64-bit guest CPU and then=
- switch to a 32-bit CPU.
-
-It'd be a nightmare to check all configurations on every setter function.
-
-Unless...
-
-We could introduce a sanity check function that gets executed every time we c=
-hange PVR or enable PAPR. That could set a variable in the vcpu struct to in=
-dicate that the config is ok. We could then check that on vcpu_run.
-
-
-Alex
-
->=20
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
