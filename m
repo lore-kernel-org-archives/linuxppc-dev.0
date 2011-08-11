@@ -1,19 +1,21 @@
 Return-Path: <holt@sgi.com>
 Received: from relay.sgi.com (relay3.sgi.com [192.48.152.1])
-	by ozlabs.org (Postfix) with ESMTP id 42E69B6F71
+	by ozlabs.org (Postfix) with ESMTP id A681DB6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Aug 2011 02:07:21 +1000 (EST)
+	Fri, 12 Aug 2011 02:07:22 +1000 (EST)
 From: Robin Holt <holt@sgi.com>
 To: Robin Holt <holt@sgi.com>, Kumar Gala <galak@kernel.crashing.org>,
 	Wolfgang Grandegger <wg@grandegger.com>,
 	Marc Kleine-Budde <mkl@pengutronix.de>,
 	U Bhaskar-B22300 <B22300@freescale.com>
-Subject: [PATCH v12 0/6] flexcan/powerpc: Add support for powerpc flexcan
-	(freescale p1010)
-Date: Thu, 11 Aug 2011 11:07:05 -0500
-Message-Id: <1313078831-2511-1-git-send-email-holt@sgi.com>
-Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
-	PPC list <linuxppc-dev@lists.ozlabs.org>, Robin Holt <holt@sgi.com>
+Subject: [PATCH v11 1/6] flexcan: Remove #include <mach/clock.h>
+Date: Thu, 11 Aug 2011 11:07:06 -0500
+Message-Id: <1313078831-2511-2-git-send-email-holt@sgi.com>
+In-Reply-To: <1313078831-2511-1-git-send-email-holt@sgi.com>
+References: <1313078831-2511-1-git-send-email-holt@sgi.com>
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,15 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With all the patches applied, my p1010rdb works for communicating between
-its two can ports and also can communicate with an external PSOC.
-I have done no testing beyond compile testing for an arm system as I
-have no access to an arm based system.
+powerpc does not have a mach-####/clock.h.  When testing, I found neither
+arm nor powerpc needed the mach/clock.h at all so I removed it.
 
-With the latest version, changes to the arch tree really only reflect
-changes in the drivers/net/can tree.  I, therefore, believe it is
-probably best to route them through David S. Miller's netdev tree.
-Wolfgang and Kumar, does that seem correct to you?
+Signed-off-by: Robin Holt <holt@sgi.com>
+Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>
+Acked-by: Wolfgang Grandegger <wg@grandegger.com>
+Cc: U Bhaskar-B22300 <B22300@freescale.com>
+Cc: socketcan-core@lists.berlios.de
+Cc: netdev@vger.kernel.org
+Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+---
+ drivers/net/can/flexcan.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-Thanks,
-Robin Holt
+diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
+index 1767811..586b2cd 100644
+--- a/drivers/net/can/flexcan.c
++++ b/drivers/net/can/flexcan.c
+@@ -35,8 +35,6 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ 
+-#include <mach/clock.h>
+-
+ #define DRV_NAME			"flexcan"
+ 
+ /* 8 for RX fifo and 2 error handling */
+-- 
+1.7.2.1
