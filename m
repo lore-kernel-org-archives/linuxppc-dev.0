@@ -1,14 +1,12 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Thu, 11 Aug 2011 16:16:54 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
-	Josh Boyer <jwboyer@gmail.com>
-Subject: 44x/pci: Add __init annotations for *init_port_hw() functions.
-Message-ID: <20110811061654.GD20597@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <anton@samba.org>
+Message-Id: <20110811064427.515781037@samba.org>
+Date: Thu, 11 Aug 2011 16:44:21 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, sfr@ozlabs.org,
+	nfont@austin.ibm.com
+Subject: [PATCH 1/4] [PATCH] powerpc: numa: Remove double of_node_put in
+	hot_add_node_scn_to_nid
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,74 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The various port_init_hw methods of ppc4xx_pciex_hwops should have been
-marked __init and when I added ppc4xx_pciex_port_reset_sdr(), which is
-__init.  This added many section mismatch warnings like:
+During memory hotplug testing, I got the following warning:
 
-WARNING: arch/powerpc/sysdev/built-in.o(.text+0x5c68): Section mismatch in reference from the function ppc440spe_pciex_init_port_hw() to the function .init.text:ppc4xx_pciex_port_reset_sdr()
-The function ppc440spe_pciex_init_port_hw() references
-the function __init ppc4xx_pciex_port_reset_sdr().
-This is often because ppc440spe_pciex_init_port_hw lacks a __init
-annotation or the annotation of ppc4xx_pciex_port_reset_sdr is wrong.
 
-Trivial patch to silence those warnings.
+ERROR: Bad of_node_put() on /memory@0
 
-Reported-By: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+of_node_release
+kref_put
+of_node_put
+of_find_node_by_type
+hot_add_node_scn_to_nid
+hot_add_scn_to_nid
+memory_add_physaddr_to_nid
+...
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index dbfe96b..60541a6 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -834,7 +834,7 @@ static int __init ppc440spe_pciex_core_init(struct device_node *np)
- 	return 3;
+
+of_find_node_by_type() loop does the of_node_put for us so we only
+need the handle the case where we terminate the loop early.
+
+As suggested by Stephen Rothwell we can do the of_node_put
+unconditionally outside of the loop since of_node_put handles a
+NULL argument fine.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
+---
+
+Index: linux-powerpc/arch/powerpc/mm/numa.c
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/mm/numa.c	2011-06-06 08:07:35.148708089 +1000
++++ linux-powerpc/arch/powerpc/mm/numa.c	2011-08-11 09:07:07.329584634 +1000
+@@ -1214,11 +1214,12 @@ int hot_add_node_scn_to_nid(unsigned lon
+ 			break;
+ 		}
+ 
+-		of_node_put(memory);
+ 		if (nid >= 0)
+ 			break;
+ 	}
+ 
++	of_node_put(memory);
++
+ 	return nid;
  }
  
--static int ppc440spe_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
-+static int __init ppc440spe_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- {
- 	u32 val = 1 << 24;
- 
-@@ -872,12 +872,12 @@ static int ppc440spe_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- 	return ppc4xx_pciex_port_reset_sdr(port);
- }
- 
--static int ppc440speA_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
-+static int __init ppc440speA_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- {
- 	return ppc440spe_pciex_init_port_hw(port);
- }
- 
--static int ppc440speB_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
-+static int __init ppc440speB_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- {
- 	int rc = ppc440spe_pciex_init_port_hw(port);
- 
-@@ -936,7 +936,7 @@ static int __init ppc460ex_pciex_core_init(struct device_node *np)
- 	return 2;
- }
- 
--static int ppc460ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
-+static int __init ppc460ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- {
- 	u32 val;
- 	u32 utlset1;
-@@ -1122,7 +1122,7 @@ static int __init ppc460sx_pciex_core_init(struct device_node *np)
- 	return 2;
- }
- 
--static int ppc460sx_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
-+static int __init ppc460sx_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- {
- 
- 	if (port->endpoint)
-@@ -1189,7 +1189,7 @@ static void ppc405ex_pcie_phy_reset(struct ppc4xx_pciex_port *port)
- 	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x00101000);
- }
- 
--static int ppc405ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
-+static int __init ppc405ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- {
- 	u32 val;
- 
-Yours Tony
