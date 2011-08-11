@@ -1,10 +1,9 @@
 Return-Path: <a.heider@gmail.com>
 From: Andre Heider <a.heider@gmail.com>
 To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH part1 v2 3/9] ps3: Get lv1 high memory region from the
-	repository
-Date: Thu, 11 Aug 2011 21:31:07 +0200
-Message-Id: <1313091073-4572-4-git-send-email-a.heider@gmail.com>
+Subject: [PATCH part1 v2 6/9] ps3: Detect the current lpar
+Date: Thu, 11 Aug 2011 21:31:10 +0200
+Message-Id: <1313091073-4572-7-git-send-email-a.heider@gmail.com>
 In-Reply-To: <1313091073-4572-1-git-send-email-a.heider@gmail.com>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 	<1313091073-4572-1-git-send-email-a.heider@gmail.com>
@@ -19,117 +18,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This lets the bootloader preallocate the high lv1 region and pass its
-location to the kernel through the repository. Thus, it can be used to
-hold the initrd. If the region info doesn't exist, the kernel retains
-the old behavior and attempts to allocate the region itself.
-
-Based on the patch
-"[PS3] Get lv1 high memory region from devtree"
-from Hector Martin <hector@marcansoft.com>
+Detect it by reading the ss laid repository node, and make it
+accessible via ps3_get_ss_laid().
 
 Signed-off-by: Andre Heider <a.heider@gmail.com>
 ---
- arch/powerpc/platforms/ps3/mm.c |   46 ++++++++++++++++++++++++++++++++++++--
- 1 files changed, 43 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/ps3.h          |    6 ++++++
+ arch/powerpc/platforms/ps3/platform.h   |    4 ++++
+ arch/powerpc/platforms/ps3/repository.c |   19 +++++++++++++++++++
+ arch/powerpc/platforms/ps3/setup.c      |    9 +++++++++
+ 4 files changed, 38 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index c204588..983b719 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -78,12 +78,14 @@ enum {
-  * @base: base address
-  * @size: size in bytes
-  * @offset: difference between base and rm.size
-+ * @destroy: flag if region should be destroyed upon shutdown
-  */
+diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
+index 7f065e1..9e8c878 100644
+--- a/arch/powerpc/include/asm/ps3.h
++++ b/arch/powerpc/include/asm/ps3.h
+@@ -39,6 +39,12 @@ union ps3_firmware_version {
+ void ps3_get_firmware_version(union ps3_firmware_version *v);
+ int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev);
  
- struct mem_region {
- 	u64 base;
- 	u64 size;
- 	unsigned long offset;
-+	int destroy;
- };
- 
- /**
-@@ -261,6 +263,7 @@ static int ps3_mm_region_create(struct mem_region *r, unsigned long size)
- 		goto zero_region;
- 	}
- 
-+	r->destroy = 1;
- 	r->offset = r->base - map.rm.size;
- 	return result;
- 
-@@ -279,6 +282,12 @@ static void ps3_mm_region_destroy(struct mem_region *r)
- 	int result;
- 
- 	DBG("%s:%d: r->base = %llxh\n", __func__, __LINE__, r->base);
++enum ps3_ss_laid {
++	PS3_SS_LAID_OTHEROS = 0x1080000004000001UL,
++};
 +
-+	if (!r->destroy) {
-+		DBG("%s:%d: not destroying region\n", __func__, __LINE__);
-+		return;
-+	}
++enum ps3_ss_laid ps3_get_ss_laid(void);
 +
- 	if (r->base) {
- 		result = lv1_release_memory(r->base);
- 		BUG_ON(result);
-@@ -287,6 +296,29 @@ static void ps3_mm_region_destroy(struct mem_region *r)
- 	}
+ /* 'Other OS' area */
+ 
+ enum ps3_param_av_multi_out {
+diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
+index d9b4ec0..b912d15 100644
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -235,4 +235,8 @@ int ps3_repository_read_spu_resource_id(unsigned int res_index,
+ int ps3_repository_read_vuart_av_port(unsigned int *port);
+ int ps3_repository_read_vuart_sysmgr_port(unsigned int *port);
+ 
++/* repository ss info */
++
++int ps3_repository_read_ss_laid(enum ps3_ss_laid *laid);
++
+ #endif
+diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
+index 9908d61..06f8801 100644
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -1038,6 +1038,25 @@ int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
+ 			    lpar, rights);
  }
  
-+static int ps3_mm_get_repository_highmem(struct mem_region *r)
++/**
++ * ps3_repository_read_ss_laid - Read the lpar auth id
++ */
++
++int ps3_repository_read_ss_laid(enum ps3_ss_laid *laid)
 +{
-+	int result = ps3_repository_read_highmem_info(&r->base, &r->size);
++	int result;
++	u64 id, v1;
 +
-+	if (result)
-+		goto zero_region;
-+
-+	if (!r->base || !r->size) {
-+		result = -1;
-+		goto zero_region;
-+	}
-+
-+	r->offset = r->base - map.rm.size;
-+	DBG("%s:%d got high region from repository: %llxh %llxh\n",
-+	    __func__, __LINE__, r->base, r->size);
-+	return 0;
-+
-+zero_region:
-+	DBG("%s:%d no high region in repository...\n", __func__, __LINE__);
-+	r->size = r->base = r->offset = 0;
++	lv1_get_logical_partition_id(&id);
++	result = read_node(PS3_LPAR_ID_PME,
++			   make_first_field("ss", 0),
++			   make_field("laid", 0),
++			   id, 0,
++			   &v1, NULL);
++	*laid = v1;
 +	return result;
 +}
 +
- /**
-  * ps3_mm_add_memory - hot add memory
-  */
-@@ -303,6 +335,12 @@ static int __init ps3_mm_add_memory(void)
+ #if defined(DEBUG)
  
- 	BUG_ON(!mem_init_done);
+ int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index 149bea2..9f23a6d 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -47,6 +47,7 @@ DEFINE_MUTEX(ps3_gpu_mutex);
+ EXPORT_SYMBOL_GPL(ps3_gpu_mutex);
  
-+	if (!map.r1.size) {
-+		DBG("%s:%d: no region 1, not adding memory\n",
-+		    __func__, __LINE__);
-+		return 0;
-+	}
+ static union ps3_firmware_version ps3_firmware_version;
++static enum ps3_ss_laid ps3_ss_laid;
+ 
+ void ps3_get_firmware_version(union ps3_firmware_version *v)
+ {
+@@ -68,6 +69,12 @@ int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
+ }
+ EXPORT_SYMBOL_GPL(ps3_compare_firmware_version);
+ 
++enum ps3_ss_laid ps3_get_ss_laid(void)
++{
++	return ps3_ss_laid;
++}
++EXPORT_SYMBOL_GPL(ps3_get_ss_laid);
 +
- 	start_addr = map.rm.size;
- 	start_pfn = start_addr >> PAGE_SHIFT;
- 	nr_pages = (map.r1.size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-@@ -1217,9 +1255,11 @@ void __init ps3_mm_init(void)
- 	BUG_ON(map.rm.base);
- 	BUG_ON(!map.rm.size);
+ static void ps3_power_save(void)
+ {
+ 	/*
+@@ -200,6 +207,8 @@ static void __init ps3_setup_arch(void)
+ 	       ps3_firmware_version.major, ps3_firmware_version.minor,
+ 	       ps3_firmware_version.rev);
  
--
--	/* arrange to do this in ps3_mm_add_memory */
--	ps3_mm_region_create(&map.r1, map.total - map.rm.size);
-+	/* check if we got the highmem region from an earlier boot step */
-+	if (ps3_mm_get_repository_highmem(&map.r1)) {
-+		/* arrange to do this in ps3_mm_add_memory */
-+		ps3_mm_region_create(&map.r1, map.total - map.rm.size);
-+	}
++	ps3_repository_read_ss_laid(&ps3_ss_laid);
++
+ 	ps3_spu_set_platform();
  
- 	/* correct map.total for the real total amount of memory we use */
- 	map.total = map.rm.size + map.r1.size;
+ #ifdef CONFIG_SMP
 -- 
 1.7.5.4
