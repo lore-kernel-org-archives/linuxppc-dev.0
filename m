@@ -1,20 +1,23 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH v11 5/6] flexcan: Prefer device tree clock frequency if
-	available.
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E5C5FB7091
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 12 Aug 2011 03:41:40 +1000 (EST)
+Subject: Re: [PATCH v11 6/6] powerpc: Add flexcan device support for p1010rdb.
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4E4400CC.3020704@pengutronix.de>
-Date: Thu, 11 Aug 2011 12:40:03 -0500
-Message-Id: <1BE7ECA1-8E3D-4750-9DC7-0FABC1B6E545@kernel.crashing.org>
+In-Reply-To: <1313078831-2511-7-git-send-email-holt@sgi.com>
+Date: Thu, 11 Aug 2011 12:41:34 -0500
+Message-Id: <9C81E6C0-D278-40BF-8F32-445F870F845A@kernel.crashing.org>
 References: <1313078831-2511-1-git-send-email-holt@sgi.com>
-	<1313078831-2511-6-git-send-email-holt@sgi.com>
-	<4E4400CC.3020704@pengutronix.de>
-To: Marc Kleine-Budde <mkl@pengutronix.de>
+	<1313078831-2511-7-git-send-email-holt@sgi.com>
+To: Robin Holt <holt@sgi.com>
 Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
 	U Bhaskar-B22300 <B22300@freescale.com>,
-	Robin Holt <holt@sgi.com>, Scott Wood <scottwood@freescale.com>,
+	Scott Wood <scottwood@freescale.com>,
 	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,59 +29,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 11, 2011, at 11:18 AM, Marc Kleine-Budde wrote:
+On Aug 11, 2011, at 11:07 AM, Robin Holt wrote:
 
-> On 08/11/2011 06:07 PM, Robin Holt wrote:
->> If our CAN device's device tree node has a clock-frequency property,
->> then use that value for the can devices clock frequency.  If not, =
-fall
->> back to asking the platform/mach code for the clock frequency =
-associated
->> with the flexcan device.
+> Allow the p1010 processor to select the flexcan network driver.
 >=20
-> nitpicking follows inline:
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>,
+> Acked-by: Wolfgang Grandegger <wg@grandegger.com>,
+> Cc: U Bhaskar-B22300 <B22300@freescale.com>
+> Cc: socketcan-core@lists.berlios.de,
+> Cc: netdev@vger.kernel.org,
+> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> arch/powerpc/boot/dts/p1010rdb.dts  |    8 ++++++++
+> arch/powerpc/platforms/85xx/Kconfig |    2 ++
+> 2 files changed, 10 insertions(+), 0 deletions(-)
 >=20
->> Signed-off-by: Robin Holt <holt@sgi.com>
->> To: Kumar Gala <galak@kernel.crashing.org>
->> To: Wolfgang Grandegger <wg@grandegger.com>,
->> To: Marc Kleine-Budde <mkl@pengutronix.de>,
->> To: U Bhaskar-B22300 <B22300@freescale.com>
->> To: Scott Wood <scottwood@freescale.com>
->> To: Grant Likely <grant.likely@secretlab.ca>
->> Cc: socketcan-core@lists.berlios.de,
->> Cc: netdev@vger.kernel.org,
->> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
->> Cc: devicetree-discuss@lists.ozlabs.org
->> ---
->> .../devicetree/bindings/net/can/fsl-flexcan.txt    |    2 +
->> drivers/net/can/flexcan.c                          |   33 =
-+++++++++++++++-----
->> 2 files changed, 27 insertions(+), 8 deletions(-)
->>=20
->> diff --git =
-a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt =
-b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
->> index c78dcbb..a4382c7 100644
->> --- a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
->> +++ b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
->> @@ -11,6 +11,7 @@ Required properties:
->>=20
->> - reg : Offset and length of the register set for this device
->> - interrupts : Interrupt tuple for this device
->> +- clock-frequency : The oscillator frequency driving the flexcan =
-device
->>=20
->> Example:
->>=20
->> @@ -19,4 +20,5 @@ Example:
->>           reg =3D <0x1c000 0x1000>;
->>           interrupts =3D <48 0x2>;
->>           interrupt-parent =3D <&mpic>;
->> +          clock-frequency =3D <0x0bebc1fc>;
+> diff --git a/arch/powerpc/boot/dts/p1010rdb.dts =
+b/arch/powerpc/boot/dts/p1010rdb.dts
+> index d6c669c..df89b60 100644
+> --- a/arch/powerpc/boot/dts/p1010rdb.dts
+> +++ b/arch/powerpc/boot/dts/p1010rdb.dts
+> @@ -171,6 +171,14 @@
+> 			};
+> 		};
 >=20
-> Does the device tree support dec coded integers? IMHO a frequency is
-> best expressed in decimal.
+> +		can@1c000 {
+> +			clock-frequency =3D <0x0bebc1fc>;
+> +		};
+> +
+> +		can1: can@1d000 {
+> +			clock-frequency =3D <0x0bebc1fc>;
+> +		};
+> +
 
-Yes it does, and agree that in the example a dec # might be better
+set them to 0, as we expect u-boot to fill them in.
 
-- k=
+> 		usb@22000 {
+> 			phy_type =3D "utmi";
+> 		};
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig =
+b/arch/powerpc/platforms/85xx/Kconfig
+> index 498534c..c4304ae 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -70,6 +70,8 @@ config MPC85xx_RDB
+> config P1010_RDB
+> 	bool "Freescale P1010RDB"
+> 	select DEFAULT_UIMAGE
+> +	select HAVE_CAN_FLEXCAN if NET && CAN
+> +	select PPC_CLOCK if CAN_FLEXCAN
+
+Can you move this to arch/powerpc/Kconfig & FSL_SOC instead.
+
+> 	help
+> 	  This option enables support for the MPC85xx RDB (P1010 RDB) =
+board
+>=20
+> --=20
+> 1.7.2.1
