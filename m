@@ -1,17 +1,15 @@
 Return-Path: <arnd@arndb.de>
 From: Arnd Bergmann <arnd@arndb.de>
 To: cbe-oss-dev@lists.ozlabs.org
-Subject: Re: [Cbe-oss-dev] [PATCH 01/15] [PS3] Add udbg driver using the PS3
-	gelic Ethernet device
-Date: Thu, 11 Aug 2011 14:13:51 +0200
+Subject: Re: [Cbe-oss-dev] [PATCH 00/15] ps3: Support more than the OtherOS
+	lpar
+Date: Thu, 11 Aug 2011 14:17:20 +0200
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1312228986-32307-2-git-send-email-a.heider@gmail.com>
-	<4E39CC67.2060606@infradead.org>
-In-Reply-To: <4E39CC67.2060606@infradead.org>
+In-Reply-To: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
-Message-Id: <201108111413.51764.arnd@arndb.de>
+Message-Id: <201108111417.20409.arnd@arndb.de>
 Cc: Geoff Levand <geoff@infradead.org>, Andre Heider <a.heider@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,19 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 04 August 2011, Geoff Levand wrote:
-> > + *
-> > + * udbg debug output routine via GELIC UDP broadcasts
-> > + * Copyright (C) 2010 Hector Martin <hector@marcansoft.com>
-> > + * Copyright (C) 2011 Andre Heider <a.heider@gmail.com>
-> 
-> Some of this seems to be taken from the gelic driver, so shouldn't
-> the copyright info from there be included here?
+On Monday 01 August 2011, Andre Heider wrote:
+> This series addresses various issues and extends support when running
+> in lpars like GameOS. Included are some patches from Hector Martin, which
+> I found useful.
 
-Moreover, if there is a significant amount of code duplication
-between this driver and gelic, I would expect to actually share
-the code instead, either by integrating the udbg code into the
-gelic driver in form of netconsole support, or by moving the
-common parts into a separate module.
+Hi Andre,
+
+I've looked at the entire series and support merging it into 3.2 once
+the concerns from Geoff and Geert are resolved. I don't have anything
+to add there.
 
 	Arnd
