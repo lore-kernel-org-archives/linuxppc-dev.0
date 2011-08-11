@@ -1,10 +1,10 @@
 Return-Path: <a.heider@gmail.com>
 From: Andre Heider <a.heider@gmail.com>
 To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH part1 v2 8/9] ps3flash: Refuse to work in lpars other than
-	OtherOS
-Date: Thu, 11 Aug 2011 21:31:12 +0200
-Message-Id: <1313091073-4572-9-git-send-email-a.heider@gmail.com>
+Subject: [PATCH part1 v2 9/9] ps3: Only prealloc the flash bounce buffer for
+	the OtherOS lpar
+Date: Thu, 11 Aug 2011 21:31:13 +0200
+Message-Id: <1313091073-4572-10-git-send-email-a.heider@gmail.com>
 In-Reply-To: <1313091073-4572-1-git-send-email-a.heider@gmail.com>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 	<1313091073-4572-1-git-send-email-a.heider@gmail.com>
@@ -19,55 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The driver implements a character and misc device, meant for the
-axed OtherOS to exchange various settings with GameOS.
-Since Firmware 3.21 there is no support anymore to write these
-settings, so test if we're running in OtherOS, and refuse to load
-if that is not the case.
+It's only used by the ps3flash driver, which only supports the
+OtherOS lpar.
 
 Signed-off-by: Andre Heider <a.heider@gmail.com>
 ---
- arch/powerpc/platforms/ps3/Kconfig |    2 +-
- drivers/char/ps3flash.c            |    7 +++++++
- 2 files changed, 8 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/ps3/setup.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
-index 84df5c8..72fdecd 100644
---- a/arch/powerpc/platforms/ps3/Kconfig
-+++ b/arch/powerpc/platforms/ps3/Kconfig
-@@ -121,7 +121,7 @@ config PS3_FLASH
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index 1239059..81ce835 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -233,7 +233,10 @@ static void __init ps3_setup_arch(void)
+ #endif
  
- 	  This support is required to access the PS3 FLASH ROM, which
- 	  contains the boot loader and some boot options.
--	  In general, all users will say Y or M.
-+	  In general, all PS3 OtherOS users will say Y or M.
- 
- 	  As this driver needs a fixed buffer of 256 KiB of memory, it can
- 	  be disabled on the kernel command line using "ps3flash=off", to
-diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
-index d0c57c2..fc6d867 100644
---- a/drivers/char/ps3flash.c
-+++ b/drivers/char/ps3flash.c
-@@ -25,6 +25,7 @@
- 
- #include <asm/lv1call.h>
- #include <asm/ps3stor.h>
-+#include <asm/firmware.h>
- 
- 
- #define DEVICE_NAME		"ps3flash"
-@@ -464,6 +465,12 @@ static struct ps3_system_bus_driver ps3flash = {
- 
- static int __init ps3flash_init(void)
- {
-+	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
-+		return -ENODEV;
+ 	prealloc_ps3fb_videomemory();
+-	prealloc_ps3flash_bounce_buffer();
 +
-+	if (ps3_get_ss_laid() != PS3_SS_LAID_OTHEROS)
-+		return -ENODEV;
-+
- 	return ps3_system_bus_driver_register(&ps3flash);
- }
++	/* the ps3flash driver only works for OtherOS */
++	if (ps3_get_ss_laid() == PS3_SS_LAID_OTHEROS)
++		prealloc_ps3flash_bounce_buffer();
  
+ 	ppc_md.power_save = ps3_power_save;
+ 	ps3_os_area_init();
 -- 
 1.7.5.4
