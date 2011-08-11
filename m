@@ -1,20 +1,19 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id A3B1CB6F7D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Aug 2011 17:35:43 +1000 (EST)
-Message-ID: <4E43864B.2050302@grandegger.com>
-Date: Thu, 11 Aug 2011 09:35:39 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8BA9B6F65
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 18:20:43 +1000 (EST)
+Received: from mail1.transmode.se (mail1.transmode.se [192.168.201.18])
+	by gw1.transmode.se (Postfix) with ESMTP id CE92E25855B
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2011 10:13:35 +0200 (CEST)
+Subject: [RFC] Optimize __arch_swab32 and __arch_swab16
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OF9F5D0B06.A12659DA-ONC12578E9.002B23BB-C12578E9.002D304C@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 11 Aug 2011 10:13:34 +0200
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH v11 4/5] powerpc: Add flexcan device support for p1010rdb.
-References: <1312993670-23999-1-git-send-email-holt@sgi.com>	<1312993670-23999-5-git-send-email-holt@sgi.com>	<8E5FA886-038D-4DF4-8A54-DD60188A21A2@kernel.crashing.org>	<4E42CB01.7030700@grandegger.com>
-	<20110811035620.GB4926@sgi.com>
-In-Reply-To: <20110811035620.GB4926@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
-	socketcan-core@lists.berlios.de, PPC list <linuxppc-dev@lists.ozlabs.org>
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,115 +23,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2011 05:56 AM, Robin Holt wrote:
-> On Wed, Aug 10, 2011 at 08:16:33PM +0200, Wolfgang Grandegger wrote:
->> On 08/10/2011 07:01 PM, Kumar Gala wrote:
->>>
->>> On Aug 10, 2011, at 11:27 AM, Robin Holt wrote:
->>>
->>>> I added a simple clock source for the p1010rdb so the flexcan driver
->>>> could determine a clock frequency.  The p1010 flexcan device only has
->>>> an oscillator of system bus frequency divided by 2.
->>>>
->>>> Signed-off-by: Robin Holt <holt@sgi.com>
->>>> Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>,
->>>> Acked-by: Wolfgang Grandegger <wg@grandegger.com>,
->>>> Cc: U Bhaskar-B22300 <B22300@freescale.com>
->>>> Cc: socketcan-core@lists.berlios.de,
->>>> Cc: netdev@vger.kernel.org,
->>>> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
->>>> Cc: Kumar Gala <galak@kernel.crashing.org>
->>>> ---
->>>> arch/powerpc/platforms/85xx/Kconfig    |    2 +
->>>> arch/powerpc/platforms/85xx/Makefile   |    2 +
->>>> arch/powerpc/platforms/85xx/clock.c    |   52 ++++++++++++++++++++++++++++++++
->>>> arch/powerpc/platforms/85xx/p1010rdb.c |    8 +++++
->>>> 4 files changed, 64 insertions(+), 0 deletions(-)
->>>> create mode 100644 arch/powerpc/platforms/85xx/clock.c
->>>
->>> I dont understand how mpc85xx_clk_functions() ends up being associated with the frequency the flexcan is running at.
->>
->> The function mpc85xx_clk_get_rate() returns "fsl_get_sys_freq() / 2" for
->> Flexcan devices.
->>
->>> This either seems to global or I'm missing something.
->>
->> This patch extends the existing Flexcan platform driver for ARM for the
->> PowerPC using the device tree. Due to the nice integration of the device
->> tree (of-platform) into the platform driver and devices, the difference
->> are quite small (see patches 1..3). Apart from the endianess issue, only
->> the clock needs to be handled in a common way. As ARM already uses the
->> clk interface, we found it straight-forward to implement it for the
->> P1010, or more general for the 85xx, as well, instead of using an
->> additional helper function.
->>
->>> I still think the clk / freq info should be in the device tree and handled in the driver and NOT arch/powerpc platform code.
->>
->> If I understand you correctly, you want the boot-loader to provide the
->> relevant information by fixing up the device tree, which then can be
->> handled arch-independently by the driver, right?
-> 
-> Marc and Wolfgang,
-> 
-> This is a very early swag at this which I worked up while driving home from dinner
-> this evening.  It works with my current config, but that includes at least one
-> bogus patch.  I will have to do more testing tomorrow.  For now, it is something
-> to ponder.
 
-Yes, that's what Kumar is proposing. Fine for me with the P1010. It just
-needs some proper U-Boot implementation.
+PPC __arch_swab32 and __arch_swab16 generates non optimal code.
+It doesn't schedule very well, need to copy its input register and
+and swab16 needs an extra insn to clear its upper bits. I have improved
+these functions(see my__xx). Any problem with the new asm? If
+not I will send a patch.
 
-> Thanks,
-> Robin
-> ------------------------------------------------------------------------
-> 
-> flexcan: Prefer device tree clock frequency if available.
-> 
-> If our CAN device's device tree node has a clock-frequency property,
-> then use that value for the can devices clock frequency.  If not, fall
-> back to asking the platform/mach code for the clock frequency associated
-> with the flexcan device.
-> 
-> Too-early-to-be-signed-off-by: Robin Holt <holt@sgi.com>
-> 
-> diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
-> index 662f832..d6a87c9 100644
-> --- a/drivers/net/can/flexcan.c
-> +++ b/drivers/net/can/flexcan.c
-> @@ -33,6 +33,7 @@
->  #include <linux/kernel.h>
->  #include <linux/list.h>
->  #include <linux/module.h>
-> +#include <linux/of.h>
->  #include <linux/platform_device.h>
->  
->  #define DRV_NAME			"flexcan"
-> @@ -929,12 +930,25 @@ static int __devinit flexcan_probe(struct platform_device *pdev)
->  	void __iomem *base;
->  	resource_size_t mem_size;
->  	int err, irq;
-> +	u32 clock_freq = 0;
->  
-> -	clk = clk_get(&pdev->dev, NULL);
-> -	if (IS_ERR(clk)) {
-> -		dev_err(&pdev->dev, "no clock defined\n");
-> -		err = PTR_ERR(clk);
-> -		goto failed_clock;
-> +	if (pdev->dev.of_node) {
-> +		u32 *clock_freq_p;
+Below some example code to illustrate:
 
-Should be:
+#include <stdio.h>
 
-		const u32 *clock_freq_p;
+unsigned long __arch_swab32(unsigned long value)
+{
+	unsigned long result;
 
-> +
-> +		clk = NULL;
-> +		clock_freq_p = (u32 *)of_get_property(pdev->dev.of_node, "clock-frequency", NULL);
+	__asm__("rlwimi %0,%1,24,16,23\n\t"
+	    "rlwimi %0,%1,8,8,15\n\t"
+	    "rlwimi %0,%1,24,0,7"
+	    : "=r" (result)
+	    : "r" (value), "0" (value >> 24));
+	return result;
+}
 
-No cast please.
+unsigned long my__arch_swab32(unsigned long value)
+{
+	unsigned long tmp;
 
-> +		if (clock_freq_p)
-> +			clock_freq = *clock_freq_p;
-> +	}
+	__asm__("rlwimi %0,%0,24,0xffffffff"
+		: "+r" (value));
+	__asm__("rlwinm %0,%1,16,0xffffffff"
+		: "=r" (tmp), "+r" (value));
+	__asm__("rlwimi %0,%1,0,0x00ff0000"
+		: "+r" (value), "+r" (tmp));
+	__asm__("rlwimi %0,%1,0,0x000000ff"
+		: "+r" (value), "+r" (tmp));
+	return value;
+}
 
-Wolfgang.
+unsigned short __arch_swab16(unsigned short value)
+{
+	unsigned short result;
+
+	__asm__("rlwimi %0,%1,8,16,23"
+	    : "=r" (result)
+	    : "r" (value), "0" (value >> 8));
+	return result;
+}
+
+unsigned short my__arch_swab16(unsigned short value)
+{
+	__asm__("rlwimi %0,%0,16,0x00ff0000"
+		: "+r" (value));
+	__asm__("rlwinm %0,%0,24,0x0000ffff"
+		: "+r"(value));
+	return value;
+}
+
+main()
+{
+	unsigned long x=0x12345678, y;
+
+	y = my__arch_swab32(x);
+	printf("swab32 x:%x, y:%x\n", x, y);
+	y = my__arch_swab16(x);
+	printf("swab16 x:%x, y:%x\n", x, y);
+}
+
+Generated asm:
+
+	.file	"tst.c"
+	.section	".text"
+	.align 2
+	.globl __arch_swab32
+	.type	__arch_swab32, @function
+__arch_swab32:
+	mr %r0,%r3
+	srwi %r3,%r3,24
+#APP
+	rlwimi %r3,%r0,24,16,23
+	rlwimi %r3,%r0,8,8,15
+	rlwimi %r3,%r0,24,0,7
+#NO_APP
+	blr
+	.size	__arch_swab32, .-__arch_swab32
+	.align 2
+	.globl my__arch_swab32
+	.type	my__arch_swab32, @function
+my__arch_swab32:
+#APP
+	rlwimi %r3,%r3,24,0xffffffff
+	rlwinm %r0,%r3,16,0xffffffff
+	rlwimi %r3,%r0,0,0x00ff0000
+	rlwimi %r3,%r0,0,0x000000ff
+#NO_APP
+	blr
+	.size	my__arch_swab32, .-my__arch_swab32
+	.align 2
+	.globl __arch_swab16
+	.type	__arch_swab16, @function
+__arch_swab16:
+	mr %r0,%r3
+	srwi %r3,%r3,8
+#APP
+	rlwimi %r3,%r0,8,16,23
+#NO_APP
+	rlwinm %r3,%r3,0,0xffff
+	blr
+	.size	__arch_swab16, .-__arch_swab16
+	.align 2
+	.globl my__arch_swab16
+	.type	my__arch_swab16, @function
+my__arch_swab16:
+#APP
+	rlwimi %r3,%r3,16,0x00ff0000
+	rlwinm %r3,%r3,24,0x0000ffff
+#NO_APP
+	blr
+	.size	my__arch_swab16, .-my__arch_swab16
+	.section	.rodata.str1.4,"aMS",@progbits,1
+	.align 2
+.LC0:
+	.string	"swab32 x:%x, y:%x\n"
+	.align 2
+.LC1:
+	.string	"swab16 x:%x, y:%x\n"
+	.section	".text"
+	.align 2
+	.globl main
+	.type	main, @function
+main:
+	mflr %r0
+	lis %r3,0x1234
+	stwu %r1,-16(%r1)
+	ori %r3,%r3,22136
+	stw %r0,20(%r1)
+	bl my__arch_swab32
+	mr %r5,%r3
+	lis %r4,0x1234
+	lis %r3,.LC0@ha
+	ori %r4,%r4,22136
+	la %r3,.LC0@l(%r3)
+	bl printf
+	li %r3,22136
+	bl my__arch_swab16
+	lis %r4,0x1234
+	mr %r5,%r3
+	lis %r3,.LC1@ha
+	la %r3,.LC1@l(%r3)
+	ori %r4,%r4,22136
+	bl printf
+	lwz %r0,20(%r1)
+	addi %r1,%r1,16
+	mtlr %r0
+	blr
+	.size	main, .-main
+	.section	.note.GNU-stack,"",@progbits
+	.ident	"GCC: (GNU) 3.4.6 (Gentoo 3.4.6-r2, ssp-3.4.6-1.0, pie-8.7.9)"
