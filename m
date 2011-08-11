@@ -1,13 +1,12 @@
 Return-Path: <a.heider@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <201108111413.51764.arnd@arndb.de>
+In-Reply-To: <201108111417.20409.arnd@arndb.de>
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1312228986-32307-2-git-send-email-a.heider@gmail.com>
-	<4E39CC67.2060606@infradead.org> <201108111413.51764.arnd@arndb.de>
-Date: Thu, 11 Aug 2011 19:32:14 +0200
-Message-ID: <CAHsu+b8e2eZZA_ogVP5fpsepWXGWw=dvJAAVCGD94rW3WdZj=w@mail.gmail.com>
-Subject: Re: [Cbe-oss-dev] [PATCH 01/15] [PS3] Add udbg driver using the PS3
-	gelic Ethernet device
+	<201108111417.20409.arnd@arndb.de>
+Date: Thu, 11 Aug 2011 19:34:58 +0200
+Message-ID: <CAHsu+b_GLvFORD+1BmDq-MZfGkY50EJwB5g30iZig8-QLd+z=w@mail.gmail.com>
+Subject: Re: [Cbe-oss-dev] [PATCH 00/15] ps3: Support more than the OtherOS
+	lpar
 From: Andre Heider <a.heider@gmail.com>
 To: Arnd Bergmann <arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -22,25 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 11, 2011 at 2:13 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Thursday 04 August 2011, Geoff Levand wrote:
->> > + *
->> > + * udbg debug output routine via GELIC UDP broadcasts
->> > + * Copyright (C) 2010 Hector Martin <hector@marcansoft.com>
->> > + * Copyright (C) 2011 Andre Heider <a.heider@gmail.com>
->>
->> Some of this seems to be taken from the gelic driver, so shouldn't
->> the copyright info from there be included here?
+On Thu, Aug 11, 2011 at 2:17 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Monday 01 August 2011, Andre Heider wrote:
+>> This series addresses various issues and extends support when running
+>> in lpars like GameOS. Included are some patches from Hector Martin, which
+>> I found useful.
 >
-> Moreover, if there is a significant amount of code duplication
-> between this driver and gelic, I would expect to actually share
-> the code instead, either by integrating the udbg code into the
-> gelic driver in form of netconsole support, or by moving the
-> common parts into a separate module.
+> Hi Andre,
+>
+> I've looked at the entire series and support merging it into 3.2 once
+> the concerns from Geoff and Geert are resolved. I don't have anything
+> to add there.
 
-No, thankfully there is no significant code duplication :)
-It contains a few structs and defines found elsewhere, but that's
-because it's not a real netdev. It just prepares the eth/ip/udp header
-once for its single purpose, then uses the hypervisor to send and poll
-- in contrast to the gelic driver, which reuses its irqhandler for
-netconsole support.
+Hi Arnd,
+
+thanks, I'll send the first part of v2 soon
