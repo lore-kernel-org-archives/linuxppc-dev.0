@@ -1,23 +1,14 @@
-Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.179.29])
-	by ozlabs.org (Postfix) with ESMTP id 3C7F8B7010
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Aug 2011 04:13:00 +1000 (EST)
-Date: Thu, 11 Aug 2011 13:12:58 -0500
-From: Robin Holt <holt@sgi.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v11 6/6] powerpc: Add flexcan device support for p1010rdb.
-Message-ID: <20110811181258.GG4926@sgi.com>
-References: <1313078831-2511-1-git-send-email-holt@sgi.com>
-	<1313078831-2511-7-git-send-email-holt@sgi.com>
-	<9C81E6C0-D278-40BF-8F32-445F870F845A@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9C81E6C0-D278-40BF-8F32-445F870F845A@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
-	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
-	Scott Wood <scottwood@freescale.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <a.heider@gmail.com>
+From: Andre Heider <a.heider@gmail.com>
+To: Geoff Levand <geoff@infradead.org>
+Subject: [PATCH part1 v2 0/9] ps3: General improvements and preparation for
+	support more than the OtherOS lpar
+Date: Thu, 11 Aug 2011 21:31:04 +0200
+Message-Id: <1313091073-4572-1-git-send-email-a.heider@gmail.com>
+In-Reply-To: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
+References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,72 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 11, 2011 at 12:41:34PM -0500, Kumar Gala wrote:
-> 
-> On Aug 11, 2011, at 11:07 AM, Robin Holt wrote:
-> 
-> > Allow the p1010 processor to select the flexcan network driver.
-> > 
-> > Signed-off-by: Robin Holt <holt@sgi.com>
-> > Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>,
-> > Acked-by: Wolfgang Grandegger <wg@grandegger.com>,
-> > Cc: U Bhaskar-B22300 <B22300@freescale.com>
-> > Cc: socketcan-core@lists.berlios.de,
-> > Cc: netdev@vger.kernel.org,
-> > Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-> > Cc: Kumar Gala <galak@kernel.crashing.org>
-> > ---
-> > arch/powerpc/boot/dts/p1010rdb.dts  |    8 ++++++++
-> > arch/powerpc/platforms/85xx/Kconfig |    2 ++
-> > 2 files changed, 10 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/boot/dts/p1010rdb.dts b/arch/powerpc/boot/dts/p1010rdb.dts
-> > index d6c669c..df89b60 100644
-> > --- a/arch/powerpc/boot/dts/p1010rdb.dts
-> > +++ b/arch/powerpc/boot/dts/p1010rdb.dts
-> > @@ -171,6 +171,14 @@
-> > 			};
-> > 		};
-> > 
-> > +		can@1c000 {
-> > +			clock-frequency = <0x0bebc1fc>;
-> > +		};
-> > +
-> > +		can1: can@1d000 {
-> > +			clock-frequency = <0x0bebc1fc>;
-> > +		};
-> > +
-> 
-> set them to 0, as we expect u-boot to fill them in.
+This is the first part of my previous series including the discussed fixups.
 
-Done.
+I dropped the old #2 ([PS3] Get lv1 high memory region from devtree)
+and replaced it with 2 new patches, now #2 and #3. The latter contains
+the fixups mentioned on the old #2 thread.
 
-> 
-> > 		usb@22000 {
-> > 			phy_type = "utmi";
-> > 		};
-> > diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-> > index 498534c..c4304ae 100644
-> > --- a/arch/powerpc/platforms/85xx/Kconfig
-> > +++ b/arch/powerpc/platforms/85xx/Kconfig
-> > @@ -70,6 +70,8 @@ config MPC85xx_RDB
-> > config P1010_RDB
-> > 	bool "Freescale P1010RDB"
-> > 	select DEFAULT_UIMAGE
-> > +	select HAVE_CAN_FLEXCAN if NET && CAN
-> > +	select PPC_CLOCK if CAN_FLEXCAN
-> 
-> Can you move this to arch/powerpc/Kconfig & FSL_SOC instead.
+Patches are based on today's Linus' tree.
 
-I am not sure.  FSL_SOC seems to come with any of the freescale system
-on a chip.  I would not be that worried, about the flexcan build as
-I think that is sufficiently agostic where we will not see problems,
-but now we could end up with build failures on any of the other configs
-which select CAN_FLEXCAN.  I would normally want to do all those builds,
-but there is no way I would know how to do that with my limited knowledge
-of powerpc and freescale.
+Andre Heider (7):
+  ps3: Add helper functions to read highmem info from the repository
+  ps3: Get lv1 high memory region from the repository
+  ps3: MEMORY_HOTPLUG is not a requirement anymore
+  ps3: Detect the current lpar
+  ps3: Log the detected lpar on startup
+  ps3flash: Refuse to work in lpars other than OtherOS
+  ps3: Only prealloc the flash bounce buffer for the OtherOS lpar
 
-If you are comfortable with that, I will happily make the change.
+Hector Martin (2):
+  Add udbg driver using the PS3 gelic Ethernet device
+  Add region 1 memory early
 
-Thanks,
-Robin
+ arch/powerpc/Kconfig.debug              |    8 +
+ arch/powerpc/include/asm/ps3.h          |    7 +
+ arch/powerpc/include/asm/udbg.h         |    1 +
+ arch/powerpc/kernel/udbg.c              |    2 +
+ arch/powerpc/platforms/ps3/Kconfig      |   15 ++-
+ arch/powerpc/platforms/ps3/Makefile     |    1 +
+ arch/powerpc/platforms/ps3/gelic_udbg.c |  273 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/ps3/mm.c         |   85 +++++------
+ arch/powerpc/platforms/ps3/platform.h   |    7 +
+ arch/powerpc/platforms/ps3/repository.c |   55 ++++++
+ arch/powerpc/platforms/ps3/setup.c      |   27 +++-
+ drivers/char/ps3flash.c                 |    7 +
+ drivers/net/ps3_gelic_net.c             |    3 +
+ drivers/net/ps3_gelic_net.h             |    6 +
+ 14 files changed, 447 insertions(+), 50 deletions(-)
+ create mode 100644 arch/powerpc/platforms/ps3/gelic_udbg.c
+
+-- 
+1.7.5.4
