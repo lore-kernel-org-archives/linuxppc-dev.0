@@ -1,17 +1,19 @@
 Return-Path: <holt@sgi.com>
 Received: from relay.sgi.com (relay3.sgi.com [192.48.152.1])
-	by ozlabs.org (Postfix) with ESMTP id C21DAB6F80
+	by ozlabs.org (Postfix) with ESMTP id 42E69B6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Aug 2011 00:25:03 +1000 (EST)
-Date: Thu, 11 Aug 2011 09:25:00 -0500
+	Fri, 12 Aug 2011 02:07:21 +1000 (EST)
 From: Robin Holt <holt@sgi.com>
-To: U Bhaskar-B22300 <B22300@freescale.com>
-Subject: [PATCH] p1010rdb: gianfar config does not have queues.
-Message-ID: <20110811142500.GD4926@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: PPC list <linuxppc-dev@lists.ozlabs.org>,
-	Eric Dumazet <eric.dumazet@gmail.com>
+To: Robin Holt <holt@sgi.com>, Kumar Gala <galak@kernel.crashing.org>,
+	Wolfgang Grandegger <wg@grandegger.com>,
+	Marc Kleine-Budde <mkl@pengutronix.de>,
+	U Bhaskar-B22300 <B22300@freescale.com>
+Subject: [PATCH v12 0/6] flexcan/powerpc: Add support for powerpc flexcan
+	(freescale p1010)
+Date: Thu, 11 Aug 2011 11:07:05 -0500
+Message-Id: <1313078831-2511-1-git-send-email-holt@sgi.com>
+Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
+	PPC list <linuxppc-dev@lists.ozlabs.org>, Robin Holt <holt@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,45 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If I have the the fsl,num_rx_queues and fsl,num_tx_queues properties
-defined in the p1010's device tree file, I get a kernel panic very
-shortly after boot.  The failure indicates we are configuring the
-gianfar.c driver for a queue depth greater than actual.  Removing the
-properties got the problem resolved.
+With all the patches applied, my p1010rdb works for communicating between
+its two can ports and also can communicate with an external PSOC.
+I have done no testing beyond compile testing for an arm system as I
+have no access to an arm based system.
 
-Signed-off-by: Robin Holt <holt@sgi.com>
-To: U Bhaskar-B22300 <B22300@freescale.com>
-Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
+With the latest version, changes to the arch tree really only reflect
+changes in the drivers/net/can tree.  I, therefore, believe it is
+probably best to route them through David S. Miller's netdev tree.
+Wolfgang and Kumar, does that seem correct to you?
 
-diff --git a/arch/powerpc/boot/dts/p1010si.dtsi b/arch/powerpc/boot/dts/p1010si.dtsi
-index 7f51104..91566aa 100644
---- a/arch/powerpc/boot/dts/p1010si.dtsi
-+++ b/arch/powerpc/boot/dts/p1010si.dtsi
-@@ -258,8 +258,6 @@
- 			device_type = "network";
- 			model = "eTSEC";
- 			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupt-parent = <&mpic>;
- 
-@@ -280,8 +278,6 @@
- 			device_type = "network";
- 			model = "eTSEC";
- 			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupt-parent = <&mpic>;
- 
-@@ -302,8 +298,6 @@
- 			device_type = "network";
- 			model = "eTSEC";
- 			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupt-parent = <&mpic>;
- 
+Thanks,
+Robin Holt
