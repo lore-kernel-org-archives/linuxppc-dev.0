@@ -1,11 +1,11 @@
 Return-Path: <anton@samba.org>
-Message-Id: <20110811064427.685158581@samba.org>
-Date: Thu, 11 Aug 2011 16:44:23 +1000
+Message-Id: <20110811064427.775019703@samba.org>
+Date: Thu, 11 Aug 2011 16:44:24 +1000
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
- paulus@samba.org,
- sfr@ozlabs.org
-Subject: [PATCH 3/4] [PATCH] powerpc: Coding style cleanups
+To: benh@kernel.crashing.org, paulus@samba.org, sfr@ozlabs.org,
+	nfont@austin.ibm.com
+Subject: [PATCH 4/4] powerpc: Fix oops when echoing bad values to
+	/sys/devices/system/memory/probe
 References: <20110811064427.515781037@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -17,91 +17,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While converting code to use for_each_node_by_type I noticed a
-number of coding style issues.
+If we echo an address the hypervisor doesn't like to
+/sys/devices/system/memory/probe we oops the box:
+
+# echo 0x10000000000 > /sys/devices/system/memory/probe
+
+kernel BUG at arch/powerpc/mm/hash_utils_64.c:541!
+
+The backtrace is:
+
+create_section_mapping
+arch_add_memory
+add_memory
+memory_probe_store
+sysdev_class_store
+sysfs_write_file
+vfs_write
+SyS_write
+
+In create_section_mapping we BUG if htab_bolt_mapping returned
+an error. A better approach is to return an error which will
+propagate back to userspace.
+
+Rerunning the test with this patch applied:
+
+# echo 0x10000000000 > /sys/devices/system/memory/probe
+-bash: echo: write error: Invalid argument
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
 ---
 
-Index: linux-powerpc/arch/powerpc/kernel/setup_64.c
+Index: linux-build/arch/powerpc/mm/hash_utils_64.c
 ===================================================================
---- linux-powerpc.orig/arch/powerpc/kernel/setup_64.c	2011-08-10 16:19:00.629356097 +1000
-+++ linux-powerpc/arch/powerpc/kernel/setup_64.c	2011-08-10 16:21:31.642031299 +1000
-@@ -281,11 +281,11 @@ static void __init initialize_cache_info
- 	for_each_node_by_type(np, "cpu") {
- 		num_cpus += 1;
+--- linux-build.orig/arch/powerpc/mm/hash_utils_64.c	2011-08-10 17:00:42.603007554 +1000
++++ linux-build/arch/powerpc/mm/hash_utils_64.c	2011-08-10 17:05:56.338457482 +1000
+@@ -534,11 +534,11 @@ static unsigned long __init htab_get_tab
+ }
  
--		/* We're assuming *all* of the CPUs have the same
-+		/*
-+		 * We're assuming *all* of the CPUs have the same
- 		 * d-cache and i-cache sizes... -Peter
- 		 */
--
--		if ( num_cpus == 1 ) {
-+		if (num_cpus == 1) {
- 			const u32 *sizep, *lsizep;
- 			u32 size, lsize;
- 
-@@ -294,10 +294,13 @@ static void __init initialize_cache_info
- 			sizep = of_get_property(np, "d-cache-size", NULL);
- 			if (sizep != NULL)
- 				size = *sizep;
--			lsizep = of_get_property(np, "d-cache-block-size", NULL);
-+			lsizep = of_get_property(np, "d-cache-block-size",
-+						 NULL);
- 			/* fallback if block size missing */
- 			if (lsizep == NULL)
--				lsizep = of_get_property(np, "d-cache-line-size", NULL);
-+				lsizep = of_get_property(np,
-+							 "d-cache-line-size",
-+							 NULL);
- 			if (lsizep != NULL)
- 				lsize = *lsizep;
- 			if (sizep == 0 || lsizep == 0)
-@@ -314,9 +317,12 @@ static void __init initialize_cache_info
- 			sizep = of_get_property(np, "i-cache-size", NULL);
- 			if (sizep != NULL)
- 				size = *sizep;
--			lsizep = of_get_property(np, "i-cache-block-size", NULL);
-+			lsizep = of_get_property(np, "i-cache-block-size",
-+						 NULL);
- 			if (lsizep == NULL)
--				lsizep = of_get_property(np, "i-cache-line-size", NULL);
-+				lsizep = of_get_property(np,
-+							 "i-cache-line-size",
-+							 NULL);
- 			if (lsizep != NULL)
- 				lsize = *lsizep;
- 			if (sizep == 0 || lsizep == 0)
-Index: linux-powerpc/arch/powerpc/mm/numa.c
-===================================================================
---- linux-powerpc.orig/arch/powerpc/mm/numa.c	2011-08-10 16:19:57.080356036 +1000
-+++ linux-powerpc/arch/powerpc/mm/numa.c	2011-08-10 16:20:46.981240046 +1000
-@@ -709,7 +709,6 @@ static void __init parse_drconf_memory(s
- 
- static int __init parse_numa_properties(void)
+ #ifdef CONFIG_MEMORY_HOTPLUG
+-void create_section_mapping(unsigned long start, unsigned long end)
++int create_section_mapping(unsigned long start, unsigned long end)
  {
--	struct device_node *cpu = NULL;
- 	struct device_node *memory;
- 	int default_nid = 0;
- 	unsigned long i;
-@@ -732,6 +731,7 @@ static int __init parse_numa_properties(
- 	 * each node to be onlined must have NODE_DATA etc backing it.
- 	 */
- 	for_each_present_cpu(i) {
-+		struct device_node *cpu;
- 		int nid;
+-	BUG_ON(htab_bolt_mapping(start, end, __pa(start),
++	return htab_bolt_mapping(start, end, __pa(start),
+ 				 pgprot_val(PAGE_KERNEL), mmu_linear_psize,
+-				 mmu_kernel_ssize));
++				 mmu_kernel_ssize);
+ }
  
- 		cpu = of_get_cpu_node(i, NULL);
-@@ -800,8 +800,9 @@ new_range:
- 	}
+ int remove_section_mapping(unsigned long start, unsigned long end)
+Index: linux-build/arch/powerpc/include/asm/sparsemem.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/sparsemem.h	2011-08-10 17:06:11.948728948 +1000
++++ linux-build/arch/powerpc/include/asm/sparsemem.h	2011-08-10 17:06:21.878901648 +1000
+@@ -16,7 +16,7 @@
+ #endif /* CONFIG_SPARSEMEM */
  
- 	/*
--	 * Now do the same thing for each MEMBLOCK listed in the ibm,dynamic-memory
--	 * property in the ibm,dynamic-reconfiguration-memory node.
-+	 * Now do the same thing for each MEMBLOCK listed in the
-+	 * ibm,dynamic-memory property in the
-+	 * ibm,dynamic-reconfiguration-memory node.
- 	 */
- 	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (memory)
+ #ifdef CONFIG_MEMORY_HOTPLUG
+-extern void create_section_mapping(unsigned long start, unsigned long end);
++extern int create_section_mapping(unsigned long start, unsigned long end);
+ extern int remove_section_mapping(unsigned long start, unsigned long end);
+ #ifdef CONFIG_NUMA
+ extern int hot_add_scn_to_nid(unsigned long scn_addr);
+Index: linux-build/arch/powerpc/mm/mem.c
+===================================================================
+--- linux-build.orig/arch/powerpc/mm/mem.c	2011-08-10 17:06:42.539260996 +1000
++++ linux-build/arch/powerpc/mm/mem.c	2011-08-10 17:06:45.269308484 +1000
+@@ -123,7 +123,8 @@ int arch_add_memory(int nid, u64 start,
+ 	pgdata = NODE_DATA(nid);
+ 
+ 	start = (unsigned long)__va(start);
+-	create_section_mapping(start, start + size);
++	if (create_section_mapping(start, start + size))
++		return -EINVAL;
+ 
+ 	/* this should work for most non-highmem platforms */
+ 	zone = pgdata->node_zones;
