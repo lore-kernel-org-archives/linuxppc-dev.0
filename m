@@ -1,27 +1,19 @@
-Return-Path: <B25806@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 105F0B6F6B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Aug 2011 20:58:14 +1000 (EST)
-Received: from mail186-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail186-ch1-R.bigfish.com (Postfix) with ESMTP id A2B7511F00FA	for
-	<linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2011 10:58:07 +0000 (UTC)
-Received: from CH1EHSMHS012.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.241])	by mail186-ch1.bigfish.com (Postfix) with ESMTP id
-	686FD1358046	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Aug 2011 10:58:07 +0000 (UTC)
-From: Chunhe Lan <Chunhe.Lan@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/p1023rds: Fix the error of bank-width of nor flash
-Date: Fri, 12 Aug 2011 19:00:09 +0800
-Message-ID: <1313146809-13686-1-git-send-email-Chunhe.Lan@freescale.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4E451B20.2070207@grandegger.com>
+Date: Fri, 12 Aug 2011 14:22:56 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kumar.gala@freescale.com, Chunhe Lan <Chunhe.Lan@freescale.com>
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH v12 5/6] flexcan: Prefer device tree clock frequency if
+	available.
+References: <1313138752-24006-1-git-send-email-holt@sgi.com>
+	<1313138752-24006-6-git-send-email-holt@sgi.com>
+In-Reply-To: <1313138752-24006-6-git-send-email-holt@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	U Bhaskar-B22300 <B22300@freescale.com>, socketcan-core@lists.berlios.de,
+	Scott Wood <scottwood@freescale.com>,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the p1023rds, a physical bus of nor flash is 16 bits width.
-The bank-width is width (in bytes) of the bus width. So, the
-value of bank-width of nor flash is not one, and it should be
-two.
+On 08/12/2011 10:45 AM, Robin Holt wrote:
+> If our CAN device's device tree node has a clock-frequency property,
+> then use that value for the can devices clock frequency.  If not, fall
+> back to asking the platform/mach code for the clock frequency associated
+> with the flexcan device.
+> 
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> To: Kumar Gala <galak@kernel.crashing.org>
+> To: Wolfgang Grandegger <wg@grandegger.com>,
+> To: Marc Kleine-Budde <mkl@pengutronix.de>,
+> To: U Bhaskar-B22300 <B22300@freescale.com>
+> To: Scott Wood <scottwood@freescale.com>
+> To: Grant Likely <grant.likely@secretlab.ca>
+> Cc: socketcan-core@lists.berlios.de,
+> Cc: netdev@vger.kernel.org,
+> Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+> Cc: devicetree-discuss@lists.ozlabs.org
 
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
----
- arch/powerpc/boot/dts/p1023rds.dts |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Acked-by: Wolfgang Grandegger <wg@grandegger.com>
 
-diff --git a/arch/powerpc/boot/dts/p1023rds.dts b/arch/powerpc/boot/dts/p1023rds.dts
-index bfa96aa..d9b7767 100644
---- a/arch/powerpc/boot/dts/p1023rds.dts
-+++ b/arch/powerpc/boot/dts/p1023rds.dts
-@@ -387,7 +387,7 @@
- 			#size-cells = <1>;
- 			compatible = "cfi-flash";
- 			reg = <0x0 0x0 0x02000000>;
--			bank-width = <1>;
-+			bank-width = <2>;
- 			device-width = <1>;
- 			partition@0 {
- 				label = "ramdisk";
--- 
-1.5.6.5
+>From the Socket-CAN point of view, this and the other patches can go in.
+Thanks for your effort.
+
+Wolfgang.
