@@ -1,15 +1,21 @@
-Return-Path: <a.heider@gmail.com>
-From: Andre Heider <a.heider@gmail.com>
-To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH part1 v2 9/9] ps3: Only prealloc the flash bounce buffer for
-	the OtherOS lpar
-Date: Thu, 11 Aug 2011 21:31:13 +0200
-Message-Id: <1313091073-4572-10-git-send-email-a.heider@gmail.com>
-In-Reply-To: <1313091073-4572-1-git-send-email-a.heider@gmail.com>
-References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1313091073-4572-1-git-send-email-a.heider@gmail.com>
-Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
+	by ozlabs.org (Postfix) with ESMTP id 3AF61B6F77
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 12 Aug 2011 12:54:08 +1000 (EST)
+Date: Fri, 12 Aug 2011 12:54:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: Question about the drivers movement (IBM_NEW_EMAC)
+Message-Id: <20110812125402.f54c52c09a18cb40ecc5489b@canb.auug.org.au>
+In-Reply-To: <20110812120744.1912ca01ab4e76faaa93892c@canb.auug.org.au>
+References: <20110812120744.1912ca01ab4e76faaa93892c@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__12_Aug_2011_12_54_02_+1000_8HytCwul1kD=4bjH"
+Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,29 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's only used by the ps3flash driver, which only supports the
-OtherOS lpar.
+--Signature=_Fri__12_Aug_2011_12_54_02_+1000_8HytCwul1kD=4bjH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andre Heider <a.heider@gmail.com>
----
- arch/powerpc/platforms/ps3/setup.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+[just cc'ing linuxppc-dev mailing list]
 
-diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-index 1239059..81ce835 100644
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -233,7 +233,10 @@ static void __init ps3_setup_arch(void)
- #endif
- 
- 	prealloc_ps3fb_videomemory();
--	prealloc_ps3flash_bounce_buffer();
-+
-+	/* the ps3flash driver only works for OtherOS */
-+	if (ps3_get_ss_laid() == PS3_SS_LAID_OTHEROS)
-+		prealloc_ps3flash_bounce_buffer();
- 
- 	ppc_md.power_save = ps3_power_save;
- 	ps3_os_area_init();
--- 
-1.7.5.4
+On Fri, 12 Aug 2011 12:07:44 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Hi Jeff,
+>=20
+> In commit 9aa328359545 ("ehea/ibm*: Move the IBM drivers") from Dave's
+> net tree, you not only move the drivers around, but you change
+> CONFIG_IBM_NEW_EMAC to CONFIG_IBM_EMAC.  Won't that mean that all the
+> PowerPC configs that currently set CONFIG_IBM_NEW_EMAC to y will no
+> longer build this driver?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__12_Aug_2011_12_54_02_+1000_8HytCwul1kD=4bjH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJORJXKAAoJEDMEi1NhKgbs2FMH/AupNfIXYr5afODGIH4sSgNW
+i6G8xTD5o2euiBLupdKnA6FeY9nxaGhWLJ7K9qpXPUyym5I4ptOONcLkOXvLx1c6
+mJNgdzZp/Qp1py9T5cpdOaQRDA4iuohsLNbcq1pXbBZEMq8bDecZJIIP7knbGQtb
+DZRmVPW2bJXvpTKfahQbuKujiJAi8bRtUxv4/o+BIVDI3bUdcv+/NJeAM1Rdfi4Q
+8hohZ8eZsvFMHUR1Qnt69ci4hsDe/ewfzleWkz8wBz6TMIBORM0desgJiqAq135U
+BtUD1fSW0zdoGYMVI5z7EIynKA4uJrsBiRYYfRz6oVT/HIiGegiQvMZsOXukqnA=
+=QEju
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__12_Aug_2011_12_54_02_+1000_8HytCwul1kD=4bjH--
