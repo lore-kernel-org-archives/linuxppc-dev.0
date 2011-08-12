@@ -2,19 +2,19 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9E971B70BC
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Aug 2011 15:36:01 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 353F8B70C0
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Aug 2011 15:39:13 +1000 (EST)
 References: <1312907508-14599-1-git-send-email-agraf@suse.de>
-	<1312907508-14599-10-git-send-email-agraf@suse.de>
-	<20110812033343.GR30552@yookeroo.fritz.box>
-In-Reply-To: <20110812033343.GR30552@yookeroo.fritz.box>
+	<1312907508-14599-8-git-send-email-agraf@suse.de>
+	<20110812033529.GS30552@yookeroo.fritz.box>
+In-Reply-To: <20110812033529.GS30552@yookeroo.fritz.box>
 Mime-Version: 1.0 (iPhone Mail 8G4)
 Content-Type: text/plain;
 	charset=us-ascii
-Message-Id: <998B41E9-23CC-4FBD-BD35-11004D77B087@suse.de>
+Message-Id: <D03414E2-97E0-4439-BD88-E3FFCCF1E5FB@suse.de>
 From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 09/10] KVM: PPC: Support SC1 hypercalls for PAPR in PR mode
-Date: Fri, 12 Aug 2011 07:35:42 +0200
+Subject: Re: [PATCH 07/10] KVM: PPC: Add PAPR hypercall code for PR mode
+Date: Fri, 12 Aug 2011 07:38:54 +0200
 To: David Gibson <david@gibson.dropbear.id.au>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	"paulus@samba.org" <paulus@samba.org>,
@@ -30,34 +30,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Am 12.08.2011 um 05:33 schrieb David Gibson <david@gibson.dropbear.id.au>:
+Am 12.08.2011 um 05:35 schrieb David Gibson <david@gibson.dropbear.id.au>:
 
-> On Tue, Aug 09, 2011 at 06:31:47PM +0200, Alexander Graf wrote:
->> PAPR defines hypercalls as SC1 instructions. Using these, the guest modif=
-ies
->> page tables and does other privileged operations that it wouldn't be allo=
-wed
->> to do in supervisor mode.
+> On Tue, Aug 09, 2011 at 06:31:45PM +0200, Alexander Graf wrote:
+>> When running a PAPR guest, we need to handle a few hypercalls in kernel s=
+pace,
+>> most prominently the page table invalidation (to sync the shadows).
 >>=20
->> This patch adds support for PR KVM to trap these instructions and route t=
-hem
->> through the same PAPR hypercall interface that we already use for HV styl=
-e
->> KVM.
+>> So this patch adds handling for a few PAPR hypercalls to PR mode KVM. I t=
+ried
+>> to share the code with HV mode, but it ended up being a lot easier this w=
+ay
+>> around, as the two differ too much in those details.
 >=20
-> This will work on a powermac or bare metal host.  Unfortunately, it's
-> not enough on a pSeries LPAR host - the sc 1 instruction from the
-> guest problem state will go direct to the hypervisor, which will
-> return an error rather than trapping to the guest kernel.
->=20
-> The only way around this I can see is for qemu to search for and patch
-> up sc 1 instructions to something else.  Obviously that would also
-> need some kernel support, and probably a capability to let it know if
-> it's necessary.
+> Are these strictly necessary, or just an optimization?  Because you're
+> using the space allocated by qemu for the guest hash table, it seems
+> to be you could just let h_enter fall through to qemu which will put
+> the right thing into the guest hash table which you can then walk in
+> the kernel translation code.
 
-Well I'd like to keep Qemu out of the patching business, so the guest kernel=
- would have to patch itself. But yes, PHyP guests can't run this target yet :=
-). I'll take a stab at that too, but one continent at a time! ;)
+Every time a PTE can be invalidated, we need to do so in kvm to keep the SPT=
+ in sync. IIRC h_enter can evict/overwrite a previous entry, so we need to h=
+andle it in kvm as well :). Removal definitely needs to happin in-kernel.
 
 
 Alex
