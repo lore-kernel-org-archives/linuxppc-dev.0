@@ -1,23 +1,29 @@
-Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
-	by ozlabs.org (Postfix) with ESMTP id 47638B7AFA
+Return-Path: <r61911@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DA10FB6F7B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Aug 2011 18:46:35 +1000 (EST)
-From: Robin Holt <holt@sgi.com>
-To: Robin Holt <holt@sgi.com>, Kumar Gala <galak@kernel.crashing.org>,
-	Wolfgang Grandegger <wg@grandegger.com>,
-	Marc Kleine-Budde <mkl@pengutronix.de>,
-	U Bhaskar-B22300 <B22300@freescale.com>,
-	Scott Wood <scottwood@freescale.com>,
-	Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v12 6/6] powerpc: Add flexcan device support for p1010rdb.
-Date: Fri, 12 Aug 2011 03:45:52 -0500
-Message-Id: <1313138752-24006-7-git-send-email-holt@sgi.com>
-In-Reply-To: <1313138752-24006-1-git-send-email-holt@sgi.com>
-References: <1313138752-24006-1-git-send-email-holt@sgi.com>
-Cc: , netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
-	socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
-	PPC list <linuxppc-dev@lists.ozlabs.org>
+	Fri, 12 Aug 2011 19:44:35 +1000 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: RE: [PATCH 2/2 v2] eSDHC: Fix errors when booting kernel with fsl
+	esdhc
+Date: Fri, 12 Aug 2011 09:44:26 +0000
+Message-ID: <2239AC579C7D3646A720227A37E0268118FD3B@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1311329717-13954-1-git-send-email-tie-fei.zang@freescale.com>
+	<1311329717-13954-2-git-send-email-tie-fei.zang@freescale.com>
+	<20110722101512.GA1576@oksana.dev.rtsoft.ru>
+In-Reply-To: <20110722101512.GA1576@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	Xu Lei-B33228 <B33228@freescale.com>,
+	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allow the p1010 processor to select the flexcan network driver.
-
-Signed-off-by: Robin Holt <holt@sgi.com>
-Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>,
-Acked-by: Wolfgang Grandegger <wg@grandegger.com>,
-Cc: U Bhaskar-B22300 <B22300@freescale.com>
-Cc: socketcan-core@lists.berlios.de,
-Cc: netdev@vger.kernel.org,
-Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6926b61..47682b6 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -656,6 +656,8 @@ config SBUS
- 
- config FSL_SOC
- 	bool
-+	select HAVE_CAN_FLEXCAN if NET && CAN
-+	select PPC_CLOCK if CAN_FLEXCAN
- 
- config FSL_PCI
-  	bool
--- 
-1.7.2.1
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtbW1jLW93bmVy
+QHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LW1tYy1vd25lckB2Z2VyLmtlcm5lbC5vcmdd
+DQo+IE9uIEJlaGFsZiBPZiBBbnRvbiBWb3JvbnRzb3YNCj4gU2VudDogRnJpZGF5LCBKdWx5IDIy
+LCAyMDExIDE4OjE1IFBNDQo+IFRvOiBaYW5nIFJveS1SNjE5MTENCj4gQ2M6IGxpbnV4LW1tY0B2
+Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBha3BtQGxpbnV4
+LQ0KPiBmb3VuZGF0aW9uLm9yZzsgWHUgTGVpLUIzMzIyODsgS3VtYXIgR2FsYQ0KPiBTdWJqZWN0
+OiBSZTogW1BBVENIIDIvMiB2Ml0gZVNESEM6IEZpeCBlcnJvcnMgd2hlbiBib290aW5nIGtlcm5l
+bCB3aXRoIGZzbCBlc2RoYw0KPiANCj4gT24gRnJpLCBKdWwgMjIsIDIwMTEgYXQgMDY6MTU6MTdQ
+TSArMDgwMCwgUm95IFphbmcgd3JvdGU6DQo+IFsuLi5dDQo+ID4gIAlpZiAoaG9zdC0+dmVyc2lv
+biA+PSBTREhDSV9TUEVDXzIwMCkgew0KPiA+IC0JCWN0cmwgPSBzZGhjaV9yZWFkYihob3N0LCBT
+REhDSV9IT1NUX0NPTlRST0wpOw0KPiA+IC0JCWN0cmwgJj0gflNESENJX0NUUkxfRE1BX01BU0s7
+DQo+ID4gLQkJaWYgKChob3N0LT5mbGFncyAmIFNESENJX1JFUV9VU0VfRE1BKSAmJg0KPiA+IC0J
+CQkoaG9zdC0+ZmxhZ3MgJiBTREhDSV9VU0VfQURNQSkpDQo+ID4gLQkJCWN0cmwgfD0gU0RIQ0lf
+Q1RSTF9BRE1BMzI7DQo+ID4gLQkJZWxzZQ0KPiA+IC0JCQljdHJsIHw9IFNESENJX0NUUkxfU0RN
+QTsNCj4gPiAtCQlzZGhjaV93cml0ZWIoaG9zdCwgY3RybCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsN
+Cj4gPiArCQlpZiAoaG9zdC0+cXVpcmtzICYgU0RIQ0lfUVVJUktfUU9SSVFfUFJPQ1RMX1dFSVJE
+KSB7DQo+ID4gKyNkZWZpbmUgRVNESENJX1BST0NUTF9ETUFTX01BU0sJCTB4MDAwMDAzMDANCj4g
+PiArI2RlZmluZSBFU0RIQ0lfUFJPQ1RMX0FETUEzMgkJMHgwMDAwMDIwMA0KPiA+ICsjZGVmaW5l
+IEVTREhDSV9QUk9DVExfU0RNQQkJMHgwMDAwMDAwMA0KPiA+ICsJCQljdHJsID0gc2RoY2lfcmVh
+ZGwoaG9zdCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsNCj4gPiArCQkJY3RybCAmPSB+RVNESENJX1BS
+T0NUTF9ETUFTX01BU0s7DQo+ID4gKwkJCWlmICgoaG9zdC0+ZmxhZ3MgJiBTREhDSV9SRVFfVVNF
+X0RNQSkgJiYNCj4gPiArCQkJCShob3N0LT5mbGFncyAmIFNESENJX1VTRV9BRE1BKSkNCj4gPiAr
+CQkJCWN0cmwgfD0gRVNESENJX1BST0NUTF9BRE1BMzI7DQo+ID4gKwkJCWVsc2UNCj4gPiArCQkJ
+CWN0cmwgfD0gRVNESENJX1BST0NUTF9TRE1BOw0KPiA+ICsJCQlzZGhjaV93cml0ZWwoaG9zdCwg
+Y3RybCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsNCj4gPiArCQl9IGVsc2Ugew0KPiA+ICsJCQljdHJs
+ID0gc2RoY2lfcmVhZGIoaG9zdCwgU0RIQ0lfSE9TVF9DT05UUk9MKTsNCj4gPiArCQkJY3RybCAm
+PSB+U0RIQ0lfQ1RSTF9ETUFfTUFTSzsNCj4gPiArCQkJaWYgKChob3N0LT5mbGFncyAmIFNESENJ
+X1JFUV9VU0VfRE1BKSAmJg0KPiA+ICsJCQkJKGhvc3QtPmZsYWdzICYgU0RIQ0lfVVNFX0FETUEp
+KQ0KPiA+ICsJCQkJY3RybCB8PSBTREhDSV9DVFJMX0FETUEzMjsNCj4gPiArCQkJZWxzZQ0KPiA+
+ICsJCQkJY3RybCB8PSBTREhDSV9DVFJMX1NETUE7DQo+ID4gKwkJCXNkaGNpX3dyaXRlYihob3N0
+LCBjdHJsLCBTREhDSV9IT1NUX0NPTlRST0wpOw0KPiANCj4gV2UgdHJ5IHRvIG5vdCBwb2xsdXRl
+IGdlbmVyaWMgc2RoY2kuYyBkcml2ZXIgd2l0aCBjaGlwLXNwZWNpZmljDQo+IHF1aXJrcy4NCj4g
+DQo+IE1heWJlIHlvdSBjYW4gZG8gdGhlIGZpeHVwcyB2aWEgSU8gYWNjZXNzb3JzPyBPciBieSBp
+bnRyb2R1Y2luZw0KPiBzb21lIGFkZGl0aW9uYWwgc2RoY2kgb3A/DQpBbnRvbiwNCnRoYW5rcyBm
+b3IgdGhlIGNvbW1lbnQsIGFzIHdlIGRpc2N1c3NlZCwgdGhlIG9yaWdpbmFsIGNvZGUgdXNlIDgg
+Yml0IGJ5dGUgb3BlcmF0aW9uLA0Kd2hpbGUgaW4gZmFjdCwgb24gc29tZSBwb3dlcnBjIHBsYXRm
+b3JtLCAzMiBiaXQgb3BlcmF0aW9uIGlzIG5lZWRlZC4gDQpzaG91bGQgaXQgYmUgcG9zc2libGUg
+Zml4ZWQgYnkgYWRkaW5nIHNvbWUgd3JhcHBlciBpbiBJTyBhY2Nlc3NvcnMgb3IgaW50cm9kdWNl
+IGFkZGl0aW9uYWwgc2RoY2kgb3A/DQpQbGVhc2UgYWR2aWNlIG1vcmUuIA0KVGhhbmtzLg0KUm95
+DQo=
