@@ -1,16 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 12 Aug 2011 17:43:08 +1000
+Date: Fri, 12 Aug 2011 17:43:59 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 07/10] KVM: PPC: Add PAPR hypercall code for PR mode
-Message-ID: <20110812074308.GV30552@yookeroo.fritz.box>
+Subject: Re: [PATCH 09/10] KVM: PPC: Support SC1 hypercalls for PAPR in PR mode
+Message-ID: <20110812074359.GW30552@yookeroo.fritz.box>
 References: <1312907508-14599-1-git-send-email-agraf@suse.de>
-	<1312907508-14599-8-git-send-email-agraf@suse.de>
-	<20110812033529.GS30552@yookeroo.fritz.box>
-	<D03414E2-97E0-4439-BD88-E3FFCCF1E5FB@suse.de>
+	<1312907508-14599-10-git-send-email-agraf@suse.de>
+	<20110812033343.GR30552@yookeroo.fritz.box>
+	<998B41E9-23CC-4FBD-BD35-11004D77B087@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D03414E2-97E0-4439-BD88-E3FFCCF1E5FB@suse.de>
+In-Reply-To: <998B41E9-23CC-4FBD-BD35-11004D77B087@suse.de>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	"paulus@samba.org" <paulus@samba.org>,
 	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
@@ -24,31 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 12, 2011 at 07:38:54AM +0200, Alexander Graf wrote:
+On Fri, Aug 12, 2011 at 07:35:42AM +0200, Alexander Graf wrote:
 > 
-> Am 12.08.2011 um 05:35 schrieb David Gibson <david@gibson.dropbear.id.au>:
+> Am 12.08.2011 um 05:33 schrieb David Gibson <david@gibson.dropbear.id.au>:
 > 
-> > On Tue, Aug 09, 2011 at 06:31:45PM +0200, Alexander Graf wrote:
-> >> When running a PAPR guest, we need to handle a few hypercalls in kernel space,
-> >> most prominently the page table invalidation (to sync the shadows).
+> > On Tue, Aug 09, 2011 at 06:31:47PM +0200, Alexander Graf wrote:
+> >> PAPR defines hypercalls as SC1 instructions. Using these, the guest modifies
+> >> page tables and does other privileged operations that it wouldn't be allowed
+> >> to do in supervisor mode.
 > >> 
-> >> So this patch adds handling for a few PAPR hypercalls to PR mode KVM. I tried
-> >> to share the code with HV mode, but it ended up being a lot easier this way
-> >> around, as the two differ too much in those details.
+> >> This patch adds support for PR KVM to trap these instructions and route them
+> >> through the same PAPR hypercall interface that we already use for HV style
+> >> KVM.
 > > 
-> > Are these strictly necessary, or just an optimization?  Because you're
-> > using the space allocated by qemu for the guest hash table, it seems
-> > to be you could just let h_enter fall through to qemu which will put
-> > the right thing into the guest hash table which you can then walk in
-> > the kernel translation code.
+> > This will work on a powermac or bare metal host.  Unfortunately, it's
+> > not enough on a pSeries LPAR host - the sc 1 instruction from the
+> > guest problem state will go direct to the hypervisor, which will
+> > return an error rather than trapping to the guest kernel.
+> > 
+> > The only way around this I can see is for qemu to search for and patch
+> > up sc 1 instructions to something else.  Obviously that would also
+> > need some kernel support, and probably a capability to let it know if
+> > it's necessary.
 > 
-> Every time a PTE can be invalidated, we need to do so in kvm to keep
-> the SPT in sync. IIRC h_enter can evict/overwrite a previous entry,
-> so we need to handle it in kvm as well :). Removal definitely needs
-> to happin in-kernel.
+> Well I'd like to keep Qemu out of the patching business, so the
+> guest kernel would have to patch itself.
 
-True.  I think you could actually delay this invalidation until the
-guest issues the tlbie, but it's probably not worth it.
+Well sure, but guest patching itself means it can't run existing
+kernels.  I thought qemu already patched a few things, ugly though
+that approach is.
+
+> But yes, PHyP guests can't
+> run this target yet :). I'll take a stab at that too, but one
+> continent at a time! ;)
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
