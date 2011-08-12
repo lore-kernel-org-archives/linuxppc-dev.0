@@ -1,14 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 12 Aug 2011 13:33:43 +1000
+Date: Fri, 12 Aug 2011 13:35:29 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 09/10] KVM: PPC: Support SC1 hypercalls for PAPR in PR mode
-Message-ID: <20110812033343.GR30552@yookeroo.fritz.box>
+Subject: Re: [PATCH 07/10] KVM: PPC: Add PAPR hypercall code for PR mode
+Message-ID: <20110812033529.GS30552@yookeroo.fritz.box>
 References: <1312907508-14599-1-git-send-email-agraf@suse.de>
-	<1312907508-14599-10-git-send-email-agraf@suse.de>
+	<1312907508-14599-8-git-send-email-agraf@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1312907508-14599-10-git-send-email-agraf@suse.de>
+In-Reply-To: <1312907508-14599-8-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,24 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 09, 2011 at 06:31:47PM +0200, Alexander Graf wrote:
-> PAPR defines hypercalls as SC1 instructions. Using these, the guest modifies
-> page tables and does other privileged operations that it wouldn't be allowed
-> to do in supervisor mode.
+On Tue, Aug 09, 2011 at 06:31:45PM +0200, Alexander Graf wrote:
+> When running a PAPR guest, we need to handle a few hypercalls in kernel space,
+> most prominently the page table invalidation (to sync the shadows).
 > 
-> This patch adds support for PR KVM to trap these instructions and route them
-> through the same PAPR hypercall interface that we already use for HV style
-> KVM.
+> So this patch adds handling for a few PAPR hypercalls to PR mode KVM. I tried
+> to share the code with HV mode, but it ended up being a lot easier this way
+> around, as the two differ too much in those details.
 
-This will work on a powermac or bare metal host.  Unfortunately, it's
-not enough on a pSeries LPAR host - the sc 1 instruction from the
-guest problem state will go direct to the hypervisor, which will
-return an error rather than trapping to the guest kernel.
-
-The only way around this I can see is for qemu to search for and patch
-up sc 1 instructions to something else.  Obviously that would also
-need some kernel support, and probably a capability to let it know if
-it's necessary.
+Are these strictly necessary, or just an optimization?  Because you're
+using the space allocated by qemu for the guest hash table, it seems
+to be you could just let h_enter fall through to qemu which will put
+the right thing into the guest hash table which you can then walk in
+the kernel translation code.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
