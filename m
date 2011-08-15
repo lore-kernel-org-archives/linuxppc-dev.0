@@ -1,16 +1,12 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1313139173-25049-1-git-send-email-venkatram867@gmail.com>
-References: <1313139173-25049-1-git-send-email-venkatram867@gmail.com>
-Date: Sat, 13 Aug 2011 16:31:43 +0200
-Message-ID: <CAMuHMdVdA8x1NKijH4xsvbr69wOjjMn51Xn3iktbVt0N3Wthig@mail.gmail.com>
-Subject: Re: [PATCH] PS3: Fixed Coding Style Issues in ps3av.c
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Venkatram Tummala <venkatram867@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: geoff@infradead.org, cbe-oss-dev@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Mon, 15 Aug 2011 10:30:30 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, nfont@austin.ibm.com
+Subject: [PATCH] powerpc: pseries: Avoid spurious error during hotplug CPU add
+Message-ID: <20110815103030.2e90f017@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,36 +16,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 12, 2011 at 10:52, Venkatram Tummala <venkatram867@gmail.com> w=
-rote:
-> diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
-> index a409fa0..e6d1a3d 100644
-> --- a/drivers/ps3/ps3av.c
-> +++ b/drivers/ps3/ps3av.c
-> @@ -26,7 +26,7 @@
-> =C2=A0#include <linux/fb.h>
-> =C2=A0#include <linux/slab.h>
->
-> -#include <asm/firmware.h>
-> +#include <linux/firmware.h>
 
-IIRC, arch/powerpc/include/asm/firmware.h is unrelated to linux/firmware.h.
-Does it actually compile when not including asm/firmware.h explicitly?
+During hotplug CPU add we get the following error:
 
-The rest looks OK to me.
+Unexpected Error (0) returned from configure-connector
 
-Gr{oetje,eeting}s,
+ibm,configure-connector returns 0 for configuration complete, so
+catch this and avoid the error.
 
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+Index: linux-powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2011-08-12 09:37:11.921180339 +1000
++++ linux-powerpc/arch/powerpc/platforms/pseries/dlpar.c	2011-08-15 10:09:25.940626779 +1000
+@@ -112,6 +112,7 @@ void dlpar_free_cc_nodes(struct device_n
+ 	dlpar_free_one_cc_node(dn);
+ }
+ 
++#define COMPLETE	0
+ #define NEXT_SIBLING    1
+ #define NEXT_CHILD      2
+ #define NEXT_PROPERTY   3
+@@ -158,6 +159,9 @@ struct device_node *dlpar_configure_conn
+ 		spin_unlock(&rtas_data_buf_lock);
+ 
+ 		switch (rc) {
++		case COMPLETE:
++			break;
++
+ 		case NEXT_SIBLING:
+ 			dn = dlpar_parse_cc_node(ccwa);
+ 			if (!dn)
