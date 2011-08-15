@@ -1,31 +1,28 @@
-Return-Path: <r61911@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
-	[213.199.154.205])
+Return-Path: <B25806@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
 	(using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2397B6F8A
+	by ozlabs.org (Postfix) with ESMTPS id C429DB6F76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Aug 2011 14:46:34 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: RE: [PATCH 2/2 v2] eSDHC: Fix errors when booting kernel with fsl
-	esdhc
-Date: Mon, 15 Aug 2011 04:46:25 +0000
-Message-ID: <2239AC579C7D3646A720227A37E0268119077A@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1311329717-13954-1-git-send-email-tie-fei.zang@freescale.com>
-	<1311329717-13954-2-git-send-email-tie-fei.zang@freescale.com>
-	<20110722101512.GA1576@oksana.dev.rtsoft.ru>
-	<2239AC579C7D3646A720227A37E0268118FD3B@039-SN1MPN1-005.039d.mgd.msft.net>
-	<20110812100450.GA23333@oksana.dev.rtsoft.ru>
-In-Reply-To: <20110812100450.GA23333@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset="utf-8"
+	Mon, 15 Aug 2011 18:40:54 +1000 (EST)
+Received: from mail118-ch1 (localhost.localdomain [127.0.0.1])	by
+	mail118-ch1-R.bigfish.com (Postfix) with ESMTP id 697382E026D	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2011 08:40:49 +0000 (UTC)
+Received: from CH1EHSMHS008.bigfish.com (snatpool1.int.messaging.microsoft.com
+	[10.43.68.247])	by mail118-ch1.bigfish.com (Postfix) with ESMTP id
+	35514192004B	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 15 Aug 2011 08:40:49 +0000 (UTC)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/p1023rds: Add nand flash node support in the dts
+Date: Mon, 15 Aug 2011 16:43:10 +0800
+Message-ID: <1313397790-15432-1-git-send-email-Chunhe.Lan@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	Xu Lei-B33228 <B33228@freescale.com>,
-	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: scottwood@freescale.com, kumar.gala@freescale.com,
+	Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,22 +32,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW50b24gVm9yb250c292
-IFttYWlsdG86Y2JvdWF0bWFpbHJ1QGdtYWlsLmNvbV0NCj4gU2VudDogRnJpZGF5LCBBdWd1c3Qg
-MTIsIDIwMTEgMTg6MDUgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogbGludXgtbW1j
-QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGFrcG1AbGlu
-dXgtDQo+IGZvdW5kYXRpb24ub3JnOyBYdSBMZWktQjMzMjI4OyBLdW1hciBHYWxhOyBXb29kIFNj
-b3R0LUIwNzQyMQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMiB2Ml0gZVNESEM6IEZpeCBlcnJv
-cnMgd2hlbiBib290aW5nIGtlcm5lbCB3aXRoIGZzbCBlc2RoYw0KPiANCj4gSGVsbG8sDQo+IA0K
-PiBPbiBGcmksIEF1ZyAxMiwgMjAxMSBhdCAwOTo0NDoyNkFNICswMDAwLCBaYW5nIFJveS1SNjE5
-MTEgd3JvdGU6DQo+IFsuLi5dDQo+ID4gPiBXZSB0cnkgdG8gbm90IHBvbGx1dGUgZ2VuZXJpYyBz
-ZGhjaS5jIGRyaXZlciB3aXRoIGNoaXAtc3BlY2lmaWMNCj4gPiA+IHF1aXJrcy4NCj4gPiA+DQo+
-ID4gPiBNYXliZSB5b3UgY2FuIGRvIHRoZSBmaXh1cHMgdmlhIElPIGFjY2Vzc29ycz8gT3IgYnkg
-aW50cm9kdWNpbmcNCj4gPiA+IHNvbWUgYWRkaXRpb25hbCBzZGhjaSBvcD8NCj4gPiBBbnRvbiwN
-Cj4gPiB0aGFua3MgZm9yIHRoZSBjb21tZW50LCBhcyB3ZSBkaXNjdXNzZWQsIHRoZSBvcmlnaW5h
-bCBjb2RlIHVzZSA4IGJpdCBieXRlDQo+IG9wZXJhdGlvbiwNCj4gPiB3aGlsZSBpbiBmYWN0LCBv
-biBzb21lIHBvd2VycGMgcGxhdGZvcm0sIDMyIGJpdCBvcGVyYXRpb24gaXMgbmVlZGVkLg0KPiA+
-IHNob3VsZCBpdCBiZSBwb3NzaWJsZSBmaXhlZCBieSBhZGRpbmcgc29tZSB3cmFwcGVyIGluIElP
-IGFjY2Vzc29ycyBvcg0KPiBpbnRyb2R1Y2UgYWRkaXRpb25hbCBzZGhjaSBvcD8NCj4gDQo+IEkg
-d291bGQgZG8gaXQgaW4gdGhlIElPIGFjY2Vzc29ycy4NCkkgYW0gbG9va2luZyBmb3J3YXJkIHRv
-IHlvdXIgcGF0Y2guDQpSb3kNCg==
+In the p1023rds, accessing exclusively nor flash or nand flash
+device by BR0/OR0. When booting from nor flash, nand node is
+disabled and nor node is enabled in the default dts. So, when
+booting from nand flash, u-boot should do some operations:
+
+   o The "status" property of nand node should be enabled.
+   o The "status" property of nor node should be disabled.
+
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+---
+ arch/powerpc/boot/dts/p1023rds.dts |   46 +++++++++++++++++++++++++++++++++--
+ 1 files changed, 43 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/p1023rds.dts b/arch/powerpc/boot/dts/p1023rds.dts
+index d9b7767..aa63b81 100644
+--- a/arch/powerpc/boot/dts/p1023rds.dts
++++ b/arch/powerpc/boot/dts/p1023rds.dts
+@@ -58,6 +58,9 @@
+ 		rtic_b = &rtic_b;
+ 		rtic_c = &rtic_c;
+ 		rtic_d = &rtic_d;
++
++		nor_flash = &nor_flash;
++		nand_flash = &nand_flash;
+ 	};
+ 
+ 	cpus {
+@@ -378,11 +381,12 @@
+ 		interrupts = <19 2>;
+ 		interrupt-parent = <&mpic>;
+ 
+-		/* NOR Flash, BCSR */
++		/* NOR Flash, BCSR, NAND Flash */
+ 		ranges = <0x0 0x0 0x0 0xee000000 0x02000000
+-			  0x1 0x0 0x0 0xe0000000 0x00008000>;
++			  0x1 0x0 0x0 0xe0000000 0x00008000
++			  0x2 0x0 0x0 0xffa00000 0x00040000>;
+ 
+-		nor@0,0 {
++		nor_flash: nor@0,0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			compatible = "cfi-flash";
+@@ -425,6 +429,42 @@
+ 				reg = <0x20 0x20>;
+ 			};
+ 		};
++
++		nand_flash: nand@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,p1023-fcm-nand",
++				     "fsl,elbc-fcm-nand";
++			reg = <0x2 0x0 0x00040000>;
++			status = "disabled";
++
++			u-boot-nand@0 {
++				/* This location must not be altered  */
++				/* 1MB for u-boot Bootloader Image */
++				reg = <0x0 0x00100000>;
++				read-only;
++			};
++
++			dtb-nand@100000 {
++				/* 1MB for DTB Image */
++				reg = <0x00100000 0x00100000>;
++			};
++
++			kernel-nand@200000 {
++				/* 4MB for Linux Kernel Image */
++				reg = <0x00200000 0x00400000>;
++			};
++
++			ramdisk-nand@600000 {
++				/* 57MB for Compressed Root file System Image */
++				reg = <0x00600000 0x03900000>;
++			};
++
++			empty-nand@3f00000 {
++				/* 1MB for reserved space */
++				reg = <0x03f00000 0x00100000>;
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ff60a000 {
+-- 
+1.5.6.5
