@@ -1,28 +1,22 @@
-Return-Path: <B25806@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C429DB6F76
+Return-Path: <fabio.baltieri@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5ED57B6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Aug 2011 18:40:54 +1000 (EST)
-Received: from mail118-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail118-ch1-R.bigfish.com (Postfix) with ESMTP id 697382E026D	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2011 08:40:49 +0000 (UTC)
-Received: from CH1EHSMHS008.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.247])	by mail118-ch1.bigfish.com (Postfix) with ESMTP id
-	35514192004B	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Aug 2011 08:40:49 +0000 (UTC)
-From: Chunhe Lan <Chunhe.Lan@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/p1023rds: Add nand flash node support in the dts
-Date: Mon, 15 Aug 2011 16:43:10 +0800
-Message-ID: <1313397790-15432-1-git-send-email-Chunhe.Lan@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, kumar.gala@freescale.com,
-	Chunhe Lan <Chunhe.Lan@freescale.com>
+	Tue, 16 Aug 2011 00:19:09 +1000 (EST)
+Received: by fxh10 with SMTP id 10so3795839fxh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 15 Aug 2011 07:19:04 -0700 (PDT)
+From: Fabio Baltieri <fabio.baltieri@gmail.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>,
+	Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] mcu_mpc8349emitx.c: add shutdown request support
+Date: Mon, 15 Aug 2011 16:19:30 +0200
+Message-Id: <1313417970-28098-1-git-send-email-fabio.baltieri@gmail.com>
+Cc: Fabio Baltieri <fabio.baltieri@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,91 +26,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the p1023rds, accessing exclusively nor flash or nand flash
-device by BR0/OR0. When booting from nor flash, nand node is
-disabled and nor node is enabled in the default dts. So, when
-booting from nand flash, u-boot should do some operations:
+This patch add support for calling ctrl_alt_del() when the power button is
+pressed for more than about 2 seconds on some freescale MPC83xx
+evaluation boards and reference design.
 
-   o The "status" property of nand node should be enabled.
-   o The "status" property of nor node should be disabled.
+The code uses a kthread to poll the CTRL_BTN bit each second.
 
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+Also change Kconfig entry of the driver to bool, as device's gpio
+registration is broken when loading as module.
+
+Tested on an MPC8315E RDB board.
+
+Signed-off-by: Fabio Baltieri <fabio.baltieri@gmail.com>
 ---
- arch/powerpc/boot/dts/p1023rds.dts |   46 +++++++++++++++++++++++++++++++++--
- 1 files changed, 43 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   58 +++++++++++++++++++++++-
+ arch/powerpc/platforms/Kconfig                 |    2 +-
+ 2 files changed, 58 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/p1023rds.dts b/arch/powerpc/boot/dts/p1023rds.dts
-index d9b7767..aa63b81 100644
---- a/arch/powerpc/boot/dts/p1023rds.dts
-+++ b/arch/powerpc/boot/dts/p1023rds.dts
-@@ -58,6 +58,9 @@
- 		rtic_b = &rtic_b;
- 		rtic_c = &rtic_c;
- 		rtic_d = &rtic_d;
-+
-+		nor_flash = &nor_flash;
-+		nand_flash = &nand_flash;
- 	};
+diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+index 70798ac..ef6537b 100644
+--- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
++++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+@@ -21,6 +21,8 @@
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
+ #include <linux/slab.h>
++#include <linux/kthread.h>
++#include <linux/reboot.h>
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
  
- 	cpus {
-@@ -378,11 +381,12 @@
- 		interrupts = <19 2>;
- 		interrupt-parent = <&mpic>;
+@@ -30,6 +32,7 @@
+  */
+ #define MCU_REG_CTRL	0x20
+ #define MCU_CTRL_POFF	0x40
++#define MCU_CTRL_BTN	0x80
  
--		/* NOR Flash, BCSR */
-+		/* NOR Flash, BCSR, NAND Flash */
- 		ranges = <0x0 0x0 0x0 0xee000000 0x02000000
--			  0x1 0x0 0x0 0xe0000000 0x00008000>;
-+			  0x1 0x0 0x0 0xe0000000 0x00008000
-+			  0x2 0x0 0x0 0xffa00000 0x00040000>;
+ #define MCU_NUM_GPIO	2
  
--		nor@0,0 {
-+		nor_flash: nor@0,0 {
- 			#address-cells = <1>;
- 			#size-cells = <1>;
- 			compatible = "cfi-flash";
-@@ -425,6 +429,42 @@
- 				reg = <0x20 0x20>;
- 			};
- 		};
-+
-+		nand_flash: nand@2,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,p1023-fcm-nand",
-+				     "fsl,elbc-fcm-nand";
-+			reg = <0x2 0x0 0x00040000>;
-+			status = "disabled";
-+
-+			u-boot-nand@0 {
-+				/* This location must not be altered  */
-+				/* 1MB for u-boot Bootloader Image */
-+				reg = <0x0 0x00100000>;
-+				read-only;
-+			};
-+
-+			dtb-nand@100000 {
-+				/* 1MB for DTB Image */
-+				reg = <0x00100000 0x00100000>;
-+			};
-+
-+			kernel-nand@200000 {
-+				/* 4MB for Linux Kernel Image */
-+				reg = <0x00200000 0x00400000>;
-+			};
-+
-+			ramdisk-nand@600000 {
-+				/* 57MB for Compressed Root file System Image */
-+				reg = <0x00600000 0x03900000>;
-+			};
-+
-+			empty-nand@3f00000 {
-+				/* 1MB for reserved space */
-+				reg = <0x03f00000 0x00100000>;
-+			};
-+		};
- 	};
+@@ -42,13 +45,55 @@ struct mcu {
  
- 	pci0: pcie@ff60a000 {
+ static struct mcu *glob_mcu;
+ 
++struct task_struct *shutdown_thread;
++static int shutdown_thread_fn(void *data)
++{
++	int ret;
++	struct mcu *mcu = glob_mcu;
++
++	while (!kthread_should_stop()) {
++		ret = i2c_smbus_read_byte_data(mcu->client, MCU_REG_CTRL);
++		if (ret < 0)
++			pr_err("MCU status reg read failed.\n");
++		mcu->reg_ctrl = ret;
++
++
++		if (mcu->reg_ctrl & MCU_CTRL_BTN) {
++			i2c_smbus_write_byte_data(mcu->client, MCU_REG_CTRL,
++						  mcu->reg_ctrl & ~MCU_CTRL_BTN);
++
++			ctrl_alt_del();
++		}
++
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule_timeout(HZ);
++	}
++
++	return 0;
++}
++
++static ssize_t show_status(struct device *d,
++			   struct device_attribute *attr, char *buf)
++{
++	int ret;
++	struct mcu *mcu = glob_mcu;
++
++	ret = i2c_smbus_read_byte_data(mcu->client, MCU_REG_CTRL);
++	if (ret < 0)
++		return -ENODEV;
++	mcu->reg_ctrl = ret;
++
++	return sprintf(buf, "%02x\n", ret);
++}
++static DEVICE_ATTR(status, S_IRUGO, show_status, NULL);
++
+ static void mcu_power_off(void)
+ {
+ 	struct mcu *mcu = glob_mcu;
+ 
+ 	pr_info("Sending power-off request to the MCU...\n");
+ 	mutex_lock(&mcu->lock);
+-	i2c_smbus_write_byte_data(glob_mcu->client, MCU_REG_CTRL,
++	i2c_smbus_write_byte_data(mcu->client, MCU_REG_CTRL,
+ 				  mcu->reg_ctrl | MCU_CTRL_POFF);
+ 	mutex_unlock(&mcu->lock);
+ }
+@@ -130,6 +175,13 @@ static int __devinit mcu_probe(struct i2c_client *client,
+ 		dev_info(&client->dev, "will provide power-off service\n");
+ 	}
+ 
++	if (device_create_file(&client->dev, &dev_attr_status))
++		dev_err(&client->dev,
++			"couldn't create device file for status\n");
++
++	shutdown_thread = kthread_run(shutdown_thread_fn, NULL,
++				      "mcu-i2c-shdn");
++
+ 	return 0;
+ err:
+ 	kfree(mcu);
+@@ -141,6 +193,10 @@ static int __devexit mcu_remove(struct i2c_client *client)
+ 	struct mcu *mcu = i2c_get_clientdata(client);
+ 	int ret;
+ 
++	kthread_stop(shutdown_thread);
++
++	device_remove_file(&client->dev, &dev_attr_status);
++
+ 	if (glob_mcu == mcu) {
+ 		ppc_md.power_off = NULL;
+ 		glob_mcu = NULL;
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index b9ba861..7bfd30e 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -355,7 +355,7 @@ config SIMPLE_GPIO
+ 	  on-board peripherals.
+ 
+ config MCU_MPC8349EMITX
+-	tristate "MPC8349E-mITX MCU driver"
++	bool "MPC8349E-mITX MCU driver"
+ 	depends on I2C && PPC_83xx
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
 -- 
-1.5.6.5
+1.7.5.1
