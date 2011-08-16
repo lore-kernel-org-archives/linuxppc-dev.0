@@ -1,18 +1,19 @@
 Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
+	[213.199.154.141])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 821BFB6F7B
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2011 07:45:06 +1000 (EST)
-Message-ID: <4E4AE4D8.1080903@freescale.com>
-Date: Tue, 16 Aug 2011 16:44:56 -0500
+	by ozlabs.org (Postfix) with ESMTPS id D6B2BB6F7B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2011 07:46:35 +1000 (EST)
+Message-ID: <4E4AE535.4070400@freescale.com>
+Date: Tue, 16 Aug 2011 16:46:29 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Chunhe Lan <Chunhe.Lan@freescale.com>
-Subject: Re: [PATCH] mtd/physmap_of: Don't add disabled flash devices
-References: <1313486750-15211-1-git-send-email-Chunhe.Lan@freescale.com>
-In-Reply-To: <1313486750-15211-1-git-send-email-Chunhe.Lan@freescale.com>
+Subject: Re: [PATCH] mtd/nand: Don't add disabled nand flash devices
+References: <1313486855-15233-1-git-send-email-Chunhe.Lan@freescale.com>
+In-Reply-To: <1313486855-15233-1-git-send-email-Chunhe.Lan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Cc: dwmw2@infradead.org, kumar.gala@freescale.com,
 	linux-mtd@lists.infradead.org, akpm@linux-foundation.org,
@@ -26,32 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/16/2011 04:25 AM, Chunhe Lan wrote:
-> Flash(cfi-flash, jedec-flash, and so on) nodes with the
-> property status="disabled" are not usable and so avoid
-> adding "disabled" flash devices with the system.
-> 
+On 08/16/2011 04:27 AM, Chunhe Lan wrote:
+> Nand flash nodes with the property status=3D"disabled" are not
+> usable and so avoid adding "disabled" nand flash devices with
+> the system.
+>=20
 > Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
 > ---
->  drivers/mtd/maps/physmap_of.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-> index d251d1d..812e6dc 100644
-> --- a/drivers/mtd/maps/physmap_of.c
-> +++ b/drivers/mtd/maps/physmap_of.c
-> @@ -219,6 +219,9 @@ static int __devinit of_flash_probe(struct platform_device *dev)
->  	struct mtd_info **mtd_list = NULL;
->  	resource_size_t res_size;
->  
-> +	if (!of_device_is_available(dp))
+>  drivers/mtd/nand/fsl_elbc_nand.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_el=
+bc_nand.c
+> index 33d8aad..8212c12 100644
+> --- a/drivers/mtd/nand/fsl_elbc_nand.c
+> +++ b/drivers/mtd/nand/fsl_elbc_nand.c
+> @@ -1,6 +1,6 @@
+>  /* Freescale Enhanced Local Bus Controller NAND driver
+>   *
+> - * Copyright =C2=A9 2006-2007, 2010 Freescale Semiconductor
+> + * Copyright =C2=A9 2006-2007, 2010-2011 Freescale Semiconductor
+>   *
+>   * Authors: Nick Spence <nick.spence@freescale.com>,
+>   *          Scott Wood <scottwood@freescale.com>
+> @@ -849,6 +849,9 @@ static int __devinit fsl_elbc_nand_probe(struct pla=
+tform_device *pdev)
+>  	struct device *dev;
+>  	struct device_node *node =3D pdev->dev.of_node;
+> =20
+> +	if (!of_device_is_available(node))
 > +		return -ENODEV;
 > +
->  	match = of_match_device(of_flash_match, &dev->dev);
->  	if (!match)
->  		return -EINVAL;
+>  	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
+>  		return -ENODEV;
+>  	lbc =3D fsl_lbc_ctrl_dev->regs;
 
-Are you actually seeing unavailable devices get probed?  I thought the
-upper layers were supposed to prevent that.
+Same comment as the other patch -- unavailable devices should already
+not be getting probed.  Also, this subject line makes it sound like this
+is a NAND subsystem change rather than a change in one specific driver.
 
 -Scott
