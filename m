@@ -1,21 +1,25 @@
-Return-Path: <B25806@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 29C1FB6F8A
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Aug 2011 19:25:14 +1000 (EST)
-From: Chunhe Lan <Chunhe.Lan@freescale.com>
-To: <linux-mtd@lists.infradead.org>
-Subject: [PATCH] mtd/nand: Don't add disabled nand flash devices
-Date: Tue, 16 Aug 2011 17:27:35 +0800
-Message-ID: <1313486855-15233-1-git-send-email-Chunhe.Lan@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kumar.gala@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	akpm@linux-foundation.org, dwmw2@infradead.org,
-	Chunhe Lan <Chunhe.Lan@freescale.com>
+Return-Path: <dedekind1@gmail.com>
+Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
+	[209.85.216.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D3465B6F72
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2011 01:05:00 +1000 (EST)
+Received: by qwi4 with SMTP id 4so3090458qwi.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Aug 2011 08:04:56 -0700 (PDT)
+Subject: Re: [PATCH] mtd-utils: fix corrupt cleanmarker with flash_erase -j
+	command
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: b35362@freescale.com
+Date: Tue, 16 Aug 2011 18:06:35 +0300
+In-Reply-To: <1312350638-25566-1-git-send-email-b35362@freescale.com>
+References: <1312350638-25566-1-git-send-email-b35362@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1313507201.2679.2.camel@sauron>
+Mime-Version: 1.0
+Cc: linuxppc-dev@linux.freescale.net, dwmw2@infradead.org,
+	linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nand flash nodes with the property status="disabled" are not
-usable and so avoid adding "disabled" nand flash devices with
-the system.
+On Wed, 2011-08-03 at 13:50 +0800, b35362@freescale.com wrote:
+> From: Liu Shuo <b35362@freescale.com>
+> 
+> Flash_erase -j should fill discrete freeoob areas with required bytes
+> of JFFS2 cleanmarker in jffs2_check_nand_cleanmarker(). Not just fill
+> the first freeoob area.
+> 
+> Signed-off-by: Liu Shuo <b35362@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
 
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
----
- drivers/mtd/nand/fsl_elbc_nand.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+...
 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index 33d8aad..8212c12 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -1,6 +1,6 @@
- /* Freescale Enhanced Local Bus Controller NAND driver
-  *
-- * Copyright © 2006-2007, 2010 Freescale Semiconductor
-+ * Copyright © 2006-2007, 2010-2011 Freescale Semiconductor
-  *
-  * Authors: Nick Spence <nick.spence@freescale.com>,
-  *          Scott Wood <scottwood@freescale.com>
-@@ -849,6 +849,9 @@ static int __devinit fsl_elbc_nand_probe(struct platform_device *pdev)
- 	struct device *dev;
- 	struct device_node *node = pdev->dev.of_node;
- 
-+	if (!of_device_is_available(node))
-+		return -ENODEV;
-+
- 	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
- 		return -ENODEV;
- 	lbc = fsl_lbc_ctrl_dev->regs;
+>  	/*
+>  	 * Process user arguments
+> @@ -197,15 +198,40 @@ int main(int argc, char *argv[])
+>  			if (ioctl(fd, MEMGETOOBSEL, &oobinfo) != 0)
+>  				return sys_errmsg("%s: unable to get NAND oobinfo", mtd_device);
+>  
+> +			cleanmarker.totlen = cpu_to_je32(8);
+>  			/* Check for autoplacement */
+>  			if (oobinfo.useecc == MTD_NANDECC_AUTOPLACE) {
+> +				struct nand_ecclayout_user ecclayout;
+>  				/* Get the position of the free bytes */
+> -				if (!oobinfo.oobfree[0][1])
+> +				if (ioctl(fd, ECCGETLAYOUT, &ecclayout) != 0)
+> +					return sys_errmsg("%s: unable to get NAND ecclayout", mtd_device);
+> +
+
+Hmm, shouldn't we instead make MTD_OOB_AUTO be available for userspace
+via an ioctl instead and make flash_eraseall use it instead?
+
 -- 
-1.5.6.5
+Best Regards,
+Artem Bityutskiy
