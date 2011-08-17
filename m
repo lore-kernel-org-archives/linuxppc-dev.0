@@ -1,28 +1,24 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BD528B6F86
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Aug 2011 16:25:59 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id p7H6KnaC016838
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2011 16:20:49 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p7H6OpMe1163378
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2011 16:24:51 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p7H6Pvmd018699
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2011 16:25:57 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.ozlabs.org, Michal Marek <mmarek@suse.cz>
-Subject: [PATCH] tags, powerpc: Update tags.sh to support _GLOBAL symbols
-Date: Wed, 17 Aug 2011 16:25:47 +1000
-Message-Id: <1313562347-20099-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>, linux-kbuild@vger.kernel.org
+Return-Path: <B35362@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F422B6F76
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2011 17:29:10 +1000 (EST)
+Message-ID: <4E4B6F46.2050209@freescale.com>
+Date: Wed, 17 Aug 2011 15:35:34 +0800
+From: LiuShuo <b35362@freescale.com>
+MIME-Version: 1.0
+To: <dedekind1@gmail.com>
+Subject: Re: [PATCH] mtd-utils: fix corrupt cleanmarker with flash_erase -j
+	command
+References: <1312350638-25566-1-git-send-email-b35362@freescale.com>
+	<1313507201.2679.2.camel@sauron>
+In-Reply-To: <1313507201.2679.2.camel@sauron>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@linux.freescale.net, dwmw2@infradead.org,
+	linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+=E4=BA=8E 2011=E5=B9=B408=E6=9C=8816=E6=97=A5 23:06, Artem Bityutskiy =E5=
+=86=99=E9=81=93:
+> On Wed, 2011-08-03 at 13:50 +0800, b35362@freescale.com wrote:
+>> From: Liu Shuo<b35362@freescale.com>
+>>
+>> Flash_erase -j should fill discrete freeoob areas with required bytes
+>> of JFFS2 cleanmarker in jffs2_check_nand_cleanmarker(). Not just fill
+>> the first freeoob area.
+>>
+>> Signed-off-by: Liu Shuo<b35362@freescale.com>
+>> Signed-off-by: Li Yang<leoli@freescale.com>
+> ...
+>
+>>   	/*
+>>   	 * Process user arguments
+>> @@ -197,15 +198,40 @@ int main(int argc, char *argv[])
+>>   			if (ioctl(fd, MEMGETOOBSEL,&oobinfo) !=3D 0)
+>>   				return sys_errmsg("%s: unable to get NAND oobinfo", mtd_device);
+>>
+>> +			cleanmarker.totlen =3D cpu_to_je32(8);
+>>   			/* Check for autoplacement */
+>>   			if (oobinfo.useecc =3D=3D MTD_NANDECC_AUTOPLACE) {
+>> +				struct nand_ecclayout_user ecclayout;
+>>   				/* Get the position of the free bytes */
+>> -				if (!oobinfo.oobfree[0][1])
+>> +				if (ioctl(fd, ECCGETLAYOUT,&ecclayout) !=3D 0)
+>> +					return sys_errmsg("%s: unable to get NAND ecclayout", mtd_device=
+);
+>> +
+> Hmm, shouldn't we instead make MTD_OOB_AUTO be available for userspace
+> via an ioctl instead and make flash_eraseall use it instead?
+>
 
-On PowerPC we use _GLOBAL throughout the assembly to define symbols, but
-currently these symbols are missing from the tags generated with
-ARCH=powerpc make tags. This patch modifies the tags.sh script to
-recognise _GLOBAL(.*) so that these symbols will be in the tags.
 
-This is almost (but not quite) PowerPC specific and this change should
-not affect anyone else:
+I think We can add a new ioctl MEMSETOOBMODE for selecting a mode to=20
+access the OOB area.
 
-$ git grep -E '^_GLOBAL\(([^)]*)\).*' |sed 's/^\([^/]*\/[^/]*\)\/.*$/\1/'|uniq -c
-    627 arch/powerpc
-      2 arch/um
+Add new member into struct mtd_info:
 
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
- scripts/tags.sh |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+struct mtd_info {
+     ......
 
-diff --git a/scripts/tags.sh b/scripts/tags.sh
-index 75c5d24f1..38f6617 100755
---- a/scripts/tags.sh
-+++ b/scripts/tags.sh
-@@ -129,7 +129,7 @@ exuberant()
- 	-I EXPORT_SYMBOL,EXPORT_SYMBOL_GPL                      \
- 	-I DEFINE_TRACE,EXPORT_TRACEPOINT_SYMBOL,EXPORT_TRACEPOINT_SYMBOL_GPL \
- 	--extra=+f --c-kinds=+px                                \
--	--regex-asm='/^ENTRY\(([^)]*)\).*/\1/'                  \
-+	--regex-asm='/^(ENTRY|_GLOBAL)\(([^)]*)\).*/\2/'        \
- 	--regex-c='/^SYSCALL_DEFINE[[:digit:]]?\(([^,)]*).*/sys_\1/' \
- 	--regex-c++='/^TRACE_EVENT\(([^,)]*).*/trace_\1/'		\
- 	--regex-c++='/^DEFINE_EVENT\([^,)]*, *([^,)]*).*/trace_\1/'
-@@ -151,7 +151,7 @@ exuberant()
- emacs()
- {
- 	all_sources | xargs $1 -a                               \
--	--regex='/^ENTRY(\([^)]*\)).*/\1/'                      \
-+	--regex='/^(ENTRY|_GLOBAL)(\([^)]*\)).*/\2/'            \
- 	--regex='/^SYSCALL_DEFINE[0-9]?(\([^,)]*\).*/sys_\1/'   \
- 	--regex='/^TRACE_EVENT(\([^,)]*\).*/trace_\1/'		\
- 	--regex='/^DEFINE_EVENT([^,)]*, *\([^,)]*\).*/trace_\1/'
--- 
-1.7.2.5
+     enum {
+          MTD_OOB_PLACE,
+          MTD_OOB_AUTO,
+          MTD_OOB_RAW,
+     } oob_mode;
+}
+
+In function mtd_do_writeoob() (in drivers/mtd/mtdchar.c) :
+     -  ops.mode =3D MTD_OOB_PLACE;
+     + ops.mode =3D mtd->oob_mode;
+
+
+
+Could we do it like this ?
+
+Thanks
+-LiuShuo
