@@ -1,21 +1,20 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E2CD3B6F85
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2011 11:04:45 +1000 (EST)
-Date: Wed, 17 Aug 2011 10:04:34 +0900
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] [v2] ASoC: claim the IRQ when the fsl_ssi device is
-	probed, not opened
-Message-ID: <20110817010433.GC27099@opensource.wolfsonmicro.com>
-References: <1313534865-7795-1-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1313534865-7795-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, lrg@ti.com
+Return-Path: <holt@sgi.com>
+Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
+	by ozlabs.org (Postfix) with ESMTP id 0D679B6F71
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 17 Aug 2011 13:32:36 +1000 (EST)
+From: Robin Holt <holt@sgi.com>
+To: Robin Holt <holt@sgi.com>, "David S. Miller" <davem@davemloft.net>,
+	Kumar Gala <galak@kernel.crashing.org>,
+	Wolfgang Grandegger <wg@grandegger.com>,
+	Marc Kleine-Budde <mkl@pengutronix.de>,
+	U Bhaskar-B22300 <B22300@freescale.com>
+Subject: [PATCH v13 0/6] flexcan: Add support for powerpc flexcan (freescale
+	p1010)
+Date: Tue, 16 Aug 2011 22:32:18 -0500
+Message-Id: <1313551944-28603-1-git-send-email-holt@sgi.com>
+Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
+	PPC list <linuxppc-dev@lists.ozlabs.org>, Robin Holt <holt@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,11 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 16, 2011 at 06:47:45PM -0400, Timur Tabi wrote:
-> The PowerPC Freescale SSI driver is claiming the IRQ when the IRQ when
-> the device is opened, which means that the /proc/interrupts entry for
-> the SSI exists only during playback or capture.  This also meant that
-> the user won't know that the IRQ number is wrong until he tries to use
-> the device.  Instead, we should claim the IRQ when the device is probed.
+David,
 
-Applied, thanks.
+The following set of patches have been reviewed by the above parties and
+all comments have been integrated.  Although the patches stray from the
+drivers/net/can directory, the diversions are related to changes for
+the flexcan driver.
+
+The patch set is based upon your net-next-2.6 tree's commit 6c37e46.
+
+Could you please queue these up for the next appropriate push to Linus'
+tree?
+
+Thanks,
+Robin Holt
