@@ -1,20 +1,22 @@
-Return-Path: <schwab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id DD4B4B6F7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Aug 2011 19:31:20 +1000 (EST)
-From: Andreas Schwab <schwab@redhat.com>
-To: Ian Campbell <Ian.Campbell@citrix.com>
-Subject: Re: build failure with gcc 4.6.0 "array subscript is above array
-	bounds"
-References: <1313656032.5010.247.camel@zakaz.uk.xensource.com>
-Date: Thu, 18 Aug 2011 11:31:17 +0200
-In-Reply-To: <1313656032.5010.247.camel@zakaz.uk.xensource.com> (Ian
-	Campbell's message of "Thu, 18 Aug 2011 09:27:12 +0100")
-Message-ID: <m34o1fyska.fsf@hase.home>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
+	[213.199.154.208])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6EEECB6FA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2011 02:25:13 +1000 (EST)
+Message-ID: <4E4D3CE0.7020602@freescale.com>
+Date: Thu, 18 Aug 2011 11:25:04 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+To: <b35362@freescale.com>
+Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
+	large-page Nand chip
+References: <1313634783-8855-1-git-send-email-b35362@freescale.com>
+In-Reply-To: <1313634783-8855-1-git-send-email-b35362@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ian Campbell <Ian.Campbell@citrix.com> writes:
+On 08/17/2011 09:33 PM, b35362@freescale.com wrote:
+> From: Liu Shuo <b35362@freescale.com>
+> 
+> Freescale FCM controller has a 2K size limitation of buffer RAM. In order
+> to support the Nand flash chip whose page size is larger than 2K bytes,
+> we divide a page into multi-2K pages for MTD layer driver. In that case,
+> we force to set the page size to 2K bytes. We convert the page address of
+> MTD layer driver to a real page address in flash chips and a column index
+> in fsl_elbc driver. We can issue any column address by UA instruction of
+> elbc controller.
+> 
+> NOTE: Due to there is a limitation of 'Number of Partial Program Cycles in
+> the Same Page (NOP)', the flash chip which is supported by this workaround 
+> have to meet below conditions.
+> 	1. page size is not greater than 4KB 
+> 	2.	1) if main area and spare area have independent NOPs:
+> 			  main  area NOP    :    >=3
+> 			  spare area NOP    :    >=2?
 
-> I noticed this with a defconfig build:
->       CC      arch/powerpc/kernel/ptrace.o
->     arch/powerpc/kernel/ptrace.c: In function 'arch_ptrace':
->     arch/powerpc/kernel/ptrace.c:1502:5: error: array subscript is above array bounds [-Werror=array-bounds]
->     arch/powerpc/kernel/ptrace.c:1530:5: error: array subscript is above array bounds [-Werror=array-bounds]
->
-> That corresponds to:
-> 	tmp = ((unsigned long *)child->thread.fpr)
-> 		[TS_FPRWIDTH * (index - PT_FPR0)];
->
-> child->thread.fpr is "double fpr[32][TS_FPRWIDTH]".
->
-> index has already been bounds checked so we know it is <= PT_FPSCR.
->
-> I tried to fix but I don't really know enough about PPC to figure out
-> the correct fix is. PT_FPSCR is "PT_FPR0 + 32" on ppc64, which seems
-> consistent with the fpr definition.
+How often are the NOPs split like this?
 
-Perhaps there should be a union that overlays fpr with an array of
-longs.
+> 		2) if main area and spare area have a common NOP: 
+> 			  NOP               :    >=4
 
-> On ppc32 PT_FPSCR is "PT_FPR0 + 2*32 + 1", I tried replacing the 32 with
-> "PT_FPSCR - PT_FPR0" (+ 1) but that got me into the BUILD_BUG_ONs at
-> line 346 and 374. At this point I'm afraid gave up trying to fix things,
-> I hope the report is useful anyway...
+This depends on how the flash is used.  If you treat it as a NOP1 flash
+(e.g. run ubifs rather than jffs2), then you need NOP2 for a 4K chip and
+NOP4 for an 8K chip.  OTOH, if you would be making full use of NOP4 on a
+real 2K chip, you'll need NOP8 for a 4K chip.
 
-On ppc32 a single ptrace call can only read/write half of an fpr, so
-each fpr occupies two slots.
+The NOP restrictions should be documented in the code itself, not just
+in the git changelog.  Maybe print it to the console when this hack is
+used, along with the NOP value read from the ID.  If it's less than 4
+for 4K or 8 for 8K, also print a message saying not to use jffs2 (does
+yaffs2 do similar things?).  If it's less than 2 for 4K or 4 for 8K, the
+probe should fail.
 
-Andreas.
-
--- 
-Andreas Schwab, schwab@redhat.com
-GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
-"And now for something completely different."
+-Scott
