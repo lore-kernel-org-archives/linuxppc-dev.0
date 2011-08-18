@@ -1,22 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE002.bigfish.com (va3ehsobe002.messaging.microsoft.com
-	[216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 49630B6F70
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2011 04:27:34 +1000 (EST)
-Message-ID: <4E4D5985.3080300@freescale.com>
-Date: Thu, 18 Aug 2011 13:27:17 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: <b35362@freescale.com>
-Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
-	large-page Nand chip
-References: <1313634783-8855-1-git-send-email-b35362@freescale.com>
-	<4E4D3CE0.7020602@freescale.com>
-In-Reply-To: <4E4D3CE0.7020602@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
+Return-Path: <carlos.moratelli@digitel.com.br>
+Received: from atena.digitel.com.br (ares.digitel.com.br [200.198.105.40])
+	by ozlabs.org (Postfix) with ESMTP id 5F6E6B6F18
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Aug 2011 06:49:02 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by atena.digitel.com.br (Postfix) with ESMTP id BE61132E8023
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Aug 2011 17:47:31 -0300 (BRT)
+Received: from atena.digitel.com.br ([127.0.0.1])
+	by localhost (atena.digitel.com.br [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id jx6TPSGTEhVz for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Aug 2011 17:47:30 -0300 (BRT)
+Received: from [192.168.20.229] (unknown [192.168.20.229])
+	by atena.digitel.com.br (Postfix) with ESMTP id 535DD32E801D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Aug 2011 17:47:30 -0300 (BRT)
+Subject: Question about mem parameter in the bootargs
+From: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Aug 2011 17:40:42 -0300
+Message-ID: <1313700042.14585.2.camel@moratelli-host.digitel.com.br>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,15 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/18/2011 11:25 AM, Scott Wood wrote:
-> The NOP restrictions should be documented in the code itself, not just
-> in the git changelog.  Maybe print it to the console when this hack is
-> used, along with the NOP value read from the ID.  If it's less than 4
-> for 4K or 8 for 8K, also print a message saying not to use jffs2 (does
-> yaffs2 do similar things?).  If it's less than 2 for 4K or 4 for 8K, the
-> probe should fail.
+Hi,
 
-We should also warn the user about the need to prepare the NAND chip by
-copying the bad block markers to the OOB of the new layout.
+Does someone knows what is the smallest step to increase the mem
+parameter in the bootargs?
 
--Scott
+I am running linux in an embedded system where I have a very critical
+memory constraint and  I would like to have mem=3584k instead mem=3M or
+mem=4M.
+
+The Linux boot up sucessfull with mem=3M or mem=4M but the kernel
+crashes with mem=3584k.
+
+thank you
+
+Moratelli
