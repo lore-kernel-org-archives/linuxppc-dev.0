@@ -1,25 +1,30 @@
-Return-Path: <B35362@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
-	[213.199.154.140])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98D85B6F71
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2011 13:13:32 +1000 (EST)
-Message-ID: <4E4DD661.5080006@freescale.com>
-Date: Fri, 19 Aug 2011 11:20:01 +0800
-From: LiuShuo <b35362@freescale.com>
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 93B57B6F65
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2011 17:45:47 +1000 (EST)
+Received: from /spool/local by au.ibm.com with XMail ESMTP
+	for <linuxppc-dev@ozlabs.org> from <prasad@linux.vnet.ibm.com>;
+	Fri, 19 Aug 2011 08:42:51 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p7J7iQFD1044710
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2011 17:44:26 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p7J7jZFb017756
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2011 17:45:35 +1000
+Date: Fri, 19 Aug 2011 13:15:27 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/2] Changes to PowerPC ptrace flags using watchpoints
+Message-ID: <20110819074527.GA21817@in.ibm.com>
 MIME-Version: 1.0
-To: Matthieu CASTET <matthieu.castet@parrot.com>
-Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
-	large-page Nand chip
-References: <1313634783-8855-1-git-send-email-b35362@freescale.com>
-	<4E4D452C.7050805@parrot.com>
-In-Reply-To: <4E4D452C.7050805@parrot.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"dwmw2@infradead.org" <dwmw2@infradead.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: Thiago Jung Bauermann <bauerman@br.ibm.com>,
+	Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>, dwg@au1.ibm.com
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +34,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=E4=BA=8E 2011=E5=B9=B408=E6=9C=8819=E6=97=A5 01:00, Matthieu CASTET =E5=86=
-=99=E9=81=93:
-> b35362@freescale.com a =C3=A9crit :
->> From: Liu Shuo<b35362@freescale.com>
->>
->> Freescale FCM controller has a 2K size limitation of buffer RAM. In or=
-der
->> to support the Nand flash chip whose page size is larger than 2K bytes=
-,
->> we divide a page into multi-2K pages for MTD layer driver. In that cas=
-e,
->> we force to set the page size to 2K bytes. We convert the page address=
- of
->> MTD layer driver to a real page address in flash chips and a column in=
-dex
->> in fsl_elbc driver. We can issue any column address by UA instruction =
-of
->> elbc controller.
->>
-> Why do you need to do that ?
->
-> When mtd send you a 4k page, why can't you write it by 2*2k pages write=
- ?
-1. It's easy to implement.
-2. We don't need to move the data in buffer more times, because we
-want to use the HW_ECC.
+Hi All,
+        Please find a set of two patches that introduce generic
+hw-breakpoint interfaces for a couple of ptrace flags used by server-class
+processors and another change to advertise a feature to user-space hitherto
+available and used, but not claimed as supported.
 
-In flash chip per Page:
-----------------------------------------------------------------
-| first data | first oob | second data | second oob |
-----------------------------------------------------------------
+GDB, which recently began using the
+PPC_PTRACE_GETHWDBGINFO/PPC_PTRACE_SETHWDEBUG/PPC_PTRACE_DELHWDEBUG
+flags on BookS processors is presently unable to set watchpoints. The
+changes in Patch1, will fix that issue and help it use a common set of code
+across BookE and BookS.
 
-> Even better send the first 2K and then if your controller allow it send=
- the
-> remaining 2K without command/address phase.
-The elbc controller don't allow that.
-I have to send twice Program CMD for writing the whole 4KB data.
+K.Prasad (2):
+  [hw-breakpoint] Use generic hw-breakpoint interfaces for new PPC
+    ptrace flags
+  [PowerPC Book3E] Introduce new ptrace debug feature flag
 
->
-> Matthieu
->
+ Documentation/powerpc/ptrace.txt  |   16 ++++++
+ arch/powerpc/include/asm/ptrace.h |    1 +
+ arch/powerpc/kernel/ptrace.c      |  105
+++++++++++++++++++++++++++++++++++---
+ 3 files changed, 114 insertions(+), 8 deletions(-)
+
+Thanks,
+K.Prasad
