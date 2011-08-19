@@ -1,21 +1,16 @@
-Return-Path: <matthieu.castet@parrot.com>
-Received: from co202.xi-lite.net (co202.xi-lite.net [149.6.83.202])
-	by ozlabs.org (Postfix) with ESMTP id 60F02B6F6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2011 18:57:28 +1000 (EST)
-Message-ID: <4E4E2571.20409@parrot.com>
-Date: Fri, 19 Aug 2011 10:57:21 +0200
-From: Matthieu CASTET <matthieu.castet@parrot.com>
+Return-Path: <Ian.Campbell@eu.citrix.com>
+From: Ian Campbell <ian.campbell@citrix.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH 40/75] pasemi: convert to SKB paged frag API.
+Date: Fri, 19 Aug 2011 14:27:12 +0100
+Message-ID: <1313760467-8598-40-git-send-email-ian.campbell@citrix.com>
+In-Reply-To: <1313760393.5010.356.camel@zakaz.uk.xensource.com>
+References: <1313760393.5010.356.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: LiuShuo <b35362@freescale.com>
-Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
-	large-page Nand chip
-References: <1313634783-8855-1-git-send-email-b35362@freescale.com>
-	<4E4D452C.7050805@parrot.com> <4E4DD661.5080006@freescale.com>
-In-Reply-To: <4E4DD661.5080006@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"dwmw2@infradead.org" <dwmw2@infradead.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Content-Type: text/plain
+Cc: Ian Campbell <ian.campbell@citrix.com>, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LiuShuo a écrit :
-> 于 2011年08月19日 01:00, Matthieu CASTET 写道:
->> b35362@freescale.com a écrit :
->>> From: Liu Shuo<b35362@freescale.com>
->>>
->>> Freescale FCM controller has a 2K size limitation of buffer RAM. In order
->>> to support the Nand flash chip whose page size is larger than 2K bytes,
->>> we divide a page into multi-2K pages for MTD layer driver. In that case,
->>> we force to set the page size to 2K bytes. We convert the page address of
->>> MTD layer driver to a real page address in flash chips and a column index
->>> in fsl_elbc driver. We can issue any column address by UA instruction of
->>> elbc controller.
->>>
->> Why do you need to do that ?
->>
->> When mtd send you a 4k page, why can't you write it by 2*2k pages write ?
-> 1. It's easy to implement.
-> 2. We don't need to move the data in buffer more times, because we
-> want to use the HW_ECC.
-> 
-> In flash chip per Page:
-> ----------------------------------------------------------------
-> | first data | first oob | second data | second oob |
-> ----------------------------------------------------------------
-How the bad block marker are handled with this remapping ?
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: devicetree-discuss@lists.ozlabs.org
+---
+ drivers/net/pasemi_mac.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Mtd will search in the first oob, but this will be the data zone of the nand,
-not where manufacturer put marker.
-
-Matthieu
+diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
+index 9ec112c..3cd2cd3 100644
+--- a/drivers/net/pasemi_mac.c
++++ b/drivers/net/pasemi_mac.c
+@@ -1505,9 +1505,8 @@ static int pasemi_mac_start_tx(struct sk_buff *skb, struct net_device *dev)
+ 	for (i = 0; i < nfrags; i++) {
+ 		skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
+ 
+-		map[i+1] = pci_map_page(mac->dma_pdev, frag->page,
+-					frag->page_offset, frag->size,
+-					PCI_DMA_TODEVICE);
++		map[i + 1] = skb_frag_dma_map(&mac->dma_pdev->dev, frag, 0,
++					      frag->size, PCI_DMA_TODEVICE);
+ 		map_size[i+1] = frag->size;
+ 		if (pci_dma_mapping_error(mac->dma_pdev, map[i+1])) {
+ 			nfrags = i;
+-- 
+1.7.2.5
