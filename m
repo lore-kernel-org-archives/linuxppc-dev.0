@@ -1,9 +1,9 @@
 Return-Path: <julia@diku.dk>
 From: Julia Lawall <julia@diku.dk>
 To: Timur Tabi <timur@freescale.com>
-Subject: [PATCH 2/2] sound/soc/fsl/mpc8610_hpcd.c: add missing of_node_put
-Date: Sat, 20 Aug 2011 09:02:01 +0200
-Message-Id: <1313823721-16930-2-git-send-email-julia@diku.dk>
+Subject: [PATCH] sound/soc/fsl/fsl_dma.c: add missing of_node_put
+Date: Sat, 20 Aug 2011 09:23:45 +0200
+Message-Id: <1313825025-17590-1-git-send-email-julia@diku.dk>
 Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
 	devicetree-discuss@lists.ozlabs.org,
 	Mark Brown <broonie@opensource.wolfsonmicro.com>,
@@ -21,82 +21,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Julia Lawall <julia@diku.dk>
 
-The first change is to add an of_node_put, since codec_np has previously
-been allocated.  The rest of the patch reorganizes the error handling code
-so the only code executed is that which is needed.
+of_parse_phandle increments the reference count of np, so this should be
+decremented before trying the next possibility.
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
 // <smpl>
 @@
-identifier x;
-expression E1!=0,E2,E3,E4;
-statement S;
-iterator I;
+expression e,e1,e2;
 @@
 
-(
-if (...) { ... when != of_node_put(x)
-               when != x = E3
-               when != E3 = x
-*  return ...;
- }
-... when != x = E2
-    when != I(...,x,...) S
-if (...) { ... when != x = E4
- of_node_put(x); ... return ...; }
-)
+*e = of_parse_phandle(...)
+... when != of_node_put(e)
+    when != true e == NULL
+    when != e2 = e
+e = e1
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- sound/soc/fsl/mpc8610_hpcd.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ sound/soc/fsl/fsl_dma.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index a192979..358f0ba 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -345,8 +345,10 @@ static int mpc8610_hpcd_probe(struct platform_device *pdev)
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index 0efc04a..b33271b 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -880,10 +880,12 @@ static struct device_node *find_ssi_node(struct device_node *dma_channel_np)
+ 		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
+ 		if (np == dma_channel_np)
+ 			return ssi_np;
++		of_node_put(np);
+ 
+ 		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
+ 		if (np == dma_channel_np)
+ 			return ssi_np;
++		of_node_put(np);
  	}
  
- 	machine_data = kzalloc(sizeof(struct mpc8610_hpcd_data), GFP_KERNEL);
--	if (!machine_data)
--		return -ENOMEM;
-+	if (!machine_data) {
-+		ret = -ENOMEM;
-+		goto error_alloc;
-+	}
- 
- 	machine_data->dai[0].cpu_dai_name = dev_name(&ssi_pdev->dev);
- 	machine_data->dai[0].ops = &mpc8610_hpcd_ops;
-@@ -494,7 +496,7 @@ static int mpc8610_hpcd_probe(struct platform_device *pdev)
- 	ret = platform_device_add(sound_device);
- 	if (ret) {
- 		dev_err(&pdev->dev, "platform device add failed\n");
--		goto error;
-+		goto error_sound;
- 	}
- 	dev_set_drvdata(&pdev->dev, sound_device);
- 
-@@ -502,14 +504,12 @@ static int mpc8610_hpcd_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
-+error_sound:
-+	platform_device_unregister(sound_device);
- error:
--	of_node_put(codec_np);
--
--	if (sound_device)
--		platform_device_unregister(sound_device);
--
- 	kfree(machine_data);
--
-+error_alloc:
-+	of_node_put(codec_np);
- 	return ret;
- }
- 
+ 	return NULL;
