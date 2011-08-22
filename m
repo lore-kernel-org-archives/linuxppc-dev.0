@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 23053B6F62
+	by ozlabs.org (Postfix) with ESMTPS id CE427B6F84
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Aug 2011 06:54:07 +1000 (EST)
+	Tue, 23 Aug 2011 07:02:02 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Avi Kivity <avi@redhat.com>
-In-Reply-To: <4E51F782.7060005@redhat.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+In-Reply-To: <1314027950.6866.242.camel@x201.home>
 References: <1311983933.8793.42.camel@pasglop>
 	<1312050011.2265.185.camel@x201.home>
 	<20110802082848.GD29719@yookeroo.fritz.box>
@@ -17,17 +17,19 @@ References: <1311983933.8793.42.camel@pasglop>
 	<20110803020422.GF29719@yookeroo.fritz.box>
 	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
 	<1312944513.29273.28.camel@pasglop>
-	<1313859105.6866.192.camel@x201.home>  <4E51F782.7060005@redhat.com>
+	<1313859105.6866.192.camel@x201.home>
+	<20110822055509.GI30097@yookeroo.fritz.box>
+	<1314027950.6866.242.camel@x201.home>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Aug 2011 06:53:46 +1000
-Message-ID: <1314046426.7662.30.camel@pasglop>
+Date: Tue, 23 Aug 2011 07:01:44 +1000
+Message-ID: <1314046904.7662.37.camel@pasglop>
 Mime-Version: 1.0
-Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+Cc: aafabbri <aafabbri@cisco.com>, Alexey Kardashevskiy <aik@au1.ibm.com>,
 	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
 	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
 	qemu-devel <qemu-devel@nongnu.org>,
-	iommu <iommu@lists.linux-foundation.org>, aafabbri <aafabbri@cisco.com>,
-	Alex Williamson <alex.williamson@redhat.com>,
+	David Gibson <dwg@au1.ibm.com>, chrisw <chrisw@sous-sol.org>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
 	Anthony Liguori <anthony@codemonkey.ws>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,38 +41,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-08-22 at 09:30 +0300, Avi Kivity wrote:
-> On 08/20/2011 07:51 PM, Alex Williamson wrote:
-> > We need to address both the description and enforcement of device
-> > groups.  Groups are formed any time the iommu does not have resolution
-> > between a set of devices.  On x86, this typically happens when a
-> > PCI-to-PCI bridge exists between the set of devices and the iommu.  For
-> > Power, partitionable endpoints define a group.  Grouping information
-> > needs to be exposed for both userspace and kernel internal usage.  This
-> > will be a sysfs attribute setup by the iommu drivers.  Perhaps:
-> >
-> > # cat /sys/devices/pci0000:00/0000:00:19.0/iommu_group
-> > 42
-> >
-> 
-> $ readlink /sys/devices/pci0000:00/0000:00:19.0/iommu_group
-> ../../../path/to/device/which/represents/the/resource/constraint
-> 
-> (the pci-to-pci bridge on x86, or whatever node represents partitionable 
-> endpoints on power)
+On Mon, 2011-08-22 at 09:45 -0600, Alex Williamson wrote:
 
-The constraint might not necessarily be a device.
+> Yes, that's the idea.  An open question I have towards the configuration
+> side is whether we might add iommu driver specific options to the
+> groups.  For instance on x86 where we typically have B:D.F granularity,
+> should we have an option not to trust multi-function devices and use a
+> B:D granularity for grouping?
 
-The PCI bridge is just an example. There are other possible constraints.
-On POWER for example, it could be a limit in how far I can segment the
-DMA address space, forcing me to arbitrarily put devices together, or it
-could be a similar constraint related to how the MMIO space is broken
-up.
+Or even B or range of busses... if you want to enforce strict isolation
+you really can't trust anything below a bus level :-)
 
-So either that remains a path in which case we do have a separate set of
-sysfs nodes representing the groups themselves which may or may not
-itself contain a pointer to the "constraining" device, or we just make
-that an arbitrary number (in my case the PE#)
+> Right, we can also combine models.  Binding a device to vfio
+> creates /dev/vfio$GROUP, which only allows a subset of ioctls and no
+> device access until all the group devices are also bound.  I think
+> the /dev/vfio/$GROUP might help provide an enumeration interface as well
+> though, which could be useful.
+
+Could be tho in what form ? returning sysfs pathes ?
+
+> 1:1 group<->process is probably too strong.  Not allowing concurrent
+> open()s on the group file enforces a single userspace entity is
+> responsible for that group.  Device fds can be passed to other
+> processes, but only retrieved via the group fd.  I suppose we could even
+> branch off the dma interface into a different fd, but it seems like we
+> would logically want to serialize dma mappings at each iommu group
+> anyway.  I'm open to alternatives, this just seemed an easy way to do
+> it.  Restricting on UID implies that we require isolated qemu instances
+> to run as different UIDs.  I know that's a goal, but I don't know if we
+> want to make it an assumption in the group security model.
+
+1:1 process has the advantage of linking to an -mm which makes the whole
+mmu notifier business doable. How do you want to track down mappings and
+do the second level translation in the case of explicit map/unmap (like
+on power) if you are not tied to an mm_struct ?
+
+> Yes.  I'm not sure there's a good ROI to prioritize that model.  We have
+> to assume >1 device per guest is a typical model and that the iotlb is
+> large enough that we might improve thrashing to see both a resource and
+> performance benefit from it.  I'm open to suggestions for how we could
+> include it though.
+
+Sharing may or may not be possible depending on setups so yes, it's a
+bit tricky.
+
+My preference is to have a static interface (and that's actually where
+your pet netlink might make some sense :-) to create "synthetic" groups
+made of other groups if the arch allows it. But that might not be the
+best approach. In another email I also proposed an option for a group to
+"capture" another one...
+
+> > If that's
+> > not what you're saying, how would the domains - now made up of a
+> > user's selection of groups, rather than individual devices - be
+> > configured?
+> > 
+> > > Hope that captures it, feel free to jump in with corrections and
+> > > suggestions.  Thanks,
+> > 
+
+Another aspect I don't see discussed is how we represent these things to
+the guest.
+
+On Power for example, I have a requirement that a given iommu domain is
+represented by a single dma window property in the device-tree. What
+that means is that that property needs to be either in the node of the
+device itself if there's only one device in the group or in a parent
+node (ie a bridge or host bridge) if there are multiple devices.
+
+Now I do -not- want to go down the path of simulating P2P bridges,
+besides we'll quickly run out of bus numbers if we go there.
+
+For us the most simple and logical approach (which is also what pHyp
+uses and what Linux handles well) is really to expose a given PCI host
+bridge per group to the guest. Believe it or not, it makes things
+easier :-)
 
 Cheers,
-Ben
+Ben.
