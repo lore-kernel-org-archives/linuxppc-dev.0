@@ -1,20 +1,15 @@
-Return-Path: <julia@diku.dk>
-Date: Mon, 22 Aug 2011 16:06:43 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] sound/soc/fsl/fsl_dma.c: add missing of_node_put
-In-Reply-To: <4E5261A5.5050608@freescale.com>
-Message-ID: <Pine.LNX.4.64.1108221606220.10948@ask.diku.dk>
-References: <1313825025-17590-1-git-send-email-julia@diku.dk>
-	<4E5261A5.5050608@freescale.com>
+Return-Path: <B04825@freescale.com>
+From: Timur Tabi <timur@freescale.com>
+To: <kernel-janitors@vger.kernel.org>, <lrg@ti.com>,
+	<broonie@opensource.wolfsonmicro.com>, <perex@perex.cz>, <tiwai@suse.de>,
+	<grant.likely@secretlab.ca>, <alsa-devel@alsa-project.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<devicetree-discuss@lists.ozlabs.org>, <julia@diku.dk>
+Subject: [PATCH] [v2] sound/soc/fsl/fsl_dma.c: add missing of_node_put
+Date: Mon, 22 Aug 2011 09:22:41 -0500
+Message-ID: <1314022961-27513-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
-	devicetree-discuss@lists.ozlabs.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Jaroslav Kysela <perex@perex.cz>, linuxppc-dev@lists.ozlabs.org,
-	Liam Girdwood <lrg@ti.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 22 Aug 2011, Timur Tabi wrote:
+of_parse_phandle increments the reference count of np, so this should be
+decremented before trying the next possibility.
 
-> Julia Lawall wrote:
-> > diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
-> > index 0efc04a..b33271b 100644
-> > --- a/sound/soc/fsl/fsl_dma.c
-> > +++ b/sound/soc/fsl/fsl_dma.c
-> > @@ -880,10 +880,12 @@ static struct device_node *find_ssi_node(struct device_node *dma_channel_np)
-> >  		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
-> >  		if (np == dma_channel_np)
-> >  			return ssi_np;
-> > +		of_node_put(np);
-> >  
-> >  		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
-> >  		if (np == dma_channel_np)
-> >  			return ssi_np;
-> > +		of_node_put(np);
-> >  	}
-> 
-> Thanks for catching the problem, Julia, but the fix is not quite correct.  My
-> code assumes that of_parse_phandle() doesn't claim the node, but it doesn't
-> actually use the node pointer, either.  All I care about is whether 'np' is
-> equal to dma_channel_np.  I'm not going to use 'np'.  So I think the real fix is
-> this:
-> 
-> @@ -880,10 +880,12 @@ static struct device_node *find_ssi_node(struct
-> device_node *dma_channel_np)
->  		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
-> +		of_node_put(np);
->  		if (np == dma_channel_np)
->  			return ssi_np;
-> 
->  		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
-> +		of_node_put(np);
->  		if (np == dma_channel_np)
->  			return ssi_np;
->  	}
-> 
->  	return NULL;
+Since we don't actually use np, we can decrement the reference count
+immediately.
 
-OK, that looks reasonable.
+Reported-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ sound/soc/fsl/fsl_dma.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-julia
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index 6680c0b..b300f4b 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -877,10 +877,12 @@ static struct device_node *find_ssi_node(struct device_node *dma_channel_np)
+ 		 * assume that device_node pointers are a valid comparison.
+ 		 */
+ 		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
++		of_node_put(np);
+ 		if (np == dma_channel_np)
+ 			return ssi_np;
+ 
+ 		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
++		of_node_put(np);
+ 		if (np == dma_channel_np)
+ 			return ssi_np;
+ 	}
+-- 
+1.7.3.4
