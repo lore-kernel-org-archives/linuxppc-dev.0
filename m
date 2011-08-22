@@ -1,25 +1,45 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
-	by ozlabs.org (Postfix) with ESMTP id 5B76AB6F6F
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BDAC7B6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Aug 2011 11:30:50 +1000 (EST)
-Date: Mon, 22 Aug 2011 11:30:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: linux-next: boot test failure (net tree)
-Message-Id: <20110822113032.15087c2e190e2b0c3ee7dfb8@canb.auug.org.au>
-In-Reply-To: <20110817.225356.1790362313048139752.davem@davemloft.net>
-References: <20110816.171525.639251389938336183.davem@davemloft.net>
-	<20110817105002.efebf85d08460ad99b14be8e@canb.auug.org.au>
-	<20110818152214.661858a61496993aaef2c704@canb.auug.org.au>
-	<20110817.225356.1790362313048139752.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mikey@neuling.org, netdev@vger.kernel.org,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, jeffrey.t.kirsher@intel.com,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org
+	Mon, 22 Aug 2011 15:55:43 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id p7M5td7B012667
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2011 15:55:39 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p7M5sNQD1147086
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2011 15:54:23 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p7M5tcTE019297
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2011 15:55:38 +1000
+Date: Mon, 22 Aug 2011 15:55:09 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+Message-ID: <20110822055509.GI30097@yookeroo.fritz.box>
+References: <1311983933.8793.42.camel@pasglop>
+	<1312050011.2265.185.camel@x201.home>
+	<20110802082848.GD29719@yookeroo.fritz.box>
+	<1312308847.2653.467.camel@bling.home>
+	<1312310121.2653.470.camel@bling.home>
+	<20110803020422.GF29719@yookeroo.fritz.box>
+	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
+	<1312944513.29273.28.camel@pasglop>
+	<1313859105.6866.192.camel@x201.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1313859105.6866.192.camel@x201.home>
+Cc: aafabbri <aafabbri@cisco.com>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
+	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,231 +49,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Dave,
-
-On Wed, 17 Aug 2011 22:53:56 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
->
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Thu, 18 Aug 2011 15:22:14 +1000
+On Sat, Aug 20, 2011 at 09:51:39AM -0700, Alex Williamson wrote:
+> We had an extremely productive VFIO BoF on Monday.  Here's my attempt to
+> capture the plan that I think we agreed to:
 > 
-> > Mikey asks:  Will Dave take these updates if we get Acks from the
-> > maintainers?  :-)
+> We need to address both the description and enforcement of device
+> groups.  Groups are formed any time the iommu does not have resolution
+> between a set of devices.  On x86, this typically happens when a
+> PCI-to-PCI bridge exists between the set of devices and the iommu.  For
+> Power, partitionable endpoints define a group.  Grouping information
+> needs to be exposed for both userspace and kernel internal usage.  This
+> will be a sysfs attribute setup by the iommu drivers.  Perhaps:
 > 
-> I'm more than happy to :-)
+> # cat /sys/devices/pci0000:00/0000:00:19.0/iommu_group
+> 42
+> 
+> (I use a PCI example here, but attribute should not be PCI specific)
 
-Here's what I am applying as a merge fixup to the net tree today so that
-my ppc64_defconfig builds actually build more or less the same set of
-drivers as before this rearrangement.
+Ok.  Am I correct in thinking these group IDs are representing the
+minimum granularity, and are therefore always static, defined only by
+the connected hardware, not by configuration?
 
-This has no Acks yet, but produces a very similar .config to what we had
-previously.
+> >From there we have a few options.  In the BoF we discussed a model where
+> binding a device to vfio creates a /dev/vfio$GROUP character device
+> file.  This "group" fd provides provides dma mapping ioctls as well as
+> ioctls to enumerate and return a "device" fd for each attached member of
+> the group (similar to KVM_CREATE_VCPU).  We enforce grouping by
+> returning an error on open() of the group fd if there are members of the
+> group not bound to the vfio driver.  Each device fd would then support a
+> similar set of ioctls and mapping (mmio/pio/config) interface as current
+> vfio, except for the obvious domain and dma ioctls superseded by the
+> group fd.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 22 Aug 2011 11:23:56 +1000
-Subject: [PATCH] powerpc: update ppc64_defconfig for net device movement
+It seems a slightly strange distinction that the group device appears
+when any device in the group is bound to vfio, but only becomes usable
+when all devices are bound.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/configs/ppc64_defconfig |   71 +++++++++++++--------------------
- 1 files changed, 28 insertions(+), 43 deletions(-)
+> Another valid model might be that /dev/vfio/$GROUP is created for all
+> groups when the vfio module is loaded.  The group fd would allow open()
+> and some set of iommu querying and device enumeration ioctls, but would
+> error on dma mapping and retrieving device fds until all of the group
+> devices are bound to the vfio driver.
 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 84a685a5..9a424c4 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -49,7 +49,6 @@ CONFIG_NO_HZ=y
- CONFIG_HIGH_RES_TIMERS=y
- CONFIG_HZ_100=y
- CONFIG_BINFMT_MISC=m
--CONFIG_HOTPLUG_CPU=y
- CONFIG_KEXEC=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_MEMORY_HOTREMOVE=y
-@@ -75,7 +74,6 @@ CONFIG_INET_ESP=m
- CONFIG_INET_IPCOMP=m
- # CONFIG_IPV6 is not set
- CONFIG_NETFILTER=y
--CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NF_CONNTRACK=m
- CONFIG_NF_CONNTRACK_EVENTS=y
- CONFIG_NF_CT_PROTO_SCTP=m
-@@ -133,7 +131,6 @@ CONFIG_NETFILTER_XT_MATCH_U32=m
- CONFIG_NF_CONNTRACK_IPV4=m
- CONFIG_IP_NF_QUEUE=m
- CONFIG_IP_NF_IPTABLES=m
--CONFIG_IP_NF_MATCH_ADDRTYPE=m
- CONFIG_IP_NF_MATCH_AH=m
- CONFIG_IP_NF_MATCH_ECN=m
- CONFIG_IP_NF_MATCH_TTL=m
-@@ -145,7 +142,6 @@ CONFIG_NF_NAT=m
- CONFIG_IP_NF_TARGET_MASQUERADE=m
- CONFIG_IP_NF_TARGET_NETMAP=m
- CONFIG_IP_NF_TARGET_REDIRECT=m
--CONFIG_NF_NAT_SNMP_BASIC=m
- CONFIG_IP_NF_MANGLE=m
- CONFIG_IP_NF_TARGET_CLUSTERIP=m
- CONFIG_IP_NF_TARGET_ECN=m
-@@ -176,7 +172,6 @@ CONFIG_CHR_DEV_SG=y
- CONFIG_SCSI_MULTI_LUN=y
- CONFIG_SCSI_CONSTANTS=y
- CONFIG_SCSI_FC_ATTRS=y
--CONFIG_SCSI_SAS_ATTRS=m
- CONFIG_SCSI_CXGB3_ISCSI=m
- CONFIG_SCSI_CXGB4_ISCSI=m
- CONFIG_SCSI_BNX2_ISCSI=m
-@@ -208,13 +203,6 @@ CONFIG_DM_SNAPSHOT=m
- CONFIG_DM_MIRROR=m
- CONFIG_DM_ZERO=m
- CONFIG_DM_MULTIPATH=m
--CONFIG_IEEE1394=y
--CONFIG_IEEE1394_OHCI1394=y
--CONFIG_IEEE1394_SBP2=m
--CONFIG_IEEE1394_ETH1394=m
--CONFIG_IEEE1394_RAWIO=y
--CONFIG_IEEE1394_VIDEO1394=m
--CONFIG_IEEE1394_DV1394=m
- CONFIG_ADB_PMU=y
- CONFIG_PMAC_SMU=y
- CONFIG_THERM_PM72=y
-@@ -223,43 +211,49 @@ CONFIG_WINDFARM_PM81=y
- CONFIG_WINDFARM_PM91=y
- CONFIG_WINDFARM_PM112=y
- CONFIG_WINDFARM_PM121=y
--CONFIG_NETDEVICES=y
- CONFIG_DUMMY=m
- CONFIG_BONDING=m
- CONFIG_TUN=m
- CONFIG_MARVELL_PHY=y
- CONFIG_BROADCOM_PHY=m
--CONFIG_NET_ETHERNET=y
--CONFIG_SUNGEM=y
- CONFIG_NET_VENDOR_3COM=y
- CONFIG_VORTEX=y
--CONFIG_IBMVETH=m
--CONFIG_NET_PCI=y
--CONFIG_PCNET32=y
--CONFIG_E100=y
-+CONFIG_NET_VENDOR_ALTEON=y
- CONFIG_ACENIC=m
- CONFIG_ACENIC_OMIT_TIGON_I=y
--CONFIG_E1000=y
--CONFIG_E1000E=y
-+CONFIG_NET_VENDOR_AMD=y
-+CONFIG_PCNET32=y
- CONFIG_TIGON3=y
--CONFIG_BNX2=m
--CONFIG_SPIDER_NET=m
--CONFIG_GELIC_NET=m
--CONFIG_GELIC_WIRELESS=y
- CONFIG_CHELSIO_T1=m
--CONFIG_CHELSIO_T3=m
--CONFIG_CHELSIO_T4=m
-+CONFIG_NET_VENDOR_EMULEX=y
-+CONFIG_BE2NET=m
-+CONFIG_NET_VENDOR_EXAR=y
-+CONFIG_S2IO=m
-+CONFIG_NET_VENDOR_IBM=y
-+CONFIG_IBMVETH=m
-+CONFIG_ISERIES_VETH=m
- CONFIG_EHEA=m
--CONFIG_IXGBE=m
-+CONFIG_NET_VENDOR_INTEL=y
-+CONFIG_E100=y
-+CONFIG_E1000=y
-+CONFIG_E1000E=y
- CONFIG_IXGB=m
--CONFIG_S2IO=m
-+CONFIG_IXGBE=m
-+CONFIG_MLX4_EN=m
-+CONFIG_NET_VENDOR_MYRI=y
- CONFIG_MYRI10GE=m
--CONFIG_NETXEN_NIC=m
-+CONFIG_NET_VENDOR_NVIDIA=y
-+CONFIG_NET_VENDOR_PASEMI=y
- CONFIG_PASEMI_MAC=y
--CONFIG_MLX4_EN=m
-+CONFIG_NET_VENDOR_QLOGIC=y
- CONFIG_QLGE=m
--CONFIG_BE2NET=m
--CONFIG_ISERIES_VETH=m
-+CONFIG_NETXEN_NIC=m
-+CONFIG_NET_VENDOR_SUN=y
-+CONFIG_SUNGEM=y
-+CONFIG_NET_VENDOR_TOSHIBA=y
-+CONFIG_GELIC_NET=m
-+CONFIG_GELIC_WIRELESS=y
-+CONFIG_SPIDER_NET=m
- CONFIG_PPP=m
- CONFIG_PPP_ASYNC=m
- CONFIG_PPP_SYNC_TTY=m
-@@ -331,7 +325,6 @@ CONFIG_USB=y
- CONFIG_USB_DEVICEFS=y
- CONFIG_USB_MON=m
- CONFIG_USB_EHCI_HCD=y
--CONFIG_USB_EHCI_TT_NEWSCHED=y
- # CONFIG_USB_EHCI_HCD_PPC_OF is not set
- CONFIG_USB_OHCI_HCD=y
- CONFIG_USB_STORAGE=m
-@@ -373,11 +366,9 @@ CONFIG_JFS_POSIX_ACL=y
- CONFIG_JFS_SECURITY=y
- CONFIG_XFS_FS=m
- CONFIG_XFS_POSIX_ACL=y
--CONFIG_OCFS2_FS=m
- CONFIG_BTRFS_FS=m
- CONFIG_BTRFS_FS_POSIX_ACL=y
- CONFIG_NILFS2_FS=m
--CONFIG_INOTIFY=y
- CONFIG_AUTOFS4_FS=m
- CONFIG_FUSE_FS=m
- CONFIG_ISO9660_FS=y
-@@ -398,7 +389,6 @@ CONFIG_ROOT_NFS=y
- CONFIG_NFSD=m
- CONFIG_NFSD_V3_ACL=y
- CONFIG_NFSD_V4=y
--CONFIG_RPCSEC_GSS_SPKM3=m
- CONFIG_CIFS=m
- CONFIG_CIFS_XATTR=y
- CONFIG_CIFS_POSIX=y
-@@ -444,15 +434,13 @@ CONFIG_CRC_T10DIF=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_KERNEL=y
- CONFIG_LOCKUP_DETECTOR=y
--CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_MUTEXES=y
--# CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+CONFIG_DEBUG_STACK_USAGE=y
- CONFIG_LATENCYTOP=y
- CONFIG_SYSCTL_SYSCALL_CHECK=y
- CONFIG_SCHED_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
- CONFIG_DEBUG_STACKOVERFLOW=y
--CONFIG_DEBUG_STACK_USAGE=y
- CONFIG_CODE_PATCHING_SELFTEST=y
- CONFIG_FTR_FIXUP_SELFTEST=y
- CONFIG_MSI_BITMAP_SELFTEST=y
-@@ -463,10 +451,8 @@ CONFIG_CRYPTO_NULL=m
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_CCM=m
- CONFIG_CRYPTO_GCM=m
--CONFIG_CRYPTO_ECB=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPTO_MD4=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=m
- CONFIG_CRYPTO_SHA512=m
-@@ -474,7 +460,6 @@ CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_AES=m
- CONFIG_CRYPTO_ANUBIS=m
--CONFIG_CRYPTO_ARC4=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAST6=m
- CONFIG_CRYPTO_KHAZAD=m
--- 
-1.7.5.4
+Which is why I marginally prefer this model, although it's not a big
+deal.
+
+> In either case, the uiommu interface is removed entirely since dma
+> mapping is done via the group fd.  As necessary in the future, we can
+> define a more high performance dma mapping interface for streaming dma
+> via the group fd.  I expect we'll also include architecture specific
+> group ioctls to describe features and capabilities of the iommu.  The
+> group fd will need to prevent concurrent open()s to maintain a 1:1 group
+> to userspace process ownership model.
+
+A 1:1 group<->process correspondance seems wrong to me. But there are
+many ways you could legitimately write the userspace side of the code,
+many of them involving some sort of concurrency.  Implementing that
+concurrency as multiple processes (using explicit shared memory and/or
+other IPC mechanisms to co-ordinate) seems a valid choice that we
+shouldn't arbitrarily prohibit.
+
+Obviously, only one UID may be permitted to have the group open at a
+time, and I think that's enough to prevent them doing any worse than
+shooting themselves in the foot.
+
+> Also on the table is supporting non-PCI devices with vfio.  To do this,
+> we need to generalize the read/write/mmap and irq eventfd interfaces.
+> We could keep the same model of segmenting the device fd address space,
+> perhaps adding ioctls to define the segment offset bit position or we
+> could split each region into it's own fd (VFIO_GET_PCI_BAR_FD(0),
+> VFIO_GET_PCI_CONFIG_FD(), VFIO_GET_MMIO_FD(3)), though we're already
+> suffering some degree of fd bloat (group fd, device fd(s), interrupt
+> event fd(s), per resource fd, etc).  For interrupts we can overload
+> VFIO_SET_IRQ_EVENTFD to be either PCI INTx or non-PCI irq 
+
+Sounds reasonable.
+
+> (do non-PCI
+> devices support MSI?).
+
+They can.  Obviously they might not have exactly the same semantics as
+PCI MSIs, but I know we have SoC systems with (non-PCI) on-die devices
+whose interrupts are treated by the (also on-die) root interrupt
+controller in the same way as PCI MSIs.
+
+> For qemu, these changes imply we'd only support a model where we have a
+> 1:1 group to iommu domain.  The current vfio driver could probably
+> become vfio-pci as we might end up with more target specific vfio
+> drivers for non-pci.  PCI should be able to maintain a simple -device
+> vfio-pci,host=bb:dd.f to enable hotplug of individual devices.  We'll
+> need to come up with extra options when we need to expose groups to
+> guest for pvdma.
+
+Are you saying that you'd no longer support the current x86 usage of
+putting all of one guest's devices into a single domain?  If that's
+not what you're saying, how would the domains - now made up of a
+user's selection of groups, rather than individual devices - be
+configured?
+
+> Hope that captures it, feel free to jump in with corrections and
+> suggestions.  Thanks,
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
