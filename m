@@ -1,32 +1,19 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id AEC41B6F57
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Aug 2011 23:17:55 +1000 (EST)
-Message-ID: <4E5256F5.3090909@redhat.com>
-Date: Mon, 22 Aug 2011 16:17:41 +0300
-From: Avi Kivity <avi@redhat.com>
+Return-Path: <B04825@freescale.com>
+Message-ID: <4E5261A5.5050608@freescale.com>
+Date: Mon, 22 Aug 2011 09:03:17 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: "Roedel, Joerg" <Joerg.Roedel@amd.com>
-Subject: Re: kvm PCI assignment & VFIO ramblings
-References: <1312932258.4524.55.camel@bling.home>
-	<1312944513.29273.28.camel@pasglop>
-	<1313859105.6866.192.camel@x201.home>
-	<4E51F782.7060005@redhat.com> <20110822104635.GC2079@amd.com>
-	<4E5234B7.7000700@redhat.com> <20110822123651.GD2079@amd.com>
-	<4E524EBB.8090603@redhat.com> <20110822125502.GF2079@amd.com>
-	<4E52543F.70104@redhat.com> <20110822131508.GG2079@amd.com>
-In-Reply-To: <20110822131508.GG2079@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-	Paul Mackerras <pmac@au1.ibm.com>, qemu-devel <qemu-devel@nongnu.org>,
-	iommu <iommu@lists.linux-foundation.org>, chrisw <chrisw@sous-sol.org>,
-	Alex Williamson <alex.williamson@redhat.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"benve@cisco.com" <benve@cisco.com>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] sound/soc/fsl/fsl_dma.c: add missing of_node_put
+References: <1313825025-17590-1-git-send-email-julia@diku.dk>
+In-Reply-To: <1313825025-17590-1-git-send-email-julia@diku.dk>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+	devicetree-discuss@lists.ozlabs.org,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Jaroslav Kysela <perex@perex.cz>, linuxppc-dev@lists.ozlabs.org,
+	Liam Girdwood <lrg@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,25 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/22/2011 04:15 PM, Roedel, Joerg wrote:
-> On Mon, Aug 22, 2011 at 09:06:07AM -0400, Avi Kivity wrote:
-> >  On 08/22/2011 03:55 PM, Roedel, Joerg wrote:
->
-> >  >  Well, I don't think its really meaningless, but we need some way to
-> >  >  communicate the information about device groups to userspace.
-> >
-> >  I mean the contents of the group descriptor.  There are enough 42s in
-> >  the kernel, it's better if we can replace a synthetic number with
-> >  something meaningful.
->
-> If we only look at PCI than a Segment:Bus:Dev.Fn Number would be
-> sufficient, of course. But the idea was to make it generic enough so
-> that it works with !PCI too.
->
+Julia Lawall wrote:
+> diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+> index 0efc04a..b33271b 100644
+> --- a/sound/soc/fsl/fsl_dma.c
+> +++ b/sound/soc/fsl/fsl_dma.c
+> @@ -880,10 +880,12 @@ static struct device_node *find_ssi_node(struct device_node *dma_channel_np)
+>  		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
+>  		if (np == dma_channel_np)
+>  			return ssi_np;
+> +		of_node_put(np);
+>  
+>  		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
+>  		if (np == dma_channel_np)
+>  			return ssi_np;
+> +		of_node_put(np);
+>  	}
 
-We could make it an arch defined string instead of a symlink.  So it 
-doesn't return 42, rather something that can be used by the admin to 
-figure out what the problem was.
+Thanks for catching the problem, Julia, but the fix is not quite correct.  My
+code assumes that of_parse_phandle() doesn't claim the node, but it doesn't
+actually use the node pointer, either.  All I care about is whether 'np' is
+equal to dma_channel_np.  I'm not going to use 'np'.  So I think the real fix is
+this:
+
+@@ -880,10 +880,12 @@ static struct device_node *find_ssi_node(struct
+device_node *dma_channel_np)
+ 		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
++		of_node_put(np);
+ 		if (np == dma_channel_np)
+ 			return ssi_np;
+
+ 		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
++		of_node_put(np);
+ 		if (np == dma_channel_np)
+ 			return ssi_np;
+ 	}
+
+ 	return NULL;
 
 -- 
-error compiling committee.c: too many arguments to function
+Timur Tabi
+Linux kernel developer at Freescale
