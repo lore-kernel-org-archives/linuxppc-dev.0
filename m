@@ -1,30 +1,29 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 08F15B6EE8
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Aug 2011 20:56:51 +1000 (EST)
-Received: by gyd5 with SMTP id 5so3552644gyd.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Aug 2011 03:56:47 -0700 (PDT)
-Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
-	large-page Nand chip
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Date: Mon, 22 Aug 2011 13:58:33 +0300
-In-Reply-To: <4E4EA70B.9050203@freescale.com>
-References: <1313634783-8855-1-git-send-email-b35362@freescale.com>
-	<4E4D452C.7050805@parrot.com> <4E4DD661.5080006@freescale.com>
-	<4E4E2571.20409@parrot.com> <4E4EA70B.9050203@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1314010719.2644.114.camel@sauron>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	LiuShuo <b35362@freescale.com>,
-	"dwmw2@infradead.org" <dwmw2@infradead.org>,
-	Matthieu CASTET <matthieu.castet@parrot.com>
-Reply-To: dedekind1@gmail.com
+Return-Path: <lrg@ti.com>
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mailhost.ti.com",
+	Issuer "VeriSign Class 3 Secure Server CA - G2" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0A81FB6F57
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 22 Aug 2011 20:30:06 +1000 (EST)
+Message-ID: <4E522D02.9020809@ti.com>
+Date: Mon, 22 Aug 2011 11:18:42 +0100
+From: Liam Girdwood <lrg@ti.com>
+MIME-Version: 1.0
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] sound/soc/fsl/fsl_dma.c: add missing of_node_put
+References: <1313825025-17590-1-git-send-email-julia@diku.dk>
+In-Reply-To: <1313825025-17590-1-git-send-email-julia@diku.dk>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+	Takashi Iwai <tiwai@suse.de>, "devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	"kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +33,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-08-19 at 13:10 -0500, Scott Wood wrote:
-> On 08/19/2011 03:57 AM, Matthieu CASTET wrote:
-> > LiuShuo a écrit :
-> >> 于 2011年08月19日 01:00, Matthieu CASTET 写道:
-> >>> b35362@freescale.com a écrit :
-> >>>> From: Liu Shuo<b35362@freescale.com>
-> >>>>
-> >>>> Freescale FCM controller has a 2K size limitation of buffer RAM. In order
-> >>>> to support the Nand flash chip whose page size is larger than 2K bytes,
-> >>>> we divide a page into multi-2K pages for MTD layer driver. In that case,
-> >>>> we force to set the page size to 2K bytes. We convert the page address of
-> >>>> MTD layer driver to a real page address in flash chips and a column index
-> >>>> in fsl_elbc driver. We can issue any column address by UA instruction of
-> >>>> elbc controller.
-> >>>>
-> >>> Why do you need to do that ?
-> >>>
-> >>> When mtd send you a 4k page, why can't you write it by 2*2k pages write ?
-> >> 1. It's easy to implement.
-> >> 2. We don't need to move the data in buffer more times, because we
-> >> want to use the HW_ECC.
-> >>
-> >> In flash chip per Page:
-> >> ----------------------------------------------------------------
-> >> | first data | first oob | second data | second oob |
-> >> ----------------------------------------------------------------
-> > How the bad block marker are handled with this remapping ?
+On 20/08/11 08:23, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> It has to be migrated prior to first use (this needs to be documented,
-> and ideally a U-Boot command provided do do this), or else special
-> handling would be needed when building the BBT.  The only way around
-> this would be to do ECC in software, and do the buffering needed to let
-> MTD treat it as a 4K chip.
+> of_parse_phandle increments the reference count of np, so this should be
+> decremented before trying the next possibility.
+> 
+> The semantic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression e,e1,e2;
+> @@
+> 
+> *e = of_parse_phandle(...)
+> ... when != of_node_put(e)
+>     when != true e == NULL
+>     when != e2 = e
+> e = e1
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  sound/soc/fsl/fsl_dma.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+> index 0efc04a..b33271b 100644
+> --- a/sound/soc/fsl/fsl_dma.c
+> +++ b/sound/soc/fsl/fsl_dma.c
+> @@ -880,10 +880,12 @@ static struct device_node *find_ssi_node(struct device_node *dma_channel_np)
+>  		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
+>  		if (np == dma_channel_np)
+>  			return ssi_np;
+> +		of_node_put(np);
+>  
+>  		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
+>  		if (np == dma_channel_np)
+>  			return ssi_np;
+> +		of_node_put(np);
+>  	}
+>  
+>  	return NULL;
+> 
 
-It really feels like a special hack which would better not go to
-mainline - am I the only one with such feeling? If yes, probably I am
-wrong...
-
--- 
-Best Regards,
-Artem Bityutskiy
+Acked-by: Liam Girdwood <lrg@ti.com>
