@@ -1,24 +1,18 @@
-Return-Path: <B25806@freescale.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
-	[213.199.154.207])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8ACF4B6F00
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Aug 2011 20:01:48 +1000 (EST)
-Content-Type: text/plain; charset="utf-8"; format=flowed; delsp=yes
-To: Scott Wood <scottwood@freescale.com>, Chunhe Lan <Chunhe.Lan@freescale.com>
-Subject: Re: [PATCH] mtd/nand: Don't add disabled nand flash devices
-References: <1313486855-15233-1-git-send-email-Chunhe.Lan@freescale.com>
-	<4E4AE535.4070400@freescale.com>
-Date: Mon, 22 Aug 2011 18:04:35 +0800
+Return-Path: <julia@diku.dk>
+Date: Mon, 22 Aug 2011 12:14:27 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: walter harms <wharms@bfs.de>
+Subject: Re: [PATCH 2/2] arch/powerpc/platforms/powermac/setup.c: add missing
+	of_node_put
+In-Reply-To: <4E522AD0.7030907@bfs.de>
+Message-ID: <Pine.LNX.4.64.1108221213150.10948@ask.diku.dk>
+References: <1313943001-12884-2-git-send-email-julia@diku.dk>
+	<4E522AD0.7030907@bfs.de>
 MIME-Version: 1.0
-From: Lan Chunhe <b25806@freescale.com>
-Message-ID: <op.v0l0xxanz91x4h@localhost.localdomain>
-In-Reply-To: <4E4AE535.4070400@freescale.com>
-Cc: dwmw2@infradead.org, kumar.gala@freescale.com,
-	linux-mtd@lists.infradead.org, akpm@linux-foundation.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,60 +22,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 17 Aug 2011 05:46:29 +0800, Scott Wood <scottwood@freescale.com>=
-  =
+On Mon, 22 Aug 2011, walter harms wrote:
 
-wrote:
+> 
+> 
+> Am 21.08.2011 18:10, schrieb Julia Lawall:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > np is initialized to the result of calling a function that calls
+> > of_node_get, so of_node_put should be called before the pointer is dropped.
+> > 
+> > The semantic match that finds this problem is as follows:
+> > (http://coccinelle.lip6.fr/)
+> > 
+> > // <smpl>
+> > @@
+> > expression e,e1,e2;
+> > @@
+> > 
+> > * e = \(of_find_node_by_type\|of_find_node_by_name\)(...)
+> >   ... when != of_node_put(e)
+> >       when != true e == NULL
+> >       when != e2 = e
+> >   e = e1
+> > // </smpl>
+> > 
+> > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > 
+> > ---
+> >  arch/powerpc/platforms/powermac/setup.c |    8 ++++++--
+> >  1 file changed, 6 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+> > index 96580b1..970ea1d 100644
+> > --- a/arch/powerpc/platforms/powermac/setup.c
+> > +++ b/arch/powerpc/platforms/powermac/setup.c
+> > @@ -494,11 +494,15 @@ static int __init pmac_declare_of_platform_devices(void)
+> >  		return -1;
+> >  
+> >  	np = of_find_node_by_name(NULL, "valkyrie");
+> > -	if (np)
+> > +	if (np) {
+> >  		of_platform_device_create(np, "valkyrie", NULL);
+> > +		of_node_put(np);
+> > +	}
+> >  	np = of_find_node_by_name(NULL, "platinum");
+> > -	if (np)
+> > +	if (np) {
+> >  		of_platform_device_create(np, "platinum", NULL);
+> > +		of_node_put(np);
+> > +	}
+> >          np = of_find_node_by_type(NULL, "smu");
+> >          if (np) {
+> >  		of_platform_device_create(np, "smu", NULL);
+> > 
+> 
+> 
+> hi,
+> it seems save to call of_node_put(np) with np==NULL, i assume the same is true
+> for of_platform_device_create().
+> 
+> so the code collapses to:
+> 
+> _test_node(char *name)
+> {
+>  struct device_node *np;
+>  np = of_find_node_by_name(NULL, name);
+>  of_platform_device_create(np, name, NULL);
 
-> On 08/16/2011 04:27 AM, Chunhe Lan wrote:
->> Nand flash nodes with the property status=3D"disabled" are not
->> usable and so avoid adding "disabled" nand flash devices with
->> the system.
->>
->> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
->> ---
->>  drivers/mtd/nand/fsl_elbc_nand.c |    5 ++++-
->>  1 files changed, 4 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/mtd/nand/fsl_elbc_nand.c  =
+of_platform_device_create seems to do a lot of work if np is NULL.  It 
+returns NULL in the end, as far as I can see, but a lot of function calls 
+are required.
 
->> b/drivers/mtd/nand/fsl_elbc_nand.c
->> index 33d8aad..8212c12 100644
->> --- a/drivers/mtd/nand/fsl_elbc_nand.c
->> +++ b/drivers/mtd/nand/fsl_elbc_nand.c
->> @@ -1,6 +1,6 @@
->>  /* Freescale Enhanced Local Bus Controller NAND driver
->>   *
->> - * Copyright =C2=A9 2006-2007, 2010 Freescale Semiconductor
->> + * Copyright =C2=A9 2006-2007, 2010-2011 Freescale Semiconductor
->>   *
->>   * Authors: Nick Spence <nick.spence@freescale.com>,
->>   *          Scott Wood <scottwood@freescale.com>
->> @@ -849,6 +849,9 @@ static int __devinit fsl_elbc_nand_probe(struct  =
+julia
 
->> platform_device *pdev)
->>  	struct device *dev;
->>  	struct device_node *node =3D pdev->dev.of_node;
->>
->> +	if (!of_device_is_available(node))
->> +		return -ENODEV;
->> +
->>  	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
->>  		return -ENODEV;
->>  	lbc =3D fsl_lbc_ctrl_dev->regs;
->
-> Same comment as the other patch -- unavailable devices should already
-> not be getting probed.  Also, this subject line makes it sound like th=
-is
-> is a NAND subsystem change rather than a change in one specific driver=
-.
-
-    You are right.
-    The upper layers have prevented unavailable devices.
-    So, this patch is no need.
-
-    Thanks.
-
-    -Jack Lan
-
-> -Scott
+>  of_node_put(np);
+>  return NULL?:0:1;
+> }
+> 
+> maybe there is already something like find_node() ?
+> 
+> re,
+>  wh
+> 
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
