@@ -3,14 +3,14 @@ Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
 	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 57E7FB6F7C
+	by ozlabs.org (Postfix) with ESMTPS id 7DEABB6F7F
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 23 Aug 2011 08:37:12 +1000 (EST)
-Date: Mon, 22 Aug 2011 23:27:20 +0100
+Date: Mon, 22 Aug 2011 23:30:31 +0100
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH] [v2] sound/soc/fsl/fsl_dma.c: add missing of_node_put
-Message-ID: <20110822222720.GA29473@opensource.wolfsonmicro.com>
+Message-ID: <20110822223031.GF30609@opensource.wolfsonmicro.com>
 References: <1314022961-27513-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
