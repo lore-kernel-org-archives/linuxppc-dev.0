@@ -1,15 +1,33 @@
-Return-Path: <B04825@freescale.com>
-From: Timur Tabi <timur@freescale.com>
-To: <kernel-janitors@vger.kernel.org>, <lrg@ti.com>,
-	<broonie@opensource.wolfsonmicro.com>, <perex@perex.cz>, <tiwai@suse.de>,
-	<grant.likely@secretlab.ca>, <alsa-devel@alsa-project.org>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<devicetree-discuss@lists.ozlabs.org>, <julia@diku.dk>
-Subject: [PATCH] [v2] sound/soc/fsl/fsl_dma.c: add missing of_node_put
-Date: Mon, 22 Aug 2011 09:22:41 -0500
-Message-ID: <1314022961-27513-1-git-send-email-timur@freescale.com>
+Return-Path: <Joerg.Roedel@amd.com>
+Received: from VA3EHSOBE007.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9EE38B6F65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 23 Aug 2011 00:38:16 +1000 (EST)
+Date: Mon, 22 Aug 2011 16:37:12 +0200
+From: "Roedel, Joerg" <Joerg.Roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+Message-ID: <20110822143712.GH2079@amd.com>
+References: <1313859105.6866.192.camel@x201.home> <4E51F782.7060005@redhat.com>
+	<20110822104635.GC2079@amd.com> <4E5234B7.7000700@redhat.com>
+	<20110822123651.GD2079@amd.com> <4E524EBB.8090603@redhat.com>
+	<20110822125502.GF2079@amd.com> <4E52543F.70104@redhat.com>
+	<20110822131508.GG2079@amd.com> <4E5256F5.3090909@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <4E5256F5.3090909@redhat.com>
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>, qemu-devel <qemu-devel@nongnu.org>,
+	iommu <iommu@lists.linux-foundation.org>, chrisw <chrisw@sous-sol.org>,
+	Alex Williamson <alex.williamson@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,34 +37,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_parse_phandle increments the reference count of np, so this should be
-decremented before trying the next possibility.
+On Mon, Aug 22, 2011 at 09:17:41AM -0400, Avi Kivity wrote:
+> On 08/22/2011 04:15 PM, Roedel, Joerg wrote:
+> > On Mon, Aug 22, 2011 at 09:06:07AM -0400, Avi Kivity wrote:
+> > >  On 08/22/2011 03:55 PM, Roedel, Joerg wrote:
+> >
+> > >  >  Well, I don't think its really meaningless, but we need some way to
+> > >  >  communicate the information about device groups to userspace.
+> > >
+> > >  I mean the contents of the group descriptor.  There are enough 42s in
+> > >  the kernel, it's better if we can replace a synthetic number with
+> > >  something meaningful.
+> >
+> > If we only look at PCI than a Segment:Bus:Dev.Fn Number would be
+> > sufficient, of course. But the idea was to make it generic enough so
+> > that it works with !PCI too.
+> >
+> 
+> We could make it an arch defined string instead of a symlink.  So it 
+> doesn't return 42, rather something that can be used by the admin to 
+> figure out what the problem was.
 
-Since we don't actually use np, we can decrement the reference count
-immediately.
+Well, ok, it would certainly differ from the in-kernel representation
+then and introduce new architecture dependencies into libvirt. But if
+the 'group-string' is more meaningful to users then its certainly good.
+Suggestions?
 
-Reported-by: Julia Lawall <julia@diku.dk>
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- sound/soc/fsl/fsl_dma.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+	Joerg
 
-diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
-index 6680c0b..b300f4b 100644
---- a/sound/soc/fsl/fsl_dma.c
-+++ b/sound/soc/fsl/fsl_dma.c
-@@ -877,10 +877,12 @@ static struct device_node *find_ssi_node(struct device_node *dma_channel_np)
- 		 * assume that device_node pointers are a valid comparison.
- 		 */
- 		np = of_parse_phandle(ssi_np, "fsl,playback-dma", 0);
-+		of_node_put(np);
- 		if (np == dma_channel_np)
- 			return ssi_np;
- 
- 		np = of_parse_phandle(ssi_np, "fsl,capture-dma", 0);
-+		of_node_put(np);
- 		if (np == dma_channel_np)
- 			return ssi_np;
- 	}
 -- 
-1.7.3.4
+AMD Operating System Research Center
+
+Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
+General Managers: Alberto Bozzo, Andrew Bowd
+Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
