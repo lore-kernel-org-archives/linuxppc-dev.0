@@ -1,15 +1,15 @@
 Return-Path: <geoff@infradead.org>
-Message-ID: <4E54134D.7080004@infradead.org>
-Date: Tue, 23 Aug 2011 13:53:33 -0700
+Message-ID: <4E541354.6030005@infradead.org>
+Date: Tue, 23 Aug 2011 13:53:40 -0700
 From: Geoff Levand <geoff@infradead.org>
 MIME-Version: 1.0
 To: Andre Heider <a.heider@gmail.com>
-Subject: Re: [PATCH part1 v2 2/9] ps3: Add helper functions to read highmem
-	info from the repository
+Subject: Re: [PATCH part1 v2 3/9] ps3: Get lv1 high memory region from the
+	repository
 References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
 	<1313091073-4572-1-git-send-email-a.heider@gmail.com>
-	<1313091073-4572-3-git-send-email-a.heider@gmail.com>
-In-Reply-To: <1313091073-4572-3-git-send-email-a.heider@gmail.com>
+	<1313091073-4572-4-git-send-email-a.heider@gmail.com>
+In-Reply-To: <1313091073-4572-4-git-send-email-a.heider@gmail.com>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
 	linuxppc-dev@lists.ozlabs.org
@@ -23,103 +23,119 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 08/11/2011 12:31 PM, Andre Heider wrote:
-> An earlier step in the boot chain can preallocate the highmem region.
-> A boot loader doing so will place the region infos in the repository.
-> Provide helper functions to read the required nodes.
+> This lets the bootloader preallocate the high lv1 region and pass its
+> location to the kernel through the repository. Thus, it can be used to
+> hold the initrd. If the region info doesn't exist, the kernel retains
+> the old behavior and attempts to allocate the region itself.
+> 
+> Based on the patch
+> "[PS3] Get lv1 high memory region from devtree"
+> from Hector Martin <hector@marcansoft.com>
 > 
 > Signed-off-by: Andre Heider <a.heider@gmail.com>
 > ---
->  arch/powerpc/platforms/ps3/platform.h   |    3 ++
->  arch/powerpc/platforms/ps3/repository.c |   36 +++++++++++++++++++++++++++++++
->  2 files changed, 39 insertions(+), 0 deletions(-)
+>  arch/powerpc/platforms/ps3/mm.c |   46 ++++++++++++++++++++++++++++++++++++--
+>  1 files changed, 43 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
-> index 9a196a8..d9b4ec0 100644
-> --- a/arch/powerpc/platforms/ps3/platform.h
-> +++ b/arch/powerpc/platforms/ps3/platform.h
-> @@ -187,6 +187,9 @@ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
->  int ps3_repository_read_region_total(u64 *region_total);
->  int ps3_repository_read_mm_info(u64 *rm_base, u64 *rm_size,
->  	u64 *region_total);
-> +int ps3_repository_read_highmem_base(u64 *highmem_base);
-> +int ps3_repository_read_highmem_size(u64 *highmem_size);
-> +int ps3_repository_read_highmem_info(u64 *highmem_base, u64 *highmem_size);
-
-In the general case we could have multiple regions.  If we
-add a region arg here we can handle that if needed.
-region_index would be {1..}.  ps3_repository_read_highmem_info
-could hold how many regions, so:
-
-  int ps3_repository_read_highmem_base(unsigned int region_index, u64 *highmem_base);
-  int ps3_repository_read_highmem_size(unsigned int region_index, u64 *highmem_size);
-  int ps3_repository_read_highmem_region(unsigned int region_index, u64 *highmem_base, u64 *highmem_size);
-
+> diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+> index c204588..983b719 100644
+> --- a/arch/powerpc/platforms/ps3/mm.c
+> +++ b/arch/powerpc/platforms/ps3/mm.c
+> @@ -78,12 +78,14 @@ enum {
+>   * @base: base address
+>   * @size: size in bytes
+>   * @offset: difference between base and rm.size
+> + * @destroy: flag if region should be destroyed upon shutdown
+>   */
 >  
->  /* repository pme info */
+>  struct mem_region {
+>  	u64 base;
+>  	u64 size;
+>  	unsigned long offset;
+> +	int destroy;
+>  };
 >  
-> diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-> index 5e304c2..9908d61 100644
-> --- a/arch/powerpc/platforms/ps3/repository.c
-> +++ b/arch/powerpc/platforms/ps3/repository.c
-> @@ -778,6 +778,42 @@ int ps3_repository_read_mm_info(u64 *rm_base, u64 *rm_size, u64 *region_total)
->  		: ps3_repository_read_region_total(region_total);
+>  /**
+> @@ -261,6 +263,7 @@ static int ps3_mm_region_create(struct mem_region *r, unsigned long size)
+>  		goto zero_region;
+>  	}
+>  
+> +	r->destroy = 1;
+>  	r->offset = r->base - map.rm.size;
+>  	return result;
+>  
+> @@ -279,6 +282,12 @@ static void ps3_mm_region_destroy(struct mem_region *r)
+>  	int result;
+>  
+>  	DBG("%s:%d: r->base = %llxh\n", __func__, __LINE__, r->base);
+> +
+> +	if (!r->destroy) {
+> +		DBG("%s:%d: not destroying region\n", __func__, __LINE__);
+> +		return;
+> +	}
+> +
+>  	if (r->base) {
+>  		result = lv1_release_memory(r->base);
+>  		BUG_ON(result);
+> @@ -287,6 +296,29 @@ static void ps3_mm_region_destroy(struct mem_region *r)
+>  	}
 >  }
 >  
-> +int ps3_repository_read_highmem_base(u64 *highmem_base)
+> +static int ps3_mm_get_repository_highmem(struct mem_region *r)
 > +{
-> +	return read_node(PS3_LPAR_ID_CURRENT,
-> +			 make_first_field("bi", 0),
-> +			 make_field("highmem", 0),
-> +			 make_field("base", 0),
-> +			 0,
-> +			 highmem_base, NULL);
-> +}
-
-I think something like this seems better:
-
-int ps3_repository_read_highmem_base(unsigned int region_index, u64 *highmem_base)
-{
-	return read_node(PS3_LPAR_ID_CURRENT,
-		make_first_field("highmem", 0),
-		make_field("region", region_index),
-		make_field("base", 0),
-		0,
-		highmem_base, NULL);
-}
-
+> +	int result = ps3_repository_read_highmem_info(&r->base, &r->size);
 > +
-> +int ps3_repository_read_highmem_size(u64 *highmem_size)
-> +{
-> +	return read_node(PS3_LPAR_ID_CURRENT,
-> +			 make_first_field("bi", 0),
-> +			 make_field("highmem", 0),
-> +			 make_field("size", 0),
-> +			 0,
-> +			 highmem_size, NULL);
-> +}
+> +	if (result)
+> +		goto zero_region;
 > +
-> +/**
-> + * ps3_repository_read_highmem_info - Read high memory info
-> + * @highmem_base: High memory base address.
-> + * @highmem_size: High mode memory size.
-> + */
+> +	if (!r->base || !r->size) {
+> +		result = -1;
+> +		goto zero_region;
+> +	}
 > +
-> +int ps3_repository_read_highmem_info(u64 *highmem_base, u64 *highmem_size)
-> +{
-> +	int result;
+> +	r->offset = r->base - map.rm.size;
+> +	DBG("%s:%d got high region from repository: %llxh %llxh\n",
+> +	    __func__, __LINE__, r->base, r->size);
+> +	return 0;
 > +
-> +	*highmem_base = 0;
-> +	result = ps3_repository_read_highmem_base(highmem_base);
-> +	return result ? result
-> +		: ps3_repository_read_highmem_size(highmem_size);
+> +zero_region:
+> +	DBG("%s:%d no high region in repository...\n", __func__, __LINE__);
 
+Three dots implies something more is on its way.  I
+don't think we need them.
 
-	ps3_repository_read_highmem_base(1, highmem_base);
-	...
+> +	r->size = r->base = r->offset = 0;
+> +	return result;
 > +}
 > +
 >  /**
->   * ps3_repository_read_num_spu_reserved - Number of physical spus reserved.
->   * @num_spu: Number of physical spus.
-
--Geoff
+>   * ps3_mm_add_memory - hot add memory
+>   */
+> @@ -303,6 +335,12 @@ static int __init ps3_mm_add_memory(void)
+>  
+>  	BUG_ON(!mem_init_done);
+>  
+> +	if (!map.r1.size) {
+> +		DBG("%s:%d: no region 1, not adding memory\n",
+> +		    __func__, __LINE__);
+> +		return 0;
+> +	}
+> +
+>  	start_addr = map.rm.size;
+>  	start_pfn = start_addr >> PAGE_SHIFT;
+>  	nr_pages = (map.r1.size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+> @@ -1217,9 +1255,11 @@ void __init ps3_mm_init(void)
+>  	BUG_ON(map.rm.base);
+>  	BUG_ON(!map.rm.size);
+>  
+> -
+> -	/* arrange to do this in ps3_mm_add_memory */
+> -	ps3_mm_region_create(&map.r1, map.total - map.rm.size);
+> +	/* check if we got the highmem region from an earlier boot step */
+> +	if (ps3_mm_get_repository_highmem(&map.r1)) {
+> +		/* arrange to do this in ps3_mm_add_memory */
+> +		ps3_mm_region_create(&map.r1, map.total - map.rm.size);
+> +	}
+>  
+>  	/* correct map.total for the real total amount of memory we use */
+>  	map.total = map.rm.size + map.r1.size;
