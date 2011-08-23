@@ -1,33 +1,27 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3F622B6F86
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Aug 2011 15:09:36 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id p7N59Zag024296
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Aug 2011 15:09:35 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p7N58LJ61376274
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Aug 2011 15:08:21 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p7N59ZlB018579
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Aug 2011 15:09:35 +1000
-Date: Tue, 23 Aug 2011 15:09:31 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature
-	flag
-Message-ID: <20110823050931.GT30097@yookeroo.fritz.box>
-References: <20110819074527.GA21817@in.ibm.com>
-	<20110819075338.GC21817@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110819075338.GC21817@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
-	Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7FCE2B6F85
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 23 Aug 2011 16:55:10 +1000 (EST)
+Subject: Re: kvm PCI assignment & VFIO ramblings
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: aafabbri <aafabbri@cisco.com>
+In-Reply-To: <CA7847D2.FB3A%aafabbri@cisco.com>
+References: <CA7847D2.FB3A%aafabbri@cisco.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Aug 2011 16:54:43 +1000
+Message-ID: <1314082483.30478.43.camel@pasglop>
+Mime-Version: 1.0
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
+	Paul Mackerras <pmac@au1.ibm.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>,
+	iommu <iommu@lists.linux-foundation.org>, chrisw <chrisw@sous-sol.org>,
+	Alex Williamson <alex.williamson@redhat.com>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,53 +31,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 19, 2011 at 01:23:38PM +0530, K.Prasad wrote:
-> 
-> While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
-> PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
-> user-space debuggers (like GDB) who may want to use it. Hence we introduce a
-> new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
-> "features" member of "struct ppc_debug_info" to advertise support for the
-> same on Book3E PowerPC processors.
+On Mon, 2011-08-22 at 17:52 -0700, aafabbri wrote:
 
-I thought the idea was that the BP_EXACT mode was the default - if the
-new interface was supported at all, then BP_EXACT was always
-supported.  So, why do you need a new flag?
-
+> I'm not following you.
 > 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/ptrace.h |    1 +
->  arch/powerpc/kernel/ptrace.c      |    1 +
->  2 files changed, 2 insertions(+), 0 deletions(-)
+> You have to enforce group/iommu domain assignment whether you have the
+> existing uiommu API, or if you change it to your proposed
+> ioctl(inherit_iommu) API.
 > 
-> diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-> index 48223f9..cf014f9 100644
-> --- a/arch/powerpc/include/asm/ptrace.h
-> +++ b/arch/powerpc/include/asm/ptrace.h
-> @@ -380,6 +380,7 @@ struct ppc_debug_info {
->  #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x0000000000000002
->  #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x0000000000000004
->  #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x0000000000000008
-> +#define PPC_DEBUG_FEATURE_DATA_BP_EXACT		0x0000000000000010
->  
->  #ifndef __ASSEMBLY__
->  
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 18d28b6..71db5a6 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -1636,6 +1636,7 @@ long arch_ptrace(struct task_struct *child, long request,
->  #ifdef CONFIG_PPC_ADV_DEBUG_DAC_RANGE
->  		dbginfo.features |=
->  				   PPC_DEBUG_FEATURE_DATA_BP_RANGE |
-> +				   PPC_DEBUG_FEATURE_DATA_BP_EXACT |
->  				   PPC_DEBUG_FEATURE_DATA_BP_MASK;
->  #endif
->  #else /* !CONFIG_PPC_ADV_DEBUG_REGS */
+> The only change needed to VFIO here should be to make uiommu fd assignment
+> happen on the groups instead of on device fds.  That operation fails or
+> succeeds according to the group semantics (all-or-none assignment/same
+> uiommu).
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Ok, so I missed that part where you change uiommu to operate on group
+fd's rather than device fd's, my apologies if you actually wrote that
+down :-) It might be obvious ... bare with me I just flew back from the
+US and I am badly jet lagged ...
+
+So I see what you mean, however...
+
+> I think the question is: do we force 1:1 iommu/group mapping, or do we allow
+> arbitrary mapping (satisfying group constraints) as we do today.
+> 
+> I'm saying I'm an existing user who wants the arbitrary iommu/group mapping
+> ability and definitely think the uiommu approach is cleaner than the
+> ioctl(inherit_iommu) approach.  We considered that approach before but it
+> seemed less clean so we went with the explicit uiommu context.
+
+Possibly, the question that interest me the most is what interface will
+KVM end up using. I'm also not terribly fan with the (perceived)
+discrepancy between using uiommu to create groups but using the group fd
+to actually do the mappings, at least if that is still the plan.
+
+If the separate uiommu interface is kept, then anything that wants to be
+able to benefit from the ability to put multiple devices (or existing
+groups) into such a "meta group" would need to be explicitly modified to
+deal with the uiommu APIs.
+
+I tend to prefer such "meta groups" as being something you create
+statically using a configuration interface, either via sysfs, netlink or
+ioctl's to a "control" vfio device driven by a simple command line tool
+(which can have the configuration stored in /etc and re-apply it at
+boot).
+
+That way, any program capable of exploiting VFIO "groups" will
+automatically be able to exploit those "meta groups" (or groups of
+groups) as well as long as they are supported on the system.
+
+If we ever have system specific constraints as to how such groups can be
+created, then it can all be handled at the level of that configuration
+tool without impact on whatever programs know how to exploit them via
+the VFIO interfaces.
+
+> >  .../...
+> > 
+> >> If we in singleton-group land were building our own "groups" which were sets
+> >> of devices sharing the IOMMU domains we wanted, I suppose we could do away
+> >> with uiommu fds, but it sounds like the current proposal would create 20
+> >> singleton groups (x86 iommu w/o PCI bridges => all devices are partitionable
+> >> endpoints).  Asking me to ioctl(inherit) them together into a blob sounds
+> >> worse than the current explicit uiommu API.
+> > 
+> > I'd rather have an API to create super-groups (groups of groups)
+> > statically and then you can use such groups as normal groups using the
+> > same interface. That create/management process could be done via a
+> > simple command line utility or via sysfs banging, whatever...
+
+Cheers,
+Ben.
