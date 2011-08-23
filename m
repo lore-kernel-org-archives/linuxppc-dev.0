@@ -1,25 +1,33 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 418CFB6F8B
+	by ozlabs.org (Postfix) with ESMTP id F1B7AB6F18
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Aug 2011 03:01:12 +1000 (EST)
+	Wed, 24 Aug 2011 03:08:41 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
 From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 23 Aug 2011 11:01:00 -0600
-In-Reply-To: <1314082483.30478.43.camel@pasglop>
-References: <CA7847D2.FB3A%aafabbri@cisco.com>
-	<1314082483.30478.43.camel@pasglop>
+To: "Roedel, Joerg" <Joerg.Roedel@amd.com>
+Date: Tue, 23 Aug 2011 11:08:29 -0600
+In-Reply-To: <20110823131441.GN2079@amd.com>
+References: <20110802082848.GD29719@yookeroo.fritz.box>
+	<1312308847.2653.467.camel@bling.home>
+	<1312310121.2653.470.camel@bling.home>
+	<20110803020422.GF29719@yookeroo.fritz.box>
+	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
+	<1312944513.29273.28.camel@pasglop>
+	<1313859105.6866.192.camel@x201.home> <20110822172508.GJ2079@amd.com>
+	<1314040622.6866.268.camel@x201.home> <20110823131441.GN2079@amd.com>
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1314118861.2859.51.camel@bling.home>
+Message-ID: <1314119311.2859.59.camel@bling.home>
 Mime-Version: 1.0
-Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
-	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	qemu-devel <qemu-devel@nongnu.org>, aafabbri <aafabbri@cisco.com>,
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>,
+	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
 	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
 	Anthony Liguori <anthony@codemonkey.ws>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +37,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-08-23 at 16:54 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2011-08-22 at 17:52 -0700, aafabbri wrote:
+On Tue, 2011-08-23 at 15:14 +0200, Roedel, Joerg wrote:
+> On Mon, Aug 22, 2011 at 03:17:00PM -0400, Alex Williamson wrote:
+> > On Mon, 2011-08-22 at 19:25 +0200, Joerg Roedel wrote:
 > 
-> > I'm not following you.
+> > > I am in favour of /dev/vfio/$GROUP. If multiple devices should be
+> > > assigned to a guest, there can also be an ioctl to bind a group to an
+> > > address-space of another group (certainly needs some care to not allow
+> > > that both groups belong to different processes).
 > > 
-> > You have to enforce group/iommu domain assignment whether you have the
-> > existing uiommu API, or if you change it to your proposed
-> > ioctl(inherit_iommu) API.
+> > That's an interesting idea.  Maybe an interface similar to the current
+> > uiommu interface, where you open() the 2nd group fd and pass the fd via
+> > ioctl to the primary group.  IOMMUs that don't support this would fail
+> > the attach device callback, which would fail the ioctl to bind them.  It
+> > will need to be designed so any group can be removed from the super-set
+> > and the remaining group(s) still works.  This feels like something that
+> > can be added after we get an initial implementation.
+> 
+> Handling it through fds is a good idea. This makes sure that everything
+> belongs to one process. I am not really sure yet if we go the way to
+> just bind plain groups together or if we create meta-groups. The
+> meta-groups thing seems somewhat cleaner, though.
+
+I'm leaning towards binding because we need to make it dynamic, but I
+don't really have a good picture of the lifecycle of a meta-group.
+
+> > > Btw, a problem we havn't talked about yet entirely is
+> > > driver-deassignment. User space can decide to de-assign the device from
+> > > vfio while a fd is open on it. With PCI there is no way to let this fail
+> > > (the .release function returns void last time i checked). Is this a
+> > > problem, and yes, how we handle that?
 > > 
-> > The only change needed to VFIO here should be to make uiommu fd assignment
-> > happen on the groups instead of on device fds.  That operation fails or
-> > succeeds according to the group semantics (all-or-none assignment/same
-> > uiommu).
+> > The current vfio has the same problem, we can't unbind a device from
+> > vfio while it's attached to a guest.  I think we'd use the same solution
+> > too; send out a netlink packet for a device removal and have the .remove
+> > call sleep on a wait_event(, refcnt == 0).  We could also set a timeout
+> > and SIGBUS the PIDs holding the device if they don't return it
+> > willingly.  Thanks,
 > 
-> Ok, so I missed that part where you change uiommu to operate on group
-> fd's rather than device fd's, my apologies if you actually wrote that
-> down :-) It might be obvious ... bare with me I just flew back from the
-> US and I am badly jet lagged ...
+> Putting the process to sleep (which would be uninterruptible) seems bad.
+> The process would sleep until the guest releases the device-group, which
+> can take days or months.
+> The best thing (and the most intrusive :-) ) is to change PCI core to
+> allow unbindings to fail, I think. But this probably further complicates
+> the way to upstream VFIO...
 
-I missed it too, the model I'm proposing entirely removes the uiommu
-concept.
-
-> So I see what you mean, however...
-> 
-> > I think the question is: do we force 1:1 iommu/group mapping, or do we allow
-> > arbitrary mapping (satisfying group constraints) as we do today.
-> > 
-> > I'm saying I'm an existing user who wants the arbitrary iommu/group mapping
-> > ability and definitely think the uiommu approach is cleaner than the
-> > ioctl(inherit_iommu) approach.  We considered that approach before but it
-> > seemed less clean so we went with the explicit uiommu context.
-> 
-> Possibly, the question that interest me the most is what interface will
-> KVM end up using. I'm also not terribly fan with the (perceived)
-> discrepancy between using uiommu to create groups but using the group fd
-> to actually do the mappings, at least if that is still the plan.
-
-Current code: uiommu creates the domain, we bind a vfio device to that
-domain via a SET_UIOMMU_DOMAIN ioctl on the vfio device, then do
-mappings via MAP_DMA on the vfio device (affecting all the vfio devices
-bound to the domain)
-
-My current proposal: "groups" are predefined.  groups ~= iommu domain.
-The iommu domain would probably be allocated when the first device is
-bound to vfio.  As each device is bound, it gets attached to the group.
-DMAs are done via an ioctl on the group.
-
-I think group + uiommu leads to effectively reliving most of the
-problems with the current code.  The only benefit is the group
-assignment to enforce hardware restrictions.  We still have the problem
-that uiommu open() = iommu_domain_alloc(), whose properties are
-meaningless without attached devices (groups).  Which I think leads to
-the same awkward model of attaching groups to define the domain, then we
-end up doing mappings via the group to enforce ordering.
-
-> If the separate uiommu interface is kept, then anything that wants to be
-> able to benefit from the ability to put multiple devices (or existing
-> groups) into such a "meta group" would need to be explicitly modified to
-> deal with the uiommu APIs.
-> 
-> I tend to prefer such "meta groups" as being something you create
-> statically using a configuration interface, either via sysfs, netlink or
-> ioctl's to a "control" vfio device driven by a simple command line tool
-> (which can have the configuration stored in /etc and re-apply it at
-> boot).
-
-I cringe anytime there's a mention of "static".  IMHO, we have to
-support hotplug.  That means "meta groups" change dynamically.  Maybe
-this supports the idea that we should be able to retrieve a new fd from
-the group to do mappings.  Any groups bound together will return the
-same fd and the fd will persist so long as any member of the group is
-open.
-
-> That way, any program capable of exploiting VFIO "groups" will
-> automatically be able to exploit those "meta groups" (or groups of
-> groups) as well as long as they are supported on the system.
-> 
-> If we ever have system specific constraints as to how such groups can be
-> created, then it can all be handled at the level of that configuration
-> tool without impact on whatever programs know how to exploit them via
-> the VFIO interfaces.
-
-I'd prefer to have the constraints be represented in the ioctl to bind
-groups.  It works or not and the platform gets to define what it
-considers compatible.  Thanks,
+Yes, it's not ideal but I think it's sufficient for now and if we later
+get support for returning an error from release, we can set a timeout
+after notifying the user to make use of that.  Thanks,
 
 Alex
