@@ -1,33 +1,28 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 97D07B6F93
+Return-Path: <aafabbri@cisco.com>
+Received: from rcdn-iport-5.cisco.com (rcdn-iport-5.cisco.com [173.37.86.76])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "rcdn-iport-5.cisco.com", Issuer "Cisco SSCA2" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3420BB7091
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Aug 2011 02:23:57 +1000 (EST)
+	Wed, 24 Aug 2011 02:54:34 +1000 (EST)
+Date: Tue, 23 Aug 2011 09:54:27 -0700
 Subject: Re: kvm PCI assignment & VFIO ramblings
-From: Alex Williamson <alex.williamson@redhat.com>
-To: David Gibson <dwg@au1.ibm.com>
-Date: Tue, 23 Aug 2011 10:23:14 -0600
-In-Reply-To: <20110823023822.GO30097@yookeroo.fritz.box>
-References: <20110802082848.GD29719@yookeroo.fritz.box>
-	<1312308847.2653.467.camel@bling.home>
-	<1312310121.2653.470.camel@bling.home>
-	<20110803020422.GF29719@yookeroo.fritz.box>
-	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
-	<1312944513.29273.28.camel@pasglop>
-	<1313859105.6866.192.camel@x201.home>
-	<20110822055509.GI30097@yookeroo.fritz.box>
-	<1314027950.6866.242.camel@x201.home>
-	<20110823023822.GO30097@yookeroo.fritz.box>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1314116600.2859.28.camel@bling.home>
-Mime-Version: 1.0
-Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
-	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
+From: aafabbri <aafabbri@cisco.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Message-ID: <CA792953.FB87%aafabbri@cisco.com>
+In-Reply-To: <20110823110431.GK2079@amd.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>,
 	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	qemu-devel <qemu-devel@nongnu.org>, aafabbri <aafabbri@cisco.com>,
+	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
 	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
 	Anthony Liguori <anthony@codemonkey.ws>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,192 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-08-23 at 12:38 +1000, David Gibson wrote:
-> On Mon, Aug 22, 2011 at 09:45:48AM -0600, Alex Williamson wrote:
-> > On Mon, 2011-08-22 at 15:55 +1000, David Gibson wrote:
-> > > On Sat, Aug 20, 2011 at 09:51:39AM -0700, Alex Williamson wrote:
-> > > > We had an extremely productive VFIO BoF on Monday.  Here's my attempt to
-> > > > capture the plan that I think we agreed to:
-> > > > 
-> > > > We need to address both the description and enforcement of device
-> > > > groups.  Groups are formed any time the iommu does not have resolution
-> > > > between a set of devices.  On x86, this typically happens when a
-> > > > PCI-to-PCI bridge exists between the set of devices and the iommu.  For
-> > > > Power, partitionable endpoints define a group.  Grouping information
-> > > > needs to be exposed for both userspace and kernel internal usage.  This
-> > > > will be a sysfs attribute setup by the iommu drivers.  Perhaps:
-> > > > 
-> > > > # cat /sys/devices/pci0000:00/0000:00:19.0/iommu_group
-> > > > 42
-> > > > 
-> > > > (I use a PCI example here, but attribute should not be PCI specific)
-> > > 
-> > > Ok.  Am I correct in thinking these group IDs are representing the
-> > > minimum granularity, and are therefore always static, defined only by
-> > > the connected hardware, not by configuration?
-> > 
-> > Yes, that's the idea.  An open question I have towards the configuration
-> > side is whether we might add iommu driver specific options to the
-> > groups.  For instance on x86 where we typically have B:D.F granularity,
-> > should we have an option not to trust multi-function devices and use a
-> > B:D granularity for grouping?
+
+
+
+On 8/23/11 4:04 AM, "Joerg Roedel" <joerg.roedel@amd.com> wrote:
+
+> On Mon, Aug 22, 2011 at 08:52:18PM -0400, aafabbri wrote:
+>> You have to enforce group/iommu domain assignment whether you have the
+>> existing uiommu API, or if you change it to your proposed
+>> ioctl(inherit_iommu) API.
+>> 
+>> The only change needed to VFIO here should be to make uiommu fd assignment
+>> happen on the groups instead of on device fds.  That operation fails or
+>> succeeds according to the group semantics (all-or-none assignment/same
+>> uiommu).
 > 
-> Right.  And likewise I can see a place for configuration parameters
-> like the present 'allow_unsafe_irqs'.  But these would be more-or-less
-> global options which affected the overall granularity, rather than
-> detailed configuration such as explicitly binding some devices into a
-> group, yes?
+> That is makes uiommu basically the same as the meta-groups, right?
 
-Yes, currently the interrupt remapping support is a global iommu
-capability.  I suppose it's possible that this could be an iommu option,
-where the iommu driver would not advertise a group if the interrupt
-remapping constraint isn't met.
+Yes, functionality seems the same, thus my suggestion to keep uiommu
+explicit.  Is there some need for group-groups besides defining sets of
+groups which share IOMMU resources?
 
-> > > > >From there we have a few options.  In the BoF we discussed a model where
-> > > > binding a device to vfio creates a /dev/vfio$GROUP character device
-> > > > file.  This "group" fd provides provides dma mapping ioctls as well as
-> > > > ioctls to enumerate and return a "device" fd for each attached member of
-> > > > the group (similar to KVM_CREATE_VCPU).  We enforce grouping by
-> > > > returning an error on open() of the group fd if there are members of the
-> > > > group not bound to the vfio driver.  Each device fd would then support a
-> > > > similar set of ioctls and mapping (mmio/pio/config) interface as current
-> > > > vfio, except for the obvious domain and dma ioctls superseded by the
-> > > > group fd.
-> > > 
-> > > It seems a slightly strange distinction that the group device appears
-> > > when any device in the group is bound to vfio, but only becomes usable
-> > > when all devices are bound.
-> > > 
-> > > > Another valid model might be that /dev/vfio/$GROUP is created for all
-> > > > groups when the vfio module is loaded.  The group fd would allow open()
-> > > > and some set of iommu querying and device enumeration ioctls, but would
-> > > > error on dma mapping and retrieving device fds until all of the group
-> > > > devices are bound to the vfio driver.
-> > > 
-> > > Which is why I marginally prefer this model, although it's not a big
-> > > deal.
-> > 
-> > Right, we can also combine models.  Binding a device to vfio
-> > creates /dev/vfio$GROUP, which only allows a subset of ioctls and no
-> > device access until all the group devices are also bound.  I think
-> > the /dev/vfio/$GROUP might help provide an enumeration interface as well
-> > though, which could be useful.
-> 
-> I'm not entirely sure what you mean here.  But, that's now several
-> weak votes in favour of the always-present group devices, and none in
-> favour of the created-when-first-device-bound model, so I suggest we
-> take the /dev/vfio/$GROUP as our tentative approach.
+I do all this stuff (bringing up sets of devices which may share IOMMU
+domain) dynamically from C applications.  I don't really want some static
+(boot-time or sysfs fiddling) supergroup config unless there is a good
+reason KVM/power needs it.
 
-Yep
+As you say in your next email, doing it all from ioctls is very easy,
+programmatically.
 
-> > > > In either case, the uiommu interface is removed entirely since dma
-> > > > mapping is done via the group fd.  As necessary in the future, we can
-> > > > define a more high performance dma mapping interface for streaming dma
-> > > > via the group fd.  I expect we'll also include architecture specific
-> > > > group ioctls to describe features and capabilities of the iommu.  The
-> > > > group fd will need to prevent concurrent open()s to maintain a 1:1 group
-> > > > to userspace process ownership model.
-> > > 
-> > > A 1:1 group<->process correspondance seems wrong to me. But there are
-> > > many ways you could legitimately write the userspace side of the code,
-> > > many of them involving some sort of concurrency.  Implementing that
-> > > concurrency as multiple processes (using explicit shared memory and/or
-> > > other IPC mechanisms to co-ordinate) seems a valid choice that we
-> > > shouldn't arbitrarily prohibit.
-> > > 
-> > > Obviously, only one UID may be permitted to have the group open at a
-> > > time, and I think that's enough to prevent them doing any worse than
-> > > shooting themselves in the foot.
-> > 
-> > 1:1 group<->process is probably too strong.  Not allowing concurrent
-> > open()s on the group file enforces a single userspace entity is
-> > responsible for that group.  Device fds can be passed to other
-> > processes, but only retrieved via the group fd.  I suppose we could even
-> > branch off the dma interface into a different fd, but it seems like we
-> > would logically want to serialize dma mappings at each iommu group
-> > anyway.  I'm open to alternatives, this just seemed an easy way to do
-> > it.  Restricting on UID implies that we require isolated qemu instances
-> > to run as different UIDs.
-> 
-> Well.. yes and know.  It means guests which need to be isolated from
-> malicious interference with each other need different UIDs, but given
-> that if they have the same UID one qemu can kill() or ptrace() the
-> other, they're not isolated in that sense anyway.
-> 
-> It seems to me that running as the same UIDs with different device
-> groups assigned, the guests are still pretty well isolated from
-> accidental interference with each other.
-
-If our only restriction is UID, what prevents a non-clueful user from
-trying to create separate qemu instances making use of different devices
-within the same group (or even the same device)?  If we restrict
-concurrent opens, it's just the subsequent instances get a -EBUSY.
-
-> >  I know that's a goal, but I don't know if we
-> > want to make it an assumption in the group security model.
-> > 
-> > > > Also on the table is supporting non-PCI devices with vfio.  To do this,
-> > > > we need to generalize the read/write/mmap and irq eventfd interfaces.
-> > > > We could keep the same model of segmenting the device fd address space,
-> > > > perhaps adding ioctls to define the segment offset bit position or we
-> > > > could split each region into it's own fd (VFIO_GET_PCI_BAR_FD(0),
-> > > > VFIO_GET_PCI_CONFIG_FD(), VFIO_GET_MMIO_FD(3)), though we're already
-> > > > suffering some degree of fd bloat (group fd, device fd(s), interrupt
-> > > > event fd(s), per resource fd, etc).  For interrupts we can overload
-> > > > VFIO_SET_IRQ_EVENTFD to be either PCI INTx or non-PCI irq 
-> > > 
-> > > Sounds reasonable.
-> > > 
-> > > > (do non-PCI
-> > > > devices support MSI?).
-> > > 
-> > > They can.  Obviously they might not have exactly the same semantics as
-> > > PCI MSIs, but I know we have SoC systems with (non-PCI) on-die devices
-> > > whose interrupts are treated by the (also on-die) root interrupt
-> > > controller in the same way as PCI MSIs.
-> > 
-> > Ok, I suppose we can define ioctls to enable these as we go.  We also
-> > need to figure out how non-PCI resources, interrupts, and iommu mapping
-> > restrictions are described via vfio.
-> 
-> Yeah.  On device tree platforms we'd want it to be bound to the device
-> tree representation in some way.
-> 
-> For platform devices, at least, could we have the index into the array
-> of resources take the place of BAR number for PCI?
-
-That's what I was thinking, but we need some way to describe the set of
-valid indexes and type and size for each as well.  We already have the
-BAR_LEN helper ioctl, we could make that generic (RANGE_LEN?) and add
-NUM_RANGES and RANGE_TYPE.  For PCI there would always be 7 ranges (6
-BARs + ROM).
-
-> > > > For qemu, these changes imply we'd only support a model where we have a
-> > > > 1:1 group to iommu domain.  The current vfio driver could probably
-> > > > become vfio-pci as we might end up with more target specific vfio
-> > > > drivers for non-pci.  PCI should be able to maintain a simple -device
-> > > > vfio-pci,host=bb:dd.f to enable hotplug of individual devices.  We'll
-> > > > need to come up with extra options when we need to expose groups to
-> > > > guest for pvdma.
-> > > 
-> > > Are you saying that you'd no longer support the current x86 usage of
-> > > putting all of one guest's devices into a single domain?
-> > 
-> > Yes.  I'm not sure there's a good ROI to prioritize that model.  We have
-> > to assume >1 device per guest is a typical model and that the iotlb is
-> > large enough that we might improve thrashing to see both a resource and
-> > performance benefit from it.  I'm open to suggestions for how we could
-> > include it though.
-> 
-> Creating supergroups of some sort seems to be what we need, but I'm
-> not sure what's the best interface for doing that.
-
-Yeah.  Joerg's idea of binding groups internally (pass the fd of one
-group to another via ioctl) is one option.  The tricky part will be
-implementing it to support hot unplug of any group from the supergroup.
-I believe Ben had a suggestion that supergroups could be created in
-sysfs, but I don't know what the mechanism to do that looks like.  It
-would also be an extra management step to dynamically bind and unbind
-groups to the supergroup around hotplug.  Thanks,
-
-Alex
+-Aaron Fabbri
