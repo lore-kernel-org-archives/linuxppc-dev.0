@@ -1,34 +1,31 @@
-Return-Path: <B35362@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
-	[213.199.154.208])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 819AAB6F8D
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Aug 2011 13:03:55 +1000 (EST)
-Message-ID: <4E5319E8.50903@freescale.com>
-Date: Tue, 23 Aug 2011 11:09:28 +0800
-From: LiuShuo <b35362@freescale.com>
+Return-Path: <lacombar@gmail.com>
+Received: from mail-pz0-f46.google.com (mail-pz0-f46.google.com
+	[209.85.210.46]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9241FB6F91
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 23 Aug 2011 13:50:05 +1000 (EST)
+Received: by pzk32 with SMTP id 32so11352807pzk.33
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 22 Aug 2011 20:50:02 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
-	large-page Nand chip
-References: <1313634783-8855-1-git-send-email-b35362@freescale.com>
-	<4E4D452C.7050805@parrot.com> <4E4DD661.5080006@freescale.com>
-	<4E4E2571.20409@parrot.com> <4E4EA70B.9050203@freescale.com>
-	<1314010719.2644.114.camel@sauron>
-	<20110822152530.GA16794@parrot.com>
-	<4E527E0F.1010500@freescale.com> <4E528036.5070801@parrot.com>
-	<4E52819C.8080204@freescale.com>
-In-Reply-To: <4E52819C.8080204@freescale.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Li Yang-R58472 <r58472@freescale.com>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	Matthieu CASTET <matthieu.castet@parrot.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	Ivan Djelic <ivan.djelic@parrot.com>,
-	"dwmw2@infradead.org" <dwmw2@infradead.org>
+In-Reply-To: <20110822.191348.2099822249437201579.davem@davemloft.net>
+References: <20110822113032.15087c2e190e2b0c3ee7dfb8@canb.auug.org.au>
+	<20110823114011.a059aea0138b75bfa7eed1ce@canb.auug.org.au>
+	<20110823114129.ceb18da164bf7df3c145941b@canb.auug.org.au>
+	<20110822.191348.2099822249437201579.davem@davemloft.net>
+Date: Mon, 22 Aug 2011 23:50:02 -0400
+Message-ID: <CACqU3MW4BnucRt3gxPrKPDvWEjaVuxRF1VOPWk5hTRfneyANkg@mail.gmail.com>
+Subject: Re: linux-next: boot test failure (net tree)
+From: Arnaud Lacombe <lacombar@gmail.com>
+To: David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sfr@canb.auug.org.au, mikey@neuling.org, linux-kbuild@vger.kernel.org,
+	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	paulus@samba.org, jeffrey.t.kirsher@intel.com,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,49 +35,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=E4=BA=8E 2011=E5=B9=B408=E6=9C=8823=E6=97=A5 00:19, Scott Wood =E5=86=99=
-=E9=81=93:
-> On 08/22/2011 11:13 AM, Matthieu CASTET wrote:
->> Scott Wood a =C3=A9crit :
->>> To eliminate it we'd need to do an extra data transfer without reissu=
-ing
->>> the command, which Shuo was unable to get to work.
+Hi,
+
+[Added linux-kbuild@ to the Cc: list.]
+
+On Mon, Aug 22, 2011 at 10:13 PM, David Miller <davem@davemloft.net> wrote:
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Tue, 23 Aug 2011 11:41:29 +1000
+>
+>> On Tue, 23 Aug 2011 11:40:11 +1000 Stephen Rothwell <sfr@canb.auug.org.a=
+u> wrote:
 >>>
->> That's weird because our controller seems quite flexible [1].
+>>> On Mon, 22 Aug 2011 11:30:32 +1000 Stephen Rothwell <sfr@canb.auug.org.=
+au> wrote:
+>>> >
+>>> > Here's what I am applying as a merge fixup to the net tree today so t=
+hat
+>>> > my ppc64_defconfig builds actually build more or less the same set of
+>>> > drivers as before this rearrangement.
+>>>
+>>> And this today:
 >>
->> Something like that should work ?
->>
->>              out_be32(&lbc->fir,
->>                       (FIR_OP_CM2<<  FIR_OP0_SHIFT) |
->>                       (FIR_OP_CA<<  FIR_OP1_SHIFT) |
->>                       (FIR_OP_PA<<  FIR_OP2_SHIFT) |
->>                       (FIR_OP_WB<<  FIR_OP3_SHIFT));
->> refill FCM buffer with next 2k data
->>
->>              out_be32(&lbc->fir,
->>                       (FIR_OP_WB<<  FIR_OP3_SHIFT) |
->>                       (FIR_OP_CM3<<  FIR_OP4_SHIFT) |
->>                       (FIR_OP_CW1<<  FIR_OP5_SHIFT) |
->>                       (FIR_OP_RS<<  FIR_OP6_SHIFT));
-> Something like that is what I originally suggested, but Shuo said it
-> didn't work (even in theory, it requires a CE-don't-care NAND chip,
-> since bus atomicity is broken).
+>> And this:
 >
-> Shuo, what specifically did you try, and what did you see happen?
+> I'm starting to get uncomfortable with this whole situation, and I
+> feel more and more that these new kconfig guards are not tenable.
 >
-> -Scott
-First, if we want to read 4K data with once command issuing, we can't=20
-use HW_ECC.
-Even if we use SW_ECC, we always get lots of weird '0xFF's between 1st=20
-2k and 2nd 2k data.
-They will cover the data in the head of 2nd 2K.
-  -----------------------------------------------------------------------=
---------------
-| xxxxxx ... 1st 2k xxxxxxx ... | ff ff ff ... ff xxxxxx 2nd 2k xxxxxxx |
-  -----------------------------------------------------------------------=
---------------
+> Changing defconfig files might fix the "automated test boot with
+> defconfig" case but it won't fix the case of someone trying to
+> automate a build and boot using a different, existing, config file.
+> It ought to work too, and I do know people really do this.
+>
+> And just the fact that we would have to merge all of these defconfig chan=
+ges
+> through the networking tree is evidence of how it's really not reasonable
+> to be doing things this way.
+>
+> Jeff, I think we need to revert the dependencies back to what they were
+> before the drivers/net moves. =A0Could you prepare a patch which does tha=
+t?
+>
+Are you implying we need some kind of way to migrate config ?
 
-It is worse to write 4k data with once command issuing. It can't write=20
-the 2nd data correctly.
-
--Liu Shuo
+ - Arnaud
