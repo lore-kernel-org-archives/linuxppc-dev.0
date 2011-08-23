@@ -1,24 +1,24 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C6C2AB6FAF
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0554CB6F9C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Aug 2011 23:02:39 +1000 (EST)
+	Tue, 23 Aug 2011 23:03:02 +1000 (EST)
+Received: by wwg9 with SMTP id 9so70928wwg.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 23 Aug 2011 06:02:58 -0700 (PDT)
+Date: Tue, 23 Aug 2011 17:02:53 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH] usb: Allocate pram dynamically.
+Message-ID: <20110823130253.GA30733@oksana.dev.rtsoft.ru>
+References: <1314103121-9857-1-git-send-email-Joakim.Tjernlund@transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] RapidIO: Fix use of non-compatible registers
-Date: Tue, 23 Aug 2011 05:55:35 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552020BFA25@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <20110822122807.5b558d65.akpm@linux-foundation.org>
-References: <1311703646-3453-1-git-send-email-alexandre.bounine@idt.com>
-	<20110822122807.5b558d65.akpm@linux-foundation.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Kim, Chul" <Chul.Kim@idt.com>, linux-kernel@vger.kernel.org,
-	Thomas Moll <thomas.moll@sysgo.com>,
-	linuxppc-dev@lists.ozlabs.org, stable@kernel.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1314103121-9857-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, Aug 23, 2011 at 02:38:41PM +0200, Joakim Tjernlund wrote:
+> MPC832x does not have enough MURAM to do fixed MURAM allocation.
+> Change to dynamic allocation.
+> 
+> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 
-> On Tue, 26 Jul 2011 14:07:26 -0400
-> Alexandre Bounine <alexandre.bounine@idt.com> wrote:
->=20
-> > Replace/remove use of RIO v.1.2 registers/bits that are not forward-
-> compatible
-> > with newer versions of RapidIO specification.
-> >
-> > RapidIO specification v. 1.3 removed Write Port CSR, Doorbell CSR,
-> > Mailbox CSR and Mailbox and Doorbell bits of the PEF CAR.
-> >
-.....
-> You did a cc:stable but provided no reason (that I can understand) for
-> backporting the patch.  Please explain why the problem is sufficiently
-> serious to warrant this action.
+Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-My reason for this is that use of removed (since RIO v.1.3) register
-bits
-affects users of currently available 1.3 and 2.x compliant devices who
-may
-use not so recent kernel versions.
+Thanks!
 
-Removing checks for unsupported bits makes corresponding routines
-compatible
-with all versions of RapidIO specification. Therefore, backporting makes
-stable
-kernel versions compliant with RIO v.1.3 and later as well.=20
+p.s. You probably want to send this to Greg KH, + Cc linux-usb
+mailing list.
+
+-- 
+Anton Vorontsov
+Email: cbouatmailru@gmail.com
