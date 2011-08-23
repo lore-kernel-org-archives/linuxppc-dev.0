@@ -2,14 +2,14 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
 	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D441B6FA3
+	by ozlabs.org (Postfix) with ESMTPS id 463BCB6FA6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Aug 2011 22:38:18 +1000 (EST)
+	Tue, 23 Aug 2011 22:38:47 +1000 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Timur Tabi <timur@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: fixup QE_General4 errata
-Date: Tue, 23 Aug 2011 14:30:05 +0200
-Message-Id: <1314102605-9718-1-git-send-email-Joakim.Tjernlund@transmode.se>
+To: Anton Vorontsov <cbouatmailru@gmail.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] usb: Allocate pram dynamically.
+Date: Tue, 23 Aug 2011 14:38:41 +0200
+Message-Id: <1314103121-9857-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,27 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QE_General4 should only round up the divisor iff divisor is > 3.
-Rounding up lower divisors makes the error too big, causing USB
-on MPC832x to fail.
+MPC832x does not have enough MURAM to do fixed MURAM allocation.
+Change to dynamic allocation.
 
 Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 ---
- arch/powerpc/sysdev/qe_lib/qe.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/usb/host/fhci-hcd.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 093e0ae..5399316 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -216,7 +216,7 @@ int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier)
- 	/* Errata QE_General4, which affects some MPC832x and MPC836x SOCs, says
- 	   that the BRG divisor must be even if you're not using divide-by-16
- 	   mode. */
--	if (!div16 && (divisor & 1))
-+	if (!div16 && (divisor & 1) && (divisor > 3))
- 		divisor++;
+diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
+index c7c8392..98adbe8 100644
+--- a/drivers/usb/host/fhci-hcd.c
++++ b/drivers/usb/host/fhci-hcd.c
+@@ -622,12 +622,15 @@ static int __devinit of_fhci_probe(struct of_device *ofdev,
+ 		goto err_pram;
+ 	}
  
- 	tempval = ((divisor - 1) << QE_BRGC_DIVISOR_SHIFT) |
+-	pram_addr = cpm_muram_alloc_fixed(iprop[2], FHCI_PRAM_SIZE);
++	pram_addr = cpm_muram_alloc(FHCI_PRAM_SIZE, 64);
+ 	if (IS_ERR_VALUE(pram_addr)) {
+ 		dev_err(dev, "failed to allocate usb pram\n");
+ 		ret = -ENOMEM;
+ 		goto err_pram;
+ 	}
++
++	qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, QE_CR_SUBBLOCK_USB,
++		     QE_CR_PROTOCOL_UNSPECIFIED, pram_addr);
+ 	fhci->pram = cpm_muram_addr(pram_addr);
+ 
+ 	/* GPIOs and pins */
 -- 
 1.7.3.4
