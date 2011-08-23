@@ -1,36 +1,18 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 37DBFB6F68
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Aug 2011 05:30:53 +1000 (EST)
-Subject: Re: kvm PCI assignment & VFIO ramblings
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 23 Aug 2011 13:30:06 -0600
-In-Reply-To: <1314046904.7662.37.camel@pasglop>
-References: <1311983933.8793.42.camel@pasglop>
-	<1312050011.2265.185.camel@x201.home>
-	<20110802082848.GD29719@yookeroo.fritz.box>
-	<1312308847.2653.467.camel@bling.home>
-	<1312310121.2653.470.camel@bling.home>
-	<20110803020422.GF29719@yookeroo.fritz.box>
-	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
-	<1312944513.29273.28.camel@pasglop>
-	<1313859105.6866.192.camel@x201.home>
-	<20110822055509.GI30097@yookeroo.fritz.box>
-	<1314027950.6866.242.camel@x201.home>
-	<1314046904.7662.37.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1314127809.2859.121.camel@bling.home>
-Mime-Version: 1.0
-Cc: aafabbri <aafabbri@cisco.com>, Alexey Kardashevskiy <aik@au1.ibm.com>,
-	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	qemu-devel <qemu-devel@nongnu.org>,
-	David Gibson <dwg@au1.ibm.com>, chrisw <chrisw@sous-sol.org>,
-	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
+Return-Path: <geoff@infradead.org>
+Message-ID: <4E541344.5010802@infradead.org>
+Date: Tue, 23 Aug 2011 13:53:24 -0700
+From: Geoff Levand <geoff@infradead.org>
+MIME-Version: 1.0
+To: Andre Heider <a.heider@gmail.com>
+Subject: Re: [PATCH part1 v2 1/9] Add udbg driver using the PS3 gelic Ethernet
+	device
+References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
+	<1313091073-4572-1-git-send-email-a.heider@gmail.com>
+	<1313091073-4572-2-git-send-email-a.heider@gmail.com>
+In-Reply-To: <1313091073-4572-2-git-send-email-a.heider@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: cbe-oss-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,116 +22,416 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-08-23 at 07:01 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2011-08-22 at 09:45 -0600, Alex Williamson wrote:
-> 
-> > Yes, that's the idea.  An open question I have towards the configuration
-> > side is whether we might add iommu driver specific options to the
-> > groups.  For instance on x86 where we typically have B:D.F granularity,
-> > should we have an option not to trust multi-function devices and use a
-> > B:D granularity for grouping?
-> 
-> Or even B or range of busses... if you want to enforce strict isolation
-> you really can't trust anything below a bus level :-)
-> 
-> > Right, we can also combine models.  Binding a device to vfio
-> > creates /dev/vfio$GROUP, which only allows a subset of ioctls and no
-> > device access until all the group devices are also bound.  I think
-> > the /dev/vfio/$GROUP might help provide an enumeration interface as well
-> > though, which could be useful.
-> 
-> Could be tho in what form ? returning sysfs pathes ?
+Hi,
 
-I'm at a loss there, please suggest.  I think we need an ioctl that
-returns some kind of array of devices within the group and another that
-maybe takes an index from that array and returns an fd for that device.
-A sysfs path string might be a reasonable array element, but it sounds
-like a pain to work with.
+We had some questions as to why we have this totally separate driver
+from the gelic driver, so I think it worthwhile to have an
+explanation of why in the commit log.   Otherwise, the code looks
+OK.
 
-> > 1:1 group<->process is probably too strong.  Not allowing concurrent
-> > open()s on the group file enforces a single userspace entity is
-> > responsible for that group.  Device fds can be passed to other
-> > processes, but only retrieved via the group fd.  I suppose we could even
-> > branch off the dma interface into a different fd, but it seems like we
-> > would logically want to serialize dma mappings at each iommu group
-> > anyway.  I'm open to alternatives, this just seemed an easy way to do
-> > it.  Restricting on UID implies that we require isolated qemu instances
-> > to run as different UIDs.  I know that's a goal, but I don't know if we
-> > want to make it an assumption in the group security model.
+-Geoff
+
+> From: Hector Martin <hector@marcansoft.com>
 > 
-> 1:1 process has the advantage of linking to an -mm which makes the whole
-> mmu notifier business doable. How do you want to track down mappings and
-> do the second level translation in the case of explicit map/unmap (like
-> on power) if you are not tied to an mm_struct ?
-
-Right, I threw away the mmu notifier code that was originally part of
-vfio because we can't do anything useful with it yet on x86.  I
-definitely don't want to prevent it where it makes sense though.  Maybe
-we just record current->mm on open and restrict subsequent opens to the
-same.
-
-> > Yes.  I'm not sure there's a good ROI to prioritize that model.  We have
-> > to assume >1 device per guest is a typical model and that the iotlb is
-> > large enough that we might improve thrashing to see both a resource and
-> > performance benefit from it.  I'm open to suggestions for how we could
-> > include it though.
+> Signed-off-by: Hector Martin <hector@marcansoft.com>
+> [a.heider: Various cleanups to make checkpatch.pl happy]
+> Signed-off-by: Andre Heider <a.heider@gmail.com>
+> ---
+>  arch/powerpc/Kconfig.debug              |    8 +
+>  arch/powerpc/include/asm/udbg.h         |    1 +
+>  arch/powerpc/kernel/udbg.c              |    2 +
+>  arch/powerpc/platforms/ps3/Kconfig      |   12 ++
+>  arch/powerpc/platforms/ps3/Makefile     |    1 +
+>  arch/powerpc/platforms/ps3/gelic_udbg.c |  273 +++++++++++++++++++++++++++++++
+>  drivers/net/ps3_gelic_net.c             |    3 +
+>  drivers/net/ps3_gelic_net.h             |    6 +
+>  8 files changed, 306 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/ps3/gelic_udbg.c
 > 
-> Sharing may or may not be possible depending on setups so yes, it's a
-> bit tricky.
-> 
-> My preference is to have a static interface (and that's actually where
-> your pet netlink might make some sense :-) to create "synthetic" groups
-> made of other groups if the arch allows it. But that might not be the
-> best approach. In another email I also proposed an option for a group to
-> "capture" another one...
-
-I already made some comments on this in a different thread, so I won't
-repeat here.
-
-> > > If that's
-> > > not what you're saying, how would the domains - now made up of a
-> > > user's selection of groups, rather than individual devices - be
-> > > configured?
-> > > 
-> > > > Hope that captures it, feel free to jump in with corrections and
-> > > > suggestions.  Thanks,
-> > > 
-> 
-> Another aspect I don't see discussed is how we represent these things to
-> the guest.
-> 
-> On Power for example, I have a requirement that a given iommu domain is
-> represented by a single dma window property in the device-tree. What
-> that means is that that property needs to be either in the node of the
-> device itself if there's only one device in the group or in a parent
-> node (ie a bridge or host bridge) if there are multiple devices.
-> 
-> Now I do -not- want to go down the path of simulating P2P bridges,
-> besides we'll quickly run out of bus numbers if we go there.
-> 
-> For us the most simple and logical approach (which is also what pHyp
-> uses and what Linux handles well) is really to expose a given PCI host
-> bridge per group to the guest. Believe it or not, it makes things
-> easier :-)
-
-I'm all for easier.  Why does exposing the bridge use less bus numbers
-than emulating a bridge?
-
-On x86, I want to maintain that our default assignment is at the device
-level.  A user should be able to pick single or multiple devices from
-across several groups and have them all show up as individual,
-hotpluggable devices on bus 0 in the guest.  Not surprisingly, we've
-also seen cases where users try to attach a bridge to the guest,
-assuming they'll get all the devices below the bridge, so I'd be in
-favor of making this "just work" if possible too, though we may have to
-prevent hotplug of those.
-
-Given the device requirement on x86 and since everything is a PCI device
-on x86, I'd like to keep a qemu command line something like -device
-vfio,host=00:19.0.  I assume that some of the iommu properties, such as
-dma window size/address, will be query-able through an architecture
-specific (or general if possible) ioctl on the vfio group fd.  I hope
-that will help the specification, but I don't fully understand what all
-remains.  Thanks,
-
-Alex
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index 067cb84..ab2335f 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -258,6 +258,14 @@ config PPC_EARLY_DEBUG_WSP
+>  	depends on PPC_WSP
+>  	select PPC_UDBG_16550
+>  
+> +config PPC_EARLY_DEBUG_PS3GELIC
+> +	bool "Early debugging through the PS3 Ethernet port"
+> +	depends on PPC_PS3
+> +	select PS3GELIC_UDBG
+> +	help
+> +	  Select this to enable early debugging for the PlayStation3 via
+> +	  UDP broadcasts sent out through the Ethernet port.
+> +
+>  endchoice
+>  
+>  config PPC_EARLY_DEBUG_HVSI_VTERMNO
+> diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+> index 93e05d1..7cf796f 100644
+> --- a/arch/powerpc/include/asm/udbg.h
+> +++ b/arch/powerpc/include/asm/udbg.h
+> @@ -54,6 +54,7 @@ extern void __init udbg_init_40x_realmode(void);
+>  extern void __init udbg_init_cpm(void);
+>  extern void __init udbg_init_usbgecko(void);
+>  extern void __init udbg_init_wsp(void);
+> +extern void __init udbg_init_ps3gelic(void);
+>  
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_UDBG_H */
+> diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+> index faa82c1..5b3e98e 100644
+> --- a/arch/powerpc/kernel/udbg.c
+> +++ b/arch/powerpc/kernel/udbg.c
+> @@ -67,6 +67,8 @@ void __init udbg_early_init(void)
+>  	udbg_init_usbgecko();
+>  #elif defined(CONFIG_PPC_EARLY_DEBUG_WSP)
+>  	udbg_init_wsp();
+> +#elif defined(CONFIG_PPC_EARLY_DEBUG_PS3GELIC)
+> +	udbg_init_ps3gelic();
+>  #endif
+>  
+>  #ifdef CONFIG_PPC_EARLY_DEBUG
+> diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
+> index dfe316b..476d9d9 100644
+> --- a/arch/powerpc/platforms/ps3/Kconfig
+> +++ b/arch/powerpc/platforms/ps3/Kconfig
+> @@ -148,4 +148,16 @@ config PS3_LPM
+>  	  profiling support of the Cell processor with programs like
+>  	  oprofile and perfmon2, then say Y or M, otherwise say N.
+>  
+> +config PS3GELIC_UDBG
+> +	bool "PS3 udbg output via UDP broadcasts on Ethernet"
+> +	depends on PPC_PS3
+> +	help
+> +	  Enables udbg early debugging output by sending broadcast UDP
+> +	  via the Ethernet port (UDP port number 18194).
+> +
+> +	  This driver uses a trivial implementation and is independent
+> +	  from the main network driver.
+> +
+> +	  If in doubt, say N here.
+> +
+>  endmenu
+> diff --git a/arch/powerpc/platforms/ps3/Makefile b/arch/powerpc/platforms/ps3/Makefile
+> index ac1bdf8..02b9e63 100644
+> --- a/arch/powerpc/platforms/ps3/Makefile
+> +++ b/arch/powerpc/platforms/ps3/Makefile
+> @@ -2,6 +2,7 @@ obj-y += setup.o mm.o time.o hvcall.o htab.o repository.o
+>  obj-y += interrupt.o exports.o os-area.o
+>  obj-y += system-bus.o
+>  
+> +obj-$(CONFIG_PS3GELIC_UDBG) += gelic_udbg.o
+>  obj-$(CONFIG_SMP) += smp.o
+>  obj-$(CONFIG_SPU_BASE) += spu.o
+>  obj-y += device-init.o
+> diff --git a/arch/powerpc/platforms/ps3/gelic_udbg.c b/arch/powerpc/platforms/ps3/gelic_udbg.c
+> new file mode 100644
+> index 0000000..20b46a1
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/ps3/gelic_udbg.c
+> @@ -0,0 +1,273 @@
+> +/*
+> + * udbg debug output routine via GELIC UDP broadcasts
+> + *
+> + * Copyright (C) 2007 Sony Computer Entertainment Inc.
+> + * Copyright 2006, 2007 Sony Corporation
+> + * Copyright (C) 2010 Hector Martin <hector@marcansoft.com>
+> + * Copyright (C) 2011 Andre Heider <a.heider@gmail.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version 2
+> + * of the License, or (at your option) any later version.
+> + *
+> + */
+> +
+> +#include <asm/io.h>
+> +#include <asm/udbg.h>
+> +#include <asm/lv1call.h>
+> +
+> +#define GELIC_BUS_ID 1
+> +#define GELIC_DEVICE_ID 0
+> +#define GELIC_DEBUG_PORT 18194
+> +#define GELIC_MAX_MESSAGE_SIZE 1000
+> +
+> +#define GELIC_LV1_GET_MAC_ADDRESS 1
+> +#define GELIC_LV1_GET_VLAN_ID 4
+> +#define GELIC_LV1_VLAN_TX_ETHERNET_0 2
+> +
+> +#define GELIC_DESCR_DMA_STAT_MASK 0xf0000000
+> +#define GELIC_DESCR_DMA_CARDOWNED 0xa0000000
+> +
+> +#define GELIC_DESCR_TX_DMA_IKE 0x00080000
+> +#define GELIC_DESCR_TX_DMA_NO_CHKSUM 0x00000000
+> +#define GELIC_DESCR_TX_DMA_FRAME_TAIL 0x00040000
+> +
+> +#define GELIC_DESCR_DMA_CMD_NO_CHKSUM (GELIC_DESCR_DMA_CARDOWNED | \
+> +				       GELIC_DESCR_TX_DMA_IKE | \
+> +				       GELIC_DESCR_TX_DMA_NO_CHKSUM)
+> +
+> +static u64 bus_addr;
+> +
+> +struct gelic_descr {
+> +	/* as defined by the hardware */
+> +	__be32 buf_addr;
+> +	__be32 buf_size;
+> +	__be32 next_descr_addr;
+> +	__be32 dmac_cmd_status;
+> +	__be32 result_size;
+> +	__be32 valid_size;	/* all zeroes for tx */
+> +	__be32 data_status;
+> +	__be32 data_error;	/* all zeroes for tx */
+> +} __attribute__((aligned(32)));
+> +
+> +struct debug_block {
+> +	struct gelic_descr descr;
+> +	u8 pkt[1520];
+> +} __packed;
+> +
+> +struct ethhdr {
+> +	u8 dest[6];
+> +	u8 src[6];
+> +	u16 type;
+> +} __packed;
+> +
+> +struct vlantag {
+> +	u16 vlan;
+> +	u16 subtype;
+> +} __packed;
+> +
+> +struct iphdr {
+> +	u8 ver_len;
+> +	u8 dscp_ecn;
+> +	u16 total_length;
+> +	u16 ident;
+> +	u16 frag_off_flags;
+> +	u8 ttl;
+> +	u8 proto;
+> +	u16 checksum;
+> +	u32 src;
+> +	u32 dest;
+> +} __packed;
+> +
+> +struct udphdr {
+> +	u16 src;
+> +	u16 dest;
+> +	u16 len;
+> +	u16 checksum;
+> +} __packed;
+> +
+> +static __iomem struct ethhdr *h_eth;
+> +static __iomem struct vlantag *h_vlan;
+> +static __iomem struct iphdr *h_ip;
+> +static __iomem struct udphdr *h_udp;
+> +
+> +static __iomem char *pmsg;
+> +static __iomem char *pmsgc;
+> +
+> +static __iomem struct debug_block dbg __attribute__((aligned(32)));
+> +
+> +static int header_size;
+> +
+> +static void map_dma_mem(int bus_id, int dev_id, void *start, size_t len,
+> +			u64 *real_bus_addr)
+> +{
+> +	s64 result;
+> +	u64 real_addr = ((u64)start) & 0x0fffffffffffffffUL;
+> +	u64 real_end = real_addr + len;
+> +	u64 map_start = real_addr & ~0xfff;
+> +	u64 map_end = (real_end + 0xfff) & ~0xfff;
+> +	u64 bus_addr = 0;
+> +
+> +	u64 flags = 0xf800000000000000UL;
+> +
+> +	result = lv1_allocate_device_dma_region(bus_id, dev_id,
+> +						map_end - map_start, 12, 0,
+> +						&bus_addr);
+> +	if (result)
+> +		lv1_panic(0);
+> +
+> +	result = lv1_map_device_dma_region(bus_id, dev_id, map_start,
+> +					   bus_addr, map_end - map_start,
+> +					   flags);
+> +	if (result)
+> +		lv1_panic(0);
+> +
+> +	*real_bus_addr = bus_addr + real_addr - map_start;
+> +}
+> +
+> +static int unmap_dma_mem(int bus_id, int dev_id, u64 bus_addr, size_t len)
+> +{
+> +	s64 result;
+> +	u64 real_bus_addr;
+> +
+> +	real_bus_addr = bus_addr & ~0xfff;
+> +	len += bus_addr - real_bus_addr;
+> +	len = (len + 0xfff) & ~0xfff;
+> +
+> +	result = lv1_unmap_device_dma_region(bus_id, dev_id, real_bus_addr,
+> +					     len);
+> +	if (result)
+> +		return result;
+> +
+> +	return lv1_free_device_dma_region(bus_id, dev_id, real_bus_addr);
+> +}
+> +
+> +static void gelic_debug_init(void)
+> +{
+> +	s64 result;
+> +	u64 v2;
+> +	u64 mac;
+> +	u64 vlan_id;
+> +
+> +	result = lv1_open_device(GELIC_BUS_ID, GELIC_DEVICE_ID, 0);
+> +	if (result)
+> +		lv1_panic(0);
+> +
+> +	map_dma_mem(GELIC_BUS_ID, GELIC_DEVICE_ID, &dbg, sizeof(dbg),
+> +		    &bus_addr);
+> +
+> +	memset(&dbg, 0, sizeof(dbg));
+> +
+> +	dbg.descr.buf_addr = bus_addr + offsetof(struct debug_block, pkt);
+> +
+> +	wmb();
+> +
+> +	result = lv1_net_control(GELIC_BUS_ID, GELIC_DEVICE_ID,
+> +				 GELIC_LV1_GET_MAC_ADDRESS, 0, 0, 0,
+> +				 &mac, &v2);
+> +	if (result)
+> +		lv1_panic(0);
+> +
+> +	mac <<= 16;
+> +
+> +	h_eth = (struct ethhdr *)dbg.pkt;
+> +
+> +	memset(&h_eth->dest, 0xff, 6);
+> +	memcpy(&h_eth->src, &mac, 6);
+> +
+> +	header_size = sizeof(struct ethhdr);
+> +
+> +	result = lv1_net_control(GELIC_BUS_ID, GELIC_DEVICE_ID,
+> +				 GELIC_LV1_GET_VLAN_ID,
+> +				 GELIC_LV1_VLAN_TX_ETHERNET_0, 0, 0,
+> +				 &vlan_id, &v2);
+> +	if (!result) {
+> +		h_eth->type = 0x8100;
+> +
+> +		header_size += sizeof(struct vlantag);
+> +		h_vlan = (struct vlantag *)(h_eth + 1);
+> +		h_vlan->vlan = vlan_id;
+> +		h_vlan->subtype = 0x0800;
+> +		h_ip = (struct iphdr *)(h_vlan + 1);
+> +	} else {
+> +		h_eth->type = 0x0800;
+> +		h_ip = (struct iphdr *)(h_eth + 1);
+> +	}
+> +
+> +	header_size += sizeof(struct iphdr);
+> +	h_ip->ver_len = 0x45;
+> +	h_ip->ttl = 10;
+> +	h_ip->proto = 0x11;
+> +	h_ip->src = 0x00000000;
+> +	h_ip->dest = 0xffffffff;
+> +
+> +	header_size += sizeof(struct udphdr);
+> +	h_udp = (struct udphdr *)(h_ip + 1);
+> +	h_udp->src = GELIC_DEBUG_PORT;
+> +	h_udp->dest = GELIC_DEBUG_PORT;
+> +
+> +	pmsgc = pmsg = (char *)(h_udp + 1);
+> +}
+> +
+> +static void gelic_debug_shutdown(void)
+> +{
+> +	if (bus_addr)
+> +		unmap_dma_mem(GELIC_BUS_ID, GELIC_DEVICE_ID,
+> +			      bus_addr, sizeof(dbg));
+> +	lv1_close_device(GELIC_BUS_ID, GELIC_DEVICE_ID);
+> +}
+> +
+> +static void gelic_sendbuf(int msgsize)
+> +{
+> +	u16 *p;
+> +	u32 sum;
+> +	int i;
+> +
+> +	dbg.descr.buf_size = header_size + msgsize;
+> +	h_ip->total_length = msgsize + sizeof(struct udphdr) +
+> +			     sizeof(struct iphdr);
+> +	h_udp->len = msgsize + sizeof(struct udphdr);
+> +
+> +	h_ip->checksum = 0;
+> +	sum = 0;
+> +	p = (u16 *)h_ip;
+> +	for (i = 0; i < 5; i++)
+> +		sum += *p++;
+> +	h_ip->checksum = ~(sum + (sum >> 16));
+> +
+> +	dbg.descr.dmac_cmd_status = GELIC_DESCR_DMA_CMD_NO_CHKSUM |
+> +				    GELIC_DESCR_TX_DMA_FRAME_TAIL;
+> +	dbg.descr.result_size = 0;
+> +	dbg.descr.data_status = 0;
+> +
+> +	wmb();
+> +
+> +	lv1_net_start_tx_dma(GELIC_BUS_ID, GELIC_DEVICE_ID, bus_addr, 0);
+> +
+> +	while ((dbg.descr.dmac_cmd_status & GELIC_DESCR_DMA_STAT_MASK) ==
+> +	       GELIC_DESCR_DMA_CARDOWNED)
+> +		cpu_relax();
+> +}
+> +
+> +static void ps3gelic_udbg_putc(char ch)
+> +{
+> +	*pmsgc++ = ch;
+> +	if (ch == '\n' || (pmsgc-pmsg) >= GELIC_MAX_MESSAGE_SIZE) {
+> +		gelic_sendbuf(pmsgc-pmsg);
+> +		pmsgc = pmsg;
+> +	}
+> +}
+> +
+> +void __init udbg_init_ps3gelic(void)
+> +{
+> +	gelic_debug_init();
+> +	udbg_putc = ps3gelic_udbg_putc;
+> +}
+> +
+> +void udbg_shutdown_ps3gelic(void)
+> +{
+> +	udbg_putc = NULL;
+> +	gelic_debug_shutdown();
+> +}
+> +EXPORT_SYMBOL(udbg_shutdown_ps3gelic);
+> diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
+> index d82a82d..e743c94 100644
+> --- a/drivers/net/ps3_gelic_net.c
+> +++ b/drivers/net/ps3_gelic_net.c
+> @@ -1674,6 +1674,9 @@ static int __devinit ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
+>  	int result;
+>  
+>  	pr_debug("%s: called\n", __func__);
+> +
+> +	udbg_shutdown_ps3gelic();
+> +
+>  	result = ps3_open_hv_device(dev);
+>  
+>  	if (result) {
+> diff --git a/drivers/net/ps3_gelic_net.h b/drivers/net/ps3_gelic_net.h
+> index d3fadfb..a93df6a 100644
+> --- a/drivers/net/ps3_gelic_net.h
+> +++ b/drivers/net/ps3_gelic_net.h
+> @@ -359,6 +359,12 @@ static inline void *port_priv(struct gelic_port *port)
+>  	return port->priv;
+>  }
+>  
+> +#ifdef CONFIG_PPC_EARLY_DEBUG_PS3GELIC
+> +extern void udbg_shutdown_ps3gelic(void);
+> +#else
+> +static inline void udbg_shutdown_ps3gelic(void) {}
+> +#endif
+> +
+>  extern int gelic_card_set_irq_mask(struct gelic_card *card, u64 mask);
+>  /* shared netdev ops */
+>  extern void gelic_card_up(struct gelic_card *card);
