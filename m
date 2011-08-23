@@ -1,15 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
-	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 463BCB6FA6
+Return-Path: <f.fainelli@gmail.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B9D1EB6F7E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Aug 2011 22:38:47 +1000 (EST)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Anton Vorontsov <cbouatmailru@gmail.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] usb: Allocate pram dynamically.
-Date: Tue, 23 Aug 2011 14:38:41 +0200
-Message-Id: <1314103121-9857-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	Tue, 23 Aug 2011 22:20:27 +1000 (EST)
+Received: by wwg9 with SMTP id 9so37782wwg.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 23 Aug 2011 05:20:22 -0700 (PDT)
+Sender: Florian Fainelli <f.fainelli@gmail.com>
+From: Florian Fainelli <florian@openwrt.org>
+To: Ian Munsie <imunsie@au.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] perf: fix build for PowerPC with uclibc toolchains
+Date: Tue, 23 Aug 2011 14:20:08 +0200
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201108231420.08879.florian@openwrt.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,34 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC832x does not have enough MURAM to do fixed MURAM allocation.
-Change to dynamic allocation.
+libio.h is not provided by uClibc, in order to be able to test the
+definition of __UCLIBC__ we need to include stdlib.h, which also
+includes stddef.h, providing the definition of 'NULL'.
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Signed-off-by: Florian Fainelli <florian@openwrt.org>
 ---
- drivers/usb/host/fhci-hcd.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+FYI, I submitted the exact same patch for ARM:
+https://patchwork.kernel.org/patch/1049152/
 
-diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
-index c7c8392..98adbe8 100644
---- a/drivers/usb/host/fhci-hcd.c
-+++ b/drivers/usb/host/fhci-hcd.c
-@@ -622,12 +622,15 @@ static int __devinit of_fhci_probe(struct of_device *ofdev,
- 		goto err_pram;
- 	}
+diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
+index 48ae0c5..7cdd61d 100644
+--- a/tools/perf/arch/powerpc/util/dwarf-regs.c
++++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
+@@ -9,7 +9,10 @@
+  * 2 of the License, or (at your option) any later version.
+  */
  
--	pram_addr = cpm_muram_alloc_fixed(iprop[2], FHCI_PRAM_SIZE);
-+	pram_addr = cpm_muram_alloc(FHCI_PRAM_SIZE, 64);
- 	if (IS_ERR_VALUE(pram_addr)) {
- 		dev_err(dev, "failed to allocate usb pram\n");
- 		ret = -ENOMEM;
- 		goto err_pram;
- 	}
-+
-+	qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, QE_CR_SUBBLOCK_USB,
-+		     QE_CR_PROTOCOL_UNSPECIFIED, pram_addr);
- 	fhci->pram = cpm_muram_addr(pram_addr);
++#include <stdlib.h>
++#ifndef __UCLIBC__
+ #include <libio.h>
++#endif
+ #include <dwarf-regs.h>
  
- 	/* GPIOs and pins */
+ 
 -- 
-1.7.3.4
+1.7.4.1
