@@ -1,26 +1,27 @@
 Return-Path: <Joerg.Roedel@amd.com>
-Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1AF6CB6FA3
+	by ozlabs.org (Postfix) with ESMTPS id 1E688B6FAF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Aug 2011 21:07:40 +1000 (EST)
-Date: Tue, 23 Aug 2011 13:04:31 +0200
+	Tue, 23 Aug 2011 21:09:57 +1000 (EST)
+Date: Tue, 23 Aug 2011 13:09:42 +0200
 From: Joerg Roedel <joerg.roedel@amd.com>
-To: aafabbri <aafabbri@cisco.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110823110431.GK2079@amd.com>
-References: <1314049785.7662.44.camel@pasglop>
-	<CA7847D2.FB3A%aafabbri@cisco.com>
+Message-ID: <20110823110942.GL2079@amd.com>
+References: <CA7847D2.FB3A%aafabbri@cisco.com>
+	<1314082483.30478.43.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <CA7847D2.FB3A%aafabbri@cisco.com>
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+In-Reply-To: <1314082483.30478.43.camel@pasglop>
+Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
 	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
 	Paul Mackerras <pmac@au1.ibm.com>,
 	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
+	qemu-devel <qemu-devel@nongnu.org>, aafabbri <aafabbri@cisco.com>,
 	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
 	Anthony Liguori <anthony@codemonkey.ws>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -34,17 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 22, 2011 at 08:52:18PM -0400, aafabbri wrote:
-> You have to enforce group/iommu domain assignment whether you have the
-> existing uiommu API, or if you change it to your proposed
-> ioctl(inherit_iommu) API.
+On Tue, Aug 23, 2011 at 02:54:43AM -0400, Benjamin Herrenschmidt wrote:
+> Possibly, the question that interest me the most is what interface will
+> KVM end up using. I'm also not terribly fan with the (perceived)
+> discrepancy between using uiommu to create groups but using the group fd
+> to actually do the mappings, at least if that is still the plan.
 > 
-> The only change needed to VFIO here should be to make uiommu fd assignment
-> happen on the groups instead of on device fds.  That operation fails or
-> succeeds according to the group semantics (all-or-none assignment/same
-> uiommu).
+> If the separate uiommu interface is kept, then anything that wants to be
+> able to benefit from the ability to put multiple devices (or existing
+> groups) into such a "meta group" would need to be explicitly modified to
+> deal with the uiommu APIs.
+> 
+> I tend to prefer such "meta groups" as being something you create
+> statically using a configuration interface, either via sysfs, netlink or
+> ioctl's to a "control" vfio device driven by a simple command line tool
+> (which can have the configuration stored in /etc and re-apply it at
+> boot).
 
-That is makes uiommu basically the same as the meta-groups, right?
+Hmm, I don't think that these groups are static for the systems
+run-time. They only exist for the lifetime of a guest per default, at
+least on x86. Thats why I prefer to do this grouping using VFIO and not
+some sysfs interface (which would be the third interface beside the
+ioctls and netlink a VFIO user needs to be aware of). Doing this in the
+ioctl interface just makes things easier.
 
 	Joerg
 
