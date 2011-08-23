@@ -1,18 +1,29 @@
-Return-Path: <jslaby@suse.cz>
-Received: from smtp.pripojeni.net (mail.pripojeni.net [178.22.112.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD5C1B6F9C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Aug 2011 18:06:11 +1000 (EST)
-From: Jiri Slaby <jslaby@suse.cz>
-To: grant.likely@secretlab.ca
-Subject: [PATCH] SPI: fix build with CONFIG_SPI_FSL_ESPI=m
-Date: Tue, 23 Aug 2011 09:59:05 +0200
-Message-Id: <1314086345-2818-1-git-send-email-jslaby@suse.cz>
-Cc: spi-devel-general@lists.sourceforge.net, Jiri Slaby <jslaby@suse.cz>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	jirislaby@gmail.com
+Return-Path: <matthieu.castet@parrot.com>
+Received: from co202.xi-lite.net (co202.xi-lite.net [149.6.83.202])
+	by ozlabs.org (Postfix) with ESMTP id 0EF23B6F77
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Aug 2011 18:14:12 +1000 (EST)
+Message-ID: <4E53614E.2070103@parrot.com>
+Date: Tue, 23 Aug 2011 10:14:06 +0200
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+MIME-Version: 1.0
+To: LiuShuo <b35362@freescale.com>
+Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
+	large-page Nand chip
+References: <1313634783-8855-1-git-send-email-b35362@freescale.com>
+	<4E4D452C.7050805@parrot.com> <4E4DD661.5080006@freescale.com>
+	<4E4E2571.20409@parrot.com> <4E4EA70B.9050203@freescale.com>
+	<1314010719.2644.114.camel@sauron>
+	<20110822152530.GA16794@parrot.com>
+	<4E527E0F.1010500@freescale.com> <4E528036.5070801@parrot.com>
+	<4E52819C.8080204@freescale.com> <4E5319E8.50903@freescale.com>
+In-Reply-To: <4E5319E8.50903@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+	Artem Bityutskiy <dedekind1@gmail.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	Scott Wood <scottwood@freescale.com>, Ivan Djelic <ivan.djelic@parrot.com>,
+	"dwmw2@infradead.org" <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,34 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When spi_fsl_espi is chosen to be built as a module, there is a build
-error because we test only CONFIG_SPI_FSL_ESPI in declaration of
-struct mpc8xxx_spi in drivers/spi/spi_fsl_lib.h.
+LiuShuo a écrit :
+> 于 2011年08月23日 00:19, Scott Wood 写道:
+>> On 08/22/2011 11:13 AM, Matthieu CASTET wrote:
+>>> Scott Wood a écrit :
+>>>> To eliminate it we'd need to do an extra data transfer without reissuing
+>>>> the command, which Shuo was unable to get to work.
+>>>>
+>>> That's weird because our controller seems quite flexible [1].
+>>>
+>>> Something like that should work ?
+>>>
+>>>              out_be32(&lbc->fir,
+>>>                       (FIR_OP_CM2<<  FIR_OP0_SHIFT) |
+>>>                       (FIR_OP_CA<<  FIR_OP1_SHIFT) |
+>>>                       (FIR_OP_PA<<  FIR_OP2_SHIFT) |
+>>>                       (FIR_OP_WB<<  FIR_OP3_SHIFT));
+>>> refill FCM buffer with next 2k data
+>>>
+>>>              out_be32(&lbc->fir,
+>>>                       (FIR_OP_WB<<  FIR_OP3_SHIFT) |
+>>>                       (FIR_OP_CM3<<  FIR_OP4_SHIFT) |
+>>>                       (FIR_OP_CW1<<  FIR_OP5_SHIFT) |
+>>>                       (FIR_OP_RS<<  FIR_OP6_SHIFT));
+>> Something like that is what I originally suggested, but Shuo said it
+>> didn't work (even in theory, it requires a CE-don't-care NAND chip,
+>> since bus atomicity is broken).
+>>
+>> Shuo, what specifically did you try, and what did you see happen?
+>>
+>> -Scott
+> First, if we want to read 4K data with once command issuing, we can't 
+> use HW_ECC.
+Yes, but as ivan said doesn't the cost of 2 read isn't bigger than software ecc ?
 
-We need to add a test for CONFIG_SPI_FSL_ESPI_MODULE too.
+> Even if we use SW_ECC, we always get lots of weird '0xFF's between 1st 
+> 2k and 2nd 2k data.
+Did you understand where those 0xff comes (what's the size of them. Doesn't the
+controller try to insert spare aera ?)
 
-The error looks like:
-drivers/spi/spi_fsl_espi.c: In function 'fsl_espi_bufs':
-drivers/spi/spi_fsl_espi.c:232: error: 'struct mpc8xxx_spi' has no member named 'len'
-...
+Could you detail the sequence you used ?
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
----
- drivers/spi/spi-fsl-lib.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/spi/spi-fsl-lib.h b/drivers/spi/spi-fsl-lib.h
-index cbe881b..97968de 100644
---- a/drivers/spi/spi-fsl-lib.h
-+++ b/drivers/spi/spi-fsl-lib.h
-@@ -28,7 +28,7 @@ struct mpc8xxx_spi {
- 	/* rx & tx bufs from the spi_transfer */
- 	const void *tx;
- 	void *rx;
--#ifdef CONFIG_SPI_FSL_ESPI
-+#if defined(CONFIG_SPI_FSL_ESPI) || defined(CONFIG_SPI_FSL_ESPI_MODULE)
- 	int len;
- #endif
- 
--- 
-1.7.6
+Matthieu
