@@ -1,17 +1,26 @@
-Return-Path: <steve.belanger@ca.transport.bombardier.com>
-Received: from BBTSVLSDC01.TRANSPORT.BOMBARDIER.COM
-	(bbtsvlsdc01.transport.bombardier.com [20.133.40.69])
-	by ozlabs.org (Postfix) with ESMTP id D3047B6FD1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Aug 2011 00:27:50 +1000 (EST)
-To: linuxppc-dev@lists.ozlabs.org
-Subject: MPC5200 + BestComm support in QEMU
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A98CCB6F9D
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2011 02:12:24 +1000 (EST)
+Message-ID: <4E53D15D.2050807@freescale.com>
+Date: Tue, 23 Aug 2011 11:12:13 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Message-ID: <OF67848023.5100FBC5-ON852578F5.004F5D2A-852578F5.004F7274@amer.bombardier.com>
-From: steve.belanger@ca.transport.bombardier.com
-Date: Tue, 23 Aug 2011 10:26:18 -0400
-Content-Type: multipart/alternative;
-	boundary="=_alternative 004F7273852578F5_="
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Subject: Re: [PATCH v3] mtd/nand : workaround for Freescale FCM to support
+	large-page Nand chip
+References: <1313634783-8855-1-git-send-email-b35362@freescale.com>	<4E4D3CE0.7020602@freescale.com>
+	<4E5366AF.7040108@freescale.com> <4E537AC4.6000301@parrot.com>
+In-Reply-To: <4E537AC4.6000301@parrot.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	LiuShuo <b35362@freescale.com>,
+	"dwmw2@infradead.org" <dwmw2@infradead.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,165 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 004F7273852578F5_=
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On 08/23/2011 05:02 AM, Matthieu CASTET wrote:
+> LiuShuo a =C3=A9crit :
+>> We can't read the NOP from the ID on any chip. Some chips don't
+>> give this infomation.(e.g. Micron MT29F4G08BAC)
 
-Hi,=20
+Are there any 4K+ chips (especially ones with insufficient NOP) that
+don't have the info?
 
-I'm Steve, an embedded software developper for Bombardier Transportation=20
-Canada. We use the MPC5200 for most of our onboard computers inside train=20
-control systems. To enhance our SW engineering process, we would like the=20
-emulate the MPC5200 processor using QEMU, an open source software CPU=20
-emulator. This software supports the MPC5200 CPU emulation.
+This chip is 2K and NOP8.
 
-However, the network interface is handled with the BestComm DMA engine and =
+Is there an easy way (without needing to have every datasheet for every
+chip ever made) to determine at runtime which chips supply this informati=
+on?
 
-it seems very difficult to simulate this co-processor with our current=20
-knowledge level. In that sense, I would like to know if someone was able=20
-to emulate correctly the MPC5200 with the BestComm DMA using QEMU=20
-software?
+> Doesn't the micron chip provide it with onfi info ?
 
-Steve B=E9langer, ing. / Eng.
-D=E9veloppeur logiciel embarqu=E9 / Embedded Software Developper
-Bombardier Transportation Canada Inc.=20
-Train Control and Management System
-Saint-Bruno: 450-441-2020 ext.6148
+This chip doesn't appear to be ONFI.
 
-=20
- =20
-Please consider the environment before you print / Merci de penser =E0=20
-l'environnement avant d'imprimer=20
-
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=20
-
-This e-mail communication (and any attachment/s) may contain confidential=20
-or privileged information and is intended only for the individual(s) or=20
-entity named above and to others who have been specifically authorized to=20
-receive it. If you are not the intended recipient, please do not read,=20
-copy, use or disclose the contents of this communication to others. Please =
-
-notify the sender that you have received this e-mail in error by reply=20
-e-mail, and delete the e-mail subsequently. Please note that in order to=20
-protect the security of our information systems an AntiSPAM solution is in =
-
-use and will browse through incoming emails.=20
-Thank you.=20
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=20
-
-
-Ce message (ainsi que le(s) fichier(s)), transmis par courriel, peut=20
-contenir des renseignements confidentiels ou prot=E9g=E9s et est destin=E9 =
-=E0=20
-l?usage exclusif du destinataire ci-dessus. Toute autre personne est, par=20
-les pr=E9sentes, avis=E9e qu?il est strictement interdit de le diffuser, le=
-=20
-distribuer ou le reproduire. Si vous l?avez re=E7u par inadvertance,=20
-veuillez nous en aviser et d=E9truire ce message. Veuillez prendre note=20
-qu'une solution antipollupostage (AntiSPAM) est utilis=E9e afin d'assurer l=
-a=20
-s=E9curit=E9 de nos syst=E8mes d'information et qu'elle fur=E8tera les cour=
-riels=20
-entrants.
-Merci.=20
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=20
-
-
-
---=_alternative 004F7273852578F5_=
-Content-Type: text/html; charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-
-<br><font size=3D2 face=3D"sans-serif">Hi, </font>
-<br>
-<br><font size=3D2 face=3D"sans-serif">I'm Steve, an embedded software deve=
-lopper
-for Bombardier Transportation Canada. We use the MPC5200 for most of our
-onboard computers inside train control systems. To enhance our SW engineeri=
-ng
-process, we would like the emulate the MPC5200 processor using QEMU, an
-open source software CPU emulator. This software supports the MPC5200 CPU
-emulation.</font>
-<br>
-<br><font size=3D2 face=3D"sans-serif">However, the network interface is ha=
-ndled
-with the BestComm DMA engine and it seems very difficult to simulate this
-co-processor with our current knowledge level. In that sense, I would like
-to know if someone was able to emulate correctly the MPC5200 with the BestC=
-omm
-DMA using QEMU software?</font>
-<br><font size=3D2 face=3D"sans-serif"><br>
-Steve B=E9langer, ing. / Eng.<br>
-D=E9veloppeur logiciel embarqu=E9 / Embedded Software Developper<br>
-Bombardier Transportation Canada Inc. <br>
-Train Control and Management System<br>
-Saint-Bruno: 450-441-2020 ext.6148<br>
-<br>
-</font><font size=3D2 face=3D"Microsoft Sans Serif"> &nbsp;<br>
- &nbsp;</font><font size=3D1 face=3D"Microsoft Sans Serif"><br>
-Please consider the environment before you print / Merci de penser =E0 l'en=
-vironnement
-avant d'imprimer <br>
-<br>
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
-<br>
-This e-mail communication (and any attachment/s) may contain confidential
-or privileged information and is intended only for the individual(s) or
-entity named above and to others who have been specifically authorized
-to receive it. If you are not the intended recipient, please do not read,
-copy, use or disclose the contents of this communication to others. Please
-notify the sender that you have received this e-mail in error by reply
-e-mail, and delete the e-mail subsequently. Please note that in order to
-protect the security of our information systems an AntiSPAM solution is
-in use and will browse through incoming emails. <br>
-Thank you. <br>
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
-<br>
-<br>
-Ce message (ainsi que le(s) fichier(s)), transmis par courriel, peut conten=
-ir
-des renseignements confidentiels ou prot=E9g=E9s et est destin=E9 =E0 l&#82=
-17;usage
-exclusif du destinataire ci-dessus. Toute autre personne est, par les pr=E9=
-sentes,
-avis=E9e qu&#8217;il est strictement interdit de le diffuser, le distribuer=
- ou
-le reproduire. Si vous l&#8217;avez re=E7u par inadvertance, veuillez nous =
-en
-aviser et d=E9truire ce message. Veuillez prendre note qu'une solution anti=
-pollupostage
-(AntiSPAM) est utilis=E9e afin d'assurer la s=E9curit=E9 de nos syst=E8mes =
-d'information
-et qu'elle fur=E8tera les courriels entrants.<br>
-Merci. <br>
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
-<br>
-<br>
-</font>
---=_alternative 004F7273852578F5_=--
+-Scott
