@@ -1,20 +1,36 @@
-Return-Path: <ospite@studenti.unina.it>
-Date: Wed, 24 Aug 2011 00:37:20 +0200
-From: Antonio Ospite <ospite@studenti.unina.it>
-To: Geoff Levand <geoff@infradead.org>
-Subject: Re: [Cbe-oss-dev] [PATCH part1 v2 4/9] Add region 1 memory early
-Message-Id: <20110824003720.bc0589b8776467cc42e5d066@studenti.unina.it>
-In-Reply-To: <4E54135A.7030509@infradead.org>
-References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
-	<1313091073-4572-1-git-send-email-a.heider@gmail.com>
-	<1313091073-4572-5-git-send-email-a.heider@gmail.com>
-	<4E54135A.7030509@infradead.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1BD35B6F69
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 24 Aug 2011 09:36:33 +1000 (EST)
+Subject: Re: kvm PCI assignment & VFIO ramblings
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Roedel, Joerg" <Joerg.Roedel@amd.com>
+In-Reply-To: <20110823131819.GO2079@amd.com>
+References: <20110802082848.GD29719@yookeroo.fritz.box>
+	<1312308847.2653.467.camel@bling.home>
+	<1312310121.2653.470.camel@bling.home>
+	<20110803020422.GF29719@yookeroo.fritz.box>
+	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
+	<1312944513.29273.28.camel@pasglop>
+	<1313859105.6866.192.camel@x201.home> <20110822172508.GJ2079@amd.com>
+	<1314047033.7662.39.camel@pasglop>  <20110823131819.GO2079@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 24 Aug 2011 09:35:37 +1000
+Message-ID: <1314142537.30478.59.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__24_Aug_2011_00_37_20_+0200_aG9LN7AygmgFbXrT"
-Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>,
+	iommu <iommu@lists.linux-foundation.org>, chrisw <chrisw@sous-sol.org>,
+	Alex Williamson <alex.williamson@redhat.com>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__24_Aug_2011_00_37_20_+0200_aG9LN7AygmgFbXrT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2011-08-23 at 15:18 +0200, Roedel, Joerg wrote:
+> On Mon, Aug 22, 2011 at 05:03:53PM -0400, Benjamin Herrenschmidt wrote:
+> > 
+> > > I am in favour of /dev/vfio/$GROUP. If multiple devices should be
+> > > assigned to a guest, there can also be an ioctl to bind a group to an
+> > > address-space of another group (certainly needs some care to not allow
+> > > that both groups belong to different processes).
+> > > 
+> > > Btw, a problem we havn't talked about yet entirely is
+> > > driver-deassignment. User space can decide to de-assign the device from
+> > > vfio while a fd is open on it. With PCI there is no way to let this fail
+> > > (the .release function returns void last time i checked). Is this a
+> > > problem, and yes, how we handle that?
+> > 
+> > We can treat it as a hard unplug (like a cardbus gone away).
+> > 
+> > IE. Dispose of the direct mappings (switch to MMIO emulation) and return
+> > all ff's from reads (& ignore writes).
+> > 
+> > Then send an unplug event via whatever mechanism the platform provides
+> > (ACPI hotplug controller on x86 for example, we haven't quite sorted out
+> > what to do on power for hotplug yet).
+> 
+> Hmm, good idea. But as far as I know the hotplug-event needs to be in
+> the guest _before_ the device is actually unplugged (so that the guest
+> can unbind its driver first). That somehow brings back the sleep-idea
+> and the timeout in the .release function.
 
-On Tue, 23 Aug 2011 13:53:46 -0700
-Geoff Levand <geoff@infradead.org> wrote:
+That's for normal assisted hotplug, but don't we support hard hotplug ?
+I mean, things like cardbus, thunderbolt (if we ever support that)
+etc... will need it and some platforms do support hard hotplug of PCIe
+devices.
 
-[...]
-> > =20
-> > +	if (!map.r1.size) {
-> > +		DBG("%s:%d: no region 1, not adding memory\n",
-> > +			__func__, __LINE__);
-> > +	} else {
->=20
-> Remove brackets around a single line conditional.
->=20
-> > +		DBG("%s:%d: adding memory: start %llxh, size %llxh\n",
-> > +			__func__, __LINE__, map.rm.size, map.r1.size);
-> > +
-> > +		memblock_add(map.rm.size, map.r1.size);
-> > +		memblock_analyze();
-> > +	}
-> > +
+(That's why drivers should never spin on MMIO waiting for a 1 bit to
+clear without a timeout :-)
 
-In Documentation/CodingStyle I read that if [only] one branch is a
-single statement then the parenthesis are OK (and even recommended) for
-both branches, I guess this is for style consistency. See Chapter 3,
-around line 169 on my copy. I guess the wording on that paragraph can
-be made more explicit, I'll try to fix that up.
-
-Regards,
-   Antonio
-
---=20
-Antonio Ospite
-http://ao2.it
-
-PGP public key ID: 0x4553B001
-
-A: Because it messes up the order in which people normally read text.
-   See http://en.wikipedia.org/wiki/Posting_style
-Q: Why is top-posting such a bad thing?
-
---Signature=_Wed__24_Aug_2011_00_37_20_+0200_aG9LN7AygmgFbXrT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEARECAAYFAk5UK6AACgkQ5xr2akVTsAFVywCfUttzaLP0tUyKMZmQ9Ax7DQNf
-dL8AoIj4gElxAhISc97ezPLmDM9M9YSM
-=50rU
------END PGP SIGNATURE-----
-
---Signature=_Wed__24_Aug_2011_00_37_20_+0200_aG9LN7AygmgFbXrT--
+Cheers,
+Ben.
