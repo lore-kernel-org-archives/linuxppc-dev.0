@@ -1,17 +1,17 @@
 Return-Path: <steve.belanger@ca.transport.bombardier.com>
 Received: from BBTSVLSDC01.TRANSPORT.BOMBARDIER.COM
 	(bbtsvlsdc01.transport.bombardier.com [20.133.40.69])
-	by ozlabs.org (Postfix) with ESMTP id 0452FB6FD1
+	by ozlabs.org (Postfix) with ESMTP id D3047B6FD1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Aug 2011 00:21:21 +1000 (EST)
+	Wed, 24 Aug 2011 00:27:50 +1000 (EST)
 To: linuxppc-dev@lists.ozlabs.org
 Subject: MPC5200 + BestComm support in QEMU
 MIME-Version: 1.0
-Message-ID: <OF5FF83352.5C6F5D6E-ON852578F5.004DA150-852578F5.004DE37C@amer.bombardier.com>
+Message-ID: <OF67848023.5100FBC5-ON852578F5.004F5D2A-852578F5.004F7274@amer.bombardier.com>
 From: steve.belanger@ca.transport.bombardier.com
-Date: Tue, 23 Aug 2011 10:09:17 -0400
+Date: Tue, 23 Aug 2011 10:26:18 -0400
 Content-Type: multipart/alternative;
-	boundary="=_alternative 004DE373852578F5_="
+	boundary="=_alternative 004F7273852578F5_="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,7 +22,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multipart message in MIME format.
---=_alternative 004DE373852578F5_=
+--=_alternative 004F7273852578F5_=
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
@@ -40,8 +40,6 @@ it seems very difficult to simulate this co-processor with our current=20
 knowledge level. In that sense, I would like to know if someone was able=20
 to emulate correctly the MPC5200 with the BestComm DMA using QEMU=20
 software?
-
-Regards,
 
 Steve B=E9langer, ing. / Eng.
 D=E9veloppeur logiciel embarqu=E9 / Embedded Software Developper
@@ -101,7 +99,7 @@ Merci.=20
 
 
 
---=_alternative 004DE373852578F5_=
+--=_alternative 004F7273852578F5_=
 Content-Type: text/html; charset="ISO-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
@@ -124,8 +122,6 @@ co-processor with our current knowledge level. In that sense, I would like
 to know if someone was able to emulate correctly the MPC5200 with the BestC=
 omm
 DMA using QEMU software?</font>
-<br>
-<br><font size=3D2 face=3D"sans-serif">Regards,</font>
 <br><font size=3D2 face=3D"sans-serif"><br>
 Steve B=E9langer, ing. / Eng.<br>
 D=E9veloppeur logiciel embarqu=E9 / Embedded Software Developper<br>
@@ -186,4 +182,4 @@ Merci. <br>
 <br>
 <br>
 </font>
---=_alternative 004DE373852578F5_=--
+--=_alternative 004F7273852578F5_=--
