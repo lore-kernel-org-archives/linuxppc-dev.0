@@ -1,29 +1,38 @@
-Return-Path: <Joerg.Roedel@amd.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C574FB6F68
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 4CD3EB6EE8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Aug 2011 21:06:01 +1000 (EST)
-Date: Wed, 24 Aug 2011 13:03:32 +0200
-From: "Roedel, Joerg" <Joerg.Roedel@amd.com>
-To: aafabbri <aafabbri@cisco.com>, Alexey Kardashevskiy <aik@au1.ibm.com>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>, Paul Mackerras
-	<pmac@au1.ibm.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>, iommu
-	<iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>, Anthony
-	Liguori <anthony@codemonkey.ws>, linuxppc-dev
-	<linuxppc-dev@lists.ozlabs.org>, "benve@cisco.com" <benve@cisco.com>
+	Thu, 25 Aug 2011 00:48:17 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110824110332.GH2079@amd.com>
-References: <20110823110431.GK2079@amd.com> <CA792953.FB87%aafabbri@cisco.com>
-	<20110824091425.GE2079@amd.com>
-	<20110824093300.GI30097@yookeroo.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20110824093300.GI30097@yookeroo.fritz.box>
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 24 Aug 2011 08:47:46 -0600
+In-Reply-To: <1314143508.30478.72.camel@pasglop>
+References: <1311983933.8793.42.camel@pasglop>
+	<1312050011.2265.185.camel@x201.home>
+	<20110802082848.GD29719@yookeroo.fritz.box>
+	<1312308847.2653.467.camel@bling.home>
+	<1312310121.2653.470.camel@bling.home>
+	<20110803020422.GF29719@yookeroo.fritz.box>
+	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
+	<1312944513.29273.28.camel@pasglop>
+	<1313859105.6866.192.camel@x201.home>
+	<20110822055509.GI30097@yookeroo.fritz.box>
+	<1314027950.6866.242.camel@x201.home>
+	<1314046904.7662.37.camel@pasglop>
+	<1314127809.2859.121.camel@bling.home>
+	<1314143508.30478.72.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1314197268.2859.177.camel@bling.home>
+Mime-Version: 1.0
+Cc: aafabbri <aafabbri@cisco.com>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+	kvm@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>,
+	David Gibson <dwg@au1.ibm.com>, chrisw <chrisw@sous-sol.org>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, benve@cisco.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,27 +42,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 24, 2011 at 05:33:00AM -0400, David Gibson wrote:
-> On Wed, Aug 24, 2011 at 11:14:26AM +0200, Roedel, Joerg wrote:
-
-> > I don't see a reason to make this meta-grouping static. It would harm
-> > flexibility on x86. I think it makes things easier on power but there
-> > are options on that platform to get the dynamic solution too.
+On Wed, 2011-08-24 at 09:51 +1000, Benjamin Herrenschmidt wrote:
+> > > For us the most simple and logical approach (which is also what pHyp
+> > > uses and what Linux handles well) is really to expose a given PCI host
+> > > bridge per group to the guest. Believe it or not, it makes things
+> > > easier :-)
+> > 
+> > I'm all for easier.  Why does exposing the bridge use less bus numbers
+> > than emulating a bridge?
 > 
-> I think several people are misreading what Ben means by "static".  I
-> would prefer to say 'persistent', in that the meta-groups lifetime is
-> not tied to an fd, but they can be freely created, altered and removed
-> during runtime.
+> Because a host bridge doesn't look like a PCI to PCI bridge at all for
+> us. It's an entire separate domain with it's own bus number space
+> (unlike most x86 setups).
 
-Even if it can be altered at runtime, from a usability perspective it is
-certainly the best to handle these groups directly in qemu. Or are there
-strong reasons to do it somewhere else?
+Ok, I missed the "host" bridge.
 
-	Joerg
+> In fact we have some problems afaik in qemu today with the concept of
+> PCI domains, for example, I think qemu has assumptions about a single
+> shared IO space domain which isn't true for us (each PCI host bridge
+> provides a distinct IO space domain starting at 0). We'll have to fix
+> that, but it's not a huge deal.
 
--- 
-AMD Operating System Research Center
+Yep, I've seen similar on ia64 systems.
 
-Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
-General Managers: Alberto Bozzo, Andrew Bowd
-Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
+> So for each "group" we'd expose in the guest an entire separate PCI
+> domain space with its own IO, MMIO etc... spaces, handed off from a
+> single device-tree "host bridge" which doesn't itself appear in the
+> config space, doesn't need any emulation of any config space etc...
+> 
+> > On x86, I want to maintain that our default assignment is at the device
+> > level.  A user should be able to pick single or multiple devices from
+> > across several groups and have them all show up as individual,
+> > hotpluggable devices on bus 0 in the guest.  Not surprisingly, we've
+> > also seen cases where users try to attach a bridge to the guest,
+> > assuming they'll get all the devices below the bridge, so I'd be in
+> > favor of making this "just work" if possible too, though we may have to
+> > prevent hotplug of those.
+> >
+> > Given the device requirement on x86 and since everything is a PCI device
+> > on x86, I'd like to keep a qemu command line something like -device
+> > vfio,host=00:19.0.  I assume that some of the iommu properties, such as
+> > dma window size/address, will be query-able through an architecture
+> > specific (or general if possible) ioctl on the vfio group fd.  I hope
+> > that will help the specification, but I don't fully understand what all
+> > remains.  Thanks,
+> 
+> Well, for iommu there's a couple of different issues here but yes,
+> basically on one side we'll have some kind of ioctl to know what segment
+> of the device(s) DMA address space is assigned to the group and we'll
+> need to represent that to the guest via a device-tree property in some
+> kind of "parent" node of all the devices in that group.
+> 
+> We -might- be able to implement some kind of hotplug of individual
+> devices of a group under such a PHB (PCI Host Bridge), I don't know for
+> sure yet, some of that PAPR stuff is pretty arcane, but basically, for
+> all intend and purpose, we really want a group to be represented as a
+> PHB in the guest.
+> 
+> We cannot arbitrary have individual devices of separate groups be
+> represented in the guest as siblings on a single simulated PCI bus.
+
+I think the vfio kernel layer we're describing easily supports both.
+This is just a matter of adding qemu-vfio code to expose different
+topologies based on group iommu capabilities and mapping mode.  Thanks,
+
+Alex
