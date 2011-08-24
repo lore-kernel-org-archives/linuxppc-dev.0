@@ -1,26 +1,22 @@
 Return-Path: <Joerg.Roedel@amd.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D995BB6F70
+	by ozlabs.org (Postfix) with ESMTPS id C1723B6F64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Aug 2011 18:55:42 +1000 (EST)
-Date: Wed, 24 Aug 2011 10:53:21 +0200
-From: "Roedel, Joerg" <Joerg.Roedel@amd.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Wed, 24 Aug 2011 19:11:11 +1000 (EST)
+Date: Wed, 24 Aug 2011 11:10:35 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Aaron Fabbri <aafabbri@cisco.com>
 Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110824085321.GC2079@amd.com>
-References: <1312310121.2653.470.camel@bling.home>
-	<20110803020422.GF29719@yookeroo.fritz.box>
-	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
-	<1312944513.29273.28.camel@pasglop>
-	<1313859105.6866.192.camel@x201.home>
-	<20110822172508.GJ2079@amd.com> <1314047033.7662.39.camel@pasglop>
-	<20110823131819.GO2079@amd.com> <1314142537.30478.59.camel@pasglop>
+Message-ID: <20110824091035.GD2079@amd.com>
+References: <1314118861.2859.51.camel@bling.home>
+	<CA79326A.FB97%aafabbri@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1314142537.30478.59.camel@pasglop>
+In-Reply-To: <CA79326A.FB97%aafabbri@cisco.com>
 Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
 	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
 	Paul Mackerras <pmac@au1.ibm.com>,
@@ -40,24 +36,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 23, 2011 at 07:35:37PM -0400, Benjamin Herrenschmidt wrote:
-> On Tue, 2011-08-23 at 15:18 +0200, Roedel, Joerg wrote:
-
-> > Hmm, good idea. But as far as I know the hotplug-event needs to be in
-> > the guest _before_ the device is actually unplugged (so that the guest
-> > can unbind its driver first). That somehow brings back the sleep-idea
-> > and the timeout in the .release function.
+On Tue, Aug 23, 2011 at 01:33:14PM -0400, Aaron Fabbri wrote:
+> On 8/23/11 10:01 AM, "Alex Williamson" <alex.williamson@redhat.com> wrote:
+> > The iommu domain would probably be allocated when the first device is
+> > bound to vfio.  As each device is bound, it gets attached to the group.
+> > DMAs are done via an ioctl on the group.
+> > 
+> > I think group + uiommu leads to effectively reliving most of the
+> > problems with the current code.  The only benefit is the group
+> > assignment to enforce hardware restrictions.  We still have the problem
+> > that uiommu open() = iommu_domain_alloc(), whose properties are
+> > meaningless without attached devices (groups).  Which I think leads to
+> > the same awkward model of attaching groups to define the domain, then we
+> > end up doing mappings via the group to enforce ordering.
 > 
-> That's for normal assisted hotplug, but don't we support hard hotplug ?
-> I mean, things like cardbus, thunderbolt (if we ever support that)
-> etc... will need it and some platforms do support hard hotplug of PCIe
-> devices.
+> Is there a better way to allow groups to share an IOMMU domain?
 > 
-> (That's why drivers should never spin on MMIO waiting for a 1 bit to
-> clear without a timeout :-)
+> Maybe, instead of having an ioctl to allow a group A to inherit the same
+> iommu domain as group B, we could have an ioctl to fully merge two groups
+> (could be what Ben was thinking):
+> 
+> A.ioctl(MERGE_TO_GROUP, B)
+> 
+> The group A now goes away and its devices join group B.  If A ever had an
+> iommu domain assigned (and buffers mapped?) we fail.
+> 
+> Groups cannot get smaller (they are defined as minimum granularity of an
+> IOMMU, initially).  They can get bigger if you want to share IOMMU
+> resources, though.
+> 
+> Any downsides to this approach?
 
-Right, thats probably the best semantic for this issue then. The worst
-thing that happens is that the admin crashed the guest.
+As long as this is a 2-way road its fine. There must be a way to split
+the groups again after the guest exits. But then we are again at the
+super-groups (aka meta-groups, aka uiommu) point.
 
 	Joerg
 
