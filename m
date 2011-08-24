@@ -1,33 +1,30 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id F1F37B6F62
+	by ozlabs.org (Postfix) with ESMTP id CA8A7B6F64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Aug 2011 00:56:24 +1000 (EST)
+	Thu, 25 Aug 2011 01:07:57 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
 From: Alex Williamson <alex.williamson@redhat.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Date: Wed, 24 Aug 2011 08:56:13 -0600
-In-Reply-To: <20110824084336.GA2079@amd.com>
+To: "Roedel, Joerg" <Joerg.Roedel@amd.com>
+Date: Wed, 24 Aug 2011 09:07:46 -0600
+In-Reply-To: <20110824085213.GB2079@amd.com>
 References: <1312310121.2653.470.camel@bling.home>
 	<20110803020422.GF29719@yookeroo.fritz.box>
 	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
 	<1312944513.29273.28.camel@pasglop>
-	<1313859105.6866.192.camel@x201.home>
-	<20110822055509.GI30097@yookeroo.fritz.box>
-	<1314027950.6866.242.camel@x201.home>
-	<1314046904.7662.37.camel@pasglop>
-	<1314127809.2859.121.camel@bling.home> <20110824084336.GA2079@amd.com>
+	<1313859105.6866.192.camel@x201.home> <20110822172508.GJ2079@amd.com>
+	<1314040622.6866.268.camel@x201.home> <20110823131441.GN2079@amd.com>
+	<1314119311.2859.59.camel@bling.home> <20110824085213.GB2079@amd.com>
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1314197775.2859.182.camel@bling.home>
+Message-ID: <1314198467.2859.192.camel@bling.home>
 Mime-Version: 1.0
 Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
 	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
 	Paul Mackerras <pmac@au1.ibm.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	qemu-devel <qemu-devel@nongnu.org>,
-	David Gibson <dwg@au1.ibm.com>, chrisw <chrisw@sous-sol.org>,
+	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
 	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
 	Anthony Liguori <anthony@codemonkey.ws>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,75 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-08-24 at 10:43 +0200, Joerg Roedel wrote:
-> On Tue, Aug 23, 2011 at 03:30:06PM -0400, Alex Williamson wrote:
-> > On Tue, 2011-08-23 at 07:01 +1000, Benjamin Herrenschmidt wrote:
+On Wed, 2011-08-24 at 10:52 +0200, Roedel, Joerg wrote:
+> On Tue, Aug 23, 2011 at 01:08:29PM -0400, Alex Williamson wrote:
+> > On Tue, 2011-08-23 at 15:14 +0200, Roedel, Joerg wrote:
 > 
-> > > Could be tho in what form ? returning sysfs pathes ?
+> > > Handling it through fds is a good idea. This makes sure that everything
+> > > belongs to one process. I am not really sure yet if we go the way to
+> > > just bind plain groups together or if we create meta-groups. The
+> > > meta-groups thing seems somewhat cleaner, though.
 > > 
-> > I'm at a loss there, please suggest.  I think we need an ioctl that
-> > returns some kind of array of devices within the group and another that
-> > maybe takes an index from that array and returns an fd for that device.
-> > A sysfs path string might be a reasonable array element, but it sounds
-> > like a pain to work with.
+> > I'm leaning towards binding because we need to make it dynamic, but I
+> > don't really have a good picture of the lifecycle of a meta-group.
 > 
-> Limiting to PCI we can just pass the BDF as the argument to optain the
-> device-fd. For a more generic solution we need a unique identifier in
-> some way which is unique across all 'struct device' instances in the
-> system. As far as I know we don't have that yet (besides the sysfs-path)
-> so we either add that or stick with bus-specific solutions.
-> 
-> > > 1:1 process has the advantage of linking to an -mm which makes the whole
-> > > mmu notifier business doable. How do you want to track down mappings and
-> > > do the second level translation in the case of explicit map/unmap (like
-> > > on power) if you are not tied to an mm_struct ?
-> > 
-> > Right, I threw away the mmu notifier code that was originally part of
-> > vfio because we can't do anything useful with it yet on x86.  I
-> > definitely don't want to prevent it where it makes sense though.  Maybe
-> > we just record current->mm on open and restrict subsequent opens to the
-> > same.
-> 
-> Hmm, I think we need io-page-fault support in the iommu-api then.
+> In my view the life-cycle of the meta-group is a subrange of the
+> qemu-instance's life-cycle.
 
-Yeah, when we can handle iommu page faults, this gets more interesting.
+I guess I mean the lifecycle of a super-group that's actually exposed as
+a new group in sysfs.  Who creates it?  How?  How are groups dynamically
+added and removed from the super-group?  The group merging makes sense
+to me because it's largely just an optimization that qemu will try to
+merge groups.  If it works, great.  If not, it manages them separately.
+When all the devices from a group are unplugged, unmerge the group if
+necessary.
 
-> > > Another aspect I don't see discussed is how we represent these things to
-> > > the guest.
-> > > 
-> > > On Power for example, I have a requirement that a given iommu domain is
-> > > represented by a single dma window property in the device-tree. What
-> > > that means is that that property needs to be either in the node of the
-> > > device itself if there's only one device in the group or in a parent
-> > > node (ie a bridge or host bridge) if there are multiple devices.
-> > > 
-> > > Now I do -not- want to go down the path of simulating P2P bridges,
-> > > besides we'll quickly run out of bus numbers if we go there.
-> > > 
-> > > For us the most simple and logical approach (which is also what pHyp
-> > > uses and what Linux handles well) is really to expose a given PCI host
-> > > bridge per group to the guest. Believe it or not, it makes things
-> > > easier :-)
+> > > Putting the process to sleep (which would be uninterruptible) seems bad.
+> > > The process would sleep until the guest releases the device-group, which
+> > > can take days or months.
+> > > The best thing (and the most intrusive :-) ) is to change PCI core to
+> > > allow unbindings to fail, I think. But this probably further complicates
+> > > the way to upstream VFIO...
 > > 
-> > I'm all for easier.  Why does exposing the bridge use less bus numbers
-> > than emulating a bridge?
-> > 
-> > On x86, I want to maintain that our default assignment is at the device
-> > level.  A user should be able to pick single or multiple devices from
-> > across several groups and have them all show up as individual,
-> > hotpluggable devices on bus 0 in the guest.  Not surprisingly, we've
-> > also seen cases where users try to attach a bridge to the guest,
-> > assuming they'll get all the devices below the bridge, so I'd be in
-> > favor of making this "just work" if possible too, though we may have to
-> > prevent hotplug of those.
+> > Yes, it's not ideal but I think it's sufficient for now and if we later
+> > get support for returning an error from release, we can set a timeout
+> > after notifying the user to make use of that.  Thanks,
 > 
-> A side-note: Might it be better to expose assigned devices in a guest on
-> a seperate bus? This will make it easier to emulate an IOMMU for the
-> guest inside qemu.
+> Ben had the idea of just forcing to hard-unplug this device from the
+> guest. Thats probably the best way to deal with that, I think. VFIO
+> sends a notification to qemu that the device is gone and qemu informs
+> the guest in some way about it.
 
-I think we want that option, sure.  A lot of guests aren't going to
-support hotplugging buses though, so I think our default, map the entire
-guest model should still be using bus 0.  The ACPI gets a lot more
-complicated for that model too; dynamic SSDTs?  Thanks,
+We need to try the polite method of attempting to hot unplug the device
+from qemu first, which the current vfio code already implements.  We can
+then escalate if it doesn't respond.  The current code calls abort in
+qemu if the guest doesn't respond, but I agree we should also be
+enforcing this at the kernel interface.  I think the problem with the
+hard-unplug is that we don't have a good revoke mechanism for the mmio
+mmaps.  Thanks,
 
 Alex
