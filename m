@@ -1,36 +1,39 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 61570B6F70
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2011 14:00:15 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id p7O3xJP9002421
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2011 13:59:19 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p7O3wxZc1061078
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2011 13:58:59 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p7O40E96019221
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2011 14:00:15 +1000
-Date: Wed, 24 Aug 2011 13:59:39 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] [hw-breakpoint] Use generic hw-breakpoint interfaces
-	for new PPC ptrace flags
-Message-ID: <20110824035939.GB30097@yookeroo.fritz.box>
-References: <20110819074527.GA21817@in.ibm.com>
-	<20110819075136.GB21817@in.ibm.com>
-	<20110823050850.GS30097@yookeroo.fritz.box>
-	<20110823092513.GA2962@in.ibm.com>
+Return-Path: <Joerg.Roedel@amd.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F0B2DB6F64
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 24 Aug 2011 18:44:06 +1000 (EST)
+Date: Wed, 24 Aug 2011 10:43:36 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+Message-ID: <20110824084336.GA2079@amd.com>
+References: <1312310121.2653.470.camel@bling.home>
+	<20110803020422.GF29719@yookeroo.fritz.box>
+	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
+	<1312944513.29273.28.camel@pasglop>
+	<1313859105.6866.192.camel@x201.home>
+	<20110822055509.GI30097@yookeroo.fritz.box>
+	<1314027950.6866.242.camel@x201.home>
+	<1314046904.7662.37.camel@pasglop>
+	<1314127809.2859.121.camel@bling.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110823092513.GA2962@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
-	Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1314127809.2859.121.camel@bling.home>
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>,
+	David Gibson <dwg@au1.ibm.com>, chrisw <chrisw@sous-sol.org>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,178 +43,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 23, 2011 at 02:55:13PM +0530, K.Prasad wrote:
-> On Tue, Aug 23, 2011 at 03:08:50PM +1000, David Gibson wrote:
-> > On Fri, Aug 19, 2011 at 01:21:36PM +0530, K.Prasad wrote:
-> > > PPC_PTRACE_GETHWDBGINFO, PPC_PTRACE_SETHWDEBUG and PPC_PTRACE_DELHWDEBUG are
-> > > PowerPC specific ptrace flags that use the watchpoint register. While they are
-> > > targeted primarily towards BookE users, user-space applications such as GDB
-> > > have started using them for BookS too.
-> > > 
-> > > This patch enables the use of generic hardware breakpoint interfaces for these
-> > > new flags. The version number of the associated data structures
-> > > "ppc_hw_breakpoint" and "ppc_debug_info" is incremented to denote new semantics.
+On Tue, Aug 23, 2011 at 03:30:06PM -0400, Alex Williamson wrote:
+> On Tue, 2011-08-23 at 07:01 +1000, Benjamin Herrenschmidt wrote:
+
+> > Could be tho in what form ? returning sysfs pathes ?
+> 
+> I'm at a loss there, please suggest.  I think we need an ioctl that
+> returns some kind of array of devices within the group and another that
+> maybe takes an index from that array and returns an fd for that device.
+> A sysfs path string might be a reasonable array element, but it sounds
+> like a pain to work with.
+
+Limiting to PCI we can just pass the BDF as the argument to optain the
+device-fd. For a more generic solution we need a unique identifier in
+some way which is unique across all 'struct device' instances in the
+system. As far as I know we don't have that yet (besides the sysfs-path)
+so we either add that or stick with bus-specific solutions.
+
+> > 1:1 process has the advantage of linking to an -mm which makes the whole
+> > mmu notifier business doable. How do you want to track down mappings and
+> > do the second level translation in the case of explicit map/unmap (like
+> > on power) if you are not tied to an mm_struct ?
+> 
+> Right, I threw away the mmu notifier code that was originally part of
+> vfio because we can't do anything useful with it yet on x86.  I
+> definitely don't want to prevent it where it makes sense though.  Maybe
+> we just record current->mm on open and restrict subsequent opens to the
+> same.
+
+Hmm, I think we need io-page-fault support in the iommu-api then.
+
+> > Another aspect I don't see discussed is how we represent these things to
+> > the guest.
 > > 
-> > So, the structure itself doesn't seem to have been extended.  I don't
-> > understand what the semantic difference is - your patch comment needs
-> > to explain this clearly.
-> >
-> 
-> We had a request to extend the structure but thought it was dangerous to
-> do so. For instance if the user-space used version1 of the structure,
-> while kernel did a copy_to_user() pertaining to version2, then we'd run
-> into problems. Unfortunately the ptrace flags weren't designed to accept
-> a version number as input from the user through the
-> PPC_PTRACE_GETHWDBGINFO flag (which would have solved this issue).
-
-I still don't follow you.
-
-> I'll add a comment w.r.t change in semantics - such as the ability to
-> accept 'range' breakpoints in BookS.
->  
-> > > Apart from the usual benefits of using generic hw-breakpoint interfaces, these
-> > > changes allow debuggers (such as GDB) to use a common set of ptrace flags for
-> > > their watchpoint needs and allow more precise breakpoint specification (length
-> > > of the variable can be specified).
+> > On Power for example, I have a requirement that a given iommu domain is
+> > represented by a single dma window property in the device-tree. What
+> > that means is that that property needs to be either in the node of the
+> > device itself if there's only one device in the group or in a parent
+> > node (ie a bridge or host bridge) if there are multiple devices.
 > > 
-> > What is the mechanism for implementing the range breakpoint on book3s?
+> > Now I do -not- want to go down the path of simulating P2P bridges,
+> > besides we'll quickly run out of bus numbers if we go there.
 > > 
+> > For us the most simple and logical approach (which is also what pHyp
+> > uses and what Linux handles well) is really to expose a given PCI host
+> > bridge per group to the guest. Believe it or not, it makes things
+> > easier :-)
 > 
-> The hw-breakpoint interface, accepts length as an argument in BookS (any
-> value <= 8 Bytes) and would filter out extraneous interrupts arising out
-> of accesses outside the range comprising <addr, addr + len> inside
-> hw_breakpoint_handler function.
+> I'm all for easier.  Why does exposing the bridge use less bus numbers
+> than emulating a bridge?
 > 
-> We put that ability to use here.
+> On x86, I want to maintain that our default assignment is at the device
+> level.  A user should be able to pick single or multiple devices from
+> across several groups and have them all show up as individual,
+> hotpluggable devices on bus 0 in the guest.  Not surprisingly, we've
+> also seen cases where users try to attach a bridge to the guest,
+> assuming they'll get all the devices below the bridge, so I'd be in
+> favor of making this "just work" if possible too, though we may have to
+> prevent hotplug of those.
 
-Ah, so in hardware the breakpoints are always 8 bytes long, but you
-filter out false hits on a shorter range?  Of course, the utility of
-range breakpoints is questionable when length <=8, but the start must
-be aligned on an 8-byte boundary.
+A side-note: Might it be better to expose assigned devices in a guest on
+a seperate bus? This will make it easier to emulate an IOMMU for the
+guest inside qemu.
 
-[snip]
-> > >  	if ((unsigned long)bp_info->addr >= TASK_SIZE)
-> > >  		return -EIO;
-> > >  
-> > > @@ -1398,15 +1400,86 @@ static long ppc_set_hwdebug(struct task_struct *child,
-> > >  		dabr |= DABR_DATA_READ;
-> > >  	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
-> > >  		dabr |= DABR_DATA_WRITE;
-> > > +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> > > +	if (bp_info->version == 1)
-> > > +		goto version_one;
-> > 
-> > There are several legitimate uses of goto in the kernel, but this is
-> > definitely not one of them.  You're essentially using it to put the
-> > old and new versions of the same function in one block.  Nasty.
-> > 
-> 
-> Maybe it's the label that's causing bother here. It might look elegant
-> if it was called something like exit_* or error_* :-)
-> 
-> The goto here helps reduce code, is similar to the error exits we use
-> everywhere.
 
-Rubbish, it is not an exception exit at all, it is two separate code
-paths for the different versions which would be much clearer as two
-different functions.
-
-> > > +	if (ptrace_get_breakpoints(child) < 0)
-> > > +		return -ESRCH;
-> > >  
-> > > -	child->thread.dabr = dabr;
-> > > +	bp = thread->ptrace_bps[0];
-> > > +	if (!bp_info->addr) {
-> > > +		if (bp) {
-> > > +			unregister_hw_breakpoint(bp);
-> > > +			thread->ptrace_bps[0] = NULL;
-> > > +		}
-> > > +		ptrace_put_breakpoints(child);
-> > > +		return 0;
-> > 
-> > Why are you making setting a 0 watchpoint remove the existing one (I
-> > think that's what this does).  I thought there was an explicit del
-> > breakpoint operation instead.
-> 
-> We had to define the semantics for what writing a 0 to DABR could mean,
-> and I think it is intuitive to consider it as deletion
-> request...couldn't think of a case where DABR with addr=0 and RW=1 would
-> be required.
-
-When a user space program maps pages at virtual address 0, which it
-can do.
-
-> > > +	}
-> > > +	/*
-> > > +	 * Check if the request is for 'range' breakpoints. We can
-> > > +	 * support it if range < 8 bytes.
-> > > +	 */
-> > > +	if (bp_info->addr_mode == PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE)
-> > > +		len = bp_info->addr2 - bp_info->addr;
-> > 
-> > So you compute the length here, but I don't see you ever test if it is
-> > < 8 and return an error.
-> > 
-> 
-> The hw-breakpoint interfaces would fail if the length was > 8.
-
-Ok.
-
-> > > +	else if (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) {
-> > > +			ptrace_put_breakpoints(child);
-> > > +			return -EINVAL;
-> > > +		}
-> > > +	if (bp) {
-> > > +		attr = bp->attr;
-> > > +		attr.bp_addr = (unsigned long)bp_info->addr & ~HW_BREAKPOINT_ALIGN;
-> > > +		arch_bp_generic_fields(dabr &
-> > > +					(DABR_DATA_WRITE | DABR_DATA_READ),
-> > > +							&attr.bp_type);
-> > > +		attr.bp_len = len;
-> > > +		ret =  modify_user_hw_breakpoint(bp, &attr);
-> > > +		if (ret) {
-> > > +			ptrace_put_breakpoints(child);
-> > > +			return ret;
-> > > +		}
-> > > +		thread->ptrace_bps[0] = bp;
-> > > +		ptrace_put_breakpoints(child);
-> > > +		thread->dabr = dabr;
-> > > +		return 0;
-> > > +	}
-> > >  
-> > > +	/* Create a new breakpoint request if one doesn't exist already */
-> > > +	hw_breakpoint_init(&attr);
-> > > +	attr.bp_addr = (unsigned long)bp_info->addr & ~HW_BREAKPOINT_ALIGN;
-> > 
-> > You seem to be silently masking the given address, which seems
-> > completely wrong.
-> > 
-> 
-> We have two ways of looking at the input address.
-> a) Assume that the input address is not multiplexed with the read/write
-> bits and return -EINVAL (for not confirming to the 8-byte alignment
-> requirement).
-> b) Consider the input address to be encoded with the read/write
-> watchpoint type request and align the address by default. This is how
-> the code behaves presently for the !CONFIG_HAVE_HW_BREAKPOINT case.
-
-Hrm, ok, but this needs commenting.
-
-> I chose to go with b) and discard the last 3-bits from the address.
-> 
-> Thanks for the detailed review. Looking forward for your comments.
-> 
-> Thanks,
-> K.Prasad
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+	Joerg
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+AMD Operating System Research Center
+
+Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
+General Managers: Alberto Bozzo, Andrew Bowd
+Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
