@@ -1,32 +1,26 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id CA8A7B6F64
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A954FB6F57
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Aug 2011 01:07:57 +1000 (EST)
-Subject: Re: kvm PCI assignment & VFIO ramblings
-From: Alex Williamson <alex.williamson@redhat.com>
-To: "Roedel, Joerg" <Joerg.Roedel@amd.com>
-Date: Wed, 24 Aug 2011 09:07:46 -0600
-In-Reply-To: <20110824085213.GB2079@amd.com>
-References: <1312310121.2653.470.camel@bling.home>
-	<20110803020422.GF29719@yookeroo.fritz.box>
-	<4E3F9E33.5000706@redhat.com> <1312932258.4524.55.camel@bling.home>
-	<1312944513.29273.28.camel@pasglop>
-	<1313859105.6866.192.camel@x201.home> <20110822172508.GJ2079@amd.com>
-	<1314040622.6866.268.camel@x201.home> <20110823131441.GN2079@amd.com>
-	<1314119311.2859.59.camel@bling.home> <20110824085213.GB2079@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1314198467.2859.192.camel@bling.home>
+	Thu, 25 Aug 2011 04:54:01 +1000 (EST)
+Date: Wed, 24 Aug 2011 11:53:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Liu Gang-B34182 <B34182@freescale.com>
+Subject: Re: [PATCH] fsl-rio: Correct IECSR register clear value
+Message-Id: <20110824115355.92febdfc.akpm@linux-foundation.org>
+In-Reply-To: <9A1C2A9ACC704641BC472A1588CE16470EC9C3@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1312798419-3912-1-git-send-email-b34182@freescale.com>
+	<9A1C2A9ACC704641BC472A1588CE16470EC9C3@039-SN1MPN1-004.039d.mgd.msft.net>
 Mime-Version: 1.0
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-	Paul Mackerras <pmac@au1.ibm.com>,
-	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
-	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"benve@cisco.com" <benve@cisco.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+	"'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>,
+	Li Yang-R58472 <r58472@freescale.com>,
+	Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-08-24 at 10:52 +0200, Roedel, Joerg wrote:
-> On Tue, Aug 23, 2011 at 01:08:29PM -0400, Alex Williamson wrote:
-> > On Tue, 2011-08-23 at 15:14 +0200, Roedel, Joerg wrote:
+On Wed, 24 Aug 2011 09:31:21 +0000
+Liu Gang-B34182 <B34182@freescale.com> wrote:
+
+> Hi, Andrew,
 > 
-> > > Handling it through fds is a good idea. This makes sure that everything
-> > > belongs to one process. I am not really sure yet if we go the way to
-> > > just bind plain groups together or if we create meta-groups. The
-> > > meta-groups thing seems somewhat cleaner, though.
-> > 
-> > I'm leaning towards binding because we need to make it dynamic, but I
-> > don't really have a good picture of the lifecycle of a meta-group.
+> Thank you for applying the patch "[PATCH] rio: Use discovered bit to test if enumeration is complete "!
 > 
-> In my view the life-cycle of the meta-group is a subrange of the
-> qemu-instance's life-cycle.
+> So far the following patch "[PATCH] fsl-rio: Correct IECSR register clear value " has no comment or response.
 
-I guess I mean the lifecycle of a super-group that's actually exposed as
-a new group in sysfs.  Who creates it?  How?  How are groups dynamically
-added and removed from the super-group?  The group merging makes sense
-to me because it's largely just an optimization that qemu will try to
-merge groups.  If it works, great.  If not, it manages them separately.
-When all the devices from a group are unplugged, unmerge the group if
-necessary.
+Perhaps because you didn't tell anyone what the patch does.
 
-> > > Putting the process to sleep (which would be uninterruptible) seems bad.
-> > > The process would sleep until the guest releases the device-group, which
-> > > can take days or months.
-> > > The best thing (and the most intrusive :-) ) is to change PCI core to
-> > > allow unbindings to fail, I think. But this probably further complicates
-> > > the way to upstream VFIO...
-> > 
-> > Yes, it's not ideal but I think it's sufficient for now and if we later
-> > get support for returning an error from release, we can set a timeout
-> > after notifying the user to make use of that.  Thanks,
+> To: linuxppc-dev@ozlabs.org
+> Cc: akpm@linux-foundation.org; Li Yang-R58472; Gala Kumar-B11780; Zang Roy-R61911; Liu Gang-B34182; Liu Gang-B34182
+> Subject: [PATCH] fsl-rio: Correct IECSR register clear value
 > 
-> Ben had the idea of just forcing to hard-unplug this device from the
-> guest. Thats probably the best way to deal with that, I think. VFIO
-> sends a notification to qemu that the device is gone and qemu informs
-> the guest in some way about it.
+> The RETE bit in IECSR is cleared by writing a 1 to it.
+> 
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_rio.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c index b3fd081..cdd765b 100644
+> --- a/arch/powerpc/sysdev/fsl_rio.c
+> +++ b/arch/powerpc/sysdev/fsl_rio.c
+> @@ -54,6 +54,7 @@
+>  #define ODSR_CLEAR		0x1c00
+>  #define LTLEECSR_ENABLE_ALL	0xFFC000FC
+>  #define ESCSR_CLEAR		0x07120204
+> +#define IECSR_CLEAR		0x80000000
+>  
+>  #define RIO_PORT1_EDCSR		0x0640
+>  #define RIO_PORT2_EDCSR		0x0680
+> @@ -1089,11 +1090,11 @@ static void port_error_handler(struct rio_mport *port, int offset)
+>  
+>  	if (offset == 0) {
+>  		out_be32((u32 *)(rio_regs_win + RIO_PORT1_EDCSR), 0);
+> -		out_be32((u32 *)(rio_regs_win + RIO_PORT1_IECSR), 0);
+> +		out_be32((u32 *)(rio_regs_win + RIO_PORT1_IECSR), IECSR_CLEAR);
+>  		out_be32((u32 *)(rio_regs_win + RIO_ESCSR), ESCSR_CLEAR);
+>  	} else {
+>  		out_be32((u32 *)(rio_regs_win + RIO_PORT2_EDCSR), 0);
+> -		out_be32((u32 *)(rio_regs_win + RIO_PORT2_IECSR), 0);
+> +		out_be32((u32 *)(rio_regs_win + RIO_PORT2_IECSR), IECSR_CLEAR);
+>  		out_be32((u32 *)(rio_regs_win + RIO_PORT2_ESCSR), ESCSR_CLEAR);
+>  	}
+>  }
 
-We need to try the polite method of attempting to hot unplug the device
-from qemu first, which the current vfio code already implements.  We can
-then escalate if it doesn't respond.  The current code calls abort in
-qemu if the guest doesn't respond, but I agree we should also be
-enforcing this at the kernel interface.  I think the problem with the
-hard-unplug is that we don't have a good revoke mechanism for the mmio
-mmaps.  Thanks,
-
-Alex
+Apparently it fixes some bug.  But because you didn't tell us what the
+user-visible effects of that bug are, I am unable to determine what
+kernel versions (if any) the patch should be merged into.
