@@ -1,28 +1,31 @@
-Return-Path: <kyungmin78@gmail.com>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B85FEB6F71
+Return-Path: <Joerg.Roedel@amd.com>
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CCFECB6F18
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Aug 2011 20:23:39 +1000 (EST)
-Received: by qwf7 with SMTP id 7so1230434qwf.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Aug 2011 03:23:35 -0700 (PDT)
+	Thu, 25 Aug 2011 20:54:32 +1000 (EST)
+Date: Thu, 25 Aug 2011 12:54:02 +0200
+From: "Roedel, Joerg" <Joerg.Roedel@amd.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+Message-ID: <20110825105402.GB1923@amd.com>
+References: <1314118861.2859.51.camel@bling.home>
+	<CA79326A.FB97%aafabbri@cisco.com> <20110824091035.GD2079@amd.com>
+	<1314220434.2859.203.camel@bling.home>
 MIME-Version: 1.0
-Sender: kyungmin78@gmail.com
-In-Reply-To: <1314262479-32520-1-git-send-email-Chunhe.Lan@freescale.com>
-References: <1314262479-32520-1-git-send-email-Chunhe.Lan@freescale.com>
-Date: Thu, 25 Aug 2011 19:23:35 +0900
-Message-ID: <CAH9JG2VUA_5c=3LPEvoVmTrYN9WibY87AgEkNgV3uFpAS0euQA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] mmc: Use mmc_delay() instead of mdelay() for time
-	delay
-From: Kyungmin Park <kmpark@infradead.org>
-To: Chunhe Lan <Chunhe.Lan@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, kumar.gala@freescale.com,
-	Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org,
-	Shengzhou Liu <b36685@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1314220434.2859.203.camel@bling.home>
+Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>, qemu-devel <qemu-devel@nongnu.org>,
+	Aaron Fabbri <aafabbri@cisco.com>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,104 +35,242 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 25, 2011 at 5:54 PM, Chunhe Lan <Chunhe.Lan@freescale.com> wrot=
-e:
-> The mmc_delay() is a wrapper function for mdelay() and msleep().
->
-> =A0 =A0o mdelay() -- block the system when busy-waiting.
-> =A0 =A0o msleep() -- suspend the currently running task to enable CPU
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0to process other tasks, so it is non-b=
-locking
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0regarding the whole system.
->
-> When the desired delay time is more than a period of timer interrupt,
-> just use msleep(). Change mdelay() to mmc_delay() to avoid chewing
-> CPU when busy wait.
->
-> Signed-off-by: Shengzhou Liu <b36685@freescale.com>
-> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> Cc: Chris Ball <cjb@laptop.org>
-> ---
-> =A0drivers/mmc/host/sdhci.c | =A0 11 ++++++-----
-> =A01 files changed, 6 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> index 0e02cc1..0cb5dc1 100644
-> --- a/drivers/mmc/host/sdhci.c
-> +++ b/drivers/mmc/host/sdhci.c
-> @@ -27,6 +27,7 @@
-> =A0#include <linux/mmc/host.h>
->
-> =A0#include "sdhci.h"
-> +#include "../core/core.h"
+Hi Alex,
 
-Doesn't better to move the mmc_delay() to "include/linux/mmc/core.h"?
-and include it.
-I think It's not proper include syntax using relative path.
+On Wed, Aug 24, 2011 at 05:13:49PM -0400, Alex Williamson wrote:
+> Is this roughly what you're thinking of for the iommu_group component?
+> Adding a dev_to_group iommu ops callback let's us consolidate the sysfs
+> support in the iommu base.  Would AMD-Vi do something similar (or
+> exactly the same) for group #s?  Thanks,
 
-Thank you,
-Kyungmin Park
->
-> =A0#define DRIVER_NAME "sdhci"
->
-> @@ -186,7 +187,7 @@ static void sdhci_reset(struct sdhci_host *host, u8 m=
-ask)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0timeout--;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mmc_delay(1);
-> =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0if (host->ops->platform_reset_exit)
-> @@ -957,7 +958,7 @@ static void sdhci_send_command(struct sdhci_host *hos=
-t, struct mmc_command *cmd)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0timeout--;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mmc_delay(1);
-> =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0mod_timer(&host->timer, jiffies + 10 * HZ);
-> @@ -1127,7 +1128,7 @@ static void sdhci_set_clock(struct sdhci_host *host=
-, unsigned int clock)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0timeout--;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mmc_delay(1);
-> =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0clk |=3D SDHCI_CLOCK_CARD_EN;
-> @@ -1192,7 +1193,7 @@ static void sdhci_set_power(struct sdhci_host *host=
-, unsigned short power)
-> =A0 =A0 =A0 =A0 * can apply clock after applying power
-> =A0 =A0 =A0 =A0 */
-> =A0 =A0 =A0 =A0if (host->quirks & SDHCI_QUIRK_DELAY_AFTER_POWER)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(10);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mmc_delay(10);
-> =A0}
->
-> =A0/*********************************************************************=
-********\
-> @@ -1712,7 +1713,7 @@ static int sdhci_execute_tuning(struct mmc_host *mm=
-c)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ctrl =3D sdhci_readw(host, SDHCI_HOST_CONT=
-ROL2);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tuning_loop_counter--;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0timeout--;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mmc_delay(1);
-> =A0 =A0 =A0 =A0} while (ctrl & SDHCI_CTRL_EXEC_TUNING);
->
-> =A0 =A0 =A0 =A0/*
-> --
-> 1.7.5.1
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->
+The concept looks good, I have some comments, though. On AMD-Vi the
+implementation would look a bit different because there is a
+data-structure were the information can be gathered from, so no need for
+PCI bus scanning there.
+
+> diff --git a/drivers/base/iommu.c b/drivers/base/iommu.c
+> index 6e6b6a1..6b54c1a 100644
+> --- a/drivers/base/iommu.c
+> +++ b/drivers/base/iommu.c
+> @@ -17,20 +17,56 @@
+>   */
+>  
+>  #include <linux/bug.h>
+> +#include <linux/device.h>
+>  #include <linux/types.h>
+>  #include <linux/module.h>
+>  #include <linux/slab.h>
+>  #include <linux/errno.h>
+>  #include <linux/iommu.h>
+> +#include <linux/pci.h>
+>  
+>  static struct iommu_ops *iommu_ops;
+>  
+> +static ssize_t show_iommu_group(struct device *dev,
+> +				struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%lx", iommu_dev_to_group(dev));
+
+Probably add a 0x prefix so userspace knows the format?
+
+> +}
+> +static DEVICE_ATTR(iommu_group, S_IRUGO, show_iommu_group, NULL);
+> +
+> +static int add_iommu_group(struct device *dev, void *unused)
+> +{
+> +	if (iommu_dev_to_group(dev) >= 0)
+> +		return device_create_file(dev, &dev_attr_iommu_group);
+> +
+> +	return 0;
+> +}
+> +
+> +static int device_notifier(struct notifier_block *nb,
+> +			   unsigned long action, void *data)
+> +{
+> +	struct device *dev = data;
+> +
+> +	if (action == BUS_NOTIFY_ADD_DEVICE)
+> +		return add_iommu_group(dev, NULL);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct notifier_block device_nb = {
+> +	.notifier_call = device_notifier,
+> +};
+> +
+>  void register_iommu(struct iommu_ops *ops)
+>  {
+>  	if (iommu_ops)
+>  		BUG();
+>  
+>  	iommu_ops = ops;
+> +
+> +	/* FIXME - non-PCI, really want for_each_bus() */
+> +	bus_register_notifier(&pci_bus_type, &device_nb);
+> +	bus_for_each_dev(&pci_bus_type, NULL, NULL, add_iommu_group);
+>  }
+
+We need to solve this differently. ARM is starting to use the iommu-api
+too and this definitly does not work there. One possible solution might
+be to make the iommu-ops per-bus.
+
+>  bool iommu_found(void)
+> @@ -94,6 +130,14 @@ int iommu_domain_has_cap(struct iommu_domain *domain,
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_domain_has_cap);
+>  
+> +long iommu_dev_to_group(struct device *dev)
+> +{
+> +	if (iommu_ops->dev_to_group)
+> +		return iommu_ops->dev_to_group(dev);
+> +	return -ENODEV;
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_dev_to_group);
+
+Please rename this to iommu_device_group(). The dev_to_group name
+suggests a conversion but it is actually just a property of the device.
+Also the return type should not be long but something that fits into
+32bit on all platforms. Since you use -ENODEV, probably s32 is a good
+choice.
+
+> +
+>  int iommu_map(struct iommu_domain *domain, unsigned long iova,
+>  	      phys_addr_t paddr, int gfp_order, int prot)
+>  {
+> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+> index f02c34d..477259c 100644
+> --- a/drivers/pci/intel-iommu.c
+> +++ b/drivers/pci/intel-iommu.c
+> @@ -404,6 +404,7 @@ static int dmar_map_gfx = 1;
+>  static int dmar_forcedac;
+>  static int intel_iommu_strict;
+>  static int intel_iommu_superpage = 1;
+> +static int intel_iommu_no_mf_groups;
+>  
+>  #define DUMMY_DEVICE_DOMAIN_INFO ((struct device_domain_info *)(-1))
+>  static DEFINE_SPINLOCK(device_domain_lock);
+> @@ -438,6 +439,10 @@ static int __init intel_iommu_setup(char *str)
+>  			printk(KERN_INFO
+>  				"Intel-IOMMU: disable supported super page\n");
+>  			intel_iommu_superpage = 0;
+> +		} else if (!strncmp(str, "no_mf_groups", 12)) {
+> +			printk(KERN_INFO
+> +				"Intel-IOMMU: disable separate groups for multifunction devices\n");
+> +			intel_iommu_no_mf_groups = 1;
+
+This should really be a global iommu option and not be VT-d specific.
+
+>  
+>  		str += strcspn(str, ",");
+> @@ -3902,6 +3907,52 @@ static int intel_iommu_domain_has_cap(struct iommu_domain *domain,
+>  	return 0;
+>  }
+>  
+> +/* Group numbers are arbitrary.  Device with the same group number
+> + * indicate the iommu cannot differentiate between them.  To avoid
+> + * tracking used groups we just use the seg|bus|devfn of the lowest
+> + * level we're able to differentiate devices */
+> +static long intel_iommu_dev_to_group(struct device *dev)
+> +{
+> +	struct pci_dev *pdev = to_pci_dev(dev);
+> +	struct pci_dev *bridge;
+> +	union {
+> +		struct {
+> +			u8 devfn;
+> +			u8 bus;
+> +			u16 segment;
+> +		} pci;
+> +		u32 group;
+> +	} id;
+> +
+> +	if (iommu_no_mapping(dev))
+> +		return -ENODEV;
+> +
+> +	id.pci.segment = pci_domain_nr(pdev->bus);
+> +	id.pci.bus = pdev->bus->number;
+> +	id.pci.devfn = pdev->devfn;
+> +
+> +	if (!device_to_iommu(id.pci.segment, id.pci.bus, id.pci.devfn))
+> +		return -ENODEV;
+> +
+> +	bridge = pci_find_upstream_pcie_bridge(pdev);
+> +	if (bridge) {
+> +		if (pci_is_pcie(bridge)) {
+> +			id.pci.bus = bridge->subordinate->number;
+> +			id.pci.devfn = 0;
+> +		} else {
+> +			id.pci.bus = bridge->bus->number;
+> +			id.pci.devfn = bridge->devfn;
+> +		}
+> +	}
+> +
+> +	/* Virtual functions always get their own group */
+> +	if (!pdev->is_virtfn && intel_iommu_no_mf_groups)
+> +		id.pci.devfn = PCI_DEVFN(PCI_SLOT(id.pci.devfn), 0);
+> +
+> +	/* FIXME - seg # >= 0x8000 on 32b */
+> +	return id.group;
+> +}
+
+This looks like code duplication in the VT-d driver. It doesn't need to
+be generalized now, but we should keep in mind to do a more general
+solution later.
+Maybe it is beneficial if the IOMMU drivers only setup the number in
+dev->arch.iommu.groupid and the iommu-api fetches it from there then.
+But as I said, this is some more work and does not need to be done for
+this patch(-set).
+
+> +
+>  static struct iommu_ops intel_iommu_ops = {
+>  	.domain_init	= intel_iommu_domain_init,
+>  	.domain_destroy = intel_iommu_domain_destroy,
+> @@ -3911,6 +3962,7 @@ static struct iommu_ops intel_iommu_ops = {
+>  	.unmap		= intel_iommu_unmap,
+>  	.iova_to_phys	= intel_iommu_iova_to_phys,
+>  	.domain_has_cap = intel_iommu_domain_has_cap,
+> +	.dev_to_group	= intel_iommu_dev_to_group,
+>  };
+>  
+>  static void __devinit quirk_iommu_rwbf(struct pci_dev *dev)
+> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+> index 0a2ba40..90c1a86 100644
+> --- a/include/linux/iommu.h
+> +++ b/include/linux/iommu.h
+> @@ -45,6 +45,7 @@ struct iommu_ops {
+>  				    unsigned long iova);
+>  	int (*domain_has_cap)(struct iommu_domain *domain,
+>  			      unsigned long cap);
+> +	long (*dev_to_group)(struct device *dev);
+>  };
+>  
+>  #ifdef CONFIG_IOMMU_API
+> @@ -65,6 +66,7 @@ extern phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain,
+>  				      unsigned long iova);
+>  extern int iommu_domain_has_cap(struct iommu_domain *domain,
+>  				unsigned long cap);
+> +extern long iommu_dev_to_group(struct device *dev);
+>  
+>  #else /* CONFIG_IOMMU_API */
+>  
+> @@ -121,6 +123,10 @@ static inline int domain_has_cap(struct iommu_domain *domain,
+>  	return 0;
+>  }
+>  
+> +static inline long iommu_dev_to_group(struct device *dev);
+> +{
+> +	return -ENODEV;
+> +}
+>  #endif /* CONFIG_IOMMU_API */
+>  
+>  #endif /* __LINUX_IOMMU_H */
+> 
+> 
+> 
+
+-- 
+AMD Operating System Research Center
+
+Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
+General Managers: Alberto Bozzo, Andrew Bowd
+Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
