@@ -1,23 +1,30 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6DD37B6F6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2011 04:02:08 +1000 (EST)
-Message-ID: <4E568E19.405@freescale.com>
-Date: Thu, 25 Aug 2011 13:02:01 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <joro@8bytes.org>
+Received: from 8bytes.org (8bytes.org [88.198.83.132])
+	by ozlabs.org (Postfix) with ESMTP id 66909B6F6F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 26 Aug 2011 04:06:00 +1000 (EST)
+Date: Thu, 25 Aug 2011 20:05:57 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+Message-ID: <20110825180557.GD8978@8bytes.org>
+References: <1314118861.2859.51.camel@bling.home>
+	<CA79326A.FB97%aafabbri@cisco.com> <20110824091035.GD2079@amd.com>
+	<1314220434.2859.203.camel@bling.home>
+	<20110825105402.GB1923@amd.com>
+	<1314292832.2492.31.camel@x201.home>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] tty/powerpc: fix build break with ehv_bytechan.c on
-	allyesconfig
-References: <1314289245-14946-1-git-send-email-timur@freescale.com>
-	<20110825163234.GA31629@kroah.com>
-In-Reply-To: <20110825163234.GA31629@kroah.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1314292832.2492.31.camel@x201.home>
+Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>, "Roedel, Joerg" <Joerg.Roedel@amd.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>, Aaron Fabbri <aafabbri@cisco.com>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +34,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg KH wrote:
-> tested doesn't mean that it shouldn't still build properly for other
-> platforms, right?
+On Thu, Aug 25, 2011 at 11:20:30AM -0600, Alex Williamson wrote:
+> On Thu, 2011-08-25 at 12:54 +0200, Roedel, Joerg wrote:
 
-The problem is the dependency on MSR_GS, which is defined only for Book-E
-PowerPC chips, not all PowerPC.
+> > We need to solve this differently. ARM is starting to use the iommu-api
+> > too and this definitly does not work there. One possible solution might
+> > be to make the iommu-ops per-bus.
+> 
+> That sounds good.  Is anyone working on it?  It seems like it doesn't
+> hurt to use this in the interim, we may just be watching the wrong bus
+> and never add any sysfs group info.
 
-So I gave it some more thought, and technically ePAPR extends beyond Book-E, so
-it's wrong for the driver to depend on anything specific to Book-E.  I've
-removed the code that breaks:
+I'll cook something up for RFC over the weekend.
 
-	/* Check if we're running as a guest of a hypervisor */
-	if (!(mfmsr() & MSR_GS))
-		return;
+> > Also the return type should not be long but something that fits into
+> > 32bit on all platforms. Since you use -ENODEV, probably s32 is a good
+> > choice.
+> 
+> The convenience of using seg|bus|dev|fn was too much to resist, too bad
+> it requires a full 32bits.  Maybe I'll change it to:
+>         int iommu_device_group(struct device *dev, unsigned int *group)
 
-> What is keeping the driver from building on all PPC, or even all arches
-> today?
+If we really expect segment numbers that need the full 16 bit then this
+would be the way to go. Otherwise I would prefer returning the group-id
+directly and partition the group-id space for the error values (s32 with
+negative numbers being errors).
 
-I've made a few changes, and it builds on all PPC now.  I'll post a new patch.
+> > > @@ -438,6 +439,10 @@ static int __init intel_iommu_setup(char *str)
+> > >  			printk(KERN_INFO
+> > >  				"Intel-IOMMU: disable supported super page\n");
+> > >  			intel_iommu_superpage = 0;
+> > > +		} else if (!strncmp(str, "no_mf_groups", 12)) {
+> > > +			printk(KERN_INFO
+> > > +				"Intel-IOMMU: disable separate groups for multifunction devices\n");
+> > > +			intel_iommu_no_mf_groups = 1;
+> > 
+> > This should really be a global iommu option and not be VT-d specific.
+> 
+> You think?  It's meaningless on benh's power systems.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+But it is not meaningless on AMD-Vi systems :) There should be one
+option for both.
+On the other hand this requires an iommu= parameter on ia64, but thats
+probably not that bad.
+
+> > This looks like code duplication in the VT-d driver. It doesn't need to
+> > be generalized now, but we should keep in mind to do a more general
+> > solution later.
+> > Maybe it is beneficial if the IOMMU drivers only setup the number in
+> > dev->arch.iommu.groupid and the iommu-api fetches it from there then.
+> > But as I said, this is some more work and does not need to be done for
+> > this patch(-set).
+> 
+> The iommu-api reaches into dev->arch.iommu.groupid?  I figured we should
+> at least start out with a lightweight, optional interface without the
+> overhead of predefining groupids setup by bus notification callbacks in
+> each iommu driver.  Thanks,
+
+As I said, this is just an idea for an later optimization. It is fine
+for now as it is in this patch.
+
+	Joerg
