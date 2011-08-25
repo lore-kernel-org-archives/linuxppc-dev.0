@@ -1,24 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4589AB6F91
+Return-Path: <lacombar@gmail.com>
+Received: from mail-pz0-f46.google.com (mail-pz0-f46.google.com
+	[209.85.210.46]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EFC57B6F98
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Aug 2011 05:31:39 +1000 (EST)
-Received: from mail79-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail79-tx2-R.bigfish.com (Postfix) with ESMTP id E8F7F11052A	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2011 19:31:34 +0000 (UTC)
-Message-ID: <4E56A30F.4010509@freescale.com>
-Date: Thu, 25 Aug 2011 14:31:27 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Fri, 26 Aug 2011 06:00:40 +1000 (EST)
+Received: by pzk32 with SMTP id 32so3390513pzk.33
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 25 Aug 2011 13:00:38 -0700 (PDT)
 MIME-Version: 1.0
-To: <smitha.vanga@wipro.com>
-Subject: Re: Kernel boot up
-References: <07ACDFB8ECA8EF47863A613BC01BBB22035E3A70@HYD-MKD-MBX02.wipro.com>
-In-Reply-To: <07ACDFB8ECA8EF47863A613BC01BBB22035E3A70@HYD-MKD-MBX02.wipro.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4E56A15D.8070406@freescale.com>
+References: <1314288433-26322-1-git-send-email-lacombar@gmail.com>
+	<4E56A15D.8070406@freescale.com>
+Date: Thu, 25 Aug 2011 16:00:38 -0400
+Message-ID: <CACqU3MUWdadkJqii8j8htSbYXN+SaYC5uMSvm3t=2E=n4P1xcg@mail.gmail.com>
+Subject: Re: [PATCH] xics/icp_natives: add __init to marker icp_native_init()
+From: Arnaud Lacombe <lacombar@gmail.com>
+To: Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +29,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/25/2011 02:57 AM, smitha.vanga@wipro.com wrote:
-> Hi Scott,
-> 
-> I am currently trying to bring up 2.6.39 kernel on a target based on MPC8247
-> Processor, using the attched .dts  file . I get the below logs while the
-> kernel is booting.
-> I see that the unflattening of the device tree and the initial loading
-> of the kernel and ramdisk file system is happening correctly. Can you
-> point me where exactly I can look for this issue. I am attaching the
-> .config and .dts file I am using.
+Hi,
 
-Which error are you referring to?
+On Thu, Aug 25, 2011 at 3:24 PM, Timur Tabi <timur@freescale.com> wrote:
+> Arnaud Lacombe wrote:
+>> This should fix the following warning:
+>>
+>> =A0LD =A0 =A0 =A0arch/powerpc/sysdev/xics/built-in.o
+>> WARNING: arch/powerpc/sysdev/xics/built-in.o(.text+0x1310): Section mism=
+atch in
+>> reference from the function .icp_native_init() to the function
+>> .init.text:.icp_native_init_one_node()
+>> The function .icp_native_init() references
+>> the function __init .icp_native_init_one_node().
+>> This is often because .icp_native_init lacks a __init
+>> annotation or the annotation of .icp_native_init_one_node is wrong.
+>>
+>> icp_native_init() is only referenced in `arch/powerpc/sysdev/xics/xics-c=
+ommon.c'
+>> by xics_init() which is itself marked with __init.
+>>
+>> =3D not built-tested =3D
+>>
+>> Reported-by: Timur Tabi <timur@freescale.com>
+>> Signed-off-by: Arnaud Lacombe <lacombar@gmail.com>
+>
+> Acked-by: Timur Tabi <timur@freescale.com>
+>
+> This warning still appears, though:
+>
+> WARNING: arch/powerpc/sysdev/built-in.o(.text+0xf6b8): Section mismatch i=
+n
+> reference from the function .ics_rtas_init() to the function
+> .init.text:.xics_register_ics()
+> The function .ics_rtas_init() references
+> the function __init .xics_register_ics().
+> This is often because .ics_rtas_init lacks a __init
+> annotation or the annotation of .xics_register_ics is wrong.
+>
+he, chain-reaction :)
 
-> of-flash ff800000.flash: do_map_probe() failed
+> To fix this warning, you'll also need:
+>
+> diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xi=
+cs/ics-
+> index c782f85..a125721 100644
+> --- a/arch/powerpc/sysdev/xics/ics-rtas.c
+> +++ b/arch/powerpc/sysdev/xics/ics-rtas.c
+> @@ -213,7 +213,7 @@ static int ics_rtas_host_match(struct ics *ics, struc=
+t devic
+> =A0 =A0 =A0 =A0return !of_device_is_compatible(node, "chrp,iic");
+> =A0}
+>
+> -int ics_rtas_init(void)
+> +int __init ics_rtas_init(void)
+> =A0{
+> =A0 =A0 =A0 =A0ibm_get_xive =3D rtas_token("ibm,get-xive");
+> =A0 =A0 =A0 =A0ibm_set_xive =3D rtas_token("ibm,set-xive");
+>
+>
+> However, now we get another similar warning:
+>
+> WARNING: drivers/built-in.o(.text+0x259c484): Section mismatch in referen=
+ce from
+> the function .tc3589x_keypad_open() to the function
+> .devinit.text:.tc3589x_keypad_init_key_hardware()
+> The function .tc3589x_keypad_open() references
+> the function __devinit .tc3589x_keypad_init_key_hardware().
+> This is often because .tc3589x_keypad_open lacks a __devinit
+> annotation or the annotation of .tc3589x_keypad_init_key_hardware is wron=
+g.
+>
+> I'm not sure what to do at this point, because I have a suspicion that ad=
+ding
+> __devinit to tc3589x_keypad_open() is wrong.
+>
+tc3589x_keypad_init_key_hardware() annotation looks plain wrong.
 
-What kind of flash chip do you have?  Does the node in the device tree
-accurately describe it (four interleaved 8-bit chips that only do JEDEC
-and not CFI)?
+ - Arnaud
 
-> PPP generic driver version 2.4.2
-> PPP Deflate Compression module registered
-> tun: Universal TUN/TAP device driver, 1.6
-> tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-> eth0: fs_enet: 00:00:00:00:00:00
-> eth1: fs_enet: 00:00:00:00:00:00
-
-These MAC addresses should have been set in the device tree.  If you're
-using U-Boot, it should be doing the fixup.
-
-> Populating /dev using udev: /sbin/udevd: '/lib/libc.so.6' library
-> contains unsup
-> ported TLS
-> /sbin/udevd: '/lib/libc.so.6' library contains unsupported TLS
-> /sbin/udevd: can't load library 'libc.so.6'
-> FAIL
-> /sbin/udevstart: '/lib/libc.so.6' library contains unsupported TLS
-> /sbin/udevstart: '/lib/libc.so.6' library contains unsupported TLS
-> /sbin/udevstart: can't load library 'libc.so.6'
-> FAIL
-
-This is a problem with the root filesystem, not the kernel.
-
--Scott
+> --
+> Timur Tabi
+> Linux kernel developer at Freescale
+>
+>
