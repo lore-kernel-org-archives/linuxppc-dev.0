@@ -1,25 +1,26 @@
-Return-Path: <lacombar@gmail.com>
-Received: from mail-pz0-f46.google.com (mail-pz0-f46.google.com
-	[209.85.210.46]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EFC57B6F98
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
+	by ozlabs.org (Postfix) with ESMTP id 6960BB6F7E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Aug 2011 06:00:40 +1000 (EST)
-Received: by pzk32 with SMTP id 32so3390513pzk.33
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Aug 2011 13:00:38 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4E56A15D.8070406@freescale.com>
-References: <1314288433-26322-1-git-send-email-lacombar@gmail.com>
-	<4E56A15D.8070406@freescale.com>
-Date: Thu, 25 Aug 2011 16:00:38 -0400
-Message-ID: <CACqU3MUWdadkJqii8j8htSbYXN+SaYC5uMSvm3t=2E=n4P1xcg@mail.gmail.com>
-Subject: Re: [PATCH] xics/icp_natives: add __init to marker icp_native_init()
-From: Arnaud Lacombe <lacombar@gmail.com>
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Fri, 26 Aug 2011 10:39:39 +1000 (EST)
+Date: Fri, 26 Aug 2011 10:39:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Arnaud Lacombe <lacombar@gmail.com>
+Subject: Re: linux-next: build failure after merge of the final tree (tty
+	tree related)
+Message-Id: <20110826103932.1626f1c5542b660bcd1b24aa@canb.auug.org.au>
+In-Reply-To: <CACqU3MUs_97=MuuKAjr-LeUT7kSRxtzSntwUeKeeH4n8s7SSGg@mail.gmail.com>
+References: <20110825161843.daf46b6b4023926fcfeec387@canb.auug.org.au>
+	<20110825140820.GA9126@kroah.com> <4E56689D.3080202@freescale.com>
+	<20110826015111.49af16f792d5554fd931d230@canb.auug.org.au>
+	<CACqU3MUs_97=MuuKAjr-LeUT7kSRxtzSntwUeKeeH4n8s7SSGg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__26_Aug_2011_10_39_32_+1000_UQfyvCYc3R3Zechk"
+Cc: Greg KH <greg@kroah.com>, linux-next@vger.kernel.org,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Timur Tabi <timur@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,87 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+--Signature=_Fri__26_Aug_2011_10_39_32_+1000_UQfyvCYc3R3Zechk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Aug 25, 2011 at 3:24 PM, Timur Tabi <timur@freescale.com> wrote:
-> Arnaud Lacombe wrote:
->> This should fix the following warning:
->>
->> =A0LD =A0 =A0 =A0arch/powerpc/sysdev/xics/built-in.o
->> WARNING: arch/powerpc/sysdev/xics/built-in.o(.text+0x1310): Section mism=
-atch in
->> reference from the function .icp_native_init() to the function
->> .init.text:.icp_native_init_one_node()
->> The function .icp_native_init() references
->> the function __init .icp_native_init_one_node().
->> This is often because .icp_native_init lacks a __init
->> annotation or the annotation of .icp_native_init_one_node is wrong.
->>
->> icp_native_init() is only referenced in `arch/powerpc/sysdev/xics/xics-c=
-ommon.c'
->> by xics_init() which is itself marked with __init.
->>
->> =3D not built-tested =3D
->>
->> Reported-by: Timur Tabi <timur@freescale.com>
->> Signed-off-by: Arnaud Lacombe <lacombar@gmail.com>
->
-> Acked-by: Timur Tabi <timur@freescale.com>
->
-> This warning still appears, though:
->
-> WARNING: arch/powerpc/sysdev/built-in.o(.text+0xf6b8): Section mismatch i=
-n
-> reference from the function .ics_rtas_init() to the function
-> .init.text:.xics_register_ics()
-> The function .ics_rtas_init() references
-> the function __init .xics_register_ics().
-> This is often because .ics_rtas_init lacks a __init
-> annotation or the annotation of .xics_register_ics is wrong.
->
-he, chain-reaction :)
+Hi Arnaud,
 
-> To fix this warning, you'll also need:
+On Thu, 25 Aug 2011 12:09:20 -0400 Arnaud Lacombe <lacombar@gmail.com> wrot=
+e:
 >
-> diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xi=
-cs/ics-
-> index c782f85..a125721 100644
-> --- a/arch/powerpc/sysdev/xics/ics-rtas.c
-> +++ b/arch/powerpc/sysdev/xics/ics-rtas.c
-> @@ -213,7 +213,7 @@ static int ics_rtas_host_match(struct ics *ics, struc=
-t devic
-> =A0 =A0 =A0 =A0return !of_device_is_compatible(node, "chrp,iic");
-> =A0}
->
-> -int ics_rtas_init(void)
-> +int __init ics_rtas_init(void)
-> =A0{
-> =A0 =A0 =A0 =A0ibm_get_xive =3D rtas_token("ibm,get-xive");
-> =A0 =A0 =A0 =A0ibm_set_xive =3D rtas_token("ibm,set-xive");
->
->
-> However, now we get another similar warning:
->
-> WARNING: drivers/built-in.o(.text+0x259c484): Section mismatch in referen=
-ce from
-> the function .tc3589x_keypad_open() to the function
-> .devinit.text:.tc3589x_keypad_init_key_hardware()
-> The function .tc3589x_keypad_open() references
-> the function __devinit .tc3589x_keypad_init_key_hardware().
-> This is often because .tc3589x_keypad_open lacks a __devinit
-> annotation or the annotation of .tc3589x_keypad_init_key_hardware is wron=
-g.
->
-> I'm not sure what to do at this point, because I have a suspicion that ad=
-ding
-> __devinit to tc3589x_keypad_open() is wrong.
->
-tc3589x_keypad_init_key_hardware() annotation looks plain wrong.
+> If you could provide an exhaustive list of them, I'd be interested. Do
+> you account/reference them in the report you make on each new -next
+> tree ?
 
- - Arnaud
+I don't refer to them at all :-(
 
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
->
->
+If you are not just referring to powerpc ones, then an x86_64
+allmodconfig is a good place to start, there are several in there.
+
+Otherwise, I will send you the results of some of my builds this evening.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__26_Aug_2011_10_39_32_+1000_UQfyvCYc3R3Zechk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJOVutEAAoJEDMEi1NhKgbstWUH/2xvvQhPrYnpIAFED1Sk616Q
+MffZWwjA3EpcxIYBQcyEVkLeymFZG3zcEpPo6dyEoiV1h8c1TCjQkFt2ACFPnbjj
+H49835CYAzc9Yl6M2K8FM5XdkBgVXRbIA4J+Bd+aUddYYewNhju2Etk2leGEnzH/
+KvAXoCgl8sPh1Q93QCeML7EbgFPpuK175d9k7Ckid4ihfoVPazA1kOTsQLVADroH
+NC0pLcs0H69p4RDU4I6kEFNfEHIU1c+YyoVm3hebw7hLWe8UeS6ipTTLGWmg3ARo
+tWxLPHFmKV29gVzvYNwPVNsaYivaDq389qk8Nd6L3Ju5wBxYNgR1O31fircJOoo=
+=qvYM
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Aug_2011_10_39_32_+1000_UQfyvCYc3R3Zechk--
