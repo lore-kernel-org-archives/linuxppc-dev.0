@@ -1,17 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
-	by ozlabs.org (Postfix) with ESMTP id 43176B6F8B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Aug 2011 11:26:46 +1000 (EST)
-Date: Fri, 26 Aug 2011 11:26:43 +1000
+	by ozlabs.org (Postfix) with ESMTP id 5DC04B6F83
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2011 13:33:59 +1000 (EST)
+Date: Fri, 26 Aug 2011 13:33:45 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Gibson <dwg@au1.ibm.com>, jdl@jdl.com
-Subject: [PATCH] dtc: remove some warnings
-Message-Id: <20110826112643.f86132d55edc5d452df3ebd0@canb.auug.org.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] [v2] tty/powerpc: fix build break with ehv_bytechan.c
+	on allyesconfig
+Message-Id: <20110826133345.f76a4f6cee53925de9ec2567@canb.auug.org.au>
+In-Reply-To: <1314295617-2953-1-git-send-email-timur@freescale.com>
+References: <1314295617-2953-1-git-send-email-timur@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: John Bonesio <bones@secretlab.ca>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__26_Aug_2011_13_33_45_+1000_fmwIfgQUypxploIx"
+Cc: greg@kroah.com, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,69 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I assume that these variables were used in the past but not removed when
-their usage was removed.
+--Signature=_Fri__26_Aug_2011_13_33_45_+1000_fmwIfgQUypxploIx
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Fixes these warnings:
+Hi all,
 
-scripts/dtc/dtc.c: In function 'main':
-scripts/dtc/dtc.c:102:17: warning: variable 'check' set but not used [-Wunused-but-set-variable]
-scripts/dtc/flattree.c: In function 'flat_read_mem_reserve':
-scripts/dtc/flattree.c:700:14: warning: variable 'p' set but not used [-Wunused-but-set-variable]
+On Thu, 25 Aug 2011 13:06:57 -0500 Timur Tabi <timur@freescale.com> wrote:
+>
+> The ePAPR hypervisor byte channel driver is supposed to work on all
+> ePAPR-compliant embedded PowerPC systems, but it had a reference to the M=
+SR_GS
+> bit, which is available only on Book-E systems.
+>=20
+> Also fix a couple integer-to-pointer typecast problems.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- scripts/dtc/dtc.c      |    5 +----
- scripts/dtc/flattree.c |    2 --
- 2 files changed, 1 insertions(+), 6 deletions(-)
+I applied this to linux-next today.
 
-diff --git a/scripts/dtc/dtc.c b/scripts/dtc/dtc.c
-index cbc0193..fc83355 100644
---- a/scripts/dtc/dtc.c
-+++ b/scripts/dtc/dtc.c
-@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
- 	const char *inform = "dts";
- 	const char *outform = "dts";
- 	const char *outname = "-";
--	int force = 0, check = 0, sort = 0;
-+	int force = 0, sort = 0;
- 	const char *arg;
- 	int opt;
- 	FILE *outf = NULL;
-@@ -137,9 +137,6 @@ int main(int argc, char *argv[])
- 		case 'f':
- 			force = 1;
- 			break;
--		case 'c':
--			check = 1;
--			break;
- 		case 'q':
- 			quiet++;
- 			break;
-diff --git a/scripts/dtc/flattree.c b/scripts/dtc/flattree.c
-index ead0332..28d0b23 100644
---- a/scripts/dtc/flattree.c
-+++ b/scripts/dtc/flattree.c
-@@ -697,7 +697,6 @@ static struct reserve_info *flat_read_mem_reserve(struct inbuf *inb)
- {
- 	struct reserve_info *reservelist = NULL;
- 	struct reserve_info *new;
--	const char *p;
- 	struct fdt_reserve_entry re;
- 
- 	/*
-@@ -706,7 +705,6 @@ static struct reserve_info *flat_read_mem_reserve(struct inbuf *inb)
- 	 *
- 	 * First pass, count entries.
- 	 */
--	p = inb->ptr;
- 	while (1) {
- 		flat_read_chunk(inb, &re, sizeof(re));
- 		re.address  = fdt64_to_cpu(re.address);
--- 
-1.7.5.4
-
--- 
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__26_Aug_2011_13_33_45_+1000_fmwIfgQUypxploIx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJOVxQZAAoJEDMEi1NhKgbs8vAH/2VYdW0yglicLXlFDMcoAoma
+pJEWnjspPeIEamtuc2OfKwUp79U6YYVNdkgKy6dy4wc//YccSaujLRugvOKtAfpU
+6K6WLBi2ID6mLH/RvOy62fA6dATu1C3Wc2aCCZZkaKQ0XaY18VihuYSMWBkpuDxI
+Hg3ieImG9n2m0NHa7l5Nx3ZpKvTZ5ovWgNfBnaNk0ecW6E/o8Fm5im7ARcvLar7Q
+1/hEQVxP3Op/ojtPkeOWJuWgmlx3wknnUL3zwpG5mIoAyWJVVO5r66ksiDaf/TmI
+lS9CJNj8Yec1yt3yeVG+ENbSQ2p4641pfa6U+efo1F4keTukRzlX7+KNN++NLG4=
+=duXm
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Aug_2011_13_33_45_+1000_fmwIfgQUypxploIx--
