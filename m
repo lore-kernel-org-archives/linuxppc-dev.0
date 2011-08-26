@@ -1,38 +1,33 @@
 Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com",
+	(Client CN "e23smtp05.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 032C2B6F8C
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2011 14:45:51 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id p7Q4isHq010278
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2011 14:44:54 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p7Q4jp1d1749056
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2011 14:45:51 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p7Q4jogJ020288
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2011 14:45:51 +1000
-Date: Fri, 26 Aug 2011 14:41:23 +1000
+	by ozlabs.org (Postfix) with ESMTPS id 06FC3B6F7B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 26 Aug 2011 15:00:41 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp05.au.ibm.com (8.14.4/8.13.1) with ESMTP id p7Q4s284017430
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2011 14:54:02 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p7Q4xIfV1294346
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2011 14:59:18 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p7Q50cB3013928
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2011 15:00:39 +1000
+Date: Fri, 26 Aug 2011 14:49:02 +1000
 From: David Gibson <dwg@au1.ibm.com>
-To: Thiago Jung Bauermann <bauerman@br.ibm.com>
-Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature
-	flag
-Message-ID: <20110826044123.GI2308@yookeroo.fritz.box>
-References: <20110819074527.GA21817@in.ibm.com>
-	<20110819075338.GC21817@in.ibm.com>
-	<20110823050931.GT30097@yookeroo.fritz.box>
-	<20110823092756.GB2962@in.ibm.com>
-	<20110824040010.GC30097@yookeroo.fritz.box>
-	<1314232903.14168.4.camel@hactar>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] dtc: remove some warnings
+Message-ID: <20110826044902.GJ2308@yookeroo.fritz.box>
+References: <20110826112643.f86132d55edc5d452df3ebd0@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1314232903.14168.4.camel@hactar>
-Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-	Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+In-Reply-To: <20110826112643.f86132d55edc5d452df3ebd0@canb.auug.org.au>
+Cc: John Bonesio <bones@secretlab.ca>, jdl@jdl.com,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,43 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 24, 2011 at 09:41:43PM -0300, Thiago Jung Bauermann wrote:
-> On Wed, 2011-08-24 at 14:00 +1000, David Gibson wrote:
-> > On Tue, Aug 23, 2011 at 02:57:56PM +0530, K.Prasad wrote:
-> > > On Tue, Aug 23, 2011 at 03:09:31PM +1000, David Gibson wrote:
-> > > > On Fri, Aug 19, 2011 at 01:23:38PM +0530, K.Prasad wrote:
-> > > > > 
-> > > > > While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
-> > > > > PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
-> > > > > user-space debuggers (like GDB) who may want to use it. Hence we introduce a
-> > > > > new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
-> > > > > "features" member of "struct ppc_debug_info" to advertise support for the
-> > > > > same on Book3E PowerPC processors.
-> > > > 
-> > > > I thought the idea was that the BP_EXACT mode was the default - if the
-> > > > new interface was supported at all, then BP_EXACT was always
-> > > > supported.  So, why do you need a new flag?
-> > > > 
-> > > 
-> > > Yes, BP_EXACT was always supported but not advertised through
-> > > PPC_PTRACE_GETHWDBGINFO. We're now doing that.
-> > 
-> > I can see that.  But you haven't answered why.
+On Fri, Aug 26, 2011 at 11:26:43AM +1000, Stephen Rothwell wrote:
+> I assume that these variables were used in the past but not removed when
+> their usage was removed.
 > 
-> BookS doesn't support BP_EXACT, that's why I suggested this flag.
-
-Surely you can support it with exactly the same sort of filtering
-you're using for the 8-byte ranges now?
-
-> A BP_EXACT watchpoint triggers only when there's a memory access exactly
-> at the given address. It doesn't trigger when there's (for example) a
-> 4-byte write at an address immediately before which also changes the
-> memory contents of the byte watched by the BP_EXACT watchpoint. a ranged
-> watchpoint would trigger, so the semantics are different.
+> Fixes these warnings:
 > 
-> As a general rule, GDB only sets ranged watchpoints and only uses
-> BP_EXACT ones when the user sets a flag. I want GDB to fail when the
-> user sets the flag on BookS since it can't provide the feature.
+> scripts/dtc/dtc.c: In function 'main':
+> scripts/dtc/dtc.c:102:17: warning: variable 'check' set but not used [-Wunused-but-set-variable]
+> scripts/dtc/flattree.c: In function 'flat_read_mem_reserve':
+> scripts/dtc/flattree.c:700:14: warning: variable 'p' set but not used [-Wunused-but-set-variable]
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
+
+Yeah, I noticed these gcc 4.6 warnings recently, but didn't get around
+to sending a patch.
+
+Jon, please apply.  Uh.. except that this is a patch against the in
+kernel dtc, rather than upstream.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
