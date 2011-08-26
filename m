@@ -1,24 +1,25 @@
-Return-Path: <aafabbri@cisco.com>
-Received: from rcdn-iport-8.cisco.com (rcdn-iport-8.cisco.com [173.37.86.79])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "rcdn-iport-8.cisco.com", Issuer "Cisco SSCA2" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A3A8EB6F7D
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 84D54B6F8D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Aug 2011 03:53:02 +1000 (EST)
-Date: Fri, 26 Aug 2011 10:52:54 -0700
+	Sat, 27 Aug 2011 04:04:37 +1000 (EST)
 Subject: Re: kvm PCI assignment & VFIO ramblings
-From: Aaron Fabbri <aafabbri@cisco.com>
-To: Alexander Graf <agraf@suse.de>, "Roedel, Joerg" <joerg.roedel@amd.com>
-Message-ID: <CA7D2B86.FD79%aafabbri@cisco.com>
-In-Reply-To: <571DC890-A1A3-4528-92BE-566F033FD4BF@suse.de>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Joerg Roedel <joro@8bytes.org>
+Date: Fri, 26 Aug 2011 12:04:22 -0600
+In-Reply-To: <20110825180557.GD8978@8bytes.org>
+References: <1314118861.2859.51.camel@bling.home>
+	<CA79326A.FB97%aafabbri@cisco.com> <20110824091035.GD2079@amd.com>
+	<1314220434.2859.203.camel@bling.home> <20110825105402.GB1923@amd.com>
+	<1314292832.2492.31.camel@x201.home> <20110825180557.GD8978@8bytes.org>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1314381863.2859.312.camel@bling.home>
+Mime-Version: 1.0
+Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
 	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-	Paul Mackerras <pmac@au1.ibm.com>,
+	Paul Mackerras <pmac@au1.ibm.com>, "Roedel, Joerg" <Joerg.Roedel@amd.com>,
 	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	qemu-devel <qemu-devel@nongnu.org>, chrisw <chrisw@sous-sol.org>,
+	qemu-devel <qemu-devel@nongnu.org>, Aaron Fabbri <aafabbri@cisco.com>,
 	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
 	Anthony Liguori <anthony@codemonkey.ws>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -32,40 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-
-On 8/26/11 7:07 AM, "Alexander Graf" <agraf@suse.de> wrote:
-
+On Thu, 2011-08-25 at 20:05 +0200, Joerg Roedel wrote:
+> On Thu, Aug 25, 2011 at 11:20:30AM -0600, Alex Williamson wrote:
+> > On Thu, 2011-08-25 at 12:54 +0200, Roedel, Joerg wrote:
 > 
-<snip>
+> > > We need to solve this differently. ARM is starting to use the iommu-api
+> > > too and this definitly does not work there. One possible solution might
+> > > be to make the iommu-ops per-bus.
+> > 
+> > That sounds good.  Is anyone working on it?  It seems like it doesn't
+> > hurt to use this in the interim, we may just be watching the wrong bus
+> > and never add any sysfs group info.
 > 
-> Forget the KVM case for a moment and think of a user space device driver. I as
-> a user am not root. But I as a user when having access to /dev/vfioX want to
-> be able to access the device and manage it - and only it. The admin of that
-> box needs to set it up properly for me to be able to access it.
+> I'll cook something up for RFC over the weekend.
 > 
-> So having two steps is really the correct way to go:
+> > > Also the return type should not be long but something that fits into
+> > > 32bit on all platforms. Since you use -ENODEV, probably s32 is a good
+> > > choice.
+> > 
+> > The convenience of using seg|bus|dev|fn was too much to resist, too bad
+> > it requires a full 32bits.  Maybe I'll change it to:
+> >         int iommu_device_group(struct device *dev, unsigned int *group)
 > 
->   * create VFIO group
->   * use VFIO group
-> 
-> because the two are done by completely different users.
+> If we really expect segment numbers that need the full 16 bit then this
+> would be the way to go. Otherwise I would prefer returning the group-id
+> directly and partition the group-id space for the error values (s32 with
+> negative numbers being errors).
 
-This is not the case for my userspace drivers using VFIO today.
+It's unlikely to have segments using the top bit, but it would be broken
+for an iommu driver to define it's group numbers using pci s:b:d.f if we
+don't have that bit available.  Ben/David, do PEs have an identifier of
+a convenient size?  I'd guess any hardware based identifier is going to
+use a full unsigned bit width.  Thanks,
 
-Each process will open vfio devices on the fly, and they need to be able to
-share IOMMU resources.
-
-So I need the ability to dynamically bring up devices and assign them to a
-group.  The number of actual devices and how they map to iommu domains is
-not known ahead of time.  We have a single piece of silicon that can expose
-hundreds of pci devices.
-
-In my case, the only administrative task would be to give my processes/users
-access to the vfio groups (which are initially singletons), and the
-application actually opens them and needs the ability to merge groups
-together to conserve IOMMU resources (assuming we're not going to expose
-uiommu).
-
--Aaron
+Alex
