@@ -1,18 +1,38 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3C892B6FA6
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Aug 2011 21:18:41 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p7RBIbI0024415
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Aug 2011 06:18:38 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl-booke: Handle L1 D-cache parity error correctly
-	on e500mc
-Date: Sat, 27 Aug 2011 06:18:37 -0500
-Message-Id: <1314443917-18515-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 421A5B6F71
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 28 Aug 2011 23:14:45 +1000 (EST)
+Message-ID: <4E5A3F18.7050903@redhat.com>
+Date: Sun, 28 Aug 2011 16:14:00 +0300
+From: Avi Kivity <avi@redhat.com>
+MIME-Version: 1.0
+To: "Roedel, Joerg" <Joerg.Roedel@amd.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+References: <1313859105.6866.192.camel@x201.home>
+	<20110822172508.GJ2079@amd.com>
+	<1314040622.6866.268.camel@x201.home>
+	<20110823131441.GN2079@amd.com>
+	<1314119311.2859.59.camel@bling.home>
+	<20110824085213.GB2079@amd.com>
+	<1314198467.2859.192.camel@bling.home>
+	<20110825123146.GD1923@amd.com>
+	<EC0C2298-1EC9-42A0-9A71-3671E21BCA56@suse.de>
+	<20110826042423.GF2308@yookeroo.fritz.box>
+	<20110826092440.GO1923@amd.com>
+In-Reply-To: <20110826092440.GO1923@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Alex Williamson <alex.williamson@redhat.com>,
+	Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>,
+	Alexander Graf <agraf@suse.de>, chrisw <chrisw@sous-sol.org>,
+	iommu <iommu@lists.linux-foundation.org>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,50 +42,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the L1 D-Cache is in write shadow mode the HW will auto-recover the
-error.  However we might still log the error and cause a machine check
-(if L1CSR0[CPE] - Cache error checking enable).  We should only treat
-the non-write shadow case as non-recoverable.
+On 08/26/2011 12:24 PM, Roedel, Joerg wrote:
+> >
+> >  As I see it there are two options: (a) make subsequent accesses from
+> >  userspace or the guest result in either a SIGBUS that userspace must
+> >  either deal with or die, or (b) replace the mapping with a dummy RO
+> >  mapping containing 0xff, with any trapped writes emulated as nops.
+>
+> The biggest problem with this approach is that it has to happen in the
+> context of the given process. Linux can't really modify an mm which
+> which belong to another context in a safe way.
+>
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/include/asm/reg_booke.h |    3 +++
- arch/powerpc/kernel/traps.c          |    9 ++++++++-
- 2 files changed, 11 insertions(+), 1 deletions(-)
+Is use_mm() insufficient?
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index 2d8c920..9856452 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -551,6 +551,9 @@
- #define L1CSR1_ICFI	0x00000002	/* Instr Cache Flash Invalidate */
- #define L1CSR1_ICE	0x00000001	/* Instr Cache Enable */
- 
-+/* Bit definitions for L1CSR2. */
-+#define L1CSR2_DCWS	0x40000000	/* Data Cache write shadow */
-+
- /* Bit definitions for L2CSR0. */
- #define L2CSR0_L2E	0x80000000	/* L2 Cache Enable */
- #define L2CSR0_L2PE	0x40000000	/* L2 Cache Parity/ECC Enable */
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 1a01414..a1a40f9 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -457,7 +457,14 @@ int machine_check_e500mc(struct pt_regs *regs)
- 
- 	if (reason & MCSR_DCPERR_MC) {
- 		printk("Data Cache Parity Error\n");
--		recoverable = 0;
-+
-+		/*
-+		 * In write shadow mode we auto-recover from the error, but it
-+		 * may still get logged and cause a machine check.  We should
-+		 * only treat the non-write shadow case as non-recoverable.
-+		 */
-+		if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
-+			recoverable = 0;
- 	}
- 
- 	if (reason & MCSR_L2MMU_MHIT) {
 -- 
-1.7.3.4
+error compiling committee.c: too many arguments to function
