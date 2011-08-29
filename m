@@ -1,18 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
-	by ozlabs.org (Postfix) with ESMTP id 923AEB6F83
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 29 Aug 2011 10:44:55 +1000 (EST)
-Date: Mon, 29 Aug 2011 10:44:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Subject: linux-next: build failure in Linus' tree
-Message-Id: <20110829104451.1c777e24ff72823d1e399f12@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "J. Bruce Fields" <bfields@redhat.com>, linux-parisc@vger.kernel.org,
-	NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-	linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 1/2] arch/powerpc/platforms/cell/iommu.c: add missing
+	of_node_put
+Date: Mon, 29 Aug 2011 13:26:49 +0200
+References: <1313943001-12884-1-git-send-email-julia@diku.dk>
+In-Reply-To: <1313943001-12884-1-git-send-email-julia@diku.dk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <201108291326.49561.arnd@arndb.de>
+Cc: cbe-oss-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,68 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus,
-
-After merging the fixes tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
-
-arch/powerpc/kernel/built-in.o: In function `.sys_call_table':
-(.text+0xbd00): undefined reference to `.sys_nfsservctl'
-arch/powerpc/kernel/built-in.o: In function `.sys_call_table':
-(.text+0xbd08): undefined reference to `.compat_sys_nfsservctl'
-
-Caused by commit f5b940997397 ("All Arch: remove linkage for
-sys_nfsservctl system call") which also missed parisc.
-
-I will apply this patch for today:
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 29 Aug 2011 10:38:57 +1000
-Subject: [PATCH] remove remaining references to nfsservctl
-
-These were missed in commit f5b940997397 "All Arch: remove linkage
-for sys_nfsservctl system call" due to them having no sys_ prefix
-(presumably).
-
-Cc: NeilBrown <neilb@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-parisc@vger.kernel.org
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/parisc/kernel/syscall_table.S |    2 +-
- arch/powerpc/include/asm/systbl.h  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/parisc/kernel/syscall_table.S b/arch/parisc/kernel/syscall_table.S
-index e66366f..3735abd 100644
---- a/arch/parisc/kernel/syscall_table.S
-+++ b/arch/parisc/kernel/syscall_table.S
-@@ -259,7 +259,7 @@
- 	ENTRY_SAME(ni_syscall)		/* query_module */
- 	ENTRY_SAME(poll)
- 	/* structs contain pointers and an in_addr... */
--	ENTRY_COMP(nfsservctl)
-+	ENTRY_SAME(ni_syscall)		/* was nfsservctl */
- 	ENTRY_SAME(setresgid)		/* 170 */
- 	ENTRY_SAME(getresgid)
- 	ENTRY_SAME(prctl)
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index f6736b7..fa0d27a 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -171,7 +171,7 @@ SYSCALL_SPU(setresuid)
- SYSCALL_SPU(getresuid)
- SYSCALL(ni_syscall)
- SYSCALL_SPU(poll)
--COMPAT_SYS(nfsservctl)
-+SYSCALL(ni_syscall)
- SYSCALL_SPU(setresgid)
- SYSCALL_SPU(getresgid)
- COMPAT_SYS_SPU(prctl)
--- 
-1.7.5.4
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+On Sunday 21 August 2011, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> np is initialized to the result of calling a function that calls
+> of_node_get, so of_node_put should be called before the pointer is dropped.
+> 
+> The semantic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression e,e1,e2;
+> @@
+> 
+> * e = \(of_find_node_by_type\|of_find_node_by_name\)(...)
+>   ... when != of_node_put(e)
+>       when != true e == NULL
+>       when != e2 = e
+>   e = e1
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+Acked-by: Arnd Bergmann <arnd@arndb.de>
