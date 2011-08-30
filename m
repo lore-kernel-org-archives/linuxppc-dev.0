@@ -1,16 +1,16 @@
 Return-Path: <pratyush.anand@st.com>
-Received: from eu1sys200aog118.obsmtp.com (eu1sys200aog118.obsmtp.com
-	[207.126.144.145])
+Received: from eu1sys200aog114.obsmtp.com (eu1sys200aog114.obsmtp.com
+	[207.126.144.137])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E00B6B6F81
+	by ozlabs.org (Postfix) with ESMTPS id C46BFB6F9B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Aug 2011 22:26:40 +1000 (EST)
+	Tue, 30 Aug 2011 22:26:42 +1000 (EST)
 From: Pratyush Anand <pratyush.anand@st.com>
 To: <linux-usb@vger.kernel.org>
-Subject: [PATCH 03/14] dwc/otg: Add driver framework
-Date: Tue, 30 Aug 2011 17:27:50 +0530
-Message-ID: <73a8a4be221e3bc0404da22473913e9a846ee0df.1314704557.git.pratyush.anand@st.com>
+Subject: [PATCH 02/14] dwc/otg: Structure declaration for shared data
+Date: Tue, 30 Aug 2011 17:27:49 +0530
+Message-ID: <d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
 In-Reply-To: <cover.1314704557.git.pratyush.anand@st.com>
 References: <cover.1314704557.git.pratyush.anand@st.com>
 MIME-Version: 1.0
@@ -29,772 +29,295 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tirumala Marri <tmarri@apm.com>
+There are some DWC OTG parameters which might be passed by a platform.
+Declaration for structure of those parameters have been provided in this
+include file.
 
-Platform probing is in dwc_otg_apmppc.c.
-Driver parameter and parameter checking are in dwc_otg_param.c.
-
-Signed-off-by: Tirumala R Marri <tmarri@apm.com>
-Signed-off-by: Fushen Chen <fchen@apm.com>
-Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
 ---
- drivers/usb/dwc/apmppc.c |  436 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/usb/dwc/driver.h |   76 ++++++++
- drivers/usb/dwc/param.c  |  219 +++++++++++++++++++++++
- 3 files changed, 731 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/dwc/apmppc.c
- create mode 100644 drivers/usb/dwc/driver.h
- create mode 100644 drivers/usb/dwc/param.c
+ include/linux/usb/dwc_otg.h |  274 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 274 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/usb/dwc_otg.h
 
-diff --git a/drivers/usb/dwc/apmppc.c b/drivers/usb/dwc/apmppc.c
+diff --git a/include/linux/usb/dwc_otg.h b/include/linux/usb/dwc_otg.h
 new file mode 100644
-index 0000000..80ea274
+index 0000000..aa86adc
 --- /dev/null
-+++ b/drivers/usb/dwc/apmppc.c
-@@ -0,0 +1,436 @@
-+/*
-+ * DesignWare HS OTG controller driver
-+ * Copyright (C) 2006 Synopsys, Inc.
-+ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
-+ *
-+ * This program is free software: you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License version 2 for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see http://www.gnu.org/licenses
-+ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
-+ * Suite 500, Boston, MA 02110-1335 USA.
-+ *
-+ * Based on Synopsys driver version 2.60a
-+ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
-+ * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
-+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ */
++++ b/include/linux/usb/dwc_otg.h
+@@ -0,0 +1,274 @@
++/* DWC OTG (On The Go) defines */
++
++#ifndef __LINUX_DWC_OTG_H
++#define __LINUX_DWC_OTG_H
 +
 +/*
-+ * The dwc_otg module provides the initialization and cleanup entry
-+ * points for the dwcotg driver. This module will be dynamically installed
-+ * after Linux is booted using the insmod command. When the module is
-+ * installed, the dwc_otg_driver_init function is called. When the module is
-+ * removed (using rmmod), the dwc_otg_driver_cleanup function is called.
-+ *
-+ * This module also defines a data structure for the dwc_otg driver, which is
-+ * used in conjunction with the standard device structure. These
-+ * structures allow the OTG driver to comply with the standard Linux driver
-+ * model in which devices and drivers are registered with a bus driver. This
-+ * has the benefit that Linux can expose attributes of the driver and device
-+ * in its special sysfs file system. Users can then read or write files in
-+ * this file system to perform diagnostics on the driver components or the
-+ * device.
++ * The following parameters may be specified when starting the module. These
++ * parameters define how the DWC_otg controller should be configured.  Parameter
++ * values are passed to the CIL initialization function dwc_otg_cil_init.
 + */
++struct core_params {
++	/*
++	 * Specifies the OTG capabilities. The driver will automatically
++	 * detect the value for this parameter if none is specified.
++	 * 0 - HNP and SRP capable (default)
++	 * 1 - SRP Only capable
++	 * 2 - No HNP/SRP capable
++	 */
++	int otg_cap;
++#define DWC_OTG_CAP_PARAM_HNP_SRP_CAPABLE		0
++#define DWC_OTG_CAP_PARAM_SRP_ONLY_CAPABLE		1
++#define DWC_OTG_CAP_PARAM_NO_HNP_SRP_CAPABLE		2
 +
-+#include <linux/platform_device.h>
-+
-+#include "driver.h"
-+
-+#define DWC_DRIVER_VERSION		"1.05"
-+#define DWC_DRIVER_DESC			"HS OTG USB Controller driver"
-+static const char dwc_driver_name[] = "dwc_otg";
-+
-+/**
-+ * This function is the top level interrupt handler for the Common
-+ * (Device and host modes) interrupts.
-+ */
-+static irqreturn_t dwc_otg_common_irq(int _irq, void *dev)
-+{
-+	struct dwc_otg_device *dwc_dev = dev;
-+	int retval;
-+
-+	retval = dwc_otg_handle_common_intr(dwc_dev->core_if);
-+	return IRQ_RETVAL(retval);
-+}
-+
-+/**
-+ * This function is the interrupt handler for the OverCurrent condition
-+ * from the external charge pump (if enabled)
-+ */
-+static irqreturn_t dwc_otg_externalchgpump_irq(int _irq, void *dev)
-+{
-+	struct dwc_otg_device *dwc_dev = dev;
-+
-+	if (dwc_otg_is_host_mode(dwc_dev->core_if)) {
-+		struct dwc_hcd *dwc_hcd;
-+		u32 hprt0 = 0;
-+
-+		dwc_hcd = dwc_dev->hcd;
-+		spin_lock(&dwc_hcd->lock);
-+		dwc_hcd->flags.b.port_over_current_change = 1;
-+
-+		hprt0 = DWC_HPRT0_PRT_PWR_RW(hprt0, 0);
-+		dwc_write32(dwc_dev->core_if->host_if->hprt0, hprt0);
-+		spin_unlock(&dwc_hcd->lock);
-+	} else {
-+		/* Device mode - This int is n/a for device mode */
-+		dev_dbg(dev, "DeviceMode: OTG OverCurrent Detected\n");
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/**
-+ * This function is called when a device is unregistered with the
-+ * dwc_otg_driver. This happens, for example, when the rmmod command is
-+ * executed. The device may or may not be electrically present. If it is
-+ * present, the driver stops device processing. Any resources used on behalf
-+ * of this device are freed.
-+ */
-+static int __devexit dwc_otg_driver_remove(struct platform_device *ofdev)
-+{
-+	struct device *dev = &ofdev->dev;
-+	struct dwc_otg_device *dwc_dev = dev_get_drvdata(dev);
-+
-+	/* Memory allocation for dwc_otg_device may have failed. */
-+	if (!dwc_dev)
-+		return 0;
-+
-+	/* Free the IRQ */
-+	if (dwc_dev->common_irq_installed)
-+		free_irq(dwc_dev->irq, dwc_dev);
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY)) {
-+		if (dwc_dev->hcd) {
-+			if (dwc_dev->hcd->cp_irq_installed)
-+				free_irq(dwc_dev->hcd->cp_irq, dwc_dev);
-+			dwc_otg_hcd_remove(dev);
-+		}
-+	}
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
-+		if (dwc_dev->pcd)
-+			dwc_otg_pcd_remove(dev);
-+	}
-+
-+	if (dwc_dev->core_if)
-+		dwc_otg_cil_remove(dwc_dev->core_if);
-+
-+	/* Return the memory. */
-+	if (dwc_dev->base)
-+		iounmap(dwc_dev->base);
-+
-+	if (dwc_dev->phys_addr)
-+		release_mem_region(dwc_dev->phys_addr, dwc_dev->base_len);
-+
-+	if (dwc_dev->core_if->xceiv) {
-+		otg_put_transceiver(dwc_dev->core_if->xceiv);
-+		dwc_dev->core_if->xceiv = NULL;
-+		usb_nop_xceiv_unregister();
-+	}
-+
-+	kfree(dwc_dev);
-+
-+	/* Clear the drvdata pointer. */
-+	dev_set_drvdata(dev, NULL);
-+	return 0;
-+}
-+
-+/**
-+ * This function is called when an device is bound to a
-+ * dwc_otg_driver. It creates the driver components required to
-+ * control the device (CIL, HCD, and PCD) and it initializes the
-+ * device. The driver components are stored in a dwc_otg_device
-+ * structure. A reference to the dwc_otg_device is saved in the
-+ * device. This allows the driver to access the dwc_otg_device
-+ * structure on subsequent calls to driver methods for this device.
-+ */
-+static int __devinit dwc_otg_driver_probe(struct platform_device *ofdev)
-+{
-+	int retval;
-+	struct dwc_otg_device *dwc_dev;
-+	struct device *dev = &ofdev->dev;
-+	struct resource *res;
-+	struct dwc_otg_plat_data *pdata;
-+	ulong gusbcfg_addr;
-+	u32 usbcfg = 0;
-+
-+	dev_dbg(dev, "dwc_otg_driver_probe(%p)\n", dev);
-+
-+	dwc_dev = kzalloc(sizeof(*dwc_dev), GFP_KERNEL);
-+	if (!dwc_dev) {
-+		dev_err(dev, "kmalloc of dwc_otg_device failed\n");
-+		retval = -ENOMEM;
-+		goto fail_dwc_dev;
-+	}
-+
-+	/* Retrieve the memory and IRQ resources. */
-+	dwc_dev->irq = platform_get_irq(ofdev, 0);
-+	if (dwc_dev->irq == NO_IRQ) {
-+		dev_err(dev, "no device irq\n");
-+		retval = -ENODEV;
-+		goto fail_of_irq;
-+	}
-+	dev_dbg(dev, "OTG - device irq: %d\n", dwc_dev->irq);
-+
-+	res = platform_get_resource(ofdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(dev, "%s: Can't get USB-OTG register address\n",
-+			__func__);
-+		retval = -ENOMEM;
-+		goto fail_of_irq;
-+	}
-+	dev_dbg(dev, "OTG - ioresource_mem start0x%llx: end:0x%llx\n",
-+		(unsigned long long)res->start, (unsigned long long)res->end);
-+
-+	dwc_dev->phys_addr = res->start;
-+	dwc_dev->base_len = res->end - res->start + 1;
-+	if (!request_mem_region(dwc_dev->phys_addr,
-+				dwc_dev->base_len, dwc_driver_name)) {
-+		dev_err(dev, "request_mem_region failed\n");
-+		retval = -EBUSY;
-+		goto fail_of_irq;
-+	}
-+
-+	/* Map the DWC_otg Core memory into virtual address space. */
-+	dwc_dev->base = ioremap(dwc_dev->phys_addr, dwc_dev->base_len);
-+	if (!dwc_dev->base) {
-+		dev_err(dev, "ioremap() failed\n");
-+		retval = -ENOMEM;
-+		goto fail_ioremap;
-+	}
-+	dev_dbg(dev, "mapped base=0x%08x\n", (__force u32)dwc_dev->base);
-+
-+	pdata = dev_get_platdata(dev);
-+	if (pdata) {
-+		if (pdata->phy_init)
-+			pdata->phy_init();
-+		if (pdata->param_init)
-+			pdata->param_init(&dwc_otg_module_params);
-+	}
++#define dwc_param_otg_cap_default	DWC_OTG_CAP_PARAM_HNP_SRP_CAPABLE
 +
 +	/*
-+	 * Initialize driver data to point to the global DWC_otg
-+	 * Device structure.
++	 * Specifies whether to use slave or DMA mode for accessing the data
++	 * FIFOs. The driver will automatically detect the value for this
++	 * parameter if none is specified.
++	 * 0 - Slave
++	 * 1 - DMA (default, if available)
 +	 */
-+	dev_set_drvdata(dev, dwc_dev);
-+
-+	dwc_dev->core_if =
-+	    dwc_otg_cil_init(dwc_dev->base, &dwc_otg_module_params);
-+	if (!dwc_dev->core_if) {
-+		dev_err(dev, "CIL initialization failed!\n");
-+		retval = -ENOMEM;
-+		goto fail_cil_init;
-+	}
-+
-+	/*
-+	 * Validate parameter values after dwc_otg_cil_init.
-+	 */
-+	if (check_parameters(dwc_dev->core_if)) {
-+		retval = -EINVAL;
-+		goto fail_check_param;
-+	}
-+
-+	usb_nop_xceiv_register();
-+	dwc_dev->core_if->xceiv = otg_get_transceiver();
-+	if (!dwc_dev->core_if->xceiv) {
-+		retval = -ENODEV;
-+		goto fail_xceiv;
-+	}
-+	dwc_set_feature(dwc_dev->core_if);
-+
-+	/* Initialize the DWC_otg core. */
-+	dwc_otg_core_init(dwc_dev->core_if);
-+
-+	/*
-+	 * Disable the global interrupt until all the interrupt
-+	 * handlers are installed.
-+	 */
-+	dwc_otg_disable_global_interrupts(dwc_dev->core_if);
-+
-+	/*
-+	 * Install the interrupt handler for the common interrupts before
-+	 * enabling common interrupts in core_init below.
-+	 */
-+	retval = request_irq(dwc_dev->irq, dwc_otg_common_irq,
-+			     IRQF_SHARED, "dwc_otg", dwc_dev);
-+	if (retval) {
-+		dev_err(dev, "request of irq%d failed retval: %d\n",
-+			dwc_dev->irq, retval);
-+		retval = -EBUSY;
-+		goto fail_req_irq;
-+	} else {
-+		dwc_dev->common_irq_installed = 1;
-+	}
-+
-+	gusbcfg_addr = (ulong) (dwc_dev->core_if->core_global_regs)
-+		+ DWC_GUSBCFG;
-+
-+	if (dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY)) {
-+		usbcfg = dwc_read32(gusbcfg_addr);
-+		usbcfg &= ~DWC_USBCFG_FRC_HST_MODE;
-+		usbcfg |= DWC_USBCFG_FRC_DEV_MODE;
-+		dwc_write32(gusbcfg_addr, usbcfg);
-+	}
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
-+		/* Initialize the PCD */
-+		retval = dwc_otg_pcd_init(dev);
-+		if (retval) {
-+			dev_err(dev, "dwc_otg_pcd_init failed\n");
-+			dwc_dev->pcd = NULL;
-+			goto fail_req_irq;
-+		}
-+	}
-+
-+	if (dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
-+		/* Initialize the HCD and force_host_mode */
-+		usbcfg = dwc_read32(gusbcfg_addr);
-+		usbcfg |= DWC_USBCFG_FRC_HST_MODE;
-+		usbcfg &= ~DWC_USBCFG_FRC_DEV_MODE;
-+		dwc_write32(gusbcfg_addr, usbcfg);
-+	}
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY)) {
-+		/* update transiver state */
-+		dwc_dev->core_if->xceiv->state = OTG_STATE_A_HOST;
-+
-+		retval = dwc_otg_hcd_init(dev, dwc_dev);
-+		if (retval) {
-+			dev_err(dev, "dwc_otg_hcd_init failed\n");
-+			dwc_dev->hcd = NULL;
-+			goto fail_hcd;
-+		}
-+		/* configure chargepump interrupt */
-+		dwc_dev->hcd->cp_irq = platform_get_irq(ofdev, 1);
-+		if (dwc_dev->hcd->cp_irq != -ENXIO) {
-+			retval = request_irq(dwc_dev->hcd->cp_irq,
-+					     dwc_otg_externalchgpump_irq,
-+					     IRQF_SHARED,
-+					     "dwc_otg_ext_chg_pump", dwc_dev);
-+			if (retval) {
-+				dev_err(dev,
-+					"request of irq failed retval: %d\n",
-+					retval);
-+				retval = -EBUSY;
-+				goto fail_hcd;
-+			} else {
-+				dev_dbg(dev, "%s: ExtChgPump Detection "
-+					"IRQ registered\n", dwc_driver_name);
-+				dwc_dev->hcd->cp_irq_installed = 1;
-+			}
-+		}
-+	}
-+	/*
-+	 * Enable the global interrupt after all the interrupt
-+	 * handlers are installed.
-+	 */
-+	dwc_otg_enable_global_interrupts(dwc_dev->core_if);
-+	return 0;
-+fail_hcd:
-+	free_irq(dwc_dev->irq, dwc_dev);
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
-+		if (dwc_dev->pcd)
-+			dwc_otg_pcd_remove(dev);
-+	}
-+fail_req_irq:
-+	otg_put_transceiver(dwc_dev->core_if->xceiv);
-+fail_xceiv:
-+	usb_nop_xceiv_unregister();
-+fail_check_param:
-+	dwc_otg_cil_remove(dwc_dev->core_if);
-+fail_cil_init:
-+	dev_set_drvdata(dev, NULL);
-+	iounmap(dwc_dev->base);
-+fail_ioremap:
-+	release_mem_region(dwc_dev->phys_addr, dwc_dev->base_len);
-+fail_of_irq:
-+	kfree(dwc_dev);
-+fail_dwc_dev:
-+	return retval;
-+}
-+
-+/*
-+ * This structure defines the methods to be called by a bus driver
-+ * during the lifecycle of a device on that bus. Both drivers and
-+ * devices are registered with a bus driver. The bus driver matches
-+ * devices to drivers based on information in the device and driver
-+ * structures.
-+ *
-+ * The probe function is called when the bus driver matches a device
-+ * to this driver. The remove function is called when a device is
-+ * unregistered with the bus driver.
-+ */
-+
-+#if defined(CONFIG_OF)
-+static const struct of_device_id dwc_otg_match[] = {
-+	{.compatible = "amcc,dwc-otg",},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, dwc_otg_match);
++	int dma_enable;
++#ifdef CONFIG_DWC_SLAVE
++#define dwc_param_dma_enable_default			0
++#else
++#define dwc_param_dma_enable_default			1
 +#endif
 +
-+static struct platform_driver dwc_otg_driver = {
-+	.probe = dwc_otg_driver_probe,
-+	.remove = __devexit_p(dwc_otg_driver_remove),
-+	.driver = {
-+		   .name = "dwc_otg",
-+		   .owner = THIS_MODULE,
-+#if defined(CONFIG_OF)
-+		   .of_match_table = dwc_otg_match,
-+#endif
-+		   },
-+};
-+
-+/**
-+ * This function is called when the dwc_otg_driver is installed with the
-+ * insmod command. It registers the dwc_otg_driver structure with the
-+ * appropriate bus driver. This will cause the dwc_otg_driver_probe function
-+ * to be called. In addition, the bus driver will automatically expose
-+ * attributes defined for the device and driver in the special sysfs file
-+ * system.
-+ */
-+static int __init dwc_otg_driver_init(void)
-+{
-+
-+	pr_info("%s: version %s\n", dwc_driver_name, DWC_DRIVER_VERSION);
-+	return platform_driver_register(&dwc_otg_driver);
-+}
-+
-+module_init(dwc_otg_driver_init);
-+
-+/**
-+ * This function is called when the driver is removed from the kernel
-+ * with the rmmod command. The driver unregisters itself with its bus
-+ * driver.
-+ *
-+ */
-+static void __exit dwc_otg_driver_cleanup(void)
-+{
-+	platform_driver_unregister(&dwc_otg_driver);
-+}
-+
-+module_exit(dwc_otg_driver_cleanup);
-+
-+MODULE_DESCRIPTION(DWC_DRIVER_DESC);
-+MODULE_AUTHOR("Mark Miesfeld <mmiesfeld@apm.com");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/usb/dwc/driver.h b/drivers/usb/dwc/driver.h
-new file mode 100644
-index 0000000..a86532b
---- /dev/null
-+++ b/drivers/usb/dwc/driver.h
-@@ -0,0 +1,76 @@
-+/*
-+ * DesignWare HS OTG controller driver
-+ * Copyright (C) 2006 Synopsys, Inc.
-+ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
-+ *
-+ * This program is free software: you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License version 2 for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see http://www.gnu.org/licenses
-+ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
-+ * Suite 500, Boston, MA 02110-1335 USA.
-+ *
-+ * Based on Synopsys driver version 2.60a
-+ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
-+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ */
-+
-+#if !defined(__DWC_OTG_DRIVER_H__)
-+#define __DWC_OTG_DRIVER_H__
-+
-+/*
-+ * This file contains the interface to the Linux driver.
-+ */
-+#include "cil.h"
-+
-+/*
-+ * This structure is a wrapper that encapsulates the driver components used to
-+ * manage a single DWC_otg controller.
-+ */
-+struct dwc_otg_device {
-+	/* Base address returned from ioremap() */
-+	__iomem void *base;
-+
-+	/* Pointer to the core interface structure. */
-+	struct core_if *core_if;
-+
-+	/* Pointer to the PCD structure. */
-+	struct dwc_pcd *pcd;
-+
-+	/* Pointer to the HCD structure. */
-+	struct dwc_hcd *hcd;
-+
-+	/* Flag to indicate whether the common IRQ handler is installed. */
-+	u8 common_irq_installed;
-+
-+	/* Interrupt request number. */
-+	unsigned int irq;
++	/*
++	 * The DMA Burst size (applicable only for External DMA Mode).
++	 * 1, 4, 8 16, 32, 64, 128, 256 (default 32)
++	 */
++	int dma_burst_size;	/* Translate this to GAHBCFG values */
++#define dwc_param_dma_burst_size_default		32
 +
 +	/*
-+	 * Physical address of Control and Status registers, used by
-+	 * release_mem_region().
++	 * Specifies the maximum speed of operation in host and device mode.
++	 * The actual speed depends on the speed of the attached device and
++	 * the value of phy_type. The actual speed depends on the speed of the
++	 * attached device.
++	 *      0 - High Speed (default)
++	 *      1 - Full Speed
 +	 */
-+	resource_size_t phys_addr;
-+
-+	/* Length of memory region, used by release_mem_region(). */
-+	unsigned long base_len;
-+};
-+#endif
-diff --git a/drivers/usb/dwc/param.c b/drivers/usb/dwc/param.c
-new file mode 100644
-index 0000000..b9fcfa3
---- /dev/null
-+++ b/drivers/usb/dwc/param.c
-@@ -0,0 +1,219 @@
-+/*
-+ * DesignWare HS OTG controller driver
-+ * Copyright (C) 2006 Synopsys, Inc.
-+ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
-+ *
-+ * This program is free software: you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License version 2 for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see http://www.gnu.org/licenses
-+ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
-+ * Suite 500, Boston, MA 02110-1335 USA.
-+ *
-+ * Based on Synopsys driver version 2.60a
-+ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
-+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ */
-+
-+/*
-+ * This file provides dwc_otg driver parameter and parameter checking.
-+ */
-+
-+#include "cil.h"
-+
-+/*
-+ * Encapsulate the module parameter settings
-+ */
-+struct core_params dwc_otg_module_params = {
-+	.otg_cap = dwc_param_otg_cap_default,
-+	.dma_enable = dwc_param_dma_enable_default,
-+	.dma_burst_size = dwc_param_dma_burst_size_default,
-+	.speed = dwc_param_speed_default,
-+	.host_support_fs_ls_low_power
-+		= dwc_param_host_support_fs_ls_low_power_default,
-+	.host_ls_low_power_phy_clk
-+		= dwc_param_host_ls_low_power_phy_clk_default,
-+	.enable_dynamic_fifo = -1,
-+	.dev_rx_fifo_size = -1,
-+	.dev_nperio_tx_fifo_size = -1,
-+	.dev_perio_tx_fifo_size = {-1, -1, -1, -1, -1, -1, -1, -1,
-+		-1, -1, -1, -1, -1, -1, -1},	/* 15 */
-+	.host_rx_fifo_size = -1,
-+	.host_nperio_tx_fifo_size = -1,
-+	.host_perio_tx_fifo_size = -1,
-+	.max_transfer_size = -1,
-+	.max_packet_count = -1,
-+	.host_channels = -1,
-+	.dev_endpoints = -1,
-+	.phy_type = dwc_param_phy_type_default,
-+	.phy_utmi_width = dwc_param_phy_utmi_width_default,
-+	.phy_ulpi_ddr = dwc_param_phy_ulpi_ddr_default,
-+	.phy_ulpi_ext_vbus = dwc_param_phy_ulpi_ext_vbus_default,
-+	.i2c_enable = dwc_param_i2c_enable_default,
-+	.ulpi_fs_ls = dwc_param_ulpi_fs_ls_default,
-+	.ts_dline = dwc_param_ts_dline_default,
-+	.en_multiple_tx_fifo = -1,
-+	.dev_tx_fifo_size = {-1, -1, -1, -1, -1, -1, -1, -1, -1,
-+		-1, -1, -1, -1, -1, -1},	/* 15 */
-+	.fifo_number = MAX_TX_FIFOS,
-+	.thr_ctl = dwc_param_thr_ctl_default,
-+	.tx_thr_length = dwc_param_tx_thr_length_default,
-+	.rx_thr_length = dwc_param_rx_thr_length_default,
-+};
-+
-+/**
-+ * Checks that parameter settings for the periodic Tx FIFO sizes are correct
-+ * according to the hardware configuration. Sets the size to the hardware
-+ * configuration if an incorrect size is detected.
-+ */
-+static int set_valid_perio_tx_fifo_sizes(struct core_if *core_if)
-+{
-+	ulong regs = (u32) core_if->core_global_regs;
-+	u32 *param_size = &dwc_otg_module_params.dev_perio_tx_fifo_size[0];
-+	u32 i, size;
-+
-+	for (i = 0; i < dwc_otg_module_params.fifo_number; i++) {
-+		if (param_size[i] == -1) {
-+			size = dwc_read32(regs + DWC_DPTX_FSIZ_DIPTXF(i));
-+			param_size[i] =	DWC_TX_FIFO_DEPTH_RD(size);
-+		}
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * Checks that parameter settings for the Tx FIFO sizes are correct according to
-+ * the hardware configuration.  Sets the size to the hardware configuration if
-+ * an incorrect size is detected.
-+ */
-+static int set_valid_tx_fifo_sizes(struct core_if *core_if)
-+{
-+	ulong regs = (u32) core_if->core_global_regs;
-+	u32 *param_size = &dwc_otg_module_params.dev_tx_fifo_size[0];
-+	u32 i, size;
-+
-+	for (i = 0; i < dwc_otg_module_params.fifo_number; i++) {
-+		if (param_size[i] == -1) {
-+			size = dwc_read32(regs + DWC_DPTX_FSIZ_DIPTXF(i));
-+			param_size[i] =	DWC_TX_FIFO_DEPTH_RD(size);
-+		}
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * This function is called during module intialization to verify that
-+ * the module parameters are in a valid state.
-+ */
-+int __devinit check_parameters(struct core_if *core_if)
-+{
-+	int size;
-+
-+	/* Hardware read only configurations of the OTG core. */
-+	dwc_otg_module_params.enable_dynamic_fifo =
-+		DWC_HWCFG2_DYN_FIFO_RD(core_if->hwcfg2);
-+	dwc_otg_module_params.max_transfer_size =
-+		(1 << (DWC_HWCFG3_XFERSIZE_CTR_WIDTH_RD(core_if->hwcfg3) + 11))
-+		- 1;
-+	dwc_otg_module_params.max_packet_count =
-+		(1 << (DWC_HWCFG3_PKTSIZE_CTR_WIDTH_RD(core_if->hwcfg3) + 4))
-+		- 1;
-+	dwc_otg_module_params.host_channels =
-+		DWC_HWCFG2_NO_HST_CHAN_RD(core_if->hwcfg2) + 1;
-+	dwc_otg_module_params.dev_endpoints =
-+		DWC_HWCFG2_NO_DEV_EP_RD(core_if->hwcfg2);
-+	dwc_otg_module_params.en_multiple_tx_fifo =
-+		(DWC_HWCFG4_DED_FIFO_ENA_RD(core_if->hwcfg4) == 0)
-+		? 0 : 1, 0;
++	int speed;
++#define dwc_param_speed_default				0
++#define DWC_SPEED_PARAM_HIGH				0
++#define DWC_SPEED_PARAM_FULL				1
 +
 +	/*
-+	 * Hardware read/write configurations of the OTG core.
-+	 * If not defined by platform then read it from HW itself
++	 * Specifies whether low power mode is supported when attached to a Full
++	 * Speed or Low Speed device in host mode.
++	 *      0 - Don't support low power mode (default)
++	 *      1 - Support low power mode
 +	 */
-+	if (dwc_otg_module_params.dev_rx_fifo_size == -1)
-+		dwc_otg_module_params.dev_rx_fifo_size =
-+		dwc_read32(core_if->core_global_regs + DWC_GRXFSIZ);
-+
-+	if (dwc_otg_module_params.dev_nperio_tx_fifo_size == -1) {
-+		size = dwc_read32(core_if->core_global_regs + DWC_GNPTXFSIZ);
-+		dwc_otg_module_params.dev_nperio_tx_fifo_size =
-+		DWC_TX_FIFO_DEPTH_RD(size);
-+	}
-+
-+	if (dwc_otg_module_params.en_multiple_tx_fifo)
-+		set_valid_tx_fifo_sizes(core_if);
-+	else
-+		set_valid_perio_tx_fifo_sizes(core_if);
-+
-+	if (dwc_otg_module_params.host_rx_fifo_size == -1)
-+		dwc_otg_module_params.host_rx_fifo_size =
-+		dwc_read32(core_if->core_global_regs + DWC_GRXFSIZ);
-+	if (dwc_otg_module_params.host_nperio_tx_fifo_size == -1) {
-+		size
-+		= dwc_read32(core_if->core_global_regs + DWC_GNPTXFSIZ) >> 16;
-+		dwc_otg_module_params.host_nperio_tx_fifo_size =
-+		DWC_TX_FIFO_DEPTH_RD(size);
-+	}
-+	if (dwc_otg_module_params.host_perio_tx_fifo_size == -1) {
-+		size =
-+		dwc_read32(core_if->core_global_regs + DWC_HPTXFSIZ) >> 16;
-+		dwc_otg_module_params.host_perio_tx_fifo_size =
-+		DWC_TX_FIFO_DEPTH_RD(size);
-+	}
++	int host_support_fs_ls_low_power;
++#define dwc_param_host_support_fs_ls_low_power_default	0
 +
 +	/*
-+	 * Hardware read/write configurations of the OTG core.
-+	 * If not defined by platform then read it from HW itself
-+	 * If defined by platform then write the same value in HW regs
++	 * Specifies the PHY clock rate in low power mode when connected to a
++	 * Low Speed device in host mode. This parameter is applicable only if
++	 * HOST_SUPPORT_FS_LS_LOW_POWER is enabled. If PHY_TYPE is set to FS
++	 * then defaults to 6 MHZ otherwise 48 MHZ.
++	 *
++	 *      0 - 48 MHz
++	 *      1 - 6 MHz
 +	 */
-+	if (dwc_otg_module_params.dev_rx_fifo_size == -1)
-+		dwc_otg_module_params.dev_rx_fifo_size =
-+		dwc_read32(core_if->core_global_regs + DWC_GRXFSIZ);
-+	else
-+		dwc_write32(core_if->core_global_regs + DWC_GRXFSIZ,
-+		dwc_otg_module_params.dev_rx_fifo_size);
++	int host_ls_low_power_phy_clk;
++#define dwc_param_host_ls_low_power_phy_clk_default	0
++#define DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_48MHZ	0
++#define DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_6MHZ	1
 +
-+	if (dwc_otg_module_params.dev_nperio_tx_fifo_size == -1)
-+		dwc_otg_module_params.dev_nperio_tx_fifo_size =
-+		dwc_read32(core_if->core_global_regs + DWC_GNPTXFSIZ) >> 16;
-+	else
-+		dwc_write32(core_if->core_global_regs + DWC_GNPTXFSIZ,
-+			(dwc_otg_module_params.dev_rx_fifo_size |
-+			(dwc_otg_module_params.dev_nperio_tx_fifo_size << 16)));
++	/*
++	 * 0 - Use cC FIFO size parameters
++	 * 1 - Allow dynamic FIFO sizing (default)
++	 */
++	int enable_dynamic_fifo;
++#define dwc_param_enable_dynamic_fifo_default		1
 +
-+	set_valid_perio_tx_fifo_sizes(core_if);
-+	set_valid_tx_fifo_sizes(core_if);
++	/*
++	 * Number of 4-byte words in the Rx FIFO in device mode when dynamic
++	 * FIFO sizing is enabled.  16 to 32768 (default 1064)
++	 */
++	int dev_rx_fifo_size;
++#define dwc_param_dev_rx_fifo_size_default		1064
 +
-+	if (dwc_otg_module_params.host_rx_fifo_size == -1)
-+		dwc_otg_module_params.host_rx_fifo_size =
-+		dwc_read32(core_if->core_global_regs + DWC_GRXFSIZ);
-+	if (dwc_otg_module_params.host_nperio_tx_fifo_size == -1)
-+		dwc_otg_module_params.host_nperio_tx_fifo_size =
-+		dwc_read32(core_if->core_global_regs + DWC_GNPTXFSIZ) >> 16;
-+	if (dwc_otg_module_params.host_perio_tx_fifo_size == -1)
-+		dwc_otg_module_params.host_perio_tx_fifo_size =
-+		dwc_read32(core_if->core_global_regs + DWC_HPTXFSIZ) >> 16;
++	/*
++	 * Number of 4-byte words in the non-periodic Tx FIFO in device mode
++	 * when dynamic FIFO sizing is enabled.  16 to 32768 (default 1024)
++	 */
++	int dev_nperio_tx_fifo_size;
++#define dwc_param_dev_nperio_tx_fifo_size_default	1024
 +
-+	return 0;
-+}
++	/*
++	 * Number of 4-byte words in each of the periodic Tx FIFOs in device
++	 * mode when dynamic FIFO sizing is enabled.  4 to 768 (default 256)
++	 */
++#define MAX_TX_FIFOS			15	/* Max periodic FIFOs */
++	u32 dev_perio_tx_fifo_size[MAX_TX_FIFOS];
++#define dwc_param_dev_perio_tx_fifo_size_default	256
 +
-+module_param_named(dma_enable, dwc_otg_module_params.dma_enable, bool, 0444);
-+MODULE_PARM_DESC(dma_enable, "DMA Mode 0=Slave 1=DMA enabled");
++	/*
++	 * Number of 4-byte words in the Rx FIFO in host mode when dynamic
++	 * FIFO sizing is enabled.  16 to 32768 (default 1024)
++	 */
++	int host_rx_fifo_size;
++#define dwc_param_host_rx_fifo_size_default		1024
++
++	/*
++	 * Number of 4-byte words in the non-periodic Tx FIFO in host mode
++	 * when Dynamic FIFO sizing is enabled in the core.  16 to 32768
++	 * (default 1024)
++	 */
++	int host_nperio_tx_fifo_size;
++#define dwc_param_host_nperio_tx_fifo_size_default	1024
++
++	/*
++	   Number of 4-byte words in the host periodic Tx FIFO when dynamic
++	   * FIFO sizing is enabled.  16 to 32768 (default 1024)
++	 */
++	int host_perio_tx_fifo_size;
++#define dwc_param_host_perio_tx_fifo_size_default	1024
++
++	/*
++	 * The maximum transfer size supported in bytes. 2047 to 65,535
++	 * (default 65,535)
++	 */
++	int max_transfer_size;
++#define dwc_param_max_transfer_size_default		65535
++
++	/*
++	 * The maximum number of packets in a transfer. 15 to 511  (default 511)
++	 */
++	int max_packet_count;
++#define dwc_param_max_packet_count_default		511
++
++	/*
++	 * The number of host channel registers to use.
++	 * 1 to 16 (default 12)
++	 * Note: The FPGA configuration supports a maximum of 12 host channels.
++	 */
++	int host_channels;
++#define dwc_param_host_channels_default			12
++
++	/*
++	 * The number of endpoints in addition to EP0 available for device
++	 * mode operations.
++	 * 1 to 15 (default 6 IN and OUT)
++	 * Note: The FPGA configuration supports a maximum of 6 IN and OUT
++	 * endpoints in addition to EP0.
++	 */
++	int dev_endpoints;
++#define dwc_param_dev_endpoints_default			6
++
++	/*
++	 * Specifies the type of PHY interface to use. By default, the driver
++	 * will automatically detect the phy_type.
++	 *
++	 *      0 - Full Speed PHY
++	 *      1 - UTMI+ (default)
++	 *      2 - ULPI
++	 */
++	int phy_type;
++#define DWC_PHY_TYPE_PARAM_FS			0
++#define DWC_PHY_TYPE_PARAM_UTMI			1
++#define DWC_PHY_TYPE_PARAM_ULPI			2
++#define dwc_param_phy_type_default		DWC_PHY_TYPE_PARAM_UTMI
++
++	/*
++	 * Specifies the UTMI+ Data Width.  This parameter is applicable for a
++	 * PHY_TYPE of UTMI+ or ULPI. (For a ULPI PHY_TYPE, this parameter
++	 * indicates the data width between the MAC and the ULPI Wrapper.) Also,
++	 * this parameter is applicable only if the OTG_HSPHY_WIDTH cC parameter
++	 * was set to "8 and 16 bits", meaning that the core has been configured
++	 * to work at either data path width.
++	 *
++	 * 8 or 16 bits (default 16)
++	 */
++	int phy_utmi_width;
++#define dwc_param_phy_utmi_width_default	16
++
++	/*
++	 * Specifies whether the ULPI operates at double or single
++	 * data rate. This parameter is only applicable if PHY_TYPE is
++	 * ULPI.
++	 *
++	 *      0 - single data rate ULPI interface with 8 bit wide data
++	 *              bus (default)
++	 *      1 - double data rate ULPI interface with 4 bit wide data
++	 *              bus
++	 */
++	int phy_ulpi_ddr;
++#define dwc_param_phy_ulpi_ddr_default		0
++
++	/*
++	 * Specifies whether to use the internal or external supply to
++	 * drive the vbus with a ULPI phy.
++	 */
++	int phy_ulpi_ext_vbus;
++#define DWC_PHY_ULPI_INTERNAL_VBUS		0
++#define DWC_PHY_ULPI_EXTERNAL_VBUS		1
++#define dwc_param_phy_ulpi_ext_vbus_default	DWC_PHY_ULPI_INTERNAL_VBUS
++
++	/*
++	 * Specifies whether to use the I2Cinterface for full speed PHY. This
++	 * parameter is only applicable if PHY_TYPE is FS.
++	 *      0 - No (default)
++	 *      1 - Yes
++	 */
++	int i2c_enable;
++#define dwc_param_i2c_enable_default		0
++
++	int ulpi_fs_ls;
++#define dwc_param_ulpi_fs_ls_default		0
++
++	int ts_dline;
++#define dwc_param_ts_dline_default		0
++
++	/*
++	 * Specifies whether dedicated transmit FIFOs are enabled for non
++	 * periodic IN endpoints in device mode
++	 *      0 - No
++	 *      1 - Yes
++	 */
++	int en_multiple_tx_fifo;
++#define dwc_param_en_multiple_tx_fifo_default	1
++
++	/*
++	 * Number of 4-byte words in each of the Tx FIFOs in device
++	 * mode when dynamic FIFO sizing is enabled. 4 to 768 (default 256)
++	 */
++	u32 dev_tx_fifo_size[MAX_TX_FIFOS];
++	u32 fifo_number;
++#define dwc_param_dev_tx_fifo_size_default	256
++
++	/*
++	 * Thresholding enable flag
++	 *      bit 0 - enable non-ISO Tx thresholding
++	 *      bit 1 - enable ISO Tx thresholding
++	 *      bit 2 - enable Rx thresholding
++	 */
++	u32 thr_ctl;
++#define dwc_param_thr_ctl_default		0
++
++	/* Thresholding length for Tx FIFOs in 32 bit DWORDs */
++	u32 tx_thr_length;
++#define dwc_param_tx_thr_length_default		64
++
++	/* Thresholding length for Rx FIFOs in 32 bit DWORDs */
++	u32 rx_thr_length;
++#define dwc_param_rx_thr_length_default		64
++
++};
++
++
++/**
++ * struct dwc_otg_plat_data - device.platform_data for dwc otg driver.
++ */
++struct dwc_otg_plat_data {
++	int (*phy_init)(void);
++	int (*param_init)(struct core_params *);
++};
++
++#endif /* __LINUX_DWC_OTG_H */
 -- 
 1.7.2.2
