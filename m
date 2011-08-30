@@ -1,35 +1,23 @@
-Return-Path: <joro@8bytes.org>
-Received: from 8bytes.org (8bytes.org [88.198.83.132])
-	by ozlabs.org (Postfix) with ESMTP id 5558CB6F92
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D95CBB6F7E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Aug 2011 02:14:35 +1000 (EST)
-Date: Tue, 30 Aug 2011 18:14:33 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: kvm PCI assignment & VFIO ramblings
-Message-ID: <20110830161433.GC5203@8bytes.org>
-References: <1314119311.2859.59.camel@bling.home>
-	<20110824085213.GB2079@amd.com>
-	<1314198467.2859.192.camel@bling.home>
-	<20110825123146.GD1923@amd.com>
-	<EC0C2298-1EC9-42A0-9A71-3671E21BCA56@suse.de>
-	<20110826042423.GF2308@yookeroo.fritz.box>
-	<20110826092440.GO1923@amd.com> <4E5A3F18.7050903@redhat.com>
-	<20110828135632.GG8978@8bytes.org> <4E5A4AF0.20707@redhat.com>
+	Wed, 31 Aug 2011 04:09:18 +1000 (EST)
+Message-ID: <4E5D272B.6000403@freescale.com>
+Date: Tue, 30 Aug 2011 13:08:43 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E5A4AF0.20707@redhat.com>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
-	Alexey Kardashevskiy <aik@au1.ibm.com>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-	Paul Mackerras <pmac@au1.ibm.com>, "Roedel, Joerg" <Joerg.Roedel@amd.com>,
-	qemu-devel <qemu-devel@nongnu.org>,
-	Alexander Graf <agraf@suse.de>, chrisw <chrisw@sous-sol.org>,
-	iommu <iommu@lists.linux-foundation.org>,
-	Anthony Liguori <anthony@codemonkey.ws>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"benve@cisco.com" <benve@cisco.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix xmon for systems without MSR[RI]
+References: <1312838739-20660-1-git-send-email-jimix@pobox.com>
+	<1314684670.2488.82.camel@pasglop>
+In-Reply-To: <1314684670.2488.82.camel@pasglop>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,18 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 28, 2011 at 05:04:32PM +0300, Avi Kivity wrote:
-> On 08/28/2011 04:56 PM, Joerg Roedel wrote:
-
->> This can't be secured by a lock, because it introduces potential
->> A->B<-->B->A lock problem when two processes try to take each others mm.
->> It could probably be solved by a task->real_mm pointer, havn't thought
->> about this yet...
+On 08/30/2011 01:11 AM, Benjamin Herrenschmidt wrote:
+> On Mon, 2011-08-08 at 16:25 -0500, Jimi Xenidis wrote:
+>> From: David Gibson <dwg@au1.ibm.com>
 >>
->
-> Or a workqueue -  you get a kernel thread context with a bit of boilerplate.
+>> Based on patch by David Gibson <dwg@au1.ibm.com>
+>>
+>> xmon has a longstanding bug on systems which are SMP-capable but lack
+>> the MSR[RI] bit.  In these cases, xmon invoked by IPI on secondary
+>> CPUs will not properly keep quiet, but will print stuff, thereby
+>> garbling the primary xmon's output.  This patch fixes it, by ignoring
+>> the RI bit if the processor does not support it.
+>>
+>> There's already a version of this for 4xx upstream, which we'll need
+>> to extend to other RI-lacking CPUs at some point.  For now this adds
+>> BookE processors to the mix.
+> 
+> Don't freescale one have RI ?
 
-Right, a workqueue might do the trick. We'll evaluate that. Thanks for
-the idea :)
+e500mc does.
 
-	Joerg
+e500v2 doesn't -- if a machine check happens while MSR[ME]=0, it causes
+a checkstop.
+
+-Scott
