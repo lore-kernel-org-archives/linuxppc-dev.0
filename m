@@ -1,22 +1,21 @@
 Return-Path: <pratyush.anand@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+	[209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 26072B6F83
+	by ozlabs.org (Postfix) with ESMTPS id 6B220B7214
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Aug 2011 01:43:45 +1000 (EST)
-Received: by ywt32 with SMTP id 32so5861213ywt.38
+	Wed, 31 Aug 2011 01:46:58 +1000 (EST)
+Received: by gyd8 with SMTP id 8so5930790gyd.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Aug 2011 08:43:42 -0700 (PDT)
+	Tue, 30 Aug 2011 08:46:54 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <9183dc7afa5b8cde400e9f37f5679d4f@mail.gmail.com>
+In-Reply-To: <bff62861217ab3d8dbf8041e2c4d1c8c@mail.gmail.com>
 References: <cover.1314704557.git.pratyush.anand@st.com>
-	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
-	<9183dc7afa5b8cde400e9f37f5679d4f@mail.gmail.com>
-Date: Tue, 30 Aug 2011 21:13:42 +0530
-Message-ID: <CAHM4w1nHQ1arnTjFyp4dbmp1SBWKJPfREOOR_yykfaVyS48-iA@mail.gmail.com>
-Subject: Re: [PATCH 02/14] dwc/otg: Structure declaration for shared data
+	<bff62861217ab3d8dbf8041e2c4d1c8c@mail.gmail.com>
+Date: Tue, 30 Aug 2011 21:16:53 +0530
+Message-ID: <CAHM4w1nWTxfMTSTbmt4vnWAKhj4JisJf1f0SjirOt7Z9vjORoA@mail.gmail.com>
+Subject: Re: [PATCH 00/14] Modifications for DWC OTG since v13
 From: Pratyush Anand <pratyush.anand@gmail.com>
 To: Tirumala Marri <tmarri@apm.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -35,7 +34,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 30, 2011 at 8:59 PM, Tirumala Marri <tmarri@apm.com> wrote:
+On Tue, Aug 30, 2011 at 8:57 PM, Tirumala Marri <tmarri@apm.com> wrote:
 > <-----Original Message-----
 > <From: Pratyush Anand [mailto:pratyush.anand@st.com]
 > <Sent: Tuesday, August 30, 2011 4:58 AM
@@ -45,25 +44,24 @@ On Tue, Aug 30, 2011 at 8:59 PM, Tirumala Marri <tmarri@apm.com> wrote:
 > <vipulkumar.samar@st.com; rajeev-dlh.kumar@st.com; vipin.kumar@st.com;
 > <bhupesh.sharma@st.com; viresh.kumar@st.com; Amit.VIRDI@st.com; Pratyush
 > <Anand
-> <Subject: [PATCH 02/14] dwc/otg: Structure declaration for shared data
+> <Subject: [PATCH 00/14] Modifications for DWC OTG since v13
 > <
-> <There are some DWC OTG parameters which might be passed by a platform.
-> <Declaration for structure of those parameters have been provided in this
-> <include file.
-> <
-> <Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
-> <---
-> < include/linux/usb/dwc_otg.h | =A0274
+> <These patches are based on:http://patchwork.ozlabs.org/patch/89560/
+> <After not getting any reply from developers, I started to do
+> <modifications for my platform (SPEAr1340).
+> <I have done modifications in such a way that all the code in
+> <driver/usb/dwc/ would be platform independent.
+> <I have tested this code for host/device/dma/slave mode.
+> <My fifo configuration is dedicated and dynamic.
 >
-> [Tirumala Marri] I am not sure how to separate your changes. But we need
-> More time as our initial patches are still pending.
-> --marri
+> [Tirumala Marri] We are working on our next release of patches. They
+> should be coming out soon.
 
-Tirumala,
-
-If you agree , then I can send you modifications which I did over your
-patches(v13) separately,
-and then you can decide the final inclusion of only these modifications.
+Oh, thats great !!
+Actually, I did not get any reply of my previous mail on your patch release=
+.
+I thought no one is maintaining., and so I sent them with my modifications,
+after testing them in all dev/host/otg mode.
 
 Regards
 Pratyush
