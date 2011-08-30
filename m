@@ -1,18 +1,19 @@
 Return-Path: <tmarri@apm.com>
-Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
-	by ozlabs.org (Postfix) with SMTP id 6D576B6F81
+Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
+	by ozlabs.org (Postfix) with SMTP id A2A7AB6F81
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Aug 2011 01:32:54 +1000 (EST)
-Received: by mail-yi0-f43.google.com with SMTP id 27so5354147yia.2
+	Wed, 31 Aug 2011 01:35:32 +1000 (EST)
+Received: by qwj8 with SMTP id 8so5138735qwj.32
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Aug 2011 08:32:53 -0700 (PDT)
+	Tue, 30 Aug 2011 08:35:29 -0700 (PDT)
 From: Tirumala Marri <tmarri@apm.com>
 References: <cover.1314704557.git.pratyush.anand@st.com>
-In-Reply-To: <cover.1314704557.git.pratyush.anand@st.com>
+	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
+In-Reply-To: <d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
 MIME-Version: 1.0
-Date: Tue, 30 Aug 2011 08:27:30 -0700
-Message-ID: <bff62861217ab3d8dbf8041e2c4d1c8c@mail.gmail.com>
-Subject: RE: [PATCH 00/14] Modifications for DWC OTG since v13
+Date: Tue, 30 Aug 2011 08:29:21 -0700
+Message-ID: <9183dc7afa5b8cde400e9f37f5679d4f@mail.gmail.com>
+Subject: RE: [PATCH 02/14] dwc/otg: Structure declaration for shared data
 To: Pratyush Anand <pratyush.anand@st.com>, linux-usb@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: viresh.kumar@st.com, vipulkumar.samar@st.com, bhupesh.sharma@st.com,
@@ -38,15 +39,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 <vipulkumar.samar@st.com; rajeev-dlh.kumar@st.com; vipin.kumar@st.com;
 <bhupesh.sharma@st.com; viresh.kumar@st.com; Amit.VIRDI@st.com; Pratyush
 <Anand
-<Subject: [PATCH 00/14] Modifications for DWC OTG since v13
+<Subject: [PATCH 02/14] dwc/otg: Structure declaration for shared data
 <
-<These patches are based on:http://patchwork.ozlabs.org/patch/89560/
-<After not getting any reply from developers, I started to do
-<modifications for my platform (SPEAr1340).
-<I have done modifications in such a way that all the code in
-<driver/usb/dwc/ would be platform independent.
-<I have tested this code for host/device/dma/slave mode.
-<My fifo configuration is dedicated and dynamic.
+<There are some DWC OTG parameters which might be passed by a platform.
+<Declaration for structure of those parameters have been provided in this
+<include file.
+<
+<Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
+<---
+< include/linux/usb/dwc_otg.h |  274
 
-[Tirumala Marri] We are working on our next release of patches. They
-should be coming out soon.
+[Tirumala Marri] I am not sure how to separate your changes. But we need
+More time as our initial patches are still pending.
+--marri
