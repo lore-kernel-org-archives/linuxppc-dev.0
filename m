@@ -1,20 +1,27 @@
-Return-Path: <pwsan@booyaka.com>
-Received: from utopia.booyaka.com (utopia.booyaka.com [72.9.107.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 14CF7B6F86
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Aug 2011 07:51:00 +1000 (EST)
-Date: Tue, 30 Aug 2011 15:43:36 -0600 (MDT)
-From: Paul Walmsley <paul@pwsan.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	Kumar Gala <galak@kernel.crashing.org>,
-	Wolfgang Grandegger <wg@grandegger.com>
-Subject: Virtual addresses in arch/powerpc/boot/dts/tqm8548*.dts ?
-Message-ID: <alpine.DEB.2.00.1108301508130.26173@utopia.booyaka.com>
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 44FB9B6F86
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2011 08:25:05 +1000 (EST)
+Received: from mail139-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail139-tx2-R.bigfish.com (Postfix) with ESMTP id EAF30D4057C	for
+	<linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 22:25:02 +0000 (UTC)
+Received: from TX2EHSMHS024.bigfish.com (unknown [10.9.14.250])	by
+	mail139-tx2.bigfish.com (Postfix) with ESMTP id 98F3C1C2804C	for
+	<linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 22:25:02 +0000 (UTC)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl_msi: clean up and document calculation of
+	MSIIR address
+Date: Tue, 30 Aug 2011 22:24:59 +0000
+Message-ID: <4E5D633B.6090500@freescale.com>
+References: <1314404912-6947-1-git-send-email-timur@freescale.com>
+In-Reply-To: <1314404912-6947-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Timur Tabi wrote:
+> Commit 3da34aae (powerpc/fsl: Support unique MSI addresses per PCIe Root
+> Complex) redefined the meanings of msi->msi_addr_hi and msi->msi_addr_lo =
+to be
+> an offset rather than an address.  To help clarify the code, we make the
+> following changes:
 
-Hi,
-
-Looking at some of the PPC DTS files in arch/powerpc/boot/dts, there are 
-some files that are mostly identical, except for some strange 
-differences.
-
-For example, tqm8548.dts and tqm8548-bigflash.dts differ mostly in that 
-the former file claims that the SoC registers start at 0xe0000000[1], but 
-the latter file claims that the SoC registers start at 0xa0000000[2].
-
-Commit 02b8a3d1eb2ae6353cfbce627ded22e299cf1989 ("powerpc/85xx: support 
-for the TQM8548 module using the big Flash") claims that:
-
-    Some TQM85xx boards could be equipped with up to 1 GiB (NOR) flash
-    memory and therefore a modified memory map is required and setup by
-    the board loader. This patch adds an appropriate DTS file.
-
-So are these addresses virtual?  My (perhaps incorrect) understanding of 
-the device tree files was that they were intended to describe the physical 
-memory map, rather than the virtual memory map.  Or does this PowerPC 
-variant have the ability to dynamically change its own physical address 
-decoding?  Or is something else going on?
-
-
-thanks for any clarification,
-
-- Paul
-
-1. arch/powerpc/boot/dts/tqm8548.dts line 53, as of Linux v3.1-rc3:
-   http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/powerpc/boot/dts/tqm8548.dts;h=619776f72c904c611e9507d44db4bee1200e6688;hb=HEAD#l53
-
-2. arch/powerpc/boot/dts/tqm8548-bigflash.dts line 53, as of Linux 
-   v3.1-rc3:
-   http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/powerpc/boot/dts/tqm8548-bigflash.dts;h=9452c3c05114e523033eebb278d7f78811890a87;hb=HEAD#l53
+Kumar, I'm going to merge this patch into a bigger patch that makes a=20
+bunch of other fixes.=
