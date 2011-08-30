@@ -1,30 +1,32 @@
-Return-Path: <pratyush.anand@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B220B7214
+Return-Path: <joro@8bytes.org>
+Received: from 8bytes.org (8bytes.org [88.198.83.132])
+	by ozlabs.org (Postfix) with ESMTP id 725BDB6F86
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Aug 2011 01:46:58 +1000 (EST)
-Received: by gyd8 with SMTP id 8so5930790gyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Aug 2011 08:46:54 -0700 (PDT)
+	Wed, 31 Aug 2011 02:13:46 +1000 (EST)
+Date: Tue, 30 Aug 2011 18:13:43 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+Message-ID: <20110830161343.GB5203@8bytes.org>
+References: <1314118861.2859.51.camel@bling.home>
+	<CA79326A.FB97%aafabbri@cisco.com> <20110824091035.GD2079@amd.com>
+	<1314220434.2859.203.camel@bling.home>
+	<20110825105402.GB1923@amd.com>
+	<1314292832.2492.31.camel@x201.home>
+	<20110825180557.GD8978@8bytes.org>
+	<1314381863.2859.312.camel@bling.home>
 MIME-Version: 1.0
-In-Reply-To: <bff62861217ab3d8dbf8041e2c4d1c8c@mail.gmail.com>
-References: <cover.1314704557.git.pratyush.anand@st.com>
-	<bff62861217ab3d8dbf8041e2c4d1c8c@mail.gmail.com>
-Date: Tue, 30 Aug 2011 21:16:53 +0530
-Message-ID: <CAHM4w1nWTxfMTSTbmt4vnWAKhj4JisJf1f0SjirOt7Z9vjORoA@mail.gmail.com>
-Subject: Re: [PATCH 00/14] Modifications for DWC OTG since v13
-From: Pratyush Anand <pratyush.anand@gmail.com>
-To: Tirumala Marri <tmarri@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com,
-	linux-usb@vger.kernel.org, vipin.kumar@st.com,
-	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
-	Mark Miesfeld <mmiesfeld@apm.com>, deepak.sikri@st.com,
-	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1314381863.2859.312.camel@bling.home>
+Cc: chrisw <chrisw@sous-sol.org>, Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>, "Roedel, Joerg" <Joerg.Roedel@amd.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	qemu-devel <qemu-devel@nongnu.org>, Aaron Fabbri <aafabbri@cisco.com>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 30, 2011 at 8:57 PM, Tirumala Marri <tmarri@apm.com> wrote:
-> <-----Original Message-----
-> <From: Pratyush Anand [mailto:pratyush.anand@st.com]
-> <Sent: Tuesday, August 30, 2011 4:58 AM
-> <To: linux-usb@vger.kernel.org
-> <Cc: tmarri@apm.com; linuxppc-dev@lists.ozlabs.org; fchen@apm.com;
-> <mmiesfeld@apm.com; shiraz.hashim@st.com; deepak.sikri@st.com;
-> <vipulkumar.samar@st.com; rajeev-dlh.kumar@st.com; vipin.kumar@st.com;
-> <bhupesh.sharma@st.com; viresh.kumar@st.com; Amit.VIRDI@st.com; Pratyush
-> <Anand
-> <Subject: [PATCH 00/14] Modifications for DWC OTG since v13
-> <
-> <These patches are based on:http://patchwork.ozlabs.org/patch/89560/
-> <After not getting any reply from developers, I started to do
-> <modifications for my platform (SPEAr1340).
-> <I have done modifications in such a way that all the code in
-> <driver/usb/dwc/ would be platform independent.
-> <I have tested this code for host/device/dma/slave mode.
-> <My fifo configuration is dedicated and dynamic.
->
-> [Tirumala Marri] We are working on our next release of patches. They
-> should be coming out soon.
+On Fri, Aug 26, 2011 at 12:04:22PM -0600, Alex Williamson wrote:
+> On Thu, 2011-08-25 at 20:05 +0200, Joerg Roedel wrote:
 
-Oh, thats great !!
-Actually, I did not get any reply of my previous mail on your patch release=
-.
-I thought no one is maintaining., and so I sent them with my modifications,
-after testing them in all dev/host/otg mode.
+> > If we really expect segment numbers that need the full 16 bit then this
+> > would be the way to go. Otherwise I would prefer returning the group-id
+> > directly and partition the group-id space for the error values (s32 with
+> > negative numbers being errors).
+> 
+> It's unlikely to have segments using the top bit, but it would be broken
+> for an iommu driver to define it's group numbers using pci s:b:d.f if we
+> don't have that bit available.  Ben/David, do PEs have an identifier of
+> a convenient size?  I'd guess any hardware based identifier is going to
+> use a full unsigned bit width.
 
-Regards
-Pratyush
+Okay, if we want to go the secure way I am fine with the "int *group"
+parameter. Another option is to just return u64 and use the extended
+number space for errors. But that is even worse as an interface, I
+think.
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->
+	Joerg
