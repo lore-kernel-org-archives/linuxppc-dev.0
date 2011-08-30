@@ -1,22 +1,43 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
-	[66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 0775FB6F90
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 25BC1B6F7B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Aug 2011 08:59:09 +1000 (EST)
-Subject: Re: linux-next: build failure in Linus' tree
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20110830083218.1819a5d73c3a33e5053e8312@canb.auug.org.au>
-References: <20110829104451.1c777e24ff72823d1e399f12@canb.auug.org.au>
-	<20110830083218.1819a5d73c3a33e5053e8312@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 29 Aug 2011 15:50:42 -0700
-Message-ID: <1314658242.3078.18.camel@dabdike.int.hansenpartnership.com>
-Mime-Version: 1.0
-Cc: "J. Bruce Fields" <bfields@redhat.com>, linux-parisc@vger.kernel.org,
-	NeilBrown <neilb@suse.de>, Linus <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
+	Tue, 30 Aug 2011 11:34:58 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id p7U1XkGx017506
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2011 11:33:46 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p7U1XKc11450072
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2011 11:33:20 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p7U1Yhov029778
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2011 11:34:44 +1000
+Date: Tue, 30 Aug 2011 11:29:48 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Aaron Fabbri <aafabbri@cisco.com>
+Subject: Re: kvm PCI assignment & VFIO ramblings
+Message-ID: <20110830012948.GD4254@yookeroo.fritz.box>
+References: <20110826193559.GD13060@sequoia.sous-sol.org>
+	<CA7D4D51.FD84%aafabbri@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA7D4D51.FD84%aafabbri@cisco.com>
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	Alexander Graf <agraf@suse.de>, qemu-devel <qemu-devel@nongnu.org>,
+	Chris Wright <chrisw@sous-sol.org>,
+	iommu <iommu@lists.linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+	Anthony Liguori <anthony@codemonkey.ws>, "Roedel,
+	Joerg" <joerg.roedel@amd.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"benve@cisco.com" <benve@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +47,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-08-30 at 08:32 +1000, Stephen Rothwell wrote:
-> Hi Linus,
-> 
-> On Mon, 29 Aug 2011 10:44:51 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > After merging the fixes tree, today's linux-next build (powerpc
-> > ppc64_defconfig) failed like this:
-> > 
-> > arch/powerpc/kernel/built-in.o: In function `.sys_call_table':
-> > (.text+0xbd00): undefined reference to `.sys_nfsservctl'
-> > arch/powerpc/kernel/built-in.o: In function `.sys_call_table':
-> > (.text+0xbd08): undefined reference to `.compat_sys_nfsservctl'
-> > 
-> > Caused by commit f5b940997397 ("All Arch: remove linkage for
-> > sys_nfsservctl system call") which also missed parisc.
-> > 
-> > I will apply this patch for today:
-> 
-> Will you please appply this?  (repeated for ease of inclusion)
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 29 Aug 2011 10:38:57 +1000
-> Subject: [PATCH] remove remaining references to nfsservctl
-> 
-> These were missed in commit f5b940997397 "All Arch: remove linkage
-> for sys_nfsservctl system call" due to them having no sys_ prefix
-> (presumably).
-> 
-> Cc: NeilBrown <neilb@suse.de>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-parisc@vger.kernel.org
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+eOn Fri, Aug 26, 2011 at 01:17:05PM -0700, Aaron Fabbri wrote:
+[snip]
+> Yes.  In essence, I'd rather not have to run any other admin processes.
+> Doing things programmatically, on the fly, from each process, is the
+> cleanest model right now.
 
-Thanks for finding this ... definitely acked by me if necessary.
+The "persistent group" model doesn't necessarily prevent that.
+There's no reason your program can't use the administrative interface
+as well as the "use" interface, and I don't see that making the admin
+interface separate and persistent makes this any harder.
 
-James
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
