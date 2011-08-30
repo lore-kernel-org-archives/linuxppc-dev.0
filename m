@@ -1,24 +1,23 @@
 Return-Path: <pratyush.anand@st.com>
-Received: from eu1sys200aog112.obsmtp.com (eu1sys200aog112.obsmtp.com
-	[207.126.144.133])
+Received: from eu1sys200aog108.obsmtp.com (eu1sys200aog108.obsmtp.com
+	[207.126.144.125])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 83FE4B6F94
+	by ozlabs.org (Postfix) with ESMTPS id B33C5B6F97
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 30 Aug 2011 22:26:41 +1000 (EST)
 From: Pratyush Anand <pratyush.anand@st.com>
 To: <linux-usb@vger.kernel.org>
-Subject: [PATCH 10/14] dwc/otg: Add driver kernel configuration and Makefile
-Date: Tue, 30 Aug 2011 17:27:57 +0530
-Message-ID: <2da5e10a283ff182f25b9097f51cc6889db030e4.1314704558.git.pratyush.anand@st.com>
-In-Reply-To: <cover.1314704557.git.pratyush.anand@st.com>
-References: <cover.1314704557.git.pratyush.anand@st.com>
+Subject: [PATCH 00/14] Modifications for DWC OTG since v13
+Date: Tue, 30 Aug 2011 17:27:47 +0530
+Message-ID: <cover.1314704557.git.pratyush.anand@st.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: viresh.kumar@st.com, vipulkumar.samar@st.com, bhupesh.sharma@st.com,
-	tmarri@apm.com, vipin.kumar@st.com, shiraz.hashim@st.com,
-	Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com, mmiesfeld@apm.com,
-	deepak.sikri@st.com, linuxppc-dev@lists.ozlabs.org, fchen@apm.com
+Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
+	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
+	vipin.kumar@st.com, shiraz.hashim@st.com, Amit.VIRDI@st.com,
+	rajeev-dlh.kumar@st.com, mmiesfeld@apm.com, deepak.sikri@st.com,
+	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,164 +27,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tirumala Marri <tmarri@apm.com>
+These patches are based on:http://patchwork.ozlabs.org/patch/89560/
+After not getting any reply from developers, I started to do
+modifications for my platform (SPEAr1340).
+I have done modifications in such a way that all the code in 
+driver/usb/dwc/ would be platform independent.
+I have tested this code for host/device/dma/slave mode.
+My fifo configuration is dedicated and dynamic.
 
-Add Synopsys DesignWare HS USB OTG driver kernel configuration.
-Synopsys OTG driver may operate in  host only, device only, or OTG mode.
-The driver also allows user configure the core to use its internal DMA
-or Slave (PIO) mode.
+Changes since v13:
 
-Signed-off-by: Tirumala R Marri <tmarri@apm.com>
-Signed-off-by: Fushen Chen <fchen@apm.com>
-Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
----
- drivers/Makefile         |    1 +
- drivers/usb/Kconfig      |    2 +
- drivers/usb/dwc/Kconfig  |   84 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/usb/dwc/Makefile |   19 ++++++++++
- 4 files changed, 106 insertions(+), 0 deletions(-)
+1. All the patches has been renamed from usb/ppc4xx to dwc/otg. Changes
+   has been done, because these files are valid for other architecture
+   also.
+2. Parameter passing mechanism has been modified. Now, driver can also
+   receive parameters from a platform device.
+3. Next request is started after clear halt for all slave transfer
+    There might be a situation, when there are data into fifo, EP is
+    receiving IN token, but EP is disabled. In this case, EP will just
+    stop and do nothing.  So, for each transfer type start_next_request
+    is enabled.
+4. Dynamic fifo was configured by reading number of endpoints. Number
+   of endpoints can be different than the number of dynamic fifo in the
+   controller. Number of dynamic fifo is programmed in fifo_number
+   parameter. Program fifos only for fifo_number of fifo.
+5.  If platform specific functions like phy_init and param_init is
+    defined then call it.
+6.  Few define which are used for TX, were defined as RX in the code.
+    All such definition has been replaced throughout the code.
+7. There are some defined steps to disable an endpoint.  It can not be
+   disabled just by setting epdisable bit.  Now, it is disabled as
+   specification says.
+    
+    During stall of and endpoint, first stall bit should be set and then
+    endpoint should be disabled.
+    
+    In dwc_otg_pcd_ep_disable, TX fifo must be flushed along with
+    disabling of endpoint.
+    
+    In DMA mode if Fifo is flushed only once then, DMA will write data
+    into it again. So, it must be flushed till DMA transfer is complete.
+8. dwc_otg_ep_deactivate is called after dwc_otg_ep_disable.
+9. platform_get_irq return -ENXIO , if requested IRQ is not found.  So,
+   return must be checked accordingly.
+    
+10.  There is a struct (core_params) for all possible variable
+     parameters of OTG.  Earlier, these parameters were not modifiable
+     for any platform data. It was reading from the HW and then was
+     programming the same value again.
+    
+    Now, it has been modified. A platform code can modify these
+    parameters.
+    
+    Struct definition has been moved from cil.h to a new file
+    include/linux/usb/dwc_otg.h.
+    
+    Some of the parameters have been initialized with default values,
+    while other with -1.
+    
+    A new parameter fifo_number has been added. This parameter is also
+    defined in the specification. Otg code was reading number of
+    endpoint from hwcfg regs for the purpose of this parameter, which
+    was wrong.
+    
+    SW checks for only fifo_number fifos and not MAX_TX_FIFOS.
+    
+    Now , there is only one define for MAX_TX_FIFO and MAX_PERIO_FIFOS.
+    As, per specification they can not be different.
+11. In dwc_otg_pcd_handle_np_tx_fifo_empty_intr a different interrupt
+    was cleared. Corrected it to clear NP TX Fifo empty interrupt.
+    
+    Re-enabling of interrupt was not correct when packets were still
+    pending. This patch also corrects this behaviour.
+12. Code checks for space availability in fifo during
+    write_epmty_tx_fifo.  It was writing only when space available was
+    more than data to be written. So, it was writing 512 bytes only when
+    516 bytes space was available.  Modified condition check from > to
+	>=.
+13.  When TX fifo empty interrupt is received, transfer completion may
+     not be true. Next transfer should only be started when transfer is
+     complete, i.e. packet count in dieptsiz register has become zero.
+14.  Max number of EP increased to 16
+15. There can be few devices like SPEAr1340, which issues a connection
+    only after removal of soft disconnect. Default reset value is
+    disconnected.  It will not have any side effect even for the device
+    where reset value is connected.
+16.  As per data sheet, when bit 31 of GRSTCTL is 1 then AHB is IDLE.
+     Earlier function was waiting for this but to be 0, which was wrong.
+17. Although name of file suggest that it is specific for PPC.  But, all
+    of its content are common for OTG and can be used for any platform.
+    There were some compilation issued on ARM platform with this file.
+    It has been removed by calling by proper functions.
+
+
+
+Pratyush Anand (4):
+  dwc/otg: Structure declaration for shared data
+  include/linux/usb/gadget.h : include <linux/device.h> for successful
+    compilation
+  usb/gadget/kconfig: added dwc otg as an option for peripheral
+    controller
+  arm/include/asm/io.h : added macros to read/write big/little endian
+    register
+
+Tirumala Marri (10):
+  dwc/otg: Add Register definitions
+  dwc/otg: Add driver framework
+  dwc/otg: Add Core Interface Layer (CIL)
+  dwc/otg: Add HCD function
+  dwc/otg: Add HCD interrupt function
+  dwc/otg: Add HCD queue function
+  dwc/otg: Add PCD function
+  dwc/otg: Add PCD interrupt function
+  dwc/otg: Add driver kernel configuration and Makefile
+  dwc/otg: Driver enable gadget support
+
+ arch/arm/include/asm/io.h         |    8 +
+ drivers/Makefile                  |    1 +
+ drivers/usb/Kconfig               |    2 +
+ drivers/usb/dwc/Kconfig           |   84 ++
+ drivers/usb/dwc/Makefile          |   19 +
+ drivers/usb/dwc/apmppc.c          |  436 +++++++
+ drivers/usb/dwc/cil.c             |  969 +++++++++++++++
+ drivers/usb/dwc/cil.h             |  921 ++++++++++++++
+ drivers/usb/dwc/cil_intr.c        |  616 +++++++++
+ drivers/usb/dwc/driver.h          |   76 ++
+ drivers/usb/dwc/hcd.c             | 2465 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/dwc/hcd.h             |  416 +++++++
+ drivers/usb/dwc/hcd_intr.c        | 1481 ++++++++++++++++++++++
+ drivers/usb/dwc/hcd_queue.c       |  696 +++++++++++
+ drivers/usb/dwc/param.c           |  219 ++++
+ drivers/usb/dwc/pcd.c             | 1818 +++++++++++++++++++++++++++
+ drivers/usb/dwc/pcd.h             |  139 +++
+ drivers/usb/dwc/pcd_intr.c        | 2316 ++++++++++++++++++++++++++++++++++
+ drivers/usb/dwc/regs.h            | 1324 ++++++++++++++++++++
+ drivers/usb/gadget/Kconfig        |   17 +
+ drivers/usb/gadget/gadget_chips.h |   18 +-
+ include/linux/usb/dwc_otg.h       |  274 ++++
+ include/linux/usb/gadget.h        |    1 +
+ 23 files changed, 14315 insertions(+), 1 deletions(-)
  create mode 100644 drivers/usb/dwc/Kconfig
  create mode 100644 drivers/usb/dwc/Makefile
+ create mode 100644 drivers/usb/dwc/apmppc.c
+ create mode 100644 drivers/usb/dwc/cil.c
+ create mode 100644 drivers/usb/dwc/cil.h
+ create mode 100644 drivers/usb/dwc/cil_intr.c
+ create mode 100644 drivers/usb/dwc/driver.h
+ create mode 100644 drivers/usb/dwc/hcd.c
+ create mode 100644 drivers/usb/dwc/hcd.h
+ create mode 100644 drivers/usb/dwc/hcd_intr.c
+ create mode 100644 drivers/usb/dwc/hcd_queue.c
+ create mode 100644 drivers/usb/dwc/param.c
+ create mode 100644 drivers/usb/dwc/pcd.c
+ create mode 100644 drivers/usb/dwc/pcd.h
+ create mode 100644 drivers/usb/dwc/pcd_intr.c
+ create mode 100644 drivers/usb/dwc/regs.h
+ create mode 100644 include/linux/usb/dwc_otg.h
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index a0d5aa60..d951bf6 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -68,6 +68,7 @@ obj-$(CONFIG_PARIDE) 		+= block/paride/
- obj-$(CONFIG_TC)		+= tc/
- obj-$(CONFIG_UWB)		+= uwb/
- obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
-+obj-$(CONFIG_USB_DWC_OTG)	+= usb/dwc/
- obj-$(CONFIG_USB)		+= usb/
- obj-$(CONFIG_USB_MUSB_HDRC)	+= usb/musb/
- obj-$(CONFIG_PCI)		+= usb/
-diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-index 8cd1df5..963e4b3 100644
---- a/drivers/usb/Kconfig
-+++ b/drivers/usb/Kconfig
-@@ -117,6 +117,8 @@ source "drivers/usb/host/Kconfig"
- 
- source "drivers/usb/musb/Kconfig"
- 
-+source "drivers/usb/dwc/Kconfig"
-+
- source "drivers/usb/class/Kconfig"
- 
- source "drivers/usb/storage/Kconfig"
-diff --git a/drivers/usb/dwc/Kconfig b/drivers/usb/dwc/Kconfig
-new file mode 100644
-index 0000000..eafc5ed
---- /dev/null
-+++ b/drivers/usb/dwc/Kconfig
-@@ -0,0 +1,84 @@
-+#
-+# USB Dual Role (OTG-ready) Controller Drivers
-+# for silicon based on Synopsys DesignWare IP
-+#
-+
-+comment "Enable Host or Gadget support for DesignWare OTG controller"
-+	depends on !USB && USB_GADGET=n
-+
-+config USB_DWC_OTG
-+	tristate "Synopsys DWC OTG Controller"
-+	depends on USB || USB_GADGET
-+	select NOP_USB_XCEIV
-+	select USB_OTG_UTILS
-+	default USB_GADGET
-+	help
-+	  This driver provides USB Device Controller support for the
-+	  Synopsys DesignWare USB OTG Core used on the AppliedMicro PowerPC SoC.
-+
-+config DWC_DEBUG
-+	bool "Enable DWC Debugging"
-+	depends on USB_DWC_OTG
-+	default n
-+	help
-+	  Enable DWC driver debugging
-+
-+choice
-+	prompt "DWC Mode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_HOST_ONLY
-+	help
-+	  Select the DWC Core in OTG, Host only, or Device only mode.
-+
-+config DWC_HOST_ONLY
-+	bool "DWC Host Only Mode"
-+
-+config DWC_OTG_MODE
-+	bool "DWC OTG Mode"
-+	select USB_GADGET_SELECTED
-+
-+config DWC_DEVICE_ONLY
-+	bool "DWC Device Only Mode"
-+	select USB_GADGET_SELECTED
-+
-+endchoice
-+
-+# enable peripheral support (including with OTG)
-+choice
-+	prompt "DWC DMA/SlaveMode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_DMA_MODE
-+	help
-+	  Select the DWC DMA or Slave Mode.
-+	  DMA mode uses the DWC core internal DMA engines.
-+	  Slave mode uses the processor PIO to tranfer data.
-+	  In Slave mode, processor's DMA channels can be used if available.
-+
-+config DWC_SLAVE
-+	bool "DWC Slave Mode"
-+
-+config DWC_DMA_MODE
-+	bool "DWC DMA Mode"
-+
-+endchoice
-+
-+config DWC_OTG_REG_LE
-+	bool "DWC Little Endian Register"
-+	depends on USB_DWC_OTG
-+	default y
-+	help
-+	  OTG core register access is Little-Endian.
-+
-+config DWC_OTG_FIFO_LE
-+	bool "DWC FIFO Little Endian"
-+	depends on USB_DWC_OTG
-+	default n
-+	help
-+	  OTG core FIFO access is Little-Endian.
-+
-+config DWC_LIMITED_XFER_SIZE
-+	bool "DWC Endpoint Limited Xfer Size"
-+	depends on USB_GADGET_DWC_HDRC
-+	default n
-+	help
-+	  Bit fields in the Device EP Transfer Size Register is 11 bits.
-diff --git a/drivers/usb/dwc/Makefile b/drivers/usb/dwc/Makefile
-new file mode 100644
-index 0000000..4102add
---- /dev/null
-+++ b/drivers/usb/dwc/Makefile
-@@ -0,0 +1,19 @@
-+#
-+# OTG infrastructure and transceiver drivers
-+#
-+obj-$(CONFIG_USB_DWC_OTG)	+= dwc.o
-+
-+dwc-objs := cil.o cil_intr.o param.o
-+
-+ifeq ($(CONFIG_4xx_SOC),y)
-+dwc-objs += apmppc.o
-+endif
-+
-+ifneq ($(CONFIG_DWC_DEVICE_ONLY),y)
-+dwc-objs += hcd.o hcd_intr.o \
-+		hcd_queue.o
-+endif
-+
-+ifneq ($(CONFIG_DWC_HOST_ONLY),y)
-+dwc-objs += pcd.o pcd_intr.o
-+endif
 -- 
 1.7.2.2
