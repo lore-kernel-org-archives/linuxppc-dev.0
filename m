@@ -1,28 +1,25 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0326DB6EE8
+Return-Path: <pratyush.anand@st.com>
+Received: from eu1sys200aog117.obsmtp.com (eu1sys200aog117.obsmtp.com
+	[207.126.144.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17849B6F7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Aug 2011 23:03:39 +1000 (EST)
-Received: by wyh21 with SMTP id 21so3238094wyh.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Aug 2011 06:03:34 -0700 (PDT)
-Message-ID: <4E5CDF2C.8030400@ru.mvista.com>
-Date: Tue, 30 Aug 2011 17:01:32 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-MIME-Version: 1.0
-To: Pratyush Anand <pratyush.anand@st.com>
-Subject: Re: [PATCH 11/14] dwc/otg: Driver enable gadget support
+	Tue, 30 Aug 2011 22:26:31 +1000 (EST)
+From: Pratyush Anand <pratyush.anand@st.com>
+To: <linux-usb@vger.kernel.org>
+Subject: [PATCH 13/14] usb/gadget/kconfig: added dwc otg as an option for
+	peripheral controller
+Date: Tue, 30 Aug 2011 17:28:00 +0530
+Message-ID: <0141f2f382fd7e96192c528126384a252d96ae1e.1314704558.git.pratyush.anand@st.com>
+In-Reply-To: <cover.1314704557.git.pratyush.anand@st.com>
 References: <cover.1314704557.git.pratyush.anand@st.com>
-	<d12fef0c09645ba1cd56dd011b5090cc8bde4b4b.1314704558.git.pratyush.anand@st.com>
-In-Reply-To: <d12fef0c09645ba1cd56dd011b5090cc8bde4b4b.1314704558.git.pratyush.anand@st.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: viresh.kumar@st.com, vipulkumar.samar@st.com, bhupesh.sharma@st.com,
-	tmarri@apm.com, linux-usb@vger.kernel.org, vipin.kumar@st.com,
-	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
-	mmiesfeld@apm.com, deepak.sikri@st.com,
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
+	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
+	vipin.kumar@st.com, shiraz.hashim@st.com, Amit.VIRDI@st.com,
+	rajeev-dlh.kumar@st.com, mmiesfeld@apm.com, deepak.sikri@st.com,
 	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,69 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+When dwc otg is configured as either dual or device only mode, then it can also
+be used as a usb gadget. So added dwc otg as an option for peripheral
+controller.
 
-On 08/30/2011 03:57 PM, Pratyush Anand wrote:
+Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
+---
+ drivers/usb/gadget/Kconfig |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-> From: Tirumala Marri<tmarri@apm.com>
-
-> Enable gadget support
-
-> Signed-off-by: Tirumala R Marri<tmarri@apm.com>
-> Signed-off-by: Fushen Chen<fchen@apm.com>
-> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
-> Signed-off-by: Pratyush Anand<pratyush.anand@st.com>
-> ---
->   drivers/usb/gadget/gadget_chips.h |   18 +++++++++++++++++-
->   1 files changed, 17 insertions(+), 1 deletions(-)
-
-> diff --git a/drivers/usb/gadget/gadget_chips.h b/drivers/usb/gadget/gadget_chips.h
-> index 0978103..66b8018 100644
-> --- a/drivers/usb/gadget/gadget_chips.h
-> +++ b/drivers/usb/gadget/gadget_chips.h
-> @@ -148,6 +148,19 @@
->   #define gadget_is_s3c_hsotg(g)    0
->   #endif
->
-> +#if defined(CONFIG_DWC_OTG_MODE) || defined(CONFIG_DWC_DEVICE_ONLY)
-> +#define gadget_is_dwc_otg_pcd(g)	(!strcmp("dwc_otg_pcd", (g)->name))
-> +#else
-> +#define gadget_is_dwc_otg_pcd(g)	0
-> +#endif
-> +
-> +#ifdef CONFIG_USB_GADGET_CI13XXX_MSM
-> +#define gadget_is_ci13xxx_msm(g)	(!strcmp("ci13xxx_msm", (g)->name))
-> +#else
-> +#define gadget_is_ci13xxx_msm(g)	0
-> +#endif
-> +
-> +
-
-    Too many newlines.
-
->
->   /**
->    * usb_gadget_controller_number - support bcdDevice id convention
-> @@ -208,10 +221,13 @@ static inline int usb_gadget_controller_number(struct usb_gadget *gadget)
->   		return 0x26;
->   	else if (gadget_is_designware(gadget))
->   		return 0x27;
-> +	else if (gadget_is_ci13xxx_msm(gadget))
-> +		return 0x28;
-> +	else if (gadget_is_dwc_otg_pcd(gadget))
-> +		return 0x29;
-
-    Hm, why are you adding 2 gadgets?
-
->   	return -ENOENT;
->   }
->
-> -
-
-    Unrelated white space change.
-
->   /**
->    * gadget_supports_altsettings - return true if altsettings work
->    * @gadget: the gadget in question
-
-WBR, Sergei
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index 09fa211..ca0d83a 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -169,6 +169,23 @@ config USB_DESIGNWARE
+ 	default USB_GADGET
+ 	select USB_GADGET_SELECTED
+ 
++config USB_GADGET_DESIGNWARE_OTG
++	boolean "Synopsys designware OTG Device Controller"
++	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
++	select USB_GADGET_DUALSPEED
++	help
++	  This driver supports the OTG device synopsys controller.
++	  Say "y" to link the driver statically, or "m" to build a
++	  dynamically linked module called "spear_udc" and force all
++	  gadget drivers to also be dynamically linked.
++
++config USB_DESIGNWARE_OTG
++	tristate
++	depends on USB_GADGET_DESIGNWARE_OTG
++	default USB_GADGET
++	select USB_GADGET_SELECTED
++
++
+ config USB_GADGET_FSL_USB2
+ 	boolean "Freescale Highspeed USB DR Peripheral Controller"
+ 	depends on FSL_SOC || ARCH_MXC
+-- 
+1.7.2.2
