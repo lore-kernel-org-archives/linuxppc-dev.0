@@ -1,19 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <lasaine@lvk.cs.msu.su>
+Received: from mail.lvk.cs.msu.su (lvk-gate.cmc.msu.ru [212.192.248.233])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB338B6F7B
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2011 16:10:44 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 31 Aug 2011 16:10:02 +1000
-Message-ID: <1314771002.2488.138.camel@pasglop>
+	(Client CN "mail.lvk.cs.msu.su", Issuer "CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B6936B6F80
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 31 Aug 2011 16:56:44 +1000 (EST)
+Date: Wed, 31 Aug 2011 10:49:43 +0400
+From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+To: Kyungmin Park <kmpark@infradead.org>
+Subject: Re: [PATCH 00/14] Modifications for DWC OTG since v13
+Message-ID: <20110831104943.01d11a55@apollo.gnet>
+In-Reply-To: <CAH9JG2WzpYgM0r+Zgf2cnL94-qG4XmVm3RxYqRRezHhMgeovYQ@mail.gmail.com>
+References: <cover.1314704557.git.pratyush.anand@st.com>
+	<bff62861217ab3d8dbf8041e2c4d1c8c@mail.gmail.com>
+	<CAHM4w1nWTxfMTSTbmt4vnWAKhj4JisJf1f0SjirOt7Z9vjORoA@mail.gmail.com>
+	<CAH9JG2WzpYgM0r+Zgf2cnL94-qG4XmVm3RxYqRRezHhMgeovYQ@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=PGP-SHA256;
+	boundary="Sig_/J8+9bCvxNqDJdWP24ThGi_w";
+	protocol="application/pgp-signature"
+Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
+	vipulkumar.samar@st.com, rajeev-dlh.kumar@st.com,
+	bhupesh.sharma@st.com, Tirumala Marri <tmarri@apm.com>,
+	Pratyush Anand <pratyush.anand@gmail.com>, vipin.kumar@st.com,
+	shiraz.hashim@st.com, Amit.VIRDI@st.com,
+	linux-usb@vger.kernel.org, Mark Miesfeld <mmiesfeld@apm.com>,
+	deepak.sikri@st.com, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +36,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+--Sig_/J8+9bCvxNqDJdWP24ThGi_w
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Here are some minor defconfig updates and a device tree fix from
-Kumar for 3.1.
+Hi,
 
-Cheers,
-Ben.
+=D0=92 Wed, 31 Aug 2011 10:18:42 +0900
+Kyungmin Park <kmpark@infradead.org> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
 
-The following changes since commit c6a389f123b9f68d605bb7e0f9b32ec1e3e14132:
+> On Wed, Aug 31, 2011 at 12:46 AM, Pratyush Anand
+> <pratyush.anand@gmail.com> wrote:
+> > On Tue, Aug 30, 2011 at 8:57 PM, Tirumala Marri <tmarri@apm.com> wrote:
+> >> <-----Original Message-----
+> >> <From: Pratyush Anand [mailto:pratyush.anand@st.com]
+> >> <Sent: Tuesday, August 30, 2011 4:58 AM
+> >> <To: linux-usb@vger.kernel.org
+> >> <Cc: tmarri@apm.com; linuxppc-dev@lists.ozlabs.org; fchen@apm.com;
+> >> <mmiesfeld@apm.com; shiraz.hashim@st.com; deepak.sikri@st.com;
+> >> <vipulkumar.samar@st.com; rajeev-dlh.kumar@st.com; vipin.kumar@st.com;
+> >> <bhupesh.sharma@st.com; viresh.kumar@st.com; Amit.VIRDI@st.com; Pratyu=
+sh
+> >> <Anand
+> >> <Subject: [PATCH 00/14] Modifications for DWC OTG since v13
+> >> <
+> >> <These patches are based on:http://patchwork.ozlabs.org/patch/89560/
+> >> <After not getting any reply from developers, I started to do
+> >> <modifications for my platform (SPEAr1340).
+> >> <I have done modifications in such a way that all the code in
+> >> <driver/usb/dwc/ would be platform independent.
+> >> <I have tested this code for host/device/dma/slave mode.
+> >> <My fifo configuration is dedicated and dynamic.
+> >>
+> >> [Tirumala Marri] We are working on our next release of patches. They
+> >> should be coming out soon.
+> >
+> > Oh, thats great !!
+> > Actually, I did not get any reply of my previous mail on your patch rel=
+ease.
+> > I thought no one is maintaining., and so I sent them with my modificati=
+ons,
+> > after testing them in all dev/host/otg mode.
+> >
+> > Regards
+> > Pratyush
+>=20
+> Hi,
+>=20
+> Can you provide the git repo to test?
+> and I wonder what's the difference between dwc (from you) and dwc3
+> (from Felipe Balbi). I think it's dwc targets for usb 2.0 and dwc3 for
+> usb 3.0.
 
-  Linux 3.1-rc4 (2011-08-28 21:16:01 -0700)
+It doesn't look the same. At least, register definitions are quite
+different.
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+--=20
+  Alexander
 
-Chunhe Lan (1):
-      powerpc/p1023rds: Fix the error of bank-width of nor flash
+--Sig_/J8+9bCvxNqDJdWP24ThGi_w
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-Kim Phillips (1):
-      powerpc/85xx: enable caam crypto driver by default
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Timur Tabi (1):
-      powerpc/85xx: enable the audio drivers in the defconfigs
+iQEcBAEBCAAGBQJOXdmHAAoJEElrwznyooJbxV8H/ifPFiMdSa8e1jlA4KPzDBpB
+dG4A+qaJHtXJ/m8QS2DvuYVOA+/QN3Q9VXqgYW8D5UOyt7VesKnzFRtddwXR5sU3
+x8XEIao55F6fLbXKmdDCHRJEGTLaASMCjuLlMp0FtMwZKJ5sy4P3vMdhhqbsa5WE
+3f0MLGnKKcuOmBIQuxpjO8PeUgdROR1brlbF+HRYd5qfK4HZdDIz7R3bjXDJUs5h
+z55wxhsmIHsnCVapLvbUPYqP87+iBREbwmbt6Cpgnry306CFKhK2QHp1CcHMnjt+
+5gptWhfjTAIhJYxF0yQeYq+v6+JXVtJHStWuU85UOCMZCBuEYRdUKSAH3ekp5vM=
+=m0Im
+-----END PGP SIGNATURE-----
 
- arch/powerpc/boot/dts/p1023rds.dts           |    2 +-
- arch/powerpc/configs/85xx/p1023rds_defconfig |    1 +
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    5 ++++-
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- 6 files changed, 9 insertions(+), 2 deletions(-)
+--Sig_/J8+9bCvxNqDJdWP24ThGi_w--
