@@ -1,28 +1,18 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 52CC8B6F81
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2011 19:17:19 +1000 (EST)
-Message-ID: <4E5DFC41.7030606@windriver.com>
-Date: Wed, 31 Aug 2011 17:17:53 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <geoff@infradead.org>
+Message-ID: <4E5E621A.8090309@infradead.org>
+Date: Wed, 31 Aug 2011 09:32:26 -0700
+From: Geoff Levand <geoff@infradead.org>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program exception to use one
-	dedicated exception stack
-References: <1310383915-30543-1-git-send-email-tiejun.chen@windriver.com>	
-	<CC4F4DC6-0682-4FC6-8D89-CE9AFEA7AD85@kernel.crashing.org>	
-	<4E1FCFEF.7070702@windriver.com>	
-	<20110715134232.56373e03@schlenkerla.am.freescale.net>	
-	<82C960D7DF4A1F47B94FC1C67A29BEE384D577@ALA-MBA.corp.ad.wrs.com>	
-	<20110718105627.245c9fa4@schlenkerla.am.freescale.net>	
-	<4E2561F0.5040701@windriver.com> <1314683064.2488.76.camel@pasglop>
-In-Reply-To: <1314683064.2488.76.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] [ps3] Add gelic udbg driver
+References: <1312228986-32307-1-git-send-email-a.heider@gmail.com>
+	<1313091073-4572-1-git-send-email-a.heider@gmail.com>
+	<1313091073-4572-2-git-send-email-a.heider@gmail.com>
+	<4E541344.5010802@infradead.org>
+In-Reply-To: <4E541344.5010802@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org, Hector Martin <hector@marcansoft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,74 +22,413 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->>> As I understand it, the problem comes from the fact that stwu combines the
->>> creation of a stack frame with storing into that stack frame.  If they were
->> Yes.
->>
->>> separate instructions you'd have a new exception frame at a lower address
->>> by the time you actually store to the non-exception frame.
->> So when kprobe we should use a unique stack frame to skip that stack frame the
->> kprobed stwu want to create.
-> 
-> I still don't like that patch. Potentially the problem exist for all
-> variants of powerpc, not just booke, and I'm not sure I like adding yet
+From: Hector Martin <hector@marcansoft.com>
 
-Yes.
+Add a new udbg driver for the PS3 gelic Ehthernet device.
 
-> another exception stack.
+This driver shares only a few stucture and constant definitions with the
+gelic Ethernet device driver, so is implemented as a stand-alone driver
+with no dependencies on the gelic Ethernet device driver.
 
-But I think we should extend easily this for other powerpc variants. And only
-when enable CONFIG_KPROBES that dedicated exception stack is valid, so its not
-such a big risk :)
+Signed-off-by: Hector Martin <hector@marcansoft.com>
+Signed-off-by: Andre Heider <a.heider@gmail.com>
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ arch/powerpc/Kconfig.debug              |    8 +
+ arch/powerpc/include/asm/udbg.h         |    1 +
+ arch/powerpc/kernel/udbg.c              |    2 +
+ arch/powerpc/platforms/ps3/Kconfig      |   12 ++
+ arch/powerpc/platforms/ps3/Makefile     |    1 +
+ arch/powerpc/platforms/ps3/gelic_udbg.c |  273 +++++++++++++++++++++++++++++++
+ drivers/net/ps3_gelic_net.c             |    3 +
+ drivers/net/ps3_gelic_net.h             |    6 +
+ 8 files changed, 306 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/ps3/gelic_udbg.c
 
-> 
-> Another (non-great) approach would be to special case stwu to the stack,
-> and instead of doing the store while emulating the instruction, keep the
-> store address around and do it later, after the stack has been unwound,
-> in the exit path (a TIF flag to hit the slow path and then do it in the
-> slow path).
-
-Actually I also considered one idea that we do stw-update in the exit path like
-your proposal. But I'm not sure if its worth intruding a new TIF flag only for
-'stwu'. And if I understand what your exit path means properly, we should do
-this on ret_from_except_full,
-
-...
-exc_exit_restart:
-        lwz     r11,_NIP(r1)
-        lwz     r12,_MSR(r1)
-	
-	Looks we have to add something to update as 'stwu' since _NIP/_MSR are also
-corrupted potentially. So I feel we'll make this complicated if we really do here.
-
-exc_exit_start:
-        mtspr   SPRN_SRR0,r11
-        mtspr   SPRN_SRR1,r12
-        REST_2GPRS(11, r1)
-        lwz     r1,GPR1(r1)
-        .globl exc_exit_restart_end
-exc_exit_restart_end:
-        PPC405_ERR77_SYNC
-        rfi
-        b       .                       /* prevent prefetch past rfi */
-
-If I'm wrong please correct me.
-
-> 
-> It sounds hackish but it makes it easier to fix everybody at once, there
-> are "issues" with changing stacks especially on ppc64 and it would
-> definitely be affected as well if the stack frame created is larger than
-> our gap.
-
-If we provide another exception stack like we did debug exception on ppc64, are
-there those "issues" you said?
-
-Thanks
-Tiejun
-
-> 
-> Cheers,
-> Ben.
-> 
-> 
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 067cb84..ab2335f 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -258,6 +258,14 @@ config PPC_EARLY_DEBUG_WSP
+ 	depends on PPC_WSP
+ 	select PPC_UDBG_16550
+ 
++config PPC_EARLY_DEBUG_PS3GELIC
++	bool "Early debugging through the PS3 Ethernet port"
++	depends on PPC_PS3
++	select PS3GELIC_UDBG
++	help
++	  Select this to enable early debugging for the PlayStation3 via
++	  UDP broadcasts sent out through the Ethernet port.
++
+ endchoice
+ 
+ config PPC_EARLY_DEBUG_HVSI_VTERMNO
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index 93e05d1..7cf796f 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -54,6 +54,7 @@ extern void __init udbg_init_40x_realmode(void);
+ extern void __init udbg_init_cpm(void);
+ extern void __init udbg_init_usbgecko(void);
+ extern void __init udbg_init_wsp(void);
++extern void __init udbg_init_ps3gelic(void);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_UDBG_H */
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index faa82c1..5b3e98e 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -67,6 +67,8 @@ void __init udbg_early_init(void)
+ 	udbg_init_usbgecko();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_WSP)
+ 	udbg_init_wsp();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_PS3GELIC)
++	udbg_init_ps3gelic();
+ #endif
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG
+diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
+index dfe316b..476d9d9 100644
+--- a/arch/powerpc/platforms/ps3/Kconfig
++++ b/arch/powerpc/platforms/ps3/Kconfig
+@@ -148,4 +148,16 @@ config PS3_LPM
+ 	  profiling support of the Cell processor with programs like
+ 	  oprofile and perfmon2, then say Y or M, otherwise say N.
+ 
++config PS3GELIC_UDBG
++	bool "PS3 udbg output via UDP broadcasts on Ethernet"
++	depends on PPC_PS3
++	help
++	  Enables udbg early debugging output by sending broadcast UDP
++	  via the Ethernet port (UDP port number 18194).
++
++	  This driver uses a trivial implementation and is independent
++	  from the main network driver.
++
++	  If in doubt, say N here.
++
+ endmenu
+diff --git a/arch/powerpc/platforms/ps3/Makefile b/arch/powerpc/platforms/ps3/Makefile
+index ac1bdf8..02b9e63 100644
+--- a/arch/powerpc/platforms/ps3/Makefile
++++ b/arch/powerpc/platforms/ps3/Makefile
+@@ -2,6 +2,7 @@ obj-y += setup.o mm.o time.o hvcall.o htab.o repository.o
+ obj-y += interrupt.o exports.o os-area.o
+ obj-y += system-bus.o
+ 
++obj-$(CONFIG_PS3GELIC_UDBG) += gelic_udbg.o
+ obj-$(CONFIG_SMP) += smp.o
+ obj-$(CONFIG_SPU_BASE) += spu.o
+ obj-y += device-init.o
+diff --git a/arch/powerpc/platforms/ps3/gelic_udbg.c b/arch/powerpc/platforms/ps3/gelic_udbg.c
+new file mode 100644
+index 0000000..20b46a1
+--- /dev/null
++++ b/arch/powerpc/platforms/ps3/gelic_udbg.c
+@@ -0,0 +1,273 @@
++/*
++ * udbg debug output routine via GELIC UDP broadcasts
++ *
++ * Copyright (C) 2007 Sony Computer Entertainment Inc.
++ * Copyright 2006, 2007 Sony Corporation
++ * Copyright (C) 2010 Hector Martin <hector@marcansoft.com>
++ * Copyright (C) 2011 Andre Heider <a.heider@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ */
++
++#include <asm/io.h>
++#include <asm/udbg.h>
++#include <asm/lv1call.h>
++
++#define GELIC_BUS_ID 1
++#define GELIC_DEVICE_ID 0
++#define GELIC_DEBUG_PORT 18194
++#define GELIC_MAX_MESSAGE_SIZE 1000
++
++#define GELIC_LV1_GET_MAC_ADDRESS 1
++#define GELIC_LV1_GET_VLAN_ID 4
++#define GELIC_LV1_VLAN_TX_ETHERNET_0 2
++
++#define GELIC_DESCR_DMA_STAT_MASK 0xf0000000
++#define GELIC_DESCR_DMA_CARDOWNED 0xa0000000
++
++#define GELIC_DESCR_TX_DMA_IKE 0x00080000
++#define GELIC_DESCR_TX_DMA_NO_CHKSUM 0x00000000
++#define GELIC_DESCR_TX_DMA_FRAME_TAIL 0x00040000
++
++#define GELIC_DESCR_DMA_CMD_NO_CHKSUM (GELIC_DESCR_DMA_CARDOWNED | \
++				       GELIC_DESCR_TX_DMA_IKE | \
++				       GELIC_DESCR_TX_DMA_NO_CHKSUM)
++
++static u64 bus_addr;
++
++struct gelic_descr {
++	/* as defined by the hardware */
++	__be32 buf_addr;
++	__be32 buf_size;
++	__be32 next_descr_addr;
++	__be32 dmac_cmd_status;
++	__be32 result_size;
++	__be32 valid_size;	/* all zeroes for tx */
++	__be32 data_status;
++	__be32 data_error;	/* all zeroes for tx */
++} __attribute__((aligned(32)));
++
++struct debug_block {
++	struct gelic_descr descr;
++	u8 pkt[1520];
++} __packed;
++
++struct ethhdr {
++	u8 dest[6];
++	u8 src[6];
++	u16 type;
++} __packed;
++
++struct vlantag {
++	u16 vlan;
++	u16 subtype;
++} __packed;
++
++struct iphdr {
++	u8 ver_len;
++	u8 dscp_ecn;
++	u16 total_length;
++	u16 ident;
++	u16 frag_off_flags;
++	u8 ttl;
++	u8 proto;
++	u16 checksum;
++	u32 src;
++	u32 dest;
++} __packed;
++
++struct udphdr {
++	u16 src;
++	u16 dest;
++	u16 len;
++	u16 checksum;
++} __packed;
++
++static __iomem struct ethhdr *h_eth;
++static __iomem struct vlantag *h_vlan;
++static __iomem struct iphdr *h_ip;
++static __iomem struct udphdr *h_udp;
++
++static __iomem char *pmsg;
++static __iomem char *pmsgc;
++
++static __iomem struct debug_block dbg __attribute__((aligned(32)));
++
++static int header_size;
++
++static void map_dma_mem(int bus_id, int dev_id, void *start, size_t len,
++			u64 *real_bus_addr)
++{
++	s64 result;
++	u64 real_addr = ((u64)start) & 0x0fffffffffffffffUL;
++	u64 real_end = real_addr + len;
++	u64 map_start = real_addr & ~0xfff;
++	u64 map_end = (real_end + 0xfff) & ~0xfff;
++	u64 bus_addr = 0;
++
++	u64 flags = 0xf800000000000000UL;
++
++	result = lv1_allocate_device_dma_region(bus_id, dev_id,
++						map_end - map_start, 12, 0,
++						&bus_addr);
++	if (result)
++		lv1_panic(0);
++
++	result = lv1_map_device_dma_region(bus_id, dev_id, map_start,
++					   bus_addr, map_end - map_start,
++					   flags);
++	if (result)
++		lv1_panic(0);
++
++	*real_bus_addr = bus_addr + real_addr - map_start;
++}
++
++static int unmap_dma_mem(int bus_id, int dev_id, u64 bus_addr, size_t len)
++{
++	s64 result;
++	u64 real_bus_addr;
++
++	real_bus_addr = bus_addr & ~0xfff;
++	len += bus_addr - real_bus_addr;
++	len = (len + 0xfff) & ~0xfff;
++
++	result = lv1_unmap_device_dma_region(bus_id, dev_id, real_bus_addr,
++					     len);
++	if (result)
++		return result;
++
++	return lv1_free_device_dma_region(bus_id, dev_id, real_bus_addr);
++}
++
++static void gelic_debug_init(void)
++{
++	s64 result;
++	u64 v2;
++	u64 mac;
++	u64 vlan_id;
++
++	result = lv1_open_device(GELIC_BUS_ID, GELIC_DEVICE_ID, 0);
++	if (result)
++		lv1_panic(0);
++
++	map_dma_mem(GELIC_BUS_ID, GELIC_DEVICE_ID, &dbg, sizeof(dbg),
++		    &bus_addr);
++
++	memset(&dbg, 0, sizeof(dbg));
++
++	dbg.descr.buf_addr = bus_addr + offsetof(struct debug_block, pkt);
++
++	wmb();
++
++	result = lv1_net_control(GELIC_BUS_ID, GELIC_DEVICE_ID,
++				 GELIC_LV1_GET_MAC_ADDRESS, 0, 0, 0,
++				 &mac, &v2);
++	if (result)
++		lv1_panic(0);
++
++	mac <<= 16;
++
++	h_eth = (struct ethhdr *)dbg.pkt;
++
++	memset(&h_eth->dest, 0xff, 6);
++	memcpy(&h_eth->src, &mac, 6);
++
++	header_size = sizeof(struct ethhdr);
++
++	result = lv1_net_control(GELIC_BUS_ID, GELIC_DEVICE_ID,
++				 GELIC_LV1_GET_VLAN_ID,
++				 GELIC_LV1_VLAN_TX_ETHERNET_0, 0, 0,
++				 &vlan_id, &v2);
++	if (!result) {
++		h_eth->type = 0x8100;
++
++		header_size += sizeof(struct vlantag);
++		h_vlan = (struct vlantag *)(h_eth + 1);
++		h_vlan->vlan = vlan_id;
++		h_vlan->subtype = 0x0800;
++		h_ip = (struct iphdr *)(h_vlan + 1);
++	} else {
++		h_eth->type = 0x0800;
++		h_ip = (struct iphdr *)(h_eth + 1);
++	}
++
++	header_size += sizeof(struct iphdr);
++	h_ip->ver_len = 0x45;
++	h_ip->ttl = 10;
++	h_ip->proto = 0x11;
++	h_ip->src = 0x00000000;
++	h_ip->dest = 0xffffffff;
++
++	header_size += sizeof(struct udphdr);
++	h_udp = (struct udphdr *)(h_ip + 1);
++	h_udp->src = GELIC_DEBUG_PORT;
++	h_udp->dest = GELIC_DEBUG_PORT;
++
++	pmsgc = pmsg = (char *)(h_udp + 1);
++}
++
++static void gelic_debug_shutdown(void)
++{
++	if (bus_addr)
++		unmap_dma_mem(GELIC_BUS_ID, GELIC_DEVICE_ID,
++			      bus_addr, sizeof(dbg));
++	lv1_close_device(GELIC_BUS_ID, GELIC_DEVICE_ID);
++}
++
++static void gelic_sendbuf(int msgsize)
++{
++	u16 *p;
++	u32 sum;
++	int i;
++
++	dbg.descr.buf_size = header_size + msgsize;
++	h_ip->total_length = msgsize + sizeof(struct udphdr) +
++			     sizeof(struct iphdr);
++	h_udp->len = msgsize + sizeof(struct udphdr);
++
++	h_ip->checksum = 0;
++	sum = 0;
++	p = (u16 *)h_ip;
++	for (i = 0; i < 5; i++)
++		sum += *p++;
++	h_ip->checksum = ~(sum + (sum >> 16));
++
++	dbg.descr.dmac_cmd_status = GELIC_DESCR_DMA_CMD_NO_CHKSUM |
++				    GELIC_DESCR_TX_DMA_FRAME_TAIL;
++	dbg.descr.result_size = 0;
++	dbg.descr.data_status = 0;
++
++	wmb();
++
++	lv1_net_start_tx_dma(GELIC_BUS_ID, GELIC_DEVICE_ID, bus_addr, 0);
++
++	while ((dbg.descr.dmac_cmd_status & GELIC_DESCR_DMA_STAT_MASK) ==
++	       GELIC_DESCR_DMA_CARDOWNED)
++		cpu_relax();
++}
++
++static void ps3gelic_udbg_putc(char ch)
++{
++	*pmsgc++ = ch;
++	if (ch == '\n' || (pmsgc-pmsg) >= GELIC_MAX_MESSAGE_SIZE) {
++		gelic_sendbuf(pmsgc-pmsg);
++		pmsgc = pmsg;
++	}
++}
++
++void __init udbg_init_ps3gelic(void)
++{
++	gelic_debug_init();
++	udbg_putc = ps3gelic_udbg_putc;
++}
++
++void udbg_shutdown_ps3gelic(void)
++{
++	udbg_putc = NULL;
++	gelic_debug_shutdown();
++}
++EXPORT_SYMBOL(udbg_shutdown_ps3gelic);
+diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
+index d82a82d..e743c94 100644
+--- a/drivers/net/ps3_gelic_net.c
++++ b/drivers/net/ps3_gelic_net.c
+@@ -1674,6 +1674,9 @@ static int __devinit ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
+ 	int result;
+ 
+ 	pr_debug("%s: called\n", __func__);
++
++	udbg_shutdown_ps3gelic();
++
+ 	result = ps3_open_hv_device(dev);
+ 
+ 	if (result) {
+diff --git a/drivers/net/ps3_gelic_net.h b/drivers/net/ps3_gelic_net.h
+index d3fadfb..a93df6a 100644
+--- a/drivers/net/ps3_gelic_net.h
++++ b/drivers/net/ps3_gelic_net.h
+@@ -359,6 +359,12 @@ static inline void *port_priv(struct gelic_port *port)
+ 	return port->priv;
+ }
+ 
++#ifdef CONFIG_PPC_EARLY_DEBUG_PS3GELIC
++extern void udbg_shutdown_ps3gelic(void);
++#else
++static inline void udbg_shutdown_ps3gelic(void) {}
++#endif
++
+ extern int gelic_card_set_irq_mask(struct gelic_card *card, u64 mask);
+ /* shared netdev ops */
+ extern void gelic_card_up(struct gelic_card *card);
