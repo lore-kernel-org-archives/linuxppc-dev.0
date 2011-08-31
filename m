@@ -1,28 +1,19 @@
-Return-Path: <B11780@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
-	[213.199.154.205])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4BD93B6F7B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Aug 2011 13:20:13 +1000 (EST)
-Received: from mail51-am1 (localhost.localdomain [127.0.0.1])	by
-	mail51-am1-R.bigfish.com (Postfix) with ESMTP id 4C79C9182A6	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2011 03:20:07 +0000 (UTC)
-Received: from AM1EHSMHS008.bigfish.com (unknown [10.3.201.247])	by
-	mail51-am1.bigfish.com (Postfix) with ESMTP id A0D6718600DA	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2011 03:18:44 +0000 (UTC)
-Subject: Re: [PATCH] powerpc/p1023rds: Fix the error of bank-width of nor flash
-MIME-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1313146809-13686-1-git-send-email-Chunhe.Lan@freescale.com>
-Date: Tue, 30 Aug 2011 22:18:42 -0500
-Message-ID: <28BF0640-0199-4A4F-B335-582650291893@freescale.com>
-References: <1313146809-13686-1-git-send-email-Chunhe.Lan@freescale.com>
-To: Chunhe Lan <Chunhe.Lan@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Wed, 31 Aug 2011 14:11:34 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 02/10] fadump: Reserve the memory for firmware
+	assisted dump.
+Message-ID: <20110831141134.590c4f4e@kryten>
+In-Reply-To: <20110713180648.6210.39530.stgit@mars.in.ibm.com>
+References: <20110713180252.6210.34810.stgit@mars.in.ibm.com>
+	<20110713180648.6210.39530.stgit@mars.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+	Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,18 +24,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 12, 2011, at 6:00 AM, Chunhe Lan wrote:
+Hi Mahesh,
 
-> In the p1023rds, a physical bus of nor flash is 16 bits width.
-> The bank-width is width (in bytes) of the bus width. So, the
-> value of bank-width of nor flash is not one, and it should be
-> two.
-> 
-> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> ---
-> arch/powerpc/boot/dts/p1023rds.dts |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
+Just a few comments.
 
-applied to merge
+> +#define RMR_START	0x0
+> +#define RMR_END		(0x1UL << 28)	/* 256 MB */
 
-- k
+What if the RMO is bigger than 256MB? Should we be using ppc64_rma_size?
+
+> +#ifdef DEBUG
+> +#define PREFIX		"fadump: "
+> +#define DBG(fmt...)	printk(KERN_ERR PREFIX fmt)
+> +#else
+> +#define DBG(fmt...)
+> +#endif
+
+We should use the standard debug macros (pr_debug etc).
+
+> +/* Global variable to hold firmware assisted dump configuration info. */
+> +static struct fw_dump fw_dump;
+
+You can remove this comment, especially because the variable isn't global :)
+
+> +	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
+> +					NULL);
+> +
+> +	if (!sections)
+> +		return 0;
+> +
+> +	for (i = 0; i < FW_DUMP_NUM_SECTIONS; i++) {
+> +		switch (sections[i].dump_section) {
+> +		case FADUMP_CPU_STATE_DATA:
+> +			fw_dump.cpu_state_data_size =
+> sections[i].section_size;
+> +			break;
+> +		case FADUMP_HPTE_REGION:
+> +			fw_dump.hpte_region_size =
+> sections[i].section_size;
+> +			break;
+> +		}
+> +	}
+> +	return 1;
+> +}
+
+This makes me a bit nervous. We should really get the size of the property
+and use it to iterate through the array. I saw no requirement in the PAPR
+that the array had to be 2 entries long.
+
+> +static inline unsigned long calculate_reserve_size(void)
+> +{
+> +	unsigned long size;
+> +
+> +	/* divide by 20 to get 5% of value */
+> +	size = memblock_end_of_DRAM();
+> +	do_div(size, 20);
+> +
+> +	/* round it down in multiples of 256 */
+> +	size = size & ~0x0FFFFFFFUL;
+> +
+> +	/* Truncate to memory_limit. We don't want to over reserve
+> the memory.*/
+> +	if (memory_limit && size > memory_limit)
+> +		size = memory_limit;
+> +
+> +	return (size > RMR_END ? size : RMR_END);
+> +}
+
+5% is pretty aribitrary, that's 400GB on an 8TB box. Also our experience
+with kdump is that 256MB is too small. Is there any reason to scale it
+with memory size? Can we do what kdump does and set it to a single
+value (eg 512MB)?
+
+We could override the default with a boot option, which is similar to
+how kdump specifies the region to reserve.
+
+Anton
