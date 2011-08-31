@@ -1,38 +1,33 @@
-Return-Path: <bauerman@br.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e24smtp01.br.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6A7A8B6F8C
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2011 10:27:49 +1000 (EST)
-Received: from mailhub3.br.ibm.com (mailhub3.br.ibm.com [9.18.232.110])
-	by e24smtp01.br.ibm.com (8.14.4/8.13.1) with ESMTP id p7V1ggoV019370
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 21:42:42 -0400
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
-	by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p7V0Uf4L3584186
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 21:30:41 -0300
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
-	by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p7UGRhtI015802
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 13:27:43 -0300
-Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug
-	feature flag
-From: Thiago Jung Bauermann <bauerman@br.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20110826044123.GI2308@yookeroo.fritz.box>
-References: <20110819074527.GA21817@in.ibm.com>
-	<20110819075338.GC21817@in.ibm.com>
-	<20110823050931.GT30097@yookeroo.fritz.box>
-	<20110823092756.GB2962@in.ibm.com>
-	<20110824040010.GC30097@yookeroo.fritz.box>
-	<1314232903.14168.4.camel@hactar>
-	<20110826044123.GI2308@yookeroo.fritz.box>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 30 Aug 2011 21:27:41 -0300
-Message-ID: <1314750461.20347.1.camel@hactar>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-	Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+Return-Path: <kyungmin78@gmail.com>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F38CB6F71
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 31 Aug 2011 11:18:45 +1000 (EST)
+Received: by qwf7 with SMTP id 7so136926qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 30 Aug 2011 18:18:42 -0700 (PDT)
+MIME-Version: 1.0
+Sender: kyungmin78@gmail.com
+In-Reply-To: <CAHM4w1nWTxfMTSTbmt4vnWAKhj4JisJf1f0SjirOt7Z9vjORoA@mail.gmail.com>
+References: <cover.1314704557.git.pratyush.anand@st.com>
+	<bff62861217ab3d8dbf8041e2c4d1c8c@mail.gmail.com>
+	<CAHM4w1nWTxfMTSTbmt4vnWAKhj4JisJf1f0SjirOt7Z9vjORoA@mail.gmail.com>
+Date: Wed, 31 Aug 2011 10:18:42 +0900
+Message-ID: <CAH9JG2WzpYgM0r+Zgf2cnL94-qG4XmVm3RxYqRRezHhMgeovYQ@mail.gmail.com>
+Subject: Re: [PATCH 00/14] Modifications for DWC OTG since v13
+From: Kyungmin Park <kmpark@infradead.org>
+To: Pratyush Anand <pratyush.anand@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
+	vipulkumar.samar@st.com, bhupesh.sharma@st.com,
+	Tirumala Marri <tmarri@apm.com>, linux-usb@vger.kernel.org,
+	vipin.kumar@st.com, shiraz.hashim@st.com, Amit.VIRDI@st.com,
+	rajeev-dlh.kumar@st.com, Mark Miesfeld <mmiesfeld@apm.com>,
+	deepak.sikri@st.com, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,43 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-08-26 at 14:41 +1000, David Gibson wrote:
-> On Wed, Aug 24, 2011 at 09:41:43PM -0300, Thiago Jung Bauermann wrote:
-> > On Wed, 2011-08-24 at 14:00 +1000, David Gibson wrote:
-> > > On Tue, Aug 23, 2011 at 02:57:56PM +0530, K.Prasad wrote:
-> > > > On Tue, Aug 23, 2011 at 03:09:31PM +1000, David Gibson wrote:
-> > > > > On Fri, Aug 19, 2011 at 01:23:38PM +0530, K.Prasad wrote:
-> > > > > > 
-> > > > > > While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
-> > > > > > PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
-> > > > > > user-space debuggers (like GDB) who may want to use it. Hence we introduce a
-> > > > > > new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
-> > > > > > "features" member of "struct ppc_debug_info" to advertise support for the
-> > > > > > same on Book3E PowerPC processors.
-> > > > > 
-> > > > > I thought the idea was that the BP_EXACT mode was the default - if the
-> > > > > new interface was supported at all, then BP_EXACT was always
-> > > > > supported.  So, why do you need a new flag?
-> > > > > 
-> > > > 
-> > > > Yes, BP_EXACT was always supported but not advertised through
-> > > > PPC_PTRACE_GETHWDBGINFO. We're now doing that.
-> > > 
-> > > I can see that.  But you haven't answered why.
-> > 
-> > BookS doesn't support BP_EXACT, that's why I suggested this flag.
-> 
-> Surely you can support it with exactly the same sort of filtering
-> you're using for the 8-byte ranges now?
+On Wed, Aug 31, 2011 at 12:46 AM, Pratyush Anand
+<pratyush.anand@gmail.com> wrote:
+> On Tue, Aug 30, 2011 at 8:57 PM, Tirumala Marri <tmarri@apm.com> wrote:
+>> <-----Original Message-----
+>> <From: Pratyush Anand [mailto:pratyush.anand@st.com]
+>> <Sent: Tuesday, August 30, 2011 4:58 AM
+>> <To: linux-usb@vger.kernel.org
+>> <Cc: tmarri@apm.com; linuxppc-dev@lists.ozlabs.org; fchen@apm.com;
+>> <mmiesfeld@apm.com; shiraz.hashim@st.com; deepak.sikri@st.com;
+>> <vipulkumar.samar@st.com; rajeev-dlh.kumar@st.com; vipin.kumar@st.com;
+>> <bhupesh.sharma@st.com; viresh.kumar@st.com; Amit.VIRDI@st.com; Pratyush
+>> <Anand
+>> <Subject: [PATCH 00/14] Modifications for DWC OTG since v13
+>> <
+>> <These patches are based on:http://patchwork.ozlabs.org/patch/89560/
+>> <After not getting any reply from developers, I started to do
+>> <modifications for my platform (SPEAr1340).
+>> <I have done modifications in such a way that all the code in
+>> <driver/usb/dwc/ would be platform independent.
+>> <I have tested this code for host/device/dma/slave mode.
+>> <My fifo configuration is dedicated and dynamic.
+>>
+>> [Tirumala Marri] We are working on our next release of patches. They
+>> should be coming out soon.
+>
+> Oh, thats great !!
+> Actually, I did not get any reply of my previous mail on your patch relea=
+se.
+> I thought no one is maintaining., and so I sent them with my modification=
+s,
+> after testing them in all dev/host/otg mode.
+>
+> Regards
+> Pratyush
 
-Yes, but to detect that the processor doesn't support BP_EXACT in
-hardware I'd have to send a ptrace request, and have it rejected. Only
-then I'd step back and simulate one with ranges. Considering that it's
-easy and backwards compatible to add a new flag to signal that BP_EXACT
-is not supported, I don't know why it would be better to go with the
-more convoluted process.
+Hi,
 
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Can you provide the git repo to test?
+and I wonder what's the difference between dwc (from you) and dwc3
+(from Felipe Balbi). I think it's dwc targets for usb 2.0 and dwc3 for
+usb 3.0.
+
+Thank you,
+Kyungmin Park
+>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>
