@@ -1,28 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <greg@kroah.com>
+Received: from out5.smtp.messagingengine.com (out5.smtp.messagingengine.com
+	[66.111.4.29])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2E7A9B6F80
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Sep 2011 07:33:16 +1000 (EST)
-Subject: Re: [v3 PATCH 1/1] booke/kprobe: make program exception to use one
-	dedicated exception stack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-In-Reply-To: <4E5DFC41.7030606@windriver.com>
-References: <1310383915-30543-1-git-send-email-tiejun.chen@windriver.com>
-	<CC4F4DC6-0682-4FC6-8D89-CE9AFEA7AD85@kernel.crashing.org>
-	<4E1FCFEF.7070702@windriver.com>
-	<20110715134232.56373e03@schlenkerla.am.freescale.net>
-	<82C960D7DF4A1F47B94FC1C67A29BEE384D577@ALA-MBA.corp.ad.wrs.com>
-	<20110718105627.245c9fa4@schlenkerla.am.freescale.net>
-	<4E2561F0.5040701@windriver.com> <1314683064.2488.76.camel@pasglop>
-	<4E5DFC41.7030606@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 01 Sep 2011 07:32:59 +1000
-Message-ID: <1314826379.2488.151.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 403E2B6F88
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  1 Sep 2011 08:37:17 +1000 (EST)
+Date: Wed, 31 Aug 2011 15:36:04 -0700
+From: Greg KH <greg@kroah.com>
+To: Pratyush Anand <pratyush.anand@st.com>
+Subject: Re: [PATCH 02/14] dwc/otg: Structure declaration for shared data
+Message-ID: <20110831223604.GB27818@kroah.com>
+References: <cover.1314704557.git.pratyush.anand@st.com>
+	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
+Cc: viresh.kumar@st.com, vipulkumar.samar@st.com, bhupesh.sharma@st.com,
+	tmarri@apm.com, linux-usb@vger.kernel.org, vipin.kumar@st.com,
+	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
+	mmiesfeld@apm.com, deepak.sikri@st.com,
+	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,23 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-08-31 at 17:17 +0800, tiejun.chen wrote:
-
-> > It sounds hackish but it makes it easier to fix everybody at once, there
-> > are "issues" with changing stacks especially on ppc64 and it would
-> > definitely be affected as well if the stack frame created is larger than
-> > our gap.
+On Tue, Aug 30, 2011 at 05:27:49PM +0530, Pratyush Anand wrote:
+> There are some DWC OTG parameters which might be passed by a platform.
+> Declaration for structure of those parameters have been provided in this
+> include file.
 > 
-> If we provide another exception stack like we did debug exception on ppc64, are
-> there those "issues" you said?
+> Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
+> ---
+>  include/linux/usb/dwc_otg.h |  274 +++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 274 insertions(+), 0 deletions(-)
+>  create mode 100644 include/linux/usb/dwc_otg.h
+> 
+> diff --git a/include/linux/usb/dwc_otg.h b/include/linux/usb/dwc_otg.h
 
-Actually if we allocate it like the irq stacks, we should be ok, but
-that's yet another 16K per CPU that needs to be covered by the first
-segment, nasty....
-
-In any case, please try to come up with a patch that covers all
-variants.
-
-Cheers,
-Ben.
- 
+Shouldn't this be in include/linux/platform/ instead?
