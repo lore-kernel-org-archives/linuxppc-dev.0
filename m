@@ -1,15 +1,38 @@
-Return-Path: <gary@mlbassoc.com>
-Message-ID: <4E5D668B.1060609@mlbassoc.com>
-Date: Tue, 30 Aug 2011 16:39:07 -0600
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
-To: Paul Walmsley <paul@pwsan.com>
-Subject: Re: Virtual addresses in arch/powerpc/boot/dts/tqm8548*.dts ?
-References: <alpine.DEB.2.00.1108301508130.26173@utopia.booyaka.com>
-In-Reply-To: <alpine.DEB.2.00.1108301508130.26173@utopia.booyaka.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <bauerman@br.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e24smtp01.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6A7A8B6F8C
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2011 10:27:49 +1000 (EST)
+Received: from mailhub3.br.ibm.com (mailhub3.br.ibm.com [9.18.232.110])
+	by e24smtp01.br.ibm.com (8.14.4/8.13.1) with ESMTP id p7V1ggoV019370
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 21:42:42 -0400
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+	by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p7V0Uf4L3584186
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 21:30:41 -0300
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+	by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p7UGRhtI015802
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2011 13:27:43 -0300
+Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug
+	feature flag
+From: Thiago Jung Bauermann <bauerman@br.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+In-Reply-To: <20110826044123.GI2308@yookeroo.fritz.box>
+References: <20110819074527.GA21817@in.ibm.com>
+	<20110819075338.GC21817@in.ibm.com>
+	<20110823050931.GT30097@yookeroo.fritz.box>
+	<20110823092756.GB2962@in.ibm.com>
+	<20110824040010.GC30097@yookeroo.fritz.box>
+	<1314232903.14168.4.camel@hactar>
+	<20110826044123.GI2308@yookeroo.fritz.box>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 30 Aug 2011 21:27:41 -0300
+Message-ID: <1314750461.20347.1.camel@hactar>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+	Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,56 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2011-08-30 15:43, Paul Walmsley wrote:
->
-> Hi,
->
-> Looking at some of the PPC DTS files in arch/powerpc/boot/dts, there are
-> some files that are mostly identical, except for some strange
-> differences.
->
-> For example, tqm8548.dts and tqm8548-bigflash.dts differ mostly in that
-> the former file claims that the SoC registers start at 0xe0000000[1], but
-> the latter file claims that the SoC registers start at 0xa0000000[2].
->
-> Commit 02b8a3d1eb2ae6353cfbce627ded22e299cf1989 ("powerpc/85xx: support
-> for the TQM8548 module using the big Flash") claims that:
->
->      Some TQM85xx boards could be equipped with up to 1 GiB (NOR) flash
->      memory and therefore a modified memory map is required and setup by
->      the board loader. This patch adds an appropriate DTS file.
->
-> So are these addresses virtual?  My (perhaps incorrect) understanding of
-> the device tree files was that they were intended to describe the physical
-> memory map, rather than the virtual memory map.  Or does this PowerPC
-> variant have the ability to dynamically change its own physical address
-> decoding?  Or is something else going on?
+On Fri, 2011-08-26 at 14:41 +1000, David Gibson wrote:
+> On Wed, Aug 24, 2011 at 09:41:43PM -0300, Thiago Jung Bauermann wrote:
+> > On Wed, 2011-08-24 at 14:00 +1000, David Gibson wrote:
+> > > On Tue, Aug 23, 2011 at 02:57:56PM +0530, K.Prasad wrote:
+> > > > On Tue, Aug 23, 2011 at 03:09:31PM +1000, David Gibson wrote:
+> > > > > On Fri, Aug 19, 2011 at 01:23:38PM +0530, K.Prasad wrote:
+> > > > > > 
+> > > > > > While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
+> > > > > > PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
+> > > > > > user-space debuggers (like GDB) who may want to use it. Hence we introduce a
+> > > > > > new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
+> > > > > > "features" member of "struct ppc_debug_info" to advertise support for the
+> > > > > > same on Book3E PowerPC processors.
+> > > > > 
+> > > > > I thought the idea was that the BP_EXACT mode was the default - if the
+> > > > > new interface was supported at all, then BP_EXACT was always
+> > > > > supported.  So, why do you need a new flag?
+> > > > > 
+> > > > 
+> > > > Yes, BP_EXACT was always supported but not advertised through
+> > > > PPC_PTRACE_GETHWDBGINFO. We're now doing that.
+> > > 
+> > > I can see that.  But you haven't answered why.
+> > 
+> > BookS doesn't support BP_EXACT, that's why I suggested this flag.
+> 
+> Surely you can support it with exactly the same sort of filtering
+> you're using for the 8-byte ranges now?
 
-These addresses correspond to the internal registers which can be moved.
-The default address is set by hardware at reset time (check out the documentation
-on the hardware reset word).  Obviously one board is strapped for the IMMR
-at one address, another board at a different address.  I almost always configure
-my boards to use 0xF0000000 for the IMMR.
-
->
->
-> thanks for any clarification,
->
-> - Paul
->
-> 1. arch/powerpc/boot/dts/tqm8548.dts line 53, as of Linux v3.1-rc3:
->     http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/powerpc/boot/dts/tqm8548.dts;h=619776f72c904c611e9507d44db4bee1200e6688;hb=HEAD#l53
->
-> 2. arch/powerpc/boot/dts/tqm8548-bigflash.dts line 53, as of Linux
->     v3.1-rc3:
->     http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/powerpc/boot/dts/tqm8548-bigflash.dts;h=9452c3c05114e523033eebb278d7f78811890a87;hb=HEAD#l53
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Yes, but to detect that the processor doesn't support BP_EXACT in
+hardware I'd have to send a ptrace request, and have it rejected. Only
+then I'd step back and simulate one with ranges. Considering that it's
+easy and backwards compatible to add a new flag to signal that BP_EXACT
+is not supported, I don't know why it would be better to go with the
+more convoluted process.
 
 -- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
