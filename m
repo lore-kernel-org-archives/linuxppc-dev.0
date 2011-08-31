@@ -1,24 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
-	[213.199.154.206])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 433EBB6F83
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2011 13:01:57 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 08E3EB6FA5
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2011 13:05:47 +1000 (EST)
 Subject: Re: [PATCH] powerpc/85xx: clean up FPGA device tree nodes for
 	Freecsale QorIQ boards
-Date: Wed, 31 Aug 2011 03:01:39 +0000
-Message-ID: <4E5DA412.5020300@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4E5DA412.5020300@freescale.com>
+Date: Tue, 30 Aug 2011 22:05:43 -0500
+Message-Id: <54E184ED-3934-4872-B821-ED394C351788@kernel.crashing.org>
 References: <1314644999-16955-1-git-send-email-timur@freescale.com>
 	<3F34FBCD-3F0B-4D59-A947-C16CC812B42E@freescale.com>
 	<4E5DA1CC.1020808@freescale.com>
 	<DBF3606B-8F59-4E5F-9B47-C3E0235665C4@freescale.com>
-In-Reply-To: <DBF3606B-8F59-4E5F-9B47-C3E0235665C4@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
+	<4E5DA412.5020300@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Gala Kumar-B11780 <B11780@freescale.com>,
 	"devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
@@ -31,50 +30,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->
-> On Aug 30, 2011, at 9:51 PM, Tabi Timur-B04825 wrote:
->
->> Kumar Gala wrote:
->>> Do we really want the generic "fsl,fpga-cpld"&   "fsl,fpga-pixis"?  Thi=
-s seems to vague.
->>
->> Yes, the PIXIS is generally register compatible across all boards.  Ther=
-e
->> may be some minor differences, but the OCM driver can work with all PIXI=
-S
->> boards that have an PIXIS.
->
-> Is this true?  Don't we have pixis and ngpixis in u-boot?
 
-I forgot about that.  Well, everything I said is true about the ngpixis,=20
-so I guess I should use "ngpixis" instead of just "pixis" here.  I'll have=
-=20
-to check if the old pixis can be used this way.
+On Aug 30, 2011, at 10:01 PM, Tabi Timur-B04825 wrote:
 
->
->>> Also you need "pixis" on MPC8544DS, MPC8572DS, MPC8536DS.
->>
->> Ok.
->>
->>> Also fpga-cpld makes no sense if we keep this.  You are either a CPLD o=
-r FPGA not both.
->>
->> Then I don't understand what the CPLD is.
->
-> http://en.wikipedia.org/wiki/Complex_programmable_logic_device
+> Kumar Gala wrote:
+>>=20
+>> On Aug 30, 2011, at 9:51 PM, Tabi Timur-B04825 wrote:
+>>=20
+>>> Kumar Gala wrote:
+>>>> Do we really want the generic "fsl,fpga-cpld"&   "fsl,fpga-pixis"?  =
+This seems to vague.
+>>>=20
+>>> Yes, the PIXIS is generally register compatible across all boards.  =
+There
+>>> may be some minor differences, but the OCM driver can work with all =
+PIXIS
+>>> boards that have an PIXIS.
+>>=20
+>> Is this true?  Don't we have pixis and ngpixis in u-boot?
+>=20
+> I forgot about that.  Well, everything I said is true about the =
+ngpixis,=20
+> so I guess I should use "ngpixis" instead of just "pixis" here.  I'll =
+have=20
+> to check if the old pixis can be used this way.
+>=20
+>>=20
+>>>> Also you need "pixis" on MPC8544DS, MPC8572DS, MPC8536DS.
+>>>=20
+>>> Ok.
+>>>=20
+>>>> Also fpga-cpld makes no sense if we keep this.  You are either a =
+CPLD or FPGA not both.
+>>>=20
+>>> Then I don't understand what the CPLD is.
+>>=20
+>> http://en.wikipedia.org/wiki/Complex_programmable_logic_device
+>=20
+> Ok, I get it now.  Is there a name for the CPLD we use on these chips?=20=
 
-Ok, I get it now.  Is there a name for the CPLD we use on these chips?=20
-I'm having a hard time getting proper documentation on the CPLD.  York=20
-expressed similar frustration.
+> I'm having a hard time getting proper documentation on the CPLD.  York=20=
 
-Perhaps these should be called board-control devices.  How about
+> expressed similar frustration.
+>=20
+> Perhaps these should be called board-control devices.  How about
+>=20
+> 	fsl,boardcontrol-cpld
+> 	fsl,boardcontrol-ngpixis
+> 	fsl,boardcontrol-qixis
 
-	fsl,boardcontrol-cpld
-	fsl,boardcontrol-ngpixis
-	fsl,boardcontrol-qixis
+For the CPLD based boards I think:
 
+<BOARDNAME>-cpld is best as there isn't really much consistent right =
+now.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+- k=
