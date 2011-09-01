@@ -1,22 +1,22 @@
-Return-Path: <mylinux@10.ap.freescale.net>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9CCCDB6F70
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id CA48DB6F81
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Sep 2011 19:56:26 +1000 (EST)
-From: Liu Gang <Gang.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] fsl-rio: Release rapidio port I/O region resource if port
-	failed to initialize
-Date: Thu, 1 Sep 2011 17:52:24 +0800
-Message-ID: <1314870744-27325-1-git-send-email-Gang.Liu@freescale.com>
+	Thu,  1 Sep 2011 23:30:37 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: r58472@freescale.com, r61911@freescale.com, linux-kernel@vger.kernel.org,
-	Liu Gang <Gang.Liu@freescale.com>, akpm@linux-foundation.org,
-	B11780@freescale.com
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] fsl-rio: Release rapidio port I/O region resource if
+	portfailed to initialize
+Date: Thu, 1 Sep 2011 06:29:55 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E5520210DF01@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1314870744-27325-1-git-send-email-Gang.Liu@freescale.com>
+References: <1314870744-27325-1-git-send-email-Gang.Liu@freescale.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Liu Gang <Gang.Liu@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	B11780@freescale.com, r58472@freescale.com, r61911@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The "struct rio_mport" contains a member of master port I/O memory resource structure
-"struct resource iores". This resource will be read from device tree and be used for
-rapidio R/W transaction memory space. Rapidio requests the port I/O memory resource
-under the root resource "iomem_resource".
-			
-			struct rio_mport *port;
-			port = kzalloc(sizeof(struct rio_mport), GFP_KERNEL);
+On Thursday, September 01, 2011 5:52 AM
+Liu Gang <Gang.Liu@freescale.com> wrote:
 
-			request_resource(&iomem_resource, &port->iores);
+> Subject: [PATCH] fsl-rio: Release rapidio port I/O region resource if
+> portfailed to initialize
+>=20
+...
+>=20
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_rio.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_rio.c
+> b/arch/powerpc/sysdev/fsl_rio.c
+> index c65f75a..22ffccd 100644
+> --- a/arch/powerpc/sysdev/fsl_rio.c
+> +++ b/arch/powerpc/sysdev/fsl_rio.c
+> @@ -1608,6 +1608,7 @@ int fsl_rio_setup(struct platform_device *dev)
+>  	return 0;
+>  err:
+>  	iounmap(priv->regs_win);
+> +	release_resource(&port->iores);
+>  err_res:
+>  	kfree(priv);
+>  err_priv:
+> --
+> 1.7.3.1
 
-When port failed to initialize, allocated "rio_mport" structure memory will be freed,
-and the port I/O memory resource structure pointer "&port->iores" will be invalid. If
-other requests resource under "iomem_resource", "&port->iores" node may be operated in
-the child resources list and this will cause the system to crash.
-
-So the requested port I/O memory resource should be released before freeing allocated
-"rio_mport" structure.
-
-Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
----
- arch/powerpc/sysdev/fsl_rio.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index c65f75a..22ffccd 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1608,6 +1608,7 @@ int fsl_rio_setup(struct platform_device *dev)
- 	return 0;
- err:
- 	iounmap(priv->regs_win);
-+	release_resource(&port->iores);
- err_res:
- 	kfree(priv);
- err_priv:
--- 
-1.7.3.1
+Acked-by: Alexandre Bounine <alexandre.bounine@idt.com>
