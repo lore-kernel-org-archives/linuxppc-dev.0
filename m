@@ -1,33 +1,31 @@
 Return-Path: <pratyush.anand@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-pz0-f46.google.com (mail-pz0-f46.google.com
+	[209.85.210.46]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D1C42B6F7B
+	by ozlabs.org (Postfix) with ESMTPS id A6CDAB6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Sep 2011 21:42:30 +1000 (EST)
-Received: by gyd8 with SMTP id 8so1911208gyd.38
+	Fri,  2 Sep 2011 21:49:21 +1000 (EST)
+Received: by pzk32 with SMTP id 32so5087207pzk.33
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 02 Sep 2011 04:42:17 -0700 (PDT)
+	Fri, 02 Sep 2011 04:49:18 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <a85a652e82b2bacdda84d7286b804aa3@mail.gmail.com>
+In-Reply-To: <20110831223604.GB27818@kroah.com>
 References: <cover.1314704557.git.pratyush.anand@st.com>
 	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
-	<9183dc7afa5b8cde400e9f37f5679d4f@mail.gmail.com>
-	<CAHM4w1nHQ1arnTjFyp4dbmp1SBWKJPfREOOR_yykfaVyS48-iA@mail.gmail.com>
-	<a85a652e82b2bacdda84d7286b804aa3@mail.gmail.com>
-Date: Fri, 2 Sep 2011 17:12:17 +0530
-Message-ID: <CAHM4w1nZkjT2zXB=KfXw0ueOBTLRL2hMFxRYyFwTAoWsdrD9iA@mail.gmail.com>
+	<20110831223604.GB27818@kroah.com>
+Date: Fri, 2 Sep 2011 17:19:17 +0530
+Message-ID: <CAHM4w1npnX9ELf6AypR7+3D55qUw3Euz0dT_rb7UOj=1buuN+A@mail.gmail.com>
 Subject: Re: [PATCH 02/14] dwc/otg: Structure declaration for shared data
 From: Pratyush Anand <pratyush.anand@gmail.com>
-To: Tirumala Marri <tmarri@apm.com>
+To: Greg KH <greg@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com,
+	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
 	linux-usb@vger.kernel.org, vipin.kumar@st.com,
 	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
-	Mark Miesfeld <mmiesfeld@apm.com>, deepak.sikri@st.com,
-	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>
+	mmiesfeld@apm.com, deepak.sikri@st.com,
+	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I will send you those patches.
-But, how to go about it? Will you send next revision of your patces soon, and
-will also include comments for current review?
+On Thu, Sep 1, 2011 at 4:06 AM, Greg KH <greg@kroah.com> wrote:
+> On Tue, Aug 30, 2011 at 05:27:49PM +0530, Pratyush Anand wrote:
+>> There are some DWC OTG parameters which might be passed by a platform.
+>> Declaration for structure of those parameters have been provided in this
+>> include file.
+>>
+>> Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
+>> ---
+>> =A0include/linux/usb/dwc_otg.h | =A0274 ++++++++++++++++++++++++++++++++=
++++++++++++
+>> =A01 files changed, 274 insertions(+), 0 deletions(-)
+>> =A0create mode 100644 include/linux/usb/dwc_otg.h
+>>
+>> diff --git a/include/linux/usb/dwc_otg.h b/include/linux/usb/dwc_otg.h
+>
+> Shouldn't this be in include/linux/platform/ instead?
 
-Or,
+do you mean linux/platform_data/?
 
-I replly all the comments from community and get agreed about
-modifications first.
-Then I will release next revision with all these modifications and get
-it included. Once these patches are
-included then we can keep on sending further patches over those
-included. This will shorten review time
-and will be easier for inclusion.
+seems better place.
 
 Regards
 Pratyush
 
-On Wed, Aug 31, 2011 at 10:47 PM, Tirumala Marri <tmarri@apm.com> wrote:
-> <
-> <Tirumala,
-> <
-> <If you agree , then I can send you modifications which I did over your
-> <patches(v13) separately,
-> <and then you can decide the final inclusion of only these modifications.
-> [Tirumala Marri] Sounds like a plan. Could you send the changes, I will
-> take
-> A look at the changes.
 >
-> --marri
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
 >
