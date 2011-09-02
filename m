@@ -1,21 +1,35 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE007.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 08B95B6F77
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Sep 2011 08:37:41 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] powerpc/85xx: Rename PowerPC core nodes to match
-	other e500mc based .dts
-Date: Thu, 1 Sep 2011 22:33:57 +0000
-Message-ID: <CAOZdJXUfgkvCCgW-KEgGJ0wW+EyGnhf+=aLV7E4SsKBoztP7uQ@mail.gmail.com>
-References: <1314905175-4371-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1314905175-4371-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [194.196.100.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5F504B6F77
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  2 Sep 2011 13:01:45 +1000 (EST)
+Received: from d06nrmr1806.portsmouth.uk.ibm.com
+	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
+	by mtagate3.uk.ibm.com (8.13.1/8.13.1) with ESMTP id p8231dmf008469
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2011 03:01:39 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id p8231c3R2629732
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2011 04:01:39 +0100
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with
+	ESMTP id p8231c4i010876
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2011 21:01:38 -0600
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+	[9.149.104.171])
+	by d06av04.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with
+	ESMTP id p8231csF010873
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2011 21:01:38 -0600
+Subject: AUTO: Michael Barry is out of the office (returning 12/09/2011)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OFF3A30A07.D12144EC-ON802578FF.00109224-802578FF.00109224@ie.ibm.com>
+Date: Fri, 2 Sep 2011 04:00:59 +0100
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +39,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 1, 2011 at 2:26 PM, Kumar Gala <galak@kernel.crashing.org> wrot=
-e:
-> The P4080 silicon device tree was using PowerPC,4080 while the other
-> e500mc based SoCs used PowerPC,e500mc. =A0Use the core name to be
-> consistent going forward.
 
-Shouldn't we change the nodes for all e500 based device trees in one
-shot, instead of just the P4080?
+I am out of the office until 12/09/2011.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+
+
+
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 85, Issue 4" sent on 1/9/2011 19:49:48.
+
+This is the only notification you will receive while this person is away.
