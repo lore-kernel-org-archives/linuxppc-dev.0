@@ -1,30 +1,24 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
-	by ozlabs.org (Postfix) with SMTP id BA0FAB6F88
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Sep 2011 02:40:11 +1000 (EST)
-Received: by mail-iy0-f178.google.com with SMTP id e36so4617175iag.23
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 02 Sep 2011 09:40:09 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <cover.1314704557.git.pratyush.anand@st.com>	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
-	<9183dc7afa5b8cde400e9f37f5679d4f@mail.gmail.com>	<CAHM4w1nHQ1arnTjFyp4dbmp1SBWKJPfREOOR_yykfaVyS48-iA@mail.gmail.com>
-	<a85a652e82b2bacdda84d7286b804aa3@mail.gmail.com>	<CAHM4w1nZkjT2zXB=KfXw0ueOBTLRL2hMFxRYyFwTAoWsdrD9iA@mail.gmail.com>
-	<20110902163010.61be424d@apollo.gnet>
-In-Reply-To: <20110902163010.61be424d@apollo.gnet>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E6F1BB6F88
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2011 03:55:19 +1000 (EST)
+Message-ID: <4E6117E6.8080103@freescale.com>
+Date: Fri, 2 Sep 2011 12:52:38 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Date: Fri, 2 Sep 2011 09:40:07 -0700
-Message-ID: <0e20626bf08505dd0d46cf6dc5c27ca3@mail.gmail.com>
-Subject: RE: [PATCH 02/14] dwc/otg: Structure declaration for shared data
-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>,
-	Pratyush Anand <pratyush.anand@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com,
-	linux-usb@vger.kernel.org, vipin.kumar@st.com,
-	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
-	Mark Miesfeld <mmiesfeld@apm.com>, deepak.sikri@st.com,
-	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] powerpc/85xx: Rename PowerPC core nodes to match
+	other	e500mc based .dts
+References: <1314905175-4371-1-git-send-email-galak@kernel.crashing.org>
+	<4E5FEE40.7080901@freescale.com>
+	<0995BAB2-7865-4E95-A842-EFE486FFDAC4@kernel.crashing.org>
+In-Reply-To: <0995BAB2-7865-4E95-A842-EFE486FFDAC4@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<Pratyush Anand <pratyush.anand@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
-<
-<> I will send you those patches.
-<> But, how to go about it? Will you send next revision of your patces
-<> soon, and will also include comments for current review?
-<>
-<> Or,
-<>
-<> I replly all the comments from community and get agreed about
-<> modifications first.
-<> Then I will release next revision with all these modifications and get
-<> it included. Once these patches are included then we can keep on
-<> sending further patches over those included. This will shorten review
-<> time and will be easier for inclusion.
-<
-<What do you think about making a public git repository on github, for
-<example? I'm using dwc_otg on several MIPS boards and would be happy to
-<contribute too (at least, fix things pointed out by reviewers to speed
-<up inclusion).
-[Tirumala Marri] I can take a look at this and setup a public git
-repository.
-We started the initial dwc_otg submissions and planning to continue it.
+On 09/01/2011 10:21 PM, Kumar Gala wrote:
+> 
+> On Sep 1, 2011, at 3:42 PM, Scott Wood wrote:
+> 
+>> On 09/01/2011 02:26 PM, Kumar Gala wrote:
+>>> The P4080 silicon device tree was using PowerPC,4080 while the other
+>>> e500mc based SoCs used PowerPC,e500mc.  Use the core name to be
+>>> consistent going forward.
+>>
+>> Why are we not using the generic names recommendation?
+>>
+>> Is the "PowerPC" vendor string still appropriate here, or should we use
+>> "fsl"?
+>>
+>> -Scott
+> 
+> I have mixed feelings on this.  The PowerPC,NAME has a long history & precedence.  Is there any use or value to change this?
 
-Regards,
-Marri
+It's inconsistent with all of our other compatibles.  My understanding
+is that for older chips, the naming was from a managed numberspace -- is
+"e500" or "eXXXX" something that was explicitly granted to us by
+power.org, or just something we started calling our cores?
+
+-Scott
