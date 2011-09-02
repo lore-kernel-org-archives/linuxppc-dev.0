@@ -1,27 +1,32 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55903B6F7C
+Return-Path: <pratyush.anand@gmail.com>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+	[209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 14944B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Sep 2011 19:56:28 +1000 (EST)
-Date: Fri, 2 Sep 2011 11:23:08 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH 1/3] i2c: move of_i2c_register_devices call into core
-Message-ID: <20110902112308.70745cc0@endymion.delvare>
-In-Reply-To: <4E3C7B3C.1090100@gmail.com>
-References: <1312579468-19365-1-git-send-email-robherring2@gmail.com>
-	<1312579468-19365-2-git-send-email-robherring2@gmail.com>
-	<20110805225435.GA6404@ponder.secretlab.ca>
-	<4E3C7B3C.1090100@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Warren <swarren@nvidia.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
-	Ben Dooks <ben-linux@fluff.org>, Dirk Brandewie <dirk.brandewie@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
+	Fri,  2 Sep 2011 20:43:13 +1000 (EST)
+Received: by gxk1 with SMTP id 1so2039716gxk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 02 Sep 2011 03:43:10 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20110831073500.GB9353@linutronix.de>
+References: <cover.1314704557.git.pratyush.anand@st.com>
+	<335243c9467c0127206234819a94c9f72358fdf2.1314704558.git.pratyush.anand@st.com>
+	<20110831073500.GB9353@linutronix.de>
+Date: Fri, 2 Sep 2011 16:13:10 +0530
+Message-ID: <CAHM4w1k56SgXXvDm0f8-P_LOsmYgG4_RjBVD3T9ws+BNk+U_+Q@mail.gmail.com>
+Subject: Re: [PATCH 14/14] arm/include/asm/io.h : added macros to read/write
+	big/little endian register
+From: Pratyush Anand <pratyush.anand@gmail.com>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
+	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
+	linux-usb@vger.kernel.org, vipin.kumar@st.com,
+	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
+	mmiesfeld@apm.com, deepak.sikri@st.com,
+	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,57 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Rob, Grant,
+On Wed, Aug 31, 2011 at 1:05 PM, Sebastian Andrzej Siewior
+<bigeasy@linutronix.de> wrote:
+> * Pratyush Anand | 2011-08-30 17:28:01 [+0530]:
+>
+>>diff --git a/arch/arm/include/asm/io.h b/arch/arm/include/asm/io.h
+>>index 815efa2..32282b4 100644
+>>--- a/arch/arm/include/asm/io.h
+>>+++ b/arch/arm/include/asm/io.h
+>>@@ -297,6 +297,14 @@ extern int valid_mmap_phys_addr_range(unsigned long =
+pfn, size_t size);
+>> extern int devmem_is_allowed(unsigned long pfn);
+>> #endif
+>>
+>>+/* Big Endian */
+>>+#define out_be32(a, v) writel(__cpu_to_be32(v), a)
+>>+#define in_be32(a) __be32_to_cpu(readl(a))
+>>+
+>>+/* Little endian */
+>>+#define out_le32(a, v) writel(__cpu_to_le32(v), a)
+>>+#define in_le32(a) __le32_to_cpu(readl(a))
+>
+> In LE-mode __le32_to_cpu() is NOP and you get a LE value.
+> In BE-mode readl() will swap a and le32_to_cpu will swap a again. So you
+> get a BE value. Is this what you want?
+>
 
-On Fri, 05 Aug 2011 18:22:36 -0500, Rob Herring wrote:
-> Grant,
-> 
-> On 08/05/2011 05:54 PM, Grant Likely wrote:
-> > On Fri, Aug 05, 2011 at 04:24:26PM -0500, Rob Herring wrote:
-> >> From: Rob Herring <rob.herring@calxeda.com>
-> >>
-> >> All callers of of_i2c_register_devices are immediately preceded by a call
-> >> to i2c_add_adapter or i2c_add_numbered_adapter. Add call to
-> >> of_i2c_register_devices and remove all other callers.
-> >>
-> >> This causes a module dependency loop that is resolved by the next commit.
-> > 
-> > Wrong way around.  Don't break bisectability.  I'll leave it up to Ben
-> > and Jean on weather or not they want to move this code.  I intend to
-> > do the same thing for spi/gpio, but I maintain those subsystems so I
-> > get to choose.  i2c is not up to me.
-> 
-> Well, I know, but it's only broken for bisect in the case of both being
-> modules. So it's only run-time brokenness. That's better than the 3
-> months it was broken before. I couldn't come up with a better way. The
-> choices I thought of were:
-> 
-> -temporarily exporting and adding of_i2c_register_devices to i2c.h and
-> then removing it. I'm not a fan of adding that churn.
-> -just combining it all into 1 patch.
+There can be some peripheral like dwc-otg, whose registers will be
+either in LE or in BE
+depending on the RTL configuration selected by a implementor.
+Software always expects a LE value when it will call "in_" and will
+provide a LE value when "out_".
+It expects beacuse , it wants to do same bit wise operation for both
+configurations.
 
-That would have been the right thing to do, yes. The two patches are
-not so large, so the resulting merged patch would still be reasonable.
-There's no point in splitting patches if they can't be applied in
-sequence, bisected, and rejected, reverted or backported individually;
-which is clearly not the case here.
 
-But anyway, I don't buy the whole thing. We currently have a nice
-separation between OF and the underlying bus types. Breaking it all
-just for the sake of saving one call in 4 drivers (out of ~70 in the
-current kernel tree) doesn't seem worth it, at all. It would make
-things harder to maintain, too (I definitely do not want to maintain
-OF-specific code).
 
-If you are really worried about the extra call to
-of_i2c_register_devices(), then maybe the of_i2c implementation is
-incorrect, and you should rework it to build on top of
-i2c_register_board_info() rather than i2c_new_device().
+>>+
+>
+> Please split this patch out and get it accepterd by ARM community. USB
+> people won't merge this.
+>
 
-> -reverse the order and leave i2c device registration broken for 1
-> commit. Thinking some more about it, perhaps that is a bit better than
-> broken module loading. Guess it depends if you are doing modules or
-> built-in.
+Ok, will send it to ARM mailing list.
 
--- 
-Jean Delvare
+Regards
+Pratyush
+
+> Sebastian
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>
