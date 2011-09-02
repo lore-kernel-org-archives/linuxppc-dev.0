@@ -1,24 +1,26 @@
 Return-Path: <pratyush.anand@gmail.com>
-Received: from mail-pz0-f46.google.com (mail-pz0-f46.google.com
-	[209.85.210.46]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Received: from mail-yi0-f51.google.com (mail-yi0-f51.google.com
+	[209.85.218.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A6CDAB6F68
+	by ozlabs.org (Postfix) with ESMTPS id D8F90B6F88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Sep 2011 21:49:21 +1000 (EST)
-Received: by pzk32 with SMTP id 32so5087207pzk.33
+	Fri,  2 Sep 2011 21:56:00 +1000 (EST)
+Received: by yib12 with SMTP id 12so2103081yib.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 02 Sep 2011 04:49:18 -0700 (PDT)
+	Fri, 02 Sep 2011 04:55:57 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20110831223604.GB27818@kroah.com>
+In-Reply-To: <4E60BEB9.4020200@linutronix.de>
 References: <cover.1314704557.git.pratyush.anand@st.com>
-	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
-	<20110831223604.GB27818@kroah.com>
-Date: Fri, 2 Sep 2011 17:19:17 +0530
-Message-ID: <CAHM4w1npnX9ELf6AypR7+3D55qUw3Euz0dT_rb7UOj=1buuN+A@mail.gmail.com>
-Subject: Re: [PATCH 02/14] dwc/otg: Structure declaration for shared data
+	<73a8a4be221e3bc0404da22473913e9a846ee0df.1314704557.git.pratyush.anand@st.com>
+	<20110831071929.GA9353@linutronix.de>
+	<CAHM4w1nwyCxJYyPxJn=yXmcD+cAMY4txorrgfKHdp-FGDZ7BKg@mail.gmail.com>
+	<4E60BEB9.4020200@linutronix.de>
+Date: Fri, 2 Sep 2011 17:25:57 +0530
+Message-ID: <CAHM4w1ms=T+8sKe+spb6kNxpw_VC32-KSwne9w9E0kgyUMQfRw@mail.gmail.com>
+Subject: Re: [PATCH 03/14] dwc/otg: Add driver framework
 From: Pratyush Anand <pratyush.anand@gmail.com>
-To: Greg KH <greg@kroah.com>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
 	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
@@ -35,33 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 1, 2011 at 4:06 AM, Greg KH <greg@kroah.com> wrote:
-> On Tue, Aug 30, 2011 at 05:27:49PM +0530, Pratyush Anand wrote:
->> There are some DWC OTG parameters which might be passed by a platform.
->> Declaration for structure of those parameters have been provided in this
->> include file.
+On Fri, Sep 2, 2011 at 5:02 PM, Sebastian Andrzej Siewior
+<bigeasy@linutronix.de> wrote:
+> On 09/02/2011 01:17 PM, Pratyush Anand wrote:
+>>>
+>>> oh boy, oh boy. This is a huge number of module parameters. Do you
+>>> actually expect someone setting all of them on modprobe? And if udev is
+>>> faster you rmmod and modpobe again, right? The clever ones would enter
+>>> it somewhere in modprobe.conf or so. Anyway. Since you have
+>>> already device tree bindings and I assume you are using them, why not
+>>> move all this parameters into the device and remove _all_ module
+>>> parameters?
 >>
->> Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
->> ---
->> =A0include/linux/usb/dwc_otg.h | =A0274 ++++++++++++++++++++++++++++++++=
-+++++++++++
->> =A01 files changed, 274 insertions(+), 0 deletions(-)
->> =A0create mode 100644 include/linux/usb/dwc_otg.h
->>
->> diff --git a/include/linux/usb/dwc_otg.h b/include/linux/usb/dwc_otg.h
+>> In my case, I am passing necessary parameters from platform_data.
+>> I do not use module param.
 >
-> Shouldn't this be in include/linux/platform/ instead?
+> From what I can see in
+> =A0http://permalink.gmane.org/gmane.linux.ports.arm.kernel/76267
+>
+> is that it is being worked on DT-support for SPEAr. So I think it
+> would be better to grab this information from the device tree if
+> available (and keep the standard value otherwise) instead of starting
+> doing the platform_data thingy.
 
-do you mean linux/platform_data/?
-
-seems better place.
+will get the knowledge about device tree and will explore this option.
 
 Regards
 Pratyush
 
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> Sebastian
 >
