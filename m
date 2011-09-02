@@ -1,21 +1,27 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10538B6F76
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Sep 2011 18:09:51 +1000 (EST)
-Date: Fri, 2 Sep 2011 10:09:36 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc/5200: enable audio in the defconfig
-Message-ID: <20110902080936.GA1901@pengutronix.de>
-References: <1314916282-13863-1-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
-In-Reply-To: <1314916282-13863-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 55903B6F7C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  2 Sep 2011 19:56:28 +1000 (EST)
+Date: Fri, 2 Sep 2011 11:23:08 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH 1/3] i2c: move of_i2c_register_devices call into core
+Message-ID: <20110902112308.70745cc0@endymion.delvare>
+In-Reply-To: <4E3C7B3C.1090100@gmail.com>
+References: <1312579468-19365-1-git-send-email-robherring2@gmail.com>
+	<1312579468-19365-2-git-send-email-robherring2@gmail.com>
+	<20110805225435.GA6404@ponder.secretlab.ca>
+	<4E3C7B3C.1090100@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Warren <swarren@nvidia.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+	Ben Dooks <ben-linux@fluff.org>, Dirk Brandewie <dirk.brandewie@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Rob, Grant,
 
---WIyZ46R2i8wDzkSu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 05 Aug 2011 18:22:36 -0500, Rob Herring wrote:
+> Grant,
+> 
+> On 08/05/2011 05:54 PM, Grant Likely wrote:
+> > On Fri, Aug 05, 2011 at 04:24:26PM -0500, Rob Herring wrote:
+> >> From: Rob Herring <rob.herring@calxeda.com>
+> >>
+> >> All callers of of_i2c_register_devices are immediately preceded by a call
+> >> to i2c_add_adapter or i2c_add_numbered_adapter. Add call to
+> >> of_i2c_register_devices and remove all other callers.
+> >>
+> >> This causes a module dependency loop that is resolved by the next commit.
+> > 
+> > Wrong way around.  Don't break bisectability.  I'll leave it up to Ben
+> > and Jean on weather or not they want to move this code.  I intend to
+> > do the same thing for spi/gpio, but I maintain those subsystems so I
+> > get to choose.  i2c is not up to me.
+> 
+> Well, I know, but it's only broken for bisect in the case of both being
+> modules. So it's only run-time brokenness. That's better than the 3
+> months it was broken before. I couldn't come up with a better way. The
+> choices I thought of were:
+> 
+> -temporarily exporting and adding of_i2c_register_devices to i2c.h and
+> then removing it. I'm not a fan of adding that churn.
+> -just combining it all into 1 patch.
 
-On Thu, Sep 01, 2011 at 05:31:22PM -0500, Timur Tabi wrote:
-> Audio support for the MPC5200 exists, so enable it by default.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+That would have been the right thing to do, yes. The two patches are
+not so large, so the resulting merged patch would still be reasonable.
+There's no point in splitting patches if they can't be applied in
+sequence, bisected, and rejected, reverted or backported individually;
+which is clearly not the case here.
 
-Yup, I like to have the PCM030 in a working state
+But anyway, I don't buy the whole thing. We currently have a nice
+separation between OF and the underlying bus types. Breaking it all
+just for the sake of saving one call in 4 drivers (out of ~70 in the
+current kernel tree) doesn't seem worth it, at all. It would make
+things harder to maintain, too (I definitely do not want to maintain
+OF-specific code).
 
-Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+If you are really worried about the extra call to
+of_i2c_register_devices(), then maybe the of_i2c implementation is
+incorrect, and you should rework it to build on top of
+i2c_register_board_info() rather than i2c_new_device().
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> -reverse the order and leave i2c device registration broken for 1
+> commit. Thinking some more about it, perhaps that is a bit better than
+> broken module loading. Guess it depends if you are doing modules or
+> built-in.
 
---WIyZ46R2i8wDzkSu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk5gj0AACgkQD27XaX1/VRvQCQCgsovymLVpV4agN0J9aP7ZJ0he
-27wAniebaCu72i/bXjiKM/weiAWYtusJ
-=uGFK
------END PGP SIGNATURE-----
-
---WIyZ46R2i8wDzkSu--
+-- 
+Jean Delvare
