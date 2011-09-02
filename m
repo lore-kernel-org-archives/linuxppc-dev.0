@@ -1,25 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3CFECB6F7F
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2011 04:33:22 +1000 (EST)
-Message-ID: <4E61216A.4040502@freescale.com>
-Date: Fri, 2 Sep 2011 13:33:14 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <greg@kroah.com>
+Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
+	[66.111.4.28])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8DF2DB6F8B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  3 Sep 2011 10:20:01 +1000 (EST)
+Date: Fri, 2 Sep 2011 06:57:51 -0700
+From: Greg KH <greg@kroah.com>
+To: Pratyush Anand <pratyush.anand@gmail.com>
+Subject: Re: [PATCH 02/14] dwc/otg: Structure declaration for shared data
+Message-ID: <20110902135751.GB28815@kroah.com>
+References: <cover.1314704557.git.pratyush.anand@st.com>
+	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
+	<20110831223604.GB27818@kroah.com>
+	<CAHM4w1npnX9ELf6AypR7+3D55qUw3Euz0dT_rb7UOj=1buuN+A@mail.gmail.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] powerpc/85xx: Rename PowerPC core nodes to match
-	other	e500mc based .dts
-References: <1314905175-4371-1-git-send-email-galak@kernel.crashing.org>
-	<4E5FEE40.7080901@freescale.com>
-	<0995BAB2-7865-4E95-A842-EFE486FFDAC4@kernel.crashing.org>
-	<4E6117E6.8080103@freescale.com>
-	<337763E2-C543-4CC2-95F2-0B7BDBA0E6B6@kernel.crashing.org>
-In-Reply-To: <337763E2-C543-4CC2-95F2-0B7BDBA0E6B6@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <CAHM4w1npnX9ELf6AypR7+3D55qUw3Euz0dT_rb7UOj=1buuN+A@mail.gmail.com>
+Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
+	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
+	linux-usb@vger.kernel.org, vipin.kumar@st.com,
+	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
+	mmiesfeld@apm.com, deepak.sikri@st.com,
+	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/02/2011 01:29 PM, Kumar Gala wrote:
+On Fri, Sep 02, 2011 at 05:19:17PM +0530, Pratyush Anand wrote:
+> On Thu, Sep 1, 2011 at 4:06 AM, Greg KH <greg@kroah.com> wrote:
+> > On Tue, Aug 30, 2011 at 05:27:49PM +0530, Pratyush Anand wrote:
+> >> There are some DWC OTG parameters which might be passed by a platform.
+> >> Declaration for structure of those parameters have been provided in this
+> >> include file.
+> >>
+> >> Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
+> >> ---
+> >>  include/linux/usb/dwc_otg.h |  274 +++++++++++++++++++++++++++++++++++++++++++
+> >>  1 files changed, 274 insertions(+), 0 deletions(-)
+> >>  create mode 100644 include/linux/usb/dwc_otg.h
+> >>
+> >> diff --git a/include/linux/usb/dwc_otg.h b/include/linux/usb/dwc_otg.h
+> >
+> > Shouldn't this be in include/linux/platform/ instead?
 > 
-> On Sep 2, 2011, at 12:52 PM, Scott Wood wrote:
-> 
->> On 09/01/2011 10:21 PM, Kumar Gala wrote:
->>>
->>> On Sep 1, 2011, at 3:42 PM, Scott Wood wrote:
->>>> Is the "PowerPC" vendor string still appropriate here, or should we use
->>>> "fsl"?
->>>
->>> I have mixed feelings on this.  The PowerPC,NAME has a long history & precedence.  Is there any use or value to change this?
->>
->> It's inconsistent with all of our other compatibles.  My understanding
->> is that for older chips, the naming was from a managed numberspace -- is
->> "e500" or "eXXXX" something that was explicitly granted to us by
->> power.org, or just something we started calling our cores?
-> 
-> The names for PPC cores are NOT granted by anyone.
+> do you mean linux/platform_data/?
 
-So, it's fsl's namespace, and the vendor id should be fsl.
-
--Scott
+Yes, sorry.
