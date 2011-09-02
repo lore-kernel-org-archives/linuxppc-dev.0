@@ -1,35 +1,21 @@
-Return-Path: <michael_barry@ie.ibm.com>
-Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [194.196.100.163])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5F504B6F77
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Sep 2011 13:01:45 +1000 (EST)
-Received: from d06nrmr1806.portsmouth.uk.ibm.com
-	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
-	by mtagate3.uk.ibm.com (8.13.1/8.13.1) with ESMTP id p8231dmf008469
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2011 03:01:39 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id p8231c3R2629732
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2011 04:01:39 +0100
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with
-	ESMTP id p8231c4i010876
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2011 21:01:38 -0600
-Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
-	[9.149.104.171])
-	by d06av04.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with
-	ESMTP id p8231csF010873
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2011 21:01:38 -0600
-Subject: AUTO: Michael Barry is out of the office (returning 12/09/2011)
-From: Michael Barry <michael_barry@ie.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <OFF3A30A07.D12144EC-ON802578FF.00109224-802578FF.00109224@ie.ibm.com>
-Date: Fri, 2 Sep 2011 04:00:59 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E2A91B6F81
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Sep 2011 13:22:01 +1000 (EST)
+Subject: Re: [PATCH 1/4] powerpc/85xx: Rename PowerPC core nodes to match
+	other	e500mc based .dts
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4E5FEE40.7080901@freescale.com>
+Date: Thu, 1 Sep 2011 22:21:55 -0500
+Message-Id: <0995BAB2-7865-4E95-A842-EFE486FFDAC4@kernel.crashing.org>
+References: <1314905175-4371-1-git-send-email-galak@kernel.crashing.org>
+	<4E5FEE40.7080901@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,12 +26,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-I am out of the office until 12/09/2011.
+On Sep 1, 2011, at 3:42 PM, Scott Wood wrote:
 
+> On 09/01/2011 02:26 PM, Kumar Gala wrote:
+>> The P4080 silicon device tree was using PowerPC,4080 while the other
+>> e500mc based SoCs used PowerPC,e500mc.  Use the core name to be
+>> consistent going forward.
+>=20
+> Why are we not using the generic names recommendation?
+>=20
+> Is the "PowerPC" vendor string still appropriate here, or should we =
+use
+> "fsl"?
+>=20
+> -Scott
 
+I have mixed feelings on this.  The PowerPC,NAME has a long history & =
+precedence.  Is there any use or value to change this?
 
-
-Note: This is an automated response to your message  "Linuxppc-dev Digest,
-Vol 85, Issue 4" sent on 1/9/2011 19:49:48.
-
-This is the only notification you will receive while this person is away.
+- k=
