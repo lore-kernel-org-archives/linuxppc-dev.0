@@ -1,29 +1,23 @@
-Return-Path: <pratyush.anand@gmail.com>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 14944B6F7C
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 850D0B6F83
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Sep 2011 20:43:13 +1000 (EST)
-Received: by gxk1 with SMTP id 1so2039716gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 02 Sep 2011 03:43:10 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20110831073500.GB9353@linutronix.de>
+	Fri,  2 Sep 2011 21:01:58 +1000 (EST)
+Subject: Re: [PATCH 14/14] arm/include/asm/io.h : added macros to
+	read/write big/little endian register
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pratyush Anand <pratyush.anand@st.com>
+In-Reply-To: <335243c9467c0127206234819a94c9f72358fdf2.1314704558.git.pratyush.anand@st.com>
 References: <cover.1314704557.git.pratyush.anand@st.com>
 	<335243c9467c0127206234819a94c9f72358fdf2.1314704558.git.pratyush.anand@st.com>
-	<20110831073500.GB9353@linutronix.de>
-Date: Fri, 2 Sep 2011 16:13:10 +0530
-Message-ID: <CAHM4w1k56SgXXvDm0f8-P_LOsmYgG4_RjBVD3T9ws+BNk+U_+Q@mail.gmail.com>
-Subject: Re: [PATCH 14/14] arm/include/asm/io.h : added macros to read/write
-	big/little endian register
-From: Pratyush Anand <pratyush.anand@gmail.com>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
-	linux-usb@vger.kernel.org, vipin.kumar@st.com,
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 02 Sep 2011 21:01:43 +1000
+Message-ID: <1314961303.13112.1.camel@pasglop>
+Mime-Version: 1.0
+Cc: viresh.kumar@st.com, vipulkumar.samar@st.com, bhupesh.sharma@st.com,
+	tmarri@apm.com, linux-usb@vger.kernel.org, vipin.kumar@st.com,
 	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
 	mmiesfeld@apm.com, deepak.sikri@st.com,
 	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
@@ -36,56 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 31, 2011 at 1:05 PM, Sebastian Andrzej Siewior
-<bigeasy@linutronix.de> wrote:
-> * Pratyush Anand | 2011-08-30 17:28:01 [+0530]:
->
->>diff --git a/arch/arm/include/asm/io.h b/arch/arm/include/asm/io.h
->>index 815efa2..32282b4 100644
->>--- a/arch/arm/include/asm/io.h
->>+++ b/arch/arm/include/asm/io.h
->>@@ -297,6 +297,14 @@ extern int valid_mmap_phys_addr_range(unsigned long =
-pfn, size_t size);
->> extern int devmem_is_allowed(unsigned long pfn);
->> #endif
->>
->>+/* Big Endian */
->>+#define out_be32(a, v) writel(__cpu_to_be32(v), a)
->>+#define in_be32(a) __be32_to_cpu(readl(a))
->>+
->>+/* Little endian */
->>+#define out_le32(a, v) writel(__cpu_to_le32(v), a)
->>+#define in_le32(a) __le32_to_cpu(readl(a))
->
-> In LE-mode __le32_to_cpu() is NOP and you get a LE value.
-> In BE-mode readl() will swap a and le32_to_cpu will swap a again. So you
-> get a BE value. Is this what you want?
->
+On Tue, 2011-08-30 at 17:28 +0530, Pratyush Anand wrote:
+> There are some peripheral(e.g dwc otg) whose registers can be configured to
+> work in either little or big endian mode. Therefor macros like out_be32,
+> in_be32, out_le32 and in_le32 have been added to support such peripherals.
 
-There can be some peripheral like dwc-otg, whose registers will be
-either in LE or in BE
-depending on the RTL configuration selected by a implementor.
-Software always expects a LE value when it will call "in_" and will
-provide a LE value when "out_".
-It expects beacuse , it wants to do same bit wise operation for both
-configurations.
+Yuck.
+
+Don't copy those ppc specific historical accessors :-)
+
+Doesn't arm have writel_be ? If not , define those, it's a bit more
+common, or better, switch to the newer iomap variants which should be
+provided in both endianness.
+
+Cheers,
+Ben.
 
 
-
->>+
->
-> Please split this patch out and get it accepterd by ARM community. USB
-> people won't merge this.
->
-
-Ok, will send it to ARM mailing list.
-
-Regards
-Pratyush
-
-> Sebastian
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->
+> Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
+> ---
+>  arch/arm/include/asm/io.h |    8 ++++++++
+>  1 files changed, 8 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/arm/include/asm/io.h b/arch/arm/include/asm/io.h
+> index 815efa2..32282b4 100644
+> --- a/arch/arm/include/asm/io.h
+> +++ b/arch/arm/include/asm/io.h
+> @@ -297,6 +297,14 @@ extern int valid_mmap_phys_addr_range(unsigned long pfn, size_t size);
+>  extern int devmem_is_allowed(unsigned long pfn);
+>  #endif
+>  
+> +/* Big Endian */
+> +#define out_be32(a, v) writel(__cpu_to_be32(v), a)
+> +#define in_be32(a) __be32_to_cpu(readl(a))
+> +
+> +/* Little endian */
+> +#define out_le32(a, v) writel(__cpu_to_le32(v), a)
+> +#define in_le32(a) __le32_to_cpu(readl(a))
+> +
+>  /*
+>   * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+>   * access
