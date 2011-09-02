@@ -1,30 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A9F60B6F68
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Sep 2011 23:00:05 +1000 (EST)
-Subject: Re: [PATCH 14/14] arm/include/asm/io.h : added macros to
-	read/write big/little endian register
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pratyush Anand <pratyush.anand@gmail.com>
-In-Reply-To: <CAHM4w1k56SgXXvDm0f8-P_LOsmYgG4_RjBVD3T9ws+BNk+U_+Q@mail.gmail.com>
-References: <cover.1314704557.git.pratyush.anand@st.com>
-	<335243c9467c0127206234819a94c9f72358fdf2.1314704558.git.pratyush.anand@st.com>
-	<20110831073500.GB9353@linutronix.de>
-	<CAHM4w1k56SgXXvDm0f8-P_LOsmYgG4_RjBVD3T9ws+BNk+U_+Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 02 Sep 2011 21:02:32 +1000
-Message-ID: <1314961352.13112.2.camel@pasglop>
-Mime-Version: 1.0
-Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	linux-usb@vger.kernel.org, vipin.kumar@st.com,
-	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
-	mmiesfeld@apm.com, deepak.sikri@st.com,
-	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
+	by ozlabs.org (Postfix) with ESMTPS id 60D3BB6F77
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2011 00:27:51 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/85xx: Adding DCSR node to dtsi device trees
+Date: Fri,  2 Sep 2011 09:27:39 -0500
+Message-Id: <1314973659-13321-1-git-send-email-galak@kernel.crashing.org>
+Cc: devicetree-discuss@lists.ozlabs.org,
+	Stephen George <stephen.george@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +20,1031 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Stephen George <stephen.george@freescale.com>
 
-> There can be some peripheral like dwc-otg, whose registers will be
-> either in LE or in BE
-> depending on the RTL configuration selected by a implementor.
-> Software always expects a LE value when it will call "in_" and will
-> provide a LE value when "out_".
-> It expects beacuse , it wants to do same bit wise operation for both
-> configurations.
+Adding new device tree binding file for the DCSR node.  Modifying device
+tree dtsi files to add DCSR node for P2041, P3041, P3060, P4080, & P5020.
 
-Then these are the wrong accessors.
+Signed-off-by: Stephen George <stephen.george@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+v2:
+* include dscr.txt binding spec
+* moved around dcsr nodes to keep sorted in addr order
 
-Cheers,
-Ben.
+ .../devicetree/bindings/powerpc/fsl/dcsr.txt       |  395 ++++++++++++++++++++
+ arch/powerpc/boot/dts/p2041rdb.dts                 |    4 +
+ arch/powerpc/boot/dts/p2041si.dtsi                 |   71 ++++-
+ arch/powerpc/boot/dts/p3041ds.dts                  |    4 +
+ arch/powerpc/boot/dts/p3041si.dtsi                 |   71 ++++-
+ arch/powerpc/boot/dts/p3060qds.dts                 |    4 +
+ arch/powerpc/boot/dts/p3060si.dtsi                 |   81 ++++-
+ arch/powerpc/boot/dts/p4080ds.dts                  |    4 +
+ arch/powerpc/boot/dts/p4080si.dtsi                 |   98 +++++-
+ arch/powerpc/boot/dts/p5020ds.dts                  |    4 +
+ arch/powerpc/boot/dts/p5020si.dtsi                 |   68 ++++-
+ 11 files changed, 797 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/dcsr.txt
 
-> 
-> 
-> >>+
-> >
-> > Please split this patch out and get it accepterd by ARM community. USB
-> > people won't merge this.
-> >
-> 
-> Ok, will send it to ARM mailing list.
-> 
-> Regards
-> Pratyush
-> 
-> > Sebastian
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dcsr.txt b/Documentation/devicetree/bindings/powerpc/fsl/dcsr.txt
+new file mode 100644
+index 0000000..5dc567c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/dcsr.txt
+@@ -0,0 +1,395 @@
++===================================================================
++Debug Control and Status Register (DCSR) Binding
++Copyright 2011 Freescale Semiconductor Inc.
++
++NOTE: The bindings described in this document are preliminary and subject
++to change.  Some of the compatible strings that contain only generic names
++may turn out to be inappropriate, or need additional properties to describe
++the integration of the block with the rest of the chip.
++
++=====================================================================
++Debug Control and Status Register Memory Map
++
++Description
++
++This node defines the base address and range for the
++defined DCSR Memory Map. Child nodes will describe the individual
++debug blocks defined within this memory space.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include "fsl,dcsr" and "simple-bus".
++	The DCSR space exists in the memory-mapped bus.
++
++	- #address-cells
++	Usage: required
++	Value type: <u32>
++	Definition: A standard property.  Defines the number of cells
++	or representing physical addresses in child nodes.
++
++	- #size-cells
++	Usage: required
++	Value type: <u32>
++	Definition: A standard property.  Defines the number of cells
++	or representing the size of physical addresses in
++	child nodes.
++
++	- ranges
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property. Specifies the physical address
++	range of the DCSR space.
++
++EXAMPLE
++	dcsr: dcsr@f00000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,dcsr", "simple-bus";
++		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
++	};
++
++=====================================================================
++Event Processing Unit
++
++This node represents the region of DCSR space allocated to the EPU
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include "fsl,dcsr-epu"
++
++	- interrupts
++	Usage: required
++	Value type: <prop_encoded-array>
++	Definition:  Specifies the interrupts generated by the EPU.
++	The value of the interrupts property consists of three
++	interrupt specifiers. The format of the specifier is defined
++	by the binding document describing the node's interrupt parent.
++
++	The EPU counters can be configured to assert the performance
++	monitor interrupt signal based on either counter overflow or value
++	match. Which counter asserted the interrupt is captured in an EPU
++	Counter Interrupt Status Register (EPCPUISR).
++
++	The EPU unit can also be configured to assert either or both of
++	two interrupt signals based on debug event sources within the SoC.
++	The interrupt signals are epu_xt_int0 and epu_xt_int1.
++	Which event source asserted the interrupt is captured in an EPU
++	Interrupt Status Register (EPISR0,EPISR1).
++
++	Interrupt numbers are lised in order (perfmon, event0, event1).
++
++	- interrupt-parent
++	Usage: required
++	Value type: <phandle>
++	Definition: A single <phandle> value that points
++	to the interrupt parent to which the child domain
++	is being mapped. Value must be "&mpic"
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++	dcsr-epu@0 {
++		compatible = "fsl,dcsr-epu";
++		interrupts = <36 2 0 0
++			      68 2 0 0
++			      69 2 0 0>;
++		interrupt-parent = <&mpic>;
++		reg = <0x0 0x1000>;
++	};
++
++=======================================================================
++Nexus Port Controller
++
++This node represents the region of DCSR space allocated to the NPC
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include "fsl,dcsr-npc"
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++	The Nexus Port controller occupies two regions in the DCSR space
++	with distinct functionality.
++
++	The first register range describes the Nexus Port Controller
++	control and status registers.
++
++	The second register range describes the Nexus Port Controller
++	internal trace buffer. The NPC trace buffer is a small memory buffer
++	which stages the nexus trace data for transmission via the Aurora port
++	or to a DDR based trace buffer. In some configurations the NPC trace
++	buffer can be the only trace buffer used.
++
++
++EXAMPLE
++		dcsr-npc {
++			compatible = "fsl,dcsr-npc";
++			reg = <0x1000 0x1000 0x1000000 0x8000>;
++		};
++
++=======================================================================
++Nexus Concentrator
++
++This node represents the region of DCSR space allocated to the NXC
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include "fsl,dcsr-nxc"
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++		dcsr-nxc@2000 {
++			compatible = "fsl,dcsr-nxc";
++			reg = <0x2000 0x1000>;
++		};
++=======================================================================
++CoreNet Debug Controller
++
++This node represents the region of DCSR space allocated to
++the CoreNet Debug controller.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include "fsl,dcsr-corenet"
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++	The CoreNet Debug controller occupies two regions in the DCSR space
++	with distinct functionality.
++
++	The first register range describes the CoreNet Debug Controller
++	functionalty to perform transaction and transaction attribute matches.
++
++	The second register range describes the CoreNet Debug Controller
++	functionalty to trigger event notifications and debug traces.
++
++EXAMPLE
++		dcsr-corenet {
++			compatible = "fsl,dcsr-corenet";
++			reg = <0x8000 0x1000 0xB0000 0x1000>;
++		};
++
++=======================================================================
++Data Path Debug controller
++
++This node represents the region of DCSR space allocated to
++the DPAA Debug Controller. This controller controls debug configuration
++for the QMAN and FMAN blocks.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include both an identifier specific to the SoC
++	or Debug IP of the form "fsl,<soc>-dcsr-dpaa" in addition to the
++	generic compatible string "fsl,dcsr-dpaa".
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++		dcsr-dpaa@9000 {
++			compatible = "fsl,p4080-dcsr-dpaa", "fsl,dcsr-dpaa";
++			reg = <0x9000 0x1000>;
++		};
++
++=======================================================================
++OCeaN Debug controller
++
++This node represents the region of DCSR space allocated to
++the OCN Debug Controller.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include both an identifier specific to the SoC
++	or Debug IP of the form "fsl,<soc>-dcsr-ocn" in addition to the
++	generic compatible string "fsl,dcsr-ocn".
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++		dcsr-ocn@11000 {
++			compatible = "fsl,p4080-dcsr-ocn", "fsl,dcsr-ocn";
++			reg = <0x11000 0x1000>;
++		};
++
++=======================================================================
++DDR Controller Debug controller
++
++This node represents the region of DCSR space allocated to
++the OCN Debug Controller.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include "fsl,dcsr-ddr"
++
++	- dev-handle
++	Usage: required
++	Definition: A phandle to associate this debug node with its
++	component controller.
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++		dcsr-ddr@12000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr1>;
++			reg = <0x12000 0x1000>;
++		};
++
++=======================================================================
++Nexus Aurora Link Controller
++
++This node represents the region of DCSR space allocated to
++the NAL Controller.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include both an identifier specific to the SoC
++	or Debug IP of the form "fsl,<soc>-dcsr-nal" in addition to the
++	generic compatible string "fsl,dcsr-nal".
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++		dcsr-nal@18000 {
++			compatible = "fsl,p4080-dcsr-nal", "fsl,dcsr-nal";
++			reg = <0x18000 0x1000>;
++		};
++
++
++=======================================================================
++Run Control and Power Management
++
++This node represents the region of DCSR space allocated to
++the RCPM Debug Controller. This functionlity is limited to the
++control the debug operations of the SoC and cores.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include both an identifier specific to the SoC
++	or Debug IP of the form "fsl,<soc>-dcsr-rcpm" in addition to the
++	generic compatible string "fsl,dcsr-rcpm".
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++		dcsr-rcpm@22000 {
++			compatible = "fsl,p4080-dcsr-rcpm", "fsl,dcsr-rcpm";
++			reg = <0x22000 0x1000>;
++		};
++
++=======================================================================
++Core Service Bridge Proxy
++
++This node represents the region of DCSR space allocated to
++the Core Service Bridge Proxies.
++There is one Core Service Bridge Proxy device for each CPU in the system.
++This functionlity provides access to the debug operations of the CPU.
++
++PROPERTIES
++
++	- compatible
++	Usage: required
++	Value type: <string>
++	Definition: Must include both an identifier specific to the cpu
++	of the form "fsl,dcsr-<cpu>-sb-proxy" in addition to the
++	generic compatible string "fsl,dcsr-cpu-sb-proxy".
++
++	- cpu-handle
++	Usage: required
++	Definition: A phandle to associate this debug node with its cpu.
++
++	- reg
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: A standard property.  Specifies the physical address
++	offset and length of the DCSR space registers of the device
++	configuration block.
++
++EXAMPLE
++		dcsr-cpu-sb-proxy@40000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy",
++				     "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu0>;
++			reg = <0x40000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@41000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy",
++				     "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu1>;
++			reg = <0x41000 0x1000>;
++		};
++
++=======================================================================
+diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
+index 47bb461..79b6895 100644
+--- a/arch/powerpc/boot/dts/p2041rdb.dts
++++ b/arch/powerpc/boot/dts/p2041rdb.dts
+@@ -45,6 +45,10 @@
+ 		device_type = "memory";
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
++	};
++
+ 	soc: soc@ffe000000 {
+ 		spi@110000 {
+ 			flash@0 {
+diff --git a/arch/powerpc/boot/dts/p2041si.dtsi b/arch/powerpc/boot/dts/p2041si.dtsi
+index 420cdb0..aceb139 100644
+--- a/arch/powerpc/boot/dts/p2041si.dtsi
++++ b/arch/powerpc/boot/dts/p2041si.dtsi
+@@ -42,6 +42,7 @@
+ 
+ 	aliases {
+ 		ccsr = &soc;
++		dcsr = &dcsr;
+ 
+ 		serial0 = &serial0;
+ 		serial1 = &serial1;
+@@ -109,6 +110,74 @@
+ 		};
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,dcsr", "simple-bus";
++
++		dcsr-epu@0 {
++			compatible = "fsl,dcsr-epu";
++			interrupts = <36 2 0 0
++				      68 2 0 0
++				      69 2 0 0>;
++			interrupt-parent = <&mpic>;
++			reg = <0x0 0x1000>;
++		};
++		dcsr-npc {
++			compatible = "fsl,dcsr-npc";
++			reg = <0x1000 0x1000 0x1000000 0x8000>;
++		};
++		dcsr-nxc@2000 {
++			compatible = "fsl,dcsr-nxc";
++			reg = <0x2000 0x1000>;
++		};
++		dcsr-corenet {
++			compatible = "fsl,dcsr-corenet";
++			reg = <0x8000 0x1000 0xB0000 0x1000>;
++		};
++		dcsr-dpaa@9000 {
++			compatible = "fsl,p2041-dcsr-dpaa", "fsl,dcsr-dpaa";
++			reg = <0x9000 0x1000>;
++		};
++		dcsr-ocn@11000 {
++			compatible = "fsl,p2041-dcsr-ocn", "fsl,dcsr-ocn";
++			reg = <0x11000 0x1000>;
++		};
++		dcsr-ddr@12000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr>;
++			reg = <0x12000 0x1000>;
++		};
++		dcsr-nal@18000 {
++			compatible = "fsl,p2041-dcsr-nal", "fsl,dcsr-nal";
++			reg = <0x18000 0x1000>;
++		};
++		dcsr-rcpm@22000 {
++			compatible = "fsl,p2041-dcsr-rcpm", "fsl,dcsr-rcpm";
++			reg = <0x22000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@40000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu0>;
++			reg = <0x40000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@41000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu1>;
++			reg = <0x41000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@42000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu2>;
++			reg = <0x42000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@43000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu3>;
++			reg = <0x43000 0x1000>;
++		};
++	};
++
+ 	soc: soc@ffe000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -128,7 +197,7 @@
+ 			fsl,num-laws = <32>;
+ 		};
+ 
+-		memory-controller@8000 {
++		ddr: memory-controller@8000 {
+ 			compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
+ 			reg = <0x8000 0x1000>;
+ 			interrupts = <16 2 1 23>;
+diff --git a/arch/powerpc/boot/dts/p3041ds.dts b/arch/powerpc/boot/dts/p3041ds.dts
+index 69cae67..ce15726 100644
+--- a/arch/powerpc/boot/dts/p3041ds.dts
++++ b/arch/powerpc/boot/dts/p3041ds.dts
+@@ -45,6 +45,10 @@
+ 		device_type = "memory";
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
++	};
++
+ 	soc: soc@ffe000000 {
+ 		spi@110000 {
+ 			flash@0 {
+diff --git a/arch/powerpc/boot/dts/p3041si.dtsi b/arch/powerpc/boot/dts/p3041si.dtsi
+index 8b69580..e788b25 100644
+--- a/arch/powerpc/boot/dts/p3041si.dtsi
++++ b/arch/powerpc/boot/dts/p3041si.dtsi
+@@ -42,6 +42,7 @@
+ 
+ 	aliases {
+ 		ccsr = &soc;
++		dcsr = &dcsr;
+ 
+ 		serial0 = &serial0;
+ 		serial1 = &serial1;
+@@ -114,6 +115,74 @@
+ 		};
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,dcsr", "simple-bus";
++
++		dcsr-epu@0 {
++			compatible = "fsl,dcsr-epu";
++			interrupts = <36 2 0 0
++				      68 2 0 0
++				      69 2 0 0>;
++			interrupt-parent = <&mpic>;
++			reg = <0x0 0x1000>;
++		};
++		dcsr-npc {
++			compatible = "fsl,dcsr-npc";
++			reg = <0x1000 0x1000 0x1000000 0x8000>;
++		};
++		dcsr-nxc@2000 {
++			compatible = "fsl,dcsr-nxc";
++			reg = <0x2000 0x1000>;
++		};
++		dcsr-corenet {
++			compatible = "fsl,dcsr-corenet";
++			reg = <0x8000 0x1000 0xB0000 0x1000>;
++		};
++		dcsr-dpaa@9000 {
++			compatible = "fsl,p43041-dcsr-dpaa", "fsl,dcsr-dpaa";
++			reg = <0x9000 0x1000>;
++		};
++		dcsr-ocn@11000 {
++			compatible = "fsl,p43041-dcsr-ocn", "fsl,dcsr-ocn";
++			reg = <0x11000 0x1000>;
++		};
++		dcsr-ddr@12000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr>;
++			reg = <0x12000 0x1000>;
++		};
++		dcsr-nal@18000 {
++			compatible = "fsl,p43041-dcsr-nal", "fsl,dcsr-nal";
++			reg = <0x18000 0x1000>;
++		};
++		dcsr-rcpm@22000 {
++			compatible = "fsl,p43041-dcsr-rcpm", "fsl,dcsr-rcpm";
++			reg = <0x22000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@40000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu0>;
++			reg = <0x40000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@41000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu1>;
++			reg = <0x41000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@42000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu2>;
++			reg = <0x42000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@43000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu3>;
++			reg = <0x43000 0x1000>;
++		};
++	};
++
+ 	soc: soc@ffe000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -133,7 +202,7 @@
+ 			fsl,num-laws = <32>;
+ 		};
+ 
+-		memory-controller@8000 {
++		ddr: memory-controller@8000 {
+ 			compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
+ 			reg = <0x8000 0x1000>;
+ 			interrupts = <16 2 1 23>;
+diff --git a/arch/powerpc/boot/dts/p3060qds.dts b/arch/powerpc/boot/dts/p3060qds.dts
+index bf3844b..89beeab 100644
+--- a/arch/powerpc/boot/dts/p3060qds.dts
++++ b/arch/powerpc/boot/dts/p3060qds.dts
+@@ -45,6 +45,10 @@
+ 		device_type = "memory";
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
++	};
++
+ 	soc: soc@ffe000000 {
+ 		spi@110000 {
+ 			flash@0 {
+diff --git a/arch/powerpc/boot/dts/p3060si.dtsi b/arch/powerpc/boot/dts/p3060si.dtsi
+index 0e2cd10..5a4842c 100644
+--- a/arch/powerpc/boot/dts/p3060si.dtsi
++++ b/arch/powerpc/boot/dts/p3060si.dtsi
+@@ -42,6 +42,7 @@
+ 
+ 	aliases {
+ 		ccsr = &soc;
++		dcsr = &dcsr;
+ 
+ 		serial0 = &serial0;
+ 		serial1 = &serial1;
+@@ -125,6 +126,84 @@
+ 		};
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,dcsr", "simple-bus";
++
++		dcsr-epu@0 {
++			compatible = "fsl,dcsr-epu";
++			interrupts = <36 2 0 0
++				      68 2 0 0
++				      69 2 0 0>;
++			interrupt-parent = <&mpic>;
++			reg = <0x0 0x1000>;
++		};
++		dcsr-npc {
++			compatible = "fsl,dcsr-npc";
++			reg = <0x1000 0x1000 0x1000000 0x8000>;
++		};
++		dcsr-nxc@2000 {
++			compatible = "fsl,dcsr-nxc";
++			reg = <0x2000 0x1000>;
++		};
++		dcsr-corenet {
++			compatible = "fsl,dcsr-corenet";
++			reg = <0x8000 0x1000 0xB0000 0x1000>;
++		};
++		dcsr-dpaa@9000 {
++			compatible = "fsl,p3060-dcsr-dpaa", "fsl,dcsr-dpaa";
++			reg = <0x9000 0x1000>;
++		};
++		dcsr-ocn@11000 {
++			compatible = "fsl,p3060-dcsr-ocn", "fsl,dcsr-ocn";
++			reg = <0x11000 0x1000>;
++		};
++		dcsr-ddr@12000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr>;
++			reg = <0x12000 0x1000>;
++		};
++		dcsr-nal@18000 {
++			compatible = "fsl,p3060-dcsr-nal", "fsl,dcsr-nal";
++			reg = <0x18000 0x1000>;
++		};
++		dcsr-rcpm@22000 {
++			compatible = "fsl,p3060-dcsr-rcpm", "fsl,dcsr-rcpm";
++			reg = <0x22000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@40000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu0>;
++			reg = <0x40000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@41000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu1>;
++			reg = <0x41000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@44000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu4>;
++			reg = <0x44000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@45000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu5>;
++			reg = <0x45000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@46000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu6>;
++			reg = <0x46000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@47000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu7>;
++			reg = <0x47000 0x1000>;
++		};
++	};
++
+ 	soc: soc@ffe000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -144,7 +223,7 @@
+ 			fsl,num-laws = <32>;
+ 		};
+ 
+-		memory-controller@8000 {
++		ddr: memory-controller@8000 {
+ 			compatible = "fsl,qoriq-memory-controller-v4.4", "fsl,qoriq-memory-controller";
+ 			reg = <0x8000 0x1000>;
+ 			interrupts = <16 2 1 23>;
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index eb11098..c1ab435 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -45,6 +45,10 @@
+ 		device_type = "memory";
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
++	};
++
+ 	soc: soc@ffe000000 {
+ 		spi@110000 {
+ 			flash@0 {
+diff --git a/arch/powerpc/boot/dts/p4080si.dtsi b/arch/powerpc/boot/dts/p4080si.dtsi
+index 4984edb..941ba6d 100644
+--- a/arch/powerpc/boot/dts/p4080si.dtsi
++++ b/arch/powerpc/boot/dts/p4080si.dtsi
+@@ -42,6 +42,7 @@
+ 
+ 	aliases {
+ 		ccsr = &soc;
++		dcsr = &dcsr;
+ 
+ 		serial0 = &serial0;
+ 		serial1 = &serial1;
+@@ -143,6 +144,99 @@
+ 		};
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,dcsr", "simple-bus";
++
++		dcsr-epu@0 {
++			compatible = "fsl,dcsr-epu";
++			interrupts = <36 2 0 0
++				      68 2 0 0
++				      69 2 0 0>;
++			interrupt-parent = <&mpic>;
++			reg = <0x0 0x1000>;
++		};
++		dcsr-npc {
++			compatible = "fsl,dcsr-npc";
++			reg = <0x1000 0x1000 0x1000000 0x8000>;
++		};
++		dcsr-nxc@2000 {
++			compatible = "fsl,dcsr-nxc";
++			reg = <0x2000 0x1000>;
++		};
++		dcsr-corenet {
++			compatible = "fsl,dcsr-corenet";
++			reg = <0x8000 0x1000 0xB0000 0x1000>;
++		};
++		dcsr-dpaa@9000 {
++			compatible = "fsl,p4080-dcsr-dpaa", "fsl,dcsr-dpaa";
++			reg = <0x9000 0x1000>;
++		};
++		dcsr-ocn@11000 {
++			compatible = "fsl,p4080-dcsr-ocn", "fsl,dcsr-ocn";
++			reg = <0x11000 0x1000>;
++		};
++		dcsr-ddr@12000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr1>;
++			reg = <0x12000 0x1000>;
++		};
++		dcsr-ddr@13000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr2>;
++			reg = <0x13000 0x1000>;
++		};
++		dcsr-nal@18000 {
++			compatible = "fsl,p4080-dcsr-nal", "fsl,dcsr-nal";
++			reg = <0x18000 0x1000>;
++		};
++		dcsr-rcpm@22000 {
++			compatible = "fsl,p4080-dcsr-rcpm", "fsl,dcsr-rcpm";
++			reg = <0x22000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@40000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu0>;
++			reg = <0x40000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@41000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu1>;
++			reg = <0x41000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@42000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu2>;
++			reg = <0x42000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@43000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu3>;
++			reg = <0x43000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@44000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu4>;
++			reg = <0x44000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@45000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu5>;
++			reg = <0x45000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@46000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu6>;
++			reg = <0x46000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@47000 {
++			compatible = "fsl,dcsr-e500mc-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu7>;
++			reg = <0x47000 0x1000>;
++		};
++	};
++
+ 	soc: soc@ffe000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -162,13 +256,13 @@
+ 			fsl,num-laws = <32>;
+ 		};
+ 
+-		memory-controller@8000 {
++		ddr1: memory-controller@8000 {
+ 			compatible = "fsl,qoriq-memory-controller-v4.4", "fsl,qoriq-memory-controller";
+ 			reg = <0x8000 0x1000>;
+ 			interrupts = <16 2 1 23>;
+ 		};
+ 
+-		memory-controller@9000 {
++		ddr2: memory-controller@9000 {
+ 			compatible = "fsl,qoriq-memory-controller-v4.4","fsl,qoriq-memory-controller";
+ 			reg = <0x9000 0x1000>;
+ 			interrupts = <16 2 1 22>;
+diff --git a/arch/powerpc/boot/dts/p5020ds.dts b/arch/powerpc/boot/dts/p5020ds.dts
+index 8366e2f..38fbf5c 100644
+--- a/arch/powerpc/boot/dts/p5020ds.dts
++++ b/arch/powerpc/boot/dts/p5020ds.dts
+@@ -45,6 +45,10 @@
+ 		device_type = "memory";
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
++	};
++
+ 	soc: soc@ffe000000 {
+ 		spi@110000 {
+ 			flash@0 {
+diff --git a/arch/powerpc/boot/dts/p5020si.dtsi b/arch/powerpc/boot/dts/p5020si.dtsi
+index 5e6048e..93f9348 100644
+--- a/arch/powerpc/boot/dts/p5020si.dtsi
++++ b/arch/powerpc/boot/dts/p5020si.dtsi
+@@ -42,6 +42,7 @@
+ 
+ 	aliases {
+ 		ccsr = &soc;
++		dcsr = &dcsr;
+ 
+ 		serial0 = &serial0;
+ 		serial1 = &serial1;
+@@ -98,6 +99,69 @@
+ 		};
+ 	};
+ 
++	dcsr: dcsr@f00000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,dcsr", "simple-bus";
++
++		dcsr-epu@0 {
++			compatible = "fsl,dcsr-epu";
++			interrupts = <36 2 0 0
++				      68 2 0 0
++				      69 2 0 0>;
++			interrupt-parent = <&mpic>;
++			reg = <0x0 0x1000>;
++		};
++		dcsr-npc {
++			compatible = "fsl,dcsr-npc";
++			reg = <0x1000 0x1000 0x1000000 0x8000>;
++		};
++		dcsr-nxc@2000 {
++			compatible = "fsl,dcsr-nxc";
++			reg = <0x2000 0x1000>;
++		};
++		dcsr-corenet {
++			compatible = "fsl,dcsr-corenet";
++			reg = <0x8000 0x1000 0xB0000 0x1000>;
++		};
++		dcsr-dpaa@9000 {
++			compatible = "fsl,p5020-dcsr-dpaa", "fsl,dcsr-dpaa";
++			reg = <0x9000 0x1000>;
++		};
++		dcsr-ocn@11000 {
++			compatible = "fsl,p5020-dcsr-ocn", "fsl,dcsr-ocn";
++			reg = <0x11000 0x1000>;
++		};
++		dcsr-ddr@12000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr1>;
++			reg = <0x12000 0x1000>;
++		};
++		dcsr-ddr@13000 {
++			compatible = "fsl,dcsr-ddr";
++			dev-handle = <&ddr2>;
++			reg = <0x13000 0x1000>;
++		};
++		dcsr-nal@18000 {
++			compatible = "fsl,p5020-dcsr-nal", "fsl,dcsr-nal";
++			reg = <0x18000 0x1000>;
++		};
++		dcsr-rcpm@22000 {
++			compatible = "fsl,p5020-dcsr-rcpm", "fsl,dcsr-rcpm";
++			reg = <0x22000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@40000 {
++			compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu0>;
++			reg = <0x40000 0x1000>;
++		};
++		dcsr-cpu-sb-proxy@41000 {
++			compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++			cpu-handle = <&cpu1>;
++			reg = <0x41000 0x1000>;
++		};
++	};
++
+ 	soc: soc@ffe000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -117,13 +181,13 @@
+ 			fsl,num-laws = <32>;
+ 		};
+ 
+-		memory-controller@8000 {
++		ddr1: memory-controller@8000 {
+ 			compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
+ 			reg = <0x8000 0x1000>;
+ 			interrupts = <16 2 1 23>;
+ 		};
+ 
+-		memory-controller@9000 {
++		ddr2: memory-controller@9000 {
+ 			compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
+ 			reg = <0x9000 0x1000>;
+ 			interrupts = <16 2 1 22>;
+-- 
+1.7.3.4
