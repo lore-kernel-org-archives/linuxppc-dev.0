@@ -1,33 +1,30 @@
-Return-Path: <lasaine@lvk.cs.msu.su>
-Received: from mail.lvk.cs.msu.su (lvk-gate.cmc.msu.ru [212.192.248.233])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.lvk.cs.msu.su", Issuer "CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4098CB6F18
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A9F60B6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Sep 2011 22:30:26 +1000 (EST)
-Date: Fri, 2 Sep 2011 16:30:10 +0400
-From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+	Fri,  2 Sep 2011 23:00:05 +1000 (EST)
+Subject: Re: [PATCH 14/14] arm/include/asm/io.h : added macros to
+	read/write big/little endian register
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Pratyush Anand <pratyush.anand@gmail.com>
-Subject: Re: [PATCH 02/14] dwc/otg: Structure declaration for shared data
-Message-ID: <20110902163010.61be424d@apollo.gnet>
-In-Reply-To: <CAHM4w1nZkjT2zXB=KfXw0ueOBTLRL2hMFxRYyFwTAoWsdrD9iA@mail.gmail.com>
+In-Reply-To: <CAHM4w1k56SgXXvDm0f8-P_LOsmYgG4_RjBVD3T9ws+BNk+U_+Q@mail.gmail.com>
 References: <cover.1314704557.git.pratyush.anand@st.com>
-	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
-	<9183dc7afa5b8cde400e9f37f5679d4f@mail.gmail.com>
-	<CAHM4w1nHQ1arnTjFyp4dbmp1SBWKJPfREOOR_yykfaVyS48-iA@mail.gmail.com>
-	<a85a652e82b2bacdda84d7286b804aa3@mail.gmail.com>
-	<CAHM4w1nZkjT2zXB=KfXw0ueOBTLRL2hMFxRYyFwTAoWsdrD9iA@mail.gmail.com>
+	<335243c9467c0127206234819a94c9f72358fdf2.1314704558.git.pratyush.anand@st.com>
+	<20110831073500.GB9353@linutronix.de>
+	<CAHM4w1k56SgXXvDm0f8-P_LOsmYgG4_RjBVD3T9ws+BNk+U_+Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 02 Sep 2011 21:02:32 +1000
+Message-ID: <1314961352.13112.2.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA256;
-	boundary="Sig_/9D6beRehhST1DbnEHaQqnIu";
-	protocol="application/pgp-signature"
 Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com,
-	Tirumala Marri <tmarri@apm.com>, linux-usb@vger.kernel.org,
-	vipin.kumar@st.com, shiraz.hashim@st.com, Amit.VIRDI@st.com,
-	rajeev-dlh.kumar@st.com, Mark Miesfeld <mmiesfeld@apm.com>,
-	deepak.sikri@st.com, linuxppc-dev@lists.ozlabs.org,
-	Fushen Chen <fchen@apm.com>
+	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	linux-usb@vger.kernel.org, vipin.kumar@st.com,
+	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
+	mmiesfeld@apm.com, deepak.sikri@st.com,
+	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,50 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/9D6beRehhST1DbnEHaQqnIu
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 
-=D0=92 Fri, 2 Sep 2011 17:12:17 +0530
-Pratyush Anand <pratyush.anand@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+> There can be some peripheral like dwc-otg, whose registers will be
+> either in LE or in BE
+> depending on the RTL configuration selected by a implementor.
+> Software always expects a LE value when it will call "in_" and will
+> provide a LE value when "out_".
+> It expects beacuse , it wants to do same bit wise operation for both
+> configurations.
 
-> I will send you those patches.
-> But, how to go about it? Will you send next revision of your patces soon,=
- and
-> will also include comments for current review?
->=20
-> Or,
->=20
-> I replly all the comments from community and get agreed about
-> modifications first.
-> Then I will release next revision with all these modifications and get
-> it included. Once these patches are
-> included then we can keep on sending further patches over those
-> included. This will shorten review time
-> and will be easier for inclusion.
+Then these are the wrong accessors.
 
-What do you think about making a public git repository on github, for
-example? I'm using dwc_otg on several MIPS boards and would be happy to
-contribute too (at least, fix things pointed out by reviewers to speed
-up inclusion).
+Cheers,
+Ben.
 
---=20
-  Alexander
-
---Sig_/9D6beRehhST1DbnEHaQqnIu
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBCAAGBQJOYMxSAAoJEElrwznyooJbJSUIAJnUMUqEiuzTF6pAUT9Pa9B0
-RlGr4uR3qhkJybsF4AW6xV/1baVliTmgduHZvAX34t7OQHZFjjdIpVhzHfWS8ejJ
-HWH4nbiHuKNSC3NZleVtPGe65dAWqnsDTZ45MBVleWHNpVRofPNXFUr+YQ86aqT2
-HdrWaGA8G6q8akOtdcYb7RPXDXlXVJP2b62LxrRUnL5b+T0tWhnl19OAJCACzaJS
-Smwv5LeOsBc2+lebyCruHqlVqJURVzmHB7FYoPzp3er/p3RKElk1tQgLMv2ZR7Pr
-ySyh9aHAqkgOSP6moZxYfsvGte8hp6FLmdelwNdwNF6jL7+FYSUngnwsASugmkk=
-=0I5R
------END PGP SIGNATURE-----
-
---Sig_/9D6beRehhST1DbnEHaQqnIu--
+> 
+> 
+> >>+
+> >
+> > Please split this patch out and get it accepterd by ARM community. USB
+> > people won't merge this.
+> >
+> 
+> Ok, will send it to ARM mailing list.
+> 
+> Regards
+> Pratyush
+> 
+> > Sebastian
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
