@@ -1,29 +1,18 @@
-Return-Path: <greg@kroah.com>
-Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
-	[66.111.4.28])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8DF2DB6F8B
+	by ozlabs.org (Postfix) with ESMTPS id 68D0FB6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Sep 2011 10:20:01 +1000 (EST)
-Date: Fri, 2 Sep 2011 06:57:51 -0700
-From: Greg KH <greg@kroah.com>
-To: Pratyush Anand <pratyush.anand@gmail.com>
-Subject: Re: [PATCH 02/14] dwc/otg: Structure declaration for shared data
-Message-ID: <20110902135751.GB28815@kroah.com>
-References: <cover.1314704557.git.pratyush.anand@st.com>
-	<d10bbf1498af371e41907fa07624456d981e56af.1314704557.git.pratyush.anand@st.com>
-	<20110831223604.GB27818@kroah.com>
-	<CAHM4w1npnX9ELf6AypR7+3D55qUw3Euz0dT_rb7UOj=1buuN+A@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <CAHM4w1npnX9ELf6AypR7+3D55qUw3Euz0dT_rb7UOj=1buuN+A@mail.gmail.com>
-Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
-	linux-usb@vger.kernel.org, vipin.kumar@st.com,
-	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
-	mmiesfeld@apm.com, deepak.sikri@st.com,
-	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
+	Mon,  5 Sep 2011 06:08:41 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=windows-1252
+Subject: early_init_devtree() order of memblock limit setting
+Date: Sun, 4 Sep 2011 15:08:32 -0500
+Message-Id: <8A961C15-8762-4350-B96D-5173F18C785B@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v1244.3)
+Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,23 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 02, 2011 at 05:19:17PM +0530, Pratyush Anand wrote:
-> On Thu, Sep 1, 2011 at 4:06 AM, Greg KH <greg@kroah.com> wrote:
-> > On Tue, Aug 30, 2011 at 05:27:49PM +0530, Pratyush Anand wrote:
-> >> There are some DWC OTG parameters which might be passed by a platform.
-> >> Declaration for structure of those parameters have been provided in this
-> >> include file.
-> >>
-> >> Signed-off-by: Pratyush Anand <pratyush.anand@st.com>
-> >> ---
-> >>  include/linux/usb/dwc_otg.h |  274 +++++++++++++++++++++++++++++++++++++++++++
-> >>  1 files changed, 274 insertions(+), 0 deletions(-)
-> >>  create mode 100644 include/linux/usb/dwc_otg.h
-> >>
-> >> diff --git a/include/linux/usb/dwc_otg.h b/include/linux/usb/dwc_otg.h
-> >
-> > Shouldn't this be in include/linux/platform/ instead?
-> 
-> do you mean linux/platform_data/?
+Ben,
 
-Yes, sorry.
+I've got an issue on Book-E 64 with the bolted linear mapping and how =
+big it might be.  We have to take into account things like mem=3D when =
+determining how to set ppc64_rma_size.  So I'm wondering if there is a =
+reason w/regards to the order in which we call =
+setup_initial_memory_limit() vs parsing the cmdline and calling =
+memblock_enforce_memory_limit(limit) in early_init_devtree().
+
+Could we reorder the follow code such that we call =
+setup_initial_memory_limit() to after memblock_enforce_memory_limit()?
+
+- k
+
+void __init early_init_devtree(void *params)
+{
+	=85
+
+        setup_initial_memory_limit(memstart_addr, first_memblock_size);
+
+        /* Save command line for /proc/cmdline and then parse parameters =
+*/
+        strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
+        parse_early_param();
+
+        /* Reserve MEMBLOCK regions used by kernel, initrd, dt, etc... =
+*/
+        memblock_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
+        /* If relocatable, reserve first 32k for interrupt vectors etc. =
+*/
+        if (PHYSICAL_START > MEMORY_START)
+                memblock_reserve(MEMORY_START, 0x8000);
+        reserve_kdump_trampoline();
+        reserve_crashkernel();
+        early_reserve_mem();
+        phyp_dump_reserve_mem();
+
+        limit =3D memory_limit;
+        if (! limit) {
+                phys_addr_t memsize;
+
+                /* Ensure that total memory size is page-aligned, =
+because
+                 * otherwise mark_bootmem() gets upset. */
+                memblock_analyze();
+                memsize =3D memblock_phys_mem_size();
+                if ((memsize & PAGE_MASK) !=3D memsize)
+                        limit =3D memsize & PAGE_MASK;
+        }
+        memblock_enforce_memory_limit(limit);
+
+	=85
+}=
