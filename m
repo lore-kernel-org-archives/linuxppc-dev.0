@@ -1,29 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D64DB6F7B
+Return-Path: <B25806@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4ABA5B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Sep 2011 03:17:26 +1000 (EST)
-Subject: Re: [PATCH 14/14] arm/include/asm/io.h : added macros to
-	read/write big/little endian register
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-In-Reply-To: <20110905142802.GB24469@linutronix.de>
-References: <cover.1314704557.git.pratyush.anand@st.com>
-	<335243c9467c0127206234819a94c9f72358fdf2.1314704558.git.pratyush.anand@st.com>
-	<1314961303.13112.1.camel@pasglop>
-	<20110905142802.GB24469@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 06 Sep 2011 03:16:59 +1000
-Message-ID: <1315243019.13112.52.camel@pasglop>
-Mime-Version: 1.0
-Cc: Pratyush Anand <pratyush.anand@st.com>, viresh.kumar@st.com,
-	vipulkumar.samar@st.com, bhupesh.sharma@st.com, tmarri@apm.com,
-	linux-usb@vger.kernel.org, vipin.kumar@st.com,
-	shiraz.hashim@st.com, Amit.VIRDI@st.com, rajeev-dlh.kumar@st.com,
-	mmiesfeld@apm.com, deepak.sikri@st.com,
-	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
+	Tue,  6 Sep 2011 16:50:57 +1000 (EST)
+Content-Type: text/plain; charset="utf-8"; format=flowed; delsp=yes
+To: Kumar Gala <kumar.gala@freescale.com>, Chunhe Lan
+	<Chunhe.Lan@freescale.com>, Chris Ball <cjb@laptop.org>
+Subject: Re: [PATCH 3/3 v2] mmc: Use mmc_delay() instead of mdelay() for time
+	delay
+References: <1314345310-15041-1-git-send-email-Chunhe.Lan@freescale.com>
+	<CBED532F-6456-46FE-A96A-D91264E95966@freescale.com>
+Date: Tue, 6 Sep 2011 14:52:18 +0800
+MIME-Version: 1.0
+From: Chunhe Lan <b25806@freescale.com>
+Message-ID: <op.v1dj1g1mrxq6oa@localhost.localdomain>
+In-Reply-To: <CBED532F-6456-46FE-A96A-D91264E95966@freescale.com>
+Cc: Shengzhou Liu <b36685@freescale.com>, linux-mmc@vger.kernel.org,
+	PPC list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-09-05 at 16:28 +0200, Sebastian Andrzej Siewior wrote:
-> * Benjamin Herrenschmidt | 2011-09-02 21:01:43 [+1000]:
-> 
-> >or better, switch to the newer iomap variants which should be
-> >provided in both endianness.
-> 
-> I know some ppc-mmu provide the capability to perform the endian swap
-> during page access. I wasn't aware that there is a kernel wide interface
-> for this. What do you do on architectures which don't provide this?
+On Thu, 01 Sep 2011 12:42:08 +0800, Kumar Gala <kumar.gala@freescale.com>  
+wrote:
 
-Oh we don't provide a kernel interface for it, well not "officially",
-that's not what I meant by using iomap.
+>
+> On Aug 26, 2011, at 2:55 AM, Chunhe Lan wrote:
+>
+>> The mmc_delay() is a wrapper function for mdelay() and msleep().
+>>
+>>    o mdelay() -- block the system when busy-waiting.
+>>    o msleep() -- suspend the currently running task to enable CPU
+>>                  to process other tasks, so it is non-blocking
+>>                  regarding the whole system.
+>>
+>> When the desired delay time is more than a period of timer interrupt,
+>> just use msleep(). Change mdelay() to mmc_delay() to avoid chewing
+>> CPU when busy wait.
+>>
+>> Signed-off-by: Shengzhou Liu <b36685@freescale.com>
+>> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+>> Cc: Chris Ball <cjb@laptop.org>
+>> ---
+>> drivers/mmc/host/sdhci.c |   10 +++++-----
+>> 1 files changed, 5 insertions(+), 5 deletions(-)
+>
+> It might be good to either merge patch 2/3 & 3/3 or rename them since  
+> they have same commit message.
+>
+> Chris,
+>
+> Any comments on closing on these patches?
+>
 
-You -can- use the platform specific _PAGE_ENDIAN to ioremap_flags() but
-that's very platform specific and it's up to you to know you're doing it
-on a CPU that supports it :-)
+   Hello Chris,
 
-Cheers,
-Ben.
+           Do you any comments on these patches ?
+           If not, can you apply these patches to mmc-next ?
+
+           Thanks.
+          -Jack
+> - k
