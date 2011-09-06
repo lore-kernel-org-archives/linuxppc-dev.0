@@ -1,38 +1,17 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E86F9B6F76
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 19FBAB6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Sep 2011 22:00:11 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p86BsXPJ015922
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2011 21:54:33 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p86Bxwoa1785878
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2011 21:59:58 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p86BxwjI032210
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2011 21:59:58 +1000
-Message-ID: <4E660B3B.3070608@linux.vnet.ibm.com>
-Date: Tue, 06 Sep 2011 17:29:55 +0530
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [RFC PATCH 02/10] fadump: Reserve the memory for firmware assisted
-	dump.
-References: <20110713180252.6210.34810.stgit@mars.in.ibm.com>
-	<20110713180648.6210.39530.stgit@mars.in.ibm.com>
-	<20110831141134.590c4f4e@kryten>
-In-Reply-To: <20110831141134.590c4f4e@kryten>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-	Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Wed,  7 Sep 2011 03:26:06 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -mm] RapidIO: Tsi721 driver - fixes for the initial release
+Date: Tue,  6 Sep 2011 13:24:01 -0400
+Message-Id: <1315329841-3086-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>, Chul Kim <chul.kim@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,118 +21,673 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anton,
+- address comments made by Andrew Morton,
+  see http://marc.info/?l=linux-kernel&m=131361256714116&w=2
+- add spinlock for IB_MSG handler
+- rename private BDMA channel structure to avoid conflict with DMA engine
+- fix endianess bug in outbound message interrupt handler
 
-On 08/31/2011 09:41 AM, Anton Blanchard wrote:
-> 
-> Hi Mahesh,
-> 
-> Just a few comments.
-> 
->> +#define RMR_START	0x0
->> +#define RMR_END		(0x1UL << 28)	/* 256 MB */
-> 
-> What if the RMO is bigger than 256MB? Should we be using ppc64_rma_size?
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Chul Kim <chul.kim@idt.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+---
+ drivers/rapidio/devices/Kconfig  |    2 +-
+ drivers/rapidio/devices/tsi721.c |  273 ++++++++++++++++++++-----------------
+ drivers/rapidio/devices/tsi721.h |   20 ++-
+ 3 files changed, 161 insertions(+), 134 deletions(-)
 
-The idea was to have a minimum memory threshold that requires for a
-kernel to boot successfully. On some Power systems where RMO is 128MB,
-it still requires minimum of 256MB for kernel to boot successfully.
-
-I think we can rename above #defines as BOOT_MEM_START and BOOT_MEM_END
-respectively and have BOOT_MEM_END defined as below:
-
-#define BOOT_MEM_END 	((ppc64_rma_size < (0x1UL << 28)) ? \
-			(0x1UL << 28) : ppc64_rma_size)
-
-What do you think?
-
-> 
->> +#ifdef DEBUG
->> +#define PREFIX		"fadump: "
->> +#define DBG(fmt...)	printk(KERN_ERR PREFIX fmt)
->> +#else
->> +#define DBG(fmt...)
->> +#endif
-> 
-> We should use the standard debug macros (pr_debug etc).
-
-Sure will do that.
-
-> 
->> +/* Global variable to hold firmware assisted dump configuration info. */
->> +static struct fw_dump fw_dump;
-> 
-> You can remove this comment, especially because the variable isn't global :)
-
-Agree.
-
-> 
->> +	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
->> +					NULL);
->> +
->> +	if (!sections)
->> +		return 0;
->> +
->> +	for (i = 0; i < FW_DUMP_NUM_SECTIONS; i++) {
->> +		switch (sections[i].dump_section) {
->> +		case FADUMP_CPU_STATE_DATA:
->> +			fw_dump.cpu_state_data_size =
->> sections[i].section_size;
->> +			break;
->> +		case FADUMP_HPTE_REGION:
->> +			fw_dump.hpte_region_size =
->> sections[i].section_size;
->> +			break;
->> +		}
->> +	}
->> +	return 1;
->> +}
-> 
-> This makes me a bit nervous. We should really get the size of the property
-> and use it to iterate through the array. I saw no requirement in the PAPR
-> that the array had to be 2 entries long.
-> 
-
-Agree. Will make the change.
-
->> +static inline unsigned long calculate_reserve_size(void)
->> +{
->> +	unsigned long size;
->> +
->> +	/* divide by 20 to get 5% of value */
->> +	size = memblock_end_of_DRAM();
->> +	do_div(size, 20);
->> +
->> +	/* round it down in multiples of 256 */
->> +	size = size & ~0x0FFFFFFFUL;
->> +
->> +	/* Truncate to memory_limit. We don't want to over reserve
->> the memory.*/
->> +	if (memory_limit && size > memory_limit)
->> +		size = memory_limit;
->> +
->> +	return (size > RMR_END ? size : RMR_END);
->> +}
-> 
-> 5% is pretty aribitrary, that's 400GB on an 8TB box. Also our experience
-> with kdump is that 256MB is too small. Is there any reason to scale it
-> with memory size? Can we do what kdump does and set it to a single
-> value (eg 512MB)?
-
-I have picked up this heuristic from the phyp-assisted dump code. I am
-yet to figure out a fool-proof method to calculate the minimum memory
-needed for any Power box to successfully boot. Till then, I presume we
-can use this heuristic based approach?
-
-While testing these patches on huge power system with 1TB RAM and 896
-CPUs, I found that even 512MB is small. Hence setting it to a single
-value may not work for all system configuration.
-
-> 
-> We could override the default with a boot option, which is similar to
-> how kdump specifies the region to reserve.
-
-Agree, will work on the change.
-
-Thanks,
--Mahesh.
+diff --git a/drivers/rapidio/devices/Kconfig b/drivers/rapidio/devices/Kconfig
+index df0b0c5..12a9d7f 100644
+--- a/drivers/rapidio/devices/Kconfig
++++ b/drivers/rapidio/devices/Kconfig
+@@ -4,7 +4,7 @@
+ 
+ config RAPIDIO_TSI721
+ 	bool "IDT Tsi721 PCI Express SRIO Controller support"
+-	depends on RAPIDIO && PCI && PCIEPORTBUS
++	depends on RAPIDIO && PCIEPORTBUS
+ 	default "n"
+ 	---help---
+ 	  Include support for IDT Tsi721 PCI Express Serial RapidIO controller.
+diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
+index dafedc8..5225930 100644
+--- a/drivers/rapidio/devices/tsi721.c
++++ b/drivers/rapidio/devices/tsi721.c
+@@ -136,21 +136,20 @@ static int tsi721_maint_dma(struct tsi721_device *priv, u32 sys_size,
+ 	/* Start DMA operation */
+ 	iowrite32(rd_count + 2,
+ 		priv->regs + TSI721_DMAC_DWRCNT(TSI721_DMACH_MAINT));
+-	(void)ioread32(priv->regs + TSI721_DMAC_DWRCNT(TSI721_DMACH_MAINT));
++	ioread32(priv->regs + TSI721_DMAC_DWRCNT(TSI721_DMACH_MAINT));
+ 	i = 0;
+ 
+ 	/* Wait until DMA transfer is finished */
+ 	while ((ch_stat = ioread32(priv->regs +
+ 		TSI721_DMAC_STS(TSI721_DMACH_MAINT))) & TSI721_DMAC_STS_RUN) {
+-		udelay(10);
+-		i++;
+-		if (i >= 5000000) {
++		udelay(1);
++		if (++i >= 5000000) {
+ 			dev_dbg(&priv->pdev->dev,
+ 				"%s : DMA[%d] read timeout ch_status=%x\n",
+ 				__func__, TSI721_DMACH_MAINT, ch_stat);
+ 			if (!do_wr)
+ 				*data = 0xffffffff;
+-			err = -EFAULT;
++			err = -EIO;
+ 			goto err_out;
+ 		}
+ 	}
+@@ -173,7 +172,7 @@ static int tsi721_maint_dma(struct tsi721_device *priv, u32 sys_size,
+ 		udelay(1);
+ 		if (!do_wr)
+ 			*data = 0xffffffff;
+-		err = -EFAULT;
++		err = -EIO;
+ 		goto err_out;
+ 	}
+ 
+@@ -288,18 +287,15 @@ static void tsi721_pw_dpc(struct work_struct *work)
+ {
+ 	struct tsi721_device *priv = container_of(work, struct tsi721_device,
+ 						    pw_work);
+-	unsigned long flags;
+ 	u32 msg_buffer[RIO_PW_MSG_SIZE/sizeof(u32)]; /* Use full size PW message
+ 							buffer for RIO layer */
+ 
+ 	/*
+ 	 * Process port-write messages
+ 	 */
+-	spin_lock_irqsave(&priv->pw_fifo_lock, flags);
+-	while (kfifo_out(&priv->pw_fifo, (unsigned char *)msg_buffer,
+-			 TSI721_RIO_PW_MSG_SIZE)) {
++	while (kfifo_out_spinlocked(&priv->pw_fifo, (unsigned char *)msg_buffer,
++			 TSI721_RIO_PW_MSG_SIZE, &priv->pw_fifo_lock)) {
+ 		/* Process one message */
+-		spin_unlock_irqrestore(&priv->pw_fifo_lock, flags);
+ #ifdef DEBUG_PW
+ 		{
+ 		u32 i;
+@@ -315,9 +311,7 @@ static void tsi721_pw_dpc(struct work_struct *work)
+ #endif
+ 		/* Pass the port-write message to RIO core for processing */
+ 		rio_inb_pwrite_handler((union rio_pw_msg *)msg_buffer);
+-		spin_lock_irqsave(&priv->pw_fifo_lock, flags);
+ 	}
+-	spin_unlock_irqrestore(&priv->pw_fifo_lock, flags);
+ }
+ 
+ /**
+@@ -457,87 +451,6 @@ static void tsi721_db_dpc(struct work_struct *work)
+ }
+ 
+ /**
+- * tsi721_srio_msix - Tsi721 MSI-X SRIO MAC interrupt handler
+- * @irq: Linux interrupt number
+- * @ptr: Pointer to interrupt-specific data (mport structure)
+- *
+- * Handles Tsi721 interrupts from SRIO MAC.
+- */
+-static irqreturn_t tsi721_srio_msix(int irq, void *ptr)
+-{
+-	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
+-	u32 srio_int;
+-
+-	/* Service SRIO MAC interrupts */
+-	srio_int = ioread32(priv->regs + TSI721_RIO_EM_INT_STAT);
+-	if (srio_int & TSI721_RIO_EM_INT_STAT_PW_RX)
+-		tsi721_pw_handler((struct rio_mport *)ptr);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-/**
+- * tsi721_sr2pc_ch_msix - Tsi721 MSI-X SR2PC Channel interrupt handler
+- * @irq: Linux interrupt number
+- * @ptr: Pointer to interrupt-specific data (mport structure)
+- *
+- * Handles Tsi721 interrupts from SR2PC Channel.
+- * NOTE: At this moment services only one SR2PC channel associated with inbound
+- * doorbells.
+- */
+-static irqreturn_t tsi721_sr2pc_ch_msix(int irq, void *ptr)
+-{
+-	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
+-	u32 sr_ch_int;
+-
+-	/* Service Inbound DB interrupt from SR2PC channel */
+-	sr_ch_int = ioread32(priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
+-	if (sr_ch_int & TSI721_SR_CHINT_IDBQRCV)
+-		tsi721_dbell_handler((struct rio_mport *)ptr);
+-
+-	/* Clear interrupts */
+-	iowrite32(sr_ch_int, priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
+-	/* Read back to ensure that interrupt was cleared */
+-	sr_ch_int = ioread32(priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
+-
+-	return IRQ_HANDLED;
+-}
+-
+-/**
+- * tsi721_omsg_msix - MSI-X interrupt handler for outbound messaging
+- * @irq: Linux interrupt number
+- * @ptr: Pointer to interrupt-specific data (mport structure)
+- *
+- * Handles outbound messaging interrupts signaled using MSI-X.
+- */
+-static irqreturn_t tsi721_omsg_msix(int irq, void *ptr)
+-{
+-	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
+-	int mbox;
+-
+-	mbox = (irq - priv->msix[TSI721_VECT_OMB0_DONE].vector) % RIO_MAX_MBOX;
+-	tsi721_omsg_handler(priv, mbox);
+-	return IRQ_HANDLED;
+-}
+-
+-/**
+- * tsi721_imsg_msix - MSI-X interrupt handler for inbound messaging
+- * @irq: Linux interrupt number
+- * @ptr: Pointer to interrupt-specific data (mport structure)
+- *
+- * Handles inbound messaging interrupts signaled using MSI-X.
+- */
+-static irqreturn_t tsi721_imsg_msix(int irq, void *ptr)
+-{
+-	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
+-	int mbox;
+-
+-	mbox = (irq - priv->msix[TSI721_VECT_IMB0_RCV].vector) % RIO_MAX_MBOX;
+-	tsi721_imsg_handler(priv, mbox + 4);
+-	return IRQ_HANDLED;
+-}
+-
+-/**
+  * tsi721_irqhandler - Tsi721 interrupt handler
+  * @irq: Linux interrupt number
+  * @ptr: Pointer to interrupt-specific data (mport structure)
+@@ -575,7 +488,7 @@ static irqreturn_t tsi721_irqhandler(int irq, void *ptr)
+ 			/* Clear interrupts */
+ 			iowrite32(intval,
+ 				priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
+-			(void)ioread32(priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
++			ioread32(priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
+ 		}
+ 	}
+ 
+@@ -653,7 +566,89 @@ static void tsi721_interrupts_init(struct tsi721_device *priv)
+ 			TSI721_DEV_INT_SMSG_CH;
+ 
+ 	iowrite32(intr, priv->regs + TSI721_DEV_INTE);
+-	(void)ioread32(priv->regs + TSI721_DEV_INTE);
++	ioread32(priv->regs + TSI721_DEV_INTE);
++}
++
++#ifdef CONFIG_PCI_MSI
++/**
++ * tsi721_omsg_msix - MSI-X interrupt handler for outbound messaging
++ * @irq: Linux interrupt number
++ * @ptr: Pointer to interrupt-specific data (mport structure)
++ *
++ * Handles outbound messaging interrupts signaled using MSI-X.
++ */
++static irqreturn_t tsi721_omsg_msix(int irq, void *ptr)
++{
++	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
++	int mbox;
++
++	mbox = (irq - priv->msix[TSI721_VECT_OMB0_DONE].vector) % RIO_MAX_MBOX;
++	tsi721_omsg_handler(priv, mbox);
++	return IRQ_HANDLED;
++}
++
++/**
++ * tsi721_imsg_msix - MSI-X interrupt handler for inbound messaging
++ * @irq: Linux interrupt number
++ * @ptr: Pointer to interrupt-specific data (mport structure)
++ *
++ * Handles inbound messaging interrupts signaled using MSI-X.
++ */
++static irqreturn_t tsi721_imsg_msix(int irq, void *ptr)
++{
++	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
++	int mbox;
++
++	mbox = (irq - priv->msix[TSI721_VECT_IMB0_RCV].vector) % RIO_MAX_MBOX;
++	tsi721_imsg_handler(priv, mbox + 4);
++	return IRQ_HANDLED;
++}
++
++/**
++ * tsi721_srio_msix - Tsi721 MSI-X SRIO MAC interrupt handler
++ * @irq: Linux interrupt number
++ * @ptr: Pointer to interrupt-specific data (mport structure)
++ *
++ * Handles Tsi721 interrupts from SRIO MAC.
++ */
++static irqreturn_t tsi721_srio_msix(int irq, void *ptr)
++{
++	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
++	u32 srio_int;
++
++	/* Service SRIO MAC interrupts */
++	srio_int = ioread32(priv->regs + TSI721_RIO_EM_INT_STAT);
++	if (srio_int & TSI721_RIO_EM_INT_STAT_PW_RX)
++		tsi721_pw_handler((struct rio_mport *)ptr);
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * tsi721_sr2pc_ch_msix - Tsi721 MSI-X SR2PC Channel interrupt handler
++ * @irq: Linux interrupt number
++ * @ptr: Pointer to interrupt-specific data (mport structure)
++ *
++ * Handles Tsi721 interrupts from SR2PC Channel.
++ * NOTE: At this moment services only one SR2PC channel associated with inbound
++ * doorbells.
++ */
++static irqreturn_t tsi721_sr2pc_ch_msix(int irq, void *ptr)
++{
++	struct tsi721_device *priv = ((struct rio_mport *)ptr)->priv;
++	u32 sr_ch_int;
++
++	/* Service Inbound DB interrupt from SR2PC channel */
++	sr_ch_int = ioread32(priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
++	if (sr_ch_int & TSI721_SR_CHINT_IDBQRCV)
++		tsi721_dbell_handler((struct rio_mport *)ptr);
++
++	/* Clear interrupts */
++	iowrite32(sr_ch_int, priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
++	/* Read back to ensure that interrupt was cleared */
++	sr_ch_int = ioread32(priv->regs + TSI721_SR_CHINT(IDB_QUEUE));
++
++	return IRQ_HANDLED;
+ }
+ 
+ /**
+@@ -678,26 +673,11 @@ static int tsi721_request_msix(struct rio_mport *mport)
+ 	err = request_irq(priv->msix[TSI721_VECT_PWRX].vector,
+ 			tsi721_srio_msix, 0,
+ 			priv->msix[TSI721_VECT_PWRX].irq_name, (void *)mport);
+-out:
+-	return err;
+-}
+-
+-static int tsi721_request_irq(struct rio_mport *mport)
+-{
+-	struct tsi721_device *priv = mport->priv;
+-	int err;
+-
+-	if (priv->flags & TSI721_USING_MSIX)
+-		err = tsi721_request_msix(mport);
+-	else
+-		err = request_irq(priv->pdev->irq, tsi721_irqhandler,
+-			  (priv->flags & TSI721_USING_MSI) ? 0 : IRQF_SHARED,
+-			  DRV_NAME, (void *)mport);
+-
+ 	if (err)
+-		dev_err(&priv->pdev->dev,
+-			"Unable to allocate interrupt, Error: %d\n", err);
+-
++		free_irq(
++			priv->msix[TSI721_VECT_IDB].vector,
++			(void *)mport);
++out:
+ 	return err;
+ }
+ 
+@@ -781,6 +761,28 @@ static int tsi721_enable_msix(struct tsi721_device *priv)
+ 
+ 	return 0;
+ }
++#endif /* CONFIG_PCI_MSI */
++
++static int tsi721_request_irq(struct rio_mport *mport)
++{
++	struct tsi721_device *priv = mport->priv;
++	int err;
++
++#ifdef CONFIG_PCI_MSI
++	if (priv->flags & TSI721_USING_MSIX)
++		err = tsi721_request_msix(mport);
++	else
++#endif
++		err = request_irq(priv->pdev->irq, tsi721_irqhandler,
++			  (priv->flags & TSI721_USING_MSI) ? 0 : IRQF_SHARED,
++			  DRV_NAME, (void *)mport);
++
++	if (err)
++		dev_err(&priv->pdev->dev,
++			"Unable to allocate interrupt, Error: %d\n", err);
++
++	return err;
++}
+ 
+ /**
+  * tsi721_init_pc2sr_mapping - initializes outbound (PCIe->SRIO)
+@@ -966,11 +968,11 @@ static int tsi721_bdma_ch_init(struct tsi721_device *priv, int chnum)
+ 	iowrite32(TSI721_DMAC_INT_ALL,
+ 		priv->regs + TSI721_DMAC_INT(chnum));
+ 
+-	(void)ioread32(priv->regs + TSI721_DMAC_INT(chnum));
++	ioread32(priv->regs + TSI721_DMAC_INT(chnum));
+ 
+ 	/* Toggle DMA channel initialization */
+ 	iowrite32(TSI721_DMAC_CTL_INIT,	priv->regs + TSI721_DMAC_CTL(chnum));
+-	(void)ioread32(priv->regs + TSI721_DMAC_CTL(chnum));
++	ioread32(priv->regs + TSI721_DMAC_CTL(chnum));
+ 	udelay(10);
+ 
+ 	return 0;
+@@ -1205,7 +1207,7 @@ tsi721_add_outb_message(struct rio_mport *mport, struct rio_dev *rdev, int mbox,
+ 	/* Set new write count value */
+ 	iowrite32(priv->omsg_ring[mbox].wr_count,
+ 		priv->regs + TSI721_OBDMAC_DWRCNT(mbox));
+-	(void)ioread32(priv->regs + TSI721_OBDMAC_DWRCNT(mbox));
++	ioread32(priv->regs + TSI721_OBDMAC_DWRCNT(mbox));
+ 
+ 	return 0;
+ }
+@@ -1246,7 +1248,7 @@ static void tsi721_omsg_handler(struct tsi721_device *priv, int ch)
+ 		while (sts_ptr[j]) {
+ 			for (i = 0; i < 8 && sts_ptr[j]; i++, j++) {
+ 				prev_ptr = last_ptr;
+-				last_ptr = sts_ptr[j];
++				last_ptr = le64_to_cpu(sts_ptr[j]);
+ 				sts_ptr[j] = 0;
+ 			}
+ 
+@@ -1308,7 +1310,7 @@ no_sts_update:
+ 				priv->regs + TSI721_OBDMAC_INT(ch));
+ 		iowrite32(TSI721_OBDMAC_CTL_INIT,
+ 				priv->regs + TSI721_OBDMAC_CTL(ch));
+-		(void)ioread32(priv->regs + TSI721_OBDMAC_CTL(ch));
++		ioread32(priv->regs + TSI721_OBDMAC_CTL(ch));
+ 
+ 		/* Inform upper level to clear all pending tx slots */
+ 		if (priv->mport->outb_msg[ch].mcback)
+@@ -1318,7 +1320,7 @@ no_sts_update:
+ 		/* Synch tx_slot tracking */
+ 		iowrite32(priv->omsg_ring[ch].tx_slot,
+ 			priv->regs + TSI721_OBDMAC_DRDCNT(ch));
+-		(void)ioread32(priv->regs + TSI721_OBDMAC_DRDCNT(ch));
++		ioread32(priv->regs + TSI721_OBDMAC_DRDCNT(ch));
+ 		priv->omsg_ring[ch].wr_count = priv->omsg_ring[ch].tx_slot;
+ 		priv->omsg_ring[ch].sts_rdptr = 0;
+ 	}
+@@ -1394,8 +1396,6 @@ static int tsi721_open_outb_mbox(struct rio_mport *mport, void *dev_id,
+ 		goto out_buf;
+ 	}
+ 
+-	memset(priv->omsg_ring[mbox].omd_base, 0,
+-		(entries + 1) * sizeof(struct tsi721_omsg_desc));
+ 	priv->omsg_ring[mbox].tx_slot = 0;
+ 
+ 	/* Outbound message descriptor status FIFO allocation */
+@@ -1437,6 +1437,7 @@ static int tsi721_open_outb_mbox(struct rio_mport *mport, void *dev_id,
+ 
+ 	/* Enable interrupts */
+ 
++#ifdef CONFIG_PCI_MSI
+ 	if (priv->flags & TSI721_USING_MSIX) {
+ 		/* Request interrupt service if we are in MSI-X mode */
+ 		rc = request_irq(
+@@ -1467,12 +1468,14 @@ static int tsi721_open_outb_mbox(struct rio_mport *mport, void *dev_id,
+ 			goto out_stat;
+ 		}
+ 	}
++#endif /* CONFIG_PCI_MSI */
+ 
+ 	tsi721_omsg_interrupt_enable(priv, mbox, TSI721_OBDMAC_INT_ALL);
+ 
+ 	/* Initialize Outbound Message descriptors ring */
+ 	bd_ptr = priv->omsg_ring[mbox].omd_base;
+ 	bd_ptr[entries].type_id = cpu_to_le32(DTYPE5 << 29);
++	bd_ptr[entries].msg_info = 0;
+ 	bd_ptr[entries].next_lo =
+ 		cpu_to_le32((u64)priv->omsg_ring[mbox].omd_phys &
+ 		TSI721_OBDMAC_DPTRL_MASK);
+@@ -1483,13 +1486,14 @@ static int tsi721_open_outb_mbox(struct rio_mport *mport, void *dev_id,
+ 
+ 	/* Initialize Outbound Message engine */
+ 	iowrite32(TSI721_OBDMAC_CTL_INIT, priv->regs + TSI721_OBDMAC_CTL(mbox));
+-	(void)ioread32(priv->regs + TSI721_OBDMAC_DWRCNT(mbox));
++	ioread32(priv->regs + TSI721_OBDMAC_DWRCNT(mbox));
+ 	udelay(10);
+ 
+ 	priv->omsg_init[mbox] = 1;
+ 
+ 	return 0;
+ 
++#ifdef CONFIG_PCI_MSI
+ out_stat:
+ 	dma_free_coherent(&priv->pdev->dev,
+ 		priv->omsg_ring[mbox].sts_size * sizeof(struct tsi721_dma_sts),
+@@ -1497,6 +1501,7 @@ out_stat:
+ 		priv->omsg_ring[mbox].sts_phys);
+ 
+ 	priv->omsg_ring[mbox].sts_base = NULL;
++#endif /* CONFIG_PCI_MSI */
+ 
+ out_desc:
+ 	dma_free_coherent(&priv->pdev->dev,
+@@ -1540,12 +1545,14 @@ static void tsi721_close_outb_mbox(struct rio_mport *mport, int mbox)
+ 
+ 	tsi721_omsg_interrupt_disable(priv, mbox, TSI721_OBDMAC_INT_ALL);
+ 
++#ifdef CONFIG_PCI_MSI
+ 	if (priv->flags & TSI721_USING_MSIX) {
+ 		free_irq(priv->msix[TSI721_VECT_OMB0_DONE + mbox].vector,
+ 			 (void *)mport);
+ 		free_irq(priv->msix[TSI721_VECT_OMB0_INT + mbox].vector,
+ 			 (void *)mport);
+ 	}
++#endif /* CONFIG_PCI_MSI */
+ 
+ 	/* Free OMSG Descriptor Status FIFO */
+ 	dma_free_coherent(&priv->pdev->dev,
+@@ -1589,6 +1596,8 @@ static void tsi721_imsg_handler(struct tsi721_device *priv, int ch)
+ 	u32 mbox = ch - 4;
+ 	u32 imsg_int;
+ 
++	spin_lock(&priv->imsg_ring[mbox].lock);
++
+ 	imsg_int = ioread32(priv->regs + TSI721_IBDMAC_INT(ch));
+ 
+ 	if (imsg_int & TSI721_IBDMAC_INT_SRTO)
+@@ -1620,6 +1629,8 @@ static void tsi721_imsg_handler(struct tsi721_device *priv, int ch)
+ 		ch_inte |= TSI721_INT_IMSG_CHAN(ch);
+ 		iowrite32(ch_inte, priv->regs + TSI721_DEV_CHAN_INTE);
+ 	}
++
++	spin_unlock(&priv->imsg_ring[mbox].lock);
+ }
+ 
+ /**
+@@ -1653,6 +1664,7 @@ static int tsi721_open_inb_mbox(struct rio_mport *mport, void *dev_id,
+ 	priv->imsg_ring[mbox].fq_wrptr = 0;
+ 	for (i = 0; i < priv->imsg_ring[mbox].size; i++)
+ 		priv->imsg_ring[mbox].imq_base[i] = NULL;
++	spin_lock_init(&priv->imsg_ring[mbox].lock);
+ 
+ 	/* Allocate buffers for incoming messages */
+ 	priv->imsg_ring[mbox].buf_base =
+@@ -1740,6 +1752,7 @@ static int tsi721_open_inb_mbox(struct rio_mport *mport, void *dev_id,
+ 
+ 	/* Enable interrupts */
+ 
++#ifdef CONFIG_PCI_MSI
+ 	if (priv->flags & TSI721_USING_MSIX) {
+ 		/* Request interrupt service if we are in MSI-X mode */
+ 		rc = request_irq(priv->msix[TSI721_VECT_IMB0_RCV + mbox].vector,
+@@ -1763,15 +1776,19 @@ static int tsi721_open_inb_mbox(struct rio_mport *mport, void *dev_id,
+ 			dev_dbg(&priv->pdev->dev,
+ 				"Unable to allocate MSI-X interrupt for "
+ 				"IBOX%d-INT\n", mbox);
++			free_irq(
++				priv->msix[TSI721_VECT_IMB0_RCV + mbox].vector,
++				(void *)mport);
+ 			goto out_desc;
+ 		}
+ 	}
++#endif /* CONFIG_PCI_MSI */
+ 
+ 	tsi721_imsg_interrupt_enable(priv, ch, TSI721_IBDMAC_INT_ALL);
+ 
+ 	/* Initialize Inbound Message Engine */
+ 	iowrite32(TSI721_IBDMAC_CTL_INIT, priv->regs + TSI721_IBDMAC_CTL(ch));
+-	(void)ioread32(priv->regs + TSI721_IBDMAC_CTL(ch));
++	ioread32(priv->regs + TSI721_IBDMAC_CTL(ch));
+ 	udelay(10);
+ 	priv->imsg_ring[mbox].fq_wrptr = entries - 1;
+ 	iowrite32(entries - 1, priv->regs + TSI721_IBDMAC_FQWP(ch));
+@@ -1779,6 +1796,7 @@ static int tsi721_open_inb_mbox(struct rio_mport *mport, void *dev_id,
+ 	priv->imsg_init[mbox] = 1;
+ 	return 0;
+ 
++#ifdef CONFIG_PCI_MSI
+ out_desc:
+ 	dma_free_coherent(&priv->pdev->dev,
+ 		priv->imsg_ring[mbox].size * sizeof(struct tsi721_imsg_desc),
+@@ -1786,6 +1804,7 @@ out_desc:
+ 		priv->imsg_ring[mbox].imd_phys);
+ 
+ 	priv->imsg_ring[mbox].imd_base = NULL;
++#endif /* CONFIG_PCI_MSI */
+ 
+ out_dma:
+ 	dma_free_coherent(&priv->pdev->dev,
+@@ -1827,12 +1846,14 @@ static void tsi721_close_inb_mbox(struct rio_mport *mport, int mbox)
+ 	/* Disable Interrupts */
+ 	tsi721_imsg_interrupt_disable(priv, ch, TSI721_OBDMAC_INT_MASK);
+ 
++#ifdef CONFIG_PCI_MSI
+ 	if (priv->flags & TSI721_USING_MSIX) {
+ 		free_irq(priv->msix[TSI721_VECT_IMB0_RCV + mbox].vector,
+ 				(void *)mport);
+ 		free_irq(priv->msix[TSI721_VECT_IMB0_INT + mbox].vector,
+ 				(void *)mport);
+ 	}
++#endif /* CONFIG_PCI_MSI */
+ 
+ 	/* Clear Inbound Buffer Queue */
+ 	for (rx_slot = 0; rx_slot < priv->imsg_ring[mbox].size; rx_slot++)
+@@ -2101,6 +2122,7 @@ static int __devinit tsi721_setup_mport(struct tsi721_device *priv)
+ 
+ 	/* Hook up interrupt handler */
+ 
++#ifdef CONFIG_PCI_MSI
+ 	if (!tsi721_enable_msix(priv))
+ 		priv->flags |= TSI721_USING_MSIX;
+ 	else if (!pci_enable_msi(pdev))
+@@ -2108,6 +2130,7 @@ static int __devinit tsi721_setup_mport(struct tsi721_device *priv)
+ 	else
+ 		dev_info(&pdev->dev,
+ 			 "MSI/MSI-X is not available. Using legacy INTx.\n");
++#endif /* CONFIG_PCI_MSI */
+ 
+ 	err = tsi721_request_irq(mport);
+ 
+diff --git a/drivers/rapidio/devices/tsi721.h b/drivers/rapidio/devices/tsi721.h
+index 3bea6bc..58be4de 100644
+--- a/drivers/rapidio/devices/tsi721.h
++++ b/drivers/rapidio/devices/tsi721.h
+@@ -505,7 +505,7 @@ struct tsi721_dma_desc {
+ 		__le32 data[4];		   /* if DTYPE == 2 */
+ 		u32    reserved[4];	   /* if DTYPE == 3 */
+ 	};
+-} __attribute__((aligned(32)));
++} __aligned(32);
+ 
+ /*
+  * Inbound Messaging Descriptor
+@@ -533,7 +533,7 @@ struct tsi721_imsg_desc {
+ 	__le32 bufptr_hi;
+ 	u32    reserved[12];
+ 
+-} __attribute__((aligned(64)));
++} __aligned(64);
+ 
+ /*
+  * Outbound Messaging Descriptor
+@@ -567,11 +567,11 @@ struct tsi721_omsg_desc {
+ 		__le32 next_hi;		/* if DTYPE == 5 */
+ 	};
+ 
+-} __attribute__((aligned(16)));
++} __aligned(16);
+ 
+ struct tsi721_dma_sts {
+ 	__le64	desc_sts[8];
+-} __attribute__((aligned(64)));
++} __aligned(64);
+ 
+ struct tsi721_desc_sts_fifo {
+ 	union {
+@@ -581,7 +581,7 @@ struct tsi721_desc_sts_fifo {
+ 			__le32	hi;
+ 		} da32;
+ 	} stat[8];
+-} __attribute__((aligned(64)));
++} __aligned(64);
+ 
+ /* Descriptor types for BDMA and Messaging blocks */
+ enum dma_dtype {
+@@ -624,7 +624,7 @@ enum tsi721_smsg_int_flag {
+ 
+ /* Structures */
+ 
+-struct dma_chan {
++struct tsi721_bdma_chan {
+ 	int		bd_num;		/* number of buffer descriptors */
+ 	void		*bd_base;	/* start of DMA descriptors */
+ 	dma_addr_t	bd_phys;
+@@ -651,6 +651,7 @@ struct tsi721_imsg_ring {
+ 	void		*dev_id;
+ 	u32		fq_wrptr;
+ 	u32		desc_rdptr;
++	spinlock_t	lock;
+ };
+ 
+ struct tsi721_omsg_ring {
+@@ -679,6 +680,7 @@ enum tsi721_flags {
+ 	TSI721_IMSGID_SET	= (1 << 2),
+ };
+ 
++#ifdef CONFIG_PCI_MSI
+ /*
+  * MSI-X Table Entries (0 ... 69)
+  */
+@@ -726,14 +728,16 @@ struct msix_irq {
+ 	u16	vector;
+ 	char	irq_name[IRQ_DEVICE_NAME_MAX];
+ };
++#endif /* CONFIG_PCI_MSI */
+ 
+ struct tsi721_device {
+ 	struct pci_dev	*pdev;
+ 	struct rio_mport *mport;
+ 	u32		flags;
+ 	void __iomem	*regs;
++#ifdef CONFIG_PCI_MSI
+ 	struct msix_irq	msix[TSI721_VECT_MAX];
+-
++#endif
+ 	/* Doorbells */
+ 	void __iomem	*odb_base;
+ 	void		*idb_base;
+@@ -748,7 +752,7 @@ struct tsi721_device {
+ 	u32		pw_discard_count;
+ 
+ 	/* BDMA Engine */
+-	struct dma_chan bdma[TSI721_DMA_CHNUM];
++	struct tsi721_bdma_chan bdma[TSI721_DMA_CHNUM];
+ 
+ 	/* Inbound Messaging */
+ 	int		imsg_init[TSI721_IMSG_CHNUM];
+-- 
+1.7.6
