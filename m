@@ -1,15 +1,15 @@
-Return-Path: <tglx@linutronix.de>
-Date: Wed, 7 Sep 2011 19:32:39 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Miller <davem@davemloft.net>
+Return-Path: <davem@davemloft.net>
+Date: Wed, 07 Sep 2011 13:52:34 -0400 (EDT)
+Message-Id: <20110907.135234.17759197083710999.davem@davemloft.net>
+To: tglx@linutronix.de
 Subject: Re: [PATCH 45/62] net: irq: Remove IRQF_DISABLED
-In-Reply-To: <20110907.131325.897937687962213943.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.02.1109071932100.2723@ionos>
-References: <1315383059-3673-1-git-send-email-yong.zhang0@gmail.com>
-	<1315383059-3673-46-git-send-email-yong.zhang0@gmail.com>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.02.1109071932100.2723@ionos>
+References: <1315383059-3673-46-git-send-email-yong.zhang0@gmail.com>
 	<20110907.131325.897937687962213943.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<alpine.LFD.2.02.1109071932100.2723@ionos>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: perex@perex.cz, dhowells@redhat.com, prakity@marvell.com,
 	netdev@vger.kernel.org, chunkeey@googlemail.com,
 	sonic.zhang@analog.com, klaus.kudielka@ieee.org,
@@ -38,25 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 7 Sep 2011, David Miller wrote:
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Wed, 7 Sep 2011 19:32:39 +0200 (CEST)
 
-> From: Yong Zhang <yong.zhang0@gmail.com>
-> Date: Wed,  7 Sep 2011 16:10:42 +0800
+> On Wed, 7 Sep 2011, David Miller wrote:
 > 
-> > This flag is a NOOP and can be removed now.
-> > 
-> > Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+>> From: Yong Zhang <yong.zhang0@gmail.com>
+>> Date: Wed,  7 Sep 2011 16:10:42 +0800
+>> 
+>> > This flag is a NOOP and can be removed now.
+>> > 
+>> > Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+>> 
+>> I have the same concerns here as I had for the sparc case.
+>> 
+>> Some of these drivers might be using IRQF_DISABLED to make sure the
+>> IRQ cannot be delivered until it is explicitly enabled via an
+>> enable_irq() call.
+>> 
+>> How is that being accomodated now?
 > 
-> I have the same concerns here as I had for the sparc case.
-> 
-> Some of these drivers might be using IRQF_DISABLED to make sure the
-> IRQ cannot be delivered until it is explicitly enabled via an
-> enable_irq() call.
-> 
-> How is that being accomodated now?
+> Again IRQF_DISABLED never ever had that functionality. 
 
-Again IRQF_DISABLED never ever had that functionality. 
+My bad.
 
-Thanks,
+But what if these interrupts want interrupts disabled during their
+interrupt handler, for other reasons?
 
-	tglx
+This has the potential to break tons of stuff, especially on the
+really old chips which almost no developers have any more but some
+user might try to use.
