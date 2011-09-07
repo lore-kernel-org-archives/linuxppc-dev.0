@@ -1,32 +1,34 @@
 Return-Path: <yong.zhang0@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6F963B6F8B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  7 Sep 2011 18:20:08 +1000 (EST)
-Received: by mail-ww0-f45.google.com with SMTP id 9so6111507wwg.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 07 Sep 2011 01:20:07 -0700 (PDT)
 From: Yong Zhang <yong.zhang0@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 54/62] TTY: irq: Remove IRQF_DISABLED
-Date: Wed,  7 Sep 2011 16:10:51 +0800
-Message-Id: <1315383059-3673-55-git-send-email-yong.zhang0@gmail.com>
+Subject: [PATCH 55/62] USB: irq: Remove IRQF_DISABLED
+Date: Wed,  7 Sep 2011 16:10:52 +0800
+Message-Id: <1315383059-3673-56-git-send-email-yong.zhang0@gmail.com>
 In-Reply-To: <1315383059-3673-1-git-send-email-yong.zhang0@gmail.com>
 References: <1315383059-3673-1-git-send-email-yong.zhang0@gmail.com>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>, linux-cris-kernel@axis.com,
-	Tobias Klauser <tklauser@distanz.ch>,
+Cc: linux-usb@vger.kernel.org, Andiry Xu <andiry.xu@amd.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Sarah Sharp <sarah.a.sharp@linux.intel.com>,
+	Ming Lei <tom.leiming@gmail.com>, Martin Fuzzey <mfuzzey@gmail.com>,
+	"Justin P. Mattock" <justinmattock@gmail.com>,
+	Lennert Buytenhek <kernel@wantstofly.org>,
+	Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>,
+	John Youn <johnyoun@synopsys.com>,
+	Alan Stern <stern@rowland.harvard.edu>, mingo@elte.hu,
+	cbe-oss-dev@lists.ozlabs.org,
+	Javier Martinez Canillas <martinez.javier@gmail.com>,
+	Mike Frysinger <vapier@gentoo.org>,
 	Lucas De Marchi <lucas.demarchi@profusion.mobi>,
-	Greg Kroah-Hartman <gregkh@suse.de>, nios2-dev@sopc.et.ntust.edu.tw,
-	Mikael Starvik <starvik@axis.com>, Yong Zhang <yong.zhang0@gmail.com>,
-	Jesper Juhl <jj@chaosbits.net>, linux-serial@vger.kernel.org,
-	Jiri Kosina <jkosina@suse.cz>,
-	uclinux-dist-devel@blackfin.uclinux.org, tglx@linutronix.de,
-	Sonic Zhang <sonic.zhang@analog.com>,
-	linuxppc-dev@lists.ozlabs.org, mingo@elte.hu,
-	Alan Cox <alan@linux.intel.com>
+	Robert Morell <rmorell@nvidia.com>, Yong Zhang <yong.zhang0@gmail.com>,
+	Jesper Juhl <jj@chaosbits.net>, Ben Dooks <ben-linux@fluff.org>,
+	tglx@linutronix.de, linux-omap@vger.kernel.org,
+	Olav Kongas <ok@artecdesign.ee>, Axel Lin <axel.lin@gmail.com>,
+	linux-arm-kernel@lists.infradead.org, Eric Miao <eric.y.miao@gmail.com>,
+	Geoff Levand <geoff@infradead.org>, Jiri Kosina <jkosina@suse.cz>,
+	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>, Felipe Balbi <balbi@ti.com>,
+	Paul Mundt <lethal@linux-sh.org>, Joe Perches <joe@perches.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,402 +42,844 @@ This flag is a NOOP and can be removed now.
 
 Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
 ---
- drivers/tty/amiserial.c              |    2 +-
- drivers/tty/cyclades.c               |    2 +-
- drivers/tty/hvc/hvc_irq.c            |    2 +-
- drivers/tty/hvc/hvcs.c               |    2 +-
- drivers/tty/hvc/hvsi.c               |    2 +-
- drivers/tty/isicom.c                 |    2 +-
- drivers/tty/serial/68328serial.c     |    2 +-
- drivers/tty/serial/altera_jtaguart.c |    2 +-
- drivers/tty/serial/altera_uart.c     |    2 +-
- drivers/tty/serial/bfin_5xx.c        |    8 ++++----
- drivers/tty/serial/bfin_sport_uart.c |    2 +-
- drivers/tty/serial/crisv10.c         |   18 +++++++++---------
- drivers/tty/serial/icom.c            |    2 +-
- drivers/tty/serial/lantiq.c          |    6 +++---
- drivers/tty/serial/mcf.c             |    2 +-
- drivers/tty/serial/mpc52xx_uart.c    |    2 +-
- drivers/tty/serial/serial_ks8695.c   |    8 ++++----
- drivers/tty/serial/sh-sci.c          |    2 +-
- drivers/tty/serial/sn_console.c      |    2 +-
- 19 files changed, 35 insertions(+), 35 deletions(-)
+ drivers/usb/core/hcd-pci.c        |    2 +-
+ drivers/usb/gadget/at91_udc.c     |    4 ++--
+ drivers/usb/gadget/fusb300_udc.c  |    4 ++--
+ drivers/usb/gadget/imx_udc.c      |    2 +-
+ drivers/usb/gadget/m66592-udc.c   |    2 +-
+ drivers/usb/gadget/mv_udc_core.c  |    2 +-
+ drivers/usb/gadget/omap_udc.c     |    2 +-
+ drivers/usb/gadget/pxa25x_udc.c   |    6 +++---
+ drivers/usb/gadget/r8a66597-udc.c |    2 +-
+ drivers/usb/gadget/s3c2410_udc.c  |    4 ++--
+ drivers/usb/host/ehci-ath79.c     |    2 +-
+ drivers/usb/host/ehci-au1xxx.c    |    2 +-
+ drivers/usb/host/ehci-fsl.c       |    2 +-
+ drivers/usb/host/ehci-mxc.c       |    2 +-
+ drivers/usb/host/ehci-octeon.c    |    2 +-
+ drivers/usb/host/ehci-omap.c      |    2 +-
+ drivers/usb/host/ehci-orion.c     |    2 +-
+ drivers/usb/host/ehci-ps3.c       |    2 +-
+ drivers/usb/host/ehci-s5p.c       |    2 +-
+ drivers/usb/host/ehci-sh.c        |    2 +-
+ drivers/usb/host/ehci-spear.c     |    2 +-
+ drivers/usb/host/ehci-tegra.c     |    2 +-
+ drivers/usb/host/ehci-vt8500.c    |    2 +-
+ drivers/usb/host/fhci-hcd.c       |    4 ++--
+ drivers/usb/host/imx21-hcd.c      |    2 +-
+ drivers/usb/host/isp116x-hcd.c    |    2 +-
+ drivers/usb/host/isp1362-hcd.c    |    2 +-
+ drivers/usb/host/isp1760-if.c     |    6 +++---
+ drivers/usb/host/ohci-ath79.c     |    2 +-
+ drivers/usb/host/ohci-au1xxx.c    |    2 +-
+ drivers/usb/host/ohci-da8xx.c     |    2 +-
+ drivers/usb/host/ohci-ep93xx.c    |    2 +-
+ drivers/usb/host/ohci-octeon.c    |    2 +-
+ drivers/usb/host/ohci-omap.c      |    4 ++--
+ drivers/usb/host/ohci-omap3.c     |    2 +-
+ drivers/usb/host/ohci-pnx4008.c   |    2 +-
+ drivers/usb/host/ohci-pnx8550.c   |    2 +-
+ drivers/usb/host/ohci-ppc-of.c    |    2 +-
+ drivers/usb/host/ohci-ppc-soc.c   |    2 +-
+ drivers/usb/host/ohci-ps3.c       |    2 +-
+ drivers/usb/host/ohci-pxa27x.c    |    2 +-
+ drivers/usb/host/ohci-s3c2410.c   |    2 +-
+ drivers/usb/host/ohci-sa1111.c    |    2 +-
+ drivers/usb/host/ohci-sh.c        |    2 +-
+ drivers/usb/host/ohci-sm501.c     |    2 +-
+ drivers/usb/host/ohci-spear.c     |    2 +-
+ drivers/usb/host/ohci-ssb.c       |    2 +-
+ drivers/usb/host/ohci-tmio.c      |    2 +-
+ drivers/usb/host/r8a66597-hcd.c   |    2 +-
+ drivers/usb/host/sl811-hcd.c      |    2 +-
+ drivers/usb/host/xhci-pci.c       |    2 +-
+ drivers/usb/musb/musbhsdma.c      |    2 +-
+ drivers/usb/otg/isp1301_omap.c    |    2 +-
+ drivers/usb/renesas_usbhs/mod.c   |    2 +-
+ 54 files changed, 63 insertions(+), 63 deletions(-)
 
-diff --git a/drivers/tty/amiserial.c b/drivers/tty/amiserial.c
-index 2205795..047e8ff 100644
---- a/drivers/tty/amiserial.c
-+++ b/drivers/tty/amiserial.c
-@@ -2025,7 +2025,7 @@ static int __init amiga_serial_probe(struct platform_device *pdev)
- 	if (error)
- 		goto fail_unregister;
+diff --git a/drivers/usb/core/hcd-pci.c b/drivers/usb/core/hcd-pci.c
+index ce22f4a..a004db3 100644
+--- a/drivers/usb/core/hcd-pci.c
++++ b/drivers/usb/core/hcd-pci.c
+@@ -242,7 +242,7 @@ int usb_hcd_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
  
--	error = request_irq(IRQ_AMIGA_RBF, ser_rx_int, IRQF_DISABLED,
-+	error = request_irq(IRQ_AMIGA_RBF, ser_rx_int, 0,
- 			    "serial RX", state);
- 	if (error)
- 		goto fail_free_irq;
-diff --git a/drivers/tty/cyclades.c b/drivers/tty/cyclades.c
-index c0e8f2e..1215773 100644
---- a/drivers/tty/cyclades.c
-+++ b/drivers/tty/cyclades.c
-@@ -3377,7 +3377,7 @@ static int __init cy_detect_isa(void)
+ 	pci_set_master(dev);
  
- 		/* allocate IRQ */
- 		if (request_irq(cy_isa_irq, cyy_interrupt,
--				IRQF_DISABLED, "Cyclom-Y", &cy_card[j])) {
-+				0, "Cyclom-Y", &cy_card[j])) {
- 			printk(KERN_ERR "Cyclom-Y/ISA found at 0x%lx, but "
- 				"could not allocate IRQ#%d.\n",
- 				(unsigned long)cy_isa_address, cy_isa_irq);
-diff --git a/drivers/tty/hvc/hvc_irq.c b/drivers/tty/hvc/hvc_irq.c
-index 2623e17..c9adb05 100644
---- a/drivers/tty/hvc/hvc_irq.c
-+++ b/drivers/tty/hvc/hvc_irq.c
-@@ -28,7 +28,7 @@ int notifier_add_irq(struct hvc_struct *hp, int irq)
- 		hp->irq_requested = 0;
- 		return 0;
- 	}
--	rc = request_irq(irq, hvc_handle_interrupt, IRQF_DISABLED,
-+	rc = request_irq(irq, hvc_handle_interrupt, 0,
- 			   "hvc_console", hp);
- 	if (!rc)
- 		hp->irq_requested = 1;
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 4c8b665..2a6f413 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -1057,7 +1057,7 @@ static int hvcs_enable_device(struct hvcs_struct *hvcsd, uint32_t unit_address,
- 	 * the conn was registered and now.
- 	 */
- 	if (!(rc = request_irq(irq, &hvcs_handle_interrupt,
--				IRQF_DISABLED, "ibmhvcs", hvcsd))) {
-+				0, "ibmhvcs", hvcsd))) {
- 		/*
- 		 * It is possible the vty-server was removed after the irq was
- 		 * requested but before we have time to enable interrupts.
-diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
-index c94e2f5..cdfa3e0 100644
---- a/drivers/tty/hvc/hvsi.c
-+++ b/drivers/tty/hvc/hvsi.c
-@@ -1105,7 +1105,7 @@ static int __init hvsi_init(void)
- 		struct hvsi_struct *hp = &hvsi_ports[i];
- 		int ret = 1;
- 
--		ret = request_irq(hp->virq, hvsi_interrupt, IRQF_DISABLED, "hvsi", hp);
-+		ret = request_irq(hp->virq, hvsi_interrupt, 0, "hvsi", hp);
- 		if (ret)
- 			printk(KERN_ERR "HVSI: couldn't reserve irq 0x%x (error %i)\n",
- 				hp->virq, ret);
-diff --git a/drivers/tty/isicom.c b/drivers/tty/isicom.c
-index db1cf9c..e5c295a 100644
---- a/drivers/tty/isicom.c
-+++ b/drivers/tty/isicom.c
-@@ -1598,7 +1598,7 @@ static int __devinit isicom_probe(struct pci_dev *pdev,
- 	}
- 
- 	retval = request_irq(board->irq, isicom_interrupt,
--			IRQF_SHARED | IRQF_DISABLED, ISICOM_NAME, board);
-+			IRQF_SHARED, ISICOM_NAME, board);
+-	retval = usb_add_hcd(hcd, dev->irq, IRQF_DISABLED | IRQF_SHARED);
++	retval = usb_add_hcd(hcd, dev->irq, IRQF_SHARED);
+ 	if (retval != 0)
+ 		goto unmap_registers;
+ 	set_hs_companion(dev, hcd);
+diff --git a/drivers/usb/gadget/at91_udc.c b/drivers/usb/gadget/at91_udc.c
+index ddb118a..1b4bf50 100644
+--- a/drivers/usb/gadget/at91_udc.c
++++ b/drivers/usb/gadget/at91_udc.c
+@@ -1820,7 +1820,7 @@ static int __init at91udc_probe(struct platform_device *pdev)
+ 	/* request UDC and maybe VBUS irqs */
+ 	udc->udp_irq = platform_get_irq(pdev, 0);
+ 	retval = request_irq(udc->udp_irq, at91_udc_irq,
+-			IRQF_DISABLED, driver_name, udc);
++			0, driver_name, udc);
  	if (retval < 0) {
- 		dev_err(&pdev->dev, "Could not install handler at Irq %d. "
- 			"Card%d will be disabled.\n", board->irq, index + 1);
-diff --git a/drivers/tty/serial/68328serial.c b/drivers/tty/serial/68328serial.c
-index e0a7754..84a822e 100644
---- a/drivers/tty/serial/68328serial.c
-+++ b/drivers/tty/serial/68328serial.c
-@@ -1341,7 +1341,7 @@ rs68328_init(void)
+ 		DBG("request irq %d failed\n", udc->udp_irq);
+ 		goto fail1;
+@@ -1848,7 +1848,7 @@ static int __init at91udc_probe(struct platform_device *pdev)
+ 				  jiffies + VBUS_POLL_TIMEOUT);
+ 		} else {
+ 			if (request_irq(udc->board.vbus_pin, at91_vbus_irq,
+-					IRQF_DISABLED, driver_name, udc)) {
++					0, driver_name, udc)) {
+ 				DBG("request vbus irq %d failed\n",
+ 				    udc->board.vbus_pin);
+ 				retval = -EBUSY;
+diff --git a/drivers/usb/gadget/fusb300_udc.c b/drivers/usb/gadget/fusb300_udc.c
+index 4ec888f..b5e51c4 100644
+--- a/drivers/usb/gadget/fusb300_udc.c
++++ b/drivers/usb/gadget/fusb300_udc.c
+@@ -1479,7 +1479,7 @@ static int __init fusb300_probe(struct platform_device *pdev)
+ 	fusb300->gadget.name = udc_name;
+ 	fusb300->reg = reg;
  
- 	    if (request_irq(uart_irqs[i],
- 			    rs_interrupt,
--			    IRQF_DISABLED,
-+			    0,
- 			    "M68328_UART", info))
-                 panic("Unable to attach 68328 serial interrupt\n");
- 	}
-diff --git a/drivers/tty/serial/altera_jtaguart.c b/drivers/tty/serial/altera_jtaguart.c
-index 60e049b..00a73ec 100644
---- a/drivers/tty/serial/altera_jtaguart.c
-+++ b/drivers/tty/serial/altera_jtaguart.c
-@@ -218,7 +218,7 @@ static int altera_jtaguart_startup(struct uart_port *port)
- 	unsigned long flags;
- 	int ret;
- 
--	ret = request_irq(port->irq, altera_jtaguart_interrupt, IRQF_DISABLED,
-+	ret = request_irq(port->irq, altera_jtaguart_interrupt, 0,
- 			DRV_NAME, port);
- 	if (ret) {
- 		pr_err(DRV_NAME ": unable to attach Altera JTAG UART %d "
-diff --git a/drivers/tty/serial/altera_uart.c b/drivers/tty/serial/altera_uart.c
-index 50bc5a5..d902558 100644
---- a/drivers/tty/serial/altera_uart.c
-+++ b/drivers/tty/serial/altera_uart.c
-@@ -315,7 +315,7 @@ static int altera_uart_startup(struct uart_port *port)
- 		return 0;
+-	ret = request_irq(ires->start, fusb300_irq, IRQF_DISABLED | IRQF_SHARED,
++	ret = request_irq(ires->start, fusb300_irq, IRQF_SHARED,
+ 			  udc_name, fusb300);
+ 	if (ret < 0) {
+ 		pr_err("request_irq error (%d)\n", ret);
+@@ -1487,7 +1487,7 @@ static int __init fusb300_probe(struct platform_device *pdev)
  	}
  
--	ret = request_irq(port->irq, altera_uart_interrupt, IRQF_DISABLED,
-+	ret = request_irq(port->irq, altera_uart_interrupt, 0,
- 			DRV_NAME, port);
- 	if (ret) {
- 		pr_err(DRV_NAME ": unable to attach Altera UART %d "
-diff --git a/drivers/tty/serial/bfin_5xx.c b/drivers/tty/serial/bfin_5xx.c
-index ff69791..1769bbf 100644
---- a/drivers/tty/serial/bfin_5xx.c
-+++ b/drivers/tty/serial/bfin_5xx.c
-@@ -667,14 +667,14 @@ static int bfin_serial_startup(struct uart_port *port)
- 		kgdboc_break_enabled = 0;
- 	else {
- # endif
--	if (request_irq(uart->port.irq, bfin_serial_rx_int, IRQF_DISABLED,
-+	if (request_irq(uart->port.irq, bfin_serial_rx_int, 0,
- 	     "BFIN_UART_RX", uart)) {
- 		printk(KERN_NOTICE "Unable to attach BlackFin UART RX interrupt\n");
- 		return -EBUSY;
- 	}
+ 	ret = request_irq(ires1->start, fusb300_irq,
+-			IRQF_DISABLED | IRQF_SHARED, udc_name, fusb300);
++			IRQF_SHARED, udc_name, fusb300);
+ 	if (ret < 0) {
+ 		pr_err("request_irq1 error (%d)\n", ret);
+ 		goto clean_up;
+diff --git a/drivers/usb/gadget/imx_udc.c b/drivers/usb/gadget/imx_udc.c
+index 692fd9b..5dcc693 100644
+--- a/drivers/usb/gadget/imx_udc.c
++++ b/drivers/usb/gadget/imx_udc.c
+@@ -1478,7 +1478,7 @@ static int __init imx_udc_probe(struct platform_device *pdev)
  
- 	if (request_irq
--	    (uart->port.irq+1, bfin_serial_tx_int, IRQF_DISABLED,
-+	    (uart->port.irq+1, bfin_serial_tx_int, 0,
- 	     "BFIN_UART_TX", uart)) {
- 		printk(KERN_NOTICE "Unable to attach BlackFin UART TX interrupt\n");
- 		free_irq(uart->port.irq, uart);
-@@ -734,7 +734,7 @@ static int bfin_serial_startup(struct uart_port *port)
- 		if (request_irq(gpio_to_irq(uart->cts_pin),
- 			bfin_serial_mctrl_cts_int,
- 			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING |
--			IRQF_DISABLED, "BFIN_UART_CTS", uart)) {
-+			0, "BFIN_UART_CTS", uart)) {
- 			uart->cts_pin = -1;
- 			pr_info("Unable to attach BlackFin UART CTS interrupt. So, disable it.\n");
+ 	for (i = 0; i < IMX_USB_NB_EP + 1; i++) {
+ 		ret = request_irq(imx_usb->usbd_int[i], intr_handler(i),
+-				     IRQF_DISABLED, driver_name, imx_usb);
++				     0, driver_name, imx_usb);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "can't get irq %i, err %d\n",
+ 				imx_usb->usbd_int[i], ret);
+diff --git a/drivers/usb/gadget/m66592-udc.c b/drivers/usb/gadget/m66592-udc.c
+index 491f825..42ee2a4 100644
+--- a/drivers/usb/gadget/m66592-udc.c
++++ b/drivers/usb/gadget/m66592-udc.c
+@@ -1674,7 +1674,7 @@ static int __init m66592_probe(struct platform_device *pdev)
+ 	m66592->timer.data = (unsigned long)m66592;
+ 	m66592->reg = reg;
+ 
+-	ret = request_irq(ires->start, m66592_irq, IRQF_DISABLED | IRQF_SHARED,
++	ret = request_irq(ires->start, m66592_irq, IRQF_SHARED,
+ 			udc_name, m66592);
+ 	if (ret < 0) {
+ 		pr_err("request_irq error (%d)\n", ret);
+diff --git a/drivers/usb/gadget/mv_udc_core.c b/drivers/usb/gadget/mv_udc_core.c
+index ce1ac2b..fd5a55e 100644
+--- a/drivers/usb/gadget/mv_udc_core.c
++++ b/drivers/usb/gadget/mv_udc_core.c
+@@ -2049,7 +2049,7 @@ int mv_udc_probe(struct platform_device *dev)
+ 	}
+ 	udc->irq = r->start;
+ 	if (request_irq(udc->irq, mv_udc_irq,
+-		IRQF_DISABLED | IRQF_SHARED, driver_name, udc)) {
++		IRQF_SHARED, driver_name, udc)) {
+ 		dev_err(&dev->dev, "Request irq %d for UDC failed\n",
+ 			udc->irq);
+ 		retval = -ENODEV;
+diff --git a/drivers/usb/gadget/omap_udc.c b/drivers/usb/gadget/omap_udc.c
+index 740c7da..e9efdd41 100644
+--- a/drivers/usb/gadget/omap_udc.c
++++ b/drivers/usb/gadget/omap_udc.c
+@@ -2968,7 +2968,7 @@ known:
+ 	}
+ #ifdef	USE_ISO
+ 	status = request_irq(pdev->resource[3].start, omap_udc_iso_irq,
+-			IRQF_DISABLED, "omap_udc iso", udc);
++			0, "omap_udc iso", udc);
+ 	if (status != 0) {
+ 		ERR("can't get irq %d, err %d\n",
+ 			(int) pdev->resource[3].start, status);
+diff --git a/drivers/usb/gadget/pxa25x_udc.c b/drivers/usb/gadget/pxa25x_udc.c
+index e4e59b4..ef3380f 100644
+--- a/drivers/usb/gadget/pxa25x_udc.c
++++ b/drivers/usb/gadget/pxa25x_udc.c
+@@ -2202,7 +2202,7 @@ static int __init pxa25x_udc_probe(struct platform_device *pdev)
+ 
+ 	/* irq setup after old hardware state is cleaned up */
+ 	retval = request_irq(irq, pxa25x_udc_irq,
+-			IRQF_DISABLED, driver_name, dev);
++			0, driver_name, dev);
+ 	if (retval != 0) {
+ 		pr_err("%s: can't get irq %d, err %d\n",
+ 			driver_name, irq, retval);
+@@ -2214,7 +2214,7 @@ static int __init pxa25x_udc_probe(struct platform_device *pdev)
+ 	if (machine_is_lubbock()) {
+ 		retval = request_irq(LUBBOCK_USB_DISC_IRQ,
+ 				lubbock_vbus_irq,
+-				IRQF_DISABLED | IRQF_SAMPLE_RANDOM,
++				IRQF_SAMPLE_RANDOM,
+ 				driver_name, dev);
+ 		if (retval != 0) {
+ 			pr_err("%s: can't get irq %i, err %d\n",
+@@ -2223,7 +2223,7 @@ static int __init pxa25x_udc_probe(struct platform_device *pdev)
  		}
-@@ -746,7 +746,7 @@ static int bfin_serial_startup(struct uart_port *port)
- #ifdef CONFIG_SERIAL_BFIN_HARD_CTSRTS
- 	if (uart->cts_pin >= 0 && request_irq(uart->status_irq,
- 		bfin_serial_mctrl_cts_int,
--		IRQF_DISABLED, "BFIN_UART_MODEM_STATUS", uart)) {
-+		0, "BFIN_UART_MODEM_STATUS", uart)) {
- 		uart->cts_pin = -1;
- 		pr_info("Unable to attach BlackFin UART Modem Status interrupt.\n");
- 	}
-diff --git a/drivers/tty/serial/bfin_sport_uart.c b/drivers/tty/serial/bfin_sport_uart.c
-index 891d194..ee101c0 100644
---- a/drivers/tty/serial/bfin_sport_uart.c
-+++ b/drivers/tty/serial/bfin_sport_uart.c
-@@ -294,7 +294,7 @@ static int sport_startup(struct uart_port *port)
- 		if (request_irq(gpio_to_irq(up->cts_pin),
- 			sport_mctrl_cts_int,
- 			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING |
--			IRQF_DISABLED, "BFIN_SPORT_UART_CTS", up)) {
-+			0, "BFIN_SPORT_UART_CTS", up)) {
- 			up->cts_pin = -1;
- 			dev_info(port->dev, "Unable to attach BlackFin UART over SPORT CTS interrupt. So, disable it.\n");
+ 		retval = request_irq(LUBBOCK_USB_IRQ,
+ 				lubbock_vbus_irq,
+-				IRQF_DISABLED | IRQF_SAMPLE_RANDOM,
++				IRQF_SAMPLE_RANDOM,
+ 				driver_name, dev);
+ 		if (retval != 0) {
+ 			pr_err("%s: can't get irq %i, err %d\n",
+diff --git a/drivers/usb/gadget/r8a66597-udc.c b/drivers/usb/gadget/r8a66597-udc.c
+index 50991e5..46523df 100644
+--- a/drivers/usb/gadget/r8a66597-udc.c
++++ b/drivers/usb/gadget/r8a66597-udc.c
+@@ -1643,7 +1643,7 @@ static int __init r8a66597_probe(struct platform_device *pdev)
+ 
+ 	disable_controller(r8a66597); /* make sure controller is disabled */
+ 
+-	ret = request_irq(irq, r8a66597_irq, IRQF_DISABLED | IRQF_SHARED,
++	ret = request_irq(irq, r8a66597_irq, IRQF_SHARED,
+ 			udc_name, r8a66597);
+ 	if (ret < 0) {
+ 		printk(KERN_ERR "request_irq error (%d)\n", ret);
+diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
+index 8d31848..768960b 100644
+--- a/drivers/usb/gadget/s3c2410_udc.c
++++ b/drivers/usb/gadget/s3c2410_udc.c
+@@ -1903,7 +1903,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
+ 
+ 	/* irq setup after old hardware state is cleaned up */
+ 	retval = request_irq(IRQ_USBD, s3c2410_udc_irq,
+-			     IRQF_DISABLED, gadget_name, udc);
++			     0, gadget_name, udc);
+ 
+ 	if (retval != 0) {
+ 		dev_err(dev, "cannot get irq %i, err %d\n", IRQ_USBD, retval);
+@@ -1927,7 +1927,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
  		}
-diff --git a/drivers/tty/serial/crisv10.c b/drivers/tty/serial/crisv10.c
-index 225123b..59a4d22 100644
---- a/drivers/tty/serial/crisv10.c
-+++ b/drivers/tty/serial/crisv10.c
-@@ -258,7 +258,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_out_enabled = 1,
- 	  .dma_out_nbr = SER0_TX_DMA_NBR,
- 	  .dma_out_irq_nbr = SER0_DMA_TX_IRQ_NBR,
--	  .dma_out_irq_flags = IRQF_DISABLED,
-+	  .dma_out_irq_flags = 0,
- 	  .dma_out_irq_description = "serial 0 dma tr",
- #else
- 	  .dma_out_enabled = 0,
-@@ -271,7 +271,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_in_enabled = 1,
- 	  .dma_in_nbr = SER0_RX_DMA_NBR,
- 	  .dma_in_irq_nbr = SER0_DMA_RX_IRQ_NBR,
--	  .dma_in_irq_flags = IRQF_DISABLED,
-+	  .dma_in_irq_flags = 0,
- 	  .dma_in_irq_description = "serial 0 dma rec",
- #else
- 	  .dma_in_enabled = 0,
-@@ -313,7 +313,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_out_enabled = 1,
- 	  .dma_out_nbr = SER1_TX_DMA_NBR,
- 	  .dma_out_irq_nbr = SER1_DMA_TX_IRQ_NBR,
--	  .dma_out_irq_flags = IRQF_DISABLED,
-+	  .dma_out_irq_flags = 0,
- 	  .dma_out_irq_description = "serial 1 dma tr",
- #else
- 	  .dma_out_enabled = 0,
-@@ -326,7 +326,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_in_enabled = 1,
- 	  .dma_in_nbr = SER1_RX_DMA_NBR,
- 	  .dma_in_irq_nbr = SER1_DMA_RX_IRQ_NBR,
--	  .dma_in_irq_flags = IRQF_DISABLED,
-+	  .dma_in_irq_flags = 0,
- 	  .dma_in_irq_description = "serial 1 dma rec",
- #else
- 	  .dma_in_enabled = 0,
-@@ -369,7 +369,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_out_enabled = 1,
- 	  .dma_out_nbr = SER2_TX_DMA_NBR,
- 	  .dma_out_irq_nbr = SER2_DMA_TX_IRQ_NBR,
--	  .dma_out_irq_flags = IRQF_DISABLED,
-+	  .dma_out_irq_flags = 0,
- 	  .dma_out_irq_description = "serial 2 dma tr",
- #else
- 	  .dma_out_enabled = 0,
-@@ -382,7 +382,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_in_enabled = 1,
- 	  .dma_in_nbr = SER2_RX_DMA_NBR,
- 	  .dma_in_irq_nbr = SER2_DMA_RX_IRQ_NBR,
--	  .dma_in_irq_flags = IRQF_DISABLED,
-+	  .dma_in_irq_flags = 0,
- 	  .dma_in_irq_description = "serial 2 dma rec",
- #else
- 	  .dma_in_enabled = 0,
-@@ -423,7 +423,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_out_enabled = 1,
- 	  .dma_out_nbr = SER3_TX_DMA_NBR,
- 	  .dma_out_irq_nbr = SER3_DMA_TX_IRQ_NBR,
--	  .dma_out_irq_flags = IRQF_DISABLED,
-+	  .dma_out_irq_flags = 0,
- 	  .dma_out_irq_description = "serial 3 dma tr",
- #else
- 	  .dma_out_enabled = 0,
-@@ -436,7 +436,7 @@ static struct e100_serial rs_table[] = {
- 	  .dma_in_enabled = 1,
- 	  .dma_in_nbr = SER3_RX_DMA_NBR,
- 	  .dma_in_irq_nbr = SER3_DMA_RX_IRQ_NBR,
--	  .dma_in_irq_flags = IRQF_DISABLED,
-+	  .dma_in_irq_flags = 0,
- 	  .dma_in_irq_description = "serial 3 dma rec",
- #else
- 	  .dma_in_enabled = 0,
-@@ -4558,7 +4558,7 @@ static int __init rs_init(void)
- 	/* hook the irq's for DMA channel 6 and 7, serial output and input, and some more... */
  
- 	if (request_irq(SERIAL_IRQ_NBR, ser_interrupt,
--			IRQF_SHARED | IRQF_DISABLED, "serial ", driver))
-+			IRQF_SHARED, "serial ", driver))
- 		panic("%s: Failed to request irq8", __func__);
+ 		retval = request_irq(irq, s3c2410_udc_vbus_irq,
+-				     IRQF_DISABLED | IRQF_TRIGGER_RISING
++				     IRQF_TRIGGER_RISING
+ 				     | IRQF_TRIGGER_FALLING | IRQF_SHARED,
+ 				     gadget_name, udc);
  
+diff --git a/drivers/usb/host/ehci-ath79.c b/drivers/usb/host/ehci-ath79.c
+index 4d2e88d..afb6743 100644
+--- a/drivers/usb/host/ehci-ath79.c
++++ b/drivers/usb/host/ehci-ath79.c
+@@ -163,7 +163,7 @@ static int ehci_ath79_probe(struct platform_device *pdev)
+ 		goto err_release_region;
+ 	}
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret)
+ 		goto err_iounmap;
+ 
+diff --git a/drivers/usb/host/ehci-au1xxx.c b/drivers/usb/host/ehci-au1xxx.c
+index 42ae574..30f923d 100644
+--- a/drivers/usb/host/ehci-au1xxx.c
++++ b/drivers/usb/host/ehci-au1xxx.c
+@@ -181,7 +181,7 @@ static int ehci_hcd_au1xxx_drv_probe(struct platform_device *pdev)
+ 	ehci->hcs_params = readl(&ehci->caps->hcs_params);
+ 
+ 	ret = usb_add_hcd(hcd, pdev->resource[1].start,
+-			  IRQF_DISABLED | IRQF_SHARED);
++			  IRQF_SHARED);
+ 	if (ret == 0) {
+ 		platform_set_drvdata(pdev, hcd);
+ 		return ret;
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index 34a3140..bc7691e 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -134,7 +134,7 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ 
+ 	/* Don't need to set host mode here. It will be done by tdi_reset() */
+ 
+-	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	retval = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (retval != 0)
+ 		goto err4;
+ 
+diff --git a/drivers/usb/host/ehci-mxc.c b/drivers/usb/host/ehci-mxc.c
+index 555a73c..55978fc 100644
+--- a/drivers/usb/host/ehci-mxc.c
++++ b/drivers/usb/host/ehci-mxc.c
+@@ -236,7 +236,7 @@ static int ehci_mxc_drv_probe(struct platform_device *pdev)
+ 	priv->hcd = hcd;
+ 	platform_set_drvdata(pdev, priv);
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret)
+ 		goto err_add;
+ 
+diff --git a/drivers/usb/host/ehci-octeon.c b/drivers/usb/host/ehci-octeon.c
+index c3ba3ed..ba1f513 100644
+--- a/drivers/usb/host/ehci-octeon.c
++++ b/drivers/usb/host/ehci-octeon.c
+@@ -155,7 +155,7 @@ static int ehci_octeon_drv_probe(struct platform_device *pdev)
+ 	/* cache this readonly data; minimize chip reads */
+ 	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret) {
+ 		dev_dbg(&pdev->dev, "failed to add hcd with err %d\n", ret);
+ 		goto err3;
+diff --git a/drivers/usb/host/ehci-omap.c b/drivers/usb/host/ehci-omap.c
+index 4524032..e39b029 100644
+--- a/drivers/usb/host/ehci-omap.c
++++ b/drivers/usb/host/ehci-omap.c
+@@ -228,7 +228,7 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
+ 	/* cache this readonly data; minimize chip reads */
+ 	omap_ehci->hcs_params = readl(&omap_ehci->caps->hcs_params);
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret) {
+ 		dev_err(dev, "failed to add hcd with err %d\n", ret);
+ 		goto err_add_hcd;
+diff --git a/drivers/usb/host/ehci-orion.c b/drivers/usb/host/ehci-orion.c
+index 395bdb0..a68a2a5 100644
+--- a/drivers/usb/host/ehci-orion.c
++++ b/drivers/usb/host/ehci-orion.c
+@@ -277,7 +277,7 @@ static int __devinit ehci_orion_drv_probe(struct platform_device *pdev)
+ 		printk(KERN_WARNING "Orion ehci -USB phy version isn't supported.\n");
+ 	}
+ 
+-	err = usb_add_hcd(hcd, irq, IRQF_SHARED | IRQF_DISABLED);
++	err = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (err)
+ 		goto err4;
+ 
+diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
+index 64626a7..2dc32da 100644
+--- a/drivers/usb/host/ehci-ps3.c
++++ b/drivers/usb/host/ehci-ps3.c
+@@ -167,7 +167,7 @@ static int __devinit ps3_ehci_probe(struct ps3_system_bus_device *dev)
+ 
+ 	ps3_system_bus_set_drvdata(dev, hcd);
+ 
+-	result = usb_add_hcd(hcd, virq, IRQF_DISABLED);
++	result = usb_add_hcd(hcd, virq, 0);
+ 
+ 	if (result) {
+ 		dev_dbg(&dev->core, "%s:%d: usb_add_hcd failed (%d)\n",
+diff --git a/drivers/usb/host/ehci-s5p.c b/drivers/usb/host/ehci-s5p.c
+index 9e77f1c..84c4fef 100644
+--- a/drivers/usb/host/ehci-s5p.c
++++ b/drivers/usb/host/ehci-s5p.c
+@@ -136,7 +136,7 @@ static int __devinit s5p_ehci_probe(struct platform_device *pdev)
+ 	/* cache this readonly data; minimize chip reads */
+ 	ehci->hcs_params = readl(&ehci->caps->hcs_params);
+ 
+-	err = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	err = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "Failed to add USB HCD\n");
+ 		goto fail;
+diff --git a/drivers/usb/host/ehci-sh.c b/drivers/usb/host/ehci-sh.c
+index 86a95bb..9d9cf47 100644
+--- a/drivers/usb/host/ehci-sh.c
++++ b/drivers/usb/host/ehci-sh.c
+@@ -168,7 +168,7 @@ static int ehci_hcd_sh_probe(struct platform_device *pdev)
+ 	clk_enable(priv->fclk);
+ 	clk_enable(priv->iclk);
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret != 0) {
+ 		dev_err(&pdev->dev, "Failed to add hcd");
+ 		goto fail_add_hcd;
+diff --git a/drivers/usb/host/ehci-spear.c b/drivers/usb/host/ehci-spear.c
+index dbf1e4e..b115b0b 100644
+--- a/drivers/usb/host/ehci-spear.c
++++ b/drivers/usb/host/ehci-spear.c
+@@ -154,7 +154,7 @@ static int spear_ehci_hcd_drv_probe(struct platform_device *pdev)
+ 	ehci->clk = usbh_clk;
+ 
+ 	spear_start_ehci(ehci);
+-	retval = usb_add_hcd(hcd, irq, IRQF_SHARED | IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (retval)
+ 		goto fail_add_hcd;
+ 
+diff --git a/drivers/usb/host/ehci-tegra.c b/drivers/usb/host/ehci-tegra.c
+index 02b2bfd..db9d1b4 100644
+--- a/drivers/usb/host/ehci-tegra.c
++++ b/drivers/usb/host/ehci-tegra.c
+@@ -674,7 +674,7 @@ static int tegra_ehci_probe(struct platform_device *pdev)
+ 	}
  #endif
-diff --git a/drivers/tty/serial/icom.c b/drivers/tty/serial/icom.c
-index 8a869e5..d55709a 100644
---- a/drivers/tty/serial/icom.c
-+++ b/drivers/tty/serial/icom.c
-@@ -1554,7 +1554,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
  
- 	 /* save off irq and request irq line */
- 	 if ( (retval = request_irq(dev->irq, icom_interrupt,
--				   IRQF_DISABLED | IRQF_SHARED, ICOM_DRIVER_NAME,
-+				   IRQF_SHARED, ICOM_DRIVER_NAME,
- 				   (void *) icom_adapter))) {
- 		  goto probe_exit2;
- 	 }
-diff --git a/drivers/tty/serial/lantiq.c b/drivers/tty/serial/lantiq.c
-index 58cf279..9e2d42b 100644
---- a/drivers/tty/serial/lantiq.c
-+++ b/drivers/tty/serial/lantiq.c
-@@ -338,21 +338,21 @@ lqasc_startup(struct uart_port *port)
- 		ASCCON_ROEN, port->membase + LTQ_ASC_CON);
+-	err = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	err = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "Failed to add USB HCD\n");
+ 		goto fail;
+diff --git a/drivers/usb/host/ehci-vt8500.c b/drivers/usb/host/ehci-vt8500.c
+index 47d7496..54d1ab8 100644
+--- a/drivers/usb/host/ehci-vt8500.c
++++ b/drivers/usb/host/ehci-vt8500.c
+@@ -133,7 +133,7 @@ static int vt8500_ehci_drv_probe(struct platform_device *pdev)
+ 	ehci_port_power(ehci, 1);
  
- 	retval = request_irq(ltq_port->tx_irq, lqasc_tx_int,
--		IRQF_DISABLED, "asc_tx", port);
-+		0, "asc_tx", port);
- 	if (retval) {
- 		pr_err("failed to request lqasc_tx_int\n");
+ 	ret = usb_add_hcd(hcd, pdev->resource[1].start,
+-			  IRQF_DISABLED | IRQF_SHARED);
++			  IRQF_SHARED);
+ 	if (ret == 0) {
+ 		platform_set_drvdata(pdev, hcd);
+ 		return ret;
+diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
+index 572ea53..a7a94e3 100644
+--- a/drivers/usb/host/fhci-hcd.c
++++ b/drivers/usb/host/fhci-hcd.c
+@@ -686,7 +686,7 @@ static int __devinit of_fhci_probe(struct platform_device *ofdev)
+ 	}
+ 
+ 	ret = request_irq(fhci->timer->irq, fhci_frame_limit_timer_irq,
+-			  IRQF_DISABLED, "qe timer (usb)", hcd);
++			  0, "qe timer (usb)", hcd);
+ 	if (ret) {
+ 		dev_err(dev, "failed to request timer irq");
+ 		goto err_timer_irq;
+@@ -745,7 +745,7 @@ static int __devinit of_fhci_probe(struct platform_device *ofdev)
+ 	out_be16(&fhci->regs->usb_event, 0xffff);
+ 	out_be16(&fhci->regs->usb_mask, 0);
+ 
+-	ret = usb_add_hcd(hcd, usb_irq, IRQF_DISABLED);
++	ret = usb_add_hcd(hcd, usb_irq, 0);
+ 	if (ret < 0)
+ 		goto err_add_hcd;
+ 
+diff --git a/drivers/usb/host/imx21-hcd.c b/drivers/usb/host/imx21-hcd.c
+index af05718..2ee18cf 100644
+--- a/drivers/usb/host/imx21-hcd.c
++++ b/drivers/usb/host/imx21-hcd.c
+@@ -1891,7 +1891,7 @@ static int imx21_probe(struct platform_device *pdev)
+ 	dev_info(imx21->dev, "Hardware HC revision: 0x%02X\n",
+ 		(readl(imx21->regs + USBOTG_HWMODE) >> 16) & 0xFF);
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	ret = usb_add_hcd(hcd, irq, 0);
+ 	if (ret != 0) {
+ 		dev_err(imx21->dev, "usb_add_hcd() returned %d\n", ret);
+ 		goto failed_add_hcd;
+diff --git a/drivers/usb/host/isp116x-hcd.c b/drivers/usb/host/isp116x-hcd.c
+index baae4cc..d91e5f2 100644
+--- a/drivers/usb/host/isp116x-hcd.c
++++ b/drivers/usb/host/isp116x-hcd.c
+@@ -1639,7 +1639,7 @@ static int __devinit isp116x_probe(struct platform_device *pdev)
+ 		goto err6;
+ 	}
+ 
+-	ret = usb_add_hcd(hcd, irq, irqflags | IRQF_DISABLED);
++	ret = usb_add_hcd(hcd, irq, irqflags);
+ 	if (ret)
+ 		goto err6;
+ 
+diff --git a/drivers/usb/host/isp1362-hcd.c b/drivers/usb/host/isp1362-hcd.c
+index 9c37dad..81e8131 100644
+--- a/drivers/usb/host/isp1362-hcd.c
++++ b/drivers/usb/host/isp1362-hcd.c
+@@ -2773,7 +2773,7 @@ static int __devinit isp1362_probe(struct platform_device *pdev)
+ 	if (irq_res->flags & IORESOURCE_IRQ_LOWLEVEL)
+ 		irq_flags |= IRQF_TRIGGER_LOW;
+ 
+-	retval = usb_add_hcd(hcd, irq, irq_flags | IRQF_DISABLED | IRQF_SHARED);
++	retval = usb_add_hcd(hcd, irq, irq_flags | IRQF_SHARED);
+ 	if (retval != 0)
+ 		goto err6;
+ 	pr_info("%s, irq %d\n", hcd->product_desc, irq);
+diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
+index 7ee3005..d2f6b2d 100644
+--- a/drivers/usb/host/isp1760-if.c
++++ b/drivers/usb/host/isp1760-if.c
+@@ -79,7 +79,7 @@ static int of_isp1760_probe(struct platform_device *dev)
+ 		devflags |= ISP1760_FLAG_DREQ_POL_HIGH;
+ 
+ 	hcd = isp1760_register(memory.start, res_len, virq,
+-		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev_name(&dev->dev),
++		IRQF_SHARED, &dev->dev, dev_name(&dev->dev),
+ 		devflags);
+ 	if (IS_ERR(hcd)) {
+ 		ret = PTR_ERR(hcd);
+@@ -240,7 +240,7 @@ static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+ 
+ 	dev->dev.dma_mask = NULL;
+ 	hcd = isp1760_register(pci_mem_phy0, memlength, dev->irq,
+-		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev_name(&dev->dev),
++		IRQF_SHARED, &dev->dev, dev_name(&dev->dev),
+ 		devflags);
+ 	if (IS_ERR(hcd)) {
+ 		ret_status = -ENODEV;
+@@ -313,7 +313,7 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
+ 	resource_size_t mem_size;
+ 	struct isp1760_platform_data *priv = pdev->dev.platform_data;
+ 	unsigned int devflags = 0;
+-	unsigned long irqflags = IRQF_SHARED | IRQF_DISABLED;
++	unsigned long irqflags = IRQF_SHARED;
+ 
+ 	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!mem_res) {
+diff --git a/drivers/usb/host/ohci-ath79.c b/drivers/usb/host/ohci-ath79.c
+index c620c50..18d574d 100644
+--- a/drivers/usb/host/ohci-ath79.c
++++ b/drivers/usb/host/ohci-ath79.c
+@@ -111,7 +111,7 @@ static int ohci_ath79_probe(struct platform_device *pdev)
+ 
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	ret = usb_add_hcd(hcd, irq, 0);
+ 	if (ret)
+ 		goto err_stop_hcd;
+ 
+diff --git a/drivers/usb/host/ohci-au1xxx.c b/drivers/usb/host/ohci-au1xxx.c
+index 958d985..6b7bc50 100644
+--- a/drivers/usb/host/ohci-au1xxx.c
++++ b/drivers/usb/host/ohci-au1xxx.c
+@@ -218,7 +218,7 @@ static int ohci_hcd_au1xxx_drv_probe(struct platform_device *pdev)
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+ 	ret = usb_add_hcd(hcd, pdev->resource[1].start,
+-			  IRQF_DISABLED | IRQF_SHARED);
++			  IRQF_SHARED);
+ 	if (ret == 0) {
+ 		platform_set_drvdata(pdev, hcd);
+ 		return ret;
+diff --git a/drivers/usb/host/ohci-da8xx.c b/drivers/usb/host/ohci-da8xx.c
+index 6aca2c4..8435097 100644
+--- a/drivers/usb/host/ohci-da8xx.c
++++ b/drivers/usb/host/ohci-da8xx.c
+@@ -344,7 +344,7 @@ static int usb_hcd_da8xx_probe(const struct hc_driver *driver,
+ 		error = -ENODEV;
+ 		goto err4;
+ 	}
+-	error = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	error = usb_add_hcd(hcd, irq, 0);
+ 	if (error)
+ 		goto err4;
+ 
+diff --git a/drivers/usb/host/ohci-ep93xx.c b/drivers/usb/host/ohci-ep93xx.c
+index 4e68161..dc45d48 100644
+--- a/drivers/usb/host/ohci-ep93xx.c
++++ b/drivers/usb/host/ohci-ep93xx.c
+@@ -81,7 +81,7 @@ static int usb_hcd_ep93xx_probe(const struct hc_driver *driver,
+ 
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, pdev->resource[1].start, IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, pdev->resource[1].start, 0);
+ 	if (retval == 0)
  		return retval;
+ 
+diff --git a/drivers/usb/host/ohci-octeon.c b/drivers/usb/host/ohci-octeon.c
+index d8b4564..d469bf9 100644
+--- a/drivers/usb/host/ohci-octeon.c
++++ b/drivers/usb/host/ohci-octeon.c
+@@ -164,7 +164,7 @@ static int ohci_octeon_drv_probe(struct platform_device *pdev)
+ 
+ 	ohci_hcd_init(ohci);
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret) {
+ 		dev_dbg(&pdev->dev, "failed to add hcd with err %d\n", ret);
+ 		goto err3;
+diff --git a/drivers/usb/host/ohci-omap.c b/drivers/usb/host/ohci-omap.c
+index 5645f70..e4b8782 100644
+--- a/drivers/usb/host/ohci-omap.c
++++ b/drivers/usb/host/ohci-omap.c
+@@ -14,7 +14,7 @@
+  * This file is licenced under the GPL.
+  */
+ 
+-#include <linux/signal.h>	/* IRQF_DISABLED */
++#include <linux/signal.h>
+ #include <linux/jiffies.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+@@ -363,7 +363,7 @@ static int usb_hcd_omap_probe (const struct hc_driver *driver,
+ 		retval = -ENXIO;
+ 		goto err3;
  	}
+-	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, irq, 0);
+ 	if (retval)
+ 		goto err3;
  
- 	retval = request_irq(ltq_port->rx_irq, lqasc_rx_int,
--		IRQF_DISABLED, "asc_rx", port);
-+		0, "asc_rx", port);
- 	if (retval) {
- 		pr_err("failed to request lqasc_rx_int\n");
- 		goto err1;
- 	}
+diff --git a/drivers/usb/host/ohci-omap3.c b/drivers/usb/host/ohci-omap3.c
+index 6048f2f..f6faf4f 100644
+--- a/drivers/usb/host/ohci-omap3.c
++++ b/drivers/usb/host/ohci-omap3.c
+@@ -180,7 +180,7 @@ static int __devinit ohci_hcd_omap3_probe(struct platform_device *pdev)
  
- 	retval = request_irq(ltq_port->err_irq, lqasc_err_int,
--		IRQF_DISABLED, "asc_err", port);
-+		0, "asc_err", port);
- 	if (retval) {
- 		pr_err("failed to request lqasc_err_int\n");
- 		goto err2;
-diff --git a/drivers/tty/serial/mcf.c b/drivers/tty/serial/mcf.c
-index 3394b7c..9afca09 100644
---- a/drivers/tty/serial/mcf.c
-+++ b/drivers/tty/serial/mcf.c
-@@ -380,7 +380,7 @@ static void mcf_config_port(struct uart_port *port, int flags)
- 	/* Clear mask, so no surprise interrupts. */
- 	writeb(0, port->membase + MCFUART_UIMR);
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
  
--	if (request_irq(port->irq, mcf_interrupt, IRQF_DISABLED, "UART", port))
-+	if (request_irq(port->irq, mcf_interrupt, 0, "UART", port))
- 		printk(KERN_ERR "MCF: unable to attach ColdFire UART %d "
- 			"interrupt vector=%d\n", port->line, port->irq);
- }
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index a0bcd8a..a0d02ef 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -273,7 +273,7 @@ static unsigned int mpc5200b_psc_set_baudrate(struct uart_port *port,
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	ret = usb_add_hcd(hcd, irq, 0);
+ 	if (ret) {
+ 		dev_dbg(dev, "failed to add hcd with err %d\n", ret);
+ 		goto err_add_hcd;
+diff --git a/drivers/usb/host/ohci-pnx4008.c b/drivers/usb/host/ohci-pnx4008.c
+index 653d6a6..9ad8bee 100644
+--- a/drivers/usb/host/ohci-pnx4008.c
++++ b/drivers/usb/host/ohci-pnx4008.c
+@@ -398,7 +398,7 @@ static int __devinit usb_hcd_pnx4008_probe(struct platform_device *pdev)
+ 	ohci_hcd_init(ohci);
  
- static void mpc52xx_psc_get_irq(struct uart_port *port, struct device_node *np)
- {
--	port->irqflags = IRQF_DISABLED;
-+	port->irqflags = 0;
- 	port->irq = irq_of_parse_and_map(np, 0);
- }
+ 	dev_info(&pdev->dev, "at 0x%p, irq %d\n", hcd->regs, hcd->irq);
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	ret = usb_add_hcd(hcd, irq, 0);
+ 	if (ret == 0)
+ 		return ret;
  
-diff --git a/drivers/tty/serial/serial_ks8695.c b/drivers/tty/serial/serial_ks8695.c
-index 2430319..01949af 100644
---- a/drivers/tty/serial/serial_ks8695.c
-+++ b/drivers/tty/serial/serial_ks8695.c
-@@ -336,19 +336,19 @@ static int ks8695uart_startup(struct uart_port *port)
- 	/*
- 	 * Allocate the IRQ
+diff --git a/drivers/usb/host/ohci-pnx8550.c b/drivers/usb/host/ohci-pnx8550.c
+index 28467e2..f13d08f 100644
+--- a/drivers/usb/host/ohci-pnx8550.c
++++ b/drivers/usb/host/ohci-pnx8550.c
+@@ -107,7 +107,7 @@ int usb_hcd_pnx8550_probe (const struct hc_driver *driver,
+ 
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, dev->resource[1].start, IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, dev->resource[1].start, 0);
+ 	if (retval == 0)
+ 		return retval;
+ 
+diff --git a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
+index 0c12f4e..d24cc89d 100644
+--- a/drivers/usb/host/ohci-ppc-of.c
++++ b/drivers/usb/host/ohci-ppc-of.c
+@@ -143,7 +143,7 @@ static int __devinit ohci_hcd_ppc_of_probe(struct platform_device *op)
+ 
+ 	ohci_hcd_init(ohci);
+ 
+-	rv = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	rv = usb_add_hcd(hcd, irq, 0);
+ 	if (rv == 0)
+ 		return 0;
+ 
+diff --git a/drivers/usb/host/ohci-ppc-soc.c b/drivers/usb/host/ohci-ppc-soc.c
+index c0f595c..1514b70 100644
+--- a/drivers/usb/host/ohci-ppc-soc.c
++++ b/drivers/usb/host/ohci-ppc-soc.c
+@@ -80,7 +80,7 @@ static int usb_hcd_ppc_soc_probe(const struct hc_driver *driver,
+ #endif
+ 	ohci_hcd_init(ohci);
+ 
+-	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, irq, 0);
+ 	if (retval == 0)
+ 		return retval;
+ 
+diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
+index 7009504..6fd4fa1 100644
+--- a/drivers/usb/host/ohci-ps3.c
++++ b/drivers/usb/host/ohci-ps3.c
+@@ -164,7 +164,7 @@ static int __devinit ps3_ohci_probe(struct ps3_system_bus_device *dev)
+ 
+ 	ps3_system_bus_set_drvdata(dev, hcd);
+ 
+-	result = usb_add_hcd(hcd, virq, IRQF_DISABLED);
++	result = usb_add_hcd(hcd, virq, 0);
+ 
+ 	if (result) {
+ 		dev_dbg(&dev->core, "%s:%d: usb_add_hcd failed (%d)\n",
+diff --git a/drivers/usb/host/ohci-pxa27x.c b/drivers/usb/host/ohci-pxa27x.c
+index 80be547..29dfefe 100644
+--- a/drivers/usb/host/ohci-pxa27x.c
++++ b/drivers/usb/host/ohci-pxa27x.c
+@@ -359,7 +359,7 @@ int usb_hcd_pxa27x_probe (const struct hc_driver *driver, struct platform_device
+ 
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, irq, 0);
+ 	if (retval == 0)
+ 		return retval;
+ 
+diff --git a/drivers/usb/host/ohci-s3c2410.c b/drivers/usb/host/ohci-s3c2410.c
+index 7c9a4d5..a1877c4 100644
+--- a/drivers/usb/host/ohci-s3c2410.c
++++ b/drivers/usb/host/ohci-s3c2410.c
+@@ -384,7 +384,7 @@ static int usb_hcd_s3c2410_probe(const struct hc_driver *driver,
+ 
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, dev->resource[1].start, IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, dev->resource[1].start, 0);
+ 	if (retval != 0)
+ 		goto err_ioremap;
+ 
+diff --git a/drivers/usb/host/ohci-sa1111.c b/drivers/usb/host/ohci-sa1111.c
+index 4204d972..4bde4f9 100644
+--- a/drivers/usb/host/ohci-sa1111.c
++++ b/drivers/usb/host/ohci-sa1111.c
+@@ -143,7 +143,7 @@ int usb_hcd_sa1111_probe (const struct hc_driver *driver,
+ 	sa1111_start_hc(dev);
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, dev->irq[1], IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, dev->irq[1], 0);
+ 	if (retval == 0)
+ 		return retval;
+ 
+diff --git a/drivers/usb/host/ohci-sh.c b/drivers/usb/host/ohci-sh.c
+index 14cecb5..afc4eb6 100644
+--- a/drivers/usb/host/ohci-sh.c
++++ b/drivers/usb/host/ohci-sh.c
+@@ -109,7 +109,7 @@ static int ohci_hcd_sh_probe(struct platform_device *pdev)
+ 	hcd->regs = (void __iomem *)res->start;
+ 	hcd->rsrc_start = res->start;
+ 	hcd->rsrc_len = resource_size(res);
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret != 0) {
+ 		err("Failed to add hcd");
+ 		usb_put_hcd(hcd);
+diff --git a/drivers/usb/host/ohci-sm501.c b/drivers/usb/host/ohci-sm501.c
+index 78918ca..968cea2 100644
+--- a/drivers/usb/host/ohci-sm501.c
++++ b/drivers/usb/host/ohci-sm501.c
+@@ -165,7 +165,7 @@ static int ohci_hcd_sm501_drv_probe(struct platform_device *pdev)
+ 
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
++	retval = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (retval)
+ 		goto err5;
+ 
+diff --git a/drivers/usb/host/ohci-spear.c b/drivers/usb/host/ohci-spear.c
+index 4fd4bea..6987465 100644
+--- a/drivers/usb/host/ohci-spear.c
++++ b/drivers/usb/host/ohci-spear.c
+@@ -152,7 +152,7 @@ static int spear_ohci_hcd_drv_probe(struct platform_device *pdev)
+ 	spear_start_ohci(ohci_p);
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, platform_get_irq(pdev, 0), IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, platform_get_irq(pdev, 0), 0);
+ 	if (retval == 0)
+ 		return retval;
+ 
+diff --git a/drivers/usb/host/ohci-ssb.c b/drivers/usb/host/ohci-ssb.c
+index c4aea3b..5ba1859 100644
+--- a/drivers/usb/host/ohci-ssb.c
++++ b/drivers/usb/host/ohci-ssb.c
+@@ -169,7 +169,7 @@ static int ssb_ohci_attach(struct ssb_device *dev)
+ 	hcd->regs = ioremap_nocache(hcd->rsrc_start, hcd->rsrc_len);
+ 	if (!hcd->regs)
+ 		goto err_put_hcd;
+-	err = usb_add_hcd(hcd, dev->irq, IRQF_DISABLED | IRQF_SHARED);
++	err = usb_add_hcd(hcd, dev->irq, IRQF_SHARED);
+ 	if (err)
+ 		goto err_iounmap;
+ 
+diff --git a/drivers/usb/host/ohci-tmio.c b/drivers/usb/host/ohci-tmio.c
+index 57ad127..06331d9 100644
+--- a/drivers/usb/host/ohci-tmio.c
++++ b/drivers/usb/host/ohci-tmio.c
+@@ -244,7 +244,7 @@ static int __devinit ohci_hcd_tmio_drv_probe(struct platform_device *dev)
+ 	ohci = hcd_to_ohci(hcd);
+ 	ohci_hcd_init(ohci);
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	ret = usb_add_hcd(hcd, irq, 0);
+ 	if (ret)
+ 		goto err_add_hcd;
+ 
+diff --git a/drivers/usb/host/r8a66597-hcd.c b/drivers/usb/host/r8a66597-hcd.c
+index 40a0d8b..4512d09 100644
+--- a/drivers/usb/host/r8a66597-hcd.c
++++ b/drivers/usb/host/r8a66597-hcd.c
+@@ -2519,7 +2519,7 @@ static int __devinit r8a66597_probe(struct platform_device *pdev)
+ 	hcd->rsrc_start = res->start;
+ 	hcd->has_tt = 1;
+ 
+-	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | irq_trigger);
++	ret = usb_add_hcd(hcd, irq, irq_trigger);
+ 	if (ret != 0) {
+ 		dev_err(&pdev->dev, "Failed to add hcd\n");
+ 		goto clean_up3;
+diff --git a/drivers/usb/host/sl811-hcd.c b/drivers/usb/host/sl811-hcd.c
+index 1a99624..961d663 100644
+--- a/drivers/usb/host/sl811-hcd.c
++++ b/drivers/usb/host/sl811-hcd.c
+@@ -1729,7 +1729,7 @@ sl811h_probe(struct platform_device *dev)
+ 	 * Use resource IRQ flags if set by platform device setup.
  	 */
--	retval = request_irq(KS8695_IRQ_UART_TX, ks8695uart_tx_chars, IRQF_DISABLED, "UART TX", port);
-+	retval = request_irq(KS8695_IRQ_UART_TX, ks8695uart_tx_chars, 0, "UART TX", port);
+ 	irqflags |= IRQF_SHARED;
+-	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | irqflags);
++	retval = usb_add_hcd(hcd, irq, irqflags);
+ 	if (retval != 0)
+ 		goto err6;
+ 
+diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
+index cb16de2..9d326f9 100644
+--- a/drivers/usb/host/xhci-pci.c
++++ b/drivers/usb/host/xhci-pci.c
+@@ -222,7 +222,7 @@ static int xhci_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	*((struct xhci_hcd **) xhci->shared_hcd->hcd_priv) = xhci;
+ 
+ 	retval = usb_add_hcd(xhci->shared_hcd, dev->irq,
+-			IRQF_DISABLED | IRQF_SHARED);
++			IRQF_SHARED);
  	if (retval)
- 		goto err_tx;
+ 		goto put_usb3_hcd;
+ 	/* Roothub already marked as USB 3.0 speed */
+diff --git a/drivers/usb/musb/musbhsdma.c b/drivers/usb/musb/musbhsdma.c
+index f70c5a5..57a6085 100644
+--- a/drivers/usb/musb/musbhsdma.c
++++ b/drivers/usb/musb/musbhsdma.c
+@@ -408,7 +408,7 @@ dma_controller_create(struct musb *musb, void __iomem *base)
+ 	controller->controller.channel_program = dma_channel_program;
+ 	controller->controller.channel_abort = dma_channel_abort;
  
--	retval = request_irq(KS8695_IRQ_UART_RX, ks8695uart_rx_chars, IRQF_DISABLED, "UART RX", port);
-+	retval = request_irq(KS8695_IRQ_UART_RX, ks8695uart_rx_chars, 0, "UART RX", port);
- 	if (retval)
- 		goto err_rx;
+-	if (request_irq(irq, dma_controller_irq, IRQF_DISABLED,
++	if (request_irq(irq, dma_controller_irq, 0,
+ 			dev_name(musb->controller), &controller->controller)) {
+ 		dev_err(dev, "request_irq %d failed!\n", irq);
+ 		dma_controller_destroy(&controller->controller);
+diff --git a/drivers/usb/otg/isp1301_omap.c b/drivers/usb/otg/isp1301_omap.c
+index ca9b690..8c86787 100644
+--- a/drivers/usb/otg/isp1301_omap.c
++++ b/drivers/usb/otg/isp1301_omap.c
+@@ -899,7 +899,7 @@ static int otg_bind(struct isp1301 *isp)
  
--	retval = request_irq(KS8695_IRQ_UART_LINE_STATUS, ks8695uart_rx_chars, IRQF_DISABLED, "UART LineStatus", port);
-+	retval = request_irq(KS8695_IRQ_UART_LINE_STATUS, ks8695uart_rx_chars, 0, "UART LineStatus", port);
- 	if (retval)
- 		goto err_ls;
+ 	if (otg_dev)
+ 		status = request_irq(otg_dev->resource[1].start, omap_otg_irq,
+-				IRQF_DISABLED, DRIVER_NAME, isp);
++				0, DRIVER_NAME, isp);
+ 	else
+ 		status = -ENODEV;
  
--	retval = request_irq(KS8695_IRQ_UART_MODEM_STATUS, ks8695uart_modem_status, IRQF_DISABLED, "UART ModemStatus", port);
-+	retval = request_irq(KS8695_IRQ_UART_MODEM_STATUS, ks8695uart_modem_status, 0, "UART ModemStatus", port);
- 	if (retval)
- 		goto err_ms;
+diff --git a/drivers/usb/renesas_usbhs/mod.c b/drivers/usb/renesas_usbhs/mod.c
+index a577f8f..621f6cc 100644
+--- a/drivers/usb/renesas_usbhs/mod.c
++++ b/drivers/usb/renesas_usbhs/mod.c
+@@ -145,7 +145,7 @@ int usbhs_mod_probe(struct usbhs_priv *priv)
  
-diff --git a/drivers/tty/serial/sh-sci.c b/drivers/tty/serial/sh-sci.c
-index a9414fa..7b14f6c 100644
---- a/drivers/tty/serial/sh-sci.c
-+++ b/drivers/tty/serial/sh-sci.c
-@@ -1962,7 +1962,7 @@ static int __devinit sci_init_single(struct platform_device *dev,
- 	 * For the muxed case there's nothing more to do.
- 	 */
- 	port->irq		= p->irqs[SCIx_RXI_IRQ];
--	port->irqflags		= IRQF_DISABLED;
-+	port->irqflags		= 0;
- 
- 	port->serial_in		= sci_serial_in;
- 	port->serial_out	= sci_serial_out;
-diff --git a/drivers/tty/serial/sn_console.c b/drivers/tty/serial/sn_console.c
-index 377ae74..2969c86 100644
---- a/drivers/tty/serial/sn_console.c
-+++ b/drivers/tty/serial/sn_console.c
-@@ -737,7 +737,7 @@ static void __init sn_sal_switch_to_interrupts(struct sn_cons_port *port)
- 		DPRINTF("sn_console: switching to interrupt driven console\n");
- 
- 		if (request_irq(SGI_UART_VECTOR, sn_sal_interrupt,
--				IRQF_DISABLED | IRQF_SHARED,
-+				IRQF_SHARED,
- 				"SAL console driver", port) >= 0) {
- 			spin_lock_irqsave(&port->sc_port.lock, flags);
- 			port->sc_port.irq = SGI_UART_VECTOR;
+ 	/* irq settings */
+ 	ret = request_irq(priv->irq, usbhs_interrupt,
+-			  IRQF_DISABLED, dev_name(dev), priv);
++			  0, dev_name(dev), priv);
+ 	if (ret) {
+ 		dev_err(dev, "irq request err\n");
+ 		goto mod_init_gadget_err;
 -- 
 1.7.4.1
