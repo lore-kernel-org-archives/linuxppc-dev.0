@@ -1,14 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 07 Sep 2011 13:13:25 -0400 (EDT)
-Message-Id: <20110907.131325.897937687962213943.davem@davemloft.net>
-To: yong.zhang0@gmail.com
+Return-Path: <tglx@linutronix.de>
+Date: Wed, 7 Sep 2011 19:32:39 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Miller <davem@davemloft.net>
 Subject: Re: [PATCH 45/62] net: irq: Remove IRQF_DISABLED
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1315383059-3673-46-git-send-email-yong.zhang0@gmail.com>
+In-Reply-To: <20110907.131325.897937687962213943.davem@davemloft.net>
+Message-ID: <alpine.LFD.2.02.1109071932100.2723@ionos>
 References: <1315383059-3673-1-git-send-email-yong.zhang0@gmail.com>
 	<1315383059-3673-46-git-send-email-yong.zhang0@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	<20110907.131325.897937687962213943.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: perex@perex.cz, dhowells@redhat.com, prakity@marvell.com,
 	netdev@vger.kernel.org, chunkeey@googlemail.com,
 	sonic.zhang@analog.com, klaus.kudielka@ieee.org,
@@ -17,17 +18,17 @@ Cc: perex@perex.cz, dhowells@redhat.com, prakity@marvell.com,
 	mingo@elte.hu, jpr@f6fbb.org, adobriyan@gmail.com,
 	jreuter@yaina.de, cbe-oss-dev@lists.ozlabs.org,
 	martinez.javier@gmail.com, samuel@sortiz.org, vapier@gentoo.org,
-	grundler@parisc-linux.org, tklauser@distanz.ch,
-	lucas.demarchi@profusion.mobi, u.kleine-koenig@pengutronix.de,
-	olof@lixom.net, uclinux-dist-devel@blackfin.uclinux.org,
-	linux-hams@vger.kernel.org, tglx@linutronix.de,
-	leitao@linux.vnet.ibm.com, blogic@openwrt.org,
-	shawn.guo@linaro.org, nico@fluxnic.net, geoff@infradead.org,
-	jkosina@suse.cz, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	ralph.hempel@lantiq.com, jdmason@kudzu.us, joe@perches.com,
-	steve.glendinning@smsc.com, richard.cochran@omicron.at,
-	linuxppc-dev@lists.ozlabs.org
+	grundler@parisc-linux.org, yong.zhang0@gmail.com,
+	tklauser@distanz.ch, lucas.demarchi@profusion.mobi,
+	u.kleine-koenig@pengutronix.de, olof@lixom.net,
+	uclinux-dist-devel@blackfin.uclinux.org,
+	linux-hams@vger.kernel.org, leitao@linux.vnet.ibm.com,
+	blogic@openwrt.org, shawn.guo@linaro.org, nico@fluxnic.net,
+	geoff@infradead.org, jkosina@suse.cz,
+	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, ralph.hempel@lantiq.com, jdmason@kudzu.us,
+	joe@perches.com, steve.glendinning@smsc.com,
+	richard.cochran@omicron.at, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,17 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yong Zhang <yong.zhang0@gmail.com>
-Date: Wed,  7 Sep 2011 16:10:42 +0800
+On Wed, 7 Sep 2011, David Miller wrote:
 
-> This flag is a NOOP and can be removed now.
+> From: Yong Zhang <yong.zhang0@gmail.com>
+> Date: Wed,  7 Sep 2011 16:10:42 +0800
 > 
-> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+> > This flag is a NOOP and can be removed now.
+> > 
+> > Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+> 
+> I have the same concerns here as I had for the sparc case.
+> 
+> Some of these drivers might be using IRQF_DISABLED to make sure the
+> IRQ cannot be delivered until it is explicitly enabled via an
+> enable_irq() call.
+> 
+> How is that being accomodated now?
 
-I have the same concerns here as I had for the sparc case.
+Again IRQF_DISABLED never ever had that functionality. 
 
-Some of these drivers might be using IRQF_DISABLED to make sure the
-IRQ cannot be delivered until it is explicitly enabled via an
-enable_irq() call.
+Thanks,
 
-How is that being accomodated now?
+	tglx
