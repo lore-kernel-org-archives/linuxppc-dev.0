@@ -1,31 +1,16 @@
-Return-Path: <peter.ujfalusi@ti.com>
-From: =?ISO-8859-1?Q?P=E9ter?= Ujfalusi <peter.ujfalusi@ti.com>
-To: Yong Zhang <yong.zhang0@gmail.com>
-Subject: Re: [PATCH 60/62] sound: irq: Remove IRQF_DISABLED
-Date: Wed, 07 Sep 2011 11:36:33 +0300
-Message-ID: <4946313.Ptpr0aqkpm@barack>
-In-Reply-To: <1315383059-3673-61-git-send-email-yong.zhang0@gmail.com>
-References: <1315383059-3673-1-git-send-email-yong.zhang0@gmail.com>
-	<1315383059-3673-61-git-send-email-yong.zhang0@gmail.com>
+Return-Path: <B04825@freescale.com>
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl_msi: Handle msi-available-ranges better
+Date: Wed, 7 Sep 2011 16:20:19 +0000
+Message-ID: <CAOZdJXVm1YL-T8i26O0BiB-uTkXUDnYQdacU8k52aG-K0pZ1Lg@mail.gmail.com>
+References: <20110117202528.GB561@udp111988uds.am.freescale.net>
+In-Reply-To: <20110117202528.GB561@udp111988uds.am.freescale.net>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: alsa-devel@alsa-project.org,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-	Russell King <linux@arm.linux.org.uk>,
-	Jassi Brar <jassisinghbrar@gmail.com>,
-	Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Axel Lin <axel.lin@gmail.com>, Liam Girdwood <lrg@ti.com>,
-	cbe-oss-dev@lists.ozlabs.org, Wan ZongShun <mcuos.com@gmail.com>,
-	Lucas De Marchi <lucas.demarchi@profusion.mobi>,
-	tglx@linutronix.de, Jarkko Nikula <jhnikula@retiisi.org.uk>,
-	mingo@elte.hu, linux-arm-kernel@lists.infradead.org,
-	Eric Miao <eric.y.miao@gmail.com>, Sangbeom Kim <sbkim73@samsung.com>,
-	Jiri Kosina <jkosina@suse.cz>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linux-kernel@vger.kernel.org, Geoff Levand <geoff@infradead.org>,
-	Paul Mundt <lethal@linux-sh.org>, Simon Horman <simon@horms.net>,
-	Joe Perches <joe@perches.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +20,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 07 September 2011 16:10:57 Yong Zhang wrote:
-> This flag is a NOOP and can be removed now.
-> 
-> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+On Mon, Jan 17, 2011 at 2:25 PM, Scott Wood <scottwood@freescale.com> wrote=
+:
 
-...
+> + =A0 =A0 =A0 for (irq_index =3D 0, i =3D 0; i < len / (2 * sizeof(u32));=
+ i++) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (p[i * 2] % IRQS_PER_MSI_REG ||
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 p[i * 2 + 1] % IRQS_PER_MSI_REG) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_WARNING "%s: %s=
+: msi available range of %u at %u is not IRQ-aligned\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, de=
+v->dev.of_node->full_name,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0p[i * 2 + 1]=
+, p[i * 2]);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D -EINVAL;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto error_out;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 offset =3D p[i * 2] / IRQS_PER_MSI_REG;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 count =3D p[i * 2 + 1] / IRQS_PER_MSI_REG;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (j =3D 0; j < count; j++, irq_index++) =
+{
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D fsl_msi_setup_hwirq=
+(msi, dev, offset, irq_index);
 
->  sound/soc/codecs/tlv320dac33.c     |    2 +-
+Scott,
 
-..
+I know it's been eight months since you posted this patch, but I'm not
+sure this part is correct.   fsl_msi_setup_hwirq() does this:
 
-> diff --git a/sound/soc/codecs/tlv320dac33.c b/sound/soc/codecs/tlv320dac33.c
-> index faa5e9f..243d177 100644
-> --- a/sound/soc/codecs/tlv320dac33.c
-> +++ b/sound/soc/codecs/tlv320dac33.c
-> @@ -1431,7 +1431,7 @@ static int dac33_soc_probe(struct snd_soc_codec
-> *codec) /* Check if the IRQ number is valid and request it */
->  	if (dac33->irq >= 0) {
->  		ret = request_irq(dac33->irq, dac33_interrupt_handler,
-> -				  IRQF_TRIGGER_RISING | IRQF_DISABLED,
-> +				  IRQF_TRIGGER_RISING,
->  				  codec->name, codec);
->  		if (ret < 0) {
->  			dev_err(codec->dev, "Could not request IRQ%d (%d)\n",
+cascade_data->index =3D offset + irq_index;
 
-Acked-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+"cascade_data->index" is supposed to be the index of the MSIIR
+register, so it's a number between 0 and 7.  irq_index is incremented
+on every pass of loop 'j'.  My understanding is that the following two
+definitions of msi-available-ranges are equivalent:
+
+static const u32 all_avail[] =3D { 0, NR_MSI_IRQS };
+
+static const u32 all_avail[] =3D { 0, 64, 64, 32, 96, 32, 128, 32, 160, 96}=
+;
+
+When I use the first definition, I get this on each call to
+fsl_msi_setup_hwirq():
+
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D0 cascade_data->index=3D0
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D1 cascade_data->index=3D1
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D2 cascade_data->index=3D2
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D3 cascade_data->index=3D3
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D4 cascade_data->index=3D4
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D5 cascade_data->index=3D5
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D6 cascade_data->index=3D6
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D7 cascade_data->index=3D7
+
+But when I use the second definition of all_avail[], I get this instead:
+
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D0 cascade_data->index=3D0
+fsl_msi_setup_hwirq:299 offset=3D0 irq_index=3D1 cascade_data->index=3D1
+fsl_msi_setup_hwirq:299 offset=3D2 irq_index=3D2 cascade_data->index=3D4
+fsl_msi_setup_hwirq:299 offset=3D3 irq_index=3D3 cascade_data->index=3D6
+fsl_msi_setup_hwirq:299 offset=3D4 irq_index=3D4 cascade_data->index=3D8
+fsl_msi_setup_hwirq:299 offset=3D5 irq_index=3D5 cascade_data->index=3D10
+fsl_msi_setup_hwirq:299 offset=3D5 irq_index=3D6 cascade_data->index=3D11
+fsl_msi_setup_hwirq:299 offset=3D5 irq_index=3D7 cascade_data->index=3D12
+
+The problem is that both offset and irq_index are being incremented in
+the loop, and cascade_data->index is set to the sum of the two.
+
+Perhaps you meant this:
+
+		err =3D fsl_msi_setup_hwirq(msi, dev, offset, j);
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
