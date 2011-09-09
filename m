@@ -1,30 +1,25 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8CBEB70BC
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 48C27B70BB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Sep 2011 23:09:03 +1000 (EST)
-Date: Fri, 9 Sep 2011 15:08:55 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Zang Roy-R61911 <r61911@freescale.com>
+	Sat, 10 Sep 2011 00:07:10 +1000 (EST)
+Received: by wyh21 with SMTP id 21so1554123wyh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 09 Sep 2011 07:07:05 -0700 (PDT)
+Date: Fri, 9 Sep 2011 18:07:01 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Roy Zang <tie-fei.zang@freescale.com>
 Subject: Re: [PATCH] eSDHC: Access Freescale eSDHC registers by 32-bit
-Message-ID: <20110909130855.GR1912@pengutronix.de>
+Message-ID: <20110909140701.GA9258@oksana.dev.rtsoft.ru>
 References: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
-	<20110909114004.GP1912@pengutronix.de>
-	<2239AC579C7D3646A720227A37E026811A22BD@039-SN1MPN1-005.039d.mgd.msft.net>
-	<20110909123324.GQ1912@pengutronix.de>
-	<2239AC579C7D3646A720227A37E026811A2311@039-SN1MPN1-005.039d.mgd.msft.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="eyYj78xbwv+yMvU1"
-In-Reply-To: <2239AC579C7D3646A720227A37E026811A2311@039-SN1MPN1-005.039d.mgd.msft.net>
-Cc: Xu Lei-B33228 <B33228@freescale.com>,
-	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"cjb@laptop.org" <cjb@laptop.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+	linux-mmc@vger.kernel.org, Xu lei <B33228@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,48 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Sep 09, 2011 at 08:05:46PM +0800, Roy Zang wrote:
+> From: Xu lei <B33228@freescale.com>
+> 
+> Freescale eSDHC registers only support 32-bit accesses,
+> this patch ensures that all Freescale eSDHC register accesses
+> are 32-bit.
+> 
+> Signed-off-by: Xu lei <B33228@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
 
---eyYj78xbwv+yMvU1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The patch looks OK.
 
+Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-> Previously, I sent this patch together  with another one. But
-> technically they are separated patches.  I got some comments from
-> Anton about the patch. I will try to address the comment. but for this
-> one, it is a stand along patch. I'd like to push it first.
+[...]
+> +static u8 esdhc_readb(struct sdhci_host *host, int reg)
+> +{
+> +	int base = reg & ~0x3;
+> +	int shift = (reg & 0x3) * 8;
+> +	u8 ret = (in_be32(host->ioaddr + base) >> shift) & 0xff;
+>  	return ret;
+>  }
 
-Okay.
+Though, I wonder if we could change sdhci_be32bs_read{b,w}, instead
+of making this local to eSDHC.
 
-> I do not see any comment about byte swapping about this patch.
-> you may have mis-understanding here.
+The thing is: sdhci_be32bs_writeb() is using clrsetbits_be32,
+so the write variant already uses 32-bit accessors, so nothing should
+break if we switch sdhci_be32bs_readb() to in_be32().
 
-I was misguided, yes, sorry. BE/LE issues with additional byteswapping
-are a mind twister :/ Having a second look, it looks okay to me. One
-could think about putting this into sdhci_platform as well, but this can
-be done later if needed. Sadly, I currently don't have hardware to test
-it.
+But maybe it's safer if we do this in a separate patch, so that it
+could be easily reverted without impacting eSDHC if something actually
+breaks.
 
-Regards,
+You decide. :-)
 
-   Wolfram
+Thanks!
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---eyYj78xbwv+yMvU1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk5qD+cACgkQD27XaX1/VRubIACgopSfpZCL5tDlkpdGGE0i2qla
-s1cAnjosG/RlaaGzhli707im1SOCRZBI
-=0AAa
------END PGP SIGNATURE-----
-
---eyYj78xbwv+yMvU1--
+-- 
+Anton Vorontsov
+Email: cbouatmailru@gmail.com
