@@ -1,28 +1,29 @@
-Return-Path: <r61911@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
-	[213.199.154.208])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3ADFFB6FA2
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B9F46B6F9C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Sep 2011 19:04:02 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: RE: [PATCH 2/2 v2] eSDHC: Fix errors when booting kernel with fsl
+	Fri,  9 Sep 2011 19:07:38 +1000 (EST)
+Date: Fri, 9 Sep 2011 11:07:27 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH 2/2 v2] eSDHC: Fix errors when booting kernel with fsl
 	esdhc
-Date: Fri, 9 Sep 2011 09:03:53 +0000
-Message-ID: <2239AC579C7D3646A720227A37E026811A1F8D@039-SN1MPN1-005.039d.mgd.msft.net>
+Message-ID: <20110909090727.GH1912@pengutronix.de>
 References: <1311329717-13954-1-git-send-email-tie-fei.zang@freescale.com>
 	<1311329717-13954-2-git-send-email-tie-fei.zang@freescale.com>
 	<20110722101512.GA1576@oksana.dev.rtsoft.ru>
 	<2239AC579C7D3646A720227A37E0268118FD3B@039-SN1MPN1-005.039d.mgd.msft.net>
 	<20110812100450.GA23333@oksana.dev.rtsoft.ru>
-In-Reply-To: <20110812100450.GA23333@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset="utf-8"
+	<2239AC579C7D3646A720227A37E026811A1F8D@039-SN1MPN1-005.039d.mgd.msft.net>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	Xu Lei-B33228 <B33228@freescale.com>,
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WIIRZ1HQ6FgrlPgb"
+In-Reply-To: <2239AC579C7D3646A720227A37E026811A1F8D@039-SN1MPN1-005.039d.mgd.msft.net>
+Cc: Xu Lei-B33228 <B33228@freescale.com>,
+	Wood Scott-B07421 <B07421@freescale.com>,
 	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
 	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
 	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -35,22 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW50b24gVm9yb250c292
-IFttYWlsdG86Y2JvdWF0bWFpbHJ1QGdtYWlsLmNvbV0NCj4gU2VudDogRnJpZGF5LCBBdWd1c3Qg
-MTIsIDIwMTEgMTg6MDUgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogbGludXgtbW1j
-QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGFrcG1AbGlu
-dXgtDQo+IGZvdW5kYXRpb24ub3JnOyBYdSBMZWktQjMzMjI4OyBLdW1hciBHYWxhOyBXb29kIFNj
-b3R0LUIwNzQyMQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMiB2Ml0gZVNESEM6IEZpeCBlcnJv
-cnMgd2hlbiBib290aW5nIGtlcm5lbCB3aXRoIGZzbCBlc2RoYw0KPiANCj4gSGVsbG8sDQo+IA0K
-PiBPbiBGcmksIEF1ZyAxMiwgMjAxMSBhdCAwOTo0NDoyNkFNICswMDAwLCBaYW5nIFJveS1SNjE5
-MTEgd3JvdGU6DQo+IFsuLi5dDQo+ID4gPiBXZSB0cnkgdG8gbm90IHBvbGx1dGUgZ2VuZXJpYyBz
-ZGhjaS5jIGRyaXZlciB3aXRoIGNoaXAtc3BlY2lmaWMNCj4gPiA+IHF1aXJrcy4NCj4gPiA+DQo+
-ID4gPiBNYXliZSB5b3UgY2FuIGRvIHRoZSBmaXh1cHMgdmlhIElPIGFjY2Vzc29ycz8gT3IgYnkg
-aW50cm9kdWNpbmcNCj4gPiA+IHNvbWUgYWRkaXRpb25hbCBzZGhjaSBvcD8NCj4gPiBBbnRvbiwN
-Cj4gPiB0aGFua3MgZm9yIHRoZSBjb21tZW50LCBhcyB3ZSBkaXNjdXNzZWQsIHRoZSBvcmlnaW5h
-bCBjb2RlIHVzZSA4IGJpdCBieXRlDQo+IG9wZXJhdGlvbiwNCj4gPiB3aGlsZSBpbiBmYWN0LCBv
-biBzb21lIHBvd2VycGMgcGxhdGZvcm0sIDMyIGJpdCBvcGVyYXRpb24gaXMgbmVlZGVkLg0KPiA+
-IHNob3VsZCBpdCBiZSBwb3NzaWJsZSBmaXhlZCBieSBhZGRpbmcgc29tZSB3cmFwcGVyIGluIElP
-IGFjY2Vzc29ycyBvcg0KPiBpbnRyb2R1Y2UgYWRkaXRpb25hbCBzZGhjaSBvcD8NCj4gDQo+IEkg
-d291bGQgZG8gaXQgaW4gdGhlIElPIGFjY2Vzc29ycy4NCj4gDQo+IFRoYW5rcywNCkFueSB1cGRh
-dGUgZm9yIHlvdXIgY29tbWVudD8NClJveQ0K
+
+--WIIRZ1HQ6FgrlPgb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+> > I would do it in the IO accessors.
+> >=20
+> > Thanks,
+> Any update for your comment?
+
+It is still valid. You can go that road.
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--WIIRZ1HQ6FgrlPgb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk5p108ACgkQD27XaX1/VRvIBQCffGKejoGw9ddEjayX38ZnzzXs
+CUIAn3n1SHj50BgI6OV4liBgPzO7h/7N
+=gdxp
+-----END PGP SIGNATURE-----
+
+--WIIRZ1HQ6FgrlPgb--
