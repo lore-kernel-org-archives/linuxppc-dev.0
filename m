@@ -1,25 +1,29 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 48C27B70BB
+Return-Path: <tklauser@sym.noone.org>
+Received: from sym.noone.org (symlink.to.noone.org [85.10.207.172])
+	by ozlabs.org (Postfix) with ESMTP id DF7EEB70B2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 10 Sep 2011 00:07:10 +1000 (EST)
-Received: by wyh21 with SMTP id 21so1554123wyh.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 09 Sep 2011 07:07:05 -0700 (PDT)
-Date: Fri, 9 Sep 2011 18:07:01 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH] eSDHC: Access Freescale eSDHC registers by 32-bit
-Message-ID: <20110909140701.GA9258@oksana.dev.rtsoft.ru>
-References: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
+	Sat, 10 Sep 2011 00:48:54 +1000 (EST)
+Date: Fri, 9 Sep 2011 11:49:52 +0200
+From: Tobias Klauser <tklauser@distanz.ch>
+To: Yong Zhang <yong.zhang0@gmail.com>
+Subject: Re: [PATCH 54/62] TTY: irq: Remove IRQF_DISABLED
+Message-ID: <20110909094952.GI11405@distanz.ch>
+References: <1315383059-3673-1-git-send-email-yong.zhang0@gmail.com>
+	<1315383059-3673-55-git-send-email-yong.zhang0@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
-	linux-mmc@vger.kernel.org, Xu lei <B33228@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1315383059-3673-55-git-send-email-yong.zhang0@gmail.com>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>, linux-cris-kernel@axis.com,
+	nios2-dev@sopc.et.ntust.edu.tw,
+	Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, Mikael Starvik <starvik@axis.com>,
+	Jesper Juhl <jj@chaosbits.net>, linux-serial@vger.kernel.org,
+	Jiri Kosina <jkosina@suse.cz>,
+	uclinux-dist-devel@blackfin.uclinux.org, tglx@linutronix.de,
+	Sonic Zhang <sonic.zhang@analog.com>,
+	linuxppc-dev@lists.ozlabs.org, mingo@elte.hu,
+	Alan Cox <alan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +33,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 09, 2011 at 08:05:46PM +0800, Roy Zang wrote:
-> From: Xu lei <B33228@freescale.com>
+On 2011-09-07 at 10:10:51 +0200, Yong Zhang <yong.zhang0@gmail.com> wrote:
+> This flag is a NOOP and can be removed now.
 > 
-> Freescale eSDHC registers only support 32-bit accesses,
-> this patch ensures that all Freescale eSDHC register accesses
-> are 32-bit.
-> 
-> Signed-off-by: Xu lei <B33228@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
+> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
 
-The patch looks OK.
+For altera_jtaguart and altera_uart:
 
-Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
-
-[...]
-> +static u8 esdhc_readb(struct sdhci_host *host, int reg)
-> +{
-> +	int base = reg & ~0x3;
-> +	int shift = (reg & 0x3) * 8;
-> +	u8 ret = (in_be32(host->ioaddr + base) >> shift) & 0xff;
->  	return ret;
->  }
-
-Though, I wonder if we could change sdhci_be32bs_read{b,w}, instead
-of making this local to eSDHC.
-
-The thing is: sdhci_be32bs_writeb() is using clrsetbits_be32,
-so the write variant already uses 32-bit accessors, so nothing should
-break if we switch sdhci_be32bs_readb() to in_be32().
-
-But maybe it's safer if we do this in a separate patch, so that it
-could be easily reverted without impacting eSDHC if something actually
-breaks.
-
-You decide. :-)
-
-Thanks!
-
--- 
-Anton Vorontsov
-Email: cbouatmailru@gmail.com
+Acked-by: Tobias Klauser <tklauser@distanz.ch>
