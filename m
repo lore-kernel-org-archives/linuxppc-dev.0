@@ -2,14 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 338EDB74C0
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Sep 2011 00:20:25 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 42005B71F2
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Sep 2011 00:20:28 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/21] of: Change logic to overwrite cmd_line with
-	CONFIG_CMDLINE
-Date: Sat, 10 Sep 2011 11:19:54 -0300
-Message-Id: <1315664408-16797-7-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 08/21] powerpc/powernv: Add CPU hotplug support
+Date: Sat, 10 Sep 2011 11:19:55 -0300
+Message-Id: <1315664408-16797-8-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1315664408-16797-1-git-send-email-benh@kernel.crashing.org>
 References: <1315664408-16797-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,34 +20,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We used to overwrite with CONFIG_CMDLINE if we found a chosen
-node but failed to get bootargs out of it or they were empty,
-unless CONFIG_CMDLINE_FORCE is set.
-
-Instead change that to overwrite if cmd_line is non empty after
-the bootargs check. It allows arch code to have other mechanisms
-to retrieve the command line prior to parsing the device-tree.
-
-Note: CONFIG_CMDLINE_FORCE case should ideally be handled elsewhere
-as it won't work as it-is if the device-tree has no /chosen node
+Unplugged CPU go into NAP mode in a loop until woken up
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/of/fdt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/Kconfig                 |    2 +-
+ arch/powerpc/platforms/powernv/smp.c |   78 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 78 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 65200af..d382163 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -683,7 +683,7 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6926b61..85baae5 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -323,7 +323,7 @@ config SWIOTLB
  
- #ifdef CONFIG_CMDLINE
- #ifndef CONFIG_CMDLINE_FORCE
--	if (p == NULL || l == 0 || (l == 1 && (*p) == 0))
-+	if (!cmd_line[0])
- #endif
- 		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
- #endif /* CONFIG_CMDLINE */
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
+-	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC)
++	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC || PPC_POWERNV)
+ 	---help---
+ 	  Say Y here to be able to disable and re-enable individual
+ 	  CPUs at runtime on SMP machines.
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 36c7151..4f4ec37 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -33,7 +33,14 @@
+ 
+ #include "powernv.h"
+ 
+-static void __devinit pnv_smp_setup_cpu(int cpu)
++#ifdef DEBUG
++#include <asm/udbg.h>
++#define DBG(fmt...) udbg_printf(fmt)
++#else
++#define DBG(fmt...)
++#endif
++
++static void __cpuinit pnv_smp_setup_cpu(int cpu)
+ {
+ 	if (cpu != boot_cpuid)
+ 		xics_setup_cpu();
+@@ -55,6 +62,67 @@ static int pnv_smp_cpu_bootable(unsigned int nr)
+ 	return 1;
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++
++static int pnv_smp_cpu_disable(void)
++{
++	int cpu = smp_processor_id();
++
++	/* This is identical to pSeries... might consolidate by
++	 * moving migrate_irqs_away to a ppc_md with default to
++	 * the generic fixup_irqs. --BenH.
++	 */
++	set_cpu_online(cpu, false);
++	vdso_data->processorCount--;
++	if (cpu == boot_cpuid)
++		boot_cpuid = cpumask_any(cpu_online_mask);
++	xics_migrate_irqs_away();
++	return 0;
++}
++
++static void pnv_smp_cpu_kill_self(void)
++{
++	unsigned int cpu;
++
++	/* If powersave_nap is enabled, use NAP mode, else just
++	 * spin aimlessly
++	 */
++	if (!powersave_nap) {
++		generic_mach_cpu_die();
++		return;
++	}
++
++	/* Standard hot unplug procedure */
++	local_irq_disable();
++	idle_task_exit();
++	current->active_mm = NULL; /* for sanity */
++	cpu = smp_processor_id();
++	DBG("CPU%d offline\n", cpu);
++	generic_set_cpu_dead(cpu);
++	smp_wmb();
++
++	/* We don't want to take decrementer interrupts while we are offline,
++	 * so clear LPCR:PECE1. We keep PECE2 enabled.
++	 */
++	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
++	while (!generic_check_cpu_restart(cpu)) {
++		power7_idle();
++		if (!generic_check_cpu_restart(cpu)) {
++			DBG("CPU%d Unexpected exit while offline !\n", cpu);
++			/* We may be getting an IPI, so we re-enable
++			 * interrupts to process it, it will be ignored
++			 * since we aren't online (hopefully)
++			 */
++			local_irq_enable();
++			local_irq_disable();
++		}
++	}
++	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_PECE1);
++	DBG("CPU%d coming online...\n", cpu);
++}
++
++#endif /* CONFIG_HOTPLUG_CPU */
++
+ static struct smp_ops_t pnv_smp_ops = {
+ 	.message_pass	= smp_muxed_ipi_message_pass,
+ 	.cause_ipi	= NULL,	/* Filled at runtime by xics_smp_probe() */
+@@ -62,6 +130,10 @@ static struct smp_ops_t pnv_smp_ops = {
+ 	.kick_cpu	= smp_generic_kick_cpu,
+ 	.setup_cpu	= pnv_smp_setup_cpu,
+ 	.cpu_bootable	= pnv_smp_cpu_bootable,
++#ifdef CONFIG_HOTPLUG_CPU
++	.cpu_disable	= pnv_smp_cpu_disable,
++	.cpu_die	= generic_cpu_die,
++#endif /* CONFIG_HOTPLUG_CPU */
+ };
+ 
+ /* This is called very early during platform setup_arch */
+@@ -80,4 +152,8 @@ void __init pnv_smp_init(void)
+ 		smp_ops->take_timebase = rtas_take_timebase;
+ 	}
+ #endif /* CONFIG_PPC_RTAS */
++
++#ifdef CONFIG_HOTPLUG_CPU
++	ppc_md.cpu_die	= pnv_smp_cpu_kill_self;
++#endif
+ }
 -- 
 1.7.4.1
