@@ -2,18 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B240EB71BE
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Sep 2011 19:24:46 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Optimize __arch_swab32 and __arch_swab16
+	by ozlabs.org (Postfix) with ESMTPS id 6A8E4B6F18
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Sep 2011 00:20:16 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1315570258-12275-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1315570258-12275-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 10 Sep 2011 06:24:39 -0300
-Message-ID: <1315646679.455.38.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/21] powerpc/udbg: Fix Kconfig entry for avoiding 44x early
+	debug with KVM
+Date: Sat, 10 Sep 2011 11:19:48 -0300
+Message-Id: <1315664408-16797-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-09-09 at 14:10 +0200, Joakim Tjernlund wrote:
-> PPC __arch_swab32 and __arch_swab16 generates non optimal code.
-> They do not schedule very well, need to copy its input register
-> and swab16 needs an extra insn to clear its upper bits.
-> Fix this with better inline ASM.
-> 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
->  arch/powerpc/include/asm/swab.h |   28 ++++++++++++++--------------
->  1 files changed, 14 insertions(+), 14 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/swab.h b/arch/powerpc/include/asm/swab.h
-> index c581e3e..3b9a200 100644
-> --- a/arch/powerpc/include/asm/swab.h
-> +++ b/arch/powerpc/include/asm/swab.h
-> @@ -61,25 +61,25 @@ static inline void __arch_swab32s(__u32 *addr)
->  
->  static inline __attribute_const__ __u16 __arch_swab16(__u16 value)
->  {
-> -	__u16 result;
-> -
-> -	__asm__("rlwimi %0,%1,8,16,23"
-> -	    : "=r" (result)
-> -	    : "r" (value), "0" (value >> 8));
-> -	return result;
-> +	__asm__("rlwimi %0,%0,16,0x00ff0000\n\t"
-> +		"rlwinm %0,%0,24,0x0000ffff"
-> +		: "+r"(value));
-> +	return value;
->  }
->  #define __arch_swab16 __arch_swab16
+It was preventing the global early debug selection whenever KVM was enabled
+instead of only preventing the 440 specific one.
 
-I don't quite get the thing about needing to clear the high bits.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/Kconfig.debug |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-Value is a u16 to start with, %0 is pre-filled with value >> 8 which
-won't add anything to the upper bits, neither will rlwimi, so why would
-you need to clear upper bits ?
-
-Now I do see why gcc might generate something sub-optimal here, but can
-you provide examples of asm output before/after in the patch commit ?
-
->  static inline __attribute_const__ __u32 __arch_swab32(__u32 value)
->  {
-> -	__u32 result;
-> -
-> -	__asm__("rlwimi %0,%1,24,16,23\n\t"
-> -	    "rlwimi %0,%1,8,8,15\n\t"
-> -	    "rlwimi %0,%1,24,0,7"
-> -	    : "=r" (result)
-> -	    : "r" (value), "0" (value >> 24));
-> -	return result;
-> +	__u32 tmp;
-> +
-> +	__asm__("rlwimi %0,%1,24,0xffffffff"
-> +		: "=r" (value) : "r" (value));
-> +	tmp = value;
-> +	__asm__("rlwimi %0,%1,16,0x00ff0000"
-> +		: "+r" (value) : "r" (tmp));
-> +	__asm__("rlwimi %0,%1,16,0x000000ff"
-> +		: "+r" (value) : "r" (tmp));
-> +	return value;
->  }
->  #define __arch_swab32 __arch_swab32
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 067cb84..cc01f1d 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -141,9 +141,6 @@ config BOOTX_TEXT
+ 
+ config PPC_EARLY_DEBUG
+ 	bool "Early debugging (dangerous)"
+-	# PPC_EARLY_DEBUG on 440 leaves AS=1 mappings above the TLB high water
+-	# mark, which doesn't work with current 440 KVM.
+-	depends on !KVM
+ 	help
+ 	  Say Y to enable some early debugging facilities that may be available
+ 	  for your processor/board combination. Those facilities are hacks
+@@ -222,7 +219,9 @@ config PPC_EARLY_DEBUG_BEAT
+ 
+ config PPC_EARLY_DEBUG_44x
+ 	bool "Early serial debugging for IBM/AMCC 44x CPUs"
+-	depends on 44x
++	# PPC_EARLY_DEBUG on 440 leaves AS=1 mappings above the TLB high water
++	# mark, which doesn't work with current 440 KVM.
++	depends on 44x && !KVM
+ 	help
+ 	  Select this to enable early debugging for IBM 44x chips via the
+ 	  inbuilt serial port.  If you enable this, ensure you set
+-- 
+1.7.4.1
