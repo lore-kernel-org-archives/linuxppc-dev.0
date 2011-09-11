@@ -1,16 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B7AABB7251
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Sep 2011 01:59:57 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 17/21] powerpc/powernv: Register and handle OPAL interrupts
-Date: Sat, 10 Sep 2011 11:20:04 -0300
-Message-Id: <1315664408-16797-17-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1315664408-16797-1-git-send-email-benh@kernel.crashing.org>
-References: <1315664408-16797-1-git-send-email-benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 882F3B7233
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Sep 2011 19:32:38 +1000 (EST)
+In-Reply-To: <1315646679.455.38.camel@pasglop>
+References: <1315570258-12275-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1315646679.455.38.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Optimize __arch_swab32 and __arch_swab16
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF325566ED.72C2FC40-ONC1257908.00327CBA-C1257908.00346A94@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sun, 11 Sep 2011 11:32:31 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,73 +24,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We do the minimum which is to "pass" interrupts to HAL, which
-makes the console smoother and will allow us to implement
-interrupt based completion and console.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 2011/09/10 11:24:39:
+>
+> On Fri, 2011-09-09 at 14:10 +0200, Joakim Tjernlund wrote:
+> > PPC __arch_swab32 and __arch_swab16 generates non optimal code.
+> > They do not schedule very well, need to copy its input register
+> > and swab16 needs an extra insn to clear its upper bits.
+> > Fix this with better inline ASM.
+> >
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > ---
+> >  arch/powerpc/include/asm/swab.h |   28 ++++++++++++++--------------
+> >  1 files changed, 14 insertions(+), 14 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/swab.h b/arch/powerpc/include/asm/swab.h
+> > index c581e3e..3b9a200 100644
+> > --- a/arch/powerpc/include/asm/swab.h
+> > +++ b/arch/powerpc/include/asm/swab.h
+> > @@ -61,25 +61,25 @@ static inline void __arch_swab32s(__u32 *addr)
+> >
+> >  static inline __attribute_const__ __u16 __arch_swab16(__u16 value)
+> >  {
+> > -   __u16 result;
+> > -
+> > -   __asm__("rlwimi %0,%1,8,16,23"
+> > -       : "=r" (result)
+> > -       : "r" (value), "0" (value >> 8));
+> > -   return result;
+> > +   __asm__("rlwimi %0,%0,16,0x00ff0000\n\t"
+> > +      "rlwinm %0,%0,24,0x0000ffff"
+> > +      : "+r"(value));
+> > +   return value;
+> >  }
+> >  #define __arch_swab16 __arch_swab16
+>
+> I don't quite get the thing about needing to clear the high bits.
+>
+> Value is a u16 to start with, %0 is pre-filled with value >> 8 which
+> won't add anything to the upper bits, neither will rlwimi, so why would
+> you need to clear upper bits ?
+>
+> Now I do see why gcc might generate something sub-optimal here, but can
+> you provide examples of asm output before/after in the patch commit ?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/powernv/opal.c |   31 +++++++++++++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
+I did a simple test earlier like so:
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 7887733..5a598ca 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -14,6 +14,7 @@
- #include <linux/types.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
-+#include <linux/interrupt.h>
- #include <asm/opal.h>
- #include <asm/firmware.h>
- 
-@@ -135,9 +136,22 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
- 	return written;
- }
- 
-+static irqreturn_t opal_interrupt(int irq, void *data)
-+{
-+	uint64_t events;
-+
-+	opal_handle_interrupt(virq_to_hw(irq), &events);
-+
-+	/* XXX TODO: Do something with the events */
-+
-+	return IRQ_HANDLED;
-+}
-+
- static int __init opal_init(void)
- {
- 	struct device_node *np, *consoles;
-+	const u32 *irqs;
-+	int rc, i, irqlen;
- 
- 	opal_node = of_find_node_by_path("/ibm,opal");
- 	if (!opal_node) {
-@@ -156,6 +170,23 @@ static int __init opal_init(void)
- 		of_platform_device_create(np, NULL, NULL);
- 	}
- 	of_node_put(consoles);
-+
-+	/* Find all OPAL interrupts and request them */
-+	irqs = of_get_property(opal_node, "opal-interrupts", &irqlen);
-+	pr_debug("opal: Found %d interrupts reserved for OPAL\n",
-+		 irqs ? (irqlen / 4) : 0);
-+	for (i = 0; irqs && i < (irqlen / 4); i++, irqs++) {
-+		unsigned int hwirq = be32_to_cpup(irqs);
-+		unsigned int irq = irq_create_mapping(NULL, hwirq);
-+		if (irq == NO_IRQ) {
-+			pr_warning("opal: Failed to map irq 0x%x\n", hwirq);
-+			continue;
-+		}
-+		rc = request_irq(irq, opal_interrupt, 0, "opal", NULL);
-+		if (rc)
-+			pr_warning("opal: Error %d requesting irq %d"
-+				   " (0x%x)\n", rc, irq, hwirq);
-+	}
- 	return 0;
- }
- subsys_initcall(opal_init);
--- 
-1.7.4.1
+unsigned short __arch_swab16(unsigned short value)
+{
+		 unsigned short result;
+
+		 __asm__("rlwimi %0,%1,8,16,23"
+		     : "=r" (result)
+		     : "r" (value), "0" (value >> 8));
+		 return result;
+}
+
+unsigned short my__arch_swab16(unsigned short value)
+{
+		 __asm__("rlwimi %0,%0,16,0x00ff0000\n\t"
+			 "rlwinm %0,%0,24,0x0000ffff"
+			 : "+r"(value));
+		 return value;
+}
+
+gcc -O2 -S outputs:
+
+	.file	"my_swab.c"
+	.section	".text"
+	.align 2
+	.globl __arch_swab16
+	.type	__arch_swab16, @function
+__arch_swab16:
+	mr 0,3
+	srwi 3,3,8
+#APP
+	rlwimi 3,0,8,16,23
+#NO_APP
+	rlwinm 3,3,0,0xffff
+	blr
+	.size	__arch_swab16, .-__arch_swab16
+	.align 2
+	.globl my__arch_swab16
+	.type	my__arch_swab16, @function
+my__arch_swab16:
+#APP
+	rlwimi 3,3,16,0x00ff0000
+	rlwinm 3,3,24,0x0000ffff
+#NO_APP
+	blr
+	.size	my__arch_swab16, .-my__arch_swab16
+	.section	.note.GNU-stack,"",@progbits
+	.ident	"GCC: (GNU) 3.4.6 (Gentoo 3.4.6-r2, ssp-3.4.6-1.0, pie-8.7.9)"
+
+However I recently installed gcc 4.5.2 to do some tests and that gives
+me this instead:
+	.file	"my_swab.c"
+	.gnu_attribute 4, 2
+	.gnu_attribute 8, 1
+	.gnu_attribute 12, 2
+	.section	".text"
+	.align 2
+	.globl __arch_swab16
+	.type	__arch_swab16, @function
+__arch_swab16:
+	srwi 0,3,8
+#APP
+ # 5 "my_swab.c" 1
+	rlwimi 0,3,8,16,23
+ # 0 "" 2
+#NO_APP
+	rlwinm 3,0,0,0xffff
+	blr
+	.size	__arch_swab16, .-__arch_swab16
+	.align 2
+	.globl my__arch_swab16
+	.type	my__arch_swab16, @function
+my__arch_swab16:
+#APP
+ # 13 "my_swab.c" 1
+	rlwimi 3,3,16,0x00ff0000
+	rlwinm 3,3,24,0x0000ffff
+ # 0 "" 2
+#NO_APP
+	rlwinm 3,3,0,0xffff
+	blr
+	.size	my__arch_swab16, .-my__arch_swab16
+	.ident	"GCC: (Gentoo 4.5.2 p1.1, pie-0.4.5) 4.5.2"
+	.section	.note.GNU-stack,"",@progbits
+
+So now both versions mask off the high bits, strange.
+Not sure what is going on here?
+
+ Jocke
