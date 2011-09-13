@@ -1,31 +1,16 @@
-Return-Path: <r61911@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 23859B71BE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 13 Sep 2011 14:10:13 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: RE: [PATCH] eSDHC: Access Freescale eSDHC registers by 32-bit
-Date: Tue, 13 Sep 2011 04:10:05 +0000
-Message-ID: <2239AC579C7D3646A720227A37E026811A3C67@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
-	<20110909114004.GP1912@pengutronix.de>
-	<2239AC579C7D3646A720227A37E026811A22BD@039-SN1MPN1-005.039d.mgd.msft.net>
-	<20110909123324.GQ1912@pengutronix.de>
-	<2239AC579C7D3646A720227A37E026811A2311@039-SN1MPN1-005.039d.mgd.msft.net>
-	<20110909130855.GR1912@pengutronix.de>
-In-Reply-To: <20110909130855.GR1912@pengutronix.de>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Xu Lei-B33228 <B33228@freescale.com>,
-	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"cjb@laptop.org" <cjb@laptop.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 97901B6F87
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2011 00:14:32 +1000 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Fix build failure with HV KVM and CBE
+Date: Tue, 13 Sep 2011 16:15:31 +0200
+Message-Id: <1315923331-12223-1-git-send-email-agraf@suse.de>
+Cc: linuxppc-dev@ozlabs.org, dvaleev@suse.de, paulus@samba.org,
+	kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When running with HV KVM and CBE config options enabled, I get
+build failures like the following:
 
+  arch/powerpc/kernel/head_64.o: In function `cbe_system_error_hv':
+  (.text+0x1228): undefined reference to `do_kvm_0x1202'
+  arch/powerpc/kernel/head_64.o: In function `cbe_maintenance_hv':
+  (.text+0x1628): undefined reference to `do_kvm_0x1602'
+  arch/powerpc/kernel/head_64.o: In function `cbe_thermal_hv':
+  (.text+0x1828): undefined reference to `do_kvm_0x1802'
 
-> -----Original Message-----
-> From: linux-mmc-owner@vger.kernel.org [mailto:linux-mmc-owner@vger.kernel=
-.org]
-> On Behalf Of Wolfram Sang
-> Sent: Friday, September 09, 2011 21:09 PM
-> To: Zang Roy-R61911
-> Cc: cjb@laptop.org; linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.=
-org;
-> akpm@linux-foundation.org; cbouatmailru@gmail.com; Xu Lei-B33228; Kumar G=
-ala
-> Subject: Re: [PATCH] eSDHC: Access Freescale eSDHC registers by 32-bit
->=20
->=20
-> > Previously, I sent this patch together  with another one. But
-> > technically they are separated patches.  I got some comments from
-> > Anton about the patch. I will try to address the comment. but for this
-> > one, it is a stand along patch. I'd like to push it first.
->=20
-> Okay.
-Good.
->=20
-> > I do not see any comment about byte swapping about this patch.
-> > you may have mis-understanding here.
->=20
-> I was misguided, yes, sorry. BE/LE issues with additional byteswapping
-> are a mind twister :/ Having a second look, it looks okay to me. One
-> could think about putting this into sdhci_platform as well, but this can
-> be done later if needed. Sadly, I currently don't have hardware to test
-> it.
-I tested on 8536 and P4080/P5020/P3041 platform.
-Anyone can help to pull it in?
-Thanks.
-Roy
+This is because we jump to a KVM handler when HV is enabled, but we
+only generate the handler with PR KVM mode.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kernel/exceptions-64s.S |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 29ddd8b..396d080 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -267,7 +267,7 @@ vsx_unavailable_pSeries_1:
+ 
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1200, 0x1202, cbe_system_error)
+-	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
+ #endif /* CONFIG_CBE_RAS */
+ 
+ 	STD_EXCEPTION_PSERIES(0x1300, 0x1300, instruction_breakpoint)
+@@ -275,7 +275,7 @@ vsx_unavailable_pSeries_1:
+ 
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1600, 0x1602, cbe_maintenance)
+-	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
+ #endif /* CONFIG_CBE_RAS */
+ 
+ 	STD_EXCEPTION_PSERIES(0x1700, 0x1700, altivec_assist)
+@@ -283,7 +283,7 @@ vsx_unavailable_pSeries_1:
+ 
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1800, 0x1802, cbe_thermal)
+-	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1802)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1802)
+ #endif /* CONFIG_CBE_RAS */
+ 
+ 	. = 0x3000
+-- 
+1.6.0.2
