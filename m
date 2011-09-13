@@ -1,18 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4E6FA1E2.2060706@freescale.com>
-Date: Tue, 13 Sep 2011 13:33:06 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0FA28B71C2
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2011 07:18:53 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <scottwood@freescale.com>,
+	<benh@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/fsl_msi: fix support for multiple MSI ranges
+Date: Tue, 13 Sep 2011 16:17:00 -0500
+Message-ID: <1315948620-12402-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl_msi: Handle msi-available-ranges better
-References: <20110117202528.GB561@udp111988uds.am.freescale.net>
-	<CAOZdJXVm1YL-T8i26O0BiB-uTkXUDnYQdacU8k52aG-K0pZ1Lg@mail.gmail.com>
-In-Reply-To: <CAOZdJXVm1YL-T8i26O0BiB-uTkXUDnYQdacU8k52aG-K0pZ1Lg@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/07/2011 11:20 AM, Tabi Timur-B04825 wrote:
-> The problem is that both offset and irq_index are being incremented in
-> the loop, and cascade_data->index is set to the sum of the two.
-> 
-> Perhaps you meant this:
-> 
-> 		err = fsl_msi_setup_hwirq(msi, dev, offset, j);
+Commit 6820fead ("powerpc/fsl_msi: Handle msi-available-ranges better") added
+support for multiple ranges in the msi-available-ranges property, but it
+miscalculated the MSIR index when multiple ranges are used.
 
-That's not right either, it would retrieve the wrong IRQ from the
-interrupts property if you have holes -- try with something like
-{ 0 64, 128, 64 }.  The desired behavior there is:
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_msi.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-  offset = 0 irq_index = 0
-  offset = 1 irq_index = 1
-  offset = 4 irq_index = 2
-  offset = 5 irq_index = 3
-
-I think the right code (untested) might be:
-
-	err = fsl_msi_setup_hwirq(msi, dev, offset + j, irq_index);
-
-and
-
-	cascade_data->index = offset;
-
--Scott
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 419a772..1cca251 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -296,7 +296,7 @@ static int __devinit fsl_msi_setup_hwirq(struct fsl_msi *msi,
+ 	}
+ 
+ 	msi->msi_virqs[irq_index] = virt_msir;
+-	cascade_data->index = offset + irq_index;
++	cascade_data->index = offset;
+ 	cascade_data->msi_data = msi;
+ 	irq_set_handler_data(virt_msir, cascade_data);
+ 	irq_set_chained_handler(virt_msir, fsl_msi_cascade);
+@@ -376,8 +376,10 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
+ 		goto error_out;
+ 	}
+ 
+-	if (!p)
++	if (!p) {
+ 		p = all_avail;
++		len = sizeof(all_avail);
++	}
+ 
+ 	for (irq_index = 0, i = 0; i < len / (2 * sizeof(u32)); i++) {
+ 		if (p[i * 2] % IRQS_PER_MSI_REG ||
+@@ -393,7 +395,7 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
+ 		count = p[i * 2 + 1] / IRQS_PER_MSI_REG;
+ 
+ 		for (j = 0; j < count; j++, irq_index++) {
+-			err = fsl_msi_setup_hwirq(msi, dev, offset, irq_index);
++			err = fsl_msi_setup_hwirq(msi, dev, offset + j, irq_index);
+ 			if (err)
+ 				goto error_out;
+ 		}
+-- 
+1.7.3.4
