@@ -1,14 +1,12 @@
 Return-Path: <anton@samba.org>
-Date: Thu, 15 Sep 2011 05:43:15 +1000
+Date: Thu, 15 Sep 2011 06:26:15 +1000
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Fix deadlock in icswx code
-Message-ID: <20110915054315.5e5ae062@kryten>
-In-Reply-To: <20110915052313.7127520d@kryten>
-References: <20110915052313.7127520d@kryten>
+To: gregkh@suse.de, nfont@austin.ibm.com
+Subject: [PATCH] memory hotplug: Refuse to add unaligned memory regions
+Message-ID: <20110915062615.782bc4df@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,63 +17,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-The icswx code introduced an A-B B-A deadlock:
+The sysfs memory probe interface allows unaligned regions
+to be added:
 
-     CPU0                    CPU1
-     ----                    ----
-lock(&anon_vma->mutex);
-                             lock(&mm->mmap_sem);
-                             lock(&anon_vma->mutex);
-lock(&mm->mmap_sem);
+# echo 0xffffff > /sys/devices/system/memory/probe
 
-Instead of using the mmap_sem to keep mm_users constant, take the
-page table spinlock.
+# cat /proc/iomem 
+00ffffff-01fffffe : System RAM
+01ffffff-02fffffe : System RAM
+02ffffff-03fffffe : System RAM
+03ffffff-04fffffe : System RAM
+04ffffff-05fffffe : System RAM
+
+Return -EINVAL instead of creating these bad regions.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: <stable@kernel.org>
 ---
 
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index 3bafc3d..4ff587e 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -136,8 +136,8 @@ int use_cop(unsigned long acop, struct mm_struct *mm)
- 	if (!mm || !acop)
- 		return -EINVAL;
+Index: linux-build/drivers/base/memory.c
+===================================================================
+--- linux-build.orig/drivers/base/memory.c	2011-08-11 08:25:55.005941391 +1000
++++ linux-build/drivers/base/memory.c	2011-08-11 08:28:27.938580440 +1000
+@@ -380,9 +380,13 @@ memory_probe_store(struct class *class,
+ 	u64 phys_addr;
+ 	int nid;
+ 	int i, ret;
++	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
  
--	/* We need to make sure mm_users doesn't change */
--	down_read(&mm->mmap_sem);
-+	/* The page_table_lock ensures mm_users won't change under us */
-+	spin_lock(&mm->page_table_lock);
- 	spin_lock(mm->context.cop_lockp);
+ 	phys_addr = simple_strtoull(buf, NULL, 0);
  
- 	if (mm->context.cop_pid == COP_PID_NONE) {
-@@ -164,7 +164,7 @@ int use_cop(unsigned long acop, struct mm_struct *mm)
- 
- out:
- 	spin_unlock(mm->context.cop_lockp);
--	up_read(&mm->mmap_sem);
-+	spin_unlock(&mm->page_table_lock);
- 
- 	return ret;
- }
-@@ -185,8 +185,8 @@ void drop_cop(unsigned long acop, struct mm_struct *mm)
- 	if (WARN_ON_ONCE(!mm))
- 		return;
- 
--	/* We need to make sure mm_users doesn't change */
--	down_read(&mm->mmap_sem);
-+	/* The page_table_lock ensures mm_users won't change under us */
-+	spin_lock(&mm->page_table_lock);
- 	spin_lock(mm->context.cop_lockp);
- 
- 	mm->context.acop &= ~acop;
-@@ -213,7 +213,7 @@ void drop_cop(unsigned long acop, struct mm_struct *mm)
- 	}
- 
- 	spin_unlock(mm->context.cop_lockp);
--	up_read(&mm->mmap_sem);
-+	spin_unlock(&mm->page_table_lock);
- }
- EXPORT_SYMBOL_GPL(drop_cop);
- 
++	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
++		return -EINVAL;
++
+ 	for (i = 0; i < sections_per_block; i++) {
+ 		nid = memory_add_physaddr_to_nid(phys_addr);
+ 		ret = add_memory(nid, phys_addr,
