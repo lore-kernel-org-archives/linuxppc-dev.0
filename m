@@ -1,21 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
-	[213.199.154.139])
+Return-Path: <B11780@freescale.com>
+Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
+	[213.199.154.208])
 	(using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 50AC4B70FE
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Sep 2011 07:39:06 +1000 (EST)
-Message-ID: <4E727072.7050401@freescale.com>
-Date: Thu, 15 Sep 2011 16:38:58 -0500
-From: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 3114BB6F62
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Sep 2011 03:04:08 +1000 (EST)
+From: Gala Kumar-B11780 <B11780@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: Re: [PATCH] [v2] powerpc/85xx: clean up FPGA device tree nodes for
+	Freecsale QorIQ boards
+Date: Thu, 15 Sep 2011 17:04:00 +0000
+Message-ID: <95760360-FBCE-4D68-B2AB-A5270F8FBD0F@freescale.com>
+References: <1316036538-311-1-git-send-email-timur@freescale.com>
+	<454A6F08-BD85-4C80-BF0D-3BC04D95EA36@freescale.com>,
+	<4E722860.8090605@freescale.com>
+In-Reply-To: <4E722860.8090605@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl_msi: fix support for multiple MSI ranges
-References: <1315948620-12402-1-git-send-email-timur@freescale.com>
-In-Reply-To: <1315948620-12402-1-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: kumar.gala@freescale.com, linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Gala Kumar-B11780 <B11780@freescale.com>,
+	"devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/13/2011 04:17 PM, Timur Tabi wrote:
-> Commit 6820fead ("powerpc/fsl_msi: Handle msi-available-ranges better") added
-> support for multiple ranges in the msi-available-ranges property, but it
-> miscalculated the MSIR index when multiple ranges are used.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->  arch/powerpc/sysdev/fsl_msi.c |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
+I pulling the p3060qds bit out so drop that change from next patch.
 
-Acked-by: Scott Wood <scottwood@freescale.com>
+- k
 
--Scott
+
+
+On Sep 15, 2011, at 11:31 AM, "Tabi Timur-B04825" <B04825@freescale.com> wr=
+ote:
+
+> Kumar Gala wrote:
+>> What happened to looking at pixis vs ngpixis ?
+>=20
+> Doh, I knew I was forgetting something.
+>=20
+> --=20
+> Timur Tabi
+> Linux kernel developer at Freescale
