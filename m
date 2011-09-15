@@ -1,20 +1,24 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BFD2DB71AD
+Return-Path: <akpm00@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65C98B70FE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Sep 2011 16:47:01 +1000 (EST)
-Date: Thu, 15 Sep 2011 08:35:43 +0200
-From: Greg KH <gregkh@suse.de>
+	Thu, 15 Sep 2011 17:58:31 +1000 (EST)
+Received: by iabn5 with SMTP id n5so1086525iab.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Sep 2011 00:58:27 -0700 (PDT)
+Date: Thu, 15 Sep 2011 00:58:48 -0700
+From: Andrew Morton <akpm00@gmail.com>
 To: Anton Blanchard <anton@samba.org>
 Subject: Re: [PATCH] memory hotplug: Refuse to add unaligned memory regions
-Message-ID: <20110915063543.GA29211@suse.de>
-References: <20110915062615.782bc4df@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <20110915005848.59e6fb36.akpm@linux-foundation.org>
 In-Reply-To: <20110915062615.782bc4df@kryten>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20110915062615.782bc4df@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,7 +28,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 15, 2011 at 06:26:15AM +1000, Anton Blanchard wrote:
+On Thu, 15 Sep 2011 06:26:15 +1000 Anton Blanchard <anton@samba.org> wrote:
+
 > 
 > The sysfs memory probe interface allows unaligned regions
 > to be added:
@@ -37,13 +42,5 @@ On Thu, Sep 15, 2011 at 06:26:15AM +1000, Anton Blanchard wrote:
 > 02ffffff-03fffffe : System RAM
 > 03ffffff-04fffffe : System RAM
 > 04ffffff-05fffffe : System RAM
-> 
-> Return -EINVAL instead of creating these bad regions.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
 
-Is this something that should go into 3.1 and older kernels to properly
-handle this type of error?
-
-greg k-h
+Then don't do that?
