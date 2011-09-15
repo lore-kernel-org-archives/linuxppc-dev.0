@@ -1,25 +1,18 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-gx0-f171.google.com (mail-gx0-f171.google.com
-	[209.85.161.171]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EEE84B71CC
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DBC8EB70C7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Sep 2011 23:09:52 +1000 (EST)
-Received: by gxk22 with SMTP id 22so3025805gxk.16
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Sep 2011 06:09:49 -0700 (PDT)
-Sender: "xenidis@gmail.com" <xenidis@gmail.com>
-Subject: Re: [PATCH] powerpc: Fix deadlock in icswx code
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <20110915054315.5e5ae062@kryten>
-Date: Thu, 15 Sep 2011 08:09:47 -0500
-Message-Id: <743CC253-C7B7-473E-84A2-B9A2A956D4D3@pobox.com>
-References: <20110915052313.7127520d@kryten> <20110915054315.5e5ae062@kryten>
-To: Anton Blanchard <anton@samba.org>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+	Thu, 15 Sep 2011 23:21:17 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] RapidIO: documentation update
+Date: Thu, 15 Sep 2011 09:19:19 -0400
+Message-Id: <1316092759-5460-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
+	Liu Gang <Gang.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,87 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Update rapidio.txt to reflect changes from recent patch.
+See http://marc.info/?l=linux-kernel&m=131285620113589&w=2 for details.
 
-On Sep 14, 2011, at 2:43 PM, Anton Blanchard wrote:
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Liu Gang <Gang.Liu@freescale.com>
+---
+ Documentation/rapidio/rapidio.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-Hi Anton,
-It would really help me a lot if you could review and maybe merge this =
-with my earlier patch that splits this file.
-  <http://patchwork.ozlabs.org/patch/109103/>
-All it does is split.. I promise.
-You don't have to take the other stuff.. yet :)
-
--JX
-
-
->=20
-> The icswx code introduced an A-B B-A deadlock:
->=20
->     CPU0                    CPU1
->     ----                    ----
-> lock(&anon_vma->mutex);
->                             lock(&mm->mmap_sem);
->                             lock(&anon_vma->mutex);
-> lock(&mm->mmap_sem);
->=20
-> Instead of using the mmap_sem to keep mm_users constant, take the
-> page table spinlock.
->=20
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Cc: <stable@kernel.org>
-> ---
->=20
-> diff --git a/arch/powerpc/mm/mmu_context_hash64.c =
-b/arch/powerpc/mm/mmu_context_hash64.c
-> index 3bafc3d..4ff587e 100644
-> --- a/arch/powerpc/mm/mmu_context_hash64.c
-> +++ b/arch/powerpc/mm/mmu_context_hash64.c
-> @@ -136,8 +136,8 @@ int use_cop(unsigned long acop, struct mm_struct =
-*mm)
-> 	if (!mm || !acop)
-> 		return -EINVAL;
->=20
-> -	/* We need to make sure mm_users doesn't change */
-> -	down_read(&mm->mmap_sem);
-> +	/* The page_table_lock ensures mm_users won't change under us */
-> +	spin_lock(&mm->page_table_lock);
-> 	spin_lock(mm->context.cop_lockp);
->=20
-> 	if (mm->context.cop_pid =3D=3D COP_PID_NONE) {
-> @@ -164,7 +164,7 @@ int use_cop(unsigned long acop, struct mm_struct =
-*mm)
->=20
-> out:
-> 	spin_unlock(mm->context.cop_lockp);
-> -	up_read(&mm->mmap_sem);
-> +	spin_unlock(&mm->page_table_lock);
->=20
-> 	return ret;
-> }
-> @@ -185,8 +185,8 @@ void drop_cop(unsigned long acop, struct mm_struct =
-*mm)
-> 	if (WARN_ON_ONCE(!mm))
-> 		return;
->=20
-> -	/* We need to make sure mm_users doesn't change */
-> -	down_read(&mm->mmap_sem);
-> +	/* The page_table_lock ensures mm_users won't change under us */
-> +	spin_lock(&mm->page_table_lock);
-> 	spin_lock(mm->context.cop_lockp);
->=20
-> 	mm->context.acop &=3D ~acop;
-> @@ -213,7 +213,7 @@ void drop_cop(unsigned long acop, struct mm_struct =
-*mm)
-> 	}
->=20
-> 	spin_unlock(mm->context.cop_lockp);
-> -	up_read(&mm->mmap_sem);
-> +	spin_unlock(&mm->page_table_lock);
-> }
-> EXPORT_SYMBOL_GPL(drop_cop);
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/Documentation/rapidio/rapidio.txt b/Documentation/rapidio/rapidio.txt
+index be70ee1..c75694b 100644
+--- a/Documentation/rapidio/rapidio.txt
++++ b/Documentation/rapidio/rapidio.txt
+@@ -144,7 +144,7 @@ and the default device ID in order to access the device on the active port.
+ 
+ After the host has completed enumeration of the entire network it releases
+ devices by clearing device ID locks (calls rio_clear_locks()). For each endpoint
+-in the system, it sets the Master Enable bit in the Port General Control CSR
++in the system, it sets the Discovered bit in the Port General Control CSR
+ to indicate that enumeration is completed and agents are allowed to execute
+ passive discovery of the network.
+ 
+-- 
+1.7.6
