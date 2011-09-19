@@ -1,20 +1,22 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
-	(using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2A831B70CA
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BC56FB6F86
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 19 Sep 2011 08:38:15 +1000 (EST)
-Date: Mon, 19 Sep 2011 00:28:49 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: "F. Heitkamp" <heitkamp@ameritech.net>
-Subject: Re: mount file system using offset.
-Message-ID: <20110918222849.GA15635@lst.de>
-References: <4E7644C9.4070802@ameritech.net>
+	Mon, 19 Sep 2011 10:20:52 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4E7644C9.4070802@ameritech.net>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] RapidIO: documentation update
+Date: Sun, 18 Sep 2011 17:20:38 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552021F93AE@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <4E7470E6.2000404@neli.hopto.org>
+References: <1316092759-5460-1-git-send-email-alexandre.bounine@idt.com>
+	<4E7470E6.2000404@neli.hopto.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Micha Nelissen <micha@neli.hopto.org>
+Cc: Liu Gang <Gang.Liu@freescale.com>, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,13 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 18, 2011 at 03:21:45PM -0400, F. Heitkamp wrote:
-> Hi,
->
-> First of all please accept my apologies for posting to this list on this 
-> particular topic, but it was the closest match I could find.
->
-> I pulled the harddisk out of my ps3, because I have forgotten the root 
-> password on the linux partition.
+Micha Nelissen wrote:
+>=20
+> Alexandre Bounine wrote:
+> >  After the host has completed enumeration of the entire network it
+releases
+> >  devices by clearing device ID locks (calls rio_clear_locks()). For
+each endpoint
+> > -in the system, it sets the Master Enable bit in the Port General
+Control CSR
+> > +in the system, it sets the Discovered bit in the Port General
+Control CSR
+> >  to indicate that enumeration is completed and agents are allowed to
+execute
+> >  passive discovery of the network.
+>=20
+> The host needs to set both. Without Master Enable an agent is not
+> supposed to initiate transactions on the "bus", that's the meaning of
+> that bit.
 
-Why doesn't init=/bin/sh work on the ps3?
+This is correct and host set both bits: Master_Enable and Discovered.
+The documentation change above is related to event that triggers
+discovery process.
+In this context the change shown above is sufficient.
+Please see the original code patch submitted by Liu Gang.
+
+Alex.
+  =20
