@@ -2,14 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 20FCA100C9F
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Sep 2011 13:46:05 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 3244D100DC8
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Sep 2011 13:46:07 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 14/20] powerpc/powernv: Add RTC and NVRAM support plus RTAS
-	fallbacks
-Date: Tue, 20 Sep 2011 13:45:01 +1000
-Message-Id: <1316490307-28030-14-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 15/20] powerpc/powernv: Add OPAL ICS backend
+Date: Tue, 20 Sep 2011 13:45:02 +1000
+Message-Id: <1316490307-28030-15-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1316490307-28030-1-git-send-email-benh@kernel.crashing.org>
 References: <1316490307-28030-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,59 +20,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implements OPAL RTC and NVRAM support and wire all that up to
-the powernv platform.
-
-We use RTAS for RTC as a fallback if available. Using RTAS for nvram
-is not supported yet, pending some rework/cleanup and generalization
-of the pSeries & CHRP code. We also use RTAS fallbacks for power off
-and reboot
+OPAL handles HW access to the various ICS or equivalent chips
+for us (with the exception of p5ioc2 based HEA which uses a
+different backend) similarily to what RTAS does on pSeries.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/opal.h             |    6 ++
- arch/powerpc/platforms/powernv/Makefile     |    2 +
- arch/powerpc/platforms/powernv/opal-nvram.c |   88 ++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-rtc.c   |   97 +++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/setup.c      |   57 ++++++++++------
- 5 files changed, 229 insertions(+), 21 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-nvram.c
- create mode 100644 arch/powerpc/platforms/powernv/opal-rtc.c
+ arch/powerpc/include/asm/xics.h        |   19 +++
+ arch/powerpc/sysdev/xics/Makefile      |    1 +
+ arch/powerpc/sysdev/xics/ics-opal.c    |  244 ++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/xics/xics-common.c |    8 +-
+ 4 files changed, 266 insertions(+), 6 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/xics/ics-opal.c
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index dbeabea..9bb0efd 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -430,6 +430,12 @@ extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
+diff --git a/arch/powerpc/include/asm/xics.h b/arch/powerpc/include/asm/xics.h
+index b183a40..bd6c401 100644
+--- a/arch/powerpc/include/asm/xics.h
++++ b/arch/powerpc/include/asm/xics.h
+@@ -27,10 +27,18 @@
+ #define MAX_NUM_PRIORITIES	3
  
- extern void hvc_opal_init_early(void);
+ /* Native ICP */
++#ifdef CONFIG_PPC_ICP_NATIVE
+ extern int icp_native_init(void);
++#else
++static inline int icp_native_init(void) { return -ENODEV; }
++#endif
  
-+struct rtc_time;
-+extern int opal_set_rtc_time(struct rtc_time *tm);
-+extern void opal_get_rtc_time(struct rtc_time *tm);
-+extern unsigned long opal_get_boot_time(void);
-+extern void opal_nvram_init(void);
+ /* PAPR ICP */
++#ifdef CONFIG_PPC_ICP_HV
+ extern int icp_hv_init(void);
++#else
++static inline int icp_hv_init(void) { return -ENODEV; }
++#endif
+ 
+ /* ICP ops */
+ struct icp_ops {
+@@ -51,7 +59,18 @@ extern const struct icp_ops *icp_ops;
+ extern int ics_native_init(void);
+ 
+ /* RTAS ICS */
++#ifdef CONFIG_PPC_ICS_RTAS
+ extern int ics_rtas_init(void);
++#else
++static inline int ics_rtas_init(void) { return -ENODEV; }
++#endif
 +
- #endif /* __ASSEMBLY__ */
++/* HAL ICS */
++#ifdef CONFIG_PPC_POWERNV
++extern int ics_opal_init(void);
++#else
++static inline int ics_opal_init(void) { return -ENODEV; }
++#endif
  
- #endif /* __OPAL_H */
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 8f69c0d..618ad83 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,2 +1,4 @@
- obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o
-+obj-y			+= opal-rtc.o opal-nvram.o
-+
- obj-$(CONFIG_SMP)	+= smp.o
-diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
+ /* ICS instance, hooked up to chip_data of an irq */
+ struct ics {
+diff --git a/arch/powerpc/sysdev/xics/Makefile b/arch/powerpc/sysdev/xics/Makefile
+index b75a605..c606aa8 100644
+--- a/arch/powerpc/sysdev/xics/Makefile
++++ b/arch/powerpc/sysdev/xics/Makefile
+@@ -4,3 +4,4 @@ obj-y				+= xics-common.o
+ obj-$(CONFIG_PPC_ICP_NATIVE)	+= icp-native.o
+ obj-$(CONFIG_PPC_ICP_HV)	+= icp-hv.o
+ obj-$(CONFIG_PPC_ICS_RTAS)	+= ics-rtas.o
++obj-$(CONFIG_PPC_POWERNV)	+= ics-opal.o
+diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xics/ics-opal.c
 new file mode 100644
-index 0000000..3f83e1a
+index 0000000..f7e8609
 --- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-nvram.c
-@@ -0,0 +1,88 @@
++++ b/arch/powerpc/sysdev/xics/ics-opal.c
+@@ -0,0 +1,244 @@
 +/*
-+ * PowerNV nvram code.
++ * ICS backend for OPAL managed interrupts.
 + *
 + * Copyright 2011 IBM Corp.
 + *
@@ -83,296 +101,269 @@ index 0000000..3f83e1a
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#define DEBUG
++#undef DEBUG
 +
++#include <linux/types.h>
 +#include <linux/kernel.h>
++#include <linux/irq.h>
++#include <linux/smp.h>
++#include <linux/interrupt.h>
 +#include <linux/init.h>
++#include <linux/cpu.h>
 +#include <linux/of.h>
++#include <linux/spinlock.h>
++#include <linux/msi.h>
 +
-+#include <asm/opal.h>
++#include <asm/prom.h>
++#include <asm/smp.h>
 +#include <asm/machdep.h>
-+
-+static unsigned int nvram_size;
-+
-+static ssize_t opal_nvram_size(void)
-+{
-+	return nvram_size;
-+}
-+
-+static ssize_t opal_nvram_read(char *buf, size_t count, loff_t *index)
-+{
-+	s64 rc;
-+	int off;
-+
-+	if (*index >= nvram_size)
-+		return 0;
-+	off = *index;
-+	if ((off + count) > nvram_size)
-+		count = nvram_size - off;
-+	rc = opal_read_nvram(__pa(buf), count, off);
-+	if (rc != OPAL_SUCCESS)
-+		return -EIO;
-+	*index += count;
-+	return count;
-+}
-+
-+static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
-+{
-+	s64 rc = OPAL_BUSY;
-+	int off;
-+
-+	if (*index >= nvram_size)
-+		return 0;
-+	off = *index;
-+	if ((off + count) > nvram_size)
-+		count = nvram_size - off;
-+
-+	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+		rc = opal_write_nvram(__pa(buf), count, off);
-+		if (rc == OPAL_BUSY_EVENT)
-+			opal_poll_events(NULL);
-+	}
-+	*index += count;
-+	return count;
-+}
-+
-+void __init opal_nvram_init(void)
-+{
-+	struct device_node *np;
-+	const u32 *nbytes_p;
-+
-+	np = of_find_compatible_node(NULL, NULL, "ibm,opal-nvram");
-+	if (np == NULL)
-+		return;
-+
-+	nbytes_p = of_get_property(np, "#bytes", NULL);
-+	if (!nbytes_p) {
-+		of_node_put(np);
-+		return;
-+	}
-+	nvram_size = *nbytes_p;
-+
-+	printk(KERN_INFO "OPAL nvram setup, %u bytes\n", nvram_size);
-+	of_node_put(np);
-+
-+	ppc_md.nvram_read = opal_nvram_read;
-+	ppc_md.nvram_write = opal_nvram_write;
-+	ppc_md.nvram_size = opal_nvram_size;
-+}
-+
-diff --git a/arch/powerpc/platforms/powernv/opal-rtc.c b/arch/powerpc/platforms/powernv/opal-rtc.c
-new file mode 100644
-index 0000000..2aa7641
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-rtc.c
-@@ -0,0 +1,97 @@
-+/*
-+ * PowerNV Real Time Clock.
-+ *
-+ * Copyright 2011 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/time.h>
-+#include <linux/bcd.h>
-+#include <linux/rtc.h>
-+#include <linux/delay.h>
-+
++#include <asm/irq.h>
++#include <asm/errno.h>
++#include <asm/xics.h>
 +#include <asm/opal.h>
 +#include <asm/firmware.h>
 +
-+static void opal_to_tm(u32 y_m_d, u64 h_m_s_ms, struct rtc_time *tm)
++static int ics_opal_mangle_server(int server)
 +{
-+	tm->tm_year	= ((bcd2bin(y_m_d >> 24) * 100) +
-+			   bcd2bin((y_m_d >> 16) & 0xff)) - 1900;
-+	tm->tm_mon	= bcd2bin((y_m_d >> 8) & 0xff) - 1;
-+	tm->tm_mday	= bcd2bin(y_m_d & 0xff);
-+	tm->tm_hour	= bcd2bin((h_m_s_ms >> 56) & 0xff);
-+	tm->tm_min	= bcd2bin((h_m_s_ms >> 48) & 0xff);
-+	tm->tm_sec	= bcd2bin((h_m_s_ms >> 40) & 0xff);
-+
-+        GregorianDay(tm);
++	/* No link for now */
++	return server << 2;
 +}
 +
-+unsigned long __init opal_get_boot_time(void)
++static int ics_opal_unmangle_server(int server)
 +{
-+	struct rtc_time tm;
-+	u32 y_m_d;
-+	u64 h_m_s_ms;
-+	long rc = OPAL_BUSY;
++	/* No link for now */
++	return server >> 2;
++}
 +
-+	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+		rc = opal_rtc_read(&y_m_d, &h_m_s_ms);
-+		if (rc == OPAL_BUSY_EVENT)
-+			opal_poll_events(NULL);
-+		else
-+			mdelay(10);
-+	}
++static void ics_opal_unmask_irq(struct irq_data *d)
++{
++	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
++	int64_t rc;
++	int server;
++
++	pr_devel("ics-hal: unmask virq %d [hw 0x%x]\n", d->irq, hw_irq);
++
++	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
++		return;
++
++	server = xics_get_irq_server(d->irq, d->affinity, 0);
++	server = ics_opal_mangle_server(server);
++
++	rc = opal_set_xive(hw_irq, server, DEFAULT_PRIORITY);
 +	if (rc != OPAL_SUCCESS)
-+		return 0;
-+	opal_to_tm(y_m_d, h_m_s_ms, &tm);
-+	return mktime(tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-+		      tm.tm_hour, tm.tm_min, tm.tm_sec);
++		pr_err("%s: opal_set_xive(irq=%d [hw 0x%x] server=%x)"
++		       " error %lld\n",
++		       __func__, d->irq, hw_irq, server, rc);
 +}
 +
-+void opal_get_rtc_time(struct rtc_time *tm)
++static unsigned int ics_opal_startup(struct irq_data *d)
 +{
-+	long rc = OPAL_BUSY;
-+	u32 y_m_d;
-+	u64 h_m_s_ms;
++#ifdef CONFIG_PCI_MSI
++	/*
++	 * The generic MSI code returns with the interrupt disabled on the
++	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
++	 * at that level, so we do it here by hand.
++	 */
++	if (d->msi_desc)
++		unmask_msi_irq(d);
++#endif
 +
-+	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+		rc = opal_rtc_read(&y_m_d, &h_m_s_ms);
-+		if (rc == OPAL_BUSY_EVENT)
-+			opal_poll_events(NULL);
-+		else
-+			mdelay(10);
++	/* unmask it */
++	ics_opal_unmask_irq(d);
++	return 0;
++}
++
++static void ics_opal_mask_real_irq(unsigned int hw_irq)
++{
++	int server = ics_opal_mangle_server(xics_default_server);
++	int64_t rc;
++
++	if (hw_irq == XICS_IPI)
++		return;
++
++	/* Have to set XIVE to 0xff to be able to remove a slot */
++	rc = opal_set_xive(hw_irq, server, 0xff);
++	if (rc != OPAL_SUCCESS)
++		pr_err("%s: opal_set_xive(0xff) irq=%u returned %lld\n",
++		       __func__, hw_irq, rc);
++}
++
++static void ics_opal_mask_irq(struct irq_data *d)
++{
++	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
++
++	pr_devel("ics-hal: mask virq %d [hw 0x%x]\n", d->irq, hw_irq);
++
++	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
++		return;
++	ics_opal_mask_real_irq(hw_irq);
++}
++
++static int ics_opal_set_affinity(struct irq_data *d,
++				 const struct cpumask *cpumask,
++				 bool force)
++{
++	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
++	int16_t server;
++	int8_t priority;
++	int64_t rc;
++	int wanted_server;
++
++	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
++		return -1;
++
++	rc = opal_get_xive(hw_irq, &server, &priority);
++	if (rc != OPAL_SUCCESS) {
++		pr_err("%s: opal_set_xive(irq=%d [hw 0x%x] server=%x)"
++		       " error %lld\n",
++		       __func__, d->irq, hw_irq, server, rc);
++		return -1;
 +	}
++
++	wanted_server = xics_get_irq_server(d->irq, cpumask, 1);
++	if (wanted_server < 0) {
++		char cpulist[128];
++		cpumask_scnprintf(cpulist, sizeof(cpulist), cpumask);
++		pr_warning("%s: No online cpus in the mask %s for irq %d\n",
++			   __func__, cpulist, d->irq);
++		return -1;
++	}
++	server = ics_opal_mangle_server(wanted_server);
++
++	pr_devel("ics-hal: set-affinity irq %d [hw 0x%x] server: 0x%x/0x%x\n",
++		 d->irq, hw_irq, wanted_server, server);
++
++	rc = opal_set_xive(hw_irq, server, priority);
++	if (rc != OPAL_SUCCESS) {
++		pr_err("%s: opal_set_xive(irq=%d [hw 0x%x] server=%x)"
++		       " error %lld\n",
++		       __func__, d->irq, hw_irq, server, rc);
++		return -1;
++	}
++	return 0;
++}
++
++static struct irq_chip ics_opal_irq_chip = {
++	.name = "OPAL ICS",
++	.irq_startup = ics_opal_startup,
++	.irq_mask = ics_opal_mask_irq,
++	.irq_unmask = ics_opal_unmask_irq,
++	.irq_eoi = NULL, /* Patched at init time */
++	.irq_set_affinity = ics_opal_set_affinity
++};
++
++static int ics_opal_map(struct ics *ics, unsigned int virq);
++static void ics_opal_mask_unknown(struct ics *ics, unsigned long vec);
++static long ics_opal_get_server(struct ics *ics, unsigned long vec);
++
++static int ics_opal_host_match(struct ics *ics, struct device_node *node)
++{
++	return 1;
++}
++
++/* Only one global & state struct ics */
++static struct ics ics_hal = {
++	.map		= ics_opal_map,
++	.mask_unknown	= ics_opal_mask_unknown,
++	.get_server	= ics_opal_get_server,
++	.host_match	= ics_opal_host_match,
++};
++
++static int ics_opal_map(struct ics *ics, unsigned int virq)
++{
++	unsigned int hw_irq = (unsigned int)virq_to_hw(virq);
++	int64_t rc;
++	int16_t server;
++	int8_t priority;
++
++	if (WARN_ON(hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS))
++		return -EINVAL;
++
++	/* Check if HAL knows about this interrupt */
++	rc = opal_get_xive(hw_irq, &server, &priority);
++	if (rc != OPAL_SUCCESS)
++		return -ENXIO;
++
++	irq_set_chip_and_handler(virq, &ics_opal_irq_chip, handle_fasteoi_irq);
++	irq_set_chip_data(virq, &ics_hal);
++
++	return 0;
++}
++
++static void ics_opal_mask_unknown(struct ics *ics, unsigned long vec)
++{
++	int64_t rc;
++	int16_t server;
++	int8_t priority;
++
++	/* Check if HAL knows about this interrupt */
++	rc = opal_get_xive(vec, &server, &priority);
 +	if (rc != OPAL_SUCCESS)
 +		return;
-+	opal_to_tm(y_m_d, h_m_s_ms, tm);
++
++	ics_opal_mask_real_irq(vec);
 +}
 +
-+int opal_set_rtc_time(struct rtc_time *tm)
++static long ics_opal_get_server(struct ics *ics, unsigned long vec)
 +{
-+	long rc = OPAL_BUSY;
-+	u32 y_m_d = 0;
-+	u64 h_m_s_ms = 0;
++	int64_t rc;
++	int16_t server;
++	int8_t priority;
 +
-+	y_m_d |= ((u32)bin2bcd((tm->tm_year + 1900) / 100)) << 24;
-+	y_m_d |= ((u32)bin2bcd((tm->tm_year + 1900) % 100)) << 16;
-+	y_m_d |= ((u32)bin2bcd((tm->tm_mon + 1))) << 8;
-+	y_m_d |= ((u32)bin2bcd(tm->tm_mday));
-+
-+	h_m_s_ms |= ((u64)bin2bcd(tm->tm_hour)) << 56;
-+	h_m_s_ms |= ((u64)bin2bcd(tm->tm_min)) << 48;
-+	h_m_s_ms |= ((u64)bin2bcd(tm->tm_sec)) << 40;
-+
-+	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+		rc = opal_rtc_write(y_m_d, h_m_s_ms);
-+		if (rc == OPAL_BUSY_EVENT)
-+			opal_poll_events(NULL);
-+		else
-+			mdelay(10);
-+	}
-+	return rc == OPAL_SUCCESS ? 0 : -EIO;
++	/* Check if HAL knows about this interrupt */
++	rc = opal_get_xive(vec, &server, &priority);
++	if (rc != OPAL_SUCCESS)
++		return -1;
++	return ics_opal_unmangle_server(server);
 +}
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 0fac0a6..4a2b2e2 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -29,7 +29,9 @@
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- #include <asm/xics.h>
-+#include <asm/rtas.h>
- #include <asm/opal.h>
-+#include <asm/xics.h>
- 
- #include "powernv.h"
- 
-@@ -40,7 +42,9 @@ static void __init pnv_setup_arch(void)
- 
- 	/* XXX PCI */
- 
--	/* XXX NVRAM */
-+	/* Setup RTC and NVRAM callbacks */
-+	if (firmware_has_feature(FW_FEATURE_OPAL))
-+		opal_nvram_init();
- 
- 	/* Enable NAP mode */
- 	powersave_nap = 1;
-@@ -118,30 +122,40 @@ static void __noreturn pnv_halt(void)
- 	pnv_power_off();
- }
- 
--static unsigned long __init pnv_get_boot_time(void)
--{
--	return 0;
--}
--
--static void pnv_get_rtc_time(struct rtc_time *rtc_tm)
-+static void pnv_progress(char *s, unsigned short hex)
- {
- }
- 
--static int pnv_set_rtc_time(struct rtc_time *tm)
-+#ifdef CONFIG_KEXEC
-+static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- {
--	return 0;
-+	xics_kexec_teardown_cpu(secondary);
- }
-+#endif /* CONFIG_KEXEC */
- 
--static void pnv_progress(char *s, unsigned short hex)
-+static void __init pnv_setup_machdep_opal(void)
- {
-+	ppc_md.get_boot_time = opal_get_boot_time;
-+	ppc_md.get_rtc_time = opal_get_rtc_time;
-+	ppc_md.set_rtc_time = opal_set_rtc_time;
-+	ppc_md.restart = pnv_restart;
-+	ppc_md.power_off = pnv_power_off;
-+	ppc_md.halt = pnv_halt;
- }
- 
--#ifdef CONFIG_KEXEC
--static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
-+#ifdef CONFIG_PPC_POWERNV_RTAS
-+static void __init pnv_setup_machdep_rtas(void)
- {
--	xics_kexec_teardown_cpu(secondary);
-+	if (rtas_token("get-time-of-day") != RTAS_UNKNOWN_SERVICE) {
-+		ppc_md.get_boot_time = rtas_get_boot_time;
-+		ppc_md.get_rtc_time = rtas_get_rtc_time;
-+		ppc_md.set_rtc_time = rtas_set_rtc_time;
-+	}
-+	ppc_md.restart = rtas_restart;
-+	ppc_md.power_off = rtas_power_off;
-+	ppc_md.halt = rtas_halt;
- }
--#endif /* CONFIG_KEXEC */
-+#endif /* CONFIG_PPC_POWERNV_RTAS */
- 
- static int __init pnv_probe(void)
- {
-@@ -152,6 +166,13 @@ static int __init pnv_probe(void)
- 
- 	hpte_init_native();
- 
-+	if (firmware_has_feature(FW_FEATURE_OPAL))
-+		pnv_setup_machdep_opal();
-+#ifdef CONFIG_PPC_POWERNV_RTAS
-+	else if (rtas.base)
-+		pnv_setup_machdep_rtas();
-+#endif /* CONFIG_PPC_POWERNV_RTAS */
 +
- 	pr_debug("PowerNV detected !\n");
++int __init ics_opal_init(void)
++{
++	if (!firmware_has_feature(FW_FEATURE_OPAL))
++		return -ENODEV;
++
++	/* We need to patch our irq chip's EOI to point to the
++	 * right ICP
++	 */
++	ics_opal_irq_chip.irq_eoi = icp_ops->eoi;
++
++	/* Register ourselves */
++	xics_register_ics(&ics_hal);
++
++	pr_info("ICS OPAL backend registered\n");
++
++	return 0;
++}
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index 445c5a0..3d93a8d 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -409,14 +409,10 @@ void __init xics_init(void)
+ 	int rc = -1;
  
- 	return 1;
-@@ -160,16 +181,10 @@ static int __init pnv_probe(void)
- define_machine(powernv) {
- 	.name			= "PowerNV",
- 	.probe			= pnv_probe,
--	.setup_arch		= pnv_setup_arch,
- 	.init_early		= pnv_init_early,
-+	.setup_arch		= pnv_setup_arch,
- 	.init_IRQ		= pnv_init_IRQ,
- 	.show_cpuinfo		= pnv_show_cpuinfo,
--	.restart		= pnv_restart,
--	.power_off		= pnv_power_off,
--	.halt			= pnv_halt,
--	.get_boot_time		= pnv_get_boot_time,
--	.get_rtc_time		= pnv_get_rtc_time,
--	.set_rtc_time		= pnv_set_rtc_time,
- 	.progress		= pnv_progress,
- 	.power_save             = power7_idle,
- 	.calibrate_decr		= generic_calibrate_decr,
+ 	/* Fist locate ICP */
+-#ifdef CONFIG_PPC_ICP_HV
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		rc = icp_hv_init();
+-#endif
+-#ifdef CONFIG_PPC_ICP_NATIVE
+ 	if (rc < 0)
+ 		rc = icp_native_init();
+-#endif
+ 	if (rc < 0) {
+ 		pr_warning("XICS: Cannot find a Presentation Controller !\n");
+ 		return;
+@@ -429,9 +425,9 @@ void __init xics_init(void)
+ 	xics_ipi_chip.irq_eoi = icp_ops->eoi;
+ 
+ 	/* Now locate ICS */
+-#ifdef CONFIG_PPC_ICS_RTAS
+ 	rc = ics_rtas_init();
+-#endif
++	if (rc < 0)
++		rc = ics_opal_init();
+ 	if (rc < 0)
+ 		pr_warning("XICS: Cannot find a Source Controller !\n");
+ 
 -- 
 1.7.4.1
