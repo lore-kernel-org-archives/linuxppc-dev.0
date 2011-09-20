@@ -1,21 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
-	[IPv6:2402:b800:7003:1::15])
-	by ozlabs.org (Postfix) with ESMTP id ECA0C1007D1
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e24smtp03.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DE834B71C6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Sep 2011 20:37:15 +1000 (EST)
-Date: Tue, 20 Sep 2011 20:30:39 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: power-next
-Message-Id: <20110920203039.930cb5e60e3f0743b2d43cd8@canb.auug.org.au>
-In-Reply-To: <1316501174.7975.32.camel@pasglop>
-References: <1316501174.7975.32.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r"
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Tue, 20 Sep 2011 23:07:48 +1000 (EST)
+Received: from /spool/local by br.ibm.com with XMail ESMTP
+	for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+	Tue, 20 Sep 2011 10:07:39 -0300
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+	by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p8KD6kqg3203242
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2011 10:06:46 -0300
+Received: from d24av04.br.ibm.com (loopback [127.0.0.1])
+	by d24av04.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p8KD7M9j009385
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2011 10:07:23 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: reserve iommu page 0
+Date: Tue, 20 Sep 2011 10:07:24 -0300
+Message-Id: <1316524044-5260-1-git-send-email-cascardo@linux.vnet.ibm.com>
+Cc: alexander.h.duyck@intel.com, nhorman@redhat.com,
+	linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
+	Paul Mackerras <paulus@samba.org>,
+	Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Some devices have a dma-window that starts at the address 0. This allows
+DMA addresses to be mapped to this address and returned to drivers as a
+valid DMA address. Some drivers may not behave well in this case, since
+the address 0 is considered an error or not allocated.
 
-Hi Ben,
+The solution to avoid this kind of error from happening is reserve the
+page addressed as 0 so it cannot be allocated for a DMA mapping.
 
-On Tue, 20 Sep 2011 16:46:14 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> Hi folks !
->=20
-> So I've finally got to setup a branch on github for powerpc next.
->=20
-> I've also committed a bunch of stuff to it, so here it is. I'll go back
-> to kernel.org as soon as it's been fixed.
->=20
-> https://github.com/ozbenh/linux/commits/next
+Ben Herrenschmidt deserves the credit for this patch. He pointed out the
+solution and what code would do the job.
 
-OK, tomorrow I will switch to the "next" branch of
-git://github.com/ozbenh/linux.git ... are you also going to create a
-"merge" branch?
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/iommu.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBAgAGBQJOeGtPAAoJEDMEi1NhKgbsLNAH/0GohA+RQTtcDpgD9ueLC+Sg
-6RRY36LvyWWlBmXdEo+d4r8gtPc2SzPX8mge9S76RyHPigum0Phf3vKypPsqSxdW
-uy9vyiW8YbMHqjnMv/K2CpdYEzp7x54nWfgxmgBOalTmwCdGAGGqJSDXk7a3Y1rm
-70bOve5cVXp9JtbRuByQzsy64YAv5Ad6gbhREZG4EZ9kJ6z9HSTPpHJrdDxIrY0/
-d/ldaNpqk9YkQam8GifVZJ/JiQpwdvhn003wPhAdPFZGfsb/QlXDY/1uZotfJQbv
-9qXIDjEc2QfMPY77TpL88lkUk2kx1rqXiqAG5Y9Vzpio61RyecV2hXMxffAz7Hs=
-=ytmX
------END PGP SIGNATURE-----
-
---Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r--
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 961bb03..53411bc 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -501,6 +501,9 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ 	tbl->it_map = page_address(page);
+ 	memset(tbl->it_map, 0, sz);
+ 
++	if (tbl->it_offset == 0)
++		set_bit(0, tbl->it_map);
++		
+ 	tbl->it_hint = 0;
+ 	tbl->it_largehint = tbl->it_halfpoint;
+ 	spin_lock_init(&tbl->it_lock);
+-- 
+1.7.4.4
