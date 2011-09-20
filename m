@@ -1,22 +1,21 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
-	[IPv6:2001:4978:20e::2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9C979B71D5
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+	[IPv6:2402:b800:7003:1::15])
+	by ozlabs.org (Postfix) with ESMTP id ECA0C1007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Sep 2011 18:07:22 +1000 (EST)
-Subject: Re: [PATCH 0/5] ppc64 scheduler fixes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Anton Blanchard <anton@samba.org>
-Date: Tue, 20 Sep 2011 10:07:02 +0200
-In-Reply-To: <20110920101938.121098ed@kryten>
-References: <20110725023311.175792493@samba.org>
-	<1311597702.24752.1.camel@twins> <20110920101938.121098ed@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1316506022.6091.22.camel@twins>
+	Tue, 20 Sep 2011 20:37:15 +1000 (EST)
+Date: Tue, 20 Sep 2011 20:30:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: power-next
+Message-Id: <20110920203039.930cb5e60e3f0743b2d43cd8@canb.auug.org.au>
+In-Reply-To: <1316501174.7975.32.camel@pasglop>
+References: <1316501174.7975.32.camel@pasglop>
 Mime-Version: 1.0
-Cc: mingo@elte.hu, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,12 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-09-20 at 10:19 +1000, Anton Blanchard wrote:
-> > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+--Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Ben,
+
+On Tue, 20 Sep 2011 16:46:14 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> Hi folks !
 >=20
-> Are you OK if Ben takes this, or would you prefer to send it via the
-> scheduler tree?=20
+> So I've finally got to setup a branch on github for powerpc next.
+>=20
+> I've also committed a bunch of stuff to it, so here it is. I'll go back
+> to kernel.org as soon as it's been fixed.
+>=20
+> https://github.com/ozbenh/linux/commits/next
 
-I was expecting Ben to pick it up, and I see he already did so.
+OK, tomorrow I will switch to the "next" branch of
+git://github.com/ozbenh/linux.git ... are you also going to create a
+"merge" branch?
 
-Thanks!
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJOeGtPAAoJEDMEi1NhKgbsLNAH/0GohA+RQTtcDpgD9ueLC+Sg
+6RRY36LvyWWlBmXdEo+d4r8gtPc2SzPX8mge9S76RyHPigum0Phf3vKypPsqSxdW
+uy9vyiW8YbMHqjnMv/K2CpdYEzp7x54nWfgxmgBOalTmwCdGAGGqJSDXk7a3Y1rm
+70bOve5cVXp9JtbRuByQzsy64YAv5Ad6gbhREZG4EZ9kJ6z9HSTPpHJrdDxIrY0/
+d/ldaNpqk9YkQam8GifVZJ/JiQpwdvhn003wPhAdPFZGfsb/QlXDY/1uZotfJQbv
+9qXIDjEc2QfMPY77TpL88lkUk2kx1rqXiqAG5Y9Vzpio61RyecV2hXMxffAz7Hs=
+=ytmX
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__20_Sep_2011_20_30_39_+1000_mDVh6VKS8M6hK.0r--
