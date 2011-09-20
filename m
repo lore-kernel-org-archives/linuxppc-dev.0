@@ -1,26 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-ew0-f50.google.com (mail-ew0-f50.google.com
-	[209.85.215.50]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DB140B71CD
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Sep 2011 14:45:43 +1000 (EST)
-Received: by ewy22 with SMTP id 22so240773ewy.23
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Sep 2011 21:45:39 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <CACxGe6vxC4xq8OOVWfs2cMKzDe_R2ELu4WvVR9wxfft1RovQTg@mail.gmail.com>
-References: <1316490307-28030-1-git-send-email-benh@kernel.crashing.org>
-	<1316490307-28030-6-git-send-email-benh@kernel.crashing.org>
-	<CACxGe6vxC4xq8OOVWfs2cMKzDe_R2ELu4WvVR9wxfft1RovQTg@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 19 Sep 2011 22:45:17 -0600
-Message-ID: <CACxGe6vEV2wS7hXa2481kDEH367chGpeAUzZFoX-zfOyew2s2w@mail.gmail.com>
-Subject: Re: [PATCH 06/20] of: Change logic to overwrite cmd_line with
-	CONFIG_CMDLINE
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C04B4B6F9E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 20 Sep 2011 14:49:02 +1000 (EST)
+Subject: [PATCH v2] of: Change logic to overwrite cmd_line with CONFIG_CMDLINE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 20 Sep 2011 14:48:55 +1000
+Message-ID: <1316494135.7975.28.camel@pasglop>
+Mime-Version: 1.0
+Cc: devicetree-discuss@lists-ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,76 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 19, 2011 at 10:30 PM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
-> On Mon, Sep 19, 2011 at 9:44 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->> We used to overwrite with CONFIG_CMDLINE if we found a chosen
->> node but failed to get bootargs out of it or they were empty,
->> unless CONFIG_CMDLINE_FORCE is set.
->>
->> Instead change that to overwrite if cmd_line is non empty after
->> the bootargs check. It allows arch code to have other mechanisms
->> to retrieve the command line prior to parsing the device-tree.
->>
->> Note: CONFIG_CMDLINE_FORCE case should ideally be handled elsewhere
->> as it won't work as it-is if the device-tree has no /chosen node
->>
->> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+We used to overwrite with CONFIG_CMDLINE if we found a chosen
+node but failed to get bootargs out of it or they were empty,
+unless CONFIG_CMDLINE_FORCE is set.
 
-Oops, as you pointed out on IRC, there is a bug here.  The test should
-be on data[0], not cmd_line[0].  Otherwise it will break on
-non-powerpc.
+Instead change that to overwrite if "data" is non empty after
+the bootargs check. It allows arch code to have other mechanisms
+to retrieve the command line prior to parsing the device-tree.
 
-g.
+Note: CONFIG_CMDLINE_FORCE case should ideally be handled elsewhere
+as it won't work as it-is if the device-tree has no /chosen node
 
->
-> But while you're in there, you should comment what you described in
-> the commit text. =A0Namely that CONFIG_CMDLINE is a last resort if
-> nothing else managed to set the command line.
->
-> g.
->
->> ---
->> =A0drivers/of/fdt.c | =A0 =A02 +-
->> =A01 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
->> index 65200af..d382163 100644
->> --- a/drivers/of/fdt.c
->> +++ b/drivers/of/fdt.c
->> @@ -683,7 +683,7 @@ int __init early_init_dt_scan_chosen(unsigned long n=
-ode, const char *uname,
->>
->> =A0#ifdef CONFIG_CMDLINE
->> =A0#ifndef CONFIG_CMDLINE_FORCE
->> - =A0 =A0 =A0 if (p =3D=3D NULL || l =3D=3D 0 || (l =3D=3D 1 && (*p) =3D=
-=3D 0))
->> + =A0 =A0 =A0 if (!cmd_line[0])
->> =A0#endif
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0strlcpy(data, CONFIG_CMDLINE, COMMAND_LIN=
-E_SIZE);
->> =A0#endif /* CONFIG_CMDLINE */
->> --
->> 1.7.4.1
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
->
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: devicetree-discuss@lists-ozlabs.org
+CC: Grant Likely <grant.likely@secretlab.ca>
+---
+ drivers/of/fdt.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
+v2. Use "data" instead of "cmd_line" so it works on archs like
+mips who don't pass cmd_line to that function to start with, also
+add a comment explaining the mechanism.
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 65200af..323b722 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -681,9 +681,14 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 	if (p != NULL && l > 0)
+ 		strlcpy(data, p, min((int)l, COMMAND_LINE_SIZE));
+ 
++	/*
++	 * CONFIG_CMDLINE is meant to be a default in case nothing else
++	 * managed to set the command line, unless CONFIG_CMDLINE_FORCE
++	 * is set in which case we override whatever was found earlier.
++	 */
+ #ifdef CONFIG_CMDLINE
+ #ifndef CONFIG_CMDLINE_FORCE
+-	if (p == NULL || l == 0 || (l == 1 && (*p) == 0))
++	if (!data[0])
+ #endif
+ 		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
+ #endif /* CONFIG_CMDLINE */
+-- 
+1.7.4.1
