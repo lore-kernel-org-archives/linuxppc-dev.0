@@ -1,20 +1,21 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
-	[213.199.154.141])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6A268B6F76
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Sep 2011 04:27:07 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
-	<linuxppc-dev@ozlabs.org>, <linux-console@vger.kernel.org>
-Subject: [PATCH] drivers/tty: don't use the byte channel handle as a parameter
-	in ehv_bytechan.c
-Date: Tue, 20 Sep 2011 13:26:57 -0500
-Message-ID: <1316543217-13769-1-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8D730B6F83
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Sep 2011 04:46:00 +1000 (EST)
+Subject: Re: power-next
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20110920203039.930cb5e60e3f0743b2d43cd8@canb.auug.org.au>
+References: <1316501174.7975.32.camel@pasglop>
+	<20110920203039.930cb5e60e3f0743b2d43cd8@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 21 Sep 2011 04:45:44 +1000
+Message-ID: <1316544344.7975.39.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,66 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ePAPR hypervisor byte channel console driver only supports one byte
-channel as a console, and the byte channel handle is stored in a global
-variable.  It doesn't make any sense to pass that handle as a parameter
-to the console functions, since these functions already have access to the
-global variable.
+On Tue, 2011-09-20 at 20:30 +1000, Stephen Rothwell wrote:
+> Hi Ben,
+> 
+> On Tue, 20 Sep 2011 16:46:14 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > Hi folks !
+> > 
+> > So I've finally got to setup a branch on github for powerpc next.
+> > 
+> > I've also committed a bunch of stuff to it, so here it is. I'll go back
+> > to kernel.org as soon as it's been fixed.
+> > 
+> > https://github.com/ozbenh/linux/commits/next
+> 
+> OK, tomorrow I will switch to the "next" branch of
+> git://github.com/ozbenh/linux.git ... are you also going to create a
+> "merge" branch?
 
-This change also fixes this compilation warning on a 64-bit kernel:
+Only if/when I need it.
 
-  CC      drivers/tty/ehv_bytechan.o
-drivers/tty/ehv_bytechan.c: In function 'ehv_bc_console_write':
-drivers/tty/ehv_bytechan.c:289:24: warning: cast from pointer to integer of different size
-drivers/tty/ehv_bytechan.c: In function 'ehv_bc_console_init':
-drivers/tty/ehv_bytechan.c:355:24: warning: cast to pointer from integer of different size
-
-This warning is because the driver is converting the integer byte channel
-handle to/from the void* 'data' field of struct console.  Rather than fix
-the warning, we just eliminate the code altogether.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- drivers/tty/ehv_bytechan.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/tty/ehv_bytechan.c b/drivers/tty/ehv_bytechan.c
-index e67f70b..b24e6f7 100644
---- a/drivers/tty/ehv_bytechan.c
-+++ b/drivers/tty/ehv_bytechan.c
-@@ -286,7 +286,6 @@ static int ehv_bc_console_byte_channel_send(unsigned int handle, const char *s,
- static void ehv_bc_console_write(struct console *co, const char *s,
- 				 unsigned int count)
- {
--	unsigned int handle = (unsigned int)co->data;
- 	char s2[EV_BYTE_CHANNEL_MAX_BYTES];
- 	unsigned int i, j = 0;
- 	char c;
-@@ -299,14 +298,14 @@ static void ehv_bc_console_write(struct console *co, const char *s,
- 
- 		s2[j++] = c;
- 		if (j >= (EV_BYTE_CHANNEL_MAX_BYTES - 1)) {
--			if (ehv_bc_console_byte_channel_send(handle, s2, j))
-+			if (ehv_bc_console_byte_channel_send(stdout_bc, s2, j))
- 				return;
- 			j = 0;
- 		}
- 	}
- 
- 	if (j)
--		ehv_bc_console_byte_channel_send(handle, s2, j);
-+		ehv_bc_console_byte_channel_send(stdout_bc, s2, j);
- }
- 
- /*
-@@ -352,8 +351,6 @@ static int __init ehv_bc_console_init(void)
- 			   CONFIG_PPC_EARLY_DEBUG_EHV_BC_HANDLE);
- #endif
- 
--	ehv_bc_console.data = (void *)stdout_bc;
--
- 	/* add_preferred_console() must be called before register_console(),
- 	   otherwise it won't work.  However, we don't want to enumerate all the
- 	   byte channels here, either, since we only care about one. */
--- 
-1.7.3.4
+Cheers,
+Ben.
