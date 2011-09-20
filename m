@@ -1,18 +1,12 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C04B4B6F9E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Sep 2011 14:49:02 +1000 (EST)
 Subject: [PATCH v2] of: Change logic to overwrite cmd_line with CONFIG_CMDLINE
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 20 Sep 2011 14:48:55 +1000
-Message-ID: <1316494135.7975.28.camel@pasglop>
+Date: Tue, 20 Sep 2011 14:50:15 +1000
+Message-ID: <1316494215.7975.29.camel@pasglop>
 Mime-Version: 1.0
-Cc: devicetree-discuss@lists-ozlabs.org
+Cc: devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,6 +37,8 @@ CC: Grant Likely <grant.likely@secretlab.ca>
 v2. Use "data" instead of "cmd_line" so it works on archs like
 mips who don't pass cmd_line to that function to start with, also
 add a comment explaining the mechanism.
+
+(resent with right list address as well while at it)
 
 diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
 index 65200af..323b722 100644
