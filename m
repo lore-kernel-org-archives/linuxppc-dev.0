@@ -2,13 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 73741B71E4
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Sep 2011 13:45:39 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id BE5B6B73A5
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Sep 2011 13:45:41 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/20] powerpc/powernv: Add CPU hotplug support
-Date: Tue, 20 Sep 2011 13:44:54 +1000
-Message-Id: <1316490307-28030-7-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 09/20] powerpc/powernv: Get kernel command line accross OPAL
+	takeover
+Date: Tue, 20 Sep 2011 13:44:56 +1000
+Message-Id: <1316490307-28030-9-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1316490307-28030-1-git-send-email-benh@kernel.crashing.org>
 References: <1316490307-28030-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,134 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unplugged CPU go into NAP mode in a loop until woken up
+We stash it in boot_command_line which isn't in BSS and so won't
+be overwritten. We then use that as a default cmd_line before
+we walk the device-tree.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/Kconfig                 |    2 +-
- arch/powerpc/platforms/powernv/smp.c |   78 +++++++++++++++++++++++++++++++++-
- 2 files changed, 78 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/prom.c             |    7 +++++++
+ arch/powerpc/kernel/prom_init.c        |    4 ++++
+ arch/powerpc/kernel/prom_init_check.sh |    3 ++-
+ 3 files changed, 13 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6926b61..85baae5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -323,7 +323,7 @@ config SWIOTLB
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 174e1e9..7b90c56 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -712,6 +712,13 @@ void __init early_init_devtree(void *params)
+ 	of_scan_flat_dt(early_init_dt_scan_phyp_dump, NULL);
+ #endif
  
- config HOTPLUG_CPU
- 	bool "Support for enabling/disabling CPUs"
--	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC)
-+	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC || PPC_POWERNV)
- 	---help---
- 	  Say Y here to be able to disable and re-enable individual
- 	  CPUs at runtime on SMP machines.
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 36c7151..4f4ec37 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -33,7 +33,14 @@
- 
- #include "powernv.h"
- 
--static void __devinit pnv_smp_setup_cpu(int cpu)
-+#ifdef DEBUG
-+#include <asm/udbg.h>
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...)
-+#endif
-+
-+static void __cpuinit pnv_smp_setup_cpu(int cpu)
- {
- 	if (cpu != boot_cpuid)
- 		xics_setup_cpu();
-@@ -55,6 +62,67 @@ static int pnv_smp_cpu_bootable(unsigned int nr)
- 	return 1;
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+
-+static int pnv_smp_cpu_disable(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	/* This is identical to pSeries... might consolidate by
-+	 * moving migrate_irqs_away to a ppc_md with default to
-+	 * the generic fixup_irqs. --BenH.
++	/* Pre-initialize the cmd_line with the content of boot_commmand_line,
++	 * which will be empty except when the content of the variable has
++	 * been overriden by a bootloading mechanism. This happens typically
++	 * with HAL takeover
 +	 */
-+	set_cpu_online(cpu, false);
-+	vdso_data->processorCount--;
-+	if (cpu == boot_cpuid)
-+		boot_cpuid = cpumask_any(cpu_online_mask);
-+	xics_migrate_irqs_away();
-+	return 0;
-+}
++	strlcpy(cmd_line, boot_command_line, COMMAND_LINE_SIZE);
 +
-+static void pnv_smp_cpu_kill_self(void)
-+{
-+	unsigned int cpu;
-+
-+	/* If powersave_nap is enabled, use NAP mode, else just
-+	 * spin aimlessly
-+	 */
-+	if (!powersave_nap) {
-+		generic_mach_cpu_die();
-+		return;
-+	}
-+
-+	/* Standard hot unplug procedure */
-+	local_irq_disable();
-+	idle_task_exit();
-+	current->active_mm = NULL; /* for sanity */
-+	cpu = smp_processor_id();
-+	DBG("CPU%d offline\n", cpu);
-+	generic_set_cpu_dead(cpu);
-+	smp_wmb();
-+
-+	/* We don't want to take decrementer interrupts while we are offline,
-+	 * so clear LPCR:PECE1. We keep PECE2 enabled.
-+	 */
-+	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
-+	while (!generic_check_cpu_restart(cpu)) {
-+		power7_idle();
-+		if (!generic_check_cpu_restart(cpu)) {
-+			DBG("CPU%d Unexpected exit while offline !\n", cpu);
-+			/* We may be getting an IPI, so we re-enable
-+			 * interrupts to process it, it will be ignored
-+			 * since we aren't online (hopefully)
-+			 */
-+			local_irq_enable();
-+			local_irq_disable();
-+		}
-+	}
-+	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_PECE1);
-+	DBG("CPU%d coming online...\n", cpu);
-+}
-+
-+#endif /* CONFIG_HOTPLUG_CPU */
-+
- static struct smp_ops_t pnv_smp_ops = {
- 	.message_pass	= smp_muxed_ipi_message_pass,
- 	.cause_ipi	= NULL,	/* Filled at runtime by xics_smp_probe() */
-@@ -62,6 +130,10 @@ static struct smp_ops_t pnv_smp_ops = {
- 	.kick_cpu	= smp_generic_kick_cpu,
- 	.setup_cpu	= pnv_smp_setup_cpu,
- 	.cpu_bootable	= pnv_smp_cpu_bootable,
-+#ifdef CONFIG_HOTPLUG_CPU
-+	.cpu_disable	= pnv_smp_cpu_disable,
-+	.cpu_die	= generic_cpu_die,
-+#endif /* CONFIG_HOTPLUG_CPU */
- };
+ 	/* Retrieve various informations from the /chosen node of the
+ 	 * device-tree, including the platform type, initrd location and
+ 	 * size, TCE reserve, and more ...
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 9369287..e3f3904 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1449,6 +1449,10 @@ static void prom_opal_takeover(void)
+ 		opal_addr = top_addr;
+ 	args->hal_addr = opal_addr;
  
- /* This is called very early during platform setup_arch */
-@@ -80,4 +152,8 @@ void __init pnv_smp_init(void)
- 		smp_ops->take_timebase = rtas_take_timebase;
- 	}
- #endif /* CONFIG_PPC_RTAS */
++	/* Copy the command line to the kernel image */
++	strlcpy(RELOC(boot_command_line), RELOC(prom_cmd_line),
++		COMMAND_LINE_SIZE);
 +
-+#ifdef CONFIG_HOTPLUG_CPU
-+	ppc_md.cpu_die	= pnv_smp_cpu_kill_self;
-+#endif
- }
+ 	prom_debug("  k_image    = 0x%lx\n", args->k_image);
+ 	prom_debug("  k_size     = 0x%lx\n", args->k_size);
+ 	prom_debug("  k_entry    = 0x%lx\n", args->k_entry);
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index 20af6aa..70f4286 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -21,7 +21,8 @@ _end enter_prom memcpy memset reloc_offset __secondary_hold
+ __secondary_hold_acknowledge __secondary_hold_spinloop __start
+ strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
+ reloc_got2 kernstart_addr memstart_addr linux_banner _stext
+-opal_query_takeover opal_do_takeover opal_enter_rtas opal_secondary_entry"
++opal_query_takeover opal_do_takeover opal_enter_rtas opal_secondary_entry
++boot_command_line"
+ 
+ NM="$1"
+ OBJ="$2"
 -- 
 1.7.4.1
