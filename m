@@ -1,24 +1,20 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8138AB6F81
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Sep 2011 12:10:48 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
-Date: Wed, 21 Sep 2011 02:10:42 +0000
-Message-ID: <CAOZdJXUZsByLorWZNtDRMzsezF_qVX62+8zfiMKJqMMhCD2i3g@mail.gmail.com>
-References: <1308691655-3416-1-git-send-email-timur@freescale.com>
-	<20110622003853.1041385c@wker>	<4E012586.7050808@freescale.com>
-	<20110622221143.503add74@wker>
-In-Reply-To: <20110622221143.503add74@wker>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+	[IPv6:2402:b800:7003:1::15])
+	by ozlabs.org (Postfix) with ESMTP id 83CC6B6F8F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Sep 2011 15:01:27 +1000 (EST)
+Date: Wed, 21 Sep 2011 15:01:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Subject: linux-next: manual merge of the tty tree with the powerpc tree
+Message-Id: <20110921150121.9f530384bc0bb6c2268fd9ea@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Geoff Levand <geoff@infradead.org>, Andre Heider <a.heider@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Hector Martin <hector@marcansoft.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anatolij,
+Hi Greg,
 
-I'm sorry to resurrect an old thread, but ...
+Today's linux-next merge of the tty tree got conflicts in
+arch/powerpc/include/asm/udbg.h and arch/powerpc/kernel/udbg.c between
+commit c26afe9e8591 ("powerpc/ps3: Add gelic udbg driver") from the
+powerpc tree and commit dcd83aaff1c8 ("tty/powerpc: introduce the ePAPR
+embedded hypervisor byte channel driver") from the tty tree.
 
-On Wed, Jun 22, 2011 at 3:11 PM, Anatolij Gustschin <agust@denx.de> wrote:
-> On Tue, 21 Jun 2011 23:13:11 +0000
-> Tabi Timur-B04825 <B04825@freescale.com> wrote:
->
->> Anatolij Gustschin wrote:
->> > No! We are using ioctl interface of this driver in many video
->> > rendering applications on overlay planes on huge number of boards.
->> > So, please don't remove it.
->>
->> Ok, I had no idea anyone was using it.
->>
->> Can you email me details about how you use the ioctl interface? =A0If I =
-can't
->> remove it, maybe I can clean it up.
->
-> Following DIU specific ioctls are used:
->
-> MFB_SET_CHROMA_KEY
-> MFB_SET_PIXFMT
-> MFB_GET_PIXFMT
-> MFB_SET_AOID
-> MFB_GET_AOID
-> MFB_GET_ALPHA
-> MFB_SET_ALPHA
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-The definitions of MFB_SET_PIXFMT and MFB_GET_PIXFMT are wrong:
-
-#define MFB_SET_PIXFMT          0x80014d08
-#define MFB_GET_PIXFMT          0x40014d08
-
-The "01" is the size.  However, these ioctls take a __u32 as a parameter.
-
-This means that I have to fix the definitions to this:
-
-#define MFB_SET_PIXFMT          _IOW('M', 8, __u32)
-#define MFB_GET_PIXFMT          _IOR('M', 8, __u32)
-
-This will change the values and break binary compatibility with your
-applications.  Are you okay with that?
-
-> Other ioctls can be removed. I'm not sure if someone
-> uses FBIOGET_GWINFO. If there are no objections from
-> other people, it can also be dropped.
-
-I'm going to remove FBIOGET_GWINFO because no one is using it, and the
-ioctl value is malformed (it doesn't define a direction or size).
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+diff --cc arch/powerpc/include/asm/udbg.h
+index 6587ec7,5354ae9..0000000
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@@ -54,9 -54,7 +54,10 @@@ extern void __init udbg_init_40x_realmo
+  extern void __init udbg_init_cpm(void);
+  extern void __init udbg_init_usbgecko(void);
+  extern void __init udbg_init_wsp(void);
+ +extern void __init udbg_init_ps3gelic(void);
+ +extern void __init udbg_init_debug_opal_raw(void);
+ +extern void __init udbg_init_debug_opal_hvsi(void);
++ extern void __init udbg_init_ehv_bc(void);
+  
+  #endif /* __KERNEL__ */
+  #endif /* _ASM_POWERPC_UDBG_H */
+diff --cc arch/powerpc/kernel/udbg.c
+index 35f9482,b4607a9..0000000
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@@ -67,12 -67,8 +67,14 @@@ void __init udbg_early_init(void
+  	udbg_init_usbgecko();
+  #elif defined(CONFIG_PPC_EARLY_DEBUG_WSP)
+  	udbg_init_wsp();
+ +#elif defined(CONFIG_PPC_EARLY_DEBUG_PS3GELIC)
+ +	udbg_init_ps3gelic();
+ +#elif defined(CONFIG_PPC_EARLY_DEBUG_OPAL_RAW)
+ +	udbg_init_debug_opal_raw();
+ +#elif defined(CONFIG_PPC_EARLY_DEBUG_OPAL_HVSI)
+ +	udbg_init_debug_opal_hvsi();
++ #elif defined(CONFIG_PPC_EARLY_DEBUG_EHV_BC)
++ 	udbg_init_ehv_bc();
+  #endif
+  
+  #ifdef CONFIG_PPC_EARLY_DEBUG
