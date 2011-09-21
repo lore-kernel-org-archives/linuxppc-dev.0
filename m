@@ -1,24 +1,23 @@
-Return-Path: <greg@kroah.com>
-Received: from out2.smtp.messagingengine.com (out2.smtp.messagingengine.com
-	[66.111.4.26])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5E1721007D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Sep 2011 00:08:24 +1000 (EST)
-Date: Wed, 21 Sep 2011 07:06:23 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the tty tree with the powerpc tree
-Message-ID: <20110921140623.GA19567@kroah.com>
-References: <20110921150121.9f530384bc0bb6c2268fd9ea@canb.auug.org.au>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gw0-f41.google.com (mail-gw0-f41.google.com [74.125.83.41])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8A703B6F68
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2011 02:33:09 +1000 (EST)
+Received: by gwaa12 with SMTP id a12so2500308gwa.0
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Sep 2011 09:33:06 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Wed, 21 Sep 2011 10:33:01 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH V2 1/2] gpio: move mpc8xxx/512x gpio driver to drivers/gpio
+Message-ID: <20110921163301.GZ7781@ponder.secretlab.ca>
+References: <1316602161-12546-1-git-send-email-w.sang@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110921150121.9f530384bc0bb6c2268fd9ea@canb.auug.org.au>
-Cc: Geoff Levand <geoff@infradead.org>, Andre Heider <a.heider@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Hector Martin <hector@marcansoft.com>,
-	linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1316602161-12546-1-git-send-email-w.sang@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 21, 2011 at 03:01:21PM +1000, Stephen Rothwell wrote:
-> Hi Greg,
+On Wed, Sep 21, 2011 at 12:49:20PM +0200, Wolfram Sang wrote:
+> Move the driver to the place where it is expected to be nowadays. Also
+> rename its CONFIG-name to match the rest and adapt the defconfigs.
+> Finally, move selection of REQUIRE_GPIOLIB or WANTS_OPTIONAL_GPIOLIB to
+> the platforms, because this option is per-platform and not per-driver.
 > 
-> Today's linux-next merge of the tty tree got conflicts in
-> arch/powerpc/include/asm/udbg.h and arch/powerpc/kernel/udbg.c between
-> commit c26afe9e8591 ("powerpc/ps3: Add gelic udbg driver") from the
-> powerpc tree and commit dcd83aaff1c8 ("tty/powerpc: introduce the ePAPR
-> embedded hypervisor byte channel driver") from the tty tree.
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
 > 
-> Just context changes.  I fixed it up (see below) and can carry the fix as
-> necessary.
+> I'd think this should go via ppc, so it is in sync with the defconfig update of
+> patch 2/2.
+> 
+> Changes since V1: Use -C in format-patch to show the rename.
 
-Thanks, that looks fine to me.
+Nit: I prefer to see the changelog before the s-o-b lines so that it
+gets included in the final commit text.  Helps when trying to identify
+exactly which version of a patch got merged.
 
-greg k-h
+> 
+>  arch/powerpc/configs/85xx/p1023rds_defconfig       |    2 +-
+>  arch/powerpc/configs/85xx/xes_mpc85xx_defconfig    |    2 +-
+>  arch/powerpc/configs/mpc85xx_defconfig             |    2 +-
+>  arch/powerpc/configs/mpc85xx_smp_defconfig         |    2 +-
+>  arch/powerpc/configs/ppc6xx_defconfig              |    2 +-
+>  arch/powerpc/platforms/512x/Kconfig                |    1 +
+>  arch/powerpc/platforms/83xx/Kconfig                |    9 ++++++---
+>  arch/powerpc/platforms/85xx/Kconfig                |   12 ++++++++----
+>  arch/powerpc/platforms/86xx/Kconfig                |    1 +
+>  arch/powerpc/platforms/Kconfig                     |   10 ----------
+>  arch/powerpc/sysdev/Makefile                       |    1 -
+>  drivers/gpio/Kconfig                               |    8 ++++++++
+>  drivers/gpio/Makefile                              |    1 +
+>  .../mpc8xxx_gpio.c => drivers/gpio/gpio-mpc8xxx.c  |    0
+>  14 files changed, 30 insertions(+), 23 deletions(-)
+>  rename arch/powerpc/sysdev/mpc8xxx_gpio.c => drivers/gpio/gpio-mpc8xxx.c (100%)
+
+Looks good to me.  Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+Yes, it probably should go via the ppc tree.  I don't foresee any conflict
+issues with the gpio tree.
+
+g.
