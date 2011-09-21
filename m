@@ -1,22 +1,23 @@
-Return-Path: <cjb@laptop.org>
-Received: from void.printf.net (void.printf.net [89.145.121.20])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 97052B6F99
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D46FF1007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Sep 2011 04:23:41 +1000 (EST)
-From: Chris Ball <cjb@laptop.org>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH] eSDHC: Access Freescale eSDHC registers by 32-bit
-References: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
-Date: Wed, 21 Sep 2011 13:53:27 -0400
-In-Reply-To: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
-	(Roy Zang's message of "Fri, 9 Sep 2011 20:05:46 +0800")
-Message-ID: <m2pqit4wa0.fsf@bob.laptop.org>
+	Thu, 22 Sep 2011 05:41:42 +1000 (EST)
+Message-ID: <4E7A3DED.9030402@freescale.com>
+Date: Wed, 21 Sep 2011 14:41:33 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Xu lei <B33228@freescale.com>, linux-mmc@vger.kernel.org,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+To: Vineeth <vneethv@gmail.com>
+Subject: Re: Timer interrupt on Linux 3.0.3
+References: <CAFbQSaD-c=QqSsq__VtBEcMCJabnBi4AP4KunDNV7u7xXAuaTw@mail.gmail.com>
+	<4E73816C.6000304@freescale.com>
+	<CAFbQSaBcdLCoVY471mVLAyM=eYDSN77=DODPasMaAEm6pRm7jQ@mail.gmail.com>
+In-Reply-To: <CAFbQSaBcdLCoVY471mVLAyM=eYDSN77=DODPasMaAEm6pRm7jQ@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Roy,
+On 09/21/2011 01:56 AM, Vineeth wrote:
+>>> What was the issue?  You really should try to make this work rather than
+>>> hack around it.
+> 
+> what we found was the decrementer is not generating an exception when it
+> becomes 0. and the timebase registers are not getting incremented too.
 
-On Fri, Sep 09 2011, Roy Zang wrote:
-> From: Xu lei <B33228@freescale.com>
->
-> Freescale eSDHC registers only support 32-bit accesses,
-> this patch ensures that all Freescale eSDHC register accesses
-> are 32-bit.
->
-> Signed-off-by: Xu lei <B33228@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Does the decrementer actually tick until it reaches zero, or do it and
+the timebase never tick?
 
-Pushed to mmc-next for 3.2 with Anton's ACK now, thanks.
+Is the TBEN input to the CPU asserted?
 
-- Chris.
--- 
-Chris Ball   <cjb@laptop.org>   <http://printf.net/>
-One Laptop Per Child
+-Scott
