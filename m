@@ -1,31 +1,25 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e24smtp01.br.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7B8F6B6F7D
+Return-Path: <vneethv@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4FDE3B6F8D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Sep 2011 23:06:37 +1000 (EST)
-Received: from mailhub3.br.ibm.com (mailhub3.br.ibm.com [9.18.232.110])
-	by e24smtp01.br.ibm.com (8.14.4/8.13.1) with ESMTP id p8LEOGx8032648
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2011 10:24:16 -0400
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
-	by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p8LD9aST954524
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2011 10:09:42 -0300
-Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
-	by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p8LD6JiU022677
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2011 10:06:19 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH v2] powerpc: reserve iommu page 0
-Date: Wed, 21 Sep 2011 10:06:12 -0300
-Message-Id: <1316610372-5795-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Cc: alexander.h.duyck@intel.com, nhorman@redhat.com,
-	linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
-	Paul Mackerras <paulus@samba.org>,
-	Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org
+	Wed, 21 Sep 2011 17:02:54 +1000 (EST)
+Received: by bkbzu17 with SMTP id zu17so1202687bkb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Sep 2011 00:02:49 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <4E73816C.6000304@freescale.com>
+References: <CAFbQSaD-c=QqSsq__VtBEcMCJabnBi4AP4KunDNV7u7xXAuaTw@mail.gmail.com>
+	<4E73816C.6000304@freescale.com>
+From: Vineeth <vneethv@gmail.com>
+Date: Wed, 21 Sep 2011 12:26:00 +0530
+Message-ID: <CAFbQSaBcdLCoVY471mVLAyM=eYDSN77=DODPasMaAEm6pRm7jQ@mail.gmail.com>
+Subject: Re: Timer interrupt on Linux 3.0.3
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=0015174be13e02c02d04ad6e2a26
+Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,51 +29,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some devices have a dma-window that starts at the address 0. This allows
-DMA addresses to be mapped to this address and returned to drivers as a
-valid DMA address. Some drivers may not behave well in this case, since
-the address 0 is considered an error or not allocated.
+--0015174be13e02c02d04ad6e2a26
+Content-Type: text/plain; charset=ISO-8859-1
 
-The solution to avoid this kind of error from happening is reserve the
-page addressed as 0 so it cannot be allocated for a DMA mapping.
+>> What was the issue?  You really should try to make this work rather than
+>> hack around it.
 
-Ben Herrenschmidt deserves the credit for this patch. He pointed out the
-solution and what code would do the job.
+what we found was the decrementer is not generating an exception when it
+becomes 0. and the timebase registers are not getting incremented too. The
+exceptions are enabled in MSR registers.
 
-v2:
-Add a comment in the code.
+we are using embedded60x port of linux3.0.3; we've written the dts file with
+proper clock-frequency/timebase-frequency values.
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
+Do you think we might've missed some configuration in the timer perspective
+?
 
-Resending, since it was recommended to add a comment about this
-particular code.
 
----
- arch/powerpc/kernel/iommu.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+On Fri, Sep 16, 2011 at 10:33 PM, Scott Wood <scottwood@freescale.com>wrote:
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 961bb03..8395301 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -501,6 +501,14 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- 	tbl->it_map = page_address(page);
- 	memset(tbl->it_map, 0, sz);
- 
-+	/*
-+	 * Reserve page 0 so it will not be used for any mappings.
-+	 * This avoids buggy drivers that consider page 0 to be invalid
-+	 * to crash the machine or even lose data.
-+	*/
-+	if (tbl->it_offset == 0)
-+		set_bit(0, tbl->it_map);
-+		
- 	tbl->it_hint = 0;
- 	tbl->it_largehint = tbl->it_halfpoint;
- 	spin_lock_init(&tbl->it_lock);
--- 
-1.7.4.4
+> On 09/16/2011 06:43 AM, Vineeth wrote:
+> > Hi,
+> >
+> > We are porting Linux on MPC7410 based board. As there was some issue
+> > with the processor DECrementer and timebase registers,
+>
+> What was the issue?  You really should try to make this work rather than
+> hack around it.
+>
+> > lately we moved to Linux 3.0.3. What we found was even without a proper
+> > timer, the kernel with initramfs worked (except the calls like
+> > sleep,delay ofcourse); Is there any major difference in the scheduler ?
+> > or the way context switch happens ? is it not depended on the timer
+> > interrupt or the timer ??
+>
+> If your timer is broken then you won't get timeslice expiration, but
+> basic scheduling should still work.  Most scheduling (depending on type
+> of load, of course) will be triggered by processes blocking or being
+> woken up by I/O, not timeslice expiration.
+>
+> -Scott
+>
+>
+
+--0015174be13e02c02d04ad6e2a26
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+&gt;&gt; What was the issue? =A0You really should try to make this work rat=
+her than<br>&gt;&gt; hack around it.<br><br>what we found was the decrement=
+er is not generating an exception when it becomes 0. and the timebase regis=
+ters are not getting incremented too. The exceptions are enabled in MSR reg=
+isters.<br>
+
+<br>we are using embedded60x port of linux3.0.3; we&#39;ve written the dts =
+file with proper clock-frequency/timebase-frequency values.<br><br>Do you t=
+hink we might&#39;ve missed some configuration in the timer perspective ?<b=
+r>
+
+<br><br><div class=3D"gmail_quote">On Fri, Sep 16, 2011 at 10:33 PM, Scott =
+Wood <span dir=3D"ltr">&lt;<a href=3D"mailto:scottwood@freescale.com">scott=
+wood@freescale.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quot=
+e" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex;"=
+>
+
+<div class=3D"im">On 09/16/2011 06:43 AM, Vineeth wrote:<br>
+&gt; Hi,<br>
+&gt;<br>
+&gt; We are porting Linux on MPC7410 based board. As there was some issue<b=
+r>
+&gt; with the processor DECrementer and timebase registers,<br>
+<br>
+</div>What was the issue? =A0You really should try to make this work rather=
+ than<br>
+hack around it.<br>
+<div class=3D"im"><br>
+&gt; lately we moved to Linux 3.0.3. What we found was even without a prope=
+r<br>
+&gt; timer, the kernel with initramfs worked (except the calls like<br>
+&gt; sleep,delay ofcourse); Is there any major difference in the scheduler =
+?<br>
+&gt; or the way context switch happens ? is it not depended on the timer<br=
+>
+&gt; interrupt or the timer ??<br>
+<br>
+</div>If your timer is broken then you won&#39;t get timeslice expiration, =
+but<br>
+basic scheduling should still work. =A0Most scheduling (depending on type<b=
+r>
+of load, of course) will be triggered by processes blocking or being<br>
+woken up by I/O, not timeslice expiration.<br>
+<font color=3D"#888888"><br>
+-Scott<br>
+<br>
+</font></blockquote></div><br>
+
+--0015174be13e02c02d04ad6e2a26--
