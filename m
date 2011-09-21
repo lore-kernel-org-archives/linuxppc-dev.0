@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D730B6F83
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Sep 2011 04:46:00 +1000 (EST)
-Subject: Re: power-next
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20110920203039.930cb5e60e3f0743b2d43cd8@canb.auug.org.au>
-References: <1316501174.7975.32.camel@pasglop>
-	<20110920203039.930cb5e60e3f0743b2d43cd8@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 21 Sep 2011 04:45:44 +1000
-Message-ID: <1316544344.7975.39.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8138AB6F81
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Sep 2011 12:10:48 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
+Date: Wed, 21 Sep 2011 02:10:42 +0000
+Message-ID: <CAOZdJXUZsByLorWZNtDRMzsezF_qVX62+8zfiMKJqMMhCD2i3g@mail.gmail.com>
+References: <1308691655-3416-1-git-send-email-timur@freescale.com>
+	<20110622003853.1041385c@wker>	<4E012586.7050808@freescale.com>
+	<20110622221143.503add74@wker>
+In-Reply-To: <20110622221143.503add74@wker>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-09-20 at 20:30 +1000, Stephen Rothwell wrote:
-> Hi Ben,
-> 
-> On Tue, 20 Sep 2011 16:46:14 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > Hi folks !
-> > 
-> > So I've finally got to setup a branch on github for powerpc next.
-> > 
-> > I've also committed a bunch of stuff to it, so here it is. I'll go back
-> > to kernel.org as soon as it's been fixed.
-> > 
-> > https://github.com/ozbenh/linux/commits/next
-> 
-> OK, tomorrow I will switch to the "next" branch of
-> git://github.com/ozbenh/linux.git ... are you also going to create a
-> "merge" branch?
+Anatolij,
 
-Only if/when I need it.
+I'm sorry to resurrect an old thread, but ...
 
-Cheers,
-Ben.
+On Wed, Jun 22, 2011 at 3:11 PM, Anatolij Gustschin <agust@denx.de> wrote:
+> On Tue, 21 Jun 2011 23:13:11 +0000
+> Tabi Timur-B04825 <B04825@freescale.com> wrote:
+>
+>> Anatolij Gustschin wrote:
+>> > No! We are using ioctl interface of this driver in many video
+>> > rendering applications on overlay planes on huge number of boards.
+>> > So, please don't remove it.
+>>
+>> Ok, I had no idea anyone was using it.
+>>
+>> Can you email me details about how you use the ioctl interface? =A0If I =
+can't
+>> remove it, maybe I can clean it up.
+>
+> Following DIU specific ioctls are used:
+>
+> MFB_SET_CHROMA_KEY
+> MFB_SET_PIXFMT
+> MFB_GET_PIXFMT
+> MFB_SET_AOID
+> MFB_GET_AOID
+> MFB_GET_ALPHA
+> MFB_SET_ALPHA
+
+The definitions of MFB_SET_PIXFMT and MFB_GET_PIXFMT are wrong:
+
+#define MFB_SET_PIXFMT          0x80014d08
+#define MFB_GET_PIXFMT          0x40014d08
+
+The "01" is the size.  However, these ioctls take a __u32 as a parameter.
+
+This means that I have to fix the definitions to this:
+
+#define MFB_SET_PIXFMT          _IOW('M', 8, __u32)
+#define MFB_GET_PIXFMT          _IOR('M', 8, __u32)
+
+This will change the values and break binary compatibility with your
+applications.  Are you okay with that?
+
+> Other ioctls can be removed. I'm not sure if someone
+> uses FBIOGET_GWINFO. If there are no objections from
+> other people, it can also be dropped.
+
+I'm going to remove FBIOGET_GWINFO because no one is using it, and the
+ioctl value is malformed (it doesn't define a direction or size).
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
