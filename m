@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f41.google.com (mail-gw0-f41.google.com [74.125.83.41])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8A703B6F68
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2011 02:33:09 +1000 (EST)
-Received: by gwaa12 with SMTP id a12so2500308gwa.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Sep 2011 09:33:06 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 21 Sep 2011 10:33:01 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH V2 1/2] gpio: move mpc8xxx/512x gpio driver to drivers/gpio
-Message-ID: <20110921163301.GZ7781@ponder.secretlab.ca>
-References: <1316602161-12546-1-git-send-email-w.sang@pengutronix.de>
+Return-Path: <cjb@laptop.org>
+Received: from void.printf.net (void.printf.net [89.145.121.20])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 97052B6F99
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 22 Sep 2011 04:23:41 +1000 (EST)
+From: Chris Ball <cjb@laptop.org>
+To: Roy Zang <tie-fei.zang@freescale.com>
+Subject: Re: [PATCH] eSDHC: Access Freescale eSDHC registers by 32-bit
+References: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
+Date: Wed, 21 Sep 2011 13:53:27 -0400
+In-Reply-To: <1315569946-21386-1-git-send-email-tie-fei.zang@freescale.com>
+	(Roy Zang's message of "Fri, 9 Sep 2011 20:05:46 +0800")
+Message-ID: <m2pqit4wa0.fsf@bob.laptop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1316602161-12546-1-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain
+Cc: Xu lei <B33228@freescale.com>, linux-mmc@vger.kernel.org,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 21, 2011 at 12:49:20PM +0200, Wolfram Sang wrote:
-> Move the driver to the place where it is expected to be nowadays. Also
-> rename its CONFIG-name to match the rest and adapt the defconfigs.
-> Finally, move selection of REQUIRE_GPIOLIB or WANTS_OPTIONAL_GPIOLIB to
-> the platforms, because this option is per-platform and not per-driver.
-> 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Anatolij Gustschin <agust@denx.de>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> I'd think this should go via ppc, so it is in sync with the defconfig update of
-> patch 2/2.
-> 
-> Changes since V1: Use -C in format-patch to show the rename.
+Hi Roy,
 
-Nit: I prefer to see the changelog before the s-o-b lines so that it
-gets included in the final commit text.  Helps when trying to identify
-exactly which version of a patch got merged.
+On Fri, Sep 09 2011, Roy Zang wrote:
+> From: Xu lei <B33228@freescale.com>
+>
+> Freescale eSDHC registers only support 32-bit accesses,
+> this patch ensures that all Freescale eSDHC register accesses
+> are 32-bit.
+>
+> Signed-off-by: Xu lei <B33228@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-> 
->  arch/powerpc/configs/85xx/p1023rds_defconfig       |    2 +-
->  arch/powerpc/configs/85xx/xes_mpc85xx_defconfig    |    2 +-
->  arch/powerpc/configs/mpc85xx_defconfig             |    2 +-
->  arch/powerpc/configs/mpc85xx_smp_defconfig         |    2 +-
->  arch/powerpc/configs/ppc6xx_defconfig              |    2 +-
->  arch/powerpc/platforms/512x/Kconfig                |    1 +
->  arch/powerpc/platforms/83xx/Kconfig                |    9 ++++++---
->  arch/powerpc/platforms/85xx/Kconfig                |   12 ++++++++----
->  arch/powerpc/platforms/86xx/Kconfig                |    1 +
->  arch/powerpc/platforms/Kconfig                     |   10 ----------
->  arch/powerpc/sysdev/Makefile                       |    1 -
->  drivers/gpio/Kconfig                               |    8 ++++++++
->  drivers/gpio/Makefile                              |    1 +
->  .../mpc8xxx_gpio.c => drivers/gpio/gpio-mpc8xxx.c  |    0
->  14 files changed, 30 insertions(+), 23 deletions(-)
->  rename arch/powerpc/sysdev/mpc8xxx_gpio.c => drivers/gpio/gpio-mpc8xxx.c (100%)
+Pushed to mmc-next for 3.2 with Anton's ACK now, thanks.
 
-Looks good to me.  Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
-Yes, it probably should go via the ppc tree.  I don't foresee any conflict
-issues with the gpio tree.
-
-g.
+- Chris.
+-- 
+Chris Ball   <cjb@laptop.org>   <http://printf.net/>
+One Laptop Per Child
