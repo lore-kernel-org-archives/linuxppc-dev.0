@@ -1,36 +1,31 @@
-Return-Path: <yong.zhang0@gmail.com>
-Date: Wed, 21 Sep 2011 20:12:41 +0800
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 53/57] sound: irq: Remove IRQF_DISABLED
-Message-ID: <20110921121241.GC2550@zhy>
-References: <1316597339-29861-1-git-send-email-yong.zhang0@gmail.com>
-	<1316597339-29861-54-git-send-email-yong.zhang0@gmail.com>
-	<s5hsjnqxlxb.wl%tiwai@suse.de>
-	<alpine.LFD.2.02.1109211154280.2723@ionos>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <alpine.LFD.2.02.1109211154280.2723@ionos>
-Cc: alsa-devel@alsa-project.org,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Takashi Iwai <tiwai@suse.de>, Clemens Ladisch <clemens@ladisch.de>,
-	Jaroslav Kysela <perex@perex.cz>, Peter Ujfalusi <peter.ujfalusi@ti.com>,
-	Paul Gortmaker <paul.gortmaker@windriver.com>, linux-arch@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>,
-	Jassi Brar <jassisinghbrar@gmail.com>,
-	Manuel Lauss <manuel.lauss@googlemail.com>,
-	Uwe =?utf-8?Q?Kleine-K=EF=BF=BDnig?= <u.kleine-koenig@pengutronix.de>,
-	Axel Lin <axel.lin@gmail.com>, Liam Girdwood <lrg@ti.com>,
-	cbe-oss-dev@lists.ozlabs.org, Wan ZongShun <mcuos.com@gmail.com>,
-	Lucas De Marchi <lucas.demarchi@profusion.mobi>,
-	linux-arm-kernel@lists.infradead.org, Eric Miao <eric.y.miao@gmail.com>,
-	Sangbeom Kim <sbkim73@samsung.com>, Jiri Kosina <jkosina@suse.cz>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linux-kernel@vger.kernel.org, Geoff Levand <geoff@infradead.org>,
-	Paul Mundt <lethal@linux-sh.org>, Simon Horman <simon@horms.net>,
-	Joe Perches <joe@perches.com>, Jarkko Nikula <jhnikula@gmail.com>,
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e24smtp01.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7B8F6B6F7D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Sep 2011 23:06:37 +1000 (EST)
+Received: from mailhub3.br.ibm.com (mailhub3.br.ibm.com [9.18.232.110])
+	by e24smtp01.br.ibm.com (8.14.4/8.13.1) with ESMTP id p8LEOGx8032648
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2011 10:24:16 -0400
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+	by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p8LD9aST954524
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2011 10:09:42 -0300
+Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
+	by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p8LD6JiU022677
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2011 10:06:19 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH v2] powerpc: reserve iommu page 0
+Date: Wed, 21 Sep 2011 10:06:12 -0300
+Message-Id: <1316610372-5795-1-git-send-email-cascardo@linux.vnet.ibm.com>
+Cc: alexander.h.duyck@intel.com, nhorman@redhat.com,
+	linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
+	Paul Mackerras <paulus@samba.org>,
+	Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
 	linuxppc-dev@lists.ozlabs.org
-Reply-To: Yong Zhang <yong.zhang0@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 21, 2011 at 11:55:36AM +0200, Thomas Gleixner wrote:
-> On Wed, 21 Sep 2011, Takashi Iwai wrote:
-> 
-> > At Wed, 21 Sep 2011 17:28:54 +0800,
-> > Yong Zhang wrote:
-> > > 
-> > > Since commit [c58543c8: genirq: Run irq handlers with interrupts disabled],
-> > 
-> > Hm, this id hits a different commit:
-> >     commit c58543c869606532c2382f027d6466f4672ea756
-> >     Author: David S. Miller <davem@davemloft.net>
-> >     Date:   Tue Oct 13 00:49:09 2009 -0700
-> > 
-> >     sparc64: Set IRQF_DISABLED on LDC channel IRQs.
-> > 
-> > You mean commit e58aa3d2d0cc01ad8d6f7f640a0670433f794922?
-> 
-> Yeah.
->  
-> > > We run all interrupt handlers with interrupts disabled
-> > > and we even check and yell when an interrupt handler
-> > > returns with interrupts enabled (see commit [b738a50a:
-> > > genirq: Warn when handler enables interrupts]).
-> > > 
-> > > So now this flag is a NOOP and can be removed.
-> > > 
-> > > Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-> > > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> > 
-> > Do you want to merge by yourself or shall I take it to sound git tree?
-> > Since IRQF_DISABLED isn't used, it can be applied safely in 3.1-based
-> > tree, right?
-> 
-> Yes, please go ahead. I'll pick up the leftovers.
+Some devices have a dma-window that starts at the address 0. This allows
+DMA addresses to be mapped to this address and returned to drivers as a
+valid DMA address. Some drivers may not behave well in this case, since
+the address 0 is considered an error or not allocated.
 
-Takashi, if you take it, could you please modify that commit id to the
-right one?
+The solution to avoid this kind of error from happening is reserve the
+page addressed as 0 so it cannot be allocated for a DMA mapping.
 
-Otherwise I could change it when I refresh this patchset.
+Ben Herrenschmidt deserves the credit for this patch. He pointed out the
+solution and what code would do the job.
 
-Thanks,
-Yong
+v2:
+Add a comment in the code.
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+
+Resending, since it was recommended to add a comment about this
+particular code.
+
+---
+ arch/powerpc/kernel/iommu.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 961bb03..8395301 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -501,6 +501,14 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ 	tbl->it_map = page_address(page);
+ 	memset(tbl->it_map, 0, sz);
+ 
++	/*
++	 * Reserve page 0 so it will not be used for any mappings.
++	 * This avoids buggy drivers that consider page 0 to be invalid
++	 * to crash the machine or even lose data.
++	*/
++	if (tbl->it_offset == 0)
++		set_bit(0, tbl->it_map);
++		
+ 	tbl->it_hint = 0;
+ 	tbl->it_largehint = tbl->it_halfpoint;
+ 	spin_lock_init(&tbl->it_lock);
+-- 
+1.7.4.4
