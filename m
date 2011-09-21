@@ -1,23 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D46FF1007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Sep 2011 05:41:42 +1000 (EST)
-Message-ID: <4E7A3DED.9030402@freescale.com>
-Date: Wed, 21 Sep 2011 14:41:33 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <davidb@codeaurora.org>
+Date: Wed, 21 Sep 2011 13:22:02 -0700
+From: David Brown <davidb@codeaurora.org>
+To: Yong Zhang <yong.zhang0@gmail.com>
+Subject: Re: [PATCH 49/57] video: irq: Remove IRQF_DISABLED
+Message-ID: <20110921202202.GB2321@huya.qualcomm.com>
+References: <1316597339-29861-1-git-send-email-yong.zhang0@gmail.com>
+	<1316597339-29861-50-git-send-email-yong.zhang0@gmail.com>
 MIME-Version: 1.0
-To: Vineeth <vneethv@gmail.com>
-Subject: Re: Timer interrupt on Linux 3.0.3
-References: <CAFbQSaD-c=QqSsq__VtBEcMCJabnBi4AP4KunDNV7u7xXAuaTw@mail.gmail.com>
-	<4E73816C.6000304@freescale.com>
-	<CAFbQSaBcdLCoVY471mVLAyM=eYDSN77=DODPasMaAEm6pRm7jQ@mail.gmail.com>
-In-Reply-To: <CAFbQSaBcdLCoVY471mVLAyM=eYDSN77=DODPasMaAEm6pRm7jQ@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1316597339-29861-50-git-send-email-yong.zhang0@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Daniel Walker <dwalker@fifo99.com>, linux-arch@vger.kernel.org,
+	Kukjin Kim <kgene.kim@samsung.com>,
+	Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+	Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <archit@ti.com>,
+	David Brown <davidb@codeaurora.org>,
+	Anatolij Gustschin <agust@denx.de>, cbe-oss-dev@lists.ozlabs.org,
+	Wan ZongShun <mcuos.com@gmail.com>,
+	linux-arm-msm@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+	tglx@linutronix.de, linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, Geoff Levand <geoff@infradead.org>,
+	Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+	Bryan Huntsman <bryanh@codeaurora.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +33,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/21/2011 01:56 AM, Vineeth wrote:
->>> What was the issue?  You really should try to make this work rather than
->>> hack around it.
+On Wed, Sep 21, 2011 at 05:28:50PM +0800, Yong Zhang wrote:
+> Since commit [c58543c8: genirq: Run irq handlers with interrupts disabled],
+> We run all interrupt handlers with interrupts disabled
+> and we even check and yell when an interrupt handler
+> returns with interrupts enabled (see commit [b738a50a:
+> genirq: Warn when handler enables interrupts]).
 > 
-> what we found was the decrementer is not generating an exception when it
-> becomes 0. and the timebase registers are not getting incremented too.
+> So now this flag is a NOOP and can be removed.
+> 
+> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+> ---
+>  drivers/video/msm/mddi.c                  |    2 +-
+>  drivers/video/msm/mdp.c                   |    2 +-
 
-Does the decrementer actually tick until it reaches zero, or do it and
-the timebase never tick?
+Acked-by: David Brown <davidb@codeaurora.org>
 
-Is the TBEN input to the CPU asserted?
-
--Scott
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
