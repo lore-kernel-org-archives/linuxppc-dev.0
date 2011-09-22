@@ -1,16 +1,23 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
-	[IPv6:2001:a60:0:70:0:1:25:1])
-	by ozlabs.org (Postfix) with ESMTP id C5A3B1007D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2011 09:20:07 +1000 (EST)
-Date: Fri, 23 Sep 2011 01:20:00 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull 'next' branch of 5xxx tree
-Message-ID: <20110923012000.31d4e38d@wker>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <greg@kroah.com>
+Received: from out2.smtp.messagingengine.com (out2.smtp.messagingengine.com
+	[66.111.4.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7AAE51007D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2011 09:28:35 +1000 (EST)
+Date: Thu, 22 Sep 2011 16:28:28 -0700
+From: Greg KH <greg@kroah.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] drivers/tty: don't use the byte channel handle as a
+	parameter in ehv_bytechan.c
+Message-ID: <20110922232828.GA12088@kroah.com>
+References: <1316543217-13769-1-git-send-email-timur@freescale.com>
+	<20110922230640.GA16981@kroah.com> <4E7BC1A9.5050708@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4E7BC1A9.5050708@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-console@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,50 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Thu, Sep 22, 2011 at 06:15:53PM -0500, Timur Tabi wrote:
+> Greg KH wrote:
+> > This patch doesn't apply at all to my tty tree, what was it made
+> > against?
+> 
+> An internal repository that supposed to be in-sync with the latest and greatest.
+> 
+> What's the URL for your tty-next repo?
 
-please pull some mpc5xxx updates and mpc8xxx/512x gpio driver
-move patches for next.
+There is no public one due to kernel.org being down.
 
-Anatolij
-
-The following changes since commit a120db06c3f435c37d028b6e5a1968dad06b7df0:
-
-  perf events, powerpc: Add POWER7 stalled-cycles-frontend/backend events (2011-09-20 16:12:56 +1000)
-
-are available in the git repository at:
-  git://git.denx.de/linux-2.6-agust.git next
-
-Anatolij Gustschin (4):
-      powerpc/5200: mpc5200b.dtsi: add spi node address- and size-cells properties
-      powerpc/5200: dts: digsy_mtc.dts: update to add can, pci, serial and spi
-      powerpc/5200: dts: digsy_mtc.dts: add timer0 and timer1 gpio properties
-      powerpc/5200: dts: digsy_mtc.dts: enable both MSCAN nodes
-
-Timur Tabi (1):
-      powerpc/5200: enable audio in the defconfig
-
-Wolfram Sang (2):
-      gpio: move mpc8xxx/512x gpio driver to drivers/gpio
-      powerpc: update 512x-defconfig
-
- arch/powerpc/boot/dts/digsy_mtc.dts                |   59 +++++++++++++++++---
- arch/powerpc/boot/dts/mpc5200b.dtsi                |    2 +
- arch/powerpc/configs/85xx/p1023rds_defconfig       |    2 +-
- arch/powerpc/configs/85xx/xes_mpc85xx_defconfig    |    2 +-
- arch/powerpc/configs/mpc512x_defconfig             |   19 ++++---
- arch/powerpc/configs/mpc5200_defconfig             |   12 ++++
- arch/powerpc/configs/mpc85xx_defconfig             |    2 +-
- arch/powerpc/configs/mpc85xx_smp_defconfig         |    2 +-
- arch/powerpc/configs/ppc6xx_defconfig              |    2 +-
- arch/powerpc/platforms/512x/Kconfig                |    1 +
- arch/powerpc/platforms/83xx/Kconfig                |    9 ++-
- arch/powerpc/platforms/85xx/Kconfig                |   12 +++-
- arch/powerpc/platforms/86xx/Kconfig                |    1 +
- arch/powerpc/platforms/Kconfig                     |   10 ---
- arch/powerpc/sysdev/Makefile                       |    1 -
- drivers/gpio/Kconfig                               |    8 +++
- drivers/gpio/Makefile                              |    1 +
- .../mpc8xxx_gpio.c => drivers/gpio/gpio-mpc8xxx.c  |    0
- 18 files changed, 106 insertions(+), 39 deletions(-)
- rename arch/powerpc/sysdev/mpc8xxx_gpio.c => drivers/gpio/gpio-mpc8xxx.c (100%)
+Does your patch apply to linux-next?
