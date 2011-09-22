@@ -1,15 +1,14 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
-	[IPv6:2001:a60:0:32:0:1:25:1])
-	by ozlabs.org (Postfix) with ESMTP id B988E1007D3
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2011 09:01:53 +1000 (EST)
-Date: Fri, 23 Sep 2011 01:01:25 +0200
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8803CB6F85
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2011 09:03:43 +1000 (EST)
+Date: Fri, 23 Sep 2011 01:03:24 +0200
 From: Anatolij Gustschin <agust@denx.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc/5200: enable audio in the defconfig
-Message-ID: <20110923010125.1bcf3d9a@wker>
-In-Reply-To: <1314916282-13863-1-git-send-email-timur@freescale.com>
-References: <1314916282-13863-1-git-send-email-timur@freescale.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH V2 1/2] gpio: move mpc8xxx/512x gpio driver to drivers/gpio
+Message-ID: <20110923010324.74819a2b@wker>
+In-Reply-To: <1316602161-12546-1-git-send-email-w.sang@pengutronix.de>
+References: <1316602161-12546-1-git-send-email-w.sang@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -22,22 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 1 Sep 2011 17:31:22 -0500
-Timur Tabi <timur@freescale.com> wrote:
+On Wed, 21 Sep 2011 12:49:20 +0200
+Wolfram Sang <w.sang@pengutronix.de> wrote:
 
-> Audio support for the MPC5200 exists, so enable it by default.
+> Move the driver to the place where it is expected to be nowadays. Also
+> rename its CONFIG-name to match the rest and adapt the defconfigs.
+> Finally, move selection of REQUIRE_GPIOLIB or WANTS_OPTIONAL_GPIOLIB to
+> the platforms, because this option is per-platform and not per-driver.
 > 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
 > 
-> There was a bug in the audio drivers related to the of_platform
-> changes that was never discovered because these drivers were
-> never compiled by default.  This patch should make sure that
-> never happens again.
-> 
->  arch/powerpc/configs/mpc5200_defconfig |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
+> I'd think this should go via ppc, so it is in sync with the defconfig update of
+> patch 2/2.
 
-applied to next, thanks.
+applied both patches to next, thanks.
 
 Anatolij
