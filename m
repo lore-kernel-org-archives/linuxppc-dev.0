@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EE9D9B6F7B
+Return-Path: <sumeshkkn@hotmail.com>
+Received: from blu0-omc3-s16.blu0.hotmail.com (blu0-omc3-s16.blu0.hotmail.com
+	[65.55.116.91]) by ozlabs.org (Postfix) with ESMTP id EB1EEB6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 26 Sep 2011 15:02:40 +1000 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p8Q52YmO027879
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2011 00:02:35 -0500
-Subject: [PATCH] powerpc/pci: Don't configure PCIe settings when
-	PCI_PROBE_ONLY is set
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Sep 2011 15:02:31 +1000
-Message-ID: <1317013351.2629.78.camel@pasglop>
-Mime-Version: 1.0
+	Mon, 26 Sep 2011 04:52:30 +1000 (EST)
+Message-ID: <BLU124-W1648A42F7514E880C9B199B4F20@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_ec2bdc40-8459-4d90-8c3b-5df30db25d77_"
+From: Sumesh Kaana <sumeshkkn@hotmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <jwboyer@gmail.com>
+Subject: Loading Linux from already running code..
+Date: Sun, 25 Sep 2011 18:47:15 +0000
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +20,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We don't want to configure PCI Express Max Payload Size or
-Max Read Request Size on systems that set that flag. The
-firmware will have done it for us, and under hypervisors such
-as pHyp we don't even see the parent switches and bridges and
-thus can make no assumption on what values are safe to use.
+--_ec2bdc40-8459-4d90-8c3b-5df30db25d77_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/pci-common.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 1bd47f3..677eccc 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1732,7 +1732,7 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
- 
- 	/* Configure PCI Express settings */
--	if (bus) {
-+	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
- 		struct pci_bus *child;
- 		list_for_each_entry(child, &bus->children, node) {
- 			struct pci_dev *self = child->self;
+Hi All=2C
+I need some suggestions for booting Linux( >2.6.30 ) with my new project.
+Scenario:I've a custom built board with PowerPC 440 + 256 MB RAM. there is =
+NO FLASH on this board.There is a hardware logic which will get an initial =
+piece of code (through hardware network) into the ram and then execute it. =
+This code does mandatory initialization of a proprietary chip and this code=
+ MUST execute on power on. any other images (Linux image or ramdisk) can be=
+ loaded any specified area in the memory along with this code.
+My requirement is to boot Linux at the end of the this initialization.
+what is the best way to do it?=20
+1. Will it be possible to transfer control to a simpleImage.initrd.myboard.=
+elf(or .bin ..?!)  image from already_existing_code?2. Should I use u-boot =
+and then load uImage=2C ramdisk and the dts blob? Using u-boot will reduce =
+the effort?3. Is there any other way to approach this??
+
+
+Regards=2CSumesh 		 	   		  =
+
+--_ec2bdc40-8459-4d90-8c3b-5df30db25d77_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'><div dir=3D'ltr'>
+Hi All=2C<div><br></div><div>I need some suggestions for booting Linux( &gt=
+=3B2.6.30 ) with my new project.</div><div><br></div><div>Scenario:</div><d=
+iv>I've a custom built board with PowerPC 440 + 256 MB RAM. there is NO FLA=
+SH on this board.</div><div>There is a hardware logic which will get an ini=
+tial piece of code&nbsp=3B(through hardware network)&nbsp=3Binto the ram an=
+d then execute it. This code does mandatory initialization of a proprietary=
+ chip and this code MUST execute on power on. any other images (Linux image=
+ or ramdisk) can be loaded any specified area in the memory along with this=
+ code.</div><div><br></div><div>My requirement is to boot Linux at the end =
+of the this initialization.</div><div><br></div><div>what is the best way t=
+o do it?&nbsp=3B</div><div><br></div><div>1. Will it be possible to transfe=
+r control to a simpleImage.initrd.myboard.elf(or .bin ..?!) &nbsp=3Bimage f=
+rom already_existing_code?</div><div>2. Should I use u-boot and then load u=
+Image=2C ramdisk and the dts blob? Using u-boot will reduce the effort?</di=
+v><div>3. Is there any other way to approach&nbsp=3Bthis??</div><div><br></=
+div><div><br></div><div><br></div><div>Regards=2C</div><div>Sumesh</div> 		=
+ 	   		  </div></body>
+</html>=
+
+--_ec2bdc40-8459-4d90-8c3b-5df30db25d77_--
