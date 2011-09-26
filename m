@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 09B53B6F72
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B081AB6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Sep 2011 08:12:31 +1000 (EST)
+	Tue, 27 Sep 2011 08:15:51 +1000 (EST)
+Message-ID: <4E80F941.2090408@freescale.com>
+Date: Mon, 26 Sep 2011 17:14:25 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc/85xx: fix PHYS_64BIT selection for P1022DS
-Mime-Version: 1.0 (Apple Message framework v1244.3)
-Content-Type: text/plain; charset=iso-8859-1
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CAOZdJXXw-YMFG4vVbYQKOtDYHtriaXe-=sz6YBivFXbp=mH2PQ@mail.gmail.com>
-Date: Mon, 26 Sep 2011 17:12:09 -0500
-Message-Id: <FAF4E48A-0966-4A6E-8D31-B30D07CB0746@kernel.crashing.org>
 References: <1316806370-21067-1-git-send-email-agust@denx.de>
 	<CAOZdJXXw-YMFG4vVbYQKOtDYHtriaXe-=sz6YBivFXbp=mH2PQ@mail.gmail.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
+	<FAF4E48A-0966-4A6E-8D31-B30D07CB0746@kernel.crashing.org>
+In-Reply-To: <FAF4E48A-0966-4A6E-8D31-B30D07CB0746@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: Anatolij Gustschin <agust@denx.de>,
 	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,35 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> Why, the way this patch makes it will work both with a 32-bit or 36-bit address map.   The comment should be fixed since its wrong.
 
-On Sep 25, 2011, at 12:06 PM, Tabi Timur-B04825 wrote:
+I think the BSP team had said that there is a significant performance
+improvement in some benchmark when 36-bit support is disabled.  That's why they
+like to keep 32-bit and 36-bit environments for both, and why they default to
+32-bit.
 
-> On Fri, Sep 23, 2011 at 2:32 PM, Anatolij Gustschin <agust@denx.de> =
-wrote:
->=20
->> diff --git a/arch/powerpc/platforms/85xx/Kconfig =
-b/arch/powerpc/platforms/85xx/Kconfig
->> index 1b393f4..b29d4f2 100644
->> --- a/arch/powerpc/platforms/85xx/Kconfig
->> +++ b/arch/powerpc/platforms/85xx/Kconfig
->> @@ -80,7 +80,7 @@ config P1010_RDB
->>  config P1022_DS
->>        bool "Freescale P1022 DS"
->>        select DEFAULT_UIMAGE
->> -       select CONFIG_PHYS_64BIT        # The DTS has 36-bit =
-addresses
->> +       select PHYS_64BIT       # The DTS has 36-bit addresses
->=20
-> I have no idea how this happened, but I wonder if it's a good idea.
-> On the Freescale BSP, the default config for the P1022DS is 32-bit,
-> not 36-bit, so one day we might have a 32-bit config in the upstream
-> repository.
->=20
-> PHYS_64BIT is already covered by the defconfig.  I wonder if we should
-> just delete the bad line, and let the defconfig select the address
-> size.
-
-Why, the way this patch makes it will work both with a 32-bit or 36-bit =
-address map.   The comment should be fixed since its wrong.
-
-- k=
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
