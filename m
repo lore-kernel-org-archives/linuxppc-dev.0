@@ -1,16 +1,29 @@
-Return-Path: <sumeshkkn@hotmail.com>
-Received: from blu0-omc3-s16.blu0.hotmail.com (blu0-omc3-s16.blu0.hotmail.com
-	[65.55.116.91]) by ozlabs.org (Postfix) with ESMTP id EB1EEB6F75
+Return-Path: <vneethv@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4442EB6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 26 Sep 2011 04:52:30 +1000 (EST)
-Message-ID: <BLU124-W1648A42F7514E880C9B199B4F20@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_ec2bdc40-8459-4d90-8c3b-5df30db25d77_"
-From: Sumesh Kaana <sumeshkkn@hotmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <jwboyer@gmail.com>
-Subject: Loading Linux from already running code..
-Date: Sun, 25 Sep 2011 18:47:15 +0000
+	Mon, 26 Sep 2011 19:12:21 +1000 (EST)
+Received: by bkbzu17 with SMTP id zu17so5308830bkb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 26 Sep 2011 02:12:16 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <CAEZ9+qnSXXi5w9BbwyaQWQybCtaCsJ0T5j5ySEjOkpnnYmr7aA@mail.gmail.com>
+References: <CAFbQSaD-c=QqSsq__VtBEcMCJabnBi4AP4KunDNV7u7xXAuaTw@mail.gmail.com>
+	<4E73816C.6000304@freescale.com>
+	<CAFbQSaBcdLCoVY471mVLAyM=eYDSN77=DODPasMaAEm6pRm7jQ@mail.gmail.com>
+	<4E7A3DED.9030402@freescale.com>
+	<CAEZ9+qnSXXi5w9BbwyaQWQybCtaCsJ0T5j5ySEjOkpnnYmr7aA@mail.gmail.com>
+From: Vineeth <vneethv@gmail.com>
+Date: Mon, 26 Sep 2011 14:41:56 +0530
+Message-ID: <CAFbQSaAoug6Sc-ANFUaE0Y9dQROHcNxtzevj2itiArME4aHR6A@mail.gmail.com>
+Subject: Re: Timer interrupt on Linux 3.0.3
+To: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-embedded@vger.kernel.org
+Content-Type: multipart/alternative; boundary=0015175cd5fe23524f04add48ed7
+Cc: mohanreddykv@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,66 +33,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_ec2bdc40-8459-4d90-8c3b-5df30db25d77_
-Content-Type: text/plain; charset="iso-8859-1"
+--0015175cd5fe23524f04add48ed7
+Content-Type: text/plain; charset=ISO-8859-1
+
+Hi,
+
+there's a good news which is pretty bad. Good news is that we identified why
+our processor timer not working. its because the TBEN in our board is pulled
+LOW. which means the decrementer and the timebase registers wont work.
+
+The board design cannot be changed !!! but we have an MPC107 connected with
+our processor. Our plan is to use the timer of MPC107 and register our
+timer_interrupt function with this timer interrupt. I think that's the only
+workaround left now.
+
+Thanks
+Vineeth
+
+On Thu, Sep 22, 2011 at 11:52 AM, MohanReddy koppula <mohanreddykv@gmail.com
+> wrote:
+
+> I had the same issue with an MPC885 board. My kernel was 2.6.33. On
+> that board decrementer exception was not working. I replaced the
+> board, took new board (MPC885 only, just another board) and the same
+> kernel worked fine. I don't know how the problem was solved.
+>
+> -Mohan
+>
+> On 9/22/11, Scott Wood <scottwood@freescale.com> wrote:
+> > On 09/21/2011 01:56 AM, Vineeth wrote:
+> >>>> What was the issue?  You really should try to make this work rather
+> than
+> >>>> hack around it.
+> >>
+> >> what we found was the decrementer is not generating an exception when it
+> >> becomes 0. and the timebase registers are not getting incremented too.
+> >
+> > Does the decrementer actually tick until it reaches zero, or do it and
+> > the timebase never tick?
+> >
+> > Is the TBEN input to the CPU asserted?
+> >
+> > -Scott
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >
+>
+
+--0015175cd5fe23524f04add48ed7
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
+Hi,<br><br>there&#39;s a good news which is pretty bad. Good news is that w=
+e identified why our processor timer not working. its because the TBEN in o=
+ur board is pulled LOW. which means the decrementer and the timebase regist=
+ers wont work.<br>
 
-Hi All=2C
-I need some suggestions for booting Linux( >2.6.30 ) with my new project.
-Scenario:I've a custom built board with PowerPC 440 + 256 MB RAM. there is =
-NO FLASH on this board.There is a hardware logic which will get an initial =
-piece of code (through hardware network) into the ram and then execute it. =
-This code does mandatory initialization of a proprietary chip and this code=
- MUST execute on power on. any other images (Linux image or ramdisk) can be=
- loaded any specified area in the memory along with this code.
-My requirement is to boot Linux at the end of the this initialization.
-what is the best way to do it?=20
-1. Will it be possible to transfer control to a simpleImage.initrd.myboard.=
-elf(or .bin ..?!)  image from already_existing_code?2. Should I use u-boot =
-and then load uImage=2C ramdisk and the dts blob? Using u-boot will reduce =
-the effort?3. Is there any other way to approach this??
+<br>The board design cannot be changed !!! but we have an MPC107 connected =
+with our processor. Our plan is to use the timer of MPC107 and register our=
+ timer_interrupt function with this timer interrupt. I think that&#39;s the=
+ only workaround left now.<br>
 
+<br>Thanks<br>Vineeth<br><br><div class=3D"gmail_quote">On Thu, Sep 22, 201=
+1 at 11:52 AM, MohanReddy koppula <span dir=3D"ltr">&lt;<a href=3D"mailto:m=
+ohanreddykv@gmail.com">mohanreddykv@gmail.com</a>&gt;</span> wrote:<br><blo=
+ckquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #c=
+cc solid;padding-left:1ex;">
 
-Regards=2CSumesh 		 	   		  =
+I had the same issue with an MPC885 board. My kernel was 2.6.33. On<br>
+that board decrementer exception was not working. I replaced the<br>
+board, took new board (MPC885 only, just another board) and the same<br>
+kernel worked fine. I don&#39;t know how the problem was solved.<br>
+<br>
+-Mohan<br>
+<div><div></div><div class=3D"h5"><br>
+On 9/22/11, Scott Wood &lt;<a href=3D"mailto:scottwood@freescale.com">scott=
+wood@freescale.com</a>&gt; wrote:<br>
+&gt; On 09/21/2011 01:56 AM, Vineeth wrote:<br>
+&gt;&gt;&gt;&gt; What was the issue? =A0You really should try to make this =
+work rather than<br>
+&gt;&gt;&gt;&gt; hack around it.<br>
+&gt;&gt;<br>
+&gt;&gt; what we found was the decrementer is not generating an exception w=
+hen it<br>
+&gt;&gt; becomes 0. and the timebase registers are not getting incremented =
+too.<br>
+&gt;<br>
+&gt; Does the decrementer actually tick until it reaches zero, or do it and=
+<br>
+&gt; the timebase never tick?<br>
+&gt;<br>
+&gt; Is the TBEN input to the CPU asserted?<br>
+&gt;<br>
+&gt; -Scott<br>
+&gt;<br>
+</div></div>&gt; _______________________________________________<br>
+&gt; Linuxppc-dev mailing list<br>
+&gt; <a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.oz=
+labs.org</a><br>
+&gt; <a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_=
+blank">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
+&gt;<br>
+</blockquote></div><br>
 
---_ec2bdc40-8459-4d90-8c3b-5df30db25d77_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Tahoma
-}
---></style>
-</head>
-<body class=3D'hmmessage'><div dir=3D'ltr'>
-Hi All=2C<div><br></div><div>I need some suggestions for booting Linux( &gt=
-=3B2.6.30 ) with my new project.</div><div><br></div><div>Scenario:</div><d=
-iv>I've a custom built board with PowerPC 440 + 256 MB RAM. there is NO FLA=
-SH on this board.</div><div>There is a hardware logic which will get an ini=
-tial piece of code&nbsp=3B(through hardware network)&nbsp=3Binto the ram an=
-d then execute it. This code does mandatory initialization of a proprietary=
- chip and this code MUST execute on power on. any other images (Linux image=
- or ramdisk) can be loaded any specified area in the memory along with this=
- code.</div><div><br></div><div>My requirement is to boot Linux at the end =
-of the this initialization.</div><div><br></div><div>what is the best way t=
-o do it?&nbsp=3B</div><div><br></div><div>1. Will it be possible to transfe=
-r control to a simpleImage.initrd.myboard.elf(or .bin ..?!) &nbsp=3Bimage f=
-rom already_existing_code?</div><div>2. Should I use u-boot and then load u=
-Image=2C ramdisk and the dts blob? Using u-boot will reduce the effort?</di=
-v><div>3. Is there any other way to approach&nbsp=3Bthis??</div><div><br></=
-div><div><br></div><div><br></div><div>Regards=2C</div><div>Sumesh</div> 		=
- 	   		  </div></body>
-</html>=
-
---_ec2bdc40-8459-4d90-8c3b-5df30db25d77_--
+--0015175cd5fe23524f04add48ed7--
