@@ -1,26 +1,22 @@
-Return-Path: <ittette@gmail.com>
-Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
-	[209.85.216.172]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 354F6B6F72
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 09B53B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Sep 2011 04:13:28 +1000 (EST)
-Received: by qyk32 with SMTP id 32so9848767qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 26 Sep 2011 11:13:25 -0700 (PDT)
-MIME-Version: 1.0
-Sender: ittette@gmail.com
-In-Reply-To: <1317058016.1650.50.camel@pug>
-References: <BLU124-W1648A42F7514E880C9B199B4F20@phx.gbl>
-	<1317058016.1650.50.camel@pug>
-Date: Mon, 26 Sep 2011 20:13:24 +0200
-Message-ID: <CAC157GAaqdNVQf9hycEVft3cgpbVWxOwncBSNwfVFBGQugZjpQ@mail.gmail.com>
-Subject: Re: Loading Linux from already running code..
-From: Philipp Ittershagen <p.ittershagen@googlemail.com>
-To: Carlos Munoz <cmunoz@sablenetworks.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Sumesh Kaana <sumeshkkn@hotmail.com>
+	Tue, 27 Sep 2011 08:12:31 +1000 (EST)
+Subject: Re: [PATCH] powerpc/85xx: fix PHYS_64BIT selection for P1022DS
+Mime-Version: 1.0 (Apple Message framework v1244.3)
+Content-Type: text/plain; charset=iso-8859-1
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <CAOZdJXXw-YMFG4vVbYQKOtDYHtriaXe-=sz6YBivFXbp=mH2PQ@mail.gmail.com>
+Date: Mon, 26 Sep 2011 17:12:09 -0500
+Message-Id: <FAF4E48A-0966-4A6E-8D31-B30D07CB0746@kernel.crashing.org>
+References: <1316806370-21067-1-git-send-email-agust@denx.de>
+	<CAOZdJXXw-YMFG4vVbYQKOtDYHtriaXe-=sz6YBivFXbp=mH2PQ@mail.gmail.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Cc: Anatolij Gustschin <agust@denx.de>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 26, 2011 at 7:26 PM, Carlos Munoz <cmunoz@sablenetworks.com> wrote:
-> You could build a tarball containing the root files system, dtb, Linux,
-> plus a header indicating where the different pieces need to be loaded.
-> Then your initial code loads the different parts at the right memory
-> locations, sets up the Linux arguments, and jumps to Linux.
 
-That is exactly what the firmware-independent simpleImage.initrd.*
-targets already do. The resulting elf file include the dtb and initrd
-as well as a prompt-like boot arg cli.
-I think it will be possible to just place the simpleImage.initrd.*
-into you memory and let the existing code jump to the start adress of
-the elf image. I managed to start a ppc core using JTAG and the
-simpleImage.initrd elf files and I think the procedure is very much
-the same but instead of the JTAG debugger setting the PC to the start
-address, your startup code has to do it.
+On Sep 25, 2011, at 12:06 PM, Tabi Timur-B04825 wrote:
 
+> On Fri, Sep 23, 2011 at 2:32 PM, Anatolij Gustschin <agust@denx.de> =
+wrote:
+>=20
+>> diff --git a/arch/powerpc/platforms/85xx/Kconfig =
+b/arch/powerpc/platforms/85xx/Kconfig
+>> index 1b393f4..b29d4f2 100644
+>> --- a/arch/powerpc/platforms/85xx/Kconfig
+>> +++ b/arch/powerpc/platforms/85xx/Kconfig
+>> @@ -80,7 +80,7 @@ config P1010_RDB
+>>  config P1022_DS
+>>        bool "Freescale P1022 DS"
+>>        select DEFAULT_UIMAGE
+>> -       select CONFIG_PHYS_64BIT        # The DTS has 36-bit =
+addresses
+>> +       select PHYS_64BIT       # The DTS has 36-bit addresses
+>=20
+> I have no idea how this happened, but I wonder if it's a good idea.
+> On the Freescale BSP, the default config for the P1022DS is 32-bit,
+> not 36-bit, so one day we might have a 32-bit config in the upstream
+> repository.
+>=20
+> PHYS_64BIT is already covered by the defconfig.  I wonder if we should
+> just delete the bad line, and let the defconfig select the address
+> size.
 
-Philipp
+Why, the way this patch makes it will work both with a 32-bit or 36-bit =
+address map.   The comment should be fixed since its wrong.
+
+- k=
