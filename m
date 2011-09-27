@@ -1,21 +1,14 @@
-Return-Path: <sumeshkkn@hotmail.com>
-Received: from blu0-omc3-s20.blu0.hotmail.com (blu0-omc3-s20.blu0.hotmail.com
-	[65.55.116.95]) by ozlabs.org (Postfix) with ESMTP id B533AB6F83
+Return-Path: <holger.brunck@keymile.com>
+Received: from mail.de.keymile.com (mail.de.keymile.com [195.8.104.1])
+	by ozlabs.org (Postfix) with SMTP id 33A3BB6F64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Sep 2011 16:51:34 +1000 (EST)
-Message-ID: <BLU124-W2524979DEF83F7225DFC24B4F00@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_21713310-484d-4c88-9dd6-5ae7e0731e76_"
-From: Sumesh Kaana <sumeshkkn@hotmail.com>
-To: <p.ittershagen@googlemail.com>, <cmunoz@sablenetworks.com>
-Subject: RE: Loading Linux from already running code..
-Date: Tue, 27 Sep 2011 06:51:30 +0000
-In-Reply-To: <CAC157GAaqdNVQf9hycEVft3cgpbVWxOwncBSNwfVFBGQugZjpQ@mail.gmail.com>
-References: <BLU124-W1648A42F7514E880C9B199B4F20@phx.gbl>,
-	<1317058016.1650.50.camel@pug>,
-	<CAC157GAaqdNVQf9hycEVft3cgpbVWxOwncBSNwfVFBGQugZjpQ@mail.gmail.com>
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Tue, 27 Sep 2011 17:55:25 +1000 (EST)
+From: Holger Brunck <holger.brunck@keymile.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/82xx: updates for mgcoge
+Date: Tue, 27 Sep 2011 09:44:50 +0200
+Message-Id: <1317109490-4449-1-git-send-email-holger.brunck@keymile.com>
+Cc: Holger Brunck <holger.brunck@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,115 +18,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_21713310-484d-4c88-9dd6-5ae7e0731e76_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Add:
+ - Setup dts node for USB
+ - pin description and setup for SMC1 (serial interface)
 
+Update and cleanup mgcoge_defconfig:
+- enable: TIPC, UBIFS, USB_GADGET driver, SQUASHFS, HIGHRES timers
+          POSIX_MQUEUE, EMBEDDED
+- disable: EXT3, PPC_PMAC
 
-Hi Philipp and Carlos=2C
+Signed-off-by: Holger Brunck <holger.brunck@keymile.com>
+Acked-by: Heiko Schocher <hs@denx.de>
+cc: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/dts/mgcoge.dts      |    9 +++++++++
+ arch/powerpc/configs/mgcoge_defconfig |   27 ++++++++++++++++-----------
+ arch/powerpc/platforms/82xx/km82xx.c  |    4 ++++
+ 3 files changed, 29 insertions(+), 11 deletions(-)
 
-Thanks for the reply.
-
-When simpleImage.elf is loaded by a debugger=2C the debugger reads the elf =
-image header and places various sections of image into right place in the R=
-AM. But when I do it from already_running_code=2C I should manually unpack =
-the elf and place the sections in the memory=2C then jump to the start addr=
-ess=2C Am I right?
-
-Also=2C
-Is it possible to load a simpleImage.bin file and jump to the start address=
- using a function pointer=2C Hence I can avoid unpack_elf_image()...? - Wil=
-l this work?
-
-
-Thanks=2C
-Sumesh.
-
-
-
-> Date: Mon=2C 26 Sep 2011 20:13:24 +0200
-> Subject: Re: Loading Linux from already running code..
-> From: p.ittershagen@googlemail.com
-> To: cmunoz@sablenetworks.com
-> CC: linuxppc-dev@lists.ozlabs.org=3B sumeshkkn@hotmail.com
->=20
-> On Mon=2C Sep 26=2C 2011 at 7:26 PM=2C Carlos Munoz <cmunoz@sablenetworks=
-.com> wrote:
-> > You could build a tarball containing the root files system=2C dtb=2C Li=
-nux=2C
-> > plus a header indicating where the different pieces need to be loaded.
-> > Then your initial code loads the different parts at the right memory
-> > locations=2C sets up the Linux arguments=2C and jumps to Linux.
->=20
-> That is exactly what the firmware-independent simpleImage.initrd.*
-> targets already do. The resulting elf file include the dtb and initrd
-> as well as a prompt-like boot arg cli.
-> I think it will be possible to just place the simpleImage.initrd.*
-> into you memory and let the existing code jump to the start adress of
-> the elf image. I managed to start a ppc core using JTAG and the
-> simpleImage.initrd elf files and I think the procedure is very much
-> the same but instead of the JTAG debugger setting the PC to the start
-> address=2C your startup code has to do it.
->=20
->=20
-> Philipp
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
- 		 	   		  =
-
---_21713310-484d-4c88-9dd6-5ae7e0731e76_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Tahoma
-}
---></style>
-</head>
-<body class=3D'hmmessage'><div dir=3D'ltr'>
-Hi Philipp and Carlos=2C<br><br>Thanks for the reply.<br><br>When simpleIma=
-ge.elf is loaded by a debugger=2C the debugger reads the elf image header a=
-nd places various sections of image into right place in the RAM. But when I=
- do it from already_running_code=2C I should manually unpack the elf and pl=
-ace the sections in the memory=2C then jump to the start address=2C Am I ri=
-ght?<br><br>Also=2C<br>Is it possible to load a simpleImage.bin file and ju=
-mp to the start address using a function pointer=2C Hence I can avoid unpac=
-k_elf_image()...? - Will this work?<br><br><br>Thanks=2C<br>Sumesh.<br><br>=
-<br><br><div>&gt=3B Date: Mon=2C 26 Sep 2011 20:13:24 +0200<br>&gt=3B Subje=
-ct: Re: Loading Linux from already running code..<br>&gt=3B From: p.ittersh=
-agen@googlemail.com<br>&gt=3B To: cmunoz@sablenetworks.com<br>&gt=3B CC: li=
-nuxppc-dev@lists.ozlabs.org=3B sumeshkkn@hotmail.com<br>&gt=3B <br>&gt=3B O=
-n Mon=2C Sep 26=2C 2011 at 7:26 PM=2C Carlos Munoz &lt=3Bcmunoz@sablenetwor=
-ks.com&gt=3B wrote:<br>&gt=3B &gt=3B You could build a tarball containing t=
-he root files system=2C dtb=2C Linux=2C<br>&gt=3B &gt=3B plus a header indi=
-cating where the different pieces need to be loaded.<br>&gt=3B &gt=3B Then =
-your initial code loads the different parts at the right memory<br>&gt=3B &=
-gt=3B locations=2C sets up the Linux arguments=2C and jumps to Linux.<br>&g=
-t=3B <br>&gt=3B That is exactly what the firmware-independent simpleImage.i=
-nitrd.*<br>&gt=3B targets already do. The resulting elf file include the dt=
-b and initrd<br>&gt=3B as well as a prompt-like boot arg cli.<br>&gt=3B I t=
-hink it will be possible to just place the simpleImage.initrd.*<br>&gt=3B i=
-nto you memory and let the existing code jump to the start adress of<br>&gt=
-=3B the elf image. I managed to start a ppc core using JTAG and the<br>&gt=
-=3B simpleImage.initrd elf files and I think the procedure is very much<br>=
-&gt=3B the same but instead of the JTAG debugger setting the PC to the star=
-t<br>&gt=3B address=2C your startup code has to do it.<br>&gt=3B <br>&gt=3B=
- <br>&gt=3B Philipp<br>&gt=3B _____________________________________________=
-__<br>&gt=3B Linuxppc-dev mailing list<br>&gt=3B Linuxppc-dev@lists.ozlabs.=
-org<br>&gt=3B https://lists.ozlabs.org/listinfo/linuxppc-dev<br></div> 		 	=
-   		  </div></body>
-</html>=
-
---_21713310-484d-4c88-9dd6-5ae7e0731e76_--
+diff --git a/arch/powerpc/boot/dts/mgcoge.dts b/arch/powerpc/boot/dts/mgcoge.dts
+index 1360d2f..ededaf5 100644
+--- a/arch/powerpc/boot/dts/mgcoge.dts
++++ b/arch/powerpc/boot/dts/mgcoge.dts
+@@ -213,6 +213,15 @@
+ 				linux,network-index = <2>;
+ 				fsl,cpm-command = <0x16200300>;
+ 			};
++
++			usb@11b60 {
++				compatible = "fsl,mpc8272-cpm-usb";
++				mode = "peripheral";
++				reg = <0x11b60 0x40 0x8b00 0x100>;
++				interrupts = <11 8>;
++				interrupt-parent = <&PIC>;
++				usb-clock = <5>;
++			};
+ 		};
+ 
+ 		cpm2_pio_c: gpio-controller@10d40 {
+diff --git a/arch/powerpc/configs/mgcoge_defconfig b/arch/powerpc/configs/mgcoge_defconfig
+index 6cb588a..0d36b0e 100644
+--- a/arch/powerpc/configs/mgcoge_defconfig
++++ b/arch/powerpc/configs/mgcoge_defconfig
+@@ -1,15 +1,22 @@
++CONFIG_EXPERIMENTAL=y
++# CONFIG_SWAP is not set
+ CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
+ CONFIG_SPARSE_IRQ=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_EXPERT=y
++# CONFIG_RD_GZIP is not set
+ CONFIG_KALLSYMS_ALL=y
++# CONFIG_PCSPKR_PLATFORM is not set
++CONFIG_EMBEDDED=y
+ CONFIG_SLAB=y
+ # CONFIG_IOSCHED_CFQ is not set
++# CONFIG_PPC_PMAC is not set
+ CONFIG_PPC_82xx=y
+ CONFIG_MGCOGE=y
++CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BINFMT_MISC=y
+ # CONFIG_SECCOMP is not set
+ CONFIG_NET=y
+@@ -24,11 +31,10 @@ CONFIG_SYN_COOKIES=y
+ # CONFIG_INET_LRO is not set
+ # CONFIG_IPV6 is not set
+ CONFIG_NETFILTER=y
++CONFIG_TIPC=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ # CONFIG_FW_LOADER is not set
+ CONFIG_MTD=y
+-CONFIG_MTD_CONCAT=y
+-CONFIG_MTD_PARTITIONS=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLKDEVS=y
+@@ -42,7 +48,6 @@ CONFIG_MTD_PHYSMAP_OF=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+-# CONFIG_MACINTOSH_DRIVERS is not set
+ CONFIG_NETDEVICES=y
+ CONFIG_FIXED_PHY=y
+ CONFIG_NET_ETHERNET=y
+@@ -50,6 +55,7 @@ CONFIG_FS_ENET=y
+ CONFIG_FS_ENET_MDIO_FCC=y
+ # CONFIG_NETDEV_1000 is not set
+ # CONFIG_NETDEV_10000 is not set
++# CONFIG_WLAN is not set
+ # CONFIG_INPUT is not set
+ # CONFIG_SERIO is not set
+ # CONFIG_VT is not set
+@@ -57,24 +63,24 @@ CONFIG_SERIAL_CPM=y
+ CONFIG_SERIAL_CPM_CONSOLE=y
+ CONFIG_I2C=y
+ CONFIG_I2C_CHARDEV=y
+-# CONFIG_I2C_POWERMAC is not set
+ CONFIG_I2C_CPM=y
+ # CONFIG_HWMON is not set
+-# CONFIG_USB_SUPPORT is not set
++CONFIG_USB_GADGET=y
++CONFIG_USB_FSL_USB2=y
++CONFIG_USB_G_SERIAL=y
++CONFIG_UIO=y
++CONFIG_UIO_PDRV=y
+ CONFIG_EXT2_FS=y
+-CONFIG_EXT3_FS=y
+-# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+-# CONFIG_EXT3_FS_XATTR is not set
+ CONFIG_AUTOFS4_FS=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_JFFS2_FS=y
+ CONFIG_CRAMFS=y
++CONFIG_SQUASHFS=y
+ CONFIG_NFS_FS=y
+ CONFIG_NFS_V3=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_PARTITION_ADVANCED=y
+-# CONFIG_MAC_PARTITION is not set
+ CONFIG_NLS=y
+ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ASCII=y
+@@ -82,7 +88,6 @@ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_FS=y
+-CONFIG_DEBUG_KERNEL=y
+ # CONFIG_SCHED_DEBUG is not set
+ CONFIG_DEBUG_INFO=y
+ CONFIG_SYSCTL_SYSCALL_CHECK=y
+diff --git a/arch/powerpc/platforms/82xx/km82xx.c b/arch/powerpc/platforms/82xx/km82xx.c
+index 428c5e0..3661bcd 100644
+--- a/arch/powerpc/platforms/82xx/km82xx.c
++++ b/arch/powerpc/platforms/82xx/km82xx.c
+@@ -49,6 +49,9 @@ struct cpm_pin {
+ };
+ 
+ static __initdata struct cpm_pin km82xx_pins[] = {
++	/* SMC1 */
++	{2, 4, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{2, 5, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
+ 
+ 	/* SMC2 */
+ 	{0, 8, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+@@ -137,6 +140,7 @@ static void __init init_ioports(void)
+ 	}
+ 
+ 	cpm2_smc_clk_setup(CPM_CLK_SMC2, CPM_BRG8);
++	cpm2_smc_clk_setup(CPM_CLK_SMC1, CPM_BRG7);
+ 	cpm2_clk_setup(CPM_CLK_SCC1, CPM_CLK11, CPM_CLK_RX);
+ 	cpm2_clk_setup(CPM_CLK_SCC1, CPM_CLK11, CPM_CLK_TX);
+ 	cpm2_clk_setup(CPM_CLK_SCC3, CPM_CLK5, CPM_CLK_RTX);
+-- 
+1.7.1
