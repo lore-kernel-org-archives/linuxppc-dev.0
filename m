@@ -1,24 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2D369B6F64
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CA1E0B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Sep 2011 08:24:52 +1000 (EST)
-Message-ID: <4E80FBAB.7080706@freescale.com>
-Date: Mon, 26 Sep 2011 17:24:43 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/85xx: fix PHYS_64BIT selection for P1022DS
-References: <1316806370-21067-1-git-send-email-agust@denx.de>	<CAOZdJXXw-YMFG4vVbYQKOtDYHtriaXe-=sz6YBivFXbp=mH2PQ@mail.gmail.com>
-	<FAF4E48A-0966-4A6E-8D31-B30D07CB0746@kernel.crashing.org>
-In-Reply-To: <FAF4E48A-0966-4A6E-8D31-B30D07CB0746@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Anatolij Gustschin <agust@denx.de>,
-	Tabi Timur-B04825 <B04825@freescale.com>
+	Tue, 27 Sep 2011 14:12:34 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p8R4CQCM009254
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2011 23:12:28 -0500
+Subject: [PATCH] powerpc/ptrace: Fix build with gcc 4.6
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Sep 2011 14:12:26 +1000
+Message-ID: <1317096746.29415.42.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/26/2011 05:12 PM, Kumar Gala wrote:
-> 
-> On Sep 25, 2011, at 12:06 PM, Tabi Timur-B04825 wrote:
-> 
->> On Fri, Sep 23, 2011 at 2:32 PM, Anatolij Gustschin <agust@denx.de> wrote:
->>
->>> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
->>> index 1b393f4..b29d4f2 100644
->>> --- a/arch/powerpc/platforms/85xx/Kconfig
->>> +++ b/arch/powerpc/platforms/85xx/Kconfig
->>> @@ -80,7 +80,7 @@ config P1010_RDB
->>>  config P1022_DS
->>>        bool "Freescale P1022 DS"
->>>        select DEFAULT_UIMAGE
->>> -       select CONFIG_PHYS_64BIT        # The DTS has 36-bit addresses
->>> +       select PHYS_64BIT       # The DTS has 36-bit addresses
->>
->> I have no idea how this happened, but I wonder if it's a good idea.
->> On the Freescale BSP, the default config for the P1022DS is 32-bit,
->> not 36-bit, so one day we might have a 32-bit config in the upstream
->> repository.
->>
->> PHYS_64BIT is already covered by the defconfig.  I wonder if we should
->> just delete the bad line, and let the defconfig select the address
->> size.
-> 
-> Why, the way this patch makes it will work both with a 32-bit or 36-bit address map.   The comment should be fixed since its wrong.
+gcc (rightfully) complains that we are accessing beyond the
+end of the fpr array (we do, to access the fpscr).
 
-"select" should not be used for things that you think make good
-defaults.  It should be used for things that are required.  It's just
-like "depends on", except for user interface considerations (and the
-whole transitive dependency mess).
+The only sane thing to do (whether anything in that code can be
+called remotely sane is debatable) is to special case fpscr and
+handle it as a separate statement.
 
--Scott
+I initially tried to do it it by making the array access conditional
+to index < PT_FPSCR and using a 3rd else leg but for some reason gcc
+was unable to understand it and still spewed the warning.
+
+So I ended up with something a tad more intricated but it seems to
+build on 32-bit and on 64-bit with and without VSX.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+I very much welcome a few more pairs of eyes on this one in case I
+missed something, this code sucks. It took me a good 15mn to figure
+out that it was actually correct to begin with (hint: look at the
+definition of PT_FPSCR on 32-bit, don't miss the *2 in there).
+ 
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 05b7dd2..adf4d73 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1497,9 +1497,14 @@ long arch_ptrace(struct task_struct *child, long request,
+ 		if (index < PT_FPR0) {
+ 			tmp = ptrace_get_reg(child, (int) index);
+ 		} else {
++			unsigned int fpidx = index - PT_FPR0;
++
+ 			flush_fp_to_thread(child);
+-			tmp = ((unsigned long *)child->thread.fpr)
+-				[TS_FPRWIDTH * (index - PT_FPR0)];
++			if (fpidx < (PT_FPSCR - PT_FPR0))
++				tmp = ((unsigned long *)child->thread.fpr)
++					[fpidx * TS_FPRWIDTH];
++			else
++				tmp = child->thread.fpscr.val;
+ 		}
+ 		ret = put_user(tmp, datalp);
+ 		break;
+@@ -1525,9 +1530,12 @@ long arch_ptrace(struct task_struct *child, long request,
+ 		if (index < PT_FPR0) {
+ 			ret = ptrace_put_reg(child, index, data);
+ 		} else {
++			unsigned int fpidx = index - PT_FPR0;
++
+ 			flush_fp_to_thread(child);
+-			((unsigned long *)child->thread.fpr)
+-				[TS_FPRWIDTH * (index - PT_FPR0)] = data;
++			if (fpidx < (PT_FPSCR - PT_FPR0))
++				((unsigned long *)child->thread.fpr)
++					[fpidx * TS_FPRWIDTH] = data;
+ 			ret = 0;
+ 		}
+ 		break;
