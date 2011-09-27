@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CA1E0B6F7C
+	by ozlabs.org (Postfix) with ESMTPS id A44C0B6F83
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Sep 2011 14:12:34 +1000 (EST)
+	Tue, 27 Sep 2011 15:38:03 +1000 (EST)
 Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p8R4CQCM009254
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2011 23:12:28 -0500
-Subject: [PATCH] powerpc/ptrace: Fix build with gcc 4.6
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p8R5bvrc018642
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2011 00:37:58 -0500
+Subject: [PATCH v2] powerpc/ptrace: Fix build with gcc 4.6
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1317096746.29415.42.camel@pasglop>
+References: <1317096746.29415.42.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Sep 2011 14:12:26 +1000
-Message-ID: <1317096746.29415.42.camel@pasglop>
+Date: Tue, 27 Sep 2011 15:37:57 +1000
+Message-ID: <1317101877.29415.52.camel@pasglop>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -45,9 +47,11 @@ I very much welcome a few more pairs of eyes on this one in case I
 missed something, this code sucks. It took me a good 15mn to figure
 out that it was actually correct to begin with (hint: look at the
 definition of PT_FPSCR on 32-bit, don't miss the *2 in there).
- 
+
+v2. Allow setting the fpscr (thanks Stephen)
+
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 05b7dd2..adf4d73 100644
+index cb22024..9321d0f 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
 @@ -1497,9 +1497,14 @@ long arch_ptrace(struct task_struct *child, long request,
@@ -67,7 +71,7 @@ index 05b7dd2..adf4d73 100644
  		}
  		ret = put_user(tmp, datalp);
  		break;
-@@ -1525,9 +1530,12 @@ long arch_ptrace(struct task_struct *child, long request,
+@@ -1525,9 +1530,14 @@ long arch_ptrace(struct task_struct *child, long request,
  		if (index < PT_FPR0) {
  			ret = ptrace_put_reg(child, index, data);
  		} else {
@@ -79,6 +83,8 @@ index 05b7dd2..adf4d73 100644
 +			if (fpidx < (PT_FPSCR - PT_FPR0))
 +				((unsigned long *)child->thread.fpr)
 +					[fpidx * TS_FPRWIDTH] = data;
++			else
++				child->thread.fpscr.val = data;
  			ret = 0;
  		}
  		break;
