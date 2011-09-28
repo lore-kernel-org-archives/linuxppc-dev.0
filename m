@@ -1,28 +1,26 @@
-Return-Path: <cel@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9BCC21007D3
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Sep 2011 07:23:44 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p8SL8eOo017519
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Sep 2011 17:08:40 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p8SLNZSU206382
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Sep 2011 17:23:35 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p8SLNYa6003833
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Sep 2011 15:23:34 -0600
-Subject: [PATCH REPOST] perf event, POWER 6: L1 cache read and write access
-	event code fix]
-From: "Carl E. Love" <cel@linux.vnet.ibm.com>
-To: pmac@au1.ibm.com, bherren@au1.ibm.com, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 28 Sep 2011 14:23:33 -0700
-Message-ID: <1317245013.5461.11.camel@oc5652146517.ibm.com>
+Return-Path: <akpm00@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E44B1007D5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Sep 2011 08:03:32 +1000 (EST)
+Received: by iabn5 with SMTP id n5so8280239iab.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Sep 2011 15:03:29 -0700 (PDT)
+Date: Wed, 28 Sep 2011 15:03:25 -0700
+From: Andrew Morton <akpm00@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build failure after merge of the akpm tree
+Message-Id: <20110928150325.52c12c1e.akpm00@gmail.com>
+In-Reply-To: <20110928192220.6d85ae23a2f2ef316139a310@canb.auug.org.au>
+References: <20110928192220.6d85ae23a2f2ef316139a310@canb.auug.org.au>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Joe Perches <joe@perches.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +30,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben, Paul:
- 
-I posted this patch to lkml but did not copy the linuxppc-dev@ozlabs.org
-mailing list.  
+On Wed, 28 Sep 2011 19:22:20 +1000
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-                   Carl Love
----------------------------------------------------------------------
+> After merging the akpm tree, today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+> 
+> In file included from arch/powerpc/boot/stdio.c:12:0:
+> arch/powerpc/boot/stdio.h:10:17: error: expected declaration specifiers or '...' before numeric constant
+> arch/powerpc/boot/stdio.h:10:20: error: expected declaration specifiers or '...' before numeric constant
+> arch/powerpc/boot/stdio.h:10:8: warning: return type defaults to 'int'
+> arch/powerpc/boot/stdio.h:10:8: warning: function declaration isn't a prototype
+> arch/powerpc/boot/stdio.h: In function '__printf':
+> arch/powerpc/boot/stdio.h:14:17: error: expected declaration specifiers or '...' before numeric constant
+> arch/powerpc/boot/stdio.h:14:20: error: expected declaration specifiers or '...' before numeric constant
+> arch/powerpc/boot/stdio.h:14:23: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'int'
+> arch/powerpc/boot/stdio.h:16:12: error: storage class specified for parameter 'vsprintf'
+> 
+> And went down hill from there (it produced hundreds of errors).
 
-The current L1 cache read event code 0x80082 only counts for thread 0. The
-event code 0x280030 should be used to count events on thread 0 and 1. The
-patch fixes the event code for the L1 cache read.
+I could only find two non-kernel files which were modified by that
+patch so afaict we just need to revert those two bits.  I'll test the
+below..
 
-The current L1 cache write event code 0x80086 only counts for thread 0. The
-event code 0x180032 should be used to count events on thread 0 and 1. The
-patch fixes the event code for the L1 cache write.
 
-FYI, the documentation lists three event codes for the L1 cache read event
-and three event codes for the L1 cache write event.  The event description
-for the event codes is as follows:
 
-L1 cache read requests  0x80082  LSU 0 only
-L1 cache read requests  0x8008A  LSU 1 only
-L1 cache read requests  0x80030  LSU 1 or LSU 0, counter 2 only.
+From: Andrew Morton <akpm@google.com>
+Subject: treewide-use-__printf-not-__attribute__formatprintf-fix
 
-L1 cache store requests 0x80086  LSU 0 only
-L1 cache store requests 0x8008E  LSU 1 only
-L1 cache store requests 0x80032  LSU 0 or LSU 1, counter 1 only.
+After merging the akpm tree, today's linux-next build (powerpc
+ppc64_defconfig) failed like this:
 
-There can only be one request from either LSU 0 or 1 active at a time.
-
-Signed-off-by: Carl Love <cel@us.ibm.com>
+In file included from arch/powerpc/boot/stdio.c:12:0:
+arch/powerpc/boot/stdio.h:10:17: error: expected declaration specifiers or '...' before numeric constant
+arch/powerpc/boot/stdio.h:10:20: error: expected declaration specifiers or '...' before numeric constant
+arch/powerpc/boot/stdio.h:10:8: warning: return type defaults to 'int'
+arch/powerpc/boot/stdio.h:10:8: warning: function declaration isn't a prototype
+arch/powerpc/boot/stdio.h: In function '__printf':
+arch/powerpc/boot/stdio.h:14:17: error: expected declaration specifiers or '...' before numeric constant
+arch/powerpc/boot/stdio.h:14:20: error: expected declaration specifiers or '...' before numeric constant
+arch/powerpc/boot/stdio.h:14:23: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'int'
+arch/powerpc/boot/stdio.h:16:12: error: storage class specified for parameter 'vsprintf'
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Joe Perches <joe@perches.com>
+Signed-off-by: Andrew Morton <akpm@google.com>
 ---
- arch/powerpc/kernel/power6-pmu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/power6-pmu.c b/arch/powerpc/kernel/power6-pmu.c
-index 03b95e2..0bbc901 100644
---- a/arch/powerpc/kernel/power6-pmu.c
-+++ b/arch/powerpc/kernel/power6-pmu.c
-@@ -487,8 +487,8 @@ static int power6_generic_events[] = {
-  */
- static int power6_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
-        [C(L1D)] = {            /*      RESULT_ACCESS   RESULT_MISS */
--               [C(OP_READ)] = {        0x80082,        0x80080         },
--               [C(OP_WRITE)] = {       0x80086,        0x80088         },
-+               [C(OP_READ)] = {        0x280030,       0x80080         },
-+               [C(OP_WRITE)] = {       0x180032,       0x80088         },
-                [C(OP_PREFETCH)] = {    0x810a4,        0               },
-        },
-        [C(L1I)] = {            /*      RESULT_ACCESS   RESULT_MISS */
+ arch/powerpc/boot/ps3.c   |    3 ++-
+ arch/powerpc/boot/stdio.h |    5 +++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff -puN arch/alpha/boot/misc.c~treewide-use-__printf-not-__attribute__formatprintf-fix arch/alpha/boot/misc.c
+diff -puN arch/alpha/include/asm/console.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/alpha/include/asm/console.h
+diff -puN arch/frv/include/asm/system.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/frv/include/asm/system.h
+diff -puN arch/ia64/include/asm/mca.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/ia64/include/asm/mca.h
+diff -puN arch/m68k/include/asm/natfeat.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/m68k/include/asm/natfeat.h
+diff -puN arch/mn10300/include/asm/gdb-stub.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/mn10300/include/asm/gdb-stub.h
+diff -puN arch/powerpc/boot/ps3.c~treewide-use-__printf-not-__attribute__formatprintf-fix arch/powerpc/boot/ps3.c
+--- a/arch/powerpc/boot/ps3.c~treewide-use-__printf-not-__attribute__formatprintf-fix
++++ a/arch/powerpc/boot/ps3.c
+@@ -36,7 +36,8 @@ extern int lv1_get_repository_node_value
+ #ifdef DEBUG
+ #define DBG(fmt...) printf(fmt)
+ #else
+-static inline __printf(1, 2) int DBG(const char *fmt, ...) {return 0;}
++static inline int __attribute__ ((format (printf, 1, 2))) DBG(
++	const char *fmt, ...) {return 0;}
+ #endif
+ 
+ BSS_STACK(4096);
+diff -puN arch/powerpc/boot/stdio.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/powerpc/boot/stdio.h
+--- a/arch/powerpc/boot/stdio.h~treewide-use-__printf-not-__attribute__formatprintf-fix
++++ a/arch/powerpc/boot/stdio.h
+@@ -7,11 +7,12 @@
+ #define	EINVAL		22	/* Invalid argument */
+ #define ENOSPC		28	/* No space left on device */
+ 
+-extern __printf(1, 2) int printf(const char *fmt, ...);
++extern int printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+ 
+ #define fprintf(fmt, args...)	printf(args)
+ 
+-extern __printf(2, 3) int sprintf(char *buf, const char *fmt, ...);
++extern int sprintf(char *buf, const char *fmt, ...)
++	__attribute__((format(printf, 2, 3)));
+ 
+ extern int vsprintf(char *buf, const char *fmt, va_list args);
+ 
+diff -puN arch/powerpc/include/asm/udbg.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/powerpc/include/asm/udbg.h
+diff -puN arch/s390/include/asm/debug.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/s390/include/asm/debug.h
+diff -puN arch/um/include/shared/user.h~treewide-use-__printf-not-__attribute__formatprintf-fix arch/um/include/shared/user.h
+diff -puN drivers/isdn/hisax/callc.c~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/isdn/hisax/callc.c
+diff -puN drivers/isdn/hisax/hisax.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/isdn/hisax/hisax.h
+diff -puN drivers/isdn/hisax/isdnl1.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/isdn/hisax/isdnl1.h
+diff -puN drivers/isdn/hisax/isdnl3.c~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/isdn/hisax/isdnl3.c
+diff -puN drivers/isdn/hisax/st5481_d.c~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/isdn/hisax/st5481_d.c
+diff -puN drivers/net/ethernet/mellanox/mlx4/mlx4_en.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/net/ethernet/mellanox/mlx4/mlx4_en.h
+diff -puN drivers/net/wireless/ath/ath.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/net/wireless/ath/ath.h
+diff -puN drivers/net/wireless/ath/ath5k/debug.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/net/wireless/ath/ath5k/debug.h
+diff -puN drivers/net/wireless/ath/ath6kl/debug.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/net/wireless/ath/ath6kl/debug.h
+diff -puN drivers/net/wireless/b43/b43.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/net/wireless/b43/b43.h
+diff -puN drivers/net/wireless/b43legacy/b43legacy.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/net/wireless/b43legacy/b43legacy.h
+diff -puN drivers/staging/iio/trigger.h~treewide-use-__printf-not-__attribute__formatprintf-fix drivers/staging/iio/trigger.h
+diff -puN fs/ecryptfs/ecryptfs_kernel.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/ecryptfs/ecryptfs_kernel.h
+diff -puN fs/ext2/ext2.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/ext2/ext2.h
+diff -puN fs/ext4/ext4.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/ext4/ext4.h
+diff -puN fs/fat/fat.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/fat/fat.h
+diff -puN fs/gfs2/glock.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/gfs2/glock.h
+diff -puN fs/hpfs/hpfs_fn.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/hpfs/hpfs_fn.h
+diff -puN fs/nilfs2/nilfs.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/nilfs2/nilfs.h
+diff -puN fs/ntfs/debug.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/ntfs/debug.h
+diff -puN fs/ocfs2/super.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/ocfs2/super.h
+diff -puN fs/partitions/ldm.c~treewide-use-__printf-not-__attribute__formatprintf-fix fs/partitions/ldm.c
+diff -puN fs/udf/udfdecl.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/udf/udfdecl.h
+diff -puN fs/ufs/ufs.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/ufs/ufs.h
+diff -puN fs/xfs/xfs_message.h~treewide-use-__printf-not-__attribute__formatprintf-fix fs/xfs/xfs_message.h
+diff -puN include/asm-generic/bug.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/asm-generic/bug.h
+diff -puN include/drm/drmP.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/drm/drmP.h
+diff -puN include/linux/audit.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/audit.h
+diff -puN include/linux/blktrace_api.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/blktrace_api.h
+diff -puN include/linux/device.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/device.h
+diff -puN include/linux/dynamic_debug.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/dynamic_debug.h
+diff -puN include/linux/ext3_fs.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/ext3_fs.h
+diff -puN include/linux/fs.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/fs.h
+diff -puN include/linux/fscache-cache.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/fscache-cache.h
+diff -puN include/linux/gameport.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/gameport.h
+diff -puN include/linux/kallsyms.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/kallsyms.h
+diff -puN include/linux/kdb.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/kdb.h
+diff -puN include/linux/kernel.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/kernel.h
+diff -puN include/linux/kexec.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/kexec.h
+diff -puN include/linux/kmod.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/kmod.h
+diff -puN include/linux/kobject.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/kobject.h
+diff -puN include/linux/kthread.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/kthread.h
+diff -puN include/linux/libata.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/libata.h
+diff -puN include/linux/mmiotrace.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/mmiotrace.h
+diff -puN include/linux/netdevice.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/netdevice.h
+diff -puN include/linux/printk.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/printk.h
+diff -puN include/linux/quotaops.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/quotaops.h
+diff -puN include/linux/seq_file.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/seq_file.h
+diff -puN include/linux/trace_seq.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/linux/trace_seq.h
+diff -puN include/net/bluetooth/bluetooth.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/net/bluetooth/bluetooth.h
+diff -puN include/net/netfilter/nf_log.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/net/netfilter/nf_log.h
+diff -puN include/net/sock.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/net/sock.h
+diff -puN include/sound/core.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/sound/core.h
+diff -puN include/sound/info.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/sound/info.h
+diff -puN include/sound/seq_kernel.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/sound/seq_kernel.h
+diff -puN include/xen/hvc-console.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/xen/hvc-console.h
+diff -puN include/xen/xenbus.h~treewide-use-__printf-not-__attribute__formatprintf-fix include/xen/xenbus.h
+diff -puN net/nfc/nfc.h~treewide-use-__printf-not-__attribute__formatprintf-fix net/nfc/nfc.h
+diff -puN net/rds/rds.h~treewide-use-__printf-not-__attribute__formatprintf-fix net/rds/rds.h
+diff -puN net/sunrpc/svc.c~treewide-use-__printf-not-__attribute__formatprintf-fix net/sunrpc/svc.c
+diff -puN sound/firewire/cmp.c~treewide-use-__printf-not-__attribute__formatprintf-fix sound/firewire/cmp.c
+_
