@@ -1,20 +1,21 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6AF45B6F7E
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Sep 2011 08:06:51 +1000 (EST)
-Message-ID: <4E824904.2040208@embedded-sol.com>
-Date: Wed, 28 Sep 2011 01:07:00 +0300
-From: Felix Radensky <felix@embedded-sol.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Handling multiple GPIO controllers in 8xxx GPIO driver
-References: <4E81D6C0.3010201@embedded-sol.com>
-	<20110927182912.GA3994@ponder.secretlab.ca>
-In-Reply-To: <20110927182912.GA3994@ponder.secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+	[IPv6:2402:b800:7003:1::15])
+	by ozlabs.org (Postfix) with ESMTP id DCAD8B6F72
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Sep 2011 19:22:31 +1000 (EST)
+Date: Wed, 28 Sep 2011 19:22:20 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: build failure after merge of the akpm tree
+Message-Id: <20110928192220.6d85ae23a2f2ef316139a310@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__28_Sep_2011_19_22_20_+1000_RlgdBTOqj909DXmG"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Joe Perches <joe@perches.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
+--Signature=_Wed__28_Sep_2011_19_22_20_+1000_RlgdBTOqj909DXmG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 09/27/2011 09:29 PM, Grant Likely wrote:
-> On Tue, Sep 27, 2011 at 04:59:28PM +0300, Felix Radensky wrote:
->> Hi,
->>
->> Looks like  8xxx GPIO driver cannot properly handle interrupts
->> when multiple GPIO controllers exist in the system.
->>
->> On Freescale P1022 there are 3 GPIO controllers. All 3 use
->> the same interrupt line, internal interrupt 31. If all controllers
->> are defined in device tree set_irq_chained_handler() is invoked
->> 3 times with same  hardware irq number. The result is interrupt
->> storm,  mpc8xxx_gpio_irq_cascade() is invoked indefinitely.
->>
->> What would be the best way to fix the problem ?
-> The solution is to make the gpio driver register as a regular
-> interrupt handler, and not as a chained handler.
->
-> g.
->
+Hi Andrew,
 
-You mean interrupt handler per GPIO pin ?
+After merging the akpm tree, today's linux-next build (powerpc
+ppc64_defconfig) failed like this:
 
-Felix.
+In file included from arch/powerpc/boot/stdio.c:12:0:
+arch/powerpc/boot/stdio.h:10:17: error: expected declaration specifiers or =
+'...' before numeric constant
+arch/powerpc/boot/stdio.h:10:20: error: expected declaration specifiers or =
+'...' before numeric constant
+arch/powerpc/boot/stdio.h:10:8: warning: return type defaults to 'int'
+arch/powerpc/boot/stdio.h:10:8: warning: function declaration isn't a proto=
+type
+arch/powerpc/boot/stdio.h: In function '__printf':
+arch/powerpc/boot/stdio.h:14:17: error: expected declaration specifiers or =
+'...' before numeric constant
+arch/powerpc/boot/stdio.h:14:20: error: expected declaration specifiers or =
+'...' before numeric constant
+arch/powerpc/boot/stdio.h:14:23: error: expected '=3D', ',', ';', 'asm' or =
+'__attribute__' before 'int'
+arch/powerpc/boot/stdio.h:16:12: error: storage class specified for paramet=
+er 'vsprintf'
+
+And went down hill from there (it produced hundreds of errors).
+
+Caused by commit a52af697aaeb ("treewide: use __printf not __attribute__
+((format(printf,...)))").  Maybe because some of these files are part of
+the boot wrappers and are built (effectively) independently of the kernel
+itself.  Notice that arch/powerpc/boot/stdio.h does not include any
+kernel headers ...
+
+I have reverted that commit (and the follup ones b31d03e43e56
+"treewide-use-__printf-not-__attribute__formatprintf-checkpatch-fixes"
+and f43c361e2bd9 "kernel.h/checkpatch: mark strict_strto<foo> and
+simple_strto<foo> as obsolete") for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__28_Sep_2011_19_22_20_+1000_RlgdBTOqj909DXmG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJOgudMAAoJEDMEi1NhKgbscAAIAJQWo9Pf9LFIXFVVFUoMD3KZ
+VpSdXcFC9maeTZGO71yuFOSoVlbUfQ1G6ttS2qJu3jqpFra9ScbU1P2RtJo2OM8z
+3CTXzROqYACdUghQXwNWvM0CNHwFz3V8imnsHLHAIL3ZZAoafb5zpgelr6urXltW
+yztsl89XII/k/MYcZR0wm4bdKu2zz2zBg44puHPRugqhnMxROVflOCzPRSkkVAfB
+kw69ZhlB/CadyXJo6hVXL42Mq05N9+NgMfd5tWc6ouVBNwbEKlOSO8SwoOnM9FV/
+il9s7dDn5WWZU2e6P4StDU/rsnv+IKru1bEQQ3xOqUm82Hh89YzXLoBBzuDPrEA=
+=h6wU
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__28_Sep_2011_19_22_20_+1000_RlgdBTOqj909DXmG--
