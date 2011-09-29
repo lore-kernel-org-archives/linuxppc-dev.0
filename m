@@ -1,20 +1,21 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2E29AB6F95
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 06CFD1007D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 30 Sep 2011 08:05:34 +1000 (EST)
-Received: by yxk8 with SMTP id 8so1234265yxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Sep 2011 15:05:32 -0700 (PDT)
-Sender: "xenidis@gmail.com" <xenidis@gmail.com>
-From: Jimi Xenidis <jimix@pobox.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: xmon: Fix #if typo for systems without MSR[RI]
-Date: Thu, 29 Sep 2011 17:05:28 -0500
-Message-Id: <1317333928-17987-1-git-send-email-jimix@pobox.com>
+	Fri, 30 Sep 2011 09:52:30 +1000 (EST)
+Subject: Re: [PATCH] powerpc: book3e: WSP: Add Chroma as an new WSP/PowerEN
+	platform.
+Mime-Version: 1.0 (Apple Message framework v1244.3)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1317333352-17628-1-git-send-email-jimix@pobox.com>
+Date: Thu, 29 Sep 2011 18:52:41 -0500
+Message-Id: <520D1933-900E-4A3C-BFDE-28FD2352A9FD@kernel.crashing.org>
+References: <1317333352-17628-1-git-send-email-jimix@pobox.com>
+To: Jimi Xenidis <jimix@pobox.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry, there was a typo in the #if
 
-signed-off-by: Jimi Xenidis <jimix@pobox.com>
----
- arch/powerpc/xmon/xmon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Sep 29, 2011, at 4:55 PM, Jimi Xenidis wrote:
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 13f82f8..e88e7f5 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -340,7 +340,7 @@ int cpus_are_in_xmon(void)
- 
- static inline int unrecoverable_excp(struct pt_regs *regs)
- {
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOK3E)
-+#if defined(CONFIG_4xx) || defined(CONFIG_PPC_BOOK3E)
- 	/* We have no MSR_RI bit on 4xx or Book3e, so we simply return false */
- 	return 0;
- #else
--- 
-1.7.0.4
+> arch/powerpc/configs/chroma_defconfig | 1817 =
++++++++++++++++++++++++++++++++++
+
+Seems kind big, you probably need a 'make savedefconfig' ;)
+
+- k=
