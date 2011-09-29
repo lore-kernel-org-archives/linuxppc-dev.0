@@ -1,35 +1,23 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 824511007D5
+Return-Path: <xenidis@gmail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+	[209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4A26F1007D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Sep 2011 19:40:26 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id p8T9dGdh024801
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2011 19:39:16 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p8T9eOSE1863798
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2011 19:40:24 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p8T9eNgV028205
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2011 19:40:24 +1000
-Message-ID: <4E843D05.3070401@in.ibm.com>
-Date: Thu, 29 Sep 2011 15:10:21 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] CONFIG_RELOCATABLE : __va() & __pa() definitions
-References: <20110927175433.0c300384@suzukikp.in.ibm.com>
-	<1317250996.29415.125.camel@pasglop>
-In-Reply-To: <1317250996.29415.125.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+	Thu, 29 Sep 2011 22:46:12 +1000 (EST)
+Received: by ywn1 with SMTP id 1so563540ywn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Sep 2011 05:46:08 -0700 (PDT)
+Sender: "xenidis@gmail.com" <xenidis@gmail.com>
+From: Jimi Xenidis <jimix@pobox.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] [PATCH v3] powerpc: Fix xmon for systems without MSR[RI]
+Date: Thu, 29 Sep 2011 07:45:51 -0500
+Message-Id: <1317300351-23744-1-git-send-email-jimix@pobox.com>
+In-Reply-To: <1316792446-10599-1-git-send-email-jimix@pobox.com>
+References: <1316792446-10599-1-git-send-email-jimix@pobox.com>
+Cc: Scott Wood <scottwood@freescale.com>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,55 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/29/11 04:33, Benjamin Herrenschmidt wrote:
-> On Tue, 2011-09-27 at 17:54 +0530, Suzuki Poulose wrote:
->> Hi,
->>
->> I am working on enabling CONFIG_RELOCATABLE for PPC44x Embedded PowerPC
->> boards as a foundation to enable CONFIG_CRASH_DUMP. After a discussion
->> on the linux-ppcdev we decided that we will follow the 'processing
->> relocation entries' approach for running the kernel from a different
->> address.
->
-> I think the best approach is to not touch KERNELBASE and PAGE_OFFSET,
-> and just process relocations, that way __va() and __pa() are unoutched
-> and plenty of other stuff won't break.
+From: David Gibson <dwg@au1.ibm.com>
 
-Ben,
+Based on patch by David Gibson <dwg@au1.ibm.com>
 
-I am processing the relocations in my approach.
-But even in that case, __va(), __pa() needs modification since , on BookE,
-we depend on PHYSICAL_START(kernstart_addr) to do the translations.
+xmon has a longstanding bug on systems which are SMP-capable but lack
+the MSR[RI] bit.  In these cases, xmon invoked by IPI on secondary
+CPUs will not properly keep quiet, but will print stuff, thereby
+garbling the primary xmon's output.  This patch fixes it, by ignoring
+the RI bit if the processor does not support it.
 
-So depending on the kernstart_addr, the __va() keeps changing, even though
-the mappings doesn't change. (Virtual to Physical mapping). Please note that,
-since we use 256M mappings, any address within the 256M will result in the same
-mapping.
+There's already a version of this for 4xx upstream, which we'll need
+to extend to other RI-lacking CPUs at some point.  For now this adds
+Book3e processors to the mix.
 
->> 			| Phys. Addr	| Virt. Addr	|
->> PageBoundary (256M)	|-------------------------------|
->> 			|		|		|
->> 			|		|		|
->> 			|		|		|
->> (Phys. Start)%256M->	|_______________|_ _ _ _ _ _ _ _|<- Relocated. Kernel
->> 			|		|       ^	| Virtual Address
->> 			|		|	|	|
->> 			|		|	|	|
->> 			|		|  reloc_offset	|
->> 			|		|	|	|
->> 			|		|	|	|
->> 			|		|_______v_______|<-(KERNELBASE)%
->> 			|		|		|   256M
->> 			|		|		|
->> 			|		|		|
->> 			|		|		|
->> 			|		|		|
->> PageBoundary (256M)	|---------------|---------------|
->> 			|		|		|
->> 			|		|		|
->>
+Signed-off-by: Jimi Xenidis <jimix@pobox.com>
 
+---
+Restricted it to Book3e
+Fix typo, its supposed to be CONFIG_PPC_BOOK3E
+---
+ arch/powerpc/xmon/xmon.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks
-
-Suzuki
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 42541bb..e88e7f5 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -340,8 +340,8 @@ int cpus_are_in_xmon(void)
+ 
+ static inline int unrecoverable_excp(struct pt_regs *regs)
+ {
+-#ifdef CONFIG_4xx
+-	/* We have no MSR_RI bit on 4xx, so we simply return false */
++#if defined(CONFIG_4xx) || defined(CONFIG_PPC_BOOK3E)
++	/* We have no MSR_RI bit on 4xx or Book3e, so we simply return false */
+ 	return 0;
+ #else
+ 	return ((regs->msr & MSR_RI) == 0);
+-- 
+1.7.0.4
