@@ -1,35 +1,26 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8093B1007E4
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2011 01:12:06 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id p8TF5VZM004289
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2011 01:05:31 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p8TFA11Z2007258
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2011 01:10:01 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p8TFC5j5026164
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2011 01:12:06 +1000
-Subject: [RFC PATCH v2 10/10] fadump: Introduce config option for firmware
-	assisted dump feature
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 29 Sep 2011 20:41:13 +0530
-Message-ID: <20110929151113.26689.41730.stgit@mars.in.ibm.com>
-In-Reply-To: <20110929150117.26689.62053.stgit@mars.in.ibm.com>
-References: <20110929150117.26689.62053.stgit@mars.in.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yi0-f42.google.com (mail-yi0-f42.google.com
+	[209.85.218.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4DAA410083A
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2011 06:16:28 +1000 (EST)
+Received: by yib12 with SMTP id 12so918312yib.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Sep 2011 13:16:25 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Thu, 29 Sep 2011 12:27:37 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: Re: Handling multiple GPIO controllers in 8xxx GPIO driver
+Message-ID: <20110929172737.GF6800@ponder.secretlab.ca>
+References: <4E81D6C0.3010201@embedded-sol.com>
+	<20110927182912.GA3994@ponder.secretlab.ca>
+	<CAOZdJXW7uSSMO2KP7gW9UVQXNvBiYJoDRWsJWtPGXgWY-PXvCQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Anton Blanchard <anton@samba.org>, Milton Miller <miltonm@bga.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOZdJXW7uSSMO2KP7gW9UVQXNvBiYJoDRWsJWtPGXgWY-PXvCQ@mail.gmail.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Felix Radensky <felix@embedded-sol.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Wed, Sep 28, 2011 at 08:52:30PM +0000, Tabi Timur-B04825 wrote:
+> On Tue, Sep 27, 2011 at 1:29 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> 
+> > The solution is to make the gpio driver register as a regular
+> > interrupt handler, and not as a chained handler.
+> 
+> I was wondering about that.
+> 
+> What exactly is a chained handler?  How is it different from a regular handler?
 
-This patch introduces a new config option CONFIG_FA_DUMP for firmware
-assisted dump feature on Powerpc (ppc64) architecture.
+A chained handler has an expedited path through the interrupt code for
+handling it (basically, it skips handling it at the parent controller
+and passes through to the child, but it cannot handle multiple chained
+children on a single irq input.
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6926b61..7ce773c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -379,6 +379,19 @@ config PHYP_DUMP
- 
- 	  If unsure, say "N"
- 
-+config FA_DUMP
-+	bool "Firmware-assisted dump"
-+	depends on PPC64 && PPC_RTAS && CRASH_DUMP
-+	help
-+	  A robust mechanism to get reliable kernel crash dump with
-+	  assistance from firmware. This approach does not use kexec,
-+	  instead firmware assists in booting the kdump kernel
-+	  while preserving memory contents. Firmware-assisted dump
-+	  is meant to be a kdump replacement offering robustness and
-+	  speed not possible without system firmware assistance.
-+
-+	  If unsure, say "N"
-+
- config PPCBUG_NVRAM
- 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
- 	default y if PPC_PREP
+g.
