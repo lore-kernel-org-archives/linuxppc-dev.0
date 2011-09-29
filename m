@@ -1,23 +1,23 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
+	[209.85.212.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4A26F1007D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Sep 2011 22:46:12 +1000 (EST)
-Received: by ywn1 with SMTP id 1so563540ywn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Sep 2011 05:46:08 -0700 (PDT)
-Sender: "xenidis@gmail.com" <xenidis@gmail.com>
-From: Jimi Xenidis <jimix@pobox.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] [PATCH v3] powerpc: Fix xmon for systems without MSR[RI]
-Date: Thu, 29 Sep 2011 07:45:51 -0500
-Message-Id: <1317300351-23744-1-git-send-email-jimix@pobox.com>
-In-Reply-To: <1316792446-10599-1-git-send-email-jimix@pobox.com>
-References: <1316792446-10599-1-git-send-email-jimix@pobox.com>
-Cc: Scott Wood <scottwood@freescale.com>, David Gibson <dwg@au1.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id C1AE9B6F7D
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Sep 2011 22:49:15 +1000 (EST)
+Received: by vwl1 with SMTP id 1so468291vwl.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Sep 2011 05:49:11 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20110929113025.2b224cd3@wker>
+References: <20110929113025.2b224cd3@wker>
+Date: Thu, 29 Sep 2011 07:49:07 -0500
+Message-ID: <CACxGe6s1K+rUbH7XinhHXqXvNzZ_QXwYfZHe8t1kzYj223ampg@mail.gmail.com>
+Subject: Re: Please pull 'next' branch of 5xxx tree
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: multipart/alternative; boundary=20cf3078139e6cee8604ae13efa3
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +27,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Gibson <dwg@au1.ibm.com>
+--20cf3078139e6cee8604ae13efa3
+Content-Type: text/plain; charset=ISO-8859-1
 
-Based on patch by David Gibson <dwg@au1.ibm.com>
+On Sep 29, 2011 4:31 AM, "Anatolij Gustschin" <agust@denx.de> wrote:
+>
+> Hi Ben,
+>
+> please pull another two mpc5xxx patches for next. These patches were
+> queued in Grant's 'powerpc/next' branch a while ago, but a pull request
+> have never been submitted for them. Thanks!
+>
+> Anatolij
+>
+> The following changes since commit
+7680057cc4c7d9caada12767831bfd9738dd7b43:
+>
+>  powerpc: Don't try OPAL takeover on old 970 blades (2011-09-29 17:04:59
++1000)
+>
+> are available in the git repository at:
+>  git://git.denx.de/linux-2.6-agust.git next
+>
+> Grant Likely (1):
+>      powerpc/5200: add support for charon board
 
-xmon has a longstanding bug on systems which are SMP-capable but lack
-the MSR[RI] bit.  In these cases, xmon invoked by IPI on secondary
-CPUs will not properly keep quiet, but will print stuff, thereby
-garbling the primary xmon's output.  This patch fixes it, by ignoring
-the RI bit if the processor does not support it.
+Hmmm, I didn't actually write this patch. It looks like the author credit
+got screwed up at some point.
 
-There's already a version of this for 4xx upstream, which we'll need
-to extend to other RI-lacking CPUs at some point.  For now this adds
-Book3e processors to the mix.
+g.
 
-Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>
+> Heiko Schocher (1):
+>      powerpc, tqm5200: update tqm5200_defconfig to fit for charon board.
+>
+>  arch/powerpc/boot/dts/charon.dts             |  236
+++++++++++++++++++++++++++
+>  arch/powerpc/configs/52xx/tqm5200_defconfig  |   20 ++-
+>  arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
+>  3 files changed, 249 insertions(+), 8 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/charon.dts
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
----
-Restricted it to Book3e
-Fix typo, its supposed to be CONFIG_PPC_BOOK3E
----
- arch/powerpc/xmon/xmon.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+--20cf3078139e6cee8604ae13efa3
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 42541bb..e88e7f5 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -340,8 +340,8 @@ int cpus_are_in_xmon(void)
- 
- static inline int unrecoverable_excp(struct pt_regs *regs)
- {
--#ifdef CONFIG_4xx
--	/* We have no MSR_RI bit on 4xx, so we simply return false */
-+#if defined(CONFIG_4xx) || defined(CONFIG_PPC_BOOK3E)
-+	/* We have no MSR_RI bit on 4xx or Book3e, so we simply return false */
- 	return 0;
- #else
- 	return ((regs->msr & MSR_RI) == 0);
--- 
-1.7.0.4
+<p><br>
+On Sep 29, 2011 4:31 AM, &quot;Anatolij Gustschin&quot; &lt;<a href=3D"mail=
+to:agust@denx.de">agust@denx.de</a>&gt; wrote:<br>
+&gt;<br>
+&gt; Hi Ben,<br>
+&gt;<br>
+&gt; please pull another two mpc5xxx patches for next. These patches were<b=
+r>
+&gt; queued in Grant&#39;s &#39;powerpc/next&#39; branch a while ago, but a=
+ pull request<br>
+&gt; have never been submitted for them. Thanks!<br>
+&gt;<br>
+&gt; Anatolij<br>
+&gt;<br>
+&gt; The following changes since commit 7680057cc4c7d9caada12767831bfd9738d=
+d7b43:<br>
+&gt;<br>
+&gt; =A0powerpc: Don&#39;t try OPAL takeover on old 970 blades (2011-09-29 =
+17:04:59 +1000)<br>
+&gt;<br>
+&gt; are available in the git repository at:<br>
+&gt; =A0git://<a href=3D"http://git.denx.de/linux-2.6-agust.git">git.denx.d=
+e/linux-2.6-agust.git</a> next<br>
+&gt;<br>
+&gt; Grant Likely (1):<br>
+&gt; =A0 =A0 =A0powerpc/5200: add support for charon board</p>
+<p>Hmmm, I didn&#39;t actually write this patch. It looks like the author c=
+redit got screwed up at some point.</p>
+<p>g.</p>
+<p>&gt;<br>
+&gt; Heiko Schocher (1):<br>
+&gt; =A0 =A0 =A0powerpc, tqm5200: update tqm5200_defconfig to fit for charo=
+n board.<br>
+&gt;<br>
+&gt; =A0arch/powerpc/boot/dts/charon.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0236 +=
++++++++++++++++++++++++++<br>
+&gt; =A0arch/powerpc/configs/52xx/tqm5200_defconfig =A0| =A0 20 ++-<br>
+&gt; =A0arch/powerpc/platforms/52xx/mpc5200_simple.c | =A0 =A01 +<br>
+&gt; =A03 files changed, 249 insertions(+), 8 deletions(-)<br>
+&gt; =A0create mode 100644 arch/powerpc/boot/dts/charon.dts<br>
+&gt; _______________________________________________<br>
+&gt; Linuxppc-dev mailing list<br>
+&gt; <a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.oz=
+labs.org</a><br>
+&gt; <a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lis=
+ts.ozlabs.org/listinfo/linuxppc-dev</a><br>
+</p>
+
+--20cf3078139e6cee8604ae13efa3--
