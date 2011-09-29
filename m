@@ -1,22 +1,16 @@
-Return-Path: <jhautbois@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B38C01007D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Sep 2011 19:20:13 +1000 (EST)
-Received: by wyg36 with SMTP id 36so52525wyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Sep 2011 02:20:09 -0700 (PDT)
-MIME-Version: 1.0
-From: Jean-Michel Hautbois <jhautbois@gmail.com>
-Date: Thu, 29 Sep 2011 11:19:49 +0200
-Message-ID: <CAL8zT=i1=9Cwhx_8tNu=JPHyd_gn=sUexsyRqBJeZQ7axgXrvg@mail.gmail.com>
-Subject: MMC on SPI (MPC8313) slow reading
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
-Cc: Jean-Michel Hautbois <jhautbois@gmail.com>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+	[IPv6:2001:a60:0:70:0:1:25:1])
+	by ozlabs.org (Postfix) with ESMTP id 68DECB6F62
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Sep 2011 19:30:40 +1000 (EST)
+Date: Thu, 29 Sep 2011 11:30:25 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull 'next' branch of 5xxx tree
+Message-ID: <20110929113025.2b224cd3@wker>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgbGlzdCwKCkkgYW0gY3VycmVudGx5IHVzaW5nIGEgTVBDODMxMyB3aXRoIGFuIE1NQyBzbG90
-IG9uIFNQSSBidXMuCk15IGZzbCBpcyB0aGUgZm9sbG93aW5nIDoKc3BpQDcwMDAgewrCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICNhZGRyZXNzLWNlbGxzID0g
-PDE+OwrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICNzaXpl
-LWNlbGxzID0gPDA+OwrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIGNlbGwtaW5kZXggPSA8MD47CsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqAgY29tcGF0aWJsZSA9ICJmc2wsc3BpIjsKwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCByZWcgPSA8MHg3MDAwIDB4MTAwMD47CsKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgaW50ZXJydXB0cyA9IDwxNiAw
-eDg+OwrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGludGVy
-cnVwdC1wYXJlbnQgPSA8JmlwaWM+OwrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgIG1vZGUgPSAiY3B1IjsKwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoCAvKiBDaGlwIFNlbGVjdHMgKi8KwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBncGlvcyA9IDwmZ3BpbzEgMTUgMD47CsKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgYnVzLW51bSA9ICIwIjsKCsKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgbW1jLXNsb3RAMCB7
-CsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzgzMTMtbW1jLXNsb3QiLArCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgICJtbWMtc3BpLXNsb3QiOwrCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCByZWcgPSA8MD47CsKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-IC8qIENhcmQtRGV0ZWN0IEdQSU8gKi8KwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgZ3Bpb3MgPSA8JmVwbGRfc3RhdDYgNyAxPjsK
-CsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgIHZvbHRhZ2UtcmFuZ2VzID0gPDMzMDAgMzMwMD47CsKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHNwaS1tYXgtZnJlcXVl
-bmN5ID0gPDQxNjY1MDAwPjsKwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoCB9Owp9OwoKV2hlbiBJIHJlYWQgYSBmaWxlIChzb21lIE1CeXRlcykgZnJvbSBhbiBT
-RCBjYXJkLCBJIHJlYWQgYXQgc29tZXRoaW5nCmxpa2UgMjQwa0J5dGVzL3NlYy4KVGhpcyBpcyBy
-ZWFsbHkgc2xvdywgYW5kIEkgd291bGQgbGlrZSB0byBiZSBzdXJlIHRoYXQgSSBjYW5ub3QgaGF2
-ZQpiZXR0ZXIgcGVyZm9ybWFuY2VzLgpGWUkgdGhlIHJlYWRpbmcgdGltZSBvbiB0aGUgc2FtZSBT
-RCBjYXJkIG9uIGEgbGFwdG9wIGlzIGFib3V0IDIwTUJ5dGVzL3NlYy4KClRoYW5rcyBpbiBhZHZh
-bmNlIGZvciB5b3VyIGhlbHAgIQpSZWdhcmRzLApKTQo=
+Hi Ben,
+
+please pull another two mpc5xxx patches for next. These patches were
+queued in Grant's 'powerpc/next' branch a while ago, but a pull request
+have never been submitted for them. Thanks!
+
+Anatolij
+
+The following changes since commit 7680057cc4c7d9caada12767831bfd9738dd7b43:
+
+  powerpc: Don't try OPAL takeover on old 970 blades (2011-09-29 17:04:59 +1000)
+
+are available in the git repository at:
+  git://git.denx.de/linux-2.6-agust.git next
+
+Grant Likely (1):
+      powerpc/5200: add support for charon board
+
+Heiko Schocher (1):
+      powerpc, tqm5200: update tqm5200_defconfig to fit for charon board.
+
+ arch/powerpc/boot/dts/charon.dts             |  236 ++++++++++++++++++++++++++
+ arch/powerpc/configs/52xx/tqm5200_defconfig  |   20 ++-
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
+ 3 files changed, 249 insertions(+), 8 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/charon.dts
