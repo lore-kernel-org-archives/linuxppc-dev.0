@@ -1,19 +1,29 @@
-Return-Path: <hs@denx.de>
-Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
-	by ozlabs.org (Postfix) with ESMTP id F099A1007DA
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2011 16:38:54 +1000 (EST)
-Date: Fri, 30 Sep 2011 08:38:42 +0200
-From: Heiko Schocher <hs@denx.de>
-Subject: Re: Please pull 'next' branch of 5xxx tree
-In-reply-to: <4E85622D.8000700@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Message-id: <4E8563F2.20408@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-References: <4E85622D.8000700@denx.de>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Anatolij Gustschin <agust@denx.de>
-Reply-To: hs@denx.de
+Return-Path: <B34182@freescale.com>
+Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
+	[213.199.154.204])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3725D1007D6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 30 Sep 2011 17:36:30 +1000 (EST)
+From: Liu Gang-B34182 <B34182@freescale.com>
+To: 'Kumar Gala' <galak@kernel.crashing.org>
+Subject: RE: [PATCH 4/4] powerpc/fsl: Document rapidio node binding-information
+Date: Fri, 30 Sep 2011 07:35:49 +0000
+Message-ID: <9A1C2A9ACC704641BC472A1588CE1647107F70@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1317263341-19010-1-git-send-email-Gang.Liu@freescale.com>
+	<1317263341-19010-4-git-send-email-Gang.Liu@freescale.com>
+	<1953FF3D-EE9F-400F-880A-072DE37AEE8C@kernel.crashing.org>
+In-Reply-To: <1953FF3D-EE9F-400F-880A-072DE37AEE8C@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: 'Jin Qing' <b24347@freescale.com>, Li Yang-R58472 <r58472@freescale.com>,
+	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+	Zang Roy-R61911 <r61911@freescale.com>,
+	Gala Kumar-B11780 <B11780@freescale.com>,
+	"'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>,
+	"'akpm@linux-foundation.org'" <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,54 +33,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Grant,
+Thanks Kumar! I'll update these SRIO patches following all your comments.
 
-Heiko Schocher wrote:
-> Hello Grant,
-> 
-> On Thu, 29 Sep 2011 07:49:07 -0500 Grant wrote:
->> On Sep 29, 2011 4:31 AM, "Anatolij Gustschin" <agust@denx.de> wrote:
->>>> Hi Ben,
->>>>
->>>> please pull another two mpc5xxx patches for next. These patches were
->>>> queued in Grant's 'powerpc/next' branch a while ago, but a pull request
->>>> have never been submitted for them. Thanks!
->>>>
->>>> Anatolij
->>>>
->>>> The following changes since commit 7680057cc4c7d9caada12767831bfd9738dd7b43:
->>>>
->>>>  powerpc: Don't try OPAL takeover on old 970 blades (2011-09-29 17:04:59+1000)
->>>>
->>>> are available in the git repository at:
->>>>  git://git.denx.de/linux-2.6-agust.git next
->>>>
->>>> Grant Likely (1):
->>>>      powerpc/5200: add support for charon board
->> Hmmm, I didn't actually write this patch. It looks like the author credit
->> got screwed up at some point.
-> 
-> I am not got screwed up, I just waiting for an answer, as I wrote here:
-> 
-> http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-August/092040.html:
-> "Thanks for your review! I wait for a comment on patch
-> http://patchwork.ozlabs.org/patch/91919/ from you and rework this
-> 2 patches."
-> 
-> I just forgot to trigger you ;-)
+Regards,
 
-Sorry, was the wrong board ...
+Liu Gang
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+Sent: Thursday, September 29, 2011 10:21 PM
+To: Liu Gang-B34182
+Cc: linuxppc-dev@lists.ozlabs.org; akpm@linux-foundation.org; linux-kernel@=
+vger.kernel.org; Li Yang-R58472; Gala Kumar-B11780; Zang Roy-R61911; Li Yan=
+g-R58472; Jin Qing
+Subject: Re: [PATCH 4/4] powerpc/fsl: Document rapidio node binding-informa=
+tion
 
-For the charon board I have this info from you:
 
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-May/089852.html
-"I did pick them up and they are in my tree.  Actually, I squashed
-those two together since there was no reason to have them split apart."
+On Sep 28, 2011, at 9:29 PM, Liu Gang wrote:
 
-So, I thought its on the right way ...
+> This document is created for powerpc rapidio and rmu nodes in dts=20
+> file. These nodes can support two rapidio ports and message units. In=20
+> addition, It explicates the properties and gives examples about rapidio a=
+nd rmu nodes.
+>=20
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Jin Qing <b24347@freescale.com>
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+> .../devicetree/bindings/powerpc/fsl/srio.txt       |   85 +++++++++++++++=
++++++
+> 1 files changed, 85 insertions(+), 0 deletions(-) create mode 100644=20
+> Documentation/devicetree/bindings/powerpc/fsl/srio.txt
 
-bye,
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+You need to fix this for 80 char column line wrap.
+
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/srio.txt=20
+> b/Documentation/devicetree/bindings/powerpc/fsl/srio.txt
+> new file mode 100644
+> index 0000000..01f2da1
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/srio.txt
+> @@ -0,0 +1,85 @@
+> +* Freescale Rapidio Controller
+> +
+> +Rapidio port node:
+> +Properties:
+> +	- compatible: "fsl,rapidio-delta".
+> +	  "fsl,rapidio-delta" should be listed for any chip whose rapidio contr=
+oller is compatible.
+> +	  At first, rapidio controller was introduced with the version of delta=
+ and has no revision
+> +	  register. Rapidio driver and controller were matched by "fsl,rapidio-=
+delta". After the
+> +	  addition of two revision registers in rapidio controller, we can read=
+ some revision and
+> +	  configuration information about rapidio controller IP block, and the =
+compatible with
+> +	  "fsl,rapidio-delta" was still used.
+
+
+Lets go ahead and change this from 'fsl,rapdio-delta' to 'fsl,srio' since y=
+ou're changing how the binding is defined completely.  This way old .dts wi=
+ll fail graceful with the new code.
+
+> +
+> +	- reg: For devices compatible with "fsl,rapidio-delta", should contain =
+the address and
+> +	  the length about all the rapidio controller's registers.
+> +
+> +	- ranges: Should be defined according to the u-boot settings about SRIO=
+. Describe the memory
+> +	  mapped I/O space used by the rapidio controller.
+> +
+> +	- interrupts: Interrupt mapping for rapidio IRQ. Three interrupts in th=
+e group, and starting
+> +	  with SRIO error/port-write IRQ, an error interrupt and with interrupt=
+ type 1. The other
+> +	  two interrupts are doorbell outbound IRQ and doorbell inbound IRQ, an=
+d they are external
+> +	  interrupts.
+
+be clear about the order of the interrupts
+
+> +
+> +	- fsl,rio-num-ports: The number of rapidio ports supported by this cont=
+roller.
+> +
+> +	- fsl,liodn: The logical I/O device number for the PAMU to be correctly=
+ configured for SRIO
+> +	  accesses. This property is added in SRIO node by u-boot and usually u=
+sed by hypervisor.
+> +	  The number of elements may either be 2 or 4 LIODN values. For HW that=
+ only supports LIODNs
+> +	  for ALL memory & maintenance transactions we have 2 cells.
+
+We need to add something like:
+
+In this case, the first cell is the LIODN associated with the port 1 and th=
+e second LIODN is associated with port 2.
+
+
+> For HW that has separate LIODNs
+> +	  for memory & maintenance transaction we utilize 4 cells.
+
+In this case, the first pair of cells are associated with port 1.  The firs=
+t cell is the LIODN associated with memory transactions, the second cell is=
+ the LIODN associated with maintenance transactions.  The 3 and 4 cells fol=
+low the same pattern for port 2.
+
+> +
+> +	- rmu-handle: The phandle for the rmu connected to this rapidio control=
+ler.
+> +
+> +Example:
+> +
+> +	rapidio: rapidio@ffe0c0000 {
+> +		#address-cells =3D <2>;
+> +		#size-cells =3D <2>;
+> +		compatible =3D "fsl,rapidio-delta";
+> +		interrupts =3D <
+> +			16 2 1 11 /* err_irq */
+> +			56 2 0 0  /* bell_outb_irq */
+> +			57 2 0 0>;/* bell_inb_irq */
+> +		fsl,rio-num-ports =3D <2>;
+> +		rmu-handle =3D <&rmu>;
+> +	};
+> +
+> +Message unit node:
+> +Properties:
+> +	- compatible: "fsl,rmu".
+> +	  "fsl,rmu" should be listed for any chip whose message unit is compati=
+ble. In addition,
+> +	  RMAN will replace RMU for rapidio message transaction in some chips u=
+sing DPAA architecture.
+> +	  Then instead of RMU node, RMAN node will be used in dts file and the =
+compatible property
+> +	  "fsl,rmu" should be replaced.
+> +
+> +	- reg: Registers mapping for message unit.
+> +
+> +	- interrupts: Interrupt mapping for message unit controller. Every mess=
+age
+> +	  unit controller has two external interrupts: message outbound IRQ and
+> +	  message inbound IRQ.
+
+be clear about the order of the interrupts being TX first and RX second.
+
+> +
+> +	- fsl,liodn: The logical I/O device number for rmuliodnr and added by u=
+-boot.
+> +
+> +Example:
+> +
+> +	rmu: rmu@d3000 {
+> +		fsl,liodn =3D <0xc8>;
+> +		#address-cells =3D <1>;
+> +		#size-cells =3D <1>;
+> +		compatible =3D "fsl,rmu";
+> +		reg =3D <0xd3000 0x200>;
+> +
+> +		message-unit@0 {
+> +		reg =3D <0x0 0x100>;
+> +		interrupts =3D <
+> +			60 2 0 0  /* msg1_tx_irq */
+> +			61 2 0 0>;/* msg1_rx_irq */
+> +		};
+> +		message-unit@1 {
+
+should be message-unit@100
+
+> +		reg =3D <0x100 0x100>;
+> +		interrupts =3D <
+> +			62 2 0 0  /* msg2_tx_irq */
+> +			63 2 0 0>;/* msg2_rx_irq */
+> +		};
+> +	};
+> --
+> 1.7.3.1
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe=20
+> linux-kernel" in the body of a message to majordomo@vger.kernel.org=20
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
