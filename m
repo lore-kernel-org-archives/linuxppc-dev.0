@@ -1,25 +1,20 @@
-Return-Path: <akpm00@gmail.com>
-Received: from mail-pz0-f43.google.com (mail-pz0-f43.google.com
-	[209.85.210.43]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E769B6F75
+Return-Path: <vinod.koul@intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+	by ozlabs.org (Postfix) with ESMTP id 8F695B6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  1 Oct 2011 08:15:49 +1000 (EST)
-Received: by pzd13 with SMTP id 13so5603668pzd.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 30 Sep 2011 15:15:46 -0700 (PDT)
-Date: Fri, 30 Sep 2011 15:15:44 -0700
-From: Andrew Morton <akpm00@gmail.com>
-To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [RFC PATCH 2/2 -mm] RapidIO: TSI721 Add DMA Engine support
-Message-Id: <20110930151544.31875132.akpm00@gmail.com>
-In-Reply-To: <1317418715-9666-2-git-send-email-alexandre.bounine@idt.com>
+	Sun,  2 Oct 2011 05:07:30 +1100 (EST)
+Subject: Re: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
+	transfers
+From: Vinod Koul <vinod.koul@intel.com>
+To: Alexandre Bounine <alexandre.bounine@idt.com>,
+	Dan <dan.j.williams@intel.com>
+In-Reply-To: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
 References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
-	<1317418715-9666-2-git-send-email-alexandre.bounine@idt.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 01 Oct 2011 23:31:17 +0530
+Message-ID: <1317492077.1573.1839.camel@vkoul-udesk3>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org,
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
 	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,354 +25,268 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 30 Sep 2011 17:38:35 -0400
-Alexandre Bounine <alexandre.bounine@idt.com> wrote:
+On Fri, 2011-09-30 at 17:38 -0400, Alexandre Bounine wrote:
+Please CC *maintainers* on your patches, get_maintainers.pl will tell
+you who. Adding Dan here
+> Adds DMA Engine framework support into RapidIO subsystem.
+> Uses DMA Engine DMA_SLAVE interface to generate data transfers to/from remote
+> RapidIO target devices. Uses scatterlist to describe local data buffer and
+> dma_chan.private member to pass target specific information. Supports flat
+> data buffer only for a remote side.
+The way dmaengine works today is that it doesn't know anything about
+client subsystem. But this brings in a subsystem details to dmaengine
+which I don't agree with yet.
+Why can't we abstract this out??
 
-> Adds support for DMA Engine API.
+After going thru the patch, I do not believe that this this is case of
+SLAVE transfers, Dan can you please take a look at this patch
+
+
+> Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+> Cc: Vinod Koul <vinod.koul@intel.com>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Matt Porter <mporter@kernel.crashing.org>
+> Cc: Li Yang <leoli@freescale.com>
+> ---
+>  drivers/dma/dmaengine.c   |    4 ++
+>  drivers/rapidio/Kconfig   |    6 +++
+>  drivers/rapidio/rio.c     |   79 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/dmaengine.h |    1 +
+>  include/linux/rio.h       |   47 ++++++++++++++++++++++++++
+>  include/linux/rio_drv.h   |    9 +++++
+>  6 files changed, 146 insertions(+), 0 deletions(-)
 > 
-> Includes following changes:
-> - Modifies BDMA register offset definitions to support per-channel handling
-> - Separates BDMA channel reserved for RIO Maintenance requests
-> - Adds DMA Engine callback routines
-> 
-> ...
->
->  5 files changed, 1029 insertions(+), 90 deletions(-)
-
-hm, what a lot of code.
-
-> +config TSI721_DMA
-> +	bool "IDT Tsi721 RapidIO DMA support"
-> +	depends on RAPIDIO_TSI721
-> +	default "n"
-> +	select RAPIDIO_DMA_ENGINE
-> +	help
-> +	  Enable DMA support for IDT Tsi721 PCIe-to-SRIO controller.
-
-Do we really need to offer this decision to the user?  If possible it
-would be better to always enable the feature where that makes sense. 
-Better code coverage, less maintenance effort, more effective testing
-effort, possibly cleaner code.
-
->
-> ...
->
-> +static int tsi721_bdma_ch_init(struct tsi721_bdma_chan *chan)
+> diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+> index b48967b..11fdc2c 100644
+> --- a/drivers/dma/dmaengine.c
+> +++ b/drivers/dma/dmaengine.c
+> @@ -699,6 +699,10 @@ int dma_async_device_register(struct dma_device *device)
+>  		!device->device_prep_dma_cyclic);
+>  	BUG_ON(dma_has_cap(DMA_SLAVE, device->cap_mask) &&
+>  		!device->device_control);
+> +	BUG_ON(dma_has_cap(DMA_RAPIDIO, device->cap_mask) &&
+> +		!device->device_prep_slave_sg);
+> +	BUG_ON(dma_has_cap(DMA_RAPIDIO, device->cap_mask) &&
+> +		!device->device_control);
+>  
+>  	BUG_ON(!device->device_alloc_chan_resources);
+>  	BUG_ON(!device->device_free_chan_resources);
+> diff --git a/drivers/rapidio/Kconfig b/drivers/rapidio/Kconfig
+> index bc87192..c4aa279 100644
+> --- a/drivers/rapidio/Kconfig
+> +++ b/drivers/rapidio/Kconfig
+> @@ -34,3 +34,9 @@ config RAPIDIO_DEBUG
+>  	  If you are unsure about this, say N here.
+>  
+>  source "drivers/rapidio/switches/Kconfig"
+> +
+> +# This option to be turned on by a device selection
+> +config RAPIDIO_DMA_ENGINE
+> +	bool
+> +	select DMADEVICES
+> +	select DMA_ENGINE
+> diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+> index 86c9a09..e5905fc 100644
+> --- a/drivers/rapidio/rio.c
+> +++ b/drivers/rapidio/rio.c
+> @@ -1121,6 +1121,85 @@ int rio_std_route_clr_table(struct rio_mport *mport, u16 destid, u8 hopcount,
+>  	return 0;
+>  }
+>  
+> +#ifdef CONFIG_RAPIDIO_DMA_ENGINE
+> +
+> +#include <linux/dmaengine.h>
+> +
+> +static bool rio_chan_filter(struct dma_chan *chan, void *arg)
 > +{
-> +	struct tsi721_dma_desc *bd_ptr;
-> +	struct device *dev = chan->dchan.device->dev;
-> +	u64		*sts_ptr;
-> +	dma_addr_t	bd_phys;
-> +	dma_addr_t	sts_phys;
-> +	int		sts_size;
-> +	int		bd_num = chan->bd_num;
+> +	struct rio_dev *rdev = arg;
 > +
-> +	dev_dbg(dev, "Init Block DMA Engine, CH%d\n", chan->id);
-> +
-> +	/* Allocate space for DMA descriptors */
-> +	bd_ptr = dma_alloc_coherent(dev,
-> +				bd_num * sizeof(struct tsi721_dma_desc),
-> +				&bd_phys, GFP_KERNEL);
-> +	if (!bd_ptr)
-> +		return -ENOMEM;
-> +
-> +	chan->bd_phys = bd_phys;
-> +	chan->bd_base = bd_ptr;
-> +
-> +	memset(bd_ptr, 0, bd_num * sizeof(struct tsi721_dma_desc));
-> +
-> +	dev_dbg(dev, "DMA descriptors @ %p (phys = %llx)\n",
-> +		bd_ptr, (unsigned long long)bd_phys);
-> +
-> +	/* Allocate space for descriptor status FIFO */
-> +	sts_size = (bd_num >= TSI721_DMA_MINSTSSZ) ?
-> +					bd_num : TSI721_DMA_MINSTSSZ;
-> +	sts_size = roundup_pow_of_two(sts_size);
-> +	sts_ptr = dma_alloc_coherent(dev,
-> +				     sts_size * sizeof(struct tsi721_dma_sts),
-> +				     &sts_phys, GFP_KERNEL);
-> +	if (!sts_ptr) {
-> +		/* Free space allocated for DMA descriptors */
-> +		dma_free_coherent(dev,
-> +				  bd_num * sizeof(struct tsi721_dma_desc),
-> +				  bd_ptr, bd_phys);
-> +		chan->bd_base = NULL;
-> +		return -ENOMEM;
-> +	}
-> +
-> +	chan->sts_phys = sts_phys;
-> +	chan->sts_base = sts_ptr;
-> +	chan->sts_size = sts_size;
-> +
-> +	memset(sts_ptr, 0, sts_size);
-
-You meant
-
---- a/drivers/rapidio/devices/tsi721.c~rapidio-tsi721-add-dma-engine-support-fix
-+++ a/drivers/rapidio/devices/tsi721.c
-@@ -1006,7 +1006,7 @@ static int tsi721_bdma_maint_init(struct
- 	priv->mdma.sts_base = sts_ptr;
- 	priv->mdma.sts_size = sts_size;
- 
--	memset(sts_ptr, 0, sts_size);
-+	memset(sts_ptr, 0, sts_size * sizeof(struct tsi721_dma_sts));
- 
- 	dev_dbg(&priv->pdev->dev,
- 		"desc status FIFO @ %p (phys = %llx) size=0x%x\n",
-
-However that's at least two instances where you wanted a
-dma_zalloc_coherent().  How's about we give ourselves one?
-
-
-> +	dev_dbg(dev,
-> +		"desc status FIFO @ %p (phys = %llx) size=0x%x\n",
-> +		sts_ptr, (unsigned long long)sts_phys, sts_size);
-> +
-> +	/* Initialize DMA descriptors ring */
-> +	bd_ptr[bd_num - 1].type_id = cpu_to_le32(DTYPE3 << 29);
-> +	bd_ptr[bd_num - 1].next_lo = cpu_to_le32((u64)bd_phys &
-> +						 TSI721_DMAC_DPTRL_MASK);
-> +	bd_ptr[bd_num - 1].next_hi = cpu_to_le32((u64)bd_phys >> 32);
-> +
-> +	/* Setup DMA descriptor pointers */
-> +	iowrite32(((u64)bd_phys >> 32),
-> +		chan->regs + TSI721_DMAC_DPTRH);
-> +	iowrite32(((u64)bd_phys & TSI721_DMAC_DPTRL_MASK),
-> +		chan->regs + TSI721_DMAC_DPTRL);
-> +
-> +	/* Setup descriptor status FIFO */
-> +	iowrite32(((u64)sts_phys >> 32),
-> +		chan->regs + TSI721_DMAC_DSBH);
-> +	iowrite32(((u64)sts_phys & TSI721_DMAC_DSBL_MASK),
-> +		chan->regs + TSI721_DMAC_DSBL);
-> +	iowrite32(TSI721_DMAC_DSSZ_SIZE(sts_size),
-> +		chan->regs + TSI721_DMAC_DSSZ);
-> +
-> +	/* Clear interrupt bits */
-> +	iowrite32(TSI721_DMAC_INT_ALL,
-> +		chan->regs + TSI721_DMAC_INT);
-> +
-> +	ioread32(chan->regs + TSI721_DMAC_INT);
-> +
-> +	/* Toggle DMA channel initialization */
-> +	iowrite32(TSI721_DMAC_CTL_INIT,	chan->regs + TSI721_DMAC_CTL);
-> +	ioread32(chan->regs + TSI721_DMAC_CTL);
-> +	chan->wr_count = chan->wr_count_next = 0;
-> +	chan->sts_rdptr = 0;
-> +	udelay(10);
-> +
-> +	return 0;
+> +	/* Check that DMA device belongs to the right MPORT */
+> +	return (rdev->net->hport ==
+> +		container_of(chan->device, struct rio_mport, dma));
 > +}
 > +
->
-> ...
->
+> +/**
+> + * rio_request_dma - request RapidIO capable DMA channel that supports
+> + *   specified target RapidIO device.
+> + * @rdev: RIO device control structure
+> + *
+> + * Returns pointer to allocated DMA channel or NULL if failed.
+> + */
+> +struct dma_chan *rio_request_dma(struct rio_dev *rdev)
 > +{
-> +	/* Disable BDMA channel interrupts */
-> +	iowrite32(0, chan->regs + TSI721_DMAC_INTE);
+> +	dma_cap_mask_t mask;
+> +	struct dma_chan *dchan;
 > +
-> +	tasklet_schedule(&chan->tasklet);
-
-I'm not seeing any tasklet_disable()s on the shutdown/rmmod paths.  Is
-there anything here which prevents shutdown races against a
-still-pending tasklet?
-
+> +	dma_cap_zero(mask);
+> +	dma_cap_set(DMA_RAPIDIO, mask);
+> +	dchan = dma_request_channel(mask, rio_chan_filter, rdev);
+> +
+> +	return dchan;
 > +}
+> +EXPORT_SYMBOL_GPL(rio_request_dma);
 > +
->
-> ...
->
-> +static
-> +int tsi721_fill_desc(struct tsi721_bdma_chan *chan, struct tsi721_tx_desc *desc,
-> +	struct scatterlist *sg, enum dma_rtype rtype, u32 sys_size)
+> +/**
+> + * rio_release_dma - release specified DMA channel
+> + * @dchan: DMA channel to release
+> + */
+> +void rio_release_dma(struct dma_chan *dchan)
 > +{
-> +	struct tsi721_dma_desc *bd_ptr = desc->hw_desc;
-> +	u64 rio_addr;
-> +
-> +	if (sg_dma_len(sg) > TSI721_DMAD_BCOUNT1 + 1) {
-> +		dev_err(chan->dchan.device->dev, "SG element is too large\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	dev_dbg(chan->dchan.device->dev,
-> +		"desc: 0x%llx, addr: 0x%llx len: 0x%x\n",
-> +		(u64)desc->txd.phys, (unsigned long long)sg_dma_address(sg),
-> +		sg_dma_len(sg));
-> +
-> +	dev_dbg(chan->dchan.device->dev, "bd_ptr = %p did=%d raddr=0x%llx\n",
-> +		bd_ptr, desc->destid, desc->rio_addr);
-> +
-> +	/* Initialize DMA descriptor */
-> +	bd_ptr->type_id = cpu_to_le32((DTYPE1 << 29) |
-> +					(rtype << 19) | desc->destid);
-> +	if (desc->interrupt)
-> +		bd_ptr->type_id |= cpu_to_le32(TSI721_DMAD_IOF);
-> +	bd_ptr->bcount = cpu_to_le32(((desc->rio_addr & 0x3) << 30) |
-> +					(sys_size << 26) | sg_dma_len(sg));
-> +	rio_addr = (desc->rio_addr >> 2) |
-> +				((u64)(desc->rio_addr_u & 0x3) << 62);
-> +	bd_ptr->raddr_lo = cpu_to_le32(rio_addr & 0xffffffff);
-> +	bd_ptr->raddr_hi = cpu_to_le32(rio_addr >> 32);
-> +	bd_ptr->t1.bufptr_lo = cpu_to_le32(
-> +					(u64)sg_dma_address(sg) & 0xffffffff);
-> +	bd_ptr->t1.bufptr_hi = cpu_to_le32((u64)sg_dma_address(sg) >> 32);
-> +	bd_ptr->t1.s_dist = 0;
-> +	bd_ptr->t1.s_size = 0;
-> +
-> +	mb();
-
-Mystery barrier needs a comment explaining why it's here, please.  This
-is almost always the case with barriers.
-
-> +	return 0;
+> +	dma_release_channel(dchan);
 > +}
+> +EXPORT_SYMBOL_GPL(rio_release_dma);
 > +
->
-> ...
->
-> +static int tsi721_alloc_chan_resources(struct dma_chan *dchan)
+> +/**
+> + * rio_dma_prep_slave_sg - RapidIO specific wrapper
+> + *   for device_prep_slave_sg callback defined by DMAENGINE.
+> + * @rdev: RIO device control structure
+> + * @dchan: DMA channel to configure
+> + * @data: RIO specific data descriptor
+> + * @direction: DMA data transfer direction (TO or FROM the device)
+> + * @flags: dmaengine defined flags
+> + *
+> + * Initializes RapidIO capable DMA channel for the specified data transfer.
+> + * Uses DMA channel private extension to pass information related to remote
+> + * target RIO device.
+> + * Returns pointer to DMA transaction descriptor or NULL if failed.
+> + */
+> +struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev *rdev,
+> +	struct dma_chan *dchan, struct rio_dma_data *data,
+> +	enum dma_data_direction direction, unsigned long flags)
 > +{
-> +	struct tsi721_bdma_chan *chan = to_tsi721_chan(dchan);
-> +	struct tsi721_device *priv = to_tsi721(dchan->device);
-> +	struct tsi721_tx_desc *desc = NULL;
-> +	LIST_HEAD(tmp_list);
-> +	int i;
-> +	int rc;
+> +	struct dma_async_tx_descriptor *txd = NULL;
+> +	struct rio_dma_ext rio_ext;
 > +
-> +	if (chan->bd_base)
-> +		return chan->bd_num - 1;
+> +	rio_ext.destid = rdev->destid;
+> +	rio_ext.rio_addr_u = data->rio_addr_u;
+> +	rio_ext.rio_addr = data->rio_addr;
+> +	rio_ext.wr_type = data->wr_type;
+> +	dchan->private = &rio_ext;
 > +
-> +	/* Initialize BDMA channel */
-> +	if (tsi721_bdma_ch_init(chan)) {
-> +		dev_err(dchan->device->dev, "Unable to initialize data DMA"
-> +			" channel %d, aborting\n", chan->id);
-> +		return -ENOMEM;
-> +	}
+> +	txd = dchan->device->device_prep_slave_sg(dchan, data->sg, data->sg_len,
+> +						  direction, flags);
 > +
-> +	/* Allocate matching number of logical descriptors */
-> +	desc = kzalloc((chan->bd_num - 1) * sizeof(struct tsi721_tx_desc),
-> +			GFP_KERNEL);
-
-kcalloc() would be a better fit here.
-
-> +	if (!desc) {
-> +		dev_err(dchan->device->dev,
-> +			"Failed to allocate logical descriptors\n");
-> +		rc = -ENOMEM;
-> +		goto err_out;
-> +	}
-> +
-> +	chan->tx_desc = desc;
-> +
-> +	for (i = 0; i < chan->bd_num - 1; i++) {
-> +		dma_async_tx_descriptor_init(&desc[i].txd, dchan);
-> +		desc[i].txd.tx_submit = tsi721_tx_submit;
-> +		desc[i].txd.flags = DMA_CTRL_ACK;
-> +		INIT_LIST_HEAD(&desc[i].tx_list);
-> +		list_add_tail(&desc[i].desc_node, &tmp_list);
-> +	}
-> +
-> +	spin_lock_bh(&chan->lock);
-> +	list_splice(&tmp_list, &chan->free_list);
-> +	chan->completed_cookie = dchan->cookie = 1;
-> +	spin_unlock_bh(&chan->lock);
-> +
-> +#ifdef CONFIG_PCI_MSI
-> +	if (priv->flags & TSI721_USING_MSIX) {
-> +		/* Request interrupt service if we are in MSI-X mode */
-> +		rc = request_irq(
-> +			priv->msix[TSI721_VECT_DMA0_DONE + chan->id].vector,
-> +			tsi721_bdma_msix, 0,
-> +			priv->msix[TSI721_VECT_DMA0_DONE + chan->id].irq_name,
-> +			(void *)chan);
-> +
-> +		if (rc) {
-> +			dev_dbg(dchan->device->dev,
-> +				"Unable to allocate MSI-X interrupt for "
-> +				"BDMA%d-DONE\n", chan->id);
-> +			goto err_out;
-> +		}
-> +
-> +		rc = request_irq(priv->msix[TSI721_VECT_DMA0_INT +
-> +					    chan->id].vector,
-> +			tsi721_bdma_msix, 0,
-> +			priv->msix[TSI721_VECT_DMA0_INT + chan->id].irq_name,
-> +			(void *)chan);
-> +
-> +		if (rc)	{
-> +			dev_dbg(dchan->device->dev,
-> +				"Unable to allocate MSI-X interrupt for "
-> +				"BDMA%d-INT\n", chan->id);
-> +			free_irq(
-> +				priv->msix[TSI721_VECT_DMA0_DONE +
-> +					   chan->id].vector,
-> +				(void *)chan);
-> +			rc = -EIO;
-> +			goto err_out;
-> +		}
-> +	}
-> +#endif /* CONFIG_PCI_MSI */
-> +
-> +	tsi721_bdma_interrupt_enable(chan, 1);
-> +
-> +	return chan->bd_num - 1;
-> +
-> +err_out:
-> +	kfree(desc);
-> +	tsi721_bdma_ch_free(chan);
-> +	return rc;
+> +	return txd;
 > +}
+> +EXPORT_SYMBOL_GPL(rio_dma_prep_slave_sg);
+You should move the rdev and data to dma_slave_config, that way you
+should be able to use the existing _prep_slave_sg function.
+
 > +
->
-> ...
->
-> +static
-> +enum dma_status tsi721_tx_status(struct dma_chan *dchan, dma_cookie_t cookie,
-> +				 struct dma_tx_state *txstate)
+> +#endif /* CONFIG_RAPIDIO_DMA_ENGINE */
+> +
+>  static void rio_fixup_device(struct rio_dev *dev)
+>  {
+>  }
+> diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+> index 8fbf40e..867b685 100644
+> --- a/include/linux/dmaengine.h
+> +++ b/include/linux/dmaengine.h
+> @@ -70,6 +70,7 @@ enum dma_transaction_type {
+>  	DMA_PRIVATE,
+>  	DMA_ASYNC_TX,
+>  	DMA_SLAVE,
+> +	DMA_RAPIDIO,
+>  	DMA_CYCLIC,
+>  };
+>  
+> diff --git a/include/linux/rio.h b/include/linux/rio.h
+> index 4d50611..a6d1054c 100644
+> --- a/include/linux/rio.h
+> +++ b/include/linux/rio.h
+> @@ -20,6 +20,9 @@
+>  #include <linux/errno.h>
+>  #include <linux/device.h>
+>  #include <linux/rio_regs.h>
+> +#ifdef CONFIG_RAPIDIO_DMA_ENGINE
+> +#include <linux/dmaengine.h>
+> +#endif
+>  
+>  #define RIO_NO_HOPCOUNT		-1
+>  #define RIO_INVALID_DESTID	0xffff
+> @@ -254,6 +257,9 @@ struct rio_mport {
+>  	u32 phys_efptr;
+>  	unsigned char name[40];
+>  	void *priv;		/* Master port private data */
+> +#ifdef CONFIG_RAPIDIO_DMA_ENGINE
+> +	struct dma_device	dma;
+> +#endif
+>  };
+>  
+>  /**
+> @@ -395,6 +401,47 @@ union rio_pw_msg {
+>  	u32 raw[RIO_PW_MSG_SIZE/sizeof(u32)];
+>  };
+>  
+> +#ifdef CONFIG_RAPIDIO_DMA_ENGINE
+> +
+> +/**
+> + * enum rio_write_type - RIO write transaction types used in DMA transfers
+> + *
+> + * Note: RapidIO specification defines write (NWRITE) and
+> + * write-with-response (NWRITE_R) data transfer operations.
+> + * Existing DMA controllers that service RapidIO may use one of these operations
+> + * for entire data transfer or their combination with only the last data packet
+> + * requires response.
+> + */
+> +enum rio_write_type {
+> +	RDW_DEFAULT,		/* default method used by DMA driver */
+> +	RDW_ALL_NWRITE,		/* all packets use NWRITE */
+> +	RDW_ALL_NWRITE_R,	/* all packets use NWRITE_R */
+> +	RDW_LAST_NWRITE_R,	/* last packet uses NWRITE_R, all other - NWRITE */
+> +};
+Why not use the current mechanism of specifying callback or ACK flags if
+you want a response or not.
+
+> +
+> +struct rio_dma_ext {
+> +	u16 destid;
+> +	u64 rio_addr;	/* low 64-bits of 66-bit RapidIO address */
+> +	u8  rio_addr_u;  /* upper 2-bits of 66-bit RapidIO address */
+> +	enum rio_write_type wr_type; /* preferred RIO write operation type */
+> +};
+will this address translated to a dma_addr_t or not?
+> +
+> +struct rio_dma_data {
+> +	/* Local data (as scatterlist) */
+> +	struct scatterlist	*sg;	/* I/O scatter list */
+> +	unsigned int		sg_len;	/* size of scatter list */
+> +	/* Remote device address (flat buffer) */
+> +	u64 rio_addr;	/* low 64-bits of 66-bit RapidIO address */
+> +	u8  rio_addr_u;  /* upper 2-bits of 66-bit RapidIO address */
+> +	enum rio_write_type wr_type; /* preferred RIO write operation type */
+> +};
+> +
+> +static inline struct rio_mport *dma_to_mport(struct dma_device *ddev)
 > +{
-> +	struct tsi721_bdma_chan *bdma_chan = to_tsi721_chan(dchan);
-> +	dma_cookie_t		last_used;
-> +	dma_cookie_t		last_completed;
-> +	int			ret;
-> +
-> +	spin_lock_irq(&bdma_chan->lock);
-> +	last_completed = bdma_chan->completed_cookie;
-> +	last_used = dchan->cookie;
-> +	spin_unlock_irq(&bdma_chan->lock);
-> +
-> +	ret = dma_async_is_complete(cookie, last_completed, last_used);
-> +
-> +	dma_set_tx_state(txstate, last_completed, last_used, 0);
-> +
-> +	dev_dbg(dchan->device->dev,
-> +		"%s: exit, ret: %d, last_completed: %d, last_used: %d\n",
-> +		__func__, ret, last_completed, last_used);
-> +
-> +	return ret;
+> +	return container_of(ddev, struct rio_mport, dma);
 > +}
+> +#endif /* CONFIG_RAPIDIO_DMA_ENGINE */
 > +
-> +static void tsi721_issue_pending(struct dma_chan *dchan)
-> +{
-> +	struct tsi721_bdma_chan *chan = to_tsi721_chan(dchan);
+>  /* Architecture and hardware-specific functions */
+>  extern int rio_register_mport(struct rio_mport *);
+>  extern int rio_open_inb_mbox(struct rio_mport *, void *, int, int);
+> diff --git a/include/linux/rio_drv.h b/include/linux/rio_drv.h
+> index 229b3ca..d140996 100644
+> --- a/include/linux/rio_drv.h
+> +++ b/include/linux/rio_drv.h
+> @@ -378,6 +378,15 @@ void rio_unregister_driver(struct rio_driver *);
+>  struct rio_dev *rio_dev_get(struct rio_dev *);
+>  void rio_dev_put(struct rio_dev *);
+>  
+> +#ifdef CONFIG_RAPIDIO_DMA_ENGINE
+> +extern struct dma_chan *rio_request_dma(struct rio_dev *rdev);
+> +extern void rio_release_dma(struct dma_chan *dchan);
+> +extern struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(
+> +		struct rio_dev *rdev, struct dma_chan *dchan,
+> +		struct rio_dma_data *data, enum dma_data_direction direction,
+> +		unsigned long flags);
+> +#endif
 > +
-> +	dev_dbg(dchan->device->dev, "%s: Entry\n", __func__);
-> +
-> +	if (tsi721_dma_is_idle(chan)) {
-> +		spin_lock_bh(&chan->lock);
-> +		tsi721_advance_work(chan);
-> +		spin_unlock_bh(&chan->lock);
-> +	} else
-> +		dev_dbg(dchan->device->dev,
-> +			"%s: DMA channel still busy\n", __func__);
-> +}
+>  /**
+>   * rio_name - Get the unique RIO device identifier
+>   * @rdev: RIO device
 
-I really don't like that a "struct tsi721_bdma_chan *" is called "chan"
-in come places and "bdma_chan" in others.  "bdma_chan" is better.
 
-The code takes that lock with spin_lock_bh() in some places and
-spin_lock_irq() in others.  I trust there's some method to it all ;) Has
-it been carefully tested with lockdep enabled?
-
->
-> ...
->
+-- 
+~Vinod
