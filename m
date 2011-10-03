@@ -1,18 +1,22 @@
-Return-Path: <joerg@alea.gnuu.de>
-Received: from uucp.gnuu.de (uucp.gnuu.de [83.246.114.63])
-	by ozlabs.org (Postfix) with ESMTP id E8287B6F76
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 3BBFE1007D8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Oct 2011 04:39:43 +1100 (EST)
-From: =?UTF-8?q?J=C3=B6rg=20Sommer?= <joerg@alea.gnuu.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>,
-	"David S. Miller" <davem@davemloft.net>, Jeff Garzik <jgarzik@pobox.com>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] libata: Convert LED disk trigger from IDE to libata
-Date: Mon,  3 Oct 2011 18:07:45 +0200
-Message-Id: <38bd3a0590c6b069e2e6ff63d2bc4d039a703f02.1317657893.git.joerg@alea.gnuu.de>
-Cc: =?UTF-8?q?J=C3=B6rg=20Sommer?= <joerg@alea.gnuu.de>
+	Tue,  4 Oct 2011 04:54:41 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [RFC PATCH 2/2 -mm] RapidIO: TSI721 Add DMA Engine support
+Date: Mon, 3 Oct 2011 10:53:45 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E8D@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <20110930151544.31875132.akpm00@gmail.com>
+References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com><1317418715-9666-2-git-send-email-alexandre.bounine@idt.com>
+	<20110930151544.31875132.akpm00@gmail.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Andrew Morton <akpm00@gmail.com>
+Cc: Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,323 +26,421 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch converts the trigger for the LED at the front of Apple's
-iBooks to libata. It's merely a replacement of the string ide by disk.
+Andrew Morton wroye:
+>=20
+> On Fri, 30 Sep 2011 17:38:35 -0400
+> Alexandre Bounine <alexandre.bounine@idt.com> wrote:
+>=20
+> > Adds support for DMA Engine API.
+> >
+> > Includes following changes:
+> > - Modifies BDMA register offset definitions to support per-channel
+> handling
+> > - Separates BDMA channel reserved for RIO Maintenance requests
+> > - Adds DMA Engine callback routines
+> >
+> > ...
+> >
+> >  5 files changed, 1029 insertions(+), 90 deletions(-)
+>=20
+> hm, what a lot of code.
 
-The patch is taken from http://dev.gentoo.org/~josejx/ata.patch. I've
-asked Joseph Jezak if he intends to send this patch upstream, but as he
-did not reply I'll do so.
----
- arch/powerpc/configs/pmac32_defconfig |    2 +-
- arch/powerpc/configs/ppc6xx_defconfig |    2 +-
- drivers/ata/libata-core.c             |    4 ++
- drivers/ide/ide-disk.c                |    2 +-
- drivers/leds/Kconfig                  |   10 +++---
- drivers/leds/Makefile                 |    2 +-
- drivers/leds/ledtrig-disk.c           |   64 +++++++++++++++++++++++++++++++++
- drivers/leds/ledtrig-ide-disk.c       |   64 ---------------------------------
- drivers/macintosh/Kconfig             |   11 +++---
- drivers/macintosh/via-pmu-led.c       |    4 +-
- include/linux/leds.h                  |    6 ++--
- 11 files changed, 87 insertions(+), 84 deletions(-)
- create mode 100644 drivers/leds/ledtrig-disk.c
- delete mode 100644 drivers/leds/ledtrig-ide-disk.c
+This is mostly new stuff for that driver.
 
-diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
-index f8b394a..cff5d4e 100644
---- a/arch/powerpc/configs/pmac32_defconfig
-+++ b/arch/powerpc/configs/pmac32_defconfig
-@@ -180,7 +180,7 @@ CONFIG_ADB=y
- CONFIG_ADB_CUDA=y
- CONFIG_ADB_PMU=y
- CONFIG_ADB_PMU_LED=y
--CONFIG_ADB_PMU_LED_IDE=y
-+CONFIG_ADB_PMU_LED_DISK=y
- CONFIG_PMAC_APM_EMU=m
- CONFIG_PMAC_MEDIABAY=y
- CONFIG_PMAC_BACKLIGHT=y
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 04360f9..c56464d 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -471,7 +471,7 @@ CONFIG_ADB=y
- CONFIG_ADB_CUDA=y
- CONFIG_ADB_PMU=y
- CONFIG_ADB_PMU_LED=y
--CONFIG_ADB_PMU_LED_IDE=y
-+CONFIG_ADB_PMU_LED_DISK=y
- CONFIG_PMAC_APM_EMU=y
- CONFIG_PMAC_MEDIABAY=y
- CONFIG_PMAC_BACKLIGHT=y
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 4a3a5ae..d37e3a2 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -66,6 +66,7 @@
- #include <asm/byteorder.h>
- #include <linux/cdrom.h>
- #include <linux/ratelimit.h>
-+#include <linux/leds.h>
- 
- #include "libata.h"
- #include "libata-transport.h"
-@@ -4823,6 +4824,9 @@ void ata_qc_complete(struct ata_queued_cmd *qc)
- {
- 	struct ata_port *ap = qc->ap;
- 
-+	/* Trigger the LED (if available) */
-+	ledtrig_disk_activity();
-+
- 	/* XXX: New EH and old EH use different mechanisms to
- 	 * synchronize EH with regular execution path.
- 	 *
-diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-index 2747980..cb25bd6 100644
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -186,7 +186,7 @@ static ide_startstop_t ide_do_rw_disk(ide_drive_t *drive, struct request *rq,
- 	BUG_ON(drive->dev_flags & IDE_DFLAG_BLOCKED);
- 	BUG_ON(rq->cmd_type != REQ_TYPE_FS);
- 
--	ledtrig_ide_activity();
-+	ledtrig_disk_activity();
- 
- 	pr_debug("%s: %sing: block=%llu, sectors=%u, buffer=0x%08lx\n",
- 		 drive->name, rq_data_dir(rq) == READ ? "read" : "writ",
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index b591e72..1934d8a 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -404,12 +404,12 @@ config LEDS_TRIGGER_TIMER
- 
- 	  If unsure, say Y.
- 
--config LEDS_TRIGGER_IDE_DISK
--	bool "LED IDE Disk Trigger"
--	depends on IDE_GD_ATA
--	depends on LEDS_TRIGGERS
-+config LEDS_TRIGGER_DISK
-+	bool "LED Disk Trigger"
-+	depends on IDE_GD_ATA || ATA
-+        depends on LEDS_TRIGGERS
- 	help
--	  This allows LEDs to be controlled by IDE disk activity.
-+	  This allows LEDs to be controlled by disk activity.
- 	  If unsure, say Y.
- 
- config LEDS_TRIGGER_HEARTBEAT
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index bbfd2e3..350cc89 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -49,7 +49,7 @@ obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
- 
- # LED Triggers
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
--obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
-+obj-$(CONFIG_LEDS_TRIGGER_DISK)		+= ledtrig-disk.o
- obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
- obj-$(CONFIG_LEDS_TRIGGER_BACKLIGHT)	+= ledtrig-backlight.o
- obj-$(CONFIG_LEDS_TRIGGER_GPIO)		+= ledtrig-gpio.o
-diff --git a/drivers/leds/ledtrig-disk.c b/drivers/leds/ledtrig-disk.c
-new file mode 100644
-index 0000000..0ebb2eb
---- /dev/null
-+++ b/drivers/leds/ledtrig-disk.c
-@@ -0,0 +1,64 @@
-+/*
-+ * LED Disk Activity Trigger
-+ *
-+ * Copyright 2006 Openedhand Ltd.
-+ *
-+ * Author: Richard Purdie <rpurdie@openedhand.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/jiffies.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/timer.h>
-+#include <linux/leds.h>
-+
-+static void ledtrig_disk_timerfunc(unsigned long data);
-+
-+DEFINE_LED_TRIGGER(ledtrig_disk);
-+static DEFINE_TIMER(ledtrig_disk_timer, ledtrig_disk_timerfunc, 0, 0);
-+static int disk_activity;
-+static int disk_lastactivity;
-+
-+void ledtrig_disk_activity(void)
-+{
-+	disk_activity++;
-+	if (!timer_pending(&ledtrig_disk_timer))
-+		mod_timer(&ledtrig_disk_timer, jiffies + msecs_to_jiffies(10));
-+}
-+EXPORT_SYMBOL(ledtrig_disk_activity);
-+
-+static void ledtrig_disk_timerfunc(unsigned long data)
-+{
-+	if (disk_lastactivity != disk_activity) {
-+		disk_lastactivity = disk_activity;
-+		/* INT_MAX will set each LED to its maximum brightness */
-+		led_trigger_event(ledtrig_disk, INT_MAX);
-+		mod_timer(&ledtrig_disk_timer, jiffies + msecs_to_jiffies(10));
-+	} else {
-+		led_trigger_event(ledtrig_disk, LED_OFF);
-+	}
-+}
-+
-+static int __init ledtrig_disk_init(void)
-+{
-+	led_trigger_register_simple("disk-activity", &ledtrig_disk);
-+	return 0;
-+}
-+
-+static void __exit ledtrig_disk_exit(void)
-+{
-+	led_trigger_unregister_simple(ledtrig_disk);
-+}
-+
-+module_init(ledtrig_disk_init);
-+module_exit(ledtrig_disk_exit);
-+
-+MODULE_AUTHOR("Richard Purdie <rpurdie@openedhand.com>");
-+MODULE_DESCRIPTION("LED Disk Activity Trigger");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/leds/ledtrig-ide-disk.c b/drivers/leds/ledtrig-ide-disk.c
-deleted file mode 100644
-index ec099fc..0000000
---- a/drivers/leds/ledtrig-ide-disk.c
-+++ /dev/null
-@@ -1,64 +0,0 @@
--/*
-- * LED IDE-Disk Activity Trigger
-- *
-- * Copyright 2006 Openedhand Ltd.
-- *
-- * Author: Richard Purdie <rpurdie@openedhand.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- */
--
--#include <linux/module.h>
--#include <linux/jiffies.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/timer.h>
--#include <linux/leds.h>
--
--static void ledtrig_ide_timerfunc(unsigned long data);
--
--DEFINE_LED_TRIGGER(ledtrig_ide);
--static DEFINE_TIMER(ledtrig_ide_timer, ledtrig_ide_timerfunc, 0, 0);
--static int ide_activity;
--static int ide_lastactivity;
--
--void ledtrig_ide_activity(void)
--{
--	ide_activity++;
--	if (!timer_pending(&ledtrig_ide_timer))
--		mod_timer(&ledtrig_ide_timer, jiffies + msecs_to_jiffies(10));
--}
--EXPORT_SYMBOL(ledtrig_ide_activity);
--
--static void ledtrig_ide_timerfunc(unsigned long data)
--{
--	if (ide_lastactivity != ide_activity) {
--		ide_lastactivity = ide_activity;
--		/* INT_MAX will set each LED to its maximum brightness */
--		led_trigger_event(ledtrig_ide, INT_MAX);
--		mod_timer(&ledtrig_ide_timer, jiffies + msecs_to_jiffies(10));
--	} else {
--		led_trigger_event(ledtrig_ide, LED_OFF);
--	}
--}
--
--static int __init ledtrig_ide_init(void)
--{
--	led_trigger_register_simple("ide-disk", &ledtrig_ide);
--	return 0;
--}
--
--static void __exit ledtrig_ide_exit(void)
--{
--	led_trigger_unregister_simple(ledtrig_ide);
--}
--
--module_init(ledtrig_ide_init);
--module_exit(ledtrig_ide_exit);
--
--MODULE_AUTHOR("Richard Purdie <rpurdie@openedhand.com>");
--MODULE_DESCRIPTION("LED IDE Disk Activity Trigger");
--MODULE_LICENSE("GPL");
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index fa51af1..aeb7b2a 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -96,17 +96,16 @@ config ADB_PMU_LED
- 	  Support the front LED on Power/iBooks as a generic LED that can
- 	  be triggered by any of the supported triggers. To get the
- 	  behaviour of the old CONFIG_BLK_DEV_IDE_PMAC_BLINK, select this
--	  and the ide-disk LED trigger and configure appropriately through
--	  sysfs.
-+	  and the disk LED trigger and configure appropriately through sysfs.
- 
--config ADB_PMU_LED_IDE
--	bool "Use front LED as IDE LED by default"
-+config ADB_PMU_LED_DISK
-+	bool "Use front LED as a disk LED by default"
- 	depends on ADB_PMU_LED
- 	depends on LEDS_CLASS
- 	select LEDS_TRIGGERS
--	select LEDS_TRIGGER_IDE_DISK
-+	select LEDS_TRIGGER_DISK
- 	help
--	  This option makes the front LED default to the IDE trigger
-+	  This option makes the front LED default to the disk trigger
- 	  so that it blinks on IDE activity.
- 
- config PMAC_SMU
-diff --git a/drivers/macintosh/via-pmu-led.c b/drivers/macintosh/via-pmu-led.c
-index 19c3718..ae067ab 100644
---- a/drivers/macintosh/via-pmu-led.c
-+++ b/drivers/macintosh/via-pmu-led.c
-@@ -73,8 +73,8 @@ static void pmu_led_set(struct led_classdev *led_cdev,
- 
- static struct led_classdev pmu_led = {
- 	.name = "pmu-led::front",
--#ifdef CONFIG_ADB_PMU_LED_IDE
--	.default_trigger = "ide-disk",
-+#ifdef CONFIG_ADB_PMU_LED_DISK
-+	.default_trigger = "disk-activity",
- #endif
- 	.brightness_set = pmu_led_set,
- };
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index 5884def..3413358 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -161,10 +161,10 @@ extern void led_trigger_blink(struct led_trigger *trigger,
- #endif
- 
- /* Trigger specific functions */
--#ifdef CONFIG_LEDS_TRIGGER_IDE_DISK
--extern void ledtrig_ide_activity(void);
-+#ifdef CONFIG_LEDS_TRIGGER_DISK
-+extern void ledtrig_disk_activity(void);
- #else
--#define ledtrig_ide_activity() do {} while(0)
-+#define ledtrig_disk_activity() do {} while(0)
- #endif
- 
- /*
--- 
-1.7.6.3
+>=20
+> > +config TSI721_DMA
+> > +	bool "IDT Tsi721 RapidIO DMA support"
+> > +	depends on RAPIDIO_TSI721
+> > +	default "n"
+> > +	select RAPIDIO_DMA_ENGINE
+> > +	help
+> > +	  Enable DMA support for IDT Tsi721 PCIe-to-SRIO controller.
+>=20
+> Do we really need to offer this decision to the user?  If possible it
+> would be better to always enable the feature where that makes sense.
+> Better code coverage, less maintenance effort, more effective testing
+> effort, possibly cleaner code.
+
+Agree. Influence of dmaengine here ;)
+But we still need RAPIDIO_DMA_ENGINE option to control DMA
+configuration for devices that are RIO targets only.=20
+
+>=20
+> >
+> > ...
+> >
+> > +static int tsi721_bdma_ch_init(struct tsi721_bdma_chan *chan)
+> > +{
+> > +	struct tsi721_dma_desc *bd_ptr;
+> > +	struct device *dev =3D chan->dchan.device->dev;
+> > +	u64		*sts_ptr;
+> > +	dma_addr_t	bd_phys;
+> > +	dma_addr_t	sts_phys;
+> > +	int		sts_size;
+> > +	int		bd_num =3D chan->bd_num;
+> > +
+> > +	dev_dbg(dev, "Init Block DMA Engine, CH%d\n", chan->id);
+> > +
+> > +	/* Allocate space for DMA descriptors */
+> > +	bd_ptr =3D dma_alloc_coherent(dev,
+> > +				bd_num * sizeof(struct tsi721_dma_desc),
+> > +				&bd_phys, GFP_KERNEL);
+> > +	if (!bd_ptr)
+> > +		return -ENOMEM;
+> > +
+> > +	chan->bd_phys =3D bd_phys;
+> > +	chan->bd_base =3D bd_ptr;
+> > +
+> > +	memset(bd_ptr, 0, bd_num * sizeof(struct tsi721_dma_desc));
+> > +
+> > +	dev_dbg(dev, "DMA descriptors @ %p (phys =3D %llx)\n",
+> > +		bd_ptr, (unsigned long long)bd_phys);
+> > +
+> > +	/* Allocate space for descriptor status FIFO */
+> > +	sts_size =3D (bd_num >=3D TSI721_DMA_MINSTSSZ) ?
+> > +					bd_num : TSI721_DMA_MINSTSSZ;
+> > +	sts_size =3D roundup_pow_of_two(sts_size);
+> > +	sts_ptr =3D dma_alloc_coherent(dev,
+> > +				     sts_size * sizeof(struct
+tsi721_dma_sts),
+> > +				     &sts_phys, GFP_KERNEL);
+> > +	if (!sts_ptr) {
+> > +		/* Free space allocated for DMA descriptors */
+> > +		dma_free_coherent(dev,
+> > +				  bd_num * sizeof(struct
+tsi721_dma_desc),
+> > +				  bd_ptr, bd_phys);
+> > +		chan->bd_base =3D NULL;
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	chan->sts_phys =3D sts_phys;
+> > +	chan->sts_base =3D sts_ptr;
+> > +	chan->sts_size =3D sts_size;
+> > +
+> > +	memset(sts_ptr, 0, sts_size);
+>=20
+> You meant
+
+I really need it here. That status block tracks progress by keeping
+non-zero addresses of processed descriptors.
+=20
+>=20
+> --- a/drivers/rapidio/devices/tsi721.c~rapidio-tsi721-add-dma-engine-
+> support-fix
+> +++ a/drivers/rapidio/devices/tsi721.c
+> @@ -1006,7 +1006,7 @@ static int tsi721_bdma_maint_init(struct
+>  	priv->mdma.sts_base =3D sts_ptr;
+>  	priv->mdma.sts_size =3D sts_size;
+>=20
+> -	memset(sts_ptr, 0, sts_size);
+> +	memset(sts_ptr, 0, sts_size * sizeof(struct tsi721_dma_sts));
+>=20
+>  	dev_dbg(&priv->pdev->dev,
+>  		"desc status FIFO @ %p (phys =3D %llx) size=3D0x%x\n",
+>=20
+> However that's at least two instances where you wanted a
+> dma_zalloc_coherent().  How's about we give ourselves one?
+
+Does this mean that I am on hook for it as a "most frequent user"?
+
+>=20
+>=20
+> > +	dev_dbg(dev,
+> > +		"desc status FIFO @ %p (phys =3D %llx) size=3D0x%x\n",
+> > +		sts_ptr, (unsigned long long)sts_phys, sts_size);
+> > +
+> > +	/* Initialize DMA descriptors ring */
+> > +	bd_ptr[bd_num - 1].type_id =3D cpu_to_le32(DTYPE3 << 29);
+> > +	bd_ptr[bd_num - 1].next_lo =3D cpu_to_le32((u64)bd_phys &
+> > +
+TSI721_DMAC_DPTRL_MASK);
+> > +	bd_ptr[bd_num - 1].next_hi =3D cpu_to_le32((u64)bd_phys >> 32);
+> > +
+> > +	/* Setup DMA descriptor pointers */
+> > +	iowrite32(((u64)bd_phys >> 32),
+> > +		chan->regs + TSI721_DMAC_DPTRH);
+> > +	iowrite32(((u64)bd_phys & TSI721_DMAC_DPTRL_MASK),
+> > +		chan->regs + TSI721_DMAC_DPTRL);
+> > +
+> > +	/* Setup descriptor status FIFO */
+> > +	iowrite32(((u64)sts_phys >> 32),
+> > +		chan->regs + TSI721_DMAC_DSBH);
+> > +	iowrite32(((u64)sts_phys & TSI721_DMAC_DSBL_MASK),
+> > +		chan->regs + TSI721_DMAC_DSBL);
+> > +	iowrite32(TSI721_DMAC_DSSZ_SIZE(sts_size),
+> > +		chan->regs + TSI721_DMAC_DSSZ);
+> > +
+> > +	/* Clear interrupt bits */
+> > +	iowrite32(TSI721_DMAC_INT_ALL,
+> > +		chan->regs + TSI721_DMAC_INT);
+> > +
+> > +	ioread32(chan->regs + TSI721_DMAC_INT);
+> > +
+> > +	/* Toggle DMA channel initialization */
+> > +	iowrite32(TSI721_DMAC_CTL_INIT,	chan->regs + TSI721_DMAC_CTL);
+> > +	ioread32(chan->regs + TSI721_DMAC_CTL);
+> > +	chan->wr_count =3D chan->wr_count_next =3D 0;
+> > +	chan->sts_rdptr =3D 0;
+> > +	udelay(10);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +{
+> > +	/* Disable BDMA channel interrupts */
+> > +	iowrite32(0, chan->regs + TSI721_DMAC_INTE);
+> > +
+> > +	tasklet_schedule(&chan->tasklet);
+>=20
+> I'm not seeing any tasklet_disable()s on the shutdown/rmmod paths.  Is
+> there anything here which prevents shutdown races against a
+> still-pending tasklet?
+
+Marked for review.
+
+>=20
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +static
+> > +int tsi721_fill_desc(struct tsi721_bdma_chan *chan, struct
+> tsi721_tx_desc *desc,
+> > +	struct scatterlist *sg, enum dma_rtype rtype, u32 sys_size)
+> > +{
+> > +	struct tsi721_dma_desc *bd_ptr =3D desc->hw_desc;
+> > +	u64 rio_addr;
+> > +
+> > +	if (sg_dma_len(sg) > TSI721_DMAD_BCOUNT1 + 1) {
+> > +		dev_err(chan->dchan.device->dev, "SG element is too
+> large\n");
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	dev_dbg(chan->dchan.device->dev,
+> > +		"desc: 0x%llx, addr: 0x%llx len: 0x%x\n",
+> > +		(u64)desc->txd.phys, (unsigned long
+> long)sg_dma_address(sg),
+> > +		sg_dma_len(sg));
+> > +
+> > +	dev_dbg(chan->dchan.device->dev, "bd_ptr =3D %p did=3D%d
+> raddr=3D0x%llx\n",
+> > +		bd_ptr, desc->destid, desc->rio_addr);
+> > +
+> > +	/* Initialize DMA descriptor */
+> > +	bd_ptr->type_id =3D cpu_to_le32((DTYPE1 << 29) |
+> > +					(rtype << 19) | desc->destid);
+> > +	if (desc->interrupt)
+> > +		bd_ptr->type_id |=3D cpu_to_le32(TSI721_DMAD_IOF);
+> > +	bd_ptr->bcount =3D cpu_to_le32(((desc->rio_addr & 0x3) << 30) |
+> > +					(sys_size << 26) |
+sg_dma_len(sg));
+> > +	rio_addr =3D (desc->rio_addr >> 2) |
+> > +				((u64)(desc->rio_addr_u & 0x3) << 62);
+> > +	bd_ptr->raddr_lo =3D cpu_to_le32(rio_addr & 0xffffffff);
+> > +	bd_ptr->raddr_hi =3D cpu_to_le32(rio_addr >> 32);
+> > +	bd_ptr->t1.bufptr_lo =3D cpu_to_le32(
+> > +					(u64)sg_dma_address(sg) &
+0xffffffff);
+> > +	bd_ptr->t1.bufptr_hi =3D cpu_to_le32((u64)sg_dma_address(sg) >>
+> 32);
+> > +	bd_ptr->t1.s_dist =3D 0;
+> > +	bd_ptr->t1.s_size =3D 0;
+> > +
+> > +	mb();
+>=20
+> Mystery barrier needs a comment explaining why it's here, please.
+This
+> is almost always the case with barriers.
+
+Marked for review.
+
+>=20
+> > +	return 0;
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +static int tsi721_alloc_chan_resources(struct dma_chan *dchan)
+> > +{
+> > +	struct tsi721_bdma_chan *chan =3D to_tsi721_chan(dchan);
+> > +	struct tsi721_device *priv =3D to_tsi721(dchan->device);
+> > +	struct tsi721_tx_desc *desc =3D NULL;
+> > +	LIST_HEAD(tmp_list);
+> > +	int i;
+> > +	int rc;
+> > +
+> > +	if (chan->bd_base)
+> > +		return chan->bd_num - 1;
+> > +
+> > +	/* Initialize BDMA channel */
+> > +	if (tsi721_bdma_ch_init(chan)) {
+> > +		dev_err(dchan->device->dev, "Unable to initialize data
+DMA"
+> > +			" channel %d, aborting\n", chan->id);
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	/* Allocate matching number of logical descriptors */
+> > +	desc =3D kzalloc((chan->bd_num - 1) * sizeof(struct
+> tsi721_tx_desc),
+> > +			GFP_KERNEL);
+>=20
+> kcalloc() would be a better fit here.
+
+Agree. Would look more clear.
+
+>=20
+> > +	if (!desc) {
+> > +		dev_err(dchan->device->dev,
+> > +			"Failed to allocate logical descriptors\n");
+> > +		rc =3D -ENOMEM;
+> > +		goto err_out;
+> > +	}
+> > +
+> > +	chan->tx_desc =3D desc;
+> > +
+> > +	for (i =3D 0; i < chan->bd_num - 1; i++) {
+> > +		dma_async_tx_descriptor_init(&desc[i].txd, dchan);
+> > +		desc[i].txd.tx_submit =3D tsi721_tx_submit;
+> > +		desc[i].txd.flags =3D DMA_CTRL_ACK;
+> > +		INIT_LIST_HEAD(&desc[i].tx_list);
+> > +		list_add_tail(&desc[i].desc_node, &tmp_list);
+> > +	}
+> > +
+> > +	spin_lock_bh(&chan->lock);
+> > +	list_splice(&tmp_list, &chan->free_list);
+> > +	chan->completed_cookie =3D dchan->cookie =3D 1;
+> > +	spin_unlock_bh(&chan->lock);
+> > +
+> > +#ifdef CONFIG_PCI_MSI
+> > +	if (priv->flags & TSI721_USING_MSIX) {
+> > +		/* Request interrupt service if we are in MSI-X mode */
+> > +		rc =3D request_irq(
+> > +			priv->msix[TSI721_VECT_DMA0_DONE +
+chan->id].vector,
+> > +			tsi721_bdma_msix, 0,
+> > +			priv->msix[TSI721_VECT_DMA0_DONE + chan-
+> >id].irq_name,
+> > +			(void *)chan);
+> > +
+> > +		if (rc) {
+> > +			dev_dbg(dchan->device->dev,
+> > +				"Unable to allocate MSI-X interrupt for
+"
+> > +				"BDMA%d-DONE\n", chan->id);
+> > +			goto err_out;
+> > +		}
+> > +
+> > +		rc =3D request_irq(priv->msix[TSI721_VECT_DMA0_INT +
+> > +					    chan->id].vector,
+> > +			tsi721_bdma_msix, 0,
+> > +			priv->msix[TSI721_VECT_DMA0_INT +
+chan->id].irq_name,
+> > +			(void *)chan);
+> > +
+> > +		if (rc)	{
+> > +			dev_dbg(dchan->device->dev,
+> > +				"Unable to allocate MSI-X interrupt for
+"
+> > +				"BDMA%d-INT\n", chan->id);
+> > +			free_irq(
+> > +				priv->msix[TSI721_VECT_DMA0_DONE +
+> > +					   chan->id].vector,
+> > +				(void *)chan);
+> > +			rc =3D -EIO;
+> > +			goto err_out;
+> > +		}
+> > +	}
+> > +#endif /* CONFIG_PCI_MSI */
+> > +
+> > +	tsi721_bdma_interrupt_enable(chan, 1);
+> > +
+> > +	return chan->bd_num - 1;
+> > +
+> > +err_out:
+> > +	kfree(desc);
+> > +	tsi721_bdma_ch_free(chan);
+> > +	return rc;
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +static
+> > +enum dma_status tsi721_tx_status(struct dma_chan *dchan,
+> dma_cookie_t cookie,
+> > +				 struct dma_tx_state *txstate)
+> > +{
+> > +	struct tsi721_bdma_chan *bdma_chan =3D to_tsi721_chan(dchan);
+> > +	dma_cookie_t		last_used;
+> > +	dma_cookie_t		last_completed;
+> > +	int			ret;
+> > +
+> > +	spin_lock_irq(&bdma_chan->lock);
+> > +	last_completed =3D bdma_chan->completed_cookie;
+> > +	last_used =3D dchan->cookie;
+> > +	spin_unlock_irq(&bdma_chan->lock);
+> > +
+> > +	ret =3D dma_async_is_complete(cookie, last_completed, last_used);
+> > +
+> > +	dma_set_tx_state(txstate, last_completed, last_used, 0);
+> > +
+> > +	dev_dbg(dchan->device->dev,
+> > +		"%s: exit, ret: %d, last_completed: %d, last_used:
+%d\n",
+> > +		__func__, ret, last_completed, last_used);
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static void tsi721_issue_pending(struct dma_chan *dchan)
+> > +{
+> > +	struct tsi721_bdma_chan *chan =3D to_tsi721_chan(dchan);
+> > +
+> > +	dev_dbg(dchan->device->dev, "%s: Entry\n", __func__);
+> > +
+> > +	if (tsi721_dma_is_idle(chan)) {
+> > +		spin_lock_bh(&chan->lock);
+> > +		tsi721_advance_work(chan);
+> > +		spin_unlock_bh(&chan->lock);
+> > +	} else
+> > +		dev_dbg(dchan->device->dev,
+> > +			"%s: DMA channel still busy\n", __func__);
+> > +}
+>=20
+> I really don't like that a "struct tsi721_bdma_chan *" is called
+"chan"
+> in come places and "bdma_chan" in others.  "bdma_chan" is better.
+>=20
+Agree. "bdma_chan" gives more device-specific meaning.
+Opposite comment that I have heard was that this driver uses "dma" too
+much.
+Will unify to "bdma_chan".
+
+> The code takes that lock with spin_lock_bh() in some places and
+> spin_lock_irq() in others.  I trust there's some method to it all ;)
+> Has
+> it been carefully tested with lockdep enabled?
+
+Ooops. Another prove that global replace does not work.
+Cleared spin_lock_irqsave() well though ;)
+
+lockdep is enabled on my test machine and it did not complain in
+this case. I am using a test adopted from one in dmaengine and it
+calls both routines that have spin_lock_irq().=20
+
+>=20
+> >
+> > ...
+> >
+
+Thank you,
+
+Alex.
