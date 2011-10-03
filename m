@@ -1,21 +1,23 @@
-Return-Path: <smitha.vanga@wipro.com>
-Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
-	[203.91.198.74])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 162F4B6F71
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4D316B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  3 Oct 2011 23:38:09 +1100 (EST)
-From: <smitha.vanga@wipro.com>
-To: <scottwood@freescale.com>
-Subject: Request_irq fails for IRQ2 
-Date: Mon, 3 Oct 2011 12:31:34 +0000
-Message-ID: <40631E9A2581F14BA60888C87A76A1FE0145B6@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <4E57FD3D.6090809@freescale.com>
-Content-Type: multipart/alternative;
-	boundary="_000_40631E9A2581F14BA60888C87A76A1FE0145B6HYDMKDMBX4wiproco_"
+	Tue,  4 Oct 2011 03:52:33 +1100 (EST)
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
+	transfers
+Date: Mon, 3 Oct 2011 09:52:15 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1317492077.1573.1839.camel@vkoul-udesk3>
+References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
+	<1317492077.1573.1839.camel@vkoul-udesk3>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Vinod Koul <vinod.koul@intel.com>, Dan <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,121 +27,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_40631E9A2581F14BA60888C87A76A1FE0145B6HYDMKDMBX4wiproco_
-Content-Type: text/plain; charset="us-ascii"
-content-transfer-encoding: quoted-printable
-
-
-Hi Scott,
-
- I try to request an IRQ (IRQ2 and IRQ3 which are ineterrupt no 20 and 21 in=
- mpc8247)in my driver . The
-Call fails in setup_irq in Manage.c at /kernel/irq.
-
-Setup _irq returns -ENOSYS
-
-if (desc->irq_data.chip =3D=3D &no_irq_chip)
-                 return -ENOSYS;
-
-I just want to know why it fails. Below is the call to request irq in my dri=
-ver.
-
-
-#define CPLD1_INTERRUPT  20
-if (request_irq(CPLD1_INTERRUPT,cpld_irq_handler, 0, GPIO_CHAR_PATH, NULL))
-   {
-      printk(KERN_ERR "gpio_init: Could not grab IRQ line for CPLD\n");
-          goto err1;
-   }
-
-Regards,
-Smitha
-
-
-
-Please do not print this email unless it is absolutely necessary. =0A=
-=0A=
-The information contained in this electronic message and any attachments to=
- this message are intended for the exclusive use of the addressee(s) and may=
- contain proprietary, confidential or privileged information. If you are not=
- the intended recipient, you should not disseminate, distribute or copy this=
- e-mail. Please notify the sender immediately and destroy all copies of this=
- message and any attachments. =0A=
-=0A=
-WARNING: Computer viruses can be transmitted via email. The recipient should=
- check this email and any attachments for the presence of viruses. The compa=
-ny accepts no liability for any damage caused by any virus transmitted by th=
-is email. =0A=
-=0A=
-www.wipro.com
-
---_000_40631E9A2581F14BA60888C87A76A1FE0145B6HYDMKDMBX4wiproco_
-Content-Type: text/html; charset="us-ascii"
-content-transfer-encoding: quoted-printable
-
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii">
-<meta name=3D"Generator" content=3D"Microsoft Exchange Server">
-<!-- converted from rtf -->
-<style><!-- .EmailQuote { margin-left: 1pt; padding-left: 4pt; border-left:=
- #800000 2px solid; } --></style>
-</head>
-<body>
-<font face=3D"Arial" size=3D"2"><span style=3D"font-size:10pt;">
-<div>&nbsp;</div>
-<div>Hi Scott,</div>
-<div>&nbsp;</div>
-<div> I try to request an IRQ (IRQ2 and IRQ3 which are ineterrupt no 20 and=
- 21 in mpc8247)in my driver . The</div>
-<div>Call fails in setup_irq in Manage.c at /kernel/irq. </div>
-<div>&nbsp;</div>
-<div>Setup _irq returns -ENOSYS</div>
-<div>&nbsp;</div>
-<div><font color=3D"red">if (desc-&gt;irq_data.chip =3D=3D &amp;no_irq_chip)=
-</font></div>
-<div><font color=3D"red">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -ENOSYS;</font></div>
-<div><font color=3D"red">&nbsp;</font></div>
-<div>I just want to know why it fails. Below is the call to request irq in m=
-y driver. </div>
-<div>&nbsp;</div>
-<div>&nbsp;</div>
-<div>#define CPLD1_INTERRUPT&nbsp; 20</div>
-<div>if <b>(request_irq(CPLD1_INTERRUPT,cpld_irq_handler, 0, GPIO_CHAR_PATH,=
- NULL</b>))</div>
-<div>&nbsp;&nbsp; {</div>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printk(KERN_ERR &quot;gpio_init: Could n=
-ot grab IRQ line for CPLD\n&quot;);</div>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; goto err1;</div>
-<div>&nbsp;&nbsp; }</div>
-<div>&nbsp;</div>
-<div>Regards,</div>
-<div>Smitha</div>
-<div><font color=3D"red">&nbsp;</font></div>
-<div><font color=3D"red">&nbsp;</font></div>
-</span></font>
-<P><strong><span style=3D'font-size:10.0pt;font-family:=0A=
-"Palatino Linotype","serif";color:green'> Please do not print this email unl=
-ess it is absolutely necessary. </span></strong><span style=3D'font-family:"=
-Arial","sans-serif"'><o:p></o:p></span></p>=0A=
-=0A=
-=0A=
-<p> The information contained in this electronic message and any attachments=
- to this message are intended for the exclusive use of the addressee(s) and=
- may contain proprietary, confidential or privileged information. If you are=
- not the intended recipient, you should not disseminate, distribute or copy=
- this e-mail. Please notify the sender immediately and destroy all copies of=
- this message and any attachments. </p>=0A=
-=0A=
-<p>WARNING: Computer viruses can be transmitted via email. The recipient sho=
-uld check this email and any attachments for the presence of viruses. The co=
-mpany accepts no liability for any damage caused by any virus transmitted by=
- this email. </p>=0A=
-<p>=0A=
-www.wipro.com=0A=
-</p>
-</body>
-</html>
-
---_000_40631E9A2581F14BA60888C87A76A1FE0145B6HYDMKDMBX4wiproco_--
+Vmlub2QgS291bCB3cm90ZToNCj4gDQo+IE9uIEZyaSwgMjAxMS0wOS0zMCBhdCAxNzozOCAtMDQw
+MCwgQWxleGFuZHJlIEJvdW5pbmUgd3JvdGU6DQo+IFBsZWFzZSBDQyAqbWFpbnRhaW5lcnMqIG9u
+IHlvdXIgcGF0Y2hlcywgZ2V0X21haW50YWluZXJzLnBsIHdpbGwgdGVsbA0KPiB5b3Ugd2hvLiBB
+ZGRpbmcgRGFuIGhlcmUNCg0KQmFzZWQgb24gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTEvMi8x
+NC82NyBhbmQgdXNlIG9mIERNQV9TTEFWRSBpbiB0aGlzDQpwYXRjaCBJIGRlY2lkZWQgdGhhdCB5
+b3UgYXJlIHRoZSBiZXN0IG1hdGNoIGFtb25nIHR3byBhbmQgdGhlcmUgaXMgbm8gcmVhc29uDQp0
+byBkaXN0dXJiIERhbiA7KSANCg0KPiA+IEFkZHMgRE1BIEVuZ2luZSBmcmFtZXdvcmsgc3VwcG9y
+dCBpbnRvIFJhcGlkSU8gc3Vic3lzdGVtLg0KPiA+IFVzZXMgRE1BIEVuZ2luZSBETUFfU0xBVkUg
+aW50ZXJmYWNlIHRvIGdlbmVyYXRlIGRhdGEgdHJhbnNmZXJzIHRvL2Zyb20gcmVtb3RlDQo+ID4g
+UmFwaWRJTyB0YXJnZXQgZGV2aWNlcy4gVXNlcyBzY2F0dGVybGlzdCB0byBkZXNjcmliZSBsb2Nh
+bCBkYXRhIGJ1ZmZlciBhbmQNCj4gPiBkbWFfY2hhbi5wcml2YXRlIG1lbWJlciB0byBwYXNzIHRh
+cmdldCBzcGVjaWZpYyBpbmZvcm1hdGlvbi4gU3VwcG9ydHMgZmxhdA0KPiA+IGRhdGEgYnVmZmVy
+IG9ubHkgZm9yIGEgcmVtb3RlIHNpZGUuDQo+IFRoZSB3YXkgZG1hZW5naW5lIHdvcmtzIHRvZGF5
+IGlzIHRoYXQgaXQgZG9lc24ndCBrbm93IGFueXRoaW5nIGFib3V0DQo+IGNsaWVudCBzdWJzeXN0
+ZW0uIEJ1dCB0aGlzIGJyaW5ncyBpbiBhIHN1YnN5c3RlbSBkZXRhaWxzIHRvIGRtYWVuZ2luZQ0K
+PiB3aGljaCBJIGRvbid0IGFncmVlIHdpdGggeWV0Lg0KPiBXaHkgY2FuJ3Qgd2UgYWJzdHJhY3Qg
+dGhpcyBvdXQ/Pw0KDQpUaGUgb25seSB0aGluZyB0aGF0IGJyaW5ncyBzdWJzeXN0ZW0ga25vd2xl
+ZGdlIGludG8gZG1hZW5naW5lIGlzIERNQV9SQVBJRElPIGZsYWcuDQpJIGFtIGFjdHVhbGx5IG9u
+IHRoZSBmZW5jZSBhYm91dCB0aGlzLiBGcm9tIFJhcGlkSU8gc2lkZSBwb2ludCBvZiB2aWV3IEkg
+ZG8gbm90DQpuZWVkIHRoYXQgZmxhZyBhdCBhbGwuDQpSYXBpZElPIHVzZXMgYSBmaWx0ZXIgcm91
+dGluZSB0aGF0IGlzIHN1ZmZpY2llbnQgdG8gaWRlbnRpZnkgZG1hZW5naW5lIGNoYW5uZWxzDQph
+c3NvY2lhdGVkIHdpdGggc3BlY2lmaWMgUmFwaWRJTyBtcG9ydC4gVXNlIG9mIERNQV9TTEFWRSBm
+bGFnIGlzIHNhZmUgaGVyZS4NClVzZSBvZiBwcml2YXRlIG1lbWJlciBvZiBkbWFfY2hhbiBpcyAi
+cHJpdmF0ZSIgYnVzaW5lc3Mgb2YgUmFwaWRJTyBhbmQgZG9lcw0Kbm90IGJyZWFrIGFueXRoaW5n
+LiANCg0KTXkgY29uY2VybiBoZXJlIGlzIHRoYXQgb3RoZXIgc3Vic3lzdGVtcyBtYXkgdXNlL3Jl
+cXVlc3QgRE1BX1NMQVZFIGNoYW5uZWwocykgYXMgd2VsbA0KYW5kIHdyb25nZnVsbHkgYWNxdWly
+ZSBvbmUgdGhhdCBiZWxvbmdzIHRvIFJhcGlkSU8uIEluIHRoaXMgY2FzZSBzZXBhcmF0aW9uIHdp
+dGggYW5vdGhlcg0KZmxhZyBtYXkgaGF2ZSBhIHNlbnNlIC0gaXQgaXMgcG9zc2libGUgdG8gaGF2
+ZSBhIHN5c3RlbSB0aGF0IHVzZXMgUmFwaWRJTw0KYW5kIG90aGVyICJ0cmFkaXRpb25hbCIgRE1B
+IHNsYXZlIGNoYW5uZWwuDQoNClRoaXMgaXMgd2h5IEkgcHV0IHRoYXQgcHJvcG9zZWQgaW50ZXJm
+YWNlIGZvciBkaXNjdXNzaW9uIGluc3RlYWQgb2Yga2VlcGluZyBldmVyeXRoaW5nDQppbnNpZGUg
+b2YgUmFwaWRJTy4NCklmIHlvdSB0aGluayB0aGF0IHNpdHVhdGlvbiBhYm92ZSB3aWxsIG5vdCBo
+YXBwZW4gSSB3aWxsIGJlIGhhcHB5IHRvIHJlbW92ZQ0KdGhhdCBzdWJzeXN0ZW0ga25vd2xlZGdl
+IGZyb20gZG1hZW5naW5lIGZpbGVzLg0KDQpNeSBtb3N0IHJlY2VudCB0ZXN0IGltcGxlbWVudGF0
+aW9uIHJ1bnMgd2l0aG91dCBETUFfUkFQSURJTyBmbGFnIHRob3VnaC4NCg0KPiANCj4gQWZ0ZXIg
+Z29pbmcgdGhydSB0aGUgcGF0Y2gsIEkgZG8gbm90IGJlbGlldmUgdGhhdCB0aGlzIHRoaXMgaXMg
+Y2FzZSBvZg0KPiBTTEFWRSB0cmFuc2ZlcnMsIERhbiBjYW4geW91IHBsZWFzZSB0YWtlIGEgbG9v
+ayBhdCB0aGlzIHBhdGNoDQoNCkkgYWdyZWUsIHRoaXMgaXMgbm90IGEgY2FzZSBvZiAicHVyZSIg
+c2xhdmUgdHJhbnNmZXJzIGJ1dCBleGlzdGluZyBETUFfU0xBVkUNCmludGVyZmFjZSBmaXRzIHdl
+bGwgaW50byB0aGUgUmFwaWRJTyBvcGVyYXRpb25zLg0KDQpGaXJzdCwgd2UgaGF2ZSBvbmx5IG9u
+ZSBtZW1vcnkgbWFwcGVkIGxvY2F0aW9uIG9uIHRoZSBob3N0IHNpZGUuIFdlIHRyYW5zZmVyDQpk
+YXRhIHRvL2Zyb20gbG9jYXRpb24gdGhhdCBpcyBub3QgbWFwcGVkIGludG8gbWVtb3J5IG9uIHRo
+ZSBzYW1lIHNpZGUuICANCg0KU2Vjb25kLCBoYXZpbmcgYWJpbGl0eSB0byBwYXNzIHByaXZhdGUg
+dGFyZ2V0IGluZm9ybWF0aW9uIGFsbG93cyBtZSB0byBwYXNzDQppbmZvcm1hdGlvbiBhYm91dCBy
+ZW1vdGUgdGFyZ2V0IGRldmljZSBvbiBwZXItdHJhbnNmZXIgYmFzaXMuDQoNCj4gDQo+IA0KPiA+
+IFNpZ25lZC1vZmYtYnk6IEFsZXhhbmRyZSBCb3VuaW5lIDxhbGV4YW5kcmUuYm91bmluZUBpZHQu
+Y29tPg0KPiA+IENjOiBWaW5vZCBLb3VsIDx2aW5vZC5rb3VsQGludGVsLmNvbT4NCj4gPiBDYzog
+S3VtYXIgR2FsYSA8Z2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZz4NCj4gPiBDYzogTWF0dCBQb3J0
+ZXIgPG1wb3J0ZXJAa2VybmVsLmNyYXNoaW5nLm9yZz4NCj4gPiBDYzogTGkgWWFuZyA8bGVvbGlA
+ZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9kbWEvZG1hZW5naW5lLmMgICB8
+ICAgIDQgKysNCi4uLiBza2lwIC4uLg0KPiA+ICsjaWZkZWYgQ09ORklHX1JBUElESU9fRE1BX0VO
+R0lORQ0KPiA+ICsNCj4gPiArI2luY2x1ZGUgPGxpbnV4L2RtYWVuZ2luZS5oPg0KPiA+ICsNCi4u
+LiBza2lwIC4uLg0KPiA+ICsgKi8NCj4gPiArc3RydWN0IGRtYV9hc3luY190eF9kZXNjcmlwdG9y
+ICpyaW9fZG1hX3ByZXBfc2xhdmVfc2coc3RydWN0IHJpb19kZXYgKnJkZXYsDQo+ID4gKwlzdHJ1
+Y3QgZG1hX2NoYW4gKmRjaGFuLCBzdHJ1Y3QgcmlvX2RtYV9kYXRhICpkYXRhLA0KPiA+ICsJZW51
+bSBkbWFfZGF0YV9kaXJlY3Rpb24gZGlyZWN0aW9uLCB1bnNpZ25lZCBsb25nIGZsYWdzKQ0KPiA+
+ICt7DQo+ID4gKwlzdHJ1Y3QgZG1hX2FzeW5jX3R4X2Rlc2NyaXB0b3IgKnR4ZCA9IE5VTEw7DQo+
+ID4gKwlzdHJ1Y3QgcmlvX2RtYV9leHQgcmlvX2V4dDsNCj4gPiArDQo+ID4gKwlyaW9fZXh0LmRl
+c3RpZCA9IHJkZXYtPmRlc3RpZDsNCj4gPiArCXJpb19leHQucmlvX2FkZHJfdSA9IGRhdGEtPnJp
+b19hZGRyX3U7DQo+ID4gKwlyaW9fZXh0LnJpb19hZGRyID0gZGF0YS0+cmlvX2FkZHI7DQo+ID4g
+KwlyaW9fZXh0LndyX3R5cGUgPSBkYXRhLT53cl90eXBlOw0KPiA+ICsJZGNoYW4tPnByaXZhdGUg
+PSAmcmlvX2V4dDsNCj4gPiArDQo+ID4gKwl0eGQgPSBkY2hhbi0+ZGV2aWNlLT5kZXZpY2VfcHJl
+cF9zbGF2ZV9zZyhkY2hhbiwgZGF0YS0+c2csIGRhdGEtDQo+ID5zZ19sZW4sDQo+ID4gKwkJCQkJ
+CSAgZGlyZWN0aW9uLCBmbGFncyk7DQo+ID4gKw0KPiA+ICsJcmV0dXJuIHR4ZDsNCj4gPiArfQ0K
+PiA+ICtFWFBPUlRfU1lNQk9MX0dQTChyaW9fZG1hX3ByZXBfc2xhdmVfc2cpOw0KPiBZb3Ugc2hv
+dWxkIG1vdmUgdGhlIHJkZXYgYW5kIGRhdGEgdG8gZG1hX3NsYXZlX2NvbmZpZywgdGhhdCB3YXkg
+eW91DQo+IHNob3VsZCBiZSBhYmxlIHRvIHVzZSB0aGUgZXhpc3RpbmcgX3ByZXBfc2xhdmVfc2cg
+ZnVuY3Rpb24uDQogDQpSYXBpZElPIG5ldHdvcmsgdXN1YWxseSBoYXMgbW9yZSB0aGFuIG9uZSBk
+ZXZpY2UgYXR0YWNoZWQgdG8gaXQgYW5kDQpzaW5nbGUgRE1BIGNoYW5uZWwgbWF5IHNlcnZpY2Ug
+ZGF0YSB0cmFuc2ZlcnMgdG8vZnJvbSBzZXZlcmFsIGRldmljZXMuDQpJbiB0aGlzIGNhc2UgZGV2
+aWNlIGluZm9ybWF0aW9uIHNob3VsZCBiZSBwYXNzZWQgb24gcGVyLXRyYW5zZmVyIGJhc2lzLg0K
+DQo+ID4gKw0KPiA+ICsjZW5kaWYgLyogQ09ORklHX1JBUElESU9fRE1BX0VOR0lORSAqLw0KPiA+
+ICsNCi4uLiBza2lwIC4uLg0KPiA+ICsgKg0KPiA+ICsgKiBOb3RlOiBSYXBpZElPIHNwZWNpZmlj
+YXRpb24gZGVmaW5lcyB3cml0ZSAoTldSSVRFKSBhbmQNCj4gPiArICogd3JpdGUtd2l0aC1yZXNw
+b25zZSAoTldSSVRFX1IpIGRhdGEgdHJhbnNmZXIgb3BlcmF0aW9ucy4NCj4gPiArICogRXhpc3Rp
+bmcgRE1BIGNvbnRyb2xsZXJzIHRoYXQgc2VydmljZSBSYXBpZElPIG1heSB1c2Ugb25lIG9mIHRo
+ZXNlIG9wZXJhdGlvbnMNCj4gPiArICogZm9yIGVudGlyZSBkYXRhIHRyYW5zZmVyIG9yIHRoZWly
+IGNvbWJpbmF0aW9uIHdpdGggb25seSB0aGUgbGFzdCBkYXRhIHBhY2tldA0KPiA+ICsgKiByZXF1
+aXJlcyByZXNwb25zZS4NCj4gPiArICovDQo+ID4gK2VudW0gcmlvX3dyaXRlX3R5cGUgew0KPiA+
+ICsJUkRXX0RFRkFVTFQsCQkvKiBkZWZhdWx0IG1ldGhvZCB1c2VkIGJ5IERNQSBkcml2ZXIgKi8N
+Cj4gPiArCVJEV19BTExfTldSSVRFLAkJLyogYWxsIHBhY2tldHMgdXNlIE5XUklURSAqLw0KPiA+
+ICsJUkRXX0FMTF9OV1JJVEVfUiwJLyogYWxsIHBhY2tldHMgdXNlIE5XUklURV9SICovDQo+ID4g
+KwlSRFdfTEFTVF9OV1JJVEVfUiwJLyogbGFzdCBwYWNrZXQgdXNlcyBOV1JJVEVfUiwgYWxsIG90
+aGVyIC0gTldSSVRFICovDQo+ID4gK307DQo+IFdoeSBub3QgdXNlIHRoZSBjdXJyZW50IG1lY2hh
+bmlzbSBvZiBzcGVjaWZ5aW5nIGNhbGxiYWNrIG9yIEFDSyBmbGFncw0KPiBpZiB5b3Ugd2FudCBh
+IHJlc3BvbnNlIG9yIG5vdC4NCg0KVGhhdCByZXNwb25zZSBpcyBoYW5kbGVkIGJ5IFJhcGlkSU8g
+aGFyZHdhcmUgYW5kIGVuc3VyZXMgcmVsaWFibGUNCnBhY2tldCBkZWxpdmVyeSB3aGVuIHJlc3Bv
+bnNlIGlzIHVzZWQuIFVzZXIgbWF5IG5vdCBuZWVkIGNhbGxiYWNrIG9yIEFDSw0KZm9yIGhpcyBv
+cGVyYXRpb24gKGluIHRlcm1zIG9mIGRtYWVuZ2luZSkgYnV0IGVycm9yIGhhbmRsaW5nIHdpbGwg
+YmUgaW5pdGlhdGVkDQppZiB0aGVyZSBpcyBubyByZXNwb25zZSBmcm9tIHRoZSB0YXJnZXQgZGV2
+aWNlLiANCiANCj4gDQo+ID4gKw0KPiA+ICtzdHJ1Y3QgcmlvX2RtYV9leHQgew0KPiA+ICsJdTE2
+IGRlc3RpZDsNCj4gPiArCXU2NCByaW9fYWRkcjsJLyogbG93IDY0LWJpdHMgb2YgNjYtYml0IFJh
+cGlkSU8gYWRkcmVzcyAqLw0KPiA+ICsJdTggIHJpb19hZGRyX3U7ICAvKiB1cHBlciAyLWJpdHMg
+b2YgNjYtYml0IFJhcGlkSU8gYWRkcmVzcyAqLw0KPiA+ICsJZW51bSByaW9fd3JpdGVfdHlwZSB3
+cl90eXBlOyAvKiBwcmVmZXJyZWQgUklPIHdyaXRlIG9wZXJhdGlvbiB0eXBlICovDQo+ID4gK307
+DQo+IHdpbGwgdGhpcyBhZGRyZXNzIHRyYW5zbGF0ZWQgdG8gYSBkbWFfYWRkcl90IG9yIG5vdD8N
+Cg0KTm8uIFRoaXMgaXMgYSBSYXBpZElPIHNwZWNpZmljIGFkZHJlc3Mgb24gdGhlIHJlbW90ZSBk
+ZXZpY2UuDQoNCj4gPiArDQo+ID4gK3N0cnVjdCByaW9fZG1hX2RhdGEgew0KPiA+ICsJLyogTG9j
+YWwgZGF0YSAoYXMgc2NhdHRlcmxpc3QpICovDQo+ID4gKwlzdHJ1Y3Qgc2NhdHRlcmxpc3QJKnNn
+OwkvKiBJL08gc2NhdHRlciBsaXN0ICovDQo+ID4gKwl1bnNpZ25lZCBpbnQJCXNnX2xlbjsJLyog
+c2l6ZSBvZiBzY2F0dGVyIGxpc3QgKi8NCj4gPiArCS8qIFJlbW90ZSBkZXZpY2UgYWRkcmVzcyAo
+ZmxhdCBidWZmZXIpICovDQouLi4uIHNraXAgLi4uDQo+ID4gICAqIHJpb19uYW1lIC0gR2V0IHRo
+ZSB1bmlxdWUgUklPIGRldmljZSBpZGVudGlmaWVyDQo+ID4gICAqIEByZGV2OiBSSU8gZGV2aWNl
+DQo+IA0KPiANCj4gLS0NCj4gflZpbm9kDQoNClJlZ2FyZHMsDQoNCkFsZXguDQoNCg==
