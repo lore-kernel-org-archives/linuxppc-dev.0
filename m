@@ -1,22 +1,37 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
-	[65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6876DB6F7E
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e24smtp05.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C47F3B6F7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Oct 2011 05:07:19 +1100 (EST)
-Message-ID: <4E89F8C1.3040509@freescale.com>
-Date: Mon, 3 Oct 2011 13:02:41 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue,  4 Oct 2011 07:54:33 +1100 (EST)
+Received: from /spool/local by br.ibm.com with XMail ESMTP
+	for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+	Mon, 3 Oct 2011 17:54:15 -0300
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+	by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p93KqtIv3379268
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Oct 2011 17:52:59 -0300
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+	by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p93Krvi0019208
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Oct 2011 17:53:57 -0300
+Date: Mon, 3 Oct 2011 17:53:58 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: Yevgeny Petrilin <yevgenyp@mellanox.co.il>
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
+	enabled
+Message-ID: <20111003205358.GB3596@oc1711230544.ibm.com>
+References: <1317388995-411-1-git-send-email-cascardo@linux.vnet.ibm.com>
+	<953B660C027164448AE903364AC447D2235D9A8C@MTLDAG02.mtl.com>
+	<20111003143721.GA3596@oc1711230544.ibm.com>
+	<953B660C027164448AE903364AC447D2235DAA9D@MTLDAG02.mtl.com>
 MIME-Version: 1.0
-To: Jimi Xenidis <jimix@pobox.com>
-Subject: Re: [PATCH v2] powerpc: book3e: WSP: Add Chroma as a new WSP/PowerEN
-	platform.
-References: <1317349675-18661-1-git-send-email-jimix@pobox.com>
-In-Reply-To: <1317349675-18661-1-git-send-email-jimix@pobox.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <953B660C027164448AE903364AC447D2235DAA9D@MTLDAG02.mtl.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"eli@dev.mellanox.co.il" <eli@dev.mellanox.co.il>,
+	linuxppc-dev@lists.ozlabs.org, Eli Cohen <eli@mellanox.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +41,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/29/2011 09:27 PM, Jimi Xenidis wrote:
-> diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
-> index ea2811c..a3eef8e 100644
-> --- a/arch/powerpc/platforms/wsp/Kconfig
-> +++ b/arch/powerpc/platforms/wsp/Kconfig
-> @@ -1,6 +1,7 @@
->  config PPC_WSP
->  	bool
->  	select PPC_A2
-> +	select GENERIC_TBSYNC
->  	select PPC_ICSWX
->  	select PPC_SCOM
->  	select PPC_XICS
-> @@ -8,14 +9,20 @@ config PPC_WSP
->  	select PCI
->  	select PPC_IO_WORKAROUNDS if PCI
->  	select PPC_INDIRECT_PIO if PCI
-> +	select PPC_WSP_COPRO
->  	default n
->  
->  menu "WSP platform selection"
->  	depends on PPC_BOOK3E_64
->  
->  config PPC_PSR2
-> -	bool "PSR-2 platform"
-> -	select GENERIC_TBSYNC
-> +	bool "PowerEN System Reference Platform 2"
-> +	select EPAPR_BOOT
-> +	select PPC_WSP
-> +	default y
-> +
-> +config PPC_CHROMA
-> +	bool "PowerEN PCIe Chroma Card"
->  	select EPAPR_BOOT
->  	select PPC_WSP
->  	default y
+On Mon, Oct 03, 2011 at 02:56:08PM +0000, Yevgeny Petrilin wrote:
+> > Hello, Yevgeny.
+> > 
+> > We use a MT26448 (lspci -v output bellow) on a POWER7. Any other
+> > information, tests or debug patches you want me to try, just tell me.
+> > 
+> > I expected this was really not the proper fix, but thought it would be
+> > better to send it than just guess. Any clues what the problem might be?
+> > Perhaps, we would have to disable blue frame for this particular device?
+> > 
+> > Regards,
+> > Cascardo.
+> > 
+> > ---
+> > lspci output
+> > 0006:01:00.0 Ethernet controller: Mellanox Technologies MT26448 [ConnectX EN 10GigE, PCIe 2.0 5GT/s] (rev b0)
+> > ---
+> > lspci -v output
+> > 0006:01:00.0 0200: 15b3:6750 (rev b0)
+> >         Subsystem: 1014:0416
+> >         Flags: bus master, fast devsel, latency 0, IRQ 31
+> >         Memory at 3da47be00000 (64-bit, non-prefetchable) [size=1M]
+> >         Memory at 3da47c000000 (64-bit, prefetchable) [size=32M]
+> >         Expansion ROM at 3da47bf00000 [disabled] [size=1M]
+> >         Capabilities: [40] Power Management version 3
+> >         Capabilities: [48] Vital Product Data
+> >         Capabilities: [9c] MSI-X: Enable+ Count=128 Masked-
+> >         Capabilities: [60] Express Endpoint, MSI 00
+> >         Capabilities: [100] Alternative Routing-ID Interpretation (ARI)
+> >         Capabilities: [148] Device Serial Number 00-02-c9-03-00-0f-50-be
+> >         Kernel driver in use: mlx4_core
+> >         Kernel modules: mlx4_en, mlx4_core
+> > ---
+> 
+> Cascardo,
+> 
+> Can you also send me the output of ethtool -i?
+> It seems that there is a problem with write combining on Power processors, we will check this issue.
+> 
+> Yevgeny
 
-This is an existing problem with PSR2, but please don't hide "default y"
-in a menu (at least make it a menuconfig).  As is, it's not obvious from
-looking at the toplevel platforms menu that these platforms are enabled
-at all.
+Hello, Yevgeny.
 
-Further, PPC_WSP doesn't build on non-SMP (undefined references to
-boot_cpuid and get_hard_smp_processor_id in ics.c), but the platforms
-that select it don't depend on SMP.
+You will find the output of ethtool -i below.
 
--Scott
+I am copying Ben and powerpc list, in case this is an issue with Power
+processors. They can provide us some more insight into this.
+
+Thanks,
+Cascardo.
+
+---
+# ethtool -i eth10
+driver: mlx4_en
+version: 1.5.4.1 (March 2011)
+firmware-version: 2.9.4130
+bus-info: 0006:01:00.0
