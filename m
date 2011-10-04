@@ -1,24 +1,40 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4942BB6F68
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e24smtp05.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 56799B6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Oct 2011 02:30:48 +1100 (EST)
-Received: from mail117-va3 (localhost.localdomain [127.0.0.1])	by
-	mail117-va3-R.bigfish.com (Postfix) with ESMTP id 911ED2A021A	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2011 15:30:42 +0000 (UTC)
-Message-ID: <4E8B269C.5020606@freescale.com>
-Date: Tue, 4 Oct 2011 10:30:36 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Wed,  5 Oct 2011 07:26:34 +1100 (EST)
+Received: from /spool/local by br.ibm.com with XMail ESMTP
+	for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+	Tue, 4 Oct 2011 17:26:29 -0300
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+	by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p94KPBbI3379260
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Oct 2011 17:25:11 -0300
+Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
+	by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p94KQMuF022890
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Oct 2011 17:26:22 -0300
+Date: Tue, 4 Oct 2011 17:26:20 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
+	enabled
+Message-ID: <20111004202620.GA3455@oc1711230544.ibm.com>
+References: <1317388995-411-1-git-send-email-cascardo@linux.vnet.ibm.com>
+	<953B660C027164448AE903364AC447D2235D9A8C@MTLDAG02.mtl.com>
+	<20111003143721.GA3596@oc1711230544.ibm.com>
+	<953B660C027164448AE903364AC447D2235DAA9D@MTLDAG02.mtl.com>
+	<20111003205358.GB3596@oc1711230544.ibm.com>
+	<1317708132.29415.213.camel@pasglop>
 MIME-Version: 1.0
-To: <smitha.vanga@wipro.com>
-Subject: Re: Request_irq fails for IRQ2
-References: <40631E9A2581F14BA60888C87A76A1FE014773@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <40631E9A2581F14BA60888C87A76A1FE014773@HYD-MKD-MBX4.wipro.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1317708132.29415.213.camel@pasglop>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	Eli Cohen <eli@mellanox.co.il>,
+	"eli@dev.mellanox.co.il" <eli@dev.mellanox.co.il>,
+	linuxppc-dev@lists.ozlabs.org, Yevgeny Petrilin <yevgenyp@mellanox.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +44,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/04/2011 06:21 AM, smitha.vanga@wipro.com wrote:
-> Hi Scott,
+On Tue, Oct 04, 2011 at 08:02:12AM +0200, Benjamin Herrenschmidt wrote:
+> On Mon, 2011-10-03 at 17:53 -0300, Thadeu Lima de Souza Cascardo wrote:
 > 
-> I am able to register the IRQ now once I add the call irq_set_default_host in cpm2_pic.
-> But when I call enable_irq the code throws the below warning and gives exception in enable irq at 
-> spin_unlock_irqrestore(&desc->lock, flags); in enable_irq.
+>  .../...
+> 
+> > > Can you also send me the output of ethtool -i?
+> > > It seems that there is a problem with write combining on Power processors, we will check this issue.
+> > > 
+> > > Yevgeny
+> > 
+> > Hello, Yevgeny.
+> > 
+> > You will find the output of ethtool -i below.
+> > 
+> > I am copying Ben and powerpc list, in case this is an issue with Power
+> > processors. They can provide us some more insight into this.
+> 
+> May I get some background please ? :-)
+> 
+> I'm not aware of a specific issue with write combining but I'd need to
+> know more about what you are doing and the code to do it to comment on
+> whether it should work or not.
+> 
+> Cheers,
+> Ben.
 > 
 > 
-> printk(KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
 
-The IRQ is automatically enabled when you request it.  Only call
-enable_irq() if you previously called disable_irq().
+Hello, Ben.
 
--Scott
+Sorry for that. I am testing mlx4_en driver on a POWER. Yevgeny has
+added blue frame support, that does not require writing to the device
+memory to indicate a new packet (the doorbell register as it is called).
+
+Well, the ring is getting full with no interrupt or packets transmitted.
+I simply added a write to the doorbell register and it works for me.
+Yevgeny says this is not the right fix, claiming there is a problem with
+write combining on POWER. The code uses memory barriers, so I don't know
+why there is any problem.
+
+I am posting the code here to show better what the situation is.
+Yevgeny can tell more about the device and the driver.
+
+The code below is the driver as of now, including a diff with what I
+changed and had resulted OK for me. Before the blue frame support, the
+only code executed was the else part. I can't tell much what the device
+should be seeing and doing after the blue frame part of the code is
+executed. But it does send the packet if I write to the doorbell
+register.
+
+Yevgeny, can you tell us what the device should be doing and why you
+think this is a problem on POWER? Is it possible that this is simply a
+problem with the firmware version?
+
+Thanks,
+Cascardo.
+
+---
+        if (ring->bf_enabled && desc_size <= MAX_BF && !bounce &&
+!vlan_tag) {
+                *(u32 *) (&tx_desc->ctrl.vlan_tag) |=
+ring->doorbell_qpn;
+                op_own |= htonl((bf_index & 0xffff) << 8);
+                /* Ensure new descirptor hits memory
+                * before setting ownership of this descriptor to HW */
+                wmb();
+                tx_desc->ctrl.owner_opcode = op_own;
+
+                wmb();
+
+                mlx4_bf_copy(ring->bf.reg + ring->bf.offset, (unsigned
+long *) &tx_desc->ctrl,
+                     desc_size);
+
+                wmb();
+
+                ring->bf.offset ^= ring->bf.buf_size;
+        } else {
+                /* Ensure new descirptor hits memory
+                * before setting ownership of this descriptor to HW */
+                wmb();
+                tx_desc->ctrl.owner_opcode = op_own;
+-               wmb();
+-               writel(ring->doorbell_qpn, ring->bf.uar->map +
+MLX4_SEND_DOORBELL);
+        }
+
++       wmb();
++       writel(ring->doorbell_qpn, ring->bf.uar->map +
+MLX4_SEND_DOORBELL);
++
+---
