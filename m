@@ -1,25 +1,28 @@
-Return-Path: <akpm00@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 33DE2B6F64
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 160B7B6F70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Oct 2011 11:50:28 +1100 (EST)
-Received: by yxk8 with SMTP id 8so4708071yxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 03 Oct 2011 17:50:25 -0700 (PDT)
-Date: Mon, 3 Oct 2011 17:50:22 -0700
-From: Andrew Morton <akpm00@gmail.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH] memory hotplug: Correct page reservation checking
-Message-Id: <20111003175022.50cbef7f.akpm00@gmail.com>
-In-Reply-To: <4E8098B9.1080702@austin.ibm.com>
-References: <4E8098B9.1080702@austin.ibm.com>
+	Tue,  4 Oct 2011 17:02:31 +1100 (EST)
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
+	enabled
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+In-Reply-To: <20111003205358.GB3596@oc1711230544.ibm.com>
+References: <1317388995-411-1-git-send-email-cascardo@linux.vnet.ibm.com>
+	<953B660C027164448AE903364AC447D2235D9A8C@MTLDAG02.mtl.com>
+	<20111003143721.GA3596@oc1711230544.ibm.com>
+	<953B660C027164448AE903364AC447D2235DAA9D@MTLDAG02.mtl.com>
+	<20111003205358.GB3596@oc1711230544.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 04 Oct 2011 08:02:12 +0200
+Message-ID: <1317708132.29415.213.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Greg KH <gregkh@suse.de>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	Eli Cohen <eli@mellanox.co.il>,
+	"eli@dev.mellanox.co.il" <eli@dev.mellanox.co.il>,
+	linuxppc-dev@lists.ozlabs.org, Yevgeny Petrilin <yevgenyp@mellanox.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 26 Sep 2011 10:22:33 -0500
-Nathan Fontenot <nfont@austin.ibm.com> wrote:
+On Mon, 2011-10-03 at 17:53 -0300, Thadeu Lima de Souza Cascardo wrote:
 
-> The check to ensure that pages of recently added memory sections are correctly
-> marked as reserved before trying to online the memory is broken.  The request
-> to online the memory fails with the following:
-> 
-> kernel: section number XXX page number 256 not reserved, was it already online?
-> 
-> This updates the page reservation checking to check the pages of each memory
-> section of the memory block being onlined individually.
+ .../...
 
-Why was this only noticed now?  Is there something unusual about the
-way in which you're using it, or has nobody ever used this code, or...?
+> > Can you also send me the output of ethtool -i?
+> > It seems that there is a problem with write combining on Power processors, we will check this issue.
+> > 
+> > Yevgeny
+> 
+> Hello, Yevgeny.
+> 
+> You will find the output of ethtool -i below.
+> 
+> I am copying Ben and powerpc list, in case this is an issue with Power
+> processors. They can provide us some more insight into this.
+
+May I get some background please ? :-)
+
+I'm not aware of a specific issue with write combining but I'd need to
+know more about what you are doing and the code to do it to comment on
+whether it should work or not.
+
+Cheers,
+Ben.
