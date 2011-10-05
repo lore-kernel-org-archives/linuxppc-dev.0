@@ -1,32 +1,24 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B64FB700E
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 710DFB6FA5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Oct 2011 03:52:10 +1100 (EST)
-Received: from /spool/local by us.ibm.com with XMail ESMTP
-	for <linuxppc-dev@lists.ozlabs.org> from <dave@linux.vnet.ibm.com>;
-	Wed, 5 Oct 2011 10:52:08 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p95Gq2XO193308
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Oct 2011 10:52:03 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p95Gq2aP025685
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Oct 2011 10:52:02 -0600
-Subject: Re: Defintion of kernstart_addr
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Suzuki Poulose <suzuki@in.ibm.com>
-In-Reply-To: <4E8C525F.4090000@in.ibm.com>
-References: <4E8C525F.4090000@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 05 Oct 2011 09:51:58 -0700
-Message-ID: <1317833518.7842.92.camel@nimitz>
-Mime-Version: 1.0
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+	Thu,  6 Oct 2011 04:43:40 +1100 (EST)
+Received: from mail123-va3 (localhost.localdomain [127.0.0.1])	by
+	mail123-va3-R.bigfish.com (Postfix) with ESMTP id E0EE9D2812C	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2011 17:43:34 +0000 (UTC)
+Message-ID: <4E8C9741.9010401@freescale.com>
+Date: Wed, 5 Oct 2011 12:43:29 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: <smitha.vanga@wipro.com>
+Subject: Re: BUG: scheduling while atomic:
+References: <40631E9A2581F14BA60888C87A76A1FE014A35@HYD-MKD-MBX4.wipro.com>
+In-Reply-To: <40631E9A2581F14BA60888C87A76A1FE014A35@HYD-MKD-MBX4.wipro.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-10-05 at 18:19 +0530, Suzuki Poulose wrote:
-> #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) -
->                                                 PHYSICAL_START + KERNELBASE)
+On 10/05/2011 06:24 AM, smitha.vanga@wipro.com wrote:
+> Hi Scoot,
 > 
-> where,
->         PHYSICAL_START is #define'd to kernstart_addr variable, updated at boot 
+>  When my  ISR gets exeuted I get a below BUG. Could let me what I am
+> doing wrong in the ISR?
+>  
+>  
+>  BUG: scheduling while atomic: IRQ-20/0x0fff0000/108
+> Call Trace:
+> [C3AEFEC0] [C0007CCC]  (unreliable)
+> [C3AEFEF0] [C0017F10]
+> [C3AEFF00] [C0268818]
+> [C3AEFF50] [C0017F44]
+> [C3AEFF60] [C0018044]
+> [C3AEFF70] [C0046A90]
+> [C3AEFF90] [C0046D90]
+> [C3AEFFC0] [C0032AFC]
+> [C3AEFFF0] [C000F5AC]
 
-Where kernstart_addr is the physical address of where we loaded the
-kernel.  But, this has the side-effect of also shifting the kernel's
-identity mapping (the 1:1 virtual-to-physical map) up by that amount.
+This trace is useless without debugging symbols from your kernel image.
+Please enable kallsyms.
 
-I'm unconvinced that this movement of the identity mapping is necessary.
-
-Even if it is, Suzuki mentions:
-
-> #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - 
->                                                 PHYSICAL_START + KERNELBASE)
-> where:
->  PHYSICAL_START is kernstart_addr - a variable updated at runtime.
->  KERNELBASE     is the compile time Virtual base address of kernel.
+> Below is the code :
+> *My ISR*
 > 
-> This won't work for us, as the kernstart_addr may change at runtime, even
-> though the mapping doesn't change.
+> irqreturn_t cpld_irq_handler(int irq, void * dev_id, struct pt_regs *regs)
+> 
+> {
+> 
+> wake_up(&cpld_intr_wait);
+> 
+> atomic_inc(&cpld_intr_data); /* incrementing this will indicate the
+> poll() that the interrupt is occured */
 
-That seems to tell me that PHYSICAL_START and kernstart_addr shouldn't
-be the same variable.  We should break them apart so that we can move
-the kernel's starting physical address without changing the virt/phys
-mapping.
+None of this should schedule when run in interrupt context.
 
-Which, I'm fearing, was what Suzuki's first patch did, and I failed to
-grok it.
+The only thing that comes to mind is possibly wake_up(), if you're
+running the RT patch but somehow the interrupt isn't in a thread.
 
--- Dave
+> return 0;
+
+Not related, but return IRQ_HANDLED;
+
+-Scott
