@@ -1,33 +1,20 @@
-Return-Path: <eli@dev.mellanox.co.il>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B062BB6F8B
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
+	[203.91.198.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 046CAB6F9F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Oct 2011 19:15:12 +1100 (EST)
-Received: by eyh5 with SMTP id 5so1334945eyh.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 05 Oct 2011 01:15:07 -0700 (PDT)
-Date: Wed, 5 Oct 2011 10:15:02 +0200
-From: Eli Cohen <eli@dev.mellanox.co.il>
-To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
-	enabled
-Message-ID: <20111005081502.GB2681@mtldesk30>
-References: <1317388995-411-1-git-send-email-cascardo@linux.vnet.ibm.com>
-	<953B660C027164448AE903364AC447D2235D9A8C@MTLDAG02.mtl.com>
-	<20111003143721.GA3596@oc1711230544.ibm.com>
-	<953B660C027164448AE903364AC447D2235DAA9D@MTLDAG02.mtl.com>
-	<20111003205358.GB3596@oc1711230544.ibm.com>
-	<1317708132.29415.213.camel@pasglop>
-	<20111004202620.GA3455@oc1711230544.ibm.com>
+	Wed,  5 Oct 2011 22:24:43 +1100 (EST)
+From: <smitha.vanga@wipro.com>
+To: <scottwood@freescale.com>
+Subject: BUG: scheduling while atomic:
+Date: Wed, 5 Oct 2011 11:24:25 +0000
+Message-ID: <40631E9A2581F14BA60888C87A76A1FE014A35@HYD-MKD-MBX4.wipro.com>
+Content-Type: multipart/alternative;
+	boundary="_000_40631E9A2581F14BA60888C87A76A1FE014A35HYDMKDMBX4wiproco_"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111004202620.GA3455@oc1711230544.ibm.com>
-Cc: Eli Cohen <eli@mellanox.co.il>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, Yevgeny Petrilin <yevgenyp@mellanox.co.il>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,106 +24,234 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 04, 2011 at 05:26:20PM -0300, Thadeu Lima de Souza Cascardo wrote:
+--_000_40631E9A2581F14BA60888C87A76A1FE014A35HYDMKDMBX4wiproco_
+Content-Type: text/plain; charset="us-ascii"
+content-transfer-encoding: quoted-printable
 
-I believe we have an endianess problem here. The source buffer is in
-big endian - in x86 archs, it will rich the pci device unswapped since
-both x86 and pci are little endian. In ppc, it wil be swapped by the
-chipset so it will reach the device in little endian which is wrong.
-So, in mlx4_bf_copy, you could loop over the buffer and swap32 the all
-the dwords before the call to __iowrite64_copy. Of course which should
-fix this in an arch independent manner. Let me know this works for
-you.
+Hi Scoot,
 
-> On Tue, Oct 04, 2011 at 08:02:12AM +0200, Benjamin Herrenschmidt wrote:
-> > On Mon, 2011-10-03 at 17:53 -0300, Thadeu Lima de Souza Cascardo wrote:
-> > 
-> >  .../...
-> > 
-> > > > Can you also send me the output of ethtool -i?
-> > > > It seems that there is a problem with write combining on Power processors, we will check this issue.
-> > > > 
-> > > > Yevgeny
-> > > 
-> > > Hello, Yevgeny.
-> > > 
-> > > You will find the output of ethtool -i below.
-> > > 
-> > > I am copying Ben and powerpc list, in case this is an issue with Power
-> > > processors. They can provide us some more insight into this.
-> > 
-> > May I get some background please ? :-)
-> > 
-> > I'm not aware of a specific issue with write combining but I'd need to
-> > know more about what you are doing and the code to do it to comment on
-> > whether it should work or not.
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > 
-> 
-> Hello, Ben.
-> 
-> Sorry for that. I am testing mlx4_en driver on a POWER. Yevgeny has
-> added blue frame support, that does not require writing to the device
-> memory to indicate a new packet (the doorbell register as it is called).
-> 
-> Well, the ring is getting full with no interrupt or packets transmitted.
-> I simply added a write to the doorbell register and it works for me.
-> Yevgeny says this is not the right fix, claiming there is a problem with
-> write combining on POWER. The code uses memory barriers, so I don't know
-> why there is any problem.
-> 
-> I am posting the code here to show better what the situation is.
-> Yevgeny can tell more about the device and the driver.
-> 
-> The code below is the driver as of now, including a diff with what I
-> changed and had resulted OK for me. Before the blue frame support, the
-> only code executed was the else part. I can't tell much what the device
-> should be seeing and doing after the blue frame part of the code is
-> executed. But it does send the packet if I write to the doorbell
-> register.
-> 
-> Yevgeny, can you tell us what the device should be doing and why you
-> think this is a problem on POWER? Is it possible that this is simply a
-> problem with the firmware version?
-> 
-> Thanks,
-> Cascardo.
-> 
-> ---
->         if (ring->bf_enabled && desc_size <= MAX_BF && !bounce &&
-> !vlan_tag) {
->                 *(u32 *) (&tx_desc->ctrl.vlan_tag) |=
-> ring->doorbell_qpn;
->                 op_own |= htonl((bf_index & 0xffff) << 8);
->                 /* Ensure new descirptor hits memory
->                 * before setting ownership of this descriptor to HW */
->                 wmb();
->                 tx_desc->ctrl.owner_opcode = op_own;
-> 
->                 wmb();
-> 
->                 mlx4_bf_copy(ring->bf.reg + ring->bf.offset, (unsigned
-> long *) &tx_desc->ctrl,
->                      desc_size);
-> 
->                 wmb();
-> 
->                 ring->bf.offset ^= ring->bf.buf_size;
->         } else {
->                 /* Ensure new descirptor hits memory
->                 * before setting ownership of this descriptor to HW */
->                 wmb();
->                 tx_desc->ctrl.owner_opcode = op_own;
-> -               wmb();
-> -               writel(ring->doorbell_qpn, ring->bf.uar->map +
-> MLX4_SEND_DOORBELL);
->         }
-> 
-> +       wmb();
-> +       writel(ring->doorbell_qpn, ring->bf.uar->map +
-> MLX4_SEND_DOORBELL);
-> +
-> ---
+ When my  ISR gets exeuted I get a below BUG. Could let me what I am doing w=
+rong in the ISR?
+
+
+ BUG: scheduling while atomic: IRQ-20/0x0fff0000/108
+Call Trace:
+[C3AEFEC0] [C0007CCC]  (unreliable)
+[C3AEFEF0] [C0017F10]
+[C3AEFF00] [C0268818]
+[C3AEFF50] [C0017F44]
+[C3AEFF60] [C0018044]
+[C3AEFF70] [C0046A90]
+[C3AEFF90] [C0046D90]
+[C3AEFFC0] [C0032AFC]
+[C3AEFFF0] [C000F5AC]
+
+
+Below is the code :
+My ISR
+
+irqreturn_t cpld_irq_handler(int irq, void * dev_id, struct pt_regs *regs)
+
+{
+
+wake_up(&cpld_intr_wait);
+
+atomic_inc(&cpld_intr_data); /* incrementing this will indicate the poll() t=
+hat the interrupt is occured */
+
+return 0;
+
+}
+
+DRIVER_INIT
+static int __init gpio_init(void)
+{
+        int ret =3D 0;
+        int virq;
+
+
+    atomic_set(&cpld_intr_data, 0);                     /* initialize the In=
+terrupt indicator */
+    init_waitqueue_head(&cpld_intr_wait);               /* Initialize the wa=
+it queue */
+
+    virq =3D irq_create_mapping(NULL, CPLD1_INTERRUPT);
+
+
+   if ((ret =3D request_irq(virq,cpld_irq_handler, 0, GPIO_CHAR_PATH, NULL))=
+!=3D0)
+   {
+      printk(KERN_ERR "gpio_init: Could not grab IRQ line for CPLD ret =3D %=
+d\n",ret);
+          goto err1;
+   }
+
+
+        if((s_nGPIOMajor =3D register_chrdev(MPC8247_DEVICE_MAJOR_NUM, GPIO_=
+CHAR_PATH, &gpio_fops))<0)
+        {
+                GPIO_DBG2("GPIO_DRIVER  : unable to get major %d\n", s_nGPIO=
+Major);
+                return s_nGPIOMajor;
+
+        }else{
+                GPIO_DBG2("GPIO_DRIVER  : major =3D %x\n", s_nGPIOMajor );
+        }
+
+        return 0;
+
+}
+
+Thanks in Advance
+
+Regards,
+Smitha
+
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
+
+--_000_40631E9A2581F14BA60888C87A76A1FE014A35HYDMKDMBX4wiproco_
+Content-Type: text/html; charset="us-ascii"
+content-transfer-encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii">
+<title></title>
+<meta content=3D"MSHTML 6.00.2900.3698" name=3D"GENERATOR">
+</head>
+<body>
+<div dir=3D"ltr" align=3D"left"><font size=3D"2">Hi Scoot,<br>
+<br>
+<span class=3D"123312911-05102011"><font face=3D"Arial" color=3D"#0000ff">&n=
+bsp;<font face=3D"Times New Roman" color=3D"#000000">When my
+</font>&nbsp;<font face=3D"Times New Roman" color=3D"#000000">ISR gets exeut=
+ed I get&nbsp;a below BUG. Could let me what I am doing wrong in the ISR?</f=
+ont></font></span></font></div>
+<div dir=3D"ltr" align=3D"left"><span class=3D"123312911-05102011"></span><f=
+ont color=3D"#ff0000"><font size=3D"2"><span class=3D"123312911-05102011"><f=
+ont face=3D"Arial" color=3D"#0000ff">&nbsp;</font></span></font></font></div=
+>
+<div dir=3D"ltr" align=3D"left"><font color=3D"#ff0000"><font size=3D"2"><sp=
+an class=3D"123312911-05102011"></span></font></font>&nbsp;</div>
+<div dir=3D"ltr" align=3D"left"><font color=3D"#ff0000"><font size=3D"2"><sp=
+an class=3D"123312911-05102011">&nbsp;</span>BUG: scheduling while atomic: I=
+RQ-20/0x0fff0000/108<br>
+Call Trace:<br>
+[C3AEFEC0] [C0007CCC]&nbsp; (unreliable)<br>
+[C3AEFEF0] [C0017F10] <br>
+[C3AEFF00] [C0268818] <br>
+[C3AEFF50] [C0017F44] <br>
+[C3AEFF60] [C0018044] <br>
+[C3AEFF70] [C0046A90] <br>
+[C3AEFF90] [C0046D90] <br>
+[C3AEFFC0] [C0032AFC] <br>
+[C3AEFFF0] [C000F5AC]</font></font></div>
+<p><font color=3D"#ff0000"><br>
+</font><br>
+<font size=3D"2">Below is the code :<br>
+<font face=3D"Arial" color=3D"#0000ff"><strong>My ISR</strong></font></font>=
+</p>
+<div><font face=3D"Arial" color=3D"#0000ff"><span lang=3D"EN">
+<p><font size=3D"2">irqreturn_t cpld_irq_handler(int irq, void * dev_id, str=
+uct pt_regs *regs)</font></p>
+<p><font size=3D"2">{</font></p>
+<p><font size=3D"2">wake_up(&amp;cpld_intr_wait);</font></p>
+<p><font color=3D"#ff0000" size=3D"2">atomic_inc(&amp;cpld_intr_data); /* in=
+crementing this will indicate the poll() that the interrupt is occured */</f=
+ont></p>
+<p><font size=3D"2"></font></p>
+<p><font size=3D"2">return 0;</font></p>
+<p><font size=3D"2">}</font></p>
+</span></font></div>
+<div><font face=3D"Arial" color=3D"#0000ff" size=3D"2"><strong>DRIVER_INIT</=
+strong></font></div>
+<div><font size=3D"2">static int __init gpio_init(void)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int ret =3D 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int virq;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp; </font><font size=3D"2"><font color=3D"#0000ff">atomic_se=
+t(&amp;cpld_intr_data, 0);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* in=
+itialize the Interrupt indicator */<br>
+</font>&nbsp;&nbsp;&nbsp; init_waitqueue_head(&amp;cpld_intr_wait);&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+ /* Initialize the wait queue */<br>
+</font></div>
+<p><font size=3D"2">&nbsp;&nbsp;&nbsp; virq =3D irq_create_mapping(NULL, CPL=
+D1_INTERRUPT);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;<br>
+&nbsp;&nbsp; if ((ret =3D request_irq(virq,cpld_irq_handler, 0, GPIO_CHAR_PA=
+TH, NULL))!=3D0)<br>
+&nbsp;&nbsp; {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printk(KERN_ERR &quot;gpio_init: Could not gr=
+ab IRQ line for CPLD ret =3D %d\n&quot;,ret);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; goto err1;<br>
+&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if((s_nGPIOMajor =3D register_chr=
+dev(MPC8247_DEVICE_MAJOR_NUM, GPIO_CHAR_PATH, &amp;gpio_fops))&lt;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; GPIO_DBG2(&quot;GPIO_DRIVER&nbsp; : unable to get major %d\n&quot;=
+, s_nGPIOMajor);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; return s_nGPIOMajor;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }else{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; GPIO_DBG2(&quot;GPIO_DRIVER&nbsp; : major =3D %x\n&quot;, s_nGPIOM=
+ajor );<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+}</font> </p>
+<p><span class=3D"123312911-05102011"><font size=3D"2">Thanks in Advance</fo=
+nt></span></p>
+<p><font size=3D"2">Regards,<br>
+Smitha</font></p>
+<P><strong><span style=3D'font-size:10.0pt;font-family:=0A=
+"Palatino Linotype","serif";color:green'> Please do not print this email unl=
+ess it is absolutely necessary. </span></strong><span style=3D'font-family:"=
+Arial","sans-serif"'><o:p></o:p></span></p>=0A=
+=0A=
+=0A=
+<p> The information contained in this electronic message and any attachments=
+ to this message are intended for the exclusive use of the addressee(s) and=
+ may contain proprietary, confidential or privileged information. If you are=
+ not the intended recipient, you should not disseminate, distribute or copy=
+ this e-mail. Please notify the sender immediately and destroy all copies of=
+ this message and any attachments. </p>=0A=
+=0A=
+<p>WARNING: Computer viruses can be transmitted via email. The recipient sho=
+uld check this email and any attachments for the presence of viruses. The co=
+mpany accepts no liability for any damage caused by any virus transmitted by=
+ this email. </p>=0A=
+<p>=0A=
+www.wipro.com=0A=
+</p>
+</body>
+</html>
+
+--_000_40631E9A2581F14BA60888C87A76A1FE014A35HYDMKDMBX4wiproco_--
