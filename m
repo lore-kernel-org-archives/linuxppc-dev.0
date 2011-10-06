@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0E86AB708F
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Oct 2011 23:53:48 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 22EADB6F9D
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Oct 2011 23:53:49 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p96CrhvR021952
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Oct 2011 07:53:44 -0500
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p96Crj5Z021963
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Oct 2011 07:53:45 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] powerpc/book3e-64: Fix debug support for userspace
-Date: Thu,  6 Oct 2011 07:53:40 -0500
-Message-Id: <1317905621-5537-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1317905621-5537-2-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 4/4] powerpc/booke: Re-organize debug code
+Date: Thu,  6 Oct 2011 07:53:41 -0500
+Message-Id: <1317905621-5537-4-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1317905621-5537-3-git-send-email-galak@kernel.crashing.org>
 References: <1317905621-5537-1-git-send-email-galak@kernel.crashing.org>
 	<1317905621-5537-2-git-send-email-galak@kernel.crashing.org>
+	<1317905621-5537-3-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,71 +25,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the introduction of CONFIG_PPC_ADV_DEBUG_REGS user space debug is
-broken on Book-E 64-bit parts that support delayed debug events.  When
-switch_booke_debug_regs() sets DBCR0 we'll start getting debug events as
-MSR_DE is also set and we aren't able to handle debug events from kernel
-space.
+* set_dabr/do_dabr are no longer used when CNFIG_PPC_ADV_DEBUG_REGS is set
+  refactor code a bit such that we only build the dabr code for
+  !CONFIG_PPC_ADV_DEBUG_REGS and removed some CONFIG_PPC_ADV_DEBUG_REGS
+  code in set_dabr that would never get built.
 
-We can remove the hack that always enables MSR_DE and loads up DBCR0 and
-just utilize switch_booke_debug_regs() to get user space debug working
-again.
-
-We still need to handle critical/debug exception stacks & proper
-save/restore of state for those exception levles to support debug events
-from kernel space like we have on 32-bit.
+* Move do_send_trap into traps.c as its only used there
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/reg_booke.h |    2 +-
- arch/powerpc/kernel/process.c        |   22 ----------------------
- 2 files changed, 1 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/system.h |    5 +--
+ arch/powerpc/kernel/process.c     |   97 +++++++++++++-----------------------
+ arch/powerpc/kernel/traps.c       |   17 +++++++
+ 3 files changed, 53 insertions(+), 66 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index 9ec0b39..4dfa21c 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -31,7 +31,7 @@
+diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
+index e30a13d..1dc5d9c 100644
+--- a/arch/powerpc/include/asm/system.h
++++ b/arch/powerpc/include/asm/system.h
+@@ -111,11 +111,8 @@ static inline int debugger_dabr_match(struct pt_regs *regs) { return 0; }
+ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+ #endif
  
- #define MSR_		MSR_ME | MSR_CE
- #define MSR_KERNEL	MSR_ | MSR_64BIT
--#define MSR_USER32	MSR_ | MSR_PR | MSR_EE | MSR_DE
-+#define MSR_USER32	MSR_ | MSR_PR | MSR_EE
- #define MSR_USER64	MSR_USER32 | MSR_64BIT
- #elif defined (CONFIG_40x)
- #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR|MSR_CE)
++#ifndef CONFIG_PPC_ADV_DEBUG_REGS
+ extern int set_dabr(unsigned long dabr);
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-extern void do_send_trap(struct pt_regs *regs, unsigned long address,
+-			 unsigned long error_code, int signal_code, int brkpt);
+-#else
+ extern void do_dabr(struct pt_regs *regs, unsigned long address,
+ 		    unsigned long error_code);
+ #endif
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a1b5981..269a309 100644
+index 269a309..989e574 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -486,28 +486,6 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	new_thread = &new->thread;
- 	old_thread = &current->thread;
+@@ -251,50 +251,6 @@ void discard_lazy_cpu_state(void)
+ #endif /* CONFIG_SMP */
  
--#if defined(CONFIG_PPC_BOOK3E_64)
--	/* XXX Current Book3E code doesn't deal with kernel side DBCR0,
--	 * we always hold the user values, so we set it now.
--	 *
--	 * However, we ensure the kernel MSR:DE is appropriately cleared too
--	 * to avoid spurrious single step exceptions in the kernel.
--	 *
--	 * This will have to change to merge with the ppc32 code at some point,
--	 * but I don't like much what ppc32 is doing today so there's some
--	 * thinking needed there
--	 */
--	if ((new_thread->dbcr0 | old_thread->dbcr0) & DBCR0_IDM) {
--		u32 dbcr0;
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-void do_send_trap(struct pt_regs *regs, unsigned long address,
+-		  unsigned long error_code, int signal_code, int breakpt)
+-{
+-	siginfo_t info;
 -
--		mtmsr(mfmsr() & ~MSR_DE);
--		isync();
--		dbcr0 = mfspr(SPRN_DBCR0);
--		dbcr0 = (dbcr0 & DBCR0_EDM) | new_thread->dbcr0;
--		mtspr(SPRN_DBCR0, dbcr0);
+-	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+-			11, SIGSEGV) == NOTIFY_STOP)
+-		return;
+-
+-	/* Deliver the signal to userspace */
+-	info.si_signo = SIGTRAP;
+-	info.si_errno = breakpt;	/* breakpoint or watchpoint id */
+-	info.si_code = signal_code;
+-	info.si_addr = (void __user *)address;
+-	force_sig_info(SIGTRAP, &info, current);
+-}
+-#else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
+-void do_dabr(struct pt_regs *regs, unsigned long address,
+-		    unsigned long error_code)
+-{
+-	siginfo_t info;
+-
+-	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+-			11, SIGSEGV) == NOTIFY_STOP)
+-		return;
+-
+-	if (debugger_dabr_match(regs))
+-		return;
+-
+-	/* Clear the DABR */
+-	set_dabr(0);
+-
+-	/* Deliver the signal to userspace */
+-	info.si_signo = SIGTRAP;
+-	info.si_errno = 0;
+-	info.si_code = TRAP_HWBKPT;
+-	info.si_addr = (void __user *)address;
+-	force_sig_info(SIGTRAP, &info, current);
+-}
+-#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
+-
+-static DEFINE_PER_CPU(unsigned long, current_dabr);
+-
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ /*
+  * Set the debug registers back to their default "safe" values.
+  */
+@@ -357,16 +313,7 @@ static void switch_booke_debug_regs(struct thread_struct *new_thread)
+ 			prime_debug_regs(new_thread);
+ }
+ #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
+-#ifndef CONFIG_HAVE_HW_BREAKPOINT
+-static void set_debug_reg_defaults(struct thread_struct *thread)
+-{
+-	if (thread->dabr) {
+-		thread->dabr = 0;
+-		set_dabr(0);
 -	}
--#endif /* CONFIG_PPC64_BOOK3E */
+-}
+-#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
+-#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
++static DEFINE_PER_CPU(unsigned long, current_dabr);
+ 
+ int set_dabr(unsigned long dabr)
+ {
+@@ -376,19 +323,45 @@ int set_dabr(unsigned long dabr)
+ 		return ppc_md.set_dabr(dabr);
+ 
+ 	/* XXX should we have a CPU_FTR_HAS_DABR ? */
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-	mtspr(SPRN_DAC1, dabr);
+-#ifdef CONFIG_PPC_47x
+-	isync();
+-#endif
+-#elif defined(CONFIG_PPC_BOOK3S)
+ 	mtspr(SPRN_DABR, dabr);
+-#endif
 -
+ 
+ 	return 0;
+ }
+ 
++void do_dabr(struct pt_regs *regs, unsigned long address,
++		    unsigned long error_code)
++{
++	siginfo_t info;
++
++	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
++			11, SIGSEGV) == NOTIFY_STOP)
++		return;
++
++	if (debugger_dabr_match(regs))
++		return;
++
++	/* Clear the DABR */
++	set_dabr(0);
++
++	/* Deliver the signal to userspace */
++	info.si_signo = SIGTRAP;
++	info.si_errno = 0;
++	info.si_code = TRAP_HWBKPT;
++	info.si_addr = (void __user *)address;
++	force_sig_info(SIGTRAP, &info, current);
++}
++
++#ifndef CONFIG_HAVE_HW_BREAKPOINT
++static void set_debug_reg_defaults(struct thread_struct *thread)
++{
++	if (thread->dabr) {
++		thread->dabr = 0;
++		set_dabr(0);
++	}
++}
++#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
++#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
++
  #ifdef CONFIG_PPC64
- 	/*
- 	 * Collect processor utilization data per process
+ DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
+ #endif
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index db733d3..edc1108 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1184,6 +1184,23 @@ void SoftwareEmulation(struct pt_regs *regs)
+ #endif /* CONFIG_8xx */
+ 
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
++static void do_send_trap(struct pt_regs *regs, unsigned long address,
++		  unsigned long error_code, int signal_code, int breakpt)
++{
++	siginfo_t info;
++
++	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
++			11, SIGSEGV) == NOTIFY_STOP)
++		return;
++
++	/* Deliver the signal to userspace */
++	info.si_signo = SIGTRAP;
++	info.si_errno = breakpt;	/* breakpoint or watchpoint id */
++	info.si_code = signal_code;
++	info.si_addr = (void __user *)address;
++	force_sig_info(SIGTRAP, &info, current);
++}
++
+ static void handle_debug(struct pt_regs *regs, unsigned long debug_status)
+ {
+ 	int changed = 0;
 -- 
 1.7.3.4
