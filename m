@@ -1,27 +1,20 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 63EEEB70B1
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 31212B7010
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Oct 2011 21:54:15 +1100 (EST)
-Received: by wyg36 with SMTP id 36so2845955wyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 06 Oct 2011 03:54:11 -0700 (PDT)
-Message-ID: <4E8D889F.7010401@mvista.com>
-Date: Thu, 06 Oct 2011 14:53:19 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+	Thu,  6 Oct 2011 22:06:48 +1100 (EST)
+Date: Thu, 6 Oct 2011 13:06:45 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 0/4] powerpc: Mark various interrupts IRQF_NO_THREAD
+Message-ID: <20111006110645.GA18554@iram.es>
+References: <20111005122122.553832402@linutronix.de>
+	<20111005132949.GA25028@iram.es>
+	<alpine.LFD.2.02.1110051722140.18778@ionos>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?J=F6rg_Sommer?= <joerg@alea.gnuu.de>
-Subject: Re: [PATCH] libata: Convert LED disk trigger from IDE to libata
-References: <38bd3a0590c6b069e2e6ff63d2bc4d039a703f02.1317657893.git.joerg@alea.gnuu.de>
-In-Reply-To: <38bd3a0590c6b069e2e6ff63d2bc4d039a703f02.1317657893.git.joerg@alea.gnuu.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	Richard Purdie <rpurdie@rpsys.net>, Jeff Garzik <jgarzik@pobox.com>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.2.02.1110051722140.18778@ionos>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,106 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On Wed, Oct 05, 2011 at 05:31:48PM +0200, Thomas Gleixner wrote:
+> On Wed, 5 Oct 2011, Gabriel Paubert wrote:
+> 
+> > On Wed, Oct 05, 2011 at 12:30:49PM -0000, Thomas Gleixner wrote:
+> > > The following series marks the obvious interrupts IRQF_NO_THREAD to
+> > > prevent forced interrupt threading - no guarantee of completeness :)
+> > > 
+> > > The last patch enables the forced threading mechanism in the core
+> > > code, which in turn enables the "irqthreaded" commandline option.
+> > 
+> > Is there any description of what "interrupt threading" means?
+> 
+> That means that the interrupt handler is running in a thread. The
+> interrupt itself merily wakes the thread. That's a debugging option in
+> mainline - it comes handy when interrupt handlers crash as the system
+> just kills the thread, but stays otherwise alive. If the same
+> situation happens in the normal hard interrupt context, then it takes
+> them machine down completely.
+> 
+> Aside of that it's a prerequisite to support PREEMPT_RT on your
+> arch/machine.
+> 
+> > I'm only looking for a pointer to a web page, a mailing list thread
+> 
+> https://lwn.net/Articles/429690/
 
-On 03-10-2011 20:07, Jörg Sommer wrote:
+Thanks.
 
-> This patch converts the trigger for the LED at the front of Apple's
-> iBooks to libata. It's merely a replacement of the string ide by disk.
+> 
+> > (I am no more subscribed to lkml, too many things to do, so maybe
+> > it has been discussed but it comes out of the blue on linuxppc-dev), 
+> > or a well commented git commit?
+> > 
+> > >From followups, I see that cascaded interrupt controller should
+> > not be threaded. I suspect that the private VME bridge driver
+> > (Universe chip) I maintain here will need it: clients request
+> > a given VME interrupt (level/vector) and specify an interrupt
+> > handler which is called by the handler for the PCI interrupt.
+> 
+> Can't tell as I don't know how your code looks like. If your
+> subinterrupts are registered with the core interrupt system and the
+> drivers install their handlers via request_irq(), then yes. If you
+> just have your own registration and handling stuff (which you
+> shouldn't) then you might be better off to let the dispatch interrupt
+> handler be threaded so that all the demuxed ones run in that same
+> thread.
 
-> The patch is taken from http://dev.gentoo.org/~josejx/ata.patch. I've
-> asked Joseph Jezak if he intends to send this patch upstream, but as he
-> did not reply I'll do so.
 
-    The patch needs to be signed off, it cannot be applied otherwise.
+Well, for now I have my own registration, because when I originally wrote
+the code (over a decade ago), there was no simple way to add potentially
+~1800 additional interrupt sources (and the size of the interrupt descriptor
+array on a machine with 16MB of RAM was not negligible, it became several
+percent of the, minimalistic, kernel). 
 
-> ---
->   arch/powerpc/configs/pmac32_defconfig |    2 +-
->   arch/powerpc/configs/ppc6xx_defconfig |    2 +-
->   drivers/ata/libata-core.c             |    4 ++
->   drivers/ide/ide-disk.c                |    2 +-
->   drivers/leds/Kconfig                  |   10 +++---
->   drivers/leds/Makefile                 |    2 +-
->   drivers/leds/ledtrig-disk.c           |   64 +++++++++++++++++++++++++++++++++
->   drivers/leds/ledtrig-ide-disk.c       |   64 ---------------------------------
->   drivers/macintosh/Kconfig             |   11 +++---
->   drivers/macintosh/via-pmu-led.c       |    4 +-
->   include/linux/leds.h                  |    6 ++--
->   11 files changed, 87 insertions(+), 84 deletions(-)
->   create mode 100644 drivers/leds/ledtrig-disk.c
->   delete mode 100644 drivers/leds/ledtrig-ide-disk.c
+This might be feasible now, but I still have boards with the first release 
+of the bridge, which has very nasty interrupt related bugs (sometimes it 
+incorrectly reports the level, only the vector is correct).
 
-    You should use -C/-M git options to detect file renames.
-
-> diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
-> index f8b394a..cff5d4e 100644
-> --- a/arch/powerpc/configs/pmac32_defconfig
-> +++ b/arch/powerpc/configs/pmac32_defconfig
-> @@ -180,7 +180,7 @@ CONFIG_ADB=y
->   CONFIG_ADB_CUDA=y
->   CONFIG_ADB_PMU=y
->   CONFIG_ADB_PMU_LED=y
-> -CONFIG_ADB_PMU_LED_IDE=y
-> +CONFIG_ADB_PMU_LED_DISK=y
->   CONFIG_PMAC_APM_EMU=m
->   CONFIG_PMAC_MEDIABAY=y
->   CONFIG_PMAC_BACKLIGHT=y
-> diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-> index 04360f9..c56464d 100644
-> --- a/arch/powerpc/configs/ppc6xx_defconfig
-> +++ b/arch/powerpc/configs/ppc6xx_defconfig
-> @@ -471,7 +471,7 @@ CONFIG_ADB=y
->   CONFIG_ADB_CUDA=y
->   CONFIG_ADB_PMU=y
->   CONFIG_ADB_PMU_LED=y
-> -CONFIG_ADB_PMU_LED_IDE=y
-> +CONFIG_ADB_PMU_LED_DISK=y
->   CONFIG_PMAC_APM_EMU=y
->   CONFIG_PMAC_MEDIABAY=y
->   CONFIG_PMAC_BACKLIGHT=y
-
-    Defconfigs should be changed by a separate patch.
-
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 4a3a5ae..d37e3a2 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -66,6 +66,7 @@
->   #include<asm/byteorder.h>
->   #include<linux/cdrom.h>
->   #include<linux/ratelimit.h>
-> +#include<linux/leds.h>
->
->   #include "libata.h"
->   #include "libata-transport.h"
-> @@ -4823,6 +4824,9 @@ void ata_qc_complete(struct ata_queued_cmd *qc)
->   {
->   	struct ata_port *ap = qc->ap;
->
-> +	/* Trigger the LED (if available) */
-> +	ledtrig_disk_activity();
-> +
->   	/* XXX: New EH and old EH use different mechanisms to
->   	 * synchronize EH with regular execution path.
->   	 *
-
-    This also seems a material for the separate patch. You should first do a 
-file/function rename and then add support for libata, I think.
-
-> diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-> index 2747980..cb25bd6 100644
-> --- a/drivers/ide/ide-disk.c
-> +++ b/drivers/ide/ide-disk.c
-> @@ -186,7 +186,7 @@ static ide_startstop_t ide_do_rw_disk(ide_drive_t *drive, struct request *rq,
->   	BUG_ON(drive->dev_flags&  IDE_DFLAG_BLOCKED);
->   	BUG_ON(rq->cmd_type != REQ_TYPE_FS);
->
-> -	ledtrig_ide_activity();
-> +	ledtrig_disk_activity();
-
-    Hm, the trigger point seems asymmetric to that one you added to libata. 
-Here you trigger before executing a request, and in libata after a command 
-completes; also, in libata you also trigger on ATAPI devices, while here only 
-on ATA devices...
-
-WBR, Sergei
+	Regards,	
+	Gabriel
