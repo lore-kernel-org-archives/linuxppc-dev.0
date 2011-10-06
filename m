@@ -1,21 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 22EADB6F9D
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Oct 2011 23:53:49 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p96Crj5Z021963
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Oct 2011 07:53:45 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/4] powerpc/booke: Re-organize debug code
-Date: Thu,  6 Oct 2011 07:53:41 -0500
-Message-Id: <1317905621-5537-4-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1317905621-5537-3-git-send-email-galak@kernel.crashing.org>
-References: <1317905621-5537-1-git-send-email-galak@kernel.crashing.org>
-	<1317905621-5537-2-git-send-email-galak@kernel.crashing.org>
-	<1317905621-5537-3-git-send-email-galak@kernel.crashing.org>
+Return-Path: <eli@dev.mellanox.co.il>
+Received: from mail-ww0-f41.google.com (mail-ww0-f41.google.com [74.125.82.41])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 298B5B6F98
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  7 Oct 2011 00:58:09 +1100 (EST)
+Received: by wwf10 with SMTP id 10so7717071wwf.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 06 Oct 2011 06:58:04 -0700 (PDT)
+Date: Thu, 6 Oct 2011 15:57:59 +0200
+From: Eli Cohen <eli@dev.mellanox.co.il>
+To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
+	enabled
+Message-ID: <20111006135759.GH2681@mtldesk30>
+References: <1317388995-411-1-git-send-email-cascardo@linux.vnet.ibm.com>
+	<953B660C027164448AE903364AC447D2235D9A8C@MTLDAG02.mtl.com>
+	<20111003143721.GA3596@oc1711230544.ibm.com>
+	<953B660C027164448AE903364AC447D2235DAA9D@MTLDAG02.mtl.com>
+	<20111003205358.GB3596@oc1711230544.ibm.com>
+	<1317708132.29415.213.camel@pasglop>
+	<20111004202620.GA3455@oc1711230544.ibm.com>
+	<20111005081502.GB2681@mtldesk30>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111005081502.GB2681@mtldesk30>
+Cc: Eli Cohen <eli@mellanox.co.il>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, Yevgeny Petrilin <yevgenyp@mellanox.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,191 +38,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* set_dabr/do_dabr are no longer used when CNFIG_PPC_ADV_DEBUG_REGS is set
-  refactor code a bit such that we only build the dabr code for
-  !CONFIG_PPC_ADV_DEBUG_REGS and removed some CONFIG_PPC_ADV_DEBUG_REGS
-  code in set_dabr that would never get built.
+On Wed, Oct 05, 2011 at 10:15:02AM +0200, Eli Cohen wrote:
 
-* Move do_send_trap into traps.c as its only used there
+How about this patch - can you give it a try?
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+>From dee60547aa9e35a02835451d9e694cd80dd3072f Mon Sep 17 00:00:00 2001
+From: Eli Cohen <eli@mellanox.co.il>
+Date: Thu, 6 Oct 2011 15:50:02 +0200
+Subject: [PATCH] mlx4_en: Fix blue flame on powerpc
+
+The source buffer used for copying into the blue flame register is already in
+big endian. However, when copying to device on powerpc, the endianess is
+swapped so the data reaches th device in little endian which is wrong. On x86
+based platform no swapping occurs so it reaches the device with the correct
+endianess. Fix this by calling le32_to_cpu() on the buffer. On LE systems there
+is no change; on BE there will be a swap.
+
+Signed-off-by: Eli Cohen <eli@mellanox.co.il>
 ---
- arch/powerpc/include/asm/system.h |    5 +--
- arch/powerpc/kernel/process.c     |   97 +++++++++++++-----------------------
- arch/powerpc/kernel/traps.c       |   17 +++++++
- 3 files changed, 53 insertions(+), 66 deletions(-)
+ drivers/net/mlx4/en_tx.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
-index e30a13d..1dc5d9c 100644
---- a/arch/powerpc/include/asm/system.h
-+++ b/arch/powerpc/include/asm/system.h
-@@ -111,11 +111,8 @@ static inline int debugger_dabr_match(struct pt_regs *regs) { return 0; }
- static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
- #endif
+diff --git a/drivers/net/mlx4/en_tx.c b/drivers/net/mlx4/en_tx.c
+index 16337fb..3743acc 100644
+--- a/drivers/net/mlx4/en_tx.c
++++ b/drivers/net/mlx4/en_tx.c
+@@ -601,6 +601,16 @@ u16 mlx4_en_select_queue(struct net_device *dev, struct sk_buff *skb)
  
-+#ifndef CONFIG_PPC_ADV_DEBUG_REGS
- extern int set_dabr(unsigned long dabr);
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--extern void do_send_trap(struct pt_regs *regs, unsigned long address,
--			 unsigned long error_code, int signal_code, int brkpt);
--#else
- extern void do_dabr(struct pt_regs *regs, unsigned long address,
- 		    unsigned long error_code);
- #endif
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 269a309..989e574 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -251,50 +251,6 @@ void discard_lazy_cpu_state(void)
- #endif /* CONFIG_SMP */
- 
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
--void do_send_trap(struct pt_regs *regs, unsigned long address,
--		  unsigned long error_code, int signal_code, int breakpt)
--{
--	siginfo_t info;
--
--	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
--			11, SIGSEGV) == NOTIFY_STOP)
--		return;
--
--	/* Deliver the signal to userspace */
--	info.si_signo = SIGTRAP;
--	info.si_errno = breakpt;	/* breakpoint or watchpoint id */
--	info.si_code = signal_code;
--	info.si_addr = (void __user *)address;
--	force_sig_info(SIGTRAP, &info, current);
--}
--#else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
--void do_dabr(struct pt_regs *regs, unsigned long address,
--		    unsigned long error_code)
--{
--	siginfo_t info;
--
--	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
--			11, SIGSEGV) == NOTIFY_STOP)
--		return;
--
--	if (debugger_dabr_match(regs))
--		return;
--
--	/* Clear the DABR */
--	set_dabr(0);
--
--	/* Deliver the signal to userspace */
--	info.si_signo = SIGTRAP;
--	info.si_errno = 0;
--	info.si_code = TRAP_HWBKPT;
--	info.si_addr = (void __user *)address;
--	force_sig_info(SIGTRAP, &info, current);
--}
--#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
--
--static DEFINE_PER_CPU(unsigned long, current_dabr);
--
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- /*
-  * Set the debug registers back to their default "safe" values.
-  */
-@@ -357,16 +313,7 @@ static void switch_booke_debug_regs(struct thread_struct *new_thread)
- 			prime_debug_regs(new_thread);
- }
- #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
--#ifndef CONFIG_HAVE_HW_BREAKPOINT
--static void set_debug_reg_defaults(struct thread_struct *thread)
--{
--	if (thread->dabr) {
--		thread->dabr = 0;
--		set_dabr(0);
--	}
--}
--#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
--#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
-+static DEFINE_PER_CPU(unsigned long, current_dabr);
- 
- int set_dabr(unsigned long dabr)
+ static void mlx4_bf_copy(unsigned long *dst, unsigned long *src, unsigned bytecnt)
  {
-@@ -376,19 +323,45 @@ int set_dabr(unsigned long dabr)
- 		return ppc_md.set_dabr(dabr);
- 
- 	/* XXX should we have a CPU_FTR_HAS_DABR ? */
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--	mtspr(SPRN_DAC1, dabr);
--#ifdef CONFIG_PPC_47x
--	isync();
--#endif
--#elif defined(CONFIG_PPC_BOOK3S)
- 	mtspr(SPRN_DABR, dabr);
--#endif
--
- 
- 	return 0;
++	int i;
++	__le32 *psrc = (__le32 *)src;
++
++	/*
++	 * the buffer is already in big endian. For little endian machines that's
++	 * fine. For big endain machines we must swap since the chipset swaps again
++	 */
++	for (i = 0; i < bytecnt / 4; ++i)
++		psrc[i] = le32_to_cpu(psrc[i]);
++
+ 	__iowrite64_copy(dst, src, bytecnt / 8);
  }
  
-+void do_dabr(struct pt_regs *regs, unsigned long address,
-+		    unsigned long error_code)
-+{
-+	siginfo_t info;
-+
-+	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
-+			11, SIGSEGV) == NOTIFY_STOP)
-+		return;
-+
-+	if (debugger_dabr_match(regs))
-+		return;
-+
-+	/* Clear the DABR */
-+	set_dabr(0);
-+
-+	/* Deliver the signal to userspace */
-+	info.si_signo = SIGTRAP;
-+	info.si_errno = 0;
-+	info.si_code = TRAP_HWBKPT;
-+	info.si_addr = (void __user *)address;
-+	force_sig_info(SIGTRAP, &info, current);
-+}
-+
-+#ifndef CONFIG_HAVE_HW_BREAKPOINT
-+static void set_debug_reg_defaults(struct thread_struct *thread)
-+{
-+	if (thread->dabr) {
-+		thread->dabr = 0;
-+		set_dabr(0);
-+	}
-+}
-+#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
-+#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
-+
- #ifdef CONFIG_PPC64
- DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
- #endif
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index db733d3..edc1108 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1184,6 +1184,23 @@ void SoftwareEmulation(struct pt_regs *regs)
- #endif /* CONFIG_8xx */
- 
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
-+static void do_send_trap(struct pt_regs *regs, unsigned long address,
-+		  unsigned long error_code, int signal_code, int breakpt)
-+{
-+	siginfo_t info;
-+
-+	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
-+			11, SIGSEGV) == NOTIFY_STOP)
-+		return;
-+
-+	/* Deliver the signal to userspace */
-+	info.si_signo = SIGTRAP;
-+	info.si_errno = breakpt;	/* breakpoint or watchpoint id */
-+	info.si_code = signal_code;
-+	info.si_addr = (void __user *)address;
-+	force_sig_info(SIGTRAP, &info, current);
-+}
-+
- static void handle_debug(struct pt_regs *regs, unsigned long debug_status)
- {
- 	int changed = 0;
 -- 
-1.7.3.4
+1.7.7.rc0.70.g82660
+
+
+
+> On Tue, Oct 04, 2011 at 05:26:20PM -0300, Thadeu Lima de Souza Cascardo wrote:
+> 
+> I believe we have an endianess problem here. The source buffer is in
+> big endian - in x86 archs, it will rich the pci device unswapped since
+> both x86 and pci are little endian. In ppc, it wil be swapped by the
+> chipset so it will reach the device in little endian which is wrong.
+> So, in mlx4_bf_copy, you could loop over the buffer and swap32 the all
+> the dwords before the call to __iowrite64_copy. Of course which should
+> fix this in an arch independent manner. Let me know this works for
+> you.
+> 
+> > On Tue, Oct 04, 2011 at 08:02:12AM +0200, Benjamin Herrenschmidt wrote:
+> > > On Mon, 2011-10-03 at 17:53 -0300, Thadeu Lima de Souza Cascardo wrote:
+> > > 
+> > >  .../...
+> > > 
+> > > > > Can you also send me the output of ethtool -i?
+> > > > > It seems that there is a problem with write combining on Power processors, we will check this issue.
+> > > > > 
+> > > > > Yevgeny
+> > > > 
+> > > > Hello, Yevgeny.
+> > > > 
+> > > > You will find the output of ethtool -i below.
+> > > > 
+> > > > I am copying Ben and powerpc list, in case this is an issue with Power
+> > > > processors. They can provide us some more insight into this.
+> > > 
+> > > May I get some background please ? :-)
+> > > 
+> > > I'm not aware of a specific issue with write combining but I'd need to
+> > > know more about what you are doing and the code to do it to comment on
+> > > whether it should work or not.
+> > > 
+> > > Cheers,
+> > > Ben.
+> > > 
+> > > 
+> > 
+> > Hello, Ben.
+> > 
+> > Sorry for that. I am testing mlx4_en driver on a POWER. Yevgeny has
+> > added blue frame support, that does not require writing to the device
+> > memory to indicate a new packet (the doorbell register as it is called).
+> > 
+> > Well, the ring is getting full with no interrupt or packets transmitted.
+> > I simply added a write to the doorbell register and it works for me.
+> > Yevgeny says this is not the right fix, claiming there is a problem with
+> > write combining on POWER. The code uses memory barriers, so I don't know
+> > why there is any problem.
+> > 
+> > I am posting the code here to show better what the situation is.
+> > Yevgeny can tell more about the device and the driver.
+> > 
+> > The code below is the driver as of now, including a diff with what I
+> > changed and had resulted OK for me. Before the blue frame support, the
+> > only code executed was the else part. I can't tell much what the device
+> > should be seeing and doing after the blue frame part of the code is
+> > executed. But it does send the packet if I write to the doorbell
+> > register.
+> > 
+> > Yevgeny, can you tell us what the device should be doing and why you
+> > think this is a problem on POWER? Is it possible that this is simply a
+> > problem with the firmware version?
+> > 
+> > Thanks,
+> > Cascardo.
+> > 
+> > ---
+> >         if (ring->bf_enabled && desc_size <= MAX_BF && !bounce &&
+> > !vlan_tag) {
+> >                 *(u32 *) (&tx_desc->ctrl.vlan_tag) |=
+> > ring->doorbell_qpn;
+> >                 op_own |= htonl((bf_index & 0xffff) << 8);
+> >                 /* Ensure new descirptor hits memory
+> >                 * before setting ownership of this descriptor to HW */
+> >                 wmb();
+> >                 tx_desc->ctrl.owner_opcode = op_own;
+> > 
+> >                 wmb();
+> > 
+> >                 mlx4_bf_copy(ring->bf.reg + ring->bf.offset, (unsigned
+> > long *) &tx_desc->ctrl,
+> >                      desc_size);
+> > 
+> >                 wmb();
+> > 
+> >                 ring->bf.offset ^= ring->bf.buf_size;
+> >         } else {
+> >                 /* Ensure new descirptor hits memory
+> >                 * before setting ownership of this descriptor to HW */
+> >                 wmb();
+> >                 tx_desc->ctrl.owner_opcode = op_own;
+> > -               wmb();
+> > -               writel(ring->doorbell_qpn, ring->bf.uar->map +
+> > MLX4_SEND_DOORBELL);
+> >         }
+> > 
+> > +       wmb();
+> > +       writel(ring->doorbell_qpn, ring->bf.uar->map +
+> > MLX4_SEND_DOORBELL);
+> > +
+> > ---
