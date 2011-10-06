@@ -1,26 +1,27 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id A10B6B6F9D
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 63EEEB70B1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Oct 2011 07:48:32 +1100 (EST)
-Received: by vws10 with SMTP id 10so2736456vws.25
+	Thu,  6 Oct 2011 21:54:15 +1100 (EST)
+Received: by wyg36 with SMTP id 36so2845955wyg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 05 Oct 2011 13:38:21 -0700 (PDT)
+	Thu, 06 Oct 2011 03:54:11 -0700 (PDT)
+Message-ID: <4E8D889F.7010401@mvista.com>
+Date: Thu, 06 Oct 2011 14:53:19 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
-References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
-	<1317492077.1573.1839.camel@vkoul-udesk3>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
-Date: Wed, 5 Oct 2011 13:38:21 -0700
-Message-ID: <CABE8wwuB2HxpjWiOjASizL5L6LU2_AHhLZnAJyey__hh1jfX8Q@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
-	transfers
-From: "Williams, Dan J" <dan.j.williams@intel.com>
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Dave Jiang <dave.jiang@intel.com>, Vinod Koul <vinod.koul@intel.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org
+To: =?ISO-8859-1?Q?J=F6rg_Sommer?= <joerg@alea.gnuu.de>
+Subject: Re: [PATCH] libata: Convert LED disk trigger from IDE to libata
+References: <38bd3a0590c6b069e2e6ff63d2bc4d039a703f02.1317657893.git.joerg@alea.gnuu.de>
+In-Reply-To: <38bd3a0590c6b069e2e6ff63d2bc4d039a703f02.1317657893.git.joerg@alea.gnuu.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+	Richard Purdie <rpurdie@rpsys.net>, Jeff Garzik <jgarzik@pobox.com>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,161 +31,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 3, 2011 at 9:52 AM, Bounine, Alexandre
-<Alexandre.Bounine@idt.com> wrote:
-> Vinod Koul wrote:
->>
->> On Fri, 2011-09-30 at 17:38 -0400, Alexandre Bounine wrote:
->> Please CC *maintainers* on your patches, get_maintainers.pl will tell
->> you who. Adding Dan here
->
-> Based on https://lkml.org/lkml/2011/2/14/67 and use of DMA_SLAVE in this
-> patch I decided that you are the best match among two and there is no rea=
-son
-> to disturb Dan ;)
->
->> > Adds DMA Engine framework support into RapidIO subsystem.
->> > Uses DMA Engine DMA_SLAVE interface to generate data transfers to/from=
- remote
->> > RapidIO target devices. Uses scatterlist to describe local data buffer=
- and
->> > dma_chan.private member to pass target specific information. Supports =
-flat
->> > data buffer only for a remote side.
->> The way dmaengine works today is that it doesn't know anything about
->> client subsystem. But this brings in a subsystem details to dmaengine
->> which I don't agree with yet.
->> Why can't we abstract this out??
->
-> The only thing that brings subsystem knowledge into dmaengine is DMA_RAPI=
-DIO flag.
-> I am actually on the fence about this. From RapidIO side point of view I =
-do not
-> need that flag at all.
-> RapidIO uses a filter routine that is sufficient to identify dmaengine ch=
-annels
-> associated with specific RapidIO mport. Use of DMA_SLAVE flag is safe her=
-e.
-> Use of private member of dma_chan is "private" business of RapidIO and do=
-es
-> not break anything.
->
-> My concern here is that other subsystems may use/request DMA_SLAVE channe=
-l(s) as well
-> and wrongfully acquire one that belongs to RapidIO. In this case separati=
-on with another
-> flag may have a sense - it is possible to have a system that uses RapidIO
-> and other "traditional" DMA slave channel.
->
-> This is why I put that proposed interface for discussion instead of keepi=
-ng everything
-> inside of RapidIO.
-> If you think that situation above will not happen I will be happy to remo=
-ve
-> that subsystem knowledge from dmaengine files.
+Hello.
 
-I don't think that situation will happen, even on the same arch I
-don't think DMA_SLAVE is ready to be enabled generically.  So you're
-probably safe here.
+On 03-10-2011 20:07, Jörg Sommer wrote:
 
-> My most recent test implementation runs without DMA_RAPIDIO flag though.
+> This patch converts the trigger for the LED at the front of Apple's
+> iBooks to libata. It's merely a replacement of the string ide by disk.
+
+> The patch is taken from http://dev.gentoo.org/~josejx/ata.patch. I've
+> asked Joseph Jezak if he intends to send this patch upstream, but as he
+> did not reply I'll do so.
+
+    The patch needs to be signed off, it cannot be applied otherwise.
+
+> ---
+>   arch/powerpc/configs/pmac32_defconfig |    2 +-
+>   arch/powerpc/configs/ppc6xx_defconfig |    2 +-
+>   drivers/ata/libata-core.c             |    4 ++
+>   drivers/ide/ide-disk.c                |    2 +-
+>   drivers/leds/Kconfig                  |   10 +++---
+>   drivers/leds/Makefile                 |    2 +-
+>   drivers/leds/ledtrig-disk.c           |   64 +++++++++++++++++++++++++++++++++
+>   drivers/leds/ledtrig-ide-disk.c       |   64 ---------------------------------
+>   drivers/macintosh/Kconfig             |   11 +++---
+>   drivers/macintosh/via-pmu-led.c       |    4 +-
+>   include/linux/leds.h                  |    6 ++--
+>   11 files changed, 87 insertions(+), 84 deletions(-)
+>   create mode 100644 drivers/leds/ledtrig-disk.c
+>   delete mode 100644 drivers/leds/ledtrig-ide-disk.c
+
+    You should use -C/-M git options to detect file renames.
+
+> diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
+> index f8b394a..cff5d4e 100644
+> --- a/arch/powerpc/configs/pmac32_defconfig
+> +++ b/arch/powerpc/configs/pmac32_defconfig
+> @@ -180,7 +180,7 @@ CONFIG_ADB=y
+>   CONFIG_ADB_CUDA=y
+>   CONFIG_ADB_PMU=y
+>   CONFIG_ADB_PMU_LED=y
+> -CONFIG_ADB_PMU_LED_IDE=y
+> +CONFIG_ADB_PMU_LED_DISK=y
+>   CONFIG_PMAC_APM_EMU=m
+>   CONFIG_PMAC_MEDIABAY=y
+>   CONFIG_PMAC_BACKLIGHT=y
+> diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+> index 04360f9..c56464d 100644
+> --- a/arch/powerpc/configs/ppc6xx_defconfig
+> +++ b/arch/powerpc/configs/ppc6xx_defconfig
+> @@ -471,7 +471,7 @@ CONFIG_ADB=y
+>   CONFIG_ADB_CUDA=y
+>   CONFIG_ADB_PMU=y
+>   CONFIG_ADB_PMU_LED=y
+> -CONFIG_ADB_PMU_LED_IDE=y
+> +CONFIG_ADB_PMU_LED_DISK=y
+>   CONFIG_PMAC_APM_EMU=y
+>   CONFIG_PMAC_MEDIABAY=y
+>   CONFIG_PMAC_BACKLIGHT=y
+
+    Defconfigs should be changed by a separate patch.
+
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index 4a3a5ae..d37e3a2 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -66,6 +66,7 @@
+>   #include<asm/byteorder.h>
+>   #include<linux/cdrom.h>
+>   #include<linux/ratelimit.h>
+> +#include<linux/leds.h>
 >
->>
->> After going thru the patch, I do not believe that this this is case of
->> SLAVE transfers, Dan can you please take a look at this patch
+>   #include "libata.h"
+>   #include "libata-transport.h"
+> @@ -4823,6 +4824,9 @@ void ata_qc_complete(struct ata_queued_cmd *qc)
+>   {
+>   	struct ata_port *ap = qc->ap;
 >
-> I agree, this is not a case of "pure" slave transfers but existing DMA_SL=
-AVE
-> interface fits well into the RapidIO operations.
+> +	/* Trigger the LED (if available) */
+> +	ledtrig_disk_activity();
+> +
+>   	/* XXX: New EH and old EH use different mechanisms to
+>   	 * synchronize EH with regular execution path.
+>   	 *
+
+    This also seems a material for the separate patch. You should first do a 
+file/function rename and then add support for libata, I think.
+
+> diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
+> index 2747980..cb25bd6 100644
+> --- a/drivers/ide/ide-disk.c
+> +++ b/drivers/ide/ide-disk.c
+> @@ -186,7 +186,7 @@ static ide_startstop_t ide_do_rw_disk(ide_drive_t *drive, struct request *rq,
+>   	BUG_ON(drive->dev_flags&  IDE_DFLAG_BLOCKED);
+>   	BUG_ON(rq->cmd_type != REQ_TYPE_FS);
 >
-> First, we have only one memory mapped location on the host side. We trans=
-fer
-> data to/from location that is not mapped into memory on the same side.
->
-> Second, having ability to pass private target information allows me to pa=
-ss
-> information about remote target device on per-transfer basis.
+> -	ledtrig_ide_activity();
+> +	ledtrig_disk_activity();
 
-...but there is no expectation that these engines will be generically
-useful to other subsytems.  To be clear you are just using dmaengine
-as a match making service for your dma providers to clients, right?
+    Hm, the trigger point seems asymmetric to that one you added to libata. 
+Here you trigger before executing a request, and in libata after a command 
+completes; also, in libata you also trigger on ATAPI devices, while here only 
+on ATA devices...
 
->
->>
->>
->> > Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
->> > Cc: Vinod Koul <vinod.koul@intel.com>
->> > Cc: Kumar Gala <galak@kernel.crashing.org>
->> > Cc: Matt Porter <mporter@kernel.crashing.org>
->> > Cc: Li Yang <leoli@freescale.com>
->> > ---
->> > =A0drivers/dma/dmaengine.c =A0 | =A0 =A04 ++
-> ... skip ...
->> > +#ifdef CONFIG_RAPIDIO_DMA_ENGINE
->> > +
->> > +#include <linux/dmaengine.h>
->> > +
-> ... skip ...
->> > + */
->> > +struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev =
-*rdev,
->> > + =A0 struct dma_chan *dchan, struct rio_dma_data *data,
->> > + =A0 enum dma_data_direction direction, unsigned long flags)
->> > +{
->> > + =A0 struct dma_async_tx_descriptor *txd =3D NULL;
->> > + =A0 struct rio_dma_ext rio_ext;
->> > +
->> > + =A0 rio_ext.destid =3D rdev->destid;
->> > + =A0 rio_ext.rio_addr_u =3D data->rio_addr_u;
->> > + =A0 rio_ext.rio_addr =3D data->rio_addr;
->> > + =A0 rio_ext.wr_type =3D data->wr_type;
->> > + =A0 dchan->private =3D &rio_ext;
->> > +
->> > + =A0 txd =3D dchan->device->device_prep_slave_sg(dchan, data->sg, dat=
-a-
->> >sg_len,
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 direction, flags);
->> > +
->> > + =A0 return txd;
->> > +}
->> > +EXPORT_SYMBOL_GPL(rio_dma_prep_slave_sg);
->> You should move the rdev and data to dma_slave_config, that way you
->> should be able to use the existing _prep_slave_sg function.
->
-> RapidIO network usually has more than one device attached to it and
-> single DMA channel may service data transfers to/from several devices.
-> In this case device information should be passed on per-transfer basis.
->
-
-You could maybe do what async_tx does and just apply the extra context
-after the ->prep(), but before ->submit(), but it looks like that
-context is critical to setting up the operation.
-
-This looks pretty dangerous without knowing the other details.  What
-prevents another thread from changing dchan->private before the the
-prep routine reads it?
-
-DMA_SLAVE assumes a static relationship between dma device and
-slave-device, instead this rapid-io case is a per-operation slave
-context.  It sounds like you really do want a new dma operation type
-that is just an extra-parameter version of the current
-->device_prep_slave_sg.  But now we're getting into to
-dma_transaction_type proliferation again.  This is probably more fuel
-for the fire of creating a structure transfer template that defines
-multiple possible operation types and clients just fill in the fields
-that they need, rather than adding new operation types for every
-possible permutation of copy operation (DMA_SLAVE, DMA_MEMCPY,
-DMA_CYCLIC, DMA_SG, DMA_INTERLEAVE, DMA_RAPIDIO), it's getting to be a
-bit much.
-
-As a starting point, since this the first driver proposal to have
-per-operation slave context and there are other rapid-io specific
-considerations, maybe it's ok to have a rio_dma_prep_slave_sg() that
-does something like:
-
-struct tsi721_bdma_chan *bdma_chan =3D to_tsi721_chan(dchan);
-
-bdma_chan->prep_sg(rext, sgl, sg_len, direction, flags);
-
-Thoughts?
+WBR, Sergei
