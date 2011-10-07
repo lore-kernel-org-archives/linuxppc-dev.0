@@ -1,21 +1,23 @@
-Return-Path: <B10716@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
- [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9C94DB70FF
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2011 01:28:53 +1100 (EST)
-Message-ID: <4E8F0C60.5020003@freescale.com>
-Date: Fri, 7 Oct 2011 17:27:44 +0300
-From: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2A356B70BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2011 03:12:27 +1100 (EST)
 MIME-Version: 1.0
-To: <benh@kernel.crashing.org>
-Subject: Re: [linuxppc-dev] powerpc/64e: External Proxy interrupt support
-References: <20110802194449.GA26318@schlenkerla.am.freescale.net>
-In-Reply-To: <20110802194449.GA26318@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
+ transfers
+Date: Fri, 7 Oct 2011 09:12:11 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552022D6BC1@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <CABE8wwuB2HxpjWiOjASizL5L6LU2_AHhLZnAJyey__hh1jfX8Q@mail.gmail.com>
+References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com><1317492077.1573.1839.camel@vkoul-udesk3><0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
+ <CABE8wwuB2HxpjWiOjASizL5L6LU2_AHhLZnAJyey__hh1jfX8Q@mail.gmail.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: Dave Jiang <dave.jiang@intel.com>, Vinod Koul <vinod.koul@intel.com>,
+ linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,298 +27,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry about this. Please disregard.
+Dan J Williams wrote:
+>=20
+> On Mon, Oct 3, 2011 at 9:52 AM, Bounine, Alexandre
+> <Alexandre.Bounine@idt.com> wrote:
+> >
+> > My concern here is that other subsystems may use/request DMA_SLAVE
+channel(s) as well
+> > and wrongfully acquire one that belongs to RapidIO. In this case
+separation with another
+> > flag may have a sense - it is possible to have a system that uses
+RapidIO
+> > and other "traditional" DMA slave channel.
+> >
+> > This is why I put that proposed interface for discussion instead of
+keeping everything
+> > inside of RapidIO.
+> > If you think that situation above will not happen I will be happy to
+remove
+> > that subsystem knowledge from dmaengine files.
+>=20
+> I don't think that situation will happen, even on the same arch I
+> don't think DMA_SLAVE is ready to be enabled generically.  So you're
+> probably safe here.
 
----
-Best Regards, Laurentiu
+Thank you for confirmation. I will rely on DMA_SLAVE only as in my most
+recent
+version.=20
+=20
+> >
+> > I agree, this is not a case of "pure" slave transfers but existing
+DMA_SLAVE
+> > interface fits well into the RapidIO operations.
+> >
+> > First, we have only one memory mapped location on the host side. We
+transfer
+> > data to/from location that is not mapped into memory on the same
+side.
+> >
+> > Second, having ability to pass private target information allows me
+to pass
+> > information about remote target device on per-transfer basis.
+>=20
+> ...but there is no expectation that these engines will be generically
+> useful to other subsytems.  To be clear you are just using dmaengine
+> as a match making service for your dma providers to clients, right?
 
-On 10/7/2011 5:15 PM, Laurentiu Tudor wrote:
-> From: Scott Wood<scottwood@freescale.com>
->
-> Adds support for External Proxy (a.k.a. CoreInt) interrupts on 64-bit
-> kernels.  External Proxy combines interrupt delivery and
-> acknowledgement, so simply returning from the interrupt without EOI
-> or other action will not result in the interrupt being reasserted.
->
-> When an external interrupt is deferred in this manner (whether
-> external proxy is used or not), we set a flag in the PACA.  When we
-> re-enable interrupts, either explicitly or as part of an exception
-> return, we check the flag and branch to the interrupt exception
-> vector as if hardware had delivered the interrupt.
->
-> Another approach I considered was to use doorbells to replay the
-> interrupt.  There are some problems with this:
->   - The timing of the actual delivery of the doorbell is undefined.
->     This means we can't be sure in an architected way that the
->     doorbell will happen before interrupts are again soft-disabled, at
->     which point (barring interrupt-controller specific actions such as
->     raising CTPR) we could take a higher priority interrupt and
->     overwrite the saved EPR.
->   - Doorbells have a lower priority than true external interrupt. This
->     means you could have a lower priority interrupt appear to preempt
->     a higher prio interrupt, once the higher priority interrupt
->     enables EE and the doorbell comes in.
->
-> Signed-off-by: Scott Wood<scottwood@freescale.com>
->
-> ---
-> We need this patch to have reliable interrupts in hypervisor
-> scenarios.
->
-> arch/powerpc/include/asm/irq.h         |    2 +
->   arch/powerpc/include/asm/paca.h        |    4 ++
->   arch/powerpc/kernel/asm-offsets.c      |    3 +
->   arch/powerpc/kernel/entry_64.S         |    4 ++
->   arch/powerpc/kernel/exceptions-64e.S   |   94 +++++++++++++++++++++++++++-----
->   arch/powerpc/kernel/irq.c              |   11 ++++
->   arch/powerpc/platforms/85xx/p5020_ds.c |    5 --
->   7 files changed, 103 insertions(+), 20 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-> index c57a28e..c0a45e7 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -332,5 +332,7 @@ extern void do_IRQ(struct pt_regs *regs);
->
->   int irq_choose_cpu(const struct cpumask *mask);
->
-> +void deliver_pending_irq(void);
-> +
->   #endif /* _ASM_IRQ_H */
->   #endif /* __KERNEL__ */
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index c1f65f5..e5af3e3 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -134,6 +134,10 @@ struct paca_struct {
->   	u8 hard_enabled;		/* set if irqs are enabled in MSR */
->   	u8 io_sync;			/* writel() needs spin_unlock sync */
->   	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
-> +#ifdef CONFIG_PPC_BOOK3E
-> +	/* an irq is pending while soft-disabled */
-> +	u8 irq_pending;
-> +#endif
->
->   	/* Stuff for accurate time accounting */
->   	u64 user_time;			/* accumulated usermode TB ticks */
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index c98144f..5082ee7 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -206,6 +206,9 @@ int main(void)
->   	DEFINE(SVCPU_SLB, offsetof(struct kvmppc_book3s_shadow_vcpu, slb));
->   	DEFINE(SVCPU_SLB_MAX, offsetof(struct kvmppc_book3s_shadow_vcpu, slb_max));
->   #endif
-> +#ifdef CONFIG_PPC_BOOK3E
-> +	DEFINE(PACA_IRQ_PENDING, offsetof(struct paca_struct, irq_pending));
-> +#endif
->   #endif /* CONFIG_PPC64 */
->
->   	/* RTAS */
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index d834425..c1d8eea 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -596,6 +596,9 @@ _GLOBAL(ret_from_except_lite)
->   restore:
->   BEGIN_FW_FTR_SECTION
->   	ld	r5,SOFTE(r1)
-> +#ifdef CONFIG_PPC_BOOK3E
-> +	lbz	r6,PACA_IRQ_PENDING(r13)
-> +#endif
->   FW_FTR_SECTION_ELSE
->   	b	.Liseries_check_pending_irqs
->   ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_ISERIES)
-> @@ -608,6 +611,7 @@ ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_ISERIES)
->   	stb	r4,PACAHARDIRQEN(r13)
->
->   #ifdef CONFIG_PPC_BOOK3E
-> +	/* consumes r3-r6 */
->   	b	.exception_return_book3e
->   #else
->   	ld	r4,_CTR(r1)
-> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-> index 429983c..9886be9 100644
-> --- a/arch/powerpc/kernel/exceptions-64e.S
-> +++ b/arch/powerpc/kernel/exceptions-64e.S
-> @@ -2,6 +2,7 @@
->    *  Boot code and exception vectors for Book3E processors
->    *
->    *  Copyright (C) 2007 Ben. Herrenschmidt (benh@kernel.crashing.org), IBM Corp.
-> + *  Copyright 2011 Freescale Semiconductor, Inc.
->    *
->    *  This program is free software; you can redistribute it and/or
->    *  modify it under the terms of the GNU General Public License
-> @@ -125,6 +126,10 @@
->   	cmpwi	cr0,r11,0;		/* yes ->  go out of line */	    \
->   	beq	masked_doorbell_book3e
->
-> +#define PROLOG_ADDITION_EXTIRQ_GEN					    \
-> +	lbz	r11,PACASOFTIRQEN(r13); /* are irqs soft-disabled ? */	    \
-> +	cmpwi	cr0,r11,0;		/* yes ->  go out of line */	    \
-> +	beq	masked_extirq_book3e
->
->   /* Core exception code for all exceptions except TLB misses.
->    * XXX: Needs to make SPRN_SPRG_GEN depend on exception type
-> @@ -325,7 +330,13 @@ interrupt_end_book3e:
->   	b	storage_fault_common
->
->   /* External Input Interrupt */
-> -	MASKABLE_EXCEPTION(0x500, external_input, .do_IRQ, ACK_NONE)
-> +	START_EXCEPTION(external_input)
-> +	NORMAL_EXCEPTION_PROLOG(0x500, PROLOG_ADDITION_EXTIRQ)
-> +	EXCEPTION_COMMON(0x500, PACA_EXGEN, INTS_DISABLE_ALL)
-> +	CHECK_NAPPING()
-> +	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +	bl	.do_IRQ
-> +	b	.ret_from_except_lite
->
->   /* Alignment */
->   	START_EXCEPTION(alignment);
-> @@ -557,6 +568,12 @@ kernel_dbg_exc:
->    * An interrupt came in while soft-disabled; clear EE in SRR1,
->    * clear paca->hard_enabled and return.
->    */
-> +masked_extirq_book3e:
-> +	mtcr	r10
-> +	li	r10,1
-> +	stb	r10,PACA_IRQ_PENDING(r13)
-> +	b	masked_interrupt_book3e_common
-> +
->   masked_doorbell_book3e:
->   	mtcr	r10
->   	/* Resend the doorbell to fire again when ints enabled */
-> @@ -618,20 +635,8 @@ alignment_more:
->   	bl	.alignment_exception
->   	b	.ret_from_except
->
-> -/*
-> - * We branch here from entry_64.S for the last stage of the exception
-> - * return code path. MSR:EE is expected to be off at that point
-> - */
-> -_GLOBAL(exception_return_book3e)
-> -	b	1f
-> -
-> -/* This is the return from load_up_fpu fast path which could do with
-> - * less GPR restores in fact, but for now we have a single return path
-> - */
-> -	.globl fast_exception_return
-> -fast_exception_return:
-> -	wrteei	0
-> -1:	mr	r0,r13
-> +.macro exception_restore
-> +	mr	r0,r13
->   	ld	r10,_MSR(r1)
->   	REST_4GPRS(2, r1)
->   	andi.	r6,r10,MSR_PR
-> @@ -667,8 +672,67 @@ fast_exception_return:
->   	ld	r10,PACA_EXGEN+EX_R10(r13)
->   	ld	r11,PACA_EXGEN+EX_R11(r13)
->   	mfspr	r13,SPRN_SPRG_GEN_SCRATCH
-> +.endm
-> +
-> +/*
-> + * We branch here from entry_64.S for the last stage of the exception
-> + * return code path. MSR:EE is expected to be off at that point
-> + * r3 = MSR for return context
-> + * r4 = hard irq-enable status for return context
-> + * r5 = soft irq-enable status for return context
-> + * r6 = irq pending flag
-> + */
-> +_GLOBAL(exception_return_book3e)
-> +	cmpwi	r6,0
-> +	beq	common_exception_return
-> +
-> +/*
-> + * There's an interrupt pending.  If we're returning to a context that
-> + * is soft-irq-enabled, we need to deliver the interrupt now.
-> + *
-> + * We should never get here with soft IRQs enabled but hard IRQs disabled,
-> + * but just to be sure, check that too.
-> + */
-> +	cmpwi	r5,0
-> +	beq	common_exception_return
-> +	cmpwi	r4,0
-> +	beq	common_exception_return
-> +
-> +	lis	r5,(MSR_CE | MSR_ME | MSR_DE)@h
-> +	li	r4,0
-> +	ori	r5,r5,(MSR_CE | MSR_ME | MSR_DE)@l
-> +	stb	r4,PACA_IRQ_PENDING(r13)
-> +	and	r5,r5,r3
-> +	oris	r5,r5,MSR_CM@h
-> +	mtmsr	r5
-> +
-> +	exception_restore
-> +	b	exc_external_input_book3e
-> +
-> +/* This is the return from load_up_fpu fast path which could do with
-> + * less GPR restores in fact, but for now we have a single return path
-> + */
-> +	.globl fast_exception_return
-> +fast_exception_return:
-> +	wrteei	0
-> +common_exception_return:
-> +	exception_restore
->   	rfi
->
-> +/* Called from arch_local_irq_restore() prior to hard-enabling interrupts */
-> +_GLOBAL(deliver_pending_irq)
-> +	mflr	r3
-> +	mfmsr	r4
-> +	lis	r5,(MSR_CM | MSR_CE | MSR_ME | MSR_DE)@h
-> +	ori	r5,r5,(MSR_CM | MSR_CE | MSR_ME | MSR_DE)@l
-> +	and	r5,r5,r4
-> +	ori	r4,r4,MSR_EE
-> +
-> +	mtspr	SPRN_SRR0,r3
-> +	mtspr	SPRN_SRR1,r4
-> +	mtmsr	r5
-> +	b	exc_external_input_book3e
-> +
->   /*
->    * Trampolines used when spotting a bad kernel stack pointer in
->    * the exception entry code.
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index d281fb6..44a23d0 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -184,6 +184,17 @@ notrace void arch_local_irq_restore(unsigned long en)
->   		lv1_get_version_info(&tmp);
->   	}
->
-> +#ifdef CONFIG_PPC_BOOK3E
-> +	/*
-> +	 * If there's a pending IRQ, deliver it now.  Interrupts
-> +	 * will be hard-enabled on return.
-> +	 */
-> +	if (get_paca()->irq_pending) {
-> +		get_paca()->irq_pending = 0;
-> +		deliver_pending_irq();
-> +	}
-> +#endif
-> +
->   	__hard_irq_enable();
->   }
->   EXPORT_SYMBOL(arch_local_irq_restore);
-> diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
-> index e8cba50..87e7d29 100644
-> --- a/arch/powerpc/platforms/85xx/p5020_ds.c
-> +++ b/arch/powerpc/platforms/85xx/p5020_ds.c
-> @@ -76,12 +76,7 @@ define_machine(p5020_ds) {
->   #ifdef CONFIG_PCI
->   	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
->   #endif
-> -/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
-> -#ifdef CONFIG_PPC64
-> -	.get_irq		= mpic_get_irq,
-> -#else
->   	.get_irq		= mpic_get_coreint_irq,
-> -#endif
->   	.restart		= fsl_rstcr_restart,
->   	.calibrate_decr		= generic_calibrate_decr,
->   	.progress		= udbg_progress,
-> _______________________________________________
-> linuxppc-dev mailing list
-> linuxppc-dev@linux.freescale.net
-> http://linux.freescale.net/mailman/listinfo/linuxppc-dev
+Not only that. As an example I am offering other defined DMA slave mode
+callbacks
+in tsi721_dma driver. I think that RapidIO specific DMA channels should
+follow
+unified DMA engine interface. I am expecting that other DMA defined
+functions
+to be used directly without RapidIO specifics. E.g. tx_submit, tx_status
+and
+issue_pending are implemented in tsi721_dma driver. Similar approach may
+be
+applied to fsl_dma driver which is capable to RapidIO data transfers on
+platforms
+with RapidIO interface.=20
+
+> > ... skip ...
+> > RapidIO network usually has more than one device attached to it and
+> > single DMA channel may service data transfers to/from several
+devices.
+> > In this case device information should be passed on per-transfer
+basis.
+> >
+>=20
+> You could maybe do what async_tx does and just apply the extra context
+> after the ->prep(), but before ->submit(), but it looks like that
+> context is critical to setting up the operation.
+
+Yes, it is possible to do but does not look as quite safe and effective
+as passing all related parameters during single call. This would require
+RIO DMA drivers to hold a "half cooked" descriptor chain until next
+portion
+of information arrives. This requires to have prep and post-configure
+calls
+coupled together by locks. In this situation prep with private data
+looks
+safer and more effective.   =20
+
+> This looks pretty dangerous without knowing the other details.  What
+> prevents another thread from changing dchan->private before the the
+> prep routine reads it?
+
+Yes, locking is needed in rio_dma_prep_slave_sg() around a call for prep
+routine. After all internal descriptors are set dchan can be submitted
+with new private content. =20
+
+>=20
+> DMA_SLAVE assumes a static relationship between dma device and
+> slave-device, instead this rapid-io case is a per-operation slave
+> context.  It sounds like you really do want a new dma operation type
+> that is just an extra-parameter version of the current
+> ->device_prep_slave_sg.  But now we're getting into to
+> dma_transaction_type proliferation again.  This is probably more fuel
+> for the fire of creating a structure transfer template that defines
+> multiple possible operation types and clients just fill in the fields
+> that they need, rather than adding new operation types for every
+> possible permutation of copy operation (DMA_SLAVE, DMA_MEMCPY,
+> DMA_CYCLIC, DMA_SG, DMA_INTERLEAVE, DMA_RAPIDIO), it's getting to be a
+> bit much.
+
+Exactly. I need an ability of passing private parameter to prep
+function.
+I chose to adopt DMA engine interface instead of adding one completely
+internal to RapidIO because having one common API has much more sense.
+Passing user defined data structure when building individual request
+would
+make not only my life easier but probably will help some other drivers
+as well.  =20
+=20
+> As a starting point, since this the first driver proposal to have
+> per-operation slave context and there are other rapid-io specific
+> considerations, maybe it's ok to have a rio_dma_prep_slave_sg() that
+> does something like:
+>=20
+> struct tsi721_bdma_chan *bdma_chan =3D to_tsi721_chan(dchan);
+>=20
+> bdma_chan->prep_sg(rext, sgl, sg_len, direction, flags);
+>=20
+> Thoughts?
+
+This brings HW dependence into generic RapidIO layer.
+I would like to see it as a generic interface that is available
+to other RIO-capable devices (e.g Freescale's 85xx and QorIQ).
+
+I would probably make  ->prep_sg callback part of rio_mport structure
+(which holds dma_device). In this case HW will be well abstracted.
+The only problem will be with registering with DMA engine but this can
+be solved by providing a pointer to a stub routine.
+
+Second option may be keeping rio_dma_prep_slave_sg() "as is" but with an
+appropriate
+locking as I mentioned above (maybe remove "slave" from its name to
+reduce confusion).
+
+Thank you,
+
+Alex.
