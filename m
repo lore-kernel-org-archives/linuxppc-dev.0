@@ -1,62 +1,83 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 1E3B1B70B7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Oct 2011 01:11:35 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 02908-03 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Oct 2011 15:11:27 +0100 (BST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] mlx4_en: fix transmit of packages when blue frame
-	isenabled
-Date: Thu, 6 Oct 2011 15:10:28 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AE76@saturn3.aculab.com>
-In-Reply-To: <20111006135759.GH2681@mtldesk30>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Eli Cohen" <eli@dev.mellanox.co.il>,
-	"Thadeu Lima de Souza Cascardo" <cascardo@linux.vnet.ibm.com>
-Cc: Eli Cohen <eli@mellanox.co.il>, Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
-	linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Return-Path: <tmarri@amcc.com>
+Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4B4F0B70BD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2011 13:38:49 +1100 (EST)
+From: tmarri@apm.com
+To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v14 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+Date: Thu,  6 Oct 2011 19:30:21 -0700
+Message-Id: <1317954621-11702-1-git-send-email-tmarri@apm.com>
+Cc: tmarri@apm.com, greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
 List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev>
 List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
->  static void mlx4_bf_copy(unsigned long *dst, unsigned long *src,
-unsigned bytecnt) {
-> +	int i;
-> +	__le32 *psrc =3D (__le32 *)src;
-> +
-> +	/*
-> +	 * the buffer is already in big endian. For little endian
-machines that's
-> +	 * fine. For big endain machines we must swap since the chipset
-swaps again
-> +	 */
-> +	for (i =3D 0; i < bytecnt / 4; ++i)
-> +		psrc[i] =3D le32_to_cpu(psrc[i]);
-> +
->  	__iowrite64_copy(dst, src, bytecnt / 8);
->  }
+From: Tirumala Marri <tmarri@apm.com>
 
-That code looks horrid...
-1) I'm not sure the caller expects the buffer to be corrupted.
-2) It contains a lot of memory cycles.
-3) It looked from the calls that this code is copying descriptors,
-   so the transfer length is probably 1 or 2 words - so the loop
-   is inefficient.
-4) ppc doesn't have a fast byteswap instruction (very new gcc might
-   use the byteswapping memery access for the le32_to_cpu() though),
-   so it would be better getting the byteswap done inside
-   __iowrite64_copy() - since that is probably requesting a byteswap
-   anyway.
-OTOH I'm not at all clear about the 64bit xfers....
+v14:
+ 1. Modifying dwc_reg_read/write functions to accepts offset as arg.
+ 2. Adding spin_lock to common interrupt function.
+ 3. Adding start/stop, vbus_power functions to gadget_opst struct.
+ 4. Removed some unnecessary comments and prints.
+ 5. op_state_str() replace with common function.
+ 6. Removed some unnecessary checks from apmppc.c file.
+
+v13:
+ 1. Remove redundant CONFIG VARIABLE from drivers/usb/dwc/Kconfig.
+
+Tirumala Marri (10):
+  USB/ppc4xx: Add Synopsys DesignWare HS USB OTG Register definitions
+  USB/ppc4xx: Add Synopsys DesignWare HS USB OTG driver framework
+  USB/ppc4xx: Add Synopsys DWC OTG Core Interface Layer (CIL)
+  USB/ppc4xx: Add Synopsys DWC OTG HCD function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
+  USB/ppc4xx: Add Synopsys DWC OTG PCD function
+  USB ppc4xx: Add Synopsys DWC OTG PCD interrupt function
+  Add Synopsys DWC OTG driver kernel configuration and Makefile
+  USB/ppc4xx:Synopsys DWC OTG driver enable gadget support
+
+ drivers/usb/Kconfig               |    2 +
+ drivers/usb/Makefile              |    1 +
+ drivers/usb/dwc/Kconfig           |   84 ++
+ drivers/usb/dwc/Makefile          |   19 +
+ drivers/usb/dwc/apmppc.c          |  353 ++++++
+ drivers/usb/dwc/cil.c             |  889 +++++++++++++
+ drivers/usb/dwc/cil.h             | 1174 ++++++++++++++++++
+ drivers/usb/dwc/cil_intr.c        |  616 +++++++++
+ drivers/usb/dwc/driver.h          |   76 ++
+ drivers/usb/dwc/hcd.c             | 2465 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/dwc/hcd.h             |  416 +++++++
+ drivers/usb/dwc/hcd_intr.c        | 1477 ++++++++++++++++++++++
+ drivers/usb/dwc/hcd_queue.c       |  696 +++++++++++
+ drivers/usb/dwc/param.c           |  180 +++
+ drivers/usb/dwc/pcd.c             | 1791 +++++++++++++++++++++++++++
+ drivers/usb/dwc/pcd.h             |  139 +++
+ drivers/usb/dwc/pcd_intr.c        | 2311 ++++++++++++++++++++++++++++++++++
+ drivers/usb/dwc/regs.h            | 1326 ++++++++++++++++++++
+ drivers/usb/gadget/Kconfig        |   11 +
+ drivers/usb/gadget/gadget_chips.h |    3 +
+ 20 files changed, 14029 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/dwc/Kconfig
+ create mode 100644 drivers/usb/dwc/Makefile
+ create mode 100644 drivers/usb/dwc/apmppc.c
+ create mode 100644 drivers/usb/dwc/cil.c
+ create mode 100644 drivers/usb/dwc/cil.h
+ create mode 100644 drivers/usb/dwc/cil_intr.c
+ create mode 100644 drivers/usb/dwc/driver.h
+ create mode 100644 drivers/usb/dwc/hcd.c
+ create mode 100644 drivers/usb/dwc/hcd.h
+ create mode 100644 drivers/usb/dwc/hcd_intr.c
+ create mode 100644 drivers/usb/dwc/hcd_queue.c
+ create mode 100644 drivers/usb/dwc/param.c
+ create mode 100644 drivers/usb/dwc/pcd.c
+ create mode 100644 drivers/usb/dwc/pcd.h
+ create mode 100644 drivers/usb/dwc/pcd_intr.c
+ create mode 100644 drivers/usb/dwc/regs.h
