@@ -1,24 +1,33 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D31C3B70BC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2011 06:08:22 +1100 (EST)
+ (Client CN "e24smtp03.br.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 62AA9B70CA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2011 09:29:36 +1100 (EST)
+Received: from /spool/local by br.ibm.com with XMail ESMTP
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Fri, 7 Oct 2011 19:29:27 -0300
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id p97MWt3f3444926
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Oct 2011 19:32:55 -0300
+Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ p97MTNCk007981
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Oct 2011 19:29:23 -0300
+Date: Fri, 7 Oct 2011 19:29:21 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: David Laight <David.Laight@aculab.com>
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame
+ isenabled
+Message-ID: <20111007222921.GB5541@oc1711230544.ibm.com>
+References: <20111006135759.GH2681@mtldesk30>
+ <AE90C24D6B3A694183C094C60CF0A2F6D8AE76@saturn3.aculab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
- transfers
-Date: Fri, 7 Oct 2011 12:08:11 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552022D6C9A@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <1317965252.1573.2238.camel@vkoul-udesk3>
-References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
- <1317492077.1573.1839.camel@vkoul-udesk3>
- <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
- <1317965252.1573.2238.camel@vkoul-udesk3>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: Vinod Koul <vinod.koul@intel.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- Dan <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AE76@saturn3.aculab.com>
+Cc: Eli Cohen <eli@mellanox.co.il>, Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+ Eli Cohen <eli@dev.mellanox.co.il>, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +37,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vmlub2QgS291bCB3cm90ZToNCj4gDQo+IE9uIE1vbiwgMjAxMS0xMC0wMyBhdCAwOTo1MiAtMDcw
-MCwgQm91bmluZSwgQWxleGFuZHJlIHdyb3RlOg0KPiA+DQo+ID4gTXkgY29uY2VybiBoZXJlIGlz
-IHRoYXQgb3RoZXIgc3Vic3lzdGVtcyBtYXkgdXNlL3JlcXVlc3QgRE1BX1NMQVZFIGNoYW5uZWwo
-cykgYXMgd2VsbA0KPiA+IGFuZCB3cm9uZ2Z1bGx5IGFjcXVpcmUgb25lIHRoYXQgYmVsb25ncyB0
-byBSYXBpZElPLiBJbiB0aGlzIGNhc2Ugc2VwYXJhdGlvbiB3aXRoIGFub3RoZXINCj4gPiBmbGFn
-IG1heSBoYXZlIGEgc2Vuc2UgLSBpdCBpcyBwb3NzaWJsZSB0byBoYXZlIGEgc3lzdGVtIHRoYXQg
-dXNlcyBSYXBpZElPDQo+ID4gYW5kIG90aGVyICJ0cmFkaXRpb25hbCIgRE1BIHNsYXZlIGNoYW5u
-ZWwuDQo+IE5vcGUgdGhhdCB3aWxsIG5ldmVyIGhhcHBlbiBpbiBjdXJyZW50IGZvcm0uDQo+IEV2
-ZXJ5IGNvbnRyb2xsZXIgZHJpdmVyIHRvZGF5ICJtYWdpY2FsbHkiIGVuc3VyZXMgdGhhdCBpdCBk
-b2Vzbid0IGdldA0KPiBhbnkgb3RoZXIgZG1hIGNvbnRyb2xsZXJzIGNoYW5uZWwuIFdlIHVzZSBm
-aWx0ZXIgZnVuY3Rpb24gZm9yIHRoYXQuDQo+IEFsdGhvdWdoIGl0IGlzIG5vdCBjbGVhbiB5ZXQg
-YW5kIHdlIGFyZSB3b3JraW5nIHRvIGZpeCB0aGF0IGJ1dCB0aGF0J3MNCj4gYW5vdGhlciBkaXNj
-dXNzaW9uLg0KPiBFdmVuIHNwZWNpZnlpbmcgcGxhaW4gRE1BX1NMQVZFIHNob3VsZCB3b3JrIGlm
-IHlvdSBjb2RlIHlvdXIgZmlsdGVyDQo+IGZ1bmN0aW9uIHByb3Blcmx5IDopDQoNClJJTyBmaWx0
-ZXIgY2hlY2tzIGZvciBETUEgZGV2aWNlIGFzc29jaWF0ZWQgd2l0aCBSYXBpZElPIG1wb3J0IG9i
-amVjdC4NClRoaXMgc2hvdWxkIHdvcmsgcmVsaWFibGUgZnJvbSB0aGUgUmFwaWRJTyBzaWRlLiBJ
-dCBhbHNvIHZlcmlmaWVzDQp0aGF0IHJldHVybmVkIERNQSBjaGFubmVsIGlzIGNhcGFibGUgdG8g
-c2VydmljZSBjb3JyZXNwb25kaW5nIFJJTyBkZXZpY2UNCihpbiBzeXN0ZW0gdGhhdCBoYXMgbW9y
-ZSB0aGFuIG9uZSBSSU8gY29udHJvbGxlcikuIA0KDQouLi4gc2tpcCAuLi4NCj4gPg0KPiA+IFNl
-Y29uZCwgaGF2aW5nIGFiaWxpdHkgdG8gcGFzcyBwcml2YXRlIHRhcmdldCBpbmZvcm1hdGlvbiBh
-bGxvd3MgbWUgdG8gcGFzcw0KPiA+IGluZm9ybWF0aW9uIGFib3V0IHJlbW90ZSB0YXJnZXQgZGV2
-aWNlIG9uIHBlci10cmFuc2ZlciBiYXNpcy4NCj4gT2theSwgdGhlbiB3aHkgbm90IHBhc3MgdGhl
-IGRtYSBhZGRyZXNzIGFuZCBtYWtlIHlvdXIgZG1hIGRyaXZlcg0KPiB0cmFuc3BhcmVudCAoaSBz
-YXcgeW91IHBhc3NlZCBSSU8gYWRkcmVzcywgSUlSQyA2NCsyIGJpdHMpDQo+IEN1cnJlbnRseSB1
-c2luZyBkbWFfc2xhdmVfY29uZmlnIHdlIHBhc3MgY2hhbm5lbCBzcGVjaWZpYyBpbmZvcm1hdGlv
-biwNCj4gdGhpbmdzIGxpa2UgcGVyaXBoZXJhbCBhZGRyZXNzIGFuZCBjb25maWcgZG9uJ3QgY2hh
-bmdlIHR5cGljYWxseQ0KPiBiZXR3ZWVuDQo+IHRyYW5zZmVycyBhbmQgaWYgeW91IGhhdmUgc29t
-ZSBjb250cm9sbGVyIHNwZWNpZmljIHByb3BlcnRpZXMgeW91IGNhbg0KPiBwYXNzIHRoZW0gYnkg
-ZW1iZWRkaW5nIGRtYV9zbGF2ZV9jb25maWcgaW4geW91ciBzcGVjaWZpYyBzdHJ1Y3R1cmUuDQo+
-IFdvcnN0IGNhc2UsIHlvdSBjYW4gY29uZmlndXJlIHNsYXZlIGJlZm9yZSBldmVyeSBwcmVwYXJl
-DQoNCkluIGFkZGl0aW9uIHRvIGFkZHJlc3Mgb24gdGFyZ2V0IFJJTyBkZXZpY2UgSSBuZWVkIHRv
-IHBhc3MgY29ycmVzcG9uZGluZw0KZGV2aWNlIGRlc3RpbmF0aW9uIElELiBXaXRoIHNpbmdsZSBj
-aGFubmVsIGNhcGFibGUgdG8gdHJhbnNmZXIgZGF0YSBiZXR3ZWVuDQpsb2NhbCBtZW1vcnkgYW5k
-IGRpZmZlcmVudCBSYXBpZElPIGRldmljZXMgSSBoYXZlIHRvIHBhc3MgZGV2aWNlIHNwZWNpZmlj
-DQppbmZvcm1hdGlvbiBvbiBwZXIgdHJhbnNmZXIgYmFzaXMgKGRlc3RJRCArIDY2LWJpdCBhZGRy
-ZXNzICsgdHlwZSBvZiB3cml0ZSBvcHMsIGV0Yy4pLg0KDQpFdmVuIGhhdmluZyA4IGNoYW5uZWxz
-IChlYWNoIHNldCBmb3Igc3BlY2lmaWMgdGFyZ2V0KSB3aWxsIG5vdCBoZWxwIG1lIHdpdGgNCmZ1
-bGwgc3VwcG9ydCBvZiBSYXBpZElPIG5ldHdvcmsgd2hlcmUgSSBoYXZlIDgtIG9yIDE2LWJpdCBk
-ZXN0SUQgKDI1NiBvciA2NEsNCmRldmljZXMgcmVzcGVjdGl2ZWx5KS4NCg0KUmFwaWRJTyBjb250
-cm9sbGVyIGRldmljZSAoYW5kIGl0cyBETUEgY29tcG9uZW50KSBtYXkgcHJvdmlkZSBzZXJ2aWNl
-cyB0bw0KbXVsdGlwbGUgZGV2aWNlIGRyaXZlcnMgd2hpY2ggc2VydmljZSBpbmRpdmlkdWFsIGRl
-dmljZXMgb24gUmFwaWRJTyBuZXR3b3JrDQooc2ltaWxhciB0byBQQ0llIGhhdmluZyBtdWx0aXBs
-ZSBwZXJpcGhlcmFscywgYnV0IG5vdCB1c2luZyBtZW1vcnkgbWFwcGVkDQptb2RlbCAtIGRlc3RJ
-RCBkZWZpbmVzIHJvdXRlIHRvIGEgZGV2aWNlKS4gDQoNCkdlbmVyaWMgUmFwaWRJTyBjb250cm9s
-bGVyIG1heSBoYXZlIG9ubHkgb25lIERNQSBjaGFubmVsIHdoaWNoIHNlcnZpY2VzIGFsbA0KdGFy
-Z2V0IGRldmljZXMgZm9ybWluZyB0aGUgbmV0d29yay4gV2UgbWF5IGhhdmUgbXVsdGlwbGUgY29u
-Y3VycmVudCBkYXRhDQp0cmFuc2ZlciByZXF1ZXN0cyBmb3IgZGlmZmVyZW50IGRldmljZXMuDQoN
-ClBhcmFsbGVsIGRpc2N1c3Npb24gd2l0aCBEYW4gdG91Y2hlcyB0aGUgc2FtZSBwb3N0LWNvbmZp
-ZyBhcHByb2FjaCBhbmQNCmFub3RoZXIgb3B0aW9uLiBJIGxpa2UgRGFuJ3MgaWRlYSBvZiBoYXZp
-bmcgUklPLXNwZWNpZmljIHZlcnNpb24gb2YgcHJlcF9zZygpLg0KQXQgdGhlIHNhbWUgdGltZSBt
-eSBjdXJyZW50IGltcGxlbWVudGF0aW9uIG9mIHJpb19kbWFfcHJlcF9zbGF2ZV9zZygpIHdpdGgN
-CmFkZGVkIGFwcHJvcHJpYXRlIGxvY2tpbmcgbWF5IGRvIGpvYiBhcyB3ZWxsIGFuZCBrZWVwcyBE
-TUEgcGFydCB3aXRoaW4NCmV4aXN0aW5nIEFQSSAoRE1BX1JBUElESU8gcmVtb3ZlZCkuICAgICAg
-DQoNCkFsZXguDQoNCg==
+On Thu, Oct 06, 2011 at 03:10:28PM +0100, David Laight wrote:
+>  
+> >  static void mlx4_bf_copy(unsigned long *dst, unsigned long *src,
+> unsigned bytecnt) {
+> > +	int i;
+> > +	__le32 *psrc = (__le32 *)src;
+> > +
+> > +	/*
+> > +	 * the buffer is already in big endian. For little endian
+> machines that's
+> > +	 * fine. For big endain machines we must swap since the chipset
+> swaps again
+> > +	 */
+> > +	for (i = 0; i < bytecnt / 4; ++i)
+> > +		psrc[i] = le32_to_cpu(psrc[i]);
+> > +
+> >  	__iowrite64_copy(dst, src, bytecnt / 8);
+> >  }
+> 
+> That code looks horrid...
+> 1) I'm not sure the caller expects the buffer to be corrupted.
+> 2) It contains a lot of memory cycles.
+> 3) It looked from the calls that this code is copying descriptors,
+>    so the transfer length is probably 1 or 2 words - so the loop
+>    is inefficient.
+> 4) ppc doesn't have a fast byteswap instruction (very new gcc might
+>    use the byteswapping memery access for the le32_to_cpu() though),
+>    so it would be better getting the byteswap done inside
+>    __iowrite64_copy() - since that is probably requesting a byteswap
+>    anyway.
+> OTOH I'm not at all clear about the 64bit xfers....
+> 
+> 
+
+Plus, it doesn't work.  :-\
+
+After doing some more investigation, I decided to add the ARP entries
+manually and test for different packet sizes. Packets larger than 256
+should use the non-BF path and work. Smaller packets should fail. To my
+surprise, the smaller packets were fine. Tried many different sizes and
+they all succeeded. Then, tried using broadcast and it worked too (after
+setting the proper sysctl). Broadcast with 0, 8 and 16 ping size, all
+OK. Removed the ARP entries, the ARP responses did not get to the other
+side. So, I did a pretty nasty hack to not use BF for ARP packets and
+after cleaning up the ARP table, everything seems to be working fine.
+What follows is my patch, just for reference.
+
+Regards,
+Cascardo.
+
+---
+--- drivers/net/mlx4/en_tx.c.orig	2011-10-03 15:42:15.736104623 -0500
++++ drivers/net/mlx4/en_tx.c	2011-10-07 17:12:38.023792483 -0500
+@@ -627,6 +627,7 @@
+ 	int lso_header_size;
+ 	void *fragptr;
+ 	bool bounce = false;
++	bool is_arp = false;
+ 
+ 	if (!priv->port_up)
+ 		goto tx_drop;
+@@ -698,10 +699,11 @@
+ 		priv->port_stats.tx_chksum_offload++;
+ 	}
+ 
++	skb_reset_mac_header(skb);
++	ethh = eth_hdr(skb);
++	is_arp = ethh && ethh->h_proto == ETH_P_ARP;
+ 	if (unlikely(priv->validate_loopback)) {
+ 		/* Copy dst mac address to wqe */
+-		skb_reset_mac_header(skb);
+-		ethh = eth_hdr(skb);
+ 		if (ethh && ethh->h_dest) {
+ 			mac = mlx4_en_mac_to_u64(ethh->h_dest);
+ 			mac_h = (u32) ((mac & 0xffff00000000ULL) >> 16);
+@@ -790,7 +792,7 @@
+ 	if (likely(!skb_shared(skb)))
+ 		skb_orphan(skb);
+ 
+-	if (ring->bf_enabled && desc_size <= MAX_BF && !bounce && !vlan_tag) {
++	if (ring->bf_enabled && desc_size <= MAX_BF && !bounce && !vlan_tag && !is_arp) {
+ 		*(u32 *) (&tx_desc->ctrl.vlan_tag) |= ring->doorbell_qpn;
+ 		op_own |= htonl((bf_index & 0xffff) << 8);
+ 		/* Ensure new descirptor hits memory
+---
