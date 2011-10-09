@@ -1,19 +1,19 @@
-Return-Path: <smitha.vanga@wipro.com>
-Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
- [203.91.198.74])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B1B11B7091
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2011 23:52:09 +1100 (EST)
-From: <smitha.vanga@wipro.com>
-To: <scottwood@freescale.com>
-Subject: RE: BUG: scheduling while atomic:
-Date: Sat, 8 Oct 2011 12:51:54 +0000
-Message-ID: <40631E9A2581F14BA60888C87A76A1FE015506@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <4E8C9741.9010401@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id D6993B70B7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2011 18:07:57 +1100 (EST)
+Subject: RE: Request_irq fails for IRQ2
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: smitha.vanga@wipro.com
+In-Reply-To: <40631E9A2581F14BA60888C87A76A1FE014773@HYD-MKD-MBX4.wipro.com>
+References: <40631E9A2581F14BA60888C87A76A1FE014773@HYD-MKD-MBX4.wipro.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 09 Oct 2011 09:07:44 +0200
+Message-ID: <1318144064.29415.361.camel@pasglop>
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi Scott,
+On Tue, 2011-10-04 at 11:21 +0000, smitha.vanga@wipro.com wrote:
+> Hi Scott,
+> 
+> I am able to register the IRQ now once I add the call irq_set_default_host in cpm2_pic.
 
-Below are the logs when I enable the kallsyms.
-Any suggestion.
+This is a band-aid at best and will probably not be accepted upstream.
 
+You should -really- describe your interrupt in the device-tree instead.
 
-sh-3.1# I am in cpld_irq_handler
-end cpld_irq_handler
-BUG: scheduling while atomic: IRQ-20/0x0fff0000/108
-Call Trace:
-[C3B13EC0] [C0007DD0] show_stack+0x3c/0x194 (unreliable)
-[C3B13EF0] [C0017F70] __schedule_bug+0x34/0x44
-[C3B13F00] [C0269E38] schedule+0x31c/0x35c
-[C3B13F50] [C0017FA4] __cond_resched+0x24/0x50
-[C3B13F60] [C00180A4] cond_resched_hardirq_context+0x8c/0xfc
-[C3B13F70] [C0047FBC] thread_simple_irq+0x78/0xc4
-[C3B13F90] [C00482BC] do_irqd+0x2b4/0x32c
-[C3B13FC0] [C0032BAC] kthread+0xc0/0xfc
-[C3B13FF0] [C000F60C] original_kernel_thread+0x44/0x60
+Ben.
 
 
-
-Regards,
-Smitha
-Please do not print this email unless it is absolutely necessary. =0A=
-=0A=
-The information contained in this electronic message and any attachments to=
- this message are intended for the exclusive use of the addressee(s) and may=
- contain proprietary, confidential or privileged information. If you are not=
- the intended recipient, you should not disseminate, distribute or copy this=
- e-mail. Please notify the sender immediately and destroy all copies of this=
- message and any attachments. =0A=
-=0A=
-WARNING: Computer viruses can be transmitted via email. The recipient should=
- check this email and any attachments for the presence of viruses. The compa=
-ny accepts no liability for any damage caused by any virus transmitted by th=
-is email. =0A=
-=0A=
-www.wipro.com
+> But when I call enable_irq the code throws the below warning and gives exception in enable irq at 
+> spin_unlock_irqrestore(&desc->lock, flags); in enable_irq.
+> 
+> 
+> printk(KERN_WARNING "Unbalanced enable for IRQ %d\n", irq);
+> 
+> Regards,
+> Smitha
+> Please do not print this email unless it is absolutely necessary. 
+> 
+> The information contained in this electronic message and any attachments to this message are intended for the exclusive use of the addressee(s) and may contain proprietary, confidential or privileged information. If you are not the intended recipient, you should not disseminate, distribute or copy this e-mail. Please notify the sender immediately and destroy all copies of this message and any attachments. 
+> 
+> WARNING: Computer viruses can be transmitted via email. The recipient should check this email and any attachments for the presence of viruses. The company accepts no liability for any damage caused by any virus transmitted by this email. 
+> 
+> www.wipro.com
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
