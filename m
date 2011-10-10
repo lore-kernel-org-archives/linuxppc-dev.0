@@ -2,22 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3223BB7010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 19:53:49 +1100 (EST)
-Subject: RE: [PATCH] mlx4_en: fix transmit of packages when blue frame is
+ by ozlabs.org (Postfix) with ESMTPS id D685FB6FD7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 20:01:42 +1100 (EST)
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
  enabled
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Laight <David.Laight@ACULAB.COM>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AE78@saturn3.aculab.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8AE78@saturn3.aculab.com>
+To: Eli Cohen <eli@dev.mellanox.co.il>
+In-Reply-To: <20111010084726.GM2681@mtldesk30>
+References: <1318145118.29415.371.camel@pasglop>
+ <AE90C24D6B3A694183C094C60CF0A2F6D8AE78@saturn3.aculab.com>
+ <20111010084726.GM2681@mtldesk30>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 10 Oct 2011 10:53:36 +0200
-Message-ID: <1318236816.29415.415.camel@pasglop>
+Date: Mon, 10 Oct 2011 11:01:24 +0200
+Message-ID: <1318237284.29415.422.camel@pasglop>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Yevgeny Petrilin <yevgenyp@mellanox.co.il>, Eli Cohen <eli@mellanox.co.il>,
+Cc: netdev@vger.kernel.org, Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+ Eli Cohen <eli@mellanox.co.il>, David Laight <David.Laight@ACULAB.COM>,
  Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Eli Cohen <eli@dev.mellanox.co.il>
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-10-10 at 09:40 +0100, David Laight wrote:
-> > What is this __iowrite64_copy... oh I see
+On Mon, 2011-10-10 at 10:47 +0200, Eli Cohen wrote:
+> On Mon, Oct 10, 2011 at 09:40:17AM +0100, David Laight wrote:
 > > 
-> > Nice, somebody _AGAIN_ added a bunch of "generic" IO 
-> > accessors that are utterly wrong on all archs except
-> > x86 (ok, -almost-).
-> > There isn't a single bloody memory barrier in there !
-> 
-> Actually memory barriers shouldn't really be added to
-> any of these 'accessor' functions.
-> (Or, at least, ones without barriers should be provided.)
+> > Actually memory barriers shouldn't really be added to
+> > any of these 'accessor' functions.
+> > (Or, at least, ones without barriers should be provided.)
+> > 
+> > The driver may want to to a series of writes, then a
+> > single barrier, before a final write of a command (etc).
+> > 
+> > in_le32() from io.h is specially horrid!
+> > 
+> > 	David
+> > 
+> The driver would like to control if and when we want to put a memory
+> barrier. We really don't want it to be done under the hood. In this
+> respect we prefer raw functions which are still available to all
+> platforms.
 
-As long as they are documented to provide no guarantee of ordering
-between the stores... And x86 driver writers have any clue that they
-will not be ordered vs. surrounding accesses.
+ ... but not necessarily the corresponding barriers.
 
-> The driver may want to to a series of writes, then a
-> single barrier, before a final write of a command (etc).
-> 
-> in_le32() from io.h is specially horrid!
+That's why on powerpc we had to make all rmb,wmb and mb the same, aka a
+full sync, because our weaker barriers don't order cachable vs.
+non-cachable.
 
-The reason for that is that drivers expect fully ordered writel() vs
-everything (including DMA).
+In any case, the raw functions are a bit nasty to use because they both
+don't have barriers -and- don't handle endianness. So you have to be
+extra careful.
 
-Unfortunately, this is how Linux defines those semantics. I would much
-prefer to require barriers explicitely but the decision was made back
-then simply because the vast majority of driver writers do not
-understand weakly ordered memory models and "everything should be made
-to look like x86".
+In 90% of the cases, the barriers are what you want anyway. For example
+in the else case of the driver, the doorbell MMIO typically wants it, so
+using writel() is fine (or iowrite32be) and will have the necessary
+barriers.
 
-It would be great to come up with a set of more relaxed accessors along
-with the appropriate barrier to use for drivers who "know better" but so
-far all attempts at doing so have failed due to the inability to agree
-on their precise semantics. Tho that was a while ago, we should probably
-give it a new shot.
+The case where things get a bit more nasty is when you try to use MMIO
+for low latency small-data type transfers instead of DMA, in which case
+you do want the ability for the chipset to write-combine and control the
+barriers more precisely.
+
+However, this is hard and Linux doesn't provide very good accessors to
+do so, thus you need to be extra careful (see my example about wmb()
+
+In the case of the iomap "copy" operations, my problem is that they
+don't properly advertise their lack of ordering since normal iomap does
+have full ordering.
+
+I believe they should provide ordering with a barrier before & a barrier
+after, eventually with _relaxed variants or _raw variants for those who
+"know what they are doing".
+
+Maybe it's time for us to revive those discussions about providing a
+good set of relaxed MMIO accessors with explicit barriers :-)
 
 Cheers,
-Ben. 
+Ben.
+ 
