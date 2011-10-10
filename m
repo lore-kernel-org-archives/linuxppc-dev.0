@@ -1,26 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id E94E3B6FD1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 19:41:28 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 08874-03 for <linuxppc-dev@lists.ozlabs.org>;
- Mon, 10 Oct 2011 09:41:23 +0100 (BST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] mlx4_en: fix transmit of packages when blue frame is
+Return-Path: <eli@dev.mellanox.co.il>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+ [74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 81AE7B6FD1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 19:47:36 +1100 (EST)
+Received: by wyg36 with SMTP id 36so6109036wyg.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 01:47:31 -0700 (PDT)
+Date: Mon, 10 Oct 2011 10:47:26 +0200
+From: Eli Cohen <eli@dev.mellanox.co.il>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
  enabled
-Date: Mon, 10 Oct 2011 09:40:17 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AE78@saturn3.aculab.com>
-In-Reply-To: <1318145118.29415.371.camel@pasglop>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
- "Eli Cohen" <eli@dev.mellanox.co.il>
-Cc: netdev@vger.kernel.org, Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
- linuxppc-dev@lists.ozlabs.org,
+Message-ID: <20111010084726.GM2681@mtldesk30>
+References: <1318145118.29415.371.camel@pasglop>
+ <AE90C24D6B3A694183C094C60CF0A2F6D8AE78@saturn3.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AE78@saturn3.aculab.com>
+Cc: Yevgeny Petrilin <yevgenyp@mellanox.co.il>, Eli Cohen <eli@mellanox.co.il>,
  Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Eli Cohen <eli@mellanox.co.il>
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> What is this __iowrite64_copy... oh I see
->=20
-> Nice, somebody _AGAIN_ added a bunch of "generic" IO=20
-> accessors that are utterly wrong on all archs except
-> x86 (ok, -almost-).
-> There isn't a single bloody memory barrier in there !
-
-Actually memory barriers shouldn't really be added to
-any of these 'accessor' functions.
-(Or, at least, ones without barriers should be provided.)
-
-The driver may want to to a series of writes, then a
-single barrier, before a final write of a command (etc).
-
-in_le32() from io.h is specially horrid!
-
-	David
+On Mon, Oct 10, 2011 at 09:40:17AM +0100, David Laight wrote:
+> 
+> Actually memory barriers shouldn't really be added to
+> any of these 'accessor' functions.
+> (Or, at least, ones without barriers should be provided.)
+> 
+> The driver may want to to a series of writes, then a
+> single barrier, before a final write of a command (etc).
+> 
+> in_le32() from io.h is specially horrid!
+> 
+> 	David
+> 
+The driver would like to control if and when we want to put a memory
+barrier. We really don't want it to be done under the hood. In this
+respect we prefer raw functions which are still available to all
+platforms.
