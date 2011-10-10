@@ -2,15 +2,15 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 57780B72C4
+ by ozlabs.org (Postfix) with ESMTPS id 55DD0B72BB
  for <linuxppc-dev@ozlabs.org>; Mon, 10 Oct 2011 22:30:38 +1100 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Scott Wood <scottwood@freescale.com>, Willy Tarreau <w@1wt.eu>,
  Dan Malek <ppc6dev@digitaldans.com>
-Subject: [PATCH 06/14] 8xx: Fixup DAR from buggy dcbX instructions.
-Date: Mon, 10 Oct 2011 13:30:12 +0200
-Message-Id: <1318246220-4839-7-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: [PATCH 05/14] 8xx: Update TLB asm so it behaves as linux mm expects.
+Date: Mon, 10 Oct 2011 13:30:11 +0200
+Message-Id: <1318246220-4839-6-git-send-email-Joakim.Tjernlund@transmode.se>
 In-Reply-To: <1318246220-4839-1-git-send-email-Joakim.Tjernlund@transmode.se>
 References: <1318246220-4839-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,189 +22,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an assembler version to fixup DAR not being set
-by dcbX, icbi instructions. There are two versions, one
-uses selfmodifing code, the other uses a
-jump table but is much bigger(default).
+Update the TLB asm to make proper use of _PAGE_DIRTY and _PAGE_ACCESSED.
+Get rid of _PAGE_HWWRITE too.
+Pros:
+  - PRESENT is copied to ACCESSED, fixing accounting
+  - DIRTY is mapped to 0x100, the changed bit, and is set directly
+    when a page has been made dirty.
+  - Proper RO/RW mapping of user space.
+  - Free up 2 SW TLB bits in the linux pte(add back _PAGE_WRITETHRU ?)
+  - kernel RO/user NA support. Not sure this is really needed, would save
+    a few insn if not required.
+Cons:
+  - A few more instructions in the DTLB Miss routine.
 
 Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 ---
- arch/ppc/kernel/head_8xx.S |  149 +++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 146 insertions(+), 3 deletions(-)
+ arch/ppc/kernel/head_8xx.S |   53 ++++++++++++++++++++++++++-----------------
+ include/asm-ppc/pgtable.h  |   15 +++++------
+ 2 files changed, 39 insertions(+), 29 deletions(-)
 
 diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
-index c9770b6..0891b96 100644
+index 9d8a1b5..c9770b6 100644
 --- a/arch/ppc/kernel/head_8xx.S
 +++ b/arch/ppc/kernel/head_8xx.S
-@@ -511,8 +511,17 @@ DataTLBError:
+@@ -369,25 +369,27 @@ InstructionTLBMiss:
+ 	 */
+ 	tophys(r21,r21)
+ 	ori	r21,r21,1		/* Set valid bit */
+-	beq-	2f			/* If zero, don't try to find a pte */
+ 	DO_8xx_CPU6(0x2b80, r3)
+ 	mtspr	MI_TWC, r21	/* Set segment attributes */
++	beq-	2f		/* If zero, don't try to find a pte */
+ 	DO_8xx_CPU6(0x3b80, r3)
+ 	mtspr	MD_TWC, r21	/* Load pte table base address */
+ 	mfspr	r21, MD_TWC	/* ....and get the pte address */
+ 	lwz	r20, 0(r21)	/* Get the pte */
+ 
+-	ori	r20, r20, _PAGE_ACCESSED
+-	stw	r20, 0(r21)
+-
++#if 1
++	/* if !swap, you can delete this */
++	rlwimi	r20, r20, 5, _PAGE_PRESENT<<5	/* Copy PRESENT to ACCESSED */
++	stw	r20, 0(r21)	/* Update pte */
++#endif
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+-	 * Software indicator bits 21, 22 and 28 must be clear.
++	 * Software indicator bits 21 and 28 must be clear.
+ 	 * Software indicator bits 24, 25, 26, and 27 must be
+ 	 * set.  All other Linux PTE bits control the behavior
+ 	 * of the MMU.
+ 	 */
+ 2:	li	r21, 0x00f0
+-	rlwimi	r20, r21, 0, 24, 28	/* Set 24-27, clear 28 */
++	rlwimi	r20, r21, 0, 0x07f8	/* Set 24-27, clear 21-23,28 */
+ 	DO_8xx_CPU6(0x2d80, r3)
+ 	mtspr	MI_RPN, r20	/* Update TLB entry */
+ 
+@@ -444,12 +446,25 @@ DataStoreTLBMiss:
+ 	DO_8xx_CPU6(0x3b80, r3)
+ 	mtspr	MD_TWC, r21
+ 
+-	mfspr	r21, MD_TWC	/* get the pte address again */
+-	ori	r20, r20, _PAGE_ACCESSED
+-	stw	r20, 0(r21)
++#if 1
++	/* if !swap, you can delete this */
++	mfspr	r21, MD_TWC	/* get the pte address */
++	rlwimi	r20, r20, 5, _PAGE_PRESENT<<5	/* Copy PRESENT to ACCESSED */
++	stw	r20, 0(r21)	/* Update pte */
++#endif
++
++	/* Honour kernel RO, User NA */
++	/* 0x200 == Extended encoding, bit 22 */
++	/* r20 |=  (r20 & _PAGE_USER) >> 2 */
++	rlwimi	r20, r20, 32-2, 0x200
++	/* r21 =  (r20 & _PAGE_RW) >> 1 */
++	rlwinm	r21, r20, 32-1, 0x200
++	or	r20, r21, r20
++	/* invert RW and 0x200 bits */
++	xori	r20, r20, _PAGE_RW | 0x200
+ 
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+-	 * Software indicator bits 21, 22 and 28 must be clear.
++	 * Software indicator bits 22 and 28 must be clear.
+ 	 * Software indicator bits 24, 25, 26, and 27 must be
+ 	 * set.  All other Linux PTE bits control the behavior
+ 	 * of the MMU.
+@@ -496,11 +511,12 @@ DataTLBError:
  	stw	r20, 0(r0)
  	stw	r21, 4(r0)
  
--	mfspr	r20, DSISR
--	andis.	r21, r20, 0x4800	/* !translation or protection */
-+	mfspr	r20, DAR
-+	cmpwi	cr0, r20, 0x00f0
-+	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
-+DARFixed:
-+	/* As the DAR fixup may clear store we may have all 3 states zero.
-+	 * Make sure only 0x0200(store) falls down into DIRTY handling
-+	 */
-+	mfspr	r21, DSISR
-+	andis.	r21, r21, 0x4a00	/* !translation, protection or store */
-+	srwi	r21, r21, 16
-+	cmpwi	cr0, r21, 0x0200	/* just store ? */
- 	bne-	2f
- 	/* Only Change bit left now, do it here as it is faster
- 	 * than trapping to the C fault handler.
-@@ -534,7 +543,7 @@ DataTLBError:
- 	 * are initialized in mapin_ram().  This will avoid the problem,
- 	 * assuming we only use the dcbi instruction on kernel addresses.
- 	 */
--	mfspr	r20, DAR
-+	/* DAR is in r20 already */
- 	rlwinm	r21, r20, 0, 0, 19
- 	ori	r21, r21, MD_EVALID
- 	mfspr	r20, M_CASID
-@@ -618,6 +627,140 @@ DataTLBError:
- 	STD_EXCEPTION(0x1f00, Trap_1f, UnknownException)
+-	/* First, make sure this was a store operation.
+-	*/
+ 	mfspr	r20, DSISR
+-	andis.	r21, r20, 0x0200	/* If set, indicates store op */
+-	beq	2f
++	andis.	r21, r20, 0x4800	/* !translation or protection */
++	bne-	2f
++	/* Only Change bit left now, do it here as it is faster
++	 * than trapping to the C fault handler.
++ 	 */
  
- 	. = 0x2000
-+/* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-+ * by decoding the registers used by the dcbx instruction and adding them.
-+ * DAR is set to the calculated address and r10 also holds the EA on exit.
-+ */
-+ /* define if you don't want to use self modifying code */
-+#define NO_SELF_MODIFYING_CODE
-+FixupDAR:/* Entry point for dcbx workaround. */
-+	/* fetch instruction from memory. */
-+	mfspr	r20, SRR0
-+	andis.	r21, r20, 0x8000	/* Address >= 0x80000000 */
-+	DO_8xx_CPU6(0x3780, r3)
-+	mtspr	MD_EPN, r20
-+	mfspr	r21, M_TWB	/* Get level 1 table entry address */
-+	beq-	3f		/* Branch if user space */
-+	lis	r21, (swapper_pg_dir-PAGE_OFFSET)@h
-+	ori	r21, r21, (swapper_pg_dir-PAGE_OFFSET)@l
-+	rlwimi	r21, r20, 32-20, 0xffc /* r21 = r21&~0xffc|(r20>>20)&0xffc */
-+3:	lwz	r21, 0(r21)	/* Get the level 1 entry */
-+	tophys  (r21, r21)
-+	DO_8xx_CPU6(0x3b80, r3)
-+	mtspr	MD_TWC, r21	/* Load pte table base address */
-+	mfspr	r21, MD_TWC	/* ....and get the pte address */
-+	lwz	r21, 0(r21)	/* Get the pte */
-+	/* concat physical page address(r21) and page offset(r20) */
-+	rlwimi	r21, r20, 0, 20, 31
-+	lwz	r21,0(r21)
-+/* Check if it really is a dcbx instruction. */
-+/* dcbt and dcbtst does not generate DTLB Misses/Errors,
-+ * no need to include them here */
-+	srwi	r20, r21, 26	/* check if major OP code is 31 */
-+	cmpwi	cr0, r20, 31
-+	bne-	141f
-+	rlwinm	r20, r21, 0, 21, 30
-+	cmpwi	cr0, r20, 2028	/* Is dcbz? */
-+	beq+	142f
-+	cmpwi	cr0, r20, 940	/* Is dcbi? */
-+	beq+	142f
-+	cmpwi	cr0, r20, 108	/* Is dcbst? */
-+	beq+	144f		/* Fix up store bit! */
-+	cmpwi	cr0, r20, 172	/* Is dcbf? */
-+	beq+	142f
-+	cmpwi	cr0, r20, 1964	/* Is icbi? */
-+	beq+	142f
-+141:	mfspr	r20, DAR	/* r20 must hold DAR at exit */
-+	b	DARFixed	/* Nope, go back to normal TLB processing */
-+
-+144:	mfspr	r20, DSISR
-+	rlwinm	r20, r20,0,7,5	/* Clear store bit for buggy dcbst insn */
-+	mtspr	DSISR, r20
-+142:	/* continue, it was a dcbx, dcbi instruction. */
-+#ifdef CONFIG_8xx_CPU6
-+	lwz	r3, 8(r0)	/* restore r3 from memory */
-+#endif
-+#ifndef NO_SELF_MODIFYING_CODE
-+	andis.	r20,r21,0x1f	/* test if reg RA is r0 */
-+	li	r20,modified_instr@l
-+	dcbtst	r0,r20		/* touch for store */
-+	rlwinm	r21,r21,0,0,20	/* Zero lower 10 bits */
-+	oris	r21,r21,640	/* Transform instr. to a "add r20,RA,RB" */
-+	ori	r21,r21,532
-+	stw	r21,0(r20)	/* store add/and instruction */
-+	dcbf	0,r20		/* flush new instr. to memory. */
-+	icbi	0,r20		/* invalidate instr. cache line */
-+	lwz	r21, 4(r0)	/* restore r21 from memory */
-+	mfspr	r20, M_TW	/* restore r20 from M_TW */
-+	isync			/* Wait until new instr is loaded from memory */
-+modified_instr:
-+	.space	4		/* this is where the add instr. is stored */
-+	bne+	143f
-+	subf	r20,r0,r20	/* r20=r20-r0, only if reg RA is r0 */
-+143:	mtdar	r20		/* store faulting EA in DAR */
-+	b	DARFixed	/* Go back to normal TLB handling */
-+#else
-+	mfctr	r20
-+	mtdar	r20			/* save ctr reg in DAR */
-+	rlwinm	r20, r21, 24, 24, 28	/* offset into jump table for reg RB */
-+	addi	r20, r20, 150f@l	/* add start of table */
-+	mtctr	r20			/* load ctr with jump address */
-+	xor	r20, r20, r20		/* sum starts at zero */
-+	bctr				/* jump into table */
-+150:
-+	add	r20, r20, r0	;b	151f
-+	add	r20, r20, r1	;b	151f
-+	add	r20, r20, r2	;b	151f
-+	add	r20, r20, r3	;b	151f
-+	add	r20, r20, r4	;b	151f
-+	add	r20, r20, r5	;b	151f
-+	add	r20, r20, r6	;b	151f
-+	add	r20, r20, r7	;b	151f
-+	add	r20, r20, r8	;b	151f
-+	add	r20, r20, r9	;b	151f
-+	add	r20, r20, r10	;b	151f
-+	add	r20, r20, r11	;b	151f
-+	add	r20, r20, r12	;b	151f
-+	add	r20, r20, r13	;b	151f
-+	add	r20, r20, r14	;b	151f
-+	add	r20, r20, r15	;b	151f
-+	add	r20, r20, r16	;b	151f
-+	add	r20, r20, r17	;b	151f
-+	add	r20, r20, r18	;b	151f
-+	add	r20, r20, r19	;b	151f
-+	mtctr	r21	;b	154f	/* r20 needs special handling */
-+	mtctr	r21	;b	153f	/* r21 needs special handling */
-+	add	r20, r20, r22	;b	151f
-+	add	r20, r20, r23	;b	151f
-+	add	r20, r20, r24	;b	151f
-+	add	r20, r20, r25	;b	151f
-+	add	r20, r20, r26	;b	151f
-+	add	r20, r20, r27	;b	151f
-+	add	r20, r20, r28	;b	151f
-+	add	r20, r20, r29	;b	151f
-+	add	r20, r20, r30	;b	151f
-+	add	r20, r20, r31
-+151:
-+	rlwinm. r21,r21,19,24,28	/* offset into jump table for reg RA */
-+	beq	152f			/* if reg RA is zero, don't add it */ 
-+	addi	r21, r21, 150b@l	/* add start of table */
-+	mtctr	r21			/* load ctr with jump address */
-+	rlwinm	r21,r21,0,16,10		/* make sure we don't execute this more than once */
-+	bctr				/* jump into table */
-+152:
-+	mfdar	r21
-+	mtctr	r21			/* restore ctr reg from DAR */
-+	mtdar	r20			/* save fault EA to DAR */
-+	b	DARFixed		/* Go back to normal TLB handling */
-+
-+	/* special handling for r20,r21 since these are modified already */
-+153:	lwz	r21, 4(r0)	/* load r21 from memory */
-+	b	155f
-+154:	mfspr	r21, M_TW	/* load r20 from M_TW */
-+155:	add	r20, r20, r21	/* add it */
-+	mfctr	r21		/* restore r21 */
-+	b	151b
-+#endif
+ 	/* The EA of a data TLB miss is automatically stored in the MD_EPN
+ 	 * register.  The EA of a data TLB error is automatically stored in
+@@ -550,17 +566,12 @@ DataTLBError:
+ 	mfspr	r21, MD_TWC		/* ....and get the pte address */
+ 	lwz	r20, 0(r21)		/* Get the pte */
  
- /*
-  * This code finishes saving the registers to the exception frame
+-	andi.	r21, r20, _PAGE_RW	/* Is it writeable? */
+-	beq	2f			/* Bail out if not */
+-
+-	/* Update 'changed', among others.
+-	*/
+ 	ori	r20, r20, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
+-	mfspr	r21, MD_TWC		/* Get pte address again */
+ 	stw	r20, 0(r21)		/* and update pte in table */
++	xori	r20, r20, _PAGE_RW	/* RW bit is inverted */
+ 
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+-	 * Software indicator bits 21, 22 and 28 must be clear.
++	 * Software indicator bits 22 and 28 must be clear.
+ 	 * Software indicator bits 24, 25, 26, and 27 must be
+ 	 * set.  All other Linux PTE bits control the behavior
+ 	 * of the MMU.
+diff --git a/include/asm-ppc/pgtable.h b/include/asm-ppc/pgtable.h
+index 71b2165..2ba37d3 100644
+--- a/include/asm-ppc/pgtable.h
++++ b/include/asm-ppc/pgtable.h
+@@ -298,21 +298,20 @@ extern unsigned long vmalloc_start;
+ #define _PAGE_NO_CACHE	0x0002	/* I: cache inhibit */
+ #define _PAGE_SHARED	0x0004	/* No ASID (context) compare */
+ 
+-/* These five software bits must be masked out when the entry is loaded
+- * into the TLB.
++/* These three software bits must be masked out when the entry is loaded
++ * into the TLB, 2 SW bits free.
+  */
+ #define _PAGE_EXEC	0x0008	/* software: i-cache coherency required */
+ #define _PAGE_GUARDED	0x0010	/* software: guarded access */
+-#define _PAGE_DIRTY	0x0020	/* software: page changed */
+-#define _PAGE_RW	0x0040	/* software: user write access allowed */
+-#define _PAGE_ACCESSED	0x0080	/* software: page referenced */
++#define _PAGE_ACCESSED	0x0020	/* software: page referenced */
+ 
+ /* Setting any bits in the nibble with the follow two controls will
+  * require a TLB exception handler change.  It is assumed unused bits
+- * are always zero.
++ * are always zero, encoding(bit 22).
+  */
+-#define _PAGE_HWWRITE	0x0100	/* h/w write enable: never set in Linux PTE */
+-#define _PAGE_USER	0x0800	/* One of the PP bits, the other is USER&~RW */
++#define _PAGE_DIRTY	0x0100	/* Changed: page changed */
++#define _PAGE_RW	0x0400	/* PP lsb(bit 21), user write access allowed */
++#define _PAGE_USER	0x0800	/* PP msb(bit 20), user access allowed */
+ 
+ #define _PMD_PRESENT	PAGE_MASK
+ #define _PMD_PAGE_MASK	0x000c
 -- 
 1.7.3.4
