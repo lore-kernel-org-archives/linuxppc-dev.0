@@ -1,25 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
- [216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C5813B70FE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 02:15:42 +1100 (EST)
-Message-ID: <4E930BFA.5030701@freescale.com>
-Date: Mon, 10 Oct 2011 10:15:06 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: Re: [PATCH 1/3] [powerpc32] Process dynamic relocations for kernel
-References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
- <20111010095432.16589.32935.stgit@suzukikp.in.ibm.com>
-In-Reply-To: <20111010095432.16589.32935.stgit@suzukikp.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
- Paul Mackerras <paulus@samba.org>, Alan Modra <amodra@au1.ibm.com>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
+Return-Path: <w@1wt.eu>
+Received: from 1wt.eu (1wt.eu [62.212.114.60])
+ by ozlabs.org (Postfix) with ESMTP id 025D2B70B7
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2011 03:29:16 +1100 (EST)
+Date: Mon, 10 Oct 2011 18:29:09 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Dan Malek <ppc6dev@digitaldans.com>
+Subject: Re: [PATCH 0/3] 8xx: Large page(8MB) support for 2.4
+Message-ID: <20111010162909.GB21699@1wt.eu>
+References: <1318246714-5015-1-git-send-email-Joakim.Tjernlund@transmode.se>
+ <39B024CE-70A2-4D32-A29C-5702C7D2D6CF@digitaldans.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <39B024CE-70A2-4D32-A29C-5702C7D2D6CF@digitaldans.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,12 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/10/2011 04:55 AM, Suzuki K. Poulose wrote:
-> The following patch implements the dynamic relocation processing for
-> PPC32 kernel. relocate() accepts the target virtual address and relocates
->  the kernel image to the same.
+Hi an,
 
-How much overhead is involved in a true relocatable kernel?  Is it worth
-preserving the old "relocatable" booke behavior under a different name?
+On Mon, Oct 10, 2011 at 09:22:09AM -0700, Dan Malek wrote:
+> 
+> Hi Joakim.
+> 
+> On Oct 10, 2011, at 4:38 AM, Joakim Tjernlund wrote:
+> 
+> >This adds Large page support for 8xx and uses it
+> >for all kernel RAM....
+> 
+> >- Dan, what do you think :)
+> 
+> Since you asked, yes it looks great :-)  Now, can we
+> get this into a more contemporary kernel?  I'm
+> actually working on an 8xx project that may have
+> a few years of life left.
 
--Scott
+At the pace of current 2.4, I'm sure the code won't have change
+much a few years from now :-) It would be nice to know by now if
+the current longterm branches work OK or not though.
+
+Cheers,
+Willy
