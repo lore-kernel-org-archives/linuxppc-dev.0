@@ -1,34 +1,27 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id CD9F2B70BB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 21:01:53 +1100 (EST)
-Received: from /spool/local by in.ibm.com with XMail ESMTP
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Mon, 10 Oct 2011 15:27:34 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- p9A9vOIq3567734
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 15:27:24 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- p9A9vL8g012667
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 20:57:24 +1100
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH 3/3] [44x] Enable CRASH_DUMP for 440x
-To: linux ppc dev <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 10 Oct 2011 15:27:19 +0530
-Message-ID: <20111010095658.16589.20964.stgit@suzukikp.in.ibm.com>
-In-Reply-To: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
-References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 83B0CB6F8A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2011 21:18:54 +1100 (EST)
+Subject: Re: [PATCH] mlx4_en: fix transmit of packages when blue frame is
+ enabled
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eli Cohen <eli@dev.mellanox.co.il>
+In-Reply-To: <20111010092926.GO2681@mtldesk30>
+References: <1318145118.29415.371.camel@pasglop>
+ <AE90C24D6B3A694183C094C60CF0A2F6D8AE78@saturn3.aculab.com>
+ <20111010084726.GM2681@mtldesk30> <1318237284.29415.422.camel@pasglop>
+ <20111010091611.GN2681@mtldesk30> <1318238645.29415.426.camel@pasglop>
+ <20111010092926.GO2681@mtldesk30>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 10 Oct 2011 12:18:33 +0200
+Message-ID: <1318241913.29415.428.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+ Eli Cohen <eli@mellanox.co.il>, David Laight <David.Laight@ACULAB.COM>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have relocatable kernel, supporting CRASH_DUMP only requires
-turning the switches on for UP machines.
+On Mon, 2011-10-10 at 11:29 +0200, Eli Cohen wrote:
+> On Mon, Oct 10, 2011 at 11:24:05AM +0200, Benjamin Herrenschmidt wrote:
+> > On Mon, 2011-10-10 at 11:16 +0200, Eli Cohen wrote:
+> > 
+> > > Until then I think we need to have the logic working right on ppc and
+> > > measure if blue flame buys us any improvement in ppc. If that's not
+> > > the case (e.g because write combining is not working), then maybe we
+> > > should avoid using blueflame in ppc.
+> > > Could any of the guys from IBM check this and give us feedback?
+> > 
+> > I don't have the necessary hardware myself to test that but maybe Thadeu
+> > can.
+> > 
+> > Note that for WC to work, things must be mapped non-guarded. You can do
+> > that by using ioremap_prot() with pgprot_noncached_wc(PAGE_KERNEL) or
+> > ioremap_wc() (dunno how "generic" the later is).
+> 
+> I use the io mapping API:
+> 
+> at driver statrt:
+>         priv->bf_mapping = io_mapping_create_wc(bf_start, bf_len);
+>         if (!priv->bf_mapping)
+>                 err = -ENOMEM;
+> 
+> and then:
+>         uar->bf_map = io_mapping_map_wc(priv->bf_mapping, uar->index << PAGE_SHIFT);
+> 
+>         
+> Will this work on ppc?
 
-We don't have kexec support on 47x yet. Enabling SMP support would be done
-as part of enabling the PPC_47x support.
+That API has never been tested on ppc I suspect. We don't have
+CONFIG_HAVE_ATOMIC_IOMAP (mostly because we never needed it, it
+was designed and only ever used for Intel graphics before), so
+it will fallback to:
 
+static inline struct io_mapping *
+io_mapping_create_wc(resource_size_t base, unsigned long size)
+{
+	return (struct io_mapping __force *) ioremap_wc(base, size);
+}
 
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Cc:	Josh Boyer <jwboyer@gmail.com>
-Cc:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc:	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
----
+Which should work (hopefully :-)
 
- arch/powerpc/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 99558d6..fc41ce5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -362,8 +362,8 @@ config KEXEC
- 
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
--	depends on PPC64 || 6xx || FSL_BOOKE
--	select RELOCATABLE if PPC64 || FSL_BOOKE
-+	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
-+	select RELOCATABLE if PPC64 || FSL_BOOKE || 44x
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The same kernel binary can be used as production kernel and dump
+Cheers,
+Ben.
