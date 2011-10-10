@@ -2,15 +2,15 @@ Return-Path: <beckyb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DDBCEB7400
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 07:51:27 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id EFCF2B722F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 07:51:29 +1100 (EST)
 From: Becky Bruce <beckyb@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 07/13] powerpc: Add hugepage support to 64-bit tablewalk code
- for FSL_BOOK3E
-Date: Mon, 10 Oct 2011 15:50:42 -0500
-Message-Id: <13182798791090-git-send-email-beckyb@kernel.crashing.org>
-In-Reply-To: <13182798761457-git-send-email-beckyb@kernel.crashing.org>
+Subject: [PATCH 08/13] powerpc: Add gpages reservation code for 64-bit FSL
+ BOOKE
+Date: Mon, 10 Oct 2011 15:50:43 -0500
+Message-Id: <1318279883564-git-send-email-beckyb@kernel.crashing.org>
+In-Reply-To: <13182798791090-git-send-email-beckyb@kernel.crashing.org>
 References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
  <13182798624083-git-send-email-beckyb@kernel.crashing.org>
  <13182798643553-git-send-email-beckyb@kernel.crashing.org>
@@ -18,6 +18,7 @@ References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
  <1318279870278-git-send-email-beckyb@kernel.crashing.org>
  <13182798731357-git-send-email-beckyb@kernel.crashing.org>
  <13182798761457-git-send-email-beckyb@kernel.crashing.org>
+ <13182798791090-git-send-email-beckyb@kernel.crashing.org>
 Cc: david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,55 +31,117 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Becky Bruce <beckyb@kernel.crashing.org>
 
-Before hugetlb, at each level of the table, we test for
-!0 to determine if we have a valid table entry.  With hugetlb, this
-compare becomes:
-        < 0 is a normal entry
-        0 is an invalid entry
-        > 0 is huge
+For 64-bit FSL_BOOKE implementations, gigantic pages need to be
+reserved at boot time by the memblock code based on the command line.
+This adds the call that handles the reservation, and fixes some code
+comments.
 
-This works because the hugepage code pulls the top bit off the entry
-(which for non-huge entries always has the top bit set) as an
-indicator that we have a hugepage.
+It also removes the previous pr_err when reserve_hugetlb_gpages
+is called on a system without hugetlb enabled - the way the code is
+structured, the call is unconditional and the resulting error message
+spurious and confusing.
 
 Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
 ---
- arch/powerpc/mm/tlb_low_64e.S |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/hugetlb.h |   19 ++++++++++++++-----
+ arch/powerpc/kernel/setup_64.c     |   10 ++++++++++
+ arch/powerpc/mm/hugetlbpage.c      |    8 ++++----
+ 3 files changed, 28 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index 71d5d9a..ff672bd 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -136,22 +136,22 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
- #ifndef CONFIG_PPC_64K_PAGES
- 	rldicl	r15,r16,64-PUD_SHIFT+3,64-PUD_INDEX_SIZE-3
- 	clrrdi	r15,r15,3
--	cmlpdi	cr0,r14,0
--	beq	tlb_miss_fault_bolted	/* Bad pgd entry */
-+	cmpdi	cr0,r14,0
-+	bge	tlb_miss_fault_bolted	/* Bad pgd entry or hugepage; bail */
- 	ldx	r14,r14,r15		/* grab pud entry */
- #endif /* CONFIG_PPC_64K_PAGES */
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 273acfa..555044c 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -5,7 +5,6 @@
+ #include <asm/page.h>
  
- 	rldicl	r15,r16,64-PMD_SHIFT+3,64-PMD_INDEX_SIZE-3
- 	clrrdi	r15,r15,3
--	cmpldi	cr0,r14,0
--	beq	tlb_miss_fault_bolted
-+	cmpdi	cr0,r14,0
-+	bge	tlb_miss_fault_bolted
- 	ldx	r14,r14,r15		/* Grab pmd entry */
+ extern struct kmem_cache *hugepte_cache;
+-extern void __init reserve_hugetlb_gpages(void);
  
- 	rldicl	r15,r16,64-PAGE_SHIFT+3,64-PTE_INDEX_SIZE-3
- 	clrrdi	r15,r15,3
--	cmpldi	cr0,r14,0
--	beq	tlb_miss_fault_bolted
--	ldx	r14,r14,r15		/* Grab PTE */
-+	cmpdi	cr0,r14,0
-+	bge	tlb_miss_fault_bolted
-+	ldx	r14,r14,r15		/* Grab PTE, normal (!huge) page */
+ static inline pte_t *hugepd_page(hugepd_t hpd)
+ {
+@@ -153,14 +152,24 @@ static inline void arch_release_hugepage(struct page *page)
+ }
  
- 	/* Check if required permissions are met */
- 	andc.	r15,r11,r14
+ #else /* ! CONFIG_HUGETLB_PAGE */
+-static inline void reserve_hugetlb_gpages(void)
+-{
+-	pr_err("Cannot reserve gpages without hugetlb enabled\n");
+-}
+ static inline void flush_hugetlb_page(struct vm_area_struct *vma,
+ 				      unsigned long vmaddr)
+ {
+ }
++#endif /* CONFIG_HUGETLB_PAGE */
++
++
++/*
++ * FSL Book3E platforms require special gpage handling - the gpages
++ * are reserved early in the boot process by memblock instead of via
++ * the .dts as on IBM platforms.
++ */
++#if defined(CONFIG_HUGETLB_PAGE) && defined(CONFIG_PPC_FSL_BOOK3E)
++extern void __init reserve_hugetlb_gpages(void);
++#else
++static inline void reserve_hugetlb_gpages(void)
++{
++}
+ #endif
+ 
+ #endif /* _ASM_POWERPC_HUGETLB_H */
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index d4168c9..2e334d4 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -35,6 +35,8 @@
+ #include <linux/pci.h>
+ #include <linux/lockdep.h>
+ #include <linux/memblock.h>
++#include <linux/hugetlb.h>
++
+ #include <asm/io.h>
+ #include <asm/kdump.h>
+ #include <asm/prom.h>
+@@ -64,6 +66,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/code-patching.h>
+ #include <asm/kvm_ppc.h>
++#include <asm/hugetlb.h>
+ 
+ #include "setup.h"
+ 
+@@ -217,6 +220,13 @@ void __init early_setup(unsigned long dt_ptr)
+ 	/* Initialize the hash table or TLB handling */
+ 	early_init_mmu();
+ 
++	/*
++	 * Reserve any gigantic pages requested on the command line.
++	 * memblock needs to have been initialized by the time this is
++	 * called since this will reserve memory.
++	 */
++	reserve_hugetlb_gpages();
++
+ 	DBG(" <- early_setup()\n");
+ }
+ 
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 9a34606..51855a0 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -28,10 +28,10 @@ unsigned int HPAGE_SHIFT;
+ 
+ /*
+  * Tracks gpages after the device tree is scanned and before the
+- * huge_boot_pages list is ready.  On 64-bit implementations, this is
+- * just used to track 16G pages and so is a single array.  32-bit
+- * implementations may have more than one gpage size due to limitations
+- * of the memory allocators, so we need multiple arrays
++ * huge_boot_pages list is ready.  On non-Freescale implementations, this is
++ * just used to track 16G pages and so is a single array.  FSL-based
++ * implementations may have more than one gpage size, so we need multiple
++ * arrays
+  */
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+ #define MAX_NUMBER_GPAGES	128
 -- 
 1.5.6.5
