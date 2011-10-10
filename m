@@ -1,21 +1,36 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DFAAEB71BD
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2011 03:51:54 +1100 (EST)
-In-Reply-To: <39B024CE-70A2-4D32-A29C-5702C7D2D6CF@digitaldans.com>
-References: <1318246714-5015-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <39B024CE-70A2-4D32-A29C-5702C7D2D6CF@digitaldans.com>
-Subject: Re: [PATCH 0/3] 8xx: Large page(8MB) support for 2.4
-To: Dan Malek <ppc6dev@digitaldans.com>
-Message-ID: <OFAF68F93F.57D058F1-ONC1257925.005B7C6F-C1257925.005C10D7@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 10 Oct 2011 18:45:36 +0200
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 05B8BB70FF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 04:18:05 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+ by e23smtp01.au.ibm.com (8.14.4/8.13.1) with ESMTP id p9AHGP0I025147
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 04:16:25 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ p9AHI3vu2125926
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 04:18:03 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ p9AHI2YJ004644
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 04:18:03 +1100
+Message-ID: <4E932897.2060907@in.ibm.com>
+Date: Mon, 10 Oct 2011 22:47:11 +0530
+From: Suzuki Poulose <suzuki@in.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3] [powerpc32] Process dynamic relocations for kernel
+References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
+ <20111010095432.16589.32935.stgit@suzukikp.in.ibm.com>
+ <4E930BFA.5030701@freescale.com>
+In-Reply-To: <4E930BFA.5030701@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
+ Paul Mackerras <paulus@samba.org>, Alan Modra <amodra@au1.ibm.com>,
+ linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +40,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan Malek <ppc6dev@digitaldans.com> wrote on 2011/10/10 18:22:09:
+On 10/10/11 20:45, Scott Wood wrote:
+> On 10/10/2011 04:55 AM, Suzuki K. Poulose wrote:
+>> The following patch implements the dynamic relocation processing for
+>> PPC32 kernel. relocate() accepts the target virtual address and relocates
+>>   the kernel image to the same.
 >
->
-> Hi Joakim.
->
-> On Oct 10, 2011, at 4:38 AM, Joakim Tjernlund wrote:
->
-> > This adds Large page support for 8xx and uses it
-> > for all kernel RAM....
->
-> > - Dan, what do you think :)
->
-> Since you asked, yes it looks great :-)  Now, can we
-> get this into a more contemporary kernel?  I'm
-> actually working on an 8xx project that may have
-> a few years of life left.
+> How much overhead is involved in a true relocatable kernel?  Is it worth
+> preserving the old "relocatable" booke behavior under a different name?
 
-That is an easy port but I will have to do that blind. Would you
-mind take this for a spin on 2.4 first?
+There are '75782' on an ebony kernel with minimal config. So thats a pretty big
+number for small embedded chips. I guess, preserving the 'old relocatable' (page
+aligned approach) would be a good idea for the architectures which can afford it.
+e.g, places where TLB size is 64M or less.
 
-The more interesting part is if one should use other sized(16K or 512K) large pages too?
-Those should be useful for user space but it is a lot of work. I haven't checked
-what large page support for user space is in 2.6 for ppc though.
-
- Jocke
+Thanks
+Suzuki
