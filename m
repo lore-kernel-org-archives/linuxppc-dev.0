@@ -1,22 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 87F65B71AB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 05:13:07 +1100 (EST)
-Date: Mon, 10 Oct 2011 14:10:53 -0400 (EDT)
-Message-Id: <20111010.141053.1739730804108789791.davem@davemloft.net>
-To: cascardo@linux.vnet.ibm.com
-Subject: Re: [PATCH] mlx4_en: fix endianness with blue frame support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20111010164654.GA3648@oc1711230544.ibm.com>
-References: <1318231920.29415.404.camel@pasglop>
- <1318264943-10009-1-git-send-email-cascardo@linux.vnet.ibm.com>
- <20111010164654.GA3648@oc1711230544.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- eli@dev.mellanox.co.il, yevgenyp@mellanox.co.il
+ by ozlabs.org (Postfix) with ESMTPS id 2F887B71BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 07:51:07 +1100 (EST)
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/13] Hugetlb for 64-bit Freescale Book3E
+Date: Mon, 10 Oct 2011 15:50:35 -0500
+Message-Id: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
+Cc: david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Date: Mon, 10 Oct 2011 13:46:54 -0300
+This series of patches contains mostly cleanup code that allows
+the enablement of hugetlb for 64-bit Freescale BookE processors.
+There are also some bits that I dropped from the 32-bit release
+that are added back, as they are needed by other implementations.
+Otherwise, it's mostly a bunch of code rearrangement, changes
+in #include protections, and Kconfig changes.
 
-> On Mon, Oct 10, 2011 at 01:42:23PM -0300, Thadeu Lima de Souza Cascardo wrote:
->> The doorbell register was being unconditionally swapped. In x86, that
->> meant it was being swapped to BE and written to the descriptor and to
->> memory, depending on the case of blue frame support or writing to
->> doorbell register. On PPC, this meant it was being swapped to LE and
->> then swapped back to BE while writing to the register. But in the blue
->> frame case, it was being written as LE to the descriptor.
->> 
->> The fix is not to swap doorbell unconditionally, write it to the
->> register as BE and convert it to BE when writing it to the descriptor.
->> 
->> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
->> Reported-by: Richard Hendrickson <richhend@us.ibm.com>
->> Cc: Eli Cohen <eli@dev.mellanox.co.il>
->> Cc: Yevgeny Petrilin <yevgenyp@mellanox.co.il>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> ---
-> 
-> So I tested this patch and it works for me. Thanks Ben and Eli for
-> finding out the problem with doorbell in the descriptor.
+Cheers,
+Becky
 
-Applied, thanks everyone.
+ arch/powerpc/configs/corenet32_smp_defconfig |    9 +--
+ arch/powerpc/configs/corenet64_smp_defconfig |    6 +-
+ arch/powerpc/configs/mpc85xx_defconfig       |    6 +-
+ arch/powerpc/configs/mpc85xx_smp_defconfig   |    7 +-
+ arch/powerpc/include/asm/hugetlb.h           |   36 ++++++--
+ arch/powerpc/include/asm/page_64.h           |    2 +
+ arch/powerpc/kernel/setup_64.c               |   10 ++
+ arch/powerpc/mm/hugetlbpage-book3e.c         |   15 ++--
+ arch/powerpc/mm/hugetlbpage.c                |  116 ++++++++++++++++----------
+ arch/powerpc/mm/tlb_low_64e.S                |   36 ++++-----
+ arch/powerpc/mm/tlb_nohash.c                 |    2 +-
+ arch/powerpc/platforms/Kconfig.cputype       |    4 +-
+ 12 files changed, 143 insertions(+), 106 deletions(-)
