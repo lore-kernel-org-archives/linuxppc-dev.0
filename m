@@ -1,15 +1,20 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DF8EFB6F72
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 20:02:59 +1100 (EST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Fix interrupt handling in MPC8xxx GPIO driver
-Date: Tue, 11 Oct 2011 10:24:21 +0200
-Message-Id: <1318321461-3066-1-git-send-email-felix@embedded-sol.com>
-Cc: Felix Radensky <felix@embedded-sol.com>, stable@vger.kernel.org
+Return-Path: <R65777@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id F011FB6F18
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 16:56:09 +1100 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc: e500mc: Fix: use CONFIG_PPC_E500MC in idle_e500.S
+Date: Tue, 11 Oct 2011 11:26:08 +0530
+Message-ID: <1318312568-23181-1-git-send-email-bharat.bhushan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, bharatb.yadav@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,27 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Interrupt handler in MPC8xxx GPIO driver is missing the call
-to PIC EOI (end of interrupt) handler. As a result, at least
-on 85XX systems, GPIO interrupt is delivered only once. This
-patch adds the missing EOI call. Tested on custom P1022 board.
+It is wrongly using undefined CONFIG_E500MC.
 
-Signed-off-by: Felix Radensky <felix@embedded-sol.com>
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
- arch/powerpc/sysdev/mpc8xxx_gpio.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/idle_e500.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mpc8xxx_gpio.c b/arch/powerpc/sysdev/mpc8xxx_gpio.c
-index fb4963a..d2e0e1c 100644
---- a/arch/powerpc/sysdev/mpc8xxx_gpio.c
-+++ b/arch/powerpc/sysdev/mpc8xxx_gpio.c
-@@ -153,6 +153,7 @@ static void mpc8xxx_gpio_irq_cascade(unsigned int irq, struct irq_desc *desc)
- 	if (mask)
- 		generic_handle_irq(irq_linear_revmap(mpc8xxx_gc->irq,
- 						     32 - ffs(mask)));
-+	desc->chip->eoi(irq);
- }
+diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
+index 3e2b95c..4f0ab85 100644
+--- a/arch/powerpc/kernel/idle_e500.S
++++ b/arch/powerpc/kernel/idle_e500.S
+@@ -26,7 +26,7 @@ _GLOBAL(e500_idle)
+ 	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
+ 	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
  
- static void mpc8xxx_irq_unmask(struct irq_data *d)
+-#ifdef CONFIG_E500MC
++#ifdef CONFIG_PPC_E500MC
+ 	wrteei	1
+ 1:	wait
+ 
 -- 
-1.7.4.4
+1.7.0.4
