@@ -1,36 +1,21 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id F211FB6F64
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 23:54:19 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
- by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id p9BCsCtA004352
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 23:54:12 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- p9BCsCKd2490622
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 23:54:12 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- p9BCsBgU031558
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 23:54:12 +1100
-Message-ID: <4E943C70.4030106@in.ibm.com>
-Date: Tue, 11 Oct 2011 18:24:08 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-MIME-Version: 1.0
+Return-Path: <xenidis@gmail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id A4343B6F71
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 01:47:44 +1100 (EST)
+Received: by ywn1 with SMTP id 1so7683065ywn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 07:47:40 -0700 (PDT)
+Sender: "xenidis@gmail.com" <xenidis@gmail.com>
+From: Jimi Xenidis <jimix@pobox.com>
+Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH v2] powerpc: book3e: WSP: Add Chroma as a new WSP/PowerEN
+ platform.
+Date: Tue, 11 Oct 2011 09:47:36 -0500
+Message-Id: <DD04A5E8-2850-4DDC-9E7A-B899B0EEEF11@pobox.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] [44x] Enable CONFIG_RELOCATABLE for PPC44x
-References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
- <20111010095514.16589.85241.stgit@suzukikp.in.ibm.com>
- <4E9332AA.1050307@freescale.com>
-In-Reply-To: <4E9332AA.1050307@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
- Paul Mackerras <paulus@samba.org>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v1084)
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,19 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/10/11 23:30, Scott Wood wrote:
-> On 10/10/2011 04:56 AM, Suzuki K. Poulose wrote:
->> #if defined(CONFIG_RELOCATABLE)&&  defined(CONFIG_44x)
->> #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + (KERNELBASE + RELOC_OFFSET)))
->> #define __pa(x) ((unsigned long)(x) + PHYSICAL_START - (KERNELBASE + RELOC_OFFSET))
->> #endif
->
-> Why is this 44x-specific?
+On Tue Oct 4 05:02:41 EST 2011, Scott Wood wrote:
 
-As of now, we compile with relocations only for the 44x. We could make this
-generic once the approach is accepted by everyone and implemented on the other
-platforms.
+Looking at your comments below, will the following be acceptable
 
-Thanks
+> On 09/29/2011 09:27 PM, Jimi Xenidis wrote:
+> > diff --git a/arch/powerpc/platforms/wsp/Kconfig =
+b/arch/powerpc/platforms/wsp/Kconfig
+> > index ea2811c..a3eef8e 100644
+> > --- a/arch/powerpc/platforms/wsp/Kconfig
+> > +++ b/arch/powerpc/platforms/wsp/Kconfig
+> > @@ -1,6 +1,7 @@
+> >  config PPC_WSP
+> >  	bool
+> >  	select PPC_A2
+> > +	select GENERIC_TBSYNC
+> >  	select PPC_ICSWX
+> >  	select PPC_SCOM
+> >  	select PPC_XICS
+> > @@ -8,14 +9,20 @@ config PPC_WSP
+> >  	select PCI
+> >  	select PPC_IO_WORKAROUNDS if PCI
+> >  	select PPC_INDIRECT_PIO if PCI
+> > +	select PPC_WSP_COPRO
+> >  	default n
+> > =20
+> >  menu "WSP platform selection"
+> >  	depends on PPC_BOOK3E_64
 
-Suzuki
+add "&& SMP"
+
+> > =20
+> >  config PPC_PSR2
+> > -	bool "PSR-2 platform"
+> > -	select GENERIC_TBSYNC
+> > +	bool "PowerEN System Reference Platform 2"
+> > +	select EPAPR_BOOT
+> > +	select PPC_WSP
+> > +	default y
+
+Make these "default n"
+
+Will that address everything?
+-jx
+
+> > +
+> > +config PPC_CHROMA
+> > +	bool "PowerEN PCIe Chroma Card"
+> >  	select EPAPR_BOOT
+> >  	select PPC_WSP
+> >  	default y
+>=20
+> This is an existing problem with PSR2, but please don't hide "default =
+y"
+> in a menu (at least make it a menuconfig).
+>  As is, it's not obvious from
+> looking at the toplevel platforms menu that these platforms are =
+enabled
+> at all.
+>=20
+> Further, PPC_WSP doesn't build on non-SMP (undefined references to
+> boot_cpuid and get_hard_smp_processor_id in ics.c), but the platforms
+> that select it don't depend on SMP.
+
+this I can solve with=20
+
+>=20
+> -Scott
+>=20
