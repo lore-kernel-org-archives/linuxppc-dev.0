@@ -1,19 +1,19 @@
 Return-Path: <tmarri@apm.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
- by ozlabs.org (Postfix) with SMTP id 618F4B6F6B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 09:51:42 +1100 (EST)
-Received: by iadx2 with SMTP id x2so124236iad.20
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 15:51:40 -0700 (PDT)
+Received: from exprod5og112.obsmtp.com (exprod5og112.obsmtp.com [64.18.0.24])
+ by ozlabs.org (Postfix) with SMTP id 224CEB6F72
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 09:54:09 +1100 (EST)
+Received: by iaeo4 with SMTP id o4so205821iae.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2011 15:54:07 -0700 (PDT)
 From: Tirumala Marri <tmarri@apm.com>
-References: <1317954673-12032-1-git-send-email-tmarri@apm.com>
- <4E8EDD75.5090107@ru.mvista.com>
-In-Reply-To: <4E8EDD75.5090107@ru.mvista.com>
+References: <1317954632-11768-1-git-send-email-tmarri@apm.com>
+ <CAKwPUowTCS2jO1QdFMCFg86Mb_d_yo2NvnWQ=Lh6N1tdgZE1rA@mail.gmail.com>
+In-Reply-To: <CAKwPUowTCS2jO1QdFMCFg86Mb_d_yo2NvnWQ=Lh6N1tdgZE1rA@mail.gmail.com>
 MIME-Version: 1.0
-Date: Tue, 11 Oct 2011 15:43:49 -0700
-Message-ID: <85bdbe5686e64bd0be07b07e2bb9a0ac@mail.gmail.com>
-Subject: RE: [PATCH v14 10/10] USB/ppc4xx:Synopsys DWC OTG driver enable
- gadget support
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Date: Tue, 11 Oct 2011 15:46:25 -0700
+Message-ID: <050675599a1312d1eac8006bd908615f@mail.gmail.com>
+Subject: RE: [PATCH v14 02/10] USB/ppc4xx: Add Synopsys DesignWare HS USB OTG
+ driver framework
+To: Kassey Lee <kassey1216@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
  linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -27,15 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<> +# dwc_otg builds in ../dwc along with host support
-<> +config USB_GADGET_DWC_HDRC
-<> +	boolean "DesignWare USB Peripheral"
-<> +	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
-<> +	select USB_GADGET_DUALSPEED
-<> +	select USB_GADGET_SELECTED
-<> +	select USB_GADGET_DWC_OTG
+Hi,
 <
-<    I don't see where this one is defined...
+<     I did  find any private info for ppc in
+<     drivers/usb/dwc/apmppc.c
 <
-[Tirumala Marri] You mean USB_GADGET_SELECTED ? Ok I will add it.
+<     do you want make it generic driver ? if yes, it could be a
+<generic name too.
+[Tirumala Marri] This file has of PPC specific functions, like device tree
+which actually contains PPC specific address ranges, interrupt numbers
+etc.
 --marri
