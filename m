@@ -1,36 +1,16 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id AB226B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2011 01:15:41 +1100 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p9CE0CIq022989
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 10:00:12 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- p9CEFV7c219456
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 10:15:32 -0400
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- p9CEF5op007611
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 08:15:06 -0600
-Subject: Re: [PATCH 2/3] [44x] Enable CONFIG_RELOCATABLE for PPC44x
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Suzuki Poulose <suzuki@in.ibm.com>
-In-Reply-To: <4E943C70.4030106@in.ibm.com>
-References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
- <20111010095514.16589.85241.stgit@suzukikp.in.ibm.com>
- <4E9332AA.1050307@freescale.com>  <4E943C70.4030106@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 12 Oct 2011 07:15:02 -0700
-Message-ID: <1318428902.3782.9.camel@nimitz>
-Mime-Version: 1.0
-Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D72E0B6EE8
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 01:35:57 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: hjk@hansjkoch.de
+Subject: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
+Date: Wed, 12 Oct 2011 09:35:45 -0500
+Message-Id: <1318430145-19898-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de,
+ Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,26 +20,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-10-11 at 18:24 +0530, Suzuki Poulose wrote:
-> On 10/10/11 23:30, Scott Wood wrote:
-> > On 10/10/2011 04:56 AM, Suzuki K. Poulose wrote:
-> >> #if defined(CONFIG_RELOCATABLE)&&  defined(CONFIG_44x)
-> >> #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + (KERNELBASE + RELOC_OFFSET)))
-> >> #define __pa(x) ((unsigned long)(x) + PHYSICAL_START - (KERNELBASE + RELOC_OFFSET))
-> >> #endif
-> >
-> > Why is this 44x-specific?
-> 
-> As of now, we compile with relocations only for the 44x. We could make this
-> generic once the approach is accepted by everyone and implemented on the other
-> platforms. 
+From: Kai Jiang <Kai.Jiang@freescale.com>
 
-This is not the place to enforce that kind of thing.  If
-CONFIG_RELOCATABLE is only supported on one platform, then do:
+To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
+extend the width of 'addr' in struct uio_mem.  Numerous platforms like
+embedded PPC, ARM, and X86 have support for systems with larger physical
+address than logical.
 
-	config RELOCATABLE
-		depends on 44x
+Since 'addr' may contain a physical, logical, or virtual address the
+easiest solution is to just change the type to 'unsigned long long'
+regardless of which type is utilized.
 
-and take the 44x reference out of the #ifdef.
+For physical address we can support up to a 44-bit physical address on a
+typical 32-bit system as we utilize remap_pfn_range() for the mapping of
+the memory region and pfn's are represnted by shifting the address by
+the page size (typically 4k).
 
--- Dave
+Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/uio/uio.c          |    8 ++++----
+ include/linux/uio_driver.h |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+index d2efe82..a927c51 100644
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -69,7 +69,7 @@ static ssize_t map_name_show(struct uio_mem *mem, char *buf)
+ 
+ static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
+ {
+-	return sprintf(buf, "0x%lx\n", mem->addr);
++	return sprintf(buf, "0x%llx\n", mem->addr);
+ }
+ 
+ static ssize_t map_size_show(struct uio_mem *mem, char *buf)
+@@ -79,7 +79,7 @@ static ssize_t map_size_show(struct uio_mem *mem, char *buf)
+ 
+ static ssize_t map_offset_show(struct uio_mem *mem, char *buf)
+ {
+-	return sprintf(buf, "0x%lx\n", mem->addr & ~PAGE_MASK);
++	return sprintf(buf, "0x%llx\n", mem->addr & ~PAGE_MASK);
+ }
+ 
+ struct map_sysfs_entry {
+@@ -634,8 +634,8 @@ static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
+ 		page = virt_to_page(idev->info->mem[mi].addr + offset);
+ 	else
+-		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
+-							+ offset);
++		page = vmalloc_to_page((void *)(unsigned long)
++				idev->info->mem[mi].addr + offset);
+ 	get_page(page);
+ 	vmf->page = page;
+ 	return 0;
+diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+index 665517c..c1fdb19 100644
+--- a/include/linux/uio_driver.h
++++ b/include/linux/uio_driver.h
+@@ -31,7 +31,7 @@ struct uio_map;
+  */
+ struct uio_mem {
+ 	const char		*name;
+-	unsigned long		addr;
++	unsigned long long	addr;
+ 	unsigned long		size;
+ 	int			memtype;
+ 	void __iomem		*internal_addr;
+-- 
+1.7.3.4
