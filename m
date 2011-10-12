@@ -2,20 +2,22 @@ Return-Path: <hjk@hansjkoch.de>
 Received: from www.hansjkoch.de (www.hansjkoch.de [178.63.77.200])
  (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EF659B6F7C
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 03:19:50 +1100 (EST)
-Date: Wed, 12 Oct 2011 18:19:31 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 8F61FB6F18
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 03:21:13 +1100 (EST)
+Date: Wed, 12 Oct 2011 18:20:54 +0200
 From: "Hans J. Koch" <hjk@hansjkoch.de>
-To: "Hans J. Koch" <hjk@hansjkoch.de>
-Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
-Message-ID: <20111012161931.GE21852@local>
-References: <1318430145-19898-1-git-send-email-galak@kernel.crashing.org>
- <20111012153229.GB21852@local>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] UIO: Allow a UIO driver to override the default pgprot
+ when we mmap
+Message-ID: <20111012162053.GF21852@local>
+References: <1318430616-20351-1-git-send-email-galak@kernel.crashing.org>
+ <20111012153536.GC21852@local>
+ <AEAF26D0-640A-4DD2-82FE-B3BD02662EEC@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111012153229.GB21852@local>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de,
- Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <AEAF26D0-640A-4DD2-82FE-B3BD02662EEC@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, "Hans J. Koch" <hjk@hansjkoch.de>, gregkh@suse.de,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 12, 2011 at 05:32:29PM +0200, Hans J. Koch wrote:
-> On Wed, Oct 12, 2011 at 09:35:45AM -0500, Kumar Gala wrote:
-> > From: Kai Jiang <Kai.Jiang@freescale.com>
-> > 
-> > To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
-> > extend the width of 'addr' in struct uio_mem.  Numerous platforms like
-> > embedded PPC, ARM, and X86 have support for systems with larger physical
-> > address than logical.
-> > 
-> > Since 'addr' may contain a physical, logical, or virtual address the
-> > easiest solution is to just change the type to 'unsigned long long'
-> > regardless of which type is utilized.
+On Wed, Oct 12, 2011 at 11:08:20AM -0500, Kumar Gala wrote:
 > 
-> No. There's phys_addr_t for that purpose, defined in include/linux/types.h.
-> Please use that.
+> On Oct 12, 2011, at 10:35 AM, Hans J. Koch wrote:
+> 
+> > On Wed, Oct 12, 2011 at 09:43:36AM -0500, Kumar Gala wrote:
+> >> For some devices the default behavior of pgprot_noncached is not
+> >> the correct flags for the address space.
+> > 
+> > For what devices? Can you give a real world usecase where this is needed?
+> > 
+> > Thanks,
+> > Hans
+> 
+> In the Freescale Networking devices we have a coherent memory interface to our HW queuing system.  In that case we want to change the pgprot() to be cache-able instead of non-cached.
 
-I forgot: If you resend this, please update the documentation as well.
-(Documentation/DocBook/uio-howto.tmpl)
+Could you please post the kernel part of that driver?
 
 Thanks,
 Hans
