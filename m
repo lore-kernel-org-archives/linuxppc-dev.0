@@ -1,21 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 53393B6F8A
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 05:40:38 +1100 (EST)
-Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
-Mime-Version: 1.0 (Apple Message framework v1244.3)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20111012161931.GE21852@local>
-Date: Wed, 12 Oct 2011 13:40:22 -0500
-Message-Id: <38B65690-DA92-4923-B2A4-6523DDDA579A@kernel.crashing.org>
-References: <1318430145-19898-1-git-send-email-galak@kernel.crashing.org>
- <20111012153229.GB21852@local> <20111012161931.GE21852@local>
-To: "Hans J. Koch" <hjk@hansjkoch.de>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de,
- Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
+Return-Path: <geoff@infradead.org>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id BF5E6B6F18
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 05:42:38 +1100 (EST)
+Subject: [PATCH] powerpc/ps3: Fix lv1_gpu_attribute hcall
+From: Geoff Levand <geoff@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 12 Oct 2011 11:42:13 -0700
+Message-ID: <1318444933.3496.15.camel@gum>
+MIME-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+ cbe-oss-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The lv1_gpu_attribute hcall takes three, not five input
+arguments.  Adjust the lv1 hcall table and all calls.
 
-On Oct 12, 2011, at 11:19 AM, Hans J. Koch wrote:
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+CC: Takashi Iwai <tiwai@suse.de>
+---
+ arch/powerpc/include/asm/lv1call.h |    2 +-
+ sound/ppc/snd_ps3.c                |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> On Wed, Oct 12, 2011 at 05:32:29PM +0200, Hans J. Koch wrote:
->> On Wed, Oct 12, 2011 at 09:35:45AM -0500, Kumar Gala wrote:
->>> From: Kai Jiang <Kai.Jiang@freescale.com>
->>>=20
->>> To support >32-bit physical addresses for UIO_MEM_PHYS type we need =
-to
->>> extend the width of 'addr' in struct uio_mem.  Numerous platforms =
-like
->>> embedded PPC, ARM, and X86 have support for systems with larger =
-physical
->>> address than logical.
->>>=20
->>> Since 'addr' may contain a physical, logical, or virtual address the
->>> easiest solution is to just change the type to 'unsigned long long'
->>> regardless of which type is utilized.
->>=20
->> No. There's phys_addr_t for that purpose, defined in =
-include/linux/types.h.
->> Please use that.
->=20
-> I forgot: If you resend this, please update the documentation as well.
-> (Documentation/DocBook/uio-howto.tmpl)
-
-What would you look added or modified here?
-
-- k=
+--- a/arch/powerpc/include/asm/lv1call.h
++++ b/arch/powerpc/include/asm/lv1call.h
+@@ -315,7 +315,7 @@ LV1_CALL(gpu_context_free,              
+ LV1_CALL(gpu_context_iomap,                             5, 0, 221 )
+ LV1_CALL(gpu_context_attribute,                         6, 0, 225 )
+ LV1_CALL(gpu_context_intr,                              1, 1, 227 )
+-LV1_CALL(gpu_attribute,                                 5, 0, 228 )
++LV1_CALL(gpu_attribute,                                 3, 0, 228 )
+ LV1_CALL(get_rtc,                                       0, 2, 232 )
+ LV1_CALL(set_ppe_periodic_tracer_frequency,             1, 0, 240 )
+ LV1_CALL(start_ppe_periodic_tracer,                     5, 0, 241 )
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -875,7 +875,7 @@ static void __devinit snd_ps3_audio_set_
+ 		(0x0fUL << 12) |
+ 		(PS3_AUDIO_IOID);
+ 
+-	ret = lv1_gpu_attribute(0x100, 0x007, val, 0, 0);
++	ret = lv1_gpu_attribute(0x100, 0x007, val);
+ 	if (ret)
+ 		pr_info("%s: gpu_attribute failed %d\n", __func__,
+ 			ret);
