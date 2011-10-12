@@ -1,20 +1,16 @@
-Return-Path: <geoff@infradead.org>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id BF5E6B6F18
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 05:42:38 +1100 (EST)
-Subject: [PATCH] powerpc/ps3: Fix lv1_gpu_attribute hcall
-From: Geoff Levand <geoff@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 12 Oct 2011 11:42:13 -0700
-Message-ID: <1318444933.3496.15.camel@gum>
-MIME-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
- cbe-oss-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 11EF1B6F75
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 07:57:56 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: hjk@hansjkoch.de
+Subject: [PATCH][v2] uio: Support 36-bit physical addresses on 32-bit systems
+Date: Wed, 12 Oct 2011 15:57:43 -0500
+Message-Id: <1318453063-17349-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de,
+ Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +20,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The lv1_gpu_attribute hcall takes three, not five input
-arguments.  Adjust the lv1 hcall table and all calls.
+From: Kai Jiang <Kai.Jiang@freescale.com>
 
-Signed-off-by: Geoff Levand <geoff@infradead.org>
-CC: Takashi Iwai <tiwai@suse.de>
+To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
+extend the width of 'addr' in struct uio_mem.  Numerous platforms like
+embedded PPC, ARM, and X86 have support for systems with larger physical
+address than logical.
+
+Since 'addr' may contain a physical, logical, or virtual address the
+easiest solution is to just change the type to 'unsigned long long'
+regardless of which type is utilized.
+
+For physical address we can support up to a 44-bit physical address on a
+typical 32-bit system as we utilize remap_pfn_range() for the mapping of
+the memory region and pfn's are represnted by shifting the address by
+the page size (typically 4k).
+
+Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/lv1call.h |    2 +-
- sound/ppc/snd_ps3.c                |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+v2:
+* Use phys_addr_t instead of 'unsigned long long'
+* Updated DocBook detail in uio-howto.tmpl
 
---- a/arch/powerpc/include/asm/lv1call.h
-+++ b/arch/powerpc/include/asm/lv1call.h
-@@ -315,7 +315,7 @@ LV1_CALL(gpu_context_free,              
- LV1_CALL(gpu_context_iomap,                             5, 0, 221 )
- LV1_CALL(gpu_context_attribute,                         6, 0, 225 )
- LV1_CALL(gpu_context_intr,                              1, 1, 227 )
--LV1_CALL(gpu_attribute,                                 5, 0, 228 )
-+LV1_CALL(gpu_attribute,                                 3, 0, 228 )
- LV1_CALL(get_rtc,                                       0, 2, 232 )
- LV1_CALL(set_ppe_periodic_tracer_frequency,             1, 0, 240 )
- LV1_CALL(start_ppe_periodic_tracer,                     5, 0, 241 )
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -875,7 +875,7 @@ static void __devinit snd_ps3_audio_set_
- 		(0x0fUL << 12) |
- 		(PS3_AUDIO_IOID);
+ Documentation/DocBook/uio-howto.tmpl |    2 +-
+ drivers/uio/uio.c                    |    8 ++++----
+ include/linux/uio_driver.h           |    2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
+index 7c4b514d..54883de 100644
+--- a/Documentation/DocBook/uio-howto.tmpl
++++ b/Documentation/DocBook/uio-howto.tmpl
+@@ -529,7 +529,7 @@ memory (e.g. allocated with <function>kmalloc()</function>). There's also
+ </para></listitem>
  
--	ret = lv1_gpu_attribute(0x100, 0x007, val, 0, 0);
-+	ret = lv1_gpu_attribute(0x100, 0x007, val);
- 	if (ret)
- 		pr_info("%s: gpu_attribute failed %d\n", __func__,
- 			ret);
+ <listitem><para>
+-<varname>unsigned long addr</varname>: Required if the mapping is used.
++<varname>phys_addr_t addr</varname>: Required if the mapping is used.
+ Fill in the address of your memory block. This address is the one that
+ appears in sysfs.
+ </para></listitem>
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+index 88f4444..43b7096 100644
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -69,7 +69,7 @@ static ssize_t map_name_show(struct uio_mem *mem, char *buf)
+ 
+ static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
+ {
+-	return sprintf(buf, "0x%lx\n", mem->addr);
++	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr);
+ }
+ 
+ static ssize_t map_size_show(struct uio_mem *mem, char *buf)
+@@ -79,7 +79,7 @@ static ssize_t map_size_show(struct uio_mem *mem, char *buf)
+ 
+ static ssize_t map_offset_show(struct uio_mem *mem, char *buf)
+ {
+-	return sprintf(buf, "0x%lx\n", mem->addr & ~PAGE_MASK);
++	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr & ~PAGE_MASK);
+ }
+ 
+ struct map_sysfs_entry {
+@@ -634,8 +634,8 @@ static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
+ 		page = virt_to_page(idev->info->mem[mi].addr + offset);
+ 	else
+-		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
+-							+ offset);
++		page = vmalloc_to_page((void *)(unsigned long)
++				idev->info->mem[mi].addr + offset);
+ 	get_page(page);
+ 	vmf->page = page;
+ 	return 0;
+diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+index 4c618cd..d9ce796 100644
+--- a/include/linux/uio_driver.h
++++ b/include/linux/uio_driver.h
+@@ -32,7 +32,7 @@ struct uio_map;
+  */
+ struct uio_mem {
+ 	const char		*name;
+-	unsigned long		addr;
++	phys_addr_t		addr;
+ 	unsigned long		size;
+ 	int			memtype;
+ 	void __iomem		*internal_addr;
+-- 
+1.7.3.4
