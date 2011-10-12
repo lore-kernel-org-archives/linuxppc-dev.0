@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2316AB7C19
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2011 15:30:08 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc/fsl-booke: Fix setup_initial_memory_limit to
- not blindly map
-Mime-Version: 1.0 (Apple Message framework v1244.3)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1316187599-27549-2-git-send-email-galak@kernel.crashing.org>
-Date: Tue, 11 Oct 2011 23:30:02 -0500
-Message-Id: <B5219D67-F5D1-45E2-A6CD-170EB76B7AB5@kernel.crashing.org>
-References: <1316187599-27549-1-git-send-email-galak@kernel.crashing.org>
- <1316187599-27549-2-git-send-email-galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B11780@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+ [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7267CB6F6F
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2011 15:53:20 +1100 (EST)
+Subject: Re: [PATCH] [v3] powerpc/85xx: clean up FPGA device tree nodes for
+ Freecsale QorIQ boards
+MIME-Version: 1.0 (Apple Message framework v1244.3)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1316109853-6665-1-git-send-email-timur@freescale.com>
+Date: Tue, 11 Oct 2011 23:53:15 -0500
+Message-ID: <A52503AA-0708-4314-B8A1-3168EF963252@freescale.com>
+References: <1316109853-6665-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +26,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Sep 16, 2011, at 10:39 AM, Kumar Gala wrote:
+On Sep 15, 2011, at 1:04 PM, Timur Tabi wrote:
 
-> On FSL Book-E devices we support multiple large TLB sizes and so we can
-> get into situations in which the initial 1G TLB size is too big and
-> we're asked for a size that is not mappable by a single entry (like
-> 512M).  The single entry is important because when we bring up secondary
-> cores they need to ensure any data structure they need to access (eg
-> PACA or stack) is always mapped.
-> 
-> So we really need to determine what size will actually be mapped by the
-> first TLB entry to ensure we limit early memory references to that
-> region.  We refactor the map_mem_in_cams() code to provider a helper
-> function that we can utilize to determine the size of the first TLB
-> entry while taking into account size and alignment constraints.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Standarize and document the FPGA nodes used on Freescale QorIQ =
+reference
+> boards.  There are different kinds of FPGAs used on the boards, but
+> only two are currently standard: "pixis", "ngpixis", and "qixis".  =
+Although
+> there are minor differences among the boards that have one kind of =
+FPGA, most
+> of the functionality is the same, so it makes sense to create common
+> compatibility strings.
+>=20
+> We also need to update the P1022DS platform file, because the =
+compatible
+> string for its PIXIS node has changed.  This means that older kernels =
+are
+> not compatible with newer device trees.  This is not a real problem, =
+however,
+> since that particular function doesn't work anyway.  When the DIU is =
+active,
+> the PIXIS is in "indirect mode", and so cannot be accessed as a =
+memory-mapped
+> device.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/mm/fsl_booke_mmu.c |   31 +++++++++++++++++++------------
-> arch/powerpc/mm/mmu_decl.h      |    2 ++
-> arch/powerpc/mm/tlb_nohash.c    |   21 ++++++++++++++++++---
-> 3 files changed, 39 insertions(+), 15 deletions(-)
+>=20
+> v3: added "ngpixis" to list
+>=20
+> v2: removed references to the CPLD
+>=20
+> This patch only adds "ngpixis" nodes, because that's the easiest.  The
+> P3060QDS device tree already has a qixis node.  Support for older =
+boards
+> with the old "pixis" will be added later.
 
 applied
 
-- k
+- k=
