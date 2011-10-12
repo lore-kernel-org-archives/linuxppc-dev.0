@@ -1,22 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
- by ozlabs.org (Postfix) with SMTP id AA6ABB6F6F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 22:17:28 +1100 (EST)
-Message-ID: <4E957712.8050400@ru.mvista.com>
-Date: Wed, 12 Oct 2011 15:16:34 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Tirumala Marri <tmarri@apm.com>
-Subject: Re: [PATCH v14 10/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
- support
-References: <1317954673-12032-1-git-send-email-tmarri@apm.com>
- <4E8EDD75.5090107@ru.mvista.com>
- <85bdbe5686e64bd0be07b07e2bb9a0ac@mail.gmail.com>
-In-Reply-To: <85bdbe5686e64bd0be07b07e2bb9a0ac@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
- linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Fushen Chen <fchen@apm.com>
+Return-Path: <ricardo.ribalda@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+ [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id A26BEB6F75
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 22:48:18 +1100 (EST)
+Received: by vws20 with SMTP id 20so492401vws.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 04:48:14 -0700 (PDT)
+From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-netdev@vger.kernel.org, dhlii@dlasys.net, ville.sundell@digilent.ro,
+ grant.likely@secretlab.ca
+Subject: [PATCH] ll_temac: Add support for ethtool
+Date: Wed, 12 Oct 2011 13:47:29 +0200
+Message-Id: <1318420049-23019-1-git-send-email-ricardo.ribalda@gmail.com>
+Cc: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+This patch enables the ethtool interface. The implementation is done
+using the libphy helper functions.
 
-On 12-10-2011 2:43, Tirumala Marri wrote:
+Signed-off-by: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
+---
+ drivers/net/ll_temac_main.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
-> <>  +# dwc_otg builds in ../dwc along with host support
-> <>  +config USB_GADGET_DWC_HDRC
-> <>  +	boolean "DesignWare USB Peripheral"
-> <>  +	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
-> <>  +	select USB_GADGET_DUALSPEED
-> <>  +	select USB_GADGET_SELECTED
-> <>  +	select USB_GADGET_DWC_OTG
-
-> <     I don't see where this one is defined...
-
-> [Tirumala Marri] You mean USB_GADGET_SELECTED ? Ok I will add it.
-
-    No, I mean USB_GADGET_DWC_OTG. USB_GADGET_SELECTED is already defined.
-
-> --marri
-
-WBR, Sergei
+diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+index 728fe41..91a9804 100644
+--- a/drivers/net/ll_temac_main.c
++++ b/drivers/net/ll_temac_main.c
+@@ -957,6 +957,32 @@ static const struct attribute_group temac_attr_group = {
+ 	.attrs = temac_device_attrs,
+ };
+ 
++/* ethtool support */
++static int temac_get_settings(struct net_device *ndev, struct ethtool_cmd *cmd)
++{
++	struct temac_local *lp = netdev_priv(ndev);
++	return phy_ethtool_gset(lp->phy_dev, cmd);
++}
++
++static int temac_set_settings(struct net_device *ndev, struct ethtool_cmd *cmd)
++{
++	struct temac_local *lp = netdev_priv(ndev);
++	return phy_ethtool_sset(lp->phy_dev, cmd);
++}
++
++static int temac_nway_reset(struct net_device *ndev)
++{
++	struct temac_local *lp = netdev_priv(ndev);
++	return phy_start_aneg(lp->phy_dev);
++}
++
++static const struct ethtool_ops temac_ethtool_ops = {
++	.get_settings = temac_get_settings,
++	.set_settings = temac_set_settings,
++	.nway_reset = temac_nway_reset,
++	.get_link = ethtool_op_get_link,
++};
++
+ static int __devinit temac_of_probe(struct platform_device *op)
+ {
+ 	struct device_node *np;
+@@ -978,6 +1004,7 @@ static int __devinit temac_of_probe(struct platform_device *op)
+ 	ndev->flags &= ~IFF_MULTICAST;  /* clear multicast */
+ 	ndev->features = NETIF_F_SG | NETIF_F_FRAGLIST;
+ 	ndev->netdev_ops = &temac_netdev_ops;
++	ndev->ethtool_ops= &temac_ethtool_ops;
+ #if 0
+ 	ndev->features |= NETIF_F_IP_CSUM; /* Can checksum TCP/UDP over IPv4. */
+ 	ndev->features |= NETIF_F_HW_CSUM; /* Can checksum all the packets. */
+-- 
+1.7.6.3
