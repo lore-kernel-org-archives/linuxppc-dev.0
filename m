@@ -1,25 +1,23 @@
-Return-Path: <ayman@elkhashab.com>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 48F98B6F18
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2011 09:16:23 +1100 (EST)
-Received: from hrndva-omtalb.mail.rr.com ([10.128.143.54])
- by hrndva-qmta03.mail.rr.com with ESMTP
- id <20111012210922583.TUYP29997@hrndva-qmta03.mail.rr.com>
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 21:09:22 +0000
-Received: from crust.elkhashab.com (localhost [127.0.0.1])
- by crust.elkhashab.com (8.14.3/8.14.3/Debian-5) with ESMTP id p9CL8GTb018057
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 16:08:16 -0500
-Received: (from ayman@localhost)
- by crust.elkhashab.com (8.14.3/8.14.3/Submit) id p9CL8G70018056
- for linuxppc-dev@lists.ozlabs.org; Wed, 12 Oct 2011 16:08:16 -0500
-Date: Wed, 12 Oct 2011 16:08:16 -0500
-From: Ayman El-Khashab <ayman@elkhashab.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: How to handle cache when I allocate phys memory?
-Message-ID: <20111012210816.GA17878@crust.elkhashab.com>
+Return-Path: <hjk@hansjkoch.de>
+Received: from www.hansjkoch.de (www.hansjkoch.de [178.63.77.200])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 78CD8B6F82
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 03:16:56 +1100 (EST)
+Date: Wed, 12 Oct 2011 18:16:35 +0200
+From: "Hans J. Koch" <hjk@hansjkoch.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
+Message-ID: <20111012161635.GD21852@local>
+References: <1318430145-19898-1-git-send-email-galak@kernel.crashing.org>
+ <20111012153229.GB21852@local>
+ <AD39F4F8-E9C0-4090-9AEA-644F82DD328B@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AD39F4F8-E9C0-4090-9AEA-644F82DD328B@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, "Hans J. Koch" <hjk@hansjkoch.de>,
+ Kai Jiang <Kai.Jiang@freescale.com>, gregkh@suse.de,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm using the 460sx (440 core) so no snooping here.  What
-I've done is reserved the top of memory for my driver.  My
-driver can read/write the memory and I can mmap it just
-fine.  The problem is I want to enable caching on the mmap
-for performance but I don't know / can't figure out how to
-tell the kernel to sync the cache after it gets dma data
-from the device or after i put data into it from user space.
-I know how to do it from regular devices, but not when I've
-allocated the physical memory myself.  I suppose what I am
-looking for is something akin to dma_sync_single cpu/device.
+On Wed, Oct 12, 2011 at 11:07:09AM -0500, Kumar Gala wrote:
+> 
+> On Oct 12, 2011, at 10:32 AM, Hans J. Koch wrote:
+> 
+> > On Wed, Oct 12, 2011 at 09:35:45AM -0500, Kumar Gala wrote:
+> >> From: Kai Jiang <Kai.Jiang@freescale.com>
+> >> 
+> >> To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
+> >> extend the width of 'addr' in struct uio_mem.  Numerous platforms like
+> >> embedded PPC, ARM, and X86 have support for systems with larger physical
+> >> address than logical.
+> >> 
+> >> Since 'addr' may contain a physical, logical, or virtual address the
+> >> easiest solution is to just change the type to 'unsigned long long'
+> >> regardless of which type is utilized.
+> > 
+> > No. There's phys_addr_t for that purpose, defined in include/linux/types.h.
+> > Please use that.
+> 
+> Do we believe phys_addr_t is always greater than or equal to size need for logical & virtual addresses?
 
-In my device driver, I am allocating the memory like this, 
-in this case the buffer is about 512MB.
+Yes.
 
- vma->vm_flags |= VM_LOCKED | VM_RESERVED;
-
- /* map the physical area into one buffer */
- rc = remap_pfn_range(vma, vma->vm_start, 
-                         (PHYS_MEM_ADDR)>>PAGE_SHIFT, 
-                         len, vma->vm_page_prot);
-
-Is this going to give me the best performance, or is there
-something more I can do?
-
-Failing that, what is the best way to do this (i need a very
-large contiguous buffer).  it runs in batch mode, so it
-DMAs, stops, cpu reads, cpu writes, repeat ...
-
-thanks
-ayman
+Hans
