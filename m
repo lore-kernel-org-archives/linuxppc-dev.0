@@ -1,19 +1,36 @@
-Return-Path: <ricardo.ribalda@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
- [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A26BEB6F75
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 22:48:18 +1100 (EST)
-Received: by vws20 with SMTP id 20so492401vws.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 04:48:14 -0700 (PDT)
-From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-netdev@vger.kernel.org, dhlii@dlasys.net, ville.sundell@digilent.ro,
- grant.likely@secretlab.ca
-Subject: [PATCH] ll_temac: Add support for ethtool
-Date: Wed, 12 Oct 2011 13:47:29 +0200
-Message-Id: <1318420049-23019-1-git-send-email-ricardo.ribalda@gmail.com>
-Cc: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id AB226B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2011 01:15:41 +1100 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p9CE0CIq022989
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 10:00:12 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ p9CEFV7c219456
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 10:15:32 -0400
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ p9CEF5op007611
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 08:15:06 -0600
+Subject: Re: [PATCH 2/3] [44x] Enable CONFIG_RELOCATABLE for PPC44x
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Suzuki Poulose <suzuki@in.ibm.com>
+In-Reply-To: <4E943C70.4030106@in.ibm.com>
+References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
+ <20111010095514.16589.85241.stgit@suzukikp.in.ibm.com>
+ <4E9332AA.1050307@freescale.com>  <4E943C70.4030106@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 12 Oct 2011 07:15:02 -0700
+Message-ID: <1318428902.3782.9.camel@nimitz>
+Mime-Version: 1.0
+Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
+ Scott Wood <scottwood@freescale.com>,
+ linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,58 +40,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables the ethtool interface. The implementation is done
-using the libphy helper functions.
+On Tue, 2011-10-11 at 18:24 +0530, Suzuki Poulose wrote:
+> On 10/10/11 23:30, Scott Wood wrote:
+> > On 10/10/2011 04:56 AM, Suzuki K. Poulose wrote:
+> >> #if defined(CONFIG_RELOCATABLE)&&  defined(CONFIG_44x)
+> >> #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + (KERNELBASE + RELOC_OFFSET)))
+> >> #define __pa(x) ((unsigned long)(x) + PHYSICAL_START - (KERNELBASE + RELOC_OFFSET))
+> >> #endif
+> >
+> > Why is this 44x-specific?
+> 
+> As of now, we compile with relocations only for the 44x. We could make this
+> generic once the approach is accepted by everyone and implemented on the other
+> platforms. 
 
-Signed-off-by: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
----
- drivers/net/ll_temac_main.c |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
+This is not the place to enforce that kind of thing.  If
+CONFIG_RELOCATABLE is only supported on one platform, then do:
 
-diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
-index 728fe41..91a9804 100644
---- a/drivers/net/ll_temac_main.c
-+++ b/drivers/net/ll_temac_main.c
-@@ -957,6 +957,32 @@ static const struct attribute_group temac_attr_group = {
- 	.attrs = temac_device_attrs,
- };
- 
-+/* ethtool support */
-+static int temac_get_settings(struct net_device *ndev, struct ethtool_cmd *cmd)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	return phy_ethtool_gset(lp->phy_dev, cmd);
-+}
-+
-+static int temac_set_settings(struct net_device *ndev, struct ethtool_cmd *cmd)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	return phy_ethtool_sset(lp->phy_dev, cmd);
-+}
-+
-+static int temac_nway_reset(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	return phy_start_aneg(lp->phy_dev);
-+}
-+
-+static const struct ethtool_ops temac_ethtool_ops = {
-+	.get_settings = temac_get_settings,
-+	.set_settings = temac_set_settings,
-+	.nway_reset = temac_nway_reset,
-+	.get_link = ethtool_op_get_link,
-+};
-+
- static int __devinit temac_of_probe(struct platform_device *op)
- {
- 	struct device_node *np;
-@@ -978,6 +1004,7 @@ static int __devinit temac_of_probe(struct platform_device *op)
- 	ndev->flags &= ~IFF_MULTICAST;  /* clear multicast */
- 	ndev->features = NETIF_F_SG | NETIF_F_FRAGLIST;
- 	ndev->netdev_ops = &temac_netdev_ops;
-+	ndev->ethtool_ops= &temac_ethtool_ops;
- #if 0
- 	ndev->features |= NETIF_F_IP_CSUM; /* Can checksum TCP/UDP over IPv4. */
- 	ndev->features |= NETIF_F_HW_CSUM; /* Can checksum all the packets. */
--- 
-1.7.6.3
+	config RELOCATABLE
+		depends on 44x
+
+and take the 44x reference out of the #ifdef.
+
+-- Dave
