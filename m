@@ -1,21 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AECA2B6F8C
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 03:08:25 +1100 (EST)
-Subject: Re: [PATCH] UIO: Allow a UIO driver to override the default pgprot
- when we mmap
-Mime-Version: 1.0 (Apple Message framework v1244.3)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20111012153536.GC21852@local>
-Date: Wed, 12 Oct 2011 11:08:20 -0500
-Message-Id: <AEAF26D0-640A-4DD2-82FE-B3BD02662EEC@kernel.crashing.org>
-References: <1318430616-20351-1-git-send-email-galak@kernel.crashing.org>
- <20111012153536.GC21852@local>
-To: "Hans J. Koch" <hjk@hansjkoch.de>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
+ [209.85.210.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 03A41B6F84
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 03:15:53 +1100 (EST)
+Received: by iaeo4 with SMTP id o4so192520iae.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2011 09:15:50 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <AD39F4F8-E9C0-4090-9AEA-644F82DD328B@kernel.crashing.org>
+References: <1318430145-19898-1-git-send-email-galak@kernel.crashing.org>
+ <20111012153229.GB21852@local>
+ <AD39F4F8-E9C0-4090-9AEA-644F82DD328B@kernel.crashing.org>
+Date: Wed, 12 Oct 2011 18:15:49 +0200
+Message-ID: <CAMuHMdU1rHDvZEknNqKLHyBmJ26kH7SJtxsOZmOysrSzg6bz4g@mail.gmail.com>
+Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, "Hans J. Koch" <hjk@hansjkoch.de>,
+ Kai Jiang <Kai.Jiang@freescale.com>, gregkh@suse.de,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,79 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Oct 12, 2011 at 18:07, Kumar Gala <galak@kernel.crashing.org> wrote=
+:
+> On Oct 12, 2011, at 10:32 AM, Hans J. Koch wrote:
+>> On Wed, Oct 12, 2011 at 09:35:45AM -0500, Kumar Gala wrote:
+>>> From: Kai Jiang <Kai.Jiang@freescale.com>
+>>>
+>>> To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
+>>> extend the width of 'addr' in struct uio_mem. =C2=A0Numerous platforms =
+like
+>>> embedded PPC, ARM, and X86 have support for systems with larger physica=
+l
+>>> address than logical.
+>>>
+>>> Since 'addr' may contain a physical, logical, or virtual address the
+>>> easiest solution is to just change the type to 'unsigned long long'
+>>> regardless of which type is utilized.
+>>
+>> No. There's phys_addr_t for that purpose, defined in include/linux/types=
+.h.
+>> Please use that.
+>
+> Do we believe phys_addr_t is always greater than or equal to size need fo=
+r logical & virtual addresses?
 
-On Oct 12, 2011, at 10:35 AM, Hans J. Koch wrote:
+Yes:
 
-> On Wed, Oct 12, 2011 at 09:43:36AM -0500, Kumar Gala wrote:
->> For some devices the default behavior of pgprot_noncached is not
->> the correct flags for the address space.
->=20
-> For what devices? Can you give a real world usecase where this is =
-needed?
->=20
-> Thanks,
-> Hans
+#ifdef CONFIG_PHYS_ADDR_T_64BIT
+typedef u64 phys_addr_t;
+#else
+typedef u32 phys_addr_t;
+#endif
 
-In the Freescale Networking devices we have a coherent memory interface =
-to our HW queuing system.  In that case we want to change the pgprot() =
-to be cache-able instead of non-cached.
+config PHYS_ADDR_T_64BIT
+        def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
 
-- k
+Gr{oetje,eeting}s,
 
->=20
->> Provide a means for the
->> kernel side UIO driver to override the flags without having to
->> implement its own full mmap callback.
->>=20
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> drivers/uio/uio.c          |    6 +++++-
->> include/linux/uio_driver.h |    2 ++
->> 2 files changed, 7 insertions(+), 1 deletions(-)
->>=20
->> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
->> index d2efe82..88f4444 100644
->> --- a/drivers/uio/uio.c
->> +++ b/drivers/uio/uio.c
->> @@ -656,7 +656,11 @@ static int uio_mmap_physical(struct =
-vm_area_struct *vma)
->>=20
->> 	vma->vm_flags |=3D VM_IO | VM_RESERVED;
->>=20
->> -	vma->vm_page_prot =3D pgprot_noncached(vma->vm_page_prot);
->> +	if (idev->info->mem[mi].set_pgprot)
->> +		vma->vm_page_prot =3D
->> +			=
-idev->info->mem[mi].set_pgprot(vma->vm_page_prot);
->> +	else
->> +		vma->vm_page_prot =3D =
-pgprot_noncached(vma->vm_page_prot);
->>=20
->> 	return remap_pfn_range(vma,
->> 			       vma->vm_start,
->> diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
->> index 665517c..4c618cd 100644
->> --- a/include/linux/uio_driver.h
->> +++ b/include/linux/uio_driver.h
->> @@ -28,6 +28,7 @@ struct uio_map;
->>  * @memtype:		type of memory addr points to
->>  * @internal_addr:	ioremap-ped version of addr, for driver internal =
-use
->>  * @map:		for use by the UIO core only.
->> + * @set_pgprot:		allow driver to override =
-default(noncached) pgprot
->>  */
->> struct uio_mem {
->> 	const char		*name;
->> @@ -36,6 +37,7 @@ struct uio_mem {
->> 	int			memtype;
->> 	void __iomem		*internal_addr;
->> 	struct uio_map		*map;
->> +	pgprot_t (*set_pgprot)(pgprot_t prot);
->> };
->>=20
->> #define MAX_UIO_MAPS	5
->> --=20
->> 1.7.3.4
->>=20
->>=20
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
