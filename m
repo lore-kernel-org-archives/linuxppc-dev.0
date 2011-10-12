@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AF824B6F67
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2011 15:53:57 +1100 (EST)
-Subject: Re: [PATCH v3] powerpc/85xx: Adding DCSR node to dtsi device trees
-Mime-Version: 1.0 (Apple Message framework v1244.3)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1316187394-858-1-git-send-email-galak@kernel.crashing.org>
-Date: Tue, 11 Oct 2011 23:53:51 -0500
-Message-Id: <24B22B94-9388-4638-9629-87DD547097AE@kernel.crashing.org>
-References: <1316187394-858-1-git-send-email-galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Stephen George <stephen.george@freescale.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+ by ozlabs.org (Postfix) with SMTP id AA6ABB6F6F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2011 22:17:28 +1100 (EST)
+Message-ID: <4E957712.8050400@ru.mvista.com>
+Date: Wed, 12 Oct 2011 15:16:34 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Tirumala Marri <tmarri@apm.com>
+Subject: Re: [PATCH v14 10/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
+ support
+References: <1317954673-12032-1-git-send-email-tmarri@apm.com>
+ <4E8EDD75.5090107@ru.mvista.com>
+ <85bdbe5686e64bd0be07b07e2bb9a0ac@mail.gmail.com>
+In-Reply-To: <85bdbe5686e64bd0be07b07e2bb9a0ac@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+ linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello.
 
-On Sep 16, 2011, at 10:36 AM, Kumar Gala wrote:
+On 12-10-2011 2:43, Tirumala Marri wrote:
 
-> From: Stephen George <stephen.george@freescale.com>
-> 
-> Adding new device tree binding file for the DCSR node.  Modifying device
-> tree dtsi files to add DCSR node for P2041, P3041, P3060, P4080, & P5020.
-> 
-> Signed-off-by: Stephen George <stephen.george@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> v3:
-> * fix IRQs #, (should be +16 because of external IRQs starting at 0)
-> 
-> v2:
-> * include dscr.txt binding spec
-> * moved around dcsr nodes to keep sorted in addr order
+> <>  +# dwc_otg builds in ../dwc along with host support
+> <>  +config USB_GADGET_DWC_HDRC
+> <>  +	boolean "DesignWare USB Peripheral"
+> <>  +	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
+> <>  +	select USB_GADGET_DUALSPEED
+> <>  +	select USB_GADGET_SELECTED
+> <>  +	select USB_GADGET_DWC_OTG
 
-applied, dropped p3060 for now (will pick up in the P3060QDS board patch).
+> <     I don't see where this one is defined...
 
-- k
+> [Tirumala Marri] You mean USB_GADGET_SELECTED ? Ok I will add it.
+
+    No, I mean USB_GADGET_DWC_OTG. USB_GADGET_SELECTED is already defined.
+
+> --marri
+
+WBR, Sergei
