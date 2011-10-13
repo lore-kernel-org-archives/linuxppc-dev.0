@@ -1,25 +1,17 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
- [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id B242BB71C2
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 01:37:24 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH][v2] uio: Support 36-bit physical addresses on 32-bit
- systems
-Date: Thu, 13 Oct 2011 14:37:17 +0000
-Message-ID: <CAOZdJXWd_u_EWXNhh3-t258+Y8mx=JuJhU93CeZfaocPZvhOFA@mail.gmail.com>
-References: <1318453063-17349-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1318453063-17349-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "hjk@hansjkoch.de" <hjk@hansjkoch.de>, "gregkh@suse.de" <gregkh@suse.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Jiang Kai-B18973 <B18973@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EEE43B6FA5
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 02:20:15 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p9DFKBB5010985
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 10:20:12 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
+Date: Thu, 13 Oct 2011 10:20:11 -0500
+Message-Id: <1318519211-14031-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 12, 2011 at 3:57 PM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
-> From: Kai Jiang <Kai.Jiang@freescale.com>
->
-> To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
-> extend the width of 'addr' in struct uio_mem. =A0Numerous platforms like
-> embedded PPC, ARM, and X86 have support for systems with larger physical
-> address than logical.
->
-> Since 'addr' may contain a physical, logical, or virtual address the
-> easiest solution is to just change the type to 'unsigned long long'
-> regardless of which type is utilized.
+Normally logical and hard cpu ID are the same, however in same cases like
+on the P3060 they may differ.  Where the logical is 0..5, the hard id
+goes 0,1,4..7.  This can causes issues for places we utilize PIR to index
+into array like in debug exception handlers for finding the exception
+stack.
 
-You forgot to update this description.
+Move to setting up PIR with hard_smp_processor_id fixes the issue.
 
-> =A0struct uio_mem {
-> =A0 =A0 =A0 =A0const char =A0 =A0 =A0 =A0 =A0 =A0 =A0*name;
-> - =A0 =A0 =A0 unsigned long =A0 =A0 =A0 =A0 =A0 addr;
-> + =A0 =A0 =A0 phys_addr_t =A0 =A0 =A0 =A0 =A0 =A0 addr;
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/platforms/85xx/smp.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-Please add a comment here saying:
-
-1) That 'addr' can be a virtual or physical address
-2) That the kernel guarantees that sizeof(phys_addr_t) >=3D sizeof(void
-*), so it's safe to use phys_addr_t for a virtual pointer.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index d6e4746..190d111 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -48,10 +48,11 @@ smp_85xx_kick_cpu(int nr)
+ 	const u64 *cpu_rel_addr;
+ 	__iomem u32 *bptr_vaddr;
+ 	struct device_node *np;
+-	int n = 0;
++	int n = 0, hw_cpu = get_hard_smp_processor_id(nr);
+ 	int ioremappable;
+ 
+-	WARN_ON (nr < 0 || nr >= NR_CPUS);
++	WARN_ON(nr < 0 || nr >= NR_CPUS);
++	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
+ 
+ 	pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
+ 
+@@ -79,7 +80,7 @@ smp_85xx_kick_cpu(int nr)
+ 
+ 	local_irq_save(flags);
+ 
+-	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, nr);
++	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, hw_cpu);
+ #ifdef CONFIG_PPC32
+ 	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
+ 
+@@ -88,7 +89,7 @@ smp_85xx_kick_cpu(int nr)
+ 				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
+ 
+ 	/* Wait a bit for the CPU to ack. */
+-	while ((__secondary_hold_acknowledge != nr) && (++n < 1000))
++	while ((__secondary_hold_acknowledge != hw_cpu) && (++n < 1000))
+ 		mdelay(1);
+ #else
+ 	smp_generic_kick_cpu(nr);
+-- 
+1.7.3.4
