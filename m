@@ -2,15 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6648DB70FE
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 01:11:01 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id AD983B7280
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 01:11:02 +1100 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/5][v2] powerpc/fsl: Document rapidio node binding-information
-Date: Thu, 13 Oct 2011 09:08:38 -0500
-Message-Id: <1318514922-12672-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 5/5][v2] powerpc/8xxx: Update device tree bus probe for new
+ RapidIO node binding
+Date: Thu, 13 Oct 2011 09:08:42 -0500
+Message-Id: <1318514922-12672-5-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1318514922-12672-4-git-send-email-galak@kernel.crashing.org>
+References: <1318514922-12672-1-git-send-email-galak@kernel.crashing.org>
+ <1318514922-12672-2-git-send-email-galak@kernel.crashing.org>
+ <1318514922-12672-3-git-send-email-galak@kernel.crashing.org>
+ <1318514922-12672-4-git-send-email-galak@kernel.crashing.org>
 Cc: Andrew Morton <akpm@osdl.org>, alexandre.bounine@idt.com,
- Liu Gang <Gang.Liu@freescale.com>, linux-kernel@vger.kernel.org
+ Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,300 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Liu Gang <Gang.Liu@freescale.com>
+From: Kai Jiang <Kai.Jiang@freescale.com>
 
-This document is created for powerpc rapidio and rmu nodes in dts file.
-These nodes can support two rapidio ports and message units. In addition,
-It explicates the properties and gives examples about rapidio and rmu nodes.
+Update of_platform_bus_probe() RapidIO node to be compitable with
+new RapidIO dts compatible property.
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jin Qing <b24347@freescale.com>
-Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- .../devicetree/bindings/powerpc/fsl/srio-rmu.txt   |  163 ++++++++++++++++++++
- .../devicetree/bindings/powerpc/fsl/srio.txt       |  103 ++++++++++++
- 2 files changed, 266 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/srio.txt
+ arch/powerpc/platforms/85xx/corenet_ds.c   |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    2 +-
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt b/Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt
-new file mode 100644
-index 0000000..b9a8a2b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/srio-rmu.txt
-@@ -0,0 +1,163 @@
-+Message unit node:
-+
-+For SRIO controllers that implement the message unit as part of the controller
-+this node is required.  For devices with RMAN this node should NOT exist.  The
-+node is composed of three types of sub-nodes ("fsl-srio-msg-unit",
-+"fsl-srio-dbell-unit" and "fsl-srio-port-write-unit").
-+
-+See srio.txt for more details about generic SRIO controller details.
-+
-+   - compatible
-+	Usage: required
-+	Value type: <string>
-+	Definition: Must include "fsl,srio-rmu-vX.Y", "fsl,srio-rmu".
-+
-+	The version X.Y should match the general SRIO controller's IP Block
-+	revision register's Major(X) and Minor (Y) value.
-+
-+   - reg
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: A standard property.  Specifies the physical address and
-+		length of the SRIO configuration registers for message units
-+		and doorbell units.
-+
-+   - fsl,liodn
-+	Usage: optional-but-recommended (for devices with PAMU)
-+	Value type: <prop-encoded-array>
-+	Definition: The logical I/O device number for the PAMU (IOMMU) to be
-+		correctly configured for SRIO accesses.  The property should
-+		not exist on devices that do not support PAMU.
-+
-+		The LIODN value is associated with all RMU transactions
-+		(msg-unit, doorbell, port-write).
-+
-+Sub-Nodes for RMU:  The RMU node is composed of multiple sub-nodes that
-+correspond to the actual sub-controllers in the RMU.  The manual for a given
-+SoC will detail which and how many of these sub-controllers are implemented.
-+
-+Message Unit:
-+
-+   - compatible
-+	Usage: required
-+	Value type: <string>
-+	Definition: Must include "fsl,srio-msg-unit-vX.Y", "fsl,srio-msg-unit".
-+
-+	The version X.Y should match the general SRIO controller's IP Block
-+	revision register's Major(X) and Minor (Y) value.
-+
-+   - reg
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: A standard property.  Specifies the physical address and
-+		length of the SRIO configuration registers for message units
-+		and doorbell units.
-+
-+   - interrupts
-+	Usage: required
-+	Value type: <prop_encoded-array>
-+	Definition:  Specifies the interrupts generated by this device.  The
-+		value of the interrupts property consists of one interrupt
-+		specifier. The format of the specifier is defined by the
-+		binding document describing the node's interrupt parent.
-+
-+		A pair of IRQs are specified in this property.  The first
-+		element is associated with the transmit (TX) interrupt and the
-+		second element is associated with the receive (RX) interrupt.
-+
-+Doorbell Unit:
-+
-+   - compatible
-+	Usage: required
-+	Value type: <string>
-+	Definition: Must include:
-+		"fsl,srio-dbell-unit-vX.Y", "fsl,srio-dbell-unit"
-+
-+	The version X.Y should match the general SRIO controller's IP Block
-+	revision register's Major(X) and Minor (Y) value.
-+
-+   - reg
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: A standard property.  Specifies the physical address and
-+		length of the SRIO configuration registers for message units
-+		and doorbell units.
-+
-+   - interrupts
-+	Usage: required
-+	Value type: <prop_encoded-array>
-+	Definition:  Specifies the interrupts generated by this device.  The
-+		value of the interrupts property consists of one interrupt
-+		specifier. The format of the specifier is defined by the
-+		binding document describing the node's interrupt parent.
-+
-+		A pair of IRQs are specified in this property.  The first
-+		element is associated with the transmit (TX) interrupt and the
-+		second element is associated with the receive (RX) interrupt.
-+
-+Port-Write Unit:
-+
-+   - compatible
-+	Usage: required
-+	Value type: <string>
-+	Definition: Must include:
-+		 "fsl,srio-port-write-unit-vX.Y", "fsl,srio-port-write-unit"
-+
-+	The version X.Y should match the general SRIO controller's IP Block
-+	revision register's Major(X) and Minor (Y) value.
-+
-+   - reg
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: A standard property.  Specifies the physical address and
-+		length of the SRIO configuration registers for message units
-+		and doorbell units.
-+
-+   - interrupts
-+	Usage: required
-+	Value type: <prop_encoded-array>
-+	Definition:  Specifies the interrupts generated by this device.  The
-+		value of the interrupts property consists of one interrupt
-+		specifier. The format of the specifier is defined by the
-+		binding document describing the node's interrupt parent.
-+
-+		A single IRQ that handles port-write conditions is
-+		specified by this property.  (Typically shared with error).
-+
-+   Note: All other standard properties (see the ePAPR) are allowed
-+   but are optional.
-+
-+Example:
-+	rmu: rmu@d3000 {
-+		compatible = "fsl,srio-rmu";
-+		reg = <0xd3000 0x400>;
-+		ranges = <0x0 0xd3000 0x400>;
-+		fsl,liodn = <0xc8>;
-+
-+		message-unit@0 {
-+			compatible = "fsl,srio-msg-unit";
-+			reg = <0x0 0x100>;
-+			interrupts = <
-+				60 2 0 0  /* msg1_tx_irq */
-+				61 2 0 0>;/* msg1_rx_irq */
-+		};
-+		message-unit@100 {
-+			compatible = "fsl,srio-msg-unit";
-+			reg = <0x100 0x100>;
-+			interrupts = <
-+				62 2 0 0  /* msg2_tx_irq */
-+				63 2 0 0>;/* msg2_rx_irq */
-+		};
-+		doorbell-unit@400 {
-+			compatible = "fsl,srio-dbell-unit";
-+			reg = <0x400 0x80>;
-+			interrupts = <
-+				56 2 0 0  /* bell_outb_irq */
-+				57 2 0 0>;/* bell_inb_irq */
-+		};
-+		port-write-unit@4e0 {
-+			compatible = "fsl,srio-port-write-unit";
-+			reg = <0x4e0 0x20>;
-+			interrupts = <16 2 1 11>;
-+		};
-+	};
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/srio.txt b/Documentation/devicetree/bindings/powerpc/fsl/srio.txt
-new file mode 100644
-index 0000000..b039bcb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/srio.txt
-@@ -0,0 +1,103 @@
-+* Freescale Serial RapidIO (SRIO) Controller
-+
-+RapidIO port node:
-+Properties:
-+   - compatible
-+	Usage: required
-+	Value type: <string>
-+	Definition: Must include "fsl,srio" for IP blocks with IP Block
-+	Revision Register (SRIO IPBRR1) Major ID equal to 0x01c0.
-+
-+	Optionally, a compatiable string of "fsl,srio-vX.Y" where X is Major
-+	version in IP Block Revision Register and Y is Minor version.  If this
-+	compatiable is provided it should be ordered before "fsl,srio".
-+
-+   - reg
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: A standard property.  Specifies the physical address and
-+		length of the SRIO configuration registers.  The size should
-+		be set to 0x11000.
-+
-+   - interrupts
-+	Usage: required
-+	Value type: <prop_encoded-array>
-+	Definition:  Specifies the interrupts generated by this device.  The
-+		value of the interrupts property consists of one interrupt
-+		specifier. The format of the specifier is defined by the
-+		binding document describing the node's interrupt parent.
-+
-+		A single IRQ that handles error conditions is specified by this
-+		property.  (Typically shared with port-write).
-+
-+   - fsl,srio-rmu-handle:
-+	Usage: required if rmu node is defined
-+	Value type: <phandle>
-+	Definition: A single <phandle> value that points to the RMU.
-+	(See srio-rmu.txt for more details on RMU node binding)
-+
-+Port Child Nodes:  There should a port child node for each port that exists in
-+the controller.  The ports are numbered starting at one (1) and should have
-+the following properties:
-+
-+   - cell-index
-+	Usage: required
-+	Value type: <u32>
-+	Definition: A standard property.  Matches the port id.
-+
-+   - ranges
-+	Usage: required if local access windows preset
-+	Value type: <prop-encoded-array>
-+	Definition: A standard property. Utilized to describe the memory mapped
-+		IO space utilized by the controller.  This corresponds to the
-+		setting of the local access windows that are targeted to this
-+		SRIO port.
-+
-+   - fsl,liodn
-+	Usage: optional-but-recommended (for devices with PAMU)
-+	Value type: <prop-encoded-array>
-+	Definition: The logical I/O device number for the PAMU (IOMMU) to be
-+		correctly configured for SRIO accesses.  The property should
-+		not exist on devices that do not support PAMU.
-+
-+		For HW (ie, the P4080) that only supports a LIODN for both
-+		memory and maintenance transactions then a single LIODN is
-+		represented in the property for both transactions.
-+
-+		For HW (ie, the P304x/P5020, etc) that supports an LIODN for
-+		memory transactions and a unique LIODN for maintenance
-+		transactions then a pair of LIODNs are represented in the
-+		property.  Within the pair, the first element represents the
-+		LIODN associated with memory transactions and the second element
-+		represents the LIODN associated with maintenance transactions
-+		for the port.
-+
-+Note: All other standard properties (see ePAPR) are allowed but are optional.
-+
-+Example:
-+
-+	rapidio: rapidio@ffe0c0000 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		reg = <0xf 0xfe0c0000 0 0x11000>;
-+		compatible = "fsl,srio";
-+		interrupts = <16 2 1 11>; /* err_irq */
-+		fsl,srio-rmu-handle = <&rmu>;
-+		ranges;
-+
-+		port1 {
-+			cell-index = <1>;
-+			#address-cells = <2>;
-+			#size-cells = <2>;
-+			fsl,liodn = <34>;
-+			ranges = <0 0 0xc 0x20000000 0 0x10000000>;
-+		};
-+
-+		port2 {
-+			cell-index = <2>;
-+			#address-cells = <2>;
-+			#size-cells = <2>;
-+			fsl,liodn = <48>;
-+			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
-+		};
-+	};
+diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
+index 802ad11..c48b661 100644
+--- a/arch/powerpc/platforms/85xx/corenet_ds.c
++++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+@@ -112,7 +112,7 @@ static const struct of_device_id of_device_ids[] __devinitconst = {
+ 		.compatible	= "simple-bus"
+ 	},
+ 	{
+-		.compatible	= "fsl,rapidio-delta",
++		.compatible	= "fsl,srio",
+ 	},
+ 	{
+ 		.compatible	= "fsl,p4080-pcie",
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index a23a3ff..7968ced 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -433,7 +433,7 @@ static struct of_device_id mpc85xx_ids[] = {
+ 	{ .compatible = "soc", },
+ 	{ .compatible = "simple-bus", },
+ 	{ .compatible = "gianfar", },
+-	{ .compatible = "fsl,rapidio-delta", },
++	{ .compatible = "fsl,srio", },
+ 	{ .compatible = "fsl,mpc8548-guts", },
+ 	{ .compatible = "gpio-leds", },
+ 	{},
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index b11c353..569262c 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -161,7 +161,7 @@ mpc86xx_time_init(void)
+ 
+ static __initdata struct of_device_id of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
+-	{ .compatible = "fsl,rapidio-delta", },
++	{ .compatible = "fsl,srio", },
+ 	{ .compatible = "gianfar", },
+ 	{},
+ };
 -- 
 1.7.3.4
