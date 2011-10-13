@@ -1,27 +1,22 @@
-Return-Path: <ppc6dev@digitaldans.com>
-Received: from digitaldans.com (digitaldans.com [69.36.177.99])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BF691B71D3
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 02:48:44 +1100 (EST)
-Message-Id: <821BA94B-6AD9-4474-9650-7D9B513F08B5@digitaldans.com>
-From: Dan Malek <ppc6dev@digitaldans.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OFF1B869AD.14EDDF6F-ONC1257928.004AA88D-C1257928.004CF976@transmode.se>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH 0/3] 8xx: Large page(8MB) support for 2.4
-Date: Thu, 13 Oct 2011 08:48:15 -0700
-References: <1318246714-5015-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <39B024CE-70A2-4D32-A29C-5702C7D2D6CF@digitaldans.com>
- <OFAF68F93F.57D058F1-ONC1257925.005B7C6F-C1257925.005C10D7@transmode.se>
- <9CE82FAD-2451-4253-B304-CF8BE5AC8CAC@digitaldans.com>
- <OF5A487DD5.BE515A85-ONC1257926.0029F008-C1257926.002A6323@LocalDomain>
- <OF76F1F5B7.8750C8C4-ONC1257927.00767D9A-C1257927.0076B5BE@transmode.se>
- <A1820550-38CB-445E-B7EB-7D0077673686@digitaldans.com>
- <OFF1B869AD.14EDDF6F-ONC1257928.004AA88D-C1257928.004CF976@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
+ by ozlabs.org (Postfix) with ESMTPS id 8169DB71C5
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 02:50:39 +1100 (EST)
+Subject: Re: [PATCH][v2] uio: Support 36-bit physical addresses on 32-bit
+ systems
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AE7E@saturn3.aculab.com>
+Date: Thu, 13 Oct 2011 10:50:17 -0500
+Message-Id: <9FAA2091-2FED-4B44-9224-6C735CF51D2C@kernel.crashing.org>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8AE7E@saturn3.aculab.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ hjk@hansjkoch.de, Jiang Kai-B18973 <B18973@freescale.com>,
+ Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,11 +27,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 13, 2011, at 7:00 AM, Joakim Tjernlund wrote:
+On Oct 13, 2011, at 10:37 AM, David Laight wrote:
 
-> ehhm, do the fun stuff first? :)
+> 
+>> Kumar Gala wrote:
+>>>>>>> +       phys_addr_t             addr;
+>>>>> 
+>>>>> Please add a comment here saying:
+>>>>> 
+>>>>> 1) That 'addr' can be a virtual or physical address
+>>> The code and everything else makes that clear
+>> 
+>> I'm sorry, but I have to strongly disagree here.  It is *NOT* 
+>> clear that a variable of type 'phys_addr_t' can hold something
+>> that is not a physical address.
+> 
+> Since there is a discriminating field, could a union be used?
+> At a guess the type of the address is constrained between
+> produces and consumer??
 
-Need to pay the bills, first :-)
-Thanks for the other information.
+Uugh.
 
-	-- Dan
+I'll add a comment to uio_mem.
+
+- k
