@@ -2,16 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EEE43B6FA5
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 02:20:15 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p9DFKBB5010985
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2011 10:20:12 -0500
+ by ozlabs.org (Postfix) with ESMTPS id C0F8DB7090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 02:31:59 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: fix PHYS_64BIT selection for P1022DS
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=iso-8859-1
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
-Date: Thu, 13 Oct 2011 10:20:11 -0500
-Message-Id: <1318519211-14031-1-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <CAOZdJXUWiatadSCmCAvMRrVjVKCJb0xo+XGsF=Rz5-Smp08tMA@mail.gmail.com>
+Date: Thu, 13 Oct 2011 10:31:47 -0500
+Message-Id: <6F5815DD-DBF0-4155-94CE-FEDC2C9802E1@kernel.crashing.org>
+References: <1316806370-21067-1-git-send-email-agust@denx.de>
+ <6EFB6D12-7505-4D3E-8FF9-033EF74FFB81@kernel.crashing.org>
+ <CAOZdJXUWiatadSCmCAvMRrVjVKCJb0xo+XGsF=Rz5-Smp08tMA@mail.gmail.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Cc: Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,54 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Normally logical and hard cpu ID are the same, however in same cases like
-on the P3060 they may differ.  Where the logical is 0..5, the hard id
-goes 0,1,4..7.  This can causes issues for places we utilize PIR to index
-into array like in debug exception handlers for finding the exception
-stack.
 
-Move to setting up PIR with hard_smp_processor_id fixes the issue.
+On Oct 13, 2011, at 9:14 AM, Tabi Timur-B04825 wrote:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/platforms/85xx/smp.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+> On Tue, Oct 11, 2011 at 11:53 PM, Kumar Gala =
+<galak@kernel.crashing.org> wrote:
+>>=20
+>> On Sep 23, 2011, at 2:32 PM, Anatolij Gustschin wrote:
+>>=20
+>>> Remove wrong CONFIG_ prefix in Kconfig file.
+>>>=20
+>>> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+>>> ---
+>>> arch/powerpc/platforms/85xx/Kconfig |    2 +-
+>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>=20
+>> applied
+>=20
+> Why did you apply this patch?  Both Scott and I rejected it.
 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index d6e4746..190d111 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -48,10 +48,11 @@ smp_85xx_kick_cpu(int nr)
- 	const u64 *cpu_rel_addr;
- 	__iomem u32 *bptr_vaddr;
- 	struct device_node *np;
--	int n = 0;
-+	int n = 0, hw_cpu = get_hard_smp_processor_id(nr);
- 	int ioremappable;
- 
--	WARN_ON (nr < 0 || nr >= NR_CPUS);
-+	WARN_ON(nr < 0 || nr >= NR_CPUS);
-+	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
- 
- 	pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
- 
-@@ -79,7 +80,7 @@ smp_85xx_kick_cpu(int nr)
- 
- 	local_irq_save(flags);
- 
--	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, nr);
-+	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, hw_cpu);
- #ifdef CONFIG_PPC32
- 	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
- 
-@@ -88,7 +89,7 @@ smp_85xx_kick_cpu(int nr)
- 				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
- 
- 	/* Wait a bit for the CPU to ack. */
--	while ((__secondary_hold_acknowledge != nr) && (++n < 1000))
-+	while ((__secondary_hold_acknowledge != hw_cpu) && (++n < 1000))
- 		mdelay(1);
- #else
- 	smp_generic_kick_cpu(nr);
--- 
-1.7.3.4
+Because its fixing a real issue.  If we want to remove PHYS_64BIT =
+support or make it optional for the board feel free to send another =
+patch.
+
+- k=
