@@ -1,20 +1,19 @@
-Return-Path: <R65777@freescale.com>
-Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
- [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1ACE4B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2011 15:47:45 +1100 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <stable@kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <galak@kernel.crashing.org>, <bharatb.yadav@gmail.com>
-Subject: [PATCH] powerpc: e500mc: Fix: use CONFIG_PPC_E500MC in idle_e500.S
-Date: Thu, 13 Oct 2011 10:16:35 +0530
-Message-ID: <1318481195-9630-1-git-send-email-bharat.bhushan@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 01C82B6F18
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2011 16:02:35 +1100 (EST)
+Subject: Re: [PATCH v2] powerpc/fsl-booke: Fix settlbcam for 64-bit
+Mime-Version: 1.0 (Apple Message framework v1244.3)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <13184542222469-git-send-email-beckyb@kernel.crashing.org>
+Date: Thu, 13 Oct 2011 00:02:30 -0500
+Message-Id: <4E855C1B-5E87-4692-9C83-289026BAE932@kernel.crashing.org>
+References: <13184542222469-git-send-email-beckyb@kernel.crashing.org>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is wrongly using undefined CONFIG_E500MC. Tested on custom p4080DS board.
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
- arch/powerpc/kernel/idle_e500.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Oct 12, 2011, at 4:17 PM, Becky Bruce wrote:
 
-diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
-index 3e2b95c..4f0ab85 100644
---- a/arch/powerpc/kernel/idle_e500.S
-+++ b/arch/powerpc/kernel/idle_e500.S
-@@ -26,7 +26,7 @@ _GLOBAL(e500_idle)
- 	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
- 	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
- 
--#ifdef CONFIG_E500MC
-+#ifdef CONFIG_PPC_E500MC
- 	wrteei	1
- 1:	wait
- 
--- 
-1.7.0.4
+> From: Becky Bruce <beckyb@kernel.crashing.org>
+> 
+> Currently, it does a cntlzd on the size and then subtracts it from
+> 21.... this doesn't take into account the varying size of a "long".
+> Just use __ilog instead (and subtract the 10 we have to subtract
+> to get to the tsize encoding).
+> 
+> Also correct the comment about page sizes supported.
+> 
+> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+> ---
+> Sent the wrong version last time; also noticed that the comment is
+> incorrect now that we have 64-bit and added that to the patch.
+> 
+> arch/powerpc/mm/fsl_booke_mmu.c |   12 ++++++------
+> 1 files changed, 6 insertions(+), 6 deletions(-)
+
+applied
+
+- k
