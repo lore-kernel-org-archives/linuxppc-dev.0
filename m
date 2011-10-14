@@ -1,20 +1,21 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og115.obsmtp.com (exprod5og115.obsmtp.com [64.18.0.246])
- by ozlabs.org (Postfix) with SMTP id D52EFB6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2011 05:14:26 +1100 (EST)
-Received: by iakl21 with SMTP id l21so3550975iak.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 11:14:24 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <F6C4814A9B336243ABC3D1FB44E08AE801D2B2FEF4@US01WXMBX1.internal.synopsys.com>
-In-Reply-To: <F6C4814A9B336243ABC3D1FB44E08AE801D2B2FEF4@US01WXMBX1.internal.synopsys.com>
+Return-Path: <hjk@hansjkoch.de>
+Received: from www.hansjkoch.de (www.hansjkoch.de [178.63.77.200])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DF42FB6F9F
+ for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2011 05:32:12 +1100 (EST)
+Date: Fri, 14 Oct 2011 20:31:45 +0200
+From: "Hans J. Koch" <hjk@hansjkoch.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
+Message-ID: <20111014183144.GD28556@local>
+References: <1318521058-15662-1-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
-Date: Fri, 14 Oct 2011 11:14:22 -0700
-Message-ID: <9fa903c8656e99d5ad8844f4c8390634@mail.gmail.com>
-Subject: RE: [PATCH v14 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core Interface
- Layer (CIL)
-To: Paul Zimmerman <Paul.Zimmerman@synopsys.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1318521058-15662-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, hjk@hansjkoch.de,
+ Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org,
+ gregkh@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +25,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<> +void dwc_otg_enable_global_interrupts(struct core_if *core_if)
-<> +{
-<> +	u32 ahbcfg = 0;
-<> +
-<> +	ahbcfg |= DWC_AHBCFG_GLBL_INT_MASK;
-<> +	dwc_reg_modify(core_if->core_global_regs, DWC_GAHBCFG, 0,
-<> +		     ahbcfg);
-<
-<What is the point of initializing the variable to 0, and then
-<immediately
-<ORing it with a value? Why not just:
-<
-<	u32 ahbcfg = DWC_AHBCFG_GLBL_INT_MASK;
-<
-<	dwc_reg_modify(core_if->core_global_regs, DWC_GAHBCFG,
-<		     ahbcfg, 0);
-<
-<or even simpler:
-<
-<	dwc_reg_modify(core_if->core_global_regs, DWC_GAHBCFG,
-<		       DWC_AHBCFG_GLBL_INT_MASK, 0);
-<
-<? Same for other places in this file.
+On Thu, Oct 13, 2011 at 10:50:58AM -0500, Kumar Gala wrote:
+> From: Kai Jiang <Kai.Jiang@freescale.com>
+> 
+> To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
+> extend the width of 'addr' in struct uio_mem.  Numerous platforms like
+> embedded PPC, ARM, and X86 have support for systems with larger physical
+> address than logical.
+> 
+> Since 'addr' may contain a physical, logical, or virtual address the
+> easiest solution is to just change the type to 'phys_addr_t' which
+> should always be greater than or equal to the sizeof(void *) such that
+> it can properly hold any of the address types.
+> 
+> For physical address we can support up to a 44-bit physical address on a
+> typical 32-bit system as we utilize remap_pfn_range() for the mapping of
+> the memory region and pfn's are represnted by shifting the address by
+> the page size (typically 4k).
+> 
+> Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
+> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-[Tirumala Marri] I can definitely change this at some places.
-This had to do because there was suggestion modify the API to accept
-The offset. It happened to be some of the accesses doesn't have offsets.
-<
-<> +/**
-<> + * Tests if the current hardware is using a full speed phy.
-<> + */
-<> +static inline int full_speed_phy(struct core_if *core_if)
-<> +{
-<> +	if ((DWC_HWCFG2_FS_PHY_TYPE_RD(core_if->hwcfg2) == 2 &&
-<> +	     DWC_HWCFG2_FS_PHY_TYPE_RD(core_if->hwcfg2) == 1 &&
-<
-<Surely this is a typo? You are checking the same variable for containing
-<two different values at the same time. From looking at similar code in
-<the dwc_otg_core_init() function, I think you meant to write:
+Signed-off-by: "Hans J. Koch" <hjk@hansjkoch.de>
 
-[Tirumala Marri] Will correct
+That looks good to me. There's an unnecessary cast (see below), but I fixed that
+on the way.
+
+Greg, please pull this from branch uio-for-gregkh from
+
+git://hansjkoch.de/git/linux-hjk
+
+Thanks,
+Hans
+
+> ---
+> v3:
+> * Updated commit message to be correct w/regards to code
+> * Updated comment about addr field in uio_mem
+> v2:
+> * Use phys_addr_t instead of 'unsigned long long'
+> * Updated DocBook detail in uio-howto.tmpl
+> 
+>  Documentation/DocBook/uio-howto.tmpl |    2 +-
+>  drivers/uio/uio.c                    |    8 ++++----
+>  include/linux/uio_driver.h           |    7 +++++--
+>  3 files changed, 10 insertions(+), 7 deletions(-)
+> 
+> diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
+> index 7c4b514d..54883de 100644
+> --- a/Documentation/DocBook/uio-howto.tmpl
+> +++ b/Documentation/DocBook/uio-howto.tmpl
+> @@ -529,7 +529,7 @@ memory (e.g. allocated with <function>kmalloc()</function>). There's also
+>  </para></listitem>
+>  
+>  <listitem><para>
+> -<varname>unsigned long addr</varname>: Required if the mapping is used.
+> +<varname>phys_addr_t addr</varname>: Required if the mapping is used.
+>  Fill in the address of your memory block. This address is the one that
+>  appears in sysfs.
+>  </para></listitem>
+> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+> index 88f4444..43b7096 100644
+> --- a/drivers/uio/uio.c
+> +++ b/drivers/uio/uio.c
+> @@ -69,7 +69,7 @@ static ssize_t map_name_show(struct uio_mem *mem, char *buf)
+>  
+>  static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
+>  {
+> -	return sprintf(buf, "0x%lx\n", mem->addr);
+> +	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr);
+>  }
+>  
+>  static ssize_t map_size_show(struct uio_mem *mem, char *buf)
+> @@ -79,7 +79,7 @@ static ssize_t map_size_show(struct uio_mem *mem, char *buf)
+>  
+>  static ssize_t map_offset_show(struct uio_mem *mem, char *buf)
+>  {
+> -	return sprintf(buf, "0x%lx\n", mem->addr & ~PAGE_MASK);
+> +	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr & ~PAGE_MASK);
+>  }
+>  
+>  struct map_sysfs_entry {
+> @@ -634,8 +634,8 @@ static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
+>  		page = virt_to_page(idev->info->mem[mi].addr + offset);
+>  	else
+> -		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
+> -							+ offset);
+> +		page = vmalloc_to_page((void *)(unsigned long)
+
+(void *) is enough, the (unsigned long) is not needed.
+
+> +				idev->info->mem[mi].addr + offset);
+>  	get_page(page);
+>  	vmf->page = page;
+>  	return 0;
+> diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+> index 4c618cd..ad16aa9 100644
+> --- a/include/linux/uio_driver.h
+> +++ b/include/linux/uio_driver.h
+> @@ -23,7 +23,10 @@ struct uio_map;
+>  /**
+>   * struct uio_mem - description of a UIO memory region
+>   * @name:		name of the memory region for identification
+> - * @addr:		address of the device's memory
+> + * @addr:		address of the device's memory (phys_addr is used since
+> + * 			addr can be logical, virtual, or physical & phys_addr_t
+> + * 			should always be large enough to handle any of the
+> + * 			address types)
+>   * @size:		size of IO
+>   * @memtype:		type of memory addr points to
+>   * @internal_addr:	ioremap-ped version of addr, for driver internal use
+> @@ -32,7 +35,7 @@ struct uio_map;
+>   */
+>  struct uio_mem {
+>  	const char		*name;
+> -	unsigned long		addr;
+> +	phys_addr_t		addr;
+>  	unsigned long		size;
+>  	int			memtype;
+>  	void __iomem		*internal_addr;
+> -- 
+> 1.7.3.4
+> 
+> 
