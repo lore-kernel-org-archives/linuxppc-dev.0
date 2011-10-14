@@ -1,21 +1,17 @@
-Return-Path: <hjk@hansjkoch.de>
-Received: from www.hansjkoch.de (www.hansjkoch.de [178.63.77.200])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CCA94B708F
- for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2011 05:47:01 +1100 (EST)
-Date: Fri, 14 Oct 2011 20:46:36 +0200
-From: "Hans J. Koch" <hjk@hansjkoch.de>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
-Message-ID: <20111014184636.GA6466@local>
-References: <1318521058-15662-1-git-send-email-galak@kernel.crashing.org>
- <20111014183144.GD28556@local> <20111014183633.GA30068@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111014183633.GA30068@suse.de>
-Cc: linuxppc-dev@ozlabs.org, "Hans J. Koch" <hjk@hansjkoch.de>,
- Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 2E09BB70B2
+ for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2011 07:35:17 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: gregkh@suse.de
+Subject: [PATCH] USB: Fix USB Kconfig dependency problem on 85xx/QoirQ
+ platforms
+Date: Fri, 14 Oct 2011 15:35:10 -0500
+Message-Id: <1318624510-24058-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Xu lei <B33228@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,146 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 14, 2011 at 12:36:33PM -0600, Greg KH wrote:
-> On Fri, Oct 14, 2011 at 08:31:45PM +0200, Hans J. Koch wrote:
-> > On Thu, Oct 13, 2011 at 10:50:58AM -0500, Kumar Gala wrote:
-> > > From: Kai Jiang <Kai.Jiang@freescale.com>
-> > > 
-> > > To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
-> > > extend the width of 'addr' in struct uio_mem.  Numerous platforms like
-> > > embedded PPC, ARM, and X86 have support for systems with larger physical
-> > > address than logical.
-> > > 
-> > > Since 'addr' may contain a physical, logical, or virtual address the
-> > > easiest solution is to just change the type to 'phys_addr_t' which
-> > > should always be greater than or equal to the sizeof(void *) such that
-> > > it can properly hold any of the address types.
-> > > 
-> > > For physical address we can support up to a 44-bit physical address on a
-> > > typical 32-bit system as we utilize remap_pfn_range() for the mapping of
-> > > the memory region and pfn's are represnted by shifting the address by
-> > > the page size (typically 4k).
-> > > 
-> > > Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
-> > > Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> > > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> > 
-> > Signed-off-by: "Hans J. Koch" <hjk@hansjkoch.de>
-> > 
-> > That looks good to me. There's an unnecessary cast (see below), but I fixed that
-> > on the way.
-> > 
-> > Greg, please pull this from branch uio-for-gregkh from
-> > 
-> > git://hansjkoch.de/git/linux-hjk
-> 
-> Care to send it as an email?  I can apply it easier that way as I have
-> limited internet access while on the road.
-> 
-> greg k-h
+From: Xu lei <B33228@freescale.com>
 
+For FSL PPC SoCs USB_ARCH_HAS_EHCI currently on depends on PPC_83xx.
+However that excludes support for USB on 85xx & QorIQ devices.  Use
+FSL_SOC insted which will get us 83xx, 85xx, QorIQ, and 5xxx which all
+have the same USB IP on them.
 
->From b00f4ca33322a48928624ae3c34dc5fe9d2f40ff Mon Sep 17 00:00:00 2001
-From: Kai Jiang <Kai.Jiang@freescale.com>
-Date: Fri, 14 Oct 2011 20:04:43 +0200
-Subject: [PATCH] uio: Support physical addresses >32 bits on 32-bit systems
-
-From: Kai Jiang <Kai.Jiang@freescale.com>
-
-To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
-extend the width of 'addr' in struct uio_mem.  Numerous platforms like
-embedded PPC, ARM, and X86 have support for systems with larger physical
-address than logical.
-
-Since 'addr' may contain a physical, logical, or virtual address the
-easiest solution is to just change the type to 'phys_addr_t' which
-should always be greater than or equal to the sizeof(void *) such that
-it can properly hold any of the address types.
-
-For physical address we can support up to a 44-bit physical address on a
-typical 32-bit system as we utilize remap_pfn_range() for the mapping of
-the memory region and pfn's are represnted by shifting the address by
-the page size (typically 4k).
-
-Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Xulei <B33228@freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Hans J. Koch <hjk@hansjkoch.de>
 ---
- Documentation/DocBook/uio-howto.tmpl |    2 +-
- drivers/uio/uio.c                    |    7 +++----
- include/linux/uio_driver.h           |    7 +++++--
- 3 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/usb/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
-index 7c4b514d..54883de 100644
---- a/Documentation/DocBook/uio-howto.tmpl
-+++ b/Documentation/DocBook/uio-howto.tmpl
-@@ -529,7 +529,7 @@ memory (e.g. allocated with <function>kmalloc()</function>). There's also
- </para></listitem>
- 
- <listitem><para>
--<varname>unsigned long addr</varname>: Required if the mapping is used.
-+<varname>phys_addr_t addr</varname>: Required if the mapping is used.
- Fill in the address of your memory block. This address is the one that
- appears in sysfs.
- </para></listitem>
-diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-index d2efe82..c0626ea 100644
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -69,7 +69,7 @@ static ssize_t map_name_show(struct uio_mem *mem, char *buf)
- 
- static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
- {
--	return sprintf(buf, "0x%lx\n", mem->addr);
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr);
- }
- 
- static ssize_t map_size_show(struct uio_mem *mem, char *buf)
-@@ -79,7 +79,7 @@ static ssize_t map_size_show(struct uio_mem *mem, char *buf)
- 
- static ssize_t map_offset_show(struct uio_mem *mem, char *buf)
- {
--	return sprintf(buf, "0x%lx\n", mem->addr & ~PAGE_MASK);
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr & ~PAGE_MASK);
- }
- 
- struct map_sysfs_entry {
-@@ -634,8 +634,7 @@ static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
- 		page = virt_to_page(idev->info->mem[mi].addr + offset);
- 	else
--		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
--							+ offset);
-+		page = vmalloc_to_page((void *)idev->info->mem[mi].addr + offset);
- 	get_page(page);
- 	vmf->page = page;
- 	return 0;
-diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-index 665517c..fd99ff9 100644
---- a/include/linux/uio_driver.h
-+++ b/include/linux/uio_driver.h
-@@ -23,7 +23,10 @@ struct uio_map;
- /**
-  * struct uio_mem - description of a UIO memory region
-  * @name:		name of the memory region for identification
-- * @addr:		address of the device's memory
-+ * @addr:		address of the device's memory (phys_addr is used since
-+ * 			addr can be logical, virtual, or physical & phys_addr_t
-+ * 			should always be large enough to handle any of the
-+ * 			address types)
-  * @size:		size of IO
-  * @memtype:		type of memory addr points to
-  * @internal_addr:	ioremap-ped version of addr, for driver internal use
-@@ -31,7 +34,7 @@ struct uio_map;
-  */
- struct uio_mem {
- 	const char		*name;
--	unsigned long		addr;
-+	phys_addr_t		addr;
- 	unsigned long		size;
- 	int			memtype;
- 	void __iomem		*internal_addr;
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index 48f1781..1580d7c 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -54,7 +54,7 @@ config USB_ARCH_HAS_OHCI
+ # some non-PCI hcds implement EHCI
+ config USB_ARCH_HAS_EHCI
+ 	boolean
+-	default y if PPC_83xx
++	default y if FSL_SOC
+ 	default y if PPC_MPC512x
+ 	default y if SOC_AU1200
+ 	default y if ARCH_IXP4XX
 -- 
-1.7.6.3
+1.7.3.4
