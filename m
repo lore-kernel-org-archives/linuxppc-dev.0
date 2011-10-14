@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7CD29B6F80
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 18:40:04 +1100 (EST)
-Subject: Re: How to handle cache when I allocate phys memory?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ayman El-Khashab <ayman@elkhashab.com>
-In-Reply-To: <20111012210816.GA17878@crust.elkhashab.com>
-References: <20111012210816.GA17878@crust.elkhashab.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 14 Oct 2011 09:39:51 +0200
-Message-ID: <1318577991.29415.514.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id A6A79B6F99
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 18:52:55 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p9E7qqsD015075
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2011 02:52:52 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
+Date: Fri, 14 Oct 2011 02:52:51 -0500
+Message-Id: <1318578771-16865-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-10-12 at 16:08 -0500, Ayman El-Khashab wrote:
-> I'm using the 460sx (440 core) so no snooping here.  What
-> I've done is reserved the top of memory for my driver.  My
-> driver can read/write the memory and I can mmap it just
-> fine.  The problem is I want to enable caching on the mmap
-> for performance but I don't know / can't figure out how to
-> tell the kernel to sync the cache after it gets dma data
-> from the device or after i put data into it from user space.
-> I know how to do it from regular devices, but not when I've
-> allocated the physical memory myself.  I suppose what I am
-> looking for is something akin to dma_sync_single cpu/device.
-> 
-> In my device driver, I am allocating the memory like this, 
-> in this case the buffer is about 512MB.
-> 
->  vma->vm_flags |= VM_LOCKED | VM_RESERVED;
-> 
->  /* map the physical area into one buffer */
->  rc = remap_pfn_range(vma, vma->vm_start, 
->                          (PHYS_MEM_ADDR)>>PAGE_SHIFT, 
->                          len, vma->vm_page_prot);
-> 
-> Is this going to give me the best performance, or is there
-> something more I can do?
-> 
-> Failing that, what is the best way to do this (i need a very
-> large contiguous buffer).  it runs in batch mode, so it
-> DMAs, stops, cpu reads, cpu writes, repeat ...
+Normally logical and hard cpu ID are the same, however in same cases like
+on the P3060 they may differ.  Where the logical is 0..5, the hard id
+goes 0,1,4..7.  This can causes issues for places we utilize PIR to index
+into array like in debug exception handlers for finding the exception
+stack.
 
-Did you try looking at what the dma_* functions do under the hood and
-call it directly (or reproducing it) ?
+Move to setting up PIR with hard_smp_processor_id fixes the issue.
 
-Basically it boils down to using dcbf instructions to flush dirty data
-or dcbi to invalidate cache lines.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/platforms/85xx/smp.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-Cheers,
-Ben.
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index d6e4746..190d111 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -48,10 +48,11 @@ smp_85xx_kick_cpu(int nr)
+ 	const u64 *cpu_rel_addr;
+ 	__iomem u32 *bptr_vaddr;
+ 	struct device_node *np;
+-	int n = 0;
++	int n = 0, hw_cpu = get_hard_smp_processor_id(nr);
+ 	int ioremappable;
+ 
+-	WARN_ON (nr < 0 || nr >= NR_CPUS);
++	WARN_ON(nr < 0 || nr >= NR_CPUS);
++	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
+ 
+ 	pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
+ 
+@@ -79,7 +80,7 @@ smp_85xx_kick_cpu(int nr)
+ 
+ 	local_irq_save(flags);
+ 
+-	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, nr);
++	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, hw_cpu);
+ #ifdef CONFIG_PPC32
+ 	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
+ 
+@@ -88,7 +89,7 @@ smp_85xx_kick_cpu(int nr)
+ 				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
+ 
+ 	/* Wait a bit for the CPU to ack. */
+-	while ((__secondary_hold_acknowledge != nr) && (++n < 1000))
++	while ((__secondary_hold_acknowledge != hw_cpu) && (++n < 1000))
+ 		mdelay(1);
+ #else
+ 	smp_generic_kick_cpu(nr);
+-- 
+1.7.3.4
