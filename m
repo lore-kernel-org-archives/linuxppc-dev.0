@@ -1,21 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
- [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 96B4DB6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2011 00:40:37 +1100 (EST)
-Received: by vws20 with SMTP id 20so1099890vws.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 06:40:33 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1318595400.6132.73.camel@x61.thuisdomein>
-References: <1318595400.6132.73.camel@x61.thuisdomein>
-Date: Fri, 14 Oct 2011 09:40:33 -0400
-Message-ID: <CA+5PVA5T+XqY8CxoK7+_s0F6FPW+ey2tAssEHMOi7M4vHph+tA@mail.gmail.com>
-Subject: Re: [PATCH 15/21] powerpc: drop unused Kconfig symbols
-From: Josh Boyer <jwboyer@gmail.com>
-To: Paul Bolle <pebolle@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <B11780@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 8CE7CB6FA5
+ for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2011 01:15:56 +1100 (EST)
+Subject: Re: [PATCH] powerpc/fsl_msi: add support for "msi-address-64" property
+MIME-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1316799695-31376-1-git-send-email-timur@freescale.com>
+Date: Fri, 14 Oct 2011 09:15:08 -0500
+Message-ID: <C4D76656-C95E-4906-BC65-6EBAFBBB6A7C@freescale.com>
+References: <1316799695-31376-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 14, 2011 at 8:30 AM, Paul Bolle <pebolle@tiscali.nl> wrote:
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+
+On Sep 23, 2011, at 12:41 PM, Timur Tabi wrote:
+
+> Add support for the msi-address-64 property of a PCI node.  This =
+property
+> specifies the PCI address of MSIIR (message signaled interrupt index
+> register).
+>=20
+> In commit 3da34aae ("powerpc/fsl: Support unique MSI addresses per =
+PCIe Root
+> Complex"), the msi_addr_hi/msi_addr_lo fields of struct fsl_msi were =
+redefined
+> from an actual address to just an offset, but the fields were not =
+renamed
+> accordingly.  These fields are replace with a single field, =
+msiir_offset,
+> to reflect the new meaning.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> =A0arch/powerpc/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
- 22 ----------------------
-> =A0arch/powerpc/platforms/40x/Kconfig =A0 =A0 =A0 =A0 | =A0 =A05 -----
-> =A0arch/powerpc/platforms/Kconfig.cputype =A0 =A0 | =A0 =A08 --------
-> =A0arch/powerpc/platforms/embedded6xx/Kconfig | =A0 =A04 ----
-> =A0arch/powerpc/platforms/prep/Kconfig =A0 =A0 =A0 =A0| =A0 =A09 --------=
--
-> =A0arch/powerpc/platforms/wsp/Kconfig =A0 =A0 =A0 =A0 | =A0 =A05 -----
-> =A06 files changed, 0 insertions(+), 53 deletions(-)
+>=20
+> This patch is necessary, but not sufficient, for MSI support under the
+> Freescale hypervisor.  Future patches will add full support.
+>=20
+> .../devicetree/bindings/powerpc/fsl/msi-pic.txt    |   42 =
+++++++++++++++++++++
+> arch/powerpc/sysdev/fsl_msi.c                      |   20 +++++++---
+> arch/powerpc/sysdev/fsl_msi.h                      |    3 +-
+> 3 files changed, 57 insertions(+), 8 deletions(-)
 
-For the 40x change:
+applied
 
-Acked-by: Josh Boyer <jwboyer@gmail.com>
-
-josh
-
-> diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/=
-40x/Kconfig
-> index d733d7c..4bd3a27 100644
-> --- a/arch/powerpc/platforms/40x/Kconfig
-> +++ b/arch/powerpc/platforms/40x/Kconfig
-> @@ -115,11 +115,6 @@ config PPC40x_SIMPLE
-> =A0 =A0 =A0 =A0help
-> =A0 =A0 =A0 =A0 =A0This option enables the simple PowerPC 40x platform su=
-pport.
->
-> -# 40x specific CPU modules, selected based on the board above.
-> -config NP405H
-> - =A0 =A0 =A0 bool
-> - =A0 =A0 =A0 #depends on ASH
-> -
-> =A0# OAK doesn't exist but wanted to keep this around for any future 403G=
-CX boards
-> =A0config 403GCX
-> =A0 =A0 =A0 =A0bool
->
+- k=
