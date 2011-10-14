@@ -1,19 +1,19 @@
-Return-Path: <B21989@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
- [213.199.154.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1EF1AB6F97
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 19:59:32 +1100 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] mtd: m25p80: don't probe device which has status of 'disabled'
-Date: Fri, 14 Oct 2011 15:49:00 +0800
-Message-ID: <1318578540-12872-1-git-send-email-Shaohui.Xie@freescale.com>
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
+ [203.91.198.74])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8BF78B6F8B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 21:03:45 +1100 (EST)
+From: <smitha.vanga@wipro.com>
+To: <R65777@freescale.com>, <B07421@freescale.com>
+Subject: RE: I2c-cpm driver not working
+Date: Fri, 14 Oct 2011 10:02:56 +0000
+Message-ID: <40631E9A2581F14BA60888C87A76A1FE015C1A@HYD-MKD-MBX4.wipro.com>
+In-Reply-To: <B8D6CA50DACE9E4AAADE9A4D56FBAAE622DD7D@039-SN1MPN1-004.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-mtd@lists.infradead.org, Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On some platforms such as P3060QDS, has multiple spi flashes, but they are
-not available at same time, so if their status is 'disabled', which is set
-by u-boot, will not be probed.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-Disabled nodes should automatically not be probed. But I found this is only
-true for spi node, for the flash nodes which embedded in spi node, still got
-probed even it has a status of 'disabled'.
+ Hi ,
 
- drivers/mtd/devices/m25p80.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 4e20c4d..30d61d5 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -30,6 +30,7 @@
- #include <linux/mtd/cfi.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/partitions.h>
-+#include <linux/of_platform.h>
- 
- #include <linux/spi/spi.h>
- #include <linux/spi/flash.h>
-@@ -829,6 +830,11 @@ static int __devinit m25p_probe(struct spi_device *spi)
- 	struct mtd_partition		*parts = NULL;
- 	int				nr_parts = 0;
- 
-+#ifdef CONFIG_MTD_OF_PARTS
-+	if (!of_device_is_available(spi->dev.of_node))
-+		return -ENODEV;
-+#endif
-+
- 	/* Platform data helps sort out which chip type we have, as
- 	 * well as how this board partitions it.  If we don't have
- 	 * a chip ID, try the JEDEC id commands; they'll work for most
--- 
-1.6.4
+I see that the i2c_master_send works but when I do a i2c_master_recv returns=
+ with a error code -121.
+
+What should be the i2c-base address be configured for the i2c-cpm driver for=
+ mpc9247 . Also
+
+When I pass the interrupt for this driver as 1 , I see the registered interr=
+upt number as 10 in /proc/interrupts why is it like this?
+
+Regards,
+Smitha
+Please do not print this email unless it is absolutely necessary. 
+
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. 
+
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. 
+
+www.wipro.com
