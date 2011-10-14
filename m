@@ -1,22 +1,19 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 4350EB71FE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 02:59:24 +1100 (EST)
-Message-ID: <4E970AC4.5010707@freescale.com>
-Date: Thu, 13 Oct 2011 10:59:00 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
+ [203.91.198.75])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 497D9B6FA5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2011 15:15:21 +1100 (EST)
+From: <smitha.vanga@wipro.com>
+To: <scottwood@freescale.com>
+Subject: I2c-cpm drievr not working
+Date: Fri, 14 Oct 2011 04:14:55 +0000
+Message-ID: <40631E9A2581F14BA60888C87A76A1FE015B09@HYD-MKD-MBX4.wipro.com>
+In-Reply-To: <4E8C9741.9010401@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] powerpc/85xx: fix PHYS_64BIT selection for P1022DS
-References: <1316806370-21067-1-git-send-email-agust@denx.de>	<6EFB6D12-7505-4D3E-8FF9-033EF74FFB81@kernel.crashing.org>	<CAOZdJXUWiatadSCmCAvMRrVjVKCJb0xo+XGsF=Rz5-Smp08tMA@mail.gmail.com>	<6F5815DD-DBF0-4155-94CE-FEDC2C9802E1@kernel.crashing.org>	<4E970528.8080908@freescale.com>
- <20111013175026.1479c674@wker>
-In-Reply-To: <20111013175026.1479c674@wker>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anatolij Gustschin wrote:
-> there is no 32bit address map DTS file for P1022DS in the mainline
-> tree. A proper patch should then also add appropriate 32bit address
-> map DTS file. I'm not in the position to do it currently since it would
-> require testing, I do not have this board to test patches for it.
+ 
+Hi Scott,
 
-The defconfig already enables CONFIG_PHYS_64BIT for the P1022DS and all other
-85xx parts.  If you look at the Kconfig, you'll see that most boards don't
-enable it.  So by default, everything is 64-bit capable.
+I am using the i2c-cpm driver to read and write to a LM75 sensor. The 
+int i2c_master_send(struct i2c_client *client,const char *buf ,int count) fu=
+nction is not successful.
+Could you let me know what may be the issue. Below are the traces.
 
-Adding the Kconfig option will *prevent* anyone from creating a 32-bit kernel.
-This is my problem with the patch.
+DS75_DRIVER : Open
+DS75_DRIVER : Device Open Successful!
+DS75_DRIVER  : ioctl TEMP_READ cmd 1
+In i2c_master_send enter-------
+In i2c_master_send enter [2]-------
+In i2c_master_send msg.addr=3Dc031
+In i2c_master_send 1 client->addr =3D0
+In i2c_master_send 2
+In i2c_master_send 3
+In i2c_master_send 4
+--- enter i2c_transfer
+i2c_transfer_entry
+*********** cpm_i2c_xfer
+***********cpm_i2c_parse_message
+***********cpm_i2c_check_message
+*********** else
+ rv =3D1
+In i2c_master_send 5
+ i2c_master_recv client.addr=3D0
+--- enter i2c_transfer
+i2c_transfer_entry
+*********** cpm_i2c_xfer
+***********cpm_i2c_parse_message
+i2c_adapter i2c-0: I2C transfer: timeout
+*********** cpm_i2c_xfer out_err
+***********cpm_i2c_force_close
+ rv =3Dffffff87
+DS75_DRIVER  : Error reading from I2C 
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Regards,
+Smitha
+Please do not print this email unless it is absolutely necessary. 
+
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. 
+
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. 
+
+www.wipro.com
