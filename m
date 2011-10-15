@@ -1,15 +1,24 @@
-Return-Path: <robert.sciuk@exfo.com>
-Received: from smtpinqc.exfo.com (smtpinqc.exfo.com [206.162.164.97])
- by ozlabs.org (Postfix) with ESMTP id B19D5B7B6E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2011 09:10:07 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: FW: P4080 device tree problems with fsl dpaa ...
-Date: Fri, 14 Oct 2011 17:57:55 -0400
-Message-ID: <2DD52030B5146141BEB762A11AE97C4CF6E0ED@SPQCEXC05.exfo.com>
-From: "Robert Sciuk" <robert.sciuk@exfo.com>
-To: <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 3B940B7090
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Oct 2011 04:44:06 +1100 (EST)
+Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
+ transfers
+From: Vinod Koul <vinod.koul@intel.com>
+To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>,
+ Jassi Brar <jaswinder.singh@linaro.org>
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552022D6C9A@CORPEXCH1.na.ads.idt.com>
+References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
+ <1317492077.1573.1839.camel@vkoul-udesk3>
+ <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
+ <1317965252.1573.2238.camel@vkoul-udesk3>
+ <0CE8B6BE3C4AD74AB97D9D29BD24E552022D6C9A@CORPEXCH1.na.ads.idt.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 15 Oct 2011 23:05:42 +0530
+Message-ID: <1318700142.23438.45.camel@vkoul-udesk3>
+Mime-Version: 1.0
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ Dan <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,97 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2011-10-07 at 12:08 -0700, Bounine, Alexandre wrote:
+> Vinod Koul wrote:
+> > 
+> > On Mon, 2011-10-03 at 09:52 -0700, Bounine, Alexandre wrote:
+Adding Jassi to this and sorry for late reply...
 
+> ... skip ...
+> > >
+> > > Second, having ability to pass private target information allows me to pass
+> > > information about remote target device on per-transfer basis.
+> > Okay, then why not pass the dma address and make your dma driver
+> > transparent (i saw you passed RIO address, IIRC 64+2 bits)
+> > Currently using dma_slave_config we pass channel specific information,
+> > things like peripheral address and config don't change typically
+> > between
+> > transfers and if you have some controller specific properties you can
+> > pass them by embedding dma_slave_config in your specific structure.
+> > Worst case, you can configure slave before every prepare
+> 
+> In addition to address on target RIO device I need to pass corresponding
+> device destination ID. With single channel capable to transfer data between
+> local memory and different RapidIO devices I have to pass device specific
+> information on per transfer basis (destID + 66-bit address + type of write ops, etc.).
+> 
+> Even having 8 channels (each set for specific target) will not help me with
+> full support of RapidIO network where I have 8- or 16-bit destID (256 or 64K
+> devices respectively).
+> 
+> RapidIO controller device (and its DMA component) may provide services to
+> multiple device drivers which service individual devices on RapidIO network
+> (similar to PCIe having multiple peripherals, but not using memory mapped
+> model - destID defines route to a device). 
+> 
+> Generic RapidIO controller may have only one DMA channel which services all
+> target devices forming the network. We may have multiple concurrent data
+> transfer requests for different devices.
+> 
+> Parallel discussion with Dan touches the same post-config approach and
+> another option. I like Dan's idea of having RIO-specific version of prep_sg().
+> At the same time my current implementation of rio_dma_prep_slave_sg() with
+> added appropriate locking may do job as well and keeps DMA part within
+> existing API (DMA_RAPIDIO removed). 
+Thanks this helps to understand your model.
 
------Original Message-----
-From: Robert Sciuk=20
-Sent: Friday, October 14, 2011 5:27 PM
-To: 'devicetree-discuss@lists.ozlabs.org'
-Subject: P4080 device tree problems with fsl dpaa ...
+Per above you need destID, 66bit address and type of write to be passed
+for each transfer. Looking at your rio_dma_data, i cant see the destID.
 
-I've just joined the list, and I hope that this is not an inappropriate =
-question, but I'm looking for some direction with respect to device =
-trees, and the fsl, dpaa Ethernet drivers.
+Nevertheless we have few ways to solve this, pass this using
+dma_slave_config _every-time_ before doing a prep_slave_sg. Or as Dan
+pointed out create RIO specific version. Principally I am not for adding
+a subsystem specific stuff, even more when we are talking about
+converging and cutting down on dmaengine API :)
 
-I'm wondering if anyone has had any experience with the FreeScale DPAA =
-drivers for the 1g dtsec interface.  We are getting interfaces defined, =
-and the tx count increases, but we are not seeing packets on the "wire".
+Another alternate approach could be to add one more argument to
+prep_slave_sg API which allows us to pass additional runtime specific
+parameters. This can be NULL and unused for existing drivers and used in
+RIO and any future subsystems which want to use dmaengine.
+Thoughts...?
 
-...
-[    0.911592] Freescale FM module (Oct 13 2011:14:41:07)
-[    0.916745] cpu6/6: fsl_mac: FSL FMan MAC API based driver ()
-[    0.923077] cpu6/6: fsl_mac: ffe4e0000.ethernet: FMan dTSEC version: =
-0x08240101
-[    0.930403] cpu6/6: fsl_mac: ffe4e0000.ethernet: FMan MAC address: =
-00:a0:a9:be:ef:10
-...
-[    1.015863] cpu6/6: fsl_dpa: FSL DPAA Ethernet driver ()
-[    1.021446] cpu6/6: fsl_dpa: ethernet.23: =
-dpaa_eth.c:1684:dpa_bp_create() eth%d: Using private BM buffer pools
-[    1.032263] cpu6/6: Using dynamic RX QM frame queues
-[    1.037242] cpu6/6: Using dynamic TX QM frame queues
-[    1.042263] cpu6/6: > WARNING (FM) =
-[/export2/rd2/dev/robsci1/Work/gold/wr4linux-layer/obj/hotwire1/hotwire1/=
-build/linux/drivers/n
-et/dpa/NetCommSw/Peripherals/FM/fm.c:911 FmGetSetPortParams]:
-[    1.059138] cpu6/6: FIFO size enlarged to 11008
-[    1.063670] cpu6/6:
-[    1.066672] cpu6/6: fsl_dpa: ethernet.23: =
-dpaa_eth.c:2327:dpaa_oh_probe() no OH port bindings on node =
-/fsl,dpaa/ethernet@0
-[    1.077806] cpu6/6: fsl_dpa: ethernet.24: =
-dpaa_eth.c:1684:dpa_bp_create() eth%d: Using private BM buffer pools
-[    1.087826] cpu6/6: Using dynamic RX QM frame queues
-[    1.092798] cpu6/6: Using dynamic TX QM frame queues
-...
-
-Our device tree defines the top level Ethernet as:
-ethernet@0 {
- compatible =3D "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
- fsl,qman-channel =3D <0x13>;=20
- fsl,fman-mac =3D <0x50>;
-};
-
-And the mac and phys are defined as follows:
-
-ethernet@e0000 {
- cell-index =3D <0x0>;
- compatible =3D "fsl,p4080-fman-1g-mac", "fsl,fman-1g-mac";
- reg =3D <0xe0000 0x1000>;
- fsl,port-handles =3D <0x22 0x23>;
- tbi-handle =3D <0x24>;
- phy-handle =3D <0x25>;
- phy-connection-type =3D "sgmii";
- ptimer-handle =3D <0x26>;
- linux,phandle =3D <0x50>;
-};
-mdio@e1120 {
- #address-cells =3D <0x1>;
- #size-cells =3D <0x0>;
- compatible =3D "fsl,fman-mdio";
- reg =3D <0xe1120 0xee0>;
- interrupts =3D <0x64 0x1 0x0 0x0>;
- gpios =3D <0x27 0x0 0x0 0x27 0x1 0x0>;
- linux,phandle =3D <0x28>;
- tbi-phy@8 {
-  reg =3D <0x8>;
-  device_type =3D "tbi-phy";
-  linux,phandle =3D <0x24>;
- };
- phy0: ethernet-phy@0 {
-  device_type=3D"ethernet-phy";
-  compatible=3D"broadcom,BCM5482";
-  reg =3D <0>;
-  linux,phandle =3D <0x25>;
- };
-};
-
-
-I have no idea what an OH binding is, what it might look like, and what =
-it entails, but I think that it might be a significant factor in our not =
-seeing a working interface.  Has anyone any experience with dpaa device =
-trees, and configuration?  Any pointers?  Any docs? Shots in the dark?=20
-
-Robert Sciuk
-Senior Designer, R&D.
-905.738.3741 xt 22621
+-- 
+~Vinod
