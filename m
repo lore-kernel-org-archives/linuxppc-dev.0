@@ -1,22 +1,19 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8CEF8B7090
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 05:17:51 +1100 (EST)
+Return-Path: <robert.sciuk@exfo.com>
+Received: from smtpinqc.exfo.com (smtpinqc.exfo.com [206.162.164.97])
+ by ozlabs.org (Postfix) with ESMTP id 6E719B702E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 05:35:17 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
- transfers
-Date: Mon, 17 Oct 2011 11:16:14 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202321F81@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <CAJe_ZhdjMTsqSTDwV_zaAQKmCbjOtRVc951wxqKScaCR-DBG9Q@mail.gmail.com>
-References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com><1317492077.1573.1839.camel@vkoul-udesk3><0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com><1317965252.1573.2238.camel@vkoul-udesk3><0CE8B6BE3C4AD74AB97D9D29BD24E552022D6C9A@CORPEXCH1.na.ads.idt.com><1318700142.23438.45.camel@vkoul-udesk3>
- <CAJe_ZhdjMTsqSTDwV_zaAQKmCbjOtRVc951wxqKScaCR-DBG9Q@mail.gmail.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: Jassi Brar <jaswinder.singh@linaro.org>, Vinod Koul <vinod.koul@intel.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- Dan <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: FW: P4080 device tree problems with fsl dpaa ...
+Date: Mon, 17 Oct 2011 14:34:54 -0400
+Message-ID: <2DD52030B5146141BEB762A11AE97C4CF6E2E7@SPQCEXC05.exfo.com>
+In-reply-to: <CAAXf6LXuid9NJcY9DeJYJR0ns6corATzxN2BN5RpkGE08OVcQw@mail.gmail.com>
+References: <2DD52030B5146141BEB762A11AE97C4CF6E0ED@SPQCEXC05.exfo.com>
+ <CAAXf6LXuid9NJcY9DeJYJR0ns6corATzxN2BN5RpkGE08OVcQw@mail.gmail.com>
+From: "Robert Sciuk" <robert.sciuk@exfo.com>
+To: "Thomas De Schampheleire" <patrickdepinguin+linuxppc@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +23,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 17, 2011 at 11:53 AM, Jassi Brar
-<jaswinder.singh@linaro.org> wrote:
->=20
-> On 15 October 2011 23:05, Vinod Koul <vinod.koul@intel.com> wrote:
->=20
-> > Another alternate approach could be to add one more argument to
-> > prep_slave_sg API which allows us to pass additional runtime
-specific
-> > parameters. This can be NULL and unused for existing drivers and
-used
-> in
-> > RIO and any future subsystems which want to use dmaengine.
-> > Thoughts...?
-> >
-> That doesn't sound much different than passing the data via
-> dma_chan.private during prep_slave_sg. Only now we add to
-> the number of arguments.
-One dma_chan may be used by multiple drivers requesting data transfer.
-In this case we will need a lock to keep dma_chan and its private
-coupled together.=20
-If we consider this coupling as a valid way we may think about
-adding a lock member into dma_chan structure. This will make locking
-more effective for configurations with multiple DMA channels.=20
 
-> And then either this argument would be RapidIO specific (unfair
-> to other users) or generic. In latter case what would it look like ?
-It should not be RapidIO specific. Just transfer specific context that
-will be interpreted by participants. Given that we have a channel
-filtering mechanism there is a little chance of wrongful usage of
-that parameter.
 
-Alex.
+> -----Original Message-----
+> From: patrickdepinguin@gmail.com [mailto:patrickdepinguin@gmail.com] =
+On
+> Behalf Of Thomas De Schampheleire
+> Sent: Monday, October 17, 2011 5:01 AM
+> To: Robert Sciuk
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: FW: P4080 device tree problems with fsl dpaa ...
+>=20
+> Hi Robert,
+
+[my stuff snipped]
+>=20
+> > I have no idea what an OH binding is, what it might look like, and
+> what it entails, but I think that it might be a significant factor in
+> our not seeing a working interface. =A0Has anyone any experience with
+> dpaa device trees, and configuration? =A0Any pointers? =A0Any docs? =
+Shots
+> in the dark?
+>=20
+> We are using a device tree on p4080 with a dpaa configuration, yes.
+> I also don't know about the OH bindings, but I have a vague memory of
+> us having that message too, and it not being a real problem.
+>=20
+
+Other indicators concur with your assessment, and suggest that I back =
+those nodes out as well. =20
+
+
+> What I do know is that the device tree is very easy to get wrong, and
+> that it should match your hardware precisely. I'm not using the same
+> configuration as you are (there are no MDIO devices between our phy
+> and dTSEC) so the device tree looks a little different.
+
+Would it be possible to have a look at the relevant portions of your dev =
+tree?
+
+
+
+>=20
+> Are you using the reference design or is this custom?
+
+This is a custom design, and is an ATCA blade.
+
+
+> Did you have a look at the device tree in the linux kernel sources?
+> (arch/powerpc/boot/dts/p4080.dts). Does this configuration match
+> yours? In that configuration, there are separate nodes of type
+> p4080ds-mdio, inside the main mdio node.
+
+We actually used the 36 bit tree (we plan to ship the boards with 16G =
+initially, and up to 32G eventually).  I've also re-worked the tree from =
+the LTIB (System Builder) in an attempt to get this to work.  Our design =
+differs significantly from the P4080DS in that there exists no MUX =
+between the bus and phy ... and there is no PIXIS FPGA to do all the =
+clocking and startup stuff.=20
+
+I've modified u-boot to assign mac addresses based upon our OUI, and the =
+MACs all seem to be configured properly coming out of firmware, the =
+ifconfig on the Linux side recognizes all of our 6 interfaces ...
+
+
+>=20
+> Is your phy configured correctly? Are there any boot messages about
+> this? Can you check its registers?
+> The same for the mdio.
+
+There is some question about the TBI initialization, and we are tracing =
+that as we speak ...
+
+>=20
+> Some generic pointers:
+> * If you set CONFIG_PROC_DEVICETREE in the kernel config, you can read
+> out the device-tree at runtime in /proc/device-tree. This helps in
+> verifying whether the nodes you programmed actually appear in the
+> running system.
+
+Ack.
+
+>=20
+> * The /sys/devices directory can also be useful in identifying
+> potential problems for unfound devices (which does not appear to be
+> your case).
+>=20
+=20
+Ack.  Also using /proc/interrupts ...
+
+
+> * Can you step through the code, e.g. with a JTAG debugger? Try
+> following the transmit path in the dpaa_eth driver. Maybe something
+> errors out prematurely.
+>=20
+
+With some headaches ... using codewarrior, and getting assembly level =
+tracing ...
+
+> Best regards,
+> Thomas
