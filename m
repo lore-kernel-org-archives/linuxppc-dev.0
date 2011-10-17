@@ -1,26 +1,21 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E574CB6F75
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 01:34:05 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
- transfers
-Date: Mon, 17 Oct 2011 07:33:01 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202321E3E@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <1318700142.23438.45.camel@vkoul-udesk3>
-References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
- <1317492077.1573.1839.camel@vkoul-udesk3>
- <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
- <1317965252.1573.2238.camel@vkoul-udesk3>
- <0CE8B6BE3C4AD74AB97D9D29BD24E552022D6C9A@CORPEXCH1.na.ads.idt.com>
- <1318700142.23438.45.camel@vkoul-udesk3>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: Vinod Koul <vinod.koul@intel.com>, Jassi Brar <jaswinder.singh@linaro.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- Dan <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C46E7B6FA6
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Oct 2011 03:01:11 +1100 (EST)
+Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20111014183144.GD28556@local>
+Date: Mon, 17 Oct 2011 11:00:55 -0500
+Message-Id: <4D73F261-3795-4F71-9921-568C1B9F06E0@kernel.crashing.org>
+References: <1318521058-15662-1-git-send-email-galak@kernel.crashing.org>
+ <20111014183144.GD28556@local>
+To: "Hans J. Koch" <hjk@hansjkoch.de>
+Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de,
+ Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,69 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gU2F0LCBPY3QgMTUsIDIwMTEgYXQgMTozNiBQTSwgVmlub2QgS291bCA8dmlub2Qua291bEBp
-bnRlbC5jb20+IHdyb3RlOg0KPiANCj4gPiAuLi4gc2tpcCAuLi4NCj4gPiA+ID4NCj4gPiA+ID4g
-U2Vjb25kLCBoYXZpbmcgYWJpbGl0eSB0byBwYXNzIHByaXZhdGUgdGFyZ2V0IGluZm9ybWF0aW9u
-IGFsbG93cyBtZSB0byBwYXNzDQo+ID4gPiA+IGluZm9ybWF0aW9uIGFib3V0IHJlbW90ZSB0YXJn
-ZXQgZGV2aWNlIG9uIHBlci10cmFuc2ZlciBiYXNpcy4NCj4gPiA+IE9rYXksIHRoZW4gd2h5IG5v
-dCBwYXNzIHRoZSBkbWEgYWRkcmVzcyBhbmQgbWFrZSB5b3VyIGRtYSBkcml2ZXINCj4gPiA+IHRy
-YW5zcGFyZW50IChpIHNhdyB5b3UgcGFzc2VkIFJJTyBhZGRyZXNzLCBJSVJDIDY0KzIgYml0cykN
-Cj4gPiA+IEN1cnJlbnRseSB1c2luZyBkbWFfc2xhdmVfY29uZmlnIHdlIHBhc3MgY2hhbm5lbCBz
-cGVjaWZpYyBpbmZvcm1hdGlvbiwNCj4gPiA+IHRoaW5ncyBsaWtlIHBlcmlwaGVyYWwgYWRkcmVz
-cyBhbmQgY29uZmlnIGRvbid0IGNoYW5nZSB0eXBpY2FsbHkNCj4gPiA+IGJldHdlZW4NCj4gPiA+
-IHRyYW5zZmVycyBhbmQgaWYgeW91IGhhdmUgc29tZSBjb250cm9sbGVyIHNwZWNpZmljIHByb3Bl
-cnRpZXMgeW91IGNhbg0KPiA+ID4gcGFzcyB0aGVtIGJ5IGVtYmVkZGluZyBkbWFfc2xhdmVfY29u
-ZmlnIGluIHlvdXIgc3BlY2lmaWMgc3RydWN0dXJlLg0KPiA+ID4gV29yc3QgY2FzZSwgeW91IGNh
-biBjb25maWd1cmUgc2xhdmUgYmVmb3JlIGV2ZXJ5IHByZXBhcmUNCj4gPg0KPiA+IEluIGFkZGl0
-aW9uIHRvIGFkZHJlc3Mgb24gdGFyZ2V0IFJJTyBkZXZpY2UgSSBuZWVkIHRvIHBhc3MgY29ycmVz
-cG9uZGluZw0KPiA+IGRldmljZSBkZXN0aW5hdGlvbiBJRC4gV2l0aCBzaW5nbGUgY2hhbm5lbCBj
-YXBhYmxlIHRvIHRyYW5zZmVyIGRhdGEgYmV0d2Vlbg0KPiA+IGxvY2FsIG1lbW9yeSBhbmQgZGlm
-ZmVyZW50IFJhcGlkSU8gZGV2aWNlcyBJIGhhdmUgdG8gcGFzcyBkZXZpY2Ugc3BlY2lmaWMNCj4g
-PiBpbmZvcm1hdGlvbiBvbiBwZXIgdHJhbnNmZXIgYmFzaXMgKGRlc3RJRCArIDY2LWJpdCBhZGRy
-ZXNzICsgdHlwZSBvZiB3cml0ZSBvcHMsIGV0Yy4pLg0KPiA+DQo+ID4gRXZlbiBoYXZpbmcgOCBj
-aGFubmVscyAoZWFjaCBzZXQgZm9yIHNwZWNpZmljIHRhcmdldCkgd2lsbCBub3QgaGVscCBtZSB3
-aXRoDQo+ID4gZnVsbCBzdXBwb3J0IG9mIFJhcGlkSU8gbmV0d29yayB3aGVyZSBJIGhhdmUgOC0g
-b3IgMTYtYml0IGRlc3RJRCAoMjU2IG9yIDY0Sw0KPiA+IGRldmljZXMgcmVzcGVjdGl2ZWx5KS4N
-Cj4gPg0KPiA+IFJhcGlkSU8gY29udHJvbGxlciBkZXZpY2UgKGFuZCBpdHMgRE1BIGNvbXBvbmVu
-dCkgbWF5IHByb3ZpZGUgc2VydmljZXMgdG8NCj4gPiBtdWx0aXBsZSBkZXZpY2UgZHJpdmVycyB3
-aGljaCBzZXJ2aWNlIGluZGl2aWR1YWwgZGV2aWNlcyBvbiBSYXBpZElPIG5ldHdvcmsNCj4gPiAo
-c2ltaWxhciB0byBQQ0llIGhhdmluZyBtdWx0aXBsZSBwZXJpcGhlcmFscywgYnV0IG5vdCB1c2lu
-ZyBtZW1vcnkgbWFwcGVkDQo+ID4gbW9kZWwgLSBkZXN0SUQgZGVmaW5lcyByb3V0ZSB0byBhIGRl
-dmljZSkuDQo+ID4NCj4gPiBHZW5lcmljIFJhcGlkSU8gY29udHJvbGxlciBtYXkgaGF2ZSBvbmx5
-IG9uZSBETUEgY2hhbm5lbCB3aGljaCBzZXJ2aWNlcyBhbGwNCj4gPiB0YXJnZXQgZGV2aWNlcyBm
-b3JtaW5nIHRoZSBuZXR3b3JrLiBXZSBtYXkgaGF2ZSBtdWx0aXBsZSBjb25jdXJyZW50IGRhdGEN
-Cj4gPiB0cmFuc2ZlciByZXF1ZXN0cyBmb3IgZGlmZmVyZW50IGRldmljZXMuDQo+ID4NCj4gPiBQ
-YXJhbGxlbCBkaXNjdXNzaW9uIHdpdGggRGFuIHRvdWNoZXMgdGhlIHNhbWUgcG9zdC1jb25maWcg
-YXBwcm9hY2ggYW5kDQo+ID4gYW5vdGhlciBvcHRpb24uIEkgbGlrZSBEYW4ncyBpZGVhIG9mIGhh
-dmluZyBSSU8tc3BlY2lmaWMgdmVyc2lvbiBvZiBwcmVwX3NnKCkuDQo+ID4gQXQgdGhlIHNhbWUg
-dGltZSBteSBjdXJyZW50IGltcGxlbWVudGF0aW9uIG9mIHJpb19kbWFfcHJlcF9zbGF2ZV9zZygp
-IHdpdGgNCj4gPiBhZGRlZCBhcHByb3ByaWF0ZSBsb2NraW5nIG1heSBkbyBqb2IgYXMgd2VsbCBh
-bmQga2VlcHMgRE1BIHBhcnQgd2l0aGluDQo+ID4gZXhpc3RpbmcgQVBJIChETUFfUkFQSURJTyBy
-ZW1vdmVkKS4NCj4gVGhhbmtzIHRoaXMgaGVscHMgdG8gdW5kZXJzdGFuZCB5b3VyIG1vZGVsLg0K
-PiANCj4gUGVyIGFib3ZlIHlvdSBuZWVkIGRlc3RJRCwgNjZiaXQgYWRkcmVzcyBhbmQgdHlwZSBv
-ZiB3cml0ZSB0byBiZSBwYXNzZWQNCj4gZm9yIGVhY2ggdHJhbnNmZXIuIExvb2tpbmcgYXQgeW91
-ciByaW9fZG1hX2RhdGEsIGkgY2FudCBzZWUgdGhlIGRlc3RJRC4NCj4gDQpkZXN0SUQgaXMgZXh0
-cmFjdGVkIGJ5IHJpb19kbWFfcHJlcF9zbGF2ZV9zZygpIGZyb20gdGhlIHJpb19kZXYgcGFyYW1l
-dGVyDQphbmQgcGFzc2VkIGRvd24gcHJlcF9zbGF2ZV9zZygpIGFzIHBhcnQgb2YgcmlvX2RtYV9l
-eHQgc3RydWN0dXJlDQooYXMgZGNoYW4tPnByaXZhdGUpLiANCg0KPiBOZXZlcnRoZWxlc3Mgd2Ug
-aGF2ZSBmZXcgd2F5cyB0byBzb2x2ZSB0aGlzLCBwYXNzIHRoaXMgdXNpbmcNCj4gZG1hX3NsYXZl
-X2NvbmZpZyBfZXZlcnktdGltZV8gYmVmb3JlIGRvaW5nIGEgcHJlcF9zbGF2ZV9zZy4gT3IgYXMg
-RGFuDQo+IHBvaW50ZWQgb3V0IGNyZWF0ZSBSSU8gc3BlY2lmaWMgdmVyc2lvbi4gUHJpbmNpcGFs
-bHkgSSBhbSBub3QgZm9yDQo+IGFkZGluZw0KPiBhIHN1YnN5c3RlbSBzcGVjaWZpYyBzdHVmZiwg
-ZXZlbiBtb3JlIHdoZW4gd2UgYXJlIHRhbGtpbmcgYWJvdXQNCj4gY29udmVyZ2luZyBhbmQgY3V0
-dGluZyBkb3duIG9uIGRtYWVuZ2luZSBBUEkgOikNCj4gDQpBZ3JlZS4gVGhpcyBpcyB3aHkgSSBh
-bSB0cnlpbmcgdG8gZmluZCBteSB3YXkgd2l0aGluIGJvdW5kYXJpZXMgb2YgRE1BX1NMQVZFIEFQ
-SSBmaXJzdC4NCg0KPiBBbm90aGVyIGFsdGVybmF0ZSBhcHByb2FjaCBjb3VsZCBiZSB0byBhZGQg
-b25lIG1vcmUgYXJndW1lbnQgdG8NCj4gcHJlcF9zbGF2ZV9zZyBBUEkgd2hpY2ggYWxsb3dzIHVz
-IHRvIHBhc3MgYWRkaXRpb25hbCBydW50aW1lIHNwZWNpZmljDQo+IHBhcmFtZXRlcnMuIFRoaXMg
-Y2FuIGJlIE5VTEwgYW5kIHVudXNlZCBmb3IgZXhpc3RpbmcgZHJpdmVycyBhbmQgdXNlZA0KPiBp
-bg0KPiBSSU8gYW5kIGFueSBmdXR1cmUgc3Vic3lzdGVtcyB3aGljaCB3YW50IHRvIHVzZSBkbWFl
-bmdpbmUuDQo+IFRob3VnaHRzLi4uPw0KPiANClRoaXMgaXMgZXhhY3RseSB3aGF0IEkgbmVlZCBh
-bmQgaXQgbWF5IGJlIHVzZWZ1bCBmb3IgZnV0dXJlIHN5c3RlbXMuDQpUaGlzIG1ha2VzIERNQV9T
-TEFWRSBwcmVwYXJlZCBmb3IgdmFyaWF0aW9ucyBpbiBkZXZpY2UgYWRkcmVzc2luZy4NCg0KUGx1
-cywgdGhpcyB3aWxsIG1ha2UgcG9ydGluZyBSSU8gRE1BIHRvIHByZXZpb3VzIGtlcm5lbCB2ZXJz
-aW9ucw0KcmVsYXRpdmVseSBlYXN5IGZvciB0aG9zZSB3aG8gcHJlZmVycy9yZXF1aXJlcyB0aGF0
-Lg0KDQpCYXNlZCBvbiB0aGUgZmFjdCB0aGF0IHlvdSBzdGFydGVkIHRyYW5zaXRpb24gdG8gdGhl
-IG5ldyBETUEgdHJhbnNmZXINCmRpcmVjdGlvbiBmbGFncywgaXQgbWF5IGJlIGEgZ29vZCB0aW1l
-IHRvIGFkZCB0aGF0IGV4dHJhIGFyZ3VtZW50DQp0byBwcmVwX3NsYXZlX3NnKCkuDQoNCkFsZXgu
-DQoNCg==
+
+On Oct 14, 2011, at 1:31 PM, Hans J. Koch wrote:
+
+> On Thu, Oct 13, 2011 at 10:50:58AM -0500, Kumar Gala wrote:
+>> From: Kai Jiang <Kai.Jiang@freescale.com>
+>>=20
+>> To support >32-bit physical addresses for UIO_MEM_PHYS type we need =
+to
+>> extend the width of 'addr' in struct uio_mem.  Numerous platforms =
+like
+>> embedded PPC, ARM, and X86 have support for systems with larger =
+physical
+>> address than logical.
+>>=20
+>> Since 'addr' may contain a physical, logical, or virtual address the
+>> easiest solution is to just change the type to 'phys_addr_t' which
+>> should always be greater than or equal to the sizeof(void *) such =
+that
+>> it can properly hold any of the address types.
+>>=20
+>> For physical address we can support up to a 44-bit physical address =
+on a
+>> typical 32-bit system as we utilize remap_pfn_range() for the mapping =
+of
+>> the memory region and pfn's are represnted by shifting the address by
+>> the page size (typically 4k).
+>>=20
+>> Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
+>> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>=20
+> Signed-off-by: "Hans J. Koch" <hjk@hansjkoch.de>
+>=20
+> That looks good to me. There's an unnecessary cast (see below), but I =
+fixed that
+> on the way.
+>=20
+> Greg, please pull this from branch uio-for-gregkh from
+>=20
+> git://hansjkoch.de/git/linux-hjk
+>=20
+> Thanks,
+> Hans
+
+I think removing that cast is wrong:
+
+drivers/uio/uio.c: In function 'uio_vma_fault':
+drivers/uio/uio.c:637:26: warning: cast to pointer from integer of =
+different size
+
+- k
