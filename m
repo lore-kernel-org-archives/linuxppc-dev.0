@@ -1,23 +1,18 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 12150B71BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2011 02:03:37 +1100 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: "smitha.vanga@wipro.com" <smitha.vanga@wipro.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: IRQ2 and IRQ 3
-Date: Tue, 18 Oct 2011 15:03:27 +0000
-Message-ID: <B8D6CA50DACE9E4AAADE9A4D56FBAAE623CED7@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <B8D6CA50DACE9E4AAADE9A4D56FBAAE623BEB3@039-SN1MPN1-005.039d.mgd.msft.net>
- <40631E9A2581F14BA60888C87A76A1FE016391@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <40631E9A2581F14BA60888C87A76A1FE016391@HYD-MKD-MBX4.wipro.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <dpmcgee@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+ [209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 094E5B70BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 07:18:01 +1100 (EST)
+Received: by iajr24 with SMTP id r24so7174503iaj.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2011 13:17:57 -0700 (PDT)
+From: Dan McGee <dpmcgee@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/mm: remove hack in mmap randomize layout
+Date: Mon, 17 Oct 2011 15:17:36 -0500
+Message-Id: <1318882661-26859-1-git-send-email-dpmcgee@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ Dan McGee <dpmcgee@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,=20
+Since commit 8a0a9bd4db63bc45e301, this comment in mmap_rnd() does not
+hold true as the value returned by get_random_int() will in fact be
+different every single call. Remove the comment and simplify the code
+back to its original desired form.
 
-For detail please look at ePAPR specification.
+This reverts commit a5adc91a4b44b5d1 which is no longer necessary.
 
-Say i2c interrupt number is 21 then you can try
-"interrupts =3D <21 8>;" in device tree.
+Signed-off-by: Dan McGee <dpmcgee@gmail.com>
+---
+ arch/powerpc/mm/mmap_64.c |   14 +++-----------
+ 1 files changed, 3 insertions(+), 11 deletions(-)
 
-Thanks
--Bharat
-
-> -----Original Message-----
-> From: smitha.vanga@wipro.com [mailto:smitha.vanga@wipro.com]
-> Sent: Tuesday, October 18, 2011 2:35 PM
-> To: Bhushan Bharat-R65777; Wood Scott-B07421
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: RE: IRQ2 and IRQ 3
->=20
-> Yes , there is a vector numbe defined in the specifications .
->=20
-> IRQ2 - 20
-> IRQ3 - 21
->=20
-> But I don't know how to specify them in the .dts file .
->=20
-> Regards,
-> Smitha
-> Please do not print this email unless it is absolutely necessary.
->=20
-> The information contained in this electronic message and any attachments
-> to this message are intended for the exclusive use of the addressee(s)
-> and may contain proprietary, confidential or privileged information. If
-> you are not the intended recipient, you should not disseminate,
-> distribute or copy this e-mail. Please notify the sender immediately and
-> destroy all copies of this message and any attachments.
->=20
-> WARNING: Computer viruses can be transmitted via email. The recipient
-> should check this email and any attachments for the presence of viruses.
-> The company accepts no liability for any damage caused by any virus
-> transmitted by this email.
->=20
-> www.wipro.com
+diff --git a/arch/powerpc/mm/mmap_64.c b/arch/powerpc/mm/mmap_64.c
+index 5a783d8..67a42ed 100644
+--- a/arch/powerpc/mm/mmap_64.c
++++ b/arch/powerpc/mm/mmap_64.c
+@@ -53,14 +53,6 @@ static inline int mmap_is_legacy(void)
+ 	return sysctl_legacy_va_layout;
+ }
+ 
+-/*
+- * Since get_random_int() returns the same value within a 1 jiffy window,
+- * we will almost always get the same randomisation for the stack and mmap
+- * region. This will mean the relative distance between stack and mmap will
+- * be the same.
+- *
+- * To avoid this we can shift the randomness by 1 bit.
+- */
+ static unsigned long mmap_rnd(void)
+ {
+ 	unsigned long rnd = 0;
+@@ -68,11 +60,11 @@ static unsigned long mmap_rnd(void)
+ 	if (current->flags & PF_RANDOMIZE) {
+ 		/* 8MB for 32bit, 1GB for 64bit */
+ 		if (is_32bit_task())
+-			rnd = (long)(get_random_int() % (1<<(22-PAGE_SHIFT)));
++			rnd = (long)(get_random_int() % (1<<(23-PAGE_SHIFT)));
+ 		else
+-			rnd = (long)(get_random_int() % (1<<(29-PAGE_SHIFT)));
++			rnd = (long)(get_random_int() % (1<<(30-PAGE_SHIFT)));
+ 	}
+-	return (rnd << PAGE_SHIFT) * 2;
++	return rnd << PAGE_SHIFT;
+ }
+ 
+ static inline unsigned long mmap_base(void)
+-- 
+1.7.7
