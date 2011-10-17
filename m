@@ -1,22 +1,26 @@
-Return-Path: <patrickdepinguin@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
- [209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id BB0B0B6F8F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2011 20:01:30 +1100 (EST)
-Received: by vcbfl13 with SMTP id fl13so1795262vcb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2011 02:01:26 -0700 (PDT)
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E574CB6F75
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 01:34:05 +1100 (EST)
 MIME-Version: 1.0
-Sender: patrickdepinguin@gmail.com
-In-Reply-To: <2DD52030B5146141BEB762A11AE97C4CF6E0ED@SPQCEXC05.exfo.com>
-References: <2DD52030B5146141BEB762A11AE97C4CF6E0ED@SPQCEXC05.exfo.com>
-Date: Mon, 17 Oct 2011 11:01:26 +0200
-Message-ID: <CAAXf6LXuid9NJcY9DeJYJR0ns6corATzxN2BN5RpkGE08OVcQw@mail.gmail.com>
-Subject: Re: FW: P4080 device tree problems with fsl dpaa ...
-From: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
-To: Robert Sciuk <robert.sciuk@exfo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
+ transfers
+Date: Mon, 17 Oct 2011 07:33:01 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202321E3E@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1318700142.23438.45.camel@vkoul-udesk3>
+References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
+ <1317492077.1573.1839.camel@vkoul-udesk3>
+ <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
+ <1317965252.1573.2238.camel@vkoul-udesk3>
+ <0CE8B6BE3C4AD74AB97D9D29BD24E552022D6C9A@CORPEXCH1.na.ads.idt.com>
+ <1318700142.23438.45.camel@vkoul-udesk3>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Vinod Koul <vinod.koul@intel.com>, Jassi Brar <jaswinder.singh@linaro.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ Dan <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,131 +30,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Robert,
-
-On Fri, Oct 14, 2011 at 11:57 PM, Robert Sciuk <robert.sciuk@exfo.com> wrot=
-e:
->
->
-> -----Original Message-----
-> From: Robert Sciuk
-> Sent: Friday, October 14, 2011 5:27 PM
-> To: 'devicetree-discuss@lists.ozlabs.org'
-> Subject: P4080 device tree problems with fsl dpaa ...
->
-> I've just joined the list, and I hope that this is not an inappropriate q=
-uestion, but I'm looking for some direction with respect to device trees, a=
-nd the fsl, dpaa Ethernet drivers.
->
-> I'm wondering if anyone has had any experience with the FreeScale DPAA dr=
-ivers for the 1g dtsec interface. =A0We are getting interfaces defined, and=
- the tx count increases, but we are not seeing packets on the "wire".
->
-> ...
-> [ =A0 =A00.911592] Freescale FM module (Oct 13 2011:14:41:07)
-> [ =A0 =A00.916745] cpu6/6: fsl_mac: FSL FMan MAC API based driver ()
-> [ =A0 =A00.923077] cpu6/6: fsl_mac: ffe4e0000.ethernet: FMan dTSEC versio=
-n: 0x08240101
-> [ =A0 =A00.930403] cpu6/6: fsl_mac: ffe4e0000.ethernet: FMan MAC address:=
- 00:a0:a9:be:ef:10
-> ...
-> [ =A0 =A01.015863] cpu6/6: fsl_dpa: FSL DPAA Ethernet driver ()
-> [ =A0 =A01.021446] cpu6/6: fsl_dpa: ethernet.23: dpaa_eth.c:1684:dpa_bp_c=
-reate() eth%d: Using private BM buffer pools
-> [ =A0 =A01.032263] cpu6/6: Using dynamic RX QM frame queues
-> [ =A0 =A01.037242] cpu6/6: Using dynamic TX QM frame queues
-> [ =A0 =A01.042263] cpu6/6: > WARNING (FM) [/export2/rd2/dev/robsci1/Work/=
-gold/wr4linux-layer/obj/hotwire1/hotwire1/build/linux/drivers/n
-> et/dpa/NetCommSw/Peripherals/FM/fm.c:911 FmGetSetPortParams]:
-> [ =A0 =A01.059138] cpu6/6: FIFO size enlarged to 11008
-> [ =A0 =A01.063670] cpu6/6:
-> [ =A0 =A01.066672] cpu6/6: fsl_dpa: ethernet.23: dpaa_eth.c:2327:dpaa_oh_=
-probe() no OH port bindings on node /fsl,dpaa/ethernet@0
-> [ =A0 =A01.077806] cpu6/6: fsl_dpa: ethernet.24: dpaa_eth.c:1684:dpa_bp_c=
-reate() eth%d: Using private BM buffer pools
-> [ =A0 =A01.087826] cpu6/6: Using dynamic RX QM frame queues
-> [ =A0 =A01.092798] cpu6/6: Using dynamic TX QM frame queues
-> ...
->
-> Our device tree defines the top level Ethernet as:
-> ethernet@0 {
-> =A0compatible =3D "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
-> =A0fsl,qman-channel =3D <0x13>;
-> =A0fsl,fman-mac =3D <0x50>;
-> };
->
-> And the mac and phys are defined as follows:
->
-> ethernet@e0000 {
-> =A0cell-index =3D <0x0>;
-> =A0compatible =3D "fsl,p4080-fman-1g-mac", "fsl,fman-1g-mac";
-> =A0reg =3D <0xe0000 0x1000>;
-> =A0fsl,port-handles =3D <0x22 0x23>;
-> =A0tbi-handle =3D <0x24>;
-> =A0phy-handle =3D <0x25>;
-> =A0phy-connection-type =3D "sgmii";
-> =A0ptimer-handle =3D <0x26>;
-> =A0linux,phandle =3D <0x50>;
-> };
-> mdio@e1120 {
-> =A0#address-cells =3D <0x1>;
-> =A0#size-cells =3D <0x0>;
-> =A0compatible =3D "fsl,fman-mdio";
-> =A0reg =3D <0xe1120 0xee0>;
-> =A0interrupts =3D <0x64 0x1 0x0 0x0>;
-> =A0gpios =3D <0x27 0x0 0x0 0x27 0x1 0x0>;
-> =A0linux,phandle =3D <0x28>;
-> =A0tbi-phy@8 {
-> =A0reg =3D <0x8>;
-> =A0device_type =3D "tbi-phy";
-> =A0linux,phandle =3D <0x24>;
-> =A0};
-> =A0phy0: ethernet-phy@0 {
-> =A0device_type=3D"ethernet-phy";
-> =A0compatible=3D"broadcom,BCM5482";
-> =A0reg =3D <0>;
-> =A0linux,phandle =3D <0x25>;
-> =A0};
-> };
->
->
-> I have no idea what an OH binding is, what it might look like, and what i=
-t entails, but I think that it might be a significant factor in our not see=
-ing a working interface. =A0Has anyone any experience with dpaa device tree=
-s, and configuration? =A0Any pointers? =A0Any docs? Shots in the dark?
-
-We are using a device tree on p4080 with a dpaa configuration, yes.
-I also don't know about the OH bindings, but I have a vague memory of
-us having that message too, and it not being a real problem.
-
-What I do know is that the device tree is very easy to get wrong, and
-that it should match your hardware precisely. I'm not using the same
-configuration as you are (there are no MDIO devices between our phy
-and dTSEC) so the device tree looks a little different.
-
-Are you using the reference design or is this custom?
-Did you have a look at the device tree in the linux kernel sources?
-(arch/powerpc/boot/dts/p4080.dts). Does this configuration match
-yours? In that configuration, there are separate nodes of type
-p4080ds-mdio, inside the main mdio node.
-
-Is your phy configured correctly? Are there any boot messages about
-this? Can you check its registers?
-The same for the mdio.
-
-Some generic pointers:
-* If you set CONFIG_PROC_DEVICETREE in the kernel config, you can read
-out the device-tree at runtime in /proc/device-tree. This helps in
-verifying whether the nodes you programmed actually appear in the
-running system.
-
-* The /sys/devices directory can also be useful in identifying
-potential problems for unfound devices (which does not appear to be
-your case).
-
-* Can you step through the code, e.g. with a JTAG debugger? Try
-following the transmit path in the dpaa_eth driver. Maybe something
-errors out prematurely.
-
-Best regards,
-Thomas
+T24gU2F0LCBPY3QgMTUsIDIwMTEgYXQgMTozNiBQTSwgVmlub2QgS291bCA8dmlub2Qua291bEBp
+bnRlbC5jb20+IHdyb3RlOg0KPiANCj4gPiAuLi4gc2tpcCAuLi4NCj4gPiA+ID4NCj4gPiA+ID4g
+U2Vjb25kLCBoYXZpbmcgYWJpbGl0eSB0byBwYXNzIHByaXZhdGUgdGFyZ2V0IGluZm9ybWF0aW9u
+IGFsbG93cyBtZSB0byBwYXNzDQo+ID4gPiA+IGluZm9ybWF0aW9uIGFib3V0IHJlbW90ZSB0YXJn
+ZXQgZGV2aWNlIG9uIHBlci10cmFuc2ZlciBiYXNpcy4NCj4gPiA+IE9rYXksIHRoZW4gd2h5IG5v
+dCBwYXNzIHRoZSBkbWEgYWRkcmVzcyBhbmQgbWFrZSB5b3VyIGRtYSBkcml2ZXINCj4gPiA+IHRy
+YW5zcGFyZW50IChpIHNhdyB5b3UgcGFzc2VkIFJJTyBhZGRyZXNzLCBJSVJDIDY0KzIgYml0cykN
+Cj4gPiA+IEN1cnJlbnRseSB1c2luZyBkbWFfc2xhdmVfY29uZmlnIHdlIHBhc3MgY2hhbm5lbCBz
+cGVjaWZpYyBpbmZvcm1hdGlvbiwNCj4gPiA+IHRoaW5ncyBsaWtlIHBlcmlwaGVyYWwgYWRkcmVz
+cyBhbmQgY29uZmlnIGRvbid0IGNoYW5nZSB0eXBpY2FsbHkNCj4gPiA+IGJldHdlZW4NCj4gPiA+
+IHRyYW5zZmVycyBhbmQgaWYgeW91IGhhdmUgc29tZSBjb250cm9sbGVyIHNwZWNpZmljIHByb3Bl
+cnRpZXMgeW91IGNhbg0KPiA+ID4gcGFzcyB0aGVtIGJ5IGVtYmVkZGluZyBkbWFfc2xhdmVfY29u
+ZmlnIGluIHlvdXIgc3BlY2lmaWMgc3RydWN0dXJlLg0KPiA+ID4gV29yc3QgY2FzZSwgeW91IGNh
+biBjb25maWd1cmUgc2xhdmUgYmVmb3JlIGV2ZXJ5IHByZXBhcmUNCj4gPg0KPiA+IEluIGFkZGl0
+aW9uIHRvIGFkZHJlc3Mgb24gdGFyZ2V0IFJJTyBkZXZpY2UgSSBuZWVkIHRvIHBhc3MgY29ycmVz
+cG9uZGluZw0KPiA+IGRldmljZSBkZXN0aW5hdGlvbiBJRC4gV2l0aCBzaW5nbGUgY2hhbm5lbCBj
+YXBhYmxlIHRvIHRyYW5zZmVyIGRhdGEgYmV0d2Vlbg0KPiA+IGxvY2FsIG1lbW9yeSBhbmQgZGlm
+ZmVyZW50IFJhcGlkSU8gZGV2aWNlcyBJIGhhdmUgdG8gcGFzcyBkZXZpY2Ugc3BlY2lmaWMNCj4g
+PiBpbmZvcm1hdGlvbiBvbiBwZXIgdHJhbnNmZXIgYmFzaXMgKGRlc3RJRCArIDY2LWJpdCBhZGRy
+ZXNzICsgdHlwZSBvZiB3cml0ZSBvcHMsIGV0Yy4pLg0KPiA+DQo+ID4gRXZlbiBoYXZpbmcgOCBj
+aGFubmVscyAoZWFjaCBzZXQgZm9yIHNwZWNpZmljIHRhcmdldCkgd2lsbCBub3QgaGVscCBtZSB3
+aXRoDQo+ID4gZnVsbCBzdXBwb3J0IG9mIFJhcGlkSU8gbmV0d29yayB3aGVyZSBJIGhhdmUgOC0g
+b3IgMTYtYml0IGRlc3RJRCAoMjU2IG9yIDY0Sw0KPiA+IGRldmljZXMgcmVzcGVjdGl2ZWx5KS4N
+Cj4gPg0KPiA+IFJhcGlkSU8gY29udHJvbGxlciBkZXZpY2UgKGFuZCBpdHMgRE1BIGNvbXBvbmVu
+dCkgbWF5IHByb3ZpZGUgc2VydmljZXMgdG8NCj4gPiBtdWx0aXBsZSBkZXZpY2UgZHJpdmVycyB3
+aGljaCBzZXJ2aWNlIGluZGl2aWR1YWwgZGV2aWNlcyBvbiBSYXBpZElPIG5ldHdvcmsNCj4gPiAo
+c2ltaWxhciB0byBQQ0llIGhhdmluZyBtdWx0aXBsZSBwZXJpcGhlcmFscywgYnV0IG5vdCB1c2lu
+ZyBtZW1vcnkgbWFwcGVkDQo+ID4gbW9kZWwgLSBkZXN0SUQgZGVmaW5lcyByb3V0ZSB0byBhIGRl
+dmljZSkuDQo+ID4NCj4gPiBHZW5lcmljIFJhcGlkSU8gY29udHJvbGxlciBtYXkgaGF2ZSBvbmx5
+IG9uZSBETUEgY2hhbm5lbCB3aGljaCBzZXJ2aWNlcyBhbGwNCj4gPiB0YXJnZXQgZGV2aWNlcyBm
+b3JtaW5nIHRoZSBuZXR3b3JrLiBXZSBtYXkgaGF2ZSBtdWx0aXBsZSBjb25jdXJyZW50IGRhdGEN
+Cj4gPiB0cmFuc2ZlciByZXF1ZXN0cyBmb3IgZGlmZmVyZW50IGRldmljZXMuDQo+ID4NCj4gPiBQ
+YXJhbGxlbCBkaXNjdXNzaW9uIHdpdGggRGFuIHRvdWNoZXMgdGhlIHNhbWUgcG9zdC1jb25maWcg
+YXBwcm9hY2ggYW5kDQo+ID4gYW5vdGhlciBvcHRpb24uIEkgbGlrZSBEYW4ncyBpZGVhIG9mIGhh
+dmluZyBSSU8tc3BlY2lmaWMgdmVyc2lvbiBvZiBwcmVwX3NnKCkuDQo+ID4gQXQgdGhlIHNhbWUg
+dGltZSBteSBjdXJyZW50IGltcGxlbWVudGF0aW9uIG9mIHJpb19kbWFfcHJlcF9zbGF2ZV9zZygp
+IHdpdGgNCj4gPiBhZGRlZCBhcHByb3ByaWF0ZSBsb2NraW5nIG1heSBkbyBqb2IgYXMgd2VsbCBh
+bmQga2VlcHMgRE1BIHBhcnQgd2l0aGluDQo+ID4gZXhpc3RpbmcgQVBJIChETUFfUkFQSURJTyBy
+ZW1vdmVkKS4NCj4gVGhhbmtzIHRoaXMgaGVscHMgdG8gdW5kZXJzdGFuZCB5b3VyIG1vZGVsLg0K
+PiANCj4gUGVyIGFib3ZlIHlvdSBuZWVkIGRlc3RJRCwgNjZiaXQgYWRkcmVzcyBhbmQgdHlwZSBv
+ZiB3cml0ZSB0byBiZSBwYXNzZWQNCj4gZm9yIGVhY2ggdHJhbnNmZXIuIExvb2tpbmcgYXQgeW91
+ciByaW9fZG1hX2RhdGEsIGkgY2FudCBzZWUgdGhlIGRlc3RJRC4NCj4gDQpkZXN0SUQgaXMgZXh0
+cmFjdGVkIGJ5IHJpb19kbWFfcHJlcF9zbGF2ZV9zZygpIGZyb20gdGhlIHJpb19kZXYgcGFyYW1l
+dGVyDQphbmQgcGFzc2VkIGRvd24gcHJlcF9zbGF2ZV9zZygpIGFzIHBhcnQgb2YgcmlvX2RtYV9l
+eHQgc3RydWN0dXJlDQooYXMgZGNoYW4tPnByaXZhdGUpLiANCg0KPiBOZXZlcnRoZWxlc3Mgd2Ug
+aGF2ZSBmZXcgd2F5cyB0byBzb2x2ZSB0aGlzLCBwYXNzIHRoaXMgdXNpbmcNCj4gZG1hX3NsYXZl
+X2NvbmZpZyBfZXZlcnktdGltZV8gYmVmb3JlIGRvaW5nIGEgcHJlcF9zbGF2ZV9zZy4gT3IgYXMg
+RGFuDQo+IHBvaW50ZWQgb3V0IGNyZWF0ZSBSSU8gc3BlY2lmaWMgdmVyc2lvbi4gUHJpbmNpcGFs
+bHkgSSBhbSBub3QgZm9yDQo+IGFkZGluZw0KPiBhIHN1YnN5c3RlbSBzcGVjaWZpYyBzdHVmZiwg
+ZXZlbiBtb3JlIHdoZW4gd2UgYXJlIHRhbGtpbmcgYWJvdXQNCj4gY29udmVyZ2luZyBhbmQgY3V0
+dGluZyBkb3duIG9uIGRtYWVuZ2luZSBBUEkgOikNCj4gDQpBZ3JlZS4gVGhpcyBpcyB3aHkgSSBh
+bSB0cnlpbmcgdG8gZmluZCBteSB3YXkgd2l0aGluIGJvdW5kYXJpZXMgb2YgRE1BX1NMQVZFIEFQ
+SSBmaXJzdC4NCg0KPiBBbm90aGVyIGFsdGVybmF0ZSBhcHByb2FjaCBjb3VsZCBiZSB0byBhZGQg
+b25lIG1vcmUgYXJndW1lbnQgdG8NCj4gcHJlcF9zbGF2ZV9zZyBBUEkgd2hpY2ggYWxsb3dzIHVz
+IHRvIHBhc3MgYWRkaXRpb25hbCBydW50aW1lIHNwZWNpZmljDQo+IHBhcmFtZXRlcnMuIFRoaXMg
+Y2FuIGJlIE5VTEwgYW5kIHVudXNlZCBmb3IgZXhpc3RpbmcgZHJpdmVycyBhbmQgdXNlZA0KPiBp
+bg0KPiBSSU8gYW5kIGFueSBmdXR1cmUgc3Vic3lzdGVtcyB3aGljaCB3YW50IHRvIHVzZSBkbWFl
+bmdpbmUuDQo+IFRob3VnaHRzLi4uPw0KPiANClRoaXMgaXMgZXhhY3RseSB3aGF0IEkgbmVlZCBh
+bmQgaXQgbWF5IGJlIHVzZWZ1bCBmb3IgZnV0dXJlIHN5c3RlbXMuDQpUaGlzIG1ha2VzIERNQV9T
+TEFWRSBwcmVwYXJlZCBmb3IgdmFyaWF0aW9ucyBpbiBkZXZpY2UgYWRkcmVzc2luZy4NCg0KUGx1
+cywgdGhpcyB3aWxsIG1ha2UgcG9ydGluZyBSSU8gRE1BIHRvIHByZXZpb3VzIGtlcm5lbCB2ZXJz
+aW9ucw0KcmVsYXRpdmVseSBlYXN5IGZvciB0aG9zZSB3aG8gcHJlZmVycy9yZXF1aXJlcyB0aGF0
+Lg0KDQpCYXNlZCBvbiB0aGUgZmFjdCB0aGF0IHlvdSBzdGFydGVkIHRyYW5zaXRpb24gdG8gdGhl
+IG5ldyBETUEgdHJhbnNmZXINCmRpcmVjdGlvbiBmbGFncywgaXQgbWF5IGJlIGEgZ29vZCB0aW1l
+IHRvIGFkZCB0aGF0IGV4dHJhIGFyZ3VtZW50DQp0byBwcmVwX3NsYXZlX3NnKCkuDQoNCkFsZXgu
+DQoNCg==
