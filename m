@@ -1,24 +1,28 @@
-Return-Path: <hjk@hansjkoch.de>
-Received: from www.hansjkoch.de (www.hansjkoch.de [178.63.77.200])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4A483B6F98
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Oct 2011 05:50:54 +1100 (EST)
-Date: Mon, 17 Oct 2011 20:50:20 +0200
-From: "Hans J. Koch" <hjk@hansjkoch.de>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] uio: Support 36-bit physical addresses on 32-bit systems
-Message-ID: <20111017185020.GF13919@local>
-References: <1318521058-15662-1-git-send-email-galak@kernel.crashing.org>
- <20111014183144.GD28556@local>
- <4D73F261-3795-4F71-9921-568C1B9F06E0@kernel.crashing.org>
- <20111017171859.GB13919@local> <20111017180350.GC13919@local>
- <20111017182345.GA14416@suse.de>
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE947B7090
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 06:40:08 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111017182345.GA14416@suse.de>
-Cc: linuxppc-dev@ozlabs.org, "Hans J. Koch" <hjk@hansjkoch.de>,
- Kai Jiang <Kai.Jiang@freescale.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Subject: RE: [RFC PATCH 1/2] RapidIO: Add DMA Engine support for RIO data
+ transfers
+Date: Mon, 17 Oct 2011 12:39:45 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202322024@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1318870884.23438.174.camel@vkoul-udesk3>
+References: <1317418715-9666-1-git-send-email-alexandre.bounine@idt.com>
+ <1317492077.1573.1839.camel@vkoul-udesk3>
+ <0CE8B6BE3C4AD74AB97D9D29BD24E55202291E40@CORPEXCH1.na.ads.idt.com>
+ <1317965252.1573.2238.camel@vkoul-udesk3>
+ <0CE8B6BE3C4AD74AB97D9D29BD24E552022D6C9A@CORPEXCH1.na.ads.idt.com>
+ <1318700142.23438.45.camel@vkoul-udesk3>
+ <CAJe_ZhdjMTsqSTDwV_zaAQKmCbjOtRVc951wxqKScaCR-DBG9Q@mail.gmail.com>
+ <1318870884.23438.174.camel@vkoul-udesk3>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Vinod Koul <vinod.koul@intel.com>, Jassi Brar <jaswinder.singh@linaro.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ Dan <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,162 +32,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 17, 2011 at 11:23:45AM -0700, Greg KH wrote:
-> On Mon, Oct 17, 2011 at 08:03:51PM +0200, Hans J. Koch wrote:
-> > On Mon, Oct 17, 2011 at 07:18:59PM +0200, Hans J. Koch wrote:
-> > > On Mon, Oct 17, 2011 at 11:00:55AM -0500, Kumar Gala wrote:
-> > > > 
-> > > > On Oct 14, 2011, at 1:31 PM, Hans J. Koch wrote:
-> > > > 
-> > > > > On Thu, Oct 13, 2011 at 10:50:58AM -0500, Kumar Gala wrote:
-> > > > >> From: Kai Jiang <Kai.Jiang@freescale.com>
-> > > > >> 
-> > > > >> To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
-> > > > >> extend the width of 'addr' in struct uio_mem.  Numerous platforms like
-> > > > >> embedded PPC, ARM, and X86 have support for systems with larger physical
-> > > > >> address than logical.
-> > > > >> 
-> > > > >> Since 'addr' may contain a physical, logical, or virtual address the
-> > > > >> easiest solution is to just change the type to 'phys_addr_t' which
-> > > > >> should always be greater than or equal to the sizeof(void *) such that
-> > > > >> it can properly hold any of the address types.
-> > > > >> 
-> > > > >> For physical address we can support up to a 44-bit physical address on a
-> > > > >> typical 32-bit system as we utilize remap_pfn_range() for the mapping of
-> > > > >> the memory region and pfn's are represnted by shifting the address by
-> > > > >> the page size (typically 4k).
-> > > > >> 
-> > > > >> Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
-> > > > >> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> > > > >> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> > > > > 
-> > > > > Signed-off-by: "Hans J. Koch" <hjk@hansjkoch.de>
-> > > > > 
-> > > > > That looks good to me. There's an unnecessary cast (see below), but I fixed that
-> > > > > on the way.
-> > > > > 
-> > > > > Greg, please pull this from branch uio-for-gregkh from
-> > > > > 
-> > > > > git://hansjkoch.de/git/linux-hjk
-> > > > > 
-> > > > > Thanks,
-> > > > > Hans
-> > > > 
-> > > > I think removing that cast is wrong:
-> > > > 
-> > > > drivers/uio/uio.c: In function 'uio_vma_fault':
-> > > > drivers/uio/uio.c:637:26: warning: cast to pointer from integer of different size
-> > > 
-> > > Hmm, on what platform did you see this? I tested on 32bit-x86 and didn't get
-> > > any warnings.
-> > 
-> > OK, you're right. I turned on CONFIG_HIGHMEM64G and got that warning. Damned x86...
-> > 
-> > Greg, can you fix it, or should I send the patch again?
-> 
-> Please send it again.
-
->From 30767223785a2ea412bd31a00a4534051af1f5dd Mon Sep 17 00:00:00 2001
-From: Kai Jiang <Kai.Jiang@freescale.com>
-Date: Fri, 14 Oct 2011 20:04:43 +0200
-Subject: [PATCH] uio: Support physical addresses >32 bits on 32-bit systems
-
-From: Kai Jiang <Kai.Jiang@freescale.com>
-
-To support >32-bit physical addresses for UIO_MEM_PHYS type we need to
-extend the width of 'addr' in struct uio_mem.  Numerous platforms like
-embedded PPC, ARM, and X86 have support for systems with larger physical
-address than logical.
-
-Since 'addr' may contain a physical, logical, or virtual address the
-easiest solution is to just change the type to 'phys_addr_t' which
-should always be greater than or equal to the sizeof(void *) such that
-it can properly hold any of the address types.
-
-For physical address we can support up to a 44-bit physical address on a
-typical 32-bit system as we utilize remap_pfn_range() for the mapping of
-the memory region and pfn's are represnted by shifting the address by
-the page size (typically 4k).
-
-Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Hans J. Koch <hjk@hansjkoch.de>
----
- Documentation/DocBook/uio-howto.tmpl |    2 +-
- drivers/uio/uio.c                    |    7 +++----
- include/linux/uio_driver.h           |    7 +++++--
- 3 files changed, 9 insertions(+), 7 deletions(-)
-
-diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
-index 7c4b514d..54883de 100644
---- a/Documentation/DocBook/uio-howto.tmpl
-+++ b/Documentation/DocBook/uio-howto.tmpl
-@@ -529,7 +529,7 @@ memory (e.g. allocated with <function>kmalloc()</function>). There's also
- </para></listitem>
- 
- <listitem><para>
--<varname>unsigned long addr</varname>: Required if the mapping is used.
-+<varname>phys_addr_t addr</varname>: Required if the mapping is used.
- Fill in the address of your memory block. This address is the one that
- appears in sysfs.
- </para></listitem>
-diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-index d2efe82..dc27d89 100644
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -69,7 +69,7 @@ static ssize_t map_name_show(struct uio_mem *mem, char *buf)
- 
- static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
- {
--	return sprintf(buf, "0x%lx\n", mem->addr);
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr);
- }
- 
- static ssize_t map_size_show(struct uio_mem *mem, char *buf)
-@@ -79,7 +79,7 @@ static ssize_t map_size_show(struct uio_mem *mem, char *buf)
- 
- static ssize_t map_offset_show(struct uio_mem *mem, char *buf)
- {
--	return sprintf(buf, "0x%lx\n", mem->addr & ~PAGE_MASK);
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)mem->addr & ~PAGE_MASK);
- }
- 
- struct map_sysfs_entry {
-@@ -634,8 +634,7 @@ static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
- 		page = virt_to_page(idev->info->mem[mi].addr + offset);
- 	else
--		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
--							+ offset);
-+		page = vmalloc_to_page((void *)(unsigned long)idev->info->mem[mi].addr + offset);
- 	get_page(page);
- 	vmf->page = page;
- 	return 0;
-diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-index 665517c..fd99ff9 100644
---- a/include/linux/uio_driver.h
-+++ b/include/linux/uio_driver.h
-@@ -23,7 +23,10 @@ struct uio_map;
- /**
-  * struct uio_mem - description of a UIO memory region
-  * @name:		name of the memory region for identification
-- * @addr:		address of the device's memory
-+ * @addr:		address of the device's memory (phys_addr is used since
-+ * 			addr can be logical, virtual, or physical & phys_addr_t
-+ * 			should always be large enough to handle any of the
-+ * 			address types)
-  * @size:		size of IO
-  * @memtype:		type of memory addr points to
-  * @internal_addr:	ioremap-ped version of addr, for driver internal use
-@@ -31,7 +34,7 @@ struct uio_map;
-  */
- struct uio_mem {
- 	const char		*name;
--	unsigned long		addr;
-+	phys_addr_t		addr;
- 	unsigned long		size;
- 	int			memtype;
- 	void __iomem		*internal_addr;
--- 
-1.7.6.3
+T24gTW9uLCBPY3QgMTcsIDIwMTEgYXQgMTowMSBQTSwgVmlub2QgS291bCA8dmlub2Qua291bEBp
+bnRlbC5jb20+IHdyb3RlOg0KPiANCj4gT24gTW9uLCAyMDExLTEwLTE3IGF0IDIxOjIyICswNTMw
+LCBKYXNzaSBCcmFyIHdyb3RlOg0KPiA+IE9uIDE1IE9jdG9iZXIgMjAxMSAyMzowNSwgVmlub2Qg
+S291bCA8dmlub2Qua291bEBpbnRlbC5jb20+IHdyb3RlOg0KPiA+DQo+ID4gPiBBbm90aGVyIGFs
+dGVybmF0ZSBhcHByb2FjaCBjb3VsZCBiZSB0byBhZGQgb25lIG1vcmUgYXJndW1lbnQgdG8NCj4g
+PiA+IHByZXBfc2xhdmVfc2cgQVBJIHdoaWNoIGFsbG93cyB1cyB0byBwYXNzIGFkZGl0aW9uYWwg
+cnVudGltZQ0KPiBzcGVjaWZpYw0KPiA+ID4gcGFyYW1ldGVycy4gVGhpcyBjYW4gYmUgTlVMTCBh
+bmQgdW51c2VkIGZvciBleGlzdGluZyBkcml2ZXJzIGFuZA0KPiB1c2VkIGluDQo+ID4gPiBSSU8g
+YW5kIGFueSBmdXR1cmUgc3Vic3lzdGVtcyB3aGljaCB3YW50IHRvIHVzZSBkbWFlbmdpbmUuDQo+
+ID4gPiBUaG91Z2h0cy4uLj8NCj4gPiA+DQo+ID4gVGhhdCBkb2Vzbid0IHNvdW5kIG11Y2ggZGlm
+ZmVyZW50IHRoYW4gcGFzc2luZyB0aGUgZGF0YSB2aWENCj4gPiBkbWFfY2hhbi5wcml2YXRlIGR1
+cmluZyBwcmVwX3NsYXZlX3NnLiBPbmx5IG5vdyB3ZSBhZGQgdG8NCj4gPiB0aGUgbnVtYmVyIG9m
+IGFyZ3VtZW50cy4NCj4gWWVzIGFncmVlZCwgYnV0IHdlIGFscmVhZHkgZGVjaWRlZCBhbmQgbWFy
+a2VkIGl0IGFzIGRlcHJlY2lhdGVkLg0KPiANCj4gPiBBbmQgdGhlbiBlaXRoZXIgdGhpcyBhcmd1
+bWVudCB3b3VsZCBiZSBSYXBpZElPIHNwZWNpZmljICh1bmZhaXINCj4gPiB0byBvdGhlciB1c2Vy
+cykgb3IgZ2VuZXJpYy4gSW4gbGF0dGVyIGNhc2Ugd2hhdCB3b3VsZCBpdCBsb29rIGxpa2UgPw0K
+PiBNeSBpbml0aWFsIHRob3VnaHRzIHdlcmUgdG8gYWRkIGFuIGFyZ3VtZW50IHdoaWNoIG9ubHkg
+dGhlIHNwZWNpZmljDQo+IGRtYWMNCj4ga25vd3MgaG93dG8gZGVjb2RlIGFuZCBpcyBmaWxsZWQg
+YnkgaXRzIGNsaWVudC4gQXMgaSBzYWlkIGZvciBleGlzdGluZw0KPiB1c2VycyBhbmQgcGVvcGxl
+IHdobyBkb24ndCByZXF1aXJlIGR5bmFtaWMgaW5mb3JtYXRpb24gd291bGRuJ3QgYm90aGVyLg0K
+PiBUaGUgcHJvcw0KPiAgLSBhbGxvd3MgdXMgdG8gc3VwcG9ydCBSSU8ga2luZCBvZiBzdWJzeXN0
+ZW1zIHdoZXJlIG9uZSBuZWVkcyB0byBwYXNzDQo+IHN1YnN5c3RlbSBzcGVjaWZpYyBpbmZvcm1h
+dGlvbiBmb3IgcHJvZ3JhbWluZyB0aGUgZG1hYw0KPiAgLSBkb2Vzbid0IHJlcXVpcmUgdXMgdG8g
+YWRkIHN1YnN5c3RlbSBzcGVjaWZpYyBzdHVmZiBpbiBkbWFlbmdpbmUsDQo+IHRvZGF5IGl0cyBS
+SU8gdG9tb3Jyb3cgc29tZSBvdGhlciBmb2xrcyBtYXkgd2FudCB0byBhZGQuIFdlIHdhbnQgdG8N
+Cj4gbWFpbnRhaW4gZG1hZW5naW5lIGFzIGEgZ2VuZXJpYyBmcmFtZXdvcmssIHdoaWxlIGFsc28g
+dHJ5aW5nIHRvIHN1cHBvcnQNCj4gbXVsdGlwbGUgYXVkaWVuY2VzLg0KPiBDb25zOg0KPiAgLSB0
+aGVyZSBpcyBubyBndWFyYW50ZWU7ICBkbWFjIGV4cGVjdHMgZm9vIGFuZCBjbGllbnRzIHBhc3Mg
+YmFyDQo+IA0KVGhpcyB3YXMgbXkgY29uY2VybiB0aGF0IEkgbWVudGlvbmVkIGluIHRoZSBiZWdp
+bm5pbmcgb2YgdGhpcyB0aHJlYWQ6DQpob3cgdG8gZGlmZmVyZW50aWF0ZSBiZXR3ZWVuIGRpZmZl
+cmVudCB0eXBlcyBvZiBzbGF2ZSBjaGFubmVscy4gQXQgdGhhdA0KdGltZSB3ZSBkZWNpZGVkIHRo
+YXQgY2hhbm5lbCBmaWx0ZXJpbmcgcm91dGluZXMgc2hvdWxkIGJlIHN1ZmZpY2llbnQNCnRvIHBy
+b3Blcmx5IGlkZW50aWZ5IGEgc3VpdGFibGUgY2hhbm5lbC4gQW5kIHRoaXMgaXMgdHJ1ZSAtIGlm
+IFJJTyBmaWx0ZXINCmRldGVjdHMgcmVnaXN0ZXJlZCBSYXBpZElPIGNhcGFibGUgRE1BIGNoYW5u
+ZWwgaXQgc2hvdWxkIGJlIHNhZmUgdG8gcGFzcw0KYSBwYXJhbWV0ZXIgc3BlY2lmaWMgdG8gUklP
+IGNsaWVudCBpbXBsZW1lbnRhdGlvbi4gICANCg0KSWYgd2Ugd2FudCB0byBwcm90ZWN0IHB1cmUg
+c2xhdmUgY2hhbm5lbHMgZnJvbSBtaXhpbmcgd2l0aCBzb21lIHNwZWNpZmljDQppbXBsZW1lbnRh
+dGlvbnMgd2UgbWF5IGNvbnNpZGVyIGFkZGluZyBuZXcgdmFsdWVzIGZvciBkbWFfdHJhbnNhY3Rp
+b25fdHlwZQ0KYXMgaXQgZG9uZSBmb3IgUmFwaWRJTyAoRE1BX1JBUElESU8sIERNQV9GT08sIERN
+QV9CQVIgZXRjLikuDQpUaGlzIHdheSB3ZSBtYXkga2VlcCBzaW5nbGUgQVBJIHdpdGggZXh0cmEg
+YXJndW1lbnQgYW5kIGRpZmZlcmVudGlhdGUNCmJldHdlZW4gImZsYXZvcnMiIG9mIERNQV9TTEFW
+RSB0byBtYWtlIGRlY2lzaW9ucyBhYm91dCB1c2Ugb2YgdGhhdA0KZXh0cmEgcGFyYW1ldGVyLiBF
+LmcuIGNoYW5uZWxzIHJlZ2lzdGVyZWQgYXMgRE1BX1NMQVZFIHdpbGwgaWdub3JlDQp0aGUgbmV3
+IHBhcmFtZXRlciAocHVyZSBzbGF2ZSBtb2RlKSwgRE1BX1JBUElESU8gYW5kIERNQV9GT08gdXNl
+IGl0DQphY2NvcmRpbmcgdG8gdGhlICJmbGF2b3IiLiAgDQoNClllcywgSSBhbSBwbGFubmluZyB0
+byBkcm9wIHRoYXQgZmxhZyBmcm9tIHRoZSBjdXJyZW50IFJJTyBpbXBsZW1lbnRhdGlvbiBidXQN
+Ckl0IG1heSBoYXZlIGEgbmV3IG1lYW5pbmcgaWYgcHJlcF9zbGF2ZV9zZygpIGdldHMgdGhlIGV4
+dHJhIGFyZ3VtZW50LiAgDQoNCj4gSSBhbSBva2F5IGlmIHdlIGhhdmUgYWx0ZXJuYXRlIHdheSB0
+byBzdXBwb3J0IHRoaXMgd2l0aCBhYm92ZSBnb2FsIDopDQo+IA0KPiAtLQ0KPiB+Vmlub2QNCg0K
