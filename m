@@ -1,24 +1,23 @@
-Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
- by ozlabs.org (Postfix) with ESMTP id 54CDDB70BC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 23:30:32 +1100 (EST)
-Date: Tue, 18 Oct 2011 07:30:27 -0500
-From: Robin Holt <holt@sgi.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v13 0/6] flexcan: Add support for powerpc flexcan
- (freescale p1010)
-Message-ID: <20111018123027.GD22814@sgi.com>
-References: <1313551944-28603-1-git-send-email-holt@sgi.com>
- <16FBAA47-5133-43A1-80CE-C6D63B79FB5D@kernel.crashing.org>
- <20111018094328.GC22814@sgi.com>
- <D79CB818-C14E-4C8D-9A8D-42B39ADE20B2@kernel.crashing.org>
+Return-Path: <R65777@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 12150B71BE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2011 02:03:37 +1100 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: "smitha.vanga@wipro.com" <smitha.vanga@wipro.com>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: IRQ2 and IRQ 3
+Date: Tue, 18 Oct 2011 15:03:27 +0000
+Message-ID: <B8D6CA50DACE9E4AAADE9A4D56FBAAE623CED7@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <B8D6CA50DACE9E4AAADE9A4D56FBAAE623BEB3@039-SN1MPN1-005.039d.mgd.msft.net>
+ <40631E9A2581F14BA60888C87A76A1FE016391@HYD-MKD-MBX4.wipro.com>
+In-Reply-To: <40631E9A2581F14BA60888C87A76A1FE016391@HYD-MKD-MBX4.wipro.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D79CB818-C14E-4C8D-9A8D-42B39ADE20B2@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
- socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
- PPC list <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,47 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 18, 2011 at 06:43:13AM -0500, Kumar Gala wrote:
-> 
-> >> Robin,
-> >> 
-> >> Do you remember why we went with just 'fsl,p1010-flexcan' as the device tree compatible?  Do we feel the flex can on P1010 isn't the same as on MPC5xxx? or the ARM SoCs?
-> > 
-> > The decision was due to the fact there is no true "generic" fsl.flexcan
-> > chip free of any SOC implementation and therefore not something which
-> > could be separately defined.  That decision was made by Grant Likely.
-> > I will inline that email below.
-> > 
-> > Robin
-> 
-> 
-> Thanks, I'll look into this internally at FSL.  I think its confusing as hell to have "fsl,p1010-flexcan" in an ARM .dts and don't think any reasonable ARM customer of FSL would know to put a PPC SOC name in their .dts.  I'll ask the HW guys what's going on so we can come up with a bit more generic name so we don't have to constantly change this.  Even if its just:
+Hi,=20
 
-Grants argument was that there should then be a fsl,zeba-flexcan which
-would define each arm based soc.  The match string could be there and
-the devicetree binding would match on each equivalent.
+For detail please look at ePAPR specification.
 
-Robin
+Say i2c interrupt number is 21 then you can try
+"interrupts =3D <21 8>;" in device tree.
 
-> 
-> fsl,ppc-flexcan & fsl,arm-flexcan.
-> 
-> > On Mon, Aug 15, 2011 at 09:13:50AM -0600, Grant Likely wrote:
-> >> On Mon, Aug 15, 2011 at 9:03 AM, Robin Holt <holt@sgi.com> wrote:
-> >>> Grant,
-> >>> 
-> >>> Earlier, you had asked for a more specific name for the compatible
-> >>> property of the Freescale flexcan device.  I still have not gotten a
-> >>> more specific answer.  Hopefully Marc can give you more details about
-> >>> the flexcan implementations.
-> >> 
-> >> If there is no ip core version, then just stick with the
-> >> fsl,<soc>-flexcan name and drop "fsl,flexcan".  Marketing may say
-> >> flexcan is flexcan, but hardware engineers like to change things.
-> >> Trying to be too generic in compatible values will just lead to
-> >> problems in the future.
-> > 
-> > Thanks,
-> > Robin
-> 
-> - k
+Thanks
+-Bharat
+
+> -----Original Message-----
+> From: smitha.vanga@wipro.com [mailto:smitha.vanga@wipro.com]
+> Sent: Tuesday, October 18, 2011 2:35 PM
+> To: Bhushan Bharat-R65777; Wood Scott-B07421
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: RE: IRQ2 and IRQ 3
+>=20
+> Yes , there is a vector numbe defined in the specifications .
+>=20
+> IRQ2 - 20
+> IRQ3 - 21
+>=20
+> But I don't know how to specify them in the .dts file .
+>=20
+> Regards,
+> Smitha
+> Please do not print this email unless it is absolutely necessary.
+>=20
+> The information contained in this electronic message and any attachments
+> to this message are intended for the exclusive use of the addressee(s)
+> and may contain proprietary, confidential or privileged information. If
+> you are not the intended recipient, you should not disseminate,
+> distribute or copy this e-mail. Please notify the sender immediately and
+> destroy all copies of this message and any attachments.
+>=20
+> WARNING: Computer viruses can be transmitted via email. The recipient
+> should check this email and any attachments for the presence of viruses.
+> The company accepts no liability for any damage caused by any virus
+> transmitted by this email.
+>=20
+> www.wipro.com
