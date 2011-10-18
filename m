@@ -1,17 +1,24 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
- by ozlabs.org (Postfix) with ESMTP id 2CD96B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 18:19:44 +1100 (EST)
-Date: Tue, 18 Oct 2011 09:19:39 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: nello martuscielli <ppc.addon@gmail.com>
-Subject: Re: linux-3.0.4, mv643xx_eth troubles on Pegasos2 G4
-Message-ID: <20111018071939.GB16633@iram.es>
-References: <CABMX=WzPuhBywZTJShnM5W1Y2cqMOr=2BuJTKecsyfCp73Ko7g@mail.gmail.com>
+Return-Path: <patrickdepinguin@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+ [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 65F5EB6F91
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 18:57:25 +1100 (EST)
+Received: by vws20 with SMTP id 20so127080vws.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 00:57:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CABMX=WzPuhBywZTJShnM5W1Y2cqMOr=2BuJTKecsyfCp73Ko7g@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, acrux@linuxmail.org
+Sender: patrickdepinguin@gmail.com
+In-Reply-To: <2DD52030B5146141BEB762A11AE97C4CF6E2E7@SPQCEXC05.exfo.com>
+References: <2DD52030B5146141BEB762A11AE97C4CF6E0ED@SPQCEXC05.exfo.com>
+ <CAAXf6LXuid9NJcY9DeJYJR0ns6corATzxN2BN5RpkGE08OVcQw@mail.gmail.com>
+ <2DD52030B5146141BEB762A11AE97C4CF6E2E7@SPQCEXC05.exfo.com>
+Date: Tue, 18 Oct 2011 09:57:21 +0200
+Message-ID: <CAAXf6LWTU_OVBLfn4Tavo6JxE5UfoN8JuCidB4fbr4-RX+XdAw@mail.gmail.com>
+Subject: Re: FW: P4080 device tree problems with fsl dpaa ...
+From: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
+To: Robert Sciuk <robert.sciuk@exfo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,133 +28,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 17, 2011 at 11:40:54PM +0200, nello martuscielli wrote:
-> i'm trying to enable marvel gigabit ethernet support but it doesn't work.
-> Here my dmesg instead my config is attached.
-[snipped]
-> via_rhine: v1.10-LK1.5.0 2010-10-09 Written by Donald Becker
-> mv643xx_eth: MV-643xx 10/100/1000 ethernet driver version 1.4
-> uhci_hcd 0000:00:0c.2: irq 9, io base 0x00001040
-> sysfs: cannot create duplicate filename '/class/mdio_bus/0'
+Hi Robert,
 
-I have 2 Pegasos running 3.0, but in my case mv643xx_eth is non-modular
-and /sys/class/mdio_bus/0 exists and points to
-
-../../devices/platform/mv643xx_eth.0/mdio_bus/0
-
-which is correct as far as I can say. 
-
-Is it a regression from 3.0 or not? Try to make it non modular and see
-what happens. If it is a regression, could you try to bisect it?
-
-I won't be close enough to the machines to do a regression
-hunt myself before a week or 3 (really, maybe next week, 
-I don't yet know, but for sure starting on Nov 8th).
-
+On Mon, Oct 17, 2011 at 8:34 PM, Robert Sciuk <robert.sciuk@exfo.com> wrote=
+:
+>
+>
+>> -----Original Message-----
+>> From: patrickdepinguin@gmail.com [mailto:patrickdepinguin@gmail.com] On
+>> Behalf Of Thomas De Schampheleire
+>> Sent: Monday, October 17, 2011 5:01 AM
+>> To: Robert Sciuk
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Subject: Re: FW: P4080 device tree problems with fsl dpaa ...
+>>
+>> Hi Robert,
+>
+> [my stuff snipped]
+>>
+>> > I have no idea what an OH binding is, what it might look like, and
+>> what it entails, but I think that it might be a significant factor in
+>> our not seeing a working interface. =A0Has anyone any experience with
+>> dpaa device trees, and configuration? =A0Any pointers? =A0Any docs? Shot=
+s
+>> in the dark?
+>>
+>> We are using a device tree on p4080 with a dpaa configuration, yes.
+>> I also don't know about the OH bindings, but I have a vague memory of
+>> us having that message too, and it not being a real problem.
+>>
+>
+> Other indicators concur with your assessment, and suggest that I back tho=
+se nodes out as well.
+>
+>
+>> What I do know is that the device tree is very easy to get wrong, and
+>> that it should match your hardware precisely. I'm not using the same
+>> configuration as you are (there are no MDIO devices between our phy
+>> and dTSEC) so the device tree looks a little different.
+>
+> Would it be possible to have a look at the relevant portions of your dev =
+tree?
+>
 >
 
-> usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/dir.c:455
-> Modules linked in: snd_via82xx(+) snd_ac97_codec mv643xx_eth(+)
-> via_rhine(+) i2c_viapro(+) ac97_bus ohci_hcd(+) snd_mpu401_uart
-> uhci_hcd(+) snd_rawmidi
-> NIP: c00fa718 LR: c00fa718 CTR: 00000000
-> REGS: ef271c00 TRAP: 0700   Not tainted  (3.0.4)
-> MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 22004428  XER: 00000000
-> TASK = ef294c60[94] 'modprobe' THREAD: ef270000
-> GPR00: c00fa718 ef271cb0 ef294c60 00000042 c0008904 00000001 00000000 00000000
-> GPR08: c06b6bd8 00000000 22004482 ef271c70 22004422 10024440 1000ba68 00000000
-> GPR16: 1000ba44 bf83e324 00000000 1000ba58 00000000 104410ec 00000a30 00000000
-> GPR24: c0059210 00000124 00000000 00000001 ef271cd8 ef2ba480 ffffffef ef344000
-> NIP [c00fa718] sysfs_add_one+0x88/0xa0
-> LR [c00fa718] sysfs_add_one+0x88/0xa0
-> Call Trace:
-> [ef271cb0] [c00fa718] sysfs_add_one+0x88/0xa0 (unreliable)
-> [ef271cd0] [c00faff4] sysfs_do_create_link+0x134/0x1e0
-> [ef271d00] [c0392cf8] device_add+0x204/0x544
-> [ef271d40] [c03d67e4] mdiobus_register+0xa4/0x198
-> [ef271d60] [f26785a4] mv643xx_eth_shared_probe+0x144/0x428 [mv643xx_eth]
-> [ef271d80] [c039685c] platform_drv_probe+0x20/0x30
-> [ef271d90] [c0395578] driver_probe_device+0xe4/0x198
-> [ef271db0] [c039569c] __driver_attach+0x70/0x98
-> [ef271dd0] [c0394614] bus_for_each_dev+0x60/0x90
-> [ef271e00] [c03951d0] driver_attach+0x24/0x34
-> [ef271e10] [c0394d9c] bus_add_driver+0xbc/0x23c
-> [ef271e30] [c0395ac8] driver_register+0xb8/0x144
-> [ef271e50] [c0396bb4] platform_driver_register+0x68/0x78
-> [ef271e60] [f2680024] mv643xx_eth_init_module+0x24/0x80 [mv643xx_eth]
-> [ef271e80] [c000402c] do_one_initcall+0xe0/0x1c0
-> [ef271eb0] [c005b438] sys_init_module+0x1600/0x17f4
-> [ef271f40] [c0012df8] ret_from_syscall+0x0/0x38
-> --- Exception: c01 at 0xff62ac0
->    LR = 0x10003f2c
-> Instruction dump:
-> 807c0000 7fe4fb78 4bfff469 3c80c060 3884f131 4bf2051d 809d0010 4bf20515
-> 7c641b78 3c60c060 3863f0fe 484650f9 <0fe00000> 7fe3fb78 4bfa8009 39610020
-> ---[ end trace cebed1f190337b77 ]---
-> usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> usb usb2: Product: UHCI Host Controller
-> usb usb2: Manufacturer: Linux 3.0.4 uhci_hcd
-> usb usb2: SerialNumber: 0000:00:0c.2
-> hub 2-0:1.0: USB hub found
-> mii_bus 0 failed to register
-> mv643xx_eth: probe of mv643xx_eth.0 failed with error -12
-> hub 2-0:1.0: 2 ports detected
-> ohci_hcd 0000:00:05.0: OHCI Host Controller
-> ohci_hcd 0000:00:05.0: new USB bus registered, assigned bus number 3
-> Unable to handle kernel paging request for data at address 0x00000000
-> ohci_hcd 0000:00:05.0: irq 9, io mem 0x80000000
-> Faulting instruction address: 0xf267b3a8
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> PREEMPT CHRP
-> Modules linked in: snd_via82xx(+) snd_ac97_codec mv643xx_eth(+)
-> via_rhine(+) i2c_viapro(+) ac97_bus ohci_hcd(+) snd_mpu401_uart
-> uhci_hcd(+) snd_rawmidi
-> NIP: f267b3a8 LR: f267b3a0 CTR: c0394ff4
-> REGS: ef271c90 TRAP: 0300   Tainted: G        W    (3.0.4)
-> MSR: 00009032 <EE,ME,IR,DR>  CR: 84004448  XER: 00000000
-> DAR: 00000000, DSISR: 40000000
-> TASK = ef294c60[94] 'modprobe' THREAD: ef270000
-> GPR00: 00000000 ef271d40 ef294c60 00000000 eec003c0 eec00005 ef24bb3c 00000000
-> GPR08: ef24bb28 ef8a7600 ffffffff 00000001 44004442 10024440 1000ba68 00000000
-> GPR16: 1000ba44 bf83e324 00000000 1000ba58 00000000 104410ec 00000a30 00000000
-> GPR24: c0059210 c06b68c0 00000020 c06b68b8 fffffff4 eec00000 c06b6740 eec003c0
-> NIP [f267b3a8] mv643xx_eth_probe+0x98/0x604 [mv643xx_eth]
-> LR [f267b3a0] mv643xx_eth_probe+0x90/0x604 [mv643xx_eth]
-> Call Trace:
-> [ef271d40] [f267b394] mv643xx_eth_probe+0x84/0x604 [mv643xx_eth] (unreliable)
-> [ef271d80] [c039685c] platform_drv_probe+0x20/0x30
-> [ef271d90] [c0395578] driver_probe_device+0xe4/0x198
-> [ef271db0] [c039569c] __driver_attach+0x70/0x98
-> [ef271dd0] [c0394614] bus_for_each_dev+0x60/0x90
-> [ef271e00] [c03951d0] driver_attach+0x24/0x34
-> [ef271e10] [c0394d9c] bus_add_driver+0xbc/0x23c
-> [ef271e30] [c0395ac8] driver_register+0xb8/0x144
-> [ef271e50] [c0396bb4] platform_driver_register+0x68/0x78
-> [ef271e60] [f2680034] mv643xx_eth_init_module+0x34/0x80 [mv643xx_eth]
-> [ef271e80] [c000402c] do_one_initcall+0xe0/0x1c0
-> [ef271eb0] [c005b438] sys_init_module+0x1600/0x17f4
-> [ef271f40] [c0012df8] ret_from_syscall+0x0/0x38
-> --- Exception: c01 at 0xff62ac0
->    LR = 0x10003f2c
-> Instruction dump:
-> 7c7d1b79 41820530 3bfd03c0 3b3b0008 7fe4fb78 7f23cb78 48001101 807e0000
-> 38630008 48001505 907d03c0 817e0004
-> 556b502a 396b0400 7d605a14
-> usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
-> usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> usb usb3: Product: OHCI Host Controller
-> usb usb3: Manufacturer: Linux 3.0.4 ohci_hcd
-> usb usb3: SerialNumber: 0000:00:05.0
-> hub 3-0:1.0: USB hub found
-> hub 3-0:1.0: 3 ports detected
-> vt596_smbus 0000:00:0c.4: SMBUS: Error: Host SMBus controller not
-> enabled! - upgrade BIOS or use force=1
-> VIA 82xx Audio 0000:00:0c.5: enabling device (0000 -> 0001)
-> ---[ end trace cebed1f190337b78 ]---
-> via-rhine 0000:00:0d.0: enabling device (0000 -> 0003)
-> via-rhine 0000:00:0d.0: eth0: VIA Rhine II at 0x80001900,
+Sure.
+The following snippets are for two SGMII devices on the second FMAN:
 
-	Regards,
-	Gabriel
+First the ports:
+
+// RX
+                        fman1_rx2: port@8a000 {
+                                compatible =3D
+"fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
+                                reg =3D <0x8a000 0x1000>;
+                                fsl,liodn =3D <0x2d>;
+         // Logical Input/Output Device Number used by PAMU
+                                cell-index =3D <2>;
+         // 1G index
+                        };
+                        fman1_rx3: port@8b000 {
+                                compatible =3D
+"fsl,p4080-fman-port-1g-rx", "fsl,fman-port-1g-rx";
+                                reg =3D <0x8b000 0x1000>;
+                                fsl,liodn =3D <0x2e>;
+         // Logical Input/Output Device Number used by PAMU
+                                cell-index =3D <3>;
+         // 1G index
+                        };
+// TX
+                        fman1_tx2: port@aa000 {
+                                compatible =3D
+"fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
+                                reg =3D <0xaa000 0x1000>;
+                                fsl,qman-channel-id =3D <0x63>;
+         // Direct-HW-Portal 1: SP3
+                                cell-index =3D <2>;
+         // 1G index
+                        };
+                        fman1_tx3: port@ab000 {
+                                compatible =3D
+"fsl,p4080-fman-port-1g-tx", "fsl,fman-port-1g-tx";
+                                reg =3D <0xab000 0x1000>;
+                                fsl,qman-channel-id =3D <0x64>;
+         // Direct-HW-Portal 1: SP4
+                                cell-index =3D <3>;
+         // 1G index
+                        };
+
+Then the TSECs:
+                        enet7: ethernet@e4000 { // dTSEC3
+                                compatible =3D "fsl,p4080-fman-1g-mac",
+"fsl,fman-1g-mac";
+                                reg =3D <0xe4000 0x1000>;
+                                fixed-link =3D <7 1 1000 0 0>;
+         // Use fixed settings because there is no MDIO bus between
+SOC and PHY
+                                local-mac-address =3D [00 BA 0B AB 00 0A];
+                                fsl,port-handles =3D <&fman1_rx2
+&fman1_tx2>;     // RX + TX port
+                                phy-connection-type =3D "sgmii";
+         // 1Gb
+                                cell-index =3D <2>;
+                        };
+                        enet8: ethernet@e6000 { // dTSEC4
+                                compatible =3D "fsl,p4080-fman-1g-mac",
+"fsl,fman-1g-mac";
+                                reg =3D <0xe6000 0x1000>;
+                                fixed-link =3D <8 1 1000 0 0>;
+         // Use fixed settings because there is no MDIO bus between
+SOC and PHY
+                                local-mac-address =3D [00 BA 0B AB 00 0B];
+                                fsl,port-handles =3D <&fman1_rx3
+&fman1_tx3>;     // RX + TX port
+                                phy-connection-type =3D "sgmii";
+         // 1Gb
+                                cell-index =3D <3>;
+                        };
+
+The ethernet devices in the fsl,dpaa node:
+                ethernet@7 {
+                        compatible =3D "fsl,p4080-dpa-ethernet",
+"fsl,dpa-ethernet";
+                        fsl,qman-channel =3D <&qportal0>;
+                        fsl,fman-mac =3D <&enet7>;
+                };
+                ethernet@8 {
+                        compatible =3D "fsl,p4080-dpa-ethernet",
+"fsl,dpa-ethernet";
+                        fsl,qman-channel =3D <&qportal0>;
+                        fsl,fman-mac =3D <&enet8>;
+
+
+>
+>>
+>> Are you using the reference design or is this custom?
+>
+> This is a custom design, and is an ATCA blade.
+>
+>
+>> Did you have a look at the device tree in the linux kernel sources?
+>> (arch/powerpc/boot/dts/p4080.dts). Does this configuration match
+>> yours? In that configuration, there are separate nodes of type
+>> p4080ds-mdio, inside the main mdio node.
+>
+> We actually used the 36 bit tree (we plan to ship the boards with 16G ini=
+tially, and up to 32G eventually). =A0I've also re-worked the tree from the=
+ LTIB (System Builder) in an attempt to get this to work. =A0Our design dif=
+fers significantly from the P4080DS in that there exists no MUX between the=
+ bus and phy ... and there is no PIXIS FPGA to do all the clocking and star=
+tup stuff.
+
+I have to admit that I'm not an export at the DPAA part either. My
+colleague who is is on holiday, unfortunately.
+
+In our case, we needed the 'fixed-link' settings because of the
+absence of an MDIO, and I also initially made the mistake of
+registering the devices on the wrong FMAN.
+For RX, I also had some problems receiving frames correctly. Setting
+the source MAC address correctly fixed that problem.
+But you seem to have problems with TX...
+
+>
+> I've modified u-boot to assign mac addresses based upon our OUI, and the =
+MACs all seem to be configured properly coming out of firmware, the ifconfi=
+g on the Linux side recognizes all of our 6 interfaces ...
+>
+>
+>>
+>> Is your phy configured correctly? Are there any boot messages about
+>> this? Can you check its registers?
+>> The same for the mdio.
+>
+> There is some question about the TBI initialization, and we are tracing t=
+hat as we speak ...
+>
+>>
+>> Some generic pointers:
+>> * If you set CONFIG_PROC_DEVICETREE in the kernel config, you can read
+>> out the device-tree at runtime in /proc/device-tree. This helps in
+>> verifying whether the nodes you programmed actually appear in the
+>> running system.
+>
+> Ack.
+>
+>>
+>> * The /sys/devices directory can also be useful in identifying
+>> potential problems for unfound devices (which does not appear to be
+>> your case).
+>>
+>
+> Ack. =A0Also using /proc/interrupts ...
+>
+>
+>> * Can you step through the code, e.g. with a JTAG debugger? Try
+>> following the transmit path in the dpaa_eth driver. Maybe something
+>> errors out prematurely.
+>>
+>
+> With some headaches ... using codewarrior, and getting assembly level tra=
+cing ...
+
+Also, did you check in the dTSEC/FMAN/BMAN for relevant counter
+registers? Do you find proof that the packets make it as far as the
+dTSEC? (then maybe there is a problem in the link between dTSEC and
+PHY).
+Are there counters in the PHY that can indicate that packets or no
+packets are received?
+
+Which version of the kernel and associated Freescale patches are you using?
+
+How and what type of packets are you sending? Raw MAC frames, IP? Are
+you using custom code, or can you try things like ping?
+If you are using IP, I trust you checked the Linux configuration (like
+assigning a valid IP address to the interface and making sure the
+routing table is correct).
+
+Best regards,
+Thomas
