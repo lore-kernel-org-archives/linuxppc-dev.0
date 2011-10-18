@@ -1,26 +1,22 @@
-Return-Path: <R65777@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
- [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id B1633B70C5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 15:08:41 +1100 (EST)
-Received: from mail88-am1 (localhost.localdomain [127.0.0.1])	by
- mail88-am1-R.bigfish.com (Postfix) with ESMTP id 9CAF74902AA	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 04:08:35 +0000 (UTC)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: "smitha.vanga@wipro.com" <smitha.vanga@wipro.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: I2c-cpm driver not working
-Date: Tue, 18 Oct 2011 04:05:39 +0000
-Message-ID: <B8D6CA50DACE9E4AAADE9A4D56FBAAE623B55D@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <B8D6CA50DACE9E4AAADE9A4D56FBAAE62372F8@039-SN1MPN1-005.039d.mgd.msft.net>
- <40631E9A2581F14BA60888C87A76A1FE015E0E@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <40631E9A2581F14BA60888C87A76A1FE015E0E@HYD-MKD-MBX4.wipro.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0A756B6F80
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 16:44:24 +1100 (EST)
+Subject: Re: [PATCH v13 0/6] flexcan: Add support for powerpc flexcan
+ (freescale p1010)
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1313551944-28603-1-git-send-email-holt@sgi.com>
+Date: Tue, 18 Oct 2011 00:44:07 -0500
+Message-Id: <16FBAA47-5133-43A1-80CE-C6D63B79FB5D@kernel.crashing.org>
+References: <1313551944-28603-1-git-send-email-holt@sgi.com>
+To: Robin Holt <holt@sgi.com>
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+ socketcan-core@lists.berlios.de, PPC list <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,63 +27,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Aug 16, 2011, at 10:32 PM, Robin Holt wrote:
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.or=
-g
-> [mailto:linuxppc-dev-
-> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
-> smitha.vanga@wipro.com
-> Sent: Monday, October 17, 2011 1:48 PM
-> To: Bhushan Bharat-R65777; Wood Scott-B07421
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: RE: I2c-cpm driver not working
+> David,
 >=20
+> The following set of patches have been reviewed by the above parties =
+and
+> all comments have been integrated.  Although the patches stray from =
+the
+> drivers/net/can directory, the diversions are related to changes for
+> the flexcan driver.
 >=20
-> Hi Bhusan,
+> The patch set is based upon your net-next-2.6 tree's commit 6c37e46.
 >=20
-> Below is i2c node in the device tree.
+> Could you please queue these up for the next appropriate push to =
+Linus'
+> tree?
 >=20
-> i2c@11860 {
-> 				compatible =3D "fsl-i2c-cpm";
-> 				device_type =3D "i2c";
-> 	  			reg =3D <11860 20 8afc 2>;
-> 				interrupts =3D <1 8>;
-> 				interrupt-parent =3D <10c00>;
-> 				#address-cells =3D <1>;
-> 				#size-cells =3D <0>;
-> 				cell-index =3D <0>;
-> 				fsl,cpm-command =3D <29600000>;
->=20
->=20
-> 			};
->=20
+> Thanks,
+> Robin Holt
 
-This looks ok to me, I hope you provides proper reg, interrupt number, pola=
-rity and sense (as per you mpc9247 specification)?
+Robin,
 
-Thanks
--Bharat
+Do you remember why we went with just 'fsl,p1010-flexcan' as the device =
+tree compatible?  Do we feel the flex can on P1010 isn't the same as on =
+MPC5xxx? or the ARM SoCs?
 
->=20
-> Regards,
-> Smitha
-> Please do not print this email unless it is absolutely necessary.
->=20
-> The information contained in this electronic message and any attachments
-> to this message are intended for the exclusive use of the addressee(s)
-> and may contain proprietary, confidential or privileged information. If
-> you are not the intended recipient, you should not disseminate,
-> distribute or copy this e-mail. Please notify the sender immediately and
-> destroy all copies of this message and any attachments.
->=20
-> WARNING: Computer viruses can be transmitted via email. The recipient
-> should check this email and any attachments for the presence of viruses.
-> The company accepts no liability for any damage caused by any virus
-> transmitted by this email.
->=20
-> www.wipro.com
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+- k=
