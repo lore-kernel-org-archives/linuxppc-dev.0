@@ -3,14 +3,13 @@ Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
  [203.91.198.74])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 66FBEB6F82
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 19:06:08 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4E2B5B6F82
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 19:06:36 +1100 (EST)
 From: <smitha.vanga@wipro.com>
-To: <B07421@freescale.com>
-Subject: IRQ2 and IRQ 3
-Date: Tue, 18 Oct 2011 08:05:48 +0000
-Message-ID: <40631E9A2581F14BA60888C87A76A1FE016373@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <B8D6CA50DACE9E4AAADE9A4D56FBAAE623B55D@039-SN1MPN1-005.039d.mgd.msft.net>
+To: <B07421@freescale.com>, <R65777@freescale.com>
+Subject: RE: IRQ2 and IRQ 3
+Date: Tue, 18 Oct 2011 08:06:25 +0000
+Message-ID: <40631E9A2581F14BA60888C87A76A1FE01637C@HYD-MKD-MBX4.wipro.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -23,7 +22,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
+
+  
 Hi ,
 
 I want to use IRQ2 and IRQ3 in my driver. How do I add them in the device tr=
