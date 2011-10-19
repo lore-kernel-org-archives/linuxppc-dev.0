@@ -1,26 +1,15 @@
-Return-Path: <patrickdepinguin@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
- [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id D97EFB6F8C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2011 17:34:10 +1100 (EST)
-Received: by vws20 with SMTP id 20so1018007vws.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2011 23:34:07 -0700 (PDT)
-MIME-Version: 1.0
-Sender: patrickdepinguin@gmail.com
-In-Reply-To: <2DD52030B5146141BEB762A11AE97C4CF6E5E9@SPQCEXC05.exfo.com>
-References: <2DD52030B5146141BEB762A11AE97C4CF6E0ED@SPQCEXC05.exfo.com>
- <CAAXf6LXuid9NJcY9DeJYJR0ns6corATzxN2BN5RpkGE08OVcQw@mail.gmail.com>
- <2DD52030B5146141BEB762A11AE97C4CF6E2E7@SPQCEXC05.exfo.com>
- <CAAXf6LWTU_OVBLfn4Tavo6JxE5UfoN8JuCidB4fbr4-RX+XdAw@mail.gmail.com>
- <2DD52030B5146141BEB762A11AE97C4CF6E5E9@SPQCEXC05.exfo.com>
-Date: Wed, 19 Oct 2011 08:34:07 +0200
-Message-ID: <CAAXf6LVketwJhnvRBq7ftpxq912MV8RgUoFoVyUv5G8Xtv7MpQ@mail.gmail.com>
-Subject: Re: FW: P4080 device tree problems with fsl dpaa ... RESOLVED.
-From: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
-To: Robert Sciuk <robert.sciuk@exfo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A49D6B6F91
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Oct 2011 18:19:00 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/cpm: Clear muram before it is in use.
+Date: Wed, 19 Oct 2011 02:18:52 -0500
+Message-Id: <1319008732-8057-1-git-send-email-galak@kernel.crashing.org>
+Cc: Hongjun Chen <Hong-jun.Chen@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,52 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Robert,
+From: Hongjun Chen <Hong-jun.Chen@freescale.com>
 
-On Tue, Oct 18, 2011 at 11:38 PM, Robert Sciuk <robert.sciuk@exfo.com> wrot=
-e:
->
->
-> [snip]
->
->>
->> How and what type of packets are you sending? Raw MAC frames, IP? Are
->> you using custom code, or can you try things like ping?
->> If you are using IP, I trust you checked the Linux configuration (like
->> assigning a valid IP address to the interface and making sure the
->> routing table is correct).
->>
->> Best regards,
->> Thomas
->
-> Thomas,
->
-> I would like to thank you for your very kind assistance on the DPAA probl=
-em. =A0We traced the problem to the connection between MAC and PHY, and we =
-have resolved it by instrumenting code and comparing the TBI and PHY initia=
-lization from u-boot to the Linux DPA code, and replacing some of the "magi=
-c numbers" we found in the driver with "magic numbers" we know to work. =A0=
-OUCH!
->
-> We spent an inordinate amount of effort in trying to understand the undoc=
-umented code/tree, but I am convinced that the device-tree approach to embe=
-dded boards is a very valuable approach, and will ultimately solve many mor=
-e problems than it creates short term.
->
-> Again, your information was of great assistance, and I look forward to be=
-ing able to pay forward the same kind of assistance in the future.
+We need to ensure that MURAM is in a known and cleared out state before
+using it as the bootloader could have utilized it from its own purposes
+and left it in an unknown state.
 
-I'm very glad you found the issue (I was running out of ideas ;-) and
-that I was able to help you in some way.
-Thanks for posting back.
+If we don't clear it out we've seen issues with UCC ethernet:
+* Multi ethernet interfaces can't work simultanously.
+* Multi up/down Ethernet interfaces will halt these ports.
+* UCC1 RGMII can't work when kernel boots from some hosts.
 
-Good luck with the rest of your project!
+Signed-off-by: Kai.Jiang <Kai.Jiang@freescale.com>
+Signed-off-by: Hongjun Chen <Hong-jun.Chen@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/cpm_common.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Best regards,
-Thomas
-
->
-> Cheers,
-> Rob Sciuk.
->
->
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index d55d0ad..8db10bb 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -3,7 +3,7 @@
+  *
+  * Author: Scott Wood <scottwood@freescale.com>
+  *
+- * Copyright 2007 Freescale Semiconductor, Inc.
++ * Copyright 2007-2008,2010 Freescale Semiconductor, Inc.
+  *
+  * Some parts derived from commproc.c/cpm2_common.c, which is:
+  * Copyright (c) 1997 Dan error_act (dmalek@jlc.net)
+@@ -146,6 +146,7 @@ unsigned long cpm_muram_alloc(unsigned long size, unsigned long align)
+ 	spin_lock_irqsave(&cpm_muram_lock, flags);
+ 	cpm_muram_info.alignment = align;
+ 	start = rh_alloc(&cpm_muram_info, size, "commproc");
++	memset(cpm_muram_addr(start), 0, size);
+ 	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+ 
+ 	return start;
+-- 
+1.7.3.4
