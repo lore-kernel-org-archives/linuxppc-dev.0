@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5E249B6F80
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2011 07:44:04 +1100 (EST)
-Subject: Re: [RFC][PATCH 1/2] powerpc/85xx: create dts components to build up
- an SoC
+ by ozlabs.org (Postfix) with ESMTPS id DF43B1007D1
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2011 07:56:02 +1100 (EST)
+Subject: Re: [RFC][PATCH 2/2] powerpc/85xx: Introduce a P1020 SoC device tree
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=iso-8859-1
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CAOZdJXWtnBB5=DahG8LGQpeP7or0VZv78duhtPiORk3WOir8gQ@mail.gmail.com>
-Date: Thu, 20 Oct 2011 15:44:11 -0500
-Message-Id: <A54F7698-A96F-4EE1-89DB-B6A7C5A071FB@kernel.crashing.org>
+In-Reply-To: <CAOZdJXU4uHSTRD0vf2jS9gOzjVyO4BLn9=kEmLwwb72LhkTz=w@mail.gmail.com>
+Date: Thu, 20 Oct 2011 15:56:09 -0500
+Message-Id: <F31B0E37-BB2A-4C7A-8CB1-FCE55392A29B@kernel.crashing.org>
 References: <1319095467-6229-1-git-send-email-galak@kernel.crashing.org>
- <CAOZdJXWtnBB5=DahG8LGQpeP7or0VZv78duhtPiORk3WOir8gQ@mail.gmail.com>
+ <1319095467-6229-2-git-send-email-galak@kernel.crashing.org>
+ <CAOZdJXU4uHSTRD0vf2jS9gOzjVyO4BLn9=kEmLwwb72LhkTz=w@mail.gmail.com>
 To: Tabi Timur-B04825 <B04825@freescale.com>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
  "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
@@ -27,27 +27,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 20, 2011, at 11:42 AM, Tabi Timur-B04825 wrote:
+On Oct 20, 2011, at 11:28 AM, Tabi Timur-B04825 wrote:
 
-> Ok, your other patch makes more sense now.
->=20
 > On Thu, Oct 20, 2011 at 2:24 AM, Kumar Gala =
 <galak@kernel.crashing.org> wrote:
+>>=20
+>>  arch/powerpc/boot/dts/p1020soc.dtsi |  262 =
++++++++++++++++++++++++++++++++++++
 >=20
->> +++ b/arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi
->> @@ -0,0 +1,8 @@
->> +&serial0 {
->> +       cell-index =3D <0>;
->> +       device_type =3D "serial";
->> +       compatible =3D "ns16550";
->> +       reg =3D <0x4500 0x100>;
->> +       clock-frequency =3D <0>;
->> +       interrupts =3D <42 2 0 0>;
->> +};
->=20
-> How about we put all serial devices into one pq3-duart.dtsi file, and
-> let the parent dtsi file reference just the ones that it needs?
+> All of the other dtsi files are of the format "___si.dtsi".  Why does
+> this one use "___soc.dtsi"?
 
-there isn't an option to do that w/dtc
+I intend to also have a ___si.dtsi, still playing around with this so we =
+have less overall duplication to support both 32 & 36-bit address maps =
+as an example.
 
 - k=
