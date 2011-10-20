@@ -1,18 +1,18 @@
 Return-Path: <pratyush.anand@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
- [209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+ [209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id B84B5B70C7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2011 19:42:59 +1100 (EST)
-Received: by gyg8 with SMTP id 8so2725189gyg.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2011 01:42:55 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id AD04DB6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2011 20:12:06 +1100 (EST)
+Received: by ggnk1 with SMTP id k1so2756348ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2011 02:12:03 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1318630119-14165-1-git-send-email-tmarri@apm.com>
-References: <1318630119-14165-1-git-send-email-tmarri@apm.com>
-Date: Thu, 20 Oct 2011 14:12:55 +0530
-Message-ID: <CAHM4w1mPvvXM6fwQSuFT6=PdgwSnqdRkqNoCL5EzOpfNHR1fUA@mail.gmail.com>
-Subject: Re: [PATCH v15 01/10] USB/ppc4xx: Add Synopsys DesignWare HS USB OTG
- Register definitions
+In-Reply-To: <1317954637-11802-1-git-send-email-tmarri@apm.com>
+References: <1317954637-11802-1-git-send-email-tmarri@apm.com>
+Date: Thu, 20 Oct 2011 14:42:02 +0530
+Message-ID: <CAHM4w1=OiZA4S4TBE_Hgx3yBptcWdtLu2iQiy17wb2=NaSjwZw@mail.gmail.com>
+Subject: Re: [PATCH v14 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core Interface
+ Layer (CIL)
 From: Pratyush Anand <pratyush.anand@gmail.com>
 To: tmarri@apm.com
 Content-Type: text/plain; charset=ISO-8859-1
@@ -28,40 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Oct 15, 2011 at 3:38 AM,  <tmarri@apm.com> wrote:
+On Fri, Oct 7, 2011 at 8:00 AM,  <tmarri@apm.com> wrote:
 > From: Tirumala Marri <tmarri@apm.com>
 >
+
 [...]
 
-> +/*
-> + * These Macros represents the bit fields in the FIFO Size Registers (HPTXFSIZ,
-> + * GNPTXFSIZ, DPTXFSIZn). Read the register into the u32 element then
-> + * read out the bits using the bit elements.
+> + * Do core a soft reset of the core.  Be careful with this because it
+> + * resets all the internal state machines of the core.
 > + */
-> +#define DWC_RX_FIFO_DEPTH_RD(reg)      (((reg) & ((u32)0xffff << 16)) >> 16)
-> +#define DWC_RX_FIFO_DEPTH_WR(reg, x)   \
-> +       (((reg) & (~((u32)0xffff << 16))) | ((x) << 16))
-> +#define DWC_RX_FIFO_START_ADDR_RD(reg)         ((reg) & 0xffff)
-> +#define DWC_RX_FIFO_START_ADDR_WR(reg, x)      \
-> +       (((reg) & (~((u32)0xffff))) | (x))
+> +static void dwc_otg_core_reset(struct core_if *core_if)
+> +{
+> +       ulong global_regs = core_if->core_global_regs;
+> +       u32 greset = 0;
+> +       int count = 0;
 > +
+> +       /* Wait for AHB master IDLE state. */
+> +       do {
+> +               udelay(10);
+> +               greset = dwc_reg_read(global_regs, DWC_GRSTCTL);
+> +               if (++count > 100000) {
+> +                       pr_warning("%s() HANG! AHB Idle GRSTCTL=%0x\n",
+> +                                  __func__, greset);
+> +                       return;
+> +               }
+> +       } while (greset & DWC_RSTCTL_AHB_IDLE);
 
-These are GNPTX  and DPTX registers.
-So name should be DWC_TX_FIFO_DEPTH_RD rather than DWC_RX_FIFO_DEPTH_RD.
-Same for other defines.
+As per sepcs:
+Bit 31:  AHB Master Idle (AHBIdle): Indicates that the AHB Master State
+Machine is in the IDLE condition.
+So when this bit is 1 , AHB would be idle. So, what do you want here?
+If AHB is idle, control wil return from above loop rather going ahead to execute
+this function.
 
-
-> +/*
-> + * These Macros represents the bit fields in the Non-Periodic Tx FIFO/Queue
 > +
+> +       /* Core Soft Reset */
+> +       count = 0;
+> +       greset |= DWC_RSTCTL_SFT_RST;
 
 [...]
 
-> +#define MAX_PERIO_FIFOS                        15      /* Max periodic FIFOs */
-> +#define MAX_TX_FIFOS                   15      /* Max non-periodic FIFOs */
+> +       /* Rx FIFO */
+> +       dwc_reg_write(regs, DWC_GRXFSIZ, params->dev_rx_fifo_size);
 > +
-> +/* Maximum number of Endpoints/HostChannels */
-> +#define MAX_EPS_CHANNELS 12    /* This come from device tree or defconfig */
+> +       /* Set Periodic and Non-periodic Tx FIFO Mask bits to all 0 */
+> +       core_if->p_tx_msk = 0;
+> +       core_if->tx_msk = 0;
+> +
+> +       if (core_if->en_multiple_tx_fifo == 0) {
+> +               /* Non-periodic Tx FIFO */
+> +               nptxsize = DWC_RX_FIFO_DEPTH_WR(nptxsize,
+> +                                               params->
+> +                                               dev_nperio_tx_fifo_size);
 
-There could be some platform even with 16 channels (as specs permits it.)
-So, please make it 16.
+So, if you will follow the commnet of patch 01 then , here two you will have to
+rename as TX_FIFO.
+Also, at all other occurances.
+
+> +               nptxsize =
+> +                   DWC_RX_FIFO_START_ADDR_WR(nptxsize,
+> +                                             params->dev_rx_fifo_size);
+> +               dwc_reg_write(regs, DWC_GNPTXFSIZ, nptxsize);
+> +
+> +               ptxsize = DWC_RX_FIFO_START_ADDR_WR(ptxsize,
+> +                                                   (DWC_RX_FIFO_START_ADDR_RD
+> +                                                    (nptxsize) +
+> +                                                    DWC_RX_FIFO_DEPTH_RD
+> +                                                    (nptxsize)));
+> +               for (i = 0;
+> +                    i < DWC_HWCFG4_NUM_DEV_PERIO_IN_EP_RD(core_if->hwcfg4);
+> +                    i++) {
+
+
+Reading hwcfg4 will give you maximum nuber of fifos provided by hardware.
+But, a particular application (platform) may not need all those fifo. Since, you
+have a vriable fifo_num in your param list, so why not use that?
+
+> +                       ptxsize =
+> +                           DWC_RX_FIFO_DEPTH_WR(ptxsize,
+> +                                                params->
+> +                                                dev_perio_tx_fifo_size[i]);
+> +                       dwc_reg_write(regs, DWC_DPTX_FSIZ_DIPTXF(i), ptxsize);
+> +                       ptxsize = DWC_RX_FIFO_START_ADDR_WR(ptxsize,
+> +                                                  (DWC_RX_FIFO_START_ADDR_RD
+> +                                                   (ptxsize) +
+> +                                                   DWC_RX_FIFO_DEPTH_RD
+> +                                                   (ptxsize)));
+> +               }
+> +       } else {
+> +               nptxsize = DWC_RX_FIFO_DEPTH_WR(nptxsize,
+> +                                               params->
+> +                                               dev_nperio_tx_fifo_size);
+> +               nptxsize =
+> +                   DWC_RX_FIFO_START_ADDR_WR(nptxsize,
+> +                                             params->dev_rx_fifo_size);
+> +               dwc_reg_write(regs, DWC_GNPTXFSIZ, nptxsize);
+> +
+> +               txsize = DWC_RX_FIFO_START_ADDR_WR(txsize,
+> +                                                  (DWC_RX_FIFO_START_ADDR_RD
+> +                                                   (nptxsize) +
+> +                                                   DWC_RX_FIFO_DEPTH_RD
+> +                                                   (nptxsize)));
+> +               for (i = 1;
+> +                    i < DWC_HWCFG4_NUM_DEV_PERIO_IN_EP_RD(core_if->hwcfg4);
+> +                    i++) {
+
+Same as above
+
+> +                       txsize =
+> +                           DWC_RX_FIFO_DEPTH_WR(txsize,
+> +                                                params->dev_tx_fifo_size[i]);
+> +                       dwc_reg_write(regs, DWC_DPTX_FSIZ_DIPTXF(i - 1), txsize);
+> +                       txsize = DWC_RX_FIFO_START_ADDR_WR(txsize,
+> +                                                  (DWC_RX_FIFO_START_ADDR_RD
+> +                                                   (txsize) +
+> +                                                   DWC_RX_FIFO_DEPTH_RD
+> +                                                   (txsize)));
+> +               }
+> +       }
+> +}
+> +
+
+Regards
+Pratyush
