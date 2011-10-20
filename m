@@ -1,25 +1,19 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
- [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 257DF1007D1
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2011 08:05:46 +1100 (EST)
-Message-ID: <4EA08D20.7010405@freescale.com>
-Date: Thu, 20 Oct 2011 16:05:36 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 1/2] powerpc/85xx: create dts components to build
- up an SoC
-References: <1319095467-6229-1-git-send-email-galak@kernel.crashing.org>
- <CAOZdJXWtnBB5=DahG8LGQpeP7or0VZv78duhtPiORk3WOir8gQ@mail.gmail.com>
- <A54F7698-A96F-4EE1-89DB-B6A7C5A071FB@kernel.crashing.org>
-In-Reply-To: <A54F7698-A96F-4EE1-89DB-B6A7C5A071FB@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from border.exmeritus.com (border.exmeritus.com
+ [IPv6:2002:46a7:f11a:ffff::])
+ by ozlabs.org (Postfix) with ESMTP id AC1A41007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2011 08:13:22 +1100 (EST)
+From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+To: linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
+Subject: [RFC PATCH 13/17] mpc836x: Move board-specific bcm5481 fixup out of
+ the PHY driver
+Date: Thu, 20 Oct 2011 17:00:20 -0400
+Message-Id: <1319144425-15547-14-git-send-email-Kyle.D.Moffett@boeing.com>
+In-Reply-To: <1319144425-15547-1-git-send-email-Kyle.D.Moffett@boeing.com>
+References: <1319144425-15547-1-git-send-email-Kyle.D.Moffett@boeing.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Kyle Moffett <Kyle.D.Moffett@boeing.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,14 +23,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->> > How about we put all serial devices into one pq3-duart.dtsi file, and
->> > let the parent dtsi file reference just the ones that it needs?
-> there isn't an option to do that w/dtc
+By comparing the BCM5481 registers modified in the ->config_aneg()
+method with the datasheet I have for the BCM5482, it appears that the
+register writes are adjusting signal timing to work around a known
+trace-length issue on the PCB.
 
-What about making all the nodes disabled by default, and then the soc.dtsi
-or si.dtsi file can re-enable them?
+Such hardware workarounds don't belong in the generic driver, and should
+instead be placed in a board-specific PHY fixup.
 
+NOTE: Needs testing by somebody with the hardware.
+
+Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+---
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c |   35 ++++++++++++++++++++++++++++
+ drivers/net/phy/broadcom.c                |   36 -----------------------------
+ 2 files changed, 35 insertions(+), 36 deletions(-)
+
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+index b0090aa..b7cc607 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+@@ -14,6 +14,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
++#include <linux/phy.h>
+ #include <linux/of_platform.h>
+ #include <linux/io.h>
+ #include <asm/prom.h>
+@@ -38,6 +39,36 @@ static int __init mpc836x_rdk_declare_of_platform_devices(void)
+ }
+ machine_device_initcall(mpc836x_rdk, mpc836x_rdk_declare_of_platform_devices);
+ 
++static int mpc836x_rdk_bcm5481_fixup(struct phy_device *phydev)
++{
++	int reg;
++
++	if (phydev->interface != PHY_INTERFACE_MODE_RGMII_RXID)
++		return;
++
++	/*
++	 * There is no BCM5481 specification available, so down
++	 * here is everything we know about "register 0x18". This
++	 * at least helps BCM5481 to successfuly receive packets
++	 * on MPC8360E-RDK board. Peter Barada <peterb@logicpd.com>
++	 * says: "This sets delay between the RXD and RXC signals
++	 * instead of using trace lengths to achieve timing".
++	 */
++
++	/* Set RDX clk delay. */
++	reg = 0x7 | (0x7 << 12);
++	phy_write(phydev, 0x18, reg);
++	reg = phy_read(phydev, 0x18);
++	if (reg < 0)
++		return reg;
++
++	/* Set RDX-RXC skew. */
++	reg |= (1 << 8);
++	/* Write bits 14:0. */
++	reg |= (1 << 15);
++	return phy_write(phydev, 0x18, reg);
++}
++
+ static void __init mpc836x_rdk_setup_arch(void)
+ {
+ #ifdef CONFIG_PCI
+@@ -54,6 +85,10 @@ static void __init mpc836x_rdk_setup_arch(void)
+ #ifdef CONFIG_QUICC_ENGINE
+ 	qe_reset();
+ #endif
++#ifdef CONFIG_BROADCOM_PHY
++	phy_register_fixup_for_uid(0x0143bca0, 0xfffffff0,
++			&mpc836x_rdk_bcm5481_phy_fixup);
++#endif
+ }
+ 
+ static void __init mpc836x_rdk_init_IRQ(void)
+diff --git a/drivers/net/phy/broadcom.c b/drivers/net/phy/broadcom.c
+index 1b83f75..8c03ebc 100644
+--- a/drivers/net/phy/broadcom.c
++++ b/drivers/net/phy/broadcom.c
+@@ -539,41 +539,6 @@ static int bcm54xx_config_intr(struct phy_device *phydev)
+ 	return err;
+ }
+ 
+-static int bcm5481_config_aneg(struct phy_device *phydev)
+-{
+-	int ret;
+-
+-	/* Aneg firsly. */
+-	ret = genphy_config_aneg(phydev);
+-
+-	/* Then we can set up the delay. */
+-	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID) {
+-		u16 reg;
+-
+-		/*
+-		 * There is no BCM5481 specification available, so down
+-		 * here is everything we know about "register 0x18". This
+-		 * at least helps BCM5481 to successfuly receive packets
+-		 * on MPC8360E-RDK board. Peter Barada <peterb@logicpd.com>
+-		 * says: "This sets delay between the RXD and RXC signals
+-		 * instead of using trace lengths to achieve timing".
+-		 */
+-
+-		/* Set RDX clk delay. */
+-		reg = 0x7 | (0x7 << 12);
+-		phy_write(phydev, 0x18, reg);
+-
+-		reg = phy_read(phydev, 0x18);
+-		/* Set RDX-RXC skew. */
+-		reg |= (1 << 8);
+-		/* Write bits 14:0. */
+-		reg |= (1 << 15);
+-		phy_write(phydev, 0x18, reg);
+-	}
+-
+-	return ret;
+-}
+-
+ static int brcm_phy_setbits(struct phy_device *phydev, int reg, int set)
+ {
+ 	int val;
+@@ -736,7 +701,6 @@ static struct phy_driver broadcom_drivers[] = { {
+ 			  SUPPORTED_Pause | SUPPORTED_Asym_Pause,
+ 	.flags		= PHY_HAS_MAGICANEG | PHY_HAS_INTERRUPT,
+ 	.config_init	= bcm54xx_config_init,
+-	.config_aneg	= bcm5481_config_aneg,
+ 	.ack_interrupt	= bcm54xx_ack_interrupt,
+ 	.config_intr	= bcm54xx_config_intr,
+ 	.driver		= { .owner = THIS_MODULE },
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.2.5
