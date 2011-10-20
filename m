@@ -1,21 +1,20 @@
-Return-Path: <R65777@freescale.com>
-Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
- [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 15974B70BD
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Oct 2011 14:54:38 +1100 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, "linuxppc-dev@ozlabs.org"
- <linuxppc-dev@ozlabs.org>
-Subject: RE: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
-Date: Thu, 20 Oct 2011 03:53:57 +0000
-Message-ID: <B8D6CA50DACE9E4AAADE9A4D56FBAAE6244FDF@039-SN1MPN1-005.039d.mgd.msft.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id ACAE7B70BF
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Oct 2011 15:02:07 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <B8D6CA50DACE9E4AAADE9A4D56FBAAE6244FDF@039-SN1MPN1-005.039d.mgd.msft.net>
+Date: Wed, 19 Oct 2011 23:02:15 -0500
+Message-Id: <C79C8827-F6FE-42E0-8FAF-E62A8FFD6A1F@kernel.crashing.org>
 References: <1318578771-16865-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1318578771-16865-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ <B8D6CA50DACE9E4AAADE9A4D56FBAAE6244FDF@039-SN1MPN1-005.039d.mgd.msft.net>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,78 +25,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Oct 19, 2011, at 10:53 PM, Bhushan Bharat-R65777 wrote:
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.or=
-g
-> [mailto:linuxppc-dev-
-> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Kum=
-ar
-> Gala
-> Sent: Friday, October 14, 2011 1:23 PM
-> To: linuxppc-dev@ozlabs.org
-> Subject: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
->=20
-> Normally logical and hard cpu ID are the same, however in same cases like
-> on the P3060 they may differ.  Where the logical is 0..5, the hard id
-> goes 0,1,4..7.  This can causes issues for places we utilize PIR to index
-> into array like in debug exception handlers for finding the exception
-> stack.
+> 
+> 
+>> -----Original Message-----
+>> From: linuxppc-dev-bounces+bharat.bhushan=freescale.com@lists.ozlabs.org
+>> [mailto:linuxppc-dev-
+>> bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On Behalf Of Kumar
+>> Gala
+>> Sent: Friday, October 14, 2011 1:23 PM
+>> To: linuxppc-dev@ozlabs.org
+>> Subject: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
+>> 
+>> Normally logical and hard cpu ID are the same, however in same cases like
+>> on the P3060 they may differ.  Where the logical is 0..5, the hard id
+>> goes 0,1,4..7.  This can causes issues for places we utilize PIR to index
+>> into array like in debug exception handlers for finding the exception
+>> stack.
+> 
+> Kumar, What should be the CONFIG_NR_CPUS for this? 8 or 6 ?
 
-Kumar, What should be the CONFIG_NR_CPUS for this? 8 or 6 ?
+8.
 
-Thanks
--Bharat
-
->=20
-> Move to setting up PIR with hard_smp_processor_id fixes the issue.
->=20
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  arch/powerpc/platforms/85xx/smp.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/85xx/smp.c
-> b/arch/powerpc/platforms/85xx/smp.c
-> index d6e4746..190d111 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -48,10 +48,11 @@ smp_85xx_kick_cpu(int nr)
->  	const u64 *cpu_rel_addr;
->  	__iomem u32 *bptr_vaddr;
->  	struct device_node *np;
-> -	int n =3D 0;
-> +	int n =3D 0, hw_cpu =3D get_hard_smp_processor_id(nr);
->  	int ioremappable;
->=20
-> -	WARN_ON (nr < 0 || nr >=3D NR_CPUS);
-> +	WARN_ON(nr < 0 || nr >=3D NR_CPUS);
-> +	WARN_ON(hw_cpu < 0 || hw_cpu >=3D NR_CPUS);
->=20
->  	pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
->=20
-> @@ -79,7 +80,7 @@ smp_85xx_kick_cpu(int nr)
->=20
->  	local_irq_save(flags);
->=20
-> -	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, nr);
-> +	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, hw_cpu);
->  #ifdef CONFIG_PPC32
->  	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
->=20
-> @@ -88,7 +89,7 @@ smp_85xx_kick_cpu(int nr)
->  				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
->=20
->  	/* Wait a bit for the CPU to ack. */
-> -	while ((__secondary_hold_acknowledge !=3D nr) && (++n < 1000))
-> +	while ((__secondary_hold_acknowledge !=3D hw_cpu) && (++n < 1000))
->  		mdelay(1);
->  #else
->  	smp_generic_kick_cpu(nr);
-> --
-> 1.7.3.4
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+- k
