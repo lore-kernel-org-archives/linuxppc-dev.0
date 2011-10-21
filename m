@@ -1,23 +1,28 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
- [209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9B7441007D1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2011 04:48:04 +1100 (EST)
-Received: by qyk31 with SMTP id 31so4313884qyk.17
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2011 10:48:01 -0700 (PDT)
-Date: Fri, 21 Oct 2011 10:48:13 -0700
-From: Olof Johansson <olof@lixom.net>
-To: tmarri@apm.com
-Subject: Re: [PATCH v15 04/10] USB/ppc4xx: Add Synopsys DWC OTG HCD function
-Message-ID: <20111021174813.GD27652@quad.lixom.net>
-References: <1318630133-14264-1-git-send-email-tmarri@apm.com>
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+ [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 4BFE5B71C1
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2011 06:19:09 +1100 (EST)
+Received: from mail110-db3 (localhost.localdomain [127.0.0.1])	by
+ mail110-db3-R.bigfish.com (Postfix) with ESMTP id 8A23A8C84C3	for
+ <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2011 19:19:03 +0000 (UTC)
+Received: from DB3EHSMHS016.bigfish.com (unknown [10.3.81.245])	by
+ mail110-db3.bigfish.com (Postfix) with ESMTP id 3E6CC10C81EE	for
+ <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2011 19:17:01 +0000 (UTC)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl_msi: add support for "msi-address-64" property
+Date: Fri, 21 Oct 2011 19:16:58 +0000
+Message-ID: <CAOZdJXVJXhiSsjm9cBruGgJ946fr6xwpOZzTLcN2GQGq6eamVw@mail.gmail.com>
+References: <1316799695-31376-1-git-send-email-timur@freescale.com>
+ <C4D76656-C95E-4906-BC65-6EBAFBBB6A7C@freescale.com>
+In-Reply-To: <C4D76656-C95E-4906-BC65-6EBAFBBB6A7C@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1318630133-14264-1-git-send-email-tmarri@apm.com>
-Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
- linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Fushen Chen <fchen@apm.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,118 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some more hit-and-run comments.
+On Fri, Oct 14, 2011 at 9:15 AM, Kumar Gala <kumar.gala@freescale.com> wrot=
+e:
 
-On Fri, Oct 14, 2011 at 03:08:53PM -0700, tmarri@apm.com wrote:
-> +static int dwc_otg_hcd_disconnect_cb(void *_p)
-> +{
-> +	u32 intr;
-> +	struct dwc_hcd *hcd = hcd_to_dwc_otg_hcd(_p);
-> +	struct core_if *core_if = hcd->core_if;
-> +
-> +	/* Set status flags for the hub driver. */
-> +	hcd->flags.b.port_connect_status_change = 1;
-> +	hcd->flags.b.port_connect_status = 0;
-> +
-> +	/*
-> +	 * Shutdown any transfers in process by clearing the Tx FIFO Empty
-> +	 * interrupt mask and status bits and disabling subsequent host
-> +	 * channel interrupts.
-> +	 */
-> +	intr = 0;
-> +	intr |= DWC_INTMSK_NP_TXFIFO_EMPT;
-> +	intr |= DWC_INTMSK_P_TXFIFO_EMPTY;
-> +	intr |= DWC_INTMSK_HST_CHAN;
-> +	spin_lock(&hcd->lock);
-> +	dwc_reg_modify(gintmsk_reg(hcd), 0, intr, 0);
-> +	dwc_reg_modify(gintsts_reg(hcd), 0, intr, 0);
-> +	spin_unlock(&hcd->lock);
-> +
-> +	del_timers(hcd);
-> +
-> +	/*
-> +	 * Turn off the vbus power only if the core has transitioned to device
-> +	 * mode. If still in host mode, need to keep power on to detect a
-> +	 * reconnection.
-> +	 */
-> +	if (dwc_otg_is_device_mode(core_if)) {
-> +		if (core_if->xceiv->state != OTG_STATE_A_SUSPEND) {
-> +			u32 hprt0 = 0;
-> +
-> +			pr_info("Disconnect: PortPower off\n");
-> +			hprt0 = DWC_HPRT0_PRT_PWR_RW(hprt0, 0);
-> +			dwc_reg_write(core_if->host_if->hprt0, 0, hprt0);
-> +		}
-> +		dwc_otg_disable_host_interrupts(core_if);
-> +	}
-> +
-> +	/* Respond with an error status to all URBs in the schedule. */
-> +	kill_all_urbs(hcd);
-> +	if (dwc_otg_is_host_mode(core_if)) {
-> +		/* Clean up any host channels that were in use. */
-> +		int num_channels;
-> +		u32 i;
-> +		struct dwc_hc *channel;
-> +		ulong regs;
-> +		u32 hcchar;
+>> .../devicetree/bindings/powerpc/fsl/msi-pic.txt =A0 =A0| =A0 42 ++++++++=
+++++++++++++
+>> arch/powerpc/sysdev/fsl_msi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 20 +++++++---
+>> arch/powerpc/sysdev/fsl_msi.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 =A03 +-
+>> 3 files changed, 57 insertions(+), 8 deletions(-)
+>
+> applied
 
-If you need these many local variables here, and this much indentation, then
-please refactor to a helper function. That will get rid of the crazy
-linewrapping below too.
+Applied where, exactly?  You don't have a repo on kernel.org, and your
+repo on github.org is over a month old.
 
-> +
-> +		num_channels = core_if->core_params->host_channels;
-> +		if (!core_if->dma_enable) {
-> +			/* Flush out any channel requests in slave mode. */
-> +			for (i = 0; i < num_channels; i++) {
-> +				channel = hcd->hc_ptr_array[i];
-> +				if (list_empty(&channel->hc_list_entry)) {
-> +					regs =
-> +					    core_if->host_if->hc_regs[i];
-> +					hcchar = dwc_reg_read(regs, DWC_HCCHAR);
-> +
-> +					if (DWC_HCCHAR_ENA_RD(hcchar)) {
-> +						hcchar =
-> +						    DWC_HCCHAR_ENA_RW(hcchar,
-> +								      0);
-> +						hcchar =
-> +						    DWC_HCCHAR_DIS_RW(hcchar,
-> +								      1);
-> +						hcchar =
-> +						    DWC_HCCHAR_EPDIR_RW(hcchar,
-> +									0);
-> +						dwc_reg_write(regs, DWC_HCCHAR,
-> +							    hcchar);
-> +					}
-> +				}
-> +			}
-> +		}
-> +
-> +		for (i = 0; i < num_channels; i++) {
-> +			channel = hcd->hc_ptr_array[i];
-> +			if (list_empty(&channel->hc_list_entry)) {
-> +				regs = core_if->host_if->hc_regs[i];
-> +				hcchar = dwc_reg_read(regs, DWC_HCCHAR);
-> +
-> +				if (DWC_HCCHAR_ENA_RD(hcchar)) {
-> +					/* Halt the channel. */
-> +					hcchar = DWC_HCCHAR_DIS_RW(hcchar, 1);
-> +					dwc_reg_write(regs, DWC_HCCHAR, hcchar);
-> +				}
-> +				dwc_otg_hc_cleanup(core_if, channel);
-> +				list_add_tail(&channel->hc_list_entry,
-> +					      &hcd->free_hc_list);
-> +			}
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * A disconnect will end the session so the B-Device is no
-> +	 * longer a B-host.
-> +	 */
-> +	((struct usb_hcd *)_p)->self.is_b_host = 0;
-> +	return 1;
-> +}
-> +
-
--Olof
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
