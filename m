@@ -1,13 +1,22 @@
-Return-Path: <yong.zhang0@gmail.com>
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 41/49] powerpc/ps3: irq: Remove IRQF_DISABLED
-Date: Sat, 22 Oct 2011 17:56:53 +0800
-Message-Id: <1319277421-9203-42-git-send-email-yong.zhang0@gmail.com>
-In-Reply-To: <1319277421-9203-1-git-send-email-yong.zhang0@gmail.com>
-References: <1319277421-9203-1-git-send-email-yong.zhang0@gmail.com>
-Cc: Geoff Levand <geoff@infradead.org>, cbe-oss-dev@lists.ozlabs.org,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 780D1B71C6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Oct 2011 07:30:54 +1100 (EST)
+Received: by ywp31 with SMTP id 31so1456050ywp.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2011 13:30:50 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20111021173302.GB27652@quad.lixom.net>
+References: <1318630114-14064-1-git-send-email-tmarri@apm.com>
+ <20111021173302.GB27652@quad.lixom.net>
+Date: Sat, 22 Oct 2011 13:30:50 -0700
+Message-ID: <CAOesGMg_Q6M5fsN3BsROu3XpGZGiC1Wi+GD7ksOYFMNfn_wW0Q@mail.gmail.com>
+Subject: Re: [PATCH v15 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+From: Olof Johansson <olof@lixom.net>
+To: tmarri@apm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,46 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit [e58aa3d2: genirq: Run irq handlers with interrupts disabled],
-We run all interrupt handlers with interrupts disabled
-and we even check and yell when an interrupt handler
-returns with interrupts enabled (see commit [b738a50a:
-genirq: Warn when handler enables interrupts]).
+Hi,
 
-So now this flag is a NOOP and can be removed.
+On Fri, Oct 21, 2011 at 10:33 AM, Olof Johansson <olof@lixom.net> wrote:
+> On Fri, Oct 14, 2011 at 03:08:34PM -0700, tmarri@apm.com wrote:
+>> From: Tirumala Marri <tmarri@apm.com>
+>
+> Overall this driver seems to be based on the IP vendor driver? It
+> looks like a completely flexible driver that implements all possible
+> combinations of everything.
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Acked-by: Geoff Levand <geoff@infradead.org>
----
- drivers/ps3/ps3-vuart.c   |    2 +-
- drivers/ps3/ps3stor_lib.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+After looking a little closer at the patch set, it seems that number
+one thing you need to do is simplify the driver. A lot.
 
-diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
-index d9fb729..fb73008 100644
---- a/drivers/ps3/ps3-vuart.c
-+++ b/drivers/ps3/ps3-vuart.c
-@@ -952,7 +952,7 @@ static int ps3_vuart_bus_interrupt_get(void)
- 	}
- 
- 	result = request_irq(vuart_bus_priv.virq, ps3_vuart_irq_handler,
--		IRQF_DISABLED, "vuart", &vuart_bus_priv);
-+		0, "vuart", &vuart_bus_priv);
- 
- 	if (result) {
- 		pr_debug("%s:%d: request_irq failed (%d)\n",
-diff --git a/drivers/ps3/ps3stor_lib.c b/drivers/ps3/ps3stor_lib.c
-index cc328de..8c3f5ad 100644
---- a/drivers/ps3/ps3stor_lib.c
-+++ b/drivers/ps3/ps3stor_lib.c
-@@ -167,7 +167,7 @@ int ps3stor_setup(struct ps3_storage_device *dev, irq_handler_t handler)
- 		goto fail_close_device;
- 	}
- 
--	error = request_irq(dev->irq, handler, IRQF_DISABLED,
-+	error = request_irq(dev->irq, handler, 0,
- 			    dev->sbd.core.driver->name, dev);
- 	if (error) {
- 		dev_err(&dev->sbd.core, "%s:%u: request_irq failed %d\n",
--- 
-1.7.1
+I suggest starting from scratch with a clean implementation, only
+bringing in the pieces you need. Over time, if other vendors are using
+other aspects of the same IP, they get to add those parts of the
+driver when they need it.  Look at the dwc3 driver for comparison on
+cleanliness, it's much cleaner than what you've posted.
+
+
+-Olof
