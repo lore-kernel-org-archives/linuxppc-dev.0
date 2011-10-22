@@ -1,22 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
- [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 780D1B71C6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Oct 2011 07:30:54 +1100 (EST)
-Received: by ywp31 with SMTP id 31so1456050ywp.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2011 13:30:50 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20111021173302.GB27652@quad.lixom.net>
-References: <1318630114-14064-1-git-send-email-tmarri@apm.com>
- <20111021173302.GB27652@quad.lixom.net>
-Date: Sat, 22 Oct 2011 13:30:50 -0700
-Message-ID: <CAOesGMg_Q6M5fsN3BsROu3XpGZGiC1Wi+GD7ksOYFMNfn_wW0Q@mail.gmail.com>
-Subject: Re: [PATCH v15 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-From: Olof Johansson <olof@lixom.net>
-To: tmarri@apm.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 07F77B70C0
+ for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2011 08:19:27 +1100 (EST)
+Subject: Re: [PATCH] powerpc/fsl_msi: add support for "msi-address-64" property
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=iso-8859-1
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <CAOZdJXVJXhiSsjm9cBruGgJ946fr6xwpOZzTLcN2GQGq6eamVw@mail.gmail.com>
+Date: Sat, 22 Oct 2011 16:19:18 -0500
+Message-Id: <F4205ADA-3408-4807-9207-4FFC3866A8B7@kernel.crashing.org>
+References: <1316799695-31376-1-git-send-email-timur@freescale.com>
+ <C4D76656-C95E-4906-BC65-6EBAFBBB6A7C@freescale.com>
+ <CAOZdJXVJXhiSsjm9cBruGgJ946fr6xwpOZzTLcN2GQGq6eamVw@mail.gmail.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-On Fri, Oct 21, 2011 at 10:33 AM, Olof Johansson <olof@lixom.net> wrote:
-> On Fri, Oct 14, 2011 at 03:08:34PM -0700, tmarri@apm.com wrote:
->> From: Tirumala Marri <tmarri@apm.com>
->
-> Overall this driver seems to be based on the IP vendor driver? It
-> looks like a completely flexible driver that implements all possible
-> combinations of everything.
+On Oct 21, 2011, at 2:16 PM, Tabi Timur-B04825 wrote:
 
-After looking a little closer at the patch set, it seems that number
-one thing you need to do is simplify the driver. A lot.
-
-I suggest starting from scratch with a clean implementation, only
-bringing in the pieces you need. Over time, if other vendors are using
-other aspects of the same IP, they get to add those parts of the
-driver when they need it.  Look at the dwc3 driver for comparison on
-cleanliness, it's much cleaner than what you've posted.
+> On Fri, Oct 14, 2011 at 9:15 AM, Kumar Gala <kumar.gala@freescale.com> =
+wrote:
+>=20
+>>> .../devicetree/bindings/powerpc/fsl/msi-pic.txt    |   42 =
+++++++++++++++++++++
+>>> arch/powerpc/sysdev/fsl_msi.c                      |   20 +++++++---
+>>> arch/powerpc/sysdev/fsl_msi.h                      |    3 +-
+>>> 3 files changed, 57 insertions(+), 8 deletions(-)
+>>=20
+>> applied
+>=20
+> Applied where, exactly?  You don't have a repo on kernel.org, and your
+> repo on github.org is over a month old.
 
 
--Olof
+I've updated github as still trying to figure out when I'll get my =
+kernel.org account back.
+
+- k=
