@@ -1,23 +1,14 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 430D21007D1
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Oct 2011 01:38:20 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 03/11] powerpc/85xx: Rework PCI nodes on P1020RDB
-Date: Sun, 23 Oct 2011 14:37:17 +0000
-Message-ID: <CAOZdJXUy5qDhbEAih2kx91fmgyxqd7u9T6AV4fDvp4AMMRA+4w@mail.gmail.com>
-References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-2-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from vps4.telegraphics.com.au (vm4.telegraphics.com.au
+ [98.124.60.149]) by ozlabs.org (Postfix) with ESMTP id A7A43B6F87
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2011 01:39:10 +1100 (EST)
+Message-Id: <20111023141115.208699274@telegraphics.com.au>
+Date: Mon, 24 Oct 2011 01:11:09 +1100
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 01/16] pmac_zilog: fix unexpected irq
+References: <20111023141108.856998818@telegraphics.com.au>
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +18,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Oct 22, 2011 at 4:20 PM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
-> * Move SoC specific details like irq mapping to SoC dtsi
-> * Update interrupt property to cover both error interrupt and PCIe
-> =A0runtime interrupts
+On most 68k Macs the SCC IRQ is an autovector interrupt and cannot be masked. This can be a problem when pmac_zilog starts up.
 
-Are we going to be doing this for all our device trees?  If so, then I
-think we need to document what properties the board dts should be
-defining when it includes a node from a dtsi.  Something like this:
+For example, the serial debugging code in arch/m68k/kernel/head.S may be used beforehand. It disables the SCC interrupts at the chip but doesn't ack them. Then when a pmac_zilog port is opened and SCC chip interrupts become enabled, the machine locks up with "unexpected interrupt" because request_irq() hasn't happened yet.
 
-dtsi:
-               pcie@0 {
-                       /* dts should define 'reg' and 'ranges' */
-                       reg =3D <0 0 0 0 0>;
-                       #interrupt-cells =3D <1>;
+Fix this by setting the SCC master interrupt enable bit only after the handler is installed. This is achieved by extracting that operation out of __pmz_startup() and placing it into a seperate routine.
 
-I suppose it's obvious that 'reg' and 'ranges' should be defined, so
-this isn't the best example.  But we should document if any other
-properties should be defined.
+A similar problem arises when the irq is freed. Fix this by resetting the chip first (on m68k mac).
 
-For example, the SSI nodes contain a bunch of SOC- and board-specific
-properties.
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+---
+
+This patch has been tested on a variety of m68k Macs but no PowerMacs.
+
+Index: linux-m68k/drivers/tty/serial/pmac_zilog.c
+===================================================================
+--- linux-m68k.orig/drivers/tty/serial/pmac_zilog.c	2011-10-22 23:02:22.000000000 +1100
++++ linux-m68k/drivers/tty/serial/pmac_zilog.c	2011-10-22 23:02:38.000000000 +1100
+@@ -910,8 +910,8 @@ static int __pmz_startup(struct uart_pma
+ 	/* Clear handshaking, enable BREAK interrupts */
+ 	uap->curregs[R15] = BRKIE;
+ 
+-	/* Master interrupt enable */
+-	uap->curregs[R9] |= NV | MIE;
++	/* No vector */
++	uap->curregs[R9] |= NV;
+ 
+ 	pmz_load_zsregs(uap, uap->curregs);
+ 
+@@ -925,6 +925,17 @@ static int __pmz_startup(struct uart_pma
+ 	return pwr_delay;
+ }
+ 
++static void pmz_master_int_control(struct uart_pmac_port *uap, int enable)
++{
++	if (enable) {
++		uap->curregs[R9] |= MIE; /* Master interrupt enable */
++		write_zsreg(uap, R9, uap->curregs[R9]);
++	} else {
++		uap->curregs[R9] &= ~MIE;
++		write_zsreg(uap, 9, FHWRES);
++	}
++}
++
+ static void pmz_irda_reset(struct uart_pmac_port *uap)
+ {
+ 	uap->curregs[R5] |= DTR;
+@@ -976,6 +987,19 @@ static int pmz_startup(struct uart_port
+ 		return -ENXIO;
+ 	}
+ 
++	/*
++	 * Most 68k Mac models cannot mask the SCC IRQ so they must enable
++	 * interrupts after the handler is installed and not before.
++	 */
++#ifndef CONFIG_MAC
++	if (!ZS_IS_CONS(uap))
++#endif
++	{
++		spin_lock_irqsave(&port->lock, flags);
++		pmz_master_int_control(uap, 1);
++		spin_unlock_irqrestore(&port->lock, flags);
++	}
++
+ 	mutex_unlock(&pmz_irq_mutex);
+ 
+ 	/* Right now, we deal with delay by blocking here, I'll be
+@@ -1015,6 +1039,11 @@ static void pmz_shutdown(struct uart_por
+ 
+ 	mutex_lock(&pmz_irq_mutex);
+ 
++#ifdef CONFIG_MAC
++	if (!ZS_IS_OPEN(uap->mate))
++		pmz_master_int_control(uap, 0);
++#endif
++
+ 	/* Release interrupt handler */
+ 	free_irq(uap->port.irq, uap);
+ 
+@@ -1734,6 +1763,7 @@ static int pmz_resume(struct macio_dev *
+ 		goto bail;
+ 	}
+ 	pwr_delay = __pmz_startup(uap);
++	pmz_master_int_control(uap, 1);
+ 
+ 	/* Take care of config that may have changed while asleep */
+ 	__pmz_set_termios(&uap->port, &uap->termios_cache, NULL);
+@@ -2178,6 +2208,9 @@ static int __init pmz_console_setup(stru
+ 	 * Enable the hardware
+ 	 */
+ 	pwr_delay = __pmz_startup(uap);
++#ifndef CONFIG_MAC
++	pmz_master_int_control(uap, 1);
++#endif
+ 	if (pwr_delay)
+ 		mdelay(pwr_delay);
+ 	
