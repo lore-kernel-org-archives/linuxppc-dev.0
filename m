@@ -1,17 +1,23 @@
-Return-Path: <geoff@infradead.org>
-Subject: Re: [PATCH 15/49] powerpc: irq: Remove IRQF_DISABLED
-From: Geoff Levand <geoff@infradead.org>
-To: Yong Zhang <yong.zhang0@gmail.com>
-In-Reply-To: <1319277421-9203-16-git-send-email-yong.zhang0@gmail.com>
-References: <1319277421-9203-1-git-send-email-yong.zhang0@gmail.com>
- <1319277421-9203-16-git-send-email-yong.zhang0@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 22 Oct 2011 18:57:08 -0700
-Message-ID: <1319335028.4949.1.camel@pump>
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 430D21007D1
+ for <linuxppc-dev@ozlabs.org>; Mon, 24 Oct 2011 01:38:20 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 03/11] powerpc/85xx: Rework PCI nodes on P1020RDB
+Date: Sun, 23 Oct 2011 14:37:17 +0000
+Message-ID: <CAOZdJXUy5qDhbEAih2kx91fmgyxqd7u9T6AV4fDvp4AMMRA+4w@mail.gmail.com>
+References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
+ <1319318452-27036-2-git-send-email-galak@kernel.crashing.org>
+ <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2011-10-22 at 17:56 +0800, Yong Zhang wrote:
-> Since commit [e58aa3d2: genirq: Run irq handlers with interrupts disabled],
-> We run all interrupt handlers with interrupts disabled
-> and we even check and yell when an interrupt handler
-> returns with interrupts enabled (see commit [b738a50a:
-> genirq: Warn when handler enables interrupts]).
-> 
-> So now this flag is a NOOP and can be removed.
-> 
-> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  arch/powerpc/include/asm/floppy.h              |    4 ++--
->  arch/powerpc/include/asm/xics.h                |    4 ++--
->  arch/powerpc/kernel/smp.c                      |    2 +-
->  arch/powerpc/platforms/cell/beat.c             |    2 +-
->  arch/powerpc/platforms/cell/celleb_scc_pciex.c |    2 +-
->  arch/powerpc/platforms/cell/iommu.c            |    3 +--
->  arch/powerpc/platforms/cell/pmu.c              |    2 +-
->  arch/powerpc/platforms/cell/spu_base.c         |    9 +++------
->  arch/powerpc/platforms/powermac/pic.c          |    1 -
->  arch/powerpc/platforms/powermac/smp.c          |    4 ++--
->  arch/powerpc/platforms/ps3/device-init.c       |    2 +-
->  arch/powerpc/sysdev/mpic.c                     |    2 --
->  arch/powerpc/sysdev/ppc4xx_soc.c               |    2 +-
->  arch/powerpc/sysdev/xics/xics-common.c         |    5 ++---
->  14 files changed, 18 insertions(+), 26 deletions(-)
+On Sat, Oct 22, 2011 at 4:20 PM, Kumar Gala <galak@kernel.crashing.org> wro=
+te:
+> * Move SoC specific details like irq mapping to SoC dtsi
+> * Update interrupt property to cover both error interrupt and PCIe
+> =A0runtime interrupts
 
-Looks OK for PS3.
+Are we going to be doing this for all our device trees?  If so, then I
+think we need to document what properties the board dts should be
+defining when it includes a node from a dtsi.  Something like this:
 
-Acked-by: Geoff Levand <geoff@infradead.org>
+dtsi:
+               pcie@0 {
+                       /* dts should define 'reg' and 'ranges' */
+                       reg =3D <0 0 0 0 0>;
+                       #interrupt-cells =3D <1>;
+
+I suppose it's obvious that 'reg' and 'ranges' should be defined, so
+this isn't the best example.  But we should document if any other
+properties should be defined.
+
+For example, the SSI nodes contain a bunch of SOC- and board-specific
+properties.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
