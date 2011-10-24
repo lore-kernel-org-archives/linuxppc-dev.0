@@ -1,25 +1,18 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 372B5B6F87
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2011 01:09:06 +1100 (EST)
-Message-ID: <4EA570AB.7040704@freescale.com>
-Date: Mon, 24 Oct 2011 09:05:31 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <ramamru@gmail.com>
+Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
+ [209.85.216.172]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 8B5281007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2011 23:31:40 +1100 (EST)
+Received: by qyk34 with SMTP id 34so2078545qyk.17
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2011 05:31:36 -0700 (PDT)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 03/11] powerpc/85xx: Rework PCI nodes on P1020RDB
-References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-2-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
- <CAOZdJXUy5qDhbEAih2kx91fmgyxqd7u9T6AV4fDvp4AMMRA+4w@mail
- <49F9A823-B7C3-4D53-A061-8AC1C8D22554@kernel.crashing.org>
-In-Reply-To: <49F9A823-B7C3-4D53-A061-8AC1C8D22554@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Mon, 24 Oct 2011 18:01:11 +0530
+Message-ID: <CAJ4m0g4=B01UkLu-pZusqOy19wj92e+h_pwmdOA54G0jvVSFng@mail.gmail.com>
+Subject: kexec support for P2020
+From: radha krishna <ramamru@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=bcaec520f21d15219104b00a99af
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> I would have hoped the bindings had made it clear already what was board info vs what was SoC.
+--bcaec520f21d15219104b00a99af
+Content-Type: text/plain; charset=ISO-8859-1
 
-When it comes to device trees, I never assume anything is "clear".
+Hi Team,
 
-> If not, they should be clarify that in the binding specs.
+I want to use kdump mechanism to collect kernel crash dump for P2010 and
+P2020 processor based systems running Linux-2.6.32 kernel version.
 
-I'm okay with that.
+Please help me in finding answers for following:
+Is kexec support available for p2010 in Linux-2.6.32 version?
+Is open source kexec tools works for P2010 ?
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+If anyone already tried, please provide steps to do it.
+
+Thanks in advance.
+
+--Regards,
+RamAmru
+
+--bcaec520f21d15219104b00a99af
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi Team,<br><br>I want to use kdump mechanism to collect kernel crash dump =
+for P2010 and P2020 processor based systems running Linux-2.6.32 kernel ver=
+sion.<br><br>Please help me in finding answers for following:<br>Is kexec s=
+upport available for p2010 in Linux-2.6.32 version?<br>
+Is open source kexec tools works for P2010 ?<br><br>If anyone already tried=
+, please provide steps to do it.<br><br>Thanks in advance.<br><br>--Regards=
+,<br>RamAmru<br><br><br><br><br>
+
+--bcaec520f21d15219104b00a99af--
