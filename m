@@ -1,26 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9B9891007D9
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Oct 2011 09:23:24 +1100 (EST)
-Message-ID: <4EA735E8.5010206@freescale.com>
-Date: Tue, 25 Oct 2011 17:19:20 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og117.obsmtp.com (exprod5og117.obsmtp.com [64.18.0.149])
+ by ozlabs.org (Postfix) with SMTP id 081D8B6F7C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 09:45:53 +1100 (EST)
+Received: by qyk7 with SMTP id 7so1140798qyk.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2011 15:45:50 -0700 (PDT)
+From: Tirumala Marri <tmarri@apm.com>
+References: <1318630114-14064-1-git-send-email-tmarri@apm.com>
+ <CAHM4w1k+-KgpkW4QzRkq5wDZK0+VdVhD_QLkJy24HB0s+pE8fg@mail.gmail.com>
+In-Reply-To: <CAHM4w1k+-KgpkW4QzRkq5wDZK0+VdVhD_QLkJy24HB0s+pE8fg@mail.gmail.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 06/11] powerpc/85xx: Add ethernet magic packet property
- to P1020 device tree
-References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-2-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-4-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-5-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-6-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1319318452-27036-6-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Date: Tue, 25 Oct 2011 15:45:49 -0700
+Message-ID: <adb0006ab8a5fe968bda420e861af0ba@mail.gmail.com>
+Subject: RE: [PATCH v15 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+To: Pratyush Anand <pratyush.anand@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,11 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/22/2011 04:20 PM, Kumar Gala wrote:
-> All eTSEC2 controllers support waking on magic packet so fixup device
-> tree to report that.
-
-If they *all* support it, we can make the driver rely on the compatible
-instead.
-
--Scott
+Hi Pratyush,
+<
+<Hi Tirumala,
+<
+<I have reviwed all the patches.
+<Thanks for taking my most of the diffs over your v13.
+<There are few thing, which are really very important like,
+<AHB disable check, EP Disable/Stall (have commented about them in
+<respective patches). I am doubtful, that how does all of usbcv test
+<cases passes
+<without those modifications.
+<So, please have a look on those comments.
+<You may  add my signed-off.
+<
+[Tirumala Marri]  I don't do all the unit tests before submission.
+I only do few device tests like Ethernet and file backed storage.
+For host mode I do some basic IO test. I will try embed your suggestions.
+Thx,
+Marri
