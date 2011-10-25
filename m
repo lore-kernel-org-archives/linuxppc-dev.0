@@ -1,14 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: MPC8548 core "freezes"
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4CE4CD7158AFEE44A025CA3D42C323811B16E1D65A@spvw1505.ONE-05.GRP>
-Date: Tue, 25 Oct 2011 15:28:00 -0500
-Message-Id: <138EDED0-EA33-44BD-A0DD-DBE6D5C7BFB6@kernel.crashing.org>
-References: <4CE4CD7158AFEE44A025CA3D42C323811B16E1D65A@spvw1505.ONE-05.GRP>
-To: JACOBS Willy <willy.jacobs@nl.thalesgroup.com>
-Cc: "Linuxppc-dev@lists.ozlabs.org" <Linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id D3B0E1007D9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 08:37:28 +1100 (EST)
+Message-ID: <4EA72C0C.3000908@freescale.com>
+Date: Tue, 25 Oct 2011 16:37:16 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v13 0/6] flexcan: Add support for powerpc flexcan
+ (freescale p1010)
+References: <1313551944-28603-1-git-send-email-holt@sgi.com>
+ <16FBAA47-5133-43A1-80CE-C6D63B79FB5D@kernel.crashing.org>
+ <20111018094328.GC22814@sgi.com>
+ <D79CB818-C14E-4C8D-9A8D-42B39ADE20B2@kernel.crashing.org>
+In-Reply-To: <D79CB818-C14E-4C8D-9A8D-42B39ADE20B2@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: netdev@vger.kernel.org, U Bhaskar-B22300 <B22300@freescale.com>,
+ socketcan-core@lists.berlios.de, Robin Holt <holt@sgi.com>,
+ PPC list <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,64 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 10/18/2011 06:43 AM, Kumar Gala wrote:
+> 
+>>> Robin,
+>>>
+>>> Do you remember why we went with just 'fsl,p1010-flexcan' as the device tree compatible?  Do we feel the flex can on P1010 isn't the same as on MPC5xxx? or the ARM SoCs?
+>>
+>> The decision was due to the fact there is no true "generic" fsl.flexcan
+>> chip free of any SOC implementation and therefore not something which
+>> could be separately defined.  That decision was made by Grant Likely.
+>> I will inline that email below.
+>>
+>> Robin
+> 
+> 
+> Thanks, I'll look into this internally at FSL.  I think its confusing as hell to have "fsl,p1010-flexcan" in an ARM .dts
 
-On Oct 25, 2011, at 9:37 AM, JACOBS Willy wrote:
+It's confusing to have devices labelled in vague ways that we can't tie
+back to any real piece of hardware, or even a public architectural spec.
+ If you're talking to our hardware people, ask them to put public names
+and versions, guaranteed unique throughout FSL, on all of our logic
+blocks -- with public block manuals that have any SW-relevant
+integration parameters clearly itemized.
 
-> We discover on our own developed board based on a MPC8548, a FPGA =
-connected
-> through the PCIe bus which the PQ3, and running U-BOOT, Linux 2.6.33.7 =
-(+ RT
-> patches), and a Wind River 2.0 root file system on irregular =
-occurrences that the
-> PQ3 "freezes". The main application running on the PQ3 transfer data =
-between the
-> FPGA/PCIe (bi-directional over several PCIe lanes) and the MOTTSECs =
-(at gigabit
-> speed). =20
-> With a Wind River Probe we can connected to the PQ3 JTAG, and to look
-> into the PQ3 registers. In the erroneous state we always see:
->=20
-> - all the CPU e500 core registers have the value 0
-> - the L1 I/D caches are disabled
-> - the L2 cache is still enabled
-> - the DDR SDRAM logic is disabled (DDR_SDRAM_CFG[MEN_EN] =3D 0); the =
-other DDR_SDRAM_CFG bits contains the programmed value
-> - the contents of the remaining peripheral registers look OK
->=20
-> We have already swapped boards, without any success.
-> On the same boards we have also other applications running without =
-this "freeze" problem.
-> Because no exception are generated it's very difficult to catch the =
-root cause.
-> So any help is appreciated.
->=20
-> U-Boot 2009.01.01 (Oct 08 2010 - 08:35:06)
->=20
-> CPU:   8548, Version: 2.1, (0x80310021)
-> Core:  E500, Version: 2.2, (0x80210022)
-> Clock Configuration:
->       CPU:1333.333 MHz, CCB:533.333 MHz,
->       DDR:266.667 MHz (533.333 MT/s data rate), LBC:66.667 MHz
-> L1:    D-cache 32 kB enabled
->       I-cache 32 kB enabled
-> I2C:   ready
-> Board: thales,payarapc8548, 12nc: 955683208506, snr: 0014
-> DRAM:      DDR:  2 GB
-> FLASH: 128 MB
-> L2:    512 KB enabled
->    PCI: 32 bit, 66 MHz, async, host, arbiter
->               Scanning PCI bus 00
-> PCI on bus 00 - 00
->=20
->    PCIE connected to slot as Root Complex (base address e000a000)
-> PCIE on bus 1 - 1
-> In:    serial
-> Out:   serial
-> Err:   serial
-> Net:   tsec0, tsec1, tsec2 [PRIME]
+Why is putting "fsl,p1010-flexcan" an an ARM device any more confusing
+than putting it on some PowerPC chip that is not a p1010?  Think of it
+like a PCI ID, the actual value not being meaningful for much other than
+its uniqueness and the ability to find a manual for the hardware.
 
+This has been the recommended practice for quite some time.
 
-You appear to be freezing in u-boot, should ask your question on that =
-list.
+> and don't think any reasonable ARM customer of FSL would know to put
+> a PPC SOC name in their .dts.  
 
-- k=
+If an ARM device tree comes along that just has
+"fsl,some-arm-chip-flexcan", so what?  Let the same driver bind against
+both, again like PCI IDs.  Additional compatibles are mainly a
+convenience to give things a chance to work before the driver is updated
+(a frequent irritant with PCI IDs and new hardware).
+
+Ideally we would be publishing a sample device tree for our ARM chips
+and their peripherals, though. :-P
+
+> I'll ask the HW guys what's going on
+> so we can come up with a bit more generic name so we don't have to
+> constantly change this.  Even if its just:
+> 
+> fsl,ppc-flexcan & fsl,arm-flexcan.
+
+Why is CPU instruction set relevant?
+
+Would a QorIQ customer think to check for an existing compatible in
+mpc5xxx, or even mpc83xx or mpc86xx?
+
+-Scott
