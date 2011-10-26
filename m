@@ -1,26 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DC5691007D9
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Oct 2011 14:35:08 +1100 (EST)
-Subject: Re: [PATCH 06/11] powerpc/85xx: Add ethernet magic packet property to
- P1020 device tree
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=iso-8859-1
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4EA735E8.5010206@freescale.com>
-Date: Tue, 25 Oct 2011 22:35:08 -0500
-Message-Id: <6549A2B9-A9FD-42BC-A3B0-B920167739F5@kernel.crashing.org>
-References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-2-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-4-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-5-git-send-email-galak@kernel.crashing.org>
- <1319318452-27036-6-git-send-email-galak@kernel.crashing.org>
- <4EA735E8.5010206@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+ [209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 521661007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 23:04:58 +1100 (EST)
+Received: by gyg8 with SMTP id 8so1715939gyg.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 05:04:51 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <c898f5030d342baa4df570317536bcf2@mail.gmail.com>
+References: <1318630114-14064-1-git-send-email-tmarri@apm.com>
+ <20111021173302.GB27652@quad.lixom.net>
+ <c898f5030d342baa4df570317536bcf2@mail.gmail.com>
+Date: Wed, 26 Oct 2011 05:04:51 -0700
+Message-ID: <CAOesGMhVuxbqq7cmm2XVUof9vEifAL=GpPirYb8148a24upJCw@mail.gmail.com>
+Subject: Re: [PATCH v15 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+From: Olof Johansson <olof@lixom.net>
+To: Tirumala Marri <tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Oct 25, 2011 at 2:54 PM, Tirumala Marri <tmarri@apm.com> wrote:
+> <
+> <Overall this driver seems to be based on the IP vendor driver? It
+> <looks like a completely flexible driver that implements all possible
+> <combinations of everything.
+> <
+> [Tirumala Marri] Some what true that it was based on skeletal driver
+> Provided from IP vendor.
 
-On Oct 25, 2011, at 5:19 PM, Scott Wood wrote:
+Please use a real mail program instead of this [name] comment style.
+It's hard to read.
 
-> On 10/22/2011 04:20 PM, Kumar Gala wrote:
->> All eTSEC2 controllers support waking on magic packet so fixup device
->> tree to report that.
->=20
-> If they *all* support it, we can make the driver rely on the =
-compatible
-> instead.
->=20
-> -Scott
+> <And as a result, it's huge, and it's got a lot of extra code in there
+> <that I'm
+> <willing to bet that you have never even executed on your platform.
+> <
+> <Please, pare it down to the portions that you have used, and know works
+> <and can support. If others need the extra functionality in the future,
+> <they can and will expand and bring in what is needed.
+> <
+> [Tirumala Marri] I can sure review and find if there are any dead
+> functions.
+> It may not be 100% free of dead code as some of the code paths may execut=
+e
+> Asynchronously.
 
-I think this might have originated on eTSEC v1, in which all controllers =
-don't support it.
+No, just start over from scratch. Just leave the crap driver behind,
+use it for reference but write the new one.
 
-I'm not against removing it & just using compatible but don't know =
-enough about these nodes to comment.
+It's obvious given that you are already at iteration v15 and it's
+still looking this bad that this is not realistic to get reviewed and
+accepted as-is. I don't think staging is a good target either -- what
+the driver really needs is _functional_ cut-down to only cover the use
+cases that your product uses, and staging cleanups are mostly around
+style and refactoring, not changing, fixing or removing functionality.
 
-- k=
+> <Compare this to the dwc3 driver, which is much much cleaner.
+> <
+> [Tirumala Marri] I will check.
+> <Overall other comments:
+> <
+> <* Register definitions are crazy long. It means you have to do lots of
+> <line
+> < =A0wraps to keep the 80-character limit, which makes it hard to read th=
+e
+> <code.
+> [Tirumala Marri] This was suggestion from the review to use bit shifting.
+> I welcome any suggestions.
+
+I'd be surprised if anyone asked to you that kind of crazy shifting.
+
+> <* The header files seem to have been autogenerated and have unnneeded
+> < =A0shift/mask operations.
+> <
+> <* It doesn't build on non-powerpc platforms since it uses out_{b,l}e
+> <accessors.
+> <
+> [Tirumala Marri] You have to select Little Endian mode for LE platform
+> From make menuconfig.
+
+I don't think you understood what I meant. Try building an ARM config
+with this driver enabled, for example, and you'll see that it breaks
+the build.
+
+
+-Olof
