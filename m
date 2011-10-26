@@ -1,26 +1,26 @@
-Return-Path: <B11780@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6F549B6F7F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 14:16:52 +1100 (EST)
-Received: from mail153-tx2 (localhost.localdomain [127.0.0.1])	by
- mail153-tx2-R.bigfish.com (Postfix) with ESMTP id 0DB78BA8175	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 03:16:44 +0000 (UTC)
-Received: from TX2EHSMHS032.bigfish.com (unknown [10.9.14.244])	by
- mail153-tx2.bigfish.com (Postfix) with ESMTP id E328C1C805A	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 03:16:43 +0000 (UTC)
-Subject: Re: [PATCH 1/5] powerpc/85xx: issue 15 EOI after core reset
-MIME-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1319583246-6120-1-git-send-email-msm@freescale.com>
-Date: Tue, 25 Oct 2011 22:16:44 -0500
-Message-ID: <08F58B37-0825-4C07-91B3-1040A7E70528@freescale.com>
-References: <1319583246-6120-1-git-send-email-msm@freescale.com>
-To: Matthew McClintock <msm@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DC5691007D9
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Oct 2011 14:35:08 +1100 (EST)
+Subject: Re: [PATCH 06/11] powerpc/85xx: Add ethernet magic packet property to
+ P1020 device tree
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=iso-8859-1
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4EA735E8.5010206@freescale.com>
+Date: Tue, 25 Oct 2011 22:35:08 -0500
+Message-Id: <6549A2B9-A9FD-42BC-A3B0-B920167739F5@kernel.crashing.org>
+References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
+ <1319318452-27036-2-git-send-email-galak@kernel.crashing.org>
+ <1319318452-27036-3-git-send-email-galak@kernel.crashing.org>
+ <1319318452-27036-4-git-send-email-galak@kernel.crashing.org>
+ <1319318452-27036-5-git-send-email-galak@kernel.crashing.org>
+ <1319318452-27036-6-git-send-email-galak@kernel.crashing.org>
+ <4EA735E8.5010206@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +31,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 25, 2011, at 5:54 PM, Matthew McClintock wrote:
+On Oct 25, 2011, at 5:19 PM, Scott Wood wrote:
 
-> This is listed as a requirement after issuing a core reset to
-> properly clear pending interrupts
+> On 10/22/2011 04:20 PM, Kumar Gala wrote:
+>> All eTSEC2 controllers support waking on magic packet so fixup device
+>> tree to report that.
 >=20
+> If they *all* support it, we can make the driver rely on the =
+compatible
+> instead.
+>=20
+> -Scott
 
-Fix comment message to be more clear on 'what' this is required. [ its a =
-requirement on FSL corenet series / MPIC v4.x ]
+I think this might have originated on eTSEC v1, in which all controllers =
+don't support it.
 
-> Signed-off-by: Matthew McClintock <msm@freescale.com>
-> ---
-> arch/powerpc/sysdev/mpic.c |    7 +++++++
-> 1 files changed, 7 insertions(+), 0 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 9678081..f5b83f0 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -1748,6 +1748,7 @@ void mpic_reset_core(int cpu)
-> 	struct mpic *mpic =3D mpic_primary;
-> 	u32 pir;
-> 	int cpuid =3D get_hard_smp_processor_id(cpu);
-> +	int i;
->=20
-> 	/* Set target bit for core reset */
-> 	pir =3D mpic_read(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT));
-> @@ -1759,6 +1760,12 @@ void mpic_reset_core(int cpu)
-> 	pir &=3D ~(1 << cpuid);
-> 	mpic_write(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT), pir);
-> 	mpic_read(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT));
-> +
-> +	/* Perform 15 EOI on each reset core to clear pending interrupts =
-*/
-> +	for (i =3D 0; i < 15; i++) {
-> +		_mpic_write(mpic->reg_type, &mpic->cpuregs[cpuid],
-> +				      MPIC_CPU_EOI, 0);
-> +	}
-> }
-> #endif /* CONFIG_SMP */
->=20
-> --=20
-> 1.7.6.1
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+I'm not against removing it & just using compatible but don't know =
+enough about these nodes to comment.
+
+- k=
