@@ -1,20 +1,37 @@
-Return-Path: <B29882@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
- [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 11CC3B6F94
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 05:47:15 +1100 (EST)
-From: Matthew McClintock <msm@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <kumar.gala@freescale.com>
-Subject: [PATCH v4 1/5] powerpc/85xx: issue 15 EOI after core reset for FSL
- CoreNet devices
-Date: Wed, 26 Oct 2011 13:46:57 -0500
-Message-ID: <1319654817-14087-1-git-send-email-msm@freescale.com>
-In-Reply-To: <1319654028-30478-1-git-send-email-msm@freescale.com>
-References: <1319654028-30478-1-git-send-email-msm@freescale.com>
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 9406FB6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 06:12:34 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by e28smtp01.in.ibm.com (8.14.4/8.13.1) with ESMTP id p9QJCORa021756
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 00:42:24 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ p9QJCOCm4436214
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 00:42:24 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ p9QJCN7Z000724
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 00:42:24 +0530
+Message-ID: <4EA85B95.9030802@in.ibm.com>
+Date: Thu, 27 Oct 2011 00:42:21 +0530
+From: Suzuki Poulose <suzuki@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] [44x] Enable CONFIG_RELOCATABLE for PPC44x
+References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
+ <20111010095514.16589.85241.stgit@suzukikp.in.ibm.com>
+ <4E9332AA.1050307@freescale.com> <4E943C70.4030106@in.ibm.com>
+ <1318428902.3782.9.camel@nimitz> <4EA6D701.3030603@freescale.com>
+In-Reply-To: <4EA6D701.3030603@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
+ Paul Mackerras <paulus@samba.org>,
+ linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is listed as a requirement for Freescale CoreNet based devices  (e.g
-p4080ds with MPIC v4.x) after issuing a core reset to properly clear pending
-interrupts.
+On 10/25/11 21:04, Scott Wood wrote:
+> On 10/12/2011 09:15 AM, Dave Hansen wrote:
+>> On Tue, 2011-10-11 at 18:24 +0530, Suzuki Poulose wrote:
+>>> On 10/10/11 23:30, Scott Wood wrote:
+>>>> On 10/10/2011 04:56 AM, Suzuki K. Poulose wrote:
+>>>>> #if defined(CONFIG_RELOCATABLE)&&   defined(CONFIG_44x)
+>>>>> #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + (KERNELBASE + RELOC_OFFSET)))
+>>>>> #define __pa(x) ((unsigned long)(x) + PHYSICAL_START - (KERNELBASE + RELOC_OFFSET))
+>>>>> #endif
+>>>>
+>>>> Why is this 44x-specific?
+>>>
+>>> As of now, we compile with relocations only for the 44x. We could make this
+>>> generic once the approach is accepted by everyone and implemented on the other
+>>> platforms.
+>>
+>> This is not the place to enforce that kind of thing.  If
+>> CONFIG_RELOCATABLE is only supported on one platform, then do:
+>>
+>> 	config RELOCATABLE
+>> 		depends on 44x
+>>
+>> and take the 44x reference out of the #ifdef.
+>
+> ...but please first rename the existing, different CONFIG_RELOCATABLE
+> behavior that is currently supported on e500.
 
-Signed-off-by: Matthew McClintock <msm@freescale.com>
----
- v2: Updated commit message
- v3: Added detail in code comment as well
- v4: Check for MPIC_FSL in mpic->flags to determine if we need 15 EOIs
+Scott,
 
- arch/powerpc/sysdev/mpic.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+I have renamed the new type of relocation to RELOCATABLE_PPC32_PIE. The patches
+were posted yesterday. Please let me know your thoughts.
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 9678081..0842c6f 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1748,6 +1748,7 @@ void mpic_reset_core(int cpu)
- 	struct mpic *mpic = mpic_primary;
- 	u32 pir;
- 	int cpuid = get_hard_smp_processor_id(cpu);
-+	int i;
- 
- 	/* Set target bit for core reset */
- 	pir = mpic_read(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT));
-@@ -1759,6 +1760,15 @@ void mpic_reset_core(int cpu)
- 	pir &= ~(1 << cpuid);
- 	mpic_write(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT), pir);
- 	mpic_read(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT));
-+
-+	/* Perform 15 EOI on each reset core to clear pending interrupts.
-+	 * This is required for FSL CoreNet based devices */
-+	if (mpic->flags & MPIC_FSL) {
-+		for (i = 0; i < 15; i++) {
-+			_mpic_write(mpic->reg_type, &mpic->cpuregs[cpuid],
-+				      MPIC_CPU_EOI, 0);
-+		}
-+	}
- }
- #endif /* CONFIG_SMP */
- 
--- 
-1.7.6.1
+Thanks
+Suzuki
