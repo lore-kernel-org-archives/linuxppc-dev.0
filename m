@@ -1,20 +1,31 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
- [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 58C371007D7
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2011 09:30:23 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: <kumar.gala@freescale.com>, <scottwood@freescale.com>, <miltonm@bga.com>,
- <tglx@linutronix.de>, <benh@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] [v2] powerpc/fsl_msi: add support for the fsl,
- msi property in PCI nodes
-Date: Wed, 26 Oct 2011 17:30:15 -0500
-Message-ID: <1319668215-20089-1-git-send-email-timur@freescale.com>
+Return-Path: <nacc@us.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 066B11007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 09:43:34 +1100 (EST)
+Received: from /spool/local
+ by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@us.ibm.com>;
+ Wed, 26 Oct 2011 18:43:30 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ p9QMhRUk233046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 18:43:27 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ p9QMhQHh021570
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 20:43:27 -0200
+Date: Wed, 26 Oct 2011 15:43:23 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/iommu: remove default window before creating larger
+ window
+Message-ID: <20111026224323.GA15685@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Cc: miltonm@us.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,115 +35,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Freescale parts with multiple MSI controllers, the controllers are
-combined into one "pool" of interrupts.  Whenever a device requests an MSI
-interrupt, the next available interrupt from the pool is selected,
-regardless of which MSI controller the interrupt is from.  This works
-because each PCI bus has an ATMU to all of CCSR, so any PCI device can
-access any MSI interrupt register.
+The DDW feature relies on there being sufficient TCE space to allocate
+for the requested DMA window size. The default window uses up some of
+that space, though, and it is recommended to first remove the default
+window and then allocate the larger window advertised by firmware. Do
+this by abstracting out parts of remove_ddw into a function that does
+not assume an existing larger window has been created.
 
-The fsl,msi property is used to specify that a given PCI bus should only
-use a specific MSI device.  This is necessary, for example, with the
-Freescale hypervisor, because the MSI devices are assigned to specific
-partitions.
-
-Ideally, we'd like to be able to assign MSI devices to PCI busses within
-the MSI or PCI layers.  However, there does not appear to be a mechanism
-to do that.  Whenever the MSI layer wants to allocate an MSI interrupt to
-a PCI device, it just calls arch_setup_msi_irqs().  It would be nice if we
-could register an MSI device with a specific PCI bus.
-
-So instead we remember the phandles of each MSI device, and we use that to
-limit our search for an available interrupt.  Whenever we are asked to
-allocate a new interrupt for a PCI device, we check the fsl,msi property
-of the PCI bus for that device.  If it exists, then as we are looping over
-all MSI devices, we skip the ones that don't have a matching phandle.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
- arch/powerpc/sysdev/fsl_msi.c |   33 +++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_msi.h |    3 +++
- 2 files changed, 36 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |   35 +++++++++++++++++++++++--------
+ 1 files changed, 26 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index e5c344d..155ccb2 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -148,14 +148,41 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+Is there a better way to get the default window's LIOBN than to call
+of_parse_dma_window?
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 01faab9..afcc04c 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -655,6 +655,21 @@ static int __init disable_ddw_setup(char *str)
  
- static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ early_param("disable_ddw", disable_ddw_setup);
+ 
++static void __remove_ddw(struct device_node *np, const u32 *ddw_avail, u64 liobn)
++{
++	int ret;
++
++	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
++	if (ret)
++		pr_warning("%s: failed to remove direct window: rtas returned "
++			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
++			np->full_name, ret, ddw_avail[2], liobn);
++	else
++		pr_debug("%s: successfully removed direct window: rtas returned "
++			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
++			np->full_name, ret, ddw_avail[2], liobn);
++}
++
+ static void remove_ddw(struct device_node *np)
  {
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct device_node *np;
-+	phandle phandle = 0;
- 	int rc, hwirq = -ENOMEM;
- 	unsigned int virq;
- 	struct msi_desc *entry;
- 	struct msi_msg msg;
- 	struct fsl_msi *msi_data;
+ 	struct dynamic_dma_window_prop *dwp;
+@@ -684,15 +699,7 @@ static void remove_ddw(struct device_node *np)
+ 		pr_debug("%s successfully cleared tces in window.\n",
+ 			 np->full_name);
+ 
+-	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
+-	if (ret)
+-		pr_warning("%s: failed to remove direct window: rtas returned "
+-			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
+-			np->full_name, ret, ddw_avail[2], liobn);
+-	else
+-		pr_debug("%s: successfully removed direct window: rtas returned "
+-			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
+-			np->full_name, ret, ddw_avail[2], liobn);
++	__remove_ddw(np, ddw_avail, liobn);
+ 
+ delprop:
+ 	ret = prom_remove_property(np, win64);
+@@ -843,6 +850,8 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	struct direct_window *window;
+ 	struct property *win64;
+ 	struct dynamic_dma_window_prop *ddwprop;
++	const void *dma_window = NULL;
++	unsigned long liobn, offset, size;
+ 
+ 	mutex_lock(&direct_window_init_mutex);
+ 
+@@ -918,6 +927,14 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 		goto out_free_prop;
+ 	}
  
 +	/*
-+	 * If the PCI node has an fsl,msi property, then we need to use it
-+	 * to find the specific MSI.
++	 * To maximize the resources available to the create RTAS call,
++	 * delete the existing DMA window
 +	 */
-+	np = of_parse_phandle(hose->dn, "fsl,msi", 0);
-+	if (np)
-+		phandle = np->phandle;
++	dma_window = of_get_property(pdn, "ibm,dma-window", NULL);
++	of_parse_dma_window(pdn, dma_window, &liobn, &offset, &size);
++	__remove_ddw(pdn, ddw_avail, liobn);
 +
- 	list_for_each_entry(entry, &pdev->msi_list, list) {
-+		/*
-+		 * Loop over all the available MSI devices until we find one
-+		 * that has an available interrupt.
-+		 */
- 		list_for_each_entry(msi_data, &msi_head, list) {
-+			/*
-+			 * If the PCI node has an fsl,msi property, then we
-+			 * need to restrict our search to the corresponding
-+			 * MSI node.  The simplest way is to skip over MSI
-+			 * nodes with the wrong phandle. Under the Freescale
-+			 * hypervisor, this has the additional benefit of
-+			 * skipping over MSI nodes that are not mapped in the
-+			 * PAMU.
-+			 */
-+			if (phandle && (phandle != msi_data->phandle))
-+				continue;
-+
- 			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
- 			if (hwirq >= 0)
- 				break;
-@@ -370,6 +397,12 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
- 
- 	msi->msiir_offset = features->msiir_offset + (res.start & 0xfffff);
- 
-+	/*
-+	 * Remember the phandle, so that we can match with any PCI nodes
-+	 * that have an "fsl,msi" property.
-+	 */
-+	msi->phandle = dev->dev.of_node->phandle;
-+
- 	rc = fsl_msi_init_allocator(msi);
- 	if (rc) {
- 		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 1313abb..b5d25ba 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -13,6 +13,7 @@
- #ifndef _POWERPC_SYSDEV_FSL_MSI_H
- #define _POWERPC_SYSDEV_FSL_MSI_H
- 
-+#include <linux/of.h>
- #include <asm/msi_bitmap.h>
- 
- #define NR_MSI_REG		8
-@@ -36,6 +37,8 @@ struct fsl_msi {
- 	struct msi_bitmap bitmap;
- 
- 	struct list_head list;          /* support multiple MSI banks */
-+
-+	phandle phandle;
- };
- 
- #endif /* _POWERPC_SYSDEV_FSL_MSI_H */
+ 	ret = create_ddw(dev, ddw_avail, &create, page_shift, len);
+ 	if (ret != 0)
+ 		goto out_free_prop;
 -- 
-1.7.3.4
+1.7.5.4
+
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
