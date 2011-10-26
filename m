@@ -1,29 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 08B8AB6F7C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 06:16:30 +1100 (EST)
-Message-ID: <4EA85C85.7090404@freescale.com>
-Date: Wed, 26 Oct 2011 14:16:21 -0500
-From: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 248E11007D2
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2011 08:26:35 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <scottwood@freescale.com>, <miltonm@bga.com>,
+ <tglx@linutronix.de>, <benh@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/fsl_msi: add support for the fsl,
+ msi property in PCI nodes
+Date: Wed, 26 Oct 2011 16:22:33 -0500
+Message-ID: <1319664153-11715-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-To: Suzuki Poulose <suzuki@in.ibm.com>
-Subject: Re: [PATCH 2/3] [44x] Enable CONFIG_RELOCATABLE for PPC44x
-References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
- <20111010095514.16589.85241.stgit@suzukikp.in.ibm.com>
- <4E9332AA.1050307@freescale.com> <4E943C70.4030106@in.ibm.com>
- <1318428902.3782.9.camel@nimitz> <4EA6D701.3030603@freescale.com>
- <4EA85B95.9030802@in.ibm.com>
-In-Reply-To: <4EA85B95.9030802@in.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
- Paul Mackerras <paulus@samba.org>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,29 +23,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/26/2011 02:12 PM, Suzuki Poulose wrote:
-> On 10/25/11 21:04, Scott Wood wrote:
->> On 10/12/2011 09:15 AM, Dave Hansen wrote:
->>> This is not the place to enforce that kind of thing.  If
->>> CONFIG_RELOCATABLE is only supported on one platform, then do:
->>>
->>>     config RELOCATABLE
->>>         depends on 44x
->>>
->>> and take the 44x reference out of the #ifdef.
->>
->> ...but please first rename the existing, different CONFIG_RELOCATABLE
->> behavior that is currently supported on e500.
-> 
-> Scott,
-> 
-> I have renamed the new type of relocation to RELOCATABLE_PPC32_PIE. The
-> patches
-> were posted yesterday. Please let me know your thoughts.
+On Freescale parts with multiple MSI controllers, the controllers are
+combined into one "pool" of interrupts.  Whenever a device requests an MSI
+interrupt, the next available interrupt from the pool is selected,
+regardless of which MSI controller the interrupt is from.  This works
+because each PCI bus has an ATMU to all of CCSR, so any PCI device can
+access any MSI interrupt register.
 
-I think it would make more sense to rename the existing behavior (maybe
-something like DYNAMIC_MEMSTART -- if there's even enough overhead to
-make it worth being configurable at all), since it's not fully
-relocatable and since 64-bit already uses RELOCATABLE to mean PIE.
+The fsl,msi property is used to specify that a given PCI bus should only
+use a specific MSI device.  This is necessary, for example, with the
+Freescale hypervisor, because the MSI devices are assigned to specific
+partitions.
 
--Scott
+Ideally, we'd like to be able to assign MSI devices to PCI busses within
+the MSI or PCI layers.  However, there does not appear to be a mechanism
+to do that.  Whenever the MSI layer wants to allocate an MSI interrupt to
+a PCI device, it just calls arch_setup_msi_irqs().  It would be nice if we
+could register an MSI device with a specific PCI bus.
+
+So instead we remember the phandles of each MSI device, and we use that to
+limit our search for an available interrupt.  Whenever we are asked to
+allocate a new interrupt for a PCI device, we check the fsl,msi property
+of the PCI bus for that device.  If it exists, then as we are looping over
+all MSI devices, we skip the ones that don't have a matching phandle.
+
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_msi.c |   33 +++++++++++++++++++++++++++++++++
+ 1 files changed, 33 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index e5c344d..ef08b1b 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -148,14 +148,41 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+ 
+ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ {
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++	struct device_node *np = hose->dn;
++	phandle phandle = 0;
+ 	int rc, hwirq = -ENOMEM;
+ 	unsigned int virq;
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
+ 	struct fsl_msi *msi_data;
+ 
++	/*
++	 * If the PCI node has an fsl,msi property, then we need to use it
++	 * to find the specific MSI.
++	 */
++	np = of_parse_phandle(hose->dn, "fsl,msi", 0);
++	if (np)
++		phandle = np->phandle;
++
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
++		/*
++		 * Loop over all the available MSI devices until we find one
++		 * that has an available interrupt.
++		 */
+ 		list_for_each_entry(msi_data, &msi_head, list) {
++			/*
++			 * If the PCI node has an fsl,msi property, then we
++			 * need to restrict our search to the corresponding
++			 * MSI node.  The simplest way is to skip over MSI
++			 * nodes with the wrong phandle. Under the Freescale
++			 * hypervisor, this has the additional benefit of
++			 * skipping over MSI nodes that are not mapped in the
++			 * PAMU.
++			 */
++			if (phandle && (phandle != msi_data->phandle))
++				continue;
++
+ 			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
+ 			if (hwirq >= 0)
+ 				break;
+@@ -370,6 +397,12 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
+ 
+ 	msi->msiir_offset = features->msiir_offset + (res.start & 0xfffff);
+ 
++	/*
++	 * Remember the phandle, so that we can match with any PCI nodes
++	 * that have an "fsl,msi" property.
++	 */
++	msi->phandle = dev->dev.of_node->phandle;
++
+ 	rc = fsl_msi_init_allocator(msi);
+ 	if (rc) {
+ 		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
+-- 
+1.7.3.4
