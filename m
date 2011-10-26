@@ -1,28 +1,21 @@
-Return-Path: <B29882@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 088751007D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 05:13:27 +1100 (EST)
-Received: from mail126-ch1 (localhost.localdomain [127.0.0.1])	by
- mail126-ch1-R.bigfish.com (Postfix) with ESMTP id BE3542A0336	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 18:13:19 +0000 (UTC)
-Received: from CH1EHSMHS018.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.244])	by mail126-ch1.bigfish.com (Postfix) with ESMTP id
- 7553993004C	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 18:13:17
- +0000 (UTC)
-From: Matthew McClintock <msm@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <kumar.gala@freescale.com>
-Subject: [PATCH 1/5] powerpc/85xx: issue 15 EOI after core reset for FSL
- CoreNet devices
-Date: Wed, 26 Oct 2011 13:13:17 -0500
-Message-ID: <1319652797-28017-1-git-send-email-msm@freescale.com>
-In-Reply-To: <08F58B37-0825-4C07-91B3-1040A7E70528@freescale.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8C8601007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 05:29:43 +1100 (EST)
+In-Reply-To: <1319652797-28017-1-git-send-email-msm@freescale.com>
 References: <08F58B37-0825-4C07-91B3-1040A7E70528@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <1319652797-28017-1-git-send-email-msm@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2E906E82-C4BE-4A7A-BA25-3ADAFFA3EB09@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] powerpc/85xx: issue 15 EOI after core reset for FSL
+ CoreNet devices
+Date: Wed, 26 Oct 2011 20:30:04 +0200
+To: Matthew McClintock <msm@freescale.com>
+Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,41 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is listed as a requirement for Freescale CoreNet based devices  (e.g
-p4080ds with MPIC v4.x) after issuing a core reset to properly clear pending
-interrupts.
+> @@ -1759,6 +1760,12 @@ void mpic_reset_core(int cpu)
+>  	pir &= ~(1 << cpuid);
+>  	mpic_write(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT), pir);
+>  	mpic_read(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT));
+> +
+> +	/* Perform 15 EOI on each reset core to clear pending interrupts */
+> +	for (i = 0; i < 15; i++) {
+> +		_mpic_write(mpic->reg_type, &mpic->cpuregs[cpuid],
+> +				      MPIC_CPU_EOI, 0);
+> +	}
 
-Signed-off-by: Matthew McClintock <msm@freescale.com>
----
-v2: Updated commit message
+This is generic code, right?  Please add info to the comment about
+which devices need this quirk, then.
 
- arch/powerpc/sysdev/mpic.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 9678081..f5b83f0 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1748,6 +1748,7 @@ void mpic_reset_core(int cpu)
- 	struct mpic *mpic = mpic_primary;
- 	u32 pir;
- 	int cpuid = get_hard_smp_processor_id(cpu);
-+	int i;
- 
- 	/* Set target bit for core reset */
- 	pir = mpic_read(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT));
-@@ -1759,6 +1760,12 @@ void mpic_reset_core(int cpu)
- 	pir &= ~(1 << cpuid);
- 	mpic_write(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT), pir);
- 	mpic_read(mpic->gregs, MPIC_INFO(GREG_PROCESSOR_INIT));
-+
-+	/* Perform 15 EOI on each reset core to clear pending interrupts */
-+	for (i = 0; i < 15; i++) {
-+		_mpic_write(mpic->reg_type, &mpic->cpuregs[cpuid],
-+				      MPIC_CPU_EOI, 0);
-+	}
- }
- #endif /* CONFIG_SMP */
- 
--- 
-1.7.6.1
+Segher
