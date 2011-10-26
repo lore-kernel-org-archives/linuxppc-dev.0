@@ -1,17 +1,18 @@
 Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 248E11007D2
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2011 08:26:35 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 58C371007D7
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2011 09:30:23 +1100 (EST)
 From: Timur Tabi <timur@freescale.com>
 To: <kumar.gala@freescale.com>, <scottwood@freescale.com>, <miltonm@bga.com>,
  <tglx@linutronix.de>, <benh@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/fsl_msi: add support for the fsl,
+Subject: [PATCH] [v2] powerpc/fsl_msi: add support for the fsl,
  msi property in PCI nodes
-Date: Wed, 26 Oct 2011 16:22:33 -0500
-Message-ID: <1319664153-11715-1-git-send-email-timur@freescale.com>
+Date: Wed, 26 Oct 2011 17:30:15 -0500
+Message-ID: <1319668215-20089-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -50,10 +51,11 @@ all MSI devices, we skip the ones that don't have a matching phandle.
 Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
  arch/powerpc/sysdev/fsl_msi.c |   33 +++++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/fsl_msi.h |    3 +++
+ 2 files changed, 36 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index e5c344d..ef08b1b 100644
+index e5c344d..155ccb2 100644
 --- a/arch/powerpc/sysdev/fsl_msi.c
 +++ b/arch/powerpc/sysdev/fsl_msi.c
 @@ -148,14 +148,41 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
@@ -61,7 +63,7 @@ index e5c344d..ef08b1b 100644
  static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
  {
 +	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct device_node *np = hose->dn;
++	struct device_node *np;
 +	phandle phandle = 0;
  	int rc, hwirq = -ENOMEM;
  	unsigned int virq;
@@ -111,5 +113,26 @@ index e5c344d..ef08b1b 100644
  	rc = fsl_msi_init_allocator(msi);
  	if (rc) {
  		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
+diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
+index 1313abb..b5d25ba 100644
+--- a/arch/powerpc/sysdev/fsl_msi.h
++++ b/arch/powerpc/sysdev/fsl_msi.h
+@@ -13,6 +13,7 @@
+ #ifndef _POWERPC_SYSDEV_FSL_MSI_H
+ #define _POWERPC_SYSDEV_FSL_MSI_H
+ 
++#include <linux/of.h>
+ #include <asm/msi_bitmap.h>
+ 
+ #define NR_MSI_REG		8
+@@ -36,6 +37,8 @@ struct fsl_msi {
+ 	struct msi_bitmap bitmap;
+ 
+ 	struct list_head list;          /* support multiple MSI banks */
++
++	phandle phandle;
+ };
+ 
+ #endif /* _POWERPC_SYSDEV_FSL_MSI_H */
 -- 
 1.7.3.4
