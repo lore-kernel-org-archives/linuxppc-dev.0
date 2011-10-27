@@ -1,24 +1,22 @@
-Return-Path: <pratyush.anand@gmail.com>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
- [209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id B1E9B1007D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 16:07:10 +1100 (EST)
-Received: by ggnk1 with SMTP id k1so2705572ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2011 22:07:05 -0700 (PDT)
+Return-Path: <B29882@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7CA24B6F7E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2011 16:24:12 +1100 (EST)
+From: McClintock Matthew-B29882 <B29882@freescale.com>
+To: radha krishna <ramamru@gmail.com>
+Subject: Re: Kdump/kexec for mpc85xx
+Date: Thu, 27 Oct 2011 05:21:01 +0000
+Message-ID: <CAEsOVNexaLHCs_rjC9z1_NeSTYYYEzp_+u0F-JwwrR3dt387Ag@mail.gmail.com>
+References: <CAJ4m0g6vDoT6wy3owmRpJowQrJqMyB0F80y=BBTcBZtzHJUd2A@mail.gmail.com>
+In-Reply-To: <CAJ4m0g6vDoT6wy3owmRpJowQrJqMyB0F80y=BBTcBZtzHJUd2A@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-In-Reply-To: <CAOesGMg_Q6M5fsN3BsROu3XpGZGiC1Wi+GD7ksOYFMNfn_wW0Q@mail.gmail.com>
-References: <1318630114-14064-1-git-send-email-tmarri@apm.com>
- <20111021173302.GB27652@quad.lixom.net>
- <CAOesGMg_Q6M5fsN3BsROu3XpGZGiC1Wi+GD7ksOYFMNfn_wW0Q@mail.gmail.com>
-Date: Thu, 27 Oct 2011 10:37:04 +0530
-Message-ID: <CAHM4w1nqP_OgsQ=NQ7yyd4cxHXyT8F1y7ULaCR2exLGg7YqqJg@mail.gmail.com>
-Subject: Re: [PATCH v15 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-From: Pratyush Anand <pratyush.anand@gmail.com>
-To: Olof Johansson <olof@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: tmarri@apm.com, greg@kroah.com, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Oct 23, 2011 at 2:00 AM, Olof Johansson <olof@lixom.net> wrote:
+On Wed, Oct 26, 2011 at 11:57 PM, radha krishna <ramamru@gmail.com> wrote:
+> Hi ,
 >
-> Hi,
->
-> On Fri, Oct 21, 2011 at 10:33 AM, Olof Johansson <olof@lixom.net> wrote:
-> > On Fri, Oct 14, 2011 at 03:08:34PM -0700, tmarri@apm.com wrote:
-> >> From: Tirumala Marri <tmarri@apm.com>
-> >
-> > Overall this driver seems to be based on the IP vendor driver? It
-> > looks like a completely flexible driver that implements all possible
-> > combinations of everything.
->
-> After looking a little closer at the patch set, it seems that number
-> one thing you need to do is simplify the driver. A lot.
->
-> I suggest starting from scratch with a clean implementation, only
-> bringing in the pieces you need. Over time, if other vendors are using
+> The subject is changed to "Kdump/kexec for mpc85xx", as i am going to use=
+ it
+> on P2010 and MPC8567 processors as will. So that it will not confuse othe=
+rs
+> and to continue as a separate topic. In fact, i have selected P2041 which=
+ is
+> e500mc core, for my next project.
+> Please provide more details on "how to Kdump/kexec for 85xx?". I mean ope=
+n
+> source versions of kexec-tools, linux versions, etc....
+> At preset, i have been using linux-2.6.32 on P2010 based board and ELDK42=
+ as
+> tool chain.
 
-Writing from scratch might take lot of time. I have used this driver
-on a ARM based platform,
-and found it stable after just  a bit modification , which I have
-suggested in my earlier mails.
-I have run all the test cases of standard testusb (except for
-iscochronous), and have found
-them working after the suggested modifications. So, I think that
-driver is stable in a sense, and
-can be included into mainline.
+You will need a newer kernel, I'm not precise of the exact release.
+But kexec-tools project contains a HOWTO in the project under
+'docs/mpc85xx.txt'. Please read that over and give it a shot. It
+should work for the P2010 or the P2041 cores.
 
-Regards
-Pratyush
-
-
-> other aspects of the same IP, they get to add those parts of the
-> driver when they need it. =A0Look at the dwc3 driver for comparison on
-> cleanliness, it's much cleaner than what you've posted.
->
->
-> -Olof
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+-M=
