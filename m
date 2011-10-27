@@ -1,30 +1,17 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 50D471007D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 02:41:58 +1100 (EST)
-Message-ID: <4EA97BB1.8020009@freescale.com>
-Date: Thu, 27 Oct 2011 10:41:37 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <arusev@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+ by ozlabs.org (Postfix) with SMTP id 4BE041007DA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 01:25:19 +1100 (EST)
+Message-ID: <4EA9683D.8030100@dev.rtsoft.ru>
+Date: Thu, 27 Oct 2011 18:18:37 +0400
+From: Rusev <arusev@dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Suzuki Poulose <suzuki@in.ibm.com>
-Subject: Re: [PATCH 2/3] [44x] Enable CONFIG_RELOCATABLE for PPC44x
-References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
- <20111010095514.16589.85241.stgit@suzukikp.in.ibm.com>
- <4E9332AA.1050307@freescale.com> <4E943C70.4030106@in.ibm.com>
- <1318428902.3782.9.camel@nimitz> <4EA6D701.3030603@freescale.com>
- <4EA85B95.9030802@in.ibm.com> <4EA85C85.7090404@freescale.com>
- <4EA919AE.4020508@in.ibm.com>
-In-Reply-To: <4EA919AE.4020508@in.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
- Paul Mackerras <paulus@samba.org>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
+To: benh@kernel.crashing.org,  paulus@samba.org,
+ galak@kernel.crashing.org,  Shengzhou.Liu@freescale.com,
+ Shaohui.Xie@freescale.com,  linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Fix for fsl_upm
+Content-Type: multipart/mixed; boundary="------------090608020905030200050608"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/27/2011 03:43 AM, Suzuki Poulose wrote:
-> On 10/27/11 00:46, Scott Wood wrote:
->> On 10/26/2011 02:12 PM, Suzuki Poulose wrote:
->>> I have renamed the new type of relocation to RELOCATABLE_PPC32_PIE. The
->>> patches
->>> were posted yesterday. Please let me know your thoughts.
->>
->> I think it would make more sense to rename the existing behavior (maybe
->> something like DYNAMIC_MEMSTART -- if there's even enough overhead to
->> make it worth being configurable at all), since it's not fully
->> relocatable and since 64-bit already uses RELOCATABLE to mean PIE.
-> 
-> I think leaving the current behaviour as it is, and adding the PIE as an
-> additional configuration option would be safe and wouldn't disturb the
-> existing dependencies.
+This is a multi-part message in MIME format.
+--------------090608020905030200050608
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-That's how things grow to be an unmaintainable mess.  AFAICT, what
-you're doing is the same as what 64-bit does for RELOCATABLE.  If
-they're doing the same thing, they should be called the same thing.
-Whereas 64-bit and e500 are currently doing different things for
-RELOCATABLE -- so they should be called different things.
+patch is vs. 2.6.39, yet it applied to 3.1
 
-> ( CRASH_DUMP etc. depend on RELOCATABLE for archs which work fine ).
 
-A simple grep should be able to sort out such dependencies on the name.
 
--Scott
+
+--------------090608020905030200050608
+Content-Type: text/x-patch;
+ name="fsl_lbc.c.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fsl_lbc.c.patch"
+
+Fix of UPM driver for Freescale PowerPC processors
+
+If Freescale LBC driver fails to initialise itself from device tree,
+then internal structure is freed only but not NULL-fied.
+As result functions fsl_lbc_find() after checking the structure is not NULL are
+trying to access device registers.
+
+Signed-off-by: Alexandre Rusev <arusev@dev.rtsoft.ru> 
+--- linux-2.6.39.old/arch/powerpc/sysdev/fsl_lbc.c	2011-10-27 03:17:28.000000000 +0400
++++ linux-2.6.39/arch/powerpc/sysdev/fsl_lbc.c	2011-10-27 05:06:44.000000000 +0400
+@@ -322,6 +322,7 @@ static int __devinit fsl_lbc_ctrl_probe(
+ err:
+ 	iounmap(fsl_lbc_ctrl_dev->regs);
+ 	kfree(fsl_lbc_ctrl_dev);
++	fsl_lbc_ctrl_dev = NULL;
+ 	return ret;
+ }
+ 
+
+--------------090608020905030200050608--
