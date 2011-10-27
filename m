@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 29C08B6F90
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 05:28:31 +1100 (EST)
-Subject: Re: Fix for fsl_upm
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=iso-8859-1
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4EA9683D.8030100@dev.rtsoft.ru>
-Date: Thu, 27 Oct 2011 13:28:12 -0500
-Message-Id: <4BF2BC2E-1596-42D1-A403-78A1FDBC9EAC@kernel.crashing.org>
-References: <4EA9683D.8030100@dev.rtsoft.ru>
-To: Rusev <arusev@dev.rtsoft.ru>
-Cc: Shaohui.Xie@freescale.com, linux-kernel@vger.kernel.org,
- Shengzhou.Liu@freescale.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id F17A21007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 07:49:18 +1100 (EST)
+Message-ID: <4EA9C3AA.6000807@freescale.com>
+Date: Thu, 27 Oct 2011 15:48:42 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Jimi Xenidis <jimix@pobox.com>
+Subject: Re: [PATCH v2] powerpc: book3e: WSP: Add Chroma as a new WSP/PowerEN
+ platform.
+References: <DD04A5E8-2850-4DDC-9E7A-B899B0EEEF11@pobox.com>
+In-Reply-To: <DD04A5E8-2850-4DDC-9E7A-B899B0EEEF11@pobox.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 10/11/2011 09:47 AM, Jimi Xenidis wrote:
+> On Tue Oct 4 05:02:41 EST 2011, Scott Wood wrote:
+> 
+> Looking at your comments below, will the following be acceptable
+> 
+>> On 09/29/2011 09:27 PM, Jimi Xenidis wrote:
+>>> diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
+>>> index ea2811c..a3eef8e 100644
+>>> --- a/arch/powerpc/platforms/wsp/Kconfig
+>>> +++ b/arch/powerpc/platforms/wsp/Kconfig
+>>> @@ -1,6 +1,7 @@
+>>>  config PPC_WSP
+>>>  	bool
+>>>  	select PPC_A2
+>>> +	select GENERIC_TBSYNC
+>>>  	select PPC_ICSWX
+>>>  	select PPC_SCOM
+>>>  	select PPC_XICS
+>>> @@ -8,14 +9,20 @@ config PPC_WSP
+>>>  	select PCI
+>>>  	select PPC_IO_WORKAROUNDS if PCI
+>>>  	select PPC_INDIRECT_PIO if PCI
+>>> +	select PPC_WSP_COPRO
+>>>  	default n
+>>>  
+>>>  menu "WSP platform selection"
+>>>  	depends on PPC_BOOK3E_64
+> 
+> add "&& SMP"
+> 
+>>>  
+>>>  config PPC_PSR2
+>>> -	bool "PSR-2 platform"
+>>> -	select GENERIC_TBSYNC
+>>> +	bool "PowerEN System Reference Platform 2"
+>>> +	select EPAPR_BOOT
+>>> +	select PPC_WSP
+>>> +	default y
+> 
+> Make these "default n"
+> 
+> Will that address everything?
 
-On Oct 27, 2011, at 9:18 AM, Rusev wrote:
+It should address the issues I've seen, though someone (IIRC Timur) said
+that he saw a dependency on some PCI error detection code as well.
 
-> patch is vs. 2.6.39, yet it applied to 3.1
->=20
->=20
->=20
-> Fix of UPM driver for Freescale PowerPC processors
->=20
-> If Freescale LBC driver fails to initialise itself from device tree,
-> then internal structure is freed only but not NULL-fied.
-> As result functions fsl_lbc_find() after checking the structure is not =
-NULL are
-> trying to access device registers.
->=20
-> Signed-off-by: Alexandre Rusev <arusev@dev.rtsoft.ru>=20
-> --- linux-2.6.39.old/arch/powerpc/sysdev/fsl_lbc.c	2011-10-27 =
-03:17:28.000000000 +0400
-> +++ linux-2.6.39/arch/powerpc/sysdev/fsl_lbc.c	2011-10-27 =
-05:06:44.000000000 +0400
-> @@ -322,6 +322,7 @@ static int __devinit fsl_lbc_ctrl_probe(
-> err:
-> 	iounmap(fsl_lbc_ctrl_dev->regs);
-> 	kfree(fsl_lbc_ctrl_dev);
-> +	fsl_lbc_ctrl_dev =3D NULL;
-> 	return ret;
-> }
->=20
-
-Can you send this as a proper patch.
-
-- k
+-Scott
