@@ -1,28 +1,30 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3CCCC1007D8
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Oct 2011 02:29:42 +1100 (EST)
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 50D471007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 02:41:58 +1100 (EST)
+Message-ID: <4EA97BB1.8020009@freescale.com>
+Date: Thu, 27 Oct 2011 10:41:37 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH 3/5][v2] fsl-rio: Add two ports and rapidio message units
- support
-Date: Thu, 27 Oct 2011 08:26:36 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552023B093B@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <9A1C2A9ACC704641BC472A1588CE164713112C@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1318514922-12672-1-git-send-email-galak@kernel.crashing.org>
- <1318514922-12672-2-git-send-email-galak@kernel.crashing.org>
- <1318514922-12672-3-git-send-email-galak@kernel.crashing.org>
- <0CE8B6BE3C4AD74AB97D9D29BD24E55202367762@CORPEXCH1.na.ads.idt.com>
- <9A1C2A9ACC704641BC472A1588CE164712E48E@039-SN1MPN1-005.039d.mgd.msft.net>
- <0CE8B6BE3C4AD74AB97D9D29BD24E55202368098@CORPEXCH1.na.ads.idt.com>
- <9A1C2A9ACC704641BC472A1588CE164713112C@039-SN1MPN1-005.039d.mgd.msft.net>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: Liu Gang-B34182 <B34182@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>, Zang Roy-R61911
- <r61911@freescale.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+To: Suzuki Poulose <suzuki@in.ibm.com>
+Subject: Re: [PATCH 2/3] [44x] Enable CONFIG_RELOCATABLE for PPC44x
+References: <20111010094627.16589.52367.stgit@suzukikp.in.ibm.com>
+ <20111010095514.16589.85241.stgit@suzukikp.in.ibm.com>
+ <4E9332AA.1050307@freescale.com> <4E943C70.4030106@in.ibm.com>
+ <1318428902.3782.9.camel@nimitz> <4EA6D701.3030603@freescale.com>
+ <4EA85B95.9030802@in.ibm.com> <4EA85C85.7090404@freescale.com>
+ <4EA919AE.4020508@in.ibm.com>
+In-Reply-To: <4EA919AE.4020508@in.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Michal Simek <monstr@monstr.eu>, tmarri@apm.com,
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Dave Hansen <dave@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
+ Paul Mackerras <paulus@samba.org>,
+ linux ppc dev <linuxppc-dev@lists.ozlabs.org>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,111 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 25, 2011 at 6:40 AM, Liu Gang-B34182 <B34182@freescale.com>
-wrote:
-> > ... skip ...
-> > > +
-> > > +      DBELL_TID(dmsg),
-> > > +      DBELL_INF(dmsg));
-> > > +     break;
-> > > +    }
-> > >     }
-> > >    }
-> >
-> > Do we need to check for matching DBELL_TID and mport destID here and
-> > scan only doorbell list attached to the right port? Otherwise this
-> may
-> > call service routine associated with doorbell on a wrong port.
-> > [Liu Gang-B34182] Do you mean to match DBELL_TID and mport DevID?
->=20
-> Yes.
->=20
-> > Usually this is a reliable method, but for the rapidio module of
-> > powerpc, will encounter some problem. We set the port's DevID by the
-> > register "Base Device ID CSR" defined in Rapidio Specification.
-> The
-> > rapidio module of powerpc can support two ports but have only one
-the
-> > Base Device ID CSR. So these two ports will have the same DevID.
-> > Although there are two registers "Alternate Device ID CSR" to
-> separate
-> > deviceIDs for each port, they are specific registers of the
-freescale
-> > rapidio and can't be accessed by getting the extended
-> feature
-> > space block offset. For this doobell issue, in order to call a right
-> > service routine, perhaps we should ensure that different ports in
-> > different "res->start and res->end" configurations.
->=20
-> This gives us an issue that has to be solved at some point.
-> Splitting doorbell resources may be a way in this case but should be
-> considered in context of RIO network with different endpoints and
-> therefore it will be some device-specific quirk.
->=20
-> Probably the best approach in this case is to keep doorbell handler as
-> it is now (for purpose of this patchset) and address doorbell resource
-> assignment during enumeration/discovery. At least this has to be well
-> commented.
-> [Liu Gang-B34182] I think this is a very complex issue, and could be
-> very difficult to be resolved if we can't separate DevIDs for each
-> port.
-> Based on the current architecture of the RIO driver, the doorbell
-> resource will be assigned by the application. For example, RIONET will
-> assign the doorbell resource like this:
-> 	if ((rc =3D rio_request_inb_dbell(rnet->mport,
-> 					(void *)ndev,
-> 					RIONET_DOORBELL_JOIN,
-> 					RIONET_DOORBELL_LEAVE,
-> 					rionet_dbell_event)) < 0)
-> 		goto out;
-> The res->start and res->end were defined by RIONET to
-> RIONET_DOORBELL_JOIN (0x1000) and RIONET_DOORBELL_LEAVE (0x1001). And
-> RIONET will send a doorbell
-> package like this:
-> 	rio_send_doorbell(peer->rdev, RIONET_DOORBELL_JOIN);
-> When the destination port of this doorbell package has been assigned
-> the same res->start and res->end, it can work well. But when we try to
-> address doorbell resource assignment during enumeration/discovery, and
-> give the different doorbell resource to different port, how an
-endpoint
-> to get the destination port resource it wants to send to a doorbell
-> package?
->=20
-> In fact, I also encountered some other issues due to the two ports
-> sharing one CSR. For example the "Host base device ID lock command and
-> status register" and "Port General control command and status
-> register", these caused some issues when enumeration/discovery, and
-> very difficult to be resolved
-> based on current RIO architecture.
+On 10/27/2011 03:43 AM, Suzuki Poulose wrote:
+> On 10/27/11 00:46, Scott Wood wrote:
+>> On 10/26/2011 02:12 PM, Suzuki Poulose wrote:
+>>> I have renamed the new type of relocation to RELOCATABLE_PPC32_PIE. The
+>>> patches
+>>> were posted yesterday. Please let me know your thoughts.
+>>
+>> I think it would make more sense to rename the existing behavior (maybe
+>> something like DYNAMIC_MEMSTART -- if there's even enough overhead to
+>> make it worth being configurable at all), since it's not fully
+>> relocatable and since 64-bit already uses RELOCATABLE to mean PIE.
+> 
+> I think leaving the current behaviour as it is, and adding the PIE as an
+> additional configuration option would be safe and wouldn't disturb the
+> existing dependencies.
 
-We need to adjust enumeration/discovery to deal with multi-port
-endpoints.
-As per RIO spec multi-port device has only one Base Device ID CSR but at
-least offers a way to properly identify such capability.
-Unfortunately p4080 controller follows older RIO 1.2 spec and does not
-implement the multiport bit and CSR 0x14. This will force us to have a
-quirk for devices with specific Device Identity CAR values.
+That's how things grow to be an unmaintainable mess.  AFAICT, what
+you're doing is the same as what 64-bit does for RELOCATABLE.  If
+they're doing the same thing, they should be called the same thing.
+Whereas 64-bit and e500 are currently doing different things for
+RELOCATABLE -- so they should be called different things.
 
-One of possible ways for discovery may be ignoring value in reg.0x60 and
-use destID set in the routing table of the attached switch (assuming
-that
-endpoint is capable to accept packets with destIDs other than one
-in reg.0x60). But this alone does not guarantee that destIDs assigned to
-two different ports will not match. This may force us to consider
-additional measures of identification (which may be easier to implement
-if 16-bit destIDs are used).
+> ( CRASH_DUMP etc. depend on RELOCATABLE for archs which work fine ).
 
-Anyway, we are not in position to resolve this immediately and probably
-the best what we can do now is to keep multi-port endpoint specifics
-in mind for future extensions.=20
+A simple grep should be able to sort out such dependencies on the name.
 
-I am slowly addressing multiple port support issues in
-enumeration/discovery prompted by introduction of tsi721 PCIe-to-SRIO
-bridge
-and will keep multi-port endpoints in mind (this is different from
-multiple
-tsi721's on single board).=20
-
-Regards,
-=20
-Alex.
+-Scott
