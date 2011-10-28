@@ -1,31 +1,16 @@
-Return-Path: <dipankar@in.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C2FDB1007DB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2011 01:38:38 +1100 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dipankar@in.ibm.com>;
- Fri, 28 Oct 2011 10:27:25 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- p9SEPc8d3391504
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 10:25:39 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- p9SEPbRK014943
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 08:25:37 -0600
-Date: Fri, 28 Oct 2011 19:55:32 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: [PATCH] NUMA topology support for powernv
-Message-ID: <20111028142532.GF26162@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <pmac@au1.ibm.com>
-Reply-To: dipankar@in.ibm.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BC6FBB6F77
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2011 02:50:42 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: hjk@hansjkoch.de
+Subject: [RFC][PATCH 1/2] uio: allow drivers to override the pgprot for mmap
+Date: Fri, 28 Oct 2011 10:50:29 -0500
+Message-Id: <1319817030-23992-1-git-send-email-galak@kernel.crashing.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,56 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+For some devices, the default behavior of pgprot_noncached() is not
+appropriate for all of its mappable regions. This provides a means for
+the kernel side of the UIO driver to override the flags without having
+to implement its own full mmap callback.
 
-This patch adds support for numa topology on powernv platforms running
-OPAL formware. It checks for the type of platform at run time and
-sets the affinity form correctly so that NUMA topology can be discovered
-correctly.
-
-Signed-off-by: Dipankar Sarma <dipankar@in.ibm.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Geoff Thorpe <geoff@geoffthorpe.net>
 ---
- arch/powerpc/mm/numa.c |   24 +++++++++++++++++-------
- 1 files changed, 17 insertions(+), 7 deletions(-)
+ drivers/uio/uio.c          |    6 +++++-
+ include/linux/uio_driver.h |    3 +++
+ 2 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0bfb90c..58f292f 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -315,7 +315,10 @@ static int __init find_min_common_depth(void)
- 	struct device_node *root;
- 	const char *vec5;
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+index dc27d89..0aebe27 100644
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -655,7 +655,11 @@ static int uio_mmap_physical(struct vm_area_struct *vma)
  
--	root = of_find_node_by_path("/rtas");
-+	if (firmware_has_feature(FW_FEATURE_OPAL))
-+		root = of_find_node_by_path("/ibm,opal");
+ 	vma->vm_flags |= VM_IO | VM_RESERVED;
+ 
+-	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++	if (idev->info->set_pgprot)
++		vma->vm_page_prot = idev->info->set_pgprot(idev->info, mi,
++							   vma->vm_page_prot);
 +	else
-+		root = of_find_node_by_path("/rtas");
- 	if (!root)
- 		root = of_find_node_by_path("/");
++		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
  
-@@ -344,12 +347,19 @@ static int __init find_min_common_depth(void)
+ 	return remap_pfn_range(vma,
+ 			       vma->vm_start,
+diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+index fd99ff9..edfe7c8 100644
+--- a/include/linux/uio_driver.h
++++ b/include/linux/uio_driver.h
+@@ -80,6 +80,7 @@ struct uio_device;
+  * @open:		open operation for this uio device
+  * @release:		release operation for this uio device
+  * @irqcontrol:		disable/enable irqs when 0/1 is written to /dev/uioX
++ * @set_pgprot:		allow driver to override default(noncached) pgprot
+  */
+ struct uio_info {
+ 	struct uio_device	*uio_dev;
+@@ -95,6 +96,8 @@ struct uio_info {
+ 	int (*open)(struct uio_info *info, struct inode *inode);
+ 	int (*release)(struct uio_info *info, struct inode *inode);
+ 	int (*irqcontrol)(struct uio_info *info, s32 irq_on);
++	pgprot_t (*set_pgprot)(struct uio_info *uio, unsigned int mem_idx,
++			       pgprot_t prot);
+ };
  
- #define VEC5_AFFINITY_BYTE	5
- #define VEC5_AFFINITY		0x80
--	chosen = of_find_node_by_path("/chosen");
--	if (chosen) {
--		vec5 = of_get_property(chosen, "ibm,architecture-vec-5", NULL);
--		if (vec5 && (vec5[VEC5_AFFINITY_BYTE] & VEC5_AFFINITY)) {
--			dbg("Using form 1 affinity\n");
--			form1_affinity = 1;
-+
-+	if (firmware_has_feature(FW_FEATURE_OPAL))
-+		form1_affinity = 1;
-+	else {
-+		chosen = of_find_node_by_path("/chosen");
-+		if (chosen) {
-+			vec5 = of_get_property(chosen, 
-+					       "ibm,architecture-vec-5", NULL);
-+			if (vec5 && (vec5[VEC5_AFFINITY_BYTE] & 
-+							VEC5_AFFINITY)) {
-+				dbg("Using form 1 affinity\n");
-+				form1_affinity = 1;
-+			}
- 		}
- 	}
- 
+ extern int __must_check
+-- 
+1.7.3.4
