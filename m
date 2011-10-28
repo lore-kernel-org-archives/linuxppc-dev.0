@@ -1,20 +1,21 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
- [209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E514EB6F62
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2011 07:43:57 +1100 (EST)
-Received: by ggnk1 with SMTP id k1so4788353ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 13:43:54 -0700 (PDT)
-Sender: "xenidis@gmail.com" <xenidis@gmail.com>
-From: Jimi Xenidis <jimix@pobox.com>
-Content-Type: text/plain; charset=us-ascii
-Subject: RFC: ESR_I/DLK processing
-Date: Fri, 28 Oct 2011 15:43:52 -0500
-Message-Id: <00A1F69B-FCB7-4F45-8BE4-4C4B35D53D59@pobox.com>
+Return-Path: <hjk@hansjkoch.de>
+Received: from www.hansjkoch.de (www.hansjkoch.de [178.63.77.200])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 556E41007DB
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2011 08:41:01 +1100 (EST)
+Date: Fri, 28 Oct 2011 23:40:39 +0200
+From: "Hans J. Koch" <hjk@hansjkoch.de>
 To: Kumar Gala <galak@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v1084)
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC][PATCH 2/2] Example to show use of uio pgprot
+Message-ID: <20111028214039.GC23092@local>
+References: <1319817030-23992-1-git-send-email-galak@kernel.crashing.org>
+ <1319817030-23992-2-git-send-email-galak@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1319817030-23992-2-git-send-email-galak@kernel.crashing.org>
+Cc: Greg KH <greg@kroah.com>, hjk@hansjkoch.de, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +25,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/kernel/head_fsl_booke.S has the following code:
-> 	/* Data Storage Interrupt */
-> 	START_EXCEPTION(DataStorage)
-> 	NORMAL_EXCEPTION_PROLOG
-> 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass =
-arg3 */
-> 	stw	r5,_ESR(r11)
-> 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass =
-arg2 */
-> 	andis.	r10,r5,(ESR_ILK|ESR_DLK)@h
-> 	bne	1f
-> 	EXC_XFER_EE_LITE(0x0300, handle_page_fault)
-> 1:
-> 	addi	r3,r1,STACK_FRAME_OVERHEAD
-> 	EXC_XFER_EE_LITE(0x0300, CacheLockingException)
+On Fri, Oct 28, 2011 at 10:50:30AM -0500, Kumar Gala wrote:
 
+A few remarks below.
 
-I need something similar for A2 (and all book3e) and was wondering, why =
-this isn't just:
+> +static void __init dpa_uio_portal_init(struct dpa_uio_portal *p,
+> +				const struct dpa_uio_class *c)
 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 88abe70..8451822 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -159,6 +159,14 @@ int __kprobes do_page_fault(struct pt_regs *regs, =
-unsigned long address,
->  	}
->  #endif
-> =20
-> +#ifdef CONFIG_PPC_BOOK3E
-> +	if (error_code & (ESR_DLK|ESR_ILK)) {
-> +		/* detect that this is a privileged op and SIGILL */
-> +		_exception(SIGILL, regs, ILL_PRVOPC, regs->nip);
-> +		return 0;
-> +	}
-> +#endif
+This can't be "void". You have to return apropiate errors.
+
+> +{
+> +	struct dpa_uio_info *info;
+> +	const struct resource *res;
+> +	u32 index;
+> +	int irq, ret;
 > +
->  	if (notify_page_fault(regs))
->  		return 0;
+> +	/* allocate 'info' */
+> +	info = kzalloc(sizeof(*info), GFP_KERNEL);
+> +	if (!info)
+> +		return;
 
-Its not like this need to be fast or anything.
-I'd be happy to submit a patch that adds to fault.c and removed the =
-I/DLK processing from head_fsl_booke.S
+return -ENOMEM (more similar cases below)
 
-Thoughts?
--jx
+> +	atomic_set(&info->ref, 1);
+> +	if (p->type == dpa_uio_portal_bman) {
+> +		res = &p->bm_cfg->addr_phys[0];
+> +		index = p->bm_cfg->public_cfg.index;
+> +		irq = p->bm_cfg->public_cfg.irq;
+> +	} else {
+> +		res = &p->qm_cfg->addr_phys[0];
+> +		index = p->qm_cfg->public_cfg.index;
+> +		irq = p->qm_cfg->public_cfg.irq;
+> +	}
+> +	/* We need to map the cache-inhibited region in the kernel for
+> +	 * interrupt-handling purposes. */
+> +	info->addr_ci = ioremap_prot(res[DPA_PORTAL_CI].start,
+> +				resource_size(&res[DPA_PORTAL_CI]),
+> +				_PAGE_GUARDED | _PAGE_NO_CACHE);
+> +	/* Name the UIO device according to the cell-index. It's supposed to be
+> +	 * unique for each device class (Qman/Bman), and is also a convenient
+> +	 * way for user-space to find the UIO device that corresponds to a given
+> +	 * portal device-tree node. */
+> +	sprintf(info->name, "%s%x", c->dev_prefix, index);
+> +	info->pdev = platform_device_alloc(info->name, -1);
+> +	if (!info->pdev) {
+> +		iounmap(info->addr_ci);
+> +		kfree(info);
+> +		pr_err("dpa_uio_portal: platform_device_alloc() failed\n");
+> +		return;
+> +	}
+> +	ret = platform_device_add(info->pdev);
+> +	if (ret) {
+> +		platform_device_put(info->pdev);
+> +		iounmap(info->addr_ci);
+> +		kfree(info);
+> +		pr_err("dpa_uio_portal: platform_device_add() failed\n");
+> +		return;
+> +	}
+> +	info->uio.name = info->name;
+> +	info->uio.version = dpa_uio_version;
+> +	info->uio.mem[DPA_PORTAL_CE].name = "cena";
+> +	info->uio.mem[DPA_PORTAL_CE].addr = res[DPA_PORTAL_CE].start;
+> +	info->uio.mem[DPA_PORTAL_CE].size = resource_size(&res[DPA_PORTAL_CE]);
+> +	info->uio.mem[DPA_PORTAL_CE].memtype = UIO_MEM_PHYS;
+> +	info->uio.mem[DPA_PORTAL_CI].name = "cinh";
+> +	info->uio.mem[DPA_PORTAL_CI].addr = res[DPA_PORTAL_CI].start;
+> +	info->uio.mem[DPA_PORTAL_CI].size = resource_size(&res[DPA_PORTAL_CI]);
+> +	info->uio.mem[DPA_PORTAL_CI].memtype = UIO_MEM_PHYS;
+> +	info->uio.irq = irq;
+> +	info->uio.handler = dpa_uio_irq_handler;
+> +	info->uio.set_pgprot = dpa_uio_pgprot;
+> +	info->uio.open = dpa_uio_open;
+> +	info->uio.release = dpa_uio_release;
+> +	ret = uio_register_device(&info->pdev->dev, &info->uio);
+
+This should be the last thing you do before return. You can have
+interrupts even before uio_register_device returns.
+
+> +	if (ret) {
+> +		platform_device_del(info->pdev);
+> +		platform_device_put(info->pdev);
+> +		iounmap(info->addr_ci);
+> +		kfree(info);
+> +		pr_err("dpa_uio_portal: UIO registration failed\n");
+> +		return;
+> +	}
+> +	list_add_tail(&info->node, &uio_portal_list);
+
+That should probably be done prior to uio_register_device.
+
+> +	pr_info("USDPAA portal initialised, %s\n", info->name);
+> +}
+> +
+> +static int __init dpa_uio_init(void)
+> +{
+> +	const struct dpa_uio_class *classes[3], **c = classes;
+> +	classes[0] = dpa_uio_bman();
+> +	classes[1] = dpa_uio_qman();
+> +	classes[2] = NULL;
+> +	while (*c) {
+> +		struct dpa_uio_portal *p;
+> +		list_for_each_entry(p, &(*c)->list, node)
+> +			dpa_uio_portal_init(p, *c);
+> +		c++;
+> +	}
+> +	pr_info("USDPAA portal layer loaded\n");
+> +	return 0;
+
+You can't just return OK here if dpa_uio_portal_init() fails.
+
+> +}
+> +
+> +static void __exit dpa_uio_exit(void)
+> +{
+> +	struct dpa_uio_info *info, *tmp;
+> +	list_for_each_entry_safe(info, tmp, &uio_portal_list, node) {
+> +		list_del(&info->node);
+> +		uio_unregister_device(&info->uio);
+> +		platform_device_del(info->pdev);
+> +		platform_device_put(info->pdev);
+> +		iounmap(info->addr_ci);
+> +		pr_info("USDPAA portal removed, %s\n", info->name);
+> +		kfree(info);
+> +	}
+> +	pr_info("USDPAA portal layer unloaded\n");
+> +}
+> +
+> +
+> +module_init(dpa_uio_init)
+> +module_exit(dpa_uio_exit)
+> +MODULE_LICENSE("GPL");
+> +
+> -- 
+> 1.7.3.4
+> 
+> 
