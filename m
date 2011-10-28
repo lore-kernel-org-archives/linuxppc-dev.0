@@ -1,21 +1,23 @@
 Return-Path: <B38951@freescale.com>
-Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
- [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
+ [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9EC131007DB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 20:19:42 +1100 (EST)
-Received: from mail122-tx2 (localhost.localdomain [127.0.0.1])	by
- mail122-tx2-R.bigfish.com (Postfix) with ESMTP id 982B4D504A4	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 09:19:34 +0000 (UTC)
-Received: from TX2EHSMHS040.bigfish.com (unknown [10.9.14.251])	by
- mail122-tx2.bigfish.com (Postfix) with ESMTP id 7762A1568050	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 09:19:34 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 6CFA11007DB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 18:04:12 +1100 (EST)
+Received: from mail102-db3 (localhost.localdomain [127.0.0.1])	by
+ mail102-db3-R.bigfish.com (Postfix) with ESMTP id C30175400CF	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 07:04:01 +0000 (UTC)
+Received: from DB3EHSMHS016.bigfish.com (unknown [10.3.81.244])	by
+ mail102-db3.bigfish.com (Postfix) with ESMTP id 9B86217C0050	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 07:04:01 +0000 (UTC)
 From: Jia Hongtao <B38951@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] Do not hide resource for pci/pcie when configured as Agent/EP
-Date: Fri, 28 Oct 2011 16:08:00 +0800
-Message-ID: <1319789280-12091-1-git-send-email-B38951@freescale.com>
+Subject: [PATCH SDK1.1 ] Do not hide resource for pci/pcie when configured as
+ Agent/EP
+Date: Fri, 28 Oct 2011 13:52:18 +0800
+Message-ID: <1319781138-16051-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: B11780@freescale.com, b38951@freescale.com
