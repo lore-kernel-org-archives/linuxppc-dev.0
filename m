@@ -1,26 +1,21 @@
-Return-Path: <B38951@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6CFA11007DB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 18:04:12 +1100 (EST)
-Received: from mail102-db3 (localhost.localdomain [127.0.0.1])	by
- mail102-db3-R.bigfish.com (Postfix) with ESMTP id C30175400CF	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 07:04:01 +0000 (UTC)
-Received: from DB3EHSMHS016.bigfish.com (unknown [10.3.81.244])	by
- mail102-db3.bigfish.com (Postfix) with ESMTP id 9B86217C0050	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2011 07:04:01 +0000 (UTC)
-From: Jia Hongtao <B38951@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH SDK1.1 ] Do not hide resource for pci/pcie when configured as
- Agent/EP
-Date: Fri, 28 Oct 2011 13:52:18 +0800
-Message-ID: <1319781138-16051-1-git-send-email-B38951@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: B11780@freescale.com, b38951@freescale.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B7887B6F83
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2011 00:09:53 +1100 (EST)
+Subject: Re: [PATCH 2/2] powerpc/fsl-pci: Only scan PCI bus if configured as a
+ host
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1319789023-8924-2-git-send-email-B38951@freescale.com>
+Date: Fri, 28 Oct 2011 08:09:45 -0500
+Message-Id: <A40D3EA1-8172-4267-A509-2409CF32310D@kernel.crashing.org>
+References: <1319789023-8924-1-git-send-email-B38951@freescale.com>
+ <1319789023-8924-2-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: B11780@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +25,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jason Jin <Jason.jin@freescale.com>
 
-Current pci/pcie init code will hide the pci/pcie host resource.
-But did not judge it is host/RC or agent/EP. If configured as
-agent/EP, we should avoid hiding its resource in the host side.
+On Oct 28, 2011, at 3:03 AM, Jia Hongtao wrote:
 
-In PCI system, the Programing Interface can be used to judge the
-host/agent status:
-Programing Interface = 0: host
-Programing Interface = 1: Agent
+> If we're an agent/end-point or fsl_add_bridge doesn't succeed due to =
+some
+> resource failure we should not scan the PCI bus. We change =
+fsl_add_bridge()
+> to return -ENODEV in the case we're an agent/end-point.
+>=20
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> arch/powerpc/sysdev/fsl_pci.c |   17 ++++++++++-------
+> 1 files changed, 10 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
+b/arch/powerpc/sysdev/fsl_pci.c
+> index 4d4536f..caa7801 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -370,7 +370,7 @@ int __init fsl_add_bridge(struct device_node *dev, =
+int is_primary)
+> 			iounmap(hose->cfg_data);
+> 		iounmap(hose->cfg_addr);
+> 		pcibios_free_controller(hose);
+> -		return 0;
+> +		return -ENODEV;
+> 	}
+>=20
+> 	setup_pci_cmd(hose);
+> @@ -418,6 +418,7 @@ void fsl_pci_setup(int primary_phb_addr)
+> {
+> 	struct device_node *np;
+> 	struct pci_controller *hose;
+> +	int ret;
+> 	dma_addr_t min_dma_addr =3D 0xffffffff;
+>=20
+> 	for_each_node_by_type(np, "pci") {
+> @@ -425,14 +426,16 @@ void fsl_pci_setup(int primary_phb_addr)
+> 			struct resource rsrc;
+> 			of_address_to_resource(np, 0, &rsrc);
+> 			if ((rsrc.start & 0xfffff) =3D=3D =
+primary_phb_addr)
+> -				fsl_add_bridge(np, 1);
+> +				ret =3D fsl_add_bridge(np, 1);
+> 			else
+> -				fsl_add_bridge(np, 0);
+> +				ret =3D fsl_add_bridge(np, 0);
+>=20
+> -			hose =3D pci_find_hose_for_OF_device(np);
+> -			min_dma_addr =3D min(min_dma_addr,
+> -					hose->dma_window_base_cur
+> -					+ hose->dma_window_size);
+> +			if (ret =3D=3D 0) {
+> +				hose =3D =
+pci_find_hose_for_OF_device(np);
+> +				min_dma_addr =3D min(min_dma_addr,
+> +						=
+hose->dma_window_base_cur
+> +						+ =
+hose->dma_window_size);
+> +			}
+>=20
+> 		}
+> 	}
 
-In PCIE system, both the Programing Interface and Header type can
-be used to judge the RC/EP status.
-Header Type = 0: EP
-Header Type = 1: RC
+In the failure case (i.e. when ret !=3D 0), what about the following =
+code:
 
-Signed-off-by: Jason Jin <Jason.jin@freescale.com>
-Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/kernel/pci-common.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
++#ifdef CONFIG_SWIOTLB
++	/*
++	 * if we couldn't map all of DRAM via the dma windows we need =
+SWIOTLB
++	 * to handle buffers located outside of dma capable memory =
+region
++	 */
++	if (memblock_end_of_DRAM() > min_dma_addr) {
++		ppc_swiotlb_enable =3D 1;
++		set_pci_dma_ops(&swiotlb_dma_ops);
++		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
++	}
++#endif
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 4f134132c..bc61a69 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1732,10 +1732,13 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
- {
- 	int i, class = dev->class >> 8;
-+	/* When configured as agent, programing interface = 1 */
-+	int prog_if = dev->class & 0xf;
- 
- 	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
- 	     class == PCI_CLASS_BRIDGE_OTHER) &&
- 		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
-+		(prog_if == 0) &&
- 		(dev->bus->parent == NULL)) {
- 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
- 			dev->resource[i].start = 0;
--- 
-1.7.5.1
+This should get updated to be:
+	if ((ret =3D=3D 0) && (memblock_end_of_DRAM() > min_dma_arr)) {
