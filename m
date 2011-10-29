@@ -1,21 +1,17 @@
-Return-Path: <hjk@hansjkoch.de>
-Received: from www.hansjkoch.de (www.hansjkoch.de [178.63.77.200])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 753321007DB
- for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2011 08:48:31 +1100 (EST)
-Date: Fri, 28 Oct 2011 23:48:12 +0200
-From: "Hans J. Koch" <hjk@hansjkoch.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 1/2] uio: allow drivers to override the pgprot for
- mmap
-Message-ID: <20111028214812.GD23092@local>
-References: <1319817030-23992-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <geoff@infradead.org>
+Subject: Re: Kernel hang on PS3 with SMP
+From: Geoff Levand <geoff@infradead.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <4EAA02A7.7010109@infradead.org>
+References: <CAHsu+b-AEtOs+YuYxYFTkMjGwUMoc3jP9cYYkb31nZ+JVrGNVQ@mail.gmail.com>
+ <1310808863.13765.3.camel@twins>  <4EAA02A7.7010109@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 28 Oct 2011 18:33:25 -0700
+Message-ID: <1319852005.24935.40.camel@gum>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1319817030-23992-1-git-send-email-galak@kernel.crashing.org>
-Cc: Greg KH <greg@kroah.com>, hjk@hansjkoch.de, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Frank Rowand <frank.rowand@us.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,71 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 28, 2011 at 10:50:29AM -0500, Kumar Gala wrote:
-> For some devices, the default behavior of pgprot_noncached() is not
-> appropriate for all of its mappable regions. This provides a means for
-> the kernel side of the UIO driver to override the flags without having
-> to implement its own full mmap callback.
+Hi,
 
-Thanks for also providing an example driver showing the use of this.
-You should also post this driver in a mainline-ready version, I'm a bit
-uncomfortable with adding a new function pointer without having any users.
+On Thu, 2011-10-27 at 18:17 -0700, Geoff Levand wrote: 
+> I verified that indeed 317f394160e9beb97d19a84c39b7e5eb3d7815a8
+> 'sched: Move the second half of ttwu() to the remote cpu' introduces
+> the hang.
 
-And since you change uio_driver.h you should also update documentation
-accordingly (Documentation/DocBook/uio-howto.tmpl).
+After some more digging I found that it seems a short while after
+startup ps3_smp_message_pass() gets called with a PPC_MSG_RESCHEDULE,
+but then there is no corresponding call to scheduler_ipi() on the target
+cpu.
 
-Otherwise, I have no general objections.
+I'll do some more work on it and verify that this is what is actually
+happening.
 
-Thanks,
-Hans
-
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Geoff Thorpe <geoff@geoffthorpe.net>
-> ---
->  drivers/uio/uio.c          |    6 +++++-
->  include/linux/uio_driver.h |    3 +++
->  2 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-> index dc27d89..0aebe27 100644
-> --- a/drivers/uio/uio.c
-> +++ b/drivers/uio/uio.c
-> @@ -655,7 +655,11 @@ static int uio_mmap_physical(struct vm_area_struct *vma)
->  
->  	vma->vm_flags |= VM_IO | VM_RESERVED;
->  
-> -	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-> +	if (idev->info->set_pgprot)
-> +		vma->vm_page_prot = idev->info->set_pgprot(idev->info, mi,
-> +							   vma->vm_page_prot);
-> +	else
-> +		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
->  
->  	return remap_pfn_range(vma,
->  			       vma->vm_start,
-> diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-> index fd99ff9..edfe7c8 100644
-> --- a/include/linux/uio_driver.h
-> +++ b/include/linux/uio_driver.h
-> @@ -80,6 +80,7 @@ struct uio_device;
->   * @open:		open operation for this uio device
->   * @release:		release operation for this uio device
->   * @irqcontrol:		disable/enable irqs when 0/1 is written to /dev/uioX
-> + * @set_pgprot:		allow driver to override default(noncached) pgprot
->   */
->  struct uio_info {
->  	struct uio_device	*uio_dev;
-> @@ -95,6 +96,8 @@ struct uio_info {
->  	int (*open)(struct uio_info *info, struct inode *inode);
->  	int (*release)(struct uio_info *info, struct inode *inode);
->  	int (*irqcontrol)(struct uio_info *info, s32 irq_on);
-> +	pgprot_t (*set_pgprot)(struct uio_info *uio, unsigned int mem_idx,
-> +			       pgprot_t prot);
->  };
->  
->  extern int __must_check
-> -- 
-> 1.7.3.4
-> 
-> 
+-Geoff
