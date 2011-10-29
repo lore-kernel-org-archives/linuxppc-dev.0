@@ -1,17 +1,22 @@
-Return-Path: <geoff@infradead.org>
-Subject: Re: Kernel hang on PS3 with SMP
-From: Geoff Levand <geoff@infradead.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <4EAA02A7.7010109@infradead.org>
-References: <CAHsu+b-AEtOs+YuYxYFTkMjGwUMoc3jP9cYYkb31nZ+JVrGNVQ@mail.gmail.com>
- <1310808863.13765.3.camel@twins>  <4EAA02A7.7010109@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 28 Oct 2011 18:33:25 -0700
-Message-ID: <1319852005.24935.40.camel@gum>
+Return-Path: <greg@kroah.com>
+Received: from out5.smtp.messagingengine.com (out5.smtp.messagingengine.com
+ [66.111.4.29])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F3F561007D5
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2011 17:38:32 +1100 (EST)
+Date: Sat, 29 Oct 2011 08:38:09 +0200
+From: Greg KH <greg@kroah.com>
+To: "Hans J. Koch" <hjk@hansjkoch.de>
+Subject: Re: [RFC][PATCH 1/2] uio: allow drivers to override the pgprot for
+ mmap
+Message-ID: <20111029063809.GC2280@kroah.com>
+References: <1319817030-23992-1-git-send-email-galak@kernel.crashing.org>
+ <20111028214812.GD23092@local>
 MIME-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Frank Rowand <frank.rowand@us.sony.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111028214812.GD23092@local>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,19 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, Oct 28, 2011 at 11:48:12PM +0200, Hans J. Koch wrote:
+> On Fri, Oct 28, 2011 at 10:50:29AM -0500, Kumar Gala wrote:
+> > For some devices, the default behavior of pgprot_noncached() is not
+> > appropriate for all of its mappable regions. This provides a means for
+> > the kernel side of the UIO driver to override the flags without having
+> > to implement its own full mmap callback.
+> 
+> Thanks for also providing an example driver showing the use of this.
+> You should also post this driver in a mainline-ready version, I'm a bit
+> uncomfortable with adding a new function pointer without having any users.
 
-On Thu, 2011-10-27 at 18:17 -0700, Geoff Levand wrote: 
-> I verified that indeed 317f394160e9beb97d19a84c39b7e5eb3d7815a8
-> 'sched: Move the second half of ttwu() to the remote cpu' introduces
-> the hang.
+I'm more than "uncomfortable", I'll refuse to take any such patch unless
+there is a in-kernel user, otherwise it makes no sense to add the
+pointer at all.
 
-After some more digging I found that it seems a short while after
-startup ps3_smp_message_pass() gets called with a PPC_MSG_RESCHEDULE,
-but then there is no corresponding call to scheduler_ipi() on the target
-cpu.
+thanks,
 
-I'll do some more work on it and verify that this is what is actually
-happening.
-
--Geoff
+greg k-h
