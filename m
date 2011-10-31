@@ -1,21 +1,11 @@
-Return-Path: <greg@kroah.com>
-Received: from out5.smtp.messagingengine.com (out5.smtp.messagingengine.com
- [66.111.4.29])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F3F561007D5
- for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2011 17:38:32 +1100 (EST)
-Date: Sat, 29 Oct 2011 08:38:09 +0200
-From: Greg KH <greg@kroah.com>
-To: "Hans J. Koch" <hjk@hansjkoch.de>
-Subject: Re: [RFC][PATCH 1/2] uio: allow drivers to override the pgprot for
- mmap
-Message-ID: <20111029063809.GC2280@kroah.com>
-References: <1319817030-23992-1-git-send-email-galak@kernel.crashing.org>
- <20111028214812.GD23092@local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111028214812.GD23092@local>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Santosh Kumar <santoshkumar.a@gmail.com>
+Subject: Re: powerpc 476, Little-endian, pte fault
+In-reply-to: <CAJw04pD24W_nGSLheWunCa_o7QqBmRf_TSAD44EkzazigRe_nQ@mail.gmail.com>
+References: <CAJw04pD24W_nGSLheWunCa_o7QqBmRf_TSAD44EkzazigRe_nQ@mail.gmail.com>
+Date: Mon, 31 Oct 2011 16:51:16 +1100
+Message-ID: <12144.1320040276@neuling.org>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,21 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 28, 2011 at 11:48:12PM +0200, Hans J. Koch wrote:
-> On Fri, Oct 28, 2011 at 10:50:29AM -0500, Kumar Gala wrote:
-> > For some devices, the default behavior of pgprot_noncached() is not
-> > appropriate for all of its mappable regions. This provides a means for
-> > the kernel side of the UIO driver to override the flags without having
-> > to implement its own full mmap callback.
+Adding linuxppc-dev list to the CC
+
+> KERNEL: linux 2.6.39.4
+> POWERPC: 476, little endian.
 > 
-> Thanks for also providing an example driver showing the use of this.
-> You should also post this driver in a mainline-ready version, I'm a bit
-> uncomfortable with adding a new function pointer without having any users.
+> I am trying to get linux 2.6.39.4 up on PPC 476 i have done done
+> Big-endian to little endian Changes in:
 
-I'm more than "uncomfortable", I'll refuse to take any such patch unless
-there is a in-kernel user, otherwise it makes no sense to add the
-pointer at all.
+Can you explain what you are trying to do in more detail?  What does "i
+have done Big-endian to little endian Changes" mean?
 
-thanks,
+> 1) bitops header file.
+> 2) while reading the device tree.
+> 3) the PTE read/computed in head_32.S
+> 4) added E bit in the TLB entries.
+> 
+> with all the above changes the kernel_init is done but and inited is
+> mounted.
 
-greg k-h
+Can you post your patch?
+
+Are you trying to boot the kernel in little endian or just run userspace
+in little endian?  
+
+> But while spawning init process the kernel continuously hits pte
+> faults at address 0x100000fc and never comes out. Please let me know
+> where i should be looking into.
+
+Is this the very first userspace instruction?
+
+Mikey
