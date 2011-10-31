@@ -1,15 +1,24 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Santosh Kumar <santoshkumar.a@gmail.com>
-Subject: Re: powerpc 476, Little-endian, pte fault
-In-reply-to: <CAJw04pAh5QDQMkUHbj9=rRPiUCZejimHiydCJFMAoZeSd_ydhA@mail.gmail.com>
-References: <CAJw04pD24W_nGSLheWunCa_o7QqBmRf_TSAD44EkzazigRe_nQ@mail.gmail.com>
- <12144.1320040276@neuling.org>
- <CAJw04pAh5QDQMkUHbj9=rRPiUCZejimHiydCJFMAoZeSd_ydhA@mail.gmail.com>
-Date: Mon, 31 Oct 2011 20:49:48 +1100
-Message-ID: <20440.1320054588@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Ian Munsie <ianmunsi@au1.ibm.com>,
- linux-kernel@vger.kernel.org
+Return-Path: <B35362@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 5F7C7B6F7D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2011 21:50:39 +1100 (EST)
+From: <b35362@freescale.com>
+To: <dwmw2@infradead.org>, <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH] mtd/nand : set Nand flash page address to FBAR and FPAR
+ correctly
+Date: Mon, 31 Oct 2011 17:38:20 +0800
+Message-ID: <1320053901-23801-2-git-send-email-b35362@freescale.com>
+In-Reply-To: <1320053901-23801-1-git-send-email-b35362@freescale.com>
+References: <1320053901-23801-1-git-send-email-b35362@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: r58472@freescale.com, linux-kernel@vger.kernel.org,
+ linux-mtd@lists.infradead.org, scottwood@freescale.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,41 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I have built a cross compiler for ppc440 in little endian mode and
-> using it to build the kernel.
-> 
-> Yes i am running Linux in Little-Endian. This is the first user space
-> process. I wrote the below program and running it as init from
-> /sbin/init. I have also set the permissions with chmod +s.
-> 
-> main()
-> {
-> 
-> while(1){
-> printf("hello world");
-> sleep(1);
->  }
-> }
+From: Liu Shuo <b35362@freescale.com>
 
-Does libc even support little endian on PPC?
+If we use the Nand flash chip whose number of pages in a block is greater
+than 64(for large page), we must treat the low bit of FBAR as being the
+high bit of the page address due to the limitation of FCM, it simply uses
+the low 6-bits (for large page) of the combined block/page address as the
+FPAR component, rather than considering the actual block size.
 
-> I have attached the patch.
+Signed-off-by: Liu Shuo <b35362@freescale.com>
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+Signed-off-by: Tang Yuantian <b29983@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ drivers/mtd/nand/fsl_elbc_nand.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
-This is a pretty huge patch:
-
- 115 files changed, 44479 insertions(+), 7398 deletions(-)
-
-It seems to include a new platform as well as a bunch of unrelated junk.
-
-I suggest you need to break this down into something more digestible.
-Like remove all the junk in the patch.  Then add the support for the new
-platform (invader? platform).  Then start looking at little endian.
-Unless you do this, it's unlikely anyone here is going to be able to
-help.
-
-When you get to the little endian work, you might want to take a look at
-this patch series from Ian Munsie:
-
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-October/086165.html
-
-Mikey
+diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
+index 33d8aad..681d8c5 100644
+--- a/drivers/mtd/nand/fsl_elbc_nand.c
++++ b/drivers/mtd/nand/fsl_elbc_nand.c
+@@ -167,15 +167,22 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
+ 
+ 	elbc_fcm_ctrl->page = page_addr;
+ 
+-	out_be32(&lbc->fbar,
+-	         page_addr >> (chip->phys_erase_shift - chip->page_shift));
+-
+ 	if (priv->page_size) {
++		/*
++		 * large page size chip : FPAR[PI] save the lowest 6 bits,
++		 *                        FBAR[BLK] save the other bits.
++		 */
++		out_be32(&lbc->fbar, page_addr >> 6);
+ 		out_be32(&lbc->fpar,
+ 		         ((page_addr << FPAR_LP_PI_SHIFT) & FPAR_LP_PI) |
+ 		         (oob ? FPAR_LP_MS : 0) | column);
+ 		buf_num = (page_addr & 1) << 2;
+ 	} else {
++		/*
++		 * small page size chip : FPAR[PI] save the lowest 5 bits,
++		 *                        FBAR[BLK] save the other bits.
++		 */
++		out_be32(&lbc->fbar, page_addr >> 5);
+ 		out_be32(&lbc->fpar,
+ 		         ((page_addr << FPAR_SP_PI_SHIFT) & FPAR_SP_PI) |
+ 		         (oob ? FPAR_SP_MS : 0) | column);
+-- 
+1.7.1
