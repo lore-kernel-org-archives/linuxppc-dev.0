@@ -1,18 +1,17 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from border.exmeritus.com (border.exmeritus.com
- [IPv6:2002:46a7:f11a:ffff::])
- by ozlabs.org (Postfix) with ESMTP id A2B32B6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2011 08:11:38 +1100 (EST)
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 01/10] powerpc/85xx: Move mpc85xx_smp_init() decl to a new
- "smp.h"
-Date: Mon, 31 Oct 2011 17:10:02 -0400
-Message-Id: <1320095411-20667-2-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [RFC PATCH 02/10] powerpc: Consolidate mpic_alloc() OF address
+ translation
+Date: Mon, 31 Oct 2011 17:10:03 -0400
+Message-Id: <1320095411-20667-3-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <1320095411-20667-1-git-send-email-Kyle.D.Moffett@boeing.com>
 References: <1320095411-20667-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Cc: Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Cc: Lennert Buytenhek <buytenh@secretlab.ca>,
+ devicetree-discuss@lists.ozlabs.org, Milton Miller <miltonm@bga.com>,
+ Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+ Scott Wood <scottwood@freescale.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,276 +21,675 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This removes a bunch of "extern" declarations and CONFIG_SMP ifdefs.
+Instead of using the open-coded "reg" property lookup and address
+translation in mpic_alloc(), directly call of_address_to_resource().
+This includes various workarounds for special cases which the naive
+of_address_translate() does not.
+
+Afterwards it is possible to remove the copiously copy-pasted calls to
+of_address_translate() from the 85xx/86xx/powermac platforms.
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/platforms/85xx/corenet_ds.c  |    7 +------
- arch/powerpc/platforms/85xx/mpc85xx_ds.c  |    6 +-----
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |    7 +------
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |    7 +------
- arch/powerpc/platforms/85xx/p1022_ds.c    |    7 +------
- arch/powerpc/platforms/85xx/p1023_rds.c   |    5 +----
- arch/powerpc/platforms/85xx/smp.c         |    1 +
- arch/powerpc/platforms/85xx/smp.h         |   15 +++++++++++++++
- arch/powerpc/platforms/85xx/xes_mpc85xx.c |    6 +-----
- 9 files changed, 23 insertions(+), 38 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/smp.h
+ arch/powerpc/platforms/85xx/corenet_ds.c  |    9 +----
+ arch/powerpc/platforms/85xx/ksi8560.c     |    9 +----
+ arch/powerpc/platforms/85xx/mpc8536_ds.c  |    9 +----
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c |    9 +----
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |    9 +----
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c  |   11 +----
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    9 +----
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   11 +----
+ arch/powerpc/platforms/85xx/p1010rdb.c    |    9 +----
+ arch/powerpc/platforms/85xx/p1022_ds.c    |    9 +----
+ arch/powerpc/platforms/85xx/p1023_rds.c   |    9 +----
+ arch/powerpc/platforms/85xx/sbc8548.c     |    9 +----
+ arch/powerpc/platforms/85xx/sbc8560.c     |    9 +----
+ arch/powerpc/platforms/85xx/socrates.c    |    9 +----
+ arch/powerpc/platforms/85xx/stx_gp3.c     |    9 +----
+ arch/powerpc/platforms/85xx/tqm85xx.c     |    9 +----
+ arch/powerpc/platforms/85xx/xes_mpc85xx.c |    9 +----
+ arch/powerpc/platforms/86xx/pic.c         |    4 +-
+ arch/powerpc/platforms/powermac/pic.c     |    7 +---
+ arch/powerpc/sysdev/mpic.c                |   63 +++++++++++++++--------------
+ 20 files changed, 54 insertions(+), 177 deletions(-)
 
 diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
-index 802ad11..435074d 100644
+index 435074d..7893ad3 100644
 --- a/arch/powerpc/platforms/85xx/corenet_ds.c
 +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
-@@ -31,6 +31,7 @@
- #include <linux/of_platform.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-+#include "smp.h"
- 
+@@ -36,7 +36,6 @@
  void __init corenet_ds_pic_init(void)
  {
-@@ -65,10 +66,6 @@ void __init corenet_ds_pic_init(void)
- /*
-  * Setup the architecture
-  */
--#ifdef CONFIG_SMP
--void __init mpc85xx_smp_init(void);
--#endif
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np = NULL;
+ 	unsigned int flags = MPIC_PRIMARY | MPIC_BIG_ENDIAN |
+ 				MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU;
+@@ -48,16 +47,10 @@ void __init corenet_ds_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
 -
- void __init corenet_ds_setup_arch(void)
+ 	if (ppc_md.get_irq == mpic_get_coreint_irq)
+ 		flags |= MPIC_ENABLE_COREINT;
+ 
+-	mpic = mpic_alloc(np, r.start, flags, 0, 256, " OpenPIC  ");
++	mpic = mpic_alloc(np, 0, flags, 0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+ 
+ 	mpic_init(mpic);
+diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
+index c46f935..b20c07d 100644
+--- a/arch/powerpc/platforms/85xx/ksi8560.c
++++ b/arch/powerpc/platforms/85xx/ksi8560.c
+@@ -68,7 +68,6 @@ static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
+ static void __init ksi8560_pic_init(void)
  {
- #ifdef CONFIG_PCI
-@@ -77,9 +74,7 @@ void __init corenet_ds_setup_arch(void)
- #endif
- 	dma_addr_t max = 0xffffffff;
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
+ #ifdef CONFIG_CPM2
+ 	int irq;
+@@ -81,13 +80,7 @@ static void __init ksi8560_pic_init(void)
+ 		return;
+ 	}
  
--#ifdef CONFIG_SMP
- 	mpc85xx_smp_init();
--#endif
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Could not map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+index f79f2f1..03173ba 100644
+--- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+@@ -35,7 +35,6 @@
+ void __init mpc8536_ds_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
  
- #ifdef CONFIG_PCI
- 	for_each_node_by_type(np, "pci") {
+ 	np = of_find_node_by_type(NULL, "open-pic");
+@@ -44,13 +43,7 @@ void __init mpc8536_ds_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
+ 			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
+ 			0, 256, " OpenPIC  ");
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 3b2c9bb..5cb797b 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -64,7 +64,6 @@ static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
+ static void __init mpc85xx_ads_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np = NULL;
+ #ifdef CONFIG_CPM2
+ 	int irq;
+@@ -76,13 +75,7 @@ static void __init mpc85xx_ads_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Could not map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 2bf9978..69c1d0a 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -187,7 +187,6 @@ static struct irqaction mpc85xxcds_8259_irqaction = {
+ static void __init mpc85xx_cds_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np = NULL;
+ 
+ 	np = of_find_node_by_type(np, "open-pic");
+@@ -197,13 +196,7 @@ static void __init mpc85xx_cds_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 1b9a8cf..52d2a3e 100644
+index 52d2a3e..b608da7 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -35,6 +35,7 @@
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-+#include "smp.h"
- 
- #undef DEBUG
- 
-@@ -152,9 +153,6 @@ static int mpc85xx_exclude_device(struct pci_controller *hose,
- /*
-  * Setup the architecture
-  */
--#ifdef CONFIG_SMP
--extern void __init mpc85xx_smp_init(void);
--#endif
- static void __init mpc85xx_ds_setup_arch(void)
+@@ -61,7 +61,6 @@ static void mpc85xx_8259_cascade(unsigned int irq, struct irq_desc *desc)
+ void __init mpc85xx_ds_pic_init(void)
  {
- #ifdef CONFIG_PCI
-@@ -187,9 +185,7 @@ static void __init mpc85xx_ds_setup_arch(void)
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
+ #ifdef CONFIG_PPC_I8259
+ 	struct device_node *cascade_node = NULL;
+@@ -75,20 +74,14 @@ void __init mpc85xx_ds_pic_init(void)
+ 		return;
+ 	}
  
--#ifdef CONFIG_SMP
- 	mpc85xx_smp_init();
--#endif
- 
- #ifdef CONFIG_SWIOTLB
- 	if (memblock_end_of_DRAM() > max) {
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+ 	if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS-CAMP")) {
+-		mpic = mpic_alloc(np, r.start,
++		mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY |
+ 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+ 			MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " OpenPIC  ");
+ 	} else {
+-		mpic = mpic_alloc(np, r.start,
++		mpic = mpic_alloc(np, 0,
+ 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
+ 			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+ 			  MPIC_SINGLE_DEST_CPU,
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 973b3f4..074be05 100644
+index 074be05..982f1a7 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -52,6 +52,7 @@
- #include <asm/qe_ic.h>
- #include <asm/mpic.h>
- #include <asm/swiotlb.h>
-+#include "smp.h"
+@@ -475,20 +475,13 @@ machine_arch_initcall(p1021_mds, swiotlb_setup_bus_notifier);
+ static void __init mpc85xx_mds_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np = NULL;
  
- #undef DEBUG
- #ifdef DEBUG
-@@ -154,10 +155,6 @@ static int mpc8568_mds_phy_fixups(struct phy_device *phydev)
-  * Setup the architecture
-  *
-  */
--#ifdef CONFIG_SMP
--extern void __init mpc85xx_smp_init(void);
--#endif
+ 	np = of_find_node_by_type(NULL, "open-pic");
+ 	if (!np)
+ 		return;
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
 -
- #ifdef CONFIG_QUICC_ENGINE
- static struct of_device_id mpc85xx_qe_ids[] __initdata = {
- 	{ .type = "qe", },
-@@ -382,9 +379,7 @@ static void __init mpc85xx_mds_setup_arch(void)
- 	}
- #endif
- 
--#ifdef CONFIG_SMP
- 	mpc85xx_smp_init();
--#endif
- 
- 	mpc85xx_mds_qe_init();
- 
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
+ 			MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " OpenPIC  ");
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index f5ff911..cd49898 100644
+index cd49898..67bd1d4 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -29,6 +29,7 @@
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-+#include "smp.h"
- 
- #undef DEBUG
- 
-@@ -82,9 +83,6 @@ void __init mpc85xx_rdb_pic_init(void)
- /*
-  * Setup the architecture
-  */
--#ifdef CONFIG_SMP
--extern void __init mpc85xx_smp_init(void);
--#endif
- static void __init mpc85xx_rdb_setup_arch(void)
+@@ -43,7 +43,6 @@
+ void __init mpc85xx_rdb_pic_init(void)
  {
- #ifdef CONFIG_PCI
-@@ -102,10 +100,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
+ 	unsigned long root = of_get_flat_dt_root();
  
- #endif
+@@ -53,20 +52,14 @@ void __init mpc85xx_rdb_pic_init(void)
+ 		return;
+ 	}
  
--#ifdef CONFIG_SMP
- 	mpc85xx_smp_init();
--#endif
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
 -
- 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
- }
+ 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
+-		mpic = mpic_alloc(np, r.start,
++		mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY |
+ 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+ 			MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " OpenPIC  ");
+ 	} else {
+-		mpic = mpic_alloc(np, r.start,
++		mpic = mpic_alloc(np, 0,
+ 		  MPIC_PRIMARY | MPIC_WANTS_RESET |
+ 		  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+ 		  MPIC_SINGLE_DEST_CPU,
+diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
+index d7387fa..5ffca27 100644
+--- a/arch/powerpc/platforms/85xx/p1010rdb.c
++++ b/arch/powerpc/platforms/85xx/p1010rdb.c
+@@ -31,7 +31,6 @@
+ void __init p1010_rdb_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
+ 
+ 	np = of_find_node_by_type(NULL, "open-pic");
+@@ -40,13 +39,7 @@ void __init p1010_rdb_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start, MPIC_PRIMARY | MPIC_WANTS_RESET |
++	mpic = mpic_alloc(np, NULL, MPIC_PRIMARY | MPIC_WANTS_RESET |
+ 	  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
+ 	  0, 256, " OpenPIC  ");
  
 diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 266b3aa..7e90e24 100644
+index 7e90e24..d911aca 100644
 --- a/arch/powerpc/platforms/85xx/p1022_ds.c
 +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -26,6 +26,7 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/fsl_guts.h>
-+#include "smp.h"
+@@ -239,7 +239,6 @@ int p1022ds_set_sysfs_monitor_port(int val)
+ void __init p1022_ds_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
  
- #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+ 	np = of_find_node_by_type(NULL, "open-pic");
+@@ -248,13 +247,7 @@ void __init p1022_ds_pic_init(void)
+ 		return;
+ 	}
  
-@@ -265,10 +266,6 @@ void __init p1022_ds_pic_init(void)
- 	mpic_init(mpic);
- }
- 
--#ifdef CONFIG_SMP
--void __init mpc85xx_smp_init(void);
--#endif
+-	if (of_address_to_resource(np, 0, &r)) {
+-		pr_err("Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
 -
- /*
-  * Setup the architecture
-  */
-@@ -309,9 +306,7 @@ static void __init p1022_ds_setup_arch(void)
- 	diu_ops.set_sysfs_monitor_port	= p1022ds_set_sysfs_monitor_port;
- #endif
- 
--#ifdef CONFIG_SMP
- 	mpc85xx_smp_init();
--#endif
- 
- #ifdef CONFIG_SWIOTLB
- 	if (memblock_end_of_DRAM() > max) {
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 		MPIC_PRIMARY | MPIC_WANTS_RESET |
+ 		MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+ 		MPIC_SINGLE_DEST_CPU,
 diff --git a/arch/powerpc/platforms/85xx/p1023_rds.c b/arch/powerpc/platforms/85xx/p1023_rds.c
-index 835e0b3..5ab21f3 100644
+index 5ab21f3..30a5adb 100644
 --- a/arch/powerpc/platforms/85xx/p1023_rds.c
 +++ b/arch/powerpc/platforms/85xx/p1023_rds.c
-@@ -30,6 +30,7 @@
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/mpic.h>
-+#include "smp.h"
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -39,10 +40,6 @@
-  * Setup the architecture
-  *
-  */
--#ifdef CONFIG_SMP
--void __init mpc85xx_smp_init(void);
--#endif
--
- static void __init mpc85xx_rds_setup_arch(void)
+@@ -109,7 +109,6 @@ machine_device_initcall(p1023_rds, p1023_publish_devices);
+ static void __init mpc85xx_rds_pic_init(void)
  {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np = NULL;
+ 
+ 	np = of_find_node_by_type(NULL, "open-pic");
+@@ -118,13 +117,7 @@ static void __init mpc85xx_rds_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, NULL,
+ 		MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
+ 		MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
+ 		0, 256, " OpenPIC  ");
+diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
+index d07dcb7..daced7d 100644
+--- a/arch/powerpc/platforms/85xx/sbc8548.c
++++ b/arch/powerpc/platforms/85xx/sbc8548.c
+@@ -54,7 +54,6 @@ static int sbc_rev;
+ static void __init sbc8548_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np = NULL;
+ 
+ 	np = of_find_node_by_type(np, "open-pic");
+@@ -64,13 +63,7 @@ static void __init sbc8548_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
+index 09ced72..bd8b6c9 100644
+--- a/arch/powerpc/platforms/85xx/sbc8560.c
++++ b/arch/powerpc/platforms/85xx/sbc8560.c
+@@ -55,7 +55,6 @@ static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
+ static void __init sbc8560_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np = NULL;
+ #ifdef CONFIG_CPM2
+ 	int irq;
+@@ -67,13 +66,7 @@ static void __init sbc8560_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Could not map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
+index 747d8fb..fb4bfd6 100644
+--- a/arch/powerpc/platforms/85xx/socrates.c
++++ b/arch/powerpc/platforms/85xx/socrates.c
+@@ -46,7 +46,6 @@
+ static void __init socrates_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
  	struct device_node *np;
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 5b9b901..4578112 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -27,6 +27,7 @@
  
- #include <sysdev/fsl_soc.h>
- #include <sysdev/mpic.h>
-+#include "smp.h"
+ 	np = of_find_node_by_type(NULL, "open-pic");
+@@ -55,13 +54,7 @@ static void __init socrates_pic_init(void)
+ 		return;
+ 	}
  
- extern void __early_start(void);
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Could not map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
+index 5387e9f..78aef45 100644
+--- a/arch/powerpc/platforms/85xx/stx_gp3.c
++++ b/arch/powerpc/platforms/85xx/stx_gp3.c
+@@ -59,7 +59,6 @@ static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
+ static void __init stx_gp3_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
+ #ifdef CONFIG_CPM2
+ 	int irq;
+@@ -71,13 +70,7 @@ static void __init stx_gp3_pic_init(void)
+ 		return;
+ 	}
  
-diff --git a/arch/powerpc/platforms/85xx/smp.h b/arch/powerpc/platforms/85xx/smp.h
-new file mode 100644
-index 0000000..e2b4493
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/smp.h
-@@ -0,0 +1,15 @@
-+#ifndef POWERPC_85XX_SMP_H_
-+#define POWERPC_85XX_SMP_H_ 1
-+
-+#include <linux/init.h>
-+
-+#ifdef CONFIG_SMP
-+void __init mpc85xx_smp_init(void);
-+#else
-+static inline void mpc85xx_smp_init(void)
-+{
-+	/* Nothing to do */
-+}
-+#endif
-+
-+#endif /* not POWERPC_85XX_SMP_H_ */
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Could not map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
+index 325de77..5775f4c 100644
+--- a/arch/powerpc/platforms/85xx/tqm85xx.c
++++ b/arch/powerpc/platforms/85xx/tqm85xx.c
+@@ -57,7 +57,6 @@ static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
+ static void __init tqm85xx_pic_init(void)
+ {
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
+ #ifdef CONFIG_CPM2
+ 	int irq;
+@@ -69,13 +68,7 @@ static void __init tqm85xx_pic_init(void)
+ 		return;
+ 	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Could not map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
 diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-index a9dc5e7..ce3f660 100644
+index ce3f660..fccf9aa 100644
 --- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
 +++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-@@ -32,6 +32,7 @@
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-+#include "smp.h"
- 
- /* A few bit definitions needed for fixups on some boards */
- #define MPC85xx_L2CTL_L2E		0x80000000 /* L2 enable */
-@@ -136,9 +137,6 @@ static int primary_phb_addr;
- /*
-  * Setup the architecture
-  */
--#ifdef CONFIG_SMP
--extern void __init mpc85xx_smp_init(void);
--#endif
- static void __init xes_mpc85xx_setup_arch(void)
+@@ -42,7 +42,6 @@
+ void __init xes_mpc85xx_pic_init(void)
  {
- #ifdef CONFIG_PCI
-@@ -172,9 +170,7 @@ static void __init xes_mpc85xx_setup_arch(void)
+ 	struct mpic *mpic;
+-	struct resource r;
+ 	struct device_node *np;
+ 
+ 	np = of_find_node_by_type(NULL, "open-pic");
+@@ -51,13 +50,7 @@ void __init xes_mpc85xx_pic_init(void)
+ 		return;
  	}
+ 
+-	if (of_address_to_resource(np, 0, &r)) {
+-		printk(KERN_ERR "Failed to map mpic register space\n");
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	mpic = mpic_alloc(np, r.start,
++	mpic = mpic_alloc(np, 0,
+ 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
+ 			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
+ 			0, 256, " OpenPIC  ");
+diff --git a/arch/powerpc/platforms/86xx/pic.c b/arch/powerpc/platforms/86xx/pic.c
+index 8ef8960..f85c8f0 100644
+--- a/arch/powerpc/platforms/86xx/pic.c
++++ b/arch/powerpc/platforms/86xx/pic.c
+@@ -33,7 +33,6 @@ void __init mpc86xx_init_irq(void)
+ {
+ 	struct mpic *mpic;
+ 	struct device_node *np;
+-	struct resource res;
+ #ifdef CONFIG_PPC_I8259
+ 	struct device_node *cascade_node = NULL;
+ 	int cascade_irq;
+@@ -43,9 +42,8 @@ void __init mpc86xx_init_irq(void)
+ 	np = of_find_node_by_type(NULL, "open-pic");
+ 	if (np == NULL)
+ 		return;
+-	of_address_to_resource(np, 0, &res);
+ 
+-	mpic = mpic_alloc(np, res.start,
++	mpic = mpic_alloc(np, 0,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET |
+ 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+ 			MPIC_SINGLE_DEST_CPU,
+diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+index 7667db4..fe360f7c 100644
+--- a/arch/powerpc/platforms/powermac/pic.c
++++ b/arch/powerpc/platforms/powermac/pic.c
+@@ -500,15 +500,10 @@ static struct mpic * __init pmac_setup_one_mpic(struct device_node *np,
+ 						int master)
+ {
+ 	const char *name = master ? " MPIC 1   " : " MPIC 2   ";
+-	struct resource r;
+ 	struct mpic *mpic;
+ 	unsigned int flags = master ? MPIC_PRIMARY : 0;
+ 	int rc;
+ 
+-	rc = of_address_to_resource(np, 0, &r);
+-	if (rc)
+-		return NULL;
+-
+ 	pmac_call_feature(PMAC_FTR_ENABLE_MPIC, np, 0, 0);
+ 
+ 	flags |= MPIC_WANTS_RESET;
+@@ -521,7 +516,7 @@ static struct mpic * __init pmac_setup_one_mpic(struct device_node *np,
+ 	if (master && (flags & MPIC_BIG_ENDIAN))
+ 		flags |= MPIC_U3_HT_IRQS;
+ 
+-	mpic = mpic_alloc(np, r.start, flags, 0, 0, name);
++	mpic = mpic_alloc(np, 0, flags, 0, 0, name);
+ 	if (mpic == NULL)
+ 		return NULL;
+ 
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index d5d3ff3..d6ef4d9 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1144,7 +1144,29 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	const char	*vers;
+ 	int		i;
+ 	int		intvec_top;
+-	u64		paddr = phys_addr;
++
++	/*
++	 * If no phyiscal address was specified then all of the phyiscal
++	 * addressing parameters must come from the device-tree.
++	 */
++	if (!phys_addr) {
++		BUG_ON(!node);
++
++		/* Check if it is DCR-based */
++		if (of_get_property(node, "dcr-reg")) {
++			flags |= MPIC_USES_DCR;
++		} else {
++			struct resource r;
++			if (of_address_to_resource(node, 0, &r))
++				return NULL;
++			phys_addr = r.start;
++		}
++	}
++
++#ifndef CONFIG_PPC_DCR
++	/* If DCR support is not enabled then MPICs cannot use it */
++	BUG_ON(flags & MPIC_USES_DCR);
++#endif
+ 
+ 	mpic = kzalloc(sizeof(struct mpic), GFP_KERNEL);
+ 	if (mpic == NULL)
+@@ -1226,35 +1248,16 @@ struct mpic * __init mpic_alloc(struct device_node *node,
  #endif
  
--#ifdef CONFIG_SMP
- 	mpc85xx_smp_init();
--#endif
- }
+ 	/* default register type */
+-	mpic->reg_type = (flags & MPIC_BIG_ENDIAN) ?
+-		mpic_access_mmio_be : mpic_access_mmio_le;
+-
+-	/* If no physical address is passed in, a device-node is mandatory */
+-	BUG_ON(paddr == 0 && node == NULL);
+-
+-	/* If no physical address passed in, check if it's dcr based */
+-	if (paddr == 0 && of_get_property(node, "dcr-reg", NULL) != NULL) {
+-#ifdef CONFIG_PPC_DCR
+-		mpic->flags |= MPIC_USES_DCR;
++	if (flags & MPIC_USES_DCR)
+ 		mpic->reg_type = mpic_access_dcr;
+-#else
+-		BUG();
+-#endif /* CONFIG_PPC_DCR */
+-	}
+-
+-	/* If the MPIC is not DCR based, and no physical address was passed
+-	 * in, try to obtain one
+-	 */
+-	if (paddr == 0 && !(mpic->flags & MPIC_USES_DCR)) {
+-		const u32 *reg = of_get_property(node, "reg", NULL);
+-		BUG_ON(reg == NULL);
+-		paddr = of_translate_address(node, reg);
+-		BUG_ON(paddr == OF_BAD_ADDR);
+-	}
++	else if (flags & MPIC_BIG_ENDIAN)
++		mpic->reg_type = mpic_access_mmio_be;
++	else
++		mpic->reg_type = mpic_access_mmio_le;
  
- static struct of_device_id __initdata xes_mpc85xx_ids[] = {
+ 	/* Map the global registers */
+-	mpic_map(mpic, node, paddr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
+-	mpic_map(mpic, node, paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
++	mpic_map(mpic, node, phys_addr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
++	mpic_map(mpic, node, phys_addr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
+ 
+ 	/* Reset */
+ 
+@@ -1303,7 +1306,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 
+ 	/* Map the per-CPU registers */
+ 	for (i = 0; i < mpic->num_cpus; i++) {
+-		mpic_map(mpic, node, paddr, &mpic->cpuregs[i],
++		mpic_map(mpic, node, phys_addr, &mpic->cpuregs[i],
+ 			 MPIC_INFO(CPU_BASE) + i * MPIC_INFO(CPU_STRIDE),
+ 			 0x1000);
+ 	}
+@@ -1311,7 +1314,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	/* Initialize main ISU if none provided */
+ 	if (mpic->isu_size == 0) {
+ 		mpic->isu_size = mpic->num_sources;
+-		mpic_map(mpic, node, paddr, &mpic->isus[0],
++		mpic_map(mpic, node, phys_addr, &mpic->isus[0],
+ 			 MPIC_INFO(IRQ_BASE), MPIC_INFO(IRQ_STRIDE) * mpic->isu_size);
+ 	}
+ 	mpic->isu_shift = 1 + __ilog2(mpic->isu_size - 1);
+@@ -1343,7 +1346,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	}
+ 	printk(KERN_INFO "mpic: Setting up MPIC \"%s\" version %s at %llx,"
+ 	       " max %d CPUs\n",
+-	       name, vers, (unsigned long long)paddr, mpic->num_cpus);
++	       name, vers, (unsigned long long)phys_addr, mpic->num_cpus);
+ 	printk(KERN_INFO "mpic: ISU size: %d, shift: %d, mask: %x\n",
+ 	       mpic->isu_size, mpic->isu_shift, mpic->isu_mask);
+ 
 -- 
 1.7.2.5
