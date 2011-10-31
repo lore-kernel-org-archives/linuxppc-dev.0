@@ -1,20 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 159D9B6F65
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2011 01:21:27 +1100 (EST)
-Subject: Re: [4/4] powerpc/booke: Re-organize debug code
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <5EF5AFC4-C852-4D1C-9019-D1CBAE1157EA@pobox.com>
-Date: Mon, 31 Oct 2011 09:21:15 -0500
-Message-Id: <137546DC-1F2C-4623-B96F-5F9FFB9498F9@kernel.crashing.org>
-References: <1317905621-5537-4-git-send-email-galak@kernel.crashing.org>
- <5EF5AFC4-C852-4D1C-9019-D1CBAE1157EA@pobox.com>
-To: Jimi Xenidis <jimix@pobox.com>
-Cc: linuxppc-dev@ozlabs.org
+ (Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 8A336B6F7B
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2011 04:05:41 +1100 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 31 Oct 2011 18:00:29 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ p9VH2W4L2216128
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Nov 2011 04:02:32 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ p9VH5LIU018791
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Nov 2011 04:05:21 +1100
+Subject: [RFC PATCH v3 00/10] fadump: Firmware-assisted dump support for
+ Powerpc.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Mon, 31 Oct 2011 22:34:28 +0530
+Message-ID: <20111031170200.12259.27663.stgit@mars.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Anton Blanchard <anton@samba.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Milton Miller <miltonm@bga.com>,
+ Amerigo Wang <amwang@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,250 +39,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi All,
 
-On Oct 28, 2011, at 2:37 PM, Jimi Xenidis wrote:
+Please find the version 3 of the patchset that implements firmware-assisted
+dump mechanism to capture kernel crash dump for Powerpc architecture. The
+firmware-assisted dump is a robust mechanism to get reliable kernel crash
+dump with assistance from firmware. This approach does not use kexec, instead
+firmware assists in booting the kdump kernel while preserving memory contents.
 
->=20
-> On Oct 5, 2011, at 9:53 PM, Kumar Gala wrote:
->=20
->> * set_dabr/do_dabr are no longer used when CNFIG_PPC_ADV_DEBUG_REGS =
-is set
->> refactor code a bit such that we only build the dabr code for
->> !CONFIG_PPC_ADV_DEBUG_REGS and removed some CONFIG_PPC_ADV_DEBUG_REGS
->> code in set_dabr that would never get built.
->>=20
->> * Move do_send_trap into traps.c as its only used there
->>=20
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>=20
->> ---
->> arch/powerpc/include/asm/system.h |    5 +--
->> arch/powerpc/kernel/process.c     |   97 =
-+++++++++++++-----------------------
->> arch/powerpc/kernel/traps.c       |   17 +++++++
->> 3 files changed, 53 insertions(+), 66 deletions(-)
->>=20
->> diff --git a/arch/powerpc/include/asm/system.h =
-b/arch/powerpc/include/asm/system.h
->> index e30a13d..1dc5d9c 100644
->> --- a/arch/powerpc/include/asm/system.h
->> +++ b/arch/powerpc/include/asm/system.h
->> @@ -111,11 +111,8 @@ static inline int debugger_dabr_match(struct =
-pt_regs *regs) { return 0; }
->> static inline int debugger_fault_handler(struct pt_regs *regs) { =
-return 0; }
->> #endif
->>=20
->> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
->> extern int set_dabr(unsigned long dabr);
->> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
->> -extern void do_send_trap(struct pt_regs *regs, unsigned long =
-address,
->> -			 unsigned long error_code, int signal_code, int =
-brkpt);
->> -#else
->=20
->=20
-> This part of the patch breaks xmon.c
-> Naively I simply wrapped the xmon call:
->=20
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index f08836a..b5911b2 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -738,8 +738,10 @@ static void insert_bpts(void)
->=20
-> static void insert_cpu_bpts(void)
-> {
-> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
-> 	if (dabr.enabled)
-> 		set_dabr(dabr.address | (dabr.enabled & 7));
-> +#endif
-> 	if (iabr && cpu_has_feature(CPU_FTR_IABR))
-> 		mtspr(SPRN_IABR, iabr->address
-> 			 | (iabr->enabled & (BP_IABR|BP_IABR_TE)));
-> @@ -767,7 +769,9 @@ static void remove_bpts(void)
->=20
-> static void remove_cpu_bpts(void)
-> {
-> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
-> 	set_dabr(0);
-> +#endif
-> 	if (cpu_has_feature(CPU_FTR_IABR))
-> 		mtspr(SPRN_IABR, 0);
-> }
+Changes in v3:
+-------------
+- Re-factored the implementation to work with kdump service start/stop.
+  Introduced fadump_registered sysfs control file which will be used by
+  kdump init scripts to start/stop firmware assisted dump. echo 1 to
+  /sys/kernel/fadump_registered file for fadump registration and
+  echo 0 to /sys/kernel/fadump_registered file for fadump un-registration.
+- Introduced the locking mechanism to handle simultaneous writes to
+  sysfs control files fadump_registered and fadump_release_mem
 
-Shouldn't all of these functions be #ifndef'd out as we don't support =
-cpu_bpts on book-e parts in xmon code today?
+  Affected patches are: 01/10, 03/10, 08/10.
 
->=20
-> -JX
->=20
->=20
->> extern void do_dabr(struct pt_regs *regs, unsigned long address,
->> 		    unsigned long error_code);
->> #endif
->> diff --git a/arch/powerpc/kernel/process.c =
-b/arch/powerpc/kernel/process.c
->> index 269a309..989e574 100644
->> --- a/arch/powerpc/kernel/process.c
->> +++ b/arch/powerpc/kernel/process.c
->> @@ -251,50 +251,6 @@ void discard_lazy_cpu_state(void)
->> #endif /* CONFIG_SMP */
->>=20
->> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
->> -void do_send_trap(struct pt_regs *regs, unsigned long address,
->> -		  unsigned long error_code, int signal_code, int =
-breakpt)
->> -{
->> -	siginfo_t info;
->> -
->> -	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->> -			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->> -		return;
->> -
->> -	/* Deliver the signal to userspace */
->> -	info.si_signo =3D SIGTRAP;
->> -	info.si_errno =3D breakpt;	/* breakpoint or watchpoint id =
-*/
->> -	info.si_code =3D signal_code;
->> -	info.si_addr =3D (void __user *)address;
->> -	force_sig_info(SIGTRAP, &info, current);
->> -}
->> -#else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
->> -void do_dabr(struct pt_regs *regs, unsigned long address,
->> -		    unsigned long error_code)
->> -{
->> -	siginfo_t info;
->> -
->> -	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->> -			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->> -		return;
->> -
->> -	if (debugger_dabr_match(regs))
->> -		return;
->> -
->> -	/* Clear the DABR */
->> -	set_dabr(0);
->> -
->> -	/* Deliver the signal to userspace */
->> -	info.si_signo =3D SIGTRAP;
->> -	info.si_errno =3D 0;
->> -	info.si_code =3D TRAP_HWBKPT;
->> -	info.si_addr =3D (void __user *)address;
->> -	force_sig_info(SIGTRAP, &info, current);
->> -}
->> -#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
->> -
->> -static DEFINE_PER_CPU(unsigned long, current_dabr);
->> -
->> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
->> /*
->> * Set the debug registers back to their default "safe" values.
->> */
->> @@ -357,16 +313,7 @@ static void switch_booke_debug_regs(struct =
-thread_struct *new_thread)
->> 			prime_debug_regs(new_thread);
->> }
->> #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
->> -#ifndef CONFIG_HAVE_HW_BREAKPOINT
->> -static void set_debug_reg_defaults(struct thread_struct *thread)
->> -{
->> -	if (thread->dabr) {
->> -		thread->dabr =3D 0;
->> -		set_dabr(0);
->> -	}
->> -}
->> -#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
->> -#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
->> +static DEFINE_PER_CPU(unsigned long, current_dabr);
->>=20
->> int set_dabr(unsigned long dabr)
->> {
->> @@ -376,19 +323,45 @@ int set_dabr(unsigned long dabr)
->> 		return ppc_md.set_dabr(dabr);
->>=20
->> 	/* XXX should we have a CPU_FTR_HAS_DABR ? */
->> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
->> -	mtspr(SPRN_DAC1, dabr);
->> -#ifdef CONFIG_PPC_47x
->> -	isync();
->> -#endif
->> -#elif defined(CONFIG_PPC_BOOK3S)
->> 	mtspr(SPRN_DABR, dabr);
->> -#endif
->> -
->>=20
->> 	return 0;
->> }
->>=20
->> +void do_dabr(struct pt_regs *regs, unsigned long address,
->> +		    unsigned long error_code)
->> +{
->> +	siginfo_t info;
->> +
->> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->> +			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->> +		return;
->> +
->> +	if (debugger_dabr_match(regs))
->> +		return;
->> +
->> +	/* Clear the DABR */
->> +	set_dabr(0);
->> +
->> +	/* Deliver the signal to userspace */
->> +	info.si_signo =3D SIGTRAP;
->> +	info.si_errno =3D 0;
->> +	info.si_code =3D TRAP_HWBKPT;
->> +	info.si_addr =3D (void __user *)address;
->> +	force_sig_info(SIGTRAP, &info, current);
->> +}
->> +
->> +#ifndef CONFIG_HAVE_HW_BREAKPOINT
->> +static void set_debug_reg_defaults(struct thread_struct *thread)
->> +{
->> +	if (thread->dabr) {
->> +		thread->dabr =3D 0;
->> +		set_dabr(0);
->> +	}
->> +}
->> +#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
->> +#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
->> +
->> #ifdef CONFIG_PPC64
->> DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
->> #endif
->> diff --git a/arch/powerpc/kernel/traps.c =
-b/arch/powerpc/kernel/traps.c
->> index db733d3..edc1108 100644
->> --- a/arch/powerpc/kernel/traps.c
->> +++ b/arch/powerpc/kernel/traps.c
->> @@ -1184,6 +1184,23 @@ void SoftwareEmulation(struct pt_regs *regs)
->> #endif /* CONFIG_8xx */
->>=20
->> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
->> +static void do_send_trap(struct pt_regs *regs, unsigned long =
-address,
->> +		  unsigned long error_code, int signal_code, int =
-breakpt)
->> +{
->> +	siginfo_t info;
->> +
->> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->> +			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->> +		return;
->> +
->> +	/* Deliver the signal to userspace */
->> +	info.si_signo =3D SIGTRAP;
->> +	info.si_errno =3D breakpt;	/* breakpoint or watchpoint id =
-*/
->> +	info.si_code =3D signal_code;
->> +	info.si_addr =3D (void __user *)address;
->> +	force_sig_info(SIGTRAP, &info, current);
->> +}
->> +
->> static void handle_debug(struct pt_regs *regs, unsigned long =
-debug_status)
->> {
->> 	int changed =3D 0;
+Changes in v2:
+-------------
+patch 01/10:
+- Modified the documentation to reflect the change of fadump_region
+  file under debugfs filesystem.
+
+patch 02/10:
+- Modified to use standard pr_debug() macro.
+- Modified early_init_dt_scan_fw_dump() to get the size of
+  "ibm,configure-kernel-dump-sizes" property and use it to iterate through
+  an array of dump sections.
+- Introduced boot option 'fadump_reserve_mem=' to let user specify the
+  fadump boot memory to be reserved.
+
+patch 03/10:
+- Removed few debug print statements.
+- Moved the setup_fadump() call from setup_system() and now calling it
+  subsys_initcall.
+- Moved fadump_region attribute under debugfs.
+- Clear the TCE entries if firmware assisted dump is active.
+
+patch 05/10:
+- Moved the crash_fadump() invocation from generic code to panic notifier.
+- Introduced cpu_notes_buf_alloc() function to allocate cpu notes buffer
+  using get_free_pages().
+
+patch 08/10:
+- Introduced cpu_notes_buf_free() function to free memory allocated for
+  cpu notes buffer.
+
+The most of the code implementation has been adapted from phyp assisted dump
+implementation written by Linas Vepstas and Manish Ahuja.
+
+The first patch is a documentation that talks about firmware-assisted dump
+mechanism, implementation details and TODO list.
+
+I have tested the patches on following system configuration:
+1. LPAR on Power6 with 4GB RAM and 8 CPUs
+2. LPAR on Power7 with 2GB RAM and 20 CPUs
+3. LPAR on Power7 with 1TB RAM and 896 CPUs
+
+These patches cleanly apply on commit c3b92c878 in linux-2.6 git tree.
+
+Please review the patchset and let me know your comments.
+
+Thanks,
+-Mahesh.
+
+---
+
+Mahesh Salgaonkar (10):
+      fadump: Add documentation for firmware-assisted dump.
+      fadump: Reserve the memory for firmware assisted dump.
+      fadump: Register for firmware assisted dump.
+      fadump: Initialize elfcore header and add PT_LOAD program headers.
+      fadump: Convert firmware-assisted cpu state dump data into elf notes.
+      fadump: Add PT_NOTE program header for vmcoreinfo
+      fadump: Introduce cleanup routine to invalidate /proc/vmcore.
+      fadump: Invalidate registration and release reserved memory for general use.
+      fadump: Invalidate the fadump registration during machine shutdown.
+      fadump: Introduce config option for firmware assisted dump feature
+
+
+ Documentation/powerpc/firmware-assisted-dump.txt |  262 ++++
+ arch/powerpc/Kconfig                             |   13 
+ arch/powerpc/include/asm/fadump.h                |  205 ++++
+ arch/powerpc/kernel/Makefile                     |    1 
+ arch/powerpc/kernel/fadump.c                     | 1284 ++++++++++++++++++++++
+ arch/powerpc/kernel/iommu.c                      |    8 
+ arch/powerpc/kernel/prom.c                       |   15 
+ arch/powerpc/kernel/setup-common.c               |   16 
+ arch/powerpc/kernel/traps.c                      |    5 
+ arch/powerpc/mm/hash_utils_64.c                  |   11 
+ fs/proc/vmcore.c                                 |   23 
+ include/linux/crash_dump.h                       |    1 
+ include/linux/memblock.h                         |    1 
+ kernel/crash_dump.c                              |   33 +
+ 14 files changed, 1876 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/powerpc/firmware-assisted-dump.txt
+ create mode 100644 arch/powerpc/include/asm/fadump.h
+ create mode 100644 arch/powerpc/kernel/fadump.c
+
+-- 
+Signature
