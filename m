@@ -2,21 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C5163B6F81
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2011 00:44:52 +1100 (EST)
-Subject: Re: [RFC][PATCH 1/2] uio: allow drivers to override the pgprot for
- mmap
+ by ozlabs.org (Postfix) with ESMTPS id DBF49B6F75
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2011 01:19:02 +1100 (EST)
+Subject: Re: [1/4] powerpc: Revert show_regs() define for readability
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20111029063809.GC2280@kroah.com>
-Date: Mon, 31 Oct 2011 08:44:40 -0500
-Message-Id: <A4AFF4A3-0F5F-430C-BD34-CC043C0644AB@kernel.crashing.org>
-References: <1319817030-23992-1-git-send-email-galak@kernel.crashing.org>
- <20111028214812.GD23092@local> <20111029063809.GC2280@kroah.com>
-To: Greg KH <greg@kroah.com>
-Cc: linuxppc-dev@ozlabs.org, "Hans J. Koch" <hjk@hansjkoch.de>,
- linux-kernel@vger.kernel.org
+In-Reply-To: <1ADB010A-A48C-4E71-91E0-94D60A3E676F@pobox.com>
+Date: Mon, 31 Oct 2011 09:18:57 -0500
+Message-Id: <F8FBC967-70A0-47F4-9BB8-3E16CCEC6565@kernel.crashing.org>
+References: <1317905621-5537-1-git-send-email-galak@kernel.crashing.org>
+ <1ADB010A-A48C-4E71-91E0-94D60A3E676F@pobox.com>
+To: Jimi Xenidis <jimix@pobox.com>
+Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +25,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 29, 2011, at 1:38 AM, Greg KH wrote:
+On Oct 28, 2011, at 2:40 PM, Jimi Xenidis wrote:
 
-> On Fri, Oct 28, 2011 at 11:48:12PM +0200, Hans J. Koch wrote:
->> On Fri, Oct 28, 2011 at 10:50:29AM -0500, Kumar Gala wrote:
->>> For some devices, the default behavior of pgprot_noncached() is not
->>> appropriate for all of its mappable regions. This provides a means =
-for
->>> the kernel side of the UIO driver to override the flags without =
-having
->>> to implement its own full mmap callback.
->>=20
->> Thanks for also providing an example driver showing the use of this.
->> You should also post this driver in a mainline-ready version, I'm a =
-bit
->> uncomfortable with adding a new function pointer without having any =
-users.
->=20
-> I'm more than "uncomfortable", I'll refuse to take any such patch =
-unless
-> there is a in-kernel user, otherwise it makes no sense to add the
-> pointer at all.
->=20
-> thanks,
->=20
-> greg k-h
+> 
+> On Oct 5, 2011, at 9:53 PM, Kumar Gala wrote:
+> 
+>> We had an existing ifdef for 4xx & BOOKE processors that got changed to
+>> CONFIG_PPC_ADV_DEBUG_REGS.  The define has nothing to do with
+>> CONFIG_PPC_ADV_DEBUG_REGS.  The define really should be:
+>> 
+>> #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+>> 
+>> and not
+>> 
+>> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>> 
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> 
+>> ---
+>> arch/powerpc/kernel/process.c |    2 +-
+>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+>> index 8f53954..a1b5981 100644
+>> --- a/arch/powerpc/kernel/process.c
+>> +++ b/arch/powerpc/kernel/process.c
+>> @@ -657,7 +657,7 @@ void show_regs(struct pt_regs * regs)
+>> 	if ((regs->trap != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
+>> 		printk("CFAR: "REG"\n", regs->orig_gpr3);
+>> 	if (trap == 0x300 || trap == 0x600)
+>> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>> +#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+>> 		printk("DEAR: "REG", ESR: "REG"\n", regs->dar, regs->dsisr);
+> 
+> I'll be needing "|| defined(CONFIG_PPC_BOOK3E)" added to this please.
+> -jx
 
-I'm in agreement with this view.  I wanted to post this to make sure the =
-direction we took was ok so when the upstream driver is posted this =
-patch / change isn't a concern.
+Under what platform is CONFIG_PPC_BOOK3E set and CONFIG_BOOKE is not?
 
-- k=
+- k
