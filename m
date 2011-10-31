@@ -1,24 +1,15 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
- [209.85.160.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6EAF6B6F7F
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2011 05:37:37 +1100 (EST)
-Received: by gyd5 with SMTP id 5so6474173gyd.15
- for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2011 11:37:34 -0700 (PDT)
-Sender: "xenidis@gmail.com" <xenidis@gmail.com>
-Subject: Re: [4/4] powerpc/booke: Re-organize debug code
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <137546DC-1F2C-4623-B96F-5F9FFB9498F9@kernel.crashing.org>
-Date: Mon, 31 Oct 2011 13:37:30 -0500
-Message-Id: <567C3D8A-BBB9-4487-8069-0EA57701D7B6@pobox.com>
-References: <1317905621-5537-4-git-send-email-galak@kernel.crashing.org>
- <5EF5AFC4-C852-4D1C-9019-D1CBAE1157EA@pobox.com>
- <137546DC-1F2C-4623-B96F-5F9FFB9498F9@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from border.exmeritus.com (border.exmeritus.com
+ [IPv6:2002:46a7:f11a:ffff::])
+ by ozlabs.org (Postfix) with ESMTP id 98226B6F88
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2011 08:11:31 +1100 (EST)
+From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+To: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 00/10] powerpc/mpic: General cleanup patch series
+Date: Mon, 31 Oct 2011 17:10:01 -0400
+Message-Id: <1320095411-20667-1-git-send-email-Kyle.D.Moffett@boeing.com>
+Cc: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,262 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-On Oct 31, 2011, at 9:21 AM, Kumar Gala wrote:
+I've been tinkering with a series of patches to clean up the PowerPC
+MPIC/OpenPIC init recently as part of a new board port I'm working on.
 
->=20
-> On Oct 28, 2011, at 2:37 PM, Jimi Xenidis wrote:
->=20
->>=20
->> On Oct 5, 2011, at 9:53 PM, Kumar Gala wrote:
->>=20
->>> * set_dabr/do_dabr are no longer used when CNFIG_PPC_ADV_DEBUG_REGS =
-is set
->>> refactor code a bit such that we only build the dabr code for
->>> !CONFIG_PPC_ADV_DEBUG_REGS and removed some =
-CONFIG_PPC_ADV_DEBUG_REGS
->>> code in set_dabr that would never get built.
->>>=20
->>> * Move do_send_trap into traps.c as its only used there
->>>=20
->>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>>=20
->>> ---
->>> arch/powerpc/include/asm/system.h |    5 +--
->>> arch/powerpc/kernel/process.c     |   97 =
-+++++++++++++-----------------------
->>> arch/powerpc/kernel/traps.c       |   17 +++++++
->>> 3 files changed, 53 insertions(+), 66 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/include/asm/system.h =
-b/arch/powerpc/include/asm/system.h
->>> index e30a13d..1dc5d9c 100644
->>> --- a/arch/powerpc/include/asm/system.h
->>> +++ b/arch/powerpc/include/asm/system.h
->>> @@ -111,11 +111,8 @@ static inline int debugger_dabr_match(struct =
-pt_regs *regs) { return 0; }
->>> static inline int debugger_fault_handler(struct pt_regs *regs) { =
-return 0; }
->>> #endif
->>>=20
->>> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
->>> extern int set_dabr(unsigned long dabr);
->>> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
->>> -extern void do_send_trap(struct pt_regs *regs, unsigned long =
-address,
->>> -			 unsigned long error_code, int signal_code, int =
-brkpt);
->>> -#else
->>=20
->>=20
->> This part of the patch breaks xmon.c
->> Naively I simply wrapped the xmon call:
->>=20
->> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->> index f08836a..b5911b2 100644
->> --- a/arch/powerpc/xmon/xmon.c
->> +++ b/arch/powerpc/xmon/xmon.c
->> @@ -738,8 +738,10 @@ static void insert_bpts(void)
->>=20
->> static void insert_cpu_bpts(void)
->> {
->> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
->> 	if (dabr.enabled)
->> 		set_dabr(dabr.address | (dabr.enabled & 7));
->> +#endif
->> 	if (iabr && cpu_has_feature(CPU_FTR_IABR))
->> 		mtspr(SPRN_IABR, iabr->address
->> 			 | (iabr->enabled & (BP_IABR|BP_IABR_TE)));
->> @@ -767,7 +769,9 @@ static void remove_bpts(void)
->>=20
->> static void remove_cpu_bpts(void)
->> {
->> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
->> 	set_dabr(0);
->> +#endif
->> 	if (cpu_has_feature(CPU_FTR_IABR))
->> 		mtspr(SPRN_IABR, 0);
->> }
->=20
-> Shouldn't all of these functions be #ifndef'd out as we don't support =
-cpu_bpts on book-e parts in xmon code today?
+It's reached the point where I'd like some feedback on the general
+approach.  The code itself hasn't been tested at all yet, and probably
+does not compile right now (though that is my next step).
 
-Well I guess this is one for benh, because I would have expected xmon to =
-test and call ppc_md.dabr.
-Actually, should everyone be doing that?
--jx
+(Oh, actually, the first patch isn't really even about the MPIC code,
+it should probably be reviewed on its own; oh well...)
 
+Please let me know what you think.
 
->=20
->>=20
->> -JX
->>=20
->>=20
->>> extern void do_dabr(struct pt_regs *regs, unsigned long address,
->>> 		    unsigned long error_code);
->>> #endif
->>> diff --git a/arch/powerpc/kernel/process.c =
-b/arch/powerpc/kernel/process.c
->>> index 269a309..989e574 100644
->>> --- a/arch/powerpc/kernel/process.c
->>> +++ b/arch/powerpc/kernel/process.c
->>> @@ -251,50 +251,6 @@ void discard_lazy_cpu_state(void)
->>> #endif /* CONFIG_SMP */
->>>=20
->>> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
->>> -void do_send_trap(struct pt_regs *regs, unsigned long address,
->>> -		  unsigned long error_code, int signal_code, int =
-breakpt)
->>> -{
->>> -	siginfo_t info;
->>> -
->>> -	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->>> -			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->>> -		return;
->>> -
->>> -	/* Deliver the signal to userspace */
->>> -	info.si_signo =3D SIGTRAP;
->>> -	info.si_errno =3D breakpt;	/* breakpoint or watchpoint id =
-*/
->>> -	info.si_code =3D signal_code;
->>> -	info.si_addr =3D (void __user *)address;
->>> -	force_sig_info(SIGTRAP, &info, current);
->>> -}
->>> -#else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
->>> -void do_dabr(struct pt_regs *regs, unsigned long address,
->>> -		    unsigned long error_code)
->>> -{
->>> -	siginfo_t info;
->>> -
->>> -	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->>> -			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->>> -		return;
->>> -
->>> -	if (debugger_dabr_match(regs))
->>> -		return;
->>> -
->>> -	/* Clear the DABR */
->>> -	set_dabr(0);
->>> -
->>> -	/* Deliver the signal to userspace */
->>> -	info.si_signo =3D SIGTRAP;
->>> -	info.si_errno =3D 0;
->>> -	info.si_code =3D TRAP_HWBKPT;
->>> -	info.si_addr =3D (void __user *)address;
->>> -	force_sig_info(SIGTRAP, &info, current);
->>> -}
->>> -#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
->>> -
->>> -static DEFINE_PER_CPU(unsigned long, current_dabr);
->>> -
->>> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
->>> /*
->>> * Set the debug registers back to their default "safe" values.
->>> */
->>> @@ -357,16 +313,7 @@ static void switch_booke_debug_regs(struct =
-thread_struct *new_thread)
->>> 			prime_debug_regs(new_thread);
->>> }
->>> #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
->>> -#ifndef CONFIG_HAVE_HW_BREAKPOINT
->>> -static void set_debug_reg_defaults(struct thread_struct *thread)
->>> -{
->>> -	if (thread->dabr) {
->>> -		thread->dabr =3D 0;
->>> -		set_dabr(0);
->>> -	}
->>> -}
->>> -#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
->>> -#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
->>> +static DEFINE_PER_CPU(unsigned long, current_dabr);
->>>=20
->>> int set_dabr(unsigned long dabr)
->>> {
->>> @@ -376,19 +323,45 @@ int set_dabr(unsigned long dabr)
->>> 		return ppc_md.set_dabr(dabr);
->>>=20
->>> 	/* XXX should we have a CPU_FTR_HAS_DABR ? */
->>> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
->>> -	mtspr(SPRN_DAC1, dabr);
->>> -#ifdef CONFIG_PPC_47x
->>> -	isync();
->>> -#endif
->>> -#elif defined(CONFIG_PPC_BOOK3S)
->>> 	mtspr(SPRN_DABR, dabr);
->>> -#endif
->>> -
->>>=20
->>> 	return 0;
->>> }
->>>=20
->>> +void do_dabr(struct pt_regs *regs, unsigned long address,
->>> +		    unsigned long error_code)
->>> +{
->>> +	siginfo_t info;
->>> +
->>> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->>> +			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->>> +		return;
->>> +
->>> +	if (debugger_dabr_match(regs))
->>> +		return;
->>> +
->>> +	/* Clear the DABR */
->>> +	set_dabr(0);
->>> +
->>> +	/* Deliver the signal to userspace */
->>> +	info.si_signo =3D SIGTRAP;
->>> +	info.si_errno =3D 0;
->>> +	info.si_code =3D TRAP_HWBKPT;
->>> +	info.si_addr =3D (void __user *)address;
->>> +	force_sig_info(SIGTRAP, &info, current);
->>> +}
->>> +
->>> +#ifndef CONFIG_HAVE_HW_BREAKPOINT
->>> +static void set_debug_reg_defaults(struct thread_struct *thread)
->>> +{
->>> +	if (thread->dabr) {
->>> +		thread->dabr =3D 0;
->>> +		set_dabr(0);
->>> +	}
->>> +}
->>> +#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
->>> +#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
->>> +
->>> #ifdef CONFIG_PPC64
->>> DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
->>> #endif
->>> diff --git a/arch/powerpc/kernel/traps.c =
-b/arch/powerpc/kernel/traps.c
->>> index db733d3..edc1108 100644
->>> --- a/arch/powerpc/kernel/traps.c
->>> +++ b/arch/powerpc/kernel/traps.c
->>> @@ -1184,6 +1184,23 @@ void SoftwareEmulation(struct pt_regs *regs)
->>> #endif /* CONFIG_8xx */
->>>=20
->>> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
->>> +static void do_send_trap(struct pt_regs *regs, unsigned long =
-address,
->>> +		  unsigned long error_code, int signal_code, int =
-breakpt)
->>> +{
->>> +	siginfo_t info;
->>> +
->>> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
->>> +			11, SIGSEGV) =3D=3D NOTIFY_STOP)
->>> +		return;
->>> +
->>> +	/* Deliver the signal to userspace */
->>> +	info.si_signo =3D SIGTRAP;
->>> +	info.si_errno =3D breakpt;	/* breakpoint or watchpoint id =
-*/
->>> +	info.si_code =3D signal_code;
->>> +	info.si_addr =3D (void __user *)address;
->>> +	force_sig_info(SIGTRAP, &info, current);
->>> +}
->>> +
->>> static void handle_debug(struct pt_regs *regs, unsigned long =
-debug_status)
->>> {
->>> 	int changed =3D 0;
->=20
+Cheers,
+Kyle Moffett
+
+--
+Curious about my work on the Debian powerpcspe port?
+I'm keeping a blog here: http://pureperl.blogspot.com/
