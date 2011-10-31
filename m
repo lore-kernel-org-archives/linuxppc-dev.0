@@ -1,16 +1,20 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 09/10] powerpc/mpic: Cache the device-tree node in "struct
- mpic"
-Date: Mon, 31 Oct 2011 17:10:10 -0400
-Message-Id: <1320095411-20667-10-git-send-email-Kyle.D.Moffett@boeing.com>
-In-Reply-To: <1320095411-20667-1-git-send-email-Kyle.D.Moffett@boeing.com>
-References: <1320095411-20667-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Milton Miller <miltonm@bga.com>,
- Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
- Scott Wood <scottwood@freescale.com>
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+ [65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id DADA1B6F93
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2011 09:06:41 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <scottwood@freescale.com>, <miltonm@bga.com>,
+ <tglx@linutronix.de>, <benh@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>,
+ <michael@ellerman.id.au>
+Subject: [PATCH] [v3] powerpc/fsl_msi: add support for the fsl,
+ msi property in PCI nodes
+Date: Mon, 31 Oct 2011 17:06:35 -0500
+Message-ID: <1320098795-7658-1-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,142 +24,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Store the node pointer in the MPIC during initialization so that all of
-the later operational code can just reuse the cached pointer.
+On Freescale parts with multiple MSI controllers, the controllers are
+combined into one "pool" of interrupts.  Whenever a device requests an MSI
+interrupt, the next available interrupt from the pool is selected,
+regardless of which MSI controller the interrupt is from.  This works
+because each PCI bus has an ATMU to all of CCSR, so any PCI device can
+access any MSI interrupt register.
 
-Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+The fsl,msi property is used to specify that a given PCI bus should only
+use a specific MSI device.  This is necessary, for example, with the
+Freescale hypervisor, because the MSI devices are assigned to specific
+partitions.
+
+Ideally, we'd like to be able to assign MSI devices to PCI busses within
+the MSI or PCI layers.  However, there does not appear to be a mechanism
+to do that.  Whenever the MSI layer wants to allocate an MSI interrupt to
+a PCI device, it just calls arch_setup_msi_irqs().  It would be nice if we
+could register an MSI device with a specific PCI bus.
+
+So instead we remember the phandles of each MSI device, and we use that to
+limit our search for an available interrupt.  Whenever we are asked to
+allocate a new interrupt for a PCI device, we check the fsl,msi property
+of the PCI bus for that device.  If it exists, then as we are looping over
+all MSI devices, we skip the ones that don't have a matching phandle.
+
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- arch/powerpc/include/asm/mpic.h |    3 +++
- arch/powerpc/sysdev/mpic.c      |   32 ++++++++++++++++----------------
- 2 files changed, 19 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index a241076..db78b89 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -251,6 +251,9 @@ struct mpic_irq_save {
- /* The instance data of a given MPIC */
- struct mpic
+v3: added check for invalid fsl,msi phandles
+
+ arch/powerpc/sysdev/fsl_msi.c |   39 +++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_msi.h |    3 +++
+ 2 files changed, 42 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index e5c344d..89548e0 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -148,14 +148,47 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+ 
+ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
  {
-+	/* The OpenFirmware dt node for this MPIC */
-+	struct device_node *node;
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++	struct device_node *np;
++	phandle phandle = 0;
+ 	int rc, hwirq = -ENOMEM;
+ 	unsigned int virq;
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
+ 	struct fsl_msi *msi_data;
+ 
++	/*
++	 * If the PCI node has an fsl,msi property, then we need to use it
++	 * to find the specific MSI.
++	 */
++	np = of_parse_phandle(hose->dn, "fsl,msi", 0);
++	if (np) {
++		if (of_device_is_compatible(np, "fsl,mpic-msi"))
++			phandle = np->phandle;
++		else {
++			dev_err(&pdev->dev, "node %s has an invalid fsl,msi"
++				" phandle\n", hose->dn->full_name);
++			return -EINVAL;
++		}
++	}
 +
- 	/* The remapper for this MPIC */
- 	struct irq_host		*irqhost;
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
++		/*
++		 * Loop over all the MSI devices until we find one that has an
++		 * available interrupt.
++		 */
+ 		list_for_each_entry(msi_data, &msi_head, list) {
++			/*
++			 * If the PCI node has an fsl,msi property, then we
++			 * restrict our search to the corresponding MSI node.
++			 * The simplest way is to skip over MSI nodes with the
++			 * wrong phandle. Under the Freescale hypervisor, this
++			 * has the additional benefit of skipping over MSI
++			 * nodes that are not mapped in the PAMU.
++			 */
++			if (phandle && (phandle != msi_data->phandle))
++				continue;
++
+ 			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
+ 			if (hwirq >= 0)
+ 				break;
+@@ -370,6 +403,12 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
  
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 8b4f022..1826dae 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -315,26 +315,25 @@ static void _mpic_map_mmio(struct mpic *mpic, phys_addr_t phys_addr,
- }
+ 	msi->msiir_offset = features->msiir_offset + (res.start & 0xfffff);
  
- #ifdef CONFIG_PPC_DCR
--static void _mpic_map_dcr(struct mpic *mpic, struct device_node *node,
--			  struct mpic_reg_bank *rb,
-+static void _mpic_map_dcr(struct mpic *mpic, struct mpic_reg_bank *rb,
- 			  unsigned int offset, unsigned int size)
- {
--	phys_addr_t phys_addr = dcr_resource_start(node);
-+	phys_addr_t phys_addr = dcr_resource_start(mpic->node);
- 	rb->dhost = dcr_map(mpic->node, phys_addr + offset, size);
- 	BUG_ON(!DCR_MAP_OK(rb->dhost));
- }
++	/*
++	 * Remember the phandle, so that we can match with any PCI nodes
++	 * that have an "fsl,msi" property.
++	 */
++	msi->phandle = dev->dev.of_node->phandle;
++
+ 	rc = fsl_msi_init_allocator(msi);
+ 	if (rc) {
+ 		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
+diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
+index 1313abb..b5d25ba 100644
+--- a/arch/powerpc/sysdev/fsl_msi.h
++++ b/arch/powerpc/sysdev/fsl_msi.h
+@@ -13,6 +13,7 @@
+ #ifndef _POWERPC_SYSDEV_FSL_MSI_H
+ #define _POWERPC_SYSDEV_FSL_MSI_H
  
--static inline void mpic_map(struct mpic *mpic, struct device_node *node,
-+static inline void mpic_map(struct mpic *mpic,
- 			    phys_addr_t phys_addr, struct mpic_reg_bank *rb,
- 			    unsigned int offset, unsigned int size)
- {
- 	if (mpic->flags & MPIC_USES_DCR)
--		_mpic_map_dcr(mpic, node, rb, offset, size);
-+		_mpic_map_dcr(mpic, rb, offset, size);
- 	else
- 		_mpic_map_mmio(mpic, phys_addr, rb, offset, size);
- }
- #else /* CONFIG_PPC_DCR */
--#define mpic_map(m,n,p,b,o,s)	_mpic_map_mmio(m,p,b,o,s)
-+#define mpic_map(m,p,b,o,s)	_mpic_map_mmio(m,p,b,o,s)
- #endif /* !CONFIG_PPC_DCR */
++#include <linux/of.h>
+ #include <asm/msi_bitmap.h>
  
+ #define NR_MSI_REG		8
+@@ -36,6 +37,8 @@ struct fsl_msi {
+ 	struct msi_bitmap bitmap;
  
-@@ -1178,6 +1177,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		return NULL;
+ 	struct list_head list;          /* support multiple MSI banks */
++
++	phandle phandle;
+ };
  
- 	mpic->name = name;
-+	mpic->node = node;
- 	mpic->paddr = phys_addr;
- 
- 	mpic->hc_irq = mpic_irq_chip;
-@@ -1224,13 +1224,13 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic->spurious_vec  = intvec_top;
- 
- 	/* Check for "big-endian" in device-tree */
--	if (of_get_property(node, "big-endian", NULL) != NULL)
-+	if (of_get_property(mpic->node, "big-endian", NULL) != NULL)
- 		mpic->flags |= MPIC_BIG_ENDIAN;
--	if (of_device_is_compatible(node, "fsl,mpic"))
-+	if (of_device_is_compatible(mpic->node, "fsl,mpic"))
- 		mpic->flags |= MPIC_FSL;
- 
- 	/* Look for protected sources */
--	psrc = of_get_property(node, "protected-sources", &psize);
-+	psrc = of_get_property(mpic->node, "protected-sources", &psize);
- 	if (psrc) {
- 		/* Allocate a bitmap with one bit per interrupt */
- 		unsigned int mapsize = BITS_TO_LONGS(intvec_top + 1);
-@@ -1256,15 +1256,15 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		mpic->reg_type = mpic_access_mmio_le;
- 
- 	/* Map the global registers */
--	mpic_map(mpic, node, mpic->paddr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
--	mpic_map(mpic, node, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
-+	mpic_map(mpic, mpic->paddr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
-+	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
- 
- 	/* Reset */
- 
- 	/* When using a device-node, reset requests are only honored if the MPIC
- 	 * is allowed to reset.
- 	 */
--	if (of_get_property(node, "pic-no-reset", NULL))
-+	if (of_get_property(mpic->node, "pic-no-reset", NULL))
- 		mpic->flags |= MPIC_NO_RESET;
- 
- 	if ((flags & MPIC_WANTS_RESET) && !(mpic->flags & MPIC_NO_RESET)) {
-@@ -1306,7 +1306,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 
- 	/* Map the per-CPU registers */
- 	for (i = 0; i < mpic->num_cpus; i++) {
--		mpic_map(mpic, node, mpic->paddr, &mpic->cpuregs[i],
-+		mpic_map(mpic, mpic->paddr, &mpic->cpuregs[i],
- 			 MPIC_INFO(CPU_BASE) + i * MPIC_INFO(CPU_STRIDE),
- 			 0x1000);
- 	}
-@@ -1314,13 +1314,13 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	/* Initialize main ISU if none provided */
- 	if (mpic->isu_size == 0) {
- 		mpic->isu_size = mpic->num_sources;
--		mpic_map(mpic, node, mpic->paddr, &mpic->isus[0],
-+		mpic_map(mpic, mpic->paddr, &mpic->isus[0],
- 			 MPIC_INFO(IRQ_BASE), MPIC_INFO(IRQ_STRIDE) * mpic->isu_size);
- 	}
- 	mpic->isu_shift = 1 + __ilog2(mpic->isu_size - 1);
- 	mpic->isu_mask = (1 << mpic->isu_shift) - 1;
- 
--	mpic->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR,
-+	mpic->irqhost = irq_alloc_host(mpic->node, IRQ_HOST_MAP_LINEAR,
- 				       isu_size ? isu_size : mpic->num_sources,
- 				       &mpic_host_ops,
- 				       flags & MPIC_LARGE_VECTORS ? 2048 : 256);
-@@ -1368,7 +1368,7 @@ void __init mpic_assign_isu(struct mpic *mpic, unsigned int isu_num,
- 
- 	BUG_ON(isu_num >= MPIC_MAX_ISU);
- 
--	mpic_map(mpic, mpic->irqhost->of_node,
-+	mpic_map(mpic,
- 		 paddr, &mpic->isus[isu_num], 0,
- 		 MPIC_INFO(IRQ_STRIDE) * mpic->isu_size);
- 
+ #endif /* _POWERPC_SYSDEV_FSL_MSI_H */
 -- 
-1.7.2.5
+1.7.3.4
