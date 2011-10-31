@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DBF49B6F75
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2011 01:19:02 +1100 (EST)
-Subject: Re: [1/4] powerpc: Revert show_regs() define for readability
+ by ozlabs.org (Postfix) with ESMTPS id 73841B6F86
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2011 01:19:30 +1100 (EST)
+Subject: Re: RFC: ESR_I/DLK processing
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1ADB010A-A48C-4E71-91E0-94D60A3E676F@pobox.com>
-Date: Mon, 31 Oct 2011 09:18:57 -0500
-Message-Id: <F8FBC967-70A0-47F4-9BB8-3E16CCEC6565@kernel.crashing.org>
-References: <1317905621-5537-1-git-send-email-galak@kernel.crashing.org>
- <1ADB010A-A48C-4E71-91E0-94D60A3E676F@pobox.com>
+In-Reply-To: <00A1F69B-FCB7-4F45-8BE4-4C4B35D53D59@pobox.com>
+Date: Mon, 31 Oct 2011 09:19:23 -0500
+Message-Id: <7004CC61-3425-4D00-A8E9-BE49DDDD1D26@kernel.crashing.org>
+References: <00A1F69B-FCB7-4F45-8BE4-4C4B35D53D59@pobox.com>
 To: Jimi Xenidis <jimix@pobox.com>
-Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +24,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 28, 2011, at 2:40 PM, Jimi Xenidis wrote:
+On Oct 28, 2011, at 3:43 PM, Jimi Xenidis wrote:
 
-> 
-> On Oct 5, 2011, at 9:53 PM, Kumar Gala wrote:
-> 
->> We had an existing ifdef for 4xx & BOOKE processors that got changed to
->> CONFIG_PPC_ADV_DEBUG_REGS.  The define has nothing to do with
->> CONFIG_PPC_ADV_DEBUG_REGS.  The define really should be:
->> 
->> #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
->> 
->> and not
->> 
->> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
->> 
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> 
->> ---
->> arch/powerpc/kernel/process.c |    2 +-
->> 1 files changed, 1 insertions(+), 1 deletions(-)
->> 
->> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
->> index 8f53954..a1b5981 100644
->> --- a/arch/powerpc/kernel/process.c
->> +++ b/arch/powerpc/kernel/process.c
->> @@ -657,7 +657,7 @@ void show_regs(struct pt_regs * regs)
->> 	if ((regs->trap != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
->> 		printk("CFAR: "REG"\n", regs->orig_gpr3);
->> 	if (trap == 0x300 || trap == 0x600)
->> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
->> +#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
->> 		printk("DEAR: "REG", ESR: "REG"\n", regs->dar, regs->dsisr);
-> 
-> I'll be needing "|| defined(CONFIG_PPC_BOOK3E)" added to this please.
+> arch/powerpc/kernel/head_fsl_booke.S has the following code:
+>> 	/* Data Storage Interrupt */
+>> 	START_EXCEPTION(DataStorage)
+>> 	NORMAL_EXCEPTION_PROLOG
+>> 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass =
+arg3 */
+>> 	stw	r5,_ESR(r11)
+>> 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass =
+arg2 */
+>> 	andis.	r10,r5,(ESR_ILK|ESR_DLK)@h
+>> 	bne	1f
+>> 	EXC_XFER_EE_LITE(0x0300, handle_page_fault)
+>> 1:
+>> 	addi	r3,r1,STACK_FRAME_OVERHEAD
+>> 	EXC_XFER_EE_LITE(0x0300, CacheLockingException)
+>=20
+>=20
+> I need something similar for A2 (and all book3e) and was wondering, =
+why this isn't just:
+>=20
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index 88abe70..8451822 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -159,6 +159,14 @@ int __kprobes do_page_fault(struct pt_regs =
+*regs, unsigned long address,
+>> 	}
+>> #endif
+>>=20
+>> +#ifdef CONFIG_PPC_BOOK3E
+>> +	if (error_code & (ESR_DLK|ESR_ILK)) {
+>> +		/* detect that this is a privileged op and SIGILL */
+>> +		_exception(SIGILL, regs, ILL_PRVOPC, regs->nip);
+>> +		return 0;
+>> +	}
+>> +#endif
+>> +
+>> 	if (notify_page_fault(regs))
+>> 		return 0;
+>=20
+> Its not like this need to be fast or anything.
+> I'd be happy to submit a patch that adds to fault.c and removed the =
+I/DLK processing from head_fsl_booke.S
+>=20
+> Thoughts?
 > -jx
 
-Under what platform is CONFIG_PPC_BOOK3E set and CONFIG_BOOKE is not?
+Probably because at one point in time DSI had a fast path handling for =
+us.  I've got no issues w/the proposed patch, just remember to mixup the =
+CONFIG_PPC_BOOK3E as we don't define that in 32-bit fsl-booke=20
 
-- k
+- k=
