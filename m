@@ -1,16 +1,19 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from border.exmeritus.com (border.exmeritus.com
+ [IPv6:2002:46a7:f11a:ffff::])
+ by ozlabs.org (Postfix) with ESMTP id B5A7FB71E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2011 08:13:07 +1100 (EST)
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 08/10] powerpc/mpic: Put "pic-no-reset" test back into the
- MPIC code
-Date: Mon, 31 Oct 2011 17:10:09 -0400
-Message-Id: <1320095411-20667-9-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [RFC PATCH 10/10] powerpc/mpic: Add in-core support for cascaded MPICs
+Date: Mon, 31 Oct 2011 17:10:11 -0400
+Message-Id: <1320095411-20667-11-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <1320095411-20667-1-git-send-email-Kyle.D.Moffett@boeing.com>
 References: <1320095411-20667-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Milton Miller <miltonm@bga.com>,
- Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
- Scott Wood <scottwood@freescale.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ Milton Miller <miltonm@bga.com>, Paul Mackerras <paulus@samba.org>,
+ Kyle Moffett <Kyle.D.Moffett@boeing.com>, Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,39 +23,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There's not really any reason to have this one-liner in a separate
-static inline function, given that all the other similar tests are
-already in the alloc_mpic() code.
+The Cell and PowerMac platforms use virtually identical cascaded-IRQ
+setup code, so just merge it into the core.  This does the obvious thing
+when an MPIC device-node specifies an "interrupts" property.
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 ---
- arch/powerpc/sysdev/mpic.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/cell/setup.c   |   22 --------------------
+ arch/powerpc/platforms/powermac/pic.c |   36 ++++----------------------------
+ arch/powerpc/sysdev/mpic.c            |   27 ++++++++++++++++++++++-
+ 3 files changed, 30 insertions(+), 55 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 0342ab8..8b4f022 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1120,11 +1120,6 @@ static struct irq_host_ops mpic_host_ops = {
- 	.xlate = mpic_host_xlate,
- };
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index 392cbdb..8708a71 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -183,19 +183,6 @@ static int __init cell_publish_devices(void)
+ }
+ machine_subsys_initcall(cell, cell_publish_devices);
  
--static int mpic_reset_prohibited(struct device_node *node)
+-static void cell_mpic_cascade(unsigned int irq, struct irq_desc *desc)
 -{
--	return node && of_get_property(node, "pic-no-reset", NULL);
+-	struct irq_chip *chip = irq_desc_get_chip(desc);
+-	struct mpic *mpic = irq_desc_get_handler_data(desc);
+-	unsigned int virq;
+-
+-	virq = mpic_get_one_irq(mpic);
+-	if (virq != NO_IRQ)
+-		generic_handle_irq(virq);
+-
+-	chip->irq_eoi(&desc->irq_data);
 -}
 -
- /*
-  * Exported functions
-  */
-@@ -1269,7 +1264,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	/* When using a device-node, reset requests are only honored if the MPIC
- 	 * is allowed to reset.
- 	 */
--	if (mpic_reset_prohibited(node))
-+	if (of_get_property(node, "pic-no-reset", NULL))
- 		mpic->flags |= MPIC_NO_RESET;
+ static void __init mpic_init_IRQ(void)
+ {
+ 	struct device_node *dn;
+@@ -214,15 +201,6 @@ static void __init mpic_init_IRQ(void)
+ 		if (mpic == NULL)
+ 			continue;
+ 		mpic_init(mpic);
+-
+-		virq = irq_of_parse_and_map(dn, 0);
+-		if (virq == NO_IRQ)
+-			continue;
+-
+-		printk(KERN_INFO "%s : hooking up to IRQ %d\n",
+-		       dn->full_name, virq);
+-		irq_set_handler_data(virq, mpic);
+-		irq_set_chained_handler(virq, cell_mpic_cascade);
+ 	}
+ }
  
- 	if ((flags & MPIC_WANTS_RESET) && !(mpic->flags & MPIC_NO_RESET)) {
+diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+index f4dc247..e02cd79 100644
+--- a/arch/powerpc/platforms/powermac/pic.c
++++ b/arch/powerpc/platforms/powermac/pic.c
+@@ -466,18 +466,6 @@ int of_irq_map_oldworld(struct device_node *device, int index,
+ }
+ #endif /* CONFIG_PPC32 */
+ 
+-static void pmac_u3_cascade(unsigned int irq, struct irq_desc *desc)
+-{
+-	struct irq_chip *chip = irq_desc_get_chip(desc);
+-	struct mpic *mpic = irq_desc_get_handler_data(desc);
+-	unsigned int cascade_irq = mpic_get_one_irq(mpic);
+-
+-	if (cascade_irq != NO_IRQ)
+-		generic_handle_irq(cascade_irq);
+-
+-	chip->irq_eoi(&desc->irq_data);
+-}
+-
+ static void __init pmac_pic_setup_mpic_nmi(struct mpic *mpic)
+ {
+ #if defined(CONFIG_XMON) && defined(CONFIG_PPC32)
+@@ -529,7 +517,6 @@ static int __init pmac_pic_probe_mpic(void)
+ {
+ 	struct mpic *mpic1, *mpic2;
+ 	struct device_node *np, *master = NULL, *slave = NULL;
+-	unsigned int cascade;
+ 
+ 	/* We can have up to 2 MPICs cascaded */
+ 	for (np = NULL; (np = of_find_node_by_type(np, "open-pic"))
+@@ -565,27 +552,14 @@ static int __init pmac_pic_probe_mpic(void)
+ 
+ 	of_node_put(master);
+ 
+-	/* No slave, let's go out */
+-	if (slave == NULL)
+-		return 0;
+-
+-	/* Get/Map slave interrupt */
+-	cascade = irq_of_parse_and_map(slave, 0);
+-	if (cascade == NO_IRQ) {
+-		printk(KERN_ERR "Failed to map cascade IRQ\n");
+-		return 0;
+-	}
+-
+-	mpic2 = pmac_setup_one_mpic(slave, 0);
+-	if (mpic2 == NULL) {
+-		printk(KERN_ERR "Failed to setup slave MPIC\n");
++	/* Set up a cascaded controller, if present */
++	if (slave) {
++		mpic2 = pmac_setup_one_mpic(slave, 0);
++		if (mpic2 == NULL)
++			printk(KERN_ERR "Failed to setup slave MPIC\n");
+ 		of_node_put(slave);
+-		return 0;
+ 	}
+-	irq_set_handler_data(cascade, mpic2);
+-	irq_set_chained_handler(cascade, pmac_u3_cascade);
+ 
+-	of_node_put(slave);
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 1826dae..d5cf276 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1113,6 +1113,21 @@ static int mpic_host_xlate(struct irq_host *h, struct device_node *ct,
+ 	return 0;
+ }
+ 
++/* IRQ handler for a secondary MPIC cascaded from another IRQ controller */
++static void mpic_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	struct irq_chip *chip = irq_desc_get_chip(desc);
++	struct mpic *mpic = irq_desc_get_handler_data(desc);
++
++	BUG_ON(!(mpic->flags & MPIC_SECONDARY));
++
++	unsigned int virq = mpic_get_one_irq(mpic);
++	if (virq != NO_IRQ)
++		generic_handle_irq(virq);
++
++	chip->irq_eoi(&desc->irq_data);
++}
++
+ static struct irq_host_ops mpic_host_ops = {
+ 	.match = mpic_host_match,
+ 	.map = mpic_host_map,
+@@ -1384,8 +1399,7 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
+ 
+ void __init mpic_init(struct mpic *mpic)
+ {
+-	int i;
+-	int cpu;
++	int i, cpu, virq;
+ 
+ 	BUG_ON(mpic->num_sources == 0);
+ 
+@@ -1470,6 +1484,15 @@ void __init mpic_init(struct mpic *mpic)
+ 				  GFP_KERNEL);
+ 	BUG_ON(mpic->save_data == NULL);
+ #endif
++
++	/* Check if this MPIC is chained from a parent interrupt controller */
++	virq = irq_of_parse_and_map(mpic->node, 0);
++	if (virq != NO_IRQ) {
++		printk(KERN_INFO "%s: hooking up to IRQ %d\n",
++				dn->full_name, virq);
++		irq_set_handler_data(virq, mpic);
++		irq_set_chained_handler(virq, &mpic_cascade);
++	}
+ }
+ 
+ void __init mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio)
 -- 
 1.7.2.5
