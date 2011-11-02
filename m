@@ -1,21 +1,33 @@
-Return-Path: <openspace.wang@gmail.com>
-Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
- [209.85.210.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6A564B6F86
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2011 22:17:25 +1100 (EST)
-Received: by iakc1 with SMTP id c1so12422iak.15
- for <linuxppc-dev@ozlabs.org>; Wed, 02 Nov 2011 04:17:22 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20111101172531.GG16267@us.ibm.com>
+Return-Path: <nacc@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id CDD85B6F8C
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2011 05:31:38 +1100 (EST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nacc@us.ibm.com>;
+ Wed, 2 Nov 2011 12:31:27 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA2IV15l068170
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Nov 2011 12:31:13 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA2IUxSD002067
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Nov 2011 12:31:00 -0600
+Date: Wed, 2 Nov 2011 11:30:55 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Ryan Wang <openspace.wang@gmail.com>
+Subject: Re: What does rmo/tce stand for in powerpc?
+Message-ID: <20111102183055.GK24610@us.ibm.com>
 References: <CAPxxNQnhXaKJ5ve-=0qwChuuvDj_027RM2pSD43DEf6BZbaHDA@mail.gmail.com>
  <20111101172531.GG16267@us.ibm.com>
-Date: Wed, 2 Nov 2011 19:17:20 +0800
-Message-ID: <CAPxxNQ=TkMFhzBeLi9bt5Fo7gygoM2V61EHYRzKqcMetaG2qnQ@mail.gmail.com>
-Subject: Re: What does rmo/tce stand for in powerpc?
-From: Ryan Wang <openspace.wang@gmail.com>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Content-Type: multipart/alternative; boundary=90e6ba6e89d690714b04b0be9ddb
+ <CAPxxNQ=TkMFhzBeLi9bt5Fo7gygoM2V61EHYRzKqcMetaG2qnQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAPxxNQ=TkMFhzBeLi9bt5Fo7gygoM2V61EHYRzKqcMetaG2qnQ@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,103 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---90e6ba6e89d690714b04b0be9ddb
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
-
-2011/11/2 Nishanth Aravamudan <nacc@us.ibm.com>
-
-> Hi Ryan,
->
-> On 01.11.2011 [14:25:43 +0800], Ryan Wang wrote:
-> > Hi,
+On 02.11.2011 [19:17:20 +0800], Ryan Wang wrote:
+> 2011/11/2 Nishanth Aravamudan <nacc@us.ibm.com>
+> 
+> > Hi Ryan,
 > >
-> > In kernel source comments, I saw the words:
-> > ''
+> > On 01.11.2011 [14:25:43 +0800], Ryan Wang wrote:
+> > > Hi,
+> > >
+> > > In kernel source comments, I saw the words:
+> > > ''
+> > >
+> > > alloc_top is set to the top of RMO, eventually shrink down if the
+> > > <http://lxr.linux.no/linux+*/arch/powerpc/kernel/prom_init.c#L972>TCEs
+> > > overlap
+> > >
+> > > ''
+> > >
+> > > I wonder what does RMO mean, and TCE?
 > >
-> > alloc_top is set to the top of RMO, eventually shrink down if the
-> > <http://lxr.linux.no/linux+*/arch/powerpc/kernel/prom_init.c#L972>TCEs
-> > overlap
+> > RMO = Real Mode Offset -- deprecated in terms of Real Mode Area in PAPR.
 > >
-> > ''
+> > TCE = Translation Control Entry
 > >
-> > I wonder what does RMO mean, and TCE?
->
-> RMO =3D Real Mode Offset -- deprecated in terms of Real Mode Area in PAPR=
-.
->
-> TCE =3D Translation Control Entry
->
-> You should be able to find descriptions of both in PAPR.
->
+> > You should be able to find descriptions of both in PAPR.
+> >
+> 
+> Thanks Nish!
+> 
+> But I searched <Power.orgTM Standard for Embedded Power ArchitectureTM
+> Platform Requirements> and failed to found the concept RMO or Real Mode
+> Offset.
+> 
+> Will you please give me some hints to the docs??Thanks,
 
-Thanks Nish!
+Section 14.1.1 Real Mode Accesses in PAPR 2.4
 
-But I searched <Power.orgTM Standard for Embedded Power ArchitectureTM
-Platform Requirements> and failed to found the concept RMO or Real Mode
-Offset.
+Thanks,
+Nish
 
-Will you please give me some hints to the docs=A3=BFThanks,
-
-
-
->
-> Thanks,
-> Nish
->
-> --
-> Nishanth Aravamudan <nacc@us.ibm.com>
-> IBM Linux Technology Center
->
->
-
---90e6ba6e89d690714b04b0be9ddb
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
-
-<br><br><div class=3D"gmail_quote">2011/11/2 Nishanth Aravamudan <span dir=
-=3D"ltr">&lt;<a href=3D"mailto:nacc@us.ibm.com">nacc@us.ibm.com</a>&gt;</sp=
-an><br><blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex=
-; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
-Hi Ryan,<br>
-<div class=3D"im"><br>
-On 01.11.2011 [14:25:43 +0800], Ryan Wang wrote:<br>
-&gt; Hi,<br>
-&gt;<br>
-&gt; In kernel source comments, I saw the words:<br>
-&gt; &#39;&#39;<br>
-&gt;<br>
-&gt; alloc_top is set to the top of RMO, eventually shrink down if the<br>
-</div>&gt; &lt;<a href=3D"http://lxr.linux.no/linux+*/arch/powerpc/kernel/p=
-rom_init.c#L972" target=3D"_blank">http://lxr.linux.no/linux+*/arch/powerpc=
-/kernel/prom_init.c#L972</a>&gt;TCEs<br>
-<div class=3D"im">&gt; overlap<br>
-&gt;<br>
-&gt; &#39;&#39;<br>
-&gt;<br>
-&gt; I wonder what does RMO mean, and TCE?<br>
-<br>
-</div>RMO =3D Real Mode Offset -- deprecated in terms of Real Mode Area in =
-PAPR.<br>
-<br>
-TCE =3D Translation Control Entry<br>
-<br>
-You should be able to find descriptions of both in PAPR.<br></blockquote><d=
-iv><br>Thanks Nish!<br><br>But I searched &lt;Power.orgTM Standard for Embe=
-dded Power ArchitectureTM Platform Requirements&gt; and failed to found the=
- concept RMO or Real Mode Offset.<br>
-<br>Will you please give me some hints to the docs=A3=BFThanks,<br><br>&nbs=
-p;<br></div><blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt =
-0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
-<br>
-Thanks,<br>
-Nish<br>
-<font color=3D"#888888"><br>
---<br>
-Nishanth Aravamudan &lt;<a href=3D"mailto:nacc@us.ibm.com">nacc@us.ibm.com<=
-/a>&gt;<br>
-IBM Linux Technology Center<br>
-<br>
-</font></blockquote></div><br>
-
---90e6ba6e89d690714b04b0be9ddb--
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
