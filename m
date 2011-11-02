@@ -1,25 +1,13 @@
-Return-Path: <miche@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.44.51])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1DE3BB6F62
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 09:19:41 +1100 (EST)
-Subject: [PATCH RFC 0/3] Support multiple VirtioConsoles.
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Greg Kroah-Hartman <gregkh@suse.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Rusty Russell <rusty@rustcorp.com.au>,
- Miche Baker-Harvey <miche@google.com>, linux-kernel@vger.kernel.org,
- Mike Waychison <mikew@google.com>, xen-devel@lists.xensource.com,
- Anton Blanchard <anton@samba.org>, Amit Shah <amit.shah@redhat.com>,
- virtualization@lists.linux-foundation.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
-From: Miche Baker-Harvey <miche@google.com>
-Date: Wed, 02 Nov 2011 15:19:06 -0700
-Message-ID: <20111102221905.9722.62090.stgit@miche.sea.corp.google.com>
+Return-Path: <robert.sciuk@exfo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: fpga driver on custom PPC target platform (P4080) ...
+Date: Wed, 2 Nov 2011 18:43:20 -0400
+Message-ID: <2DD52030B5146141BEB762A11AE97C4C0100C4AA@SPQCEXC05.exfo.com>
+From: "Robert Sciuk" <robert.sciuk@exfo.com>
+To: <devicetree-discuss@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +17,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset applies to linux-next/next-20111102.
+Dear Tree lovers,
 
-This series implements support for multiple virtio_consoles using KVM.
+I'm in the process of designing and implementing a Linux device driver
+for a Xilinx V6 FPGA which can be loaded from  the CPU (P4080) on our
+target board (and optionally 2 additional FPGA's on a riser card).  The
+programming pins of the FPGAs are tied to a MUX (PCA9539) on an i2c bus,
+and the port is located on the localbus (simplebus).  I'm thinking that
+a uio type driver could in theory set the programming bits using the i2c
+mux upon open(), and that an mmap() in userspace would perform the .bits
+load, and the programming done bit would be returned in the close() of
+the device from userland.
 
-This patchset addresses several issues associated with trying to
-establish multiple virtio consoles. 
+I would like to use the device tree to map both the i2c access and the
+localbus mappings, and I've yet to start coding, though this may start
+RSN.  My questions to the list, are:
 
-I'm trying to start a guest via KVM that supports multiple virtual
-consoles, with getty's on each, and with some being console devices.
+	- am I barking up the wrong tree here?
+	- is there anyone who has done something similar before which
+can be shared?
+	- Is there an impedance problem having the device accessed on
+both I2c and localbus?
+	- Is there a problem combining device tree and uio drivers?
+	- How does one specify in the device tree an FPGA which uses
+both I2c bus and localbus for programming?
 
-These patches let me establish more than one VirtioConsole (I'm
-running eight at the moment), and enable console output appearing on
-one of them.  It still doesn't successfully generate console output on
-multiple VirtioConsoles.
+This is kind of an interesting project, as I've never written a
+device-tree driver before, and I've yet to use uio type drivers, but it
+does seem a good match for the problem.  Any comments or pointers would
+be well received.
 
-Let me apologise for my last patch having gotten into Linus' tree, and
-leaving other people to deal with crashes.  I had meant to be asking
-for guidance, but I didn't mark it as "RFC".
+Thanks in advance, and sorry for cross-posting, I'm sure that some of
+you may well see this message twice, and for that I'm sorry.
 
-This series reflects the input from Konrad Rzeszutek, Amit Shah, Stephen
-Boyd, and Rusty Russell.  I think we do have to limit hvc_alloc() to one
-thread.
-
-I would appreciate any comments or feedback, or accept if appropriate.
-
-Thanks,
-Miche Baker-Harvey
-
----
-
-Miche Baker-Harvey (3):
-      virtio_console:  Fix locking of vtermno.
-      hvc_init():  Enforce one-time initialization.
-      Use separate struct console structure for each hvc_console.
-
-
- drivers/char/virtio_console.c |    9 ++++++---
- drivers/tty/hvc/hvc_console.c |   33 +++++++++++++++++++++++++++++++--
- drivers/tty/hvc/hvc_console.h |    1 +
- 3 files changed, 38 insertions(+), 5 deletions(-)
-
--- 
+Robert Sciuk
+Senior Designer, R&D.
+905.738.3741 xt 22621
