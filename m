@@ -1,13 +1,42 @@
-Return-Path: <robert.sciuk@exfo.com>
+Return-Path: <afleming@gmail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 73BB0B6F7B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 09:51:33 +1100 (EST)
+Received: by ywp31 with SMTP id 31so2183409ywp.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2011 15:51:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: fpga driver on custom PPC target platform (P4080) ...
-Date: Thu, 3 Nov 2011 18:12:01 -0400
-Message-ID: <2DD52030B5146141BEB762A11AE97C4C0100C735@SPQCEXC05.exfo.com>
-From: "Robert Sciuk" <robert.sciuk@exfo.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1319144425-15547-18-git-send-email-Kyle.D.Moffett@boeing.com>
+References: <1319144425-15547-1-git-send-email-Kyle.D.Moffett@boeing.com>
+ <1319144425-15547-18-git-send-email-Kyle.D.Moffett@boeing.com>
+Date: Thu, 3 Nov 2011 17:51:29 -0500
+Message-ID: <CAKWjMd51V-r_t85KvHRGQ=ddu0bWXC05piRhi2WrkqsHTr+WRQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 17/17] phy_device: Rename phy_start_aneg() to
+ phy_start_link()
+From: Andy Fleming <afleming@gmail.com>
+To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-doc@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+ Stephen Hemminger <shemminger@vyatta.com>, David Decotigny <decot@google.com>,
+ devel@driverdev.osuosl.org, Matt Carlson <mcarlson@broadcom.com>,
+ Kuninori Morimoto <morimoto.kuninori@renesas.com>,
+ Alexey Dobriyan <adobriyan@gmail.com>,
+ Lennert Buytenhek <buytenh@wantstofly.org>, Mike Frysinger <vapier@gentoo.org>,
+ =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>,
+ Michael Chan <mchan@broadcom.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+ Nobuhiro Iwamatsu <nobuhiro.iwamatsu.yj@renesas.com>,
+ John Crispin <blogic@openwrt.org>,
+ Richard Cochran <richard.cochran@omicron.at>, Ilya Yanok <yanok@emcraft.com>,
+ netdev@vger.kernel.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Christian Dietrich <christian.dietrich@informatik.uni-erlangen.de>,
+ Ralph Hempel <ralph.hempel@lantiq.com>, Jon Mason <jdmason@kudzu.us>,
+ Joe Perches <joe@perches.com>, Steve Glendinning <steve.glendinning@smsc.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Kristoffer Glembo <kristoffer@gaisler.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,83 +46,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2011/10/20 Kyle Moffett <Kyle.D.Moffett@boeing.com>:
+> The name of the "phy_start_aneg()" function is very confusing, because
+> it also handles forced-mode (AUTONEG_DISABLE) links.
+>
+> Rename the function to phy_start_link() and fix up all users.
+>
+> Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 
+Sounds good to me.
 
-> -----Original Message-----
-> From: Segher Boessenkool [mailto:segher@kernel.crashing.org]
-> Sent: Thursday, November 03, 2011 5:22 PM
-> To: Robert Sciuk
-> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: fpga driver on custom PPC target platform (P4080) ...
->=20
-> > 	- How does one specify in the device tree an FPGA which uses
-> > both I2c bus and localbus for programming?
->=20
-> You have two device nodes, one on the localbus and one on the IIC bus.
-> One of the nodes points to the other, or both do; you point to another
-> node by having a property containing the phandle of that other node.
->=20
-> It's probably easiest to make the IIC node point to the localbus node,
-> because you will most likely always have exactly one of those, and you
-> could have multiple IIC nodes on your FPGA, or none at all.  But this
-> is something you'll have to put in the device binding for your device,
-> and it doesn't really matter what you choose -- it will work either
-> way,
-> some choices are more convenient than others though.
->=20
->=20
-> Segher
-
-Segher,
-
-Actually, I'm just now re-configuring my device-tree i2c nodes to =
-accurately reflect reality.  As the open() will be doing the i2c bit =
-banging, I agree completely with your assessment, and I will access the =
-FPGA's via the I2c bus, and locate the localbus port via the phandle =
-8-).
-
-dmesg | grep pca
-
-[    2.699342] pca953x 2-00e8: failed reading register
-[    2.708444] pca953x: probe of 2-00e8 failed with error -5
-[    2.719097] pca953x 2-00e9: failed reading register
-[    2.728192] pca953x: probe of 2-00e9 failed with error -5	=09
-
-	i2c@119000 {
-			#address-cells =3D <1>;
-			#size-cells =3D <0>;
-			cell-index =3D <2>;
-			compatible =3D "fsl-i2c";
-			reg =3D <0x119000 0x100>;
-			interrupts =3D <39 2 0 0>;
-			interrupt-parent =3D <&mpic>;
-			dfsrr;
-
-                        lim_r: gpio@e8 {
-                                compatible =3D "nxp,pca9539";
-                                reg =3D <0xe8>;
-                                #gpio-cells =3D <2>;
-                                gpio-controller;
-                                polarity =3D <0x00>;
-                        };
-
-                        lim_w: gpio@e9 {
-                                compatible =3D "nxp,pca9539";
-                                reg =3D <0xe9>;
-                                #gpio-cells =3D <2>;
-                                gpio-controller;
-                                polarity =3D <0x00>;
-                        };
-
-		};
-
-It appears that I'm not correctly creating the pca9539 nodes as of yet =
-(I'll be adding the phandles shortly).  Any pointers for pca9539 driver =
-nodes would be appreciated, as I took these from a similar tree, but not =
-the 95xx driver.  I'll match them up with the code in the morning ...
-
-
-Thanks for your feedback, it was as timely as it was welcomed!
-
-Cheers,
-Rob
+Acked-by: Andy Fleming <afleming@freescale.com>
