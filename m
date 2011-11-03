@@ -1,22 +1,23 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id E1163B6F70
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 22:15:48 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 16365-05 for <linuxppc-dev@lists.ozlabs.org>;
- Thu,  3 Nov 2011 11:15:44 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] powerpc/usb: use unsigned long to type cast an address of
- ioremap
-Date: Thu, 3 Nov 2011 11:14:14 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AEA1@saturn3.aculab.com>
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id DC2CBB6F68
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 22:38:49 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Xie Shaohui-B21989 <B21989@freescale.com>
+Subject: Re: [PATCH] powerpc/usb: use unsigned long to type cast an address
+ of ioremap
+Date: Thu, 3 Nov 2011 11:38:39 +0000
+Message-ID: <CAOZdJXW16RbPkMfmoNu4t1c5mqCuZsztPMk1=hNc7NaYXOsx7A@mail.gmail.com>
+References: <1320314302-7973-1-git-send-email-Shaohui.Xie@freescale.com>
 In-Reply-To: <1320314302-7973-1-git-send-email-Shaohui.Xie@freescale.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Shaohui Xie" <Shaohui.Xie@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-usb@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> Below are codes for accessing usb sysif_regs in driver:
->=20
-> usb_sys_regs =3D (struct usb_sys_interface *)
-> 	((u32)dr_regs + USB_DR_SYS_OFFSET);
->=20
-> these codes work in 32-bit, but in 64-bit, use u32 to type cast the
-address
-> of ioremap is not right, and accessing members of 'usb_sys_regs' will
-cause
-> call trace, so use unsigned long for both 32-bit and 64-bit.
+On Thu, Nov 3, 2011 at 4:58 AM, Shaohui Xie <Shaohui.Xie@freescale.com> wro=
+te:
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0usb_sys_regs =3D (struct usb_sys_interface=
+ *)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ((u32)dr_re=
+gs + USB_DR_SYS_OFFSET);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ((unsigned =
+long)dr_regs + USB_DR_SYS_OFFSET);
 
-Wouldn't a (char *) cast be even better?
+This makes more sense:
 
-	David
+usb_sys_regs =3D (void *)dr_regs + USB_DR_SYS_OFFSET;
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
