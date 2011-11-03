@@ -1,20 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 85F56B6F70
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2011 04:59:45 +1100 (EST)
-Subject: Re: [PATCH 01/11] powerpc/85xx: Add 'fsl,
- pq3-gpio' compatiable for GPIO driver
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
-Date: Thu, 3 Nov 2011 12:59:39 -0500
-Message-Id: <AC4524EB-6C7A-487D-82E1-CF32F7486D81@kernel.crashing.org>
-References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B11780@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id BCD56B6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 05:00:24 +1100 (EST)
+Received: from mail137-ch1 (localhost.localdomain [127.0.0.1])	by
+ mail137-ch1-R.bigfish.com (Postfix) with ESMTP id D31134300F1	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 18:00:11 +0000 (UTC)
+Received: from CH1EHSMHS024.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.251])	by mail137-ch1.bigfish.com (Postfix) with ESMTP id
+ AF536AC804F	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 18:00:11
+ +0000 (UTC)
+Subject: Re: [PATCH v4 1/5] powerpc/85xx: issue 15 EOI after core reset for
+ FSL CoreNet devices
+MIME-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1319654817-14087-1-git-send-email-msm@freescale.com>
+Date: Thu, 3 Nov 2011 13:00:13 -0500
+Message-ID: <D48DEF81-8966-4807-8AA3-0BFDABF14DFD@freescale.com>
+References: <1319654028-30478-1-git-send-email-msm@freescale.com>
+ <1319654817-14087-1-git-send-email-msm@freescale.com>
+To: Matthew McClintock <msm@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +35,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 22, 2011, at 4:20 PM, Kumar Gala wrote:
+On Oct 26, 2011, at 1:46 PM, Matthew McClintock wrote:
 
-> Support MPC85xx platforms outside of MPC8572/MPC8536.  The
-> MPC8572/MPC8536 have an erratum that is worked around based on having
-> "fsl,mpc8572-gpio" in the compatiable list.  All other MPC85xx SoCs
-> don't require this workaround and thus utilize the 'fsl,pq3-gpio'
-> compatiable.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> This is listed as a requirement for Freescale CoreNet based devices  =
+(e.g
+> p4080ds with MPIC v4.x) after issuing a core reset to properly clear =
+pending
+> interrupts.
+>=20
+> Signed-off-by: Matthew McClintock <msm@freescale.com>
 > ---
-> drivers/gpio/gpio-mpc8xxx.c |    1 +
-> 1 files changed, 1 insertions(+), 0 deletions(-)
+> v2: Updated commit message
+> v3: Added detail in code comment as well
+> v4: Check for MPIC_FSL in mpic->flags to determine if we need 15 EOIs
+>=20
+> arch/powerpc/sysdev/mpic.c |   10 ++++++++++
+> 1 files changed, 10 insertions(+), 0 deletions(-)
 
 applied
 
-- k
+- k=
