@@ -1,28 +1,19 @@
-Return-Path: <B11780@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 05513B72F6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 05:00:44 +1100 (EST)
-Received: from mail52-db3 (localhost.localdomain [127.0.0.1])	by
- mail52-db3-R.bigfish.com (Postfix) with ESMTP id 8C7A91188452	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 18:00:31 +0000 (UTC)
-Received: from DB3EHSMHS007.bigfish.com (unknown [10.3.81.242])	by
- mail52-db3.bigfish.com (Postfix) with ESMTP id 1490DE30050	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 18:00:30 +0000 (UTC)
-Subject: Re: [PATCH 3/5] powerpc/85xx: Make kexec to interate over online cpus
-MIME-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1319583246-6120-3-git-send-email-msm@freescale.com>
-Date: Thu, 3 Nov 2011 13:00:32 -0500
-Message-ID: <3B689200-F6FF-47E7-9C4B-2C26C980EF27@freescale.com>
-References: <1319583246-6120-1-git-send-email-msm@freescale.com>
- <1319583246-6120-3-git-send-email-msm@freescale.com>
-To: Matthew McClintock <msm@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8BA46B7853
+ for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2011 05:01:36 +1100 (EST)
+Subject: Re: [PATCH] powerpc/cpm: Clear muram before it is in use.
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1319008732-8057-1-git-send-email-galak@kernel.crashing.org>
+Date: Thu, 3 Nov 2011 13:01:18 -0500
+Message-Id: <CAA93274-85A1-4208-858C-3BB2F319D585@kernel.crashing.org>
+References: <1319008732-8057-1-git-send-email-galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Cc: Hongjun Chen <Hong-jun.Chen@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,16 +24,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 25, 2011, at 5:54 PM, Matthew McClintock wrote:
+On Oct 19, 2011, at 2:18 AM, Kumar Gala wrote:
 
-> This is not strictly required, because this iterates over logical
-> cpus and they are not (currently) discontigous. But, it's cleaner
-> code and more obvious what is going on
+> From: Hongjun Chen <Hong-jun.Chen@freescale.com>
 > 
-> Signed-off-by: Matthew McClintock <msm@freescale.com>
+> We need to ensure that MURAM is in a known and cleared out state before
+> using it as the bootloader could have utilized it from its own purposes
+> and left it in an unknown state.
+> 
+> If we don't clear it out we've seen issues with UCC ethernet:
+> * Multi ethernet interfaces can't work simultanously.
+> * Multi up/down Ethernet interfaces will halt these ports.
+> * UCC1 RGMII can't work when kernel boots from some hosts.
+> 
+> Signed-off-by: Kai.Jiang <Kai.Jiang@freescale.com>
+> Signed-off-by: Hongjun Chen <Hong-jun.Chen@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 > ---
-> arch/powerpc/platforms/85xx/smp.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
+> arch/powerpc/sysdev/cpm_common.c |    3 ++-
+> 1 files changed, 2 insertions(+), 1 deletions(-)
 
 applied
 
