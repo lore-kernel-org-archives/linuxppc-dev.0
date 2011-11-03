@@ -1,22 +1,13 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 824DEB6F18
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 09:08:12 +1100 (EST)
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AEA4@saturn3.aculab.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8AEA4@saturn3.aculab.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <56B53DA2-CB5E-4EB9-A5B3-470B7B0CD0FD@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/usb: use unsigned long to type cast an address of
- ioremap
-Date: Thu, 3 Nov 2011 23:08:18 +0100
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
- Tabi Timur-B04825 <B04825@freescale.com>,
- Xie Shaohui-B21989 <B21989@freescale.com>
+Return-Path: <robert.sciuk@exfo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: fpga driver on custom PPC target platform (P4080) ...
+Date: Thu, 3 Nov 2011 18:12:01 -0400
+Message-ID: <2DD52030B5146141BEB762A11AE97C4C0100C735@SPQCEXC05.exfo.com>
+From: "Robert Sciuk" <robert.sciuk@exfo.com>
+To: "Segher Boessenkool" <segher@kernel.crashing.org>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +17,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Arithmetic on 'void *' should not be done. I know some versions of
-> gcc allow it (provided some warning level/option is enabled) but
-> that doesn't mean it is valid.
-
-All relevant GCC versions support it (going back to 2.x at least).
-It is _always_ allowed, whatever compiler options you use; -pedantic
-or -Wpointer-arith will warn (which you can upgrade to an error).
-
-The Linux kernel is not built with these warnings enabled.
-
->> A char* is incorrect because a char could be more
->> than one byte, in theory.
->
-> It is somewhat difficult to untangle the standard, but
-> sizeof (char) is defined to be one.
-
-A char takes exactly one byte.  A byte could be more than eight bits,
-of course.
-
-In GCC, sizeof(void) is 1 as well.
-
-> Of course, the C language doesn't actually require that
-> you can converts between pointers to different types in
-> any well-defined manner.
-
-It does actually, see 6.3.2.3/7.  You can convert any pointer to object
-to a pointer to a different object type, as long as it is properly  
-aligned.
-You cannot in general access the object as that new type of course, but
-it is perfectly well-defined; in particular, you can convert it back to
-the original type and get the same value again, and you can walk  
-consecutive
-bytes of the object by using a pointer to character type.
 
 
-Segher
+> -----Original Message-----
+> From: Segher Boessenkool [mailto:segher@kernel.crashing.org]
+> Sent: Thursday, November 03, 2011 5:22 PM
+> To: Robert Sciuk
+> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: fpga driver on custom PPC target platform (P4080) ...
+>=20
+> > 	- How does one specify in the device tree an FPGA which uses
+> > both I2c bus and localbus for programming?
+>=20
+> You have two device nodes, one on the localbus and one on the IIC bus.
+> One of the nodes points to the other, or both do; you point to another
+> node by having a property containing the phandle of that other node.
+>=20
+> It's probably easiest to make the IIC node point to the localbus node,
+> because you will most likely always have exactly one of those, and you
+> could have multiple IIC nodes on your FPGA, or none at all.  But this
+> is something you'll have to put in the device binding for your device,
+> and it doesn't really matter what you choose -- it will work either
+> way,
+> some choices are more convenient than others though.
+>=20
+>=20
+> Segher
+
+Segher,
+
+Actually, I'm just now re-configuring my device-tree i2c nodes to =
+accurately reflect reality.  As the open() will be doing the i2c bit =
+banging, I agree completely with your assessment, and I will access the =
+FPGA's via the I2c bus, and locate the localbus port via the phandle =
+8-).
+
+dmesg | grep pca
+
+[    2.699342] pca953x 2-00e8: failed reading register
+[    2.708444] pca953x: probe of 2-00e8 failed with error -5
+[    2.719097] pca953x 2-00e9: failed reading register
+[    2.728192] pca953x: probe of 2-00e9 failed with error -5	=09
+
+	i2c@119000 {
+			#address-cells =3D <1>;
+			#size-cells =3D <0>;
+			cell-index =3D <2>;
+			compatible =3D "fsl-i2c";
+			reg =3D <0x119000 0x100>;
+			interrupts =3D <39 2 0 0>;
+			interrupt-parent =3D <&mpic>;
+			dfsrr;
+
+                        lim_r: gpio@e8 {
+                                compatible =3D "nxp,pca9539";
+                                reg =3D <0xe8>;
+                                #gpio-cells =3D <2>;
+                                gpio-controller;
+                                polarity =3D <0x00>;
+                        };
+
+                        lim_w: gpio@e9 {
+                                compatible =3D "nxp,pca9539";
+                                reg =3D <0xe9>;
+                                #gpio-cells =3D <2>;
+                                gpio-controller;
+                                polarity =3D <0x00>;
+                        };
+
+		};
+
+It appears that I'm not correctly creating the pca9539 nodes as of yet =
+(I'll be adding the phandles shortly).  Any pointers for pca9539 driver =
+nodes would be appreciated, as I took these from a similar tree, but not =
+the 95xx driver.  I'll match them up with the code in the morning ...
+
+
+Thanks for your feedback, it was as timely as it was welcomed!
+
+Cheers,
+Rob
