@@ -1,27 +1,24 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 7DBCFB6F89
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 12:32:20 +1100 (EST)
-Date: Wed, 2 Nov 2011 18:30:12 -0700
-From: Greg KH <gregkh@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Regression: patch " hvc_console: display printk messages on
- console." causing infinite loop with 3.2-rc0 + Xen.
-Message-ID: <20111103013012.GB3449@suse.de>
-References: <20111027053007.GA32765@phenom.dumpdata.com>
- <20111027054806.GA1377@suse.de>
- <20111102121309.4dbb0d2ac90d2879130820dd@canb.auug.org.au>
+Return-Path: <openspace.wang@gmail.com>
+Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
+ [209.85.210.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id EF781B6F67
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2011 12:05:23 +1100 (EST)
+Received: by iakc1 with SMTP id c1so781289iak.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 02 Nov 2011 18:05:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111102121309.4dbb0d2ac90d2879130820dd@canb.auug.org.au>
-Cc: xen-devel@lists.xensource.com,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Rusty Russell <rusty@rustcorp.com.au>, miche@google.com,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- Linus <torvalds@linux-foundation.org>, Anton Blanchard <anton@samba.org>,
- Amit Shah <amit.shah@redhat.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <4EB197B8.8020504@freescale.com>
+References: <CAPxxNQnhXaKJ5ve-=0qwChuuvDj_027RM2pSD43DEf6BZbaHDA@mail.gmail.com>
+ <20111101172531.GG16267@us.ibm.com>
+ <CAPxxNQ=TkMFhzBeLi9bt5Fo7gygoM2V61EHYRzKqcMetaG2qnQ@mail.gmail.com>
+ <4EB197B8.8020504@freescale.com>
+Date: Thu, 3 Nov 2011 09:05:21 +0800
+Message-ID: <CAPxxNQm6xHciU137i-s2MWAjv-SPCJNx3JX5NuLb7SxneaLomQ@mail.gmail.com>
+Subject: Re: What does rmo/tce stand for in powerpc?
+From: Ryan Wang <openspace.wang@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=90e6ba1eee6ec3aa6604b0ca2e83
+Cc: Nishanth Aravamudan <nacc@us.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,36 +28,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 02, 2011 at 12:13:09PM +1100, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> On Thu, 27 Oct 2011 07:48:06 +0200 Greg KH <gregkh@suse.de> wrote:
+--90e6ba1eee6ec3aa6604b0ca2e83
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: quoted-printable
+
+2011/11/3 Scott Wood <scottwood@freescale.com>
+
+> On 11/02/2011 06:17 AM, Ryan Wang wrote:
 > >
-> > On Thu, Oct 27, 2011 at 01:30:08AM -0400, Konrad Rzeszutek Wilk wrote:
-> > > Hey Miche.
-> > > 
-> > > The git commit 361162459f62dc0826b82c9690a741a940f457f0:
-> > > 
-> > >     hvc_console: display printk messages on console.
-> > > 
-> > > is causing an infinite loop when booting Linux under Xen, as so:
-> > 
-> > Ick, not good, thanks for letting us know.
-> 
-> Indeed. I am wondering why it was put in a tree and sent to Linus without
-> any Acks or even being replied to by anyone.  It appeared in the tty tree
-> between Oct 14 and Oct 25 (while I was unfortunately on vacation).  If
-> anyone had tried to boot this on any PowerPC server, it would have been
-> immediately obvious (as it was when I booted Linus' tree last night).
-> 
-> And the original author expressed doubts as to his understanding of how
-> it should all work anyway.
-> 
-> Just a little more care, please.
-> 
-> I would vote for reverting the original and having it resubmitted with
-> corrections at some later date.
+> >
+> > 2011/11/2 Nishanth Aravamudan <nacc@us.ibm.com <mailto:nacc@us.ibm.com>=
+>
+> >
+> >     Hi Ryan,
+> >
+> >     On 01.11.2011 [14:25:43 +0800], Ryan Wang wrote:
+> >     > Hi,
+> >     >
+> >     > In kernel source comments, I saw the words:
+> >     > ''
+> >     >
+> >     > alloc_top is set to the top of RMO, eventually shrink down if the
+> >     > <http://lxr.linux.no/linux+*/arch/powerpc/kernel/prom_init.c#L972
+> >     <http://lxr.linux.no/linux+*/arch/powerpc/kernel/prom_init.c#L972
+> >>TCEs
+> >     > overlap
+> >     >
+> >     > ''
+> >     >
+> >     > I wonder what does RMO mean, and TCE?
+> >
+> >     RMO =3D Real Mode Offset -- deprecated in terms of Real Mode Area i=
+n
+> PAPR.
+> >
+> >     TCE =3D Translation Control Entry
+> >
+> >     You should be able to find descriptions of both in PAPR.
+> >
+> >
+> > Thanks Nish!
+> >
+> > But I searched <Power.orgTM Standard for Embedded Power ArchitectureTM
+> > Platform Requirements> and failed to found the concept RMO or Real Mode
+> > Offset.
+> >
+> > Will you please give me some hints to the docs=A3=BFThanks,
+>
+> ePAPR and PAPR are not the same thing.
+>
+> It looks like PAPR is only available to power.org members.
+>
 
-You are right, I will go do that, sorry for the problems.
+Got it. Thanks, Nish.
 
-greg k-h
+
+>
+> -Scott
+>
+>
+
+--90e6ba1eee6ec3aa6604b0ca2e83
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: quoted-printable
+
+<br><br><div class=3D"gmail_quote">2011/11/3 Scott Wood <span dir=3D"ltr">&=
+lt;<a href=3D"mailto:scottwood@freescale.com">scottwood@freescale.com</a>&g=
+t;</span><br><blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt=
+ 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
+On 11/02/2011 06:17 AM, Ryan Wang wrote:<br>
+&gt;<br>
+&gt;<br>
+&gt; 2011/11/2 Nishanth Aravamudan &lt;<a href=3D"mailto:nacc@us.ibm.com">n=
+acc@us.ibm.com</a> &lt;mailto:<a href=3D"mailto:nacc@us.ibm.com">nacc@us.ib=
+m.com</a>&gt;&gt;<br>
+<div class=3D"im">&gt;<br>
+&gt; &nbsp; &nbsp; Hi Ryan,<br>
+&gt;<br>
+&gt; &nbsp; &nbsp; On 01.11.2011 [14:25:43 +0800], Ryan Wang wrote:<br>
+&gt; &nbsp; &nbsp; &gt; Hi,<br>
+&gt; &nbsp; &nbsp; &gt;<br>
+&gt; &nbsp; &nbsp; &gt; In kernel source comments, I saw the words:<br>
+&gt; &nbsp; &nbsp; &gt; &#39;&#39;<br>
+&gt; &nbsp; &nbsp; &gt;<br>
+&gt; &nbsp; &nbsp; &gt; alloc_top is set to the top of RMO, eventually shri=
+nk down if the<br>
+&gt; &nbsp; &nbsp; &gt; &lt;<a href=3D"http://lxr.linux.no/linux+*/arch/pow=
+erpc/kernel/prom_init.c#L972" target=3D"_blank">http://lxr.linux.no/linux+*=
+/arch/powerpc/kernel/prom_init.c#L972</a><br>
+&gt; &nbsp; &nbsp; &lt;<a href=3D"http://lxr.linux.no/linux+*/arch/powerpc/=
+kernel/prom_init.c#L972" target=3D"_blank">http://lxr.linux.no/linux+*/arch=
+/powerpc/kernel/prom_init.c#L972</a>&gt;&gt;TCEs<br>
+&gt; &nbsp; &nbsp; &gt; overlap<br>
+&gt; &nbsp; &nbsp; &gt;<br>
+&gt; &nbsp; &nbsp; &gt; &#39;&#39;<br>
+&gt; &nbsp; &nbsp; &gt;<br>
+&gt; &nbsp; &nbsp; &gt; I wonder what does RMO mean, and TCE?<br>
+&gt;<br>
+&gt; &nbsp; &nbsp; RMO =3D Real Mode Offset -- deprecated in terms of Real =
+Mode Area in PAPR.<br>
+&gt;<br>
+&gt; &nbsp; &nbsp; TCE =3D Translation Control Entry<br>
+&gt;<br>
+&gt; &nbsp; &nbsp; You should be able to find descriptions of both in PAPR.=
+<br>
+&gt;<br>
+&gt;<br>
+&gt; Thanks Nish!<br>
+&gt;<br>
+&gt; But I searched &lt;Power.orgTM Standard for Embedded Power Architectur=
+eTM<br>
+&gt; Platform Requirements&gt; and failed to found the concept RMO or Real =
+Mode<br>
+&gt; Offset.<br>
+&gt;<br>
+&gt; Will you please give me some hints to the docs=A3=BFThanks,<br>
+<br>
+</div>ePAPR and PAPR are not the same thing.<br>
+<br>
+It looks like PAPR is only available to <a href=3D"http://power.org" target=
+=3D"_blank">power.org</a> members.<br></blockquote><div><br>Got it. Thanks,=
+ Nish.<br>&nbsp;</div><blockquote class=3D"gmail_quote" style=3D"margin: 0p=
+t 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1=
+ex;">
+
+<font color=3D"#888888"><br>
+-Scott<br>
+<br>
+</font></blockquote></div><br>
+
+--90e6ba1eee6ec3aa6604b0ca2e83--
