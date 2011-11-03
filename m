@@ -1,13 +1,27 @@
-Return-Path: <anton@samba.org>
-Message-Id: <20111103010112.114553477@samba.org>
-Date: Thu, 03 Nov 2011 11:59:26 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
- paulus@samba.org,
- johnstul@us.ibm.com
-Subject: [PATCH 4/4] powerpc/time: Fix some style issues
-References: <20111103005922.854058953@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7DBCFB6F89
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 12:32:20 +1100 (EST)
+Date: Wed, 2 Nov 2011 18:30:12 -0700
+From: Greg KH <gregkh@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Regression: patch " hvc_console: display printk messages on
+ console." causing infinite loop with 3.2-rc0 + Xen.
+Message-ID: <20111103013012.GB3449@suse.de>
+References: <20111027053007.GA32765@phenom.dumpdata.com>
+ <20111027054806.GA1377@suse.de>
+ <20111102121309.4dbb0d2ac90d2879130820dd@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111102121309.4dbb0d2ac90d2879130820dd@canb.auug.org.au>
+Cc: xen-devel@lists.xensource.com,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, miche@google.com,
+ linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+ Linus <torvalds@linux-foundation.org>, Anton Blanchard <anton@samba.org>,
+ Amit Shah <amit.shah@redhat.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,97 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix some formatting issues and use the DECREMENTER_MAX
-define instead of 0x7fffffff.
+On Wed, Nov 02, 2011 at 12:13:09PM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Thu, 27 Oct 2011 07:48:06 +0200 Greg KH <gregkh@suse.de> wrote:
+> >
+> > On Thu, Oct 27, 2011 at 01:30:08AM -0400, Konrad Rzeszutek Wilk wrote:
+> > > Hey Miche.
+> > > 
+> > > The git commit 361162459f62dc0826b82c9690a741a940f457f0:
+> > > 
+> > >     hvc_console: display printk messages on console.
+> > > 
+> > > is causing an infinite loop when booting Linux under Xen, as so:
+> > 
+> > Ick, not good, thanks for letting us know.
+> 
+> Indeed. I am wondering why it was put in a tree and sent to Linus without
+> any Acks or even being replied to by anyone.  It appeared in the tty tree
+> between Oct 14 and Oct 25 (while I was unfortunately on vacation).  If
+> anyone had tried to boot this on any PowerPC server, it would have been
+> immediately obvious (as it was when I booted Linus' tree last night).
+> 
+> And the original author expressed doubts as to his understanding of how
+> it should all work anyway.
+> 
+> Just a little more care, please.
+> 
+> I would vote for reverting the original and having it resubmitted with
+> corrections at some later date.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+You are right, I will go do that, sorry for the problems.
 
-Index: linux-build/arch/powerpc/kernel/time.c
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-03 10:20:02.117723634 +1100
-+++ linux-build/arch/powerpc/kernel/time.c	2011-11-03 10:20:03.101740361 +1100
-@@ -82,20 +82,20 @@
- 
- static cycle_t rtc_read(struct clocksource *);
- static struct clocksource clocksource_rtc = {
--	.name         = "rtc",
--	.rating       = 400,
--	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
--	.mask         = CLOCKSOURCE_MASK(64),
--	.read         = rtc_read,
-+	.name		= "rtc",
-+	.rating		= 400,
-+	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+	.mask		= CLOCKSOURCE_MASK(64),
-+	.read		= rtc_read,
- };
- 
- static cycle_t timebase_read(struct clocksource *);
- static struct clocksource clocksource_timebase = {
--	.name         = "timebase",
--	.rating       = 400,
--	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
--	.mask         = CLOCKSOURCE_MASK(64),
--	.read         = timebase_read,
-+	.name		= "timebase",
-+	.rating		= 400,
-+	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+	.mask		= CLOCKSOURCE_MASK(64),
-+	.read		= timebase_read,
- };
- 
- #define DECREMENTER_MAX	0x7fffffff
-@@ -106,12 +106,12 @@ static void decrementer_set_mode(enum cl
- 				 struct clock_event_device *dev);
- 
- static struct clock_event_device decrementer_clockevent = {
--       .name           = "decrementer",
--       .rating         = 200,
--       .irq            = 0,
--       .set_next_event = decrementer_set_next_event,
--       .set_mode       = decrementer_set_mode,
--       .features       = CLOCK_EVT_FEAT_ONESHOT,
-+	.name		= "decrementer",
-+	.rating		= 200,
-+	.irq		= 0,
-+	.set_next_event	= decrementer_set_next_event,
-+	.set_mode	= decrementer_set_mode,
-+	.features	= CLOCK_EVT_FEAT_ONESHOT,
- };
- 
- static DEFINE_PER_CPU(struct clock_event_device, decrementers);
-@@ -430,7 +430,7 @@ EXPORT_SYMBOL(profile_pc);
- /* 
-  * This function recalibrates the timebase based on the 49-bit time-of-day
-  * value in the Titan chip.  The Titan is much more accurate than the value
-- * returned by the service processor for the timebase frequency.  
-+ * returned by the service processor for the timebase frequency.
-  */
- 
- static int __init iSeries_tb_recal(void)
-@@ -628,9 +628,9 @@ static void generic_suspend_disable_irqs
- 	 * with suspending.
- 	 */
- 
--	set_dec(0x7fffffff);
-+	set_dec(DECREMENTER_MAX);
- 	local_irq_disable();
--	set_dec(0x7fffffff);
-+	set_dec(DECREMENTER_MAX);
- }
- 
- static void generic_suspend_enable_irqs(void)
-@@ -965,10 +965,10 @@ void __init time_init(void)
- 	boot_tb = get_tb_or_rtc();
- 
- 	/* If platform provided a timezone (pmac), we correct the time */
--        if (timezone_offset) {
-+	if (timezone_offset) {
- 		sys_tz.tz_minuteswest = -timezone_offset / 60;
- 		sys_tz.tz_dsttime = 0;
--        }
-+	}
- 
- 	vdso_data->tb_update_count = 0;
- 	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+greg k-h
