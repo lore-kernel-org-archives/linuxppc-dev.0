@@ -2,17 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B5647B6F69
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2011 04:59:19 +1100 (EST)
-Subject: Re: [PATCH] powerpc/86xx: Correct Gianfar support for GE boards
+ by ozlabs.org (Postfix) with ESMTPS id 85F56B6F70
+ for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2011 04:59:45 +1100 (EST)
+Subject: Re: [PATCH 01/11] powerpc/85xx: Add 'fsl,
+ pq3-gpio' compatiable for GPIO driver
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20111103173726.23924.83647.stgit@ES-BJ21R4J>
-Date: Thu, 3 Nov 2011 12:59:10 -0500
-Message-Id: <86053748-291E-484F-B071-02A3061ECC3F@kernel.crashing.org>
-References: <20111103173726.23924.83647.stgit@ES-BJ21R4J>
-To: Martyn Welch <martyn.welch@ge.com>
+In-Reply-To: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
+Date: Thu, 3 Nov 2011 12:59:39 -0500
+Message-Id: <AC4524EB-6C7A-487D-82E1-CF32F7486D81@kernel.crashing.org>
+References: <1319318452-27036-1-git-send-email-galak@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,26 +25,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 3, 2011, at 12:37 PM, Martyn Welch wrote:
+On Oct 22, 2011, at 4:20 PM, Kumar Gala wrote:
 
-> The GE DTBs were not updated when the Gianfar driver was converted to =
-an
-> of_platform_driver in commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4. =
-Update
-> the DTBs, adding the required TBI entries.
->=20
-> Signed-off-by: Martyn Welch <martyn.welch@ge.com>
+> Support MPC85xx platforms outside of MPC8572/MPC8536.  The
+> MPC8572/MPC8536 have an erratum that is worked around based on having
+> "fsl,mpc8572-gpio" in the compatiable list.  All other MPC85xx SoCs
+> don't require this workaround and thus utilize the 'fsl,pq3-gpio'
+> compatiable.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 > ---
->=20
-> arch/powerpc/boot/dts/gef_ppc9a.dts  |   33 =
-+++++++++++++++++++++++++++++----
-> arch/powerpc/boot/dts/gef_sbc310.dts |   33 =
-+++++++++++++++++++++++++++++----
-> arch/powerpc/boot/dts/gef_sbc610.dts |   33 =
-+++++++++++++++++++++++++++++----
-> 3 files changed, 87 insertions(+), 12 deletions(-)
->=20
+> drivers/gpio/gpio-mpc8xxx.c |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
 applied
 
-- k=
+- k
