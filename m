@@ -1,17 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DF1B6B6F83
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2011 05:28:08 +1100 (EST)
-Date: Thu, 3 Nov 2011 13:27:56 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git next branch
-Message-ID: <alpine.LFD.2.00.1111031327060.9315@right.am.freescale.net>
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+ [216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 1D2E1B6F76
+ for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2011 05:50:22 +1100 (EST)
+Received: from mail25-va3 (localhost [127.0.0.1])	by mail25-va3-R.bigfish.com
+ (Postfix) with ESMTP id 4E3E11E04CD	for <linuxppc-dev@ozlabs.org>;
+ Thu,  3 Nov 2011 18:52:01 +0000 (UTC)
+Received: from VA3EHSMHS024.bigfish.com (unknown [10.7.14.254])	by
+ mail25-va3.bigfish.com (Postfix) with ESMTP id 140FC1C0043	for
+ <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2011 18:52:01 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: do not force PHYS_64BIT on Freescale reference
+ boards
+Date: Thu, 3 Nov 2011 13:50:15 -0500
+Message-ID: <1320346215-21024-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,138 +28,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit 7680057cc4c7d9caada12767831bfd9738dd7b43:
+Kconfig option PHYS_64BIT sets the size of phys_addr_t to 64 bits, which
+allows support for a 36-bit physical address space.  With this option, the
+kernel can support more than 2GB of RAM, but the larger address size
+impacts performance slightly.
 
-  powerpc: Don't try OPAL takeover on old 970 blades (2011-09-29 17:04:59 +1000)
+By including "select PHYS_64BIT" in the Kconfig for a particular board,
+that option is forced enabled, and it becomes impossible to create a 32-bit
+kernel.  Instead, we should depend on the defconfig to enable this option.
+We still build a 36-bit kernel by default, and we also allow users to build
+32-bit kernels if they really want.
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/configs/corenet32_smp_defconfig |    1 +
+ arch/powerpc/platforms/85xx/Kconfig          |    5 -----
+ 2 files changed, 1 insertions(+), 5 deletions(-)
 
-Anatolij Gustschin (1):
-      powerpc/85xx: fix PHYS_64BIT selection for P1022DS
-
-Becky Bruce (3):
-      powerpc: Update mpc85xx/corenet 32-bit defconfigs
-      powerpc: Update corenet64_smp_defconfig
-      powerpc/fsl-booke: Fix settlbcam for 64-bit
-
-Bharat Bhushan (1):
-      powerpc: e500mc: Fix: use CONFIG_PPC_E500MC in idle_e500.S
-
-Dmitry Eremin-Solenikov (4):
-      powerpc/85xx: sbc8560 - correct compilation if CONFIG_PHYS_ADDR_T_64BIT is set
-      powerpc/85xx: ksi8560 - declare that localbus is compatbile with simple-bus
-      powerpc/85xx: sbc8560 - declare that localbus is compatbile with simple-bus
-      powerpc/mpc8349emitx: mark localbus as compatible with simple-bus
-
-Fabio Baltieri (1):
-      powerpc/83xx: Add shutdown request support to MCU handling on MPC8349 MITX
-
-Felix Radensky (1):
-      powerpc/8xxx: Fix interrupt handling in MPC8xxx GPIO driver
-
-Holger Brunck (1):
-      powerpc/82xx: updates for mgcoge
-
-Hongjun Chen (1):
-      powerpc/cpm: Clear muram before it is in use.
-
-Kumar Gala (6):
-      powerpc/85xx: Rename PowerPC core nodes to match other e500mc based .dts
-      powerpc/fsl-booke: Handle L1 D-cache parity error correctly on e500mc
-      powerpc: respect mem= setting for early memory limit setup
-      powerpc/fsl-booke: Fix setup_initial_memory_limit to not blindly map
-      powerpc/85xx: Setup secondary cores PIR with hard SMP id
-      powerpc/85xx: Add 'fsl,pq3-gpio' compatiable for GPIO driver
-
-Liu Yu (3):
-      powerpc/math_emu/efp: Use pr_debug instead of printk
-      powerpc/math_emu/efp: No need to round if the result is exact
-      powerpc/math_emu/efp: Look for errata handler when type mismatches
-
-Martyn Welch (1):
-      powerpc/86xx: Correct Gianfar support for GE boards
-
-Matthew McClintock (4):
-      powerpc/85xx: Fix support for enabling doorbells for IPIs
-      powerpc/85xx: issue 15 EOI after core reset for FSL CoreNet devices
-      powerpc/fsl_booke: Fix comment in head_fsl_booke.S
-      powerpc/85xx: Make kexec to interate over online cpus
-
-Mihai Caraman (1):
-      drivers/virt: add ioctl for 32-bit compat on 64-bit to fsl-hv-manager
-
-Mingkai Hu (1):
-      powerpc/85xx: Rename p2040_rdb.c to p2041_rdb.c
-
-Shengzhou Liu (1):
-      powerpc/p3060qds: Add support for P3060QDS board
-
-Stephen George (1):
-      powerpc/85xx: Adding DCSR node to dtsi device trees
-
-Timur Tabi (3):
-      powerpc/fsl_msi: fix support for multiple MSI ranges
-      powerpc/85xx: clean up FPGA device tree nodes for Freecsale QorIQ boards
-      powerpc/fsl_msi: add support for "msi-address-64" property
-
- .../devicetree/bindings/powerpc/fsl/board.txt      |   30 +-
- .../devicetree/bindings/powerpc/fsl/dcsr.txt       |  395 ++++++++++++++++++++
- .../devicetree/bindings/powerpc/fsl/msi-pic.txt    |   42 ++
- arch/powerpc/boot/dts/gef_ppc9a.dts                |   33 ++-
- arch/powerpc/boot/dts/gef_sbc310.dts               |   33 ++-
- arch/powerpc/boot/dts/gef_sbc610.dts               |   33 ++-
- arch/powerpc/boot/dts/ksi8560.dts                  |    2 +-
- arch/powerpc/boot/dts/mgcoge.dts                   |    9 +
- arch/powerpc/boot/dts/mpc8349emitx.dts             |    3 +-
- arch/powerpc/boot/dts/p1022ds.dts                  |    2 +-
- arch/powerpc/boot/dts/p2020ds.dts                  |    5 +
- .../boot/dts/{p2040rdb.dts => p2041rdb.dts}        |   17 +-
- .../boot/dts/{p2040si.dtsi => p2041si.dtsi}        |  135 +++++--
- arch/powerpc/boot/dts/p3041ds.dts                  |    8 +-
- arch/powerpc/boot/dts/p3041si.dtsi                 |   71 ++++-
- .../boot/dts/{p2040rdb.dts => p3060qds.dts}        |  142 ++++++--
- .../boot/dts/{p2040si.dtsi => p3060si.dtsi}        |  314 ++++++++++------
- arch/powerpc/boot/dts/p4080ds.dts                  |   12 +-
- arch/powerpc/boot/dts/p4080si.dtsi                 |  114 +++++-
- arch/powerpc/boot/dts/p5020ds.dts                  |    8 +-
- arch/powerpc/boot/dts/p5020si.dtsi                 |   68 ++++-
- arch/powerpc/boot/dts/sbc8560.dts                  |    2 +-
- arch/powerpc/configs/corenet32_smp_defconfig       |   11 +-
- arch/powerpc/configs/corenet64_smp_defconfig       |    5 -
- arch/powerpc/configs/mgcoge_defconfig              |   27 +-
- arch/powerpc/configs/mpc85xx_defconfig             |    5 +-
- arch/powerpc/configs/mpc85xx_smp_defconfig         |    6 +-
- arch/powerpc/include/asm/reg_booke.h               |    3 +
- arch/powerpc/kernel/head_fsl_booke.S               |    4 +-
- arch/powerpc/kernel/idle_e500.S                    |    2 +-
- arch/powerpc/kernel/prom.c                         |    5 +-
- arch/powerpc/kernel/traps.c                        |    9 +-
- arch/powerpc/math-emu/math_efp.c                   |  100 +++---
- arch/powerpc/mm/fsl_booke_mmu.c                    |   43 ++-
- arch/powerpc/mm/mmu_decl.h                         |    2 +
- arch/powerpc/mm/tlb_nohash.c                       |   21 +-
- arch/powerpc/platforms/82xx/km82xx.c               |    4 +
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c     |   58 +++-
- arch/powerpc/platforms/85xx/Kconfig                |   20 +-
- arch/powerpc/platforms/85xx/Makefile               |    3 +-
- arch/powerpc/platforms/85xx/p1022_ds.c             |   11 +-
- .../platforms/85xx/{p2040_rdb.c => p2041_rdb.c}    |   18 +-
- .../platforms/85xx/{p2040_rdb.c => p3060_qds.c}    |   31 +-
- arch/powerpc/platforms/85xx/sbc8560.c              |    2 +-
- arch/powerpc/platforms/85xx/smp.c                  |   12 +-
- arch/powerpc/platforms/Kconfig                     |    2 +-
- arch/powerpc/sysdev/cpm_common.c                   |    3 +-
- arch/powerpc/sysdev/fsl_msi.c                      |   28 +-
- arch/powerpc/sysdev/fsl_msi.h                      |    3 +-
- arch/powerpc/sysdev/mpic.c                         |   10 +
- drivers/gpio/gpio-mpc8xxx.c                        |    3 +
- drivers/virt/fsl_hypervisor.c                      |    1 +
- 52 files changed, 1527 insertions(+), 403 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/dcsr.txt
- copy arch/powerpc/boot/dts/{p2040rdb.dts => p2041rdb.dts} (95%)
- copy arch/powerpc/boot/dts/{p2040si.dtsi => p2041si.dtsi} (80%)
- rename arch/powerpc/boot/dts/{p2040rdb.dts => p3060qds.dts} (62%)
- rename arch/powerpc/boot/dts/{p2040si.dtsi => p3060si.dtsi} (65%)
- copy arch/powerpc/platforms/85xx/{p2040_rdb.c => p2041_rdb.c} (82%)
- rename arch/powerpc/platforms/85xx/{p2040_rdb.c => p3060_qds.c} (73%)
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 4311d02..819c06e 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -1,4 +1,5 @@
+ CONFIG_PPC_85xx=y
++CONFIG_PHYS_64BIT=y
+ CONFIG_SMP=y
+ CONFIG_NR_CPUS=8
+ CONFIG_EXPERIMENTAL=y
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 12f5932..6dba779 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -80,7 +80,6 @@ config P1010_RDB
+ config P1022_DS
+ 	bool "Freescale P1022 DS"
+ 	select DEFAULT_UIMAGE
+-	select PHYS_64BIT	# The DTS has 36-bit addresses
+ 	select SWIOTLB
+ 	help
+ 	  This option enables support for the Freescale P1022DS reference board.
+@@ -175,7 +174,6 @@ config P2040_RDB
+ 	bool "Freescale P2040 RDB"
+ 	select DEFAULT_UIMAGE
+ 	select PPC_E500MC
+-	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+ 	select HAS_RAPIDIO
+@@ -187,7 +185,6 @@ config P3041_DS
+ 	bool "Freescale P3041 DS"
+ 	select DEFAULT_UIMAGE
+ 	select PPC_E500MC
+-	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+ 	select HAS_RAPIDIO
+@@ -199,7 +196,6 @@ config P4080_DS
+ 	bool "Freescale P4080 DS"
+ 	select DEFAULT_UIMAGE
+ 	select PPC_E500MC
+-	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+ 	select HAS_RAPIDIO
+@@ -214,7 +210,6 @@ config P5020_DS
+ 	select DEFAULT_UIMAGE
+ 	select E500
+ 	select PPC_E500MC
+-	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+ 	select HAS_RAPIDIO
+-- 
+1.7.3.4
