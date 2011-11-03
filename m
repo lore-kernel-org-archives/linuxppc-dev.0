@@ -1,14 +1,22 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <2DD52030B5146141BEB762A11AE97C4C0100C4AA@SPQCEXC05.exfo.com>
-References: <2DD52030B5146141BEB762A11AE97C4C0100C4AA@SPQCEXC05.exfo.com>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 824DEB6F18
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 09:08:12 +1100 (EST)
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AEA4@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8AEA4@saturn3.aculab.com>
 Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <E084F63F-C294-471C-AEFB-EBF5F8CCA89E@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <56B53DA2-CB5E-4EB9-A5B3-470B7B0CD0FD@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: fpga driver on custom PPC target platform (P4080) ...
-Date: Thu, 3 Nov 2011 22:22:13 +0100
-To: Robert Sciuk <robert.sciuk@exfo.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/usb: use unsigned long to type cast an address of
+ ioremap
+Date: Thu, 3 Nov 2011 23:08:18 +0100
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ Xie Shaohui-B21989 <B21989@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,19 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> 	- How does one specify in the device tree an FPGA which uses
-> both I2c bus and localbus for programming?
+> Arithmetic on 'void *' should not be done. I know some versions of
+> gcc allow it (provided some warning level/option is enabled) but
+> that doesn't mean it is valid.
 
-You have two device nodes, one on the localbus and one on the IIC bus.
-One of the nodes points to the other, or both do; you point to another
-node by having a property containing the phandle of that other node.
+All relevant GCC versions support it (going back to 2.x at least).
+It is _always_ allowed, whatever compiler options you use; -pedantic
+or -Wpointer-arith will warn (which you can upgrade to an error).
 
-It's probably easiest to make the IIC node point to the localbus node,
-because you will most likely always have exactly one of those, and you
-could have multiple IIC nodes on your FPGA, or none at all.  But this
-is something you'll have to put in the device binding for your device,
-and it doesn't really matter what you choose -- it will work either way,
-some choices are more convenient than others though.
+The Linux kernel is not built with these warnings enabled.
+
+>> A char* is incorrect because a char could be more
+>> than one byte, in theory.
+>
+> It is somewhat difficult to untangle the standard, but
+> sizeof (char) is defined to be one.
+
+A char takes exactly one byte.  A byte could be more than eight bits,
+of course.
+
+In GCC, sizeof(void) is 1 as well.
+
+> Of course, the C language doesn't actually require that
+> you can converts between pointers to different types in
+> any well-defined manner.
+
+It does actually, see 6.3.2.3/7.  You can convert any pointer to object
+to a pointer to a different object type, as long as it is properly  
+aligned.
+You cannot in general access the object as that new type of course, but
+it is perfectly well-defined; in particular, you can convert it back to
+the original type and get the same value again, and you can walk  
+consecutive
+bytes of the object by using a pointer to character type.
 
 
 Segher
