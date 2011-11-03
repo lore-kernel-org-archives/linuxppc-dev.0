@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0742BB6F92
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2011 05:02:24 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pA3I1JUs023424
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Nov 2011 13:02:21 -0500
-Content-Type: text/plain; charset=us-ascii
+ by ozlabs.org (Postfix) with ESMTPS id CBEB5B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 05:07:18 +1100 (EST)
+Subject: Re: [PATCH] mcu_mpc8349emitx.c: add shutdown request support
 Mime-Version: 1.0 (Apple Message framework v1251.1)
-Subject: Re: [PATCH] powerpc/85xx: Setup secondary cores PIR with hard SMP id
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1318578771-16865-1-git-send-email-galak@kernel.crashing.org>
-Date: Thu, 3 Nov 2011 13:02:20 -0500
-Message-Id: <4144C592-29A6-4DE1-9A20-EC94538496F2@kernel.crashing.org>
-References: <1318578771-16865-1-git-send-email-galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1313417970-28098-1-git-send-email-fabio.baltieri@gmail.com>
+Date: Thu, 3 Nov 2011 13:07:10 -0500
+Message-Id: <3051811F-3000-44B1-B207-01D654E453E3@kernel.crashing.org>
+References: <1313417970-28098-1-git-send-email-fabio.baltieri@gmail.com>
+To: Fabio Baltieri <fabio.baltieri@gmail.com>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +25,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 14, 2011, at 2:52 AM, Kumar Gala wrote:
+On Aug 15, 2011, at 9:19 AM, Fabio Baltieri wrote:
 
-> Normally logical and hard cpu ID are the same, however in same cases like
-> on the P3060 they may differ.  Where the logical is 0..5, the hard id
-> goes 0,1,4..7.  This can causes issues for places we utilize PIR to index
-> into array like in debug exception handlers for finding the exception
-> stack.
-> 
-> Move to setting up PIR with hard_smp_processor_id fixes the issue.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> This patch add support for calling ctrl_alt_del() when the power =
+button is
+> pressed for more than about 2 seconds on some freescale MPC83xx
+> evaluation boards and reference design.
+>=20
+> The code uses a kthread to poll the CTRL_BTN bit each second.
+>=20
+> Also change Kconfig entry of the driver to bool, as device's gpio
+> registration is broken when loading as module.
+>=20
+> Tested on an MPC8315E RDB board.
+>=20
+> Signed-off-by: Fabio Baltieri <fabio.baltieri@gmail.com>
 > ---
-> arch/powerpc/platforms/85xx/smp.c |    9 +++++----
-> 1 files changed, 5 insertions(+), 4 deletions(-)
+> arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   58 =
++++++++++++++++++++++++-
+> arch/powerpc/platforms/Kconfig                 |    2 +-
+> 2 files changed, 58 insertions(+), 2 deletions(-)
 
 applied
 
-- k
+- k=
