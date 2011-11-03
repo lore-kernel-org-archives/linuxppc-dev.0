@@ -1,16 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Support for multiple MSI interrupts on MPC8377
-From: Michael Ellerman <michael@ellerman.id.au>
-To: "Giffel, Brad" <Brad.Giffel@hbm.com>
-In-Reply-To: <FBC631D6B23BAB40AF19415483130F7A6FD458@HBMURBX.hbm.com>
-References: <FBC631D6B23BAB40AF19415483130F7A6FD458@HBMURBX.hbm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature"; boundary="=-8w4R55E5WU9nqr0txk7/"
-Date: Thu, 03 Nov 2011 14:51:22 +1100
-Message-ID: <1320292282.3852.33.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Matthew Wilcox <matthew@wil.cx>
-Reply-To: michael@ellerman.id.au
+Return-Path: <B21989@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 17FD5B6F18
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 22:11:36 +1100 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/usb: use unsigned long to type cast an address of
+ ioremap
+Date: Thu, 3 Nov 2011 17:58:22 +0800
+Message-ID: <1320314302-7973-1-git-send-email-Shaohui.Xie@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,47 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Below are codes for accessing usb sysif_regs in driver:
 
---=-8w4R55E5WU9nqr0txk7/
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+usb_sys_regs = (struct usb_sys_interface *)
+	((u32)dr_regs + USB_DR_SYS_OFFSET);
 
-On Wed, 2011-11-02 at 16:02 -0500, Giffel, Brad wrote:
-> I=E2=80=99m working a project using a Spartan 6 FPGA with a PCIe interfac=
-e and
-> MSI interrupts.  I want to use multiple MSI interrupts (MSI-X is not
-> supported in the FPGA PCIe core) but the current Linux distribution
-> (3.0.8) prevents that (lines 23 to 25 in arch/powerpc/kernel/msi.c).
->=20
-> =20
->=20
-> What=E2=80=99s the story here?  Is the code in place but not tested?  I t=
-ried
-> commenting out those lines but a request_irq() called failed for the
-> second interrupt requested.  Am I wasting my time here?  Should I
-> re-architect to use a single MSI interrupt?
+these codes work in 32-bit, but in 64-bit, use u32 to type cast the address
+of ioremap is not right, and accessing members of 'usb_sys_regs' will cause
+call trace, so use unsigned long for both 32-bit and 64-bit.
 
-The short and easy answer is you should use a single MSI interrupt.
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+---
+ drivers/usb/gadget/fsl_udc_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-There is some code in place to support multiple MSI, but only in the
-generic code (drivers/pci/msi.c), and I'm not sure if it's complete.
-There is no arch support, for any arch AFAIK, and certainly not for
-powerpc.
-
-cheers
-
-
-
---=-8w4R55E5WU9nqr0txk7/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAk6yD7UACgkQdSjSd0sB4dL8+gCdHLvSMHKNbm9LyFohIMLH6Vw2
-IhMAoJIz7hIinsiXvAEWHUBifdge5i5I
-=U3Kh
------END PGP SIGNATURE-----
-
---=-8w4R55E5WU9nqr0txk7/--
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index c81fbad..581b7cc 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -2498,7 +2498,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
+ #ifndef CONFIG_ARCH_MXC
+ 	if (pdata->have_sysif_regs)
+ 		usb_sys_regs = (struct usb_sys_interface *)
+-				((u32)dr_regs + USB_DR_SYS_OFFSET);
++				((unsigned long)dr_regs + USB_DR_SYS_OFFSET);
+ #endif
+ 
+ 	/* Initialize USB clocks */
+-- 
+1.6.4
