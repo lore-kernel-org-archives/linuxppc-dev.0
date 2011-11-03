@@ -1,23 +1,18 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 2598AB6F7B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 23:17:37 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 27468-09 for <linuxppc-dev@lists.ozlabs.org>;
- Thu,  3 Nov 2011 12:17:33 +0000 (GMT)
+Return-Path: <Brad.Giffel@hbm.com>
+Received: from relay.medianet-world.de (relay.medianet-world.de
+ [213.157.0.172]) by ozlabs.org (Postfix) with SMTP id 4E848B6F65
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2011 23:19:55 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: [PATCH] powerpc/usb: use unsigned long to type cast an address of
- ioremap
-Date: Thu, 3 Nov 2011 12:16:02 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AEA4@saturn3.aculab.com>
-In-Reply-To: <4EB283F5.6000202@freescale.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Tabi Timur-B04825" <B04825@freescale.com>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Xie Shaohui-B21989 <B21989@freescale.com>
+Subject: RE: Support for multiple MSI interrupts on MPC8377
+Date: Thu, 3 Nov 2011 07:19:49 -0500
+Message-ID: <FBC631D6B23BAB40AF19415483130F7A6FD48B@HBMURBX.hbm.com>
+In-Reply-To: <1320292282.3852.33.camel@concordia>
+References: <FBC631D6B23BAB40AF19415483130F7A6FD458@HBMURBX.hbm.com>
+ <1320292282.3852.33.camel@concordia>
+From: "Giffel, Brad" <Brad.Giffel@hbm.com>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >> >  usb_sys_regs =3D (void *)dr_regs + USB_DR_SYS_OFFSET;
+A single MSI interrupt it is then.
+
+	Thanks,
+	- Brad
+
+
+-----Original Message-----
+From: Michael Ellerman [mailto:michael@ellerman.id.au]=20
+Sent: Wednesday, November 02, 2011 10:51 PM
+To: Giffel, Brad
+Cc: linuxppc-dev@lists.ozlabs.org; Matthew Wilcox
+Subject: Re: Support for multiple MSI interrupts on MPC8377
+
+On Wed, 2011-11-02 at 16:02 -0500, Giffel, Brad wrote:
+> I'm working a project using a Spartan 6 FPGA with a PCIe interface and
+> MSI interrupts.  I want to use multiple MSI interrupts (MSI-X is not
+> supported in the FPGA PCIe core) but the current Linux distribution
+> (3.0.8) prevents that (lines 23 to 25 in arch/powerpc/kernel/msi.c).
 >=20
-> > But that is invalid C.
+> =20
 >=20
-> What's invalid about it?  I haven't tried compiling this=20
-> specific line of code, but I've done stuff like it in the past many
-times.
->=20
-> Are you talking about adding an integer to a void pointer? =20
-> If so, then that's something that gcc supports and that the kernel
-uses=20
-> all over the place.
+> What's the story here?  Is the code in place but not tested?  I tried
+> commenting out those lines but a request_irq() called failed for the
+> second interrupt requested.  Am I wasting my time here?  Should I
+> re-architect to use a single MSI interrupt?
 
-Arithmetic on 'void *' should not be done. I know some versions of
-gcc allow it (provided some warning level/option is enabled) but
-that doesn't mean it is valid.
-My suspicions are that is was allowed due to the way 'void *'
-was originally bodged into gcc.
+The short and easy answer is you should use a single MSI interrupt.
 
-> A char* is incorrect because a char could be more=20
-> than one byte, in theory.
+There is some code in place to support multiple MSI, but only in the
+generic code (drivers/pci/msi.c), and I'm not sure if it's complete.
+There is no arch support, for any arch AFAIK, and certainly not for
+powerpc.
 
-It is somewhat difficult to untangle the standard, but
-sizeof (char) is defined to be one.
-
-Of course, the C language doesn't actually require that
-you can converts between pointers to different types in
-any well-defined manner. But most of the low level device
-access assumes an adequately linear address space.
-
-	David
+cheers
