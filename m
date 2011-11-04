@@ -1,28 +1,16 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
- [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A7CD8B6F69
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2011 04:34:35 +1100 (EST)
-Received: from mail45-am1 (localhost.localdomain [127.0.0.1])	by
- mail45-am1-R.bigfish.com (Postfix) with ESMTP id EA82B12003EF	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 17:34:21 +0000 (UTC)
-Received: from AM1EHSMHS003.bigfish.com (unknown [10.3.201.245])	by
- mail45-am1.bigfish.com (Postfix) with ESMTP id 4C91713C005F	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 17:33:45 +0000 (UTC)
-Message-ID: <4EB421FD.6010805@freescale.com>
-Date: Fri, 4 Nov 2011 12:33:49 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <robert.sciuk@exfo.com>
 MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH 1/7] powerpc/85xx: re-enable timebase sync disabled by
- KEXEC patch
-References: <1320409787-14360-1-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1320409787-14360-1-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: fpga driver on custom PPC target platform (P4080) ...
+Date: Fri, 4 Nov 2011 14:19:36 -0400
+Message-ID: <2DD52030B5146141BEB762A11AE97C4C0100C8C1@SPQCEXC05.exfo.com>
+References: <2DD52030B5146141BEB762A11AE97C4C0100C735@SPQCEXC05.exfo.com>
+ <CAOZdJXWjS4t9cOKRB3rxy0iCFAYRyEgg6kfQwvydUQSyO1ttoA@mail.gmail.com>
+From: "Robert Sciuk" <robert.sciuk@exfo.com>
+To: "Robert Sciuk" <robert.sciuk@exfo.com>,
+ "Tabi Timur-B04825" <B04825@freescale.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/04/2011 07:29 AM, Zhao Chenhui wrote:
-> From: Li Yang <leoli@freescale.com>
-> 
-> The timebase sync is not only necessary when using KEXEC. It should also
-> be used by normal boot up and cpu hotplug. Remove the ifdef added by
-> the KEXEC patch.
+> >
+> > I *believe* you are not supposed to create separate nodes for =
+reading
+> > and writing.  I know that's how I2C works, but I think the I2C layer
+> > takes care of that for you.
+> >
+> > If you look at other device trees, you'll see they only have one =
+node
+> > for any particular I2C device.
+> >
+> > --
+> > Timur Tabi
+> > Linux kernel developer at Freescale
+>=20
+>=20
+> Thanks, Timur ... I've fixed the tree, and I'm tracking down the
+> problems with addressing the nodes ...
 
-The KEXEC patch didn't just add the ifdef, it also added the initializers:
+Ah,  my compatible attribute was wrong:
 
-> @@ -105,8 +107,64 @@ smp_85xx_setup_cpu(int cpu_nr)
->  
->  struct smp_ops_t smp_85xx_ops = {
->         .kick_cpu = smp_85xx_kick_cpu,
-> +#ifdef CONFIG_KEXEC
-> +       .give_timebase  = smp_generic_give_timebase,
-> +       .take_timebase  = smp_generic_take_timebase,
-> +#endif
->  };
+	Compatible =3D "nxp,pca9539";
 
-U-Boot synchronizes the timebase on 85xx.  With what chip and U-Boot
-version are you seeing this not happen?
+	Should have been:
 
-If you are seeing only a small (around one tick) difference, make sure
-you're running a U-Boot that has this commit:
+	Compatible =3D "nxp,pca953x";
 
-> commit 7afc45ad7d9493208d89072cbb78a5bfc8034b59
-> Author: Kumar Gala <galak@kernel.crashing.org>
-> Date:   Sun Mar 13 10:55:53 2011 -0500
-> 
->     powerpc/85xx: Fix synchronization of timebase on MP boot
->     
->     There is a small ordering issue in the master core in that we need to
->     make sure the disabling of the timebase in the SoC is visible before we
->     set the value to 0.  We can simply just read back the value to
->     synchronizatize the write, before we set TB to 0.
->     
->     Reported-by: Dan Hettena
->     Tested-by: Dan Hettena
->     Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+The tree now seems to bind the i2c gpio drivers properly ... on to the =
+localbus mappings!
 
-
--Scott
+Rob.
