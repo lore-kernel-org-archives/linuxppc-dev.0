@@ -1,27 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 457A4B6FA0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2011 05:45:30 +1100 (EST)
-Received: from mail110-db3 (localhost.localdomain [127.0.0.1])	by
- mail110-db3-R.bigfish.com (Postfix) with ESMTP id 2AC498C83F2	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 18:45:17 +0000 (UTC)
-Received: from DB3EHSMHS019.bigfish.com (unknown [10.3.81.245])	by
- mail110-db3.bigfish.com (Postfix) with ESMTP id E40A410C8050	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2011 18:45:16 +0000 (UTC)
-Message-ID: <4EB432C1.1000601@freescale.com>
-Date: Fri, 4 Nov 2011 13:45:21 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E8601B6F69
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2011 04:36:07 +1100 (EST)
+Message-ID: <4EB4229C.1050403@embedded-sol.com>
+Date: Fri, 04 Nov 2011 19:36:28 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: chenhui.zhao@freescale.com, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH 3/7] powerpc/85xx: add sleep and deep sleep support
 References: <1320410014-14453-1-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1320410014-14453-1-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/html; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,86 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/04/2011 07:33 AM, Zhao Chenhui wrote:
-> +/* Cast the ccsrbar to 64-bit parameter so that the assembly
-> + * code can be compatible with both 32-bit & 36-bit */
-> +extern void mpc85xx_enter_deep_sleep(u64 ccsrbar, u32 powmgtreq);
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
 
-/*
- * Please use proper
- * Linux multi-line comment format.
- */
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  </head>
+  <body bgcolor="#ffffff" text="#000000">
+    Hi Zhao,<br>
+    <blockquote cite="mid:4EB41B95.2080508@embedded-sol.com" type="cite">
+      <pre>From: Li Yang &lt;<a moz-do-not-send="true" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">leoli at freescale.com</a>&gt;
 
->  static int pmc_suspend_enter(suspend_state_t state)
->  {
->  	int ret;
-> +	u32 powmgtreq = 0x00500000;
+Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
+in addtion to the sleep PM mode.
 
-Where does this 0x00500000 come from?  Please symbolically define
-individual bits.
+In sleep PM mode, the clocks of e500 core and unused IP blocks is
+turned off. IP blocks which are allowed to wake up the processor
+are still running
 
-The comment in the asm code says it should be 0x00100000, BTW.
+While in deep sleep PM mode, additionally, the power supply is
+removed from e500 core and most IP blocks. Only the blocks needed
+to wake up the chip out of deep sleep are ON.
 
-> +
-> +	switch (state) {
-> +	case PM_SUSPEND_MEM:
-> +#ifdef CONFIG_SPE
-> +		enable_kernel_spe();
-> +#endif
+This patch supports 32-bit and 36-bit address space.
 
-Should comment that currently only e500v2 hardware supports deep sleep
--- else we'd need to save normal FP here.
+The deep sleep mode is equal to the Suspend-to-RAM state of Linux
+Power Management.
 
-> +		pr_debug("Entering deep sleep\n");
-> +
-> +		local_irq_disable();
-> +		mpc85xx_enter_deep_sleep(get_immrbase(),
-> +				powmgtreq);
-> +		pr_debug("Resumed from deep sleep\n");
-> +
-> +		return 0;
-> +
-> +	/* else fall-through */
-> +	case PM_SUSPEND_STANDBY:
+Command to enter deep sleep mode.
+  echo mem &gt; /sys/power/state
 
-What fall-through?  You just returned.
-
-> +	}
->  
-> -	/* Upon resume, wait for SLP bit to be clear. */
-> -	ret = spin_event_timeout((in_be32(&pmc_regs->pmcsr) & PMCSR_SLP) == 0,
-> -				 10000, 10) ? 0 : -ETIMEDOUT;
-> -	if (ret)
-> -		dev_err(pmc_dev, "tired waiting for SLP bit to clear\n");
-> -	return ret;
->  }
-
-Remove that blank line as well.
-
-> @@ -58,13 +101,23 @@ static const struct platform_suspend_ops pmc_suspend_ops = {
->  	.enter = pmc_suspend_enter,
->  };
->  
-> -static int pmc_probe(struct platform_device *ofdev)
-> +static int pmc_probe(struct platform_device *pdev)
->  {
-> -	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
-> +	struct device_node *np = pdev->dev.of_node;
-> +
-> +	pmc_regs = of_iomap(pdev->dev.of_node, 0);
->  	if (!pmc_regs)
->  		return -ENOMEM;
->  
-> -	pmc_dev = &ofdev->dev;
-> +	has_deep_sleep = 0;
-> +	if (of_device_is_compatible(np, "fsl,mpc8536-pmc"))
-> +		has_deep_sleep = 1;
-> +
-> +	has_lossless = 0;
-> +	if (of_device_is_compatible(np, "fsl,p1022-pmc"))
-> +		has_lossless = 1;
-> +
-
-You never use has_lossless.
-
--Scott
+</pre>
+    </blockquote>
+    <br>
+    Thanks a lot for bringing this code to mainline. I was recently
+    involved in enabling<br>
+    deep sleep on a custom P1022 board, and would like to make some
+    remarks based<br>
+    on this experience.<br>
+    <br>
+    1. I think 85xx deep sleep code would be more complete if you also
+    port FSL<br>
+    &nbsp;&nbsp;&nbsp; BSP code that saves eLBC configuration before entering deep
+    sleep and <br>
+    &nbsp;&nbsp;&nbsp; restores it afterwards. Otherwise all eLBC customization done by
+    u-boot is lost.<br>
+    <br>
+    2. You should implement fsl_deep_sleep() routine for 85xx. The
+    default implementation<br>
+    &nbsp;&nbsp;&nbsp; in include/linux/fsl_devices.h always returns 0. The routine is
+    used by FSL USB host <br>
+    &nbsp;&nbsp;&nbsp; driver, drivers/usb/host/ehci-fsl.c to restore USB hardware
+    state after deep sleep. <br>
+    &nbsp;&nbsp;&nbsp; With default implementation USB is dead on 85xx after deep sleep
+    if USB PHY is <br>
+    &nbsp;&nbsp;&nbsp; powered down completely.<br>
+    <br>
+    Felix.<br>
+  </body>
+</html>
