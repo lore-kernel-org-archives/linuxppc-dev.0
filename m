@@ -1,21 +1,16 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.parisc-linux.org",
- Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 795B5B6F69
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2011 01:10:55 +1100 (EST)
-Date: Fri, 4 Nov 2011 08:00:51 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: Support for multiple MSI interrupts on MPC8377
-Message-ID: <20111104140050.GG22937@parisc-linux.org>
-References: <FBC631D6B23BAB40AF19415483130F7A6FD458@HBMURBX.hbm.com>
- <1320292282.3852.33.camel@concordia>
+Return-Path: <B04825@freescale.com>
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Robert Sciuk <robert.sciuk@exfo.com>
+Subject: Re: fpga driver on custom PPC target platform (P4080) ...
+Date: Fri, 4 Nov 2011 16:36:42 +0000
+Message-ID: <CAOZdJXWjS4t9cOKRB3rxy0iCFAYRyEgg6kfQwvydUQSyO1ttoA@mail.gmail.com>
+References: <2DD52030B5146141BEB762A11AE97C4C0100C735@SPQCEXC05.exfo.com>
+In-Reply-To: <2DD52030B5146141BEB762A11AE97C4C0100C735@SPQCEXC05.exfo.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1320292282.3852.33.camel@concordia>
-Cc: linuxppc-dev@lists.ozlabs.org, "Giffel, Brad" <Brad.Giffel@hbm.com>
+Cc: "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 03, 2011 at 02:51:22PM +1100, Michael Ellerman wrote:
-> There is some code in place to support multiple MSI, but only in the
-> generic code (drivers/pci/msi.c), and I'm not sure if it's complete.
-> There is no arch support, for any arch AFAIK, and certainly not for
-> powerpc.
+On Thu, Nov 3, 2011 at 5:12 PM, Robert Sciuk <robert.sciuk@exfo.com> wrote:
 
-I think there's an ARM or MIPS architecture that implements support for
-it ... the x86 support was never merged.
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0lim_r: gpio@e8 {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible=
+ =3D "nxp,pca9539";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0=
+xe8>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#gpio-cell=
+s =3D <2>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gpio-contr=
+oller;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0polarity =
+=3D <0x00>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0lim_w: gpio@e9 {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible=
+ =3D "nxp,pca9539";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0=
+xe9>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#gpio-cell=
+s =3D <2>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gpio-contr=
+oller;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0polarity =
+=3D <0x00>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>
+> It appears that I'm not correctly creating the pca9539 nodes as of yet (I=
+'ll be adding the phandles shortly). =A0Any pointers for pca9539 driver nod=
+es would be appreciated, as I took these from a similar tree, but not the 9=
+5xx driver. =A0I'll match them up with the code in the morning ...
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I *believe* you are not supposed to create separate nodes for reading
+and writing.  I know that's how I2C works, but I think the I2C layer
+takes care of that for you.
+
+If you look at other device trees, you'll see they only have one node
+for any particular I2C device.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
