@@ -1,16 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Sat, 5 Nov 2011 11:55:51 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 2/4] powerpc/time: Use clocksource_register_hz
-Message-ID: <20111105005551.GB31510@bloggs.ozlabs.ibm.com>
-References: <20111103005922.854058953@samba.org>
- <20111103010111.951358660@samba.org>
- <1320326084.2892.4.camel@js-netbook>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 5 Nov 2011 11:40:50 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Robert Sciuk <robert.sciuk@exfo.com>
+Subject: Re: fpga driver on custom PPC target platform (P4080) ...
+Message-ID: <20111105004050.GA1384@truffala.fritz.box>
+References: <2DD52030B5146141BEB762A11AE97C4C0100C735@SPQCEXC05.exfo.com>
+ <CAOZdJXWjS4t9cOKRB3rxy0iCFAYRyEgg6kfQwvydUQSyO1ttoA@mail.gmail.com>
+ <2DD52030B5146141BEB762A11AE97C4C0100C8C1@SPQCEXC05.exfo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1320326084.2892.4.camel@js-netbook>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+In-Reply-To: <2DD52030B5146141BEB762A11AE97C4C0100C8C1@SPQCEXC05.exfo.com>
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+ Tabi Timur-B04825 <B04825@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,53 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 03, 2011 at 09:14:44AM -0400, John Stultz wrote:
-> On Thu, 2011-11-03 at 11:59 +1100, Anton Blanchard wrote:
-> > plain text document attachment (clock3)
-> > Use clocksource_register_hz which calculates the shift/mult
-> > factors for us.
+On Fri, Nov 04, 2011 at 02:19:36PM -0400, Robert Sciuk wrote:
+> > >
+> > > I *believe* you are not supposed to create separate nodes for reading
+> > > and writing.  I know that's how I2C works, but I think the I2C layer
+> > > takes care of that for you.
+> > >
+> > > If you look at other device trees, you'll see they only have one node
+> > > for any particular I2C device.
+> > >
 > > 
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
-> > ---
 > > 
-> > Index: linux-build/arch/powerpc/kernel/time.c
-> > ===================================================================
-> > --- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-03 10:19:59.493679032 +1100
-> > +++ linux-build/arch/powerpc/kernel/time.c	2011-11-03 10:20:00.965704053 +1100
-> > @@ -86,8 +86,6 @@ static struct clocksource clocksource_rt
-> >  	.rating       = 400,
-> >  	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-> >  	.mask         = CLOCKSOURCE_MASK(64),
-> > -	.shift        = 22,
-> > -	.mult         = 0,	/* To be filled in */
-> >  	.read         = rtc_read,
-> >  };
-> > 
-> > @@ -97,8 +95,6 @@ static struct clocksource clocksource_ti
-> >  	.rating       = 400,
-> >  	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-> >  	.mask         = CLOCKSOURCE_MASK(64),
-> > -	.shift        = 22,
-> > -	.mult         = 0,	/* To be filled in */
-> >  	.read         = timebase_read,
-> >  };
+> > Thanks, Timur ... I've fixed the tree, and I'm tracking down the
+> > problems with addressing the nodes ...
 > 
-> So I've held off on ppc conversion to clocksource_register_hz due to the
-> fact that the ppc vdso gettimeofday at least used to make assumptions
-> that shift was 22.
+> Ah,  my compatible attribute was wrong:
 > 
-> Is that no longer the case?
+> 	Compatible = "nxp,pca9539";
+> 
+> 	Should have been:
+> 
+> 	Compatible = "nxp,pca953x";
+> 
+> The tree now seems to bind the i2c gpio drivers properly ... on to
+> the localbus mappings!
 
-It is still the case; specifically, update_vsyscall() in
-arch/powerpc/kernel/time.c converts a multiplier value to a 'tb_to_xs'
-multiplier (timebase to xsec conversion factor, where 1 xsec = 2^-20
-seconds) using a factor which assumes a shift of 22.  The factor needs
-to be 2^(20 + 64 - shift) / 1e9, so we could accommodate other shift
-values by changing the line that computes new_tb_to_xs to do
+Ah.  In that case the drivers should probably be extended to recognize
+the first compatible.  "wildcard" compatible strings are a bad idea,
+unfortunately there are some already in the wild, as you've seen.  We
+should try to phase them out though.
 
-       new_tb_to_xs = (u64) mult * (19342813113834067ULL >> shift);
-
-assuming the shift value is easily available to update_vsyscall
-(I assume it would be clock->shift).
-
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
