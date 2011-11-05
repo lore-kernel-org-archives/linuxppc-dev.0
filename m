@@ -1,24 +1,16 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 2A372B6F99
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2011 11:08:46 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Zhao Chenhui-B35336 <B35336@freescale.com>
-Subject: Re: [PATCH 6/7] fsl_pmc: Add API to enable device as wakeup event
- source
-Date: Sat, 5 Nov 2011 00:08:24 +0000
-Message-ID: <CAOZdJXXB9zJWqC+kPq7ZDdzePtp8XNBnWcf5UmE8Ye50U-G7Dg@mail.gmail.com>
-References: <1320410349-14600-1-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1320410349-14600-1-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 5 Nov 2011 11:55:51 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: John Stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 2/4] powerpc/time: Use clocksource_register_hz
+Message-ID: <20111105005551.GB31510@bloggs.ozlabs.ibm.com>
+References: <20111103005922.854058953@samba.org>
+ <20111103010111.951358660@samba.org>
+ <1320326084.2892.4.camel@js-netbook>
 MIME-Version: 1.0
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1320326084.2892.4.camel@js-netbook>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 4, 2011 at 7:39 AM, Zhao Chenhui <chenhui.zhao@freescale.com> w=
-rote:
+On Thu, Nov 03, 2011 at 09:14:44AM -0400, John Stultz wrote:
+> On Thu, 2011-11-03 at 11:59 +1100, Anton Blanchard wrote:
+> > plain text document attachment (clock3)
+> > Use clocksource_register_hz which calculates the shift/mult
+> > factors for us.
+> > 
+> > Signed-off-by: Anton Blanchard <anton@samba.org>
+> > ---
+> > 
+> > Index: linux-build/arch/powerpc/kernel/time.c
+> > ===================================================================
+> > --- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-03 10:19:59.493679032 +1100
+> > +++ linux-build/arch/powerpc/kernel/time.c	2011-11-03 10:20:00.965704053 +1100
+> > @@ -86,8 +86,6 @@ static struct clocksource clocksource_rt
+> >  	.rating       = 400,
+> >  	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
+> >  	.mask         = CLOCKSOURCE_MASK(64),
+> > -	.shift        = 22,
+> > -	.mult         = 0,	/* To be filled in */
+> >  	.read         = rtc_read,
+> >  };
+> > 
+> > @@ -97,8 +95,6 @@ static struct clocksource clocksource_ti
+> >  	.rating       = 400,
+> >  	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
+> >  	.mask         = CLOCKSOURCE_MASK(64),
+> > -	.shift        = 22,
+> > -	.mult         = 0,	/* To be filled in */
+> >  	.read         = timebase_read,
+> >  };
+> 
+> So I've held off on ppc conversion to clocksource_register_hz due to the
+> fact that the ppc vdso gettimeofday at least used to make assumptions
+> that shift was 22.
+> 
+> Is that no longer the case?
 
-> + =A0 =A0 =A0 if (!pmc_regs) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_WARNING "PMC is unavailable\n")=
-;
+It is still the case; specifically, update_vsyscall() in
+arch/powerpc/kernel/time.c converts a multiplier value to a 'tb_to_xs'
+multiplier (timebase to xsec conversion factor, where 1 xsec = 2^-20
+seconds) using a factor which assumes a shift of 22.  The factor needs
+to be 2^(20 + 64 - shift) / 1e9, so we could accommodate other shift
+values by changing the line that computes new_tb_to_xs to do
 
-Use pr_warn() and the other pr_xxx functions.
+       new_tb_to_xs = (u64) mult * (19342813113834067ULL >> shift);
 
-> + =A0 =A0 =A0 pmcdr_mask =3D (u32 *)of_get_property(clk_np, "fsl,pmcdr-ma=
-sk", NULL);
+assuming the shift value is easily available to update_vsyscall
+(I assume it would be clock->shift).
 
-The typecast is unnecessary here.
-
-> + =A0 =A0 =A0 /* clear to enable clock in low power mode */
-> + =A0 =A0 =A0 if (enable)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 clrbits32(&pmc_regs->pmcdr, *pmcdr_mask);
-> + =A0 =A0 =A0 else
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 setbits32(&pmc_regs->pmcdr, *pmcdr_mask);
-
-You need to use be32_to_cpup() when dereferencing a pointer to a
-device tree property.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Paul.
