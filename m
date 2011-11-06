@@ -1,19 +1,17 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AC0D5B70C0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2011 09:42:51 +1100 (EST)
-Message-ID: <4EB46A7B.6030108@embedded-sol.com>
-Date: Sat, 05 Nov 2011 00:43:07 +0200
-From: Felix Radensky <felix@embedded-sol.com>
-MIME-Version: 1.0
-To: chenhui.zhao@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Felix Radensky <felix@embedded-sol.com>
-Subject: Re: [PATCH 3/7] powerpc/85xx: add sleep and deep sleep support
-References: <1320410014-14453-1-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1320410014-14453-1-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/html; charset=ISO-8859-1
+ by ozlabs.org (Postfix) with ESMTPS id 188AC1007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2011 10:29:27 +1100 (EST)
+Message-ID: <1320622150.2779.6.camel@pasglop>
+Subject: New location of powerpc git tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 07 Nov 2011 10:29:10 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,63 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-  <head>
-    <meta http-equiv="content-type" content="text/html;
-      charset=ISO-8859-1">
-  </head>
-  <body bgcolor="#ffffff" text="#000000">
-    Hi Zhao,<br>
-    <blockquote cite="mid:4EB41B95.2080508@embedded-sol.com" type="cite">
-      <pre>From: Li Yang &lt;<a moz-do-not-send="true" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">leoli at freescale.com</a>&gt;
+Hi folks !
 
-Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
-in addtion to the sleep PM mode.
+I've moved the powerpc git tree back to kernel.org. The URL should be
+back to normal for users:
 
-In sleep PM mode, the clocks of e500 core and unused IP blocks is
-turned off. IP blocks which are allowed to wake up the processor
-are still running
+git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
 
-While in deep sleep PM mode, additionally, the power supply is
-removed from e500 core and most IP blocks. Only the blocks needed
-to wake up the chip out of deep sleep are ON.
+I've only uploaded the next and merge branches for now (merge is stale
+btw, it's just there to avoid breaking scripts).
 
-This patch supports 32-bit and 36-bit address space.
+Note: Ignore the "linux-powerpc.git" tree that's next to that one, it's
+a mistake and I haven't manage to delete it just yet...
 
-The deep sleep mode is equal to the Suspend-to-RAM state of Linux
-Power Management.
-
-Command to enter deep sleep mode.
-  echo mem &gt; /sys/power/state
-
-</pre>
-    </blockquote>
-    Resending in plain text.<br>
-    <br>
-    Thanks a lot for bringing this code to mainline. I was recently
-    involved in enabling<br>
-    deep sleep on a custom P1022 board, and would like to make some
-    remarks based<br>
-    on this experience.<br>
-    <br>
-    1. I think 85xx deep sleep code would be more complete if you also
-    port FSL<br>
-    &nbsp;&nbsp;&nbsp; BSP code that saves eLBC configuration before entering deep
-    sleep and <br>
-    &nbsp;&nbsp;&nbsp; restores it afterwards. Otherwise all eLBC customization done by
-    u-boot is lost.<br>
-    <br>
-    2. You should implement fsl_deep_sleep() routine for 85xx. The
-    default implementation<br>
-    &nbsp;&nbsp;&nbsp; in include/linux/fsl_devices.h always returns 0. The routine is
-    used by FSL USB host <br>
-    &nbsp;&nbsp;&nbsp; driver, drivers/usb/host/ehci-fsl.c to restore USB hardware
-    state after deep sleep. <br>
-    &nbsp;&nbsp;&nbsp; With default implementation USB is dead on 85xx after deep sleep
-    if USB PHY is <br>
-    &nbsp;&nbsp;&nbsp; powered down.<br>
-    <br>
-    Felix.<br>
-  </body>
-</html>
+Cheers,
+Ben.
