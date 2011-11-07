@@ -1,18 +1,29 @@
-Return-Path: <robert.sciuk@exfo.com>
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 324B81007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 07:25:19 +1100 (EST)
+Date: Mon, 7 Nov 2011 12:24:51 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Regression: patch " hvc_console: display printk messages on
+ console." causing infinite loop with 3.2-rc0 + Xen.
+Message-ID: <20111107202451.GA14482@suse.de>
+References: <20111027053007.GA32765@phenom.dumpdata.com>
+ <20111027054806.GA1377@suse.de>
+ <20111102121309.4dbb0d2ac90d2879130820dd@canb.auug.org.au>
+ <20111103013012.GB3449@suse.de>
+ <20111107171942.fe21429583491475f245aa08@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: fpga driver on custom PPC target platform (P4080) ...
-Date: Mon, 7 Nov 2011 15:09:59 -0500
-Message-ID: <2DD52030B5146141BEB762A11AE97C4C0100CB3D@SPQCEXC05.exfo.com>
-In-reply-to: <20111105004050.GA1384@truffala.fritz.box>
-References: <2DD52030B5146141BEB762A11AE97C4C0100C735@SPQCEXC05.exfo.com>
- <CAOZdJXWjS4t9cOKRB3rxy0iCFAYRyEgg6kfQwvydUQSyO1ttoA@mail.gmail.com>
- <2DD52030B5146141BEB762A11AE97C4C0100C8C1@SPQCEXC05.exfo.com>
- <20111105004050.GA1384@truffala.fritz.box>
-From: "Robert Sciuk" <robert.sciuk@exfo.com>
-To: <linuxppc-dev@lists.ozlabs.org>,
-	<devicetree-discuss@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111107171942.fe21429583491475f245aa08@canb.auug.org.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, xen-devel@lists.xensource.com,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, miche@google.com,
+ linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+ Anton Blanchard <anton@samba.org>, Amit Shah <amit.shah@redhat.com>,
+ Linus <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In my continuing saga of dev/tree driver development, I have a problem =
-which might be obvious to those who have more experience in such =
-matters.
+On Mon, Nov 07, 2011 at 05:19:42PM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Wed, 2 Nov 2011 18:30:12 -0700 Greg KH <gregkh@suse.de> wrote:
+> >
+> > On Wed, Nov 02, 2011 at 12:13:09PM +1100, Stephen Rothwell wrote:
+> > > 
+> > > On Thu, 27 Oct 2011 07:48:06 +0200 Greg KH <gregkh@suse.de> wrote:
+> > > >
+> > > > On Thu, Oct 27, 2011 at 01:30:08AM -0400, Konrad Rzeszutek Wilk wrote:
+> > > > > Hey Miche.
+> > > > > 
+> > > > > The git commit 361162459f62dc0826b82c9690a741a940f457f0:
+> > > > > 
+> > > > >     hvc_console: display printk messages on console.
+> > > > > 
+> > > > > is causing an infinite loop when booting Linux under Xen, as so:
+> > > > 
+> > > > Ick, not good, thanks for letting us know.
+> > > 
+> > > Indeed. I am wondering why it was put in a tree and sent to Linus without
+> > > any Acks or even being replied to by anyone.  It appeared in the tty tree
+> > > between Oct 14 and Oct 25 (while I was unfortunately on vacation).  If
+> > > anyone had tried to boot this on any PowerPC server, it would have been
+> > > immediately obvious (as it was when I booted Linus' tree last night).
+> > > 
+> > > And the original author expressed doubts as to his understanding of how
+> > > it should all work anyway.
+> > > 
+> > > Just a little more care, please.
+> > > 
+> > > I would vote for reverting the original and having it resubmitted with
+> > > corrections at some later date.
+> > 
+> > You are right, I will go do that, sorry for the problems.
+> 
+> Ping ...
+> 
+> Linus can you please just revert 361162459f62dc0826b82c9690a741a940f457f0
+> "hvc_console: display printk messages on console" as it breaks consoles
+> for all PowerPC server machines.
 
-I'm a bit perplexed on the tree nodes for the localbus/simplebus nodes =
-for my FPGA.  CS0 is reserved for booting (from NOR flash as required by =
-our design), CS1 is tied to an FPGA which will always be present.  CS2 =
-actually is tied to both of two (optional) fpga's, which have been =
-previously mapped by U-Boot (BRn/ORn configuration).  Should I specify a =
-ranges command as follows?  This seems somehow wrong, to me, and I'm =
-wondering if there is an alternative representation which would work =
-better in this case.  If you recall, the programming control lines are =
-handled on the I2C bus, via a gpio controller.  In an ideal world, the =
-optional FPE1 and FPE2 fpgas will have the identical .bts stream, and =
-should support the option to program both simultaneously, or each =
-individually, but I'm at a loss as how to best represent this in the =
-tree.
+Thanks for doing this, I was going to include it in my next pull request
+after 3.2-rc1 was out, but you are right, it should have gone in sooner.
 
-	        localbus@ffe124000 {
-                compatible =3D "fsl,p4080-elbc", "fsl,elbc", =
-"simple-bus";
-                reg =3D <0xf 0xfe124000 0 0x1000>;
-                interrupts =3D <25 2 0 0>;
-                interrupt-parent =3D <&mpic>;
-                #address-cells =3D <2>;
-                #size-cells =3D <1>;
-
-                /* Local bus region mappings */
-                ranges =3D <0 0 0xf 0xe8000000 0x08000000         /* =
-CS0: Boot flash */
-                          1 0 0xf 0xd0000000 0x7fff             /* CS1: =
-FPGA0 -  LIM */
-                          2 0 0xf 0xd1000000 0x7fff             /* CS2: =
-FPGA1 -  FPE1 */
-                          2 0 0xf 0xd2000000 0x7fff >;          /* CS2: =
-FPGA2 -  FPE2 */
-
-                flash@0,0 {
-                        compatible =3D "cfi-flash";
-                        reg =3D <0 0 0x08000000>;
-                        bank-width =3D <2>;
-                        device-width =3D <2>;
-                        #size-cells =3D <1>;
-                        #address-cells =3D <1>;
-
-                        partition@0 {
-                                label =3D "rcw";
-                                reg =3D <0x0 0x20000>;
-                                read-only;
-                        };
-                        partition@40000 {
-                                label =3D "saveenv";
-                                reg =3D <0x40000 0x20000>;
-                        };
-                        partition@7000000 {
-                                label =3D "fman-firmware";
-                                reg =3D <0x7000000 0x20000>;
-                                read-only;
-                        };
-                        partition@7f80000 {
-                                label =3D "u-boot";
-                                reg =3D <0x7f80000 0x80000>;
-                                read-only;
-                        };
-                };
-
-                lim: fpga@1, {
-                }
-
-                fpe1: fpga@2, {
-                }
-
-                fpe2: fpga@2, {
-	}
-
-Again, any pointers here would be greatly appreciated ...
-
-Cheers,
-Rob Sciuk
+greg k-h
