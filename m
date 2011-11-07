@@ -1,24 +1,20 @@
-Return-Path: <MAILER-DAEMON>
-Received: from WA2EHSNDR001.bigfish.com (smtp-cpk.frontbridge.com
- [204.231.192.41]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1AE621007D4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2011 22:38:47 +1100 (EST)
-Date: Mon, 7 Nov 2011 19:22:36 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 6/7] fsl_pmc: Add API to enable device as wakeup event
- source
-Message-ID: <20111107112236.GB16470@localhost.localdomain>
-References: <1320410349-14600-1-git-send-email-chenhui.zhao@freescale.com>
- <4EB455B1.8030009@freescale.com>
+Return-Path: <bounces@nabble.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 694A1B6F80
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 21:52:46 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <bounces@nabble.com>) id 1RNMVx-0008QS-GL
+ for linuxppc-dev@ozlabs.org; Mon, 07 Nov 2011 02:33:17 -0800
+Message-ID: <32788715.post@talk.nabble.com>
+Date: Mon, 7 Nov 2011 02:33:17 -0800 (PST)
+From: suggest <harshalshete@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: suspecting ibm_newemac driver problem.
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4EB455B1.8030009@freescale.com>
-Sender: <zch@localhost.localdomain>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Reply-To: zch@localhost.localdomain
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,91 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 04, 2011 at 04:14:25PM -0500, Scott Wood wrote:
-> On 11/04/2011 07:39 AM, Zhao Chenhui wrote:
-> > @@ -45,6 +46,72 @@ static int has_lossless;
-> >   * code can be compatible with both 32-bit & 36-bit */
-> >  extern void mpc85xx_enter_deep_sleep(u64 ccsrbar, u32 powmgtreq);
-> >  
-> > +#ifdef CONFIG_FSL_PMC
-> > +/**
-> > + * pmc_enable_wake - enable OF device as wakeup event source
-> > + * @pdev: platform device affected
-> > + * @state: PM state from which device will issue wakeup events
-> > + * @enable: True to enable event generation; false to disable
-> > + *
-> > + * This enables the device as a wakeup event source, or disables it.
-> > + *
-> > + * RETURN VALUE:
-> > + * 0 is returned on success
-> > + * -EINVAL is returned if device is not supposed to wake up the system
-> > + * Error code depending on the platform is returned if both the platform and
-> > + * the native mechanism fail to enable the generation of wake-up events
-> > + */
-> > +int pmc_enable_wake(struct platform_device *pdev,
-> > +				suspend_state_t state, bool enable)
-> 
-> "pmc" is too generic for a global function.  If this can be either
-> enable or disable, perhaps it should be something like
-> mpc85xx_pmc_set_wake().
-> 
-> > +{
-> > +	int ret = 0;
-> > +	struct device_node *clk_np;
-> > +	u32 *pmcdr_mask;
-> > +
-> > +	if (!pmc_regs) {
-> > +		printk(KERN_WARNING "PMC is unavailable\n");
-> > +		return -ENOMEM;
-> > +	}
-> 
-> -ENOMEM is not appropriate here, maybe -ENODEV?
-> 
-> Should print __func__ so the user knows what's complaining.
-> 
-> > +	if (enable && !device_may_wakeup(&pdev->dev))
-> > +		return -EINVAL;
-> > +
-> > +	clk_np = of_parse_phandle(pdev->dev.of_node, "clk-handle", 0);
-> > +	if (!clk_np)
-> > +		return -EINVAL;
-> > +
-> > +	pmcdr_mask = (u32 *)of_get_property(clk_np, "fsl,pmcdr-mask", NULL);
-> > +	if (!pmcdr_mask) {
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	/* clear to enable clock in low power mode */
-> > +	if (enable)
-> > +		clrbits32(&pmc_regs->pmcdr, *pmcdr_mask);
-> > +	else
-> > +		setbits32(&pmc_regs->pmcdr, *pmcdr_mask);
-> 
-> We should probably initialize PMCDR to all bits set (or at least all
-> ones we know are valid) -- the default should be "not a wakeup source".
 
-I think it should be initialized in u-boot.
+Hello All,
 
-> 
-> > +/**
-> > + * pmc_enable_lossless - enable lossless ethernet in low power mode
-> > + * @enable: True to enable event generation; false to disable
-> > + */
-> > +void pmc_enable_lossless(int enable)
-> > +{
-> > +	if (enable && has_lossless)
-> > +		setbits32(&pmc_regs->pmcsr, PMCSR_LOSSLESS);
-> > +	else
-> > +		clrbits32(&pmc_regs->pmcsr, PMCSR_LOSSLESS);
-> > +}
-> > +EXPORT_SYMBOL_GPL(pmc_enable_lossless);
-> > +#endif
-> 
-> Won't we overwrite this later?
-> 
-> -Scott
+I am using ppc460ex based custom board.
+using linux 2.6.30.2 kernel on this board it has ibm_newemac driver in it.
 
-Do you have any idea?
+I am using this board as a iSCSI target which has RAID system behind it.
 
--chenhui
+                                               ||
+                                               ||                    ||                      
+||
+      n/w driver (ibm_newemac)    ||    n/w layer   ||    iSCSI Target  ||  
+RAID
+                                               ||                    ||                      
+||
+
+The problem i am facing is when i start iometer based i/o.
+I am doing i/o with following specifications.
+
+Workload type : All in one.
+no of outstanding i/o : 32.
+no of worker threads : 8.
+
+With this kind of workload n/w stucks in between. and board becomes
+unresponsive.
+If i try to ping to the board then ping fails with 100% packet loss.
+
+While debugging the issue i found out that
+sock->sk_state_change callback is called from the TCP layer and state of the
+socket is not TCP_ESTABLISHED in the iSCSI target driver.
+
+So i am assuming that this is a problem related to n/w driver.
+
+Did anyone faced similar kind of issue before? Please point me in right
+direction.
+
+
+Thanks and Regards,
+Harshal Shete.
+-- 
+View this message in context: http://old.nabble.com/suspecting-ibm_newemac-driver-problem.-tp32788715p32788715.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
