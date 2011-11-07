@@ -1,29 +1,28 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BB501007D6
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 20:56:10 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
+ (Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 010FD100BD8
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 20:56:26 +1100 (EST)
+Received: from /spool/local by e28smtp09.in.ibm.com with XMail ESMTP
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 7 Nov 2011 09:44:41 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pA79u70J884970
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 20:56:07 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pA79u7jj013406
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 20:56:07 +1100
-Subject: [RFC PATCH v4 06/10] fadump: Add PT_NOTE program header for vmcoreinfo
+ Mon, 7 Nov 2011 15:26:23 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA79uJ6U3878944
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:26:20 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA79uJle018573
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 20:56:19 +1100
+Subject: [RFC PATCH v4 08/10] fadump: Invalidate registration and release
+ reserved memory for general use.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Linux Kernel <linux-kernel@vger.kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 07 Nov 2011 15:26:04 +0530
-Message-ID: <20111107095603.1997.39898.stgit@mars.in.ibm.com>
+Date: Mon, 07 Nov 2011 15:26:18 +0530
+Message-ID: <20111107095618.1997.59178.stgit@mars.in.ibm.com>
 In-Reply-To: <20111107095215.1997.14866.stgit@mars.in.ibm.com>
 References: <20111107095215.1997.14866.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -41,60 +40,256 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Introduce a PT_NOTE program header that points to physical address of
-vmcoreinfo_note buffer declared in kernel/kexec.c. The vmcoreinfo
-note buffer is populated during crash_fadump() at the time of system
-crash.
+This patch introduces an sysfs interface '/sys/kernel/fadump_release_mem' to
+invalidate the last fadump registration, invalidate '/proc/vmcore', release
+the reserved memory for general use and re-register for future kernel dump.
+Once the dump is copied to the disk, the userspace tool will echo 1 to
+'/sys/kernel/fadump_release_mem'.
+
+Release the reserved memory region excluding the size of the memory required
+for future kernel dump registration.
+
+Change in v3:
+- Syncronize the fadump invalidation step to handle simultaneous writes to
+  /sys/kernel/fadump_release_mem.
+
+Change in v2:
+- Introduced cpu_notes_buf_free() function to free memory allocated for
+  cpu notes buffer.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/fadump.c |   29 +++++++++++++++++++++++++++++
- 1 files changed, 29 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/fadump.h |    3 +
+ arch/powerpc/kernel/fadump.c      |  157 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 156 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+index 0c14097..8ddfbc7 100644
+--- a/arch/powerpc/include/asm/fadump.h
++++ b/arch/powerpc/include/asm/fadump.h
+@@ -202,6 +202,9 @@ extern int fadump_reserve_mem(void);
+ extern int setup_fadump(void);
+ extern int is_fadump_active(void);
+ extern void crash_fadump(struct pt_regs *, const char *);
++extern void fadump_cleanup(void);
++
++extern void vmcore_cleanup(void);
+ #else	/* CONFIG_FA_DUMP */
+ static inline int is_fadump_active(void) { return 0; }
+ #endif
 diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 70d6287..e68ee3a 100644
+index e68ee3a..b449b55 100644
 --- a/arch/powerpc/kernel/fadump.c
 +++ b/arch/powerpc/kernel/fadump.c
-@@ -816,6 +816,19 @@ static void setup_crash_memory_ranges(void)
- 	}
+@@ -33,6 +33,8 @@
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/crash_dump.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
+ 
+ #include <asm/page.h>
+ #include <asm/prom.h>
+@@ -986,6 +988,131 @@ static int fadump_unregister_dump(struct fadump_mem_struct *fdm)
+ 	return 0;
  }
  
-+/*
-+ * If the given physical address falls within the boot memory region then
-+ * return the relocated address that points to the dump region reserved
-+ * for saving initial boot memory contents.
-+ */
-+static inline unsigned long relocate(unsigned long paddr)
++static int fadump_invalidate_dump(struct fadump_mem_struct *fdm)
 +{
-+	if (paddr > RMR_START && paddr < fw_dump.boot_memory_size)
-+		return fdm.rmr_region.destination_address + paddr;
-+	else
-+		return paddr;
++	int rc = 0;
++	unsigned int wait_time;
++
++	pr_debug("Invalidating firmware-assisted dump registration\n");
++
++	/* TODO: Add upper time limit for the delay */
++	do {
++		rc = rtas_call(fw_dump.ibm_configure_kernel_dump, 3, 1, NULL,
++			FADUMP_INVALIDATE, fdm,
++			sizeof(struct fadump_mem_struct));
++
++		wait_time = rtas_busy_delay_time(rc);
++		if (wait_time)
++			mdelay(wait_time);
++	} while (wait_time);
++
++	if (rc) {
++		printk(KERN_ERR "Failed to invalidate firmware-assisted dump "
++			"rgistration. unexpected error(%d).\n", rc);
++		return rc;
++	}
++	fw_dump.dump_active = 0;
++	fdm_active = NULL;
++	return 0;
 +}
 +
- static int create_elfcore_headers(char *bufp)
- {
- 	struct elfhdr *elf;
-@@ -847,6 +860,22 @@ static int create_elfcore_headers(char *bufp)
- 
- 	(elf->e_phnum)++;
- 
-+	/* setup ELF PT_NOTE for vmcoreinfo */
-+	phdr = (struct elf_phdr *)bufp;
-+	bufp += sizeof(struct elf_phdr);
-+	phdr->p_type	= PT_NOTE;
-+	phdr->p_flags	= 0;
-+	phdr->p_vaddr	= 0;
-+	phdr->p_align	= 0;
++void fadump_cleanup(void)
++{
++	/* Invalidate the registration only if dump is active. */
++	if (fw_dump.dump_active) {
++		init_fadump_mem_struct(&fdm,
++			fdm_active->cpu_state_data.destination_address);
++		fadump_invalidate_dump(&fdm);
++	}
++}
 +
-+	phdr->p_paddr	= relocate(paddr_vmcoreinfo_note());
-+	phdr->p_offset	= phdr->p_paddr;
-+	phdr->p_memsz	= vmcoreinfo_max_size;
-+	phdr->p_filesz	= vmcoreinfo_max_size;
++/*
++ * Release the memory that was reserved in early boot to preserve the memory
++ * contents. The released memory will be available for general use.
++ */
++static void fadump_release_memory(unsigned long begin, unsigned long end)
++{
++	unsigned long addr;
++	unsigned long ra_start, ra_end;
 +
-+	/* Increment number of program headers. */
-+	(elf->e_phnum)++;
++	ra_start = fw_dump.reserve_dump_area_start;
++	ra_end = ra_start + fw_dump.reserve_dump_area_size;
 +
- 	/* setup PT_LOAD sections. */
++	for (addr = begin; addr < end; addr += PAGE_SIZE) {
++		/*
++		 * exclude the dump reserve area. Will reuse it for next
++		 * fadump registration.
++		 */
++		if (addr <= ra_end && ((addr + PAGE_SIZE) > ra_start))
++			continue;
++
++		ClearPageReserved(pfn_to_page(addr >> PAGE_SHIFT));
++		init_page_count(pfn_to_page(addr >> PAGE_SHIFT));
++		free_page((unsigned long)__va(addr));
++		totalram_pages++;
++	}
++}
++
++static void fadump_invalidate_release_mem(void)
++{
++	unsigned long reserved_area_start, reserved_area_end;
++	unsigned long destination_address;
++
++	mutex_lock(&fadump_mutex);
++	if (!fw_dump.dump_active) {
++		mutex_unlock(&fadump_mutex);
++		return;
++	}
++
++	destination_address = fdm_active->cpu_state_data.destination_address;
++	fadump_cleanup();
++	mutex_unlock(&fadump_mutex);
++
++	/*
++	 * Save the current reserved memory bounds we will require them
++	 * later for releasing the memory for general use.
++	 */
++	reserved_area_start = fw_dump.reserve_dump_area_start;
++	reserved_area_end = reserved_area_start +
++			fw_dump.reserve_dump_area_size;
++	/*
++	 * Setup reserve_dump_area_start and its size so that we can
++	 * reuse this reserved memory for Re-registration.
++	 */
++	fw_dump.reserve_dump_area_start = destination_address;
++	fw_dump.reserve_dump_area_size = get_dump_area_size();
++
++	fadump_release_memory(reserved_area_start, reserved_area_end);
++	if (fw_dump.cpu_notes_buf) {
++		cpu_notes_buf_free((unsigned long)__va(fw_dump.cpu_notes_buf),
++					fw_dump.cpu_notes_buf_size);
++		fw_dump.cpu_notes_buf = 0;
++		fw_dump.cpu_notes_buf_size = 0;
++	}
++	/* Initialize the kernel dump memory structure for FAD registration. */
++	init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
++}
++
++static ssize_t fadump_release_memory_store(struct kobject *kobj,
++					struct kobj_attribute *attr,
++					const char *buf, size_t count)
++{
++	if (!fw_dump.dump_active)
++		return -EPERM;
++
++	if (buf[0] == '1') {
++		/*
++		 * Take away the '/proc/vmcore'. We are releasing the dump
++		 * memory, hence it will not be valid anymore.
++		 */
++		vmcore_cleanup();
++		fadump_invalidate_release_mem();
++
++	} else
++		return -EINVAL;
++	return count;
++}
++
+ static ssize_t fadump_enabled_show(struct kobject *kobj,
+ 					struct kobj_attribute *attr,
+ 					char *buf)
+@@ -1045,10 +1172,13 @@ static int fadump_region_show(struct seq_file *m, void *private)
+ 	if (!fw_dump.fadump_enabled)
+ 		return 0;
  
- 	for (i = 0; i < crash_mem_ranges; i++) {
++	mutex_lock(&fadump_mutex);
+ 	if (fdm_active)
+ 		fdm_ptr = fdm_active;
+-	else
++	else {
++		mutex_unlock(&fadump_mutex);
+ 		fdm_ptr = &fdm;
++	}
+ 
+ 	seq_printf(m,
+ 			"CPU : [%#016llx-%#016llx] %#llx bytes, "
+@@ -1078,7 +1208,7 @@ static int fadump_region_show(struct seq_file *m, void *private)
+ 	if (!fdm_active ||
+ 		(fw_dump.reserve_dump_area_start ==
+ 		fdm_ptr->cpu_state_data.destination_address))
+-		return 0;
++		goto out;
+ 
+ 	/* Dump is active. Show reserved memory region. */
+ 	seq_printf(m,
+@@ -1090,9 +1220,15 @@ static int fadump_region_show(struct seq_file *m, void *private)
+ 			fw_dump.reserve_dump_area_start,
+ 			fdm_ptr->cpu_state_data.destination_address -
+ 			fw_dump.reserve_dump_area_start);
++out:
++	if (fdm_active)
++		mutex_unlock(&fadump_mutex);
+ 	return 0;
+ }
+ 
++static struct kobj_attribute fadump_release_attr = __ATTR(fadump_release_mem,
++						0200, NULL,
++						fadump_release_memory_store);
+ static struct kobj_attribute fadump_attr = __ATTR(fadump_enabled,
+ 						0444, fadump_enabled_show,
+ 						NULL);
+@@ -1133,6 +1269,13 @@ static void fadump_init_files(void)
+ 	if (!debugfs_file)
+ 		printk(KERN_ERR "fadump: unable to create debugfs file"
+ 				" fadump_region\n");
++
++	if (fw_dump.dump_active) {
++		rc = sysfs_create_file(kernel_kobj, &fadump_release_attr.attr);
++		if (rc)
++			printk(KERN_ERR "fadump: unable to create sysfs file"
++				" fadump_release_mem (%d)\n", rc);
++	}
+ 	return;
+ }
+ 
+@@ -1152,8 +1295,14 @@ int __init setup_fadump(void)
+ 	 * If dump data is available then see if it is valid and prepare for
+ 	 * saving it to the disk.
+ 	 */
+-	if (fw_dump.dump_active)
+-		process_fadump(fdm_active);
++	if (fw_dump.dump_active) {
++		/*
++		 * if dump process fails then invalidate the registration
++		 * and release memory before proceeding for re-registration.
++		 */
++		if (process_fadump(fdm_active) < 0)
++			fadump_invalidate_release_mem();
++	}
+ 	/* Initialize the kernel dump memory structure for FAD registration. */
+ 	else if (fw_dump.reserve_dump_area_size)
+ 		init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
