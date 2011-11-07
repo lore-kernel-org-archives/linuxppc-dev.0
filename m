@@ -1,36 +1,20 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 04C76100924
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 21:24:01 +1100 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 7 Nov 2011 15:28:32 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pA79uDYb2682976
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:26:13 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pA79uDeZ006193
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 20:56:13 +1100
-Subject: [RFC PATCH v4 07/10] fadump: Introduce cleanup routine to invalidate
- /proc/vmcore.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Linux Kernel <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 07 Nov 2011 15:26:12 +0530
-Message-ID: <20111107095612.1997.27442.stgit@mars.in.ibm.com>
-In-Reply-To: <20111107095215.1997.14866.stgit@mars.in.ibm.com>
-References: <20111107095215.1997.14866.stgit@mars.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Amerigo Wang <amwang@redhat.com>, Milton Miller <miltonm@bga.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>, Anton Blanchard <anton@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+ [IPv6:2402:b800:7003:1::15])
+ by ozlabs.org (Postfix) with ESMTP id 211A31007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2011 21:26:24 +1100 (EST)
+Date: Mon, 7 Nov 2011 21:26:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: New location of powerpc git tree
+Message-Id: <20111107212608.a9295147d976980587b4b566@canb.auug.org.au>
+In-Reply-To: <1320622150.2779.6.camel@pasglop>
+References: <1320622150.2779.6.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__7_Nov_2011_21_26_08_+1100_AAD191.GcFIHpI4D"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,53 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+--Signature=_Mon__7_Nov_2011_21_26_08_+1100_AAD191.GcFIHpI4D
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-With the firmware-assisted dump support we don't require a reboot when we
-are in second kernel after crash. The second kernel after crash is a normal
-kernel boot and has knowledge about entire system RAM with the page tables
-initialized for entire system RAM. Hence once the dump is saved to disk, we
-can just release the reserved memory area for general use and continue
-with second kernel as production kernel.
+Hi Ben,
 
-Hence when we release the reserved memory that contains dump data, the
-'/proc/vmcore' will not be valid anymore. Hence this patch introduces
-a cleanup routine that invalidates and removes the /proc/vmcore file. This
-routine will be invoked before we release the reserved dump memory area.
+On Mon, 07 Nov 2011 10:29:10 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> I've moved the powerpc git tree back to kernel.org. The URL should be
+> back to normal for users:
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- fs/proc/vmcore.c |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
+OK, I have switched back to that, now.
 
-diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
-index cd99bf5..fae5526 100644
---- a/fs/proc/vmcore.c
-+++ b/fs/proc/vmcore.c
-@@ -699,3 +699,26 @@ static int __init vmcore_init(void)
- 	return 0;
- }
- module_init(vmcore_init)
-+
-+/* Cleanup function for vmcore module. */
-+void vmcore_cleanup(void)
-+{
-+	struct list_head *pos, *next;
-+
-+	if (proc_vmcore) {
-+		remove_proc_entry(proc_vmcore->name, proc_vmcore->parent);
-+		proc_vmcore = NULL;
-+	}
-+
-+	/* clear the vmcore list. */
-+	list_for_each_safe(pos, next, &vmcore_list) {
-+		struct vmcore *m;
-+
-+		m = list_entry(pos, struct vmcore, list);
-+		list_del(&m->list);
-+		kfree(m);
-+	}
-+	kfree(elfcorebuf);
-+	elfcorebuf = NULL;
-+}
-+EXPORT_SYMBOL_GPL(vmcore_cleanup);
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__7_Nov_2011_21_26_08_+1100_AAD191.GcFIHpI4D
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJOt7JAAAoJEECxmPOUX5FE+fcQAKEfV+Rxv2lVUq6VVjjGey8v
+CRUzGQpF7QfO0GlNqpXqeswOu72q+s1DqRgNowHG5Cbnw9YcV++S2/LPJ1AjFJlt
+RMehrLAYiE4Rhid2yn8MqAjcxhCphAPloieBYPx9R+mb5sj/B6hUDvilLBmb7GsM
+61guIiuD9r3MnoEfrkWFnuGcI40j5IVdxOQoDQsQVyXsNeoWE91efm3QhPg3z9SA
+VlTlxNJy9QaTyW+PLquUTKYSvqy73ZqMiyJLPS8lOFu/P3T8GHBlEVhGUKDxavPO
+YhAxIn3Jr24vuLbaXH+3stgbDMwE8/4ZYbCKa9ocJVmRWLg5Sleli0a7Ckp5/Fg7
+hS4gLIQiBYd30qAwq+ydsLzgBjfESLGzT+leF3vr0XpqOQLU4zo9JP8isDWMCZ6C
+VpjZER8cCJVATClMXr6dmpzEtk864iZIVbws4CG1Ozkkv6VIJctYXUH34dU5s4RV
+7zIH7gLh9lzpWRr+lwouX1VJ2O6xVtHUi9mrWGh9k0hdAvURKjx72R9em9XnyMYB
+pA8H5WPNKNSZBXjXxdm4ziwCCxnWNcvek9hdxz3wA/1zdXkKW6b+ndQVJpr557gK
+apnlXMKVhAR+ri/Q95gx2tiD0KGueC+Mw5G4cnlflrWg6Xh1y6c6Dpd6fKlVGkq1
+OnkZiMheEnm8YyT5BnyM
+=eAdX
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Nov_2011_21_26_08_+1100_AAD191.GcFIHpI4D--
