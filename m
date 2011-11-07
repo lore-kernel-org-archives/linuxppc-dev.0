@@ -1,17 +1,37 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D46D8B6F7F
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2011 00:22:23 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] gpio: mpc8xxx: don't allow input-only pins to be output for
- MPC5121
-Date: Mon,  7 Nov 2011 14:21:16 +0100
-Message-Id: <1320672076-2950-1-git-send-email-w.sang@pengutronix.de>
-Cc: Anatolij Gustschin <agust@denx.de>
+Return-Path: <jpoimboe@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 9D3521007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 02:14:44 +1100 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jpoimboe@linux.vnet.ibm.com>;
+ Mon, 7 Nov 2011 08:14:39 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA7FDqhI155468
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2011 08:14:09 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA7FDhZ2026083
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2011 08:13:44 -0700
+Subject: Re: [PATCH v2 1/5] [ppc] Process dynamic relocations for kernel
+From: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
+To: Suzuki Poulose <suzuki@in.ibm.com>
+In-Reply-To: <4EB3A40C.1070802@in.ibm.com>
+References: <20111025114829.8183.1725.stgit@suzukikp.in.ibm.com>
+ <20111025115354.8183.48237.stgit@suzukikp.in.ibm.com>
+ <1320276969.3309.3.camel@treble>  <4EB3A40C.1070802@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Nov 2011 09:13:39 -0600
+Message-ID: <1320678819.2750.15.camel@treble>
+Mime-Version: 1.0
+Cc: Nathan Miller <nathanm2@us.ibm.com>, Josh Poimboeuf <jpoimboe@us.ibm.com>,
+ Dave Hansen <dave@linux.vnet.ibm.com>, Alan Modra <amodra@au1.ibm.com>,
+ Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,49 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a 5121-custom reject if an input-only pin is requested to be output
-(see 18.3.1.1 in the refman). Also, rewrite mach-specific quirk setup to
-consume less lines.
+On Fri, 2011-11-04 at 14:06 +0530, Suzuki Poulose wrote:
+> On 11/03/11 05:06, Josh Poimboeuf wrote:
+> > On Tue, 2011-10-25 at 17:23 +0530, Suzuki K. Poulose wrote:
+> > @@ -137,6 +137,9 @@ get_type:
+> >   	lwz	r0, 8(r9)	/* r_addend */
+> >   	add	r0, r0, r3	/* final addend */
+> >   	stwx	r0, r4, r7	/* memory[r4+r7]) = (u32)r0 */
+> > +	dcbst	r4,r7		/* flush dcache line to memory */
+> > +	sync			/* wait for flush to complete */
+> > +	icbi	r4,r7		/* invalidate icache line */
+> 
+> Doing it this way has two drawbacks :
+> 
+> 1) Placing it here in relocate would do the flushing for each and every update.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
- drivers/gpio/gpio-mpc8xxx.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+I agree.  My kernel had around 80,000 relocations, which means 80,000
+d-cache line flushes (for a 32k d-cache) and 80,000 i-cache line
+invalidates (for a 32k i-cache).  Which is obviously a little overkill.
+Although I didn't notice a performance hit during boot.
 
-diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
-index ec3fcf0..25dc736 100644
---- a/drivers/gpio/gpio-mpc8xxx.c
-+++ b/drivers/gpio/gpio-mpc8xxx.c
-@@ -115,6 +115,14 @@ static int mpc8xxx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	return 0;
- }
- 
-+static int mpc5121_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	/* GPIO 28..31 are input only on MPC5121 */
-+	if (gpio >= 28)
-+		return -EINVAL;
-+
-+	return mpc8xxx_gpio_dir_out(gc, gpio, val);
-+}
- static int mpc8xxx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
- 	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
-@@ -340,11 +348,10 @@ static void __init mpc8xxx_add_controller(struct device_node *np)
- 	mm_gc->save_regs = mpc8xxx_gpio_save_regs;
- 	gc->ngpio = MPC8XXX_GPIO_PINS;
- 	gc->direction_input = mpc8xxx_gpio_dir_in;
--	gc->direction_output = mpc8xxx_gpio_dir_out;
--	if (of_device_is_compatible(np, "fsl,mpc8572-gpio"))
--		gc->get = mpc8572_gpio_get;
--	else
--		gc->get = mpc8xxx_gpio_get;
-+	gc->direction_output = of_device_is_compatible(np, "fsl,mpc5121-gpio") ?
-+		mpc5121_gpio_dir_out : mpc8xxx_gpio_dir_out;
-+	gc->get = of_device_is_compatible(np, "fsl,mpc8572-gpio") ?
-+		mpc8572_gpio_get : mpc8xxx_gpio_get;
- 	gc->set = mpc8xxx_gpio_set;
- 	gc->to_irq = mpc8xxx_gpio_to_irq;
- 
--- 
-1.7.7.1
+
+> 2) I would like to keep this code as generic as possible for the PPC32 code.
+> 
+> Could we move this to the place from relocate is called and flush the d-cache and
+> i-cache entirely ?
+
+Why not put the cache flushing code at the end of relocate?  Would some
+of the other PPC32 platforms not require the cache flushing?
+
+My PPC32 knowledge is 4xx-centric, so please feel free to rewrite the
+patch as needed to accommodate other PPC32 cores.
+
+
+Thanks,
+Josh
