@@ -1,31 +1,26 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 84CB9B6F7D
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 15:47:44 +1100 (EST)
-Received: from /spool/local
- by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
- Sun, 6 Nov 2011 23:47:40 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pA74lcBi321230
- for <linuxppc-dev@ozlabs.org>; Sun, 6 Nov 2011 23:47:38 -0500
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pA74lbQD027281
- for <linuxppc-dev@ozlabs.org>; Sun, 6 Nov 2011 21:47:37 -0700
-Date: Mon, 7 Nov 2011 10:17:50 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 506F51007D3
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 15:58:14 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+ by e23smtp01.au.ibm.com (8.14.4/8.13.1) with ESMTP id pA74uRmf006293
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:56:27 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA74wD5F2584696
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:58:13 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA74wDcW020768
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:58:13 +1100
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Export PIR data through sysfs
-Message-ID: <20111107044750.GB4361@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Anton Blanchard <anton@samba.org>, mahesh@linux.vnet.ibm.com
-Reply-To: ananth@in.ibm.com
+Subject: [PATCH 1/5] powerpc/pci: Add a platform hook after probe and before
+ resource survey
+Date: Mon,  7 Nov 2011 15:55:57 +1100
+Message-Id: <1320641761-4028-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,55 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Processor Identification Register (PIR) on powerpc provides
-information to decode the processor identification tag. Decoding
-this information platform specfic.
+Some platforms need to perform resource allocation using a custom algorithm
+due to HW constraints, or may want to tweak things globally below a host
+bridge. For example OPAL support for IODA will need to perform a
+resource allocation pass that applies IODA specific segmentation
+constraints to MMIO which cannot be done simply using the kernel generic
+resource management code.
 
-Export PIR data via sysfs.
-
-(Powerpc manuals state this register is 'optional'. I am not sure
-though if there are any Linux supported powerpc platforms that
-don't have it. Code in the kernel referencing PIR isn't under
-a platform ifdef).
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/sysfs.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/include/asm/machdep.h |    3 +++
+ arch/powerpc/kernel/pci-common.c   |    6 ++++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
 
-Index: linux-3.1/arch/powerpc/kernel/sysfs.c
-===================================================================
---- linux-3.1.orig/arch/powerpc/kernel/sysfs.c
-+++ linux-3.1/arch/powerpc/kernel/sysfs.c
-@@ -177,11 +177,13 @@ SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
- SYSFS_PMCSETUP(purr, SPRN_PURR);
- SYSFS_PMCSETUP(spurr, SPRN_SPURR);
- SYSFS_PMCSETUP(dscr, SPRN_DSCR);
-+SYSFS_PMCSETUP(pir, SPRN_PIR);
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 58fc216..505bc21 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -212,6 +212,9 @@ struct machdep_calls {
+ 	 * allow assignment/enabling of the device. */
+ 	int  (*pcibios_enable_device_hook)(struct pci_dev *);
  
- static SYSDEV_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
- static SYSDEV_ATTR(spurr, 0600, show_spurr, NULL);
- static SYSDEV_ATTR(dscr, 0600, show_dscr, store_dscr);
- static SYSDEV_ATTR(purr, 0600, show_purr, store_purr);
-+static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
- 
- unsigned long dscr_default = 0;
- EXPORT_SYMBOL(dscr_default);
-@@ -394,6 +396,8 @@ static void __cpuinit register_cpu_onlin
- 		sysdev_create_file(s, &attr_dscr);
- #endif /* CONFIG_PPC64 */
- 
-+	sysdev_create_file(s, &attr_pir);
++	/* Called after scan and before resource survey */
++	void (*pcibios_fixup_phb)(struct pci_controller *hose);
 +
- 	cacheinfo_cpu_online(cpu);
- }
+ 	/* Called to shutdown machine specific hardware not already controlled
+ 	 * by other drivers.
+ 	 */
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 677eccc..855969f 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1731,6 +1731,12 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ 	if (mode == PCI_PROBE_NORMAL)
+ 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
  
-@@ -464,6 +468,8 @@ static void unregister_cpu_online(unsign
- 		sysdev_remove_file(s, &attr_dscr);
- #endif /* CONFIG_PPC64 */
- 
-+	sysdev_remove_file(s, &attr_pir);
++	/* Platform gets a chance to do some global fixups before
++	 * we proceed to resource allocation
++	 */
++	if (ppc_md.pcibios_fixup_phb)
++		ppc_md.pcibios_fixup_phb(hose);
 +
- 	cacheinfo_cpu_offline(cpu);
- }
- 
+ 	/* Configure PCI Express settings */
+ 	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+ 		struct pci_bus *child;
+-- 
+1.7.7.1
