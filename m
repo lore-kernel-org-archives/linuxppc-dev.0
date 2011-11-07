@@ -1,30 +1,28 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id DD25F100984
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 20:56:33 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 7 Nov 2011 15:26:31 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pA79uQxI1994766
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:26:26 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pA79uPHj018543
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 20:56:25 +1100
-Subject: [RFC PATCH v4 09/10] fadump: Invalidate the fadump registration
- during machine shutdown.
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 1ABD7100D8A
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2011 20:56:34 +1100 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by e28smtp03.in.ibm.com (8.14.4/8.13.1) with ESMTP id pA79uWVr023704
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:26:32 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA79uVBX815268
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 15:26:31 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA79uVgI004530
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Nov 2011 20:56:31 +1100
+Subject: [RFC PATCH v4 10/10] fadump: Introduce config option for firmware
+ assisted dump feature
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Linux Kernel <linux-kernel@vger.kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 07 Nov 2011 15:26:24 +0530
-Message-ID: <20111107095624.1997.39099.stgit@mars.in.ibm.com>
+Date: Mon, 07 Nov 2011 15:26:30 +0530
+Message-ID: <20111107095630.1997.54984.stgit@mars.in.ibm.com>
 In-Reply-To: <20111107095215.1997.14866.stgit@mars.in.ibm.com>
 References: <20111107095215.1997.14866.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -42,30 +40,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-If dump is active during system reboot, shutdown or halt then invalidate
-the fadump registration as it does not get invalidated automatically.
+This patch introduces a new config option CONFIG_FA_DUMP for firmware
+assisted dump feature on Powerpc (ppc64) architecture.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/setup-common.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/powerpc/Kconfig |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index ce35aaf..67e5caa 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -110,6 +110,14 @@ EXPORT_SYMBOL(ppc_do_canonicalize_irqs);
- /* also used by kexec */
- void machine_shutdown(void)
- {
-+#ifdef CONFIG_FA_DUMP
-+	/*
-+	 * if fadump is active, cleanup the fadump registration before we
-+	 * shutdown.
-+	 */
-+	fadump_cleanup();
-+#endif
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6926b61..7ce773c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -379,6 +379,19 @@ config PHYP_DUMP
+ 
+ 	  If unsure, say "N"
+ 
++config FA_DUMP
++	bool "Firmware-assisted dump"
++	depends on PPC64 && PPC_RTAS && CRASH_DUMP
++	help
++	  A robust mechanism to get reliable kernel crash dump with
++	  assistance from firmware. This approach does not use kexec,
++	  instead firmware assists in booting the kdump kernel
++	  while preserving memory contents. Firmware-assisted dump
++	  is meant to be a kdump replacement offering robustness and
++	  speed not possible without system firmware assistance.
 +
- 	if (ppc_md.machine_shutdown)
- 		ppc_md.machine_shutdown();
- }
++	  If unsure, say "N"
++
+ config PPCBUG_NVRAM
+ 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
+ 	default y if PPC_PREP
