@@ -2,13 +2,15 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EE3F8B6F7E
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2011 15:21:52 +1100 (EST)
-Message-ID: <1320726103.9419.14.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
+ by ozlabs.org (Postfix) with ESMTPS id C5C251007D4
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2011 15:43:01 +1100 (EST)
+Message-ID: <1320727374.9419.17.camel@pasglop>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 08 Nov 2011 15:21:43 +1100
+Date: Tue, 08 Nov 2011 15:42:54 +1100
+In-Reply-To: <1320726103.9419.14.camel@pasglop>
+References: <1320726103.9419.14.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
@@ -23,20 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Tue, 2011-11-08 at 15:21 +1100, Benjamin Herrenschmidt wrote:
+> Hi Linus !
+> 
+> Me again :-) So yesterday you pulled my -next branch with the bulk of
+> what happened since the last merge window up to when I left for my long
+> vacation (5 weeks). Today are a few remaining nits that happened during
+> that time.
 
-Me again :-) So yesterday you pulled my -next branch with the bulk of
-what happened since the last merge window up to when I left for my long
-vacation (5 weeks). Today are a few remaining nits that happened during
-that time.
-
-Essentially small fixes, a defconfig bit, some janitorial stuff
-(IRQ_DISABLED removal), a board support for 52xx that I forgot to pull
-from Anatolij, and a fix to properly parse NUMA info from the
-device-tree on powernc.
-
-Ah, also finally add main memory to /proc/iomem. I've resisted that for
-a long time but too much userspace gunk relies on it so here we go.
+ .. Add added a build fix (the defconfig change enables KVM which hits a
+compile problem with some config combinations) so new pull request
+bellow. Sorry about that.
 
 Cheers,
 Ben.
@@ -47,6 +46,9 @@ The following changes since commit 1ea6b8f48918282bdca0b32a34095504ee65bab5:
 
 are available in the git repository at:
   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Alexander Graf (1):
+      powerpc/kvm: Fix build failure with HV KVM and CBE
 
 Anton Blanchard (1):
       powerpc: Add System RAM to /proc/iomem
@@ -82,6 +84,7 @@ Yong Zhang (2):
  arch/powerpc/include/asm/floppy.h              |    4 +-
  arch/powerpc/include/asm/lv1call.h             |    2 +-
  arch/powerpc/include/asm/xics.h                |    4 +-
+ arch/powerpc/kernel/exceptions-64s.S           |    6 +-
  arch/powerpc/kernel/smp.c                      |    2 +-
  arch/powerpc/kvm/book3s_hv_rmhandlers.S        |    2 +-
  arch/powerpc/mm/mem.c                          |   30 +++
@@ -102,5 +105,5 @@ Yong Zhang (2):
  drivers/ps3/ps3-vuart.c                        |    2 +-
  drivers/ps3/ps3stor_lib.c                      |    2 +-
  sound/ppc/snd_ps3.c                            |    2 +-
- 27 files changed, 343 insertions(+), 62 deletions(-)
+ 28 files changed, 346 insertions(+), 65 deletions(-)
  create mode 100644 arch/powerpc/boot/dts/charon.dts
