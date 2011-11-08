@@ -1,11 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: add KVM as module to defconfigs
-Date: Tue, 08 Nov 2011 11:49:13 +1100
-Message-ID: <20521.1320713353@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, anton@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EE3F8B6F7E
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2011 15:21:52 +1100 (EST)
+Message-ID: <1320726103.9419.14.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 08 Nov 2011 15:21:43 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,42 +23,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add HV mode KVM to Book3 server 64bit defconfigs as a module.  
+Hi Linus !
 
-Doesn't add much to the size:
-   text	   data	    bss	     dec	    hex	filename
-8244109	4686767	 994000	13924876	 d47a0c	vmlinux.vanilla
-8256092 4691607  994128 13941827         d4bc43 vmlinux.kvm
+Me again :-) So yesterday you pulled my -next branch with the bulk of
+what happened since the last merge window up to when I left for my long
+vacation (5 weeks). Today are a few remaining nits that happened during
+that time.
 
-This should enable more testing of this configuration.
+Essentially small fixes, a defconfig bit, some janitorial stuff
+(IRQ_DISABLED removal), a board support for 52xx that I forgot to pull
+from Anatolij, and a fix to properly parse NUMA info from the
+device-tree on powernc.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/configs/ppc64_defconfig   |    4 ++++
- arch/powerpc/configs/pseries_defconfig |    4 ++++
- 2 files changed, 8 insertions(+)
+Ah, also finally add main memory to /proc/iomem. I've resisted that for
+a long time but too much userspace gunk relies on it so here we go.
 
-Index: linux-ozlabs/arch/powerpc/configs/ppc64_defconfig
-===================================================================
---- linux-ozlabs.orig/arch/powerpc/configs/ppc64_defconfig
-+++ linux-ozlabs/arch/powerpc/configs/ppc64_defconfig
-@@ -485,3 +485,7 @@ CONFIG_CRYPTO_TWOFISH=m
- CONFIG_CRYPTO_LZO=m
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- # CONFIG_CRYPTO_HW is not set
-+CONFIG_VIRTUALIZATION=y
-+CONFIG_KVM_BOOK3S_64=m
-+CONFIG_KVM_BOOK3S_64_HV=y
-+CONFIG_VHOST_NET=m
-Index: linux-ozlabs/arch/powerpc/configs/pseries_defconfig
-===================================================================
---- linux-ozlabs.orig/arch/powerpc/configs/pseries_defconfig
-+++ linux-ozlabs/arch/powerpc/configs/pseries_defconfig
-@@ -362,3 +362,7 @@ CONFIG_CRYPTO_TWOFISH=m
- CONFIG_CRYPTO_LZO=m
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- # CONFIG_CRYPTO_HW is not set
-+CONFIG_VIRTUALIZATION=y
-+CONFIG_KVM_BOOK3S_64=m
-+CONFIG_KVM_BOOK3S_64_HV=y
-+CONFIG_VHOST_NET=m
+Cheers,
+Ben.
+
+The following changes since commit 1ea6b8f48918282bdca0b32a34095504ee65bab5:
+
+  Linux 3.2-rc1 (2011-11-07 16:16:02 -0800)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Anton Blanchard (1):
+      powerpc: Add System RAM to /proc/iomem
+
+Benjamin Herrenschmidt (1):
+      Merge remote-tracking branch 'agust/next' into merge
+
+Dipankar Sarma (1):
+      powerpc/numa: NUMA topology support for PowerNV
+
+Geoff Levand (2):
+      powerpc/ps3: Fix PS3 repository build warnings
+      powerpc/ps3: Fix lv1_gpu_attribute hcall
+
+Heiko Schocher (2):
+      powerpc/5200: add support for charon board
+      powerpc, tqm5200: update tqm5200_defconfig to fit for charon board.
+
+Michael Neuling (1):
+      powerpc: Add KVM as module to defconfigs
+
+Nishanth Aravamudan (1):
+      powerpc/kvm: Fix build with older toolchains
+
+Yong Zhang (2):
+      powerpc/irq: Remove IRQF_DISABLED
+      powerpc/ps3: irq: Remove IRQF_DISABLED
+
+ arch/powerpc/boot/dts/charon.dts               |  236 ++++++++++++++++++++++++
+ arch/powerpc/configs/52xx/tqm5200_defconfig    |   20 ++-
+ arch/powerpc/configs/ppc64_defconfig           |    4 +
+ arch/powerpc/configs/pseries_defconfig         |    4 +
+ arch/powerpc/include/asm/floppy.h              |    4 +-
+ arch/powerpc/include/asm/lv1call.h             |    2 +-
+ arch/powerpc/include/asm/xics.h                |    4 +-
+ arch/powerpc/kernel/smp.c                      |    2 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S        |    2 +-
+ arch/powerpc/mm/mem.c                          |   30 +++
+ arch/powerpc/mm/numa.c                         |   24 ++-
+ arch/powerpc/platforms/52xx/mpc5200_simple.c   |    1 +
+ arch/powerpc/platforms/cell/beat.c             |    2 +-
+ arch/powerpc/platforms/cell/celleb_scc_pciex.c |    2 +-
+ arch/powerpc/platforms/cell/iommu.c            |    3 +-
+ arch/powerpc/platforms/cell/pmu.c              |    2 +-
+ arch/powerpc/platforms/cell/spu_base.c         |    9 +-
+ arch/powerpc/platforms/powermac/pic.c          |    1 -
+ arch/powerpc/platforms/powermac/smp.c          |    4 +-
+ arch/powerpc/platforms/ps3/device-init.c       |    2 +-
+ arch/powerpc/platforms/ps3/repository.c        |   32 ++--
+ arch/powerpc/sysdev/mpic.c                     |    2 -
+ arch/powerpc/sysdev/ppc4xx_soc.c               |    2 +-
+ arch/powerpc/sysdev/xics/xics-common.c         |    5 +-
+ drivers/ps3/ps3-vuart.c                        |    2 +-
+ drivers/ps3/ps3stor_lib.c                      |    2 +-
+ sound/ppc/snd_ps3.c                            |    2 +-
+ 27 files changed, 343 insertions(+), 62 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/charon.dts
