@@ -1,38 +1,32 @@
-Return-Path: <jpoimboe@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 244A71007D4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 03:26:56 +1100 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jpoimboe@linux.vnet.ibm.com>;
- Tue, 8 Nov 2011 09:26:46 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pA8GQ43Q120298
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 09:26:08 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pA8GQ2MM004144
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 09:26:03 -0700
-Subject: Re: [PATCH v2 1/5] [ppc] Process dynamic relocations for kernel
-From: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
-To: Suzuki Poulose <suzuki@in.ibm.com>
-In-Reply-To: <4EB8D628.2090304@in.ibm.com>
-References: <20111025114829.8183.1725.stgit@suzukikp.in.ibm.com>
- <20111025115354.8183.48237.stgit@suzukikp.in.ibm.com>
- <1320276969.3309.3.camel@treble>  <4EB3A40C.1070802@in.ibm.com>
- <1320678819.2750.15.camel@treble>  <4EB8D628.2090304@in.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 63BFA1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 03:54:59 +1100 (EST)
+Received: from mail69-ch1 (localhost.localdomain [127.0.0.1])	by
+ mail69-ch1-R.bigfish.com (Postfix) with ESMTP id 10D0B1770259	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 16:54:44 +0000 (UTC)
+Received: from CH1EHSMHS011.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.244])	by mail69-ch1.bigfish.com (Postfix) with ESMTP id
+ E439521804C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 16:54:13 +0000 (UTC)
+Message-ID: <4EB95EBC.8010808@freescale.com>
+Date: Tue, 8 Nov 2011 10:54:20 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive
+ for PCIe
+References: <1320654778-3294-1-git-send-email-tie-fei.zang@freescale.com>
+ <4EB826F1.50402@freescale.com>
+ <2239AC579C7D3646A720227A37E0268120D5C5@039-SN1MPN1-004.039d.mgd.msft.net>
+In-Reply-To: <2239AC579C7D3646A720227A37E0268120D5C5@039-SN1MPN1-004.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Nov 2011 10:19:05 -0600
-Message-ID: <1320769145.5273.26.camel@treble>
-Mime-Version: 1.0
-Cc: Nathan Miller <nathanm2@us.ibm.com>, Josh Poimboeuf <jpoimboe@us.ibm.com>,
- Dave Hansen <dave@linux.vnet.ibm.com>, Alan Modra <amodra@au1.ibm.com>,
- Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,51 +36,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-11-08 at 12:41 +0530, Suzuki Poulose wrote:
-> What I was suggesting is, instead of flushing the cache in relocate(), lets do it
-> like:
-> 
-> for e.g, on 440x, (in head_44x.S :)
-> 
-> #ifdef CONFIG_RELOCATABLE
-> 	...
-> 	bl relocate
-> 
-> 	#Flush the d-cache and invalidate the i-cache here
-> #endif
+On 11/07/2011 11:51 PM, Zang Roy-R61911 wrote:
 > 
 > 
-> This would let the different platforms do the the cache invalidation in their
-> own way.
-> 
-> Btw, I didn't find an instruction to flush the entire d-cache in PPC440 manual.
-> We have instructions to flush only a block corresponding to an address.
-> 
-> However, we have 'iccci' which would invalidate the entire i-cache which, which
-> I think is better than 80,000 i-cache invalidates.
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Tuesday, November 08, 2011 2:44 AM
+>> To: Zang Roy-R61911
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Subject: Re: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive for
+>> PCIe
+>>
+>> On 11/07/2011 02:32 AM, Roy Zang wrote:
+>>> P1023 external IRQ[4:6, 11] do not pin out, but the interrupts are
+>>> shared with PCIe controller.
+>>> The silicon internally ties the interrupts to L, so change the
+>>> IRQ[4:6,11] to high level sensitive for PCIe.
+>>
+>> Some extra commentary on why this works would be nice.
+> I do not know what kind of extra commentary you request. 
 
-In misc_32.S there are already some platform-independent cache
-management functions.  If we use those, then relocate() could simply
-call them.  Then the different platforms calling relocate() wouldn't
-have to worry about flushing/invalidating caches.
+Just a note that there's magic to allow the PCIe block to output these
+interrupts as either active-high or active-low, depending on how they're
+configured at the mpic.
 
-For example, there's a clean_dcache_range() function.  Given any range
-twice the size of the d-cache, it should flush the entire d-cache.  But
-the only drawback is that it would require the caller to know the size
-of the d-cache.
+> IRQ 4,5,6, 11 are internally tie to low by silicon. To use these interrupts for PCIe, they need to set high level sensitive.
+> It is clear enough for this patch.
 
-Instead, I think it would be preferable to create a new clean_dcache()
-(or clean_dcache_all()?) function in misc_32.S, which could call
-clean_dcache_range() with the appropriate args for flushing the entire
-d-cache.  relocate() could then call the platform-independent
-clean_dcache().
+It's odd enough that I felt the need to go reading through the docs to
+see why such a thing would work at all.
 
-For i-cache invalidation there's already the (incorrectly named?)
-flush_instruction_cache().  It uses the appropriate platform-specific
-methods (e.g. iccci for 44x) to invalidate the entire i-cache.
+>> The manual says:
+>>
+>>> If a PCI Express INTx interrupt is being used, then the PIC must be configured
+>> so that external interrupts
+>>> are level-sensitive (EIVPRn[S] = 1).
+> That is true for all FSL powerpc silicon with PCIe controller beside P1023.
 
-Suzuki, if you agree with this direction, I could work up a new patch if
-needed.
+Sure, my point was more that it didn't say anything there about how to
+configure EIVPRn[P].
 
-
-Josh
+-Scott
