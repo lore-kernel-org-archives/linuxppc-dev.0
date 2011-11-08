@@ -1,16 +1,30 @@
-Return-Path: <baruch@tkos.co.il>
-Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 490E91007D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 18:32:30 +1100 (EST)
-From: Baruch Siach <baruch@tkos.co.il>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4] powerpc: 85xx: separate e500 from e500mc
-Date: Tue,  8 Nov 2011 09:31:30 +0200
-Message-Id: <5b7992dbbf0f10ab3207a8e3a0520597f10a7044.1320737269.git.baruch@tkos.co.il>
-Cc: Scott Wood <scottwood@freescale.com>, Baruch Siach <baruch@tkos.co.il>,
- Timur Tabi <timur@freescale.com>
+Return-Path: <r58472@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+ [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id EFA3AB6F18
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 20:07:11 +1100 (EST)
+Received: from mail100-am1 (localhost.localdomain [127.0.0.1])	by
+ mail100-am1-R.bigfish.com (Postfix) with ESMTP id 7503C180446	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 09:06:50 +0000 (UTC)
+Received: from AM1EHSMHS020.bigfish.com (unknown [10.3.201.254])	by
+ mail100-am1.bigfish.com (Postfix) with ESMTP id 147FCE7806C	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 09:06:50 +0000 (UTC)
+From: Li Yang-R58472 <r58472@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Zhao Chenhui-B35336
+ <B35336@freescale.com>
+Subject: RE: [PATCH 1/7] powerpc/85xx: re-enable timebase sync disabled by
+ KEXEC patch
+Date: Tue, 8 Nov 2011 09:06:55 +0000
+Message-ID: <3F607A5180246847A760FD34122A1E052BC5F8@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1320409787-14360-1-git-send-email-chenhui.zhao@freescale.com>
+ <4EB421FD.6010805@freescale.com>
+In-Reply-To: <4EB421FD.6010805@freescale.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,164 +34,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
-breaking clear_pages(), probably others too.
 
-This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
-depend on PPC_E500_V1_V2.
 
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
+>-----Original Message-----
+>From: linuxppc-dev-bounces+leoli=3Dfreescale.com@lists.ozlabs.org
+>[mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@lists.ozlabs.org] On
+>Behalf Of Scott Wood
+>Sent: Saturday, November 05, 2011 1:34 AM
+>To: Zhao Chenhui-B35336
+>Cc: linuxppc-dev@lists.ozlabs.org
+>Subject: Re: [PATCH 1/7] powerpc/85xx: re-enable timebase sync disabled by
+>KEXEC patch
+>
+>On 11/04/2011 07:29 AM, Zhao Chenhui wrote:
+>> From: Li Yang <leoli@freescale.com>
+>>
+>> The timebase sync is not only necessary when using KEXEC. It should also
+>> be used by normal boot up and cpu hotplug. Remove the ifdef added by
+>> the KEXEC patch.
+>
+>The KEXEC patch didn't just add the ifdef, it also added the initializers:
 
-Changes from v3:
+Yes.  But the code suggests that the timebase synchronization is only neces=
+sary for KEXEC, but it turns out that sleep/wakeup also need it.  Maybe the=
+ description of the patch need to be changed as KEXEC is not to be blamed.
 
-	* Rebase on 3.2-rc1 (add P3060_QDS)
+>
+>> @@ -105,8 +107,64 @@ smp_85xx_setup_cpu(int cpu_nr)
+>>
+>>  struct smp_ops_t smp_85xx_ops =3D {
+>>         .kick_cpu =3D smp_85xx_kick_cpu,
+>> +#ifdef CONFIG_KEXEC
+>> +       .give_timebase  =3D smp_generic_give_timebase,
+>> +       .take_timebase  =3D smp_generic_take_timebase,
+>> +#endif
+>>  };
+>
+>U-Boot synchronizes the timebase on 85xx.  With what chip and U-Boot
+>version are you seeing this not happen?
 
-Changes from v2:
+I'm curious why don't we make it happen in kernel as we are against adding =
+dependency to the bootloader?  Other architectures don't have this dependen=
+cy, it will be better if we don't add this dependency either IMO.
 
-	* s/CONFIG_PPC_E500/CONFIG_PPC_E500_V1_V2/ as suggested by Scott Wood
 
-Changes from v1:
-
-	* Rebase on 3.1-rc1
-
-	* Remove the list of processor families from the PPC_E500 and 
-	  PPC_E500MC options description. The P20xx can be either e500v2 or 
-	  e500mc.
-
- arch/powerpc/platforms/85xx/Kconfig    |   14 +++++++++-----
- arch/powerpc/platforms/Kconfig.cputype |   27 +++++++++++++++------------
- 2 files changed, 24 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 45023e2..cfa2bc9 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
- 
- if PPC32
- 
-+if PPC_E500_V1_V2
-+
- config MPC8540_ADS
- 	bool "Freescale MPC8540 ADS"
- 	select DEFAULT_UIMAGE
-@@ -171,10 +173,13 @@ config SBC8560
- 	help
- 	  This option enables support for the Wind River SBC8560 board
- 
-+endif # PPC_E500_V1_V2
-+
-+if PPC_E500MC
-+
- config P2041_RDB
- 	bool "Freescale P2041 RDB"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
-@@ -187,7 +192,6 @@ config P2041_RDB
- config P3041_DS
- 	bool "Freescale P3041 DS"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
-@@ -200,7 +204,6 @@ config P3041_DS
- config P3060_QDS
- 	bool "Freescale P3060 QDS"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select MPC8xxx_GPIO
-@@ -212,7 +215,6 @@ config P3060_QDS
- config P4080_DS
- 	bool "Freescale P4080 DS"
- 	select DEFAULT_UIMAGE
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
-@@ -222,13 +224,15 @@ config P4080_DS
- 	help
- 	  This option enables support for the P4080 DS board
- 
-+endif # PPC_E500MC
-+
- endif # PPC32
- 
- config P5020_DS
- 	bool "Freescale P5020 DS"
-+	depends on PPC_E500MC
- 	select DEFAULT_UIMAGE
- 	select E500
--	select PPC_E500MC
- 	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index fbecae0..e08d1e3 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -10,13 +10,13 @@ choice
- 	prompt "Processor Type"
- 	depends on PPC32
- 	help
--	  There are five families of 32 bit PowerPC chips supported.
-+	  There are six families of 32 bit PowerPC chips supported.
- 	  The most common ones are the desktop and server CPUs (601, 603,
- 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
- 	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
--	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
--	  (85xx) each form a family of their own that is not compatible
--	  with the others.
-+	  The other embedded parts, namely 4xx, 8xx, e200 (55xx), e500
-+	  (85xx), and e500mc each form a family of their own that is not
-+	  compatible with the others.
- 
- 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
- 
-@@ -24,10 +24,15 @@ config PPC_BOOK3S_32
- 	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
- 	select PPC_FPU
- 
--config PPC_85xx
--	bool "Freescale 85xx"
-+config PPC_E500_V1_V2
-+	bool "Freescale e500v1/e500v2"
-+	select PPC_85xx
- 	select E500
- 
-+config PPC_E500MC
-+	bool "Freescale e500mc/e5500"
-+	select PPC_85xx
-+
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
-@@ -129,15 +134,13 @@ config TUNE_CELL
- config 8xx
- 	bool
- 
--config E500
-+config PPC_85xx
-+	bool
- 	select FSL_EMB_PERFMON
- 	select PPC_FSL_BOOK3E
--	bool
- 
--config PPC_E500MC
--	bool "e500mc Support"
--	select PPC_FPU
--	depends on E500
-+config E500
-+	bool
- 
- config PPC_FPU
- 	bool
--- 
-1.7.7.1
+>
+>If you are seeing only a small (around one tick) difference, make sure
+>you're running a U-Boot that has this commit:
+>
+>> commit 7afc45ad7d9493208d89072cbb78a5bfc8034b59
+>> Author: Kumar Gala <galak@kernel.crashing.org>
+>> Date:   Sun Mar 13 10:55:53 2011 -0500
+>>
+>>     powerpc/85xx: Fix synchronization of timebase on MP boot
+>>
+>>     There is a small ordering issue in the master core in that we need
+>to
+>>     make sure the disabling of the timebase in the SoC is visible before
+>we
+>>     set the value to 0.  We can simply just read back the value to
+>>     synchronizatize the write, before we set TB to 0.
+>>
+>>     Reported-by: Dan Hettena
+>>     Tested-by: Dan Hettena
+>>     Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>
+>
+>-Scott
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
