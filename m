@@ -1,24 +1,25 @@
 Return-Path: <miche@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [74.125.121.67])
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.44.51])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 44ED4100A2D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 06:30:22 +1100 (EST)
-Received: from hpaq12.eem.corp.google.com (hpaq12.eem.corp.google.com
- [172.25.149.12]) by smtp-out.google.com with ESMTP id pA8JUJaf018886
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 11:30:19 -0800
+ by ozlabs.org (Postfix) with ESMTPS id DD50F100AD5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 06:30:26 +1100 (EST)
+Received: from wpaz37.hot.corp.google.com (wpaz37.hot.corp.google.com
+ [172.24.198.101]) by smtp-out.google.com with ESMTP id pA8JUNMP006667
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 11:30:23 -0800
 Received: from miche.sea.corp.google.com (miche.sea.corp.google.com
  [172.31.71.52])
- by hpaq12.eem.corp.google.com with ESMTP id pA8JUHqu028151
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 11:30:17 -0800
+ by wpaz37.hot.corp.google.com with ESMTP id pA8JUMJ0012510
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 11:30:23 -0800
 Received: from miche.sea.corp.google.com (localhost [IPv6:::1])
- by miche.sea.corp.google.com (Postfix) with ESMTP id 3146D20253
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 11:30:17 -0800 (PST)
-Subject: [PATCH v2 2/3] hvc_init():  Enforce one-time initialization.
+ by miche.sea.corp.google.com (Postfix) with ESMTP id 8994620253
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 11:30:22 -0800 (PST)
+Subject: [PATCH v2 3/3] Use separate struct console structure for each
+ hvc_console.
 To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 From: Miche Baker-Harvey <miche@google.com>
-Date: Tue, 08 Nov 2011 11:30:17 -0800
-Message-ID: <20111108193016.30707.95497.stgit@miche.sea.corp.google.com>
+Date: Tue, 08 Nov 2011 11:30:22 -0800
+Message-ID: <20111108193022.30707.84711.stgit@miche.sea.corp.google.com>
 In-Reply-To: <20111108193005.30707.23990.stgit@miche.sea.corp.google.com>
 References: <20111108193005.30707.23990.stgit@miche.sea.corp.google.com>
 MIME-Version: 1.0
@@ -32,58 +33,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hvc_init() must only be called once, and no thread should continue with hvc_alloc()
-until after initialization is complete.  The original code does not enforce either
-of these requirements.  A new mutex limits entry to hvc_init() to a single thread,
-and blocks all later comers until it has completed.
+It is possible to make any virtio_console port be a console
+by sending VIRITO_CONSOLE_CONSOLE_PORT.  But hvc_alloc was
+using a single struct console hvc_console, which contains
+both an index and flags which are per-port.
 
-This patch fixes multiple crash symptoms.
+This adds a separate struct console for each virtio_console
+that is CONSOLE_PORT.
 
 Signed-off-by: Miche Baker-Harvey <miche@google.com>
 ---
- drivers/tty/hvc/hvc_console.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+ drivers/tty/hvc/hvc_console.c |   20 ++++++++++++++++++++
+ drivers/tty/hvc/hvc_console.h |    1 +
+ 2 files changed, 21 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index b6b2d18..09a6159 100644
+index 09a6159..24a84d6 100644
 --- a/drivers/tty/hvc/hvc_console.c
 +++ b/drivers/tty/hvc/hvc_console.c
-@@ -29,8 +29,9 @@
- #include <linux/kernel.h>
- #include <linux/kthread.h>
- #include <linux/list.h>
--#include <linux/module.h>
- #include <linux/major.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
- #include <linux/sysrq.h>
- #include <linux/tty.h>
- #include <linux/tty_flip.h>
-@@ -84,6 +85,10 @@ static LIST_HEAD(hvc_structs);
-  * list traversal.
-  */
- static DEFINE_SPINLOCK(hvc_structs_lock);
-+/*
-+ * only one task does allocation at a time.
-+ */
-+static DEFINE_MUTEX(hvc_ports_mutex);
+@@ -247,6 +247,7 @@ static void destroy_hvc_struct(struct kref *kref)
  
- /*
-  * This value is used to assign a tty->index value to a hvc_struct based
-@@ -825,11 +830,15 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 	spin_unlock(&hvc_structs_lock);
+ 
++	kfree(hp->hvc_console);
+ 	kfree(hp);
+ }
+ 
+@@ -827,6 +828,7 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 			     int outbuf_size)
+ {
+ 	struct hvc_struct *hp;
++	struct console *cp;
  	int i;
  
  	/* We wait until a driver actually comes along */
-+	mutex_lock(&hvc_ports_mutex);
- 	if (!hvc_driver) {
- 		int err = hvc_init();
--		if (err)
-+		if (err) {
-+			mutex_unlock(&hvc_ports_mutex);
- 			return ERR_PTR(err);
-+		}
- 	}
-+	mutex_unlock(&hvc_ports_mutex);
+@@ -854,6 +856,17 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 	kref_init(&hp->kref);
  
- 	hp = kzalloc(ALIGN(sizeof(*hp), sizeof(long)) + outbuf_size,
- 			GFP_KERNEL);
+ 	INIT_WORK(&hp->tty_resize, hvc_set_winsz);
++	/*
++	 * Make each console its own struct console.
++	 */
++	cp = kmemdup(&hvc_console, sizeof(*cp), GFP_KERNEL);
++	if (!cp) {
++		kfree(hp);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	hp->hvc_console = cp;
++
+ 	spin_lock_init(&hp->lock);
+ 	spin_lock(&hvc_structs_lock);
+ 
+@@ -872,8 +885,13 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 
+ 	hp->index = i;
+ 
++	cp->index = i;
++	vtermnos[i] = vtermno;
++	cons_ops[i] = ops;
++
+ 	list_add_tail(&(hp->next), &hvc_structs);
+ 	spin_unlock(&hvc_structs_lock);
++	register_console(cp);
+ 
+ 	return hp;
+ }
+@@ -884,6 +902,8 @@ int hvc_remove(struct hvc_struct *hp)
+ 	unsigned long flags;
+ 	struct tty_struct *tty;
+ 
++	BUG_ON(!hp->hvc_console);
++	unregister_console(hp->hvc_console);
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	tty = tty_kref_get(hp->tty);
+ 
+diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+index c335a14..2d20ab7 100644
+--- a/drivers/tty/hvc/hvc_console.h
++++ b/drivers/tty/hvc/hvc_console.h
+@@ -58,6 +58,7 @@ struct hvc_struct {
+ 	const struct hv_ops *ops;
+ 	int irq_requested;
+ 	int data;
++	struct console *hvc_console;
+ 	struct winsize ws;
+ 	struct work_struct tty_resize;
+ 	struct list_head next;
