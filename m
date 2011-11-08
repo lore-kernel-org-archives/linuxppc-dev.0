@@ -1,23 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 883511007D3
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 03:59:55 +1100 (EST)
-Message-ID: <4EB96002.5030605@freescale.com>
-Date: Tue, 8 Nov 2011 10:59:46 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ by ozlabs.org (Postfix) with ESMTP id B533BB6F85
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 04:09:05 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: [PATCH] KVM: PPC: move compute_tlbie_rb to book3s_64 common header
+References: <1312907508-14599-1-git-send-email-agraf@suse.de>
+ <1312907508-14599-2-git-send-email-agraf@suse.de>
+Date: Tue, 08 Nov 2011 18:08:52 +0100
+In-Reply-To: <1312907508-14599-2-git-send-email-agraf@suse.de> (Alexander
+ Graf's message of "Tue, 9 Aug 2011 18:31:39 +0200")
+Message-ID: <m2bosmpmmz.fsf_-_@igel.home>
 MIME-Version: 1.0
-To: <ananth@in.ibm.com>
-Subject: Re: [PATCH] powerpc: Export PIR data through sysfs
-References: <20111107044750.GB4361@in.ibm.com>
- <4EB812E8.9090107@freescale.com> <20111108065811.GA9109@in.ibm.com>
-In-Reply-To: <20111108065811.GA9109@in.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
- mahesh@linux.vnet.ibm.com
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +24,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/08/2011 12:58 AM, Ananth N Mavinakayanahalli wrote:
-> On Mon, Nov 07, 2011 at 11:18:32AM -0600, Scott Wood wrote:
->> What use does userspace have for this?  If you want to return the
->> currently executing CPU (which unless you're pinned could change as soon
->> as the value is read...), why not just return smp_processor_id() or
->> hard_smp_processor_id()?
-> 
-> Its not just the current cpu. Decoding PIR can tell you the core id,
-> thread id in case of SMT, and this information can be used by userspace
-> apps to set affinities, etc.
+compute_tlbie_rb is only used on ppc64 and cannot be compiled on ppc32.
 
-Wouldn't it make more sense to expose the thread to core mappings in a
-general way, not tied to hardware or what thread we're currently running on?
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ arch/powerpc/include/asm/kvm_book3s.h    |   33 ------------------------------
+ arch/powerpc/include/asm/kvm_book3s_64.h |   33 ++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+), 33 deletions(-)
 
-What's the use case for knowing this information only about the current
-thread (or rather the state the current thread was in a few moments ago)?
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index a384ffd..db73fa3 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -383,39 +383,6 @@ static inline bool kvmppc_critical_section(struct kvm_vcpu *vcpu)
+ }
+ #endif
+ 
+-static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+-					     unsigned long pte_index)
+-{
+-	unsigned long rb, va_low;
+-
+-	rb = (v & ~0x7fUL) << 16;		/* AVA field */
+-	va_low = pte_index >> 3;
+-	if (v & HPTE_V_SECONDARY)
+-		va_low = ~va_low;
+-	/* xor vsid from AVA */
+-	if (!(v & HPTE_V_1TB_SEG))
+-		va_low ^= v >> 12;
+-	else
+-		va_low ^= v >> 24;
+-	va_low &= 0x7ff;
+-	if (v & HPTE_V_LARGE) {
+-		rb |= 1;			/* L field */
+-		if (cpu_has_feature(CPU_FTR_ARCH_206) &&
+-		    (r & 0xff000)) {
+-			/* non-16MB large page, must be 64k */
+-			/* (masks depend on page size) */
+-			rb |= 0x1000;		/* page encoding in LP field */
+-			rb |= (va_low & 0x7f) << 16; /* 7b of VA in AVA/LP field */
+-			rb |= (va_low & 0xfe);	/* AVAL field (P7 doesn't seem to care) */
+-		}
+-	} else {
+-		/* 4kB page */
+-		rb |= (va_low & 0x7ff) << 12;	/* remaining 11b of VA */
+-	}
+-	rb |= (v >> 54) & 0x300;		/* B field */
+-	return rb;
+-}
+-
+ /* Magic register values loaded into r3 and r4 before the 'sc' assembly
+  * instruction for the OSI hypercalls */
+ #define OSI_SC_MAGIC_R3			0x113724FA
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index e43fe42..d0ac94f 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -29,4 +29,37 @@ static inline struct kvmppc_book3s_shadow_vcpu *to_svcpu(struct kvm_vcpu *vcpu)
+ 
+ #define SPAPR_TCE_SHIFT		12
+ 
++static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
++					     unsigned long pte_index)
++{
++	unsigned long rb, va_low;
++
++	rb = (v & ~0x7fUL) << 16;		/* AVA field */
++	va_low = pte_index >> 3;
++	if (v & HPTE_V_SECONDARY)
++		va_low = ~va_low;
++	/* xor vsid from AVA */
++	if (!(v & HPTE_V_1TB_SEG))
++		va_low ^= v >> 12;
++	else
++		va_low ^= v >> 24;
++	va_low &= 0x7ff;
++	if (v & HPTE_V_LARGE) {
++		rb |= 1;			/* L field */
++		if (cpu_has_feature(CPU_FTR_ARCH_206) &&
++		    (r & 0xff000)) {
++			/* non-16MB large page, must be 64k */
++			/* (masks depend on page size) */
++			rb |= 0x1000;		/* page encoding in LP field */
++			rb |= (va_low & 0x7f) << 16; /* 7b of VA in AVA/LP field */
++			rb |= (va_low & 0xfe);	/* AVAL field (P7 doesn't seem to care) */
++		}
++	} else {
++		/* 4kB page */
++		rb |= (va_low & 0x7ff) << 12;	/* remaining 11b of VA */
++	}
++	rb |= (v >> 54) & 0x300;		/* B field */
++	return rb;
++}
++
+ #endif /* __ASM_KVM_BOOK3S_64_H__ */
+-- 
+1.7.7.2
 
-> +#if defined(CONFIG_SMP) && defined(SPRN_PIR)
-> +SYSFS_PMCSETUP(pir, SPRN_PIR);
-> +static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
-> +#endif
 
-This only helps on architectures such as 8xx where you can't build as
-SMP -- and I don't think #ifdef SPRN_PIR excludes any builds.
-
-It doesn't help on chips like 750 or e300 where you can run a normal 6xx
-SMP build, you just won't have multiple CPUs, and thus won't run things
-like the secondary entry code.
-
--Scott
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
