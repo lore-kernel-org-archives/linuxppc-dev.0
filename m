@@ -3,15 +3,15 @@ Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:770:15f::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B3711B6F71
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 13:19:44 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 91EEB100ACE
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 13:19:54 +1100 (EST)
 From: Geoff Levand <geoff@infradead.org>
-Date: Tue, 8 Nov 2011 14:37:26 -0800
-Subject: [PATCH 1/2] powerpc/ps3: Fix lost SMP IPIs
+Date: Tue, 8 Nov 2011 14:38:21 -0800
+Subject: [PATCH 2/2] powerpc/ps3: Fix SMP lockdep boot warning
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <E1RNxlN-0000wq-1P@casper.infradead.org>
+Message-Id: <E1RNxlX-0000xO-0e@casper.infradead.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
- Andre Heider <a.heider@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+ Andre Heider <a.heider@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,111 +21,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixes the PS3 bootup hang introduced in 3.0-rc1 by:
+Move the PS3 IPI message setup from ps3_smp_setup_cpu() to ps3_smp_probe().
 
-  commit 317f394160e9beb97d19a84c39b7e5eb3d7815a
-  sched: Move the second half of ttwu() to the remote cpu
+Fixes startup warnings like these:
 
-Move the PS3's LV1 EOI call lv1_end_of_interrupt_ext() from ps3_chip_eoi()
-to ps3_get_irq() for IPI messages.
+  ------------[ cut here ]------------
+  WARNING: at kernel/lockdep.c:2649
+  Modules linked in:
+  ...
+  ---[ end trace 31fd0ba7d8756001 ]---
 
-If lv1_send_event_locally() is called between a previous call to
-lv1_send_event_locally() and the coresponding call to
-lv1_end_of_interrupt_ext() the second event will not be delivered to the
-target cpu.
-
-The PS3's SMP IPIs are implemented using lv1_send_event_locally(), so if two
-IPI messages of the same type are sent to the same target in a relatively
-short period of time the second IPI event can become lost when
-lv1_end_of_interrupt_ext() is called from ps3_chip_eoi().
-
-CC: stable@kernel.org
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |   23 ++++++++++++++++++++++-
- arch/powerpc/platforms/ps3/platform.h  |    1 +
- arch/powerpc/platforms/ps3/smp.c       |    2 ++
- 3 files changed, 25 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/ps3/smp.c |   64 +++++++++++++++++++-------------------
+ 1 files changed, 32 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
-index 404bc52..1d6f4f4 100644
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -88,6 +88,7 @@ struct ps3_private {
- 	struct ps3_bmp bmp __attribute__ ((aligned (PS3_BMP_MINALIGN)));
- 	u64 ppe_id;
- 	u64 thread_id;
-+	unsigned long ipi_mask;
- };
- 
- static DEFINE_PER_CPU(struct ps3_private, ps3_private);
-@@ -144,7 +145,11 @@ static void ps3_chip_unmask(struct irq_data *d)
- static void ps3_chip_eoi(struct irq_data *d)
- {
- 	const struct ps3_private *pd = irq_data_get_irq_chip_data(d);
--	lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, d->irq);
-+
-+	/* non-IPIs are EOIed here. */
-+
-+	if (!test_bit(63 - d->irq, &pd->ipi_mask))
-+		lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, d->irq);
- }
- 
- /**
-@@ -691,6 +696,16 @@ void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq)
- 		cpu, virq, pd->bmp.ipi_debug_brk_mask);
- }
- 
-+void __init ps3_register_ipi_irq(unsigned int cpu, unsigned int virq)
-+{
-+	struct ps3_private *pd = &per_cpu(ps3_private, cpu);
-+
-+	set_bit(63 - virq, &pd->ipi_mask);
-+
-+	DBG("%s:%d: cpu %u, virq %u, ipi_mask %lxh\n", __func__, __LINE__,
-+		cpu, virq, pd->ipi_mask);
-+}
-+
- static unsigned int ps3_get_irq(void)
- {
- 	struct ps3_private *pd = &__get_cpu_var(ps3_private);
-@@ -720,6 +735,12 @@ static unsigned int ps3_get_irq(void)
- 		BUG();
- 	}
- #endif
-+
-+	/* IPIs are EOIed here. */
-+
-+	if (test_bit(63 - plug, &pd->ipi_mask))
-+		lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, plug);
-+
- 	return plug;
- }
- 
-diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
-index 9a196a8..1a633ed 100644
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -43,6 +43,7 @@ void ps3_mm_shutdown(void);
- void ps3_init_IRQ(void);
- void ps3_shutdown_IRQ(int cpu);
- void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq);
-+void __init ps3_register_ipi_irq(unsigned int cpu, unsigned int virq);
- 
- /* smp */
- 
 diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
-index 4c44794..f609345 100644
+index f609345..efc1cd8 100644
 --- a/arch/powerpc/platforms/ps3/smp.c
 +++ b/arch/powerpc/platforms/ps3/smp.c
-@@ -94,6 +94,8 @@ static void __init ps3_smp_setup_cpu(int cpu)
+@@ -59,48 +59,49 @@ static void ps3_smp_message_pass(int cpu, int msg)
  
- 		if (result)
- 			virqs[i] = NO_IRQ;
-+		else
-+			ps3_register_ipi_irq(cpu, virqs[i]);
- 	}
+ static int ps3_smp_probe(void)
+ {
+-	return 2;
+-}
++	int cpu;
  
- 	ps3_register_ipi_debug_brk(cpu, virqs[PPC_MSG_DEBUGGER_BREAK]);
+-static void __init ps3_smp_setup_cpu(int cpu)
+-{
+-	int result;
+-	unsigned int *virqs = per_cpu(ps3_ipi_virqs, cpu);
+-	int i;
++	for (cpu = 0; cpu < 2; cpu++) {
++		int result;
++		unsigned int *virqs = per_cpu(ps3_ipi_virqs, cpu);
++		int i;
+ 
+-	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
++		DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
+ 
+-	/*
+-	 * Check assumptions on ps3_ipi_virqs[] indexing. If this
+-	 * check fails, then a different mapping of PPC_MSG_
+-	 * to index needs to be setup.
+-	 */
++		/*
++		* Check assumptions on ps3_ipi_virqs[] indexing. If this
++		* check fails, then a different mapping of PPC_MSG_
++		* to index needs to be setup.
++		*/
+ 
+-	BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
+-	BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
+-	BUILD_BUG_ON(PPC_MSG_CALL_FUNC_SINGLE != 2);
+-	BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
++		BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
++		BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
++		BUILD_BUG_ON(PPC_MSG_CALL_FUNC_SINGLE != 2);
++		BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
+ 
+-	for (i = 0; i < MSG_COUNT; i++) {
+-		result = ps3_event_receive_port_setup(cpu, &virqs[i]);
++		for (i = 0; i < MSG_COUNT; i++) {
++			result = ps3_event_receive_port_setup(cpu, &virqs[i]);
+ 
+-		if (result)
+-			continue;
++			if (result)
++				continue;
+ 
+-		DBG("%s:%d: (%d, %d) => virq %u\n",
+-			__func__, __LINE__, cpu, i, virqs[i]);
++			DBG("%s:%d: (%d, %d) => virq %u\n",
++				__func__, __LINE__, cpu, i, virqs[i]);
+ 
+-		result = smp_request_message_ipi(virqs[i], i);
++			result = smp_request_message_ipi(virqs[i], i);
+ 
+-		if (result)
+-			virqs[i] = NO_IRQ;
+-		else
+-			ps3_register_ipi_irq(cpu, virqs[i]);
+-	}
++			if (result)
++				virqs[i] = NO_IRQ;
++			else
++				ps3_register_ipi_irq(cpu, virqs[i]);
++		}
+ 
+-	ps3_register_ipi_debug_brk(cpu, virqs[PPC_MSG_DEBUGGER_BREAK]);
++		ps3_register_ipi_debug_brk(cpu, virqs[PPC_MSG_DEBUGGER_BREAK]);
+ 
+-	DBG(" <- %s:%d: (%d)\n", __func__, __LINE__, cpu);
++		DBG(" <- %s:%d: (%d)\n", __func__, __LINE__, cpu);
++	}
++
++	return 2;
+ }
+ 
+ void ps3_smp_cleanup_cpu(int cpu)
+@@ -123,7 +124,6 @@ static struct smp_ops_t ps3_smp_ops = {
+ 	.probe		= ps3_smp_probe,
+ 	.message_pass	= ps3_smp_message_pass,
+ 	.kick_cpu	= smp_generic_kick_cpu,
+-	.setup_cpu	= ps3_smp_setup_cpu,
+ };
+ 
+ void smp_init_ps3(void)
 -- 
 1.7.0.4
