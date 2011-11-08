@@ -1,36 +1,16 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <baruch@tkos.co.il>
+Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id DF0F71007D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 18:12:13 +1100 (EST)
-Received: from /spool/local by e28smtp09.in.ibm.com with XMail ESMTP
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Tue, 8 Nov 2011 12:42:10 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pA87Bcxh2207868
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 12:41:39 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pA87BbsO029641
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 18:11:38 +1100
-Message-ID: <4EB8D628.2090304@in.ibm.com>
-Date: Tue, 08 Nov 2011 12:41:36 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-MIME-Version: 1.0
-To: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/5] [ppc] Process dynamic relocations for kernel
-References: <20111025114829.8183.1725.stgit@suzukikp.in.ibm.com>
- <20111025115354.8183.48237.stgit@suzukikp.in.ibm.com>
- <1320276969.3309.3.camel@treble> <4EB3A40C.1070802@in.ibm.com>
- <1320678819.2750.15.camel@treble>
-In-Reply-To: <1320678819.2750.15.camel@treble>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Nathan Miller <nathanm2@us.ibm.com>, Josh Poimboeuf <jpoimboe@us.ibm.com>,
- Dave Hansen <dave@linux.vnet.ibm.com>, Alan Modra <amodra@au1.ibm.com>,
- Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 85AFBB6F7D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 18:24:23 +1100 (EST)
+From: Baruch Siach <baruch@tkos.co.il>
+To: netdev@vger.kernel.org
+Subject: [PATCH] net: fsl_pq_mdio: fix oops when using uninitialized mutex
+Date: Tue,  8 Nov 2011 09:23:44 +0200
+Message-Id: <59b050a97a9b5382918b66f2850a80c86e52f409.1320736936.git.baruch@tkos.co.il>
+Cc: Andy Fleming <afleming@freescale.com>, Baruch Siach <baruch@tkos.co.il>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,69 +20,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/07/11 20:43, Josh Poimboeuf wrote:
-> On Fri, 2011-11-04 at 14:06 +0530, Suzuki Poulose wrote:
->> On 11/03/11 05:06, Josh Poimboeuf wrote:
->>> On Tue, 2011-10-25 at 17:23 +0530, Suzuki K. Poulose wrote:
->>> @@ -137,6 +137,9 @@ get_type:
->>>    	lwz	r0, 8(r9)	/* r_addend */
->>>    	add	r0, r0, r3	/* final addend */
->>>    	stwx	r0, r4, r7	/* memory[r4+r7]) = (u32)r0 */
->>> +	dcbst	r4,r7		/* flush dcache line to memory */
->>> +	sync			/* wait for flush to complete */
->>> +	icbi	r4,r7		/* invalidate icache line */
->>
->> Doing it this way has two drawbacks :
->>
->> 1) Placing it here in relocate would do the flushing for each and every update.
->
-> I agree.  My kernel had around 80,000 relocations, which means 80,000
-> d-cache line flushes (for a 32k d-cache) and 80,000 i-cache line
-> invalidates (for a 32k i-cache).  Which is obviously a little overkill.
-> Although I didn't notice a performance hit during boot.
->
->
->> 2) I would like to keep this code as generic as possible for the PPC32 code.
->>
->> Could we move this to the place from relocate is called and flush the d-cache and
->> i-cache entirely ?
->
-> Why not put the cache flushing code at the end of relocate?  Would some
-> of the other PPC32 platforms not require the cache flushing?
-What I was suggesting is, instead of flushing the cache in relocate(), lets do it
-like:
+The get_phy_id() routine (called via fsl_pq_mdio_find_free()) tries to acquire
+the mdio_lock mutex which is only initialized when of_mdiobus_register() gets
+called later. This causes the following oops:
 
-for e.g, on 440x, (in head_44x.S :)
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc02eda74
+Oops: Kernel access of bad area, sig: 11 [#1]
+P1020 RDB
+NIP: c02eda74 LR: c01b3aa4 CTR: 00000007
+REGS: cf039d70 TRAP: 0300   Not tainted  (3.2.0-rc1-00004-gdc9d867-dirty)
+MSR: 00029000 <EE,ME,CE>  CR: 24024028  XER: 00000000
+DEAR: 00000000, ESR: 00800000
+TASK = cf034000[1] 'swapper' THREAD: cf038000
+GPR00: cf039e28 cf039e20 cf034000 cf368228 00000020 00000002 ffeb02ad 000000d0
+GPR08: 00001083 00000000 d1080000 cf039e90 00000000 100ae780 00000000 00000000
+GPR16: c0000900 00000012 0fffffff 00ffa000 00000015 00000001 c0470000 00000000
+GPR24: 00000000 00000000 c03b4e89 d1072030 cf034000 00000020 cf36822c cf368228
+NIP [c02eda74] __mutex_lock_slowpath+0x30/0xb0
+LR [c01b3aa4] mdiobus_read+0x38/0x68
+Call Trace:
+[cf039e20] [ffeb0000] 0xffeb0000 (unreliable)
+[cf039e50] [c01b3aa4] mdiobus_read+0x38/0x68
+[cf039e70] [c01b2af0] get_phy_id+0x24/0x70
+[cf039e90] [c01b4128] fsl_pq_mdio_probe+0x364/0x414
+[cf039ec0] [c0195050] platform_drv_probe+0x20/0x30
+[cf039ed0] [c0193a70] driver_probe_device+0xc8/0x170
+[cf039ef0] [c0193b88] __driver_attach+0x70/0x98
+[cf039f10] [c019294c] bus_for_each_dev+0x60/0x90
+[cf039f40] [c0193cc8] driver_attach+0x24/0x34
+[cf039f50] [c0192f88] bus_add_driver+0xbc/0x230
+[cf039f70] [c0194594] driver_register+0xb8/0x13c
+[cf039f90] [c0195b40] platform_driver_register+0x6c/0x7c
+[cf039fa0] [c03e433c] fsl_pq_mdio_init+0x18/0x28
+[cf039fb0] [c03ce824] do_one_initcall+0xdc/0x1b4
+[cf039fe0] [c03ce984] kernel_init+0x88/0x118
+[cf039ff0] [c000bd5c] kernel_thread+0x4c/0x68
+Instruction dump:
+9421ffd0 7c0802a6 81230008 bf61001c 3bc30004 7c7f1b78 90010034 38010008
+7c5c1378 90030008 93c10008 9121000c
+ 3800ffff 90410010 7d201828
 
-#ifdef CONFIG_RELOCATABLE
-	...
-	bl relocate
+Fix this by moving the of_mdiobus_register() call earlier.
 
-	#Flush the d-cache and invalidate the i-cache here
-#endif
+Cc: Andy Fleming <afleming@freescale.com>
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+---
+ drivers/net/ethernet/freescale/fsl_pq_mdio.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-
-This would let the different platforms do the the cache invalidation in their
-own way.
-
-Btw, I didn't find an instruction to flush the entire d-cache in PPC440 manual.
-We have instructions to flush only a block corresponding to an address.
-
-However, we have 'iccci' which would invalidate the entire i-cache which, which
-I think is better than 80,000 i-cache invalidates.
-
-Kumar / Josh,
-
-Do you have any suggestions here ?
-
-
-
-
->
-> My PPC32 knowledge is 4xx-centric, so please feel free to rewrite the
-> patch as needed to accommodate other PPC32 cores.
-
-Same here :)
-
-Thanks
-Suzuki
+diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+index 52f4e8a..e17fd2f 100644
+--- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
++++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+@@ -385,6 +385,13 @@ static int fsl_pq_mdio_probe(struct platform_device *ofdev)
+ 			tbiaddr = *prop;
+ 	}
+ 
++	err = of_mdiobus_register(new_bus, np);
++	if (err) {
++		printk (KERN_ERR "%s: Cannot register as MDIO bus\n",
++				new_bus->name);
++		goto err_free_irqs;
++	}
++
+ 	if (tbiaddr == -1) {
+ 		out_be32(tbipa, 0);
+ 
+@@ -403,13 +410,6 @@ static int fsl_pq_mdio_probe(struct platform_device *ofdev)
+ 
+ 	out_be32(tbipa, tbiaddr);
+ 
+-	err = of_mdiobus_register(new_bus, np);
+-	if (err) {
+-		printk (KERN_ERR "%s: Cannot register as MDIO bus\n",
+-				new_bus->name);
+-		goto err_free_irqs;
+-	}
+-
+ 	return 0;
+ 
+ err_free_irqs:
+-- 
+1.7.7.1
