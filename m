@@ -3,15 +3,15 @@ Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:770:15f::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1E0D5B6F71
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 13:19:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B3711B6F71
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 13:19:44 +1100 (EST)
 From: Geoff Levand <geoff@infradead.org>
-Date: Tue, 8 Nov 2011 17:51:30 -0800
-Subject: [PATCH 0/2] PS3 fixes for 3.2
+Date: Tue, 8 Nov 2011 14:37:26 -0800
+Subject: [PATCH 1/2] powerpc/ps3: Fix lost SMP IPIs
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <E1RNxlF-0000wf-Rh@casper.infradead.org>
+Message-Id: <E1RNxlN-0000wq-1P@casper.infradead.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
- Andre Heider <a.heider@gmail.com>
+ Andre Heider <a.heider@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,23 +21,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+Fixes the PS3 bootup hang introduced in 3.0-rc1 by:
 
-Here are two fixes for PS3.  Please apply for 3.2.
+  commit 317f394160e9beb97d19a84c39b7e5eb3d7815a
+  sched: Move the second half of ttwu() to the remote cpu
 
--Geoff
+Move the PS3's LV1 EOI call lv1_end_of_interrupt_ext() from ps3_chip_eoi()
+to ps3_get_irq() for IPI messages.
 
-The following changes
+If lv1_send_event_locally() is called between a previous call to
+lv1_send_event_locally() and the coresponding call to
+lv1_end_of_interrupt_ext() the second event will not be delivered to the
+target cpu.
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-powerpc
+The PS3's SMP IPIs are implemented using lv1_send_event_locally(), so if two
+IPI messages of the same type are sent to the same target in a relatively
+short period of time the second IPI event can become lost when
+lv1_end_of_interrupt_ext() is called from ps3_chip_eoi().
 
-
-Geoff Levand (2):
-  powerpc/ps3: Fix lost SMP IPIs
-  powerpc/ps3: Fix SMP lockdep boot warning
-
- arch/powerpc/platforms/ps3/interrupt.c |   23 +++++++++++-
+CC: stable@kernel.org
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ arch/powerpc/platforms/ps3/interrupt.c |   23 ++++++++++++++++++++++-
  arch/powerpc/platforms/ps3/platform.h  |    1 +
- arch/powerpc/platforms/ps3/smp.c       |   62 ++++++++++++++++---------------
- 3 files changed, 55 insertions(+), 31 deletions(-)
+ arch/powerpc/platforms/ps3/smp.c       |    2 ++
+ 3 files changed, 25 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
+index 404bc52..1d6f4f4 100644
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -88,6 +88,7 @@ struct ps3_private {
+ 	struct ps3_bmp bmp __attribute__ ((aligned (PS3_BMP_MINALIGN)));
+ 	u64 ppe_id;
+ 	u64 thread_id;
++	unsigned long ipi_mask;
+ };
+ 
+ static DEFINE_PER_CPU(struct ps3_private, ps3_private);
+@@ -144,7 +145,11 @@ static void ps3_chip_unmask(struct irq_data *d)
+ static void ps3_chip_eoi(struct irq_data *d)
+ {
+ 	const struct ps3_private *pd = irq_data_get_irq_chip_data(d);
+-	lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, d->irq);
++
++	/* non-IPIs are EOIed here. */
++
++	if (!test_bit(63 - d->irq, &pd->ipi_mask))
++		lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, d->irq);
+ }
+ 
+ /**
+@@ -691,6 +696,16 @@ void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq)
+ 		cpu, virq, pd->bmp.ipi_debug_brk_mask);
+ }
+ 
++void __init ps3_register_ipi_irq(unsigned int cpu, unsigned int virq)
++{
++	struct ps3_private *pd = &per_cpu(ps3_private, cpu);
++
++	set_bit(63 - virq, &pd->ipi_mask);
++
++	DBG("%s:%d: cpu %u, virq %u, ipi_mask %lxh\n", __func__, __LINE__,
++		cpu, virq, pd->ipi_mask);
++}
++
+ static unsigned int ps3_get_irq(void)
+ {
+ 	struct ps3_private *pd = &__get_cpu_var(ps3_private);
+@@ -720,6 +735,12 @@ static unsigned int ps3_get_irq(void)
+ 		BUG();
+ 	}
+ #endif
++
++	/* IPIs are EOIed here. */
++
++	if (test_bit(63 - plug, &pd->ipi_mask))
++		lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, plug);
++
+ 	return plug;
+ }
+ 
+diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
+index 9a196a8..1a633ed 100644
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -43,6 +43,7 @@ void ps3_mm_shutdown(void);
+ void ps3_init_IRQ(void);
+ void ps3_shutdown_IRQ(int cpu);
+ void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq);
++void __init ps3_register_ipi_irq(unsigned int cpu, unsigned int virq);
+ 
+ /* smp */
+ 
+diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
+index 4c44794..f609345 100644
+--- a/arch/powerpc/platforms/ps3/smp.c
++++ b/arch/powerpc/platforms/ps3/smp.c
+@@ -94,6 +94,8 @@ static void __init ps3_smp_setup_cpu(int cpu)
+ 
+ 		if (result)
+ 			virqs[i] = NO_IRQ;
++		else
++			ps3_register_ipi_irq(cpu, virqs[i]);
+ 	}
+ 
+ 	ps3_register_ipi_debug_brk(cpu, virqs[PPC_MSG_DEBUGGER_BREAK]);
+-- 
+1.7.0.4
