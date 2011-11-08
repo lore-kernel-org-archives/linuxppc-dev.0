@@ -2,15 +2,15 @@ Return-Path: <baruch@tkos.co.il>
 Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 85AFBB6F7D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 18:24:23 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 490E91007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 18:32:30 +1100 (EST)
 From: Baruch Siach <baruch@tkos.co.il>
-To: netdev@vger.kernel.org
-Subject: [PATCH] net: fsl_pq_mdio: fix oops when using uninitialized mutex
-Date: Tue,  8 Nov 2011 09:23:44 +0200
-Message-Id: <59b050a97a9b5382918b66f2850a80c86e52f409.1320736936.git.baruch@tkos.co.il>
-Cc: Andy Fleming <afleming@freescale.com>, Baruch Siach <baruch@tkos.co.il>,
- linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4] powerpc: 85xx: separate e500 from e500mc
+Date: Tue,  8 Nov 2011 09:31:30 +0200
+Message-Id: <5b7992dbbf0f10ab3207a8e3a0520597f10a7044.1320737269.git.baruch@tkos.co.il>
+Cc: Scott Wood <scottwood@freescale.com>, Baruch Siach <baruch@tkos.co.il>,
+ Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,86 +20,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The get_phy_id() routine (called via fsl_pq_mdio_find_free()) tries to acquire
-the mdio_lock mutex which is only initialized when of_mdiobus_register() gets
-called later. This causes the following oops:
+CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
+breaking clear_pages(), probably others too.
 
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc02eda74
-Oops: Kernel access of bad area, sig: 11 [#1]
-P1020 RDB
-NIP: c02eda74 LR: c01b3aa4 CTR: 00000007
-REGS: cf039d70 TRAP: 0300   Not tainted  (3.2.0-rc1-00004-gdc9d867-dirty)
-MSR: 00029000 <EE,ME,CE>  CR: 24024028  XER: 00000000
-DEAR: 00000000, ESR: 00800000
-TASK = cf034000[1] 'swapper' THREAD: cf038000
-GPR00: cf039e28 cf039e20 cf034000 cf368228 00000020 00000002 ffeb02ad 000000d0
-GPR08: 00001083 00000000 d1080000 cf039e90 00000000 100ae780 00000000 00000000
-GPR16: c0000900 00000012 0fffffff 00ffa000 00000015 00000001 c0470000 00000000
-GPR24: 00000000 00000000 c03b4e89 d1072030 cf034000 00000020 cf36822c cf368228
-NIP [c02eda74] __mutex_lock_slowpath+0x30/0xb0
-LR [c01b3aa4] mdiobus_read+0x38/0x68
-Call Trace:
-[cf039e20] [ffeb0000] 0xffeb0000 (unreliable)
-[cf039e50] [c01b3aa4] mdiobus_read+0x38/0x68
-[cf039e70] [c01b2af0] get_phy_id+0x24/0x70
-[cf039e90] [c01b4128] fsl_pq_mdio_probe+0x364/0x414
-[cf039ec0] [c0195050] platform_drv_probe+0x20/0x30
-[cf039ed0] [c0193a70] driver_probe_device+0xc8/0x170
-[cf039ef0] [c0193b88] __driver_attach+0x70/0x98
-[cf039f10] [c019294c] bus_for_each_dev+0x60/0x90
-[cf039f40] [c0193cc8] driver_attach+0x24/0x34
-[cf039f50] [c0192f88] bus_add_driver+0xbc/0x230
-[cf039f70] [c0194594] driver_register+0xb8/0x13c
-[cf039f90] [c0195b40] platform_driver_register+0x6c/0x7c
-[cf039fa0] [c03e433c] fsl_pq_mdio_init+0x18/0x28
-[cf039fb0] [c03ce824] do_one_initcall+0xdc/0x1b4
-[cf039fe0] [c03ce984] kernel_init+0x88/0x118
-[cf039ff0] [c000bd5c] kernel_thread+0x4c/0x68
-Instruction dump:
-9421ffd0 7c0802a6 81230008 bf61001c 3bc30004 7c7f1b78 90010034 38010008
-7c5c1378 90030008 93c10008 9121000c
- 3800ffff 90410010 7d201828
+This patch adds a new "Processor Type" entry for e500mc, and makes e500 systems
+depend on PPC_E500_V1_V2.
 
-Fix this by moving the of_mdiobus_register() call earlier.
-
-Cc: Andy Fleming <afleming@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
 Signed-off-by: Baruch Siach <baruch@tkos.co.il>
 ---
- drivers/net/ethernet/freescale/fsl_pq_mdio.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-index 52f4e8a..e17fd2f 100644
---- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-+++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-@@ -385,6 +385,13 @@ static int fsl_pq_mdio_probe(struct platform_device *ofdev)
- 			tbiaddr = *prop;
- 	}
+Changes from v3:
+
+	* Rebase on 3.2-rc1 (add P3060_QDS)
+
+Changes from v2:
+
+	* s/CONFIG_PPC_E500/CONFIG_PPC_E500_V1_V2/ as suggested by Scott Wood
+
+Changes from v1:
+
+	* Rebase on 3.1-rc1
+
+	* Remove the list of processor families from the PPC_E500 and 
+	  PPC_E500MC options description. The P20xx can be either e500v2 or 
+	  e500mc.
+
+ arch/powerpc/platforms/85xx/Kconfig    |   14 +++++++++-----
+ arch/powerpc/platforms/Kconfig.cputype |   27 +++++++++++++++------------
+ 2 files changed, 24 insertions(+), 17 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 45023e2..cfa2bc9 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
  
-+	err = of_mdiobus_register(new_bus, np);
-+	if (err) {
-+		printk (KERN_ERR "%s: Cannot register as MDIO bus\n",
-+				new_bus->name);
-+		goto err_free_irqs;
-+	}
+ if PPC32
+ 
++if PPC_E500_V1_V2
 +
- 	if (tbiaddr == -1) {
- 		out_be32(tbipa, 0);
+ config MPC8540_ADS
+ 	bool "Freescale MPC8540 ADS"
+ 	select DEFAULT_UIMAGE
+@@ -171,10 +173,13 @@ config SBC8560
+ 	help
+ 	  This option enables support for the Wind River SBC8560 board
  
-@@ -403,13 +410,6 @@ static int fsl_pq_mdio_probe(struct platform_device *ofdev)
++endif # PPC_E500_V1_V2
++
++if PPC_E500MC
++
+ config P2041_RDB
+ 	bool "Freescale P2041 RDB"
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -187,7 +192,6 @@ config P2041_RDB
+ config P3041_DS
+ 	bool "Freescale P3041 DS"
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -200,7 +204,6 @@ config P3041_DS
+ config P3060_QDS
+ 	bool "Freescale P3060 QDS"
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+@@ -212,7 +215,6 @@ config P3060_QDS
+ config P4080_DS
+ 	bool "Freescale P4080 DS"
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -222,13 +224,15 @@ config P4080_DS
+ 	help
+ 	  This option enables support for the P4080 DS board
  
- 	out_be32(tbipa, tbiaddr);
++endif # PPC_E500MC
++
+ endif # PPC32
  
--	err = of_mdiobus_register(new_bus, np);
--	if (err) {
--		printk (KERN_ERR "%s: Cannot register as MDIO bus\n",
--				new_bus->name);
--		goto err_free_irqs;
--	}
--
- 	return 0;
+ config P5020_DS
+ 	bool "Freescale P5020 DS"
++	depends on PPC_E500MC
+ 	select DEFAULT_UIMAGE
+ 	select E500
+-	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index fbecae0..e08d1e3 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -10,13 +10,13 @@ choice
+ 	prompt "Processor Type"
+ 	depends on PPC32
+ 	help
+-	  There are five families of 32 bit PowerPC chips supported.
++	  There are six families of 32 bit PowerPC chips supported.
+ 	  The most common ones are the desktop and server CPUs (601, 603,
+ 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
+ 	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
+-	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
+-	  (85xx) each form a family of their own that is not compatible
+-	  with the others.
++	  The other embedded parts, namely 4xx, 8xx, e200 (55xx), e500
++	  (85xx), and e500mc each form a family of their own that is not
++	  compatible with the others.
  
- err_free_irqs:
+ 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
+ 
+@@ -24,10 +24,15 @@ config PPC_BOOK3S_32
+ 	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
+ 	select PPC_FPU
+ 
+-config PPC_85xx
+-	bool "Freescale 85xx"
++config PPC_E500_V1_V2
++	bool "Freescale e500v1/e500v2"
++	select PPC_85xx
+ 	select E500
+ 
++config PPC_E500MC
++	bool "Freescale e500mc/e5500"
++	select PPC_85xx
++
+ config PPC_8xx
+ 	bool "Freescale 8xx"
+ 	select FSL_SOC
+@@ -129,15 +134,13 @@ config TUNE_CELL
+ config 8xx
+ 	bool
+ 
+-config E500
++config PPC_85xx
++	bool
+ 	select FSL_EMB_PERFMON
+ 	select PPC_FSL_BOOK3E
+-	bool
+ 
+-config PPC_E500MC
+-	bool "e500mc Support"
+-	select PPC_FPU
+-	depends on E500
++config E500
++	bool
+ 
+ config PPC_FPU
+ 	bool
 -- 
 1.7.7.1
