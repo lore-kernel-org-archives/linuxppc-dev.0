@@ -1,32 +1,23 @@
 Return-Path: <B07421@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 63BFA1007D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 03:54:59 +1100 (EST)
-Received: from mail69-ch1 (localhost.localdomain [127.0.0.1])	by
- mail69-ch1-R.bigfish.com (Postfix) with ESMTP id 10D0B1770259	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 16:54:44 +0000 (UTC)
-Received: from CH1EHSMHS011.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.244])	by mail69-ch1.bigfish.com (Postfix) with ESMTP id
- E439521804C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 16:54:13 +0000 (UTC)
-Message-ID: <4EB95EBC.8010808@freescale.com>
-Date: Tue, 8 Nov 2011 10:54:20 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 883511007D3
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 03:59:55 +1100 (EST)
+Message-ID: <4EB96002.5030605@freescale.com>
+Date: Tue, 8 Nov 2011 10:59:46 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Zang Roy-R61911 <r61911@freescale.com>
-Subject: Re: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive
- for PCIe
-References: <1320654778-3294-1-git-send-email-tie-fei.zang@freescale.com>
- <4EB826F1.50402@freescale.com>
- <2239AC579C7D3646A720227A37E0268120D5C5@039-SN1MPN1-004.039d.mgd.msft.net>
-In-Reply-To: <2239AC579C7D3646A720227A37E0268120D5C5@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: <ananth@in.ibm.com>
+Subject: Re: [PATCH] powerpc: Export PIR data through sysfs
+References: <20111107044750.GB4361@in.ibm.com>
+ <4EB812E8.9090107@freescale.com> <20111108065811.GA9109@in.ibm.com>
+In-Reply-To: <20111108065811.GA9109@in.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+ mahesh@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,44 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/07/2011 11:51 PM, Zang Roy-R61911 wrote:
+On 11/08/2011 12:58 AM, Ananth N Mavinakayanahalli wrote:
+> On Mon, Nov 07, 2011 at 11:18:32AM -0600, Scott Wood wrote:
+>> What use does userspace have for this?  If you want to return the
+>> currently executing CPU (which unless you're pinned could change as soon
+>> as the value is read...), why not just return smp_processor_id() or
+>> hard_smp_processor_id()?
 > 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Tuesday, November 08, 2011 2:44 AM
->> To: Zang Roy-R61911
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Subject: Re: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive for
->> PCIe
->>
->> On 11/07/2011 02:32 AM, Roy Zang wrote:
->>> P1023 external IRQ[4:6, 11] do not pin out, but the interrupts are
->>> shared with PCIe controller.
->>> The silicon internally ties the interrupts to L, so change the
->>> IRQ[4:6,11] to high level sensitive for PCIe.
->>
->> Some extra commentary on why this works would be nice.
-> I do not know what kind of extra commentary you request. 
+> Its not just the current cpu. Decoding PIR can tell you the core id,
+> thread id in case of SMT, and this information can be used by userspace
+> apps to set affinities, etc.
 
-Just a note that there's magic to allow the PCIe block to output these
-interrupts as either active-high or active-low, depending on how they're
-configured at the mpic.
+Wouldn't it make more sense to expose the thread to core mappings in a
+general way, not tied to hardware or what thread we're currently running on?
 
-> IRQ 4,5,6, 11 are internally tie to low by silicon. To use these interrupts for PCIe, they need to set high level sensitive.
-> It is clear enough for this patch.
+What's the use case for knowing this information only about the current
+thread (or rather the state the current thread was in a few moments ago)?
 
-It's odd enough that I felt the need to go reading through the docs to
-see why such a thing would work at all.
+> +#if defined(CONFIG_SMP) && defined(SPRN_PIR)
+> +SYSFS_PMCSETUP(pir, SPRN_PIR);
+> +static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
+> +#endif
 
->> The manual says:
->>
->>> If a PCI Express INTx interrupt is being used, then the PIC must be configured
->> so that external interrupts
->>> are level-sensitive (EIVPRn[S] = 1).
-> That is true for all FSL powerpc silicon with PCIe controller beside P1023.
+This only helps on architectures such as 8xx where you can't build as
+SMP -- and I don't think #ifdef SPRN_PIR excludes any builds.
 
-Sure, my point was more that it didn't say anything there about how to
-configure EIVPRn[P].
+It doesn't help on chips like 750 or e300 where you can run a normal 6xx
+SMP build, you just won't have multiple CPUs, and thus won't run things
+like the secondary entry code.
 
 -Scott
