@@ -1,29 +1,34 @@
-Return-Path: <r61911@freescale.com>
-Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
- [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 2D4121007D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 16:51:23 +1100 (EST)
-Received: from mail92-db3 (localhost.localdomain [127.0.0.1])	by
- mail92-db3-R.bigfish.com (Postfix) with ESMTP id EC61C1A30261	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 05:51:06 +0000 (UTC)
-Received: from DB3EHSMHS013.bigfish.com (unknown [10.3.81.248])	by
- mail92-db3.bigfish.com (Postfix) with ESMTP id AD63D14A0054	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 05:51:06 +0000 (UTC)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive
- for PCIe
-Date: Tue, 8 Nov 2011 05:51:13 +0000
-Message-ID: <2239AC579C7D3646A720227A37E0268120D5C5@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1320654778-3294-1-git-send-email-tie-fei.zang@freescale.com>
- <4EB826F1.50402@freescale.com>
-In-Reply-To: <4EB826F1.50402@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <ananth@in.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 8EB541007D4
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2011 17:58:32 +1100 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
+ Tue, 8 Nov 2011 01:58:28 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA86vw3R219778
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Nov 2011 01:57:59 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA86vw9v002436
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Nov 2011 04:57:58 -0200
+Date: Tue, 8 Nov 2011 12:28:11 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: Export PIR data through sysfs
+Message-ID: <20111108065811.GA9109@in.ibm.com>
+References: <20111107044750.GB4361@in.ibm.com> <4EB812E8.9090107@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4EB812E8.9090107@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+ mahesh@linux.vnet.ibm.com
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,46 +38,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgTm92ZW1iZXIgMDgsIDIwMTEgMjo0NCBBTQ0KPiBUbzogWmFu
-ZyBSb3ktUjYxOTExDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJq
-ZWN0OiBSZTogW1BBVENIXSBwb3dlcnBjL3AxMDIzOiBzZXQgSVJRWzQ6NiwgMTFdIHRvIGhpZ2gg
-bGV2ZWwgc2Vuc2l0aXZlIGZvcg0KPiBQQ0llDQo+IA0KPiBPbiAxMS8wNy8yMDExIDAyOjMyIEFN
-LCBSb3kgWmFuZyB3cm90ZToNCj4gPiBQMTAyMyBleHRlcm5hbCBJUlFbNDo2LCAxMV0gZG8gbm90
-IHBpbiBvdXQsIGJ1dCB0aGUgaW50ZXJydXB0cyBhcmUNCj4gPiBzaGFyZWQgd2l0aCBQQ0llIGNv
-bnRyb2xsZXIuDQo+ID4gVGhlIHNpbGljb24gaW50ZXJuYWxseSB0aWVzIHRoZSBpbnRlcnJ1cHRz
-IHRvIEwsIHNvIGNoYW5nZSB0aGUNCj4gPiBJUlFbNDo2LDExXSB0byBoaWdoIGxldmVsIHNlbnNp
-dGl2ZSBmb3IgUENJZS4NCj4gDQo+IFNvbWUgZXh0cmEgY29tbWVudGFyeSBvbiB3aHkgdGhpcyB3
-b3JrcyB3b3VsZCBiZSBuaWNlLg0KSSBkbyBub3Qga25vdyB3aGF0IGtpbmQgb2YgZXh0cmEgY29t
-bWVudGFyeSB5b3UgcmVxdWVzdC4gDQpJUlEgNCw1LDYsIDExIGFyZSBpbnRlcm5hbGx5IHRpZSB0
-byBsb3cgYnkgc2lsaWNvbi4gVG8gdXNlIHRoZXNlIGludGVycnVwdHMgZm9yIFBDSWUsIHRoZXkg
-bmVlZCB0byBzZXQgaGlnaCBsZXZlbCBzZW5zaXRpdmUuDQpJdCBpcyBjbGVhciBlbm91Z2ggZm9y
-IHRoaXMgcGF0Y2guDQoNCj4gDQo+IFRoZSBtYW51YWwgc2F5czoNCj4gDQo+ID4gSWYgYSBQQ0kg
-RXhwcmVzcyBJTlR4IGludGVycnVwdCBpcyBiZWluZyB1c2VkLCB0aGVuIHRoZSBQSUMgbXVzdCBi
-ZSBjb25maWd1cmVkDQo+IHNvIHRoYXQgZXh0ZXJuYWwgaW50ZXJydXB0cw0KPiA+IGFyZSBsZXZl
-bC1zZW5zaXRpdmUgKEVJVlBSbltTXSA9IDEpLg0KVGhhdCBpcyB0cnVlIGZvciBhbGwgRlNMIHBv
-d2VycGMgc2lsaWNvbiB3aXRoIFBDSWUgY29udHJvbGxlciBiZXNpZGUgUDEwMjMuDQoNCj4gDQo+
-IGFuZA0KPiANCj4gPiBJbiBnZW5lcmFsLCB0aGVzZSBzaWduYWxzIHNob3VsZCBiZSBjb25zaWRl
-cmVkIG11dHVhbGx5IGV4Y2x1c2l2ZS4gSWYgYSBQQ0kNCj4gRXhwcmVzcyBJTlR4IHNpZ25hbCBp
-cyBiZWluZw0KPiA+IHVzZWQsIHRoZSBQSUMgbXVzdCBiZSBjb25maWd1cmVkIHNvIHRoYXQgZXh0
-ZXJuYWwgaW50ZXJydXB0cyBhcmUgbGV2ZWwNCj4gc2Vuc2l0aXZlIChFSVZQUm5bU10gPSAxKS4g
-SWYgYW4gSVJRbg0KPiA+IHNpZ25hbCBpcyBiZWluZyB1c2VkIGFzIGVkZ2UtdHJpZ2dlcmVkIChF
-SVZQUm5bU10gPSAwKSwgdGhlIHN5c3RlbSBtdXN0IG5vdA0KPiBhbGxvdyBpbmJvdW5kIFBDSSBF
-eHByZXNzDQo+ID4gSU5UeCB0cmFuc2FjdGlvbnMuDQo+ID4NCj4gPiBOb3RlIHRoYXQgaXQgaXMg
-cG9zc2libGUgdG8gc2hhcmUgSVJRbiBhbmQgSU5UeCBpZiB0aGUgZXh0ZXJuYWwgaW50ZXJydXB0
-IGlzDQo+IGxldmVsIHNlbnNpdGl2ZTsgaG93ZXZlciwgaWYgYW4NCj4gPiBpbnRlcnJ1cHQgb2Nj
-dXJzLCB0aGUgaW50ZXJydXB0IHNlcnZpY2Ugcm91dGluZSBtdXN0IHBvbGwgYm90aCB0aGUgZXh0
-ZXJuYWwNCj4gc291cmNlcyBjb25uZWN0ZWQgdG8gdGhlIElSUW4NCj4gPiBpbnB1dCBhbmQgdGhl
-IFBDSSBFeHByZXNzIElOVHggc291cmNlcyB0byBkZXRlcm1pbmUgZnJvbSB3aGljaCBwYXRoIHRo
-ZQ0KPiBleHRlcm5hbCBpbnRlcnJ1cHQgY2FtZS4gSW4gYW55DQo+ID4gY2FzZSwgSVJRbiBzaG91
-bGQgYmUgcHVsbGVkIHRvIHRoZSBuZWdhdGVkIHN0YXRlIGFzIGRldGVybWluZWQgYnkgdGhlDQo+
-IGFzc29jaWF0ZWQgcG9sYXJpdHkgc2V0dGluZyBpbg0KPiA+IEVJVlBSbltQXS4NCj4gDQo+IFNv
-IGl0IGxvb2tzIGxpa2UgdGhlcmUncyBzb21lIG1hZ2ljIHdoZXJlYnkgdGhlIGNvbmZpZ3VyYXRp
-b24gb2YgdGhlDQo+IE1QSUMgYWZmZWN0cyBob3cgdGhlIFBDSWUgZmVlZHMgdGhlIGludGVycnVw
-dCBpbi4NCj4gDQo+IElzIHRoZXJlIChvciB3aWxsIHRoZXJlIGJlKSBhbiBlcnJhdHVtLCBvciBh
-bnl0aGluZyBpbiB0aGUgbWFudWFsDQo+IGJlc2lkZXMgbm90IGJlaW5nIGRvY3VtZW50ZWQgYXMg
-ZXh0ZXJuYWwgaW50ZXJydXB0cywgYWJvdXQgdGhlc2UNCj4gc3BlY2lmaWMgaW50ZXJydXB0cyBi
-ZWluZyB0aWVkIGxvdyBpbiBzaWxpY29uIG9yIG5lZWRpbmcgdG8gYmUgYWN0aXZlIGhpZ2g/DQpJ
-IGRvIG5vdCB0aGluayB0aGVyZSBpcyAod2lsbCkgYW4gZXJyYXR1bS4gQnV0IEkgYWdyZWUgdGhl
-IG1hbnVhbCBuZWVkcyB0byBkb2N1bWVudCB0aGlzIG1vcmUgY2xlYXIuDQp0aGFua3MuDQpSb3kN
-Cg0K
+On Mon, Nov 07, 2011 at 11:18:32AM -0600, Scott Wood wrote:
+> On 11/06/2011 10:47 PM, Ananth N Mavinakayanahalli wrote:
+> > The Processor Identification Register (PIR) on powerpc provides
+> > information to decode the processor identification tag. Decoding
+> > this information platform specfic.
+> > 
+> > Export PIR data via sysfs.
+> > 
+> > (Powerpc manuals state this register is 'optional'. I am not sure
+> > though if there are any Linux supported powerpc platforms that
+> > don't have it. Code in the kernel referencing PIR isn't under
+> > a platform ifdef).
+> 
+> Those references are in platform-specific files, under #ifdef
+> CONFIG_SMP, often in areas that would only be executed in the presence
+> of multiple CPUs (e.g. secondary release).  The reference in misc_32.S
+> is inside #ifdef CONFIG_KEXEC and is fairly recent -- it may not have
+> been tested on these systems.
+> 
+> I don't see PIR (other than in the acronym definition section) in
+> manuals for UP-only cores such as e300, 8xx, and 750.
+
+I saw that SPRN_PIR is defined for booke in reg_booke.h but wasn't sure
+if it is applicable to all platforms. Thanks for the clarification.
+
+> What use does userspace have for this?  If you want to return the
+> currently executing CPU (which unless you're pinned could change as soon
+> as the value is read...), why not just return smp_processor_id() or
+> hard_smp_processor_id()?
+
+Its not just the current cpu. Decoding PIR can tell you the core id,
+thread id in case of SMT, and this information can be used by userspace
+apps to set affinities, etc.
+
+How does the following look?
+
+Ananth
+---
+
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+
+The Processor Identification Register (PIR) on powerpc provides
+information to decode the processor identification tag. Decoding
+this information platform specfic.
+
+Export PIR data via sysfs.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ arch/powerpc/kernel/sysfs.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+Index: linux-3.1/arch/powerpc/kernel/sysfs.c
+===================================================================
+--- linux-3.1.orig/arch/powerpc/kernel/sysfs.c
++++ linux-3.1/arch/powerpc/kernel/sysfs.c
+@@ -330,6 +330,11 @@ static struct sysdev_attribute pa6t_attr
+ #endif /* HAS_PPC_PMC_PA6T */
+ #endif /* HAS_PPC_PMC_CLASSIC */
+ 
++#if defined(CONFIG_SMP) && defined(SPRN_PIR)
++SYSFS_PMCSETUP(pir, SPRN_PIR);
++static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
++#endif
++
+ static void __cpuinit register_cpu_online(unsigned int cpu)
+ {
+ 	struct cpu *c = &per_cpu(cpu_devices, cpu);
+@@ -394,6 +399,10 @@ static void __cpuinit register_cpu_onlin
+ 		sysdev_create_file(s, &attr_dscr);
+ #endif /* CONFIG_PPC64 */
+ 
++#if defined(CONFIG_SMP) && defined(SPRN_PIR)
++	sysdev_create_file(s, &attr_pir);
++#endif
++
+ 	cacheinfo_cpu_online(cpu);
+ }
+ 
+@@ -464,6 +473,10 @@ static void unregister_cpu_online(unsign
+ 		sysdev_remove_file(s, &attr_dscr);
+ #endif /* CONFIG_PPC64 */
+ 
++#if defined(CONFIG_SMP) && defined(SPRN_PIR)
++	sysdev_remove_file(s, &attr_pir);
++#endif
++
+ 	cacheinfo_cpu_offline(cpu);
+ }
+ 
