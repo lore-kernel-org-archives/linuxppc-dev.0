@@ -1,25 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 216B3B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 00:42:20 +1100 (EST)
-Subject: Re: [PATCH 7/7] gianfar: add support for wake-on-packet
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=windows-1252
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <3F607A5180246847A760FD34122A1E052BC9C7@039-SN1MPN1-004.039d.mgd.msft.net>
-Date: Tue, 8 Nov 2011 07:42:09 -0600
-Message-Id: <5D4A38A7-B662-40CC-97AB-9E2A64531776@kernel.crashing.org>
-References: <1320410403-14639-1-git-send-email-chenhui.zhao@freescale.com>
- <4EB45515.6060405@freescale.com>
- <3F607A5180246847A760FD34122A1E052BC9C7@039-SN1MPN1-004.039d.mgd.msft.net>
-To: Li Yang-R58472 <r58472@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>
+Return-Path: <will.deacon@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 5A9CB1007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 01:58:40 +1100 (EST)
+From: Will Deacon <will.deacon@arm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: signal32: fix sigset_t conversion when copying to
+ user
+Date: Tue,  8 Nov 2011 14:51:19 +0000
+Message-Id: <1320763879-12466-1-git-send-email-will.deacon@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On PPC64, put_sigset_t converts a sigset_t to a compat_sigset_t
+before copying it to userspace. There is a typo in the case that
+we have 4 words to copy, meaning that we corrupt the compat_sigset_t.
 
-On Nov 8, 2011, at 5:20 AM, Li Yang-R58472 wrote:
+It appears that _NSIG_WORDS can't be greater than 2 at the moment
+so this code is probably always optimised away anyway.
 
->=20
->=20
->> -----Original Message-----
->> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@lists.ozlabs.org
->> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@lists.ozlabs.org] =
-On
->> Behalf Of Scott Wood
->> Sent: Saturday, November 05, 2011 5:12 AM
->> To: Zhao Chenhui-B35336
->> Cc: netdev@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Fleming =
-Andy-
->> AFLEMING
->> Subject: Re: [PATCH 7/7] gianfar: add support for wake-on-packet
->>=20
->> On 11/04/2011 07:40 AM, Zhao Chenhui wrote:
->>> diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
->> b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
->>> index 2c6be03..543e36c 100644
->>> --- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
->>> +++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
->>> @@ -56,6 +56,9 @@ Properties:
->>>     hardware.
->>>   - fsl,magic-packet : If present, indicates that the hardware =
-supports
->>>     waking up via magic packet.
->>> +  - fsl,wake-on-filer : If present, indicates that the hardware
->> supports
->>> +    waking up via arp request to local ip address or unicast packet =
-to
->>> +    local mac address.
->>=20
->> Is there any way to determine this at runtime via the device's =
-registers?
->>=20
->> I think TSEC_ID2[TSEC_CFG] can be used.  The manual describes it
->> awkwardly, but it looks like 0x20 is the bit for the filer.
->=20
-> That bit only defines the filer feature but not wakeup on it.  Another =
-solution is to get the capability from the fsl_pmc driver, but will make =
-the driver a lot more complex.
+Signed-off-by: Will Deacon <will.deacon@arm.com>
+---
+ arch/powerpc/kernel/signal_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I don't believe there is a way to know this from the controller itself.  =
-We have to use device tree for it.
-
-- k=
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 78b76dc..836a5a1 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -97,7 +97,7 @@ static inline int put_sigset_t(compat_sigset_t __user *uset, sigset_t *set)
+ 	compat_sigset_t	cset;
+ 
+ 	switch (_NSIG_WORDS) {
+-	case 4: cset.sig[5] = set->sig[3] & 0xffffffffull;
++	case 4: cset.sig[6] = set->sig[3] & 0xffffffffull;
+ 		cset.sig[7] = set->sig[3] >> 32;
+ 	case 3: cset.sig[4] = set->sig[2] & 0xffffffffull;
+ 		cset.sig[5] = set->sig[2] >> 32;
+-- 
+1.7.4.1
