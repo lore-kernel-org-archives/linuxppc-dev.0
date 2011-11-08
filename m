@@ -1,26 +1,27 @@
 Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE007.bigfish.com (mail-va3.bigfish.com [216.32.180.10])
+Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
+ [213.199.154.142])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id CB3EC1007D4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 07:41:55 +1100 (EST)
-Received: from mail29-va3 (localhost [127.0.0.1])	by mail29-va3-R.bigfish.com
- (Postfix) with ESMTP id B178A2A0243	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Nov 2011 20:41:20 +0000 (UTC)
-Received: from VA3EHSMHS003.bigfish.com (unknown [10.7.14.243])	by
- mail29-va3.bigfish.com (Postfix) with ESMTP id 70BAE80043	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 20:39:45 +0000 (UTC)
-Message-ID: <4EB9939E.8070800@freescale.com>
-Date: Tue, 8 Nov 2011 14:39:58 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 3201F1007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 07:58:27 +1100 (EST)
+Received: from mail19-db3 (localhost.localdomain [127.0.0.1])	by
+ mail19-db3-R.bigfish.com (Postfix) with ESMTP id C95D873049E	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 20:58:11 +0000 (UTC)
+Received: from DB3EHSMHS014.bigfish.com (unknown [10.3.81.253])	by
+ mail19-db3.bigfish.com (Postfix) with ESMTP id 022381978051	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2011 20:57:37 +0000 (UTC)
+Message-ID: <4EB997C5.60105@freescale.com>
+Date: Tue, 8 Nov 2011 14:57:41 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH 5/7] fsl_pmc: update device bindings
-References: <1320410207-14537-1-git-send-email-chenhui.zhao@freescale.com>
- <4EB4456F.9020005@freescale.com>
- <3F607A5180246847A760FD34122A1E052BC964@039-SN1MPN1-004.039d.mgd.msft.net>
-In-Reply-To: <3F607A5180246847A760FD34122A1E052BC964@039-SN1MPN1-004.039d.mgd.msft.net>
+Subject: Re: [PATCH 2/7] powerpc/85xx: add HOTPLUG_CPU support
+References: <1320409889-14408-1-git-send-email-chenhui.zhao@freescale.com>
+ <4EB4305C.6030303@freescale.com>
+ <3F607A5180246847A760FD34122A1E052BC6F1@039-SN1MPN1-004.039d.mgd.msft.net>
+In-Reply-To: <3F607A5180246847A760FD34122A1E052BC6F1@039-SN1MPN1-004.039d.mgd.msft.net>
 Content-Type: text/plain; charset="windows-1252"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -34,79 +35,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/08/2011 04:56 AM, Li Yang-R58472 wrote:
->>> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
->> b/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
->>> index 07256b7..d84b4f8 100644
->>> --- a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
->>> +++ b/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
->>> @@ -9,22 +9,27 @@ Properties:
+On 11/08/2011 04:05 AM, Li Yang-R58472 wrote:
+>> Subject: Re: [PATCH 2/7] powerpc/85xx: add HOTPLUG_CPU support
+>>
+>> On 11/04/2011 07:31 AM, Zhao Chenhui wrote:
+>>> +static int is_corenet;
+>>> +static void __cpuinit smp_85xx_setup_cpu(int cpu_nr);
+>>> +
+>>> +#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
+>>
+>> Why PPC32?
+> 
+> Not sure if it is the same for e5500.  E5500 support will be verified later.
+
+It's better to have 64-bit silently do nothing here?
+
+>>> +	flush_disable_L1();
+>>
+>> You'll also need to take down L2 on e500mc.
+> 
+> Right.  E500mc support is beyond this patch series.  We will work on it after the e500v2 support is finalized.
+
+I saw some support with "is_corenet"...  If we don't support e500mc,
+make sure the code doesn't try to run on e500mc.
+
+This isn't an e500v2-only BSP you're putting the code into. :-)
+
+>>> +	tmp = 0;
+>>> +	if (cpu_has_feature(CPU_FTR_CAN_NAP))
+>>> +		tmp = HID0_NAP;
+>>> +	else if (cpu_has_feature(CPU_FTR_CAN_DOZE))
+>>> +		tmp = HID0_DOZE;
+>>
+>> Those FTR bits are for what we can do in idle, and can be cleared if the
+>> user sets CONFIG_BDI_SWITCH.
+> 
+> It is powersave_nap variable shows what we can do in idle.
+
+No, that shows what the user wants to do in idle.
+
+> I think it's correct to use the CPU_FTR_CAN_* macro as CPU capability.
+
+This is 85xx-specific code.  We always can, and want to, nap here
+(though the way we enter nap will be different on e500mc and up) -- even
+if it's broken to use it for idle (such as on p4080, which would miss
+doorbells as wake events).
+
+>>> +static void __cpuinit smp_85xx_reset_core(int nr)
+>>> +{
+>>> +	__iomem u32 *vaddr, *pir_vaddr;
+>>> +	u32 val, cpu_mask;
+>>> +
+>>> +	/* If CoreNet platform, use BRR as release register. */
+>>> +	if (is_corenet) {
+>>> +		cpu_mask = 1 << nr;
+>>> +		vaddr = ioremap(get_immrbase() + MPC85xx_BRR_OFF, 4);
+>>> +	} else {
+>>> +		cpu_mask = 1 << (24 + nr);
+>>> +		vaddr = ioremap(get_immrbase() + MPC85xx_ECM_EEBPCR_OFF, 4);
+>>> +	}
+>>
+>> Please use the device tree node, not get_immrbase().
+> 
+> The get_immrbase() implementation uses the device tree node.
+
+I mean the guts node.  get_immrbase() should be avoided where possible.
+
+Also, some people might care about latency to enter/exit deep sleep.
+Searching through the device tree at this point (rather than on init)
+slows that down.
+
+>>> +static int __cpuinit smp_85xx_map_bootpg(u32 page)
+>>> +{
+>>> +	__iomem u32 *bootpg_ptr;
+>>> +	u32 bptr;
+>>> +
+>>> +	/* Get the BPTR */
+>>> +	bootpg_ptr = ioremap(get_immrbase() + MPC85xx_BPTR_OFF, 4);
+>>> +
+>>> +	/* Set the BPTR to the secondary boot page */
+>>> +	bptr = MPC85xx_BPTR_EN | (page & MPC85xx_BPTR_BOOT_PAGE_MASK);
+>>> +	out_be32(bootpg_ptr, bptr);
+>>> +
+>>> +	iounmap(bootpg_ptr);
+>>> +	return 0;
+>>> +}
+>>
+>> Shouldn't the boot page already be set by U-Boot?
+> 
+> The register should be lost after a deep sleep.   Better to do it again.
+
+How can it be lost after a deep sleep if we're relying on it to hold our
+wakeup code?
+
+It's not "better to do it again" if we're making a bad assumption about
+the code and the table being in the same page.
+
+>>>  	local_irq_save(flags);
 >>>
->>>    "fsl,mpc8548-pmc" should be listed for any chip whose PMC is
->>>    compatible.  "fsl,mpc8536-pmc" should also be listed for any chip
->>> -  whose PMC is compatible, and implies deep-sleep capability.
->>> +  whose PMC is compatible, and implies deep-sleep capability and
->>> +  wake on user defined packet(wakeup on ARP).
+>>> -	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, nr);
+>>> +	out_be32(&epapr->pir, hw_cpu);
+>>>  #ifdef CONFIG_PPC32
+>>> -	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
+>>> +#ifdef CONFIG_HOTPLUG_CPU
+>>> +	if (system_state == SYSTEM_RUNNING) {
+>>> +		out_be32(&epapr->addr_l, 0);
+>>> +		smp_85xx_map_bootpg((u32)(*cpu_rel_addr >> PAGE_SHIFT));
 >>
->> Why does the PMC care?  This is an ethernet controller feature, the PMC
->> is just keeping the wakeup-relevant parts of the ethernet controller
->> alive (whatever they happen to be).
->>
->> Do we have any chips that have ethernet controller support for wake on
->> user-defined packet, but a sleep mode that doesn't let it be used?
+>> Why is this inside PPC32?
 > 
-> I think it is more a PMC feature cause Ethernet controller on many
-> SoCs have the filer feature, but only very limited SoCs can support
-> using it as a wake-up source.  The differences should be mostly in
-> the PM controller block.
+> Not tested on 64-bit yet.  Might require a different implementation on PPC64.
 
-Have you tried waking from sleep with it on those other SoCs?
+Please make a reasonable effort to do things in a way that works on
+both.  It shouldn't be a big deal to test that it doesn't break booting
+on p5020.
 
-> Also the wake on user-defined packet feature was never mentioned in the Ethernet controller part of UM.
-
-AFAICT all this "feature" is, is programming the Ethernet controller to
-filter out some packets that we don't want to wake us up, and then
-refraining from entering magic packet mode.  What PMC registers are
-programmed any differently for this?
-
-It's in the PM part of the manual because that's where they generally
-describe issues related to PM.  They describe magic packet there too.
-
-The set of devices which are still active during sleep is a different
-issue from the conditions on which a device will request a wake.
-
-I also don't trust our PM documentation very much.  It's ambiguous just
-what gets shut down in ordinary sleep mode.  E.g. the mpc8544 manual
-talks about "external interrupts", but in one place it looks like it
-means external to the SoC:
-
-> In sleep mode, all clocks internal to the e500 core are turned off, including the timer facilities clock. All
-> I/O interfaces in the device logic are also shut down. Only the clocks to the MPC8544E PIC are still
-> running so that an external interrupt can wake up the device.
-
-But the note immediately below that seems to imply they're talking about
-external to the core:
-
-> Only external interrupts can wake the MPC8544E from sleep mode. Internal
-> interrupt sources like the core interval timer or watchdog timer depend on
-> an active clock for their operation and these are disabled in sleep mode.
-
-
-
->> Normally that shouldn't matter, but we already an unused binding for
->> this. :-)
+>>>  	if (!ioremappable)
+>>> -		flush_dcache_range((ulong)bptr_vaddr,
+>>> -				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
+>>> +		flush_dcache_range((ulong)epapr,
+>>> +				(ulong)epapr + sizeof(struct epapr_entry));
 >>
->> Please provide rationale for doing it this way.  Ideally it should
->> probably use whatever http://devicetree.org/ClockBindings ends up being.
+>> We don't wait for the core to come up on 64-bit?
 > 
-> I have looked into that binding.  The binding was primarily defined for the Linux clock API which is not same as what we are doing here(set wakeup source).
-> If in the future the clock API also covers wakeup related features, we can change to use it.
+> Not sure about it.  But at least the normal boot up should be tested on P5020, right?
 
-While Linux APIs can serve as an inspiration, they're not the basis of
-device tree bindings.  The device tree is not Linux-specific, and should
-not change just because Linux changes, but rather should describe the
-hardware.  We want to get this right the first time.
+Well, that's a special case in that it only has one secondary. :-)
 
-What we are describing here is how a device's clock is connected to the PMC.
+Or we could be getting lucky with timing.  It's not a new issue with
+this patch, it just looks odd.
 
 -Scott
