@@ -1,14 +1,15 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH v3 2/3] hvc_init():  Enforce one-time initialization.
+Subject: Re: [PATCH v3 3/3] Use separate struct console structure for each
+ hvc_console.
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Miche Baker-Harvey <miche@google.com>
-In-Reply-To: <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
+In-Reply-To: <20111108214509.28884.98169.stgit@miche.sea.corp.google.com>
 References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
- <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
+ <20111108214509.28884.98169.stgit@miche.sea.corp.google.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature"; boundary="=-3wlTs2+aNijJKtMncx1A"
-Date: Wed, 09 Nov 2011 18:24:12 +1100
-Message-ID: <1320823452.9376.31.camel@concordia>
+ protocol="application/pgp-signature"; boundary="=-d4UMUQr8j6a6R6ANBKiZ"
+Date: Wed, 09 Nov 2011 19:05:12 +1100
+Message-ID: <1320825912.9376.72.camel@concordia>
 Mime-Version: 1.0
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
  Greg Kroah-Hartman <gregkh@suse.de>,
@@ -29,74 +30,101 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-3wlTs2+aNijJKtMncx1A
+--=-d4UMUQr8j6a6R6ANBKiZ
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Tue, 2011-11-08 at 13:45 -0800, Miche Baker-Harvey wrote:
-> hvc_init() must only be called once, and no thread should continue with h=
-vc_alloc()
-> until after initialization is complete.  The original code does not enfor=
-ce either
-> of these requirements.  A new mutex limits entry to hvc_init() to a singl=
-e thread,
-> and blocks all later comers until it has completed.
+> It is possible to make any virtio_console port be a console
+> by sending VIRITO_CONSOLE_CONSOLE_PORT.  But hvc_alloc was
+> using a single struct console hvc_console, which contains
+> both an index and flags which are per-port.
 >=20
-> This patch fixes multiple crash symptoms.
+> This adds a separate struct console for each virtio_console
+> that is CONSOLE_PORT.
 
 Hi Miche,
 
-A few nit-picky comments below ..
+I'm testing this on powerpc and unfortunately it's working a little _too
+well_. I end up with two struct consoles registered and so I get every
+line of output twice :)
 
-> @@ -84,6 +85,10 @@ static LIST_HEAD(hvc_structs);
->   * list traversal.
->   */
->  static DEFINE_SPINLOCK(hvc_structs_lock);
-> +/*
-> + * only one task does allocation at a time.
-> + */
-> +static DEFINE_MUTEX(hvc_ports_mutex);
+The problem is that we're registering two struct consoles. The first
+obviously is hvc_console, either in hvc_console_init(), or in my case
+from hvc_instantiate().
 
-The comment is wrong, isn't it? Only one task does _init_ at a time.
-Once the driver is initialised allocs can run concurrently.
+Then we register the allocated one in hvc_alloc(). But because they both
+point back to the same hardware you get duplicate output.
 
-So shouldn't it be called hvc_init_mutex ?
+We _do_ want to register a console early, in either/both
+hvc_console_init() and hvc_instantiate(), because we want to have
+console during boot prior to when hvc_alloc() gets called.
 
-> @@ -825,11 +830,15 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int =
-data,
->  	int i;
-> =20
->  	/* We wait until a driver actually comes along */
-> +	mutex_lock(&hvc_ports_mutex);
->  	if (!hvc_driver) {
->  		int err =3D hvc_init();
-> -		if (err)
-> +		if (err) {
-> +			mutex_unlock(&hvc_ports_mutex);
->  			return ERR_PTR(err);
-> +		}
->  	}
-> +	mutex_unlock(&hvc_ports_mutex);
-> =20
->  	hp =3D kzalloc(ALIGN(sizeof(*hp), sizeof(long)) + outbuf_size,
->  			GFP_KERNEL);
+I think maybe we should be checking in hvc_alloc() whether we already
+have hvc_console associated with the vtermno and if so we use
+hvc_console instead of allocating a new one.
 
-It'd be cleaner I think to do all the locking in hvc_init(). That's safe
-as long as you recheck !hvc_driver in hvc_init() with the lock held.
+Patch below to do that, and works for me, but it's a bit of a hack,
+there must be a better solution.
+
+Finally I'm not sure how your patch affects the code in hvc_poll() which
+checks hvc_console.index to do the SYSRQ hack.
 
 cheers
 
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index fff35da..b249195 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -815,13 +815,15 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int da=
+ta,
+        kref_init(&hp->kref);
+=20
+        INIT_WORK(&hp->tty_resize, hvc_set_winsz);
+-       /*
+-        * Make each console its own struct console.
+-        */
+-       cp =3D kmemdup(&hvc_console, sizeof(*cp), GFP_KERNEL);
+-       if (!cp) {
+-               kfree(hp);
+-               return ERR_PTR(-ENOMEM);
++
++       if (hvc_console.index >=3D 0 && vtermnos[hvc_console.index] =3D=3D =
+hp->vtermno)
++               cp =3D &hvc_console;
++       else {
++               cp =3D kmemdup(&hvc_console, sizeof(*cp), GFP_KERNEL);
++               if (!cp) {
++                       kfree(hp);
++                       return ERR_PTR(-ENOMEM);
++               }
+        }
+=20
+        hp->hvc_console =3D cp;
+@@ -850,7 +852,9 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data=
+,
+=20
+        list_add_tail(&(hp->next), &hvc_structs);
+        spin_unlock(&hvc_structs_lock);
+-       register_console(cp);
++
++       if (cp !=3D &hvc_console)
++               register_console(cp);
+=20
+        return hp;
+ }
 
---=-3wlTs2+aNijJKtMncx1A
+
+--=-d4UMUQr8j6a6R6ANBKiZ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAk66KpwACgkQdSjSd0sB4dKSVgCeMFezuF3zVrIQ9OJdHh8MukP2
-KtcAnRLc243qSYELFwz+KCQLEI9qqD9Y
-=l0OT
+iEYEABECAAYFAk66NDgACgkQdSjSd0sB4dJg5ACgjHqUujtNJ9SiPUAhWVHc6sv7
+Y5AAnRuekB5kaSUrzXaxayeTwFqR49UT
+=Ticb
 -----END PGP SIGNATURE-----
 
---=-3wlTs2+aNijJKtMncx1A--
+--=-d4UMUQr8j6a6R6ANBKiZ--
