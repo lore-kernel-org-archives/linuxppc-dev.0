@@ -1,34 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id B72F51007DB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 04:15:55 +1100 (EST)
-Received: from mail109-ch1 (localhost.localdomain [127.0.0.1])	by
- mail109-ch1-R.bigfish.com (Postfix) with ESMTP id D245A28007A	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 17:15:38 +0000 (UTC)
-Received: from CH1EHSMHS025.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.251])	by mail109-ch1.bigfish.com (Postfix) with ESMTP id
- 1EFBE9E0052	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 17:15:25
- +0000 (UTC)
-Date: Wed, 9 Nov 2011 11:15:33 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH 5/7] fsl_pmc: update device bindings
-Message-ID: <20111109171533.GA7982@schlenkerla.am.freescale.net>
-References: <1320410207-14537-1-git-send-email-chenhui.zhao@freescale.com>
- <4EB4456F.9020005@freescale.com>
- <3F607A5180246847A760FD34122A1E052BC964@039-SN1MPN1-004.039d.mgd.msft.net>
- <4EB9939E.8070800@freescale.com>
- <3F607A5180246847A760FD34122A1E052BD6F1@039-SN1MPN1-004.039d.mgd.msft.net>
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
+ by ozlabs.org (Postfix) with SMTP id 4139B1007DB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 05:02:45 +1100 (EST)
+Received: by mail-qw0-f43.google.com with SMTP id g1so1966198qab.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2011 10:02:42 -0800 (PST)
+From: Tirumala Marri <tmarri@apm.com>
+References: <1317954637-11802-1-git-send-email-tmarri@apm.com>
+ <CAHM4w1=OiZA4S4TBE_Hgx3yBptcWdtLu2iQiy17wb2=NaSjwZw@mail.gmail.com>
+In-Reply-To: <CAHM4w1=OiZA4S4TBE_Hgx3yBptcWdtLu2iQiy17wb2=NaSjwZw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <3F607A5180246847A760FD34122A1E052BD6F1@039-SN1MPN1-004.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Zhao Chenhui-B35336 <B35336@freescale.com>
+Date: Wed, 9 Nov 2011 10:02:41 -0800
+Message-ID: <dbe3a7c6582240de54396a033990a604@mail.gmail.com>
+Subject: RE: [PATCH v14 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core Interface
+ Layer (CIL)
+To: Pratyush Anand <pratyush.anand@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: greg@kroah.com, linux-usb@vger.kernel.org,
+ Mark Miesfeld <mmiesfeld@apm.com>, linuxppc-dev@lists.ozlabs.org,
+ Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,51 +27,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 09, 2011 at 04:59:16AM -0600, Li Yang-R58472 wrote:
-> >>> Do we have any chips that have ethernet controller support for wake
-> >>> on user-defined packet, but a sleep mode that doesn't let it be used?
-> >>
-> >> I think it is more a PMC feature cause Ethernet controller on many
-> >> SoCs have the filer feature, but only very limited SoCs can support
-> >> using it as a wake-up source.  The differences should be mostly in the
-> >> PM controller block.
-> >
-> >Have you tried waking from sleep with it on those other SoCs?
-> 
-> We have tried and it's not working.
-
-OK.
-
-> AFAIKT, the purpose of defining the clock binding is used to describe
-> the topology of clocks in a system.  And then used for runtime control
-> of enabling/disabling clocks or getting/changing clock frequencies.
+>-----Original Message-----
+>From: linuxppc-dev-bounces+tmarri=amcc.com@lists.ozlabs.org
+>[mailto:linuxppc-dev-bounces+tmarri=amcc.com@lists.ozlabs.org] On Behalf
+>Of Pratyush Anand
+>Sent: Thursday, October 20, 2011 2:12 AM
+>To: tmarri@apm.com
+>Cc: Mark Miesfeld; greg@kroah.com; linux-usb@vger.kernel.org; linuxppc-
+>dev@lists.ozlabs.org; Fushen Chen
+>Subject: Re: [PATCH v14 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
+>Interface Layer (CIL)
 >
-> But in this PM case, we just set the wakeup capability 
+>On Fri, Oct 7, 2011 at 8:00 AM,  <tmarri@apm.com> wrote:
+>> From: Tirumala Marri <tmarri@apm.com>
+>>
+>
+>[...]
+>
+>> + * Do core a soft reset of the core.  Be careful with this because it
+>> + * resets all the internal state machines of the core.
+>> + */
+>> +static void dwc_otg_core_reset(struct core_if *core_if)
+>> +{
+>> +       ulong global_regs = core_if->core_global_regs;
+>> +       u32 greset = 0;
+>> +       int count = 0;
+>> +
+>> +       /* Wait for AHB master IDLE state. */
+>> +       do {
+>> +               udelay(10);
+>> +               greset = dwc_reg_read(global_regs, DWC_GRSTCTL);
+>> +               if (++count > 100000) {
+>> +                       pr_warning("%s() HANG! AHB Idle
+>GRSTCTL=%0x\n",
+>> +                                  __func__, greset);
+>> +                       return;
+>> +               }
+>> +       } while (greset & DWC_RSTCTL_AHB_IDLE);
+>
+>As per sepcs:
+>Bit 31:  AHB Master Idle (AHBIdle): Indicates that the AHB Master State
+>Machine is in the IDLE condition.
+>So when this bit is 1 , AHB would be idle. So, what do you want here?
+>If AHB is idle, control wil return from above loop rather going ahead to
+>execute
+>this function.
 
-Where "wakeup capability" means deciding whether to turn off the clock
-during a low-power state.  The basic information you need from the device
-tree is the same -- a connection from here to there.
 
-> and provide little runtime control of the clocks for on-chip devices.
-
-My original intent for the binding you replaced was that it could be used
-for other clock management as well -- you could use it to describe
-DEVDISR or 83xx SCCR mappings as well.  It was when I sent that binding
-out that I recall being asked to use the clock binding.
-
-That said, Grant has recently said he's unhappy with the current state of
-the clock binding, so I'm not sure what the right thing to do here is.
-
->  And it doesn't get any benefit of using this binding.  If your concern
-> is the confusion with the already existing clock binding, we can remove
-> the clk in the name of the PM binding.
-
-My concern, besides unnecessary duplication of ways to express something,
-is a loss of generality.
-
-> If we are to use the clock binding, I think adding the CSB clock, DDR
-> clock, core clock, and etc with this binding is more appropriate.
-
-That would be another use of it, but one doesn't need to imply the other.
-
--Scott
+What we are trying to do is waiting for the idle before we reset the core.
+We want to make sure state machine is settle down and all the transactions
+Are finished before reset.
+>
+>> +               nptxsize =
+>> +                   DWC_RX_FIFO_START_ADDR_WR(nptxsize,
+>> +                                             params-
+>>dev_rx_fifo_size);
+>> +               dwc_reg_write(regs, DWC_GNPTXFSIZ, nptxsize);
+>> +
+>> +               ptxsize = DWC_RX_FIFO_START_ADDR_WR(ptxsize,
+>> +
+>(DWC_RX_FIFO_START_ADDR_RD
+>> +                                                    (nptxsize) +
+>> +
+>DWC_RX_FIFO_DEPTH_RD
+>> +                                                    (nptxsize)));
+>> +               for (i = 0;
+>> +                    i < DWC_HWCFG4_NUM_DEV_PERIO_IN_EP_RD(core_if-
+>>hwcfg4);
+>> +                    i++) {
+>
+>
+>Reading hwcfg4 will give you maximum nuber of fifos provided by
+>hardware.
+>But, a particular application (platform) may not need all those fifo.
+>Since, you
+>have a vriable fifo_num in your param list, so why not use that?
+>
+I am not sure about that. I think it should come from device tree
+Based on how board is going to be configured.
