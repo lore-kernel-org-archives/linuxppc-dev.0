@@ -1,36 +1,37 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E83451007D8
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 15:41:18 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
- Tue, 8 Nov 2011 21:41:15 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pA94fAK3310736
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Nov 2011 21:41:11 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pA94fA5W026786
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Nov 2011 21:41:10 -0700
-Date: Wed, 9 Nov 2011 10:11:24 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: Export PIR data through sysfs
-Message-ID: <20111109044124.GA10961@in.ibm.com>
-References: <20111107044750.GB4361@in.ibm.com>
- <4EB812E8.9090107@freescale.com> <20111108065811.GA9109@in.ibm.com>
- <4EB96002.5030605@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4EB96002.5030605@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
- mahesh@linux.vnet.ibm.com
-Reply-To: ananth@in.ibm.com
+ (Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 3346CB6F71
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 17:33:25 +1100 (EST)
+Received: from /spool/local by e28smtp09.in.ibm.com with XMail ESMTP
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Wed, 9 Nov 2011 12:03:14 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA96X7Il2543818
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2011 12:03:08 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA96X6bY008978
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2011 17:33:07 +1100
+Date: Wed, 9 Nov 2011 12:03:03 +0530
+From: Suzuki Poulose <suzuki@in.ibm.com>
+To: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/5] [ppc] Process dynamic relocations for kernel
+Message-ID: <20111109120303.51ac3b1b@suzukikp.in.ibm.com>
+In-Reply-To: <1320769145.5273.26.camel@treble>
+References: <20111025114829.8183.1725.stgit@suzukikp.in.ibm.com>
+ <20111025115354.8183.48237.stgit@suzukikp.in.ibm.com>
+ <1320276969.3309.3.camel@treble> <4EB3A40C.1070802@in.ibm.com>
+ <1320678819.2750.15.camel@treble> <4EB8D628.2090304@in.ibm.com>
+ <1320769145.5273.26.camel@treble>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Nathan Miller <nathanm2@us.ibm.com>, Josh Poimboeuf <jpoimboe@us.ibm.com>,
+ Dave Hansen <dave@linux.vnet.ibm.com>, Alan Modra <amodra@au1.ibm.com>,
+ Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,47 +41,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 08, 2011 at 10:59:46AM -0600, Scott Wood wrote:
-> On 11/08/2011 12:58 AM, Ananth N Mavinakayanahalli wrote:
-> > On Mon, Nov 07, 2011 at 11:18:32AM -0600, Scott Wood wrote:
-> >> What use does userspace have for this?  If you want to return the
-> >> currently executing CPU (which unless you're pinned could change as soon
-> >> as the value is read...), why not just return smp_processor_id() or
-> >> hard_smp_processor_id()?
+On Tue, 08 Nov 2011 10:19:05 -0600
+Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com> wrote:
+
+> On Tue, 2011-11-08 at 12:41 +0530, Suzuki Poulose wrote:
+> > What I was suggesting is, instead of flushing the cache in
+> > relocate(), lets do it like:
 > > 
-> > Its not just the current cpu. Decoding PIR can tell you the core id,
-> > thread id in case of SMT, and this information can be used by userspace
-> > apps to set affinities, etc.
+> > for e.g, on 440x, (in head_44x.S :)
+> > 
+> > #ifdef CONFIG_RELOCATABLE
+> > 	...
+> > 	bl relocate
+> > 
+> > 	#Flush the d-cache and invalidate the i-cache here
+> > #endif
+> > 
+> > 
+> > This would let the different platforms do the the cache
+> > invalidation in their own way.
+> > 
+> > Btw, I didn't find an instruction to flush the entire d-cache in
+> > PPC440 manual. We have instructions to flush only a block
+> > corresponding to an address.
+> > 
+> > However, we have 'iccci' which would invalidate the entire i-cache
+> > which, which I think is better than 80,000 i-cache invalidates.
 > 
-> Wouldn't it make more sense to expose the thread to core mappings in a
-> general way, not tied to hardware or what thread we're currently running on?
-
-AFAIK, the information encoding in PIR is platform dependent. There is
-no general way to expose this information unless you want have a
-per-platform ifdef. Even then, I am not sure if that information will
-generally be available or provided.
-
-> What's the use case for knowing this information only about the current
-> thread (or rather the state the current thread was in a few moments ago)?
-
-Its not information about the thread but about the cpu. Unless you have
-a shared LPAR environment, the data will be consistent and can be used
-by applications with knowledge of the platform.
-
-> > +#if defined(CONFIG_SMP) && defined(SPRN_PIR)
-> > +SYSFS_PMCSETUP(pir, SPRN_PIR);
-> > +static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
-> > +#endif
+> In misc_32.S there are already some platform-independent cache
+> management functions.  If we use those, then relocate() could simply
+> call them.  Then the different platforms calling relocate() wouldn't
+> have to worry about flushing/invalidating caches.
 > 
-> This only helps on architectures such as 8xx where you can't build as
-> SMP -- and I don't think #ifdef SPRN_PIR excludes any builds.
+> For example, there's a clean_dcache_range() function.  Given any range
+> twice the size of the d-cache, it should flush the entire d-cache.
+> But the only drawback is that it would require the caller to know the
+> size of the d-cache.
 > 
-> It doesn't help on chips like 750 or e300 where you can run a normal 6xx
-> SMP build, you just won't have multiple CPUs, and thus won't run things
-> like the secondary entry code.
+> Instead, I think it would be preferable to create a new clean_dcache()
+> (or clean_dcache_all()?) function in misc_32.S, which could call
+> clean_dcache_range() with the appropriate args for flushing the entire
+> d-cache.  relocate() could then call the platform-independent
+> clean_dcache().
+> 
 
-Ugh! Booke builds seem to be fun :-)
 
-I think this calls for a CPU_FTR_PIR. What do you suggest?
+How about using clean_dcache_range() to flush the range runtime
+address range [ _stext, _end ] ? That would flush the entire
+instructions.
 
-Ananth
+
+> For i-cache invalidation there's already the (incorrectly named?)
+> flush_instruction_cache().  It uses the appropriate platform-specific
+> methods (e.g. iccci for 44x) to invalidate the entire i-cache.
+
+Agreed. The only thing that worries me is the use of KERNELBASE in the 
+flush_instruction_cache() for CONFIG_4xx. Can we safely assume all 4xx
+implementations ignore the arguments passed to iccci ? 
+> 
+> Suzuki, if you agree with this direction, I could work up a new patch
+> if needed.
+> 
+
+I have the following (untested) patch which uses clean_dcache_range()
+and flush_instruction_cache(): I will send the next version soon
+with those changes and the DYNAMIC_MEMSTART config for oldstyle
+relocatoin, if every one agrees to this.
+
+
+diff --git a/arch/powerpc/kernel/reloc_32.S
+b/arch/powerpc/kernel/reloc_32.S index 045d61e..cce0510 100644
+--- a/arch/powerpc/kernel/reloc_32.S
++++ b/arch/powerpc/kernel/reloc_32.S
+@@ -33,10 +33,9 @@ R_PPC_RELATIVE = 22
+ 
+ _GLOBAL(relocate)
+ 
+-	mflr	r0
++	mflr	r14		/* Save our LR */
+ 	bl	0f		/* Find our current runtime
+address */ 0:	mflr	r12		/* Make it
+accessible */
+-	mtlr	r0
+ 
+ 	lwz	r11, (p_dyn - 0b)(r12)
+ 	add	r11, r11, r12	/* runtime address of .dynamic
+section */ @@ -87,18 +86,19 @@ eodyn:				/*
+End of Dyn Table scan */
+ 	 * Work out the current offset from the link time address
+of .rela
+ 	 * section.
+ 	 *  cur_offset[r7] = rela.run[r9] - rela.link [r7]
+-	 *  _stext.link[r10] = _stext.run[r10] - cur_offset[r7]
+-	 *  final_offset[r3] = _stext.final[r3] - _stext.link[r10]
++	 *  _stext.link[r12] = _stext.run[r10] - cur_offset[r7]
++	 *  final_offset[r3] = _stext.final[r3] - _stext.link[r12]
+ 	 */
+ 	subf	r7, r7, r9	/* cur_offset */
+-	subf	r10, r7, r10
+-	subf	r3, r10, r3	/* final_offset */
++	subf	r12, r7, r10
++	subf	r3, r12, r3	/* final_offset */
+ 
+ 	subf	r8, r6, r8	/* relaz -= relaent */
+ 	/*
+ 	 * Scan through the .rela table and process each entry
+ 	 * r9	- points to the current .rela table entry
+ 	 * r13	- points to the symbol table
++	 * r10  - holds the runtime address of _stext
+ 	 */
+ 
+ 	/*
+@@ -180,12 +180,23 @@ store_half:
+ 
+ nxtrela:
+ 	cmpwi	r8, 0		/* relasz = 0 ? */
+-	ble	done
++	ble	flush
+ 	add	r9, r9, r6	/* move to next entry in
+the .rela table */ subf	r8, r6, r8	/* relasz -= relaent */
+ 	b	applyrela
+ 
+-done:	blr
++	/* Flush the d-cache'd instructions */
++flush:
++	mr	r3, r10
++	lis	r4, (_end - _stext)@h
++	ori	r4, r4, (_end - _stext)@l
++	add	r4, r3, r4
++	bl	clean_dcache_range
++	/* Invalidate the i-cache */
++	bl	flush_instruction_cache
++done:
++	mtlr	r14
++	blr
+ 
+ 
+ p_dyn:		.long	__dynamic_start - 0b
+
+
+Thanks
+
+Suzuki
