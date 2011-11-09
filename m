@@ -1,21 +1,17 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5AAA41007D7
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 20:53:49 +1100 (EST)
-Subject: Re: [PATCH 1/2] powerpc/ps3: Fix lost SMP IPIs
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Geoff Levand <geoff@infradead.org>
-Date: Wed, 09 Nov 2011 10:53:36 +0100
-In-Reply-To: <E1RNxlN-0000wq-1P@casper.infradead.org>
-References: <E1RNxlN-0000wq-1P@casper.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1320832416.13360.7.camel@twins>
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
- linuxppc-dev@ozlabs.org
+Return-Path: <gong.chen@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id 888301007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 18:38:40 +1100 (EST)
+Message-ID: <4EBA2B90.5040901@linux.intel.com>
+Date: Wed, 09 Nov 2011 15:28:16 +0800
+From: Chen Gong <gong.chen@linux.intel.com>
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] memory hotplug: Refuse to add unaligned memory regions
+References: <20110915062615.782bc4df@kryten>
+In-Reply-To: <20110915062615.782bc4df@kryten>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-11-08 at 14:37 -0800, Geoff Levand wrote:
-> Fixes the PS3 bootup hang introduced in 3.0-rc1 by:
->=20
->   commit 317f394160e9beb97d19a84c39b7e5eb3d7815a
->   sched: Move the second half of ttwu() to the remote cpu
->=20
-> Move the PS3's LV1 EOI call lv1_end_of_interrupt_ext() from ps3_chip_eoi(=
-)
-> to ps3_get_irq() for IPI messages.
->=20
-> If lv1_send_event_locally() is called between a previous call to
-> lv1_send_event_locally() and the coresponding call to
-> lv1_end_of_interrupt_ext() the second event will not be delivered to the
-> target cpu.
->=20
-> The PS3's SMP IPIs are implemented using lv1_send_event_locally(), so if =
-two
-> IPI messages of the same type are sent to the same target in a relatively
-> short period of time the second IPI event can become lost when
-> lv1_end_of_interrupt_ext() is called from ps3_chip_eoi().=20
+于 2011/9/15 4:26, Anton Blanchard 写道:
+>
+> The sysfs memory probe interface allows unaligned regions
+> to be added:
+>
+> # echo 0xffffff>  /sys/devices/system/memory/probe
+>
+> # cat /proc/iomem
+> 00ffffff-01fffffe : System RAM
+> 01ffffff-02fffffe : System RAM
+> 02ffffff-03fffffe : System RAM
+> 03ffffff-04fffffe : System RAM
+> 04ffffff-05fffffe : System RAM
+>
+> Return -EINVAL instead of creating these bad regions.
+>
+> Signed-off-by: Anton Blanchard<anton@samba.org>
+> ---
+>
+> Index: linux-build/drivers/base/memory.c
+> ===================================================================
+> --- linux-build.orig/drivers/base/memory.c	2011-08-11 08:25:55.005941391 +1000
+> +++ linux-build/drivers/base/memory.c	2011-08-11 08:28:27.938580440 +1000
+> @@ -380,9 +380,13 @@ memory_probe_store(struct class *class,
+>   	u64 phys_addr;
+>   	int nid;
+>   	int i, ret;
+> +	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
+>
+>   	phys_addr = simple_strtoull(buf, NULL, 0);
+>
+> +	if (phys_addr&  ((pages_per_block<<  PAGE_SHIFT) - 1))
+> +		return -EINVAL;
+> +
+>   	for (i = 0; i<  sections_per_block; i++) {
+>   		nid = memory_add_physaddr_to_nid(phys_addr);
+>   		ret = add_memory(nid, phys_addr,
+> --
 
-Ah glad you found it! I'm not going to ack it since PPC guts are way
-beyond me.
+what platform doese it affect? PowerPC or else?
+
+As I know, on x86 platform it should not use this interface: *probe*,
+instead of acpi_hotplug_xxx. But PowerPC is RISC so how can you add
+such weird address for it? Maybe it is because PowerPC uses 16M as
+one section size and you assign a wrong address to it intentionally.
+The final result is as you show, isn't it?
