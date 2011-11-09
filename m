@@ -1,34 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Received: from VA3EHSOBE007.bigfish.com (mail-va3.bigfish.com [216.32.180.10])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C307EB6F71
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 02:38:27 +1100 (EST)
-Received: from mail157-ch1 (localhost.localdomain [127.0.0.1])	by
- mail157-ch1-R.bigfish.com (Postfix) with ESMTP id 4E8AFC802A2	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 15:38:11 +0000 (UTC)
-Received: from CH1EHSMHS027.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.254])	by mail157-ch1.bigfish.com (Postfix) with ESMTP id
- 171671580051	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 15:38:09
- +0000 (UTC)
-Date: Wed, 9 Nov 2011 09:38:13 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 7F138B6F83
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 02:48:42 +1100 (EST)
+Date: Wed, 9 Nov 2011 09:48:25 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Zang Roy-R61911 <r61911@freescale.com>
-Subject: Re: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive
- for PCIe
-Message-ID: <20111109153813.GA7839@schlenkerla.am.freescale.net>
-References: <1320654778-3294-1-git-send-email-tie-fei.zang@freescale.com>
- <4EB826F1.50402@freescale.com>
- <2239AC579C7D3646A720227A37E0268120D5C5@039-SN1MPN1-004.039d.mgd.msft.net>
- <4EB95EBC.8010808@freescale.com>
- <2239AC579C7D3646A720227A37E0268120EC83@039-SN1MPN1-004.039d.mgd.msft.net>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH] powerpc: Export PIR data through sysfs
+Message-ID: <20111109154825.GB7839@schlenkerla.am.freescale.net>
+References: <20111107044750.GB4361@in.ibm.com> <4EB812E8.9090107@freescale.com>
+ <20111108065811.GA9109@in.ibm.com> <4EB96002.5030605@freescale.com>
+ <20111109044124.GA10961@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <2239AC579C7D3646A720227A37E0268120EC83@039-SN1MPN1-004.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20111109044124.GA10961@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+ mahesh@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 09, 2011 at 09:27:02AM -0600, Zang Roy-R61911 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, November 09, 2011 0:54 AM
-> > To: Zang Roy-R61911
-> > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive for
-> > PCIe
+On Wed, Nov 09, 2011 at 10:11:24AM +0530, Ananth N Mavinakayanahalli wrote:
+> On Tue, Nov 08, 2011 at 10:59:46AM -0600, Scott Wood wrote:
+> > On 11/08/2011 12:58 AM, Ananth N Mavinakayanahalli wrote:
+> > > On Mon, Nov 07, 2011 at 11:18:32AM -0600, Scott Wood wrote:
+> > >> What use does userspace have for this?  If you want to return the
+> > >> currently executing CPU (which unless you're pinned could change as soon
+> > >> as the value is read...), why not just return smp_processor_id() or
+> > >> hard_smp_processor_id()?
+> > > 
+> > > Its not just the current cpu. Decoding PIR can tell you the core id,
+> > > thread id in case of SMT, and this information can be used by userspace
+> > > apps to set affinities, etc.
 > > 
-> > Just a note that there's magic to allow the PCIe block to output these
-> > interrupts as either active-high or active-low, depending on how they're
-> > configured at the mpic.
-> I do not think there is any magic.
-> On the contrary, it is the mpic/device tree needs to comply with the hardware setting for the interrupt polarity.
+> > Wouldn't it make more sense to expose the thread to core mappings in a
+> > general way, not tied to hardware or what thread we're currently running on?
+> 
+> AFAIK, the information encoding in PIR is platform dependent. There is
+> no general way to expose this information unless you want have a
+> per-platform ifdef. Even then, I am not sure if that information will
+> generally be available or provided.
+> 
+> > What's the use case for knowing this information only about the current
+> > thread (or rather the state the current thread was in a few moments ago)?
+> 
+> Its not information about the thread but about the cpu. Unless you have
+> a shared LPAR environment, the data will be consistent and can be used
+> by applications with knowledge of the platform.
 
-The magic is that the PCIe block can generate the interrupt in either
-polarity depending on the MPIC setting (or perhaps it bases it on
-sampling the pin status during/after reset, but that seems fragile).
+I'm not sure what a "shared LPAR environment" is, but unless you're
+pinned there's no guarantee the CPU you're running on once the read()
+syscall returns is the same as the one that PIR was read on.  Do you mean
+you're expecting this to be run from inside a partition that runs only on
+one CPU, and thus whichever thread you'll be migrated to will have the
+other data remain the same?
 
-> > > IRQ 4,5,6, 11 are internally tie to low by silicon. To use these interrupts
-> > for PCIe, they need to set high level sensitive.
-> > > It is clear enough for this patch.
+> > > +#if defined(CONFIG_SMP) && defined(SPRN_PIR)
+> > > +SYSFS_PMCSETUP(pir, SPRN_PIR);
+> > > +static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
+> > > +#endif
 > > 
-> > It's odd enough that I felt the need to go reading through the docs to
-> > see why such a thing would work at all.
-> If you consider the normal case, the shared irq pulls up, the PCIe interrupt set to low level sensitive. Anything odd?
+> > This only helps on architectures such as 8xx where you can't build as
+> > SMP -- and I don't think #ifdef SPRN_PIR excludes any builds.
+> > 
+> > It doesn't help on chips like 750 or e300 where you can run a normal 6xx
+> > SMP build, you just won't have multiple CPUs, and thus won't run things
+> > like the secondary entry code.
+> 
+> Ugh! Booke builds seem to be fun :-)
 
-The oddity is that active-high works at all for a PCI interrupt, and that
-not all the PCIe interrupts have the same polarity.
+Those aren't booke.
+
+> I think this calls for a CPU_FTR_PIR. What do you suggest?
+
+Unless someone wants to test what actually happens when you read PIR on
+all these CPUs...
+
+What platform is this meant to be useful for?  Perhaps it could just be a
+platform-specific sysfs entry?
 
 -Scott
