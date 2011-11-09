@@ -1,26 +1,17 @@
-Return-Path: <miche@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.44.51])
+Return-Path: <geoff@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0BBE31008CF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 08:45:26 +1100 (EST)
-Subject: [PATCH v3 3/3] Use separate struct console structure for each
- hvc_console.
-To: Greg Kroah-Hartman <gregkh@suse.de>
-From: Miche Baker-Harvey <miche@google.com>
-Date: Tue, 08 Nov 2011 13:45:09 -0800
-Message-ID: <20111108214509.28884.98169.stgit@miche.sea.corp.google.com>
-In-Reply-To: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
-References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
- Amit Shah <amit.shah@redhat.com>, Mike Waychison <mikew@google.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Eric Northrup <digitaleric@google.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1E0D5B6F71
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2011 13:19:43 +1100 (EST)
+From: Geoff Levand <geoff@infradead.org>
+Date: Tue, 8 Nov 2011 17:51:30 -0800
+Subject: [PATCH 0/2] PS3 fixes for 3.2
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-Id: <E1RNxlF-0000wf-Rh@casper.infradead.org>
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
+ Andre Heider <a.heider@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,90 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is possible to make any virtio_console port be a console
-by sending VIRITO_CONSOLE_CONSOLE_PORT.  But hvc_alloc was
-using a single struct console hvc_console, which contains
-both an index and flags which are per-port.
+Ben,
 
-This adds a separate struct console for each virtio_console
-that is CONSOLE_PORT.
+Here are two fixes for PS3.  Please apply for 3.2.
 
-Signed-off-by: Miche Baker-Harvey <miche@google.com>
----
- drivers/tty/hvc/hvc_console.c |   20 ++++++++++++++++++++
- drivers/tty/hvc/hvc_console.h |    1 +
- 2 files changed, 21 insertions(+), 0 deletions(-)
+-Geoff
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 09a6159..24a84d6 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -247,6 +247,7 @@ static void destroy_hvc_struct(struct kref *kref)
- 
- 	spin_unlock(&hvc_structs_lock);
- 
-+	kfree(hp->hvc_console);
- 	kfree(hp);
- }
- 
-@@ -827,6 +828,7 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
- 			     int outbuf_size)
- {
- 	struct hvc_struct *hp;
-+	struct console *cp;
- 	int i;
- 
- 	/* We wait until a driver actually comes along */
-@@ -854,6 +856,17 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
- 	kref_init(&hp->kref);
- 
- 	INIT_WORK(&hp->tty_resize, hvc_set_winsz);
-+	/*
-+	 * Make each console its own struct console.
-+	 */
-+	cp = kmemdup(&hvc_console, sizeof(*cp), GFP_KERNEL);
-+	if (!cp) {
-+		kfree(hp);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	hp->hvc_console = cp;
-+
- 	spin_lock_init(&hp->lock);
- 	spin_lock(&hvc_structs_lock);
- 
-@@ -872,8 +885,13 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
- 
- 	hp->index = i;
- 
-+	cp->index = i;
-+	vtermnos[i] = vtermno;
-+	cons_ops[i] = ops;
-+
- 	list_add_tail(&(hp->next), &hvc_structs);
- 	spin_unlock(&hvc_structs_lock);
-+	register_console(cp);
- 
- 	return hp;
- }
-@@ -884,6 +902,8 @@ int hvc_remove(struct hvc_struct *hp)
- 	unsigned long flags;
- 	struct tty_struct *tty;
- 
-+	BUG_ON(!hp->hvc_console);
-+	unregister_console(hp->hvc_console);
- 	spin_lock_irqsave(&hp->lock, flags);
- 	tty = tty_kref_get(hp->tty);
- 
-diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
-index c335a14..2d20ab7 100644
---- a/drivers/tty/hvc/hvc_console.h
-+++ b/drivers/tty/hvc/hvc_console.h
-@@ -58,6 +58,7 @@ struct hvc_struct {
- 	const struct hv_ops *ops;
- 	int irq_requested;
- 	int data;
-+	struct console *hvc_console;
- 	struct winsize ws;
- 	struct work_struct tty_resize;
- 	struct list_head next;
+The following changes
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-powerpc
+
+
+Geoff Levand (2):
+  powerpc/ps3: Fix lost SMP IPIs
+  powerpc/ps3: Fix SMP lockdep boot warning
+
+ arch/powerpc/platforms/ps3/interrupt.c |   23 +++++++++++-
+ arch/powerpc/platforms/ps3/platform.h  |    1 +
+ arch/powerpc/platforms/ps3/smp.c       |   62 ++++++++++++++++---------------
+ 3 files changed, 55 insertions(+), 31 deletions(-)
