@@ -1,35 +1,40 @@
-Return-Path: <MAILER-DAEMON>
-Received: from WA2EHSNDR001.bigfish.com (smtp-cpk.frontbridge.com
- [204.231.192.41]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 284B5B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 22:38:34 +1100 (EST)
-Received: from mail90-db3 (localhost.localdomain [127.0.0.1])	by
- mail90-db3-R.bigfish.com (Postfix) with ESMTP id 8835F7D00BC	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 11:38:07 +0000 (UTC)
-Received: from DB3EHSMHS004.bigfish.com (unknown [10.3.81.249])	by
- mail90-db3.bigfish.com (Postfix) with ESMTP id 54BE118D8050	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2011 11:38:07 +0000 (UTC)
-Received: from localhost.localdomain ([10.193.20.166])	by
- az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id pA9BcCTx015804	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2011 05:38:13 -0600 (CST)
-Date: Wed, 9 Nov 2011 19:38:13 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 4/7] powerpc/85xx: add support to JOG feature using
- cpufreq interface
-Message-ID: <20111109113813.GB3303@localhost.localdomain>
-References: <1320410166-14500-1-git-send-email-chenhui.zhao@freescale.com>
- <4EB4403E.3040700@freescale.com>
- <20111107102724.GA16470@localhost.localdomain>
- <4EB82870.1090907@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4EB82870.1090907@freescale.com>
-Sender: <zch@localhost.localdomain>
-Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, linuxppc-dev@lists.ozlabs.org
-Reply-To: zch@localhost.localdomain
+Return-Path: <jpoimboe@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0E8D41007D9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 01:53:17 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jpoimboe@linux.vnet.ibm.com>;
+ Wed, 9 Nov 2011 07:53:14 -0700
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pA9ErB3b144334
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2011 07:53:11 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pA9ErA0C017476
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2011 07:53:11 -0700
+Subject: Re: [PATCH v2 1/5] [ppc] Process dynamic relocations for kernel
+From: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
+To: Suzuki Poulose <suzuki@in.ibm.com>
+In-Reply-To: <20111109120303.51ac3b1b@suzukikp.in.ibm.com>
+References: <20111025114829.8183.1725.stgit@suzukikp.in.ibm.com>
+ <20111025115354.8183.48237.stgit@suzukikp.in.ibm.com>
+ <1320276969.3309.3.camel@treble> <4EB3A40C.1070802@in.ibm.com>
+ <1320678819.2750.15.camel@treble> <4EB8D628.2090304@in.ibm.com>
+ <1320769145.5273.26.camel@treble>
+ <20111109120303.51ac3b1b@suzukikp.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Nov 2011 08:53:08 -0600
+Message-ID: <1320850388.3259.18.camel@treble>
+Mime-Version: 1.0
+Cc: Nathan Miller <nathanm2@us.ibm.com>, Josh Poimboeuf <jpoimboe@us.ibm.com>,
+ Dave Hansen <dave@linux.vnet.ibm.com>, Alan Modra <amodra@au1.ibm.com>,
+ Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,55 +44,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 07, 2011 at 12:50:24PM -0600, Scott Wood wrote:
-> On 11/07/2011 04:27 AM, Zhao Chenhui wrote:
-> > On Fri, Nov 04, 2011 at 02:42:54PM -0500, Scott Wood wrote:
-> >> On 11/04/2011 07:36 AM, Zhao Chenhui wrote:
-> >>> +	cpufreq_frequency_table_target(policy,
-> >>> +				       mpc85xx_freqs,
-> >>> +				       target_freq,
-> >>> +				       relation,
-> >>> +				       &new);
-> >>> +
-> >>> +	freqs.old = policy->cur;
-> >>> +	freqs.new = mpc85xx_freqs[new].frequency;
-> >>> +	freqs.cpu = policy->cpu;
-> >>> +
-> >>> +	mutex_lock(&mpc85xx_switch_mutex);
-> >>> +	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-> >>> +
-> >>> +	pr_info("Setting frequency for core %d to %d kHz, " \
-> >>> +		 "PLL ratio is %d/2\n",
-> >>> +		 policy->cpu,
-> >>> +		 mpc85xx_freqs[new].frequency,
-> >>> +		 mpc85xx_freqs[new].index);
-> >>> +
-> >>> +	set_pll(mpc85xx_freqs[new].index, policy->cpu);
-> >>> +
-> >>> +	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> >>> +	mutex_unlock(&mpc85xx_switch_mutex);
-> >>> +
-> >>> +	ppc_proc_freq = freqs.new * 1000ul;
-> >>
-> >> ppc_proc_freq is global -- can CPUs not have their frequencies adjusted
-> >> separately?
-> >>
-> >> It should be under the lock, if the lock is needed at all.
-> >>
+On Wed, 2011-11-09 at 12:03 +0530, Suzuki Poulose wrote:
+> On Tue, 08 Nov 2011 10:19:05 -0600
+> Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com> wrote:
+> 
+> > On Tue, 2011-11-08 at 12:41 +0530, Suzuki Poulose wrote:
+> > > What I was suggesting is, instead of flushing the cache in
+> > > relocate(), lets do it like:
+> > > 
+> > > for e.g, on 440x, (in head_44x.S :)
+> > > 
+> > > #ifdef CONFIG_RELOCATABLE
+> > > 	...
+> > > 	bl relocate
+> > > 
+> > > 	#Flush the d-cache and invalidate the i-cache here
+> > > #endif
+> > > 
+> > > 
+> > > This would let the different platforms do the the cache
+> > > invalidation in their own way.
+> > > 
+> > > Btw, I didn't find an instruction to flush the entire d-cache in
+> > > PPC440 manual. We have instructions to flush only a block
+> > > corresponding to an address.
+> > > 
+> > > However, we have 'iccci' which would invalidate the entire i-cache
+> > > which, which I think is better than 80,000 i-cache invalidates.
 > > 
-> > There is only one ppc_proc_freq. no lock.
+> > In misc_32.S there are already some platform-independent cache
+> > management functions.  If we use those, then relocate() could simply
+> > call them.  Then the different platforms calling relocate() wouldn't
+> > have to worry about flushing/invalidating caches.
+> > 
+> > For example, there's a clean_dcache_range() function.  Given any range
+> > twice the size of the d-cache, it should flush the entire d-cache.
+> > But the only drawback is that it would require the caller to know the
+> > size of the d-cache.
+> > 
+> > Instead, I think it would be preferable to create a new clean_dcache()
+> > (or clean_dcache_all()?) function in misc_32.S, which could call
+> > clean_dcache_range() with the appropriate args for flushing the entire
+> > d-cache.  relocate() could then call the platform-independent
+> > clean_dcache().
+> > 
 > 
-> I realize there's only one.
 > 
-> I'm asking whether CPUs can have their frequencies set indpendently --
-> if the answer is no, and this function is not specific to a CPU, my only
-> concern is the lock.  Either this function can be called multiple times
-> in parallel, in which case the ppc_proc_freq update should be inside the
-> lock, or it can't, in which case why do we need the lock at all?
-> 
-> -Scott
+> How about using clean_dcache_range() to flush the range runtime
+> address range [ _stext, _end ] ? That would flush the entire
+> instructions.
 
-Yes. They can be changed independently.
-I will set ppc_proc_freq inside the lock.
+Wouldn't that result in more cache flushing than the original solution? 
 
--chenhui
+For example, my kernel is 3.5MB.  Assuming a 32 byte cache line size,
+clean_dcache_range(_stext, _end) would result in about 115,000 dcbst's
+(3.5MB / 32).
+
+
+> 
+> 
+> > For i-cache invalidation there's already the (incorrectly named?)
+> > flush_instruction_cache().  It uses the appropriate platform-specific
+> > methods (e.g. iccci for 44x) to invalidate the entire i-cache.
+> 
+> Agreed. The only thing that worries me is the use of KERNELBASE in the 
+> flush_instruction_cache() for CONFIG_4xx. Can we safely assume all 4xx
+> implementations ignore the arguments passed to iccci ? 
+
+Good question.  I don't know the answer. :-)
+
+That also may suggest a bigger can of worms.  A grep of the powerpc code
+shows many uses of KERNELBASE.  For a relocatable kernel, nobody should
+be relying on KERNELBASE except for the early relocation code.  Are we
+sure that all the other usages of KERNELBASE are "safe"?
+
+For example -- the DEBUG_CRIT_EXCEPTION macro, which head_44x.S uses,
+relies on KERNELBASE.  That doesn't seem right to me.
+
+
+Josh
