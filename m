@@ -1,18 +1,23 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Export PIR data through sysfs
+Subject: Re: [PATCH v3 2/3] hvc_init():  Enforce one-time initialization.
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <4EB96002.5030605@freescale.com>
-References: <20111107044750.GB4361@in.ibm.com>
- <4EB812E8.9090107@freescale.com> <20111108065811.GA9109@in.ibm.com>
- <4EB96002.5030605@freescale.com>
+To: Miche Baker-Harvey <miche@google.com>
+In-Reply-To: <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
+References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
+ <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature"; boundary="=-c32i3MHk0AFmrbwUuc8S"
-Date: Wed, 09 Nov 2011 17:51:24 +1100
-Message-ID: <1320821484.9376.9.camel@concordia>
+ protocol="application/pgp-signature"; boundary="=-3wlTs2+aNijJKtMncx1A"
+Date: Wed, 09 Nov 2011 18:24:12 +1100
+Message-ID: <1320823452.9376.31.camel@concordia>
 Mime-Version: 1.0
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
- Anton Blanchard <anton@samba.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Greg Kroah-Hartman <gregkh@suse.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, xen-devel@lists.xensource.com,
+ Anton Blanchard <anton@samba.org>, Amit Shah <amit.shah@redhat.com>,
+ Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Eric Northrup <digitaleric@google.com>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,42 +29,74 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-c32i3MHk0AFmrbwUuc8S
+--=-3wlTs2+aNijJKtMncx1A
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2011-11-08 at 10:59 -0600, Scott Wood wrote:
-> On 11/08/2011 12:58 AM, Ananth N Mavinakayanahalli wrote:
-> > On Mon, Nov 07, 2011 at 11:18:32AM -0600, Scott Wood wrote:
-> >> What use does userspace have for this?  If you want to return the
-> >> currently executing CPU (which unless you're pinned could change as so=
-on
-> >> as the value is read...), why not just return smp_processor_id() or
-> >> hard_smp_processor_id()?
-> >=20
-> > Its not just the current cpu. Decoding PIR can tell you the core id,
-> > thread id in case of SMT, and this information can be used by userspace
-> > apps to set affinities, etc.
+On Tue, 2011-11-08 at 13:45 -0800, Miche Baker-Harvey wrote:
+> hvc_init() must only be called once, and no thread should continue with h=
+vc_alloc()
+> until after initialization is complete.  The original code does not enfor=
+ce either
+> of these requirements.  A new mutex limits entry to hvc_init() to a singl=
+e thread,
+> and blocks all later comers until it has completed.
 >=20
-> Wouldn't it make more sense to expose the thread to core mappings in a
-> general way, not tied to hardware or what thread we're currently running =
-on?
+> This patch fixes multiple crash symptoms.
 
-AFAIK that is already available in /sys/devices/system/cpu/cpuX/topology
+Hi Miche,
+
+A few nit-picky comments below ..
+
+> @@ -84,6 +85,10 @@ static LIST_HEAD(hvc_structs);
+>   * list traversal.
+>   */
+>  static DEFINE_SPINLOCK(hvc_structs_lock);
+> +/*
+> + * only one task does allocation at a time.
+> + */
+> +static DEFINE_MUTEX(hvc_ports_mutex);
+
+The comment is wrong, isn't it? Only one task does _init_ at a time.
+Once the driver is initialised allocs can run concurrently.
+
+So shouldn't it be called hvc_init_mutex ?
+
+> @@ -825,11 +830,15 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int =
+data,
+>  	int i;
+> =20
+>  	/* We wait until a driver actually comes along */
+> +	mutex_lock(&hvc_ports_mutex);
+>  	if (!hvc_driver) {
+>  		int err =3D hvc_init();
+> -		if (err)
+> +		if (err) {
+> +			mutex_unlock(&hvc_ports_mutex);
+>  			return ERR_PTR(err);
+> +		}
+>  	}
+> +	mutex_unlock(&hvc_ports_mutex);
+> =20
+>  	hp =3D kzalloc(ALIGN(sizeof(*hp), sizeof(long)) + outbuf_size,
+>  			GFP_KERNEL);
+
+It'd be cleaner I think to do all the locking in hvc_init(). That's safe
+as long as you recheck !hvc_driver in hvc_init() with the lock held.
 
 cheers
 
 
---=-c32i3MHk0AFmrbwUuc8S
+--=-3wlTs2+aNijJKtMncx1A
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAk66IuQACgkQdSjSd0sB4dL0NACeP2luzI5Nro0jiLLv7aWUetzu
-yMwAnjujq0DbgHvq1Sl5AJCGW/xUvobF
-=nUqO
+iEYEABECAAYFAk66KpwACgkQdSjSd0sB4dKSVgCeMFezuF3zVrIQ9OJdHh8MukP2
+KtcAnRLc243qSYELFwz+KCQLEI9qqD9Y
+=l0OT
 -----END PGP SIGNATURE-----
 
---=-c32i3MHk0AFmrbwUuc8S--
+--=-3wlTs2+aNijJKtMncx1A--
