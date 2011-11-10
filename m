@@ -1,22 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 11AADB6F87
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 00:59:18 +1100 (EST)
-Subject: Re: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Date: Thu, 10 Nov 2011 07:59:08 -0600
-Message-Id: <FF2BF3F3-1158-4747-AEEC-03D6A7C462D9@kernel.crashing.org>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
+ [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id C653AB6F82
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 01:04:29 +1100 (EST)
+Message-ID: <4EBBD9DF.6080100@freescale.com>
+Date: Thu, 10 Nov 2011 08:04:15 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
 To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-Cc: Scott Wood <scottwood@freescale.com>, Timur Tabi <B04825@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [RFC PATCH 02/17] powerpc: Split up PHYS_64BIT config option
+ to fix "select" issues
+References: <4E42AB6F.1050900@freescale.com>
+ <1320883635-17194-3-git-send-email-Kyle.D.Moffett@boeing.com>
+In-Reply-To: <1320883635-17194-3-git-send-email-Kyle.D.Moffett@boeing.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Baruch Siach <baruch@tkos.co.il>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ Paul Bolle <pebolle@tiscali.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Kyle Moffett wrote:
+>   CONFIG_PHYS_64BIT_SUPPORTED:
+>     This hidden option should be selected by any CPU type which supports
+>     64-bit physical addresses.  This will enable the PHYS_64BIT option
+>     to be selected.  It is (obviously) always set on PPC64.
+> 
+>   CONFIG_PHYS_64BIT_DT_REQUIRED:
+>     This hidden option should be selected by any board or platform which
+>     has >32-bit physical devices present in hardware.  If this is set
+>     then the CONFIG_PHYS_64BIT option will be forcibly enabled and
+>     hidden from the user.  It is (obviously) always set on PPC64.
+> 
+>   CONFIG_PHYS_64BIT:
+>     This option is user-controllable, where allowed by CPU and platform
+>     settings, and should never be pointed at with a "select" statement.
+>     Due to the values of the above two options, this is never visible on
+>     PPC64.
 
-On Nov 9, 2011, at 6:03 PM, Kyle Moffett wrote:
+I'm with Kumar on this.  I don't see the point of making it so complicated.  No kernel should ever have to care with a DT is 64-bit or 32-bit.  If you build a kernel with 64-bit phys support, then it will work with any DT.
 
-> Hello,
->=20
-> I saw Baruch Siach's patch:
->  powerpc: 85xx: separate e500 from e500mc
->=20
-> Unfortunately, that patch breaks the dependencies for the P5020DS
-> platform and does not fix the underlying code which does not
-> understand what the ambiguous "CONFIG_E500" means.
->=20
-> In order to fix the issue at the fundamental level, I created the
-> following 17-patch series loosely based on Baruch's patch.
->=20
-> =3D=3D=3D High-Level Summary =3D=3D=3D
->=20
-> The e500v1/v2 and e500mc/e5500 CPU families are not compatible with
-> each other, yet they share the same "CONFIG_E500" Kconfig option.
->=20
-> The following patch series splits the 32-bit CPU support into two
-> separate options: "CONFIG_FSL_E500_V1_V2" and "CONFIG_FSL_E500MC".
-> Additionally, the 64-bit e5500 support is separated to its own config
-> option ("CONFIG_FSL_E5500") which is automatically combined with
-> either 32-bit e500MC or 64-bit Book-3E when the P5020DS board support
-> is enabled.
+U-Boot already warns you if the DT and the actual physical addresses of the devices don't match.
 
-So its clear from the community that there is confusion here and we need =
-to clean this up.  I guess my attempt to support an kernel that ran on =
-both E500v2 and E500mc isn't worth it.  However I don't want to =
-completely remove the ability to do this.
+There are only two reasons to create a 32-bit kernel:
 
-Towards the cleanup I'd ask for a proposal on what exactly the CONFIG_ =
-options we'd end up with would be and their meaning.
+1) A small performance improvement on systems with 2GB or less.
+2) Some SOC devices only support 32-bit physical addresses, so the easiest way to ensure a compatible address is to prohibit memory above 4GB.
 
-So today we have:
+Item #2 is not something that we really worry about.  It's only a real problem on true 64-bit kernels, and in those cases, we cannot build a kernel with 32-bit phys support, so the driver needs to handle it internally.
 
-CONFIG_E500
-CONFIG_PPC_E500MC
-
-What do we want to move to?  I want to keep the builds such that we have =
-only 2 classes:  e500V1/V2 and e500mc/e5500/e6500/.../eX500.  I see no =
-reason to hyper-optimize e500mc vs e5500 vs e6500.
-
-- k=
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
