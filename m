@@ -1,31 +1,41 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from slb-smtpout-01.boeing.com (slb-smtpout-01.boeing.com
- [130.76.64.48])
+Return-Path: <jpoimboe@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "slb-smtpout-01.boeing.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 948C41007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 08:07:46 +1100 (EST)
-From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 10 Nov 2011 14:27:35 -0600
-Subject: Re: [RFC PATCH 08/17] powerpc/e500: Remove conditional "lwsync"
- substitution
-Message-ID: <4567A1A9-51D2-4D21-9080-BD3D78901C1D@boeing.com>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883635-17194-9-git-send-email-Kyle.D.Moffett@boeing.com>
- <3937191C-A735-4668-8E80-9FB4B35E2F63@kernel.crashing.org>
- <20111110163100.GA11983@schlenkerla.am.freescale.net>
- <AC287A9B-0C8B-494E-95CD-A33014AECE22@kernel.crashing.org>
- <20111110170334.GF11983@schlenkerla.am.freescale.net>
-In-Reply-To: <20111110170334.GF11983@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Baruch Siach <baruch@tkos.co.il>, Timur Tabi <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 1FC5F1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 08:45:40 +1100 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jpoimboe@linux.vnet.ibm.com>;
+ Thu, 10 Nov 2011 16:45:35 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAALj4en250520
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 16:45:04 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAALj0qS028741
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 16:45:03 -0500
+Subject: Re: [PATCH v2 1/5] [ppc] Process dynamic relocations for kernel
+From: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
+To: Suzuki Poulose <suzuki@in.ibm.com>
+In-Reply-To: <4EBB3794.9050309@in.ibm.com>
+References: <20111025114829.8183.1725.stgit@suzukikp.in.ibm.com>
+ <20111025115354.8183.48237.stgit@suzukikp.in.ibm.com>
+ <1320276969.3309.3.camel@treble> <4EB3A40C.1070802@in.ibm.com>
+ <1320678819.2750.15.camel@treble> <4EB8D628.2090304@in.ibm.com>
+ <1320769145.5273.26.camel@treble>
+ <20111109120303.51ac3b1b@suzukikp.in.ibm.com>
+ <1320850388.3259.18.camel@treble>  <4EBB3794.9050309@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 10 Nov 2011 15:44:57 -0600
+Message-ID: <1320961497.5535.66.camel@treble>
+Mime-Version: 1.0
+Cc: Nathan Miller <nathanm2@us.ibm.com>, Josh Poimboeuf <jpoimboe@us.ibm.com>,
+ Dave Hansen <dave@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Scott Wood <scottwood@freescale.com>, Alan Modra <amodra@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,51 +45,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Nov 10, 2011, at 12:03, Scott Wood wrote:
-> On Thu, Nov 10, 2011 at 10:42:25AM -0600, Kumar Gala wrote:
->>=20
->> On Nov 10, 2011, at 10:31 AM, Scott Wood wrote:
->>=20
->>> On Thu, Nov 10, 2011 at 07:40:04AM -0600, Kumar Gala wrote:
->>>> Nak, we can run an e500mc in a mode that is compatible with e500v1/v2.
->>>> I see no reason to change the support we have there.
->>>=20
->>> What "mode" do you mean?  DCBZ32?  We don't support using that currentl=
-y,
->>> and I'd imagine the performance implication would be such that you'd
->>> never want to do it unless it's the only way to make some piece of lega=
-cy
->>> software work.
->>=20
->> Correct, DCBZ32, we've had customers that go down this path.
->=20
-> For running legacy software, or for multiplatform Linux kernels?
->=20
-> And if you're willing to toss performance away for this goal, why do you
-> need lwsync? :-)
->=20
-> DCBZ32 is not a "mode that is compatible with v1/v2", BTW.  It only
-> affects cache block size (for dcbz/dcba only), not SPE versus FP, not
-> changes in power management, not changes in machine check handling, etc.
->=20
-> Using DCBZ32 for the kernel would also complicate switching the kernel to
-> dcbzl, to support enabling DCBZ32 for certain userspace apps (a more
-> likely use case) without making it systemwide.
+On Thu, 2011-11-10 at 08:01 +0530, Suzuki Poulose wrote:
+> >> How about using clean_dcache_range() to flush the range runtime
+> >> address range [ _stext, _end ] ? That would flush the entire
+> >> instructions.
+> >
+> > Wouldn't that result in more cache flushing than the original solution?
+> >
+> > For example, my kernel is 3.5MB.  Assuming a 32 byte cache line size,
+> > clean_dcache_range(_stext, _end) would result in about 115,000 dcbst's
+> > (3.5MB / 32).
+> 
+> Oops ! You are right. We could go back to the clean_dcache_all() or the
+> initial approach that you suggested. (dcbst).
+> 
+> I am not sure how do we flush the entire dcache(only). Could you post a
+> patch which does the same ?
 
-So, as far as I can tell the kernel doesn't even try to touch DCBZ32.
+It turns out that my original idea of giving a 64k address range to
+clean_dcache_range() wouldn't work, because dcbst only flushes the line
+if the given address is in the cache already.
 
-Even if it did, if you are building a new kernel that includes this patch,
-surely you can actually build a proper e500mc kernel instead of trying to
-build a new kernel to run on hardware it wasn't designed to run on, right?
 
-I think the bigger issue is the fact that building a PPC_BOOK3E_64 kernel
-with both e5500 and PowerPC A2 support turned on will not actually run on
-both.  Before my v1-patch-series, machine-check handling is messed up for
-PowerPC A2, and afterwards cacheline sizes are messed up for e5500.
+Also, I experimented with a simple clean_dcache_all() function in
+misc_32.S:
 
-Does this mean that PPC_BOOK3E_64 needs to be split into two separate
-Book 3-III families the same way that 32-bit has been split?  Is there
-another way around it?
+#define L1_CACHE_SIZE   (32 * 1024)
+#define L1_CACHE_LINES  (L1_CACHE_SIZE / L1_CACHE_BYTES) 
+_GLOBAL(clean_dcache_all)
+        lis     r3, _start@h
+        ori     r3, r3, _start@l
+        li      r4, (L1_CACHE_LINES * 2)
+        mtctr   r4
+1:      lwz     r5, 0(r3)
+        addi    r3, r3, L1_CACHE_BYTES
+        bdnz    1b
+        sync
+        blr
 
-Cheers,
-Kyle Moffett
+But this approach has some issues:
+
+1. It should probably be made more platform-independent with respect to
+d-cache size.  I'm not sure the best way to achieve that.
+
+2. The _start address is the kernel virtual address, not the physical
+address, but relocate() is running without TLB address translation
+enabled.  Although we could easily circumvent this problem by clearing
+the d-cache directly in relocate() (or in head_44x.S) using physical
+addresses.
+
+3. Chicken/egg issue:  the _start address might be stale because we
+haven't yet flushed the d-cache and invalidated the i-cache.
+
+I also discovered that calling flush_instruction_cache() from relocate()
+wouldn't work for all platforms, for similar reasons.
+
+We could overcome these issues with more code, but the added complexity
+might not be worth it (premature optimization and all).  My original
+patch at least has the benefit of being simple.
+
+
+> 
+> Another option is to, change the current mapping to 'Write Through' before
+> calling the relocate() and revert back to the original setting after relocate().
+
+True, that's another option.  Although since TLB handling is
+platform-specific, I think it would have to be handled by the caller in
+head_44x.S, rather than within relocate().
+
+
+> > That also may suggest a bigger can of worms.  A grep of the powerpc code
+> > shows many uses of KERNELBASE.  For a relocatable kernel, nobody should
+> > be relying on KERNELBASE except for the early relocation code.  Are we
+> > sure that all the other usages of KERNELBASE are "safe"?
+> >
+> I think we could simply replace the occurrences of KERNELBASE (after the relocate())
+>   with '_stext' which would give the virtual start address of the kernel.
+
+Yeah, that would work.
+
+
+Josh
