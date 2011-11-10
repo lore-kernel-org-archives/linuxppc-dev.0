@@ -2,19 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 73ECD10084E
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 03:14:20 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A043A100986
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 03:14:21 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAAGEG71031486
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 10:14:17 -0600
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAAGEIoh031497
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 10:14:18 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH 02/30] powerpc/85xx: Rework PCI nodes on P1020RDB
-Date: Thu, 10 Nov 2011 10:13:45 -0600
-Message-Id: <1320941653-29797-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1320941653-29797-2-git-send-email-galak@kernel.crashing.org>
+Subject: [RFC][PATCH 03/30] powerpc/85xx: Update SPI binding to match binding
+ spec for P1020RDB
+Date: Thu, 10 Nov 2011 10:13:46 -0600
+Message-Id: <1320941653-29797-4-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1320941653-29797-3-git-send-email-galak@kernel.crashing.org>
 References: <1320941653-29797-1-git-send-email-galak@kernel.crashing.org>
  <1320941653-29797-2-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-3-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,130 +26,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Move SoC specific details like irq mapping to SoC dtsi
-* Update interrupt property to cover both error interrupt and PCIe
-  runtime interrupts
+The SPI node is out of date with regards to the binding for fsl-espi and
+driver support.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/p1020rdb.dts |   26 +---------------------
- arch/powerpc/boot/dts/p1020si.dtsi |   40 ++++++++++++++++++++++++++++++++---
- 2 files changed, 38 insertions(+), 28 deletions(-)
+ arch/powerpc/boot/dts/p1020rdb.dts |   30 +++++++++++++-----------------
+ arch/powerpc/boot/dts/p1020si.dtsi |    5 ++---
+ 2 files changed, 15 insertions(+), 20 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
-index d6a8ae4..8b1a7ee 100644
+index 8b1a7ee..b31e7ec 100644
 --- a/arch/powerpc/boot/dts/p1020rdb.dts
 +++ b/arch/powerpc/boot/dts/p1020rdb.dts
-@@ -257,19 +257,8 @@
- 	pci0: pcie@ffe09000 {
- 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
--		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
--		interrupt-map = <
--			/* IDSEL 0x0 */
--			0000 0x0 0x0 0x1 &mpic 0x4 0x1
--			0000 0x0 0x0 0x2 &mpic 0x5 0x1
--			0000 0x0 0x0 0x3 &mpic 0x6 0x1
--			0000 0x0 0x0 0x4 &mpic 0x7 0x1
--			>;
-+		reg = <0 0xffe09000 0 0x1000>;
- 		pcie@0 {
--			reg = <0x0 0x0 0x0 0x0 0x0>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
- 			ranges = <0x2000000 0x0 0xa0000000
- 				  0x2000000 0x0 0xa0000000
- 				  0x0 0x20000000
-@@ -281,21 +270,10 @@
- 	};
+@@ -149,49 +149,45 @@
+ 		};
  
- 	pci1: pcie@ffe0a000 {
-+		reg = <0 0xffe0a000 0 0x1000>;
- 		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
--		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
--		interrupt-map = <
--			/* IDSEL 0x0 */
--			0000 0x0 0x0 0x1 &mpic 0x0 0x1
--			0000 0x0 0x0 0x2 &mpic 0x1 0x1
--			0000 0x0 0x0 0x3 &mpic 0x2 0x1
--			0000 0x0 0x0 0x4 &mpic 0x3 0x1
--			>;
- 		pcie@0 {
--			reg = <0x0 0x0 0x0 0x0 0x0>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
- 			ranges = <0x2000000 0x0 0x80000000
- 				  0x2000000 0x0 0x80000000
- 				  0x0 0x20000000
+ 		spi@7000 {
+-
+-			fsl_m25p80@0 {
++			flash@0 {
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+-				compatible = "fsl,espi-flash";
++				compatible = "spansion,s25sl12801";
+ 				reg = <0>;
+-				linux,modalias = "fsl_m25p80";
+-				modal = "s25sl128b";
+-				spi-max-frequency = <50000000>;
+-				mode = <0>;
++				spi-max-frequency = <40000000>; /* input clock */
+ 
+-				partition@0 {
++				partition@u-boot {
+ 					/* 512KB for u-boot Bootloader Image */
+ 					reg = <0x0 0x00080000>;
+-					label = "SPI (RO) U-Boot Image";
++					label = "u-boot";
+ 					read-only;
+ 				};
+ 
+-				partition@80000 {
++				partition@dtb {
+ 					/* 512KB for DTB Image */
+ 					reg = <0x00080000 0x00080000>;
+-					label = "SPI (RO) DTB Image";
++					label = "dtb";
+ 					read-only;
+ 				};
+ 
+-				partition@100000 {
++				partition@kernel {
+ 					/* 4MB for Linux Kernel Image */
+ 					reg = <0x00100000 0x00400000>;
+-					label = "SPI (RO) Linux Kernel Image";
++					label = "kernel";
+ 					read-only;
+ 				};
+ 
+-				partition@500000 {
++				partition@fs {
+ 					/* 4MB for Compressed RFS Image */
+ 					reg = <0x00500000 0x00400000>;
+-					label = "SPI (RO) Compressed RFS Image";
++					label = "file system";
+ 					read-only;
+ 				};
+ 
+-				partition@900000 {
++				partition@jffs-fs {
+ 					/* 7MB for JFFS2 based RFS */
+ 					reg = <0x00900000 0x00700000>;
+-					label = "SPI (RW) JFFS2 RFS";
++					label = "file system jffs2";
+ 				};
+ 			};
+ 		};
 diff --git a/arch/powerpc/boot/dts/p1020si.dtsi b/arch/powerpc/boot/dts/p1020si.dtsi
-index 5c5acb6..58f6b30 100644
+index 58f6b30..25e10cf 100644
 --- a/arch/powerpc/boot/dts/p1020si.dtsi
 +++ b/arch/powerpc/boot/dts/p1020si.dtsi
-@@ -352,26 +352,58 @@
- 	pci0: pcie@ffe09000 {
- 		compatible = "fsl,mpc8548-pcie";
- 		device_type = "pci";
--		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0 0xffe09000 0 0x1000>;
- 		bus-range = <0 255>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <16 2>;
-+
-+		pcie@0 {
-+			reg = <0 0 0 0 0>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			interrupts = <16 2>;
-+			interrupt-map-mask = <0xf800 0 0 7>;
-+			interrupt-map = <
-+				/* IDSEL 0x0 */
-+				0000 0x0 0x0 0x1 &mpic 0x4 0x1
-+				0000 0x0 0x0 0x2 &mpic 0x5 0x1
-+				0000 0x0 0x0 0x3 &mpic 0x6 0x1
-+				0000 0x0 0x0 0x4 &mpic 0x7 0x1
-+				>;
-+		};
-+
- 	};
+@@ -112,14 +112,13 @@
+ 		};
  
- 	pci1: pcie@ffe0a000 {
- 		compatible = "fsl,mpc8548-pcie";
- 		device_type = "pci";
--		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0 0xffe0a000 0 0x1000>;
- 		bus-range = <0 255>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <16 2>;
-+
-+		pcie@0 {
-+			reg = <0 0 0 0 0>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			interrupts = <16 2>;
-+			interrupt-map-mask = <0xf800 0 0 7>;
-+
-+			interrupt-map = <
-+				/* IDSEL 0x0 */
-+				0000 0x0 0x0 0x1 &mpic 0x0 0x1
-+				0000 0x0 0x0 0x2 &mpic 0x1 0x1
-+				0000 0x0 0x0 0x3 &mpic 0x2 0x1
-+				0000 0x0 0x0 0x4 &mpic 0x3 0x1
-+				>;
-+		};
- 	};
- };
+ 		spi@7000 {
+-			cell-index = <0>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+-			compatible = "fsl,espi";
++			compatible = "fsl,p1020-espi", "fsl,mpc8536-espi";
+ 			reg = <0x7000 0x1000>;
+ 			interrupts = <59 0x2>;
+ 			interrupt-parent = <&mpic>;
+-			mode = "cpu";
++			fsl,espi-num-chipselects = <4>;
+ 		};
+ 
+ 		gpio: gpio-controller@f000 {
 -- 
 1.7.3.4
