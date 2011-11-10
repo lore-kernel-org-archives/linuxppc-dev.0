@@ -1,39 +1,18 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 10E141007D1
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 21:43:22 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 10 Nov 2011 16:13:18 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAAAhGCi3010560
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 16:13:16 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAAAhGOj015748
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 21:43:16 +1100
-Date: Thu, 10 Nov 2011 16:13:15 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [RFC PATCH v4 02/10] fadump: Reserve the memory for firmware
- assisted	dump.
-Message-ID: <20111110104315.GB5145@in.ibm.com>
-References: <20111107095215.1997.14866.stgit@mars.in.ibm.com>
- <20111107095527.1997.79902.stgit@mars.in.ibm.com>
- <4EBB9FEE.9090905@redhat.com>
+Return-Path: <ndrs.frsn@googlemail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 2E6691007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 22:31:17 +1100 (EST)
+Received: by ywp27 with SMTP id 27so1365031ywp.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 03:31:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4EBB9FEE.9090905@redhat.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- Anton Blanchard <anton@samba.org>
-Reply-To: mahesh@linux.vnet.ibm.com
+Date: Thu, 10 Nov 2011 12:31:13 +0100
+Message-ID: <CAMU=cjySPDP0WFJi+07UkiQw71Ta0Uqd6n2NtKRScCxPxZsFRg@mail.gmail.com>
+Subject: right way to get interrupt controller register
+From: Andreas Friesen <ndrs.frsn@googlemail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,22 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2011-11-10 17:57:02 Thu, Cong Wang wrote:
-> Hi, Mahesh,
-> 
-> Your patch seems have some style problems... checkpatch.pl complains,
-> 
-> total: 330 errors, 1 warnings, 355 lines checked
-> 
-> NOTE: whitespace errors detected, you may wish to use scripts/cleanpatch or
->       scripts/cleanfile
-> 
-> Could use scripts/checkpatch.pl to check your patch?
+Hello people,
 
-I do run the checkpatch.pl before sending patches out. I am not sure how
-I missed this one. Will do better job next time.
+I have a little problem with the isr routine. The interrupt handler
+is installed and working fine, but I can not clear the interrupt flag in
+ICTL-Register.
 
-Thanks,
+Is that right way to get interrupt controller register ?
 
--- 
-Mahesh J Salgaonkar
+Thanks in advance,
+Andreas Friesen
+
+
+Hier is my ISR-Handler and probe functions :
+
+static irqreturn_t mess_isr (int irq, void *data)
+{
+struct qxcpld_drvdata *drvdata ;
+drvdata =3D (struct qxcpld_drvdata *)data ;
+struct mpc52xx_intr __iomem *intr;
+int i ;
+u32 intr_ctrl;
+
+=A0 =A0 =A0 =A0intr =3D drvdata->intr
+=A0 =A0 =A0 =A0intr_ctrl =3D intr->ctrl ;
+intr_ctrl =3D in_be32(&intr->ctrl);
+intr_ctrl |=3D =A00x04000000;
+out_be32 (&intr->ctrl,intr_ctrl);
+
+=A0 =A0 =A0 // set gpio
+=A0 =A0 =A0 ....
+
+return IRQ_HANDLED;
+}
+
+
+
+/* MPC5200 device tree match tables */
+static struct of_device_id mpc52xx_pic_ids[] __initdata =3D {
+{ .compatible =3D "fsl,mpc5200b-pic", },
+{ .compatible =3D "mpc5200-pic", },
+{}
+};
+
+
+static int __devinit qxcpld_of_probe (struct platform_device *ofdev)
+{
+.....
+/* Remap the necessary zones */
+np =3D of_find_matching_node(NULL, mpc52xx_pic_ids);
+drvdata->intr =3D of_iomap(np, 0);
+if (!drvdata->intr)
+panic(__FILE__ =A0": find_and_map failed on 'mpc5200-pic'. "
+=A0 =A0 =A0"Check node !");
+of_node_put (np);
+....
+
+/* request irq */
+drvdata->mess_irq =3D irq_of_parse_and_map(ofdev->dev.of_node,0);
+if (drvdata->mess_irq =3D=3D NO_IRQ ) {
+dev_err (&ofdev->dev, "failed to attach interrupt\n");
+goto reg_unmap ;
+}
+
+....
+if ( request_irq( drvdata->mess_irq,
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0qxcpld_mess_isr,
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0IRQF_DISABLED|IRQF_SHARED,
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"qxcpld-mess-irq",
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(void *)drvdata
+=A0 =A0 ) ) {
+dev_err(&ofdev->dev, "Can't request irq\n") ;
+goto reg_unmap ;
+}
+
+...
+
+}
