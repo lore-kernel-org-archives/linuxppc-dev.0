@@ -1,28 +1,21 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
 Received: from border.exmeritus.com (border.exmeritus.com
  [IPv6:2002:46a7:f11a:ffff::])
- by ozlabs.org (Postfix) with ESMTP id DD7371007FF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 11:08:57 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 3C98B1008E0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 11:08:59 +1100 (EST)
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 09/17] powerpc/e500: Split idle handlers for e500v1/v2 and
- e500mc
-Date: Wed,  9 Nov 2011 19:07:07 -0500
-Message-Id: <1320883635-17194-10-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [RFC PATCH 10/17] powerpc/e500: Fix up the last references to
+ CONFIG_PPC_E500MC
+Date: Wed,  9 Nov 2011 19:07:08 -0500
+Message-Id: <1320883635-17194-11-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <4E42AB6F.1050900@freescale.com>
 References: <4E42AB6F.1050900@freescale.com>
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>,
- Baruch Siach <baruch@tkos.co.il>, Andrew Gabbasov <andrew_gabbasov@mentor.com>,
- Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
- "Justin P. Mattock" <justinmattock@gmail.com>,
- Sonny Rao <sonnyrao@linux.vnet.ibm.com>, Timur Tabi <B04825@freescale.com>,
- linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
- Michael Ellerman <michael@ellerman.id.au>,
+Cc: Baruch Siach <baruch@tkos.co.il>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
+ Timur Tabi <B04825@freescale.com>, linux-kernel@vger.kernel.org,
  Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Kyle Moffett <Kyle.D.Moffett@boeing.com>, Scott Wood <scottwood@freescale.com>,
- Josh Boyer <jwboyer@linux.vnet.ibm.com>, Vakul Garg <vakul@freescale.com>,
- Ian Munsie <imunsie@au1.ibm.com>
+ Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+ Scott Wood <scottwood@freescale.com>, Paul Bolle <pebolle@tiscali.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,219 +25,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These are totally different (more so in fact than 6xx vs. e500v1/v2), so
-there isn't really a good reason to keep them in the same file.
+This moves the "select PPC_FPU" from PPC_E500MC to the new FSL_E500MC
+processor selection, where it belongs.
+
+The only actual difference that this patch introduces is the P5020DS
+board (FreeScale e5500 CPU) will not set FSL_E500MC when building in
+64-bit mode.
+
+This is OK as all of the existing code that the 64-bit P5020DS needs is
+still conditional on CONFIG_E500 or CONFIG_PPC_FPU, which are both set
+properly on the P5020DS (PPC_FPU is always enabled on 64-bit).
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 ---
- arch/powerpc/include/asm/machdep.h      |    1 +
- arch/powerpc/kernel/Makefile            |    3 +-
- arch/powerpc/kernel/idle_e500.S         |   12 -------
- arch/powerpc/kernel/idle_e500mc.S       |   56 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/setup_32.c          |    2 +-
- arch/powerpc/platforms/85xx/p2041_rdb.c |    2 +-
- arch/powerpc/platforms/85xx/p3041_ds.c  |    2 +-
- arch/powerpc/platforms/85xx/p3060_qds.c |    2 +-
- arch/powerpc/platforms/85xx/p4080_ds.c  |    2 +-
- arch/powerpc/platforms/85xx/p5020_ds.c  |    2 +-
- 10 files changed, 65 insertions(+), 19 deletions(-)
- create mode 100644 arch/powerpc/kernel/idle_e500mc.S
+ arch/powerpc/include/asm/cache.h       |    2 +-
+ arch/powerpc/platforms/85xx/Kconfig    |   10 +++++-----
+ arch/powerpc/platforms/Kconfig.cputype |    8 ++------
+ 3 files changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index b540d6f..995a2ec 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -253,6 +253,7 @@ struct machdep_calls {
- };
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index 4b50941..10988a2 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -8,7 +8,7 @@
+ #if defined(CONFIG_8xx) || defined(CONFIG_403GCX)
+ #define L1_CACHE_SHIFT		4
+ #define MAX_COPY_PREFETCH	1
+-#elif defined(CONFIG_PPC_E500MC)
++#elif defined(CONFIG_FSL_E500MC)
+ #define L1_CACHE_SHIFT		6
+ #define MAX_COPY_PREFETCH	4
+ #elif defined(CONFIG_PPC32)
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 37f9de7..248f87c 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -173,8 +173,8 @@ config SBC8560
  
- extern void e500_idle(void);
-+extern void e500mc_idle(void);
- extern void power4_idle(void);
- extern void power7_idle(void);
- extern void ppc6xx_idle(void);
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index ce4f7f1..8627dda 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -61,7 +61,8 @@ obj-$(CONFIG_IBMEBUS)           += ibmebus.o
- obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- ifeq ($(CONFIG_PPC32),y)
--obj-$(CONFIG_E500)		+= idle_e500.o
-+obj-$(CONFIG_FSL_E500_V1_V2)	+= idle_e500.o
-+obj-$(CONFIG_FSL_E500MC)	+= idle_e500mc.o
- endif
- obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
- obj-$(CONFIG_TAU)		+= tau_6xx.o
-diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
-index 4f0ab85..47a1a98 100644
---- a/arch/powerpc/kernel/idle_e500.S
-+++ b/arch/powerpc/kernel/idle_e500.S
-@@ -26,17 +26,6 @@ _GLOBAL(e500_idle)
- 	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
- 	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
+ config P2041_RDB
+ 	bool "Freescale P2041 RDB"
++	depends on FSL_E500MC
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT_DT_REQUIRED
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -187,8 +187,8 @@ config P2041_RDB
  
--#ifdef CONFIG_PPC_E500MC
--	wrteei	1
--1:	wait
+ config P3041_DS
+ 	bool "Freescale P3041 DS"
++	depends on FSL_E500MC
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT_DT_REQUIRED
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -201,8 +201,8 @@ config P3041_DS
+ 
+ config P3060_QDS
+ 	bool "Freescale P3060 QDS"
++	depends on FSL_E500MC
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT_DT_REQUIRED
+ 	select SWIOTLB
+ 	select MPC8xxx_GPIO
+@@ -214,8 +214,8 @@ config P3060_QDS
+ 
+ config P4080_DS
+ 	bool "Freescale P4080 DS"
++	depends on FSL_E500MC
+ 	select DEFAULT_UIMAGE
+-	select PPC_E500MC
+ 	select PHYS_64BIT_DT_REQUIRED
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -230,9 +230,9 @@ endif # PPC32
+ 
+ config P5020_DS
+ 	bool "Freescale P5020 DS"
++	depends on FSL_E500MC || PPC_BOOK3E_64
+ 	select DEFAULT_UIMAGE
+ 	select E500
+-	select PPC_E500MC
+ 	select PHYS_64BIT_DT_REQUIRED
+ 	select SWIOTLB
+ 	select ARCH_REQUIRE_GPIOLIB
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 9770564..fd37bb2 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -38,6 +38,7 @@ config FSL_E500_V1_V2
+ config FSL_E500MC
+ 	bool "Freescale e500mc (also e5500 in 32-bit mode)"
+ 	select PHYS_64BIT_SUPPORTED
++	select PPC_FPU
+ 	select E500
+ 	select PPC_85xx
+ 
+@@ -148,11 +149,6 @@ config E500
+ 	select PPC_FSL_BOOK3E
+ 	bool
+ 
+-config PPC_E500MC
+-	bool "e500mc Support"
+-	select PPC_FPU
+-	depends on E500
 -
--	/*
--	 * Guard against spurious wakeups (e.g. from a hypervisor) --
--	 * any real interrupt will cause us to return to LR due to
--	 * _TLF_NAPPING.
--	 */
--	b	1b
--#else
- 	/* Check if we can nap or doze, put HID0 mask in r3 */
- 	lis	r3,0
- BEGIN_FTR_SECTION
-@@ -83,7 +72,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_L2CSR|CPU_FTR_CAN_NAP)
- 	mtmsr	r7
- 	isync
- 2:	b	2b
--#endif /* !E500MC */
+ config PPC_FPU
+ 	bool
+ 	default y if PPC64
+@@ -280,7 +276,7 @@ config PPC_ICSWX
  
- /*
-  * Return from NAP/DOZE mode, restore some CPU specific registers,
-diff --git a/arch/powerpc/kernel/idle_e500mc.S b/arch/powerpc/kernel/idle_e500mc.S
-new file mode 100644
-index 0000000..4806942
---- /dev/null
-+++ b/arch/powerpc/kernel/idle_e500mc.S
-@@ -0,0 +1,56 @@
-+/*
-+ * Copyright (C) 2008 Freescale Semiconductor, Inc. All rights reserved.
-+ * Dave Liu <daveliu@freescale.com>
-+ * copy from idle_6xx.S and modify for e500 based processor,
-+ * implement the power_save function in idle.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/threads.h>
-+#include <asm/reg.h>
-+#include <asm/page.h>
-+#include <asm/cputable.h>
-+#include <asm/thread_info.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/asm-offsets.h>
-+
-+	.text
-+
-+_GLOBAL(e500mc_idle)
-+	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
-+	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
-+	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
-+	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
-+	wrteei	1
-+1:	wait
-+
-+	/*
-+	 * Guard against spurious wakeups (e.g. from a hypervisor) --
-+	 * any real interrupt will cause us to return to LR due to
-+	 * _TLF_NAPPING.
-+	 */
-+	b	1b
-+
-+/*
-+ * Return from NAP/DOZE mode, restore some CPU specific registers,
-+ * r2 containing physical address of current.
-+ * r11 points to the exception frame (physical address).
-+ * We have to preserve r10.
-+ */
-+_GLOBAL(power_save_ppc32_restore)
-+	lwz	r9,_LINK(r11)		/* interrupted in e500mc_idle */
-+	stw	r9,_NIP(r11)		/* make it do a blr */
-+
-+#ifdef CONFIG_SMP
-+	rlwinm	r12,r1,0,0,31-THREAD_SHIFT
-+	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
-+	slwi	r11,r11,2
-+#else
-+	li	r11,0
-+#endif
-+
-+	b	transfer_to_handler_cont
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index c1ce863..b14aabd 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -139,7 +139,7 @@ notrace void __init machine_init(u64 dt_ptr)
- 		ppc_md.power_save = ppc6xx_idle;
- #endif
- 
--#ifdef CONFIG_E500
-+#ifdef CONFIG_FSL_E500_V1_V2
- 	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
- 	    cpu_has_feature(CPU_FTR_CAN_NAP))
- 		ppc_md.power_save = e500_idle;
-diff --git a/arch/powerpc/platforms/85xx/p2041_rdb.c b/arch/powerpc/platforms/85xx/p2041_rdb.c
-index eda6ed5..43ca79d 100644
---- a/arch/powerpc/platforms/85xx/p2041_rdb.c
-+++ b/arch/powerpc/platforms/85xx/p2041_rdb.c
-@@ -78,7 +78,7 @@ define_machine(p2041_rdb) {
- 	.restart		= fsl_rstcr_restart,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
--	.power_save		= e500_idle,
-+	.power_save		= e500mc_idle,
- };
- 
- machine_device_initcall(p2041_rdb, corenet_ds_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/p3041_ds.c b/arch/powerpc/platforms/85xx/p3041_ds.c
-index 96d99a3..4abf6ef 100644
---- a/arch/powerpc/platforms/85xx/p3041_ds.c
-+++ b/arch/powerpc/platforms/85xx/p3041_ds.c
-@@ -80,7 +80,7 @@ define_machine(p3041_ds) {
- 	.restart		= fsl_rstcr_restart,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
--	.power_save		= e500_idle,
-+	.power_save		= e500mc_idle,
- };
- 
- machine_device_initcall(p3041_ds, corenet_ds_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/p3060_qds.c b/arch/powerpc/platforms/85xx/p3060_qds.c
-index 01dcf44..6f66776 100644
---- a/arch/powerpc/platforms/85xx/p3060_qds.c
-+++ b/arch/powerpc/platforms/85xx/p3060_qds.c
-@@ -67,7 +67,7 @@ define_machine(p3060_qds) {
- 	.restart		= fsl_rstcr_restart,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
--	.power_save		= e500_idle,
-+	.power_save		= e500mc_idle,
- };
- 
- machine_device_initcall(p3060_qds, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/p4080_ds.c b/arch/powerpc/platforms/85xx/p4080_ds.c
-index d1b21d7..3589961 100644
---- a/arch/powerpc/platforms/85xx/p4080_ds.c
-+++ b/arch/powerpc/platforms/85xx/p4080_ds.c
-@@ -79,7 +79,7 @@ define_machine(p4080_ds) {
- 	.restart		= fsl_rstcr_restart,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
--	.power_save		= e500_idle,
-+	.power_save		= e500mc_idle,
- };
- 
- machine_device_initcall(p4080_ds, corenet_ds_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
-index e8cba50..2e38748 100644
---- a/arch/powerpc/platforms/85xx/p5020_ds.c
-+++ b/arch/powerpc/platforms/85xx/p5020_ds.c
-@@ -88,7 +88,7 @@ define_machine(p5020_ds) {
- #ifdef CONFIG_PPC64
- 	.power_save		= book3e_idle,
- #else
--	.power_save		= e500_idle,
-+	.power_save		= e500mc_idle,
- #endif
- };
- 
+ config SPE
+ 	bool "SPE Support"
+-	depends on FSL_E200 || (E500 && !PPC_E500MC)
++	depends on FSL_E200 || FSL_E500_V1_V2
+ 	default y
+ 	---help---
+ 	  This option enables kernel support for the Signal Processing
 -- 
 1.7.2.5
