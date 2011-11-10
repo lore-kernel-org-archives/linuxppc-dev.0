@@ -1,26 +1,19 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
- [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C653AB6F82
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 01:04:29 +1100 (EST)
-Message-ID: <4EBBD9DF.6080100@freescale.com>
-Date: Thu, 10 Nov 2011 08:04:15 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-Subject: Re: [RFC PATCH 02/17] powerpc: Split up PHYS_64BIT config option
- to fix "select" issues
-References: <4E42AB6F.1050900@freescale.com>
- <1320883635-17194-3-git-send-email-Kyle.D.Moffett@boeing.com>
-In-Reply-To: <1320883635-17194-3-git-send-email-Kyle.D.Moffett@boeing.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Baruch Siach <baruch@tkos.co.il>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- Paul Bolle <pebolle@tiscali.nl>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D4012B6F65
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 03:07:14 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAAG7A5r027637
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 10:07:11 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 02/11] powerpc/85xx: Simplify P1020RDB CAMP dts using includes
+Date: Thu, 10 Nov 2011 10:07:00 -0600
+Message-Id: <1320941229-29557-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1320941229-29557-1-git-send-email-galak@kernel.crashing.org>
+References: <1320941229-29557-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +23,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kyle Moffett wrote:
->   CONFIG_PHYS_64BIT_SUPPORTED:
->     This hidden option should be selected by any CPU type which supports
->     64-bit physical addresses.  This will enable the PHYS_64BIT option
->     to be selected.  It is (obviously) always set on PPC64.
-> 
->   CONFIG_PHYS_64BIT_DT_REQUIRED:
->     This hidden option should be selected by any board or platform which
->     has >32-bit physical devices present in hardware.  If this is set
->     then the CONFIG_PHYS_64BIT option will be forcibly enabled and
->     hidden from the user.  It is (obviously) always set on PPC64.
-> 
->   CONFIG_PHYS_64BIT:
->     This option is user-controllable, where allowed by CPU and platform
->     settings, and should never be pointed at with a "select" statement.
->     Due to the values of the above two options, this is never visible on
->     PPC64.
+If we include the p1020rdb.dts instead of p1020si.dts we greatly reduce
+duplication and maintenance.  We can just list which devices are
+disabled for the given core and mpic protected sources.
 
-I'm with Kumar on this.  I don't see the point of making it so complicated.  No kernel should ever have to care with a DT is 64-bit or 32-bit.  If you build a kernel with 64-bit phys support, then it will work with any DT.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |  154 +------------------------
+ arch/powerpc/boot/dts/p1020rdb_camp_core1.dts |   11 +--
+ 2 files changed, 4 insertions(+), 161 deletions(-)
 
-U-Boot already warns you if the DT and the actual physical addresses of the devices don't match.
-
-There are only two reasons to create a 32-bit kernel:
-
-1) A small performance improvement on systems with 2GB or less.
-2) Some SOC devices only support 32-bit physical addresses, so the easiest way to ensure a compatible address is to prohibit memory above 4GB.
-
-Item #2 is not something that we really worry about.  It's only a real problem on true 64-bit kernels, and in those cases, we cannot build a kernel with 32-bit phys support, so the driver needs to handle it internally.
-
+diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
+index f0bf7f4..41b4585 100644
+--- a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
++++ b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
+@@ -16,7 +16,7 @@
+  * option) any later version.
+  */
+ 
+-/include/ "p1020si.dtsi"
++/include/ "p1020rdb.dts"
+ 
+ / {
+ 	model = "fsl,P1020RDB";
+@@ -32,7 +32,7 @@
+ 
+ 	cpus {
+ 		PowerPC,P1020@1 {
+-		status = "disabled";
++			status = "disabled";
+ 		};
+ 	};
+ 
+@@ -45,169 +45,19 @@
+ 	};
+ 
+ 	soc@ffe00000 {
+-		i2c@3000 {
+-			rtc@68 {
+-				compatible = "dallas,ds1339";
+-				reg = <0x68>;
+-			};
+-		};
+-
+ 		serial1: serial@4600 {
+ 			status = "disabled";
+ 		};
+ 
+-		spi@7000 {
+-			fsl_m25p80@0 {
+-				#address-cells = <1>;
+-				#size-cells = <1>;
+-				compatible = "fsl,espi-flash";
+-				reg = <0>;
+-				linux,modalias = "fsl_m25p80";
+-				spi-max-frequency = <40000000>;
+-
+-				partition@0 {
+-					/* 512KB for u-boot Bootloader Image */
+-					reg = <0x0 0x00080000>;
+-					label = "SPI (RO) U-Boot Image";
+-					read-only;
+-				};
+-
+-				partition@80000 {
+-					/* 512KB for DTB Image */
+-					reg = <0x00080000 0x00080000>;
+-					label = "SPI (RO) DTB Image";
+-					read-only;
+-				};
+-
+-				partition@100000 {
+-					/* 4MB for Linux Kernel Image */
+-					reg = <0x00100000 0x00400000>;
+-					label = "SPI (RO) Linux Kernel Image";
+-					read-only;
+-				};
+-
+-				partition@500000 {
+-					/* 4MB for Compressed RFS Image */
+-					reg = <0x00500000 0x00400000>;
+-					label = "SPI (RO) Compressed RFS Image";
+-					read-only;
+-				};
+-
+-				partition@900000 {
+-					/* 7MB for JFFS2 based RFS */
+-					reg = <0x00900000 0x00700000>;
+-					label = "SPI (RW) JFFS2 RFS";
+-				};
+-			};
+-		};
+-
+-		mdio@24000 {
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <3 1>;
+-				reg = <0x0>;
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <2 1>;
+-				reg = <0x1>;
+-			};
+-		};
+-
+-		mdio@25000 {
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@b0000 {
+ 			status = "disabled";
+ 		};
+ 
+-		enet1: ethernet@b1000 {
+-			phy-handle = <&phy0>;
+-			tbi-handle = <&tbi0>;
+-			phy-connection-type = "sgmii";
+-		};
+-
+-		enet2: ethernet@b2000 {
+-			phy-handle = <&phy1>;
+-			phy-connection-type = "rgmii-id";
+-		};
+-
+-		usb@22000 {
+-			phy_type = "ulpi";
+-		};
+-
+-		/* USB2 is shared with localbus, so it must be disabled
+-		   by default. We can't put 'status = "disabled";' here
+-		   since U-Boot doesn't clear the status property when
+-		   it enables USB2. OTOH, U-Boot does create a new node
+-		   when there isn't any. So, just comment it out.
+-		usb@23000 {
+-			phy_type = "ulpi";
+-		};
+-		*/
+-
+ 		mpic: pic@40000 {
+ 			protected-sources = <
+ 			42 29 30 34	/* serial1, enet0-queue-group0 */
+ 			17 18 24 45	/* enet0-queue-group1, crypto */
+ 			>;
+ 		};
+-
+-	};
+-
+-	pci0: pcie@ffe09000 {
+-		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
+-		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+-		interrupt-map = <
+-			/* IDSEL 0x0 */
+-			0000 0x0 0x0 0x1 &mpic 0x4 0x1
+-			0000 0x0 0x0 0x2 &mpic 0x5 0x1
+-			0000 0x0 0x0 0x3 &mpic 0x6 0x1
+-			0000 0x0 0x0 0x4 &mpic 0x7 0x1
+-			>;
+-		pcie@0 {
+-			reg = <0x0 0x0 0x0 0x0 0x0>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			device_type = "pci";
+-			ranges = <0x2000000 0x0 0xa0000000
+-				  0x2000000 0x0 0xa0000000
+-				  0x0 0x20000000
+-
+-				  0x1000000 0x0 0x0
+-				  0x1000000 0x0 0x0
+-				  0x0 0x100000>;
+-		};
+-	};
+-
+-	pci1: pcie@ffe0a000 {
+-		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
+-		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+-		interrupt-map = <
+-			/* IDSEL 0x0 */
+-			0000 0x0 0x0 0x1 &mpic 0x0 0x1
+-			0000 0x0 0x0 0x2 &mpic 0x1 0x1
+-			0000 0x0 0x0 0x3 &mpic 0x2 0x1
+-			0000 0x0 0x0 0x4 &mpic 0x3 0x1
+-			>;
+-		pcie@0 {
+-			reg = <0x0 0x0 0x0 0x0 0x0>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			device_type = "pci";
+-			ranges = <0x2000000 0x0 0x80000000
+-				  0x2000000 0x0 0x80000000
+-				  0x0 0x20000000
+-
+-				  0x1000000 0x0 0x0
+-				  0x1000000 0x0 0x0
+-				  0x0 0x100000>;
+-		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
+index 6ec0220..5174538 100644
+--- a/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
++++ b/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
+@@ -15,7 +15,7 @@
+  * option) any later version.
+  */
+ 
+-/include/ "p1020si.dtsi"
++/include/ "p1020rdb.dts"
+ 
+ / {
+ 	model = "fsl,P1020RDB";
+@@ -28,7 +28,7 @@
+ 
+ 	cpus {
+ 		PowerPC,P1020@0 {
+-		status = "disabled";
++			status = "disabled";
+ 		};
+ 	};
+ 
+@@ -85,12 +85,6 @@
+ 			status = "disabled";
+ 		};
+ 
+-		enet0: ethernet@b0000 {
+-			fixed-link = <1 1 1000 0 0>;
+-			phy-connection-type = "rgmii-id";
+-
+-		};
+-
+ 		enet1: ethernet@b1000 {
+ 			status = "disabled";
+ 		};
+@@ -135,7 +129,6 @@
+ 		global-utilities@e0000 {	//global utilities block
+ 			status = "disabled";
+ 		};
+-
+ 	};
+ 
+ 	pci0: pcie@ffe09000 {
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.3.4
