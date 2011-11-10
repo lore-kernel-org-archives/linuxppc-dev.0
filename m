@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 06AA0100825
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 03:07:21 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DB07B1007DC
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 03:07:20 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAAG7ISp027724
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 10:07:18 -0600
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAAG7HUJ027713
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 10:07:17 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/11] powerpc/85xx: Rework P1020 SoC device tree
-Date: Thu, 10 Nov 2011 10:07:07 -0600
-Message-Id: <1320941229-29557-9-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1320941229-29557-8-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 08/11] powerpc/85xx: create dts components to build up an SoC
+Date: Thu, 10 Nov 2011 10:07:06 -0600
+Message-Id: <1320941229-29557-8-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1320941229-29557-7-git-send-email-galak@kernel.crashing.org>
 References: <1320941229-29557-1-git-send-email-galak@kernel.crashing.org>
  <1320941229-29557-2-git-send-email-galak@kernel.crashing.org>
  <1320941229-29557-3-git-send-email-galak@kernel.crashing.org>
@@ -20,7 +20,6 @@ References: <1320941229-29557-1-git-send-email-galak@kernel.crashing.org>
  <1320941229-29557-5-git-send-email-galak@kernel.crashing.org>
  <1320941229-29557-6-git-send-email-galak@kernel.crashing.org>
  <1320941229-29557-7-git-send-email-galak@kernel.crashing.org>
- <1320941229-29557-8-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split the P1020 SoC device tree into what we can include as a 'prefix'
-to the board device tree and what needs to be included as a 'postfix'.
-
-This allows use more re-use and less duplication between various board
-device tree configurations (32-bit address map vs 36-bit address map).
+Introduce some common components that we can utilize to build up the
+various PQ3/85xx device trees.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/fsl/p1020si-post.dtsi |  229 +++++++++++++++
- arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi  |   68 +++++
- arch/powerpc/boot/dts/p1020si.dtsi          |  407 ---------------------------
- 3 files changed, 297 insertions(+), 407 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
- delete mode 100644 arch/powerpc/boot/dts/p1020si.dtsi
+ arch/powerpc/boot/dts/fsl/pq3-dma-0.dtsi        |   66 ++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi      |   51 +++++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-esdhc-0.dtsi      |   41 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-espi-0.dtsi       |   42 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi     |   67 +++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi     |   67 +++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi     |   66 ++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-gpio-0.dtsi       |   41 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-i2c-0.dtsi        |   43 +++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-i2c-1.dtsi        |   43 +++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi |   42 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi         |   66 ++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-sec3.3-0.dtsi     |   45 +++++++++++++++
+ 13 files changed, 680 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-esdhc-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-espi-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-gpio-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-i2c-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-i2c-1.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-sec3.3-0.dtsi
 
-diff --git a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-dma-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-dma-0.dtsi
 new file mode 100644
-index 0000000..74538a4
+index 0000000..caf0b1e
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
-@@ -0,0 +1,229 @@
++++ b/arch/powerpc/boot/dts/fsl/pq3-dma-0.dtsi
+@@ -0,0 +1,66 @@
 +/*
-+ * P1020/P1011 Silicon/SoC Device Tree Source (post include)
++ * PQ3 DMA device tree stub [ controller @ offset 0x21000 ]
 + *
 + * Copyright 2011 Freescale Semiconductor Inc.
 + *
@@ -86,209 +102,46 @@ index 0000000..74538a4
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+&lbc {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	compatible = "fsl,p1020-elbc", "fsl,elbc", "simple-bus";
-+	interrupts = <19 2 0 0>;
-+};
-+
-+&pci0 {
-+	compatible = "fsl,mpc8548-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 255>;
-+	clock-frequency = <33333333>;
-+	interrupts = <16 2 0 0>;
-+
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <16 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x4 0x1
-+			0000 0x0 0x0 0x2 &mpic 0x5 0x1
-+			0000 0x0 0x0 0x3 &mpic 0x6 0x1
-+			0000 0x0 0x0 0x4 &mpic 0x7 0x1
-+			>;
-+	};
-+};
-+
-+&pci1 {
-+	compatible = "fsl,mpc8548-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 255>;
-+	clock-frequency = <33333333>;
-+	interrupts = <16 2 0 0>;
-+
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <16 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x0 0x1
-+			0000 0x0 0x0 0x2 &mpic 0x1 0x1
-+			0000 0x0 0x0 0x3 &mpic 0x2 0x1
-+			0000 0x0 0x0 0x4 &mpic 0x3 0x1
-+			>;
-+	};
-+};
-+
-+&soc {
++&dma0 {
 +	#address-cells = <1>;
 +	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "fsl,p1020-immr", "simple-bus";
-+	bus-frequency = <0>;		// Filled out by uboot.
-+
-+	ecm-law@0 {
-+		compatible = "fsl,ecm-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <12>;
++	compatible = "fsl,eloplus-dma";
++	reg = <0x21300 0x4>;
++	ranges = <0x0 0x21100 0x200>;
++	cell-index = <0>;
++	dma-channel@0 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x0 0x80>;
++		cell-index = <0>;
++		interrupts = <20 2 0 0>;
 +	};
-+
-+	ecm@1000 {
-+		compatible = "fsl,p1020-ecm", "fsl,ecm";
-+		reg = <0x1000 0x1000>;
-+		interrupts = <16 2 0 0>;
++	dma-channel@80 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x80 0x80>;
++		cell-index = <1>;
++		interrupts = <21 2 0 0>;
 +	};
-+
-+	memory-controller@2000 {
-+		compatible = "fsl,p1020-memory-controller";
-+		reg = <0x2000 0x1000>;
-+		interrupts = <16 2 0 0>;
++	dma-channel@100 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x100 0x80>;
++		cell-index = <2>;
++		interrupts = <22 2 0 0>;
 +	};
-+
-+	i2c0: i2c@3000 {
-+	};
-+
-+	i2c1: i2c@3100 {
-+	};
-+
-+	serial0: serial@4500 {
-+	};
-+
-+	serial1: serial@4600 {
-+	};
-+
-+	spi0: spi@7000 {
-+	};
-+
-+	gpio0: gpio-controller@f000 {
-+	};
-+
-+	L2: l2-cache-controller@20000 {
-+		compatible = "fsl,p1020-l2-cache-controller";
-+		reg = <0x20000 0x1000>;
-+		cache-line-size = <32>;	// 32 bytes
-+		cache-size = <0x40000>; // L2,256K
-+		interrupts = <16 2 0 0>;
-+	};
-+
-+	dma0: dma@21300 {
-+	};
-+
-+	mdio0: mdio@24000 {
-+	};
-+
-+	mdio1: mdio@25000 {
-+	};
-+
-+	mdio2: mdio@26000 {
-+	};
-+
-+	enet0: ethernet@b0000 {
-+	};
-+
-+	enet1: ethernet@b1000 {
-+	};
-+
-+	enet2: ethernet@b2000 {
-+	};
-+
-+	usb@22000 {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		compatible = "fsl-usb2-dr";
-+		reg = <0x22000 0x1000>;
-+		interrupts = <28 0x2 0 0>;
-+	};
-+
-+	/* USB2 is shared with localbus, so it must be disabled
-+	   by default. We can't put 'status = "disabled";' here
-+	   since U-Boot doesn't clear the status property when
-+	   it enables USB2. OTOH, U-Boot does create a new node
-+	   when there isn't any. So, just comment it out.
-+	usb@23000 {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		compatible = "fsl-usb2-dr";
-+		reg = <0x23000 0x1000>;
-+		interrupts = <46 0x2 0 0>;
-+		phy_type = "ulpi";
-+	};
-+	*/
-+
-+	sdhc0: sdhc@2e000 {
-+	};
-+
-+	crypto: crypto@30000 {
-+	};
-+
-+	mpic: pic@40000 {
-+	};
-+
-+	timerA: timer@41100 {
-+	};
-+
-+	timerB: timer@42100 {
-+	};
-+
-+	msiA: msi@41600 {
-+	};
-+
-+	global-utilities@e0000 {
-+		compatible = "fsl,p1020-guts";
-+		reg = <0xe0000 0x1000>;
-+		fsl,has-rstcr;
++	dma-channel@180 {
++		compatible = "fsl,eloplus-dma-channel";
++		reg = <0x180 0x80>;
++		cell-index = <3>;
++		interrupts = <23 2 0 0>;
 +	};
 +};
-+
-+/include/ "pq3-dma-0.dtsi"
-+/include/ "pq3-duart-0.dtsi"
-+/include/ "pq3-esdhc-0.dtsi"
-+/include/ "pq3-espi-0.dtsi"
-+/include/ "pq3-etsec2-0.dtsi"
-+/include/ "pq3-etsec2-1.dtsi"
-+/include/ "pq3-etsec2-2.dtsi"
-+/include/ "pq3-gpio-0.dtsi"
-+/include/ "pq3-i2c-0.dtsi"
-+/include/ "pq3-i2c-1.dtsi"
-+/include/ "pq3-mpic.dtsi"
-+/include/ "pq3-mpic-timer-B.dtsi"
-+/include/ "pq3-sec3.3-0.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi
 new file mode 100644
-index 0000000..6f0376e
+index 0000000..3cd2545
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
-@@ -0,0 +1,68 @@
++++ b/arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi
+@@ -0,0 +1,51 @@
 +/*
-+ * P1020/P1011 Silicon/SoC Device Tree Source (pre include)
++ * PQ3 DUART device tree stub [ controller @ offset 0x4000 ]
 + *
 + * Copyright 2011 Freescale Semiconductor Inc.
 + *
@@ -321,452 +174,651 @@ index 0000000..6f0376e
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+/dts-v1/;
-+/ {
-+	compatible = "fsl,P1020";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
++&serial0 {
++	cell-index = <0>;
++	device_type = "serial";
++	compatible = "ns16550";
++	reg = <0x4500 0x100>;
++	clock-frequency = <0>;
++	interrupts = <42 2 0 0>;
++};
 +
-+	aliases {
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
++&serial1 {
++	cell-index = <1>;
++	device_type = "serial";
++	compatible = "ns16550";
++	reg = <0x4600 0x100>;
++	clock-frequency = <0>;
++	interrupts = <42 2 0 0>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-esdhc-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-esdhc-0.dtsi
+new file mode 100644
+index 0000000..b4e428c
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-esdhc-0.dtsi
+@@ -0,0 +1,41 @@
++/*
++ * PQ3 eSDHC device tree stub [ controller @ offset 0x2e000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&sdhc0 {
++	compatible = "fsl,esdhc";
++	reg = <0x2e000 0x1000>;
++	interrupts = <72 0x2 0 0>;
++	/* Filled in by U-Boot */
++	clock-frequency = <0>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-espi-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-espi-0.dtsi
+new file mode 100644
+index 0000000..4a51bce
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-espi-0.dtsi
+@@ -0,0 +1,42 @@
++/*
++ * PQ3 eSPI device tree stub [ controller @ offset 0x7000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&spi0 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	compatible = "fsl,mpc8536-espi";
++	reg = <0x7000 0x1000>;
++	interrupts = <59 0x2 0 0>;
++	fsl,espi-num-chipselects = <4>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
+new file mode 100644
+index 0000000..c65b434
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
+@@ -0,0 +1,67 @@
++/*
++ * PQ3 eTSEC2 device tree stub [ @ offsets 0x24000/0xb0000/0xb4000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++
++&mdio0 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	compatible = "fsl,etsec2-mdio";
++	reg = <0x24000 0x1000 0xb0030 0x4>;
++};
++
++&enet0 {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "network";
++	model = "eTSEC";
++	compatible = "fsl,etsec2";
++	fsl,num_rx_queues = <0x8>;
++	fsl,num_tx_queues = <0x8>;
++	fsl,magic-packet;
++	local-mac-address = [ 00 00 00 00 00 00 ];
++
++	queue-group@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0xb0000 0x1000>;
++		interrupts = <29 2 0 0 30 2 0 0 34 2 0 0>;
 +	};
 +
-+	cpus {
++	queue-group@1 {
 +		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,P1020@0 {
-+			device_type = "cpu";
-+			reg = <0x0>;
-+			next-level-cache = <&L2>;
-+		};
-+
-+		PowerPC,P1020@1 {
-+			device_type = "cpu";
-+			reg = <0x1>;
-+			next-level-cache = <&L2>;
-+		};
++		#size-cells = <1>;
++		reg = <0xb4000 0x1000>;
++		interrupts = <17 2 0 0 18 2 0 0 24 2 0 0>;
 +	};
 +};
-diff --git a/arch/powerpc/boot/dts/p1020si.dtsi b/arch/powerpc/boot/dts/p1020si.dtsi
-deleted file mode 100644
-index b08c848..0000000
---- a/arch/powerpc/boot/dts/p1020si.dtsi
-+++ /dev/null
-@@ -1,407 +0,0 @@
--/*
-- * P1020si Device Tree Source
-- *
-- * Copyright 2011 Freescale Semiconductor Inc.
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--/dts-v1/;
--/ {
--	compatible = "fsl,P1020";
--	#address-cells = <2>;
--	#size-cells = <2>;
--	interrupt-parent = <&mpic>;
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		PowerPC,P1020@0 {
--			device_type = "cpu";
--			reg = <0x0>;
--			next-level-cache = <&L2>;
--		};
--
--		PowerPC,P1020@1 {
--			device_type = "cpu";
--			reg = <0x1>;
--			next-level-cache = <&L2>;
--		};
--	};
--
--	localbus@ffe05000 {
--		#address-cells = <2>;
--		#size-cells = <1>;
--		compatible = "fsl,p1020-elbc", "fsl,elbc", "simple-bus";
--		reg = <0 0xffe05000 0 0x1000>;
--		interrupts = <19 2 0 0>;
--	};
--
--	soc@ffe00000 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		device_type = "soc";
--		compatible = "fsl,p1020-immr", "simple-bus";
--		ranges = <0x0  0x0 0xffe00000 0x100000>;
--		bus-frequency = <0>;		// Filled out by uboot.
--
--		ecm-law@0 {
--			compatible = "fsl,ecm-law";
--			reg = <0x0 0x1000>;
--			fsl,num-laws = <12>;
--		};
--
--		ecm@1000 {
--			compatible = "fsl,p1020-ecm", "fsl,ecm";
--			reg = <0x1000 0x1000>;
--			interrupts = <16 2 0 0>;
--		};
--
--		memory-controller@2000 {
--			compatible = "fsl,p1020-memory-controller";
--			reg = <0x2000 0x1000>;
--			interrupts = <16 2 0 0>;
--		};
--
--		i2c@3000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			cell-index = <0>;
--			compatible = "fsl-i2c";
--			reg = <0x3000 0x100>;
--			interrupts = <43 2 0 0>;
--			dfsrr;
--		};
--
--		i2c@3100 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			cell-index = <1>;
--			compatible = "fsl-i2c";
--			reg = <0x3100 0x100>;
--			interrupts = <43 2 0 0>;
--			dfsrr;
--		};
--
--		serial0: serial@4500 {
--			cell-index = <0>;
--			device_type = "serial";
--			compatible = "ns16550";
--			reg = <0x4500 0x100>;
--			clock-frequency = <0>;
--			interrupts = <42 2 0 0>;
--		};
--
--		serial1: serial@4600 {
--			cell-index = <1>;
--			device_type = "serial";
--			compatible = "ns16550";
--			reg = <0x4600 0x100>;
--			clock-frequency = <0>;
--			interrupts = <42 2 0 0>;
--		};
--
--		spi@7000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl,p1020-espi", "fsl,mpc8536-espi";
--			reg = <0x7000 0x1000>;
--			interrupts = <59 0x2 0 0>;
--			fsl,espi-num-chipselects = <4>;
--		};
--
--		gpio: gpio-controller@f000 {
--			#gpio-cells = <2>;
--			compatible = "fsl,mpc8572-gpio";
--			reg = <0xf000 0x100>;
--			interrupts = <47 0x2 0 0>;
--			gpio-controller;
--		};
--
--		L2: l2-cache-controller@20000 {
--			compatible = "fsl,p1020-l2-cache-controller";
--			reg = <0x20000 0x1000>;
--			cache-line-size = <32>;	// 32 bytes
--			cache-size = <0x40000>; // L2,256K
--			interrupts = <16 2 0 0>;
--		};
--
--		dma@21300 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "fsl,eloplus-dma";
--			reg = <0x21300 0x4>;
--			ranges = <0x0 0x21100 0x200>;
--			cell-index = <0>;
--			dma-channel@0 {
--				compatible = "fsl,eloplus-dma-channel";
--				reg = <0x0 0x80>;
--				cell-index = <0>;
--				interrupts = <20 2 0 0>;
--			};
--			dma-channel@80 {
--				compatible = "fsl,eloplus-dma-channel";
--				reg = <0x80 0x80>;
--				cell-index = <1>;
--				interrupts = <21 2 0 0>;
--			};
--			dma-channel@100 {
--				compatible = "fsl,eloplus-dma-channel";
--				reg = <0x100 0x80>;
--				cell-index = <2>;
--				interrupts = <22 2 0 0>;
--			};
--			dma-channel@180 {
--				compatible = "fsl,eloplus-dma-channel";
--				reg = <0x180 0x80>;
--				cell-index = <3>;
--				interrupts = <23 2 0 0>;
--			};
--		};
--
--		mdio@24000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl,etsec2-mdio";
--			reg = <0x24000 0x1000 0xb0030 0x4>;
--
--		};
--
--		mdio@25000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl,etsec2-tbi";
--			reg = <0x25000 0x1000 0xb1030 0x4>;
--
--		};
--
--		enet0: ethernet@b0000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			device_type = "network";
--			model = "eTSEC";
--			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
--			fsl,magic-packet;
--			local-mac-address = [ 00 00 00 00 00 00 ];
--
--			queue-group@0 {
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xb0000 0x1000>;
--				interrupts = <29 2 0 0 30 2 0 0 34 2 0 0>;
--			};
--
--			queue-group@1 {
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xb4000 0x1000>;
--				interrupts = <17 2 0 0 18 2 0 0 24 2 0 0>;
--			};
--		};
--
--		enet1: ethernet@b1000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			device_type = "network";
--			model = "eTSEC";
--			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
--			fsl,magic-packet;
--			local-mac-address = [ 00 00 00 00 00 00 ];
--
--			queue-group@0 {
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xb1000 0x1000>;
--				interrupts = <35 2 0 0 36 2 0 0 40 2 0 0>;
--			};
--
--			queue-group@1 {
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xb5000 0x1000>;
--				interrupts = <51 2 0 0 52 2 0 0 67 2 0 0>;
--			};
--		};
--
--		enet2: ethernet@b2000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			device_type = "network";
--			model = "eTSEC";
--			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
--			fsl,magic-packet;
--			local-mac-address = [ 00 00 00 00 00 00 ];
--
--			queue-group@0 {
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xb2000 0x1000>;
--				interrupts = <31 2 0 0 32 2 0 0 33 2 0 0>;
--			};
--
--			queue-group@1 {
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xb6000 0x1000>;
--				interrupts = <25 2 0 0 26 2 0 0 27 2 0 0>;
--			};
--		};
--
--		usb@22000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl-usb2-dr";
--			reg = <0x22000 0x1000>;
--			interrupts = <28 0x2 0 0>;
--		};
--
--		/* USB2 is shared with localbus, so it must be disabled
--		   by default. We can't put 'status = "disabled";' here
--		   since U-Boot doesn't clear the status property when
--		   it enables USB2. OTOH, U-Boot does create a new node
--		   when there isn't any. So, just comment it out.
--		usb@23000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl-usb2-dr";
--			reg = <0x23000 0x1000>;
--			interrupts = <46 0x2 0 0>;
--			phy_type = "ulpi";
--		};
--		*/
--
--		sdhci@2e000 {
--			compatible = "fsl,p1020-esdhc", "fsl,esdhc";
--			reg = <0x2e000 0x1000>;
--			interrupts = <72 0x2 0 0>;
--			/* Filled in by U-Boot */
--			clock-frequency = <0>;
--		};
--
--		crypto@30000 {
--			compatible = "fsl,sec3.3", "fsl,sec3.1", "fsl,sec3.0",
--				     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
--				     "fsl,sec2.0";
--			reg = <0x30000 0x10000>;
--			interrupts = <45 2 0 0 58 2 0 0>;
--			fsl,num-channels = <4>;
--			fsl,channel-fifo-len = <24>;
--			fsl,exec-units-mask = <0x97c>;
--			fsl,descriptor-types-mask = <0x3a30abf>;
--		};
--
--		mpic: pic@40000 {
--			interrupt-controller;
--			#address-cells = <0>;
--			#interrupt-cells = <4>;
--			reg = <0x40000 0x40000>;
--			compatible = "chrp,open-pic";
--			device_type = "open-pic";
--		};
--
--		timer@41100 {
--			compatible = "fsl,mpic-global-timer";
--			reg = <0x41100 0x100 0x41300 4>;
--			interrupts = <0 0 3 0
--			              1 0 3 0
--			              2 0 3 0
--			              3 0 3 0>;
--		};
--
--		timer@42100 {
--			compatible = "fsl,mpic-global-timer";
--			reg = <0x42100 0x100 0x42300 4>;
--			interrupts = <4 0 3 0
--			              5 0 3 0
--			              6 0 3 0
--			              7 0 3 0>;
--		};
--
--		msi@41600 {
--			compatible = "fsl,p1020-msi", "fsl,mpic-msi";
--			reg = <0x41600 0x80>;
--			msi-available-ranges = <0 0x100>;
--			interrupts = <
--				0xe0 0 0 0
--				0xe1 0 0 0
--				0xe2 0 0 0
--				0xe3 0 0 0
--				0xe4 0 0 0
--				0xe5 0 0 0
--				0xe6 0 0 0
--				0xe7 0 0 0>;
--		};
--
--		global-utilities@e0000 {	//global utilities block
--			compatible = "fsl,p1020-guts","fsl,p2020-guts";
--			reg = <0xe0000 0x1000>;
--			fsl,has-rstcr;
--		};
--	};
--
--	pci0: pcie@ffe09000 {
--		compatible = "fsl,mpc8548-pcie";
--		device_type = "pci";
--		#size-cells = <2>;
--		#address-cells = <3>;
--		bus-range = <0 255>;
--		clock-frequency = <33333333>;
--		interrupts = <16 2 0 0>;
--
--		pcie@0 {
--			reg = <0 0 0 0 0>;
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
--			interrupts = <16 2 0 0>;
--			interrupt-map-mask = <0xf800 0 0 7>;
--			interrupt-map = <
--				/* IDSEL 0x0 */
--				0000 0x0 0x0 0x1 &mpic 0x4 0x1
--				0000 0x0 0x0 0x2 &mpic 0x5 0x1
--				0000 0x0 0x0 0x3 &mpic 0x6 0x1
--				0000 0x0 0x0 0x4 &mpic 0x7 0x1
--				>;
--		};
--
--	};
--
--	pci1: pcie@ffe0a000 {
--		compatible = "fsl,mpc8548-pcie";
--		device_type = "pci";
--		#size-cells = <2>;
--		#address-cells = <3>;
--		bus-range = <0 255>;
--		clock-frequency = <33333333>;
--		interrupts = <16 2 0 0>;
--
--		pcie@0 {
--			reg = <0 0 0 0 0>;
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
--			interrupts = <16 2 0 0>;
--			interrupt-map-mask = <0xf800 0 0 7>;
--
--			interrupt-map = <
--				/* IDSEL 0x0 */
--				0000 0x0 0x0 0x1 &mpic 0x0 0x1
--				0000 0x0 0x0 0x2 &mpic 0x1 0x1
--				0000 0x0 0x0 0x3 &mpic 0x2 0x1
--				0000 0x0 0x0 0x4 &mpic 0x3 0x1
--				>;
--		};
--	};
--};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi b/arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi
+new file mode 100644
+index 0000000..9490f4f
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi
+@@ -0,0 +1,67 @@
++/*
++ * PQ3 eTSEC2 device tree stub [ @ offsets 0x25000/0xb1000/0xb5000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++
++&mdio1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	compatible = "fsl,etsec2-tbi";
++	reg = <0x25000 0x1000 0xb1030 0x4>;
++};
++
++&enet1 {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "network";
++	model = "eTSEC";
++	compatible = "fsl,etsec2";
++	fsl,num_rx_queues = <0x8>;
++	fsl,num_tx_queues = <0x8>;
++	fsl,magic-packet;
++	local-mac-address = [ 00 00 00 00 00 00 ];
++
++	queue-group@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0xb1000 0x1000>;
++		interrupts = <35 2 0 0 36 2 0 0 40 2 0 0>;
++	};
++
++	queue-group@1 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0xb5000 0x1000>;
++		interrupts = <51 2 0 0 52 2 0 0 67 2 0 0>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi b/arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi
+new file mode 100644
+index 0000000..61efc92
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi
+@@ -0,0 +1,66 @@
++/*
++ * PQ3 eTSEC2 device tree stub [ @ offsets 0x26000/0xb2000/0xb6000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&mdio2 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	compatible = "fsl,etsec2-tbi";
++	reg = <0x26000 0x1000 0xb1030 0x4>;
++};
++
++&enet2 {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "network";
++	model = "eTSEC";
++	compatible = "fsl,etsec2";
++	fsl,num_rx_queues = <0x8>;
++	fsl,num_tx_queues = <0x8>;
++	fsl,magic-packet;
++	local-mac-address = [ 00 00 00 00 00 00 ];
++
++	queue-group@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0xb2000 0x1000>;
++		interrupts = <31 2 0 0 32 2 0 0 33 2 0 0>;
++	};
++
++	queue-group@1 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0xb6000 0x1000>;
++		interrupts = <25 2 0 0 26 2 0 0 27 2 0 0>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-gpio-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-gpio-0.dtsi
+new file mode 100644
+index 0000000..a62a6d8
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-gpio-0.dtsi
+@@ -0,0 +1,41 @@
++/*
++ * PQ3 GPIO device tree stub [ controller @ offset 0xf000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&gpio0 {
++	#gpio-cells = <2>;
++	compatible = "fsl,pq3-gpio";
++	reg = <0xf000 0x100>;
++	interrupts = <47 0x2 0 0>;
++	gpio-controller;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-i2c-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-i2c-0.dtsi
+new file mode 100644
+index 0000000..82f5aaa
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-i2c-0.dtsi
+@@ -0,0 +1,43 @@
++/*
++ * PQ3 I2C device tree stub [ controller @ offset 0x3000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&i2c0 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	cell-index = <0>;
++	compatible = "fsl-i2c";
++	reg = <0x3000 0x100>;
++	interrupts = <43 2 0 0>;
++	dfsrr;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-i2c-1.dtsi b/arch/powerpc/boot/dts/fsl/pq3-i2c-1.dtsi
+new file mode 100644
+index 0000000..ac077de
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-i2c-1.dtsi
+@@ -0,0 +1,43 @@
++/*
++ * PQ3 I2C device tree stub [ controller @ offset 0x3100 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&i2c1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	cell-index = <1>;
++	compatible = "fsl-i2c";
++	reg = <0x3100 0x100>;
++	interrupts = <43 2 0 0>;
++	dfsrr;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi b/arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi
+new file mode 100644
+index 0000000..274b16a
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi
+@@ -0,0 +1,42 @@
++/*
++ * PQ3 MPIC Timer (Group B) device tree stub [ controller @ offset 0x42100 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&timerB {
++	compatible = "fsl,mpic-global-timer";
++	reg = <0x42100 0x100 0x42300 4>;
++	interrupts = <4 0 3 0
++		      5 0 3 0
++		      6 0 3 0
++		      7 0 3 0>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
+new file mode 100644
+index 0000000..94ecd9f
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
+@@ -0,0 +1,66 @@
++/*
++ * PQ3 MPIC device tree stub [ controller @ offset 0x40000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&mpic {
++	interrupt-controller;
++	#address-cells = <0>;
++	#interrupt-cells = <4>;
++	reg = <0x40000 0x40000>;
++	compatible = "chrp,open-pic";
++	device_type = "open-pic";
++};
++
++&timerA {
++	compatible = "fsl,mpic-global-timer";
++	reg = <0x41100 0x100 0x41300 4>;
++	interrupts = <0 0 3 0
++		      1 0 3 0
++		      2 0 3 0
++		      3 0 3 0>;
++};
++
++&msiA {
++	compatible = "fsl,mpic-msi";
++	reg = <0x41600 0x80>;
++	msi-available-ranges = <0 0x100>;
++	interrupts = <
++		0xe0 0 0 0
++		0xe1 0 0 0
++		0xe2 0 0 0
++		0xe3 0 0 0
++		0xe4 0 0 0
++		0xe5 0 0 0
++		0xe6 0 0 0
++		0xe7 0 0 0>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-sec3.3-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-sec3.3-0.dtsi
+new file mode 100644
+index 0000000..d06d2c4
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-sec3.3-0.dtsi
+@@ -0,0 +1,45 @@
++/*
++ * PQ3 Sec/Crypto 3.3 device tree stub [ controller @ offset 0x30000 ]
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&crypto {
++	compatible = "fsl,sec3.3", "fsl,sec3.1", "fsl,sec3.0",
++		     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
++		     "fsl,sec2.0";
++	reg = <0x30000 0x10000>;
++	interrupts = <45 2 0 0 58 2 0 0>;
++	fsl,num-channels = <4>;
++	fsl,channel-fifo-len = <24>;
++	fsl,exec-units-mask = <0x97c>;
++	fsl,descriptor-types-mask = <0x3a30abf>;
++};
 -- 
 1.7.3.4
