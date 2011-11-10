@@ -4,26 +4,26 @@ Received: from ch1outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 67A2D1007F8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 03:55:04 +1100 (EST)
-Date: Thu, 10 Nov 2011 10:54:55 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 63D54100812
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 04:03:46 +1100 (EST)
+Date: Thu, 10 Nov 2011 11:03:35 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
-Message-ID: <20111110165455.GE11983@schlenkerla.am.freescale.net>
+Subject: Re: [RFC PATCH 08/17] powerpc/e500: Remove conditional "lwsync"
+ substitution
+Message-ID: <20111110170334.GF11983@schlenkerla.am.freescale.net>
 References: <4E42AB6F.1050900@freescale.com>
- <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
- <FF2BF3F3-1158-4747-AEEC-03D6A7C462D9@kernel.crashing.org>
- <C0DED343-76A8-457E-BF54-E52DFCAC83A8@boeing.com>
- <58FDDDA5-26C4-493B-A00D-81DD94A5C26A@kernel.crashing.org>
+ <1320883635-17194-9-git-send-email-Kyle.D.Moffett@boeing.com>
+ <3937191C-A735-4668-8E80-9FB4B35E2F63@kernel.crashing.org>
+ <20111110163100.GA11983@schlenkerla.am.freescale.net>
+ <AC287A9B-0C8B-494E-95CD-A33014AECE22@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <58FDDDA5-26C4-493B-A00D-81DD94A5C26A@kernel.crashing.org>
-Cc: Timur Tabi <B04825@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Moffett,
- Kyle D" <Kyle.D.Moffett@boeing.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>
+In-Reply-To: <AC287A9B-0C8B-494E-95CD-A33014AECE22@kernel.crashing.org>
+Cc: Baruch Siach <baruch@tkos.co.il>, Timur Tabi <B04825@freescale.com>,
+ linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 10, 2011 at 10:30:41AM -0600, Kumar Gala wrote:
-> On Nov 10, 2011, at 10:17 AM, Moffett, Kyle D wrote:
-> > Furthermore, it looks like there are a couple issues here I missed
-> > before.  PPC64 systems all appear to have an L1_CACHE_SHIFT of 7,
-> > except when you turn on the P5020DS board option which magically
-> > changes it to "6" and breaks lord-knows-what.  I think my patch
-> > series actually "breaks" that and makes e5500 use 7 as well.
+On Thu, Nov 10, 2011 at 10:42:25AM -0600, Kumar Gala wrote:
 > 
-> a value of '6' on E5500 / P5020DS is correct and doesn't break anything.  Setting it to 7 is wrong and thus the code is correct today.
+> On Nov 10, 2011, at 10:31 AM, Scott Wood wrote:
 > 
-> > Are you sure that a kernel built to support E5500 can also run on
-> > other 64-bit PowerPC/POWER systems?
+> > On Thu, Nov 10, 2011 at 07:40:04AM -0600, Kumar Gala wrote:
+> >> Nak, we can run an e500mc in a mode that is compatible with e500v1/v2.  I see no reason to change the support we have there.
+> > 
+> > What "mode" do you mean?  DCBZ32?  We don't support using that currently,
+> > and I'd imagine the performance implication would be such that you'd
+> > never want to do it unless it's the only way to make some piece of legacy
+> > software work.
 > 
-> No it will not.  There is not expectation of that as E5500 is an
-> embedded / Book-E class part and uses that ISA version.  Book-S
-> (server) 64-bit machines are not OS compatible and we are not trying to
-> make them as such (but we do re-use a lot of code).
+> Correct, DCBZ32, we've had customers that go down this path.
 
-What about other 64-bit book3e chips?  What cache block size does A2 have?
+For running legacy software, or for multiplatform Linux kernels?
+
+And if you're willing to toss performance away for this goal, why do you
+need lwsync? :-)
+
+DCBZ32 is not a "mode that is compatible with v1/v2", BTW.  It only
+affects cache block size (for dcbz/dcba only), not SPE versus FP, not
+changes in power management, not changes in machine check handling, etc.
+
+Using DCBZ32 for the kernel would also complicate switching the kernel to
+dcbzl, to support enabling DCBZ32 for certain userspace apps (a more
+likely use case) without making it systemwide.
 
 -Scott
