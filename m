@@ -1,28 +1,26 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from blv-smtpout-01.boeing.com (blv-smtpout-01.boeing.com
- [130.76.32.69])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "blv-smtpout-01.boeing.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 875A9100911
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 03:33:28 +1100 (EST)
-From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Thu, 10 Nov 2011 10:33:21 -0600
-Subject: Re: [RFC PATCH 04/17] powerpc: Allow multiple machine-check handlers
-Message-ID: <2806AFF9-4F67-4846-95F6-D4093EA351A5@boeing.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B975C1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 03:42:36 +1100 (EST)
+Subject: Re: [RFC PATCH 08/17] powerpc/e500: Remove conditional "lwsync"
+ substitution
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20111110163100.GA11983@schlenkerla.am.freescale.net>
+Date: Thu, 10 Nov 2011 10:42:25 -0600
+Message-Id: <AC287A9B-0C8B-494E-95CD-A33014AECE22@kernel.crashing.org>
 References: <4E42AB6F.1050900@freescale.com>
- <1320883635-17194-5-git-send-email-Kyle.D.Moffett@boeing.com>
- <C3C78EA9-9E3D-46AC-94D0-537348DCFC64@kernel.crashing.org>
-In-Reply-To: <C3C78EA9-9E3D-46AC-94D0-537348DCFC64@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ <1320883635-17194-9-git-send-email-Kyle.D.Moffett@boeing.com>
+ <3937191C-A735-4668-8E80-9FB4B35E2F63@kernel.crashing.org>
+ <20111110163100.GA11983@schlenkerla.am.freescale.net>
+To: Scott Wood <scottwood@freescale.com>
 Cc: Baruch Siach <baruch@tkos.co.il>, Timur Tabi <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,19 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Nov 10, 2011, at 08:37, Kumar Gala wrote:
-> On Nov 9, 2011, at 6:07 PM, Kyle Moffett wrote:
+
+On Nov 10, 2011, at 10:31 AM, Scott Wood wrote:
+
+> On Thu, Nov 10, 2011 at 07:40:04AM -0600, Kumar Gala wrote:
 >>=20
->> +#if defined(CONFIG_FSL_E500MC) || defined(CONFIG_FSL_E5500)
->> +#ifdef CONFIG_FSL_E500_V1_V2
+>> On Nov 9, 2011, at 6:07 PM, Kyle Moffett wrote:
+>>=20
+>>> As FreeScale e500 systems have different cacheline sizes from =
+e500mc, it
+>>> is basically impossible for the kernel to support both in a single
+>>> system image at present.
+>>>=20
+>>> Given that one is SPE-float and the other is classic-float, they are =
+not
+>>> generally userspace-compatible either.
+>>>=20
+>>> This patch updates the conditional to depend on whether the system =
+is
+>>> actually targetting an "e500" or "e500mc" core and entirely removes =
+the
+>>> unused sync-to-lwsync-replacement on e500v1/e500v2 systems.
+>>>=20
+>>> Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+>>> ---
+>>> arch/powerpc/include/asm/synch.h |   16 ++++------------
+>>> 1 files changed, 4 insertions(+), 12 deletions(-)
+>>=20
+>> Nak, we can run an e500mc in a mode that is compatible with =
+e500v1/v2.  I see no reason to change the support we have there.
 >=20
-> doesn't exist yet, so patch is wrong sequence order.
+> What "mode" do you mean?  DCBZ32?  We don't support using that =
+currently,
+> and I'd imagine the performance implication would be such that you'd
+> never want to do it unless it's the only way to make some piece of =
+legacy
+> software work.
 
-Oops, d'oh.
+Correct, DCBZ32, we've had customers that go down this path.
 
-You are completely correct, thanks for noticing!
+>> I see no reason to change the support we have there.
+>=20
+> No reason to remove complexity that is not needed, and is not planned =
+to
+> be needed?
 
-I'll fix this for my next submission.
 
-Cheers,
-Kyle Moffett
+I'd rather wait for at least 2 years for e500mc devices to have further =
+deployment before we'd remove this.
+
+- k=
