@@ -2,12 +2,11 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: stable@kernel.org
 MIME-Version: 1.0
-Subject: [stable 3.1] [PATCH] KVM: PPC: Assemble book3s{,
- _hv}_rmhandlers.S separately
-Date: Thu, 10 Nov 2011 11:04:51 +1100
-Message-ID: <18815.1320883491@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Alexander Graf <agraf@suse.de>
+Subject: [stable 3.1] [PATCH] powerpc/kvm: Fix build failure with HV KVM and
+ CBE
+Date: Thu, 10 Nov 2011 11:04:56 +1100
+Message-ID: <18823.1320883496@neuling.org>
+Cc: Alexander Graf <agraf@suse.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,116 +16,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
+From: Alexander Graf <agraf@suse.de>
 
-KVM: PPC: Assemble book3s{,_hv}_rmhandlers.S separately
+powerpc/kvm: Fix build failure with HV KVM and CBE
 
-This makes arch/powerpc/kvm/book3s_rmhandlers.S and
-arch/powerpc/kvm/book3s_hv_rmhandlers.S be assembled as
-separate compilation units rather than having them #included in
-arch/powerpc/kernel/exceptions-64s.S.  We no longer have any
-conditional branches between the exception prologs in
-exceptions-64s.S and the KVM handlers, so there is no need to
-keep their contents close together in the vmlinux image.
+When running with HV KVM and CBE config options enabled, I get
+build failures like the following:
 
-In their current location, they are using up part of the limited
-space between the first-level interrupt handlers and the firmware
-NMI data area at offset 0x7000, and with some kernel configurations
-this area will overflow (e.g. allyesconfig), leading to an
-"attempt to .org backwards" error when compiling exceptions-64s.S.
+  arch/powerpc/kernel/head_64.o: In function `cbe_system_error_hv':
+  (.text+0x1228): undefined reference to `do_kvm_0x1202'
+  arch/powerpc/kernel/head_64.o: In function `cbe_maintenance_hv':
+  (.text+0x1628): undefined reference to `do_kvm_0x1602'
+  arch/powerpc/kernel/head_64.o: In function `cbe_thermal_hv':
+  (.text+0x1828): undefined reference to `do_kvm_0x1802'
 
-Moving them out requires that we add some #includes that the
-book3s_{,hv_}rmhandlers.S code was previously getting implicitly
-via exceptions-64s.S.
+This is because we jump to a KVM handler when HV is enabled, but we
+only generate the handler with PR KVM mode.
 
-Upstream commit 177339d7f7c99a25ecfdb6baeea6a2508fb2349f
+Upstream commit 5ccf55dd8177295813b68780f0a3c85e47306be1
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 CC: stable@kernel.org (3.1 only)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 41b02c7..29ddd8b 100644
+index a54d92f..cf9c69b 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -427,16 +427,6 @@ slb_miss_user_pseries:
- 	b	.				/* prevent spec. execution */
- #endif /* __DISABLED__ */
+@@ -267,7 +267,7 @@ vsx_unavailable_pSeries_1:
  
--/* KVM's trampoline code needs to be close to the interrupt handlers */
--
--#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
--#ifdef CONFIG_KVM_BOOK3S_PR
--#include "../kvm/book3s_rmhandlers.S"
--#else
--#include "../kvm/book3s_hv_rmhandlers.S"
--#endif
--#endif
--
- 	.align	7
- 	.globl	__end_interrupts
- __end_interrupts:
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 4c66d51..3688aee 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -50,12 +50,15 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
- 	book3s_64_mmu_host.o \
- 	book3s_64_mmu.o \
- 	book3s_32_mmu.o
-+kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
-+	book3s_rmhandlers.o
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1200, 0x1202, cbe_system_error)
+-	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
+ #endif /* CONFIG_CBE_RAS */
  
- kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
- 	book3s_hv.o \
- 	book3s_hv_interrupts.o \
- 	book3s_64_mmu_hv.o
- kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
-+	book3s_hv_rmhandlers.o \
- 	book3s_hv_rm_mmu.o \
- 	book3s_64_vio_hv.o \
- 	book3s_hv_builtin.o
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index de29501..bc6ade9 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -20,7 +20,10 @@
- #include <asm/ppc_asm.h>
- #include <asm/kvm_asm.h>
- #include <asm/reg.h>
-+#include <asm/mmu.h>
- #include <asm/page.h>
-+#include <asm/ptrace.h>
-+#include <asm/hvcall.h>
- #include <asm/asm-offsets.h>
- #include <asm/exception-64s.h>
+ 	STD_EXCEPTION_PSERIES(0x1300, 0x1300, instruction_breakpoint)
+@@ -275,7 +275,7 @@ vsx_unavailable_pSeries_1:
  
-diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
-index c1f877c..5ee66ed 100644
---- a/arch/powerpc/kvm/book3s_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_rmhandlers.S
-@@ -20,6 +20,7 @@
- #include <asm/ppc_asm.h>
- #include <asm/kvm_asm.h>
- #include <asm/reg.h>
-+#include <asm/mmu.h>
- #include <asm/page.h>
- #include <asm/asm-offsets.h>
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1600, 0x1602, cbe_maintenance)
+-	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
+ #endif /* CONFIG_CBE_RAS */
  
-@@ -39,6 +40,7 @@
- #define MSR_NOIRQ		MSR_KERNEL & ~(MSR_IR | MSR_DR)
- #define FUNC(name) 		GLUE(.,name)
+ 	STD_EXCEPTION_PSERIES(0x1700, 0x1700, altivec_assist)
+@@ -283,7 +283,7 @@ vsx_unavailable_pSeries_1:
  
-+	.globl	kvmppc_skip_interrupt
- kvmppc_skip_interrupt:
- 	/*
- 	 * Here all GPRs are unchanged from when the interrupt happened
-@@ -51,6 +53,7 @@ kvmppc_skip_interrupt:
- 	rfid
- 	b	.
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1800, 0x1802, cbe_thermal)
+-	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1802)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1802)
+ #endif /* CONFIG_CBE_RAS */
  
-+	.globl	kvmppc_skip_Hinterrupt
- kvmppc_skip_Hinterrupt:
- 	/*
- 	 * Here all GPRs are unchanged from when the interrupt happened
+ 	. = 0x3000
