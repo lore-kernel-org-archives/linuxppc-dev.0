@@ -1,29 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 63D54100812
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 04:03:46 +1100 (EST)
-Date: Thu, 10 Nov 2011 11:03:35 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC PATCH 08/17] powerpc/e500: Remove conditional "lwsync"
- substitution
-Message-ID: <20111110170334.GF11983@schlenkerla.am.freescale.net>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883635-17194-9-git-send-email-Kyle.D.Moffett@boeing.com>
- <3937191C-A735-4668-8E80-9FB4B35E2F63@kernel.crashing.org>
- <20111110163100.GA11983@schlenkerla.am.freescale.net>
- <AC287A9B-0C8B-494E-95CD-A33014AECE22@kernel.crashing.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id F3659B6F93
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 04:11:53 +1100 (EST)
+Message-ID: <4EBC05D5.5080302@suse.de>
+Date: Thu, 10 Nov 2011 18:11:49 +0100
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <AC287A9B-0C8B-494E-95CD-A33014AECE22@kernel.crashing.org>
-Cc: Baruch Siach <baruch@tkos.co.il>, Timur Tabi <B04825@freescale.com>,
- linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: Re: [PATCH] powerpc/kvm: fix build with older toolchains
+References: <20111107233656.GB20208@us.ibm.com>
+In-Reply-To: <20111107233656.GB20208@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 10, 2011 at 10:42:25AM -0600, Kumar Gala wrote:
-> 
-> On Nov 10, 2011, at 10:31 AM, Scott Wood wrote:
-> 
-> > On Thu, Nov 10, 2011 at 07:40:04AM -0600, Kumar Gala wrote:
-> >> Nak, we can run an e500mc in a mode that is compatible with e500v1/v2.  I see no reason to change the support we have there.
-> > 
-> > What "mode" do you mean?  DCBZ32?  We don't support using that currently,
-> > and I'd imagine the performance implication would be such that you'd
-> > never want to do it unless it's the only way to make some piece of legacy
-> > software work.
-> 
-> Correct, DCBZ32, we've had customers that go down this path.
+On 11/08/2011 12:36 AM, Nishanth Aravamudan wrote:
+> Fix KVM build for older toolchains (found with .powerpc64-unknown-linux-gnu-gcc
+> (crosstool-NG-1.8.1) 4.3.2):
+>
+>    AS      arch/powerpc/kvm/book3s_hv_rmhandlers.o
+> arch/powerpc/kvm/book3s_hv_rmhandlers.S: Assembler messages:
+> arch/powerpc/kvm/book3s_hv_rmhandlers.S:1388: Error: Unrecognized opcode: `popcntw'
+> make[1]: *** [arch/powerpc/kvm/book3s_hv_rmhandlers.o] Error 1
+> make: *** [_module_arch/powerpc/kvm] Error 2
+>
+> Signed-off-by: Nishanth Aravamudan<nacc@us.ibm.com>
 
-For running legacy software, or for multiplatform Linux kernels?
+Thanks, applied to kvm-ppc-next.
 
-And if you're willing to toss performance away for this goal, why do you
-need lwsync? :-)
 
-DCBZ32 is not a "mode that is compatible with v1/v2", BTW.  It only
-affects cache block size (for dcbz/dcba only), not SPE versus FP, not
-changes in power management, not changes in machine check handling, etc.
+Alex
 
-Using DCBZ32 for the kernel would also complicate switching the kernel to
-dcbzl, to support enabling DCBZ32 for certain userspace apps (a more
-likely use case) without making it systemwide.
-
--Scott
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 0607909..a053db1 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1385,7 +1385,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_206)
+>   	addi	r6,r5,VCORE_NAPPING_THREADS
+>   31:	lwarx	r4,0,r6
+>   	or	r4,r4,r0
+> -	popcntw	r7,r4
+> +	PPC_POPCNTW(r7,r4)
+>   	cmpw	r7,r8
+>   	bge	2f
+>   	stwcx.	r4,0,r6
+>
