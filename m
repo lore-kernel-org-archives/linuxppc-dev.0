@@ -2,22 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D0C18100AE3
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 03:14:23 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 11ECA100C0D
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 03:14:24 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAAGEJhn031510
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 10:14:19 -0600
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAAGELqt031529
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 10:14:21 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH 04/30] powerpc/85xx: Update P1020 SEC3.3 node to match
- actual SoC HW
-Date: Thu, 10 Nov 2011 10:13:47 -0600
-Message-Id: <1320941653-29797-5-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1320941653-29797-4-git-send-email-galak@kernel.crashing.org>
+Subject: [RFC][PATCH 05/30] powerpc/85xx: Add ethernet magic packet property
+ to P1020 device tree
+Date: Thu, 10 Nov 2011 10:13:48 -0600
+Message-Id: <1320941653-29797-6-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1320941653-29797-5-git-send-email-galak@kernel.crashing.org>
 References: <1320941653-29797-1-git-send-email-galak@kernel.crashing.org>
  <1320941653-29797-2-git-send-email-galak@kernel.crashing.org>
  <1320941653-29797-3-git-send-email-galak@kernel.crashing.org>
  <1320941653-29797-4-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-5-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+All eTSEC2 controllers support waking on magic packet so fixup device
+tree to report that.
+
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/p1020si.dtsi |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/dts/p1020si.dtsi |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/p1020si.dtsi b/arch/powerpc/boot/dts/p1020si.dtsi
-index 25e10cf..5514e1d 100644
+index 5514e1d..14dff69 100644
 --- a/arch/powerpc/boot/dts/p1020si.dtsi
 +++ b/arch/powerpc/boot/dts/p1020si.dtsi
-@@ -305,15 +305,16 @@
- 		};
- 
- 		crypto@30000 {
--			compatible = "fsl,sec3.1", "fsl,sec3.0", "fsl,sec2.4",
--				     "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
-+			compatible = "fsl,sec3.3", "fsl,sec3.1", "fsl,sec3.0",
-+				     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
-+				     "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <45 2 58 2>;
+@@ -200,6 +200,7 @@
+ 			compatible = "fsl,etsec2";
+ 			fsl,num_rx_queues = <0x8>;
+ 			fsl,num_tx_queues = <0x8>;
++			fsl,magic-packet;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
  			interrupt-parent = <&mpic>;
- 			fsl,num-channels = <4>;
- 			fsl,channel-fifo-len = <24>;
--			fsl,exec-units-mask = <0xbfe>;
--			fsl,descriptor-types-mask = <0x3ab0ebf>;
-+			fsl,exec-units-mask = <0x97c>;
-+			fsl,descriptor-types-mask = <0x3a30abf>;
- 		};
  
- 		mpic: pic@40000 {
+@@ -226,6 +227,7 @@
+ 			compatible = "fsl,etsec2";
+ 			fsl,num_rx_queues = <0x8>;
+ 			fsl,num_tx_queues = <0x8>;
++			fsl,magic-packet;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupt-parent = <&mpic>;
+ 
+@@ -252,6 +254,7 @@
+ 			compatible = "fsl,etsec2";
+ 			fsl,num_rx_queues = <0x8>;
+ 			fsl,num_tx_queues = <0x8>;
++			fsl,magic-packet;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupt-parent = <&mpic>;
+ 
 -- 
 1.7.3.4
