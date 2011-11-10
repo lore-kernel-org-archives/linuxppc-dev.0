@@ -1,12 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: stable@kernel.org
-MIME-Version: 1.0
-Subject: [stable 3.1] [PATCH] powerpc/kvm: Fix build failure with HV KVM and
- CBE
-Date: Thu, 10 Nov 2011 11:04:56 +1100
-Message-ID: <18823.1320883496@neuling.org>
-Cc: Alexander Graf <agraf@suse.de>, linuxppc-dev@ozlabs.org
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from border.exmeritus.com (border.exmeritus.com
+ [IPv6:2002:46a7:f11a:ffff::])
+ by ozlabs.org (Postfix) with ESMTP id 95B69B6F71
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 11:07:57 +1100 (EST)
+From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
+Date: Wed,  9 Nov 2011 19:06:58 -0500
+Message-Id: <1320883635-17194-1-git-send-email-Kyle.D.Moffett@boeing.com>
+In-Reply-To: <4E42AB6F.1050900@freescale.com>
+References: <4E42AB6F.1050900@freescale.com>
+Cc: Baruch Siach <baruch@tkos.co.il>, Timur Tabi <B04825@freescale.com>,
+ linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,58 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alexander Graf <agraf@suse.de>
+(Sorry for the repost, I accidentally omitted Baruch's email).
 
-powerpc/kvm: Fix build failure with HV KVM and CBE
+Hello,
 
-When running with HV KVM and CBE config options enabled, I get
-build failures like the following:
+I saw Baruch Siach's patch:
+  powerpc: 85xx: separate e500 from e500mc
 
-  arch/powerpc/kernel/head_64.o: In function `cbe_system_error_hv':
-  (.text+0x1228): undefined reference to `do_kvm_0x1202'
-  arch/powerpc/kernel/head_64.o: In function `cbe_maintenance_hv':
-  (.text+0x1628): undefined reference to `do_kvm_0x1602'
-  arch/powerpc/kernel/head_64.o: In function `cbe_thermal_hv':
-  (.text+0x1828): undefined reference to `do_kvm_0x1802'
+Unfortunately, that patch breaks the dependencies for the P5020DS
+platform and does not fix the underlying code which does not
+understand what the ambiguous "CONFIG_E500" means.
 
-This is because we jump to a KVM handler when HV is enabled, but we
-only generate the handler with PR KVM mode.
+In order to fix the issue at the fundamental level, I created the
+following 17-patch series loosely based on Baruch's patch.
 
-Upstream commit 5ccf55dd8177295813b68780f0a3c85e47306be1
+=== High-Level Summary ===
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-CC: stable@kernel.org (3.1 only)
+The e500v1/v2 and e500mc/e5500 CPU families are not compatible with
+each other, yet they share the same "CONFIG_E500" Kconfig option.
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index a54d92f..cf9c69b 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -267,7 +267,7 @@ vsx_unavailable_pSeries_1:
- 
- #ifdef CONFIG_CBE_RAS
- 	STD_EXCEPTION_HV(0x1200, 0x1202, cbe_system_error)
--	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
-+	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
- #endif /* CONFIG_CBE_RAS */
- 
- 	STD_EXCEPTION_PSERIES(0x1300, 0x1300, instruction_breakpoint)
-@@ -275,7 +275,7 @@ vsx_unavailable_pSeries_1:
- 
- #ifdef CONFIG_CBE_RAS
- 	STD_EXCEPTION_HV(0x1600, 0x1602, cbe_maintenance)
--	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
-+	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
- #endif /* CONFIG_CBE_RAS */
- 
- 	STD_EXCEPTION_PSERIES(0x1700, 0x1700, altivec_assist)
-@@ -283,7 +283,7 @@ vsx_unavailable_pSeries_1:
- 
- #ifdef CONFIG_CBE_RAS
- 	STD_EXCEPTION_HV(0x1800, 0x1802, cbe_thermal)
--	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_HV, 0x1802)
-+	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1802)
- #endif /* CONFIG_CBE_RAS */
- 
- 	. = 0x3000
+The following patch series splits the 32-bit CPU support into two
+separate options: "CONFIG_FSL_E500_V1_V2" and "CONFIG_FSL_E500MC".
+Additionally, the 64-bit e5500 support is separated to its own config
+option ("CONFIG_FSL_E5500") which is automatically combined with
+either 32-bit e500MC or 64-bit Book-3E when the P5020DS board support
+is enabled.
+
+I based the patches on v3.2-rc1, please let me know if I should
+update the patches against a different tree.
+
+The first 4 patches stand on their own merits; they are generic code
+cleanups necessary to support the later patches.
+
+I'd like to know what you all think.
+
+Cheers,
+Kyle Moffett
+
+--
+Curious about my work on the Debian powerpcspe port?
+I'm keeping a blog here: http://pureperl.blogspot.com/
