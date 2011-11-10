@@ -1,18 +1,31 @@
-Return-Path: <ndrs.frsn@googlemail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
- [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 2E6691007D4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 22:31:17 +1100 (EST)
-Received: by ywp27 with SMTP id 27so1365031ywp.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 03:31:13 -0800 (PST)
+Return-Path: <ralf@linux-mips.org>
+Received: from linux-mips.org
+ (6.7.d.7.e.9.6.e.9.3.9.f.e.8.9.4.0.0.0.0.a.e.3.0.0.b.8.0.1.0.0.2.ip6.arpa
+ [IPv6:2001:8b0:3ea:0:498e:f939:e69e:7d76])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 406DDB6F77
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 22:41:45 +1100 (EST)
+Date: Thu, 10 Nov 2011 11:41:15 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 3/5] treewide: Remove useless NORET_TYPE macro and uses
+Message-ID: <20111110114115.GA21453@linux-mips.org>
+References: <cover.1320917551.git.joe@perches.com>
+ <e69163f6245513b05d5d21c2f57b916931ad5bff.1320917557.git.joe@perches.com>
 MIME-Version: 1.0
-Date: Thu, 10 Nov 2011 12:31:13 +0100
-Message-ID: <CAMU=cjySPDP0WFJi+07UkiQw71Ta0Uqd6n2NtKRScCxPxZsFRg@mail.gmail.com>
-Subject: right way to get interrupt controller register
-From: Andreas Friesen <ndrs.frsn@googlemail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e69163f6245513b05d5d21c2f57b916931ad5bff.1320917557.git.joe@perches.com>
+Cc: Andrew Morton <akpm@google.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ linux-m68k@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ Peter Zijlstra <peterz@infradead.org>, linux-s390@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Chris Metcalf <cmetcalf@tilera.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux390@de.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,80 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello people,
+On Thu, Nov 10, 2011 at 01:41:44AM -0800, Joe Perches wrote:
 
-I have a little problem with the isr routine. The interrupt handler
-is installed and working fine, but I can not clear the interrupt flag in
-ICTL-Register.
+>  arch/mips/include/asm/ptrace.h         |    2 +-
+>  arch/mips/kernel/traps.c               |    2 +-
 
-Is that right way to get interrupt controller register ?
+For the MIPS bits:
 
-Thanks in advance,
-Andreas Friesen
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-
-Hier is my ISR-Handler and probe functions :
-
-static irqreturn_t mess_isr (int irq, void *data)
-{
-struct qxcpld_drvdata *drvdata ;
-drvdata =3D (struct qxcpld_drvdata *)data ;
-struct mpc52xx_intr __iomem *intr;
-int i ;
-u32 intr_ctrl;
-
-=A0 =A0 =A0 =A0intr =3D drvdata->intr
-=A0 =A0 =A0 =A0intr_ctrl =3D intr->ctrl ;
-intr_ctrl =3D in_be32(&intr->ctrl);
-intr_ctrl |=3D =A00x04000000;
-out_be32 (&intr->ctrl,intr_ctrl);
-
-=A0 =A0 =A0 // set gpio
-=A0 =A0 =A0 ....
-
-return IRQ_HANDLED;
-}
-
-
-
-/* MPC5200 device tree match tables */
-static struct of_device_id mpc52xx_pic_ids[] __initdata =3D {
-{ .compatible =3D "fsl,mpc5200b-pic", },
-{ .compatible =3D "mpc5200-pic", },
-{}
-};
-
-
-static int __devinit qxcpld_of_probe (struct platform_device *ofdev)
-{
-.....
-/* Remap the necessary zones */
-np =3D of_find_matching_node(NULL, mpc52xx_pic_ids);
-drvdata->intr =3D of_iomap(np, 0);
-if (!drvdata->intr)
-panic(__FILE__ =A0": find_and_map failed on 'mpc5200-pic'. "
-=A0 =A0 =A0"Check node !");
-of_node_put (np);
-....
-
-/* request irq */
-drvdata->mess_irq =3D irq_of_parse_and_map(ofdev->dev.of_node,0);
-if (drvdata->mess_irq =3D=3D NO_IRQ ) {
-dev_err (&ofdev->dev, "failed to attach interrupt\n");
-goto reg_unmap ;
-}
-
-....
-if ( request_irq( drvdata->mess_irq,
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0qxcpld_mess_isr,
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0IRQF_DISABLED|IRQF_SHARED,
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"qxcpld-mess-irq",
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(void *)drvdata
-=A0 =A0 ) ) {
-dev_err(&ofdev->dev, "Can't request irq\n") ;
-goto reg_unmap ;
-}
-
-...
-
-}
+  Ralf
