@@ -1,26 +1,28 @@
 Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
  [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 99C3C1007DC
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 05:56:06 +1100 (EST)
-Date: Thu, 10 Nov 2011 12:55:59 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 818661007E2
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 05:58:25 +1100 (EST)
+Date: Thu, 10 Nov 2011 12:58:18 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 28/30] powerpc/85xx: Rework P1023RDS device tree
-Message-ID: <20111110185559.GA12339@schlenkerla.am.freescale.net>
-References: <1320941653-29797-20-git-send-email-galak@kernel.crashing.org>
- <1320941653-29797-21-git-send-email-galak@kernel.crashing.org>
- <1320941653-29797-22-git-send-email-galak@kernel.crashing.org>
- <1320941653-29797-23-git-send-email-galak@kernel.crashing.org>
- <1320941653-29797-24-git-send-email-galak@kernel.crashing.org>
- <1320941653-29797-25-git-send-email-galak@kernel.crashing.org>
- <1320941653-29797-26-git-send-email-galak@kernel.crashing.org>
- <B48BB824-D8FF-4D60-B0A5-B6C237074907@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 08/30] powerpc/85xx: Rework P1020 SoC device tree
+Message-ID: <20111110185818.GB12339@schlenkerla.am.freescale.net>
+References: <1320941653-29797-2-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-3-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-4-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-5-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-6-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-7-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-8-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-9-git-send-email-galak@kernel.crashing.org>
+ <20111110180542.GA12203@schlenkerla.am.freescale.net>
+ <5561C3BD-B4E5-4D82-84C4-B8715191DDE3@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <B48BB824-D8FF-4D60-B0A5-B6C237074907@kernel.crashing.org>
+In-Reply-To: <5561C3BD-B4E5-4D82-84C4-B8715191DDE3@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,40 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 10, 2011 at 12:42:54PM -0600, Kumar Gala wrote:
+On Thu, Nov 10, 2011 at 12:46:27PM -0600, Kumar Gala wrote:
 > 
-> On Nov 10, 2011, at 12:10 PM, Scott Wood wrote:
+> On Nov 10, 2011, at 12:05 PM, Scott Wood wrote:
 > 
-> > On Thu, Nov 10, 2011 at 10:14:11AM -0600, Kumar Gala wrote:
-> >> -		power@e0070{
-> >> -			compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc",
-> >> -			             "fsl,p1022-pmc";
-> >> -			reg = <0xe0070 0x20>;
-> >> -			etsec1_clk: soc-clk@B0{
-> >> -				fsl,pmcdr-mask = <0x00000080>;
-> >> -			};
-> >> -			etsec2_clk: soc-clk@B1{
-> >> -				fsl,pmcdr-mask = <0x00000040>;
-> >> -			};
-> >> -			etsec3_clk: soc-clk@B2{
-> >> -				fsl,pmcdr-mask = <0x00000020>;
-> >> -			};
-> >> -		};
+> > On Thu, Nov 10, 2011 at 10:13:51AM -0600, Kumar Gala wrote:
+> >> Split the P1020 SoC device tree into what we can include as a 'prefix'
+> >> to the board device tree and what needs to be included as a 'postfix'.
+> >> 
+> >> This allows use more re-use and less duplication between various board
+> >> device tree configurations (32-bit address map vs 36-bit address map).
 > > 
-> > The compatibles on this node are wrong, but it looks like you're removing
-> > it altogether?
-> > 
-> > -Scott
+> > Could you elaborate on the issues that require this pre/post approach?
 > 
-> Yeah, I think the whole thing needs to be relocated at because there are no etsec's on P1023, etc.  So will comment about this in commit message
+> We utilize two 'features' of dtc to accomplish things.  One is includes the other is 'merging of labeled nodes'.
+> 
+> We can using merging to allow the board to specify the "reg" & "ranges"
+> values of a SoC node that might vary between physical address maps
+> (32-bit vs 36-bit as example).
+> 
+> dtc is able to 'merge' multiple labeled nodes as well.  So we use that
+> to handle board specific values for something like localbus if we want
+> to support both a 32-bit and 36-bit address map.
+> 
+> > What does the SoC part need to specify that has to override or go within
+> > something the board specifies?
+> 
+> Not sure I follow the question.
 
-Ah right, the etsec stuff should go as well. :-)
+My question is, why does the stuff in post need to be in post, versus pre?
 
-It should look like this:
-
-	power@e0070 {
-		compatible = "fsl,p1023-pmc", "fsl,mpc8548-pmc";
-		reg = <0xe0070 0x20>;
-	};
+Why can't pre define the soc node, and let the board dts set ranges? 
+Likewise for localbus, pci, etc.
 
 -Scott
