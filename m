@@ -1,18 +1,13 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from border.exmeritus.com (border.exmeritus.com
- [IPv6:2002:46a7:f11a:ffff::])
- by ozlabs.org (Postfix) with ESMTP id 72F99B6F71
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 11:04:17 +1100 (EST)
-From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
-Date: Wed,  9 Nov 2011 19:03:02 -0500
-Message-Id: <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
-In-Reply-To: <4E42AB6F.1050900@freescale.com>
-References: <4E42AB6F.1050900@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Timur Tabi <B04825@freescale.com>, linux-kernel@vger.kernel.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: stable@kernel.org
+MIME-Version: 1.0
+Subject: [stable 3.1] [PATCH] KVM: PPC: Assemble book3s{,
+ _hv}_rmhandlers.S separately
+Date: Thu, 10 Nov 2011 11:04:51 +1100
+Message-ID: <18815.1320883491@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,41 +17,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+From: Paul Mackerras <paulus@samba.org>
 
-I saw Baruch Siach's patch:
-  powerpc: 85xx: separate e500 from e500mc
+KVM: PPC: Assemble book3s{,_hv}_rmhandlers.S separately
 
-Unfortunately, that patch breaks the dependencies for the P5020DS
-platform and does not fix the underlying code which does not
-understand what the ambiguous "CONFIG_E500" means.
+This makes arch/powerpc/kvm/book3s_rmhandlers.S and
+arch/powerpc/kvm/book3s_hv_rmhandlers.S be assembled as
+separate compilation units rather than having them #included in
+arch/powerpc/kernel/exceptions-64s.S.  We no longer have any
+conditional branches between the exception prologs in
+exceptions-64s.S and the KVM handlers, so there is no need to
+keep their contents close together in the vmlinux image.
 
-In order to fix the issue at the fundamental level, I created the
-following 17-patch series loosely based on Baruch's patch.
+In their current location, they are using up part of the limited
+space between the first-level interrupt handlers and the firmware
+NMI data area at offset 0x7000, and with some kernel configurations
+this area will overflow (e.g. allyesconfig), leading to an
+"attempt to .org backwards" error when compiling exceptions-64s.S.
 
-=== High-Level Summary ===
+Moving them out requires that we add some #includes that the
+book3s_{,hv_}rmhandlers.S code was previously getting implicitly
+via exceptions-64s.S.
 
-The e500v1/v2 and e500mc/e5500 CPU families are not compatible with
-each other, yet they share the same "CONFIG_E500" Kconfig option.
+Upstream commit 177339d7f7c99a25ecfdb6baeea6a2508fb2349f
 
-The following patch series splits the 32-bit CPU support into two
-separate options: "CONFIG_FSL_E500_V1_V2" and "CONFIG_FSL_E500MC".
-Additionally, the 64-bit e5500 support is separated to its own config
-option ("CONFIG_FSL_E5500") which is automatically combined with
-either 32-bit e500MC or 64-bit Book-3E when the P5020DS board support
-is enabled.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+CC: stable@kernel.org (3.1 only)
 
-I based the patches on v3.2-rc1, please let me know if I should
-update the patches against a different tree.
-
-The first 4 patches stand on their own merits; they are generic code
-cleanups necessary to support the later patches.
-
-I'd like to know what you all think.
-
-Cheers,
-Kyle Moffett
-
---
-Curious about my work on the Debian powerpcspe port?
-I'm keeping a blog here: http://pureperl.blogspot.com/
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 41b02c7..29ddd8b 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -427,16 +427,6 @@ slb_miss_user_pseries:
+ 	b	.				/* prevent spec. execution */
+ #endif /* __DISABLED__ */
+ 
+-/* KVM's trampoline code needs to be close to the interrupt handlers */
+-
+-#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+-#ifdef CONFIG_KVM_BOOK3S_PR
+-#include "../kvm/book3s_rmhandlers.S"
+-#else
+-#include "../kvm/book3s_hv_rmhandlers.S"
+-#endif
+-#endif
+-
+ 	.align	7
+ 	.globl	__end_interrupts
+ __end_interrupts:
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 4c66d51..3688aee 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -50,12 +50,15 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
+ 	book3s_64_mmu_host.o \
+ 	book3s_64_mmu.o \
+ 	book3s_32_mmu.o
++kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
++	book3s_rmhandlers.o
+ 
+ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
+ 	book3s_hv.o \
+ 	book3s_hv_interrupts.o \
+ 	book3s_64_mmu_hv.o
+ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
++	book3s_hv_rmhandlers.o \
+ 	book3s_hv_rm_mmu.o \
+ 	book3s_64_vio_hv.o \
+ 	book3s_hv_builtin.o
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index de29501..bc6ade9 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -20,7 +20,10 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/kvm_asm.h>
+ #include <asm/reg.h>
++#include <asm/mmu.h>
+ #include <asm/page.h>
++#include <asm/ptrace.h>
++#include <asm/hvcall.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/exception-64s.h>
+ 
+diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
+index c1f877c..5ee66ed 100644
+--- a/arch/powerpc/kvm/book3s_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_rmhandlers.S
+@@ -20,6 +20,7 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/kvm_asm.h>
+ #include <asm/reg.h>
++#include <asm/mmu.h>
+ #include <asm/page.h>
+ #include <asm/asm-offsets.h>
+ 
+@@ -39,6 +40,7 @@
+ #define MSR_NOIRQ		MSR_KERNEL & ~(MSR_IR | MSR_DR)
+ #define FUNC(name) 		GLUE(.,name)
+ 
++	.globl	kvmppc_skip_interrupt
+ kvmppc_skip_interrupt:
+ 	/*
+ 	 * Here all GPRs are unchanged from when the interrupt happened
+@@ -51,6 +53,7 @@ kvmppc_skip_interrupt:
+ 	rfid
+ 	b	.
+ 
++	.globl	kvmppc_skip_Hinterrupt
+ kvmppc_skip_Hinterrupt:
+ 	/*
+ 	 * Here all GPRs are unchanged from when the interrupt happened
