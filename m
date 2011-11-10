@@ -1,21 +1,20 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
 Received: from border.exmeritus.com (border.exmeritus.com
  [IPv6:2002:46a7:f11a:ffff::])
- by ozlabs.org (Postfix) with ESMTP id 16892100EED
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 11:09:05 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id D39E9100946
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2011 11:09:09 +1100 (EST)
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 13/17] powerpc/e500: Add a new CONFIG_FSL_E5500 option for
- the e5500
-Date: Wed,  9 Nov 2011 19:07:11 -0500
-Message-Id: <1320883635-17194-14-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [RFC PATCH 14/17] powerpc/e500: Don't make kgdb use e500v1/e500v2
+ registers on e500mc
+Date: Wed,  9 Nov 2011 19:07:12 -0500
+Message-Id: <1320883635-17194-15-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <4E42AB6F.1050900@freescale.com>
 References: <4E42AB6F.1050900@freescale.com>
-Cc: Baruch Siach <baruch@tkos.co.il>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
- Timur Tabi <B04825@freescale.com>, linux-kernel@vger.kernel.org,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
+Cc: Baruch Siach <baruch@tkos.co.il>, Timur Tabi <B04825@freescale.com>,
+ linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
  Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
- Scott Wood <scottwood@freescale.com>, Paul Bolle <pebolle@tiscali.nl>
+ Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As part of splitting CONFIG_E500 into separate options for e500v1/v2 and
-e500mc/e5500, some code only needs to be built when e5500 support is
-required.
+The only systems which need the sparse PowerPC register map are the
+e500v1/e500v2.
 
-This adds a new internal-use config option for both 32-bit and 64-bit
-builds that enables only the e5500 support code.
+NOTE: The kgdb code does not otherwise use CONFIG_E500, so this support
+is probably still buggy on e500v1/e500v2, but I don't know kgdb enough
+to fix it.
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 ---
- arch/powerpc/platforms/85xx/Kconfig    |    2 +-
- arch/powerpc/platforms/Kconfig.cputype |    4 ++++
- 2 files changed, 5 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/kgdb.h |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 248f87c..72488d4 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -231,8 +231,8 @@ endif # PPC32
- config P5020_DS
- 	bool "Freescale P5020 DS"
- 	depends on FSL_E500MC || PPC_BOOK3E_64
-+	select FSL_E5500
- 	select DEFAULT_UIMAGE
--	select E500
- 	select PHYS_64BIT_DT_REQUIRED
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index fd37bb2..cff45e3 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -144,6 +144,10 @@ config 8xx
- config PPC_85xx
- 	bool
- 
-+config FSL_E5500
-+	bool
-+	select E500
-+
- config E500
- 	select FSL_EMB_PERFMON
- 	select PPC_FSL_BOOK3E
+diff --git a/arch/powerpc/include/asm/kgdb.h b/arch/powerpc/include/asm/kgdb.h
+index 9db24e7..4dea066 100644
+--- a/arch/powerpc/include/asm/kgdb.h
++++ b/arch/powerpc/include/asm/kgdb.h
+@@ -46,14 +46,17 @@ static inline void arch_kgdb_breakpoint(void)
+ #define NUMREGBYTES		((68 * 8) + (3 * 4))
+ #define NUMCRITREGBYTES		184
+ #else /* CONFIG_PPC32 */
+-/* On non-E500 family PPC32 we determine the size by picking the last
+- * register we need, but on E500 we skip sections so we list what we
+- * need to store, and add it up. */
+-#ifndef CONFIG_E500
+-#define MAXREG			(PT_FPSCR+1)
+-#else
++/*
++ * On FreeScale e500v1 or e500v2 processors we need to skip some register
++ * sections, so just add up a list of what we need to store.
++ *
++ * On all other 32-bit PowerPC we can just pick the last needed register.
++ */
++#ifdef CONFIG_FSL_E500_V1_V2
+ /* 32 GPRs (8 bytes), nip, msr, ccr, link, ctr, xer, acc (8 bytes), spefscr*/
+-#define MAXREG                 ((32*2)+6+2+1)
++#define MAXREG			((32*2)+6+2+1)
++#else
++#define MAXREG			(PT_FPSCR+1)
+ #endif
+ #define NUMREGBYTES		(MAXREG * sizeof(int))
+ /* CR/LR, R1, R2, R13-R31 inclusive. */
 -- 
 1.7.2.5
