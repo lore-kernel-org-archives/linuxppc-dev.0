@@ -1,20 +1,22 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 6EE7C1007D8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 02:32:09 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 08970-08 for <linuxppc-dev@lists.ozlabs.org>;
- Fri, 11 Nov 2011 15:32:01 +0000 (GMT)
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B8E421007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 02:48:34 +1100 (EST)
+Message-ID: <4EBD43BB.8090903@windriver.com>
+Date: Fri, 11 Nov 2011 10:48:11 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Disabling TCP slow start after idle
-Date: Fri, 11 Nov 2011 15:30:23 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AEBA@saturn3.aculab.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
+To: Liu Gang <Gang.Liu@freescale.com>
+Subject: Re: [PATCH] fsl-rio: fix compile error
+References: <1321019308-7785-1-git-send-email-Gang.Liu@freescale.com>
+In-Reply-To: <1321019308-7785-1-git-send-email-Gang.Liu@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: r58472@freescale.com, linux-kernel@vger.kernel.org, r61911@freescale.com,
+ Alexandre.Bounine@idt.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,56 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have some connections that suffer very badly from the TCP
-'slow start' algorithm. These are connections that will
-always be local - they may be MAC-Switch-MAC using RGMII
-crossover, they might also be connected via an external
-switch. In either case the RTT is most likely to be almost
-zero, certainly below 1ms.
+On 11-11-11 08:48 AM, Liu Gang wrote:
+> The "#include <linux/module.h>" was replaced by "#include <linux/export.h>"
+> in the patch "powerpc: various straight conversions from module.h --> export.h".
+> This will cause the following compile problem:
+> arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
+> arch/powerpc/sysdev/fsl_rio.c:296: error: implicit declaration of function 'search_exception_tables'.
+> 
+> The file fsl_rio.c needs the declaration of function "search_exception_tables"
+> in the header file "linux/module.h".
 
-The traffic is single packets (carrying another protocol)
-so we have Nagle disabled and the send and receive sides
-run separately. So the traffic is neither bulk, nor
-command/response.
+Thanks -- not sure why this never showed up in my builds of all the
+powerpc configs, _or_ the linux-next builds.  Maybe srio isn't enabled
+in any of them? 
 
-This means that there is very rarely any unacked data,
-so almost every packet is sent using 'slow start'.
+In any case it looks fine to me.  Having the search_exception_tables
+live in module.h seems odd, but that is an independent issue for later.
 
-If the external switch drops a packet (they do!) then
-slow start stops more packets being sent, and nothing
-progresses for about 1.5 seconds by which time there
-is a significant amount of traffic queued and, in some
-cases, data has to be discarded.
+I can queue this unless someone else has already done so.
 
-Similar issues happen if the receiving system decides
-to defer the ack until a timer tick (instead of
-sending one after every second packet). In this case
-only 4 packets are sent. (We fixed this one be sending
-a software ACK every 4 packets.)
+Paul.
 
-Quite cleary the 'slow start' algorithm just doesn't
-work in these cases.
-
-I found this https://lkml.org/lkml/2010/4/9/427
-discussion about a socket option to disable slow start.
-But it seems that some people are completely against the idea.
-I'd have thought that the global option would be more of a
-problem - since that will affect ftp connections to remote
-hosts where slow start is alomost certainly benefitial.
-
-I'd have thought it would be sensible to allow one (or more)
-of the following (either as a sysctl, socket option, or
-code change):
-1) Disable slow start for the local subnet.
-2) Disable slow start for connections with very low RTT.
-3) Disable slow start for a minimum period with no traffic
-   (after the last packet is acked).
-
-I'm not sure of the resolution used by the Linux RTT
-calculations. I know NetBSD had a recent set of patches
-to fix calculation errors with low RTT because the code
-had been written when all RTT were much longer.
-
-	David
-
-(Copied to linuxppc-dev because I'm subscribed to it.)
+> 
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_rio.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+> index de170fd..22ffccd 100644
+> --- a/arch/powerpc/sysdev/fsl_rio.c
+> +++ b/arch/powerpc/sysdev/fsl_rio.c
+> @@ -23,7 +23,7 @@
+>   */
+>  
+>  #include <linux/init.h>
+> -#include <linux/export.h>
+> +#include <linux/module.h>
+>  #include <linux/types.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/interrupt.h>
