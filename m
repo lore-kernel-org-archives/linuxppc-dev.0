@@ -1,21 +1,17 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1E40B1007D4
- for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2011 03:03:07 +1100 (EST)
-Message-ID: <4EBD474A.3010700@suse.de>
-Date: Fri, 11 Nov 2011 17:03:22 +0100
-From: Alexander Graf <agraf@suse.de>
+Return-Path: <ioannis.kokoris@siemens-enterprise.com>
+Received: from senmx12-mx.siemens-enterprise.com
+ (senmx12-mx.siemens-enterprise.com [62.134.46.10])
+ by ozlabs.org (Postfix) with ESMTP id D0C8B1007DC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 03:13:36 +1100 (EST)
+From: "Kokoris, Ioannis" <ioannis.kokoris@siemens-enterprise.com>
+To: "timur@freescale.com" <timur@freescale.com>
+Date: Fri, 11 Nov 2011 17:05:11 +0100
+Subject: [PATCH] P1021: set IReady in QE Microcode Upload 
+Message-ID: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [PATCH] KVM: PPC: move compute_tlbie_rb to book3s_64 common header
-References: <1312907508-14599-1-git-send-email-agraf@suse.de>	<1312907508-14599-2-git-send-email-agraf@suse.de>
- <m2bosmpmmz.fsf_-_@igel.home>
-In-Reply-To: <m2bosmpmmz.fsf_-_@igel.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,11 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/08/2011 06:08 PM, Andreas Schwab wrote:
-> compute_tlbie_rb is only used on ppc64 and cannot be compiled on ppc32.
->
-> Signed-off-by: Andreas Schwab<schwab@linux-m68k.org>
+Hi,
 
-Thanks, applied to kvm-ppc-next.
+QE Microcode Initialization using qe_upload_microcode() does not work on P1=
+021 if the IRAM-Ready register is not set after the microcode upload. This =
+patch adds a definition for the "I-RAM Ready" register and sets it uppon mi=
+crocode upload completion.
 
-Alex
+
+Signed-off-by: Ioannis Kokkoris <ioannis.kokoris@siemens-enterprise.com>
+
+
+diff -Nru a/arch/powerpc/include/asm/immap_qe.h b/arch/powerpc/include/asm/=
+immap_qe.h
+--- a/arch/powerpc/include/asm/immap_qe.h	2011-11-11 17:47:45.000000000 +02=
+00
++++ b/arch/powerpc/include/asm/immap_qe.h	2011-11-11 17:49:31.000000000 +02=
+00
+@@ -26,7 +26,9 @@
+ struct qe_iram {
+ 	__be32	iadd;		/* I-RAM Address Register */
+ 	__be32	idata;		/* I-RAM Data Register */
+-	u8	res0[0x78];
++	u8	res0[0x04];
++	__be32	iready;		/* I-RAM Ready Register */
++	u8	res1[0x70];
+ } __attribute__ ((packed));
+=20
+ /* QE Interrupt Controller */
+diff -Nru a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+--- a/arch/powerpc/include/asm/qe.h	2011-11-11 17:47:57.000000000 +0200
++++ b/arch/powerpc/include/asm/qe.h	2011-11-11 17:49:42.000000000 +0200
+@@ -499,6 +499,7 @@
+ /* I-RAM */
+ #define QE_IRAM_IADD_AIE	0x80000000	/* Auto Increment Enable */
+ #define QE_IRAM_IADD_BADDR	0x00080000	/* Base Address */
++#define QE_IRAM_READY           0x80000000      /* Ready */
+=20
+ /* UPC */
+ #define UPGCR_PROTOCOL	0x80000000	/* protocol ul2 or pl2 */
+diff -Nru a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe=
+.c
+--- a/arch/powerpc/sysdev/qe_lib/qe.c	2011-11-11 17:48:44.000000000 +0200
++++ b/arch/powerpc/sysdev/qe_lib/qe.c	2011-11-11 17:49:59.000000000 +0200
+@@ -377,6 +377,9 @@
+=20
+ 	for (i =3D 0; i < be32_to_cpu(ucode->count); i++)
+ 		out_be32(&qe_immr->iram.idata, be32_to_cpu(code[i]));
++=09
++	/* Set I-RAM Ready Register */=09
++	out_be32(&qe_immr->iram.iready, be32_to_cpu(QE_IRAM_READY));
+ }
+=20
+ /*
+--
+
+Best Regards,
+Ioannis
