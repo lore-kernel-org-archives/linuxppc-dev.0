@@ -1,22 +1,20 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE009.bigfish.com (mail-va3.bigfish.com [216.32.180.10])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id D32561007D4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 03:39:31 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: "Kokoris, Ioannis" <ioannis.kokoris@siemens-enterprise.com>
-Subject: Re: [PATCH] P1021: set IReady in QE Microcode Upload
-Date: Fri, 11 Nov 2011 16:39:21 +0000
-Message-ID: <4EBD4FB8.2020406@freescale.com>
-References: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
-In-Reply-To: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 677931007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 03:51:43 +1100 (EST)
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] fsl-rio: fix compile error
+Date: Fri, 11 Nov 2011 08:49:45 -0800
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202490DDA@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1321019308-7785-1-git-send-email-Gang.Liu@freescale.com>
+References: <1321019308-7785-1-git-send-email-Gang.Liu@freescale.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Liu Gang <Gang.Liu@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Cc: r58472@freescale.com, linux-kernel@vger.kernel.org, r61911@freescale.com,
+ paul.gortmaker@windriver.com, akpm@linux-foundation.org, B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kokoris, Ioannis wrote:
-> Hi,
->
-> QE Microcode Initialization using qe_upload_microcode() does not work
-> on P1021 if the IRAM-Ready register is not set after the microcode
-> upload. This patch adds a definition for the "I-RAM Ready" register and
-> sets it uppon microcode upload completion.
+On Fri, Nov 11, 2011 at 8:48 AM Liu Gang <Gang.Liu@freescale.com> wrote:
 
-Will this code still work on other QE parts, like the MPC8323?
+> Sent: Friday, November 11, 2011 8:48 AM
+> To: linuxppc-dev@lists.ozlabs.org; Bounine, Alexandre
+> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
+> paul.gortmaker@windriver.com; r58472@freescale.com;
+> B11780@freescale.com; r61911@freescale.com; Liu Gang
+> Subject: [PATCH] fsl-rio: fix compile error
+>=20
+> The "#include <linux/module.h>" was replaced by "#include
+> <linux/export.h>"
+> in the patch "powerpc: various straight conversions from module.h -->
+> export.h".
+> This will cause the following compile problem:
+> arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
+> arch/powerpc/sysdev/fsl_rio.c:296: error: implicit declaration of
+> function 'search_exception_tables'.
+>=20
+> The file fsl_rio.c needs the declaration of function
+> "search_exception_tables"
+> in the header file "linux/module.h".
+>=20
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_rio.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_rio.c
+> b/arch/powerpc/sysdev/fsl_rio.c
+> index de170fd..22ffccd 100644
+> --- a/arch/powerpc/sysdev/fsl_rio.c
+> +++ b/arch/powerpc/sysdev/fsl_rio.c
+> @@ -23,7 +23,7 @@
+>   */
+>=20
+>  #include <linux/init.h>
+> -#include <linux/export.h>
+> +#include <linux/module.h>
+>  #include <linux/types.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/interrupt.h>
+> --
+> 1.7.3.1
+>=20
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+
+Acked-by: Alexandre Bounine <alexandre.bounine@idt.com>
