@@ -1,29 +1,12 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from blv-smtpout-01.boeing.com (blv-smtpout-01.boeing.com
- [130.76.32.69])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "blv-smtpout-01.boeing.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 8BC0B1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 11:38:50 +1100 (EST)
-From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 10 Nov 2011 18:38:32 -0600
-Subject: Re: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
-Message-ID: <15AB1C61-181F-4454-AF99-772B73DE0AA5@boeing.com>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
- <FF2BF3F3-1158-4747-AEEC-03D6A7C462D9@kernel.crashing.org>
- <C0DED343-76A8-457E-BF54-E52DFCAC83A8@boeing.com>
- <58FDDDA5-26C4-493B-A00D-81DD94A5C26A@kernel.crashing.org>
- <20111110165455.GE11983@schlenkerla.am.freescale.net>
-In-Reply-To: <20111110165455.GE11983@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+ Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Cc: Timur Tabi <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] powerpc kvm: fix kvmppc_start_thread() for CONFIG_SMP=N
+Date: Fri, 11 Nov 2011 13:03:20 +1100
+Message-ID: <12283.1320977000@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,88 +16,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Nov 10, 2011, at 11:54, Scott Wood wrote:
-> On Thu, Nov 10, 2011 at 10:30:41AM -0600, Kumar Gala wrote:
->> On Nov 10, 2011, at 10:17 AM, Moffett, Kyle D wrote:
->>> Furthermore, it looks like there are a couple issues here I missed
->>> before.  PPC64 systems all appear to have an L1_CACHE_SHIFT of 7,
->>> except when you turn on the P5020DS board option which magically
->>> changes it to "6" and breaks lord-knows-what.  I think my patch
->>> series actually "breaks" that and makes e5500 use 7 as well.
->>=20
->> a value of '6' on E5500 / P5020DS is correct and doesn't break anything.
->> Setting it to 7 is wrong and thus the code is correct today.
->>=20
->>> Are you sure that a kernel built to support E5500 can also run on
->>> other 64-bit PowerPC/POWER systems?
->>=20
->> No it will not.  There is not expectation of that as E5500 is an
->> embedded / Book-E class part and uses that ISA version.  Book-S
->> (server) 64-bit machines are not OS compatible and we are not trying to
->> make them as such (but we do re-use a lot of code).
->=20
-> What about other 64-bit book3e chips?  What cache block size does A2 have=
-?
+Currently kvmppc_start_thread() tries to wake other SMT threads via
+xics_wake_cpu().  Unfortunately xics_wake_cpu only exists when
+CONFIG_SMP=Y so when compiling with CONFIG_SMP=N we get:
 
-Ok, so I've been poking around this code a bunch and as far as I can
-tell, the cacheline stuff has basically always been subtly wrong in
-twelve different ways and it's only largely coincidence that it works
-today.
+  arch/powerpc/kvm/built-in.o: In function `.kvmppc_start_thread':
+  book3s_hv.c:(.text+0xa1e0): undefined reference to `.xics_wake_cpu'
 
-So PowerPC64 systems have their own "ppc64_caches" structure set up
-before start_kernel() is called by parsing the OpenFirmware "cpu" nodes.
-That structure is then checked in every piece of 64-bit kernel code
-(except xmon) that uses the "dcbXX" and "icbXX" opcodes.
+The following should be fine since kvmppc_start_thread() shouldn't
+called to start non-zero threads when SMP=N since threads_per_core=1.
 
-There is an entirely separate mechanism built into the "cputable" that
-is used on all PowerPC systems to compute cacheline sizes to pass in via
-ELF headers for userspace to use in memset()/memcpy(), etc.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kvm/book3s_hv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Furthermore, the VDSO gets cacheline sizes stored into it, but on 64-bit
-they come from the ppc64_caches structure and on 32-bit they come from
-dcache_bsize/icache_bsize copied from the cputable.
-
-Then there's the value in arch/powerpc/include/asm/cache.h which is used
-throughout the kernel to figure out how far apart to space CPU-specific
-datastructures (EG: __cacheline_aligned_on_smp).
-
-Despite the fact that all PPC64 have an "L1_CACHE_SIZE" value of 128,
-the PowerPC A2 and e5500 have {d,i}cache_bsize values of 64 in cputable
-and presumably also get correct values from OpenFirmware, so the bogus
-constant in asm/cache.h does nothing more than waste a bit of memory
-for unnecessary padding.
-
-Unfortunately, lots of PPC32 assembly pretends that the value found in
-asm/cache.h is a hard truth and uses it for "dcbz", etc, which is why
-there are all of those ugly #ifdefs in asm/cache.h
-
-Based on all of that, my proposal is going to be a patch which does the
-following:
-
-  (1) Conditionally set L1_CACHE_SHIFT to the maximum value used by any
-      platform being compiled in for alignment purposes.
-
-  (2) Make the ppc64_caches struct apply to ppc32 as well, and
-      preinitialize it with a minimum value used by any platform being
-      compiled in (for "dcbXX"/"icbXX" purposes).  This is safe because
-      the pagesize is always a multiple of the cache block size and the
-      kernel only uses dcbXX/icbXX on whole pages.  The only impact is a
-      temporary small performance hit from flushing or zeroing the same
-      block 8 times if too small.
-
-  (3) Try to initialize the ppc_caches struct on ppc32 from the
-      OpenFirmware device-tree.  If that fails, then use the values we
-      find in the cputable.  After this is initialized any performance
-      hit in copy_page()/zero_page() will obviously disappear.
-
-  (4) Fix all of the PPC32 assembly code that is misusing L1_CACHE_SHIFT
-      to use the ppc_caches struct instead.
-
-Does that sound like a reasonable approach?
-
-Cheers,
-Kyle Moffett
-
---
-Curious about my work on the Debian powerpcspe port?
-I'm keeping a blog here: http://pureperl.blogspot.com/
+Index: linux-ozlabs/arch/powerpc/kvm/book3s_hv.c
+===================================================================
+--- linux-ozlabs.orig/arch/powerpc/kvm/book3s_hv.c
++++ linux-ozlabs/arch/powerpc/kvm/book3s_hv.c
+@@ -538,7 +538,7 @@ static void kvmppc_start_thread(struct k
+ 	tpaca->kvm_hstate.napping = 0;
+ 	vcpu->cpu = vc->pcpu;
+ 	smp_wmb();
+-#ifdef CONFIG_PPC_ICP_NATIVE
++#if defined(CONFIG_PPC_ICP_NATIVE) && defined(CONFIG_SMP)
+ 	if (vcpu->arch.ptid) {
+ 		tpaca->cpu_start = 0x80;
+ 		wmb();
