@@ -1,31 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ananth@in.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2CC2DB6F97
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 15:51:19 +1100 (EST)
-Message-ID: <1320987054.21206.55.camel@pasglop>
-Subject: Re: [RFC PATCH 02/17] powerpc: Split up PHYS_64BIT config option to
- fix "select" issues
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-Date: Fri, 11 Nov 2011 15:50:54 +1100
-In-Reply-To: <4EBC00D2.2030208@freescale.com>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883635-17194-3-git-send-email-Kyle.D.Moffett@boeing.com>
- <4EBBD9DF.6080100@freescale.com>
- <501ACA94-491F-43A7-9DCF-485BEE824DD5@boeing.com>
- <4EBC00D2.2030208@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Baruch Siach <baruch@tkos.co.il>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, "Moffett,
- Kyle D" <Kyle.D.Moffett@boeing.com>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Bolle <pebolle@tiscali.nl>
+ (Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id A3B17B70C1
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 16:58:59 +1100 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
+ Thu, 10 Nov 2011 22:58:53 -0700
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAB5wgIX108258
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 22:58:43 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAB5wfeq029888
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 22:58:41 -0700
+Date: Fri, 11 Nov 2011 11:28:53 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH V2] powerpc: Export PIR data through sysfs
+Message-ID: <20111111055853.GB19107@in.ibm.com>
+References: <20111107044750.GB4361@in.ibm.com>
+ <4EB812E8.9090107@freescale.com> <20111108065811.GA9109@in.ibm.com>
+ <4EB96002.5030605@freescale.com> <20111109044124.GA10961@in.ibm.com>
+ <20111109154825.GB7839@schlenkerla.am.freescale.net>
+ <20111110084807.GA16323@in.ibm.com> <1320985094.21206.35.camel@pasglop>
+ <20111111044755.GA19107@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111111044755.GA19107@in.ibm.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+ Anton Blanchard <anton@samba.org>, mahesh@linux.vnet.ibm.com
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +43,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-11-10 at 10:50 -0600, Timur Tabi wrote:
+On Fri, Nov 11, 2011 at 10:17:55AM +0530, Ananth N Mavinakayanahalli wrote:
+> > 
+> > At this rate we're going to end up with no bits left for CPU features
+> > way too quickly... Especially for something we only care about once at
+> > boot time.
+> >
+> > Wouldn't CPU_FTR_PPCAS_ARCH_V2 be a good enough test ?
+> 
+> /me checks Cell manuals... yes, that test would be good enough. I will
+> cook up a patch to use this.
 
-> I'm not sure that Kconfig rule is enforceable.  We use 'select' all the time to make sure that our boards enable the options that need to be enabled.  I'd rather see this:
-> 
-> config X
-> 	select A
-> 
-> config Y
-> 	select A
-> 
-> config Z
-> 	select A
-> 
-> than this:
-> 
-> config A
-> 	default y if X | Y | Z
-> 
-> The former is more maintainable and does not allow the option of disabling "A" if someone wants "X".
+Here it is...
+---
 
-This is fine as long as config A is not a user selectable option.
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-We do the wrong thing in a few places (i2c comes to mind) and we should
-most certainly consider fixing it. Some of the solution is to move some
-select's to defconfigs, some is to do things the way Kyle proposed.
+The Processor Identification Register (PIR) on some powerpc platforms
+provides information to decode the processor identification tag that
+can be used for node/core/thread affinity tests and for debugging.
+Decoding this information is platform specific.
 
-For PHYS_64BIT, I'm not 100% certain at this point what the best
-approach it. It should clearly be fixed and hidden for real 64-bit. As
-for the rest, should it be user selectable ? I tend to think it should
-be fixed & selected by the board config and keep it that way, avoiding
-the user question entirely... but you may have good reasons to want to
-keep it around.
+Export PIR contents through sysfs.
 
-Cheers,
-Ben.
+[V2] Use CPU_FTR_PPCAS_ARCH_V2 as a test for PIR's presence per
+BenH's suggestion.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ arch/powerpc/kernel/sysfs.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+Index: linux-3.2-rc1/arch/powerpc/kernel/sysfs.c
+===================================================================
+--- linux-3.2-rc1.orig/arch/powerpc/kernel/sysfs.c
++++ linux-3.2-rc1/arch/powerpc/kernel/sysfs.c
+@@ -177,11 +177,13 @@ SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
+ SYSFS_PMCSETUP(purr, SPRN_PURR);
+ SYSFS_PMCSETUP(spurr, SPRN_SPURR);
+ SYSFS_PMCSETUP(dscr, SPRN_DSCR);
++SYSFS_PMCSETUP(pir, SPRN_PIR);
+ 
+ static SYSDEV_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
+ static SYSDEV_ATTR(spurr, 0600, show_spurr, NULL);
+ static SYSDEV_ATTR(dscr, 0600, show_dscr, store_dscr);
+ static SYSDEV_ATTR(purr, 0600, show_purr, store_purr);
++static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
+ 
+ unsigned long dscr_default = 0;
+ EXPORT_SYMBOL(dscr_default);
+@@ -392,6 +394,9 @@ static void __cpuinit register_cpu_onlin
+ 
+ 	if (cpu_has_feature(CPU_FTR_DSCR))
+ 		sysdev_create_file(s, &attr_dscr);
++
++	if (cpu_has_feature(CPU_FTR_PPCAS_ARCH_V2))
++		sysdev_create_file(s, &attr_pir);
+ #endif /* CONFIG_PPC64 */
+ 
+ 	cacheinfo_cpu_online(cpu);
+@@ -462,6 +467,9 @@ static void unregister_cpu_online(unsign
+ 
+ 	if (cpu_has_feature(CPU_FTR_DSCR))
+ 		sysdev_remove_file(s, &attr_dscr);
++
++	if (cpu_has_feature(CPU_FTR_PPCAS_ARCH_V2))
++		sysdev_remove_file(s, &attr_pir);
+ #endif /* CONFIG_PPC64 */
+ 
+ 	cacheinfo_cpu_offline(cpu);
