@@ -1,39 +1,19 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A3B17B70C1
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 16:58:59 +1100 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
- Thu, 10 Nov 2011 22:58:53 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAB5wgIX108258
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 22:58:43 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAB5wfeq029888
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 22:58:41 -0700
-Date: Fri, 11 Nov 2011 11:28:53 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH V2] powerpc: Export PIR data through sysfs
-Message-ID: <20111111055853.GB19107@in.ibm.com>
-References: <20111107044750.GB4361@in.ibm.com>
- <4EB812E8.9090107@freescale.com> <20111108065811.GA9109@in.ibm.com>
- <4EB96002.5030605@freescale.com> <20111109044124.GA10961@in.ibm.com>
- <20111109154825.GB7839@schlenkerla.am.freescale.net>
- <20111110084807.GA16323@in.ibm.com> <1320985094.21206.35.camel@pasglop>
- <20111111044755.GA19107@in.ibm.com>
+Return-Path: <r58472@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 951D01007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 22:37:54 +1100 (EST)
+From: Li Yang <leoli@freescale.com>
+To: <balbi@ti.com>, <gregkh@suse.de>
+Subject: [PATCH] usb/fsl_udc: fix dequeuing a request in progress
+Date: Fri, 11 Nov 2011 20:38:13 +0800
+Message-ID: <1321015093-13715-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111111044755.GA19107@in.ibm.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Anton Blanchard <anton@samba.org>, mahesh@linux.vnet.ibm.com
-Reply-To: ananth@in.ibm.com
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,72 +23,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 11, 2011 at 10:17:55AM +0530, Ananth N Mavinakayanahalli wrote:
-> > 
-> > At this rate we're going to end up with no bits left for CPU features
-> > way too quickly... Especially for something we only care about once at
-> > boot time.
-> >
-> > Wouldn't CPU_FTR_PPCAS_ARCH_V2 be a good enough test ?
-> 
-> /me checks Cell manuals... yes, that test would be good enough. I will
-> cook up a patch to use this.
+The original implementation of dequeuing a request in progress
+is not correct.  Change to use a correct process and also clean
+up the related functions a little bit.
 
-Here it is...
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
+ drivers/usb/gadget/fsl_udc_core.c |   62 +++++++++++++++++-------------------
+ 1 files changed, 29 insertions(+), 33 deletions(-)
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-
-The Processor Identification Register (PIR) on some powerpc platforms
-provides information to decode the processor identification tag that
-can be used for node/core/thread affinity tests and for debugging.
-Decoding this information is platform specific.
-
-Export PIR contents through sysfs.
-
-[V2] Use CPU_FTR_PPCAS_ARCH_V2 as a test for PIR's presence per
-BenH's suggestion.
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
- arch/powerpc/kernel/sysfs.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-Index: linux-3.2-rc1/arch/powerpc/kernel/sysfs.c
-===================================================================
---- linux-3.2-rc1.orig/arch/powerpc/kernel/sysfs.c
-+++ linux-3.2-rc1/arch/powerpc/kernel/sysfs.c
-@@ -177,11 +177,13 @@ SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
- SYSFS_PMCSETUP(purr, SPRN_PURR);
- SYSFS_PMCSETUP(spurr, SPRN_SPURR);
- SYSFS_PMCSETUP(dscr, SPRN_DSCR);
-+SYSFS_PMCSETUP(pir, SPRN_PIR);
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index b2c44e1..beef9b7 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -696,12 +696,31 @@ static void fsl_free_request(struct usb_ep *_ep, struct usb_request *_req)
+ 		kfree(req);
+ }
  
- static SYSDEV_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
- static SYSDEV_ATTR(spurr, 0600, show_spurr, NULL);
- static SYSDEV_ATTR(dscr, 0600, show_dscr, store_dscr);
- static SYSDEV_ATTR(purr, 0600, show_purr, store_purr);
-+static SYSDEV_ATTR(pir, 0400, show_pir, NULL);
- 
- unsigned long dscr_default = 0;
- EXPORT_SYMBOL(dscr_default);
-@@ -392,6 +394,9 @@ static void __cpuinit register_cpu_onlin
- 
- 	if (cpu_has_feature(CPU_FTR_DSCR))
- 		sysdev_create_file(s, &attr_dscr);
+-/*-------------------------------------------------------------------------*/
++/* Actually add a dTD chain to an empty dQH and let go */
++static void fsl_prime_ep(struct fsl_ep *ep, struct ep_td_struct *td)
++{
++	struct ep_queue_head *qh = ep->qh;
 +
-+	if (cpu_has_feature(CPU_FTR_PPCAS_ARCH_V2))
-+		sysdev_create_file(s, &attr_pir);
- #endif /* CONFIG_PPC64 */
- 
- 	cacheinfo_cpu_online(cpu);
-@@ -462,6 +467,9 @@ static void unregister_cpu_online(unsign
- 
- 	if (cpu_has_feature(CPU_FTR_DSCR))
- 		sysdev_remove_file(s, &attr_dscr);
++	/* Write dQH next pointer and terminate bit to 0 */
++	qh->next_dtd_ptr = cpu_to_hc32(td->td_dma
++			& EP_QUEUE_HEAD_NEXT_POINTER_MASK);
 +
-+	if (cpu_has_feature(CPU_FTR_PPCAS_ARCH_V2))
-+		sysdev_remove_file(s, &attr_pir);
- #endif /* CONFIG_PPC64 */
++	/* Clear active and halt bit */
++	qh->size_ioc_int_sts &= cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
++					| EP_QUEUE_HEAD_STATUS_HALT));
++
++	/* Ensure that updates to the QH will occur before priming. */
++	wmb();
++
++	/* Prime endpoint by writing correct bit to ENDPTPRIME */
++	fsl_writel(ep_is_in(ep) ? (1 << (ep_index(ep) + 16))
++			: (1 << (ep_index(ep))), &dr_regs->endpointprime);
++}
++
++/* Add dTD chain to the dQH of an EP */
+ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+ {
+-	int i = ep_index(ep) * 2 + ep_is_in(ep);
+ 	u32 temp, bitmask, tmp_stat;
+-	struct ep_queue_head *dQH = &ep->udc->ep_qh[i];
  
- 	cacheinfo_cpu_offline(cpu);
+ 	/* VDBG("QH addr Register 0x%8x", dr_regs->endpointlistaddr);
+ 	VDBG("ep_qh[%d] addr is 0x%8x", i, (u32)&(ep->udc->ep_qh[i])); */
+@@ -719,7 +738,7 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+ 			cpu_to_hc32(req->head->td_dma & DTD_ADDR_MASK);
+ 		/* Read prime bit, if 1 goto done */
+ 		if (fsl_readl(&dr_regs->endpointprime) & bitmask)
+-			goto out;
++			return;
+ 
+ 		do {
+ 			/* Set ATDTW bit in USBCMD */
+@@ -736,28 +755,10 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+ 		fsl_writel(temp & ~USB_CMD_ATDTW, &dr_regs->usbcmd);
+ 
+ 		if (tmp_stat)
+-			goto out;
++			return;
+ 	}
+ 
+-	/* Write dQH next pointer and terminate bit to 0 */
+-	temp = req->head->td_dma & EP_QUEUE_HEAD_NEXT_POINTER_MASK;
+-	dQH->next_dtd_ptr = cpu_to_hc32(temp);
+-
+-	/* Clear active and halt bit */
+-	temp = cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
+-			| EP_QUEUE_HEAD_STATUS_HALT));
+-	dQH->size_ioc_int_sts &= temp;
+-
+-	/* Ensure that updates to the QH will occur before priming. */
+-	wmb();
+-
+-	/* Prime endpoint by writing 1 to ENDPTPRIME */
+-	temp = ep_is_in(ep)
+-		? (1 << (ep_index(ep) + 16))
+-		: (1 << (ep_index(ep)));
+-	fsl_writel(temp, &dr_regs->endpointprime);
+-out:
+-	return;
++	fsl_prime_ep(ep, req->head);
+ }
+ 
+ /* Fill in the dTD structure
+@@ -973,25 +974,20 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
+ 
+ 		/* The request isn't the last request in this ep queue */
+ 		if (req->queue.next != &ep->queue) {
+-			struct ep_queue_head *qh;
+ 			struct fsl_req *next_req;
+ 
+-			qh = ep->qh;
+ 			next_req = list_entry(req->queue.next, struct fsl_req,
+ 					queue);
+ 
+-			/* Point the QH to the first TD of next request */
+-			fsl_writel((u32) next_req->head, &qh->curr_dtd_ptr);
++			/* prime with dTD of next request */
++			fsl_prime_ep(ep, next_req->head);
+ 		}
+-
+-		/* The request hasn't been processed, patch up the TD chain */
++	/* The request hasn't been processed, patch up the TD chain */
+ 	} else {
+ 		struct fsl_req *prev_req;
+ 
+ 		prev_req = list_entry(req->queue.prev, struct fsl_req, queue);
+-		fsl_writel(fsl_readl(&req->tail->next_td_ptr),
+-				&prev_req->tail->next_td_ptr);
+-
++		prev_req->tail->next_td_ptr = req->tail->next_td_ptr;
+ 	}
+ 
+ 	done(ep, req, -ECONNRESET);
+-- 
+1.5.4.3
