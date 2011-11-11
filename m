@@ -1,38 +1,31 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9673CB6F97
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 15:47:48 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
- Thu, 10 Nov 2011 23:47:45 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAB4lhQe2998372
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2011 23:47:43 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAB4lgxO014193
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2011 02:47:43 -0200
-Date: Fri, 11 Nov 2011 10:17:55 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Export PIR data through sysfs
-Message-ID: <20111111044755.GA19107@in.ibm.com>
-References: <20111107044750.GB4361@in.ibm.com>
- <4EB812E8.9090107@freescale.com> <20111108065811.GA9109@in.ibm.com>
- <4EB96002.5030605@freescale.com> <20111109044124.GA10961@in.ibm.com>
- <20111109154825.GB7839@schlenkerla.am.freescale.net>
- <20111110084807.GA16323@in.ibm.com> <1320985094.21206.35.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1320985094.21206.35.camel@pasglop>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Anton Blanchard <anton@samba.org>, mahesh@linux.vnet.ibm.com
-Reply-To: ananth@in.ibm.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2CC2DB6F97
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 15:51:19 +1100 (EST)
+Message-ID: <1320987054.21206.55.camel@pasglop>
+Subject: Re: [RFC PATCH 02/17] powerpc: Split up PHYS_64BIT config option to
+ fix "select" issues
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+Date: Fri, 11 Nov 2011 15:50:54 +1100
+In-Reply-To: <4EBC00D2.2030208@freescale.com>
+References: <4E42AB6F.1050900@freescale.com>
+ <1320883635-17194-3-git-send-email-Kyle.D.Moffett@boeing.com>
+ <4EBBD9DF.6080100@freescale.com>
+ <501ACA94-491F-43A7-9DCF-485BEE824DD5@boeing.com>
+ <4EBC00D2.2030208@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Baruch Siach <baruch@tkos.co.il>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, "Moffett,
+ Kyle D" <Kyle.D.Moffett@boeing.com>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Paul Bolle <pebolle@tiscali.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 11, 2011 at 03:18:14PM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2011-11-10 at 14:18 +0530, Ananth N Mavinakayanahalli wrote:
+On Thu, 2011-11-10 at 10:50 -0600, Timur Tabi wrote:
+
+> I'm not sure that Kconfig rule is enforceable.  We use 'select' all the time to make sure that our boards enable the options that need to be enabled.  I'd rather see this:
 > 
-> > 
-> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > 
-> > The Processor Identification Register (PIR) on some powerpc platforms
-> > provides information to decode the processor identification tag.
-> > Decoding this information is platform specific.
-> > 
-> > We currently need this information for POWERx processors and hence
-> > follows a similar model as adopted for the other POWERx specific
-> > features.
+> config X
+> 	select A
 > 
-> At this rate we're going to end up with no bits left for CPU features
-> way too quickly... Especially for something we only care about once at
-> boot time.
->
-> Wouldn't CPU_FTR_PPCAS_ARCH_V2 be a good enough test ?
+> config Y
+> 	select A
+> 
+> config Z
+> 	select A
+> 
+> than this:
+> 
+> config A
+> 	default y if X | Y | Z
+> 
+> The former is more maintainable and does not allow the option of disabling "A" if someone wants "X".
 
-/me checks Cell manuals... yes, that test would be good enough. I will
-cook up a patch to use this.
- 
-> Can you tell us a bit more about the real use for that feature ? I still
-> don't see what's the point of getting the underlying HW ID.
+This is fine as long as config A is not a user selectable option.
 
-This is a requirement from the hardware system test folks for use with
-their core, node and thread tests.
+We do the wrong thing in a few places (i2c comes to mind) and we should
+most certainly consider fixing it. Some of the solution is to move some
+select's to defconfigs, some is to do things the way Kyle proposed.
 
-Ananth
+For PHYS_64BIT, I'm not 100% certain at this point what the best
+approach it. It should clearly be fixed and hidden for real 64-bit. As
+for the rest, should it be user selectable ? I tend to think it should
+be fixed & selected by the board config and keep it that way, avoiding
+the user question entirely... but you may have good reasons to want to
+keep it around.
+
+Cheers,
+Ben.
