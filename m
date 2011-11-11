@@ -1,23 +1,22 @@
-Return-Path: <B35336@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE009.bigfish.com (mail-va3.bigfish.com [216.32.180.10])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 90AE31007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 23:26:36 +1100 (EST)
-From: Zhao Chenhui-B35336 <B35336@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH 2/7] powerpc/85xx: add HOTPLUG_CPU support
-Date: Fri, 11 Nov 2011 12:26:11 +0000
-Message-ID: <BD213C8CF658C24091429A9C376C468D0A0942@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1320409889-14408-1-git-send-email-chenhui.zhao@freescale.com>
- <1320985376.21206.39.camel@pasglop>
-In-Reply-To: <1320985376.21206.39.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id D32561007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 03:39:31 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: "Kokoris, Ioannis" <ioannis.kokoris@siemens-enterprise.com>
+Subject: Re: [PATCH] P1021: set IReady in QE Microcode Upload
+Date: Fri, 11 Nov 2011 16:39:21 +0000
+Message-ID: <4EBD4FB8.2020406@freescale.com>
+References: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
+In-Reply-To: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogRnJpZGF5
-LCBOb3ZlbWJlciAxMSwgMjAxMSAxMjoyMyBQTQ0KPiBUbzogWmhhbyBDaGVuaHVpLUIzNTMzNg0K
-PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRD
-SCAyLzddIHBvd2VycGMvODV4eDogYWRkIEhPVFBMVUdfQ1BVIHN1cHBvcnQNCj4gDQo+IE9uIEZy
-aSwgMjAxMS0xMS0wNCBhdCAyMDozMSArMDgwMCwgWmhhbyBDaGVuaHVpIHdyb3RlOg0KPiANCj4g
-PiAgI2lmZGVmIENPTkZJR19TTVANCj4gPiAgLyogV2hlbiB3ZSBnZXQgaGVyZSwgcjI0IG5lZWRz
-IHRvIGhvbGQgdGhlIENQVSAjICovDQo+ID4gIAkuZ2xvYmwgX19zZWNvbmRhcnlfc3RhcnQNCj4g
-PiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zbXAuYyBiL2FyY2gvcG93ZXJwYy9r
-ZXJuZWwvc21wLmMNCj4gPiBpbmRleCA3YmYyMTg3Li4xMmE1NGYwIDEwMDY0NA0KPiA+IC0tLSBh
-L2FyY2gvcG93ZXJwYy9rZXJuZWwvc21wLmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVs
-L3NtcC5jDQo+ID4gQEAgLTM4MSw4ICszODEsMTQgQEAgdm9pZCBnZW5lcmljX2NwdV9kaWUodW5z
-aWduZWQgaW50IGNwdSkNCj4gPg0KPiA+ICAJZm9yIChpID0gMDsgaSA8IDEwMDsgaSsrKSB7DQo+
-ID4gIAkJc21wX3JtYigpOw0KPiA+IC0JCWlmIChwZXJfY3B1KGNwdV9zdGF0ZSwgY3B1KSA9PSBD
-UFVfREVBRCkNCj4gPiArCQlpZiAocGVyX2NwdShjcHVfc3RhdGUsIGNwdSkgPT0gQ1BVX0RFQUQp
-IHsNCj4gPiArCQkJLyoNCj4gPiArCQkJICogQWZ0ZXIgYW5vdGhlciBjb3JlIHNldHMgY3B1X3N0
-YXRlIHRvIENQVV9ERUFELA0KPiA+ICsJCQkgKiBpdCBuZWVkcyBzb21lIHRpbWUgdG8gZGllLg0K
-PiA+ICsJCQkgKi8NCj4gPiArCQkJbXNsZWVwKDEwKTsNCj4gPiAgCQkJcmV0dXJuOw0KPiA+ICsJ
-CX0NCj4gPiAgCQltc2xlZXAoMTAwKTsNCj4gPiAgCX0NCj4gPiAgCXByaW50ayhLRVJOX0VSUiAi
-Q1BVJWQgZGlkbid0IGRpZS4uLlxuIiwgY3B1KTsNCj4gDQo+IEkgZG9uJ3QgcmVhbGx5IHNlZSB3
-aHkgeW91IG5lZWQgdG8gd2FpdC4gVGhpcyBsb29wIGlzIGFib3V0IHdhaXRpbmcgZm9yDQo+IHRo
-ZSBDUFUgdG8gbWFyayBpdHNlbGYgREVBRCwgbm90IG5lY2Vzc2FyaWx5IHRvIGJlIHBoeXNpY2Fs
-bHkgcG93ZXJlZA0KPiBvZmYuDQo+IA0KDQpJZiBJIGRvbid0IGFkZCB0aGlzIGRlbGF5LCB0aGUg
-a2VybmVsIGhhbmdzIHNvbWV0aW1lcyB3aGVuIGhvdHBsdWdpbmcgYSBjb3JlLg0KSSB3aWxsIG1v
-dmUgdGhpcyBmdW5jdGlvbiB0byA4NXh4L3NtcC5jIGluIHRoZSBuZXh0IHJldmlzaW9uLg0KDQo+
-ID4gK3N0cnVjdCBlcGFwcl9lbnRyeSB7DQo+ID4gKwl1MzIJYWRkcl9oOw0KPiA+ICsJdTMyCWFk
-ZHJfbDsNCj4gPiArCXUzMglyM19oOw0KPiA+ICsJdTMyCXIzX2w7DQo+ID4gKwl1MzIJcmVzZXJ2
-ZWQ7DQo+ID4gKwl1MzIJcGlyOw0KPiA+ICsJdTMyCXI2X2g7DQo+ID4gKwl1MzIJcjZfbDsNCj4g
-PiArfTsNCj4gDQo+IFRoaXMgc2hvdWxkIHByb2JhYmx5IGJlIGluIGEgZ2VuZXJpYyBsb2NhdGlv
-bi4NCj4gDQo+ID4gK3N0YXRpYyBpbnQgaXNfY29yZW5ldDsNCj4gDQo+IFRoaXMgZ2xvYmFsIGlz
-IGEgYml0IGdyb3NzLi4uDQo+IA0KPiAgLi4uDQoNCkFncmVlLiBJIHdpbGwgcmVtb3ZlIGl0Lg0K
-DQo+IA0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQgX19jcHVpbml0IHNtcF84NXh4X3Jlc2V0X2Nv
-cmUoaW50IG5yKQ0KPiA+ICt7DQo+ID4gKwlfX2lvbWVtIHUzMiAqdmFkZHIsICpwaXJfdmFkZHI7
-DQo+ID4gKwl1MzIgdmFsLCBjcHVfbWFzazsNCj4gPiArDQo+ID4gKwkvKiBJZiBDb3JlTmV0IHBs
-YXRmb3JtLCB1c2UgQlJSIGFzIHJlbGVhc2UgcmVnaXN0ZXIuICovDQo+ID4gKwlpZiAoaXNfY29y
-ZW5ldCkgew0KPiA+ICsJCWNwdV9tYXNrID0gMSA8PCBucjsNCj4gPiArCQl2YWRkciA9IGlvcmVt
-YXAoZ2V0X2ltbXJiYXNlKCkgKyBNUEM4NXh4X0JSUl9PRkYsIDQpOw0KPiA+ICsJfSBlbHNlIHsN
-Cj4gPiArCQljcHVfbWFzayA9IDEgPDwgKDI0ICsgbnIpOw0KPiA+ICsJCXZhZGRyID0gaW9yZW1h
-cChnZXRfaW1tcmJhc2UoKSArIE1QQzg1eHhfRUNNX0VFQlBDUl9PRkYsIDQpOw0KPiA+ICsJfQ0K
-PiANCj4gSW5zdGVhZCwgY2FuJ3QgeW91IGluc3RlYWQgaGF2ZSB0d28gZnVuY3Rpb25zIHVzaW5n
-IGEgY29tbW9uIGhlbHBlciBhbmQNCj4gcGljay9ob29rIHRoZSByaWdodCBvbmUgPw0KPiANCj4g
-QWxzbyBpbiB3aGF0IGNvbnRleHQgaXMgdGhhdCByZXNldF9jb3JlKCkgY2FsbGVkID8gRG9pbmcg
-aW9yZW1hcCBpc24ndA0KPiBzb21ldGhpbmcgeW91IGNhbiBkbyBhdCBhbnkgcmFuZG9tIHRpbWUu
-Li4NCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiANCj4gDQoNClRoYW5rcy4gSSB3aWxsIGZpeCB0
-aGVtLg0KDQotY2hlbmh1aQ0KDQo=
+Kokoris, Ioannis wrote:
+> Hi,
+>
+> QE Microcode Initialization using qe_upload_microcode() does not work
+> on P1021 if the IRAM-Ready register is not set after the microcode
+> upload. This patch adds a definition for the "I-RAM Ready" register and
+> sets it uppon microcode upload completion.
+
+Will this code still work on other QE parts, like the MPC8323?
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
