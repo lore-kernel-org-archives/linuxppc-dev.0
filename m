@@ -1,19 +1,17 @@
-Return-Path: <jjdanimoth@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
- [209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C7FCCB70FF
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Nov 2011 10:27:39 +1100 (EST)
-Received: by bkat8 with SMTP id t8so4671549bka.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 15:27:34 -0800 (PST)
-From: DaNiMoTh <jjdanimoth@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: yenta_socket and Machine check in kernel mode
-Date: Sun, 13 Nov 2011 00:27:23 +0100
-Message-ID: <4362111.VxQkn1oUZp@jack>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2886498.MIYU0OOx6Q";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Return-Path: <pebolle@tiscali.nl>
+Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
+ by ozlabs.org (Postfix) with ESMTP id 2DA61B71E2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Nov 2011 10:50:45 +1100 (EST)
+Subject: [PATCH] powerpc/p3060qds: Fix select of 'MPC8xxx_GPIO'
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>, Wolfram Sang
+ <w.sang@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 13 Nov 2011 00:50:30 +0100
+Message-ID: <1321141830.20271.22.camel@x61.thuisdomein>
+Mime-Version: 1.0
+Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,67 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The driver for the Freescale P3060 QDS got added by commit 96cc017c5b
+("[...] Add support for P3060QDS board"). Its Kconfig entry selects
+MPC8xxx_GPIO. But at the time that driver got added MPC8xxx_GPIO was
+already renamed to GPIO_MPC8XXX, by commit c68308dd50c ("gpio: move
+mpc8xxx/512x gpio driver to drivers/gpio").
 
---nextPart2886498.MIYU0OOx6Q
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+So make this driver select GPIO_MPC8XXX.
 
-Hi,
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+0) Bravely untested: I haven't got the hardware nor the PPC toolchain
+needed to build this. And it seems this needs (build) testing anyhow.
 
-The error message "Caused by (from SRR1=214b030): Transfer error ack signal"
-is everywhere in my (PowerBook G4) messages.log. I checked, and the module 
-that cause it is yenta_socket.
+1) Sent to the people who wrote the two patches mentioned in the commit
+explanation and CC'd the non-authors who signed-off these patches.
 
-That's the messages.log after a rmmod && modprobe (the [...] as for hundred 
-and hundred line of the same messages:
+2) The config tools do not complain about selects that cannot be met
+because they concern a Kconfig symbol that doesn't even exist. Shouldn't
+they be made to complain in that case?
 
-Nov 12 21:41:09 localhost kernel: yenta_cardbus 0001:10:13.0: CardBus bridge found [0000:0000]
-Nov 12 21:41:09 localhost kernel: yenta_cardbus 0001:10:13.0: Using CSCINT to route CSC interrupts to PCI
-Nov 12 21:41:09 localhost kernel: yenta_cardbus 0001:10:13.0: Routing CardBus interrupts to PCI
-Nov 12 21:41:09 localhost kernel: yenta_cardbus 0001:10:13.0: TI: mfunc 0x00001002, devctl 0x60
-Nov 12 21:41:09 localhost kernel: yenta_cardbus 0001:10:13.0: ISA IRQ mask 0x0000, PCI irq 53
-Nov 12 21:41:09 localhost kernel: yenta_cardbus 0001:10:13.0: Socket status: 30000007
-Nov 12 21:41:09 localhost kernel: yenta_cardbus 0001:10:13.0: pcmcia: parent PCI bridge window: [io  0x0000-0x7fffff]
-Nov 12 21:41:09 localhost kernel: pcmcia_socket pcmcia_socket0: cs: IO port probe 0x0-0x7fffff:Machine check in kernel mode.
-Nov 12 21:41:09 localhost kernel: Caused by (from SRR1=214b030): Transfer error ack signal
-Nov 12 21:41:09 localhost kernel: Machine check in kernel mode.
-[...]
-Nov 12 21:43:47 localhost kernel: Machine check in kernel mode.
-Nov 12 21:43:47 localhost kernel: Caused by (from SRR1=214b030): Transfer error ack signal
-Nov 12 21:43:47 localhost kernel: Machine check in kernel mode.
-Nov 12 21:43:47 localhost kernel: Caused by (from SRR1=214b030): Transfer error ack signal
-Nov 12 21:43:47 localhost kernel:
-Nov 12 21:43:47 localhost kernel: yenta_cardbus 0001:10:13.0: pcmcia: parent PCI bridge window: [mem 0xf3000000-0xf3ffffff]
-Nov 12 21:43:47 localhost kernel: pcmcia_socket pcmcia_socket0: cs: memory probe 0xf3000000-0xf3ffffff: clean.
-Nov 12 21:43:47 localhost kernel: yenta_cardbus 0001:10:13.0: pcmcia: parent PCI bridge window: [mem 0x80000000-0xafffffff]
-Nov 12 21:43:47 localhost kernel: pcmcia_socket pcmcia_socket0: cs: memory probe 0x80000000-0xafffffff: excluding 0x80000000-0x807fffff 0x84000000-0x8bffffff 0xa0000000-0xa07fffff
+ arch/powerpc/platforms/85xx/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-I'm using the git 3.2.0-rc1 kernel, but I have the same problem with the 2.6.38.
-There's something I can do (apart from blacklisting it, and don't use PCMCIA)?
-
-Thanks
-
-PS: Maybe related:
-
-[1] http://lkml.indiana.edu/hypermail/linux/kernel/1104.3/01793.html
-(Using pci=cbmemsize=8M doesn't help.. messages are still here)
-[2] https://lists.linux-foundation.org/pipermail/bugme-new/2011-January/026377.html
-(No hint if that is fixed or not)
-
-
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 45023e2..d7946be 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -203,7 +203,7 @@ config P3060_QDS
+ 	select PPC_E500MC
+ 	select PHYS_64BIT
+ 	select SWIOTLB
+-	select MPC8xxx_GPIO
++	select GPIO_MPC8XXX
+ 	select HAS_RAPIDIO
+ 	select PPC_EPAPR_HV_PIC
+ 	help
 -- 
-Stay open, be free.
---nextPart2886498.MIYU0OOx6Q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iF4EABEIAAYFAk6/ANsACgkQf3jdaskA4+jd9AEAsvoAb0942t6Zqk+rYfm+s/NG
-fbdmvz6U+PLNZalLePwBAJ7Kf+jQeiSf1O9BMv8KUZIZecNcm1zmUCwp8sPeUXHY
-=fBXh
------END PGP SIGNATURE-----
-
---nextPart2886498.MIYU0OOx6Q--
+1.7.4.4
