@@ -1,20 +1,20 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 677931007D4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 03:51:43 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] fsl-rio: fix compile error
-Date: Fri, 11 Nov 2011 08:49:45 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55202490DDA@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <1321019308-7785-1-git-send-email-Gang.Liu@freescale.com>
-References: <1321019308-7785-1-git-send-email-Gang.Liu@freescale.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: Liu Gang <Gang.Liu@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Cc: r58472@freescale.com, linux-kernel@vger.kernel.org, r61911@freescale.com,
- paul.gortmaker@windriver.com, akpm@linux-foundation.org, B11780@freescale.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+ [IPv6:2402:b800:7003:1::15])
+ by ozlabs.org (Postfix) with ESMTP id 029CF1007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 11:06:03 +1100 (EST)
+Date: Sat, 12 Nov 2011 11:05:55 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: Disabling TCP slow start after idle
+Message-Id: <20111112110555.8ca6f5d81646718e90c4af80@canb.auug.org.au>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AEBA@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8AEBA@saturn3.aculab.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 11, 2011 at 8:48 AM Liu Gang <Gang.Liu@freescale.com> wrote:
+--Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Sent: Friday, November 11, 2011 8:48 AM
-> To: linuxppc-dev@lists.ozlabs.org; Bounine, Alexandre
-> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
-> paul.gortmaker@windriver.com; r58472@freescale.com;
-> B11780@freescale.com; r61911@freescale.com; Liu Gang
-> Subject: [PATCH] fsl-rio: fix compile error
->=20
-> The "#include <linux/module.h>" was replaced by "#include
-> <linux/export.h>"
-> in the patch "powerpc: various straight conversions from module.h -->
-> export.h".
-> This will cause the following compile problem:
-> arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
-> arch/powerpc/sysdev/fsl_rio.c:296: error: implicit declaration of
-> function 'search_exception_tables'.
->=20
-> The file fsl_rio.c needs the declaration of function
-> "search_exception_tables"
-> in the header file "linux/module.h".
->=20
-> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
-> ---
->  arch/powerpc/sysdev/fsl_rio.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/fsl_rio.c
-> b/arch/powerpc/sysdev/fsl_rio.c
-> index de170fd..22ffccd 100644
-> --- a/arch/powerpc/sysdev/fsl_rio.c
-> +++ b/arch/powerpc/sysdev/fsl_rio.c
-> @@ -23,7 +23,7 @@
->   */
->=20
->  #include <linux/init.h>
-> -#include <linux/export.h>
-> +#include <linux/module.h>
->  #include <linux/types.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/interrupt.h>
-> --
-> 1.7.3.1
->=20
+Hi David,
 
+On Fri, 11 Nov 2011 15:30:23 -0000 "David Laight" <David.Laight@ACULAB.COM>=
+ wrote:
+>
+> We have some connections that suffer very badly from the TCP
+> 'slow start' algorithm. These are connections that will
+> always be local - they may be MAC-Switch-MAC using RGMII
+> crossover, they might also be connected via an external
+> switch. In either case the RTT is most likely to be almost
+> zero, certainly below 1ms.
 
-Acked-by: Alexandre Bounine <alexandre.bounine@idt.com>
+You would be better off asking networking questions on netdev at
+vger.kernel.org ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJOvbhjAAoJEECxmPOUX5FEphkP/iO0kXlbL7uM3j3L3ec1GOmv
+jjNl5yFRDFI9VYQxyL7wr9GPGkdpGLpp9ZWMIcm1frBEdED2Cdl5KJlGoQ4jpcvl
+JZSWK9efnNxsBaXfqL5Bx7guSmq+91lKE2EXkrNZ0yax1Joe36n0TQGIqzSG0I/G
+YAnUXOMOX5CObVSbKxXhi/etYlAc/5q3nByqyUj1OUSWfNBzst5u28wT/I+JOGOz
+R9PY2g4fhJJqYHy9Yqi796j/aD+mgshFYvEoTl0/dqVchG0kCGVLxMCg6Mo1Vpww
+eyQTnFA3XyQ5H/uz9lu60SDThGk94cZjGnuwSuFyhxNSpuv3Kh/bqPHxJO7Wd5Nr
+V/87fEZ6TZNFtVnPJRvk0wrwHrC9x1CACFqUdUxmCqKW44LZ3UXzvuVGn4/c4Jz0
+6thxF1pw2Ln9f9FVzJ5QJlgsDvjldGahFUdFkvCA1bimq3osY9Sa1xKRMM7/GCh0
+XgKxTBbFMbYpIbJ+TRFDX2XT7ek7Lefae5CE33HNnYjJcDgPgi8NM7vuuRzU281n
+SvX8JnwZ2HCy6XMz0xWWqYZ5r6CHZaRvI5LZR7eHvn4VuXVcfxYzHqN1T+JjmazW
+7jTi/0VNkqR0Wv35VfEYZBtNmBjAl5M2WNxHTqYBsF/kMvc992arQe7KfI8ylhEU
+t5CAjjkMzEQvz/Pz8f9s
+=gm3S
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/--
