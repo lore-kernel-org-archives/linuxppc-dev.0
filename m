@@ -1,20 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id 029CF1007D8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 11:06:03 +1100 (EST)
-Date: Sat, 12 Nov 2011 11:05:55 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David Laight" <David.Laight@ACULAB.COM>
-Subject: Re: Disabling TCP slow start after idle
-Message-Id: <20111112110555.8ca6f5d81646718e90c4af80@canb.auug.org.au>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AEBA@saturn3.aculab.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8AEBA@saturn3.aculab.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/"
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [194.196.100.163])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 82619B6F8E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 15:01:18 +1100 (EST)
+Received: from d06nrmr1707.portsmouth.uk.ibm.com
+ (d06nrmr1707.portsmouth.uk.ibm.com [9.149.39.225])
+ by mtagate3.uk.ibm.com (8.13.1/8.13.1) with ESMTP id pAC419rX001751
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 04:01:09 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by d06nrmr1707.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAC419ug2367502
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2011 04:01:09 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAC419Gv025794
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 21:01:09 -0700
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+ [9.149.104.171])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ pAC419oT025789
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2011 21:01:09 -0700
+Subject: AUTO: Michael Barry is out of the office (returning 15/11/2011)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OF08D30F95.9BF386AF-ON80257946.00160D19-80257946.00160D19@ie.ibm.com>
+Date: Sat, 12 Nov 2011 04:00:51 +0000
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +38,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi David,
+I am out of the office until 15/11/2011.
 
-On Fri, 11 Nov 2011 15:30:23 -0000 "David Laight" <David.Laight@ACULAB.COM>=
- wrote:
->
-> We have some connections that suffer very badly from the TCP
-> 'slow start' algorithm. These are connections that will
-> always be local - they may be MAC-Switch-MAC using RGMII
-> crossover, they might also be connected via an external
-> switch. In either case the RTT is most likely to be almost
-> zero, certainly below 1ms.
 
-You would be better off asking networking questions on netdev at
-vger.kernel.org ...
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/
-Content-Type: application/pgp-signature
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 87, Issue 74" sent on 12/11/2011 1:00:02.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJOvbhjAAoJEECxmPOUX5FEphkP/iO0kXlbL7uM3j3L3ec1GOmv
-jjNl5yFRDFI9VYQxyL7wr9GPGkdpGLpp9ZWMIcm1frBEdED2Cdl5KJlGoQ4jpcvl
-JZSWK9efnNxsBaXfqL5Bx7guSmq+91lKE2EXkrNZ0yax1Joe36n0TQGIqzSG0I/G
-YAnUXOMOX5CObVSbKxXhi/etYlAc/5q3nByqyUj1OUSWfNBzst5u28wT/I+JOGOz
-R9PY2g4fhJJqYHy9Yqi796j/aD+mgshFYvEoTl0/dqVchG0kCGVLxMCg6Mo1Vpww
-eyQTnFA3XyQ5H/uz9lu60SDThGk94cZjGnuwSuFyhxNSpuv3Kh/bqPHxJO7Wd5Nr
-V/87fEZ6TZNFtVnPJRvk0wrwHrC9x1CACFqUdUxmCqKW44LZ3UXzvuVGn4/c4Jz0
-6thxF1pw2Ln9f9FVzJ5QJlgsDvjldGahFUdFkvCA1bimq3osY9Sa1xKRMM7/GCh0
-XgKxTBbFMbYpIbJ+TRFDX2XT7ek7Lefae5CE33HNnYjJcDgPgi8NM7vuuRzU281n
-SvX8JnwZ2HCy6XMz0xWWqYZ5r6CHZaRvI5LZR7eHvn4VuXVcfxYzHqN1T+JjmazW
-7jTi/0VNkqR0Wv35VfEYZBtNmBjAl5M2WNxHTqYBsF/kMvc992arQe7KfI8ylhEU
-t5CAjjkMzEQvz/Pz8f9s
-=gm3S
------END PGP SIGNATURE-----
-
---Signature=_Sat__12_Nov_2011_11_05_55_+1100_VUv62bLcGypndbG/--
+This is the only notification you will receive while this person is away.
