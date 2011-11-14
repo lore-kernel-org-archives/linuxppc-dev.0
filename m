@@ -1,27 +1,25 @@
 Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CBE57B720D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:44:14 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
+ (Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 01261B72C8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:44:28 +1100 (EST)
+Received: from /spool/local by e28smtp09.in.ibm.com with XMail ESMTP
  for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Mon, 14 Nov 2011 05:32:17 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAE5caU83461234
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:38:36 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAE5fcQW003867
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:41:41 +1100
+ Mon, 14 Nov 2011 11:14:26 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAE5hxtG331960
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 11:13:59 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAE5hsw1002959
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 11:13:58 +0530
 From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH v3 1/8] [44x] Fix typo in KEXEC Kconfig dependency
+Subject: [PATCH v3 6/8] [44x] Enable CONFIG_RELOCATABLE for PPC44x
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 14 Nov 2011 11:11:36 +0530
-Message-ID: <20111114054129.23410.57513.stgit@suzukikp.in.ibm.com>
+Date: Mon, 14 Nov 2011 11:13:53 +0530
+Message-ID: <20111114054337.23410.38202.stgit@suzukikp.in.ibm.com>
 In-Reply-To: <20111114053749.23410.63745.stgit@suzukikp.in.ibm.com>
 References: <20111114053749.23410.63745.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
@@ -38,29 +36,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kexec is not supported on 47x. 47x is a variant of 44x with slightly
-different MMU and SMP support. There was a typo in the Kconfig
-dependency for KEXEC. This patch fixes the same.
+The following patch adds relocatable support for PPC44x kernel.
+
+This enables two types of relocatable kernel support for PPC44x.
+
+1) The old style, mapping based- which restricts the load address to 256M
+   aligned.
+
+2) The new approach based on processing dynamic relocation entries -
+   CONFIG_RELOCATABLE_PPC32_PIE
+
+
+In case of CONFIG_RELOCATABLE_PPC32_PIE :
+
+We find the runtime address of _stext and relocate ourselves based
+on the following calculation.
+
+	virtual_base = ALIGN(KERNELBASE,256M) +
+			MODULO(_stext.run,256M)
+
+relocate() is called with the Effective Virtual Base Address (as
+shown below)
+
+            | Phys. Addr| Virt. Addr |
+Page (256M) |------------------------|
+Boundary    |           |            |
+            |           |            |
+            |           |            |
+Kernel Load |___________|_ __ _ _ _ _|<- Effective
+Addr(_stext)|           |      ^     |Virt. Base Addr
+            |           |      |     |
+            |           |      |     |
+            |           |reloc_offset|
+            |           |      |     |
+            |           |      |     |
+            |           |______v_____|<-(KERNELBASE)%256M
+            |           |            |
+            |           |            |
+            |           |            |
+Page(256M)  |-----------|------------|
+Boundary    |           |            |
+
+The virt_phys_offset is updated accordingly, i.e,
+
+	virt_phys_offset = effective. kernel virt base - kernstart_addr
+
+I have tested the patches on 440x platforms only. However this should
+work fine for PPC_47x also, as we only depend on the runtime address
+and the current TLB XLAT entry for the startup code, which is available
+in r25. I don't have access to a 47x board yet. So, it would be great if
+somebody could test this on 47x.
 
 Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Cc:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc:	Kumar Gala <galak@kernel.crashing.org>
+Cc:	Tony Breeds <tony@bakeyournoodle.com>
 Cc:	Josh Boyer <jwboyer@gmail.com>
-Cc:	linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+Cc:	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 ---
 
- arch/powerpc/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/Kconfig           |    2 -
+ arch/powerpc/kernel/head_44x.S |   90 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 89 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8523bd1..d7c2d1a 100644
+index a976f75..7923520 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -345,7 +345,7 @@ config ARCH_ENABLE_MEMORY_HOTREMOVE
+@@ -859,7 +859,7 @@ config DYNAMIC_MEMSTART
  
- config KEXEC
- 	bool "kexec system call (EXPERIMENTAL)"
--	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP && !47x)) && EXPERIMENTAL
-+	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP && !PPC_47x)) && EXPERIMENTAL
+ config RELOCATABLE
+ 	bool "Build a relocatable kernel (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM
++	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && 44x
  	help
- 	  kexec is a system call that implements the ability to shutdown your
- 	  current kernel, and to start another kernel.  It is like a reboot
+ 	  This builds a kernel image that is capable of running at the
+ 	  location the kernel is loaded at, without any alignment restrictions.
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 62a4cd5..7672f2c 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -64,6 +64,35 @@ _ENTRY(_start);
+ 	mr	r31,r3		/* save device tree ptr */
+ 	li	r24,0		/* CPU number */
+ 
++#ifdef CONFIG_RELOCATABLE
++/*
++ * Relocate ourselves to the current runtime address.
++ * This is called only by the Boot CPU.
++ * "relocate" is called with our current runtime virutal
++ * address.
++ * r21 will be loaded with the physical runtime address of _stext
++ */
++	bl	0f				/* Get our runtime address */
++0:	mflr	r21				/* Make it accessible */
++	addis	r21,r21,(_stext - 0b)@ha
++	addi	r21,r21,(_stext - 0b)@l 	/* Get our current runtime base */
++
++	/*
++	 * We have the runtime (virutal) address of our base.
++	 * We calculate our shift of offset from a 256M page.
++	 * We could map the 256M page we belong to at PAGE_OFFSET and
++	 * get going from there.
++	 */
++	lis	r4,KERNELBASE@h
++	ori	r4,r4,KERNELBASE@l
++	rlwinm	r6,r21,0,4,31			/* r6 = PHYS_START % 256M */
++	rlwinm	r5,r4,0,4,31			/* r5 = KERNELBASE % 256M */
++	subf	r3,r5,r6			/* r3 = r6 - r5 */
++	add	r3,r4,r3			/* Required Virutal Address */
++
++	bl	relocate
++#endif
++
+ 	bl	init_cpu_state
+ 
+ 	/*
+@@ -86,7 +115,64 @@ _ENTRY(_start);
+ 
+ 	bl	early_init
+ 
+-#ifdef CONFIG_DYNAMIC_MEMSTART
++#ifdef CONFIG_RELOCATABLE
++	/*
++	 * Relocatable kernel support based on processing of dynamic
++	 * relocation entries.
++	 *
++	 * r25 will contain RPN/ERPN for the start address of memory
++	 * r21 will contain the current offset of _stext
++	 */
++	lis	r3,kernstart_addr@ha
++	la	r3,kernstart_addr@l(r3)
++
++	/*
++	 * Compute the kernstart_addr.
++	 * kernstart_addr => (r6,r8)
++	 * kernstart_addr & ~0xfffffff => (r6,r7)
++	 */
++	rlwinm	r6,r25,0,28,31	/* ERPN. Bits 32-35 of Address */
++	rlwinm	r7,r25,0,0,3	/* RPN - assuming 256 MB page size */
++	rlwinm	r8,r21,0,4,31	/* r8 = (_stext & 0xfffffff) */
++	or	r8,r7,r8	/* Compute the lower 32bit of kernstart_addr */
++
++	/* Store kernstart_addr */
++	stw	r6,0(r3)	/* higher 32bit */
++	stw	r8,4(r3)	/* lower 32bit  */
++
++	/*
++	 * Compute the virt_phys_offset :
++	 * virt_phys_offset = stext.run - kernstart_addr
++	 *
++	 * stext.run = (KERNELBASE & ~0xfffffff) + (kernstart_addr & 0xfffffff)
++	 * When we relocate, we have :
++	 *
++	 *	(kernstart_addr & 0xfffffff) = (stext.run & 0xfffffff)
++	 *
++	 * hence:
++	 *  virt_phys_offset = (KERNELBASE & ~0xfffffff) - (kernstart_addr & ~0xfffffff)
++	 *
++	 */
++
++	/* KERNELBASE&~0xfffffff => (r4,r5) */
++	li	r4, 0		/* higer 32bit */
++	lis	r5,KERNELBASE@h
++	rlwinm	r5,r5,0,0,3	/* Align to 256M, lower 32bit */
++
++	/*
++	 * 64bit subtraction.
++	 */
++	subfc	r5,r7,r5
++	subfe	r4,r6,r4
++
++	/* Store virt_phys_offset */
++	lis	r3,virt_phys_offset@ha
++	la	r3,virt_phys_offset@l(r3)
++
++	stw	r4,0(r3)
++	stw	r5,4(r3)
++
++#elif defined(CONFIG_DYNAMIC_MEMSTART)
+ 	/*
+ 	 * Mapping based, page aligned dyanmic kernel loading.
+ 	 *
+@@ -802,7 +888,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ /*
+  * Configure and load pinned entry into TLB slot 63.
+  */
+-#ifdef CONFIG_DYNAMIC_MEMSTART
++#if defined(CONFIG_DYNAMIC_MEMSTART) || defined(CONFIG_RELOCATABLE)
+ 
+ 	/* Read the XLAT entry for our current mapping */
+ 	tlbre	r25,r23,PPC44x_TLB_XLAT
