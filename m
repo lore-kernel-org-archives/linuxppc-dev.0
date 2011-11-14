@@ -1,25 +1,26 @@
 Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 523DEB7203
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:43:10 +1100 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 64F6FB7201
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:43:38 +1100 (EST)
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by e28smtp02.in.ibm.com (8.14.4/8.13.1) with ESMTP id pAE5h64e012248
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 11:13:06 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by e28smtp01.in.ibm.com (8.14.4/8.13.1) with ESMTP id pAE5hZZs031351
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 11:13:35 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAE5h60N3571796
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 11:13:06 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAE5h4Qv027278
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:43:05 +1100
+ pAE5hXBC1716470
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 11:13:34 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAE5hWLi011675
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 16:43:33 +1100
 From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH v3 4/8] [ppc] Process dynamic relocations for kernel
+Subject: [PATCH v3 5/8] [ppc] Define virtual-physical translations for
+ RELOCATABLE
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 14 Nov 2011 11:13:04 +0530
-Message-ID: <20111114054222.23410.23022.stgit@suzukikp.in.ibm.com>
+Date: Mon, 14 Nov 2011 11:13:32 +0530
+Message-ID: <20111114054309.23410.23082.stgit@suzukikp.in.ibm.com>
 In-Reply-To: <20111114053749.23410.63745.stgit@suzukikp.in.ibm.com>
 References: <20111114053749.23410.63745.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
@@ -36,357 +37,268 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patch implements the dynamic relocation processing for
-PPC32 kernel. relocate() accepts the target virtual address and relocates
- the kernel image to the same.
+We find the runtime address of _stext and relocate ourselves based
+on the following calculation.
 
-Currently the following relocation types are handled :
+	virtual_base = ALIGN(KERNELBASE,KERNEL_TLB_PIN_SIZE) +
+			MODULO(_stext.run,KERNEL_TLB_PIN_SIZE)
 
-	R_PPC_RELATIVE
-	R_PPC_ADDR16_LO
-	R_PPC_ADDR16_HI
-	R_PPC_ADDR16_HA
+relocate() is called with the Effective Virtual Base Address (as
+shown below)
 
-The last 3 relocations in the above list depends on value of Symbol indexed
-whose index is encoded in the Relocation entry. Hence we need the Symbol
-Table for processing such relocations.
+            | Phys. Addr| Virt. Addr |
+Page        |------------------------|
+Boundary    |           |            |
+            |           |            |
+            |           |            |
+Kernel Load |___________|_ __ _ _ _ _|<- Effective
+Addr(_stext)|           |      ^     |Virt. Base Addr
+            |           |      |     |
+            |           |      |     |
+            |           |reloc_offset|
+            |           |      |     |
+            |           |      |     |
+            |           |______v_____|<-(KERNELBASE)%TLB_SIZE
+            |           |            |
+            |           |            |
+            |           |            |
+Page        |-----------|------------|
+Boundary    |           |            |
 
-Note: The GNU ld for ppc32 produces buggy relocations for relocation types
-that depend on symbols. The value of the symbols with STB_LOCAL scope
-should be assumed to be zero. - Alan Modra
 
-Changes since v2:
-  * Flush the d-cache'd instructions and invalidate the i-cache to reflect
-    the processed instructions.(Reported by: Josh Poimboeuf)
+On BookE, we need __va() & __pa() early in the boot process to access
+the device tree.
+
+Currently this has been defined as :
+
+#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) -
+						PHYSICAL_START + KERNELBASE)
+where:
+ PHYSICAL_START is kernstart_addr - a variable updated at runtime.
+ KERNELBASE	is the compile time Virtual base address of kernel.
+
+This won't work for us, as kernstart_addr is dynamic and will yield different
+results for __va()/__pa() for same mapping.
+
+e.g.,
+
+Let the kernel be loaded at 64MB and KERNELBASE be 0xc0000000 (same as
+PAGE_OFFSET).
+
+In this case, we would be mapping 0 to 0xc0000000, and kernstart_addr = 64M
+
+Now __va(1MB) = (0x100000) - (0x4000000) + 0xc0000000
+		= 0xbc100000 , which is wrong.
+
+it should be : 0xc0000000 + 0x100000 = 0xc0100000
+
+On platforms which support AMP, like PPC_47x (based on 44x), the kernel
+could be loaded at highmem. Hence we cannot always depend on the compile
+time constants for mapping.
+
+Here are the possible solutions:
+
+1) Update kernstart_addr(PHSYICAL_START) to match the Physical address of
+compile time KERNELBASE value, instead of the actual Physical_Address(_stext).
+
+The disadvantage is that we may break other users of PHYSICAL_START. They
+could be replaced with __pa(_stext).
+
+2) Redefine __va() & __pa() with relocation offset
+
+
+#ifdef	CONFIG_RELOCATABLE_PPC32
+#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + (KERNELBASE + RELOC_OFFSET)))
+#define __pa(x) ((unsigned long)(x) + PHYSICAL_START - (KERNELBASE + RELOC_OFFSET))
+#endif
+
+where, RELOC_OFFSET could be
+
+  a) A variable, say relocation_offset (like kernstart_addr), updated
+     at boot time. This impacts performance, as we have to load an additional
+     variable from memory.
+
+		OR
+
+  b) #define RELOC_OFFSET ((PHYSICAL_START & PPC_PIN_SIZE_OFFSET_MASK) - \
+                      (KERNELBASE & PPC_PIN_SIZE_OFFSET_MASK))
+
+   This introduces more calculations for doing the translation.
+
+3) Redefine __va() & __pa() with a new variable
+
+i.e,
+
+#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + VIRT_PHYS_OFFSET))
+
+where VIRT_PHYS_OFFSET :
+
+#ifdef CONFIG_RELOCATABLE_PPC32
+#define VIRT_PHYS_OFFSET virt_phys_offset
+#else
+#define VIRT_PHYS_OFFSET (KERNELBASE - PHYSICAL_START)
+#endif /* CONFIG_RELOCATABLE_PPC32 */
+
+where virt_phy_offset is updated at runtime to :
+
+	Effective KERNELBASE - kernstart_addr.
+
+Taking our example, above:
+
+virt_phys_offset = effective_kernelstart_vaddr - kernstart_addr
+		 = 0xc0400000 - 0x400000
+		 = 0xc0000000
+	and
+
+	__va(0x100000) = 0xc0000000 + 0x100000 = 0xc0100000
+	 which is what we want.
+
+I have implemented (3) in the following patch which has same cost of
+operation as the existing one.
+
+I have tested the patches on 440x platforms only. However this should
+work fine for PPC_47x also, as we only depend on the runtime address
+and the current TLB XLAT entry for the startup code, which is available
+in r25. I don't have access to a 47x board yet. So, it would be great if
+somebody could test this on 47x.
 
 Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Signed-off-by: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
-Cc:	Paul Mackerras <paulus@samba.org>
 Cc:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc:	Alan Modra <amodra@au1.ibm.com>
 Cc:	Kumar Gala <galak@kernel.crashing.org>
 Cc:	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 ---
 
- arch/powerpc/Kconfig              |   41 ++++---
- arch/powerpc/Makefile             |    6 +
- arch/powerpc/kernel/Makefile      |    2 
- arch/powerpc/kernel/reloc_32.S    |  207 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S |    8 +
- 5 files changed, 243 insertions(+), 21 deletions(-)
- create mode 100644 arch/powerpc/kernel/reloc_32.S
+ arch/powerpc/include/asm/page.h |   85 ++++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/mm/init_32.c       |    7 +++
+ 2 files changed, 89 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 076782d..a976f75 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -855,23 +855,30 @@ config DYNAMIC_MEMSTART
- 	  load address. When this option is enabled, the compile time physical 
- 	  address CONFIG_PHYSICAL_START is ignored.
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 97cfe86..a8d0888 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -97,12 +97,26 @@ extern unsigned int HPAGE_SHIFT;
  
--# Mapping based RELOCATABLE is moved to DYNAMIC_MEMSTART
--# config RELOCATABLE
--#	bool "Build a relocatable kernel (EXPERIMENTAL)"
--#	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && (FSL_BOOKE || PPC_47x)
--#	help
--#	  This builds a kernel image that is capable of running at the
--#	  location the kernel is loaded at, without any alignment restrictions.
--#
--#	  One use is for the kexec on panic case where the recovery kernel
--#	  must live at a different physical address than the primary
--#	  kernel.
--#
--#	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
--#	  it has been loaded at and the compile time physical addresses
--#	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
--#	  setting can still be useful to bootwrappers that need to know the
--#	  load location of the kernel (eg. u-boot/mkimage).
-+	  This option is overridden by RELOCATABLE.
+ extern phys_addr_t memstart_addr;
+ extern phys_addr_t kernstart_addr;
 +
-+config RELOCATABLE
-+	bool "Build a relocatable kernel (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM
-+	help
-+	  This builds a kernel image that is capable of running at the
-+	  location the kernel is loaded at, without any alignment restrictions.
-+	  This feature is a superset of DYNAMIC_MEMSTART, and hence overrides 
-+	  it.
-+
-+	  One use is for the kexec on panic case where the recovery kernel
-+	  must live at a different physical address than the primary
-+	  kernel.
-+
-+	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
-+	  it has been loaded at and the compile time physical addresses
-+	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
-+	  setting can still be useful to bootwrappers that need to know the
-+	  load address of the kernel (eg. u-boot/mkimage).
-+
-+config RELOCATABLE_PPC32
-+	def_bool y
-+	depends on PPC32 && RELOCATABLE
- 
- config PAGE_OFFSET_BOOL
- 	bool "Set custom page offset address"
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 57af16e..435ecb8 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -63,9 +63,9 @@ override CC	+= -m$(CONFIG_WORD_SIZE)
- override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
- endif
- 
--LDFLAGS_vmlinux-yy := -Bstatic
--LDFLAGS_vmlinux-$(CONFIG_PPC64)$(CONFIG_RELOCATABLE) := -pie
--LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-yy)
-+LDFLAGS_vmlinux-y := -Bstatic
-+LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
-+LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
- 
- CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=no -mcall-aixdesc
- CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index ce4f7f1..ee728e4 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -85,6 +85,8 @@ extra-$(CONFIG_FSL_BOOKE)	:= head_fsl_booke.o
- extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-y				+= vmlinux.lds
- 
-+obj-$(CONFIG_RELOCATABLE_PPC32)	+= reloc_32.o
-+
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
- obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
- obj-$(CONFIG_KGDB)		+= kgdb.o
-diff --git a/arch/powerpc/kernel/reloc_32.S b/arch/powerpc/kernel/reloc_32.S
-new file mode 100644
-index 0000000..a45438e
---- /dev/null
-+++ b/arch/powerpc/kernel/reloc_32.S
-@@ -0,0 +1,207 @@
-+/*
-+ * Code to process dynamic relocations for PPC32.
-+ *
-+ * Copyrights (C) IBM Corporation, 2011.
-+ *	Author: Suzuki Poulose <suzuki@in.ibm.com>
-+ *
-+ *  - Based on ppc64 code - reloc_64.S
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <asm/ppc_asm.h>
-+
-+/* Dynamic section table entry tags */
-+DT_RELA = 7			/* Tag for Elf32_Rela section */
-+DT_RELASZ = 8			/* Size of the Rela relocs */
-+DT_RELAENT = 9			/* Size of one Rela reloc entry */
-+
-+STN_UNDEF = 0			/* Undefined symbol index */
-+STB_LOCAL = 0			/* Local binding for the symbol */
-+
-+R_PPC_ADDR16_LO = 4		/* Lower half of (S+A) */
-+R_PPC_ADDR16_HI = 5		/* Upper half of (S+A) */
-+R_PPC_ADDR16_HA = 6		/* High Adjusted (S+A) */
-+R_PPC_RELATIVE = 22
-+
-+/*
-+ * r3 = desired final address
-+ */
-+
-+_GLOBAL(relocate)
-+
-+	mflr	r0		/* Save our LR */
-+	bl	0f		/* Find our current runtime address */
-+0:	mflr	r12		/* Make it accessible */
-+	mtlr	r0
-+
-+	lwz	r11, (p_dyn - 0b)(r12)
-+	add	r11, r11, r12	/* runtime address of .dynamic section */
-+	lwz	r9, (p_rela - 0b)(r12)
-+	add	r9, r9, r12	/* runtime address of .rela.dyn section */
-+	lwz	r10, (p_st - 0b)(r12)
-+	add	r10, r10, r12	/* runtime address of _stext section */
-+	lwz	r13, (p_sym - 0b)(r12)
-+	add	r13, r13, r12	/* runtime address of .dynsym section */
-+
-+	/*
-+	 * Scan the dynamic section for RELA, RELASZ entries
-+	 */
-+	li	r6, 0
-+	li	r7, 0
-+	li	r8, 0
-+1:	lwz	r5, 0(r11)	/* ELF_Dyn.d_tag */
-+	cmpwi	r5, 0		/* End of ELF_Dyn[] */
-+	beq	eodyn
-+	cmpwi	r5, DT_RELA
-+	bne	relasz
-+	lwz	r7, 4(r11)	/* r7 = rela.link */
-+	b	skip
-+relasz:
-+	cmpwi	r5, DT_RELASZ
-+	bne	relaent
-+	lwz	r8, 4(r11)	/* r8 = Total Rela relocs size */
-+	b	skip
-+relaent:
-+	cmpwi	r5, DT_RELAENT
-+	bne	skip
-+	lwz	r6, 4(r11)	/* r6 = Size of one Rela reloc */
-+skip:
-+	addi	r11, r11, 8
-+	b	1b
-+eodyn:				/* End of Dyn Table scan */
-+
-+	/* Check if we have found all the entries */
-+	cmpwi	r7, 0
-+	beq	done
-+	cmpwi	r8, 0
-+	beq	done
-+	cmpwi	r6, 0
-+	beq	done
-+
-+
-+	/*
-+	 * Work out the current offset from the link time address of .rela
-+	 * section.
-+	 *  cur_offset[r7] = rela.run[r9] - rela.link [r7]
-+	 *  _stext.link[r12] = _stext.run[r10] - cur_offset[r7]
-+	 *  final_offset[r3] = _stext.final[r3] - _stext.link[r12]
-+	 */
-+	subf	r7, r7, r9	/* cur_offset */
-+	subf	r12, r7, r10
-+	subf	r3, r12, r3	/* final_offset */
-+
-+	subf	r8, r6, r8	/* relaz -= relaent */
-+	/*
-+	 * Scan through the .rela table and process each entry
-+	 * r9	- points to the current .rela table entry
-+	 * r13	- points to the symbol table
-+	 */
-+
-+	/*
-+	 * Check if we have a relocation based on symbol
-+	 * r5 will hold the value of the symbol.
-+	 */
-+applyrela:
-+	lwz	r4, 4(r9)
-+	srwi	r5, r4, 8		/* ELF32_R_SYM(r_info) */
-+	cmpwi	r5, STN_UNDEF	/* sym == STN_UNDEF ? */
-+	beq	get_type	/* value = 0 */
-+	/* Find the value of the symbol at index(r5) */
-+	slwi	r5, r5, 4		/* r5 = r5 * sizeof(Elf32_Sym) */
-+	add	r12, r13, r5	/* r12 = &__dyn_sym[Index] */
-+
-+	/*
-+	 * GNU ld has a bug, where dynamic relocs based on
-+	 * STB_LOCAL symbols, the value should be assumed
-+	 * to be zero. - Alan Modra
-+	 */
-+	/* XXX: Do we need to check if we are using GNU ld ? */
-+	lbz	r5, 12(r12)	/* r5 = dyn_sym[Index].st_info */
-+	extrwi	r5, r5, 4, 24	/* r5 = ELF32_ST_BIND(r5) */
-+	cmpwi	r5, STB_LOCAL	/* st_value = 0, ld bug */
-+	beq	get_type	/* We have r5 = 0 */
-+	lwz	r5, 4(r12)	/* r5 = __dyn_sym[Index].st_value */
-+
-+get_type:
-+	/* r4 holds the relocation type */
-+	extrwi	r4, r4, 8, 24	/* r4 = ((char*)r4)[3] */
-+
-+	/* R_PPC_RELATIVE */
-+	cmpwi	r4, R_PPC_RELATIVE
-+	bne	hi16
-+	lwz	r4, 0(r9)	/* r_offset */
-+	lwz	r0, 8(r9)	/* r_addend */
-+	add	r0, r0, r3	/* final addend */
-+	stwx	r0, r4, r7	/* memory[r4+r7]) = (u32)r0 */
-+	b	nxtrela		/* continue */
-+
-+	/* R_PPC_ADDR16_HI */
-+hi16:
-+	cmpwi	r4, R_PPC_ADDR16_HI
-+	bne	ha16
-+	lwz	r4, 0(r9)	/* r_offset */
-+	lwz	r0, 8(r9)	/* r_addend */
-+	add	r0, r0, r3
-+	add	r0, r0, r5	/* r0 = (S+A+Offset) */
-+	extrwi	r0, r0, 16, 0	/* r0 = (r0 >> 16) */
-+	b	store_half
-+
-+	/* R_PPC_ADDR16_HA */
-+ha16:
-+	cmpwi	r4, R_PPC_ADDR16_HA
-+	bne	lo16
-+	lwz	r4, 0(r9)	/* r_offset */
-+	lwz	r0, 8(r9)	/* r_addend */
-+	add	r0, r0, r3
-+	add	r0, r0, r5	/* r0 = (S+A+Offset) */
-+	extrwi	r5, r0, 1, 16	/* Extract bit 16 */
-+	extrwi	r0, r0, 16, 0	/* r0 = (r0 >> 16) */
-+	add	r0, r0, r5	/* Add it to r0 */
-+	b	store_half
-+
-+	/* R_PPC_ADDR16_LO */
-+lo16:
-+	cmpwi	r4, R_PPC_ADDR16_LO
-+	bne	nxtrela
-+	lwz	r4, 0(r9)	/* r_offset */
-+	lwz	r0, 8(r9)	/* r_addend */
-+	add	r0, r0, r3
-+	add	r0, r0, r5	/* r0 = (S+A+Offset) */
-+	extrwi	r0, r0, 16, 16	/* r0 &= 0xffff */
-+	/* Fall through to */
-+
-+	/* Store half word */
-+store_half:
-+	sthx	r0, r4, r7	/* memory[r4+r7] = (u16)r0 */
-+
-+nxtrela:
-+	/*
-+	 * We have to flush the modified instructions to the
-+	 * main storage from the d-cache. And also, invalidate the
-+	 * cached instructions in i-cache which has been modified.
-+	 *
-+	 * We delay the msync / isync operation till the end, since
-+	 * we won't be executing the modified instructions until
-+	 * we return from here.
-+	 */
-+	dcbst	r4,r7
-+	icbi	r4,r7
-+	cmpwi	r8, 0		/* relasz = 0 ? */
-+	ble	done
-+	add	r9, r9, r6	/* move to next entry in the .rela table */
-+	subf	r8, r6, r8	/* relasz -= relaent */
-+	b	applyrela
-+
-+done:
-+	msync			/* Wait for the flush to finish */
-+	isync			/* Discard prefetched instructions */
-+	blr
-+
-+p_dyn:		.long	__dynamic_start - 0b
-+p_rela:		.long	__rela_dyn_start - 0b
-+p_sym:		.long	__dynamic_symtab - 0b
-+p_st:		.long	_stext - 0b
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 920276c..710a540 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -170,7 +170,13 @@ SECTIONS
- 	}
- #ifdef CONFIG_RELOCATABLE
- 	. = ALIGN(8);
--	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET) { *(.dynsym) }
-+	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET)
-+	{
 +#ifdef CONFIG_RELOCATABLE_PPC32
-+		__dynamic_symtab = .;
++extern long long virt_phys_offset;
+ #endif
++
++#endif /* __ASSEMBLY__ */
+ #define PHYSICAL_START	kernstart_addr
+-#else
++
++#else	/* !CONFIG_RELOCATABLE */
+ #define PHYSICAL_START	ASM_CONST(CONFIG_PHYSICAL_START)
+ #endif
+ 
++/* See Description below for VIRT_PHYS_OFFSET */
++#ifdef CONFIG_RELOCATABLE_PPC32
++#define VIRT_PHYS_OFFSET virt_phys_offset
++#else
++#define VIRT_PHYS_OFFSET (KERNELBASE - PHYSICAL_START)
 +#endif
-+		*(.dynsym)
-+	}
- 	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
- 	.dynamic : AT(ADDR(.dynamic) - LOAD_OFFSET)
- 	{
++
++
+ #ifdef CONFIG_PPC64
+ #define MEMORY_START	0UL
+ #elif defined(CONFIG_RELOCATABLE) || defined(CONFIG_DYNAMIC_MEMSTART)
+@@ -125,12 +139,77 @@ extern phys_addr_t kernstart_addr;
+  * determine MEMORY_START until then.  However we can determine PHYSICAL_START
+  * from information at hand (program counter, TLB lookup).
+  *
++ * On BookE with RELOCATABLE (RELOCATABLE_PPC32)
++ *
++ *   With RELOCATABLE_PPC32,  we support loading the kernel at any physical 
++ *   address without any restriction on the page alignment.
++ *
++ *   We find the runtime address of _stext and relocate ourselves based on 
++ *   the following calculation:
++ *
++ *  	  virtual_base = ALIGN_DOWN(KERNELBASE,256M) +
++ *  				MODULO(_stext.run,256M)
++ *   and create the following mapping:
++ *
++ * 	  ALIGN_DOWN(_stext.run,256M) => ALIGN_DOWN(KERNELBASE,256M)
++ *
++ *   When we process relocations, we cannot depend on the
++ *   existing equation for the __va()/__pa() translations:
++ *
++ * 	   __va(x) = (x)  - PHYSICAL_START + KERNELBASE
++ *
++ *   Where:
++ *   	 PHYSICAL_START = kernstart_addr = Physical address of _stext
++ *  	 KERNELBASE = Compiled virtual address of _stext.
++ *
++ *   This formula holds true iff, kernel load address is TLB page aligned.
++ *
++ *   In our case, we need to also account for the shift in the kernel Virtual 
++ *   address.
++ *
++ *   E.g.,
++ *
++ *   Let the kernel be loaded at 64MB and KERNELBASE be 0xc0000000 (same as PAGE_OFFSET).
++ *   In this case, we would be mapping 0 to 0xc0000000, and kernstart_addr = 64M
++ *
++ *   Now __va(1MB) = (0x100000) - (0x4000000) + 0xc0000000
++ *                 = 0xbc100000 , which is wrong.
++ *
++ *   Rather, it should be : 0xc0000000 + 0x100000 = 0xc0100000
++ *      	according to our mapping.
++ *
++ *   Hence we use the following formula to get the translations right:
++ *
++ * 	  __va(x) = (x) - [ PHYSICAL_START - Effective KERNELBASE ]
++ *
++ * 	  Where :
++ * 		PHYSICAL_START = dynamic load address.(kernstart_addr variable)
++ * 		Effective KERNELBASE = virtual_base =
++ * 				     = ALIGN_DOWN(KERNELBASE,256M) +
++ * 						MODULO(PHYSICAL_START,256M)
++ *
++ * 	To make the cost of __va() / __pa() more light weight, we introduce
++ * 	a new variable virt_phys_offset, which will hold :
++ *
++ * 	virt_phys_offset = Effective KERNELBASE - PHYSICAL_START
++ * 			 = ALIGN_DOWN(KERNELBASE,256M) - 
++ * 			 	ALIGN_DOWN(PHYSICALSTART,256M)
++ *
++ * 	Hence :
++ *
++ * 	__va(x) = x - PHYSICAL_START + Effective KERNELBASE
++ * 		= x + virt_phys_offset
++ *
++ * 		and
++ * 	__pa(x) = x + PHYSICAL_START - Effective KERNELBASE
++ * 		= x - virt_phys_offset
++ * 		
+  * On non-Book-E PPC64 PAGE_OFFSET and MEMORY_START are constants so use
+  * the other definitions for __va & __pa.
+  */
+ #ifdef CONFIG_BOOKE
+-#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + KERNELBASE))
+-#define __pa(x) ((unsigned long)(x) + PHYSICAL_START - KERNELBASE)
++#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + VIRT_PHYS_OFFSET))
++#define __pa(x) ((unsigned long)(x) - VIRT_PHYS_OFFSET)
+ #else
+ #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + PAGE_OFFSET - MEMORY_START))
+ #define __pa(x) ((unsigned long)(x) - PAGE_OFFSET + MEMORY_START)
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 161cefd..60a4e4e 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -65,6 +65,13 @@ phys_addr_t memstart_addr = (phys_addr_t)~0ull;
+ EXPORT_SYMBOL(memstart_addr);
+ phys_addr_t kernstart_addr;
+ EXPORT_SYMBOL(kernstart_addr);
++
++#ifdef CONFIG_RELOCATABLE_PPC32
++/* Used in __va()/__pa() */
++long long virt_phys_offset;
++EXPORT_SYMBOL(virt_phys_offset);
++#endif
++
+ phys_addr_t lowmem_end_addr;
+ 
+ int boot_mapsize;
