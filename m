@@ -1,21 +1,15 @@
-Return-Path: <baruch@tkos.co.il>
-Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 71BC0B6F83
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 16:17:31 +1100 (EST)
-Date: Tue, 15 Nov 2011 07:17:14 +0200
-From: Baruch Siach <baruch@tkos.co.il>
-To: Fleming Andy-AFLEMING <afleming@freescale.com>
-Subject: Re: [PATCH] net: fsl_pq_mdio: fix non tbi phy access
-Message-ID: <20111115051713.GA4052@sapphire.tkos.co.il>
-References: <b693b45a689d42b60a8a9e29dcdd2fb27e20df82.1321251618.git.baruch@tkos.co.il>
- <C89A2124-7AB4-45B6-ACD1-8C5936027531@freescale.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
+ by ozlabs.org (Postfix) with ESMTP id 03E3FB6F65
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 19:50:38 +1100 (EST)
+Date: Tue, 15 Nov 2011 00:44:19 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 3.2.0-rc1 panic on PowerPC
+Message-ID: <alpine.DEB.2.01.1111150035560.8000@trent.utfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C89A2124-7AB4-45B6-ACD1-8C5936027531@freescale.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andy,
+Hi,
 
-On Mon, Nov 14, 2011 at 09:04:47PM +0000, Fleming Andy-AFLEMING wrote:
-> Well, this got applied quickly, so I guess I can't NAK, but this requires discussion.
-> 
-> On Nov 14, 2011, at 0:22, "Baruch Siach" <baruch@tkos.co.il> wrote:
-> 
-> > Since 952c5ca1 (fsl_pq_mdio: Clean up tbi address configuration) .probe returns
-> > -EBUSY when the "tbi-phy" node is missing. Fix this.
-> 
-> It returns an error because it finds no tbi node. Because without the tbi 
-> node, there is no way for the driver to determine which address to set.
-> 
-> Your solution is to ignore the error, and hope. That's a broken approach.  
-> The real solution for a p1010 should be to have a tbi node in the dts.
+I noticed a few crashes on this PowerBook G4 lately, starting somewhere in 
+3.2.0-rc1. The crashes are really rare and as I'm not on the system all 
+the time I did not notice most of them. By the time I did, the screen was 
+blank already and I had to hard-reset the box. But not this time:
 
-Can you elaborate a bit on why this approach is broken? The PHY used to work 
-for me until 952c5ca1, and with this applied.
+  http://nerdbynature.de/bits/3.2.0-rc1/oops/
 
-> And looking at the p1010si.dtsi, I see that it's automatically there for 
-> you.
-> 
-> How were you breaking?
+When the crash occured, the system was failry loaded (CPU and disk I/O 
+wise), so that may have triggered it. I tried to type off the stack trace, 
+I hope there are not too many typos, see below.
 
-Adding linuxppc to Cc.
+The machine is fairly old, so maybe it's "just" bad RAM or something, I 
+wouldn't be suprised. But maybe not, the box us pretty stable most of the 
+time and only now I notice these rare crashes.
 
-My board is P1011 based, the single core version of P1020, not P1010. In 
-p1020si.dtsi I see no tbi node. In p1020rdb.dts I see a tbi node but only for 
-mdio@25000, not mdio@24000, which is what I'm using.
+If anyone could take a quick look...?
 
-Am I missing something?
+Thank you,
+Christian.
 
-baruch
+Instruction dump:
+92c40008 68000001 0f000000 80040000 5400003c 90040000 817f000c 380bffff
+901f000c 2f090000 81640018 81440014 <916a0004> 914b0000 92840014 92a49918
+Kernel panic - not syncing: Fatal exception in interrupt
+Call Trace:
+show_stack+0x70/0x1bc (unreliable)
+panic+0xc8/0x220
+die+0x2ac/0x2b8
+bad_page_fault+0xbc/0x104
+handle_page_fault+0x7c/0x80
+Exception: 300 at T.975+0x3f4/0x570
+LR = T.957+0x300/0x570
+kmem_cache_alloc+0x150/0x150
+__aloc_skb+0x50/0x148
+tcp_send_ack+0x35/0x138
+tcp_delay_timer+0x140/0x244
+run_timer_softirq+0x1a0/0x2ec
+__do_softirq+0xf4/0x1bc
+call_do_softirq+0x14/0x24
+do_softirq+0xfc/0x128
+irq_exit+0xa0/0xa4
+timer_interrupt+0x148/0x180
+ret_from_except+0x0/0x14
+cpu_idle+0xa0/0x118
+rest_init+0xf0/0x114
+start_kernel+0x2d0/0x2f0
+0x3444
+Rebooting in 180 seconds..
 
 -- 
-                                                     ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+BOFH excuse #184:
+
+loop found in loop in redundant loopback
