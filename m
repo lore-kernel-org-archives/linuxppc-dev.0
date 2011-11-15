@@ -1,32 +1,33 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 934A0B71FF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:41:45 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-Subject: Re: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
-Date: Tue, 15 Nov 2011 02:41:35 +0000
-Message-ID: <4EC1D15E.3010800@freescale.com>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
- <FF2BF3F3-1158-4747-AEEC-03D6A7C462D9@kernel.crashing.org>
- <C0DED343-76A8-457E-BF54-E52DFCAC83A8@boeing.com>
- <58FDDDA5-26C4-493B-A00D-81DD94A5C26A@kernel.crashing.org>
- <20111110165455.GE11983@schlenkerla.am.freescale.net>
- <15AB1C61-181F-4454-AF99-772B73DE0AA5@boeing.com>
- <1320986410.21206.48.camel@pasglop>
- <4A0007C2-1C2C-4162-98E8-ACCA4E673AFE@boeing.com>
-In-Reply-To: <4A0007C2-1C2C-4162-98E8-ACCA4E673AFE@boeing.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 71C2EB7431
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:44:09 +1100 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Tue, 15 Nov 2011 02:32:11 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAF2enqf2748524
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:40:49 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAF2hrwe027776
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:43:54 +1100
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [UPDATED] [PATCH v3 1/8] [44x] Fix typo in KEXEC CONFIG dependency
+To: linux-ppc dev <linuxppc-dev@lists.ozlabs.org>,
+ Josh Boyer <jwboyer@gmail.com>
+Date: Tue, 15 Nov 2011 08:13:50 +0530
+Message-ID: <20111115024032.21658.64055.stgit@suzukikp.in.ibm.com>
+In-Reply-To: <20111114054129.23410.57513.stgit@suzukikp.in.ibm.com>
+References: <20111114054129.23410.57513.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: Paul Bolle <pebolle@tiscali.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,12 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Moffett, Kyle D wrote:
->the PPC Book-E spec documents that the pagesize is an even multiple
-> of the cacheline size and the cachelines are always page-aligned.
+Kexec is not supported on 47x. 47x is a variant of 44x with slightly
+different MMU and SMP support. There was a typo in the config
+dependency for KEXEC. This patch fixes the same.
 
-cachelines are page aligned?
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+Cc:	Kumar Gala <galak@kernel.crashing.org>
+Cc:	Josh Boyer <jwboyer@gmail.com>
+Cc:	linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+---
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+ arch/powerpc/Kconfig          |    2 +-
+ arch/powerpc/kernel/misc_32.S |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8523bd1..d7c2d1a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -345,7 +345,7 @@ config ARCH_ENABLE_MEMORY_HOTREMOVE
+ 
+ config KEXEC
+ 	bool "kexec system call (EXPERIMENTAL)"
+-	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP && !47x)) && EXPERIMENTAL
++	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP && !PPC_47x)) && EXPERIMENTAL
+ 	help
+ 	  kexec is a system call that implements the ability to shutdown your
+ 	  current kernel, and to start another kernel.  It is like a reboot
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index f7d760a..7cd07b4 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -738,7 +738,7 @@ relocate_new_kernel:
+ 	mr      r5, r31
+ 
+ 	li	r0, 0
+-#elif defined(CONFIG_44x)  && !defined(CONFIG_47x)
++#elif defined(CONFIG_44x)  && !defined(CONFIG_PPC_47x)
+ 
+ /*
+  * Code for setting up 1:1 mapping for PPC440x for KEXEC
