@@ -1,28 +1,22 @@
-Return-Path: <BATV+9d7a692d408e90752201+3005+infradead.org+dwmw2@casper.srs.infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B06E0B6F91
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 02:05:18 +1100 (EST)
-Message-ID: <1321369503.1932.79.camel@shinybook.infradead.org>
-Subject: RE: [PATCH 1/3] mtd/nand: fix coding style issue in
- drivers/mtd/nand/fsl_elbc.c
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-Date: Tue, 15 Nov 2011 15:05:03 +0000
-In-Reply-To: <929D3CED81F34E43887A393170D66FB9053A8F81@GBRSUN01MS002.eu.xerox.net>
-References: <1321349355-1639-1-git-send-email-b35362@freescale.com>
- <929D3CED81F34E43887A393170D66FB9053A8C82@GBRSUN01MS002.eu.xerox.net>
- <1321362603.1932.67.camel@shinybook.infradead.org>
- <929D3CED81F34E43887A393170D66FB9053A8F81@GBRSUN01MS002.eu.xerox.net>
-Content-Type: multipart/signed; micalg="sha1";
- protocol="application/x-pkcs7-signature";
- boundary="=-vCmekyLwlabd3yQciMSB"
-Mime-Version: 1.0
-Cc: Artem.Bityutskiy@nokia.com, b35362@freescale.com,
- linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
- scottwood@freescale.com, akpm@linux-foundation.org,
+Return-Path: <afleming@freescale.com>
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+ [216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 83D23B6FA2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 02:06:14 +1100 (EST)
+Subject: Re: [PATCH] net: fsl_pq_mdio: fix non tbi phy access
+MIME-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset="us-ascii"
+From: Andy Fleming <afleming@freescale.com>
+In-Reply-To: <20111115051713.GA4052@sapphire.tkos.co.il>
+Date: Tue, 15 Nov 2011 09:06:03 -0600
+Message-ID: <74631EEB-F6F8-4969-AD05-81DEAFB0EAB4@freescale.com>
+References: <b693b45a689d42b60a8a9e29dcdd2fb27e20df82.1321251618.git.baruch@tkos.co.il>
+ <C89A2124-7AB4-45B6-ACD1-8C5936027531@freescale.com>
+ <20111115051713.GA4052@sapphire.tkos.co.il>
+To: Baruch Siach <baruch@tkos.co.il>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,129 +28,117 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-vCmekyLwlabd3yQciMSB
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Nov 14, 2011, at 11:17 PM, Baruch Siach wrote:
 
-On Tue, 2011-11-15 at 14:42 +0000, Jenkins, Clive wrote:
-> This may be your (not so humble :-) opinion, and I happen to agree that
-> a tab setting of 8 is best, usually. However, as Linus says in his
-> coding style document "Coding style is very personal, and I won't _force_
-> my views on anybody".=20
-
-I refer you to the remainder of that same sentence.
-
---=20
-dwmw2
-
---=-vCmekyLwlabd3yQciMSB
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIITvzCCBi0w
-ggQVoAMCAQICAwCtOTANBgkqhkiG9w0BAQUFADBUMRQwEgYDVQQKEwtDQWNlcnQgSW5jLjEeMBwG
-A1UECxMVaHR0cDovL3d3dy5DQWNlcnQub3JnMRwwGgYDVQQDExNDQWNlcnQgQ2xhc3MgMyBSb290
-MB4XDTEwMDYxMjEwMDMwMFoXDTEyMDYxMTEwMDMwMFowgegxGDAWBgNVBAMTD0RhdmlkIFdvb2Ro
-b3VzZTEiMCAGCSqGSIb3DQEJARYTZHdtdzJAaW5mcmFkZWFkLm9yZzEfMB0GCSqGSIb3DQEJARYQ
-ZGF2aWRAd29vZGhvdS5zZTEoMCYGCSqGSIb3DQEJARYZZGF2aWQud29vZGhvdXNlQGludGVsLmNv
-bTEkMCIGCSqGSIb3DQEJARYVZHdtdzJAbGludXguaW50ZWwuY29tMTcwNQYJKoZIhvcNAQkBFigx
-MDg3MmEwN2Y2ZDdlMWUwN2Y1NWZmMTcyYTAzYjMwMGVlYWFkMjAzMIIBIjANBgkqhkiG9w0BAQEF
-AAOCAQ8AMIIBCgKCAQEA29OPhNvMxBMW83psWdVhZDtmJvgN+tBEp1r6MZamONsR0k81a6fDFwJz
-M0fEzEbV/bDG102QyX/xXC/0IpKV4acnqESC+sTHUmRwxfRKGNmR6t2iwEs2Y5kQDF31JxbCt49w
-AlhLMAa+e1MBZ7vO0uDmRuJpS7+ZdHboq7cdk6dyoeumGv5sl6U/SPK9rL4KzULtqQaw6Wucd6MJ
-irIggEHfCNqeT5a+TyuH4zKCwv9nblIGXq9wt+yqu5t/RicGaKPnXSqo/WpJAGggaO8g92mnYlVl
-Wu/b9bYVISwQ8LI0sEtjN1WnP5AQO2f59bdPAVk4Rn25HceOO4NvlG47LwIDAQABo4IBcTCCAW0w
-DAYDVR0TAQH/BAIwADBWBglghkgBhvhCAQ0ESRZHVG8gZ2V0IHlvdXIgb3duIGNlcnRpZmljYXRl
-IGZvciBGUkVFIGhlYWQgb3ZlciB0byBodHRwOi8vd3d3LkNBY2VydC5vcmcwQAYDVR0lBDkwNwYI
-KwYBBQUHAwQGCCsGAQUFBwMCBgorBgEEAYI3CgMEBgorBgEEAYI3CgMDBglghkgBhvhCBAEwMgYI
-KwYBBQUHAQEEJjAkMCIGCCsGAQUFBzABhhZodHRwOi8vb2NzcC5jYWNlcnQub3JnMIGOBgNVHREE
-gYYwgYOBE2R3bXcyQGluZnJhZGVhZC5vcmeBEGRhdmlkQHdvb2Rob3Uuc2WBGWRhdmlkLndvb2Ro
-b3VzZUBpbnRlbC5jb22BFWR3bXcyQGxpbnV4LmludGVsLmNvbYEoMTA4NzJhMDdmNmQ3ZTFlMDdm
-NTVmZjE3MmEwM2IzMDBlZWFhZDIwMzANBgkqhkiG9w0BAQUFAAOCAgEAXm+SUO1/TSeGJK0D9pAm
-E9LTFkdlgbaD6HXGbS0TNUDyfLFkacc2F1JLoWcoFwcL6Rup5o/Rt4QYDBPWgF9EXFvqsc9SLrSe
-X6VwRj7vI40x19ThE2A1Y8DzBJ9+2MzIR6hd5n9axATCOIRhmZVjX1cRkwshEGvAn8mTYGhWttkx
-WhBcaAuCd9OOQqUwfxTUXiSfVumPUNrrbuvaH6MjrNjDrXdvicL26Y+AzFSJn3o8DShjjMhkUx9l
-qV46BpjSGIuvkHhcLkGJ3Y1YmtOX1hwT+Z+d/10WJh8ZG2FqIlJtPtqvHK5ol/KvdzMwmMBd4qFj
-YAO32vf7zde+jdTHNp2Mb15bJHhNdGOsZicpGue42fg3deZQFe1E2KBl9VO09fjncjt9YdhCUtxO
-buDnoOixY6YSJgSmGJB2Xs+TE5gps4UiiOYen+NeJkuwg5x9vmyraU061Uc0csfc/E5IoxhTX/Pc
-H+zXiER8aSjA/9MXQfrJM2xkY6UNKlDbCYSLKnH/O02eu7Hma6lB4wtcY8ECu7LJuFY2448Quolv
-SQfQLRvKauGFGUAhbPClOxObuv/fNzA+lfg8DX2y5jXDutnpvBGgsplKxoah01SZfR9zNqxodPx2
-srKhujBNB+WiAZntMf0xp4e0JPMlTFxm3tbY9wuBSyTJyueO9hUkbN4wggYtMIIEFaADAgECAgMA
-rTkwDQYJKoZIhvcNAQEFBQAwVDEUMBIGA1UEChMLQ0FjZXJ0IEluYy4xHjAcBgNVBAsTFWh0dHA6
-Ly93d3cuQ0FjZXJ0Lm9yZzEcMBoGA1UEAxMTQ0FjZXJ0IENsYXNzIDMgUm9vdDAeFw0xMDA2MTIx
-MDAzMDBaFw0xMjA2MTExMDAzMDBaMIHoMRgwFgYDVQQDEw9EYXZpZCBXb29kaG91c2UxIjAgBgkq
-hkiG9w0BCQEWE2R3bXcyQGluZnJhZGVhZC5vcmcxHzAdBgkqhkiG9w0BCQEWEGRhdmlkQHdvb2Ro
-b3Uuc2UxKDAmBgkqhkiG9w0BCQEWGWRhdmlkLndvb2Rob3VzZUBpbnRlbC5jb20xJDAiBgkqhkiG
-9w0BCQEWFWR3bXcyQGxpbnV4LmludGVsLmNvbTE3MDUGCSqGSIb3DQEJARYoMTA4NzJhMDdmNmQ3
-ZTFlMDdmNTVmZjE3MmEwM2IzMDBlZWFhZDIwMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC
-ggEBANvTj4TbzMQTFvN6bFnVYWQ7Zib4DfrQRKda+jGWpjjbEdJPNWunwxcCczNHxMxG1f2wxtdN
-kMl/8Vwv9CKSleGnJ6hEgvrEx1JkcMX0ShjZkerdosBLNmOZEAxd9ScWwrePcAJYSzAGvntTAWe7
-ztLg5kbiaUu/mXR26Ku3HZOncqHrphr+bJelP0jyvay+Cs1C7akGsOlrnHejCYqyIIBB3wjank+W
-vk8rh+MygsL/Z25SBl6vcLfsqrubf0YnBmij510qqP1qSQBoIGjvIPdpp2JVZVrv2/W2FSEsEPCy
-NLBLYzdVpz+QEDtn+fW3TwFZOEZ9uR3HjjuDb5RuOy8CAwEAAaOCAXEwggFtMAwGA1UdEwEB/wQC
-MAAwVgYJYIZIAYb4QgENBEkWR1RvIGdldCB5b3VyIG93biBjZXJ0aWZpY2F0ZSBmb3IgRlJFRSBo
-ZWFkIG92ZXIgdG8gaHR0cDovL3d3dy5DQWNlcnQub3JnMEAGA1UdJQQ5MDcGCCsGAQUFBwMEBggr
-BgEFBQcDAgYKKwYBBAGCNwoDBAYKKwYBBAGCNwoDAwYJYIZIAYb4QgQBMDIGCCsGAQUFBwEBBCYw
-JDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3AuY2FjZXJ0Lm9yZzCBjgYDVR0RBIGGMIGDgRNkd213
-MkBpbmZyYWRlYWQub3JngRBkYXZpZEB3b29kaG91LnNlgRlkYXZpZC53b29kaG91c2VAaW50ZWwu
-Y29tgRVkd213MkBsaW51eC5pbnRlbC5jb22BKDEwODcyYTA3ZjZkN2UxZTA3ZjU1ZmYxNzJhMDNi
-MzAwZWVhYWQyMDMwDQYJKoZIhvcNAQEFBQADggIBAF5vklDtf00nhiStA/aQJhPS0xZHZYG2g+h1
-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
-AAAAAA==
+> Hi Andy,
+>=20
+> On Mon, Nov 14, 2011 at 09:04:47PM +0000, Fleming Andy-AFLEMING wrote:
+>> Well, this got applied quickly, so I guess I can't NAK, but this =
+requires discussion.
+>>=20
+>> On Nov 14, 2011, at 0:22, "Baruch Siach" <baruch@tkos.co.il> wrote:
+>>=20
+>>> Since 952c5ca1 (fsl_pq_mdio: Clean up tbi address configuration) =
+.probe returns
+>>> -EBUSY when the "tbi-phy" node is missing. Fix this.
+>>=20
+>> It returns an error because it finds no tbi node. Because without the =
+tbi=20
+>> node, there is no way for the driver to determine which address to =
+set.
+>>=20
+>> Your solution is to ignore the error, and hope. That's a broken =
+approach. =20
+>> The real solution for a p1010 should be to have a tbi node in the =
+dts.
+>=20
+> Can you elaborate a bit on why this approach is broken? The PHY used =
+to work=20
+> for me until 952c5ca1, and with this applied.
 
 
---=-vCmekyLwlabd3yQciMSB--
+Yes, well, just because a problem goes away when a patch is applied does =
+not mean that the patch is correct, or that it made things work.
+
+An explanation:
+
+In order to support certain types of serial data interfaces with =
+external PHYs (like SGMII), it is necessary to translate the MAC's data =
+signaling into the serialized signaling. On Freescale parts, this is =
+done via a SerDes block, but the SerDes link needs a small amount of =
+management. To perform this management, we have an onboard "TBI" PHY. =
+This PHY is highly integrated with the MAC and MDIO devices. Each MAC =
+has two relevant components:
+
+1) a TBIPA register, which declares the address of the TBI PHY
+2) an associated MDIO controller.
+
+In order to configure the SerDes link, it is necessary to communicate =
+via the "local" MDIO controller with the TBI PHY. For most of the MACs, =
+this is simple: Choose an address for TBIPA, and then use that address =
+to communicate with the TBI PHY. However, the *first* MDIO controller is =
+also used to communicate with external PHYs. On this controller, we have =
+to be fairly particular about which address we put in TBIPA, because all =
+transactions to that address will go to the TBI PHY. On older parts, =
+this value defaulted to "0", but it now defaults to "31", I believe.
+
+Ok, so now we're at this code. The of_mdiobus_register() function will =
+parse the device tree, and find all of the PHYs on the MDIO bus, and =
+register them as devices. In order to ensure that all of those PHYs are =
+accessible, we *MUST* set TBIPA to something that won't conflict with =
+any existing addresses. The mechanism we have chosen for this is to =
+assign the address in the device tree, via a tbi-phy node.
+
+My recent patch changed the behavior, because we used to try to find a =
+free address via scanning, but this was somewhat ugly, and failed (as =
+you noticed) due to uninitialized mutexes.
+
+The reason your latest patch is wrong is because it doesn't set the =
+TBIPA register at all if there is no tbi-phy node. Instead, it just =
+relies on luck, hoping that the TBIPA register was set to something that =
+doesn't conflict already. It will work if 0x1f or 0 aren't necessary PHY =
+addresses for your board, or if the firmware set it to something =
+sensible.
+
+
+>=20
+>> And looking at the p1010si.dtsi, I see that it's automatically there =
+for=20
+>> you.
+>>=20
+>> How were you breaking?
+>=20
+> Adding linuxppc to Cc.
+>=20
+> My board is P1011 based, the single core version of P1020, not P1010. =
+In=20
+> p1020si.dtsi I see no tbi node. In p1020rdb.dts I see a tbi node but =
+only for=20
+> mdio@25000, not mdio@24000, which is what I'm using.
+>=20
+> Am I missing something?
+
+
+Well, that's a bug. In truth, the silicon dtsi trees should not have tbi =
+nodes, as that's highly machine-specific. The p1020rdb is apparently =
+relying on the old behavior, which is broken, and due to the fact that =
+the first ethernet interface doesn't *use* the TBI PHY.
+
+You should add this to your board tree:
+
+                mdio@24000 {
+
+                        tbi0: tbi-phy@11 {
+                                reg =3D <0x11>;
+                                device_type =3D "tbi-phy";
+                        };
+                };
+
+And add the PHYs you use, as well as set reg (and the value after the =
+"@") to something that makes sense for your board.
+
+I am going to go right now, and add tbi nodes for all of the Freescale =
+platforms. I will also modify the fsl_pq_mdio code to be more explicit =
+about its reason for failure.
+
+Andy=
