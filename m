@@ -1,23 +1,35 @@
-Return-Path: <afleming@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
- [216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 83D23B6FA2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 02:06:14 +1100 (EST)
-Subject: Re: [PATCH] net: fsl_pq_mdio: fix non tbi phy access
-MIME-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset="us-ascii"
-From: Andy Fleming <afleming@freescale.com>
-In-Reply-To: <20111115051713.GA4052@sapphire.tkos.co.il>
-Date: Tue, 15 Nov 2011 09:06:03 -0600
-Message-ID: <74631EEB-F6F8-4969-AD05-81DEAFB0EAB4@freescale.com>
-References: <b693b45a689d42b60a8a9e29dcdd2fb27e20df82.1321251618.git.baruch@tkos.co.il>
- <C89A2124-7AB4-45B6-ACD1-8C5936027531@freescale.com>
- <20111115051713.GA4052@sapphire.tkos.co.il>
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2CC01B6FA1
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2011 02:13:47 +1100 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 15 Nov 2011 15:08:42 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAFFANxW2912280
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2011 02:10:28 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAFFDT75010212
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2011 02:13:29 +1100
+Subject: [RFC PATCH v5 0/9] fadump: Firmware-assisted dump support for Powerpc.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Tue, 15 Nov 2011 20:43:24 +0530
+Message-ID: <20111115151145.16533.16384.stgit@mars.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Anton Blanchard <anton@samba.org>, Amerigo Wang <amwang@redhat.com>,
+ Kexec-ml <kexec@lists.infradead.org>, Milton Miller <miltonm@bga.com>,
+ Randy Dunlap <rdunlap@xenotime.net>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,118 +39,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi All,
 
-On Nov 14, 2011, at 11:17 PM, Baruch Siach wrote:
+Please find the version 5 of the patchset that implements firmware-assisted
+dump mechanism to capture kernel crash dump for Powerpc architecture. The
+firmware-assisted dump is a robust mechanism to get reliable kernel crash
+dump with assistance from firmware. This approach does not use kexec, instead
+firmware assists in booting the kdump kernel while preserving memory contents.
 
-> Hi Andy,
->=20
-> On Mon, Nov 14, 2011 at 09:04:47PM +0000, Fleming Andy-AFLEMING wrote:
->> Well, this got applied quickly, so I guess I can't NAK, but this =
-requires discussion.
->>=20
->> On Nov 14, 2011, at 0:22, "Baruch Siach" <baruch@tkos.co.il> wrote:
->>=20
->>> Since 952c5ca1 (fsl_pq_mdio: Clean up tbi address configuration) =
-.probe returns
->>> -EBUSY when the "tbi-phy" node is missing. Fix this.
->>=20
->> It returns an error because it finds no tbi node. Because without the =
-tbi=20
->> node, there is no way for the driver to determine which address to =
-set.
->>=20
->> Your solution is to ignore the error, and hope. That's a broken =
-approach. =20
->> The real solution for a p1010 should be to have a tbi node in the =
-dts.
->=20
-> Can you elaborate a bit on why this approach is broken? The PHY used =
-to work=20
-> for me until 952c5ca1, and with this applied.
+Change in v5:
+-------------
+- Added 'fadump_' prefix to all static functions defined.
+
+patch 02/10:
+- Merged patch 10/10 which introduces a config option CONFIG_FA_DUMP
+  for firmware assisted dump feature on Powerpc (ppc64) architecture.
+- Increased MIN_BOOT_MEM by 64M to avoid OOM issue during network
+  dump capture. When kdump infrastructure is configured to save vmcore
+  over network, we run into OOM issue while loading modules related to
+  network setup.
+
+Changes in v4:
+--------------
+patch 04/10:
+- Move the init_elfcore_header() function and 'memblock_num_regions' macro
+ from generic code to power specific code as these are used only by
+ firmware assisted dump implementation which is power specific feature.
+
+patch 05/10:
+- Fixes a issue where memblock_free() is invoked from build_cpu_notes()
+  function during error_out path. Invoke cpu_notes_buf_free() in error_out
+  path instead of memblock_free().
+
+Changes in v3:
+-------------
+- Re-factored the implementation to work with kdump service start/stop.
+  Introduce fadump_registered sysfs control file which will be used by
+  kdump init scripts to start/stop firmware assisted dump. echo 1 to
+  /sys/kernel/fadump_registered file for fadump registration and
+  echo 0 to /sys/kernel/fadump_registered file for fadump un-registration.
+- Introduced the locking mechanism to handle simultaneous writes to
+  sysfs control files fadump_registered and fadump_release_mem
+
+  Affected patches are: 01/10, 03/10, 08/10.
+
+Changes in v2:
+-------------
+patch 01/10:
+- Modified the documentation to reflect the change of fadump_region
+  file under debugfs filesystem.
+
+patch 02/10:
+- Modified to use standard pr_debug() macro.
+- Modified early_init_dt_scan_fw_dump() to get the size of
+  "ibm,configure-kernel-dump-sizes" property and use it to iterate through
+  an array of dump sections.
+- Introduced boot option 'fadump_reserve_mem=' to let user specify the
+  fadump boot memory to be reserved.
+
+patch 03/10:
+- Removed few debug print statements.
+- Moved the setup_fadump() call from setup_system() and now calling it
+  subsys_initcall.
+- Moved fadump_region attribute under debugfs.
+- Clear the TCE entries if firmware assisted dump is active.
+
+patch 05/10:
+- Moved the crash_fadump() invocation from generic code to panic notifier.
+- Introduced cpu_notes_buf_alloc() function to allocate cpu notes buffer
+  using get_free_pages().
+
+patch 08/10:
+- Introduced cpu_notes_buf_free() function to free memory allocated for
+  cpu notes buffer.
+
+The most of the code implementation has been adapted from phyp assisted dump
+implementation written by Linas Vepstas and Manish Ahuja.
+
+The first patch is a documentation that talks about firmware-assisted dump
+mechanism, implementation details and TODO list.
+
+I have tested the patches on following system configuration:
+1. LPAR on Power6 with 4GB RAM and 8 CPUs
+2. LPAR on Power7 with 2GB RAM and 20 CPUs
+3. LPAR on Power7 with 1TB RAM and 896 CPUs
+
+These patches cleanly apply on commit c3b92c878 in linux-2.6 git tree.
+
+Please review the patchset and let me know your comments.
+
+Thanks,
+-Mahesh.
+---
+
+Mahesh Salgaonkar (9):
+      fadump: Add documentation for firmware-assisted dump.
+      fadump: Reserve the memory for firmware assisted dump.
+      fadump: Register for firmware assisted dump.
+      fadump: Initialize elfcore header and add PT_LOAD program headers.
+      fadump: Convert firmware-assisted cpu state dump data into elf notes.
+      fadump: Add PT_NOTE program header for vmcoreinfo
+      fadump: Introduce cleanup routine to invalidate /proc/vmcore.
+      fadump: Invalidate registration and release reserved memory for general use.
+      fadump: Invalidate the fadump registration during machine shutdown.
 
 
-Yes, well, just because a problem goes away when a patch is applied does =
-not mean that the patch is correct, or that it made things work.
+ Documentation/powerpc/firmware-assisted-dump.txt |  243 ++++
+ arch/powerpc/Kconfig                             |   13 
+ arch/powerpc/include/asm/fadump.h                |  216 ++++
+ arch/powerpc/kernel/Makefile                     |    1 
+ arch/powerpc/kernel/fadump.c                     | 1316 ++++++++++++++++++++++
+ arch/powerpc/kernel/iommu.c                      |    8 
+ arch/powerpc/kernel/prom.c                       |   15 
+ arch/powerpc/kernel/setup-common.c               |   14 
+ arch/powerpc/kernel/traps.c                      |    3 
+ arch/powerpc/mm/hash_utils_64.c                  |   11 
+ fs/proc/vmcore.c                                 |   23 
+ 11 files changed, 1861 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/powerpc/firmware-assisted-dump.txt
+ create mode 100644 arch/powerpc/include/asm/fadump.h
+ create mode 100644 arch/powerpc/kernel/fadump.c
 
-An explanation:
-
-In order to support certain types of serial data interfaces with =
-external PHYs (like SGMII), it is necessary to translate the MAC's data =
-signaling into the serialized signaling. On Freescale parts, this is =
-done via a SerDes block, but the SerDes link needs a small amount of =
-management. To perform this management, we have an onboard "TBI" PHY. =
-This PHY is highly integrated with the MAC and MDIO devices. Each MAC =
-has two relevant components:
-
-1) a TBIPA register, which declares the address of the TBI PHY
-2) an associated MDIO controller.
-
-In order to configure the SerDes link, it is necessary to communicate =
-via the "local" MDIO controller with the TBI PHY. For most of the MACs, =
-this is simple: Choose an address for TBIPA, and then use that address =
-to communicate with the TBI PHY. However, the *first* MDIO controller is =
-also used to communicate with external PHYs. On this controller, we have =
-to be fairly particular about which address we put in TBIPA, because all =
-transactions to that address will go to the TBI PHY. On older parts, =
-this value defaulted to "0", but it now defaults to "31", I believe.
-
-Ok, so now we're at this code. The of_mdiobus_register() function will =
-parse the device tree, and find all of the PHYs on the MDIO bus, and =
-register them as devices. In order to ensure that all of those PHYs are =
-accessible, we *MUST* set TBIPA to something that won't conflict with =
-any existing addresses. The mechanism we have chosen for this is to =
-assign the address in the device tree, via a tbi-phy node.
-
-My recent patch changed the behavior, because we used to try to find a =
-free address via scanning, but this was somewhat ugly, and failed (as =
-you noticed) due to uninitialized mutexes.
-
-The reason your latest patch is wrong is because it doesn't set the =
-TBIPA register at all if there is no tbi-phy node. Instead, it just =
-relies on luck, hoping that the TBIPA register was set to something that =
-doesn't conflict already. It will work if 0x1f or 0 aren't necessary PHY =
-addresses for your board, or if the firmware set it to something =
-sensible.
-
-
->=20
->> And looking at the p1010si.dtsi, I see that it's automatically there =
-for=20
->> you.
->>=20
->> How were you breaking?
->=20
-> Adding linuxppc to Cc.
->=20
-> My board is P1011 based, the single core version of P1020, not P1010. =
-In=20
-> p1020si.dtsi I see no tbi node. In p1020rdb.dts I see a tbi node but =
-only for=20
-> mdio@25000, not mdio@24000, which is what I'm using.
->=20
-> Am I missing something?
-
-
-Well, that's a bug. In truth, the silicon dtsi trees should not have tbi =
-nodes, as that's highly machine-specific. The p1020rdb is apparently =
-relying on the old behavior, which is broken, and due to the fact that =
-the first ethernet interface doesn't *use* the TBI PHY.
-
-You should add this to your board tree:
-
-                mdio@24000 {
-
-                        tbi0: tbi-phy@11 {
-                                reg =3D <0x11>;
-                                device_type =3D "tbi-phy";
-                        };
-                };
-
-And add the PHYs you use, as well as set reg (and the value after the =
-"@") to something that makes sense for your board.
-
-I am going to go right now, and add tbi nodes for all of the Freescale =
-platforms. I will also modify the fsl_pq_mdio code to be more explicit =
-about its reason for failure.
-
-Andy=
+-- 
+Signature
