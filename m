@@ -1,34 +1,21 @@
-Return-Path: <kyle@moffetthome.net>
-Received: from mail-pz0-f43.google.com (mail-pz0-f43.google.com
- [209.85.210.43]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 51E70B7212
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 14:40:42 +1100 (EST)
-Received: by pzk34 with SMTP id 34so14358456pzk.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2011 19:40:39 -0800 (PST)
+Return-Path: <baruch@tkos.co.il>
+Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 71BC0B6F83
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 16:17:31 +1100 (EST)
+Date: Tue, 15 Nov 2011 07:17:14 +0200
+From: Baruch Siach <baruch@tkos.co.il>
+To: Fleming Andy-AFLEMING <afleming@freescale.com>
+Subject: Re: [PATCH] net: fsl_pq_mdio: fix non tbi phy access
+Message-ID: <20111115051713.GA4052@sapphire.tkos.co.il>
+References: <b693b45a689d42b60a8a9e29dcdd2fb27e20df82.1321251618.git.baruch@tkos.co.il>
+ <C89A2124-7AB4-45B6-ACD1-8C5936027531@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <4EC1D15E.3010800@freescale.com>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
- <FF2BF3F3-1158-4747-AEEC-03D6A7C462D9@kernel.crashing.org>
- <C0DED343-76A8-457E-BF54-E52DFCAC83A8@boeing.com>
- <58FDDDA5-26C4-493B-A00D-81DD94A5C26A@kernel.crashing.org>
- <20111110165455.GE11983@schlenkerla.am.freescale.net>
- <15AB1C61-181F-4454-AF99-772B73DE0AA5@boeing.com>
- <1320986410.21206.48.camel@pasglop>
- <4A0007C2-1C2C-4162-98E8-ACCA4E673AFE@boeing.com>
- <4EC1D15E.3010800@freescale.com>
-From: Kyle Moffett <kyle@moffetthome.net>
-Date: Mon, 14 Nov 2011 22:40:18 -0500
-Message-ID: <CAGZ=bqKm8dctvYdHesaxAXxgSUmOBhExCwq=J9vc+QYCzaoJiw@mail.gmail.com>
-Subject: Re: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>, "Moffett,
- Kyle D" <Kyle.D.Moffett@boeing.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <C89A2124-7AB4-45B6-ACD1-8C5936027531@freescale.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 14, 2011 at 21:41, Tabi Timur-B04825 <B04825@freescale.com> wrote:
-> Moffett, Kyle D wrote:
->>the PPC Book-E spec documents that the pagesize is an even multiple
->> of the cacheline size and the cachelines are always page-aligned.
->
-> cachelines are page aligned?
+Hi Andy,
 
-Whoops, good catch.  That should have been:
+On Mon, Nov 14, 2011 at 09:04:47PM +0000, Fleming Andy-AFLEMING wrote:
+> Well, this got applied quickly, so I guess I can't NAK, but this requires discussion.
+> 
+> On Nov 14, 2011, at 0:22, "Baruch Siach" <baruch@tkos.co.il> wrote:
+> 
+> > Since 952c5ca1 (fsl_pq_mdio: Clean up tbi address configuration) .probe returns
+> > -EBUSY when the "tbi-phy" node is missing. Fix this.
+> 
+> It returns an error because it finds no tbi node. Because without the tbi 
+> node, there is no way for the driver to determine which address to set.
+> 
+> Your solution is to ignore the error, and hope. That's a broken approach.  
+> The real solution for a p1010 should be to have a tbi node in the dts.
 
-"the PPC Book-E spec documents that the pagesize is an even multiple
-of the cacheline size and that the pages are always cacheline-aligned."
+Can you elaborate a bit on why this approach is broken? The PHY used to work 
+for me until 952c5ca1, and with this applied.
 
-Thanks!
+> And looking at the p1010si.dtsi, I see that it's automatically there for 
+> you.
+> 
+> How were you breaking?
 
-Cheers,
-Kyle Moffett
+Adding linuxppc to Cc.
+
+My board is P1011 based, the single core version of P1020, not P1010. In 
+p1020si.dtsi I see no tbi node. In p1020rdb.dts I see a tbi node but only for 
+mdio@25000, not mdio@24000, which is what I'm using.
+
+Am I missing something?
+
+baruch
 
 -- 
-Curious about my work on the Debian powerpcspe port?
-I'm keeping a blog here: http://pureperl.blogspot.com/
+                                                     ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
