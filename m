@@ -1,32 +1,31 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from stl-smtpout-01.boeing.com (stl-smtpout-01.boeing.com
- [130.76.96.56])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "stl-smtpout-01.boeing.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 51B0FB721C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:53:47 +1100 (EST)
-From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 14 Nov 2011 20:36:48 -0600
-Subject: Re: [RFC PATCH 00/17] powerpc/e500: separate e500 from e500mc
-Message-ID: <4A0007C2-1C2C-4162-98E8-ACCA4E673AFE@boeing.com>
-References: <4E42AB6F.1050900@freescale.com>
- <1320883399-15911-1-git-send-email-Kyle.D.Moffett@boeing.com>
- <FF2BF3F3-1158-4747-AEEC-03D6A7C462D9@kernel.crashing.org>
- <C0DED343-76A8-457E-BF54-E52DFCAC83A8@boeing.com>
- <58FDDDA5-26C4-493B-A00D-81DD94A5C26A@kernel.crashing.org>
- <20111110165455.GE11983@schlenkerla.am.freescale.net>
- <15AB1C61-181F-4454-AF99-772B73DE0AA5@boeing.com>
- <1320986410.21206.48.camel@pasglop>
-In-Reply-To: <1320986410.21206.48.camel@pasglop>
+Return-Path: <B34182@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 3CF2BB7200
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 14:22:03 +1100 (EST)
+From: Liu Gang-B34182 <B34182@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 4/5, v3] powerpc/8xxx: Update device tree bus probe for
+ new RapidIO node binding
+Date: Tue, 15 Nov 2011 03:21:54 +0000
+Message-ID: <9A1C2A9ACC704641BC472A1588CE16471417AE@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1321099352-21462-1-git-send-email-Gang.Liu@freescale.com>
+ <1321099352-21462-4-git-send-email-Gang.Liu@freescale.com>
+ <4EC15145.3030001@freescale.com> <4EC151D5.3040900@freescale.com>
+In-Reply-To: <4EC151D5.3040900@freescale.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Timur Tabi <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+ Zang Roy-R61911 <r61911@freescale.com>,
+ "'Alexandre.Bounine@idt.com'" <Alexandre.Bounine@idt.com>,
+ Jiang Kai-B18973 <B18973@freescale.com>,
+ "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
+ "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,44 +35,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Nov 10, 2011, at 23:40, Benjamin Herrenschmidt wrote:
-> On Thu, 2011-11-10 at 18:38 -0600, Moffett, Kyle D wrote:
->>  (2) Make the ppc64_caches struct apply to ppc32 as well, and
->>      preinitialize it with a minimum value used by any platform being
->>      compiled in (for "dcbXX"/"icbXX" purposes).  This is safe because
->>      the pagesize is always a multiple of the cache block size and the
->>      kernel only uses dcbXX/icbXX on whole pages.  The only impact is a
->>      temporary small performance hit from flushing or zeroing the same
->>      block 8 times if too small.
+Yeah, send binding first should be better for reviewing entire set of patch=
+es.
+Thanks!
+
+-----Original Message-----
+From: Wood Scott-B07421=20
+Sent: Tuesday, November 15, 2011 1:37 AM
+To: Liu Gang-B34182
+Cc: Li Yang-R58472; Jiang Kai-B18973; linux-kernel@vger.kernel.org; Zang Ro=
+y-R61911; Alexandre.Bounine@idt.com; akpm@linux-foundation.org; linuxppc-de=
+v@lists.ozlabs.org; Gala Kumar-B11780
+Subject: Re: [PATCH 4/5, v3] powerpc/8xxx: Update device tree bus probe for=
+ new RapidIO node binding
+
+On 11/14/2011 11:35 AM, Scott Wood wrote:
+> On 11/12/2011 06:02 AM, Liu Gang wrote:
+>> From: Kai Jiang <Kai.Jiang@freescale.com>
+>>
+>> Update of_platform_bus_probe() RapidIO node to be compitable with new=20
+>> RapidIO dts compatible property.
+>>
+>> Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>>  arch/powerpc/platforms/85xx/corenet_ds.c   |    2 +-
+>>  arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    2 +-
+>>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
+>>  3 files changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c=20
+>> b/arch/powerpc/platforms/85xx/corenet_ds.c
+>> index 802ad11..c48b661 100644
+>> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
+>> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+>> @@ -112,7 +112,7 @@ static const struct of_device_id of_device_ids[] __d=
+evinitconst =3D {
+>>  		.compatible	=3D "simple-bus"
+>>  	},
+>>  	{
+>> -		.compatible	=3D "fsl,rapidio-delta",
+>> +		.compatible	=3D "fsl,srio",
 >=20
-> Are you sure about dcbz ? Getting that wrong can be deadly ... I'd
-> rather get rid of some fancy optims and use a soft value in some cases.
-> That or we can compile multiple variants for the common case of some of
-> the copy routines and use patching (alternate sections) to branch to the
-> right one at runtime, at least for the common cases (32 and 128 for
-> example for 440 and 476).
+> fsl,srio is too vague.  We need to identify the specific hardware (or=20
+> at least a concrete programming interface document), not just the bus =20
+> that the hardware implements.
 
-Well, all of the kernel loops that use dcbz are operating on whole pages,
-and the PPC Book-E spec documents that the pagesize is an even multiple
-of the cacheline size and the cachelines are always page-aligned.
+Never mind, I see that the binding is more specific about what this string =
+means.
 
-So when you are clearing a whole page, there are only 2 things you can do
-wrong with "dcbz":
+Next time have the binding come first. :-)
 
-  (1) Call "dcbz" with an address outside of the page you want to zero.
-
-  (2) Omit calls "dcbz" to dcbz for some physical cachelines in the page.
-
-Now, that's a totally different story from the userspace memset() calls
-that caused the problem originally, because they were frequently given
-memory much smaller than a page to clear, and if you didn't know exactly
-how many bytes a "dcbz" was going to clear you couldn't use it at all.
-
-But the kernel doesn't do that anywhere, it just uses it for page clears.
-
-Cheers,
-Kyle Moffett
-
---
-Curious about my work on the Debian powerpcspe port?
-I'm keeping a blog here: http://pureperl.blogspot.com/
+-Scott
