@@ -1,33 +1,17 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 3E3B5B7209
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:30:28 +1100 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Tue, 15 Nov 2011 02:28:46 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAF2UB301646774
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:30:11 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAF2UBr0008923
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:30:11 +1100
-Message-ID: <4EC1CEAF.3040308@in.ibm.com>
-Date: Tue, 15 Nov 2011 08:00:07 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-MIME-Version: 1.0
-To: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH] powerpc/44x: Fix typos '47x' and 'CONFIG_47x'
-References: <1321309827.20271.146.camel@x61.thuisdomein>
-In-Reply-To: <1321309827.20271.146.camel@x61.thuisdomein>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from border.exmeritus.com (border.exmeritus.com
+ [IPv6:2002:46a7:f11a:ffff::])
+ by ozlabs.org (Postfix) with ESMTP id E2163B7209
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2011 13:32:59 +1100 (EST)
+From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC PATCH 0/2] powerpc: CPU cache op cleanup
+Date: Mon, 14 Nov 2011 21:32:09 -0500
+Message-Id: <1321324332-22964-1-git-send-email-Kyle.D.Moffett@boeing.com>
+In-Reply-To: <1320986410.21206.48.camel@pasglop>
+References: <1320986410.21206.48.camel@pasglop>
+Cc: B04825@freescale.com, linux-kernel@vger.kernel.org,
+ paul.gortmaker@windriver.com, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,20 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/15/11 04:00, Paul Bolle wrote:
-> Commit 674bfa4855 ("powerpc/44x: Kexec support for PPC440X chipsets")
-> used the Kconfig symbol '47x', and the macro 'CONFIG_47x'. Neither
-> exist. These should have been 'PPC_47x' and 'CONFIG_PPC_47x'. Fix these
-> typos.
+Ok, so I have a work-in-progress patch for cleaning up the CPU cache
+handling, and I'd like some comments on the approach.
 
-Thanks for catching this. I have already sent a series which fixes the
-same. (Sub: Kdump support for PPC440x ). But I think I missed one hunk in
-the misc_32.S.
+It's not really split up, and it's kind of a huge patch because it
+tries to tackle a lot of things at once.  Unfortunately, I'm having a
+hard time finding good clean places to break things apart.
 
->
-> Also fix a related preprocessor check at the top of kexec.h.
->
+Furthermore, I know 100% that it is not complete on PPC32 yet, and it
+almost certainly does not build on PPC64 yet either.
 
-Thanks
+These are the only files in arch/powerpc/ which have known-incorrect
+references to L1_CACHE_* variables:
+  arch/powerpc/lib/copy_32.S
+  arch/powerpc/kernel/misc_32.S
 
-Suzuki
+Unfortunately, I've been staring at PPC asm for long enough that I
+have a migraine headache and I'm going to have to stop here for now.
+If somebody else wants to tackle fixing up the 32-bit copy_page() and
+__copy_tofrom_user() routines it would be highly appreciated.
+
+Cheers,
+Kyle Moffett
+
+--
+Curious about my work on the Debian powerpcspe port?
+I'm keeping a blog here: http://pureperl.blogspot.com/
