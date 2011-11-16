@@ -1,14 +1,27 @@
-Return-Path: <robert.sciuk@exfo.com>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+ [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id E75B8B7134
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 08:42:23 +1100 (EST)
+Received: from mail114-am1 (localhost [127.0.0.1])	by
+ mail114-am1-R.bigfish.com (Postfix) with ESMTP id ACBC5360116	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 21:42:32 +0000 (UTC)
+Received: from AM1EHSMHS002.bigfish.com (unknown [10.3.201.244])	by
+ mail114-am1.bigfish.com (Postfix) with ESMTP id 932B45C0043	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 21:42:32 +0000 (UTC)
+Message-ID: <4EC42E35.607@freescale.com>
+Date: Wed, 16 Nov 2011 15:42:13 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: P4080: attempting to use the uio_pdrv to attach FPGA on localbus ...
-Date: Wed, 16 Nov 2011 16:19:51 -0500
-Message-ID: <2DD52030B5146141BEB762A11AE97C4C010A0519@SPQCEXC05.exfo.com>
-In-reply-to: <mailman.2323.1320874671.15294.devicetree-discuss@lists.ozlabs.org>
-References: <mailman.2323.1320874671.15294.devicetree-discuss@lists.ozlabs.org>
-From: "Robert Sciuk" <robert.sciuk@exfo.com>
-To: <devicetree-discuss@lists.ozlabs.org>
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v2 3/7] powerpc/85xx: add sleep and deep sleep support
+References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
+ <1321437344-19253-3-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1321437344-19253-3-git-send-email-chenhui.zhao@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,50 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have succeeded in using the i2c bus with GPIO expander to access the =
-programming pins of my FPGA devices, but the data port uses the =
-localbus.  I had initially thought that the uio platform driver would be =
-the ideal approach to creating a device which would allow configuration =
-from userland via the /dev/uio[0|1] device interface, but apparently the =
-device binding is not being accomplished as expected. =20
+On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index ce4f7f1..d5cc385 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -63,6 +63,7 @@ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+>  ifeq ($(CONFIG_PPC32),y)
+>  obj-$(CONFIG_E500)		+= idle_e500.o
+>  endif
+> +obj-$(CONFIG_PPC_85xx)		+= l2cr_85xx.o
 
-	localbus@ffe124000 {
-		compatible =3D "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
-		reg =3D <0xf 0xfe124000 0 0x1000>;
-		interrupts =3D <25 2 0 0>;
-		interrupt-parent =3D <&mpic>;
-		#address-cells =3D <2>;
-		#size-cells =3D <1>;
+Can you restrict this to e500v1/v2?
 
-                /* Local bus region mappings */
-                ranges =3D <0 0 0xf 0xe8000000 0x08000000 	/* CS0: Boot =
-flash */
-                          1 0 0xf 0xd0000000 0x8000 		/* CS1: FPGA0 */
-                          2 0 0xf 0xd1000000 0x8000 >; 	/* CS2: FPGA1 */
+Also, don't call it "l2cr" -- that's a 6xx register that is not present
+on 85xx.
 
-		flash@0,0 {
-		  ........
-            };=20
+> +	.section .data
+> +	.align	5
+> +mpc85xx_sleep_save_area:
+> +	.space	STATE_SAVE_SIZE
+> +ccsrbase_low:
+> +	.long	0
+> +ccsrbase_high:
+> +	.long	0
+> +powmgtreq:
+> +	.long	POWMGTCSR_DPSLP_MASK
+> +
+> +	.section .text
+> +	.align	12
+> +
+> +	/*
+> +	 * r3 = high word of physical address of CCSR
+> +	 * r4 = low word of physical address of CCSR
+> +	 */
 
-		lim: fpga@1,0 {
-			compatible =3D "uio_pdrv";
-			pin-handle=3D<&lim_ctrl>;
-		};=20
+The whole point of powmgtreq is to store a dynamically-passed-in
+value... and it doesn't look like you add it in the jog patch.
 
-		nitro: fpga@2,0 {
-			compatible =3D "uio_pdrv";
-			pin-handle=3D<&fpe0_ctrl &fpe1_ctrl>;
-		};=20
-	};
-
-I have aliases pointing to the localbus nodes lim and nitro, but it =
-appears that the uio_pdrv driver does not bind to the device based upon =
-the compatible property of the tree.  I'm hoping to be able to mmap the =
-localbus port memory (0xf_d000_0000 and 0xf_d100_0000) respectively when =
-I open /dev/uio[0|1].  Is there additional driver registration needed in =
-order to use the uio_pdrv driver?  What am I missing??
-
-Any pointers would be appreciated.
-
-Cheers,
-Rob
+-Scott
