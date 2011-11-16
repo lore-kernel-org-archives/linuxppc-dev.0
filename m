@@ -1,28 +1,34 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
- [213.199.154.206])
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E75B8B7134
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 08:42:23 +1100 (EST)
-Received: from mail114-am1 (localhost [127.0.0.1])	by
- mail114-am1-R.bigfish.com (Postfix) with ESMTP id ACBC5360116	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 21:42:32 +0000 (UTC)
-Received: from AM1EHSMHS002.bigfish.com (unknown [10.3.201.244])	by
- mail114-am1.bigfish.com (Postfix) with ESMTP id 932B45C0043	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 21:42:32 +0000 (UTC)
-Message-ID: <4EC42E35.607@freescale.com>
-Date: Wed, 16 Nov 2011 15:42:13 -0600
-From: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0F608B70FE
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 08:47:33 +1100 (EST)
+Message-ID: <4EC42F6E.2030500@freescale.com>
+Date: Wed, 16 Nov 2011 15:47:26 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v2 3/7] powerpc/85xx: add sleep and deep sleep support
-References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
- <1321437344-19253-3-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1321437344-19253-3-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC][PATCH 15/30] powerpc/85xx: Rework P1022DS device tree
+References: <1320941653-29797-1-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-4-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-5-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-6-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-7-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-8-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-9-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-10-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-11-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-12-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-13-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-14-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-15-git-send-email-galak@kernel.crashing.org>
+ <1320941653-29797-16-git-send-email-galak@kernel.crashing.org>
+ <CAOZdJXU6NXgWv=VwShOvEGH5rm0KJmrQgOCVDiSJtKoVMs5=eg@mail.gmail.com>
+In-Reply-To: <CAOZdJXU6NXgWv=VwShOvEGH5rm0KJmrQgOCVDiSJtKoVMs5=eg@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +38,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index ce4f7f1..d5cc385 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -63,6 +63,7 @@ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
->  ifeq ($(CONFIG_PPC32),y)
->  obj-$(CONFIG_E500)		+= idle_e500.o
->  endif
-> +obj-$(CONFIG_PPC_85xx)		+= l2cr_85xx.o
+ wrote:
+> I just noticed this bug in the original p1022ds.dts, and I see you're
+> carrying it over here.  The reg property should look like this:
+> 
+> reg = <0xf 0xffe05000 0 0x1000>;
+>        ^^^
 
-Can you restrict this to e500v1/v2?
+It looks like there's also a problem with the 'ranges' property:
 
-Also, don't call it "l2cr" -- that's a 6xx register that is not present
-on 85xx.
+	ranges = <0x0 0x0 0xf 0xe8000000 0x08000000
+		  0x1 0x0 0xf 0xe0000000 0x08000000
+		  0x2 0x0 0x0 0xffa00000 0x00040000
+		          ^^^
+		  0x3 0x0 0xf 0xffdf0000 0x00008000>;
 
-> +	.section .data
-> +	.align	5
-> +mpc85xx_sleep_save_area:
-> +	.space	STATE_SAVE_SIZE
-> +ccsrbase_low:
-> +	.long	0
-> +ccsrbase_high:
-> +	.long	0
-> +powmgtreq:
-> +	.long	POWMGTCSR_DPSLP_MASK
-> +
-> +	.section .text
-> +	.align	12
-> +
-> +	/*
-> +	 * r3 = high word of physical address of CCSR
-> +	 * r4 = low word of physical address of CCSR
-> +	 */
-
-The whole point of powmgtreq is to store a dynamically-passed-in
-value... and it doesn't look like you add it in the jog patch.
-
--Scott
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
