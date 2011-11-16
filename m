@@ -1,27 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
- [216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 725AEB70ED
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 06:02:34 +1100 (EST)
-Received: from mail153-va3 (localhost [127.0.0.1])	by
- mail153-va3-R.bigfish.com (Postfix) with ESMTP id 1A8C34806C6	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 19:06:46 +0000 (UTC)
-Received: from VA3EHSMHS018.bigfish.com (unknown [10.7.14.235])	by
- mail153-va3.bigfish.com (Postfix) with ESMTP id CDAE8300044	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 19:06:45 +0000 (UTC)
-Message-ID: <4EC408C1.1040400@freescale.com>
-Date: Wed, 16 Nov 2011 13:02:25 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from slb-smtpout-01.boeing.com (slb-smtpout-01.boeing.com
+ [130.76.64.48])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "slb-smtpout-01.boeing.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id E10B0B71BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 07:52:47 +1100 (EST)
+From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
+To: Paul Mackerras <paulus@samba.org>
+Date: Wed, 16 Nov 2011 14:52:28 -0600
+Subject: Re: [RFC PATCH 0/2] powerpc: CPU cache op cleanup
+Message-ID: <CBC1AF48-B8D4-42B6-8E50-5ACA84F03022@boeing.com>
+References: <1320986410.21206.48.camel@pasglop>
+ <1321324332-22964-1-git-send-email-Kyle.D.Moffett@boeing.com>
+ <1321396146.3170.11.camel@pasglop>
+ <022078B9-CD41-4D24-B44A-F85256A69D0A@boeing.com>
+ <20111116044032.GA26476@bloggs.ozlabs.ibm.com>
+In-Reply-To: <20111116044032.GA26476@bloggs.ozlabs.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v2 2/7] powerpc/85xx: add HOTPLUG_CPU support
-References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
- <1321437344-19253-2-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1321437344-19253-2-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "B04825@freescale.com" <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,88 +33,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
-> +static void __cpuinit smp_85xx_mach_cpu_die(void)
-> +{
-> +	unsigned int cpu = smp_processor_id();
-> +	register u32 tmp;
-> +
-> +	local_irq_disable();
-> +	idle_task_exit();
-> +	generic_set_cpu_dead(cpu);
-> +	mb();
-> +
-> +	mtspr(SPRN_TCR, 0);
-> +	mtspr(SPRN_TSR, TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS);
+On Nov 15, 2011, at 23:40, Paul Mackerras wrote:
+> On Tue, Nov 15, 2011 at 04:45:18PM -0600, Moffett, Kyle D wrote:
+>>=20
+>> I guess that's doable, although I have to admit that idea almost gives
+>> me more of a headache than trying to fix up the 32-bit ASM.
+>>=20
+>> One thing that bothers me in particular is that both 32/64 versions of
+>> __copy_tofrom_user() are dramatically overcomplicated for what they
+>> ought to be doing.
+>>=20
+>> It would seem that if we get a page fault during an unaligned copy, we
+>> ought to just give up and fall back to a simple byte-by-byte copy loop
+>> from wherever we left off.  That would eliminate 90% of the ugly
+>> special cases without actually hurting performance, right?
+>=20
+> That's basically what we do, IIRC, and most of the complexity comes
+> from working out where we were up to.  We could probably use a simpler
+> approximation that means we might copy some bytes twice.  In fact the
+> greatest simplification would probably be to implement range entries
+> in the exception table so we can just have one entry for all the loads
+> and stores instead of an entry for each individual load and store.
 
-Clearing these bits in TSR should be unnecessary since we clear TCR --
-and doesn't really accomplish anything since the TSR bits can continue
-to be set.
+Well, I spent some time tinkering with the GCC inline-assembly option,
+which was probably a waste, but I figured I would post my code here for
+other people to chuckle at.  :-D
 
-If watchdog is in use, we need to set the period to the highest possible
-to effectively disable it.
+Here's a basic, relatively easily extended "copy u8" macro that sets up
+the exception table using "asm goto":
 
-> +	if (cpu_has_feature(CPU_FTR_CAN_NAP)) {
+#define try_copy_u8(DST, SRC, LOAD_FAULT, STORE_FAULT) do {	\
+	unsigned long try_copy_tmp__ =3D (try_copy_tmp__);	\
+	asm goto (						\
+		"1:	lbz %[tmp], %[src]\n"			\
+		"2:	stb %[tmp], %[dst]\n"			\
+		"	.pushsection __ex_table, \"a\"\n"	\
+		"	.align 2\n"				\
+		"	.long 1b, %l["#LOAD_FAULT"]\n"		\
+		"	.long 2b, %l["#STORE_FAULT"]\n"		\
+		"	.popsection\n"				\
+		: /* No outputs allowed for "asm goto" */	\
+		: [dst] "m"(*(__user u8 *)(DST)),		\
+		  [src] "m"(*(const __user u8 *)(SRC)),		\
+		  [tmp] "r"(try_copy_tmp__)			\
+		: "memory"					\
+		: LOAD_FAULT, STORE_FAULT			\
+	);							\
+} while(0)
 
-Again, don't check this.  On 85xx, we *always* can and should use nap
-here.  At best this is noise, at worst this will cause problems if
-CONFIG_BDI_SWITCH is enabled, or if CPU_FTR_CAN_NAP is cleared for any
-other reason (e.g. it's not set on e500mc, and the reason isn't that the
-nap implementation is different (which it is), but that it's not usable
-in the idle loop).
+If I put that into a function and compile it, the assembly and the
+exception table look perfectly OK, even under register pressure.
+With a few macros like that it looks like it should be possible to
+write the copy function directly in C and get optimal results.
 
-> +static int __cpuinit smp_85xx_kick_cpu(int nr)
-> +
->  {
->  	unsigned long flags;
->  	const u64 *cpu_rel_addr;
-> -	__iomem u32 *bptr_vaddr;
-> +	__iomem struct epapr_spin_table *epapr;
+The only other variants you need would be "try_copy_ulong" and
+"try_copy_4ulong"/"try_copy_8ulong" for 32/64-bit.
 
-Please don't call this just "epapr".  That's like calling a reference to
-any powerpc-specific struct "powerpc".
+Unfortunately, as I mentioned before, GCC 4.4 and older don't have
+"asm goto" support :-(.
 
-How about "spin_table"?
+Perhaps I could put __copy_tofrom_user() into its own file and make
+the assembled 32/64 output files be ".shipped"?
 
-> -	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, hw_cpu);
-> +	out_be32(&epapr->pir, hw_cpu);
->  #ifdef CONFIG_PPC32
-> -	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +	/* Corresponding to generic_set_cpu_dead() */
-> +	generic_set_cpu_up(nr);
-> +
-> +	if (system_state == SYSTEM_RUNNING) {
-> +		out_be32(&epapr->addr_l, 0);
-> +
-> +		smp_85xx_set_bootpg((u32)(*cpu_rel_addr >> PAGE_SHIFT));
+On the other hand, perhaps this is overly complicated :-D.
 
-As previously requested, please document why you're setting the boot
-page here.  This should really be done when you resume from deep sleep,
-rather than here, and should be a restoration of the value that the
-register held prior to deep sleep.
+I'll poke at it more tomorrow.
 
->  struct smp_ops_t smp_85xx_ops = {
->  	.kick_cpu = smp_85xx_kick_cpu,
-> +	.setup_cpu	= smp_85xx_setup_cpu,
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +	.cpu_disable	= generic_cpu_disable,
-> +	.cpu_die	= generic_cpu_die,
-> +#endif
 
-Only fill these fields in on e500v1/v2, until we properly support
-e500mc.  Likewise in ppc_md.cpu_die and anywhere else we advertise this
-functionality.
+>> For a page-fault during a cacheline-aligned copy, we should be able to
+>> handle the exception and retry from the last cacheline without much
+>> logic, again with good performance.
+>>=20
+>> With that said, I'm curious about the origin of the PPC32 ASM.  In
+>> particular, it looks like it was generated by GCC at some point in the
+>> distant past, and I'm wondering if there's a good way to rewrite that
+>> file in C and trick GCC into generating the relevant exception tables
+>> for it?
+>=20
+> Why do you think it was generated by gcc?  I wrote the original
+> version, but I think it got extended and macro-ized by others.
 
-> +	of_node_put(np);
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +	bptr = NULL;
-> +	np = of_find_node_by_name(NULL, "ecm-law");
-> +	if (!np) {
-> +		pr_err("%s: can't find ecm-law node in dts\n", __func__);
-> +		return;
-> +	}
+Ah, sorry,  when I first looked at it the large collection of numeric
+labels and the very sparing comments made it look autogenerated.
 
-Look up by compatible, not name.
+Although, given how much of a pain in the neck it is maybe you would
+rather people not think you wrote it at all. ;-)
 
--Scott
+Cheers,
+Kyle Moffett
+
+--
+Curious about my work on the Debian powerpcspe port?
+I'm keeping a blog here: http://pureperl.blogspot.com/
