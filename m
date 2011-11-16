@@ -1,24 +1,21 @@
-Return-Path: <r61911@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
- [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 07314B6F94
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 15:27:11 +1100 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level sensitive
- for PCIe
-Date: Wed, 16 Nov 2011 04:27:01 +0000
-Message-ID: <2239AC579C7D3646A720227A37E0268121EBED@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1320654778-3294-1-git-send-email-tie-fei.zang@freescale.com>
- <45E28F47-CC83-4059-959F-E890049F416B@kernel.crashing.org>
- <4EC2E42B.1090600@freescale.com>
-In-Reply-To: <4EC2E42B.1090600@freescale.com>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 16 Nov 2011 15:40:32 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
+Subject: Re: [RFC PATCH 0/2] powerpc: CPU cache op cleanup
+Message-ID: <20111116044032.GA26476@bloggs.ozlabs.ibm.com>
+References: <1320986410.21206.48.camel@pasglop>
+ <1321324332-22964-1-git-send-email-Kyle.D.Moffett@boeing.com>
+ <1321396146.3170.11.camel@pasglop>
+ <022078B9-CD41-4D24-B44A-F85256A69D0A@boeing.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <022078B9-CD41-4D24-B44A-F85256A69D0A@boeing.com>
+Cc: "B04825@freescale.com" <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Nov 15, 2011 at 04:45:18PM -0600, Moffett, Kyle D wrote:
+> On Nov 15, 2011, at 17:29, Benjamin Herrenschmidt wrote:
+> > On Mon, 2011-11-14 at 21:32 -0500, Kyle Moffett wrote:
+> >> Unfortunately, I've been staring at PPC asm for long enough that I
+> >> have a migraine headache and I'm going to have to stop here for now.
+> >> If somebody else wants to tackle fixing up the 32-bit copy_page() and
+> >> __copy_tofrom_user() routines it would be highly appreciated. 
+> > 
+> > Yeah that's the one everybody's avoiding :-)
+> > 
+> > What about my idea of instead compiling it multiple times with a
+> > different size and fixing up the branch to call the right one ?
+> 
+> I guess that's doable, although I have to admit that idea almost gives
+> me more of a headache than trying to fix up the 32-bit ASM.
+> 
+> One thing that bothers me in particular is that both 32/64 versions of
+> __copy_tofrom_user() are dramatically overcomplicated for what they
+> ought to be doing.
+> 
+> It would seem that if we get a page fault during an unaligned copy, we
+> ought to just give up and fall back to a simple byte-by-byte copy loop
+> from wherever we left off.  That would eliminate 90% of the ugly
+> special cases without actually hurting performance, right?
 
+That's basically what we do, IIRC, and most of the complexity comes
+from working out where we were up to.  We could probably use a simpler
+approximation that means we might copy some bytes twice.  In fact the
+greatest simplification would probably be to implement range entries
+in the exception table so we can just have one entry for all the loads
+and stores instead of an entry for each individual load and store.
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, November 16, 2011 6:14 AM
-> To: Kumar Gala
-> Cc: Zang Roy-R61911; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH] powerpc/p1023: set IRQ[4:6, 11] to high level
-> sensitive for PCIe
->=20
-> On 11/15/2011 03:51 PM, Kumar Gala wrote:
-> >
-> > On Nov 7, 2011, at 2:32 AM, Roy Zang wrote:
-> >
-> > Should be setting ALL PCIe interrupts to '2'?  As I think in general
-> > we say these PCIe are 'active high'.  The only reason I would think
-> > we would NOT do this is if they are shared with some external device
-> > that is 'active low'.  If so we should comment that somewhere (maybe
-> > in the .dts, maybe just in the commit message).
->=20
-> I'd assume the ones that are pinned out are pulled high on the board.
-yes. The boards pulled up the shared IRQs. PCIe specification does not spec=
-ify 'active low' or 'active high', but for PCI, the INTx is 'active low'.
+> For a page-fault during a cacheline-aligned copy, we should be able to
+> handle the exception and retry from the last cacheline without much
+> logic, again with good performance.
+> 
+> With that said, I'm curious about the origin of the PPC32 ASM.  In
+> particular, it looks like it was generated by GCC at some point in the
+> distant past, and I'm wondering if there's a good way to rewrite that
+> file in C and trick GCC into generating the relevant exception tables
+> for it?
 
-> Active-low is normal, it's these non-pinned-out "external" interrupts
-> that are pulled low inside the SoC that are weird.
-I agree here. Do you want me to add something to point out the "weird" in t=
-he commit message?
-Thanks.
-Roy
+Why do you think it was generated by gcc?  I wrote the original
+version, but I think it got extended and macro-ized by others.
+
+Paul.
