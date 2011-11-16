@@ -1,29 +1,15 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from slb-smtpout-01.boeing.com (slb-smtpout-01.boeing.com
- [130.76.64.48])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "slb-smtpout-01.boeing.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E10B0B71BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 07:52:47 +1100 (EST)
-From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-To: Paul Mackerras <paulus@samba.org>
-Date: Wed, 16 Nov 2011 14:52:28 -0600
-Subject: Re: [RFC PATCH 0/2] powerpc: CPU cache op cleanup
-Message-ID: <CBC1AF48-B8D4-42B6-8E50-5ACA84F03022@boeing.com>
-References: <1320986410.21206.48.camel@pasglop>
- <1321324332-22964-1-git-send-email-Kyle.D.Moffett@boeing.com>
- <1321396146.3170.11.camel@pasglop>
- <022078B9-CD41-4D24-B44A-F85256A69D0A@boeing.com>
- <20111116044032.GA26476@bloggs.ozlabs.ibm.com>
-In-Reply-To: <20111116044032.GA26476@bloggs.ozlabs.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <robert.sciuk@exfo.com>
 MIME-Version: 1.0
-Cc: "B04825@freescale.com" <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: P4080: attempting to use the uio_pdrv to attach FPGA on localbus ...
+Date: Wed, 16 Nov 2011 16:19:51 -0500
+Message-ID: <2DD52030B5146141BEB762A11AE97C4C010A0519@SPQCEXC05.exfo.com>
+In-reply-to: <mailman.2323.1320874671.15294.devicetree-discuss@lists.ozlabs.org>
+References: <mailman.2323.1320874671.15294.devicetree-discuss@lists.ozlabs.org>
+From: "Robert Sciuk" <robert.sciuk@exfo.com>
+To: <devicetree-discuss@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,95 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Nov 15, 2011, at 23:40, Paul Mackerras wrote:
-> On Tue, Nov 15, 2011 at 04:45:18PM -0600, Moffett, Kyle D wrote:
->>=20
->> I guess that's doable, although I have to admit that idea almost gives
->> me more of a headache than trying to fix up the 32-bit ASM.
->>=20
->> One thing that bothers me in particular is that both 32/64 versions of
->> __copy_tofrom_user() are dramatically overcomplicated for what they
->> ought to be doing.
->>=20
->> It would seem that if we get a page fault during an unaligned copy, we
->> ought to just give up and fall back to a simple byte-by-byte copy loop
->> from wherever we left off.  That would eliminate 90% of the ugly
->> special cases without actually hurting performance, right?
->=20
-> That's basically what we do, IIRC, and most of the complexity comes
-> from working out where we were up to.  We could probably use a simpler
-> approximation that means we might copy some bytes twice.  In fact the
-> greatest simplification would probably be to implement range entries
-> in the exception table so we can just have one entry for all the loads
-> and stores instead of an entry for each individual load and store.
+I have succeeded in using the i2c bus with GPIO expander to access the =
+programming pins of my FPGA devices, but the data port uses the =
+localbus.  I had initially thought that the uio platform driver would be =
+the ideal approach to creating a device which would allow configuration =
+from userland via the /dev/uio[0|1] device interface, but apparently the =
+device binding is not being accomplished as expected. =20
 
-Well, I spent some time tinkering with the GCC inline-assembly option,
-which was probably a waste, but I figured I would post my code here for
-other people to chuckle at.  :-D
+	localbus@ffe124000 {
+		compatible =3D "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
+		reg =3D <0xf 0xfe124000 0 0x1000>;
+		interrupts =3D <25 2 0 0>;
+		interrupt-parent =3D <&mpic>;
+		#address-cells =3D <2>;
+		#size-cells =3D <1>;
 
-Here's a basic, relatively easily extended "copy u8" macro that sets up
-the exception table using "asm goto":
+                /* Local bus region mappings */
+                ranges =3D <0 0 0xf 0xe8000000 0x08000000 	/* CS0: Boot =
+flash */
+                          1 0 0xf 0xd0000000 0x8000 		/* CS1: FPGA0 */
+                          2 0 0xf 0xd1000000 0x8000 >; 	/* CS2: FPGA1 */
 
-#define try_copy_u8(DST, SRC, LOAD_FAULT, STORE_FAULT) do {	\
-	unsigned long try_copy_tmp__ =3D (try_copy_tmp__);	\
-	asm goto (						\
-		"1:	lbz %[tmp], %[src]\n"			\
-		"2:	stb %[tmp], %[dst]\n"			\
-		"	.pushsection __ex_table, \"a\"\n"	\
-		"	.align 2\n"				\
-		"	.long 1b, %l["#LOAD_FAULT"]\n"		\
-		"	.long 2b, %l["#STORE_FAULT"]\n"		\
-		"	.popsection\n"				\
-		: /* No outputs allowed for "asm goto" */	\
-		: [dst] "m"(*(__user u8 *)(DST)),		\
-		  [src] "m"(*(const __user u8 *)(SRC)),		\
-		  [tmp] "r"(try_copy_tmp__)			\
-		: "memory"					\
-		: LOAD_FAULT, STORE_FAULT			\
-	);							\
-} while(0)
+		flash@0,0 {
+		  ........
+            };=20
 
-If I put that into a function and compile it, the assembly and the
-exception table look perfectly OK, even under register pressure.
-With a few macros like that it looks like it should be possible to
-write the copy function directly in C and get optimal results.
+		lim: fpga@1,0 {
+			compatible =3D "uio_pdrv";
+			pin-handle=3D<&lim_ctrl>;
+		};=20
 
-The only other variants you need would be "try_copy_ulong" and
-"try_copy_4ulong"/"try_copy_8ulong" for 32/64-bit.
+		nitro: fpga@2,0 {
+			compatible =3D "uio_pdrv";
+			pin-handle=3D<&fpe0_ctrl &fpe1_ctrl>;
+		};=20
+	};
 
-Unfortunately, as I mentioned before, GCC 4.4 and older don't have
-"asm goto" support :-(.
+I have aliases pointing to the localbus nodes lim and nitro, but it =
+appears that the uio_pdrv driver does not bind to the device based upon =
+the compatible property of the tree.  I'm hoping to be able to mmap the =
+localbus port memory (0xf_d000_0000 and 0xf_d100_0000) respectively when =
+I open /dev/uio[0|1].  Is there additional driver registration needed in =
+order to use the uio_pdrv driver?  What am I missing??
 
-Perhaps I could put __copy_tofrom_user() into its own file and make
-the assembled 32/64 output files be ".shipped"?
-
-On the other hand, perhaps this is overly complicated :-D.
-
-I'll poke at it more tomorrow.
-
-
->> For a page-fault during a cacheline-aligned copy, we should be able to
->> handle the exception and retry from the last cacheline without much
->> logic, again with good performance.
->>=20
->> With that said, I'm curious about the origin of the PPC32 ASM.  In
->> particular, it looks like it was generated by GCC at some point in the
->> distant past, and I'm wondering if there's a good way to rewrite that
->> file in C and trick GCC into generating the relevant exception tables
->> for it?
->=20
-> Why do you think it was generated by gcc?  I wrote the original
-> version, but I think it got extended and macro-ized by others.
-
-Ah, sorry,  when I first looked at it the large collection of numeric
-labels and the very sparing comments made it look autogenerated.
-
-Although, given how much of a pain in the neck it is maybe you would
-rather people not think you wrote it at all. ;-)
+Any pointers would be appreciated.
 
 Cheers,
-Kyle Moffett
-
---
-Curious about my work on the Debian powerpcspe port?
-I'm keeping a blog here: http://pureperl.blogspot.com/
+Rob
