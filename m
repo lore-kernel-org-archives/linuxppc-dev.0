@@ -1,22 +1,21 @@
 Return-Path: <B35336@freescale.com>
-Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
- [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+ [65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 48496B75DD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 20:56:16 +1100 (EST)
-Received: from mail142-tx2 (localhost.localdomain [127.0.0.1])	by
- mail142-tx2-R.bigfish.com (Postfix) with ESMTP id 2FD76550335	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 09:55:58 +0000 (UTC)
-Received: from TX2EHSMHS032.bigfish.com (unknown [10.9.14.245])	by
- mail142-tx2.bigfish.com (Postfix) with ESMTP id E66CD198051	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 09:55:35 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id AA7CFB7610
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 20:56:17 +1100 (EST)
+Received: from mail110-tx2 (localhost.localdomain [127.0.0.1])	by
+ mail110-tx2-R.bigfish.com (Postfix) with ESMTP id CFA8F600399	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 09:55:59 +0000 (UTC)
+Received: from TX2EHSMHS038.bigfish.com (unknown [10.9.14.244])	by
+ mail110-tx2.bigfish.com (Postfix) with ESMTP id 619B91058056	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2011 09:55:40 +0000 (UTC)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 4/7] powerpc/85xx: add support to JOG feature using cpufreq
- interface
-Date: Wed, 16 Nov 2011 17:55:42 +0800
-Message-ID: <1321437344-19253-4-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v2 5/7] fsl_pmc: update device bindings
+Date: Wed, 16 Nov 2011 17:55:43 +0800
+Message-ID: <1321437344-19253-5-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -33,385 +32,105 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Li Yang <leoli@freescale.com>
 
-Some 85xx silicons like MPC8536 and P1022 has the JOG PM feature.
-
-The patch adds the support to change CPU frequency using the standard
-cpufreq interface. Add the all PLL ratio core support. The ratio CORE
-to CCB can 1:1(except MPC8536), 3:2, 2:1, 5:2, 3:1, 7:2 and 4:1.
-
-Signed-off-by: Dave Liu <daveliu@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 ---
-Changes for v2:
- - rework set_pll(). wakeup all cores before issuing a jog request.
- - use the platform driver framwork
+ .../devicetree/bindings/powerpc/fsl/pmc.txt        |   63 +++++++++++--------
+ 1 files changed, 36 insertions(+), 27 deletions(-)
 
- arch/powerpc/platforms/85xx/Makefile      |    1 +
- arch/powerpc/platforms/85xx/cpufreq-jog.c |  322 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig            |    8 +
- 3 files changed, 331 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/cpufreq-jog.c
-
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index cec54c7..49a865a 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -3,6 +3,7 @@
- #
- obj-$(CONFIG_SMP) += smp.o
- obj-$(CONFIG_SUSPEND)	+= sleep.o
-+obj-$(CONFIG_MPC85xx_CPUFREQ) += cpufreq-jog.o
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt b/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
+index 07256b7..d84b4f8 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
+@@ -9,22 +9,27 @@ Properties:
  
- obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
-diff --git a/arch/powerpc/platforms/85xx/cpufreq-jog.c b/arch/powerpc/platforms/85xx/cpufreq-jog.c
-new file mode 100644
-index 0000000..efe62b9
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/cpufreq-jog.c
-@@ -0,0 +1,322 @@
-+/*
-+ * Copyright (C) 2008-2011 Freescale Semiconductor, Inc.
-+ * Author: Dave Liu <daveliu@freescale.com>
-+ * Modifier: Chenhui Zhao <chenhui.zhao@freescale.com>
-+ *
-+ * The cpufreq driver is for Freescale 85xx processor,
-+ * based on arch/powerpc/platforms/cell/cbe_cpufreq.c
-+ * (C) Copyright IBM Deutschland Entwicklung GmbH 2005-2007
-+ *	Christian Krafft <krafft@de.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
+   "fsl,mpc8548-pmc" should be listed for any chip whose PMC is
+   compatible.  "fsl,mpc8536-pmc" should also be listed for any chip
+-  whose PMC is compatible, and implies deep-sleep capability.
++  whose PMC is compatible, and implies deep-sleep capability and
++  wake on user defined packet(wakeup on ARP).
 +
-+#include <linux/module.h>
-+#include <linux/cpufreq.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/prom.h>
-+#include <asm/time.h>
-+#include <asm/reg.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+static DEFINE_MUTEX(mpc85xx_switch_mutex);
-+static void __iomem *guts;
-+static u32 sysfreq, threshold_freq;
-+static struct cpufreq_frequency_table *mpc85xx_freqs;
-+
-+static struct cpufreq_frequency_table mpc8536_freqs_table[] = {
-+	{3,	0},
-+	{4,	0},
-+	{5,	0},
-+	{6,	0},
-+	{7,	0},
-+	{8,	0},
-+	{0,	CPUFREQ_TABLE_END},
-+};
-+
-+static struct cpufreq_frequency_table p1022_freqs_table[] = {
-+	{2,	0},
-+	{3,	0},
-+	{4,	0},
-+	{5,	0},
-+	{6,	0},
-+	{7,	0},
-+	{8,	0},
-+	{0,	CPUFREQ_TABLE_END},
-+};
-+
-+#define FREQ_533MHz	533340000
-+#define FREQ_800MHz	800000000
-+
-+#define CORE_RATIO_BITS		8
-+#define CORE_RATIO_MASK		0x3f
-+#define CORE0_RATIO_SHIFT	16
-+
-+#define PORPLLSR	0x0
-+
-+#define PMJCR		0x7c
-+#define PMJCR_CORE0_SPD_MASK	0x00001000
-+
-+#define POWMGTCSR	0x80
-+#define POWMGTCSR_LOSSLESS_MASK	0x00400000
-+#define POWMGTCSR_JOG_MASK	0x00200000
-+#define POWMGTCSR_CORE0_IRQ_MSK	0x80000000
-+#define POWMGTCSR_CORE0_CI_MSK	0x40000000
-+#define POWMGTCSR_CORE0_DOZING	0x00000008
-+#define POWMGTCSR_CORE0_NAPPING	0x00000004
-+
-+/*
-+ * hardware specific functions
-+ */
-+static int get_pll(int hw_cpu)
-+{
-+	int ret, shift;
-+	u32 cur_pll = in_be32(guts + PORPLLSR);
-+
-+	shift = hw_cpu * CORE_RATIO_BITS + CORE0_RATIO_SHIFT;
-+	ret = (cur_pll >> shift) & CORE_RATIO_MASK;
-+	return ret;
-+}
-+
-+static int set_pll(unsigned int cpu, unsigned int pll)
-+{
-+	void *powersave = NULL;
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	int shift, i;
-+	u32 corefreq, val;
-+	u32 mask;
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	if (pll == get_pll(hw_cpu))
-+		return 0;
-+
-+	shift = hw_cpu * CORE_RATIO_BITS + CORE0_RATIO_SHIFT;
-+	val = (pll & CORE_RATIO_MASK) << shift;
-+
-+	corefreq = sysfreq * pll / 2;
-+	/*
-+	 * Set the COREx_SPD bit if the requested core frequency
-+	 * is larger than the threshold frequency.
-+	 */
-+	if (corefreq > threshold_freq)
-+		val |= PMJCR_CORE0_SPD_MASK << hw_cpu;
-+
-+	mask = (CORE_RATIO_MASK << shift) | (PMJCR_CORE0_SPD_MASK << hw_cpu);
-+	clrsetbits_be32(guts + PMJCR, mask, val);
-+
-+	/* readback to sync write */
-+	val = in_be32(guts + PMJCR);
-+
-+	local_irq_save(flags);
-+	/*
-+	 * A Jog request can not be asserted when any core is in a low power
-+	 * state. Before executing a jog request, any core which is in
-+	 * a low power state must be waked by a interrupt.
-+	 */
-+	if (mpc85xx_freqs == p1022_freqs_table) {
-+		powersave = ppc_md.power_save;
-+		ppc_md.power_save = NULL;
-+		wmb();
-+		val = in_be32(guts + POWMGTCSR);
-+		for_each_online_cpu(i) {
-+			if (val & ((POWMGTCSR_CORE0_DOZING |
-+					POWMGTCSR_CORE0_NAPPING) << (i * 2)))
-+				smp_send_reschedule(i);
-+		}
-+	}
-+	setbits32(guts + POWMGTCSR, POWMGTCSR_JOG_MASK);
-+
-+	if (powersave) {
-+		ppc_md.power_save = powersave;
-+		wmb();
-+	}
-+
-+	local_irq_restore(flags);
-+
-+	/* verify */
-+	if (!spin_event_timeout(get_pll(hw_cpu) == pll, 10000, 10)) {
-+		pr_err("%s: Fail to switch the core frequency. "
-+			"The current PLL of core %d is %d instead of %d.\n",
-+				__func__, hw_cpu, get_pll(hw_cpu), pll);
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-+ * cpufreq functions
-+ */
-+static int mpc85xx_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	unsigned int i, cur_pll;
-+	int hw_cpu = get_hard_smp_processor_id(policy->cpu);
-+
-+	if (!cpu_present(policy->cpu))
-+		return -EINVAL;
-+
-+	/* the latency of a transition, the unit is ns */
-+	policy->cpuinfo.transition_latency = 2000;
-+
-+	cur_pll = get_pll(hw_cpu);
-+
-+	/* initialize frequency table */
-+	pr_debug("core%d frequency table:\n", hw_cpu);
-+	for (i = 0; mpc85xx_freqs[i].frequency != CPUFREQ_TABLE_END; i++) {
-+		/* The frequency unit is kHz. */
-+		mpc85xx_freqs[i].frequency =
-+				(sysfreq * mpc85xx_freqs[i].index / 2) / 1000;
-+		pr_debug("%d: %dkHz\n", i, mpc85xx_freqs[i].frequency);
-+
-+		if (mpc85xx_freqs[i].index == cur_pll)
-+			policy->cur = mpc85xx_freqs[i].frequency;
-+	}
-+	pr_debug("current pll is at %d, and core freq is%d\n",
-+					cur_pll, policy->cur);
-+
-+	cpufreq_frequency_table_get_attr(mpc85xx_freqs, policy->cpu);
-+
-+	/*
-+	 * This ensures that policy->cpuinfo_min
-+	 * and policy->cpuinfo_max are set correctly.
-+	 */
-+	return cpufreq_frequency_table_cpuinfo(policy, mpc85xx_freqs);
-+}
-+
-+static int mpc85xx_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+	return 0;
-+}
-+
-+static int mpc85xx_cpufreq_verify(struct cpufreq_policy *policy)
-+{
-+	return cpufreq_frequency_table_verify(policy, mpc85xx_freqs);
-+}
-+
-+static int mpc85xx_cpufreq_target(struct cpufreq_policy *policy,
-+			      unsigned int target_freq,
-+			      unsigned int relation)
-+{
-+	struct cpufreq_freqs freqs;
-+	unsigned int new;
-+	int ret = 0;
-+
-+	cpufreq_frequency_table_target(policy,
-+				       mpc85xx_freqs,
-+				       target_freq,
-+				       relation,
-+				       &new);
-+
-+	freqs.old = policy->cur;
-+	freqs.new = mpc85xx_freqs[new].frequency;
-+	freqs.cpu = policy->cpu;
-+
-+	mutex_lock(&mpc85xx_switch_mutex);
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+
-+	ret = set_pll(policy->cpu, mpc85xx_freqs[new].index);
-+	if (!ret) {
-+		pr_info("cpufreq: Setting core%d frequency to %d kHz and " \
-+			 "PLL ratio to %d:2\n",
-+			 policy->cpu,
-+			 mpc85xx_freqs[new].frequency,
-+			 mpc85xx_freqs[new].index);
-+
-+		ppc_proc_freq = freqs.new * 1000ul;
-+	}
-+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	mutex_unlock(&mpc85xx_switch_mutex);
-+
-+	return ret;
-+}
-+
-+static struct cpufreq_driver mpc85xx_cpufreq_driver = {
-+	.verify		= mpc85xx_cpufreq_verify,
-+	.target		= mpc85xx_cpufreq_target,
-+	.init		= mpc85xx_cpufreq_cpu_init,
-+	.exit		= mpc85xx_cpufreq_cpu_exit,
-+	.name		= "mpc85xx-JOG",
-+	.owner		= THIS_MODULE,
-+	.flags		= CPUFREQ_CONST_LOOPS,
-+};
-+
-+static int mpc85xx_job_probe(struct platform_device *ofdev)
-+{
-+	struct device_node *np = ofdev->dev.of_node;
-+
-+	if (of_device_is_compatible(np, "fsl,mpc8536-guts")) {
-+		threshold_freq = FREQ_800MHz;
-+		mpc85xx_freqs = mpc8536_freqs_table;
-+	} else if (of_device_is_compatible(np, "fsl,p1022-guts")) {
-+		threshold_freq = FREQ_533MHz;
-+		mpc85xx_freqs = p1022_freqs_table;
-+	}
-+
-+	sysfreq = fsl_get_sys_freq();
-+
-+	guts = of_iomap(np, 0);
-+	if (guts == NULL)
-+		return -ENOMEM;
-+
-+	pr_info("Freescale MPC85xx CPU frequency switching(JOG) driver\n");
-+
-+	return cpufreq_register_driver(&mpc85xx_cpufreq_driver);
-+}
-+
-+static int mpc85xx_jog_remove(struct platform_device *ofdev)
-+{
-+	iounmap(guts);
-+	cpufreq_unregister_driver(&mpc85xx_cpufreq_driver);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id mpc85xx_jog_ids[] = {
-+	{ .compatible = "fsl,mpc8536-guts", },
-+	{ .compatible = "fsl,p1022-guts", },
-+	{}
-+};
-+
-+static struct platform_driver mpc85xx_jog_driver = {
-+	.driver = {
-+		.name = "mpc85xx_cpufreq_jog",
-+		.owner = THIS_MODULE,
-+		.of_match_table = mpc85xx_jog_ids,
-+	},
-+	.probe = mpc85xx_job_probe,
-+	.remove = mpc85xx_jog_remove,
-+};
-+
-+static int __init mpc85xx_jog_init(void)
-+{
-+	return platform_driver_register(&mpc85xx_jog_driver);
-+}
-+
-+static void __exit mpc85xx_jog_exit(void)
-+{
-+	platform_driver_unregister(&mpc85xx_jog_driver);
-+}
-+
-+module_init(mpc85xx_jog_init);
-+module_exit(mpc85xx_jog_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Dave Liu <daveliu@freescale.com>");
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index e458872..63bd32a 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -200,6 +200,14 @@ config CPU_FREQ_PMAC64
- 	  This adds support for frequency switching on Apple iMac G5,
- 	  and some of the more recent desktop G5 machines as well.
++  "fsl,p1022-pmc" should be listed for any chip whose PMC is
++  compatible, and implies lossless Ethernet capability during sleep.
  
-+config MPC85xx_CPUFREQ
-+	bool "Support for Freescale MPC85xx CPU freq"
-+	depends on PPC_85xx && PPC32
-+	select CPU_FREQ_TABLE
-+	help
-+	  This adds support for frequency switching on Freescale MPC85xx,
-+	  currently including P1022 and MPC8536.
+   "fsl,mpc8641d-pmc" should be listed for any chip whose PMC is
+   compatible; all statements below that apply to "fsl,mpc8548-pmc" also
+   apply to "fsl,mpc8641d-pmc".
+ 
+   Compatibility does not include bit assignments in SCCR/PMCDR/DEVDISR; these
+-  bit assignments are indicated via the sleep specifier in each device's
+-  sleep property.
++  bit assignments are indicated via the clock nodes.  Device which has a
++  controllable clock source should have a "clk-handle" property pointing
++  to the clock node.
+ 
+ - reg: For devices compatible with "fsl,mpc8349-pmc", the first resource
+   is the PMC block, and the second resource is the Clock Configuration
+   block.
+ 
+-  For devices compatible with "fsl,mpc8548-pmc", the first resource
+-  is a 32-byte block beginning with DEVDISR.
++  For devices compatible with "fsl,mpc8548-pmc", the second resource
++  is a 32-byte block beginning with DEVDISR if supported.
+ 
+ - interrupts: For "fsl,mpc8349-pmc"-compatible devices, the first
+   resource is the PMC block interrupt.
+@@ -33,31 +38,35 @@ Properties:
+   this is a phandle to an "fsl,gtm" node on which timer 4 can be used as
+   a wakeup source from deep sleep.
+ 
+-Sleep specifiers:
++Clock nodes:
++The clock nodes are to describe the masks in PM controller registers for each
++soc clock.
++- fsl,pmcdr-mask: For "fsl,mpc8548-pmc"-compatible devices, the mask will be
++  ORed into PMCDR before suspend if the device using this clock is the wake-up
++  source and need to be running during low power mode; clear the mask if
++  otherwise.
+ 
+-  fsl,mpc8349-pmc: Sleep specifiers consist of one cell.  For each bit
+-  that is set in the cell, the corresponding bit in SCCR will be saved
+-  and cleared on suspend, and restored on resume.  This sleep controller
+-  supports disabling and resuming devices at any time.
++- fsl,sccr-mask: For "fsl,mpc8349-pmc"-compatible devices, the corresponding
++  bit specified by the mask in SCCR will be saved and cleared on suspend, and
++  restored on resume.
+ 
+-  fsl,mpc8536-pmc: Sleep specifiers consist of three cells, the third of
+-  which will be ORed into PMCDR upon suspend, and cleared from PMCDR
+-  upon resume.  The first two cells are as described for fsl,mpc8578-pmc.
+-  This sleep controller only supports disabling devices during system
+-  sleep, or permanently.
+-
+-  fsl,mpc8548-pmc: Sleep specifiers consist of one or two cells, the
+-  first of which will be ORed into DEVDISR (and the second into
+-  DEVDISR2, if present -- this cell should be zero or absent if the
+-  hardware does not have DEVDISR2) upon a request for permanent device
+-  disabling.  This sleep controller does not support configuring devices
+-  to disable during system sleep (unless supported by another compatible
+-  match), or dynamically.
++- fsl,devdisr-mask: Contain one or two cells, depending on the availability of
++  DEVDISR2 register.  For compatible devices, the mask will be ORed into DEVDISR
++  or DEVDISR2 when the clock should be permenently disabled.
+ 
+ Example:
+ 
+-	power@b00 {
+-		compatible = "fsl,mpc8313-pmc", "fsl,mpc8349-pmc";
+-		reg = <0xb00 0x100 0xa00 0x100>;
+-		interrupts = <80 8>;
++	power@e0070 {
++		compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
++		reg = <0xe0070 0x20>;
 +
- config PPC_PASEMI_CPUFREQ
- 	bool "Support for PA Semi PWRficient"
- 	depends on PPC_PASEMI
++		etsec1_clk: soc-clk@24 {
++			fsl,pmcdr-mask = <0x00000080>;
++		};
++		etsec2_clk: soc-clk@25 {
++			fsl,pmcdr-mask = <0x00000040>;
++		};
++		etsec3_clk: soc-clk@26 {
++			fsl,pmcdr-mask = <0x00000020>;
++		};
+ 	};
 -- 
 1.6.4.1
