@@ -2,20 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C2487B71EA
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 18:16:26 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C94A8B71ED
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 18:16:25 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAH7GNYf026495
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 01:16:23 -0600
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAH7GLAQ026473
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 01:16:22 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/29] powerpc/85xx: Update SPI binding to match binding spec
- for P1020RDB
-Date: Thu, 17 Nov 2011 01:15:55 -0600
-Message-Id: <1321514181-28897-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1321514181-28897-2-git-send-email-galak@kernel.crashing.org>
-References: <1321514181-28897-1-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-2-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 01/29] powerpc/85xx: Simplify P1020RDB CAMP dts using includes
+Date: Thu, 17 Nov 2011 01:15:53 -0600
+Message-Id: <1321514181-28897-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,102 +21,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SPI node is out of date with regards to the binding for fsl-espi and
-driver support.
+If we include the p1020rdb.dts instead of p1020si.dts we greatly reduce
+duplication and maintenance.  We can just list which devices are
+disabled for the given core and mpic protected sources.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/p1020rdb.dts |   30 +++++++++++++-----------------
- arch/powerpc/boot/dts/p1020si.dtsi |    5 ++---
- 2 files changed, 15 insertions(+), 20 deletions(-)
+ arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |  154 +------------------------
+ arch/powerpc/boot/dts/p1020rdb_camp_core1.dts |   11 +--
+ 2 files changed, 4 insertions(+), 161 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
-index 8b1a7ee..b31e7ec 100644
---- a/arch/powerpc/boot/dts/p1020rdb.dts
-+++ b/arch/powerpc/boot/dts/p1020rdb.dts
-@@ -149,49 +149,45 @@
- 		};
+diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
+index f0bf7f4..41b4585 100644
+--- a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
++++ b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
+@@ -16,7 +16,7 @@
+  * option) any later version.
+  */
  
- 		spi@7000 {
+-/include/ "p1020si.dtsi"
++/include/ "p1020rdb.dts"
+ 
+ / {
+ 	model = "fsl,P1020RDB";
+@@ -32,7 +32,7 @@
+ 
+ 	cpus {
+ 		PowerPC,P1020@1 {
+-		status = "disabled";
++			status = "disabled";
+ 		};
+ 	};
+ 
+@@ -45,169 +45,19 @@
+ 	};
+ 
+ 	soc@ffe00000 {
+-		i2c@3000 {
+-			rtc@68 {
+-				compatible = "dallas,ds1339";
+-				reg = <0x68>;
+-			};
+-		};
 -
+ 		serial1: serial@4600 {
+ 			status = "disabled";
+ 		};
+ 
+-		spi@7000 {
 -			fsl_m25p80@0 {
-+			flash@0 {
- 				#address-cells = <1>;
- 				#size-cells = <1>;
+-				#address-cells = <1>;
+-				#size-cells = <1>;
 -				compatible = "fsl,espi-flash";
-+				compatible = "spansion,s25sl12801";
- 				reg = <0>;
+-				reg = <0>;
 -				linux,modalias = "fsl_m25p80";
--				modal = "s25sl128b";
--				spi-max-frequency = <50000000>;
--				mode = <0>;
-+				spi-max-frequency = <40000000>; /* input clock */
- 
+-				spi-max-frequency = <40000000>;
+-
 -				partition@0 {
-+				partition@u-boot {
- 					/* 512KB for u-boot Bootloader Image */
- 					reg = <0x0 0x00080000>;
+-					/* 512KB for u-boot Bootloader Image */
+-					reg = <0x0 0x00080000>;
 -					label = "SPI (RO) U-Boot Image";
-+					label = "u-boot";
- 					read-only;
- 				};
- 
+-					read-only;
+-				};
+-
 -				partition@80000 {
-+				partition@dtb {
- 					/* 512KB for DTB Image */
- 					reg = <0x00080000 0x00080000>;
+-					/* 512KB for DTB Image */
+-					reg = <0x00080000 0x00080000>;
 -					label = "SPI (RO) DTB Image";
-+					label = "dtb";
- 					read-only;
- 				};
- 
+-					read-only;
+-				};
+-
 -				partition@100000 {
-+				partition@kernel {
- 					/* 4MB for Linux Kernel Image */
- 					reg = <0x00100000 0x00400000>;
+-					/* 4MB for Linux Kernel Image */
+-					reg = <0x00100000 0x00400000>;
 -					label = "SPI (RO) Linux Kernel Image";
-+					label = "kernel";
- 					read-only;
- 				};
- 
+-					read-only;
+-				};
+-
 -				partition@500000 {
-+				partition@fs {
- 					/* 4MB for Compressed RFS Image */
- 					reg = <0x00500000 0x00400000>;
+-					/* 4MB for Compressed RFS Image */
+-					reg = <0x00500000 0x00400000>;
 -					label = "SPI (RO) Compressed RFS Image";
-+					label = "file system";
- 					read-only;
- 				};
- 
+-					read-only;
+-				};
+-
 -				partition@900000 {
-+				partition@jffs-fs {
- 					/* 7MB for JFFS2 based RFS */
- 					reg = <0x00900000 0x00700000>;
+-					/* 7MB for JFFS2 based RFS */
+-					reg = <0x00900000 0x00700000>;
 -					label = "SPI (RW) JFFS2 RFS";
-+					label = "file system jffs2";
- 				};
- 			};
- 		};
-diff --git a/arch/powerpc/boot/dts/p1020si.dtsi b/arch/powerpc/boot/dts/p1020si.dtsi
-index 58f6b30..25e10cf 100644
---- a/arch/powerpc/boot/dts/p1020si.dtsi
-+++ b/arch/powerpc/boot/dts/p1020si.dtsi
-@@ -112,14 +112,13 @@
+-				};
+-			};
+-		};
+-
+-		mdio@24000 {
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <3 1>;
+-				reg = <0x0>;
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <2 1>;
+-				reg = <0x1>;
+-			};
+-		};
+-
+-		mdio@25000 {
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@b0000 {
+ 			status = "disabled";
  		};
  
- 		spi@7000 {
--			cell-index = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			compatible = "fsl,espi";
-+			compatible = "fsl,p1020-espi", "fsl,mpc8536-espi";
- 			reg = <0x7000 0x1000>;
- 			interrupts = <59 0x2>;
- 			interrupt-parent = <&mpic>;
--			mode = "cpu";
-+			fsl,espi-num-chipselects = <4>;
+-		enet1: ethernet@b1000 {
+-			phy-handle = <&phy0>;
+-			tbi-handle = <&tbi0>;
+-			phy-connection-type = "sgmii";
+-		};
+-
+-		enet2: ethernet@b2000 {
+-			phy-handle = <&phy1>;
+-			phy-connection-type = "rgmii-id";
+-		};
+-
+-		usb@22000 {
+-			phy_type = "ulpi";
+-		};
+-
+-		/* USB2 is shared with localbus, so it must be disabled
+-		   by default. We can't put 'status = "disabled";' here
+-		   since U-Boot doesn't clear the status property when
+-		   it enables USB2. OTOH, U-Boot does create a new node
+-		   when there isn't any. So, just comment it out.
+-		usb@23000 {
+-			phy_type = "ulpi";
+-		};
+-		*/
+-
+ 		mpic: pic@40000 {
+ 			protected-sources = <
+ 			42 29 30 34	/* serial1, enet0-queue-group0 */
+ 			17 18 24 45	/* enet0-queue-group1, crypto */
+ 			>;
+ 		};
+-
+-	};
+-
+-	pci0: pcie@ffe09000 {
+-		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
+-		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+-		interrupt-map = <
+-			/* IDSEL 0x0 */
+-			0000 0x0 0x0 0x1 &mpic 0x4 0x1
+-			0000 0x0 0x0 0x2 &mpic 0x5 0x1
+-			0000 0x0 0x0 0x3 &mpic 0x6 0x1
+-			0000 0x0 0x0 0x4 &mpic 0x7 0x1
+-			>;
+-		pcie@0 {
+-			reg = <0x0 0x0 0x0 0x0 0x0>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			device_type = "pci";
+-			ranges = <0x2000000 0x0 0xa0000000
+-				  0x2000000 0x0 0xa0000000
+-				  0x0 0x20000000
+-
+-				  0x1000000 0x0 0x0
+-				  0x1000000 0x0 0x0
+-				  0x0 0x100000>;
+-		};
+-	};
+-
+-	pci1: pcie@ffe0a000 {
+-		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
+-		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+-		interrupt-map = <
+-			/* IDSEL 0x0 */
+-			0000 0x0 0x0 0x1 &mpic 0x0 0x1
+-			0000 0x0 0x0 0x2 &mpic 0x1 0x1
+-			0000 0x0 0x0 0x3 &mpic 0x2 0x1
+-			0000 0x0 0x0 0x4 &mpic 0x3 0x1
+-			>;
+-		pcie@0 {
+-			reg = <0x0 0x0 0x0 0x0 0x0>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			device_type = "pci";
+-			ranges = <0x2000000 0x0 0x80000000
+-				  0x2000000 0x0 0x80000000
+-				  0x0 0x20000000
+-
+-				  0x1000000 0x0 0x0
+-				  0x1000000 0x0 0x0
+-				  0x0 0x100000>;
+-		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
+index 6ec0220..5174538 100644
+--- a/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
++++ b/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
+@@ -15,7 +15,7 @@
+  * option) any later version.
+  */
+ 
+-/include/ "p1020si.dtsi"
++/include/ "p1020rdb.dts"
+ 
+ / {
+ 	model = "fsl,P1020RDB";
+@@ -28,7 +28,7 @@
+ 
+ 	cpus {
+ 		PowerPC,P1020@0 {
+-		status = "disabled";
++			status = "disabled";
+ 		};
+ 	};
+ 
+@@ -85,12 +85,6 @@
+ 			status = "disabled";
  		};
  
- 		gpio: gpio-controller@f000 {
+-		enet0: ethernet@b0000 {
+-			fixed-link = <1 1 1000 0 0>;
+-			phy-connection-type = "rgmii-id";
+-
+-		};
+-
+ 		enet1: ethernet@b1000 {
+ 			status = "disabled";
+ 		};
+@@ -135,7 +129,6 @@
+ 		global-utilities@e0000 {	//global utilities block
+ 			status = "disabled";
+ 		};
+-
+ 	};
+ 
+ 	pci0: pcie@ffe09000 {
 -- 
 1.7.3.4
