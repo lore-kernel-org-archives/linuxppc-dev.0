@@ -1,21 +1,27 @@
 Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
- [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 905C4B722F
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 09:09:24 +1100 (EST)
-Message-ID: <4EC5860D.5000606@freescale.com>
-Date: Thu, 17 Nov 2011 16:09:17 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 3944BB722F
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 09:12:09 +1100 (EST)
+Received: from mail121-tx2 (localhost.localdomain [127.0.0.1])	by
+ mail121-tx2-R.bigfish.com (Postfix) with ESMTP id 09E46590094	for
+ <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:11:53 +0000 (UTC)
+Received: from TX2EHSMHS023.bigfish.com (unknown [10.9.14.246])	by
+ mail121-tx2.bigfish.com (Postfix) with ESMTP id AA0E3190059	for
+ <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:11:51 +0000 (UTC)
+Message-ID: <4EC586B2.5060604@freescale.com>
+Date: Thu, 17 Nov 2011 16:12:02 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 2/2] powerpc/85xx: p1022ds: enable monitor switching via
  pixis indirect mode
 References: <1321556259-4459-1-git-send-email-timur@freescale.com>
  <1321556259-4459-2-git-send-email-timur@freescale.com>
- <20111118082929.5ee8d4f07d84f2bf65e18006@canb.auug.org.au>
-In-Reply-To: <20111118082929.5ee8d4f07d84f2bf65e18006@canb.auug.org.au>
+ <20111117213733.GC14736@schlenkerla.am.freescale.net>
+In-Reply-To: <20111117213733.GC14736@schlenkerla.am.freescale.net>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,29 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
+Scott Wood wrote:
 
->>  static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
->>  {
->> -	struct device_node *np;
->> -	void __iomem *pixis;
->> -	u8 __iomem *brdcfg1;
->> +	struct device_node *guts_node = NULL;
+>> This has the side-effect of no longer requiring U-Boot to enable the DIU.
+>> Now Linux can enable the DIU all by itself.
 > 
-> There is no point in initialising this as it is assigned before being
-> used.
+> Under what circumstances does Linux do this?  
 
-Ok.
+p1022ds_set_monitor_port() is called by the DIU driver when it enables the DIU.  This happens on boot, for example, if you enable the framebuffer console.
 
->> +	struct device_node *indirect_node = NULL;
->> +	struct ccsr_guts_85xx __iomem *guts = NULL;
->> +	u8 __iomem *lbc_lcs0_ba = NULL;
->> +	u8 __iomem *lbc_lcs1_ba = NULL;
-> 
-> And if you had multiple error path labels, you could avoid these others
-> as well (and the NULL checks on the error path).
+> How does Linux prevent the
+> NOR flash driver from binding to the device when this mode has been or
+> will be used?
 
-But I don't want multiple error path labels.  The error path could only happen if someone passed in a broken device tree (i.e. pretty much never), so I'm not keen on complicating my code just to optimize something that will never be used.
+It doesn't.  This isn't a simple problem to solve.  On the P1022, NOR flash and the DIU are incompatible, and yet that's exactly what we ship on the P1022DS board.  We could just remove the NOR flash node from the DTS.
 
 -- 
 Timur Tabi
