@@ -1,19 +1,29 @@
-Return-Path: <B35336@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
- [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <r58472@freescale.com>
+Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
+ [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id B27AEB7209
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 22:10:26 +1100 (EST)
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 7/7] gianfar: add support for wake-on-packet
-Date: Thu, 17 Nov 2011 19:10:06 +0800
-Message-ID: <1321528206-9925-1-git-send-email-chenhui.zhao@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 04091B7209
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 22:16:15 +1100 (EST)
+Received: from mail144-tx2 (localhost.localdomain [127.0.0.1])	by
+ mail144-tx2-R.bigfish.com (Postfix) with ESMTP id 950B88781F4	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 11:15:56 +0000 (UTC)
+Received: from TX2EHSMHS017.bigfish.com (unknown [10.9.14.253])	by
+ mail144-tx2.bigfish.com (Postfix) with ESMTP id 5931B1AA004E	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 11:15:56 +0000 (UTC)
+From: Li Yang-R58472 <r58472@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Zhao Chenhui-B35336
+ <B35336@freescale.com>
+Subject: RE: [PATCH v2 2/7] powerpc/85xx: add HOTPLUG_CPU support
+Date: Thu, 17 Nov 2011 11:16:09 +0000
+Message-ID: <3F607A5180246847A760FD34122A1E052D4486@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
+ <1321437344-19253-2-git-send-email-chenhui.zhao@freescale.com>
+ <4EC408C1.1040400@freescale.com>
+In-Reply-To: <4EC408C1.1040400@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: netdev@vger.kernel.org, afleming@freescale.com
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,723 +33,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On certain chip like MPC8536 and P1022, system can be waked up from
-sleep by user-defined packet and Magic Patcket.(The eTSEC cannot
-supports both types of wake-up event simultaneously.) This patch
-implements wake-up on user-defined patcket including ARP request
-packet and unicast patcket to this station.
-
-When entering suspend state, the gianfar driver sets receive queue
-filer table to filter all of packets except ARP request packet and
-unicast patcket to this station. The driver temporarily uses the last
-receive queue to receive the user defined packet.
-
-In suspend state, the receive part of eTSEC keeps working. When
-receiving a user defined packet, it generates an interrupt to
-wake up the system.
-
-The rule of the filer table is as below.
-  if (arp request to local ip address)
-      accept it to the last queue
-  elif (unicast packet to local mac address)
-      accept it to the last queue
-  else
-      reject it
-  endif
-Note: The local ip/mac address is the ethernet primary IP/MAC address of
-the station. Do not support multiple IP/MAC addresses.
-
-Here is an example of enabling and testing wake up on user defined packet.
-  ifconfig eth0 10.193.20.169
-  ethtool -s eth0 wol a
-  echo standby > /sys/power/state or echo mem > /sys/power/state
-
-Ping from PC host to wake up the station:
-  ping 10.193.20.169
-
-Signed-off-by: Dave Liu <daveliu@freescale.com>
-Signed-off-by: Jin Qing <b24347@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-Acked-by: Andy Fleming <afleming@freescale.com>
----
-Changes for v2:
- - rework gfar_get_ip(), gfar_config_filer_table(), gfar_suspend() and gfar_resume()
- - add support unicast wakeup
- - add supported in struct gfar_private
-
- .../devicetree/bindings/net/fsl-tsec-phy.txt       |    3 +
- drivers/net/ethernet/freescale/gianfar.c           |  362 +++++++++++++++++---
- drivers/net/ethernet/freescale/gianfar.h           |   33 ++-
- drivers/net/ethernet/freescale/gianfar_ethtool.c   |   52 ++-
- 4 files changed, 372 insertions(+), 78 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-index 2c6be03..543e36c 100644
---- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-+++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-@@ -56,6 +56,9 @@ Properties:
-     hardware.
-   - fsl,magic-packet : If present, indicates that the hardware supports
-     waking up via magic packet.
-+  - fsl,wake-on-filer : If present, indicates that the hardware supports
-+    waking up via arp request to local ip address or unicast packet to
-+    local mac address.
-   - bd-stash : If present, indicates that the hardware supports stashing
-     buffer descriptors in the L2.
-   - rx-stash-len : Denotes the number of bytes of a received buffer to stash
-diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-index 83199fd..991bd47 100644
---- a/drivers/net/ethernet/freescale/gianfar.c
-+++ b/drivers/net/ethernet/freescale/gianfar.c
-@@ -85,6 +85,8 @@
- #include <linux/tcp.h>
- #include <linux/udp.h>
- #include <linux/in.h>
-+#include <linux/inetdevice.h>
-+#include <sysdev/fsl_soc.h>
- #include <linux/net_tstamp.h>
- 
- #include <asm/io.h>
-@@ -147,6 +149,17 @@ static void gfar_clear_exact_match(struct net_device *dev);
- static void gfar_set_mac_for_addr(struct net_device *dev, int num,
- 				  const u8 *addr);
- static int gfar_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
-+static void gfar_schedule_cleanup(struct gfar_priv_grp *gfargrp);
-+
-+#ifdef CONFIG_PM
-+static void gfar_halt_rx(struct net_device *dev);
-+static void gfar_rx_start(struct net_device *dev);
-+static void gfar_enable_filer(struct net_device *dev);
-+static void gfar_disable_filer(struct net_device *dev);
-+static void gfar_config_filer_table(struct net_device *dev);
-+static void gfar_restore_filer_table(struct net_device *dev);
-+static int gfar_get_ip(struct net_device *dev);
-+#endif
- 
- MODULE_AUTHOR("Freescale Semiconductor, Inc");
- MODULE_DESCRIPTION("Gianfar Ethernet Driver");
-@@ -751,7 +764,6 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
- 			FSL_GIANFAR_DEV_HAS_PADDING |
- 			FSL_GIANFAR_DEV_HAS_CSUM |
- 			FSL_GIANFAR_DEV_HAS_VLAN |
--			FSL_GIANFAR_DEV_HAS_MAGIC_PACKET |
- 			FSL_GIANFAR_DEV_HAS_EXTENDED_HASH |
- 			FSL_GIANFAR_DEV_HAS_TIMER;
- 
-@@ -763,8 +775,19 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
- 	else
- 		priv->interface = PHY_INTERFACE_MODE_MII;
- 
--	if (of_get_property(np, "fsl,magic-packet", NULL))
-+	/* Init Wake-on-LAN */
-+	priv->wol_opts = 0;
-+	priv->wol_supported = 0;
-+	if (of_get_property(np, "fsl,magic-packet", NULL)) {
- 		priv->device_flags |= FSL_GIANFAR_DEV_HAS_MAGIC_PACKET;
-+		priv->wol_supported |= GIANFAR_WOL_MAGIC;
-+	}
-+
-+	if (of_get_property(np, "fsl,wake-on-filer", NULL)) {
-+		priv->device_flags |= FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER;
-+		priv->wol_supported |= GIANFAR_WOL_ARP;
-+		priv->wol_supported |= GIANFAR_WOL_UCAST;
-+	}
- 
- 	priv->phy_node = of_parse_phandle(np, "phy-handle", 0);
- 
-@@ -1168,8 +1191,10 @@ static int gfar_probe(struct platform_device *ofdev)
- 		goto register_fail;
- 	}
- 
--	device_init_wakeup(&dev->dev,
--		priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+	if (priv->wol_supported) {
-+		device_set_wakeup_capable(&ofdev->dev, true);
-+		device_set_wakeup_enable(&ofdev->dev, false);
-+	}
- 
- 	/* fill out IRQ number and name fields */
- 	len_devname = strlen(dev->name);
-@@ -1260,6 +1285,143 @@ static int gfar_remove(struct platform_device *ofdev)
- }
- 
- #ifdef CONFIG_PM
-+static void gfar_enable_filer(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 temp;
-+
-+	lock_rx_qs(priv);
-+
-+	temp = gfar_read(&regs->rctrl);
-+	temp &= ~(RCTRL_FSQEN | RCTRL_PRSDEP_MASK);
-+	temp |= RCTRL_FILREN | RCTRL_PRSDEP_L2L3;
-+	gfar_write(&regs->rctrl, temp);
-+
-+	unlock_rx_qs(priv);
-+}
-+
-+static void gfar_disable_filer(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 temp;
-+
-+	lock_rx_qs(priv);
-+
-+	temp = gfar_read(&regs->rctrl);
-+	temp &= ~RCTRL_FILREN;
-+	gfar_write(&regs->rctrl, temp);
-+
-+	unlock_rx_qs(priv);
-+}
-+
-+static int gfar_get_ip(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct in_device *in_dev;
-+	int ret = -ENOENT;
-+
-+	in_dev = in_dev_get(dev);
-+	if (!in_dev)
-+		return ret;
-+
-+	/* Get the primary IP address */
-+	for_primary_ifa(in_dev) {
-+		priv->ip_addr = ifa->ifa_address;
-+		ret = 0;
-+		break;
-+	} endfor_ifa(in_dev);
-+
-+	in_dev_put(in_dev);
-+	return ret;
-+}
-+
-+static void gfar_restore_filer_table(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	u32 rqfcr, rqfpr;
-+	int i;
-+
-+	lock_rx_qs(priv);
-+
-+	for (i = 0; i <= MAX_FILER_IDX; i++) {
-+		rqfcr = priv->ftp_rqfcr[i];
-+		rqfpr = priv->ftp_rqfpr[i];
-+		gfar_write_filer(priv, i, rqfcr, rqfpr);
-+	}
-+
-+	unlock_rx_qs(priv);
-+}
-+
-+static void gfar_config_filer_table(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	u32 dest_mac_addr;
-+	u32 rqfcr, rqfpr;
-+	u8  rqfcr_queue = priv->num_rx_queues - 1;
-+	unsigned int index;
-+
-+	if (gfar_get_ip(dev)) {
-+		netif_err(priv, wol, dev, "WOL: get the ip address error\n");
-+		return;
-+	}
-+
-+	lock_rx_qs(priv);
-+
-+	/* init filer table */
-+	rqfcr = RQFCR_RJE | RQFCR_CMP_MATCH;
-+	rqfpr = 0x0;
-+	for (index = 0; index <= MAX_FILER_IDX; index++)
-+		gfar_write_filer(priv, index, rqfcr, rqfpr);
-+
-+	index = 0;
-+	if (priv->wol_opts & GIANFAR_WOL_ARP) {
-+		/* ARP request filer, filling the packet to the last queue */
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_MASK;
-+		rqfpr = RQFPR_ARQ;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_PARSE;
-+		rqfpr = RQFPR_ARQ;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		/*
-+		 * DEST_IP address in ARP packet,
-+		 * filling it to the last queue.
-+		 */
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_MASK;
-+		rqfpr = FPR_FILER_MASK;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_GPI |
-+					RQFCR_CMP_EXACT | RQFCR_PID_DIA;
-+		rqfpr = priv->ip_addr;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+	}
-+
-+	if (priv->wol_opts & GIANFAR_WOL_UCAST) {
-+		/* Unicast packet, filling it to the last queue */
-+		dest_mac_addr = (dev->dev_addr[0] << 16) |
-+				(dev->dev_addr[1] << 8) | dev->dev_addr[2];
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_DAH;
-+		rqfpr = dest_mac_addr;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		dest_mac_addr = (dev->dev_addr[3] << 16) |
-+				(dev->dev_addr[4] << 8) | dev->dev_addr[5];
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_GPI |
-+					RQFCR_CMP_EXACT | RQFCR_PID_DAL;
-+		rqfpr = dest_mac_addr;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+	}
-+
-+	unlock_rx_qs(priv);
-+}
- 
- static int gfar_suspend(struct device *dev)
- {
-@@ -1269,48 +1431,43 @@ static int gfar_suspend(struct device *dev)
- 	unsigned long flags;
- 	u32 tempval;
- 
--	int magic_packet = priv->wol_en &&
--		(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
--
- 	netif_device_detach(ndev);
- 
--	if (netif_running(ndev)) {
--
--		local_irq_save(flags);
--		lock_tx_qs(priv);
--		lock_rx_qs(priv);
--
--		gfar_halt_nodisable(ndev);
--
--		/* Disable Tx, and Rx if wake-on-LAN is disabled. */
--		tempval = gfar_read(&regs->maccfg1);
--
--		tempval &= ~MACCFG1_TX_EN;
-+	if (!netif_running(ndev))
-+		return 0;
- 
--		if (!magic_packet)
--			tempval &= ~MACCFG1_RX_EN;
-+	local_irq_save(flags);
-+	lock_tx_qs(priv);
-+	lock_rx_qs(priv);
- 
--		gfar_write(&regs->maccfg1, tempval);
-+	gfar_halt(ndev);
- 
--		unlock_rx_qs(priv);
--		unlock_tx_qs(priv);
--		local_irq_restore(flags);
-+	unlock_rx_qs(priv);
-+	unlock_tx_qs(priv);
-+	local_irq_restore(flags);
- 
--		disable_napi(priv);
-+	disable_napi(priv);
- 
--		if (magic_packet) {
--			/* Enable interrupt on Magic Packet */
--			gfar_write(&regs->imask, IMASK_MAG);
-+	if (!priv->wol_opts && priv->phydev) {
-+		phy_stop(priv->phydev);
-+		return 0;
-+	}
- 
--			/* Enable Magic Packet mode */
--			tempval = gfar_read(&regs->maccfg2);
--			tempval |= MACCFG2_MPEN;
--			gfar_write(&regs->maccfg2, tempval);
--		} else {
--			phy_stop(priv->phydev);
--		}
-+	mpc85xx_pmc_set_wake(priv->ofdev, 1);
-+	if (priv->wol_opts & GIANFAR_WOL_MAGIC) {
-+		/* Enable Magic Packet mode */
-+		tempval = gfar_read(&regs->maccfg2);
-+		tempval |= MACCFG2_MPEN;
-+		gfar_write(&regs->maccfg2, tempval);
- 	}
- 
-+	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
-+		mpc85xx_pmc_set_lossless_ethernet(1);
-+		gfar_disable_filer(ndev);
-+		gfar_config_filer_table(ndev);
-+		gfar_enable_filer(ndev);
-+	}
-+	gfar_rx_start(ndev);
- 	return 0;
- }
- 
-@@ -1320,39 +1477,49 @@ static int gfar_resume(struct device *dev)
- 	struct net_device *ndev = priv->ndev;
- 	struct gfar __iomem *regs = priv->gfargrp[0].regs;
- 	unsigned long flags;
--	u32 tempval;
--	int magic_packet = priv->wol_en &&
--		(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+	u32 tempval, i;
- 
- 	if (!netif_running(ndev)) {
- 		netif_device_attach(ndev);
- 		return 0;
- 	}
- 
--	if (!magic_packet && priv->phydev)
-+	if (!priv->wol_opts && priv->phydev) {
- 		phy_start(priv->phydev);
-+		goto out;
-+	}
-+
-+	mpc85xx_pmc_set_wake(priv->ofdev, 0);
- 
--	/* Disable Magic Packet mode, in case something
--	 * else woke us up.
--	 */
- 	local_irq_save(flags);
--	lock_tx_qs(priv);
- 	lock_rx_qs(priv);
--
--	tempval = gfar_read(&regs->maccfg2);
--	tempval &= ~MACCFG2_MPEN;
--	gfar_write(&regs->maccfg2, tempval);
--
--	gfar_start(ndev);
--
-+	gfar_halt_rx(ndev);
- 	unlock_rx_qs(priv);
--	unlock_tx_qs(priv);
- 	local_irq_restore(flags);
- 
--	netif_device_attach(ndev);
-+	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
-+		mpc85xx_pmc_set_lossless_ethernet(0);
-+		gfar_disable_filer(ndev);
-+		gfar_restore_filer_table(ndev);
-+	}
-+
-+	if (priv->wol_opts & GIANFAR_WOL_MAGIC) {
-+		/* Disable Magic Packet mode */
-+		tempval = gfar_read(&regs->maccfg2);
-+		tempval &= ~MACCFG2_MPEN;
-+		gfar_write(&regs->maccfg2, tempval);
-+	}
- 
-+out:
-+	gfar_start(ndev);
-+	netif_device_attach(ndev);
- 	enable_napi(priv);
- 
-+	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
-+		/* send requests to process the received packets */
-+		for (i = 0; i < priv->num_grps; i++)
-+			gfar_schedule_cleanup(&priv->gfargrp[i]);
-+	}
- 	return 0;
- }
- 
-@@ -1602,6 +1769,48 @@ static int __gfar_is_rx_idle(struct gfar_private *priv)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+/* Halt the receive queues */
-+static void gfar_halt_rx(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 tempval;
-+	int i = 0;
-+
-+	for (i = 0; i < priv->num_grps; i++) {
-+		regs = priv->gfargrp[i].regs;
-+		/* Mask all interrupts */
-+		gfar_write(&regs->imask, IMASK_INIT_CLEAR);
-+
-+		/* Clear all interrupts */
-+		gfar_write(&regs->ievent, IEVENT_INIT_CLEAR);
-+	}
-+
-+	regs = priv->gfargrp[0].regs;
-+	/* Stop the DMA, and wait for it to stop */
-+	tempval = gfar_read(&regs->dmactrl);
-+	if ((tempval & DMACTRL_GRS) != DMACTRL_GRS) {
-+		int ret;
-+
-+		tempval |= DMACTRL_GRS;
-+		gfar_write(&regs->dmactrl, tempval);
-+
-+		do {
-+			ret = spin_event_timeout(((gfar_read(&regs->ievent) &
-+				IEVENT_GRSC) == IEVENT_GRSC), 1000000, 0);
-+			if (!ret && !(gfar_read(&regs->ievent) & IEVENT_GRSC))
-+				ret = __gfar_is_rx_idle(priv);
-+		} while (!ret);
-+	}
-+
-+	/* Disable Rx in MACCFG1  */
-+	tempval = gfar_read(&regs->maccfg1);
-+	tempval &= ~MACCFG1_RX_EN;
-+	gfar_write(&regs->maccfg1, tempval);
-+}
-+#endif
-+
- /* Halt the receive and transmit queues */
- static void gfar_halt_nodisable(struct net_device *dev)
- {
-@@ -1808,6 +2017,40 @@ void gfar_start(struct net_device *dev)
- 	dev->trans_start = jiffies; /* prevent tx timeout */
- }
- 
-+#ifdef CONFIG_PM
-+void gfar_rx_start(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 tempval;
-+	int i = 0;
-+
-+	/* Enable Rx in MACCFG1 */
-+	tempval = gfar_read(&regs->maccfg1);
-+	tempval |= MACCFG1_RX_EN;
-+	gfar_write(&regs->maccfg1, tempval);
-+
-+	/* Initialize DMACTRL to have WWR and WOP */
-+	tempval = gfar_read(&regs->dmactrl);
-+	tempval |= DMACTRL_INIT_SETTINGS;
-+	gfar_write(&regs->dmactrl, tempval);
-+
-+	/* Make sure we aren't stopped */
-+	tempval = gfar_read(&regs->dmactrl);
-+	tempval &= ~DMACTRL_GRS;
-+	gfar_write(&regs->dmactrl, tempval);
-+
-+	for (i = 0; i < priv->num_grps; i++) {
-+		regs = priv->gfargrp[i].regs;
-+		/* Clear RHLT, so that the DMA starts polling now */
-+		gfar_write(&regs->rstat, priv->gfargrp[i].rstat);
-+
-+		/* Unmask the interrupts we look for */
-+		gfar_write(&regs->imask, IMASK_DEFAULT);
-+	}
-+}
-+#endif
-+
- void gfar_configure_coalescing(struct gfar_private *priv,
- 	unsigned long tx_mask, unsigned long rx_mask)
- {
-@@ -1970,7 +2213,7 @@ static int gfar_enet_open(struct net_device *dev)
- 
- 	netif_tx_start_all_queues(dev);
- 
--	device_set_wakeup_enable(&dev->dev, priv->wol_en);
-+	device_set_wakeup_enable(&priv->ofdev->dev, priv->wol_opts);
- 
- 	return err;
- }
-@@ -2657,6 +2900,17 @@ static inline void count_errors(unsigned short status, struct net_device *dev)
- 
- irqreturn_t gfar_receive(int irq, void *grp_id)
- {
-+	struct gfar_priv_grp *gfargrp = grp_id;
-+	struct gfar __iomem *regs = gfargrp->regs;
-+	u32 ievent;
-+
-+	ievent = gfar_read(&regs->ievent);
-+
-+	if ((ievent & IEVENT_FGPI) == IEVENT_FGPI) {
-+		gfar_write(&regs->ievent, ievent & IEVENT_RX_MASK);
-+		return IRQ_HANDLED;
-+	}
-+
- 	gfar_schedule_cleanup((struct gfar_priv_grp *)grp_id);
- 	return IRQ_HANDLED;
- }
-diff --git a/drivers/net/ethernet/freescale/gianfar.h b/drivers/net/ethernet/freescale/gianfar.h
-index 9aa4377..1abebc4 100644
---- a/drivers/net/ethernet/freescale/gianfar.h
-+++ b/drivers/net/ethernet/freescale/gianfar.h
-@@ -232,6 +232,13 @@ extern const char gfar_driver_version[];
- #define RQUEUE_EN7		0x00000001
- #define RQUEUE_EN_ALL		0x000000FF
- 
-+/* Wake-On-Lan options */
-+#define GIANFAR_WOL_UCAST	0x00000001	/* Unicast wakeup */
-+#define GIANFAR_WOL_MCAST	0x00000002	/* Multicast wakeup */
-+#define GIANFAR_WOL_BCAST	0x00000004	/* Broadcase wakeup */
-+#define GIANFAR_WOL_ARP		0x00000008	/* ARP request wakeup */
-+#define GIANFAR_WOL_MAGIC	0x00000010	/* Magic packet wakeup */
-+
- /* Init to do tx snooping for buffers and descriptors */
- #define DMACTRL_INIT_SETTINGS   0x000000c3
- #define DMACTRL_GRS             0x00000010
-@@ -277,11 +284,15 @@ extern const char gfar_driver_version[];
- #define RCTRL_PAL_MASK		0x001f0000
- #define RCTRL_VLEX		0x00002000
- #define RCTRL_FILREN		0x00001000
-+#define RCTRL_FSQEN		0x00000800
- #define RCTRL_GHTX		0x00000400
- #define RCTRL_IPCSEN		0x00000200
- #define RCTRL_TUCSEN		0x00000100
- #define RCTRL_PRSDEP_MASK	0x000000c0
- #define RCTRL_PRSDEP_INIT	0x000000c0
-+#define RCTRL_PRSDEP_L2		0x00000040
-+#define RCTRL_PRSDEP_L2L3	0x00000080
-+#define RCTRL_PRSDEP_L2L3L4	0x000000c0
- #define RCTRL_PRSFM		0x00000020
- #define RCTRL_PROM		0x00000008
- #define RCTRL_EMEN		0x00000002
-@@ -327,18 +338,20 @@ extern const char gfar_driver_version[];
- #define IEVENT_MAG		0x00000800
- #define IEVENT_GRSC		0x00000100
- #define IEVENT_RXF0		0x00000080
-+#define IEVENT_FGPI		0x00000010
- #define IEVENT_FIR		0x00000008
- #define IEVENT_FIQ		0x00000004
- #define IEVENT_DPE		0x00000002
- #define IEVENT_PERR		0x00000001
--#define IEVENT_RX_MASK          (IEVENT_RXB0 | IEVENT_RXF0 | IEVENT_BSY)
-+#define IEVENT_RX_MASK          (IEVENT_RXB0 | IEVENT_RXF0 | \
-+					IEVENT_FGPI | IEVENT_BSY)
- #define IEVENT_TX_MASK          (IEVENT_TXB | IEVENT_TXF)
- #define IEVENT_RTX_MASK         (IEVENT_RX_MASK | IEVENT_TX_MASK)
- #define IEVENT_ERR_MASK         \
--(IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
-- IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC \
-- | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR \
-- | IEVENT_MAG | IEVENT_BABR)
-+	(IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
-+	 IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC | \
-+	 IEVENT_CRL | IEVENT_XFUN | IEVENT_FIR | IEVENT_FIQ | \
-+	 IEVENT_DPE | IEVENT_PERR | IEVENT_MAG | IEVENT_BABR)
- 
- #define IMASK_INIT_CLEAR	0x00000000
- #define IMASK_BABR              0x80000000
-@@ -359,14 +372,15 @@ extern const char gfar_driver_version[];
- #define IMASK_MAG		0x00000800
- #define IMASK_GRSC              0x00000100
- #define IMASK_RXFEN0		0x00000080
-+#define IMASK_FGPI		0x00000010
- #define IMASK_FIR		0x00000008
- #define IMASK_FIQ		0x00000004
- #define IMASK_DPE		0x00000002
- #define IMASK_PERR		0x00000001
- #define IMASK_DEFAULT  (IMASK_TXEEN | IMASK_TXFEN | IMASK_TXBEN | \
- 		IMASK_RXFEN0 | IMASK_BSY | IMASK_EBERR | IMASK_BABR | \
--		IMASK_XFUN | IMASK_RXC | IMASK_BABT | IMASK_DPE \
--		| IMASK_PERR)
-+		IMASK_XFUN | IMASK_RXC | IMASK_BABT | IMASK_FGPI | \
-+		IMASK_FIR | IMASK_FIQ | IMASK_DPE | IMASK_PERR | IMASK_MAG)
- #define IMASK_RTX_DISABLED ((~(IMASK_RXFEN0 | IMASK_TXFEN | IMASK_BSY)) \
- 			   & IMASK_DEFAULT)
- 
-@@ -883,6 +897,7 @@ struct gfar {
- #define FSL_GIANFAR_DEV_HAS_BD_STASHING		0x00000200
- #define FSL_GIANFAR_DEV_HAS_BUF_STASHING	0x00000400
- #define FSL_GIANFAR_DEV_HAS_TIMER		0x00000800
-+#define FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER	0x00001000
- 
- #if (MAXGROUPS == 2)
- #define DEFAULT_MAPPING 	0xAA
-@@ -1115,6 +1130,10 @@ struct gfar_private {
- 
- 	struct work_struct reset_task;
- 
-+	u32 ip_addr;
-+	u32 wol_opts;
-+	u32 wol_supported;
-+
- 	/* Network Statistics */
- 	struct gfar_extra_stats extra_stats;
- 
-diff --git a/drivers/net/ethernet/freescale/gianfar_ethtool.c b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-index 212736b..296e762 100644
---- a/drivers/net/ethernet/freescale/gianfar_ethtool.c
-+++ b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-@@ -29,6 +29,7 @@
- #include <linux/skbuff.h>
- #include <linux/spinlock.h>
- #include <linux/mm.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/irq.h>
-@@ -577,32 +578,49 @@ static void gfar_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
- 
--	if (priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) {
--		wol->supported = WAKE_MAGIC;
--		wol->wolopts = priv->wol_en ? WAKE_MAGIC : 0;
--	} else {
--		wol->supported = wol->wolopts = 0;
--	}
-+	wol->supported = 0;
-+	wol->wolopts = 0;
-+
-+	if (!priv->wol_supported || !device_can_wakeup(&priv->ofdev->dev))
-+		return;
-+
-+	if (priv->wol_supported & GIANFAR_WOL_MAGIC)
-+		wol->supported |= WAKE_MAGIC;
-+
-+	if (priv->wol_supported & GIANFAR_WOL_ARP)
-+		wol->supported |= WAKE_ARP;
-+
-+	if (priv->wol_supported & GIANFAR_WOL_UCAST)
-+		wol->supported |= WAKE_UCAST;
-+
-+	if (priv->wol_opts & GIANFAR_WOL_MAGIC)
-+		wol->wolopts |= WAKE_MAGIC;
-+
-+	if (priv->wol_opts & GIANFAR_WOL_ARP)
-+		wol->wolopts |= WAKE_ARP;
-+
-+	if (priv->wol_opts & GIANFAR_WOL_UCAST)
-+		wol->wolopts |= WAKE_UCAST;
- }
- 
- static int gfar_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
--	unsigned long flags;
- 
--	if (!(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) &&
--	    wol->wolopts != 0)
--		return -EINVAL;
--
--	if (wol->wolopts & ~WAKE_MAGIC)
--		return -EINVAL;
-+	if (!priv->wol_supported || !device_can_wakeup(&priv->ofdev->dev) ||
-+		(wol->wolopts & ~(WAKE_MAGIC | WAKE_ARP | WAKE_UCAST)))
-+		return -EOPNOTSUPP;
- 
--	device_set_wakeup_enable(&dev->dev, wol->wolopts & WAKE_MAGIC);
-+	priv->wol_opts = 0;
- 
--	spin_lock_irqsave(&priv->bflock, flags);
--	priv->wol_en =  !!device_may_wakeup(&dev->dev);
--	spin_unlock_irqrestore(&priv->bflock, flags);
-+	if (wol->wolopts & WAKE_MAGIC)
-+		priv->wol_opts |= GIANFAR_WOL_MAGIC;
-+	if (wol->wolopts & WAKE_ARP)
-+		priv->wol_opts |= GIANFAR_WOL_ARP;
-+	if (wol->wolopts & WAKE_UCAST)
-+		priv->wol_opts |= GIANFAR_WOL_UCAST;
- 
-+	device_set_wakeup_enable(&priv->ofdev->dev, (u32)priv->wol_opts);
- 	return 0;
- }
- #endif
--- 
-1.6.4.1
+DQoNCj5DYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctUjU4NDcyDQo+
+U3ViamVjdDogUmU6IFtQQVRDSCB2MiAyLzddIHBvd2VycGMvODV4eDogYWRkIEhPVFBMVUdfQ1BV
+IHN1cHBvcnQNCj4NCj5PbiAxMS8xNi8yMDExIDAzOjU1IEFNLCBaaGFvIENoZW5odWkgd3JvdGU6
+DQo+PiArc3RhdGljIHZvaWQgX19jcHVpbml0IHNtcF84NXh4X21hY2hfY3B1X2RpZSh2b2lkKSB7
+DQo+PiArCXVuc2lnbmVkIGludCBjcHUgPSBzbXBfcHJvY2Vzc29yX2lkKCk7DQo+PiArCXJlZ2lz
+dGVyIHUzMiB0bXA7DQo+PiArDQo+PiArCWxvY2FsX2lycV9kaXNhYmxlKCk7DQo+PiArCWlkbGVf
+dGFza19leGl0KCk7DQo+PiArCWdlbmVyaWNfc2V0X2NwdV9kZWFkKGNwdSk7DQo+PiArCW1iKCk7
+DQo+PiArDQo+PiArCW10c3ByKFNQUk5fVENSLCAwKTsNCj4+ICsJbXRzcHIoU1BSTl9UU1IsIFRT
+Ul9FTlcgfCBUU1JfV0lTIHwgVFNSX0RJUyB8IFRTUl9GSVMpOw0KPg0KPkNsZWFyaW5nIHRoZXNl
+IGJpdHMgaW4gVFNSIHNob3VsZCBiZSB1bm5lY2Vzc2FyeSBzaW5jZSB3ZSBjbGVhciBUQ1IgLS0g
+YW5kDQo+ZG9lc24ndCByZWFsbHkgYWNjb21wbGlzaCBhbnl0aGluZyBzaW5jZSB0aGUgVFNSIGJp
+dHMgY2FuIGNvbnRpbnVlIHRvIGJlDQo+c2V0Lg0KDQpJIGFsc28gcmVjb21tZW5kIHNldHRpbmcg
+dGhlIENPUkVfSVJRX01BU0sgYW5kIENPUkVfQ0lfTUFTSyBpbiB0aGUgUE9XTUdUQ1NSIHJlZ2lz
+dGVyIHNvIHRoYXQgbm8gaW50ZXJydXB0IHdpbGwgd2FrZXVwIHRoZSBjb3JlIGZyb20gTkFQLg0K
+DQo+DQo+SWYgd2F0Y2hkb2cgaXMgaW4gdXNlLCB3ZSBuZWVkIHRvIHNldCB0aGUgcGVyaW9kIHRv
+IHRoZSBoaWdoZXN0IHBvc3NpYmxlDQo+dG8gZWZmZWN0aXZlbHkgZGlzYWJsZSBpdC4NCg0KU2V0
+dGluZyBpdCB0byB0aGUgaGlnaGVzdCB0aW1lb3V0IGRvZXNuJ3QgcmVhbGx5IGRpc2FibGUgdGhl
+IHdhdGNoZG9nLiAgVGhlIGJlc3Qgd2F5IGZvciBkaXNhYmxpbmcgdGhlIHdkdCBpcyB0byByZXNl
+dCB0aGUgY29yZSwgYWx0aG91Z2ggaXQncyBhIGJpdCB0b28gY29tcGxleCB0byBkby4NCg0KPg0K
+Pj4gKwlpZiAoY3B1X2hhc19mZWF0dXJlKENQVV9GVFJfQ0FOX05BUCkpIHsNCj4NCj5BZ2Fpbiwg
+ZG9uJ3QgY2hlY2sgdGhpcy4gIE9uIDg1eHgsIHdlICphbHdheXMqIGNhbiBhbmQgc2hvdWxkIHVz
+ZSBuYXAgaGVyZS4NCj5BdCBiZXN0IHRoaXMgaXMgbm9pc2UsIGF0IHdvcnN0IHRoaXMgd2lsbCBj
+YXVzZSBwcm9ibGVtcyBpZg0KPkNPTkZJR19CRElfU1dJVENIIGlzIGVuYWJsZWQsIG9yIGlmIENQ
+VV9GVFJfQ0FOX05BUCBpcyBjbGVhcmVkIGZvciBhbnkNCj5vdGhlciByZWFzb24gKGUuZy4gaXQn
+cyBub3Qgc2V0IG9uIGU1MDBtYywgYW5kIHRoZSByZWFzb24gaXNuJ3QgdGhhdCB0aGUNCj5uYXAg
+aW1wbGVtZW50YXRpb24gaXMgZGlmZmVyZW50ICh3aGljaCBpdCBpcyksIGJ1dCB0aGF0IGl0J3Mg
+bm90IHVzYWJsZSBpbg0KPnRoZSBpZGxlIGxvb3ApLg0KPg0KPj4gK3N0YXRpYyBpbnQgX19jcHVp
+bml0IHNtcF84NXh4X2tpY2tfY3B1KGludCBucikNCj4+ICsNCj4+ICB7DQo+PiAgCXVuc2lnbmVk
+IGxvbmcgZmxhZ3M7DQo+PiAgCWNvbnN0IHU2NCAqY3B1X3JlbF9hZGRyOw0KPj4gLQlfX2lvbWVt
+IHUzMiAqYnB0cl92YWRkcjsNCj4+ICsJX19pb21lbSBzdHJ1Y3QgZXBhcHJfc3Bpbl90YWJsZSAq
+ZXBhcHI7DQo+DQo+UGxlYXNlIGRvbid0IGNhbGwgdGhpcyBqdXN0ICJlcGFwciIuICBUaGF0J3Mg
+bGlrZSBjYWxsaW5nIGEgcmVmZXJlbmNlIHRvDQo+YW55IHBvd2VycGMtc3BlY2lmaWMgc3RydWN0
+ICJwb3dlcnBjIi4NCj4NCj5Ib3cgYWJvdXQgInNwaW5fdGFibGUiPw0KDQpZb3UgbWVhbiB0aGUg
+bmFtZSBvZiB0aGUgdmFyaWFibGUgbm90IHRoZSBzdHJ1Y3R1cmUsIHJpZ2h0PyAgSSBhZ3JlZS4N
+Cg0KPg0KPj4gLQlvdXRfYmUzMihicHRyX3ZhZGRyICsgQk9PVF9FTlRSWV9QSVIsIGh3X2NwdSk7
+DQo+PiArCW91dF9iZTMyKCZlcGFwci0+cGlyLCBod19jcHUpOw0KPj4gICNpZmRlZiBDT05GSUdf
+UFBDMzINCj4+IC0Jb3V0X2JlMzIoYnB0cl92YWRkciArIEJPT1RfRU5UUllfQUREUl9MT1dFUiwg
+X19wYShfX2Vhcmx5X3N0YXJ0KSk7DQo+PiArI2lmZGVmIENPTkZJR19IT1RQTFVHX0NQVQ0KPj4g
+KwkvKiBDb3JyZXNwb25kaW5nIHRvIGdlbmVyaWNfc2V0X2NwdV9kZWFkKCkgKi8NCj4+ICsJZ2Vu
+ZXJpY19zZXRfY3B1X3VwKG5yKTsNCj4+ICsNCj4+ICsJaWYgKHN5c3RlbV9zdGF0ZSA9PSBTWVNU
+RU1fUlVOTklORykgew0KPj4gKwkJb3V0X2JlMzIoJmVwYXByLT5hZGRyX2wsIDApOw0KPj4gKw0K
+Pj4gKwkJc21wXzg1eHhfc2V0X2Jvb3RwZygodTMyKSgqY3B1X3JlbF9hZGRyID4+IFBBR0VfU0hJ
+RlQpKTsNCj4NCj5BcyBwcmV2aW91c2x5IHJlcXVlc3RlZCwgcGxlYXNlIGRvY3VtZW50IHdoeSB5
+b3UncmUgc2V0dGluZyB0aGUgYm9vdCBwYWdlDQo+aGVyZS4gIFRoaXMgc2hvdWxkIHJlYWxseSBi
+ZSBkb25lIHdoZW4geW91IHJlc3VtZSBmcm9tIGRlZXAgc2xlZXAsIHJhdGhlcg0KPnRoYW4gaGVy
+ZSwgYW5kIHNob3VsZCBiZSBhIHJlc3RvcmF0aW9uIG9mIHRoZSB2YWx1ZSB0aGF0IHRoZSByZWdp
+c3RlciBoZWxkDQo+cHJpb3IgdG8gZGVlcCBzbGVlcC4NCj4NCj4+ICBzdHJ1Y3Qgc21wX29wc190
+IHNtcF84NXh4X29wcyA9IHsNCj4+ICAJLmtpY2tfY3B1ID0gc21wXzg1eHhfa2lja19jcHUsDQo+
+PiArCS5zZXR1cF9jcHUJPSBzbXBfODV4eF9zZXR1cF9jcHUsDQo+PiArI2lmZGVmIENPTkZJR19I
+T1RQTFVHX0NQVQ0KPj4gKwkuY3B1X2Rpc2FibGUJPSBnZW5lcmljX2NwdV9kaXNhYmxlLA0KPj4g
+KwkuY3B1X2RpZQk9IGdlbmVyaWNfY3B1X2RpZSwNCj4+ICsjZW5kaWYNCj4NCj5Pbmx5IGZpbGwg
+dGhlc2UgZmllbGRzIGluIG9uIGU1MDB2MS92MiwgdW50aWwgd2UgcHJvcGVybHkgc3VwcG9ydCBl
+NTAwbWMuDQo+TGlrZXdpc2UgaW4gcHBjX21kLmNwdV9kaWUgYW5kIGFueXdoZXJlIGVsc2Ugd2Ug
+YWR2ZXJ0aXNlIHRoaXMNCj5mdW5jdGlvbmFsaXR5Lg0KDQpJcyB0aGVyZSBhIHN0YW5kYXJkIGZ1
+bmN0aW9uIGNhbGwgdGhhdCBjYW4gdGVsbCB0aGF0IGl0IGlzIGFuIGU1MDBtYyBub3QgbGVnYWN5
+IGU1MDA/DQoNCi0gTGVvDQo=
