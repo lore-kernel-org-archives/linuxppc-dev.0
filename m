@@ -1,21 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id B7292B7262
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2011 08:22:59 +1100 (EST)
-Date: Fri, 18 Nov 2011 08:22:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 6/6] poewrpc/85xx: headers cleanup
-Message-Id: <20111118082253.f3111cd6b1314c7762d27b2a@canb.auug.org.au>
-In-Reply-To: <1321552581-29773-6-git-send-email-dbaryshkov@gmail.com>
-References: <1321552581-29773-1-git-send-email-dbaryshkov@gmail.com>
- <1321552581-29773-6-git-send-email-dbaryshkov@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__18_Nov_2011_08_22_53_+1100_fdgmNS+60Oa2mTvL"
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9C131B7255
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 08:27:51 +1100 (EST)
+In-Reply-To: <A8CB2347-27B6-482A-B49B-F434FBFCBC10@freescale.com>
+References: <OFD9ADD493.27DB131E-ONC125794B.002E2035-C125794B.002F715A@transmode.se>
+ <4EC544C6.3050502@us.ibm.com>
+ <A8CB2347-27B6-482A-B49B-F434FBFCBC10@freescale.com>
+Subject: Re: oprofile callgraph support missing for common cpus
+To: Andy Fleming <afleming@freescale.com>
+Message-ID: <OF8F2311F0.71A00B7A-ONC125794B.007583D0-C125794B.0075E666@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 17 Nov 2011 22:27:46 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, maynardj@us.ibm.com,
+ oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__18_Nov_2011_08_22_53_+1100_fdgmNS+60Oa2mTvL
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Dmitry,
-
-On Thu, 17 Nov 2011 21:56:21 +0400 Dmitry Eremin-Solenikov <dbaryshkov@gmai=
-l.com> wrote:
+Andy Fleming <afleming@freescale.com> wrote on 2011/11/17 18:51:52:
 >
-> Drop lots of unused headers after board files merge/splitup
+>
+> On Nov 17, 2011, at 11:30 AM, Maynard Johnson wrote:
+>
+> >>
+> >> Notice the first
+> >>        if (!cur_cpu_spec->oprofile_cpu_type)
+> >>               return -ENODEV;
+> >>
+> >>        if (firmware_has_feature(FW_FEATURE_ISERIES))
+> >>               return -ENODEV;
+> >> For my e300c2 cpu both if's are false and I don't get support for callgraph/backtrace
+> >> support. Moving the ops->backtrace = op_powerpc_backtrace; to the top
+> >> enables backtrace for me.
+> > What kernel version are you using?  Actually, looking at a 3.0.3 tree I happen to have available, I see oprofile h/w event support (in arch/powerpc/kernel/cputable.c) for e300c3 and e300c4, but not the other e300 flavors.  I've added Andy Flemming from Freescale to cc.  Maybe he knows why e300c2
+isn't supported.
+>
+> e300c2 does not have hardware performance monitor events.
+>
+> However, it should be able to support timer-based profiling, right? And why not support backtrace from there? Do we require hardware counters to get a backtrace?
 
-Again, I am concerned that you may have removed too many includes (though
-I didn't explicitly check this time).
+It sure seems to work :)
+If it doesn't, one needs to make sure /dev/oprofile/backtrace_depth isn't published as it is now.
 
-In general, these clean ups look great.
+Question, what is the sample rate for timer based oprofile?
+Is it HZ depended?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__18_Nov_2011_08_22_53_+1100_fdgmNS+60Oa2mTvL
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJOxXstAAoJEECxmPOUX5FEIVoQAJ2ZbWSqXBjMtj9+okcyGgzR
-l9QeBWJLP6gVis4dRD+bFiEZ1MzCDxGklm4baguqaGV6yetN8fP5j/RZuXeme917
-WQBzTSZOgPoFJCv7drfxaFkbfrEJ22AkK1RXlcOp+LEpQpixq+nk60arPAJE6E2P
-XhWnafZn9fPKIX93bTzprmcwJulauHGb2mdX871p6Jt1WH6HkEBzJuWwJYTs3NEH
-VkAfsK/n1ErcGX/83G0xEm85NmYvstsgxRhdnvrdP7QnNkQ87kagcDjoOqe6wEgg
-DMybxCAMUH08nrEsDjgsQ1J4F6QgSr89Z35SebKZoTsOOMjLAw+zzgluVTnUi14r
-qR0mJlP/cykltcfIvYQOnjTIHLDJ7WSFQ209c5reWwJu9ydmENNKe4akrGgn25rL
-PlFRK27oeItr8PDaEC+/jcguAZ1ZpjNz7AAJq2T6igW36LeGUJcW65qQmHnm3PeB
-iEFxLo5cvKCBVZcWNz3wYUVa02d4FJENXlI5j2fyHHvxNzsWrIlO+nclnS1OVlkz
-V74cC8idSkyKz+VcwJvUWsIwB7wNQ8gmh67WFWnIN4dxXoAb37CJs9WtnRCoNpmI
-qrxLm6SXZinUymbwDMtFDaUm6bTVco1VTS1M+Ou81AMFTw6R4xasUgROFTaDxSOJ
-wyut/akrSjx2GjEm++7V
-=F5Ku
------END PGP SIGNATURE-----
-
---Signature=_Fri__18_Nov_2011_08_22_53_+1100_fdgmNS+60Oa2mTvL--
+  Jocke
