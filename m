@@ -1,29 +1,34 @@
-Return-Path: <r58472@freescale.com>
-Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
- [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 04091B7209
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 22:16:15 +1100 (EST)
-Received: from mail144-tx2 (localhost.localdomain [127.0.0.1])	by
- mail144-tx2-R.bigfish.com (Postfix) with ESMTP id 950B88781F4	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 11:15:56 +0000 (UTC)
-Received: from TX2EHSMHS017.bigfish.com (unknown [10.9.14.253])	by
- mail144-tx2.bigfish.com (Postfix) with ESMTP id 5931B1AA004E	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 11:15:56 +0000 (UTC)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Zhao Chenhui-B35336
- <B35336@freescale.com>
-Subject: RE: [PATCH v2 2/7] powerpc/85xx: add HOTPLUG_CPU support
-Date: Thu, 17 Nov 2011 11:16:09 +0000
-Message-ID: <3F607A5180246847A760FD34122A1E052D4486@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
- <1321437344-19253-2-git-send-email-chenhui.zhao@freescale.com>
- <4EC408C1.1040400@freescale.com>
-In-Reply-To: <4EC408C1.1040400@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 81CFAB721E
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:28:55 +1100 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Thu, 17 Nov 2011 11:16:46 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAHBPRqa3428594
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:25:28 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAHBSa1F031188
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:28:36 +1100
+Subject: [RFC PATCH v2 1/4] cpuidle: (powerpc) Add cpu_idle_wait() to allow
+ switching of idle routines
+To: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
+ linux-pm@vger.kernel.org
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Thu, 17 Nov 2011 16:58:34 +0530
+Message-ID: <20111117112830.9191.1951.stgit@localhost6.localdomain6>
+In-Reply-To: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,59 +38,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj5DYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctUjU4NDcyDQo+
-U3ViamVjdDogUmU6IFtQQVRDSCB2MiAyLzddIHBvd2VycGMvODV4eDogYWRkIEhPVFBMVUdfQ1BV
-IHN1cHBvcnQNCj4NCj5PbiAxMS8xNi8yMDExIDAzOjU1IEFNLCBaaGFvIENoZW5odWkgd3JvdGU6
-DQo+PiArc3RhdGljIHZvaWQgX19jcHVpbml0IHNtcF84NXh4X21hY2hfY3B1X2RpZSh2b2lkKSB7
-DQo+PiArCXVuc2lnbmVkIGludCBjcHUgPSBzbXBfcHJvY2Vzc29yX2lkKCk7DQo+PiArCXJlZ2lz
-dGVyIHUzMiB0bXA7DQo+PiArDQo+PiArCWxvY2FsX2lycV9kaXNhYmxlKCk7DQo+PiArCWlkbGVf
-dGFza19leGl0KCk7DQo+PiArCWdlbmVyaWNfc2V0X2NwdV9kZWFkKGNwdSk7DQo+PiArCW1iKCk7
-DQo+PiArDQo+PiArCW10c3ByKFNQUk5fVENSLCAwKTsNCj4+ICsJbXRzcHIoU1BSTl9UU1IsIFRT
-Ul9FTlcgfCBUU1JfV0lTIHwgVFNSX0RJUyB8IFRTUl9GSVMpOw0KPg0KPkNsZWFyaW5nIHRoZXNl
-IGJpdHMgaW4gVFNSIHNob3VsZCBiZSB1bm5lY2Vzc2FyeSBzaW5jZSB3ZSBjbGVhciBUQ1IgLS0g
-YW5kDQo+ZG9lc24ndCByZWFsbHkgYWNjb21wbGlzaCBhbnl0aGluZyBzaW5jZSB0aGUgVFNSIGJp
-dHMgY2FuIGNvbnRpbnVlIHRvIGJlDQo+c2V0Lg0KDQpJIGFsc28gcmVjb21tZW5kIHNldHRpbmcg
-dGhlIENPUkVfSVJRX01BU0sgYW5kIENPUkVfQ0lfTUFTSyBpbiB0aGUgUE9XTUdUQ1NSIHJlZ2lz
-dGVyIHNvIHRoYXQgbm8gaW50ZXJydXB0IHdpbGwgd2FrZXVwIHRoZSBjb3JlIGZyb20gTkFQLg0K
-DQo+DQo+SWYgd2F0Y2hkb2cgaXMgaW4gdXNlLCB3ZSBuZWVkIHRvIHNldCB0aGUgcGVyaW9kIHRv
-IHRoZSBoaWdoZXN0IHBvc3NpYmxlDQo+dG8gZWZmZWN0aXZlbHkgZGlzYWJsZSBpdC4NCg0KU2V0
-dGluZyBpdCB0byB0aGUgaGlnaGVzdCB0aW1lb3V0IGRvZXNuJ3QgcmVhbGx5IGRpc2FibGUgdGhl
-IHdhdGNoZG9nLiAgVGhlIGJlc3Qgd2F5IGZvciBkaXNhYmxpbmcgdGhlIHdkdCBpcyB0byByZXNl
-dCB0aGUgY29yZSwgYWx0aG91Z2ggaXQncyBhIGJpdCB0b28gY29tcGxleCB0byBkby4NCg0KPg0K
-Pj4gKwlpZiAoY3B1X2hhc19mZWF0dXJlKENQVV9GVFJfQ0FOX05BUCkpIHsNCj4NCj5BZ2Fpbiwg
-ZG9uJ3QgY2hlY2sgdGhpcy4gIE9uIDg1eHgsIHdlICphbHdheXMqIGNhbiBhbmQgc2hvdWxkIHVz
-ZSBuYXAgaGVyZS4NCj5BdCBiZXN0IHRoaXMgaXMgbm9pc2UsIGF0IHdvcnN0IHRoaXMgd2lsbCBj
-YXVzZSBwcm9ibGVtcyBpZg0KPkNPTkZJR19CRElfU1dJVENIIGlzIGVuYWJsZWQsIG9yIGlmIENQ
-VV9GVFJfQ0FOX05BUCBpcyBjbGVhcmVkIGZvciBhbnkNCj5vdGhlciByZWFzb24gKGUuZy4gaXQn
-cyBub3Qgc2V0IG9uIGU1MDBtYywgYW5kIHRoZSByZWFzb24gaXNuJ3QgdGhhdCB0aGUNCj5uYXAg
-aW1wbGVtZW50YXRpb24gaXMgZGlmZmVyZW50ICh3aGljaCBpdCBpcyksIGJ1dCB0aGF0IGl0J3Mg
-bm90IHVzYWJsZSBpbg0KPnRoZSBpZGxlIGxvb3ApLg0KPg0KPj4gK3N0YXRpYyBpbnQgX19jcHVp
-bml0IHNtcF84NXh4X2tpY2tfY3B1KGludCBucikNCj4+ICsNCj4+ICB7DQo+PiAgCXVuc2lnbmVk
-IGxvbmcgZmxhZ3M7DQo+PiAgCWNvbnN0IHU2NCAqY3B1X3JlbF9hZGRyOw0KPj4gLQlfX2lvbWVt
-IHUzMiAqYnB0cl92YWRkcjsNCj4+ICsJX19pb21lbSBzdHJ1Y3QgZXBhcHJfc3Bpbl90YWJsZSAq
-ZXBhcHI7DQo+DQo+UGxlYXNlIGRvbid0IGNhbGwgdGhpcyBqdXN0ICJlcGFwciIuICBUaGF0J3Mg
-bGlrZSBjYWxsaW5nIGEgcmVmZXJlbmNlIHRvDQo+YW55IHBvd2VycGMtc3BlY2lmaWMgc3RydWN0
-ICJwb3dlcnBjIi4NCj4NCj5Ib3cgYWJvdXQgInNwaW5fdGFibGUiPw0KDQpZb3UgbWVhbiB0aGUg
-bmFtZSBvZiB0aGUgdmFyaWFibGUgbm90IHRoZSBzdHJ1Y3R1cmUsIHJpZ2h0PyAgSSBhZ3JlZS4N
-Cg0KPg0KPj4gLQlvdXRfYmUzMihicHRyX3ZhZGRyICsgQk9PVF9FTlRSWV9QSVIsIGh3X2NwdSk7
-DQo+PiArCW91dF9iZTMyKCZlcGFwci0+cGlyLCBod19jcHUpOw0KPj4gICNpZmRlZiBDT05GSUdf
-UFBDMzINCj4+IC0Jb3V0X2JlMzIoYnB0cl92YWRkciArIEJPT1RfRU5UUllfQUREUl9MT1dFUiwg
-X19wYShfX2Vhcmx5X3N0YXJ0KSk7DQo+PiArI2lmZGVmIENPTkZJR19IT1RQTFVHX0NQVQ0KPj4g
-KwkvKiBDb3JyZXNwb25kaW5nIHRvIGdlbmVyaWNfc2V0X2NwdV9kZWFkKCkgKi8NCj4+ICsJZ2Vu
-ZXJpY19zZXRfY3B1X3VwKG5yKTsNCj4+ICsNCj4+ICsJaWYgKHN5c3RlbV9zdGF0ZSA9PSBTWVNU
-RU1fUlVOTklORykgew0KPj4gKwkJb3V0X2JlMzIoJmVwYXByLT5hZGRyX2wsIDApOw0KPj4gKw0K
-Pj4gKwkJc21wXzg1eHhfc2V0X2Jvb3RwZygodTMyKSgqY3B1X3JlbF9hZGRyID4+IFBBR0VfU0hJ
-RlQpKTsNCj4NCj5BcyBwcmV2aW91c2x5IHJlcXVlc3RlZCwgcGxlYXNlIGRvY3VtZW50IHdoeSB5
-b3UncmUgc2V0dGluZyB0aGUgYm9vdCBwYWdlDQo+aGVyZS4gIFRoaXMgc2hvdWxkIHJlYWxseSBi
-ZSBkb25lIHdoZW4geW91IHJlc3VtZSBmcm9tIGRlZXAgc2xlZXAsIHJhdGhlcg0KPnRoYW4gaGVy
-ZSwgYW5kIHNob3VsZCBiZSBhIHJlc3RvcmF0aW9uIG9mIHRoZSB2YWx1ZSB0aGF0IHRoZSByZWdp
-c3RlciBoZWxkDQo+cHJpb3IgdG8gZGVlcCBzbGVlcC4NCj4NCj4+ICBzdHJ1Y3Qgc21wX29wc190
-IHNtcF84NXh4X29wcyA9IHsNCj4+ICAJLmtpY2tfY3B1ID0gc21wXzg1eHhfa2lja19jcHUsDQo+
-PiArCS5zZXR1cF9jcHUJPSBzbXBfODV4eF9zZXR1cF9jcHUsDQo+PiArI2lmZGVmIENPTkZJR19I
-T1RQTFVHX0NQVQ0KPj4gKwkuY3B1X2Rpc2FibGUJPSBnZW5lcmljX2NwdV9kaXNhYmxlLA0KPj4g
-KwkuY3B1X2RpZQk9IGdlbmVyaWNfY3B1X2RpZSwNCj4+ICsjZW5kaWYNCj4NCj5Pbmx5IGZpbGwg
-dGhlc2UgZmllbGRzIGluIG9uIGU1MDB2MS92MiwgdW50aWwgd2UgcHJvcGVybHkgc3VwcG9ydCBl
-NTAwbWMuDQo+TGlrZXdpc2UgaW4gcHBjX21kLmNwdV9kaWUgYW5kIGFueXdoZXJlIGVsc2Ugd2Ug
-YWR2ZXJ0aXNlIHRoaXMNCj5mdW5jdGlvbmFsaXR5Lg0KDQpJcyB0aGVyZSBhIHN0YW5kYXJkIGZ1
-bmN0aW9uIGNhbGwgdGhhdCBjYW4gdGVsbCB0aGF0IGl0IGlzIGFuIGU1MDBtYyBub3QgbGVnYWN5
-IGU1MDA/DQoNCi0gTGVvDQo=
+This patch provides cpu_idle_wait() routine for the powerpc
+platform which is required by the cpuidle subsystem. This
+routine is requied to change the idle handler on SMP systems.
+The equivalent routine for x86 is in arch/x86/kernel/process.c
+but the powerpc implementation is different.
+
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Signed-off-by: Trinabh Gupta <g.trinabh@gmail.com>
+Signed-off-by: Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
+---
+ arch/powerpc/Kconfig                 |    4 ++++
+ arch/powerpc/include/asm/processor.h |    2 ++
+ arch/powerpc/include/asm/system.h    |    1 +
+ arch/powerpc/kernel/idle.c           |   26 ++++++++++++++++++++++++++
+ 4 files changed, 33 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b177caa..87f8604 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -87,6 +87,10 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default y if 64BIT
+ 
++config ARCH_HAS_CPU_IDLE_WAIT
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index eb11a44..811b7e7 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -382,6 +382,8 @@ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
+ }
+ #endif
+ 
++enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_PROCESSOR_H */
+diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
+index e30a13d..ff66680 100644
+--- a/arch/powerpc/include/asm/system.h
++++ b/arch/powerpc/include/asm/system.h
+@@ -221,6 +221,7 @@ extern unsigned long klimit;
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+ 
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
++void cpu_idle_wait(void);
+ 
+ /*
+  * Atomic exchange
+diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+index 39a2baa..b478c72 100644
+--- a/arch/powerpc/kernel/idle.c
++++ b/arch/powerpc/kernel/idle.c
+@@ -39,9 +39,13 @@
+ #define cpu_should_die()	0
+ #endif
+ 
++unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
++EXPORT_SYMBOL(boot_option_idle_override);
++
+ static int __init powersave_off(char *arg)
+ {
+ 	ppc_md.power_save = NULL;
++	boot_option_idle_override = IDLE_POWERSAVE_OFF;
+ 	return 0;
+ }
+ __setup("powersave=off", powersave_off);
+@@ -102,6 +106,28 @@ void cpu_idle(void)
+ 	}
+ }
+ 
++
++/*
++ * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
++ * idle loop and start using the new idle loop.
++ * Required while changing idle handler on SMP systems.
++ * Caller must have changed idle handler to the new value before the call.
++ */
++void cpu_idle_wait(void)
++{
++	int cpu;
++	smp_mb();
++
++	/* kick all the CPUs so that they exit out of old idle routine */
++	get_online_cpus();
++	for_each_online_cpu(cpu) {
++		if (cpu != smp_processor_id())
++			smp_send_reschedule(cpu);
++	}
++	put_online_cpus();
++}
++EXPORT_SYMBOL_GPL(cpu_idle_wait);
++
+ int powersave_nap;
+ 
+ #ifdef CONFIG_SYSCTL
