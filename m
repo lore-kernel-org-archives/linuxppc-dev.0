@@ -1,34 +1,25 @@
-Return-Path: <B07421@freescale.com>
+Return-Path: <robert.richter@amd.com>
 Received: from ch1outboundpool.messaging.microsoft.com
  (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A9B00B7249
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 09:46:06 +1100 (EST)
-Received: from mail7-ch1 (localhost [127.0.0.1])	by mail7-ch1-R.bigfish.com
- (Postfix) with ESMTP id 6B51742031C	for <linuxppc-dev@ozlabs.org>; Thu, 17
- Nov 2011 22:45:14 +0000 (UTC)
-Received: from CH1EHSMHS005.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.247])	by mail7-ch1.bigfish.com (Postfix) with ESMTP id
- 522A0680043
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:45:12 +0000 (UTC)
-Date: Thu, 17 Nov 2011 16:45:58 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 2/2] powerpc/85xx: p1022ds: enable monitor switching via
- pixis indirect mode
-Message-ID: <20111117224558.GA18848@schlenkerla.am.freescale.net>
-References: <1321556259-4459-1-git-send-email-timur@freescale.com>
- <1321556259-4459-2-git-send-email-timur@freescale.com>
- <20111117213733.GC14736@schlenkerla.am.freescale.net>
- <4EC586B2.5060604@freescale.com>
- <20111117222515.GA18827@schlenkerla.am.freescale.net>
- <4EC58AA0.2070905@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 981C6B724F
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 10:20:36 +1100 (EST)
+Date: Fri, 18 Nov 2011 00:20:27 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: oprofile callgraph support missing for common cpus
+Message-ID: <20111117232027.GW15738@erda.amd.com>
+References: <OFD9ADD493.27DB131E-ONC125794B.002E2035-C125794B.002F715A@transmode.se>
+ <4EC544C6.3050502@us.ibm.com>
+ <A8CB2347-27B6-482A-B49B-F434FBFCBC10@freescale.com>
+ <OF8F2311F0.71A00B7A-ONC125794B.007583D0-C125794B.0075E666@transmode.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4EC58AA0.2070905@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
+In-Reply-To: <OF8F2311F0.71A00B7A-ONC125794B.007583D0-C125794B.0075E666@transmode.se>
+Cc: linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
+ oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,27 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 17, 2011 at 04:28:48PM -0600, Timur Tabi wrote:
-> Scott Wood wrote:
-> 
-> > As we discussed earlier, you could have a kernel boot parameter that
-> > indicates what mode you'd like the localbus to run in.  Then, platform
-> > code could update the device tree before any drivers bind.
-> 
-> How do I update the device tree from platform code?
+On 17.11.11 22:27:46, Joakim Tjernlund wrote:
+> > >> For my e300c2 cpu both if's are false and I don't get support for callgraph/backtrace
+> > >> support. Moving the ops->backtrace = op_powerpc_backtrace; to the top
+> > >> enables backtrace for me.
 
-prom_update_property()
+> It sure seems to work :)
 
-Or, since you shouldn't be declaring these devices directly under a
-simple-bus node, selectively probe the devices that are accessible.
+Backtrace support also works in timer mode. This is already
+implemented on arm and sh (out of my mind, have to look at the code to
+be sure). This works if the architectural initialization code sets up
+ops->backtrace even on failure, which is exactly what you proposed.
 
-> > Or, have U-boot set up the desired mode before entering the kernel, and
-> > provide an appropriate device tree.
-> 
-> I can both of these features, but not in this patch.
+> Question, what is the sample rate for timer based oprofile?
+> Is it HZ depended?
 
-This patch is the one that is adding a switch to indirect mode.  You're
-adding it to the wrong place (it shouldn't be in a function called by the
-DIU driver), so it is relevant to this patch.
+Yes, it uses the high resolution timer and sets it to HZ which is 4ms
+on most architectures. (I did some measurements and for some reason I
+got 8ms on x86 though it should be 4ms, but didn't debug this yet.)
 
--Scott
+Unless there are volunteers I will queue up a patch for v3.3 to enable
+backtrace support in timer mode.
+
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
