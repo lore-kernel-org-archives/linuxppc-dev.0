@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 59AC0B7251
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 18:16:53 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4E949B7490
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 18:16:55 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAH7GmRl026775
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 01:16:49 -0600
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAH7GoZs026794
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 01:16:51 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 21/29] powerpc/85xx: Rework P1022DS device tree
-Date: Thu, 17 Nov 2011 01:16:13 -0600
-Message-Id: <1321514181-28897-21-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1321514181-28897-20-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 22/29] powerpc/85xx: Rework P1023RDS device tree
+Date: Thu, 17 Nov 2011 01:16:14 -0600
+Message-Id: <1321514181-28897-22-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1321514181-28897-21-git-send-email-galak@kernel.crashing.org>
 References: <1321514181-28897-1-git-send-email-galak@kernel.crashing.org>
  <1321514181-28897-2-git-send-email-galak@kernel.crashing.org>
  <1321514181-28897-3-git-send-email-galak@kernel.crashing.org>
@@ -33,6 +33,7 @@ References: <1321514181-28897-1-git-send-email-galak@kernel.crashing.org>
  <1321514181-28897-18-git-send-email-galak@kernel.crashing.org>
  <1321514181-28897-19-git-send-email-galak@kernel.crashing.org>
  <1321514181-28897-20-git-send-email-galak@kernel.crashing.org>
+ <1321514181-28897-21-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,35 +47,28 @@ Utilize new split between board & SoC, and new SoC device trees split
 into pre & post utilizing 'template' includes for SoC IP blocks.
 
 Other changes include:
-
-* Reworked PCIe nodes to allow supportin IRQs for controller (errors)
-  and moved PCI device IRQs down to virtual bridge level
-* Changed GPIO compatiable from 'fsl,mpc8572-gpio' to 'fsl,pq3-gpio' as the
-  'mpc8572' compatiable is to deal with a 'mpc8572' specific to an erratum
-* Updated spi node to new espi binding specification
-* Renamed SDHC node from 'sdhci' to 'sdhc'
-* Added usb node for 2nd usb controller
-* Dropping "fsl,p1022-IP..." from compatibles for standard blocks
-* Fixed bug in local bus range node for CS2, was maping to
-  0x0 0x0xffa00000 instead of 0xf 0xffa00000
+* Moved to specifying interrupt-parent for mpic at root
+* Moved to 4-cell mpic interrupt cells to support MPIC timers
+* Dropping "fsl,p1023-IP..." from compatibles for standard blocks
+* Removed incorrect power/pmc node, there are no etsec on P1023
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/fsl/p1022si-post.dtsi |  235 +++++++++++++++
- arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi  |   68 +++++
- arch/powerpc/boot/dts/p1022ds.dts           |  433 +--------------------------
- 3 files changed, 319 insertions(+), 417 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
+ arch/powerpc/boot/dts/fsl/p1023si-post.dtsi |  224 ++++++++++++++++
+ arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi  |   76 ++++++
+ arch/powerpc/boot/dts/p1023rds.dts          |  380 ++-------------------------
+ 3 files changed, 322 insertions(+), 358 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
 
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
 new file mode 100644
-index 0000000..16239b1
+index 0000000..b06bb4c
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-@@ -0,0 +1,235 @@
++++ b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
+@@ -0,0 +1,224 @@
 +/*
-+ * P1022/P1013 Silicon/SoC Device Tree Source (post include)
++ * P1023/P1017 Silicon/SoC Device Tree Source (post include)
 + *
 + * Copyright 2011 Freescale Semiconductor Inc.
 + *
@@ -110,20 +104,19 @@ index 0000000..16239b1
 +&lbc {
 +	#address-cells = <2>;
 +	#size-cells = <1>;
-+	compatible = "fsl,p1022-elbc", "fsl,elbc", "simple-bus";
++	compatible = "fsl,p1023-elbc", "fsl,elbc", "simple-bus";
 +	interrupts = <19 2 0 0>;
 +};
 +
-+/* controller at 0x9000 */
++/* controller at 0xa000 */
 +&pci0 {
-+	compatible = "fsl,p1022-pcie";
++	compatible = "fsl,p1023-pcie", "fsl,qoriq-pcie-v2.2";
 +	device_type = "pci";
 +	#size-cells = <2>;
 +	#address-cells = <3>;
-+	bus-range = <0 255>;
++	bus-range = <0x0 0xff>;
 +	clock-frequency = <33333333>;
 +	interrupts = <16 2 0 0>;
-+
 +	pcie@0 {
 +		reg = <0 0 0 0 0>;
 +		#interrupt-cells = <1>;
@@ -131,27 +124,18 @@ index 0000000..16239b1
 +		#address-cells = <3>;
 +		device_type = "pci";
 +		interrupts = <16 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x4 0x1 0x0 0x0
-+			0000 0x0 0x0 0x2 &mpic 0x5 0x1 0x0 0x0
-+			0000 0x0 0x0 0x3 &mpic 0x6 0x1 0x0 0x0
-+			0000 0x0 0x0 0x4 &mpic 0x7 0x1 0x0 0x0
-+			>;
 +	};
 +};
 +
-+/* controller at 0xa000 */
++/* controller at 0x9000 */
 +&pci1 {
-+	compatible = "fsl,p1022-pcie";
++	compatible = "fsl,p1023-pcie", "fsl,qoriq-pcie-v2.2";
 +	device_type = "pci";
 +	#size-cells = <2>;
 +	#address-cells = <3>;
-+	bus-range = <0 255>;
++	bus-range = <0 0xff>;
 +	clock-frequency = <33333333>;
 +	interrupts = <16 2 0 0>;
-+
 +	pcie@0 {
 +		reg = <0 0 0 0 0>;
 +		#interrupt-cells = <1>;
@@ -159,28 +143,18 @@ index 0000000..16239b1
 +		#address-cells = <3>;
 +		device_type = "pci";
 +		interrupts = <16 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x0 0x1 0x0 0x0
-+			0000 0x0 0x0 0x2 &mpic 0x1 0x1 0x0 0x0
-+			0000 0x0 0x0 0x3 &mpic 0x2 0x1 0x0 0x0
-+			0000 0x0 0x0 0x4 &mpic 0x3 0x1 0x0 0x0
-+			>;
 +	};
 +};
 +
 +/* controller at 0xb000 */
 +&pci2 {
-+	compatible = "fsl,p1022-pcie";
++	compatible = "fsl,p1023-pcie", "fsl,qoriq-pcie-v2.2";
 +	device_type = "pci";
 +	#size-cells = <2>;
 +	#address-cells = <3>;
-+	bus-range = <0 255>;
++	bus-range = <0x0 0xff>;
 +	clock-frequency = <33333333>;
 +	interrupts = <16 2 0 0>;
-+
 +	pcie@0 {
 +		reg = <0 0 0 0 0>;
 +		#interrupt-cells = <1>;
@@ -188,15 +162,6 @@ index 0000000..16239b1
 +		#address-cells = <3>;
 +		device_type = "pci";
 +		interrupts = <16 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x8 0x1 0x0 0x0
-+			0000 0x0 0x0 0x2 &mpic 0x9 0x1 0x0 0x0
-+			0000 0x0 0x0 0x3 &mpic 0xa 0x1 0x0 0x0
-+			0000 0x0 0x0 0x4 &mpic 0xb 0x1 0x0 0x0
-+			>;
 +	};
 +};
 +
@@ -204,7 +169,7 @@ index 0000000..16239b1
 +	#address-cells = <1>;
 +	#size-cells = <1>;
 +	device_type = "soc";
-+	compatible = "fsl,p1022-immr", "simple-bus";
++	compatible = "fsl,p1023-immr", "simple-bus";
 +	bus-frequency = <0>;		// Filled out by uboot.
 +
 +	ecm-law@0 {
@@ -214,13 +179,13 @@ index 0000000..16239b1
 +	};
 +
 +	ecm@1000 {
-+		compatible = "fsl,p1022-ecm", "fsl,ecm";
++		compatible = "fsl,p1023-ecm", "fsl,ecm";
 +		reg = <0x1000 0x1000>;
 +		interrupts = <16 2 0 0>;
 +	};
 +
 +	memory-controller@2000 {
-+		compatible = "fsl,p1022-memory-controller";
++		compatible = "fsl,p1023-memory-controller";
 +		reg = <0x2000 0x1000>;
 +		interrupts = <16 2 0 0>;
 +	};
@@ -228,44 +193,16 @@ index 0000000..16239b1
 +/include/ "pq3-i2c-0.dtsi"
 +/include/ "pq3-i2c-1.dtsi"
 +/include/ "pq3-duart-0.dtsi"
++
 +/include/ "pq3-espi-0.dtsi"
 +	spi@7000 {
 +		fsl,espi-num-chipselects = <4>;
 +	};
 +
-+/include/ "pq3-dma-1.dtsi"
-+	dma@c300 {
-+		dma00: dma-channel@0 {
-+			compatible = "fsl,ssi-dma-channel";
-+		};
-+		dma01: dma-channel@80 {
-+			compatible = "fsl,ssi-dma-channel";
-+		};
-+	};
-+
 +/include/ "pq3-gpio-0.dtsi"
 +
-+	display@10000 {
-+		compatible = "fsl,diu", "fsl,p1022-diu";
-+		reg = <0x10000 1000>;
-+		interrupts = <64 2 0 0>;
-+	};
-+
-+	ssi@15000 {
-+		compatible = "fsl,mpc8610-ssi";
-+		cell-index = <0>;
-+		reg = <0x15000 0x100>;
-+		interrupts = <75 2 0 0>;
-+		fsl,playback-dma = <&dma00>;
-+		fsl,capture-dma = <&dma01>;
-+		fsl,fifo-depth = <15>;
-+	};
-+
-+/include/ "pq3-sata2-0.dtsi"
-+/include/ "pq3-sata2-1.dtsi"
-+
 +	L2: l2-cache-controller@20000 {
-+		compatible = "fsl,p1022-l2-cache-controller";
++		compatible = "fsl,p1023-l2-cache-controller";
 +		reg = <0x20000 0x1000>;
 +		cache-line-size = <32>;	// 32 bytes
 +		cache-size = <0x40000>; // L2,256K
@@ -274,48 +211,94 @@ index 0000000..16239b1
 +
 +/include/ "pq3-dma-0.dtsi"
 +/include/ "pq3-usb2-dr-0.dtsi"
-+/include/ "pq3-usb2-dr-1.dtsi"
 +
-+/include/ "pq3-esdhc-0.dtsi"
-+	sdhc@2e000 {
-+		fsl,sdhci-auto-cmd12;
++	crypto: crypto@300000 {
++		compatible = "fsl,sec-v4.2", "fsl,sec-v4.0";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0x30000 0x10000>;
++		ranges = <0 0x30000 0x10000>;
++		interrupts = <58 2 0 0>;
++
++		sec_jr0: jr@1000 {
++			compatible = "fsl,sec-v4.2-job-ring",
++				     "fsl,sec-v4.0-job-ring";
++			reg = <0x1000 0x1000>;
++			interrupts = <45 2 0 0>;
++		};
++
++		sec_jr1: jr@2000 {
++			compatible = "fsl,sec-v4.2-job-ring",
++				     "fsl,sec-v4.0-job-ring";
++			reg = <0x2000 0x1000>;
++			interrupts = <45 2 0 0>;
++		};
++
++		sec_jr2: jr@3000 {
++			compatible = "fsl,sec-v4.2-job-ring",
++				     "fsl,sec-v4.0-job-ring";
++			reg = <0x3000 0x1000>;
++			interrupts = <57 2 0 0>;
++		};
++
++		sec_jr3: jr@4000 {
++			compatible = "fsl,sec-v4.2-job-ring",
++				     "fsl,sec-v4.0-job-ring";
++			reg = <0x4000 0x1000>;
++			interrupts = <57 2 0 0>;
++		};
++
++		rtic@6000 {
++			compatible = "fsl,sec-v4.2-rtic",
++				     "fsl,sec-v4.0-rtic";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			reg = <0x6000 0x100>;
++			ranges = <0x0 0x6100 0xe00>;
++
++			rtic_a: rtic-a@0 {
++				compatible = "fsl,sec-v4.2-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
++				reg = <0x00 0x20 0x100 0x80>;
++			};
++
++			rtic_b: rtic-b@20 {
++				compatible = "fsl,sec-v4.2-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
++				reg = <0x20 0x20 0x200 0x80>;
++			};
++
++			rtic_c: rtic-c@40 {
++				compatible = "fsl,sec-v4.2-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
++				reg = <0x40 0x20 0x300 0x80>;
++			};
++
++			rtic_d: rtic-d@60 {
++				compatible = "fsl,sec-v4.2-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
++				reg = <0x60 0x20 0x500 0x80>;
++			};
++		};
 +	};
 +
-+/include/ "pq3-sec3.3-0.dtsi"
 +/include/ "pq3-mpic.dtsi"
 +/include/ "pq3-mpic-timer-B.dtsi"
 +
-+/include/ "pq3-etsec2-0.dtsi"
-+	enet0: enet0_grp2: ethernet@b0000 {
-+	};
-+
-+/include/ "pq3-etsec2-1.dtsi"
-+	enet1: enet1_grp2: ethernet@b1000 {
-+	};
-+
 +	global-utilities@e0000 {
-+		compatible = "fsl,p1022-guts";
++		compatible = "fsl,p1023-guts";
 +		reg = <0xe0000 0x1000>;
 +		fsl,has-rstcr;
 +	};
-+
-+	power@e0070{
-+		compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
-+		reg = <0xe0070 0x20>;
-+	};
-+
 +};
-+
-+/include/ "pq3-etsec2-grp2-0.dtsi"
-+/include/ "pq3-etsec2-grp2-1.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
 new file mode 100644
-index 0000000..e930f4f
+index 0000000..ac45f6d
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-@@ -0,0 +1,68 @@
++++ b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
+@@ -0,0 +1,76 @@
 +/*
-+ * P1022/P1013 Silicon/SoC Device Tree Source (pre include)
++ * P1023/P1017 Silicon/SoC Device Tree Source (pre include)
 + *
 + * Copyright 2011 Freescale Semiconductor Inc.
 + *
@@ -350,7 +333,7 @@ index 0000000..e930f4f
 +
 +/dts-v1/;
 +/ {
-+	compatible = "fsl,P1022";
++	compatible = "fsl,P1023";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
@@ -358,105 +341,102 @@ index 0000000..e930f4f
 +	aliases {
 +		serial0 = &serial0;
 +		serial1 = &serial1;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
 +		pci0 = &pci0;
 +		pci1 = &pci1;
 +		pci2 = &pci2;
++
++		crypto = &crypto;
++		sec_jr0 = &sec_jr0;
++		sec_jr1 = &sec_jr1;
++		sec_jr2 = &sec_jr2;
++		sec_jr3 = &sec_jr3;
++		rtic_a = &rtic_a;
++		rtic_b = &rtic_b;
++		rtic_c = &rtic_c;
++		rtic_d = &rtic_d;
 +	};
 +
 +	cpus {
 +		#address-cells = <1>;
 +		#size-cells = <0>;
 +
-+		PowerPC,P1022@0 {
++		PowerPC,P1023@0 {
 +			device_type = "cpu";
 +			reg = <0x0>;
 +			next-level-cache = <&L2>;
 +		};
 +
-+		PowerPC,P1022@1 {
++		PowerPC,P1023@1 {
 +			device_type = "cpu";
 +			reg = <0x1>;
 +			next-level-cache = <&L2>;
 +		};
 +	};
 +};
-diff --git a/arch/powerpc/boot/dts/p1022ds.dts b/arch/powerpc/boot/dts/p1022ds.dts
-index b9b8719..35e0eee 100644
---- a/arch/powerpc/boot/dts/p1022ds.dts
-+++ b/arch/powerpc/boot/dts/p1022ds.dts
-@@ -8,55 +8,20 @@
-  * kind, whether express or implied.
+diff --git a/arch/powerpc/boot/dts/p1023rds.dts b/arch/powerpc/boot/dts/p1023rds.dts
+index d3b4782..beb6cb1 100644
+--- a/arch/powerpc/boot/dts/p1023rds.dts
++++ b/arch/powerpc/boot/dts/p1023rds.dts
+@@ -34,137 +34,30 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   */
  
 -/dts-v1/;
-+/include/ "fsl/p1022si-pre.dtsi"
++/include/ "fsl/p1023si-pre.dtsi"
+ 
  / {
--	model = "fsl,P1022";
-+	model = "fsl,P1022DS";
- 	compatible = "fsl,P1022DS";
--	#address-cells = <2>;
--	#size-cells = <2>;
--	interrupt-parent = <&mpic>;
+ 	model = "fsl,P1023";
+ 	compatible = "fsl,P1023RDS";
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
 -
 -	aliases {
--		ethernet0 = &enet0;
--		ethernet1 = &enet1;
 -		serial0 = &serial0;
 -		serial1 = &serial1;
 -		pci0 = &pci0;
 -		pci1 = &pci1;
 -		pci2 = &pci2;
+-
+-		crypto = &crypto;
+-		sec_jr0 = &sec_jr0;
+-		sec_jr1 = &sec_jr1;
+-		sec_jr2 = &sec_jr2;
+-		sec_jr3 = &sec_jr3;
+-		rtic_a = &rtic_a;
+-		rtic_b = &rtic_b;
+-		rtic_c = &rtic_c;
+-		rtic_d = &rtic_d;
 -	};
 -
 -	cpus {
 -		#address-cells = <1>;
 -		#size-cells = <0>;
 -
--		PowerPC,P1022@0 {
+-		cpu0: PowerPC,P1023@0 {
 -			device_type = "cpu";
 -			reg = <0x0>;
 -			next-level-cache = <&L2>;
 -		};
 -
--		PowerPC,P1022@1 {
+-		cpu1: PowerPC,P1023@1 {
 -			device_type = "cpu";
 -			reg = <0x1>;
 -			next-level-cache = <&L2>;
 -		};
 -	};
++	interrupt-parent = <&mpic>;
  
  	memory {
  		device_type = "memory";
  	};
  
--	localbus@fffe05000 {
--		#address-cells = <2>;
--		#size-cells = <1>;
--		compatible = "fsl,p1022-elbc", "fsl,elbc", "simple-bus";
-+	lbc: localbus@fffe05000 {
- 		reg = <0 0xffe05000 0 0x1000>;
--		interrupts = <19 2 0 0>;
--
- 		ranges = <0x0 0x0 0xf 0xe8000000 0x08000000
- 			  0x1 0x0 0xf 0xe0000000 0x08000000
--			  0x2 0x0 0x0 0xffa00000 0x00040000
-+			  0x2 0x0 0xf 0xffa00000 0x00040000
- 			  0x3 0x0 0xf 0xffdf0000 0x00008000>;
- 
- 		nor@0,0 {
-@@ -161,51 +126,10 @@
- 		};
- 	};
- 
--	soc@fffe00000 {
+-	soc@ff600000 {
 -		#address-cells = <1>;
 -		#size-cells = <1>;
 -		device_type = "soc";
--		compatible = "fsl,p1022-immr", "simple-bus";
-+	soc: soc@fffe00000 {
- 		ranges = <0x0 0xf 0xffe00000 0x100000>;
+-		compatible = "fsl,p1023-immr", "simple-bus";
++	soc: soc@ff600000 {
+ 		ranges = <0x0 0x0 0xff600000 0x200000>;
 -		bus-frequency = <0>;		// Filled out by uboot.
 -
 -		ecm-law@0 {
@@ -466,50 +446,53 @@ index b9b8719..35e0eee 100644
 -		};
 -
 -		ecm@1000 {
--			compatible = "fsl,p1022-ecm", "fsl,ecm";
+-			compatible = "fsl,p1023-ecm", "fsl,ecm";
 -			reg = <0x1000 0x1000>;
--			interrupts = <16 2 0 0>;
+-			interrupts = <16 2>;
+-			interrupt-parent = <&mpic>;
 -		};
 -
 -		memory-controller@2000 {
--			compatible = "fsl,p1022-memory-controller";
+-			compatible = "fsl,p1023-memory-controller";
 -			reg = <0x2000 0x1000>;
--			interrupts = <16 2 0 0>;
+-			interrupt-parent = <&mpic>;
+-			interrupts = <16 2>;
 -		};
--
--		i2c@3000 {
+ 
+ 		i2c@3000 {
 -			#address-cells = <1>;
 -			#size-cells = <0>;
 -			cell-index = <0>;
 -			compatible = "fsl-i2c";
 -			reg = <0x3000 0x100>;
--			interrupts = <43 2 0 0>;
+-			interrupts = <43 2>;
+-			interrupt-parent = <&mpic>;
 -			dfsrr;
--		};
+ 			rtc@68 {
+ 				compatible = "dallas,ds1374";
+ 				reg = <0x68>;
+ 			};
+ 		};
  
- 		i2c@3100 {
+-		i2c@3100 {
 -			#address-cells = <1>;
 -			#size-cells = <0>;
 -			cell-index = <1>;
 -			compatible = "fsl-i2c";
 -			reg = <0x3100 0x100>;
--			interrupts = <43 2 0 0>;
+-			interrupts = <43 2>;
+-			interrupt-parent = <&mpic>;
 -			dfsrr;
+-		};
 -
- 			wm8776:codec@1a {
- 				compatible = "wlf,wm8776";
- 				reg = <0x1a>;
-@@ -216,41 +140,14 @@
- 			};
- 		};
- 
 -		serial0: serial@4500 {
 -			cell-index = <0>;
 -			device_type = "serial";
 -			compatible = "ns16550";
 -			reg = <0x4500 0x100>;
 -			clock-frequency = <0>;
--			interrupts = <42 2 0 0>;
+-			interrupts = <42 2>;
+-			interrupt-parent = <&mpic>;
 -		};
 -
 -		serial1: serial@4600 {
@@ -518,95 +501,43 @@ index b9b8719..35e0eee 100644
 -			compatible = "ns16550";
 -			reg = <0x4600 0x100>;
 -			clock-frequency = <0>;
--			interrupts = <42 2 0 0>;
+-			interrupts = <42 2>;
+-			interrupt-parent = <&mpic>;
 -		};
 -
  		spi@7000 {
 -			cell-index = <0>;
 -			#address-cells = <1>;
 -			#size-cells = <0>;
--			compatible = "fsl,espi";
+-			compatible = "fsl,p1023-espi", "fsl,mpc8536-espi";
 -			reg = <0x7000 0x1000>;
--			interrupts = <59 0x2 0 0>;
--			espi,num-ss-bits = <4>;
--			mode = "cpu";
+-			interrupts = <59 0x2>;
+-			interrupt-parent = <&mpic>;
+-			fsl,espi-num-chipselects = <4>;
 -
--			fsl_m25p80@0 {
-+			flash@0 {
+ 			fsl_dataflash@0 {
  				#address-cells = <1>;
  				#size-cells = <1>;
--				compatible = "fsl,espi-flash";
-+				compatible = "spansion,s25sl12801";
- 				reg = <0>;
--				linux,modalias = "fsl_m25p80";
- 				spi-max-frequency = <40000000>; /* input clock */
-+
- 				partition@0 {
- 					label = "u-boot-spi";
- 					reg = <0x00000000 0x00100000>;
-@@ -274,115 +171,20 @@
+@@ -186,197 +79,14 @@
+ 			};
  		};
  
- 		ssi@15000 {
--			compatible = "fsl,mpc8610-ssi";
--			cell-index = <0>;
--			reg = <0x15000 0x100>;
--			interrupts = <75 2 0 0>;
- 			fsl,mode = "i2s-slave";
- 			codec-handle = <&wm8776>;
--			fsl,playback-dma = <&dma00>;
--			fsl,capture-dma = <&dma01>;
--			fsl,fifo-depth = <15>;
- 			fsl,ssi-asynchronous;
- 		};
- 
--		dma@c300 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "fsl,eloplus-dma";
--			reg = <0xc300 0x4>;
--			ranges = <0x0 0xc100 0x200>;
--			cell-index = <1>;
--			dma00: dma-channel@0 {
--				compatible = "fsl,ssi-dma-channel";
--				reg = <0x0 0x80>;
--				cell-index = <0>;
--				interrupts = <76 2 0 0>;
--			};
--			dma01: dma-channel@80 {
--				compatible = "fsl,ssi-dma-channel";
--				reg = <0x80 0x80>;
--				cell-index = <1>;
--				interrupts = <77 2 0 0>;
--			};
--			dma-channel@100 {
--				compatible = "fsl,eloplus-dma-channel";
--				reg = <0x100 0x80>;
--				cell-index = <2>;
--				interrupts = <78 2 0 0>;
--			};
--			dma-channel@180 {
--				compatible = "fsl,eloplus-dma-channel";
--				reg = <0x180 0x80>;
--				cell-index = <3>;
--				interrupts = <79 2 0 0>;
--			};
--		};
--
 -		gpio: gpio-controller@f000 {
 -			#gpio-cells = <2>;
--			compatible = "fsl,mpc8572-gpio";
+-			compatible = "fsl,qoriq-gpio";
 -			reg = <0xf000 0x100>;
--			interrupts = <47 0x2 0 0>;
+-			interrupts = <47 0x2>;
+-			interrupt-parent = <&mpic>;
 -			gpio-controller;
 -		};
 -
 -		L2: l2-cache-controller@20000 {
--			compatible = "fsl,p1022-l2-cache-controller";
+-			compatible = "fsl,p1023-l2-cache-controller";
 -			reg = <0x20000 0x1000>;
 -			cache-line-size = <32>;	// 32 bytes
--			cache-size = <0x40000>; // L2, 256K
--			interrupts = <16 2 0 0>;
+-			cache-size = <0x40000>; // L2,256K
+-			interrupt-parent = <&mpic>;
+-			interrupts = <16 2>;
 -		};
 -
 -		dma@21300 {
@@ -620,25 +551,29 @@ index b9b8719..35e0eee 100644
 -				compatible = "fsl,eloplus-dma-channel";
 -				reg = <0x0 0x80>;
 -				cell-index = <0>;
--				interrupts = <20 2 0 0>;
+-				interrupt-parent = <&mpic>;
+-				interrupts = <20 2>;
 -			};
 -			dma-channel@80 {
 -				compatible = "fsl,eloplus-dma-channel";
 -				reg = <0x80 0x80>;
 -				cell-index = <1>;
--				interrupts = <21 2 0 0>;
+-				interrupt-parent = <&mpic>;
+-				interrupts = <21 2>;
 -			};
 -			dma-channel@100 {
 -				compatible = "fsl,eloplus-dma-channel";
 -				reg = <0x100 0x80>;
 -				cell-index = <2>;
--				interrupts = <22 2 0 0>;
+-				interrupt-parent = <&mpic>;
+-				interrupts = <22 2>;
 -			};
 -			dma-channel@180 {
 -				compatible = "fsl,eloplus-dma-channel";
 -				reg = <0x180 0x80>;
 -				cell-index = <3>;
--				interrupts = <23 2 0 0>;
+-				interrupt-parent = <&mpic>;
+-				interrupts = <23 2>;
 -			};
 -		};
 -
@@ -647,282 +582,274 @@ index b9b8719..35e0eee 100644
 -			#size-cells = <0>;
 -			compatible = "fsl-usb2-dr";
 -			reg = <0x22000 0x1000>;
--			interrupts = <28 0x2 0 0>;
+-			interrupt-parent = <&mpic>;
+-			interrupts = <28 0x2>;
+ 			dr_mode = "host";
  			phy_type = "ulpi";
  		};
- 
--		mdio@24000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl,etsec2-mdio";
--			reg = <0x24000 0x1000 0xb0030 0x4>;
-+		usb@23000 {
-+			status = "disabled";
-+		};
- 
-+		mdio@24000 {
- 			phy0: ethernet-phy@0 {
- 				interrupts = <3 1 0 0>;
- 				reg = <0x1>;
-@@ -393,187 +195,22 @@
- 			};
- 		};
- 
--		mdio@25000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl,etsec2-mdio";
--			reg = <0x25000 0x1000 0xb1030 0x4>;
--		};
 -
--		enet0: ethernet@B0000 {
+-		crypto: crypto@300000 {
+-			compatible = "fsl,sec-v4.2", "fsl,sec-v4.0";
 -			#address-cells = <1>;
 -			#size-cells = <1>;
--			cell-index = <0>;
--			device_type = "network";
--			model = "eTSEC";
--			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
--			fsl,magic-packet;
--			fsl,wake-on-filer;
--			local-mac-address = [ 00 00 00 00 00 00 ];
-+		ethernet@b0000 {
- 			phy-handle = <&phy0>;
- 			phy-connection-type = "rgmii-id";
--			queue-group@0{
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xB0000 0x1000>;
--				interrupts = <29 2 0 0 30 2 0 0 34 2 0 0>;
--			};
--			queue-group@1{
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xB4000 0x1000>;
--				interrupts = <17 2 0 0 18 2 0 0 24 2 0 0>;
--			};
- 		};
- 
--		enet1: ethernet@B1000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			cell-index = <0>;
--			device_type = "network";
--			model = "eTSEC";
--			compatible = "fsl,etsec2";
--			fsl,num_rx_queues = <0x8>;
--			fsl,num_tx_queues = <0x8>;
--			local-mac-address = [ 00 00 00 00 00 00 ];
-+		ethernet@b1000 {
- 			phy-handle = <&phy1>;
- 			phy-connection-type = "rgmii-id";
--			queue-group@0{
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xB1000 0x1000>;
--				interrupts = <35 2 0 0 36 2 0 0 40 2 0 0>;
--			};
--			queue-group@1{
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0xB5000 0x1000>;
--				interrupts = <51 2 0 0 52 2 0 0 67 2 0 0>;
--			};
--		};
--
--		sdhci@2e000 {
--			compatible = "fsl,p1022-esdhc", "fsl,esdhc";
--			reg = <0x2e000 0x1000>;
--			interrupts = <72 0x2 0 0>;
--			fsl,sdhci-auto-cmd12;
--			/* Filled in by U-Boot */
--			clock-frequency = <0>;
--		};
--
--		crypto@30000 {
--			compatible = "fsl,sec3.3", "fsl,sec3.1", "fsl,sec3.0",
--				     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
--				     "fsl,sec2.0";
 -			reg = <0x30000 0x10000>;
--			interrupts = <45 2 0 0 58 2 0 0>;
--			fsl,num-channels = <4>;
--			fsl,channel-fifo-len = <24>;
--			fsl,exec-units-mask = <0x97c>;
--			fsl,descriptor-types-mask = <0x3a30abf>;
--		};
+-			ranges = <0 0x30000 0x10000>;
+-			interrupt-parent = <&mpic>;
+-			interrupts = <58 2>;
 -
--		sata@18000 {
--			compatible = "fsl,p1022-sata", "fsl,pq-sata-v2";
--			reg = <0x18000 0x1000>;
--			cell-index = <1>;
--			interrupts = <74 0x2 0 0>;
--		};
+-			sec_jr0: jr@1000 {
+-				compatible = "fsl,sec-v4.2-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
+-				reg = <0x1000 0x1000>;
+-				interrupts = <45 2>;
+-			};
 -
--		sata@19000 {
--			compatible = "fsl,p1022-sata", "fsl,pq-sata-v2";
--			reg = <0x19000 0x1000>;
--			cell-index = <2>;
--			interrupts = <41 0x2 0 0>;
+-			sec_jr1: jr@2000 {
+-				compatible = "fsl,sec-v4.2-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
+-				reg = <0x2000 0x1000>;
+-				interrupts = <45 2>;
+-			};
+-
+-			sec_jr2: jr@3000 {
+-				compatible = "fsl,sec-v4.2-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
+-				reg = <0x3000 0x1000>;
+-				interrupts = <57 2>;
+-			};
+-
+-			sec_jr3: jr@4000 {
+-				compatible = "fsl,sec-v4.2-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
+-				reg = <0x4000 0x1000>;
+-				interrupts = <57 2>;
+-			};
+-
+-			rtic@6000 {
+-				compatible = "fsl,sec-v4.2-rtic",
+-					     "fsl,sec-v4.0-rtic";
+-				#address-cells = <1>;
+-				#size-cells = <1>;
+-				reg = <0x6000 0x100>;
+-				ranges = <0x0 0x6100 0xe00>;
+-
+-				rtic_a: rtic-a@0 {
+-					compatible = "fsl,sec-v4.2-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
+-					reg = <0x00 0x20 0x100 0x80>;
+-				};
+-
+-				rtic_b: rtic-b@20 {
+-					compatible = "fsl,sec-v4.2-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
+-					reg = <0x20 0x20 0x200 0x80>;
+-				};
+-
+-				rtic_c: rtic-c@40 {
+-					compatible = "fsl,sec-v4.2-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
+-					reg = <0x40 0x20 0x300 0x80>;
+-				};
+-
+-				rtic_d: rtic-d@60 {
+-					compatible = "fsl,sec-v4.2-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
+-					reg = <0x60 0x20 0x500 0x80>;
+-				};
+-			};
 -		};
 -
 -		power@e0070{
--			compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
+-			compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc",
+-			             "fsl,p1022-pmc";
 -			reg = <0xe0070 0x20>;
--		};
--
--		display@10000 {
--			compatible = "fsl,diu", "fsl,p1022-diu";
--			reg = <0x10000 1000>;
--			interrupts = <64 2 0 0>;
--		};
--
--		timer@41100 {
--			compatible = "fsl,mpic-global-timer";
--			reg = <0x41100 0x100 0x41300 4>;
--			interrupts = <0 0 3 0
--			              1 0 3 0
--			              2 0 3 0
--			              3 0 3 0>;
--		};
--
--		timer@42100 {
--			compatible = "fsl,mpic-global-timer";
--			reg = <0x42100 0x100 0x42300 4>;
--			interrupts = <4 0 3 0
--			              5 0 3 0
--			              6 0 3 0
--			              7 0 3 0>;
+-			etsec1_clk: soc-clk@B0{
+-				fsl,pmcdr-mask = <0x00000080>;
+-			};
+-			etsec2_clk: soc-clk@B1{
+-				fsl,pmcdr-mask = <0x00000040>;
+-			};
+-			etsec3_clk: soc-clk@B2{
+-				fsl,pmcdr-mask = <0x00000020>;
+-			};
 -		};
 -
 -		mpic: pic@40000 {
 -			interrupt-controller;
 -			#address-cells = <0>;
--			#interrupt-cells = <4>;
+-			#interrupt-cells = <2>;
 -			reg = <0x40000 0x40000>;
--			compatible = "fsl,mpic";
+-			compatible = "chrp,open-pic";
 -			device_type = "open-pic";
 -		};
 -
 -		msi@41600 {
--			compatible = "fsl,p1022-msi", "fsl,mpic-msi";
+-			compatible = "fsl,p1023-msi", "fsl,mpic-msi";
 -			reg = <0x41600 0x80>;
 -			msi-available-ranges = <0 0x100>;
 -			interrupts = <
--				0xe0 0 0 0
--				0xe1 0 0 0
--				0xe2 0 0 0
--				0xe3 0 0 0
--				0xe4 0 0 0
--				0xe5 0 0 0
--				0xe6 0 0 0
--				0xe7 0 0 0>;
+-				0xe0 0
+-				0xe1 0
+-				0xe2 0
+-				0xe3 0
+-				0xe4 0
+-				0xe5 0
+-				0xe6 0
+-				0xe7 0>;
+-			interrupt-parent = <&mpic>;
 -		};
 -
 -		global-utilities@e0000 {	//global utilities block
--			compatible = "fsl,p1022-guts";
+-			compatible = "fsl,p1023-guts";
 -			reg = <0xe0000 0x1000>;
 -			fsl,has-rstcr;
+-		};
+ 	};
+ 
+-	localbus@ff605000 {
+-		#address-cells = <2>;
+-		#size-cells = <1>;
+-		compatible = "fsl,p1023-elbc", "fsl,elbc", "simple-bus";
++	lbc: localbus@ff605000 {
+ 		reg = <0 0xff605000 0 0x1000>;
+-		interrupts = <19 2>;
+-		interrupt-parent = <&mpic>;
+ 
+ 		/* NOR Flash, BCSR */
+ 		ranges = <0x0 0x0 0x0 0xee000000 0x02000000
+@@ -428,34 +138,18 @@
+ 	};
+ 
+ 	pci0: pcie@ff60a000 {
+-		compatible = "fsl,p1023-pcie", "fsl,qoriq-pcie-v2.2";
+-		cell-index = <1>;
+-		device_type = "pci";
+-		#size-cells = <2>;
+-		#address-cells = <3>;
+ 		reg = <0 0xff60a000 0 0x1000>;
+-		bus-range = <0 255>;
+ 		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
+-		clock-frequency = <33333333>;
+-		interrupt-parent = <&mpic>;
+-		interrupts = <16 2>;
+ 		pcie@0 {
+-			reg = <0x0 0x0 0x0 0x0 0x0>;
+-			#interrupt-cells = <1>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			device_type = "pci";
+-			interrupt-parent = <&mpic>;
+-			interrupts = <16 2>;
+-			interrupt-map-mask = <0xf800 0 0 7>;
+ 			/* IRQ[0:3] are pulled up on board, set to active-low */
++			interrupt-map-mask = <0xf800 0 0 7>;
+ 			interrupt-map = <
+ 				/* IDSEL 0x0 */
+-				0000 0 0 1 &mpic 0 1
+-				0000 0 0 2 &mpic 1 1
+-				0000 0 0 3 &mpic 2 1
+-				0000 0 0 4 &mpic 3 1
++				0000 0 0 1 &mpic 0 1 0 0
++				0000 0 0 2 &mpic 1 1 0 0
++				0000 0 0 3 &mpic 2 1 0 0
++				0000 0 0 4 &mpic 3 1 0 0
+ 				>;
+ 			ranges = <0x2000000 0x0 0xc0000000
+ 				  0x2000000 0x0 0xc0000000
+@@ -467,38 +161,22 @@
  		};
  	};
  
- 	pci0: pcie@fffe09000 {
--		compatible = "fsl,p1022-pcie";
+-	pci1: pcie@ff609000 {
+-		compatible = "fsl,p1023-pcie", "fsl,qoriq-pcie-v2.2";
+-		cell-index = <2>;
 -		device_type = "pci";
--		#interrupt-cells = <1>;
 -		#size-cells = <2>;
 -		#address-cells = <3>;
- 		reg = <0xf 0xffe09000 0 0x1000>;
++	board_pci1: pci1: pcie@ff609000 {
+ 		reg = <0 0xff609000 0 0x1000>;
 -		bus-range = <0 255>;
- 		ranges = <0x2000000 0x0 0xa0000000 0xc 0x20000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
+ 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
 -		clock-frequency = <33333333>;
--		interrupts = <16 2 0 0>;
--		interrupt-map-mask = <0xf800 0 0 7>;
--		interrupt-map = <
--			/* IDSEL 0x0 */
--			0000 0 0 1 &mpic 4 1
--			0000 0 0 2 &mpic 5 1
--			0000 0 0 3 &mpic 6 1
--			0000 0 0 4 &mpic 7 1
--			>;
+-		interrupt-parent = <&mpic>;
+-		interrupts = <16 2>;
  		pcie@0 {
 -			reg = <0x0 0x0 0x0 0x0 0x0>;
+-			#interrupt-cells = <1>;
 -			#size-cells = <2>;
 -			#address-cells = <3>;
 -			device_type = "pci";
- 			ranges = <0x2000000 0x0 0xe0000000
- 				  0x2000000 0x0 0xe0000000
- 				  0x0 0x20000000
-@@ -585,30 +222,11 @@
+-			interrupt-parent = <&mpic>;
+-			interrupts = <16 2>;
+-			interrupt-map-mask = <0xf800 0 0 7>;
+ 			/*
+ 			 * IRQ[4:6] only for PCIe, set to active-high,
+ 			 * IRQ[7] is pulled up on board, set to active-low
+ 			 */
++			interrupt-map-mask = <0xf800 0 0 7>;
+ 			interrupt-map = <
+ 				/* IDSEL 0x0 */
+-				0000 0 0 1 &mpic 4 2
+-				0000 0 0 2 &mpic 5 2
+-				0000 0 0 3 &mpic 6 2
+-				0000 0 0 4 &mpic 7 1
++				0000 0 0 1 &mpic 4 2 0 0
++				0000 0 0 2 &mpic 5 2 0 0
++				0000 0 0 3 &mpic 6 2 0 0
++				0000 0 0 4 &mpic 7 1 0 0
+ 				>;
+ 			ranges = <0x2000000 0x0 0xa0000000
+ 				  0x2000000 0x0 0xa0000000
+@@ -511,37 +189,21 @@
  	};
  
- 	pci1: pcie@fffe0a000 {
--		compatible = "fsl,p1022-pcie";
+ 	pci2: pcie@ff60b000 {
+-		cell-index = <3>;
+-		compatible = "fsl,p1023-pcie", "fsl,qoriq-pcie-v2.2";
 -		device_type = "pci";
--		#interrupt-cells = <1>;
 -		#size-cells = <2>;
 -		#address-cells = <3>;
- 		reg = <0xf 0xffe0a000 0 0x1000>;
+ 		reg = <0 0xff60b000 0 0x1000>;
 -		bus-range = <0 255>;
- 		ranges = <0x2000000 0x0 0xc0000000 0xc 0x40000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0xf 0xffc20000 0x0 0x10000>;
+ 		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
 -		clock-frequency = <33333333>;
--		interrupts = <16 2 0 0>;
--		interrupt-map-mask = <0xf800 0 0 7>;
--		interrupt-map = <
--			/* IDSEL 0x0 */
--			0000 0 0 1 &mpic 0 1
--			0000 0 0 2 &mpic 1 1
--			0000 0 0 3 &mpic 2 1
--			0000 0 0 4 &mpic 3 1
--			>;
- 		pcie@0 {
- 			reg = <0x0 0x0 0x0 0x0 0x0>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
- 			ranges = <0x2000000 0x0 0xe0000000
- 				  0x2000000 0x0 0xe0000000
- 				  0x0 0x20000000
-@@ -619,32 +237,11 @@
- 		};
- 	};
- 
--
- 	pci2: pcie@fffe0b000 {
--		compatible = "fsl,p1022-pcie";
--		device_type = "pci";
--		#interrupt-cells = <1>;
--		#size-cells = <2>;
--		#address-cells = <3>;
- 		reg = <0xf 0xffe0b000 0 0x1000>;
--		bus-range = <0 255>;
- 		ranges = <0x2000000 0x0 0x80000000 0xc 0x00000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
--		clock-frequency = <33333333>;
--		interrupts = <16 2 0 0>;
--		interrupt-map-mask = <0xf800 0 0 7>;
--		interrupt-map = <
--			/* IDSEL 0x0 */
--			0000 0 0 1 &mpic 8 1
--			0000 0 0 2 &mpic 9 1
--			0000 0 0 3 &mpic 10 1
--			0000 0 0 4 &mpic 11 1
--			>;
+-		interrupt-parent = <&mpic>;
+-		interrupts = <16 2>;
  		pcie@0 {
 -			reg = <0x0 0x0 0x0 0x0 0x0>;
+-			#interrupt-cells = <1>;
 -			#size-cells = <2>;
 -			#address-cells = <3>;
 -			device_type = "pci";
- 			ranges = <0x2000000 0x0 0xe0000000
- 				  0x2000000 0x0 0xe0000000
- 				  0x0 0x20000000
-@@ -655,3 +252,5 @@
+-			interrupt-parent = <&mpic>;
+-			interrupts = <16 2>;
+-			interrupt-map-mask = <0xf800 0 0 7>;
+ 			/*
+ 			 * IRQ[8:10] are pulled up on board, set to active-low
+ 			 * IRQ[11] only for PCIe, set to active-high,
+ 			 */
++			interrupt-map-mask = <0xf800 0 0 7>;
+ 			interrupt-map = <
+ 				/* IDSEL 0x0 */
+-				0000 0 0 1 &mpic 8 1
+-				0000 0 0 2 &mpic 9 1
+-				0000 0 0 3 &mpic 10 1
+-				0000 0 0 4 &mpic 11 2
++				0000 0 0 1 &mpic 8 1 0 0
++				0000 0 0 2 &mpic 9 1 0 0
++				0000 0 0 3 &mpic 10 1 0 0
++				0000 0 0 4 &mpic 11 2 0 0
+ 				>;
+ 			ranges = <0x2000000 0x0 0x80000000
+ 				  0x2000000 0x0 0x80000000
+@@ -553,3 +215,5 @@
  		};
  	};
  };
 +
-+/include/ "fsl/p1022si-post.dtsi"
++/include/ "fsl/p1023si-post.dtsi"
 -- 
 1.7.3.4
