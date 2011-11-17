@@ -1,46 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AD33CB71E8
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 20:00:01 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAH7H3ZK026926
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 01:17:04 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 29/29] powerpc/85xx: Rework P5020DS device tree
-Date: Thu, 17 Nov 2011 01:16:21 -0600
-Message-Id: <1321514181-28897-29-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1321514181-28897-28-git-send-email-galak@kernel.crashing.org>
-References: <1321514181-28897-1-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-2-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-3-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-4-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-5-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-6-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-7-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-8-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-9-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-10-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-11-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-12-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-13-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-14-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-15-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-16-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-17-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-18-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-19-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-20-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-21-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-22-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-23-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-24-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-25-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-26-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-27-git-send-email-galak@kernel.crashing.org>
- <1321514181-28897-28-git-send-email-galak@kernel.crashing.org>
+Return-Path: <B35336@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+ [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id B27AEB7209
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 22:10:26 +1100 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 7/7] gianfar: add support for wake-on-packet
+Date: Thu, 17 Nov 2011 19:10:06 +0800
+Message-ID: <1321528206-9925-1-git-send-email-chenhui.zhao@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: netdev@vger.kernel.org, afleming@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,1260 +23,723 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Utilize new split between board & SoC, and new SoC device trees split
-into pre & post utilizing 'template' includes for SoC IP blocks.
+On certain chip like MPC8536 and P1022, system can be waked up from
+sleep by user-defined packet and Magic Patcket.(The eTSEC cannot
+supports both types of wake-up event simultaneously.) This patch
+implements wake-up on user-defined patcket including ARP request
+packet and unicast patcket to this station.
 
-Other changes include:
-* Adding of MPIC timer blocks
-* Dropping "fsl,p5020-IP..." from compatibles for standard blocks
-* Removed mpic interrupt-parent from dcsr-epu node, just use top level
-* Removed mpic interrupt-parent from sec nodes, just use top level
+When entering suspend state, the gianfar driver sets receive queue
+filer table to filter all of packets except ARP request packet and
+unicast patcket to this station. The driver temporarily uses the last
+receive queue to receive the user defined packet.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+In suspend state, the receive part of eTSEC keeps working. When
+receiving a user defined packet, it generates an interrupt to
+wake up the system.
+
+The rule of the filer table is as below.
+  if (arp request to local ip address)
+      accept it to the last queue
+  elif (unicast packet to local mac address)
+      accept it to the last queue
+  else
+      reject it
+  endif
+Note: The local ip/mac address is the ethernet primary IP/MAC address of
+the station. Do not support multiple IP/MAC addresses.
+
+Here is an example of enabling and testing wake up on user defined packet.
+  ifconfig eth0 10.193.20.169
+  ethtool -s eth0 wol a
+  echo standby > /sys/power/state or echo mem > /sys/power/state
+
+Ping from PC host to wake up the station:
+  ping 10.193.20.169
+
+Signed-off-by: Dave Liu <daveliu@freescale.com>
+Signed-off-by: Jin Qing <b24347@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Acked-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |  335 +++++++++++++
- arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi  |   96 ++++
- arch/powerpc/boot/dts/p5020ds.dts           |   13 +-
- arch/powerpc/boot/dts/p5020si.dtsi          |  716 ---------------------------
- 4 files changed, 441 insertions(+), 719 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
- delete mode 100644 arch/powerpc/boot/dts/p5020si.dtsi
+Changes for v2:
+ - rework gfar_get_ip(), gfar_config_filer_table(), gfar_suspend() and gfar_resume()
+ - add support unicast wakeup
+ - add supported in struct gfar_private
 
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-new file mode 100644
-index 0000000..7135c67
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -0,0 +1,335 @@
-+/*
-+ * P5020/5010 Silicon/SoC Device Tree Source (post include)
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&lbc {
-+	compatible = "fsl,p5020-elbc", "fsl,elbc", "simple-bus";
-+	interrupts = <25 2 0 0>;
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+};
-+
-+/* controller at 0x200000 */
-+&pci0 {
-+	compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	clock-frequency = <33333333>;
-+	interrupts = <16 2 1 15>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <16 2 1 15>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 40 1 0 0
-+			0000 0 0 2 &mpic 1 1 0 0
-+			0000 0 0 3 &mpic 2 1 0 0
-+			0000 0 0 4 &mpic 3 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x201000 */
-+&pci1 {
-+	compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 0xff>;
-+	clock-frequency = <33333333>;
-+	interrupts = <16 2 1 14>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <16 2 1 14>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 41 1 0 0
-+			0000 0 0 2 &mpic 5 1 0 0
-+			0000 0 0 3 &mpic 6 1 0 0
-+			0000 0 0 4 &mpic 7 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x202000 */
-+&pci2 {
-+	compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	clock-frequency = <33333333>;
-+	interrupts = <16 2 1 13>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <16 2 1 13>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 42 1 0 0
-+			0000 0 0 2 &mpic 9 1 0 0
-+			0000 0 0 3 &mpic 10 1 0 0
-+			0000 0 0 4 &mpic 11 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x203000 */
-+&pci3 {
-+	compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	clock-frequency = <33333333>;
-+	interrupts = <16 2 1 12>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <16 2 1 12>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 43 1 0 0
-+			0000 0 0 2 &mpic 0 1 0 0
-+			0000 0 0 3 &mpic 4 1 0 0
-+			0000 0 0 4 &mpic 8 1 0 0
-+			>;
-+	};
-+};
-+
-+&dcsr {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "fsl,dcsr", "simple-bus";
-+
-+	dcsr-epu@0 {
-+		compatible = "fsl,dcsr-epu";
-+		interrupts = <52 2 0 0
-+			      84 2 0 0
-+			      85 2 0 0>;
-+		reg = <0x0 0x1000>;
-+	};
-+	dcsr-npc {
-+		compatible = "fsl,dcsr-npc";
-+		reg = <0x1000 0x1000 0x1000000 0x8000>;
-+	};
-+	dcsr-nxc@2000 {
-+		compatible = "fsl,dcsr-nxc";
-+		reg = <0x2000 0x1000>;
-+	};
-+	dcsr-corenet {
-+		compatible = "fsl,dcsr-corenet";
-+		reg = <0x8000 0x1000 0xB0000 0x1000>;
-+	};
-+	dcsr-dpaa@9000 {
-+		compatible = "fsl,p5020-dcsr-dpaa", "fsl,dcsr-dpaa";
-+		reg = <0x9000 0x1000>;
-+	};
-+	dcsr-ocn@11000 {
-+		compatible = "fsl,p5020-dcsr-ocn", "fsl,dcsr-ocn";
-+		reg = <0x11000 0x1000>;
-+	};
-+	dcsr-ddr@12000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr1>;
-+		reg = <0x12000 0x1000>;
-+	};
-+	dcsr-ddr@13000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr2>;
-+		reg = <0x13000 0x1000>;
-+	};
-+	dcsr-nal@18000 {
-+		compatible = "fsl,p5020-dcsr-nal", "fsl,dcsr-nal";
-+		reg = <0x18000 0x1000>;
-+	};
-+	dcsr-rcpm@22000 {
-+		compatible = "fsl,p5020-dcsr-rcpm", "fsl,dcsr-rcpm";
-+		reg = <0x22000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@40000 {
-+		compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu0>;
-+		reg = <0x40000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@41000 {
-+		compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu1>;
-+		reg = <0x41000 0x1000>;
-+	};
-+};
-+
-+&soc {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "simple-bus";
-+
-+	soc-sram-error {
-+		compatible = "fsl,soc-sram-error";
-+		interrupts = <16 2 1 29>;
-+	};
-+
-+	corenet-law@0 {
-+		compatible = "fsl,corenet-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <32>;
-+	};
-+
-+	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
-+		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
-+	};
-+
-+	ddr2: memory-controller@9000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.5","fsl,qoriq-memory-controller";
-+		reg = <0x9000 0x1000>;
-+		interrupts = <16 2 1 22>;
-+	};
-+
-+	cpc: l3-cache-controller@10000 {
-+		compatible = "fsl,p5020-l3-cache-controller", "fsl,p4080-l3-cache-controller", "cache";
-+		reg = <0x10000 0x1000
-+		       0x11000 0x1000>;
-+		interrupts = <16 2 1 27
-+			      16 2 1 26>;
-+	};
-+
-+	corenet-cf@18000 {
-+		compatible = "fsl,corenet-cf";
-+		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
-+		fsl,ccf-num-csdids = <32>;
-+		fsl,ccf-num-snoopids = <32>;
-+	};
-+
-+	iommu@20000 {
-+		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-+		reg = <0x20000 0x4000>;
-+		interrupts = <
-+			24 2 0 0
-+			16 2 1 30>;
-+	};
-+
-+/include/ "qoriq-mpic.dtsi"
-+
-+	guts: global-utilities@e0000 {
-+		compatible = "fsl,qoriq-device-config-1.0";
-+		reg = <0xe0000 0xe00>;
-+		fsl,has-rstcr;
-+		#sleep-cells = <1>;
-+		fsl,liodn-bits = <12>;
-+	};
-+
-+	pins: global-utilities@e0e00 {
-+		compatible = "fsl,qoriq-pin-control-1.0";
-+		reg = <0xe0e00 0x200>;
-+		#sleep-cells = <2>;
-+	};
-+
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
-+		reg = <0xe1000 0x1000>;
-+		clock-frequency = <0>;
-+	};
-+
-+	rcpm: global-utilities@e2000 {
-+		compatible = "fsl,qoriq-rcpm-1.0";
-+		reg = <0xe2000 0x1000>;
-+		#sleep-cells = <1>;
-+	};
-+
-+	sfp: sfp@e8000 {
-+		compatible = "fsl,p5020-sfp", "fsl,qoriq-sfp-1.0";
-+		reg	   = <0xe8000 0x1000>;
-+	};
-+
-+	serdes: serdes@ea000 {
-+		compatible = "fsl,p5020-serdes";
-+		reg	   = <0xea000 0x1000>;
-+	};
-+
-+/include/ "qoriq-dma-0.dtsi"
-+/include/ "qoriq-dma-1.dtsi"
-+/include/ "qoriq-espi-0.dtsi"
-+	spi@110000 {
-+		fsl,espi-num-chipselects = <4>;
-+	};
-+
-+/include/ "qoriq-esdhc-0.dtsi"
-+	sdhc@114000 {
-+		sdhci,auto-cmd12;
-+	};
-+
-+/include/ "qoriq-i2c-0.dtsi"
-+/include/ "qoriq-i2c-1.dtsi"
-+/include/ "qoriq-duart-0.dtsi"
-+/include/ "qoriq-duart-1.dtsi"
-+/include/ "qoriq-gpio-0.dtsi"
-+/include/ "qoriq-usb2-mph-0.dtsi"
-+		usb0: usb@210000 {
-+			phy_type = "utmi";
-+			port0;
-+		};
-+
-+/include/ "qoriq-usb2-dr-0.dtsi"
-+		usb1: usb@211000 {
-+			dr_mode = "host";
-+			phy_type = "utmi";
-+		};
-+
-+/include/ "qoriq-sata2-0.dtsi"
-+/include/ "qoriq-sata2-1.dtsi"
-+/include/ "qoriq-sec4.2-0.dtsi"
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-new file mode 100644
-index 0000000..ae823a4
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-@@ -0,0 +1,96 @@
-+/*
-+ * P5020/P5010 Silicon/SoC Device Tree Source (pre include)
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/dts-v1/;
-+/ {
-+	compatible = "fsl,P5020";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	aliases {
-+		ccsr = &soc;
-+		dcsr = &dcsr;
-+
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		serial2 = &serial2;
-+		serial3 = &serial3;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
-+		pci3 = &pci3;
-+		usb0 = &usb0;
-+		usb1 = &usb1;
-+		dma0 = &dma0;
-+		dma1 = &dma1;
-+		sdhc = &sdhc;
-+		msi0 = &msi0;
-+		msi1 = &msi1;
-+		msi2 = &msi2;
-+
-+		crypto = &crypto;
-+		sec_jr0 = &sec_jr0;
-+		sec_jr1 = &sec_jr1;
-+		sec_jr2 = &sec_jr2;
-+		sec_jr3 = &sec_jr3;
-+		rtic_a = &rtic_a;
-+		rtic_b = &rtic_b;
-+		rtic_c = &rtic_c;
-+		rtic_d = &rtic_d;
-+		sec_mon = &sec_mon;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu0: PowerPC,e5500@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			next-level-cache = <&L2_0>;
-+			L2_0: l2-cache {
-+				next-level-cache = <&cpc>;
-+			};
-+		};
-+		cpu1: PowerPC,e5500@1 {
-+			device_type = "cpu";
-+			reg = <1>;
-+			next-level-cache = <&L2_1>;
-+			L2_1: l2-cache {
-+				next-level-cache = <&cpc>;
-+			};
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p5020ds.dts b/arch/powerpc/boot/dts/p5020ds.dts
-index e6d4099..ceee4f5 100644
---- a/arch/powerpc/boot/dts/p5020ds.dts
-+++ b/arch/powerpc/boot/dts/p5020ds.dts
-@@ -32,7 +32,7 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
+ .../devicetree/bindings/net/fsl-tsec-phy.txt       |    3 +
+ drivers/net/ethernet/freescale/gianfar.c           |  362 +++++++++++++++++---
+ drivers/net/ethernet/freescale/gianfar.h           |   33 ++-
+ drivers/net/ethernet/freescale/gianfar_ethtool.c   |   52 ++-
+ 4 files changed, 372 insertions(+), 78 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+index 2c6be03..543e36c 100644
+--- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
++++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+@@ -56,6 +56,9 @@ Properties:
+     hardware.
+   - fsl,magic-packet : If present, indicates that the hardware supports
+     waking up via magic packet.
++  - fsl,wake-on-filer : If present, indicates that the hardware supports
++    waking up via arp request to local ip address or unicast packet to
++    local mac address.
+   - bd-stash : If present, indicates that the hardware supports stashing
+     buffer descriptors in the L2.
+   - rx-stash-len : Denotes the number of bytes of a received buffer to stash
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index 83199fd..991bd47 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -85,6 +85,8 @@
+ #include <linux/tcp.h>
+ #include <linux/udp.h>
+ #include <linux/in.h>
++#include <linux/inetdevice.h>
++#include <sysdev/fsl_soc.h>
+ #include <linux/net_tstamp.h>
  
--/include/ "p5020si.dtsi"
-+/include/ "fsl/p5020si-pre.dtsi"
- 
- / {
- 	model = "fsl,P5020DS";
-@@ -50,6 +50,8 @@
- 	};
- 
- 	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
- 		spi@110000 {
- 			flash@0 {
- 				#address-cells = <1>;
-@@ -99,7 +101,7 @@
- 		};
- 	};
- 
--	localbus@ffe124000 {
-+	lbc: localbus@ffe124000 {
- 		reg = <0xf 0xfe124000 0 0x1000>;
- 		ranges = <0 0 0xf 0xe8000000 0x08000000
- 			  2 0 0xf 0xffa00000 0x00040000
-@@ -160,7 +162,7 @@
- 		reg = <0xf 0xfe200000 0 0x1000>;
- 		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
- 			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
--
-+		fsl,msi = <&msi0>;
- 		pcie@0 {
- 			ranges = <0x02000000 0 0xe0000000
- 				  0x02000000 0 0xe0000000
-@@ -176,6 +178,7 @@
- 		reg = <0xf 0xfe201000 0 0x1000>;
- 		ranges = <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
- 			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
-+		fsl,msi = <&msi1>;
- 		pcie@0 {
- 			ranges = <0x02000000 0 0xe0000000
- 				  0x02000000 0 0xe0000000
-@@ -191,6 +194,7 @@
- 		reg = <0xf 0xfe202000 0 0x1000>;
- 		ranges = <0x02000000 0 0xe0000000 0xc 0x40000000 0 0x20000000
- 			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		fsl,msi = <&msi2>;
- 		pcie@0 {
- 			ranges = <0x02000000 0 0xe0000000
- 				  0x02000000 0 0xe0000000
-@@ -206,6 +210,7 @@
- 		reg = <0xf 0xfe203000 0 0x1000>;
- 		ranges = <0x02000000 0 0xe0000000 0xc 0x60000000 0 0x20000000
- 			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
-+		fsl,msi = <&msi2>;
- 		pcie@0 {
- 			ranges = <0x02000000 0 0xe0000000
- 				  0x02000000 0 0xe0000000
-@@ -217,3 +222,5 @@
- 		};
- 	};
- };
+ #include <asm/io.h>
+@@ -147,6 +149,17 @@ static void gfar_clear_exact_match(struct net_device *dev);
+ static void gfar_set_mac_for_addr(struct net_device *dev, int num,
+ 				  const u8 *addr);
+ static int gfar_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
++static void gfar_schedule_cleanup(struct gfar_priv_grp *gfargrp);
 +
-+/include/ "fsl/p5020si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p5020si.dtsi b/arch/powerpc/boot/dts/p5020si.dtsi
-deleted file mode 100644
-index e7948ad..0000000
---- a/arch/powerpc/boot/dts/p5020si.dtsi
-+++ /dev/null
-@@ -1,716 +0,0 @@
--/*
-- * P5020 Silicon Device Tree Source
-- *
-- * Copyright 2010-2011 Freescale Semiconductor Inc.
-- *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that the following conditions are met:
-- *     * Redistributions of source code must retain the above copyright
-- *       notice, this list of conditions and the following disclaimer.
-- *     * Redistributions in binary form must reproduce the above copyright
-- *       notice, this list of conditions and the following disclaimer in the
-- *       documentation and/or other materials provided with the distribution.
-- *     * Neither the name of Freescale Semiconductor nor the
-- *       names of its contributors may be used to endorse or promote products
-- *       derived from this software without specific prior written permission.
-- *
-- *
-- * ALTERNATIVELY, this software may be distributed under the terms of the
-- * GNU General Public License ("GPL") as published by the Free Software
-- * Foundation, either version 2 of that License or (at your option) any
-- * later version.
-- *
-- * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-- * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- */
++#ifdef CONFIG_PM
++static void gfar_halt_rx(struct net_device *dev);
++static void gfar_rx_start(struct net_device *dev);
++static void gfar_enable_filer(struct net_device *dev);
++static void gfar_disable_filer(struct net_device *dev);
++static void gfar_config_filer_table(struct net_device *dev);
++static void gfar_restore_filer_table(struct net_device *dev);
++static int gfar_get_ip(struct net_device *dev);
++#endif
+ 
+ MODULE_AUTHOR("Freescale Semiconductor, Inc");
+ MODULE_DESCRIPTION("Gianfar Ethernet Driver");
+@@ -751,7 +764,6 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
+ 			FSL_GIANFAR_DEV_HAS_PADDING |
+ 			FSL_GIANFAR_DEV_HAS_CSUM |
+ 			FSL_GIANFAR_DEV_HAS_VLAN |
+-			FSL_GIANFAR_DEV_HAS_MAGIC_PACKET |
+ 			FSL_GIANFAR_DEV_HAS_EXTENDED_HASH |
+ 			FSL_GIANFAR_DEV_HAS_TIMER;
+ 
+@@ -763,8 +775,19 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
+ 	else
+ 		priv->interface = PHY_INTERFACE_MODE_MII;
+ 
+-	if (of_get_property(np, "fsl,magic-packet", NULL))
++	/* Init Wake-on-LAN */
++	priv->wol_opts = 0;
++	priv->wol_supported = 0;
++	if (of_get_property(np, "fsl,magic-packet", NULL)) {
+ 		priv->device_flags |= FSL_GIANFAR_DEV_HAS_MAGIC_PACKET;
++		priv->wol_supported |= GIANFAR_WOL_MAGIC;
++	}
++
++	if (of_get_property(np, "fsl,wake-on-filer", NULL)) {
++		priv->device_flags |= FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER;
++		priv->wol_supported |= GIANFAR_WOL_ARP;
++		priv->wol_supported |= GIANFAR_WOL_UCAST;
++	}
+ 
+ 	priv->phy_node = of_parse_phandle(np, "phy-handle", 0);
+ 
+@@ -1168,8 +1191,10 @@ static int gfar_probe(struct platform_device *ofdev)
+ 		goto register_fail;
+ 	}
+ 
+-	device_init_wakeup(&dev->dev,
+-		priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
++	if (priv->wol_supported) {
++		device_set_wakeup_capable(&ofdev->dev, true);
++		device_set_wakeup_enable(&ofdev->dev, false);
++	}
+ 
+ 	/* fill out IRQ number and name fields */
+ 	len_devname = strlen(dev->name);
+@@ -1260,6 +1285,143 @@ static int gfar_remove(struct platform_device *ofdev)
+ }
+ 
+ #ifdef CONFIG_PM
++static void gfar_enable_filer(struct net_device *dev)
++{
++	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar __iomem *regs = priv->gfargrp[0].regs;
++	u32 temp;
++
++	lock_rx_qs(priv);
++
++	temp = gfar_read(&regs->rctrl);
++	temp &= ~(RCTRL_FSQEN | RCTRL_PRSDEP_MASK);
++	temp |= RCTRL_FILREN | RCTRL_PRSDEP_L2L3;
++	gfar_write(&regs->rctrl, temp);
++
++	unlock_rx_qs(priv);
++}
++
++static void gfar_disable_filer(struct net_device *dev)
++{
++	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar __iomem *regs = priv->gfargrp[0].regs;
++	u32 temp;
++
++	lock_rx_qs(priv);
++
++	temp = gfar_read(&regs->rctrl);
++	temp &= ~RCTRL_FILREN;
++	gfar_write(&regs->rctrl, temp);
++
++	unlock_rx_qs(priv);
++}
++
++static int gfar_get_ip(struct net_device *dev)
++{
++	struct gfar_private *priv = netdev_priv(dev);
++	struct in_device *in_dev;
++	int ret = -ENOENT;
++
++	in_dev = in_dev_get(dev);
++	if (!in_dev)
++		return ret;
++
++	/* Get the primary IP address */
++	for_primary_ifa(in_dev) {
++		priv->ip_addr = ifa->ifa_address;
++		ret = 0;
++		break;
++	} endfor_ifa(in_dev);
++
++	in_dev_put(in_dev);
++	return ret;
++}
++
++static void gfar_restore_filer_table(struct net_device *dev)
++{
++	struct gfar_private *priv = netdev_priv(dev);
++	u32 rqfcr, rqfpr;
++	int i;
++
++	lock_rx_qs(priv);
++
++	for (i = 0; i <= MAX_FILER_IDX; i++) {
++		rqfcr = priv->ftp_rqfcr[i];
++		rqfpr = priv->ftp_rqfpr[i];
++		gfar_write_filer(priv, i, rqfcr, rqfpr);
++	}
++
++	unlock_rx_qs(priv);
++}
++
++static void gfar_config_filer_table(struct net_device *dev)
++{
++	struct gfar_private *priv = netdev_priv(dev);
++	u32 dest_mac_addr;
++	u32 rqfcr, rqfpr;
++	u8  rqfcr_queue = priv->num_rx_queues - 1;
++	unsigned int index;
++
++	if (gfar_get_ip(dev)) {
++		netif_err(priv, wol, dev, "WOL: get the ip address error\n");
++		return;
++	}
++
++	lock_rx_qs(priv);
++
++	/* init filer table */
++	rqfcr = RQFCR_RJE | RQFCR_CMP_MATCH;
++	rqfpr = 0x0;
++	for (index = 0; index <= MAX_FILER_IDX; index++)
++		gfar_write_filer(priv, index, rqfcr, rqfpr);
++
++	index = 0;
++	if (priv->wol_opts & GIANFAR_WOL_ARP) {
++		/* ARP request filer, filling the packet to the last queue */
++		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
++					RQFCR_CMP_EXACT | RQFCR_PID_MASK;
++		rqfpr = RQFPR_ARQ;
++		gfar_write_filer(priv, index++, rqfcr, rqfpr);
++
++		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
++					RQFCR_CMP_EXACT | RQFCR_PID_PARSE;
++		rqfpr = RQFPR_ARQ;
++		gfar_write_filer(priv, index++, rqfcr, rqfpr);
++
++		/*
++		 * DEST_IP address in ARP packet,
++		 * filling it to the last queue.
++		 */
++		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
++					RQFCR_CMP_EXACT | RQFCR_PID_MASK;
++		rqfpr = FPR_FILER_MASK;
++		gfar_write_filer(priv, index++, rqfcr, rqfpr);
++
++		rqfcr = (rqfcr_queue << 10) | RQFCR_GPI |
++					RQFCR_CMP_EXACT | RQFCR_PID_DIA;
++		rqfpr = priv->ip_addr;
++		gfar_write_filer(priv, index++, rqfcr, rqfpr);
++	}
++
++	if (priv->wol_opts & GIANFAR_WOL_UCAST) {
++		/* Unicast packet, filling it to the last queue */
++		dest_mac_addr = (dev->dev_addr[0] << 16) |
++				(dev->dev_addr[1] << 8) | dev->dev_addr[2];
++		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
++					RQFCR_CMP_EXACT | RQFCR_PID_DAH;
++		rqfpr = dest_mac_addr;
++		gfar_write_filer(priv, index++, rqfcr, rqfpr);
++
++		dest_mac_addr = (dev->dev_addr[3] << 16) |
++				(dev->dev_addr[4] << 8) | dev->dev_addr[5];
++		rqfcr = (rqfcr_queue << 10) | RQFCR_GPI |
++					RQFCR_CMP_EXACT | RQFCR_PID_DAL;
++		rqfpr = dest_mac_addr;
++		gfar_write_filer(priv, index++, rqfcr, rqfpr);
++	}
++
++	unlock_rx_qs(priv);
++}
+ 
+ static int gfar_suspend(struct device *dev)
+ {
+@@ -1269,48 +1431,43 @@ static int gfar_suspend(struct device *dev)
+ 	unsigned long flags;
+ 	u32 tempval;
+ 
+-	int magic_packet = priv->wol_en &&
+-		(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
 -
--/dts-v1/;
+ 	netif_device_detach(ndev);
+ 
+-	if (netif_running(ndev)) {
 -
--/ {
--	compatible = "fsl,P5020";
--	#address-cells = <2>;
--	#size-cells = <2>;
--	interrupt-parent = <&mpic>;
+-		local_irq_save(flags);
+-		lock_tx_qs(priv);
+-		lock_rx_qs(priv);
 -
--	aliases {
--		ccsr = &soc;
--		dcsr = &dcsr;
+-		gfar_halt_nodisable(ndev);
 -
--		serial0 = &serial0;
--		serial1 = &serial1;
--		serial2 = &serial2;
--		serial3 = &serial3;
--		pci0 = &pci0;
--		pci1 = &pci1;
--		pci2 = &pci2;
--		pci3 = &pci3;
--		usb0 = &usb0;
--		usb1 = &usb1;
--		dma0 = &dma0;
--		dma1 = &dma1;
--		sdhc = &sdhc;
--		msi0 = &msi0;
--		msi1 = &msi1;
--		msi2 = &msi2;
+-		/* Disable Tx, and Rx if wake-on-LAN is disabled. */
+-		tempval = gfar_read(&regs->maccfg1);
 -
--		crypto = &crypto;
--		sec_jr0 = &sec_jr0;
--		sec_jr1 = &sec_jr1;
--		sec_jr2 = &sec_jr2;
--		sec_jr3 = &sec_jr3;
--		rtic_a = &rtic_a;
--		rtic_b = &rtic_b;
--		rtic_c = &rtic_c;
--		rtic_d = &rtic_d;
--		sec_mon = &sec_mon;
+-		tempval &= ~MACCFG1_TX_EN;
++	if (!netif_running(ndev))
++		return 0;
+ 
+-		if (!magic_packet)
+-			tempval &= ~MACCFG1_RX_EN;
++	local_irq_save(flags);
++	lock_tx_qs(priv);
++	lock_rx_qs(priv);
+ 
+-		gfar_write(&regs->maccfg1, tempval);
++	gfar_halt(ndev);
+ 
+-		unlock_rx_qs(priv);
+-		unlock_tx_qs(priv);
+-		local_irq_restore(flags);
++	unlock_rx_qs(priv);
++	unlock_tx_qs(priv);
++	local_irq_restore(flags);
+ 
+-		disable_napi(priv);
++	disable_napi(priv);
+ 
+-		if (magic_packet) {
+-			/* Enable interrupt on Magic Packet */
+-			gfar_write(&regs->imask, IMASK_MAG);
++	if (!priv->wol_opts && priv->phydev) {
++		phy_stop(priv->phydev);
++		return 0;
++	}
+ 
+-			/* Enable Magic Packet mode */
+-			tempval = gfar_read(&regs->maccfg2);
+-			tempval |= MACCFG2_MPEN;
+-			gfar_write(&regs->maccfg2, tempval);
+-		} else {
+-			phy_stop(priv->phydev);
+-		}
++	mpc85xx_pmc_set_wake(priv->ofdev, 1);
++	if (priv->wol_opts & GIANFAR_WOL_MAGIC) {
++		/* Enable Magic Packet mode */
++		tempval = gfar_read(&regs->maccfg2);
++		tempval |= MACCFG2_MPEN;
++		gfar_write(&regs->maccfg2, tempval);
+ 	}
+ 
++	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
++		mpc85xx_pmc_set_lossless_ethernet(1);
++		gfar_disable_filer(ndev);
++		gfar_config_filer_table(ndev);
++		gfar_enable_filer(ndev);
++	}
++	gfar_rx_start(ndev);
+ 	return 0;
+ }
+ 
+@@ -1320,39 +1477,49 @@ static int gfar_resume(struct device *dev)
+ 	struct net_device *ndev = priv->ndev;
+ 	struct gfar __iomem *regs = priv->gfargrp[0].regs;
+ 	unsigned long flags;
+-	u32 tempval;
+-	int magic_packet = priv->wol_en &&
+-		(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
++	u32 tempval, i;
+ 
+ 	if (!netif_running(ndev)) {
+ 		netif_device_attach(ndev);
+ 		return 0;
+ 	}
+ 
+-	if (!magic_packet && priv->phydev)
++	if (!priv->wol_opts && priv->phydev) {
+ 		phy_start(priv->phydev);
++		goto out;
++	}
++
++	mpc85xx_pmc_set_wake(priv->ofdev, 0);
+ 
+-	/* Disable Magic Packet mode, in case something
+-	 * else woke us up.
+-	 */
+ 	local_irq_save(flags);
+-	lock_tx_qs(priv);
+ 	lock_rx_qs(priv);
 -
--/*
--		rio0 = &rapidio0;
-- */
--	};
+-	tempval = gfar_read(&regs->maccfg2);
+-	tempval &= ~MACCFG2_MPEN;
+-	gfar_write(&regs->maccfg2, tempval);
 -
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
+-	gfar_start(ndev);
 -
--		cpu0: PowerPC,e5500@0 {
--			device_type = "cpu";
--			reg = <0>;
--			next-level-cache = <&L2_0>;
--			L2_0: l2-cache {
--				next-level-cache = <&cpc>;
--			};
--		};
--		cpu1: PowerPC,e5500@1 {
--			device_type = "cpu";
--			reg = <1>;
--			next-level-cache = <&L2_1>;
--			L2_1: l2-cache {
--				next-level-cache = <&cpc>;
--			};
--		};
--	};
++	gfar_halt_rx(ndev);
+ 	unlock_rx_qs(priv);
+-	unlock_tx_qs(priv);
+ 	local_irq_restore(flags);
+ 
+-	netif_device_attach(ndev);
++	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
++		mpc85xx_pmc_set_lossless_ethernet(0);
++		gfar_disable_filer(ndev);
++		gfar_restore_filer_table(ndev);
++	}
++
++	if (priv->wol_opts & GIANFAR_WOL_MAGIC) {
++		/* Disable Magic Packet mode */
++		tempval = gfar_read(&regs->maccfg2);
++		tempval &= ~MACCFG2_MPEN;
++		gfar_write(&regs->maccfg2, tempval);
++	}
+ 
++out:
++	gfar_start(ndev);
++	netif_device_attach(ndev);
+ 	enable_napi(priv);
+ 
++	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
++		/* send requests to process the received packets */
++		for (i = 0; i < priv->num_grps; i++)
++			gfar_schedule_cleanup(&priv->gfargrp[i]);
++	}
+ 	return 0;
+ }
+ 
+@@ -1602,6 +1769,48 @@ static int __gfar_is_rx_idle(struct gfar_private *priv)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
++/* Halt the receive queues */
++static void gfar_halt_rx(struct net_device *dev)
++{
++	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar __iomem *regs = priv->gfargrp[0].regs;
++	u32 tempval;
++	int i = 0;
++
++	for (i = 0; i < priv->num_grps; i++) {
++		regs = priv->gfargrp[i].regs;
++		/* Mask all interrupts */
++		gfar_write(&regs->imask, IMASK_INIT_CLEAR);
++
++		/* Clear all interrupts */
++		gfar_write(&regs->ievent, IEVENT_INIT_CLEAR);
++	}
++
++	regs = priv->gfargrp[0].regs;
++	/* Stop the DMA, and wait for it to stop */
++	tempval = gfar_read(&regs->dmactrl);
++	if ((tempval & DMACTRL_GRS) != DMACTRL_GRS) {
++		int ret;
++
++		tempval |= DMACTRL_GRS;
++		gfar_write(&regs->dmactrl, tempval);
++
++		do {
++			ret = spin_event_timeout(((gfar_read(&regs->ievent) &
++				IEVENT_GRSC) == IEVENT_GRSC), 1000000, 0);
++			if (!ret && !(gfar_read(&regs->ievent) & IEVENT_GRSC))
++				ret = __gfar_is_rx_idle(priv);
++		} while (!ret);
++	}
++
++	/* Disable Rx in MACCFG1  */
++	tempval = gfar_read(&regs->maccfg1);
++	tempval &= ~MACCFG1_RX_EN;
++	gfar_write(&regs->maccfg1, tempval);
++}
++#endif
++
+ /* Halt the receive and transmit queues */
+ static void gfar_halt_nodisable(struct net_device *dev)
+ {
+@@ -1808,6 +2017,40 @@ void gfar_start(struct net_device *dev)
+ 	dev->trans_start = jiffies; /* prevent tx timeout */
+ }
+ 
++#ifdef CONFIG_PM
++void gfar_rx_start(struct net_device *dev)
++{
++	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar __iomem *regs = priv->gfargrp[0].regs;
++	u32 tempval;
++	int i = 0;
++
++	/* Enable Rx in MACCFG1 */
++	tempval = gfar_read(&regs->maccfg1);
++	tempval |= MACCFG1_RX_EN;
++	gfar_write(&regs->maccfg1, tempval);
++
++	/* Initialize DMACTRL to have WWR and WOP */
++	tempval = gfar_read(&regs->dmactrl);
++	tempval |= DMACTRL_INIT_SETTINGS;
++	gfar_write(&regs->dmactrl, tempval);
++
++	/* Make sure we aren't stopped */
++	tempval = gfar_read(&regs->dmactrl);
++	tempval &= ~DMACTRL_GRS;
++	gfar_write(&regs->dmactrl, tempval);
++
++	for (i = 0; i < priv->num_grps; i++) {
++		regs = priv->gfargrp[i].regs;
++		/* Clear RHLT, so that the DMA starts polling now */
++		gfar_write(&regs->rstat, priv->gfargrp[i].rstat);
++
++		/* Unmask the interrupts we look for */
++		gfar_write(&regs->imask, IMASK_DEFAULT);
++	}
++}
++#endif
++
+ void gfar_configure_coalescing(struct gfar_private *priv,
+ 	unsigned long tx_mask, unsigned long rx_mask)
+ {
+@@ -1970,7 +2213,7 @@ static int gfar_enet_open(struct net_device *dev)
+ 
+ 	netif_tx_start_all_queues(dev);
+ 
+-	device_set_wakeup_enable(&dev->dev, priv->wol_en);
++	device_set_wakeup_enable(&priv->ofdev->dev, priv->wol_opts);
+ 
+ 	return err;
+ }
+@@ -2657,6 +2900,17 @@ static inline void count_errors(unsigned short status, struct net_device *dev)
+ 
+ irqreturn_t gfar_receive(int irq, void *grp_id)
+ {
++	struct gfar_priv_grp *gfargrp = grp_id;
++	struct gfar __iomem *regs = gfargrp->regs;
++	u32 ievent;
++
++	ievent = gfar_read(&regs->ievent);
++
++	if ((ievent & IEVENT_FGPI) == IEVENT_FGPI) {
++		gfar_write(&regs->ievent, ievent & IEVENT_RX_MASK);
++		return IRQ_HANDLED;
++	}
++
+ 	gfar_schedule_cleanup((struct gfar_priv_grp *)grp_id);
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/net/ethernet/freescale/gianfar.h b/drivers/net/ethernet/freescale/gianfar.h
+index 9aa4377..1abebc4 100644
+--- a/drivers/net/ethernet/freescale/gianfar.h
++++ b/drivers/net/ethernet/freescale/gianfar.h
+@@ -232,6 +232,13 @@ extern const char gfar_driver_version[];
+ #define RQUEUE_EN7		0x00000001
+ #define RQUEUE_EN_ALL		0x000000FF
+ 
++/* Wake-On-Lan options */
++#define GIANFAR_WOL_UCAST	0x00000001	/* Unicast wakeup */
++#define GIANFAR_WOL_MCAST	0x00000002	/* Multicast wakeup */
++#define GIANFAR_WOL_BCAST	0x00000004	/* Broadcase wakeup */
++#define GIANFAR_WOL_ARP		0x00000008	/* ARP request wakeup */
++#define GIANFAR_WOL_MAGIC	0x00000010	/* Magic packet wakeup */
++
+ /* Init to do tx snooping for buffers and descriptors */
+ #define DMACTRL_INIT_SETTINGS   0x000000c3
+ #define DMACTRL_GRS             0x00000010
+@@ -277,11 +284,15 @@ extern const char gfar_driver_version[];
+ #define RCTRL_PAL_MASK		0x001f0000
+ #define RCTRL_VLEX		0x00002000
+ #define RCTRL_FILREN		0x00001000
++#define RCTRL_FSQEN		0x00000800
+ #define RCTRL_GHTX		0x00000400
+ #define RCTRL_IPCSEN		0x00000200
+ #define RCTRL_TUCSEN		0x00000100
+ #define RCTRL_PRSDEP_MASK	0x000000c0
+ #define RCTRL_PRSDEP_INIT	0x000000c0
++#define RCTRL_PRSDEP_L2		0x00000040
++#define RCTRL_PRSDEP_L2L3	0x00000080
++#define RCTRL_PRSDEP_L2L3L4	0x000000c0
+ #define RCTRL_PRSFM		0x00000020
+ #define RCTRL_PROM		0x00000008
+ #define RCTRL_EMEN		0x00000002
+@@ -327,18 +338,20 @@ extern const char gfar_driver_version[];
+ #define IEVENT_MAG		0x00000800
+ #define IEVENT_GRSC		0x00000100
+ #define IEVENT_RXF0		0x00000080
++#define IEVENT_FGPI		0x00000010
+ #define IEVENT_FIR		0x00000008
+ #define IEVENT_FIQ		0x00000004
+ #define IEVENT_DPE		0x00000002
+ #define IEVENT_PERR		0x00000001
+-#define IEVENT_RX_MASK          (IEVENT_RXB0 | IEVENT_RXF0 | IEVENT_BSY)
++#define IEVENT_RX_MASK          (IEVENT_RXB0 | IEVENT_RXF0 | \
++					IEVENT_FGPI | IEVENT_BSY)
+ #define IEVENT_TX_MASK          (IEVENT_TXB | IEVENT_TXF)
+ #define IEVENT_RTX_MASK         (IEVENT_RX_MASK | IEVENT_TX_MASK)
+ #define IEVENT_ERR_MASK         \
+-(IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
+- IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC \
+- | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR \
+- | IEVENT_MAG | IEVENT_BABR)
++	(IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
++	 IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC | \
++	 IEVENT_CRL | IEVENT_XFUN | IEVENT_FIR | IEVENT_FIQ | \
++	 IEVENT_DPE | IEVENT_PERR | IEVENT_MAG | IEVENT_BABR)
+ 
+ #define IMASK_INIT_CLEAR	0x00000000
+ #define IMASK_BABR              0x80000000
+@@ -359,14 +372,15 @@ extern const char gfar_driver_version[];
+ #define IMASK_MAG		0x00000800
+ #define IMASK_GRSC              0x00000100
+ #define IMASK_RXFEN0		0x00000080
++#define IMASK_FGPI		0x00000010
+ #define IMASK_FIR		0x00000008
+ #define IMASK_FIQ		0x00000004
+ #define IMASK_DPE		0x00000002
+ #define IMASK_PERR		0x00000001
+ #define IMASK_DEFAULT  (IMASK_TXEEN | IMASK_TXFEN | IMASK_TXBEN | \
+ 		IMASK_RXFEN0 | IMASK_BSY | IMASK_EBERR | IMASK_BABR | \
+-		IMASK_XFUN | IMASK_RXC | IMASK_BABT | IMASK_DPE \
+-		| IMASK_PERR)
++		IMASK_XFUN | IMASK_RXC | IMASK_BABT | IMASK_FGPI | \
++		IMASK_FIR | IMASK_FIQ | IMASK_DPE | IMASK_PERR | IMASK_MAG)
+ #define IMASK_RTX_DISABLED ((~(IMASK_RXFEN0 | IMASK_TXFEN | IMASK_BSY)) \
+ 			   & IMASK_DEFAULT)
+ 
+@@ -883,6 +897,7 @@ struct gfar {
+ #define FSL_GIANFAR_DEV_HAS_BD_STASHING		0x00000200
+ #define FSL_GIANFAR_DEV_HAS_BUF_STASHING	0x00000400
+ #define FSL_GIANFAR_DEV_HAS_TIMER		0x00000800
++#define FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER	0x00001000
+ 
+ #if (MAXGROUPS == 2)
+ #define DEFAULT_MAPPING 	0xAA
+@@ -1115,6 +1130,10 @@ struct gfar_private {
+ 
+ 	struct work_struct reset_task;
+ 
++	u32 ip_addr;
++	u32 wol_opts;
++	u32 wol_supported;
++
+ 	/* Network Statistics */
+ 	struct gfar_extra_stats extra_stats;
+ 
+diff --git a/drivers/net/ethernet/freescale/gianfar_ethtool.c b/drivers/net/ethernet/freescale/gianfar_ethtool.c
+index 212736b..296e762 100644
+--- a/drivers/net/ethernet/freescale/gianfar_ethtool.c
++++ b/drivers/net/ethernet/freescale/gianfar_ethtool.c
+@@ -29,6 +29,7 @@
+ #include <linux/skbuff.h>
+ #include <linux/spinlock.h>
+ #include <linux/mm.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -577,32 +578,49 @@ static void gfar_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+ {
+ 	struct gfar_private *priv = netdev_priv(dev);
+ 
+-	if (priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) {
+-		wol->supported = WAKE_MAGIC;
+-		wol->wolopts = priv->wol_en ? WAKE_MAGIC : 0;
+-	} else {
+-		wol->supported = wol->wolopts = 0;
+-	}
++	wol->supported = 0;
++	wol->wolopts = 0;
++
++	if (!priv->wol_supported || !device_can_wakeup(&priv->ofdev->dev))
++		return;
++
++	if (priv->wol_supported & GIANFAR_WOL_MAGIC)
++		wol->supported |= WAKE_MAGIC;
++
++	if (priv->wol_supported & GIANFAR_WOL_ARP)
++		wol->supported |= WAKE_ARP;
++
++	if (priv->wol_supported & GIANFAR_WOL_UCAST)
++		wol->supported |= WAKE_UCAST;
++
++	if (priv->wol_opts & GIANFAR_WOL_MAGIC)
++		wol->wolopts |= WAKE_MAGIC;
++
++	if (priv->wol_opts & GIANFAR_WOL_ARP)
++		wol->wolopts |= WAKE_ARP;
++
++	if (priv->wol_opts & GIANFAR_WOL_UCAST)
++		wol->wolopts |= WAKE_UCAST;
+ }
+ 
+ static int gfar_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+ {
+ 	struct gfar_private *priv = netdev_priv(dev);
+-	unsigned long flags;
+ 
+-	if (!(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) &&
+-	    wol->wolopts != 0)
+-		return -EINVAL;
 -
--	dcsr: dcsr@f00000000 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		compatible = "fsl,dcsr", "simple-bus";
--
--		dcsr-epu@0 {
--			compatible = "fsl,dcsr-epu";
--			interrupts = <52 2 0 0
--				      84 2 0 0
--				      85 2 0 0>;
--			interrupt-parent = <&mpic>;
--			reg = <0x0 0x1000>;
--		};
--		dcsr-npc {
--			compatible = "fsl,dcsr-npc";
--			reg = <0x1000 0x1000 0x1000000 0x8000>;
--		};
--		dcsr-nxc@2000 {
--			compatible = "fsl,dcsr-nxc";
--			reg = <0x2000 0x1000>;
--		};
--		dcsr-corenet {
--			compatible = "fsl,dcsr-corenet";
--			reg = <0x8000 0x1000 0xB0000 0x1000>;
--		};
--		dcsr-dpaa@9000 {
--			compatible = "fsl,p5020-dcsr-dpaa", "fsl,dcsr-dpaa";
--			reg = <0x9000 0x1000>;
--		};
--		dcsr-ocn@11000 {
--			compatible = "fsl,p5020-dcsr-ocn", "fsl,dcsr-ocn";
--			reg = <0x11000 0x1000>;
--		};
--		dcsr-ddr@12000 {
--			compatible = "fsl,dcsr-ddr";
--			dev-handle = <&ddr1>;
--			reg = <0x12000 0x1000>;
--		};
--		dcsr-ddr@13000 {
--			compatible = "fsl,dcsr-ddr";
--			dev-handle = <&ddr2>;
--			reg = <0x13000 0x1000>;
--		};
--		dcsr-nal@18000 {
--			compatible = "fsl,p5020-dcsr-nal", "fsl,dcsr-nal";
--			reg = <0x18000 0x1000>;
--		};
--		dcsr-rcpm@22000 {
--			compatible = "fsl,p5020-dcsr-rcpm", "fsl,dcsr-rcpm";
--			reg = <0x22000 0x1000>;
--		};
--		dcsr-cpu-sb-proxy@40000 {
--			compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
--			cpu-handle = <&cpu0>;
--			reg = <0x40000 0x1000>;
--		};
--		dcsr-cpu-sb-proxy@41000 {
--			compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
--			cpu-handle = <&cpu1>;
--			reg = <0x41000 0x1000>;
--		};
--	};
--
--	soc: soc@ffe000000 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		device_type = "soc";
--		compatible = "simple-bus";
--		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
--		reg = <0xf 0xfe000000 0 0x00001000>;
--
--		soc-sram-error {
--			compatible = "fsl,soc-sram-error";
--			interrupts = <16 2 1 29>;
--		};
--
--		corenet-law@0 {
--			compatible = "fsl,corenet-law";
--			reg = <0x0 0x1000>;
--			fsl,num-laws = <32>;
--		};
--
--		ddr1: memory-controller@8000 {
--			compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
--			reg = <0x8000 0x1000>;
--			interrupts = <16 2 1 23>;
--		};
--
--		ddr2: memory-controller@9000 {
--			compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
--			reg = <0x9000 0x1000>;
--			interrupts = <16 2 1 22>;
--		};
--
--		cpc: l3-cache-controller@10000 {
--			compatible = "fsl,p5020-l3-cache-controller", "fsl,p4080-l3-cache-controller", "cache";
--			reg = <0x10000 0x1000
--			       0x11000 0x1000>;
--			interrupts = <16 2 1 27
--				      16 2 1 26>;
--		};
--
--		corenet-cf@18000 {
--			compatible = "fsl,corenet-cf";
--			reg = <0x18000 0x1000>;
--			interrupts = <16 2 1 31>;
--			fsl,ccf-num-csdids = <32>;
--			fsl,ccf-num-snoopids = <32>;
--		};
--
--		iommu@20000 {
--			compatible = "fsl,pamu-v1.0", "fsl,pamu";
--			reg = <0x20000 0x4000>;
--			interrupts = <
--				24 2 0 0
--				16 2 1 30>;
--		};
--
--		mpic: pic@40000 {
--			clock-frequency = <0>;
--			interrupt-controller;
--			#address-cells = <0>;
--			#interrupt-cells = <4>;
--			reg = <0x40000 0x40000>;
--			compatible = "fsl,mpic", "chrp,open-pic";
--			device_type = "open-pic";
--		};
--
--		msi0: msi@41600 {
--			compatible = "fsl,mpic-msi";
--			reg = <0x41600 0x200>;
--			msi-available-ranges = <0 0x100>;
--			interrupts = <
--				0xe0 0 0 0
--				0xe1 0 0 0
--				0xe2 0 0 0
--				0xe3 0 0 0
--				0xe4 0 0 0
--				0xe5 0 0 0
--				0xe6 0 0 0
--				0xe7 0 0 0>;
--		};
--
--		msi1: msi@41800 {
--			compatible = "fsl,mpic-msi";
--			reg = <0x41800 0x200>;
--			msi-available-ranges = <0 0x100>;
--			interrupts = <
--				0xe8 0 0 0
--				0xe9 0 0 0
--				0xea 0 0 0
--				0xeb 0 0 0
--				0xec 0 0 0
--				0xed 0 0 0
--				0xee 0 0 0
--				0xef 0 0 0>;
--		};
--
--		msi2: msi@41a00 {
--			compatible = "fsl,mpic-msi";
--			reg = <0x41a00 0x200>;
--			msi-available-ranges = <0 0x100>;
--			interrupts = <
--				0xf0 0 0 0
--				0xf1 0 0 0
--				0xf2 0 0 0
--				0xf3 0 0 0
--				0xf4 0 0 0
--				0xf5 0 0 0
--				0xf6 0 0 0
--				0xf7 0 0 0>;
--		};
--
--		guts: global-utilities@e0000 {
--			compatible = "fsl,qoriq-device-config-1.0";
--			reg = <0xe0000 0xe00>;
--			fsl,has-rstcr;
--			#sleep-cells = <1>;
--			fsl,liodn-bits = <12>;
--		};
--
--		pins: global-utilities@e0e00 {
--			compatible = "fsl,qoriq-pin-control-1.0";
--			reg = <0xe0e00 0x200>;
--			#sleep-cells = <2>;
--		};
--
--		clockgen: global-utilities@e1000 {
--			compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
--			reg = <0xe1000 0x1000>;
--			clock-frequency = <0>;
--		};
--
--		rcpm: global-utilities@e2000 {
--			compatible = "fsl,qoriq-rcpm-1.0";
--			reg = <0xe2000 0x1000>;
--			#sleep-cells = <1>;
--		};
--
--		sfp: sfp@e8000 {
--			compatible = "fsl,p5020-sfp", "fsl,qoriq-sfp-1.0";
--			reg	   = <0xe8000 0x1000>;
--		};
--
--		serdes: serdes@ea000 {
--			compatible = "fsl,p5020-serdes";
--			reg	   = <0xea000 0x1000>;
--		};
--
--		dma0: dma@100300 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "fsl,p5020-dma", "fsl,eloplus-dma";
--			reg = <0x100300 0x4>;
--			ranges = <0x0 0x100100 0x200>;
--			cell-index = <0>;
--			dma-channel@0 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x0 0x80>;
--				cell-index = <0>;
--				interrupts = <28 2 0 0>;
--			};
--			dma-channel@80 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x80 0x80>;
--				cell-index = <1>;
--				interrupts = <29 2 0 0>;
--			};
--			dma-channel@100 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x100 0x80>;
--				cell-index = <2>;
--				interrupts = <30 2 0 0>;
--			};
--			dma-channel@180 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x180 0x80>;
--				cell-index = <3>;
--				interrupts = <31 2 0 0>;
--			};
--		};
--
--		dma1: dma@101300 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "fsl,p5020-dma", "fsl,eloplus-dma";
--			reg = <0x101300 0x4>;
--			ranges = <0x0 0x101100 0x200>;
--			cell-index = <1>;
--			dma-channel@0 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x0 0x80>;
--				cell-index = <0>;
--				interrupts = <32 2 0 0>;
--			};
--			dma-channel@80 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x80 0x80>;
--				cell-index = <1>;
--				interrupts = <33 2 0 0>;
--			};
--			dma-channel@100 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x100 0x80>;
--				cell-index = <2>;
--				interrupts = <34 2 0 0>;
--			};
--			dma-channel@180 {
--				compatible = "fsl,p5020-dma-channel",
--						"fsl,eloplus-dma-channel";
--				reg = <0x180 0x80>;
--				cell-index = <3>;
--				interrupts = <35 2 0 0>;
--			};
--		};
--
--		spi@110000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			compatible = "fsl,p5020-espi", "fsl,mpc8536-espi";
--			reg = <0x110000 0x1000>;
--			interrupts = <53 0x2 0 0>;
--			fsl,espi-num-chipselects = <4>;
--		};
--
--		sdhc: sdhc@114000 {
--			compatible = "fsl,p5020-esdhc", "fsl,esdhc";
--			reg = <0x114000 0x1000>;
--			interrupts = <48 2 0 0>;
--			sdhci,auto-cmd12;
--			clock-frequency = <0>;
--		};
--
--		i2c@118000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			cell-index = <0>;
--			compatible = "fsl-i2c";
--			reg = <0x118000 0x100>;
--			interrupts = <38 2 0 0>;
--			dfsrr;
--		};
--
--		i2c@118100 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			cell-index = <1>;
--			compatible = "fsl-i2c";
--			reg = <0x118100 0x100>;
--			interrupts = <38 2 0 0>;
--			dfsrr;
--		};
--
--		i2c@119000 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			cell-index = <2>;
--			compatible = "fsl-i2c";
--			reg = <0x119000 0x100>;
--			interrupts = <39 2 0 0>;
--			dfsrr;
--		};
--
--		i2c@119100 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			cell-index = <3>;
--			compatible = "fsl-i2c";
--			reg = <0x119100 0x100>;
--			interrupts = <39 2 0 0>;
--			dfsrr;
--		};
--
--		serial0: serial@11c500 {
--			cell-index = <0>;
--			device_type = "serial";
--			compatible = "ns16550";
--			reg = <0x11c500 0x100>;
--			clock-frequency = <0>;
--			interrupts = <36 2 0 0>;
--		};
--
--		serial1: serial@11c600 {
--			cell-index = <1>;
--			device_type = "serial";
--			compatible = "ns16550";
--			reg = <0x11c600 0x100>;
--			clock-frequency = <0>;
--			interrupts = <36 2 0 0>;
--		};
--
--		serial2: serial@11d500 {
--			cell-index = <2>;
--			device_type = "serial";
--			compatible = "ns16550";
--			reg = <0x11d500 0x100>;
--			clock-frequency = <0>;
--			interrupts = <37 2 0 0>;
--		};
--
--		serial3: serial@11d600 {
--			cell-index = <3>;
--			device_type = "serial";
--			compatible = "ns16550";
--			reg = <0x11d600 0x100>;
--			clock-frequency = <0>;
--			interrupts = <37 2 0 0>;
--		};
--
--		gpio0: gpio@130000 {
--			compatible = "fsl,p5020-gpio", "fsl,qoriq-gpio";
--			reg = <0x130000 0x1000>;
--			interrupts = <55 2 0 0>;
--			#gpio-cells = <2>;
--			gpio-controller;
--		};
--
--		usb0: usb@210000 {
--			compatible = "fsl,p5020-usb2-mph",
--					"fsl,mpc85xx-usb2-mph", "fsl-usb2-mph";
--			reg = <0x210000 0x1000>;
--			#address-cells = <1>;
--			#size-cells = <0>;
--			interrupts = <44 0x2 0 0>;
--			phy_type = "utmi";
--			port0;
--		};
--
--		usb1: usb@211000 {
--			compatible = "fsl,p5020-usb2-dr",
--					"fsl,mpc85xx-usb2-dr", "fsl-usb2-dr";
--			reg = <0x211000 0x1000>;
--			#address-cells = <1>;
--			#size-cells = <0>;
--			interrupts = <45 0x2 0 0>;
--			dr_mode = "host";
--			phy_type = "utmi";
--		};
--
--		sata@220000 {
--			compatible = "fsl,p5020-sata", "fsl,pq-sata-v2";
--			reg = <0x220000 0x1000>;
--			interrupts = <68 0x2 0 0>;
--		};
--
--		sata@221000 {
--			compatible = "fsl,p5020-sata", "fsl,pq-sata-v2";
--			reg = <0x221000 0x1000>;
--			interrupts = <69 0x2 0 0>;
--		};
--
--		crypto: crypto@300000 {
--			compatible = "fsl,sec-v4.2", "fsl,sec-v4.0";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			reg		 = <0x300000 0x10000>;
--			ranges		 = <0 0x300000 0x10000>;
--			interrupts	 = <92 2 0 0>;
--
--			sec_jr0: jr@1000 {
--				compatible = "fsl,sec-v4.2-job-ring",
--					     "fsl,sec-v4.0-job-ring";
--				reg = <0x1000 0x1000>;
--				interrupts = <88 2 0 0>;
--			};
--
--			sec_jr1: jr@2000 {
--				compatible = "fsl,sec-v4.2-job-ring",
--					     "fsl,sec-v4.0-job-ring";
--				reg = <0x2000 0x1000>;
--				interrupts = <89 2 0 0>;
--			};
--
--			sec_jr2: jr@3000 {
--				compatible = "fsl,sec-v4.2-job-ring",
--					     "fsl,sec-v4.0-job-ring";
--				reg = <0x3000 0x1000>;
--				interrupts = <90 2 0 0>;
--			};
--
--			sec_jr3: jr@4000 {
--				compatible = "fsl,sec-v4.2-job-ring",
--					     "fsl,sec-v4.0-job-ring";
--				reg = <0x4000 0x1000>;
--				interrupts = <91 2 0 0>;
--			};
--
--			rtic@6000 {
--				compatible = "fsl,sec-v4.2-rtic",
--					     "fsl,sec-v4.0-rtic";
--				#address-cells = <1>;
--				#size-cells = <1>;
--				reg = <0x6000 0x100>;
--				ranges = <0x0 0x6100 0xe00>;
--
--				rtic_a: rtic-a@0 {
--					compatible = "fsl,sec-v4.2-rtic-memory",
--						     "fsl,sec-v4.0-rtic-memory";
--					reg = <0x00 0x20 0x100 0x80>;
--				};
--
--				rtic_b: rtic-b@20 {
--					compatible = "fsl,sec-v4.2-rtic-memory",
--						     "fsl,sec-v4.0-rtic-memory";
--					reg = <0x20 0x20 0x200 0x80>;
--				};
--
--				rtic_c: rtic-c@40 {
--					compatible = "fsl,sec-v4.2-rtic-memory",
--						     "fsl,sec-v4.0-rtic-memory";
--					reg = <0x40 0x20 0x300 0x80>;
--				};
--
--				rtic_d: rtic-d@60 {
--					compatible = "fsl,sec-v4.2-rtic-memory",
--						     "fsl,sec-v4.0-rtic-memory";
--					reg = <0x60 0x20 0x500 0x80>;
--				};
--			};
--		};
--
--		sec_mon: sec_mon@314000 {
--			compatible = "fsl,sec-v4.2-mon", "fsl,sec-v4.0-mon";
--			reg = <0x314000 0x1000>;
--			interrupts = <93 2 0 0>;
--		};
--	};
--
--/*
--	rapidio0: rapidio@ffe0c0000
--*/
--
--	localbus@ffe124000 {
--		compatible = "fsl,p5020-elbc", "fsl,elbc", "simple-bus";
--		interrupts = <25 2 0 0>;
--		#address-cells = <2>;
--		#size-cells = <1>;
--	};
--
--	pci0: pcie@ffe200000 {
--		compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
--		device_type = "pci";
--		#size-cells = <2>;
--		#address-cells = <3>;
--		bus-range = <0x0 0xff>;
--		clock-frequency = <0x1fca055>;
--		fsl,msi = <&msi0>;
--		interrupts = <16 2 1 15>;
--
--		pcie@0 {
--			reg = <0 0 0 0 0>;
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
--			interrupts = <16 2 1 15>;
--			interrupt-map-mask = <0xf800 0 0 7>;
--			interrupt-map = <
--				/* IDSEL 0x0 */
--				0000 0 0 1 &mpic 40 1 0 0
--				0000 0 0 2 &mpic 1 1 0 0
--				0000 0 0 3 &mpic 2 1 0 0
--				0000 0 0 4 &mpic 3 1 0 0
--				>;
--		};
--	};
--
--	pci1: pcie@ffe201000 {
--		compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
--		device_type = "pci";
--		#size-cells = <2>;
--		#address-cells = <3>;
--		bus-range = <0 0xff>;
--		clock-frequency = <0x1fca055>;
--		fsl,msi = <&msi1>;
--		interrupts = <16 2 1 14>;
--		pcie@0 {
--			reg = <0 0 0 0 0>;
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
--			interrupts = <16 2 1 14>;
--			interrupt-map-mask = <0xf800 0 0 7>;
--			interrupt-map = <
--				/* IDSEL 0x0 */
--				0000 0 0 1 &mpic 41 1 0 0
--				0000 0 0 2 &mpic 5 1 0 0
--				0000 0 0 3 &mpic 6 1 0 0
--				0000 0 0 4 &mpic 7 1 0 0
--				>;
--		};
--	};
--
--	pci2: pcie@ffe202000 {
--		compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
--		device_type = "pci";
--		#size-cells = <2>;
--		#address-cells = <3>;
--		bus-range = <0x0 0xff>;
--		clock-frequency = <0x1fca055>;
--		fsl,msi = <&msi2>;
--		interrupts = <16 2 1 13>;
--		pcie@0 {
--			reg = <0 0 0 0 0>;
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
--			interrupts = <16 2 1 13>;
--			interrupt-map-mask = <0xf800 0 0 7>;
--			interrupt-map = <
--				/* IDSEL 0x0 */
--				0000 0 0 1 &mpic 42 1 0 0
--				0000 0 0 2 &mpic 9 1 0 0
--				0000 0 0 3 &mpic 10 1 0 0
--				0000 0 0 4 &mpic 11 1 0 0
--				>;
--		};
--	};
--
--	pci3: pcie@ffe203000 {
--		compatible = "fsl,p5020-pcie", "fsl,qoriq-pcie-v2.2";
--		device_type = "pci";
--		#size-cells = <2>;
--		#address-cells = <3>;
--		bus-range = <0x0 0xff>;
--		clock-frequency = <0x1fca055>;
--		fsl,msi = <&msi2>;
--		interrupts = <16 2 1 12>;
--		pcie@0 {
--			reg = <0 0 0 0 0>;
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			device_type = "pci";
--			interrupts = <16 2 1 12>;
--			interrupt-map-mask = <0xf800 0 0 7>;
--			interrupt-map = <
--				/* IDSEL 0x0 */
--				0000 0 0 1 &mpic 43 1 0 0
--				0000 0 0 2 &mpic 0 1 0 0
--				0000 0 0 3 &mpic 4 1 0 0
--				0000 0 0 4 &mpic 8 1 0 0
--				>;
--		};
--	};
--};
+-	if (wol->wolopts & ~WAKE_MAGIC)
+-		return -EINVAL;
++	if (!priv->wol_supported || !device_can_wakeup(&priv->ofdev->dev) ||
++		(wol->wolopts & ~(WAKE_MAGIC | WAKE_ARP | WAKE_UCAST)))
++		return -EOPNOTSUPP;
+ 
+-	device_set_wakeup_enable(&dev->dev, wol->wolopts & WAKE_MAGIC);
++	priv->wol_opts = 0;
+ 
+-	spin_lock_irqsave(&priv->bflock, flags);
+-	priv->wol_en =  !!device_may_wakeup(&dev->dev);
+-	spin_unlock_irqrestore(&priv->bflock, flags);
++	if (wol->wolopts & WAKE_MAGIC)
++		priv->wol_opts |= GIANFAR_WOL_MAGIC;
++	if (wol->wolopts & WAKE_ARP)
++		priv->wol_opts |= GIANFAR_WOL_ARP;
++	if (wol->wolopts & WAKE_UCAST)
++		priv->wol_opts |= GIANFAR_WOL_UCAST;
+ 
++	device_set_wakeup_enable(&priv->ofdev->dev, (u32)priv->wol_opts);
+ 	return 0;
+ }
+ #endif
 -- 
-1.7.3.4
+1.6.4.1
