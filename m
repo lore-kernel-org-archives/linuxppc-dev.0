@@ -1,29 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (mail-va3.bigfish.com [216.32.180.10])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <R1AAHA@freescale.com>
+Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+ [65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id F41E2B71DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 11:18:09 +1100 (EST)
-Received: from mail11-va3 (localhost [127.0.0.1])	by mail11-va3-R.bigfish.com
- (Postfix) with ESMTP id 24C0C2003A0	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 17 Nov 2011 00:16:13 +0000 (UTC)
-Received: from VA3EHSMHS011.bigfish.com (unknown [10.7.14.253])	by
- mail11-va3.bigfish.com (Postfix) with ESMTP id BA1C2140019	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 00:16:12 +0000 (UTC)
-Message-ID: <4EC452B4.5090104@freescale.com>
-Date: Wed, 16 Nov 2011 18:17:56 -0600
-From: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id B708EB71F9
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 11:21:18 +1100 (EST)
+Date: Wed, 16 Nov 2011 18:20:12 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: <linux-crypto@vger.kernel.org>
+Subject: [PATCH 4/5] crypto: talitos - support for channel remap and 2nd IRQ
+Message-ID: <20111116182012.e2929f6c44cf11f8bd53437b@freescale.com>
 MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v2 4/7] powerpc/85xx: add support to JOG feature using
- cpufreq interface
-References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
- <1321437344-19253-4-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1321437344-19253-4-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,157 +22,347 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
-> From: Li Yang <leoli@freescale.com>
-> 
-> Some 85xx silicons like MPC8536 and P1022 has the JOG PM feature.
+Some later SEC v3.x are equipped with a second IRQ line.
+By correctly assigning IRQ affinity, this feature can be
+used to increase performance on dual core parts, like the
+MPC8572E and P2020E.
 
-P1023 as well -- any plan to support?
+The existence of the 2nd IRQ is determined from the device
+node's interrupt property.  If present, the driver remaps
+two of four channels, which in turn makes those channels
+trigger their interrupts on the 2nd line instead of the first.
+To handle single- and dual-IRQ combinations efficiently,
+talitos gets two new interrupt handlers and back-half workers.
 
-I see this in the p1022 and mpc8536 manuals:
+[includes a fix to MCR_LO's address.]
 
-> The system operates as if a request to enter sleep mode has occurred, with the exception that the
-> values written into the PMCDR register (clock disable register for sleep/ deep sleep modes) are
-> ignored, and it is treated as if every bit in PMCDR is a logic 1. This means that the eTSECs, USB
-> controllers, DDR and eLBC will be stopped.
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ drivers/crypto/talitos.c |  203 +++++++++++++++++++++++++++++++---------------
+ drivers/crypto/talitos.h |   14 +++-
+ 2 files changed, 147 insertions(+), 70 deletions(-)
 
-...which doesn't sound good.
-
-> The patch adds the support to change CPU frequency using the standard
-> cpufreq interface. Add the all PLL ratio core support. The ratio CORE
-> to CCB can 1:1(except MPC8536), 3:2, 2:1, 5:2, 3:1, 7:2 and 4:1.
-
-The ratios supported are implementation-specific.  Only p1022 supports
-1:1.  p1023 supports only 3:2, 2:1, 5:2, and 3:1 (assuming the
-preliminary manual I have is accurate).
-
-> +	local_irq_save(flags);
-> +	/*
-> +	 * A Jog request can not be asserted when any core is in a low power
-> +	 * state. Before executing a jog request, any core which is in
-> +	 * a low power state must be waked by a interrupt.
-> +	 */
-> +	if (mpc85xx_freqs == p1022_freqs_table) {
-> +		powersave = ppc_md.power_save;
-> +		ppc_md.power_save = NULL;
-> +		wmb();
-> +		val = in_be32(guts + POWMGTCSR);
-> +		for_each_online_cpu(i) {
-> +			if (val & ((POWMGTCSR_CORE0_DOZING |
-> +					POWMGTCSR_CORE0_NAPPING) << (i * 2)))
-> +				smp_send_reschedule(i);
-> +		}
-> +	}
-
-This is racy, what if another core read ppc_md.power_save just before
-you wrote NULL, but hasn't yet entered a low power state?
-
-You should send a reschedule to all cores regardless of what you see in
-POWMGTCSR.
-
-The p1022 also says that MSR[EE] should be zero -- it is on this core,
-but what about the other?
-
-> +	setbits32(guts + POWMGTCSR, POWMGTCSR_JOG_MASK);
-
-This might work on p1022, but don't you have to go through a core reset
-on mpc8536?  In that case, you can't just set the bit, you have to go
-through the deep sleep code to save/restore state.
-
-P1022 also says, "Mask all the interrupts to the cores by setting the
-bits CORE_UDE_MSK, CORE_MCP_MSK, CORE_INT_MSK and CORE_CINT_MSK in the
-POWMGTCSR," which I don't see happening.
-
-Though, this directly contradicts where it later says, "The user must
-not issue a jog request at the same time as issuing a request
-for another low power mode, or while the system is in the process of
-entering a low power mode. This means that a jog request must not be
-asserted when any other bit of POWMGTCSR is non-zero. If the user tries
-to do this, the jog request is ignored."
-
-POWMGTCSR must be zero except for the JOG bit, but you must set other
-POWMGTCSR bits.  Lovely. :-P  I assume that the "This means..."
-statement is just wrong, and you really are supposed to set those other
-bits.  P1023 refines the statement to, "This means that POWMGTCSR[JOG]
-must not be asserted when any of the other power management request bits
-(COREn_DOZ, SLP) in POWMGTCSR are set."
-
-> +	if (powersave) {
-> +		ppc_md.power_save = powersave;
-> +		wmb();
-> +	}
-
-How do you know the jog has happened at this point?  Just because you've
-issued a store that requests it doesn't mean it has taken effect by the
-time you execute the next instruction.
-
-> +	local_irq_restore(flags);
-> +
-> +	/* verify */
-> +	if (!spin_event_timeout(get_pll(hw_cpu) == pll, 10000, 10)) {
-> +		pr_err("%s: Fail to switch the core frequency. "
-> +			"The current PLL of core %d is %d instead of %d.\n",
-> +				__func__, hw_cpu, get_pll(hw_cpu), pll);
-> +		ret = -EINVAL;
-> +	}
-
-Shouldn't the pll be where it's supposed to be as soon as we resume
-execution?  I don't see a need to spin here, provided we properly wait
-for the jog to happen earlier (which we want to do so that we don't
-enable power_save and EE early).
-
-> +static int mpc85xx_cpufreq_target(struct cpufreq_policy *policy,
-> +			      unsigned int target_freq,
-> +			      unsigned int relation)
-> +{
-> +	struct cpufreq_freqs freqs;
-> +	unsigned int new;
-> +	int ret = 0;
-> +
-> +	cpufreq_frequency_table_target(policy,
-> +				       mpc85xx_freqs,
-> +				       target_freq,
-> +				       relation,
-> +				       &new);
-> +
-> +	freqs.old = policy->cur;
-> +	freqs.new = mpc85xx_freqs[new].frequency;
-> +	freqs.cpu = policy->cpu;
-> +
-> +	mutex_lock(&mpc85xx_switch_mutex);
-> +	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-> +
-> +	ret = set_pll(policy->cpu, mpc85xx_freqs[new].index);
-> +	if (!ret) {
-> +		pr_info("cpufreq: Setting core%d frequency to %d kHz and " \
-> +			 "PLL ratio to %d:2\n",
-> +			 policy->cpu,
-> +			 mpc85xx_freqs[new].frequency,
-> +			 mpc85xx_freqs[new].index);
-> +
-> +		ppc_proc_freq = freqs.new * 1000ul;
-> +	}
-> +	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> +	mutex_unlock(&mpc85xx_switch_mutex);
-
-I still do not understand what sense it makes to set a global variable
-(ppc_proc_freq) to the frequency of a specific CPU.
-
-> +static int mpc85xx_job_probe(struct platform_device *ofdev)
-> +{
-> +	struct device_node *np = ofdev->dev.of_node;
-> +
-> +	if (of_device_is_compatible(np, "fsl,mpc8536-guts")) {
-> +		threshold_freq = FREQ_800MHz;
-> +		mpc85xx_freqs = mpc8536_freqs_table;
-> +	} else if (of_device_is_compatible(np, "fsl,p1022-guts")) {
-> +		threshold_freq = FREQ_533MHz;
-> +		mpc85xx_freqs = p1022_freqs_table;
-> +	}
-
-Maybe use .data in the of_device_id table, similar to
-arch/powerpc/platforms/83xx/suspend.c?  Though it's slightly less
-convenient now that we need to call of_match_device() again in order to
-get a match pointer.
-
--Scott
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 7f82e91..92c0ca7 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -122,7 +122,7 @@ struct talitos_private {
+ 	struct device *dev;
+ 	struct platform_device *ofdev;
+ 	void __iomem *reg;
+-	int irq;
++	int irq[2];
+ 
+ 	/* SEC version geometry (from device tree node) */
+ 	unsigned int num_channels;
+@@ -146,7 +146,7 @@ struct talitos_private {
+ 	atomic_t last_chan ____cacheline_aligned;
+ 
+ 	/* request callback tasklet */
+-	struct tasklet_struct done_task;
++	struct tasklet_struct done_task[2];
+ 
+ 	/* list of registered algorithms */
+ 	struct list_head alg_list;
+@@ -226,13 +226,19 @@ static int reset_device(struct device *dev)
+ {
+ 	struct talitos_private *priv = dev_get_drvdata(dev);
+ 	unsigned int timeout = TALITOS_TIMEOUT;
++	u32 mcr = TALITOS_MCR_SWR;
+ 
+-	setbits32(priv->reg + TALITOS_MCR, TALITOS_MCR_SWR);
++	setbits32(priv->reg + TALITOS_MCR, mcr);
+ 
+ 	while ((in_be32(priv->reg + TALITOS_MCR) & TALITOS_MCR_SWR)
+ 	       && --timeout)
+ 		cpu_relax();
+ 
++	if (priv->irq[1] != NO_IRQ) {
++		mcr = TALITOS_MCR_RCA1 | TALITOS_MCR_RCA3;
++		setbits32(priv->reg + TALITOS_MCR, mcr);
++	}
++
+ 	if (timeout == 0) {
+ 		dev_err(dev, "failed to reset device\n");
+ 		return -EIO;
+@@ -401,21 +407,32 @@ static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
+ /*
+  * process completed requests for channels that have done status
+  */
+-static void talitos_done(unsigned long data)
+-{
+-	struct device *dev = (struct device *)data;
+-	struct talitos_private *priv = dev_get_drvdata(dev);
+-	int ch;
+-
+-	for (ch = 0; ch < priv->num_channels; ch++)
+-		flush_channel(dev, ch, 0, 0);
+-
+-	/* At this point, all completed channels have been processed.
+-	 * Unmask done interrupts for channels completed later on.
+-	 */
+-	setbits32(priv->reg + TALITOS_IMR, TALITOS_IMR_INIT);
+-	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);
++#define DEF_TALITOS_DONE(name, ch_done_mask)				\
++static void talitos_done_##name(unsigned long data)			\
++{									\
++	struct device *dev = (struct device *)data;			\
++	struct talitos_private *priv = dev_get_drvdata(dev);		\
++									\
++	if (ch_done_mask & 1)						\
++		flush_channel(dev, 0, 0, 0);				\
++	if (priv->num_channels == 1)					\
++		goto out;						\
++	if (ch_done_mask & (1 << 2))					\
++		flush_channel(dev, 1, 0, 0);				\
++	if (ch_done_mask & (1 << 4))					\
++		flush_channel(dev, 2, 0, 0);				\
++	if (ch_done_mask & (1 << 6))					\
++		flush_channel(dev, 3, 0, 0);				\
++									\
++out:									\
++	/* At this point, all completed channels have been processed */	\
++	/* Unmask done interrupts for channels completed later on. */	\
++	setbits32(priv->reg + TALITOS_IMR, ch_done_mask);		\
++	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);	\
+ }
++DEF_TALITOS_DONE(4ch, TALITOS_ISR_4CHDONE)
++DEF_TALITOS_DONE(ch0_2, TALITOS_ISR_CH_0_2_DONE)
++DEF_TALITOS_DONE(ch1_3, TALITOS_ISR_CH_1_3_DONE)
+ 
+ /*
+  * locate current (offending) descriptor
+@@ -584,7 +601,7 @@ static void talitos_error(unsigned long data, u32 isr, u32 isr_lo)
+ 			}
+ 		}
+ 	}
+-	if (reset_dev || isr & ~TALITOS_ISR_CHERR || isr_lo) {
++	if (reset_dev || isr & ~TALITOS_ISR_4CHERR || isr_lo) {
+ 		dev_err(dev, "done overflow, internal time out, or rngu error: "
+ 		        "ISR 0x%08x_%08x\n", isr, isr_lo);
+ 
+@@ -597,30 +614,35 @@ static void talitos_error(unsigned long data, u32 isr, u32 isr_lo)
+ 	}
+ }
+ 
+-static irqreturn_t talitos_interrupt(int irq, void *data)
+-{
+-	struct device *dev = data;
+-	struct talitos_private *priv = dev_get_drvdata(dev);
+-	u32 isr, isr_lo;
+-
+-	isr = in_be32(priv->reg + TALITOS_ISR);
+-	isr_lo = in_be32(priv->reg + TALITOS_ISR_LO);
+-	/* Acknowledge interrupt */
+-	out_be32(priv->reg + TALITOS_ICR, isr);
+-	out_be32(priv->reg + TALITOS_ICR_LO, isr_lo);
+-
+-	if (unlikely((isr & ~TALITOS_ISR_CHDONE) || isr_lo))
+-		talitos_error((unsigned long)data, isr, isr_lo);
+-	else
+-		if (likely(isr & TALITOS_ISR_CHDONE)) {
+-			/* mask further done interrupts. */
+-			clrbits32(priv->reg + TALITOS_IMR, TALITOS_IMR_DONE);
+-			/* done_task will unmask done interrupts at exit */
+-			tasklet_schedule(&priv->done_task);
+-		}
+-
+-	return (isr || isr_lo) ? IRQ_HANDLED : IRQ_NONE;
++#define DEF_TALITOS_INTERRUPT(name, ch_done_mask, ch_err_mask, tlet)	       \
++static irqreturn_t talitos_interrupt_##name(int irq, void *data)	       \
++{									       \
++	struct device *dev = data;					       \
++	struct talitos_private *priv = dev_get_drvdata(dev);		       \
++	u32 isr, isr_lo;						       \
++									       \
++	isr = in_be32(priv->reg + TALITOS_ISR);				       \
++	isr_lo = in_be32(priv->reg + TALITOS_ISR_LO);			       \
++	/* Acknowledge interrupt */					       \
++	out_be32(priv->reg + TALITOS_ICR, isr & (ch_done_mask | ch_err_mask)); \
++	out_be32(priv->reg + TALITOS_ICR_LO, isr_lo);			       \
++									       \
++	if (unlikely((isr & ~TALITOS_ISR_4CHDONE) & ch_err_mask || isr_lo))    \
++		talitos_error((unsigned long)data, isr, isr_lo);	       \
++	else								       \
++		if (likely(isr & ch_done_mask)) {			       \
++			/* mask further done interrupts. */		       \
++			clrbits32(priv->reg + TALITOS_IMR, ch_done_mask);      \
++			/* done_task will unmask done interrupts at exit */    \
++			tasklet_schedule(&priv->done_task[tlet]);	       \
++		}							       \
++									       \
++	return (isr & (ch_done_mask | ch_err_mask) || isr_lo) ? IRQ_HANDLED :  \
++								IRQ_NONE;      \
+ }
++DEF_TALITOS_INTERRUPT(4ch, TALITOS_ISR_4CHDONE, TALITOS_ISR_4CHERR, 0)
++DEF_TALITOS_INTERRUPT(ch0_2, TALITOS_ISR_CH_0_2_DONE, TALITOS_ISR_CH_0_2_ERR, 0)
++DEF_TALITOS_INTERRUPT(ch1_3, TALITOS_ISR_CH_1_3_DONE, TALITOS_ISR_CH_1_3_ERR, 1)
+ 
+ /*
+  * hwrng
+@@ -2558,12 +2580,15 @@ static int talitos_remove(struct platform_device *ofdev)
+ 
+ 	kfree(priv->chan);
+ 
+-	if (priv->irq != NO_IRQ) {
+-		free_irq(priv->irq, dev);
+-		irq_dispose_mapping(priv->irq);
+-	}
++	for (i = 0; i < 2; i++)
++		if (priv->irq[i] != NO_IRQ) {
++			free_irq(priv->irq[i], dev);
++			irq_dispose_mapping(priv->irq[i]);
++		}
+ 
+-	tasklet_kill(&priv->done_task);
++	tasklet_kill(&priv->done_task[0]);
++	if (priv->irq[1] != NO_IRQ)
++		tasklet_kill(&priv->done_task[1]);
+ 
+ 	iounmap(priv->reg);
+ 
+@@ -2628,6 +2653,54 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
+ 	return t_alg;
+ }
+ 
++static int talitos_probe_irq(struct platform_device *ofdev)
++{
++	struct device *dev = &ofdev->dev;
++	struct device_node *np = ofdev->dev.of_node;
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	int err;
++
++	priv->irq[0] = irq_of_parse_and_map(np, 0);
++	if (priv->irq[0] == NO_IRQ) {
++		dev_err(dev, "failed to map irq\n");
++		return -EINVAL;
++	}
++
++	priv->irq[1] = irq_of_parse_and_map(np, 1);
++
++	/* get the primary irq line */
++	if (priv->irq[1] == NO_IRQ) {
++		err = request_irq(priv->irq[0], talitos_interrupt_4ch, 0,
++				  dev_driver_string(dev), dev);
++		goto primary_out;
++	}
++
++	err = request_irq(priv->irq[0], talitos_interrupt_ch0_2, 0,
++			  dev_driver_string(dev), dev);
++	if (err)
++		goto primary_out;
++
++	/* get the secondary irq line */
++	err = request_irq(priv->irq[1], talitos_interrupt_ch1_3, 0,
++			  dev_driver_string(dev), dev);
++	if (err) {
++		dev_err(dev, "failed to request secondary irq\n");
++		irq_dispose_mapping(priv->irq[1]);
++		priv->irq[1] = NO_IRQ;
++	}
++
++	return err;
++
++primary_out:
++	if (err) {
++		dev_err(dev, "failed to request primary irq\n");
++		irq_dispose_mapping(priv->irq[0]);
++		priv->irq[0] = NO_IRQ;
++	}
++
++	return err;
++}
++
+ static int talitos_probe(struct platform_device *ofdev)
+ {
+ 	struct device *dev = &ofdev->dev;
+@@ -2644,28 +2717,22 @@ static int talitos_probe(struct platform_device *ofdev)
+ 
+ 	priv->ofdev = ofdev;
+ 
+-	tasklet_init(&priv->done_task, talitos_done, (unsigned long)dev);
+-
+-	INIT_LIST_HEAD(&priv->alg_list);
+-
+-	priv->irq = irq_of_parse_and_map(np, 0);
+-
+-	if (priv->irq == NO_IRQ) {
+-		dev_err(dev, "failed to map irq\n");
+-		err = -EINVAL;
++	err = talitos_probe_irq(ofdev);
++	if (err)
+ 		goto err_out;
+-	}
+ 
+-	/* get the irq line */
+-	err = request_irq(priv->irq, talitos_interrupt, 0,
+-			  dev_driver_string(dev), dev);
+-	if (err) {
+-		dev_err(dev, "failed to request irq %d\n", priv->irq);
+-		irq_dispose_mapping(priv->irq);
+-		priv->irq = NO_IRQ;
+-		goto err_out;
++	if (priv->irq[1] == NO_IRQ) {
++		tasklet_init(&priv->done_task[0], talitos_done_4ch,
++			     (unsigned long)dev);
++	} else {
++		tasklet_init(&priv->done_task[0], talitos_done_ch0_2,
++			     (unsigned long)dev);
++		tasklet_init(&priv->done_task[1], talitos_done_ch1_3,
++			     (unsigned long)dev);
+ 	}
+ 
++	INIT_LIST_HEAD(&priv->alg_list);
++
+ 	priv->reg = of_iomap(np, 0);
+ 	if (!priv->reg) {
+ 		dev_err(dev, "failed to of_iomap\n");
+@@ -2713,9 +2780,11 @@ static int talitos_probe(struct platform_device *ofdev)
+ 		goto err_out;
+ 	}
+ 
+-	for (i = 0; i < priv->num_channels; i++)
+-		priv->chan[i].reg = priv->reg + TALITOS_CH_BASE_OFFSET +
+-				    TALITOS_CH_STRIDE * (i + 1);
++	for (i = 0; i < priv->num_channels; i++) {
++		priv->chan[i].reg = priv->reg + TALITOS_CH_STRIDE * (i + 1);
++		if ((priv->irq[1] == NO_IRQ) || !(i & 1))
++			priv->chan[i].reg += TALITOS_CH_BASE_OFFSET;
++	}
+ 
+ 	for (i = 0; i < priv->num_channels; i++) {
+ 		spin_lock_init(&priv->chan[i].head_lock);
+diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
+index 3ed319d..3c17395 100644
+--- a/drivers/crypto/talitos.h
++++ b/drivers/crypto/talitos.h
+@@ -34,16 +34,24 @@
+ 
+ /* global register offset addresses */
+ #define TALITOS_MCR			0x1030  /* master control register */
+-#define TALITOS_MCR_LO			0x1038
++#define   TALITOS_MCR_RCA0		(1 << 15) /* remap channel 0 */
++#define   TALITOS_MCR_RCA1		(1 << 14) /* remap channel 1 */
++#define   TALITOS_MCR_RCA2		(1 << 13) /* remap channel 2 */
++#define   TALITOS_MCR_RCA3		(1 << 12) /* remap channel 3 */
+ #define   TALITOS_MCR_SWR		0x1     /* s/w reset */
++#define TALITOS_MCR_LO			0x1034
+ #define TALITOS_IMR			0x1008  /* interrupt mask register */
+ #define   TALITOS_IMR_INIT		0x100ff /* enable channel IRQs */
+ #define   TALITOS_IMR_DONE		0x00055 /* done IRQs */
+ #define TALITOS_IMR_LO			0x100C
+ #define   TALITOS_IMR_LO_INIT		0x20000 /* allow RNGU error IRQs */
+ #define TALITOS_ISR			0x1010  /* interrupt status register */
+-#define   TALITOS_ISR_CHERR		0xaa    /* channel errors mask */
+-#define   TALITOS_ISR_CHDONE		0x55    /* channel done mask */
++#define   TALITOS_ISR_4CHERR		0xaa    /* 4 channel errors mask */
++#define   TALITOS_ISR_4CHDONE		0x55    /* 4 channel done mask */
++#define   TALITOS_ISR_CH_0_2_ERR	0x22    /* channels 0, 2 errors mask */
++#define   TALITOS_ISR_CH_0_2_DONE	0x11    /* channels 0, 2 done mask */
++#define   TALITOS_ISR_CH_1_3_ERR	0x88    /* channels 1, 3 errors mask */
++#define   TALITOS_ISR_CH_1_3_DONE	0x44    /* channels 1, 3 done mask */
+ #define TALITOS_ISR_LO			0x1014
+ #define TALITOS_ICR			0x1018  /* interrupt clear register */
+ #define TALITOS_ICR_LO			0x101C
+-- 
+1.7.7
