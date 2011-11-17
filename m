@@ -1,29 +1,27 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 3944BB722F
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 09:12:09 +1100 (EST)
-Received: from mail121-tx2 (localhost.localdomain [127.0.0.1])	by
- mail121-tx2-R.bigfish.com (Postfix) with ESMTP id 09E46590094	for
- <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:11:53 +0000 (UTC)
-Received: from TX2EHSMHS023.bigfish.com (unknown [10.9.14.246])	by
- mail121-tx2.bigfish.com (Postfix) with ESMTP id AA0E3190059	for
- <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:11:51 +0000 (UTC)
-Message-ID: <4EC586B2.5060604@freescale.com>
-Date: Thu, 17 Nov 2011 16:12:02 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] powerpc/85xx: p1022ds: enable monitor switching via
- pixis indirect mode
-References: <1321556259-4459-1-git-send-email-timur@freescale.com>
- <1321556259-4459-2-git-send-email-timur@freescale.com>
- <20111117213733.GC14736@schlenkerla.am.freescale.net>
-In-Reply-To: <20111117213733.GC14736@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
+Return-Path: <dedekind1@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+ [209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 1825EB720E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2011 09:13:42 +1100 (EST)
+Received: by bkat8 with SMTP id t8so2627562bka.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 14:13:38 -0800 (PST)
+Subject: Re: [PATCH 2/3] mtd/nand : set Nand flash page address to FBAR and
+ FPAR correctly
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: b35362@freescale.com
+Date: Fri, 18 Nov 2011 00:13:34 +0200
+In-Reply-To: <1321349355-1639-2-git-send-email-b35362@freescale.com>
+References: <1321349355-1639-1-git-send-email-b35362@freescale.com>
+ <1321349355-1639-2-git-send-email-b35362@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1321568016.2272.29.camel@koala>
+Mime-Version: 1.0
+Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Tang Yuantian <b29983@freescale.com>,
+ linux-mtd@lists.infradead.org, Jerry Huang <Chang-Ming.Huang@freescale.com>,
+ scottwood@freescale.com, akpm@linux-foundation.org, dwmw2@infradead.org
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,21 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-
->> This has the side-effect of no longer requiring U-Boot to enable the DIU.
->> Now Linux can enable the DIU all by itself.
+On Tue, 2011-11-15 at 17:29 +0800, b35362@freescale.com wrote:
+> From: Liu Shuo <b35362@freescale.com>
 > 
-> Under what circumstances does Linux do this?  
+> If we use the Nand flash chip whose number of pages in a block is greater
+> than 64(for large page), we must treat the low bit of FBAR as being the
+> high bit of the page address due to the limitation of FCM, it simply uses
+> the low 6-bits (for large page) of the combined block/page address as the
+> FPAR component, rather than considering the actual block size.
 
-p1022ds_set_monitor_port() is called by the DIU driver when it enables the DIU.  This happens on boot, for example, if you enable the framebuffer console.
+Looks like this patch depends on the previous white-space clean-up patch
+- could you please refactor it (and 3/3 too) and resend?
 
-> How does Linux prevent the
-> NOR flash driver from binding to the device when this mode has been or
-> will be used?
-
-It doesn't.  This isn't a simple problem to solve.  On the P1022, NOR flash and the DIU are incompatible, and yet that's exactly what we ship on the P1022DS board.  We could just remove the NOR flash node from the DTS.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Artem.
