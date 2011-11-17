@@ -1,18 +1,20 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 231D0B6F91
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2011 01:51:33 +1100 (EST)
-Received: by wwf10 with SMTP id 10so2464375wwf.14
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 06:51:30 -0800 (PST)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/4] powerpc/83xx: make mpc830x_rdb use mpc83xx_setup_pci
-Date: Thu, 17 Nov 2011 18:48:50 +0400
-Message-Id: <1321541330-2330-4-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1321541330-2330-1-git-send-email-dbaryshkov@gmail.com>
-References: <1321541330-2330-1-git-send-email-dbaryshkov@gmail.com>
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+ [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id B8A2FB7209
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 03:04:08 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH][v2] powerpc/85xx: Rework P1022DS device tree
+Date: Thu, 17 Nov 2011 16:04:00 +0000
+Message-ID: <CAOZdJXW9Ygz9nMmXgV_GaTPEQHi0zHB7d7uBAPV4fN7-p+ST-Q@mail.gmail.com>
+References: <1321540377-3672-1-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1321540377-3672-1-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Traditionally mpc830x_rdb board file searched for mpc8308-pcie devices.
-However both in-kernel dts from the beginning declared those pcie units
-as compatible with mpc8314-pci, which is handled by mpc83xx_setup_pci().
+On Thu, Nov 17, 2011 at 8:32 AM, Kumar Gala <galak@kernel.crashing.org> wro=
+te:
+> Utilize new split between board & SoC, and new SoC device trees split
+> into pre & post utilizing 'template' includes for SoC IP blocks.
+>
+> Other changes include:
+>
+> * Reworked PCIe nodes to allow supportin IRQs for controller (errors)
+> =A0and moved PCI device IRQs down to virtual bridge level
+> * Changed GPIO compatiable from 'fsl,mpc8572-gpio' to 'fsl,pq3-gpio' as t=
+he
+> =A0'mpc8572' compatiable is to deal with a 'mpc8572' specific to an errat=
+um
+> * Updated spi node to new espi binding specification
+> * Renamed SDHC node from 'sdhci' to 'sdhc'
+> * Added usb node for 2nd usb controller
+> * Dropping "fsl,p1022-IP..." from compatibles for standard blocks
+> * Fixed bug in local bus range node for CS2, was maping to
+> =A00x0 0x0xffa00000 instead of 0xf 0xffa00000
+> * Fixed localbus reg property should have been 0xf 0xffe05000
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> v2: fixed localbus reg property
 
-Drop special handling for mpc8308 and use common function instead.
+Acked-by: Timur Tabi <timur@freescale.com>
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- arch/powerpc/platforms/83xx/mpc830x_rdb.c |   12 +-----------
- 1 files changed, 1 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-index 6e4783d..67a3030 100644
---- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-@@ -13,11 +13,8 @@
-  * option) any later version.
-  */
- 
--#include <linux/pci.h>
--
- #include <asm/ipic.h>
- #include <asm/udbg.h>
--#include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
- 
-@@ -26,17 +23,10 @@
-  */
- static void __init mpc830x_rdb_setup_arch(void)
- {
--#ifdef CONFIG_PCI
--	struct device_node *np;
--#endif
--
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc830x_rdb_setup_arch()", 0);
- 
--#ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8308-pcie")
--		mpc83xx_add_bridge(np);
--#endif
-+	mpc83xx_setup_pci();
- 	mpc831x_usb_cfg();
- }
- 
--- 
-1.7.7.1
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
