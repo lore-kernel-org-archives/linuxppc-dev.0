@@ -1,27 +1,32 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
- [209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1825EB720E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2011 09:13:42 +1100 (EST)
-Received: by bkat8 with SMTP id t8so2627562bka.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2011 14:13:38 -0800 (PST)
-Subject: Re: [PATCH 2/3] mtd/nand : set Nand flash page address to FBAR and
- FPAR correctly
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: b35362@freescale.com
-Date: Fri, 18 Nov 2011 00:13:34 +0200
-In-Reply-To: <1321349355-1639-2-git-send-email-b35362@freescale.com>
-References: <1321349355-1639-1-git-send-email-b35362@freescale.com>
- <1321349355-1639-2-git-send-email-b35362@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1321568016.2272.29.camel@koala>
-Mime-Version: 1.0
-Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Tang Yuantian <b29983@freescale.com>,
- linux-mtd@lists.infradead.org, Jerry Huang <Chang-Ming.Huang@freescale.com>,
- scottwood@freescale.com, akpm@linux-foundation.org, dwmw2@infradead.org
-Reply-To: dedekind1@gmail.com
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id B83F6B720B
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 09:25:21 +1100 (EST)
+Received: from mail105-ch1 (localhost [127.0.0.1])	by
+ mail105-ch1-R.bigfish.com (Postfix) with ESMTP id 3C1995001AB	for
+ <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:25:04 +0000 (UTC)
+Received: from CH1EHSMHS030.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.252])	by mail105-ch1.bigfish.com (Postfix) with ESMTP id
+ 1C8324C0043	for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 22:25:04 +0000
+ (UTC)
+Date: Thu, 17 Nov 2011 16:25:15 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 2/2] powerpc/85xx: p1022ds: enable monitor switching via
+ pixis indirect mode
+Message-ID: <20111117222515.GA18827@schlenkerla.am.freescale.net>
+References: <1321556259-4459-1-git-send-email-timur@freescale.com>
+ <1321556259-4459-2-git-send-email-timur@freescale.com>
+ <20111117213733.GC14736@schlenkerla.am.freescale.net>
+ <4EC586B2.5060604@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <4EC586B2.5060604@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +36,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-11-15 at 17:29 +0800, b35362@freescale.com wrote:
-> From: Liu Shuo <b35362@freescale.com>
+On Thu, Nov 17, 2011 at 04:12:02PM -0600, Timur Tabi wrote:
+> Scott Wood wrote:
 > 
-> If we use the Nand flash chip whose number of pages in a block is greater
-> than 64(for large page), we must treat the low bit of FBAR as being the
-> high bit of the page address due to the limitation of FCM, it simply uses
-> the low 6-bits (for large page) of the combined block/page address as the
-> FPAR component, rather than considering the actual block size.
+> >> This has the side-effect of no longer requiring U-Boot to enable the DIU.
+> >> Now Linux can enable the DIU all by itself.
+> > 
+> > Under what circumstances does Linux do this?  
+> 
+> p1022ds_set_monitor_port() is called by the DIU driver when it enables
+> the DIU.  This happens on boot, for example, if you enable the
+> framebuffer console.
+> 
+> > How does Linux prevent the
+> > NOR flash driver from binding to the device when this mode has been or
+> > will be used?
+> 
+> It doesn't.  This isn't a simple problem to solve.  On the P1022, NOR
+> flash and the DIU are incompatible, and yet that's exactly what we ship
+> on the P1022DS board.  We could just remove the NOR flash node from the
+> DTS.
 
-Looks like this patch depends on the previous white-space clean-up patch
-- could you please refactor it (and 3/3 too) and resend?
+As we discussed earlier, you could have a kernel boot parameter that
+indicates what mode you'd like the localbus to run in.  Then, platform
+code could update the device tree before any drivers bind.
 
-Artem.
+Or, have U-boot set up the desired mode before entering the kernel, and
+provide an appropriate device tree.
+
+Letting the kernel bind to localbus devices such as NOR flash, and then
+taking the devices away without notice just because another device gets
+initialized, is not the way to go.  We've already left "it just works"
+territory, might as well make the user choose explicitly.
+
+-Scott
