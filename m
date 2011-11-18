@@ -1,28 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
- [213.199.154.140])
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (mail-va3.bigfish.com [216.32.180.10])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 5F8F4B72AE
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2011 04:50:12 +1100 (EST)
-Received: from mail25-db3 (localhost [127.0.0.1])	by mail25-db3-R.bigfish.com
- (Postfix) with ESMTP id 22A1064011B	for <linuxppc-dev@ozlabs.org>;
- Fri, 18 Nov 2011 17:50:03 +0000 (UTC)
-Received: from DB3EHSMHS008.bigfish.com (unknown [10.3.81.253])	by
- mail25-db3.bigfish.com (Postfix) with ESMTP id DB15E200045	for
- <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 17:50:02 +0000 (UTC)
-From: Timur Tabi <timur@freescale.com>
-To: <kumar.gala@freescale.com>, <scottwood@freescale.com>,
- <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/3] [v2] powerpc/85xx: p1022ds: enable monitor switching via
- pixis indirect mode
-Date: Fri, 18 Nov 2011 11:50:01 -0600
-Message-ID: <1321638601-6861-3-git-send-email-timur@freescale.com>
-In-Reply-To: <1321638601-6861-1-git-send-email-timur@freescale.com>
-References: <1321638601-6861-1-git-send-email-timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 51739B722D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2011 05:01:38 +1100 (EST)
+Date: Fri, 18 Nov 2011 12:01:14 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 1/7] powerpc/85xx: re-enable timebase sync disabled by
+ KEXEC patch
+Message-ID: <20111118180114.GB28562@schlenkerla.am.freescale.net>
+References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
+ <4EC40406.1030408@freescale.com>
+ <54122A43-37D1-438B-A0DD-289B7AE2BA0B@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <54122A43-37D1-438B-A0DD-289B7AE2BA0B@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Zhao Chenhui <chenhui.zhao@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,196 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the P1022's DIU video controller is active, the pixis must be accessed
-in "indirect" mode, which uses localbus chip select addresses.
+On Fri, Nov 18, 2011 at 08:35:02AM -0600, Kumar Gala wrote:
+> 
+> On Nov 16, 2011, at 12:42 PM, Scott Wood wrote:
+> 
+> > On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
+> >> From: Li Yang <leoli@freescale.com>
+> >> 
+> >> The timebase sync is not only necessary when using KEXEC. It should also
+> >> be used by normal boot up and cpu hotplug. Remove the ifdef added by
+> >> the KEXEC patch.
+> > 
+> > Again, no it should not be used by normal boot up (whether KEXEC support
+> > is enabled or not).  We should only do timebase sync when we actually
+> > need to (when we've actually just reset a core), and we should do it the
+> > way U-Boot does rather than with smp-tbsync.c.
+> 
+> 
+> How can we do u-boot bases timebase sync after the system us up and
+> running?  For example would we losing some ticks of time in the case
+> that one core is up and we bring a second core online?
 
-Switching between the DVI and LVDS monitor ports is handled by the pixis,
-so that switching needs to be done via indirect mode.
+Yes, we'll lose a small handful of ticks relative to wall clock time --
+but it'll be the same loss on all cores.  It's better than possibly
+having the timebase be imperfectly synchronized, and should complete more
+quickly.
 
-This has the side-effect of no longer requiring U-Boot to enable the DIU.
-Now Linux can enable the DIU all by itself.
+This is only during intrusive events such as kexec or deep sleep (we only
+need to reset the core for jog on mpc8536 which has only one core). 
+During deep sleep all cores' timebases will be stopped.  Kexec is
+resetting the kernel; it's not going to care what the old timebase was,
+and should resync from RTC.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/platforms/85xx/p1022_ds.c |  132 ++++++++++++++++++++++++++-----
- 1 files changed, 110 insertions(+), 22 deletions(-)
+Even if we end up using this for some future power management mode where
+we take down some CPUs to the point their timebase stops, but never take
+down others, the time loss should be negligible (for comparison, what's
+the error tolerance on the crystal frequency?) and acceptable for what is
+still a fairly intrusive and rare event.
 
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index e0280e2..948f7ae 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -29,6 +29,10 @@
- 
- #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
- 
-+#define PMUXCR_ELBCDIU_MASK	0xc0000000
-+#define PMUXCR_ELBCDIU_NOR16	0x80000000
-+#define PMUXCR_ELBCDIU_DIU	0x40000000
-+
- /*
-  * Board-specific initialization of the DIU.  This code should probably be
-  * executed when the DIU is opened, rather than in arch code, but the DIU
-@@ -46,11 +50,22 @@
- #define CLKDVDR_PXCLK_MASK	0x00FF0000
- 
- /* Some ngPIXIS register definitions */
-+#define PX_CTL		3
-+#define PX_BRDCFG0	8
-+#define PX_BRDCFG1	9
-+
-+#define PX_BRDCFG0_ELBC_SPI_MASK	0xc0
-+#define PX_BRDCFG0_ELBC_SPI_ELBC	0x00
-+#define PX_BRDCFG0_ELBC_SPI_NULL	0xc0
-+#define PX_BRDCFG0_ELBC_DIU		0x02
-+
- #define PX_BRDCFG1_DVIEN	0x80
- #define PX_BRDCFG1_DFPEN	0x40
- #define PX_BRDCFG1_BACKLIGHT	0x20
- #define PX_BRDCFG1_DDCEN	0x10
- 
-+#define PX_CTL_ALTACC		0x80
-+
- /*
-  * DIU Area Descriptor
-  *
-@@ -129,44 +144,117 @@ static void p1022ds_set_gamma_table(enum fsl_diu_monitor_port port,
-  */
- static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- {
--	struct device_node *np;
--	void __iomem *pixis;
--	u8 __iomem *brdcfg1;
-+	struct device_node *guts_node;
-+	struct device_node *indirect_node = NULL;
-+	struct ccsr_guts_85xx __iomem *guts;
-+	u8 __iomem *lbc_lcs0_ba = NULL;
-+	u8 __iomem *lbc_lcs1_ba = NULL;
-+	u8 b;
- 
--	np = of_find_compatible_node(NULL, NULL, "fsl,p1022ds-fpga");
--	if (!np)
--		/* older device trees used "fsl,p1022ds-pixis" */
--		np = of_find_compatible_node(NULL, NULL, "fsl,p1022ds-pixis");
--	if (!np) {
--		pr_err("p1022ds: missing ngPIXIS node\n");
-+	/* Map the global utilities registers. */
-+	guts_node = of_find_compatible_node(NULL, NULL, "fsl,p1022-guts");
-+	if (!guts_node) {
-+		pr_err("p1022ds: missing global utilties device node\n");
- 		return;
- 	}
- 
--	pixis = of_iomap(np, 0);
--	if (!pixis) {
--		pr_err("p1022ds: could not map ngPIXIS registers\n");
--		return;
-+	guts = of_iomap(guts_node, 0);
-+	if (!guts) {
-+		pr_err("p1022ds: could not map global utilties device\n");
-+		goto exit;
-+	}
-+
-+	indirect_node = of_find_compatible_node(NULL, NULL,
-+					     "fsl,p1022ds-indirect-pixis");
-+	if (!indirect_node) {
-+		pr_err("p1022ds: missing pixis indirect mode node\n");
-+		goto exit;
- 	}
--	brdcfg1 = pixis + 9;	/* BRDCFG1 is at offset 9 in the ngPIXIS */
-+
-+	lbc_lcs0_ba = of_iomap(indirect_node, 0);
-+	if (!lbc_lcs0_ba) {
-+		pr_err("p1022ds: could not map localbus chip select 0\n");
-+		goto exit;
-+	}
-+
-+	lbc_lcs1_ba = of_iomap(indirect_node, 1);
-+	if (!lbc_lcs1_ba) {
-+		pr_err("p1022ds: could not map localbus chip select 1\n");
-+		goto exit;
-+	}
-+
-+	/* Make sure we're in indirect mode first. */
-+	if ((in_be32(&guts->pmuxcr) & PMUXCR_ELBCDIU_MASK) !=
-+	    PMUXCR_ELBCDIU_DIU) {
-+		struct device_node *pixis_node;
-+		void __iomem *pixis;
-+
-+		pixis_node =
-+			of_find_compatible_node(NULL, NULL, "fsl,p1022ds-fpga");
-+		if (!pixis_node) {
-+			pr_err("p1022ds: missing pixis node\n");
-+			goto exit;
-+		}
-+
-+		pixis = of_iomap(pixis_node, 0);
-+		of_node_put(pixis_node);
-+		if (!pixis) {
-+			pr_err("p1022ds: could not map pixis registers\n");
-+			goto exit;
-+		}
-+
-+		/* Enable indirect PIXIS mode.  */
-+		setbits8(pixis + PX_CTL, PX_CTL_ALTACC);
-+		iounmap(pixis);
-+
-+		/* Switch the board mux to the DIU */
-+		out_8(lbc_lcs0_ba, PX_BRDCFG0);	/* BRDCFG0 */
-+		b = in_8(lbc_lcs1_ba);
-+		b |= PX_BRDCFG0_ELBC_DIU;
-+		out_8(lbc_lcs1_ba, b);
-+
-+		/* Set the chip mux to DIU mode. */
-+		clrsetbits_be32(&guts->pmuxcr, PMUXCR_ELBCDIU_MASK,
-+				PMUXCR_ELBCDIU_DIU);
-+		in_be32(&guts->pmuxcr);
-+	}
-+
- 
- 	switch (port) {
- 	case FSL_DIU_PORT_DVI:
--		printk(KERN_INFO "%s:%u\n", __func__, __LINE__);
- 		/* Enable the DVI port, disable the DFP and the backlight */
--		clrsetbits_8(brdcfg1, PX_BRDCFG1_DFPEN | PX_BRDCFG1_BACKLIGHT,
--			     PX_BRDCFG1_DVIEN);
-+		out_8(lbc_lcs0_ba, PX_BRDCFG1);
-+		b = in_8(lbc_lcs1_ba);
-+		b &= ~(PX_BRDCFG1_DFPEN | PX_BRDCFG1_BACKLIGHT);
-+		b |= PX_BRDCFG1_DVIEN;
-+		out_8(lbc_lcs1_ba, b);
- 		break;
- 	case FSL_DIU_PORT_LVDS:
--		printk(KERN_INFO "%s:%u\n", __func__, __LINE__);
-+		/*
-+		 * LVDS also needs backlight enabled, otherwise the display
-+		 * will be blank.
-+		 */
- 		/* Enable the DFP port, disable the DVI and the backlight */
--		clrsetbits_8(brdcfg1, PX_BRDCFG1_DVIEN | PX_BRDCFG1_BACKLIGHT,
--			     PX_BRDCFG1_DFPEN);
-+		out_8(lbc_lcs0_ba, PX_BRDCFG1);
-+		b = in_8(lbc_lcs1_ba);
-+		b &= ~PX_BRDCFG1_DVIEN;
-+		b |= PX_BRDCFG1_DFPEN | PX_BRDCFG1_BACKLIGHT;
-+		out_8(lbc_lcs1_ba, b);
- 		break;
- 	default:
- 		pr_err("p1022ds: unsupported monitor port %i\n", port);
- 	}
- 
--	iounmap(pixis);
-+exit:
-+	if (lbc_lcs1_ba)
-+		iounmap(lbc_lcs1_ba);
-+	if (lbc_lcs0_ba)
-+		iounmap(lbc_lcs0_ba);
-+	if (guts)
-+		iounmap(guts);
-+
-+	of_node_put(indirect_node);
-+	of_node_put(guts_node);
- }
- 
- /**
--- 
-1.7.3.4
+-Scott
