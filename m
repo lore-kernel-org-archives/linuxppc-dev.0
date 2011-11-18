@@ -1,24 +1,30 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7A7C7B7258
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 19:22:31 +1100 (EST)
-In-Reply-To: <20111117232027.GW15738@erda.amd.com>
-References: <OFD9ADD493.27DB131E-ONC125794B.002E2035-C125794B.002F715A@transmode.se>
- <4EC544C6.3050502@us.ibm.com>
- <A8CB2347-27B6-482A-B49B-F434FBFCBC10@freescale.com>
- <OF8F2311F0.71A00B7A-ONC125794B.007583D0-C125794B.0075E666@transmode.se>
- <20111117232027.GW15738@erda.amd.com>
-Subject: Re: oprofile callgraph support missing for common cpus
-To: Robert Richter <robert.richter@amd.com>
-Message-ID: <OFD2223A5C.914A7555-ONC125794C.002D68B7-C125794C.002DFF90@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 18 Nov 2011 09:22:25 +0100
+Return-Path: <MAILER-DAEMON>
+Received: from WA2EHSNDR001.bigfish.com (smtp-cpk.frontbridge.com
+ [204.231.192.41]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id DF48AB7258
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2011 21:12:26 +1100 (EST)
+Received: from mail110-tx2 (localhost.localdomain [127.0.0.1])	by
+ mail110-tx2-R.bigfish.com (Postfix) with ESMTP id 27F9C600679	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2011 10:12:03 +0000 (UTC)
+Received: from TX2EHSMHS041.bigfish.com (unknown [10.9.14.254])	by
+ mail110-tx2.bigfish.com (Postfix) with ESMTP id 0AFAC105804F	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2011 10:12:03 +0000 (UTC)
+Date: Fri, 18 Nov 2011 18:12:07 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 1/7] powerpc/85xx: re-enable timebase sync disabled by
+ KEXEC patch
+Message-ID: <20111118101207.GA14411@localhost.localdomain>
+References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
+ <4EC40406.1030408@freescale.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
- oprofile-list@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <4EC40406.1030408@freescale.com>
+Sender: <zch@localhost.localdomain>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: zch@localhost.localdomain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Robert Richter <robert.richter@amd.com> wrote on 2011/11/18 00:20:27:
->
-> On 17.11.11 22:27:46, Joakim Tjernlund wrote:
-> > > >> For my e300c2 cpu both if's are false and I don't get support for callgraph/backtrace
-> > > >> support. Moving the ops->backtrace = op_powerpc_backtrace; to the top
-> > > >> enables backtrace for me.
->
-> > It sure seems to work :)
->
-> Backtrace support also works in timer mode. This is already
-> implemented on arm and sh (out of my mind, have to look at the code to
-> be sure). This works if the architectural initialization code sets up
-> ops->backtrace even on failure, which is exactly what you proposed.
->
-> > Question, what is the sample rate for timer based oprofile?
-> > Is it HZ depended?
->
-> Yes, it uses the high resolution timer and sets it to HZ which is 4ms
-> on most architectures. (I did some measurements and for some reason I
-> got 8ms on x86 though it should be 4ms, but didn't debug this yet.)
->
-> Unless there are volunteers I will queue up a patch for v3.3 to enable
-> backtrace support in timer mode.
+On Wed, Nov 16, 2011 at 12:42:14PM -0600, Scott Wood wrote:
+> On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
+> > From: Li Yang <leoli@freescale.com>
+> > 
+> > The timebase sync is not only necessary when using KEXEC. It should also
+> > be used by normal boot up and cpu hotplug. Remove the ifdef added by
+> > the KEXEC patch.
+> 
+> Again, no it should not be used by normal boot up (whether KEXEC support
+> is enabled or not).  We should only do timebase sync when we actually
+> need to (when we've actually just reset a core), and we should do it the
+> way U-Boot does rather than with smp-tbsync.c.
+> 
+> -Scott
 
-I forgot to ask, oprofile mentions setting -no-omit-framepointer to get
-correct backtrace but I cannot turn on frame pointers for the ppc kernel.
-Isn't frame pointers needed for pcc? what about user space?
+OK. I'll do it the way U-Boot does.
+Thanks.
 
- Jocke
+-chenhui
