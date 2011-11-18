@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 898B9B7236
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 14:29:14 +1100 (EST)
-Message-ID: <1321586945.2847.5.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 18 Nov 2011 14:29:05 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <prashantsmailcenter@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+ [209.85.215.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 6F724B7255
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2011 16:03:42 +1100 (EST)
+Received: by eyg7 with SMTP id 7so3164059eyg.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2011 21:03:37 -0800 (PST)
+MIME-Version: 1.0
+Date: Fri, 18 Nov 2011 10:33:37 +0530
+Message-ID: <CAD6p20dmksH7YEjijdqLRG06aigaKTpzLPdoL0SCNGD3Ji9d2A@mail.gmail.com>
+Subject: ibm_newemac tx problem with jumbo frame enabled
+From: Prashant Bhole <prashantsmailcenter@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,87 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Hi,
+I have been facing problem with ibm_newemac driver (v3.54).
+The board gets disconnected and can not be pinged in between
+some heavy network traffic. In my case I am running IOmeter
+"All-in-One" 8 threads on the iSCSI target. MTU is 4088.
 
-Here are a few fixes remaining for powerpc in 3.2. Some tiny build
-breakage, a couple of nasty ps3 bugs fixes, other very small and
-quite obvious fixes and and a long standing issue with atomics &
-ordering for which we have to use stronger barriers than we do to
-be correct.
+I found that after executing emac_full_tx_reset(), the board can
+be pinged again. Again after some heavy traffic of 5-6 seconds,
+traffic stops. This can be repeated after full tx reset.
 
-Cheers,
-Ben.
+Is this a known issue? what could cause this?
+Any pointers would be greatly appreciated.
 
-The following changes since commit a9098b372606a15745cdeb012de4ee91c0df82c4:
 
-  Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6 (2011-11-17 15:28:54 -0200)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Al Viro (4):
-      powerpc: Fix build breakage in jump_label.c
-      carma-fpga: Missed switch from of_register_platform_driver()
-      powerpc/fsl_udc_core: Fix dumb typo
-      powerpc/fsl: MCU_MPC8349EMITX wants I2C built-in, modular won't do...
-
-Anton Blanchard (2):
-      powerpc: panic if we can't instantiate RTAS
-      powerpc: Copy down exception vectors after feature fixups
-
-Benjamin Herrenschmidt (1):
-      powerpc: Fix atomic_xxx_return barrier semantics
-
-Geoff Levand (2):
-      powerpc/ps3: Fix lost SMP IPIs
-      powerpc/ps3: Fix SMP lockdep boot warning
-
-Kevin Hao (1):
-      powerpc/trace: Add a dummy stack frame for trace_hardirqs_off
-
-Kumar Gala (3):
-      powerpc: Revert show_regs() define for readability
-      powerpc: Remove extraneous CONFIG_PPC_ADV_DEBUG_REGS define
-      powerpc/book3e-64: Fix debug support for userspace
-
-Kyle Moffett (1):
-      powerpc: Remove buggy 9-year-old test for binutils < 2.12.1
-
-Michael Neuling (1):
-      powerpc: Add hvcall.h include to book3s_hv.c
-
-Suzuki Poulose (1):
-      powerpc/4xx: Fix typos in kexec config dependencies
-
-Will Deacon (1):
-      powerpc/signal32: Fix sigset_t conversion when copying to user
-
- arch/powerpc/Kconfig                    |    2 +-
- arch/powerpc/Makefile                   |    6 ---
- arch/powerpc/include/asm/atomic.h       |   48 ++++++++++++------------
- arch/powerpc/include/asm/bitops.h       |   12 +++---
- arch/powerpc/include/asm/futex.h        |    7 ++-
- arch/powerpc/include/asm/reg_booke.h    |    2 +-
- arch/powerpc/include/asm/sections.h     |    2 +-
- arch/powerpc/include/asm/synch.h        |    9 +++-
- arch/powerpc/kernel/entry_32.S          |   15 +++++++
- arch/powerpc/kernel/jump_label.c        |    2 +
- arch/powerpc/kernel/kvm.c               |    1 -
- arch/powerpc/kernel/misc_32.S           |    2 +-
- arch/powerpc/kernel/process.c           |   24 +-----------
- arch/powerpc/kernel/prom_init.c         |    6 +--
- arch/powerpc/kernel/setup_32.c          |    2 +
- arch/powerpc/kernel/setup_64.c          |    1 +
- arch/powerpc/kernel/signal_32.c         |    2 +-
- arch/powerpc/kernel/traps.c             |    2 -
- arch/powerpc/kvm/book3s_hv.c            |    1 +
- arch/powerpc/lib/feature-fixups.c       |   23 +++++++++++
- arch/powerpc/platforms/Kconfig          |    2 +-
- arch/powerpc/platforms/ps3/interrupt.c  |   23 +++++++++++-
- arch/powerpc/platforms/ps3/platform.h   |    1 +
- arch/powerpc/platforms/ps3/smp.c        |   62 ++++++++++++++++---------------
- drivers/misc/carma/carma-fpga-program.c |    9 ++--
- drivers/misc/carma/carma-fpga.c         |    9 ++--
- drivers/usb/gadget/fsl_udc_core.c       |    2 +-
- 27 files changed, 158 insertions(+), 119 deletions(-)
+-
+Prashant
