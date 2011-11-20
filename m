@@ -2,21 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DD357B71F0
- for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2011 02:51:01 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAKFotiB022239
- for <linuxppc-dev@ozlabs.org>; Sun, 20 Nov 2011 09:50:56 -0600
-Content-Type: text/plain; charset=us-ascii
+ by ozlabs.org (Postfix) with ESMTPS id F100BB7217
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 02:53:24 +1100 (EST)
+Subject: Re: [PATCH] powerpc/p3060qds: Fix select of 'MPC8xxx_GPIO'
 Mime-Version: 1.0 (Apple Message framework v1251.1)
-Subject: Re: [PATCH][v2] powerpc/p1023: set IRQ[4:6,
- 11] to active-high level sensitive for PCIe
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1321506575-21730-1-git-send-email-galak@kernel.crashing.org>
-Date: Sun, 20 Nov 2011 09:51:01 -0600
-Message-Id: <972FAEB5-713C-46DC-A396-EA8C6F1F1A37@kernel.crashing.org>
-References: <1321506575-21730-1-git-send-email-galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1321141830.20271.22.camel@x61.thuisdomein>
+Date: Sun, 20 Nov 2011 09:53:16 -0600
+Message-Id: <8FD955D3-D7DE-45DF-B9F5-247209532B4B@kernel.crashing.org>
+References: <1321141830.20271.22.camel@x61.thuisdomein>
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: linux-kernel@vger.kernel.org, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,23 +25,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 16, 2011, at 11:09 PM, Kumar Gala wrote:
+On Nov 12, 2011, at 5:50 PM, Paul Bolle wrote:
 
-> From: Roy Zang <tie-fei.zang@freescale.com>
+> The driver for the Freescale P3060 QDS got added by commit 96cc017c5b
+> ("[...] Add support for P3060QDS board"). Its Kconfig entry selects
+> MPC8xxx_GPIO. But at the time that driver got added MPC8xxx_GPIO was
+> already renamed to GPIO_MPC8XXX, by commit c68308dd50c ("gpio: move
+> mpc8xxx/512x gpio driver to drivers/gpio").
 > 
-> P1023 external IRQ[4:6, 11] are not pin out, but the interrupts are
-> utilized by the PCIe controllers.  As they are not exposed as pins we
-> need to set them as active-high (internal to the SoC these interrupts
-> are pulled down).
+> So make this driver select GPIO_MPC8XXX.
 > 
-> IRQs[0:3,7:10] are pulled up on the board so we have them set as
-> active-low.
-> 
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 > ---
-> v2:
-> * cleaned up commit message & added comments to be clear about IRQ usage
+> 0) Bravely untested: I haven't got the hardware nor the PPC toolchain
+> needed to build this. And it seems this needs (build) testing anyhow.
+> 
+> 1) Sent to the people who wrote the two patches mentioned in the commit
+> explanation and CC'd the non-authors who signed-off these patches.
+> 
+> 2) The config tools do not complain about selects that cannot be met
+> because they concern a Kconfig symbol that doesn't even exist. Shouldn't
+> they be made to complain in that case?
+> 
+> arch/powerpc/platforms/85xx/Kconfig |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
 
 applied to merge
 
