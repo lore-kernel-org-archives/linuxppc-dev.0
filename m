@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B9D11B722B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 03:46:17 +1100 (EST)
-Subject: Re: [PATCH v2 1/7] powerpc/85xx: re-enable timebase sync disabled by
- KEXEC patch
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20111118180114.GB28562@schlenkerla.am.freescale.net>
-Date: Sun, 20 Nov 2011 10:46:17 -0600
-Message-Id: <7664F579-7BFD-48B7-91E4-972FB2A424E8@kernel.crashing.org>
-References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
- <4EC40406.1030408@freescale.com>
- <54122A43-37D1-438B-A0DD-289B7AE2BA0B@kernel.crashing.org>
- <20111118180114.GB28562@schlenkerla.am.freescale.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Zhao Chenhui <chenhui.zhao@freescale.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
+ by ozlabs.org (Postfix) with ESMTP id 676F5B720A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 10:31:45 +1100 (EST)
+Date: Sun, 20 Nov 2011 15:31:38 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 3.2.0-rc1 panic on PowerPC
+In-Reply-To: <alpine.DEB.2.01.1111150035560.8000@trent.utfs.org>
+Message-ID: <alpine.DEB.2.01.1111201529070.8000@trent.utfs.org>
+References: <alpine.DEB.2.01.1111150035560.8000@trent.utfs.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 15 Nov 2011 at 00:44, Christian Kujau wrote:
+> I noticed a few crashes on this PowerBook G4 lately, starting somewhere in 
+> 3.2.0-rc1. The crashes are really rare and as I'm not on the system all 
+> the time I did not notice most of them. By the time I did, the screen was 
+> blank already and I had to hard-reset the box. But not this time:
+> 
+>   http://nerdbynature.de/bits/3.2.0-rc1/oops/
+> 
+> When the crash occured, the system was failry loaded (CPU and disk I/O 
+> wise), so that may have triggered it. I tried to type off the stack trace, 
+> I hope there are not too many typos, see below.
+> 
+> The machine is fairly old, so maybe it's "just" bad RAM or something, I 
+> wouldn't be suprised. But maybe not, the box us pretty stable most of the 
+> time and only now I notice these rare crashes.
 
-On Nov 18, 2011, at 12:01 PM, Scott Wood wrote:
+Happened again with 3.2.0-rc2-00027-gff0ff78, this time with netconsole 
+enabled. But this time the machine just stopped, w/o any output on the 
+screen or on netconsole :(
 
-> On Fri, Nov 18, 2011 at 08:35:02AM -0600, Kumar Gala wrote:
->>=20
->> On Nov 16, 2011, at 12:42 PM, Scott Wood wrote:
->>=20
->>> On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
->>>> From: Li Yang <leoli@freescale.com>
->>>>=20
->>>> The timebase sync is not only necessary when using KEXEC. It should =
-also
->>>> be used by normal boot up and cpu hotplug. Remove the ifdef added =
-by
->>>> the KEXEC patch.
->>>=20
->>> Again, no it should not be used by normal boot up (whether KEXEC =
-support
->>> is enabled or not).  We should only do timebase sync when we =
-actually
->>> need to (when we've actually just reset a core), and we should do it =
-the
->>> way U-Boot does rather than with smp-tbsync.c.
->>=20
->>=20
->> How can we do u-boot bases timebase sync after the system us up and
->> running?  For example would we losing some ticks of time in the case
->> that one core is up and we bring a second core online?
->=20
-> Yes, we'll lose a small handful of ticks relative to wall clock time =
---
-> but it'll be the same loss on all cores.  It's better than possibly
-> having the timebase be imperfectly synchronized, and should complete =
-more
-> quickly.
+Christian.
 
-Hmm, I wondering how many ticks it really is.
+> If anyone could take a quick look...?
+> 
+> Thank you,
+> Christian.
+> 
+> Instruction dump:
+> 92c40008 68000001 0f000000 80040000 5400003c 90040000 817f000c 380bffff
+> 901f000c 2f090000 81640018 81440014 <916a0004> 914b0000 92840014 92a49918
+> Kernel panic - not syncing: Fatal exception in interrupt
+> Call Trace:
+> show_stack+0x70/0x1bc (unreliable)
+> panic+0xc8/0x220
+> die+0x2ac/0x2b8
+> bad_page_fault+0xbc/0x104
+> handle_page_fault+0x7c/0x80
+> Exception: 300 at T.975+0x3f4/0x570
+> LR = T.957+0x300/0x570
+> kmem_cache_alloc+0x150/0x150
+> __aloc_skb+0x50/0x148
+> tcp_send_ack+0x35/0x138
+> tcp_delay_timer+0x140/0x244
+> run_timer_softirq+0x1a0/0x2ec
+> __do_softirq+0xf4/0x1bc
+> call_do_softirq+0x14/0x24
+> do_softirq+0xfc/0x128
+> irq_exit+0xa0/0xa4
+> timer_interrupt+0x148/0x180
+> ret_from_except+0x0/0x14
+> cpu_idle+0xa0/0x118
+> rest_init+0xf0/0x114
+> start_kernel+0x2d0/0x2f0
+> 0x3444
+> Rebooting in 180 seconds..
+> 
+> -- 
+> BOFH excuse #184:
+> 
+> loop found in loop in redundant loopback
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-> This is only during intrusive events such as kexec or deep sleep (we =
-only
-> need to reset the core for jog on mpc8536 which has only one core).=20
-> During deep sleep all cores' timebases will be stopped.  Kexec is
-> resetting the kernel; it's not going to care what the old timebase =
-was,
-> and should resync from RTC.
->=20
-> Even if we end up using this for some future power management mode =
-where
-> we take down some CPUs to the point their timebase stops, but never =
-take
-> down others, the time loss should be negligible (for comparison, =
-what's
-> the error tolerance on the crystal frequency?) and acceptable for what =
-is
-> still a fairly intrusive and rare event.
+-- 
+BOFH excuse #387:
 
-I'm also concerned about how this ends up working for p4080 when we have =
-to sync up to 8 cores or more in the future.
-
-- k=
+Your computer's union contract is set to expire at midnight.
