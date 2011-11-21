@@ -1,18 +1,21 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
- by ozlabs.org (Postfix) with ESMTP id 82FFAB720F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 12:17:12 +1100 (EST)
-Date: Sun, 20 Nov 2011 17:17:07 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E3ED3B7211
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 12:25:55 +1100 (EST)
+Message-ID: <1321838742.13860.8.camel@pasglop>
 Subject: Re: 3.2.0-rc1 panic on PowerPC
-In-Reply-To: <1321837101.13860.6.camel@pasglop>
-Message-ID: <alpine.DEB.2.01.1111201701000.8000@trent.utfs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Date: Mon, 21 Nov 2011 12:25:42 +1100
+In-Reply-To: <alpine.DEB.2.01.1111201701000.8000@trent.utfs.org>
 References: <alpine.DEB.2.01.1111150035560.8000@trent.utfs.org>
  <alpine.DEB.2.01.1111201529070.8000@trent.utfs.org>
  <1321837101.13860.6.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ <alpine.DEB.2.01.1111201701000.8000@trent.utfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,28 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 21 Nov 2011 at 11:58, Benjamin Herrenschmidt wrote:
-> I've seen something similar with 3.2-rc2 at cfcfc9ec, unfortunately I
-> couldn't capture the oops log at the time.
+On Sun, 2011-11-20 at 17:17 -0800, Christian Kujau wrote:
+> On Mon, 21 Nov 2011 at 11:58, Benjamin Herrenschmidt wrote:
+> > I've seen something similar with 3.2-rc2 at cfcfc9ec, unfortunately I
+> > couldn't capture the oops log at the time.
+> 
+> It just happened again today, after heavy CPU & IO load (rsyncing from/to 
+> external disks on dm-crypt). This time the oops was printed on the screen 
+> but nothing on netconsole:
+> 
+> http://nerdbynature.de/bits/3.2.0-rc1/oops/oops3m.JPG
+> 
+> It looks like the oops I reported earlier (oops2m.JPG) so I doubt it's a 
+> random corruption due to hardware issues...?
 
-It just happened again today, after heavy CPU & IO load (rsyncing from/to 
-external disks on dm-crypt). This time the oops was printed on the screen 
-but nothing on netconsole:
+Yeah it's starting to look like a pattern. Your latest oops looks a lot
+like the one I had (though it was with tg3 on the g5), ie, vfs_read ->
+driver -> allocator -> crash.
 
-http://nerdbynature.de/bits/3.2.0-rc1/oops/oops3m.JPG
+> Any debug or boot options to set in my next kernel build?
 
-It looks like the oops I reported earlier (oops2m.JPG) so I doubt it's a 
-random corruption due to hardware issues...?
+Well, you can turn everything on see whether that makes any difference
+or finds something a bit more precisely
 
-Any debug or boot options to set in my next kernel build?
+Cheers,
+Ben.
 
-Thanks,
-Christian.
-
-> Looks like there's some kind of memory corruption happening. So far I
-> haven't been able to get a good target at what could be causing it.
-
--- 
-BOFH excuse #90:
-
-Budget cuts
+> Thanks,
+> Christian.
+> 
+> > Looks like there's some kind of memory corruption happening. So far I
+> > haven't been able to get a good target at what could be causing it.
+> 
