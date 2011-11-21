@@ -1,25 +1,18 @@
-Return-Path: <markus@trippelsdorf.de>
-Received: from mail.ud10.udmedia.de (ud10.udmedia.de [194.117.254.50])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "ud10.udmedia.de",
- Issuer "StartCom Class 2 Primary Intermediate Server CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C9409B720D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 19:15:37 +1100 (EST)
-Date: Mon, 21 Nov 2011 09:08:49 +0100
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.2.0-rc1 panic on PowerPC
-Message-ID: <20111121080849.GC1625@x4.trippels.de>
-References: <alpine.DEB.2.01.1111150035560.8000@trent.utfs.org>
- <alpine.DEB.2.01.1111201529070.8000@trent.utfs.org>
- <1321837101.13860.6.camel@pasglop>
- <alpine.DEB.2.01.1111201701000.8000@trent.utfs.org>
- <1321838742.13860.8.camel@pasglop>
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 21 Nov 2011 22:03:56 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH 01/11] KVM: PPC: Add memory-mapping support for PCI
+ passthrough and emulation
+Message-ID: <20111121110356.GA1516@bloggs.ozlabs.ibm.com>
+References: <20111116225055.GA26985@bloggs.ozlabs.ibm.com>
+ <20111116225209.GB26985@bloggs.ozlabs.ibm.com>
+ <4EC8F158.8010706@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1321838742.13860.8.camel@pasglop>
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4EC8F158.8010706@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2011.11.21 at 12:25 +1100, Benjamin Herrenschmidt wrote:
-> On Sun, 2011-11-20 at 17:17 -0800, Christian Kujau wrote:
-> > On Mon, 21 Nov 2011 at 11:58, Benjamin Herrenschmidt wrote:
-> > > I've seen something similar with 3.2-rc2 at cfcfc9ec, unfortunately I
-> > > couldn't capture the oops log at the time.
-> > 
-> > It just happened again today, after heavy CPU & IO load (rsyncing from/to 
-> > external disks on dm-crypt). This time the oops was printed on the screen 
-> > but nothing on netconsole:
-> > 
-> > http://nerdbynature.de/bits/3.2.0-rc1/oops/oops3m.JPG
-> > 
-> > It looks like the oops I reported earlier (oops2m.JPG) so I doubt it's a 
-> > random corruption due to hardware issues...?
+On Sun, Nov 20, 2011 at 02:23:52PM +0200, Avi Kivity wrote:
 > 
-> Yeah it's starting to look like a pattern. Your latest oops looks a lot
-> like the one I had (though it was with tg3 on the g5), ie, vfs_read ->
-> driver -> allocator -> crash.
+> There is no "the VMA".  There could be multiple VMAs, or none (with the
+> mmap() coming afterwards).  You could do all the checks you want here,
+> only to have host userspace remap it under your feet.  This needs to be
+> done on a per-page basis at fault time.
 
-I might be seeing a similar issue on x86_64. See:
-http://thread.gmane.org/gmane.linux.kernel.mm/70254
+OK, so that's a somewhat different mental model than I had in mind.  I
+can change the code to do almost everything on a per-page basis at
+fault time on POWER7.  There is one thing we can't do at fault time,
+which is to tell the hardware the page size for the "virtual real mode
+area" (VRMA), which is a mapping of the memory starting at guest
+physical address zero.  We can however work out that pagesize the
+first time we run a vcpu.  By that stage we must have some memory
+mapped at gpa 0, otherwise the vcpu is not going to get very far.  We
+will need to look for the page size of whatever is mapped at gpa 0 at
+that point and give it to the hardware.
 
--- 
-Markus
+On PPC970, which is a much older processor, we can't intercept the
+page faults (at least not without running the whole guest in user mode
+and emulating all the privileged instructions), so once we have given
+the guest access to a page, we can't revoke it.  We will have to take
+and keep a reference to the page so it doesn't go away underneath us,
+which of course doesn't guarantee that userland can continue to see
+it, but does at least mean we won't corrupt memory.
+
+> > +		/*
+> > +		 * We require read & write permission as we cannot yet
+> > +		 * enforce guest read-only protection or no access.
+> > +		 */
+> > +		if ((vma->vm_flags & (VM_READ | VM_WRITE)) !=
+> > +		    (VM_READ | VM_WRITE))
+> > +			goto err_unlock;
+> 
+> This, too, must be done at get_user_pages() time.
+> 
+> What happens if mmu notifiers tell you to write protect a page?
+
+On POWER7, we have to remove access to the page, and then when we get
+a fault on the page, request write access when we do
+get_user_pages_fast.
+
+Paul.
