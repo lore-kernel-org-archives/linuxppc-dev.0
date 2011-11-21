@@ -1,22 +1,23 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
- by ozlabs.org (Postfix) with ESMTP id 149F9B7213
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 13:03:35 +1100 (EST)
-Date: Sun, 20 Nov 2011 18:03:32 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.2.0-rc1 panic on PowerPC
-In-Reply-To: <1321840301.13860.9.camel@pasglop>
-Message-ID: <alpine.DEB.2.01.1111201759500.8000@trent.utfs.org>
-References: <alpine.DEB.2.01.1111150035560.8000@trent.utfs.org>
- <alpine.DEB.2.01.1111201529070.8000@trent.utfs.org>
- <1321837101.13860.6.camel@pasglop>
- <alpine.DEB.2.01.1111201701000.8000@trent.utfs.org>
- <1321838742.13860.8.camel@pasglop>
- <1321840301.13860.9.camel@pasglop>
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Miche Baker-Harvey <miche@google.com>
+Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
+In-Reply-To: <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
+References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
+ <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
+ <874nybqo0o.fsf@rustcorp.com.au>
+ <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
+Date: Mon, 21 Nov 2011 15:31:04 +1030
+Message-ID: <87lira9ii7.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
+ Amit Shah <amit.shah@redhat.com>, Mike Waychison <mikew@google.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Eric Northrup <digitaleric@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 21 Nov 2011 at 12:51, Benjamin Herrenschmidt wrote:
-> BTW. SLUB or SLAB ? Mine was SLUB with SLUB_DEBUG enabled (tho the debug
-> didn't seem to catch anything).
+On Thu, 17 Nov 2011 10:57:37 -0800, Miche Baker-Harvey <miche@google.com> wrote:
+> Rusty, Michael, Stephen, et al,
+> 
+> Thanks for your comments on these patches.
+> 
+> For what I'm trying to do, all three patches are necessary, but maybe
+> I'm going about it the wrong way. Your input would be appreciated.
+> I'm in no way claiming that these patches are "right", just that it's
+> working for me, and that what's in the current pool is not.
 
-SLUB, and SLUB_DEBUG=y (but w/o SLUB_DEBUG_ON and SLUB_STATS). Full config 
-here: http://nerdbynature.de/bits/3.2.0-rc1/oops/config.txt
+We have to *understand* the code.  If we don't, we need to rewrite the
+code so we *do* understand it, or make way for someone who does.
 
-I'm compiling today's git checkout (mainline) with more debug settings 
-enabled[0], let's see if this helps anything.
+I'm looking at the kvm man page to try to figure out how to have virtio
+console, and it's deeply unclear.  What kvm commandline are you using?
+I'll try to debug it here, and see what I learn about hvc_console.
 
-Christian.
-
-[0] diff to old config
-+CONFIG_RT_MUTEX_TESTER=y
-+CONFIG_DEBUG_LOCKDEP=y
-+CONFIG_DEBUG_HIGHMEM=y
-+CONFIG_DEBUG_INFO=y
-+CONFIG_DEBUG_VM=y
-+CONFIG_DEBUG_WRITECOUNT=y
-+CONFIG_DEBUG_LIST=y
-+CONFIG_ATOMIC64_SELFTEST=y
-+CONFIG_XMON=y
-+CONFIG_XMON_DEFAULT=y
-+CONFIG_XMON_DISASSEMBLY=y
-+CONFIG_DEBUGGER=y
-
--- 
-BOFH excuse #242:
-
-Software uses US measurements, but the OS is in metric...
+Cheers,
+Rusty.
