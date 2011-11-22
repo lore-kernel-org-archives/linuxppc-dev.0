@@ -1,27 +1,21 @@
-Return-Path: <r58472@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
+Return-Path: <b29397@nchen-desktop.ap.freescale.net>
+Received: from TX2EHSOBE004.bigfish.com (mail-tx2.bigfish.com [65.55.88.10])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id ED443B70B1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 20:29:41 +1100 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH v2 1/7] powerpc/85xx: re-enable timebase sync disabled
- by KEXEC patch
-Date: Tue, 22 Nov 2011 09:29:02 +0000
-Message-ID: <3F607A5180246847A760FD34122A1E052D942C@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1321437344-19253-1-git-send-email-chenhui.zhao@freescale.com>
- <4EC40406.1030408@freescale.com>
- <54122A43-37D1-438B-A0DD-289B7AE2BA0B@kernel.crashing.org>
- <20111118180114.GB28562@schlenkerla.am.freescale.net>
-In-Reply-To: <20111118180114.GB28562@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="Windows-1252"
+ by ozlabs.org (Postfix) with ESMTPS id 2F813B70C8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 20:34:53 +1100 (EST)
+Date: Tue, 22 Nov 2011 17:34:39 +0800
+From: Peter Chen <peter.chen@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] usb/fsl_udc: fix dequeuing a request in progress
+Message-ID: <20111122093437.GA18543@nchen-desktop>
+References: <1321015093-13715-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Zhao Chenhui-B35336 <B35336@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1321015093-13715-1-git-send-email-leoli@freescale.com>
+Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
+ balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +25,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->Subject: Re: [PATCH v2 1/7] powerpc/85xx: re-enable timebase sync disabled
->by KEXEC patch
->
->On Fri, Nov 18, 2011 at 08:35:02AM -0600, Kumar Gala wrote:
->>
->> On Nov 16, 2011, at 12:42 PM, Scott Wood wrote:
->>
->> > On 11/16/2011 03:55 AM, Zhao Chenhui wrote:
->> >> From: Li Yang <leoli@freescale.com>
->> >>
->> >> The timebase sync is not only necessary when using KEXEC. It should
->also
->> >> be used by normal boot up and cpu hotplug. Remove the ifdef added by
->> >> the KEXEC patch.
->> >
->> > Again, no it should not be used by normal boot up (whether KEXEC
->support
->> > is enabled or not).  We should only do timebase sync when we actually
->> > need to (when we've actually just reset a core), and we should do it
->the
->> > way U-Boot does rather than with smp-tbsync.c.
+On Fri, Nov 11, 2011 at 08:38:13PM +0800, Li Yang wrote:
+> The original implementation of dequeuing a request in progress
+> is not correct.  Change to use a correct process and also clean
+> up the related functions a little bit.
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  drivers/usb/gadget/fsl_udc_core.c |   62 +++++++++++++++++-------------------
+>  1 files changed, 29 insertions(+), 33 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+> index b2c44e1..beef9b7 100644
+> --- a/drivers/usb/gadget/fsl_udc_core.c
+> +++ b/drivers/usb/gadget/fsl_udc_core.c
+> @@ -696,12 +696,31 @@ static void fsl_free_request(struct usb_ep *_ep, struct usb_request *_req)
+>  		kfree(req);
+>  }
+>  
+> -/*-------------------------------------------------------------------------*/
+> +/* Actually add a dTD chain to an empty dQH and let go */
+> +static void fsl_prime_ep(struct fsl_ep *ep, struct ep_td_struct *td)
+> +{
+> +	struct ep_queue_head *qh = ep->qh;
+It seems to can't get the correct qh pointer, you may still need to
+use below code to get it
+ 	int i = ep_index(ep) * 2 + ep_is_in(ep);
+ 	struct ep_queue_head *dQH = &ep->udc->ep_qh[i];
+> +
+> +	/* Write dQH next pointer and terminate bit to 0 */
+> +	qh->next_dtd_ptr = cpu_to_hc32(td->td_dma
+> +			& EP_QUEUE_HEAD_NEXT_POINTER_MASK);
+> +
+> +	/* Clear active and halt bit */
+> +	qh->size_ioc_int_sts &= cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
+> +					| EP_QUEUE_HEAD_STATUS_HALT));
+> +
+> +	/* Ensure that updates to the QH will occur before priming. */
+> +	wmb();
+> +
+> +	/* Prime endpoint by writing correct bit to ENDPTPRIME */
+> +	fsl_writel(ep_is_in(ep) ? (1 << (ep_index(ep) + 16))
+> +			: (1 << (ep_index(ep))), &dr_regs->endpointprime);
+> +}
+> +
+> +/* Add dTD chain to the dQH of an EP */
+>  static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+>  {
+> -	int i = ep_index(ep) * 2 + ep_is_in(ep);
+>  	u32 temp, bitmask, tmp_stat;
+> -	struct ep_queue_head *dQH = &ep->udc->ep_qh[i];
+>  
+>  	/* VDBG("QH addr Register 0x%8x", dr_regs->endpointlistaddr);
+>  	VDBG("ep_qh[%d] addr is 0x%8x", i, (u32)&(ep->udc->ep_qh[i])); */
+> @@ -719,7 +738,7 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+>  			cpu_to_hc32(req->head->td_dma & DTD_ADDR_MASK);
+>  		/* Read prime bit, if 1 goto done */
+>  		if (fsl_readl(&dr_regs->endpointprime) & bitmask)
+> -			goto out;
+> +			return;
+>  
+>  		do {
+>  			/* Set ATDTW bit in USBCMD */
+> @@ -736,28 +755,10 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+>  		fsl_writel(temp & ~USB_CMD_ATDTW, &dr_regs->usbcmd);
+>  
+>  		if (tmp_stat)
+> -			goto out;
+> +			return;
+>  	}
+>  
+> -	/* Write dQH next pointer and terminate bit to 0 */
+> -	temp = req->head->td_dma & EP_QUEUE_HEAD_NEXT_POINTER_MASK;
+> -	dQH->next_dtd_ptr = cpu_to_hc32(temp);
+> -
+> -	/* Clear active and halt bit */
+> -	temp = cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
+> -			| EP_QUEUE_HEAD_STATUS_HALT));
+> -	dQH->size_ioc_int_sts &= temp;
+> -
+> -	/* Ensure that updates to the QH will occur before priming. */
+> -	wmb();
+> -
+> -	/* Prime endpoint by writing 1 to ENDPTPRIME */
+> -	temp = ep_is_in(ep)
+> -		? (1 << (ep_index(ep) + 16))
+> -		: (1 << (ep_index(ep)));
+> -	fsl_writel(temp, &dr_regs->endpointprime);
+> -out:
+> -	return;
+> +	fsl_prime_ep(ep, req->head);
+>  }
+>  
+>  /* Fill in the dTD structure
+> @@ -973,25 +974,20 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
+>  
+>  		/* The request isn't the last request in this ep queue */
+>  		if (req->queue.next != &ep->queue) {
+> -			struct ep_queue_head *qh;
+>  			struct fsl_req *next_req;
+>  
+> -			qh = ep->qh;
+>  			next_req = list_entry(req->queue.next, struct fsl_req,
+>  					queue);
+>  
+> -			/* Point the QH to the first TD of next request */
+> -			fsl_writel((u32) next_req->head, &qh->curr_dtd_ptr);
+> +			/* prime with dTD of next request */
+> +			fsl_prime_ep(ep, next_req->head);
+>  		}
+> -
+> -		/* The request hasn't been processed, patch up the TD chain */
+> +	/* The request hasn't been processed, patch up the TD chain */
+>  	} else {
+>  		struct fsl_req *prev_req;
+>  
+>  		prev_req = list_entry(req->queue.prev, struct fsl_req, queue);
+> -		fsl_writel(fsl_readl(&req->tail->next_td_ptr),
+> -				&prev_req->tail->next_td_ptr);
+> -
+> +		prev_req->tail->next_td_ptr = req->tail->next_td_ptr;
+>  	}
+>  
+>  	done(ep, req, -ECONNRESET);
 
-While looking into the timebase sync code in u-boot, I have a few questions=
-.
+After fixing above error, others are ok. I have tested it at i.mx51 bbg board
+using 3.2.0-rc2+.
+> -- 
+> 1.5.4.3
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-        /* enable time base at the platform */
-        if (whoami)
-                devdisr |=3D MPC85xx_DEVDISR_TB1;
-        else
-                devdisr |=3D MPC85xx_DEVDISR_TB0;
-        out_be32(&gur->devdisr, devdisr);
+-- 
 
-        /* readback to sync write */
-        in_be32(&gur->devdisr);
-
-        mtspr(SPRN_TBWU, 0);
-        mtspr(SPRN_TBWL, 0);
-
-What are the TBWU/TBWL registers?  I can't find the definition of them in e=
-ither e500 RM or booke RM.  Are they valid to be used?  What is the result =
-of writing to them?  Aren't the SPR registers core specific?  How can we se=
-t the TB for the other cores?
-
-        devdisr &=3D ~(MPC85xx_DEVDISR_TB0 | MPC85xx_DEVDISR_TB1);
-        out_be32(&gur->devdisr, devdisr);
-
-Also in the UM, I read "Blocks disabled by DEVDISR must not be re-enabled w=
-ithout a hard reset."  Is it safe we enable it here?
-
-- Leo
+Best Regards,
+Peter Chen
