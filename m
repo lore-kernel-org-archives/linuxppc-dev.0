@@ -1,20 +1,13 @@
 Return-Path: <tony@bakeyournoodle.com>
-Received: from thor.bakeyournoodle.com (ibmaus65.lnk.telstra.net
- [165.228.126.9])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPSA id B4263B708F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 10:47:16 +1100 (EST)
-Date: Wed, 23 Nov 2011 10:47:15 +1100
+Date: Wed, 23 Nov 2011 10:50:46 +1100
 From: Tony Breeds <tony@bakeyournoodle.com>
-To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: your mail
-Message-ID: <20111122234715.GB25264@thor.bakeyournoodle.com>
-References: <20111122234245.GA28234@thor.bakeyournoodle.com>
+To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Josh Boyer <jwboyer@gmail.com>
+Subject: [PATCH] powerpc: 44x: Add mtd ndfc to the ppx44x defconfig
+Message-ID: <20111122234933.GA28400@thor.bakeyournoodle.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ZoaI/ZTpAVc4A5k6"
-In-Reply-To: <20111122234245.GA28234@thor.bakeyournoodle.com>
+ protocol="application/pgp-signature"; boundary="bCsyhTFzCvuiizWE"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +18,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---ZoaI/ZTpAVc4A5k6
+--bCsyhTFzCvuiizWE
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 23, 2011 at 10:42:45AM +1100, Tony Breeds wrote:
-> From 1a44c074e3ce572cbf60d31ac704e6ce42be4708 Mon Sep 17 00:00:00 2001
-> From: Tony Breeds <tony@bakeyournoodle.com>
-> Date: Wed, 23 Nov 2011 10:16:40 +1100
-> Subject: [PATCH] powerpc: 44x: Add mtd ndfc to the ppx44x defconfig
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
 
-Sorry all for the SPAM.  I screwed up trying to use mutt and git to
-send-email
+Again appologies for the SPAM trying to send this message.
+
+ arch/powerpc/configs/ppc44x_defconfig |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/configs/ppc44x_defconfig b/arch/powerpc/configs/p=
+pc44x_defconfig
+index 6cdf1c0..3b98d73 100644
+--- a/arch/powerpc/configs/ppc44x_defconfig
++++ b/arch/powerpc/configs/ppc44x_defconfig
+@@ -52,6 +52,8 @@ CONFIG_MTD_CFI=3Dy
+ CONFIG_MTD_JEDECPROBE=3Dy
+ CONFIG_MTD_CFI_AMDSTD=3Dy
+ CONFIG_MTD_PHYSMAP_OF=3Dy
++CONFIG_MTD_NAND=3Dm
++CONFIG_MTD_NAND_NDFC=3Dm
+ CONFIG_MTD_UBI=3Dm
+ CONFIG_MTD_UBI_GLUEBI=3Dm
+ CONFIG_PROC_DEVICETREE=3Dy
+--=20
+1.7.6.4
+
 
 Yours Tony
 
---ZoaI/ZTpAVc4A5k6
+--bCsyhTFzCvuiizWE
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBCAAGBQJOzDSCAAoJEEsCiJRY75GK+KwQAI9dCQD8HP5blEA5ggALPwlX
-VaEGAAsjrSbEd+1mRI5K7pa0KKhvwco8RJWqMbtflHrPqejJ34BQCICdopxwI2wb
-uS6gcY/mBoE2Ga32fJKHgulZqvolsxuYffu/KhSZQrNeQxv0j1DzwPNXEqt2C3M1
-pdDUKjxQ3sIv4jcz6FAlejGmV0iIUOYgDYOKpYbhzIosDHaUx0ygPXr/sbGJHBOJ
-6zirOj0luPp/wshZrnaZdVJcPLRXiMEm5jNyi+Rpz4Eel92iP7UTatLpyFtl1FO8
-sraSXDxc1s6/mHBjXYagY3HMQx62a6qw+d+6H0BqFgQ57HsD7aL5986GtawaQAr8
-kHXvwbNVVOqiaayBL1mxRfvMkymwCh1aWAGmYwmO0Cka2AQ2U9xu/Qcqxl+LqS5s
-9njKfK6vJbRQH8oZr8YHPTifTsN8Ml8hn+mCoDS1SQRXhUKK87vX8jnOvo3Z5sW0
-QyHfep0EHMh3A4ycgIJGwVVtGnProNo7ndeGGZOvbAs/HfLy0NnERZpLrcMZW3r2
-hXFCAO+BxBvgFbkSreZGsayuF6TdIzOxs/v1Sax9a8zyiwPzap4rAVad/5cN/9ZM
-PoKFHLYGmQ5RWa1+A735z6WndhOGTQRoGl/UjXsh0xInScHFY3o0GrljBgGcJSXv
-Bd+5he5+MhI6bY1MObc4
-=0VF9
+iQIcBAEBCAAGBQJOzDVVAAoJEEsCiJRY75GKwtsQAKv7CUTjPxtXvb2XJHRdMlNa
+5qbg+sRbmaTD07/7ZmUWUf8D8wJM1EczuqswYbf0CrdsttIKCxA9gNR/2B0pprVc
+4XXdVzFXbIYVupQe8/q9q0g8DtOlTNJ63qjwK421yxDMFn/4kdhaKxLmI8POuFVg
+sgOQN2X7FF8X/dNFv3pTIdKSDSF1QURtEZe+gSJw9WLEv+PzI15QhZ1zk/IcgaO3
+/pLo2uf6+V+JywyNUGDsXyLyioU1tAKzC2f49pXXEjtBpy56Nj3AJ7DYDmawuwhT
+yyWmSYiTURDOG/KIMvQ+3Zzj2Nb2bucFeHjnOMfcw+v8uDSQ5XxcNC4sTS1abj7j
+EnazH7arcxyQBGz8gxd3tyB4WAOHp67qMBKfNsfE0kx1y/oTZ9WjY43RHNLwvxxj
+N1O1QD8PzAil5f3ZJHT5ZyqajFvLLhk4VqcBV8kSFW2Ajp82LnOnT89S1AIUB58L
+XDBXyuJG8YZ5y5npyNf99TIS9xW9NhKiDdEqHZ9smKovX7zs8N4IT8zQv0J7F1zZ
+ltpEXNSUJZ6KByyIaV/XoOa3rnpAzHDPbaZ3wO3jdHJKCjISztw/IwhzBF08O9r3
+NVrjjc6XLePqNATK1sSYzHf6MTtz/5EmqwsCkMDMR7n3Z9/8B3pdrPHfcwq1bRHW
+k9DG/9muoZ1SC0u5Bhgp
+=gA5W
 -----END PGP SIGNATURE-----
 
---ZoaI/ZTpAVc4A5k6--
+--bCsyhTFzCvuiizWE--
