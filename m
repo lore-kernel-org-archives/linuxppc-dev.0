@@ -1,17 +1,19 @@
-Return-Path: <chris.friesen@genband.com>
-Received: from exprod7og103.obsmtp.com (exprod7og103.obsmtp.com [64.18.2.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 41B8C1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 05:53:31 +1100 (EST)
-Message-ID: <4ECBDE98.8090705@genband.com>
-Date: Tue, 22 Nov 2011 11:40:40 -0600
-From: Chris Friesen <chris.friesen@genband.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 4AC99B70BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 06:30:04 +1100 (EST)
+Date: Tue, 22 Nov 2011 10:59:25 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: b29237@freescale.com
+Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
+ spinlock use.
+Message-ID: <20111122185924.GA23323@ovro.caltech.edu>
+References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, b25806@freescale.com
-Subject: curious why mpc85xx/edac/pcie patch series was never picked up
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1321937705-19587-1-git-send-email-b29237@freescale.com>
+Cc: vinod.koul@intel.com, linux-kernel@vger.kernel.org, zw@zh-kernel.org,
+ dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +23,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Nov 22, 2011 at 12:55:05PM +0800, b29237@freescale.com wrote:
+> From: Forrest Shi <b29237@freescale.com>
+> 
+>     dma status check function fsl_tx_status is heavily called in
+>     a tight loop and the desc lock in fsl_tx_status contended by
+>     the dma status update function. this caused the dma performance
+>     degrades much.
+> 
+>     this patch releases the lock in the fsl_tx_status function.
+>     I believe it has no neglect impact on the following call of
+>     dma_async_is_complete(...).
+> 
+>     we can see below three conditions will be identified as success
+>     a)  x < complete < use
+>     b)  x < complete+N < use+N
+>     c)  x < complete < use+N
+>     here complete is the completed_cookie, use is the last_used
+>     cookie, x is the querying cookie, N is MAX cookie
+> 
+>     when chan->completed_cookie is being read, the last_used may
+>     be incresed. Anyway it has no neglect impact on the dma status
+>     decision.
+> 
+>     Signed-off-by: Forrest Shi <xuelin.shi@freescale.com>
+> ---
+>  drivers/dma/fsldma.c |    5 -----
+>  1 files changed, 0 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index 8a78154..1dca56f 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -986,15 +986,10 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
+>  	struct fsldma_chan *chan = to_fsl_chan(dchan);
+>  	dma_cookie_t last_complete;
+>  	dma_cookie_t last_used;
+> -	unsigned long flags;
+> -
+> -	spin_lock_irqsave(&chan->desc_lock, flags);
+>  
 
-We're doing some work with an mpc85xx-based board and someone pointed to 
-a patch adding PCI/PCIE error interrupt edac support that was proposed 
-by Lan Chunhe over a year ago:
+This will cause a bug. See below for a detailed explanation. You need
+this instead:
 
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/086930.html
+	/*
+	 * On an SMP system, we must ensure that this CPU has seen the
+	 * memory accesses performed by another CPU under the
+	 * chan->desc_lock spinlock.
+	 */
+	smp_mb();
+>  	last_complete = chan->completed_cookie;
+>  	last_used = dchan->cookie;
+>  
+> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> -
+>  	dma_set_tx_state(txstate, last_complete, last_used, 0);
+>  	return dma_async_is_complete(cookie, last_complete, last_used);
+>  }
 
-For some reason this doesn't appear to have been picked up for mainline, 
-and I'm curious why not--is there something wrong with it?
+Facts:
+- dchan->cookie is the same member as chan->common.cookie (same memory location)
+- chan->common.cookie is the "last allocated cookie for a pending transaction"
+- chan->completed_cookie is the "last completed transaction"
+
+I have replaced "dchan->cookie" with "chan->common.cookie" in the below
+explanation, to keep everything referenced from the same structure.
+
+Variable usage before your change. Everything is used locked.
+- RW chan->common.cookie		(fsl_dma_tx_submit)
+- R  chan->common.cookie		(fsl_tx_status)
+- R  chan->completed_cookie		(fsl_tx_status)
+- W  chan->completed_cookie		(dma_do_tasklet)
+
+Variable usage after your change:
+- RW chan->common.cookie		LOCKED
+- R  chan->common.cookie		NO LOCK
+- R  chan->completed_cookie		NO LOCK
+- W  chan->completed_cookie             LOCKED
+
+What if we assume that you have a 2 CPU system (such as a P2020). After
+your changes, one possible sequence is:
+
+=== CPU1 - allocate + submit descriptor: fsl_dma_tx_submit() ===
+spin_lock_irqsave
+descriptor->cookie = 20		(x in your example)
+chan->common.cookie = 20	(used in your example)
+spin_unlock_irqrestore
+
+=== CPU2 - immediately calls fsl_tx_status() ===
+chan->common.cookie == 19
+chan->completed_cookie == 19
+descriptor->cookie == 20
+
+Since we don't have locks anymore, CPU2 may not have seen the write to
+chan->common.cookie yet.
+
+Also assume that the DMA hardware has not started processing the
+transaction yet. Therefore dma_do_tasklet() has not been called, and
+chan->completed_cookie has not been updated.
+
+In this case, dma_async_is_complete() (on CPU2) returns DMA_SUCCESS,
+even though the DMA operation has not succeeded. The DMA operation has
+not even started yet!
+
+The smp_mb() fixes this, since it forces CPU2 to have seen all memory
+operations that happened before CPU1 released the spinlock. Spinlocks
+are implicit SMP memory barriers.
+
+Therefore, the above example becomes:
+smp_mb();
+chan->common.cookie == 20
+chan->completed_cookie == 19
+descriptor->cookie == 20
+
+Then dma_async_is_complete() returns DMA_IN_PROGRESS, which is correct.
 
 Thanks,
-Chris
-
--- 
-Chris Friesen
-Software Developer
-GENBAND
-chris.friesen@genband.com
-www.genband.com
+Ira
