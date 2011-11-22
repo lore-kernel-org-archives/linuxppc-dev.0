@@ -1,25 +1,27 @@
-Return-Path: <r58472@freescale.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
- [213.199.154.207])
+Return-Path: <B36685@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 69D24B70B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 20:49:40 +1100 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Chen Peter-B29397 <B29397@freescale.com>
-Subject: RE: [PATCH] usb/fsl_udc: fix dequeuing a request in progress
-Date: Tue, 22 Nov 2011 09:49:25 +0000
-Message-ID: <3F607A5180246847A760FD34122A1E052D94DB@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1321015093-13715-1-git-send-email-leoli@freescale.com>
- <20111122093437.GA18543@nchen-desktop>
-In-Reply-To: <20111122093437.GA18543@nchen-desktop>
-Content-Type: text/plain; charset="Windows-1252"
+ by ozlabs.org (Postfix) with ESMTPS id D3C851007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 20:54:48 +1100 (EST)
+Received: from mail27-db3 (localhost [127.0.0.1])	by mail27-db3-R.bigfish.com
+ (Postfix) with ESMTP id 791192020E	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 22 Nov 2011 09:53:55 +0000 (UTC)
+Received: from DB3EHSMHS015.bigfish.com (unknown [10.3.81.253])	by
+ mail27-db3.bigfish.com (Postfix) with ESMTP id 5852B2C0043	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 09:53:55 +0000 (UTC)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] mtd/nand: Add NAND chip ID to support Micron 4k pagesize NAND
+ chip
+Date: Tue, 22 Nov 2011 17:23:06 +0800
+Message-ID: <1321953786-26472-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Cc: "gregkh@suse.de" <gregkh@suse.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "balbi@ti.com" <balbi@ti.com>
+Content-Type: text/plain
+Cc: kumar.gala@freescale.com, Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->Subject: Re: [PATCH] usb/fsl_udc: fix dequeuing a request in progress
->
->On Fri, Nov 11, 2011 at 08:38:13PM +0800, Li Yang wrote:
->> The original implementation of dequeuing a request in progress is not
->> correct.  Change to use a correct process and also clean up the
->> related functions a little bit.
->>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->>  drivers/usb/gadget/fsl_udc_core.c |   62 +++++++++++++++++-------------
->------
->>  1 files changed, 29 insertions(+), 33 deletions(-)
->>
->> diff --git a/drivers/usb/gadget/fsl_udc_core.c
->> b/drivers/usb/gadget/fsl_udc_core.c
->> index b2c44e1..beef9b7 100644
->> --- a/drivers/usb/gadget/fsl_udc_core.c
->> +++ b/drivers/usb/gadget/fsl_udc_core.c
->> @@ -696,12 +696,31 @@ static void fsl_free_request(struct usb_ep *_ep,
->struct usb_request *_req)
->>  		kfree(req);
->>  }
->>
->> -/*-------------------------------------------------------------------
->> ------*/
->> +/* Actually add a dTD chain to an empty dQH and let go */ static void
->> +fsl_prime_ep(struct fsl_ep *ep, struct ep_td_struct *td) {
->> +	struct ep_queue_head *qh =3D ep->qh;
->It seems to can't get the correct qh pointer, you may still need to use
->below code to get it
-> 	int i =3D ep_index(ep) * 2 + ep_is_in(ep);
-> 	struct ep_queue_head *dQH =3D &ep->udc->ep_qh[i];
+Add NAND chip ID 0x38 in ids table to support Micron 4k large-page NAND chip.
 
-Thanks for trying.    It will be much easier if we can dereference QH from =
-the ep structure.  It is really strange that the ep->qh pointer is not work=
-ing somehow.
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ drivers/mtd/nand/nand_ids.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-We have initialized it in struct_ep_setup():
-	ep->qh =3D &udc->ep_qh[index];
-
-Can you do me a favor on investigating why it's failing?
-
-Thanks,
-Leo
+diff --git a/drivers/mtd/nand/nand_ids.c b/drivers/mtd/nand/nand_ids.c
+index 00cf1b0..23ed1d2 100644
+--- a/drivers/mtd/nand/nand_ids.c
++++ b/drivers/mtd/nand/nand_ids.c
+@@ -106,6 +106,7 @@ struct nand_flash_dev nand_flash_ids[] = {
+ 	/* 8 Gigabit */
+ 	{"NAND 1GiB 1,8V 8-bit",	0xA3, 0, 1024, 0, LP_OPTIONS},
+ 	{"NAND 1GiB 3,3V 8-bit",	0xD3, 0, 1024, 0, LP_OPTIONS},
++	{"NAND 1GiB 3,3V 8-bit",	0x38, 0, 1024, 0, LP_OPTIONS},
+ 	{"NAND 1GiB 1,8V 16-bit",	0xB3, 0, 1024, 0, LP_OPTIONS16},
+ 	{"NAND 1GiB 3,3V 16-bit",	0xC3, 0, 1024, 0, LP_OPTIONS16},
+ 
+-- 
+1.6.4
