@@ -1,31 +1,33 @@
 Return-Path: <B38951@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6ACB01007D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 17:20:44 +1100 (EST)
-Received: from mail141-ch1 (localhost [127.0.0.1])	by
- mail141-ch1-R.bigfish.com (Postfix) with ESMTP id 7CA892201AB	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 06:21:02 +0000 (UTC)
-Received: from CH1EHSMHS013.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.246])	by mail141-ch1.bigfish.com (Postfix) with ESMTP id
- 453116C0240	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 06:21:00
- +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 7904E1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 17:35:48 +1100 (EST)
+Received: from mail61-ch1 (localhost [127.0.0.1])	by mail61-ch1-R.bigfish.com
+ (Postfix) with ESMTP id B0B304A0428	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 22 Nov 2011 06:36:12 +0000 (UTC)
+Received: from CH1EHSMHS035.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.244])	by mail61-ch1.bigfish.com (Postfix) with ESMTP id
+ 74195100042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 06:36:10 +0000 (UTC)
 From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Jia Hongtao-B38951 <B38951@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
+To: Gala Kumar-B11780 <B11780@freescale.com>
 Subject: RE: [PATCH 1/2] Unify pci/pcie initialization code
-Date: Tue, 22 Nov 2011 06:20:34 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
+Date: Tue, 22 Nov 2011 06:35:33 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5DFD4E70@039-SN1MPN1-005.039d.mgd.msft.net>
 References: <1320040492-6407-1-git-send-email-B38951@freescale.com>
  <1320040492-6407-2-git-send-email-B38951@freescale.com>
-In-Reply-To: <1320040492-6407-2-git-send-email-B38951@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,6 +36,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+Hi Kumar,
+If the patch is ok we will apply the patch into other platforms.
+Thanks.
+
+-----Original Message-----
+From: Jia Hongtao-B38951=20
+Sent: Tuesday, November 22, 2011 2:21 PM
+To: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org
+Cc: Li Yang-R58472; Gala Kumar-B11780
+Subject: RE: [PATCH 1/2] Unify pci/pcie initialization code
 
 Hi Kumar,
 We want more comments on this series of patches ([1/2] & [2/2]) to speed up=
