@@ -1,16 +1,26 @@
-Return-Path: <tinamdar@amcc.com>
-Received: from denmail01.apm.com (unknown [192.195.68.30])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 623E9B70B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 19:07:10 +1100 (EST)
-From: Tanmay Inamdar <tinamdar@apm.com>
-To: benh@kernel.crashing.org
-Subject: powerpc: dts: Fix canyonlands EMAC interrupt map
-Date: Tue, 22 Nov 2011 12:41:17 +0530
-Message-Id: <1321945877-22802-1-git-send-email-tinamdar@apm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Tanmay Inamdar <tinamdar@apm.com>
+Return-Path: <hzpeterchen@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+ [209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 3A686B6FF5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 22:49:01 +1100 (EST)
+Received: by eyz10 with SMTP id 10so60716eyz.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 03:48:57 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <3F607A5180246847A760FD34122A1E052D94DB@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1321015093-13715-1-git-send-email-leoli@freescale.com>
+ <20111122093437.GA18543@nchen-desktop>
+ <3F607A5180246847A760FD34122A1E052D94DB@039-SN1MPN1-003.039d.mgd.msft.net>
+Date: Tue, 22 Nov 2011 19:48:55 +0800
+Message-ID: <CAL411-qEgc8T+sdn4VzUXeCd76mQ1wkc9V6oV+CovVV8QrRxYg@mail.gmail.com>
+Subject: Re: [PATCH] usb/fsl_udc: fix dequeuing a request in progress
+From: Peter Chen <hzpeterchen@gmail.com>
+To: Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Chen Peter-B29397 <B29397@freescale.com>, "gregkh@suse.de" <gregkh@suse.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "balbi@ti.com" <balbi@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,50 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixing interrupt mapping of EMAC for canyonlands
+>>It seems to can't get the correct qh pointer, you may still need to use
+>>below code to get it
+>> =A0 =A0 =A0 int i =3D ep_index(ep) * 2 + ep_is_in(ep);
+>> =A0 =A0 =A0 struct ep_queue_head *dQH =3D &ep->udc->ep_qh[i];
+>
+> Thanks for trying. =A0 =A0It will be much easier if we can dereference QH=
+ from the ep structure. =A0It is really strange that the ep->qh pointer is =
+not working somehow.
+>
 
-Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
----
- arch/powerpc/boot/dts/canyonlands.dts |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
+Seems only ep0-out's qh pointer is assigned at ep structure.
+At probe:
+/* setup udc->eps[] for ep0 */
+struct_ep_setup(udc_controller, 0, "ep0", 0);
 
-diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index 3dc75de..c76bbcd 100644
---- a/arch/powerpc/boot/dts/canyonlands.dts
-+++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -360,13 +360,11 @@
- 			EMAC0: ethernet@ef600e00 {
- 				device_type = "network";
- 				compatible = "ibm,emac-460ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC0>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
-+				interrupt-parent = <&UIC2>;
- 				#address-cells = <0>;
- 				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC2 0x10 0x4
--						 /*Wake*/   0x1 &UIC2 0x14 0x4>;
-+				interrupts = </*Status*/0x10 0x4
-+						/*Wake*/0x14 0x4>;
- 				reg = <0xef600e00 0x000000c4>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
-@@ -390,13 +388,11 @@
- 			EMAC1: ethernet@ef600f00 {
- 				device_type = "network";
- 				compatible = "ibm,emac-460ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC1>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
-+				interrupt-parent = <&UIC2>;
- 				#address-cells = <0>;
- 				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC2 0x11 0x4
--						 /*Wake*/   0x1 &UIC2 0x15 0x4>;
-+				interrupts = </*Status*/0x11 0x4
-+						/*Wake*/0x15 0x4>;
- 				reg = <0xef600f00 0x000000c4>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
--- 
-1.6.1.rc3
+
+> We have initialized it in struct_ep_setup():
+> =A0 =A0 =A0 =A0ep->qh =3D &udc->ep_qh[index];
+>
+> Can you do me a favor on investigating why it's failing?
+>
+> Thanks,
+> Leo
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>
+
+
+
+--=20
+BR,
+Peter Chen
