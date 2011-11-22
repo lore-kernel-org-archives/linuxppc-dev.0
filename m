@@ -1,25 +1,20 @@
-Return-Path: <rusty@ozlabs.org>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Miche Baker-Harvey <miche@google.com>
-Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
-In-Reply-To: <CAB8Rdaqno9kVHB8wsbH5=zs_ppUkd1G=siywFFfH3Ud21qK3FA@mail.gmail.com>
-References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
- <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
- <874nybqo0o.fsf@rustcorp.com.au>
- <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
- <87lira9ii7.fsf@rustcorp.com.au>
- <CAB8Rdaqno9kVHB8wsbH5=zs_ppUkd1G=siywFFfH3Ud21qK3FA@mail.gmail.com>
-Date: Tue, 22 Nov 2011 11:28:09 +1030
-Message-ID: <877h2tx9b2.fsf@rustcorp.com.au>
+Return-Path: <B29397@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 54D78B6F86
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 12:15:34 +1100 (EST)
+From: Peter Chen <peter.chen@freescale.com>
+To: <leoli@freescale.com>, <balbi@ti.com>
+Subject: [PATCH] USB: fsl_udc_core: Use (&) instead of (==) to compare ISO XFER
+Date: Tue, 22 Nov 2011 09:15:21 +0800
+Message-ID: <1321924521-3218-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
- Amit Shah <amit.shah@redhat.com>, Mike Waychison <mikew@google.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Eric Northrup <digitaleric@google.com>
+Content-Type: text/plain
+Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
+ stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 21 Nov 2011 14:16:38 -0800, Miche Baker-Harvey <miche@google.com> wrote:
-> Thanks, Rusty.  I'm not using QEMU though, just KVM.   I create the device, wait
-> for the message from the guest that the device is ready, and then add ports.
-> 
-> Miche
+Some ISO gadgets, like audio, has SYNC attribute as well as
+USB_ENDPOINT_XFER_ISOC for their bmAttributes at ISO endpoint
+descriptor. So, it needs to use & instead of == to judge if
+it is ISO XFER.
 
-OK, since Amit was the one who implemented multi-port console, I'm going
-to hand this to him.
+Signed-off-by: Peter Chen <peter.chen@freescale.com>
+---
+ drivers/usb/gadget/fsl_udc_core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I'm sure he's been looking for excuses to dive back into the console
-code!
-
-Cheers,
-Rusty.
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index d786ba3..bf40de3 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -877,7 +877,7 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req, gfp_t gfp_flags)
+ 		VDBG("%s, bad ep", __func__);
+ 		return -EINVAL;
+ 	}
+-	if (ep->desc->bmAttributes == USB_ENDPOINT_XFER_ISOC) {
++	if (ep->desc->bmAttributes & USB_ENDPOINT_XFER_ISOC) {
+ 		if (req->req.length > ep->ep.maxpacket)
+ 			return -EMSGSIZE;
+ 	}
+@@ -1032,7 +1032,7 @@ static int fsl_ep_set_halt(struct usb_ep *_ep, int value)
+ 		goto out;
+ 	}
+ 
+-	if (ep->desc->bmAttributes == USB_ENDPOINT_XFER_ISOC) {
++	if (ep->desc->bmAttributes & USB_ENDPOINT_XFER_ISOC) {
+ 		status = -EOPNOTSUPP;
+ 		goto out;
+ 	}
+-- 
+1.6.3.3
