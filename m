@@ -1,22 +1,31 @@
-Return-Path: <B29237@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
- [213.199.154.143])
+Return-Path: <B38951@freescale.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+ [213.199.154.207])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6F6B51007D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 17:11:02 +1100 (EST)
-From: <b29237@freescale.com>
-To: <dan.j.williams@intel.com>, <leoli@freescale.com>, <zw@zh-kernel.org>,
- <vinod.koul@intel.com>
-Subject: [PATCH][RFC] fsldma: fix performance degradation by optimizing
- spinlock use.
-Date: Tue, 22 Nov 2011 12:55:05 +0800
-Message-ID: <1321937705-19587-1-git-send-email-b29237@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 15CB31007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 17:18:36 +1100 (EST)
+Received: from mail75-am1 (localhost [127.0.0.1])	by mail75-am1-R.bigfish.com
+ (Postfix) with ESMTP id 64F954C046A	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 22 Nov 2011 06:17:28 +0000 (UTC)
+Received: from AM1EHSMHS020.bigfish.com (unknown [10.3.201.243])	by
+ mail75-am1.bigfish.com (Postfix) with ESMTP id 3D8446C0045	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 06:17:28 +0000 (UTC)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>
+Subject: RE: [PATCH] Do not hide resource for pci/pcie when configured as
+ Agent/EP
+Date: Tue, 22 Nov 2011 06:18:25 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5DFD4DA0@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1319789280-12091-1-git-send-email-B38951@freescale.com>
+In-Reply-To: <1319789280-12091-1-git-send-email-B38951@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Forrest Shi <b29237@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,52 +35,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Forrest Shi <b29237@freescale.com>
+Hi Kumar,
+We want more comments on this patch to speed up the pushing-to-kernel progr=
+ess.
+Thanks.
 
-    dma status check function fsl_tx_status is heavily called in
-    a tight loop and the desc lock in fsl_tx_status contended by
-    the dma status update function. this caused the dma performance
-    degrades much.
+-----Original Message-----
+From: Jia Hongtao-B38951=20
+Sent: Friday, October 28, 2011 4:08 PM
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Li Yang-R58472; Gala Kumar-B11780; Jia Hongtao-B38951
+Subject: [PATCH] Do not hide resource for pci/pcie when configured as Agent=
+/EP
 
-    this patch releases the lock in the fsl_tx_status function.
-    I believe it has no neglect impact on the following call of
-    dma_async_is_complete(...).
+From: Jason Jin <Jason.jin@freescale.com>
 
-    we can see below three conditions will be identified as success
-    a)  x < complete < use
-    b)  x < complete+N < use+N
-    c)  x < complete < use+N
-    here complete is the completed_cookie, use is the last_used
-    cookie, x is the querying cookie, N is MAX cookie
+Current pci/pcie init code will hide the pci/pcie host resource.
+But did not judge it is host/RC or agent/EP. If configured as agent/EP, we =
+should avoid hiding its resource in the host side.
 
-    when chan->completed_cookie is being read, the last_used may
-    be incresed. Anyway it has no neglect impact on the dma status
-    decision.
+In PCI system, the Programing Interface can be used to judge the host/agent=
+ status:
+Programing Interface =3D 0: host
+Programing Interface =3D 1: Agent
 
-    Signed-off-by: Forrest Shi <xuelin.shi@freescale.com>
+In PCIE system, both the Programing Interface and Header type can be used t=
+o judge the RC/EP status.
+Header Type =3D 0: EP
+Header Type =3D 1: RC
+
+Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
+Signed-off-by: Jia Hongtao <B38951@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- drivers/dma/fsldma.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/pci-common.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 8a78154..1dca56f 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -986,15 +986,10 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
- 	dma_cookie_t last_complete;
- 	dma_cookie_t last_used;
--	unsigned long flags;
--
--	spin_lock_irqsave(&chan->desc_lock, flags);
- 
- 	last_complete = chan->completed_cookie;
- 	last_used = dchan->cookie;
- 
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
--
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 	return dma_async_is_complete(cookie, last_complete, last_used);
- }
--- 
-1.7.0.4
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-com=
+mon.c
+index 4f134132c..bc61a69 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1732,10 +1732,13 @@ void __devinit pcibios_scan_phb(struct pci_controll=
+er *hose)  static void fixup_hide_host_resource_fsl(struct pci_dev *dev)  {
+ 	int i, class =3D dev->class >> 8;
++	/* When configured as agent, programing interface =3D 1 */
++	int prog_if =3D dev->class & 0xf;
+=20
+ 	if ((class =3D=3D PCI_CLASS_PROCESSOR_POWERPC ||
+ 	     class =3D=3D PCI_CLASS_BRIDGE_OTHER) &&
+ 		(dev->hdr_type =3D=3D PCI_HEADER_TYPE_NORMAL) &&
++		(prog_if =3D=3D 0) &&
+ 		(dev->bus->parent =3D=3D NULL)) {
+ 		for (i =3D 0; i < DEVICE_COUNT_RESOURCE; i++) {
+ 			dev->resource[i].start =3D 0;
+--
+1.7.5.1
