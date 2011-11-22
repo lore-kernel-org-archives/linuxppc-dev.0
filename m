@@ -1,25 +1,21 @@
-Return-Path: <mnazarewicz@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
- [209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9123F1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 12:26:31 +1100 (EST)
-Received: by bkat8 with SMTP id t8so7268495bka.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2011 17:26:26 -0800 (PST)
-Sender: =?UTF-8?Q?Micha=C5=82_Nazarewicz?= <mnazarewicz@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
-To: leoli@freescale.com, balbi@ti.com, "Peter Chen" <peter.chen@freescale.com>
-Subject: Re: [PATCH] USB: fsl_udc_core: Use (&) instead of (==) to compare ISO
+Return-Path: <B29397@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id A81BD1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 12:56:19 +1100 (EST)
+From: Peter Chen <peter.chen@freescale.com>
+To: <leoli@freescale.com>, <balbi@ti.com>, <mina86@mina86.com>
+Subject: [PATCH v2] USB: fsl_udc_core: use usb_endpoint_xfer_isoc to judge ISO
  XFER
-References: <1321924521-3218-1-git-send-email-peter.chen@freescale.com>
- <op.v5bp28eu3l0zgt@mpn-glaptop>
-Date: Tue, 22 Nov 2011 02:26:24 +0100
+Date: Tue, 22 Nov 2011 09:55:45 +0800
+Message-ID: <1321926945-8182-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-From: "Michal Nazarewicz" <mina86@mina86.com>
-Message-ID: <op.v5bqaaw33l0zgt@mpn-glaptop>
-In-Reply-To: <op.v5bp28eu3l0zgt@mpn-glaptop>
+Content-Type: text/plain
 Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
- stable@kernel.org
+ hzpeterchen@gmail.com, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Tue, 22 Nov 2011 02:15:21 +0100, Peter Chen <peter.chen@freescale.c=
-om> wrote:
->> @@ -877,7 +877,7 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_reque=
-st *_req, gfp_t gfp_flags)
->>  		VDBG("%s, bad ep", __func__);
->>  		return -EINVAL;
->>  	}
->> -	if (ep->desc->bmAttributes =3D=3D USB_ENDPOINT_XFER_ISOC) {
->> +	if (ep->desc->bmAttributes & USB_ENDPOINT_XFER_ISOC) {
+Some ISO gadgets, like audio, has SYNC attribute as well as
+USB_ENDPOINT_XFER_ISOC for their bmAttributes at ISO endpoint
+descriptor. So, it needs to use usb_endpoint_xfer_isoc to judge
+ISO XFER.
 
-On Tue, 22 Nov 2011 02:22:10 +0100, Michal Nazarewicz <mina86@mina86.com=
-> wrote:
-> What you really meant is:
->
-> (ep->desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) =3D=3D USB_ENDPO=
-INT_XFER_ISOC
->
-> It would probably be useful to create a function that performs that ch=
-eck rather
-> than having to type all of that every time.
+Signed-off-by: Peter Chen <peter.chen@freescale.com>
+---
+ drivers/usb/gadget/fsl_udc_core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Ah, there it is:
-
-usb_endpoint_xfer_isoc(ep)
-
-:)
-
->
->>  		if (req->req.length > ep->ep.maxpacket)
->>  			return -EMSGSIZE;
->>  	}
-
--- =
-
-Best regards,                                         _     _
-.o. | Liege of Serenely Enlightened Majesty of      o' \,=3D./ `o
-..o | Computer Science,  Micha=C5=82 =E2=80=9Cmina86=E2=80=9D Nazarewicz=
-    (o o)
-ooo +----<email/xmpp: mpn@google.com>--------------ooO--(_)--Ooo--
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index d786ba3..91df255 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -877,7 +877,7 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req, gfp_t gfp_flags)
+ 		VDBG("%s, bad ep", __func__);
+ 		return -EINVAL;
+ 	}
+-	if (ep->desc->bmAttributes == USB_ENDPOINT_XFER_ISOC) {
++	if (usb_endpoint_xfer_isoc(ep->desc)) {
+ 		if (req->req.length > ep->ep.maxpacket)
+ 			return -EMSGSIZE;
+ 	}
+@@ -1032,7 +1032,7 @@ static int fsl_ep_set_halt(struct usb_ep *_ep, int value)
+ 		goto out;
+ 	}
+ 
+-	if (ep->desc->bmAttributes == USB_ENDPOINT_XFER_ISOC) {
++	if (usb_endpoint_xfer_isoc(ep->desc)) {
+ 		status = -EOPNOTSUPP;
+ 		goto out;
+ 	}
+-- 
+1.6.3.3
