@@ -1,19 +1,17 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 4AC99B70BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 06:30:04 +1100 (EST)
-Date: Tue, 22 Nov 2011 10:59:25 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: b29237@freescale.com
-Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
- spinlock use.
-Message-ID: <20111122185924.GA23323@ovro.caltech.edu>
-References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1321937705-19587-1-git-send-email-b29237@freescale.com>
-Cc: vinod.koul@intel.com, linux-kernel@vger.kernel.org, zw@zh-kernel.org,
- dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 12E13B7091
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Nov 2011 07:25:17 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAMKPCpt012732
+ for <linuxppc-dev@ozlabs.org>; Tue, 22 Nov 2011 14:25:13 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix building ppc64 w/hugetlbfs enabled
+Date: Tue, 22 Nov 2011 14:25:12 -0600
+Message-Id: <1321993512-941-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,121 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 22, 2011 at 12:55:05PM +0800, b29237@freescale.com wrote:
-> From: Forrest Shi <b29237@freescale.com>
-> 
->     dma status check function fsl_tx_status is heavily called in
->     a tight loop and the desc lock in fsl_tx_status contended by
->     the dma status update function. this caused the dma performance
->     degrades much.
-> 
->     this patch releases the lock in the fsl_tx_status function.
->     I believe it has no neglect impact on the following call of
->     dma_async_is_complete(...).
-> 
->     we can see below three conditions will be identified as success
->     a)  x < complete < use
->     b)  x < complete+N < use+N
->     c)  x < complete < use+N
->     here complete is the completed_cookie, use is the last_used
->     cookie, x is the querying cookie, N is MAX cookie
-> 
->     when chan->completed_cookie is being read, the last_used may
->     be incresed. Anyway it has no neglect impact on the dma status
->     decision.
-> 
->     Signed-off-by: Forrest Shi <xuelin.shi@freescale.com>
-> ---
->  drivers/dma/fsldma.c |    5 -----
->  1 files changed, 0 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 8a78154..1dca56f 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -986,15 +986,10 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
->  	struct fsldma_chan *chan = to_fsl_chan(dchan);
->  	dma_cookie_t last_complete;
->  	dma_cookie_t last_used;
-> -	unsigned long flags;
-> -
-> -	spin_lock_irqsave(&chan->desc_lock, flags);
->  
+arch/powerpc/kernel/setup_64.c: In function 'early_setup':
+arch/powerpc/kernel/setup_64.c:226:2: error: implicit declaration of function 'reserve_hugetlb_gpages'
 
-This will cause a bug. See below for a detailed explanation. You need
-this instead:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/kernel/setup_64.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-	/*
-	 * On an SMP system, we must ensure that this CPU has seen the
-	 * memory accesses performed by another CPU under the
-	 * chan->desc_lock spinlock.
-	 */
-	smp_mb();
->  	last_complete = chan->completed_cookie;
->  	last_used = dchan->cookie;
->  
-> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> -
->  	dma_set_tx_state(txstate, last_complete, last_used, 0);
->  	return dma_async_is_complete(cookie, last_complete, last_used);
->  }
-
-Facts:
-- dchan->cookie is the same member as chan->common.cookie (same memory location)
-- chan->common.cookie is the "last allocated cookie for a pending transaction"
-- chan->completed_cookie is the "last completed transaction"
-
-I have replaced "dchan->cookie" with "chan->common.cookie" in the below
-explanation, to keep everything referenced from the same structure.
-
-Variable usage before your change. Everything is used locked.
-- RW chan->common.cookie		(fsl_dma_tx_submit)
-- R  chan->common.cookie		(fsl_tx_status)
-- R  chan->completed_cookie		(fsl_tx_status)
-- W  chan->completed_cookie		(dma_do_tasklet)
-
-Variable usage after your change:
-- RW chan->common.cookie		LOCKED
-- R  chan->common.cookie		NO LOCK
-- R  chan->completed_cookie		NO LOCK
-- W  chan->completed_cookie             LOCKED
-
-What if we assume that you have a 2 CPU system (such as a P2020). After
-your changes, one possible sequence is:
-
-=== CPU1 - allocate + submit descriptor: fsl_dma_tx_submit() ===
-spin_lock_irqsave
-descriptor->cookie = 20		(x in your example)
-chan->common.cookie = 20	(used in your example)
-spin_unlock_irqrestore
-
-=== CPU2 - immediately calls fsl_tx_status() ===
-chan->common.cookie == 19
-chan->completed_cookie == 19
-descriptor->cookie == 20
-
-Since we don't have locks anymore, CPU2 may not have seen the write to
-chan->common.cookie yet.
-
-Also assume that the DMA hardware has not started processing the
-transaction yet. Therefore dma_do_tasklet() has not been called, and
-chan->completed_cookie has not been updated.
-
-In this case, dma_async_is_complete() (on CPU2) returns DMA_SUCCESS,
-even though the DMA operation has not succeeded. The DMA operation has
-not even started yet!
-
-The smp_mb() fixes this, since it forces CPU2 to have seen all memory
-operations that happened before CPU1 released the spinlock. Spinlocks
-are implicit SMP memory barriers.
-
-Therefore, the above example becomes:
-smp_mb();
-chan->common.cookie == 20
-chan->completed_cookie == 19
-descriptor->cookie == 20
-
-Then dma_async_is_complete() returns DMA_IN_PROGRESS, which is correct.
-
-Thanks,
-Ira
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 66648cc..6a98051 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -65,6 +65,7 @@
+ #include <asm/kexec.h>
+ #include <asm/mmu_context.h>
+ #include <asm/code-patching.h>
++#include <asm/hugetlb.h>
+ 
+ #include "setup.h"
+ 
+-- 
+1.7.3.4
