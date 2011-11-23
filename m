@@ -1,25 +1,19 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3420110080A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 21:39:06 +1100 (EST)
-Date: Wed, 23 Nov 2011 16:08:52 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Miche Baker-Harvey <miche@google.com>
-Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
-Message-ID: <20111123103852.GG16665@amit-x200.redhat.com>
-References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
- <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
- <874nybqo0o.fsf@rustcorp.com.au>
- <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
+Return-Path: <r58472@freescale.com>
+Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 08F661007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 22:10:45 +1100 (EST)
+From: Li Yang <leoli@freescale.com>
+To: <balbi@ti.com>, <gregkh@suse.de>
+Subject: [PATCH v2] usb/fsl_udc: fix dequeuing a request in progress
+Date: Wed, 23 Nov 2011 20:12:56 +0800
+Message-ID: <1322050376-13553-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
- Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Greg Kroah-Hartman <gregkh@suse.de>, Eric Northrup <digitaleric@google.com>
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Peter Chen <peter.chen@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,95 +23,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Thu) 17 Nov 2011 [10:57:37], Miche Baker-Harvey wrote:
-> Rusty, Michael, Stephen, et al,
-> 
-> Thanks for your comments on these patches.
-> 
-> For what I'm trying to do, all three patches are necessary, but maybe
-> I'm going about it the wrong way. Your input would be appreciated.
-> I'm in no way claiming that these patches are "right", just that it's
-> working for me, and that what's in the current pool is not.
-> 
-> What I'm trying to do is:
-> On X86,
-> under KVM,
-> start a virtio console device,
-> with multiple ports on the device,
-> at least one of which is also a console (as well as ttyS0).
-> 
-> (Eventually, we want to be able to add virtio console ports on the
-> fly, and to have multiple virtio console ports be consoles.)
+The original implementation of dequeuing a request in progress
+is not correct.  Change to use a correct process and also clean
+up the related functions a little bit.
 
-Are you using kvm-tool to do this?  QEMU can already hot-plug ports
-and virtio-console (virtio-serial) devices.
+Signed-off-by: Li Yang <leoli@freescale.com>
+Cc: Peter Chen <peter.chen@freescale.com>
+---
+ drivers/usb/gadget/fsl_udc_core.c |   68 +++++++++++++++++-------------------
+ drivers/usb/gadget/fsl_usb2_udc.h |   10 +++++
+ 2 files changed, 42 insertions(+), 36 deletions(-)
 
-> When all three of the patches are in place, this works great. (By
-> great, I mean that getty's start up on all of ttyS0, hvc0 and hvc1,
-> and console output goes to ttyS0 and to hvc0.
-> "who" shows three users:  ttyS0, hvc0, and hvc1.
-> "cat /proc/consoles" shows both ttyS0 and hvc0.
-> I can use all three getty's, and console output really does appear on
-> both the consoles.
-> 
-> Based on Rusty's comments, I tried removing each of the patches
-> individually. Here's what happens today. I've seen other failure modes
-> depending on what precisely I'm passing the guest.
-> There's three patches:
-> 1/3 "fix locking of vtermno"
-> 2/3 "enforce one-time initialization with hvc_init
-> "3/3 "use separate struct console * for each console"
-> 
-> If I remove the "fix locking of vtermno", I only get one virtio
-> console terminal.  "who" shows the ttyS0 and the hvc0, and I can log
-> into the gettys on both. I don't get the second virtio console getty.
-> Interestingly, hvc0 shows up in /proc/consoles twice, and in fact the
-> console output is dumped twice to hvc0 (as you'd expect from looking
-> at printk.c, each line appears twice, followed by the next line.)
-
-I don't really understand why.  "fix locking of vtermno" adds locks in
-init_port_console(), which is called from add_port(), which should be
-serialised due to port additions being on work items on the same
-workqueue.  I don't see a race here.
-
-> If I remove the "enforce one-time initialization with hvc_init" patch,
-> which makes sure only a single thread is doing the hvc_init, and gates
-> anyone from continuing until it has completed, I get different
-> failures, including hangs, and dereferences of NULL pointers.
-> 
-> If I remove the "use separate struct console * for each console"patch,
-> what I'm seeing now is that while all of ttyS0, hvc0, and hvc1 are
-> present with gettys running on them, of the three, only ttyS0 is a
-> console.
-
-I don't see any difference in my testing with and without these
-patches.
-
-This is how I tested with qemu:
-
-./x86_64-softmmu/qemu-system-x86_64 -m 512 -smp 2 -chardev
-socket,path=/tmp/foo,server,nowait,id=foo -chardev
-socket,path=/tmp/bar,server,nowait,id=bar -device virtio-serial
--device virtconsole,chardev=foo,nr=4 -device
-virtconsole,chardev=bar,nr=3 -net none  -kernel
-/home/amit/src/linux/arch/x86/boot/bzImage -append 'root=/dev/sda1
-console=tty0 console=ttyS0' -initrd /tmp/initramfs.img
-/guests/f14-nolvm.qcow2 -enable-kvm -snapshot
-
-With this setup, with and without patches, I can spawn two consoles
-via:
-
-/sbin/agetty /dev/hvc0 9600 vt100
-/sbin/agetty /dev/hvc1 9600 vt100
-
-(Strange thing is, the second one gives a 'password incorrect' error
-on login attempts, while the first one logs in fine.  I do remember
-testing multiple consoles just fine a year and a half back, so no idea
-why this isn't behaving as expected -- but it mostly looks like a
-userspace issue rather than kernel one.)
-
-As mentioned earlier, I've not looked at the hvc code, but given my
-testing results, I'd like to first understand what you're seeing and
-what your environment is.
-
-		Amit
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index b2c44e1..cc704dc 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -696,12 +696,31 @@ static void fsl_free_request(struct usb_ep *_ep, struct usb_request *_req)
+ 		kfree(req);
+ }
+ 
+-/*-------------------------------------------------------------------------*/
++/* Actually add a dTD chain to an empty dQH and let go */
++static void fsl_prime_ep(struct fsl_ep *ep, struct ep_td_struct *td)
++{
++	struct ep_queue_head *qh = get_qh_by_ep(ep);
++
++	/* Write dQH next pointer and terminate bit to 0 */
++	qh->next_dtd_ptr = cpu_to_hc32(td->td_dma
++			& EP_QUEUE_HEAD_NEXT_POINTER_MASK);
++
++	/* Clear active and halt bit */
++	qh->size_ioc_int_sts &= cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
++					| EP_QUEUE_HEAD_STATUS_HALT));
++
++	/* Ensure that updates to the QH will occur before priming. */
++	wmb();
++
++	/* Prime endpoint by writing correct bit to ENDPTPRIME */
++	fsl_writel(ep_is_in(ep) ? (1 << (ep_index(ep) + 16))
++			: (1 << (ep_index(ep))), &dr_regs->endpointprime);
++}
++
++/* Add dTD chain to the dQH of an EP */
+ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+ {
+-	int i = ep_index(ep) * 2 + ep_is_in(ep);
+ 	u32 temp, bitmask, tmp_stat;
+-	struct ep_queue_head *dQH = &ep->udc->ep_qh[i];
+ 
+ 	/* VDBG("QH addr Register 0x%8x", dr_regs->endpointlistaddr);
+ 	VDBG("ep_qh[%d] addr is 0x%8x", i, (u32)&(ep->udc->ep_qh[i])); */
+@@ -719,7 +738,7 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+ 			cpu_to_hc32(req->head->td_dma & DTD_ADDR_MASK);
+ 		/* Read prime bit, if 1 goto done */
+ 		if (fsl_readl(&dr_regs->endpointprime) & bitmask)
+-			goto out;
++			return;
+ 
+ 		do {
+ 			/* Set ATDTW bit in USBCMD */
+@@ -736,28 +755,10 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+ 		fsl_writel(temp & ~USB_CMD_ATDTW, &dr_regs->usbcmd);
+ 
+ 		if (tmp_stat)
+-			goto out;
++			return;
+ 	}
+ 
+-	/* Write dQH next pointer and terminate bit to 0 */
+-	temp = req->head->td_dma & EP_QUEUE_HEAD_NEXT_POINTER_MASK;
+-	dQH->next_dtd_ptr = cpu_to_hc32(temp);
+-
+-	/* Clear active and halt bit */
+-	temp = cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
+-			| EP_QUEUE_HEAD_STATUS_HALT));
+-	dQH->size_ioc_int_sts &= temp;
+-
+-	/* Ensure that updates to the QH will occur before priming. */
+-	wmb();
+-
+-	/* Prime endpoint by writing 1 to ENDPTPRIME */
+-	temp = ep_is_in(ep)
+-		? (1 << (ep_index(ep) + 16))
+-		: (1 << (ep_index(ep)));
+-	fsl_writel(temp, &dr_regs->endpointprime);
+-out:
+-	return;
++	fsl_prime_ep(ep, req->head);
+ }
+ 
+ /* Fill in the dTD structure
+@@ -973,25 +974,20 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
+ 
+ 		/* The request isn't the last request in this ep queue */
+ 		if (req->queue.next != &ep->queue) {
+-			struct ep_queue_head *qh;
+ 			struct fsl_req *next_req;
+ 
+-			qh = ep->qh;
+ 			next_req = list_entry(req->queue.next, struct fsl_req,
+ 					queue);
+ 
+-			/* Point the QH to the first TD of next request */
+-			fsl_writel((u32) next_req->head, &qh->curr_dtd_ptr);
++			/* prime with dTD of next request */
++			fsl_prime_ep(ep, next_req->head);
+ 		}
+-
+-		/* The request hasn't been processed, patch up the TD chain */
++	/* The request hasn't been processed, patch up the TD chain */
+ 	} else {
+ 		struct fsl_req *prev_req;
+ 
+ 		prev_req = list_entry(req->queue.prev, struct fsl_req, queue);
+-		fsl_writel(fsl_readl(&req->tail->next_td_ptr),
+-				&prev_req->tail->next_td_ptr);
+-
++		prev_req->tail->next_td_ptr = req->tail->next_td_ptr;
+ 	}
+ 
+ 	done(ep, req, -ECONNRESET);
+@@ -1068,7 +1064,7 @@ static int fsl_ep_fifo_status(struct usb_ep *_ep)
+ 	struct fsl_udc *udc;
+ 	int size = 0;
+ 	u32 bitmask;
+-	struct ep_queue_head *d_qh;
++	struct ep_queue_head *qh;
+ 
+ 	ep = container_of(_ep, struct fsl_ep, ep);
+ 	if (!_ep || (!ep->desc && ep_index(ep) != 0))
+@@ -1079,13 +1075,13 @@ static int fsl_ep_fifo_status(struct usb_ep *_ep)
+ 	if (!udc->driver || udc->gadget.speed == USB_SPEED_UNKNOWN)
+ 		return -ESHUTDOWN;
+ 
+-	d_qh = &ep->udc->ep_qh[ep_index(ep) * 2 + ep_is_in(ep)];
++	qh = get_qh_by_ep(ep);
+ 
+ 	bitmask = (ep_is_in(ep)) ? (1 << (ep_index(ep) + 16)) :
+ 	    (1 << (ep_index(ep)));
+ 
+ 	if (fsl_readl(&dr_regs->endptstatus) & bitmask)
+-		size = (d_qh->size_ioc_int_sts & DTD_PACKET_SIZE)
++		size = (qh->size_ioc_int_sts & DTD_PACKET_SIZE)
+ 		    >> DTD_LENGTH_BIT_POS;
+ 
+ 	pr_debug("%s %u\n", __func__, size);
+diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
+index 1d51be8..f781f5d 100644
+--- a/drivers/usb/gadget/fsl_usb2_udc.h
++++ b/drivers/usb/gadget/fsl_usb2_udc.h
+@@ -569,6 +569,16 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
+ 					* 2 + ((windex & USB_DIR_IN) ? 1 : 0))
+ #define get_pipe_by_ep(EP)	(ep_index(EP) * 2 + ep_is_in(EP))
+ 
++static inline struct ep_queue_head *get_qh_by_ep(struct fsl_ep *ep)
++{
++	/* we only have one ep0 structure but two queue heads */
++	if (ep_index(ep) != 0)
++		return ep->qh;
++	else
++		return &ep->udc->ep_qh[(ep->udc->ep0_dir ==
++				USB_DIR_IN) ? 1 : 0];
++}
++
+ struct platform_device;
+ #ifdef CONFIG_ARCH_MXC
+ int fsl_udc_clk_init(struct platform_device *pdev);
+-- 
+1.5.4.3
