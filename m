@@ -1,23 +1,24 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
- [209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 7CB8F1007D5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 14:22:20 +1100 (EST)
-Received: by vcbfl15 with SMTP id fl15so1013587vcb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 19:22:16 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1322012084.14573.19.camel@pasglop>
-References: <20111122234933.GA28400@thor.bakeyournoodle.com>
- <CA+5PVA7js5kmK3JGDKiYa+xVqojmM2ZedifPHHWFsY7CYrqzYA@mail.gmail.com>
- <1322012084.14573.19.camel@pasglop>
-Date: Tue, 22 Nov 2011 22:22:16 -0500
-Message-ID: <CA+5PVA4HqcCca15urmfUaQCBC4tKmEbgNJAJViXZh9QXw2s3DQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: 44x: Add mtd ndfc to the ppx44x defconfig
-From: Josh Boyer <jwboyer@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 61EFC1007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 14:41:23 +1100 (EST)
+Subject: Re: [PATCH v2] Integrated Flash Controller support
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1320053901-23801-1-git-send-email-b35362@freescale.com>
+Date: Tue, 22 Nov 2011 21:41:00 -0600
+Message-Id: <CCF7C6DB-437C-4140-894F-2F497AD610DC@kernel.crashing.org>
+References: <1320053901-23801-1-git-send-email-b35362@freescale.com>
+To: Artem.Bityutskiy@nokia.com, David Woodhouse <dwmw2@infradead.org>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "b35362@freescale.com>" <b35362@freescale.com>,
+ "linux-kernel@vger.kernel.org Kernel" <linux-kernel@vger.kernel.org>,
+ linux-mtd@lists.infradead.org, Scott Wood <scottwood@freescale.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 22, 2011 at 8:34 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2011-11-22 at 20:04 -0500, Josh Boyer wrote:
->> On Tue, Nov 22, 2011 at 6:50 PM, Tony Breeds <tony@bakeyournoodle.com> w=
-rote:
->> > Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
->>
->> Acked-by: Josh Boyer <jwboyer@gmail.com>
->>
->> Ben, I don't have anything particularly urgent for 3.2 and this seems
->> like it is well within the 3.2 window (defconfig updates usually come
->> later). =A0Want to pick this up yourself, or do you want me to prep a
->> tree somewhere?
->
-> I'm working on 3.3 right now, so I'd rather you throw this in there, I
-> doesn't seem to be particularily urgent for 3.2 is it? (who actually
 
-Urgent, no.  I'll get a tree going after the holidays.
+On Oct 31, 2011, at 4:38 AM, <b35362@freescale.com> =
+<b35362@freescale.com> wrote:
 
-> uses 4xx_defconfig ?)
+> From: Liu Shuo <b35362@freescale.com>
+>=20
+> Integrated Flash Controller supports various flashes like NOR, NAND
+> and other devices using NOR, NAND and GPCM Machine available on it.
+> IFC supports four chip selects.
+>=20
+> Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Liu Shuo <b35362@freescale.com>
+> ---
+> arch/powerpc/Kconfig               |    4 +
+> arch/powerpc/include/asm/fsl_ifc.h |  834 =
+++++++++++++++++++++++++++++++++++++
+> arch/powerpc/sysdev/Makefile       |    1 +
+> arch/powerpc/sysdev/fsl_ifc.c      |  322 ++++++++++++++
+> 4 files changed, 1161 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/include/asm/fsl_ifc.h
+> create mode 100644 arch/powerpc/sysdev/fsl_ifc.c
 
-The linux-next tree builds it.  It would have caught a compile error
-in the NDFC driver much earlier if we had it enabled in the defconfig.
+Guys,
 
-josh
+How are we handling this patchset since it touches drivers/mtd/nand?
+
+- k=
