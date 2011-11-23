@@ -1,27 +1,17 @@
-Return-Path: <hzpeterchen@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
- [209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 0FFD4B70FF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 14:02:10 +1100 (EST)
-Received: by faaa20 with SMTP id a20so1202725faa.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2011 19:02:05 -0800 (PST)
+Return-Path: <tony@bakeyournoodle.com>
+Date: Wed, 23 Nov 2011 14:21:57 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: 44x: Add mtd ndfc to the ppx44x defconfig
+Message-ID: <20111123032155.GC25264@thor.bakeyournoodle.com>
+References: <20111122234933.GA28400@thor.bakeyournoodle.com>
+ <CA+5PVA7js5kmK3JGDKiYa+xVqojmM2ZedifPHHWFsY7CYrqzYA@mail.gmail.com>
+ <1322012084.14573.19.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <CAL411-qEgc8T+sdn4VzUXeCd76mQ1wkc9V6oV+CovVV8QrRxYg@mail.gmail.com>
-References: <1321015093-13715-1-git-send-email-leoli@freescale.com>
- <20111122093437.GA18543@nchen-desktop>
- <3F607A5180246847A760FD34122A1E052D94DB@039-SN1MPN1-003.039d.mgd.msft.net>
- <CAL411-qEgc8T+sdn4VzUXeCd76mQ1wkc9V6oV+CovVV8QrRxYg@mail.gmail.com>
-Date: Wed, 23 Nov 2011 11:02:04 +0800
-Message-ID: <CAL411-rXmawefELJCdCgiXT7Ma5Mi7z1zbR_eLZCncTChiR4Mg@mail.gmail.com>
-Subject: Re: [PATCH] usb/fsl_udc: fix dequeuing a request in progress
-From: Peter Chen <hzpeterchen@gmail.com>
-To: Li Yang-R58472 <r58472@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Chen Peter-B29397 <B29397@freescale.com>, "gregkh@suse.de" <gregkh@suse.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "balbi@ti.com" <balbi@ti.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="xo44VMWPx7vlQ2+2"
+In-Reply-To: <1322012084.14573.19.camel@pasglop>
+Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 22, 2011 at 7:48 PM, Peter Chen <hzpeterchen@gmail.com> wrote:
->>>It seems to can't get the correct qh pointer, you may still need to use
->>>below code to get it
->>> =A0 =A0 =A0 int i =3D ep_index(ep) * 2 + ep_is_in(ep);
->>> =A0 =A0 =A0 struct ep_queue_head *dQH =3D &ep->udc->ep_qh[i];
->>
->> Thanks for trying. =A0 =A0It will be much easier if we can dereference Q=
-H from the ep structure. =A0It is really strange that the ep->qh pointer is=
- not working somehow.
->>
->
-> Seems only ep0-out's qh pointer is assigned at ep structure.
-> At probe:
-> /* setup udc->eps[] for ep0 */
-> struct_ep_setup(udc_controller, 0, "ep0", 0);
->
->
->> We have initialized it in struct_ep_setup():
->> =A0 =A0 =A0 =A0ep->qh =3D &udc->ep_qh[index];
->>
->> Can you do me a favor on investigating why it's failing?
->>
-Leo, I have debugged this issue at my board just now, the reason of failure
-is we only have one ep struct for ep0, so when talking about ep0, it always
-pointers to udc->ep[0]. So even we initialize the current qh address for ep=
-0in
-at probe, it still can't get the ep0in's qh address through ep
-structure, as ep0 is
-always udc->ep[0].
 
->> Thanks,
->> Leo
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->>
->
->
->
-> --
-> BR,
-> Peter Chen
->
+--xo44VMWPx7vlQ2+2
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Nov 23, 2011 at 12:34:44PM +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2011-11-22 at 20:04 -0500, Josh Boyer wrote:
+> > On Tue, Nov 22, 2011 at 6:50 PM, Tony Breeds <tony@bakeyournoodle.com> =
+wrote:
+> > > Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> >=20
+> > Acked-by: Josh Boyer <jwboyer@gmail.com>
+> >=20
+> > Ben, I don't have anything particularly urgent for 3.2 and this seems
+> > like it is well within the 3.2 window (defconfig updates usually come
+> > later).  Want to pick this up yourself, or do you want me to prep a
+> > tree somewhere?
+>=20
+> I'm working on 3.3 right now, so I'd rather you throw this in there, I
+> doesn't seem to be particularily urgent for 3.2 is it? (who actually
+> uses 4xx_defconfig ?)
 
+It's mostly for linux-next / kisskb
 
---=20
-BR,
-Peter Chen
+There was a compiler error added to ndfc in upstream[1].  The change was in
+linux-next but nothing currently builds that code.  If we update
+4xx_defconfig then linux-next will catch errors sooner.
+
+So it's not urgent, but it doesn't hurt
+
+[1] http://patchwork.ozlabs.org/patch/127000/
+
+Yours Tony
+
+--xo44VMWPx7vlQ2+2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJOzGbTAAoJEEsCiJRY75GKYXoP/0C9wkEVguHJk0WL4+zqZH/a
+2Ug3i78GLQzm4QAwWMkLJ8jPHc8dqxP/ltceJPSzR64eXevbz8PC74ThKnuYRYZh
+izOEMhbtzZ8h5xjQvYi+dmWgyEW25bokyxNtA3Yz7I2IapiGOoDyIQFTo2ujIByJ
+zdPKsFunW4YD/ARmolxwljIDqgrB3Cd3LHAzie6TbI0cUdz/GdjQyFImIy4HjTJ2
+q6JKdOa9ib+KCIsBfmy3YeqZmqorKNMEaqWIosn1Eno5vl/cjVf0ka3RIYXHIyNY
+zSQkaKHs0ozSd7Rn7qqPYE+yvkWHmhcBQEFmr2iNL/yQezwSULYW1UWxz9hCzZLt
+9/KwEkSpOKgkC/3B8u5OstOaVcGqAzcYLYjFGEIsmcg9QMmFmD9QeFMpNwZJdK8Q
+PF+AlAJGmSXgEpWTPLhnr+ry9UHRC5F2rR9fyuGqwU6ulpVQ+5FkPakoHBqaBTxi
+bJP5fXCUUkFuCDihAO+JQ3//BOJqFF6sOpNI/ZDZS6VBxtKviwtZSpB0u/CKbXaw
+nO4pQMsd+48NMmnaMMkuU4Px35zQwRj5+0CanOA1nwxQtScwwVuzBf1TiDgX9JaU
+BALtNhYORCU4kY77dgkRbwLgEIGonnEbi0HW5HolB5dvnKS3mI9sJIcwk72VXcvw
+3VpTXzVG/+cmkWZ1c8L5
+=/TDZ
+-----END PGP SIGNATURE-----
+
+--xo44VMWPx7vlQ2+2--
