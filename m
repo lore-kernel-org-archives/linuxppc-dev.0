@@ -1,17 +1,25 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from smtp-out0.tiscali.nl (smtp-out0.tiscali.nl [195.241.79.175])
- by ozlabs.org (Postfix) with ESMTP id 42F33B70C8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 21:24:01 +1100 (EST)
-Message-ID: <1322043831.1753.49.camel@x61.thuisdomein>
-Subject: Re: [PATCH] powerpc/40x: Add APM8018X SOC support
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Tanmay Inamdar <tinamdar@apm.com>
-Date: Wed, 23 Nov 2011 11:23:51 +0100
-In-Reply-To: <1322041464-20605-1-git-send-email-tinamdar@apm.com>
-References: <1322041464-20605-1-git-send-email-tinamdar@apm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 3420110080A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2011 21:39:06 +1100 (EST)
+Date: Wed, 23 Nov 2011 16:08:52 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Miche Baker-Harvey <miche@google.com>
+Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
+Message-ID: <20111123103852.GG16665@amit-x200.redhat.com>
+References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
+ <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
+ <874nybqo0o.fsf@rustcorp.com.au>
+ <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
+ Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Greg Kroah-Hartman <gregkh@suse.de>, Eric Northrup <digitaleric@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,131 +29,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tanmay,
-
-(Some minor Kconfig related comments follow.)
-
-On Wed, 2011-11-23 at 15:14 +0530, Tanmay Inamdar wrote:
-> The AppliedMicro APM8018X embedded processor targets embedded applications that
-> require low power and a small footprint. It features a PowerPC 405 processor
-> core built in a 65nm low-power CMOS process with a five-stage pipeline executing
-> up to one instruction per cycle. The family has 128-kbytes of on-chip memory,
-> a 128-bit local bus and on-chip DDR2 SDRAM controller with 16-bit interface.
->
->[...]
->
-> Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
-> ---
->  arch/powerpc/Kconfig                        |    6 +
->  arch/powerpc/boot/dcr.h                     |    6 +
->  arch/powerpc/boot/dts/klondike.dts          |  668 +++++++++++++
->  arch/powerpc/configs/40x/klondike_defconfig | 1353 +++++++++++++++++++++++++++
->  arch/powerpc/include/asm/dcr-regs.h         |   20 +
->  arch/powerpc/kernel/cputable.c              |   52 +
->  arch/powerpc/kernel/udbg_16550.c            |   22 +
->  arch/powerpc/platforms/40x/Kconfig          |   11 +
->  arch/powerpc/platforms/40x/ppc40x_simple.c  |    4 +-
->  9 files changed, 2141 insertions(+), 1 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/klondike.dts
->  create mode 100644 arch/powerpc/configs/40x/klondike_defconfig
+On (Thu) 17 Nov 2011 [10:57:37], Miche Baker-Harvey wrote:
+> Rusty, Michael, Stephen, et al,
 > 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index b177caa..3f2cc36 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -978,3 +978,9 @@ config PPC_LIB_RHEAP
->  	bool
->  
->  source "arch/powerpc/kvm/Kconfig"
-> +
-> +config UART_16550_WORD_ADDRESSABLE
-> +	bool
-> +	default n
-> +	help
-> +	   Enable this if your UART 16550 is word addressable.
+> Thanks for your comments on these patches.
+> 
+> For what I'm trying to do, all three patches are necessary, but maybe
+> I'm going about it the wrong way. Your input would be appreciated.
+> I'm in no way claiming that these patches are "right", just that it's
+> working for me, and that what's in the current pool is not.
+> 
+> What I'm trying to do is:
+> On X86,
+> under KVM,
+> start a virtio console device,
+> with multiple ports on the device,
+> at least one of which is also a console (as well as ttyS0).
+> 
+> (Eventually, we want to be able to add virtio console ports on the
+> fly, and to have multiple virtio console ports be consoles.)
 
-This is only relevant for this SOC isn't it? If so, it might be better
-to add it to arch/powerpc/platforms/40x/Kconfig.
+Are you using kvm-tool to do this?  QEMU can already hot-plug ports
+and virtio-console (virtio-serial) devices.
 
-The help line can be dropped (there's no prompt, so the help won't be
-user visible).
+> When all three of the patches are in place, this works great. (By
+> great, I mean that getty's start up on all of ttyS0, hvc0 and hvc1,
+> and console output goes to ttyS0 and to hvc0.
+> "who" shows three users:  ttyS0, hvc0, and hvc1.
+> "cat /proc/consoles" shows both ttyS0 and hvc0.
+> I can use all three getty's, and console output really does appear on
+> both the consoles.
+> 
+> Based on Rusty's comments, I tried removing each of the patches
+> individually. Here's what happens today. I've seen other failure modes
+> depending on what precisely I'm passing the guest.
+> There's three patches:
+> 1/3 "fix locking of vtermno"
+> 2/3 "enforce one-time initialization with hvc_init
+> "3/3 "use separate struct console * for each console"
+> 
+> If I remove the "fix locking of vtermno", I only get one virtio
+> console terminal.  "who" shows the ttyS0 and the hvc0, and I can log
+> into the gettys on both. I don't get the second virtio console getty.
+> Interestingly, hvc0 shows up in /proc/consoles twice, and in fact the
+> console output is dumped twice to hvc0 (as you'd expect from looking
+> at printk.c, each line appears twice, followed by the next line.)
 
-Some people would suggest to use
-	def_bool n
+I don't really understand why.  "fix locking of vtermno" adds locks in
+init_port_console(), which is called from add_port(), which should be
+serialised due to port additions being on work items on the same
+workqueue.  I don't see a race here.
 
-here. (I don't really care.)
+> If I remove the "enforce one-time initialization with hvc_init" patch,
+> which makes sure only a single thread is doing the hvc_init, and gates
+> anyone from continuing until it has completed, I get different
+> failures, including hangs, and dereferences of NULL pointers.
+> 
+> If I remove the "use separate struct console * for each console"patch,
+> what I'm seeing now is that while all of ttyS0, hvc0, and hvc1 are
+> present with gettys running on them, of the three, only ttyS0 is a
+> console.
 
-> [...]
+I don't see any difference in my testing with and without these
+patches.
 
-> diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
-> index 6837f83..dd3bce9 100644
-> --- a/arch/powerpc/kernel/udbg_16550.c
-> +++ b/arch/powerpc/kernel/udbg_16550.c
-> @@ -18,6 +18,19 @@ extern void real_writeb(u8 data, volatile u8 __iomem *addr);
->  extern u8 real_205_readb(volatile u8 __iomem  *addr);
->  extern void real_205_writeb(u8 data, volatile u8 __iomem *addr);
->  
-> +#ifdef CONFIG_UART_16550_WORD_ADDRESSABLE
-> +struct NS16550 {
-> +	/* this struct must be packed */
-> +	unsigned char rbr;  /* 0 */ u8 s0[3];
-> +	unsigned char ier;  /* 1 */ u8 s1[3];
-> +	unsigned char fcr;  /* 2 */ u8 s2[3];
-> +	unsigned char lcr;  /* 3 */ u8 s3[3];
-> +	unsigned char mcr;  /* 4 */ u8 s4[3];
-> +	unsigned char lsr;  /* 5 */ u8 s5[3];
-> +	unsigned char msr;  /* 6 */ u8 s6[3];
-> +	unsigned char scr;  /* 7 */ u8 s7[3];
-> +};
-> +#else
->  struct NS16550 {
->  	/* this struct must be packed */
->  	unsigned char rbr;  /* 0 */
-> @@ -29,6 +42,7 @@ struct NS16550 {
->  	unsigned char msr;  /* 6 */
->  	unsigned char scr;  /* 7 */
->  };
-> +#endif /* CONFIG_UART_16550_WORD_ADDRESSABLE */
->  
->  #define thr rbr
->  #define iir fcr
-> [...] 
-> diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-> index 1530229..3d0d1d9 100644
-> --- a/arch/powerpc/platforms/40x/Kconfig
-> +++ b/arch/powerpc/platforms/40x/Kconfig
-> @@ -186,3 +186,14 @@ config IBM405_ERR51
->  #	bool
->  #	depends on !STB03xxx && PPC4xx_DMA
->  #	default y
-> +#
-> +
-> +config APM8018X
-> +	bool "APM8018X"
-> +	depends on 40x
-> +	default y
+This is how I tested with qemu:
 
-Why is this "default y"? All other "selectors" of PPC40x_SIMPLE default
-to n.
- 
-> +	select PPC40x_SIMPLE
+./x86_64-softmmu/qemu-system-x86_64 -m 512 -smp 2 -chardev
+socket,path=/tmp/foo,server,nowait,id=foo -chardev
+socket,path=/tmp/bar,server,nowait,id=bar -device virtio-serial
+-device virtconsole,chardev=foo,nr=4 -device
+virtconsole,chardev=bar,nr=3 -net none  -kernel
+/home/amit/src/linux/arch/x86/boot/bzImage -append 'root=/dev/sda1
+console=tty0 console=ttyS0' -initrd /tmp/initramfs.img
+/guests/f14-nolvm.qcow2 -enable-kvm -snapshot
 
-There was recently some powerpc related discussion on using "select" on
-symbols that are themselves user selectable (see
-https://lkml.org/lkml/2011/11/9/426 ). But other symbols already select
-this symbol so this is not specific to this patch. 
+With this setup, with and without patches, I can spawn two consoles
+via:
 
-> +	select UART_16550_WORD_ADDRESSABLE
-> +	help
-> +	  This option enables support for the AppliedMicro Klondike board.
-> +
+/sbin/agetty /dev/hvc0 9600 vt100
+/sbin/agetty /dev/hvc1 9600 vt100
 
-Since you're selecting it here it's good that you made
-UART_16550_WORD_ADDRESSABLE hidden (as it has no prompt). But perhaps
-you could even drop it and in the code just test for CONFIG_APM8018X. Or
-are you expecting more users of UART_16550_WORD_ADDRESSABLE?
+(Strange thing is, the second one gives a 'password incorrect' error
+on login attempts, while the first one logs in fine.  I do remember
+testing multiple consoles just fine a year and a half back, so no idea
+why this isn't behaving as expected -- but it mostly looks like a
+userspace issue rather than kernel one.)
 
-> [...]
+As mentioned earlier, I've not looked at the hvc code, but given my
+testing results, I'd like to first understand what you're seeing and
+what your environment is.
 
-
-Paul Bolle
+		Amit
