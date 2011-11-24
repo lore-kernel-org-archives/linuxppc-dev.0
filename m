@@ -1,27 +1,26 @@
 Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
- [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+ [216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 7E5DD1007D7
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2011 00:57:04 +1100 (EST)
-Received: from mail143-va3 (localhost [127.0.0.1])	by
- mail143-va3-R.bigfish.com (Postfix) with ESMTP id 616BF6002ED	for
- <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 13:58:36 +0000 (UTC)
-Received: from VA3EHSMHS028.bigfish.com (unknown [10.7.14.244])	by
- mail143-va3.bigfish.com (Postfix) with ESMTP id 9DFC020282	for
- <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 13:58:07 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id ACD001007E5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 00:57:47 +1100 (EST)
 From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Gala Kumar-B11780 <B11780@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: do not force PHYS_64BIT on the P1022DS
-Date: Thu, 24 Nov 2011 13:56:03 +0000
-Message-ID: <B617107E-9D15-4DA9-996C-2A4671809AA0@freescale.com>
-References: <1320349099-22594-1-git-send-email-timur@freescale.com>
- <C0BC3E1D-5FCF-42EC-A030-4F86EC1D76F3@freescale.com>
-In-Reply-To: <C0BC3E1D-5FCF-42EC-A030-4F86EC1D76F3@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] P1021: set IReady in QE Microcode Upload
+Date: Thu, 24 Nov 2011 13:57:31 +0000
+Message-ID: <0154F680-D9F4-4CE1-BF5E-11884AD0ED4A@freescale.com>
+References: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
+ <4EBD4FB8.2020406@freescale.com>
+ <026483A88B848047A08C3F03E20822D0267B1F4BDB@MCHP058A.global-ad.net>
+ <CAOZdJXXOrSaUgynqu+CL64SnivtOWHBDMcJK9Fh000M_JBK58Q@mail.gmail.com>
+ <DF5BDBFF-A726-4E1C-832E-EF2629F60DC9@kernel.crashing.org>
+In-Reply-To: <DF5BDBFF-A726-4E1C-832E-EF2629F60DC9@kernel.crashing.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "<linuxppc-dev@ozlabs.org>" <linuxppc-dev@ozlabs.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kokoris,
+ Ioannis" <ioannis.kokoris@siemens-enterprise.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,10 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Nov 24, 2011, at 1:12 AM, Kumar Gala <kumar.gala@freescale.com> wrote:
+On Nov 24, 2011, at 1:55 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
 
+>>=20
+>> I'll have to check.  But this patch can't be applied as-is unless it's
+>> proven safe for all QE-enabled chips.
 >=20
-> If you want me to apply this please also provided a 32-bit .dts for p1022=
-ds.  This should be pretty trivial based on my recent .dts cleanups.
+> Any update on trying this on a MPC8323?
 
-Ok, I'll do that.=
+Haiying said it should be ok, but I haven't tried it yet.  I'll try it on M=
+onday.
