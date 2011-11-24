@@ -1,11 +1,11 @@
 Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 7D31E1007D7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:19:56 +1100 (EST)
-Date: Thu, 24 Nov 2011 22:20:37 +0200
+ by ozlabs.org (Postfix) with ESMTP id 0460C1007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:20:42 +1100 (EST)
+Date: Thu, 24 Nov 2011 22:21:27 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: [PATCH-RFC 09/10] sh: switch to GENERIC_PCI_IOMAP
-Message-ID: <28d52b292971f1bc6dab66ad6f27a0dbce35a9c0.1322163031.git.mst@redhat.com>
+Subject: [PATCH-RFC 10/10] sparc: switch to GENERIC_PCI_IOMAP
+Message-ID: <63292221aef2eb299e7dba860b3ee38c2ed05eb8.1322163031.git.mst@redhat.com>
 References: <cover.1322163031.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,61 +48,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-sh copied pci_iomap from generic code, probably to avoid
+sparc copied pci_iomap from generic code, probably to avoid
 pulling the rest of iomap.c in.  Since that's in
 a separate file now, we can reuse the common implementation.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- arch/sh/Kconfig           |    1 +
- arch/sh/drivers/pci/pci.c |   23 -----------------------
- 2 files changed, 1 insertions(+), 23 deletions(-)
+ arch/sparc/Kconfig             |    1 +
+ arch/sparc/include/asm/io_32.h |    5 ++++-
+ arch/sparc/include/asm/io_64.h |    5 ++++-
+ arch/sparc/lib/iomap.c         |   23 -----------------------
+ 4 files changed, 9 insertions(+), 25 deletions(-)
 
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 5aeab58..ead1640 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -857,6 +857,7 @@ config PCI
- 	bool "PCI support"
- 	depends on SYS_SUPPORTS_PCI
- 	select PCI_DOMAINS
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index f92602e..a4644f5 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -28,6 +28,7 @@ config SPARC
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select GENERIC_IRQ_SHOW
+ 	select USE_GENERIC_SMP_HELPERS if SMP
 +	select GENERIC_PCI_IOMAP
- 	help
- 	  Find out whether you have a PCI motherboard. PCI is the name of a
- 	  bus system, i.e. the way the CPU talks to the other stuff inside
-diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
-index c2691af..11aaf2f 100644
---- a/arch/sh/drivers/pci/pci.c
-+++ b/arch/sh/drivers/pci/pci.c
-@@ -393,29 +393,6 @@ static void __iomem *ioport_map_pci(struct pci_dev *dev,
- 	return (void __iomem *)(chan->io_map_base + port);
- }
  
+ config SPARC32
+ 	def_bool !64BIT
+diff --git a/arch/sparc/include/asm/io_32.h b/arch/sparc/include/asm/io_32.h
+index c2ced21..9be8778 100644
+--- a/arch/sparc/include/asm/io_32.h
++++ b/arch/sparc/include/asm/io_32.h
+@@ -8,6 +8,10 @@
+ #include <asm/page.h>      /* IO address mapping routines need this */
+ #include <asm/system.h>
+ 
++#ifdef __KERNEL__
++#include <asm-generic/pci_iomap.h>
++#endif
++
+ #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
+ 
+ static inline u32 flip_dword (u32 l)
+@@ -324,7 +328,6 @@ extern void ioport_unmap(void __iomem *);
+ 
+ /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+ struct pci_dev;
+-extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
+ extern void pci_iounmap(struct pci_dev *dev, void __iomem *);
+ 
+ /*
+diff --git a/arch/sparc/include/asm/io_64.h b/arch/sparc/include/asm/io_64.h
+index 9c89654..19cd51d 100644
+--- a/arch/sparc/include/asm/io_64.h
++++ b/arch/sparc/include/asm/io_64.h
+@@ -9,6 +9,10 @@
+ #include <asm/system.h>
+ #include <asm/asi.h>
+ 
++#ifdef __KERNEL__
++#include <asm-generic/pci_iomap.h>
++#endif
++
+ /* PC crapola... */
+ #define __SLOW_DOWN_IO	do { } while (0)
+ #define SLOW_DOWN_IO	do { } while (0)
+@@ -514,7 +518,6 @@ extern void ioport_unmap(void __iomem *);
+ 
+ /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+ struct pci_dev;
+-extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
+ extern void pci_iounmap(struct pci_dev *dev, void __iomem *);
+ 
+ static inline int sbus_can_dma_64bit(void)
+diff --git a/arch/sparc/lib/iomap.c b/arch/sparc/lib/iomap.c
+index 9ef37e1..c4d42a5 100644
+--- a/arch/sparc/lib/iomap.c
++++ b/arch/sparc/lib/iomap.c
+@@ -18,31 +18,8 @@ void ioport_unmap(void __iomem *addr)
+ EXPORT_SYMBOL(ioport_map);
+ EXPORT_SYMBOL(ioport_unmap);
+ 
+-/* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
 -void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
 -{
 -	resource_size_t start = pci_resource_start(dev, bar);
 -	resource_size_t len = pci_resource_len(dev, bar);
 -	unsigned long flags = pci_resource_flags(dev, bar);
 -
--	if (unlikely(!len || !start))
+-	if (!len || !start)
 -		return NULL;
 -	if (maxlen && len > maxlen)
 -		len = maxlen;
--
 -	if (flags & IORESOURCE_IO)
--		return ioport_map_pci(dev, start, len);
+-		return ioport_map(start, len);
 -	if (flags & IORESOURCE_MEM) {
 -		if (flags & IORESOURCE_CACHEABLE)
 -			return ioremap(start, len);
 -		return ioremap_nocache(start, len);
 -	}
--
+-	/* What? */
 -	return NULL;
 -}
--EXPORT_SYMBOL(pci_iomap);
 -
- void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
+ void pci_iounmap(struct pci_dev *dev, void __iomem * addr)
  {
- 	iounmap(addr);
+ 	/* nothing to do */
+ }
+-EXPORT_SYMBOL(pci_iomap);
+ EXPORT_SYMBOL(pci_iounmap);
 -- 
 1.7.5.53.gc233e
