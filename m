@@ -1,19 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3103D1007E6
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 18:08:54 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAO78o0G002009
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 01:08:51 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc/85xx: Renamed mpc85xx_common.c to common.c
-Date: Thu, 24 Nov 2011 01:08:47 -0600
-Message-Id: <1322118527-14348-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1322118527-14348-1-git-send-email-galak@kernel.crashing.org>
-References: <1322118527-14348-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <B11780@freescale.com>
+Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
+ [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7DFDD1007D7
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 18:12:54 +1100 (EST)
+Received: from mail55-am1 (localhost [127.0.0.1])	by mail55-am1-R.bigfish.com
+ (Postfix) with ESMTP id 51B946003F0	for <linuxppc-dev@ozlabs.org>;
+ Thu, 24 Nov 2011 07:08:35 +0000 (UTC)
+Received: from AM1EHSMHS016.bigfish.com (unknown [10.3.201.241])	by
+ mail55-am1.bigfish.com (Postfix) with ESMTP id 37ACA700042	for
+ <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 07:08:35 +0000 (UTC)
+Subject: Re: [PATCH] powerpc/85xx: do not force PHYS_64BIT on the P1022DS
+MIME-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1320349099-22594-1-git-send-email-timur@freescale.com>
+Date: Thu, 24 Nov 2011 01:12:45 -0600
+Message-ID: <C0BC3E1D-5FCF-42EC-A030-4F86EC1D76F3@freescale.com>
+References: <1320349099-22594-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The file name is already scoped by the directory its in.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/platforms/85xx/Makefile               |    2 +-
- .../platforms/85xx/{mpc85xx_common.c => common.c}  |    0
- 2 files changed, 1 insertions(+), 1 deletions(-)
- rename arch/powerpc/platforms/85xx/{mpc85xx_common.c => common.c} (100%)
+On Nov 3, 2011, at 2:38 PM, Timur Tabi wrote:
 
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index b6beec8..9cb2d43 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -3,7 +3,7 @@
- #
- obj-$(CONFIG_SMP) += smp.o
- 
--obj-y += mpc85xx_common.o
-+obj-y += common.o
- 
- obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_common.c b/arch/powerpc/platforms/85xx/common.c
-similarity index 100%
-rename from arch/powerpc/platforms/85xx/mpc85xx_common.c
-rename to arch/powerpc/platforms/85xx/common.c
--- 
-1.7.3.4
+> Kconfig option PHYS_64BIT sets the size of phys_addr_t to 64 bits, =
+which
+> allows support for a 36-bit physical address space.  With this option, =
+the
+> kernel can support more than 2GB of RAM, but the larger address size
+> impacts performance slightly.
+>=20
+> By including "select PHYS_64BIT" in the Kconfig for a particular =
+board,
+> that option is forced enabled, and it becomes impossible to create a =
+32-bit
+> kernel.  Instead, we should depend on the defconfig to enable this =
+option.
+> We still build a 36-bit kernel by default, and we also allow users to =
+build
+> 32-bit kernels if they really want.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> arch/powerpc/platforms/85xx/Kconfig |    1 -
+> 1 files changed, 0 insertions(+), 1 deletions(-)
+
+If you want me to apply this please also provided a 32-bit .dts for =
+p1022ds.  This should be pretty trivial based on my recent .dts =
+cleanups.
+
+- k=
