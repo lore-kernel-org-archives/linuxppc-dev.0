@@ -2,19 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2FD691007D7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 06:12:11 +1100 (EST)
-Subject: Re: [PATCH 1/1] SPI: disable CONFIG_SPI_FSL_ESPI=m build
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
+ by ozlabs.org (Postfix) with ESMTPS id 268341007D7
+ for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2011 06:40:11 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAOJe7Kf013217
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 13:40:08 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1322131298-21511-1-git-send-email-jslaby@suse.cz>
-Date: Thu, 24 Nov 2011 13:12:08 -0600
-Message-Id: <5C7165B8-7ED5-444B-BF8B-DA049A432E6D@kernel.crashing.org>
-References: <1322131298-21511-1-git-send-email-jslaby@suse.cz>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jirislaby@gmail.com
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix compiliation with hugetlbfs enabled
+Date: Thu, 24 Nov 2011 13:40:07 -0600
+Message-Id: <1322163607-4881-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+arch/powerpc/mm/hugetlbpage.c: In function 'reserve_hugetlb_gpages':
+arch/powerpc/mm/hugetlbpage.c:312:2: error: implicit declaration of function 'parse_args'
 
-On Nov 24, 2011, at 4:41 AM, Jiri Slaby wrote:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/mm/hugetlbpage.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> When spi_fsl_espi is chosen to be built as a module, there is a build
-> error because we test only CONFIG_SPI_FSL_ESPI in declaration of
-> struct mpc8xxx_spi in drivers/spi/spi_fsl_lib.h. Also some called
-> functions are not exported.
->=20
-> So we forbid CONFIG_SPI_FSL_ESPI to be tristate here.
->=20
-> The error looks like:
-> drivers/spi/spi_fsl_espi.c: In function 'fsl_espi_bufs':
-> drivers/spi/spi_fsl_espi.c:232: error: 'struct mpc8xxx_spi' has no =
-member named 'len'
-> ...
->=20
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> drivers/spi/Kconfig |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
-
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-
-- k=
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 5964371..8558b57 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -15,6 +15,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/memblock.h>
+ #include <linux/bootmem.h>
++#include <linux/moduleparam.h>
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlb.h>
+-- 
+1.7.3.4
