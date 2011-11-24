@@ -1,10 +1,10 @@
 Return-Path: <anton@samba.org>
-Message-Id: <20111124060847.105131188@samba.org>
-Date: Thu, 24 Nov 2011 17:07:17 +1100
+Message-Id: <20111124060847.198884481@samba.org>
+Date: Thu, 24 Nov 2011 17:07:18 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, johnstul@us.ibm.com,
  miltonm@bga.com
-Subject: [PATCH 1/6] powerpc/time: Handle wrapping of decrementer
+Subject: [PATCH 2/6] powerpc/time: Use clockevents_calc_mult_shift
 References: <20111124060716.362614789@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -16,88 +16,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When re-enabling interrupts we have code to handle edge sensitive
-decrementers by resetting the decrementer to 1 whenever it is negative.
-If interrupts were disabled long enough that the decrementer wrapped to
-positive we do nothing. This means interrupts can be delayed for a long
-time until it finally goes negative again.
-
-While we hope interrupts are never be disabled long enough for the
-decrementer to go positive, we have a very good test team that can
-drive any kernel into the ground. The softlockup data we get back
-from these fails could be seconds in the future, completely missing
-the cause of the lockup.
-
-We already keep track of the timebase of the next event so use that
-to work out if we should trigger a decrementer exception.
+We can use clockevents_calc_mult_shift instead of doing all
+the work ourselves.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: stable@kernel.org
 ---
 
-- I'd like to get this into -stable if possible since the reports are
-  coming in on 3.0 and 3.1. It needs some solid review though.
-
-- This has the unfortunate side effect of forcing arch_local_irq_restore
-  to create a stack frame, but I will try to optimise that in a subsequent
-  patch.
-
-Index: linux-build/arch/powerpc/include/asm/time.h
-===================================================================
---- linux-build.orig/arch/powerpc/include/asm/time.h	2011-11-17 10:04:16.543137415 +1100
-+++ linux-build/arch/powerpc/include/asm/time.h	2011-11-17 13:19:47.831758211 +1100
-@@ -219,5 +219,7 @@ DECLARE_PER_CPU(struct cpu_usage, cpu_us
- extern void secondary_cpu_time_init(void);
- extern void iSeries_time_init_early(void);
- 
-+extern void decrementer_check_overflow(void);
-+
- #endif /* __KERNEL__ */
- #endif /* __POWERPC_TIME_H */
-Index: linux-build/arch/powerpc/kernel/irq.c
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/irq.c	2011-11-17 10:04:16.551137554 +1100
-+++ linux-build/arch/powerpc/kernel/irq.c	2011-11-17 14:23:10.834514143 +1100
-@@ -164,16 +164,13 @@ notrace void arch_local_irq_restore(unsi
- 	 */
- 	local_paca->hard_enabled = en;
- 
--#ifndef CONFIG_BOOKE
--	/* On server, re-trigger the decrementer if it went negative since
--	 * some processors only trigger on edge transitions of the sign bit.
--	 *
--	 * BookE has a level sensitive decrementer (latches in TSR) so we
--	 * don't need that
-+	/*
-+	 * Trigger the decrementer if we have a pending event. Some processors
-+	 * only trigger on edge transitions of the sign bit. We might also
-+	 * have disabled interrupts long enough that the decrementer wrapped
-+	 * to positive.
- 	 */
--	if ((int)mfspr(SPRN_DEC) < 0)
--		mtspr(SPRN_DEC, 1);
--#endif /* CONFIG_BOOKE */
-+	decrementer_check_overflow();
- 
- 	/*
- 	 * Force the delivery of pending soft-disabled interrupts on PS3.
 Index: linux-build/arch/powerpc/kernel/time.c
 ===================================================================
---- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-17 10:04:16.559137691 +1100
-+++ linux-build/arch/powerpc/kernel/time.c	2011-11-17 13:19:49.415785997 +1100
-@@ -889,6 +889,15 @@ static void __init clocksource_init(void
- 	       clock->name, clock->mult, clock->shift);
+--- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-17 10:11:49.035001617 +1100
++++ linux-build/arch/powerpc/kernel/time.c	2011-11-17 10:11:51.175038860 +1100
+@@ -112,8 +112,6 @@ static void decrementer_set_mode(enum cl
+ static struct clock_event_device decrementer_clockevent = {
+        .name           = "decrementer",
+        .rating         = 200,
+-       .shift          = 0,	/* To be filled in */
+-       .mult           = 0,	/* To be filled in */
+        .irq            = 0,
+        .set_next_event = decrementer_set_next_event,
+        .set_mode       = decrementer_set_mode,
+@@ -913,31 +911,6 @@ static void decrementer_set_mode(enum cl
+ 		decrementer_set_next_event(DECREMENTER_MAX, dev);
  }
  
-+void decrementer_check_overflow(void)
-+{
-+	u64 now = get_tb_or_rtc();
-+	struct decrementer_clock *decrementer = &__get_cpu_var(decrementers);
-+
-+	if (now >= decrementer->next_tb)
-+		set_dec(1);
-+}
-+
- static int decrementer_set_next_event(unsigned long evt,
- 				      struct clock_event_device *dev)
+-static inline uint64_t div_sc64(unsigned long ticks, unsigned long nsec,
+-				int shift)
+-{
+-	uint64_t tmp = ((uint64_t)ticks) << shift;
+-
+-	do_div(tmp, nsec);
+-	return tmp;
+-}
+-
+-static void __init setup_clockevent_multiplier(unsigned long hz)
+-{
+-	u64 mult, shift = 32;
+-
+-	while (1) {
+-		mult = div_sc64(hz, NSEC_PER_SEC, shift);
+-		if (mult && (mult >> 32UL) == 0UL)
+-			break;
+-
+-		shift--;
+-	}
+-
+-	decrementer_clockevent.shift = shift;
+-	decrementer_clockevent.mult = mult;
+-}
+-
+ static void register_decrementer_clockevent(int cpu)
  {
+ 	struct clock_event_device *dec = &per_cpu(decrementers, cpu).event;
+@@ -955,7 +928,8 @@ static void __init init_decrementer_cloc
+ {
+ 	int cpu = smp_processor_id();
+ 
+-	setup_clockevent_multiplier(ppc_tb_freq);
++	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
++
+ 	decrementer_clockevent.max_delta_ns =
+ 		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
+ 	decrementer_clockevent.min_delta_ns =
