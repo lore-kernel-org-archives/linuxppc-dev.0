@@ -1,22 +1,22 @@
-Return-Path: <b29397@nchen-desktop.ap.freescale.net>
+Return-Path: <B35362@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 817F51007D7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 12:56:36 +1100 (EST)
-Date: Thu, 24 Nov 2011 09:56:20 +0800
-From: Peter Chen <peter.chen@freescale.com>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v2] usb/fsl_udc: fix dequeuing a request in progress
-Message-ID: <20111124015619.GA21287@nchen-desktop>
-References: <1322050376-13553-1-git-send-email-leoli@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id B197B1007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 12:57:25 +1100 (EST)
+From: <b35362@freescale.com>
+To: <dwmw2@infradead.org>, <Artem.Bityutskiy@nokia.com>,
+ <scottwood@freescale.com>
+Subject: [PATCH 1/3] mtd/nand : use elbc_fcm_ctrl->oob to set FPAR_MS bit of
+ FPAR
+Date: Thu, 24 Nov 2011 08:41:44 +0800
+Message-ID: <1322095306-13156-1-git-send-email-b35362@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1322050376-13553-1-git-send-email-leoli@freescale.com>
-Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
- balbi@ti.com
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,180 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 23, 2011 at 08:12:56PM +0800, Li Yang wrote:
-> The original implementation of dequeuing a request in progress
-> is not correct.  Change to use a correct process and also clean
-> up the related functions a little bit.
-> 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Cc: Peter Chen <peter.chen@freescale.com>
-> ---
->  drivers/usb/gadget/fsl_udc_core.c |   68 +++++++++++++++++-------------------
->  drivers/usb/gadget/fsl_usb2_udc.h |   10 +++++
->  2 files changed, 42 insertions(+), 36 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-> index b2c44e1..cc704dc 100644
-> --- a/drivers/usb/gadget/fsl_udc_core.c
-> +++ b/drivers/usb/gadget/fsl_udc_core.c
-> @@ -696,12 +696,31 @@ static void fsl_free_request(struct usb_ep *_ep, struct usb_request *_req)
->  		kfree(req);
->  }
->  
-> -/*-------------------------------------------------------------------------*/
-> +/* Actually add a dTD chain to an empty dQH and let go */
-> +static void fsl_prime_ep(struct fsl_ep *ep, struct ep_td_struct *td)
-> +{
-> +	struct ep_queue_head *qh = get_qh_by_ep(ep);
-> +
-> +	/* Write dQH next pointer and terminate bit to 0 */
-> +	qh->next_dtd_ptr = cpu_to_hc32(td->td_dma
-> +			& EP_QUEUE_HEAD_NEXT_POINTER_MASK);
-> +
-> +	/* Clear active and halt bit */
-> +	qh->size_ioc_int_sts &= cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
-> +					| EP_QUEUE_HEAD_STATUS_HALT));
-> +
-> +	/* Ensure that updates to the QH will occur before priming. */
-> +	wmb();
-> +
-> +	/* Prime endpoint by writing correct bit to ENDPTPRIME */
-> +	fsl_writel(ep_is_in(ep) ? (1 << (ep_index(ep) + 16))
-> +			: (1 << (ep_index(ep))), &dr_regs->endpointprime);
-> +}
-> +
-> +/* Add dTD chain to the dQH of an EP */
->  static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
->  {
-> -	int i = ep_index(ep) * 2 + ep_is_in(ep);
->  	u32 temp, bitmask, tmp_stat;
-> -	struct ep_queue_head *dQH = &ep->udc->ep_qh[i];
->  
->  	/* VDBG("QH addr Register 0x%8x", dr_regs->endpointlistaddr);
->  	VDBG("ep_qh[%d] addr is 0x%8x", i, (u32)&(ep->udc->ep_qh[i])); */
-> @@ -719,7 +738,7 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
->  			cpu_to_hc32(req->head->td_dma & DTD_ADDR_MASK);
->  		/* Read prime bit, if 1 goto done */
->  		if (fsl_readl(&dr_regs->endpointprime) & bitmask)
-> -			goto out;
-> +			return;
->  
->  		do {
->  			/* Set ATDTW bit in USBCMD */
-> @@ -736,28 +755,10 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
->  		fsl_writel(temp & ~USB_CMD_ATDTW, &dr_regs->usbcmd);
->  
->  		if (tmp_stat)
-> -			goto out;
-> +			return;
->  	}
->  
-> -	/* Write dQH next pointer and terminate bit to 0 */
-> -	temp = req->head->td_dma & EP_QUEUE_HEAD_NEXT_POINTER_MASK;
-> -	dQH->next_dtd_ptr = cpu_to_hc32(temp);
-> -
-> -	/* Clear active and halt bit */
-> -	temp = cpu_to_hc32(~(EP_QUEUE_HEAD_STATUS_ACTIVE
-> -			| EP_QUEUE_HEAD_STATUS_HALT));
-> -	dQH->size_ioc_int_sts &= temp;
-> -
-> -	/* Ensure that updates to the QH will occur before priming. */
-> -	wmb();
-> -
-> -	/* Prime endpoint by writing 1 to ENDPTPRIME */
-> -	temp = ep_is_in(ep)
-> -		? (1 << (ep_index(ep) + 16))
-> -		: (1 << (ep_index(ep)));
-> -	fsl_writel(temp, &dr_regs->endpointprime);
-> -out:
-> -	return;
-> +	fsl_prime_ep(ep, req->head);
->  }
->  
->  /* Fill in the dTD structure
-> @@ -973,25 +974,20 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
->  
->  		/* The request isn't the last request in this ep queue */
->  		if (req->queue.next != &ep->queue) {
-> -			struct ep_queue_head *qh;
->  			struct fsl_req *next_req;
->  
-> -			qh = ep->qh;
->  			next_req = list_entry(req->queue.next, struct fsl_req,
->  					queue);
->  
-> -			/* Point the QH to the first TD of next request */
-> -			fsl_writel((u32) next_req->head, &qh->curr_dtd_ptr);
-> +			/* prime with dTD of next request */
-> +			fsl_prime_ep(ep, next_req->head);
->  		}
-> -
-> -		/* The request hasn't been processed, patch up the TD chain */
-> +	/* The request hasn't been processed, patch up the TD chain */
->  	} else {
->  		struct fsl_req *prev_req;
->  
->  		prev_req = list_entry(req->queue.prev, struct fsl_req, queue);
-> -		fsl_writel(fsl_readl(&req->tail->next_td_ptr),
-> -				&prev_req->tail->next_td_ptr);
-> -
-> +		prev_req->tail->next_td_ptr = req->tail->next_td_ptr;
->  	}
->  
->  	done(ep, req, -ECONNRESET);
-> @@ -1068,7 +1064,7 @@ static int fsl_ep_fifo_status(struct usb_ep *_ep)
->  	struct fsl_udc *udc;
->  	int size = 0;
->  	u32 bitmask;
-> -	struct ep_queue_head *d_qh;
-> +	struct ep_queue_head *qh;
->  
->  	ep = container_of(_ep, struct fsl_ep, ep);
->  	if (!_ep || (!ep->desc && ep_index(ep) != 0))
-> @@ -1079,13 +1075,13 @@ static int fsl_ep_fifo_status(struct usb_ep *_ep)
->  	if (!udc->driver || udc->gadget.speed == USB_SPEED_UNKNOWN)
->  		return -ESHUTDOWN;
->  
-> -	d_qh = &ep->udc->ep_qh[ep_index(ep) * 2 + ep_is_in(ep)];
-> +	qh = get_qh_by_ep(ep);
->  
->  	bitmask = (ep_is_in(ep)) ? (1 << (ep_index(ep) + 16)) :
->  	    (1 << (ep_index(ep)));
->  
->  	if (fsl_readl(&dr_regs->endptstatus) & bitmask)
-> -		size = (d_qh->size_ioc_int_sts & DTD_PACKET_SIZE)
-> +		size = (qh->size_ioc_int_sts & DTD_PACKET_SIZE)
->  		    >> DTD_LENGTH_BIT_POS;
->  
->  	pr_debug("%s %u\n", __func__, size);
-> diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
-> index 1d51be8..f781f5d 100644
-> --- a/drivers/usb/gadget/fsl_usb2_udc.h
-> +++ b/drivers/usb/gadget/fsl_usb2_udc.h
-> @@ -569,6 +569,16 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
->  					* 2 + ((windex & USB_DIR_IN) ? 1 : 0))
->  #define get_pipe_by_ep(EP)	(ep_index(EP) * 2 + ep_is_in(EP))
->  
-> +static inline struct ep_queue_head *get_qh_by_ep(struct fsl_ep *ep)
-> +{
-> +	/* we only have one ep0 structure but two queue heads */
-> +	if (ep_index(ep) != 0)
-> +		return ep->qh;
-> +	else
-> +		return &ep->udc->ep_qh[(ep->udc->ep0_dir ==
-> +				USB_DIR_IN) ? 1 : 0];
-> +}
-> +
->  struct platform_device;
->  #ifdef CONFIG_ARCH_MXC
->  int fsl_udc_clk_init(struct platform_device *pdev);
-> -- 
-> 1.5.4.3
-> 
-Testing this patch at i.MX51 BBG, and it is OK.
+From: Liu Shuo <b35362@freescale.com>
 
-Acked-by: Peter Chen <peter.chen@freescale.com>
+On both of large-page chip and small-page chip, we always should use
+'elbc_fcm_ctrl->oob' to set the FPAR_LP_MS/FPAR_SP_MS bit of FPAR, don't
+use a overflowed 'column' to set it.
+
+Signed-off-by: Liu Shuo <b35362@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ drivers/mtd/nand/fsl_elbc_nand.c |   18 +++++++++++-------
+ 1 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
+index cc08a11..6fce7da 100644
+--- a/drivers/mtd/nand/fsl_elbc_nand.c
++++ b/drivers/mtd/nand/fsl_elbc_nand.c
+@@ -414,9 +414,17 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 		         page_addr, column);
+ 
+ 		elbc_fcm_ctrl->column = column;
+-		elbc_fcm_ctrl->oob = 0;
+ 		elbc_fcm_ctrl->use_mdr = 1;
+ 
++		if (column >= mtd->writesize) {
++			/* OOB area */
++			column -= mtd->writesize;
++			elbc_fcm_ctrl->oob = 1;
++		} else {
++			WARN_ON(column != 0);
++			elbc_fcm_ctrl->oob = 0;
++		}
++
+ 		fcr = (NAND_CMD_STATUS   << FCR_CMD1_SHIFT) |
+ 		      (NAND_CMD_SEQIN    << FCR_CMD2_SHIFT) |
+ 		      (NAND_CMD_PAGEPROG << FCR_CMD3_SHIFT);
+@@ -441,16 +449,12 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 			         (FIR_OP_CW1 << FIR_OP6_SHIFT) |
+ 			         (FIR_OP_RS  << FIR_OP7_SHIFT));
+ 
+-			if (column >= mtd->writesize) {
++			if (elbc_fcm_ctrl->oob)
+ 				/* OOB area --> READOOB */
+-				column -= mtd->writesize;
+ 				fcr |= NAND_CMD_READOOB << FCR_CMD0_SHIFT;
+-				elbc_fcm_ctrl->oob = 1;
+-			} else {
+-				WARN_ON(column != 0);
++			else
+ 				/* First 256 bytes --> READ0 */
+ 				fcr |= NAND_CMD_READ0 << FCR_CMD0_SHIFT;
+-			}
+ 		}
+ 
+ 		out_be32(&lbc->fcr, fcr);
 -- 
-
-Best Regards,
-Peter Chen
+1.7.1
