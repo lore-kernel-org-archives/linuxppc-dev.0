@@ -1,11 +1,10 @@
 Return-Path: <anton@samba.org>
-Message-Id: <20111124060847.366751627@samba.org>
-Date: Thu, 24 Nov 2011 17:07:20 +1100
+Message-Id: <20111124060847.472884831@samba.org>
+Date: Thu, 24 Nov 2011 17:07:21 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, johnstul@us.ibm.com,
  miltonm@bga.com
-Subject: [PATCH 4/6] powerpc/time: Remove unnecessary sanity check of
- decrementer expiration
+Subject: [PATCH 5/6] powerpc/time: Fix some style issues
 References: <20111124060716.362614789@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -17,44 +16,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The clockevents code uses max_delta_ns to avoid calling a
-clockevent with too large a value.
-
-Remove the redundant version of this in the timer_interrupt
-code.
+Fix some formatting issues and use the DECREMENTER_MAX
+define instead of 0x7fffffff.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: linux-build/arch/powerpc/kernel/time.c
 ===================================================================
---- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-17 10:12:28.891690395 +1100
-+++ linux-build/arch/powerpc/kernel/time.c	2011-11-17 10:13:54.241143987 +1100
-@@ -572,7 +572,6 @@ void timer_interrupt(struct pt_regs * re
- 	struct pt_regs *old_regs;
- 	struct decrementer_clock *decrementer =  &__get_cpu_var(decrementers);
- 	struct clock_event_device *evt = &decrementer->event;
--	u64 now;
+--- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-24 16:49:25.853715846 +1100
++++ linux-build/arch/powerpc/kernel/time.c	2011-11-24 16:51:04.651432999 +1100
+@@ -106,12 +106,12 @@ static void decrementer_set_mode(enum cl
+ 				 struct clock_event_device *dev);
  
- 	/* Ensure a positive value is written to the decrementer, or else
- 	 * some CPUs will continue to take decrementer exceptions.
-@@ -607,16 +606,9 @@ void timer_interrupt(struct pt_regs * re
- 		get_lppaca()->int_dword.fields.decr_int = 0;
- #endif
+ static struct clock_event_device decrementer_clockevent = {
+-       .name           = "decrementer",
+-       .rating         = 200,
+-       .irq            = 0,
+-       .set_next_event = decrementer_set_next_event,
+-       .set_mode       = decrementer_set_mode,
+-       .features       = CLOCK_EVT_FEAT_ONESHOT,
++	.name           = "decrementer",
++	.rating         = 200,
++	.irq            = 0,
++	.set_next_event = decrementer_set_next_event,
++	.set_mode       = decrementer_set_mode,
++	.features       = CLOCK_EVT_FEAT_ONESHOT,
+ };
  
--	now = get_tb_or_rtc();
--	if (now >= decrementer->next_tb) {
--		decrementer->next_tb = ~(u64)0;
--		if (evt->event_handler)
--			evt->event_handler(evt);
--	} else {
--		now = decrementer->next_tb - now;
--		if (now <= DECREMENTER_MAX)
--			set_dec((int)now);
--	}
-+	decrementer->next_tb = ~(u64)0;
-+	if (evt->event_handler)
-+		evt->event_handler(evt);
+ struct decrementer_clock {
+@@ -435,7 +435,7 @@ EXPORT_SYMBOL(profile_pc);
+ /* 
+  * This function recalibrates the timebase based on the 49-bit time-of-day
+  * value in the Titan chip.  The Titan is much more accurate than the value
+- * returned by the service processor for the timebase frequency.  
++ * returned by the service processor for the timebase frequency.
+  */
  
- #ifdef CONFIG_PPC_ISERIES
- 	if (firmware_has_feature(FW_FEATURE_ISERIES) && hvlpevent_is_pending())
+ static int __init iSeries_tb_recal(void)
+@@ -636,9 +636,9 @@ static void generic_suspend_disable_irqs
+ 	 * with suspending.
+ 	 */
+ 
+-	set_dec(0x7fffffff);
++	set_dec(DECREMENTER_MAX);
+ 	local_irq_disable();
+-	set_dec(0x7fffffff);
++	set_dec(DECREMENTER_MAX);
+ }
+ 
+ static void generic_suspend_enable_irqs(void)
+@@ -982,10 +982,10 @@ void __init time_init(void)
+ 	boot_tb = get_tb_or_rtc();
+ 
+ 	/* If platform provided a timezone (pmac), we correct the time */
+-        if (timezone_offset) {
++	if (timezone_offset) {
+ 		sys_tz.tz_minuteswest = -timezone_offset / 60;
+ 		sys_tz.tz_dsttime = 0;
+-        }
++	}
+ 
+ 	vdso_data->tb_update_count = 0;
+ 	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
