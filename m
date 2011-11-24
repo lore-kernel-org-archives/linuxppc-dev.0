@@ -1,23 +1,19 @@
-Return-Path: <B11780@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 016581007EE
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 19:25:51 +1100 (EST)
-Subject: Re: [PATCH] [v3] powerpc/fsl_msi: add support for the fsl,
- msi property in PCI nodes
-MIME-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1320098795-7658-1-git-send-email-timur@freescale.com>
-Date: Thu, 24 Nov 2011 02:25:42 -0600
-Message-ID: <B57C188D-C613-4583-83EB-D81CAD462432@freescale.com>
-References: <1320098795-7658-1-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: miltonm@bga.com, michael@ellerman.id.au, linuxppc-dev@ozlabs.org,
- scottwood@freescale.com, tglx@linutronix.de
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8A3C0100991
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 19:26:00 +1100 (EST)
+Subject: Re: [PATCH] serial: Add missing call to init UCC UART port timeout
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4C1B7312.6080708@ThePTRGroup.com>
+Date: Thu, 24 Nov 2011 02:25:50 -0600
+Message-Id: <5C543245-7785-4698-818A-6C8970FF1FB6@kernel.crashing.org>
+References: <4C1B7312.6080708@ThePTRGroup.com>
+To: Chuck Meade <chuck@ThePTRGroup.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +24,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 31, 2011, at 5:06 PM, Timur Tabi wrote:
+On Jun 18, 2010, at 8:22 AM, Chuck Meade wrote:
 
-> On Freescale parts with multiple MSI controllers, the controllers are
-> combined into one "pool" of interrupts.  Whenever a device requests an =
-MSI
-> interrupt, the next available interrupt from the pool is selected,
-> regardless of which MSI controller the interrupt is from.  This works
-> because each PCI bus has an ATMU to all of CCSR, so any PCI device can
-> access any MSI interrupt register.
->=20
-> The fsl,msi property is used to specify that a given PCI bus should =
-only
-> use a specific MSI device.  This is necessary, for example, with the
-> Freescale hypervisor, because the MSI devices are assigned to specific
-> partitions.
->=20
-> Ideally, we'd like to be able to assign MSI devices to PCI busses =
-within
-> the MSI or PCI layers.  However, there does not appear to be a =
-mechanism
-> to do that.  Whenever the MSI layer wants to allocate an MSI interrupt =
-to
-> a PCI device, it just calls arch_setup_msi_irqs().  It would be nice =
-if we
-> could register an MSI device with a specific PCI bus.
->=20
-> So instead we remember the phandles of each MSI device, and we use =
-that to
-> limit our search for an available interrupt.  Whenever we are asked to
-> allocate a new interrupt for a PCI device, we check the fsl,msi =
-property
-> of the PCI bus for that device.  If it exists, then as we are looping =
-over
-> all MSI devices, we skip the ones that don't have a matching phandle.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> From: Chuck Meade <chuck@ThePTRGroup.com>
+> 
+> The UCC UART driver is missing a call to uart_update_timeout().
+> Without this call, attempting to close the port after outputting large
+> amounts of data (i.e. using tty and uart buffering) results in long
+> timeouts before the port will actually be shut down.
+> 
+> For example, cat a large file to a UCC UART port.  With the current
+> driver, the port will stay open for 30 seconds after the last byte
+> of data is output.  But with this patch, the port is closed as
+> expected, just after the data has been output (tx fifos empty).
+> 
+> Signed-off-by: Chuck Meade <chuck@ThePTRGroup.com>
 > ---
->=20
-> v3: added check for invalid fsl,msi phandles
->=20
-> arch/powerpc/sysdev/fsl_msi.c |   39 =
-+++++++++++++++++++++++++++++++++++++++
-> arch/powerpc/sysdev/fsl_msi.h |    3 +++
-> 2 files changed, 42 insertions(+), 0 deletions(-)
+> drivers/serial/ucc_uart.c |    3 +++
+> 1 files changed, 3 insertions(+), 0 deletions(-)
 
 applied to next
 
-- k=
+- k
