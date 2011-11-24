@@ -1,26 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 821401007D7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 01:24:56 +1100 (EST)
-Subject: Re: [PATCH v2] Integrated Flash Controller support
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CCF7C6DB-437C-4140-894F-2F497AD610DC@kernel.crashing.org>
-Date: Thu, 24 Nov 2011 08:24:33 -0600
-Message-Id: <8EDB3DC6-63E5-4D5C-BB52-15F32B85C5DD@kernel.crashing.org>
-References: <1320053901-23801-1-git-send-email-b35362@freescale.com>
- <CCF7C6DB-437C-4140-894F-2F497AD610DC@kernel.crashing.org>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Artem.Bityutskiy@nokia.com, Li Yang-R58472 <r58472@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- "b35362@freescale.com>" <b35362@freescale.com>,
- "linux-kernel@vger.kernel.org Kernel" <linux-kernel@vger.kernel.org>,
- linux-mtd@lists.infradead.org, Scott Wood <scottwood@freescale.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Woodhouse <dwmw2@infradead.org>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from vps4.telegraphics.com.au (vm4.telegraphics.com.au
+ [98.124.60.149]) by ozlabs.org (Postfix) with ESMTP id 9DE741007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 01:35:09 +1100 (EST)
+Date: Fri, 25 Nov 2011 01:34:58 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 01/16] pmac_zilog: fix unexpected irq
+In-Reply-To: <20111023141115.208699274@telegraphics.com.au>
+Message-ID: <alpine.LNX.2.00.1111250133321.6314@nippy.intranet>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,38 +24,112 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 22, 2011, at 9:41 PM, Kumar Gala wrote:
+On most 68k Macs the SCC IRQ is an autovector interrupt and cannot be 
+masked. This can be a problem when pmac_zilog starts up.
 
->=20
-> On Oct 31, 2011, at 4:38 AM, <b35362@freescale.com> =
-<b35362@freescale.com> wrote:
->=20
->> From: Liu Shuo <b35362@freescale.com>
->>=20
->> Integrated Flash Controller supports various flashes like NOR, NAND
->> and other devices using NOR, NAND and GPCM Machine available on it.
->> IFC supports four chip selects.
->>=20
->> Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
->> Signed-off-by: Scott Wood <scottwood@freescale.com>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> Signed-off-by: Liu Shuo <b35362@freescale.com>
->> ---
->> arch/powerpc/Kconfig               |    4 +
->> arch/powerpc/include/asm/fsl_ifc.h |  834 =
-++++++++++++++++++++++++++++++++++++
->> arch/powerpc/sysdev/Makefile       |    1 +
->> arch/powerpc/sysdev/fsl_ifc.c      |  322 ++++++++++++++
->> 4 files changed, 1161 insertions(+), 0 deletions(-)
->> create mode 100644 arch/powerpc/include/asm/fsl_ifc.h
->> create mode 100644 arch/powerpc/sysdev/fsl_ifc.c
->=20
-> Guys,
->=20
-> How are we handling this patchset since it touches drivers/mtd/nand?
+For example, the serial debugging code in arch/m68k/kernel/head.S may be 
+used beforehand. It disables the SCC interrupts at the chip but doesn't 
+ack them. Then when a pmac_zilog port is opened and SCC chip interrupts 
+become enabled, the machine locks up with "unexpected interrupt" because 
+request_irq() hasn't happened yet.
 
-Artem,
+Fix this by setting the SCC master interrupt enable bit only after the 
+handler is installed. This is achieved by extracting that operation out of 
+__pmz_startup() and placing it into a seperate routine.
 
-thoughts?
+A similar problem arises when the irq is freed. Fix this by resetting the 
+chip first (on m68k mac).
 
-- k=
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+---
+
+This patch has been tested on a variety of m68k Macs but no PowerMacs.
+
+I am re-sending this patch Cc linux-serial. It still needs a suitable ack 
+so that Geert can push it through his tree.
+
+Index: linux-m68k/drivers/tty/serial/pmac_zilog.c
+===================================================================
+--- linux-m68k.orig/drivers/tty/serial/pmac_zilog.c	2011-10-22 23:02:22.000000000 +1100
++++ linux-m68k/drivers/tty/serial/pmac_zilog.c	2011-10-22 23:02:38.000000000 +1100
+@@ -910,8 +910,8 @@ static int __pmz_startup(struct uart_pma
+ 	/* Clear handshaking, enable BREAK interrupts */
+ 	uap->curregs[R15] = BRKIE;
+ 
+-	/* Master interrupt enable */
+-	uap->curregs[R9] |= NV | MIE;
++	/* No vector */
++	uap->curregs[R9] |= NV;
+ 
+ 	pmz_load_zsregs(uap, uap->curregs);
+ 
+@@ -925,6 +925,17 @@ static int __pmz_startup(struct uart_pma
+ 	return pwr_delay;
+ }
+ 
++static void pmz_master_int_control(struct uart_pmac_port *uap, int enable)
++{
++	if (enable) {
++		uap->curregs[R9] |= MIE; /* Master interrupt enable */
++		write_zsreg(uap, R9, uap->curregs[R9]);
++	} else {
++		uap->curregs[R9] &= ~MIE;
++		write_zsreg(uap, 9, FHWRES);
++	}
++}
++
+ static void pmz_irda_reset(struct uart_pmac_port *uap)
+ {
+ 	uap->curregs[R5] |= DTR;
+@@ -976,6 +987,19 @@ static int pmz_startup(struct uart_port
+ 		return -ENXIO;
+ 	}
+ 
++	/*
++	 * Most 68k Mac models cannot mask the SCC IRQ so they must enable
++	 * interrupts after the handler is installed and not before.
++	 */
++#ifndef CONFIG_MAC
++	if (!ZS_IS_CONS(uap))
++#endif
++	{
++		spin_lock_irqsave(&port->lock, flags);
++		pmz_master_int_control(uap, 1);
++		spin_unlock_irqrestore(&port->lock, flags);
++	}
++
+ 	mutex_unlock(&pmz_irq_mutex);
+ 
+ 	/* Right now, we deal with delay by blocking here, I'll be
+@@ -1015,6 +1039,11 @@ static void pmz_shutdown(struct uart_por
+ 
+ 	mutex_lock(&pmz_irq_mutex);
+ 
++#ifdef CONFIG_MAC
++	if (!ZS_IS_OPEN(uap->mate))
++		pmz_master_int_control(uap, 0);
++#endif
++
+ 	/* Release interrupt handler */
+ 	free_irq(uap->port.irq, uap);
+ 
+@@ -1734,6 +1763,7 @@ static int pmz_resume(struct macio_dev *
+ 		goto bail;
+ 	}
+ 	pwr_delay = __pmz_startup(uap);
++	pmz_master_int_control(uap, 1);
+ 
+ 	/* Take care of config that may have changed while asleep */
+ 	__pmz_set_termios(&uap->port, &uap->termios_cache, NULL);
+@@ -2178,6 +2208,9 @@ static int __init pmz_console_setup(stru
+ 	 * Enable the hardware
+ 	 */
+ 	pwr_delay = __pmz_startup(uap);
++#ifndef CONFIG_MAC
++	pmz_master_int_control(uap, 1);
++#endif
+ 	if (pwr_delay)
+ 		mdelay(pwr_delay);
+ 	
