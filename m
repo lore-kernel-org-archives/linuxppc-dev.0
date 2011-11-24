@@ -1,11 +1,11 @@
 Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 9A5B11007DA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:17:26 +1100 (EST)
-Date: Thu, 24 Nov 2011 22:18:08 +0200
+ by ozlabs.org (Postfix) with ESMTP id ECB831007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:17:57 +1100 (EST)
+Date: Thu, 24 Nov 2011 22:18:37 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: [PATCH-RFC 05/10] microblaze: switch to GENERIC_PCI_IOMAP
-Message-ID: <dd85307a3ebcd0ce5870ca31cbe7b286621ab091.1322163031.git.mst@redhat.com>
+Subject: [PATCH-RFC 06/10] mips: switch to GENERIC_PCI_IOMAP
+Message-ID: <66457f7750d7d14229fcf8d0b011aba63185a75d.1322163031.git.mst@redhat.com>
 References: <cover.1322163031.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,62 +48,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-microblaze copied pci_iomap from generic code, probably to avoid
+mips copied pci_iomap from generic code, probably to avoid
 pulling the rest of iomap.c in.  Since that's in
 a separate file now, we can reuse the common implementation.
 
-The only difference is handling of nocache flag,
-that turns out to be done correctly by the
-generic code since arch/microblaze/include/asm/io.h
-defines ioremap_nocache same as ioremap.
-
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- arch/microblaze/Kconfig     |    1 +
- arch/microblaze/pci/iomap.c |   19 -------------------
- 2 files changed, 1 insertions(+), 19 deletions(-)
+ arch/mips/Kconfig         |    1 +
+ arch/mips/lib/iomap-pci.c |   26 --------------------------
+ 2 files changed, 1 insertions(+), 26 deletions(-)
 
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index e446bab..f0eead7 100644
---- a/arch/microblaze/Kconfig
-+++ b/arch/microblaze/Kconfig
-@@ -17,6 +17,7 @@ config MICROBLAZE
- 	select HAVE_GENERIC_HARDIRQS
- 	select GENERIC_IRQ_PROBE
- 	select GENERIC_IRQ_SHOW
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index d46f1da..b70c96f 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -2317,6 +2317,7 @@ config PCI
+ 	bool "Support for PCI controller"
+ 	depends on HW_HAS_PCI
+ 	select PCI_DOMAINS
 +	select GENERIC_PCI_IOMAP
+ 	help
+ 	  Find out whether you have a PCI motherboard. PCI is the name of a
+ 	  bus system, i.e. the way the CPU talks to the other stuff inside
+diff --git a/arch/mips/lib/iomap-pci.c b/arch/mips/lib/iomap-pci.c
+index 2ab899c..2635b1a 100644
+--- a/arch/mips/lib/iomap-pci.c
++++ b/arch/mips/lib/iomap-pci.c
+@@ -40,32 +40,6 @@ static void __iomem *ioport_map_pci(struct pci_dev *dev,
+ 	return (void __iomem *) (ctrl->io_map_base + port);
+ }
  
- config SWAP
- 	def_bool n
-diff --git a/arch/microblaze/pci/iomap.c b/arch/microblaze/pci/iomap.c
-index 57acda8..b07abba 100644
---- a/arch/microblaze/pci/iomap.c
-+++ b/arch/microblaze/pci/iomap.c
-@@ -10,25 +10,6 @@
- #include <asm/io.h>
- #include <asm/pci-bridge.h>
- 
--void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max)
+-/*
+- * Create a virtual mapping cookie for a PCI BAR (memory or IO)
+- */
+-void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
 -{
 -	resource_size_t start = pci_resource_start(dev, bar);
 -	resource_size_t len = pci_resource_len(dev, bar);
 -	unsigned long flags = pci_resource_flags(dev, bar);
 -
--	if (!len)
+-	if (!len || !start)
 -		return NULL;
--	if (max && len > max)
--		len = max;
+-	if (maxlen && len > maxlen)
+-		len = maxlen;
 -	if (flags & IORESOURCE_IO)
--		return ioport_map(start, len);
--	if (flags & IORESOURCE_MEM)
--		return ioremap(start, len);
+-		return ioport_map_pci(dev, start, len);
+-	if (flags & IORESOURCE_MEM) {
+-		if (flags & IORESOURCE_CACHEABLE)
+-			return ioremap(start, len);
+-		return ioremap_nocache(start, len);
+-	}
 -	/* What? */
 -	return NULL;
 -}
+-
 -EXPORT_SYMBOL(pci_iomap);
 -
- void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
+ void pci_iounmap(struct pci_dev *dev, void __iomem * addr)
  {
- 	if (isa_vaddr_is_ioport(addr))
+ 	iounmap(addr);
 -- 
 1.7.5.53.gc233e
