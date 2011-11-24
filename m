@@ -1,17 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 268341007D7
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2011 06:40:11 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAOJe7Kf013217
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 13:40:08 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix compiliation with hugetlbfs enabled
-Date: Thu, 24 Nov 2011 13:40:07 -0600
-Message-Id: <1322163607-4881-1-git-send-email-galak@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id C18EFB70B2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:42:01 +1100 (EST)
+Message-ID: <1322167308.32635.6.camel@pasglop>
+Subject: Re: [PATCH 01/16] pmac_zilog: fix unexpected irq
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Fri, 25 Nov 2011 07:41:48 +1100
+In-Reply-To: <20111124145624.24438832@lxorguk.ukuu.org.uk>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+ <alpine.LNX.2.00.1111250133321.6314@nippy.intranet>
+ <20111124145624.24438832@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
+ Finn Thain <fthain@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,25 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/mm/hugetlbpage.c: In function 'reserve_hugetlb_gpages':
-arch/powerpc/mm/hugetlbpage.c:312:2: error: implicit declaration of function 'parse_args'
+On Thu, 2011-11-24 at 14:56 +0000, Alan Cox wrote:
+> > This patch has been tested on a variety of m68k Macs but no
+> PowerMacs.
+> > 
+> > I am re-sending this patch Cc linux-serial. It still needs a
+> suitable ack 
+> > so that Geert can push it through his tree.
+> 
+> Given the change should work for all hardware do we really need the
+> ifdefs. Far better I would have thought to just change it so we don't
+> have to maintain what is effectively two versions of the code between
+> now
+> and 2038.
+> 
+> So no ack from me yet - I'd like to understand the ifdef decision
+> first.
+> Otherwise it looks sensible.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/mm/hugetlbpage.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Yes, agreed. Sorry, that one was one my to-do list for a while, I meant
+to look into more details and test on a ppc or two here see if it breaks
+anything, and never got to do it.
 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 5964371..8558b57 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -15,6 +15,7 @@
- #include <linux/of_fdt.h>
- #include <linux/memblock.h>
- #include <linux/bootmem.h>
-+#include <linux/moduleparam.h>
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
- #include <asm/tlb.h>
--- 
-1.7.3.4
+I'll try to give it a go before hell freezes over.
+
+Cheers,
+Ben.
