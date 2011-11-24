@@ -1,25 +1,24 @@
 Return-Path: <balbi@ti.com>
-Received: from na3sys009aog110.obsmtp.com (na3sys009aog110.obsmtp.com
- [74.125.149.203])
+Received: from na3sys009aog118.obsmtp.com (na3sys009aog118.obsmtp.com
+ [74.125.149.244])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F1A2D1007DB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 20:47:22 +1100 (EST)
-Received: by mail-yx0-f179.google.com with SMTP id m6so192799yen.24
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 01:47:19 -0800 (PST)
-Date: Thu, 24 Nov 2011 11:47:17 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 530CC1007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 20:49:04 +1100 (EST)
+Received: by mail-gy0-f174.google.com with SMTP id r1so3207140ghr.33
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 01:49:01 -0800 (PST)
+Date: Thu, 24 Nov 2011 11:48:59 +0200
 From: Felipe Balbi <balbi@ti.com>
-To: Peter Chen <peter.chen@freescale.com>
-Subject: Re: [PATCH v2] USB: fsl_udc_core: use usb_endpoint_xfer_isoc to
- judge ISO XFER
-Message-ID: <20111124094716.GS3352@legolas.emea.dhcp.ti.com>
-References: <1321926945-8182-1-git-send-email-peter.chen@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH v2] usb/fsl_udc: fix dequeuing a request in progress
+Message-ID: <20111124094858.GV3352@legolas.emea.dhcp.ti.com>
+References: <1322050376-13553-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8N5nZmKALFZnI1Hj"
-In-Reply-To: <1321926945-8182-1-git-send-email-peter.chen@freescale.com>
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, mina86@mina86.com, balbi@ti.com,
- linuxppc-dev@lists.ozlabs.org, stable@kernel.org, hzpeterchen@gmail.com
+ protocol="application/pgp-signature"; boundary="Q/AGl/UrDvkbRExF"
+In-Reply-To: <1322050376-13553-1-git-send-email-leoli@freescale.com>
+Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
+ balbi@ti.com, Peter Chen <peter.chen@freescale.com>
 Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,44 +30,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---8N5nZmKALFZnI1Hj
+--Q/AGl/UrDvkbRExF
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 22, 2011 at 09:55:45AM +0800, Peter Chen wrote:
-> Some ISO gadgets, like audio, has SYNC attribute as well as
-> USB_ENDPOINT_XFER_ISOC for their bmAttributes at ISO endpoint
-> descriptor. So, it needs to use usb_endpoint_xfer_isoc to judge
-> ISO XFER.
+On Wed, Nov 23, 2011 at 08:12:56PM +0800, Li Yang wrote:
+> The original implementation of dequeuing a request in progress
+> is not correct.  Change to use a correct process and also clean
+> up the related functions a little bit.
 >=20
-> Signed-off-by: Peter Chen <peter.chen@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Cc: Peter Chen <peter.chen@freescale.com>
 
 applied, thanks
 
 --=20
 balbi
 
---8N5nZmKALFZnI1Hj
+--Q/AGl/UrDvkbRExF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBAgAGBQJOzhKkAAoJEIaOsuA1yqREHLQQAIn2oTaHZbFumuE6Fp7O8OXI
-8sCuUaJcauD/Qx3HKOapd1QHkzbqTcfUCZQBDcfB99lrmeGDQGmRsh7avtuI9Ol5
-cSr5NkiWRhM4Aw3MPc47jwq2RYfgBUTvj1OCj85GA9N3Onv8p2M9Rl0hENEuRuQX
-fbj9iwggY0OodELD/fFxB7vI5q+cUOwjQypQXyrj24e34ZcKvEtPRUPLjIvH2mrn
-76yTziQuQD8HCU1LbaLqlUHEMKSX+yGQke0LVaDTgyIyWONgxHLICKNfFtr6as1B
-hLqW8ojX0VoGUIOw1rY0JoPGhwVXehx/QrWccqLqJJkMZRYv3tp5CViZVNPHx2v8
-TueERnI8WRO1ih3d7gLjZINgTxIQPy5sj42Agi52rGYzDfLGhNJ3Nldb4DQfP2ZZ
-5tmJ1TToJm5MwkRx6bOUVxQ3VKgjnsULcGdUQRbBZzFvFRgD2xJz3XB5MyW5622a
-SRxI1ypILu8lazG7X93Inj59MetBqAj4gLsMF2LtfG1u+tbjBqdv7cg2uwLJ5NuP
-EReH+eQ4Ee1ORDNDZjTc7YyAMrpPn2rNNevZqxBFt7gR9zp4c8ptMvKxak3P4ShH
-wY8XAgJGuFavVBFv9SY6zEDiLLre06Nt6PRK5uwWx+iiyN2EzGst6tZnHH4kIGkl
-44/I5tn18pmREDffLnKm
-=SCFO
+iQIcBAEBAgAGBQJOzhMKAAoJEIaOsuA1yqREISAP/3BYVdT5fyMAI3rD7h+WOLif
+FF37XioK74mF1KX8axrymqwDQB+HzJBov09jKYws1HMiwQcsg88DQyRghcEHZWnu
+l8apd5o4rWAoNz3UahG0xSOmkKwXrYfbuM6rtAkW2FRgY97NstjkIIOmqGK0xIY8
+whXgA2QetfWhHF2dlpS9YZlzSrRIiAKekJ3BsIebGQEYrqlvRh2nFkcxEdcB8+Xi
+IlsYUZuZJ7WQwfskXRwmCwWRO22LyjWqc1OfEP+1McSfd8F8kw2bMJNGVxr/O9hK
+08u2GxPsC+ccBafRFo0Glt6AOJ43+F2XV8/8ynsF8df5QYzrF0zs+jyF7r8YvAkM
+shlFcOBsGNFy2mNkh2R8vyWaFQx8mytzPe75jcn0/sPgS3LbNYHXXHEpcscTGLnL
+WcjRjv4fya3ZHtwceP/nsksPuis58cyXjBbGf+IQdoNoTVtp75KZqiIMDOldP6w9
+5on2femOy58Sp4JzdaHfx+ZsySo8QT9uIi9vCSp+VOBY1H8I4O3d9yIW76Ickdb0
+1QfdA5W6cWBKBKoNUdszYlpWzcC9s+L9a2b3OoIJvhAWFdko+evCCQn651dhhyl1
+Mv6LkYHx+lY3XugkKUACYit5jPjYFXIlSLgnLS75XtxIsijktTgcpNayxqSKrpXG
+BtJtVzPKWNCbrM7NjNuw
+=H1tm
 -----END PGP SIGNATURE-----
 
---8N5nZmKALFZnI1Hj--
+--Q/AGl/UrDvkbRExF--
