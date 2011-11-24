@@ -1,21 +1,16 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 0825E1007DB
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 21:30:43 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 18829-06 for <linuxppc-dev@ozlabs.org>;
- Thu, 24 Nov 2011 10:23:56 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 2/2] powerpc/85xx: Renamed mpc85xx_common.c to common.c
-Date: Thu, 24 Nov 2011 10:22:05 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AEDF@saturn3.aculab.com>
-In-Reply-To: <1322118527-14348-2-git-send-email-galak@kernel.crashing.org>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <jirislaby@gmail.com>
+Received: from smtp.pripojeni.net (mail.pripojeni.net [178.22.112.14])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 87B9E1007DB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 21:48:57 +1100 (EST)
+From: Jiri Slaby <jslaby@suse.cz>
+To: grant.likely@secretlab.ca
+Subject: [PATCH 1/1] SPI: disable CONFIG_SPI_FSL_ESPI=m build
+Date: Thu, 24 Nov 2011 11:41:38 +0100
+Message-Id: <1322131298-21511-1-git-send-email-jslaby@suse.cz>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jirislaby@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> Subject: [PATCH 2/2] powerpc/85xx: Renamed mpc85xx_common.c=20
-> to common.c
->=20
-> The file name is already scoped by the directory its in.
+When spi_fsl_espi is chosen to be built as a module, there is a build
+error because we test only CONFIG_SPI_FSL_ESPI in declaration of
+struct mpc8xxx_spi in drivers/spi/spi_fsl_lib.h. Also some called
+functions are not exported.
+
+So we forbid CONFIG_SPI_FSL_ESPI to be tristate here.
+
+The error looks like:
+drivers/spi/spi_fsl_espi.c: In function 'fsl_espi_bufs':
+drivers/spi/spi_fsl_espi.c:232: error: 'struct mpc8xxx_spi' has no member named 'len'
 ...
-> rename from arch/powerpc/platforms/85xx/mpc85xx_common.c
-> rename to arch/powerpc/platforms/85xx/common.c
 
-All very well until you only have a reference to the
-filename part somewhere and want to 'find' the file
-in a large directory tree.
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/spi/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-	David
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 9c90a7a..3d292be 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -198,7 +198,7 @@ config SPI_FSL_LIB
+ 	depends on FSL_SOC
+ 
+ config SPI_FSL_SPI
+-	tristate "Freescale SPI controller"
++	bool "Freescale SPI controller"
+ 	depends on FSL_SOC
+ 	select SPI_FSL_LIB
+ 	help
+@@ -207,7 +207,7 @@ config SPI_FSL_SPI
+ 	  MPC8569 uses the controller in QE mode, MPC8610 in cpu mode.
+ 
+ config SPI_FSL_ESPI
+-	tristate "Freescale eSPI controller"
++	bool "Freescale eSPI controller"
+ 	depends on FSL_SOC
+ 	select SPI_FSL_LIB
+ 	help
+-- 
+1.7.7.3
