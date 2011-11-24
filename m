@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 322901007D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 18:45:23 +1100 (EST)
-Subject: Re: [PATCH] powerpc: fixup QE_General4 errata
+ by ozlabs.org (Postfix) with ESMTPS id EE4A61007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 18:46:56 +1100 (EST)
+Subject: Re: Fix for fsl_upm
 Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1314102605-9718-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Date: Thu, 24 Nov 2011 01:45:11 -0600
-Message-Id: <ECF36C1E-4F5E-4208-B715-2A21DF6B00C0@kernel.crashing.org>
-References: <1314102605-9718-1-git-send-email-Joakim.Tjernlund@transmode.se>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <4EA9683D.8030100@dev.rtsoft.ru>
+Date: Thu, 24 Nov 2011 01:46:32 -0600
+Message-Id: <0DAA4F0B-0C32-4CF8-9E3A-EFB8B898026E@kernel.crashing.org>
+References: <4EA9683D.8030100@dev.rtsoft.ru>
+To: Rusev <arusev@dev.rtsoft.ru>
+Cc: Shaohui.Xie@freescale.com, linux-kernel@vger.kernel.org,
+ Shengzhou.Liu@freescale.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +25,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Oct 27, 2011, at 9:18 AM, Rusev wrote:
 
-On Aug 23, 2011, at 7:30 AM, Joakim Tjernlund wrote:
+> patch is vs. 2.6.39, yet it applied to 3.1
+>=20
+>=20
+>=20
+> Fix of UPM driver for Freescale PowerPC processors
+>=20
+> If Freescale LBC driver fails to initialise itself from device tree,
+> then internal structure is freed only but not NULL-fied.
+> As result functions fsl_lbc_find() after checking the structure is not =
+NULL are
+> trying to access device registers.
+>=20
+> Signed-off-by: Alexandre Rusev <arusev@dev.rtsoft.ru>=20
 
-> QE_General4 should only round up the divisor iff divisor is > 3.
-> Rounding up lower divisors makes the error too big, causing USB
-> on MPC832x to fail.
-> 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
-> arch/powerpc/sysdev/qe_lib/qe.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
+applied to next
 
-applied to merge
-
-- k
+- k=
