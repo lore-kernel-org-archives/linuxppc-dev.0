@@ -1,11 +1,11 @@
 Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 7FF891007DA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:19:10 +1100 (EST)
-Date: Thu, 24 Nov 2011 22:19:54 +0200
+ by ozlabs.org (Postfix) with ESMTP id 7D31E1007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:19:56 +1100 (EST)
+Date: Thu, 24 Nov 2011 22:20:37 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: [PATCH-RFC 08/10] powerpc: switch to GENERIC_PCI_IOMAP
-Message-ID: <54aba7d0694e98b9103ca278486485598086b2be.1322163031.git.mst@redhat.com>
+Subject: [PATCH-RFC 09/10] sh: switch to GENERIC_PCI_IOMAP
+Message-ID: <28d52b292971f1bc6dab66ad6f27a0dbce35a9c0.1322163031.git.mst@redhat.com>
 References: <cover.1322163031.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,68 +48,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc copied pci_iomap from generic code, probably to avoid
+sh copied pci_iomap from generic code, probably to avoid
 pulling the rest of iomap.c in.  Since that's in
 a separate file now, we can reuse the common implementation.
 
-The only difference is handling of nocache flag,
-that turns out to be done correctly by the
-generic code since arch/powerpc/include/asm/io.h
-defines ioremap_nocache same as ioremap.
-
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- arch/powerpc/Kconfig        |    1 +
- arch/powerpc/kernel/iomap.c |   19 -------------------
- 2 files changed, 1 insertions(+), 19 deletions(-)
+ arch/sh/Kconfig           |    1 +
+ arch/sh/drivers/pci/pci.c |   23 -----------------------
+ 2 files changed, 1 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 951e18f..6ffe3df 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -710,6 +710,7 @@ config PCI
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
- 	select ARCH_SUPPORTS_MSI
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 5aeab58..ead1640 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -857,6 +857,7 @@ config PCI
+ 	bool "PCI support"
+ 	depends on SYS_SUPPORTS_PCI
+ 	select PCI_DOMAINS
 +	select GENERIC_PCI_IOMAP
  	help
- 	  Find out whether your system includes a PCI bus. PCI is the name of
- 	  a bus system, i.e. the way the CPU talks to the other stuff inside
-diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
-index 2627918..97a3715 100644
---- a/arch/powerpc/kernel/iomap.c
-+++ b/arch/powerpc/kernel/iomap.c
-@@ -119,24 +119,6 @@ EXPORT_SYMBOL(ioport_map);
- EXPORT_SYMBOL(ioport_unmap);
+ 	  Find out whether you have a PCI motherboard. PCI is the name of a
+ 	  bus system, i.e. the way the CPU talks to the other stuff inside
+diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
+index c2691af..11aaf2f 100644
+--- a/arch/sh/drivers/pci/pci.c
++++ b/arch/sh/drivers/pci/pci.c
+@@ -393,29 +393,6 @@ static void __iomem *ioport_map_pci(struct pci_dev *dev,
+ 	return (void __iomem *)(chan->io_map_base + port);
+ }
  
- #ifdef CONFIG_PCI
--void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max)
+-void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
 -{
 -	resource_size_t start = pci_resource_start(dev, bar);
 -	resource_size_t len = pci_resource_len(dev, bar);
 -	unsigned long flags = pci_resource_flags(dev, bar);
 -
--	if (!len)
+-	if (unlikely(!len || !start))
 -		return NULL;
--	if (max && len > max)
--		len = max;
+-	if (maxlen && len > maxlen)
+-		len = maxlen;
+-
 -	if (flags & IORESOURCE_IO)
--		return ioport_map(start, len);
--	if (flags & IORESOURCE_MEM)
--		return ioremap(start, len);
--	/* What? */
+-		return ioport_map_pci(dev, start, len);
+-	if (flags & IORESOURCE_MEM) {
+-		if (flags & IORESOURCE_CACHEABLE)
+-			return ioremap(start, len);
+-		return ioremap_nocache(start, len);
+-	}
+-
 -	return NULL;
 -}
+-EXPORT_SYMBOL(pci_iomap);
 -
  void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
  {
- 	if (isa_vaddr_is_ioport(addr))
-@@ -146,6 +128,5 @@ void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
  	iounmap(addr);
- }
- 
--EXPORT_SYMBOL(pci_iomap);
- EXPORT_SYMBOL(pci_iounmap);
- #endif /* CONFIG_PCI */
 -- 
 1.7.5.53.gc233e
