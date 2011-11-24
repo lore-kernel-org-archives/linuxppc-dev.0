@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D59681007D7
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 19:25:44 +1100 (EST)
-Subject: Re: [patch 1/1] drivers/edac/mpc85xx_edac.c: fix memory controller
- compatible for edac
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <201111152252.pAFMqMYB032421@wpaz1.hot.corp.google.com>
-Date: Thu, 24 Nov 2011 02:25:29 -0600
-Message-Id: <B815F306-2881-4BE6-8660-AF3783A0A36C@kernel.crashing.org>
-References: <201111152252.pAFMqMYB032421@wpaz1.hot.corp.google.com>
-To: akpm@linux-foundation.org
-Cc: Shaohui.Xie@freescale.com, linuxppc-dev@ozlabs.org
+Return-Path: <B11780@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 016581007EE
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 19:25:51 +1100 (EST)
+Subject: Re: [PATCH] [v3] powerpc/fsl_msi: add support for the fsl,
+ msi property in PCI nodes
+MIME-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1320098795-7658-1-git-send-email-timur@freescale.com>
+Date: Thu, 24 Nov 2011 02:25:42 -0600
+Message-ID: <B57C188D-C613-4583-83EB-D81CAD462432@freescale.com>
+References: <1320098795-7658-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: miltonm@bga.com, michael@ellerman.id.au, linuxppc-dev@ozlabs.org,
+ scottwood@freescale.com, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +28,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 15, 2011, at 4:52 PM, akpm@linux-foundation.org wrote:
+On Oct 31, 2011, at 5:06 PM, Timur Tabi wrote:
 
-> From: Shaohui Xie <Shaohui.Xie@freescale.com>
-> Subject: drivers/edac/mpc85xx_edac.c: fix memory controller compatible =
-for edac
+> On Freescale parts with multiple MSI controllers, the controllers are
+> combined into one "pool" of interrupts.  Whenever a device requests an =
+MSI
+> interrupt, the next available interrupt from the pool is selected,
+> regardless of which MSI controller the interrupt is from.  This works
+> because each PCI bus has an ATMU to all of CCSR, so any PCI device can
+> access any MSI interrupt register.
 >=20
-> compatible in dts has been changed, so the driver needs to be updated
-> accordingly.
+> The fsl,msi property is used to specify that a given PCI bus should =
+only
+> use a specific MSI device.  This is necessary, for example, with the
+> Freescale hypervisor, because the MSI devices are assigned to specific
+> partitions.
 >=20
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Ideally, we'd like to be able to assign MSI devices to PCI busses =
+within
+> the MSI or PCI layers.  However, there does not appear to be a =
+mechanism
+> to do that.  Whenever the MSI layer wants to allocate an MSI interrupt =
+to
+> a PCI device, it just calls arch_setup_msi_irqs().  It would be nice =
+if we
+> could register an MSI device with a specific PCI bus.
+>=20
+> So instead we remember the phandles of each MSI device, and we use =
+that to
+> limit our search for an available interrupt.  Whenever we are asked to
+> allocate a new interrupt for a PCI device, we check the fsl,msi =
+property
+> of the PCI bus for that device.  If it exists, then as we are looping =
+over
+> all MSI devices, we skip the ones that don't have a matching phandle.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
 >=20
-> drivers/edac/mpc85xx_edac.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+> v3: added check for invalid fsl,msi phandles
+>=20
+> arch/powerpc/sysdev/fsl_msi.c |   39 =
++++++++++++++++++++++++++++++++++++++++
+> arch/powerpc/sysdev/fsl_msi.h |    3 +++
+> 2 files changed, 42 insertions(+), 0 deletions(-)
 
-applied to merge
+applied to next
 
 - k=
