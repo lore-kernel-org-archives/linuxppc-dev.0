@@ -1,11 +1,11 @@
 Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 88EE41007D7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:17:00 +1100 (EST)
-Date: Thu, 24 Nov 2011 22:17:42 +0200
+ by ozlabs.org (Postfix) with ESMTP id 9A5B11007DA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 07:17:26 +1100 (EST)
+Date: Thu, 24 Nov 2011 22:18:08 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: [PATCH-RFC 04/10] arm: switch to GENERIC_PCI_IOMAP
-Message-ID: <1415bf8cf7d98d05b7d189e913efb7f9668846ac.1322163031.git.mst@redhat.com>
+Subject: [PATCH-RFC 05/10] microblaze: switch to GENERIC_PCI_IOMAP
+Message-ID: <dd85307a3ebcd0ce5870ca31cbe7b286621ab091.1322163031.git.mst@redhat.com>
 References: <cover.1322163031.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,80 +48,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arm copied pci_iomap from generic code, probably to avoid
+microblaze copied pci_iomap from generic code, probably to avoid
 pulling the rest of iomap.c in.  Since that's in
 a separate file now, we can reuse the common implementation.
 
+The only difference is handling of nocache flag,
+that turns out to be done correctly by the
+generic code since arch/microblaze/include/asm/io.h
+defines ioremap_nocache same as ioremap.
+
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- arch/arm/Kconfig          |    1 +
- arch/arm/include/asm/io.h |    2 +-
- arch/arm/mm/iomap.c       |   21 ---------------------
- 3 files changed, 2 insertions(+), 22 deletions(-)
+ arch/microblaze/Kconfig     |    1 +
+ arch/microblaze/pci/iomap.c |   19 -------------------
+ 2 files changed, 1 insertions(+), 19 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 44789ef..2ebf66b 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -30,6 +30,7 @@ config ARM
- 	select HAVE_SPARSE_IRQ
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index e446bab..f0eead7 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -17,6 +17,7 @@ config MICROBLAZE
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select GENERIC_IRQ_PROBE
  	select GENERIC_IRQ_SHOW
- 	select CPU_PM if (SUSPEND || CPU_IDLE)
 +	select GENERIC_PCI_IOMAP
- 	help
- 	  The ARM series is a line of low-power-consumption RISC chip designs
- 	  licensed by ARM Ltd and targeted at embedded applications and
-diff --git a/arch/arm/include/asm/io.h b/arch/arm/include/asm/io.h
-index 065d100..9275828 100644
---- a/arch/arm/include/asm/io.h
-+++ b/arch/arm/include/asm/io.h
-@@ -27,6 +27,7 @@
- #include <asm/byteorder.h>
- #include <asm/memory.h>
- #include <asm/system.h>
-+#include <asm-generic/pci_iomap.h>
  
- /*
-  * ISA I/O bus memory addresses are 1:1 with the physical address.
-@@ -306,7 +307,6 @@ extern void ioport_unmap(void __iomem *addr);
+ config SWAP
+ 	def_bool n
+diff --git a/arch/microblaze/pci/iomap.c b/arch/microblaze/pci/iomap.c
+index 57acda8..b07abba 100644
+--- a/arch/microblaze/pci/iomap.c
++++ b/arch/microblaze/pci/iomap.c
+@@ -10,25 +10,6 @@
+ #include <asm/io.h>
+ #include <asm/pci-bridge.h>
  
- struct pci_dev;
- 
--extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen);
- extern void pci_iounmap(struct pci_dev *dev, void __iomem *addr);
- 
- /*
-diff --git a/arch/arm/mm/iomap.c b/arch/arm/mm/iomap.c
-index 430df1a..e62956e 100644
---- a/arch/arm/mm/iomap.c
-+++ b/arch/arm/mm/iomap.c
-@@ -35,27 +35,6 @@ EXPORT_SYMBOL(pcibios_min_mem);
- unsigned int pci_flags = PCI_REASSIGN_ALL_RSRC;
- EXPORT_SYMBOL(pci_flags);
- 
--void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+-void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max)
 -{
 -	resource_size_t start = pci_resource_start(dev, bar);
--	resource_size_t len   = pci_resource_len(dev, bar);
+-	resource_size_t len = pci_resource_len(dev, bar);
 -	unsigned long flags = pci_resource_flags(dev, bar);
 -
--	if (!len || !start)
+-	if (!len)
 -		return NULL;
--	if (maxlen && len > maxlen)
--		len = maxlen;
+-	if (max && len > max)
+-		len = max;
 -	if (flags & IORESOURCE_IO)
 -		return ioport_map(start, len);
--	if (flags & IORESOURCE_MEM) {
--		if (flags & IORESOURCE_CACHEABLE)
--			return ioremap(start, len);
--		return ioremap_nocache(start, len);
--	}
+-	if (flags & IORESOURCE_MEM)
+-		return ioremap(start, len);
+-	/* What? */
 -	return NULL;
 -}
 -EXPORT_SYMBOL(pci_iomap);
 -
  void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
  {
- 	if ((unsigned long)addr >= VMALLOC_START &&
+ 	if (isa_vaddr_is_ioport(addr))
 -- 
 1.7.5.53.gc233e
