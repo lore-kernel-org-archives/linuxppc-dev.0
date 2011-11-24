@@ -2,22 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B97B21007DB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2011 15:50:51 +1100 (EST)
-Subject: Re: [PATCH 1/2] Unify pci/pcie initialization code
+ by ozlabs.org (Postfix) with ESMTPS id AF99BB6F64
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2011 15:55:05 +1100 (EST)
+Subject: Re: [4/4] powerpc/booke: Re-organize debug code
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
-Date: Wed, 23 Nov 2011 22:50:41 -0600
-Message-Id: <3E825AD9-1CD5-4D6D-8161-E6B4F1D32457@kernel.crashing.org>
-References: <1320040492-6407-1-git-send-email-B38951@freescale.com>
- <1320040492-6407-2-git-send-email-B38951@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+In-Reply-To: <567C3D8A-BBB9-4487-8069-0EA57701D7B6@pobox.com>
+Date: Wed, 23 Nov 2011 22:54:50 -0600
+Message-Id: <0C7F609B-F752-4BEE-9995-081728A1AE53@kernel.crashing.org>
+References: <1317905621-5537-4-git-send-email-galak@kernel.crashing.org>
+ <5EF5AFC4-C852-4D1C-9019-D1CBAE1157EA@pobox.com>
+ <137546DC-1F2C-4623-B96F-5F9FFB9498F9@kernel.crashing.org>
+ <567C3D8A-BBB9-4487-8069-0EA57701D7B6@pobox.com>
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,175 +26,253 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>>>> * set_dabr/do_dabr are no longer used when CNFIG_PPC_ADV_DEBUG_REGS =
+is set
+>>>> refactor code a bit such that we only build the dabr code for
+>>>> !CONFIG_PPC_ADV_DEBUG_REGS and removed some =
+CONFIG_PPC_ADV_DEBUG_REGS
+>>>> code in set_dabr that would never get built.
+>>>>=20
+>>>> * Move do_send_trap into traps.c as its only used there
+>>>>=20
+>>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>>>=20
+>>>> ---
+>>>> arch/powerpc/include/asm/system.h |    5 +--
+>>>> arch/powerpc/kernel/process.c     |   97 =
++++++++++++++-----------------------
+>>>> arch/powerpc/kernel/traps.c       |   17 +++++++
+>>>> 3 files changed, 53 insertions(+), 66 deletions(-)
+>>>>=20
+>>>> diff --git a/arch/powerpc/include/asm/system.h =
+b/arch/powerpc/include/asm/system.h
+>>>> index e30a13d..1dc5d9c 100644
+>>>> --- a/arch/powerpc/include/asm/system.h
+>>>> +++ b/arch/powerpc/include/asm/system.h
+>>>> @@ -111,11 +111,8 @@ static inline int debugger_dabr_match(struct =
+pt_regs *regs) { return 0; }
+>>>> static inline int debugger_fault_handler(struct pt_regs *regs) { =
+return 0; }
+>>>> #endif
+>>>>=20
+>>>> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
+>>>> extern int set_dabr(unsigned long dabr);
+>>>> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>>>> -extern void do_send_trap(struct pt_regs *regs, unsigned long =
+address,
+>>>> -			 unsigned long error_code, int signal_code, int =
+brkpt);
+>>>> -#else
+>>>=20
+>>>=20
+>>> This part of the patch breaks xmon.c
+>>> Naively I simply wrapped the xmon call:
+>>>=20
+>>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>>> index f08836a..b5911b2 100644
+>>> --- a/arch/powerpc/xmon/xmon.c
+>>> +++ b/arch/powerpc/xmon/xmon.c
+>>> @@ -738,8 +738,10 @@ static void insert_bpts(void)
+>>>=20
+>>> static void insert_cpu_bpts(void)
+>>> {
+>>> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
+>>> 	if (dabr.enabled)
+>>> 		set_dabr(dabr.address | (dabr.enabled & 7));
+>>> +#endif
+>>> 	if (iabr && cpu_has_feature(CPU_FTR_IABR))
+>>> 		mtspr(SPRN_IABR, iabr->address
+>>> 			 | (iabr->enabled & (BP_IABR|BP_IABR_TE)));
+>>> @@ -767,7 +769,9 @@ static void remove_bpts(void)
+>>>=20
+>>> static void remove_cpu_bpts(void)
+>>> {
+>>> +#ifndef CONFIG_PPC_ADV_DEBUG_REGS
+>>> 	set_dabr(0);
+>>> +#endif
+>>> 	if (cpu_has_feature(CPU_FTR_IABR))
+>>> 		mtspr(SPRN_IABR, 0);
+>>> }
+>>=20
+>> Shouldn't all of these functions be #ifndef'd out as we don't support =
+cpu_bpts on book-e parts in xmon code today?
+>=20
+> Well I guess this is one for benh, because I would have expected xmon =
+to test and call ppc_md.dabr.
+> Actually, should everyone be doing that?
+> -jx
 
-On Nov 22, 2011, at 12:20 AM, Jia Hongtao-B38951 wrote:
+Ben,
 
-> Hi Kumar,
-> We want more comments on this series of patches ([1/2] & [2/2]) to =
-speed up the pushing-to-kernel progress.
-> Thanks.
-
-I think the code is fine, but you need to update it for all the boards =
-include the 86xx ones.
+Any comment on direction here ?
 
 - k
 
->=20
-> -----Original Message-----
-> From: Jia Hongtao-B38951=20
-> Sent: Monday, October 31, 2011 1:55 PM
-> To: linuxppc-dev@lists.ozlabs.org
-> Cc: Li Yang-R58472; Gala Kumar-B11780; Jia Hongtao-B38951
-> Subject: [PATCH 1/2] Unify pci/pcie initialization code
->=20
-> In previous version pci/pcie initialization is in platform code which =
-Initialize PCI bridge base on EP/RC or host/agent settings.
-> We unified pci/pcie initialization as common APIs named fsl_pci_setup =
-which can be called by platform code.
->=20
-> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> arch/powerpc/platforms/85xx/mpc85xx_ds.c |   30 ++-----------------
-> arch/powerpc/sysdev/fsl_pci.c            |   48 =
-++++++++++++++++++++++++++++++
-> arch/powerpc/sysdev/fsl_pci.h            |    5 +++
-> 3 files changed, 56 insertions(+), 27 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c =
-b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> index 10e7db0..7188c0b 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> @@ -157,33 +157,12 @@ extern void __init mpc85xx_smp_init(void);  =
-#endif  static void __init mpc85xx_ds_setup_arch(void)  { -#ifdef =
-CONFIG_PCI
-> -	struct device_node *np;
-> -	struct pci_controller *hose;
-> -#endif
-> -	dma_addr_t max =3D 0xffffffff;
-> -
-> 	if (ppc_md.progress)
-> 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
->=20
-> -#ifdef CONFIG_PCI
-> -	for_each_node_by_type(np, "pci") {
-> -		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
-> -		    of_device_is_compatible(np, "fsl,mpc8548-pcie") ||
-> -		    of_device_is_compatible(np, "fsl,p2020-pcie")) {
-> -			struct resource rsrc;
-> -			of_address_to_resource(np, 0, &rsrc);
-> -			if ((rsrc.start & 0xfffff) =3D=3D =
-primary_phb_addr)
-> -				fsl_add_bridge(np, 1);
-> -			else
-> -				fsl_add_bridge(np, 0);
-> -
-> -			hose =3D pci_find_hose_for_OF_device(np);
-> -			max =3D min(max, hose->dma_window_base_cur +
-> -					hose->dma_window_size);
-> -		}
-> -	}
-> +	fsl_pci_setup(primary_phb_addr);
->=20
-> +#ifdef CONFIG_PCI
-> 	ppc_md.pci_exclude_device =3D mpc85xx_exclude_device;  #endif
->=20
-> @@ -192,11 +171,8 @@ static void __init mpc85xx_ds_setup_arch(void)  =
-#endif
->=20
-> #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if (memblock_end_of_DRAM() > 0xffffffff)
-> 		ppc_swiotlb_enable =3D 1;
-> -		set_pci_dma_ops(&swiotlb_dma_ops);
-> -		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
-> -	}
-> #endif
->=20
-> 	printk("MPC85xx DS board from Freescale Semiconductor\n"); diff =
---git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c =
-index 80b8b7a..4d4536f 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -402,6 +402,54 @@ int __init fsl_add_bridge(struct device_node =
-*dev, int is_primary)  }  #endif /* CONFIG_FSL_SOC_BOOKE || =
-CONFIG_PPC_86xx */
->=20
-> +static struct of_device_id pci_ids[] =3D {
-> +	{ .compatible =3D "fsl,mpc8540-pci", },
-> +	{ .compatible =3D "fsl,mpc8548-pcie", },
-> +	{},
-> +};
-> +
-> +/**
-> + * fsl_pci_setup - Initialization for PCI
-> + * @primary_phb_addr: primary bus address
-> + *
-> + * Add bridge if pci controller is a host  */ void fsl_pci_setup(int=20=
-
-> +primary_phb_addr) {
-> +	struct device_node *np;
-> +	struct pci_controller *hose;
-> +	dma_addr_t min_dma_addr =3D 0xffffffff;
-> +
-> +	for_each_node_by_type(np, "pci") {
-> +		if (of_match_node(pci_ids, np)) {
-> +			struct resource rsrc;
-> +			of_address_to_resource(np, 0, &rsrc);
-> +			if ((rsrc.start & 0xfffff) =3D=3D =
-primary_phb_addr)
-> +				fsl_add_bridge(np, 1);
-> +			else
-> +				fsl_add_bridge(np, 0);
-> +
-> +			hose =3D pci_find_hose_for_OF_device(np);
-> +			min_dma_addr =3D min(min_dma_addr,
-> +					hose->dma_window_base_cur
-> +					+ hose->dma_window_size);
-> +
-> +		}
-> +	}
-> +
-> +#ifdef CONFIG_SWIOTLB
-> +	/*
-> +	 * if we couldn't map all of DRAM via the dma windows we need =
-SWIOTLB
-> +	 * to handle buffers located outside of dma capable memory =
-region
-> +	 */
-> +	if (memblock_end_of_DRAM() > min_dma_addr) {
-> +		ppc_swiotlb_enable =3D 1;
-> +		set_pci_dma_ops(&swiotlb_dma_ops);
-> +		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
-> +	}
-> +#endif
-> +}
-> +
-> DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, =
-quirk_fsl_pcie_header);
->=20
-> #if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x) diff --git =
-a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h index =
-a39ed5c..775ea21 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.h
-> +++ b/arch/powerpc/sysdev/fsl_pci.h
-> @@ -89,6 +89,11 @@ struct ccsr_pci {
-> };
->=20
-> extern int fsl_add_bridge(struct device_node *dev, int is_primary);
-> +#ifndef CONFIG_PCI
-> +#define fsl_pci_setup(p)
-> +#else
-> +extern void fsl_pci_setup(int primary_phb_addr); #endif
-> extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);  extern int =
-mpc83xx_add_bridge(struct device_node *dev);
-> u64 fsl_pci_immrbar_base(struct pci_controller *hose);
-> --
-> 1.7.5.1
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>>> extern void do_dabr(struct pt_regs *regs, unsigned long address,
+>>>> 		    unsigned long error_code);
+>>>> #endif
+>>>> diff --git a/arch/powerpc/kernel/process.c =
+b/arch/powerpc/kernel/process.c
+>>>> index 269a309..989e574 100644
+>>>> --- a/arch/powerpc/kernel/process.c
+>>>> +++ b/arch/powerpc/kernel/process.c
+>>>> @@ -251,50 +251,6 @@ void discard_lazy_cpu_state(void)
+>>>> #endif /* CONFIG_SMP */
+>>>>=20
+>>>> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>>>> -void do_send_trap(struct pt_regs *regs, unsigned long address,
+>>>> -		  unsigned long error_code, int signal_code, int =
+breakpt)
+>>>> -{
+>>>> -	siginfo_t info;
+>>>> -
+>>>> -	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+>>>> -			11, SIGSEGV) =3D=3D NOTIFY_STOP)
+>>>> -		return;
+>>>> -
+>>>> -	/* Deliver the signal to userspace */
+>>>> -	info.si_signo =3D SIGTRAP;
+>>>> -	info.si_errno =3D breakpt;	/* breakpoint or watchpoint id =
+*/
+>>>> -	info.si_code =3D signal_code;
+>>>> -	info.si_addr =3D (void __user *)address;
+>>>> -	force_sig_info(SIGTRAP, &info, current);
+>>>> -}
+>>>> -#else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
+>>>> -void do_dabr(struct pt_regs *regs, unsigned long address,
+>>>> -		    unsigned long error_code)
+>>>> -{
+>>>> -	siginfo_t info;
+>>>> -
+>>>> -	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+>>>> -			11, SIGSEGV) =3D=3D NOTIFY_STOP)
+>>>> -		return;
+>>>> -
+>>>> -	if (debugger_dabr_match(regs))
+>>>> -		return;
+>>>> -
+>>>> -	/* Clear the DABR */
+>>>> -	set_dabr(0);
+>>>> -
+>>>> -	/* Deliver the signal to userspace */
+>>>> -	info.si_signo =3D SIGTRAP;
+>>>> -	info.si_errno =3D 0;
+>>>> -	info.si_code =3D TRAP_HWBKPT;
+>>>> -	info.si_addr =3D (void __user *)address;
+>>>> -	force_sig_info(SIGTRAP, &info, current);
+>>>> -}
+>>>> -#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
+>>>> -
+>>>> -static DEFINE_PER_CPU(unsigned long, current_dabr);
+>>>> -
+>>>> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>>>> /*
+>>>> * Set the debug registers back to their default "safe" values.
+>>>> */
+>>>> @@ -357,16 +313,7 @@ static void switch_booke_debug_regs(struct =
+thread_struct *new_thread)
+>>>> 			prime_debug_regs(new_thread);
+>>>> }
+>>>> #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
+>>>> -#ifndef CONFIG_HAVE_HW_BREAKPOINT
+>>>> -static void set_debug_reg_defaults(struct thread_struct *thread)
+>>>> -{
+>>>> -	if (thread->dabr) {
+>>>> -		thread->dabr =3D 0;
+>>>> -		set_dabr(0);
+>>>> -	}
+>>>> -}
+>>>> -#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
+>>>> -#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
+>>>> +static DEFINE_PER_CPU(unsigned long, current_dabr);
+>>>>=20
+>>>> int set_dabr(unsigned long dabr)
+>>>> {
+>>>> @@ -376,19 +323,45 @@ int set_dabr(unsigned long dabr)
+>>>> 		return ppc_md.set_dabr(dabr);
+>>>>=20
+>>>> 	/* XXX should we have a CPU_FTR_HAS_DABR ? */
+>>>> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>>>> -	mtspr(SPRN_DAC1, dabr);
+>>>> -#ifdef CONFIG_PPC_47x
+>>>> -	isync();
+>>>> -#endif
+>>>> -#elif defined(CONFIG_PPC_BOOK3S)
+>>>> 	mtspr(SPRN_DABR, dabr);
+>>>> -#endif
+>>>> -
+>>>>=20
+>>>> 	return 0;
+>>>> }
+>>>>=20
+>>>> +void do_dabr(struct pt_regs *regs, unsigned long address,
+>>>> +		    unsigned long error_code)
+>>>> +{
+>>>> +	siginfo_t info;
+>>>> +
+>>>> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+>>>> +			11, SIGSEGV) =3D=3D NOTIFY_STOP)
+>>>> +		return;
+>>>> +
+>>>> +	if (debugger_dabr_match(regs))
+>>>> +		return;
+>>>> +
+>>>> +	/* Clear the DABR */
+>>>> +	set_dabr(0);
+>>>> +
+>>>> +	/* Deliver the signal to userspace */
+>>>> +	info.si_signo =3D SIGTRAP;
+>>>> +	info.si_errno =3D 0;
+>>>> +	info.si_code =3D TRAP_HWBKPT;
+>>>> +	info.si_addr =3D (void __user *)address;
+>>>> +	force_sig_info(SIGTRAP, &info, current);
+>>>> +}
+>>>> +
+>>>> +#ifndef CONFIG_HAVE_HW_BREAKPOINT
+>>>> +static void set_debug_reg_defaults(struct thread_struct *thread)
+>>>> +{
+>>>> +	if (thread->dabr) {
+>>>> +		thread->dabr =3D 0;
+>>>> +		set_dabr(0);
+>>>> +	}
+>>>> +}
+>>>> +#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
+>>>> +#endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
+>>>> +
+>>>> #ifdef CONFIG_PPC64
+>>>> DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
+>>>> #endif
+>>>> diff --git a/arch/powerpc/kernel/traps.c =
+b/arch/powerpc/kernel/traps.c
+>>>> index db733d3..edc1108 100644
+>>>> --- a/arch/powerpc/kernel/traps.c
+>>>> +++ b/arch/powerpc/kernel/traps.c
+>>>> @@ -1184,6 +1184,23 @@ void SoftwareEmulation(struct pt_regs *regs)
+>>>> #endif /* CONFIG_8xx */
+>>>>=20
+>>>> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>>>> +static void do_send_trap(struct pt_regs *regs, unsigned long =
+address,
+>>>> +		  unsigned long error_code, int signal_code, int =
+breakpt)
+>>>> +{
+>>>> +	siginfo_t info;
+>>>> +
+>>>> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+>>>> +			11, SIGSEGV) =3D=3D NOTIFY_STOP)
+>>>> +		return;
+>>>> +
+>>>> +	/* Deliver the signal to userspace */
+>>>> +	info.si_signo =3D SIGTRAP;
+>>>> +	info.si_errno =3D breakpt;	/* breakpoint or watchpoint id =
+*/
+>>>> +	info.si_code =3D signal_code;
+>>>> +	info.si_addr =3D (void __user *)address;
+>>>> +	force_sig_info(SIGTRAP, &info, current);
+>>>> +}
+>>>> +
+>>>> static void handle_debug(struct pt_regs *regs, unsigned long =
+debug_status)
+>>>> {
+>>>> 	int changed =3D 0;
+>>=20
