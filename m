@@ -1,47 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
- [212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3D1BA1007D7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 09:09:24 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH-RFC 02/10] lib: add GENERIC_PCI_IOMAP
-Date: Thu, 24 Nov 2011 23:07:57 +0100
-Message-ID: <1564173.bLjG0I2D2P@wuerfel>
-In-Reply-To: <b5a1327dd8bb38f87cba7ae10b308ec3b63de66a.1322163031.git.mst@redhat.com>
-References: <cover.1322163031.git.mst@redhat.com>
- <b5a1327dd8bb38f87cba7ae10b308ec3b63de66a.1322163031.git.mst@redhat.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Fri, 25 Nov 2011 10:02:13 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v5 2/9] fadump: Reserve the memory for firmware
+ assisted dump.
+Message-ID: <20111124230213.GC19828@bloggs.ozlabs.ibm.com>
+References: <20111115151145.16533.16384.stgit@mars.in.ibm.com>
+ <20111115151343.16533.70101.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- linux-m68k@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-pci@vger.kernel.org,
- linux@openrisc.net, Jesse Barnes <jbarnes@virtuousgeek.org>,
- Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
- Ralf Baechle <ralf@linux-mips.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Lennox Wu <lennox.wu@gmail.com>, Jonas Bonn <jonas@southpole.se>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Russell King <linux@arm.linux.org.uk>, linux-hexagon@vger.kernel.org,
- Helge Deller <deller@gmx.de>, linux-sh@vger.kernel.org,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Arend van Spriel <arend@broadcom.com>, Matt Turner <mattst88@gmail.com>,
- linux-arch@vger.kernel.org, Lasse Collin <lasse.collin@tukaani.org>,
- Lucas De Marchi <lucas.demarchi@profusion.mobi>,
- microblaze-uclinux@itee.uq.edu.au, Michal Simek <monstr@monstr.eu>,
- Rob Herring <rob.herring@calxeda.com>, Mikael Starvik <starvik@axis.com>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Franky Lin <frankyl@broadcom.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Michael Ellerman <michael@ellerman.id.au>, Paul Bolle <pebolle@tiscali.nl>,
- Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
- linux-parisc@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
- linux-kernel@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>,
- Richard Kuo <rkuo@codeaurora.org>, Kyle McMartin <kyle@mcmartin.ca>,
- Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
- Olof Johansson <olof@lixom.net>, Fabio Baltieri <fabio.baltieri@gmail.com>,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111115151343.16533.70101.stgit@mars.in.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>, Amerigo Wang <amwang@redhat.com>,
+ Kexec-ml <kexec@lists.infradead.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,14 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 24 November 2011 22:17:02 Michael S. Tsirkin wrote:
-> Many architectures want a generic pci_iomap but
-> not the rest of iomap.c. Split that to a separate .c
-> file and add a new config symbol. select automatically
-> by GENERIC_IOMAP.
+On Tue, Nov 15, 2011 at 08:43:43PM +0530, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> Reserve the memory during early boot to preserve CPU state data, HPTE region
+> and RMR region data in case of kernel crash. At the time of crash, powerpc
+> firmware will store CPU state data, HPTE region data and move RMR region
+> data to the reserved memory area.
 
-Very nice!
+What is "RMR"?  I don't see anywhere that you explain this acronym.
+Is it the same as the RMA (real mode area)?
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+> +config FA_DUMP
+> +	bool "Firmware-assisted dump"
+
+Is this new fadump infrastructure intended to supersede the existing
+phyp dump code?  Does it use the same phyp interfaces as phyp dump?
+If so, you should probably remove the phyp dump code and config option
+as the final patch in your series.
+
+> +/*
+> + * The RMR region will be saved for later dumping when kernel crashes.
+> + * Set this to RMO size.
+> + */
+> +#define RMR_START	0x0
+> +#define RMR_END		(ppc64_rma_size)
+
+An explanation of "RMR" here, and what the distinction (if any)
+between RMR and RMA/RMO is, would help future readers.
+
+> +	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
+> +					&size);
+> +
+> +	if (!sections)
+> +		return 0;
+> +
+> +	num_sections = size / sizeof(struct dump_section);
+> +
+> +	for (i = 0; i < num_sections; i++) {
+> +		switch (sections[i].dump_section) {
+> +		case FADUMP_CPU_STATE_DATA:
+> +			fw_dump.cpu_state_data_size = sections[i].section_size;
+> +			break;
+> +		case FADUMP_HPTE_REGION:
+> +			fw_dump.hpte_region_size = sections[i].section_size;
+> +			break;
+
+It's generally better to use of_read_number() or of_read_ulong() to
+parse OF properties, rather than using a structure like this.
+
+> +	/* divide by 20 to get 5% of value */
+> +	size = memblock_end_of_DRAM();
+> +	do_div(size, 20);
+
+You could just say size = memblock_end_of_DRAM() / 20 here; no need to
+use do_div, since we won't be using this code on 32-bit platforms.
+
+> +	if (!fw_dump.fadump_supported) {
+> +		printk(KERN_ERR "Firmware-assisted dump is not supported on"
+> +				" this hardware\n");
+
+This shouldn't be KERN_ERR; it's not an error to boot a kernel with
+fadump configured in on a machine that doesn't have firmware fadump
+support.  I don't think we really need any message, but if we have one
+it should be KERN_INFO at most.
+
+> +/* Look for fadump= cmdline option. */
+> +static int __init early_fadump_param(char *p)
+> +{
+> +	if (!p)
+> +		return 1;
+> +
+> +	if (p[0] == '1')
+> +		fw_dump.fadump_enabled = 1;
+> +	else if (p[0] == '0')
+> +		fw_dump.fadump_enabled = 0;
+
+I think it's usual to allow "on" and "off" as values for this kind of
+option.  There might be a handy little helper function to parse this
+sort of thing (but if there is I don't know what it is called).
+
+Paul.
