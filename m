@@ -1,12 +1,12 @@
 Return-Path: <anton@samba.org>
-Date: Fri, 25 Nov 2011 16:39:36 +1100
+Date: Fri, 25 Nov 2011 16:47:05 +1100
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Harden xics hypervisor backend
-Message-ID: <20111125163936.5218fbb3@kryten>
+To: benh@kernel.crashing.org, paulus@samba.org, miltonm@bga.com
+Subject: [PATCH] powerpc: Atomically output each stack frame line in show_stack
+Message-ID: <20111125164705.78eb9da8@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,82 +16,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Milton Miller <miltonm@bga.com>
 
-During kdump stress testing I sometimes see the kdump kernel panic
-with:
+show_stack uses up to 4 printks per line and other CPUs using printk
+can corrupt the output. This patch calls printk once per stack frame
+line to produce more readable output.
 
-  Interrupt 0x306 (real) is invalid, disabling it.
-  Kernel panic - not syncing: bad return code EOI - rc = -4, value=ff000306
-
-Instead of panicing print the error message, dump the stack the first
-time it happens and continue on. Add some more information to the
-debug messages as well.
-
+Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-build/arch/powerpc/sysdev/xics/icp-hv.c
+Index: linux-build/arch/powerpc/kernel/process.c
 ===================================================================
---- linux-build.orig/arch/powerpc/sysdev/xics/icp-hv.c	2011-11-25 14:01:50.756984686 +1100
-+++ linux-build/arch/powerpc/sysdev/xics/icp-hv.c	2011-11-25 14:13:22.389244117 +1100
-@@ -27,33 +27,49 @@ static inline unsigned int icp_hv_get_xi
- {
- 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
- 	long rc;
-+	unsigned int ret = XICS_IRQ_SPURIOUS;
- 
- 	rc = plpar_hcall(H_XIRR, retbuf, cppr);
--	if (rc != H_SUCCESS)
--		panic(" bad return code xirr - rc = %lx\n", rc);
--	return (unsigned int)retbuf[0];
-+	if (rc == H_SUCCESS) {
-+		ret = (unsigned int)retbuf[0];
-+	} else {
-+		pr_err("%s: bad return code xirr cppr=0x%x returned %ld\n",
-+			__func__, cppr, rc);
-+		WARN_ON_ONCE(1);
-+	}
+--- linux-build.orig/arch/powerpc/kernel/process.c	2011-11-25
+16:44:06.548045629 +1100 +++
+linux-build/arch/powerpc/kernel/process.c	2011-11-25
+16:44:07.944070260 +1100 @@ -1147,7 +1147,7 @@ void show_stack(struct
+task_struct *tsk, { unsigned long sp, ip, lr, newsp;
+ 	int count = 0;
+-	int firstframe = 1;
++	char *firstframe = " (unreliable)";
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 	int curr_frame = current->curr_ret_stack;
+ 	extern void return_to_handler(void);
+@@ -1180,20 +1180,20 @@ void show_stack(struct task_struct *tsk,
+ 		stack = (unsigned long *) sp;
+ 		newsp = stack[0];
+ 		ip = stack[STACK_FRAME_LR_SAVE];
+-		if (!firstframe || ip != lr) {
+-			printk("["REG"] ["REG"] %pS", sp, ip, (void
+*)ip);
++		if (!firstframe[0] || ip != lr) {
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 			if ((ip == rth || ip == mrth) && curr_frame >=
+0) {
+-				printk(" (%pS)",
+-				       (void
+*)current->ret_stack[curr_frame].ret);
++				printk("["REG"] ["REG"] %pS
+(%pS)%s\n", sp, ip,
++				       (void *)ip, (void *)
 +
-+	return ret;
- }
+current->ret_stack[curr_frame].ret,
++				       firstframe);
+ 				curr_frame--;
+-			}
++			} else
+ #endif
+-			if (firstframe)
+-				printk(" (unreliable)");
+-			printk("\n");
++				printk("["REG"] ["REG"] %pS%s\n", sp,
+ip,
++				       (void *)ip, firstframe);
+ 		}
+-		firstframe = 0;
++		firstframe = "";
  
- static inline void icp_hv_set_xirr(unsigned int value)
- {
- 	long rc = plpar_hcall_norets(H_EOI, value);
--	if (rc != H_SUCCESS)
--		panic("bad return code EOI - rc = %ld, value=%x\n", rc, value);
-+	if (rc != H_SUCCESS) {
-+		pr_err("%s: bad return code eoi xirr=0x%x returned %ld\n",
-+			__func__, value, rc);
-+		WARN_ON_ONCE(1);
-+	}
- }
+ 		/*
+ 		 * See if this is an exception frame.
+@@ -1206,7 +1206,7 @@ void show_stack(struct task_struct *tsk,
+ 			lr = regs->link;
+ 			printk("--- Exception: %lx at %pS\n    LR =
+%pS\n", regs->trap, (void *)regs->nip, (void *)lr);
+-			firstframe = 1;
++			firstframe = " (unreliable)";
+ 		}
  
- static inline void icp_hv_set_cppr(u8 value)
- {
- 	long rc = plpar_hcall_norets(H_CPPR, value);
--	if (rc != H_SUCCESS)
--		panic("bad return code cppr - rc = %lx\n", rc);
-+	if (rc != H_SUCCESS) {
-+		pr_err("%s: bad return code cppr cppr=0x%x returned %ld\n",
-+			__func__, value, rc);
-+		WARN_ON_ONCE(1);
-+	}
- }
- 
- static inline void icp_hv_set_qirr(int n_cpu , u8 value)
- {
--	long rc = plpar_hcall_norets(H_IPI, get_hard_smp_processor_id(n_cpu),
--				     value);
--	if (rc != H_SUCCESS)
--		panic("bad return code qirr - rc = %lx\n", rc);
-+	int hw_cpu = get_hard_smp_processor_id(n_cpu);
-+	long rc = plpar_hcall_norets(H_IPI, hw_cpu, value);
-+	if (rc != H_SUCCESS) {
-+		pr_err("%s: bad return code qirr cpu=%d hw_cpu=%d mfrr=0x%x "
-+			"returned %ld\n", __func__, n_cpu, hw_cpu, value, rc);
-+		WARN_ON_ONCE(1);
-+	}
- }
- 
- static void icp_hv_eoi(struct irq_data *d)
+ 		sp = newsp;
