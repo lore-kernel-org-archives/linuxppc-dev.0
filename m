@@ -1,28 +1,56 @@
-Return-Path: <Einar.Bjorgvinsson@marel.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
- [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 86DA91007D5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 19:22:38 +1100 (EST)
-Received: from mail104-am1 (localhost [127.0.0.1])	by
- mail104-am1-R.bigfish.com (Postfix) with ESMTP id 74B142C02C4	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 08:21:05 +0000 (UTC)
-Received: from AM1EHSMHS016.bigfish.com (unknown [10.3.201.243])	by
- mail104-am1.bigfish.com (Postfix) with ESMTP id 15AD4180168	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 08:19:07 +0000 (UTC)
-From: =?iso-8859-1?Q?Einar_M=E1r_Bj=F6rgvinsson?=
- <Einar.Bjorgvinsson@marel.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: Enabling MBX in MPC5121 - OGLES kernel modules
-Date: Fri, 25 Nov 2011 08:20:30 +0000
-Message-ID: <76E1146DEE728E4E95C1C6D1EEA1DBA96F174F6B@GRBSR0004.marel.net>
-References: <76E1146DEE728E4E95C1C6D1EEA1DBA96F174768@GRBSR0004.marel.net>
-In-Reply-To: <76E1146DEE728E4E95C1C6D1EEA1DBA96F174768@GRBSR0004.marel.net>
-Content-Type: multipart/alternative;
- boundary="_000_76E1146DEE728E4E95C1C6D1EEA1DBA96F174F6BGRBSR0004mareln_"
+Return-Path: <jesper.nilsson@axis.com>
+Received: from ra.se.axis.com (ra.se.axis.com [195.60.68.13])
+ by ozlabs.org (Postfix) with ESMTP id 791C31007DA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 19:47:35 +1100 (EST)
+Date: Fri, 25 Nov 2011 09:41:09 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH-RFC 01/10] lib: move GENERIC_IOMAP to lib/Kconfig
+Message-ID: <20111125084109.GS13937@axis.com>
+References: <cover.1322163031.git.mst@redhat.com>
+ <5aed7b7e1dbc8a50ebd6986245df8054fd05b7cd.1322163031.git.mst@redhat.com>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="f2QGlHpHGjS2mn6Y"
+In-Reply-To: <5aed7b7e1dbc8a50ebd6986245df8054fd05b7cd.1322163031.git.mst@redhat.com>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-m68k@vger.kernel.org" <linux-m68k@vger.kernel.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ "linux@openrisc.net" <linux@openrisc.net>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Jesse Barnes <jbarnes@virtuousgeek.org>, Chen Liqin <liqin.chen@sunplusct.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Lennox Wu <lennox.wu@gmail.com>,
+ Jonas Bonn <jonas@southpole.se>, Russell King <linux@arm.linux.org.uk>,
+ "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
+ Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Arend van Spriel <arend@broadcom.com>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Lasse Collin <lasse.collin@tukaani.org>,
+ Arnd Bergmann <arnd@arndb.de>, Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+ "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
+ Paul Bolle <pebolle@tiscali.nl>, Rob Herring <rob.herring@calxeda.com>,
+ Mikael Starvik <starvik@axis.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Franky Lin <frankyl@broadcom.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Fabio Baltieri <fabio.baltieri@gmail.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Richard Henderson <rth@twiddle.net>, Michael Ellerman <michael@ellerman.id.au>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ linux-cris-kernel <linux-cris-kernel@axis.com>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
+ Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,140 +60,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_76E1146DEE728E4E95C1C6D1EEA1DBA96F174F6BGRBSR0004mareln_
-Content-Type: text/plain; charset="iso-8859-1"
+
+--f2QGlHpHGjS2mn6Y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi
+On Thu, Nov 24, 2011 at 09:15:42PM +0100, Michael S. Tsirkin wrote:
+> define GENERIC_IOMAP in a central location
+> instead of all architectures. This will be helpful
+> for the follow-up patch which makes it select
+> other configs. Code is also a bit shorter this way.
+>=20
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 
-Wanted to repeat my previous email about enabling MBX in MPC5121.
+For the CRIS part:
 
-Anybody out there who can assist me ?
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-regards
-Einar
-________________________________
-From: Einar M=E1r Bj=F6rgvinsson
-Sent: Tuesday, November 22, 2011 7:15 PM
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Enabling MBX in MPC5121 - OGLES kernel modules
+/^JN - Jesper Nilsson
+--=20
+               Jesper Nilsson -- jesper.nilsson@axis.com
 
-Hi
+--f2QGlHpHGjS2mn6Y
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-I've been working on enabling the PowerVR GPU core in MPC5121 chip. I've be=
-en following the documentation from here:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-http://www.datasheetarchive.com/indexdl/Datasheet-076/DSAE0026055.pdf
+iEYEARECAAYFAk7PVKUACgkQ31LbvUHyf1e75ACePpPqRaa0/hcY5Pc6jHLp11KX
+g3oAn37y5BAjmjOjjeqo5aGJkxBrHR5C
+=GpXx
+-----END PGP SIGNATURE-----
 
-This documentation was released in a bundle with MBX libraries and MBX kern=
-el patches. Also have I downloaded the OGLES SDK from Imgtech where I've su=
-ccessfully built some demos for MPC5121.
-
-The last piece of the puzzle is to have the right kernel modules. There are=
- some kernel modules provided in the documentation bundle but they are buil=
-d against older kernel version (2.6.24) but I'm am using kernel version 2.6=
-.33 with RT 29.
-
-What I'm hoping is that somebody have the source code for the following ker=
-nel modules:
-
-- pvr.ko
-- clcdc.ko
-- swcamera.ko
-- dgbdrv.ko
-
-Hope somebody out there can assist
-
-Regards
-Einar M. Bjorgvinsson
-Embedded Software Engineer
-Marel ehf
-Iceland
-
-
---_000_76E1146DEE728E4E95C1C6D1EEA1DBA96F174F6BGRBSR0004mareln_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html dir=3D"ltr">
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
-1">
-<style id=3D"owaParaStyle" type=3D"text/css">=0A=
-<!--=0A=
-p=0A=
-	{margin-top:0;=0A=
-	margin-bottom:0}=0A=
--->=0A=
-P {margin-top:0;margin-bottom:0;}</style>
-</head>
-<body ocsi=3D"0" fpstyle=3D"1">
-<div style=3D"direction: ltr;font-family: Tahoma;color: #000000;font-size: =
-10pt;">Hi<br>
-<br>
-Wanted to repeat my previous email about enabling MBX in MPC5121.<br>
-<br>
-Anybody out there who can assist me ?<br>
-<br>
-regards<br>
-Einar<br>
-<div style=3D"font-family: Times New Roman; color: rgb(0, 0, 0); font-size:=
- 16px;">
-<hr tabindex=3D"-1">
-<div style=3D"direction: ltr;" id=3D"divRpF198774"><font color=3D"#000000" =
-face=3D"Tahoma" size=3D"2"><b>From:</b> Einar M=E1r Bj=F6rgvinsson<br>
-<b>Sent:</b> Tuesday, November 22, 2011 7:15 PM<br>
-<b>To:</b> linuxppc-dev@lists.ozlabs.org<br>
-<b>Subject:</b> Enabling MBX in MPC5121 - OGLES kernel modules<br>
-</font><br>
-</div>
-<div></div>
-<div>
-<div style=3D"direction: ltr; font-family: Tahoma; color: rgb(0, 0, 0); fon=
-t-size: 10pt;">
-Hi<br>
-<br>
-I've been working on enabling the PowerVR GPU core in MPC5121 chip. I've be=
-en following the documentation from here:
-<br>
-<br>
-<font size=3D"2"><span style=3D"font-size: 10pt;"><a href=3D"http://www.dat=
-asheetarchive.com/indexdl/Datasheet-076/DSAE0026055.pdf" target=3D"_blank">=
-http://www.datasheetarchive.com/indexdl/Datasheet-076/DSAE0026055.pdf</a><b=
-r>
-<br>
-This documentation was released in a bundle with MBX libraries and MBX kern=
-el patches. Also have I downloaded the OGLES SDK from Imgtech where I've su=
-ccessfully built some demos for MPC5121.
-<br>
-<br>
-The last piece of the puzzle is to have the right kernel modules. There are=
- some kernel modules provided in the documentation bundle but they are buil=
-d against older kernel version (2.6.24) but I'm am using kernel version 2.6=
-.33 with RT 29.
-<br>
-<br>
-What I'm hoping is that somebody have the source code for the following ker=
-nel modules:<br>
-<br>
-- pvr.ko<br>
-- clcdc.ko<br>
-- swcamera.ko<br>
-- dgbdrv.ko<br>
-<br>
-Hope somebody out there can assist<br>
-<br>
-Regards<br>
-Einar M. Bjorgvinsson <br>
-Embedded Software Engineer<br>
-Marel ehf<br>
-Iceland<br>
-<br>
-</span></font></div>
-</div>
-</div>
-</div>
-</body>
-</html>
-
---_000_76E1146DEE728E4E95C1C6D1EEA1DBA96F174F6BGRBSR0004mareln_--
+--f2QGlHpHGjS2mn6Y--
