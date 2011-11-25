@@ -1,20 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 25 Nov 2011 09:34:10 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v5 1/9] fadump: Add documentation for
- firmware-assisted dump.
-Message-ID: <20111124223410.GB19828@bloggs.ozlabs.ibm.com>
-References: <20111115151145.16533.16384.stgit@mars.in.ibm.com>
- <20111115151334.16533.5790.stgit@mars.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111115151334.16533.5790.stgit@mars.in.ibm.com>
-Cc: Amerigo Wang <amwang@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
- Anton Blanchard <anton@samba.org>, Vivek Goyal <vgoyal@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2F3F81007DD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2011 11:44:08 +1100 (EST)
+Message-ID: <1322181832.32635.14.camel@pasglop>
+Subject: Re: [PATCH 03/13] powerpc: Fix booke hugetlb preload code for
+ PPC_MM_SLICES and 64-bit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+Date: Fri, 25 Nov 2011 11:43:52 +1100
+In-Reply-To: <13182798681100-git-send-email-beckyb@kernel.crashing.org>
+References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
+ <13182798624083-git-send-email-beckyb@kernel.crashing.org>
+ <13182798643553-git-send-email-beckyb@kernel.crashing.org>
+ <13182798681100-git-send-email-beckyb@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,64 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 15, 2011 at 08:43:34PM +0530, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> Documentation for firmware-assisted dump. This document is based on the
-> original documentation written for phyp assisted dump by Linas Vepstas
-> and Manish Ahuja, with few changes to reflect the current implementation.
-> 
-> Change in v3:
-> - Modified the documentation to reflect introdunction of fadump_registered
->   sysfs file and few minor changes.
-> 
-> Change in v2:
-> - Modified the documentation to reflect the change of fadump_region
->   file under debugfs filesystem.
+On Mon, 2011-10-10 at 15:50 -0500, Becky Bruce wrote:
 
-In general we don't want the changes between successive versions in
-the patch description; this information should go below the "---"
-line.  The patch description should describe how the patch is now and
-give any information that will be useful to someone looking at the
-resulting git commit later on, but it doesn't need to tell us about
-previous versions of the patch that will never appear in the git
-history.
+ .../...
 
-> +-- Once the dump is copied out, the memory that held the dump
-> +   is immediately available to the running kernel. A further
-> +   reboot isn't required.
+>  #ifdef CONFIG_PPC_MM_SLICES
+> -	psize = mmu_get_tsize(get_slice_psize(mm, ea));
+> -	tsize = mmu_get_psize(psize);
+> +	psize = get_slice_psize(mm, ea);
+> +	tsize = mmu_get_tsize(psize);
+>  	shift = mmu_psize_defs[psize].shift;
+>  #else
+> -	vma = find_vma(mm, ea);
+> -	psize = vma_mmu_pagesize(vma);	/* returns actual size in bytes */
+> -	asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (psize));
+> -	shift = 31 - lz;
+> -	tsize = 21 - lz;
+> +	psize = vma_mmu_pagesize(find_vma(mm, ea));
+> +	shift = __ilog2(psize);
+> +	tsize = shift - 10;
+>  #endif
 
-I have a general worry about the system making allocations that are
-intended to be node-local while it is running with restricted memory
-(i.e. after the crash and reboot and before the dump has been written
-out and the dump memory freed).  Those allocations will probably all
-come from one node and thus won't necessarily be on the desired node.
-So, for very large systems with significant NUMA characteristics, it
-may be desirable (though not required) to reboot after taking the
-dump.
+Now, I know it was already there and you are just moving it around in
+this patch but come on ... find_vma() here ? Really ? And with no result
+checking nor boundary checking (remember it can return a vma that
+doesn't enclose the address etc....). Now I know in this specific case
+it -should- be safe but still...
 
-What happens about the NUMA information in the kernel -- all the
-memory sections, etc.?  Do they get set up as normal even though the
-second kernel is booting with only a small amount of memory initially?
+Now, the caller is just doing:
+ 
+	book3e_hugetlb_preload(vma->vm_mm, address, *ptep);
 
-> + /sys/kernel/debug/powerpc/fadump_region
-> +
-> +    This file shows the reserved memory regions if fadump is
-> +    enabled otherwise this file is empty. The output format
-> +    is:
-> +    <region>: [<start>-<end>] <reserved-size> bytes, Dumped: <dump-size>
-> +
-> +    e.g.
-> +    Contents when fadump is registered during first kernel
-> +
-> +    # cat /sys/kernel/debug/powerpc/fadump_region
-> +    CPU : [0x0000006ffb0000-0x0000006fff001f] 0x40020 bytes, Dumped: 0x0
-> +    HPTE: [0x0000006fff0020-0x0000006fff101f] 0x1000 bytes, Dumped: 0x0
-> +    DUMP: [0x0000006fff1020-0x0000007fff101f] 0x10000000 bytes, Dumped: 0x0
+So why not just change the prototype and pass the vma down instead ?
 
-How come the HPTE region is only 0x1000 (4k) bytes?  The hashed page
-table (HPT) will be much bigger than this.  Is this our way of telling
-the hypervisor that we don't care about the HPT?  If so, is it
-possible to make this region 0 bytes instead of 0x1000?
-
-Paul.
+Cheers,
+Ben.
