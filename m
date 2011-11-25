@@ -1,19 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8BC711007D1
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2011 16:25:36 +1100 (EST)
-Message-ID: <1322198727.32635.25.camel@pasglop>
-Subject: Re: ibm_newemac tx problem with jumbo frame enabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Prashant Bhole <prashantsmailcenter@gmail.com>
-Date: Fri, 25 Nov 2011 16:25:27 +1100
-In-Reply-To: <CAD6p20dmksH7YEjijdqLRG06aigaKTpzLPdoL0SCNGD3Ji9d2A@mail.gmail.com>
-References: <CAD6p20dmksH7YEjijdqLRG06aigaKTpzLPdoL0SCNGD3Ji9d2A@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <anton@samba.org>
+Date: Fri, 25 Nov 2011 16:35:57 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Decode correct MSR bits in oops output
+Message-ID: <20111125163557.5a464006@kryten>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,23 +16,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-11-18 at 10:33 +0530, Prashant Bhole wrote:
-> Hi,
-> I have been facing problem with ibm_newemac driver (v3.54).
-> The board gets disconnected and can not be pinged in between
-> some heavy network traffic. In my case I am running IOmeter
-> "All-in-One" 8 threads on the iSCSI target. MTU is 4088.
-> 
-> I found that after executing emac_full_tx_reset(), the board can
-> be pinged again. Again after some heavy traffic of 5-6 seconds,
-> traffic stops. This can be repeated after full tx reset.
-> 
-> Is this a known issue? what could cause this?
-> Any pointers would be greatly appreciated.
 
-Not that I know of. Can you check if any of the error reporting
-registers trip anything ? Could it just be a fifo overflow which we may
-not be handling properly in the driver ?
+On a 64bit book3s machine I have an oops from a system reset that
+claims the book3e CE bit was set:
 
-Cheers,
-Ben.
+MSR: 8000000000021032 <ME,CE,IR,DR>  CR: 24004082  XER: 00000010
+
+On a book3s machine system reset sets IBM bit 46 and 47 depending on
+the power saving mode. Separate the definitions by type and for
+completeness add the rest of the bits in.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-build/arch/powerpc/kernel/process.c
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/process.c	2011-11-25 13:22:24.294919094 +1100
++++ linux-build/arch/powerpc/kernel/process.c	2011-11-25 13:36:23.213834524 +1100
+@@ -584,16 +584,32 @@ static struct regbit {
+ 	unsigned long bit;
+ 	const char *name;
+ } msr_bits[] = {
++#if defined(CONFIG_PPC64) && !defined(CONFIG_BOOKE)
++	{MSR_SF,	"SF"},
++	{MSR_HV,	"HV"},
++#endif
++	{MSR_VEC,	"VEC"},
++	{MSR_VSX,	"VSX"},
++#ifdef CONFIG_BOOKE
++	{MSR_CE,	"CE"},
++#endif
+ 	{MSR_EE,	"EE"},
+ 	{MSR_PR,	"PR"},
+ 	{MSR_FP,	"FP"},
+-	{MSR_VEC,	"VEC"},
+-	{MSR_VSX,	"VSX"},
+ 	{MSR_ME,	"ME"},
+-	{MSR_CE,	"CE"},
++#ifdef CONFIG_BOOKE
+ 	{MSR_DE,	"DE"},
++#else
++	{MSR_SE,	"SE"},
++	{MSR_BE,	"BE"},
++#endif
+ 	{MSR_IR,	"IR"},
+ 	{MSR_DR,	"DR"},
++	{MSR_PMM,	"PMM"},
++#ifndef CONFIG_BOOKE
++	{MSR_RI,	"RI"},
++	{MSR_LE,	"LE"},
++#endif
+ 	{0,		NULL}
+ };
+ 
