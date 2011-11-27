@@ -2,21 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2D107B6F8E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 10:19:34 +1100 (EST)
-Message-ID: <1322435957.23348.23.camel@pasglop>
-Subject: Re: [PATCH] powerpc/40x: Add APM8018X SOC support
+ by ozlabs.org (Postfix) with ESMTPS id 849EBB6FA0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 10:51:33 +1100 (EST)
+Message-ID: <1322437884.23348.30.camel@pasglop>
+Subject: MPIC cleanup series
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tanmay Inamdar <tinamdar@apm.com>
-Date: Mon, 28 Nov 2011 10:19:17 +1100
-In-Reply-To: <CACoXjcnfCM8Z5qFfrHtxsXkpf492LVbkDA3X=a9dRv9Lcv7Asw@mail.gmail.com>
-References: <1322041464-20605-1-git-send-email-tinamdar@apm.com>
- <201111231415.51985.arnd@arndb.de>
- <CACoXjcnfCM8Z5qFfrHtxsXkpf492LVbkDA3X=a9dRv9Lcv7Asw@mail.gmail.com>
+To: Kyle Moffett <kyle@moffetthome.net>
+Date: Mon, 28 Nov 2011 10:51:24 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,109 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-11-25 at 17:49 +0530, Tanmay Inamdar wrote:
+Hi Kyle !
 
->         
->         >
->         > +#if defined(CONFIG_APM8018X)
->         > +/* CPR */
->         > +#define DCRN_CPR0_CONFIG_ADDR        0xa
->         > +#define DCRN_CPR1_CONFIG_DATA        0xb
->         > +/* AHB */
->         > +#define DCRN_SDR1_CONFIG_ADDR        0xc
->         > +#define DCRN_SDR1_CONFIG_DATA        0xd
->         > +#else
->         >  /* CPRs (440GX and 440SP/440SPe) */
->         >  #define DCRN_CPR0_CONFIG_ADDR        0xc
->         >  #define DCRN_CPR0_CONFIG_DATA        0xd
->         > +#endif /* CONFIG_APM8018X */
->         
->         
->         same comment as above.
->  
-> Some existing drivers use these macros. If I change the names, I will
-> have to update the
-> driver code.
+I can't reply to the patches themselves easily unfortunately as I
+accidentally deleted them from my mailer :-)
 
-Right, the best approach is to create a small wrapper that provides cpr
-and sdr accesses using helpers. That way you can:
+Overall I really look your series. It doesn't quite apply cleanly
+anymore so I'll as you for a new shoot after you address the comments
+below, at which point, if you're fast enough, I'll stick it in -next :-)
 
- - Properly lock since it's all indirect
+Just a couple of comments on some of the patches:
 
- - Obtain the right DCRs at boot time, stick them in variables
-   and use them at runtime, avoiding the hard coded constants completely
+ - 5/10: search for open-pic device-tree node if NULL
 
- - Make the code generally look much better
+The idea is fine, however most callers ignore the device-type and only
+compare on compatible, while you replace that with a match entry that
+seems to require matching on both. This is likely to break stuff. The
+"type" part of te march entry should be NULL I believe.
 
-Ie. Provide something like read_sdr1() and write_sdr1() accessors and
-change the drivers to use them.
+ - 9/10: cache the node
 
->         > diff --git a/arch/powerpc/kernel/cputable.c
->         b/arch/powerpc/kernel/cputable.c
->         > index edae5bb..e5c51a6 100644
->         > --- a/arch/powerpc/kernel/cputable.c
->         > +++ b/arch/powerpc/kernel/cputable.c
->         > @@ -1505,6 +1505,58 @@ static struct cpu_spec __initdata
->         cpu_specs[] = {
->         >               .machine_check          = machine_check_4xx,
->         >               .platform               = "ppc405",
->         >       },
->         > +     {       /* APM80186-SK */
->         > +             .pvr_mask               = 0xffffffff,
->         > +             .pvr_value              = 0x7ff11432,
->         
->         
->         If you mask out the lower bits, you only need a single entry
->         instead of
->         four identical ones.
-> 
-> You are right. But each PVR represent different version of SOC. If I
-> create single entry, then I will have to give generic cpu_name which I
-> don't want.
+of_node_get() is your friend. 
 
-Note that you should really tell you designers to move away from using
-the PVR to identify the SoC's. This is BAD and isn't sustainable long
-run. Stick to representing the core itself in the PVR and provide a
-different mechanism to identify the SoC (different SPR would do, or even
-a DCR).
-
->         > --- a/arch/powerpc/kernel/udbg_16550.c
->         > +++ b/arch/powerpc/kernel/udbg_16550.c
->         > @@ -18,6 +18,19 @@ extern void real_writeb(u8 data, volatile
->         u8 __iomem *addr);
->         >  extern u8 real_205_readb(volatile u8 __iomem  *addr);
->         >  extern void real_205_writeb(u8 data, volatile u8 __iomem
->         *addr);
->         >
->         > +#ifdef CONFIG_UART_16550_WORD_ADDRESSABLE
->         > +struct NS16550 {
->         > +     /* this struct must be packed */
->         > +     unsigned char rbr;  /* 0 */ u8 s0[3];
->         > +     unsigned char ier;  /* 1 */ u8 s1[3];
->         > +     unsigned char fcr;  /* 2 */ u8 s2[3];
->         > +     unsigned char lcr;  /* 3 */ u8 s3[3];
->         > +     unsigned char mcr;  /* 4 */ u8 s4[3];
->         > +     unsigned char lsr;  /* 5 */ u8 s5[3];
->         > +     unsigned char msr;  /* 6 */ u8 s6[3];
->         > +     unsigned char scr;  /* 7 */ u8 s7[3];
->         > +};
->         > +#else
->         >  struct NS16550 {
->         >       /* this struct must be packed */
->         >       unsigned char rbr;  /* 0 */
->         > @@ -29,6 +42,7 @@ struct NS16550 {
->         >       unsigned char msr;  /* 6 */
->         >       unsigned char scr;  /* 7 */
->         >  };
->         > +#endif /* CONFIG_UART_16550_WORD_ADDRESSABLE */
->         >
->         
->         
->         Same things as with the register definitions. Please make this
->         run-time selectable to allow build-time configurations that
->         support both layouts.
-> 
-> Yes. I will try to find better solution. 
+ - 10/10: Makes me a bit nervous. It 'looks' right but I wouldn't bet on
+Apple device-trees being sane vs. chaining. I would like a test that
+doesn't do the cascade if the mpic is a primary to at least limit the
+risk of messup.
 
 Cheers,
 Ben.
