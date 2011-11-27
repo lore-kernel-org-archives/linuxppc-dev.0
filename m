@@ -1,21 +1,23 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 98C3DB70B7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 05:29:37 +1100 (EST)
-Date: Sun, 27 Nov 2011 19:29:25 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Einar =?iso-8859-15?Q?M=E1r_Bj=F6rgvinsson?= <Einar.Bjorgvinsson@marel.com>
-Subject: Re: Enabling MBX in MPC5121 - OGLES kernel modules
-Message-ID: <20111127182925.GC3869@pengutronix.de>
-References: <76E1146DEE728E4E95C1C6D1EEA1DBA96F174768@GRBSR0004.marel.net>
- <76E1146DEE728E4E95C1C6D1EEA1DBA96F174F6B@GRBSR0004.marel.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <76E1146DEE728E4E95C1C6D1EEA1DBA96F174F6B@GRBSR0004.marel.net>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 34B7FB6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 09:40:56 +1100 (EST)
+Message-ID: <1322433640.23348.2.camel@pasglop>
+Subject: Re: [PATCH] perf events, powerpc: Add POWER7
+ stalled-cycles-frontend/backend events
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <michael.neuling@au1.ibm.com>
+Date: Mon, 28 Nov 2011 09:40:40 +1100
+In-Reply-To: <4880.1315549581@neuling.org>
+References: <4E5C6A7D.2010909@linux.vnet.ibm.com>
+ <25545.1315532289@neuling.org> <4E69AFCF.3040404@linux.vnet.ibm.com>
+ <4880.1315549581@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Einar,
+On Fri, 2011-09-09 at 16:26 +1000, Michael Neuling wrote:
 
-On Fri, Nov 25, 2011 at 08:20:30AM +0000, Einar Már Björgvinsson wrote:
-> Wanted to repeat my previous email about enabling MBX in MPC5121.
->
-> Anybody out there who can assist me?
+> I agree, I think they match what Ingo is trying to achieve.
+> 
+> Can you add these descriptions to the patch and resubmit please?
+> 
+> If you can find similar events for power4/5/5+/6 that would be great too
+> submit too.  
+> 
+> FWIW, the patch compiles and runs for me.  
 
-This list is about open source software. The core you are using is from
-Imagination Technologies, they do not give out any documentation. This
-means that the community on this mailing list cannot help you. Please go
-to the Imagination or Freescale support and tell them that you want to
-use their graphics core with the mainline kernel. Maybe they can help
-you.
+I already put it in my next branch, but feel free to send a followup
+patch adding some comments if you think that's worthwhile.
 
-rsc
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Cheers,
+Ben.
