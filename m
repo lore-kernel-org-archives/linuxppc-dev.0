@@ -1,28 +1,18 @@
-Return-Path: <amwang@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 75502B700E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2011 16:40:14 +1100 (EST)
-From: Cong Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 61/62] highmem: kill all __kmap_atomic()
-Date: Sun, 27 Nov 2011 13:27:41 +0800
-Message-Id: <1322371662-26166-62-git-send-email-amwang@redhat.com>
-In-Reply-To: <1322371662-26166-1-git-send-email-amwang@redhat.com>
-References: <1322371662-26166-1-git-send-email-amwang@redhat.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- Cong Wang <amwang@redhat.com>, David Howells <dhowells@redhat.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- James Bottomley <James.Bottomley@suse.de>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linux-am33-list@redhat.com,
- Russell King <linux@arm.linux.org.uk>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Ingo Molnar <mingo@redhat.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Kyle McMartin <kyle@mcmartin.ca>, Tejun Heo <tj@kernel.org>,
- akpm@linux-foundation.org, Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Return-Path: <acrux_it@libero.it>
+Received: from outrelay06.libero.it (outrelay06.libero.it [212.52.84.110])
+ by ozlabs.org (Postfix) with ESMTP id C8F57B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 00:42:27 +1100 (EST)
+Received: from acrux-1faad1e87 (151.77.169.2) by outrelay06.libero.it
+ (8.5.133) (authenticated as acrux_it@libero.it)
+ id 4DF73B8D11D1DE78 for linuxppc-dev@lists.ozlabs.org;
+ Sun, 27 Nov 2011 14:37:16 +0100
+Date: Sun, 27 Nov 2011 14:37:52 +0100
+From: acrux <acrux_it@libero.it>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: scsi/ipr failed to initialize >=linux-3.0.9, >=linux-3.1.1
+Message-Id: <20111127143752.269cc898.acrux_it@libero.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,289 +23,314 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Cong Wang <amwang@redhat.com>
----
- arch/arm/mm/highmem.c                |    4 ++--
- arch/frv/include/asm/highmem.h       |    2 +-
- arch/frv/mm/highmem.c                |    4 ++--
- arch/mips/include/asm/highmem.h      |    2 +-
- arch/mips/mm/highmem.c               |    4 ++--
- arch/mn10300/include/asm/highmem.h   |    2 +-
- arch/parisc/include/asm/cacheflush.h |    2 +-
- arch/powerpc/include/asm/highmem.h   |    2 +-
- arch/sparc/include/asm/highmem.h     |    2 +-
- arch/sparc/mm/highmem.c              |    4 ++--
- arch/tile/include/asm/highmem.h      |    2 +-
- arch/tile/mm/highmem.c               |    4 ++--
- arch/x86/include/asm/highmem.h       |    2 +-
- arch/x86/mm/highmem_32.c             |    4 ++--
- include/linux/highmem.h              |   11 +++--------
- 15 files changed, 23 insertions(+), 28 deletions(-)
+scsi subsystem with ipr driver fails to initialize with every kernel >=3.0.9 and >=3.1.1
+Checked on YDL_Powerstation, IBM 9114-275, IBM 9123-710,
 
-diff --git a/arch/arm/mm/highmem.c b/arch/arm/mm/highmem.c
-index 807c057..5a21505 100644
---- a/arch/arm/mm/highmem.c
-+++ b/arch/arm/mm/highmem.c
-@@ -36,7 +36,7 @@ void kunmap(struct page *page)
- }
- EXPORT_SYMBOL(kunmap);
- 
--void *__kmap_atomic(struct page *page)
-+void *kmap_atomic(struct page *page)
- {
- 	unsigned int idx;
- 	unsigned long vaddr;
-@@ -81,7 +81,7 @@ void *__kmap_atomic(struct page *page)
- 
- 	return (void *)vaddr;
- }
--EXPORT_SYMBOL(__kmap_atomic);
-+EXPORT_SYMBOL(kmap_atomic);
- 
- void __kunmap_atomic(void *kvaddr)
- {
-diff --git a/arch/frv/include/asm/highmem.h b/arch/frv/include/asm/highmem.h
-index a8d6565..716956a 100644
---- a/arch/frv/include/asm/highmem.h
-+++ b/arch/frv/include/asm/highmem.h
-@@ -157,7 +157,7 @@ static inline void kunmap_atomic_primary(void *kvaddr, enum km_type type)
- 	pagefault_enable();
- }
- 
--void *__kmap_atomic(struct page *page);
-+void *kmap_atomic(struct page *page);
- void __kunmap_atomic(void *kvaddr);
- 
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/frv/mm/highmem.c b/arch/frv/mm/highmem.c
-index fd7fcd4..31902c9 100644
---- a/arch/frv/mm/highmem.c
-+++ b/arch/frv/mm/highmem.c
-@@ -37,7 +37,7 @@ struct page *kmap_atomic_to_page(void *ptr)
- 	return virt_to_page(ptr);
- }
- 
--void *__kmap_atomic(struct page *page)
-+void *kmap_atomic(struct page *page)
- {
- 	unsigned long paddr;
- 	int type;
-@@ -64,7 +64,7 @@ void *__kmap_atomic(struct page *page)
- 		return NULL;
- 	}
- }
--EXPORT_SYMBOL(__kmap_atomic);
-+EXPORT_SYMBOL(kmap_atomic);
- 
- void __kunmap_atomic(void *kvaddr)
- {
-diff --git a/arch/mips/include/asm/highmem.h b/arch/mips/include/asm/highmem.h
-index 77e6440..2d91888 100644
---- a/arch/mips/include/asm/highmem.h
-+++ b/arch/mips/include/asm/highmem.h
-@@ -47,7 +47,7 @@ extern void kunmap_high(struct page *page);
- 
- extern void *kmap(struct page *page);
- extern void kunmap(struct page *page);
--extern void *__kmap_atomic(struct page *page);
-+extern void *kmap_atomic(struct page *page);
- extern void __kunmap_atomic(void *kvaddr);
- extern void *kmap_atomic_pfn(unsigned long pfn);
- extern struct page *kmap_atomic_to_page(void *ptr);
-diff --git a/arch/mips/mm/highmem.c b/arch/mips/mm/highmem.c
-index 3634c7e..aff5705 100644
---- a/arch/mips/mm/highmem.c
-+++ b/arch/mips/mm/highmem.c
-@@ -41,7 +41,7 @@ EXPORT_SYMBOL(kunmap);
-  * kmaps are appropriate for short, tight code paths only.
-  */
- 
--void *__kmap_atomic(struct page *page)
-+void *kmap_atomic(struct page *page)
- {
- 	unsigned long vaddr;
- 	int idx, type;
-@@ -62,7 +62,7 @@ void *__kmap_atomic(struct page *page)
- 
- 	return (void*) vaddr;
- }
--EXPORT_SYMBOL(__kmap_atomic);
-+EXPORT_SYMBOL(kmap_atomic);
- 
- void __kunmap_atomic(void *kvaddr)
- {
-diff --git a/arch/mn10300/include/asm/highmem.h b/arch/mn10300/include/asm/highmem.h
-index bfe2d88..7c137cd 100644
---- a/arch/mn10300/include/asm/highmem.h
-+++ b/arch/mn10300/include/asm/highmem.h
-@@ -70,7 +70,7 @@ static inline void kunmap(struct page *page)
-  * be used in IRQ contexts, so in some (very limited) cases we need
-  * it.
-  */
--static inline unsigned long __kmap_atomic(struct page *page)
-+static inline unsigned long kmap_atomic(struct page *page)
- {
- 	unsigned long vaddr;
- 	int idx, type;
-diff --git a/arch/parisc/include/asm/cacheflush.h b/arch/parisc/include/asm/cacheflush.h
-index da601dd..9f21ab0 100644
---- a/arch/parisc/include/asm/cacheflush.h
-+++ b/arch/parisc/include/asm/cacheflush.h
-@@ -140,7 +140,7 @@ static inline void *kmap(struct page *page)
- 
- #define kunmap(page)			kunmap_parisc(page_address(page))
- 
--static inline void *__kmap_atomic(struct page *page)
-+static inline void *kmap_atomic(struct page *page)
- {
- 	pagefault_disable();
- 	return page_address(page);
-diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
-index dbc2640..caaf6e0 100644
---- a/arch/powerpc/include/asm/highmem.h
-+++ b/arch/powerpc/include/asm/highmem.h
-@@ -79,7 +79,7 @@ static inline void kunmap(struct page *page)
- 	kunmap_high(page);
- }
- 
--static inline void *__kmap_atomic(struct page *page)
-+static inline void *kmap_atomic(struct page *page)
- {
- 	return kmap_atomic_prot(page, kmap_prot);
- }
-diff --git a/arch/sparc/include/asm/highmem.h b/arch/sparc/include/asm/highmem.h
-index 3d7afbb..3b6e00d 100644
---- a/arch/sparc/include/asm/highmem.h
-+++ b/arch/sparc/include/asm/highmem.h
-@@ -70,7 +70,7 @@ static inline void kunmap(struct page *page)
- 	kunmap_high(page);
- }
- 
--extern void *__kmap_atomic(struct page *page);
-+extern void *kmap_atomic(struct page *page);
- extern void __kunmap_atomic(void *kvaddr);
- extern struct page *kmap_atomic_to_page(void *vaddr);
- 
-diff --git a/arch/sparc/mm/highmem.c b/arch/sparc/mm/highmem.c
-index 77140a0..055c66c 100644
---- a/arch/sparc/mm/highmem.c
-+++ b/arch/sparc/mm/highmem.c
-@@ -30,7 +30,7 @@
- #include <asm/tlbflush.h>
- #include <asm/fixmap.h>
- 
--void *__kmap_atomic(struct page *page)
-+void *kmap_atomic(struct page *page)
- {
- 	unsigned long vaddr;
- 	long idx, type;
-@@ -64,7 +64,7 @@ void *__kmap_atomic(struct page *page)
- 
- 	return (void*) vaddr;
- }
--EXPORT_SYMBOL(__kmap_atomic);
-+EXPORT_SYMBOL(kmap_atomic);
- 
- void __kunmap_atomic(void *kvaddr)
- {
-diff --git a/arch/tile/include/asm/highmem.h b/arch/tile/include/asm/highmem.h
-index b2a6c5d..fc8429a 100644
---- a/arch/tile/include/asm/highmem.h
-+++ b/arch/tile/include/asm/highmem.h
-@@ -59,7 +59,7 @@ void *kmap_fix_kpte(struct page *page, int finished);
- /* This macro is used only in map_new_virtual() to map "page". */
- #define kmap_prot page_to_kpgprot(page)
- 
--void *__kmap_atomic(struct page *page);
-+void *kmap_atomic(struct page *page);
- void __kunmap_atomic(void *kvaddr);
- void *kmap_atomic_pfn(unsigned long pfn);
- void *kmap_atomic_prot_pfn(unsigned long pfn, pgprot_t prot);
-diff --git a/arch/tile/mm/highmem.c b/arch/tile/mm/highmem.c
-index 31dbbd9..ef8e5a6 100644
---- a/arch/tile/mm/highmem.c
-+++ b/arch/tile/mm/highmem.c
-@@ -224,12 +224,12 @@ void *kmap_atomic_prot(struct page *page, pgprot_t prot)
- }
- EXPORT_SYMBOL(kmap_atomic_prot);
- 
--void *__kmap_atomic(struct page *page)
-+void *kmap_atomic(struct page *page)
- {
- 	/* PAGE_NONE is a magic value that tells us to check immutability. */
- 	return kmap_atomic_prot(page, PAGE_NONE);
- }
--EXPORT_SYMBOL(__kmap_atomic);
-+EXPORT_SYMBOL(kmap_atomic);
- 
- void __kunmap_atomic(void *kvaddr)
- {
-diff --git a/arch/x86/include/asm/highmem.h b/arch/x86/include/asm/highmem.h
-index 3bd0402..302a323 100644
---- a/arch/x86/include/asm/highmem.h
-+++ b/arch/x86/include/asm/highmem.h
-@@ -61,7 +61,7 @@ void *kmap(struct page *page);
- void kunmap(struct page *page);
- 
- void *kmap_atomic_prot(struct page *page, pgprot_t prot);
--void *__kmap_atomic(struct page *page);
-+void *kmap_atomic(struct page *page);
- void __kunmap_atomic(void *kvaddr);
- void *kmap_atomic_pfn(unsigned long pfn);
- void *kmap_atomic_prot_pfn(unsigned long pfn, pgprot_t prot);
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index b499626..9f85499 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -50,11 +50,11 @@ void *kmap_atomic_prot(struct page *page, pgprot_t prot)
- }
- EXPORT_SYMBOL(kmap_atomic_prot);
- 
--void *__kmap_atomic(struct page *page)
-+void *kmap_atomic(struct page *page)
- {
- 	return kmap_atomic_prot(page, kmap_prot);
- }
--EXPORT_SYMBOL(__kmap_atomic);
-+EXPORT_SYMBOL(kmap_atomic);
- 
- /*
-  * This is the same as kmap_atomic() but can map memory that doesn't
-diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 42ac049..9c1b442 100644
---- a/include/linux/highmem.h
-+++ b/include/linux/highmem.h
-@@ -55,12 +55,12 @@ static inline void kunmap(struct page *page)
- {
- }
- 
--static inline void *__kmap_atomic(struct page *page)
-+static inline void *kmap_atomic(struct page *page)
- {
- 	pagefault_disable();
- 	return page_address(page);
- }
--#define kmap_atomic_prot(page, prot)	__kmap_atomic(page)
-+#define kmap_atomic_prot(page, prot)	kmap_atomic(page)
- 
- static inline void __kunmap_atomic(void *addr)
- {
-@@ -121,15 +121,10 @@ static inline void kmap_atomic_idx_pop(void)
- #define NARG_(_2, _1, n, ...) n
- #define NARG(...) NARG_(__VA_ARGS__, 2, 1, :)
- 
--static inline void *kmap_atomic(struct page *page)
--{
--	return __kmap_atomic(page);
--}
--
- static inline void __deprecated *kmap_atomic_deprecated(struct page *page,
- 							enum km_type km)
- {
--	return __kmap_atomic(page);
-+	return kmap_atomic(page);
- }
- 
- #define kmap_atomic1(...) kmap_atomic(__VA_ARGS__)
+[...]
+OF stdout device is: /ht/isa@8/serial@3f8
+Preparing to boot Linux version 3.0.10 (root@radio) (gcc version 4.5.3 (CRUX PP1
+command line: root=/dev/sda5 ro
+memory layout at init:
+  memory_limit : 0000000000000000 (16 MB aligned)
+  alloc_bottom : 0000000000b28000
+  alloc_top    : 0000000030000000
+  alloc_top_hi : 0000000400000000
+  rmo_top      : 0000000030000000
+  ram_top      : 0000000400000000
+instantiating rtas at 0x000000002fff6000... done
+boot cpu hw idx 0
+starting cpu hw idx 1... done
+starting cpu hw idx 2... done
+starting cpu hw idx 3... done
+copying OF device tree...
+Building dt strings...
+Building dt structure...
+Device tree strings 0x0000000000c29000 -> 0x0000000000c29636
+Device tree struct  0x0000000000c2a000 -> 0x0000000000c2d000
+Calling quiesce...
+returning from prom_init
+DART table allocated at: c00000007f000000
+Using Maple machine description
+DART IOMMU initialized for U4 type chipset
+bootconsole [udbg0] enabled
+CPU maps initialized for 1 thread per core
+Starting Linux PPC64 #1 SMP PREEMPT Sat Nov 26 19:26:54 CET 2011
+-----------------------------------------------------
+ppc64_pft_size                = 0x0
+physicalMemorySize            = 0x380000000
+htab_address                  = 0xc0000003f0000000
+htab_hash_mask                = 0x1fffff
+-----------------------------------------------------
+Initializing cgroup subsys cpu
+Linux version 3.0.10 (root@radio) (gcc version 4.5.3 (CRUX PPC) ) #1 SMP PREEMP1
+*** 0000 : CF000012
+
+*** 0000 : Setup Arch
+[boot]0012 Setup Arch
+Found U4-PCIE PCI host bridge. Firmware bus number: 240->255
+PCI host bridge /pciex  ranges:
+  IO 0x00000000f0000000..0x00000000f03fffff -> 0x0000000000000000
+ MEM 0x00000000c0000000..0x00000000efffffff -> 0x00000000c0000000
+Found U3-HT PCI host bridge. Firmware bus number: 0->239
+PCI host bridge /ht (primary) ranges:
+  IO 0x00000000f4000000..0x00000000f43fffff -> 0x0000000000000000
+ MEM 0x0000000080000000..0x00000000bfffffff -> 0x0000000080000000
+mmio NVRAM, 1024k at 0xff800000 mapped to d00008008220b000
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00400000
+  Normal   empty
+Movable zone start PFN for each node
+early_node_map[2] active PFN ranges
+    0: 0x00000000 -> 0x00080000
+    0: 0x00100000 -> 0x00400000
+*** 0000 : CF000015
+
+*** 0000 : Setup Done
+[boot]0015 Setup Done
+PERCPU: Embedded 11 pages/cpu @c000000000d00000 s14848 r0 d30208 u262144
+Built 1 zonelists in Node order, mobility grouping on.  Total pages: 3612672
+Policy zone: DMA
+Kernel command line: root=/dev/sda5 ro
+PID hash table entries: 4096 (order: 3, 32768 bytes)
+freeing bootmem node 0
+Memory: 14176588k/14680064k available (8176k kernel code, 503476k reserved, 120)
+SLUB: Genslabs=15, HWalign=128, Order=0-3, MinObjects=0, CPUs=4, Nodes=256
+Preemptible hierarchical RCU implementation.
+NR_IRQS:512 nr_irqs:512 16
+mpic: Setting up MPIC " MPIC     " version 1.2 at f8040000, max 4 CPUs
+mpic: ISU size: 124, shift: 7, mask: 7f
+mpic: Initializing for 124 sources
+mpic: Setting up HT PICs workarounds for U3/U4
+mpic:   - HT:07.0 [0xf0] vendor 1022 device 7460 has 24 irqs
+Maple: Found RTC at IO 0x1070
+clocksource: timebase mult[1175bfb2] shift[22] registered
+Console: colour dummy device 80x25
+pid_max: default: 32768 minimum: 301
+Dentry cache hash table entries: 2097152 (order: 12, 16777216 bytes)
+Inode-cache hash table entries: 1048576 (order: 11, 8388608 bytes)
+Mount-cache hash table entries: 256
+mpic: requesting IPIs...
+PPC970/FX/MP performance monitor hardware support registered
+Brought up 4 CPUs
+devtmpfs: initialized
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+IOMMU table initialized, virtual merging enabled
+pci 0000:f0:0b.0: PCI bridge to [bus f1-f1]
+pci 0001:00:01.0: PCI bridge to [bus 01-01]
+pci 0001:00:02.0: PCI bridge to [bus 02-02]
+pci 0001:00:03.0: PCI bridge to [bus 03-03]
+pci 0001:00:04.0: PCI bridge to [bus 04-04]
+pci 0001:00:05.0: PCI bridge to [bus 05-05]
+pci 0001:00:06.0: PCI bridge to [bus 06-06]
+pci 0001:00:07.0: PCI bridge to [bus 07-07]
+bio: create slab <bio-0> at 0
+vgaarb: device added: PCI:0000:f1:00.0,decodes=io+mem,owns=none,locks=none
+vgaarb: loaded
+vgaarb: bridge control possible 0000:f1:00.0
+SCSI subsystem initialized
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+Advanced Linux Sound Architecture Driver Version 1.0.24.
+Bluetooth: Core ver 2.16
+NET: Registered protocol family 31
+Bluetooth: HCI device and connection manager initialized
+Bluetooth: HCI socket layer initialized
+Bluetooth: L2CAP socket layer initialized
+Bluetooth: SCO socket layer initialized
+cfg80211: Calling CRDA to update world regulatory domain
+Switching to clocksource timebase
+Switched to NOHz mode on CPU #3
+NET: Registered protocol family 2
+Switched to NOHz mode on CPU #2
+Switched to NOHz mode on CPU #1
+IP route cache hash table entries: 524288 (order: 10, 4194304 bytes)
+Switched to NOHz mode on CPU #0
+TCP established hash table entries: 524288 (order: 11, 8388608 bytes)
+TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
+TCP: Hash tables configured (established 524288 bind 65536)
+TCP reno registered
+UDP hash table entries: 8192 (order: 7, 524288 bytes)
+UDP-Lite hash table entries: 8192 (order: 7, 524288 bytes)
+NET: Registered protocol family 1
+RPC: Registered named UNIX socket transport module.
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+RPC: Registered tcp NFSv4.1 backchannel transport module.
+pci 0001:00:03.0: Found enabled HT MSI Mapping
+pci 0001:00:04.0: Found enabled HT MSI Mapping
+pci 0001:00:05.0: Found enabled HT MSI Mapping
+pci 0001:00:06.0: Found enabled HT MSI Mapping
+pci 0001:01:01.0: Quirk disabled MSI
+HugeTLB registered 16 MB page size, pre-allocated 0 pages
+squashfs: version 4.0 (2009/01/31) Phillip Lougher
+JFS: nTxBlock = 8192, nTxLock = 65536
+SGI XFS with ACLs, security attributes, large block/inode numbers, no debug enad
+Btrfs loaded
+msgmni has been set to 27688
+Block layer SCSI generic (bsg) driver version 0.4 loaded (major 253)
+io scheduler noop registered
+io scheduler cfq registered (default)
+Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+serial8250.0: ttyS0 at I/O 0x4113f8 (irq = 68) is a 16550A
+console [ttyS0] enabled, bootconsole disabled
+console [ttyS0] enabled, bootconsole disabled
+serial8250.0: ttyS1 at I/O 0x4112f8 (irq = 67) is a 16550A
+serial 0001:07:02.0: enabling device (0140 -> 0142)
+0001:07:02.0: ttyS2 at MMIO 0xb8202000 (irq = 17) is a U6_16550A
+0001:07:02.0: ttyS3 at MMIO 0xb8202200 (irq = 17) is a U6_16550A
+ipmi message handler version 39.2
+ipmi device interface
+IPMI System Interface driver.
+ipmi_si: Unable to find any System Interface(s)
+IPMI Watchdog: driver initialized
+Copyright (C) 2004 MontaVista Software - IPMI Powerdown via sys_reboot.
+brd: module loaded
+loop: module loaded
+nbd: registered device at major 43
+ipr: IBM Power RAID SCSI Device Driver version: 2.5.2 (April 27, 2011)
+ipr 0001:01:01.0: Found IOA with IRQ: 18
+ipr 0001:01:01.0: Using 32-bit DMA via iommu
+ipr 0001:01:01.0: Starting IOA initialization sequence.
+ipr 0001:01:01.0: Adapter firmware version: 01200018
+ipr 0001:01:01.0: IOA initialized.
+scsi0 : IBM 572C Storage Adapter
+scsi 0:0:0:0: Direct-Access     IBM-ESXS ST373455SS       BA23 PQ: 0 ANSI: 5
+------------[ cut here ]------------
+WARNING: at drivers/scsi/scsi_lib.c:1702
+Modules linked in:
+NIP: c000000000441db4 LR: c000000000441d9c CTR: c00000000044504c
+REGS: c0000003ec8b2ee0 TRAP: 0700   Not tainted  (3.0.10)
+MSR: 9000000000029032 <EE,ME,CE,IR,DR>  CR: 48000024  XER: 200fffff
+TASK = c0000003ec8a8000[1] 'swapper' THREAD: c0000003ec8b0000 CPU: 1
+GPR00: 0000000000000001 c0000003ec8b3160 c00000000091c8c8 c0000003ea12f940
+GPR04: c0000000008d4668 0000000000000000 c0000003ea143740 c0000000007fba80
+GPR08: 0000000000000bd1 c0000000007fba88 0000000000548000 0000000000548000
+GPR12: 0000000048000028 c00000000ffff280 0000000000000000 0000000000180000
+GPR16: c0000003ec8b37a0 0000000000000090 c0000003ea198d88 0000000000000074
+GPR20: 0000000000000000 c0000003ea198000 0000000000000000 0000000000000004
+GPR24: c0000003ec8b3460 c0000003ea194400 0000000000000000 c0000003ea194428
+GPR28: c0000003ea161940 fffffffffffffffa c00000000087e5c0 c0000003ea12f940
+NIP [c000000000441db4] .scsi_free_queue+0x20/0x7c
+LR [c000000000441d9c] .scsi_free_queue+0x8/0x7c
+Call Trace:
+[c0000003ec8b3160] [c00000000087e5c0] 0xc00000000087e5c0 (unreliable)
+[c0000003ec8b31f0] [c0000000004427e8] .scsi_alloc_sdev+0x240/0x27c
+[c0000003ec8b3290] [c000000000442ba0] .scsi_probe_and_add_lun+0xf8/0x960
+[c0000003ec8b33e0] [c000000000443678] .__scsi_scan_target+0xd8/0x59c
+[c0000003ec8b3520] [c000000000443ba0] .scsi_scan_channel+0x64/0xac
+[c0000003ec8b35d0] [c000000000443f08] .scsi_scan_host_selected+0xd4/0x124
+[c0000003ec8b3680] [c0000000004443a4] .scsi_scan_host+0x1d0/0x21c
+[c0000003ec8b3720] [c000000000647058] .ipr_probe+0x13a8/0x1464
+[c0000003ec8b3850] [c0000000003b3ca4] .local_pci_probe+0x70/0xd4
+[c0000003ec8b38e0] [c0000000003b418c] .pci_device_probe+0xc8/0xf8
+[c0000003ec8b3990] [c0000000004290c8] .driver_probe_device+0xf0/0x1ac
+[c0000003ec8b3a30] [c00000000042920c] .__driver_attach+0x88/0xb8
+[c0000003ec8b3ac0] [c000000000428020] .bus_for_each_dev+0x70/0xa8
+[c0000003ec8b3b70] [c000000000428cd8] .driver_attach+0x24/0x30
+[c0000003ec8b3bf0] [c000000000428828] .bus_add_driver+0xc0/0x264
+[c0000003ec8b3c90] [c000000000429680] .driver_register+0xb8/0x150
+[c0000003ec8b3d30] [c0000000003b4428] .__pci_register_driver+0x4c/0xdc
+[c0000003ec8b3dd0] [c0000000007cef68] .ipr_init+0x44/0x50
+[c0000003ec8b3e50] [c00000000000a7e4] .do_one_initcall+0xc0/0x190
+[c0000003ec8b3f00] [c0000000007ac910] .kernel_init+0xb0/0x14c
+[c0000003ec8b3f90] [c00000000001859c] .kernel_thread+0x54/0x70
+Instruction dump:
+60000000 38210080 7fe3fb78 4bbee468 7c0802a6 4bbee3f9 f821ff71 7c7f1b78
+e80302c8 7c000074 7800d182 68000001 <0b000000> e86302e8 481f92a5 60000000
+---[ end trace 6a6e1c0c73955051 ]---
+------------[ cut here ]------------
+WARNING: at drivers/scsi/scsi_lib.c:1702
+Modules linked in:
+NIP: c000000000441db4 LR: c000000000441d9c CTR: c00000000044504c
+REGS: c0000003ec8b2ee0 TRAP: 0700   Tainted: G        W    (3.0.10)
+MSR: 9000000000029032 <EE,ME,CE,IR,DR>  CR: 48000024  XER: 200fffff
+TASK = c0000003ec8a8000[1] 'swapper' THREAD: c0000003ec8b0000 CPU: 1
+GPR00: 0000000000000001 c0000003ec8b3160 c00000000091c8c8 c0000003ea12f940
+GPR04: c0000000008d4668 0000000000000000 c0000003ea143740 c0000000007fba80
+GPR08: 0000000000000be1 c0000000007fba88 0000000000548000 0000000000548000
+GPR12: 0000000048000028 c00000000ffff280 0000000000000000 0000000000180000
+GPR16: c0000003ec8b37a0 0000000000000090 c0000003ea198d88 0000000000000074
+GPR20: 0000000000000000 c0000003ea198000 0000000000000000 0000000000000004
+GPR24: c0000003ec8b3460 c0000003ea194400 0000000000000000 c0000003ea194428
+GPR28: c0000003ea161940 fffffffffffffffa c00000000087e5c0 c0000003ea12f940
+NIP [c000000000441db4] .scsi_free_queue+0x20/0x7c
+LR [c000000000441d9c] .scsi_free_queue+0x8/0x7c
+Call Trace:
+[c0000003ec8b3160] [c00000000087e5c0] 0xc00000000087e5c0 (unreliable)
+[c0000003ec8b31f0] [c0000000004427e8] .scsi_alloc_sdev+0x240/0x27c
+[c0000003ec8b3290] [c000000000442ba0] .scsi_probe_and_add_lun+0xf8/0x960
+[c0000003ec8b33e0] [c000000000443678] .__scsi_scan_target+0xd8/0x59c
+[c0000003ec8b3520] [c000000000443ba0] .scsi_scan_channel+0x64/0xac
+[c0000003ec8b35d0] [c000000000443f08] .scsi_scan_host_selected+0xd4/0x124
+[c0000003ec8b3680] [c0000000004443a4] .scsi_scan_host+0x1d0/0x21c
+[c0000003ec8b3720] [c000000000647058] .ipr_probe+0x13a8/0x1464
+[c0000003ec8b3850] [c0000000003b3ca4] .local_pci_probe+0x70/0xd4
+[c0000003ec8b38e0] [c0000000003b418c] .pci_device_probe+0xc8/0xf8
+[c0000003ec8b3990] [c0000000004290c8] .driver_probe_device+0xf0/0x1ac
+[c0000003ec8b3a30] [c00000000042920c] .__driver_attach+0x88/0xb8
+[c0000003ec8b3ac0] [c000000000428020] .bus_for_each_dev+0x70/0xa8
+[c0000003ec8b3b70] [c000000000428cd8] .driver_attach+0x24/0x30
+[c0000003ec8b3bf0] [c000000000428828] .bus_add_driver+0xc0/0x264
+[c0000003ec8b3c90] [c000000000429680] .driver_register+0xb8/0x150
+[c0000003ec8b3d30] [c0000000003b4428] .__pci_register_driver+0x4c/0xdc
+[c0000003ec8b3dd0] [c0000000007cef68] .ipr_init+0x44/0x50
+[c0000003ec8b3e50] [c00000000000a7e4] .do_one_initcall+0xc0/0x190
+[c0000003ec8b3f00] [c0000000007ac910] .kernel_init+0xb0/0x14c
+[c0000003ec8b3f90] [c00000000001859c] .kernel_thread+0x54/0x70
+Instruction dump:
+60000000 38210080 7fe3fb78 4bbee468 7c0802a6 4bbee3f9 f821ff71 7c7f1b78
+e80302c8 7c000074 7800d182 68000001 <0b000000> e86302e8 481f92a5 60000000
+---[ end trace 6a6e1c0c73955052 ]---
+------------[ cut here ]------------
+WARNING: at drivers/scsi/scsi_lib.c:1702
+Modules linked in:
+NIP: c000000000441db4 LR: c000000000441d9c CTR: c00000000044504c
+REGS: c0000003ec8b2ee0 TRAP: 0700   Tainted: G        W    (3.0.10)
+MSR: 9000000000029032 <EE,ME,CE,IR,DR>  CR: 48000024  XER: 200fffff
+TASK = c0000003ec8a8000[1] 'swapper' THREAD: c0000003ec8b0000 CPU: 1
+GPR00: 0000000000000001 c0000003ec8b3160 c00000000091c8c8 c0000003ea12f940
+GPR04: c0000000008d4668 0000000000000000 c0000003ea143740 c0000000007fba80
+GPR08: 0000000000000bf1 c0000000007fba88 0000000000548000 0000000000548000
+GPR12: 0000000048000028 c00000000ffff280 0000000000000000 0000000000180000
+GPR16: c0000003ec8b37a0 0000000000000090 c0000003ea198d88 0000000000000074
+GPR20: 0000000000000000 c0000003ea198000 0000000000000000 0000000000000004
+GPR24: c0000003ec8b3460 c0000003ea194400 0000000000000000 c0000003ea194428
+GPR28: c0000003ea161940 fffffffffffffffa c00000000087e5c0 c0000003ea12f940
+NIP [c000000000441db4] .scsi_free_queue+0x20/0x7c
+LR [c000000000441d9c] .scsi_free_queue+0x8/0x7c
+Call Trace:
+[c0000003ec8b3160] [c00000000087e5c0] 0xc00000000087e5c0 (unreliable)
+[c0000003ec8b31f0] [c0000000004427e8] .scsi_alloc_sdev+0x240/0x27c
+[c0000003ec8b3290] [c000000000442ba0] .scsi_probe_and_add_lun+0xf8/0x960
+[c0000003ec8b33e0] [c000000000443678] .__scsi_scan_target+0xd8/0x59c
+[c0000003ec8b3520] [c000000000443ba0] .scsi_scan_channel+0x64/0xac
+[c0000003ec8b35d0] [c000000000443f08] .scsi_scan_host_selected+0xd4/0x124
+[c0000003ec8b3680] [c0000000004443a4] .scsi_scan_host+0x1d0/0x21c
+[c0000003ec8b3720] [c000000000647058] .ipr_probe+0x13a8/0x1464
+[c0000003ec8b3850] [c0000000003b3ca4] .local_pci_probe+0x70/0xd4
+[c0000003ec8b38e0] [c0000000003b418c] .pci_device_probe+0xc8/0xf8
+[c0000003ec8b3990] [c0000000004290c8] .driver_probe_device+0xf0/0x1ac
+[c0000003ec8b3a30] [c00000000042920c] .__driver_attach+0x88/0xb8
+[c0000003ec8b3ac0] [c000000000428020] .bus_for_each_dev+0x70/0xa8
+[c0000003ec8b3b70] [c000000000428cd8] .driver_attach+0x24/0x30
+[c0000003ec8b3bf0] [c000000000428828] .bus_add_driver+0xc0/0x264
+[c0000003ec8b3c90] [c000000000429680] .driver_register+0xb8/0x150
+[c0000003ec8b3d30] [c0000000003b4428] .__pci_register_driver+0x4c/0xdc
+[c0000003ec8b3dd0] [c0000000007cef68] .ipr_init+0x44/0x50
+[c0000003ec8b3e50] [c00000000000a7e4] .do_one_initcall+0xc0/0x190
+[c0000003ec8b3f00] [c0000000007ac910] .kernel_init+0xb0/0x14c
+[c0000003ec8b3f90] [c00000000001859c] .kernel_thread+0x54/0x70
+Instruction dump:
+60000000 38210080 7fe3fb78 4bbee468 7c0802a6 4bbee3f9 f821ff71 7c7f1b78
+e80302c8 7c000074 7800d182 68000001 <0b000000> e86302e8 481f92a5 60000000
+---[ end trace 6a6e1c0c73955053 ]---
+------------[ cut here ]------------
+[...]
+
+
+regards,
+--nico
 -- 
-1.7.4.4
+acrux <acrux_it@libero.it>
