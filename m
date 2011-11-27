@@ -2,20 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 37A18B6F99
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 10:07:23 +1100 (EST)
-Message-ID: <1322435233.23348.19.camel@pasglop>
-Subject: Re: [RFC PATCH v2 4/4] cpuidle: (POWER) Handle power_save=off
+ by ozlabs.org (Postfix) with ESMTPS id 2D107B6F8E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 10:19:34 +1100 (EST)
+Message-ID: <1322435957.23348.23.camel@pasglop>
+Subject: Re: [PATCH] powerpc/40x: Add APM8018X SOC support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Mon, 28 Nov 2011 10:07:13 +1100
-In-Reply-To: <20111117112906.9191.54050.stgit@localhost6.localdomain6>
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
- <20111117112906.9191.54050.stgit@localhost6.localdomain6>
+To: Tanmay Inamdar <tinamdar@apm.com>
+Date: Mon, 28 Nov 2011 10:19:17 +1100
+In-Reply-To: <CACoXjcnfCM8Z5qFfrHtxsXkpf492LVbkDA3X=a9dRv9Lcv7Asw@mail.gmail.com>
+References: <1322041464-20605-1-git-send-email-tinamdar@apm.com>
+ <201111231415.51985.arnd@arndb.de>
+ <CACoXjcnfCM8Z5qFfrHtxsXkpf492LVbkDA3X=a9dRv9Lcv7Asw@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +26,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-11-17 at 16:59 +0530, Deepthi Dharwar wrote:
-> This patch makes pseries_idle_driver not to be registered when
-> power_save=off kernel boot option is specified. The
-> boot_option_idle_override variable used here is similar to
-> its usage on x86.
+On Fri, 2011-11-25 at 17:49 +0530, Tanmay Inamdar wrote:
 
-Quick Q. With your changes, the CPU will never get into idle at all
-until cpuidle initializes and the driver loads.
+>         
+>         >
+>         > +#if defined(CONFIG_APM8018X)
+>         > +/* CPR */
+>         > +#define DCRN_CPR0_CONFIG_ADDR        0xa
+>         > +#define DCRN_CPR1_CONFIG_DATA        0xb
+>         > +/* AHB */
+>         > +#define DCRN_SDR1_CONFIG_ADDR        0xc
+>         > +#define DCRN_SDR1_CONFIG_DATA        0xd
+>         > +#else
+>         >  /* CPRs (440GX and 440SP/440SPe) */
+>         >  #define DCRN_CPR0_CONFIG_ADDR        0xc
+>         >  #define DCRN_CPR0_CONFIG_DATA        0xd
+>         > +#endif /* CONFIG_APM8018X */
+>         
+>         
+>         same comment as above.
+>  
+> Some existing drivers use these macros. If I change the names, I will
+> have to update the
+> driver code.
 
-That means not only much later in the boot process, but potentially
-never if the distro has the driver as a module and fails to load it, or
-similar.
+Right, the best approach is to create a small wrapper that provides cpr
+and sdr accesses using helpers. That way you can:
 
-Can't that be an issue ? Shouldn't we keep at least one of the basic
-idle functions as a fallback ?
+ - Properly lock since it's all indirect
+
+ - Obtain the right DCRs at boot time, stick them in variables
+   and use them at runtime, avoiding the hard coded constants completely
+
+ - Make the code generally look much better
+
+Ie. Provide something like read_sdr1() and write_sdr1() accessors and
+change the drivers to use them.
+
+>         > diff --git a/arch/powerpc/kernel/cputable.c
+>         b/arch/powerpc/kernel/cputable.c
+>         > index edae5bb..e5c51a6 100644
+>         > --- a/arch/powerpc/kernel/cputable.c
+>         > +++ b/arch/powerpc/kernel/cputable.c
+>         > @@ -1505,6 +1505,58 @@ static struct cpu_spec __initdata
+>         cpu_specs[] = {
+>         >               .machine_check          = machine_check_4xx,
+>         >               .platform               = "ppc405",
+>         >       },
+>         > +     {       /* APM80186-SK */
+>         > +             .pvr_mask               = 0xffffffff,
+>         > +             .pvr_value              = 0x7ff11432,
+>         
+>         
+>         If you mask out the lower bits, you only need a single entry
+>         instead of
+>         four identical ones.
+> 
+> You are right. But each PVR represent different version of SOC. If I
+> create single entry, then I will have to give generic cpu_name which I
+> don't want.
+
+Note that you should really tell you designers to move away from using
+the PVR to identify the SoC's. This is BAD and isn't sustainable long
+run. Stick to representing the core itself in the PVR and provide a
+different mechanism to identify the SoC (different SPR would do, or even
+a DCR).
+
+>         > --- a/arch/powerpc/kernel/udbg_16550.c
+>         > +++ b/arch/powerpc/kernel/udbg_16550.c
+>         > @@ -18,6 +18,19 @@ extern void real_writeb(u8 data, volatile
+>         u8 __iomem *addr);
+>         >  extern u8 real_205_readb(volatile u8 __iomem  *addr);
+>         >  extern void real_205_writeb(u8 data, volatile u8 __iomem
+>         *addr);
+>         >
+>         > +#ifdef CONFIG_UART_16550_WORD_ADDRESSABLE
+>         > +struct NS16550 {
+>         > +     /* this struct must be packed */
+>         > +     unsigned char rbr;  /* 0 */ u8 s0[3];
+>         > +     unsigned char ier;  /* 1 */ u8 s1[3];
+>         > +     unsigned char fcr;  /* 2 */ u8 s2[3];
+>         > +     unsigned char lcr;  /* 3 */ u8 s3[3];
+>         > +     unsigned char mcr;  /* 4 */ u8 s4[3];
+>         > +     unsigned char lsr;  /* 5 */ u8 s5[3];
+>         > +     unsigned char msr;  /* 6 */ u8 s6[3];
+>         > +     unsigned char scr;  /* 7 */ u8 s7[3];
+>         > +};
+>         > +#else
+>         >  struct NS16550 {
+>         >       /* this struct must be packed */
+>         >       unsigned char rbr;  /* 0 */
+>         > @@ -29,6 +42,7 @@ struct NS16550 {
+>         >       unsigned char msr;  /* 6 */
+>         >       unsigned char scr;  /* 7 */
+>         >  };
+>         > +#endif /* CONFIG_UART_16550_WORD_ADDRESSABLE */
+>         >
+>         
+>         
+>         Same things as with the register definitions. Please make this
+>         run-time selectable to allow build-time configurations that
+>         support both layouts.
+> 
+> Yes. I will try to find better solution. 
 
 Cheers,
 Ben.
