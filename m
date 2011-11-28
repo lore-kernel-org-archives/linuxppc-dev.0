@@ -1,50 +1,33 @@
-Return-Path: <rkuo@codeaurora.org>
-Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
- [199.106.114.254])
+Return-Path: <johnstul@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "wolverine01.qualcomm.com",
- Issuer "VeriSign Class 3 Secure Server CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F16611007D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 07:22:46 +1100 (EST)
-Date: Mon, 28 Nov 2011 14:12:26 -0600
-From: Richard Kuo <rkuo@codeaurora.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH-RFC 01/10] lib: move GENERIC_IOMAP to lib/Kconfig
-Message-ID: <20111128201226.GA4296@codeaurora.org>
-References: <cover.1322163031.git.mst@redhat.com>
- <5aed7b7e1dbc8a50ebd6986245df8054fd05b7cd.1322163031.git.mst@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5aed7b7e1dbc8a50ebd6986245df8054fd05b7cd.1322163031.git.mst@redhat.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- linux-m68k@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux@openrisc.net, linux-pci@vger.kernel.org,
- Jesse Barnes <jbarnes@virtuousgeek.org>, Chen Liqin <liqin.chen@sunplusct.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Lennox Wu <lennox.wu@gmail.com>, Jonas Bonn <jonas@southpole.se>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Russell King <linux@arm.linux.org.uk>, linux-hexagon@vger.kernel.org,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-arch@vger.kernel.org,
- Arend van Spriel <arend@broadcom.com>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lasse Collin <lasse.collin@tukaani.org>,
- Arnd Bergmann <arnd@arndb.de>, Lucas De Marchi <lucas.demarchi@profusion.mobi>,
- microblaze-uclinux@itee.uq.edu.au, Paul Bolle <pebolle@tiscali.nl>,
- Rob Herring <rob.herring@calxeda.com>, Mikael Starvik <starvik@axis.com>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Franky Lin <frankyl@broadcom.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Fabio Baltieri <fabio.baltieri@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Michael Ellerman <michael@ellerman.id.au>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, Paul Gortmaker <paul.gortmaker@windriver.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
- linux-alpha@vger.kernel.org, Olof Johansson <olof@lixom.net>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ (Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 68B711007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 10:36:00 +1100 (EST)
+Received: from /spool/local
+ by e1.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <johnstul@us.ibm.com>;
+ Mon, 28 Nov 2011 18:35:57 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pASNUunH295396
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 18:30:56 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pASNUtOx019621
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 18:30:56 -0500
+Message-ID: <1322523053.24090.6.camel@work-vm>
+Subject: Re: [PATCH 3/6] powerpc/time: Use clocksource_register_hz
+From: john stultz <johnstul@us.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Date: Mon, 28 Nov 2011 15:30:53 -0800
+In-Reply-To: <20111124060847.282144743@samba.org>
+References: <20111124060716.362614789@samba.org>
+ <20111124060847.282144743@samba.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,18 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 24, 2011 at 10:15:42PM +0200, Michael S. Tsirkin wrote:
-> define GENERIC_IOMAP in a central location
-> instead of all architectures. This will be helpful
-> for the follow-up patch which makes it select
-> other configs. Code is also a bit shorter this way.
+On Thu, 2011-11-24 at 17:07 +1100, Anton Blanchard wrote:
+> plain text document attachment (clock3)
+> Use clocksource_register_hz which calculates the shift/mult
+> factors for us. Also remove the shift = 22 assumption in
+> vsyscall_update - thanks to Paul Mackerras and John Stultz for
+> catching that.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: linux-build/arch/powerpc/kernel/time.c
+> ===================================================================
+> --- linux-build.orig/arch/powerpc/kernel/time.c	2011-11-17 10:11:51.175038860 +1100
+> +++ linux-build/arch/powerpc/kernel/time.c	2011-11-17 10:11:55.547114957 +1100
+> @@ -86,8 +86,6 @@ static struct clocksource clocksource_rt
+>  	.rating       = 400,
+>  	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
+>  	.mask         = CLOCKSOURCE_MASK(64),
+> -	.shift        = 22,
+> -	.mult         = 0,	/* To be filled in */
+>  	.read         = rtc_read,
+>  };
+> 
+> @@ -97,8 +95,6 @@ static struct clocksource clocksource_ti
+>  	.rating       = 400,
+>  	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
+>  	.mask         = CLOCKSOURCE_MASK(64),
+> -	.shift        = 22,
+> -	.mult         = 0,	/* To be filled in */
+>  	.read         = timebase_read,
+>  };
+> 
+> @@ -822,9 +818,8 @@ void update_vsyscall(struct timespec *wa
+>  	++vdso_data->tb_update_count;
+>  	smp_mb();
+> 
+> -	/* XXX this assumes clock->shift == 22 */
+> -	/* 4611686018 ~= 2^(20+64-22) / 1e9 */
+> -	new_tb_to_xs = (u64) mult * 4611686018ULL;
+> +	/* 19342813113834067 ~= 2^(20+64) / 1e9 */
+> +	new_tb_to_xs = (u64) mult * (19342813113834067ULL >> clock->shift);
 
-For the Hexagon config,
+I never verified the math on this, but assuming Paul had it right, this
+patch looks good!
 
-Acked-by: Richard Kuo <rkuo@codeaurora.org>
+Acked-by: John Stultz <johnstul@us.ibm.com>
 
-
--- 
-
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+Thanks again!
+-john
