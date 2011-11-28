@@ -1,24 +1,31 @@
-Return-Path: <beckyb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A2DAFB6F7D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 03:54:08 +1100 (EST)
-Subject: Re: [PATCH 03/13] powerpc: Fix booke hugetlb preload code for
- PPC_MM_SLICES and 64-bit
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Becky Bruce <beckyb@kernel.crashing.org>
-In-Reply-To: <1322181832.32635.14.camel@pasglop>
-Date: Mon, 28 Nov 2011 10:54:02 -0600
-Message-Id: <776AE99B-15F2-4F2E-8842-9FB65204E14B@kernel.crashing.org>
-References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
- <13182798624083-git-send-email-beckyb@kernel.crashing.org>
- <13182798643553-git-send-email-beckyb@kernel.crashing.org>
- <13182798681100-git-send-email-beckyb@kernel.crashing.org>
- <1322181832.32635.14.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 01887B6F8A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 04:20:42 +1100 (EST)
+Message-ID: <4ED3C2E2.9040601@freescale.com>
+Date: Mon, 28 Nov 2011 11:20:34 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
+ large-page Nand chip
+References: <1322095306-13156-1-git-send-email-b35362@freescale.com>
+ <1322095306-13156-3-git-send-email-b35362@freescale.com>
+ <3F607A5180246847A760FD34122A1E052DC4CD@039-SN1MPN1-003.039d.mgd.msft.net>
+In-Reply-To: <3F607A5180246847A760FD34122A1E052DC4CD@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "Artem.Bityutskiy@nokia.com" <Artem.Bityutskiy@nokia.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Liu Shuo-B35362 <B35362@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "dwmw2@infradead.org" <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 11/24/2011 01:37 AM, Li Yang-R58472 wrote:
+>> +static void io_to_buffer(struct mtd_info *mtd, int subpage, int oob)
+>> +{
+>> +	struct nand_chip *chip = mtd->priv;
+>> +	struct fsl_elbc_mtd *priv = chip->priv;
+>> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
+>> +	void *src, *dst;
+>> +	int len = (oob ? 64 : 2048);
+>> +
+>> +	if (oob)
+>> +		dst = elbc_fcm_ctrl->buffer + mtd->writesize + subpage * 64;
+>> +	else
+>> +		dst = elbc_fcm_ctrl->buffer + subpage * 2048;
+>> +
+>> +	src = elbc_fcm_ctrl->addr + (oob ? 2048 : 0);
+>> +	memcpy_fromio(dst, src, len);
+> 
+> Might be safer to use _memcpy_fromio()
 
-On Nov 24, 2011, at 6:43 PM, Benjamin Herrenschmidt wrote:
+How so?
 
-> On Mon, 2011-10-10 at 15:50 -0500, Becky Bruce wrote:
->=20
-> .../...
->=20
->> #ifdef CONFIG_PPC_MM_SLICES
->> -	psize =3D mmu_get_tsize(get_slice_psize(mm, ea));
->> -	tsize =3D mmu_get_psize(psize);
->> +	psize =3D get_slice_psize(mm, ea);
->> +	tsize =3D mmu_get_tsize(psize);
->> 	shift =3D mmu_psize_defs[psize].shift;
->> #else
->> -	vma =3D find_vma(mm, ea);
->> -	psize =3D vma_mmu_pagesize(vma);	/* returns actual size =
-in bytes */
->> -	asm (PPC_CNTLZL "%0,%1" : "=3Dr" (lz) : "r" (psize));
->> -	shift =3D 31 - lz;
->> -	tsize =3D 21 - lz;
->> +	psize =3D vma_mmu_pagesize(find_vma(mm, ea));
->> +	shift =3D __ilog2(psize);
->> +	tsize =3D shift - 10;
->> #endif
->=20
-> Now, I know it was already there and you are just moving it around in
-> this patch but come on ... find_vma() here ? Really ? And with no =
-result
-> checking nor boundary checking (remember it can return a vma that
-> doesn't enclose the address etc....). Now I know in this specific case
-> it -should- be safe but still...
->=20
-> Now, the caller is just doing:
->=20
-> 	book3e_hugetlb_preload(vma->vm_mm, address, *ptep);
->=20
-> So why not just change the prototype and pass the vma down instead ?
+memcpy_fromio() is the public interface that will end up calling
+_memcpy_fromio() on powerpc.
 
-There's no reason - I just left the prototype the way it was in the =
-original code, but it makes sense to change it given the changes to the =
-function.  Respin coming.....
-
--B
+-Scott
