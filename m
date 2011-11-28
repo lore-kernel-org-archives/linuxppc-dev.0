@@ -1,30 +1,23 @@
-Return-Path: <miche@google.com>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
- [209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 3B7121007D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 10:40:44 +1100 (EST)
-Received: by qadb10 with SMTP id b10so1230942qad.17
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 15:40:41 -0800 (PST)
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+ [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id E8A69B6F82
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 10:42:31 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 2/6] powerpc/85xx: consolidate of_platform_bus_probe calls
+Date: Mon, 28 Nov 2011 23:42:24 +0000
+Message-ID: <CAOZdJXXZG38v-tgA2Ty7-uxJ3AxoFCmNxMO3dKJnJYQtJFb9DA@mail.gmail.com>
+References: <1321552581-29773-1-git-send-email-dbaryshkov@gmail.com>
+ <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-In-Reply-To: <20111123103852.GG16665@amit-x200.redhat.com>
-References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
- <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
- <874nybqo0o.fsf@rustcorp.com.au>
- <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
- <20111123103852.GG16665@amit-x200.redhat.com>
-Date: Mon, 28 Nov 2011 15:40:41 -0800
-Message-ID: <CAB8RdaoDxMCgTjuGP70bGrsrtgh=USYtU3Spo5OPtVMYAM5EzQ@mail.gmail.com>
-Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
-From: Miche Baker-Harvey <miche@google.com>
-To: Amit Shah <amit.shah@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
- Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Greg Kroah-Hartman <gregkh@suse.de>, Eric Northrup <digitaleric@google.com>
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,120 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Amit,
+On Thu, Nov 17, 2011 at 11:56 AM, Dmitry Eremin-Solenikov
+<dbaryshkov@gmail.com> wrote:
 
-You said that the work would be serialized "due to port additions
-being on work items on the same workqueue".  I'm not seeing that.
-I've double checked this by using a mutex_trylock in
-hvc_console::hvc_alloc(), and here's the relevant output from dmesg:
+> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platfo=
+rms/85xx/p1022_ds.c
+> index 00d93a4..cacb4d4 100644
+> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
+> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+> @@ -330,10 +330,6 @@ static void __init p1022_ds_setup_arch(void)
+> =A0}
+>
+> =A0static struct of_device_id __initdata p1022_ds_ids[] =3D {
+> - =A0 =A0 =A0 { .type =3D "soc", },
+> - =A0 =A0 =A0 { .compatible =3D "soc", },
+> - =A0 =A0 =A0 { .compatible =3D "simple-bus", },
+> - =A0 =A0 =A0 { .compatible =3D "gianfar", },
+> =A0 =A0 =A0 =A0/* So that the DMA channel nodes can be probed individuall=
+y: */
+> =A0 =A0 =A0 =A0{ .compatible =3D "fsl,eloplus-dma", },
+> =A0 =A0 =A0 =A0{},
+> @@ -343,6 +339,7 @@ static int __init p1022_ds_publish_devices(void)
+> =A0{
+> =A0 =A0 =A0 =A0return of_platform_bus_probe(NULL, p1022_ds_ids, NULL);
+> =A0}
+> +machine_device_initcall(p1022_ds, mpc85xx_common_publish_devices);
+> =A0machine_device_initcall(p1022_ds, p1022_ds_publish_devices);
 
-root@myubuntu:~# dmesg | grep MBH
-[3307216.210274] MBH: got hvc_ports_mutex
-[3307216.210690] MBH: trylock of hvc_ports_mutex failed
-[3307216.211143] MBH: got hvc_ports_mutex
+I don't think this is working. =A0I need to investigate some more to be
+sure, but it looks like this is not picking up "fsl,eloplus-dma".
+None of the DMA channels are being probed in the audio driver
+(sound/soc/fsl_dma.c).
 
-This is in a system with two virtio console ports, each of which is a
-console.  I think if the VIRTIO_CONSOLE_CONSOLE_PORT message handling
-were actually being serialized, the trylock should never fail.
-
-What's the source of the serialization for the workqueue items?  At
-first reading it looks like the control_work_handler gets called for
-each virtio interrupt?
-
-Miche
-
-
-On Wed, Nov 23, 2011 at 2:38 AM, Amit Shah <amit.shah@redhat.com> wrote:
-> On (Thu) 17 Nov 2011 [10:57:37], Miche Baker-Harvey wrote:
->> Rusty, Michael, Stephen, et al,
->>
->> Thanks for your comments on these patches.
->>
->> For what I'm trying to do, all three patches are necessary, but maybe
->> I'm going about it the wrong way. Your input would be appreciated.
->> I'm in no way claiming that these patches are "right", just that it's
->> working for me, and that what's in the current pool is not.
->>
->> What I'm trying to do is:
->> On X86,
->> under KVM,
->> start a virtio console device,
->> with multiple ports on the device,
->> at least one of which is also a console (as well as ttyS0).
->>
->> (Eventually, we want to be able to add virtio console ports on the
->> fly, and to have multiple virtio console ports be consoles.)
->
-> Are you using kvm-tool to do this? =A0QEMU can already hot-plug ports
-> and virtio-console (virtio-serial) devices.
->
->> When all three of the patches are in place, this works great. (By
->> great, I mean that getty's start up on all of ttyS0, hvc0 and hvc1,
->> and console output goes to ttyS0 and to hvc0.
->> "who" shows three users: =A0ttyS0, hvc0, and hvc1.
->> "cat /proc/consoles" shows both ttyS0 and hvc0.
->> I can use all three getty's, and console output really does appear on
->> both the consoles.
->>
->> Based on Rusty's comments, I tried removing each of the patches
->> individually. Here's what happens today. I've seen other failure modes
->> depending on what precisely I'm passing the guest.
->> There's three patches:
->> 1/3 "fix locking of vtermno"
->> 2/3 "enforce one-time initialization with hvc_init
->> "3/3 "use separate struct console * for each console"
->>
->> If I remove the "fix locking of vtermno", I only get one virtio
->> console terminal. =A0"who" shows the ttyS0 and the hvc0, and I can log
->> into the gettys on both. I don't get the second virtio console getty.
->> Interestingly, hvc0 shows up in /proc/consoles twice, and in fact the
->> console output is dumped twice to hvc0 (as you'd expect from looking
->> at printk.c, each line appears twice, followed by the next line.)
->
-> I don't really understand why. =A0"fix locking of vtermno" adds locks in
-> init_port_console(), which is called from add_port(), which should be
-> serialised due to port additions being on work items on the same
-> workqueue. =A0I don't see a race here.
->
->> If I remove the "enforce one-time initialization with hvc_init" patch,
->> which makes sure only a single thread is doing the hvc_init, and gates
->> anyone from continuing until it has completed, I get different
->> failures, including hangs, and dereferences of NULL pointers.
->>
->> If I remove the "use separate struct console * for each console"patch,
->> what I'm seeing now is that while all of ttyS0, hvc0, and hvc1 are
->> present with gettys running on them, of the three, only ttyS0 is a
->> console.
->
-> I don't see any difference in my testing with and without these
-> patches.
->
-> This is how I tested with qemu:
->
-> ./x86_64-softmmu/qemu-system-x86_64 -m 512 -smp 2 -chardev
-> socket,path=3D/tmp/foo,server,nowait,id=3Dfoo -chardev
-> socket,path=3D/tmp/bar,server,nowait,id=3Dbar -device virtio-serial
-> -device virtconsole,chardev=3Dfoo,nr=3D4 -device
-> virtconsole,chardev=3Dbar,nr=3D3 -net none =A0-kernel
-> /home/amit/src/linux/arch/x86/boot/bzImage -append 'root=3D/dev/sda1
-> console=3Dtty0 console=3DttyS0' -initrd /tmp/initramfs.img
-> /guests/f14-nolvm.qcow2 -enable-kvm -snapshot
->
-> With this setup, with and without patches, I can spawn two consoles
-> via:
->
-> /sbin/agetty /dev/hvc0 9600 vt100
-> /sbin/agetty /dev/hvc1 9600 vt100
->
-> (Strange thing is, the second one gives a 'password incorrect' error
-> on login attempts, while the first one logs in fine. =A0I do remember
-> testing multiple consoles just fine a year and a half back, so no idea
-> why this isn't behaving as expected -- but it mostly looks like a
-> userspace issue rather than kernel one.)
->
-> As mentioned earlier, I've not looked at the hvc code, but given my
-> testing results, I'd like to first understand what you're seeing and
-> what your environment is.
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Amit
->
+--
+Timur Tabi
+Linux kernel developer at Freescale=
