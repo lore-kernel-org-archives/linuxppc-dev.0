@@ -1,18 +1,21 @@
-Return-Path: <acrux_it@libero.it>
-Received: from outrelay06.libero.it (outrelay06.libero.it [212.52.84.110])
- by ozlabs.org (Postfix) with ESMTP id 0EBB41007D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 06:57:00 +1100 (EST)
-Date: Mon, 28 Nov 2011 20:56:55 +0100
-From: acrux <acrux_it@libero.it>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: sam460ex, sm501 incorrect device id with kernel >=linux-2.6.39
-Message-Id: <20111128205655.fc4d3249.acrux_it@libero.it>
-In-Reply-To: <CA+5PVA592G1RVdj_C+NMFQ8nHx=0-eaF9Hn3NZ8VabpCTQGi1Q@mail.gmail.com>
-References: <20111127173748.9f235741.acrux_it@libero.it>
- <CA+5PVA592G1RVdj_C+NMFQ8nHx=0-eaF9Hn3NZ8VabpCTQGi1Q@mail.gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5A1C01007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 07:02:08 +1100 (EST)
+Message-ID: <1322510511.23348.40.camel@pasglop>
+Subject: Re: [PATCH 1/6] powerpc/time: Handle wrapping of decrementer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Tue, 29 Nov 2011 07:01:51 +1100
+In-Reply-To: <4ED3C875.5050002@freescale.com>
+References: <20111124060716.362614789@samba.org>
+ <20111124060847.105131188@samba.org> <4ED3C875.5050002@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: johnstul@us.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,53 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 28 Nov 2011 07:12:38 -0500
-Josh Boyer <jwboyer@gmail.com> wrote:
-
-> On Sun, Nov 27, 2011 at 11:37 AM, acrux <acrux_it@libero.it> wrote:
-> >
-> > Acube Sam460ex has SM502 as onboard video.
-> > I got this with any kernel newer than 2.6.38.x thus the framebuffer
-> > is lost too:
-> >
-> > root@sam4x0:~# diff dmesg-2.6.38.8 dmesg-2.6.39.4
-> > 1,2c1,3
-> > < Using PowerPC 44x Platform machine description
-> > < Linux version 2.6.38.8-Sam460ex (root@sam4x0) (gcc version 4.5.3
-> > (CRUX PPC) ) #1 Fri Nov 11 22:07:53 CET 2011
-> > ---
-> >> Using Canyonlands machine description
-> >> Initializing cgroup subsys cpu
+On Mon, 2011-11-28 at 11:44 -0600, Scott Wood wrote:
+> > -#ifndef CONFIG_BOOKE
+> > -     /* On server, re-trigger the decrementer if it went negative since
+> > -      * some processors only trigger on edge transitions of the sign bit.
+> > -      *
+> > -      * BookE has a level sensitive decrementer (latches in TSR) so we
+> > -      * don't need that
+> > +     /*
+> > +      * Trigger the decrementer if we have a pending event. Some processors
+> > +      * only trigger on edge transitions of the sign bit. We might also
+> > +      * have disabled interrupts long enough that the decrementer wrapped
+> > +      * to positive.
+> >        */
+> > -     if ((int)mfspr(SPRN_DEC) < 0)
+> > -             mtspr(SPRN_DEC, 1);
+> > -#endif /* CONFIG_BOOKE */
+> > +     decrementer_check_overflow();
 > 
-> You seem to have switched from using the generic PowerPC 44x platform,
-> to using a Canyonlands kernel and/or DTB.  Not sure why that is, but
-> it's probably not helping your issues at all.
-> 
+> Where did the #ifndef CONFIG_BOOKE go?  BookE doesn't need this; the
+> interrupt will continue asserting until software clears TSR[DIS].
 
-i think it was only a cosmetic change as it was always used
-Canyonlands platform and his own proper dtb.
+Ooops, I didnt notice Anton was removing it. Please send me a followup
+patch to make decrementer_check_overflow() an empty inline on BookE.
 
-
-> >> Linux version 2.6.39.4-Sam460ex (root@sam4x0) (gcc version 4.5.3
-> >> (CRUX PPC) ) #1 Fri Nov 11 19:06:02 CET 2011
-> > 17c18
-> > [cut]
-> > 161,179c165,167
-> > < sm501 0001:00:06.0: SM501 At f5480000: Version 050100c0, 64 Mb,
-> > IRQ 19
-> 
-> > ---
-> >> sm501 0001:00:06.0: incorrect device id c0000105
-> 
-> Something is reading the device ID in the wrong endian (and probably
-> everything else).
-> 
-
-it seems to be an endianess issue but i didn't find when it was
-introduced.  Really strange this kind of issue was never noticed
-bumping from 2.6.38.x to 2.6.39.x .
-
---nico
--- 
-GNU/Linux on Power Architecture
-CRUX PPC - http://cruxppc.org/
+Cheers,
+Ben.
