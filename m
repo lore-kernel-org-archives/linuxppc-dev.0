@@ -1,40 +1,35 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id D0322B6F18
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 17:21:39 +1100 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id BF6AFB6F84
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 22:02:42 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 28 Nov 2011 06:09:18 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAS6I5Bo2973736
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 17:18:05 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAS6LTgO002085
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 17:21:31 +1100
-Message-ID: <4ED3285D.4060100@linux.vnet.ibm.com>
-Date: Mon, 28 Nov 2011 11:51:17 +0530
-From: "Mahesh J. Salgaonkar" <mahesh@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Mon, 28 Nov 2011 11:00:25 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pASAx1OA3338306
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 21:59:01 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pASB2ORr026347
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 22:02:25 +1100
+Message-ID: <4ED36A37.3030409@linux.vnet.ibm.com>
+Date: Mon, 28 Nov 2011 16:32:15 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC PATCH v5 2/9] fadump: Reserve the memory for firmware
- assisted dump.
-References: <20111115151145.16533.16384.stgit@mars.in.ibm.com>
- <20111115151343.16533.70101.stgit@mars.in.ibm.com>
- <20111124230213.GC19828@bloggs.ozlabs.ibm.com>
-In-Reply-To: <20111124230213.GC19828@bloggs.ozlabs.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2 1/4] cpuidle: (powerpc) Add cpu_idle_wait() to
+ allow switching of idle routines
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>	<20111117112830.9191.1951.stgit@localhost6.localdomain6>
+ <1322434096.23348.6.camel@pasglop>
+In-Reply-To: <1322434096.23348.6.camel@pasglop>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Anton Blanchard <anton@samba.org>, Amerigo Wang <amwang@redhat.com>,
- Kexec-ml <kexec@lists.infradead.org>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
- "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
-Reply-To: mahesh.j.salgaonkar@gmail.com
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,94 +39,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/2011 04:32 AM, Paul Mackerras wrote:
-> On Tue, Nov 15, 2011 at 08:43:43PM +0530, Mahesh J Salgaonkar wrote:
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Hi Ben,
+
+Thanks a lot for the review.
+
+On 11/28/2011 04:18 AM, Benjamin Herrenschmidt wrote:
+
+> On Thu, 2011-11-17 at 16:58 +0530, Deepthi Dharwar wrote:
+>> This patch provides cpu_idle_wait() routine for the powerpc
+>> platform which is required by the cpuidle subsystem. This
+>> routine is requied to change the idle handler on SMP systems.
+>> The equivalent routine for x86 is in arch/x86/kernel/process.c
+>> but the powerpc implementation is different.
 >>
->> Reserve the memory during early boot to preserve CPU state data, HPTE region
->> and RMR region data in case of kernel crash. At the time of crash, powerpc
->> firmware will store CPU state data, HPTE region data and move RMR region
->> data to the reserved memory area.
+>> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+>> Signed-off-by: Trinabh Gupta <g.trinabh@gmail.com>
+>> Signed-off-by: Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
+>> ---
 > 
-> What is "RMR"?  I don't see anywhere that you explain this acronym.
-> Is it the same as the RMA (real mode area)?
-> 
+> No, that patch also adds this idle boot override thing (can you pick a
+> shorter name for boot_option_idle_override btw ?) which seems unrelated
+> and without any explanation as to what it's supposed to be about.
 
-Yes, it is the same as the RMA. I think I will replace all RMR/RMO with RMA.
 
->> +config FA_DUMP
->> +	bool "Firmware-assisted dump"
+ Yes, we can pick a better and shorter name for this variable.
+ This variable is used to determine if cpuidle framework
+ needs to be enabled and pseries_driver to be loaded or not.
+ We disable cpuidle framework only when powersave_off option is set or
+ not enabled by the user.
+
 > 
-> Is this new fadump infrastructure intended to supersede the existing
-> phyp dump code?  Does it use the same phyp interfaces as phyp dump?
-> If so, you should probably remove the phyp dump code and config option
-> as the final patch in your series.
+> Additionally, I'm a bit worried (but maybe we already discussed that a
+> while back, I don't know) but cpu_idle_wait() has "wait" in the name,
+> which makes me think it might need to actually -wait- for all cpus to
+> have come out of the function.
+
+
+cpu_idle_wait is used to ensure that all the CPUs discard old idle
+handler and update to new one.  Required while changing idle
+handler on SMP systems.
+
+> Now your implementation doesn't provide that guarantee. It might be
+> fine, I don't know, but if it is, you'd better document it well in the
+> comments surrounding the code, because as it is, all you do is shoot an
+> interrupt which will cause the target CPU to eventually come out of idle
+> some time in the future.
+
+
+I was hoping that sending an explicit reschedule to the cpus would
+do the trick but sure we can add some documentation around the code.
+
 > 
+> Cheers,
+> Ben.
+> 
+>>  arch/powerpc/Kconfig                 |    4 ++++
+>>  arch/powerpc/include/asm/processor.h |    2 ++
+>>  arch/powerpc/include/asm/system.h    |    1 +
+>>  arch/powerpc/kernel/idle.c           |   26 ++++++++++++++++++++++++++
+>>  4 files changed, 33 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index b177caa..87f8604 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -87,6 +87,10 @@ config ARCH_HAS_ILOG2_U64
+>>  	bool
+>>  	default y if 64BIT
+>>  
+>> +config ARCH_HAS_CPU_IDLE_WAIT
+>> +	bool
+>> +	default y
+>> +
+>>  config GENERIC_HWEIGHT
+>>  	bool
+>>  	default y
+>> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+>> index eb11a44..811b7e7 100644
+>> --- a/arch/powerpc/include/asm/processor.h
+>> +++ b/arch/powerpc/include/asm/processor.h
+>> @@ -382,6 +382,8 @@ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
+>>  }
+>>  #endif
+>>  
+>> +enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
+>> +
+>>  #endif /* __KERNEL__ */
+>>  #endif /* __ASSEMBLY__ */
+>>  #endif /* _ASM_POWERPC_PROCESSOR_H */
+>> diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
+>> index e30a13d..ff66680 100644
+>> --- a/arch/powerpc/include/asm/system.h
+>> +++ b/arch/powerpc/include/asm/system.h
+>> @@ -221,6 +221,7 @@ extern unsigned long klimit;
+>>  extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+>>  
+>>  extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+>> +void cpu_idle_wait(void);
+>>  
+>>  /*
+>>   * Atomic exchange
+>> diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+>> index 39a2baa..b478c72 100644
+>> --- a/arch/powerpc/kernel/idle.c
+>> +++ b/arch/powerpc/kernel/idle.c
+>> @@ -39,9 +39,13 @@
+>>  #define cpu_should_die()	0
+>>  #endif
+>>  
+>> +unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
+>> +EXPORT_SYMBOL(boot_option_idle_override);
+>> +
+>>  static int __init powersave_off(char *arg)
+>>  {
+>>  	ppc_md.power_save = NULL;
+>> +	boot_option_idle_override = IDLE_POWERSAVE_OFF;
+>>  	return 0;
+>>  }
+>>  __setup("powersave=off", powersave_off);
+>> @@ -102,6 +106,28 @@ void cpu_idle(void)
+>>  	}
+>>  }
+>>  
+>> +
 >> +/*
->> + * The RMR region will be saved for later dumping when kernel crashes.
->> + * Set this to RMO size.
+>> + * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
+>> + * idle loop and start using the new idle loop.
+>> + * Required while changing idle handler on SMP systems.
+>> + * Caller must have changed idle handler to the new value before the call.
 >> + */
->> +#define RMR_START	0x0
->> +#define RMR_END		(ppc64_rma_size)
-> 
-> An explanation of "RMR" here, and what the distinction (if any)
-> between RMR and RMA/RMO is, would help future readers.
-> 
-
-Will change this to RMA_START and RMA_END
-
->> +	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
->> +					&size);
->> +
->> +	if (!sections)
->> +		return 0;
->> +
->> +	num_sections = size / sizeof(struct dump_section);
->> +
->> +	for (i = 0; i < num_sections; i++) {
->> +		switch (sections[i].dump_section) {
->> +		case FADUMP_CPU_STATE_DATA:
->> +			fw_dump.cpu_state_data_size = sections[i].section_size;
->> +			break;
->> +		case FADUMP_HPTE_REGION:
->> +			fw_dump.hpte_region_size = sections[i].section_size;
->> +			break;
-> 
-> It's generally better to use of_read_number() or of_read_ulong() to
-> parse OF properties, rather than using a structure like this.
-> 
->> +	/* divide by 20 to get 5% of value */
->> +	size = memblock_end_of_DRAM();
->> +	do_div(size, 20);
-> 
-> You could just say size = memblock_end_of_DRAM() / 20 here; no need to
-> use do_div, since we won't be using this code on 32-bit platforms.
-> 
->> +	if (!fw_dump.fadump_supported) {
->> +		printk(KERN_ERR "Firmware-assisted dump is not supported on"
->> +				" this hardware\n");
-> 
-> This shouldn't be KERN_ERR; it's not an error to boot a kernel with
-> fadump configured in on a machine that doesn't have firmware fadump
-> support.  I don't think we really need any message, but if we have one
-> it should be KERN_INFO at most.
-> 
->> +/* Look for fadump= cmdline option. */
->> +static int __init early_fadump_param(char *p)
+>> +void cpu_idle_wait(void)
 >> +{
->> +	if (!p)
->> +		return 1;
+>> +	int cpu;
+>> +	smp_mb();
 >> +
->> +	if (p[0] == '1')
->> +		fw_dump.fadump_enabled = 1;
->> +	else if (p[0] == '0')
->> +		fw_dump.fadump_enabled = 0;
+>> +	/* kick all the CPUs so that they exit out of old idle routine */
+>> +	get_online_cpus();
+>> +	for_each_online_cpu(cpu) {
+>> +		if (cpu != smp_processor_id())
+>> +			smp_send_reschedule(cpu);
+>> +	}
+>> +	put_online_cpus();
+>> +}
+>> +EXPORT_SYMBOL_GPL(cpu_idle_wait);
+>> +
+>>  int powersave_nap;
+>>  
+>>  #ifdef CONFIG_SYSCTL
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
-> I think it's usual to allow "on" and "off" as values for this kind of
-> option.  There might be a handy little helper function to parse this
-> sort of thing (but if there is I don't know what it is called).
+> 
 
-Will rework on your suggestions. Thanks for the review.
 
-Thanks,
--Mahesh.
+Regards,
+Deepthi
