@@ -1,25 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE002.bigfish.com (va3ehsobe002.messaging.microsoft.com
- [216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id AA6961007DF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 07:32:38 +1100 (EST)
-Message-ID: <4ED3EFD9.9010200@freescale.com>
-Date: Mon, 28 Nov 2011 14:32:25 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 135001007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 07:40:20 +1100 (EST)
+Message-ID: <1322512810.23348.46.camel@pasglop>
 Subject: Re: [PATCH] powerpc: Decode correct MSR bits in oops output
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Tue, 29 Nov 2011 07:40:10 +1100
+In-Reply-To: <F744714B-0527-415C-92BE-A5CB678F1C29@kernel.crashing.org>
 References: <20111125163557.5a464006@kryten>
  <F744714B-0527-415C-92BE-A5CB678F1C29@kernel.crashing.org>
- <CA+5PVA4kkeuWqdKWAJOJSUue=XsEC=27T2zptb-1P_H+HwNymg@mail.gmail.com>
- <4ED3E168.5000002@freescale.com>
- <CA+5PVA4gxb-oHwFhZ_GrTjhD2URvjS3R7Sk-xZcCwKg77Meo_g@mail.gmail.com>
- <4ED3E951.8000005@freescale.com>
- <CA+5PVA75TKyScsPfHXXPaHC3mobPRJ0_w48HGRJ1j_-7ktP3iA@mail.gmail.com>
-In-Reply-To: <CA+5PVA75TKyScsPfHXXPaHC3mobPRJ0_w48HGRJ1j_-7ktP3iA@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
  Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,38 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/28/2011 02:12 PM, Josh Boyer wrote:
-> On Mon, Nov 28, 2011 at 3:04 PM, Scott Wood <scottwood@freescale.com> wrote:
->> On 11/28/2011 01:46 PM, Josh Boyer wrote:
->>> Could introduce BOOK3E_32 to cover cases like this.
->>
->> Why _32?  These bits apply to 64-bit as well.  MSR_CM is only for 64-bit.
+On Mon, 2011-11-28 at 10:04 -0600, Kumar Gala wrote:
+
+> > +#ifndef CONFIG_BOOKE
+> > +	{MSR_RI,	"RI"},
 > 
-> Because CONFIG_BOOK3E depeonds on PPC_BOOK3E_64.  So either that
-> dependency needs to go so it's selectable elsewhere, or a similarly
-> intended PPC_BOOK3E_32 needs to get created.  Or something.
-
-I think that dependency should go, in any case.  We already have
-PPC_BOOK3E_64 for places that need to depend on that, and we don't want
-to end up having this all over the place:
-
-#if defined(CONFIG_PPC_BOOK3E_32) || defined(CONFIG_PPC_BOOK3E_64)
-
->> UCLE and PMM are present on pre-2.06 e500 cores as well.
+> We have 'RI' on some BOOKE so lets allow for it to be decoded
 > 
-> Sigh.  Maybe there is no way to get un-ugly.
+> > +	{MSR_LE,	"LE"},
+> > +#endif
+> > 	{0,		NULL}
+> > };
+> 
+> Since you're fixing this can you add the following for CONFIG_BOOKE:
+> 
+> MSR_GS, MSR_UCLE, MSR_PMM, MSR_CM
 
-If we drop the 64-bit dependency, we could do this for UCLE if it really
-needs to be omitted from a 4xx kernel:
+Please send a followup patch.
 
-#if defined(CONFIG_PPC_BOOK3E) || defined(CONFIG_E500)
-
-PMM is not just a BookE thing, so if 4xx really needs to exclude it,
-#ifndef CONFIG_4xx is the way to go.
-
-I wouldn't bother unless 4xx is known to set these bits, though.
-
-For GS and CM CONFIG_PPC_BOOK3E is OK, once 32-bit e500mc/e5500 kernels
-start selecting it.
-
--Scott
+Cheers,
+Ben.
