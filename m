@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6812AB6F75
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2011 07:41:42 +1100 (EST)
-Message-ID: <1322512771.23348.45.camel@pasglop>
-Subject: Re: [RFC PATCH v2 4/4] cpuidle: (POWER) Handle power_save=off
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Tue, 29 Nov 2011 07:39:31 +1100
-In-Reply-To: <4ED36A7D.9070308@linux.vnet.ibm.com>
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
- <20111117112906.9191.54050.stgit@localhost6.localdomain6>
- <1322435233.23348.19.camel@pasglop> <4ED36A7D.9070308@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-Path: <kyle@moffetthome.net>
+Received: from mail-pz0-f47.google.com (mail-pz0-f47.google.com
+ [209.85.210.47]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id D251BB6F75
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 07:48:28 +1100 (EST)
+Received: by pzk1 with SMTP id 1so7535683pzk.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 12:48:25 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1322437884.23348.30.camel@pasglop>
+References: <1322437884.23348.30.camel@pasglop>
+From: Kyle Moffett <kyle@moffetthome.net>
+Date: Mon, 28 Nov 2011 15:48:04 -0500
+Message-ID: <CAGZ=bqJZdN-gpeBW+EdE7Dd=qsNzhwbFr8hBCRqMM72VkT8W7g@mail.gmail.com>
+Subject: Re: MPIC cleanup series
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-11-28 at 16:33 +0530, Deepthi Dharwar wrote:
+On Sun, Nov 27, 2011 at 18:51, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Overall I really look your series. It doesn't quite apply cleanly
+> anymore so I'll as you for a new shoot after you address the comments
+> below, at which point, if you're fast enough, I'll stick it in -next :-)
 
-> On an LPAR if cpuidle is disabled, ppc_md.power_save is still set to
-> cpuidle_idle_call by default here. This would result in calling of
-> cpuidle_idle_call repeatedly, only for the call to return -ENODEV. The
-> default idle is never executed.
-> This would be a major design flaw. No fallback idle routine.
-> 
-> We propose to fix this by checking the return value of
-> ppc_md.power_save() call from void to int.
-> Right now return value is void, but if we change this to int, this
-> would solve two problems. One being removing the cast to a function
-> pointer in the prev patch and this design flaw stated above.
-> 
-> So by checking the return value of ppc_md.power_save(), we can invoke
-> the default idle on failure. But my only concern is about the effects of
-> changing the ppc_md.power_save() to return int on other powerpc
-> architectures. Would it be a good idea to change the return type to int
-> which would help us flag an error and fallback to default idle?
+Awesome! Thanks!
 
-I would have preferred an approach where the cpuidle module sets
-ppc_md.power_save when loaded and restores it when unloaded ... but that
-would have to go into the cpuidle core as a powerpc specific tweak and
-might not be generally well received.
+As I mentioned before, I have precious little of the hardware to test
+this all on, so I hope I don't break anything.  At minimum I need to
+do a final build-and-run test on my e500 boards before I send it out.
+:-D
 
-So go for it, add the return value, but you'll have to update all the
-idle functions (grep for power_save in arch/powerpc to find them).
+
+> Just a couple of comments on some of the patches:
+>
+> =C2=A0- 5/10: search for open-pic device-tree node if NULL
+>
+> The idea is fine, however most callers ignore the device-type and only
+> compare on compatible, while you replace that with a match entry that
+> seems to require matching on both. This is likely to break stuff. The
+> "type" part of te march entry should be NULL I believe.
+
+If you re-read that, the match table used if no of_node is passed in
+has *two* separate entries, one of them with a "type" and the other
+with a "compatible", as opposed to a single entry which matches both
+"type" and "compatible".
+
+There are a lot of callers which do:
+  dnp =3D of_find_node_by_type(NULL, "open-pic");
+
+So I doubt I can remove the "type" entry all together, unfortunately.
+
+
+> =C2=A0- 9/10: cache the node
+>
+> of_node_get() is your friend.
+
+Yes, I actually messed this one up in the prior patch too, thanks for
+noticing.  It should all be fixed now.
+
+
+> =C2=A0- 10/10: Makes me a bit nervous. It 'looks' right but I wouldn't be=
+t on
+> Apple device-trees being sane vs. chaining. I would like a test that
+> doesn't do the cascade if the mpic is a primary to at least limit the
+> risk of messup.
+
+Oh, you mean to wrap that block like this?
+
+if (mpic->flags & MPIC_SECONDARY) {
+  virq =3D irq_of_parse_and_map(mpic->node, 0);
+  ...
+}
+
+Sure, makes sense to me.  I've made that change.
+
+Thanks for the review!
 
 Cheers,
-Ben.
+Kyle Moffett
+
+--=20
+Curious about my work on the Debian powerpcspe port?
+I'm keeping a blog here: http://pureperl.blogspot.com/
