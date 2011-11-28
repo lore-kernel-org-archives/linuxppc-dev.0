@@ -2,23 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 61073B6F81
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 03:01:23 +1100 (EST)
-Subject: Re: [PATCH 03/13] powerpc: Fix booke hugetlb preload code for
- PPC_MM_SLICES and 64-bit
+ by ozlabs.org (Postfix) with ESMTPS id 0227DB6F84
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 03:04:27 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Decode correct MSR bits in oops output
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1322181832.32635.14.camel@pasglop>
-Date: Mon, 28 Nov 2011 10:01:06 -0600
-Message-Id: <8EB69A3C-B196-4178-BDAD-D5533DA9A0E5@kernel.crashing.org>
-References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
- <13182798624083-git-send-email-beckyb@kernel.crashing.org>
- <13182798643553-git-send-email-beckyb@kernel.crashing.org>
- <13182798681100-git-send-email-beckyb@kernel.crashing.org>
- <1322181832.32635.14.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
+In-Reply-To: <20111125163557.5a464006@kryten>
+Date: Mon, 28 Nov 2011 10:04:18 -0600
+Message-Id: <F744714B-0527-415C-92BE-A5CB678F1C29@kernel.crashing.org>
+References: <20111125163557.5a464006@kryten>
+To: Anton Blanchard <anton@samba.org>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +24,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 24, 2011, at 6:43 PM, Benjamin Herrenschmidt wrote:
+On Nov 24, 2011, at 11:35 PM, Anton Blanchard wrote:
 
-> On Mon, 2011-10-10 at 15:50 -0500, Becky Bruce wrote:
 >=20
-> .../...
+> On a 64bit book3s machine I have an oops from a system reset that
+> claims the book3e CE bit was set:
 >=20
->> #ifdef CONFIG_PPC_MM_SLICES
->> -	psize =3D mmu_get_tsize(get_slice_psize(mm, ea));
->> -	tsize =3D mmu_get_psize(psize);
->> +	psize =3D get_slice_psize(mm, ea);
->> +	tsize =3D mmu_get_tsize(psize);
->> 	shift =3D mmu_psize_defs[psize].shift;
->> #else
->> -	vma =3D find_vma(mm, ea);
->> -	psize =3D vma_mmu_pagesize(vma);	/* returns actual size =
-in bytes */
->> -	asm (PPC_CNTLZL "%0,%1" : "=3Dr" (lz) : "r" (psize));
->> -	shift =3D 31 - lz;
->> -	tsize =3D 21 - lz;
->> +	psize =3D vma_mmu_pagesize(find_vma(mm, ea));
->> +	shift =3D __ilog2(psize);
->> +	tsize =3D shift - 10;
->> #endif
+> MSR: 8000000000021032 <ME,CE,IR,DR>  CR: 24004082  XER: 00000010
 >=20
-> Now, I know it was already there and you are just moving it around in
-> this patch but come on ... find_vma() here ? Really ? And with no =
-result
-> checking nor boundary checking (remember it can return a vma that
-> doesn't enclose the address etc....). Now I know in this specific case
-> it -should- be safe but still...
+> On a book3s machine system reset sets IBM bit 46 and 47 depending on
+> the power saving mode. Separate the definitions by type and for
+> completeness add the rest of the bits in.
 >=20
-> Now, the caller is just doing:
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
 >=20
-> 	book3e_hugetlb_preload(vma->vm_mm, address, *ptep);
->=20
-> So why not just change the prototype and pass the vma down instead ?
+> Index: linux-build/arch/powerpc/kernel/process.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-build.orig/arch/powerpc/kernel/process.c	2011-11-25 =
+13:22:24.294919094 +1100
+> +++ linux-build/arch/powerpc/kernel/process.c	2011-11-25 =
+13:36:23.213834524 +1100
+> @@ -584,16 +584,32 @@ static struct regbit {
+> 	unsigned long bit;
+> 	const char *name;
+> } msr_bits[] =3D {
+> +#if defined(CONFIG_PPC64) && !defined(CONFIG_BOOKE)
+> +	{MSR_SF,	"SF"},
+> +	{MSR_HV,	"HV"},
+> +#endif
+> +	{MSR_VEC,	"VEC"},
+> +	{MSR_VSX,	"VSX"},
+> +#ifdef CONFIG_BOOKE
+> +	{MSR_CE,	"CE"},
+> +#endif
+> 	{MSR_EE,	"EE"},
+> 	{MSR_PR,	"PR"},
+> 	{MSR_FP,	"FP"},
+> -	{MSR_VEC,	"VEC"},
+> -	{MSR_VSX,	"VSX"},
+> 	{MSR_ME,	"ME"},
+> -	{MSR_CE,	"CE"},
+> +#ifdef CONFIG_BOOKE
+> 	{MSR_DE,	"DE"},
+> +#else
+> +	{MSR_SE,	"SE"},
+> +	{MSR_BE,	"BE"},
+> +#endif
+> 	{MSR_IR,	"IR"},
+> 	{MSR_DR,	"DR"},
+> +	{MSR_PMM,	"PMM"},
+> +#ifndef CONFIG_BOOKE
+> +	{MSR_RI,	"RI"},
 
-Can we do this on top of the patchset instead of changing the existing =
-patchset?
+We have 'RI' on some BOOKE so lets allow for it to be decoded
+
+> +	{MSR_LE,	"LE"},
+> +#endif
+> 	{0,		NULL}
+> };
+
+Since you're fixing this can you add the following for CONFIG_BOOKE:
+
+MSR_GS, MSR_UCLE, MSR_PMM, MSR_CM
 
 - k=
