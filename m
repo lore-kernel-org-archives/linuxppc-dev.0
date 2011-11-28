@@ -1,23 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5F0DB1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 09:50:53 +1100 (EST)
-Message-ID: <1322520637.23348.52.camel@pasglop>
-Subject: Re: [PATCH 03/13] powerpc: Fix booke hugetlb preload code for
- PPC_MM_SLICES and 64-bit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Date: Tue, 29 Nov 2011 09:50:37 +1100
-In-Reply-To: <13182798681100-git-send-email-beckyb@kernel.crashing.org>
-References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
- <13182798624083-git-send-email-beckyb@kernel.crashing.org>
- <13182798643553-git-send-email-beckyb@kernel.crashing.org>
- <13182798681100-git-send-email-beckyb@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
+ [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id D5F97B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 10:00:24 +1100 (EST)
+Message-ID: <4ED4126D.7000201@freescale.com>
+Date: Mon, 28 Nov 2011 16:59:57 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH v3 2/8] [booke] Rename mapping based RELOCATABLE to
+ DYNAMIC_MEMSTART for BookE
+References: <20111114053749.23410.63745.stgit@suzukikp.in.ibm.com>
+ <20111114054144.23410.65704.stgit@suzukikp.in.ibm.com>
+ <CA+5PVA6uVpB6XUFkjUABJCcVjubFiWWEQgmuMijTQpdAiN7PdQ@mail.gmail.com>
+In-Reply-To: <CA+5PVA6uVpB6XUFkjUABJCcVjubFiWWEQgmuMijTQpdAiN7PdQ@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>,
+ David Laight <David.Laight@aculab.com>, Alan Modra <amodra@au1.ibm.com>,
+ "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +31,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> 	return;
->  
->  #ifdef CONFIG_PPC_MM_SLICES
-> -	psize = mmu_get_tsize(get_slice_psize(mm, ea));
-> -	tsize = mmu_get_psize(psize);
-> +	psize = get_slice_psize(mm, ea);
-> +	tsize = mmu_get_tsize(psize);
->  	shift = mmu_psize_defs[psize].shift;
->  #else
-> -	vma = find_vma(mm, ea);
-> -	psize = vma_mmu_pagesize(vma);	/* returns actual size in bytes */
-> -	asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (psize));
-> -	shift = 31 - lz;
-> -	tsize = 21 - lz;
-> +	psize = vma_mmu_pagesize(find_vma(mm, ea));
-> +	shift = __ilog2(psize);
-> +	tsize = shift - 10;
->  #endif
->  
+On 11/23/2011 10:47 AM, Josh Boyer wrote:
+> On Mon, Nov 14, 2011 at 12:41 AM, Suzuki K. Poulose <suzuki@in.ibm.com> wrote:
+>> The current implementation of CONFIG_RELOCATABLE in BookE is based
+>> on mapping the page aligned kernel load address to KERNELBASE. This
+>> approach however is not enough for platforms, where the TLB page size
+>> is large (e.g, 256M on 44x). So we are renaming the RELOCATABLE used
+>> currently in BookE to DYNAMIC_MEMSTART to reflect the actual method.
 
-BTW. Can you remind me what is the business with slices vs. no slices on
-Book3E ?
+Should reword the config help to make it clear what the alignment
+restriction is, or where to find the information for a particular
+platform.  Someone reading "page aligned" without any context that we're
+talking about special large pages is going to think 4K -- and on e500,
+many large page sizes are supported, so the required alignment is found
+in Linux init code rather than a CPU manual.
 
-I'd like to avoid having to build separate kernels for A2 vs. FSL ... 
+>>
+>> The CONFIG_RELOCATABLE for PPC32(BookE) based on processing of the
+>> dynamic relocations will be introduced in the later in the patch series.
+>>
+>> This change would allow the use of the old method of RELOCATABLE for
+>> platforms which can afford to enforce the page alignment (platforms with
+>> smaller TLB size).
+> 
+> I'm OK with the general direction, but this touches a lot of non-4xx
+> code.  I'd prefer it if Ben took this directly on whatever final
+> solution is done.
+> 
+>> I haven tested this change only on 440x. I don't have an FSL BookE to verify
+>> the changes there.
+>>
+>> Scott,
+>> Could you please test this patch on FSL and let me know the results ?
+> 
+> Scott, did you ever get around to testing this?  In my opinion, this
+> shouldn't go in without a Tested-by: from someone that tried it on an
+> FSL platform.
 
-Cheers,
-Ben.
+Booted OK for me on e500v2 with RAM starting at 256M.
+
+Tested-by: Scott Wood <scottwood@freescale.com>
+
+> We add DYNAMIC_MEMSTART for 32-bit, and we have RELOCATABLE for
+> 64-bit.  Then throughout almost the rest of the patch, all we're doing
+> is duplicating what RELOCATABLE already did (e.g. if ! either thing).
+> It works, but it is kind of ugly.
+> 
+> Instead, could we define a helper config variable that can be used in
+> place of that construct?  Something like:
+> 
+> config NONSTATIC_KERNEL (or whatever)
+>     bool
+>     default n
+> 
+> ...
+> 
+> config DYNAMIC_MEMSTART
+>     <blah>
+>     select NONSTATIC_KERNEL
+> 
+> ...
+> 
+> config RELOCATABLE
+>     <blah>
+>     select NONSTATIC_KERNEL
+
+I agree.
+
+-Scott
