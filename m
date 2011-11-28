@@ -1,31 +1,29 @@
-Return-Path: <B07421@freescale.com>
+Return-Path: <B04825@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 01887B6F8A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 04:20:42 +1100 (EST)
-Message-ID: <4ED3C2E2.9040601@freescale.com>
-Date: Mon, 28 Nov 2011 11:20:34 -0600
-From: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 99BB4B6F7D
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2011 04:41:45 +1100 (EST)
+Received: from mail76-ch1 (localhost [127.0.0.1])	by mail76-ch1-R.bigfish.com
+ (Postfix) with ESMTP id B5DAD4A0172	for <linuxppc-dev@ozlabs.org>;
+ Mon, 28 Nov 2011 17:42:34 +0000 (UTC)
+Received: from CH1EHSMHS016.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.246])	by mail76-ch1.bigfish.com (Postfix) with ESMTP id
+ 966C1300046
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 17:42:32 +0000 (UTC)
+Message-ID: <4ED3C7D0.2040508@freescale.com>
+Date: Mon, 28 Nov 2011 11:41:36 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-References: <1322095306-13156-1-git-send-email-b35362@freescale.com>
- <1322095306-13156-3-git-send-email-b35362@freescale.com>
- <3F607A5180246847A760FD34122A1E052DC4CD@039-SN1MPN1-003.039d.mgd.msft.net>
-In-Reply-To: <3F607A5180246847A760FD34122A1E052DC4CD@039-SN1MPN1-003.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "Artem.Bityutskiy@nokia.com" <Artem.Bityutskiy@nokia.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Liu Shuo-B35362 <B35362@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "dwmw2@infradead.org" <dwmw2@infradead.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [PATCH] powerpc/85xx: do not force PHYS_64BIT on the P1022DS
+References: <1320349099-22594-1-git-send-email-timur@freescale.com>
+ <C0BC3E1D-5FCF-42EC-A030-4F86EC1D76F3@freescale.com>
+In-Reply-To: <C0BC3E1D-5FCF-42EC-A030-4F86EC1D76F3@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/24/2011 01:37 AM, Li Yang-R58472 wrote:
->> +static void io_to_buffer(struct mtd_info *mtd, int subpage, int oob)
->> +{
->> +	struct nand_chip *chip = mtd->priv;
->> +	struct fsl_elbc_mtd *priv = chip->priv;
->> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->> +	void *src, *dst;
->> +	int len = (oob ? 64 : 2048);
->> +
->> +	if (oob)
->> +		dst = elbc_fcm_ctrl->buffer + mtd->writesize + subpage * 64;
->> +	else
->> +		dst = elbc_fcm_ctrl->buffer + subpage * 2048;
->> +
->> +	src = elbc_fcm_ctrl->addr + (oob ? 2048 : 0);
->> +	memcpy_fromio(dst, src, len);
-> 
-> Might be safer to use _memcpy_fromio()
+Kumar Gala wrote:
 
-How so?
+> If you want me to apply this please also provided a 32-bit .dts for
+> p1022ds.  This should be pretty trivial based on my recent .dts
+> cleanups.
 
-memcpy_fromio() is the public interface that will end up calling
-_memcpy_fromio() on powerpc.
+I think I found another bug in the 36-bit DTS.  Looking at U-Boot, I see this:
 
--Scott
+#ifdef CONFIG_PHYS_64BIT
+#define CONFIG_SYS_PCIE2_MEM_BUS	0xe0000000
+#define CONFIG_SYS_PCIE2_MEM_PHYS	0xc20000000ull
+#else
+#define CONFIG_SYS_PCIE2_MEM_BUS	0xa0000000
+#define CONFIG_SYS_PCIE2_MEM_PHYS	0xa0000000
+#endif
+
+But the 36-bit DTS has this:
+
+pci0: pcie@ffe09000 {
+	reg = <0x0 0xffe09000 0 0x1000>;
+	ranges = <0x2000000 0x0 0xa0000000 0xc 0x20000000 0x0 0x20000000
+		  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
+
+I don't think these match.  I think the first 'ranges' line should have 0xe0000000 instead of 0xa0000000.
+
+I see the same problem with the other two PCI busses.  It looks like the physical address is correct, but the BUS address is wrong (it's using the 32-bit bus address instead of the 36-bit bus address).
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
