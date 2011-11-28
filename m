@@ -1,27 +1,50 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
- [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id D5F97B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 10:00:24 +1100 (EST)
-Message-ID: <4ED4126D.7000201@freescale.com>
-Date: Mon, 28 Nov 2011 16:59:57 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <rkuo@codeaurora.org>
+Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
+ [199.106.114.254])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "wolverine01.qualcomm.com",
+ Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F16611007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 07:22:46 +1100 (EST)
+Date: Mon, 28 Nov 2011 14:12:26 -0600
+From: Richard Kuo <rkuo@codeaurora.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH-RFC 01/10] lib: move GENERIC_IOMAP to lib/Kconfig
+Message-ID: <20111128201226.GA4296@codeaurora.org>
+References: <cover.1322163031.git.mst@redhat.com>
+ <5aed7b7e1dbc8a50ebd6986245df8054fd05b7cd.1322163031.git.mst@redhat.com>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH v3 2/8] [booke] Rename mapping based RELOCATABLE to
- DYNAMIC_MEMSTART for BookE
-References: <20111114053749.23410.63745.stgit@suzukikp.in.ibm.com>
- <20111114054144.23410.65704.stgit@suzukikp.in.ibm.com>
- <CA+5PVA6uVpB6XUFkjUABJCcVjubFiWWEQgmuMijTQpdAiN7PdQ@mail.gmail.com>
-In-Reply-To: <CA+5PVA6uVpB6XUFkjUABJCcVjubFiWWEQgmuMijTQpdAiN7PdQ@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>,
- David Laight <David.Laight@aculab.com>, Alan Modra <amodra@au1.ibm.com>,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5aed7b7e1dbc8a50ebd6986245df8054fd05b7cd.1322163031.git.mst@redhat.com>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
+ linux-m68k@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux@openrisc.net, linux-pci@vger.kernel.org,
+ Jesse Barnes <jbarnes@virtuousgeek.org>, Chen Liqin <liqin.chen@sunplusct.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Lennox Wu <lennox.wu@gmail.com>, Jonas Bonn <jonas@southpole.se>,
+ Jesper Nilsson <jesper.nilsson@axis.com>,
+ Russell King <linux@arm.linux.org.uk>, linux-hexagon@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-arch@vger.kernel.org,
+ Arend van Spriel <arend@broadcom.com>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Lasse Collin <lasse.collin@tukaani.org>,
+ Arnd Bergmann <arnd@arndb.de>, Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+ microblaze-uclinux@itee.uq.edu.au, Paul Bolle <pebolle@tiscali.nl>,
+ Rob Herring <rob.herring@calxeda.com>, Mikael Starvik <starvik@axis.com>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Franky Lin <frankyl@broadcom.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Fabio Baltieri <fabio.baltieri@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
+ Michael Ellerman <michael@ellerman.id.au>, Michal Simek <monstr@monstr.eu>,
+ Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
+ linux-alpha@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,71 +54,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/23/2011 10:47 AM, Josh Boyer wrote:
-> On Mon, Nov 14, 2011 at 12:41 AM, Suzuki K. Poulose <suzuki@in.ibm.com> wrote:
->> The current implementation of CONFIG_RELOCATABLE in BookE is based
->> on mapping the page aligned kernel load address to KERNELBASE. This
->> approach however is not enough for platforms, where the TLB page size
->> is large (e.g, 256M on 44x). So we are renaming the RELOCATABLE used
->> currently in BookE to DYNAMIC_MEMSTART to reflect the actual method.
+On Thu, Nov 24, 2011 at 10:15:42PM +0200, Michael S. Tsirkin wrote:
+> define GENERIC_IOMAP in a central location
+> instead of all architectures. This will be helpful
+> for the follow-up patch which makes it select
+> other configs. Code is also a bit shorter this way.
 
-Should reword the config help to make it clear what the alignment
-restriction is, or where to find the information for a particular
-platform.  Someone reading "page aligned" without any context that we're
-talking about special large pages is going to think 4K -- and on e500,
-many large page sizes are supported, so the required alignment is found
-in Linux init code rather than a CPU manual.
+For the Hexagon config,
 
->>
->> The CONFIG_RELOCATABLE for PPC32(BookE) based on processing of the
->> dynamic relocations will be introduced in the later in the patch series.
->>
->> This change would allow the use of the old method of RELOCATABLE for
->> platforms which can afford to enforce the page alignment (platforms with
->> smaller TLB size).
-> 
-> I'm OK with the general direction, but this touches a lot of non-4xx
-> code.  I'd prefer it if Ben took this directly on whatever final
-> solution is done.
-> 
->> I haven tested this change only on 440x. I don't have an FSL BookE to verify
->> the changes there.
->>
->> Scott,
->> Could you please test this patch on FSL and let me know the results ?
-> 
-> Scott, did you ever get around to testing this?  In my opinion, this
-> shouldn't go in without a Tested-by: from someone that tried it on an
-> FSL platform.
+Acked-by: Richard Kuo <rkuo@codeaurora.org>
 
-Booted OK for me on e500v2 with RAM starting at 256M.
 
-Tested-by: Scott Wood <scottwood@freescale.com>
+-- 
 
-> We add DYNAMIC_MEMSTART for 32-bit, and we have RELOCATABLE for
-> 64-bit.  Then throughout almost the rest of the patch, all we're doing
-> is duplicating what RELOCATABLE already did (e.g. if ! either thing).
-> It works, but it is kind of ugly.
-> 
-> Instead, could we define a helper config variable that can be used in
-> place of that construct?  Something like:
-> 
-> config NONSTATIC_KERNEL (or whatever)
->     bool
->     default n
-> 
-> ...
-> 
-> config DYNAMIC_MEMSTART
->     <blah>
->     select NONSTATIC_KERNEL
-> 
-> ...
-> 
-> config RELOCATABLE
->     <blah>
->     select NONSTATIC_KERNEL
-
-I agree.
-
--Scott
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
