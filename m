@@ -1,17 +1,28 @@
-Return-Path: <prvs=13137ccccf=Staale.Aakermann@kongsberg.com>
-Received: from ukgl-edge-p01.kongsberg.com (ukgl-edge-p01.kongsberg.com
- [193.71.180.98]) by ozlabs.org (Postfix) with ESMTP id BDFCC1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 08:01:23 +1100 (EST)
-Received: from UKGTW-EXM-P04.kda.kongsberg.com ([10.50.100.65])
- by ukgl-edge-p01.kongsberg.com (8.14.1/8.14.1) with ESMTP id pASKu8L7026521
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 21:56:09 +0100
-From: <Staale.Aakermann@kongsberg.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] make gianfar eTSEC vlan hw acceleration work again. 
-Date: Mon, 28 Nov 2011 20:56:07 +0000
-Message-ID: <BDD883B26EE1104B8A2B30223B09A48C10C724F7@UKGTW-EXM-P03.kda.kongsberg.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id EA1DDB6F70
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 08:41:38 +1100 (EST)
+Message-ID: <4ED3FFFC.50807@freescale.com>
+Date: Mon, 28 Nov 2011 15:41:16 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
+To: LiuShuo <b35362@freescale.com>
+Subject: Re: [PATCH v3 3/3] mtd/nand : workaround for Freescale FCM to support
+ large-page Nand chip
+References: <1321349355-1639-1-git-send-email-b35362@freescale.com>
+ <1321349355-1639-2-git-send-email-b35362@freescale.com>
+ <1321349355-1639-3-git-send-email-b35362@freescale.com>
+ <4ECC368C.3010801@freescale.com> <4ECCE393.2030600@freescale.com>
+In-Reply-To: <4ECCE393.2030600@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Liu Shuo <Shuo.Liu@freescale.com>,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>, linux-mtd@lists.infradead.org,
+ akpm@linux-foundation.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,36 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi.
+On 11/23/2011 06:14 AM, LiuShuo wrote:
+> =E4=BA=8E 2011=E5=B9=B411=E6=9C=8823=E6=97=A5 07:55, Scott Wood =E5=86=99=
+=E9=81=93:
+>> On 11/15/2011 03:29 AM, b35362@freescale.com wrote:
+>>> From: Liu Shuo<b35362@freescale.com>
+>>>
+>>> -        if (elbc_fcm_ctrl->oob || elbc_fcm_ctrl->column !=3D 0 ||
+>>> +        if (elbc_fcm_ctrl->column>=3D mtd->writesize) {
+>>> +            /* write oob */
+>>> +            if (priv->page_size>  1) {
+>>> +                /* when pagesize of chip is greater than 2048,
+>>> +                 * we have to write full page to write spare
+>>> +                 * region, so we fill '0xff' to main region
+>>> +                 * and some bytes of spare region which we
+>>> +                 * don't want to rewrite.
+>>> +                 * (write '1' won't change the original value)
+>>> +                 */
+>>> +                memset(elbc_fcm_ctrl->buffer, 0xff,
+>>> +                        elbc_fcm_ctrl->column);
+>> I don't like relying on this -- can we use RNDIN instead to do a
+>> discontiguous write?
+>>
+> I have no better way to implement it now.
+> Some chips have 'NOP' limitation, so I don't use the FIR_OP_UA to do a
+> oob write.
 
-There seems to be a breakage in the VLAN TX HW acceleration in gianfar (ker=
-nel 3.1). It seems like the previous patch that was submitted forgotten to =
-initialize the TX registers.
+I don't think each RNDIN counts separately against NOP (someone correct
+me if I'm wrong).  You're writing discontiguous regions of the page in
+one operation.
 
---- drivers/net/gianfar.c-orig  2011-11-28 11:04:09.318992481 +0100
-+++ drivers/net/gianfar.c       2011-11-28 11:05:43.530990635 +0100
-@@ -394,6 +394,9 @@
-        /* Init rctrl based on our settings */
-        gfar_write(&regs->rctrl, rctrl);
-
-+       if (ndev->features & NETIF_F_HW_VLAN_TX)
-+               tctrl |=3D TCTRL_VLINS;
-+
-        if (ndev->features & NETIF_F_IP_CSUM)
-                tctrl |=3D TCTRL_INIT_CSUM;
-
-After this patch, it seems vlan rx/tx for eTSEC works again.
-
-Best regards
-
-Staale Aakermann
-
-________________________________
-
-CONFIDENTIALITY
-This e-mail and any attachment contain KONGSBERG information which may be p=
-roprietary, confidential or subject to export regulations, and is only mean=
-t for the intended recipient(s). Any disclosure, copying, distribution or u=
-se is prohibited, if not otherwise explicitly agreed with KONGSBERG. If rec=
-eived in error, please delete it immediately from your system and notify th=
-e sender properly.
+-Scott
