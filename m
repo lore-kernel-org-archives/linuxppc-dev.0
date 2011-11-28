@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7B0BE1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 07:58:27 +1100 (EST)
-Message-ID: <1322513899.23348.48.camel@pasglop>
-Subject: Re: MPIC cleanup series
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kyle Moffett <kyle@moffetthome.net>
-Date: Tue, 29 Nov 2011 07:58:19 +1100
-In-Reply-To: <CAGZ=bqJZdN-gpeBW+EdE7Dd=qsNzhwbFr8hBCRqMM72VkT8W7g@mail.gmail.com>
-References: <1322437884.23348.30.camel@pasglop>
- <CAGZ=bqJZdN-gpeBW+EdE7Dd=qsNzhwbFr8hBCRqMM72VkT8W7g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <prvs=13137ccccf=Staale.Aakermann@kongsberg.com>
+Received: from ukgl-edge-p01.kongsberg.com (ukgl-edge-p01.kongsberg.com
+ [193.71.180.98]) by ozlabs.org (Postfix) with ESMTP id BDFCC1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 08:01:23 +1100 (EST)
+Received: from UKGTW-EXM-P04.kda.kongsberg.com ([10.50.100.65])
+ by ukgl-edge-p01.kongsberg.com (8.14.1/8.14.1) with ESMTP id pASKu8L7026521
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 21:56:09 +0100
+From: <Staale.Aakermann@kongsberg.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] make gianfar eTSEC vlan hw acceleration work again. 
+Date: Mon, 28 Nov 2011 20:56:07 +0000
+Message-ID: <BDD883B26EE1104B8A2B30223B09A48C10C724F7@UKGTW-EXM-P03.kda.kongsberg.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-11-28 at 15:48 -0500, Kyle Moffett wrote:
-> On Sun, Nov 27, 2011 at 18:51, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > Overall I really look your series. It doesn't quite apply cleanly
-> > anymore so I'll as you for a new shoot after you address the comments
-> > below, at which point, if you're fast enough, I'll stick it in -next :-)
-> 
-> Awesome! Thanks!
-> 
-> As I mentioned before, I have precious little of the hardware to test
-> this all on, so I hope I don't break anything.  At minimum I need to
-> do a final build-and-run test on my e500 boards before I send it out.
-> :-D
+Hi.
 
-That's ok, I was planning on letting it simmer in -test for a week or
-so, giving myself time to test on a range of powermacs etc...
+There seems to be a breakage in the VLAN TX HW acceleration in gianfar (ker=
+nel 3.1). It seems like the previous patch that was submitted forgotten to =
+initialize the TX registers.
 
-> > Just a couple of comments on some of the patches:
-> >
-> >  - 5/10: search for open-pic device-tree node if NULL
-> >
-> > The idea is fine, however most callers ignore the device-type and only
-> > compare on compatible, while you replace that with a match entry that
-> > seems to require matching on both. This is likely to break stuff. The
-> > "type" part of te march entry should be NULL I believe.
-> 
-> If you re-read that, the match table used if no of_node is passed in
-> has *two* separate entries, one of them with a "type" and the other
-> with a "compatible", as opposed to a single entry which matches both
-> "type" and "compatible".
+--- drivers/net/gianfar.c-orig  2011-11-28 11:04:09.318992481 +0100
++++ drivers/net/gianfar.c       2011-11-28 11:05:43.530990635 +0100
+@@ -394,6 +394,9 @@
+        /* Init rctrl based on our settings */
+        gfar_write(&regs->rctrl, rctrl);
 
-Oh, my bad. Ok.
++       if (ndev->features & NETIF_F_HW_VLAN_TX)
++               tctrl |=3D TCTRL_VLINS;
++
+        if (ndev->features & NETIF_F_IP_CSUM)
+                tctrl |=3D TCTRL_INIT_CSUM;
 
-> There are a lot of callers which do:
->   dnp = of_find_node_by_type(NULL, "open-pic");
-> 
-> So I doubt I can remove the "type" entry all together, unfortunately.
-> 
-> 
-> >  - 9/10: cache the node
-> >
-> > of_node_get() is your friend.
-> 
-> Yes, I actually messed this one up in the prior patch too, thanks for
-> noticing.  It should all be fixed now.
-> 
-> 
-> >  - 10/10: Makes me a bit nervous. It 'looks' right but I wouldn't bet on
-> > Apple device-trees being sane vs. chaining. I would like a test that
-> > doesn't do the cascade if the mpic is a primary to at least limit the
-> > risk of messup.
-> 
-> Oh, you mean to wrap that block like this?
-> 
-> if (mpic->flags & MPIC_SECONDARY) {
->   virq = irq_of_parse_and_map(mpic->node, 0);
->   ...
-> }
+After this patch, it seems vlan rx/tx for eTSEC works again.
 
-Yes.
+Best regards
 
-> Sure, makes sense to me.  I've made that change.
-> 
-> Thanks for the review!
+Staale Aakermann
 
-Thanks. Re-post the whole series and I'll merge it.
+________________________________
 
-Cheers,
-Ben.
+CONFIDENTIALITY
+This e-mail and any attachment contain KONGSBERG information which may be p=
+roprietary, confidential or subject to export regulations, and is only mean=
+t for the intended recipient(s). Any disclosure, copying, distribution or u=
+se is prohibited, if not otherwise explicitly agreed with KONGSBERG. If rec=
+eived in error, please delete it immediately from your system and notify th=
+e sender properly.
