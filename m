@@ -1,23 +1,24 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
- [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id F00AAB6F67
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 03:23:46 +1100 (EST)
-Received: by vbbfp1 with SMTP id fp1so3030501vbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 08:23:43 -0800 (PST)
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 22868B6F89
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 03:38:18 +1100 (EST)
+Date: Mon, 28 Nov 2011 08:38:15 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Shi Xuelin-B29237 <B29237@freescale.com>
+Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
+ spinlock use.
+Message-ID: <20111128163814.GA10919@ovro.caltech.edu>
+References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
+ <20111122185924.GA23323@ovro.caltech.edu>
+ <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
 MIME-Version: 1.0
-In-Reply-To: <F744714B-0527-415C-92BE-A5CB678F1C29@kernel.crashing.org>
-References: <20111125163557.5a464006@kryten>
- <F744714B-0527-415C-92BE-A5CB678F1C29@kernel.crashing.org>
-Date: Mon, 28 Nov 2011 11:23:43 -0500
-Message-ID: <CA+5PVA4kkeuWqdKWAJOJSUue=XsEC=27T2zptb-1P_H+HwNymg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Decode correct MSR bits in oops output
-From: Josh Boyer <jwboyer@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
+Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,75 +28,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 28, 2011 at 11:04 AM, Kumar Gala <galak@kernel.crashing.org> wr=
-ote:
->
-> On Nov 24, 2011, at 11:35 PM, Anton Blanchard wrote:
->
->>
->> On a 64bit book3s machine I have an oops from a system reset that
->> claims the book3e CE bit was set:
->>
->> MSR: 8000000000021032 <ME,CE,IR,DR> =A0CR: 24004082 =A0XER: 00000010
->>
->> On a book3s machine system reset sets IBM bit 46 and 47 depending on
->> the power saving mode. Separate the definitions by type and for
->> completeness add the rest of the bits in.
->>
->> Signed-off-by: Anton Blanchard <anton@samba.org>
->> ---
->>
->> Index: linux-build/arch/powerpc/kernel/process.c
->> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> --- linux-build.orig/arch/powerpc/kernel/process.c =A0 =A02011-11-25 13:=
-22:24.294919094 +1100
->> +++ linux-build/arch/powerpc/kernel/process.c 2011-11-25 13:36:23.213834=
-524 +1100
->> @@ -584,16 +584,32 @@ static struct regbit {
->> =A0 =A0 =A0 unsigned long bit;
->> =A0 =A0 =A0 const char *name;
->> } msr_bits[] =3D {
->> +#if defined(CONFIG_PPC64) && !defined(CONFIG_BOOKE)
->> + =A0 =A0 {MSR_SF, =A0 =A0 =A0 =A0"SF"},
->> + =A0 =A0 {MSR_HV, =A0 =A0 =A0 =A0"HV"},
->> +#endif
->> + =A0 =A0 {MSR_VEC, =A0 =A0 =A0 "VEC"},
->> + =A0 =A0 {MSR_VSX, =A0 =A0 =A0 "VSX"},
->> +#ifdef CONFIG_BOOKE
->> + =A0 =A0 {MSR_CE, =A0 =A0 =A0 =A0"CE"},
->> +#endif
->> =A0 =A0 =A0 {MSR_EE, =A0 =A0 =A0 =A0"EE"},
->> =A0 =A0 =A0 {MSR_PR, =A0 =A0 =A0 =A0"PR"},
->> =A0 =A0 =A0 {MSR_FP, =A0 =A0 =A0 =A0"FP"},
->> - =A0 =A0 {MSR_VEC, =A0 =A0 =A0 "VEC"},
->> - =A0 =A0 {MSR_VSX, =A0 =A0 =A0 "VSX"},
->> =A0 =A0 =A0 {MSR_ME, =A0 =A0 =A0 =A0"ME"},
->> - =A0 =A0 {MSR_CE, =A0 =A0 =A0 =A0"CE"},
->> +#ifdef CONFIG_BOOKE
->> =A0 =A0 =A0 {MSR_DE, =A0 =A0 =A0 =A0"DE"},
->> +#else
->> + =A0 =A0 {MSR_SE, =A0 =A0 =A0 =A0"SE"},
->> + =A0 =A0 {MSR_BE, =A0 =A0 =A0 =A0"BE"},
->> +#endif
->> =A0 =A0 =A0 {MSR_IR, =A0 =A0 =A0 =A0"IR"},
->> =A0 =A0 =A0 {MSR_DR, =A0 =A0 =A0 =A0"DR"},
->> + =A0 =A0 {MSR_PMM, =A0 =A0 =A0 "PMM"},
->> +#ifndef CONFIG_BOOKE
->> + =A0 =A0 {MSR_RI, =A0 =A0 =A0 =A0"RI"},
->
-> We have 'RI' on some BOOKE so lets allow for it to be decoded
->
->> + =A0 =A0 {MSR_LE, =A0 =A0 =A0 =A0"LE"},
->> +#endif
->> =A0 =A0 =A0 {0, =A0 =A0 =A0 =A0 =A0 =A0 NULL}
->> };
->
-> Since you're fixing this can you add the following for CONFIG_BOOKE:
->
-> MSR_GS, MSR_UCLE, MSR_PMM, MSR_CM
+On Thu, Nov 24, 2011 at 08:12:25AM +0000, Shi Xuelin-B29237 wrote:
+> Hi Ira,
+> 
+> Thanks for your review.
+> 
+> After second thought, I think your scenario may not occur.
+> Because the cookie 20 we query must be returned by fsl_dma_tx_submit(...) in practice. 
+> We never query a cookie not returned by fsl_dma_tx_submit(...).
+> 
 
-Those don't exist on 4xx, so CONFIG_BOOKE doesn't seem appropriate.
+I agree about this part.
 
-josh
+> When we call fsl_tx_status(20), the chan->common.cookie is definitely wrote as 20 and cpu2 could not read as 19.
+> 
+
+This is what I don't agree about. However, I'm not an expert on CPU
+cache vs. memory accesses in an multi-processor system. The section
+titled "CACHE COHERENCY" in Documentation/memory-barriers.txt leads me
+to believe that the scenario I described is possible.
+
+What happens if CPU1's write of chan->common.cookie only goes into
+CPU1's cache. It never makes it to main memory before CPU2 fetches the
+old value of 19.
+
+I don't think you should see any performance impact from the smp_mb()
+operation.
+
+Thanks,
+Ira
+
+> -----Original Message-----
+> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu] 
+> Sent: 2011年11月23日 2:59
+> To: Shi Xuelin-B29237
+> Cc: dan.j.williams@intel.com; Li Yang-R58472; zw@zh-kernel.org; vinod.koul@intel.com; linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing spinlock use.
+> 
+> On Tue, Nov 22, 2011 at 12:55:05PM +0800, b29237@freescale.com wrote:
+> > From: Forrest Shi <b29237@freescale.com>
+> > 
+> >     dma status check function fsl_tx_status is heavily called in
+> >     a tight loop and the desc lock in fsl_tx_status contended by
+> >     the dma status update function. this caused the dma performance
+> >     degrades much.
+> > 
+> >     this patch releases the lock in the fsl_tx_status function.
+> >     I believe it has no neglect impact on the following call of
+> >     dma_async_is_complete(...).
+> > 
+> >     we can see below three conditions will be identified as success
+> >     a)  x < complete < use
+> >     b)  x < complete+N < use+N
+> >     c)  x < complete < use+N
+> >     here complete is the completed_cookie, use is the last_used
+> >     cookie, x is the querying cookie, N is MAX cookie
+> > 
+> >     when chan->completed_cookie is being read, the last_used may
+> >     be incresed. Anyway it has no neglect impact on the dma status
+> >     decision.
+> > 
+> >     Signed-off-by: Forrest Shi <xuelin.shi@freescale.com>
+> > ---
+> >  drivers/dma/fsldma.c |    5 -----
+> >  1 files changed, 0 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index 
+> > 8a78154..1dca56f 100644
+> > --- a/drivers/dma/fsldma.c
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -986,15 +986,10 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
+> >  	struct fsldma_chan *chan = to_fsl_chan(dchan);
+> >  	dma_cookie_t last_complete;
+> >  	dma_cookie_t last_used;
+> > -	unsigned long flags;
+> > -
+> > -	spin_lock_irqsave(&chan->desc_lock, flags);
+> >  
+> 
+> This will cause a bug. See below for a detailed explanation. You need this instead:
+> 
+> 	/*
+> 	 * On an SMP system, we must ensure that this CPU has seen the
+> 	 * memory accesses performed by another CPU under the
+> 	 * chan->desc_lock spinlock.
+> 	 */
+> 	smp_mb();
+> >  	last_complete = chan->completed_cookie;
+> >  	last_used = dchan->cookie;
+> >  
+> > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> > -
+> >  	dma_set_tx_state(txstate, last_complete, last_used, 0);
+> >  	return dma_async_is_complete(cookie, last_complete, last_used);  }
+> 
+> Facts:
+> - dchan->cookie is the same member as chan->common.cookie (same memory location)
+> - chan->common.cookie is the "last allocated cookie for a pending transaction"
+> - chan->completed_cookie is the "last completed transaction"
+> 
+> I have replaced "dchan->cookie" with "chan->common.cookie" in the below explanation, to keep everything referenced from the same structure.
+> 
+> Variable usage before your change. Everything is used locked.
+> - RW chan->common.cookie		(fsl_dma_tx_submit)
+> - R  chan->common.cookie		(fsl_tx_status)
+> - R  chan->completed_cookie		(fsl_tx_status)
+> - W  chan->completed_cookie		(dma_do_tasklet)
+> 
+> Variable usage after your change:
+> - RW chan->common.cookie		LOCKED
+> - R  chan->common.cookie		NO LOCK
+> - R  chan->completed_cookie		NO LOCK
+> - W  chan->completed_cookie             LOCKED
+> 
+> What if we assume that you have a 2 CPU system (such as a P2020). After your changes, one possible sequence is:
+> 
+> === CPU1 - allocate + submit descriptor: fsl_dma_tx_submit() === spin_lock_irqsave
+> descriptor->cookie = 20		(x in your example)
+> chan->common.cookie = 20	(used in your example)
+> spin_unlock_irqrestore
+> 
+> === CPU2 - immediately calls fsl_tx_status() ===
+> chan->common.cookie == 19
+> chan->completed_cookie == 19
+> descriptor->cookie == 20
+> 
+> Since we don't have locks anymore, CPU2 may not have seen the write to
+> chan->common.cookie yet.
+> 
+> Also assume that the DMA hardware has not started processing the transaction yet. Therefore dma_do_tasklet() has not been called, and
+> chan->completed_cookie has not been updated.
+> 
+> In this case, dma_async_is_complete() (on CPU2) returns DMA_SUCCESS, even though the DMA operation has not succeeded. The DMA operation has not even started yet!
+> 
+> The smp_mb() fixes this, since it forces CPU2 to have seen all memory operations that happened before CPU1 released the spinlock. Spinlocks are implicit SMP memory barriers.
+> 
+> Therefore, the above example becomes:
+> smp_mb();
+> chan->common.cookie == 20
+> chan->completed_cookie == 19
+> descriptor->cookie == 20
+> 
+> Then dma_async_is_complete() returns DMA_IN_PROGRESS, which is correct.
+> 
+> Thanks,
+> Ira
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
