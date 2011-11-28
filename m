@@ -1,42 +1,40 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 7CF73B6F85
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 14:11:22 +1100 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id D0322B6F18
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 17:21:39 +1100 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <dwg@au1.ibm.com>;
- Mon, 28 Nov 2011 03:07:04 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAS37iAB3125352
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 14:07:47 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAS3B6n2023696
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 14:11:07 +1100
-Date: Mon, 28 Nov 2011 14:11:11 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] [hw-breakpoint] Use generic hw-breakpoint interfaces
- for new PPC ptrace flags
-Message-ID: <20111128031111.GC3508@truffala.fritz.box>
-References: <20110819074527.GA21817@in.ibm.com>
- <20110819075136.GB21817@in.ibm.com>
- <20110823050850.GS30097@yookeroo.fritz.box>
- <20110823092513.GA2962@in.ibm.com>
- <20110824035939.GB30097@yookeroo.fritz.box>
- <20110826093552.GA2301@in.ibm.com>
- <20110916072710.GA28060@in.ibm.com>
- <20111012033359.GR4849@truffala.fritz.box>
- <20111012173948.GA4340@in.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 28 Nov 2011 06:09:18 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAS6I5Bo2973736
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 17:18:05 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAS6LTgO002085
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2011 17:21:31 +1100
+Message-ID: <4ED3285D.4060100@linux.vnet.ibm.com>
+Date: Mon, 28 Nov 2011 11:51:17 +0530
+From: "Mahesh J. Salgaonkar" <mahesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111012173948.GA4340@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH v5 2/9] fadump: Reserve the memory for firmware
+ assisted dump.
+References: <20111115151145.16533.16384.stgit@mars.in.ibm.com>
+ <20111115151343.16533.70101.stgit@mars.in.ibm.com>
+ <20111124230213.GC19828@bloggs.ozlabs.ibm.com>
+In-Reply-To: <20111124230213.GC19828@bloggs.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Anton Blanchard <anton@samba.org>, Amerigo Wang <amwang@redhat.com>,
+ Kexec-ml <kexec@lists.infradead.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
+Reply-To: mahesh.j.salgaonkar@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,260 +44,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[snip]
-On Wed, Oct 12, 2011 at 11:09:48PM +0530, K.Prasad wrote:
-> > > +	if (bp) {
-> > > +		attr = bp->attr;
-> > > +		attr.bp_addr = (unsigned long)bp_info->addr & ~HW_BREAKPOINT_ALIGN;
-> > > +		arch_bp_generic_fields(dabr &
-> > > +					(DABR_DATA_WRITE | DABR_DATA_READ),
-> > > +							&attr.bp_type);
-> > > +		attr.bp_len = len;
-> > 
-> > If gdb is using the new breakpoint interface, surely it should just
-> > use it, rather than doing this bit frobbing as in the old SET_DABR
-> > call.
-> > 
+On 11/25/2011 04:32 AM, Paul Mackerras wrote:
+> On Tue, Nov 15, 2011 at 08:43:43PM +0530, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Reserve the memory during early boot to preserve CPU state data, HPTE region
+>> and RMR region data in case of kernel crash. At the time of crash, powerpc
+>> firmware will store CPU state data, HPTE region data and move RMR region
+>> data to the reserved memory area.
 > 
-> I understand that you wanted to avoid this duplication of effort in terms
-> of encoding and decoding the breakpoint type from
-> PPC_BREAKPOINT_TRIGGER_READ to DABR_DATA_READ to HW_BREAKPOINT_R.
+> What is "RMR"?  I don't see anywhere that you explain this acronym.
+> Is it the same as the RMA (real mode area)?
 > 
-> However HW_BREAKPOINT_R is a generic definition used across
-> architectures, DABR_DATA_READ is used in the !CONFIG_HAVE_HW_BREAKPOINT
-> case while PPC_BREAKPOINT_TRIGGER_READ is used in
-> CONFIG_PPC_ADV_DEBUG_REGS case.
+
+Yes, it is the same as the RMA. I think I will replace all RMR/RMO with RMA.
+
+>> +config FA_DUMP
+>> +	bool "Firmware-assisted dump"
 > 
-> While we could define PPC_BREAKPOINT_TRIGGER_READ and DABR_DATA_READ to
-> the same value it may not result in any code savings (since the bit
-> translation is done for !CONFIG_HAVE_HW_BREAKPOINT case anyway). So, I
-> think it is best left the way it is.
-
-That's not what I'm suggesting.  What I'm saying is that ig userspace
-is using the new generic interface, then it should just set the
-bp_type field, and it should not use the DABR_DATA_{READ,WRITE} bits.
-The DABR_DATA bits should *only* be processed in the legacy interface,
-never in the generic interface.
-
-> I'm attaching the revised patch (after incorporating your comments).
-> Kindly let me know your comments.
+> Is this new fadump infrastructure intended to supersede the existing
+> phyp dump code?  Does it use the same phyp interfaces as phyp dump?
+> If so, you should probably remove the phyp dump code and config option
+> as the final patch in your series.
 > 
-> Thanks,
-> K.Prasad
-> ---------
+>> +/*
+>> + * The RMR region will be saved for later dumping when kernel crashes.
+>> + * Set this to RMO size.
+>> + */
+>> +#define RMR_START	0x0
+>> +#define RMR_END		(ppc64_rma_size)
 > 
-> [hw-breakpoint] Use generic hw-breakpoint interfaces for new PPC ptrace flags
+> An explanation of "RMR" here, and what the distinction (if any)
+> between RMR and RMA/RMO is, would help future readers.
 > 
-> PPC_PTRACE_GETHWDBGINFO, PPC_PTRACE_SETHWDEBUG and PPC_PTRACE_DELHWDEBUG are
-> PowerPC specific ptrace flags that use the watchpoint register. While they are
-> targeted primarily towards BookE users, user-space applications such as GDB
-> have started using them for BookS too. This patch enables the use of generic
-> hardware breakpoint interfaces for these new flags.
+
+Will change this to RMA_START and RMA_END
+
+>> +	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
+>> +					&size);
+>> +
+>> +	if (!sections)
+>> +		return 0;
+>> +
+>> +	num_sections = size / sizeof(struct dump_section);
+>> +
+>> +	for (i = 0; i < num_sections; i++) {
+>> +		switch (sections[i].dump_section) {
+>> +		case FADUMP_CPU_STATE_DATA:
+>> +			fw_dump.cpu_state_data_size = sections[i].section_size;
+>> +			break;
+>> +		case FADUMP_HPTE_REGION:
+>> +			fw_dump.hpte_region_size = sections[i].section_size;
+>> +			break;
 > 
-> Apart from the usual benefits of using generic hw-breakpoint interfaces, these
-> changes allow debuggers (such as GDB) to use a common set of ptrace flags for
-> their watchpoint needs and allow more precise breakpoint specification (length
-> of the variable can be specified).
+> It's generally better to use of_read_number() or of_read_ulong() to
+> parse OF properties, rather than using a structure like this.
 > 
-> Tested-by: Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  Documentation/powerpc/ptrace.txt |   16 +++++++
->  arch/powerpc/kernel/ptrace.c     |   88 +++++++++++++++++++++++++++++++++++---
->  2 files changed, 98 insertions(+), 6 deletions(-)
+>> +	/* divide by 20 to get 5% of value */
+>> +	size = memblock_end_of_DRAM();
+>> +	do_div(size, 20);
 > 
-> diff --git a/Documentation/powerpc/ptrace.txt b/Documentation/powerpc/ptrace.txt
-> index f4a5499..f2a7a39 100644
-> --- a/Documentation/powerpc/ptrace.txt
-> +++ b/Documentation/powerpc/ptrace.txt
-> @@ -127,6 +127,22 @@ Some examples of using the structure to:
->    p.addr2           = (uint64_t) end_range;
->    p.condition_value = 0;
->  
-> +- set a watchpoint in server processors (BookS)
-> +
-> +  p.version         = 1;
-> +  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_RW;
-> +  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
-> +  or
-> +  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
-> +
-> +  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
-> +  p.addr            = (uint64_t) begin_range;
+> You could just say size = memblock_end_of_DRAM() / 20 here; no need to
+> use do_div, since we won't be using this code on 32-bit platforms.
+> 
+>> +	if (!fw_dump.fadump_supported) {
+>> +		printk(KERN_ERR "Firmware-assisted dump is not supported on"
+>> +				" this hardware\n");
+> 
+> This shouldn't be KERN_ERR; it's not an error to boot a kernel with
+> fadump configured in on a machine that doesn't have firmware fadump
+> support.  I don't think we really need any message, but if we have one
+> it should be KERN_INFO at most.
+> 
+>> +/* Look for fadump= cmdline option. */
+>> +static int __init early_fadump_param(char *p)
+>> +{
+>> +	if (!p)
+>> +		return 1;
+>> +
+>> +	if (p[0] == '1')
+>> +		fw_dump.fadump_enabled = 1;
+>> +	else if (p[0] == '0')
+>> +		fw_dump.fadump_enabled = 0;
+> 
+> I think it's usual to allow "on" and "off" as values for this kind of
+> option.  There might be a handy little helper function to parse this
+> sort of thing (but if there is I don't know what it is called).
 
-You should probably document the alignment constraint on the address
-here, too.
+Will rework on your suggestions. Thanks for the review.
 
-> +  /* For PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE addr2 needs to be specified, where
-> +   * addr2 - addr <= 8 Bytes.
-> +   */
-> +  p.addr2           = (uint64_t) end_range;
-> +  p.condition_value = 0;
-> +
->  3. PTRACE_DELHWDEBUG
->  
->  Takes an integer which identifies an existing breakpoint or watchpoint
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 05b7dd2..be5dc57 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -1339,6 +1339,12 @@ static int set_dac_range(struct task_struct *child,
->  static long ppc_set_hwdebug(struct task_struct *child,
->  		     struct ppc_hw_breakpoint *bp_info)
->  {
-> +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> +	int ret, len = 0;
-> +	struct thread_struct *thread = &(child->thread);
-> +	struct perf_event *bp;
-> +	struct perf_event_attr attr;
-> +#endif /* CONFIG_HAVE_HW_BREAKPOINT */
->  #ifndef CONFIG_PPC_ADV_DEBUG_REGS
->  	unsigned long dabr;
->  #endif
-> @@ -1382,13 +1388,9 @@ static long ppc_set_hwdebug(struct task_struct *child,
->  	 */
->  	if ((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) == 0 ||
->  	    (bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) != 0 ||
-> -	    bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT ||
->  	    bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE)
->  		return -EINVAL;
->  
-> -	if (child->thread.dabr)
-> -		return -ENOSPC;
-> -
->  	if ((unsigned long)bp_info->addr >= TASK_SIZE)
->  		return -EIO;
->  
-> @@ -1398,15 +1400,75 @@ static long ppc_set_hwdebug(struct task_struct *child,
->  		dabr |= DABR_DATA_READ;
->  	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
->  		dabr |= DABR_DATA_WRITE;
-> +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> +	if (ptrace_get_breakpoints(child) < 0)
-> +		return -ESRCH;
->  
-> -	child->thread.dabr = dabr;
-> +	/*
-> +	 * Check if the request is for 'range' breakpoints. We can
-> +	 * support it if range < 8 bytes.
-> +	 */
-> +	if (bp_info->addr_mode == PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE) {
-> +		len = bp_info->addr2 - bp_info->addr;
-> +	} else if (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) {
-> +			ptrace_put_breakpoints(child);
-> +			return -EINVAL;
-
-You are overindented here.
-
-> +	}
-> +	bp = thread->ptrace_bps[0];
-> +	if (bp) {
-> +		attr = bp->attr;
-> +		attr.bp_addr = (unsigned long)bp_info->addr & ~HW_BREAKPOINT_ALIGN;
-> +		arch_bp_generic_fields(dabr &
-> +					(DABR_DATA_WRITE | DABR_DATA_READ),
-> +							&attr.bp_type);
-
-You still have this code which has no business in the generic
-interface path.
-
-> +		attr.bp_len = len;
-> +		ret =  modify_user_hw_breakpoint(bp, &attr);
-> +		if (ret) {
-> +			ptrace_put_breakpoints(child);
-> +			return ret;
-> +		}
-
-If a bp already exists, you're modifying it.  I thought the semantics
-of the new interface meant that you shoul return ENOSPC in this case,
-and a DEL would be necessary before adding another breakpoint.
-
-
-> +		thread->ptrace_bps[0] = bp;
-> +		ptrace_put_breakpoints(child);
-> +		thread->dabr = dabr;
-> +		return 0;
-> +	}
-> +
-> +	/* Create a new breakpoint request if one doesn't exist already */
-> +	hw_breakpoint_init(&attr);
-> +	attr.bp_addr = (unsigned long)bp_info->addr & ~HW_BREAKPOINT_ALIGN;
-> +	attr.bp_len = len;
-> +	arch_bp_generic_fields(dabr & (DABR_DATA_WRITE | DABR_DATA_READ),
-> +								&attr.bp_type);
-> +
-> +	thread->ptrace_bps[0] = bp = register_user_hw_breakpoint(&attr,
-> +					       ptrace_triggered, NULL, child);
-> +	if (IS_ERR(bp)) {
-> +		thread->ptrace_bps[0] = NULL;
-> +		ptrace_put_breakpoints(child);
-> +		return PTR_ERR(bp);
-> +	}
->  
-> +	ptrace_put_breakpoints(child);
-> +	return 1;
-> +#endif /* CONFIG_HAVE_HW_BREAKPOINT */
-> +
-> +	if (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT)
-> +		return -EINVAL;
-> +
-> +	if (child->thread.dabr)
-> +		return -ENOSPC;
-> +
-> +	child->thread.dabr = dabr;
->  	return 1;
->  #endif /* !CONFIG_PPC_ADV_DEBUG_DVCS */
->  }
->  
->  static long ppc_del_hwdebug(struct task_struct *child, long addr, long data)
->  {
-> +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> +	struct thread_struct *thread = &(child->thread);
-> +	struct perf_event *bp;
-> +#endif /* CONFIG_HAVE_HW_BREAKPOINT */
->  #ifdef CONFIG_PPC_ADV_DEBUG_REGS
->  	int rc;
->  
-> @@ -1426,10 +1488,24 @@ static long ppc_del_hwdebug(struct task_struct *child, long addr, long data)
->  #else
->  	if (data != 1)
->  		return -EINVAL;
-> +
-> +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> +	if (ptrace_get_breakpoints(child) < 0)
-> +		return -ESRCH;
-> +
-> +	bp = thread->ptrace_bps[0];
-> +	if (bp) {
-> +		unregister_hw_breakpoint(bp);
-> +		thread->ptrace_bps[0] = NULL;
-> +	}
-> +	ptrace_put_breakpoints(child);
-> +	return 0;
-
-Shouldn't DEL return an error if there is no existing bp.
-
-> +#else /* CONFIG_HAVE_HW_BREAKPOINT */
->  	if (child->thread.dabr == 0)
->  		return -ENOENT;
->  
->  	child->thread.dabr = 0;
-> +#endif /* CONFIG_HAVE_HW_BREAKPOINT */
->  
->  	return 0;
->  #endif
-> @@ -1560,7 +1636,7 @@ long arch_ptrace(struct task_struct *child, long request,
->  		dbginfo.data_bp_alignment = 4;
->  #endif
->  		dbginfo.sizeof_condition = 0;
-> -		dbginfo.features = 0;
-> +		dbginfo.features = PPC_DEBUG_FEATURE_DATA_BP_RANGE;
->  #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
->  
->  		if (!access_ok(VERIFY_WRITE, datavp,
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Thanks,
+-Mahesh.
