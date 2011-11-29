@@ -1,35 +1,19 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A784E1007D1
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2011 18:16:24 +1100 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Tue, 29 Nov 2011 12:46:18 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAT7G1tc4915336
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2011 12:46:01 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAT7G1MB013310
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2011 18:16:01 +1100
-Message-ID: <4ED486AF.5020707@linux.vnet.ibm.com>
-Date: Tue, 29 Nov 2011 12:45:59 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH v2 1/4] cpuidle: (powerpc) Add cpu_idle_wait() to
- allow switching of idle routines
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>	<20111117112830.9191.1951.stgit@localhost6.localdomain6>	<1322434096.23348.6.camel@pasglop>	<4ED36A37.3030409@linux.vnet.ibm.com>	<1322512522.23348.43.camel@pasglop>	<4ED47EC2.2090802@linux.vnet.ibm.com>
- <1322550115.23348.72.camel@pasglop>
-In-Reply-To: <1322550115.23348.72.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-Path: <wg@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ by ozlabs.org (Postfix) with ESMTP id 1E4A0B6F7D
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2011 20:11:41 +1100 (EST)
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH net-next v4 4/4] powerpc: tqm8548/tqm8xx: add and update CAN
+ device nodes
+Date: Tue, 29 Nov 2011 10:11:30 +0100
+Message-Id: <1322557890-6363-5-git-send-email-wg@grandegger.com>
+In-Reply-To: <1322557890-6363-1-git-send-email-wg@grandegger.com>
+References: <1322557890-6363-1-git-send-email-wg@grandegger.com>
+Cc: Stanislav Yelenskiy <stanislavelensky@yahoo.com>,
+ devicetree-discuss@lists.ozlabs.org, linux-can@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, IreneV <boir1@yandex.ru>,
+ socketcan-users@lists.berlios.de, Wolfgang Zarre <info@essax.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,29 +23,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/29/2011 12:31 PM, Benjamin Herrenschmidt wrote:
+This patch enables or updates support for the CC770 and AN82527
+CAN controller on the TQM8548 and TQM8xx boards.
 
-> On Tue, 2011-11-29 at 12:12 +0530, Deepthi Dharwar wrote:
->>
->> Yes, this could be problematic as there is small window for the
->> race condition to occur . Otherwise we need to manually schedule
->> it by running a kernel thread but this would definitely have a
->> overhead and would be an overkill. 
-> 
-> Depends what this "window" is. IE. What are you trying to protect
-> yourself against ? What's the risk ?
-> 
-> If it's just module unload, then stop_machine is probably your
-> friend :-)
-> 
-> Cheers,
-> Ben.
-> 
-> 
+CC: devicetree-discuss@lists.ozlabs.org
+CC: linuxppc-dev@ozlabs.org
+CC: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+---
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts |   19 ++++++++++++++-----
+ arch/powerpc/boot/dts/tqm8548.dts          |   19 ++++++++++++++-----
+ arch/powerpc/boot/dts/tqm8xx.dts           |   25 +++++++++++++++++++++++++
+ 3 files changed, 53 insertions(+), 10 deletions(-)
 
-
-Yup, it is the module unload that I am worried about. Otherwise
-manually doing it using kernel thread would be an overkill -:(
-
-Regards,
-Deepthi
+diff --git a/arch/powerpc/boot/dts/tqm8548-bigflash.dts b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+index 9452c3c..d918752 100644
+--- a/arch/powerpc/boot/dts/tqm8548-bigflash.dts
++++ b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+@@ -352,7 +352,7 @@
+ 		ranges = <
+ 			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+ 			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+-			2 0x0 0xa3000000 0x00008000	// CAN (2 x i82527)
++			2 0x0 0xa3000000 0x00008000	// CAN (2 x CC770)
+ 			3 0x0 0xa3010000 0x00008000	// NAND FLASH
+ 
+ 		>;
+@@ -393,18 +393,27 @@
+ 		};
+ 
+ 		/* Note: CAN support needs be enabled in U-Boot */
+-		can0@2,0 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,0 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x0 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
+ 		};
+ 
+-		can1@2,100 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,100 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x100 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
+ 		};
+ 
+ 		/* Note: NAND support needs to be enabled in U-Boot */
+diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tqm8548.dts
+index 619776f..988d887 100644
+--- a/arch/powerpc/boot/dts/tqm8548.dts
++++ b/arch/powerpc/boot/dts/tqm8548.dts
+@@ -352,7 +352,7 @@
+ 		ranges = <
+ 			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+ 			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+-			2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
++			2 0x0 0xe3000000 0x00008000	// CAN (2 x CC770)
+ 			3 0x0 0xe3010000 0x00008000	// NAND FLASH
+ 
+ 		>;
+@@ -393,18 +393,27 @@
+ 		};
+ 
+ 		/* Note: CAN support needs be enabled in U-Boot */
+-		can0@2,0 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,0 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x0 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
+ 		};
+ 
+-		can1@2,100 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,100 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x100 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
+ 		};
+ 
+ 		/* Note: NAND support needs to be enabled in U-Boot */
+diff --git a/arch/powerpc/boot/dts/tqm8xx.dts b/arch/powerpc/boot/dts/tqm8xx.dts
+index f6da7ec..c3dba25 100644
+--- a/arch/powerpc/boot/dts/tqm8xx.dts
++++ b/arch/powerpc/boot/dts/tqm8xx.dts
+@@ -57,6 +57,7 @@
+ 
+ 		ranges = <
+ 			0x0 0x0 0x40000000 0x800000
++			0x3 0x0 0xc0000000 0x200
+ 		>;
+ 
+ 		flash@0,0 {
+@@ -67,6 +68,30 @@
+ 			bank-width = <4>;
+ 			device-width = <2>;
+ 		};
++
++		/* Note: CAN support needs be enabled in U-Boot */
++		can@3,0 {
++			compatible = "intc,82527";
++			reg = <3 0x0 0x80>;
++			interrupts = <8 1>;
++			interrupt-parent = <&PIC>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
++		};
++
++		can@3,100 {
++			compatible = "intc,82527";
++			reg = <3 0x100 0x80>;
++			interrupts = <8 1>;
++			interrupt-parent = <&PIC>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++		};
+ 	};
+ 
+ 	soc@fff00000 {
+-- 
+1.7.4.1
