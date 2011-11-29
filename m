@@ -1,13 +1,13 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
 Received: from border.exmeritus.com (border.exmeritus.com
  [IPv6:2002:46a7:f11a:ffff::])
- by ozlabs.org (Postfix) with ESMTP id ED0A7B6F7C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 05:59:39 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 1AF511007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 05:59:40 +1100 (EST)
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 06/10] powerpc/mpic: Invert the meaning of MPIC_PRIMARY
-Date: Tue, 29 Nov 2011 13:58:33 -0500
-Message-Id: <1322593117-29938-7-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [PATCH 10/10] powerpc/mpic: Add in-core support for cascaded MPICs
+Date: Tue, 29 Nov 2011 13:58:37 -0500
+Message-Id: <1322593117-29938-11-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
 References: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,526 +21,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It turns out that there are only 2 in-tree platforms which use MPICs
-which are not "primary":  IBM Cell and PowerMac.  To reduce the
-complexity of the typical board setup code, invert the MPIC_PRIMARY bit
-into MPIC_SECONDARY.
+The Cell and PowerMac platforms use virtually identical cascaded-IRQ
+setup code, so just merge it into the core.  Ideally this code would
+trigger automatically when an MPIC device-node specifies an "interrupts"
+property, perhaps even enabling MPIC_SECONDARY along the way.
+
+Unfortunately, Benjamin Herrenschmidt has had bad experiences in the
+past with the quality of Apple PowerMac device-trees, so to be safe we
+will only try to parse out an IRQ if the MPIC_SECONDARY flag is set by
+the caller.
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 ---
- arch/powerpc/include/asm/mpic.h                   |    8 ++++----
- arch/powerpc/platforms/44x/iss4xx.c               |    2 +-
- arch/powerpc/platforms/85xx/corenet_ds.c          |    2 +-
- arch/powerpc/platforms/85xx/ksi8560.c             |    2 +-
- arch/powerpc/platforms/85xx/mpc8536_ds.c          |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_ads.c         |    3 +--
- arch/powerpc/platforms/85xx/mpc85xx_cds.c         |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_ds.c          |    3 +--
- arch/powerpc/platforms/85xx/mpc85xx_mds.c         |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c         |    3 +--
- arch/powerpc/platforms/85xx/p1010rdb.c            |    4 ++--
- arch/powerpc/platforms/85xx/p1022_ds.c            |    2 +-
- arch/powerpc/platforms/85xx/p1023_rds.c           |    2 +-
- arch/powerpc/platforms/85xx/sbc8548.c             |    2 +-
- arch/powerpc/platforms/85xx/sbc8560.c             |    2 +-
- arch/powerpc/platforms/85xx/socrates.c            |    2 +-
- arch/powerpc/platforms/85xx/stx_gp3.c             |    2 +-
- arch/powerpc/platforms/85xx/tqm85xx.c             |    2 +-
- arch/powerpc/platforms/85xx/xes_mpc85xx.c         |    2 +-
- arch/powerpc/platforms/86xx/pic.c                 |    5 ++---
- arch/powerpc/platforms/cell/setup.c               |    2 +-
- arch/powerpc/platforms/chrp/setup.c               |    3 +--
- arch/powerpc/platforms/embedded6xx/holly.c        |    2 +-
- arch/powerpc/platforms/embedded6xx/linkstation.c  |    2 +-
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    2 +-
- arch/powerpc/platforms/embedded6xx/storcenter.c   |    2 +-
- arch/powerpc/platforms/maple/setup.c              |    2 +-
- arch/powerpc/platforms/pasemi/setup.c             |    2 +-
- arch/powerpc/platforms/powermac/pic.c             |    2 +-
- arch/powerpc/platforms/pseries/setup.c            |    3 +--
- arch/powerpc/sysdev/mpic.c                        |   14 +++++++-------
- 31 files changed, 42 insertions(+), 48 deletions(-)
+ arch/powerpc/platforms/cell/setup.c   |   22 --------------------
+ arch/powerpc/platforms/powermac/pic.c |   36 ++++----------------------------
+ arch/powerpc/sysdev/mpic.c            |   30 +++++++++++++++++++++++++-
+ 3 files changed, 33 insertions(+), 55 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index ba0b204..b9d2c0f 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -334,11 +334,11 @@ struct mpic
-  * Note setting any ID (leaving those bits to 0) means standard MPIC
-  */
- 
--/* This is the primary controller, only that one has IPIs and
-- * has afinity control. A non-primary MPIC always uses CPU0
-- * registers only
-+/*
-+ * This is a secondary ("chained") controller; it only uses the CPU0
-+ * registers.  Primary controllers have IPIs and affinity control.
-  */
--#define MPIC_PRIMARY			0x00000001
-+#define MPIC_SECONDARY			0x00000001
- 
- /* Set this for a big-endian MPIC */
- #define MPIC_BIG_ENDIAN			0x00000002
-diff --git a/arch/powerpc/platforms/44x/iss4xx.c b/arch/powerpc/platforms/44x/iss4xx.c
-index 19395f1..5b8cdbb 100644
---- a/arch/powerpc/platforms/44x/iss4xx.c
-+++ b/arch/powerpc/platforms/44x/iss4xx.c
-@@ -71,7 +71,7 @@ static void __init iss4xx_init_irq(void)
- 		/* The MPIC driver will get everything it needs from the
- 		 * device-tree, just pass 0 to all arguments
- 		 */
--		struct mpic *mpic = mpic_alloc(np, 0, MPIC_PRIMARY, 0, 0,
-+		struct mpic *mpic = mpic_alloc(np, 0, 0, 0, 0,
- 					       " MPIC     ");
- 		BUG_ON(mpic == NULL);
- 		mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
-index 134e1f8..7b737a9 100644
---- a/arch/powerpc/platforms/85xx/corenet_ds.c
-+++ b/arch/powerpc/platforms/85xx/corenet_ds.c
-@@ -36,7 +36,7 @@
- void __init corenet_ds_pic_init(void)
- {
- 	struct mpic *mpic;
--	unsigned int flags = MPIC_PRIMARY | MPIC_BIG_ENDIAN |
-+	unsigned int flags = MPIC_BIG_ENDIAN |
- 				MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU;
- 
- 	if (ppc_md.get_irq == mpic_get_coreint_irq)
-diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
-index d49dbc4..278962b 100644
---- a/arch/powerpc/platforms/85xx/ksi8560.c
-+++ b/arch/powerpc/platforms/85xx/ksi8560.c
-@@ -74,7 +74,7 @@ static void __init ksi8560_pic_init(void)
- #endif
- 
- 	mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 2c928f0..d1aece5 100644
---- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -35,7 +35,7 @@
- void __init mpc8536_ds_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			  MPIC_PRIMARY | MPIC_WANTS_RESET |
-+			  MPIC_WANTS_RESET |
- 			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index 2b443ba..65a3de4 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -69,8 +69,7 @@ static void __init mpc85xx_ads_pic_init(void)
- 	int irq;
- #endif
- 
--	mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+	mpic = mpic_alloc(NULL, 0, MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 0288516..92e79d7 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -187,7 +187,7 @@ static void __init mpc85xx_cds_pic_init(void)
- {
- 	struct mpic *mpic;
- 	mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 14fccaf..5298137 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -70,13 +70,12 @@ void __init mpc85xx_ds_pic_init(void)
- 
- 	if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS-CAMP")) {
- 		mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY |
- 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
- 			MPIC_SINGLE_DEST_CPU,
- 			0, 256, " OpenPIC  ");
- 	} else {
- 		mpic = mpic_alloc(NULL, 0,
--			  MPIC_PRIMARY | MPIC_WANTS_RESET |
-+			  MPIC_WANTS_RESET |
- 			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
- 			  MPIC_SINGLE_DEST_CPU,
- 			0, 256, " OpenPIC  ");
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index c5b7991..3c13df1 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -474,7 +474,7 @@ machine_arch_initcall(p1021_mds, swiotlb_setup_bus_notifier);
- static void __init mpc85xx_mds_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
- 			MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 9edb2b1..a3cf5d1 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -47,13 +47,12 @@ void __init mpc85xx_rdb_pic_init(void)
- 
- 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
- 		mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY |
- 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
- 			MPIC_SINGLE_DEST_CPU,
- 			0, 256, " OpenPIC  ");
- 	} else {
- 		mpic = mpic_alloc(NULL, 0,
--		  MPIC_PRIMARY | MPIC_WANTS_RESET |
-+		  MPIC_WANTS_RESET |
- 		  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
- 		  MPIC_SINGLE_DEST_CPU,
- 		  0, 256, " OpenPIC  ");
-diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
-index 92ac6a1..80ddeb6 100644
---- a/arch/powerpc/platforms/85xx/p1010rdb.c
-+++ b/arch/powerpc/platforms/85xx/p1010rdb.c
-@@ -31,8 +31,8 @@
- void __init p1010_rdb_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--	  MPIC_PRIMARY | MPIC_WANTS_RESET |
--	  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
-+	  MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
-+	  MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
- 	  0, 256, " OpenPIC  ");
- 
- 	BUG_ON(mpic == NULL);
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 894ba81..d2bdf49 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -240,7 +240,7 @@ p1022ds_valid_monitor_port(enum fsl_diu_monitor_port port)
- void __init p1022_ds_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--		MPIC_PRIMARY | MPIC_WANTS_RESET |
-+		MPIC_WANTS_RESET |
- 		MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
- 		MPIC_SINGLE_DEST_CPU,
- 		0, 256, " OpenPIC  ");
-diff --git a/arch/powerpc/platforms/85xx/p1023_rds.c b/arch/powerpc/platforms/85xx/p1023_rds.c
-index df82bc9..985d56e 100644
---- a/arch/powerpc/platforms/85xx/p1023_rds.c
-+++ b/arch/powerpc/platforms/85xx/p1023_rds.c
-@@ -107,7 +107,7 @@ machine_device_initcall(p1023_rds, p1023_publish_devices);
- static void __init mpc85xx_rds_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--		MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
-+		MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
- 		MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
- 		0, 256, " OpenPIC  ");
- 
-diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
-index 5776aa8..bdfd6d8 100644
---- a/arch/powerpc/platforms/85xx/sbc8548.c
-+++ b/arch/powerpc/platforms/85xx/sbc8548.c
-@@ -53,7 +53,7 @@ static int sbc_rev;
- static void __init sbc8548_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
-index 82461d3..e851ae0 100644
---- a/arch/powerpc/platforms/85xx/sbc8560.c
-+++ b/arch/powerpc/platforms/85xx/sbc8560.c
-@@ -60,7 +60,7 @@ static void __init sbc8560_pic_init(void)
- #endif
- 
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
-index a9a45f6..94bd256 100644
---- a/arch/powerpc/platforms/85xx/socrates.c
-+++ b/arch/powerpc/platforms/85xx/socrates.c
-@@ -48,7 +48,7 @@ static void __init socrates_pic_init(void)
- 	struct device_node *np;
- 
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
-index 55e941b..e0c88b3 100644
---- a/arch/powerpc/platforms/85xx/stx_gp3.c
-+++ b/arch/powerpc/platforms/85xx/stx_gp3.c
-@@ -64,7 +64,7 @@ static void __init stx_gp3_pic_init(void)
- #endif
- 
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
-index 660769b..2f6479a 100644
---- a/arch/powerpc/platforms/85xx/tqm85xx.c
-+++ b/arch/powerpc/platforms/85xx/tqm85xx.c
-@@ -62,7 +62,7 @@ static void __init tqm85xx_pic_init(void)
- #endif
- 
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-index a968af6..a5d2a9c 100644
---- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-+++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-@@ -42,7 +42,7 @@
- void __init xes_mpc85xx_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			  MPIC_PRIMARY | MPIC_WANTS_RESET |
-+			  MPIC_WANTS_RESET |
- 			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
-diff --git a/arch/powerpc/platforms/86xx/pic.c b/arch/powerpc/platforms/86xx/pic.c
-index ed85b3c..52bbfa0 100644
---- a/arch/powerpc/platforms/86xx/pic.c
-+++ b/arch/powerpc/platforms/86xx/pic.c
-@@ -38,9 +38,8 @@ void __init mpc86xx_init_irq(void)
- #endif
- 
- 	struct mpic *mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_WANTS_RESET |
--			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
--			MPIC_SINGLE_DEST_CPU,
-+			MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
-+			MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
- 			0, 256, " MPIC     ");
- 	BUG_ON(mpic == NULL);
- 
 diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
-index 0fc9b72..cd00ca8 100644
+index cd00ca8..a0f5d28 100644
 --- a/arch/powerpc/platforms/cell/setup.c
 +++ b/arch/powerpc/platforms/cell/setup.c
-@@ -211,7 +211,7 @@ static void __init mpic_init_IRQ(void)
- 		/* The MPIC driver will get everything it needs from the
- 		 * device-tree, just pass 0 to all arguments
- 		 */
--		mpic = mpic_alloc(dn, 0, 0, 0, 0, " MPIC     ");
-+		mpic = mpic_alloc(dn, 0, MPIC_SECONDARY, 0, 0, " MPIC     ");
+@@ -184,19 +184,6 @@ static int __init cell_publish_devices(void)
+ }
+ machine_subsys_initcall(cell, cell_publish_devices);
+ 
+-static void cell_mpic_cascade(unsigned int irq, struct irq_desc *desc)
+-{
+-	struct irq_chip *chip = irq_desc_get_chip(desc);
+-	struct mpic *mpic = irq_desc_get_handler_data(desc);
+-	unsigned int virq;
+-
+-	virq = mpic_get_one_irq(mpic);
+-	if (virq != NO_IRQ)
+-		generic_handle_irq(virq);
+-
+-	chip->irq_eoi(&desc->irq_data);
+-}
+-
+ static void __init mpic_init_IRQ(void)
+ {
+ 	struct device_node *dn;
+@@ -215,15 +202,6 @@ static void __init mpic_init_IRQ(void)
  		if (mpic == NULL)
  			continue;
  		mpic_init(mpic);
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 1227864..f1f17bb 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -435,8 +435,7 @@ static void __init chrp_find_openpic(void)
- 	if (len > 1)
- 		isu_size = iranges[3];
+-
+-		virq = irq_of_parse_and_map(dn, 0);
+-		if (virq == NO_IRQ)
+-			continue;
+-
+-		printk(KERN_INFO "%s : hooking up to IRQ %d\n",
+-		       dn->full_name, virq);
+-		irq_set_handler_data(virq, mpic);
+-		irq_set_chained_handler(virq, cell_mpic_cascade);
+ 	}
+ }
  
--	chrp_mpic = mpic_alloc(np, opaddr, MPIC_PRIMARY,
--			       isu_size, 0, " MPIC    ");
-+	chrp_mpic = mpic_alloc(np, opaddr, 0, isu_size, 0, " MPIC    ");
- 	if (chrp_mpic == NULL) {
- 		printk(KERN_ERR "Failed to allocate MPIC structure\n");
- 		goto bail;
-diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
-index 5ed00a7..9cfcf20 100644
---- a/arch/powerpc/platforms/embedded6xx/holly.c
-+++ b/arch/powerpc/platforms/embedded6xx/holly.c
-@@ -155,7 +155,7 @@ static void __init holly_init_IRQ(void)
- #endif
- 
- 	mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
-+			MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
- 			MPIC_SPV_EOI | MPIC_NO_PTHROU_DIS | MPIC_REGSET_TSI108,
- 			24,
- 			NR_IRQS-4, /* num_sources used */
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index 502ff60..bcfad92 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -82,7 +82,7 @@ static void __init linkstation_init_IRQ(void)
- {
- 	struct mpic *mpic;
- 
--	mpic = mpic_alloc(NULL, 0, MPIC_PRIMARY | MPIC_WANTS_RESET,
-+	mpic = mpic_alloc(NULL, 0, MPIC_WANTS_RESET,
- 			4, 32, " EPIC     ");
- 	BUG_ON(mpic == NULL);
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-index e0f1127..f3350d7 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-+++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -109,7 +109,7 @@ static void __init mpc7448_hpc2_init_IRQ(void)
- #endif
- 
- 	mpic = mpic_alloc(NULL, 0,
--			MPIC_PRIMARY | MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
-+			MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
- 			MPIC_SPV_EOI | MPIC_NO_PTHROU_DIS | MPIC_REGSET_TSI108,
- 			24,
- 			NR_IRQS-4, /* num_sources used */
-diff --git a/arch/powerpc/platforms/embedded6xx/storcenter.c b/arch/powerpc/platforms/embedded6xx/storcenter.c
-index 9bd15df..afa6388 100644
---- a/arch/powerpc/platforms/embedded6xx/storcenter.c
-+++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
-@@ -84,7 +84,7 @@ static void __init storcenter_init_IRQ(void)
- {
- 	struct mpic *mpic;
- 
--	mpic = mpic_alloc(NULL, 0, MPIC_PRIMARY | MPIC_WANTS_RESET,
-+	mpic = mpic_alloc(NULL, 0, MPIC_WANTS_RESET,
- 			16, 32, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index 4c37204..0bcbfe7 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -221,7 +221,7 @@ static void __init maple_init_IRQ(void)
- 	unsigned long openpic_addr = 0;
- 	int naddr, n, i, opplen, has_isus = 0;
- 	struct mpic *mpic;
--	unsigned int flags = MPIC_PRIMARY;
-+	unsigned int flags = 0;
- 
- 	/* Locate MPIC in the device-tree. Note that there is a bug
- 	 * in Maple device-tree where the type of the controller is
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index baf20a9..98b7a7c 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -224,7 +224,7 @@ static __init void pas_init_IRQ(void)
- 	openpic_addr = of_read_number(opprop, naddr);
- 	printk(KERN_DEBUG "OpenPIC addr: %lx\n", openpic_addr);
- 
--	mpic_flags = MPIC_PRIMARY | MPIC_LARGE_VECTORS | MPIC_NO_BIAS;
-+	mpic_flags = MPIC_LARGE_VECTORS | MPIC_NO_BIAS;
- 
- 	nmiprop = of_get_property(mpic_node, "nmi-source", NULL);
- 	if (nmiprop)
 diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
-index 44f9774..bbfcc94 100644
+index bbfcc94..5cbceb4 100644
 --- a/arch/powerpc/platforms/powermac/pic.c
 +++ b/arch/powerpc/platforms/powermac/pic.c
-@@ -499,7 +499,7 @@ static struct mpic * __init pmac_setup_one_mpic(struct device_node *np,
+@@ -464,18 +464,6 @@ int of_irq_map_oldworld(struct device_node *device, int index,
+ }
+ #endif /* CONFIG_PPC32 */
+ 
+-static void pmac_u3_cascade(unsigned int irq, struct irq_desc *desc)
+-{
+-	struct irq_chip *chip = irq_desc_get_chip(desc);
+-	struct mpic *mpic = irq_desc_get_handler_data(desc);
+-	unsigned int cascade_irq = mpic_get_one_irq(mpic);
+-
+-	if (cascade_irq != NO_IRQ)
+-		generic_handle_irq(cascade_irq);
+-
+-	chip->irq_eoi(&desc->irq_data);
+-}
+-
+ static void __init pmac_pic_setup_mpic_nmi(struct mpic *mpic)
  {
- 	const char *name = master ? " MPIC 1   " : " MPIC 2   ";
- 	struct mpic *mpic;
--	unsigned int flags = master ? MPIC_PRIMARY : 0;
-+	unsigned int flags = master ? 0 : MPIC_SECONDARY;
- 	int rc;
+ #if defined(CONFIG_XMON) && defined(CONFIG_PPC32)
+@@ -527,7 +515,6 @@ static int __init pmac_pic_probe_mpic(void)
+ {
+ 	struct mpic *mpic1, *mpic2;
+ 	struct device_node *np, *master = NULL, *slave = NULL;
+-	unsigned int cascade;
  
- 	pmac_call_feature(PMAC_FTR_ENABLE_MPIC, np, 0, 0);
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index c3408ca..01df08d 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -192,8 +192,7 @@ static void __init pseries_mpic_init_IRQ(void)
- 	BUG_ON(openpic_addr == 0);
+ 	/* We can have up to 2 MPICs cascaded */
+ 	for (np = NULL; (np = of_find_node_by_type(np, "open-pic"))
+@@ -563,27 +550,14 @@ static int __init pmac_pic_probe_mpic(void)
  
- 	/* Setup the openpic driver */
--	mpic = mpic_alloc(pSeries_mpic_node, openpic_addr,
--			  MPIC_PRIMARY,
-+	mpic = mpic_alloc(pSeries_mpic_node, openpic_addr, 0,
- 			  16, 250, /* isu size, irq count */
- 			  " MPIC     ");
- 	BUG_ON(mpic == NULL);
+ 	of_node_put(master);
+ 
+-	/* No slave, let's go out */
+-	if (slave == NULL)
+-		return 0;
+-
+-	/* Get/Map slave interrupt */
+-	cascade = irq_of_parse_and_map(slave, 0);
+-	if (cascade == NO_IRQ) {
+-		printk(KERN_ERR "Failed to map cascade IRQ\n");
+-		return 0;
+-	}
+-
+-	mpic2 = pmac_setup_one_mpic(slave, 0);
+-	if (mpic2 == NULL) {
+-		printk(KERN_ERR "Failed to setup slave MPIC\n");
++	/* Set up a cascaded controller, if present */
++	if (slave) {
++		mpic2 = pmac_setup_one_mpic(slave, 0);
++		if (mpic2 == NULL)
++			printk(KERN_ERR "Failed to setup slave MPIC\n");
+ 		of_node_put(slave);
+-		return 0;
+ 	}
+-	irq_set_handler_data(cascade, mpic2);
+-	irq_set_chained_handler(cascade, pmac_u3_cascade);
+ 
+-	of_node_put(slave);
+ 	return 0;
+ }
+ 
 diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 4ae1402..e0216ff 100644
+index 67842a5..02191bb 100644
 --- a/arch/powerpc/sysdev/mpic.c
 +++ b/arch/powerpc/sysdev/mpic.c
-@@ -154,7 +154,7 @@ static inline unsigned int mpic_processor_id(struct mpic *mpic)
+@@ -1111,6 +1111,22 @@ static int mpic_host_xlate(struct irq_host *h, struct device_node *ct,
+ 	return 0;
+ }
+ 
++/* IRQ handler for a secondary MPIC cascaded from another IRQ controller */
++static void mpic_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	struct irq_chip *chip = irq_desc_get_chip(desc);
++	struct mpic *mpic = irq_desc_get_handler_data(desc);
++	unsigned int virq;
++
++	BUG_ON(!(mpic->flags & MPIC_SECONDARY));
++
++	virq = mpic_get_one_irq(mpic);
++	if (virq != NO_IRQ)
++		generic_handle_irq(virq);
++
++	chip->irq_eoi(&desc->irq_data);
++}
++
+ static struct irq_host_ops mpic_host_ops = {
+ 	.match = mpic_host_match,
+ 	.map = mpic_host_map,
+@@ -1402,8 +1418,7 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
+ 
+ void __init mpic_init(struct mpic *mpic)
  {
- 	unsigned int cpu = 0;
+-	int i;
+-	int cpu;
++	int i, cpu;
  
--	if (mpic->flags & MPIC_PRIMARY)
-+	if (!(mpic->flags & MPIC_SECONDARY))
- 		cpu = hard_smp_processor_id();
+ 	BUG_ON(mpic->num_sources == 0);
  
- 	return cpu;
-@@ -990,7 +990,7 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
+@@ -1488,6 +1503,17 @@ void __init mpic_init(struct mpic *mpic)
+ 				  GFP_KERNEL);
+ 	BUG_ON(mpic->save_data == NULL);
+ #endif
++
++	/* Check if this MPIC is chained from a parent interrupt controller */
++	if (mpic->flags & MPIC_SECONDARY) {
++		int virq = irq_of_parse_and_map(mpic->node, 0);
++		if (virq != NO_IRQ) {
++			printk(KERN_INFO "%s: hooking up to IRQ %d\n",
++					mpic->node->full_name, virq);
++			irq_set_handler_data(virq, mpic);
++			irq_set_chained_handler(virq, &mpic_cascade);
++		}
++	}
+ }
  
- #ifdef CONFIG_SMP
- 	else if (hw >= mpic->ipi_vecs[0]) {
--		WARN_ON(!(mpic->flags & MPIC_PRIMARY));
-+		WARN_ON(mpic->flags & MPIC_SECONDARY);
- 
- 		DBG("mpic: mapping as IPI\n");
- 		irq_set_chip_data(virq, mpic);
-@@ -1001,7 +1001,7 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
- #endif /* CONFIG_SMP */
- 
- 	if (hw >= mpic->timer_vecs[0] && hw <= mpic->timer_vecs[7]) {
--		WARN_ON(!(mpic->flags & MPIC_PRIMARY));
-+		WARN_ON(mpic->flags & MPIC_SECONDARY);
- 
- 		DBG("mpic: mapping as timer\n");
- 		irq_set_chip_data(virq, mpic);
-@@ -1184,12 +1184,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 
- 	mpic->hc_irq = mpic_irq_chip;
- 	mpic->hc_irq.name = name;
--	if (flags & MPIC_PRIMARY)
-+	if (!(flags & MPIC_SECONDARY))
- 		mpic->hc_irq.irq_set_affinity = mpic_set_affinity;
- #ifdef CONFIG_MPIC_U3_HT_IRQS
- 	mpic->hc_ht_irq = mpic_irq_ht_chip;
- 	mpic->hc_ht_irq.name = name;
--	if (flags & MPIC_PRIMARY)
-+	if (!(flags & MPIC_SECONDARY))
- 		mpic->hc_ht_irq.irq_set_affinity = mpic_set_affinity;
- #endif /* CONFIG_MPIC_U3_HT_IRQS */
- 
-@@ -1375,7 +1375,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic->next = mpics;
- 	mpics = mpic;
- 
--	if (flags & MPIC_PRIMARY) {
-+	if (!(flags & MPIC_SECONDARY)) {
- 		mpic_primary = mpic;
- 		irq_set_default_host(mpic->irqhost);
- 	}
-@@ -1450,7 +1450,7 @@ void __init mpic_init(struct mpic *mpic)
- 
- 	/* Do the HT PIC fixups on U3 broken mpic */
- 	DBG("MPIC flags: %x\n", mpic->flags);
--	if ((mpic->flags & MPIC_U3_HT_IRQS) && (mpic->flags & MPIC_PRIMARY)) {
-+	if ((mpic->flags & MPIC_U3_HT_IRQS) && !(mpic->flags & MPIC_SECONDARY)) {
- 		mpic_scan_ht_pics(mpic);
- 		mpic_u3msi_init(mpic);
- 	}
+ void __init mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio)
 -- 
 1.7.2.5
