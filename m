@@ -1,26 +1,33 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 38266B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 04:25:43 +1100 (EST)
-Date: Tue, 29 Nov 2011 09:25:40 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
- spinlock use.
-Message-ID: <20111129172539.GB15331@ovro.caltech.edu>
-References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
- <20111122185924.GA23323@ovro.caltech.edu>
- <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
- <20111128163814.GA10919@ovro.caltech.edu>
- <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
+Return-Path: <miche@google.com>
+Received: from mail-qw0-f44.google.com (mail-qw0-f44.google.com
+ [209.85.216.44]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 37DC1B6F7B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 04:50:44 +1100 (EST)
+Received: by qao25 with SMTP id 25so641830qao.17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 09:50:41 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
-Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
- Shi Xuelin-B29237 <B29237@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <CAB8RdapuPRym2dH_9mgmGdzpCxnP1KpS+hS8JJ-geVkga5fMcw@mail.gmail.com>
+References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
+ <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
+ <874nybqo0o.fsf@rustcorp.com.au>
+ <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
+ <20111123103852.GG16665@amit-x200.redhat.com>
+ <CAB8RdaoDxMCgTjuGP70bGrsrtgh=USYtU3Spo5OPtVMYAM5EzQ@mail.gmail.com>
+ <20111129142149.GE2822@amit-x200.redhat.com>
+ <CAB8RdapuPRym2dH_9mgmGdzpCxnP1KpS+hS8JJ-geVkga5fMcw@mail.gmail.com>
+Date: Tue, 29 Nov 2011 09:50:41 -0800
+Message-ID: <CAB8Rdapfuf5XH+X9gsUL+CJ9gTQcSNfq4Dj9DoYWQeFgD04ODQ@mail.gmail.com>
+Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
+From: Miche Baker-Harvey <miche@google.com>
+To: Amit Shah <amit.shah@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
+ Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Greg Kroah-Hartman <gregkh@suse.de>, Eric Northrup <digitaleric@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,192 +37,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 29, 2011 at 03:19:05AM +0000, Li Yang-R58472 wrote:
-> > Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
-> > spinlock use.
-> > 
-> > On Thu, Nov 24, 2011 at 08:12:25AM +0000, Shi Xuelin-B29237 wrote:
-> > > Hi Ira,
-> > >
-> > > Thanks for your review.
-> > >
-> > > After second thought, I think your scenario may not occur.
-> > > Because the cookie 20 we query must be returned by fsl_dma_tx_submit(...) in
-> > practice.
-> > > We never query a cookie not returned by fsl_dma_tx_submit(...).
-> > >
-> > 
-> > I agree about this part.
-> > 
-> > > When we call fsl_tx_status(20), the chan->common.cookie is definitely wrote as
-> > 20 and cpu2 could not read as 19.
-> > >
-> > 
-> > This is what I don't agree about. However, I'm not an expert on CPU cache vs.
-> > memory accesses in an multi-processor system. The section titled "CACHE
-> > COHERENCY" in Documentation/memory-barriers.txt leads me to believe that the
-> > scenario I described is possible.
-> 
-> For Freescale PowerPC, the chip automatically takes care of cache coherency.  Even if this is a concern, spinlock can't address it.
-> 
-> > 
-> > What happens if CPU1's write of chan->common.cookie only goes into CPU1's
-> > cache. It never makes it to main memory before CPU2 fetches the old value of 19.
-> > 
-> > I don't think you should see any performance impact from the smp_mb()
-> > operation.
-> 
-> Smp_mb() do have impact on performance if it's in the hot path.  While it might be safer having it, I doubt it is really necessary.  If the CPU1 doesn't have the updated last_used, it's shouldn't have known there is a cookie 20 existed either.
-> 
+Good grief!  Sorry for the spacing mess-up!  Here's a resend with reformatting.
 
-I believe that you are correct, for powerpc. However, anything outside
-of arch/powerpc shouldn't assume it only runs on powerpc. I wouldn't be
-surprised to see fsldma running on an iMX someday (ARM processor).
+Amit,
+We aren't using either QEMU or kvmtool, but we are using KVM.  All
+the issues we are seeing happen when we try to establish multiple
+virtioconsoles at boot time.  The command line isn't relevant, but I
+can tell you the protocol that's passing between the host (kvm) and
+the guest (see the end of this message).
 
-My interpretation says that the change introduces the possibility that
-fsl_tx_status() returns the wrong answer for an extremely small time
-window, on SMP only, based on Documentation/memory-barriers.txt. But I
-can't seem convince you.
+We do go through the control_work_handler(), but it's not
+providing synchronization.  Here's a trace of the
+control_work_handler() and handle_control_message() calls; note that
+there are two concurrent calls to control_work_handler().
 
-My real question is what code path is hitting this spinlock? Is it in
-mainline Linux? Why is it polling rather than using callbacks to
-determine DMA completion?
+I decorated control_work_handler() with a "lifetime" marker, and
+passed this value to handle_control_message(), so we can see which
+control messages are being handled from which instance of
+the control_work_handler() thread.
+
+Notice that we enter control_work_handler() a second time before
+the handling of the second PORT_ADD message is complete. The
+first CONSOLE_PORT message is handled by the second
+control_work_handler() call, but the second is handled by the first
+control_work_handler() call.
+
+root@myubuntu:~# dmesg | grep MBH
+[3371055.808738] control_work_handler #1
+[3371055.809372] + #1 handle_control_message PORT_ADD
+[3371055.810169] - handle_control_message PORT_ADD
+[3371055.810170] + #1 handle_control_message PORT_ADD
+[3371055.810244]  control_work_handler #2
+[3371055.810245] + #2 handle_control_message CONSOLE_PORT
+[3371055.810246]  got hvc_ports_mutex
+[3371055.810578] - handle_control_message PORT_ADD
+[3371055.810579] + #1 handle_control_message CONSOLE_PORT
+[3371055.810580]  trylock of hvc_ports_mutex failed
+[3371055.811352]  got hvc_ports_mutex
+[3371055.811370] - handle_control_message CONSOLE_PORT
+[3371055.816609] - handle_control_message CONSOLE_PORT
+
+So, I'm guessing the bug is that there shouldn't be two instances of
+control_work_handler() running simultaneously?
 
 Thanks,
-Ira
 
-> > > -----Original Message-----
-> > > From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
-> > > Sent: 2011年11月23日 2:59
-> > > To: Shi Xuelin-B29237
-> > > Cc: dan.j.williams@intel.com; Li Yang-R58472; zw@zh-kernel.org;
-> > > vinod.koul@intel.com; linuxppc-dev@lists.ozlabs.org;
-> > > linux-kernel@vger.kernel.org
-> > > Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
-> > spinlock use.
-> > >
-> > > On Tue, Nov 22, 2011 at 12:55:05PM +0800, b29237@freescale.com wrote:
-> > > > From: Forrest Shi <b29237@freescale.com>
-> > > >
-> > > >     dma status check function fsl_tx_status is heavily called in
-> > > >     a tight loop and the desc lock in fsl_tx_status contended by
-> > > >     the dma status update function. this caused the dma performance
-> > > >     degrades much.
-> > > >
-> > > >     this patch releases the lock in the fsl_tx_status function.
-> > > >     I believe it has no neglect impact on the following call of
-> > > >     dma_async_is_complete(...).
-> > > >
-> > > >     we can see below three conditions will be identified as success
-> > > >     a)  x < complete < use
-> > > >     b)  x < complete+N < use+N
-> > > >     c)  x < complete < use+N
-> > > >     here complete is the completed_cookie, use is the last_used
-> > > >     cookie, x is the querying cookie, N is MAX cookie
-> > > >
-> > > >     when chan->completed_cookie is being read, the last_used may
-> > > >     be incresed. Anyway it has no neglect impact on the dma status
-> > > >     decision.
-> > > >
-> > > >     Signed-off-by: Forrest Shi <xuelin.shi@freescale.com>
-> > > > ---
-> > > >  drivers/dma/fsldma.c |    5 -----
-> > > >  1 files changed, 0 insertions(+), 5 deletions(-)
-> > > >
-> > > > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index
-> > > > 8a78154..1dca56f 100644
-> > > > --- a/drivers/dma/fsldma.c
-> > > > +++ b/drivers/dma/fsldma.c
-> > > > @@ -986,15 +986,10 @@ static enum dma_status fsl_tx_status(struct
-> > dma_chan *dchan,
-> > > >  	struct fsldma_chan *chan = to_fsl_chan(dchan);
-> > > >  	dma_cookie_t last_complete;
-> > > >  	dma_cookie_t last_used;
-> > > > -	unsigned long flags;
-> > > > -
-> > > > -	spin_lock_irqsave(&chan->desc_lock, flags);
-> > > >
-> > >
-> > > This will cause a bug. See below for a detailed explanation. You need this instead:
-> > >
-> > > 	/*
-> > > 	 * On an SMP system, we must ensure that this CPU has seen the
-> > > 	 * memory accesses performed by another CPU under the
-> > > 	 * chan->desc_lock spinlock.
-> > > 	 */
-> > > 	smp_mb();
-> > > >  	last_complete = chan->completed_cookie;
-> > > >  	last_used = dchan->cookie;
-> > > >
-> > > > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> > > > -
-> > > >  	dma_set_tx_state(txstate, last_complete, last_used, 0);
-> > > >  	return dma_async_is_complete(cookie, last_complete, last_used);  }
-> > >
-> > > Facts:
-> > > - dchan->cookie is the same member as chan->common.cookie (same memory
-> > > location)
-> > > - chan->common.cookie is the "last allocated cookie for a pending transaction"
-> > > - chan->completed_cookie is the "last completed transaction"
-> > >
-> > > I have replaced "dchan->cookie" with "chan->common.cookie" in the below
-> > explanation, to keep everything referenced from the same structure.
-> > >
-> > > Variable usage before your change. Everything is used locked.
-> > > - RW chan->common.cookie		(fsl_dma_tx_submit)
-> > > - R  chan->common.cookie		(fsl_tx_status)
-> > > - R  chan->completed_cookie		(fsl_tx_status)
-> > > - W  chan->completed_cookie		(dma_do_tasklet)
-> > >
-> > > Variable usage after your change:
-> > > - RW chan->common.cookie		LOCKED
-> > > - R  chan->common.cookie		NO LOCK
-> > > - R  chan->completed_cookie		NO LOCK
-> > > - W  chan->completed_cookie             LOCKED
-> > >
-> > > What if we assume that you have a 2 CPU system (such as a P2020). After your
-> > changes, one possible sequence is:
-> > >
-> > > === CPU1 - allocate + submit descriptor: fsl_dma_tx_submit() ===
-> > > spin_lock_irqsave
-> > > descriptor->cookie = 20		(x in your example)
-> > > chan->common.cookie = 20	(used in your example)
-> > > spin_unlock_irqrestore
-> > >
-> > > === CPU2 - immediately calls fsl_tx_status() ===
-> > > chan->common.cookie == 19
-> > > chan->completed_cookie == 19
-> > > descriptor->cookie == 20
-> > >
-> > > Since we don't have locks anymore, CPU2 may not have seen the write to
-> > > chan->common.cookie yet.
-> > >
-> > > Also assume that the DMA hardware has not started processing the
-> > > transaction yet. Therefore dma_do_tasklet() has not been called, and
-> > > chan->completed_cookie has not been updated.
-> > >
-> > > In this case, dma_async_is_complete() (on CPU2) returns DMA_SUCCESS, even
-> > though the DMA operation has not succeeded. The DMA operation has not even
-> > started yet!
-> > >
-> > > The smp_mb() fixes this, since it forces CPU2 to have seen all memory operations
-> > that happened before CPU1 released the spinlock. Spinlocks are implicit SMP
-> > memory barriers.
-> > >
-> > > Therefore, the above example becomes:
-> > > smp_mb();
-> > > chan->common.cookie == 20
-> > > chan->completed_cookie == 19
-> > > descriptor->cookie == 20
-> > >
-> > > Then dma_async_is_complete() returns DMA_IN_PROGRESS, which is correct.
-> > >
-> > > Thanks,
-> > > Ira
-> > >
-> > >
-> > > _______________________________________________
-> > > Linuxppc-dev mailing list
-> > > Linuxppc-dev@lists.ozlabs.org
-> > > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Miche
+
+Protocol:
+We set up the virtio console device registers during initialization,
+specifying the multiport feature, and some number of
+ports, n, where nis greater than 1.
+
+In the guest, virtcons_probe() finds our device, and successfully
+sends the VIRTIO_CONSOLE_DEVICE_READY=1 control message.
+On the host, we receive the VIRTIO_CONSOLE_DEVICE_READY message,
+and send one VIRTIO_CONSOLE_PORT_ADD message via the Receive Control
+queuefor each port in the number of ports.  These messages are
+not serialized: they are all sent at once.
+
+The VIRTIO_CONSOLE_PORT_ADD messages are received
+in handle_control_message() in virtio_console.c, and add_port() is
+called for each.  After each port is added, the guest
+sendsVIRTIO_CONSOLE_PORT_READY to the host, and in these messages, the
+id of the port is included in the message.
+
+On the host, in response to each VIRTIO_CONSOLE_PORT_READY=1
+message, we may send a VIRTIO_CONSOLE_CONSOLE_PORT message.
+On the guest, in response to each VIRTIO_CONSOLE_CONSOLE_PORT
+message, init_port_console() is called on the individual port.  The
+same id is used for these messages as was used for the PORT_READY
+messages.
+
+After each successful init_port_console(), the guest
+sends VIRTIO_CONSOLE_PORT_OPEN back to the host.
