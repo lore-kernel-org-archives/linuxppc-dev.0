@@ -1,23 +1,17 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
- [213.199.154.140])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E8A69B6F82
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 10:42:31 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 2/6] powerpc/85xx: consolidate of_platform_bus_probe calls
-Date: Mon, 28 Nov 2011 23:42:24 +0000
-Message-ID: <CAOZdJXXZG38v-tgA2Ty7-uxJ3AxoFCmNxMO3dKJnJYQtJFb9DA@mail.gmail.com>
-References: <1321552581-29773-1-git-send-email-dbaryshkov@gmail.com>
- <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F18C6B6F6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 11:43:36 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAT0hXft012711
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2011 18:43:33 -0600
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/book3e: Change hugetlb preload to take vma argument
+Date: Mon, 28 Nov 2011 18:43:33 -0600
+Message-Id: <13225274132130-git-send-email-beckyb@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +21,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 17, 2011 at 11:56 AM, Dmitry Eremin-Solenikov
-<dbaryshkov@gmail.com> wrote:
+From: Becky Bruce <beckyb@kernel.crashing.org>
 
-> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platfo=
-rms/85xx/p1022_ds.c
-> index 00d93a4..cacb4d4 100644
-> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
-> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-> @@ -330,10 +330,6 @@ static void __init p1022_ds_setup_arch(void)
-> =A0}
->
-> =A0static struct of_device_id __initdata p1022_ds_ids[] =3D {
-> - =A0 =A0 =A0 { .type =3D "soc", },
-> - =A0 =A0 =A0 { .compatible =3D "soc", },
-> - =A0 =A0 =A0 { .compatible =3D "simple-bus", },
-> - =A0 =A0 =A0 { .compatible =3D "gianfar", },
-> =A0 =A0 =A0 =A0/* So that the DMA channel nodes can be probed individuall=
-y: */
-> =A0 =A0 =A0 =A0{ .compatible =3D "fsl,eloplus-dma", },
-> =A0 =A0 =A0 =A0{},
-> @@ -343,6 +339,7 @@ static int __init p1022_ds_publish_devices(void)
-> =A0{
-> =A0 =A0 =A0 =A0return of_platform_bus_probe(NULL, p1022_ds_ids, NULL);
-> =A0}
-> +machine_device_initcall(p1022_ds, mpc85xx_common_publish_devices);
-> =A0machine_device_initcall(p1022_ds, p1022_ds_publish_devices);
+This avoids an extra find_vma() and is less error-prone.
 
-I don't think this is working. =A0I need to investigate some more to be
-sure, but it looks like this is not picking up "fsl,eloplus-dma".
-None of the DMA channels are being probed in the audio driver
-(sound/soc/fsl_dma.c).
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/hugetlb.h   |    3 ++-
+ arch/powerpc/mm/hugetlbpage-book3e.c |    8 ++++++--
+ arch/powerpc/mm/mem.c                |    2 +-
+ 3 files changed, 9 insertions(+), 4 deletions(-)
 
---
-Timur Tabi
-Linux kernel developer at Freescale=
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 555044c..863f49d 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -52,7 +52,8 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
+ }
+ #endif
+ 
+-void book3e_hugetlb_preload(struct mm_struct *mm, unsigned long ea, pte_t pte);
++void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
++			    pte_t pte);
+ void flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+ 
+ void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
+diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
+index 4d6d849..3bc7006 100644
+--- a/arch/powerpc/mm/hugetlbpage-book3e.c
++++ b/arch/powerpc/mm/hugetlbpage-book3e.c
+@@ -37,12 +37,14 @@ static inline int book3e_tlb_exists(unsigned long ea, unsigned long pid)
+ 	return found;
+ }
+ 
+-void book3e_hugetlb_preload(struct mm_struct *mm, unsigned long ea, pte_t pte)
++void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
++			    pte_t pte)
+ {
+ 	unsigned long mas1, mas2;
+ 	u64 mas7_3;
+ 	unsigned long psize, tsize, shift;
+ 	unsigned long flags;
++	struct mm_struct *mm;
+ 
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+ 	int index, ncams;
+@@ -51,12 +53,14 @@ void book3e_hugetlb_preload(struct mm_struct *mm, unsigned long ea, pte_t pte)
+ 	if (unlikely(is_kernel_addr(ea)))
+ 		return;
+ 
++	mm = vma->vm_mm;
++
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	psize = get_slice_psize(mm, ea);
+ 	tsize = mmu_get_tsize(psize);
+ 	shift = mmu_psize_defs[psize].shift;
+ #else
+-	psize = vma_mmu_pagesize(find_vma(mm, ea));
++	psize = vma_mmu_pagesize(vma);
+ 	shift = __ilog2(psize);
+ 	tsize = shift - 10;
+ #endif
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 4dbc388..846065c 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -552,6 +552,6 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
+ #if (defined(CONFIG_PPC_BOOK3E_64) || defined(CONFIG_PPC_FSL_BOOK3E)) \
+ 	&& defined(CONFIG_HUGETLB_PAGE)
+ 	if (is_vm_hugetlb_page(vma))
+-		book3e_hugetlb_preload(vma->vm_mm, address, *ptep);
++		book3e_hugetlb_preload(vma, address, *ptep);
+ #endif
+ }
+-- 
+1.5.6.5
