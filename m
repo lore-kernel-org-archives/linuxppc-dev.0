@@ -1,27 +1,23 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3D1A5B6F7E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 01:22:02 +1100 (EST)
-Date: Tue, 29 Nov 2011 19:51:49 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Miche Baker-Harvey <miche@google.com>
-Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
-Message-ID: <20111129142149.GE2822@amit-x200.redhat.com>
-References: <20111108214452.28884.14840.stgit@miche.sea.corp.google.com>
- <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
- <874nybqo0o.fsf@rustcorp.com.au>
- <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
- <20111123103852.GG16665@amit-x200.redhat.com>
- <CAB8RdaoDxMCgTjuGP70bGrsrtgh=USYtU3Spo5OPtVMYAM5EzQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAB8RdaoDxMCgTjuGP70bGrsrtgh=USYtU3Spo5OPtVMYAM5EzQ@mail.gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
- Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Greg Kroah-Hartman <gregkh@suse.de>, Eric Northrup <digitaleric@google.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B8001B6F67
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 02:48:39 +1100 (EST)
+Subject: Re: [PATCH 2/6] powerpc/85xx: consolidate of_platform_bus_probe calls
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=iso-8859-1
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <CAOZdJXXZG38v-tgA2Ty7-uxJ3AxoFCmNxMO3dKJnJYQtJFb9DA@mail.gmail.com>
+Date: Tue, 29 Nov 2011 09:48:38 -0600
+Message-Id: <38BAFE03-DB17-4442-8CC2-E386E46FEB19@kernel.crashing.org>
+References: <1321552581-29773-1-git-send-email-dbaryshkov@gmail.com>
+ <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
+ <CAOZdJXXZG38v-tgA2Ty7-uxJ3AxoFCmNxMO3dKJnJYQtJFb9DA@mail.gmail.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-On (Mon) 28 Nov 2011 [15:40:41], Miche Baker-Harvey wrote:
-> Amit,
-> 
-> You said that the work would be serialized "due to port additions
-> being on work items on the same workqueue".  I'm not seeing that.
+On Nov 28, 2011, at 5:42 PM, Tabi Timur-B04825 wrote:
 
-You leave a lot of questions unanswered.  What's your environment?
-Are you hot-plugging ports?  Are you using qemu?  What's your command
-line?
+> On Thu, Nov 17, 2011 at 11:56 AM, Dmitry Eremin-Solenikov
+> <dbaryshkov@gmail.com> wrote:
+>=20
+>> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c =
+b/arch/powerpc/platforms/85xx/p1022_ds.c
+>> index 00d93a4..cacb4d4 100644
+>> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
+>> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+>> @@ -330,10 +330,6 @@ static void __init p1022_ds_setup_arch(void)
+>>  }
+>>=20
+>>  static struct of_device_id __initdata p1022_ds_ids[] =3D {
+>> -       { .type =3D "soc", },
+>> -       { .compatible =3D "soc", },
+>> -       { .compatible =3D "simple-bus", },
+>> -       { .compatible =3D "gianfar", },
+>>        /* So that the DMA channel nodes can be probed individually: =
+*/
+>>        { .compatible =3D "fsl,eloplus-dma", },
+>>        {},
+>> @@ -343,6 +339,7 @@ static int __init p1022_ds_publish_devices(void)
+>>  {
+>>        return of_platform_bus_probe(NULL, p1022_ds_ids, NULL);
+>>  }
+>> +machine_device_initcall(p1022_ds, mpc85xx_common_publish_devices);
+>>  machine_device_initcall(p1022_ds, p1022_ds_publish_devices);
+>=20
+> I don't think this is working.  I need to investigate some more to be
+> sure, but it looks like this is not picking up "fsl,eloplus-dma".
+> None of the DMA channels are being probed in the audio driver
+> (sound/soc/fsl_dma.c).
 
-> I've double checked this by using a mutex_trylock in
-> hvc_console::hvc_alloc(), and here's the relevant output from dmesg:
-> 
-> root@myubuntu:~# dmesg | grep MBH
-> [3307216.210274] MBH: got hvc_ports_mutex
-> [3307216.210690] MBH: trylock of hvc_ports_mutex failed
-> [3307216.211143] MBH: got hvc_ports_mutex
-> 
-> This is in a system with two virtio console ports, each of which is a
-> console.  I think if the VIRTIO_CONSOLE_CONSOLE_PORT message handling
-> were actually being serialized, the trylock should never fail.
+Hmm, that's odd.  Should see if the issues exists before the change.
 
-Agreed.
-
-> What's the source of the serialization for the workqueue items?  At
-> first reading it looks like the control_work_handler gets called for
-> each virtio interrupt?
-
-It all depends on how you add ports.  If you're using qemu, they
-happen via the control work handler.
-
-		Amit
+- k=
