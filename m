@@ -1,14 +1,13 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
 Received: from border.exmeritus.com (border.exmeritus.com
  [IPv6:2002:46a7:f11a:ffff::])
- by ozlabs.org (Postfix) with ESMTP id ED0CCB6F7D
+ by ozlabs.org (Postfix) with ESMTP id ED16BB6F7E
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 05:59:39 +1100 (EST)
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 08/10] powerpc/mpic: Put "pic-no-reset" test back into the
- MPIC code
-Date: Tue, 29 Nov 2011 13:58:35 -0500
-Message-Id: <1322593117-29938-9-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [PATCH 07/10] powerpc/mpic: Don't open-code dcr_resource_start
+Date: Tue, 29 Nov 2011 13:58:34 -0500
+Message-Id: <1322593117-29938-8-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
 References: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -22,39 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There's not really any reason to have this one-liner in a separate
-static inline function, given that all the other similar tests are
-already in the alloc_mpic() code.
+Don't open-code the OpenFirmware "dcr-reg" property lookup trying to map
+DCR resources.  This makes the code a bit easier to read.
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 ---
- arch/powerpc/sysdev/mpic.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ arch/powerpc/sysdev/mpic.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 6916ba5..5b380b8 100644
+index e0216ff..6916ba5 100644
 --- a/arch/powerpc/sysdev/mpic.c
 +++ b/arch/powerpc/sysdev/mpic.c
-@@ -1118,11 +1118,6 @@ static struct irq_host_ops mpic_host_ops = {
- 	.xlate = mpic_host_xlate,
- };
- 
--static int mpic_reset_prohibited(struct device_node *node)
--{
--	return node && of_get_property(node, "pic-no-reset", NULL);
--}
+@@ -319,11 +319,8 @@ static void _mpic_map_dcr(struct mpic *mpic, struct device_node *node,
+ 			  struct mpic_reg_bank *rb,
+ 			  unsigned int offset, unsigned int size)
+ {
+-	const u32 *dbasep;
 -
- /*
-  * Exported functions
-  */
-@@ -1272,7 +1267,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	/* When using a device-node, reset requests are only honored if the MPIC
- 	 * is allowed to reset.
- 	 */
--	if (mpic_reset_prohibited(node))
-+	if (of_get_property(node, "pic-no-reset", NULL))
- 		mpic->flags |= MPIC_NO_RESET;
+-	dbasep = of_get_property(node, "dcr-reg", NULL);
+-
+-	rb->dhost = dcr_map(node, *dbasep + offset, size);
++	phys_addr_t phys_addr = dcr_resource_start(node);
++	rb->dhost = dcr_map(mpic->node, phys_addr + offset, size);
+ 	BUG_ON(!DCR_MAP_OK(rb->dhost));
+ }
  
- 	if ((flags & MPIC_WANTS_RESET) && !(mpic->flags & MPIC_NO_RESET)) {
 -- 
 1.7.2.5
