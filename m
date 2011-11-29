@@ -1,31 +1,18 @@
-Return-Path: <B29237@freescale.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
- [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 2D57F1007D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 20:58:50 +1100 (EST)
-From: Shi Xuelin-B29237 <B29237@freescale.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: RE: [PATCH][RFC] fsldma: fix performance degradation by optimizing
- spinlock use.
-Date: Wed, 30 Nov 2011 09:57:47 +0000
-Message-ID: <DBB740589CE8814680DECFE34BE197AB14A1E0@039-SN1MPN1-006.039d.mgd.msft.net>
-References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
- <20111122185924.GA23323@ovro.caltech.edu>
- <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
- <20111128163814.GA10919@ovro.caltech.edu>
- <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
- <20111129172539.GB15331@ovro.caltech.edu>
-In-Reply-To: <20111129172539.GB15331@ovro.caltech.edu>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <rkuo@codeaurora.org>
+Received: from wolverine02.qualcomm.com (wolverine02.qualcomm.com
+ [199.106.114.251])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "wolverine02.qualcomm.com",
+ Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 457C21007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 17:58:35 +1100 (EST)
+Message-Id: <7f5671$45bi2l@wolverine02.qualcomm.com>
+Resent-Message-ID: <20111130065829.GA2884@codeaurora.org>
+From: Richard Kuo <rkuo@qualcomm.com>
+Date: Tue, 29 Nov 2011 12:28:20 -0600
+Subject: [PATCH] powerpc:  use rwsem.h from generic location
+To: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arch@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,158 +22,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8gSXJhLA0KDQpJbiBkcml2ZXJzL2RtYS9kbWFlbmdpbmUuYywgd2UgaGF2ZSBiZWxvdyB0
-aWdodCBsb29wIHRvIGNoZWNrIERNQSBjb21wbGV0aW9uIGluIG1haW5saW5lIExpbnV4Og0KICAg
-ICAgIGRvIHsNCiAgICAgICAgICAgICAgICBzdGF0dXMgPSBkbWFfYXN5bmNfaXNfdHhfY29tcGxl
-dGUoY2hhbiwgY29va2llLCBOVUxMLCBOVUxMKTsNCiAgICAgICAgICAgICAgICBpZiAodGltZV9h
-ZnRlcl9lcShqaWZmaWVzLCBkbWFfc3luY193YWl0X3RpbWVvdXQpKSB7DQogICAgICAgICAgICAg
-ICAgICAgICAgICBwcmludGsoS0VSTl9FUlIgImRtYV9zeW5jX3dhaXRfdGltZW91dCFcbiIpOw0K
-ICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIERNQV9FUlJPUjsNCiAgICAgICAgICAgICAg
-ICB9DQogICAgICAgIH0gd2hpbGUgKHN0YXR1cyA9PSBETUFfSU5fUFJPR1JFU1MpOw0KDQoNClRo
-YW5rcywNCkZvcnJlc3QNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IElyYSBX
-LiBTbnlkZXIgW21haWx0bzppd3NAb3Zyby5jYWx0ZWNoLmVkdV0gDQpTZW50OiAyMDEx5bm0MTHm
-nIgzMOaXpSAxOjI2DQpUbzogTGkgWWFuZy1SNTg0NzINCkNjOiBTaGkgWHVlbGluLUIyOTIzNzsg
-dmlub2Qua291bEBpbnRlbC5jb207IGRhbi5qLndpbGxpYW1zQGludGVsLmNvbTsgbGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNClN1Ympl
-Y3Q6IFJlOiBbUEFUQ0hdW1JGQ10gZnNsZG1hOiBmaXggcGVyZm9ybWFuY2UgZGVncmFkYXRpb24g
-Ynkgb3B0aW1pemluZyBzcGlubG9jayB1c2UuDQoNCk9uIFR1ZSwgTm92IDI5LCAyMDExIGF0IDAz
-OjE5OjA1QU0gKzAwMDAsIExpIFlhbmctUjU4NDcyIHdyb3RlOg0KPiA+IFN1YmplY3Q6IFJlOiBb
-UEFUQ0hdW1JGQ10gZnNsZG1hOiBmaXggcGVyZm9ybWFuY2UgZGVncmFkYXRpb24gYnkgDQo+ID4g
-b3B0aW1pemluZyBzcGlubG9jayB1c2UuDQo+ID4gDQo+ID4gT24gVGh1LCBOb3YgMjQsIDIwMTEg
-YXQgMDg6MTI6MjVBTSArMDAwMCwgU2hpIFh1ZWxpbi1CMjkyMzcgd3JvdGU6DQo+ID4gPiBIaSBJ
-cmEsDQo+ID4gPg0KPiA+ID4gVGhhbmtzIGZvciB5b3VyIHJldmlldy4NCj4gPiA+DQo+ID4gPiBB
-ZnRlciBzZWNvbmQgdGhvdWdodCwgSSB0aGluayB5b3VyIHNjZW5hcmlvIG1heSBub3Qgb2NjdXIu
-DQo+ID4gPiBCZWNhdXNlIHRoZSBjb29raWUgMjAgd2UgcXVlcnkgbXVzdCBiZSByZXR1cm5lZCBi
-eSANCj4gPiA+IGZzbF9kbWFfdHhfc3VibWl0KC4uLikgaW4NCj4gPiBwcmFjdGljZS4NCj4gPiA+
-IFdlIG5ldmVyIHF1ZXJ5IGEgY29va2llIG5vdCByZXR1cm5lZCBieSBmc2xfZG1hX3R4X3N1Ym1p
-dCguLi4pLg0KPiA+ID4NCj4gPiANCj4gPiBJIGFncmVlIGFib3V0IHRoaXMgcGFydC4NCj4gPiAN
-Cj4gPiA+IFdoZW4gd2UgY2FsbCBmc2xfdHhfc3RhdHVzKDIwKSwgdGhlIGNoYW4tPmNvbW1vbi5j
-b29raWUgaXMgDQo+ID4gPiBkZWZpbml0ZWx5IHdyb3RlIGFzDQo+ID4gMjAgYW5kIGNwdTIgY291
-bGQgbm90IHJlYWQgYXMgMTkuDQo+ID4gPg0KPiA+IA0KPiA+IFRoaXMgaXMgd2hhdCBJIGRvbid0
-IGFncmVlIGFib3V0LiBIb3dldmVyLCBJJ20gbm90IGFuIGV4cGVydCBvbiBDUFUgY2FjaGUgdnMu
-DQo+ID4gbWVtb3J5IGFjY2Vzc2VzIGluIGFuIG11bHRpLXByb2Nlc3NvciBzeXN0ZW0uIFRoZSBz
-ZWN0aW9uIHRpdGxlZCANCj4gPiAiQ0FDSEUgQ09IRVJFTkNZIiBpbiBEb2N1bWVudGF0aW9uL21l
-bW9yeS1iYXJyaWVycy50eHQgbGVhZHMgbWUgdG8gDQo+ID4gYmVsaWV2ZSB0aGF0IHRoZSBzY2Vu
-YXJpbyBJIGRlc2NyaWJlZCBpcyBwb3NzaWJsZS4NCj4gDQo+IEZvciBGcmVlc2NhbGUgUG93ZXJQ
-QywgdGhlIGNoaXAgYXV0b21hdGljYWxseSB0YWtlcyBjYXJlIG9mIGNhY2hlIGNvaGVyZW5jeS4g
-IEV2ZW4gaWYgdGhpcyBpcyBhIGNvbmNlcm4sIHNwaW5sb2NrIGNhbid0IGFkZHJlc3MgaXQuDQo+
-IA0KPiA+IA0KPiA+IFdoYXQgaGFwcGVucyBpZiBDUFUxJ3Mgd3JpdGUgb2YgY2hhbi0+Y29tbW9u
-LmNvb2tpZSBvbmx5IGdvZXMgaW50byANCj4gPiBDUFUxJ3MgY2FjaGUuIEl0IG5ldmVyIG1ha2Vz
-IGl0IHRvIG1haW4gbWVtb3J5IGJlZm9yZSBDUFUyIGZldGNoZXMgdGhlIG9sZCB2YWx1ZSBvZiAx
-OS4NCj4gPiANCj4gPiBJIGRvbid0IHRoaW5rIHlvdSBzaG91bGQgc2VlIGFueSBwZXJmb3JtYW5j
-ZSBpbXBhY3QgZnJvbSB0aGUgDQo+ID4gc21wX21iKCkgb3BlcmF0aW9uLg0KPiANCj4gU21wX21i
-KCkgZG8gaGF2ZSBpbXBhY3Qgb24gcGVyZm9ybWFuY2UgaWYgaXQncyBpbiB0aGUgaG90IHBhdGgu
-ICBXaGlsZSBpdCBtaWdodCBiZSBzYWZlciBoYXZpbmcgaXQsIEkgZG91YnQgaXQgaXMgcmVhbGx5
-IG5lY2Vzc2FyeS4gIElmIHRoZSBDUFUxIGRvZXNuJ3QgaGF2ZSB0aGUgdXBkYXRlZCBsYXN0X3Vz
-ZWQsIGl0J3Mgc2hvdWxkbid0IGhhdmUga25vd24gdGhlcmUgaXMgYSBjb29raWUgMjAgZXhpc3Rl
-ZCBlaXRoZXIuDQo+IA0KDQpJIGJlbGlldmUgdGhhdCB5b3UgYXJlIGNvcnJlY3QsIGZvciBwb3dl
-cnBjLiBIb3dldmVyLCBhbnl0aGluZyBvdXRzaWRlIG9mIGFyY2gvcG93ZXJwYyBzaG91bGRuJ3Qg
-YXNzdW1lIGl0IG9ubHkgcnVucyBvbiBwb3dlcnBjLiBJIHdvdWxkbid0IGJlIHN1cnByaXNlZCB0
-byBzZWUgZnNsZG1hIHJ1bm5pbmcgb24gYW4gaU1YIHNvbWVkYXkgKEFSTSBwcm9jZXNzb3IpLg0K
-DQpNeSBpbnRlcnByZXRhdGlvbiBzYXlzIHRoYXQgdGhlIGNoYW5nZSBpbnRyb2R1Y2VzIHRoZSBw
-b3NzaWJpbGl0eSB0aGF0DQpmc2xfdHhfc3RhdHVzKCkgcmV0dXJucyB0aGUgd3JvbmcgYW5zd2Vy
-IGZvciBhbiBleHRyZW1lbHkgc21hbGwgdGltZSB3aW5kb3csIG9uIFNNUCBvbmx5LCBiYXNlZCBv
-biBEb2N1bWVudGF0aW9uL21lbW9yeS1iYXJyaWVycy50eHQuIEJ1dCBJIGNhbid0IHNlZW0gY29u
-dmluY2UgeW91Lg0KDQpNeSByZWFsIHF1ZXN0aW9uIGlzIHdoYXQgY29kZSBwYXRoIGlzIGhpdHRp
-bmcgdGhpcyBzcGlubG9jaz8gSXMgaXQgaW4gbWFpbmxpbmUgTGludXg/IFdoeSBpcyBpdCBwb2xs
-aW5nIHJhdGhlciB0aGFuIHVzaW5nIGNhbGxiYWNrcyB0byBkZXRlcm1pbmUgRE1BIGNvbXBsZXRp
-b24/DQoNClRoYW5rcywNCklyYQ0KDQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiA+ID4gRnJvbTogSXJhIFcuIFNueWRlciBbbWFpbHRvOml3c0BvdnJvLmNhbHRlY2guZWR1XQ0K
-PiA+ID4gU2VudDogMjAxMeW5tDEx5pyIMjPml6UgMjo1OQ0KPiA+ID4gVG86IFNoaSBYdWVsaW4t
-QjI5MjM3DQo+ID4gPiBDYzogZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tOyBMaSBZYW5nLVI1ODQ3
-MjsgendAemgta2VybmVsLm9yZzsgDQo+ID4gPiB2aW5vZC5rb3VsQGludGVsLmNvbTsgbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IA0KPiA+ID4gbGludXgta2VybmVsQHZnZXIua2VybmVs
-Lm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZDXSBmc2xkbWE6IGZpeCBwZXJmb3Jt
-YW5jZSBkZWdyYWRhdGlvbiBieSANCj4gPiA+IG9wdGltaXppbmcNCj4gPiBzcGlubG9jayB1c2Uu
-DQo+ID4gPg0KPiA+ID4gT24gVHVlLCBOb3YgMjIsIDIwMTEgYXQgMTI6NTU6MDVQTSArMDgwMCwg
-YjI5MjM3QGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4gPiA+IEZyb206IEZvcnJlc3QgU2hpIDxi
-MjkyMzdAZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4NCj4gPiA+ID4gICAgIGRtYSBzdGF0dXMgY2hl
-Y2sgZnVuY3Rpb24gZnNsX3R4X3N0YXR1cyBpcyBoZWF2aWx5IGNhbGxlZCBpbg0KPiA+ID4gPiAg
-ICAgYSB0aWdodCBsb29wIGFuZCB0aGUgZGVzYyBsb2NrIGluIGZzbF90eF9zdGF0dXMgY29udGVu
-ZGVkIGJ5DQo+ID4gPiA+ICAgICB0aGUgZG1hIHN0YXR1cyB1cGRhdGUgZnVuY3Rpb24uIHRoaXMg
-Y2F1c2VkIHRoZSBkbWEgcGVyZm9ybWFuY2UNCj4gPiA+ID4gICAgIGRlZ3JhZGVzIG11Y2guDQo+
-ID4gPiA+DQo+ID4gPiA+ICAgICB0aGlzIHBhdGNoIHJlbGVhc2VzIHRoZSBsb2NrIGluIHRoZSBm
-c2xfdHhfc3RhdHVzIGZ1bmN0aW9uLg0KPiA+ID4gPiAgICAgSSBiZWxpZXZlIGl0IGhhcyBubyBu
-ZWdsZWN0IGltcGFjdCBvbiB0aGUgZm9sbG93aW5nIGNhbGwgb2YNCj4gPiA+ID4gICAgIGRtYV9h
-c3luY19pc19jb21wbGV0ZSguLi4pLg0KPiA+ID4gPg0KPiA+ID4gPiAgICAgd2UgY2FuIHNlZSBi
-ZWxvdyB0aHJlZSBjb25kaXRpb25zIHdpbGwgYmUgaWRlbnRpZmllZCBhcyBzdWNjZXNzDQo+ID4g
-PiA+ICAgICBhKSAgeCA8IGNvbXBsZXRlIDwgdXNlDQo+ID4gPiA+ICAgICBiKSAgeCA8IGNvbXBs
-ZXRlK04gPCB1c2UrTg0KPiA+ID4gPiAgICAgYykgIHggPCBjb21wbGV0ZSA8IHVzZStODQo+ID4g
-PiA+ICAgICBoZXJlIGNvbXBsZXRlIGlzIHRoZSBjb21wbGV0ZWRfY29va2llLCB1c2UgaXMgdGhl
-IGxhc3RfdXNlZA0KPiA+ID4gPiAgICAgY29va2llLCB4IGlzIHRoZSBxdWVyeWluZyBjb29raWUs
-IE4gaXMgTUFYIGNvb2tpZQ0KPiA+ID4gPg0KPiA+ID4gPiAgICAgd2hlbiBjaGFuLT5jb21wbGV0
-ZWRfY29va2llIGlzIGJlaW5nIHJlYWQsIHRoZSBsYXN0X3VzZWQgbWF5DQo+ID4gPiA+ICAgICBi
-ZSBpbmNyZXNlZC4gQW55d2F5IGl0IGhhcyBubyBuZWdsZWN0IGltcGFjdCBvbiB0aGUgZG1hIHN0
-YXR1cw0KPiA+ID4gPiAgICAgZGVjaXNpb24uDQo+ID4gPiA+DQo+ID4gPiA+ICAgICBTaWduZWQt
-b2ZmLWJ5OiBGb3JyZXN0IFNoaSA8eHVlbGluLnNoaUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiAt
-LS0NCj4gPiA+ID4gIGRyaXZlcnMvZG1hL2ZzbGRtYS5jIHwgICAgNSAtLS0tLQ0KPiA+ID4gPiAg
-MSBmaWxlcyBjaGFuZ2VkLCAwIGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQo+ID4gPiA+
-DQo+ID4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RtYS9mc2xkbWEuYyBiL2RyaXZlcnMvZG1h
-L2ZzbGRtYS5jIGluZGV4IA0KPiA+ID4gPiA4YTc4MTU0Li4xZGNhNTZmIDEwMDY0NA0KPiA+ID4g
-PiAtLS0gYS9kcml2ZXJzL2RtYS9mc2xkbWEuYw0KPiA+ID4gPiArKysgYi9kcml2ZXJzL2RtYS9m
-c2xkbWEuYw0KPiA+ID4gPiBAQCAtOTg2LDE1ICs5ODYsMTAgQEAgc3RhdGljIGVudW0gZG1hX3N0
-YXR1cyANCj4gPiA+ID4gZnNsX3R4X3N0YXR1cyhzdHJ1Y3QNCj4gPiBkbWFfY2hhbiAqZGNoYW4s
-DQo+ID4gPiA+ICAJc3RydWN0IGZzbGRtYV9jaGFuICpjaGFuID0gdG9fZnNsX2NoYW4oZGNoYW4p
-Ow0KPiA+ID4gPiAgCWRtYV9jb29raWVfdCBsYXN0X2NvbXBsZXRlOw0KPiA+ID4gPiAgCWRtYV9j
-b29raWVfdCBsYXN0X3VzZWQ7DQo+ID4gPiA+IC0JdW5zaWduZWQgbG9uZyBmbGFnczsNCj4gPiA+
-ID4gLQ0KPiA+ID4gPiAtCXNwaW5fbG9ja19pcnFzYXZlKCZjaGFuLT5kZXNjX2xvY2ssIGZsYWdz
-KTsNCj4gPiA+ID4NCj4gPiA+DQo+ID4gPiBUaGlzIHdpbGwgY2F1c2UgYSBidWcuIFNlZSBiZWxv
-dyBmb3IgYSBkZXRhaWxlZCBleHBsYW5hdGlvbi4gWW91IG5lZWQgdGhpcyBpbnN0ZWFkOg0KPiA+
-ID4NCj4gPiA+IAkvKg0KPiA+ID4gCSAqIE9uIGFuIFNNUCBzeXN0ZW0sIHdlIG11c3QgZW5zdXJl
-IHRoYXQgdGhpcyBDUFUgaGFzIHNlZW4gdGhlDQo+ID4gPiAJICogbWVtb3J5IGFjY2Vzc2VzIHBl
-cmZvcm1lZCBieSBhbm90aGVyIENQVSB1bmRlciB0aGUNCj4gPiA+IAkgKiBjaGFuLT5kZXNjX2xv
-Y2sgc3BpbmxvY2suDQo+ID4gPiAJICovDQo+ID4gPiAJc21wX21iKCk7DQo+ID4gPiA+ICAJbGFz
-dF9jb21wbGV0ZSA9IGNoYW4tPmNvbXBsZXRlZF9jb29raWU7DQo+ID4gPiA+ICAJbGFzdF91c2Vk
-ID0gZGNoYW4tPmNvb2tpZTsNCj4gPiA+ID4NCj4gPiA+ID4gLQlzcGluX3VubG9ja19pcnFyZXN0
-b3JlKCZjaGFuLT5kZXNjX2xvY2ssIGZsYWdzKTsNCj4gPiA+ID4gLQ0KPiA+ID4gPiAgCWRtYV9z
-ZXRfdHhfc3RhdGUodHhzdGF0ZSwgbGFzdF9jb21wbGV0ZSwgbGFzdF91c2VkLCAwKTsNCj4gPiA+
-ID4gIAlyZXR1cm4gZG1hX2FzeW5jX2lzX2NvbXBsZXRlKGNvb2tpZSwgbGFzdF9jb21wbGV0ZSwg
-DQo+ID4gPiA+IGxhc3RfdXNlZCk7ICB9DQo+ID4gPg0KPiA+ID4gRmFjdHM6DQo+ID4gPiAtIGRj
-aGFuLT5jb29raWUgaXMgdGhlIHNhbWUgbWVtYmVyIGFzIGNoYW4tPmNvbW1vbi5jb29raWUgKHNh
-bWUgDQo+ID4gPiBtZW1vcnkNCj4gPiA+IGxvY2F0aW9uKQ0KPiA+ID4gLSBjaGFuLT5jb21tb24u
-Y29va2llIGlzIHRoZSAibGFzdCBhbGxvY2F0ZWQgY29va2llIGZvciBhIHBlbmRpbmcgdHJhbnNh
-Y3Rpb24iDQo+ID4gPiAtIGNoYW4tPmNvbXBsZXRlZF9jb29raWUgaXMgdGhlICJsYXN0IGNvbXBs
-ZXRlZCB0cmFuc2FjdGlvbiINCj4gPiA+DQo+ID4gPiBJIGhhdmUgcmVwbGFjZWQgImRjaGFuLT5j
-b29raWUiIHdpdGggImNoYW4tPmNvbW1vbi5jb29raWUiIGluIHRoZSANCj4gPiA+IGJlbG93DQo+
-ID4gZXhwbGFuYXRpb24sIHRvIGtlZXAgZXZlcnl0aGluZyByZWZlcmVuY2VkIGZyb20gdGhlIHNh
-bWUgc3RydWN0dXJlLg0KPiA+ID4NCj4gPiA+IFZhcmlhYmxlIHVzYWdlIGJlZm9yZSB5b3VyIGNo
-YW5nZS4gRXZlcnl0aGluZyBpcyB1c2VkIGxvY2tlZC4NCj4gPiA+IC0gUlcgY2hhbi0+Y29tbW9u
-LmNvb2tpZQkJKGZzbF9kbWFfdHhfc3VibWl0KQ0KPiA+ID4gLSBSICBjaGFuLT5jb21tb24uY29v
-a2llCQkoZnNsX3R4X3N0YXR1cykNCj4gPiA+IC0gUiAgY2hhbi0+Y29tcGxldGVkX2Nvb2tpZQkJ
-KGZzbF90eF9zdGF0dXMpDQo+ID4gPiAtIFcgIGNoYW4tPmNvbXBsZXRlZF9jb29raWUJCShkbWFf
-ZG9fdGFza2xldCkNCj4gPiA+DQo+ID4gPiBWYXJpYWJsZSB1c2FnZSBhZnRlciB5b3VyIGNoYW5n
-ZToNCj4gPiA+IC0gUlcgY2hhbi0+Y29tbW9uLmNvb2tpZQkJTE9DS0VEDQo+ID4gPiAtIFIgIGNo
-YW4tPmNvbW1vbi5jb29raWUJCU5PIExPQ0sNCj4gPiA+IC0gUiAgY2hhbi0+Y29tcGxldGVkX2Nv
-b2tpZQkJTk8gTE9DSw0KPiA+ID4gLSBXICBjaGFuLT5jb21wbGV0ZWRfY29va2llICAgICAgICAg
-ICAgIExPQ0tFRA0KPiA+ID4NCj4gPiA+IFdoYXQgaWYgd2UgYXNzdW1lIHRoYXQgeW91IGhhdmUg
-YSAyIENQVSBzeXN0ZW0gKHN1Y2ggYXMgYSBQMjAyMCkuIA0KPiA+ID4gQWZ0ZXIgeW91cg0KPiA+
-IGNoYW5nZXMsIG9uZSBwb3NzaWJsZSBzZXF1ZW5jZSBpczoNCj4gPiA+DQo+ID4gPiA9PT0gQ1BV
-MSAtIGFsbG9jYXRlICsgc3VibWl0IGRlc2NyaXB0b3I6IGZzbF9kbWFfdHhfc3VibWl0KCkgPT09
-IA0KPiA+ID4gc3Bpbl9sb2NrX2lycXNhdmUNCj4gPiA+IGRlc2NyaXB0b3ItPmNvb2tpZSA9IDIw
-CQkoeCBpbiB5b3VyIGV4YW1wbGUpDQo+ID4gPiBjaGFuLT5jb21tb24uY29va2llID0gMjAJKHVz
-ZWQgaW4geW91ciBleGFtcGxlKQ0KPiA+ID4gc3Bpbl91bmxvY2tfaXJxcmVzdG9yZQ0KPiA+ID4N
-Cj4gPiA+ID09PSBDUFUyIC0gaW1tZWRpYXRlbHkgY2FsbHMgZnNsX3R4X3N0YXR1cygpID09PQ0K
-PiA+ID4gY2hhbi0+Y29tbW9uLmNvb2tpZSA9PSAxOQ0KPiA+ID4gY2hhbi0+Y29tcGxldGVkX2Nv
-b2tpZSA9PSAxOQ0KPiA+ID4gZGVzY3JpcHRvci0+Y29va2llID09IDIwDQo+ID4gPg0KPiA+ID4g
-U2luY2Ugd2UgZG9uJ3QgaGF2ZSBsb2NrcyBhbnltb3JlLCBDUFUyIG1heSBub3QgaGF2ZSBzZWVu
-IHRoZSANCj4gPiA+IHdyaXRlIHRvDQo+ID4gPiBjaGFuLT5jb21tb24uY29va2llIHlldC4NCj4g
-PiA+DQo+ID4gPiBBbHNvIGFzc3VtZSB0aGF0IHRoZSBETUEgaGFyZHdhcmUgaGFzIG5vdCBzdGFy
-dGVkIHByb2Nlc3NpbmcgdGhlIA0KPiA+ID4gdHJhbnNhY3Rpb24geWV0LiBUaGVyZWZvcmUgZG1h
-X2RvX3Rhc2tsZXQoKSBoYXMgbm90IGJlZW4gY2FsbGVkLCANCj4gPiA+IGFuZA0KPiA+ID4gY2hh
-bi0+Y29tcGxldGVkX2Nvb2tpZSBoYXMgbm90IGJlZW4gdXBkYXRlZC4NCj4gPiA+DQo+ID4gPiBJ
-biB0aGlzIGNhc2UsIGRtYV9hc3luY19pc19jb21wbGV0ZSgpIChvbiBDUFUyKSByZXR1cm5zIA0K
-PiA+ID4gRE1BX1NVQ0NFU1MsIGV2ZW4NCj4gPiB0aG91Z2ggdGhlIERNQSBvcGVyYXRpb24gaGFz
-IG5vdCBzdWNjZWVkZWQuIFRoZSBETUEgb3BlcmF0aW9uIGhhcyANCj4gPiBub3QgZXZlbiBzdGFy
-dGVkIHlldCENCj4gPiA+DQo+ID4gPiBUaGUgc21wX21iKCkgZml4ZXMgdGhpcywgc2luY2UgaXQg
-Zm9yY2VzIENQVTIgdG8gaGF2ZSBzZWVuIGFsbCANCj4gPiA+IG1lbW9yeSBvcGVyYXRpb25zDQo+
-ID4gdGhhdCBoYXBwZW5lZCBiZWZvcmUgQ1BVMSByZWxlYXNlZCB0aGUgc3BpbmxvY2suIFNwaW5s
-b2NrcyBhcmUgDQo+ID4gaW1wbGljaXQgU01QIG1lbW9yeSBiYXJyaWVycy4NCj4gPiA+DQo+ID4g
-PiBUaGVyZWZvcmUsIHRoZSBhYm92ZSBleGFtcGxlIGJlY29tZXM6DQo+ID4gPiBzbXBfbWIoKTsN
-Cj4gPiA+IGNoYW4tPmNvbW1vbi5jb29raWUgPT0gMjANCj4gPiA+IGNoYW4tPmNvbXBsZXRlZF9j
-b29raWUgPT0gMTkNCj4gPiA+IGRlc2NyaXB0b3ItPmNvb2tpZSA9PSAyMA0KPiA+ID4NCj4gPiA+
-IFRoZW4gZG1hX2FzeW5jX2lzX2NvbXBsZXRlKCkgcmV0dXJucyBETUFfSU5fUFJPR1JFU1MsIHdo
-aWNoIGlzIGNvcnJlY3QuDQo+ID4gPg0KPiA+ID4gVGhhbmtzLA0KPiA+ID4gSXJhDQo+ID4gPg0K
-PiA+ID4NCj4gPiA+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fDQo+ID4gPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+ID4gPiBMaW51eHBwYy1kZXZA
-bGlzdHMub3psYWJzLm9yZw0KPiA+ID4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZv
-L2xpbnV4cHBjLWRldg0KPiANCg0K
+As of commit dd472da38, rwsem.h was moved into asm-generic.
+This patch removes the arch file and points the build at
+its new location.
+
+Signed-off-by: Richard Kuo <rkuo@codeaurora.org>
+---
+ arch/powerpc/include/asm/Kbuild  |    2 +
+ arch/powerpc/include/asm/rwsem.h |  132 --------------------------------------
+ 2 files changed, 2 insertions(+), 132 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/rwsem.h
+
+diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
+index d51df17..7e313f1 100644
+--- a/arch/powerpc/include/asm/Kbuild
++++ b/arch/powerpc/include/asm/Kbuild
+@@ -34,3 +34,5 @@ header-y += termios.h
+ header-y += types.h
+ header-y += ucontext.h
+ header-y += unistd.h
++
++generic-y += rwsem.h
+diff --git a/arch/powerpc/include/asm/rwsem.h b/arch/powerpc/include/asm/rwsem.h
+deleted file mode 100644
+index bb1e2cd..0000000
+--- a/arch/powerpc/include/asm/rwsem.h
++++ /dev/null
+@@ -1,132 +0,0 @@
+-#ifndef _ASM_POWERPC_RWSEM_H
+-#define _ASM_POWERPC_RWSEM_H
+-
+-#ifndef _LINUX_RWSEM_H
+-#error "Please don't include <asm/rwsem.h> directly, use <linux/rwsem.h> instead."
+-#endif
+-
+-#ifdef __KERNEL__
+-
+-/*
+- * R/W semaphores for PPC using the stuff in lib/rwsem.c.
+- * Adapted largely from include/asm-i386/rwsem.h
+- * by Paul Mackerras <paulus@samba.org>.
+- */
+-
+-/*
+- * the semaphore definition
+- */
+-#ifdef CONFIG_PPC64
+-# define RWSEM_ACTIVE_MASK		0xffffffffL
+-#else
+-# define RWSEM_ACTIVE_MASK		0x0000ffffL
+-#endif
+-
+-#define RWSEM_UNLOCKED_VALUE		0x00000000L
+-#define RWSEM_ACTIVE_BIAS		0x00000001L
+-#define RWSEM_WAITING_BIAS		(-RWSEM_ACTIVE_MASK-1)
+-#define RWSEM_ACTIVE_READ_BIAS		RWSEM_ACTIVE_BIAS
+-#define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
+-
+-/*
+- * lock for reading
+- */
+-static inline void __down_read(struct rw_semaphore *sem)
+-{
+-	if (unlikely(atomic_long_inc_return((atomic_long_t *)&sem->count) <= 0))
+-		rwsem_down_read_failed(sem);
+-}
+-
+-static inline int __down_read_trylock(struct rw_semaphore *sem)
+-{
+-	long tmp;
+-
+-	while ((tmp = sem->count) >= 0) {
+-		if (tmp == cmpxchg(&sem->count, tmp,
+-				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
+-			return 1;
+-		}
+-	}
+-	return 0;
+-}
+-
+-/*
+- * lock for writing
+- */
+-static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
+-{
+-	long tmp;
+-
+-	tmp = atomic_long_add_return(RWSEM_ACTIVE_WRITE_BIAS,
+-				     (atomic_long_t *)&sem->count);
+-	if (unlikely(tmp != RWSEM_ACTIVE_WRITE_BIAS))
+-		rwsem_down_write_failed(sem);
+-}
+-
+-static inline void __down_write(struct rw_semaphore *sem)
+-{
+-	__down_write_nested(sem, 0);
+-}
+-
+-static inline int __down_write_trylock(struct rw_semaphore *sem)
+-{
+-	long tmp;
+-
+-	tmp = cmpxchg(&sem->count, RWSEM_UNLOCKED_VALUE,
+-		      RWSEM_ACTIVE_WRITE_BIAS);
+-	return tmp == RWSEM_UNLOCKED_VALUE;
+-}
+-
+-/*
+- * unlock after reading
+- */
+-static inline void __up_read(struct rw_semaphore *sem)
+-{
+-	long tmp;
+-
+-	tmp = atomic_long_dec_return((atomic_long_t *)&sem->count);
+-	if (unlikely(tmp < -1 && (tmp & RWSEM_ACTIVE_MASK) == 0))
+-		rwsem_wake(sem);
+-}
+-
+-/*
+- * unlock after writing
+- */
+-static inline void __up_write(struct rw_semaphore *sem)
+-{
+-	if (unlikely(atomic_long_sub_return(RWSEM_ACTIVE_WRITE_BIAS,
+-				 (atomic_long_t *)&sem->count) < 0))
+-		rwsem_wake(sem);
+-}
+-
+-/*
+- * implement atomic add functionality
+- */
+-static inline void rwsem_atomic_add(long delta, struct rw_semaphore *sem)
+-{
+-	atomic_long_add(delta, (atomic_long_t *)&sem->count);
+-}
+-
+-/*
+- * downgrade write lock to read lock
+- */
+-static inline void __downgrade_write(struct rw_semaphore *sem)
+-{
+-	long tmp;
+-
+-	tmp = atomic_long_add_return(-RWSEM_WAITING_BIAS,
+-				     (atomic_long_t *)&sem->count);
+-	if (tmp < 0)
+-		rwsem_downgrade_wake(sem);
+-}
+-
+-/*
+- * implement exchange and add functionality
+- */
+-static inline long rwsem_atomic_update(long delta, struct rw_semaphore *sem)
+-{
+-	return atomic_long_add_return(delta, (atomic_long_t *)&sem->count);
+-}
+-
+-#endif	/* __KERNEL__ */
+-#endif	/* _ASM_POWERPC_RWSEM_H */
+-- 
+1.7.3
+-- 
+
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
