@@ -1,21 +1,27 @@
 Return-Path: <B07421@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 241231007D4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 06:07:59 +1100 (EST)
-Message-ID: <4ED52D87.9000805@freescale.com>
-Date: Tue, 29 Nov 2011 13:07:51 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 58DAAB6F7C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 06:46:36 +1100 (EST)
+Message-ID: <4ED53695.8060005@freescale.com>
+Date: Tue, 29 Nov 2011 13:46:29 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-Subject: Re: Booting Linux on one core of P1022
-References: <93CD5F41FDBC6042A6B449764F3B35CC050B8ADA@EU-MBX-01.mgc.mentorg.com>
-In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050B8ADA@EU-MBX-01.mgc.mentorg.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 2/6] powerpc/85xx: consolidate of_platform_bus_probe calls
+References: <1321552581-29773-1-git-send-email-dbaryshkov@gmail.com>
+ <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
+ <CAOZdJXXZG38v-tgA2Ty7-uxJ3AxoFCmNxMO3dKJnJYQtJFb9DA@mail.gmail.com>
+ <38BAFE03-DB17-4442-8CC2-E386E46FEB19@kernel.crashing.org>
+ <4ED5058F.90004@freescale.com> <4ED50633.4020506@freescale.com>
+In-Reply-To: <4ED50633.4020506@freescale.com>
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/29/2011 02:36 AM, Arshad, Farrukh wrote:
-> I am loading the kernel from Uboot as following way
+On 11/29/2011 10:20 AM, Timur Tabi wrote:
+> Timur Tabi wrote:
 > 
->  
-> 
-> Setenv bootm_low 0x10000000
-> 
-> Setenv bootm_size 0x10000000
-> 
-> Setenv bootm boot=/dev/mmcblk0p3 ro debug rootdelay=5
-> 
-> Interrupts off
-> 
-> Bootm start $load1addr - $fdt1addr
-> 
-> Bootm loados
-> 
-> Bootm fdt
-> 
-> Fdt boardsetup
-> 
-> Fdt chosen
-> 
-> Bootm prep
-> 
-> Bootm go
+>> If I move the "fsl,eloplus-dma" into mpc85xx_common_ids[], then everything works.
+>>
+>> I suspect there's some kind of state machine in of_platform_bus_probe() that allows it to find the DMA channel nodes if it's scanned everything else first.  I'm trying to debug it now.
 
-You set up the device tree to reflect a core 1 boot, but I don't see
-where you told U-Boot to use core 1.  You need to use a command like
-"cpu 1 release 0x10000000 - $fdt1addr 0x45504150" instead of "bootm go".
+Probably mpc85xx_common_ids[] can probe the soc node but not the dma
+node, and the p1022-specific list can probe the dma node but not the soc
+node, so it doesn't get to the dma node.
 
-Also make sure that you pass -b1 to dtc.
+> So why do we need mpc85xx_common_ids[] at all?  Why can't of_platform_bus_probe() just scan the entire tree?
 
-BTW, your e-mail client appears to be inappropriately adding
-capitalization to pasted text.
+That would generate a lot of useless platform devices that are either
+not really devices, or duplicate a device sitting on another bus (i2c,
+pci, etc).  It could also result in a device being probed and matching a
+driver, when the device is unavailable in a way that is more complicated
+than status = "disabled" (such as p1022 muxing), or otherwise requires
+special handling.
 
 -Scott
