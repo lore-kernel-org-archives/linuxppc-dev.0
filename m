@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 72B811007D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 14:58:38 +1100 (EST)
-Message-ID: <1322539102.23348.57.camel@pasglop>
-Subject: Re: [PATCH 02/13] powerpc: hugetlb: fix huge_ptep_set_access_flags
- return value
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Date: Tue, 29 Nov 2011 14:58:22 +1100
-In-Reply-To: <13182798643553-git-send-email-beckyb@kernel.crashing.org>
-References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
- <13182798624083-git-send-email-beckyb@kernel.crashing.org>
- <13182798643553-git-send-email-beckyb@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
+Return-Path: <B29882@freescale.com>
+Received: from VA3EHSOBE007.bigfish.com (va3ehsobe006.messaging.microsoft.com
+ [216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id A6CE3B6F89
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 15:24:39 +1100 (EST)
+Received: from mail47-va3 (localhost [127.0.0.1])	by mail47-va3-R.bigfish.com
+ (Postfix) with ESMTP id 3D74C4402C2	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 29 Nov 2011 04:23:46 +0000 (UTC)
+Received: from VA3EHSMHS007.bigfish.com (unknown [10.7.14.246])	by
+ mail47-va3.bigfish.com (Postfix) with ESMTP id ED55AC029F	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 04:23:45 +0000 (UTC)
+From: Matthew McClintock <msm@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2] powerpc/setup_{32, 64}.c: remove unneeded boot_cpuid{,
+ _phys}
+Date: Mon, 28 Nov 2011 22:24:29 -0600
+Message-ID: <1322540669-6834-1-git-send-email-msm@freescale.com>
+In-Reply-To: <1322192477.32635.15.camel@pasglop>
+References: <1322192477.32635.15.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +32,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-10-10 at 15:50 -0500, Becky Bruce wrote:
+boot_cpuid and init_thread_info.cpu are redundant, just use the
+var that stays around longer and add a define to make boot_cpuid
+point at the correct value
 
-> diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-> index 8600493..70f9885 100644
-> --- a/arch/powerpc/include/asm/hugetlb.h
-> +++ b/arch/powerpc/include/asm/hugetlb.h
-> @@ -124,7 +124,18 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
->  					     unsigned long addr, pte_t *ptep,
->  					     pte_t pte, int dirty)
->  {
-> +#if defined(CONFIG_PPC_MMU_NOHASH) && \
-> +	!(defined(CONFIG_PPC_FSL_BOOK3E) && defined(CONFIG_PPC32))
+boot_cpudid_phys is not needed and can completly go away from the
+SMP case, we leave it there for the non-SMP case since the paca
+struct is not around to store this info
 
-The above conditional makes my brain hurt. Can you change that to
-instead
+This patch also has the effect of having the logical cpu number
+of the boot cpu be updated correctly independently of the ordering
+of the cpu nodes in the device tree.
 
-#ifdef HUGETLB_NEED_PRELOAD
+Signed-off-by: Matthew McClintock <msm@freescale.com>
+---
+v2: Fix compile issue for peries
+    Remove '-1' initial value
 
- ... or something like that, which you then #define in the right
-mmu-xxxx.h header ?
+ arch/powerpc/include/asm/smp.h         |    2 +-
+ arch/powerpc/kernel/setup_32.c         |    5 +++--
+ arch/powerpc/kernel/setup_64.c         |    1 -
+ arch/powerpc/sysdev/xics/xics-common.c |    1 +
+ 4 files changed, 5 insertions(+), 4 deletions(-)
 
-Cheers,
-Ben.
-
-
-> +	/*
-> +	 * The "return 1" forces a call of update_mmu_cache, which will write a
-> +	 * TLB entry.  Without this, platforms that don't do a write of the TLB
-> +	 * entry in the TLB miss handler asm will fault ad infinitum.
-> +	 */
-> +	ptep_set_access_flags(vma, addr, ptep, pte, dirty);
-> +	return 1;
-> +#else
->  	return ptep_set_access_flags(vma, addr, ptep, pte, dirty);
-> +#endif
->  }
->  
->  static inline pte_t huge_ptep_get(pte_t *ptep)
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index adba970..f26c554 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -29,7 +29,7 @@
+ #endif
+ #include <asm/percpu.h>
+ 
+-extern int boot_cpuid;
++#define boot_cpuid 	(init_thread_info.cpu)
+ extern int spinning_secondaries;
+ 
+ extern void cpu_die(void);
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index ac76108..8d4df4c 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -46,10 +46,11 @@
+ 
+ extern void bootx_init(unsigned long r4, unsigned long phys);
+ 
+-int boot_cpuid = -1;
+-EXPORT_SYMBOL_GPL(boot_cpuid);
++/* we need a place to store phys cpu for non-SMP case */
++#ifndef CONFIG_SMP
+ int boot_cpuid_phys;
+ EXPORT_SYMBOL_GPL(boot_cpuid_phys);
++#endif
+ 
+ int smp_hw_index[NR_CPUS];
+ 
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index fb9bb46..6d0f00f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -73,7 +73,6 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-int boot_cpuid = 0;
+ int __initdata spinning_secondaries;
+ u64 ppc64_pft_size;
+ 
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index d72eda6..8998b7a 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -20,6 +20,7 @@
+ #include <linux/of.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/sched.h>
+ 
+ #include <asm/prom.h>
+ #include <asm/io.h>
+-- 
+1.7.6.1
