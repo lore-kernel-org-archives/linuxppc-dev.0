@@ -1,17 +1,18 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
 Received: from border.exmeritus.com (border.exmeritus.com
  [IPv6:2002:46a7:f11a:ffff::])
- by ozlabs.org (Postfix) with ESMTP id A88F31007D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 05:59:34 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id C9AE11007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 05:59:32 +1100 (EST)
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 04/10] powerpc/mpic: Save computed phys_addr for
- board-specific code
-Date: Tue, 29 Nov 2011 13:58:31 -0500
-Message-Id: <1322593117-29938-5-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [PATCH 01/10] powerpc/85xx: Move mpc85xx_smp_init() decl to a new
+ "smp.h"
+Date: Tue, 29 Nov 2011 13:58:28 -0500
+Message-Id: <1322593117-29938-2-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
 References: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+Cc: Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Kyle Moffett <Kyle.D.Moffett@boeing.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,265 +23,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MPIC code can already perform an automatic OF address translation
-step as part of mpic_alloc(), but several boards need to use that base
-address when they perform mpic_assign_isu().
-
-The easiest solution is to save the computed physical address into the
-"struct mpic" for later use by the board code.
+This removes a bunch of "extern" declarations and CONFIG_SMP ifdefs.
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/mpic.h                   |    3 +++
- arch/powerpc/platforms/embedded6xx/holly.c        |   15 +++------------
- arch/powerpc/platforms/embedded6xx/linkstation.c  |   14 ++++----------
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   16 +++-------------
- arch/powerpc/platforms/embedded6xx/storcenter.c   |   16 +++-------------
- arch/powerpc/platforms/pasemi/setup.c             |    2 +-
- arch/powerpc/sysdev/mpic.c                        |   11 ++++++-----
- 7 files changed, 23 insertions(+), 54 deletions(-)
+ arch/powerpc/platforms/85xx/corenet_ds.c  |    7 +------
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c  |    6 +-----
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    7 +------
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |    7 +------
+ arch/powerpc/platforms/85xx/p1022_ds.c    |    7 +------
+ arch/powerpc/platforms/85xx/p1023_rds.c   |    7 +------
+ arch/powerpc/platforms/85xx/smp.c         |    1 +
+ arch/powerpc/platforms/85xx/smp.h         |   15 +++++++++++++++
+ arch/powerpc/platforms/85xx/xes_mpc85xx.c |    6 +-----
+ 9 files changed, 23 insertions(+), 40 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/smp.h
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index e6fae49..ba0b204 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -293,6 +293,9 @@ struct mpic
- 	/* Register access method */
- 	enum mpic_reg_type	reg_type;
+diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
+index 802ad11..435074d 100644
+--- a/arch/powerpc/platforms/85xx/corenet_ds.c
++++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+@@ -31,6 +31,7 @@
+ #include <linux/of_platform.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
++#include "smp.h"
  
-+	/* The physical base address of the MPIC */
-+	phys_addr_t paddr;
+ void __init corenet_ds_pic_init(void)
+ {
+@@ -65,10 +66,6 @@ void __init corenet_ds_pic_init(void)
+ /*
+  * Setup the architecture
+  */
+-#ifdef CONFIG_SMP
+-void __init mpc85xx_smp_init(void);
+-#endif
+-
+ void __init corenet_ds_setup_arch(void)
+ {
+ #ifdef CONFIG_PCI
+@@ -77,9 +74,7 @@ void __init corenet_ds_setup_arch(void)
+ #endif
+ 	dma_addr_t max = 0xffffffff;
+ 
+-#ifdef CONFIG_SMP
+ 	mpc85xx_smp_init();
+-#endif
+ 
+ #ifdef CONFIG_PCI
+ 	for_each_node_by_type(np, "pci") {
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index 1b9a8cf..52d2a3e 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -35,6 +35,7 @@
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
++#include "smp.h"
+ 
+ #undef DEBUG
+ 
+@@ -152,9 +153,6 @@ static int mpc85xx_exclude_device(struct pci_controller *hose,
+ /*
+  * Setup the architecture
+  */
+-#ifdef CONFIG_SMP
+-extern void __init mpc85xx_smp_init(void);
+-#endif
+ static void __init mpc85xx_ds_setup_arch(void)
+ {
+ #ifdef CONFIG_PCI
+@@ -187,9 +185,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
+ 
+-#ifdef CONFIG_SMP
+ 	mpc85xx_smp_init();
+-#endif
+ 
+ #ifdef CONFIG_SWIOTLB
+ 	if (memblock_end_of_DRAM() > max) {
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index a23a3ff..e4d470e 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -51,6 +51,7 @@
+ #include <asm/qe_ic.h>
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
++#include "smp.h"
+ 
+ #undef DEBUG
+ #ifdef DEBUG
+@@ -153,10 +154,6 @@ static int mpc8568_mds_phy_fixups(struct phy_device *phydev)
+  * Setup the architecture
+  *
+  */
+-#ifdef CONFIG_SMP
+-extern void __init mpc85xx_smp_init(void);
+-#endif
+-
+ #ifdef CONFIG_QUICC_ENGINE
+ static struct of_device_id mpc85xx_qe_ids[] __initdata = {
+ 	{ .type = "qe", },
+@@ -381,9 +378,7 @@ static void __init mpc85xx_mds_setup_arch(void)
+ 	}
+ #endif
+ 
+-#ifdef CONFIG_SMP
+ 	mpc85xx_smp_init();
+-#endif
+ 
+ 	mpc85xx_mds_qe_init();
+ 
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index f5ff911..cd49898 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -29,6 +29,7 @@
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
++#include "smp.h"
+ 
+ #undef DEBUG
+ 
+@@ -82,9 +83,6 @@ void __init mpc85xx_rdb_pic_init(void)
+ /*
+  * Setup the architecture
+  */
+-#ifdef CONFIG_SMP
+-extern void __init mpc85xx_smp_init(void);
+-#endif
+ static void __init mpc85xx_rdb_setup_arch(void)
+ {
+ #ifdef CONFIG_PCI
+@@ -102,10 +100,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 
+ #endif
+ 
+-#ifdef CONFIG_SMP
+ 	mpc85xx_smp_init();
+-#endif
+-
+ 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
+ }
+ 
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index fda1571..089b959 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -26,6 +26,7 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ #include <asm/fsl_guts.h>
++#include "smp.h"
+ 
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+ 
+@@ -266,10 +267,6 @@ void __init p1022_ds_pic_init(void)
+ 	mpic_init(mpic);
+ }
+ 
+-#ifdef CONFIG_SMP
+-void __init mpc85xx_smp_init(void);
+-#endif
+-
+ /*
+  * Setup the architecture
+  */
+@@ -309,9 +306,7 @@ static void __init p1022_ds_setup_arch(void)
+ 	diu_ops.valid_monitor_port	= p1022ds_valid_monitor_port;
+ #endif
+ 
+-#ifdef CONFIG_SMP
+ 	mpc85xx_smp_init();
+-#endif
+ 
+ #ifdef CONFIG_SWIOTLB
+ 	if (memblock_end_of_DRAM() > max) {
+diff --git a/arch/powerpc/platforms/85xx/p1023_rds.c b/arch/powerpc/platforms/85xx/p1023_rds.c
+index 835e0b3..da546ea 100644
+--- a/arch/powerpc/platforms/85xx/p1023_rds.c
++++ b/arch/powerpc/platforms/85xx/p1023_rds.c
+@@ -30,6 +30,7 @@
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
++#include "smp.h"
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+@@ -39,10 +40,6 @@
+  * Setup the architecture
+  *
+  */
+-#ifdef CONFIG_SMP
+-void __init mpc85xx_smp_init(void);
+-#endif
+-
+ static void __init mpc85xx_rds_setup_arch(void)
+ {
+ 	struct device_node *np;
+@@ -87,9 +84,7 @@ static void __init mpc85xx_rds_setup_arch(void)
+ 		fsl_add_bridge(np, 0);
+ #endif
+ 
+-#ifdef CONFIG_SMP
+ 	mpc85xx_smp_init();
+-#endif
+ }
+ 
+ static struct of_device_id p1023_ids[] = {
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 2df4785..ff42490 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -27,6 +27,7 @@
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/mpic.h>
++#include "smp.h"
+ 
+ extern void __early_start(void);
+ 
+diff --git a/arch/powerpc/platforms/85xx/smp.h b/arch/powerpc/platforms/85xx/smp.h
+new file mode 100644
+index 0000000..e2b4493
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/smp.h
+@@ -0,0 +1,15 @@
++#ifndef POWERPC_85XX_SMP_H_
++#define POWERPC_85XX_SMP_H_ 1
 +
- 	/* The various ioremap'ed bases */
- 	struct mpic_reg_bank	gregs;
- 	struct mpic_reg_bank	tmregs;
-diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
-index 2e9bcf6..d4fb41e 100644
---- a/arch/powerpc/platforms/embedded6xx/holly.c
-+++ b/arch/powerpc/platforms/embedded6xx/holly.c
-@@ -148,7 +148,6 @@ static void __init holly_setup_arch(void)
- static void __init holly_init_IRQ(void)
++#include <linux/init.h>
++
++#ifdef CONFIG_SMP
++void __init mpc85xx_smp_init(void);
++#else
++static inline void mpc85xx_smp_init(void)
++{
++	/* Nothing to do */
++}
++#endif
++
++#endif /* not POWERPC_85XX_SMP_H_ */
+diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
+index a9dc5e7..ce3f660 100644
+--- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
++++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
+@@ -32,6 +32,7 @@
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
++#include "smp.h"
+ 
+ /* A few bit definitions needed for fixups on some boards */
+ #define MPC85xx_L2CTL_L2E		0x80000000 /* L2 enable */
+@@ -136,9 +137,6 @@ static int primary_phb_addr;
+ /*
+  * Setup the architecture
+  */
+-#ifdef CONFIG_SMP
+-extern void __init mpc85xx_smp_init(void);
+-#endif
+ static void __init xes_mpc85xx_setup_arch(void)
  {
- 	struct mpic *mpic;
--	phys_addr_t mpic_paddr = 0;
- 	struct device_node *tsi_pic;
  #ifdef CONFIG_PCI
- 	unsigned int cascade_pci_irq;
-@@ -157,20 +156,12 @@ static void __init holly_init_IRQ(void)
+@@ -172,9 +170,7 @@ static void __init xes_mpc85xx_setup_arch(void)
+ 	}
  #endif
  
- 	tsi_pic = of_find_node_by_type(NULL, "open-pic");
--	if (tsi_pic) {
--		unsigned int size;
--		const void *prop = of_get_property(tsi_pic, "reg", &size);
--		mpic_paddr = of_translate_address(tsi_pic, prop);
--	}
--
--	if (mpic_paddr == 0) {
-+	if (!tsi_pic) {
- 		printk(KERN_ERR "%s: No tsi108 PIC found !\n", __func__);
- 		return;
- 	}
- 
--	pr_debug("%s: tsi108 pic phys_addr = 0x%x\n", __func__, (u32) mpic_paddr);
--
--	mpic = mpic_alloc(tsi_pic, mpic_paddr,
-+	mpic = mpic_alloc(tsi_pic, 0,
- 			MPIC_PRIMARY | MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
- 			MPIC_SPV_EOI | MPIC_NO_PTHROU_DIS | MPIC_REGSET_TSI108,
- 			24,
-@@ -179,7 +170,7 @@ static void __init holly_init_IRQ(void)
- 
- 	BUG_ON(mpic == NULL);
- 
--	mpic_assign_isu(mpic, 0, mpic_paddr + 0x100);
-+	mpic_assign_isu(mpic, 0, mpic->paddr + 0x100);
- 
- 	mpic_init(mpic);
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index 244f997..72b3685 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -82,28 +82,22 @@ static void __init linkstation_init_IRQ(void)
- {
- 	struct mpic *mpic;
- 	struct device_node *dnp;
--	const u32 *prop;
--	int size;
--	phys_addr_t paddr;
- 
- 	dnp = of_find_node_by_type(NULL, "open-pic");
- 	if (dnp == NULL)
- 		return;
- 
--	prop = of_get_property(dnp, "reg", &size);
--	paddr = (phys_addr_t)of_translate_address(dnp, prop);
--
--	mpic = mpic_alloc(dnp, paddr, MPIC_PRIMARY | MPIC_WANTS_RESET, 4, 32, " EPIC     ");
-+	mpic = mpic_alloc(dnp, 0, MPIC_PRIMARY | MPIC_WANTS_RESET, 4, 32, " EPIC     ");
- 	BUG_ON(mpic == NULL);
- 
- 	/* PCI IRQs */
--	mpic_assign_isu(mpic, 0, paddr + 0x10200);
-+	mpic_assign_isu(mpic, 0, mpic->paddr + 0x10200);
- 
- 	/* I2C */
--	mpic_assign_isu(mpic, 1, paddr + 0x11000);
-+	mpic_assign_isu(mpic, 1, mpic->paddr + 0x11000);
- 
- 	/* ttyS0, ttyS1 */
--	mpic_assign_isu(mpic, 2, paddr + 0x11100);
-+	mpic_assign_isu(mpic, 2, mpic->paddr + 0x11100);
- 
- 	mpic_init(mpic);
+-#ifdef CONFIG_SMP
+ 	mpc85xx_smp_init();
+-#endif
  }
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-index f8f33e1..c8ce204 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-+++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -102,7 +102,6 @@ static void __init mpc7448_hpc2_setup_arch(void)
- static void __init mpc7448_hpc2_init_IRQ(void)
- {
- 	struct mpic *mpic;
--	phys_addr_t mpic_paddr = 0;
- 	struct device_node *tsi_pic;
- #ifdef CONFIG_PCI
- 	unsigned int cascade_pci_irq;
-@@ -111,21 +110,12 @@ static void __init mpc7448_hpc2_init_IRQ(void)
- #endif
  
- 	tsi_pic = of_find_node_by_type(NULL, "open-pic");
--	if (tsi_pic) {
--		unsigned int size;
--		const void *prop = of_get_property(tsi_pic, "reg", &size);
--		mpic_paddr = of_translate_address(tsi_pic, prop);
--	}
--
--	if (mpic_paddr == 0) {
-+	if (!tsi_pic) {
- 		printk("%s: No tsi108 PIC found !\n", __func__);
- 		return;
- 	}
- 
--	DBG("%s: tsi108 pic phys_addr = 0x%x\n", __func__,
--	    (u32) mpic_paddr);
--
--	mpic = mpic_alloc(tsi_pic, mpic_paddr,
-+	mpic = mpic_alloc(tsi_pic, 0,
- 			MPIC_PRIMARY | MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
- 			MPIC_SPV_EOI | MPIC_NO_PTHROU_DIS | MPIC_REGSET_TSI108,
- 			24,
-@@ -134,7 +124,7 @@ static void __init mpc7448_hpc2_init_IRQ(void)
- 
- 	BUG_ON(mpic == NULL);
- 
--	mpic_assign_isu(mpic, 0, mpic_paddr + 0x100);
-+	mpic_assign_isu(mpic, 0, mpic->paddr + 0x100);
- 
- 	mpic_init(mpic);
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/storcenter.c b/arch/powerpc/platforms/embedded6xx/storcenter.c
-index f1eebca..084f0fc 100644
---- a/arch/powerpc/platforms/embedded6xx/storcenter.c
-+++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
-@@ -84,22 +84,12 @@ static void __init storcenter_init_IRQ(void)
- {
- 	struct mpic *mpic;
- 	struct device_node *dnp;
--	const void *prop;
--	int size;
--	phys_addr_t paddr;
- 
- 	dnp = of_find_node_by_type(NULL, "open-pic");
- 	if (dnp == NULL)
- 		return;
- 
--	prop = of_get_property(dnp, "reg", &size);
--	if (prop == NULL) {
--		of_node_put(dnp);
--		return;
--	}
--
--	paddr = (phys_addr_t)of_translate_address(dnp, prop);
--	mpic = mpic_alloc(dnp, paddr, MPIC_PRIMARY | MPIC_WANTS_RESET,
-+	mpic = mpic_alloc(dnp, 0, MPIC_PRIMARY | MPIC_WANTS_RESET,
- 			16, 32, " OpenPIC  ");
- 
- 	of_node_put(dnp);
-@@ -110,8 +100,8 @@ static void __init storcenter_init_IRQ(void)
- 	 * 16 Serial Interrupts followed by 16 Internal Interrupts.
- 	 * I2C is the second internal, so it is at 17, 0x11020.
- 	 */
--	mpic_assign_isu(mpic, 0, paddr + 0x10200);
--	mpic_assign_isu(mpic, 1, paddr + 0x11000);
-+	mpic_assign_isu(mpic, 0, mpic->paddr + 0x10200);
-+	mpic_assign_isu(mpic, 1, mpic->paddr + 0x11000);
- 
- 	mpic_init(mpic);
- }
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 6f35582..baf20a9 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -234,7 +234,7 @@ static __init void pas_init_IRQ(void)
- 			  mpic_flags, 0, 0, "PASEMI-OPIC");
- 	BUG_ON(!mpic);
- 
--	mpic_assign_isu(mpic, 0, openpic_addr + 0x10000);
-+	mpic_assign_isu(mpic, 0, mpic->paddr + 0x10000);
- 	mpic_init(mpic);
- 	/* The NMI/MCK source needs to be prio 15 */
- 	if (nmiprop) {
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index cdfa8df..b80fbe0 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1164,6 +1164,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		return NULL;
- 
- 	mpic->name = name;
-+	mpic->paddr = phys_addr;
- 
- 	mpic->hc_irq = mpic_irq_chip;
- 	mpic->hc_irq.name = name;
-@@ -1250,8 +1251,8 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- #endif
- 
- 	/* Map the global registers */
--	mpic_map(mpic, node, phys_addr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
--	mpic_map(mpic, node, phys_addr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
-+	mpic_map(mpic, node, mpic->paddr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
-+	mpic_map(mpic, node, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
- 
- 	/* Reset */
- 
-@@ -1306,7 +1307,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	for_each_possible_cpu(i) {
- 		unsigned int cpu = get_hard_smp_processor_id(i);
- 
--		mpic_map(mpic, node, phys_addr, &mpic->cpuregs[cpu],
-+		mpic_map(mpic, node, mpic->paddr, &mpic->cpuregs[cpu],
- 			 MPIC_INFO(CPU_BASE) + cpu * MPIC_INFO(CPU_STRIDE),
- 			 0x1000);
- 	}
-@@ -1314,7 +1315,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	/* Initialize main ISU if none provided */
- 	if (mpic->isu_size == 0) {
- 		mpic->isu_size = mpic->num_sources;
--		mpic_map(mpic, node, phys_addr, &mpic->isus[0],
-+		mpic_map(mpic, node, mpic->paddr, &mpic->isus[0],
- 			 MPIC_INFO(IRQ_BASE), MPIC_INFO(IRQ_STRIDE) * mpic->isu_size);
- 	}
- 	mpic->isu_shift = 1 + __ilog2(mpic->isu_size - 1);
-@@ -1346,7 +1347,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	}
- 	printk(KERN_INFO "mpic: Setting up MPIC \"%s\" version %s at %llx,"
- 	       " max %d CPUs\n",
--	       name, vers, (unsigned long long)phys_addr, num_possible_cpus());
-+	       name, vers, (unsigned long long)mpic->paddr, num_possible_cpus());
- 	printk(KERN_INFO "mpic: ISU size: %d, shift: %d, mask: %x\n",
- 	       mpic->isu_size, mpic->isu_shift, mpic->isu_mask);
- 
+ static struct of_device_id __initdata xes_mpc85xx_ids[] = {
 -- 
 1.7.2.5
