@@ -1,27 +1,30 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
+ [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 58DAAB6F7C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 06:46:36 +1100 (EST)
-Message-ID: <4ED53695.8060005@freescale.com>
-Date: Tue, 29 Nov 2011 13:46:29 -0600
+ by ozlabs.org (Postfix) with ESMTPS id B22341007FA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 06:49:40 +1100 (EST)
+Message-ID: <4ED53748.3060801@freescale.com>
+Date: Tue, 29 Nov 2011 13:49:28 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 2/6] powerpc/85xx: consolidate of_platform_bus_probe calls
-References: <1321552581-29773-1-git-send-email-dbaryshkov@gmail.com>
- <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
- <CAOZdJXXZG38v-tgA2Ty7-uxJ3AxoFCmNxMO3dKJnJYQtJFb9DA@mail.gmail.com>
- <38BAFE03-DB17-4442-8CC2-E386E46FEB19@kernel.crashing.org>
- <4ED5058F.90004@freescale.com> <4ED50633.4020506@freescale.com>
-In-Reply-To: <4ED50633.4020506@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
+ spinlock use.
+References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
+ <20111122185924.GA23323@ovro.caltech.edu>
+ <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
+ <20111128163814.GA10919@ovro.caltech.edu>
+ <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
+In-Reply-To: <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: "Ira W. Snyder" <iws@ovro.caltech.edu>,
+ "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Shi Xuelin-B29237 <B29237@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,24 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/29/2011 10:20 AM, Timur Tabi wrote:
-> Timur Tabi wrote:
-> 
->> If I move the "fsl,eloplus-dma" into mpc85xx_common_ids[], then everything works.
+On 11/28/2011 09:19 PM, Li Yang-R58472 wrote:
+>> Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
+>> spinlock use.
 >>
->> I suspect there's some kind of state machine in of_platform_bus_probe() that allows it to find the DMA channel nodes if it's scanned everything else first.  I'm trying to debug it now.
+>> On Thu, Nov 24, 2011 at 08:12:25AM +0000, Shi Xuelin-B29237 wrote:
+>>> Hi Ira,
+>>>
+>>> Thanks for your review.
+>>>
+>>> After second thought, I think your scenario may not occur.
+>>> Because the cookie 20 we query must be returned by fsl_dma_tx_submit(...) in
+>> practice.
+>>> We never query a cookie not returned by fsl_dma_tx_submit(...).
+>>>
+>>
+>> I agree about this part.
+>>
+>>> When we call fsl_tx_status(20), the chan->common.cookie is definitely wrote as
+>> 20 and cpu2 could not read as 19.
+>>>
+>>
+>> This is what I don't agree about. However, I'm not an expert on CPU cache vs.
+>> memory accesses in an multi-processor system. The section titled "CACHE
+>> COHERENCY" in Documentation/memory-barriers.txt leads me to believe that the
+>> scenario I described is possible.
+> 
+> For Freescale PowerPC, the chip automatically takes care of cache coherency.  Even if this is a concern, spinlock can't address it.
 
-Probably mpc85xx_common_ids[] can probe the soc node but not the dma
-node, and the p1022-specific list can probe the dma node but not the soc
-node, so it doesn't get to the dma node.
+Cache coherency is not the same thing as ordering -- and spinlocks do
+address ordering, because there are memory barriers in the lock
+implementation.
 
-> So why do we need mpc85xx_common_ids[] at all?  Why can't of_platform_bus_probe() just scan the entire tree?
-
-That would generate a lot of useless platform devices that are either
-not really devices, or duplicate a device sitting on another bus (i2c,
-pci, etc).  It could also result in a device being probed and matching a
-driver, when the device is unavailable in a way that is more complicated
-than status = "disabled" (such as p1022 muxing), or otherwise requires
-special handling.
+If you're relying on some non-universal ordering guarantee that all
+chips with this device make, it needs to be documented explicitly what
+you're assuming and why it's valid.
 
 -Scott
