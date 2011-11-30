@@ -1,37 +1,21 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 3DACAB6F6B
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2011 12:26:09 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Wed, 30 Nov 2011 01:23:56 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pAU1PiEI5247116
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2011 12:25:44 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pAU1PiSP032539
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2011 12:25:44 +1100
-Message-ID: <4ED58614.9090204@linux.vnet.ibm.com>
-Date: Wed, 30 Nov 2011 06:55:40 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 30 Nov 2011 12:10:18 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+Subject: Re: [PATCH 04/13] powerpc: Update hugetlb huge_pte_alloc and
+ tablewalk code for FSL BOOKE
+Message-ID: <20111130011018.GB5435@truffala.fritz.box>
+References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
+ <13182798624083-git-send-email-beckyb@kernel.crashing.org>
+ <13182798643553-git-send-email-beckyb@kernel.crashing.org>
+ <13182798681100-git-send-email-beckyb@kernel.crashing.org>
+ <1318279870278-git-send-email-beckyb@kernel.crashing.org>
+ <1322544333.23348.69.camel@pasglop>
+ <9FB8A0F3-ED6C-4C4F-BB9F-87CDEB19C3C2@kernel.crashing.org>
 MIME-Version: 1.0
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [linux-pm] [RFC PATCH v2 4/4] cpuidle: (POWER) Handle
- power_save=off
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
- <20111117112906.9191.54050.stgit@localhost6.localdomain6>
- <1322435233.23348.19.camel@pasglop>	<4ED36A7D.9070308@linux.vnet.ibm.com>
- <1322512771.23348.45.camel@pasglop> <4ED47F48.2070107@linux.vnet.ibm.com>
-In-Reply-To: <4ED47F48.2070107@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9FB8A0F3-ED6C-4C4F-BB9F-87CDEB19C3C2@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,63 +25,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/29/2011 12:14 PM, Deepthi Dharwar wrote:
+On Tue, Nov 29, 2011 at 10:36:42AM -0600, Becky Bruce wrote:
+> 
+> On Nov 28, 2011, at 11:25 PM, Benjamin Herrenschmidt wrote:
+> 
+> > On Mon, 2011-10-10 at 15:50 -0500, Becky Bruce wrote:
+> >> From: Becky Bruce <beckyb@kernel.crashing.org>
+> >> 
+> >> This updates the hugetlb page table code to handle 64-bit FSL_BOOKE.
+> >> The previous 32-bit work counted on the inner levels of the page table
+> >> collapsing.
+> > 
+> > Seriously, my brain hurts !!!
+> 
+> Now you know how I felt when I got the original code from David :)
 
-> On 11/29/2011 02:09 AM, Benjamin Herrenschmidt wrote:
-> 
->> On Mon, 2011-11-28 at 16:33 +0530, Deepthi Dharwar wrote:
->>
->>> On an LPAR if cpuidle is disabled, ppc_md.power_save is still set to
->>> cpuidle_idle_call by default here. This would result in calling of
->>> cpuidle_idle_call repeatedly, only for the call to return -ENODEV. The
->>> default idle is never executed.
->>> This would be a major design flaw. No fallback idle routine.
->>>
->>> We propose to fix this by checking the return value of
->>> ppc_md.power_save() call from void to int.
->>> Right now return value is void, but if we change this to int, this
->>> would solve two problems. One being removing the cast to a function
->>> pointer in the prev patch and this design flaw stated above.
-kernel/idle.c:  ppc_md.power_save = NULL;
->>>
->>> So by checking the return value of ppc_md.power_save(), we can invoke
->>> the default idle on failure. But my only concern is about the effects of
->>> changing the ppc_md.power_save() to return int on other powerpc
->>> architectures. Would it be a good idea to change the return type to int
->>> which would help us flag an error and fallback to default idle?
->>
->> I would have preferred an approach where the cpuidle module sets
->> ppc_md.power_save when loaded and restores it when unloaded ... but that
->> would have to go into the cpuidle core as a powerpc specific tweak and
->> might not be generally well received.
->>
->> So go for it, add the return value, but you'll have to update all the
->> idle functions (grep for power_save in arch/powerpc to find them).
->>
-> 
-> 
-> Thanks Ben. Yes, I will update all the idle functions under powerpc.
-> I will re-work these patches with the discussed changes.
-> 
-> Regards,
-> Deepthi
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
-> 
-> 
+Heh, I can't blame you.  Between the constraints of the hardware and
+fitting in with x86, that thing's accreted into a horrible pile.
 
-Hi Ben,
+> > So I've tried to understand that code and so far, what I came up with is
+> > this, please reply and let me know if I'm full of crack or what ...
+> > 
+> > - David's code has entire levels "branching off" into hugepd's which
+> > are hugetlb specific page dirs. That requires address space constrainst.
+> 
+> Yes.
+> 
+> > - The hack you do with HUGEPD_PGD_SHIFT defined to PGDIR_SHIFT and
+> > HUGEPD_PUD_SHIFT to PUD_SHIFT consists of collasping that back into the
+> > normal levels.
+> 
+> That exists so Jimi's code for A2 and mine can coexist peacefully
+> without ifdeffing huge blocks because we peel off the page table at
+> different points for a hugepd.  In my case, if I have a 4M page,
+> that is handled by having 2 entries at the 2M layer, each of which
+> is a pointer to the same pte stored in a kmem_cache created for that
+> purpose.  In the server/A2 case, they peel off at the layer above 4M
+> and have a sub-table kmem_cache that has a bunch of same-size huge
+> page ptes (this is all because of the slice constraint).
+> 
+> > - I really don't understand what you are doing in __hugepte_alloc(). It
+> > seems to me that you are trying to make things still point to some kind
+> > of separate hugepd dir with the hugeptes in it and have the page tables
+> > point to that but I don't quite get it.
+> 
+> In your example below, the alloc code is:
+> 1) allocating a small kmem_cache for the pte
+> 
+> 2) filling in 8 entries at the 2M level with the pointers to that pte, with the upper bit munged to indicate huge and bits in the lower region that store the huge page size because it can't be encoded in the book3e pte format
+> 
+> > - Couldn't we just instead ditch the whole hugepd concept alltogether
+> > and simply have the huge ptes in the page table at the right level,
+> > using possibly multiple consecutive of them for a single page when
+> > needed ?
+> > 
+> > Example: 4K base page size. PMD maps 2M. a 16M page could be
+> > representing by having 8 consecutive hugeptes pointing to the same huge
+> > page in the PMD directory.
+> 
+> We currently have 8 consecutive PMD entries that are pointers to the
+> same kmem_cache that holds the actual PTE.  I did this for a few
+> reasons:
+> 
+> 1) I was trying to stay as close to what David had done as possible
+> 
+> 2) symmetry - in every other case entries at higher levels of the
+> normal page table are pointers to something, and it's easy to
+> identify that something is a pointer to hugepte using David's
+> upper-bit-flipping trick.  If we have an actual entry mixed in with
+> the pointers it might be hard to tell that's it's an actual PTE and
+> not a pointer without getting information from somewhere else
+> (i.e. the vma)
+> 
+> 3) I was trying to avoid having multiple copies of the actual pte -
+> this way it's easy to do stuff like change the perms on the PTE,
+> since I only have to modify one copy
+> 
+> 4) I needed the information laid out for quick TLB miss
+> fault-handling of hugepte tlb misses (see below).
+> 
+> > I believe we always "know" when accessing a PTE whether it's going to be
+> > huge or not and if it's huge, the page size. IE. All the functions we
+> > care about either get the vma (which gets you everything you need) or
+> > the size (huge_pte_alloc).
+> 
+> An exception is the 32-bit fault hander asm code.  It does a walk of
+> the page table to reload the tlb.  We need to be able to easily
+> identify that we're walking into a hugepage area so we know to load
+> the tlbcam.  Having the pointer there with the munged upper bit that
+> David devised is very convenient for that.  Also, the Book3e page
+> table format does not allow us to represent page sizes > 32m.  So
+> that's encoded in the hugepd instead (and not in the pte).
+> 
+> I'm not sure how to get around this without slowing things down.  I
+> originally had a slower handler and it turned out to impact
+> performance of several important workloads and my perf guys griped
+> at me. I was actually eventually planning to rewrite the 64b fsl
+> book3e handler to deal with this in asm as well.  Large workloads on
+> our systems do a lot of tlbcam entry replacement due to 1) the small
+> size of the tlbcam and 2) the lack of any hardware replacement
+> policy on that array.
+> 
+> There are other places where we'd have to modify the code to have
+> the vma available (not that it's hard to do, but it's not floating
+> around everywhere).  And there may be other places where this is an
+> issue - I'd have to go dig around a bit to answer that.
+> 
+> For the record, I hate the idea of not being able to walk the page
+> table without going elsewhere for information.  IMHO I should be
+> able to tell everything I need to load a TLB entry from there
+> without digging up a vma.
 
-I was trying to add a return value for power_save for all arch/powepc
-idle functions but a few of them directly call *.S  routines, as they
-are asm.
+I agree, all things being equal, but there might be tradeoffs that
+make it the least bad option.
 
-What would be a good way to change the return value  for asm routines ?
-Do we make a change in asm only, put the return value in r3 or write a
-wrapper function which would call these asm routines and return an int ?
+> > This should be much simpler than what we have today.
+> > 
+> > That way, we have a completely generic accross-the-board way to store
+> > huge pte's in our page tables, which is totally disconnected from the
+> > slices. The later remains a purely server-only thing which only affects
+> > the SLB code and get_unmapped_area().
+> 
+> David and Jimi will have to comment about whether they can flatten
+> out their stuff to just store PTEs.  A lot of my code exists because
+> I was attempting to be as close to the IBM implementation as
+> possible.
 
-Regards,
-Deepthi
+I was talking with Ben about this yesterday, and I think it can
+probably be done.
+
+> > That means that we'll have to find another option for PowerEN giant
+> > indirects but that's a non issue at the moment. I think we can keep the
+> > complexity local to the PowerEN code by doing shadows there if we need
+> > to.
+> > 
+> > What do you think ?
+> 
+> I'm happy if we can come up with another solution that still allows
+> me to do my miss fault handling efficiently in asm.... What we do on
+> FSL Booke with storing multiple pointers to a single pte is actually
+> a fairly clean solution given the constraints.  It's only in the
+> context of having a different implementation coexisting with it that
+> makes things start getting complicated.  If you have some
+> suggestions on another way to deal with this, I'm all ears.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
