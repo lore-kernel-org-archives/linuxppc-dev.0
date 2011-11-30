@@ -1,17 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 30 Nov 2011 17:31:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 6/6] 44x/currituck: Add support for the new IBM currituck
- platform
-Message-ID: <20111130063122.GI5435@truffala.fritz.box>
-References: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
- <1322630640-13708-7-git-send-email-tony@bakeyournoodle.com>
- <1322634022.21641.61.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1322634022.21641.61.camel@pasglop>
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <wg@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
+ by ozlabs.org (Postfix) with ESMTP id 092A4B6F7B
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2011 19:18:19 +1100 (EST)
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH net-next v5 4/4] powerpc: tqm8548/tqm8xx: add and update CAN
+ device nodes
+Date: Wed, 30 Nov 2011 09:18:14 +0100
+Message-Id: <1322641094-12175-5-git-send-email-wg@grandegger.com>
+In-Reply-To: <1322641094-12175-1-git-send-email-wg@grandegger.com>
+References: <1322641094-12175-1-git-send-email-wg@grandegger.com>
+Cc: Stanislav Yelenskiy <stanislavelensky@yahoo.com>,
+ devicetree-discuss@lists.ozlabs.org, linux-can@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, IreneV <boir1@yandex.ru>,
+ socketcan-users@lists.berlios.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 30, 2011 at 05:20:22PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2011-11-30 at 16:24 +1100, Tony Breeds wrote:
-> 
-> > +		cpu@1 {
-> > +			device_type = "cpu";
-> > +			model = "PowerPC,476";
-> > +			reg = <1>;
-> > +			clock-frequency = <1600000000>; // 1.6 GHz
-> > +			timebase-frequency = <100000000>; // 100Mhz
-> > +			i-cache-line-size = <32>;
-> > +			d-cache-line-size = <32>;
-> > +			i-cache-size = <32768>;
-> > +			d-cache-size = <32768>;
-> > +			dcr-controller;
-> > +			dcr-access-method = "native";
-> > +			status = "disabled";
-> 
-> disabled ? really ?
+This patch enables or updates support for the CC770 and AN82527
+CAN controller on the TQM8548 and TQM8xx boards.
 
-This is ePAPR.  All non-boot CPUs are supposed to have status =
-"disabled" to indicate that they won't be available until explicitly
-enabled via the enable-method.
+CC: devicetree-discuss@lists.ozlabs.org
+CC: linuxppc-dev@ozlabs.org
+CC: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+---
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts |   19 ++++++++++++++-----
+ arch/powerpc/boot/dts/tqm8548.dts          |   19 ++++++++++++++-----
+ arch/powerpc/boot/dts/tqm8xx.dts           |   25 +++++++++++++++++++++++++
+ 3 files changed, 53 insertions(+), 10 deletions(-)
 
+diff --git a/arch/powerpc/boot/dts/tqm8548-bigflash.dts b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+index 9452c3c..d918752 100644
+--- a/arch/powerpc/boot/dts/tqm8548-bigflash.dts
++++ b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+@@ -352,7 +352,7 @@
+ 		ranges = <
+ 			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+ 			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+-			2 0x0 0xa3000000 0x00008000	// CAN (2 x i82527)
++			2 0x0 0xa3000000 0x00008000	// CAN (2 x CC770)
+ 			3 0x0 0xa3010000 0x00008000	// NAND FLASH
+ 
+ 		>;
+@@ -393,18 +393,27 @@
+ 		};
+ 
+ 		/* Note: CAN support needs be enabled in U-Boot */
+-		can0@2,0 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,0 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x0 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
+ 		};
+ 
+-		can1@2,100 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,100 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x100 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
+ 		};
+ 
+ 		/* Note: NAND support needs to be enabled in U-Boot */
+diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tqm8548.dts
+index 619776f..988d887 100644
+--- a/arch/powerpc/boot/dts/tqm8548.dts
++++ b/arch/powerpc/boot/dts/tqm8548.dts
+@@ -352,7 +352,7 @@
+ 		ranges = <
+ 			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+ 			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+-			2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
++			2 0x0 0xe3000000 0x00008000	// CAN (2 x CC770)
+ 			3 0x0 0xe3010000 0x00008000	// NAND FLASH
+ 
+ 		>;
+@@ -393,18 +393,27 @@
+ 		};
+ 
+ 		/* Note: CAN support needs be enabled in U-Boot */
+-		can0@2,0 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,0 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x0 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
+ 		};
+ 
+-		can1@2,100 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,100 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x100 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
+ 		};
+ 
+ 		/* Note: NAND support needs to be enabled in U-Boot */
+diff --git a/arch/powerpc/boot/dts/tqm8xx.dts b/arch/powerpc/boot/dts/tqm8xx.dts
+index f6da7ec..c3dba25 100644
+--- a/arch/powerpc/boot/dts/tqm8xx.dts
++++ b/arch/powerpc/boot/dts/tqm8xx.dts
+@@ -57,6 +57,7 @@
+ 
+ 		ranges = <
+ 			0x0 0x0 0x40000000 0x800000
++			0x3 0x0 0xc0000000 0x200
+ 		>;
+ 
+ 		flash@0,0 {
+@@ -67,6 +68,30 @@
+ 			bank-width = <4>;
+ 			device-width = <2>;
+ 		};
++
++		/* Note: CAN support needs be enabled in U-Boot */
++		can@3,0 {
++			compatible = "intc,82527";
++			reg = <3 0x0 0x80>;
++			interrupts = <8 1>;
++			interrupt-parent = <&PIC>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
++		};
++
++		can@3,100 {
++			compatible = "intc,82527";
++			reg = <3 0x100 0x80>;
++			interrupts = <8 1>;
++			interrupt-parent = <&PIC>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++		};
+ 	};
+ 
+ 	soc@fff00000 {
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.7.4.1
