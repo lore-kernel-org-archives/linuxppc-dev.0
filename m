@@ -1,18 +1,16 @@
 Return-Path: <tony@bakeyournoodle.com>
-Date: Thu, 1 Dec 2011 10:25:15 +1100
+Date: Thu, 1 Dec 2011 10:30:27 +1100
 From: Tony Breeds <tony@bakeyournoodle.com>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH 4/6] powerpc/boot: Add extended precision shifts to the
- boot wrapper.
-Message-ID: <20111130232515.GB15560@thor.bakeyournoodle.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 5/6] powerpc/boot: Add mfdcrx
+Message-ID: <20111130233027.GC15560@thor.bakeyournoodle.com>
 References: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
- <1322630640-13708-5-git-send-email-tony@bakeyournoodle.com>
- <1322632107.21641.43.camel@pasglop>
- <CA+5PVA6kBquh2=sPy25PKGSMBWvoZFFvZjrL4bgdmddFgjyaQA@mail.gmail.com>
+ <1322630640-13708-6-git-send-email-tony@bakeyournoodle.com>
+ <F91E9007-5DA5-4E3A-993E-EA680DE08D79@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="JP+T4n/bALQSJXh8"
-In-Reply-To: <CA+5PVA6kBquh2=sPy25PKGSMBWvoZFFvZjrL4bgdmddFgjyaQA@mail.gmail.com>
+ protocol="application/pgp-signature"; boundary="Bu8it7iiRSEf40bY"
+In-Reply-To: <F91E9007-5DA5-4E3A-993E-EA680DE08D79@kernel.crashing.org>
 Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,52 +22,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---JP+T4n/bALQSJXh8
+--Bu8it7iiRSEf40bY
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 30, 2011 at 06:45:37AM -0500, Josh Boyer wrote:
+On Wed, Nov 30, 2011 at 02:09:20PM +0100, Segher Boessenkool wrote:
+> >+#define mfdcrx(rn) \
+> >+	({	\
+> >+		unsigned long rval; \
+> >+		asm volatile("mfdcrx %0,%1" : "=3Dr"(rval) : "g"(rn)); \
+> >+		rval; \
+> >+	})
+>=20
+> "g" is never correct on PowerPC, you want "r" here.  You can write
+> this as a static inline btw, you only need the #define stuff when
+> there is an "i" constraint involved.
 
-> However, adding this code and wonderful and all but why do we need to
-> add it?  Changelog should say why.
-
-Okay changelog updated to:
-
-    powerpc/boot: Add extended precision shifts to the boot wrapper.
-   =20
-    The upcoming currituck patches will need to do 64-bit shifts which will
-    fail with undefined symbol without this patch.
-   =20
-    I looked at linking against libgcc but we can't guarantee that libgcc
-    was compiled with soft-float.  Also Using ../lib/div64.S or
-    ../kernel/misc_32.S, this will break the build as the .o's need to be
-    built with different flags for the bootwrapper vs the kernel.  So for
-    now the easiest option is to just copy code from
-    arch/powerpc/kernel/misc_32.S  I don't think this code changes too ofte=
-n ;P
+Okay I'll change it to "i", mostly I used a #define to match the style
+of m[tf]dcr.  To be honnest I didn't know about the issue with "i"
+constraints and static inlines.
 
 Yours Tony
 
---JP+T4n/bALQSJXh8
+--Bu8it7iiRSEf40bY
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBCAAGBQJO1rtbAAoJEEsCiJRY75GK4DYP/29a7mE2kntcFmzN5dRjhQWq
-kd1DoRc7c6UGHVEXuVWXArp/Dc4IaScjuIWEGRuPTSBhQSUIYDcHUcDj0yUcLt5H
-kny0W+R+n//+JktKaKdhiGYPfjbZCHp3F2d/WglEApa+u6vta0zxXxfakA80iBM2
-W6f8TT+V5IibpWcuuUXCHc2527O7GJ+otD+nFYMB424sMrjt0sf7Ac+KaMpQnOI0
-zeDfRk2yGqQisoC8oultdgYZNlZmc1jczi3wm2thZn4A14/ng3rA1QnnUIHbruNQ
-XxQzGfHMf/e7yamYvognFluzOeO29a9jsAvtExYzO/pijvOJQCRRZRPYxyZgZ/n6
-oSB6Ic9tnvWgUx8kHBl8sIr+6hICSne9eG5EvdUdNHgf3eaN9FERpAdg80Q6254b
-2Un9o/kWnWKykrHoVaeKXFGqr3nWwIgRKX8FxDIjRhqi79l18wKFQD9qNf1qCt1A
-Yg6tzLjm1BQxJFWQYvxvPxWEy6NZXWAdmDO1vzsdiHThqf+4oi+glRiZIvy7Lh4p
-No7ygulBRo5PmLvCB4v3DngIOYJ0343WfdeAUuvM0ltolH0P72kUM8peQaSzFTxx
-uH4uj7hZjRmSjgVpRtl55naSOhzEMOD44IaF+I4uaasQlrnVzgHPbDzUQmwObgeM
-VRz2ibLRJ/iYivVVYpio
-=cAxy
+iQIcBAEBCAAGBQJO1ryTAAoJEEsCiJRY75GKGVwQAI1XXTJcCM7xwThdTDXXfcAq
+alcCj4T/QEp3hyqP2NrlkEai3PMYACLHlP9qKcL1wztPXqpdc6A1OF2wlruM9E9+
+ds9WQSLySk5s0mLnu7XfxqqUyWirpKT0WYog3P1qw8PWnelwrSzy/9vZLjuwhOrl
++pUTyvY/TsQwrSumUe5WJlu4go8zNOnmZzRNxjLGxy9XyP1u1u5xZEnKI2pTSBw6
+xx2XWbfiX0NR8NpS+hlpdvH3DGItJ677o9zFFNu/fhxAOEnBABYsPndCza1IgD00
+EB8M/r7xSeoLTu4qfh/bzdi5ksgX1xmJBYU4YXDM83uMhX9HHoPDkDW8vOG+g5ip
+fMqRTppeKClJiTi/xDwbPp8gC9o84XQYDZS2rB4bDLqDxs/YxBRQZdaXbts9y9+k
+Pxcl2pMfvfb6Qzz2dq3G2Nmpjgh2+Xckhlq/CKrxBbljgICzqr6wpBKaJhq8sQGO
+7d73tCaeb0+u6TZs4a2NGvgrDDIDU97VqNPhyx6yMMMqlwJsJtDtAFkunKWA0uzj
+Pze5pSEe3QqdPTyEZwTV/1hKVkSZQr8YnY9ZQQIAOCmWgOCdiMNYZRDaGQg/LhKO
+3Pru+JqannUNpm5dUaq6Ul1n904DVyIl/qaOE8k9fhNqTbJM8OYKhekZjUn9gFbW
+qVwzg85mq0nWWSfoTviU
+=AkHP
 -----END PGP SIGNATURE-----
 
---JP+T4n/bALQSJXh8--
+--Bu8it7iiRSEf40bY--
