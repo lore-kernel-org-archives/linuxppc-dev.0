@@ -1,25 +1,16 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE010.bigfish.com (va3ehsobe010.messaging.microsoft.com
- [216.32.180.30]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id AD095B6F84
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 07:28:13 +1100 (EST)
-Message-ID: <4ED691D0.7040308@freescale.com>
-Date: Wed, 30 Nov 2011 14:28:00 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/6] powerpc/boot: Add extended precision shifts to the
- boot wrapper.
-References: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
- <1322630640-13708-5-git-send-email-tony@bakeyournoodle.com>
- <1322632107.21641.43.camel@pasglop>
- <CA+5PVA6kBquh2=sPy25PKGSMBWvoZFFvZjrL4bgdmddFgjyaQA@mail.gmail.com>
- <1322684475.29041.2.camel@pasglop>
-In-Reply-To: <1322684475.29041.2.camel@pasglop>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <0b0c0efa6cca6e5e169b4b3e81373a3bab75716a.1322615824.git.geoff@infradead.org>
+References: <cover.1322615824.git.geoff@infradead.org>
+ <0b0c0efa6cca6e5e169b4b3e81373a3bab75716a.1322615824.git.geoff@infradead.org>
+Date: Wed, 30 Nov 2011 21:57:48 +0100
+Message-ID: <CAMuHMdUjOXLskrRXYYO1Esd75W4Z=WS3srT0+qFF66DfLeQQmA@mail.gmail.com>
+Subject: Re: [PATCH 6/8] powerpc/ps3: Fix pr_debug build warnings
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Geoff Levand <geoff@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/30/2011 02:21 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2011-11-30 at 06:45 -0500, Josh Boyer wrote:
->> On Wed, Nov 30, 2011 at 12:48 AM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->>> On Wed, 2011-11-30 at 16:23 +1100, Tony Breeds wrote:
->>>> Code copied from arch/powerpc/kernel/misc_32.S
->>>>
->>>> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
->>>> ---
->>>>  arch/powerpc/boot/div64.S |   52 +++++++++++++++++++++++++++++++++++++++++++++
->>>>  1 files changed, 52 insertions(+), 0 deletions(-)
->>>
->>> Should we just link with libgcc ? :-)
->>
->> Please tell me you're joking.
-> 
-> Only half... I wonder what it would look like. Wouldn't ld only pickup
-> what we use anyway ?
+Hi Geoff,
 
-We do it in U-Boot...
+On Wed, Nov 30, 2011 at 02:38, Geoff Levand <geoff@infradead.org> wrote:
+> Fix some PS3 build warnings when DEBUG is defined.
+>
+> Fixes warnings like these:
+>
+> =C2=A0format '%lx' expects type 'long unsigned int', but argument 7 has t=
+ype 'u64'
+>
+> Signed-off-by: Geoff Levand <geoff@infradead.org>
+> ---
+> =C2=A0arch/powerpc/platforms/ps3/repository.c | =C2=A0 14 ++++++++------
+> =C2=A01 files changed, 8 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platf=
+orms/ps3/repository.c
+> index cb68729..2ce2782 100644
+> --- a/arch/powerpc/platforms/ps3/repository.c
+> +++ b/arch/powerpc/platforms/ps3/repository.c
+> @@ -1050,7 +1050,7 @@ int ps3_repository_dump_resource_info(const struct =
+ps3_repository_device *repo)
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_debug("%s:%d (%=
+u:%u) reg_type %u, bus_addr %lxh, len %lxh\n",
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0__func__, __LINE__, repo->bus_index, repo->dev_index,
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 reg_type, bus_addr, len);
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 reg_type, (unsigned long)bus_addr, (unsigned long)len);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0}
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_debug(" <- %s:%d\n", __func__, __LINE__);
 
-Only problem I see is that it would need to be built as soft-float, and
-apparently that isn't supported by gcc on 64-bit ppc.  Unfortunately
-there's isn't a "no float" mode.
+The correct way to format u64 is using the "ll" length modifier. That way y=
+ou
+don't need casts.
 
--Scott
+The code above was originally written before the u64 uniformization, when p=
+pc64
+was still using "unsigned long" for u64.
+
+Gr{oetje,eeting}s,
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
