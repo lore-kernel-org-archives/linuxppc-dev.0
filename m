@@ -1,30 +1,32 @@
 Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+ [213.199.154.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 7D439B6F6B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 09:53:42 +1100 (EST)
-Message-ID: <4ED5626C.1080201@freescale.com>
-Date: Tue, 29 Nov 2011 16:53:32 -0600
-From: Timur Tabi <timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id A48151007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 11:08:55 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
+ spinlock use.
+Date: Wed, 30 Nov 2011 00:08:44 +0000
+Message-ID: <CAOZdJXWX9EHfcXTuVag+-MvUvqnA7bA5RjmLx4jE5Cu5JmQdvg@mail.gmail.com>
+References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
+ <20111122185924.GA23323@ovro.caltech.edu>
+ <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
+ <20111128163814.GA10919@ovro.caltech.edu>
+ <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
+ <20111129172539.GB15331@ovro.caltech.edu>
+In-Reply-To: <20111129172539.GB15331@ovro.caltech.edu>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/6] powerpc/85xx: consolidate of_platform_bus_probe calls
-References: <1321552581-29773-1-git-send-email-dbaryshkov@gmail.com>
- <1321552581-29773-2-git-send-email-dbaryshkov@gmail.com>
- <CAOZdJXXZG38v-tgA2Ty7-uxJ3AxoFCmNxMO3dKJnJYQtJFb9DA@mail.gmail.com>
- <38BAFE03-DB17-4442-8CC2-E386E46FEB19@kernel.crashing.org>
- <4ED5058F.90004@freescale.com> <4ED50633.4020506@freescale.com>
- <2C30517A-CF00-455A-ABE4-CA92A8856C70@kernel.crashing.org>
- <4ED529E3.4090609@freescale.com>
- <F763A5A8-8F4B-477A-ADD3-EDEF71C8F801@kernel.crashing.org>
-In-Reply-To: <F763A5A8-8F4B-477A-ADD3-EDEF71C8F801@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Shi Xuelin-B29237 <B29237@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->> > The only fix I can think of is to move "fsl,eloplus-dma" into mpc85xx_common_ids[].  I'll post a patch that does that, and we can discuss it.
+On Tue, Nov 29, 2011 at 11:25 AM, Ira W. Snyder <iws@ovro.caltech.edu> wrot=
+e:
 
-> what if you make the p1022_ds_ids call first?  Maybe we need to add 'soc' to p1022_ds_ids list
+> I believe that you are correct, for powerpc. However, anything outside
+> of arch/powerpc shouldn't assume it only runs on powerpc. I wouldn't be
+> surprised to see fsldma running on an iMX someday (ARM processor).
 
-Reversing the calls does not help.  p1022_ds_ids[] is ignored either way.  The same problem exists in mpc85xx_publish_devices(), so this patch breaks several boards.
+I certainly would.  The i.MX chips have their own DMA controller.  The
+DMA controller that fsldma.c works with is unique to Freescale's 83xx,
+85xx, and QorIQ chips.
 
-Copying lines into p1022_ds_ids[] causes kernel BUGS() like this:
-
-sysfs: cannot create duplicate filename '/devices/e0005000.localbus'
-
-because we end up duplicating probes.
-
--- 
+--=20
 Timur Tabi
-Linux kernel developer at Freescale
+Linux kernel developer at Freescale=
