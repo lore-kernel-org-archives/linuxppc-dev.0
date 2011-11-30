@@ -1,11 +1,12 @@
 Return-Path: <anton@samba.org>
-Message-Id: <20111130102415.403402837@samba.org>
-Date: Wed, 30 Nov 2011 21:23:16 +1100
+Message-Id: <20111130102415.491424469@samba.org>
+Date: Wed, 30 Nov 2011 21:23:17 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
  paulus@samba.org,
  hbabu@us.ibm.com
-Subject: [PATCH 8/9] powerpc/kdump: Delay before sending IPI on a system reset
+Subject: [PATCH 9/9] powerpc/kdump: Only save CPU state first time through the
+ secondary CPU capture code
 References: <20111130102308.348262468@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -17,100 +18,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we enter the kdump code via system reset, wait a bit before
-sending the IPI to capture all secondary CPUs. Without it we race
-with the hypervisor that is issuing the system reset to each CPU.
-If the IPI gets there first the system reset oops output then shows
-the register state of the IPI handler which is not what we want.
+We might enter the secondary CPU capture code twice, eg if we have to
+unstick some CPUs with a system reset. In this case we don't want to
+overwrite the state on CPUs that had made it into the capture code OK,
+so use the cpus_state_saved cpumask for that and make it local to
+crash_ipi_callback.
 
-I took the opportunity to add defines for all the various delays
-we have. There's no need for cpu_relax when we are doing an mdelay,
-so remove them too.
+For controlling progress now use atomic_t cpus_in_crash to count how
+many CPUs have made it into the kdump code, and time_to_dump to tell
+everyone it's time to dump.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: linux-build/arch/powerpc/kernel/crash.c
 ===================================================================
---- linux-build.orig/arch/powerpc/kernel/crash.c	2011-11-28 11:44:42.222009861 +1100
-+++ linux-build/arch/powerpc/kernel/crash.c	2011-11-28 14:01:58.033283718 +1100
-@@ -30,6 +30,20 @@
- #include <asm/system.h>
- #include <asm/setjmp.h>
+--- linux-build.orig/arch/powerpc/kernel/crash.c	2011-11-30 07:38:35.131392789 +1100
++++ linux-build/arch/powerpc/kernel/crash.c	2011-11-30 21:22:18.790917413 +1100
+@@ -46,7 +46,8 @@
  
-+/*
-+ * The primary CPU waits a while for all secondary CPUs to enter. This is to
-+ * avoid sending an IPI if the secondary CPUs are entering
-+ * crash_kexec_secondary on their own (eg via a system reset).
-+ *
-+ * The secondary timeout has to be longer than the primary. Both timeouts are
-+ * in milliseconds.
-+ */
-+#define PRIMARY_TIMEOUT		500
-+#define SECONDARY_TIMEOUT	1000
-+
-+#define IPI_TIMEOUT		10000
-+#define REAL_MODE_TIMEOUT	10000
-+
  /* This keeps a track of which one is the crashing cpu. */
  int crashing_cpu = -1;
- static cpumask_t cpus_in_crash = CPU_MASK_NONE;
-@@ -99,11 +113,9 @@ again:
- 	 * FIXME: Until we will have the way to stop other CPUs reliably,
- 	 * the crash CPU will send an IPI and wait for other CPUs to
- 	 * respond.
--	 * Delay of at least 10 seconds.
- 	 */
--	msecs = 10000;
-+	msecs = IPI_TIMEOUT;
- 	while ((cpumask_weight(&cpus_in_crash) < ncpus) && (--msecs > 0)) {
--		cpu_relax();
- 		mdelay(1);
- 	}
+-static cpumask_t cpus_in_crash = CPU_MASK_NONE;
++static atomic_t cpus_in_crash;
++static int time_to_dump;
  
-@@ -163,11 +175,11 @@ again:
- void crash_kexec_secondary(struct pt_regs *regs)
+ #define CRASH_HANDLER_MAX 3
+ /* NULL terminated list of shutdown handles */
+@@ -67,21 +68,27 @@ static int handle_fault(struct pt_regs *
+ 
+ void crash_ipi_callback(struct pt_regs *regs)
  {
- 	unsigned long flags;
--	int msecs = 500;
-+	int msecs = SECONDARY_TIMEOUT;
++	static cpumask_t cpus_state_saved = CPU_MASK_NONE;
++
+ 	int cpu = smp_processor_id();
  
- 	local_irq_save(flags);
+ 	if (!cpu_online(cpu))
+ 		return;
  
--	/* Wait 500ms for the primary crash CPU to signal its progress */
-+	/* Wait for the primary crash CPU to signal its progress */
- 	while (crashing_cpu < 0) {
- 		if (--msecs < 0) {
- 			/* No response, kdump image may not have been loaded */
-@@ -176,7 +188,6 @@ void crash_kexec_secondary(struct pt_reg
- 		}
+ 	hard_irq_disable();
+-	if (!cpumask_test_cpu(cpu, &cpus_in_crash))
++	if (!cpumask_test_cpu(cpu, &cpus_state_saved)) {
+ 		crash_save_cpu(regs, cpu);
+-	cpumask_set_cpu(cpu, &cpus_in_crash);
++		cpumask_set_cpu(cpu, &cpus_state_saved);
++	}
++
++	atomic_inc(&cpus_in_crash);
++	smp_mb__after_atomic_inc();
  
+ 	/*
+ 	 * Starting the kdump boot.
+ 	 * This barrier is needed to make sure that all CPUs are stopped.
+ 	 */
+-	while (!cpumask_test_cpu(crashing_cpu, &cpus_in_crash))
++	while (!time_to_dump)
+ 		cpu_relax();
+ 
+ 	if (ppc_md.kexec_cpu_down)
+@@ -115,19 +122,18 @@ again:
+ 	 * respond.
+ 	 */
+ 	msecs = IPI_TIMEOUT;
+-	while ((cpumask_weight(&cpus_in_crash) < ncpus) && (--msecs > 0)) {
++	while ((atomic_read(&cpus_in_crash) < ncpus) && (--msecs > 0))
  		mdelay(1);
--		cpu_relax();
+-	}
+ 
+ 	/* Would it be better to replace the trap vector here? */
+ 
+-	if (cpumask_weight(&cpus_in_crash) >= ncpus) {
++	if (atomic_read(&cpus_in_crash) >= ncpus) {
+ 		printk(KERN_EMERG "IPI complete\n");
+ 		return;
  	}
  
- 	crash_ipi_callback(regs);
-@@ -211,7 +222,7 @@ static void crash_kexec_wait_realmode(in
- 	unsigned int msecs;
- 	int i;
+ 	printk(KERN_EMERG "ERROR: %d cpu(s) not responding\n",
+-		ncpus - cpumask_weight(&cpus_in_crash));
++		ncpus - atomic_read(&cpus_in_crash));
  
--	msecs = 10000;
-+	msecs = REAL_MODE_TIMEOUT;
- 	for (i=0; i < nr_cpu_ids && msecs > 0; i++) {
- 		if (i == cpu)
- 			continue;
-@@ -306,6 +317,14 @@ void default_machine_crash_shutdown(stru
+ 	/*
+ 	 * If we have a panic timeout set then we can't wait indefinitely
+@@ -155,10 +161,10 @@ again:
+ 		 * crash code again. We need to reset cpus_in_crash so we
+ 		 * wait for everyone to do this.
+ 		 */
+-		cpus_in_crash = CPU_MASK_NONE;
++		atomic_set(&cpus_in_crash, 0);
+ 		smp_mb();
+ 
+-		while (cpumask_weight(&cpus_in_crash) < ncpus)
++		while (atomic_read(&cpus_in_crash) < ncpus)
+ 			cpu_relax();
+ 	}
+ 
+@@ -316,7 +322,6 @@ void default_machine_crash_shutdown(stru
+ 	 * such that another IPI will not be sent.
  	 */
  	crashing_cpu = smp_processor_id();
- 	crash_save_cpu(regs, crashing_cpu);
-+
-+	/*
-+	 * If we came in via system reset, wait a while for the secondary
-+	 * CPUs to enter.
-+	 */
-+	if (TRAP(regs) == 0x100)
-+		mdelay(PRIMARY_TIMEOUT);
-+
+-	crash_save_cpu(regs, crashing_cpu);
+ 
+ 	/*
+ 	 * If we came in via system reset, wait a while for the secondary
+@@ -326,7 +331,11 @@ void default_machine_crash_shutdown(stru
+ 		mdelay(PRIMARY_TIMEOUT);
+ 
  	crash_kexec_prepare_cpus(crashing_cpu);
- 	cpumask_set_cpu(crashing_cpu, &cpus_in_crash);
+-	cpumask_set_cpu(crashing_cpu, &cpus_in_crash);
++
++	crash_save_cpu(regs, crashing_cpu);
++
++	time_to_dump = 1;
++
  	crash_kexec_wait_realmode(crashing_cpu);
+ 
+ 	machine_kexec_mask_interrupts();
