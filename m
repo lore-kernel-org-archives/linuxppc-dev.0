@@ -1,16 +1,31 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <0b0c0efa6cca6e5e169b4b3e81373a3bab75716a.1322615824.git.geoff@infradead.org>
-References: <cover.1322615824.git.geoff@infradead.org>
- <0b0c0efa6cca6e5e169b4b3e81373a3bab75716a.1322615824.git.geoff@infradead.org>
-Date: Wed, 30 Nov 2011 21:57:48 +0100
-Message-ID: <CAMuHMdUjOXLskrRXYYO1Esd75W4Z=WS3srT0+qFF66DfLeQQmA@mail.gmail.com>
-Subject: Re: [PATCH 6/8] powerpc/ps3: Fix pr_debug build warnings
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Geoff Levand <geoff@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 497091007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 08:00:35 +1100 (EST)
+Message-ID: <1322686809.29041.10.camel@pasglop>
+Subject: Re: [BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu'
+ lead to system crash/freeze
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Date: Thu, 01 Dec 2011 08:00:09 +1100
+In-Reply-To: <4ED60E2B.8030603@windriver.com>
+References: <BANLkTi=gx73d6-s-jqeke05SQYorpnzLVw@mail.gmail.com>
+ <1308911347.531.56.camel@gandalf.stny.rr.com>
+ <4E074671.7060100@hitachi.com> <20110627100104.GA24705@in.ibm.com>
+ <BANLkTimYej4_dmBqvPBCLej=JA5atLrZVA@mail.gmail.com>
+ <4E0D9B5E.3010901@windriver.com> <1322626752.21641.22.camel@pasglop>
+ <4ED60E2B.8030603@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Yong Zhang <yong.zhang0@gmail.com>,
+ paulus@samba.org, yrl.pp-manager.tt@hitachi.com,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,61 +35,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Geoff,
+On Wed, 2011-11-30 at 19:06 +0800, tiejun.chen wrote:
 
-On Wed, Nov 30, 2011 at 02:38, Geoff Levand <geoff@infradead.org> wrote:
-> Fix some PS3 build warnings when DEBUG is defined.
+> >  - Copy the exception frame we're about to unwind to just -below- the
+> > new r1 value we want to write to. Then perform the write, and change
+> > r1 to point to that copy of the frame.
+> > 
+> >  - Branch to restore: which will unwind everything from that copy of
+> > the frame, and eventually set r1 to GPR(1) in the copy which contains
+> > the new value of r1.
+> 
+> We still can't restore this there.
+
+Yes, we can since we have copied the pt_regs down to -below- where we
+are going to write to. That's the whole trick. We copy the pt_regs
+somewhere "safe" and restore from there.
+
+> I mean we have to do that real restore here. So I'm really not sure if its a
+> good way to add such a codes including check TIF/copy-get new r1/restore
+> operation here since this is so deep for the exception return code.
+
+No. Re-read my explanation.
+
+In the do_work case (so when things are still easy), we copy the pt_regs
+of the return frame to a safe place (right below where we want to write
+to typically), and change r1 to point to this "new" frame which we use
+to restore from. Then we do the store which is now safe and go to an
+unmodified "restore" exit path.
+
+> > This is the less intrusive approach and should work just fine, it's also
+> > more robust than anything I've been able to think of and the approach
+> > would work for 32 and 64-bit similarily.
+> > 
+> > (***) Above comment about a bug: If you look at entry_64.S version of
+> > ret_from_except_lite you'll notice that in the !preempt case, after
+> > we've checked MSR_PR we test for any TIF flag in _TIF_USER_WORK_MASK to
+> > decide whether to go to do_work or not. However, in the preempt case, we
+> > do a convoluted trick to test SIGPENDING only if PR was set and always
+> > test NEED_RESCHED ... but we forget to test any other bit of
+> > _TIF_USER_WORK_MASK !!! So that means that with preempt, we completely
+> > fail to test for things like single step, syscall tracing, etc...
+> > 
+> 
+> This is another problem we should address.
+> 
+> > I think this should be fixed at the same time, by simplifying the code
+> > by doing:
+> > 
+> >  - Test PR. If set, go to test_work_user, else continue (or the other
+> > way around and call it test_work_kernel)
+> > 
+> >  - In test_work_user, always test for _TIF_USER_WORK_MASK to decide to
+> > go to do_work, maybe call it do_user_work
+> > 
+> >  - In test_work_kernel, test for _TIF_KERNEL_WORK_MASK which is set to
+> > our new flag along with NEED_RESCHED if preempt is enabled and branch to
+> > do_kernel_work.
+> > 
+> > do_user_work is basically the same as today's user_work
+> > 
+> > do_kernel_work is basically the same as today preempt block with added
+> > code to handle the new flag as described above.
+> > 
+> > Is anybody volunteering for fixing that ? I don't have the bandwidth
+> 
+> I always use one specific kprobe stack to fix this for BOOKE and work well in my
+> local tree :) Do you remember my v3 patch? I think its possible to extend this
+> for all PPC variants.
 >
-> Fixes warnings like these:
->
-> =C2=A0format '%lx' expects type 'long unsigned int', but argument 7 has t=
-ype 'u64'
->
-> Signed-off-by: Geoff Levand <geoff@infradead.org>
-> ---
-> =C2=A0arch/powerpc/platforms/ps3/repository.c | =C2=A0 14 ++++++++------
-> =C2=A01 files changed, 8 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platf=
-orms/ps3/repository.c
-> index cb68729..2ce2782 100644
-> --- a/arch/powerpc/platforms/ps3/repository.c
-> +++ b/arch/powerpc/platforms/ps3/repository.c
-> @@ -1050,7 +1050,7 @@ int ps3_repository_dump_resource_info(const struct =
-ps3_repository_device *repo)
->
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_debug("%s:%d (%=
-u:%u) reg_type %u, bus_addr %lxh, len %lxh\n",
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0__func__, __LINE__, repo->bus_index, repo->dev_index,
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 reg_type, bus_addr, len);
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 reg_type, (unsigned long)bus_addr, (unsigned long)len);
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0}
->
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_debug(" <- %s:%d\n", __func__, __LINE__);
+> Anyway, I'd like to be this volunteer with our last solution.
 
-The correct way to format u64 is using the "ll" length modifier. That way y=
-ou
-don't need casts.
+So the second problem I exposed, for which you just volunteered
+(hint :-) is an orthogonal issue not related to kprobe or stacks which
+happen to be something I discovered yesterday while looking at the code.
 
-The code above was originally written before the u64 uniformization, when p=
-pc64
-was still using "unsigned long" for u64.
+As for the solution to the emulation problem, re-read my explanation.
+The whole trick is that we can avoid a separate stack (which I really
+want to avoid) and we can avoid touching the low level restore code
+path.
 
-Gr{oetje,eeting}s,
-
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+Cheers,
+Ben.
