@@ -2,9 +2,12 @@ Return-Path: <tony@bakeyournoodle.com>
 From: Tony Breeds <tony@bakeyournoodle.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Josh Boyer <jwboyer@gmail.com>
-Subject: Add support for the currituck 476 platform from IBM
-Date: Wed, 30 Nov 2011 16:23:54 +1100
-Message-Id: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
+Subject: [PATCH 1/6] 44x/pci: Continue pci setup even if there is no sdr-base
+ in the device-tree
+Date: Wed, 30 Nov 2011 16:23:55 +1100
+Message-Id: <1322630640-13708-2-git-send-email-tony@bakeyournoodle.com>
+In-Reply-To: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
+References: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
 Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -15,29 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patches 1 and 2
-	Modify the 44x PCI code to work with currituck.
-Patch 3
-	Is an old patch by Christoph Egger that fell through the cracks somehow.
-Patches 4 and 5
-	Modify the bootwrapper to handle currituck
-Patch 6 
-	The platform itself.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/sysdev/ppc4xx_pci.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
- arch/powerpc/boot/Makefile                   |    5 +-
- arch/powerpc/boot/dcr.h                      |    6 +
- arch/powerpc/boot/div64.S                    |   52 ++++++
- arch/powerpc/boot/dts/currituck.dts          |  240 ++++++++++++++++++++++++++
- arch/powerpc/boot/treeboot-currituck.c       |  129 ++++++++++++++
- arch/powerpc/boot/wrapper                    |    3 +
- arch/powerpc/configs/44x/currituck_defconfig |  110 ++++++++++++
- arch/powerpc/include/asm/reg.h               |    1 +
- arch/powerpc/kernel/cputable.c               |   14 ++
- arch/powerpc/kernel/head_44x.S               |    2 +
- arch/powerpc/mm/44x_mmu.c                    |    4 -
- arch/powerpc/platforms/44x/Kconfig           |   10 +
- arch/powerpc/platforms/44x/Makefile          |    1 +
- arch/powerpc/platforms/44x/ppc47x.c          |  198 +++++++++++++++++++++
- arch/powerpc/sysdev/ppc4xx_pci.c             |   69 +++++++-
- arch/powerpc/sysdev/ppc4xx_pci.h             |    7 +
- 16 files changed, 842 insertions(+), 9 deletions(-)
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 16f5eba..d3fa380 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -1974,11 +1974,11 @@ static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
+ 	port->node = of_node_get(np);
+ 	pval = of_get_property(np, "sdr-base", NULL);
+ 	if (pval == NULL) {
+-		printk(KERN_ERR "PCIE: missing sdr-base for %s\n",
++		printk(KERN_INFO "PCIE: missing sdr-base for %s\n",
+ 		       np->full_name);
+-		return;
++	} else {
++		port->sdr_base = *pval;
+ 	}
+-	port->sdr_base = *pval;
+ 
+ 	/* Check if device_type property is set to "pci" or "pci-endpoint".
+ 	 * Resulting from this setup this PCIe port will be configured
+-- 
+1.7.6.4
