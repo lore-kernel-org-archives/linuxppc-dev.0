@@ -2,30 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 497091007D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 08:00:35 +1100 (EST)
-Message-ID: <1322686809.29041.10.camel@pasglop>
-Subject: Re: [BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu'
- lead to system crash/freeze
+ by ozlabs.org (Postfix) with ESMTPS id B603D1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 08:03:29 +1100 (EST)
+Message-ID: <1322686997.29041.11.camel@pasglop>
+Subject: Re: [PATCH v2] powerpc/40x: Add APM8018X SOC support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Date: Thu, 01 Dec 2011 08:00:09 +1100
-In-Reply-To: <4ED60E2B.8030603@windriver.com>
-References: <BANLkTi=gx73d6-s-jqeke05SQYorpnzLVw@mail.gmail.com>
- <1308911347.531.56.camel@gandalf.stny.rr.com>
- <4E074671.7060100@hitachi.com> <20110627100104.GA24705@in.ibm.com>
- <BANLkTimYej4_dmBqvPBCLej=JA5atLrZVA@mail.gmail.com>
- <4E0D9B5E.3010901@windriver.com> <1322626752.21641.22.camel@pasglop>
- <4ED60E2B.8030603@windriver.com>
+To: Tanmay Inamdar <tinamdar@apm.com>
+Date: Thu, 01 Dec 2011 08:03:17 +1100
+In-Reply-To: <1322550101-28520-1-git-send-email-tinamdar@apm.com>
+References: <1322550101-28520-1-git-send-email-tinamdar@apm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>,
- Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Yong Zhang <yong.zhang0@gmail.com>,
- paulus@samba.org, yrl.pp-manager.tt@hitachi.com,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,84 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-11-30 at 19:06 +0800, tiejun.chen wrote:
+On Tue, 2011-11-29 at 12:31 +0530, Tanmay Inamdar wrote:
+> The AppliedMicro APM8018X embedded processor targets embedded applications that
+> require low power and a small footprint. It features a PowerPC 405 processor
+> core built in a 65nm low-power CMOS process with a five-stage pipeline executing
+> up to one instruction per cycle. The family has 128-kbytes of on-chip memory,
+> a 128-bit local bus and on-chip DDR2 SDRAM controller with 16-bit interface.
 
-> >  - Copy the exception frame we're about to unwind to just -below- the
-> > new r1 value we want to write to. Then perform the write, and change
-> > r1 to point to that copy of the frame.
-> > 
-> >  - Branch to restore: which will unwind everything from that copy of
-> > the frame, and eventually set r1 to GPR(1) in the copy which contains
-> > the new value of r1.
-> 
-> We still can't restore this there.
-
-Yes, we can since we have copied the pt_regs down to -below- where we
-are going to write to. That's the whole trick. We copy the pt_regs
-somewhere "safe" and restore from there.
-
-> I mean we have to do that real restore here. So I'm really not sure if its a
-> good way to add such a codes including check TIF/copy-get new r1/restore
-> operation here since this is so deep for the exception return code.
-
-No. Re-read my explanation.
-
-In the do_work case (so when things are still easy), we copy the pt_regs
-of the return frame to a safe place (right below where we want to write
-to typically), and change r1 to point to this "new" frame which we use
-to restore from. Then we do the store which is now safe and go to an
-unmodified "restore" exit path.
-
-> > This is the less intrusive approach and should work just fine, it's also
-> > more robust than anything I've been able to think of and the approach
-> > would work for 32 and 64-bit similarily.
-> > 
-> > (***) Above comment about a bug: If you look at entry_64.S version of
-> > ret_from_except_lite you'll notice that in the !preempt case, after
-> > we've checked MSR_PR we test for any TIF flag in _TIF_USER_WORK_MASK to
-> > decide whether to go to do_work or not. However, in the preempt case, we
-> > do a convoluted trick to test SIGPENDING only if PR was set and always
-> > test NEED_RESCHED ... but we forget to test any other bit of
-> > _TIF_USER_WORK_MASK !!! So that means that with preempt, we completely
-> > fail to test for things like single step, syscall tracing, etc...
-> > 
-> 
-> This is another problem we should address.
-> 
-> > I think this should be fixed at the same time, by simplifying the code
-> > by doing:
-> > 
-> >  - Test PR. If set, go to test_work_user, else continue (or the other
-> > way around and call it test_work_kernel)
-> > 
-> >  - In test_work_user, always test for _TIF_USER_WORK_MASK to decide to
-> > go to do_work, maybe call it do_user_work
-> > 
-> >  - In test_work_kernel, test for _TIF_KERNEL_WORK_MASK which is set to
-> > our new flag along with NEED_RESCHED if preempt is enabled and branch to
-> > do_kernel_work.
-> > 
-> > do_user_work is basically the same as today's user_work
-> > 
-> > do_kernel_work is basically the same as today preempt block with added
-> > code to handle the new flag as described above.
-> > 
-> > Is anybody volunteering for fixing that ? I don't have the bandwidth
-> 
-> I always use one specific kprobe stack to fix this for BOOKE and work well in my
-> local tree :) Do you remember my v3 patch? I think its possible to extend this
-> for all PPC variants.
->
-> Anyway, I'd like to be this volunteer with our last solution.
-
-So the second problem I exposed, for which you just volunteered
-(hint :-) is an orthogonal issue not related to kprobe or stacks which
-happen to be something I discovered yesterday while looking at the code.
-
-As for the solution to the emulation problem, re-read my explanation.
-The whole trick is that we can avoid a separate stack (which I really
-want to avoid) and we can avoid touching the low level restore code
-path.
+Thanks, looks much better.
 
 Cheers,
 Ben.
