@@ -1,32 +1,18 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
- [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A48151007D1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 11:08:55 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
- spinlock use.
-Date: Wed, 30 Nov 2011 00:08:44 +0000
-Message-ID: <CAOZdJXWX9EHfcXTuVag+-MvUvqnA7bA5RjmLx4jE5Cu5JmQdvg@mail.gmail.com>
-References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
- <20111122185924.GA23323@ovro.caltech.edu>
- <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
- <20111128163814.GA10919@ovro.caltech.edu>
- <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
- <20111129172539.GB15331@ovro.caltech.edu>
-In-Reply-To: <20111129172539.GB15331@ovro.caltech.edu>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Shi Xuelin-B29237 <B29237@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "dan.j.williams@intel.com" <dan.j.williams@intel.com>
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6901EB6F69
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 12:10:46 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pAU1AdGx020928
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2011 19:10:42 -0600
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Define/use HUGETLB_NEED_PRELOAD insead of
+ complicated #if
+Date: Tue, 29 Nov 2011 19:10:39 -0600
+Message-Id: <13226154392896-git-send-email-beckyb@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,17 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 29, 2011 at 11:25 AM, Ira W. Snyder <iws@ovro.caltech.edu> wrot=
-e:
+From: Becky Bruce <beckyb@kernel.crashing.org>
 
-> I believe that you are correct, for powerpc. However, anything outside
-> of arch/powerpc shouldn't assume it only runs on powerpc. I wouldn't be
-> surprised to see fsldma running on an iMX someday (ARM processor).
+Define HUGETLB_NEED_PRELOAD in mmu-book3e.h for CONFIG_PPC64 instead
+of having a much more complicated #if block.  This is easier to read
+and maintain.
 
-I certainly would.  The i.MX chips have their own DMA controller.  The
-DMA controller that fsldma.c works with is unique to Freescale's 83xx,
-85xx, and QorIQ chips.
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/hugetlb.h    |    3 +--
+ arch/powerpc/include/asm/mmu-book3e.h |    7 +++++++
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 863f49d..dfdb95b 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -124,8 +124,7 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 					     unsigned long addr, pte_t *ptep,
+ 					     pte_t pte, int dirty)
+ {
+-#if defined(CONFIG_PPC_MMU_NOHASH) && \
+-	!(defined(CONFIG_PPC_FSL_BOOK3E) && defined(CONFIG_PPC32))
++#ifdef HUGETLB_NEED_PRELOAD
+ 	/*
+ 	 * The "return 1" forces a call of update_mmu_cache, which will write a
+ 	 * TLB entry.  Without this, platforms that don't do a write of the TLB
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index e4d0afc..20d29a5 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -262,6 +262,13 @@ extern int mmu_vmemmap_psize;
+ 
+ #ifdef CONFIG_PPC64
+ extern unsigned long linear_map_top;
++
++/*
++ * 64-bit booke platforms don't load the tlb in the tlb miss handler code.
++ * HUGETLB_NEED_PRELOAD handles this - it causes huge_ptep_set_access_flags to
++ * return 1, indicating that the tlb requires preloading.
++ */
++#define HUGETLB_NEED_PRELOAD
+ #endif
+ 
+ #endif /* !__ASSEMBLY__ */
+-- 
+1.5.6.5
