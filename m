@@ -1,9 +1,9 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <86c8862af65d2549c575896c031acd52fbf41968.1322615824.git.geoff@infradead.org>
+Message-Id: <0b0c0efa6cca6e5e169b4b3e81373a3bab75716a.1322615824.git.geoff@infradead.org>
 In-Reply-To: <cover.1322615824.git.geoff@infradead.org>
 References: <cover.1322615824.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 4/8] powerpc/ps3: Fix hcall lv1_get_version_info
+Subject: [PATCH 6/8] powerpc/ps3: Fix pr_debug build warnings
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Wed, 30 Nov 2011 01:38:50 +0000
 Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
@@ -16,65 +16,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The lv1_get_version_info hcall takes 2, not 1 output
-arguments.  Adjust the lv1 hcall table and all calls.
+Fix some PS3 build warnings when DEBUG is defined.
 
-Usage:
+Fixes warnings like these:
 
-  int lv1_get_version_info(u64 *version_number, u64 *vendor_id)
+  format '%lx' expects type 'long unsigned int', but argument 7 has type 'u64'
 
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/include/asm/lv1call.h |    2 +-
- arch/powerpc/kernel/irq.c          |    4 ++--
- arch/powerpc/platforms/ps3/setup.c |    4 +++-
- 3 files changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/ps3/repository.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/lv1call.h b/arch/powerpc/include/asm/lv1call.h
-index 3ddf66c..8481221 100644
---- a/arch/powerpc/include/asm/lv1call.h
-+++ b/arch/powerpc/include/asm/lv1call.h
-@@ -276,7 +276,7 @@ LV1_CALL(construct_io_irq_outlet,                       1, 1, 120 )
- LV1_CALL(destruct_io_irq_outlet,                        1, 0, 121 )
- LV1_CALL(map_htab,                                      1, 1, 122 )
- LV1_CALL(unmap_htab,                                    1, 0, 123 )
--LV1_CALL(get_version_info,                              0, 1, 127 )
-+LV1_CALL(get_version_info,                              0, 2, 127 )
- LV1_CALL(insert_htab_entry,                             6, 3, 158 )
- LV1_CALL(read_virtual_uart,                             3, 1, 162 )
- LV1_CALL(write_virtual_uart,                            3, 1, 163 )
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 5c3c469..e292078 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -180,8 +180,8 @@ notrace void arch_local_irq_restore(unsigned long en)
- 	 * Any HV call will have this side effect.
- 	 */
- 	if (firmware_has_feature(FW_FEATURE_PS3_LV1)) {
--		u64 tmp;
--		lv1_get_version_info(&tmp);
-+		u64 tmp, tmp2;
-+		lv1_get_version_info(&tmp, &tmp2);
+diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
+index cb68729..2ce2782 100644
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -1050,7 +1050,7 @@ int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
+ 
+ 		pr_debug("%s:%d (%u:%u) reg_type %u, bus_addr %lxh, len %lxh\n",
+ 			__func__, __LINE__, repo->bus_index, repo->dev_index,
+-			reg_type, bus_addr, len);
++			reg_type, (unsigned long)bus_addr, (unsigned long)len);
  	}
  
- 	__hard_irq_enable();
-diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-index e8ec1b2..2d664c5 100644
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -193,10 +193,12 @@ static int ps3_set_dabr(unsigned long dabr)
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+@@ -1077,8 +1077,9 @@ static int dump_stor_dev_info(struct ps3_repository_device *repo)
  
- static void __init ps3_setup_arch(void)
- {
-+	u64 tmp;
+ 	pr_debug("%s:%d  (%u:%u): port %lu, blk_size %lu, num_blocks "
+ 		 "%lu, num_regions %u\n",
+-		 __func__, __LINE__, repo->bus_index, repo->dev_index, port,
+-		 blk_size, num_blocks, num_regions);
++		 __func__, __LINE__, repo->bus_index, repo->dev_index,
++		(unsigned long)port, (unsigned long)blk_size,
++		(unsigned long)num_blocks, num_regions);
  
- 	DBG(" -> %s:%d\n", __func__, __LINE__);
+ 	for (region_index = 0; region_index < num_regions; region_index++) {
+ 		unsigned int region_id;
+@@ -1096,7 +1097,8 @@ static int dump_stor_dev_info(struct ps3_repository_device *repo)
  
--	lv1_get_version_info(&ps3_firmware_version.raw);
-+	lv1_get_version_info(&ps3_firmware_version.raw, &tmp);
-+
- 	printk(KERN_INFO "PS3 firmware version %u.%u.%u\n",
- 	       ps3_firmware_version.major, ps3_firmware_version.minor,
- 	       ps3_firmware_version.rev);
+ 		pr_debug("%s:%d (%u:%u) region_id %u, start %lxh, size %lxh\n",
+ 			__func__, __LINE__, repo->bus_index, repo->dev_index,
+-			region_id, region_start, region_size);
++			region_id, (unsigned long)region_start,
++			(unsigned long)region_size);
+ 	}
+ 
+ out:
+@@ -1136,7 +1138,7 @@ static int dump_device_info(struct ps3_repository_device *repo,
+ 
+ 		pr_debug("%s:%d  (%u:%u): dev_type %u, dev_id %lu\n", __func__,
+ 			__LINE__, repo->bus_index, repo->dev_index,
+-			repo->dev_type, repo->dev_id);
++			repo->dev_type, (unsigned long)repo->dev_id);
+ 
+ 		ps3_repository_dump_resource_info(repo);
+ 
+@@ -1193,7 +1195,7 @@ int ps3_repository_dump_bus_info(void)
+ 
+ 		pr_debug("%s:%d bus_%u: bus_type %u, bus_id %lu, num_dev %u\n",
+ 			__func__, __LINE__, repo.bus_index, repo.bus_type,
+-			repo.bus_id, num_dev);
++			(unsigned long)repo.bus_id, num_dev);
+ 
+ 		dump_device_info(&repo, num_dev);
+ 	}
 -- 
 1.7.0.4
