@@ -1,20 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C49F7B6F8E
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2011 00:24:29 +1100 (EST)
-Subject: Re: Kernel support for the Freescale P2020-MSC8156 AdvancedMC
- Reference Design
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <32883132.post@talk.nabble.com>
-Date: Wed, 30 Nov 2011 07:24:24 -0600
-Message-Id: <23DF339B-C5B2-4395-B879-6916FCFD252F@kernel.crashing.org>
-References: <32883132.post@talk.nabble.com>
-To: Daniel Ng2 <daniel.ng1234@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id E02021007D1
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2011 00:32:21 +1100 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Wed, 30 Nov 2011 18:19:53 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pAUCl5XJ4239522
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2011 18:17:05 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pAUCl5Z8001952
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2011 23:47:05 +1100
+Subject: [RFC PATCH v3 4/4] cpuidle: (POWER) Handle power_save=off
+To: benh@kernel.crashing.org, len.brown@intel.com
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Wed, 30 Nov 2011 18:17:03 +0530
+Message-ID: <20111130124701.972.7269.stgit@deepthi-ThinkPad-T420>
+In-Reply-To: <20111130124608.972.87712.stgit@deepthi-ThinkPad-T420>
+References: <20111130124608.972.87712.stgit@deepthi-ThinkPad-T420>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch makes pseries_idle_driver not to be registered when
+power_save=off kernel boot option is specified. The
+cpuidle_disable variable used here is similar to
+its usage on x86. If cpuidle_disable is set then
+sysfs entries for cpuidle framework are not created
+and the required drivers are not loaded.
 
-On Nov 29, 2011, at 11:34 PM, Daniel Ng2 wrote:
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Signed-off-by: Trinabh Gupta <g.trinabh@gmail.com>
+Signed-off-by: Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
+---
+ arch/powerpc/include/asm/processor.h            |    1 +
+ arch/powerpc/platforms/pseries/processor_idle.c |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
->=20
-> Hi,
->=20
-> Does anyone know of any kernel support for the Freescale P2020-MSC8156 =
-AMC
-> board?-
->=20
-> =
-http://freescale.com.hk/webapp/sps/site/prod_summary.jsp?code=3DP2020-MSC8=
-156AMCRD
->=20
-> I am looking for platform-specific files ie. the ones that go in
-> arch/powerpc/platforms/85xx and DTS files if possible...
->=20
-> Cheers,
-> Daniel
-
-There isn't any support for this board in the open source kernel.
-
-- k=
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 811b7e7..b585bff 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -382,6 +382,7 @@ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
+ }
+ #endif
+ 
++extern unsigned long cpuidle_disable;
+ enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+index 352b78a..4f59af0 100644
+--- a/arch/powerpc/platforms/pseries/processor_idle.c
++++ b/arch/powerpc/platforms/pseries/processor_idle.c
+@@ -269,6 +269,9 @@ static int pseries_idle_probe(void)
+ 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		return -ENODEV;
+ 
++	if (cpuidle_disable != IDLE_NO_OVERRIDE)
++		return -ENODEV;
++
+ 	if (max_idle_state == 0) {
+ 		printk(KERN_DEBUG "pseries processor idle disabled.\n");
+ 		return -EPERM;
