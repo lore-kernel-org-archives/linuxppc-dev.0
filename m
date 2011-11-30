@@ -2,21 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6FE09B6F83
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 07:20:27 +1100 (EST)
-Message-ID: <1322684407.29041.1.camel@pasglop>
-Subject: Re: [PATCH 3/6] 44x: Removing dead CONFIG_PPC47x
+ by ozlabs.org (Postfix) with ESMTPS id C13CBB6F87
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 07:21:24 +1100 (EST)
+Message-ID: <1322684475.29041.2.camel@pasglop>
+Subject: Re: [PATCH 4/6] powerpc/boot: Add extended precision shifts to the
+ boot wrapper.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Josh Boyer <jwboyer@gmail.com>
-Date: Thu, 01 Dec 2011 07:20:07 +1100
-In-Reply-To: <CA+5PVA637ckfo60Foc_G_yhuJg6=fbuyQcjFDwYV_XFLkd6whA@mail.gmail.com>
+Date: Thu, 01 Dec 2011 07:21:15 +1100
+In-Reply-To: <CA+5PVA6kBquh2=sPy25PKGSMBWvoZFFvZjrL4bgdmddFgjyaQA@mail.gmail.com>
 References: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
- <1322630640-13708-4-git-send-email-tony@bakeyournoodle.com>
- <CA+5PVA637ckfo60Foc_G_yhuJg6=fbuyQcjFDwYV_XFLkd6whA@mail.gmail.com>
+ <1322630640-13708-5-git-send-email-tony@bakeyournoodle.com>
+ <1322632107.21641.43.camel@pasglop>
+ <CA+5PVA6kBquh2=sPy25PKGSMBWvoZFFvZjrL4bgdmddFgjyaQA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Christoph Egger <siccegge@cs.fau.de>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-11-30 at 06:43 -0500, Josh Boyer wrote:
+On Wed, 2011-11-30 at 06:45 -0500, Josh Boyer wrote:
+> On Wed, Nov 30, 2011 at 12:48 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Wed, 2011-11-30 at 16:23 +1100, Tony Breeds wrote:
+> >> Code copied from arch/powerpc/kernel/misc_32.S
+> >>
+> >> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> >> ---
+> >>  arch/powerpc/boot/div64.S |   52 +++++++++++++++++++++++++++++++++++++++++++++
+> >>  1 files changed, 52 insertions(+), 0 deletions(-)
+> >
+> > Should we just link with libgcc ? :-)
 > 
-> That doesn't look right.  The code is there doing something, why is it
-> just being removed?  I would think the change would be to use
-> CONFIG_PPC_47x?
-> 
-> Or if the code there isn't needed any longer, the changelog should say
-> why.
+> Please tell me you're joking.
 
-Ah right, I tripped on this one too when reviewing then figured it out
-but I agree, the changelog should be clearer.
+Only half... I wonder what it would look like. Wouldn't ld only pickup
+what we use anyway ?
 
-If you notice, the original ifdef was in a function that is only ever
-used on 44x. There's a separate function that handles 47x. I suppose
-this is a leftover of the initial port which somebody forgot to remove.
+> However, adding this code and wonderful and all but why do we need to
+> add it?  Changelog should say why.
 
-So the patch is fine, but yes, the changelog could be made clearer.
+Agreed.
 
 Cheers,
 Ben.
