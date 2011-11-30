@@ -1,9 +1,9 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <984c0b3123dc3d0875f0cbfa9ee49fbbdfb67900.1322615824.git.geoff@infradead.org>
+Message-Id: <86c8862af65d2549c575896c031acd52fbf41968.1322615824.git.geoff@infradead.org>
 In-Reply-To: <cover.1322615824.git.geoff@infradead.org>
 References: <cover.1322615824.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 8/8] powerpc/ps3: Update ps3_defconfig
+Subject: [PATCH 4/8] powerpc/ps3: Fix hcall lv1_get_version_info
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Wed, 30 Nov 2011 01:38:50 +0000
 Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
@@ -16,138 +16,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Refresh ps3_defconfig to latest kernel sources and
-change the options:
+The lv1_get_version_info hcall takes 2, not 1 output
+arguments.  Adjust the lv1 hcall table and all calls.
 
-  CONFIG_PPP=m to CONFIG_PPP=n.
-  CONFIG_NAMESPACES=y to CONFIG_NAMESPACES=n
-  CONFIG_NUMA=y to CONFIG_NUMA=n
+Usage:
+
+  int lv1_get_version_info(u64 *version_number, u64 *vendor_id)
 
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/configs/ps3_defconfig |   39 ++++++++++++++++++-----------------
- 1 files changed, 20 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/lv1call.h |    2 +-
+ arch/powerpc/kernel/irq.c          |    4 ++--
+ arch/powerpc/platforms/ps3/setup.c |    4 +++-
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
-index 185c292..ded8678 100644
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -6,10 +6,10 @@ CONFIG_NR_CPUS=2
- CONFIG_EXPERIMENTAL=y
- CONFIG_SYSVIPC=y
- CONFIG_POSIX_MQUEUE=y
--CONFIG_NAMESPACES=y
-+CONFIG_SPARSE_IRQ=y
- CONFIG_BLK_DEV_INITRD=y
--CONFIG_EXPERT=y
--CONFIG_KALLSYMS_EXTRA_PASS=y
-+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-+CONFIG_EMBEDDED=y
- # CONFIG_PERF_EVENTS is not set
- # CONFIG_COMPAT_BRK is not set
- CONFIG_SLAB=y
-@@ -17,6 +17,7 @@ CONFIG_PROFILING=y
- CONFIG_OPROFILE=m
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
-+# CONFIG_PPC_POWERNV is not set
- # CONFIG_PPC_PSERIES is not set
- # CONFIG_PPC_PMAC is not set
- CONFIG_PPC_PS3=y
-@@ -27,14 +28,14 @@ CONFIG_PS3_VRAM=m
- CONFIG_PS3_LPM=m
- # CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
- CONFIG_HIGH_RES_TIMERS=y
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
- CONFIG_BINFMT_MISC=y
- CONFIG_KEXEC=y
--CONFIG_SPARSE_IRQ=y
- # CONFIG_SPARSEMEM_VMEMMAP is not set
- CONFIG_SCHED_SMT=y
- CONFIG_CMDLINE_BOOL=y
- CONFIG_CMDLINE=""
--CONFIG_PM=y
-+CONFIG_PM_RUNTIME=y
- CONFIG_PM_DEBUG=y
- # CONFIG_SECCOMP is not set
- # CONFIG_PCI is not set
-@@ -81,20 +82,23 @@ CONFIG_SCSI_MULTI_LUN=y
- CONFIG_MD=y
- CONFIG_BLK_DEV_DM=m
- CONFIG_NETDEVICES=y
--CONFIG_NET_ETHERNET=y
-+# CONFIG_NET_VENDOR_BROADCOM is not set
-+# CONFIG_NET_VENDOR_CHELSIO is not set
-+# CONFIG_NET_VENDOR_INTEL is not set
-+# CONFIG_NET_VENDOR_MARVELL is not set
-+# CONFIG_NET_VENDOR_MICREL is not set
-+# CONFIG_NET_VENDOR_NATSEMI is not set
-+# CONFIG_NET_VENDOR_SEEQ is not set
-+# CONFIG_NET_VENDOR_STMICRO is not set
- CONFIG_GELIC_NET=y
- CONFIG_GELIC_WIRELESS=y
--# CONFIG_NETDEV_10000 is not set
-+# CONFIG_NET_VENDOR_XILINX is not set
- CONFIG_USB_USBNET=m
- # CONFIG_USB_NET_CDCETHER is not set
-+# CONFIG_USB_NET_CDC_NCM is not set
- # CONFIG_USB_NET_NET1080 is not set
- # CONFIG_USB_NET_CDC_SUBSET is not set
- # CONFIG_USB_NET_ZAURUS is not set
--CONFIG_PPP=m
--CONFIG_PPP_MULTILINK=y
--CONFIG_PPP_ASYNC=m
--CONFIG_PPP_DEFLATE=m
--CONFIG_PPPOE=m
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV_PSAUX is not set
- CONFIG_INPUT_JOYDEV=m
-@@ -135,22 +139,21 @@ CONFIG_USB=m
- CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
- CONFIG_USB_DEVICEFS=y
- # CONFIG_USB_DEVICE_CLASS is not set
-+CONFIG_USB_SUSPEND=y
- CONFIG_USB_MON=m
- CONFIG_USB_EHCI_HCD=m
--CONFIG_USB_EHCI_TT_NEWSCHED=y
- # CONFIG_USB_EHCI_HCD_PPC_OF is not set
- CONFIG_USB_OHCI_HCD=m
- CONFIG_USB_STORAGE=m
- CONFIG_RTC_CLASS=y
--CONFIG_RTC_DRV_PS3=m
-+CONFIG_RTC_DRV_PS3=y
-+# CONFIG_IOMMU_SUPPORT is not set
- CONFIG_EXT2_FS=m
- CONFIG_EXT3_FS=m
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
- CONFIG_EXT4_FS=y
--CONFIG_INOTIFY=y
- CONFIG_QUOTA=y
- CONFIG_QFMT_V2=y
--CONFIG_AUTOFS_FS=m
- CONFIG_AUTOFS4_FS=m
- CONFIG_ISO9660_FS=m
- CONFIG_JOLIET=y
-@@ -167,19 +170,17 @@ CONFIG_CIFS=m
- CONFIG_NLS=y
- CONFIG_NLS_CODEPAGE_437=y
- CONFIG_NLS_ISO8859_1=y
-+CONFIG_CRC_CCITT=m
- CONFIG_CRC_T10DIF=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_FS=y
--CONFIG_DEBUG_KERNEL=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_PROVE_LOCKING=y
- CONFIG_DEBUG_LOCKDEP=y
--CONFIG_DEBUG_SPINLOCK_SLEEP=y
- CONFIG_DEBUG_INFO=y
- CONFIG_DEBUG_WRITECOUNT=y
- CONFIG_DEBUG_MEMORY_INIT=y
- CONFIG_DEBUG_LIST=y
--# CONFIG_RCU_CPU_STALL_DETECTOR is not set
- CONFIG_SYSCTL_SYSCALL_CHECK=y
- # CONFIG_FTRACE is not set
- CONFIG_DEBUG_STACKOVERFLOW=y
+diff --git a/arch/powerpc/include/asm/lv1call.h b/arch/powerpc/include/asm/lv1call.h
+index 3ddf66c..8481221 100644
+--- a/arch/powerpc/include/asm/lv1call.h
++++ b/arch/powerpc/include/asm/lv1call.h
+@@ -276,7 +276,7 @@ LV1_CALL(construct_io_irq_outlet,                       1, 1, 120 )
+ LV1_CALL(destruct_io_irq_outlet,                        1, 0, 121 )
+ LV1_CALL(map_htab,                                      1, 1, 122 )
+ LV1_CALL(unmap_htab,                                    1, 0, 123 )
+-LV1_CALL(get_version_info,                              0, 1, 127 )
++LV1_CALL(get_version_info,                              0, 2, 127 )
+ LV1_CALL(insert_htab_entry,                             6, 3, 158 )
+ LV1_CALL(read_virtual_uart,                             3, 1, 162 )
+ LV1_CALL(write_virtual_uart,                            3, 1, 163 )
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 5c3c469..e292078 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -180,8 +180,8 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 	 * Any HV call will have this side effect.
+ 	 */
+ 	if (firmware_has_feature(FW_FEATURE_PS3_LV1)) {
+-		u64 tmp;
+-		lv1_get_version_info(&tmp);
++		u64 tmp, tmp2;
++		lv1_get_version_info(&tmp, &tmp2);
+ 	}
+ 
+ 	__hard_irq_enable();
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index e8ec1b2..2d664c5 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -193,10 +193,12 @@ static int ps3_set_dabr(unsigned long dabr)
+ 
+ static void __init ps3_setup_arch(void)
+ {
++	u64 tmp;
+ 
+ 	DBG(" -> %s:%d\n", __func__, __LINE__);
+ 
+-	lv1_get_version_info(&ps3_firmware_version.raw);
++	lv1_get_version_info(&ps3_firmware_version.raw, &tmp);
++
+ 	printk(KERN_INFO "PS3 firmware version %u.%u.%u\n",
+ 	       ps3_firmware_version.major, ps3_firmware_version.minor,
+ 	       ps3_firmware_version.rev);
 -- 
 1.7.0.4
