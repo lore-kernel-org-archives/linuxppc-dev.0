@@ -1,20 +1,34 @@
-Return-Path: <wg@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
- by ozlabs.org (Postfix) with ESMTP id 57068B71C2
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2011 19:18:22 +1100 (EST)
-From: Wolfgang Grandegger <wg@grandegger.com>
-To: netdev@vger.kernel.org
-Subject: [PATCH net-next v5 3/4] can: cc770: add platform bus driver for the
- CC770 and AN82527
-Date: Wed, 30 Nov 2011 09:18:13 +0100
-Message-Id: <1322641094-12175-4-git-send-email-wg@grandegger.com>
-In-Reply-To: <1322641094-12175-1-git-send-email-wg@grandegger.com>
-References: <1322641094-12175-1-git-send-email-wg@grandegger.com>
-Cc: Stanislav Yelenskiy <stanislavelensky@yahoo.com>,
- Devicetree-discuss@lists.ozlabs.org, linux-can@vger.kernel.org,
- linuxppc-dev@ozlabs.org, IreneV <boir1@yandex.ru>,
- socketcan-users@lists.berlios.de
+Return-Path: <dedekind1@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+ [209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 4F768B6F80
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 19:50:25 +1100 (EST)
+Received: by iafi7 with SMTP id i7so471551iaf.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2011 00:50:22 -0800 (PST)
+Subject: Re: [PATCH v2] Integrated Flash Controller support
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 30 Nov 2011 10:51:12 +0200
+In-Reply-To: <EFF451D9-552A-4820-90D3-BF3156D5B25F@kernel.crashing.org>
+References: <1320053901-23801-1-git-send-email-b35362@freescale.com>
+ <CCF7C6DB-437C-4140-894F-2F497AD610DC@kernel.crashing.org>
+ <8EDB3DC6-63E5-4D5C-BB52-15F32B85C5DD@kernel.crashing.org>
+ <1322602860.2150.10.camel@koala> <4ED5531C.6030104@freescale.com>
+ <EFF451D9-552A-4820-90D3-BF3156D5B25F@kernel.crashing.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-eQxlD8JR71lTLUzhZfoM"
+Message-ID: <1322643080.24797.413.camel@sauron.fi.intel.com>
+Mime-Version: 1.0
+Cc: Li Yang-R58472 <r58472@freescale.com>, "linuxppc-dev@lists.ozlabs.org
+ list" <linuxppc-dev@lists.ozlabs.org>,
+ "b35362@freescale.com>" <b35362@freescale.com>,
+ "linux-kernel@vger.kernel.org Kernel" <linux-kernel@vger.kernel.org>,
+ linux-mtd@lists.infradead.org, Scott Wood <scottwood@freescale.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Woodhouse <dwmw2@infradead.org>
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,391 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This driver works with both, static platform data and device tree
-bindings. It has been tested on a TQM855L board with two AN82527
-CAN controllers on the local bus.
 
-CC: Devicetree-discuss@lists.ozlabs.org
-CC: linuxppc-dev@ozlabs.org
-CC: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>
----
- .../devicetree/bindings/net/can/cc770.txt          |   56 ++++
- drivers/net/can/cc770/Kconfig                      |    7 +
- drivers/net/can/cc770/Makefile                     |    1 +
- drivers/net/can/cc770/cc770_platform.c             |  273 ++++++++++++++++++++
- 4 files changed, 337 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/net/can/cc770.txt
- create mode 100644 drivers/net/can/cc770/cc770_platform.c
+--=-eQxlD8JR71lTLUzhZfoM
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/devicetree/bindings/net/can/cc770.txt b/Documentation/devicetree/bindings/net/can/cc770.txt
-new file mode 100644
-index 0000000..01e282d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/net/can/cc770.txt
-@@ -0,0 +1,56 @@
-+Memory mapped Bosch CC770 and Intel AN82527 CAN controller
-+
-+Note: The CC770 is a CAN controller from Bosch, which is 100%
-+compatible with the old AN82527 from Intel, but with "bugs" being fixed.
-+
-+Required properties:
-+
-+- compatible : should be "bosch,cc770" for the CC770 and "intc,82527"
-+	for the AN82527.
-+
-+- reg : should specify the chip select, address offset and size required
-+	to map the registers of the controller. The size is usually 0x80.
-+
-+- interrupts : property with a value describing the interrupt source
-+	(number and sensitivity) required for the controller.
-+
-+Optional properties:
-+
-+- bosch,external-clock-frequency : frequency of the external oscillator
-+	clock in Hz. Note that the internal clock frequency used by the
-+	controller is half of that value. If not specified, a default
-+	value of 16000000 (16 MHz) is used.
-+
-+- bosch,clock-out-frequency : slock frequency in Hz on the CLKOUT pin.
-+	If not specified or if the specified value is 0, the CLKOUT pin
-+	will be disabled.
-+
-+- bosch,slew-rate : slew rate of the CLKOUT signal. If not specified,
-+	a resonable value will be calculated.
-+
-+- bosch,disconnect-rx0-input : see data sheet.
-+
-+- bosch,disconnect-rx1-input : see data sheet.
-+
-+- bosch,disconnect-tx1-output : see data sheet.
-+
-+- bosch,polarity-dominant : see data sheet.
-+
-+- bosch,divide-memory-clock : see data sheet.
-+
-+- bosch,iso-low-speed-mux : see data sheet.
-+
-+For further information, please have a look to the CC770 or AN82527.
-+
-+Examples:
-+
-+can@3,100 {
-+	compatible = "bosch,cc770";
-+	reg = <3 0x100 0x80>;
-+	interrupts = <2 0>;
-+	interrupt-parent = <&mpic>;
-+	bosch,external-clock-frequency = <16000000>;
-+};
-+
-+
-+
-diff --git a/drivers/net/can/cc770/Kconfig b/drivers/net/can/cc770/Kconfig
-index 28e4d48..22c07a8 100644
---- a/drivers/net/can/cc770/Kconfig
-+++ b/drivers/net/can/cc770/Kconfig
-@@ -11,4 +11,11 @@ config CAN_CC770_ISA
- 	  connected to the ISA bus using I/O port, memory mapped or
- 	  indirect access.
- 
-+config CAN_CC770_PLATFORM
-+	tristate "Generic Platform Bus based CC770 driver"
-+	---help---
-+	  This driver adds support for the CC770 and AN82527 chips
-+	  connected to the "platform bus" (Linux abstraction for directly
-+	  to the processor attached devices).
-+
- endif
-diff --git a/drivers/net/can/cc770/Makefile b/drivers/net/can/cc770/Makefile
-index 872ecff..9fb8321 100644
---- a/drivers/net/can/cc770/Makefile
-+++ b/drivers/net/can/cc770/Makefile
-@@ -4,5 +4,6 @@
- 
- obj-$(CONFIG_CAN_CC770) += cc770.o
- obj-$(CONFIG_CAN_CC770_ISA) += cc770_isa.o
-+obj-$(CONFIG_CAN_CC770_PLATFORM) += cc770_platform.o
- 
- ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
-diff --git a/drivers/net/can/cc770/cc770_platform.c b/drivers/net/can/cc770/cc770_platform.c
-new file mode 100644
-index 0000000..fb87b22
---- /dev/null
-+++ b/drivers/net/can/cc770/cc770_platform.c
-@@ -0,0 +1,273 @@
-+/*
-+ * Driver for CC770 and AN82527 CAN controllers on the platform bus
-+ *
-+ * Copyright (C) 2009, 2011 Wolfgang Grandegger <wg@grandegger.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+/*
-+ * If platform data are used you should have similar definitions
-+ * in your board-specific code:
-+ *
-+ *   static struct cc770_platform_data myboard_cc770_pdata = {
-+ *           .osc_freq = 16000000,
-+ *           .cir = 0x41,
-+ *           .cor = 0x20,
-+ *           .bcr = 0x40,
-+ *   };
-+ *
-+ * Please see include/linux/can/platform/cc770.h for description of
-+ * above fields.
-+ *
-+ * If the device tree is used, you need a CAN node definition in your
-+ * DTS file similar to:
-+ *
-+ *   can@3,100 {
-+ *           compatible = "bosch,cc770";
-+ *           reg = <3 0x100 0x80>;
-+ *           interrupts = <2 0>;
-+ *           interrupt-parent = <&mpic>;
-+ *           bosch,external-clock-frequency = <16000000>;
-+ *   };
-+ *
-+ * See "Documentation/devicetree/bindings/net/can/cc770.txt" for further
-+ * information.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/netdevice.h>
-+#include <linux/delay.h>
-+#include <linux/can.h>
-+#include <linux/can/dev.h>
-+#include <linux/can/platform/cc770.h>
-+
-+#include <linux/of_platform.h>
-+
-+#include "cc770.h"
-+
-+#define DRV_NAME "cc770_platform"
-+
-+MODULE_AUTHOR("Wolfgang Grandegger <wg@grandegger.com>");
-+MODULE_DESCRIPTION("Socket-CAN driver for CC770 on the platform bus");
-+MODULE_LICENSE("GPL v2");
-+
-+#define CC770_PLATFORM_CAN_CLOCK  16000000
-+
-+static u8 cc770_platform_read_reg(const struct cc770_priv *priv, int reg)
-+{
-+	return in_8(priv->reg_base + reg);
-+}
-+
-+static void cc770_platform_write_reg(const struct cc770_priv *priv, int reg,
-+				     u8 val)
-+{
-+	out_8(priv->reg_base + reg, val);
-+}
-+
-+static int __devinit cc770_get_of_node_data(struct platform_device *pdev,
-+					    struct cc770_priv *priv)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	const u32 *prop;
-+	int prop_size;
-+	u32 clkext;
-+
-+	prop = of_get_property(np, "bosch,external-clock-frequency",
-+			       &prop_size);
-+	if (prop && (prop_size ==  sizeof(u32)))
-+		clkext = *prop;
-+	else
-+		clkext = CC770_PLATFORM_CAN_CLOCK; /* default */
-+	priv->can.clock.freq = clkext;
-+
-+	/* The system clock may not exceed 10 MHz */
-+	if (priv->can.clock.freq > 10000000) {
-+		priv->cpu_interface |= CPUIF_DSC;
-+		priv->can.clock.freq /= 2;
-+	}
-+
-+	/* The memory clock may not exceed 8 MHz */
-+	if (priv->can.clock.freq > 8000000)
-+		priv->cpu_interface |= CPUIF_DMC;
-+
-+	if (of_get_property(np, "bosch,divide-memory-clock", NULL))
-+		priv->cpu_interface |= CPUIF_DMC;
-+	if (of_get_property(np, "bosch,iso-low-speed-mux", NULL))
-+		priv->cpu_interface |= CPUIF_MUX;
-+
-+	if (!of_get_property(np, "bosch,no-comperator-bypass", NULL))
-+		priv->bus_config |= BUSCFG_CBY;
-+	if (of_get_property(np, "bosch,disconnect-rx0-input", NULL))
-+		priv->bus_config |= BUSCFG_DR0;
-+	if (of_get_property(np, "bosch,disconnect-rx1-input", NULL))
-+		priv->bus_config |= BUSCFG_DR1;
-+	if (of_get_property(np, "bosch,disconnect-tx1-output", NULL))
-+		priv->bus_config |= BUSCFG_DT1;
-+	if (of_get_property(np, "bosch,polarity-dominant", NULL))
-+		priv->bus_config |= BUSCFG_POL;
-+
-+	prop = of_get_property(np, "bosch,clock-out-frequency", &prop_size);
-+	if (prop && (prop_size == sizeof(u32)) && *prop > 0) {
-+		u32 cdv = clkext / *prop;
-+		int slew;
-+
-+		if (cdv > 0 && cdv < 16) {
-+			priv->cpu_interface |= CPUIF_CEN;
-+			priv->clkout |= (cdv - 1) & CLKOUT_CD_MASK;
-+
-+			prop = of_get_property(np, "bosch,slew-rate",
-+					       &prop_size);
-+			if (prop && (prop_size == sizeof(u32))) {
-+				slew = *prop;
-+			} else {
-+				/* Determine default slew rate */
-+				slew = (CLKOUT_SL_MASK >>
-+					CLKOUT_SL_SHIFT) -
-+					((cdv * clkext - 1) / 8000000);
-+				if (slew < 0)
-+					slew = 0;
-+			}
-+			priv->clkout |= (slew << CLKOUT_SL_SHIFT) &
-+				CLKOUT_SL_MASK;
-+		} else {
-+			dev_dbg(&pdev->dev, "invalid clock-out-frequency\n");
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int __devinit cc770_get_platform_data(struct platform_device *pdev,
-+					     struct cc770_priv *priv)
-+{
-+
-+	struct cc770_platform_data *pdata = pdev->dev.platform_data;
-+
-+	priv->can.clock.freq = pdata->osc_freq;
-+	if (priv->cpu_interface | CPUIF_DSC)
-+		priv->can.clock.freq /= 2;
-+	priv->clkout = pdata->cor;
-+	priv->bus_config = pdata->bcr;
-+	priv->cpu_interface = pdata->cir;
-+
-+	return 0;
-+}
-+
-+static int __devinit cc770_platform_probe(struct platform_device *pdev)
-+{
-+	struct net_device *dev;
-+	struct cc770_priv *priv;
-+	struct resource *mem;
-+	resource_size_t mem_size;
-+	void __iomem *base;
-+	int err, irq;
-+
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	irq = platform_get_irq(pdev, 0);
-+	if (!mem || irq <= 0)
-+		return -ENODEV;
-+
-+	mem_size = resource_size(mem);
-+	if (!request_mem_region(mem->start, mem_size, pdev->name))
-+		return -EBUSY;
-+
-+	base = ioremap(mem->start, mem_size);
-+	if (!base) {
-+		err = -ENOMEM;
-+		goto exit_release_mem;
-+	}
-+
-+	dev = alloc_cc770dev(0);
-+	if (!dev) {
-+		err = -ENOMEM;
-+		goto exit_unmap_mem;
-+	}
-+
-+	dev->irq = irq;
-+	priv = netdev_priv(dev);
-+	priv->read_reg = cc770_platform_read_reg;
-+	priv->write_reg = cc770_platform_write_reg;
-+	priv->irq_flags = IRQF_SHARED;
-+	priv->reg_base = base;
-+
-+	if (pdev->dev.of_node)
-+		err = cc770_get_of_node_data(pdev, priv);
-+	else if (pdev->dev.platform_data)
-+		err = cc770_get_platform_data(pdev, priv);
-+	else
-+		err = -ENODEV;
-+	if (err)
-+		goto exit_free_cc770;
-+
-+	dev_dbg(&pdev->dev,
-+		 "reg_base=0x%p irq=%d clock=%d cpu_interface=0x%02x "
-+		 "bus_config=0x%02x clkout=0x%02x\n",
-+		 priv->reg_base, dev->irq, priv->can.clock.freq,
-+		 priv->cpu_interface, priv->bus_config, priv->clkout);
-+
-+	dev_set_drvdata(&pdev->dev, dev);
-+	SET_NETDEV_DEV(dev, &pdev->dev);
-+
-+	err = register_cc770dev(dev);
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"couldn't register CC700 device (err=%d)\n", err);
-+		goto exit_free_cc770;
-+	}
-+
-+	return 0;
-+
-+exit_free_cc770:
-+	free_cc770dev(dev);
-+exit_unmap_mem:
-+	iounmap(base);
-+exit_release_mem:
-+	release_mem_region(mem->start, mem_size);
-+
-+	return err;
-+}
-+
-+static int __devexit cc770_platform_remove(struct platform_device *pdev)
-+{
-+	struct net_device *dev = dev_get_drvdata(&pdev->dev);
-+	struct cc770_priv *priv = netdev_priv(dev);
-+	struct resource *mem;
-+
-+	unregister_cc770dev(dev);
-+	iounmap(priv->reg_base);
-+	free_cc770dev(dev);
-+
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	release_mem_region(mem->start, resource_size(mem));
-+
-+	return 0;
-+}
-+
-+static struct of_device_id __devinitdata cc770_platform_table[] = {
-+	{.compatible = "bosch,cc770"}, /* CC770 from Bosch */
-+	{.compatible = "intc,82527"},  /* AN82527 from Intel CP */
-+	{},
-+};
-+
-+static struct platform_driver cc770_platform_driver = {
-+	.driver = {
-+		.name = DRV_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = cc770_platform_table,
-+	},
-+	.probe = cc770_platform_probe,
-+	.remove = __devexit_p(cc770_platform_remove),
-+};
-+
-+module_platform_driver(cc770_platform_driver);
-+
--- 
-1.7.4.1
+On Tue, 2011-11-29 at 19:47 -0600, Kumar Gala wrote:
+> As Scott said, I was more asking about the 2nd patch in the sequence
+> which did touch MTD.  Since that one is dependent on this patch,
+> wondering how we wanted to handle them.
+
+I do not have time to review it, but it looks OK, so I'd suggest to
+merge it vie the same tree as the rest of the patches.
+
+--=20
+Best Regards,
+Artem Bityutskiy
+
+--=-eQxlD8JR71lTLUzhZfoM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJO1e6AAAoJECmIfjd9wqK0T9UP/1/sgKycVkmQu3OzgZZ8JNSm
+f9A0fgVSgmRvls7L6k7QWE/KPelAchdiWsSZK3V9MS46mAZmVlGlzvb/xIaUwKNe
+qMdZRFFhUEXzYXNLZCbjh3RJBO+nBXdknV8AHJRD515amwyXNipEH+360JpCIlIz
+LVneZHn8JX6laFJ4+PJSN1inEhwBs1E45WZf7zlLm+6ir1Csbh1hgQVc/4ql33rz
+RHDNHYK265Ub7SYplCLYgziy7h910aXvha5R21v+bYBEMbibxXglYpxyZ2ZenSUA
+ZfTHfv6P46Her7lOf07dtZCpshJo1+1CCiOm+lQChrfC9gAm7WJOD9xBxfBN9N8F
+7d93EyOmBlYtMQti2XkE49H+BG73xmiLp9B7yRZLOZ0qHAIqUj1lSXOWh5eXmw8Q
+KkcRl5SlblnUNeq8r3ChoHD91rNDcmbN2W6fulbANVVtPS2BjDwDnbRyhQxMeoYL
+soLjzEttyd3Mta+uZrCFgi7MjlA4+rtdSbiDmoHH3zwja7bFfeebU9tvdZrSurTX
+o9QGPvkl6mdtrEuljXJazn2on+4Lk31ao44lsZhRwntousVGjRLh2L8qA9yr0vnd
+rSq11tNN5nqWJoIVVO5d2ylt1EJIRtjEGVI1bqGg9FJSsb97t3pvy1l5XAjqN6cX
+bchp4eqlZ2UIQJ4XgVTm
+=DhO1
+-----END PGP SIGNATURE-----
+
+--=-eQxlD8JR71lTLUzhZfoM--
