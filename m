@@ -1,19 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F1D81B6F71
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 13:11:19 +1100 (EST)
-Message-ID: <1322705472.3729.11.camel@pasglop>
+Return-Path: <anton@samba.org>
+Date: Thu, 1 Dec 2011 13:26:22 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc/nvram: Add spinlock to oops_to_nvram to prevent
  oops in compression code.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-Date: Thu, 01 Dec 2011 13:11:12 +1100
-In-Reply-To: <20111201124645.24c6e54f@kryten>
-References: <20111201124645.24c6e54f@kryten>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20111201132622.2b23a1d7@kryten>
+In-Reply-To: <1322705472.3729.11.camel@pasglop>
+References: <20111201124645.24c6e54f@kryten> <1322705472.3729.11.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: jkenisto@us.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,22 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-12-01 at 12:46 +1100, Anton Blanchard wrote:
-> When issuing a system reset we almost always oops in the oops_to_nvram
-> code because multiple CPUs are using the deflate work area. Add a
-> spinlock to protect it.
+Hi Ben,
+
+> How would we miss ?
 > 
-> To play it safe I'm using trylock to avoid locking up if the NVRAM
-> code oopses. This means we might miss multiple CPUs oopsing at exactly
-> the same time but I think it's best to play it safe for now. Once we
-> are happy with the reliability we can change it to a full spinlock.
+> trylock does loop on stwcx. failure, it doesn't loop if the lock is
+> -taken-, so if the lock is only used for actually dealing with the
+> oops the only "miss" is because somebody already got it... or am I
+> missing something ?
 
-How would we miss ?
+I'm thinking of two CPUs that enter at exactly the same time either
+through a system reset or an ugly bug (writing junk at 0x900 so the
+decrementer exception gets an oops). Probably unlikely enough that we
+don't care.
 
-trylock does loop on stwcx. failure, it doesn't loop if the lock is
--taken-, so if the lock is only used for actually dealing with the oops
-the only "miss" is because somebody already got it... or am I missing
-something ?
-
-Cheers,
-Ben.
+Anton
