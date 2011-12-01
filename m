@@ -1,16 +1,18 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Thu, 1 Dec 2011 18:43:08 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Josh Boyer <jwboyer@gmail.com>
-Subject: Re: Add support for the currituck 476 platform from IBM (v2)
-Message-ID: <20111201074307.GK15560@thor.bakeyournoodle.com>
-References: <1322725164-4391-1-git-send-email-tony@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="KjSGHOmKKB2VUiQn"
-In-Reply-To: <1322725164-4391-1-git-send-email-tony@bakeyournoodle.com>
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <wg@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
+ by ozlabs.org (Postfix) with ESMTP id D79B11007D3
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2011 20:41:51 +1100 (EST)
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH net-next v6 4/4] powerpc: tqm8548/tqm8xx: add and update CAN
+ device nodes
+Date: Thu,  1 Dec 2011 10:41:21 +0100
+Message-Id: <1322732481-2255-5-git-send-email-wg@grandegger.com>
+In-Reply-To: <1322732481-2255-1-git-send-email-wg@grandegger.com>
+References: <1322732481-2255-1-git-send-email-wg@grandegger.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-can@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, socketcan-users@lists.berlios.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,64 +22,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch enables or updates support for the CC770 and AN82527
+CAN controller on the TQM8548 and TQM8xx boards.
 
---KjSGHOmKKB2VUiQn
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+CC: devicetree-discuss@lists.ozlabs.org
+CC: linuxppc-dev@ozlabs.org
+CC: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+---
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts |   19 ++++++++++++++-----
+ arch/powerpc/boot/dts/tqm8548.dts          |   19 ++++++++++++++-----
+ arch/powerpc/boot/dts/tqm8xx.dts           |   25 +++++++++++++++++++++++++
+ 3 files changed, 53 insertions(+), 10 deletions(-)
 
-On Thu, Dec 01, 2011 at 06:39:16PM +1100, Tony Breeds wrote:
-> Patches 1 to 3
->         Modify the 44x PCI code to work with 476fpe/currituck.
-> Patch 4
->        	Is an old patch by Christoph Egger that fell through the cracks somehow.
-> Patches 5 and 6
->         Modify the bootwrapper to handle 476fpe/currituck
-> Patch 7
->        	The SoC support.
-> Patch 8
->        	The currituck board support.
-
-Sorry I forgot the diffstat
-
- arch/powerpc/boot/Makefile                   |    5 +-
- arch/powerpc/boot/dcr.h                      |    6 +
- arch/powerpc/boot/div64.S                    |   52 ++++++
- arch/powerpc/boot/dts/currituck.dts          |  237 ++++++++++++++++++++++++++
- arch/powerpc/boot/treeboot-currituck.c       |  119 +++++++++++++
- arch/powerpc/boot/wrapper                    |    3 +
- arch/powerpc/configs/44x/currituck_defconfig |  110 ++++++++++++
- arch/powerpc/include/asm/reg.h               |    1 +
- arch/powerpc/kernel/cputable.c               |   14 ++
- arch/powerpc/kernel/head_44x.S               |    2 +
- arch/powerpc/mm/44x_mmu.c                    |    4 -
- arch/powerpc/platforms/44x/Kconfig           |   14 ++
- arch/powerpc/platforms/44x/Makefile          |    1 +
- arch/powerpc/platforms/44x/currituck.c       |  204 ++++++++++++++++++++++
- arch/powerpc/sysdev/ppc4xx_pci.c             |   85 +++++++++-
- arch/powerpc/sysdev/ppc4xx_pci.h             |    7 +
- 16 files changed, 851 insertions(+), 13 deletions(-)
-
-Yours Tony
-
---KjSGHOmKKB2VUiQn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO1zALAAoJEEsCiJRY75GKiq4QAMWW93tkqP9/dzxdGltgKSsV
-7ThATzoaAu4e1MgPmVlQfJa6oIkM9uouOaiJv04a6ivP5XK7mRL64cxg8OB4g/Tv
-xkVtFxyGBQa8SaX+9ojGxIBUHE/i52vOROGOZ3yedh2HAO4W6htF9SQQD4G4P4yX
-x/kqbGlNSHn1AgzObbpSTUzuxc3B/8JW5Ala3b14uH8Sx1hc0Amni/xEyjb+SwX2
-+u7NIh5fDLfUFOQvxEWvbsUMVdpSwja/9hozrqb5NKkUff9GMSgxKq6NzVS9wHOc
-iYZ8CqiZrWWzspYedvioIyb0G+cA9bl7lLbQ9aeEY3EzmGw02Jo+Bzu9gl8CrgxF
-7fkCi0QeMfNuMstP0ixEshTWIPP6SlNjhuAERTZ3Mq6Q/y/wZGM+eWPSeg1p68Jc
-zojk9VlNYVdkGYDe09G1Ayg07lbQGbRBPmFgPfTVb0i06X8AWpJJU0pB3WzjoaTu
-ActuUmSOAiR5CT6OBXfog7nXO0hM0Kmn5s6yjcFTghiUURecS01rtbSMWWLnZmjv
-5X0BD0ab0PtAIotfUIjK1EPzzx8/IP+NJF/NNjx0O8zWZUUMG7gRBLgCbndlzGXk
-rCCAoZw/4tBQaZgz0zKqkW/N5i7oXzycTdXDa4SokwAITk0v+tiuSLUfCgWiYi9Z
-nkqCcWuvqIczqWwjwSKh
-=2SZN
------END PGP SIGNATURE-----
-
---KjSGHOmKKB2VUiQn--
+diff --git a/arch/powerpc/boot/dts/tqm8548-bigflash.dts b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+index 9452c3c..d918752 100644
+--- a/arch/powerpc/boot/dts/tqm8548-bigflash.dts
++++ b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+@@ -352,7 +352,7 @@
+ 		ranges = <
+ 			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+ 			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+-			2 0x0 0xa3000000 0x00008000	// CAN (2 x i82527)
++			2 0x0 0xa3000000 0x00008000	// CAN (2 x CC770)
+ 			3 0x0 0xa3010000 0x00008000	// NAND FLASH
+ 
+ 		>;
+@@ -393,18 +393,27 @@
+ 		};
+ 
+ 		/* Note: CAN support needs be enabled in U-Boot */
+-		can0@2,0 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,0 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x0 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
+ 		};
+ 
+-		can1@2,100 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,100 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x100 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
+ 		};
+ 
+ 		/* Note: NAND support needs to be enabled in U-Boot */
+diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tqm8548.dts
+index 619776f..988d887 100644
+--- a/arch/powerpc/boot/dts/tqm8548.dts
++++ b/arch/powerpc/boot/dts/tqm8548.dts
+@@ -352,7 +352,7 @@
+ 		ranges = <
+ 			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+ 			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+-			2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
++			2 0x0 0xe3000000 0x00008000	// CAN (2 x CC770)
+ 			3 0x0 0xe3010000 0x00008000	// NAND FLASH
+ 
+ 		>;
+@@ -393,18 +393,27 @@
+ 		};
+ 
+ 		/* Note: CAN support needs be enabled in U-Boot */
+-		can0@2,0 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,0 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x0 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
+ 		};
+ 
+-		can1@2,100 {
+-			compatible = "intel,82527"; // Bosch CC770
++		can@2,100 {
++			compatible = "bosch,cc770"; // Bosch CC770
+ 			reg = <2 0x100 0x100>;
+ 			interrupts = <4 1>;
+ 			interrupt-parent = <&mpic>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
+ 		};
+ 
+ 		/* Note: NAND support needs to be enabled in U-Boot */
+diff --git a/arch/powerpc/boot/dts/tqm8xx.dts b/arch/powerpc/boot/dts/tqm8xx.dts
+index f6da7ec..c3dba25 100644
+--- a/arch/powerpc/boot/dts/tqm8xx.dts
++++ b/arch/powerpc/boot/dts/tqm8xx.dts
+@@ -57,6 +57,7 @@
+ 
+ 		ranges = <
+ 			0x0 0x0 0x40000000 0x800000
++			0x3 0x0 0xc0000000 0x200
+ 		>;
+ 
+ 		flash@0,0 {
+@@ -67,6 +68,30 @@
+ 			bank-width = <4>;
+ 			device-width = <2>;
+ 		};
++
++		/* Note: CAN support needs be enabled in U-Boot */
++		can@3,0 {
++			compatible = "intc,82527";
++			reg = <3 0x0 0x80>;
++			interrupts = <8 1>;
++			interrupt-parent = <&PIC>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++			bosch,clock-out-frequency = <16000000>;
++		};
++
++		can@3,100 {
++			compatible = "intc,82527";
++			reg = <3 0x100 0x80>;
++			interrupts = <8 1>;
++			interrupt-parent = <&PIC>;
++			bosch,external-clock-frequency = <16000000>;
++			bosch,disconnect-rx1-input;
++			bosch,disconnect-tx1-output;
++			bosch,iso-low-speed-mux;
++		};
+ 	};
+ 
+ 	soc@fff00000 {
+-- 
+1.7.4.1
