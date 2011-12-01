@@ -2,31 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 77E9AB6F75
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 08:38:14 +1100 (EST)
-Message-ID: <1322775468.3729.26.camel@pasglop>
-Subject: Re: [BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu'
- lead to system crash/freeze
+ by ozlabs.org (Postfix) with ESMTPS id 444F71007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 08:39:53 +1100 (EST)
+Message-ID: <1322775586.3729.28.camel@pasglop>
+Subject: Re: ppc4xx simple vs SoC's
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Date: Fri, 02 Dec 2011 08:37:48 +1100
-In-Reply-To: <4ED75A9A.1030100@windriver.com>
-References: <BANLkTi=gx73d6-s-jqeke05SQYorpnzLVw@mail.gmail.com>
- <1308911347.531.56.camel@gandalf.stny.rr.com>
- <4E074671.7060100@hitachi.com> <20110627100104.GA24705@in.ibm.com>
- <BANLkTimYej4_dmBqvPBCLej=JA5atLrZVA@mail.gmail.com>
- <4E0D9B5E.3010901@windriver.com> <1322626752.21641.22.camel@pasglop>
- <4ED60E2B.8030603@windriver.com> <1322686809.29041.10.camel@pasglop>
- <4ED75A9A.1030100@windriver.com>
+To: Josh Boyer <jwboyer@gmail.com>
+Date: Fri, 02 Dec 2011 08:39:46 +1100
+In-Reply-To: <CA+5PVA5xaCa8Tv3MMr1WzQAuLit9KenMoezOKB7ENQSt=fOSOg@mail.gmail.com>
+References: <1322717953.3729.18.camel@pasglop>
+ <CA+5PVA5xaCa8Tv3MMr1WzQAuLit9KenMoezOKB7ENQSt=fOSOg@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>,
- Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Yong Zhang <yong.zhang0@gmail.com>,
- paulus@samba.org, yrl.pp-manager.tt@hitachi.com,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,24 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-12-01 at 18:44 +0800, tiejun.chen wrote:
+On Thu, 2011-12-01 at 06:44 -0500, Josh Boyer wrote:
 
-> Do you mean we should push the original pt_regs (or that whole exception stack)
-> downwards the location the new r1 point? Then its safe to perform this real
-> emulated stw instruction. At last we will reroute r1 to that copied exception
-> frame to restore as normal. Right?
-
-Right. That way we don't have to modify the (sensitive) restore path, we
-only hook around the do_work branch which is a lot easier and less
-risky.
-
-> Here I suppose so, I implement this for PPC32 based on the above understanding.
-> I take a validation for kprobing do_fork()/show_interrupts(), now looks fine.
-> Tomorrow I will go PPC64, and hope its fine as well.
+> > However, the entry for ppc44x_simple doesn't select any of these,
+> > meaning for example, AFAIK, that you don't get EMAC4 etc... I'm
+> > surprised things work at all !
+> >
+> > What am I missing ?
 > 
-> If everything is good I'll send these patches to linuxppc-dev next week.
+> CONFIG_PPC44x_SIMPLE is selected by the board Kconfig values, which
+> also select all of the SoC Kconfig options they need as well.
+> ppc44x_simple started as a way to basically avoid duplicating a bunch
+> of board.c files, but it's still "driven" from the board options.
+> 
+> So hopefully that explains how things are working today.  The question
+> now is whether you would like something different?
 
-Excellent, thanks !
+Ok, just getting my head around that stuff, I haven't really looked
+since you and Grant I believe came up with the scheme :-) (Was wondering
+what to do for currituck, but for now we'll keep it a separate board, at
+least until I can decide how to deal with the interrupt quirk).
+
+I just hadn't realized that while we had ppc4xx_simple, we still had
+board Kconfig's to enable it.
 
 Cheers,
 Ben.
