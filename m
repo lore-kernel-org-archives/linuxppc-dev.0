@@ -1,19 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id DA891B6F7B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 10:41:48 +1100 (EST)
-Date: Thu, 1 Dec 2011 10:41:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: Please pull 'next' branch of new 4xx tree
-Message-Id: <20111201104141.c32e866338edfdca5e36ce88@canb.auug.org.au>
-In-Reply-To: <CA+5PVA6ahzxWHqBiESw8x7RVC1n8hjqBPvMnQ8qfb=bpwMeuzQ@mail.gmail.com>
-References: <CA+5PVA6ahzxWHqBiESw8x7RVC1n8hjqBPvMnQ8qfb=bpwMeuzQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__1_Dec_2011_10_41_41_+1100_qQA.aNw6nyGf=T72"
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 1 Dec 2011 12:04:02 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Subject: Re: [PATCH 02/10] powerpc: Consolidate mpic_alloc() OF address
+ translation
+Message-ID: <20111201010402.GA5268@drongo>
+References: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
+ <1322593117-29938-3-git-send-email-Kyle.D.Moffett@boeing.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1322593117-29938-3-git-send-email-Kyle.D.Moffett@boeing.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,46 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__1_Dec_2011_10_41_41_+1100_qQA.aNw6nyGf=T72
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Nov 29, 2011 at 01:58:29PM -0500, Kyle Moffett wrote:
+> diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+> index 901bfbd..44f9774 100644
+> --- a/arch/powerpc/platforms/powermac/pic.c
+> +++ b/arch/powerpc/platforms/powermac/pic.c
+> @@ -498,15 +498,10 @@ static struct mpic * __init pmac_setup_one_mpic(struct device_node *np,
+>  						int master)
+>  {
+>  	const char *name = master ? " MPIC 1   " : " MPIC 2   ";
+> -	struct resource r;
+>  	struct mpic *mpic;
+>  	unsigned int flags = master ? MPIC_PRIMARY : 0;
+>  	int rc;
+>  
+> -	rc = of_address_to_resource(np, 0, &r);
+> -	if (rc)
+> -		return NULL;
+> -
 
-Hi Josh,
+This gets me an unused variable warning, which because we compile
+arch/powerpc with -Werror is fatal:
 
-On Wed, 30 Nov 2011 10:14:52 -0500 Josh Boyer <jwboyer@gmail.com> wrote:
->
-> Stephen, can you switch the linux-next tree to use this instead?
->=20
-> are available in the git repository at:
->   git://git.infradead.org/users/jwboyer/powerpc-4xx.git next
+  CC      arch/powerpc/platforms/powermac/pic.o
+/home/paulus/kernel/kvm-merge/arch/powerpc/platforms/powermac/pic.c: In function ‘pmac_setup_one_mpic’:
+/home/paulus/kernel/kvm-merge/arch/powerpc/platforms/powermac/pic.c:491:6: error: unused variable ‘rc’ [-Werror=unused-variable]
+cc1: all warnings being treated as errors
 
-I have switched to that now.
+Need to remove the declaration of rc as well.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__1_Dec_2011_10_41_41_+1100_qQA.aNw6nyGf=T72
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO1r81AAoJEECxmPOUX5FE8FIP/3YqSLxwX3D5G4A81wVdPTI8
-HJVeSQjya5R3WGLYK0AgU2ZztlH0dPJlAZxjV73RvNBLA8HX8KMVDECJQaMTVr3s
-nreVOUyZCTtTz9s03yfMrPmYh4MDCTDL6ks+ydv40QSMFpQjSh/5b5WJUfvWCnVx
-qw+ai0pHl/fMKRdnYytTkOjbXu6+mmmnnfMsq1Fcwt14CBRdHKmTOMEB7luSt1oN
-ll0Go/4nP3HpVp0Gc2KbhQngPd0JhSLhNCV5G7IbMvdpHMd7c0s9yj1x5HPFZI0S
-oUu+cMSl51NtA28ZT5L9vPsoc1Pv87lPa1+zyD/v2Ca5gQmpbUvAVf8DpDGUe4Td
-54uCmsjqyRKSodYTJ3FYMdSJ0nRYJXAX8n+SERsYgv7n3Y58W26ibJaf8I4qZShJ
-hVvnPQuL+uxT7mzRdopIMciXjPb1cRRM9ax1+TE7KhbirdZaPx0FeJZIK2y5N3G8
-Cz4uQx+RSnNMTzx4PN60oieM+683R5iAZa2WDAokNUsxu/tJDFjMyCVdVs4Bk1SD
-f2DI7U/rmMSA4YKvwJmWpI46AxHmr+DqqJ8ePzluRZ+LwisZr8YAD5RSBt/BVWbi
-sIi/5xG2uqoLOaT2LeMfImarEXkEub21wf6i3n7ToG8apP4GWI+hhM3A9SFZUOt5
-fIlg564QYZkUG6fPX57+
-=fS+2
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_Dec_2011_10_41_41_+1100_qQA.aNw6nyGf=T72--
+Paul.
