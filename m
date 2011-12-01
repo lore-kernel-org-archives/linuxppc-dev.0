@@ -1,23 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6BD29B6F6F
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 06:35:18 +1100 (EST)
-Subject: Re: Different behaviour when using "nosmp" parameter on SMP and UP
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CAL8zT=jgZS2=t0SadUXXshabKPsxHJe_frkfOw5XyF88k3jR=g@mail.gmail.com>
-Date: Thu, 1 Dec 2011 13:35:12 -0600
-Message-Id: <40F38A2B-48A0-4A8C-B45D-579865F135CC@kernel.crashing.org>
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+ [209.85.161.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 61E96B6F65
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 07:09:45 +1100 (EST)
+Received: by faat2 with SMTP id t2so1761848faa.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 01 Dec 2011 12:09:41 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <40F38A2B-48A0-4A8C-B45D-579865F135CC@kernel.crashing.org>
 References: <CAL8zT=juU_PC92R4za31R8Lmur0PrFwog1m1fk+PEarW_0C6ng@mail.gmail.com>
  <D70E8CC4-9FA3-4DC9-B623-02F32EFBFE0F@kernel.crashing.org>
  <CAL8zT=gGfBYsLcsKobJPhfhEhNeLcrYMoWh2kv0odT0n0wnZgQ@mail.gmail.com>
  <CAOZdJXVq_g=GAJLRsHZ+290cAJfpOx0LX3sBL3T5i0CaG+xh9Q@mail.gmail.com>
  <CAL8zT=hK2rDDC7s+SkvCA=C5LjVX+5oRQmP+KQet2mkFEnaKKw@mail.gmail.com>
  <CAL8zT=jgZS2=t0SadUXXshabKPsxHJe_frkfOw5XyF88k3jR=g@mail.gmail.com>
-To: Jean-Michel Hautbois <jhautbois@gmail.com>
+ <40F38A2B-48A0-4A8C-B45D-579865F135CC@kernel.crashing.org>
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+Date: Thu, 1 Dec 2011 21:09:20 +0100
+Message-ID: <CAL8zT=iqoE0UKnqqDoioq6b8Ld0qXQ1XtMbACXnXtiunzpJRAw@mail.gmail.com>
+Subject: Re: Different behaviour when using "nosmp" parameter on SMP and UP
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Tabi Timur-B04825 <B04825@freescale.com>,
  linux-kernel <linux-kernel@vger.kernel.org>
@@ -30,26 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2011/12/1 Kumar Gala <galak@kernel.crashing.org>:
+>
+> On Dec 1, 2011, at 11:52 AM, Jean-Michel Hautbois wrote:
+>
+>> 2011/12/1 Jean-Michel Hautbois <jhautbois@gmail.com>:
+>>> 2011/12/1 Tabi Timur-B04825 <B04825@freescale.com>:
+>>>> On Thu, Dec 1, 2011 at 9:04 AM, Jean-Michel Hautbois
+>>>> <jhautbois@gmail.com> wrote:
+>>>>>
+>>>>> Any idea on how to debug this ? I am using a 2.6.35 kernel.
+>>>>
+>>>> There are a ton of Kconfig options for debugging various locking bugs.
+>>>> =C2=A0Try turning them on.
+>>>>
+>>
+>> All Kconfig options do not help me with cache coherency problems, though=
+.
+>> Or, I didn't find any option related.
+>> Any idea ?
+>>
+>> JM
+>
+> Nope, if you can't describe the code in any more detail we can't help.
+>
 
-On Dec 1, 2011, at 11:52 AM, Jean-Michel Hautbois wrote:
+Here is what I can tell, I hope this will help you.
 
-> 2011/12/1 Jean-Michel Hautbois <jhautbois@gmail.com>:
->> 2011/12/1 Tabi Timur-B04825 <B04825@freescale.com>:
->>> On Thu, Dec 1, 2011 at 9:04 AM, Jean-Michel Hautbois
->>> <jhautbois@gmail.com> wrote:
->>>> 
->>>> Any idea on how to debug this ? I am using a 2.6.35 kernel.
->>> 
->>> There are a ton of Kconfig options for debugging various locking bugs.
->>>  Try turning them on.
->>> 
-> 
-> All Kconfig options do not help me with cache coherency problems, though.
-> Or, I didn't find any option related.
-> Any idea ?
-> 
-> JM
+I have a userland process, which reads and writes data to a character
+device thanks to ioctl.
+Reads and Writes are performed with this scheme :
+Lock Access -> ioctl -> down_interruptible(semaphore)
+Read (or Write) -> ioctl -> ioread32
+Unlock Access -> ioctl -> up(semaphore)
 
-Nope, if you can't describe the code in any more detail we can't help.
+It reads (or writes) 4 bytes by 4 bytes, in a loop in the process
+which will eventually get several bytes from the PCIe device.
+The read (write) ioctl is really simple (and in fact, may be rewritten) :
+- kmalloc a structure, then copy_from_user
+- ioread32 using adress and offset from the structure copied previously
+- copy_to_user and free the structure.
 
-- k
+The userland process is currently doing a loop in order to read or
+writes with a 4bytes step.
+I am neither the writer of the driver nor the userland process, this
+is why I can't give you the code.
+
+Here is what I would do, at least :
+1/ rewrite the read/write part of the ioctl in order to user a per_cpu
+structure and not a "dynamically allocated at each call" structure
+2/ rewrite the userland part in order to ask the driver for n bytes,
+leaving the loop on ioread32/iowrite32 inside the ioctl
+
+Thanks for your help.
+JM
