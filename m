@@ -1,26 +1,14 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
- [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 50205B6F69
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 09:10:08 +1100 (EST)
-Message-ID: <4ED7FB38.1070302@freescale.com>
-Date: Thu, 1 Dec 2011 16:10:00 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] i2c-mpc: use the cell-index property to enumerate the
- I2C adapters
-References: <1322760781-31226-1-git-send-email-timur@freescale.com>
- <4ED7CA64.2080503@freescale.com> <4ED7E975.6090704@freescale.com>
- <4ED7F1AE.70806@freescale.com> <4ED7F5AA.2040909@freescale.com>
- <4ED7F72F.7050405@freescale.com> <4ED7F8CE.10801@freescale.com>
- <4ED7FA38.6030606@freescale.com>
-In-Reply-To: <4ED7FA38.6030606@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AEF3@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8AEF3@saturn3.aculab.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1E6FA02A-2922-4C2C-8E6D-D99151527FB8@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 5/6] powerpc/boot: Add mfdcrx
+Date: Thu, 1 Dec 2011 23:55:29 +0100
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,12 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> 
-> Does of_find_i2c_device_by_node() do what you want?
+>>> +#define mfdcrx(rn) \
+>>> +	({	\
+>>> +		unsigned long rval; \
+>>> +		asm volatile("mfdcrx %0,%1" : "=r"(rval) : "g"(rn)); \
+>>> +		rval; \
+>>> +	})
+>>
+>> "g" is never correct on PowerPC, you want "r" here.  You can write
+>> this as a static inline btw, you only need the #define stuff when
+>> there is an "i" constraint involved.
+>
+> I think you can still use static inlines even when a
+> constraint is one that requires a compile time constant.
 
-Yeah, that'll work.  I wasn't thinking about looking for an i2c device.  Thanks.
+Marking a function inline does not guarantee the compiler will
+perform inline substitution on it, which you need here.  I don't
+think it's a problem with recent GCC in the context of the Linux
+kernel though, if you use __always_inline that is.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+
+Segher
