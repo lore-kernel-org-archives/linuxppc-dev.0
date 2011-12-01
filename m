@@ -1,18 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <michaele@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9B75BB6F83
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2011 17:03:18 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pB163EOb025815
- for <linuxppc-dev@ozlabs.org>; Thu, 1 Dec 2011 00:03:15 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl-pci: Allow 64-bit PCIe devices to DMA to any
- memory address
-Date: Thu,  1 Dec 2011 00:03:14 -0600
-Message-Id: <1322719394-24586-1-git-send-email-galak@kernel.crashing.org>
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 62EE0B6F65
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2011 17:59:05 +1100 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
+ Thu, 1 Dec 2011 06:54:42 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pB16tKTh2326728
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2011 17:55:20 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pB16wkBZ007373
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2011 17:58:47 +1100
+Message-ID: <1322722726.5215.2.camel@concordia>
+Subject: Re: [PATCH 07/10] powerpc/mpic: Don't open-code dcr_resource_start
+From: Michael Ellerman <michaele@au1.ibm.com>
+To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Date: Thu, 01 Dec 2011 17:58:46 +1100
+In-Reply-To: <1322593117-29938-8-git-send-email-Kyle.D.Moffett@boeing.com>
+References: <1322593117-29938-1-git-send-email-Kyle.D.Moffett@boeing.com>
+ <1322593117-29938-8-git-send-email-Kyle.D.Moffett@boeing.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Reply-To: michaele@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,111 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is an issue on FSL-BookE 64-bit devices (P5020) in which PCIe
-devices that are capable of doing 64-bit DMAs (like an Intel e1000) do
-not function and crash the kernel if we have >4G of memory in the system.
+On Tue, 2011-11-29 at 13:58 -0500, Kyle Moffett wrote:
+> Don't open-code the OpenFirmware "dcr-reg" property lookup trying to map
+> DCR resources.  This makes the code a bit easier to read.
+> 
+> Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+> ---
+>  arch/powerpc/sysdev/mpic.c |    7 ++-----
+>  1 files changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index e0216ff..6916ba5 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -319,11 +319,8 @@ static void _mpic_map_dcr(struct mpic *mpic, struct device_node *node,
+>  			  struct mpic_reg_bank *rb,
+>  			  unsigned int offset, unsigned int size)
+>  {
+> -	const u32 *dbasep;
+> -
+> -	dbasep = of_get_property(node, "dcr-reg", NULL);
+> -
+> -	rb->dhost = dcr_map(node, *dbasep + offset, size);
+> +	phys_addr_t phys_addr = dcr_resource_start(node);
 
-The reason is that the existing code only sets up one inbound window for
-access to system memory across PCIe.  That window is limited to a 32-bit
-address space.  So on systems we'll end up utilizing SWIOTLB for dma
-mappings.  However SWIOTLB dma ops implement dma_alloc_coherent() as
-dma_direct_alloc_coherent().  Thus we can end up with dma addresses that
-are not accessible because of the inbound window limitation.
+Gives me:
 
-We could possibly set the SWIOTLB alloc_coherent op to
-swiotlb_alloc_coherent() however that does not address the issue since
-the swiotlb_alloc_coherent() will behave almost identical to
-dma_direct_alloc_coherent() since the devices coherent_dma_mask will be
-greater than any address allocated by swiotlb_alloc_coherent() and thus
-we'll never bounce buffer it into a range that would be dma-able.
+  arch/powerpc/sysdev/mpic.c:321: error: too few arguments to function 'dcr_resource_start'
 
-The easiest and best solution is to just make it so that a 64-bit
-capable device is able to DMA to any internal system address.
+Because you're missing index:
 
-We accomplish this by opening up a second inbound window that maps all
-of memory above the internal SoC address width so we can set it up to
-access all of the internal SoC address space if needed.
+  unsigned int dcr_resource_start(const struct device_node *np, unsigned int index)
 
-We than fixup the dma_ops and dma_offset for PCIe devices with a dma
-mask greater than the maximum internal SoC address.
+cheers
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/sysdev/fsl_pci.c |   55 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 55 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 4ce547e..8f92446 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -65,6 +65,30 @@ static int __init fsl_pcie_check_link(struct pci_controller *hose)
- }
- 
- #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
-+
-+#define MAX_PHYS_ADDR_BITS	40
-+static u64 pci64_dma_offset = 1ull << MAX_PHYS_ADDR_BITS;
-+
-+static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
-+{
-+	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
-+		return -EIO;
-+
-+	/*
-+	 * Fixup PCI devices that are able to DMA to above the physical
-+	 * address width of the SoC such that we can address any internal
-+	 * SoC address from across PCI if needed
-+	 */
-+	if ((dev->bus == &pci_bus_type) &&
-+	    dma_mask >= DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)) {
-+		set_dma_ops(dev, &dma_direct_ops);
-+		set_dma_offset(dev, pci64_dma_offset);
-+	}
-+
-+	*dev->dma_mask = dma_mask;
-+	return 0;
-+}
-+
- static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
- 	unsigned int index, const struct resource *res,
- 	resource_size_t offset)
-@@ -228,6 +252,37 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
- 
- 		hose->dma_window_base_cur = 0x00000000;
- 		hose->dma_window_size = (resource_size_t)sz;
-+
-+		/*
-+		 * if we have >4G of memory setup second PCI inbound window to
-+		 * let devices that are 64-bit address capable to work w/o
-+		 * SWIOTLB and access the full range of memory
-+		 */
-+		if (sz != mem) {
-+			mem_log = __ilog2_u64(mem);
-+
-+			/* Size window up if we dont fit in exact power-of-2 */
-+			if ((1ull << mem_log) != mem)
-+				mem_log++;
-+
-+			piwar = (piwar & ~PIWAR_SZ_MASK) | (mem_log - 1);
-+
-+			/* Setup inbound memory window */
-+			out_be32(&pci->piw[win_idx].pitar,  0x00000000);
-+			out_be32(&pci->piw[win_idx].piwbear,
-+					pci64_dma_offset >> 44);
-+			out_be32(&pci->piw[win_idx].piwbar,
-+					pci64_dma_offset >> 12);
-+			out_be32(&pci->piw[win_idx].piwar,  piwar);
-+
-+			/*
-+			 * install our own dma_set_mask handler to fixup dma_ops
-+			 * and dma_offset
-+			 */
-+			ppc_md.dma_set_mask = fsl_pci_dma_set_mask;
-+
-+			pr_info("%s: Setup 64-bit PCI DMA window\n", name);
-+		}
- 	} else {
- 		u64 paddr = 0;
- 
 -- 
-1.7.3.4
