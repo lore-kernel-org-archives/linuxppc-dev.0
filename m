@@ -1,29 +1,22 @@
-Return-Path: <jhautbois@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
- [209.85.161.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 61E96B6F65
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 07:09:45 +1100 (EST)
-Received: by faat2 with SMTP id t2so1761848faa.15
- for <linuxppc-dev@ozlabs.org>; Thu, 01 Dec 2011 12:09:41 -0800 (PST)
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 1BB81B6F62
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 07:54:19 +1100 (EST)
+Message-ID: <4ED7E975.6090704@freescale.com>
+Date: Thu, 1 Dec 2011 14:54:13 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <40F38A2B-48A0-4A8C-B45D-579865F135CC@kernel.crashing.org>
-References: <CAL8zT=juU_PC92R4za31R8Lmur0PrFwog1m1fk+PEarW_0C6ng@mail.gmail.com>
- <D70E8CC4-9FA3-4DC9-B623-02F32EFBFE0F@kernel.crashing.org>
- <CAL8zT=gGfBYsLcsKobJPhfhEhNeLcrYMoWh2kv0odT0n0wnZgQ@mail.gmail.com>
- <CAOZdJXVq_g=GAJLRsHZ+290cAJfpOx0LX3sBL3T5i0CaG+xh9Q@mail.gmail.com>
- <CAL8zT=hK2rDDC7s+SkvCA=C5LjVX+5oRQmP+KQet2mkFEnaKKw@mail.gmail.com>
- <CAL8zT=jgZS2=t0SadUXXshabKPsxHJe_frkfOw5XyF88k3jR=g@mail.gmail.com>
- <40F38A2B-48A0-4A8C-B45D-579865F135CC@kernel.crashing.org>
-From: Jean-Michel Hautbois <jhautbois@gmail.com>
-Date: Thu, 1 Dec 2011 21:09:20 +0100
-Message-ID: <CAL8zT=iqoE0UKnqqDoioq6b8Ld0qXQ1XtMbACXnXtiunzpJRAw@mail.gmail.com>
-Subject: Re: Different behaviour when using "nosmp" parameter on SMP and UP
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- linux-kernel <linux-kernel@vger.kernel.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] i2c-mpc: use the cell-index property to enumerate the
+ I2C adapters
+References: <1322760781-31226-1-git-send-email-timur@freescale.com>
+ <4ED7CA64.2080503@freescale.com>
+In-Reply-To: <4ED7CA64.2080503@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,57 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2011/12/1 Kumar Gala <galak@kernel.crashing.org>:
->
-> On Dec 1, 2011, at 11:52 AM, Jean-Michel Hautbois wrote:
->
->> 2011/12/1 Jean-Michel Hautbois <jhautbois@gmail.com>:
->>> 2011/12/1 Tabi Timur-B04825 <B04825@freescale.com>:
->>>> On Thu, Dec 1, 2011 at 9:04 AM, Jean-Michel Hautbois
->>>> <jhautbois@gmail.com> wrote:
->>>>>
->>>>> Any idea on how to debug this ? I am using a 2.6.35 kernel.
->>>>
->>>> There are a ton of Kconfig options for debugging various locking bugs.
->>>> =C2=A0Try turning them on.
->>>>
->>
->> All Kconfig options do not help me with cache coherency problems, though=
-.
->> Or, I didn't find any option related.
->> Any idea ?
->>
->> JM
->
-> Nope, if you can't describe the code in any more detail we can't help.
->
+Scott Wood wrote:
+> On 12/01/2011 11:33 AM, Timur Tabi wrote:
+>> An I2C device tree node can contain a 'cell-index' property that can be
+>> used to enumerate the I2C devices.  If such a property exists, use it
+>> to specify the I2C adapter number.
+> 
+> Didn't we decide a long time ago that this was a bad idea?
 
-Here is what I can tell, I hope this will help you.
+I don't see what's wrong with it.
 
-I have a userland process, which reads and writes data to a character
-device thanks to ioctl.
-Reads and Writes are performed with this scheme :
-Lock Access -> ioctl -> down_interruptible(semaphore)
-Read (or Write) -> ioctl -> ioread32
-Unlock Access -> ioctl -> up(semaphore)
+>> This feature is necessary for the Freescale PowerPC audio drivers (e.g.
+>> on the P1022DS).  The "machine driver" needs to know the adapter number
+>> for each I2C adapter, but it only has access to the device tree.
+>> Previously, the I2C nodes always appeared in cell-index order, so the
+>> dynamic numbering coincided with the cell-index property.  With commit
+>> ab827d97 ("powerpc/85xx: Rework P1022DS device tree"), the I2C nodes are
+>> unintentionally reversed in the device tree, and so the machine driver
+>> guesses the wrong I2C adapter number.
+> 
+> What specifically do you need this number for?  What does it represent?
 
-It reads (or writes) 4 bytes by 4 bytes, in a loop in the process
-which will eventually get several bytes from the PCIe device.
-The read (write) ioctl is really simple (and in fact, may be rewritten) :
-- kmalloc a structure, then copy_from_user
-- ioread32 using adress and offset from the structure copied previously
-- copy_to_user and free the structure.
+Well, I thought the above paragraph explained it pretty well.
 
-The userland process is currently doing a loop in order to read or
-writes with a 4bytes step.
-I am neither the writer of the driver nor the userland process, this
-is why I can't give you the code.
+Audio drivers come in sets of four -- machine, ssi, dma, and codec.  The machine driver needs to know which ssi is connected to which codec and which DMA channel(s) it needs to use.  So I extract all this information from the device tree.  
 
-Here is what I would do, at least :
-1/ rewrite the read/write part of the ioctl in order to user a per_cpu
-structure and not a "dynamically allocated at each call" structure
-2/ rewrite the userland part in order to ask the driver for n bytes,
-leaving the loop on ioread32/iowrite32 inside the ioctl
+The individual drivers, however, register only with their own subsystem.  So the codec driver, for example, doesn't know anything about device trees -- it just registers as an i2c driver.  That means that the machine driver has to guess what name the codec driver will use when it registers.  In this case, that's the i2c device name, which include the I2C adapter number (adap->nr).  That means that given a device tree node, I need to know what the actual bus number is.
 
-Thanks for your help.
-JM
+An alternative approach is to create a function like this:
+
+	struct i2c_adapter *i2c_adapter_from_node(struct device_node *np);
+
+I could then just use adap->nr directly.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
