@@ -1,18 +1,19 @@
-Return-Path: <wg@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
- by ozlabs.org (Postfix) with ESMTP id DE6451007D8
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2011 20:41:51 +1100 (EST)
-From: Wolfgang Grandegger <wg@grandegger.com>
-To: netdev@vger.kernel.org
-Subject: [PATCH net-next v6 3/4] can: cc770: add platform bus driver for the
- CC770 and AN82527
-Date: Thu,  1 Dec 2011 10:41:20 +0100
-Message-Id: <1322732481-2255-4-git-send-email-wg@grandegger.com>
-In-Reply-To: <1322732481-2255-1-git-send-email-wg@grandegger.com>
-References: <1322732481-2255-1-git-send-email-wg@grandegger.com>
-Cc: Devicetree-discuss@lists.ozlabs.org, linux-can@vger.kernel.org,
- linuxppc-dev@ozlabs.org, socketcan-users@lists.berlios.de
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-ee0-f42.google.com (mail-ee0-f42.google.com [74.125.83.42])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id E61151007D1
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2011 20:57:38 +1100 (EST)
+Received: by eekb47 with SMTP id b47so1110603eek.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 01 Dec 2011 01:57:30 -0800 (PST)
+MIME-Version: 1.0
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+Date: Thu, 1 Dec 2011 10:57:09 +0100
+Message-ID: <CAL8zT=juU_PC92R4za31R8Lmur0PrFwog1m1fk+PEarW_0C6ng@mail.gmail.com>
+Subject: Different behaviour when using "nosmp" parameter on SMP and UP
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,387 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This driver works with both, static platform data and device tree
-bindings. It has been tested on a TQM855L board with two AN82527
-CAN controllers on the local bus.
+Hi,
 
-CC: Devicetree-discuss@lists.ozlabs.org
-CC: linuxppc-dev@ozlabs.org
-CC: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>
----
- .../devicetree/bindings/net/can/cc770.txt          |   53 ++++
- drivers/net/can/cc770/Kconfig                      |    7 +
- drivers/net/can/cc770/Makefile                     |    1 +
- drivers/net/can/cc770/cc770_platform.c             |  272 ++++++++++++++++++++
- 4 files changed, 333 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/net/can/cc770.txt
- create mode 100644 drivers/net/can/cc770/cc770_platform.c
+I have a P2020 CPU (powerpc) and I compiled it with two different defconfigs.
+The first one is a SMP, 2 cores, launched with the "nosmp" kernel
+parameter, the other one is an UP kernel.
 
-diff --git a/Documentation/devicetree/bindings/net/can/cc770.txt b/Documentation/devicetree/bindings/net/can/cc770.txt
-new file mode 100644
-index 0000000..77027bf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/net/can/cc770.txt
-@@ -0,0 +1,53 @@
-+Memory mapped Bosch CC770 and Intel AN82527 CAN controller
-+
-+Note: The CC770 is a CAN controller from Bosch, which is 100%
-+compatible with the old AN82527 from Intel, but with "bugs" being fixed.
-+
-+Required properties:
-+
-+- compatible : should be "bosch,cc770" for the CC770 and "intc,82527"
-+	for the AN82527.
-+
-+- reg : should specify the chip select, address offset and size required
-+	to map the registers of the controller. The size is usually 0x80.
-+
-+- interrupts : property with a value describing the interrupt source
-+	(number and sensitivity) required for the controller.
-+
-+Optional properties:
-+
-+- bosch,external-clock-frequency : frequency of the external oscillator
-+	clock in Hz. Note that the internal clock frequency used by the
-+	controller is half of that value. If not specified, a default
-+	value of 16000000 (16 MHz) is used.
-+
-+- bosch,clock-out-frequency : slock frequency in Hz on the CLKOUT pin.
-+	If not specified or if the specified value is 0, the CLKOUT pin
-+	will be disabled.
-+
-+- bosch,slew-rate : slew rate of the CLKOUT signal. If not specified,
-+	a resonable value will be calculated.
-+
-+- bosch,disconnect-rx0-input : see data sheet.
-+
-+- bosch,disconnect-rx1-input : see data sheet.
-+
-+- bosch,disconnect-tx1-output : see data sheet.
-+
-+- bosch,polarity-dominant : see data sheet.
-+
-+- bosch,divide-memory-clock : see data sheet.
-+
-+- bosch,iso-low-speed-mux : see data sheet.
-+
-+For further information, please have a look to the CC770 or AN82527.
-+
-+Examples:
-+
-+can@3,100 {
-+	compatible = "bosch,cc770";
-+	reg = <3 0x100 0x80>;
-+	interrupts = <2 0>;
-+	interrupt-parent = <&mpic>;
-+	bosch,external-clock-frequency = <16000000>;
-+};
-diff --git a/drivers/net/can/cc770/Kconfig b/drivers/net/can/cc770/Kconfig
-index 28e4d48..22c07a8 100644
---- a/drivers/net/can/cc770/Kconfig
-+++ b/drivers/net/can/cc770/Kconfig
-@@ -11,4 +11,11 @@ config CAN_CC770_ISA
- 	  connected to the ISA bus using I/O port, memory mapped or
- 	  indirect access.
- 
-+config CAN_CC770_PLATFORM
-+	tristate "Generic Platform Bus based CC770 driver"
-+	---help---
-+	  This driver adds support for the CC770 and AN82527 chips
-+	  connected to the "platform bus" (Linux abstraction for directly
-+	  to the processor attached devices).
-+
- endif
-diff --git a/drivers/net/can/cc770/Makefile b/drivers/net/can/cc770/Makefile
-index 872ecff..9fb8321 100644
---- a/drivers/net/can/cc770/Makefile
-+++ b/drivers/net/can/cc770/Makefile
-@@ -4,5 +4,6 @@
- 
- obj-$(CONFIG_CAN_CC770) += cc770.o
- obj-$(CONFIG_CAN_CC770_ISA) += cc770_isa.o
-+obj-$(CONFIG_CAN_CC770_PLATFORM) += cc770_platform.o
- 
- ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
-diff --git a/drivers/net/can/cc770/cc770_platform.c b/drivers/net/can/cc770/cc770_platform.c
-new file mode 100644
-index 0000000..53115ee
---- /dev/null
-+++ b/drivers/net/can/cc770/cc770_platform.c
-@@ -0,0 +1,272 @@
-+/*
-+ * Driver for CC770 and AN82527 CAN controllers on the platform bus
-+ *
-+ * Copyright (C) 2009, 2011 Wolfgang Grandegger <wg@grandegger.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+/*
-+ * If platform data are used you should have similar definitions
-+ * in your board-specific code:
-+ *
-+ *   static struct cc770_platform_data myboard_cc770_pdata = {
-+ *           .osc_freq = 16000000,
-+ *           .cir = 0x41,
-+ *           .cor = 0x20,
-+ *           .bcr = 0x40,
-+ *   };
-+ *
-+ * Please see include/linux/can/platform/cc770.h for description of
-+ * above fields.
-+ *
-+ * If the device tree is used, you need a CAN node definition in your
-+ * DTS file similar to:
-+ *
-+ *   can@3,100 {
-+ *           compatible = "bosch,cc770";
-+ *           reg = <3 0x100 0x80>;
-+ *           interrupts = <2 0>;
-+ *           interrupt-parent = <&mpic>;
-+ *           bosch,external-clock-frequency = <16000000>;
-+ *   };
-+ *
-+ * See "Documentation/devicetree/bindings/net/can/cc770.txt" for further
-+ * information.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/netdevice.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
-+#include <linux/of.h>
-+#include <linux/can.h>
-+#include <linux/can/dev.h>
-+#include <linux/can/platform/cc770.h>
-+
-+#include "cc770.h"
-+
-+#define DRV_NAME "cc770_platform"
-+
-+MODULE_AUTHOR("Wolfgang Grandegger <wg@grandegger.com>");
-+MODULE_DESCRIPTION("Socket-CAN driver for CC770 on the platform bus");
-+MODULE_LICENSE("GPL v2");
-+
-+#define CC770_PLATFORM_CAN_CLOCK  16000000
-+
-+static u8 cc770_platform_read_reg(const struct cc770_priv *priv, int reg)
-+{
-+	return ioread8(priv->reg_base + reg);
-+}
-+
-+static void cc770_platform_write_reg(const struct cc770_priv *priv, int reg,
-+				     u8 val)
-+{
-+	iowrite8(val, priv->reg_base + reg);
-+}
-+
-+static int __devinit cc770_get_of_node_data(struct platform_device *pdev,
-+					    struct cc770_priv *priv)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	const u32 *prop;
-+	int prop_size;
-+	u32 clkext;
-+
-+	prop = of_get_property(np, "bosch,external-clock-frequency",
-+			       &prop_size);
-+	if (prop && (prop_size ==  sizeof(u32)))
-+		clkext = *prop;
-+	else
-+		clkext = CC770_PLATFORM_CAN_CLOCK; /* default */
-+	priv->can.clock.freq = clkext;
-+
-+	/* The system clock may not exceed 10 MHz */
-+	if (priv->can.clock.freq > 10000000) {
-+		priv->cpu_interface |= CPUIF_DSC;
-+		priv->can.clock.freq /= 2;
-+	}
-+
-+	/* The memory clock may not exceed 8 MHz */
-+	if (priv->can.clock.freq > 8000000)
-+		priv->cpu_interface |= CPUIF_DMC;
-+
-+	if (of_get_property(np, "bosch,divide-memory-clock", NULL))
-+		priv->cpu_interface |= CPUIF_DMC;
-+	if (of_get_property(np, "bosch,iso-low-speed-mux", NULL))
-+		priv->cpu_interface |= CPUIF_MUX;
-+
-+	if (!of_get_property(np, "bosch,no-comperator-bypass", NULL))
-+		priv->bus_config |= BUSCFG_CBY;
-+	if (of_get_property(np, "bosch,disconnect-rx0-input", NULL))
-+		priv->bus_config |= BUSCFG_DR0;
-+	if (of_get_property(np, "bosch,disconnect-rx1-input", NULL))
-+		priv->bus_config |= BUSCFG_DR1;
-+	if (of_get_property(np, "bosch,disconnect-tx1-output", NULL))
-+		priv->bus_config |= BUSCFG_DT1;
-+	if (of_get_property(np, "bosch,polarity-dominant", NULL))
-+		priv->bus_config |= BUSCFG_POL;
-+
-+	prop = of_get_property(np, "bosch,clock-out-frequency", &prop_size);
-+	if (prop && (prop_size == sizeof(u32)) && *prop > 0) {
-+		u32 cdv = clkext / *prop;
-+		int slew;
-+
-+		if (cdv > 0 && cdv < 16) {
-+			priv->cpu_interface |= CPUIF_CEN;
-+			priv->clkout |= (cdv - 1) & CLKOUT_CD_MASK;
-+
-+			prop = of_get_property(np, "bosch,slew-rate",
-+					       &prop_size);
-+			if (prop && (prop_size == sizeof(u32))) {
-+				slew = *prop;
-+			} else {
-+				/* Determine default slew rate */
-+				slew = (CLKOUT_SL_MASK >>
-+					CLKOUT_SL_SHIFT) -
-+					((cdv * clkext - 1) / 8000000);
-+				if (slew < 0)
-+					slew = 0;
-+			}
-+			priv->clkout |= (slew << CLKOUT_SL_SHIFT) &
-+				CLKOUT_SL_MASK;
-+		} else {
-+			dev_dbg(&pdev->dev, "invalid clock-out-frequency\n");
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int __devinit cc770_get_platform_data(struct platform_device *pdev,
-+					     struct cc770_priv *priv)
-+{
-+
-+	struct cc770_platform_data *pdata = pdev->dev.platform_data;
-+
-+	priv->can.clock.freq = pdata->osc_freq;
-+	if (priv->cpu_interface | CPUIF_DSC)
-+		priv->can.clock.freq /= 2;
-+	priv->clkout = pdata->cor;
-+	priv->bus_config = pdata->bcr;
-+	priv->cpu_interface = pdata->cir;
-+
-+	return 0;
-+}
-+
-+static int __devinit cc770_platform_probe(struct platform_device *pdev)
-+{
-+	struct net_device *dev;
-+	struct cc770_priv *priv;
-+	struct resource *mem;
-+	resource_size_t mem_size;
-+	void __iomem *base;
-+	int err, irq;
-+
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	irq = platform_get_irq(pdev, 0);
-+	if (!mem || irq <= 0)
-+		return -ENODEV;
-+
-+	mem_size = resource_size(mem);
-+	if (!request_mem_region(mem->start, mem_size, pdev->name))
-+		return -EBUSY;
-+
-+	base = ioremap(mem->start, mem_size);
-+	if (!base) {
-+		err = -ENOMEM;
-+		goto exit_release_mem;
-+	}
-+
-+	dev = alloc_cc770dev(0);
-+	if (!dev) {
-+		err = -ENOMEM;
-+		goto exit_unmap_mem;
-+	}
-+
-+	dev->irq = irq;
-+	priv = netdev_priv(dev);
-+	priv->read_reg = cc770_platform_read_reg;
-+	priv->write_reg = cc770_platform_write_reg;
-+	priv->irq_flags = IRQF_SHARED;
-+	priv->reg_base = base;
-+
-+	if (pdev->dev.of_node)
-+		err = cc770_get_of_node_data(pdev, priv);
-+	else if (pdev->dev.platform_data)
-+		err = cc770_get_platform_data(pdev, priv);
-+	else
-+		err = -ENODEV;
-+	if (err)
-+		goto exit_free_cc770;
-+
-+	dev_dbg(&pdev->dev,
-+		 "reg_base=0x%p irq=%d clock=%d cpu_interface=0x%02x "
-+		 "bus_config=0x%02x clkout=0x%02x\n",
-+		 priv->reg_base, dev->irq, priv->can.clock.freq,
-+		 priv->cpu_interface, priv->bus_config, priv->clkout);
-+
-+	dev_set_drvdata(&pdev->dev, dev);
-+	SET_NETDEV_DEV(dev, &pdev->dev);
-+
-+	err = register_cc770dev(dev);
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"couldn't register CC700 device (err=%d)\n", err);
-+		goto exit_free_cc770;
-+	}
-+
-+	return 0;
-+
-+exit_free_cc770:
-+	free_cc770dev(dev);
-+exit_unmap_mem:
-+	iounmap(base);
-+exit_release_mem:
-+	release_mem_region(mem->start, mem_size);
-+
-+	return err;
-+}
-+
-+static int __devexit cc770_platform_remove(struct platform_device *pdev)
-+{
-+	struct net_device *dev = dev_get_drvdata(&pdev->dev);
-+	struct cc770_priv *priv = netdev_priv(dev);
-+	struct resource *mem;
-+
-+	unregister_cc770dev(dev);
-+	iounmap(priv->reg_base);
-+	free_cc770dev(dev);
-+
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	release_mem_region(mem->start, resource_size(mem));
-+
-+	return 0;
-+}
-+
-+static struct of_device_id __devinitdata cc770_platform_table[] = {
-+	{.compatible = "bosch,cc770"}, /* CC770 from Bosch */
-+	{.compatible = "intc,82527"},  /* AN82527 from Intel CP */
-+	{},
-+};
-+
-+static struct platform_driver cc770_platform_driver = {
-+	.driver = {
-+		.name = DRV_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = cc770_platform_table,
-+	},
-+	.probe = cc770_platform_probe,
-+	.remove = __devexit_p(cc770_platform_remove),
-+};
-+
-+module_platform_driver(cc770_platform_driver);
--- 
-1.7.4.1
+My driver behaviour is not the same whether launching one or the
+other. It is hard to explain more precisely, as it deals only with
+ioctl which only does ioread32/iowrite32 on a PCIe device.
+But I can tell that it never works the same way when UP (not working
+correctly), or SMP "nosmp" (working) or even SMP (not working).
+
+AFAIK, the "nosmp" parameter should tell the kernel to act the same is
+if it is an UP kernel, and it disables IO APIC, which is not an issue
+in my case.
+
+Can you think about anything that would explain it, or would help me
+debugging it ?
+
+Thanks in advance for your help.
+Regards,
+JM
