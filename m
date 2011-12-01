@@ -1,22 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 31825B6F6F
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 02:56:48 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Jean-Michel Hautbois <jhautbois@gmail.com>
-Subject: Re: Different behaviour when using "nosmp" parameter on SMP and UP
-Date: Thu, 1 Dec 2011 15:56:41 +0000
-Message-ID: <CAOZdJXVq_g=GAJLRsHZ+290cAJfpOx0LX3sBL3T5i0CaG+xh9Q@mail.gmail.com>
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+ [209.85.161.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 54CE1B6F6F
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 03:15:20 +1100 (EST)
+Received: by faat2 with SMTP id t2so1493062faa.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 01 Dec 2011 08:15:16 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <CAOZdJXVq_g=GAJLRsHZ+290cAJfpOx0LX3sBL3T5i0CaG+xh9Q@mail.gmail.com>
 References: <CAL8zT=juU_PC92R4za31R8Lmur0PrFwog1m1fk+PEarW_0C6ng@mail.gmail.com>
  <D70E8CC4-9FA3-4DC9-B623-02F32EFBFE0F@kernel.crashing.org>
  <CAL8zT=gGfBYsLcsKobJPhfhEhNeLcrYMoWh2kv0odT0n0wnZgQ@mail.gmail.com>
-In-Reply-To: <CAL8zT=gGfBYsLcsKobJPhfhEhNeLcrYMoWh2kv0odT0n0wnZgQ@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
+ <CAOZdJXVq_g=GAJLRsHZ+290cAJfpOx0LX3sBL3T5i0CaG+xh9Q@mail.gmail.com>
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+Date: Thu, 1 Dec 2011 17:14:55 +0100
+Message-ID: <CAL8zT=hK2rDDC7s+SkvCA=C5LjVX+5oRQmP+KQet2mkFEnaKKw@mail.gmail.com>
+Subject: Re: Different behaviour when using "nosmp" parameter on SMP and UP
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,14 +29,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 1, 2011 at 9:04 AM, Jean-Michel Hautbois
-<jhautbois@gmail.com> wrote:
+2011/12/1 Tabi Timur-B04825 <B04825@freescale.com>:
+> On Thu, Dec 1, 2011 at 9:04 AM, Jean-Michel Hautbois
+> <jhautbois@gmail.com> wrote:
+>>
+>> Any idea on how to debug this ? I am using a 2.6.35 kernel.
 >
-> Any idea on how to debug this ? I am using a 2.6.35 kernel.
+> There are a ton of Kconfig options for debugging various locking bugs.
+> =C2=A0Try turning them on.
+>
 
-There are a ton of Kconfig options for debugging various locking bugs.
- Try turning them on.
+And when I do that, it works, even in SMP... :).
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+JM
