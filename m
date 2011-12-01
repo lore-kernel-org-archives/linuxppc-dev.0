@@ -1,18 +1,14 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Thu, 1 Dec 2011 12:11:49 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/6] 44x/pci: Continue pci setup even if there is no
- sdr-base in the device-tree
-Message-ID: <20111201011149.GE15560@thor.bakeyournoodle.com>
-References: <1322630640-13708-1-git-send-email-tony@bakeyournoodle.com>
- <1322630640-13708-2-git-send-email-tony@bakeyournoodle.com>
- <1322631973.21641.42.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Q8BnQc91gJZX4vDc"
-In-Reply-To: <1322631973.21641.42.camel@pasglop>
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <anton@samba.org>
+Date: Thu, 1 Dec 2011 12:46:45 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, hbabu@us.ibm.com,
+ jkenisto@us.ibm.com
+Subject: [PATCH] powerpc/nvram: Add spinlock to oops_to_nvram to prevent
+ oops in compression code.
+Message-ID: <20111201124645.24c6e54f@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +19,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---Q8BnQc91gJZX4vDc
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+When issuing a system reset we almost always oops in the oops_to_nvram
+code because multiple CPUs are using the deflate work area. Add a
+spinlock to protect it.
 
-On Wed, Nov 30, 2011 at 04:46:13PM +1100, Benjamin Herrenschmidt wrote:
+To play it safe I'm using trylock to avoid locking up if the NVRAM
+code oopses. This means we might miss multiple CPUs oopsing at exactly
+the same time but I think it's best to play it safe for now. Once we
+are happy with the reliability we can change it to a full spinlock.
 
-> If you don't expect an sdr-base as part of the normal operations of that
-> bridge, don't bring a message that makes me think something is wrong :-)
->=20
-> Just changing the severity isn't enough. you should just remove the
-> message and later on, print/warn/error out if you decide you actually
-> need an sdr-base (such as in the backend).
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Okay no problem.
-
-Yours Tony
-
---Q8BnQc91gJZX4vDc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO1tRVAAoJEEsCiJRY75GKRpYQALlJS4hxXvsG5rMm9WtJ69VJ
-oo3b6RiaWLf2weD/3W1wqrQGHdRtsl/ZeqpPGE6wfGvF/X+S1iQgzsnlV3BA0pwh
-VR6cUm68l47ipqosZjrivUxr3avGq8jJsfRhl6UuzMis1QTTo3IGKCuyrkuMrrcb
-3L6lPVMP1jwYM2DE7xKjPzEZyZIn3qMaFXlvJU+auIh2i1OmNed34bT938J5b+UB
-im9++Px3xSOlsKGXBbooriBztoNl1Sh493vMbObBQzxHIv0T2TBcNd1S9aV+GjQq
-Xyhm1FjY6+xRS7CDqScYJ2D09GGDuqQ4tveZoQ6sueFC2d748F9p1OurY/AfV+fq
-UWz4905Ia13YQQyhS3m9lL18yNZ5XTGUqLL9IiarkUwwywkpB/rlj+biP78U+Yyj
-w/2ipvzkAiP6GgsBpOjWWbVDcpEYnHzmQWczdUzxVoLGxLbOGgrOkbbLQ2Tg0d/e
-l2qqSVoLJyLcTUsGWihLYMoCg1ObMZbGmazeOyN4PiglGa1SiA2Qt0qNX8oZ2Oh/
-F3wRoC1JtplkdDbEGaKa5HRNb2H9xV4ZBaqD7v8sYLEdyOTBDgZDQ1yD1gCNSKXy
-jO7i3+J4bic3C8HNa8OuL2tpVOV/aJma4PBLmGsuqLwatDQOQHKj5yXyLxgGcal1
-Gp4JeQIOs3F7KDP3RboC
-=eNkw
------END PGP SIGNATURE-----
-
---Q8BnQc91gJZX4vDc--
+Index: linux-build/arch/powerpc/platforms/pseries/nvram.c
+===================================================================
+--- linux-build.orig/arch/powerpc/platforms/pseries/nvram.c	2011-12-01 09:44:27.205568463 +1100
++++ linux-build/arch/powerpc/platforms/pseries/nvram.c	2011-12-01 12:36:49.334478156 +1100
+@@ -634,6 +634,8 @@ static void oops_to_nvram(struct kmsg_du
+ {
+ 	static unsigned int oops_count = 0;
+ 	static bool panicking = false;
++	static DEFINE_SPINLOCK(lock);
++	unsigned long flags;
+ 	size_t text_len;
+ 	unsigned int err_type = ERR_TYPE_KERNEL_PANIC_GZ;
+ 	int rc = -1;
+@@ -664,6 +666,9 @@ static void oops_to_nvram(struct kmsg_du
+ 	if (clobbering_unread_rtas_event())
+ 		return;
+ 
++	if (!spin_trylock_irqsave(&lock, flags))
++		return;
++
+ 	if (big_oops_buf) {
+ 		text_len = capture_last_msgs(old_msgs, old_len,
+ 			new_msgs, new_len, big_oops_buf, big_oops_buf_sz);
+@@ -679,4 +684,6 @@ static void oops_to_nvram(struct kmsg_du
+ 
+ 	(void) nvram_write_os_partition(&oops_log_partition, oops_buf,
+ 		(int) (sizeof(*oops_len) + *oops_len), err_type, ++oops_count);
++
++	spin_unlock_irqrestore(&lock, flags);
+ }
