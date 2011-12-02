@@ -1,26 +1,33 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
- [209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C282AB6F64
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 12:32:18 +1100 (EST)
-Received: by bkcjk13 with SMTP id jk13so904733bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2011 17:32:13 -0800 (PST)
-MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <20111202005150.2e9fde43@bob.linux.org.uk>
-References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
- <1322783258-20443-2-git-send-email-paul.gortmaker@windriver.com>
- <20111202005150.2e9fde43@bob.linux.org.uk>
-Date: Thu, 1 Dec 2011 20:32:13 -0500
-Message-ID: <CAP=VYLpn7kJJ6we3diqhCR+QzjQtzTmkEzSP-uw07=udJKYK6g@mail.gmail.com>
-Subject: Re: [PATCH 1/3] serial: make bugs field not specific to 8250 type
- uarts.
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Alan Cox <alan@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
- scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <jkenisto@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 8D97BB6F67
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 12:37:09 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jkenisto@linux.vnet.ibm.com>;
+ Thu, 1 Dec 2011 18:37:06 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pB21b3RR127948
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2011 18:37:04 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pB21b3s3007755
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2011 18:37:03 -0700
+Subject: Re: [PATCH] powerpc/nvram: Add spinlock to oops_to_nvram to
+ prevent oops in compression code.
+From: Jim Keniston <jkenisto@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20111201124645.24c6e54f@kryten>
+References: <20111201124645.24c6e54f@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 01 Dec 2011 17:37:02 -0800
+Message-ID: <1322789822.3035.2.camel@localhost>
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 1, 2011 at 7:51 PM, Alan Cox <alan@linux.intel.com> wrote:
->> Make the bugs field part of the globally visible struct
->> uart_port and remove the 8250 specific one.
->
-> Except all the bits in it are 8250 specific things or names that are
-> meaningless in generic form - no. I also don't want to encourage flags
-> and bug bits. We already have too many and its making the code a mess.
-> So right now we want less not more.
+On Thu, 2011-12-01 at 12:46 +1100, Anton Blanchard wrote:
+> When issuing a system reset we almost always oops in the oops_to_nvram
+> code because multiple CPUs are using the deflate work area. Add a
+> spinlock to protect it.
+> 
+> To play it safe I'm using trylock to avoid locking up if the NVRAM
+> code oopses. This means we might miss multiple CPUs oopsing at exactly
+> the same time but I think it's best to play it safe for now. Once we
+> are happy with the reliability we can change it to a full spinlock.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-The bits in "bugs" are only passed through -- the idea is that there is
-no "interpretation" of them by any generic layer -- only that they prop
-from the arch down to the driver which knows what they mean.
+Acked-by: Jim Keniston <jkenisto@us.ibm.com>
 
-I can understand the "want less not more" mentality -- I was thinking
-the same thing when I was looking at the replication of fields between
-uart_port and uart_8250_port, and toying with the idea of helping clean
-that up....  (separate topic, to be sure.)
-
-If you have an idea in mind how arch/platform code should cleanly
-pass data about known uart bugs to the uart driver, then let me know
-what you have in mind.  I've no real attachment to what I proposed
-here -- it just happened to be the solution I thought would be the least
-offensive.  If there is a better idea floating around, I'll go ahead and
-try to implement it.
-
-Thanks,
-Paul.
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-serial" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> ---
+> 
+> Index: linux-build/arch/powerpc/platforms/pseries/nvram.c
+> ===================================================================
+> --- linux-build.orig/arch/powerpc/platforms/pseries/nvram.c	2011-12-01 09:44:27.205568463 +1100
+> +++ linux-build/arch/powerpc/platforms/pseries/nvram.c	2011-12-01 12:36:49.334478156 +1100
+> @@ -634,6 +634,8 @@ static void oops_to_nvram(struct kmsg_du
+>  {
+>  	static unsigned int oops_count = 0;
+>  	static bool panicking = false;
+> +	static DEFINE_SPINLOCK(lock);
+> +	unsigned long flags;
+>  	size_t text_len;
+>  	unsigned int err_type = ERR_TYPE_KERNEL_PANIC_GZ;
+>  	int rc = -1;
+> @@ -664,6 +666,9 @@ static void oops_to_nvram(struct kmsg_du
+>  	if (clobbering_unread_rtas_event())
+>  		return;
+> 
+> +	if (!spin_trylock_irqsave(&lock, flags))
+> +		return;
+> +
+>  	if (big_oops_buf) {
+>  		text_len = capture_last_msgs(old_msgs, old_len,
+>  			new_msgs, new_len, big_oops_buf, big_oops_buf_sz);
+> @@ -679,4 +684,6 @@ static void oops_to_nvram(struct kmsg_du
+> 
+>  	(void) nvram_write_os_partition(&oops_log_partition, oops_buf,
+>  		(int) (sizeof(*oops_len) + *oops_len), err_type, ++oops_count);
+> +
+> +	spin_unlock_irqrestore(&lock, flags);
+>  }
+> 
