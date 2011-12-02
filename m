@@ -1,22 +1,20 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
- [209.85.214.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 94BB9B6F67
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 11:41:59 +1100 (EST)
-Received: by bkcjm19 with SMTP id jm19so1332776bkc.15
- for <linuxppc-dev@ozlabs.org>; Thu, 01 Dec 2011 16:41:54 -0800 (PST)
-MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <1322510541-30688-1-git-send-email-galak@kernel.crashing.org>
-References: <1322510541-30688-1-git-send-email-galak@kernel.crashing.org>
-Date: Thu, 1 Dec 2011 19:41:54 -0500
-Message-ID: <CAP=VYLr406SnYQr5uf3aFwdteyCESxQpW=HBZQHNffh3s=YKvw@mail.gmail.com>
-Subject: Re: [RFC][PATCH] update FSL 16550 nodes to have...
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <alan@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 70905B6F69
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 11:50:05 +1100 (EST)
+Date: Fri, 2 Dec 2011 00:51:50 +0000
+From: Alan Cox <alan@linux.intel.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH 1/3] serial: make bugs field not specific to 8250 type
+ uarts.
+Message-ID: <20111202005150.2e9fde43@bob.linux.org.uk>
+In-Reply-To: <1322783258-20443-2-git-send-email-paul.gortmaker@windriver.com>
+References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
+ <1322783258-20443-2-git-send-email-paul.gortmaker@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +24,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 28, 2011 at 3:02 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> * Need to fixup the commit message
+> Make the bugs field part of the globally visible struct
+> uart_port and remove the 8250 specific one.
 
-I had this written when I was thinking of re-sending the dts
-with the other three, that is before I realized the dts patch
-would then overwhelm the other patches completely.  :)
-
-P.
-
-----------------
-    ppc: update FSL 16550 nodes to have fsl,ns16550 compat entry
-
-    There is an errata relating to break handling on some of
-    the Freescale 16550 implementations.  By marking the nodes
-    with a fsl prefix, we can use that to know when to enable
-    the errata handling.
-----------------
+Except all the bits in it are 8250 specific things or names that are
+meaningless in generic form - no. I also don't want to encourage flags
+and bug bits. We already have too many and its making the code a mess.
+So right now we want less not more.
