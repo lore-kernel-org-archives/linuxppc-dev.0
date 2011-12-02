@@ -1,33 +1,26 @@
-Return-Path: <jkenisto@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 8D97BB6F67
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 12:37:09 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jkenisto@linux.vnet.ibm.com>;
- Thu, 1 Dec 2011 18:37:06 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pB21b3RR127948
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2011 18:37:04 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pB21b3s3007755
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2011 18:37:03 -0700
-Subject: Re: [PATCH] powerpc/nvram: Add spinlock to oops_to_nvram to
- prevent oops in compression code.
-From: Jim Keniston <jkenisto@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20111201124645.24c6e54f@kryten>
-References: <20111201124645.24c6e54f@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 01 Dec 2011 17:37:02 -0800
-Message-ID: <1322789822.3035.2.camel@localhost>
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+ [209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 5802DB6F64
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 12:42:17 +1100 (EST)
+Received: by bkcjk13 with SMTP id jk13so914821bkc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2011 17:42:13 -0800 (PST)
+MIME-Version: 1.0
+Sender: paul.gortmaker@gmail.com
+In-Reply-To: <20111202005752.10ce5eea@bob.linux.org.uk>
+References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
+ <1322783258-20443-4-git-send-email-paul.gortmaker@windriver.com>
+ <20111202005752.10ce5eea@bob.linux.org.uk>
+Date: Thu, 1 Dec 2011 20:42:13 -0500
+Message-ID: <CAP=VYLqG_+-vksaVLO5kPbj6qRUKK9z6AcEQOFnCgoPGrO2crg@mail.gmail.com>
+Subject: Re: [PATCH 3/3] 8250: add workaround for MPC8[356]xx UART break IRQ
+ storm
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Alan Cox <alan@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,50 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-12-01 at 12:46 +1100, Anton Blanchard wrote:
-> When issuing a system reset we almost always oops in the oops_to_nvram
-> code because multiple CPUs are using the deflate work area. Add a
-> spinlock to protect it.
-> 
-> To play it safe I'm using trylock to avoid locking up if the NVRAM
-> code oopses. This means we might miss multiple CPUs oopsing at exactly
-> the same time but I think it's best to play it safe for now. Once we
-> are happy with the reliability we can change it to a full spinlock.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+On Thu, Dec 1, 2011 at 7:57 PM, Alan Cox <alan@linux.intel.com> wrote:
+>
+>> @@ -1553,7 +1554,15 @@ static void serial8250_handle_port(struct
+>> uart_8250_port *up)
+>> =A0 =A0 =A0 spin_lock_irqsave(&up->port.lock, flags);
+>>
+>> - =A0 =A0 status =3D serial_inp(up, UART_LSR);
+>> + =A0 =A0 /* Workaround for IRQ storm errata on break with Freescale
+>> 16550 */
+>> + =A0 =A0 if (UART_BUG_FSLBK & up->port.bugs && up->lsr_last &
+>> UART_LSR_BI) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 up->lsr_last &=3D ~UART_LSR_BI;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 serial_inp(up, UART_RX);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 spin_unlock_irqrestore(&up->port.lock, flags);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return;
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 status =3D up->lsr_last =3D serial_inp(up, UART_LSR);
+>
+> We've now had a recent pile of IRQ function changes adding more quirk
+> bits and special casing. This doesn't scale. We either need to make
+> handle_port a method the specific drivers can override or you could
+> hide the mess in your serial_inp implementation and not touch any core
+> code.
 
-Acked-by: Jim Keniston <jkenisto@us.ibm.com>
+To be fair, this one is zero cost for !PPC, but I understand your point,
+and the idea of hiding it somehow in serial_inp was something that
+never crossed my mind.  I'll look into seeing if I can abuse that.
 
-> ---
-> 
-> Index: linux-build/arch/powerpc/platforms/pseries/nvram.c
-> ===================================================================
-> --- linux-build.orig/arch/powerpc/platforms/pseries/nvram.c	2011-12-01 09:44:27.205568463 +1100
-> +++ linux-build/arch/powerpc/platforms/pseries/nvram.c	2011-12-01 12:36:49.334478156 +1100
-> @@ -634,6 +634,8 @@ static void oops_to_nvram(struct kmsg_du
->  {
->  	static unsigned int oops_count = 0;
->  	static bool panicking = false;
-> +	static DEFINE_SPINLOCK(lock);
-> +	unsigned long flags;
->  	size_t text_len;
->  	unsigned int err_type = ERR_TYPE_KERNEL_PANIC_GZ;
->  	int rc = -1;
-> @@ -664,6 +666,9 @@ static void oops_to_nvram(struct kmsg_du
->  	if (clobbering_unread_rtas_event())
->  		return;
-> 
-> +	if (!spin_trylock_irqsave(&lock, flags))
-> +		return;
-> +
->  	if (big_oops_buf) {
->  		text_len = capture_last_msgs(old_msgs, old_len,
->  			new_msgs, new_len, big_oops_buf, big_oops_buf_sz);
-> @@ -679,4 +684,6 @@ static void oops_to_nvram(struct kmsg_du
-> 
->  	(void) nvram_write_os_partition(&oops_log_partition, oops_buf,
->  		(int) (sizeof(*oops_len) + *oops_len), err_type, ++oops_count);
-> +
-> +	spin_unlock_irqrestore(&lock, flags);
->  }
-> 
+>
+> I really don't mind which but I suspect dealing with it in your
+> serial_inp handler so that when you read UART_LSR you do the fixup
+> might be simplest providing you can just do that.
+>
+> Sorting out a ->handle_port override is probably ultimately the right
+> thing to do and then we can push some of the other funnies out further.
+>
+> At this point it's becoming increasingly clear that 8250 UART cloners
+> are both very bad at cloning the things accurately, and very busy adding
+> extra useful features so we need to start to treat 8250.c as a library
+> you can wrap.
+
+Sad but true.  It is like a time warp back to lib8390.c  --- whee.
+
+P.
+
+>
+> Alan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-serial" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
