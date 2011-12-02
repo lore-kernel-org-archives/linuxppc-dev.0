@@ -1,22 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
- [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 65D48B6F69
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 22:52:46 +1100 (EST)
-Received: by vbbfp1 with SMTP id fp1so2353763vbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Dec 2011 03:52:39 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <CAOesGMgkh-OzyRH_O+2TT7AzhY0bHWazua9s6Mj9qmb174DANw@mail.gmail.com>
-References: <1322804108.3729.50.camel@pasglop>
- <CAOesGMgkh-OzyRH_O+2TT7AzhY0bHWazua9s6Mj9qmb174DANw@mail.gmail.com>
-Date: Fri, 2 Dec 2011 06:52:39 -0500
-Message-ID: <CA+5PVA7M3U5y8Ua+2UozOpG4ObcFttNTQO__g_p34swirdgdDg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Add support for OpenBlockS 600
-From: Josh Boyer <jwboyer@gmail.com>
-To: Olof Johansson <olof@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <acrux_it@libero.it>
+Received: from outrelay07.libero.it (outrelay07.libero.it [212.52.84.111])
+ by ozlabs.org (Postfix) with ESMTP id 53F56B6F64
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2011 01:48:41 +1100 (EST)
+Date: Fri, 2 Dec 2011 15:48:33 +0100
+From: acrux <acrux_it@libero.it>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: sam460ex, sm501 incorrect device id with kernel >=linux-2.6.39
+Message-Id: <20111202154833.72c75615.acrux_it@libero.it>
+In-Reply-To: <20111128212224.2bd66125@wker>
+References: <20111127173748.9f235741.acrux_it@libero.it>
+ <CA+5PVA592G1RVdj_C+NMFQ8nHx=0-eaF9Hn3NZ8VabpCTQGi1Q@mail.gmail.com>
+ <20111128205655.fc4d3249.acrux_it@libero.it>
+ <20111128212224.2bd66125@wker>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 2, 2011 at 1:40 AM, Olof Johansson <olof@lixom.net> wrote:
-> Hi,
->
-> On Thu, Dec 1, 2011 at 9:35 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->
->> =A0arch/powerpc/boot/dts/obs600.dts =A0 =A0 =A0 =A0 =A0 | =A0314 +++++++=
-+++++++++++++++++++++
->
-> It'd be nice to have dtsi files for the SoCs, there's a lot of boiler
-> plate in there. That shouldn't hold up this specific patch though.
+On Mon, 28 Nov 2011 21:22:24 +0100
+Anatolij Gustschin <agust@denx.de> wrote:
 
-That sounds like a cleanup project for me.  I just need to figure out
-how they work and find time.
+> On Mon, 28 Nov 2011 20:56:55 +0100
+> acrux <acrux_it@libero.it> wrote:
+> ...
+> > it seems to be an endianess issue but i didn't find when it was
+> > introduced.  Really strange this kind of issue was never noticed
+> > bumping from 2.6.38.x to 2.6.39.x .
+> 
+> Look at commit bf5f0019046d596d613caf74722ba4994e153899
+> (video, sm501: add I/O functions for use on powerpc).
+> This is the issue, I think. Especially changes in
+> include/linux/sm501.h by this commit. Since CONFIG_PPC32 is defined
+> for canyonlands, ioread32be() is used to access the registers at PCI
+> space which is wrong. The patch was tested on tqm5200 with sm501
+> connected on localbus, so using ioread32be() worked there. Your sm502
+> is on PCI bus I suppose. This issue needs to be fixed.
+> 
 
->> =A0arch/powerpc/boot/wrapper =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 22=
- ++-
->> =A0arch/powerpc/configs/40x/obs600_defconfig =A0| =A0 83 ++++++++
->
-> A new single-board defconfig? On arm that is a strong NACK, I'd say
-> it's a bad idea on powerpc as well.
 
-I like them.  Particularly when they're the output of savedefconfig.
+well, the commit suggested is this one:
+http://git.kernel.org/?p=linux/kernel/git/next/linux-next.git;a=commitdiff;h=bf5f0019046d596d613caf74722ba4994e153899
 
-josh
+
+This little hack fix my problem:
+--- a/inlcude/linux/sm501.h	2011-12-02 01:11:04.000000000 +0100
++++ b/include/linux/sm501.h	2011-12-02 01:11:09.000000000 +0100
+@@ -174,8 +174,8 @@
+ };
+ 
+ #if defined(CONFIG_PPC32)
+-#define smc501_readl(addr)		ioread32be((addr))
+-#define smc501_writel(val, addr)	iowrite32be((val), (addr))
++#define smc501_readl(addr)		ioread32((addr))
++#define smc501_writel(val, addr)	iowrite32((val), (addr))
+ #else
+ #define smc501_readl(addr)		readl(addr)
+ #define smc501_writel(val, addr)	writel(val, addr)
+
+
+but instead, why am I obliged to read it as little endian to have the correct value? 
+
+thanks for your help,
+--nico
+-- 
+GNU/Linux on Power Architecture
+CRUX PPC - http://cruxppc.org/
