@@ -1,24 +1,30 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 943081007D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2011 03:34:36 +1100 (EST)
-Message-ID: <4ED8FE14.7020007@windriver.com>
-Date: Fri, 2 Dec 2011 11:34:28 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 8E164B6F75
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2011 04:13:39 +1100 (EST)
+Date: Fri, 2 Dec 2011 09:13:35 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Shi Xuelin-B29237 <B29237@freescale.com>
+Subject: Re: [PATCH][RFC] fsldma: fix performance degradation by optimizing
+ spinlock use.
+Message-ID: <20111202171334.GA19677@ovro.caltech.edu>
+References: <1321937705-19587-1-git-send-email-b29237@freescale.com>
+ <20111122185924.GA23323@ovro.caltech.edu>
+ <DBB740589CE8814680DECFE34BE197AB148CDD@039-SN1MPN1-006.039d.mgd.msft.net>
+ <20111128163814.GA10919@ovro.caltech.edu>
+ <3F607A5180246847A760FD34122A1E052E07B7@039-SN1MPN1-003.039d.mgd.msft.net>
+ <20111129172539.GB15331@ovro.caltech.edu>
+ <DBB740589CE8814680DECFE34BE197AB14A1E0@039-SN1MPN1-006.039d.mgd.msft.net>
+ <20111130170737.GA25892@ovro.caltech.edu>
+ <DBB740589CE8814680DECFE34BE197AB14BCBC@039-SN1MPN1-006.039d.mgd.msft.net>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 3/3] 8250: add workaround for MPC8[356]xx UART break IRQ
- storm
-References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>	<1322783258-20443-4-git-send-email-paul.gortmaker@windriver.com>	<4ED812E4.60905@freescale.com>	<4ED81632.3030809@windriver.com>	<176AE2A1-6AA2-4F14-942F-8ED77AB1DBEC@kernel.crashing.org>
- <20111202113059.15d73840@lxorguk.ukuu.org.uk>
-In-Reply-To: <20111202113059.15d73840@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- alan@linux.intel.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DBB740589CE8814680DECFE34BE197AB14BCBC@039-SN1MPN1-006.039d.mgd.msft.net>
+Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +34,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11-12-02 06:30 AM, Alan Cox wrote:
->>> OK, I'll simply change the above to CONFIG_PPC then.
->>
->> It does, the bug is in the uart IP which I don't think we ever plan on fixing, so 32 or 64-bit parts will have it for ever and ever ;)
+On Fri, Dec 02, 2011 at 03:47:27AM +0000, Shi Xuelin-B29237 wrote:
+> Hi Iris,
 > 
-> It should be runtime selected, there should be no ifdefs here.
-
-The ifdef wasn't strictly required; it just made it so gcc would
-toss the errata code out of the irq handler for !PPC.  Anyway it
-will be a moot point if I can somehow hide all the mess by snooping
-serial_inp() traffic and deploying the errata fix from there....
-
-P.
-
+> >I'm convinced that "smp_rmb()" is needed when removing the spinlock. As noted, Documentation/memory-barriers.txt says that stores on one CPU can be
+> >observed by another CPU in a different order.
+> >Previously, there was an UNLOCK (in fsl_dma_tx_submit) followed by a LOCK (in fsl_tx_status). This provided a "full barrier", forcing the operations to 
+> >complete correctly when viewed by the second CPU. 
 > 
+> I do not agree this smp_rmb() works here. Because when this smp_rmb() executed and begin to read chan->common.cookie, you still cannot avoid the order issue. Something like one is reading old value, but another CPU is updating the new value. 
+> 
+> My point is here the order is not important for the DMA decision.
+> Completed DMA tx is decided as not complete is not a big deal, because next time it will be OK.
+> 
+> I believe there is no case that could cause uncompleted DMA tx is decided as completed, because the fsl_tx_status is called after fsl_dma_tx_submit for a specific cookie. If you can give me an example here, I will agree with you.
+> 
+
+According to memory-barriers.txt, writes to main memory may be observed in
+any order if memory barriers are not used. This means that writes can
+appear to happen in a different order than they were issued by the CPU.
+
+Citing from the text:
+
+> There are certain things that the Linux kernel memory barriers do not guarantee:
+>
+>  (*) There is no guarantee that any of the memory accesses specified before a
+>      memory barrier will be _complete_ by the completion of a memory barrier
+>      instruction; the barrier can be considered to draw a line in that CPU's
+>      access queue that accesses of the appropriate type may not cross.
+
+Also:
+
+> Without intervention, CPU 2 may perceive the events on CPU 1 in some
+> effectively random order, despite the write barrier issued by CPU 1:
+
+Also:
+
+> When dealing with CPU-CPU interactions, certain types of memory barrier should
+> always be paired.  A lack of appropriate pairing is almost certainly an error.
+>
+> A write barrier should always be paired with a data dependency barrier or read
+> barrier, though a general barrier would also be viable.
+
+Therefore, in an SMP system, the following situation can happen.
+
+descriptor->cookie = 2
+chan->common.cookie = 1
+chan->completed_cookie = 1
+
+This occurs when CPU-A calls fsl_dma_tx_submit() and then CPU-B calls
+dma_async_is_complete() ***after*** CPU-B has observed the write to
+descriptor->cookie, and ***before*** before CPU-B has observed the write to
+chan->common.cookie.
+
+Remember, without barriers, CPU-B can observe CPU-A's memory accesses in
+*any possible order*. Memory accesses are not guaranteed to be *complete*
+by the time fsl_dma_tx_submit() returns!
+
+With the above values, dma_async_is_complete() returns DMA_COMPLETE. This
+is incorrect: the DMA is still in progress. The required invariant
+chan->common.cookie >= descriptor->cookie has not been met.
+
+By adding an smp_rmb(), I force CPU-B to stall until *both* stores in
+fsl_dma_tx_submit() (descriptor->cookie and chan->common.cookie) actually
+hit main memory. This avoids the above situation: all CPU's observe
+descriptor->cookie and chan->common.cookie to update in sync with each
+other.
+
+Is this unclear in any way?
+
+Please run your test with the smp_rmb() and measure the performance
+impact.
+
+Ira
