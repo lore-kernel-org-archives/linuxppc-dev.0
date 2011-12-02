@@ -1,29 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
- [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B11780@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C4C8CB6F75
- for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2011 09:34:55 +1100 (EST)
-Received: from mail90-am1 (localhost [127.0.0.1])	by mail90-am1-R.bigfish.com
- (Postfix) with ESMTP id CFEFB6404DC	for <linuxppc-dev@ozlabs.org>;
- Fri,  2 Dec 2011 22:34:50 +0000 (UTC)
-Received: from AM1EHSMHS014.bigfish.com (unknown [10.3.201.252])	by
- mail90-am1.bigfish.com (Postfix) with ESMTP id 6BA73540042	for
- <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 22:34:50 +0000 (UTC)
-Message-ID: <4ED95287.1010606@freescale.com>
-Date: Fri, 2 Dec 2011 16:34:47 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id D6ECEB6F75
+ for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2011 10:03:38 +1100 (EST)
+Received: from mail44-tx2 (localhost [127.0.0.1])	by mail44-tx2-R.bigfish.com
+ (Postfix) with ESMTP id 579886801D1	for <linuxppc-dev@ozlabs.org>;
+ Fri,  2 Dec 2011 23:03:35 +0000 (UTC)
+Received: from TX2EHSMHS037.bigfish.com (unknown [10.9.14.235])	by
+ mail44-tx2.bigfish.com (Postfix) with ESMTP id 3EC2A60024D	for
+ <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2011 23:03:34 +0000 (UTC)
 Subject: Re: [PATCH 2/2] powerpc/85xx: add a 32-bit P1022DS device tree
+MIME-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1322863714-6818-2-git-send-email-timur@freescale.com>
+Date: Fri, 2 Dec 2011 17:03:33 -0600
+Message-ID: <D5BD2D7D-4549-42A7-8BA6-9B3C84DB5E85@freescale.com>
 References: <1322863714-6818-1-git-send-email-timur@freescale.com>
  <1322863714-6818-2-git-send-email-timur@freescale.com>
- <4ED94EF5.2090406@freescale.com> <4ED95006.9010301@freescale.com>
-In-Reply-To: <4ED95006.9010301@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,23 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/02/2011 04:24 PM, Timur Tabi wrote:
-> Scott Wood wrote:
-> 
->> Please add something after post to strip simple-bus off of the localbus
->> node's compatible.  Either you have board-control@0,0, or you have the
->> other stuff (did you ever find out what the situation with NAND is?) --
->> not both at the same time.  Or do you have U-Boot patching in status
->> updates now?
-> 
-> I posted a Linux patch that disables the NOR flash node if video needs to be enabled. 
-> 
-> http://patchwork.ozlabs.org/patch/126459/
-> 
-> However, I only now notice that Kumar requested some changes.
 
-Nothing that happens in Linux excuses handing Linux a device tree that
-is wrong.  That you need special handling in Linux indicates that this
-is not a simple-bus.
+On Dec 2, 2011, at 4:08 PM, Timur Tabi wrote:
 
--Scott
+> Add a 32-bit version of the device tree for the Freescale P1022DS =
+reference
+> board.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> arch/powerpc/boot/dts/p1022ds_32b.dts |  270 =
++++++++++++++++++++++++++++++++++
+> 1 files changed, 270 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/p1022ds_32b.dts
+
+look at how mpc8572ds handles 36b.dts we put common definitions in a =
+shared file.
+
+- k=
