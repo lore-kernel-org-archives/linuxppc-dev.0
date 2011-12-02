@@ -1,26 +1,22 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from earthlight.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
- [81.2.110.250])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F325CB6F67
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 22:47:58 +1100 (EST)
-Date: Fri, 2 Dec 2011 11:49:30 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH 1/3] serial: make bugs field not specific to 8250 type
- uarts.
-Message-ID: <20111202114930.74b65569@lxorguk.ukuu.org.uk>
-In-Reply-To: <CAP=VYLpn7kJJ6we3diqhCR+QzjQtzTmkEzSP-uw07=udJKYK6g@mail.gmail.com>
-References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
- <1322783258-20443-2-git-send-email-paul.gortmaker@windriver.com>
- <20111202005150.2e9fde43@bob.linux.org.uk>
- <CAP=VYLpn7kJJ6we3diqhCR+QzjQtzTmkEzSP-uw07=udJKYK6g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
- scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Alan Cox <alan@linux.intel.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+ [209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 65D48B6F69
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2011 22:52:46 +1100 (EST)
+Received: by vbbfp1 with SMTP id fp1so2353763vbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Dec 2011 03:52:39 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <CAOesGMgkh-OzyRH_O+2TT7AzhY0bHWazua9s6Mj9qmb174DANw@mail.gmail.com>
+References: <1322804108.3729.50.camel@pasglop>
+ <CAOesGMgkh-OzyRH_O+2TT7AzhY0bHWazua9s6Mj9qmb174DANw@mail.gmail.com>
+Date: Fri, 2 Dec 2011 06:52:39 -0500
+Message-ID: <CA+5PVA7M3U5y8Ua+2UozOpG4ObcFttNTQO__g_p34swirdgdDg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Add support for OpenBlockS 600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Olof Johansson <olof@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> If you have an idea in mind how arch/platform code should cleanly
-> pass data about known uart bugs to the uart driver, then let me know
-> what you have in mind.  I've no real attachment to what I proposed
-> here -- it just happened to be the solution I thought would be the least
-> offensive.  If there is a better idea floating around, I'll go ahead and
-> try to implement it.
+On Fri, Dec 2, 2011 at 1:40 AM, Olof Johansson <olof@lixom.net> wrote:
+> Hi,
+>
+> On Thu, Dec 1, 2011 at 9:35 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+>
+>> =A0arch/powerpc/boot/dts/obs600.dts =A0 =A0 =A0 =A0 =A0 | =A0314 +++++++=
++++++++++++++++++++++
+>
+> It'd be nice to have dtsi files for the SoCs, there's a lot of boiler
+> plate in there. That shouldn't hold up this specific patch though.
 
-My first guess is that "the uart driver" is our first historical mistake.
-Non standard 8250ish uarts should be their own platform driver which uses
-8250.c for support.
+That sounds like a cleanup project for me.  I just need to figure out
+how they work and find time.
 
-Things like 8250_dw.c is perhaps more the style we want to be looking at
-for other devices and adjusting 8250.c as needed to export or split
-methods up so they can be used as helpers.
+>> =A0arch/powerpc/boot/wrapper =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 22=
+ ++-
+>> =A0arch/powerpc/configs/40x/obs600_defconfig =A0| =A0 83 ++++++++
+>
+> A new single-board defconfig? On arm that is a strong NACK, I'd say
+> it's a bad idea on powerpc as well.
 
-Alan
+I like them.  Particularly when they're the output of savedefconfig.
+
+josh
