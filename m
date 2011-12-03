@@ -1,24 +1,19 @@
-Return-Path: <afleming@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
- [209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A47F6B6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Dec 2011 07:15:48 +1100 (EST)
-Received: by yenl7 with SMTP id l7so1071127yen.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Dec 2011 12:15:44 -0800 (PST)
+Return-Path: <tony@bakeyournoodle.com>
+Date: Sun, 4 Dec 2011 08:52:55 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH 7/8] 44x/476fpe: Add 476fpe SoC code
+Message-ID: <20111203215254.GA12721@thor.bakeyournoodle.com>
+References: <1322725164-4391-1-git-send-email-tony@bakeyournoodle.com>
+ <1322725164-4391-8-git-send-email-tony@bakeyournoodle.com>
+ <1322859497.11728.13.camel@pasglop>
+ <20111203101116.GA7805@thor.bakeyournoodle.com>
+ <CA+5PVA67iOfn2L8zjnjKKGhfQzhEFeU2RN90bF+5xU3=p4SN=A@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <B84C6222-2359-46D5-BA54-5024E43ECD3F@kernel.crashing.org>
-References: <1322809549-32622-1-git-send-email-afleming@freescale.com>
- <1322809549-32622-2-git-send-email-afleming@freescale.com>
- <B84C6222-2359-46D5-BA54-5024E43ECD3F@kernel.crashing.org>
-Date: Sat, 3 Dec 2011 14:15:44 -0600
-Message-ID: <CAKWjMd52BhV0j3R93Cw8usBxZwbMCY70x=BAmV7dH-WyWRUyFA@mail.gmail.com>
-Subject: Re: [PATCH] pq3: Add default tbi address
-From: Andy Fleming <afleming@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Andy Fleming <afleming@freescale.com>,
- David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
+In-Reply-To: <CA+5PVA67iOfn2L8zjnjKKGhfQzhEFeU2RN90bF+5xU3=p4SN=A@mail.gmail.com>
+Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> arch/powerpc/boot/dts/fsl/pq3-etsec1-0.dtsi | =A0 =A05 +++++
->> arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi | =A0 =A05 +++++
->> 2 files changed, 10 insertions(+), 0 deletions(-)
->
-> This doesn't seem correct, meaning this should really be in the board .dt=
-s not in the IP.
->
-> I think the driver should check and warn if this property doesn't exist.
 
-Hmm... in principle, I agree with you. I suppose I was just being
-lazy, and avoiding changing all the device trees again. However, it's
-not an unreasonable default. A search through *all* of the device
-trees for the tbi node indicates that 0x11 is chosen about 50% of the
-time.
+--sdtB3X0nJg68CQEu
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-However, I'll devise a patch which complains if the node isn't found,
-and another patch which modifies all of the offending device trees.
+On Sat, Dec 03, 2011 at 08:33:40AM -0500, Josh Boyer wrote:
 
-Andy
+> If the plan is to have them go through my tree, I can fix them up when
+> I apply them.
+
+I was expecting them to go through your tree, so it'd be grat if you
+didn't mind finxing those up.
+
+Yours Tony
+
+--sdtB3X0nJg68CQEu
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJO2po2AAoJEEsCiJRY75GKnfUQAJyMSVuWDWXTvI/mCr5dBRSX
+BOHbqoXsjDw4IHu7VhAZOWJ/WqeJOtBgll04G/gevNG/gtsrzEDwHVChef7kL7e3
+lwRG6p1ZyX6drdcnLV9c2eumlkoDR3jBPMcR0uTe56uTl/92LByEnby2/Vjp3ml7
+UvoEvkIzsORi7N9Em1zcwGpjv39mVxyS2kJdKs9U7SyUcWd0pxTcwJWKAzxu3WuP
+7L1IIxx8uYPhuaopPLXFyXKUJ9gsgRoWBUEzWW2NPADiK4yIGdUR1BUVJg/Q1cUq
+32idh2ASqiMi1BFezx8qc+1QFJUJCQkKh+uuE4GeggTpVLgcvV58FGtTp1YdDvwG
+Ym1ymsss6Snt3kc3Ge9J0Yu4F7tdPZcia8f9OOrDou1we7ag1P9Rj4CKk3q3ApDr
+m2lDGl72/rjuiGuNK5wubbjWgSqYEMYISYHakx5ddEHFDhNZ05WibjEYE3ZMNY/7
+sTJ26UbkzlJS/y75Yqrnz3tC3HvjzAGY+06Zsz587LcTd3FVgAwVUNKnb/CF8rR+
+WcHajgcd2qjkOFIHH2D/uruHeMpIMhub19O7MMMLH5/9Va3NgbCJ427nJs4/rdRb
+OhLmPNuv42tMY+mGhrkVJcLprdJ5g/LI3wlwwiE47SCh6aiWBeeWHRX2f3Xcau9d
+N4UI50/RyCfi0styb9Th
+=fHSN
+-----END PGP SIGNATURE-----
+
+--sdtB3X0nJg68CQEu--
