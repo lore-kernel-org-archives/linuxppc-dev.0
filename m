@@ -1,19 +1,18 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Sun, 4 Dec 2011 08:52:55 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH 7/8] 44x/476fpe: Add 476fpe SoC code
-Message-ID: <20111203215254.GA12721@thor.bakeyournoodle.com>
-References: <1322725164-4391-1-git-send-email-tony@bakeyournoodle.com>
- <1322725164-4391-8-git-send-email-tony@bakeyournoodle.com>
- <1322859497.11728.13.camel@pasglop>
- <20111203101116.GA7805@thor.bakeyournoodle.com>
- <CA+5PVA67iOfn2L8zjnjKKGhfQzhEFeU2RN90bF+5xU3=p4SN=A@mail.gmail.com>
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 7EE6AB6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Dec 2011 21:46:57 +1100 (EST)
+Date: Sun, 4 Dec 2011 12:48:36 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH-RFC 08/10] powerpc: switch to GENERIC_PCI_IOMAP
+Message-ID: <20111204104835.GJ15464@redhat.com>
+References: <cover.1322163031.git.mst@redhat.com>
+ <54aba7d0694e98b9103ca278486485598086b2be.1322163031.git.mst@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
-In-Reply-To: <CA+5PVA67iOfn2L8zjnjKKGhfQzhEFeU2RN90bF+5xU3=p4SN=A@mail.gmail.com>
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <54aba7d0694e98b9103ca278486485598086b2be.1322163031.git.mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Nov 24, 2011 at 10:19:54PM +0200, Michael S. Tsirkin wrote:
+> powerpc copied pci_iomap from generic code, probably to avoid
+> pulling the rest of iomap.c in.  Since that's in
+> a separate file now, we can reuse the common implementation.
+> 
+> The only difference is handling of nocache flag,
+> that turns out to be done correctly by the
+> generic code since arch/powerpc/include/asm/io.h
+> defines ioremap_nocache same as ioremap.
+> 
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 
---sdtB3X0nJg68CQEu
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 
-On Sat, Dec 03, 2011 at 08:33:40AM -0500, Josh Boyer wrote:
+Sorry to nag, any ACKs/NACKs on the powerpc changes?
+I intend to send this to Linus if there are no
+objections. Thanks!
 
-> If the plan is to have them go through my tree, I can fix them up when
-> I apply them.
-
-I was expecting them to go through your tree, so it'd be grat if you
-didn't mind finxing those up.
-
-Yours Tony
-
---sdtB3X0nJg68CQEu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO2po2AAoJEEsCiJRY75GKnfUQAJyMSVuWDWXTvI/mCr5dBRSX
-BOHbqoXsjDw4IHu7VhAZOWJ/WqeJOtBgll04G/gevNG/gtsrzEDwHVChef7kL7e3
-lwRG6p1ZyX6drdcnLV9c2eumlkoDR3jBPMcR0uTe56uTl/92LByEnby2/Vjp3ml7
-UvoEvkIzsORi7N9Em1zcwGpjv39mVxyS2kJdKs9U7SyUcWd0pxTcwJWKAzxu3WuP
-7L1IIxx8uYPhuaopPLXFyXKUJ9gsgRoWBUEzWW2NPADiK4yIGdUR1BUVJg/Q1cUq
-32idh2ASqiMi1BFezx8qc+1QFJUJCQkKh+uuE4GeggTpVLgcvV58FGtTp1YdDvwG
-Ym1ymsss6Snt3kc3Ge9J0Yu4F7tdPZcia8f9OOrDou1we7ag1P9Rj4CKk3q3ApDr
-m2lDGl72/rjuiGuNK5wubbjWgSqYEMYISYHakx5ddEHFDhNZ05WibjEYE3ZMNY/7
-sTJ26UbkzlJS/y75Yqrnz3tC3HvjzAGY+06Zsz587LcTd3FVgAwVUNKnb/CF8rR+
-WcHajgcd2qjkOFIHH2D/uruHeMpIMhub19O7MMMLH5/9Va3NgbCJ427nJs4/rdRb
-OhLmPNuv42tMY+mGhrkVJcLprdJ5g/LI3wlwwiE47SCh6aiWBeeWHRX2f3Xcau9d
-N4UI50/RyCfi0styb9Th
-=fHSN
------END PGP SIGNATURE-----
-
---sdtB3X0nJg68CQEu--
+> ---
+>  arch/powerpc/Kconfig        |    1 +
+>  arch/powerpc/kernel/iomap.c |   19 -------------------
+>  2 files changed, 1 insertions(+), 19 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 951e18f..6ffe3df 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -710,6 +710,7 @@ config PCI
+>  	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
+>  	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+>  	select ARCH_SUPPORTS_MSI
+> +	select GENERIC_PCI_IOMAP
+>  	help
+>  	  Find out whether your system includes a PCI bus. PCI is the name of
+>  	  a bus system, i.e. the way the CPU talks to the other stuff inside
+> diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
+> index 2627918..97a3715 100644
+> --- a/arch/powerpc/kernel/iomap.c
+> +++ b/arch/powerpc/kernel/iomap.c
+> @@ -119,24 +119,6 @@ EXPORT_SYMBOL(ioport_map);
+>  EXPORT_SYMBOL(ioport_unmap);
+>  
+>  #ifdef CONFIG_PCI
+> -void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max)
+> -{
+> -	resource_size_t start = pci_resource_start(dev, bar);
+> -	resource_size_t len = pci_resource_len(dev, bar);
+> -	unsigned long flags = pci_resource_flags(dev, bar);
+> -
+> -	if (!len)
+> -		return NULL;
+> -	if (max && len > max)
+> -		len = max;
+> -	if (flags & IORESOURCE_IO)
+> -		return ioport_map(start, len);
+> -	if (flags & IORESOURCE_MEM)
+> -		return ioremap(start, len);
+> -	/* What? */
+> -	return NULL;
+> -}
+> -
+>  void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
+>  {
+>  	if (isa_vaddr_is_ioport(addr))
+> @@ -146,6 +128,5 @@ void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
+>  	iounmap(addr);
+>  }
+>  
+> -EXPORT_SYMBOL(pci_iomap);
+>  EXPORT_SYMBOL(pci_iounmap);
+>  #endif /* CONFIG_PCI */
+> -- 
+> 1.7.5.53.gc233e
