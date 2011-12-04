@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AF2D6B6F69
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2011 10:18:33 +1100 (EST)
-Message-ID: <1323040701.11728.27.camel@pasglop>
-Subject: Re: [PATCH 1/1] Punch a hole in /dev/mem for librtas
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Mon, 05 Dec 2011 10:18:21 +1100
-In-Reply-To: <144CAEA6-C129-4935-B6D1-A7D6F24530A5@kernel.crashing.org>
-References: <20111202222623.GA31354@us.ibm.com>
- <144CAEA6-C129-4935-B6D1-A7D6F24530A5@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sbest@us.ibm.com,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, paulus@samba.org,
- anton@samba.org
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6170FB6F9C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 10:42:33 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: alan@linux.intel.com, gregkh@suse.de, scottwood@freescale.com,
+ galak@kernel.crashing.org
+Subject: [PATCH 0/6] RFCv2 Fix Fsl 8250 BRK bug
+Date: Sun,  4 Dec 2011 18:42:17 -0500
+Message-Id: <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2011-12-03 at 04:22 +0100, Segher Boessenkool wrote:
-> > +static inline int page_is_rtas_user_buf(unsigned long pfn)
-> > +{
-> > +	unsigned long paddr = (pfn << PAGE_SHIFT);
-> > +	if (paddr >= rtas_rmo_buf && paddr < (rtas_rmo_buf +  
-> > RTAS_RMOBUF_MAX))
-> 
-> It probably cannot overflow with actual values of rtas_rmo_buf
-> and RTAS_RMOBUF_MAX, but otherwise it is an incorrect test;
-> please write
-> 
-> 	if (paddr >= rtas_rmo_buf && paddr - rtas_rmo_buf < RTAS_RMOBUF_MAX)
-> 
-> (and, _MAX?  Shouldn't it be the actual size here?  Or is _MAX
-> just a confusing name :-) )
 
-The original code is a lot more readable and perfectly correct for all
-possible values of rtas_rmo_buf :-)
+Alan wrote:
 
-Cheers,
-Ben.
+> Things like 8250_dw.c is perhaps more the style we want to be looking at
+> for other devices and adjusting 8250.c as needed to export or split
+> methods up so they can be used as helpers.
+
+[...]
+
+> Sorting out a ->handle_port override is probably ultimately the right
+> thing to do and then we can push some of the other funnies out further.
+
+I never figured spending this much time on this, but I think this is
+a lot better, and 8250.c comes out slightly smaller and cleaner too,
+hopefully satisfying Alan's other request "...we want less not more".
+
+The errata is firewalled off in 8250_fsl.c (as per Alan's 1st comment),
+and 8250.c now exports a couple more things to be used as helpers.
+
+When I started looking at a handle_port override, I realized that it
+really didn't need to exist at all, and the existing handle_irq
+override we already have does the job nicely.  In the process, I found
+an interesting quirk while cleaning up duplicated code in the timeout
+handler, where we don't use the custom IRQ handler if there is one.
+
+So, the errata is dealt with by installing a custom IRQ handler, and
+it doesn't have the "eew ick" factor that Scott mentioned, in regards
+to trying to learn state from watching serial_in() traffic.
+
+The timeout cleanup seemed so obvious, that I was convinced I must
+be missing some subtle thing.  So I confirmed it by stripping my IRQ
+properties from my dts file and running the serial console IRQ-less.
+
+I also re-tested the sysRq feature on sbc8349, to ensure the WAR was
+actually doing its job, and I also tested with serial console on
+an old SocketA board to make sure non-ppc didn't get hosed somehow.
+
+Anyway, have a look and see if this version of things is acceptable
+to all.  (Again, the dts update from Kumar isn't shown here).
+
+Thanks to all who provided the feedback on v1.
+Paul.
+
+------
+
+Paul Gortmaker (6):
+  serial: move struct uart_8250_port from 8250.c to 8250.h
+  serial: clean up parameter passing for 8250 Rx IRQ handling
+  serial: export the key functions for an 8250 IRQ handler
+  serial: make 8250 timeout use the specified IRQ handler
+  serial: manually inline serial8250_handle_port
+  serial: add irq handler for Freescale 16550 errata.
+
+ arch/powerpc/kernel/legacy_serial.c |    3 +
+ drivers/tty/serial/8250.c           |   92 ++++++++++++-----------------------
+ drivers/tty/serial/8250.h           |   26 ++++++++++
+ drivers/tty/serial/8250_fsl.c       |   63 ++++++++++++++++++++++++
+ drivers/tty/serial/Kconfig          |    5 ++
+ drivers/tty/serial/Makefile         |    1 +
+ include/linux/serial_8250.h         |    5 ++
+ 7 files changed, 134 insertions(+), 61 deletions(-)
+ create mode 100644 drivers/tty/serial/8250_fsl.c
+
+-- 
+1.7.7
