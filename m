@@ -3,16 +3,17 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6170FB6F9C
+ by ozlabs.org (Postfix) with ESMTPS id 5F413B6F9B
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 10:42:33 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: alan@linux.intel.com, gregkh@suse.de, scottwood@freescale.com,
  galak@kernel.crashing.org
-Subject: [PATCH 0/6] RFCv2 Fix Fsl 8250 BRK bug
-Date: Sun,  4 Dec 2011 18:42:17 -0500
-Message-Id: <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 3/6] serial: export the key functions for an 8250 IRQ handler
+Date: Sun,  4 Dec 2011 18:42:20 -0500
+Message-Id: <1323042143-25330-4-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
 References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
+ <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,68 +25,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+For drivers that need to construct their own IRQ handler, the
+three components are seen in the current handle_port -- i.e.
+Rx, Tx and modem_status.
 
-Alan wrote:
+Make these exported symbols so that "almost" 8250 UARTs can
+construct their own IRQ handler with these shared components,
+while working around their own unique errata issues.
 
-> Things like 8250_dw.c is perhaps more the style we want to be looking at
-> for other devices and adjusting 8250.c as needed to export or split
-> methods up so they can be used as helpers.
+The function names are given a serial8250 prefix, since they
+are now entering the global namespace.
 
-[...]
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ drivers/tty/serial/8250.c   |   29 +++++++++++++++--------------
+ include/linux/serial_8250.h |    4 ++++
+ 2 files changed, 19 insertions(+), 14 deletions(-)
 
-> Sorting out a ->handle_port override is probably ultimately the right
-> thing to do and then we can push some of the other funnies out further.
-
-I never figured spending this much time on this, but I think this is
-a lot better, and 8250.c comes out slightly smaller and cleaner too,
-hopefully satisfying Alan's other request "...we want less not more".
-
-The errata is firewalled off in 8250_fsl.c (as per Alan's 1st comment),
-and 8250.c now exports a couple more things to be used as helpers.
-
-When I started looking at a handle_port override, I realized that it
-really didn't need to exist at all, and the existing handle_irq
-override we already have does the job nicely.  In the process, I found
-an interesting quirk while cleaning up duplicated code in the timeout
-handler, where we don't use the custom IRQ handler if there is one.
-
-So, the errata is dealt with by installing a custom IRQ handler, and
-it doesn't have the "eew ick" factor that Scott mentioned, in regards
-to trying to learn state from watching serial_in() traffic.
-
-The timeout cleanup seemed so obvious, that I was convinced I must
-be missing some subtle thing.  So I confirmed it by stripping my IRQ
-properties from my dts file and running the serial console IRQ-less.
-
-I also re-tested the sysRq feature on sbc8349, to ensure the WAR was
-actually doing its job, and I also tested with serial console on
-an old SocketA board to make sure non-ppc didn't get hosed somehow.
-
-Anyway, have a look and see if this version of things is acceptable
-to all.  (Again, the dts update from Kumar isn't shown here).
-
-Thanks to all who provided the feedback on v1.
-Paul.
-
-------
-
-Paul Gortmaker (6):
-  serial: move struct uart_8250_port from 8250.c to 8250.h
-  serial: clean up parameter passing for 8250 Rx IRQ handling
-  serial: export the key functions for an 8250 IRQ handler
-  serial: make 8250 timeout use the specified IRQ handler
-  serial: manually inline serial8250_handle_port
-  serial: add irq handler for Freescale 16550 errata.
-
- arch/powerpc/kernel/legacy_serial.c |    3 +
- drivers/tty/serial/8250.c           |   92 ++++++++++++-----------------------
- drivers/tty/serial/8250.h           |   26 ++++++++++
- drivers/tty/serial/8250_fsl.c       |   63 ++++++++++++++++++++++++
- drivers/tty/serial/Kconfig          |    5 ++
- drivers/tty/serial/Makefile         |    1 +
- include/linux/serial_8250.h         |    5 ++
- 7 files changed, 134 insertions(+), 61 deletions(-)
- create mode 100644 drivers/tty/serial/8250_fsl.c
-
+diff --git a/drivers/tty/serial/8250.c b/drivers/tty/serial/8250.c
+index a20d7eb..91afe7a 100644
+--- a/drivers/tty/serial/8250.c
++++ b/drivers/tty/serial/8250.c
+@@ -1300,8 +1300,6 @@ static void serial8250_stop_tx(struct uart_port *port)
+ 	}
+ }
+ 
+-static void transmit_chars(struct uart_8250_port *up);
+-
+ static void serial8250_start_tx(struct uart_port *port)
+ {
+ 	struct uart_8250_port *up =
+@@ -1318,7 +1316,7 @@ static void serial8250_start_tx(struct uart_port *port)
+ 			if ((up->port.type == PORT_RM9000) ?
+ 				(lsr & UART_LSR_THRE) :
+ 				(lsr & UART_LSR_TEMT))
+-				transmit_chars(up);
++				serial8250_tx_chars(up);
+ 		}
+ 	}
+ 
+@@ -1376,12 +1374,12 @@ static void clear_rx_fifo(struct uart_8250_port *up)
+ }
+ 
+ /*
+- * receive_chars: processes according to the passed in LSR
++ * serial8250_rx_chars: processes according to the passed in LSR
+  * value, and returns the remaining LSR bits not handled
+  * by this Rx routine.
+  */
+-static unsigned char
+-receive_chars(struct uart_8250_port *up, unsigned char lsr)
++unsigned char
++serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr)
+ {
+ 	struct tty_struct *tty = up->port.state->port.tty;
+ 	unsigned char ch;
+@@ -1462,8 +1460,9 @@ ignore_char:
+ 	spin_lock(&up->port.lock);
+ 	return lsr;
+ }
++EXPORT_SYMBOL_GPL(serial8250_rx_chars);
+ 
+-static void transmit_chars(struct uart_8250_port *up)
++void serial8250_tx_chars(struct uart_8250_port *up)
+ {
+ 	struct circ_buf *xmit = &up->port.state->xmit;
+ 	int count;
+@@ -1500,8 +1499,9 @@ static void transmit_chars(struct uart_8250_port *up)
+ 	if (uart_circ_empty(xmit))
+ 		__stop_tx(up);
+ }
++EXPORT_SYMBOL_GPL(serial8250_tx_chars);
+ 
+-static unsigned int check_modem_status(struct uart_8250_port *up)
++unsigned int serial8250_modem_status(struct uart_8250_port *up)
+ {
+ 	unsigned int status = serial_in(up, UART_MSR);
+ 
+@@ -1523,6 +1523,7 @@ static unsigned int check_modem_status(struct uart_8250_port *up)
+ 
+ 	return status;
+ }
++EXPORT_SYMBOL_GPL(serial8250_modem_status);
+ 
+ /*
+  * This handles the interrupt from one port.
+@@ -1539,10 +1540,10 @@ static void serial8250_handle_port(struct uart_8250_port *up)
+ 	DEBUG_INTR("status = %x...", status);
+ 
+ 	if (status & (UART_LSR_DR | UART_LSR_BI))
+-		status = receive_chars(up, status);
+-	check_modem_status(up);
++		status = serial8250_rx_chars(up, status);
++	serial8250_modem_status(up);
+ 	if (status & UART_LSR_THRE)
+-		transmit_chars(up);
++		serial8250_tx_chars(up);
+ 
+ 	spin_unlock_irqrestore(&up->port.lock, flags);
+ }
+@@ -1780,7 +1781,7 @@ static void serial8250_backup_timeout(unsigned long data)
+ 	}
+ 
+ 	if (!(iir & UART_IIR_NO_INT))
+-		transmit_chars(up);
++		serial8250_tx_chars(up);
+ 
+ 	if (is_real_interrupt(up->port.irq))
+ 		serial_out(up, UART_IER, ier);
+@@ -1814,7 +1815,7 @@ static unsigned int serial8250_get_mctrl(struct uart_port *port)
+ 	unsigned int status;
+ 	unsigned int ret;
+ 
+-	status = check_modem_status(up);
++	status = serial8250_modem_status(up);
+ 
+ 	ret = 0;
+ 	if (status & UART_MSR_DCD)
+@@ -2861,7 +2862,7 @@ serial8250_console_write(struct console *co, const char *s, unsigned int count)
+ 	 *	while processing with interrupts off.
+ 	 */
+ 	if (up->msr_saved_flags)
+-		check_modem_status(up);
++		serial8250_modem_status(up);
+ 
+ 	if (locked)
+ 		spin_unlock(&up->port.lock);
+diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+index 1f05bbe..b44034e 100644
+--- a/include/linux/serial_8250.h
++++ b/include/linux/serial_8250.h
+@@ -66,6 +66,7 @@ enum {
+  * dependent on the 8250 driver.
+  */
+ struct uart_port;
++struct uart_8250_port;
+ 
+ int serial8250_register_port(struct uart_port *);
+ void serial8250_unregister_port(int line);
+@@ -82,6 +83,9 @@ extern void serial8250_do_set_termios(struct uart_port *port,
+ extern void serial8250_do_pm(struct uart_port *port, unsigned int state,
+ 			     unsigned int oldstate);
+ int serial8250_handle_irq(struct uart_port *port, unsigned int iir);
++unsigned char serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr);
++void serial8250_tx_chars(struct uart_8250_port *up);
++unsigned int serial8250_modem_status(struct uart_8250_port *up);
+ 
+ extern void serial8250_set_isa_configurator(void (*v)
+ 					(int port, struct uart_port *up,
 -- 
 1.7.7
