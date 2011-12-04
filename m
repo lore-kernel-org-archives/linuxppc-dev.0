@@ -1,21 +1,41 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sven@narfation.org>
+Received: from v3-1039.vlinux.de (narfation.org [79.140.41.39])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 38F361007D5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 07:52:10 +1100 (EST)
-Message-ID: <1323031921.11728.25.camel@pasglop>
-Subject: Re: [PATCH-RFC 08/10] powerpc: switch to GENERIC_PCI_IOMAP
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Mon, 05 Dec 2011 07:52:01 +1100
-In-Reply-To: <20111204104835.GJ15464@redhat.com>
-References: <cover.1322163031.git.mst@redhat.com>
- <54aba7d0694e98b9103ca278486485598086b2be.1322163031.git.mst@redhat.com>
- <20111204104835.GJ15464@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id 414F31007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 08:49:24 +1100 (EST)
+From: Sven Eckelmann <sven@narfation.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: Re: [PATCHv5] atomic: add *_dec_not_zero
+Date: Sun, 04 Dec 2011 22:49:10 +0100
+Message-ID: <1699880.NTdz2k3W9O@sven-laptop.home.narfation.org>
+In-Reply-To: <20111204213316.GB14542@n2100.arm.linux.org.uk>
+References: <1323013369-29691-1-git-send-email-sven@narfation.org>
+ <20111204213316.GB14542@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4938203.Qb6ixptZZ3";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>,
+ Helge Deller <deller@gmx.de>, sparclinux@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ Richard Weinberger <richard@nod.at>, Hirokazu Takata <takata@linux-m32r.org>,
+ x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergma nn <arnd@arndb.de>,
+ Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ linux-m32r@ml.linux-m32r.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, Tony Luck <tony.luck@intel.com>,
+ linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Kyle McMartin <kyle@mcmartin.ca>, linux-alpha@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,84 +45,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-12-04 at 12:48 +0200, Michael S. Tsirkin wrote:
-> On Thu, Nov 24, 2011 at 10:19:54PM +0200, Michael S. Tsirkin wrote:
-> > powerpc copied pci_iomap from generic code, probably to avoid
-> > pulling the rest of iomap.c in.  Since that's in
-> > a separate file now, we can reuse the common implementation.
-> > 
-> > The only difference is handling of nocache flag,
-> > that turns out to be done correctly by the
-> > generic code since arch/powerpc/include/asm/io.h
-> > defines ioremap_nocache same as ioremap.
-> > 
-> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+
+--nextPart4938203.Qb6ixptZZ3
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Sunday 04 December 2011 21:33:16 Russell King - ARM Linux wrote:
+[...]
+> > +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
 > 
+> I think this is rather silly - all these definitions are very similar to
+> each other.  Is there really no way to put this into include/linux/atomic.h,
+> maybe as something like:
 > 
-> Sorry to nag, any ACKs/NACKs on the powerpc changes?
-> I intend to send this to Linus if there are no
-> objections. Thanks!
+> #ifndef atomic64_dec_not_zero
+> #define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
+> #endif
+> 
+> and avoid having to add essentially the same definition to 12 individual
+> files?
+> 
+> Architectures which want to override it can do by the following:
+> 
+> #define atomic64_dec_not_zero		atomic64_dec_not_zero
+> 
+> which won't have any effect on C nor asm code.
 
-Ah sorry, forgot about that. Do you have a git tree I can pull to do
-quick test ?
+ * https://lkml.org/lkml/2011/5/8/15
+ * https://lkml.org/lkml/2011/5/8/16
+ * https://lkml.org/lkml/2011/5/8/321
 
-No objection in principle.
+Kind regards,
+	Sven
+--nextPart4938203.Qb6ixptZZ3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
-Cheers,
-Ben.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-> > ---
-> >  arch/powerpc/Kconfig        |    1 +
-> >  arch/powerpc/kernel/iomap.c |   19 -------------------
-> >  2 files changed, 1 insertions(+), 19 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 951e18f..6ffe3df 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -710,6 +710,7 @@ config PCI
-> >  	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
-> >  	default PCI_QSPAN if !4xx && !CPM2 && 8xx
-> >  	select ARCH_SUPPORTS_MSI
-> > +	select GENERIC_PCI_IOMAP
-> >  	help
-> >  	  Find out whether your system includes a PCI bus. PCI is the name of
-> >  	  a bus system, i.e. the way the CPU talks to the other stuff inside
-> > diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
-> > index 2627918..97a3715 100644
-> > --- a/arch/powerpc/kernel/iomap.c
-> > +++ b/arch/powerpc/kernel/iomap.c
-> > @@ -119,24 +119,6 @@ EXPORT_SYMBOL(ioport_map);
-> >  EXPORT_SYMBOL(ioport_unmap);
-> >  
-> >  #ifdef CONFIG_PCI
-> > -void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max)
-> > -{
-> > -	resource_size_t start = pci_resource_start(dev, bar);
-> > -	resource_size_t len = pci_resource_len(dev, bar);
-> > -	unsigned long flags = pci_resource_flags(dev, bar);
-> > -
-> > -	if (!len)
-> > -		return NULL;
-> > -	if (max && len > max)
-> > -		len = max;
-> > -	if (flags & IORESOURCE_IO)
-> > -		return ioport_map(start, len);
-> > -	if (flags & IORESOURCE_MEM)
-> > -		return ioremap(start, len);
-> > -	/* What? */
-> > -	return NULL;
-> > -}
-> > -
-> >  void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
-> >  {
-> >  	if (isa_vaddr_is_ioport(addr))
-> > @@ -146,6 +128,5 @@ void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
-> >  	iounmap(addr);
-> >  }
-> >  
-> > -EXPORT_SYMBOL(pci_iomap);
-> >  EXPORT_SYMBOL(pci_iounmap);
-> >  #endif /* CONFIG_PCI */
-> > -- 
-> > 1.7.5.53.gc233e
+iQIcBAABCgAGBQJO2+rWAAoJEF2HCgfBJntGGaoP/1cME9u1tSkxi9MYlM/Ss2sw
+Du85XnWWOFnV+CRwZ7+QCkgr10dzf/Qf7ekcxzM/7wapAawu0FmBbehfNW+06uW0
+4XrIxUDaZy0xgHusju96MVJav0msORD/2RXM3rQxwkjR2FhmfbVntuIu/5EqEHFv
+jIzksziGDgrHx6/HMjrEiX8p2tPPBfQ7MGa1Cvj+kLgDhPAPCOUKfpwgdj35MYHe
+2D+zXMr6aHi/JtDkYK2BV9u9nAGx91fcPdOO4/SyyxVg4DLrUnuRgWhNF9UCXd7R
+IDkz2SAlkqP5RXKa9XMxnS1n1zjkpmc1wfRL4rPHmk7Fg9IgidnlZ8TsXKuDjoVR
+JtIuXmj1FQ5nuHnzKnzhIfHMlu395tL0PVHeWi1+dPZGfUCLX+T4jdlTRaShY3d1
+UUzpbfKuc2dy8uX5BNfJ5kQl4PSx8w97Kn+8vRbb3U627FIpdkK8RQNEGgB7wpIR
+rCqnxvsjPiiyQA9ckXmL/S0d9xlrPcrB1Tu4kUgXYTr6llV/xKWuYtl801IFP6lr
+kFqvPd5St69DP66x5bMMC4NalTEfCIx7HOx+xd3xQC+9qsJVLomz95bvMZHxeI8K
+Ae736/5KDqONzVPOKW2J+UJIJLqIZPuSbNVRY9lkTZXjii1U25WY03PGAGwa4LLP
+mGvc5Y2WUfdr8CtFrvVL
+=T3Oo
+-----END PGP SIGNATURE-----
+
+--nextPart4938203.Qb6ixptZZ3--
