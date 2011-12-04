@@ -1,25 +1,36 @@
-Return-Path: <B35362@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
- [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 114241007D6
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Dec 2011 16:49:00 +1100 (EST)
-From: <shuo.liu@freescale.com>
-To: <dwmw2@infradead.org>, <Artem.Bityutskiy@nokia.com>,
- <scottwood@freescale.com>
-Subject: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-Date: Sun, 4 Dec 2011 12:31:38 +0800
-Message-ID: <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
-In-Reply-To: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
- linux-mtd@lists.infradead.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sven@narfation.org>
+Received: from v3-1039.vlinux.de (narfation.org [79.140.41.39])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6AED61007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 02:53:03 +1100 (EST)
+From: Sven Eckelmann <sven@narfation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCHv5] atomic: add *_dec_not_zero
+Date: Sun,  4 Dec 2011 16:42:49 +0100
+Message-Id: <1323013369-29691-1-git-send-email-sven@narfation.org>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>,
+ Helge Deller <deller@gmx.de>, sparclinux@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, Sven Eckelmann <sven@narfation.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ user-mode-linux-devel@lists.sourceforge.net,
+ Richard Weinberger <richard@nod.at>, Hirokazu Takata <takata@linux-m32r.org>,
+ x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ linux-m32r@ml.linux-m32r.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, Tony Luck <tony.luck@intel.com>,
+ linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Kyle McMartin <kyle@mcmartin.ca>, linux-alpha@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,422 +40,541 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Liu Shuo <shuo.liu@freescale.com>
+Introduce an *_dec_not_zero operation.  Make this a special case of
+*_add_unless because batman-adv uses atomic_dec_not_zero in different
+places like re-broadcast queue or aggregation queue management. There
+are other non-final patches which may also want to use this macro.
 
-Freescale FCM controller has a 2K size limitation of buffer RAM. In order
-to support the Nand flash chip whose page size is larger than 2K bytes,
-we read/write 2k data repeatedly by issuing FIR_OP_RB/FIR_OP_WB and save
-them to a large buffer.
-
-Signed-off-by: Liu Shuo <shuo.liu@freescale.com>
+Suggested-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Hirokazu Takata <takata@linux-m32r.org>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Helge Deller <deller@gmx.de>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-m32r@ml.linux-m32r.org
+Cc: linux-m32r-ja@ml.linux-m32r.org
+Cc: linux-mips@linux-mips.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: linux-hexagon@vger.kernel.org
 ---
-v3:
-    -remove page_size of struct fsl_elbc_mtd.
-    -do a oob write by NAND_CMD_RNDIN. 
+David S. Miller recommended this change in
+ https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2011-May/004560.html
 
- drivers/mtd/nand/fsl_elbc_nand.c |  243 ++++++++++++++++++++++++++++++++++----
- 1 files changed, 218 insertions(+), 25 deletions(-)
+Arnd Bergmann wanted to apply it in 201106172320.26476.arnd@arndb.de
 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index d634c5f..a92411a 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -55,7 +55,6 @@ struct fsl_elbc_mtd {
- 	struct device *dev;
- 	int bank;               /* Chip select bank number           */
- 	u8 __iomem *vbase;      /* Chip select base virtual address  */
--	int page_size;          /* NAND page size (0=512, 1=2048)    */
- 	unsigned int fmr;       /* FCM Flash Mode Register value     */
- };
+... and then Arun Sharma created a big merge conflict with
+https://lkml.org/lkml/2011/6/6/430
+
+I don't think that it is a a good idea to assume that everyone still
+agrees with the patch after I've rewritten it. I try Andrew Morton this
+time because he applied the last changes to include/linux/atomic.h.
+There are already two projects (batman-adv/fault_inject) which include
+their private definition (not conflicting) and I have patches for 9
+other modules that could use it.
+
+
+ Documentation/atomic_ops.txt       |    1 +
+ arch/alpha/include/asm/atomic.h    |    1 +
+ arch/alpha/include/asm/local.h     |    1 +
+ arch/arm/include/asm/atomic.h      |    1 +
+ arch/hexagon/include/asm/atomic.h  |    1 +
+ arch/ia64/include/asm/atomic.h     |    1 +
+ arch/m32r/include/asm/local.h      |    1 +
+ arch/mips/include/asm/atomic.h     |    1 +
+ arch/mips/include/asm/local.h      |    1 +
+ arch/parisc/include/asm/atomic.h   |    1 +
+ arch/powerpc/include/asm/atomic.h  |    1 +
+ arch/powerpc/include/asm/local.h   |    1 +
+ arch/s390/include/asm/atomic.h     |    1 +
+ arch/sparc/include/asm/atomic_64.h |    1 +
+ arch/tile/include/asm/atomic_32.h  |    1 +
+ arch/tile/include/asm/atomic_64.h  |    1 +
+ arch/x86/include/asm/atomic64_32.h |   12 ++++++++++++
+ arch/x86/include/asm/atomic64_64.h |    1 +
+ arch/x86/include/asm/local.h       |    1 +
+ arch/x86/lib/atomic64_32.c         |    4 ++++
+ arch/x86/lib/atomic64_386_32.S     |   21 +++++++++++++++++++++
+ arch/x86/lib/atomic64_cx8_32.S     |   28 ++++++++++++++++++++++++++++
+ include/asm-generic/atomic-long.h  |    2 ++
+ include/asm-generic/atomic64.h     |    1 +
+ include/asm-generic/local.h        |    1 +
+ include/asm-generic/local64.h      |    2 ++
+ include/linux/atomic.h             |    9 +++++++++
+ lib/atomic64_test.c                |   19 +++++++++++++++++++
+ 28 files changed, 117 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/atomic_ops.txt b/Documentation/atomic_ops.txt
+index 3bd585b..1eec221 100644
+--- a/Documentation/atomic_ops.txt
++++ b/Documentation/atomic_ops.txt
+@@ -190,6 +190,7 @@ atomic_add_unless requires explicit memory barriers around the operation
+ unless it fails (returns 0).
  
-@@ -75,6 +74,8 @@ struct fsl_elbc_fcm_ctrl {
- 	unsigned int use_mdr;    /* Non zero if the MDR is to be set      */
- 	unsigned int oob;        /* Non zero if operating on OOB data     */
- 	unsigned int counter;	 /* counter for the initializations	  */
-+
-+	char *buffer;            /* just be used when pagesize > 2048     */
- };
+ atomic_inc_not_zero, equivalent to atomic_add_unless(v, 1, 0)
++atomic_dec_not_zero, equivalent to atomic_add_unless(v, -1, 0)
  
- /* These map to the positions used by the FCM hardware ECC generator */
-@@ -150,6 +151,42 @@ static struct nand_bbt_descr bbt_mirror_descr = {
- };
  
- /*=================================*/
-+static void io_to_buffer(struct mtd_info *mtd, int subpage, int oob)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	struct fsl_elbc_mtd *priv = chip->priv;
-+	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
-+	void *src, *dst;
-+	int len = (oob ? 64 : 2048);
-+
-+	if (oob)
-+		dst = elbc_fcm_ctrl->buffer + mtd->writesize + subpage * 64;
-+	else
-+		dst = elbc_fcm_ctrl->buffer + subpage * 2048;
-+
-+	src = elbc_fcm_ctrl->addr + (oob ? 2048 : 0);
-+	memcpy_fromio(dst, src, len);
-+}
-+
-+static void buffer_to_io(struct mtd_info *mtd, int subpage, int oob)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	struct fsl_elbc_mtd *priv = chip->priv;
-+	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
-+	void *src, *dst;
-+	int len = (oob ? 64 : 2048);
-+
-+	if (oob)
-+		src = elbc_fcm_ctrl->buffer + mtd->writesize + subpage * 64;
-+	else
-+		src = elbc_fcm_ctrl->buffer + subpage * 2048;
-+
-+	dst = elbc_fcm_ctrl->addr + (oob ? 2048 : 0);
-+	memcpy_toio(dst, src, len);
-+
-+	/* See the in_8() in fsl_elbc_write_buf() */
-+	in_8(elbc_fcm_ctrl->addr + (oob ? 2111 : 2047));
-+}
- 
- /*
-  * Set up the FCM hardware block and page address fields, and the fcm
-@@ -166,7 +203,7 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
- 
- 	elbc_fcm_ctrl->page = page_addr;
- 
--	if (priv->page_size) {
-+	if (mtd->writesize >= 2048) {
- 		/*
- 		 * large page size chip : FPAR[PI] save the lowest 6 bits,
- 		 *                        FBAR[BLK] save the other bits.
-@@ -193,7 +230,7 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
- 
- 	/* for OOB data point to the second half of the buffer */
- 	if (oob)
--		elbc_fcm_ctrl->index += priv->page_size ? 2048 : 512;
-+		elbc_fcm_ctrl->index += mtd->writesize;
- 
- 	dev_vdbg(priv->dev, "set_addr: bank=%d, "
- 			    "elbc_fcm_ctrl->addr=0x%p (0x%p), "
-@@ -272,13 +309,14 @@ static int fsl_elbc_run_command(struct mtd_info *mtd)
- 	return 0;
+ If a caller requires memory barrier semantics around an atomic_t
+diff --git a/arch/alpha/include/asm/atomic.h b/arch/alpha/include/asm/atomic.h
+index 640f909..09d1571 100644
+--- a/arch/alpha/include/asm/atomic.h
++++ b/arch/alpha/include/asm/atomic.h
+@@ -225,6 +225,7 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
  }
  
--static void fsl_elbc_do_read(struct nand_chip *chip, int oob)
-+static void fsl_elbc_do_read(struct mtd_info *mtd, int oob)
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+ 
+ #define atomic_add_negative(a, v) (atomic_add_return((a), (v)) < 0)
+ #define atomic64_add_negative(a, v) (atomic64_add_return((a), (v)) < 0)
+diff --git a/arch/alpha/include/asm/local.h b/arch/alpha/include/asm/local.h
+index 9c94b84..51eb678 100644
+--- a/arch/alpha/include/asm/local.h
++++ b/arch/alpha/include/asm/local.h
+@@ -79,6 +79,7 @@ static __inline__ long local_sub_return(long i, local_t * l)
+ 	c != (u);						\
+ })
+ #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
++#define local_dec_not_zero(l) local_add_unless((l), -1, 0)
+ 
+ #define local_add_negative(a, l) (local_add_return((a), (l)) < 0)
+ 
+diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
+index 86976d0..80ed975 100644
+--- a/arch/arm/include/asm/atomic.h
++++ b/arch/arm/include/asm/atomic.h
+@@ -458,6 +458,7 @@ static inline int atomic64_add_unless(atomic64_t *v, u64 a, u64 u)
+ #define atomic64_dec_return(v)		atomic64_sub_return(1LL, (v))
+ #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
+ #define atomic64_inc_not_zero(v)	atomic64_add_unless((v), 1LL, 0LL)
++#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
+ 
+ #endif /* !CONFIG_GENERIC_ATOMIC64 */
+ #endif
+diff --git a/arch/hexagon/include/asm/atomic.h b/arch/hexagon/include/asm/atomic.h
+index e220f90..3a1a33a 100644
+--- a/arch/hexagon/include/asm/atomic.h
++++ b/arch/hexagon/include/asm/atomic.h
+@@ -148,6 +148,7 @@ static inline int __atomic_add_unless(atomic_t *v, int a, int u)
+ }
+ 
+ #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
++#define atomic_dec_not_zero(v) atomic_add_unless((v), -1, 0)
+ 
+ #define atomic_inc(v) atomic_add(1, (v))
+ #define atomic_dec(v) atomic_sub(1, (v))
+diff --git a/arch/ia64/include/asm/atomic.h b/arch/ia64/include/asm/atomic.h
+index 3fad89e..af6e9b2 100644
+--- a/arch/ia64/include/asm/atomic.h
++++ b/arch/ia64/include/asm/atomic.h
+@@ -122,6 +122,7 @@ static __inline__ long atomic64_add_unless(atomic64_t *v, long a, long u)
+ }
+ 
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+ 
+ #define atomic_add_return(i,v)						\
+ ({									\
+diff --git a/arch/m32r/include/asm/local.h b/arch/m32r/include/asm/local.h
+index 734bca8..d536082 100644
+--- a/arch/m32r/include/asm/local.h
++++ b/arch/m32r/include/asm/local.h
+@@ -272,6 +272,7 @@ static inline int local_add_unless(local_t *l, long a, long u)
+ }
+ 
+ #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
++#define local_dec_not_zero(l) local_add_unless((l), -1, 0)
+ 
+ static inline void local_clear_mask(unsigned long  mask, local_t *addr)
  {
-+	struct nand_chip *chip = mtd->priv;
- 	struct fsl_elbc_mtd *priv = chip->priv;
- 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
- 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+diff --git a/arch/mips/include/asm/atomic.h b/arch/mips/include/asm/atomic.h
+index 1d93f81..babb043 100644
+--- a/arch/mips/include/asm/atomic.h
++++ b/arch/mips/include/asm/atomic.h
+@@ -697,6 +697,7 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ }
  
--	if (priv->page_size) {
-+	if (mtd->writesize >= 2048) {
- 		out_be32(&lbc->fir,
- 		         (FIR_OP_CM0 << FIR_OP0_SHIFT) |
- 		         (FIR_OP_CA  << FIR_OP1_SHIFT) |
-@@ -311,6 +349,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
- 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
- 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-+	int i, n;
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
  
- 	elbc_fcm_ctrl->use_mdr = 0;
+ #define atomic64_dec_return(v) atomic64_sub_return(1, (v))
+ #define atomic64_inc_return(v) atomic64_add_return(1, (v))
+diff --git a/arch/mips/include/asm/local.h b/arch/mips/include/asm/local.h
+index 94fde8d..0242256 100644
+--- a/arch/mips/include/asm/local.h
++++ b/arch/mips/include/asm/local.h
+@@ -137,6 +137,7 @@ static __inline__ long local_sub_return(long i, local_t * l)
+ 	c != (u);						\
+ })
+ #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
++#define local_dec_not_zero(l) local_add_unless((l), -1, 0)
  
-@@ -337,8 +376,29 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		elbc_fcm_ctrl->read_bytes = mtd->writesize + mtd->oobsize;
- 		elbc_fcm_ctrl->index += column;
+ #define local_dec_return(l) local_sub_return(1, (l))
+ #define local_inc_return(l) local_add_return(1, (l))
+diff --git a/arch/parisc/include/asm/atomic.h b/arch/parisc/include/asm/atomic.h
+index 4054b31..57b7069 100644
+--- a/arch/parisc/include/asm/atomic.h
++++ b/arch/parisc/include/asm/atomic.h
+@@ -334,6 +334,7 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ }
  
--		fsl_elbc_do_read(chip, 0);
-+		fsl_elbc_do_read(mtd, 0);
- 		fsl_elbc_run_command(mtd);
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+ 
+ #endif /* !CONFIG_64BIT */
+ 
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index 02e41b5..0798420 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -468,6 +468,7 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ }
+ 
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+ 
+ #endif /* __powerpc64__ */
+ 
+diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
+index b8da913..d182e34 100644
+--- a/arch/powerpc/include/asm/local.h
++++ b/arch/powerpc/include/asm/local.h
+@@ -134,6 +134,7 @@ static __inline__ int local_add_unless(local_t *l, long a, long u)
+ }
+ 
+ #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
++#define local_dec_not_zero(l) local_add_unless((l), -1, 0)
+ 
+ #define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
+ #define local_dec_and_test(l)		(local_dec_return((l)) == 0)
+diff --git a/arch/s390/include/asm/atomic.h b/arch/s390/include/asm/atomic.h
+index 8517d2a..92e7d5d 100644
+--- a/arch/s390/include/asm/atomic.h
++++ b/arch/s390/include/asm/atomic.h
+@@ -325,6 +325,7 @@ static inline long long atomic64_dec_if_positive(atomic64_t *v)
+ #define atomic64_dec_return(_v)		atomic64_sub_return(1, _v)
+ #define atomic64_dec_and_test(_v)	(atomic64_sub_return(1, _v) == 0)
+ #define atomic64_inc_not_zero(v)	atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
+ 
+ #define smp_mb__before_atomic_dec()	smp_mb()
+ #define smp_mb__after_atomic_dec()	smp_mb()
+diff --git a/arch/sparc/include/asm/atomic_64.h b/arch/sparc/include/asm/atomic_64.h
+index 9f421df..94cf160 100644
+--- a/arch/sparc/include/asm/atomic_64.h
++++ b/arch/sparc/include/asm/atomic_64.h
+@@ -106,6 +106,7 @@ static inline long atomic64_add_unless(atomic64_t *v, long a, long u)
+ }
+ 
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+ 
+ /* Atomic operations are already serializing */
+ #define smp_mb__before_atomic_dec()	barrier()
+diff --git a/arch/tile/include/asm/atomic_32.h b/arch/tile/include/asm/atomic_32.h
+index c03349e..9cfafb3 100644
+--- a/arch/tile/include/asm/atomic_32.h
++++ b/arch/tile/include/asm/atomic_32.h
+@@ -233,6 +233,7 @@ static inline void atomic64_set(atomic64_t *v, u64 n)
+ #define atomic64_dec_return(v)		atomic64_sub_return(1LL, (v))
+ #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
+ #define atomic64_inc_not_zero(v)	atomic64_add_unless((v), 1LL, 0LL)
++#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
+ 
+ /*
+  * We need to barrier before modifying the word, since the _atomic_xxx()
+diff --git a/arch/tile/include/asm/atomic_64.h b/arch/tile/include/asm/atomic_64.h
+index 27fe667..9c22f50 100644
+--- a/arch/tile/include/asm/atomic_64.h
++++ b/arch/tile/include/asm/atomic_64.h
+@@ -141,6 +141,7 @@ static inline long atomic64_add_unless(atomic64_t *v, long a, long u)
+ #define atomic64_add_negative(i, v)	(atomic64_add_return((i), (v)) < 0)
+ 
+ #define atomic64_inc_not_zero(v)	atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1, 0)
+ 
+ /* Atomic dec and inc don't implement barrier, so provide them if needed. */
+ #define smp_mb__before_atomic_dec()	smp_mb()
+diff --git a/arch/x86/include/asm/atomic64_32.h b/arch/x86/include/asm/atomic64_32.h
+index 24098aa..3cd4431 100644
+--- a/arch/x86/include/asm/atomic64_32.h
++++ b/arch/x86/include/asm/atomic64_32.h
+@@ -287,6 +287,18 @@ static inline int atomic64_inc_not_zero(atomic64_t *v)
+ 	return r;
+ }
+ 
 +
-+		if (mtd->writesize <= 2048)
-+			return;
++static inline int atomic64_dec_not_zero(atomic64_t *v)
++{
++	int r;
++	asm volatile(ATOMIC64_ALTERNATIVE(dec_not_zero)
++		     : "=a" (r)
++		     : "S" (v)
++		     : "ecx", "edx", "memory"
++		     );
++	return r;
++}
 +
-+		/* Continue to read the rest bytes if writesize > 2048 */
-+		io_to_buffer(mtd, 0, 0);
-+		io_to_buffer(mtd, 0, 1);
+ static inline long long atomic64_dec_if_positive(atomic64_t *v)
+ {
+ 	long long r;
+diff --git a/arch/x86/include/asm/atomic64_64.h b/arch/x86/include/asm/atomic64_64.h
+index 0e1cbfc..539e41b 100644
+--- a/arch/x86/include/asm/atomic64_64.h
++++ b/arch/x86/include/asm/atomic64_64.h
+@@ -216,6 +216,7 @@ static inline int atomic64_add_unless(atomic64_t *v, long a, long u)
+ }
+ 
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
+ 
+ /*
+  * atomic64_dec_if_positive - decrement by 1 if old value positive
+diff --git a/arch/x86/include/asm/local.h b/arch/x86/include/asm/local.h
+index 9cdae5d..2c8c92d 100644
+--- a/arch/x86/include/asm/local.h
++++ b/arch/x86/include/asm/local.h
+@@ -185,6 +185,7 @@ static inline long local_sub_return(long i, local_t *l)
+ 	c != (u);						\
+ })
+ #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
++#define local_dec_not_zero(l) local_add_unless((l), -1, 0)
+ 
+ /* On x86_32, these are no better than the atomic variants.
+  * On x86-64 these are better than the atomic variants on SMP kernels
+diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
+index 042f682..7da05c3 100644
+--- a/arch/x86/lib/atomic64_32.c
++++ b/arch/x86/lib/atomic64_32.c
+@@ -24,6 +24,8 @@ long long atomic64_dec_if_positive_cx8(atomic64_t *v);
+ EXPORT_SYMBOL(atomic64_dec_if_positive_cx8);
+ int atomic64_inc_not_zero_cx8(atomic64_t *v);
+ EXPORT_SYMBOL(atomic64_inc_not_zero_cx8);
++int atomic64_dec_not_zero_cx8(atomic64_t *v);
++EXPORT_SYMBOL(atomic64_dec_not_zero_cx8);
+ int atomic64_add_unless_cx8(atomic64_t *v, long long a, long long u);
+ EXPORT_SYMBOL(atomic64_add_unless_cx8);
+ 
+@@ -54,6 +56,8 @@ long long atomic64_dec_if_positive_386(atomic64_t *v);
+ EXPORT_SYMBOL(atomic64_dec_if_positive_386);
+ int atomic64_inc_not_zero_386(atomic64_t *v);
+ EXPORT_SYMBOL(atomic64_inc_not_zero_386);
++int atomic64_dec_not_zero_386(atomic64_t *v);
++EXPORT_SYMBOL(atomic64_dec_not_zero_386);
+ int atomic64_add_unless_386(atomic64_t *v, long long a, long long u);
+ EXPORT_SYMBOL(atomic64_add_unless_386);
+ #endif
+diff --git a/arch/x86/lib/atomic64_386_32.S b/arch/x86/lib/atomic64_386_32.S
+index e8e7e0d..c78337b 100644
+--- a/arch/x86/lib/atomic64_386_32.S
++++ b/arch/x86/lib/atomic64_386_32.S
+@@ -181,6 +181,27 @@ ENDP
+ #undef v
+ 
+ #define v %esi
++BEGIN(dec_not_zero)
++	movl  (v), %eax
++	movl 4(v), %edx
++	testl %eax, %eax
++	je 3f
++1:
++	subl $1, %eax
++	sbbl $0, %edx
++	movl %eax,  (v)
++	movl %edx, 4(v)
++	movl $1, %eax
++2:
++	RET
++3:
++	testl %edx, %edx
++	jne 1b
++	jmp 2b
++ENDP
++#undef v
 +
-+		out_be32(&lbc->fir, FIR_OP_RB << FIR_OP1_SHIFT);
++#define v %esi
+ BEGIN(dec_if_positive)
+ 	movl  (v), %eax
+ 	movl 4(v), %edx
+diff --git a/arch/x86/lib/atomic64_cx8_32.S b/arch/x86/lib/atomic64_cx8_32.S
+index 391a083..989638c 100644
+--- a/arch/x86/lib/atomic64_cx8_32.S
++++ b/arch/x86/lib/atomic64_cx8_32.S
+@@ -220,3 +220,31 @@ ENTRY(atomic64_inc_not_zero_cx8)
+ 	jmp 3b
+ 	CFI_ENDPROC
+ ENDPROC(atomic64_inc_not_zero_cx8)
 +
-+		n = mtd->writesize / 2048;
-+		for (i = 1; i < n; i++) {
-+			/*
-+			 * Maybe there are some reasons of FCM hardware timing,
-+			 * we must insert a FIR_OP_NOP(0x00) before FIR_OP_RB.
-+			 */
-+			fsl_elbc_run_command(mtd);
-+			io_to_buffer(mtd, i, 0);
-+			io_to_buffer(mtd, i, 1);
-+		}
++ENTRY(atomic64_dec_not_zero_cx8)
++	CFI_STARTPROC
++	SAVE ebx
 +
- 		return;
- 
- 	/* READOOB reads only the OOB because no ECC is performed. */
-@@ -347,13 +407,37 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		         "fsl_elbc_cmdfunc: NAND_CMD_READOOB, page_addr:"
- 			 " 0x%x, column: 0x%x.\n", page_addr, column);
- 
--		out_be32(&lbc->fbcr, mtd->oobsize - column);
--		set_addr(mtd, column, page_addr, 1);
-+		if (mtd->writesize <= 2048) {
-+			out_be32(&lbc->fbcr, mtd->oobsize - column);
-+			set_addr(mtd, column, page_addr, 1);
-+		} else {
-+			out_be32(&lbc->fbcr, 64);
-+			set_addr(mtd, 0, page_addr, 1);
-+			elbc_fcm_ctrl->index += column;
-+		}
- 
- 		elbc_fcm_ctrl->read_bytes = mtd->writesize + mtd->oobsize;
- 
--		fsl_elbc_do_read(chip, 1);
-+		fsl_elbc_do_read(mtd, 1);
- 		fsl_elbc_run_command(mtd);
++	read64 %esi
++1:
++	testl %eax, %eax
++	je 4f
++2:
++	movl %eax, %ebx
++	movl %edx, %ecx
++	subl $1, %ebx
++	sbbl $0, %ecx
++	LOCK_PREFIX
++	cmpxchg8b (%esi)
++	jne 1b
 +
-+		if (mtd->writesize <= 2048)
-+			return;
++	movl $1, %eax
++3:
++	RESTORE ebx
++	ret
++4:
++	testl %edx, %edx
++	jne 2b
++	jmp 3b
++	CFI_ENDPROC
++ENDPROC(atomic64_dec_not_zero_cx8)
+diff --git a/include/asm-generic/atomic-long.h b/include/asm-generic/atomic-long.h
+index b7babf0..0fe75ab 100644
+--- a/include/asm-generic/atomic-long.h
++++ b/include/asm-generic/atomic-long.h
+@@ -130,6 +130,7 @@ static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
+ }
+ 
+ #define atomic_long_inc_not_zero(l) atomic64_inc_not_zero((atomic64_t *)(l))
++#define atomic_long_dec_not_zero(l) atomic64_dec_not_zero((atomic64_t *)(l))
+ 
+ #define atomic_long_cmpxchg(l, old, new) \
+ 	(atomic64_cmpxchg((atomic64_t *)(l), (old), (new)))
+@@ -247,6 +248,7 @@ static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
+ }
+ 
+ #define atomic_long_inc_not_zero(l) atomic_inc_not_zero((atomic_t *)(l))
++#define atomic_long_dec_not_zero(l) atomic_dec_not_zero((atomic_t *)(l))
+ 
+ #define atomic_long_cmpxchg(l, old, new) \
+ 	(atomic_cmpxchg((atomic_t *)(l), (old), (new)))
+diff --git a/include/asm-generic/atomic64.h b/include/asm-generic/atomic64.h
+index b18ce4f..90ff9b1 100644
+--- a/include/asm-generic/atomic64.h
++++ b/include/asm-generic/atomic64.h
+@@ -38,5 +38,6 @@ extern int	 atomic64_add_unless(atomic64_t *v, long long a, long long u);
+ #define atomic64_dec_return(v)		atomic64_sub_return(1LL, (v))
+ #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
+ #define atomic64_inc_not_zero(v) 	atomic64_add_unless((v), 1LL, 0LL)
++#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
+ 
+ #endif  /*  _ASM_GENERIC_ATOMIC64_H  */
+diff --git a/include/asm-generic/local.h b/include/asm-generic/local.h
+index 9ceb03b..fabf4f3 100644
+--- a/include/asm-generic/local.h
++++ b/include/asm-generic/local.h
+@@ -44,6 +44,7 @@ typedef struct
+ #define local_xchg(l, n) atomic_long_xchg((&(l)->a), (n))
+ #define local_add_unless(l, _a, u) atomic_long_add_unless((&(l)->a), (_a), (u))
+ #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
++#define local_dec_not_zero(l) atomic_long_dec_not_zero(&(l)->a)
+ 
+ /* Non-atomic variants, ie. preemption disabled and won't be touched
+  * in interrupt, etc.  Some archs can optimize this case well. */
+diff --git a/include/asm-generic/local64.h b/include/asm-generic/local64.h
+index 5980002..76acbe2 100644
+--- a/include/asm-generic/local64.h
++++ b/include/asm-generic/local64.h
+@@ -45,6 +45,7 @@ typedef struct {
+ #define local64_xchg(l, n)	local_xchg((&(l)->a), (n))
+ #define local64_add_unless(l, _a, u) local_add_unless((&(l)->a), (_a), (u))
+ #define local64_inc_not_zero(l)	local_inc_not_zero(&(l)->a)
++#define local64_dec_not_zero(l)	local_dec_not_zero(&(l)->a)
+ 
+ /* Non-atomic variants, ie. preemption disabled and won't be touched
+  * in interrupt, etc.  Some archs can optimize this case well. */
+@@ -83,6 +84,7 @@ typedef struct {
+ #define local64_xchg(l, n)	atomic64_xchg((&(l)->a), (n))
+ #define local64_add_unless(l, _a, u) atomic64_add_unless((&(l)->a), (_a), (u))
+ #define local64_inc_not_zero(l)	atomic64_inc_not_zero(&(l)->a)
++#define local64_dec_not_zero(l)	atomic64_dec_not_zero(&(l)->a)
+ 
+ /* Non-atomic variants, ie. preemption disabled and won't be touched
+  * in interrupt, etc.  Some archs can optimize this case well. */
+diff --git a/include/linux/atomic.h b/include/linux/atomic.h
+index 42b77b5..ad2b750 100644
+--- a/include/linux/atomic.h
++++ b/include/linux/atomic.h
+@@ -27,6 +27,15 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ #define atomic_inc_not_zero(v)		atomic_add_unless((v), 1, 0)
+ 
+ /**
++ * atomic_dec_not_zero - decrement unless the number is zero
++ * @v: pointer of type atomic_t
++ *
++ * Atomically decrements @v by 1, so long as @v is non-zero.
++ * Returns non-zero if @v was non-zero, and zero otherwise.
++ */
++#define atomic_dec_not_zero(v)		atomic_add_unless((v), -1, 0)
 +
-+		if (column < 64)
-+			io_to_buffer(mtd, 0, 1);
++/**
+  * atomic_inc_not_zero_hint - increment if not null
+  * @v: pointer of type atomic_t
+  * @hint: probable value of the atomic before the increment
+diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
+index 0c33cde..b7468b7 100644
+--- a/lib/atomic64_test.c
++++ b/lib/atomic64_test.c
+@@ -145,6 +145,25 @@ static __init int test_atomic64(void)
+ 	r += one;
+ 	BUG_ON(v.counter != r);
+ 
++	INIT(onestwos);
++	BUG_ON(!atomic64_dec_not_zero(&v));
++	r -= one;
++	BUG_ON(v.counter != r);
 +
-+		out_be32(&lbc->fbcr, 2112);
-+		out_be32(&lbc->fir, FIR_OP_RB << FIR_OP1_SHIFT);
-+		out_be32(&lbc->fpar, in_be32(&lbc->fpar) & ~FPAR_LP_MS);
++	INIT(0);
++	BUG_ON(atomic64_dec_not_zero(&v));
++	BUG_ON(v.counter != r);
 +
-+		n = mtd->writesize / 2048;
-+		for (i = 1; i < n; i++) {
-+			fsl_elbc_run_command(mtd);
-+			if (column < (64 * (i + 1)))
-+				io_to_buffer(mtd, i, 1);
-+		}
++	INIT(one);
++	BUG_ON(!atomic64_dec_not_zero(&v));
++	r -= one;
++	BUG_ON(v.counter != r);
 +
- 		return;
- 
- 	/* READID must read all 5 possible bytes while CEB is active */
-@@ -429,7 +513,17 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		      (NAND_CMD_SEQIN    << FCR_CMD2_SHIFT) |
- 		      (NAND_CMD_PAGEPROG << FCR_CMD3_SHIFT);
- 
--		if (priv->page_size) {
-+		if (mtd->writesize > 2048) {
-+			/* writesize > 2048 */
-+			out_be32(&lbc->fir,
-+				 (FIR_OP_CM2 << FIR_OP0_SHIFT) |
-+				 (FIR_OP_CA  << FIR_OP1_SHIFT) |
-+				 (FIR_OP_PA  << FIR_OP2_SHIFT) |
-+				 (FIR_OP_WB  << FIR_OP3_SHIFT));
++	INIT(-one);
++	BUG_ON(!atomic64_dec_not_zero(&v));
++	r -= one;
++	BUG_ON(v.counter != r);
 +
-+			if (elbc_fcm_ctrl->oob)
-+				fcr |= NAND_CMD_RNDIN << FCR_CMD0_SHIFT;
-+		} else if (mtd->writesize == 2048) {
- 			out_be32(&lbc->fir,
- 			         (FIR_OP_CM2 << FIR_OP0_SHIFT) |
- 			         (FIR_OP_CA  << FIR_OP1_SHIFT) |
-@@ -464,6 +558,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 
- 	/* PAGEPROG reuses all of the setup from SEQIN and adds the length */
- 	case NAND_CMD_PAGEPROG: {
-+		int pos;
- 		dev_vdbg(priv->dev,
- 		         "fsl_elbc_cmdfunc: NAND_CMD_PAGEPROG "
- 			 "writing %d bytes.\n", elbc_fcm_ctrl->index);
-@@ -473,13 +568,72 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		 * write so the HW generates the ECC.
- 		 */
- 		if (elbc_fcm_ctrl->oob || elbc_fcm_ctrl->column != 0 ||
--		    elbc_fcm_ctrl->index != mtd->writesize + mtd->oobsize)
--			out_be32(&lbc->fbcr,
--				elbc_fcm_ctrl->index - elbc_fcm_ctrl->column);
--		else
-+		    elbc_fcm_ctrl->index != mtd->writesize + mtd->oobsize) {
-+			if (elbc_fcm_ctrl->oob && mtd->writesize > 2048) {
-+				out_be32(&lbc->fbcr, 64);
-+			} else {
-+				out_be32(&lbc->fbcr, elbc_fcm_ctrl->index
-+						- elbc_fcm_ctrl->column);
-+			}
-+		} else {
- 			out_be32(&lbc->fbcr, 0);
-+		}
-+
-+		if (mtd->writesize > 2048) {
-+			if (!elbc_fcm_ctrl->oob)
-+				buffer_to_io(mtd, 0, 0);
-+			buffer_to_io(mtd, 0, 1);
-+		}
- 
- 		fsl_elbc_run_command(mtd);
-+
-+		if (mtd->writesize <= 2048)
-+			return;
-+
-+		n = mtd->writesize / 2048;
-+
-+		if (elbc_fcm_ctrl->oob) {
-+			pos = 2048;
-+			out_be32(&lbc->fir,
-+				(FIR_OP_CM0 << FIR_OP0_SHIFT) |
-+				(FIR_OP_UA  << FIR_OP1_SHIFT) |
-+				(FIR_OP_UA  << FIR_OP2_SHIFT) |
-+				(FIR_OP_WB  << FIR_OP3_SHIFT));
-+
-+			for (i = 1; i < n; i++) {
-+				pos += 2112;
-+				elbc_fcm_ctrl->mdr = pos;
-+				elbc_fcm_ctrl->use_mdr = 1;
-+				if (i == n - 1) {
-+					out_be32(&lbc->fir,
-+						(FIR_OP_CM0 << FIR_OP1_SHIFT) |
-+						(FIR_OP_UA  << FIR_OP2_SHIFT) |
-+						(FIR_OP_UA  << FIR_OP3_SHIFT) |
-+						(FIR_OP_WB  << FIR_OP4_SHIFT) |
-+						(FIR_OP_CM3 << FIR_OP5_SHIFT) |
-+						(FIR_OP_CW1 << FIR_OP6_SHIFT) |
-+						(FIR_OP_RS  << FIR_OP7_SHIFT));
-+				}
-+				buffer_to_io(mtd, i, 1);
-+				fsl_elbc_run_command(mtd);
-+			}
-+		} else {
-+			out_be32(&lbc->fir, FIR_OP_WB << FIR_OP1_SHIFT);
-+			for (i = 1; i < n; i++) {
-+				if (i == n - 1) {
-+					elbc_fcm_ctrl->use_mdr = 1;
-+					out_be32(&lbc->fir,
-+						(FIR_OP_WB  << FIR_OP1_SHIFT) |
-+						(FIR_OP_CM3 << FIR_OP2_SHIFT) |
-+						(FIR_OP_CW1 << FIR_OP3_SHIFT) |
-+						(FIR_OP_RS  << FIR_OP4_SHIFT));
-+				}
-+				buffer_to_io(mtd, i, 0);
-+				buffer_to_io(mtd, i, 1);
-+				fsl_elbc_run_command(mtd);
-+			}
-+		}
-+
- 		return;
- 	}
- 
-@@ -500,6 +654,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		 * write-protected, even when it is not.
- 		 */
- 		setbits8(elbc_fcm_ctrl->addr, NAND_STATUS_WP);
-+		elbc_fcm_ctrl->buffer[0] = in_8(elbc_fcm_ctrl->addr);
- 		return;
- 
- 	/* RESET without waiting for the ready line */
-@@ -548,7 +703,14 @@ static void fsl_elbc_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
- 		len = bufsize - elbc_fcm_ctrl->index;
- 	}
- 
--	memcpy_toio(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index], buf, len);
-+	if (mtd->writesize > 2048) {
-+		memcpy(&elbc_fcm_ctrl->buffer[elbc_fcm_ctrl->index],
-+				buf, len);
-+	} else {
-+		memcpy_toio(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index],
-+				buf, len);
-+	}
-+
- 	/*
- 	 * This is workaround for the weird elbc hangs during nand write,
- 	 * Scott Wood says: "...perhaps difference in how long it takes a
-@@ -572,8 +734,13 @@ static u8 fsl_elbc_read_byte(struct mtd_info *mtd)
- 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
- 
- 	/* If there are still bytes in the FCM, then use the next byte. */
--	if (elbc_fcm_ctrl->index < elbc_fcm_ctrl->read_bytes)
--		return in_8(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index++]);
-+	if (elbc_fcm_ctrl->index < elbc_fcm_ctrl->read_bytes) {
-+		int index = elbc_fcm_ctrl->index++;
-+		if (mtd->writesize > 2048)
-+			return elbc_fcm_ctrl->buffer[index];
-+		else
-+			return in_8(&elbc_fcm_ctrl->addr[index]);
-+	}
- 
- 	dev_err(priv->dev, "read_byte beyond end of buffer\n");
- 	return ERR_BYTE;
-@@ -594,7 +761,13 @@ static void fsl_elbc_read_buf(struct mtd_info *mtd, u8 *buf, int len)
- 
- 	avail = min((unsigned int)len,
- 			elbc_fcm_ctrl->read_bytes - elbc_fcm_ctrl->index);
--	memcpy_fromio(buf, &elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index], avail);
-+	if (mtd->writesize > 2048) {
-+		memcpy(buf, &elbc_fcm_ctrl->buffer[elbc_fcm_ctrl->index],
-+				avail);
-+	} else {
-+		memcpy_fromio(buf, &elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index],
-+				avail);
-+	}
- 	elbc_fcm_ctrl->index += avail;
- 
- 	if (len > avail)
-@@ -630,10 +803,17 @@ static int fsl_elbc_verify_buf(struct mtd_info *mtd, const u_char *buf, int len)
- 		return -EINVAL;
- 	}
- 
--	for (i = 0; i < len; i++)
--		if (in_8(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index + i])
--				!= buf[i])
--			break;
-+	if (mtd->writesize > 2048) {
-+		for (i = 0; i < len; i++)
-+			if (elbc_fcm_ctrl->buffer[elbc_fcm_ctrl->index + i]
-+					!= buf[i])
-+				break;
-+	} else {
-+		for (i = 0; i < len; i++)
-+			if (in_8(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index + i])
-+					!= buf[i])
-+				break;
-+	}
- 
- 	elbc_fcm_ctrl->index += len;
- 	return i == len && elbc_fcm_ctrl->status == LTESR_CC ? 0 : -EIO;
-@@ -714,10 +894,9 @@ static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
- 
- 	/* adjust Option Register and ECC to match Flash page size */
- 	if (mtd->writesize == 512) {
--		priv->page_size = 0;
- 		clrbits32(&lbc->bank[priv->bank].or, OR_FCM_PGS);
--	} else if (mtd->writesize == 2048) {
--		priv->page_size = 1;
-+	} else if (mtd->writesize >= 2048 && mtd->writesize <= 16 * 1024) {
-+
- 		setbits32(&lbc->bank[priv->bank].or, OR_FCM_PGS);
- 		/* adjust ecc setup if needed */
- 		if ((in_be32(&lbc->bank[priv->bank].br) & BR_DECC) ==
-@@ -891,6 +1070,19 @@ static int __devinit fsl_elbc_nand_probe(struct platform_device *pdev)
- 			goto err;
- 		}
- 		elbc_fcm_ctrl->counter++;
-+		/*
-+		 * Freescale FCM controller has a 2K size limitation of buffer
-+		 * RAM, so elbc_fcm_ctrl->buffer have to be used if writesize
-+		 * of chip is greater than 2048.
-+		 * We malloc a large enough buffer (maximum page size is 16K).
-+		 */
-+		elbc_fcm_ctrl->buffer = kmalloc(1024 * 16 + 1024, GFP_KERNEL);
-+		if (!elbc_fcm_ctrl->buffer) {
-+			dev_err(dev, "failed to allocate memory\n");
-+			mutex_unlock(&fsl_elbc_nand_mutex);
-+			ret = -ENOMEM;
-+			goto err;
-+		}
- 
- 		spin_lock_init(&elbc_fcm_ctrl->controller.lock);
- 		init_waitqueue_head(&elbc_fcm_ctrl->controller.wq);
-@@ -960,6 +1152,7 @@ static int fsl_elbc_nand_remove(struct platform_device *pdev)
- 	elbc_fcm_ctrl->counter--;
- 	if (!elbc_fcm_ctrl->counter) {
- 		fsl_lbc_ctrl_dev->nand = NULL;
-+		kfree(elbc_fcm_ctrl->buffer);
- 		kfree(elbc_fcm_ctrl);
- 	}
- 	mutex_unlock(&fsl_elbc_nand_mutex);
+ #ifdef CONFIG_X86
+ 	printk(KERN_INFO "atomic64 test passed for %s platform %s CX8 and %s SSE\n",
+ #ifdef CONFIG_X86_64
 -- 
-1.7.1
+1.7.7.3
