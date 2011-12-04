@@ -3,14 +3,14 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F413B6F9B
+ by ozlabs.org (Postfix) with ESMTPS id 63C4EB6F9D
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 10:42:33 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: alan@linux.intel.com, gregkh@suse.de, scottwood@freescale.com,
  galak@kernel.crashing.org
-Subject: [PATCH 3/6] serial: export the key functions for an 8250 IRQ handler
-Date: Sun,  4 Dec 2011 18:42:20 -0500
-Message-Id: <1323042143-25330-4-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 1/6] serial: move struct uart_8250_port from 8250.c to 8250.h
+Date: Sun,  4 Dec 2011 18:42:18 -0500
+Message-Id: <1323042143-25330-2-git-send-email-paul.gortmaker@windriver.com>
 In-Reply-To: <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
 References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
  <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
@@ -25,153 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For drivers that need to construct their own IRQ handler, the
-three components are seen in the current handle_port -- i.e.
-Rx, Tx and modem_status.
-
-Make these exported symbols so that "almost" 8250 UARTs can
-construct their own IRQ handler with these shared components,
-while working around their own unique errata issues.
-
-The function names are given a serial8250 prefix, since they
-are now entering the global namespace.
+Since we want to promote sharing and move away from one single
+uart driver with a bunch of platform specific bugfixes all
+munged into one, relocate some header like material from
+the C file to the header.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/tty/serial/8250.c   |   29 +++++++++++++++--------------
- include/linux/serial_8250.h |    4 ++++
- 2 files changed, 19 insertions(+), 14 deletions(-)
+ drivers/tty/serial/8250.c |   26 --------------------------
+ drivers/tty/serial/8250.h |   26 ++++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/tty/serial/8250.c b/drivers/tty/serial/8250.c
-index a20d7eb..91afe7a 100644
+index eeadf1b..d97628e 100644
 --- a/drivers/tty/serial/8250.c
 +++ b/drivers/tty/serial/8250.c
-@@ -1300,8 +1300,6 @@ static void serial8250_stop_tx(struct uart_port *port)
- 	}
- }
+@@ -129,32 +129,6 @@ static unsigned long probe_rsa[PORT_RSA_MAX];
+ static unsigned int probe_rsa_count;
+ #endif /* CONFIG_SERIAL_8250_RSA  */
  
--static void transmit_chars(struct uart_8250_port *up);
+-struct uart_8250_port {
+-	struct uart_port	port;
+-	struct timer_list	timer;		/* "no irq" timer */
+-	struct list_head	list;		/* ports on this IRQ */
+-	unsigned short		capabilities;	/* port capabilities */
+-	unsigned short		bugs;		/* port bugs */
+-	unsigned int		tx_loadsz;	/* transmit fifo load size */
+-	unsigned char		acr;
+-	unsigned char		ier;
+-	unsigned char		lcr;
+-	unsigned char		mcr;
+-	unsigned char		mcr_mask;	/* mask of user bits */
+-	unsigned char		mcr_force;	/* mask of forced bits */
+-	unsigned char		cur_iotype;	/* Running I/O type */
 -
- static void serial8250_start_tx(struct uart_port *port)
- {
- 	struct uart_8250_port *up =
-@@ -1318,7 +1316,7 @@ static void serial8250_start_tx(struct uart_port *port)
- 			if ((up->port.type == PORT_RM9000) ?
- 				(lsr & UART_LSR_THRE) :
- 				(lsr & UART_LSR_TEMT))
--				transmit_chars(up);
-+				serial8250_tx_chars(up);
- 		}
- 	}
+-	/*
+-	 * Some bits in registers are cleared on a read, so they must
+-	 * be saved whenever the register is read but the bits will not
+-	 * be immediately processed.
+-	 */
+-#define LSR_SAVE_FLAGS UART_LSR_BRK_ERROR_BITS
+-	unsigned char		lsr_saved_flags;
+-#define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
+-	unsigned char		msr_saved_flags;
+-};
+-
+ struct irq_info {
+ 	struct			hlist_node node;
+ 	int			irq;
+diff --git a/drivers/tty/serial/8250.h b/drivers/tty/serial/8250.h
+index 6edf4a6..ae027be 100644
+--- a/drivers/tty/serial/8250.h
++++ b/drivers/tty/serial/8250.h
+@@ -13,6 +13,32 @@
  
-@@ -1376,12 +1374,12 @@ static void clear_rx_fifo(struct uart_8250_port *up)
- }
+ #include <linux/serial_8250.h>
  
- /*
-- * receive_chars: processes according to the passed in LSR
-+ * serial8250_rx_chars: processes according to the passed in LSR
-  * value, and returns the remaining LSR bits not handled
-  * by this Rx routine.
-  */
--static unsigned char
--receive_chars(struct uart_8250_port *up, unsigned char lsr)
-+unsigned char
-+serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr)
- {
- 	struct tty_struct *tty = up->port.state->port.tty;
- 	unsigned char ch;
-@@ -1462,8 +1460,9 @@ ignore_char:
- 	spin_lock(&up->port.lock);
- 	return lsr;
- }
-+EXPORT_SYMBOL_GPL(serial8250_rx_chars);
- 
--static void transmit_chars(struct uart_8250_port *up)
-+void serial8250_tx_chars(struct uart_8250_port *up)
- {
- 	struct circ_buf *xmit = &up->port.state->xmit;
- 	int count;
-@@ -1500,8 +1499,9 @@ static void transmit_chars(struct uart_8250_port *up)
- 	if (uart_circ_empty(xmit))
- 		__stop_tx(up);
- }
-+EXPORT_SYMBOL_GPL(serial8250_tx_chars);
- 
--static unsigned int check_modem_status(struct uart_8250_port *up)
-+unsigned int serial8250_modem_status(struct uart_8250_port *up)
- {
- 	unsigned int status = serial_in(up, UART_MSR);
- 
-@@ -1523,6 +1523,7 @@ static unsigned int check_modem_status(struct uart_8250_port *up)
- 
- 	return status;
- }
-+EXPORT_SYMBOL_GPL(serial8250_modem_status);
- 
- /*
-  * This handles the interrupt from one port.
-@@ -1539,10 +1540,10 @@ static void serial8250_handle_port(struct uart_8250_port *up)
- 	DEBUG_INTR("status = %x...", status);
- 
- 	if (status & (UART_LSR_DR | UART_LSR_BI))
--		status = receive_chars(up, status);
--	check_modem_status(up);
-+		status = serial8250_rx_chars(up, status);
-+	serial8250_modem_status(up);
- 	if (status & UART_LSR_THRE)
--		transmit_chars(up);
-+		serial8250_tx_chars(up);
- 
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- }
-@@ -1780,7 +1781,7 @@ static void serial8250_backup_timeout(unsigned long data)
- 	}
- 
- 	if (!(iir & UART_IIR_NO_INT))
--		transmit_chars(up);
-+		serial8250_tx_chars(up);
- 
- 	if (is_real_interrupt(up->port.irq))
- 		serial_out(up, UART_IER, ier);
-@@ -1814,7 +1815,7 @@ static unsigned int serial8250_get_mctrl(struct uart_port *port)
- 	unsigned int status;
- 	unsigned int ret;
- 
--	status = check_modem_status(up);
-+	status = serial8250_modem_status(up);
- 
- 	ret = 0;
- 	if (status & UART_MSR_DCD)
-@@ -2861,7 +2862,7 @@ serial8250_console_write(struct console *co, const char *s, unsigned int count)
- 	 *	while processing with interrupts off.
- 	 */
- 	if (up->msr_saved_flags)
--		check_modem_status(up);
-+		serial8250_modem_status(up);
- 
- 	if (locked)
- 		spin_unlock(&up->port.lock);
-diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
-index 1f05bbe..b44034e 100644
---- a/include/linux/serial_8250.h
-+++ b/include/linux/serial_8250.h
-@@ -66,6 +66,7 @@ enum {
-  * dependent on the 8250 driver.
-  */
- struct uart_port;
-+struct uart_8250_port;
- 
- int serial8250_register_port(struct uart_port *);
- void serial8250_unregister_port(int line);
-@@ -82,6 +83,9 @@ extern void serial8250_do_set_termios(struct uart_port *port,
- extern void serial8250_do_pm(struct uart_port *port, unsigned int state,
- 			     unsigned int oldstate);
- int serial8250_handle_irq(struct uart_port *port, unsigned int iir);
-+unsigned char serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr);
-+void serial8250_tx_chars(struct uart_8250_port *up);
-+unsigned int serial8250_modem_status(struct uart_8250_port *up);
- 
- extern void serial8250_set_isa_configurator(void (*v)
- 					(int port, struct uart_port *up,
++struct uart_8250_port {
++	struct uart_port	port;
++	struct timer_list	timer;		/* "no irq" timer */
++	struct list_head	list;		/* ports on this IRQ */
++	unsigned short		capabilities;	/* port capabilities */
++	unsigned short		bugs;		/* port bugs */
++	unsigned int		tx_loadsz;	/* transmit fifo load size */
++	unsigned char		acr;
++	unsigned char		ier;
++	unsigned char		lcr;
++	unsigned char		mcr;
++	unsigned char		mcr_mask;	/* mask of user bits */
++	unsigned char		mcr_force;	/* mask of forced bits */
++	unsigned char		cur_iotype;	/* Running I/O type */
++
++	/*
++	 * Some bits in registers are cleared on a read, so they must
++	 * be saved whenever the register is read but the bits will not
++	 * be immediately processed.
++	 */
++#define LSR_SAVE_FLAGS UART_LSR_BRK_ERROR_BITS
++	unsigned char		lsr_saved_flags;
++#define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
++	unsigned char		msr_saved_flags;
++};
++
+ struct old_serial_port {
+ 	unsigned int uart;
+ 	unsigned int baud_base;
 -- 
 1.7.7
