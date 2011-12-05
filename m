@@ -1,16 +1,29 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EF5291007D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2011 09:48:57 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] rapidio/tsi721: switch to dma_zalloc_coherent
-Date: Mon,  5 Dec 2011 17:33:45 -0500
-Message-Id: <1323124425-24808-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
+ [213.199.154.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7D3DB1007D4
+ for <linuxppc-dev@ozlabs.org>; Tue,  6 Dec 2011 10:44:46 +1100 (EST)
+Received: from mail27-db3 (localhost [127.0.0.1])	by mail27-db3-R.bigfish.com
+ (Postfix) with ESMTP id 3B3AD20068	for <linuxppc-dev@ozlabs.org>;
+ Mon,  5 Dec 2011 23:44:41 +0000 (UTC)
+Received: from DB3EHSMHS011.bigfish.com (unknown [10.3.81.241])	by
+ mail27-db3.bigfish.com (Postfix) with ESMTP id C81302C013B	for
+ <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2011 23:44:40 +0000 (UTC)
+Message-ID: <4EDD575F.6010006@freescale.com>
+Date: Mon, 5 Dec 2011 17:44:31 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [PATCH 2/2] powerpc/85xx: add a 32-bit P1022DS device tree
+References: <1322863714-6818-1-git-send-email-timur@freescale.com>
+ <1322863714-6818-2-git-send-email-timur@freescale.com>
+ <D5BD2D7D-4549-42A7-8BA6-9B3C84DB5E85@freescale.com>
+In-Reply-To: <D5BD2D7D-4549-42A7-8BA6-9B3C84DB5E85@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,88 +33,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replaces pair dma_alloc_coherent()+memset() with new dma_zalloc_coherent()
-added by Andrew Morton for kernel version 3.2
+Kumar Gala wrote:
+> look at how mpc8572ds handles 36b.dts we put common definitions in a shared file.
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
----
- drivers/rapidio/devices/tsi721.c |   17 ++++-------------
- 1 files changed, 4 insertions(+), 13 deletions(-)
+Ok, I've made those changes, but when I boot the kernel, I'm seeing this.  Can you give me a clue as to what's wrong?
 
-diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
-index 5225930..514c28c 100644
---- a/drivers/rapidio/devices/tsi721.c
-+++ b/drivers/rapidio/devices/tsi721.c
-@@ -851,14 +851,12 @@ static int tsi721_doorbell_init(struct tsi721_device *priv)
- 	INIT_WORK(&priv->idb_work, tsi721_db_dpc);
- 
- 	/* Allocate buffer for inbound doorbells queue */
--	priv->idb_base = dma_alloc_coherent(&priv->pdev->dev,
-+	priv->idb_base = dma_zalloc_coherent(&priv->pdev->dev,
- 				IDB_QSIZE * TSI721_IDB_ENTRY_SIZE,
- 				&priv->idb_dma, GFP_KERNEL);
- 	if (!priv->idb_base)
- 		return -ENOMEM;
- 
--	memset(priv->idb_base, 0, IDB_QSIZE * TSI721_IDB_ENTRY_SIZE);
--
- 	dev_dbg(&priv->pdev->dev, "Allocated IDB buffer @ %p (phys = %llx)\n",
- 		priv->idb_base, (unsigned long long)priv->idb_dma);
- 
-@@ -904,7 +902,7 @@ static int tsi721_bdma_ch_init(struct tsi721_device *priv, int chnum)
- 	 */
- 
- 	/* Allocate space for DMA descriptors */
--	bd_ptr = dma_alloc_coherent(&priv->pdev->dev,
-+	bd_ptr = dma_zalloc_coherent(&priv->pdev->dev,
- 					bd_num * sizeof(struct tsi721_dma_desc),
- 					&bd_phys, GFP_KERNEL);
- 	if (!bd_ptr)
-@@ -913,8 +911,6 @@ static int tsi721_bdma_ch_init(struct tsi721_device *priv, int chnum)
- 	priv->bdma[chnum].bd_phys = bd_phys;
- 	priv->bdma[chnum].bd_base = bd_ptr;
- 
--	memset(bd_ptr, 0, bd_num * sizeof(struct tsi721_dma_desc));
--
- 	dev_dbg(&priv->pdev->dev, "DMA descriptors @ %p (phys = %llx)\n",
- 		bd_ptr, (unsigned long long)bd_phys);
- 
-@@ -922,7 +918,7 @@ static int tsi721_bdma_ch_init(struct tsi721_device *priv, int chnum)
- 	sts_size = (bd_num >= TSI721_DMA_MINSTSSZ) ?
- 					bd_num : TSI721_DMA_MINSTSSZ;
- 	sts_size = roundup_pow_of_two(sts_size);
--	sts_ptr = dma_alloc_coherent(&priv->pdev->dev,
-+	sts_ptr = dma_zalloc_coherent(&priv->pdev->dev,
- 				     sts_size * sizeof(struct tsi721_dma_sts),
- 				     &sts_phys, GFP_KERNEL);
- 	if (!sts_ptr) {
-@@ -938,8 +934,6 @@ static int tsi721_bdma_ch_init(struct tsi721_device *priv, int chnum)
- 	priv->bdma[chnum].sts_base = sts_ptr;
- 	priv->bdma[chnum].sts_size = sts_size;
- 
--	memset(sts_ptr, 0, sts_size);
--
- 	dev_dbg(&priv->pdev->dev,
- 		"desc status FIFO @ %p (phys = %llx) size=0x%x\n",
- 		sts_ptr, (unsigned long long)sts_phys, sts_size);
-@@ -1400,7 +1394,7 @@ static int tsi721_open_outb_mbox(struct rio_mport *mport, void *dev_id,
- 
- 	/* Outbound message descriptor status FIFO allocation */
- 	priv->omsg_ring[mbox].sts_size = roundup_pow_of_two(entries + 1);
--	priv->omsg_ring[mbox].sts_base = dma_alloc_coherent(&priv->pdev->dev,
-+	priv->omsg_ring[mbox].sts_base = dma_zalloc_coherent(&priv->pdev->dev,
- 			priv->omsg_ring[mbox].sts_size *
- 						sizeof(struct tsi721_dma_sts),
- 			&priv->omsg_ring[mbox].sts_phys, GFP_KERNEL);
-@@ -1412,9 +1406,6 @@ static int tsi721_open_outb_mbox(struct rio_mport *mport, void *dev_id,
- 		goto out_desc;
- 	}
- 
--	memset(priv->omsg_ring[mbox].sts_base, 0,
--		entries * sizeof(struct tsi721_dma_sts));
--
- 	/*
- 	 * Configure Outbound Messaging Engine
- 	 */
+PCI: Probing PCI hardware                                                       
+pci 0000:00:00.0: [1957:0110] type 1 class 0x000b20                             
+pci 0000:00:00.0: ignoring class b20 (doesn't match header type 01)             
+pci 0000:00:00.0: supports D1 D2                                                
+pci 0000:00:00.0: PME# supported from D0 D1 D2 D3hot D3cold                     
+pci 0000:00:00.0: PME# disabled                                                 
+pci 0000:00:00.0: PCI bridge to [bus 01-ff]                                     
+pci 0001:02:00.0: [1957:0110] type 1 class 0x000b20                             
+pci 0001:02:00.0: ignoring class b20 (doesn't match header type 01)             
+pci 0001:02:00.0: supports D1 D2                                                
+pci 0001:02:00.0: PME# supported from D0 D1 D2 D3hot D3cold                     
+pci 0001:02:00.0: PME# disabled                                                 
+pci 0001:02:00.0: PCI bridge to [bus 03-ff]                                     
+pci 0002:04:00.0: [1957:0110] type 1 class 0x000b20                             
+pci 0002:04:00.0: ignoring class b20 (doesn't match header type 01)             
+pci 0002:04:00.0: supports D1 D2                                                
+pci 0002:04:00.0: PME# supported from D0 D1 D2 D3hot D3cold                     
+pci 0002:04:00.0: PME# disabled                                                 
+pci 0002:05:00.0: [8086:10d3] type 0 class 0x000200                             
+pci 0002:05:00.0: reg 10: [mem 0x80000000-0x8001ffff]                           
+pci 0002:05:00.0: reg 14: [mem 0x80080000-0x800fffff]                           
+pci 0002:05:00.0: reg 18: [io  0x1000-0x101f]                                   
+pci 0002:05:00.0: reg 1c: [mem 0x80100000-0x80103fff]                           
+pci 0002:05:00.0: reg 30: [mem 0x00000000-0x0003ffff pref]                      
+pci 0002:05:00.0: PME# supported from D0 D3hot D3cold                           
+pci 0002:05:00.0: PME# disabled                                                 
+pci 0002:04:00.0: PCI bridge to [bus 05-ff]                                     
+pci 0002:04:00.0:   bridge window [mem 0x80000000-0x801fffff]                   
+PCI: Cannot allocate resource region 0 of device 0002:05:00.0, will remap       
+PCI: Cannot allocate resource region 1 of device 0002:05:00.0, will remap       
+PCI: Cannot allocate resource region 3 of device 0002:05:00.0, will remap       
+PCI 0000:00 Cannot reserve Legacy IO [io  0xffbed000-0xffbedfff]                
+PCI 0001:02 Cannot reserve Legacy IO [io  0xffbdb000-0xffbdbfff]                
+PCI 0002:04 Cannot reserve Legacy IO [io  0xffbc9000-0xffbc9fff]                
+PCI: max bus depth: 1 pci_try_num: 2                                            
+pci 0000:00:00.0: PCI bridge to [bus 01-01]                                     
+pci 0000:00:00.0:   bridge window [io  0xffbed000-0xffbfcfff]                   
+pci 0000:00:00.0:   bridge window [mem 0xa0000000-0xbfffffff]                   
+pci 0001:02:00.0: PCI bridge to [bus 03-03]                                     
+pci 0001:02:00.0:   bridge window [io  0xffbdb000-0xffbeafff]                   
+pci 0001:02:00.0:   bridge window [mem 0xc0000000-0xdfffffff]                   
+pci 0002:04:00.0: BAR 9: can't assign mem pref (size 0x100000)                  
+pci 0002:05:00.0: BAR 1: assigned [mem 0x80000000-0x8007ffff]                   
+pci 0002:05:00.0: BAR 1: set to [mem 0x80000000-0x8007ffff] (PCI address [0xe000
+0000-0xe007ffff])                                                               
+pci 0002:05:00.0: BAR 6: assigned [mem 0x80080000-0x800bffff pref]              
+pci 0002:05:00.0: BAR 0: assigned [mem 0x800c0000-0x800dffff]                   
+pci 0002:05:00.0: BAR 0: set to [mem 0x800c0000-0x800dffff] (PCI address [0xe00c
+0000-0xe00dffff])                                                               
+pci 0002:05:00.0: BAR 3: assigned [mem 0x800e0000-0x800e3fff]                   
+pci 0002:05:00.0: BAR 3: set to [mem 0x800e0000-0x800e3fff] (PCI address [0xe00e
+0000-0xe00e3fff])                                                               
+pci 0002:04:00.0: PCI bridge to [bus 05-05]                                     
+pci 0002:04:00.0:   bridge window [io  0xffbc9000-0xffbd8fff]                   
+pci 0002:04:00.0:   bridge window [mem 0x80000000-0x9fffffff]                   
+pci 0000:00:00.0: enabling device (0106 -> 0107)                                
+pci 0001:02:00.0: enabling device (0106 -> 0107)                                
+pci 0002:04:00.0: enabling device (0106 -> 0107)                                
+pci_bus 0000:00: resource 0 [io  0xffbed000-0xffbfcfff]                         
+pci_bus 0000:00: resource 1 [mem 0xa0000000-0xbfffffff]                         
+pci_bus 0000:01: resource 0 [io  0xffbed000-0xffbfcfff]                         
+pci_bus 0000:01: resource 1 [mem 0xa0000000-0xbfffffff]                         
+pci_bus 0001:02: resource 0 [io  0xffbdb000-0xffbeafff]                         
+pci_bus 0001:02: resource 1 [mem 0xc0000000-0xdfffffff]                         
+pci_bus 0001:03: resource 0 [io  0xffbdb000-0xffbeafff]                         
+pci_bus 0001:03: resource 1 [mem 0xc0000000-0xdfffffff]                         
+pci_bus 0002:04: resource 0 [io  0xffbc9000-0xffbd8fff]                         
+pci_bus 0002:04: resource 1 [mem 0x80000000-0x9fffffff]                         
+pci_bus 0002:05: resource 0 [io  0xffbc9000-0xffbd8fff]                         
+pci_bus 0002:05: resource 1 [mem 0x80000000-0x9fffffff]        
+
 -- 
-1.7.6
+Timur Tabi
+Linux kernel developer at Freescale
