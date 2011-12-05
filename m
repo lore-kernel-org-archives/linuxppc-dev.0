@@ -1,25 +1,23 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-lpp01m010-f51.google.com (mail-lpp01m010-f51.google.com
- [209.85.215.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 41EC21007D6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 17:50:41 +1100 (EST)
-Received: by lahe6 with SMTP id e6so1566468lah.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Dec 2011 22:50:33 -0800 (PST)
-Subject: Re: [PATCH 1/3] mtd/nand : use elbc_fcm_ctrl->oob to set FPAR_MS
- bit of FPAR
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: shuo.liu@freescale.com
-Date: Mon, 05 Dec 2011 08:50:29 +0200
-In-Reply-To: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1323067832.2316.31.camel@koala>
-Mime-Version: 1.0
-Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
- scottwood@freescale.com, akpm@linux-foundation.org, dwmw2@infradead.org
-Reply-To: dedekind1@gmail.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B800F1007D4
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2011 18:57:36 +1100 (EST)
+In-Reply-To: <1323040701.11728.27.camel@pasglop>
+References: <20111202222623.GA31354@us.ibm.com>
+ <144CAEA6-C129-4935-B6D1-A7D6F24530A5@kernel.crashing.org>
+ <1323040701.11728.27.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <10A299C4-5713-49BE-AB01-24ACE0621A11@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] Punch a hole in /dev/mem for librtas
+Date: Mon, 5 Dec 2011 08:58:30 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, sbest@us.ibm.com,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, paulus@samba.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,16 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-12-04 at 12:31 +0800, shuo.liu@freescale.com wrote:
-> From: Liu Shuo <b35362@freescale.com>
-> 
-> On both of large-page chip and small-page chip, we always should use
-> 'elbc_fcm_ctrl->oob' to set the FPAR_LP_MS/FPAR_SP_MS bit of FPAR, don't
-> use a overflowed 'column' to set it.
-> 
-> Signed-off-by: Liu Shuo <b35362@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
+>>> +static inline int page_is_rtas_user_buf(unsigned long pfn)
+>>> +{
+>>> +	unsigned long paddr = (pfn << PAGE_SHIFT);
+>>> +	if (paddr >= rtas_rmo_buf && paddr < (rtas_rmo_buf +
+>>> RTAS_RMOBUF_MAX))
+>>
+>> It probably cannot overflow with actual values of rtas_rmo_buf
+>> and RTAS_RMOBUF_MAX, but otherwise it is an incorrect test;
+>> please write
+>>
+>> 	if (paddr >= rtas_rmo_buf && paddr - rtas_rmo_buf < RTAS_RMOBUF_MAX)
+>>
+>> (and, _MAX?  Shouldn't it be the actual size here?  Or is _MAX
+>> just a confusing name :-) )
+>
+> The original code is a lot more readable and perfectly correct for all
+> possible values of rtas_rmo_buf :-)
 
-Pushed patches 1 and 2 to l2-mtd-2.6.git, thanks!
+You have to consider those possible values before you see it cannot
+overflow.  So no, it's a lot _less_ readable IMHO.
 
-Artem.
+It's also a dangerous habit to get into.  Just say no :-)
+
+
+Segher
