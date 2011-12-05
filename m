@@ -1,27 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 617FB1007D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2011 06:46:37 +1100 (EST)
-Message-ID: <4EDD1F90.300@freescale.com>
-Date: Mon, 5 Dec 2011 13:46:24 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <chaker.osiedlowy@gmail.com>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 49732B6F9C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2011 02:38:51 +1100 (EST)
+Received: by dadi2 with SMTP id i2so4631431dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2011 07:38:45 -0800 (PST)
 MIME-Version: 1.0
-To: <dedekind1@gmail.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
- <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
- <1323067628.2316.29.camel@koala>
-In-Reply-To: <1323067628.2316.29.camel@koala>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Artem.Bityutskiy@nokia.com, dwmw2@infradead.org,
- linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
- linux-mtd@lists.infradead.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Date: Mon, 5 Dec 2011 16:38:44 +0100
+Message-ID: <CADMV5dRkYX1QzOFThUMc9Xk-aBZ_fMHp6RH4ezfahsBUAP6fng@mail.gmail.com>
+Subject: Powerbook G4 and sound
+From: =?UTF-8?B?0J/QtdGC0YAg0LzQtdGC0LXQu9GM?= <chaker.osiedlowy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/mixed; boundary=bcaec52e5c39306b4004b35a1dfc
+Cc: jrnieder@gmail.com, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +23,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/05/2011 12:47 AM, Artem Bityutskiy wrote:
-> On Sun, 2011-12-04 at 12:31 +0800, shuo.liu@freescale.com wrote:
->> +		/*
->> +		 * Freescale FCM controller has a 2K size limitation of buffer
->> +		 * RAM, so elbc_fcm_ctrl->buffer have to be used if writesize
->> +		 * of chip is greater than 2048.
->> +		 * We malloc a large enough buffer (maximum page size is 16K).
->> +		 */
->> +		elbc_fcm_ctrl->buffer = kmalloc(1024 * 16 + 1024, GFP_KERNEL);
->> +		if (!elbc_fcm_ctrl->buffer) {
->> +			dev_err(dev, "failed to allocate memory\n");
->> +			mutex_unlock(&fsl_elbc_nand_mutex);
->> +			ret = -ENOMEM;
->> +			goto err;
->> +		}
-> 
-> Sorry for returning to this again and agian - I do not have time to dig
-> suggest you the right solutions on the one hand, you do not provide me a
-> good answer on the other hand (or I forgot?).
-> 
-> 16KiB pages do not even exist I believe.
+--bcaec52e5c39306b4004b35a1dfc
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Googling turns up some hints of it, but nothing concrete such as a
-datasheet.  We can assume 8K max for now and adjust it later, as the
-need becomes clear.
+Hello,
 
-> And you kmalloc 33KiB or RAM
+I've got problem with sound on my Powerbook G4 Titanium
+(PowerBook3,5). Sound always cranks and skips when I moving my
+touchpad, regardless of the source of sound. It happens in all my
+programs, including vlc, mplayer, e-uae and ioquake3 - they show in
+the log messeges like "underrun occured" and "broken pipe".
+If I remember correctly, this bug appears on kernel 2.6.32-5 (from
+Debian Sqeeze) and later. On kernel 2.6.38 from Ubuntu sound works
+_almost_ normally (cranks occur rarely).
 
-17KiB, or 9KiB if we forget about 16K-page NAND.
+I used also mpd server, but it breaks after sound cranks (ncmpc shows
+"Timeout") and I can only restart mpd server (/etc/init.d/mpd restart)
+to get mpd working (for some time).
 
-> although in most cases you need only 5KiB. I think this is wrong -
-> what is the very strong reason of wasting RAM you have?
-> 
-> Why you cannot allocate exactly the required amount of RAM after
-> 'nand_scan_ident()' finishes and you know the page size?
+Log from alsa-test.sh in attachement.
 
-Because this is a controller resource, shared by multiple NAND chips
-that may be different page sizes (even if not, it's adding another point
-of synchronization required between initialization of different chips).
- I don't think it's worth the gymnastics to save a few KiB.
+Sorry for my English :)
 
--Scott
+Best regards,
+=D0=9F=D0=B5=D1=82=D1=80 =D0=BC=D0=B5=D1=82=D0=B5=D0=BB=D1=8C
+
+--bcaec52e5c39306b4004b35a1dfc
+Content-Type: application/octet-stream; name="alsa-info.txt.zUlUP5eQPO"
+Content-Disposition: attachment; filename="alsa-info.txt.zUlUP5eQPO"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_gvtn5rn80
+
+dXBsb2FkPXRydWUmc2NyaXB0PXRydWUmY2FyZGluZm89CiEhIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMKISFBTFNBIEluZm9ybWF0aW9uIFNjcmlwdCB2IDAuNC42MAohISMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgohIVNjcmlwdCByYW4gb246IE1vbiBEZWMgIDUgMTU6
+MzI6MzIgVVRDIDIwMTEKCgohIUxpbnV4IERpc3RyaWJ1dGlvbgohIS0tLS0tLS0tLS0tLS0tLS0t
+LQoKRGViaWFuIEdOVS9MaW51eCB3aGVlenkvc2lkIFxuIFxsCgoKISFETUkgSW5mb3JtYXRpb24K
+ISEtLS0tLS0tLS0tLS0tLS0KCk1hbnVmYWN0dXJlcjogICAgICAKUHJvZHVjdCBOYW1lOiAgICAg
+IApQcm9kdWN0IFZlcnNpb246ICAgCgoKISFLZXJuZWwgSW5mb3JtYXRpb24KISEtLS0tLS0tLS0t
+LS0tLS0tLS0KCktlcm5lbCByZWxlYXNlOiAgICAzLjEuMC0xLXBvd2VycGMKT3BlcmF0aW5nIFN5
+c3RlbTogIEdOVS9MaW51eApBcmNoaXRlY3R1cmU6ICAgICAgcHBjClByb2Nlc3NvcjogICAgICAg
+ICB1bmtub3duClNNUCBFbmFibGVkOiAgICAgICBObwoKCiEhQUxTQSBWZXJzaW9uCiEhLS0tLS0t
+LS0tLS0tCgpEcml2ZXIgdmVyc2lvbjogICAgIDEuMC4yNApMaWJyYXJ5IHZlcnNpb246ICAgIDEu
+MC4yNC4xClV0aWxpdGllcyB2ZXJzaW9uOiAgMS4wLjI0LjIKCgohIUxvYWRlZCBBTFNBIG1vZHVs
+ZXMKISEtLS0tLS0tLS0tLS0tLS0tLS0tCgpzbmRfcG93ZXJtYWMKCgohIVNvdW5kIFNlcnZlcnMg
+b24gdGhpcyBzeXN0ZW0KISEtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpObyBzb3VuZCBz
+ZXJ2ZXJzIGZvdW5kLgoKCiEhU291bmRjYXJkcyByZWNvZ25pc2VkIGJ5IEFMU0EKISEtLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKIDAgW1NuYXBwZXIgICAgICAgIF06IFBNYWMgU25hcHBl
+ciAtIFBvd2VyTWFjIFNuYXBwZXIKICAgICAgICAgICAgICAgICAgICAgIFBvd2VyTWFjIFNuYXBw
+ZXIgKERldiAyNikgU3ViLWZyYW1lIDAKCgohIVBDSSBTb3VuZGNhcmRzIGluc3RhbGxlZCBpbiB0
+aGUgc3lzdGVtCiEhLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCgoKISFB
+ZHZhbmNlZCBpbmZvcm1hdGlvbiAtIFBDSSBWZW5kb3IvRGV2aWNlL1N1YnN5c3RlbSBJRCdzCiEh
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
+CgoKISFNb2Rwcm9iZSBvcHRpb25zIChTb3VuZCByZWxhdGVkKQohIS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tCgpzbmQtYXRpaXhwLW1vZGVtOiBpbmRleD0tMgpzbmQtaW50ZWw4eDBt
+OiBpbmRleD0tMgpzbmQtdmlhODJ4eC1tb2RlbTogaW5kZXg9LTIKc25kLXBjc3A6IGluZGV4PS0y
+CnNuZC11c2ItYXVkaW86IGluZGV4PS0yCgoKISFMb2FkZWQgc291bmQgbW9kdWxlIG9wdGlvbnMK
+ISEtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKISFNb2R1bGU6IHNuZF9wb3dlcm1hYwoJZW5h
+YmxlX2JlZXAgOiBZCglpZCA6IChudWxsKQoJaW5kZXggOiAtMQoKCiEhQUxTQSBEZXZpY2Ugbm9k
+ZXMKISEtLS0tLS0tLS0tLS0tLS0tLQoKY3J3LXJ3LS0tVCAxIHJvb3QgYXVkaW8gMTE2LCAgNCBE
+ZWMgIDUgMTU6MTQgL2Rldi9zbmQvY29udHJvbEMwCmNydy1ydy0tLVQgMSByb290IGF1ZGlvIDEx
+NiwgIDMgRGVjICA1IDE1OjE0IC9kZXYvc25kL3BjbUMwRDBjCmNydy1ydy0tLVQgMSByb290IGF1
+ZGlvIDExNiwgIDIgRGVjICA1IDE2OjA4IC9kZXYvc25kL3BjbUMwRDBwCmNydy1ydy0tLVQgMSBy
+b290IGF1ZGlvIDExNiwgIDEgRGVjICA1IDE1OjE0IC9kZXYvc25kL3NlcQpjcnctcnctLS1UIDEg
+cm9vdCBhdWRpbyAxMTYsIDMzIERlYyAgNSAxNToxNCAvZGV2L3NuZC90aW1lcgoKL2Rldi9zbmQv
+YnktcGF0aDoKdG90YWwgMApkcnd4ci14ci14IDIgcm9vdCByb290ICA2MCBEZWMgIDUgMTU6MTQg
+Lgpkcnd4ci14ci14IDMgcm9vdCByb290IDE2MCBEZWMgIDUgMTU6MTQgLi4KbHJ3eHJ3eHJ3eCAx
+IHJvb3Qgcm9vdCAgMTIgRGVjICA1IDE1OjE0IHBsYXRmb3JtLXNuZF9wb3dlcm1hYyAtPiAuLi9j
+b250cm9sQzAKCgohIUFwbGF5L0FyZWNvcmQgb3V0cHV0CiEhLS0tLS0tLS0tLS0tCgpBUExBWQoK
+KioqKiBMaXN0IG9mIFBMQVlCQUNLIEhhcmR3YXJlIERldmljZXMgKioqKgpjYXJkIDA6IFNuYXBw
+ZXIgW1Bvd2VyTWFjIFNuYXBwZXJdLCBkZXZpY2UgMDogUE1hYyBTbmFwcGVyIFtQb3dlck1hYyBT
+bmFwcGVyXQogIFN1YmRldmljZXM6IDAvMQogIFN1YmRldmljZSAjMDogc3ViZGV2aWNlICMwCgpB
+UkVDT1JECgoqKioqIExpc3Qgb2YgQ0FQVFVSRSBIYXJkd2FyZSBEZXZpY2VzICoqKioKY2FyZCAw
+OiBTbmFwcGVyIFtQb3dlck1hYyBTbmFwcGVyXSwgZGV2aWNlIDA6IFBNYWMgU25hcHBlciBbUG93
+ZXJNYWMgU25hcHBlcl0KICBTdWJkZXZpY2VzOiAxLzEKICBTdWJkZXZpY2UgIzA6IHN1YmRldmlj
+ZSAjMAoKISFBbWl4ZXIgb3V0cHV0CiEhLS0tLS0tLS0tLS0tLQoKISEtLS0tLS0tTWl4ZXIgY29u
+dHJvbHMgZm9yIGNhcmQgMCBbU25hcHBlcl0KCkNhcmQgaHc6MCAnU25hcHBlcicvJ1Bvd2VyTWFj
+IFNuYXBwZXIgKERldiAyNikgU3ViLWZyYW1lIDAnCiAgTWl4ZXIgbmFtZQk6ICdQb3dlck1hYyBT
+bmFwcGVyJwogIENvbXBvbmVudHMJOiAnJwogIENvbnRyb2xzICAgICAgOiAxNQogIFNpbXBsZSBj
+dHJscyAgOiAxNApTaW1wbGUgbWl4ZXIgY29udHJvbCAnTWFzdGVyJywwCiAgQ2FwYWJpbGl0aWVz
+OiBwdm9sdW1lIHBzd2l0Y2ggcGVudW0KICBQbGF5YmFjayBjaGFubmVsczogRnJvbnQgTGVmdCAt
+IEZyb250IFJpZ2h0CiAgTGltaXRzOiBQbGF5YmFjayAwIC0gMTc2CiAgTW9ubzoKICBGcm9udCBM
+ZWZ0OiBQbGF5YmFjayAxMjggWzczJV0gW29uXQogIEZyb250IFJpZ2h0OiBQbGF5YmFjayAxMjgg
+WzczJV0gW29uXQpTaW1wbGUgbWl4ZXIgY29udHJvbCAnSGVhZHBob25lJywwCiAgQ2FwYWJpbGl0
+aWVzOiBwc3dpdGNoIHBzd2l0Y2gtam9pbmVkIHBlbnVtCiAgUGxheWJhY2sgY2hhbm5lbHM6IE1v
+bm8KICBNb25vOiBQbGF5YmFjayBbb25dClNpbXBsZSBtaXhlciBjb250cm9sICdIZWFkcGhvbmUg
+RGV0ZWN0aW9uJywwCiAgQ2FwYWJpbGl0aWVzOiBwc3dpdGNoIHBzd2l0Y2gtam9pbmVkIHBlbnVt
+CiAgUGxheWJhY2sgY2hhbm5lbHM6IE1vbm8KICBNb25vOiBQbGF5YmFjayBbb25dClNpbXBsZSBt
+aXhlciBjb250cm9sICdTcGVha2VyJywwCiAgQ2FwYWJpbGl0aWVzOiBwc3dpdGNoIHBzd2l0Y2gt
+am9pbmVkIHBlbnVtCiAgUGxheWJhY2sgY2hhbm5lbHM6IE1vbm8KICBNb25vOiBQbGF5YmFjayBb
+b2ZmXQpTaW1wbGUgbWl4ZXIgY29udHJvbCAnQmFzcycsMAogIENhcGFiaWxpdGllczogdm9sdW1l
+IHZvbHVtZS1qb2luZWQgcGVudW0KICBQbGF5YmFjayBjaGFubmVsczogTW9ubwogIENhcHR1cmUg
+Y2hhbm5lbHM6IE1vbm8KICBMaW1pdHM6IDAgLSA3MgogIE1vbm86IDAgWzAlXQpTaW1wbGUgbWl4
+ZXIgY29udHJvbCAnVHJlYmxlJywwCiAgQ2FwYWJpbGl0aWVzOiB2b2x1bWUgdm9sdW1lLWpvaW5l
+ZCBwZW51bQogIFBsYXliYWNrIGNoYW5uZWxzOiBNb25vCiAgQ2FwdHVyZSBjaGFubmVsczogTW9u
+bwogIExpbWl0czogMCAtIDcyCiAgTW9ubzogMCBbMCVdClNpbXBsZSBtaXhlciBjb250cm9sICdQ
+Q00nLDAKICBDYXBhYmlsaXRpZXM6IHB2b2x1bWUgcGVudW0KICBQbGF5YmFjayBjaGFubmVsczog
+RnJvbnQgTGVmdCAtIEZyb250IFJpZ2h0CiAgTGltaXRzOiBQbGF5YmFjayAwIC0gMTc2CiAgTW9u
+bzoKICBGcm9udCBMZWZ0OiBQbGF5YmFjayAxMjQgWzcwJV0KICBGcm9udCBSaWdodDogUGxheWJh
+Y2sgMTI0IFs3MCVdClNpbXBsZSBtaXhlciBjb250cm9sICdNaWMnLDAKICBDYXBhYmlsaXRpZXM6
+IHB2b2x1bWUgcGVudW0KICBQbGF5YmFjayBjaGFubmVsczogRnJvbnQgTGVmdCAtIEZyb250IFJp
+Z2h0CiAgTGltaXRzOiBQbGF5YmFjayAwIC0gMTc2CiAgTW9ubzoKICBGcm9udCBMZWZ0OiBQbGF5
+YmFjayAwIFswJV0KICBGcm9udCBSaWdodDogUGxheWJhY2sgMCBbMCVdClNpbXBsZSBtaXhlciBj
+b250cm9sICdCZWVwJywwCiAgQ2FwYWJpbGl0aWVzOiBwdm9sdW1lIHB2b2x1bWUtam9pbmVkIHBl
+bnVtCiAgUGxheWJhY2sgY2hhbm5lbHM6IE1vbm8KICBMaW1pdHM6IFBsYXliYWNrIDAgLSAxMDAK
+ICBNb25vOiBQbGF5YmFjayAxNSBbMTUlXQpTaW1wbGUgbWl4ZXIgY29udHJvbCAnQXV0byBNdXRl
+JywwCiAgQ2FwYWJpbGl0aWVzOiBwc3dpdGNoIHBzd2l0Y2gtam9pbmVkIHBlbnVtCiAgUGxheWJh
+Y2sgY2hhbm5lbHM6IE1vbm8KICBNb25vOiBQbGF5YmFjayBbb25dClNpbXBsZSBtaXhlciBjb250
+cm9sICdEUkMnLDAKICBDYXBhYmlsaXRpZXM6IHBzd2l0Y2ggcHN3aXRjaC1qb2luZWQgcGVudW0K
+ICBQbGF5YmFjayBjaGFubmVsczogTW9ubwogIE1vbm86IFBsYXliYWNrIFtvZmZdClNpbXBsZSBt
+aXhlciBjb250cm9sICdEUkMgUmFuZ2UnLDAKICBDYXBhYmlsaXRpZXM6IHZvbHVtZSB2b2x1bWUt
+am9pbmVkIHBlbnVtCiAgUGxheWJhY2sgY2hhbm5lbHM6IE1vbm8KICBDYXB0dXJlIGNoYW5uZWxz
+OiBNb25vCiAgTGltaXRzOiAwIC0gMjM5CiAgTW9ubzogMTQzIFs2MCVdClNpbXBsZSBtaXhlciBj
+b250cm9sICdJbnB1dCBTb3VyY2UnLDAKICBDYXBhYmlsaXRpZXM6IGNlbnVtCiAgSXRlbXM6ICdM
+aW5lJyAnTWljJwogIEl0ZW0wOiAnTGluZScKU2ltcGxlIG1peGVyIGNvbnRyb2wgJ01vbml0b3Ig
+TWl4JywwCiAgQ2FwYWJpbGl0aWVzOiB2b2x1bWUgcGVudW0KICBQbGF5YmFjayBjaGFubmVsczog
+RnJvbnQgTGVmdCAtIEZyb250IFJpZ2h0CiAgQ2FwdHVyZSBjaGFubmVsczogRnJvbnQgTGVmdCAt
+IEZyb250IFJpZ2h0CiAgTGltaXRzOiAwIC0gMTc2CiAgRnJvbnQgTGVmdDogMCBbMCVdCiAgRnJv
+bnQgUmlnaHQ6IDAgWzAlXQoKCiEhQWxzYWN0bCBvdXRwdXQKISEtLS0tLS0tLS0tLS0tCgotLXN0
+YXJ0Y29sbGFwc2UtLQpzdGF0ZS5TbmFwcGVyIHsKCWNvbnRyb2wuMSB7CgkJaWZhY2UgTUlYRVIK
+CQluYW1lICdNYXN0ZXIgUGxheWJhY2sgVm9sdW1lJwoJCXZhbHVlLjAgMTI4CgkJdmFsdWUuMSAx
+MjgKCQljb21tZW50IHsKCQkJYWNjZXNzICdyZWFkIHdyaXRlJwoJCQl0eXBlIElOVEVHRVIKCQkJ
+Y291bnQgMgoJCQlyYW5nZSAnMCAtIDE3NicKCQl9Cgl9Cgljb250cm9sLjIgewoJCWlmYWNlIE1J
+WEVSCgkJbmFtZSAnTWFzdGVyIFBsYXliYWNrIFN3aXRjaCcKCQl2YWx1ZS4wIHRydWUKCQl2YWx1
+ZS4xIHRydWUKCQljb21tZW50IHsKCQkJYWNjZXNzICdyZWFkIHdyaXRlJwoJCQl0eXBlIEJPT0xF
+QU4KCQkJY291bnQgMgoJCX0KCX0KCWNvbnRyb2wuMyB7CgkJaWZhY2UgTUlYRVIKCQluYW1lICdQ
+Q00gUGxheWJhY2sgVm9sdW1lJwoJCXZhbHVlLjAgMTI0CgkJdmFsdWUuMSAxMjQKCQljb21tZW50
+IHsKCQkJYWNjZXNzICdyZWFkIHdyaXRlJwoJCQl0eXBlIElOVEVHRVIKCQkJY291bnQgMgoJCQly
+YW5nZSAnMCAtIDE3NicKCQl9Cgl9Cgljb250cm9sLjQgewoJCWlmYWNlIE1JWEVSCgkJbmFtZSAn
+TWljIFBsYXliYWNrIFZvbHVtZScKCQl2YWx1ZS4wIDAKCQl2YWx1ZS4xIDAKCQljb21tZW50IHsK
+CQkJYWNjZXNzICdyZWFkIHdyaXRlJwoJCQl0eXBlIElOVEVHRVIKCQkJY291bnQgMgoJCQlyYW5n
+ZSAnMCAtIDE3NicKCQl9Cgl9Cgljb250cm9sLjUgewoJCWlmYWNlIE1JWEVSCgkJbmFtZSAnTW9u
+aXRvciBNaXggVm9sdW1lJwoJCXZhbHVlLjAgMAoJCXZhbHVlLjEgMAoJCWNvbW1lbnQgewoJCQlh
+Y2Nlc3MgJ3JlYWQgd3JpdGUnCgkJCXR5cGUgSU5URUdFUgoJCQljb3VudCAyCgkJCXJhbmdlICcw
+IC0gMTc2JwoJCX0KCX0KCWNvbnRyb2wuNiB7CgkJaWZhY2UgTUlYRVIKCQluYW1lICdUb25lIENv
+bnRyb2wgLSBCYXNzJwoJCXZhbHVlIDAKCQljb21tZW50IHsKCQkJYWNjZXNzICdyZWFkIHdyaXRl
+JwoJCQl0eXBlIElOVEVHRVIKCQkJY291bnQgMQoJCQlyYW5nZSAnMCAtIDcyJwoJCX0KCX0KCWNv
+bnRyb2wuNyB7CgkJaWZhY2UgTUlYRVIKCQluYW1lICdUb25lIENvbnRyb2wgLSBUcmVibGUnCgkJ
+dmFsdWUgMAoJCWNvbW1lbnQgewoJCQlhY2Nlc3MgJ3JlYWQgd3JpdGUnCgkJCXR5cGUgSU5URUdF
+UgoJCQljb3VudCAxCgkJCXJhbmdlICcwIC0gNzInCgkJfQoJfQoJY29udHJvbC44IHsKCQlpZmFj
+ZSBNSVhFUgoJCW5hbWUgJ0RSQyBSYW5nZScKCQl2YWx1ZSAxNDMKCQljb21tZW50IHsKCQkJYWNj
+ZXNzICdyZWFkIHdyaXRlJwoJCQl0eXBlIElOVEVHRVIKCQkJY291bnQgMQoJCQlyYW5nZSAnMCAt
+IDIzOScKCQl9Cgl9Cgljb250cm9sLjkgewoJCWlmYWNlIE1JWEVSCgkJbmFtZSAnSW5wdXQgU291
+cmNlJwoJCXZhbHVlIExpbmUKCQljb21tZW50IHsKCQkJYWNjZXNzICdyZWFkIHdyaXRlJwoJCQl0
+eXBlIEVOVU1FUkFURUQKCQkJY291bnQgMQoJCQlpdGVtLjAgTGluZQoJCQlpdGVtLjEgTWljCgkJ
+fQoJfQoJY29udHJvbC4xMCB7CgkJaWZhY2UgTUlYRVIKCQluYW1lICdIZWFkcGhvbmUgUGxheWJh
+Y2sgU3dpdGNoJwoJCXZhbHVlIHRydWUKCQljb21tZW50IHsKCQkJYWNjZXNzICdyZWFkIHdyaXRl
+JwoJCQl0eXBlIEJPT0xFQU4KCQkJY291bnQgMQoJCX0KCX0KCWNvbnRyb2wuMTEgewoJCWlmYWNl
+IE1JWEVSCgkJbmFtZSAnU3BlYWtlciBQbGF5YmFjayBTd2l0Y2gnCgkJdmFsdWUgZmFsc2UKCQlj
+b21tZW50IHsKCQkJYWNjZXNzICdyZWFkIHdyaXRlJwoJCQl0eXBlIEJPT0xFQU4KCQkJY291bnQg
+MQoJCX0KCX0KCWNvbnRyb2wuMTIgewoJCWlmYWNlIE1JWEVSCgkJbmFtZSAnRFJDIFN3aXRjaCcK
+CQl2YWx1ZSBmYWxzZQoJCWNvbW1lbnQgewoJCQlhY2Nlc3MgJ3JlYWQgd3JpdGUnCgkJCXR5cGUg
+Qk9PTEVBTgoJCQljb3VudCAxCgkJfQoJfQoJY29udHJvbC4xMyB7CgkJaWZhY2UgTUlYRVIKCQlu
+YW1lICdBdXRvIE11dGUgU3dpdGNoJwoJCXZhbHVlIHRydWUKCQljb21tZW50IHsKCQkJYWNjZXNz
+ICdyZWFkIHdyaXRlJwoJCQl0eXBlIEJPT0xFQU4KCQkJY291bnQgMQoJCX0KCX0KCWNvbnRyb2wu
+MTQgewoJCWlmYWNlIE1JWEVSCgkJbmFtZSAnSGVhZHBob25lIERldGVjdGlvbicKCQl2YWx1ZSB0
+cnVlCgkJY29tbWVudCB7CgkJCWFjY2VzcyByZWFkCgkJCXR5cGUgQk9PTEVBTgoJCQljb3VudCAx
+CgkJfQoJfQoJY29udHJvbC4xNSB7CgkJaWZhY2UgTUlYRVIKCQluYW1lICdCZWVwIFBsYXliYWNr
+IFZvbHVtZScKCQl2YWx1ZSAxNQoJCWNvbW1lbnQgewoJCQlhY2Nlc3MgJ3JlYWQgd3JpdGUnCgkJ
+CXR5cGUgSU5URUdFUgoJCQljb3VudCAxCgkJCXJhbmdlICcwIC0gMTAwJwoJCX0KCX0KfQotLWVu
+ZGNvbGxhcHNlLS0KCgohIUFsbCBMb2FkZWQgTW9kdWxlcwohIS0tLS0tLS0tLS0tLS0tLS0tLQoK
+TW9kdWxlCnVzYmhpZApoaWQKYWVzX2dlbmVyaWMKdWlucHV0CmNwdWZyZXFfY29uc2VydmF0aXZl
+CmNwdWZyZXFfcG93ZXJzYXZlCmNwdWZyZXFfb25kZW1hbmQKY3B1ZnJlcV91c2Vyc3BhY2UKY3B1
+ZnJlcV9zdGF0cwpubHNfdXRmOApoZnNwbHVzCnNuZF9wb3dlcm1hYwpsb29wCmZpcmV3aXJlX3Ni
+cDIKYXJjNApiNDMKbWFjODAyMTEKY2ZnODAyMTEKcmZraWxsCmJjbWEKcm5nX2NvcmUKc3NiCm1t
+Y19jb3JlCnNuZF9hb2FfaTJzYnVzCnNuZF9wY21fb3NzCnNuZF9taXhlcl9vc3MKc25kX3BjbQpz
+bmRfcGFnZV9hbGxvYwpzbmRfc2VxX21pZGkKc25kX3Jhd21pZGkKc25kX3NlcV9taWRpX2V2ZW50
+CnNuZF9zZXEKcmFkZW9uCnR0bQpzbmRfdGltZXIKZHJtX2ttc19oZWxwZXIKc25kX3NlcV9kZXZp
+Y2UKcGNtY2lhCmV2ZGV2CnNuZApkcm0KaTJjX3Bvd2VybWFjCnNvdW5kY29yZQpwb3dlcl9zdXBw
+bHkKc25kX2FvYV9zb3VuZGJ1cwp5ZW50YV9zb2NrZXQKcGNtY2lhX3JzcmMKcGNtY2lhX2NvcmUK
+ZXh0NAptYmNhY2hlCmpiZDIKY3JjMTYKc3JfbW9kCmNkcm9tCnNkX21vZApjcmNfdDEwZGlmCm9o
+Y2lfaGNkCmVoY2lfaGNkCnVzYmNvcmUKZmlyZXdpcmVfb2hjaQpzdW5nZW0Kc3VuZ2VtX3BoeQpm
+aXJld2lyZV9jb3JlCmNyY19pdHVfdAoKCiEhQUxTQS9IREEgZG1lc2cKISEtLS0tLS0tLS0tLS0t
+LS0tLS0KCgoK
+--bcaec52e5c39306b4004b35a1dfc--
