@@ -1,21 +1,45 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BA6F0100A37
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 10:42:40 +1100 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: alan@linux.intel.com, gregkh@suse.de, scottwood@freescale.com,
- galak@kernel.crashing.org
-Subject: [PATCH 6/6] serial: add irq handler for Freescale 16550 errata.
-Date: Sun,  4 Dec 2011 18:42:23 -0500
-Message-Id: <1323042143-25330-7-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1322783258-20443-1-git-send-email-paul.gortmaker@windriver.com>
- <1323042143-25330-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6EFF71007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2011 12:02:28 +1100 (EST)
+Message-ID: <4EDC0CD5.2090601@zytor.com>
+Date: Sun, 04 Dec 2011 16:14:13 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCHv5] atomic: add *_dec_not_zero
+References: <1323013369-29691-1-git-send-email-sven@narfation.org>
+ <20111204213316.GB14542@n2100.arm.linux.org.uk>
+ <1699880.NTdz2k3W9O@sven-laptop.home.narfation.org>
+ <20111204221850.GC14542@n2100.arm.linux.org.uk>
+ <1323038515.11728.26.camel@pasglop>
+In-Reply-To: <1323038515.11728.26.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, Sven Eckelmann <sven@narfation.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Arnd Bergma nn <arnd@arndb.de>, linux-hexagon@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>,
+ Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@addtoit.com>,
+ linux-alpha@vger.kernel.org, Chris Metcalf <cmetcalf@tilera.com>,
+ Tony Luck <tony.luck@intel.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, linux-m32r@ml.linux-m32r.org,
+ linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ "David S. Miller" <davem@davemloft.net>, Kyle McMartin <kyle@mcmartin.ca>,
+ Richard Weinberger <richard@nod.at>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Hirokazu Takata <takata@linux-m32r.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,155 +49,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sending a break on the SOC UARTs found in some MPC83xx/85xx/86xx
-chips seems to cause a short lived IRQ storm (/proc/interrupts
-typically shows somewhere between 300 and 1500 events).  Unfortunately
-this renders SysRQ over the serial console completely inoperable.
+On 12/04/2011 02:41 PM, Benjamin Herrenschmidt wrote:
+> 
+> I agree with Russell, his approach is a lot easier to maintain long run,
+> we should even consider converting existing definitions.
+> 
 
-The suggested workaround in the errata is to read the Rx register,
-wait one character period, and then read the Rx register again.
-We achieve this by tracking the old LSR value, and on the subsequent
-interrupt event after a break, we don't read LSR, instead we just
-read the RBR again and return immediately.
+Thirded.
 
-The "fsl,ns16550" is used in the compatible field of the serial
-device to mark UARTs known to have this issue.
+	-hpa
 
-Thanks to Scott Wood for providing the errata data which led to
-a much cleaner fix.
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/kernel/legacy_serial.c |    3 ++
- drivers/tty/serial/8250_fsl.c       |   63 +++++++++++++++++++++++++++++++++++
- drivers/tty/serial/Kconfig          |    5 +++
- drivers/tty/serial/Makefile         |    1 +
- include/linux/serial_8250.h         |    1 +
- 5 files changed, 73 insertions(+), 0 deletions(-)
- create mode 100644 drivers/tty/serial/8250_fsl.c
-
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index c7b5afe..3fea368 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -441,6 +441,9 @@ static void __init fixup_port_irq(int index,
- 		return;
- 
- 	port->irq = virq;
-+
-+	if (of_device_is_compatible(np, "fsl,ns16550"))
-+		port->handle_irq = fsl8250_handle_irq;
- }
- 
- static void __init fixup_port_pio(int index,
-diff --git a/drivers/tty/serial/8250_fsl.c b/drivers/tty/serial/8250_fsl.c
-new file mode 100644
-index 0000000..f4d3c47
---- /dev/null
-+++ b/drivers/tty/serial/8250_fsl.c
-@@ -0,0 +1,63 @@
-+#include <linux/serial_reg.h>
-+#include <linux/serial_8250.h>
-+
-+#include "8250.h"
-+
-+/*
-+ * Freescale 16550 UART "driver", Copyright (C) 2011 Paul Gortmaker.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This isn't a full driver; it just provides an alternate IRQ
-+ * handler to deal with an errata.  Everything else is just
-+ * using the bog standard 8250 support.
-+ *
-+ * We follow code flow of serial8250_default_handle_irq() but add
-+ * a check for a break and insert a dummy read on the Rx for the
-+ * immediately following IRQ event.
-+ *
-+ * We re-use the already existing "bug handling" lsr_saved_flags
-+ * field to carry the "what we just did" information from the one
-+ * IRQ event to the next one.
-+ */
-+
-+int fsl8250_handle_irq(struct uart_port *port)
-+{
-+	unsigned char lsr, orig_lsr;
-+	unsigned long flags;
-+	unsigned int iir;
-+	struct uart_8250_port *up =
-+		container_of(port, struct uart_8250_port, port);
-+
-+	spin_lock_irqsave(&up->port.lock, flags);
-+
-+	iir = port->serial_in(port, UART_IIR);
-+	if (iir & UART_IIR_NO_INT) {
-+		spin_unlock_irqrestore(&up->port.lock, flags);
-+		return 0;
-+	}
-+
-+	/* This is the WAR; if last event was BRK, then read and return */
-+	if (unlikely(up->lsr_saved_flags & UART_LSR_BI)) {
-+		up->lsr_saved_flags &= ~UART_LSR_BI;
-+		port->serial_in(port, UART_RX);
-+		spin_unlock_irqrestore(&up->port.lock, flags);
-+		return 1;
-+	}
-+
-+	lsr = orig_lsr = up->port.serial_in(&up->port, UART_LSR);
-+
-+	if (lsr & (UART_LSR_DR | UART_LSR_BI))
-+		lsr = serial8250_rx_chars(up, lsr);
-+
-+	serial8250_modem_status(up);
-+
-+	if (lsr & UART_LSR_THRE)
-+		serial8250_tx_chars(up);
-+
-+	up->lsr_saved_flags = orig_lsr;
-+	spin_unlock_irqrestore(&up->port.lock, flags);
-+	return 1;
-+}
-diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index 925a1e5..aa46993 100644
---- a/drivers/tty/serial/Kconfig
-+++ b/drivers/tty/serial/Kconfig
-@@ -97,6 +97,11 @@ config SERIAL_8250_PNP
- 	  This builds standard PNP serial support. You may be able to
- 	  disable this feature if you only need legacy serial support.
- 
-+config SERIAL_8250_FSL
-+	bool
-+	depends on SERIAL_8250 && PPC
-+	default PPC
-+
- config SERIAL_8250_HP300
- 	tristate
- 	depends on SERIAL_8250 && HP300
-diff --git a/drivers/tty/serial/Makefile b/drivers/tty/serial/Makefile
-index e10cf5b..fb187a3 100644
---- a/drivers/tty/serial/Makefile
-+++ b/drivers/tty/serial/Makefile
-@@ -28,6 +28,7 @@ obj-$(CONFIG_SERIAL_8250_BOCA) += 8250_boca.o
- obj-$(CONFIG_SERIAL_8250_EXAR_ST16C554) += 8250_exar_st16c554.o
- obj-$(CONFIG_SERIAL_8250_HUB6) += 8250_hub6.o
- obj-$(CONFIG_SERIAL_8250_MCA) += 8250_mca.o
-+obj-$(CONFIG_SERIAL_8250_FSL) += 8250_fsl.o
- obj-$(CONFIG_SERIAL_8250_DW) += 8250_dw.o
- obj-$(CONFIG_SERIAL_AMBA_PL010) += amba-pl010.o
- obj-$(CONFIG_SERIAL_AMBA_PL011) += amba-pl011.o
-diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
-index b44034e..8f012f8 100644
---- a/include/linux/serial_8250.h
-+++ b/include/linux/serial_8250.h
-@@ -82,6 +82,7 @@ extern void serial8250_do_set_termios(struct uart_port *port,
- 		struct ktermios *termios, struct ktermios *old);
- extern void serial8250_do_pm(struct uart_port *port, unsigned int state,
- 			     unsigned int oldstate);
-+extern int fsl8250_handle_irq(struct uart_port *port);
- int serial8250_handle_irq(struct uart_port *port, unsigned int iir);
- unsigned char serial8250_rx_chars(struct uart_8250_port *up, unsigned char lsr);
- void serial8250_tx_chars(struct uart_8250_port *up);
 -- 
-1.7.7
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
