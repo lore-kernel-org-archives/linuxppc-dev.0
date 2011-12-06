@@ -1,9 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 6 Dec 2011 17:09:59 +1100
+Date: Tue, 6 Dec 2011 17:13:13 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Alexander Graf <agraf@suse.de>
-Subject: [PATCH 08/13] KVM: PPC: Allow I/O mappings in memory slots
-Message-ID: <20111206060959.GL12389@drongo>
+Subject: [PATCH 11/13] KVM: Add barriers to allow mmu_notifier_retry to be
+ used locklessly
+Message-ID: <20111206061313.GO12389@drongo>
 References: <20111206060156.GD12389@drongo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,207 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This provides for the case where userspace maps an I/O device into the
-address range of a memory slot using a VM_PFNMAP mapping.  In that
-case, we work out the pfn from vma->vm_pgoff, and record the cache
-enable bits from vma->vm_page_prot in two low-order bits in the
-slot_phys array entries.  Then, in kvmppc_h_enter() we check that the
-cache bits in the HPTE that the guest wants to insert match the cache
-bits in the slot_phys array entry.
+This adds an smp_wmb in kvm_mmu_notifier_invalidate_range_end() and an
+smp_rmb in mmu_notifier_retry() so that mmu_notifier_retry() will give
+the correct answer when called without kvm->mmu_lock being held.
+PowerPC Book3S HV KVM wants to use a bitlock per guest page rather than
+a single global spinlock in order to improve the scalability of updates
+to the guest MMU hashed page table, and so needs this.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h |   26 +++++++++++
- arch/powerpc/include/asm/kvm_host.h      |    2 +
- arch/powerpc/kvm/book3s_64_mmu_hv.c      |   67 ++++++++++++++++++++----------
- arch/powerpc/kvm/book3s_hv_rm_mmu.c      |    5 +-
- 4 files changed, 76 insertions(+), 24 deletions(-)
+ include/linux/kvm_host.h |   14 +++++++++-----
+ virt/kvm/kvm_main.c      |    6 +++---
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index d55e6b4..a98e0f6 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -107,6 +107,32 @@ static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
- 	return 0;				/* error */
- }
- 
-+static inline int hpte_cache_flags_ok(unsigned long ptel, unsigned long io_type)
-+{
-+	unsigned int wimg = ptel & HPTE_R_WIMG;
-+
-+	/* Handle SAO */
-+	if (wimg == (HPTE_R_W | HPTE_R_I | HPTE_R_M) &&
-+	    cpu_has_feature(CPU_FTR_ARCH_206))
-+		wimg = HPTE_R_M;
-+
-+	if (!io_type)
-+		return wimg == HPTE_R_M;
-+
-+	return (wimg & (HPTE_R_W | HPTE_R_I)) == io_type;
-+}
-+
-+/* Return HPTE cache control bits corresponding to Linux pte bits */
-+static inline unsigned long hpte_cache_bits(unsigned long pte_val)
-+{
-+#if _PAGE_NO_CACHE == HPTE_R_I && _PAGE_WRITETHRU == HPTE_R_W
-+	return pte_val & (HPTE_R_W | HPTE_R_I);
-+#else
-+	return ((pte_val & _PAGE_NO_CACHE) ? HPTE_R_I : 0) +
-+		((pte_val & _PAGE_WRITETHRU) ? HPTE_R_W : 0);
-+#endif
-+}
-+
- static inline bool slot_is_aligned(struct kvm_memory_slot *memslot,
- 				   unsigned long pagesize)
- {
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index ba1da85..9b1c247 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -177,6 +177,8 @@ struct revmap_entry {
- 
- /* Low-order bits in kvm->arch.slot_phys[][] */
- #define KVMPPC_PAGE_ORDER_MASK	0x1f
-+#define KVMPPC_PAGE_NO_CACHE	HPTE_R_I	/* 0x20 */
-+#define KVMPPC_PAGE_WRITETHRU	HPTE_R_W	/* 0x40 */
- #define KVMPPC_GOT_PAGE		0x80
- 
- struct kvm_arch {
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index cc18f3d..b904c40 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -199,7 +199,8 @@ static long kvmppc_get_guest_page(struct kvm *kvm, unsigned long gfn,
- 	struct page *page, *hpage, *pages[1];
- 	unsigned long s, pgsize;
- 	unsigned long *physp;
--	unsigned int got, pgorder;
-+	unsigned int is_io, got, pgorder;
-+	struct vm_area_struct *vma;
- 	unsigned long pfn, i, npages;
- 
- 	physp = kvm->arch.slot_phys[memslot->id];
-@@ -208,34 +209,51 @@ static long kvmppc_get_guest_page(struct kvm *kvm, unsigned long gfn,
- 	if (physp[gfn - memslot->base_gfn])
- 		return 0;
- 
-+	is_io = 0;
-+	got = 0;
- 	page = NULL;
- 	pgsize = psize;
-+	err = -EINVAL;
- 	start = gfn_to_hva_memslot(memslot, gfn);
- 
- 	/* Instantiate and get the page we want access to */
- 	np = get_user_pages_fast(start, 1, 1, pages);
--	if (np != 1)
--		return -EINVAL;
--	page = pages[0];
--	got = KVMPPC_GOT_PAGE;
-+	if (np != 1) {
-+		/* Look up the vma for the page */
-+		down_read(&current->mm->mmap_sem);
-+		vma = find_vma(current->mm, start);
-+		if (!vma || vma->vm_start > start ||
-+		    start + psize > vma->vm_end ||
-+		    !(vma->vm_flags & VM_PFNMAP))
-+			goto up_err;
-+		is_io = hpte_cache_bits(pgprot_val(vma->vm_page_prot));
-+		pfn = vma->vm_pgoff + ((start - vma->vm_start) >> PAGE_SHIFT);
-+		/* check alignment of pfn vs. requested page size */
-+		if (psize > PAGE_SIZE && (pfn & ((psize >> PAGE_SHIFT) - 1)))
-+			goto up_err;
-+		up_read(&current->mm->mmap_sem);
- 
--	/* See if this is a large page */
--	s = PAGE_SIZE;
--	if (PageHuge(page)) {
--		hpage = compound_head(page);
--		s <<= compound_order(hpage);
--		/* Get the whole large page if slot alignment is ok */
--		if (s > psize && slot_is_aligned(memslot, s) &&
--		    !(memslot->userspace_addr & (s - 1))) {
--			start &= ~(s - 1);
--			pgsize = s;
--			page = hpage;
-+	} else {
-+		page = pages[0];
-+		got = KVMPPC_GOT_PAGE;
-+
-+		/* See if this is a large page */
-+		s = PAGE_SIZE;
-+		if (PageHuge(page)) {
-+			hpage = compound_head(page);
-+			s <<= compound_order(hpage);
-+			/* Get the whole large page if slot alignment is ok */
-+			if (s > psize && slot_is_aligned(memslot, s) &&
-+			    !(memslot->userspace_addr & (s - 1))) {
-+				start &= ~(s - 1);
-+				pgsize = s;
-+				page = hpage;
-+			}
- 		}
-+		if (s < psize)
-+			goto out;
-+		pfn = page_to_pfn(page);
- 	}
--	err = -EINVAL;
--	if (s < psize)
--		goto out;
--	pfn = page_to_pfn(page);
- 
- 	npages = pgsize >> PAGE_SHIFT;
- 	pgorder = __ilog2(npages);
-@@ -243,7 +261,8 @@ static long kvmppc_get_guest_page(struct kvm *kvm, unsigned long gfn,
- 	spin_lock(&kvm->arch.slot_phys_lock);
- 	for (i = 0; i < npages; ++i) {
- 		if (!physp[i]) {
--			physp[i] = ((pfn + i) << PAGE_SHIFT) + got + pgorder;
-+			physp[i] = ((pfn + i) << PAGE_SHIFT) +
-+				got + is_io + pgorder;
- 			got = 0;
- 		}
- 	}
-@@ -257,6 +276,10 @@ static long kvmppc_get_guest_page(struct kvm *kvm, unsigned long gfn,
- 		put_page(page);
- 	}
- 	return err;
-+
-+ up_err:
-+	up_read(&current->mm->mmap_sem);
-+	return err;
- }
- 
- /*
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index c76305c..88d2add 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -68,6 +68,7 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
- 	unsigned long g_ptel = ptel;
- 	struct kvm_memory_slot *memslot;
- 	unsigned long *physp, pte_size;
-+	unsigned long is_io;
- 	bool realmode = vcpu->arch.vcore->vcore_state == VCORE_RUNNING;
- 
- 	psize = hpte_page_size(pteh, ptel);
-@@ -95,6 +96,7 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
- 	pa = *physp;
- 	if (!pa)
- 		return H_TOO_HARD;
-+	is_io = pa & (HPTE_R_I | HPTE_R_W);
- 	pte_size = PAGE_SIZE << (pa & KVMPPC_PAGE_ORDER_MASK);
- 	pa &= PAGE_MASK;
- 
-@@ -107,8 +109,7 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
- 	ptel |= pa;
- 
- 	/* Check WIMG */
--	if ((ptel & HPTE_R_WIMG) != HPTE_R_M &&
--	    (ptel & HPTE_R_WIMG) != (HPTE_R_W | HPTE_R_I | HPTE_R_M))
-+	if (!hpte_cache_flags_ok(ptel, is_io))
- 		return H_PARAMETER;
- 	pteh &= ~0x60UL;
- 	pteh |= HPTE_V_VALID;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index c6a2ec9..17319ad 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -672,12 +672,16 @@ static inline int mmu_notifier_retry(struct kvm_vcpu *vcpu, unsigned long mmu_se
+ 	if (unlikely(vcpu->kvm->mmu_notifier_count))
+ 		return 1;
+ 	/*
+-	 * Both reads happen under the mmu_lock and both values are
+-	 * modified under mmu_lock, so there's no need of smb_rmb()
+-	 * here in between, otherwise mmu_notifier_count should be
+-	 * read before mmu_notifier_seq, see
+-	 * mmu_notifier_invalidate_range_end write side.
++	 * Ensure the read of mmu_notifier_count happens before the read
++	 * of mmu_notifier_seq.  This interacts with the smp_wmb() in
++	 * mmu_notifier_invalidate_range_end to make sure that the caller
++	 * either sees the old (non-zero) value of mmu_notifier_count or
++	 * the new (incremented) value of mmu_notifier_seq.
++	 * PowerPC Book3s HV KVM calls this under a per-page lock
++	 * rather than under kvm->mmu_lock, for scalability, so
++	 * can't rely on kvm->mmu_lock to keep things ordered.
+ 	 */
++	smp_rmb();
+ 	if (vcpu->kvm->mmu_notifier_seq != mmu_seq)
+ 		return 1;
+ 	return 0;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index d9cfb78..ad2a912 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -357,11 +357,11 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+ 	 * been freed.
+ 	 */
+ 	kvm->mmu_notifier_seq++;
++	smp_wmb();
+ 	/*
+ 	 * The above sequence increase must be visible before the
+-	 * below count decrease but both values are read by the kvm
+-	 * page fault under mmu_lock spinlock so we don't need to add
+-	 * a smb_wmb() here in between the two.
++	 * below count decrease, which is ensured by the smp_wmb above
++	 * in conjunction with the smp_rmb in mmu_notifier_retry().
+ 	 */
+ 	kvm->mmu_notifier_count--;
+ 	spin_unlock(&kvm->mmu_lock);
 -- 
 1.7.5.4
