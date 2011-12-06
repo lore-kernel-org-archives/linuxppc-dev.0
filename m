@@ -1,20 +1,15 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 325851007D5
- for <linuxppc-dev@ozlabs.org>; Tue,  6 Dec 2011 20:30:50 +1100 (EST)
-In-Reply-To: <4EDD32E1.7080009@freescale.com>
-References: <201112051902.35285.alexander.lyasin@gmail.com>
- <4EDD32E1.7080009@freescale.com>
-Subject: Re: Problem with eLBC?
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF61313592.71421E50-ONC125795E.0031F43D-C125795E.00343F25@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 6 Dec 2011 10:30:40 +0100
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 6 Dec 2011 22:43:47 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>, Scott Wood <scottwood@freescale.com>
+Subject: Re: "KVM: PPC: booke: Improve timer register emulation" breaks
+ Book3s HV
+Message-ID: <20111206114347.GA14832@bloggs.ozlabs.ibm.com>
+References: <20111206040300.GA12018@drongo>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Alexander Lyasin <alexander.lyasin@gmail.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111206040300.GA12018@drongo>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,76 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
-> On 12/05/2011 08:02 AM, Alexander Lyasin wrote:
-> > In reply to your Service Request SR 1-807899446:
-> >
-> > Yes, due to several design peculiarities in local bus nand controller,
-> > simultaneous accesses to nand flash and to other local bus memory
-> > controller may cause nand flash controller access failure. Our linux
-> > team suggested to use "software lock" method to avoid this problem -
-> > please do not use other local bus controllers, when nand flash is accessed.
->
-> What kernel version are you using?  The latest mainline kernel should
-> not have this issue.
->
-> Make sure you have these patches:
->
-> commit d08e44570ed611c527a1062eb4f8c6ac61832e6e
-> Author: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> Date:   Thu May 19 18:48:01 2011 +0800
->
->     powerpc/fsl_lbc: Add workaround for ELBC-A001 erratum
->
->     Simultaneous FCM and GPCM or UPM operation may erroneously trigger
->     bus monitor timeout.
->
->     Set the local bus monitor timeout value to the maximum by setting
->     LBCR[BMT] = 0 and LBCR[BMTPS] = 0xF.
->
->     Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
->     Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->
-> and
->
-> commit 476459a6cf46d20ec73d9b211f3894ced5f9871e
-> Author: Scott Wood <scottwood@freescale.com>
-> Date:   Fri Nov 13 14:13:01 2009 -0600
->
->     mtd: eLBC NAND: use recommended command sequences
->
->     Currently, the program and erase sequences do not wait for completion,
->     instead relying on a subsequent waitfunc() callback.  However, this
-> causes
->     the chipselect to be deasserted while the NAND chip is still
-> asserting the
->     busy pin, which can corrupt activity on other chipselects.
->
->     This patch switches to using the sequences recommended by the manual,
->     in which a wait is performed within the initial command sequence.
-> We can
->     now re-use the status byte from the initial command sequence, rather
-> than
->     having to do another status read in the waitfunc.
->
->     Since we're already touching the command sequences, it also cleans
-> up some
->     cruft in SEQIN that isn't needed since we cannot program partial pages
->     outside of OOB.
->
->     Signed-off-by: Scott Wood <scottwood@freescale.com>
->     Reported-by: Suchit Lepcha <suchit.lepcha@freescale.com>
->     Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
->     Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
->
-> -Scott
+On Tue, Dec 06, 2011 at 03:03:00PM +1100, Paul Mackerras wrote:
+> I'm not sure why yet, but commit 8a97c432 ("KVM: PPC: booke: Improve
+> timer register emulation") in Alex's kvm-ppc-next branch is breaking
+> Book3S HV KVM on POWER7.  Guest cpus fail to spin up, and even with
+> just one cpu, the guest stalls every so often.  If I stop the guest
+> and inspect the state with qemu, PC is at 0x900.  Reverting 8a97c432
+> makes it work properly again.
 
-Scott, you seem know something about eLBC and NAND. I have been told
-that using NAND and other memory mapped devices on the same LB may
-stall accesses to the other devices as the FCM may hold the bus for
-long periods(a whole write or erase op.), is this so?
+This fixes it:
 
-If still true, I guess the whole CPU "freezes" until the NAND op.
-is complete?
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 534cbe1..83bcb44 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -560,7 +560,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 
+ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
+ {
+-	if (waitqueue_active(&vcpu->wq)) {
++	if (waitqueue_active(vcpu->arch.wqp)) {
+ 		wake_up_interruptible(vcpu->arch.wqp);
+ 		vcpu->stat.halt_wakeup++;
+ 	} else if (vcpu->cpu != -1) {
 
- Jocke
+Alex, do you want to roll that in with Scott's patch, or do you want me
+to send a separate patch on top?
+
+Paul.
