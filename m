@@ -1,22 +1,26 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 14AF51007D4
- for <linuxppc-dev@ozlabs.org>; Tue,  6 Dec 2011 22:46:34 +1100 (EST)
-Subject: Re: "KVM: PPC: booke: Improve timer register emulation" breaks Book3s
- HV
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20111206114347.GA14832@bloggs.ozlabs.ibm.com>
-Date: Tue, 6 Dec 2011 12:46:27 +0100
-Message-Id: <018FAA2F-85F9-40EA-8F25-2BBFFF3D6CCF@suse.de>
-References: <20111206040300.GA12018@drongo>
- <20111206114347.GA14832@bloggs.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- kvm-ppc@vger.kernel.org
+Return-Path: <dedekind1@gmail.com>
+Received: from mail-lpp01m010-f51.google.com (mail-lpp01m010-f51.google.com
+ [209.85.215.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 234E51007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2011 22:49:31 +1100 (EST)
+Received: by lahe6 with SMTP id e6so2237727lah.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2011 03:49:23 -0800 (PST)
+Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
+ large-page Nand chip
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: shuo.liu@freescale.com
+Date: Tue, 06 Dec 2011 13:49:15 +0200
+In-Reply-To: <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
+References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
+ <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1323172160.2163.2.camel@koala>
+Mime-Version: 1.0
+Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+ scottwood@freescale.com, akpm@linux-foundation.org, dwmw2@infradead.org
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, 2011-12-04 at 12:31 +0800, shuo.liu@freescale.com wrote:
+> From: Liu Shuo <shuo.liu@freescale.com>
+> 
+> Freescale FCM controller has a 2K size limitation of buffer RAM. In order
+> to support the Nand flash chip whose page size is larger than 2K bytes,
+> we read/write 2k data repeatedly by issuing FIR_OP_RB/FIR_OP_WB and save
+> them to a large buffer.
+> 
+> Signed-off-by: Liu Shuo <shuo.liu@freescale.com>
 
-On 06.12.2011, at 12:43, Paul Mackerras wrote:
+This patch does not apply on top of my l2-mtd-2.6.git tree. Could you
+please send a patch that applies cleanly?
 
-> On Tue, Dec 06, 2011 at 03:03:00PM +1100, Paul Mackerras wrote:
->> I'm not sure why yet, but commit 8a97c432 ("KVM: PPC: booke: Improve
->> timer register emulation") in Alex's kvm-ppc-next branch is breaking
->> Book3S HV KVM on POWER7.  Guest cpus fail to spin up, and even with
->> just one cpu, the guest stalls every so often.  If I stop the guest
->> and inspect the state with qemu, PC is at 0x900.  Reverting 8a97c432
->> makes it work properly again.
->=20
-> This fixes it:
->=20
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 534cbe1..83bcb44 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -560,7 +560,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, =
-struct kvm_run *run)
->=20
-> void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
-> {
-> -	if (waitqueue_active(&vcpu->wq)) {
-> +	if (waitqueue_active(vcpu->arch.wqp)) {
-
-:(
-
-> 		wake_up_interruptible(vcpu->arch.wqp);
-> 		vcpu->stat.halt_wakeup++;
-> 	} else if (vcpu->cpu !=3D -1) {
->=20
-> Alex, do you want to roll that in with Scott's patch, or do you want =
-me
-> to send a separate patch on top?
-
-I usually like praise where praise belongs, so I'll put this right after =
-Scott's patch if you give me a nice and shiny patch description with a =
-signed-off-by line :)
-
-
-Alex
+Thanks!
