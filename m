@@ -1,22 +1,20 @@
-Return-Path: <B36685@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 59945100815
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2011 20:28:39 +1100 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2 v2] mtd/nand: Add ONFI support for FSL NAND controller
-Date: Tue, 6 Dec 2011 16:54:15 +0800
-Message-ID: <1323161655-19050-2-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1323161655-19050-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1323161655-19050-1-git-send-email-Shengzhou.Liu@freescale.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 325851007D5
+ for <linuxppc-dev@ozlabs.org>; Tue,  6 Dec 2011 20:30:50 +1100 (EST)
+In-Reply-To: <4EDD32E1.7080009@freescale.com>
+References: <201112051902.35285.alexander.lyasin@gmail.com>
+ <4EDD32E1.7080009@freescale.com>
+Subject: Re: Problem with eLBC?
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF61313592.71421E50-ONC125795E.0031F43D-C125795E.00343F25@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 6 Dec 2011 10:30:40 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, dwmw2@infradead.org, kumar.gala@freescale.com,
- linux-mtd@lists.infradead.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Content-type: text/plain; charset=US-ASCII
+Cc: Alexander Lyasin <alexander.lyasin@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- fix NAND_CMD_READID command for ONFI detect.
-- add NAND_CMD_PARAM command to read the ONFI parameter page.
+>
+> On 12/05/2011 08:02 AM, Alexander Lyasin wrote:
+> > In reply to your Service Request SR 1-807899446:
+> >
+> > Yes, due to several design peculiarities in local bus nand controller,
+> > simultaneous accesses to nand flash and to other local bus memory
+> > controller may cause nand flash controller access failure. Our linux
+> > team suggested to use "software lock" method to avoid this problem -
+> > please do not use other local bus controllers, when nand flash is accessed.
+>
+> What kernel version are you using?  The latest mainline kernel should
+> not have this issue.
+>
+> Make sure you have these patches:
+>
+> commit d08e44570ed611c527a1062eb4f8c6ac61832e6e
+> Author: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> Date:   Thu May 19 18:48:01 2011 +0800
+>
+>     powerpc/fsl_lbc: Add workaround for ELBC-A001 erratum
+>
+>     Simultaneous FCM and GPCM or UPM operation may erroneously trigger
+>     bus monitor timeout.
+>
+>     Set the local bus monitor timeout value to the maximum by setting
+>     LBCR[BMT] = 0 and LBCR[BMTPS] = 0xF.
+>
+>     Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+>     Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>
+> and
+>
+> commit 476459a6cf46d20ec73d9b211f3894ced5f9871e
+> Author: Scott Wood <scottwood@freescale.com>
+> Date:   Fri Nov 13 14:13:01 2009 -0600
+>
+>     mtd: eLBC NAND: use recommended command sequences
+>
+>     Currently, the program and erase sequences do not wait for completion,
+>     instead relying on a subsequent waitfunc() callback.  However, this
+> causes
+>     the chipselect to be deasserted while the NAND chip is still
+> asserting the
+>     busy pin, which can corrupt activity on other chipselects.
+>
+>     This patch switches to using the sequences recommended by the manual,
+>     in which a wait is performed within the initial command sequence.
+> We can
+>     now re-use the status byte from the initial command sequence, rather
+> than
+>     having to do another status read in the waitfunc.
+>
+>     Since we're already touching the command sequences, it also cleans
+> up some
+>     cruft in SEQIN that isn't needed since we cannot program partial pages
+>     outside of OOB.
+>
+>     Signed-off-by: Scott Wood <scottwood@freescale.com>
+>     Reported-by: Suchit Lepcha <suchit.lepcha@freescale.com>
+>     Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+>     Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+>
+> -Scott
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
-v2: no changes
+Scott, you seem know something about eLBC and NAND. I have been told
+that using NAND and other memory mapped devices on the same LB may
+stall accesses to the other devices as the FCM may hold the bus for
+long periods(a whole write or erase op.), is this so?
 
- drivers/mtd/nand/fsl_elbc_nand.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
+If still true, I guess the whole CPU "freezes" until the NAND op.
+is complete?
 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index 4f405a0..b4db407 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -349,19 +349,24 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		fsl_elbc_run_command(mtd);
- 		return;
- 
--	/* READID must read all 5 possible bytes while CEB is active */
- 	case NAND_CMD_READID:
--		dev_vdbg(priv->dev, "fsl_elbc_cmdfunc: NAND_CMD_READID.\n");
-+	case NAND_CMD_PARAM:
-+		dev_vdbg(priv->dev, "fsl_elbc_cmdfunc: NAND_CMD %x\n", command);
- 
- 		out_be32(&lbc->fir, (FIR_OP_CM0 << FIR_OP0_SHIFT) |
- 		                    (FIR_OP_UA  << FIR_OP1_SHIFT) |
- 		                    (FIR_OP_RBW << FIR_OP2_SHIFT));
--		out_be32(&lbc->fcr, NAND_CMD_READID << FCR_CMD0_SHIFT);
--		/* nand_get_flash_type() reads 8 bytes of entire ID string */
--		out_be32(&lbc->fbcr, 8);
--		elbc_fcm_ctrl->read_bytes = 8;
-+		out_be32(&lbc->fcr, command << FCR_CMD0_SHIFT);
-+		/* reads 8 bytes of entire ID string */
-+		if (NAND_CMD_READID == command) {
-+			out_be32(&lbc->fbcr, 8);
-+			elbc_fcm_ctrl->read_bytes = 8;
-+		} else {
-+			out_be32(&lbc->fbcr, 256);
-+			elbc_fcm_ctrl->read_bytes = 256;
-+		}
- 		elbc_fcm_ctrl->use_mdr = 1;
--		elbc_fcm_ctrl->mdr = 0;
-+		elbc_fcm_ctrl->mdr = column;
- 
- 		set_addr(mtd, 0, 0, 0);
- 		fsl_elbc_run_command(mtd);
--- 
-1.6.4
+ Jocke
