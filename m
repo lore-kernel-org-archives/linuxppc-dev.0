@@ -1,14 +1,12 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 6 Dec 2011 16:47:26 +1100
+Date: Tue, 6 Dec 2011 16:35:32 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Alexander Graf <agraf@suse.de>
-Subject: [PATCH] powerpc: Provide a way for KVM to indicate that NV GPR
- values are lost
-Message-ID: <20111206054726.GB12389@drongo>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/powernv: Fix problems in onlining CPUs
+Message-ID: <20111206053532.GA12389@drongo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,90 +16,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a problem where a CPU thread coming out of nap mode can
-think it has valid values in the nonvolatile GPRs (r14 - r31) as saved
-away in power7_idle, but in fact the values have been trashed because
-the thread was used for KVM in the mean time.  The result is that the
-thread crashes because code that called power7_idle (e.g.,
-pnv_smp_cpu_kill_self()) goes to use values in registers that have
-been trashed.
+At present, on the powernv platform, if you off-line a CPU that was
+online, and then try to on-line it again, the kernel generates a
+warning message "OPAL Error -1 starting CPU n".  Furthermore, if the
+CPU is a secondary thread that was used by KVM while it was off-line,
+the CPU fails to come online.
 
-The bit field in SRR1 that tells whether state was lost only reflects
-the most recent nap, which may not have been the nap instruction in
-power7_idle.  So we need an extra PACA field to indicate that state
-has been lost even if SRR1 indicates that the most recent nap didn't
-lose state.  We clear this field when saving the state in power7_idle,
-we set it to a non-zero value when we use the thread for KVM, and we
-test it in power7_wakeup_noloss.
+The first problem is fixed by only calling OPAL to start the CPU the
+first time it is on-lined, as indicated by the cpu_start field of its
+PACA being zero.  The second problem is fixed by restoring the
+cpu_start field to 1 instead of 0 when using the CPU within KVM.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-I assume this should go via Ben's tree, since it touches more powerpc
-code than PPC KVM code.
-
- arch/powerpc/include/asm/paca.h         |    1 +
- arch/powerpc/kernel/asm-offsets.c       |    1 +
- arch/powerpc/kernel/idle_power7.S       |    4 ++++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |    3 +++
- 4 files changed, 9 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 17722c7..269c05a 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -135,6 +135,7 @@ struct paca_struct {
- 	u8 hard_enabled;		/* set if irqs are enabled in MSR */
- 	u8 io_sync;			/* writel() needs spin_unlock sync */
- 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
-+	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
- 
- #ifdef CONFIG_PPC_POWERNV
- 	/* Pointer to OPAL machine check event structure set by the
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index ec24b36..8e0db0b 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -208,6 +208,7 @@ int main(void)
- 	DEFINE(PACA_USER_TIME, offsetof(struct paca_struct, user_time));
- 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
- 	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
-+	DEFINE(PACA_NAPSTATELOST, offsetof(struct paca_struct, nap_state_lost));
- #endif /* CONFIG_PPC64 */
- 
- 	/* RTAS */
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 3a70845..fcdff19 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -54,6 +54,7 @@ _GLOBAL(power7_idle)
- 	li	r0,0
- 	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
- 	stb	r0,PACAHARDIRQEN(r13)
-+	stb	r0,PACA_NAPSTATELOST(r13)
- 
- 	/* Continue saving state */
- 	SAVE_GPR(2, r1)
-@@ -86,6 +87,9 @@ _GLOBAL(power7_wakeup_loss)
- 	rfid
- 
- _GLOBAL(power7_wakeup_noloss)
-+	lbz	r0,PACA_NAPSTATELOST(r13)
-+	cmpwi	r0,0
-+	bne	.power7_wakeup_loss
- 	ld	r1,PACAR1(r13)
- 	ld	r4,_MSR(r1)
- 	ld	r5,_NIP(r1)
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 7b8dbf6..b70bf22 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -112,6 +112,9 @@ kvm_start_guest:
- 	stbcix	r0, r5, r6		/* clear it */
- 	stwcix	r8, r5, r7		/* EOI it */
- 
-+	/* NV GPR values from power7_idle() will no longer be valid */
-+	stb	r0, PACA_NAPSTATELOST(r13)
-+
- .global kvmppc_hv_entry
- kvmppc_hv_entry:
- 
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index e37f8f4..ca9b733 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -65,7 +65,7 @@ BEGIN_FTR_SECTION
+ 	lbz	r0,PACAPROCSTART(r13)
+ 	cmpwi	r0,0x80
+ 	bne	1f
+-	li	r0,0
++	li	r0,1
+ 	stb	r0,PACAPROCSTART(r13)
+ 	b	kvm_start_guest
+ 1:
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index e877366..17210c5 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -75,7 +75,7 @@ int __devinit pnv_smp_kick_cpu(int nr)
+ 	/* On OPAL v2 the CPU are still spinning inside OPAL itself,
+ 	 * get them back now
+ 	 */
+-	if (firmware_has_feature(FW_FEATURE_OPALv2)) {
++	if (!paca[nr].cpu_start && firmware_has_feature(FW_FEATURE_OPALv2)) {
+ 		pr_devel("OPAL: Starting CPU %d (HW 0x%x)...\n", nr, pcpu);
+ 		rc = opal_start_cpu(pcpu, start_here);
+ 		if (rc != OPAL_SUCCESS)
