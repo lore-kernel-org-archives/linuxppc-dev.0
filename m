@@ -1,18 +1,22 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E39DD10098F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 07:32:43 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH RESEND] rapidio/tsi721: modify PCIe capability settings
-Date: Wed,  7 Dec 2011 15:31:15 -0500
-Message-Id: <1323289875-25559-2-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1323289875-25559-1-git-send-email-alexandre.bounine@idt.com>
-References: <1323289875-25559-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F192BB70B1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 07:34:03 +1100 (EST)
+Date: Wed, 7 Dec 2011 21:33:48 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Jiri Slaby <jslaby@suse.cz>
+Subject: Re: [PATCH -resend 1/1] SPI: disable CONFIG_SPI_FSL_ESPI=m build
+Message-ID: <20111207203348.GB2526@pengutronix.de>
+References: <1323289096-13599-1-git-send-email-jslaby@suse.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="b5gNqxB1S1yM7hjW"
+In-Reply-To: <1323289096-13599-1-git-send-email-jslaby@suse.cz>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jirislaby@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,73 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Modify initialization of PCIe capability registers in Tsi721 mport driver:
-- change Completion Timeout value to avoid unexpected data transfer aborts
-  during intensive traffic.
-- replace hardcoded offset of PCIe capability block by getting it using
-  the common function.
 
-This patch is applicable to kernel versions starting from 3.2-rc1.
+--b5gNqxB1S1yM7hjW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
----
+On Wed, Dec 07, 2011 at 09:18:16PM +0100, Jiri Slaby wrote:
+> When spi_fsl_espi is chosen to be built as a module, there is a build
+> error because we test only CONFIG_SPI_FSL_ESPI in declaration of
+> struct mpc8xxx_spi in drivers/spi/spi_fsl_lib.h. Also some called
+> functions are not exported.
+>=20
+> So we forbid CONFIG_SPI_FSL_ESPI to be tristate here.
+>=20
+> The error looks like:
+> drivers/spi/spi_fsl_espi.c: In function 'fsl_espi_bufs':
+> drivers/spi/spi_fsl_espi.c:232: error: 'struct mpc8xxx_spi' has no member=
+ named 'len'
+> ...
+>=20
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> Maybe Grant is back already?
 
-[Resending this patch with updated commit comment]
+I just picked it up in the for-linus branch I am preparing while Grant
+is away.
 
- drivers/rapidio/devices/tsi721.c |   20 +++++++++++++++-----
- drivers/rapidio/devices/tsi721.h |    2 ++
- 2 files changed, 17 insertions(+), 5 deletions(-)
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
-index 83ac8728..691b1ab 100644
---- a/drivers/rapidio/devices/tsi721.c
-+++ b/drivers/rapidio/devices/tsi721.c
-@@ -2154,7 +2154,7 @@ static int __devinit tsi721_probe(struct pci_dev *pdev,
- 				  const struct pci_device_id *id)
- {
- 	struct tsi721_device *priv;
--	int i;
-+	int i, cap;
- 	int err;
- 	u32 regval;
- 
-@@ -2262,10 +2262,20 @@ static int __devinit tsi721_probe(struct pci_dev *pdev,
- 			dev_info(&pdev->dev, "Unable to set consistent DMA mask\n");
- 	}
- 
--	/* Clear "no snoop" and "relaxed ordering" bits. */
--	pci_read_config_dword(pdev, 0x40 + PCI_EXP_DEVCTL, &regval);
--	regval &= ~(PCI_EXP_DEVCTL_RELAX_EN | PCI_EXP_DEVCTL_NOSNOOP_EN);
--	pci_write_config_dword(pdev, 0x40 + PCI_EXP_DEVCTL, regval);
-+	cap = pci_pcie_cap(pdev);
-+	BUG_ON(cap == 0);
-+
-+	/* Clear "no snoop" and "relaxed ordering" bits, use default MRRS. */
-+	pci_read_config_dword(pdev, cap + PCI_EXP_DEVCTL, &regval);
-+	regval &= ~(PCI_EXP_DEVCTL_READRQ | PCI_EXP_DEVCTL_RELAX_EN |
-+		    PCI_EXP_DEVCTL_NOSNOOP_EN);
-+	regval |= 0x2 << MAX_READ_REQUEST_SZ_SHIFT;
-+	pci_write_config_dword(pdev, cap + PCI_EXP_DEVCTL, regval);
-+
-+	/* Adjust PCIe completion timeout. */
-+	pci_read_config_dword(pdev, cap + PCI_EXP_DEVCTL2, &regval);
-+	regval &= ~(0x0f);
-+	pci_write_config_dword(pdev, cap + PCI_EXP_DEVCTL2, regval | 0x2);
- 
- 	/*
- 	 * FIXUP: correct offsets of MSI-X tables in the MSI-X Capability Block
-diff --git a/drivers/rapidio/devices/tsi721.h b/drivers/rapidio/devices/tsi721.h
-index 58be4de..822e54c 100644
---- a/drivers/rapidio/devices/tsi721.h
-+++ b/drivers/rapidio/devices/tsi721.h
-@@ -72,6 +72,8 @@
- #define TSI721_MSIXPBA_OFFSET	0x2a000
- #define TSI721_PCIECFG_EPCTL	0x400
- 
-+#define MAX_READ_REQUEST_SZ_SHIFT	12
-+
- /*
-  * Event Management Registers
-  */
--- 
-1.7.6
+--b5gNqxB1S1yM7hjW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk7fzawACgkQD27XaX1/VRtpxQCgwyLXks2mr1yGcO3fyIQyknX2
+XxcAnRTjzECWSWEGOaZsyw6cMOt2tSzP
+=UflB
+-----END PGP SIGNATURE-----
+
+--b5gNqxB1S1yM7hjW--
