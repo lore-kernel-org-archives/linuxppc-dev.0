@@ -1,25 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8AB111007D2
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Dec 2011 18:42:45 +1100 (EST)
-Message-ID: <1323243750.660.72.camel@pasglop>
-Subject: Re: [PATCH net-next v6 4/4] powerpc: tqm8548/tqm8xx: add and update
- CAN device nodes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-Date: Wed, 07 Dec 2011 18:42:30 +1100
-In-Reply-To: <20111207.023916.980093028693181777.davem@davemloft.net>
-References: <1322732481-2255-1-git-send-email-wg@grandegger.com>
- <1322732481-2255-5-git-send-email-wg@grandegger.com>
- <1323243268.660.71.camel@pasglop>
- <20111207.023916.980093028693181777.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linux-can@vger.kernel.org, linuxppc-dev@ozlabs.org,
- socketcan-users@lists.berlios.de
+Return-Path: <prashantsmailcenter@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+ [209.85.215.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id B54C71007D2
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Dec 2011 19:05:25 +1100 (EST)
+Received: by eaao13 with SMTP id o13so204208eaa.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 07 Dec 2011 00:05:21 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1322198727.32635.25.camel@pasglop>
+References: <CAD6p20dmksH7YEjijdqLRG06aigaKTpzLPdoL0SCNGD3Ji9d2A@mail.gmail.com>
+ <1322198727.32635.25.camel@pasglop>
+Date: Wed, 7 Dec 2011 13:35:21 +0530
+Message-ID: <CAD6p20chCnh+PN5ekPz20BJQMdTaisb5toLA9rySaYJTeivRfQ@mail.gmail.com>
+Subject: Re: ibm_newemac tx problem with jumbo frame enabled
+From: Prashant Bhole <prashantsmailcenter@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-12-07 at 02:39 -0500, David Miller wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Wed, 07 Dec 2011 18:34:28 +1100
-> 
-> > Let me know if I should just remove them from powerpc patchwork.
-> 
-> These are DT entries for CAN devices for which drivers only exist in
-> the net-next tree, I already included this patch into the net-next
-> tree so you do not have to.
+On Fri, Nov 25, 2011 at 10:55 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2011-11-18 at 10:33 +0530, Prashant Bhole wrote:
+>> Hi,
+>> I have been facing problem with ibm_newemac driver (v3.54).
+>> The board gets disconnected and can not be pinged in between
+>> some heavy network traffic. In my case I am running IOmeter
+>> "All-in-One" 8 threads on the iSCSI target. MTU is 4088.
+>>
+>> I found that after executing emac_full_tx_reset(), the board can
+>> be pinged again. Again after some heavy traffic of 5-6 seconds,
+>> traffic stops. This can be repeated after full tx reset.
+>>
+>> Is this a known issue? what could cause this?
+>> Any pointers would be greatly appreciated.
+>
+> Not that I know of. Can you check if any of the error reporting
+> registers trip anything ? Could it just be a fifo overflow which we may
+> not be handling properly in the driver ?
+>
+> Cheers,
+> Ben.
 
-Thanks.
+Still couldn't find anything like fifo overflow...
+I noticed one more thing, this problem happens only when mtu size on
+the initiator (the other end) is set to 4088, regardless of any mtu size set
+for EMAC.
 
-Cheers,
-Ben.
+
+-
+Prashant
