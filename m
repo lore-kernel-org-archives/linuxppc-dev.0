@@ -1,30 +1,23 @@
-Return-Path: <B38951@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
- [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 2D2CD1007D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 18:28:05 +1100 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: RE: [linuxppc-release] [powerpc] boot up problem
-Date: Wed, 7 Dec 2011 07:27:58 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5DFE170A@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1320040492-6407-1-git-send-email-B38951@freescale.com>
- <1320040492-6407-2-git-send-email-B38951@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
- <3E825AD9-1CD5-4D6D-8161-E6B4F1D32457@kernel.crashing.org>
- <3F607A5180246847A760FD34122A1E052DBCD1@039-SN1MPN1-003.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5DFD6BAB@039-SN1MPN1-005.039d.mgd.msft.net>
- <3EC6F9E0-C847-4DA8-AD8C-313976982A10@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5DFDC478@039-SN1MPN1-005.039d.mgd.msft.net>
- <4ED84C32.3010807@freescale.com>
-In-Reply-To: <4ED84C32.3010807@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0CB5A1007D5
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Dec 2011 18:34:45 +1100 (EST)
+Message-ID: <1323243268.660.71.camel@pasglop>
+Subject: Re: [PATCH net-next v6 4/4] powerpc: tqm8548/tqm8xx: add and update
+ CAN device nodes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Date: Wed, 07 Dec 2011 18:34:28 +1100
+In-Reply-To: <1322732481-2255-5-git-send-email-wg@grandegger.com>
+References: <1322732481-2255-1-git-send-email-wg@grandegger.com>
+ <1322732481-2255-5-git-send-email-wg@grandegger.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, socketcan-users@lists.berlios.de,
+ linux-can@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,43 +27,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Is this the patch you mentioned?
-http://patchwork.ozlabs.org/patch/128806/
+On Thu, 2011-12-01 at 10:41 +0100, Wolfgang Grandegger wrote:
+> This patch enables or updates support for the CC770 and AN82527
+> CAN controller on the TQM8548 and TQM8xx boards.
 
-I applied this patch but the issue was still there.
+I'm a bit confused by the net-next prefix here. Those patches seem to
+be only touching arch/powerpc and seem to be sent primarily toward
+netdev with a net-next prefix.
 
------Original Message-----
-From: Tabi Timur-B04825=20
-Sent: Friday, December 02, 2011 11:56 AM
-To: Jia Hongtao-B38951
-Cc: Kumar Gala; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; Fleming Andy=
--AFLEMING
-Subject: Re: [linuxppc-release] [powerpc] boot up problem
+Also there have been at least 3 versions in a couple of days already
+without comments nor indication of what was changed...
 
-Jia Hongtao-B38951 wrote:
-> Hi
->
-> I just found that the 'next' branch you mentioned have problem to boot up=
-.
-> I test it in p1022ds and p1010rdb boards and the result are both the same=
-.
-> Note that for p1022ds I use "make p1022ds.dtb" to make the dtb file(36bit=
-) with 36bit-uboot.
-> And for p1010rdb I use all 32bit image.
-> The problem list below:
->
-> scsi0 : sata_fsl
-> ata1: SATA max UDMA/133 irq 74
-> fsl-sata fffe19000.sata: Sata FSL Platform/CSB Driver init
-> scsi1 : sata_fsl
-> ata2: SATA max UDMA/133 irq 41
-> Fixed MDIO Bus: probed
-> Unable to handle kernel paging request for data at address 0x00000000=20
-> Faulting instruction address: 0xc0451630
-> Oops: Kernel access of bad area, sig: 11 [#1]
+Can you clarify things a bit please ? It looks like they really should
+go to linuxppc-dev (and you can probably drop a bunch of other lists) or
+am I missing an important piece of the puzzle ? (Such as patch 1/4 and
+2/4 ...)
 
-Andy has phy driver patch that fixes this.
+Let me know if I should just remove them from powerpc patchwork.
 
---
-Timur Tabi
-Linux kernel developer at Freescale
+Cheers,
+Ben.
+
+> CC: devicetree-discuss@lists.ozlabs.org
+> CC: linuxppc-dev@ozlabs.org
+> CC: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> ---
+>  arch/powerpc/boot/dts/tqm8548-bigflash.dts |   19 ++++++++++++++-----
+>  arch/powerpc/boot/dts/tqm8548.dts          |   19 ++++++++++++++-----
+>  arch/powerpc/boot/dts/tqm8xx.dts           |   25 +++++++++++++++++++++++++
+>  3 files changed, 53 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/tqm8548-bigflash.dts b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+> index 9452c3c..d918752 100644
+> --- a/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+> +++ b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+> @@ -352,7 +352,7 @@
+>  		ranges = <
+>  			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+>  			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+> -			2 0x0 0xa3000000 0x00008000	// CAN (2 x i82527)
+> +			2 0x0 0xa3000000 0x00008000	// CAN (2 x CC770)
+>  			3 0x0 0xa3010000 0x00008000	// NAND FLASH
+>  
+>  		>;
+> @@ -393,18 +393,27 @@
+>  		};
+>  
+>  		/* Note: CAN support needs be enabled in U-Boot */
+> -		can0@2,0 {
+> -			compatible = "intel,82527"; // Bosch CC770
+> +		can@2,0 {
+> +			compatible = "bosch,cc770"; // Bosch CC770
+>  			reg = <2 0x0 0x100>;
+>  			interrupts = <4 1>;
+>  			interrupt-parent = <&mpic>;
+> +			bosch,external-clock-frequency = <16000000>;
+> +			bosch,disconnect-rx1-input;
+> +			bosch,disconnect-tx1-output;
+> +			bosch,iso-low-speed-mux;
+> +			bosch,clock-out-frequency = <16000000>;
+>  		};
+>  
+> -		can1@2,100 {
+> -			compatible = "intel,82527"; // Bosch CC770
+> +		can@2,100 {
+> +			compatible = "bosch,cc770"; // Bosch CC770
+>  			reg = <2 0x100 0x100>;
+>  			interrupts = <4 1>;
+>  			interrupt-parent = <&mpic>;
+> +			bosch,external-clock-frequency = <16000000>;
+> +			bosch,disconnect-rx1-input;
+> +			bosch,disconnect-tx1-output;
+> +			bosch,iso-low-speed-mux;
+>  		};
+>  
+>  		/* Note: NAND support needs to be enabled in U-Boot */
+> diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tqm8548.dts
+> index 619776f..988d887 100644
+> --- a/arch/powerpc/boot/dts/tqm8548.dts
+> +++ b/arch/powerpc/boot/dts/tqm8548.dts
+> @@ -352,7 +352,7 @@
+>  		ranges = <
+>  			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
+>  			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
+> -			2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
+> +			2 0x0 0xe3000000 0x00008000	// CAN (2 x CC770)
+>  			3 0x0 0xe3010000 0x00008000	// NAND FLASH
+>  
+>  		>;
+> @@ -393,18 +393,27 @@
+>  		};
+>  
+>  		/* Note: CAN support needs be enabled in U-Boot */
+> -		can0@2,0 {
+> -			compatible = "intel,82527"; // Bosch CC770
+> +		can@2,0 {
+> +			compatible = "bosch,cc770"; // Bosch CC770
+>  			reg = <2 0x0 0x100>;
+>  			interrupts = <4 1>;
+>  			interrupt-parent = <&mpic>;
+> +			bosch,external-clock-frequency = <16000000>;
+> +			bosch,disconnect-rx1-input;
+> +			bosch,disconnect-tx1-output;
+> +			bosch,iso-low-speed-mux;
+> +			bosch,clock-out-frequency = <16000000>;
+>  		};
+>  
+> -		can1@2,100 {
+> -			compatible = "intel,82527"; // Bosch CC770
+> +		can@2,100 {
+> +			compatible = "bosch,cc770"; // Bosch CC770
+>  			reg = <2 0x100 0x100>;
+>  			interrupts = <4 1>;
+>  			interrupt-parent = <&mpic>;
+> +			bosch,external-clock-frequency = <16000000>;
+> +			bosch,disconnect-rx1-input;
+> +			bosch,disconnect-tx1-output;
+> +			bosch,iso-low-speed-mux;
+>  		};
+>  
+>  		/* Note: NAND support needs to be enabled in U-Boot */
+> diff --git a/arch/powerpc/boot/dts/tqm8xx.dts b/arch/powerpc/boot/dts/tqm8xx.dts
+> index f6da7ec..c3dba25 100644
+> --- a/arch/powerpc/boot/dts/tqm8xx.dts
+> +++ b/arch/powerpc/boot/dts/tqm8xx.dts
+> @@ -57,6 +57,7 @@
+>  
+>  		ranges = <
+>  			0x0 0x0 0x40000000 0x800000
+> +			0x3 0x0 0xc0000000 0x200
+>  		>;
+>  
+>  		flash@0,0 {
+> @@ -67,6 +68,30 @@
+>  			bank-width = <4>;
+>  			device-width = <2>;
+>  		};
+> +
+> +		/* Note: CAN support needs be enabled in U-Boot */
+> +		can@3,0 {
+> +			compatible = "intc,82527";
+> +			reg = <3 0x0 0x80>;
+> +			interrupts = <8 1>;
+> +			interrupt-parent = <&PIC>;
+> +			bosch,external-clock-frequency = <16000000>;
+> +			bosch,disconnect-rx1-input;
+> +			bosch,disconnect-tx1-output;
+> +			bosch,iso-low-speed-mux;
+> +			bosch,clock-out-frequency = <16000000>;
+> +		};
+> +
+> +		can@3,100 {
+> +			compatible = "intc,82527";
+> +			reg = <3 0x100 0x80>;
+> +			interrupts = <8 1>;
+> +			interrupt-parent = <&PIC>;
+> +			bosch,external-clock-frequency = <16000000>;
+> +			bosch,disconnect-rx1-input;
+> +			bosch,disconnect-tx1-output;
+> +			bosch,iso-low-speed-mux;
+> +		};
+>  	};
+>  
+>  	soc@fff00000 {
