@@ -1,14 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4EDFD98A.4070803@freescale.com>
-Date: Wed, 7 Dec 2011 15:24:26 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-Subject: Re: Multi-OS on P1022RDK Failing
-References: <93CD5F41FDBC6042A6B449764F3B35CC050C38FB@EU-MBX-03.mgc.mentorg.com>
-In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050C38FB@EU-MBX-03.mgc.mentorg.com>
-Content-Type: text/plain; charset="windows-1252"
-Cc: "Linuxppc-dev@lists.ozlabs.org" <Linuxppc-dev@lists.ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BA89D1007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 08:52:09 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add TBI PHY node to first MDIO bus
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20111207.150208.588206951117780997.davem@davemloft.net>
+Date: Wed, 7 Dec 2011 15:52:10 -0600
+Message-Id: <8E6B8366-A254-4528-8327-91710BD0C68D@kernel.crashing.org>
+References: <1323287457-6085-1-git-send-email-afleming@freescale.com>
+ <20111207.150208.588206951117780997.davem@davemloft.net>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, afleming@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,57 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/07/2011 08:57 AM, Arshad, Farrukh wrote:
-> Core 0 kernel
->=20
-> CONFIG_LOWMEM_SIZE =3D 0x10000000
->=20
-> CONFIG_PHYSICAL_START =3D 0x00000000
->=20
-> =20
->=20
-> Core 1 kernel
->=20
-> CONFIG_LOWMEM_SIZE =3D 0x10000000
->=20
-> CONFIG_PHYSICAL_START =3D 0x10000000
 
-Why are you messing with CONFIG_LOWMEM_SIZE?  That adjusts the
-lowmem/highmem split, not the total amount of memory that this instance
-of Linux will use (though you may get that behavior as a side effect if
-highmem is disabled).  U-boot should set the memory node in the device
-tree based on the bootm_low/bootm_size environment variables.
+On Dec 7, 2011, at 2:02 PM, David Miller wrote:
 
-> # Boot from NFS
->=20
-> setenv core0nfsbootargs root=3D/dev/nfs nfsroot=3D$serverip:/$core0root=
-fs
-> ip=3D<dev_ip>::<nfs_server_ip>:::eth0:off rw debug
-> console=3D$consoledev0,$baudrate maxcpus=3D1
->=20
-> setenv core1nfsbootargs root=3D/dev/nfs nfsroot=3D$serverip:/$core1root=
-fs
-> ip=3D<dev_ip_2>::<nfs_server_ip>:::eth0:off rw debug
-> console=3D$consoledev0,$baudrate maxcpus=3D1
+> From: Andy Fleming <afleming@freescale.com>
+> Date: Wed, 7 Dec 2011 13:50:57 -0600
+> 
+>> Systems which use the fsl_pq_mdio driver need to specify an
+>> address for TBI PHY transactions such that the address does
+>> not conflict with any PHYs on the bus (all transactions to
+>> that address are directed to the onboard TBI PHY). The driver
+>> used to scan for a free address if no address was specified,
+>> however this ran into issues when the PHY Lib was fixed so
+>> that all MDIO transactions were protected by a mutex. As it
+>> is, the code was meant to serve as a transitional tool until
+>> the device trees were all updated to specify the TBI address.
+>> 
+>> The best fix for the mutex issue was to remove the scanning code,
+>> but it turns out some of the newer SoCs have started to omit
+>> the tbi-phy node when SGMII is not being used. As such, these
+>> devices will now fail unless we add a tbi-phy node to the first
+>> mdio controller.
+>> 
+>> Signed-off-by: Andy Fleming <afleming@freescale.com>
+>> ---
+>> 
+>> This requires fsl_pq_mdio: Clean up tbi address configuration from
+>> the net tree in order to achieve its full effect.
+>> 
+>> This needs to go into 3.2.
+> 
+> I'm fine if the powerpc tree takes this one:
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-maxcpus should be unnecessary -- there will only be one cpu in the
-device tree for each partition.
+Will pull in via PPC tree.
 
-> My problem is Core 0 kernel is booting successfully but Core 1 kernel
-> hangs after uncompressing kernel image, and after that I don=92t see
-> anything on the console.
->=20
-> =20
->=20
-> Any thoughts on what I am missing or doing incorrect?
-
-The "cpu 1 release" command should be using the address of the
-decompressed kernel (should be $bootm_low), not where the uImage was load=
-ed.
-
-Also, the two serial ports you're using share an interrupt -- this
-shouldn't stop kernel message output, but it's going to be a problem for
-userspace usage of the port.  You should remove the interrupts property
-from the serial node in both partitions, so Linux will poll instead.
-
--Scott
+- k
