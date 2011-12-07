@@ -1,19 +1,20 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3EA841007D5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 14:40:05 +1100 (EST)
-Date: Tue, 6 Dec 2011 22:39:57 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <gregkh@suse.de>
-Subject: [GIT PULL] tty-next: Fix Fsl 8250 BRK bug
-Message-ID: <20111207033957.GB20556@windriver.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from vps4.telegraphics.com.au (vm4.telegraphics.com.au
+ [98.124.60.149]) by ozlabs.org (Postfix) with ESMTP id A7C221007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 14:49:43 +1100 (EST)
+Date: Wed, 7 Dec 2011 14:49:36 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 01/16 v3] pmac_zilog: fix unexpected irq
+In-Reply-To: <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
+Message-ID: <alpine.LNX.2.00.1112071427280.28552@nippy.intranet>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+ <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-serial@vger.kernel.org, alan@linux.intel.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +24,217 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Greg,
 
-This is the Freescale hardware bug fix which turned into a
-six-pack of 8250 updates.  This is exactly what was posted
-in the v2 review, with just Alan's ack added[1].  Since nobody
-else has had any follow-on comments since then, I'm assuming
-that it is now good to go.
+On most 68k Macs the SCC IRQ is an autovector interrupt and cannot be 
+masked. This can be a problem when pmac_zilog starts up.
 
-[1] https://lkml.org/lkml/2011/12/5/156
+For example, the serial debugging code in arch/m68k/kernel/head.S may be 
+used beforehand. It disables the SCC interrupts at the chip but doesn't 
+ack them. Then when a pmac_zilog port is used, the machine locks up with 
+"unexpected interrupt".
 
-Thanks,
-Paul.
+This can happen in pmz_shutdown() since the irq is freed before the 
+channel interrupts are disabled.
+
+Fix this by clearing interrupt enable bits before the handler is 
+uninstalled. Also move the interrupt control bit flipping into a separate 
+pmz_interrupt_control() routine. Replace all instances of these operations 
+with calls to this routine. Omit the zssync() calls that seem to serve no 
+purpose.
+
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Alan Cox <alan@linux.intel.com>
+
 ---
+   
+Re-implemented as v2 using a simpler approach that avoids messing with the 
+Master Interrupt Enable bit. As well as the ifdef problem, it turns out 
+that v1 was not sufficient to entirely fix the problem.
 
-Please pull for tty-next to get:
+v3 avoids needless changes to the logic and locking in the suspend and 
+shutdown code and tries to keep register writes closer to their original 
+sequence.
 
-The following changes since commit 5611cc4572e889b62a7b4c72a413536bf6a9c416:
+This patch has been tested on a PowerBook 520 but no PowerMacs yet.
 
-  Linux 3.2-rc4 (2011-12-01 14:56:01 -0800)
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/paulg/linux fsl-uart-fix
-
-Paul Gortmaker (6):
-      serial: move struct uart_8250_port from 8250.c to 8250.h
-      serial: clean up parameter passing for 8250 Rx IRQ handling
-      serial: export the key functions for an 8250 IRQ handler
-      serial: make 8250 timeout use the specified IRQ handler
-      serial: manually inline serial8250_handle_port
-      serial: add irq handler for Freescale 16550 errata.
-
- arch/powerpc/kernel/legacy_serial.c |    3 +
- drivers/tty/serial/8250.c           |   92 ++++++++++++-----------------------
- drivers/tty/serial/8250.h           |   26 ++++++++++
- drivers/tty/serial/8250_fsl.c       |   63 ++++++++++++++++++++++++
- drivers/tty/serial/Kconfig          |    5 ++
- drivers/tty/serial/Makefile         |    1 +
- include/linux/serial_8250.h         |    5 ++
- 7 files changed, 134 insertions(+), 61 deletions(-)
- create mode 100644 drivers/tty/serial/8250_fsl.c
+Index: linux-git/drivers/tty/serial/pmac_zilog.c
+===================================================================
+--- linux-git.orig/drivers/tty/serial/pmac_zilog.c	2011-12-07 12:36:32.000000000 +1100
++++ linux-git/drivers/tty/serial/pmac_zilog.c	2011-12-07 14:29:21.000000000 +1100
+@@ -216,6 +216,18 @@ static void pmz_maybe_update_regs(struct
+ 	}
+ }
+ 
++static void pmz_interrupt_control(struct uart_pmac_port *uap, int enable)
++{
++	if (enable) {
++		uap->curregs[1] |= INT_ALL_Rx | TxINT_ENAB;
++		if (!ZS_IS_EXTCLK(uap))
++			uap->curregs[1] |= EXT_INT_ENAB;
++	} else {
++		uap->curregs[1] &= ~(EXT_INT_ENAB | TxINT_ENAB | RxINT_MASK);
++	}
++	write_zsreg(uap, R1, uap->curregs[1]);
++}
++
+ static struct tty_struct *pmz_receive_chars(struct uart_pmac_port *uap)
+ {
+ 	struct tty_struct *tty = NULL;
+@@ -339,9 +351,7 @@ static struct tty_struct *pmz_receive_ch
+ 
+ 	return tty;
+  flood:
+-	uap->curregs[R1] &= ~(EXT_INT_ENAB | TxINT_ENAB | RxINT_MASK);
+-	write_zsreg(uap, R1, uap->curregs[R1]);
+-	zssync(uap);
++	pmz_interrupt_control(uap, 0);
+ 	pmz_error("pmz: rx irq flood !\n");
+ 	return tty;
+ }
+@@ -990,12 +1000,9 @@ static int pmz_startup(struct uart_port
+ 	if (ZS_IS_IRDA(uap))
+ 		pmz_irda_reset(uap);
+ 
+-	/* Enable interrupts emission from the chip */
++	/* Enable interrupt requests for the channel */
+ 	spin_lock_irqsave(&port->lock, flags);
+-	uap->curregs[R1] |= INT_ALL_Rx | TxINT_ENAB;
+-	if (!ZS_IS_EXTCLK(uap))
+-		uap->curregs[R1] |= EXT_INT_ENAB;
+-	write_zsreg(uap, R1, uap->curregs[R1]);
++	pmz_interrupt_control(uap, 1);
+ 	spin_unlock_irqrestore(&port->lock, flags);
+ 
+ 	pmz_debug("pmz: startup() done.\n");
+@@ -1015,6 +1022,25 @@ static void pmz_shutdown(struct uart_por
+ 
+ 	mutex_lock(&pmz_irq_mutex);
+ 
++	spin_lock_irqsave(&port->lock, flags);
++
++	if (!ZS_IS_ASLEEP(uap)) {
++		/* Disable interrupt requests for the channel */
++		pmz_interrupt_control(uap, 0);
++
++		if (!ZS_IS_CONS(uap)) {
++			/* Disable receiver and transmitter */
++			uap->curregs[R3] &= ~RxENABLE;
++			uap->curregs[R5] &= ~TxENABLE;
++
++			/* Disable break assertion */
++			uap->curregs[R5] &= ~SND_BRK;
++			pmz_maybe_update_regs(uap);
++		}
++	}
++
++	spin_unlock_irqrestore(&port->lock, flags);
++
+ 	/* Release interrupt handler */
+ 	free_irq(uap->port.irq, uap);
+ 
+@@ -1025,29 +1051,8 @@ static void pmz_shutdown(struct uart_por
+ 	if (!ZS_IS_OPEN(uap->mate))
+ 		pmz_get_port_A(uap)->flags &= ~PMACZILOG_FLAG_IS_IRQ_ON;
+ 
+-	/* Disable interrupts */
+-	if (!ZS_IS_ASLEEP(uap)) {
+-		uap->curregs[R1] &= ~(EXT_INT_ENAB | TxINT_ENAB | RxINT_MASK);
+-		write_zsreg(uap, R1, uap->curregs[R1]);
+-		zssync(uap);
+-	}
+-
+-	if (ZS_IS_CONS(uap) || ZS_IS_ASLEEP(uap)) {
+-		spin_unlock_irqrestore(&port->lock, flags);
+-		mutex_unlock(&pmz_irq_mutex);
+-		return;
+-	}
+-
+-	/* Disable receiver and transmitter.  */
+-	uap->curregs[R3] &= ~RxENABLE;
+-	uap->curregs[R5] &= ~TxENABLE;
+-
+-	/* Disable all interrupts and BRK assertion.  */
+-	uap->curregs[R5] &= ~SND_BRK;
+-	pmz_maybe_update_regs(uap);
+-
+-	/* Shut the chip down */
+-	pmz_set_scc_power(uap, 0);
++	if (!ZS_IS_ASLEEP(uap) && !ZS_IS_CONS(uap))
++		pmz_set_scc_power(uap, 0);	/* Shut the chip down */
+ 
+ 	spin_unlock_irqrestore(&port->lock, flags);
+ 
+@@ -1352,19 +1357,15 @@ static void pmz_set_termios(struct uart_
+ 	spin_lock_irqsave(&port->lock, flags);	
+ 
+ 	/* Disable IRQs on the port */
+-	uap->curregs[R1] &= ~(EXT_INT_ENAB | TxINT_ENAB | RxINT_MASK);
+-	write_zsreg(uap, R1, uap->curregs[R1]);
++	pmz_interrupt_control(uap, 0);
+ 
+ 	/* Setup new port configuration */
+ 	__pmz_set_termios(port, termios, old);
+ 
+ 	/* Re-enable IRQs on the port */
+-	if (ZS_IS_OPEN(uap)) {
+-		uap->curregs[R1] |= INT_ALL_Rx | TxINT_ENAB;
+-		if (!ZS_IS_EXTCLK(uap))
+-			uap->curregs[R1] |= EXT_INT_ENAB;
+-		write_zsreg(uap, R1, uap->curregs[R1]);
+-	}
++	if (ZS_IS_OPEN(uap))
++		pmz_interrupt_control(uap, 1);
++
+ 	spin_unlock_irqrestore(&port->lock, flags);
+ }
+ 
+@@ -1671,14 +1672,17 @@ static int pmz_suspend(struct macio_dev
+ 	spin_lock_irqsave(&uap->port.lock, flags);
+ 
+ 	if (ZS_IS_OPEN(uap) || ZS_IS_CONS(uap)) {
+-		/* Disable receiver and transmitter.  */
++		/* Disable interrupt requests for the channel */
++		pmz_interrupt_control(uap, 0);
++
++		/* Disable receiver and transmitter */
+ 		uap->curregs[R3] &= ~RxENABLE;
+ 		uap->curregs[R5] &= ~TxENABLE;
+ 
+-		/* Disable all interrupts and BRK assertion.  */
+-		uap->curregs[R1] &= ~(EXT_INT_ENAB | TxINT_ENAB | RxINT_MASK);
++		/* Disable break assertion */
+ 		uap->curregs[R5] &= ~SND_BRK;
+ 		pmz_load_zsregs(uap, uap->curregs);
++
+ 		uap->flags |= PMACZILOG_FLAG_IS_ASLEEP;
+ 		mb();
+ 	}
+@@ -1738,14 +1742,6 @@ static int pmz_resume(struct macio_dev *
+ 	/* Take care of config that may have changed while asleep */
+ 	__pmz_set_termios(&uap->port, &uap->termios_cache, NULL);
+ 
+-	if (ZS_IS_OPEN(uap)) {
+-		/* Enable interrupts */		
+-		uap->curregs[R1] |= INT_ALL_Rx | TxINT_ENAB;
+-		if (!ZS_IS_EXTCLK(uap))
+-			uap->curregs[R1] |= EXT_INT_ENAB;
+-		write_zsreg(uap, R1, uap->curregs[R1]);
+-	}
+-
+ 	spin_unlock_irqrestore(&uap->port.lock, flags);
+ 
+ 	if (ZS_IS_CONS(uap))
+@@ -1757,6 +1753,12 @@ static int pmz_resume(struct macio_dev *
+ 		enable_irq(uap->port.irq);
+ 	}
+ 
++	if (ZS_IS_OPEN(uap)) {
++		spin_lock_irqsave(&uap->port.lock, flags);
++		pmz_interrupt_control(uap, 1);
++		spin_unlock_irqrestore(&uap->port.lock, flags);
++	}
++
+  bail:
+ 	mutex_unlock(&state->port.mutex);
+ 	mutex_unlock(&pmz_irq_mutex);
