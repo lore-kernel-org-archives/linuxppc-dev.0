@@ -1,22 +1,14 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F192BB70B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 07:34:03 +1100 (EST)
-Date: Wed, 7 Dec 2011 21:33:48 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH -resend 1/1] SPI: disable CONFIG_SPI_FSL_ESPI=m build
-Message-ID: <20111207203348.GB2526@pengutronix.de>
-References: <1323289096-13599-1-git-send-email-jslaby@suse.cz>
+Return-Path: <B07421@freescale.com>
+Message-ID: <4EDFD98A.4070803@freescale.com>
+Date: Wed, 7 Dec 2011 15:24:26 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="b5gNqxB1S1yM7hjW"
-In-Reply-To: <1323289096-13599-1-git-send-email-jslaby@suse.cz>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jirislaby@gmail.com
+To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+Subject: Re: Multi-OS on P1022RDK Failing
+References: <93CD5F41FDBC6042A6B449764F3B35CC050C38FB@EU-MBX-03.mgc.mentorg.com>
+In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050C38FB@EU-MBX-03.mgc.mentorg.com>
+Content-Type: text/plain; charset="windows-1252"
+Cc: "Linuxppc-dev@lists.ozlabs.org" <Linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +18,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---b5gNqxB1S1yM7hjW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Dec 07, 2011 at 09:18:16PM +0100, Jiri Slaby wrote:
-> When spi_fsl_espi is chosen to be built as a module, there is a build
-> error because we test only CONFIG_SPI_FSL_ESPI in declaration of
-> struct mpc8xxx_spi in drivers/spi/spi_fsl_lib.h. Also some called
-> functions are not exported.
+On 12/07/2011 08:57 AM, Arshad, Farrukh wrote:
+> Core 0 kernel
 >=20
-> So we forbid CONFIG_SPI_FSL_ESPI to be tristate here.
+> CONFIG_LOWMEM_SIZE =3D 0x10000000
 >=20
-> The error looks like:
-> drivers/spi/spi_fsl_espi.c: In function 'fsl_espi_bufs':
-> drivers/spi/spi_fsl_espi.c:232: error: 'struct mpc8xxx_spi' has no member=
- named 'len'
-> ...
+> CONFIG_PHYSICAL_START =3D 0x00000000
 >=20
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> Maybe Grant is back already?
+> =20
+>=20
+> Core 1 kernel
+>=20
+> CONFIG_LOWMEM_SIZE =3D 0x10000000
+>=20
+> CONFIG_PHYSICAL_START =3D 0x10000000
 
-I just picked it up in the for-linus branch I am preparing while Grant
-is away.
+Why are you messing with CONFIG_LOWMEM_SIZE?  That adjusts the
+lowmem/highmem split, not the total amount of memory that this instance
+of Linux will use (though you may get that behavior as a side effect if
+highmem is disabled).  U-boot should set the memory node in the device
+tree based on the bootm_low/bootm_size environment variables.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> # Boot from NFS
+>=20
+> setenv core0nfsbootargs root=3D/dev/nfs nfsroot=3D$serverip:/$core0root=
+fs
+> ip=3D<dev_ip>::<nfs_server_ip>:::eth0:off rw debug
+> console=3D$consoledev0,$baudrate maxcpus=3D1
+>=20
+> setenv core1nfsbootargs root=3D/dev/nfs nfsroot=3D$serverip:/$core1root=
+fs
+> ip=3D<dev_ip_2>::<nfs_server_ip>:::eth0:off rw debug
+> console=3D$consoledev0,$baudrate maxcpus=3D1
 
---b5gNqxB1S1yM7hjW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+maxcpus should be unnecessary -- there will only be one cpu in the
+device tree for each partition.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> My problem is Core 0 kernel is booting successfully but Core 1 kernel
+> hangs after uncompressing kernel image, and after that I don=92t see
+> anything on the console.
+>=20
+> =20
+>=20
+> Any thoughts on what I am missing or doing incorrect?
 
-iEYEARECAAYFAk7fzawACgkQD27XaX1/VRtpxQCgwyLXks2mr1yGcO3fyIQyknX2
-XxcAnRTjzECWSWEGOaZsyw6cMOt2tSzP
-=UflB
------END PGP SIGNATURE-----
+The "cpu 1 release" command should be using the address of the
+decompressed kernel (should be $bootm_low), not where the uImage was load=
+ed.
 
---b5gNqxB1S1yM7hjW--
+Also, the two serial ports you're using share an interrupt -- this
+shouldn't stop kernel message output, but it's going to be a problem for
+userspace usage of the port.  You should remove the interrupts property
+from the serial node in both partitions, so Linux will poll instead.
+
+-Scott
