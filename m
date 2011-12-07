@@ -1,25 +1,20 @@
-Return-Path: <B35362@freescale.com>
-Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id BDA0E100802
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 14:51:31 +1100 (EST)
-Message-ID: <4EDEE3AC.7060000@freescale.com>
-Date: Wed, 7 Dec 2011 11:55:24 +0800
-From: LiuShuo <b35362@freescale.com>
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B668A1007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 13:33:40 +1100 (EST)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
- <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
- <4EDEAEB9.6020703@freescale.com>
-In-Reply-To: <4EDEAEB9.6020703@freescale.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
- linux-mtd@lists.infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org
+Content-Type: multipart/alternative;
+ boundary="----_=_NextPart_001_01CCB488.9BF6D640"
+Subject: RE: [PATCH] rapidio/tsi721: Fix mailbox resource reporting
+Date: Tue, 6 Dec 2011 18:33:31 -0800
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55219FC70@CORPEXCH1.na.ads.idt.com>
+References: <1323198088-11669-1-git-send-email-alexandre.bounine@idt.com>
+ <20111206143638.12598c7b.akpm@linux-foundation.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,85 +24,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=E4=BA=8E 2011=E5=B9=B412=E6=9C=8807=E6=97=A5 08:09, Scott Wood =E5=86=99=
-=E9=81=93:
-> On 12/03/2011 10:31 PM, shuo.liu@freescale.com wrote:
->> From: Liu Shuo<shuo.liu@freescale.com>
->>
->> Freescale FCM controller has a 2K size limitation of buffer RAM. In or=
-der
->> to support the Nand flash chip whose page size is larger than 2K bytes=
-,
->> we read/write 2k data repeatedly by issuing FIR_OP_RB/FIR_OP_WB and sa=
-ve
->> them to a large buffer.
->>
->> Signed-off-by: Liu Shuo<shuo.liu@freescale.com>
->> ---
->> v3:
->>      -remove page_size of struct fsl_elbc_mtd.
->>      -do a oob write by NAND_CMD_RNDIN.
->>
->>   drivers/mtd/nand/fsl_elbc_nand.c |  243 ++++++++++++++++++++++++++++=
-++++++----
->>   1 files changed, 218 insertions(+), 25 deletions(-)
-> What is the plan for bad block marker migration?
-This patch has been ported to uboot now, I think we can make a special=20
-uboot image for bad
-block marker migration when first use the chip.
+------_=_NextPart_001_01CCB488.9BF6D640
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
->> @@ -473,13 +568,72 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mt=
-d, unsigned int command,
->>   		 * write so the HW generates the ECC.
->>   		 */
->>   		if (elbc_fcm_ctrl->oob || elbc_fcm_ctrl->column !=3D 0 ||
->> -		    elbc_fcm_ctrl->index !=3D mtd->writesize + mtd->oobsize)
->> -			out_be32(&lbc->fbcr,
->> -				elbc_fcm_ctrl->index - elbc_fcm_ctrl->column);
->> -		else
->> +		    elbc_fcm_ctrl->index !=3D mtd->writesize + mtd->oobsize) {
->> +			if (elbc_fcm_ctrl->oob&&  mtd->writesize>  2048) {
->> +				out_be32(&lbc->fbcr, 64);
->> +			} else {
->> +				out_be32(&lbc->fbcr, elbc_fcm_ctrl->index
->> +						- elbc_fcm_ctrl->column);
->> +			}
-> We need to limit ourselves to the regions that have actually been
-> written to in the buffer.  fbcr needs to be set separately for first an=
-d
-> last subpages, with intermediate subpages having 0, 64, or 2112 as
-> appropriate.  Subpages that are entirely before column or entirely afte=
-r
-> column + index should be skipped.
+Tsi721 patches are applicable to 3.2-rc1 and newer only. Sorry for not =
+describing it properly.
+This and following patch are fixes for issues found since 3.2-rc1.
+I will update changelogs for these patches with more details and =
+resubmit them tomorrow.
 
-I have considered this case, but I don't think it is useful.
-     1.There isn't a 'length' parameter in driver interface, although we=20
-can get it from 'index - column'.
-     2.To see nand_do_write_oob() in nand_base.c, it fill '0xff' to=20
-entire oob area first and write the user data by nand_fill_oob(), then=20
-call ecc.write_oob (default is nand_write_oob_std()). 'column' is=20
-mtd->writesize and 'length' of write_buf() is mtd->oobsize. So I don't=20
-think we need to deal with it there.
+________________________________
 
->> +		} else {
->> +			out_be32(&lbc->fir, FIR_OP_WB<<  FIR_OP1_SHIFT);
->> +			for (i =3D 1; i<  n; i++) {
->> +				if (i =3D=3D n - 1) {
->> +					elbc_fcm_ctrl->use_mdr =3D 1;
->> +					out_be32(&lbc->fir,
->> +						(FIR_OP_WB<<  FIR_OP1_SHIFT) |
->> +						(FIR_OP_CM3<<  FIR_OP2_SHIFT) |
->> +						(FIR_OP_CW1<<  FIR_OP3_SHIFT) |
->> +						(FIR_OP_RS<<  FIR_OP4_SHIFT));
-> Please explicitly show the (FIR_OP_NOP<<  FIR_OP0_SHIFT) compenent.
->
->> +	} else if (mtd->writesize>=3D 2048&&  mtd->writesize<=3D 16 * 1024) =
-{
->> +
->>   		setbits32(&lbc->bank[priv->bank].or, OR_FCM_PGS);
-> Don't insert a blank line here.
->
-Ok.
+From: linuxppc-dev-bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org =
+on behalf of Andrew Morton
+Sent: Tue 12/6/2011 5:36 PM
+To: Bounine, Alexandre
+Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rapidio/tsi721: Fix mailbox resource reporting
 
--LiuShuo
-> -Scott
+
+
+On Tue,  6 Dec 2011 14:01:27 -0500
+Alexandre Bounine <alexandre.bounine@idt.com> wrote:
+
+> Report support of four RapidIO mailboxes (MBOX0 - MBOX3) instead of =
+MBOX0
+> only.
+
+I don't know how important these changes are and I don't know what
+their end user visible effects are.  Hence I am unable to decide which
+kernel version(s) we should merge the patches into.
+
+That's why these things should always be explained in changelogs,
+please.
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@lists.ozlabs.org
+https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+
+------_=_NextPart_001_01CCB488.9BF6D640
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<HTML dir=3Dltr><HEAD><TITLE>Re: [PATCH] rapidio/tsi721: Fix mailbox =
+resource reporting</TITLE>=0A=
+<META content=3D"text/html; charset=3Dunicode" http-equiv=3DContent-Type>=0A=
+<META name=3DGENERATOR content=3D"MSHTML 9.00.8112.16437"></HEAD>=0A=
+<BODY>=0A=
+<DIV dir=3Dltr id=3DidOWAReplyText81148>=0A=
+<DIV dir=3Dltr><FONT color=3D#000000 size=3D2 =
+face=3DArial>Tsi721&nbsp;patches are applicable to 3.2-rc1 and newer =
+only. Sorry for not describing it properly.</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT size=3D2 face=3DArial>This and following patch are =
+fixes for issues found since 3.2-rc1.</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT color=3D#000000 size=3D2 face=3DArial>I will =
+update&nbsp;changelogs for&nbsp;these patches with more details and =
+resubmit them tomorrow.</FONT></DIV>=0A=
+<DIV dir=3Dltr><BR>=0A=
+<HR tabIndex=3D-1>=0A=
+<FONT size=3D2 face=3DTahoma><B>From:</B> =
+linuxppc-dev-bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org on =
+behalf of Andrew Morton<BR><B>Sent:</B> Tue 12/6/2011 5:36 =
+PM<BR><B>To:</B> Bounine, Alexandre<BR><B>Cc:</B> =
+linuxppc-dev@lists.ozlabs.org; =
+linux-kernel@vger.kernel.org<BR><B>Subject:</B> Re: [PATCH] =
+rapidio/tsi721: Fix mailbox resource reporting<BR></FONT><BR></DIV></DIV>=0A=
+<DIV>=0A=
+<P><FONT size=3D2>On Tue,&nbsp; 6 Dec 2011 14:01:27 -0500<BR>Alexandre =
+Bounine &lt;alexandre.bounine@idt.com&gt; wrote:<BR><BR>&gt; Report =
+support of four RapidIO mailboxes (MBOX0 - MBOX3) instead of =
+MBOX0<BR>&gt; only.<BR><BR>I don't know how important these changes are =
+and I don't know what<BR>their end user visible effects are.&nbsp; Hence =
+I am unable to decide which<BR>kernel version(s) we should merge the =
+patches into.<BR><BR>That's why these things should always be explained =
+in =
+changelogs,<BR>please.<BR><BR>___________________________________________=
+____<BR>Linuxppc-dev mailing list<BR>Linuxppc-dev@lists.ozlabs.org<BR><A =
+href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozl=
+abs.org/listinfo/linuxppc-dev</A><BR></FONT></P></DIV></BODY></HTML>
+------_=_NextPart_001_01CCB488.9BF6D640--
