@@ -1,44 +1,26 @@
-Return-Path: <bauerman@br.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 5A0251007D1
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 06:02:14 +1100 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <bauerman@br.ibm.com>;
- Wed, 7 Dec 2011 17:02:05 -0200
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pB7IxMas3170406
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Dec 2011 15:59:22 -0300
-Received: from d24av04.br.ibm.com (loopback [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pB7J1nCc019509
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Dec 2011 17:01:49 -0200
-Message-ID: <1323284517.10808.7.camel@hactar>
-Subject: Re: [PATCH 1/2] [hw-breakpoint] Use generic hw-breakpoint
- interfaces for new PPC ptrace flags
-From: Thiago Jung Bauermann <bauerman@br.ibm.com>
-To: prasad@linux.vnet.ibm.com
-Date: Wed, 07 Dec 2011 17:01:57 -0200
-In-Reply-To: <20111201102000.GB2632@in.ibm.com>
-References: <20110819074527.GA21817@in.ibm.com>
- <20110819075136.GB21817@in.ibm.com>
- <20110823050850.GS30097@yookeroo.fritz.box>
- <20110823092513.GA2962@in.ibm.com>
- <20110824035939.GB30097@yookeroo.fritz.box>
- <20110826093552.GA2301@in.ibm.com> <20110916072710.GA28060@in.ibm.com>
- <20111012033359.GR4849@truffala.fritz.box>
- <20111012173948.GA4340@in.ibm.com>
- <20111128031111.GC3508@truffala.fritz.box>
- <20111201102000.GB2632@in.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 935E11007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 06:11:52 +1100 (EST)
+Message-ID: <4EDFBA6D.9080500@freescale.com>
+Date: Wed, 7 Dec 2011 13:11:41 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: LiuShuo <b35362@freescale.com>
+Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
+ large-page Nand chip
+References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
+ <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
+ <4EDEAEB9.6020703@freescale.com> <4EDEE3AC.7060000@freescale.com>
+In-Reply-To: <4EDEE3AC.7060000@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
- David Gibson <dwg@au1.ibm.com>
+Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
+ linux-mtd@lists.infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,92 +30,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-12-01 at 15:50 +0530, K.Prasad wrote:
-> On Mon, Nov 28, 2011 at 02:11:11PM +1100, David Gibson wrote:
-> > [snip]
-> > On Wed, Oct 12, 2011 at 11:09:48PM +0530, K.Prasad wrote:
-> > > diff --git a/Documentation/powerpc/ptrace.txt b/Documentation/powerpc/ptrace.txt
-> > > index f4a5499..f2a7a39 100644
-> > > --- a/Documentation/powerpc/ptrace.txt
-> > > +++ b/Documentation/powerpc/ptrace.txt
-> > > @@ -127,6 +127,22 @@ Some examples of using the structure to:
-> > >    p.addr2           = (uint64_t) end_range;
-> > >    p.condition_value = 0;
-> > >  
-> > > +- set a watchpoint in server processors (BookS)
-> > > +
-> > > +  p.version         = 1;
-> > > +  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_RW;
-> > > +  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
-> > > +  or
-> > > +  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
-> > > +
-> > > +  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
-> > > +  p.addr            = (uint64_t) begin_range;
-> > 
-> > You should probably document the alignment constraint on the address
-> > here, too.
-> > 
-> 
-> Alignment constraints will be learnt by the user-space during runtime.
-> We provide that as part of 'struct ppc_debug_info' in
-> 'data_bp_alignment' field.
-> 
-> While the alignment is always 8-bytes for BookS, I think userspace
-> should be left to learn it through PTRACE_PPC_GETHWDEBUGINFO.
+On 12/06/2011 09:55 PM, LiuShuo wrote:
+> =E4=BA=8E 2011=E5=B9=B412=E6=9C=8807=E6=97=A5 08:09, Scott Wood =E5=86=99=
+=E9=81=93:
+>> On 12/03/2011 10:31 PM, shuo.liu@freescale.com wrote:
+>>> From: Liu Shuo<shuo.liu@freescale.com>
+>>>
+>>> Freescale FCM controller has a 2K size limitation of buffer RAM. In
+>>> order
+>>> to support the Nand flash chip whose page size is larger than 2K byte=
+s,
+>>> we read/write 2k data repeatedly by issuing FIR_OP_RB/FIR_OP_WB and s=
+ave
+>>> them to a large buffer.
+>>>
+>>> Signed-off-by: Liu Shuo<shuo.liu@freescale.com>
+>>> ---
+>>> v3:
+>>>      -remove page_size of struct fsl_elbc_mtd.
+>>>      -do a oob write by NAND_CMD_RNDIN.
+>>>
+>>>   drivers/mtd/nand/fsl_elbc_nand.c |  243
+>>> ++++++++++++++++++++++++++++++++++----
+>>>   1 files changed, 218 insertions(+), 25 deletions(-)
+>> What is the plan for bad block marker migration?
+> This patch has been ported to uboot now, I think we can make a special
+> uboot image for bad
+> block marker migration when first use the chip.
 
-Right. In particular, BookE doesn't have alignment constraints.
+It should not be a special image, and there should be some way to mark
+that the migration has happened.  Even if we do the migration in U-Boot,
+Linux could check for the marker and if absent, disallow access and tell
+the user to run the migration tool.
 
-> > > +		attr.bp_len = len;
-> > > +		ret =  modify_user_hw_breakpoint(bp, &attr);
-> > > +		if (ret) {
-> > > +			ptrace_put_breakpoints(child);
-> > > +			return ret;
-> > > +		}
-> > 
-> > If a bp already exists, you're modifying it.  I thought the semantics
-> > of the new interface meant that you shoul return ENOSPC in this case,
-> > and a DEL would be necessary before adding another breakpoint.
-> > 
-> 
-> I'm not too sure what would be the desired behaviour for this interface,
-> either way is fine with me. I'd like to hear from the GDB folks (copied
-> in this email) to know what would please them.
+>>> @@ -473,13 +568,72 @@ static void fsl_elbc_cmdfunc(struct mtd_info
+>>> *mtd, unsigned int command,
+>>>            * write so the HW generates the ECC.
+>>>            */
+>>>           if (elbc_fcm_ctrl->oob || elbc_fcm_ctrl->column !=3D 0 ||
+>>> -            elbc_fcm_ctrl->index !=3D mtd->writesize + mtd->oobsize)
+>>> -            out_be32(&lbc->fbcr,
+>>> -                elbc_fcm_ctrl->index - elbc_fcm_ctrl->column);
+>>> -        else
+>>> +            elbc_fcm_ctrl->index !=3D mtd->writesize + mtd->oobsize)=
+ {
+>>> +            if (elbc_fcm_ctrl->oob&&  mtd->writesize>  2048) {
+>>> +                out_be32(&lbc->fbcr, 64);
+>>> +            } else {
+>>> +                out_be32(&lbc->fbcr, elbc_fcm_ctrl->index
+>>> +                        - elbc_fcm_ctrl->column);
+>>> +            }
+>> We need to limit ourselves to the regions that have actually been
+>> written to in the buffer.  fbcr needs to be set separately for first a=
+nd
+>> last subpages, with intermediate subpages having 0, 64, or 2112 as
+>> appropriate.  Subpages that are entirely before column or entirely aft=
+er
+>> column + index should be skipped.
+>=20
+> I have considered this case, but I don't think it is useful.
+>     1.There isn't a 'length' parameter in driver interface, although we
+> can get it from 'index - column'.
 
-ENOSPC should be returned. The interface doesn't have provisions for
-modifying breakpoints. The client should delete/create instead of trying
-to modify.
+Right.  column is start, and index is end + 1.  We have the bounds of
+what has been written.
 
-Since PTRACE_PPC_GETHWDEBUGINFO returns the number of available
-breakpoint registers, the client shouldn't (and GDB doesn't) try to set
-more breakpoints than possible.
- 
-> > > @@ -1426,10 +1488,24 @@ static long ppc_del_hwdebug(struct task_struct *child, long addr, long data)
-> > >  #else
-> > >  	if (data != 1)
-> > >  		return -EINVAL;
-> > > +
-> > > +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> > > +	if (ptrace_get_breakpoints(child) < 0)
-> > > +		return -ESRCH;
-> > > +
-> > > +	bp = thread->ptrace_bps[0];
-> > > +	if (bp) {
-> > > +		unregister_hw_breakpoint(bp);
-> > > +		thread->ptrace_bps[0] = NULL;
-> > > +	}
-> > > +	ptrace_put_breakpoints(child);
-> > > +	return 0;
-> > 
-> > Shouldn't DEL return an error if there is no existing bp.
-> >
-> 
-> Same comment as above. We'd like to know what behaviour would help the
-> GDB use this interface better as there's no right or wrong way here.
+>     2.To see nand_do_write_oob() in nand_base.c, it fill '0xff' to
+> entire oob area first and write the user data by nand_fill_oob(), then
+> call ecc.write_oob (default is nand_write_oob_std()).
 
-GDB expects DEL to return ENOENT is there's no existing bp.
+Do we really want to assume that that's what it will always do?
 
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+And if we do want to make such assumptions, we could rip out all usage
+of index/column here, and just handle "oob" and "full page" cases.
+
+-Scott
