@@ -1,20 +1,26 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B668A1007D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 13:33:40 +1100 (EST)
+Return-Path: <B36685@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+ [213.199.154.144])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 82DF21007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 14:17:03 +1100 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 2/2 v2] mtd/nand: Add ONFI support for FSL NAND controller
+Date: Wed, 7 Dec 2011 03:16:53 +0000
+Message-ID: <3F453DDFF675A64A89321A1F352810216B074A@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1323161655-19050-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1323161655-19050-2-git-send-email-Shengzhou.Liu@freescale.com>
+ <4EDE4E1D.4030408@freescale.com>
+In-Reply-To: <4EDE4E1D.4030408@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----_=_NextPart_001_01CCB488.9BF6D640"
-Subject: RE: [PATCH] rapidio/tsi721: Fix mailbox resource reporting
-Date: Tue, 6 Dec 2011 18:33:31 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55219FC70@CORPEXCH1.na.ads.idt.com>
-References: <1323198088-11669-1-git-send-email-alexandre.bounine@idt.com>
- <20111206143638.12598c7b.akpm@linux-foundation.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "dwmw2@infradead.org" <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,86 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------_=_NextPart_001_01CCB488.9BF6D640
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Tsi721 patches are applicable to 3.2-rc1 and newer only. Sorry for not =
-describing it properly.
-This and following patch are fixes for issues found since 3.2-rc1.
-I will update changelogs for these patches with more details and =
-resubmit them tomorrow.
-
-________________________________
-
-From: linuxppc-dev-bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org =
-on behalf of Andrew Morton
-Sent: Tue 12/6/2011 5:36 PM
-To: Bounine, Alexandre
-Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rapidio/tsi721: Fix mailbox resource reporting
-
-
-
-On Tue,  6 Dec 2011 14:01:27 -0500
-Alexandre Bounine <alexandre.bounine@idt.com> wrote:
-
-> Report support of four RapidIO mailboxes (MBOX0 - MBOX3) instead of =
-MBOX0
-> only.
-
-I don't know how important these changes are and I don't know what
-their end user visible effects are.  Hence I am unable to decide which
-kernel version(s) we should merge the patches into.
-
-That's why these things should always be explained in changelogs,
-please.
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@lists.ozlabs.org
-https://lists.ozlabs.org/listinfo/linuxppc-dev
-
-
-
-------_=_NextPart_001_01CCB488.9BF6D640
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<HTML dir=3Dltr><HEAD><TITLE>Re: [PATCH] rapidio/tsi721: Fix mailbox =
-resource reporting</TITLE>=0A=
-<META content=3D"text/html; charset=3Dunicode" http-equiv=3DContent-Type>=0A=
-<META name=3DGENERATOR content=3D"MSHTML 9.00.8112.16437"></HEAD>=0A=
-<BODY>=0A=
-<DIV dir=3Dltr id=3DidOWAReplyText81148>=0A=
-<DIV dir=3Dltr><FONT color=3D#000000 size=3D2 =
-face=3DArial>Tsi721&nbsp;patches are applicable to 3.2-rc1 and newer =
-only. Sorry for not describing it properly.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT size=3D2 face=3DArial>This and following patch are =
-fixes for issues found since 3.2-rc1.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT color=3D#000000 size=3D2 face=3DArial>I will =
-update&nbsp;changelogs for&nbsp;these patches with more details and =
-resubmit them tomorrow.</FONT></DIV>=0A=
-<DIV dir=3Dltr><BR>=0A=
-<HR tabIndex=3D-1>=0A=
-<FONT size=3D2 face=3DTahoma><B>From:</B> =
-linuxppc-dev-bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org on =
-behalf of Andrew Morton<BR><B>Sent:</B> Tue 12/6/2011 5:36 =
-PM<BR><B>To:</B> Bounine, Alexandre<BR><B>Cc:</B> =
-linuxppc-dev@lists.ozlabs.org; =
-linux-kernel@vger.kernel.org<BR><B>Subject:</B> Re: [PATCH] =
-rapidio/tsi721: Fix mailbox resource reporting<BR></FONT><BR></DIV></DIV>=0A=
-<DIV>=0A=
-<P><FONT size=3D2>On Tue,&nbsp; 6 Dec 2011 14:01:27 -0500<BR>Alexandre =
-Bounine &lt;alexandre.bounine@idt.com&gt; wrote:<BR><BR>&gt; Report =
-support of four RapidIO mailboxes (MBOX0 - MBOX3) instead of =
-MBOX0<BR>&gt; only.<BR><BR>I don't know how important these changes are =
-and I don't know what<BR>their end user visible effects are.&nbsp; Hence =
-I am unable to decide which<BR>kernel version(s) we should merge the =
-patches into.<BR><BR>That's why these things should always be explained =
-in =
-changelogs,<BR>please.<BR><BR>___________________________________________=
-____<BR>Linuxppc-dev mailing list<BR>Linuxppc-dev@lists.ozlabs.org<BR><A =
-href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozl=
-abs.org/listinfo/linuxppc-dev</A><BR></FONT></P></DIV></BODY></HTML>
-------_=_NextPart_001_01CCB488.9BF6D640--
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IFdlZG5lc2RheSwgRGVjZW1iZXIgMDcsIDIwMTEgMToxNyBBTQ0KPiBUbzogTGl1
+IFNoZW5nemhvdS1CMzY2ODUNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBs
+aW51eC1tdGRAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gZHdtdzJAaW5mcmFkZWFkLm9yZzsgR2Fs
+YSBLdW1hci1CMTE3ODANCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzIgdjJdIG10ZC9uYW5kOiBB
+ZGQgT05GSSBzdXBwb3J0IGZvciBGU0wgTkFORA0KPiBjb250cm9sbGVyDQo+IA0KPiBPbiAxMi8w
+Ni8yMDExIDAyOjU0IEFNLCBTaGVuZ3pob3UgTGl1IHdyb3RlOg0KPiA+IGRpZmYgLS1naXQgYS9k
+cml2ZXJzL210ZC9uYW5kL2ZzbF9lbGJjX25hbmQuYw0KPiBiL2RyaXZlcnMvbXRkL25hbmQvZnNs
+X2VsYmNfbmFuZC5jDQo+ID4gaW5kZXggNGY0MDVhMC4uYjRkYjQwNyAxMDA2NDQNCj4gPiAtLS0g
+YS9kcml2ZXJzL210ZC9uYW5kL2ZzbF9lbGJjX25hbmQuYw0KPiA+ICsrKyBiL2RyaXZlcnMvbXRk
+L25hbmQvZnNsX2VsYmNfbmFuZC5jDQo+ID4gQEAgLTM0OSwxOSArMzQ5LDI0IEBAIHN0YXRpYyB2
+b2lkIGZzbF9lbGJjX2NtZGZ1bmMoc3RydWN0IG10ZF9pbmZvICptdGQsDQo+IHVuc2lnbmVkIGlu
+dCBjb21tYW5kLA0KPiA+ICAJCWZzbF9lbGJjX3J1bl9jb21tYW5kKG10ZCk7DQo+ID4gIAkJcmV0
+dXJuOw0KPiA+DQo+ID4gLQkvKiBSRUFESUQgbXVzdCByZWFkIGFsbCA1IHBvc3NpYmxlIGJ5dGVz
+IHdoaWxlIENFQiBpcyBhY3RpdmUgKi8NCj4gPiAgCWNhc2UgTkFORF9DTURfUkVBRElEOg0KPiA+
+IC0JCWRldl92ZGJnKHByaXYtPmRldiwgImZzbF9lbGJjX2NtZGZ1bmM6IE5BTkRfQ01EX1JFQURJ
+RC5cbiIpOw0KPiA+ICsJY2FzZSBOQU5EX0NNRF9QQVJBTToNCj4gPiArCQlkZXZfdmRiZyhwcml2
+LT5kZXYsICJmc2xfZWxiY19jbWRmdW5jOiBOQU5EX0NNRCAleFxuIiwNCj4gY29tbWFuZCk7DQo+
+ID4NCj4gPiAgCQlvdXRfYmUzMigmbGJjLT5maXIsIChGSVJfT1BfQ00wIDw8IEZJUl9PUDBfU0hJ
+RlQpIHwNCj4gPiAgCQkgICAgICAgICAgICAgICAgICAgIChGSVJfT1BfVUEgIDw8IEZJUl9PUDFf
+U0hJRlQpIHwNCj4gPiAgCQkgICAgICAgICAgICAgICAgICAgIChGSVJfT1BfUkJXIDw8IEZJUl9P
+UDJfU0hJRlQpKTsNCj4gPiAtCQlvdXRfYmUzMigmbGJjLT5mY3IsIE5BTkRfQ01EX1JFQURJRCA8
+PCBGQ1JfQ01EMF9TSElGVCk7DQo+ID4gLQkJLyogbmFuZF9nZXRfZmxhc2hfdHlwZSgpIHJlYWRz
+IDggYnl0ZXMgb2YgZW50aXJlIElEIHN0cmluZyAqLw0KPiA+IC0JCW91dF9iZTMyKCZsYmMtPmZi
+Y3IsIDgpOw0KPiA+IC0JCWVsYmNfZmNtX2N0cmwtPnJlYWRfYnl0ZXMgPSA4Ow0KPiA+ICsJCW91
+dF9iZTMyKCZsYmMtPmZjciwgY29tbWFuZCA8PCBGQ1JfQ01EMF9TSElGVCk7DQo+ID4gKwkJLyog
+cmVhZHMgOCBieXRlcyBvZiBlbnRpcmUgSUQgc3RyaW5nICovDQo+ID4gKwkJaWYgKE5BTkRfQ01E
+X1JFQURJRCA9PSBjb21tYW5kKSB7DQo+IA0KPiBpZiAoY29tbWFuZCA9PSBOQU5EX0NNRF9SRUFE
+SUQpIHsNCj4gDQo+ID4gKwkJCW91dF9iZTMyKCZsYmMtPmZiY3IsIDgpOw0KPiA+ICsJCQllbGJj
+X2ZjbV9jdHJsLT5yZWFkX2J5dGVzID0gODsNCj4gPiArCQl9IGVsc2Ugew0KPiA+ICsJCQlvdXRf
+YmUzMigmbGJjLT5mYmNyLCAyNTYpOw0KPiA+ICsJCQllbGJjX2ZjbV9jdHJsLT5yZWFkX2J5dGVz
+ID0gMjU2Ow0KPiA+ICsJCX0NCj4gDQo+IEFueSBoYXJtIGluIGFsd2F5cyB1c2luZyAyNTY/DQo+
+IA0KPiAtU2NvdHQNCltTaGVuZ3pob3VdIEZvciBOQU5EX0NNRF9SRUFESUQgY29tbWFuZCwgdGhl
+IHRvdGFsIGJ5dGVzIG9mIGVudGlyZSBJRCBzdHJpbmcgYXJlIDgsIHRoZXJlIGFyZSBub3QgMjU2
+IGJ5dGVzIHNvIG1hbnksIGl0J3MgdW5uZWNlc3NhcnkgYW5kIGxvb2tzIG5vdCBzbyB3ZWxsIGxv
+Z2ljYWxseSB0byBhbHdheXMgdXNpbmcgMjU2LCB0aG91Z2ggaXQgd29ya3MuDQoNCg0K
