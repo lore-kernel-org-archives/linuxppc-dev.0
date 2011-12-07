@@ -1,20 +1,22 @@
-Return-Path: <acrux_it@libero.it>
-Received: from outrelay01.libero.it (outrelay01.libero.it [212.52.84.101])
- by ozlabs.org (Postfix) with ESMTP id C61D51007D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 12:15:04 +1100 (EST)
-Received: from wmail54 (172.31.0.245) by outrelay01.libero.it (8.5.140)
- (authenticated as acrux_it@libero.it)
- id 4EDDE03B001E2127 for linuxppc-dev@lists.ozlabs.org;
- Wed, 7 Dec 2011 02:15:00 +0100
-Message-ID: <28546010.491181323220500482.JavaMail.defaultUser@defaultHost>
-Date: Wed, 7 Dec 2011 02:15:00 +0100 (CET)
-From: "acrux_it@libero.it" <acrux_it@libero.it>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: pata_sl82c105 is unable to properly handle dma (indeed it try to
- use mwdma2)
+Return-Path: <fthain@telegraphics.com.au>
+Received: from vps4.telegraphics.com.au (vm4.telegraphics.com.au
+ [98.124.60.149]) by ozlabs.org (Postfix) with ESMTP id 689C31007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 12:26:25 +1100 (EST)
+Date: Wed, 7 Dec 2011 12:26:19 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 01/16 v2] pmac_zilog: fix unexpected irq
+In-Reply-To: <CAMuHMdUB-jQQB=ieumYTehdZz1EnoSazEAhsnEunHSnK2o=k8Q@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1112070959380.2418@nippy.intranet>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+ <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
+ <CAMuHMdUB-jQQB=ieumYTehdZz1EnoSazEAhsnEunHSnK2o=k8Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset="UTF-8"
-Reply-To: "acrux_it@libero.it" <acrux_it@libero.it>
+Content-Type: MULTIPART/MIXED;
+ BOUNDARY="-1463806400-1463890039-1323221179=:2418"
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,134 +26,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-New pata_sl82c105 is unable to properly handle dma (indeed it try to use 
-mwdma2).
-Old ide driver instead worked fine.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Tested on IBM 9114-275 where to use it i must boot with dma disabled i.e. with 
-libata.dma=0
-
-[...]
-pata_sl82c105 0000:00:03.1: enabling device (0144 -> 0145)
-scsi1 : pata_sl82c105
-scsi2 : pata_sl82c105
-ata1: PATA max MWDMA2 cmd 0x1f000 ctl 0x1f010 bmdma 0x1f040 irq 165
-ata2: PATA max MWDMA2 cmd 0x1f020 ctl 0x1f030 bmdma 0x1f048 irq 165
-ata1.00: ATAPI: IBM     DROM00205, NR38, max UDMA/33
-ata1.00: configured for MWDMA2
-[...]
-scsi 1:0:0:0: CD-ROM            IBM      DROM00205        NR38 PQ: 0 ANSI: 2
-sr0: scsi3-mmc drive: 24x/24x cd/rw xa/form2 cdda tray
-cdrom: Uniform CD-ROM driver Revision: 3.20
-sr 1:0:0:0: Attached scsi generic sg3 type 5
-[...]
-ata1: lost interrupt (Status 0x50)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA2
-ata1: EH complete
-sr0: CDROM (ioctl) error, command: Get configuration 46 00 00 00 00 00 00 00 
-20 00
-sr: Sense Key : Aborted Command [current] [descriptor]
-sr: Add. Sense: No additional sense information
-ata1: lost interrupt (Status 0x50)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Xdread, Read track info: 52 01 00 00 00 01 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA2
-ata1: EH complete
-sr0: CDROM (ioctl) error, command: Xdread, Read track info 52 01 00 00 00 01 
-00 000
-sr: Sense Key : Aborted Command [current] [descriptor]
-sr: Add. Sense: No additional sense information
-ata1: lost interrupt (Status 0x50)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA2
-ata1: EH complete
-sr0: CDROM (ioctl) error, command: Get configuration 46 00 00 00 00 00 00 00 
-20 00
-sr: Sense Key : Aborted Command [current] [descriptor]
-sr: Add. Sense: No additional sense information
-ata1: lost interrupt (Status 0x50)
-ata1.00: limiting speed to MWDMA1:PIO4
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA1
-ata1: EH complete
-sr0: CDROM (ioctl) error, command: Get configuration 46 00 00 00 00 00 00 00 
-20 00
-sr: Sense Key : Aborted Command [current] [descriptor]
-sr: Add. Sense: No additional sense information
-ata1: lost interrupt (Status 0x50)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA1
-ata1: EH complete
-sr0: CDROM (ioctl) error, command: Get configuration 46 00 00 00 00 00 00 00 
-20 00
-sr: Sense Key : Aborted Command [current] [descriptor]
-sr: Add. Sense: No additional sense information
-ata1: lost interrupt (Status 0x50)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA1
-ata1: EH complete
-sr0: CDROM (ioctl) error, command: Get configuration 46 00 00 00 00 00 00 00 
-20 00
-sr: Sense Key : Aborted Command [current] [descriptor]
-sr: Add. Sense: No additional sense information
-ata1: lost interrupt (Status 0x50)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA1
-ata1: EH complete
-sr0: CDROM (ioctl) error, command: Get configuration 46 00 00 00 00 00 00 00 
-20 00
-sr: Sense Key : Aborted Command [current] [descriptor]
-sr: Add. Sense: No additional sense information
-ata1: lost interrupt (Status 0x50)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
-ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
-         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: soft resetting link
-ata1.00: configured for MWDMA1
-ata1: EH complete
+---1463806400-1463890039-1323221179=:2418
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 
+On Tue, 6 Dec 2011, Geert Uytterhoeven wrote:
 
+> Hi Finn,
+>=20
+> On Tue, Dec 6, 2011 at 16:13, Finn Thain <fthain@telegraphics.com.au> wro=
+te:
+> > +static void pmz_interrupt_control(struct uart_pmac_port *uap, int enab=
+le)
+> > +{
+> > + =C2=A0 =C2=A0 =C2=A0 if (enable) {
+> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 uap->curregs[1] |=3D=
+ INT_ALL_Rx | TxINT_ENAB;
+> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (!ZS_IS_EXTCLK(ua=
+p))
+> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 uap->curregs[1] |=3D EXT_INT_ENAB;
+> > + =C2=A0 =C2=A0 =C2=A0 } else {
+> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 uap->curregs[1] &=3D=
+ ~(EXT_INT_ENAB | TxINT_ENAB | RxINT_MASK);
+>=20
+> Should there be a call to zssync() here?
 
+I don't think so. Though I should have mentioned the change in the patch=20
+header.
 
+> The old code always did that after disabling interrupts.
 
+pmz_load_zsregs(), pmz_set_termios() and pmz_suspend() don't do it.
 
-cheers,
---nico
+sunzilog only does it on sparc64 and only when writing to the data=20
+register or writing command modifiers to the control register ("On 64-bit=
+=20
+sparc we only need to flush single writes to ensure completion.")
+
+I can't find any purpose for control register reads in the chip manual.
+
+The zssync() calls following some WR1 writes originate here:=20
+http://git.kernel.org/?p=3Dlinux/kernel/git/tglx/history.git;a=3Dcommitdiff=
+;h=3D9e9d9f693c7def3900725c04c6b64311655eea51
+
+So I don't see any need for control register reads but hopefully Ben can=20
+say for sure.
+
+Reading the patch now I notice that I dropped a pmz_maybe_update_regs() or=
+=20
+pmz_load_zsregs() in the suspend path. I will send a new patch.
+
+Finn
+
+>=20
+> > + =C2=A0 =C2=A0 =C2=A0 }
+> > + =C2=A0 =C2=A0 =C2=A0 write_zsreg(uap, R1, uap->curregs[1]);
+> > +}
+> > +
+> > =C2=A0static struct tty_struct *pmz_receive_chars(struct uart_pmac_port=
+ *uap)
+> > =C2=A0{
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0struct tty_struct *tty =3D NULL;
+> > @@ -339,9 +351,7 @@ static struct tty_struct *pmz_receive_ch
+> >
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0return tty;
+> > =C2=A0flood:
+> > - =C2=A0 =C2=A0 =C2=A0 uap->curregs[R1] &=3D ~(EXT_INT_ENAB | TxINT_ENA=
+B | RxINT_MASK);
+> > - =C2=A0 =C2=A0 =C2=A0 write_zsreg(uap, R1, uap->curregs[R1]);
+> > - =C2=A0 =C2=A0 =C2=A0 zssync(uap);
+>=20
+> Cfr. e.g. here.
+>=20
+> > + =C2=A0 =C2=A0 =C2=A0 pmz_interrupt_control(uap, 0);
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0pmz_error("pmz: rx irq flood !\n");
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0return tty;
+> > =C2=A0}
+>=20
+> Gr{oetje,eeting}s,
+>=20
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
+>=20
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+>=20
+> In personal conversations with technical people, I call myself a hacker. =
+But
+> when I'm talking to journalists I just say "programmer" or something like=
+ that.
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+>=20
+---1463806400-1463890039-1323221179=:2418--
