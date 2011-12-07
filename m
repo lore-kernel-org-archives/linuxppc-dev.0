@@ -1,31 +1,27 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
- [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6C9611007D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 02:14:08 +1100 (EST)
-References: <1320040492-6407-1-git-send-email-B38951@freescale.com>
- <1320040492-6407-2-git-send-email-B38951@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
- <3E825AD9-1CD5-4D6D-8161-E6B4F1D32457@kernel.crashing.org>
- <3F607A5180246847A760FD34122A1E052DBCD1@039-SN1MPN1-003.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5DFD6BAB@039-SN1MPN1-005.039d.mgd.msft.net>
- <3EC6F9E0-C847-4DA8-AD8C-313976982A10@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5DFDC478@039-SN1MPN1-005.039d.mgd.msft.net>
- <4ED84C32.3010807@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5DFE170A@039-SN1MPN1-005.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5DFE170A@039-SN1MPN1-005.039d.mgd.msft.net>
-MIME-Version: 1.0 (1.0)
-Content-Type: text/plain; charset="us-ascii"
-Message-ID: <2870B32F-1A57-49DC-AD70-D3DB186F3DEA@freescale.com>
-From: Timur Tabi <timur@freescale.com>
-Subject: Re: [linuxppc-release] [powerpc] boot up problem
-Date: Wed, 7 Dec 2011 09:13:59 -0600
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Cc: Fleming Andy-AFLEMING <afleming@freescale.com>,
+ by ozlabs.org (Postfix) with ESMTPS id 2C2501007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 04:16:36 +1100 (EST)
+Message-ID: <4EDF9F6A.9000407@freescale.com>
+Date: Wed, 7 Dec 2011 11:16:26 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Liu Shengzhou-B36685 <B36685@freescale.com>
+Subject: Re: [PATCH 2/2 v2] mtd/nand: Add ONFI support for FSL NAND controller
+References: <1323161655-19050-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1323161655-19050-2-git-send-email-Shengzhou.Liu@freescale.com>
+ <4EDE4E1D.4030408@freescale.com>
+ <3F453DDFF675A64A89321A1F352810216B074A@039-SN1MPN1-005.039d.mgd.msft.net>
+In-Reply-To: <3F453DDFF675A64A89321A1F352810216B074A@039-SN1MPN1-005.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ "dwmw2@infradead.org" <dwmw2@infradead.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,15 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Dec 7, 2011, at 1:27 AM, Jia Hongtao-B38951 <B38951@freescale.com> wrote:=
+On 12/06/2011 09:16 PM, Liu Shengzhou-B36685 wrote:
+>>> +			out_be32(&lbc->fbcr, 8);
+>>> +			elbc_fcm_ctrl->read_bytes = 8;
+>>> +		} else {
+>>> +			out_be32(&lbc->fbcr, 256);
+>>> +			elbc_fcm_ctrl->read_bytes = 256;
+>>> +		}
+>>
+>> Any harm in always using 256?
+>>
+>> -Scott
+> [Shengzhou] For NAND_CMD_READID command, the total bytes of entire ID string are 8, there are not 256 bytes so many, it's unnecessary and looks not so well logically to always using 256, though it works.
 
+It's not performance critical, and always using 256 keeps things
+simpler, and more robust if the length of the ID string grows in the
+future (we used to assume it was 5 bytes...).
 
-> Is this the patch you mentioned?
-> http://patchwork.ozlabs.org/patch/128806/
->=20
-> I applied this patch but the issue was still there.
-
-This is not the patch I am talking about.  Unfortunately, I can't find the r=
-ight patch in patchwork anywhere.
-
-Andy, what about patch "fsl_pq_mdio: Clean up tbi address configuration"? =20=
+-Scott
