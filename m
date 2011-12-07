@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BA89D1007D5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 08:52:09 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add TBI PHY node to first MDIO bus
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20111207.150208.588206951117780997.davem@davemloft.net>
-Date: Wed, 7 Dec 2011 15:52:10 -0600
-Message-Id: <8E6B8366-A254-4528-8327-91710BD0C68D@kernel.crashing.org>
-References: <1323287457-6085-1-git-send-email-afleming@freescale.com>
- <20111207.150208.588206951117780997.davem@davemloft.net>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, afleming@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 76B781007DA
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 09:01:51 +1100 (EST)
+Message-ID: <1323295271.12793.1.camel@pasglop>
+Subject: Re: [PATCH net-next v6 4/4] powerpc: tqm8548/tqm8xx: add and update
+ CAN device nodes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Date: Thu, 08 Dec 2011 09:01:11 +1100
+In-Reply-To: <4EDF22DF.5020001@grandegger.com>
+References: <1322732481-2255-1-git-send-email-wg@grandegger.com>
+ <1322732481-2255-5-git-send-email-wg@grandegger.com>
+ <1323243268.660.71.camel@pasglop> <4EDF22DF.5020001@grandegger.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, socketcan-users@lists.berlios.de,
+ linux-can@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2011-12-07 at 09:25 +0100, Wolfgang Grandegger wrote:
 
-On Dec 7, 2011, at 2:02 PM, David Miller wrote:
-
-> From: Andy Fleming <afleming@freescale.com>
-> Date: Wed, 7 Dec 2011 13:50:57 -0600
+> > Also there have been at least 3 versions in a couple of days already
+> > without comments nor indication of what was changed...
 > 
->> Systems which use the fsl_pq_mdio driver need to specify an
->> address for TBI PHY transactions such that the address does
->> not conflict with any PHYs on the bus (all transactions to
->> that address are directed to the onboard TBI PHY). The driver
->> used to scan for a free address if no address was specified,
->> however this ran into issues when the PHY Lib was fixed so
->> that all MDIO transactions were protected by a mutex. As it
->> is, the code was meant to serve as a transitional tool until
->> the device trees were all updated to specify the TBI address.
->> 
->> The best fix for the mutex issue was to remove the scanning code,
->> but it turns out some of the newer SoCs have started to omit
->> the tbi-phy node when SGMII is not being used. As such, these
->> devices will now fail unless we add a tbi-phy node to the first
->> mdio controller.
->> 
->> Signed-off-by: Andy Fleming <afleming@freescale.com>
->> ---
->> 
->> This requires fsl_pq_mdio: Clean up tbi address configuration from
->> the net tree in order to achieve its full effect.
->> 
->> This needs to go into 3.2.
+> Unfortunately, no response from those sub-system guys.
 > 
-> I'm fine if the powerpc tree takes this one:
+> > Can you clarify things a bit please ? It looks like they really should
+> > go to linuxppc-dev (and you can probably drop a bunch of other lists) or
+> > am I missing an important piece of the puzzle ? (Such as patch 1/4 and
+> > 2/4 ...)
 > 
-> Acked-by: David S. Miller <davem@davemloft.net>
+> I have not sent the  whole series. The changes are documented in the
+> cover-letter, which I have not sent for those patches. Well, I think
+> it's better to sent the whole series to all parties instead?
 
-Will pull in via PPC tree.
+Well at least for linuxppc-dev, don't bother now that I know what this
+is about :-)
 
-- k
+> > Let me know if I should just remove them from powerpc patchwork.
+> 
+> Dave has already applied all patches.
+> 
+> Sorry for the confusion. Any advice on how to handle multi subsystem
+> series of patches properly is welcome.
+
+No specific advice. Ideally, if patchwork could track cover letters it
+would help but I don't see a non-nasty way to do it so ... :-)
+
+Cheers,
+Ben.
