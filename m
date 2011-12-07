@@ -1,30 +1,31 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
- [209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 0B3A9B6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2011 23:48:00 +1100 (EST)
-Received: by vcbfl15 with SMTP id fl15so341587vcb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2011 04:47:56 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <4EDF5ED7.2030709@in.ibm.com>
-References: <20111114053749.23410.63745.stgit@suzukikp.in.ibm.com>
- <20111114054144.23410.65704.stgit@suzukikp.in.ibm.com>
- <CA+5PVA6uVpB6XUFkjUABJCcVjubFiWWEQgmuMijTQpdAiN7PdQ@mail.gmail.com>
- <4ED4126D.7000201@freescale.com>
- <CA+5PVA7r215N3NZV9gaTiXzeiwBnPBMbssX0Qo3zJ-9eGJaypA@mail.gmail.com>
- <4EDF5ED7.2030709@in.ibm.com>
-Date: Wed, 7 Dec 2011 07:47:56 -0500
-Message-ID: <CA+5PVA44WNwg9pLLq6E_RudbTzW0e-_sv9aK-BzP_iRE5t_b7Q@mail.gmail.com>
-Subject: Re: [PATCH v3 2/8] [booke] Rename mapping based RELOCATABLE to
- DYNAMIC_MEMSTART for BookE
-From: Josh Boyer <jwboyer@gmail.com>
-To: Suzuki Poulose <suzuki@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>,
- Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>,
- David Laight <David.Laight@aculab.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2C082B7090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 01:53:27 +1100 (EST)
+Subject: Re: [linuxppc-release] [powerpc] boot up problem
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5DFE170A@039-SN1MPN1-005.039d.mgd.msft.net>
+Date: Wed, 7 Dec 2011 08:53:32 -0600
+Message-Id: <F3AED504-1246-4D74-967E-EB3D760492BA@kernel.crashing.org>
+References: <1320040492-6407-1-git-send-email-B38951@freescale.com>
+ <1320040492-6407-2-git-send-email-B38951@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5DFD4DB8@039-SN1MPN1-005.039d.mgd.msft.net>
+ <3E825AD9-1CD5-4D6D-8161-E6B4F1D32457@kernel.crashing.org>
+ <3F607A5180246847A760FD34122A1E052DBCD1@039-SN1MPN1-003.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5DFD6BAB@039-SN1MPN1-005.039d.mgd.msft.net>
+ <3EC6F9E0-C847-4DA8-AD8C-313976982A10@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5DFDC478@039-SN1MPN1-005.039d.mgd.msft.net>
+ <4ED84C32.3010807@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5DFE170A@039-SN1MPN1-005.039d.mgd.msft.net>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Fleming Andy-AFLEMING <afleming@freescale.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 7, 2011 at 7:40 AM, Suzuki Poulose <suzuki@in.ibm.com> wrote:
-> Josh,
->
-> I rebased my patches to 3.2.0-rc3 and was able to verify it on my QEMU
-> setup.
-> However I am facing problems getting the my boards booted with the network
-> cards
-> (even without the patches). Here is what I see :
->
->
-> Creating 2 MTD partitions on "1ff800000.large-flash":
-> 0x000000000000-0x000000380000 : "fs"
-> 0x000000380000-0x000000400000 : "firmware"
-> PPC 4xx OCP EMAC driver, version 3.54
-> mal0: failed to map interrupts !
+This still needs a dts fix from Andy.
 
-That's the problem.
+- k
 
-There was a bogus commit that was added to the generic OF code that
-prevented the normal mapping that the MAL nodes do from working.  It
-was later reverted after Benh told Linus it was bogus.  I don't
-remember which -rc that wound up in, but if you move to 3.2-rc4 that
-should help.
+On Dec 7, 2011, at 1:27 AM, Jia Hongtao-B38951 wrote:
 
-josh
+> Is this the patch you mentioned?
+> http://patchwork.ozlabs.org/patch/128806/
+>=20
+> I applied this patch but the issue was still there.
+>=20
+> -----Original Message-----
+> From: Tabi Timur-B04825=20
+> Sent: Friday, December 02, 2011 11:56 AM
+> To: Jia Hongtao-B38951
+> Cc: Kumar Gala; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; Fleming =
+Andy-AFLEMING
+> Subject: Re: [linuxppc-release] [powerpc] boot up problem
+>=20
+> Jia Hongtao-B38951 wrote:
+>> Hi
+>>=20
+>> I just found that the 'next' branch you mentioned have problem to =
+boot up.
+>> I test it in p1022ds and p1010rdb boards and the result are both the =
+same.
+>> Note that for p1022ds I use "make p1022ds.dtb" to make the dtb =
+file(36bit) with 36bit-uboot.
+>> And for p1010rdb I use all 32bit image.
+>> The problem list below:
+>>=20
+>> scsi0 : sata_fsl
+>> ata1: SATA max UDMA/133 irq 74
+>> fsl-sata fffe19000.sata: Sata FSL Platform/CSB Driver init
+>> scsi1 : sata_fsl
+>> ata2: SATA max UDMA/133 irq 41
+>> Fixed MDIO Bus: probed
+>> Unable to handle kernel paging request for data at address 0x00000000=20=
+
+>> Faulting instruction address: 0xc0451630
+>> Oops: Kernel access of bad area, sig: 11 [#1]
+>=20
+> Andy has phy driver patch that fixes this.
+>=20
+> --
+> Timur Tabi
+> Linux kernel developer at Freescale
