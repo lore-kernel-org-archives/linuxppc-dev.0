@@ -1,33 +1,23 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 91D3A1007D1
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 22:23:50 +1100 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <prasad@linux.vnet.ibm.com>;
- Thu, 8 Dec 2011 09:23:40 -0200
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id pB8BOPlv3596314
- for <linuxppc-dev@ozlabs.org>; Thu, 8 Dec 2011 09:24:25 -0200
-Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pB8BNccb030307
- for <linuxppc-dev@ozlabs.org>; Thu, 8 Dec 2011 09:23:38 -0200
-Date: Thu, 8 Dec 2011 16:53:30 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: dwg@au1.ibm.com
-Subject: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature flag
-Message-ID: <20111208112330.GB24484@in.ibm.com>
-References: <20111208111212.GB3720@in.ibm.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from vps4.telegraphics.com.au (vm4.telegraphics.com.au
+ [98.124.60.149]) by ozlabs.org (Postfix) with ESMTP id 03DEC1007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 22:27:00 +1100 (EST)
+Date: Thu, 8 Dec 2011 22:26:46 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 01/16 v3] pmac_zilog: fix unexpected irq
+In-Reply-To: <1323318638.12793.23.camel@pasglop>
+Message-ID: <alpine.LNX.2.00.1112082128330.2357@nippy.intranet>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+ <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
+ <alpine.LNX.2.00.1112071427280.28552@nippy.intranet>
+ <1323318004.12793.21.camel@pasglop>
+ <1323318638.12793.23.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111208111212.GB3720@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-m68k@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
-PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
-user-space debuggers (like GDB) who may want to use it. Hence we introduce a
-new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
-"features" member of "struct ppc_debug_info" to advertise support for the
-same on Book3E PowerPC processors.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/ptrace.h |    1 +
- arch/powerpc/kernel/ptrace.c      |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+On Thu, 8 Dec 2011, Benjamin Herrenschmidt wrote:
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 48223f9..cf014f9 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -380,6 +380,7 @@ struct ppc_debug_info {
- #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x0000000000000002
- #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x0000000000000004
- #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x0000000000000008
-+#define PPC_DEBUG_FEATURE_DATA_BP_EXACT		0x0000000000000010
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 18d28b6..71db5a6 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1636,6 +1636,7 @@ long arch_ptrace(struct task_struct *child, long request,
- #ifdef CONFIG_PPC_ADV_DEBUG_DAC_RANGE
- 		dbginfo.features |=
- 				   PPC_DEBUG_FEATURE_DATA_BP_RANGE |
-+				   PPC_DEBUG_FEATURE_DATA_BP_EXACT |
- 				   PPC_DEBUG_FEATURE_DATA_BP_MASK;
- #endif
- #else /* !CONFIG_PPC_ADV_DEBUG_REGS */
+> On Thu, 2011-12-08 at 15:20 +1100, Benjamin Herrenschmidt wrote:
+> 
+> > So basic operations seem to work, I've applied the patch to 
+> > powerpc-next.
+
+Then I guess Geert should not push this for 3.3 -- or does it make no 
+difference?
+
+> > However, the internal modem on my Pismo powerbook doesn't appear to 
+> > survive suspend/resume. I'll dig into that and merge a fixup patch 
+> > asap.
+> 
+> BTW. I applied anyway because suspend/resume was already broken (you 
+> spotted that we don't clear the suspended flag for example).
+> 
+> Fixing the flag alone helps a bit. We can't use the modem if we 
+> suspend/resume with the open port,
+
+If the SCC IRQ counters change across suspend/resume, perhaps the modem 
+itself is not powering up...
+
+> but closing and re-opening works.
+
+Maybe the modem wants a transition on DTR or similar, but it hasn't had 
+time to initialise when that happens during SCC resumption.
+
+If so, calling pmz_shutdown() then pmz_startup() from the tail of 
+pmz_resume() without delay should probably fail to revive it...
+
+> 
+> Lockdep also picked-up a A->B B->A between the port mutex and the pmz 
+> irq mutex on suspend.
+> 
+> I'll try to fix all these, and will let you know (I may not have time 
+> today).
+
+Thanks.
+
+Finn
+
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-m68k" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
