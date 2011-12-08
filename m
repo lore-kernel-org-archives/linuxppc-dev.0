@@ -1,20 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 34A351007DB
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 16:46:46 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix swiotlb ops for ppc64
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1323314600.12793.19.camel@pasglop>
-Date: Wed, 7 Dec 2011 23:46:54 -0600
-Message-Id: <F8F675D7-B3F9-45B8-92D3-A3D1F0BF7746@kernel.crashing.org>
-References: <1323278391-21849-1-git-send-email-galak@kernel.crashing.org>
- <1323314600.12793.19.camel@pasglop>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: POWER7 optimised copy_to_user/copy_from_user
+ using VMX
+In-reply-to: <FC884692-A7C3-47F6-BDD5-9E3D955ABF9B@kernel.crashing.org>
+References: <20111208160227.2ef2d526@kryten>
+ <FC884692-A7C3-47F6-BDD5-9E3D955ABF9B@kernel.crashing.org>
+Date: Thu, 08 Dec 2011 16:54:09 +1100
+Message-ID: <5188.1323323649@neuling.org>
+Cc: paulus@samba.org, Anton Blanchard <anton@samba.org>,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+<snip>
+> > +#define CPU_FTR_POWER7 = LONG_ASM_CONST(0x2000000000000000)
+<snip>
+> Can we find a means to do the fixup that does NOT require a FTR bit?  I
+> have the feeling FSL will want to have various optimized copy functions
+> for our different cores and I hate to blow features bits just for this.
 
-On Dec 7, 2011, at 9:23 PM, Benjamin Herrenschmidt wrote:
++1
 
-> On Wed, 2011-12-07 at 11:19 -0600, Kumar Gala wrote:
->=20
->> struct dma_map_ops swiotlb_dma_ops =3D {
->> +#ifdef CONFIG_PPC64
->> +	.alloc_coherent =3D swiotlb_alloc_coherent,
->> +	.free_coherent =3D swiotlb_free_coherent,
->> +#else
->> 	.alloc_coherent =3D dma_direct_alloc_coherent,
->> 	.free_coherent =3D dma_direct_free_coherent,
->> +#endif
->> 	.map_sg =3D swiotlb_map_sg_attrs,
->> 	.unmap_sg =3D swiotlb_unmap_sg_attrs,
->> 	.dma_supported =3D swiotlb_dma_supported,
->=20
-> Do we really need the ifdef ? What happens if we use
-> swiotlb_alloc_coherent() on ppc32 ? Won't it allocate lowmem, realize
-> that it doesn't need bouncing and be happy ?
->=20
-> Cheers,
-> Ben.
+I hate the idea of having a POWER7 FTR bit.  Every loon will (and has
+tried to in the past) attach every POWER7 related thing to it, rather
+than thinking about what the feature really is for.  
 
-Becky any comment?
+What about other processors which could also benefit from this copy
+loop?  Turning on CPU_FTR_POWER7 for them is gonna look a bit silly.
 
-I know its been a while, but wondering if you had any reason to not do =
-what Ben's suggesting ?
-
-- k=
+Mikey
