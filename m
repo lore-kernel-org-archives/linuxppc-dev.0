@@ -1,27 +1,35 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id F0CA21007D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 05:44:00 +1100 (EST)
-Message-ID: <4EE10568.9070002@freescale.com>
-Date: Thu, 8 Dec 2011 12:43:52 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: LiuShuo <b35362@freescale.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
- <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
- <4EDEAEB9.6020703@freescale.com> <4EDEE3AC.7060000@freescale.com>
- <4EDFBA6D.9080500@freescale.com> <4EE09526.5040705@freescale.com>
-In-Reply-To: <4EE09526.5040705@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
- linux-mtd@lists.infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org
+Return-Path: <subrata@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 59D421007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 06:11:28 +1100 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <subrata@linux.vnet.ibm.com>;
+ Thu, 8 Dec 2011 14:11:20 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pB8JAq1t244108
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Dec 2011 14:10:53 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pB8JAfmt023985
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Dec 2011 17:10:42 -0200
+Subject: [linux-3.2-rc4 PPC64] Series of "Section Mismatch" warnings, are
+ they expected ?
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 09 Dec 2011 00:40:32 +0530
+Message-Id: <1323371433.23534.8.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+Cc: Mark Wizner <markwiz@us.ibm.com>, Naveed <naveedaus@in.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Manas k Nayak <maknayak@in.ibm.com>,
+ Pavaman <pavsubra@in.ibm.com>, Vishu <svishuku@in.ibm.com>,
+ "divya.vikas" <divya.vikas@in.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +39,324 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/08/2011 04:44 AM, LiuShuo wrote:
-> =E4=BA=8E 2011=E5=B9=B412=E6=9C=8808=E6=97=A5 03:11, Scott Wood =E5=86=99=
-=E9=81=93:
->> And if we do want to make such assumptions, we could rip out all usage
->> of index/column here, and just handle "oob" and "full page" cases.
-> The function nand_do_write_ops() in nandbase.c is a Nand internal
-> interface.
-> It always is called when application write to nand flash. (e.g. dd)
-> In this function, partial page write is dealt with by filling '0xff' to
-> buffer before data copy.
-> (nand_do_write_oob() is similar)
-> So I don't think we need to do it in our controller driver again, it
-> should be a job of upper layer.
+Hello,
 
-If this is to be considered part of the interface contract, then perhaps
-do a WARN_ON() if we see an unexpected index/column?  And after that,
-only consider full-page or full-oob possibilities.
+While compiling linux-3.2-rc4 on PPC64, i get the following set of
+warning series. I wanted to know if they are expected, or, they need to
+be fixed:
 
--Scott
+LD      arch/powerpc/sysdev/xics/built-in.o
+WARNING: arch/powerpc/sysdev/xics/built-in.o(.text+0x136c): Section
+mismatch in reference from the function .ics_rtas_init() to the
+function .init.text:.xics_register_ics()
+The function .ics_rtas_init() references
+the function __init .xics_register_ics().
+This is often because .ics_rtas_init lacks a __init 
+annotation or the annotation of .xics_register_ics is wrong.
+
+LD      arch/powerpc/sysdev/built-in.o
+WARNING: arch/powerpc/sysdev/built-in.o(.text+0x99d4): Section mismatch
+in reference from the function .ics_rtas_init() to the
+function .init.text:.xics_register_ics()
+The function .ics_rtas_init() references
+the function __init .xics_register_ics().
+This is often because .ics_rtas_init lacks a __init 
+annotation or the annotation of .xics_register_ics is wrong.
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x29914): Section mismatch
+in reference from the function .prom_query_opal() to the
+function .init.text:.call_prom()
+The function .prom_query_opal() references
+the function __init .call_prom().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .call_prom is wrong.
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x2993c): Section mismatch
+in reference from the function .prom_query_opal() to the
+function .init.text:.call_prom()
+The function .prom_query_opal() references
+the function __init .call_prom().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .call_prom is wrong.
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x2994c): Section mismatch
+in reference from the function .prom_query_opal() to the
+function .init.text:.prom_printf()
+The function .prom_query_opal() references
+the function __init .prom_printf().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x299a8): Section mismatch
+in reference from the function .prom_query_opal() to the
+function .init.text:.prom_printf()
+The function .prom_query_opal() references
+the function __init .prom_printf().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x299cc): Section mismatch
+in reference from the function .prom_query_opal() to the
+function .init.text:.prom_printf()
+The function .prom_query_opal() references
+the function __init .prom_printf().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x29d00): Section mismatch
+in reference from the function .prom_opal_takeover() to the
+function .init.text:.prom_printf()
+The function .prom_opal_takeover() references
+the function __init .prom_printf().
+This is often because .prom_opal_takeover lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x29d04): Section mismatch
+in reference from the function .prom_opal_takeover() to the
+function .init.text:.prom_close_stdin()
+The function .prom_opal_takeover() references
+the function __init .prom_close_stdin().
+This is often because .prom_opal_takeover lacks a __init 
+annotation or the annotation of .prom_close_stdin is wrong.
+
+MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0x90be): Section mismatch in reference from the
+variable generic_secondary_common_init to the
+variable .init.data:spinning_secondaries
+The function generic_secondary_common_init() references
+the variable __initdata spinning_secondaries.
+This is often because generic_secondary_common_init lacks a __initdata 
+annotation or the annotation of spinning_secondaries is wrong.
+
+WARNING: vmlinux.o(.text+0x93e4): Section mismatch in reference from the
+function .start_secondary_prolog() to the
+function .devinit.text:.start_secondary()
+The function .start_secondary_prolog() references
+the function __devinit .start_secondary().
+This is often because .start_secondary_prolog lacks a __devinit 
+annotation or the annotation of .start_secondary is wrong.
+
+WARNING: vmlinux.o(.text+0x93f8): Section mismatch in reference from the
+function .start_secondary_resume() to the
+function .devinit.text:.start_secondary()
+The function .start_secondary_resume() references
+the function __devinit .start_secondary().
+This is often because .start_secondary_resume lacks a __devinit 
+annotation or the annotation of .start_secondary is wrong.
+
+WARNING: vmlinux.o(.text+0x23034): Section mismatch in reference from
+the function .early_setup_secondary() to the
+function .cpuinit.text:.early_init_mmu_secondary()
+The function .early_setup_secondary() references
+the function __cpuinit .early_init_mmu_secondary().
+This is often because .early_setup_secondary lacks a __cpuinit 
+annotation or the annotation of .early_init_mmu_secondary is wrong.
+
+WARNING: vmlinux.o(.text+0x349ac): Section mismatch in reference from
+the function .prom_query_opal() to the function .init.text:.call_prom()
+The function .prom_query_opal() references
+the function __init .call_prom().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .call_prom is wrong.
+
+WARNING: vmlinux.o(.text+0x349d4): Section mismatch in reference from
+the function .prom_query_opal() to the function .init.text:.call_prom()
+The function .prom_query_opal() references
+the function __init .call_prom().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .call_prom is wrong.
+
+WARNING: vmlinux.o(.text+0x349e4): Section mismatch in reference from
+the function .prom_query_opal() to the
+function .init.text:.prom_printf()
+The function .prom_query_opal() references
+the function __init .prom_printf().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: vmlinux.o(.text+0x34a40): Section mismatch in reference from
+the function .prom_query_opal() to the
+function .init.text:.prom_printf()
+The function .prom_query_opal() references
+the function __init .prom_printf().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: vmlinux.o(.text+0x34a64): Section mismatch in reference from
+the function .prom_query_opal() to the
+function .init.text:.prom_printf()
+The function .prom_query_opal() references
+the function __init .prom_printf().
+This is often because .prom_query_opal lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: vmlinux.o(.text+0x34d98): Section mismatch in reference from
+the function .prom_opal_takeover() to the
+function .init.text:.prom_printf()
+The function .prom_opal_takeover() references
+the function __init .prom_printf().
+This is often because .prom_opal_takeover lacks a __init 
+annotation or the annotation of .prom_printf is wrong.
+
+WARNING: vmlinux.o(.text+0x34d9c): Section mismatch in reference from
+the function .prom_opal_takeover() to the
+function .init.text:.prom_close_stdin()
+The function .prom_opal_takeover() references
+the function __init .prom_close_stdin().
+This is often because .prom_opal_takeover lacks a __init 
+annotation or the annotation of .prom_close_stdin is wrong.
+
+WARNING: vmlinux.o(.text+0x3b024): Section mismatch in reference from
+the function .kexec_prepare_cpus() to the
+function .cpuinit.text:.cpu_up()
+The function .kexec_prepare_cpus() references
+the function __cpuinit .cpu_up().
+This is often because .kexec_prepare_cpus lacks a __cpuinit 
+annotation or the annotation of .cpu_up is wrong.
+
+WARNING: vmlinux.o(.text+0x4c760): Section mismatch in reference from
+the function .mark_reserved_regions_for_nid() to the
+function .meminit.text:.early_pfn_to_nid()
+The function .mark_reserved_regions_for_nid() references
+the function __meminit .early_pfn_to_nid().
+This is often because .mark_reserved_regions_for_nid lacks a __meminit 
+annotation or the annotation of .early_pfn_to_nid is wrong.
+
+WARNING: vmlinux.o(.text+0x4c780): Section mismatch in reference from
+the function .mark_reserved_regions_for_nid() to the
+function .init.text:.work_with_active_regions()
+The function .mark_reserved_regions_for_nid() references
+the function __init .work_with_active_regions().
+This is often because .mark_reserved_regions_for_nid lacks a __init 
+annotation or the annotation of .work_with_active_regions is wrong.
+
+WARNING: vmlinux.o(.text+0x4c7d4): Section mismatch in reference from
+the function .mark_reserved_regions_for_nid() to the
+function .meminit.text:.early_pfn_to_nid()
+The function .mark_reserved_regions_for_nid() references
+the function __meminit .early_pfn_to_nid().
+This is often because .mark_reserved_regions_for_nid lacks a __meminit 
+annotation or the annotation of .early_pfn_to_nid is wrong.
+
+WARNING: vmlinux.o(.text+0x4c7f0): Section mismatch in reference from
+the function .mark_reserved_regions_for_nid() to the
+function .init.text:.work_with_active_regions()
+The function .mark_reserved_regions_for_nid() references
+the function __init .work_with_active_regions().
+This is often because .mark_reserved_regions_for_nid lacks a __init 
+annotation or the annotation of .work_with_active_regions is wrong.
+
+WARNING: vmlinux.o(.text+0x4c828): Section mismatch in reference from
+the function .mark_reserved_regions_for_nid() to the
+function .init.text:.reserve_bootmem_node()
+The function .mark_reserved_regions_for_nid() references
+the function __init .reserve_bootmem_node().
+This is often because .mark_reserved_regions_for_nid lacks a __init 
+annotation or the annotation of .reserve_bootmem_node is wrong.
+
+WARNING: vmlinux.o(.text+0x5ba24): Section mismatch in reference from
+the function .ics_rtas_init() to the
+function .init.text:.xics_register_ics()
+The function .ics_rtas_init() references
+the function __init .xics_register_ics().
+This is often because .ics_rtas_init lacks a __init 
+annotation or the annotation of .xics_register_ics is wrong.
+
+WARNING: vmlinux.o(.text+0x6e3ec): Section mismatch in reference from
+the function .pci_dn_reconfig_notifier() to the
+function .devinit.text:.update_dn_pci_info()
+The function .pci_dn_reconfig_notifier() references
+the function __devinit .update_dn_pci_info().
+This is often because .pci_dn_reconfig_notifier lacks a __devinit 
+annotation or the annotation of .update_dn_pci_info is wrong.
+
+WARNING: vmlinux.o(.text+0x71f28): Section mismatch in reference from
+the function .dlpar_online_cpu() to the function .cpuinit.text:.cpu_up()
+The function .dlpar_online_cpu() references
+the function __cpuinit .cpu_up().
+This is often because .dlpar_online_cpu lacks a __cpuinit 
+annotation or the annotation of .cpu_up is wrong.
+
+WARNING: vmlinux.o(.text+0x77248): Section mismatch in reference from
+the function .pcibios_add_pci_devices() to the
+function .devinit.text:.pcibios_setup_bus_devices()
+The function .pcibios_add_pci_devices() references
+the function __devinit .pcibios_setup_bus_devices().
+This is often because .pcibios_add_pci_devices lacks a __devinit 
+annotation or the annotation of .pcibios_setup_bus_devices is wrong.
+
+WARNING: vmlinux.o(.text+0x77298): Section mismatch in reference from
+the function .pcibios_add_pci_devices() to the
+function .devinit.text:.pci_scan_bridge()
+The function .pcibios_add_pci_devices() references
+the function __devinit .pci_scan_bridge().
+This is often because .pcibios_add_pci_devices lacks a __devinit 
+annotation or the annotation of .pci_scan_bridge is wrong.
+
+WARNING: vmlinux.o(.text+0x772d0): Section mismatch in reference from
+the function .pcibios_add_pci_devices() to the
+function .devinit.text:.of_rescan_bus()
+The function .pcibios_add_pci_devices() references
+the function __devinit .of_rescan_bus().
+This is often because .pcibios_add_pci_devices lacks a __devinit 
+annotation or the annotation of .of_rescan_bus is wrong.
+
+WARNING: vmlinux.o(.text+0x3a3fe0): Section mismatch in reference from
+the function .dlpar_remove_slot() to the
+function .devinit.text:.vio_unregister_device()
+The function .dlpar_remove_slot() references
+the function __devinit .vio_unregister_device().
+This is often because .dlpar_remove_slot lacks a __devinit 
+annotation or the annotation of .vio_unregister_device is wrong.
+
+WARNING: vmlinux.o(.text+0x3a40a8): Section mismatch in reference from
+the function .dlpar_add_pci_slot() to the
+function .devinit.text:.pcibios_map_io_space()
+The function .dlpar_add_pci_slot() references
+the function __devinit .pcibios_map_io_space().
+This is often because .dlpar_add_pci_slot lacks a __devinit 
+annotation or the annotation of .pcibios_map_io_space is wrong.
+
+WARNING: vmlinux.o(.text+0x3a4148): Section mismatch in reference from
+the function .dlpar_add_pci_slot() to the
+function .devinit.text:.of_scan_pci_bridge()
+The function .dlpar_add_pci_slot() references
+the function __devinit .of_scan_pci_bridge().
+This is often because .dlpar_add_pci_slot lacks a __devinit 
+annotation or the annotation of .of_scan_pci_bridge is wrong.
+
+WARNING: vmlinux.o(.text+0x3a4300): Section mismatch in reference from
+the function .dlpar_add_slot() to the
+function .devinit.text:.init_phb_dynamic()
+The function .dlpar_add_slot() references
+the function __devinit .init_phb_dynamic().
+This is often because .dlpar_add_slot lacks a __devinit 
+annotation or the annotation of .init_phb_dynamic is wrong.
+
+WRAP    arch/powerpc/boot/zImage.pmac
+WARNING: drivers/spi/spi-gpio.o(.devinit.text+0x8c): Section mismatch in
+reference from the function .spi_gpio_probe() to the
+function .init.text:.spi_gpio_alloc()
+The function __devinit .spi_gpio_probe() references
+a function __init .spi_gpio_alloc().
+If .spi_gpio_alloc is only used by .spi_gpio_probe then
+annotate .spi_gpio_alloc with a matching annotation.
+
+WARNING: drivers/spi/spi-gpio.o(.devinit.text+0x210): Section mismatch
+in reference from the function .spi_gpio_probe() to the
+function .init.text:.spi_gpio_alloc()
+The function __devinit .spi_gpio_probe() references
+a function __init .spi_gpio_alloc().
+If .spi_gpio_alloc is only used by .spi_gpio_probe then
+annotate .spi_gpio_alloc with a matching annotation.
+
+WARNING: drivers/spi/spi-gpio.o(.devinit.text+0x244): Section mismatch
+in reference from the function .spi_gpio_probe() to the
+function .init.text:.spi_gpio_alloc()
+The function __devinit .spi_gpio_probe() references
+a function __init .spi_gpio_alloc().
+If .spi_gpio_alloc is only used by .spi_gpio_probe then
+annotate .spi_gpio_alloc with a matching annotation.
+
+Regards--
+Subrata
