@@ -1,27 +1,23 @@
-Return-Path: <B36685@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
- [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 8B5091007D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 14:36:27 +1100 (EST)
-From: Liu Shengzhou-B36685 <B36685@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/2 v2] mtd/nand: fixup for fmr initialization of
- Freescale NAND controller
-Date: Thu, 8 Dec 2011 03:36:19 +0000
-Message-ID: <3F453DDFF675A64A89321A1F352810216B089C@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1323161655-19050-1-git-send-email-Shengzhou.Liu@freescale.com>
- <4EDE4DEC.7010308@freescale.com>
- <3F453DDFF675A64A89321A1F352810216B0787@039-SN1MPN1-005.039d.mgd.msft.net>
- <4EDF9F9C.7050702@freescale.com>
-In-Reply-To: <4EDF9F9C.7050702@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "dwmw2@infradead.org" <dwmw2@infradead.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 661AF1007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 15:20:13 +1100 (EST)
+Message-ID: <1323318004.12793.21.camel@pasglop>
+Subject: Re: [PATCH 01/16 v3] pmac_zilog: fix unexpected irq
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Finn Thain <fthain@telegraphics.com.au>
+Date: Thu, 08 Dec 2011 15:20:04 +1100
+In-Reply-To: <alpine.LNX.2.00.1112071427280.28552@nippy.intranet>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+ <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
+ <alpine.LNX.2.00.1112071427280.28552@nippy.intranet>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-m68k@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,72 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIERlY2VtYmVyIDA4LCAyMDExIDE6MTcgQU0NCj4gVG86IExp
-dSBTaGVuZ3pob3UtQjM2Njg1DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBtdGRAbGlzdHMuaW5mcmFkZWFkLm9yZzsgZHdt
-dzJAaW5mcmFkZWFkLm9yZzsgR2FsYSBLdW1hci1CMTE3ODANCj4gU3ViamVjdDogUmU6IFtQQVRD
-SCAxLzIgdjJdIG10ZC9uYW5kOiBmaXh1cCBmb3IgZm1yIGluaXRpYWxpemF0aW9uIG9mDQo+IEZy
-ZWVzY2FsZSBOQU5EIGNvbnRyb2xsZXINCj4gDQo+IE9uIDEyLzA3LzIwMTEgMTI6MzAgQU0sIExp
-dSBTaGVuZ3pob3UtQjM2Njg1IHdyb3RlOg0KPiA+DQo+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4+IFNlbnQ6IFdlZG5lc2Rh
-eSwgRGVjZW1iZXIgMDcsIDIwMTEgMToxNiBBTQ0KPiA+PiBUbzogTGl1IFNoZW5nemhvdS1CMzY2
-ODUNCj4gPj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1tdGRAbGlz
-dHMuaW5mcmFkZWFkLm9yZzsNCj4gPj4gZHdtdzJAaW5mcmFkZWFkLm9yZzsgR2FsYSBLdW1hci1C
-MTE3ODANCj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzIgdjJdIG10ZC9uYW5kOiBmaXh1cCBm
-b3IgZm1yIGluaXRpYWxpemF0aW9uIG9mDQo+ID4+IEZyZWVzY2FsZSBOQU5EIGNvbnRyb2xsZXIN
-Cj4gPj4NCj4gPj4gT24gMTIvMDYvMjAxMSAwMjo1NCBBTSwgU2hlbmd6aG91IExpdSB3cm90ZToN
-Cj4gPj4+IFRoZXJlIHdhcyBhIGJ1ZyBmb3IgZm1yIGluaXRpYWxpemF0aW9uLCB3aGljaCBsZWFk
-IHRvICBmbXIgd2FzDQo+ID4+PiBhbHdheXMgMHgxMDAgaW4gZnNsX2VsYmNfY2hpcF9pbml0KCkg
-YW5kIGNhdXNlZCBGQ00gY29tbWFuZCB0aW1lb3V0DQo+ID4+PiBiZWZvcmUgY2FsbGluZyBmc2xf
-ZWxiY19jaGlwX2luaXRfdGFpbCgpLCBub3cgd2UgaW5pdGlhbGl6ZSBDV1RPIHRvDQo+ID4+PiBt
-YXhpbXVtIHRpbWVvdXQgdmFsdWUgYW5kIG5vdCByZWx5aW5nIG9uIHRoZSBzZXR0aW5nIG9mIGJv
-b3Rsb2FkZXIuDQo+ID4+Pg0KPiA+Pj4gU2lnbmVkLW9mZi1ieTogU2hlbmd6aG91IExpdSA8U2hl
-bmd6aG91LkxpdUBmcmVlc2NhbGUuY29tPg0KPiA+Pj4gLS0tDQo+ID4+PiB2MjogbWFrZSBmbXIg
-bm90IHJlbHlpbmcgb24gdGhlIHNldHRpbmcgb2YgYm9vdGxvYWRlci4NCj4gPj4+DQo+ID4+PiAg
-ZHJpdmVycy9tdGQvbmFuZC9mc2xfZWxiY19uYW5kLmMgfCAgIDEwICsrKysrLS0tLS0NCj4gPj4+
-ICAxIGZpbGVzIGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkNCj4gPj4+
-DQo+ID4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9tdGQvbmFuZC9mc2xfZWxiY19uYW5kLmMNCj4g
-Pj4+IGIvZHJpdmVycy9tdGQvbmFuZC9mc2xfZWxiY19uYW5kLmMNCj4gPj4+IGluZGV4IGVlZGQ4
-ZWUuLjRmNDA1YTAgMTAwNjQ0DQo+ID4+PiAtLS0gYS9kcml2ZXJzL210ZC9uYW5kL2ZzbF9lbGJj
-X25hbmQuYw0KPiA+Pj4gKysrIGIvZHJpdmVycy9tdGQvbmFuZC9mc2xfZWxiY19uYW5kLmMNCj4g
-Pj4+IEBAIC02NTksOSArNjU5LDcgQEAgc3RhdGljIGludCBmc2xfZWxiY19jaGlwX2luaXRfdGFp
-bChzdHJ1Y3QNCj4gPj4+IG10ZF9pbmZvDQo+ID4+ICptdGQpDQo+ID4+PiAgCWlmIChjaGlwLT5w
-YWdlbWFzayAmIDB4ZmYwMDAwMDApDQo+ID4+PiAgCQlhbCsrOw0KPiA+Pj4NCj4gPj4+IC0JLyog
-YWRkIHRvIEVDQ00gbW9kZSBzZXQgaW4gZnNsX2VsYmNfaW5pdCAqLw0KPiA+Pj4gLQlwcml2LT5m
-bXIgfD0gKDEyIDw8IEZNUl9DV1RPX1NISUZUKSB8ICAvKiBUaW1lb3V0ID4gMTIgbXMgKi8NCj4g
-Pj4+IC0JICAgICAgICAgICAgIChhbCA8PCBGTVJfQUxfU0hJRlQpOw0KPiA+Pj4gKwlwcml2LT5m
-bXIgfD0gYWwgPDwgRk1SX0FMX1NISUZUOw0KPiA+Pj4NCj4gPj4+ICAJZGV2X2RiZyhwcml2LT5k
-ZXYsICJmc2xfZWxiY19pbml0OiBuYW5kLT5udW1jaGlwcyA9ICVkXG4iLA0KPiA+Pj4gIAkgICAg
-ICAgIGNoaXAtPm51bWNoaXBzKTsNCj4gPj4+IEBAIC03NjQsOCArNzYyLDEwIEBAIHN0YXRpYyBp
-bnQgZnNsX2VsYmNfY2hpcF9pbml0KHN0cnVjdA0KPiA+Pj4gZnNsX2VsYmNfbXRkDQo+ID4+ICpw
-cml2KQ0KPiA+Pj4gIAlwcml2LT5tdGQucHJpdiA9IGNoaXA7DQo+ID4+PiAgCXByaXYtPm10ZC5v
-d25lciA9IFRISVNfTU9EVUxFOw0KPiA+Pj4NCj4gPj4+IC0JLyogU2V0IHRoZSBFQ0NNIGFjY29y
-ZGluZyB0byB0aGUgc2V0dGluZ3MgaW4gYm9vdGxvYWRlci4qLw0KPiA+Pj4gLQlwcml2LT5mbXIg
-PSBpbl9iZTMyKCZsYmMtPmZtcikgJiBGTVJfRUNDTTsNCj4gPj4+ICsJLyogc2V0IHRpbWVvdXQg
-dG8gbWF4aW11bSAqLw0KPiA+Pj4gKwlwcml2LT5mbXIgPSAxNSA8PCBGTVJfQ1dUT19TSElGVDsN
-Cj4gPj4+ICsJaWYgKGluX2JlMzIoJmxiYy0+YmFua1twcml2LT5iYW5rXS5vcikgJiBPUl9GQ01f
-UEdTKQ0KPiA+Pj4gKwkJcHJpdi0+Zm1yIHw9IEZNUl9FQ0NNOw0KPiA+Pg0KPiA+PiBQbGVhc2Ug
-ZG8gbm90IGNoYW5nZSB0aGUgd2F5IEVDQ00gaXMgaGFuZGxlZC4gIFdlIHByb2JhYmx5IHNob3Vs
-ZA0KPiA+PiBoYXZlIGRvbmUgaXQgdGhpcyB3YXkgZnJvbSB0aGUgc3RhcnQsIGJ1dCBhdCB0aGlz
-IHBvaW50IGl0IGJyZWFrcw0KPiA+PiBjb21wYXRpYmlsaXR5IGlmIHlvdSBoYXZlIGEgbGFyZ2Ug
-cGFnZSBmbGFzaCBhbmQgdGhlIGZpcm13YXJlIGRpZG4ndA0KPiA+PiB0b3VjaCBOQU5ELg0KPiA+
-Pg0KPiA+PiAtU2NvdHQNCj4gPiBbU2hlbmd6aG91XSBUaGlzIHBhdGNoIGRvZXNuJ3QgY2hhbmdl
-IHRoZSB3YXkgRUNDTSBpcyBoYW5kbGVkLCBpdCdzDQo+IHN0aWxsIHNhbWUgYXMgYmVmb3JlLCBq
-dXN0IG1ha2Ugc3VyZSBDV1RPIHRpbWVvdXQgaXMgc2V0IHRvIG1heGltdW0uDQo+IA0KPiBJdCBk
-b2VzIGNoYW5nZSBpdC4gIEl0IHVzZWQgdG8gdXNlIHRoZSBleGlzdGluZyB2YWx1ZSBpbiBGTVIs
-IGFuZCBub3cgaXQNCj4gc2V0cyBpdCBiYXNlZCBvbiBPUm5bUEdTXS4NCj4gDQo+IC1TY290dA0K
-DQpbU2hlbmd6aG91XQ0KICBJbiB1LWJvb3Q6DQoJI2lmZGVmIENPTkZJR19GU0xfRUxCQ19GTVIN
-CiAgICAgICAgICAgcHJpdi0+Zm1yID0gQ09ORklHX0ZTTF9FTEJDX0ZNUjsNCgkjZWxzZQ0KCSAg
-ICAgcHJpdi0+Zm1yID0gKDE1IDw8IEZNUl9DV1RPX1NISUZUKSB8ICgyIDw8IEZNUl9BTF9TSElG
-VCk7DQoJICAgICBvciA9IGluX2JlMzIoJmVsYmNfY3RybC0+cmVncy0+YmFua1twcml2LT5iYW5r
-XS5vcik7DQoJICAgICBpZiAob3IgJiBPUl9GQ01fUEdTKQ0KICAgIAkJICAgICAgIHByaXYtPmZt
-ciB8PSBGTVJfRUNDTTsNCgkjZW5kaWYNCg0KICBJbiBrZXJuZWw6IEl0IHVzZWQgdG8gYmUgIiBw
-cml2LT5mbXIgPSBpbl9iZTMyKCZsYmMtPmZtcikgJiBGTVJfRUNDTSAiLCBzbyBmbXIgd2FzIGFs
-d2F5cyAweDEwMChvciAwLGRlcGVuZCBvbiBPUm5bUEdTXSksIENXVE8gd2FzIDAodGltZW91dCB3
-YXMgbWluaW11bSkuICAgSW4gdGhpcyBwYXRjaCwgZm9yIG5vdCByZWx5aW5nIG9uIGJvb3Rsb2Fk
-ZXIsIGZtciBpcyBpbml0aWFsaXplZCBhcyB3aGF0IHUtYm9vdCBkb2VzLCBleGNlcHQgRk1SX0FM
-X1NISUZUIGlzIGhhbmRsZWQgaW4gZnNsX2VsYmNfY2hpcF9pbml0X3RhaWwgYW5kIHdpdGhvdXQg
-ZGVmaW5pdGlvbiBvZiBDT05GSUdfRlNMX0VMQkNfRk1SLg0KDQogIFNvLCBpdCBkb2Vzbid0IGNo
-YW5nZSBpdC4gRG8gd2Ugc3RpbGwgbmVlZCBDT05GSUdfRlNMX0VMQkNfRk1SIGluIGtlcm5lbD8g
-DQo=
+On Wed, 2011-12-07 at 14:49 +1100, Finn Thain wrote:
+> On most 68k Macs the SCC IRQ is an autovector interrupt and cannot be 
+> masked. This can be a problem when pmac_zilog starts up.
+> 
+> For example, the serial debugging code in arch/m68k/kernel/head.S may be 
+> used beforehand. It disables the SCC interrupts at the chip but doesn't 
+> ack them. Then when a pmac_zilog port is used, the machine locks up with 
+> "unexpected interrupt".
+> 
+> This can happen in pmz_shutdown() since the irq is freed before the 
+> channel interrupts are disabled.
+> 
+> Fix this by clearing interrupt enable bits before the handler is 
+> uninstalled. Also move the interrupt control bit flipping into a separate 
+> pmz_interrupt_control() routine. Replace all instances of these operations 
+> with calls to this routine. Omit the zssync() calls that seem to serve no 
+> purpose.
+> 
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Acked-by: Alan Cox <alan@linux.intel.com>
+> 
+> ---
+
+So basic operations seem to work, I've applied the patch to
+powerpc-next.
+
+However, the internal modem on my Pismo powerbook doesn't appear to
+survive suspend/resume. I'll dig into that and merge a fixup patch asap.
+
+Cheers,
+Ben.
