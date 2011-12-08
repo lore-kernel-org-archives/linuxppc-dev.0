@@ -1,31 +1,23 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 94AFA1007D1
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 22:12:47 +1100 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <prasad@linux.vnet.ibm.com>;
- Thu, 8 Dec 2011 09:12:34 -0200
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id pB8BDGPX2322782
- for <linuxppc-dev@ozlabs.org>; Thu, 8 Dec 2011 09:13:17 -0200
-Received: from d24av03.br.ibm.com (loopback [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pB8BCfAZ016125
- for <linuxppc-dev@ozlabs.org>; Thu, 8 Dec 2011 09:12:42 -0200
-Date: Thu, 8 Dec 2011 16:42:12 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: dwg@au1.ibm.com
-Subject: [PATCH 0/2] Changes to PowerPC ptrace flags using watchpoints - v2
-Message-ID: <20111208111212.GB3720@in.ibm.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:32:0:1:25:1])
+ by ozlabs.org (Postfix) with ESMTP id EEDD01007D7
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 22:15:14 +1100 (EST)
+Received: from frontend1.mail.m-online.net (frontend1.mail.intern.m-online.net
+ [192.168.8.180])
+ by mail-out.m-online.net (Postfix) with ESMTP id CEEC4186DEC0
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 12:15:02 +0100 (CET)
+Received: from igel.home (ppp-88-217-121-66.dynamic.mnet-online.de
+ [88.217.121.66])
+ by mail.mnet-online.de (Postfix) with ESMTPA id 52E9E1C00111
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 12:15:02 +0100 (CET)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: linuxppc-dev@ozlabs.org
+Subject: cpu idle time going backward
+Date: Thu, 08 Dec 2011 12:15:01 +0100
+Message-ID: <m2fwgvnwlm.fsf@igel.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,24 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
-	Please find a revised version of the patchset which have
-incorporated the various suggestions made by you.
+There seems to be something wrong with cpu idle time accounting at least
+on G5.  The value as reported in the cpu lines in /proc/stat seems to be
+stuck in the interval [100000,210000] for each cpu, jumping back at
+random points.  Any idea what could be the problem?
 
-Kindly review the patches and let me know if they look fine.
+Andreas.
 
-Changelog - v2
---------------
-v1 posted at
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-August/092463.html
-
-- Introduction of a new version number for the hw-breakpoint structures
-  dropped.
-- The ptrace flag operations are expected to make more precise requests
-  and suitable error return codes have been added for incorrect
-  requests.
-- Modification of an existing breakpoint is not possible. Request an
-  delete, followed by set breakpoint request instead.
-
-Thanks,
-K.Prasad
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
