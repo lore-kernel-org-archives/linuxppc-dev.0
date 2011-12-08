@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 393621007D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2011 18:23:32 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add TBI PHY node to first MDIO bus
+ by ozlabs.org (Postfix) with ESMTPS id BE4C11008BC
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 18:23:36 +1100 (EST)
+Subject: Re: [PATCH] powerpc/fsl-pci: Allow 64-bit PCIe devices to DMA to any
+ memory address
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1323287457-6085-1-git-send-email-afleming@freescale.com>
-Date: Thu, 8 Dec 2011 01:23:36 -0600
-Message-Id: <D23C5FF8-F960-486D-9F11-5BCE61D0A9BC@kernel.crashing.org>
-References: <1323287457-6085-1-git-send-email-afleming@freescale.com>
-To: Andy Fleming <afleming@freescale.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+In-Reply-To: <1322719394-24586-1-git-send-email-galak@kernel.crashing.org>
+Date: Thu, 8 Dec 2011 01:23:47 -0600
+Message-Id: <28D7114D-EF6C-4BAD-8198-0A82A012B1C1@kernel.crashing.org>
+References: <1322719394-24586-1-git-send-email-galak@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +25,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 7, 2011, at 1:50 PM, Andy Fleming wrote:
+On Dec 1, 2011, at 12:03 AM, Kumar Gala wrote:
 
-> Systems which use the fsl_pq_mdio driver need to specify an
-> address for TBI PHY transactions such that the address does
-> not conflict with any PHYs on the bus (all transactions to
-> that address are directed to the onboard TBI PHY). The driver
-> used to scan for a free address if no address was specified,
-> however this ran into issues when the PHY Lib was fixed so
-> that all MDIO transactions were protected by a mutex. As it
-> is, the code was meant to serve as a transitional tool until
-> the device trees were all updated to specify the TBI address.
-> 
-> The best fix for the mutex issue was to remove the scanning code,
-> but it turns out some of the newer SoCs have started to omit
-> the tbi-phy node when SGMII is not being used. As such, these
-> devices will now fail unless we add a tbi-phy node to the first
-> mdio controller.
-> 
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
+> There is an issue on FSL-BookE 64-bit devices (P5020) in which PCIe
+> devices that are capable of doing 64-bit DMAs (like an Intel e1000) do
+> not function and crash the kernel if we have >4G of memory in the =
+system.
+>=20
+> The reason is that the existing code only sets up one inbound window =
+for
+> access to system memory across PCIe.  That window is limited to a =
+32-bit
+> address space.  So on systems we'll end up utilizing SWIOTLB for dma
+> mappings.  However SWIOTLB dma ops implement dma_alloc_coherent() as
+> dma_direct_alloc_coherent().  Thus we can end up with dma addresses =
+that
+> are not accessible because of the inbound window limitation.
+>=20
+> We could possibly set the SWIOTLB alloc_coherent op to
+> swiotlb_alloc_coherent() however that does not address the issue since
+> the swiotlb_alloc_coherent() will behave almost identical to
+> dma_direct_alloc_coherent() since the devices coherent_dma_mask will =
+be
+> greater than any address allocated by swiotlb_alloc_coherent() and =
+thus
+> we'll never bounce buffer it into a range that would be dma-able.
+>=20
+> The easiest and best solution is to just make it so that a 64-bit
+> capable device is able to DMA to any internal system address.
+>=20
+> We accomplish this by opening up a second inbound window that maps all
+> of memory above the internal SoC address width so we can set it up to
+> access all of the internal SoC address space if needed.
+>=20
+> We than fixup the dma_ops and dma_offset for PCIe devices with a dma
+> mask greater than the maximum internal SoC address.
+>=20
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 > ---
-> 
-> This requires fsl_pq_mdio: Clean up tbi address configuration from
-> the net tree in order to achieve its full effect.
-> 
-> This needs to go into 3.2.
-> 
-> arch/powerpc/boot/dts/p1010rdb.dts            |    5 +++++
-> arch/powerpc/boot/dts/p1020rdb.dts            |    5 +++++
-> arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    5 +++++
-> arch/powerpc/boot/dts/p1021mds.dts            |    4 ++++
-> arch/powerpc/boot/dts/p1022ds.dts             |    4 ++++
-> arch/powerpc/boot/dts/p2020rdb.dts            |    8 ++++++--
-> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    4 ++++
-> 7 files changed, 33 insertions(+), 2 deletions(-)
+> arch/powerpc/sysdev/fsl_pci.c |   55 =
++++++++++++++++++++++++++++++++++++++++++
+> 1 files changed, 55 insertions(+), 0 deletions(-)
 
 applied to merge
 
-- k
+- k=
