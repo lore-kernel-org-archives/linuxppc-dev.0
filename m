@@ -2,21 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BE0C31007D1
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 18:28:24 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id pB87SKHb021503
- for <linuxppc-dev@ozlabs.org>; Thu, 8 Dec 2011 01:28:21 -0600
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Subject: Re: [PATCH] powerpc/fsl: Update defconfigs to enable some standard
- FSL HW features
+ by ozlabs.org (Postfix) with ESMTPS id 498581007D1
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2011 18:30:01 +1100 (EST)
+Date: Thu, 8 Dec 2011 01:29:55 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1323328285-11969-1-git-send-email-galak@kernel.crashing.org>
-Date: Thu, 8 Dec 2011 01:28:37 -0600
-Message-Id: <790A4FBA-4B03-448F-9982-D69D7A971572@kernel.crashing.org>
-References: <1323328285-11969-1-git-send-email-galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Message-ID: <alpine.LFD.2.00.1112080129140.13118@right.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+[ some bugfixes & defconfig updates for 3.2]
 
-On Dec 8, 2011, at 1:11 AM, Kumar Gala wrote:
+The following changes since commit 49e44064d7e3f24f874a51dd513b83ef9994aa8a:
 
-> corenet64_smp_defconfig:
-> - enabled rapidio
-> 
-> corenet32_smp_defconfig:
-> - enabled hugetlbfs, rapidio
-> 
-> mpc85xx_smp_defconfig:
-> - enabled P1010RDB, hugetlbfs, SPI, SDHC, Crypto/CAAM
-> 
-> mpc85xx_smp_defconfig:
-> - enabled hugetlbfs, SPI, SDHC, Crypto/CAAM
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> arch/powerpc/configs/corenet32_smp_defconfig |   10 ++++++----
-> arch/powerpc/configs/corenet64_smp_defconfig |    3 ++-
-> arch/powerpc/configs/mpc85xx_defconfig       |   17 ++++++++++++-----
-> arch/powerpc/configs/mpc85xx_smp_defconfig   |   18 +++++++++++++-----
-> 4 files changed, 33 insertions(+), 15 deletions(-)
+  powerpc/44x: Add mtd ndfc to the ppx44x defconfig (2011-11-25 10:06:00 +1100)
 
-applied to merge
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-- k
+Andy Fleming (1):
+      powerpc: Add TBI PHY node to first MDIO bus
+
+Kumar Gala (2):
+      powerpc/fsl-pci: Allow 64-bit PCIe devices to DMA to any memory address
+      powerpc/fsl: Update defconfigs to enable some standard FSL HW features
+
+Paul Gortmaker (1):
+      sbc834x: put full compat string in board match check
+
+ arch/powerpc/boot/dts/p1010rdb.dts            |    5 ++
+ arch/powerpc/boot/dts/p1020rdb.dts            |    5 ++
+ arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    5 ++
+ arch/powerpc/boot/dts/p1021mds.dts            |    4 ++
+ arch/powerpc/boot/dts/p1022ds.dts             |    4 ++
+ arch/powerpc/boot/dts/p2020rdb.dts            |    8 +++-
+ arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    4 ++
+ arch/powerpc/configs/corenet32_smp_defconfig  |   10 +++--
+ arch/powerpc/configs/corenet64_smp_defconfig  |    3 +-
+ arch/powerpc/configs/mpc85xx_defconfig        |   17 +++++--
+ arch/powerpc/configs/mpc85xx_smp_defconfig    |   18 ++++++--
+ arch/powerpc/platforms/83xx/sbc834x.c         |    4 +-
+ arch/powerpc/sysdev/fsl_pci.c                 |   55 +++++++++++++++++++++++++
+ 13 files changed, 123 insertions(+), 19 deletions(-)
