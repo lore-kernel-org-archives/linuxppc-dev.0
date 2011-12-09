@@ -1,20 +1,26 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
- [209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 712861007D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 01:00:21 +1100 (EST)
-Received: by vcbfl15 with SMTP id fl15so2341632vcb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Dec 2011 06:00:18 -0800 (PST)
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id A1D7DB6F9B
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 01:32:47 +1100 (EST)
+Received: from mail87-db3 (localhost [127.0.0.1])	by mail87-db3-R.bigfish.com
+ (Postfix) with ESMTP id 8F57F404A5	for <linuxppc-dev@ozlabs.org>;
+ Fri,  9 Dec 2011 14:32:40 +0000 (UTC)
+Received: from DB3EHSMHS002.bigfish.com (unknown [10.3.81.246])	by
+ mail87-db3.bigfish.com (Postfix) with ESMTP id 5F16180047	for
+ <linuxppc-dev@ozlabs.org>; Fri,  9 Dec 2011 14:32:40 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <scottwood@freescale.com>,
+ <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/2] [v3] powerpc/85xx: p1022ds: disable the NOR flash node if
+ video is enabled
+Date: Fri, 9 Dec 2011 08:32:36 -0600
+Message-ID: <1323441157-20496-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Date: Fri, 9 Dec 2011 09:00:18 -0500
-Message-ID: <CA+5PVA6tSuycrK-jh2UD3SfTEvhCoFNY=LmfwZYX-w=uOn+cdQ@mail.gmail.com>
-Subject: Please pull 'next' branch of new 4xx tree (updated)
-From: Josh Boyer <jwboyer@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,79 +30,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 30, 2011 at 10:14 AM, Josh Boyer <jwboyer@gmail.com> wrote:
-> Hi Ben,
->
-> I have a new 4xx tree setup now. =A0Two small commits for the next
-> branch are queued up. =A0I'd like to get the patch series from Suzie and
-> Tony included soon as well, but thought I'd start with these to get
-> things rolling.
+The Freescale P1022 has a unique pin muxing "feature" where the DIU video
+controller's video signals are muxed with 24 of the local bus address signals.
+When the DIU is enabled, the bulk of the local bus is disabled, preventing
+access to memory-mapped devices like NOR flash and the pixis FPGA.
 
-I've updated my next branch to include the Currituck changes from
-Tony.  Suzie's patches from today look good, but he has an error in
-one of them that is missing a file, so I'll have to send those on once
-that is fixed.
+Therefore, if the DIU is going to be enabled, then memory-mapped devices on
+the localbus, like NOR flash, need to be disabled.
 
-Please pull this time ;)
+This also means that the localbus is not a 'simple-bus' any more, so remove
+that string from the compatible node.
 
-josh
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/p1022si-post.dtsi |    6 ++-
+ arch/powerpc/platforms/85xx/p1022_ds.c      |   71 +++++++++++++++++++++++++++
+ 2 files changed, 76 insertions(+), 1 deletions(-)
 
-The following changes since commit fa8cbaaf5a68f62db3f9a8444ecbb940b47984cb=
-:
-
-  powerpc+sparc64/mm: Remove hack in mmap randomize layout (2011-11-28
-11:42:09 +1100)
-
-are available in the git repository at:
-  git://git.infradead.org/users/jwboyer/powerpc-4xx.git next
-
-Christoph Egger (1):
-      powerpc/44x: Removing dead CONFIG_PPC47x
-
-Josh Boyer (1):
-      MAINTAINERS: Update PowerPC 4xx git tree
-
-Tanmay Inamdar (1):
-      powerpc/40x: Add APM8018X SOC support
-
-Tony Breeds (7):
-      powerpc/44x: pci: Use PCI_BASE_ADDRESS_MEM_PREFETCH rather than
-magic value.
-      powerpc/44x: pci: Add a want_sdr flag into ppc4xx_pciex_hwops
-      powerpc/44x: pci: Setup the dma_window properties for each pci_contro=
-ller
-      powerpc/boot: Add extended precision shifts to the boot wrapper.
-      powerpc/boot: Add mfdcrx
-      powerpc/476fpe: Add 476fpe SoC code
-      powerpc/47x: Add support for the new IBM currituck platform
-
- MAINTAINERS                                  |    2 +-
- arch/powerpc/boot/Makefile                   |    5 +-
- arch/powerpc/boot/dcr.h                      |    6 +
- arch/powerpc/boot/div64.S                    |   52 ++++++
- arch/powerpc/boot/dts/currituck.dts          |  237 ++++++++++++++++++++++=
-++++
- arch/powerpc/boot/dts/klondike.dts           |  227 ++++++++++++++++++++++=
-++
- arch/powerpc/boot/treeboot-currituck.c       |  119 +++++++++++++
- arch/powerpc/boot/wrapper                    |    3 +
- arch/powerpc/configs/40x/klondike_defconfig  |   55 ++++++
- arch/powerpc/configs/44x/currituck_defconfig |  110 ++++++++++++
- arch/powerpc/include/asm/reg.h               |    1 +
- arch/powerpc/kernel/cputable.c               |   27 +++
- arch/powerpc/kernel/head_44x.S               |    2 +
- arch/powerpc/mm/44x_mmu.c                    |    4 -
- arch/powerpc/platforms/40x/Kconfig           |   11 ++
- arch/powerpc/platforms/40x/ppc40x_simple.c   |    1 +
- arch/powerpc/platforms/44x/Kconfig           |   14 ++
- arch/powerpc/platforms/44x/Makefile          |    1 +
- arch/powerpc/platforms/44x/currituck.c       |  204 ++++++++++++++++++++++
- arch/powerpc/sysdev/ppc4xx_pci.c             |   85 +++++++++-
- arch/powerpc/sysdev/ppc4xx_pci.h             |    7 +
- 21 files changed, 1159 insertions(+), 14 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/currituck.dts
- create mode 100644 arch/powerpc/boot/dts/klondike.dts
- create mode 100644 arch/powerpc/boot/treeboot-currituck.c
- create mode 100644 arch/powerpc/configs/40x/klondike_defconfig
- create mode 100644 arch/powerpc/configs/44x/currituck_defconfig
- create mode 100644 arch/powerpc/platforms/44x/currituck.c
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+index 16239b1..2a62edd 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+@@ -35,7 +35,11 @@
+ &lbc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+-	compatible = "fsl,p1022-elbc", "fsl,elbc", "simple-bus";
++	/*
++	 * The localbus on the P1022 is not a simple-bus because of the eLBC
++	 * pin muxing when the DIU is enabled.
++	 */
++	compatible = "fsl,p1022-elbc", "fsl,elbc";
+ 	interrupts = <19 2 0 0>;
+ };
+ 
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index 2ec39f4..29de80c 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -360,6 +360,49 @@ void __init p1022_ds_pic_init(void)
+ void __init mpc85xx_smp_init(void);
+ #endif
+ 
++#if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
++
++/*
++ * Disables a node in the device tree.
++ *
++ * This function is called before kmalloc() is available, so the 'new' object
++ * should be allocated in the global area.  The easiest way is to do that is
++ * to allocate one static local variable for each call to this function.
++ */
++static void __init disable_one_node(struct device_node *np, struct property *new)
++{
++	struct property *old;
++
++	old = of_find_property(np, new->name, NULL);
++	if (old)
++		prom_update_property(np, new, old);
++	else
++		prom_add_property(np, new);
++}
++
++/* TRUE if there is a "video=fslfb" command-line parameter. */
++static bool fslfb;
++
++/*
++ * Search for a "video=fslfb" command-line parameter, and set 'fslfb' to
++ * true if we find it.
++ *
++ * We need to use early_param() instead of __setup() because the normal
++ * __setup() gets called to late.  However, early_param() gets called very
++ * early, before the device tree is unflattened, so all we can do now is set a
++ * global variable.  Later on, p1022_ds_setup_arch() will use that variable
++ * to determine if we need to update the device tree.
++ */
++static int __init early_video_setup(char *options)
++{
++	fslfb = (strncmp(options, "fslfb:", 6) == 0);
++
++	return 0;
++}
++early_param("video", early_video_setup);
++
++#endif
++
+ /*
+  * Setup the architecture
+  */
+@@ -397,6 +440,34 @@ static void __init p1022_ds_setup_arch(void)
+ 	diu_ops.set_monitor_port	= p1022ds_set_monitor_port;
+ 	diu_ops.set_pixel_clock		= p1022ds_set_pixel_clock;
+ 	diu_ops.valid_monitor_port	= p1022ds_valid_monitor_port;
++
++	/*
++	 * Disable the NOR flash node if there is video=fslfb... command-line
++	 * parameter.  When the DIU is active, NOR flash is unavailable, so we
++	 * have to disable the node before the MTD driver loads.
++	 */
++	if (fslfb) {
++		struct device_node *np =
++			of_find_compatible_node(NULL, NULL, "fsl,p1022-elbc");
++
++		if (np) {
++			np = of_find_compatible_node(np, NULL, "cfi-flash");
++			if (np) {
++				static struct property nor_status = {
++					.name = "status",
++					.value = "disabled",
++					.length = sizeof("disabled"),
++				};
++
++				pr_info("p1022ds: disabling %s node",
++					np->full_name);
++				disable_one_node(np, &nor_status);
++				of_node_put(np);
++			}
++		}
++
++	}
++
+ #endif
+ 
+ #ifdef CONFIG_SMP
+-- 
+1.7.3.4
