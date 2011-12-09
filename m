@@ -1,28 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 12BB0B6F6F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 05:41:41 +1100 (EST)
-Received: from mail55-tx2 (localhost [127.0.0.1])	by mail55-tx2-R.bigfish.com
- (Postfix) with ESMTP id 71C7D5A0475	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2011 18:41:36 +0000 (UTC)
-Received: from TX2EHSMHS020.bigfish.com (unknown [10.9.14.251])	by
- mail55-tx2.bigfish.com (Postfix) with ESMTP id 467EB620045	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 18:41:36 +0000 (UTC)
-Message-ID: <4EE2565E.7050700@freescale.com>
-Date: Fri, 9 Dec 2011 12:41:34 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <rdunlap@xenotime.net>
+Received: from oproxy3-pub.bluehost.com (oproxy3-pub.bluehost.com [69.89.21.8])
+ by ozlabs.org (Postfix) with SMTP id EFF181007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 06:07:24 +1100 (EST)
+Message-ID: <0b83a8b65ef53f7892e639c89667af1b.squirrel@xenotime.net>
+In-Reply-To: <4EE19DA0.5010705@goop.org>
+References: <20111209012746.GC20353@thor.bakeyournoodle.com>
+ <4EE19DA0.5010705@goop.org>
+Date: Fri, 9 Dec 2011 11:00:00 -0800
+Subject: Re: linux-next bad Kconfig for drivers/hid
+From: "Randy Dunlap" <rdunlap@xenotime.net>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
 MIME-Version: 1.0
-To: Liu Shengzhou-B36685 <B36685@freescale.com>
-Subject: Re: Linuxppc-dev Digest, Vol 88, Issue 24
-References: <mailman.5273.1323013984.15294.linuxppc-dev@lists.ozlabs.org>
- <3F453DDFF675A64A89321A1F352810216B0A24@039-SN1MPN1-005.039d.mgd.msft.net>
-In-Reply-To: <3F453DDFF675A64A89321A1F352810216B0A24@039-SN1MPN1-005.039d.mgd.msft.net>
-Content-Type: text/plain; charset="GB2312"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Liu Shuo-B35362 <B35362@freescale.com>
+Content-Type: text/plain;charset=iso-8859-1
+Cc: Jiri Kosina <jkosina@suse.cz>, LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel ML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/09/2011 03:27 AM, Liu Shengzhou-B36685 wrote:
-> Before calling nand_scan_ident(), we can still use 2k FCM RAM, not need=
- a buffer greater than 2k=A3=AC
-> After nand_scan_ident(),  if writesize > 2048, then allocate a large bu=
-ffer.
-> We can do it in fsl_elbc_chip_init_tail()
->   if (mtd->writesize > 2048)
->       ctrl->buffer =3D kmalloc(mtd->writesize + mtd->oobsize, GFP_KERNE=
-L);
 
-As we discussed elsewhere in the thread, the buffer is a controller-wide
-resource.  It is not associated with any one NAND chip.
+On Thu, December 8, 2011 9:33 pm, Jeremy Fitzhardinge wrote:
+> On 12/08/2011 05:27 PM, Tony Breeds wrote:
+>> Commit 4f5ca836bef3 (HID: hid-input: add support for HID devices
+>> reporting Battery Strength) went into linux-next on Dec 1st since then a
+>> ppc6xx_defconfig has been failing with:
+>>
+>> ---
+>> drivers/built-in.o: In function `hidinput_cleanup_battery':
+>> /scratch/tony/working/drivers/hid/hid-input.c:351: undefined reference
+>> to `power_supply_unregister'
+>> drivers/built-in.o: In function `hidinput_setup_battery':
+>> /scratch/tony/working/drivers/hid/hid-input.c:338: undefined reference
+>> to `power_supply_register'
+>> make[1]: *** [.tmp_vmlinux1] Error 1
+>> ---
+>>
+>> http://kisskb.ellerman.id.au/kisskb/buildresult/5012563/
+>> vs
+>> http://kisskb.ellerman.id.au/kisskb/buildresult/5017366/
+>>
+>> The defconfig in question doens't mention either option
+>> (CONFIG_POWER_SUPPLY or CONFIG_HID_BATTERY_STRENGTH) and kbuild is
+>> genertaing
+>> CONFIG_HID_BATTERY_STRENGTH=y
+>> CONFIG_POWER_SUPPLY=m
+>> which clearly isn't going to work.
+>>
+>> The following change to HID_BATTERY_STRENGTH Kconfig "works" but seems a
+>> little gross.
+>>
+>> diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+>> index 5ed64f6..d2a94e6 100644
+>> --- a/drivers/hid/Kconfig
+>> +++ b/drivers/hid/Kconfig
+>> @@ -33,7 +33,7 @@ config HID
+>>
+>>  config HID_BATTERY_STRENGTH
+>>         bool
+>> -       depends on POWER_SUPPLY
+>> +       depends on POWER_SUPPLY=y
+>>         default y
+>>
+>>  config HIDRAW
+>>
+>> Any chance we can get a fix into linux-next?
+>
+> Hm.  How about making it "depends on HID && POWER_SUPPLY"?  I think that
+> would needlessly disable it if HID is also modular, but I'm not sure how
+> to fix that.  "depends on HID && POWER_SUPPLY && HID == POWER_SUPPLY"?
 
--Scott
+The last suggestion looks good to me.
+
+-- 
+~Randy
