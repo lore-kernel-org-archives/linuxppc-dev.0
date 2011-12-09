@@ -1,25 +1,31 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
- by ozlabs.org (Postfix) with ESMTP id 2D5DE1007D8
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 08:35:13 +1100 (EST)
-Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
- by mail-out.m-online.net (Postfix) with ESMTP id E41F01C0F590
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Dec 2011 22:35:09 +0100 (CET)
-Received: from igel.home (ppp-88-217-106-226.dynamic.mnet-online.de
- [88.217.106.226])
- by mail.mnet-online.de (Postfix) with ESMTPA id 2932F1C00127
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Dec 2011 22:35:09 +0100 (CET)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: fix wrong divisor in usecs_to_cputime
-References: <m2fwgvnwlm.fsf__7616.12257124415$1323342974$gmane$org@igel.home>
-Date: Fri, 09 Dec 2011 22:35:08 +0100
-In-Reply-To: <m2fwgvnwlm.fsf__7616.12257124415$1323342974$gmane$org@igel.home>
- (Andreas Schwab's message of "Thu, 08 Dec 2011 12:15:01 +0100")
-Message-ID: <m2pqfx2zub.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 1EAC11007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 08:48:55 +1100 (EST)
+Date: Fri, 9 Dec 2011 13:48:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chris Metcalf <cmetcalf@tilera.com>
+Subject: Re: [PATCH v2] ipc: provide generic compat versions of IPC syscalls
+Message-Id: <20111209134852.f5b5bcbc.akpm@linux-foundation.org>
+In-Reply-To: <201112091903.pB9J39pd031553@farm-0002.internal.tilera.com>
+References: <201112091536.pB9Fa5f7002738@farm-0002.internal.tilera.com>
+ <201112091602.31325.arnd@arndb.de>
+ <201112091903.pB9J39pd031553@farm-0002.internal.tilera.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mips@linux-mips.org, NeilBrown <neilb@suse.de>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
+ "J. Bruce Fields" <bfields@redhat.com>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,85 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit d57af9b (taskstats: use real microsecond granularity for CPU times)
-renamed msecs_to_cputime to usecs_to_cputime, but failed to update all
-numbers on the way.  This causes nonsensical cpu idle/iowait values to be
-displayed in /proc/stat (the only user of usecs_to_cputime so far).
+On Fri, 9 Dec 2011 10:29:07 -0500
+Chris Metcalf <cmetcalf@tilera.com> wrote:
 
-This also renames __cputime_msec_factor to __cputime_usec_factor, adapting
-its value and using it directly in cputime_to_usecs instead of doing two
-multiplications.
+> When using the "compat" APIs, architectures will generally want to
+> be able to make direct syscalls to msgsnd(), shmctl(), etc., and
+> in the kernel we would want them to be handled directly by
+> compat_sys_xxx() functions, as is true for other compat syscalls.
+> 
+> However, for historical reasons, several of the existing compat IPC
+> syscalls do not do this.  semctl() expects a pointer to the fourth
+> argument, instead of the fourth argument itself.  msgsnd(), msgrcv()
+> and shmat() expect arguments in different order.
+> 
+> This change adds an __ARCH_WANT_OLD_COMPAT_IPC define that can be
+> set in <asm/compat.h> to preserve this behavior for ports that use it
+> (x86, sparc, powerpc, s390, and mips).  No actual semantics are changed
+> for those architectures, and there is only a minimal amount of code
+> refactoring in ipc/compat.c.
+> 
+> Newer architectures like tile (and perhaps future architectures such
+> as arm64 and unicore64) should not supply this define, and thus can
+> avoid having any IPC-specific code at all in their architecture-specific
+> compat layer.  In the same vein, if this define is omitted, IPC_64 mode
+> is assumed, since that's what the <asm-generic> headers expect.
+> 
+> The workaround code in "tile" for msgsnd() and msgrcv() is removed
+> with this change; it also fixes the bug that shmat() and semctl() were
+> not being properly handled.
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- arch/powerpc/include/asm/cputime.h |    6 +++---
- arch/powerpc/kernel/time.c         |   10 +++++-----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+What would we need to do to get all architectures using the new
+interfaces, and remove __ARCH_WANT_OLD_COMPAT_IPC?
 
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index 1cf20bd..33a3580 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -126,11 +126,11 @@ static inline u64 cputime64_to_jiffies64(const cputime_t ct)
- /*
-  * Convert cputime <-> microseconds
-  */
--extern u64 __cputime_msec_factor;
-+extern u64 __cputime_usec_factor;
- 
- static inline unsigned long cputime_to_usecs(const cputime_t ct)
- {
--	return mulhdu(ct, __cputime_msec_factor) * USEC_PER_MSEC;
-+	return mulhdu(ct, __cputime_usec_factor);
- }
- 
- static inline cputime_t usecs_to_cputime(const unsigned long us)
-@@ -143,7 +143,7 @@ static inline cputime_t usecs_to_cputime(const unsigned long us)
- 	sec = us / 1000000;
- 	if (ct) {
- 		ct *= tb_ticks_per_sec;
--		do_div(ct, 1000);
-+		do_div(ct, 1000000);
- 	}
- 	if (sec)
- 		ct += (cputime_t) sec * tb_ticks_per_sec;
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 522bb1d..69477e5 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -168,13 +168,13 @@ EXPORT_SYMBOL_GPL(ppc_tb_freq);
- #ifdef CONFIG_VIRT_CPU_ACCOUNTING
- /*
-  * Factors for converting from cputime_t (timebase ticks) to
-- * jiffies, milliseconds, seconds, and clock_t (1/USER_HZ seconds).
-+ * jiffies, microseconds, seconds, and clock_t (1/USER_HZ seconds).
-  * These are all stored as 0.64 fixed-point binary fractions.
-  */
- u64 __cputime_jiffies_factor;
- EXPORT_SYMBOL(__cputime_jiffies_factor);
--u64 __cputime_msec_factor;
--EXPORT_SYMBOL(__cputime_msec_factor);
-+u64 __cputime_usec_factor;
-+EXPORT_SYMBOL(__cputime_usec_factor);
- u64 __cputime_sec_factor;
- EXPORT_SYMBOL(__cputime_sec_factor);
- u64 __cputime_clockt_factor;
-@@ -192,8 +192,8 @@ static void calc_cputime_factors(void)
- 
- 	div128_by_32(HZ, 0, tb_ticks_per_sec, &res);
- 	__cputime_jiffies_factor = res.result_low;
--	div128_by_32(1000, 0, tb_ticks_per_sec, &res);
--	__cputime_msec_factor = res.result_low;
-+	div128_by_32(1000000, 0, tb_ticks_per_sec, &res);
-+	__cputime_usec_factor = res.result_low;
- 	div128_by_32(1, 0, tb_ticks_per_sec, &res);
- 	__cputime_sec_factor = res.result_low;
- 	div128_by_32(USER_HZ, 0, tb_ticks_per_sec, &res);
--- 
-1.7.8
+Regarding the implementation: rather than patching the header
+files, it would be more conventional (and arguably better) to add
 
+	select ARCH_WANT_OLD_COMPAT_IPC
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+to arch/*/Kconfig, then use CONFIG_ARCH_WANT_OLD_COMPAT_IPC.
