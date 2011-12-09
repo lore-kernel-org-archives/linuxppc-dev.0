@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jeremy@goop.org>
+Received: from claw.goop.org (unknown [IPv6:2001:470:1f05:bb::8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 942C51007D6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 15:42:02 +1100 (EST)
-Message-ID: <1323405702.19891.7.camel@pasglop>
-Subject: Re: linux-next: manual merge of the 4xx tree with the powerpc tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@gmail.com>
-Date: Fri, 09 Dec 2011 15:41:42 +1100
-In-Reply-To: <CA+5PVA5vVC=e24imM0QxbT10kBAF4v=kwheKs7cOHKKcC+if=A@mail.gmail.com>
-References: <20111209123811.12cf28971f21a309976f31bb@canb.auug.org.au>
- <CA+5PVA5vVC=e24imM0QxbT10kBAF4v=kwheKs7cOHKKcC+if=A@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Tanmay Inamdar <tinamdar@apm.com>, linuxppc-dev@lists.ozlabs.org
+ (Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B232E1007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 16:43:20 +1100 (EST)
+Message-ID: <4EE19DA0.5010705@goop.org>
+Date: Thu, 08 Dec 2011 21:33:20 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel ML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next bad Kconfig for drivers/hid
+References: <20111209012746.GC20353@thor.bakeyournoodle.com>
+In-Reply-To: <20111209012746.GC20353@thor.bakeyournoodle.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-12-08 at 20:46 -0500, Josh Boyer wrote:
-> On Thu, Dec 8, 2011 at 8:38 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > Hi Josh,
-> >
-> > Today's linux-next merge of the 4xx tree got a conflict in
-> > arch/powerpc/platforms/40x/ppc40x_simple.c between commit 11eab297f57b
-> > ("powerpc: Add support for OpenBlockS 600") from the powerpc tree and
-> > commit d5b9ee7b514e ("powerpc/40x: Add APM8018X SOC support") from the
-> > 4xx tree.
-> 
-> I blame BenH.  I sent him a pull request with d5b9ee7b514e in it
-> before he went and updated his tree.  Still not pulled afaik.  Guess
-> I'll be rebasing my next branch tomorrow to pick up a series from Tony
-> Breeds, unless Ben handles the outstanding pull before I wake up :).
+On 12/08/2011 05:27 PM, Tony Breeds wrote:
+> Commit 4f5ca836bef3 (HID: hid-input: add support for HID devices
+> reporting Battery Strength) went into linux-next on Dec 1st since then a
+> ppc6xx_defconfig has been failing with:
+>
+> ---
+> drivers/built-in.o: In function `hidinput_cleanup_battery':
+> /scratch/tony/working/drivers/hid/hid-input.c:351: undefined reference to `power_supply_unregister'
+> drivers/built-in.o: In function `hidinput_setup_battery':
+> /scratch/tony/working/drivers/hid/hid-input.c:338: undefined reference to `power_supply_register'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> ---
+>
+> http://kisskb.ellerman.id.au/kisskb/buildresult/5012563/
+> vs
+> http://kisskb.ellerman.id.au/kisskb/buildresult/5017366/
+>
+> The defconfig in question doens't mention either option
+> (CONFIG_POWER_SUPPLY or CONFIG_HID_BATTERY_STRENGTH) and kbuild is
+> genertaing
+> CONFIG_HID_BATTERY_STRENGTH=y
+> CONFIG_POWER_SUPPLY=m
+> which clearly isn't going to work.
+>
+> The following change to HID_BATTERY_STRENGTH Kconfig "works" but seems a
+> little gross.
+>
+> diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+> index 5ed64f6..d2a94e6 100644
+> --- a/drivers/hid/Kconfig
+> +++ b/drivers/hid/Kconfig
+> @@ -33,7 +33,7 @@ config HID
+>  
+>  config HID_BATTERY_STRENGTH
+>         bool
+> -       depends on POWER_SUPPLY
+> +       depends on POWER_SUPPLY=y
+>         default y
+>  
+>  config HIDRAW
+>
+> Any chance we can get a fix into linux-next?
 
-Don't bother rebasing, I can deal with a minor merge conflict like
-that :-)
+Hm.  How about making it "depends on HID && POWER_SUPPLY"?  I think that
+would needlessly disable it if HID is also modular, but I'm not sure how
+to fix that.  "depends on HID && POWER_SUPPLY && HID == POWER_SUPPLY"?
 
-> > I fixed it up (see below) and can carry the fix as necessary.
-> 
-> Looks correct to me.  Hopefully you won't have to carry it long.
-> >
-> > [Josh: I have changed you contact address to the above]
-
-Cheers,
-Ben.
+    J
