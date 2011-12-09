@@ -1,31 +1,32 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 1EAC11007D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 08:48:55 +1100 (EST)
-Date: Fri, 9 Dec 2011 13:48:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Metcalf <cmetcalf@tilera.com>
-Subject: Re: [PATCH v2] ipc: provide generic compat versions of IPC syscalls
-Message-Id: <20111209134852.f5b5bcbc.akpm@linux-foundation.org>
-In-Reply-To: <201112091903.pB9J39pd031553@farm-0002.internal.tilera.com>
-References: <201112091536.pB9Fa5f7002738@farm-0002.internal.tilera.com>
- <201112091602.31325.arnd@arndb.de>
- <201112091903.pB9J39pd031553@farm-0002.internal.tilera.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, NeilBrown <neilb@suse.de>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
- "J. Bruce Fields" <bfields@redhat.com>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Lucas De Marchi <lucas.demarchi@profusion.mobi>,
- Thomas Gleixner <tglx@linutronix.de>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
+ [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 028181007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 09:05:25 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+Subject: Re: [PATCH 10/13] powerpc: Update mpc85xx/corenet 32-bit defconfigs
+Date: Fri, 9 Dec 2011 22:05:14 +0000
+Message-ID: <CAOZdJXXWE8FJg7UAQ4-sCFZcmUq3+2+kF=MCtF4muWaQQDyQ=Q@mail.gmail.com>
+References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
+ <13182798624083-git-send-email-beckyb@kernel.crashing.org>
+ <13182798643553-git-send-email-beckyb@kernel.crashing.org>
+ <13182798681100-git-send-email-beckyb@kernel.crashing.org>
+ <1318279870278-git-send-email-beckyb@kernel.crashing.org>
+ <13182798731357-git-send-email-beckyb@kernel.crashing.org>
+ <13182798761457-git-send-email-beckyb@kernel.crashing.org>
+ <13182798791090-git-send-email-beckyb@kernel.crashing.org>
+ <1318279883564-git-send-email-beckyb@kernel.crashing.org>
+ <1318279885811-git-send-email-beckyb@kernel.crashing.org>
+ <13182798883685-git-send-email-beckyb@kernel.crashing.org>
+In-Reply-To: <13182798883685-git-send-email-beckyb@kernel.crashing.org>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "david@gibson.dropbear.id.au" <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,41 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 9 Dec 2011 10:29:07 -0500
-Chris Metcalf <cmetcalf@tilera.com> wrote:
+On Mon, Oct 10, 2011 at 3:50 PM, Becky Bruce <beckyb@kernel.crashing.org> w=
+rote:
+> From: Becky Bruce <beckyb@kernel.crashing.org>
+>
+> Results from updates via make savedefconfig.
+>
+> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+> ---
 
-> When using the "compat" APIs, architectures will generally want to
-> be able to make direct syscalls to msgsnd(), shmctl(), etc., and
-> in the kernel we would want them to be handled directly by
-> compat_sys_xxx() functions, as is true for other compat syscalls.
-> 
-> However, for historical reasons, several of the existing compat IPC
-> syscalls do not do this.  semctl() expects a pointer to the fourth
-> argument, instead of the fourth argument itself.  msgsnd(), msgrcv()
-> and shmat() expect arguments in different order.
-> 
-> This change adds an __ARCH_WANT_OLD_COMPAT_IPC define that can be
-> set in <asm/compat.h> to preserve this behavior for ports that use it
-> (x86, sparc, powerpc, s390, and mips).  No actual semantics are changed
-> for those architectures, and there is only a minimal amount of code
-> refactoring in ipc/compat.c.
-> 
-> Newer architectures like tile (and perhaps future architectures such
-> as arm64 and unicore64) should not supply this define, and thus can
-> avoid having any IPC-specific code at all in their architecture-specific
-> compat layer.  In the same vein, if this define is omitted, IPC_64 mode
-> is assumed, since that's what the <asm-generic> headers expect.
-> 
-> The workaround code in "tile" for msgsnd() and msgrcv() is removed
-> with this change; it also fixes the bug that shmat() and semctl() were
-> not being properly handled.
+...
 
-What would we need to do to get all architectures using the new
-interfaces, and remove __ARCH_WANT_OLD_COMPAT_IPC?
+> -CONFIG_PPC_EPAPR_HV_BYTECHAN=3Dy
 
-Regarding the implementation: rather than patching the header
-files, it would be more conventional (and arguably better) to add
+I guess no one noticed that this patch removes byte channel support,
+thereby preventing this kernel from booting under the hypervisor?
 
-	select ARCH_WANT_OLD_COMPAT_IPC
-
-to arch/*/Kconfig, then use CONFIG_ARCH_WANT_OLD_COMPAT_IPC.
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
