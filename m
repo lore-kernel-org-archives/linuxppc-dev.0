@@ -1,28 +1,20 @@
-Return-Path: <B36685@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
- [213.199.154.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 4293E1007D6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 20:28:06 +1100 (EST)
-Received: from mail51-db3 (localhost [127.0.0.1])	by mail51-db3-R.bigfish.com
- (Postfix) with ESMTP id 8832C180348	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2011 09:28:01 +0000 (UTC)
-Received: from DB3EHSMHS007.bigfish.com (unknown [10.3.81.251])	by
- mail51-db3.bigfish.com (Postfix) with ESMTP id 60E5A3C0045	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 09:28:01 +0000 (UTC)
-From: Liu Shengzhou-B36685 <B36685@freescale.com>
-To: Liu Shuo-B35362 <B35362@freescale.com>
-Subject: RE: Linuxppc-dev Digest, Vol 88, Issue 24
-Date: Fri, 9 Dec 2011 09:27:57 +0000
-Message-ID: <3F453DDFF675A64A89321A1F352810216B0A24@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <mailman.5273.1323013984.15294.linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <mailman.5273.1323013984.15294.linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="gb2312"
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
+ by ozlabs.org (Postfix) with ESMTP id 4267BB6F6F
+ for <linuxppc-dev@ozlabs.org>; Fri,  9 Dec 2011 20:57:42 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: kevin diggs <diggskevin38@gmail.com>
+Subject: Re: cpu idle time going backward
+References: <m2fwgvnwlm.fsf@igel.home>
+ <CAKTLLVTHHSDTxybfJn3r0JOeRGtxgzJyCwAFf8w8gDxqbuXbyA__24208.5847691216$1323374038$gmane$org@mail.gmail.com>
+Date: Fri, 09 Dec 2011 10:52:21 +0100
+In-Reply-To: <CAKTLLVTHHSDTxybfJn3r0JOeRGtxgzJyCwAFf8w8gDxqbuXbyA__24208.5847691216$1323374038$gmane$org@mail.gmail.com>
+ (kevin diggs's message of "Thu, 8 Dec 2011 13:53:24 -0600")
+Message-ID: <m2liqmkr6y.fsf@linux-m68k.org>
 MIME-Version: 1.0
-Cc: Liu Shengzhou-B36685 <B36685@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,63 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gDQo+IE1lc3NhZ2U6IDQNCj4gRGF0
-ZTogU3VuLCA0IERlYyAyMDExIDEyOjMxOjM4ICswODAwDQo+IEZyb206IDxzaHVvLmxpdUBmcmVl
-c2NhbGUuY29tPg0KPiBUbzogPGR3bXcyQGluZnJhZGVhZC5vcmc+LCA8QXJ0ZW0uQml0eXV0c2tp
-eUBub2tpYS5jb20+LA0KPiAJPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPg0KPiBDYzogbGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZywgc2h1by5saXVAZnJlZXNjYWxlLmNvbSwNCj4gCWxpbnV4
-LW10ZEBsaXN0cy5pbmZyYWRlYWQub3JnLCBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnLA0KPiAJ
-bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogW1BBVENIIDMvM10gbXRk
-L25hbmQgOiB3b3JrYXJvdW5kIGZvciBGcmVlc2NhbGUgRkNNIHRvDQo+IAlzdXBwb3J0IGxhcmdl
-LXBhZ2UgTmFuZCBjaGlwDQo+IE1lc3NhZ2UtSUQ6IDwxMzIyOTczMDk4LTI1MjgtMy1naXQtc2Vu
-ZC1lbWFpbC1zaHVvLmxpdUBmcmVlc2NhbGUuY29tPg0KPiBDb250ZW50LVR5cGU6IHRleHQvcGxh
-aW4NCj4gDQo+IEZyb206IExpdSBTaHVvIDxzaHVvLmxpdUBmcmVlc2NhbGUuY29tPg0KPiANCj4g
-RnJlZXNjYWxlIEZDTSBjb250cm9sbGVyIGhhcyBhIDJLIHNpemUgbGltaXRhdGlvbiBvZiBidWZm
-ZXIgUkFNLiBJbiBvcmRlcg0KPiB0byBzdXBwb3J0IHRoZSBOYW5kIGZsYXNoIGNoaXAgd2hvc2Ug
-cGFnZSBzaXplIGlzIGxhcmdlciB0aGFuIDJLIGJ5dGVzLA0KPiB3ZSByZWFkL3dyaXRlIDJrIGRh
-dGEgcmVwZWF0ZWRseSBieSBpc3N1aW5nIEZJUl9PUF9SQi9GSVJfT1BfV0IgYW5kIHNhdmUNCj4g
-dGhlbSB0byBhIGxhcmdlIGJ1ZmZlci4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IExpdSBTaHVvIDxz
-aHVvLmxpdUBmcmVlc2NhbGUuY29tPg0KPiAtLS0NCj4gdjM6DQo+ICAgICAtcmVtb3ZlIHBhZ2Vf
-c2l6ZSBvZiBzdHJ1Y3QgZnNsX2VsYmNfbXRkLg0KPiAgICAgLWRvIGEgb29iIHdyaXRlIGJ5IE5B
-TkRfQ01EX1JORElOLg0KPiANCj4gIGRyaXZlcnMvbXRkL25hbmQvZnNsX2VsYmNfbmFuZC5jIHwg
-IDI0Mw0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLQ0KPiAgMSBmaWxl
-cyBjaGFuZ2VkLCAyMTggaW5zZXJ0aW9ucygrKSwgMjUgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9tdGQvbmFuZC9mc2xfZWxiY19uYW5kLmMNCj4gYi9kcml2ZXJzL210
-ZC9uYW5kL2ZzbF9lbGJjX25hbmQuYw0KPiBpbmRleCBkNjM0YzVmLi5hOTI0MTFhIDEwMDY0NA0K
-PiAtLS0gYS9kcml2ZXJzL210ZC9uYW5kL2ZzbF9lbGJjX25hbmQuYw0KPiArKysgYi9kcml2ZXJz
-L210ZC9uYW5kL2ZzbF9lbGJjX25hbmQuYw0KDQpbU05JUF0NCg0KPiBAQCAtNTAwLDYgKzY1NCw3
-IEBAIHN0YXRpYyB2b2lkIGZzbF9lbGJjX2NtZGZ1bmMoc3RydWN0IG10ZF9pbmZvICptdGQsDQo+
-IHVuc2lnbmVkIGludCBjb21tYW5kLA0KPiAgCQkgKiB3cml0ZS1wcm90ZWN0ZWQsIGV2ZW4gd2hl
-biBpdCBpcyBub3QuDQo+ICAJCSAqLw0KPiAgCQlzZXRiaXRzOChlbGJjX2ZjbV9jdHJsLT5hZGRy
-LCBOQU5EX1NUQVRVU19XUCk7DQo+ICsJCWVsYmNfZmNtX2N0cmwtPmJ1ZmZlclswXSA9IGluXzgo
-ZWxiY19mY21fY3RybC0+YWRkcik7DQoNCltTaGVuZ3pob3VdIGFkZCBpZiAobXRkLT53cml0ZXNp
-emUgPiAyMDQ4KSANCg0KPiAgCQlyZXR1cm47DQo+IA0KPiAgCS8qIFJFU0VUIHdpdGhvdXQgd2Fp
-dGluZyBmb3IgdGhlIHJlYWR5IGxpbmUgKi8NCj4gQEAgLTU0OCw3ICs3MDMsMTQgQEAgc3RhdGlj
-IHZvaWQgZnNsX2VsYmNfd3JpdGVfYnVmKHN0cnVjdCBtdGRfaW5mbyAqbXRkLA0KPiBjb25zdCB1
-OCAqYnVmLCBpbnQgbGVuKQ0KPiAgCQlsZW4gPSBidWZzaXplIC0gZWxiY19mY21fY3RybC0+aW5k
-ZXg7DQo+ICAJfQ0KPiANCj4gLQltZW1jcHlfdG9pbygmZWxiY19mY21fY3RybC0+YWRkcltlbGJj
-X2ZjbV9jdHJsLT5pbmRleF0sIGJ1ZiwgbGVuKTsNCj4gKwlpZiAobXRkLT53cml0ZXNpemUgPiAy
-MDQ4KSB7DQo+ICsJCW1lbWNweSgmZWxiY19mY21fY3RybC0+YnVmZmVyW2VsYmNfZmNtX2N0cmwt
-PmluZGV4XSwNCj4gKwkJCQlidWYsIGxlbik7DQo+ICsJfSBlbHNlIHsNCj4gKwkJbWVtY3B5X3Rv
-aW8oJmVsYmNfZmNtX2N0cmwtPmFkZHJbZWxiY19mY21fY3RybC0+aW5kZXhdLA0KPiArCQkJCWJ1
-ZiwgbGVuKTsNCj4gKwl9DQo+ICsNCj4gIAkJc2V0Yml0czMyKCZsYmMtPmJhbmtbcHJpdi0+YmFu
-a10ub3IsIE9SX0ZDTV9QR1MpOw0KPiAgCQkvKiBhZGp1c3QgZWNjIHNldHVwIGlmIG5lZWRlZCAq
-Lw0KPiAgCQlpZiAoKGluX2JlMzIoJmxiYy0+YmFua1twcml2LT5iYW5rXS5icikgJiBCUl9ERUND
-KSA9PQ0KPiBAQCAtODkxLDYgKzEwNzAsMTkgQEAgc3RhdGljIGludCBfX2RldmluaXQgZnNsX2Vs
-YmNfbmFuZF9wcm9iZShzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgCQkJZ290
-byBlcnI7DQo+ICAJCX0NCj4gIAkJZWxiY19mY21fY3RybC0+Y291bnRlcisrOw0KPiArCQkvKg0K
-PiArCQkgKiBGcmVlc2NhbGUgRkNNIGNvbnRyb2xsZXIgaGFzIGEgMksgc2l6ZSBsaW1pdGF0aW9u
-IG9mDQo+IGJ1ZmZlcg0KPiArCQkgKiBSQU0sIHNvIGVsYmNfZmNtX2N0cmwtPmJ1ZmZlciBoYXZl
-IHRvIGJlIHVzZWQgaWYgd3JpdGVzaXplDQo+ICsJCSAqIG9mIGNoaXAgaXMgZ3JlYXRlciB0aGFu
-IDIwNDguDQo+ICsJCSAqIFdlIG1hbGxvYyBhIGxhcmdlIGVub3VnaCBidWZmZXIgKG1heGltdW0g
-cGFnZSBzaXplIGlzIDE2SykuDQo+ICsJCSAqLw0KPiArCQllbGJjX2ZjbV9jdHJsLT5idWZmZXIg
-PSBrbWFsbG9jKDEwMjQgKiAxNiArIDEwMjQsIEdGUF9LRVJORUwpOw0KPiArCQlpZiAoIWVsYmNf
-ZmNtX2N0cmwtPmJ1ZmZlcikgew0KPiArCQkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8gYWxsb2Nh
-dGUgbWVtb3J5XG4iKTsNCj4gKwkJCW11dGV4X3VubG9jaygmZnNsX2VsYmNfbmFuZF9tdXRleCk7
-DQo+ICsJCQlyZXQgPSAtRU5PTUVNOw0KPiArCQkJZ290byBlcnI7DQo+ICsJCX0NCj4gDQpbU2hl
-bmd6aG91XSANCkJlZm9yZSBjYWxsaW5nIG5hbmRfc2Nhbl9pZGVudCgpLCB3ZSBjYW4gc3RpbGwg
-dXNlIDJrIEZDTSBSQU0sIG5vdCBuZWVkIGEgYnVmZmVyIGdyZWF0ZXIgdGhhbiAya6OsDQpBZnRl
-ciBuYW5kX3NjYW5faWRlbnQoKSwgIGlmIHdyaXRlc2l6ZSA+IDIwNDgsIHRoZW4gYWxsb2NhdGUg
-YSBsYXJnZSBidWZmZXIuDQpXZSBjYW4gZG8gaXQgaW4gZnNsX2VsYmNfY2hpcF9pbml0X3RhaWwo
-KQ0KICBpZiAobXRkLT53cml0ZXNpemUgPiAyMDQ4KQ0KICAgICAgY3RybC0+YnVmZmVyID0ga21h
-bGxvYyhtdGQtPndyaXRlc2l6ZSArIG10ZC0+b29ic2l6ZSwgR0ZQX0tFUk5FTCk7DQoNCg==
+kevin diggs <diggskevin38@gmail.com> writes:
+
+> On 12/8/11, Andreas Schwab <schwab@linux-m68k.org> wrote:
+>> There seems to be something wrong with cpu idle time accounting at least
+>> on G5.  The value as reported in the cpu lines in /proc/stat seems to be
+>> stuck in the interval [100000,210000] for each cpu, jumping back at
+>> random points.  Any idea what could be the problem?
+>>
+>> Andreas.
+>>
+>> --
+> What kernel versions?
+
+It started with 3.2-rc1.  Will try to bisect.
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
