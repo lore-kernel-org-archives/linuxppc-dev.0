@@ -1,35 +1,28 @@
-Return-Path: <ralf@linux-mips.org>
-Received: from linux-mips.org
- (f.f.9.9.2.4.2.4.4.f.3.3.9.d.c.f.0.0.0.0.a.e.3.0.0.b.8.0.1.0.0.2.ip6.arpa
- [IPv6:2001:8b0:3ea:0:fcd9:33f4:4242:99ff])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BC4EDB6F71
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 03:59:11 +1100 (EST)
-Date: Fri, 9 Dec 2011 16:07:22 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [PATCH 61/62] highmem: kill all __kmap_atomic()
-Message-ID: <20111209160722.GB30988@linux-mips.org>
-References: <1322371662-26166-1-git-send-email-amwang@redhat.com>
- <1322371662-26166-62-git-send-email-amwang@redhat.com>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 12BB0B6F6F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 05:41:41 +1100 (EST)
+Received: from mail55-tx2 (localhost [127.0.0.1])	by mail55-tx2-R.bigfish.com
+ (Postfix) with ESMTP id 71C7D5A0475	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2011 18:41:36 +0000 (UTC)
+Received: from TX2EHSMHS020.bigfish.com (unknown [10.9.14.251])	by
+ mail55-tx2.bigfish.com (Postfix) with ESMTP id 467EB620045	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 18:41:36 +0000 (UTC)
+Message-ID: <4EE2565E.7050700@freescale.com>
+Date: Fri, 9 Dec 2011 12:41:34 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1322371662-26166-62-git-send-email-amwang@redhat.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-mips@linux-mips.org,
- David Howells <dhowells@redhat.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- James Bottomley <James.Bottomley@suse.de>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linux-am33-list@redhat.com,
- Russell King <linux@arm.linux.org.uk>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Ingo Molnar <mingo@redhat.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Kyle McMartin <kyle@mcmartin.ca>, Tejun Heo <tj@kernel.org>,
- akpm@linux-foundation.org, Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+To: Liu Shengzhou-B36685 <B36685@freescale.com>
+Subject: Re: Linuxppc-dev Digest, Vol 88, Issue 24
+References: <mailman.5273.1323013984.15294.linuxppc-dev@lists.ozlabs.org>
+ <3F453DDFF675A64A89321A1F352810216B0A24@039-SN1MPN1-005.039d.mgd.msft.net>
+In-Reply-To: <3F453DDFF675A64A89321A1F352810216B0A24@039-SN1MPN1-005.039d.mgd.msft.net>
+Content-Type: text/plain; charset="GB2312"
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Liu Shuo-B35362 <B35362@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,8 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 27, 2011 at 01:27:41PM +0800, Cong Wang wrote:
+On 12/09/2011 03:27 AM, Liu Shengzhou-B36685 wrote:
+> Before calling nand_scan_ident(), we can still use 2k FCM RAM, not need=
+ a buffer greater than 2k=A3=AC
+> After nand_scan_ident(),  if writesize > 2048, then allocate a large bu=
+ffer.
+> We can do it in fsl_elbc_chip_init_tail()
+>   if (mtd->writesize > 2048)
+>       ctrl->buffer =3D kmalloc(mtd->writesize + mtd->oobsize, GFP_KERNE=
+L);
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
+As we discussed elsewhere in the thread, the buffer is a controller-wide
+resource.  It is not associated with any one NAND chip.
 
-  Ralf
+-Scott
