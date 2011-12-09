@@ -1,28 +1,29 @@
 Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6880F100863
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 22:48:25 +1100 (EST)
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 8114C1007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 22:48:49 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Fri, 9 Dec 2011 17:18:23 +0530
+ Fri, 9 Dec 2011 17:18:44 +0530
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pB9BmLVo4358392
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2011 17:18:22 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pB9Bmbph2252896
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2011 17:18:37 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pB9BmK2o028099
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2011 17:18:21 +0530
+ pB9Bmauf028765
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2011 17:18:36 +0530
 From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH v4 6/7] [44x] Enable CRASH_DUMP for 440x
+Subject: [PATCH v4 7/7] [boot] Change the load address for the wrapper to fit
+ the kernel
 To: Josh Boyer <jwboyer@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 09 Dec 2011 17:18:20 +0530
-Message-ID: <20111209114808.16360.44506.stgit@suzukikp.in.ibm.com>
+Date: Fri, 09 Dec 2011 17:18:36 +0530
+Message-ID: <20111209114826.16360.58041.stgit@suzukikp.in.ibm.com>
 In-Reply-To: <20111209114148.15616.15996.stgit@suzukikp.in.ibm.com>
 References: <20111209114148.15616.15996.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
@@ -39,34 +40,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have relocatable kernel, supporting CRASH_DUMP only requires
-turning the switches on for UP machines.
+The wrapper code which uncompresses the kernel in case of a 'ppc' boot
+is by default loaded at 0x00400000 and the kernel will be uncompressed
+to fit the location 0-0x00400000. But with dynamic relocations, the size
+of the kernel may exceed 0x00400000(4M). This would cause an overlap
+of the uncompressed kernel and the boot wrapper, causing a failure in
+boot.
 
-We don't have kexec support on 47x yet. Enabling SMP support would be done
-as part of enabling the PPC_47x support.
+The message looks like :
 
+
+   zImage starting: loaded at 0x00400000 (sp: 0x0065ffb0)
+   Allocating 0x5ce650 bytes for kernel ...
+   Insufficient memory for kernel at address 0! (_start=00400000, uncompressed size=00591a20)
+
+This patch shifts the load address of the boot wrapper code to the next higher MB,
+according to the size of  the uncompressed vmlinux.
 
 Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Cc: Josh Boyer <jwboyer@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 ---
 
- arch/powerpc/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/wrapper |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 90cd8d3..d612943 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -363,8 +363,8 @@ config KEXEC
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 14cd4bc..4d625cd 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -257,6 +257,8 @@ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
+ if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
+     ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
  
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
--	depends on PPC64 || 6xx || FSL_BOOKE
--	select RELOCATABLE if PPC64
-+	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP && !PPC_47x)
-+	select RELOCATABLE if PPC64 || 44x
- 	select DYNAMIC_MEMSTART if FSL_BOOKE
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
++    strip_size=$(stat -c %s $vmz.$$)
++
+     if [ -n "$gzip" ]; then
+         gzip -n -f -9 "$vmz.$$"
+     fi
+@@ -266,6 +268,24 @@ if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
+     else
+ 	vmz="$vmz.$$"
+     fi
++else
++    # Calculate the vmlinux.strip size
++    ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
++    strip_size=$(stat -c %s $vmz.$$)
++    rm -f $vmz.$$
++fi
++
++# Round the size to next higher MB limit
++round_size=$(((strip_size + 0xfffff) & 0xfff00000))
++
++round_size=0x$(printf "%x" $round_size)
++link_addr=$(printf "%d" $link_address)
++
++if [ $link_addr -lt $strip_size ]; then
++    echo "WARN: Uncompressed kernel size(0x$(printf "%x\n" $strip_size))" \
++		" exceeds the address of the wrapper($link_address)"
++    echo "WARN: Fixing the link_address to ($round_size))"
++    link_address=$round_size
+ fi
+ 
+ vmz="$vmz$gzip"
