@@ -1,32 +1,31 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 028181007D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 09:05:25 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Subject: Re: [PATCH 10/13] powerpc: Update mpc85xx/corenet 32-bit defconfigs
-Date: Fri, 9 Dec 2011 22:05:14 +0000
-Message-ID: <CAOZdJXXWE8FJg7UAQ4-sCFZcmUq3+2+kF=MCtF4muWaQQDyQ=Q@mail.gmail.com>
-References: <1318279848494-git-send-email-beckyb@kernel.crashing.org>
- <13182798624083-git-send-email-beckyb@kernel.crashing.org>
- <13182798643553-git-send-email-beckyb@kernel.crashing.org>
- <13182798681100-git-send-email-beckyb@kernel.crashing.org>
- <1318279870278-git-send-email-beckyb@kernel.crashing.org>
- <13182798731357-git-send-email-beckyb@kernel.crashing.org>
- <13182798761457-git-send-email-beckyb@kernel.crashing.org>
- <13182798791090-git-send-email-beckyb@kernel.crashing.org>
- <1318279883564-git-send-email-beckyb@kernel.crashing.org>
- <1318279885811-git-send-email-beckyb@kernel.crashing.org>
- <13182798883685-git-send-email-beckyb@kernel.crashing.org>
-In-Reply-To: <13182798883685-git-send-email-beckyb@kernel.crashing.org>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+ [212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 73534B6F6F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 10:22:51 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] ipc: provide generic compat versions of IPC syscalls
+Date: Sat, 10 Dec 2011 00:21:35 +0100
+Message-ID: <1690400.7yOAjHVqTH@wuerfel>
+In-Reply-To: <20111209134852.f5b5bcbc.akpm@linux-foundation.org>
+References: <201112091536.pB9Fa5f7002738@farm-0002.internal.tilera.com>
+ <201112091903.pB9J39pd031553@farm-0002.internal.tilera.com>
+ <20111209134852.f5b5bcbc.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "david@gibson.dropbear.id.au" <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linux-mips@linux-mips.org, NeilBrown <neilb@suse.de>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
+ "J. Bruce Fields" <bfields@redhat.com>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>,
+ Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,22 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 10, 2011 at 3:50 PM, Becky Bruce <beckyb@kernel.crashing.org> w=
-rote:
-> From: Becky Bruce <beckyb@kernel.crashing.org>
->
-> Results from updates via make savedefconfig.
->
-> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-> ---
+On Friday 09 December 2011 13:48:52 Andrew Morton wrote:
+> What would we need to do to get all architectures using the new
+> interfaces, and remove __ARCH_WANT_OLD_COMPAT_IPC?
 
-...
+We would change the various compat_sys_ipc functions (mips, powerpc,
+s390, sparc, x86) to call the new functions instead of the existing
+ones, and test each architecture. For parisc, we might not
+actually need the either version, but I'd have to take a closer look
+to be sure.
 
-> -CONFIG_PPC_EPAPR_HV_BYTECHAN=3Dy
+> Regarding the implementation: rather than patching the header
+> files, it would be more conventional (and arguably better) to add
+> 
+>         select ARCH_WANT_OLD_COMPAT_IPC
+> 
+> to arch/*/Kconfig, then use CONFIG_ARCH_WANT_OLD_COMPAT_IPC.
 
-I guess no one noticed that this patch removes byte channel support,
-thereby preventing this kernel from booting under the hypervisor?
+Yes.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+	Arnd
