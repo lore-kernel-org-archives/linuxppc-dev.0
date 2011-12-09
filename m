@@ -1,18 +1,23 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Fri, 9 Dec 2011 12:39:55 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Michael Neuling <mikey@neuling.org>
-Subject: [PATCH] powerpc: fix compile error with 85xx/p1010rdb.c
-Message-ID: <20111209013955.GD20353@thor.bakeyournoodle.com>
-References: <7679.1323324654@neuling.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+ [209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id CE9F91007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 12:46:43 +1100 (EST)
+Received: by vcbfl15 with SMTP id fl15so2034851vcb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Dec 2011 17:46:39 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="kA1LkgxZ0NN7Mz3A"
-In-Reply-To: <7679.1323324654@neuling.org>
-Cc: sfr@canb.auug.org.au, Michael Ellerman <michaele@au1.ibm.com>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Kyle Moffett <Kyle.D.Moffett@boeing.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20111209123811.12cf28971f21a309976f31bb@canb.auug.org.au>
+References: <20111209123811.12cf28971f21a309976f31bb@canb.auug.org.au>
+Date: Thu, 8 Dec 2011 20:46:39 -0500
+Message-ID: <CA+5PVA5vVC=e24imM0QxbT10kBAF4v=kwheKs7cOHKKcC+if=A@mail.gmail.com>
+Subject: Re: linux-next: manual merge of the 4xx tree with the powerpc tree
+From: Josh Boyer <jwboyer@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Tanmay Inamdar <tinamdar@apm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,69 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Dec 8, 2011 at 8:38 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Josh,
+>
+> Today's linux-next merge of the 4xx tree got a conflict in
+> arch/powerpc/platforms/40x/ppc40x_simple.c between commit 11eab297f57b
+> ("powerpc: Add support for OpenBlockS 600") from the powerpc tree and
+> commit d5b9ee7b514e ("powerpc/40x: Add APM8018X SOC support") from the
+> 4xx tree.
 
---kA1LkgxZ0NN7Mz3A
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I blame BenH.  I sent him a pull request with d5b9ee7b514e in it
+before he went and updated his tree.  Still not pulled afaik.  Guess
+I'll be rebasing my next branch tomorrow to pick up a series from Tony
+Breeds, unless Ben handles the outstanding pull before I wake up :).
 
-Current linux-next compiled with mpc85xx_defconfig causes this:
+> I fixed it up (see below) and can carry the fix as necessary.
 
-arch/powerpc/platforms/85xx/p1010rdb.c:41:14: error: 'np' undeclared (first=
- use in this function)
-arch/powerpc/platforms/85xx/p1023_rds.c:102:14: error: 'np' undeclared (fir=
-st use in this function)
+Looks correct to me.  Hopefully you won't have to carry it long.
+>
+> [Josh: I have changed you contact address to the above]
 
-Introduced in:=20
-  commit 996983b75cebb1bc1c2c545f20336f24ebfa17af
-  Author: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-  Date:   Fri Dec 2 06:28:02 2011 +0000
-  powerpc/mpic: Search for open-pic device-tree node if NULL
-=20
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-Mikey already posted a fix for p1023_rds.c.  I think this is the last
-one.
+Thank you.
 
- arch/powerpc/platforms/85xx/p1010rdb.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platform=
-s/85x
-index 894f1e8..538bc3f 100644
---- a/arch/powerpc/platforms/85xx/p1010rdb.c
-+++ b/arch/powerpc/platforms/85xx/p1010rdb.c
-@@ -38,10 +38,8 @@ void __init p1010_rdb_pic_init(void)
-          0, 256, " OpenPIC  ");
-=20
-        BUG_ON(mpic =3D=3D NULL);
--       of_node_put(np);
-=20
-        mpic_init(mpic);
--
- }
-
-Yours Tony
-
---kA1LkgxZ0NN7Mz3A
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO4WbrAAoJEEsCiJRY75GK0fUP+gOimNkgjYYRty1CfgrJZYz6
-LRywfBIGpmOTZXeFBTCDN8U0lnBa+2wK05ZVtem4tjo5g1Ateisl7UUWxCaVEvEA
-QzsdvtbuihsLcf/Osr0yLSOdssN7cw9YCnruboBSC8MsimWt5PGlfcpHBYWGjomw
-aBJdBtpwnR/t6nMWAEaX5FFl/OM9X6qcxYAE+hb6whkI3rIR/7A/vPi/Y/IpKFmn
-mTgBLJ+eFhPCynp2JLCllaTRZWJv5lStJN8Z7MrHMGwK8nCdPFyj1NSYS1O5fb/w
-VpQrGbTNAvgbiapz2+FI82hoaK3eX0yMpN6KZbv92ZsH/ePCH2/P86KNltxovqnk
-eUUUKL4WPunup5j6J+s+fdawYPN0gKPV/7Srrwirlx5QOoCf+mbHLYFjqAddyohp
-EL0vnSowByxCMQjtMLGy9u/KyIQJOxuv4JO5O8wmBlsWdrVyq1/53o2+3x/+AGlL
-pkaiwM1ptbfP30ZhLpZ5NNlh1zebyPfmLazYE7OachliVDvK9EciGu4j6RNkaRQQ
-uzP1OXV5qANSg5eKNY2bHYrCNu+ev24I0lJj4yo656BNCdifgSfSd+EhZvK6Nhzg
-C5/vyOqompPZj5cdcLtRaSSjvyrK10IQuzRoqzK4A0Y0KQ3Ryf5XGpN0Yx9W0TEz
-yPAyL+AL6JrBh67OoyWS
-=DmxB
------END PGP SIGNATURE-----
-
---kA1LkgxZ0NN7Mz3A--
+josh
