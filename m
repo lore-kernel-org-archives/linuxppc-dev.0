@@ -1,23 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id 7B20A10088F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 12:51:22 +1100 (EST)
-Date: Fri, 9 Dec 2011 12:51:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Josh Boyer <jwboyer@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 942C51007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2011 15:42:02 +1100 (EST)
+Message-ID: <1323405702.19891.7.camel@pasglop>
 Subject: Re: linux-next: manual merge of the 4xx tree with the powerpc tree
-Message-Id: <20111209125116.f8a5d071c3e86d26c7f8660e@canb.auug.org.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+Date: Fri, 09 Dec 2011 15:41:42 +1100
 In-Reply-To: <CA+5PVA5vVC=e24imM0QxbT10kBAF4v=kwheKs7cOHKKcC+if=A@mail.gmail.com>
 References: <20111209123811.12cf28971f21a309976f31bb@canb.auug.org.au>
  <CA+5PVA5vVC=e24imM0QxbT10kBAF4v=kwheKs7cOHKKcC+if=A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__9_Dec_2011_12_51_16_+1100_=KHtd8zT5SYgbZS."
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Tanmay Inamdar <tinamdar@apm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Tanmay Inamdar <tinamdar@apm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__9_Dec_2011_12_51_16_+1100_=KHtd8zT5SYgbZS.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Josh,
-
-On Thu, 8 Dec 2011 20:46:39 -0500 Josh Boyer <jwboyer@gmail.com> wrote:
->
+On Thu, 2011-12-08 at 20:46 -0500, Josh Boyer wrote:
+> On Thu, Dec 8, 2011 at 8:38 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > Hi Josh,
+> >
+> > Today's linux-next merge of the 4xx tree got a conflict in
+> > arch/powerpc/platforms/40x/ppc40x_simple.c between commit 11eab297f57b
+> > ("powerpc: Add support for OpenBlockS 600") from the powerpc tree and
+> > commit d5b9ee7b514e ("powerpc/40x: Add APM8018X SOC support") from the
+> > 4xx tree.
+> 
 > I blame BenH.  I sent him a pull request with d5b9ee7b514e in it
 > before he went and updated his tree.  Still not pulled afaik.  Guess
 > I'll be rebasing my next branch tomorrow to pick up a series from Tony
 > Breeds, unless Ben handles the outstanding pull before I wake up :).
 
-Don't bother rebasing, let Ben handle the conflict in the merge.
+Don't bother rebasing, I can deal with a minor merge conflict like
+that :-)
 
---=20
+> > I fixed it up (see below) and can carry the fix as necessary.
+> 
+> Looks correct to me.  Hopefully you won't have to carry it long.
+> >
+> > [Josh: I have changed you contact address to the above]
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__9_Dec_2011_12_51_16_+1100_=KHtd8zT5SYgbZS.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO4WmUAAoJEECxmPOUX5FEiXEP/iKMXQUoiEyDQH1457TWkCBL
-O+h0km6lcJGrHCaNIVCJqXWZSsJbSYLa5yWxNuQabkoc1M6mpH311jShqbCnDlSl
-NcgCsJMSKKU667fzoxbaj1tSvYPQnODihqWY4Yr5wYCkG3t6O0H14oOHjJv5cuLu
-oMNcbSlR2UkazZKFLACOSqqmX6Ex1L8UaA9dawVC3eNIVHpfJ6T5MpiHkYOkkLSx
-6ZXkV3DoAmrbhcCJn4jLaXK/TIceJFGk5wv9WblXKwxHhZOX+8cUaBtWTUKqye2p
-eU/6X1VKv6aHVqwQGIy5gmbpctNf8ZvPu4xiqka56REcD7G6A01p+2KzoaMgFB8Z
-7NXuZsVhUu+5KNjQuezYOzauKcyzEGB7f7j/T2bTS4rEenMOR7fC1H2h4M3F2vd4
-EGjAQBT6e72bTw0y3vZgQuwqaG9NpQsgIccVO3rOvfz6LMsIgsho7R4ne368ORw+
-Pp7H9ksCBSbAP2osQwOwRrAyyfhu88r+EScDjuXhNsjGgrBBzNZ86BkhH5lKuQ1P
-WezaK8aI5ThVzD4p+x2PapBubBkkhpYBYRgoEaxnMYcZVlalgh7UuArxViL0Qi0o
-a6n7xMyMlvOcjRzDa/RzYD6VSPeNkmhJVik0qQogHZEl679qD5e9xbtBiygtL8GI
-O0lPGNXT050P7RRkkux1
-=QTCy
------END PGP SIGNATURE-----
-
---Signature=_Fri__9_Dec_2011_12_51_16_+1100_=KHtd8zT5SYgbZS.--
+Ben.
