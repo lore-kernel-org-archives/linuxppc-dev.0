@@ -2,35 +2,34 @@ Return-Path: <suzuki@in.ibm.com>
 Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 82118B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 13:35:34 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 985DF1007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 13:37:33 +1100 (EST)
 Received: from /spool/local
  by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Sat, 10 Dec 2011 08:05:29 +0530
+ Sat, 10 Dec 2011 08:07:31 +0530
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pBA2ZPd02519242
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 08:05:26 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pBA2bT1n2424972
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 08:07:29 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pBA2ZPO9014711
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 08:05:25 +0530
-Message-ID: <4EE2C56B.2000306@in.ibm.com>
-Date: Sat, 10 Dec 2011 08:05:23 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
+ pBA2bS4j018307
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 08:07:29 +0530
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [UPDATED] [PATCH v4 3/7] [ppc] Process dynamic relocations for kernel
+To: Josh Boyer <jwboyer@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sat, 10 Dec 2011 08:07:24 +0530
+Message-ID: <20111210023646.19516.1453.stgit@suzukikp.in.ibm.com>
+In-Reply-To: <20111209114720.16360.9670.stgit@suzukikp.in.ibm.com>
+References: <20111209114720.16360.9670.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH v4 3/7] [ppc] Process dynamic relocations for kernel
-References: <20111209114148.15616.15996.stgit@suzukikp.in.ibm.com>
- <20111209114720.16360.9670.stgit@suzukikp.in.ibm.com>
- <CA+5PVA7+73myrEGDUjuYrc2D-MabCefehpV+ynpOPFi=hLRMEA@mail.gmail.com>
-In-Reply-To: <CA+5PVA7+73myrEGDUjuYrc2D-MabCefehpV+ynpOPFi=hLRMEA@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Cc: Scott Wood <scottwood@freescale.com>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
- Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
+ Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>,
+ linux ppc dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,33 +39,382 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/09/11 19:10, Josh Boyer wrote:
-> On Fri, Dec 9, 2011 at 6:47 AM, Suzuki K. Poulose<suzuki@in.ibm.com>  wrote:
->>
->> Signed-off-by: Suzuki K. Poulose<suzuki@in.ibm.com>
->> Signed-off-by: Josh Poimboeuf<jpoimboe@linux.vnet.ibm.com>
->> Cc: Paul Mackerras<paulus@samba.org>
->> Cc: Benjamin Herrenschmidt<benh@kernel.crashing.org>
->> Cc: Alan Modra<amodra@au1.ibm.com>
->> Cc: Kumar Gala<galak@kernel.crashing.org>
->> Cc: linuxppc-dev<linuxppc-dev@lists.ozlabs.org>
->> ---
->>
->>   arch/powerpc/Kconfig              |   42 ++++++++++++++++++++++---------------
->>   arch/powerpc/Makefile             |    6 +++--
->>   arch/powerpc/kernel/Makefile      |    2 ++
->>   arch/powerpc/kernel/vmlinux.lds.S |    8 ++++++-
->>   arch/powerpc/relocs_check.pl      |    7 ++++++
->>   5 files changed, 44 insertions(+), 21 deletions(-)
->
-> You're missing the whole reloc_32.S file in this patch.  Forget to do a git-add?
->
-> Can you resend just this patch with that fixed up?
+The following patch implements the dynamic relocation processing for
+PPC32 kernel. relocate() accepts the target virtual address and relocates
+ the kernel image to the same.
 
-Yikes, missed that. Will send the updated one.
+Currently the following relocation types are handled :
 
-Thanks
-Suzuki
->
-> josh
->
+	R_PPC_RELATIVE
+	R_PPC_ADDR16_LO
+	R_PPC_ADDR16_HI
+	R_PPC_ADDR16_HA
+
+The last 3 relocations in the above list depends on value of Symbol indexed
+whose index is encoded in the Relocation entry. Hence we need the Symbol
+Table for processing such relocations.
+
+Note: The GNU ld for ppc32 produces buggy relocations for relocation types
+that depend on symbols. The value of the symbols with STB_LOCAL scope
+should be assumed to be zero. - Alan Modra
+
+Changes since V3:
+ * Updated relocation types for ppc in arch/powerpc/relocs_check.pl
+
+Changes since v2:
+  * Flush the d-cache'd instructions and invalidate the i-cache to reflect
+    the processed instructions.(Reported by: Josh Poimboeuf)
+
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Signed-off-by: Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alan Modra <amodra@au1.ibm.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+---
+
+ arch/powerpc/Kconfig              |   42 ++++----
+ arch/powerpc/Makefile             |    6 +
+ arch/powerpc/kernel/Makefile      |    2 
+ arch/powerpc/kernel/reloc_32.S    |  207 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/vmlinux.lds.S |    8 +
+ arch/powerpc/relocs_check.pl      |    7 +
+ 6 files changed, 251 insertions(+), 21 deletions(-)
+ create mode 100644 arch/powerpc/kernel/reloc_32.S
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 5eafe95..6936cb0 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -843,23 +843,31 @@ config DYNAMIC_MEMSTART
+ 	  load address. When this option is enabled, the compile time physical 
+ 	  address CONFIG_PHYSICAL_START is ignored.
+ 
+-# Mapping based RELOCATABLE is moved to DYNAMIC_MEMSTART
+-# config RELOCATABLE
+-#	bool "Build a relocatable kernel (EXPERIMENTAL)"
+-#	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && (FSL_BOOKE || PPC_47x)
+-#	help
+-#	  This builds a kernel image that is capable of running at the
+-#	  location the kernel is loaded at, without any alignment restrictions.
+-#
+-#	  One use is for the kexec on panic case where the recovery kernel
+-#	  must live at a different physical address than the primary
+-#	  kernel.
+-#
+-#	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
+-#	  it has been loaded at and the compile time physical addresses
+-#	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
+-#	  setting can still be useful to bootwrappers that need to know the
+-#	  load location of the kernel (eg. u-boot/mkimage).
++	  This option is overridden by RELOCATABLE.
++
++config RELOCATABLE
++	bool "Build a relocatable kernel (EXPERIMENTAL)"
++	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM
++	select NONSTATIC_KERNEL
++	help
++	  This builds a kernel image that is capable of running at the
++	  location the kernel is loaded at, without any alignment restrictions.
++	  This feature is a superset of DYNAMIC_MEMSTART, and hence overrides 
++	  it.
++
++	  One use is for the kexec on panic case where the recovery kernel
++	  must live at a different physical address than the primary
++	  kernel.
++
++	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
++	  it has been loaded at and the compile time physical addresses
++	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
++	  setting can still be useful to bootwrappers that need to know the
++	  load address of the kernel (eg. u-boot/mkimage).
++
++config RELOCATABLE_PPC32
++	def_bool y
++	depends on PPC32 && RELOCATABLE
+ 
+ config PAGE_OFFSET_BOOL
+ 	bool "Set custom page offset address"
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index ffe4d88..b8b105c 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -63,9 +63,9 @@ override CC	+= -m$(CONFIG_WORD_SIZE)
+ override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
+ endif
+ 
+-LDFLAGS_vmlinux-yy := -Bstatic
+-LDFLAGS_vmlinux-$(CONFIG_PPC64)$(CONFIG_RELOCATABLE) := -pie
+-LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-yy)
++LDFLAGS_vmlinux-y := -Bstatic
++LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
++LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
+ 
+ CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=no -mcall-aixdesc
+ CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index ce4f7f1..ee728e4 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -85,6 +85,8 @@ extra-$(CONFIG_FSL_BOOKE)	:= head_fsl_booke.o
+ extra-$(CONFIG_8xx)		:= head_8xx.o
+ extra-y				+= vmlinux.lds
+ 
++obj-$(CONFIG_RELOCATABLE_PPC32)	+= reloc_32.o
++
+ obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
+ obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
+ obj-$(CONFIG_KGDB)		+= kgdb.o
+diff --git a/arch/powerpc/kernel/reloc_32.S b/arch/powerpc/kernel/reloc_32.S
+new file mode 100644
+index 0000000..a45438e
+--- /dev/null
++++ b/arch/powerpc/kernel/reloc_32.S
+@@ -0,0 +1,207 @@
++/*
++ * Code to process dynamic relocations for PPC32.
++ *
++ * Copyrights (C) IBM Corporation, 2011.
++ *	Author: Suzuki Poulose <suzuki@in.ibm.com>
++ *
++ *  - Based on ppc64 code - reloc_64.S
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++
++#include <asm/ppc_asm.h>
++
++/* Dynamic section table entry tags */
++DT_RELA = 7			/* Tag for Elf32_Rela section */
++DT_RELASZ = 8			/* Size of the Rela relocs */
++DT_RELAENT = 9			/* Size of one Rela reloc entry */
++
++STN_UNDEF = 0			/* Undefined symbol index */
++STB_LOCAL = 0			/* Local binding for the symbol */
++
++R_PPC_ADDR16_LO = 4		/* Lower half of (S+A) */
++R_PPC_ADDR16_HI = 5		/* Upper half of (S+A) */
++R_PPC_ADDR16_HA = 6		/* High Adjusted (S+A) */
++R_PPC_RELATIVE = 22
++
++/*
++ * r3 = desired final address
++ */
++
++_GLOBAL(relocate)
++
++	mflr	r0		/* Save our LR */
++	bl	0f		/* Find our current runtime address */
++0:	mflr	r12		/* Make it accessible */
++	mtlr	r0
++
++	lwz	r11, (p_dyn - 0b)(r12)
++	add	r11, r11, r12	/* runtime address of .dynamic section */
++	lwz	r9, (p_rela - 0b)(r12)
++	add	r9, r9, r12	/* runtime address of .rela.dyn section */
++	lwz	r10, (p_st - 0b)(r12)
++	add	r10, r10, r12	/* runtime address of _stext section */
++	lwz	r13, (p_sym - 0b)(r12)
++	add	r13, r13, r12	/* runtime address of .dynsym section */
++
++	/*
++	 * Scan the dynamic section for RELA, RELASZ entries
++	 */
++	li	r6, 0
++	li	r7, 0
++	li	r8, 0
++1:	lwz	r5, 0(r11)	/* ELF_Dyn.d_tag */
++	cmpwi	r5, 0		/* End of ELF_Dyn[] */
++	beq	eodyn
++	cmpwi	r5, DT_RELA
++	bne	relasz
++	lwz	r7, 4(r11)	/* r7 = rela.link */
++	b	skip
++relasz:
++	cmpwi	r5, DT_RELASZ
++	bne	relaent
++	lwz	r8, 4(r11)	/* r8 = Total Rela relocs size */
++	b	skip
++relaent:
++	cmpwi	r5, DT_RELAENT
++	bne	skip
++	lwz	r6, 4(r11)	/* r6 = Size of one Rela reloc */
++skip:
++	addi	r11, r11, 8
++	b	1b
++eodyn:				/* End of Dyn Table scan */
++
++	/* Check if we have found all the entries */
++	cmpwi	r7, 0
++	beq	done
++	cmpwi	r8, 0
++	beq	done
++	cmpwi	r6, 0
++	beq	done
++
++
++	/*
++	 * Work out the current offset from the link time address of .rela
++	 * section.
++	 *  cur_offset[r7] = rela.run[r9] - rela.link [r7]
++	 *  _stext.link[r12] = _stext.run[r10] - cur_offset[r7]
++	 *  final_offset[r3] = _stext.final[r3] - _stext.link[r12]
++	 */
++	subf	r7, r7, r9	/* cur_offset */
++	subf	r12, r7, r10
++	subf	r3, r12, r3	/* final_offset */
++
++	subf	r8, r6, r8	/* relaz -= relaent */
++	/*
++	 * Scan through the .rela table and process each entry
++	 * r9	- points to the current .rela table entry
++	 * r13	- points to the symbol table
++	 */
++
++	/*
++	 * Check if we have a relocation based on symbol
++	 * r5 will hold the value of the symbol.
++	 */
++applyrela:
++	lwz	r4, 4(r9)
++	srwi	r5, r4, 8		/* ELF32_R_SYM(r_info) */
++	cmpwi	r5, STN_UNDEF	/* sym == STN_UNDEF ? */
++	beq	get_type	/* value = 0 */
++	/* Find the value of the symbol at index(r5) */
++	slwi	r5, r5, 4		/* r5 = r5 * sizeof(Elf32_Sym) */
++	add	r12, r13, r5	/* r12 = &__dyn_sym[Index] */
++
++	/*
++	 * GNU ld has a bug, where dynamic relocs based on
++	 * STB_LOCAL symbols, the value should be assumed
++	 * to be zero. - Alan Modra
++	 */
++	/* XXX: Do we need to check if we are using GNU ld ? */
++	lbz	r5, 12(r12)	/* r5 = dyn_sym[Index].st_info */
++	extrwi	r5, r5, 4, 24	/* r5 = ELF32_ST_BIND(r5) */
++	cmpwi	r5, STB_LOCAL	/* st_value = 0, ld bug */
++	beq	get_type	/* We have r5 = 0 */
++	lwz	r5, 4(r12)	/* r5 = __dyn_sym[Index].st_value */
++
++get_type:
++	/* r4 holds the relocation type */
++	extrwi	r4, r4, 8, 24	/* r4 = ((char*)r4)[3] */
++
++	/* R_PPC_RELATIVE */
++	cmpwi	r4, R_PPC_RELATIVE
++	bne	hi16
++	lwz	r4, 0(r9)	/* r_offset */
++	lwz	r0, 8(r9)	/* r_addend */
++	add	r0, r0, r3	/* final addend */
++	stwx	r0, r4, r7	/* memory[r4+r7]) = (u32)r0 */
++	b	nxtrela		/* continue */
++
++	/* R_PPC_ADDR16_HI */
++hi16:
++	cmpwi	r4, R_PPC_ADDR16_HI
++	bne	ha16
++	lwz	r4, 0(r9)	/* r_offset */
++	lwz	r0, 8(r9)	/* r_addend */
++	add	r0, r0, r3
++	add	r0, r0, r5	/* r0 = (S+A+Offset) */
++	extrwi	r0, r0, 16, 0	/* r0 = (r0 >> 16) */
++	b	store_half
++
++	/* R_PPC_ADDR16_HA */
++ha16:
++	cmpwi	r4, R_PPC_ADDR16_HA
++	bne	lo16
++	lwz	r4, 0(r9)	/* r_offset */
++	lwz	r0, 8(r9)	/* r_addend */
++	add	r0, r0, r3
++	add	r0, r0, r5	/* r0 = (S+A+Offset) */
++	extrwi	r5, r0, 1, 16	/* Extract bit 16 */
++	extrwi	r0, r0, 16, 0	/* r0 = (r0 >> 16) */
++	add	r0, r0, r5	/* Add it to r0 */
++	b	store_half
++
++	/* R_PPC_ADDR16_LO */
++lo16:
++	cmpwi	r4, R_PPC_ADDR16_LO
++	bne	nxtrela
++	lwz	r4, 0(r9)	/* r_offset */
++	lwz	r0, 8(r9)	/* r_addend */
++	add	r0, r0, r3
++	add	r0, r0, r5	/* r0 = (S+A+Offset) */
++	extrwi	r0, r0, 16, 16	/* r0 &= 0xffff */
++	/* Fall through to */
++
++	/* Store half word */
++store_half:
++	sthx	r0, r4, r7	/* memory[r4+r7] = (u16)r0 */
++
++nxtrela:
++	/*
++	 * We have to flush the modified instructions to the
++	 * main storage from the d-cache. And also, invalidate the
++	 * cached instructions in i-cache which has been modified.
++	 *
++	 * We delay the msync / isync operation till the end, since
++	 * we won't be executing the modified instructions until
++	 * we return from here.
++	 */
++	dcbst	r4,r7
++	icbi	r4,r7
++	cmpwi	r8, 0		/* relasz = 0 ? */
++	ble	done
++	add	r9, r9, r6	/* move to next entry in the .rela table */
++	subf	r8, r6, r8	/* relasz -= relaent */
++	b	applyrela
++
++done:
++	msync			/* Wait for the flush to finish */
++	isync			/* Discard prefetched instructions */
++	blr
++
++p_dyn:		.long	__dynamic_start - 0b
++p_rela:		.long	__rela_dyn_start - 0b
++p_sym:		.long	__dynamic_symtab - 0b
++p_st:		.long	_stext - 0b
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 920276c..710a540 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -170,7 +170,13 @@ SECTIONS
+ 	}
+ #ifdef CONFIG_RELOCATABLE
+ 	. = ALIGN(8);
+-	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET) { *(.dynsym) }
++	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET)
++	{
++#ifdef CONFIG_RELOCATABLE_PPC32
++		__dynamic_symtab = .;
++#endif
++		*(.dynsym)
++	}
+ 	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
+ 	.dynamic : AT(ADDR(.dynamic) - LOAD_OFFSET)
+ 	{
+diff --git a/arch/powerpc/relocs_check.pl b/arch/powerpc/relocs_check.pl
+index d257109..71aeb03 100755
+--- a/arch/powerpc/relocs_check.pl
++++ b/arch/powerpc/relocs_check.pl
+@@ -32,8 +32,15 @@ while (<FD>) {
+ 	next if (!/\s+R_/);
+ 
+ 	# These relocations are okay
++	# On PPC64:
++	# 	R_PPC64_RELATIVE, R_PPC64_NONE, R_PPC64_ADDR64
++	# On PPC:
++	# 	R_PPC_RELATIVE, R_PPC_ADDR16_HI, 
++	# 	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO
+ 	next if (/R_PPC64_RELATIVE/ or /R_PPC64_NONE/ or
+ 	         /R_PPC64_ADDR64\s+mach_/);
++	next if (/R_PPC_ADDR16_LO/ or /R_PPC_ADDR16_HI/ or
++		 /R_PPC_ADDR16_HA/ or /R_PPC_RELATIVE/);
+ 
+ 	# If we see this type of relcoation it's an idication that
+ 	# we /may/ be using an old version of binutils.
