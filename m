@@ -1,39 +1,36 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 7F85F1007D7
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 16:03:01 +1100 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 6C62AB6F71
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 17:50:16 +1100 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Sat, 10 Dec 2011 05:00:31 +1000
+ Sat, 10 Dec 2011 06:37:19 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pBA52fjl4374694
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 16:02:41 +1100
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pBA6kMms3010596
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 17:46:22 +1100
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pBA52fdU006791
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 16:02:41 +1100
-Message-ID: <4EE2E7ED.6080202@linux.vnet.ibm.com>
-Date: Sat, 10 Dec 2011 10:32:37 +0530
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+ pBA6o2aK030509
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 17:50:03 +1100
+Subject: [RFC PATCH v6 00/10] fadump: Firmware-assisted dump support for
+ Powerpc.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Sat, 10 Dec 2011 12:19:59 +0530
+Message-ID: <20111210064301.10195.3344.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC PATCH v5 1/9] fadump: Add documentation for firmware-assisted
- dump.
-References: <20111115151145.16533.16384.stgit@mars.in.ibm.com>
- <20111115151334.16533.5790.stgit@mars.in.ibm.com>
- <20111124223410.GB19828@bloggs.ozlabs.ibm.com>
-In-Reply-To: <20111124223410.GB19828@bloggs.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Amerigo Wang <amwang@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
- Anton Blanchard <anton@samba.org>, Vivek Goyal <vgoyal@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: Anton Blanchard <anton@samba.org>, Amerigo Wang <amwang@redhat.com>,
+ Kexec-ml <kexec@lists.infradead.org>, Milton Miller <miltonm@bga.com>,
+ Randy Dunlap <rdunlap@xenotime.net>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,38 +40,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/2011 04:04 AM, Paul Mackerras wrote:
->> + /sys/kernel/debug/powerpc/fadump_region
->> +
->> +    This file shows the reserved memory regions if fadump is
->> +    enabled otherwise this file is empty. The output format
->> +    is:
->> +    <region>: [<start>-<end>] <reserved-size> bytes, Dumped: <dump-size>
->> +
->> +    e.g.
->> +    Contents when fadump is registered during first kernel
->> +
->> +    # cat /sys/kernel/debug/powerpc/fadump_region
->> +    CPU : [0x0000006ffb0000-0x0000006fff001f] 0x40020 bytes, Dumped: 0x0
->> +    HPTE: [0x0000006fff0020-0x0000006fff101f] 0x1000 bytes, Dumped: 0x0
->> +    DUMP: [0x0000006fff1020-0x0000007fff101f] 0x10000000 bytes, Dumped: 0x0
-> 
-> How come the HPTE region is only 0x1000 (4k) bytes?  The hashed page
-> table (HPT) will be much bigger than this.  Is this our way of telling
-> the hypervisor that we don't care about the HPT?  If so, is it
-> possible to make this region 0 bytes instead of 0x1000?
-> 
+Hi All,
 
-The firmware assisted dump registration fails with "Hardware
-error (-1)" when called with HPTE dump section with size 0.
+Please find the version 6 of the patchset that implements firmware-assisted
+dump mechanism to capture kernel crash dump for Powerpc architecture. The
+firmware-assisted dump is a robust mechanism to get reliable kernel crash
+dump with assistance from firmware. This approach does not use kexec, instead
+firmware assists in booting the kdump kernel while preserving memory contents.
 
-According to PAPR the size returned by ibm,configure-kernel-dump-sizes
-node for HPTE dump section is a minimum size for HPTE dump section.
+These patches cleanly apply on commit dc47ce90c3 in linux-2.6 git tree.
 
-Though PAPR dose not mention this, but after sevaral trial and error, it
-looks like the HPTE dump section is one of the mandatory
-argument that needs to be passed (with non-zero size) while making
-ibm,configure-kernel-dump rtas call.
+Change in v6:
+-------------
+- Use of_read_number and of_read_ulong while reading the dump sizes
+  from rtas node ibm,configure-kernel-kdump-sizes and few minor changes.
+- Kernel command line option 'fadump' now uses on/off values to
+  enable/disable fadump.
+- Added the last patch in this series 10/10 to remove phyp dump code.
+
+Change in v5:
+-------------
+- Added 'fadump_' prefix to all static functions defined.
+
+patch 02/10:
+- Merged patch 10/10 which introduces a config option CONFIG_FA_DUMP
+  for firmware assisted dump feature on Powerpc (ppc64) architecture.
+- Increased MIN_BOOT_MEM by 64M to avoid OOM issue during network
+  dump capture. When kdump infrastructure is configured to save vmcore
+  over network, we run into OOM issue while loading modules related to
+  network setup.
+
+Changes in v4:
+--------------
+patch 04/10:
+- Move the init_elfcore_header() function and 'memblock_num_regions' macro
+ from generic code to power specific code as these are used only by
+ firmware assisted dump implementation which is power specific feature.
+
+patch 05/10:
+- Fixes a issue where memblock_free() is invoked from build_cpu_notes()
+  function during error_out path. Invoke cpu_notes_buf_free() in error_out
+  path instead of memblock_free().
+
+Changes in v3:
+-------------
+- Re-factored the implementation to work with kdump service start/stop.
+  Introduce fadump_registered sysfs control file which will be used by
+  kdump init scripts to start/stop firmware assisted dump. echo 1 to
+  /sys/kernel/fadump_registered file for fadump registration and
+  echo 0 to /sys/kernel/fadump_registered file for fadump un-registration.
+- Introduced the locking mechanism to handle simultaneous writes to
+  sysfs control files fadump_registered and fadump_release_mem
+
+  Affected patches are: 01/10, 03/10, 08/10.
+
+Changes in v2:
+-------------
+patch 01/10:
+- Modified the documentation to reflect the change of fadump_region
+  file under debugfs filesystem.
+
+patch 02/10:
+- Modified to use standard pr_debug() macro.
+- Modified early_init_dt_scan_fw_dump() to get the size of
+  "ibm,configure-kernel-dump-sizes" property and use it to iterate through
+  an array of dump sections.
+- Introduced boot option 'fadump_reserve_mem=' to let user specify the
+  fadump boot memory to be reserved.
+
+patch 03/10:
+- Removed few debug print statements.
+- Moved the setup_fadump() call from setup_system() and now calling it
+  subsys_initcall.
+- Moved fadump_region attribute under debugfs.
+- Clear the TCE entries if firmware assisted dump is active.
+
+patch 05/10:
+- Moved the crash_fadump() invocation from generic code to panic notifier.
+- Introduced cpu_notes_buf_alloc() function to allocate cpu notes buffer
+  using get_free_pages().
+
+patch 08/10:
+- Introduced cpu_notes_buf_free() function to free memory allocated for
+  cpu notes buffer.
+
+The most of the code implementation has been adapted from phyp assisted dump
+implementation written by Linas Vepstas and Manish Ahuja.
+
+The first patch is a documentation that talks about firmware-assisted dump
+mechanism, implementation details and TODO list.
+
+I have tested the patches on following system configuration:
+1. LPAR on Power6 with 4GB RAM and 8 CPUs
+2. LPAR on Power7 with 2GB RAM and 20 CPUs
+3. LPAR on Power7 with 1TB RAM and 896 CPUs
+
+Please review the patchset and let me know your comments.
 
 Thanks,
 -Mahesh.
+---
+
+Mahesh Salgaonkar (10):
+      fadump: Add documentation for firmware-assisted dump.
+      fadump: Reserve the memory for firmware assisted dump.
+      fadump: Register for firmware assisted dump.
+      fadump: Initialize elfcore header and add PT_LOAD program headers.
+      fadump: Convert firmware-assisted cpu state dump data into elf notes.
+      fadump: Add PT_NOTE program header for vmcoreinfo
+      fadump: Introduce cleanup routine to invalidate /proc/vmcore.
+      fadump: Invalidate registration and release reserved memory for general use.
+      fadump: Invalidate the fadump registration during machine shutdown.
+      fadump: Remove the phyp assisted dump code.
+
+
+ Documentation/powerpc/firmware-assisted-dump.txt |  243 ++++
+ Documentation/powerpc/phyp-assisted-dump.txt     |  127 --
+ arch/powerpc/Kconfig                             |   17 
+ arch/powerpc/include/asm/fadump.h                |  218 ++++
+ arch/powerpc/include/asm/phyp_dump.h             |   47 -
+ arch/powerpc/kernel/Makefile                     |    1 
+ arch/powerpc/kernel/fadump.c                     | 1312 ++++++++++++++++++++++
+ arch/powerpc/kernel/iommu.c                      |    8 
+ arch/powerpc/kernel/prom.c                       |   98 --
+ arch/powerpc/kernel/setup-common.c               |   14 
+ arch/powerpc/kernel/traps.c                      |    3 
+ arch/powerpc/mm/hash_utils_64.c                  |   11 
+ arch/powerpc/platforms/pseries/Makefile          |    1 
+ arch/powerpc/platforms/pseries/phyp_dump.c       |  513 ---------
+ fs/proc/vmcore.c                                 |   23 
+ 15 files changed, 1854 insertions(+), 782 deletions(-)
+ create mode 100644 Documentation/powerpc/firmware-assisted-dump.txt
+ delete mode 100644 Documentation/powerpc/phyp-assisted-dump.txt
+ create mode 100644 arch/powerpc/include/asm/fadump.h
+ delete mode 100644 arch/powerpc/include/asm/phyp_dump.h
+ create mode 100644 arch/powerpc/kernel/fadump.c
+ delete mode 100644 arch/powerpc/platforms/pseries/phyp_dump.c
+
+--
+-Mahesh
