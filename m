@@ -1,35 +1,39 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1CB211007D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 16:02:05 +1100 (EST)
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7F85F1007D7
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 16:03:01 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Sat, 10 Dec 2011 10:32:00 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pBA51tZ04481136
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 10:31:56 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pBA51t9W025067
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2011 10:31:55 +0530
-Message-ID: <4EE2E7C0.2040102@in.ibm.com>
-Date: Sat, 10 Dec 2011 10:31:52 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Sat, 10 Dec 2011 05:00:31 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pBA52fjl4374694
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 16:02:41 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pBA52fdU006791
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Dec 2011 16:02:41 +1100
+Message-ID: <4EE2E7ED.6080202@linux.vnet.ibm.com>
+Date: Sat, 10 Dec 2011 10:32:37 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 0/7] Kudmp support for PPC440x
-References: <20111209114148.15616.15996.stgit@suzukikp.in.ibm.com>
-In-Reply-To: <20111209114148.15616.15996.stgit@suzukikp.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>,
- Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH v5 1/9] fadump: Add documentation for firmware-assisted
+ dump.
+References: <20111115151145.16533.16384.stgit@mars.in.ibm.com>
+ <20111115151334.16533.5790.stgit@mars.in.ibm.com>
+ <20111124223410.GB19828@bloggs.ozlabs.ibm.com>
+In-Reply-To: <20111124223410.GB19828@bloggs.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Amerigo Wang <amwang@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
+ Anton Blanchard <anton@samba.org>, Vivek Goyal <vgoyal@redhat.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,84 +43,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/09/11 17:13, Suzuki K. Poulose wrote:
-> The following series implements:
->
->   * Generic framework for relocatable kernel on PPC32, based on processing
->     the dynamic relocation entries.
->   * Relocatable kernel support for 44x
->   * Kdump support for 44x. Doesn't support 47x yet, as the kexec
->     support is missing.
->
-> Changes from V3:
->
->   * Added a new config - NONSTATIC_KERNEL - to group different types of relocatable
->     kernel. (Suggested by: Josh Boyer)
->   * Added supported ppc relocation types in relocs_check.pl for verifying the
->     relocations used in the kernel.
->
-> Changes from V2:
->
->   * Renamed old style mapping based RELOCATABLE on BookE to DYNAMIC_MEMSTART.
->     Suggested by: Scott Wood
->   * Added support for DYNAMIC_MEMSTART on PPC440x
->   * Reverted back to RELOCATABLE and RELOCATABLE_PPC32 from RELOCATABLE_PPC32_PIE
->     for relocation based on processing dynamic reloc entries for PPC32.
->   * Ensure the modified instructions are flushed and the i-cache invalidated at
->     the end of relocate(). - Reported by : Josh Poimboeuf
->
-> Changes from V1:
->
->   * Splitted patch 'Enable CONFIG_RELOCATABLE for PPC44x' to move some
->     of the generic bits to a new patch.
->   * Renamed RELOCATABLE_PPC32 to RELOCATABLE_PPC32_PIE and provided options to
->     retained old style mapping. (Suggested by: Scott Wood)
->   * Added support for avoiding the overlapping of uncompressed kernel
->     with boot wrapper for PPC images.
->
-> The patches are based on -next tree for ppc.
->
-> I have tested these patches on Ebony, Sequoia and Virtex(QEMU Emulated).
-> I haven't tested the RELOCATABLE bits on PPC_47x yet, as I don't have access
-> to one. However, RELOCATABLE should work fine there as we only depend on the
-> runtime address and the XLAT entry setup by the boot loader. It would be great if
-> somebody could test these patches on a 47x.
->
->
-> ---
+On 11/25/2011 04:04 AM, Paul Mackerras wrote:
+>> + /sys/kernel/debug/powerpc/fadump_region
+>> +
+>> +    This file shows the reserved memory regions if fadump is
+>> +    enabled otherwise this file is empty. The output format
+>> +    is:
+>> +    <region>: [<start>-<end>] <reserved-size> bytes, Dumped: <dump-size>
+>> +
+>> +    e.g.
+>> +    Contents when fadump is registered during first kernel
+>> +
+>> +    # cat /sys/kernel/debug/powerpc/fadump_region
+>> +    CPU : [0x0000006ffb0000-0x0000006fff001f] 0x40020 bytes, Dumped: 0x0
+>> +    HPTE: [0x0000006fff0020-0x0000006fff101f] 0x1000 bytes, Dumped: 0x0
+>> +    DUMP: [0x0000006fff1020-0x0000007fff101f] 0x10000000 bytes, Dumped: 0x0
+> 
+> How come the HPTE region is only 0x1000 (4k) bytes?  The hashed page
+> table (HPT) will be much bigger than this.  Is this our way of telling
+> the hypervisor that we don't care about the HPT?  If so, is it
+> possible to make this region 0 bytes instead of 0x1000?
+> 
 
-Updated diffstats:
+The firmware assisted dump registration fails with "Hardware
+error (-1)" when called with HPTE dump section with size 0.
 
-Suzuki K. Poulose (7):
-       [boot] Change the load address for the wrapper to fit the kernel
-       [44x] Enable CRASH_DUMP for 440x
-       [44x] Enable CONFIG_RELOCATABLE for PPC44x
-       [ppc] Define virtual-physical translations for RELOCATABLE
-       [ppc] Process dynamic relocations for kernel
-       [44x] Enable DYNAMIC_MEMSTART for 440x
-       [booke] Rename mapping based RELOCATABLE to DYNAMIC_MEMSTART for BookE
+According to PAPR the size returned by ibm,configure-kernel-dump-sizes
+node for HPTE dump section is a minimum size for HPTE dump section.
 
+Though PAPR dose not mention this, but after sevaral trial and error, it
+looks like the HPTE dump section is one of the mandatory
+argument that needs to be passed (with non-zero size) while making
+ibm,configure-kernel-dump rtas call.
 
-  arch/powerpc/Kconfig                          |   46 +++++-
-  arch/powerpc/Makefile                         |    6 -
-  arch/powerpc/boot/wrapper                     |   20 ++
-  arch/powerpc/configs/44x/iss476-smp_defconfig |    2
-  arch/powerpc/include/asm/kdump.h              |    4
-  arch/powerpc/include/asm/page.h               |   89 ++++++++++-
-  arch/powerpc/kernel/Makefile                  |    2
-  arch/powerpc/kernel/crash_dump.c              |    4
-  arch/powerpc/kernel/head_44x.S                |  105 +++++++++++++
-  arch/powerpc/kernel/head_fsl_booke.S          |    2
-  arch/powerpc/kernel/machine_kexec.c           |    2
-  arch/powerpc/kernel/prom_init.c               |    2
-  arch/powerpc/kernel/reloc_32.S                |  207 +++++++++++++++++++++++++
-  arch/powerpc/kernel/vmlinux.lds.S             |    8 +
-  arch/powerpc/mm/44x_mmu.c                     |    2
-  arch/powerpc/mm/init_32.c                     |    7 +
-  arch/powerpc/relocs_check.pl                  |    7 +
-  17 files changed, 489 insertions(+), 26 deletions(-)
-  create mode 100644 arch/powerpc/kernel/reloc_32.S
-
-
-Thanks
-Suzuki
+Thanks,
+-Mahesh.
