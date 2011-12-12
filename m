@@ -1,31 +1,27 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id AE85E1007D3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 06:25:20 +1100 (EST)
-Date: Tue, 13 Dec 2011 00:55:04 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Miche Baker-Harvey <miche@google.com>
-Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
-Message-ID: <20111212192504.GC6316@amit-x200.redhat.com>
-References: <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
- <20111123103852.GG16665@amit-x200.redhat.com>
- <CAB8RdaoDxMCgTjuGP70bGrsrtgh=USYtU3Spo5OPtVMYAM5EzQ@mail.gmail.com>
- <20111129142149.GE2822@amit-x200.redhat.com>
- <CAB8RdapuPRym2dH_9mgmGdzpCxnP1KpS+hS8JJ-geVkga5fMcw@mail.gmail.com>
- <CAB8Rdapfuf5XH+X9gsUL+CJ9gTQcSNfq4Dj9DoYWQeFgD04ODQ@mail.gmail.com>
- <20111205105452.GB27683@amit-x200.redhat.com>
- <CAB8Rdar=qOokxZkjQVRmo=zN_f75jPwzU+6=WBRo0g+P7w+pAw@mail.gmail.com>
- <20111208120804.GF23531@amit-x200.redhat.com>
- <CAB8RdapDDV0kYW_uASpBoJ3hbx6zScKnG+LWWcjYtqMnqXN4Xw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <CAB8RdapDDV0kYW_uASpBoJ3hbx6zScKnG+LWWcjYtqMnqXN4Xw@mail.gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
- Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Greg Kroah-Hartman <gregkh@suse.de>, Eric Northrup <digitaleric@google.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 56E4F1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 07:06:35 +1100 (EST)
+Message-ID: <1323720383.19891.21.camel@pasglop>
+Subject: Re: [PATCH 01/16 v3] pmac_zilog: fix unexpected irq
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Finn Thain <fthain@telegraphics.com.au>
+Date: Tue, 13 Dec 2011 07:06:23 +1100
+In-Reply-To: <alpine.LNX.2.00.1112130020000.2550@nippy.intranet>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+ <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
+ <alpine.LNX.2.00.1112071427280.28552@nippy.intranet>
+ <1323318004.12793.21.camel@pasglop> <1323318638.12793.23.camel@pasglop>
+ <alpine.LNX.2.00.1112082128330.2357@nippy.intranet>
+ <1323647315.19891.10.camel@pasglop>
+ <alpine.LNX.2.00.1112130020000.2550@nippy.intranet>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-m68k@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,67 +31,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Mon) 12 Dec 2011 [11:11:55], Miche Baker-Harvey wrote:
-> So on a CONSOLE_PORT_ADD message, we would take the
-> (existing)ports_device::ports_lock, and for other control messages we
-> would justtake the (new) port::port_lock?  You are concerned that just
-> takingthe ports_lock for all control messages could be too
-> restrictive?  Iwouldn't have expected these messages to be frequent
-> occurrences, butI'll defer to your experience here.
+On Tue, 2011-12-13 at 00:34 +1100, Finn Thain wrote:
+> On Mon, 12 Dec 2011, Benjamin Herrenschmidt wrote:
+> 
+> > Any chance you can test this patch ? I would not be surprised if it 
+> > broke m68k since I had to do some of the changes in there "blind", so 
+> > let me know... with this, I can again suspend/resume properly on a Pismo 
+> > while using the internal modem among other things.
+> 
+> The patch works on a PowerBook 520 given a few changes (below). This 
+> PowerBook only has one serial port that I can test (the internal modem is 
+> not supported on 68k Macs).
 
-No, I mean we'll have to take the new port_lock() everywhere we
-currently take the port lock, plus in a few more places.  I only
-suggest using port_lock() helper since we'll need a dependency on the
-portdev lock as well.
+Interesting. The modem is a soft-modem "geoport" or a hw serial modem ?
+In the later case it's probably just a matter of finding the right GPIO
+bit in Apple ASIC to turn the power on :-)
 
-> The CONSOLE_CONSOLE_PORT message calls hvc_alloc, which also
-> needsserialization.  That's in another one of these three patches; are
-> youthinking we could leave that patch be, or that we would we use
-> theport_lock for CONSOLE_CONSOLE_PORT?  Using the port_lock
-> wouldprovide the HVC serialization "for free" but it would be cleaner
-> if weput HVC related synchronization in hvc_console.c.
+>  Can you test a machine with two ports? The 
+> rest of my Mac hardware is in storage since I moved house last week.
 
-Yes, definitely, since other users of hvc_console may get bitten in
-similar ways.  However, I'm not too familiar with the hvc code, the
-people at linux-ppc can be of help.
+I tried on 2 port powermacs, but I only have one adapter, so I've
+basically been running with one serial port open and shooting irda frame
+on the other (with nothing to check wether I got the frames on the other
+hand), oh well ...
 
-> On Thu, Dec 8, 2011 at 4:08 AM, Amit Shah <amit.shah@redhat.com> wrote:
-> > On (Tue) 06 Dec 2011 [09:05:38], Miche Baker-Harvey wrote:
-> >> Amit,
-> >>
-> >> Ah, indeed.  I am not using MSI-X, so virtio_pci::vp_try_to_find_vqs()
-> >> calls vp_request_intx() and sets up an interrupt callback.  From
-> >> there, when an interrupt occurs, the stack looks something like this:
-> >>
-> >> virtio_pci::vp_interrupt()
-> >>   virtio_pci::vp_vring_interrupt()
-> >>     virtio_ring::vring_interrupt()
-> >>       vq->vq.callback()  <-- in this case, that's virtio_console::control_intr()
-> >>         workqueue::schedule_work()
-> >>           workqueue::queue_work()
-> >>             queue_work_on(get_cpu())  <-- queues the work on the current CPU.
-> >>
-> >> I'm not doing anything to keep multiple control message from being
-> >> sent concurrently to the guest, and we will take those interrupts on
-> >> any CPU. I've confirmed that the two instances of
-> >> handle_control_message() are occurring on different CPUs.
-> >
-> > So let's have a new helper, port_lock() that takes the port-specific
-> > spinlock.  There has to be a new helper, since the port lock should
-> > depend on the portdev lock being taken too.  For the port addition
-> > case, just the portdev lock should be taken.  For any other
-> > operations, the port lock should be taken.
-> >
-> > My assumption was that we would be able to serialise the work items,
-> > but that will be too restrictive.  Taking port locks sounds like a
-> > better idea.
-> >
-> > We'd definitely need the port lock in the control work handler.  We
-> > might need it in a few more places (like module removal), but we'll
-> > worry about that later.
-> >
-> > Does this sound fine?
-> >
-> >                Amit
+I'll apply your patch and commit via my tree.
 
-		Amit
+Cheers,
+Ben.
+
+> Finn
+> 
+> 
+> Index: linux-git/drivers/tty/serial/pmac_zilog.c
+> ===================================================================
+> --- linux-git.orig/drivers/tty/serial/pmac_zilog.c	2011-12-13 00:18:02.000000000 +1100
+> +++ linux-git/drivers/tty/serial/pmac_zilog.c	2011-12-13 00:23:55.000000000 +1100
+> @@ -1705,8 +1705,8 @@ static int __init pmz_init_port(struct u
+>  	struct resource *r_ports;
+>  	int irq;
+>  
+> -	r_ports = platform_get_resource(uap->node, IORESOURCE_MEM, 0);
+> -	irq = platform_get_irq(uap->node, 0);
+> +	r_ports = platform_get_resource(uap->pdev, IORESOURCE_MEM, 0);
+> +	irq = platform_get_irq(uap->pdev, 0);
+>  	if (!r_ports || !irq)
+>  		return -ENODEV;
+>  
+> @@ -1763,8 +1763,10 @@ static void pmz_dispose_port(struct uart
+>  
+>  static int __init pmz_attach(struct platform_device *pdev)
+>  {
+> +	struct uart_pmac_port *uap;
+>  	int i;
+>  
+> +	/* Iterate the pmz_ports array to find a matching entry */
+>  	for (i = 0; i < pmz_ports_count; i++)
+>  		if (pmz_ports[i].pdev == pdev)
+>  			break;
+> @@ -1773,15 +1775,23 @@ static int __init pmz_attach(struct plat
+>  
+>  	uap = &pmz_ports[i];
+>  	uap->port.dev = &pdev->dev;
+> -	dev_set_drvdata(&mdev->ofdev.dev, uap);
+> +	platform_set_drvdata(pdev, uap);
+>  
+> -			return uart_add_one_port(&pmz_uart_reg,
+> -						 &pmz_ports[i]->port);
+> +	return uart_add_one_port(&pmz_uart_reg, &uap->port);
+>  }
+>  
+>  static int __exit pmz_detach(struct platform_device *pdev)
+>  {
+> +	struct uart_pmac_port *uap = platform_get_drvdata(pdev);
+> +
+> +	if (!uap)
+> +		return -ENODEV;
+> +
+>  	uart_remove_one_port(&pmz_uart_reg, &uap->port);
+> +
+> +	platform_set_drvdata(pdev, NULL);
+> +	uap->port.dev = NULL;
+> +
+>  	return 0;
+>  }
+>  
+> @@ -1918,8 +1928,13 @@ static void __exit exit_pmz(void)
+>  
+>  	for (i = 0; i < pmz_ports_count; i++) {
+>  		struct uart_pmac_port *uport = &pmz_ports[i];
+> +#ifdef CONFIG_PPC_PMAC
+>  		if (uport->node != NULL)
+>  			pmz_dispose_port(uport);
+> +#else
+> +		if (uport->pdev != NULL)
+> +			pmz_dispose_port(uport);
+> +#endif
+>  	}
+>  	/* Unregister UART driver */
+>  	uart_unregister_driver(&pmz_uart_reg);
+> @@ -1993,6 +2008,9 @@ static int __init pmz_console_setup(stru
+>  #ifdef CONFIG_PPC_PMAC
+>  	if (uap->node == NULL)
+>  		return -ENODEV;
+> +#else
+> +	if (uap->pdev == NULL)
+> +		return -ENODEV;
+>  #endif
+>  	port = &uap->port;
+>  
+> Index: linux-git/drivers/tty/serial/pmac_zilog.h
+> ===================================================================
+> --- linux-git.orig/drivers/tty/serial/pmac_zilog.h	2011-12-13 00:18:02.000000000 +1100
+> +++ linux-git/drivers/tty/serial/pmac_zilog.h	2011-12-13 00:23:55.000000000 +1100
+> @@ -1,18 +1,9 @@
+>  #ifndef __PMAC_ZILOG_H__
+>  #define __PMAC_ZILOG_H__
+>  
+> -#ifdef CONFIG_PPC_PMAC
+> -/* We cannot use dev_* because this can be called early, way before
+> - * we are matched with a device (when using it as a kernel console)
+> - */
+>  #define pmz_debug(fmt, arg...)	pr_debug("ttyPZ%d: " fmt, uap->port.line, ## arg)
+>  #define pmz_error(fmt, arg...)	pr_err("ttyPZ%d: " fmt, uap->port.line, ## arg)
+>  #define pmz_info(fmt, arg...)	pr_info("ttyPZ%d: " fmt, uap->port.line, ## arg)
+> -#else
+> -#define pmz_debug(fmt, arg...)	dev_dbg(&uap->node->dev, fmt, ## arg)
+> -#define pmz_error(fmt, arg...)	dev_err(&uap->node->dev, fmt, ## arg)
+> -#define pmz_info(fmt, arg...)	dev_info(&uap->node->dev, fmt, ## arg)
+> -#endif
+>  
+>  /*
+>   * At most 2 ESCCs with 2 ports each
