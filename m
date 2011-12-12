@@ -1,33 +1,15 @@
-Return-Path: <cmetcalf@tilera.com>
-Received: from king.tilera.com (206.83.70.73.ptr.us.xo.net [206.83.70.73])
- by ozlabs.org (Postfix) with ESMTP id 635F81007D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 08:48:35 +1100 (EST)
-Message-Id: <201112122148.pBCLmPH0023959@farm-0002.internal.tilera.com>
-From: Chris Metcalf <cmetcalf@tilera.com>
-Date: Fri, 9 Dec 2011 10:29:07 -0500
-Subject: [PATCH v3] ipc: provide generic compat versions of IPC syscalls
-References: <201112091536.pB9Fa5f7002738@farm-0002.internal.tilera.com>
- <201112091903.pB9J39pd031553@farm-0002.internal.tilera.com>
- <20111209134852.f5b5bcbc.akpm@linux-foundation.org>
- <1690400.7yOAjHVqTH@wuerfel>
-In-Reply-To: <1690400.7yOAjHVqTH@wuerfel>
-To: Arnd Bergmann <arnd@arndb.de>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
- "David S. Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Christoph Hellwig <hch@lst.de>,
- Lucas De Marchi <lucas.demarchi@profusion.mobi>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "J. Bruce Fields" <bfields@redhat.com>, NeilBrown <neilb@suse.de>,
- linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 13 Dec 2011 09:33:07 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: [PATCH v3 10/14] KVM: PPC: Maintain a doubly-linked list of guest
+ HPTEs for each gfn
+Message-ID: <20111212223307.GK18868@bloggs.ozlabs.ibm.com>
+References: <20111212222347.GA18868@bloggs.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111212222347.GA18868@bloggs.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,378 +19,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using the "compat" APIs, architectures will generally want to
-be able to make direct syscalls to msgsnd(), shmctl(), etc., and
-in the kernel we would want them to be handled directly by
-compat_sys_xxx() functions, as is true for other compat syscalls.
+This expands the reverse mapping array to contain two links for each
+HPTE which are used to link together HPTEs that correspond to the
+same guest logical page.  Each circular list of HPTEs is pointed to
+by the rmap array entry for the guest logical page, pointed to by
+the relevant memslot.  Links are 32-bit HPT entry indexes rather than
+full 64-bit pointers, to save space.  We use 3 of the remaining 32
+bits in the rmap array entries as a lock bit, a referenced bit and
+a present bit (the present bit is needed since HPTE index 0 is valid).
+The bit lock for the rmap chain nests inside the HPTE lock bit.
 
-However, for historical reasons, several of the existing compat IPC
-syscalls do not do this.  semctl() expects a pointer to the fourth
-argument, instead of the fourth argument itself.  msgsnd(), msgrcv()
-and shmat() expect arguments in different order.
-
-This change adds an ARCH_WANT_OLD_COMPAT_IPC config option that can be
-set to preserve this behavior for ports that use it (x86, sparc, powerpc,
-s390, and mips).  No actual semantics are changed for those architectures,
-and there is only a minimal amount of code refactoring in ipc/compat.c.
-
-Newer architectures like tile (and perhaps future architectures such
-as arm64 and unicore64) should not select this option, and thus can
-avoid having any IPC-specific code at all in their architecture-specific
-compat layer.  In the same vein, if this option is not selected, IPC_64
-mode is assumed, since that's what the <asm-generic> headers expect.
-
-The workaround code in "tile" for msgsnd() and msgrcv() is removed
-with this change; it also fixes the bug that shmat() and semctl() were
-not being properly handled.
-
-Signed-off-by: Chris Metcalf <cmetcalf@tilera.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/Kconfig                   |    3 ++
- arch/mips/Kconfig              |    1 +
- arch/powerpc/Kconfig           |    1 +
- arch/s390/Kconfig              |    1 +
- arch/sparc/Kconfig             |    1 +
- arch/tile/include/asm/compat.h |   11 ------
- arch/tile/kernel/compat.c      |   43 ------------------------
- arch/x86/Kconfig               |    1 +
- include/linux/compat.h         |   12 ++++++-
- ipc/compat.c                   |   70 ++++++++++++++++++++++++++++++++++++---
- 10 files changed, 83 insertions(+), 61 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h |   18 ++++++
+ arch/powerpc/include/asm/kvm_host.h      |   17 ++++++-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      |   84 +++++++++++++++++++++++++++++-
+ 3 files changed, 117 insertions(+), 2 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 4b0669c..dfb1e07 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -181,4 +181,7 @@ config HAVE_RCU_TABLE_FREE
- config ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	bool
- 
-+config ARCH_WANT_OLD_COMPAT_IPC
-+	bool
-+
- source "kernel/gcov/Kconfig"
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index d46f1da..ad2af82 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -2420,6 +2420,7 @@ config MIPS32_COMPAT
- config COMPAT
- 	bool
- 	depends on MIPS32_COMPAT
-+	select ARCH_WANT_OLD_COMPAT_IPC
- 	default y
- 
- config SYSVIPC_COMPAT
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 951e18f..e2be710 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -146,6 +146,7 @@ config COMPAT
- 	bool
- 	default y if PPC64
- 	select COMPAT_BINFMT_ELF
-+	select ARCH_WANT_OLD_COMPAT_IPC
- 
- config SYSVIPC_COMPAT
- 	bool
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 373679b..2fc3bca 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -221,6 +221,7 @@ config COMPAT
- 	prompt "Kernel support for 31 bit emulation"
- 	depends on 64BIT
- 	select COMPAT_BINFMT_ELF
-+	select ARCH_WANT_OLD_COMPAT_IPC
- 	help
- 	  Select this option if you want to enable your system kernel to
- 	  handle system-calls from ELF binaries for 31 bit ESA.  This option
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index f92602e..846cb5c 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -577,6 +577,7 @@ config COMPAT
- 	depends on SPARC64
- 	default y
- 	select COMPAT_BINFMT_ELF
-+	select ARCH_WANT_OLD_COMPAT_IPC
- 
- config SYSVIPC_COMPAT
- 	bool
-diff --git a/arch/tile/include/asm/compat.h b/arch/tile/include/asm/compat.h
-index bf95f55..4b4b289 100644
---- a/arch/tile/include/asm/compat.h
-+++ b/arch/tile/include/asm/compat.h
-@@ -242,17 +242,6 @@ long compat_sys_fallocate(int fd, int mode,
- long compat_sys_sched_rr_get_interval(compat_pid_t pid,
- 				      struct compat_timespec __user *interval);
- 
--/* Versions of compat functions that differ from generic Linux. */
--struct compat_msgbuf;
--long tile_compat_sys_msgsnd(int msqid,
--			    struct compat_msgbuf __user *msgp,
--			    size_t msgsz, int msgflg);
--long tile_compat_sys_msgrcv(int msqid,
--			    struct compat_msgbuf __user *msgp,
--			    size_t msgsz, long msgtyp, int msgflg);
--long tile_compat_sys_ptrace(compat_long_t request, compat_long_t pid,
--			    compat_long_t addr, compat_long_t data);
--
- /* Tilera Linux syscalls that don't have "compat" versions. */
- #define compat_sys_flush_cache sys_flush_cache
- 
-diff --git a/arch/tile/kernel/compat.c b/arch/tile/kernel/compat.c
-index bf5e9d7..d67459b 100644
---- a/arch/tile/kernel/compat.c
-+++ b/arch/tile/kernel/compat.c
-@@ -16,7 +16,6 @@
- #define __SYSCALL_COMPAT
- 
- #include <linux/compat.h>
--#include <linux/msg.h>
- #include <linux/syscalls.h>
- #include <linux/kdev_t.h>
- #include <linux/fs.h>
-@@ -95,52 +94,10 @@ long compat_sys_sched_rr_get_interval(compat_pid_t pid,
- 	return ret;
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 18b590d..9508c03 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -113,6 +113,11 @@ static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
+ 	return 0;				/* error */
  }
  
--/*
-- * The usual compat_sys_msgsnd() and _msgrcv() seem to be assuming
-- * some different calling convention than our normal 32-bit tile code.
-- */
--
--/* Already defined in ipc/compat.c, but we need it here. */
--struct compat_msgbuf {
--	compat_long_t mtype;
--	char mtext[1];
--};
--
--long tile_compat_sys_msgsnd(int msqid,
--			    struct compat_msgbuf __user *msgp,
--			    size_t msgsz, int msgflg)
--{
--	compat_long_t mtype;
--
--	if (get_user(mtype, &msgp->mtype))
--		return -EFAULT;
--	return do_msgsnd(msqid, mtype, msgp->mtext, msgsz, msgflg);
--}
--
--long tile_compat_sys_msgrcv(int msqid,
--			    struct compat_msgbuf __user *msgp,
--			    size_t msgsz, long msgtyp, int msgflg)
--{
--	long err, mtype;
--
--	err =  do_msgrcv(msqid, &mtype, msgp->mtext, msgsz, msgtyp, msgflg);
--	if (err < 0)
--		goto out;
--
--	if (put_user(mtype, &msgp->mtype))
--		err = -EFAULT;
-- out:
--	return err;
--}
--
- /* Provide the compat syscall number to call mapping. */
- #undef __SYSCALL
- #define __SYSCALL(nr, call) [nr] = (call),
- 
--/* The generic versions of these don't work for Tile. */
--#define compat_sys_msgrcv tile_compat_sys_msgrcv
--#define compat_sys_msgsnd tile_compat_sys_msgsnd
--
- /* See comments in sys.c */
- #define compat_sys_fadvise64_64 sys32_fadvise64_64
- #define compat_sys_readahead sys32_readahead
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index cb9a104..0e1f474 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2131,6 +2131,7 @@ config IA32_AOUT
- config COMPAT
- 	def_bool y
- 	depends on IA32_EMULATION
-+	select ARCH_WANT_OLD_COMPAT_IPC
- 
- config COMPAT_FOR_U64_ALIGNMENT
- 	def_bool COMPAT
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 66ed067..f295dae 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -224,6 +224,7 @@ struct compat_sysinfo;
- struct compat_sysctl_args;
- struct compat_kexec_segment;
- struct compat_mq_attr;
-+struct compat_msgbuf;
- 
- extern void compat_exit_robust_list(struct task_struct *curr);
- 
-@@ -234,13 +235,22 @@ asmlinkage long
- compat_sys_get_robust_list(int pid, compat_uptr_t __user *head_ptr,
- 			   compat_size_t __user *len_ptr);
- 
-+#ifdef CONFIG_ARCH_WANT_OLD_COMPAT_IPC
- long compat_sys_semctl(int first, int second, int third, void __user *uptr);
- long compat_sys_msgsnd(int first, int second, int third, void __user *uptr);
- long compat_sys_msgrcv(int first, int second, int msgtyp, int third,
- 		int version, void __user *uptr);
--long compat_sys_msgctl(int first, int second, void __user *uptr);
- long compat_sys_shmat(int first, int second, compat_uptr_t third, int version,
- 		void __user *uptr);
-+#else
-+long compat_sys_semctl(int semid, int semnum, int cmd, int arg);
-+long compat_sys_msgsnd(int msqid, struct compat_msgbuf __user *msgp,
-+		size_t msgsz, int msgflg);
-+long compat_sys_msgrcv(int msqid, struct compat_msgbuf __user *msgp,
-+		size_t msgsz, long msgtyp, int msgflg);
-+long compat_sys_shmat(int shmid, compat_uptr_t shmaddr, int shmflg);
-+#endif
-+long compat_sys_msgctl(int first, int second, void __user *uptr);
- long compat_sys_shmctl(int first, int second, void __user *uptr);
- long compat_sys_semtimedop(int semid, struct sembuf __user *tsems,
- 		unsigned nsems, const struct compat_timespec __user *timeout);
-diff --git a/ipc/compat.c b/ipc/compat.c
-index 845a287..a6df704 100644
---- a/ipc/compat.c
-+++ b/ipc/compat.c
-@@ -27,6 +27,7 @@
- #include <linux/msg.h>
- #include <linux/shm.h>
- #include <linux/syscalls.h>
-+#include <linux/ptrace.h>
- 
- #include <linux/mutex.h>
- #include <asm/uaccess.h>
-@@ -117,6 +118,7 @@ extern int sem_ctls[];
- 
- static inline int compat_ipc_parse_version(int *cmd)
++static inline unsigned long hpte_rpn(unsigned long ptel, unsigned long psize)
++{
++	return ((ptel & HPTE_R_RPN) & ~(psize - 1)) >> PAGE_SHIFT;
++}
++
+ static inline int hpte_cache_flags_ok(unsigned long ptel, unsigned long io_type)
  {
-+#ifdef CONFIG_ARCH_WANT_OLD_COMPAT_IPC
- 	int version = *cmd & IPC_64;
- 
- 	/* this is tricky: architectures that have support for the old
-@@ -128,6 +130,10 @@ static inline int compat_ipc_parse_version(int *cmd)
- 	*cmd &= ~IPC_64;
+ 	unsigned int wimg = ptel & HPTE_R_WIMG;
+@@ -139,6 +144,19 @@ static inline unsigned long hpte_cache_bits(unsigned long pte_val)
  #endif
- 	return version;
-+#else
-+	/* With the asm-generic APIs, we always use the 64-bit versions. */
-+	return IPC_64;
-+#endif
  }
  
- static inline int __get_compat_ipc64_perm(struct ipc64_perm *p64,
-@@ -232,10 +238,9 @@ static inline int put_compat_semid_ds(struct semid64_ds *s,
- 	return err;
- }
- 
--long compat_sys_semctl(int first, int second, int third, void __user *uptr)
-+static long do_compat_semctl(int first, int second, int third, u32 pad)
++static inline void lock_rmap(unsigned long *rmap)
++{
++	do {
++		while (test_bit(KVMPPC_RMAP_LOCK_BIT, rmap))
++			cpu_relax();
++	} while (test_and_set_bit_lock(KVMPPC_RMAP_LOCK_BIT, rmap));
++}
++
++static inline void unlock_rmap(unsigned long *rmap)
++{
++	__clear_bit_unlock(KVMPPC_RMAP_LOCK_BIT, rmap);
++}
++
+ static inline bool slot_is_aligned(struct kvm_memory_slot *memslot,
+ 				   unsigned long pagesize)
  {
- 	union semun fourth;
--	u32 pad;
- 	int err, err2;
- 	struct semid64_ds s64;
- 	struct semid64_ds __user *up64;
-@@ -243,10 +248,6 @@ long compat_sys_semctl(int first, int second, int third, void __user *uptr)
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 243bc80..97cb2d7 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -170,12 +170,27 @@ struct kvmppc_rma_info {
+ /*
+  * The reverse mapping array has one entry for each HPTE,
+  * which stores the guest's view of the second word of the HPTE
+- * (including the guest physical address of the mapping).
++ * (including the guest physical address of the mapping),
++ * plus forward and backward pointers in a doubly-linked ring
++ * of HPTEs that map the same host page.  The pointers in this
++ * ring are 32-bit HPTE indexes, to save space.
+  */
+ struct revmap_entry {
+ 	unsigned long guest_rpte;
++	unsigned int forw, back;
+ };
  
- 	memset(&s64, 0, sizeof(s64));
- 
--	if (!uptr)
--		return -EINVAL;
--	if (get_user(pad, (u32 __user *) uptr))
--		return -EFAULT;
- 	if ((third & (~IPC_64)) == SETVAL)
- 		fourth.val = (int) pad;
- 	else
-@@ -305,6 +306,18 @@ long compat_sys_semctl(int first, int second, int third, void __user *uptr)
- 	return err;
++/*
++ * We use the top bit of each memslot->rmap entry as a lock bit,
++ * and bit 32 as a present flag.  The bottom 32 bits are the
++ * index in the guest HPT of a HPTE that points to the page.
++ */
++#define KVMPPC_RMAP_LOCK_BIT	63
++#define KVMPPC_RMAP_REF_BIT	33
++#define KVMPPC_RMAP_REFERENCED	(1ul << KVMPPC_RMAP_REF_BIT)
++#define KVMPPC_RMAP_PRESENT	0x100000000ul
++#define KVMPPC_RMAP_INDEX	0xfffffffful
++
+ /* Low-order bits in kvm->arch.slot_phys[][] */
+ #define KVMPPC_PAGE_ORDER_MASK	0x1f
+ #define KVMPPC_PAGE_NO_CACHE	HPTE_R_I	/* 0x20 */
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 3f5b016..5b31caa 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -54,6 +54,70 @@ static void *real_vmalloc_addr(void *x)
+ 	return __va(addr);
  }
  
-+#ifdef CONFIG_ARCH_WANT_OLD_COMPAT_IPC
-+long compat_sys_semctl(int first, int second, int third, void __user *uptr)
++/*
++ * Add this HPTE into the chain for the real page.
++ * Must be called with the chain locked; it unlocks the chain.
++ */
++static void kvmppc_add_revmap_chain(struct kvm *kvm, struct revmap_entry *rev,
++			     unsigned long *rmap, long pte_index, int realmode)
 +{
-+	u32 pad;
++	struct revmap_entry *head, *tail;
++	unsigned long i;
 +
-+	if (!uptr)
-+		return -EINVAL;
-+	if (get_user(pad, (u32 __user *) uptr))
-+		return -EFAULT;
-+	return do_compat_semctl(first, second, third, pad);
++	if (*rmap & KVMPPC_RMAP_PRESENT) {
++		i = *rmap & KVMPPC_RMAP_INDEX;
++		head = &kvm->arch.revmap[i];
++		if (realmode)
++			head = real_vmalloc_addr(head);
++		tail = &kvm->arch.revmap[head->back];
++		if (realmode)
++			tail = real_vmalloc_addr(tail);
++		rev->forw = i;
++		rev->back = head->back;
++		tail->forw = pte_index;
++		head->back = pte_index;
++	} else {
++		rev->forw = rev->back = pte_index;
++		i = pte_index;
++	}
++	smp_wmb();
++	*rmap = i | KVMPPC_RMAP_REFERENCED | KVMPPC_RMAP_PRESENT; /* unlock */
 +}
 +
- long compat_sys_msgsnd(int first, int second, int third, void __user *uptr)
++/* Remove this HPTE from the chain for a real page */
++static void remove_revmap_chain(struct kvm *kvm, long pte_index,
++				unsigned long hpte_v)
++{
++	struct revmap_entry *rev, *next, *prev;
++	unsigned long gfn, ptel, head;
++	struct kvm_memory_slot *memslot;
++	unsigned long *rmap;
++
++	rev = real_vmalloc_addr(&kvm->arch.revmap[pte_index]);
++	ptel = rev->guest_rpte;
++	gfn = hpte_rpn(ptel, hpte_page_size(hpte_v, ptel));
++	memslot = builtin_gfn_to_memslot(kvm, gfn);
++	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID))
++		return;
++
++	rmap = real_vmalloc_addr(&memslot->rmap[gfn - memslot->base_gfn]);
++	lock_rmap(rmap);
++
++	head = *rmap & KVMPPC_RMAP_INDEX;
++	next = real_vmalloc_addr(&kvm->arch.revmap[rev->forw]);
++	prev = real_vmalloc_addr(&kvm->arch.revmap[rev->back]);
++	next->back = rev->back;
++	prev->forw = rev->forw;
++	if (head == pte_index) {
++		head = rev->forw;
++		if (head == pte_index)
++			*rmap &= ~(KVMPPC_RMAP_PRESENT | KVMPPC_RMAP_INDEX);
++		else
++			*rmap = (*rmap & ~KVMPPC_RMAP_INDEX) | head;
++	}
++	unlock_rmap(rmap);
++}
++
+ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+ 		    long pte_index, unsigned long pteh, unsigned long ptel)
  {
- 	struct compat_msgbuf __user *up = uptr;
-@@ -353,6 +366,37 @@ long compat_sys_msgrcv(int first, int second, int msgtyp, int third,
- out:
- 	return err;
- }
-+#else
-+long compat_sys_semctl(int semid, int semnum, int cmd, int arg)
-+{
-+	return do_compat_semctl(semid, semnum, cmd, arg);
-+}
-+
-+long compat_sys_msgsnd(int msqid, struct compat_msgbuf __user *msgp,
-+		       size_t msgsz, int msgflg)
-+{
-+	compat_long_t mtype;
-+
-+	if (get_user(mtype, &msgp->mtype))
-+		return -EFAULT;
-+	return do_msgsnd(msqid, mtype, msgp->mtext, msgsz, msgflg);
-+}
-+
-+long compat_sys_msgrcv(int msqid, struct compat_msgbuf __user *msgp,
-+		       size_t msgsz, long msgtyp, int msgflg)
-+{
-+	long err, mtype;
-+
-+	err =  do_msgrcv(msqid, &mtype, msgp->mtext, msgsz, msgtyp, msgflg);
-+	if (err < 0)
-+		goto out;
-+
-+	if (put_user(mtype, &msgp->mtype))
-+		err = -EFAULT;
-+ out:
-+	return err;
-+}
-+#endif
+@@ -66,6 +130,7 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	struct kvm_memory_slot *memslot;
+ 	unsigned long *physp, pte_size;
+ 	unsigned long is_io;
++	unsigned long *rmap;
+ 	bool realmode = vcpu->arch.vcore->vcore_state == VCORE_RUNNING;
  
- static inline int get_compat_msqid64(struct msqid64_ds *m64,
- 				     struct compat_msqid64_ds __user *up64)
-@@ -470,6 +514,7 @@ long compat_sys_msgctl(int first, int second, void __user *uptr)
- 	return err;
- }
+ 	psize = hpte_page_size(pteh, ptel);
+@@ -83,6 +148,7 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	if (!slot_is_aligned(memslot, psize))
+ 		return H_PARAMETER;
+ 	slot_fn = gfn - memslot->base_gfn;
++	rmap = &memslot->rmap[slot_fn];
  
-+#ifdef CONFIG_ARCH_WANT_OLD_COMPAT_IPC
- long compat_sys_shmat(int first, int second, compat_uptr_t third, int version,
- 			void __user *uptr)
- {
-@@ -485,6 +530,19 @@ long compat_sys_shmat(int first, int second, compat_uptr_t third, int version,
- 	uaddr = compat_ptr(third);
- 	return put_user(raddr, uaddr);
- }
-+#else
-+long compat_sys_shmat(int shmid, compat_uptr_t shmaddr, int shmflg)
-+{
-+	unsigned long ret;
-+	long err;
+ 	physp = kvm->arch.slot_phys[memslot->id];
+ 	if (!physp)
+@@ -164,13 +230,25 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	}
+ 
+ 	/* Save away the guest's idea of the second HPTE dword */
+-	rev = real_vmalloc_addr(&kvm->arch.revmap[pte_index]);
++	rev = &kvm->arch.revmap[pte_index];
++	if (realmode)
++		rev = real_vmalloc_addr(rev);
+ 	if (rev)
+ 		rev->guest_rpte = g_ptel;
 +
-+	err = do_shmat(shmid, compat_ptr(shmaddr), shmflg, &ret);
-+	if (err)
-+		return err;
-+	force_successful_syscall_return();
-+	return (long)ret;
-+}
-+#endif
- 
- static inline int get_compat_shmid64_ds(struct shmid64_ds *s64,
- 					struct compat_shmid64_ds __user *up64)
++	/* Link HPTE into reverse-map chain */
++	if (realmode)
++		rmap = real_vmalloc_addr(rmap);
++	lock_rmap(rmap);
++	kvmppc_add_revmap_chain(kvm, rev, rmap, pte_index, realmode);
++
+ 	hpte[1] = ptel;
++
++	/* Write the first HPTE dword, unlocking the HPTE and making it valid */
+ 	eieio();
+ 	hpte[0] = pteh;
+ 	asm volatile("ptesync" : : : "memory");
++
+ 	vcpu->arch.gpr[4] = pte_index;
+ 	return H_SUCCESS;
+ }
+@@ -220,6 +298,8 @@ long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	vcpu->arch.gpr[4] = v = hpte[0] & ~HPTE_V_HVLOCK;
+ 	vcpu->arch.gpr[5] = r = hpte[1];
+ 	rb = compute_tlbie_rb(v, r, pte_index);
++	remove_revmap_chain(kvm, pte_index, v);
++	smp_wmb();
+ 	hpte[0] = 0;
+ 	if (!(flags & H_LOCAL)) {
+ 		while(!try_lock_tlbie(&kvm->arch.tlbie_lock))
+@@ -293,6 +373,8 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
+ 		flags |= (hp[1] >> 5) & 0x0c;
+ 		args[i * 2] = ((0x80 | flags) << 56) + pte_index;
+ 		tlbrb[n_inval++] = compute_tlbie_rb(hp[0], hp[1], pte_index);
++		remove_revmap_chain(kvm, pte_index, hp[0]);
++		smp_wmb();
+ 		hp[0] = 0;
+ 	}
+ 	if (n_inval == 0)
 -- 
-1.6.5.2
+1.7.7.3
