@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1CC171007D4
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 10:19:55 +1100 (EST)
-Message-ID: <1323731987.19891.40.camel@pasglop>
-Subject: Re: [PATCH 3/4] ppc32/kprobe: complete kprobe and migrate exception
- frame
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Date: Tue, 13 Dec 2011 10:19:47 +1100
-In-Reply-To: <1323679853-31751-4-git-send-email-tiejun.chen@windriver.com>
-References: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>
- <1323679853-31751-4-git-send-email-tiejun.chen@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
+ [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 6D467B6F70
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 10:26:40 +1100 (EST)
+Received: from mail44-va3 (localhost [127.0.0.1])	by mail44-va3-R.bigfish.com
+ (Postfix) with ESMTP id 63E22440229	for <linuxppc-dev@ozlabs.org>;
+ Mon, 12 Dec 2011 23:26:33 +0000 (UTC)
+Received: from VA3EHSMHS004.bigfish.com (unknown [10.7.14.245])	by
+ mail44-va3.bigfish.com (Postfix) with ESMTP id 41A094C0089	for
+ <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2011 23:25:49 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: re-enable the ePAPR byte channel driver in
+ corenet32_smp_defconfig
+Date: Mon, 12 Dec 2011 17:25:45 -0600
+Message-ID: <1323732345-20839-1-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,122 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-12-12 at 16:50 +0800, Tiejun Chen wrote:
-> We can't emulate stwu since that may corrupt current exception stack.
-> So we will have to do real store operation in the exception return code.
-> 
-> Firstly we'll allocate a trampoline exception frame below the kprobed
-> function stack and copy the current exception frame to the trampoline.
-> Then we can do this real store operation to implement 'stwu', and reroute
-> the trampoline frame to r1 to complete this exception migration.
-> 
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/kernel/entry_32.S |   26 ++++++++++++++++++++++++++
->  1 files changed, 26 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> index 56212bc..d56e311 100644
-> --- a/arch/powerpc/kernel/entry_32.S
-> +++ b/arch/powerpc/kernel/entry_32.S
-> @@ -1185,6 +1185,8 @@ recheck:
->  	bne-	do_resched
->  	andi.	r0,r9,_TIF_USER_WORK_MASK
->  	beq	restore_user
-> +	andis.	r0,r9,_TIF_DELAYED_KPROBE@h
-> +	bne-	restore_kprobe
+Commit 7c4b2f09 (powerpc: Update mpc85xx/corenet 32-bit defconfigs) accidentally
+disabled the ePAPR byte channel driver in the defconfig for Freescale CoreNet
+platforms.
 
-Same comment as earlier about name. Note that you're not hooking in the
-right place. "recheck" is only reached if you -already- went out of the
-normal exit path and only when going back to user space unless I'm
-missing something (which is really the case you don't care about).
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/configs/corenet32_smp_defconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-You need to hook into "resume_kernel" instead.
-
-Also, we may want to simplify the whole thing, instead of checking user
-vs. kernel first etc... we could instead have a single _TIF_WORK_MASK
-which includes both the bits for user work and the new bit for kernel
-work. With preempt, the kernel work bits would also include
-_TIF_NEED_RESCHED.
-
-Then you have in the common exit path, a single test for that, with a
-fast path that skips everything and just goes to "restore" for both
-kernel and user.
-
-The only possible issue is the setting of dbcr0 for BookE and 44x and we
-can keep that as a special case keyed of MSR_PR in the resume path under
-ifdef BOOKE (we'll probably sanitize that later with some different
-rework anyway). 
-
-So the exit path because something like:
-
-ret_from_except:
-	.. hard disable interrupts (unchanged) ...
-	read TIF flags
-	andi with _TIF_WORK_MASK
-		nothing set -> restore
-	check PR
-		set -> do_work_user
-		no set -> do_work_kernel (kprobes & preempt)
-		(both loop until relevant _TIF flags are all clear)
-restore:
-	#ifdef BOOKE & 44x test PR & do dbcr0 stuff if needed
-	... nornal restore ...
-
->  do_user_signal:			/* r10 contains MSR_KERNEL here */
->  	ori	r10,r10,MSR_EE
->  	SYNC
-> @@ -1202,6 +1204,30 @@ do_user_signal:			/* r10 contains MSR_KERNEL here */
->  	REST_NVGPRS(r1)
->  	b	recheck
->  
-> +restore_kprobe:
-> +	lwz	r3,GPR1(r1)
-> +	subi    r3,r3,INT_FRAME_SIZE; /* Allocate a trampoline exception frame */
-> +	mr	r4,r1
-> +	bl	copy_exc_stack	/* Copy from the original to the trampoline */
-> +
-> +	/* Do real stw operation to complete stwu */
-> +	mr	r4,r1
-> +	addi	r4,r4,INT_FRAME_SIZE	/* Get kprobed entry */
-> +	lwz	r5,GPR1(r1)		/* Backup r1 */
-> +	stw	r4,GPR1(r1)		/* Now store that safely */
-
-The above confuses me. Shouldn't you do instead something like
-
-	lwz	r4,GPR1(r1)
-	subi	r3,r4,INT_FRAME_SIZE
-	li	r5,INT_FRAME_SIZE
-	bl	memcpy
-
-To start with, then you need to know the "old" r1 value which may or may
-not be related to your current r1. The emulation code should stash it
-into the int frame in an unused slot such as "orig_gpr3" (since that
-only pertains to restarting syscalls which we aren't doing here).
-
-Then you adjust your r1 and do something like
-
-	lwz	r3,GPR1(r1)
-	lwz	r0,ORIG_GPR3(r1)
-	stw	r0,0(r3)
-
-To perform the store, before doing the rest:
- 
-> +	/* Reroute the trampoline frame to r1 */
-> +	subi    r5,r5,INT_FRAME_SIZE
-> +	mr	r1,r5
-> +
-> +	/* Clear _TIF_DELAYED_KPROBE flag */
-> +	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-> +	lwz	r0,TI_FLAGS(r9)
-> +	rlwinm	r0,r0,0,_TIF_DELAYED_KPROBE
-> +	stw	r0,TI_FLAGS(r9)
-> +
-> +	b	restore
-> +
->  /*
->   * We come here when we are at the end of handling an exception
->   * that occurred at a place where taking an exception will lose
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 8ff6302..ebf42ae 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -105,6 +105,7 @@ CONFIG_FSL_PQ_MDIO=y
+ # CONFIG_INPUT_MOUSE is not set
+ CONFIG_SERIO_LIBPS2=y
+ # CONFIG_LEGACY_PTYS is not set
++CONFIG_PPC_EPAPR_HV_BYTECHAN=y
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_SERIAL_8250_EXTENDED=y
+-- 
+1.7.3.4
