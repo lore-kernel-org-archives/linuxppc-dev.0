@@ -3,15 +3,14 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EE976B70BB
- for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2011 19:51:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C27B2B70DD
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2011 20:11:19 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 4/4] ppc32/kprobe: don't emulate store when kprobe stwu r1
-Date: Mon, 12 Dec 2011 16:50:53 +0800
-Message-ID: <1323679853-31751-5-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>
-References: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>
+Subject: [PATCH 1/1] ppc64: fix missing to check all bits of
+ _TIF_USER_WORK_MASK in preempt
+Date: Mon, 12 Dec 2011 17:10:35 +0800
+Message-ID: <1323681035-19350-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,58 +22,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We don't do the real store operation for kprobing 'stwu Rx,(y)R1'
-since this may corrupt the exception frame, now we will do this
-operation safely in exception return code after migrate current
-exception frame below the kprobed function stack.
+In entry_64.S version of ret_from_except_lite, you'll notice that
+in the !preempt case, after we've checked MSR_PR we test for any
+TIF flag in _TIF_USER_WORK_MASK to decide whether to go to do_work
+or not. However, in the preempt case, we do a convoluted trick to
+test SIGPENDING only if PR was set and always test NEED_RESCHED ...
+but we forget to test any other bit of _TIF_USER_WORK_MASK !!! So
+that means that with preempt, we completely fail to test for things
+like single step, syscall tracing, etc...
 
-So we only update gpr[1] here and trigger a thread flag to mask
-this.
+This should be fixed as the following path:
 
+ - Test PR. If set, go to test_work_user, else continue.
+
+ - In test_work_user, always test for _TIF_USER_WORK_MASK to decide to
+go to do_work, maybe call it do_user_work
+
+ - In test_work_kernel, test for _TIF_KERNEL_WORK_MASK which is set to
+our new flag along with NEED_RESCHED if preempt is enabled and branch to
+do_kernel_work.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/lib/sstep.c |   19 +++++++++++++++++--
- 1 files changed, 17 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/entry_64.S |   33 +++++++++++++++------------------
+ 1 files changed, 15 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 9a52349..78b7168 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -566,7 +566,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 	unsigned long int ea;
- 	unsigned int cr, mb, me, sh;
- 	int err;
--	unsigned long old_ra;
-+	unsigned long old_ra, val3;
- 	long ival;
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index d834425..9e70b9a 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -571,27 +571,26 @@ _GLOBAL(ret_from_except_lite)
+ 	mtmsrd	r9,1		/* Update machine state */
+ #endif /* CONFIG_PPC_BOOK3E */
  
- 	opcode = instr >> 26;
-@@ -1486,10 +1486,25 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 		goto ldst_done;
+-#ifdef CONFIG_PREEMPT
+-	clrrdi	r9,r1,THREAD_SHIFT	/* current_thread_info() */
+-	li	r0,_TIF_NEED_RESCHED	/* bits to check */
+-	ld	r3,_MSR(r1)
+-	ld	r4,TI_FLAGS(r9)
+-	/* Move MSR_PR bit in r3 to _TIF_SIGPENDING position in r0 */
+-	rlwimi	r0,r3,32+TIF_SIGPENDING-MSR_PR_LG,_TIF_SIGPENDING
+-	and.	r0,r4,r0	/* check NEED_RESCHED and maybe SIGPENDING */
+-	bne	do_work
+-
+-#else /* !CONFIG_PREEMPT */
+ 	ld	r3,_MSR(r1)	/* Returning to user mode? */
+ 	andi.	r3,r3,MSR_PR
+-	beq	restore		/* if not, just restore regs and return */
++	bne	test_work_user
  
- 	case 36:	/* stw */
--	case 37:	/* stwu */
- 		val = regs->gpr[rd];
- 		err = write_mem(val, dform_ea(instr, regs), 4, regs);
- 		goto ldst_done;
-+	case 37:	/* stwu */
-+		val = regs->gpr[rd];
-+		val3 = dform_ea(instr, regs);
-+		/* For PPC32 we always use stwu to change stack point with r1. So
-+		 * this emulated store may corrupt the exception frame, now we
-+		 * have to provide the exception frame trampoline, which is pushed
-+		 * below the kprobed function stack. So we only update gpr[1] but
-+		 * don't emulate the real store operation. We will do real store
-+		 * operation safely in exception return code by checking this flag.
-+		 */
-+		if (ra == 1) {
-+			set_thread_flag(TIF_KPROBE);
-+			err = 0;
-+		} else
-+			err = write_mem(val, val3, 4, regs);
-+		goto ldst_done;
++	clrrdi	r9,r1,THREAD_SHIFT	/* current_thread_info() */
++	li	r0,_TIF_USER_WORK_MASK
++#ifdef CONFIG_PREEMPT
++	ori	r0,r0,_TIF_NEED_RESCHED
++#endif
++	ld	r4,TI_FLAGS(r9)
++	and.	r0,r4,r0	/* check NEED_RESCHED and maybe _TIF_USER_WORK_MASK */
++	bne	do_kernel_work
++	b	restore		/* if so, just restore regs and return */
++
++test_work_user:
+ 	/* Check current_thread_info()->flags */
+ 	clrrdi	r9,r1,THREAD_SHIFT
+ 	ld	r4,TI_FLAGS(r9)
+ 	andi.	r0,r4,_TIF_USER_WORK_MASK
+-	bne	do_work
+-#endif
++	bne	do_user_work
  
- 	case 38:	/* stb */
- 	case 39:	/* stbu */
+ restore:
+ BEGIN_FW_FTR_SECTION
+@@ -693,10 +692,8 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 	b	.ret_from_except_lite		/* loop back and handle more */
+ #endif
+ 
+-do_work:
++do_kernel_work:
+ #ifdef CONFIG_PREEMPT
+-	andi.	r0,r3,MSR_PR	/* Returning to user mode? */
+-	bne	user_work
+ 	/* Check that preempt_count() == 0 and interrupts are enabled */
+ 	lwz	r8,TI_PREEMPT(r9)
+ 	cmpwi	cr1,r8,0
+@@ -738,9 +735,9 @@ do_work:
+ 	bne	1b
+ 	b	restore
+ 
+-user_work:
+ #endif /* CONFIG_PREEMPT */
+ 
++do_user_work:
+ 	/* Enable interrupts */
+ #ifdef CONFIG_PPC_BOOK3E
+ 	wrteei	1
 -- 
 1.5.6
