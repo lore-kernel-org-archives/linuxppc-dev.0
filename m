@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1DBB3B6F70
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 10:01:18 +1100 (EST)
-Message-ID: <1323730871.19891.25.camel@pasglop>
-Subject: Re: [PATCH 2/4] ppc32/kprobe: introduce copy_exc_stack
+ by ozlabs.org (Postfix) with ESMTPS id 1CC171007D4
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 10:19:55 +1100 (EST)
+Message-ID: <1323731987.19891.40.camel@pasglop>
+Subject: Re: [PATCH 3/4] ppc32/kprobe: complete kprobe and migrate exception
+ frame
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Tiejun Chen <tiejun.chen@windriver.com>
-Date: Tue, 13 Dec 2011 10:01:11 +1100
-In-Reply-To: <1323679853-31751-3-git-send-email-tiejun.chen@windriver.com>
+Date: Tue, 13 Dec 2011 10:19:47 +1100
+In-Reply-To: <1323679853-31751-4-git-send-email-tiejun.chen@windriver.com>
 References: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>
- <1323679853-31751-3-git-send-email-tiejun.chen@windriver.com>
+ <1323679853-31751-4-git-send-email-tiejun.chen@windriver.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
@@ -25,82 +26,121 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2011-12-12 at 16:50 +0800, Tiejun Chen wrote:
-> We need a copy mechanism to migrate exception stack. But looks copy_page()
-> already implement this well so we can complete copy_exc_stack() based on
-> that directly.
+> We can't emulate stwu since that may corrupt current exception stack.
+> So we will have to do real store operation in the exception return code.
+> 
+> Firstly we'll allocate a trampoline exception frame below the kprobed
+> function stack and copy the current exception frame to the trampoline.
+> Then we can do this real store operation to implement 'stwu', and reroute
+> the trampoline frame to r1 to complete this exception migration.
+> 
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>  arch/powerpc/kernel/entry_32.S |   26 ++++++++++++++++++++++++++
+>  1 files changed, 26 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 56212bc..d56e311 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -1185,6 +1185,8 @@ recheck:
+>  	bne-	do_resched
+>  	andi.	r0,r9,_TIF_USER_WORK_MASK
+>  	beq	restore_user
+> +	andis.	r0,r9,_TIF_DELAYED_KPROBE@h
+> +	bne-	restore_kprobe
 
-I'd rather you don't hijack copy_page which is quite sensitive. The
-emulation isn't performance critical so a "dumber" routine would work
-fine.
+Same comment as earlier about name. Note that you're not hooking in the
+right place. "recheck" is only reached if you -already- went out of the
+normal exit path and only when going back to user space unless I'm
+missing something (which is really the case you don't care about).
 
-Why not use memcpy ? You can call it from assembly.
+You need to hook into "resume_kernel" instead.
+
+Also, we may want to simplify the whole thing, instead of checking user
+vs. kernel first etc... we could instead have a single _TIF_WORK_MASK
+which includes both the bits for user work and the new bit for kernel
+work. With preempt, the kernel work bits would also include
+_TIF_NEED_RESCHED.
+
+Then you have in the common exit path, a single test for that, with a
+fast path that skips everything and just goes to "restore" for both
+kernel and user.
+
+The only possible issue is the setting of dbcr0 for BookE and 44x and we
+can keep that as a special case keyed of MSR_PR in the resume path under
+ifdef BOOKE (we'll probably sanitize that later with some different
+rework anyway). 
+
+So the exit path because something like:
+
+ret_from_except:
+	.. hard disable interrupts (unchanged) ...
+	read TIF flags
+	andi with _TIF_WORK_MASK
+		nothing set -> restore
+	check PR
+		set -> do_work_user
+		no set -> do_work_kernel (kprobes & preempt)
+		(both loop until relevant _TIF flags are all clear)
+restore:
+	#ifdef BOOKE & 44x test PR & do dbcr0 stuff if needed
+	... nornal restore ...
+
+>  do_user_signal:			/* r10 contains MSR_KERNEL here */
+>  	ori	r10,r10,MSR_EE
+>  	SYNC
+> @@ -1202,6 +1204,30 @@ do_user_signal:			/* r10 contains MSR_KERNEL here */
+>  	REST_NVGPRS(r1)
+>  	b	recheck
+>  
+> +restore_kprobe:
+> +	lwz	r3,GPR1(r1)
+> +	subi    r3,r3,INT_FRAME_SIZE; /* Allocate a trampoline exception frame */
+> +	mr	r4,r1
+> +	bl	copy_exc_stack	/* Copy from the original to the trampoline */
+> +
+> +	/* Do real stw operation to complete stwu */
+> +	mr	r4,r1
+> +	addi	r4,r4,INT_FRAME_SIZE	/* Get kprobed entry */
+> +	lwz	r5,GPR1(r1)		/* Backup r1 */
+> +	stw	r4,GPR1(r1)		/* Now store that safely */
+
+The above confuses me. Shouldn't you do instead something like
+
+	lwz	r4,GPR1(r1)
+	subi	r3,r4,INT_FRAME_SIZE
+	li	r5,INT_FRAME_SIZE
+	bl	memcpy
+
+To start with, then you need to know the "old" r1 value which may or may
+not be related to your current r1. The emulation code should stash it
+into the int frame in an unused slot such as "orig_gpr3" (since that
+only pertains to restarting syscalls which we aren't doing here).
+
+Then you adjust your r1 and do something like
+
+	lwz	r3,GPR1(r1)
+	lwz	r0,ORIG_GPR3(r1)
+	stw	r0,0(r3)
+
+To perform the store, before doing the rest:
+ 
+> +	/* Reroute the trampoline frame to r1 */
+> +	subi    r5,r5,INT_FRAME_SIZE
+> +	mr	r1,r5
+> +
+> +	/* Clear _TIF_DELAYED_KPROBE flag */
+> +	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+> +	lwz	r0,TI_FLAGS(r9)
+> +	rlwinm	r0,r0,0,_TIF_DELAYED_KPROBE
+> +	stw	r0,TI_FLAGS(r9)
+> +
+> +	b	restore
+> +
+>  /*
+>   * We come here when we are at the end of handling an exception
+>   * that occurred at a place where taking an exception will lose
 
 Cheers,
 Ben.
-
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/include/asm/page_32.h |    1 +
->  arch/powerpc/kernel/misc_32.S      |   16 +++++++++++++++-
->  arch/powerpc/kernel/ppc_ksyms.c    |    1 +
->  3 files changed, 17 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-> index 68d73b2..2c1fd84 100644
-> --- a/arch/powerpc/include/asm/page_32.h
-> +++ b/arch/powerpc/include/asm/page_32.h
-> @@ -40,6 +40,7 @@ struct page;
->  extern void clear_pages(void *page, int order);
->  static inline void clear_page(void *page) { clear_pages(page, 0); }
->  extern void copy_page(void *to, void *from);
-> +extern void copy_exc_stack(void *to, void *from);
->  
->  #include <asm-generic/getorder.h>
->  
-> diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-> index 998a100..aa02545 100644
-> --- a/arch/powerpc/kernel/misc_32.S
-> +++ b/arch/powerpc/kernel/misc_32.S
-> @@ -527,7 +527,7 @@ _GLOBAL(clear_pages)
->  	stw	r8,12(r3);	\
->  	stwu	r9,16(r3)
->  
-> -_GLOBAL(copy_page)
-> +ready_copy:
->  	addi	r3,r3,-4
->  	addi	r4,r4,-4
->  
-> @@ -544,7 +544,21 @@ _GLOBAL(copy_page)
->  	dcbt	r5,r4
->  	li	r11,L1_CACHE_BYTES+4
->  #endif /* MAX_COPY_PREFETCH */
-> +	blr
-> +
-> +_GLOBAL(copy_exc_stack)
-> +	mflr	r12
-> +	bl	ready_copy
-> +	mtlr	r12
-> +	li	r0,INT_FRAME_SIZE/L1_CACHE_BYTES - MAX_COPY_PREFETCH
-> +	b	go_copy
-> +
-> +_GLOBAL(copy_page)
-> +	mflr	r12
-> +	bl	ready_copy
-> +	mtlr	r12
->  	li	r0,PAGE_SIZE/L1_CACHE_BYTES - MAX_COPY_PREFETCH
-> +go_copy:
->  	crclr	4*cr0+eq
->  2:
->  	mtctr	r0
-> diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-> index f5ae872..2223daf 100644
-> --- a/arch/powerpc/kernel/ppc_ksyms.c
-> +++ b/arch/powerpc/kernel/ppc_ksyms.c
-> @@ -88,6 +88,7 @@ EXPORT_SYMBOL(__clear_user);
->  EXPORT_SYMBOL(__strncpy_from_user);
->  EXPORT_SYMBOL(__strnlen_user);
->  EXPORT_SYMBOL(copy_page);
-> +EXPORT_SYMBOL(copy_exc_stack);
->  
->  #if defined(CONFIG_PCI) && defined(CONFIG_PPC32)
->  EXPORT_SYMBOL(isa_io_base);
