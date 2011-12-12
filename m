@@ -3,13 +3,13 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 072FFB70BB
+ by ozlabs.org (Postfix) with ESMTPS id 09ABFB70BC
  for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2011 19:51:41 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/4] ppc32/kprobe: complete kprobe and migrate exception frame
-Date: Mon, 12 Dec 2011 16:50:52 +0800
-Message-ID: <1323679853-31751-4-git-send-email-tiejun.chen@windriver.com>
+Subject: [PATCH 1/4] powerpc/kprobe: introduce a new thread flag
+Date: Mon, 12 Dec 2011 16:50:50 +0800
+Message-ID: <1323679853-31751-2-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>
 References: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -23,62 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can't emulate stwu since that may corrupt current exception stack.
-So we will have to do real store operation in the exception return code.
-
-Firstly we'll allocate a trampoline exception frame below the kprobed
-function stack and copy the current exception frame to the trampoline.
-Then we can do this real store operation to implement 'stwu', and reroute
-the trampoline frame to r1 to complete this exception migration.
+We need to add a new thread flag, TIF_KPROBE/_TIF_DELAYED_KPROBE,
+for handling kprobe operation while exiting exception.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/entry_32.S |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/thread_info.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 56212bc..d56e311 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -1185,6 +1185,8 @@ recheck:
- 	bne-	do_resched
- 	andi.	r0,r9,_TIF_USER_WORK_MASK
- 	beq	restore_user
-+	andis.	r0,r9,_TIF_DELAYED_KPROBE@h
-+	bne-	restore_kprobe
- do_user_signal:			/* r10 contains MSR_KERNEL here */
- 	ori	r10,r10,MSR_EE
- 	SYNC
-@@ -1202,6 +1204,30 @@ do_user_signal:			/* r10 contains MSR_KERNEL here */
- 	REST_NVGPRS(r1)
- 	b	recheck
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 836f231..3378734 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -112,6 +112,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+ #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
+ #define TIF_RUNLATCH		16	/* Is the runlatch enabled? */
++#define TIF_KPROBE		17	/* Is the delayed kprobe operation? */
  
-+restore_kprobe:
-+	lwz	r3,GPR1(r1)
-+	subi    r3,r3,INT_FRAME_SIZE; /* Allocate a trampoline exception frame */
-+	mr	r4,r1
-+	bl	copy_exc_stack	/* Copy from the original to the trampoline */
-+
-+	/* Do real stw operation to complete stwu */
-+	mr	r4,r1
-+	addi	r4,r4,INT_FRAME_SIZE	/* Get kprobed entry */
-+	lwz	r5,GPR1(r1)		/* Backup r1 */
-+	stw	r4,GPR1(r1)		/* Now store that safely */
-+
-+	/* Reroute the trampoline frame to r1 */
-+	subi    r5,r5,INT_FRAME_SIZE
-+	mr	r1,r5
-+
-+	/* Clear _TIF_DELAYED_KPROBE flag */
-+	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	lwz	r0,TI_FLAGS(r9)
-+	rlwinm	r0,r0,0,_TIF_DELAYED_KPROBE
-+	stw	r0,TI_FLAGS(r9)
-+
-+	b	restore
-+
- /*
-  * We come here when we are at the end of handling an exception
-  * that occurred at a place where taking an exception will lose
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -130,6 +131,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
++#define _TIF_DELAYED_KPROBE	(1<<TIF_KPROBE)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+ 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+ 
 -- 
 1.5.6
