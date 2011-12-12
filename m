@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 13 Dec 2011 09:30:16 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: [PATCH v3 06/14] KVM: PPC: Make the H_ENTER hcall more reliable
-Message-ID: <20111212223016.GG18868@bloggs.ozlabs.ibm.com>
-References: <20111212222347.GA18868@bloggs.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111212222347.GA18868@bloggs.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 68FD7B6F7E
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 09:59:06 +1100 (EST)
+Message-ID: <1323730739.19891.23.camel@pasglop>
+Subject: Re: [PATCH 1/4] powerpc/kprobe: introduce a new thread flag
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Date: Tue, 13 Dec 2011 09:58:59 +1100
+In-Reply-To: <1323679853-31751-2-git-send-email-tiejun.chen@windriver.com>
+References: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>
+ <1323679853-31751-2-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,177 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At present, our implementation of H_ENTER only makes one try at locking
-each slot that it looks at, and doesn't even retry the ldarx/stdcx.
-atomic update sequence that it uses to attempt to lock the slot.  Thus
-it can return the H_PTEG_FULL error unnecessarily, particularly when
-the H_EXACT flag is set, meaning that the caller wants a specific PTEG
-slot.
+On Mon, 2011-12-12 at 16:50 +0800, Tiejun Chen wrote:
+> We need to add a new thread flag, TIF_KPROBE/_TIF_DELAYED_KPROBE,
+> for handling kprobe operation while exiting exception.
 
-This improves the situation by making a second pass when no free HPTE
-slot is found, where we spin until we succeed in locking each slot in
-turn and then check whether it is full while we hold the lock.  If the
-second pass fails, then we return H_PTEG_FULL.
+The basic idea is sane, however the instruction emulation isn't per-se
+kprobe specific. It could be used by xmon too for example. I'd rather
+use a different name, something like TIF_EMULATE_STACK_STORE or
+something like that.
 
-This also moves lock_hpte to a header file (since later commits in this
-series will need to use it from other source files) and renames it to
-try_lock_hpte, which is a somewhat less misleading name.
+Cheers,
+Ben.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/include/asm/kvm_book3s_64.h |   25 ++++++++++++
- arch/powerpc/kvm/book3s_hv_rm_mmu.c      |   63 ++++++++++++++++--------------
- 2 files changed, 59 insertions(+), 29 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index fa3dc79..300ec04 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -43,6 +43,31 @@ static inline void svcpu_put(struct kvmppc_book3s_shadow_vcpu *svcpu)
- #define HPT_HASH_MASK	(HPT_NPTEG - 1)
- #endif
- 
-+/*
-+ * We use a lock bit in HPTE dword 0 to synchronize updates and
-+ * accesses to each HPTE, and another bit to indicate non-present
-+ * HPTEs.
-+ */
-+#define HPTE_V_HVLOCK	0x40UL
-+
-+static inline long try_lock_hpte(unsigned long *hpte, unsigned long bits)
-+{
-+	unsigned long tmp, old;
-+
-+	asm volatile("	ldarx	%0,0,%2\n"
-+		     "	and.	%1,%0,%3\n"
-+		     "	bne	2f\n"
-+		     "	ori	%0,%0,%4\n"
-+		     "  stdcx.	%0,0,%2\n"
-+		     "	beq+	2f\n"
-+		     "	li	%1,%3\n"
-+		     "2:	isync"
-+		     : "=&r" (tmp), "=&r" (old)
-+		     : "r" (hpte), "r" (bits), "i" (HPTE_V_HVLOCK)
-+		     : "cc", "memory");
-+	return old == 0;
-+}
-+
- static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
- 					     unsigned long pte_index)
- {
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 84dae82..a28a603 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -53,26 +53,6 @@ static void *real_vmalloc_addr(void *x)
- 	return __va(addr);
- }
- 
--#define HPTE_V_HVLOCK	0x40UL
--
--static inline long lock_hpte(unsigned long *hpte, unsigned long bits)
--{
--	unsigned long tmp, old;
--
--	asm volatile("	ldarx	%0,0,%2\n"
--		     "	and.	%1,%0,%3\n"
--		     "	bne	2f\n"
--		     "	ori	%0,%0,%4\n"
--		     "  stdcx.	%0,0,%2\n"
--		     "	beq+	2f\n"
--		     "	li	%1,%3\n"
--		     "2:	isync"
--		     : "=&r" (tmp), "=&r" (old)
--		     : "r" (hpte), "r" (bits), "i" (HPTE_V_HVLOCK)
--		     : "cc", "memory");
--	return old == 0;
--}
--
- long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
- 		    long pte_index, unsigned long pteh, unsigned long ptel)
- {
-@@ -126,24 +106,49 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
- 	pteh &= ~0x60UL;
- 	ptel &= ~(HPTE_R_PP0 - kvm->arch.ram_psize);
- 	ptel |= pa;
-+
- 	if (pte_index >= HPT_NPTE)
- 		return H_PARAMETER;
- 	if (likely((flags & H_EXACT) == 0)) {
- 		pte_index &= ~7UL;
- 		hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
--		for (i = 0; ; ++i) {
--			if (i == 8)
--				return H_PTEG_FULL;
-+		for (i = 0; i < 8; ++i) {
- 			if ((*hpte & HPTE_V_VALID) == 0 &&
--			    lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID))
-+			    try_lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID))
- 				break;
- 			hpte += 2;
- 		}
-+		if (i == 8) {
-+			/*
-+			 * Since try_lock_hpte doesn't retry (not even stdcx.
-+			 * failures), it could be that there is a free slot
-+			 * but we transiently failed to lock it.  Try again,
-+			 * actually locking each slot and checking it.
-+			 */
-+			hpte -= 16;
-+			for (i = 0; i < 8; ++i) {
-+				while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
-+					cpu_relax();
-+				if ((*hpte & HPTE_V_VALID) == 0)
-+					break;
-+				*hpte &= ~HPTE_V_HVLOCK;
-+				hpte += 2;
-+			}
-+			if (i == 8)
-+				return H_PTEG_FULL;
-+		}
- 		pte_index += i;
- 	} else {
- 		hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
--		if (!lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID))
--			return H_PTEG_FULL;
-+		if (!try_lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID)) {
-+			/* Lock the slot and check again */
-+			while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
-+				cpu_relax();
-+			if (*hpte & HPTE_V_VALID) {
-+				*hpte &= ~HPTE_V_HVLOCK;
-+				return H_PTEG_FULL;
-+			}
-+		}
- 	}
- 
- 	/* Save away the guest's idea of the second HPTE dword */
-@@ -189,7 +194,7 @@ long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
- 	if (pte_index >= HPT_NPTE)
- 		return H_PARAMETER;
- 	hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
--	while (!lock_hpte(hpte, HPTE_V_HVLOCK))
-+	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
- 		cpu_relax();
- 	if ((hpte[0] & HPTE_V_VALID) == 0 ||
- 	    ((flags & H_AVPN) && (hpte[0] & ~0x7fUL) != avpn) ||
-@@ -248,7 +253,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
- 			break;
- 		}
- 		hp = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
--		while (!lock_hpte(hp, HPTE_V_HVLOCK))
-+		while (!try_lock_hpte(hp, HPTE_V_HVLOCK))
- 			cpu_relax();
- 		found = 0;
- 		if (hp[0] & HPTE_V_VALID) {
-@@ -310,7 +315,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 	if (pte_index >= HPT_NPTE)
- 		return H_PARAMETER;
- 	hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
--	while (!lock_hpte(hpte, HPTE_V_HVLOCK))
-+	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
- 		cpu_relax();
- 	if ((hpte[0] & HPTE_V_VALID) == 0 ||
- 	    ((flags & H_AVPN) && (hpte[0] & ~0x7fUL) != avpn)) {
--- 
-1.7.7.3
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>  arch/powerpc/include/asm/thread_info.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index 836f231..3378734 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -112,6 +112,7 @@ static inline struct thread_info *current_thread_info(void)
+>  #define TIF_FREEZE		14	/* Freezing for suspend */
+>  #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
+>  #define TIF_RUNLATCH		16	/* Is the runlatch enabled? */
+> +#define TIF_KPROBE		17	/* Is the delayed kprobe operation? */
+>  
+>  /* as above, but as bit values */
+>  #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+> @@ -130,6 +131,7 @@ static inline struct thread_info *current_thread_info(void)
+>  #define _TIF_FREEZE		(1<<TIF_FREEZE)
+>  #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+>  #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+> +#define _TIF_DELAYED_KPROBE	(1<<TIF_KPROBE)
+>  #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+>  				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+>  
