@@ -1,30 +1,18 @@
-Return-Path: <balbi@ti.com>
-Received: from na3sys009aog121.obsmtp.com (na3sys009aog121.obsmtp.com
- [74.125.149.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8B1361007D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 01:18:11 +1100 (EST)
-Received: by mail-lpp01m010-f49.google.com with SMTP id c1so1034461lah.36
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 06:18:08 -0800 (PST)
-Date: Tue, 13 Dec 2011 16:18:04 +0200
-From: Felipe Balbi <balbi@ti.com>
-To: Eric =?iso-8859-1?Q?B=E9nard?= <eric@eukrea.com>
-Subject: Re: [PATCH v2 01/19] mxc_udc: add workaround for ENGcm09152 for i.MX25
-Message-ID: <20111213141803.GO3133@legolas.emea.dhcp.ti.com>
-References: <20111213101846.GC2619@pengutronix.de>
- <1323785377-22463-1-git-send-email-eric@eukrea.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="bJ3jXuwtxrXxD2iT"
-In-Reply-To: <1323785377-22463-1-git-send-email-eric@eukrea.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
- "open list:FREESCALE USB PER..." <linux-usb@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>, Felipe Balbi <balbi@ti.com>,
- Sascha Hauer <kernel@pengutronix.de>,
- "open list:FREESCALE USB PER..." <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel@lists.infradead.org
-Reply-To: balbi@ti.com
+ by ozlabs.org (Postfix) with ESMTPS id 66CD41007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 04:47:53 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH V2] gpio: mpc8xxx: don't allow input-only pins to be output
+ for MPC5121
+Date: Tue, 13 Dec 2011 18:46:57 +0100
+Message-Id: <1323798417-11500-1-git-send-email-w.sang@pengutronix.de>
+Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ Linus Walleij <linus.walleij@stericsson.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,101 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add a 5121-custom reject if an input-only pin is requested to be output
+(see 18.3.1.1 in the refman). Also, rewrite mach-specific quirk setup to
+consume less lines which scales better.
 
---bJ3jXuwtxrXxD2iT
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+---
 
-Hi,
+Since V1, added an empty line after the new function.
 
-On Tue, Dec 13, 2011 at 03:09:37PM +0100, Eric B=E9nard wrote:
-> this patch gives the possibility to workaround bug ENGcm09152
-> on i.MX25 when the hardware workaround is also implemented on
-> the board.
-> It covers the workaround described on page 42 of the following Errata,
-> titled "USB: UTMI_USBPHY VBUS input impedance implementation error" :
-> http://cache.freescale.com/files/dsp/doc/errata/IMX25CE.pdf
->=20
-> Signed-off-by: Eric B=E9nard <eric@eukrea.com>
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Li Yang <leoli@freescale.com>
+ drivers/gpio/gpio-mpc8xxx.c |   18 +++++++++++++-----
+ 1 files changed, 13 insertions(+), 5 deletions(-)
 
-Sascha, are you taking this one or should I take it ? One comment below
-though.
-
-> ---
->  drivers/usb/gadget/fsl_mxc_udc.c |   22 +++++++++++++---------
->  1 files changed, 13 insertions(+), 9 deletions(-)
->=20
-> diff --git a/drivers/usb/gadget/fsl_mxc_udc.c b/drivers/usb/gadget/fsl_mx=
-c_udc.c
-> index dcbc0a2..4aff05d 100644
-> --- a/drivers/usb/gadget/fsl_mxc_udc.c
-> +++ b/drivers/usb/gadget/fsl_mxc_udc.c
-> @@ -23,7 +23,7 @@
->  static struct clk *mxc_ahb_clk;
->  static struct clk *mxc_usb_clk;
-> =20
-> -/* workaround ENGcm09152 for i.MX35 */
-> +/* workaround ENGcm09152 for i.MX25/35 */
->  #define USBPHYCTRL_OTGBASE_OFFSET	0x608
->  #define USBPHYCTRL_EVDO			(1 << 23)
-> =20
-> @@ -89,16 +89,20 @@ eenahb:
->  void fsl_udc_clk_finalize(struct platform_device *pdev)
->  {
->  	struct fsl_usb2_platform_data *pdata =3D pdev->dev.platform_data;
-> -	if (cpu_is_mx35()) {
-> +	if (cpu_is_mx25() || cpu_is_mx35()) {
->  		unsigned int v;
-> -
-> -		/* workaround ENGcm09152 for i.MX35 */
-> +		void __iomem *otgbase;
-> +		if (cpu_is_mx25())
-> +			otgbase =3D MX25_IO_ADDRESS(MX25_USB_BASE_ADDR +
-> +					USBPHYCTRL_OTGBASE_OFFSET);
-> +		else if (cpu_is_mx35())
-> +			otgbase =3D MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
-> +					USBPHYCTRL_OTGBASE_OFFSET);
-
-I don't want to see cpu_is_* or machine_is_* or <plat/*> or <mach/*>
-anywhere on drivers, please make sure to remove them for 3.4 merge
-window the latest. You should also make sure that this driver has no
-static globals. IOW, I would like to be able to have multiple instances
-of this driver working fine.
-
-Granted, you have no boards with such setup, but we made that mistake on
-musb driver and now we have a bunch of other stuff to rework in order to
-get our dual-MUSB board to work ;-)
-
-I also see that fsl_udc_core.c is still not using dev_pm_ops, please fix
-that too.
-
---=20
-balbi
-
---bJ3jXuwtxrXxD2iT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBAgAGBQJO516bAAoJEIaOsuA1yqRE19oP/iu4VtYk+Wc5HUUyzpPDnEBP
-IcXWhAFfqGkwfu1EIqsBzDX4hChT0hEuP7V/TNx9b2BF07SJnuFkn4KJlSRmBarn
-UaxABnS7Ne862GCc2fQHZYaNJ5PcMIiUmCB89YSeqmjVOa4E9S7MV6PVC7QlLmD2
-QrBmBP9ifIJXFTlbGutyZYHQeOXzc6Ln2/HIt4k149ngsI+g9vwFhkvqc/WMyhxq
-G00QFH/yjK94HyXGSTWBxU5M+ORyp+UjWn+pGXL2kyih/wmgY0DGeY8ZmoJzIiZ9
-OluE5h5dShvdrw6qSHA45Uef+J6uAOnX9zWsIuUfqCzgQCDbGU2/eN7QLwMRhu63
-lSnfkWFRL1phSgyq5rjjk5EtrZj9lti/6jjX4wq/jo1o7TjQi+TD+ijkB5D+oR+U
-WyA9WeqLCCwfji6DrRJ/sxan1W5XBw13W24AK2oMlEyLqK4yslssCIpGIPLavnhw
-mRoOdvDK2n8eOTCTFBcwpHEhc3BrcCiLDzFosKSOG8fHcS8iqvlefbYQtTB522iK
-JyPKipfk1L8u4yvQSGCxMyclfyox7GNYw6TgnpudY31+M6B+NX+JlJlAjQEAqSIh
-6dVl9kGD/olq+xULbspHU+p2MCkZd6IqfSkcn0g3bbZzvSgCt8OkM8QGPkz8Nyxl
-8kW++t4asuqSdd0WBTN5
-=4Uqw
------END PGP SIGNATURE-----
-
---bJ3jXuwtxrXxD2iT--
+diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
+index ec3fcf0..bb4975f 100644
+--- a/drivers/gpio/gpio-mpc8xxx.c
++++ b/drivers/gpio/gpio-mpc8xxx.c
+@@ -115,6 +115,15 @@ static int mpc8xxx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ 	return 0;
+ }
+ 
++static int mpc5121_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	/* GPIO 28..31 are input only on MPC5121 */
++	if (gpio >= 28)
++		return -EINVAL;
++
++	return mpc8xxx_gpio_dir_out(gc, gpio, val);
++}
++
+ static int mpc8xxx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+ 	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+@@ -340,11 +349,10 @@ static void __init mpc8xxx_add_controller(struct device_node *np)
+ 	mm_gc->save_regs = mpc8xxx_gpio_save_regs;
+ 	gc->ngpio = MPC8XXX_GPIO_PINS;
+ 	gc->direction_input = mpc8xxx_gpio_dir_in;
+-	gc->direction_output = mpc8xxx_gpio_dir_out;
+-	if (of_device_is_compatible(np, "fsl,mpc8572-gpio"))
+-		gc->get = mpc8572_gpio_get;
+-	else
+-		gc->get = mpc8xxx_gpio_get;
++	gc->direction_output = of_device_is_compatible(np, "fsl,mpc5121-gpio") ?
++		mpc5121_gpio_dir_out : mpc8xxx_gpio_dir_out;
++	gc->get = of_device_is_compatible(np, "fsl,mpc8572-gpio") ?
++		mpc8572_gpio_get : mpc8xxx_gpio_get;
+ 	gc->set = mpc8xxx_gpio_set;
+ 	gc->to_irq = mpc8xxx_gpio_to_irq;
+ 
+-- 
+1.7.2.5
