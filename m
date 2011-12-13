@@ -1,26 +1,22 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E702B1007D3
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2011 05:52:34 +1100 (EST)
-Received: from mail213-ch1 (localhost [127.0.0.1])	by
- mail213-ch1-R.bigfish.com (Postfix) with ESMTP id 376D05802A9	for
- <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 18:52:32 +0000 (UTC)
-Received: from CH1EHSMHS023.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.244])	by mail213-ch1.bigfish.com (Postfix) with ESMTP id
- D3E2C500046	for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 18:52:28 +0000
- (UTC)
-From: Timur Tabi <timur@freescale.com>
-To: <kumar.gala@freescale.com>, <scottwood@freescale.com>,
- <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] [v2] powerpc/fsl: add MSI support for the Freescale hypervisor
-Date: Tue, 13 Dec 2011 12:52:24 -0600
-Message-ID: <1323802344-11165-1-git-send-email-timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id CAF0E1007D3
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2011 06:29:03 +1100 (EST)
+Message-ID: <4EE7A776.70609@freescale.com>
+Date: Tue, 13 Dec 2011 13:28:54 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Vineeth <vneethv@gmail.com>
+Subject: Re: Linux port availability for p5010 processor
+References: <CAFbQSaALfZ-6-_g5aC1GgbUaoHyuBwaT342OFMTSf0iqtakDGA@mail.gmail.com>
+In-Reply-To: <CAFbQSaALfZ-6-_g5aC1GgbUaoHyuBwaT342OFMTSf0iqtakDGA@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, Senthil CGC <senthilece2005@gmail.com>,
+ rajarama.b@coreel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,245 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for vmpic-msi nodes to the fsl_msi driver.  The MSI is
-virtualized by the hypervisor, so the vmpic-msi does not contain a 'reg'
-property.  Instead, the driver uses hcalls.
+On 12/12/2011 11:33 PM, Vineeth wrote:
+> Do we have a linux port available for freescale P5010 processor (with
+> single E5500 core) ?
+> /(found arch/powerpc/platforms/pseries ; and a some details on
+> kernel/cputable.c /)
 
-Add support for the "msi-address-64" property to the fsl_pci driver.
-The Freescale hypervisor typically puts the virtualized MSIIR register
-in the page after the end of DDR, so we extend the DDR ATMU to cover it.
-Any other location for MSIIR is not supported, for now.
+p5010 is basically a p5020 with one core and "memory complex" instead of
+two.  The same Linux code should work for both.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/sysdev/fsl_msi.c |   68 +++++++++++++++++++++++++++++------------
- arch/powerpc/sysdev/fsl_msi.h |    7 ++--
- arch/powerpc/sysdev/fsl_pci.c |   30 ++++++++++++++++++
- 3 files changed, 82 insertions(+), 23 deletions(-)
+pseries is something completely different.
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 89548e0..7dc473f 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -23,6 +23,8 @@
- #include <asm/hw_irq.h>
- #include <asm/ppc-pci.h>
- #include <asm/mpic.h>
-+#include <asm/fsl_hcalls.h>
-+
- #include "fsl_msi.h"
- #include "fsl_pci.h"
- 
-@@ -163,11 +165,13 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 	 */
- 	np = of_parse_phandle(hose->dn, "fsl,msi", 0);
- 	if (np) {
--		if (of_device_is_compatible(np, "fsl,mpic-msi"))
-+		if (of_device_is_compatible(np, "fsl,mpic-msi") ||
-+		    of_device_is_compatible(np, "fsl,vmpic-msi"))
- 			phandle = np->phandle;
- 		else {
--			dev_err(&pdev->dev, "node %s has an invalid fsl,msi"
--				" phandle\n", hose->dn->full_name);
-+			dev_err(&pdev->dev,
-+				"node %s has an invalid fsl,msi phandle %u\n",
-+				hose->dn->full_name, np->phandle);
- 			return -EINVAL;
- 		}
- 	}
-@@ -196,16 +200,14 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 
- 		if (hwirq < 0) {
- 			rc = hwirq;
--			pr_debug("%s: fail allocating msi interrupt\n",
--					__func__);
-+			dev_err(&pdev->dev, "could not allocate MSI interrupt\n");
- 			goto out_free;
- 		}
- 
- 		virq = irq_create_mapping(msi_data->irqhost, hwirq);
- 
- 		if (virq == NO_IRQ) {
--			pr_debug("%s: fail mapping hwirq 0x%x\n",
--					__func__, hwirq);
-+			dev_err(&pdev->dev, "fail mapping hwirq %i\n", hwirq);
- 			msi_bitmap_free_hwirqs(&msi_data->bitmap, hwirq, 1);
- 			rc = -ENOSPC;
- 			goto out_free;
-@@ -234,6 +236,7 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 	u32 intr_index;
- 	u32 have_shift = 0;
- 	struct fsl_msi_cascade_data *cascade_data;
-+	unsigned int ret;
- 
- 	cascade_data = irq_get_handler_data(irq);
- 	msi_data = cascade_data->msi_data;
-@@ -265,6 +268,14 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 	case FSL_PIC_IP_IPIC:
- 		msir_value = fsl_msi_read(msi_data->msi_regs, msir_index * 0x4);
- 		break;
-+	case FSL_PIC_IP_VMPIC:
-+		ret = fh_vmpic_get_msir(virq_to_hw(irq), &msir_value);
-+		if (ret) {
-+			pr_err("fsl-msi: fh_vmpic_get_msir() failed for "
-+			       "irq %u (ret=%u)\n", irq, ret);
-+			msir_value = 0;
-+		}
-+		break;
- 	}
- 
- 	while (msir_value) {
-@@ -282,6 +293,7 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 
- 	switch (msi_data->feature & FSL_PIC_IP_MASK) {
- 	case FSL_PIC_IP_MPIC:
-+	case FSL_PIC_IP_VMPIC:
- 		chip->irq_eoi(idata);
- 		break;
- 	case FSL_PIC_IP_IPIC:
-@@ -311,7 +323,8 @@ static int fsl_of_msi_remove(struct platform_device *ofdev)
- 	}
- 	if (msi->bitmap.bitmap)
- 		msi_bitmap_free(&msi->bitmap);
--	iounmap(msi->msi_regs);
-+	if ((msi->feature & FSL_PIC_IP_MASK) != FSL_PIC_IP_VMPIC)
-+		iounmap(msi->msi_regs);
- 	kfree(msi);
- 
- 	return 0;
-@@ -383,26 +396,32 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
- 		goto error_out;
- 	}
- 
--	/* Get the MSI reg base */
--	err = of_address_to_resource(dev->dev.of_node, 0, &res);
--	if (err) {
--		dev_err(&dev->dev, "%s resource error!\n",
-+	/*
-+	 * Under the Freescale hypervisor, the msi nodes don't have a 'reg'
-+	 * property.  Instead, we use hypercalls to access the MSI.
-+	 */
-+	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) != FSL_PIC_IP_VMPIC) {
-+		err = of_address_to_resource(dev->dev.of_node, 0, &res);
-+		if (err) {
-+			dev_err(&dev->dev, "invalid resource for node %s\n",
- 				dev->dev.of_node->full_name);
--		goto error_out;
--	}
-+			goto error_out;
-+		}
- 
--	msi->msi_regs = ioremap(res.start, resource_size(&res));
--	if (!msi->msi_regs) {
--		dev_err(&dev->dev, "ioremap problem failed\n");
--		goto error_out;
-+		msi->msi_regs = ioremap(res.start, resource_size(&res));
-+		if (!msi->msi_regs) {
-+			dev_err(&dev->dev, "could not map node %s\n",
-+				dev->dev.of_node->full_name);
-+			goto error_out;
-+		}
-+		msi->msiir_offset =
-+			features->msiir_offset + (res.start & 0xfffff);
- 	}
- 
- 	msi->feature = features->fsl_pic_ip;
- 
- 	msi->irqhost->host_data = msi;
- 
--	msi->msiir_offset = features->msiir_offset + (res.start & 0xfffff);
--
- 	/*
- 	 * Remember the phandle, so that we can match with any PCI nodes
- 	 * that have an "fsl,msi" property.
-@@ -476,6 +495,11 @@ static const struct fsl_msi_feature ipic_msi_feature = {
- 	.msiir_offset = 0x38,
- };
- 
-+static const struct fsl_msi_feature vmpic_msi_feature = {
-+	.fsl_pic_ip = FSL_PIC_IP_VMPIC,
-+	.msiir_offset = 0,
-+};
-+
- static const struct of_device_id fsl_of_msi_ids[] = {
- 	{
- 		.compatible = "fsl,mpic-msi",
-@@ -485,6 +509,10 @@ static const struct of_device_id fsl_of_msi_ids[] = {
- 		.compatible = "fsl,ipic-msi",
- 		.data = (void *)&ipic_msi_feature,
- 	},
-+ 	{
-+		.compatible = "fsl,vmpic-msi",
-+		.data = (void *)&vmpic_msi_feature,
-+	},
- 	{}
- };
- 
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index b5d25ba..f6c646a 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -20,9 +20,10 @@
- #define IRQS_PER_MSI_REG	32
- #define NR_MSI_IRQS	(NR_MSI_REG * IRQS_PER_MSI_REG)
- 
--#define FSL_PIC_IP_MASK	0x0000000F
--#define FSL_PIC_IP_MPIC	0x00000001
--#define FSL_PIC_IP_IPIC	0x00000002
-+#define FSL_PIC_IP_MASK   0x0000000F
-+#define FSL_PIC_IP_MPIC   0x00000001
-+#define FSL_PIC_IP_IPIC   0x00000002
-+#define FSL_PIC_IP_VMPIC  0x00000003
- 
- struct fsl_msi {
- 	struct irq_host *irqhost;
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 4ce547e..cd82613 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -113,6 +113,8 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
- 	u32 piwar = PIWAR_EN | PIWAR_PF | PIWAR_TGI_LOCAL |
- 			PIWAR_READ_SNOOP | PIWAR_WRITE_SNOOP;
- 	char *name = hose->dn->full_name;
-+	const u64 *reg;
-+	int len;
- 
- 	pr_debug("PCI memory map start 0x%016llx, size 0x%016llx\n",
- 		 (u64)rsrc->start, (u64)resource_size(rsrc));
-@@ -205,6 +207,34 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
- 
- 	/* Setup inbound mem window */
- 	mem = memblock_end_of_DRAM();
-+
-+	/*
-+	 * The msi-address-64 property, if it exists, indicates the physical
-+	 * address of the MSIIR register.  Normally, this register is located
-+	 * inside CCSR, so the ATMU that covers all of CCSR is used. But if
-+	 * this property exists, then we normally need to create a new ATMU
-+	 * for it.  For now, however, we cheat.  The only entity that creates
-+	 * this property is the Freescale hypervisor, and the address is
-+	 * specified in the partition configuration.  Typically, the address
-+	 * is located in the page immediately after the end of DDR.  If so, we
-+	 * can avoid allocating a new ATMU by extending the DDR ATMU by one
-+	 * page.
-+	 */
-+	reg = of_get_property(hose->dn, "msi-address-64", &len);
-+	if (reg && (len == sizeof(u64))) {
-+		u64 address = be64_to_cpup(reg);
-+
-+		if ((address >= mem) && (address < (mem + PAGE_SIZE))) {
-+			pr_info("%s: extending DDR ATMU to cover MSIIR", name);
-+			mem += PAGE_SIZE;
-+		} else {
-+			/* TODO: Create a new ATMU for MSIIR */
-+			pr_warn("%s: msi-address-64 address of %llx in node %s"
-+				" is unsupported\n", name, address,
-+				hose->dn->full_name);
-+		}
-+	}
-+
- 	sz = min(mem, paddr_lo);
- 	mem_log = __ilog2_u64(sz);
- 
--- 
-1.7.3.4
+> Is there any reference board which uses this processor ?
+
+p5020ds has a p5020.
+
+Linux support is in arch/powerpc/platforms/85xx/p5020_ds.c (and
+scattered in other places).
+
+> any reference in DTS file also will be helpful.
+
+arch/powerpc/boot/dts/p5020ds.dts
+
+-Scott
