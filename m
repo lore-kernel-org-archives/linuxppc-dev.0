@@ -1,27 +1,37 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from vps4.telegraphics.com.au (vm4.telegraphics.com.au
- [98.124.60.149]) by ozlabs.org (Postfix) with ESMTP id 6FC611007D3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 12:24:47 +1100 (EST)
-Date: Tue, 13 Dec 2011 12:24:40 +1100 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 01/16 v3] pmac_zilog: fix unexpected irq
-In-Reply-To: <1323720383.19891.21.camel@pasglop>
-Message-ID: <alpine.LNX.2.00.1112131224330.2562@nippy.intranet>
-References: <20111023141108.856998818@telegraphics.com.au>
- <20111023141115.208699274@telegraphics.com.au>
- <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
- <alpine.LNX.2.00.1112071427280.28552@nippy.intranet>
- <1323318004.12793.21.camel@pasglop>
- <1323318638.12793.23.camel@pasglop>
- <alpine.LNX.2.00.1112082128330.2357@nippy.intranet>
- <1323647315.19891.10.camel@pasglop>
- <alpine.LNX.2.00.1112130020000.2550@nippy.intranet>
- <1323720383.19891.21.camel@pasglop>
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 68A3C1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 13:25:02 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Tue, 13 Dec 2011 07:54:57 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pBD2OQ193850468
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 07:54:26 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pBD2OPWq020331
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 07:54:26 +0530
+Message-ID: <4EE6B758.9070902@in.ibm.com>
+Date: Tue, 13 Dec 2011 07:54:24 +0530
+From: Suzuki Poulose <suzuki@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, linux-m68k@vger.kernel.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-serial@vger.kernel.org
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [UPDATED] [PATCH v4 3/7] [ppc] Process dynamic relocations for
+ kernel
+References: <20111209114720.16360.9670.stgit@suzukikp.in.ibm.com>
+ <20111210023646.19516.1453.stgit@suzukikp.in.ibm.com>
+ <485863B3-91BC-4488-9CA8-4F902D85D8F6@kernel.crashing.org>
+In-Reply-To: <485863B3-91BC-4488-9CA8-4F902D85D8F6@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>,
+ Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>,
+ linux ppc dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,72 +41,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/11/11 01:32, Segher Boessenkool wrote:
+> Hi Suzuki,
+>
+> Looks quite good, a few comments...
+>
+>> +get_type:
+>> + /* r4 holds the relocation type */
+>> + extrwi r4, r4, 8, 24 /* r4 = ((char*)r4)[3] */
+>
+> This comment is confusing (only makes sense together with the
+> lwz a long way up).
 
-On Tue, 13 Dec 2011, Benjamin Herrenschmidt wrote:
+Agree, will fix them.
+>
+>> +nxtrela:
+>> + /*
+>> + * We have to flush the modified instructions to the
+>> + * main storage from the d-cache. And also, invalidate the
+>> + * cached instructions in i-cache which has been modified.
+>> + *
+>> + * We delay the msync / isync operation till the end, since
+>> + * we won't be executing the modified instructions until
+>> + * we return from here.
+>> + */
+>> + dcbst r4,r7
+>> + icbi r4,r7
+>
+> You still need a sync between these two. Without it, the icbi can
+> complete before the dcbst for the same address does, which leaves
+> room for an instruction fetch from that address to get old data.
+>
+Ok.
+>> + cmpwi r8, 0 /* relasz = 0 ? */
+>> + ble done
+>> + add r9, r9, r6 /* move to next entry in the .rela table */
+>> + subf r8, r6, r8 /* relasz -= relaent */
+>> + b applyrela
+>> +
+>> +done:
+>> + msync /* Wait for the flush to finish */
+>
+> The instruction is called "sync". msync is a BookE thing.
+>
+>> next if (/R_PPC64_RELATIVE/ or /R_PPC64_NONE/ or
+>> /R_PPC64_ADDR64\s+mach_/);
+>> + next if (/R_PPC_ADDR16_LO/ or /R_PPC_ADDR16_HI/ or
+>> + /R_PPC_ADDR16_HA/ or /R_PPC_RELATIVE/);
+>
+> Nothing new, but these should probably have \b or \s or just
+> a space on each side.
+Will fix this too. Also will include the R_PPC_NONE to the list
+of valid relocations.
 
-> On Tue, 2011-12-13 at 00:34 +1100, Finn Thain wrote:
-> > On Mon, 12 Dec 2011, Benjamin Herrenschmidt wrote:
-> > 
-> > > Any chance you can test this patch ? I would not be surprised if it 
-> > > broke m68k since I had to do some of the changes in there "blind", 
-> > > so let me know... with this, I can again suspend/resume properly on 
-> > > a Pismo while using the internal modem among other things.
-> > 
-> > The patch works on a PowerBook 520 given a few changes (below). This 
-> > PowerBook only has one serial port that I can test (the internal modem 
-> > is not supported on 68k Macs).
-> 
-> Interesting. The modem is a soft-modem "geoport" or a hw serial modem ? 
+Thanks
+Suzuki
 
-It's the latter.
 
-> In the later case it's probably just a matter of finding the right GPIO 
-> bit in Apple ASIC to turn the power on :-)
-
-Surely feasible, but not high on the list of missing hardware support.
-
-> 
-> >  Can you test a machine with two ports? The rest of my Mac hardware is 
-> > in storage since I moved house last week.
-> 
-> I tried on 2 port powermacs, but I only have one adapter, so I've 
-> basically been running with one serial port open and shooting irda frame 
-> on the other (with nothing to check wether I got the frames on the other 
-> hand), oh well ...
-> 
-> I'll apply your patch and commit via my tree.
-
-I forgot to include this fix for your logging change.
-
-Finn
-
-Index: linux-git/drivers/tty/serial/pmac_zilog.c
-===================================================================
---- linux-git.orig/drivers/tty/serial/pmac_zilog.c	2011-12-13 12:12:05.000000000 +1100
-+++ linux-git/drivers/tty/serial/pmac_zilog.c	2011-12-13 12:13:29.000000000 +1100
-@@ -99,6 +99,10 @@ MODULE_LICENSE("GPL");
- #define PMACZILOG_NAME		"ttyPZ"
- #endif
- 
-+#define pmz_debug(fmt, arg...)	pr_debug(PMACZILOG_NAME "%d: " fmt, uap->port.line, ## arg)
-+#define pmz_error(fmt, arg...)	pr_err(PMACZILOG_NAME "%d: " fmt, uap->port.line, ## arg)
-+#define pmz_info(fmt, arg...)	pr_info(PMACZILOG_NAME "%d: " fmt, uap->port.line, ## arg)
-+
- 
- /*
-  * For the sake of early serial console, we can do a pre-probe
-Index: linux-git/drivers/tty/serial/pmac_zilog.h
-===================================================================
---- linux-git.orig/drivers/tty/serial/pmac_zilog.h	2011-12-13 12:12:05.000000000 +1100
-+++ linux-git/drivers/tty/serial/pmac_zilog.h	2011-12-13 12:12:28.000000000 +1100
-@@ -1,10 +1,6 @@
- #ifndef __PMAC_ZILOG_H__
- #define __PMAC_ZILOG_H__
- 
--#define pmz_debug(fmt, arg...)	pr_debug("ttyPZ%d: " fmt, uap->port.line, ## arg)
--#define pmz_error(fmt, arg...)	pr_err("ttyPZ%d: " fmt, uap->port.line, ## arg)
--#define pmz_info(fmt, arg...)	pr_info("ttyPZ%d: " fmt, uap->port.line, ## arg)
--
- /*
-  * At most 2 ESCCs with 2 ports each
-  */
+>
+>
+> Segher
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
