@@ -1,24 +1,23 @@
 Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 19ABD1007D3
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2011 07:37:34 +1100 (EST)
-Received: from mail41-ch1 (localhost [127.0.0.1])	by mail41-ch1-R.bigfish.com
- (Postfix) with ESMTP id 4F36F3E045D	for <linuxppc-dev@ozlabs.org>;
- Tue, 13 Dec 2011 20:37:32 +0000 (UTC)
-Received: from CH1EHSMHS019.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.251])	by mail41-ch1.bigfish.com (Postfix) with ESMTP id
- 6B597C0286
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 20:37:21 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 401B21007D3
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2011 07:52:16 +1100 (EST)
+Received: from mail13-db3 (localhost [127.0.0.1])	by mail13-db3-R.bigfish.com
+ (Postfix) with ESMTP id 5705480276	for <linuxppc-dev@ozlabs.org>;
+ Tue, 13 Dec 2011 20:52:13 +0000 (UTC)
+Received: from DB3EHSMHS011.bigfish.com (unknown [10.3.81.249])	by
+ mail13-db3.bigfish.com (Postfix) with ESMTP id 113BA24004B	for
+ <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 20:52:13 +0000 (UTC)
 From: Timur Tabi <timur@freescale.com>
 To: <kumar.gala@freescale.com>, <scottwood@freescale.com>,
  <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] [v3] powerpc/fsl: add MSI support for the Freescale hypervisor
-Date: Tue, 13 Dec 2011 14:37:11 -0600
-Message-ID: <1323808631-15751-1-git-send-email-timur@freescale.com>
+Subject: [PATCH] [v4] powerpc/fsl: add MSI support for the Freescale hypervisor
+Date: Tue, 13 Dec 2011 14:51:59 -0600
+Message-ID: <1323809519-16016-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,9 +41,7 @@ Any other location for MSIIR is not supported, for now.
 Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
 
-v3: fix a pr_warn message
-
-v2: fix a comment and patch description
+v4: fix checkpatch complaint.  I know, I suck.
 
  arch/powerpc/sysdev/fsl_msi.c |   68 +++++++++++++++++++++++++++++------------
  arch/powerpc/sysdev/fsl_msi.h |    7 ++--
@@ -52,7 +49,7 @@ v2: fix a comment and patch description
  3 files changed, 81 insertions(+), 23 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 89548e0..7dc473f 100644
+index 89548e0..ecb5c19 100644
 --- a/arch/powerpc/sysdev/fsl_msi.c
 +++ b/arch/powerpc/sysdev/fsl_msi.c
 @@ -23,6 +23,8 @@
@@ -202,7 +199,7 @@ index 89548e0..7dc473f 100644
  		.compatible = "fsl,ipic-msi",
  		.data = (void *)&ipic_msi_feature,
  	},
-+ 	{
++	{
 +		.compatible = "fsl,vmpic-msi",
 +		.data = (void *)&vmpic_msi_feature,
 +	},
