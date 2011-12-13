@@ -1,22 +1,12 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C34081007D3
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 17:03:28 +1100 (EST)
-Message-ID: <4EE6EA83.5030905@windriver.com>
-Date: Tue, 13 Dec 2011 14:02:43 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] ppc64: fix missing to check all bits of
- _TIF_USER_WORK_MASK in preempt
-References: <1323681035-19350-1-git-send-email-tiejun.chen@windriver.com>	
- <4EE6DC33.6090409@windriver.com> <1323755709.19891.60.camel@pasglop>
-In-Reply-To: <1323755709.19891.60.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Tue, 13 Dec 2011 17:16:36 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Fix comment explaining our VSID layout
+Message-ID: <20111213171636.3e8b8ac6@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +16,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2011-12-13 at 13:01 +0800, tiejun.chen wrote:
->> Tiejun Chen wrote:
->>> In entry_64.S version of ret_from_except_lite, you'll notice that
->>> in the !preempt case, after we've checked MSR_PR we test for any
->>> TIF flag in _TIF_USER_WORK_MASK to decide whether to go to do_work
->>> or not. However, in the preempt case, we do a convoluted trick to
->>> test SIGPENDING only if PR was set and always test NEED_RESCHED ...
->>> but we forget to test any other bit of _TIF_USER_WORK_MASK !!! So
->>> that means that with preempt, we completely fail to test for things
->>> like single step, syscall tracing, etc...
->>>
->>> This should be fixed as the following path:
->>>
->>>  - Test PR. If set, go to test_work_user, else continue.
->>>
->>>  - In test_work_user, always test for _TIF_USER_WORK_MASK to decide to
->>> go to do_work, maybe call it do_user_work
->>>
->>>  - In test_work_kernel, test for _TIF_KERNEL_WORK_MASK which is set to
->>> our new flag along with NEED_RESCHED if preempt is enabled and branch to
->>> do_kernel_work.
->> Ben,
->>
->> Any comment for this?
-> 
-> Sorry, I didn't get to review that one yet (nor reply to your newer
 
-I'm nothing, please do this when you're fine completely.
+We support 16TB of user address space and half a million contexts
+so update the comment to reflect this.
 
-Thanks
-Tiejun
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-> responses), I have very sore eyes and basically had to get off the
-> computer. Hopefully I'll be better tomorrow.
-> 
-> Cheers,
-> Ben.
+Index: linux-powerpc/arch/powerpc/include/asm/mmu-hash64.h
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/include/asm/mmu-hash64.h	2011-12-13 14:47:14.498301148 +1100
++++ linux-powerpc/arch/powerpc/include/asm/mmu-hash64.h	2011-12-13 14:58:01.085510915 +1100
+@@ -312,10 +312,9 @@ extern void slb_set_size(u16 size);
+  * (i.e. everything above 0xC000000000000000), except the very top
+  * segment, which simplifies several things.
+  *
+- * 	- We allow for 15 significant bits of ESID and 20 bits of
+- * context for user addresses.  i.e. 8T (43 bits) of address space for
+- * up to 1M contexts (although the page table structure and context
+- * allocation will need changes to take advantage of this).
++ *	- We allow for 16 significant bits of ESID and 19 bits of
++ * context for user addresses.  i.e. 16T (44 bits) of address space for
++ * up to half a million contexts.
+  *
+  * 	- The scramble function gives robust scattering in the hash
+  * table (at least based on some initial results).  The previous
