@@ -1,12 +1,19 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 13 Dec 2011 17:16:36 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Fix comment explaining our VSID layout
-Message-ID: <20111213171636.3e8b8ac6@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <eric@eukrea.com>
+Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [IPv6:2a01:e0c:1:1599::12])
+ by ozlabs.org (Postfix) with ESMTP id AB4441007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 17:32:04 +1100 (EST)
+From: =?UTF-8?q?Eric=20B=C3=A9nard?= <eric@eukrea.com>
+To: linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 01/19] mxc_udc: add workaround for ENGcm09152 for i.MX25
+Date: Tue, 13 Dec 2011 07:31:33 +0100
+Message-Id: <1323757911-25217-1-git-send-email-eric@eukrea.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+ "open list:FREESCALE USB PER..." <linux-usb@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>, Felipe Balbi <balbi@ti.com>,
+ Sascha Hauer <kernel@pengutronix.de>,
+ "open list:FREESCALE USB PER..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,28 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+this patch gives the possibility to workaround bug ENGcm09152
+on i.MX25 when the hardware workaround is also implemented on
+the board.
+It covers the workaround described on page 42 of the following Errata :
+http://cache.freescale.com/files/dsp/doc/errata/IMX25CE.pdf
 
-We support 16TB of user address space and half a million contexts
-so update the comment to reflect this.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Eric Bénard <eric@eukrea.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Li Yang <leoli@freescale.com>
 ---
+ drivers/usb/gadget/fsl_mxc_udc.c |   22 +++++++++++++---------
+ 1 files changed, 13 insertions(+), 9 deletions(-)
 
-Index: linux-powerpc/arch/powerpc/include/asm/mmu-hash64.h
-===================================================================
---- linux-powerpc.orig/arch/powerpc/include/asm/mmu-hash64.h	2011-12-13 14:47:14.498301148 +1100
-+++ linux-powerpc/arch/powerpc/include/asm/mmu-hash64.h	2011-12-13 14:58:01.085510915 +1100
-@@ -312,10 +312,9 @@ extern void slb_set_size(u16 size);
-  * (i.e. everything above 0xC000000000000000), except the very top
-  * segment, which simplifies several things.
-  *
-- * 	- We allow for 15 significant bits of ESID and 20 bits of
-- * context for user addresses.  i.e. 8T (43 bits) of address space for
-- * up to 1M contexts (although the page table structure and context
-- * allocation will need changes to take advantage of this).
-+ *	- We allow for 16 significant bits of ESID and 19 bits of
-+ * context for user addresses.  i.e. 16T (44 bits) of address space for
-+ * up to half a million contexts.
-  *
-  * 	- The scramble function gives robust scattering in the hash
-  * table (at least based on some initial results).  The previous
+diff --git a/drivers/usb/gadget/fsl_mxc_udc.c b/drivers/usb/gadget/fsl_mxc_udc.c
+index dcbc0a2..4aff05d 100644
+--- a/drivers/usb/gadget/fsl_mxc_udc.c
++++ b/drivers/usb/gadget/fsl_mxc_udc.c
+@@ -23,7 +23,7 @@
+ static struct clk *mxc_ahb_clk;
+ static struct clk *mxc_usb_clk;
+ 
+-/* workaround ENGcm09152 for i.MX35 */
++/* workaround ENGcm09152 for i.MX25/35 */
+ #define USBPHYCTRL_OTGBASE_OFFSET	0x608
+ #define USBPHYCTRL_EVDO			(1 << 23)
+ 
+@@ -89,16 +89,20 @@ eenahb:
+ void fsl_udc_clk_finalize(struct platform_device *pdev)
+ {
+ 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
+-	if (cpu_is_mx35()) {
++	if (cpu_is_mx25() || cpu_is_mx35()) {
+ 		unsigned int v;
+-
+-		/* workaround ENGcm09152 for i.MX35 */
++		void __iomem *otgbase;
++		if (cpu_is_mx25())
++			otgbase = MX25_IO_ADDRESS(MX25_USB_BASE_ADDR +
++					USBPHYCTRL_OTGBASE_OFFSET);
++		else if (cpu_is_mx35())
++			otgbase = MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
++					USBPHYCTRL_OTGBASE_OFFSET);
++
++		/* workaround ENGcm09152 for i.MX25/35 */
+ 		if (pdata->workaround & FLS_USB2_WORKAROUND_ENGCM09152) {
+-			v = readl(MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
+-					USBPHYCTRL_OTGBASE_OFFSET));
+-			writel(v | USBPHYCTRL_EVDO,
+-				MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
+-					USBPHYCTRL_OTGBASE_OFFSET));
++			v = readl(otgbase);
++			writel(v | USBPHYCTRL_EVDO, otgbase);
+ 		}
+ 	}
+ 
+-- 
+1.7.6.4
