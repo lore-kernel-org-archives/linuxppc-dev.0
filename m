@@ -1,31 +1,27 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1860B1007D3
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 11:43:41 +1100 (EST)
-Received: from mail6-db3 (localhost [127.0.0.1])	by mail6-db3-R.bigfish.com
- (Postfix) with ESMTP id 896F63A0376	for <linuxppc-dev@ozlabs.org>; Tue, 13
- Dec 2011 00:43:34 +0000 (UTC)
-Received: from DB3EHSMHS005.bigfish.com (unknown [10.3.81.240])	by
- mail6-db3.bigfish.com (Postfix) with ESMTP id 715AE44004B	for
- <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 00:43:34 +0000 (UTC)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl: add MSI support for the Freescale hypervisor
-Date: Tue, 13 Dec 2011 00:43:34 +0000
-Message-ID: <4EE69FB4.5080705@freescale.com>
-References: <1323733052-21495-1-git-send-email-timur@freescale.com>
- <4EE693C9.3080009@freescale.com> <4EE69BEB.8020208@freescale.com>
- <4EE69ED1.6040302@freescale.com>
-In-Reply-To: <4EE69ED1.6040302@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <fthain@telegraphics.com.au>
+Received: from vps4.telegraphics.com.au (vm4.telegraphics.com.au
+ [98.124.60.149]) by ozlabs.org (Postfix) with ESMTP id 6FC611007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2011 12:24:47 +1100 (EST)
+Date: Tue, 13 Dec 2011 12:24:40 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 01/16 v3] pmac_zilog: fix unexpected irq
+In-Reply-To: <1323720383.19891.21.camel@pasglop>
+Message-ID: <alpine.LNX.2.00.1112131224330.2562@nippy.intranet>
+References: <20111023141108.856998818@telegraphics.com.au>
+ <20111023141115.208699274@telegraphics.com.au>
+ <alpine.LNX.2.00.1112070203310.14968@nippy.intranet>
+ <alpine.LNX.2.00.1112071427280.28552@nippy.intranet>
+ <1323318004.12793.21.camel@pasglop>
+ <1323318638.12793.23.camel@pasglop>
+ <alpine.LNX.2.00.1112082128330.2357@nippy.intranet>
+ <1323647315.19891.10.camel@pasglop>
+ <alpine.LNX.2.00.1112130020000.2550@nippy.intranet>
+ <1323720383.19891.21.camel@pasglop>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-m68k@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +31,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> How's the hypervisor even going to know if the mem=3D kernel command line
-> argument is used to change the end of main memory (assuming that's been
-> taken into account by this point in the boot sequence)?
->
-> What if the user put a shared memory region immediately after the main
-> partition memory?
 
-Alright, I'll need to add support for detached MSIIR addresses, but for=20
-now I think this patch is okay.  It's the same level of functionality that=
-=20
-we provide on the SDK.
+On Tue, 13 Dec 2011, Benjamin Herrenschmidt wrote:
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+> On Tue, 2011-12-13 at 00:34 +1100, Finn Thain wrote:
+> > On Mon, 12 Dec 2011, Benjamin Herrenschmidt wrote:
+> > 
+> > > Any chance you can test this patch ? I would not be surprised if it 
+> > > broke m68k since I had to do some of the changes in there "blind", 
+> > > so let me know... with this, I can again suspend/resume properly on 
+> > > a Pismo while using the internal modem among other things.
+> > 
+> > The patch works on a PowerBook 520 given a few changes (below). This 
+> > PowerBook only has one serial port that I can test (the internal modem 
+> > is not supported on 68k Macs).
+> 
+> Interesting. The modem is a soft-modem "geoport" or a hw serial modem ? 
+
+It's the latter.
+
+> In the later case it's probably just a matter of finding the right GPIO 
+> bit in Apple ASIC to turn the power on :-)
+
+Surely feasible, but not high on the list of missing hardware support.
+
+> 
+> >  Can you test a machine with two ports? The rest of my Mac hardware is 
+> > in storage since I moved house last week.
+> 
+> I tried on 2 port powermacs, but I only have one adapter, so I've 
+> basically been running with one serial port open and shooting irda frame 
+> on the other (with nothing to check wether I got the frames on the other 
+> hand), oh well ...
+> 
+> I'll apply your patch and commit via my tree.
+
+I forgot to include this fix for your logging change.
+
+Finn
+
+Index: linux-git/drivers/tty/serial/pmac_zilog.c
+===================================================================
+--- linux-git.orig/drivers/tty/serial/pmac_zilog.c	2011-12-13 12:12:05.000000000 +1100
++++ linux-git/drivers/tty/serial/pmac_zilog.c	2011-12-13 12:13:29.000000000 +1100
+@@ -99,6 +99,10 @@ MODULE_LICENSE("GPL");
+ #define PMACZILOG_NAME		"ttyPZ"
+ #endif
+ 
++#define pmz_debug(fmt, arg...)	pr_debug(PMACZILOG_NAME "%d: " fmt, uap->port.line, ## arg)
++#define pmz_error(fmt, arg...)	pr_err(PMACZILOG_NAME "%d: " fmt, uap->port.line, ## arg)
++#define pmz_info(fmt, arg...)	pr_info(PMACZILOG_NAME "%d: " fmt, uap->port.line, ## arg)
++
+ 
+ /*
+  * For the sake of early serial console, we can do a pre-probe
+Index: linux-git/drivers/tty/serial/pmac_zilog.h
+===================================================================
+--- linux-git.orig/drivers/tty/serial/pmac_zilog.h	2011-12-13 12:12:05.000000000 +1100
++++ linux-git/drivers/tty/serial/pmac_zilog.h	2011-12-13 12:12:28.000000000 +1100
+@@ -1,10 +1,6 @@
+ #ifndef __PMAC_ZILOG_H__
+ #define __PMAC_ZILOG_H__
+ 
+-#define pmz_debug(fmt, arg...)	pr_debug("ttyPZ%d: " fmt, uap->port.line, ## arg)
+-#define pmz_error(fmt, arg...)	pr_err("ttyPZ%d: " fmt, uap->port.line, ## arg)
+-#define pmz_info(fmt, arg...)	pr_info("ttyPZ%d: " fmt, uap->port.line, ## arg)
+-
+ /*
+  * At most 2 ESCCs with 2 ports each
+  */
