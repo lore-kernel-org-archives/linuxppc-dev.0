@@ -1,22 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 2B0431007D6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 03:28:07 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 29404-10 for <linuxppc-dev@lists.ozlabs.org>;
- Wed, 14 Dec 2011 16:28:03 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: ARM + TI DSP device tree repesentation
-Date: Wed, 14 Dec 2011 16:27:46 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AF13@saturn3.aculab.com>
-In-Reply-To: <ACB6D0C0104CFF42A45A5D82A0DD4F3D014365@039-SN2MPN1-013.039d.mgd.msft.net>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Aggrwal Poonam-B10812" <B10812@freescale.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Cc: Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id DB4391007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 03:38:11 +1100 (EST)
+Message-ID: <1323880322.23971.33.camel@gandalf.stny.rr.com>
+Subject: Re: linux-next: build warnings after merge of the final tree
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 14 Dec 2011 11:32:02 -0500
+In-Reply-To: <20111214181545.6e13bc954cb7ddce9086e861@canb.auug.org.au>
+References: <20111214181545.6e13bc954cb7ddce9086e861@canb.auug.org.au>
+Content-Type: text/plain; charset="ISO-8859-15"
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>, "H.
+ Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> I am trying to locate the device tree for OMAP platform which=20
-> has ARM and TI DSP core.
->=20
-> The background is that we are trying to understand how such=20
-> SOCs with dissimilar cores are represented in linux.
+On Wed, 2011-12-14 at 18:15 +1100, Stephen Rothwell wrote:
 
-Most likely linux runs on the ARM, and the DSP processor
-is loaded with specific code to perform certain functions.
+> Maybe caused by commit d5e553d6e0a4 ("trace: Include <asm/asm-offsets.h>
+> in trace_syscalls.c") from the tip tree.  These warnings may have been
+> here for a while as it is hard to catch the new ones among the flood.
+> 
 
-As such the DSP is probably a 'peripheral' not a cpu.
+hpa,
 
-	David
+Was this change only needed for x86? If so, could you put that into
+asm/ftrace.h instead?
+
+-- Steve
