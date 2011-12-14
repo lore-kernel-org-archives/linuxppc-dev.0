@@ -1,25 +1,23 @@
-Return-Path: <fchen@apm.com>
-Received: from exprod5og116.obsmtp.com (exprod5og116.obsmtp.com [64.18.0.147])
- by ozlabs.org (Postfix) with SMTP id 84F92B70C2
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2011 12:14:24 +1100 (EST)
-Received: by faas1 with SMTP id s1so779164faa.3
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2011 17:14:21 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1323819246.7671.4.camel@pasglop>
-References: <CAEu=RPirE=H1N=KjHNjNRBM6H1fRvrugCw6ojqWaTNm2=WTfng@mail.gmail.com>
- <1323818650.7671.3.camel@pasglop>
- <alpine.LFD.2.02.1112140027230.3020@ionos>
- <1323819246.7671.4.camel@pasglop>
-Date: Tue, 13 Dec 2011 17:14:21 -0800
-Message-ID: <CAEu=RPgnh-i-SFt4kiiAtDjLZ3A0cAHhk7ch56Uvv0uG_+HfCg@mail.gmail.com>
-Subject: Re: CONFIG_NO_HZ added too much idle time in /proc/stat during
- throughput test.
-From: Fushen Chen <fchen@apm.com>
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A93EAB6F9C
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2011 13:53:07 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Fix swiotlb ops for ppc64
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Becky Bruce <beckyb@kernel.crashing.org>
+In-Reply-To: <1323750427.19891.59.camel@pasglop>
+Date: Tue, 13 Dec 2011 20:53:25 -0600
+Message-Id: <C9D58E47-96F4-45ED-BE54-758D71B361FD@kernel.crashing.org>
+References: <1323278391-21849-1-git-send-email-galak@kernel.crashing.org>
+ <1323314600.12793.19.camel@pasglop>
+ <F8F675D7-B3F9-45B8-92D3-A3D1F0BF7746@kernel.crashing.org>
+ <4BCA9D4A-4284-4DE8-95B9-D5DBA9254CC1@kernel.crashing.org>
+ <1323750427.19891.59.camel@pasglop>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/alternative; boundary=f46d04426bb871eecf04b4031616
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
- Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,110 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d04426bb871eecf04b4031616
-Content-Type: text/plain; charset=ISO-8859-1
 
-This is 2.6.32, but I think 2.6.36 is the same.
-Thanks,
-Fushen
+On Dec 12, 2011, at 10:27 PM, Benjamin Herrenschmidt wrote:
 
-On Tue, Dec 13, 2011 at 3:34 PM, Benjamin Herrenschmidt <
-benh@kernel.crashing.org> wrote:
+> On Mon, 2011-12-12 at 21:55 -0600, Becky Bruce wrote:
+>> 1) dma_direct_alloc_coherent strips GFP_HIGHMEM out of the flags =
+field
+>> when calling the actual allocator and the iotlb version does not.  I
+>> don't know how much this matters - I did a quick grep and I don't see
+>> any users that specify that, but somebody went through the trouble of
+>> putting it in there in the first place and without knowing why I
+>> wasn't willing to get rid of it.  Now, since my patch it looks like
+>> someone added a VM_BUG_ON into __get_free_pages() if GFP_HIGHMEM so
+>> this would get caught.  However, I don't know if we really want to
+>> throw a bug there.
+>>=20
+>> 2)  The iotlb code doesn't deal with the !coherent parts like 8xx.  =
+We
+>> can work around that by setting up the dma_ops differently for that
+>> case instead.
+>=20
+> Does the rest of it handle them ? I mean swiotlb_map_sg_attrs etc...
 
-> On Wed, 2011-12-14 at 00:28 +0100, Thomas Gleixner wrote:
-> > On Wed, 14 Dec 2011, Benjamin Herrenschmidt wrote:
-> >
-> > > On Tue, 2011-12-13 at 12:42 -0800, Fushen Chen wrote:
-> > > > On APM82181,  "vmstat" (/proc/stat)  doesn't show correct idle
-> > > > percent, if kernel enables "CONFIG_NO_HZ" (Tickless System / Dynamic
-> > > > Tick).
-> > > >
-> > > > When I run wireless throughput test with heavy traffic, "vmstat"
-> shows
-> > > > very high idle percent while "oprofile" shows very low idle percent.
-> > > > During the test, the system is idle, but network traffic uses a lot
-> of
-> > > > hard IRQ and soft-irq time. "vmstat" would have the correct stats if
-> > > > account_idle_ticks(ticks) in kernel/time/tick-sched.c doesn't add
-> more
-> > > > idle time in "vmstat". In the same test, if I disable "CONFIG_NO_HZ"
-> > > > in kernel, idle percent in "vmstat" and "oprofile" would match.
-> > > >
-> > > > My APM82181 kernel configuration is "CONFIG_NO_HZ",
-> "CONFIG_HZ_250=y",
-> > > > "CONFIG_HZ=250", and "CONFIG_HIGH_RES_TIMERS".
-> > > >
-> > > > My question is that if kernel enables "CONFIG_NO_HZ", how would
-> kernel
-> > > > report correct stats.
-> > >
-> > > Hi Thomas ! Any idea what we're doing wrong ? :-)
-> >
-> > Not really, that had been an issue before and had been fixed. Peter ????
->
-> Fusen, what kernel version is this ?
->
-> Cheers,
-> Ben.
->
->
->
+The non-coherent "specialness" is in the dma sync stuff and no, I don't =
+think the iotlb stuff deals with that properly.
 
---f46d04426bb871eecf04b4031616
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Do you not have a problem with 1)?  If not then I think we can look at =
+switching over; 2) was more of a secondary thing.
 
-This is 2.6.32, but I think 2.6.36 is the same.<br>Thanks,<br>Fushen<br><br=
-><div class=3D"gmail_quote">On Tue, Dec 13, 2011 at 3:34 PM, Benjamin Herre=
-nschmidt <span dir=3D"ltr">&lt;<a href=3D"mailto:benh@kernel.crashing.org">=
-benh@kernel.crashing.org</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex"><div class=3D"HOEnZb"><div class=3D"h5">On W=
-ed, 2011-12-14 at 00:28 +0100, Thomas Gleixner wrote:<br>
-&gt; On Wed, 14 Dec 2011, Benjamin Herrenschmidt wrote:<br>
-&gt;<br>
-&gt; &gt; On Tue, 2011-12-13 at 12:42 -0800, Fushen Chen wrote:<br>
-&gt; &gt; &gt; On APM82181, =A0&quot;vmstat&quot; (/proc/stat) =A0doesn&#39=
-;t show correct idle<br>
-&gt; &gt; &gt; percent, if kernel enables &quot;CONFIG_NO_HZ&quot; (Tickles=
-s System / Dynamic<br>
-&gt; &gt; &gt; Tick).<br>
-&gt; &gt; &gt;<br>
-&gt; &gt; &gt; When I run wireless throughput test with heavy traffic, &quo=
-t;vmstat&quot; shows<br>
-&gt; &gt; &gt; very high idle percent while &quot;oprofile&quot; shows very=
- low idle percent.<br>
-&gt; &gt; &gt; During the test, the system is idle, but network traffic use=
-s a lot of<br>
-&gt; &gt; &gt; hard IRQ and soft-irq time. &quot;vmstat&quot; would have th=
-e correct stats if<br>
-&gt; &gt; &gt; account_idle_ticks(ticks) in kernel/time/tick-sched.c doesn&=
-#39;t add more<br>
-&gt; &gt; &gt; idle time in &quot;vmstat&quot;. In the same test, if I disa=
-ble &quot;CONFIG_NO_HZ&quot;<br>
-&gt; &gt; &gt; in kernel, idle percent in &quot;vmstat&quot; and &quot;opro=
-file&quot; would match.<br>
-&gt; &gt; &gt;<br>
-&gt; &gt; &gt; My APM82181 kernel configuration is &quot;CONFIG_NO_HZ&quot;=
-, &quot;CONFIG_HZ_250=3Dy&quot;,<br>
-&gt; &gt; &gt; &quot;CONFIG_HZ=3D250&quot;, and &quot;CONFIG_HIGH_RES_TIMER=
-S&quot;.<br>
-&gt; &gt; &gt;<br>
-&gt; &gt; &gt; My question is that if kernel enables &quot;CONFIG_NO_HZ&quo=
-t;, how would kernel<br>
-&gt; &gt; &gt; report correct stats.<br>
-&gt; &gt;<br>
-&gt; &gt; Hi Thomas ! Any idea what we&#39;re doing wrong ? :-)<br>
-&gt;<br>
-&gt; Not really, that had been an issue before and had been fixed. Peter ??=
-??<br>
-<br>
-</div></div>Fusen, what kernel version is this ?<br>
-<br>
-Cheers,<br>
-Ben.<br>
-<br>
-<br>
-</blockquote></div><br>
-
---f46d04426bb871eecf04b4031616--
+-B
