@@ -1,20 +1,24 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 14 Dec 2011 14:17:55 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Fushen Chen <fchen@apm.com>
-Subject: Re: CONFIG_NO_HZ added too much idle time in /proc/stat during
- throughput test.
-Message-ID: <20111214141755.72f8c827@kryten>
-In-Reply-To: <CAEu=RPgnh-i-SFt4kiiAtDjLZ3A0cAHhk7ch56Uvv0uG_+HfCg@mail.gmail.com>
-References: <CAEu=RPirE=H1N=KjHNjNRBM6H1fRvrugCw6ojqWaTNm2=WTfng@mail.gmail.com>
- <1323818650.7671.3.camel@pasglop>
- <alpine.LFD.2.02.1112140027230.3020@ionos>
- <1323819246.7671.4.camel@pasglop>
- <CAEu=RPgnh-i-SFt4kiiAtDjLZ3A0cAHhk7ch56Uvv0uG_+HfCg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
- Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <r63061@freescale.com>
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
+ [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 0C76A1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 14:27:56 +1100 (EST)
+From: Xie Xiaobo-R63061 <r63061@freescale.com>
+To: Huang Changming-R66093 <r66093@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH] mmc: sdhci-pltfm: Added sdhci-adjust-timeout quirk
+Date: Wed, 14 Dec 2011 03:27:43 +0000
+Message-ID: <69EC9ED88E3CC04094A78F8074A7986D1D6FD3@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <y> <1323075320-9138-1-git-send-email-X.Xie@freescale.com>
+ <8A2FC72B45BB5A4C9F801431E06AE48F11644C44@039-SN1MPN1-006.039d.mgd.msft.net>
+In-Reply-To: <8A2FC72B45BB5A4C9F801431E06AE48F11644C44@039-SN1MPN1-006.039d.mgd.msft.net>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
+Cc: "avorontsov@ru.mvista.com" <avorontsov@ru.mvista.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,48 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi,
-
-> This is 2.6.32, but I think 2.6.36 is the same.
-
-Sounds a bit like this, merged in 2.6.39.
-
-Anton
---
-
-commit ad5d1c888e556bc00c4e86f452cad4a3a87d22c1
-Author: Anton Blanchard <anton@samba.org>
-Date:   Sun Mar 20 15:28:03 2011 +0000
-
-    powerpc: Fix accounting of softirq time when idle
-    
-    commit cf9efce0ce31 (powerpc: Account time using timebase rather
-    than PURR) used in_irq() to detect if the time was spent in
-    interrupt processing. This only catches hardirq context so if we
-    are in softirq context and in the idle loop we end up accounting it
-    as idle time. If we instead use in_interrupt() we catch both softirq
-    and hardirq time.
-    
-    The issue was found when running a network intensive workload. top
-    showed the following:
-    
-    0.0%us,  1.1%sy,  0.0%ni, 85.7%id,  0.0%wa,  9.9%hi,  3.3%si,  0.0%st
-    
-    85.7% idle. But this was wildly different to the perf events data.
-    To confirm the suspicion I ran something to keep the core busy:
-    
-    # yes > /dev/null &
-    
-    8.2%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa, 10.3%hi, 81.4%si,  0.0%st
-    
-    We only got 8.2% of the CPU for the userspace task and softirq has
-    shot up to 81.4%.
-    
-    With the patch below top shows the correct stats:
-    
-    0.0%us,  0.0%sy,  0.0%ni,  5.3%id,  0.0%wa, 13.3%hi, 81.3%si,  0.0%st
-    
-    Signed-off-by: Anton Blanchard <anton@samba.org>
-    Cc: stable@kernel.org
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+SGkgQ2hhbmdtaW5nLA0KDQpPSywgeW91IGNhbiBtZXJnZSBteSBwYXRjaCBpbnRvIHlvdXIgcGF0
+Y2hlcy4NCg0KSGkgYWxsLA0KUGxlYXNlIGlnbm9yZSB0aGlzIHBhdGNoLiBDaGFuZ21pbmcgd2ls
+bCBzZW5kIHRoZSBzaW1pbGFyIHBhdGNoLg0KDQpCUnMNClhpZSBYaWFvYm8NCg0KLS0tLS1Pcmln
+aW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IEh1YW5nIENoYW5nbWluZy1SNjYwOTMgDQpTZW50OiAy
+MDExxOoxMtTCMTPI1SAxNjowMA0KVG86IFhpZSBYaWFvYm8tUjYzMDYxOyBsaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZw0KQ2M6IGF2b3JvbnRzb3ZAcnUubXZpc3RhLmNvbTsgbGludXgtbW1j
+QHZnZXIua2VybmVsLm9yZzsgWGllIFhpYW9iby1SNjMwNjENClN1YmplY3Q6IFJFOiBbUEFUQ0hd
+IG1tYzogc2RoY2ktcGx0Zm06IEFkZGVkIHNkaGNpLWFkanVzdC10aW1lb3V0IHF1aXJrDQoNClhp
+YW9ibywgSSBoYXZlIG9uZSBvdGhlciBzaW1pbGFyIHBhdGNoLCBidXQgdGhlIHByb3BlcnR5IGlz
+ICdzZGhjaSxhZGp1c3QtdGltZW91dCcuDQpNYXliZSBJIGNhbiByZXBvc3QgaXQgd2l0aCBhZGQg
+eW91ciBzaWduZWQtb2ZmLWJ5Pw0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IGxpbnV4cHBjLWRldi1ib3VuY2VzK3I2NjA5Mz1mcmVlc2NhbGUuY29tQGxpc3RzLm96bGFi
+cy5vcmcNCj4gW21haWx0bzpsaW51eHBwYy1kZXYtYm91bmNlcytyNjYwOTM9ZnJlZXNjYWxlLmNv
+bUBsaXN0cy5vemxhYnMub3JnXSBPbiANCj4gQmVoYWxmIE9mIFhpZSBYaWFvYm8NCj4gU2VudDog
+TW9uZGF5LCBEZWNlbWJlciAwNSwgMjAxMSA0OjU1IFBNDQo+IFRvOiBsaW51eHBwYy1kZXZAbGlz
+dHMub3psYWJzLm9yZw0KPiBDYzogYXZvcm9udHNvdkBydS5tdmlzdGEuY29tOyBsaW51eC1tbWNA
+dmdlci5rZXJuZWwub3JnOyBYaWUgWGlhb2JvLQ0KPiBSNjMwNjENCj4gU3ViamVjdDogW1BBVENI
+XSBtbWM6IHNkaGNpLXBsdGZtOiBBZGRlZCBzZGhjaS1hZGp1c3QtdGltZW91dCBxdWlyaw0KPiAN
+Cj4gU29tZSBjb250cm9sbGVyIHByb3ZpZGVzIGFuIGluY29ycmVjdCB0aW1lb3V0IHZhbHVlIGZv
+ciB0cmFuc2ZlcnMsIFNvIA0KPiBpdCBuZWVkIHRoZSBxdWlyayB0byBhZGp1c3QgdGltZW91dCB2
+YWx1ZSB0byAweEUuDQo+IEUuZy4gZVNESEMgb2YgTVBDODUzNiwgUDEwMTAsIGFuZCBQMjAyMC4N
+Cj4gDQo+IFNpZ25lZC1vZmYtYnk6IFhpZSBYaWFvYm8gPFguWGllQGZyZWVzY2FsZS5jb20+DQo+
+IC0tLQ0KPiAgZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1wbHRmbS5jIHwgICAgNSArKysrLQ0KPiAg
+MSBmaWxlcyBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb25zKC0pDQo+IA0KPiBk
+aWZmIC0tZ2l0IGEvZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1wbHRmbS5jIGIvZHJpdmVycy9tbWMv
+aG9zdC9zZGhjaS0gDQo+IHBsdGZtLmMgaW5kZXggYTllMTJlYS4uYjVkNmIzZiAxMDA2NDQNCj4g
+LS0tIGEvZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1wbHRmbS5jDQo+ICsrKyBiL2RyaXZlcnMvbW1j
+L2hvc3Qvc2RoY2ktcGx0Zm0uYw0KPiBAQCAtMiw3ICsyLDcgQEANCj4gICAqIHNkaGNpLXBsdGZt
+LmMgU3VwcG9ydCBmb3IgU0RIQ0kgcGxhdGZvcm0gZGV2aWNlcw0KPiAgICogQ29weXJpZ2h0IChj
+KSAyMDA5IEludGVsIENvcnBvcmF0aW9uDQo+ICAgKg0KPiAtICogQ29weXJpZ2h0IChjKSAyMDA3
+IEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yLCBJbmMuDQo+ICsgKiBDb3B5cmlnaHQgKGMpIDIwMDcs
+IDIwMTEgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IsIEluYy4NCj4gICAqIENvcHlyaWdodCAoYykg
+MjAwOSBNb250YVZpc3RhIFNvZnR3YXJlLCBJbmMuDQo+ICAgKg0KPiAgICogQXV0aG9yczogWGlh
+b2JvIFhpZSA8WC5YaWVAZnJlZXNjYWxlLmNvbT4gQEAgLTY4LDYgKzY4LDkgQEAgdm9pZCANCj4g
+c2RoY2lfZ2V0X29mX3Byb3BlcnR5KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJ
+CWlmIChvZl9nZXRfcHJvcGVydHkobnAsICJzZGhjaSwxLWJpdC1vbmx5IiwgTlVMTCkpDQo+ICAJ
+CQlob3N0LT5xdWlya3MgfD0gU0RIQ0lfUVVJUktfRk9SQ0VfMV9CSVRfREFUQTsNCj4gDQo+ICsJ
+CWlmIChvZl9nZXRfcHJvcGVydHkobnAsICJzZGhjaSxzZGhjaS1hZGp1c3QtdGltZW91dCIsIE5V
+TEwpKQ0KPiArCQkJaG9zdC0+cXVpcmtzIHw9IFNESENJX1FVSVJLX0JST0tFTl9USU1FT1VUX1ZB
+TDsNCj4gKw0KPiAgCQlpZiAoc2RoY2lfb2Zfd3BfaW52ZXJ0ZWQobnApKQ0KPiAgCQkJaG9zdC0+
+cXVpcmtzIHw9IFNESENJX1FVSVJLX0lOVkVSVEVEX1dSSVRFX1BST1RFQ1Q7DQo+IA0KPiAtLQ0K
+PiAxLjYuNA0KPiANCj4gDQo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fDQo+IExpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QNCj4gTGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmcNCj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4
+cHBjLWRldg0KDQo=
