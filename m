@@ -1,20 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id CB0C61007D6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 18:15:55 +1100 (EST)
-Date: Wed, 14 Dec 2011 18:15:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: linux-next: build warnings after merge of the final tree
-Message-Id: <20111214181545.6e13bc954cb7ddce9086e861@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__14_Dec_2011_18_15_45_+1100_z=aM626Qcy4N7LZu"
-Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B35362@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 777521007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 19:37:00 +1100 (EST)
+Message-ID: <4EE8612C.9050104@freescale.com>
+Date: Wed, 14 Dec 2011 16:41:16 +0800
+From: LiuShuo <b35362@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>, <dedekind1@gmail.com>
+Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
+ large-page Nand chip
+References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
+ <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
+ <4EDEAEB9.6020703@freescale.com> <1323724195.2297.11.camel@koala>
+ <4EE66EFE.1050608@freescale.com> <1323724784.2297.20.camel@koala>
+ <4EE6725C.3050706@freescale.com> <4EE6BC9B.4000602@freescale.com>
+In-Reply-To: <4EE6BC9B.4000602@freescale.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
+ linux-mtd@lists.infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,68 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__14_Dec_2011_18_15_45_+1100_z=aM626Qcy4N7LZu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+=E4=BA=8E 2011=E5=B9=B412=E6=9C=8813=E6=97=A5 10:46, LiuShuo =E5=86=99=E9=
+=81=93:
+> =E4=BA=8E 2011=E5=B9=B412=E6=9C=8813=E6=97=A5 05:30, Scott Wood =E5=86=99=
+=E9=81=93:
+>> On 12/12/2011 03:19 PM, Artem Bityutskiy wrote:
+>>> On Mon, 2011-12-12 at 15:15 -0600, Scott Wood wrote:
+>>>> NAND chips come from the factory with bad blocks marked at a certain
+>>>> offset into each page.  This offset is normally in the OOB area, but
+>>>> since we change the layout from "4k data, 128 byte oob" to "2k=20
+>>>> data, 64
+>>>> byte oob, 2k data, 64 byte oob" the marker is no longer in the=20
+>>>> oob.  On
+>>>> first use we need to migrate the markers so that they are still in=20
+>>>> the oob.
+>>> Ah, I see, thanks. Are you planning to implement in-kernel migration =
+or
+>>> use a user-space tool?
+>> That's the kind of answer I was hoping to get from Shuo. :-)
+> OK, I try to do this. Wait for a couple of days.
+>
+> -LiuShuo
+I found it's too complex to do the migration in Linux driver.
 
-Hi all,
+Maybe we can add a uboot command (e.g. nand bbmigrate) to do it, once is=20
+enough.
+And let user ensure it been completed before linux use the Nand flash chi=
+p.
 
-After merging the final tree, today's linux-next build (powerpc allyesconfi=
-g)
-produced these warnings:
+Even if we don't do the migration, the bad block also can be marked as ba=
+d
+by wearing. So, do we really need to take much time to implement it ?
+(code looks too complex.)
 
-In file included from arch/powerpc/include/asm/asm-offsets.h:1:0,
-                 from kernel/trace/trace_syscalls.c:9:
-include/generated/asm-offsets.h:15:0: warning: "NMI_MASK" redefined [enable=
-d by default]
-include/linux/hardirq.h:56:0: note: this is the location of the previous de=
-finition
-include/generated/asm-offsets.h:128:0: warning: "CLONE_VM" redefined [enabl=
-ed by default]
-include/linux/sched.h:8:0: note: this is the location of the previous defin=
-ition
-include/generated/asm-offsets.h:129:0: warning: "CLONE_UNTRACED" redefined =
-[enabled by default]
-include/linux/sched.h:22:0: note: this is the location of the previous defi=
-nition
-include/generated/asm-offsets.h:165:0: warning: "NSEC_PER_SEC" redefined [e=
-nabled by default]
-include/linux/time.h:40:0: note: this is the location of the previous defin=
-ition
-include/generated/asm-offsets.h:173:0: warning: "PGD_TABLE_SIZE" redefined =
-[enabled by default]
-arch/powerpc/include/asm/pgtable-ppc64-4k.h:17:0: note: this is the locatio=
-n of the previous definition
+-LiuShuo
 
-Maybe caused by commit d5e553d6e0a4 ("trace: Include <asm/asm-offsets.h>
-in trace_syscalls.c") from the tip tree.  These warnings may have been
-here for a while as it is hard to catch the new ones among the flood.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__14_Dec_2011_18_15_45_+1100_z=aM626Qcy4N7LZu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO6E0hAAoJEECxmPOUX5FEnkAP/iHiiKvfQ0joG7yEwNgWBjR6
-Kx2ExnHdY7wPap1wl8BnhrjqGuQCBl3J3EBy2m1I0uj/0eKR+ChGJZnvrmrnhsmn
-r6S24vHCKl9YUimVf8buVFVMN0Vh6i0dEv3fFPaHHg8klhcN7aDud5d33oa+o1ai
-gtfdjBxRPSZ0WIBLXWGfK/lN1LKWj14spdNTVvm/IfppD97CD4TBwX0AVm8VpDRz
-Odn3jo5tbL2JqxGP0SxidkSlmC6S//hkUqQINl2lDYiO8yWwfw4xnJtEeI8nRssp
-yxhzY5sptrulvTvG01AnTZ4rsiIAvBKcby+PdfSA9yEi/GW2aARcOZWVjnnRjnt3
-0J3EXoUALIoECnQgOedMatpW0nWy+ev0H2gGVnkezoQ6G5o/Ctk6sXKVs6HMi6cD
-FodFVYXjuiGCiZzwEtB7wcjaxgOsS534hTnQkOE3f7YqPIuEMHBZF/AzyOyUrbN7
-5K6IhmvItelrTK/gFt2Rtlywh4i8O74CnFEZpOZEmm7+WVO6eWQrGPL5UAfP+wj8
-hPt8NYwOo8zAohHnkuSXiTc90yEAPNcWPgRkWy0tLBxjrpyo5cyjZHvt7gLE9Pw9
-1fwHlatou7nf4lZLh6/zTBygqwuTQqgf8ApeBX9C2J8IG3+19yiGFi9KhOxFIWA4
-rTxCzx3yOgyiq2bqCp49
-=i+tg
------END PGP SIGNATURE-----
-
---Signature=_Wed__14_Dec_2011_18_15_45_+1100_z=aM626Qcy4N7LZu--
+>> Most likely is a firmware-based tool, but I'd like there to be some wa=
+y
+>> for the tool to mark that this has happened, so that the Linux driver
+>> can refuse to do non-raw accesses to a chip that isn't marked as havin=
+g
+>> been migrated (or at least yell loudly in the log).
+>>
+>> Speaking of raw accesses, these are currently broken in the eLBC
+>> driver... we need some way for the generic layer to tell us what kind =
+of
+>> access it is before the transaction starts, not once it wants to read
+>> out the buffer (unless we add more hacks to delay the start of a read
+>> transaction until first buffer access...).  We'd be better off with a
+>> high-level "read page/write page" function that does the whole thing
+>> (not just buffer access, but command issuance as well).
+>>
+>> -Scott
+>
