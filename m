@@ -1,27 +1,33 @@
-Return-Path: <B35362@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <r58472@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 777521007D5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 19:37:00 +1100 (EST)
-Message-ID: <4EE8612C.9050104@freescale.com>
-Date: Wed, 14 Dec 2011 16:41:16 +0800
-From: LiuShuo <b35362@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 292A81007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 22:14:03 +1100 (EST)
+From: Li Yang-R58472 <r58472@freescale.com>
+To: "dedekind1@gmail.com" <dedekind1@gmail.com>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: [PATCH v2] Integrated Flash Controller support
+Date: Wed, 14 Dec 2011 11:13:53 +0000
+Message-ID: <94F013E7935FF44C83EBE7784D62AD3F056964B0@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1320053901-23801-1-git-send-email-b35362@freescale.com>
+ <CCF7C6DB-437C-4140-894F-2F497AD610DC@kernel.crashing.org>
+ <8EDB3DC6-63E5-4D5C-BB52-15F32B85C5DD@kernel.crashing.org>
+ <1322602860.2150.10.camel@koala> <4ED5531C.6030104@freescale.com>
+ <EFF451D9-552A-4820-90D3-BF3156D5B25F@kernel.crashing.org>
+ <1322643080.24797.413.camel@sauron.fi.intel.com>
+In-Reply-To: <1322643080.24797.413.camel@sauron.fi.intel.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, <dedekind1@gmail.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
- <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
- <4EDEAEB9.6020703@freescale.com> <1323724195.2297.11.camel@koala>
- <4EE66EFE.1050608@freescale.com> <1323724784.2297.20.camel@koala>
- <4EE6725C.3050706@freescale.com> <4EE6BC9B.4000602@freescale.com>
-In-Reply-To: <4EE6BC9B.4000602@freescale.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Artem.Bityutskiy@nokia.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
- linux-mtd@lists.infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Liu Shuo-B35362 <B35362@freescale.com>,
+ "linux-kernel@vger.kernel.org Kernel" <linux-kernel@vger.kernel.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=E4=BA=8E 2011=E5=B9=B412=E6=9C=8813=E6=97=A5 10:46, LiuShuo =E5=86=99=E9=
-=81=93:
-> =E4=BA=8E 2011=E5=B9=B412=E6=9C=8813=E6=97=A5 05:30, Scott Wood =E5=86=99=
-=E9=81=93:
->> On 12/12/2011 03:19 PM, Artem Bityutskiy wrote:
->>> On Mon, 2011-12-12 at 15:15 -0600, Scott Wood wrote:
->>>> NAND chips come from the factory with bad blocks marked at a certain
->>>> offset into each page.  This offset is normally in the OOB area, but
->>>> since we change the layout from "4k data, 128 byte oob" to "2k=20
->>>> data, 64
->>>> byte oob, 2k data, 64 byte oob" the marker is no longer in the=20
->>>> oob.  On
->>>> first use we need to migrate the markers so that they are still in=20
->>>> the oob.
->>> Ah, I see, thanks. Are you planning to implement in-kernel migration =
-or
->>> use a user-space tool?
->> That's the kind of answer I was hoping to get from Shuo. :-)
-> OK, I try to do this. Wait for a couple of days.
->
-> -LiuShuo
-I found it's too complex to do the migration in Linux driver.
-
-Maybe we can add a uboot command (e.g. nand bbmigrate) to do it, once is=20
-enough.
-And let user ensure it been completed before linux use the Nand flash chi=
-p.
-
-Even if we don't do the migration, the bad block also can be marked as ba=
-d
-by wearing. So, do we really need to take much time to implement it ?
-(code looks too complex.)
-
--LiuShuo
-
->> Most likely is a firmware-based tool, but I'd like there to be some wa=
-y
->> for the tool to mark that this has happened, so that the Linux driver
->> can refuse to do non-raw accesses to a chip that isn't marked as havin=
-g
->> been migrated (or at least yell loudly in the log).
->>
->> Speaking of raw accesses, these are currently broken in the eLBC
->> driver... we need some way for the generic layer to tell us what kind =
-of
->> access it is before the transaction starts, not once it wants to read
->> out the buffer (unless we add more hacks to delay the start of a read
->> transaction until first buffer access...).  We'd be better off with a
->> high-level "read page/write page" function that does the whole thing
->> (not just buffer access, but command issuance as well).
->>
->> -Scott
->
+Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogQXJ0ZW0gQml0eXV0c2tpeSBbbWFp
+bHRvOmRlZGVraW5kMUBnbWFpbC5jb21dDQo+U2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAzMCwg
+MjAxMSA0OjUxIFBNDQo+VG86IEt1bWFyIEdhbGENCj5DYzogV29vZCBTY290dC1CMDc0MjE7IExp
+IFlhbmctUjU4NDcyOyBMaXUgU2h1by1CMzUzNjI7IGxpbnV4LQ0KPmtlcm5lbEB2Z2VyLmtlcm5l
+bC5vcmcgS2VybmVsOyBsaW51eC1tdGRAbGlzdHMuaW5mcmFkZWFkLm9yZzsgQW5kcmV3DQo+TW9y
+dG9uOyBEYXZpZCBXb29kaG91c2U7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnIGxpc3QN
+Cj5TdWJqZWN0OiBSZTogW1BBVENIIHYyXSBJbnRlZ3JhdGVkIEZsYXNoIENvbnRyb2xsZXIgc3Vw
+cG9ydA0KPg0KPk9uIFR1ZSwgMjAxMS0xMS0yOSBhdCAxOTo0NyAtMDYwMCwgS3VtYXIgR2FsYSB3
+cm90ZToNCj4+IEFzIFNjb3R0IHNhaWQsIEkgd2FzIG1vcmUgYXNraW5nIGFib3V0IHRoZSAybmQg
+cGF0Y2ggaW4gdGhlIHNlcXVlbmNlDQo+PiB3aGljaCBkaWQgdG91Y2ggTVRELiAgU2luY2UgdGhh
+dCBvbmUgaXMgZGVwZW5kZW50IG9uIHRoaXMgcGF0Y2gsDQo+PiB3b25kZXJpbmcgaG93IHdlIHdh
+bnRlZCB0byBoYW5kbGUgdGhlbS4NCj4NCj5JIGRvIG5vdCBoYXZlIHRpbWUgdG8gcmV2aWV3IGl0
+LCBidXQgaXQgbG9va3MgT0ssIHNvIEknZCBzdWdnZXN0IHRvDQo+bWVyZ2UgaXQgdmllIHRoZSBz
+YW1lIHRyZWUgYXMgdGhlIHJlc3Qgb2YgdGhlIHBhdGNoZXMuDQoNCkhpIEFydGVtLA0KDQpTbyB3
+aGF0IGlzIHlvdXIgc3VnZ2VzdGlvbiBvbiB0aGlzIHBhdGNoPyAgQ2FuIHdlIHJlZ2FyZCB5b3Vy
+IHByZXZpb3VzIGVtYWlsIGFzIGFuIEFDSyBhbmQgbWVyZ2UgaXQgdGhyb3VnaCB0aGUgcG93ZXJw
+YyB0cmVlPyAgT3IgZG8geW91IHByZWZlciB0byBtZXJnZSB0aGVtIHRocm91Z2ggdGhlIE1URCB0
+cmVlIHdpdGggS3VtYXIncyBBQ0sgaW5zdGVhZD8NCg0KLSBMZW8NCg==
