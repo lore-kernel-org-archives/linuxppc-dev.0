@@ -1,36 +1,24 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Return-Path: <jkosina@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 2F1BC10080C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 20:00:31 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Thu, 15 Dec 2011 14:30:29 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pBF901uB4444276
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 14:30:01 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pBF8xvsa006754
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 14:30:00 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH v5 7/7] [boot] Change the load address for the wrapper to fit
- the kernel
-To: Josh Boyer <jwboyer@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 15 Dec 2011 14:29:57 +0530
-Message-ID: <20111215085942.3404.98212.stgit@suzukikp.in.ibm.com>
-In-Reply-To: <20111215085516.3404.56377.stgit@suzukikp.in.ibm.com>
-References: <20111215085516.3404.56377.stgit@suzukikp.in.ibm.com>
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 99B0C1007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 21:08:23 +1100 (EST)
+Date: Thu, 15 Dec 2011 11:08:08 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: linux-next bad Kconfig for drivers/hid
+In-Reply-To: <20111212003140.GA16353@thor.bakeyournoodle.com>
+Message-ID: <alpine.LNX.2.00.1112151107020.21970@pobox.suse.cz>
+References: <20111209012746.GC20353@thor.bakeyournoodle.com>
+ <4EE19DA0.5010705@goop.org>
+ <alpine.LNX.2.00.1112120020330.21970@pobox.suse.cz>
+ <20111212003140.GA16353@thor.bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Scott Wood <scottwood@freescale.com>,
- Josh Poimboeuf <jpoimboe@linux.vnet.ibm.com>,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel ML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,70 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The wrapper code which uncompresses the kernel in case of a 'ppc' boot
-is by default loaded at 0x00400000 and the kernel will be uncompressed
-to fit the location 0-0x00400000. But with dynamic relocations, the size
-of the kernel may exceed 0x00400000(4M). This would cause an overlap
-of the uncompressed kernel and the boot wrapper, causing a failure in
-boot.
+On Mon, 12 Dec 2011, Tony Breeds wrote:
 
-The message looks like :
+> On Mon, Dec 12, 2011 at 12:21:16AM +0100, Jiri Kosina wrote:
+> > On Thu, 8 Dec 2011, Jeremy Fitzhardinge wrote:
+> > > 
+> > > Hm.  How about making it "depends on HID && POWER_SUPPLY"?  I think that
+> > > would needlessly disable it if HID is also modular, but I'm not sure how
+> > > to fix that.  "depends on HID && POWER_SUPPLY && HID == POWER_SUPPLY"?
+> 
+> That would work, but I think technically I think you could end up with
+> HID=m and POWER_SUPPLY=m which would still allow HID_BATTERY_STRENGTH=y
+> which is the same problem.
+> 
+> I don't know what kind of .config contortions you'd need to do to get
+> there.
+>  
+> > How about making it 'default POWER_SUPPLY' instead?
+> 
+> By itself that wont help as POWER_SUPPLY=m statisfies.
+> 
+> So it looks like we have Jeremy's:
+> 	HID && POWER_SUPPLY && HID == POWER_SUPPLY
 
+Tony,
 
-   zImage starting: loaded at 0x00400000 (sp: 0x0065ffb0)
-   Allocating 0x5ce650 bytes for kernel ...
-   Insufficient memory for kernel at address 0! (_start=00400000, uncompressed size=00591a20)
+have you actually tested this one to work in the configuration you have 
+been seeing it to fail?
 
-This patch shifts the load address of the boot wrapper code to the next higher MB,
-according to the size of  the uncompressed vmlinux.
+I don't seem to be able to find any use of '==' in other Kconfig files 
+(and never used it myself), so I'd like to have confirmation that it 
+actually works and fixes the problem before I apply it :)
 
-With the patch, we get the following message while building the image :
+Thanks,
 
- WARN: Uncompressed kernel (size 0x5b0344) overlaps the address of the wrapper(0x400000)
- WARN: Fixing the link_address of wrapper to (0x600000)
-
-
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
----
-
- arch/powerpc/boot/wrapper |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 14cd4bc..c8d6aaf 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -257,6 +257,8 @@ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
- if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
-     ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
- 
-+    strip_size=$(stat -c %s $vmz.$$)
-+
-     if [ -n "$gzip" ]; then
-         gzip -n -f -9 "$vmz.$$"
-     fi
-@@ -266,6 +268,24 @@ if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
-     else
- 	vmz="$vmz.$$"
-     fi
-+else
-+    # Calculate the vmlinux.strip size
-+    ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
-+    strip_size=$(stat -c %s $vmz.$$)
-+    rm -f $vmz.$$
-+fi
-+
-+# Round the size to next higher MB limit
-+round_size=$(((strip_size + 0xfffff) & 0xfff00000))
-+
-+round_size=0x$(printf "%x" $round_size)
-+link_addr=$(printf "%d" $link_address)
-+
-+if [ $link_addr -lt $strip_size ]; then
-+    echo "WARN: Uncompressed kernel (size 0x$(printf "%x\n" $strip_size))" \
-+		"overlaps the address of the wrapper($link_address)"
-+    echo "WARN: Fixing the link_address of wrapper to ($round_size)"
-+    link_address=$round_size
- fi
- 
- vmz="$vmz$gzip"
+-- 
+Jiri Kosina
+SUSE Labs
