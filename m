@@ -1,10 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Thu, 15 Dec 2011 23:04:18 +1100
+Date: Thu, 15 Dec 2011 23:02:47 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Alexander Graf <agraf@suse.de>
-Subject: [PATCH 5/5] KVM: PPC: Book3s HV: Implement H_CLEAR_REF and
- H_CLEAR_MOD hcalls
-Message-ID: <20111215120417.GF20629@bloggs.ozlabs.ibm.com>
+Subject: [PATCH 3/5] KVM: PPC: Book3S HV: Use the hardware referenced bit for
+ kvm_age_hva
+Message-ID: <20111215120247.GD20629@bloggs.ozlabs.ibm.com>
 References: <20111215120018.GA20629@bloggs.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -19,111 +19,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds implementations for the H_CLEAR_REF (test and clear reference
-bit) and H_CLEAR_MOD (test and clear changed bit) hypercalls.  These
-hypercalls are not used by Linux guests at this stage, and these
-implementations are only compile tested.
+This uses the host view of the hardware R (referenced) bit to speed
+up kvm_age_hva() and kvm_test_age_hva().  Instead of removing all
+the relevant HPTEs in kvm_age_hva(), we now just reset their R bits
+if set.  Also, kvm_test_age_hva() now scans the relevant HPTEs to
+see if any of them have R set.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kvm/book3s_hv_rm_mmu.c     |   69 +++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |    4 +-
- 2 files changed, 71 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h |    2 +
+ arch/powerpc/kvm/book3s_64_mmu_hv.c   |   81 ++++++++++++++++++++++++++++-----
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c   |   19 ++++++++
+ 3 files changed, 91 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 76864a8..718b5a7 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -624,6 +624,75 @@ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
- 	return H_SUCCESS;
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index ea9539c..6ececb4 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -149,6 +149,8 @@ extern void kvmppc_add_revmap_chain(struct kvm *kvm, struct revmap_entry *rev,
+ 			unsigned long *rmap, long pte_index, int realmode);
+ extern void kvmppc_invalidate_hpte(struct kvm *kvm, unsigned long *hptep,
+ 			unsigned long pte_index);
++void kvmppc_clear_ref_hpte(struct kvm *kvm, unsigned long *hptep,
++			unsigned long pte_index);
+ extern void *kvmppc_pin_guest_page(struct kvm *kvm, unsigned long addr,
+ 			unsigned long *nb_ret);
+ extern void kvmppc_unpin_guest_page(struct kvm *kvm, void *addr);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index aa51dde..926e2b9 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -772,16 +772,50 @@ int kvm_unmap_hva(struct kvm *kvm, unsigned long hva)
+ static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 			 unsigned long gfn)
+ {
+-	if (!kvm->arch.using_mmu_notifiers)
+-		return 0;
+-	if (!(*rmapp & KVMPPC_RMAP_REFERENCED))
+-		return 0;
+-	kvm_unmap_rmapp(kvm, rmapp, gfn);
+-	while (test_and_set_bit_lock(KVMPPC_RMAP_LOCK_BIT, rmapp))
+-		cpu_relax();
+-	*rmapp &= ~KVMPPC_RMAP_REFERENCED;
+-	__clear_bit_unlock(KVMPPC_RMAP_LOCK_BIT, rmapp);
+-	return 1;
++	struct revmap_entry *rev = kvm->arch.revmap;
++	unsigned long head, i, j;
++	unsigned long *hptep;
++	int ret = 0;
++
++ retry:
++	lock_rmap(rmapp);
++	if (*rmapp & KVMPPC_RMAP_REFERENCED) {
++		*rmapp &= ~KVMPPC_RMAP_REFERENCED;
++		ret = 1;
++	}
++	if (!(*rmapp & KVMPPC_RMAP_PRESENT)) {
++		unlock_rmap(rmapp);
++		return ret;
++	}
++
++	i = head = *rmapp & KVMPPC_RMAP_INDEX;
++	do {
++		hptep = (unsigned long *) (kvm->arch.hpt_virt + (i << 4));
++		j = rev[i].forw;
++
++		/* If this HPTE isn't referenced, ignore it */
++		if (!(hptep[1] & HPTE_R_R))
++			continue;
++
++		if (!try_lock_hpte(hptep, HPTE_V_HVLOCK)) {
++			/* unlock rmap before spinning on the HPTE lock */
++			unlock_rmap(rmapp);
++			while (hptep[0] & HPTE_V_HVLOCK)
++				cpu_relax();
++			goto retry;
++		}
++
++		/* Now check and modify the HPTE */
++		if ((hptep[0] & HPTE_V_VALID) && (hptep[1] & HPTE_R_R)) {
++			kvmppc_clear_ref_hpte(kvm, hptep, i);
++			rev[i].guest_rpte |= HPTE_R_R;
++			ret = 1;
++		}
++		hptep[0] &= ~HPTE_V_HVLOCK;
++	} while ((i = j) != head);
++
++	unlock_rmap(rmapp);
++	return ret;
  }
  
-+long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
-+			unsigned long pte_index)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long *hpte, v, r, gr;
-+	struct revmap_entry *rev;
-+
-+	if (pte_index >= HPT_NPTE)
-+		return H_PARAMETER;
-+
-+	rev = real_vmalloc_addr(&kvm->arch.revmap[pte_index]);
-+	hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
-+		cpu_relax();
-+	v = hpte[0];
-+	r = hpte[1];
-+	gr = rev->guest_rpte;
-+	rev->guest_rpte &= ~HPTE_R_R;
-+	if (v & HPTE_V_VALID) {
-+		gr |= r & (HPTE_R_R | HPTE_R_C);
-+		if (r & HPTE_R_R)
-+			kvmppc_clear_ref_hpte(kvm, hpte, pte_index);
-+	}
-+	unlock_hpte(hpte, v & ~HPTE_V_HVLOCK);
-+
-+	if (!(v & (HPTE_V_VALID | HPTE_V_ABSENT)))
-+		return H_NOT_FOUND;
-+
-+	vcpu->arch.gpr[4] = gr;
-+	return H_SUCCESS;
-+}
-+
-+long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
-+			unsigned long pte_index)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long *hpte, v, r, gr;
-+	struct revmap_entry *rev;
-+
-+	if (pte_index >= HPT_NPTE)
-+		return H_PARAMETER;
-+
-+	rev = real_vmalloc_addr(&kvm->arch.revmap[pte_index]);
-+	hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
-+		cpu_relax();
-+	v = hpte[0];
-+	r = hpte[1];
-+	gr = rev->guest_rpte;
-+	rev->guest_rpte &= ~HPTE_R_C;
-+	if (v & HPTE_V_VALID) {
-+		gr |= r & (HPTE_R_R | HPTE_R_C);
-+		if (r & HPTE_R_C) {
-+			hpte[0] |= HPTE_V_ABSENT;
-+			kvmppc_invalidate_hpte(kvm, hpte, pte_index);
-+			hpte[1] &= ~HPTE_R_C;
-+			eieio();
-+			hpte[0] = v;
-+		}
-+	}
-+	unlock_hpte(hpte, v & ~HPTE_V_HVLOCK);
-+
-+	if (!(v & (HPTE_V_VALID | HPTE_V_ABSENT)))
-+		return H_NOT_FOUND;
-+
-+	vcpu->arch.gpr[4] = gr;
-+	return H_SUCCESS;
-+}
-+
- void kvmppc_invalidate_hpte(struct kvm *kvm, unsigned long *hptep,
- 			unsigned long pte_index)
+ int kvm_age_hva(struct kvm *kvm, unsigned long hva)
+@@ -794,7 +828,32 @@ int kvm_age_hva(struct kvm *kvm, unsigned long hva)
+ static int kvm_test_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 			      unsigned long gfn)
  {
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index b70bf22..4c52d6d 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1276,8 +1276,8 @@ hcall_real_table:
- 	.long	.kvmppc_h_remove - hcall_real_table
- 	.long	.kvmppc_h_enter - hcall_real_table
- 	.long	.kvmppc_h_read - hcall_real_table
--	.long	0		/* 0x10 - H_CLEAR_MOD */
--	.long	0		/* 0x14 - H_CLEAR_REF */
-+	.long	.kvmppc_h_clear_mod - hcall_real_table
-+	.long	.kvmppc_h_clear_ref - hcall_real_table
- 	.long	.kvmppc_h_protect - hcall_real_table
- 	.long	0		/* 0x1c - H_GET_TCE */
- 	.long	.kvmppc_h_put_tce - hcall_real_table
+-	return !!(*rmapp & KVMPPC_RMAP_REFERENCED);
++	struct revmap_entry *rev = kvm->arch.revmap;
++	unsigned long head, i, j;
++	unsigned long *hp;
++	int ret = 1;
++
++	if (*rmapp & KVMPPC_RMAP_REFERENCED)
++		return 1;
++
++	lock_rmap(rmapp);
++	if (*rmapp & KVMPPC_RMAP_REFERENCED)
++		goto out;
++
++	if (*rmapp & KVMPPC_RMAP_PRESENT) {
++		i = head = *rmapp & KVMPPC_RMAP_INDEX;
++		do {
++			hp = (unsigned long *)(kvm->arch.hpt_virt + (i << 4));
++			j = rev[i].forw;
++			if (hp[1] & HPTE_R_R)
++				goto out;
++		} while ((i = j) != head);
++	}
++	ret = 0;
++
++ out:
++	unlock_rmap(rmapp);
++	return ret;
+ }
+ 
+ int kvm_test_age_hva(struct kvm *kvm, unsigned long hva)
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index bcf6f92..76864a8 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -641,6 +641,25 @@ void kvmppc_invalidate_hpte(struct kvm *kvm, unsigned long *hptep,
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_invalidate_hpte);
+ 
++void kvmppc_clear_ref_hpte(struct kvm *kvm, unsigned long *hptep,
++			   unsigned long pte_index)
++{
++	unsigned long rb;
++	unsigned char rbyte;
++
++	rb = compute_tlbie_rb(hptep[0], hptep[1], pte_index);
++	rbyte = (hptep[1] & ~HPTE_R_R) >> 8;
++	/* modify only the second-last byte, which contains the ref bit */
++	*((char *)hptep + 14) = rbyte;
++	while (!try_lock_tlbie(&kvm->arch.tlbie_lock))
++		cpu_relax();
++	asm volatile(PPC_TLBIE(%1,%0)"; eieio; tlbsync"
++		     : : "r" (rb), "r" (kvm->arch.lpid));
++	asm volatile("ptesync" : : : "memory");
++	kvm->arch.tlbie_lock = 0;
++}
++EXPORT_SYMBOL_GPL(kvmppc_clear_ref_hpte);
++
+ static int slb_base_page_shift[4] = {
+ 	24,	/* 16M */
+ 	16,	/* 64k */
 -- 
 1.7.7.3
