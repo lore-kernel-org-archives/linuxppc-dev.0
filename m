@@ -1,22 +1,30 @@
-Return-Path: <B04825@freescale.com>
+Return-Path: <B07421@freescale.com>
 Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
  [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 4591D1007D4
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Dec 2011 04:23:46 +1100 (EST)
-Message-ID: <4EEA2A61.8050302@freescale.com>
-Date: Thu, 15 Dec 2011 11:12:01 -0600
-From: Timur Tabi <timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 431F0B6F9B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2011 04:38:06 +1100 (EST)
+Message-ID: <4EEA2F38.2090807@freescale.com>
+Date: Thu, 15 Dec 2011 11:32:40 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] phylib: update mdiobus_alloc() to allocate extra private
- space
-References: <1323967895-5205-1-git-send-email-timur@freescale.com>
- <8ABCAC4C-1D11-41AD-AE46-96EB9D40588D@freescale.com>
-In-Reply-To: <8ABCAC4C-1D11-41AD-AE46-96EB9D40588D@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: netdev@vger.kernel.org, davem@davemloft.net, linuxppc-dev@ozlabs.org
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
+ large-page Nand chip
+References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
+ <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
+ <4EDEAEB9.6020703@freescale.com> <1323724195.2297.11.camel@koala>
+ <4EE66EFE.1050608@freescale.com> <1323724784.2297.20.camel@koala>
+ <4EE6725C.3050706@freescale.com> <4EE6BC9B.4000602@freescale.com>
+ <4EE8612C.9050104@freescale.com> <4EE903CE.1010903@freescale.com>
+ <CADRPPNRRXTWzBEvY=vhe9+v0b8Ntq8KNoaXFN8pQZGmMc-dJYw@mail.gmail.com>
+In-Reply-To: <CADRPPNRRXTWzBEvY=vhe9+v0b8Ntq8KNoaXFN8pQZGmMc-dJYw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Artem.Bityutskiy@nokia.com, dedekind1@gmail.com, dwmw2@infradead.org,
+ LiuShuo <b35362@freescale.com>, linux-kernel@vger.kernel.org,
+ shuo.liu@freescale.com, linux-mtd@lists.infradead.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andy Fleming wrote:
-> Why? Doesn't this just obfuscate things a little, while providing no immediate benefit?
+On 12/14/2011 10:59 PM, Li Yang wrote:
+> The limitation of the proposed bad block marker migration is that you
+> need to make sure the migration is done and only done once.  If it is
+> done more than once, the factory bad block marker is totally messed
+> up.  It requires a complex mechanism to automatically guarantee the
+> migration is only done once, and it still won't be 100% safe.
+> 
+> I would suggest we use a much easier compromise that we form the BBT
+> base on the factory bad block marker on first use of the flash, and
+> after that the factory bad block marker is dropped.  We just relies on
+> the BBT for information about bad blocks.  Although by doing so we
+> can't regenerate the BBT again,  as there is mirror for the BBT I
+> don't think we have too much risk.
 
-I see code like this frequently:
+I have corrupted the BBT too often during development (e.g. a bug makes
+all accesses fail, so the upper layers decide to mark everything bad) to
+be comfortable with this.
 
-	bus = mdiobus_alloc();
-	if (bus == NULL)
-		return -ENOMEM;
-	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-	if (priv == NULL) {
-		err = -ENOMEM;
-		goto out_free;
-	}
-	bus->priv = priv;
+Elsewhere in the thread I suggested a way to let the marker be in either
+the bbt or in a dedicated block, depending on whether it's a development
+situation where the BBT needs to be erasable.
 
-This can be replaced with:
-
-	bus = mdiobus_alloc(sizeof(*priv));
-	if (bus == NULL)
-		return -ENOMEM;
-
-So the benefit is in simplifying memory management.  Now you have only one allocation to manage, instead of two.
-
-fbdev does the same thing, which is where I got the idea from.  See framebuffer_alloc().
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Scott
