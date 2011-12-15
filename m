@@ -1,23 +1,21 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DAFBF1007D4
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2011 22:20:10 +1100 (EST)
-Message-ID: <4EE9D7C3.8050506@windriver.com>
-Date: Thu, 15 Dec 2011 19:19:31 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <vneethv@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+ [209.85.215.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 3F4681007D4
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2011 22:45:35 +1100 (EST)
+Received: by eaai11 with SMTP id i11so1877390eaa.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2011 03:45:28 -0800 (PST)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] ppc32/kprobe: complete kprobe and migrate exception
- frame
-References: <1323679853-31751-1-git-send-email-tiejun.chen@windriver.com>	
- <1323679853-31751-4-git-send-email-tiejun.chen@windriver.com>	
- <1323731987.19891.40.camel@pasglop> <4EE6DA8C.8090107@windriver.com>	
- <4EE72AB8.4090502@windriver.com> <1323909460.21839.42.camel@pasglop>
-In-Reply-To: <1323909460.21839.42.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <4EE7A776.70609@freescale.com>
+References: <CAFbQSaALfZ-6-_g5aC1GgbUaoHyuBwaT342OFMTSf0iqtakDGA@mail.gmail.com>
+ <4EE7A776.70609@freescale.com>
+From: Vineeth <vneethv@gmail.com>
+Date: Thu, 15 Dec 2011 17:15:07 +0530
+Message-ID: <CAFbQSaA6yK7d+O0C6-BguKamRcBNnsU-yimO48cQV8G_evmJjw@mail.gmail.com>
+Subject: Re: Linux port availability for p5010 processor
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=000e0ce0f40853b90f04b420051c
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,156 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Looks we have to go into 'restore' at last as I said previously. I send v2 based
-on your all comments.
+--000e0ce0f40853b90f04b420051c
+Content-Type: text/plain; charset=ISO-8859-1
 
->> I assume it may not necessary to reorganize ret_from_except for *ppc32* .
-> 
-> It might be cleaner but I can do that myself later.
-> 
+found p5020_ds.c in platforms/85xx;
+why is it a part of 85xx directory ? the core of P5020 is E5500 where the
+core of 85xx is e500;
 
-I have this version but I'm not 100% sure if its as you expect :)
+Do we have the processor initialization code (start.S, head.S) files, port
+available with linux ?
 
-#define _TIF_WORK_MASK (_TIF_USER_WORK_MASK | _TIF_EMULATE_STACK_STORE)
 
-======
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 56212bc..e52b586 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -791,41 +791,29 @@ ret_from_except:
-        SYNC                    /* Some chip revs have problems here... */
-        MTMSRD(r10)             /* disable interrupts */
 
--       lwz     r3,_MSR(r1)     /* Returning to user mode? */
--       andi.   r0,r3,MSR_PR
--       beq     resume_kernel
--
- user_exc_return:               /* r10 contains MSR_KERNEL here */
-        /* Check current_thread_info()->flags */
-        rlwinm  r9,r1,0,0,(31-THREAD_SHIFT)
-        lwz     r9,TI_FLAGS(r9)
--       andi.   r0,r9,_TIF_USER_WORK_MASK
--       bne     do_work
-+       andi.   r0,r9,_TIF_WORK_MASK
-+       beq     restore
 
--restore_user:
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
--       /* Check whether this process has its own DBCR0 value.  The internal
--          debug mode bit tells us that dbcr0 should be loaded. */
--       lwz     r0,THREAD+THREAD_DBCR0(r2)
--       andis.  r10,r0,DBCR0_IDM@h
--       bnel-   load_dbcr0
--#endif
-+       lwz     r3,_MSR(r1)     /* Returning to user mode? */
-+       andi.   r0,r3,MSR_PR
-+       bne     do_user_work
 
- #ifdef CONFIG_PREEMPT
--       b       restore
--
- /* N.B. the only way to get here is from the beq following ret_from_except. */
--resume_kernel:
-        /* check current_thread_info->preempt_count */
-        rlwinm  r9,r1,0,0,(31-THREAD_SHIFT)
-        lwz     r0,TI_PREEMPT(r9)
-        cmpwi   0,r0,0          /* if non-zero, just restore regs and return */
--       bne     restore
-+       bne     2f
-        lwz     r0,TI_FLAGS(r9)
-        andi.   r0,r0,_TIF_NEED_RESCHED
--       beq+    restore
-+       beq+    2f
-        andi.   r0,r3,MSR_EE    /* interrupts off? */
--       beq     restore         /* don't schedule if so */
-+       beq     2f      /* don't schedule if so */
- #ifdef CONFIG_TRACE_IRQFLAGS
-        /* Lockdep thinks irqs are enabled, we need to call
-         * preempt_schedule_irq with IRQs off, so we inform lockdep
-@@ -844,12 +832,54 @@ resume_kernel:
-         */
-        bl      trace_hardirqs_on
- #endif
--#else
--resume_kernel:
-+2:
- #endif /* CONFIG_PREEMPT */
+On Wed, Dec 14, 2011 at 12:58 AM, Scott Wood <scottwood@freescale.com>wrote:
 
-+       /* check current_thread_info, _TIF_EMULATE_STACK_STORE */
-+       rlwinm  r9,r1,0,0,(31-THREAD_SHIFT)
-+       lwz     r0,TI_FLAGS(r9)
-+       andis.  r0,r0,_TIF_EMULATE_STACK_STORE@h
-+       beq+    restore
-+
-+       addi    r9,r1,INT_FRAME_SIZE    /* Get the kprobed function entry */
-+
-+       lwz     r3,GPR1(r1)
-+       subi    r3,r3,INT_FRAME_SIZE    /* dst: Allocate a trampoline exception
-frame */
-+       mr      r4,r1                   /* src:  current exception frame */
-+       li      r5,INT_FRAME_SIZE       /* size: INT_FRAME_SIZE */
-+       mr      r1,r3                   /* Reroute the trampoline frame to r1 */
-+       bl      memcpy                  /* Copy from the original to the
-trampoline */
-+
-+       /* Do real store operation to complete stwu */
-+       lwz     r5,GPR1(r1)
-+       stw     r9,0(r5)
-+
-+       /* Do real store operation to complete stwu */
-+       lwz     r5,GPR1(r1)
-+       stw     r9,0(r5)
-+
-+       /* Clear _TIF_EMULATE_STACK_STORE flag */
-+       rlwinm  r9,r1,0,0,(31-THREAD_SHIFT)
-+       lis     r11,_TIF_EMULATE_STACK_STORE@h
-+       addi    r9,r9,TI_FLAGS
-+0:     lwarx   r8,0,r9
-+       andc    r8,r8,r11
-+#ifdef CONFIG_IBM405_ERR77
-+       dcbt    0,r9
-+#endif
-+       stwcx.  r8,0,r9
-+       bne-    0b
-+
-        /* interrupts are hard-disabled at this point */
- restore:
-+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+       lwz     r3,_MSR(r1)     /* Returning to user mode? */
-+       andi.   r0,r3,MSR_PR
-+       beq     1f
-+       /* Check whether this process has its own DBCR0 value.  The internal
-+          debug mode bit tells us that dbcr0 should be loaded. */
-+       lwz     r0,THREAD+THREAD_DBCR0(r2)
-+       andis.  r10,r0,DBCR0_IDM@h
-+       bnel-   load_dbcr0
-+1:
-+#endif
-+
- #ifdef CONFIG_44x
- BEGIN_MMU_FTR_SECTION
-        b       1f
-@@ -1159,7 +1189,7 @@ global_dbcr0:
-        .previous
- #endif /* !(CONFIG_4xx || CONFIG_BOOKE) */
+> On 12/12/2011 11:33 PM, Vineeth wrote:
+> > Do we have a linux port available for freescale P5010 processor (with
+> > single E5500 core) ?
+> > /(found arch/powerpc/platforms/pseries ; and a some details on
+> > kernel/cputable.c /)
+>
+> p5010 is basically a p5020 with one core and "memory complex" instead of
+> two.  The same Linux code should work for both.
+>
+> pseries is something completely different.
+>
+> > Is there any reference board which uses this processor ?
+>
+> p5020ds has a p5020.
+>
+> Linux support is in arch/powerpc/platforms/85xx/p5020_ds.c (and
+> scattered in other places).
+>
+> > any reference in DTS file also will be helpful.
+>
+> arch/powerpc/boot/dts/p5020ds.dts
+>
+> -Scott
+>
+>
 
--do_work:                       /* r10 contains MSR_KERNEL here */
-+do_user_work:                  /* r10 contains MSR_KERNEL here */
-        andi.   r0,r9,_TIF_NEED_RESCHED
-        beq     do_user_signal
+--000e0ce0f40853b90f04b420051c
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-@@ -1184,7 +1214,7 @@ recheck:
-        andi.   r0,r9,_TIF_NEED_RESCHED
-        bne-    do_resched
-        andi.   r0,r9,_TIF_USER_WORK_MASK
--       beq     restore_user
-+       beq     restore
- do_user_signal:                        /* r10 contains MSR_KERNEL here */
-        ori     r10,r10,MSR_EE
-        SYNC
+found p5020_ds.c in platforms/85xx;<br>why is it a part of 85xx directory ?=
+ the core of P5020 is E5500 where the core of 85xx is e500;<br><br>Do we ha=
+ve the processor initialization code (start.S, head.S) files, port availabl=
+e with linux ? <br>
 
-Tiejun
+<br><br><br><br><br><div class=3D"gmail_quote">On Wed, Dec 14, 2011 at 12:5=
+8 AM, Scott Wood <span dir=3D"ltr">&lt;<a href=3D"mailto:scottwood@freescal=
+e.com">scottwood@freescale.com</a>&gt;</span> wrote:<br><blockquote class=
+=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padd=
+ing-left:1ex">
 
-Thanks
-Tiejun
+<div class=3D"im">On 12/12/2011 11:33 PM, Vineeth wrote:<br>
+&gt; Do we have a linux port available for freescale P5010 processor (with<=
+br>
+&gt; single E5500 core) ?<br>
+</div>&gt; /(found arch/powerpc/platforms/pseries ; and a some details on<b=
+r>
+&gt; kernel/cputable.c /)<br>
+<br>
+p5010 is basically a p5020 with one core and &quot;memory complex&quot; ins=
+tead of<br>
+two. =A0The same Linux code should work for both.<br>
+<br>
+pseries is something completely different.<br>
+<div class=3D"im"><br>
+&gt; Is there any reference board which uses this processor ?<br>
+<br>
+</div>p5020ds has a p5020.<br>
+<br>
+Linux support is in arch/powerpc/platforms/85xx/p5020_ds.c (and<br>
+scattered in other places).<br>
+<div class=3D"im"><br>
+&gt; any reference in DTS file also will be helpful.<br>
+<br>
+</div>arch/powerpc/boot/dts/p5020ds.dts<br>
+<span class=3D"HOEnZb"><font color=3D"#888888"><br>
+-Scott<br>
+<br>
+</font></span></blockquote></div><br>
+
+--000e0ce0f40853b90f04b420051c--
