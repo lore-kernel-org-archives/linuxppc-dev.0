@@ -1,31 +1,21 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6213D1007D4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 15:59:29 +1100 (EST)
-Received: by eekb57 with SMTP id b57so1638916eek.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2011 20:59:24 -0800 (PST)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <4EE903CE.1010903@freescale.com>
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
- <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
- <4EDEAEB9.6020703@freescale.com> <1323724195.2297.11.camel@koala>
- <4EE66EFE.1050608@freescale.com> <1323724784.2297.20.camel@koala>
- <4EE6725C.3050706@freescale.com> <4EE6BC9B.4000602@freescale.com>
- <4EE8612C.9050104@freescale.com> <4EE903CE.1010903@freescale.com>
-Date: Thu, 15 Dec 2011 12:59:24 +0800
-Message-ID: <CADRPPNRRXTWzBEvY=vhe9+v0b8Ntq8KNoaXFN8pQZGmMc-dJYw@mail.gmail.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-From: Li Yang <leoli@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Artem.Bityutskiy@nokia.com, dedekind1@gmail.com,
- linuxppc-dev@lists.ozlabs.org, LiuShuo <b35362@freescale.com>,
- linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
- linux-mtd@lists.infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 63BE61007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2011 19:09:51 +1100 (EST)
+Message-ID: <1323936581.21839.68.camel@pasglop>
+Subject: Re: [PATCH 2/2] offb: Add palette hack for qemu "standard vga"
+ framebuffer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas =?ISO-8859-1?Q?F=E4rber?= <afaerber@suse.de>
+Date: Thu, 15 Dec 2011 19:09:41 +1100
+In-Reply-To: <4EE9A6A5.2050600@suse.de>
+References: <1323907109.21839.28.camel@pasglop> <4EE9A6A5.2050600@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,53 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 15, 2011 at 4:15 AM, Scott Wood <scottwood@freescale.com> wrote=
-:
-> On 12/14/2011 02:41 AM, LiuShuo wrote:
->> =E4=BA=8E 2011=E5=B9=B412=E6=9C=8813=E6=97=A5 10:46, LiuShuo =E5=86=99=
-=E9=81=93:
->>> =E4=BA=8E 2011=E5=B9=B412=E6=9C=8813=E6=97=A5 05:30, Scott Wood =E5=86=
-=99=E9=81=93:
->>>> On 12/12/2011 03:19 PM, Artem Bityutskiy wrote:
->>>>> On Mon, 2011-12-12 at 15:15 -0600, Scott Wood wrote:
->>>>>> NAND chips come from the factory with bad blocks marked at a certain
->>>>>> offset into each page. =C2=A0This offset is normally in the OOB area=
-, but
->>>>>> since we change the layout from "4k data, 128 byte oob" to "2k
->>>>>> data, 64
->>>>>> byte oob, 2k data, 64 byte oob" the marker is no longer in the
->>>>>> oob. =C2=A0On
->>>>>> first use we need to migrate the markers so that they are still in
->>>>>> the oob.
->>>>> Ah, I see, thanks. Are you planning to implement in-kernel migration =
-or
->>>>> use a user-space tool?
->>>> That's the kind of answer I was hoping to get from Shuo. :-)
->>> OK, I try to do this. Wait for a couple of days.
->>>
->>> -LiuShuo
->> I found it's too complex to do the migration in Linux driver.
->>
->> Maybe we can add a uboot command (e.g. nand bbmigrate) to do it, once is
->> enough.
->
-> Any reason not to do it automatically on the first U-Boot bad block
-> scan, if the flash isn't marked as already migrated?
->
-> Further discussion on the details of how to do it in U-Boot should move
-> to the U-Boot list.
+On Thu, 2011-12-15 at 08:49 +0100, Andreas Färber wrote:
+> Am 15.12.2011 00:58, schrieb Benjamin Herrenschmidt:
+> > We rename the mach64 hack to "simple" since that's also applicable
+> > to anything using VGA-style DAC IO ports (set to 8-bit DAC) and we
+> > use it for qemu vga.
+> > 
+> > Note that this is keyed on a device-tree "compatible" property that
+> > is currently only set by an upcoming version of SLOF when using the
+> > qemu "pseries" platform. This is on purpose as other qemu ppc platforms
+> > using OpenBIOS aren't properly setting the DAC to 8-bit at the time of
+> > the writing of this patch.
+> > 
+> > We can fix OpenBIOS later to do that and add the required property, in
+> > which case it will be matched by this change.
+> 
+> Just let me know what's needed for OpenBIOS.
+> Is this just for -vga std as opposed to the default cirrus?
 
-The limitation of the proposed bad block marker migration is that you
-need to make sure the migration is done and only done once.  If it is
-done more than once, the factory bad block marker is totally messed
-up.  It requires a complex mechanism to automatically guarantee the
-migration is only done once, and it still won't be 100% safe.
+Yes. Cirrus isn't the default on mac99 and on pseries (tho I will
+eventually add a SLOF driver for it as well).
 
-I would suggest we use a much easier compromise that we form the BBT
-base on the factory bad block marker on first use of the flash, and
-after that the factory bad block marker is dropped.  We just relies on
-the BBT for information about bad blocks.  Although by doing so we
-can't regenerate the BBT again,  as there is mirror for the BBT I
-don't think we have too much risk.
+For OpenBIOS I was thinking about just sending you a patch :-) But if
+you have more time than I do, what is needed is:
 
-- Leo
+ - Set the 8-bit DAC bit in the VBE enable register when initializing
+the card (0x20 off the top of my mind but dbl check). Remove your >> 2
+in your palette setting.
+
+ - Implement color! so prom_init can set the initial palette (but that's
+not strictly necessary).
+
+ - I assume that the VGA device already has a device_type of "display",
+can be open()'ed from the client interface and will have the necessary
+properties to be used by offb (width, height, linebytes, depth, and
+address if fits in 32-bit (if not, ignore it, offb will pick the largest
+BAR)). 
+
+ - Stick "qemu,std-vga" into the compatible property of the vga PCI
+device.
+
+Cheers,
+Ben.
