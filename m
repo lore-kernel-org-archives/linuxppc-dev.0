@@ -1,24 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 3F96D1007D7
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Dec 2011 01:30:42 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Vineeth <vneethv@gmail.com>
-Subject: Re: Linux port availability for p5010 processor
-Date: Thu, 15 Dec 2011 14:30:04 +0000
-Message-ID: <CAOZdJXWBEB_Oxc6=S4Q5cN94SyYEA9tEFZQy6+3ZYfKtW4SMPg@mail.gmail.com>
-References: <CAFbQSaALfZ-6-_g5aC1GgbUaoHyuBwaT342OFMTSf0iqtakDGA@mail.gmail.com>
- <4EE7A776.70609@freescale.com>
- <CAFbQSaA6yK7d+O0C6-BguKamRcBNnsU-yimO48cQV8G_evmJjw@mail.gmail.com>
-In-Reply-To: <CAFbQSaA6yK7d+O0C6-BguKamRcBNnsU-yimO48cQV8G_evmJjw@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <rdunlap@xenotime.net>
+Received: from oproxy7-pub.bluehost.com (oproxy7-pub.bluehost.com
+ [67.222.55.9]) by ozlabs.org (Postfix) with SMTP id 362801007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2011 03:50:59 +1100 (EST)
+Message-ID: <4EEA31CB.7070205@xenotime.net>
+Date: Thu, 15 Dec 2011 09:43:39 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: linux-next bad Kconfig for drivers/hid
+References: <20111209012746.GC20353@thor.bakeyournoodle.com>
+ <4EE19DA0.5010705@goop.org>
+ <alpine.LNX.2.00.1112120020330.21970@pobox.suse.cz>
+ <20111212003140.GA16353@thor.bakeyournoodle.com>
+ <alpine.LNX.2.00.1112151107020.21970@pobox.suse.cz>
+In-Reply-To: <alpine.LNX.2.00.1112151107020.21970@pobox.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel ML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 15, 2011 at 5:45 AM, Vineeth <vneethv@gmail.com> wrote:
->
-> why is it a part of 85xx directory ? the core of P5020 is E5500 where the
-> core of 85xx is e500;
+On 12/15/2011 02:08 AM, Jiri Kosina wrote:
+> On Mon, 12 Dec 2011, Tony Breeds wrote:
+> 
+>> On Mon, Dec 12, 2011 at 12:21:16AM +0100, Jiri Kosina wrote:
+>>> On Thu, 8 Dec 2011, Jeremy Fitzhardinge wrote:
+>>>>
+>>>> Hm.  How about making it "depends on HID && POWER_SUPPLY"?  I think that
+>>>> would needlessly disable it if HID is also modular, but I'm not sure how
+>>>> to fix that.  "depends on HID && POWER_SUPPLY && HID == POWER_SUPPLY"?
+>>
+>> That would work, but I think technically I think you could end up with
+>> HID=m and POWER_SUPPLY=m which would still allow HID_BATTERY_STRENGTH=y
+>> which is the same problem.
+>>
+>> I don't know what kind of .config contortions you'd need to do to get
+>> there.
+>>  
+>>> How about making it 'default POWER_SUPPLY' instead?
+>>
+>> By itself that wont help as POWER_SUPPLY=m statisfies.
+>>
+>> So it looks like we have Jeremy's:
+>> 	HID && POWER_SUPPLY && HID == POWER_SUPPLY
+> 
+> Tony,
+> 
+> have you actually tested this one to work in the configuration you have 
+> been seeing it to fail?
+> 
+> I don't seem to be able to find any use of '==' in other Kconfig files 
+> (and never used it myself), so I'd like to have confirmation that it 
+> actually works and fixes the problem before I apply it :)
 
-e5500 is very similar to e500, so it's all part of the same family of cores=
-.
+Documentation/kbuild/kconfig-language.txt does not list "==":
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+<expr> ::= <symbol>                             (1)
+           <symbol> '=' <symbol>                (2)
+           <symbol> '!=' <symbol>               (3)
+           '(' <expr> ')'                       (4)
+           '!' <expr>                           (5)
+           <expr> '&&' <expr>                   (6)
+           <expr> '||' <expr>                   (7)
+
+
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
