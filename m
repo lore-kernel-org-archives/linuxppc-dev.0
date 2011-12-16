@@ -2,16 +2,18 @@ Return-Path: <davem@davemloft.net>
 Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EBC071007D4
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Dec 2011 07:32:44 +1100 (EST)
-Date: Fri, 16 Dec 2011 15:31:37 -0500 (EST)
-Message-Id: <20111216.153137.729586714371685980.davem@davemloft.net>
+ by ozlabs.org (Postfix) with ESMTPS id C80A91007D4
+ for <linuxppc-dev@ozlabs.org>; Sat, 17 Dec 2011 07:33:59 +1100 (EST)
+Date: Fri, 16 Dec 2011 15:32:54 -0500 (EST)
+Message-Id: <20111216.153254.1998330487051662169.davem@davemloft.net>
 To: timur@freescale.com
 Subject: Re: [PATCH] phylib: update mdiobus_alloc() to allocate extra
  private space
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1323967895-5205-1-git-send-email-timur@freescale.com>
+In-Reply-To: <4EEA2A61.8050302@freescale.com>
 References: <1323967895-5205-1-git-send-email-timur@freescale.com>
+ <8ABCAC4C-1D11-41AD-AE46-96EB9D40588D@freescale.com>
+ <4EEA2A61.8050302@freescale.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: netdev@vger.kernel.org, afleming@freescale.com, linuxppc-dev@ozlabs.org
@@ -25,31 +27,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Timur Tabi <timur@freescale.com>
-Date: Thu, 15 Dec 2011 10:51:35 -0600
+Date: Thu, 15 Dec 2011 11:12:01 -0600
 
-> Augment mdiobus_alloc() to take a parameter indicating the number of extra
-> bytes to allocate for private data.  Almost all callers of mdiobus_alloc()
-> separately allocate a private data structure.  By allowing mdiobus_alloc()
-> to allocate extra memory, the two allocations can be merged into one.
+> Andy Fleming wrote:
+>> Why? Doesn't this just obfuscate things a little, while providing no immediate benefit?
 > 
-> This patch does not change any of the callers to actually take advantage
-> of this feature, however.  That change can be made by the individual
-> maintainers at their leisure.  For now, all callers ask for zero additional
-> bytes, which mimics the previous behavior.
+> I see code like this frequently:
 > 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> 	bus = mdiobus_alloc();
+> 	if (bus == NULL)
+> 		return -ENOMEM;
+> 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+> 	if (priv == NULL) {
+> 		err = -ENOMEM;
+> 		goto out_free;
+> 	}
+> 	bus->priv = priv;
 
-Come on...
+Where "frequently", all of the mdiobus_alloc() call sites in your patch just
+get translated to pass "0" for the private size.
 
-Not one driver even uses the new facility, and on top of it you edit
-all of these drivers for no reason at all.
-
-You could edit only two source files instead of more than 30 by simply
-doing:
-
-struct mii_bus *mdiobus_alloc_size(size_t size);
-
-static inline struct mii_bus *mdiobus_alloc(void)
-{
-	return mdiobus_alloc_size(0):
-}
+Make the change how I suggested, where mdiobus_alloc() retains it's current
+function signature and semantics.  Then you can edit drivers as needed rather
+than from the beginning.
