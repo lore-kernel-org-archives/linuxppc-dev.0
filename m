@@ -1,28 +1,31 @@
-Return-Path: <B29882@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
- [65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 3E9471007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2011 14:42:42 +1100 (EST)
-From: McClintock Matthew-B29882 <B29882@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/setup_{32, 64}.c: remove unneeded
- boot_cpuid{, _phys}
-Date: Fri, 16 Dec 2011 03:42:35 +0000
-Message-ID: <CAEsOVNdb2RMJzW3syOzWmfdrnc_XBxOp4uwM+2VFbWFT=G-fTQ@mail.gmail.com>
-References: <1322192477.32635.15.camel@pasglop>
- <1322540669-6834-1-git-send-email-msm@freescale.com>
- <1324005174.4875.0.camel@pasglop>
- <CAEsOVNcZPH_MJUdy0q7AjwomHTZhg2DoHSV+y9xatq-2SohC2A@mail.gmail.com>
- <1324006543.4875.1.camel@pasglop>
-In-Reply-To: <1324006543.4875.1.camel@pasglop>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id E1DD01007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2011 17:01:03 +1100 (EST)
+Date: Fri, 16 Dec 2011 11:30:48 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Miche Baker-Harvey <miche@google.com>
+Subject: Re: [PATCH v3 2/3] hvc_init(): Enforce one-time initialization.
+Message-ID: <20111216060048.GA12211@amit-x200.redhat.com>
+References: <20111108214504.28884.61814.stgit@miche.sea.corp.google.com>
+ <874nybqo0o.fsf@rustcorp.com.au>
+ <CAB8RdapbaueyWLJuJDE_ZdvLkRNM4sQHTxgmgO=jrnXZ6YPSmA@mail.gmail.com>
+ <20111123103852.GG16665@amit-x200.redhat.com>
+ <CAB8RdaoDxMCgTjuGP70bGrsrtgh=USYtU3Spo5OPtVMYAM5EzQ@mail.gmail.com>
+ <20111129142149.GE2822@amit-x200.redhat.com>
+ <CAB8RdapuPRym2dH_9mgmGdzpCxnP1KpS+hS8JJ-geVkga5fMcw@mail.gmail.com>
+ <CAB8Rdapfuf5XH+X9gsUL+CJ9gTQcSNfq4Dj9DoYWQeFgD04ODQ@mail.gmail.com>
+ <20111205105452.GB27683@amit-x200.redhat.com>
+ <CAB8Rdar=qOokxZkjQVRmo=zN_f75jPwzU+6=WBRo0g+P7w+pAw@mail.gmail.com>
 MIME-Version: 1.0
-Cc: McClintock Matthew-B29882 <B29882@freescale.com>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAB8Rdar=qOokxZkjQVRmo=zN_f75jPwzU+6=WBRo0g+P7w+pAw@mail.gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xen-devel@lists.xensource.com,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, Anton Blanchard <anton@samba.org>,
+ Mike Waychison <mikew@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Greg Kroah-Hartman <gregkh@suse.de>, Eric Northrup <digitaleric@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 15, 2011 at 9:35 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->> This is 4/5 which is also waiting for your review.
->>
->> http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-October/093474.html
->
-> Ah missed that. This is FSL specific, I'd need Kumar and/or Scott's ack
-> for that one.
+On (Tue) 06 Dec 2011 [09:05:38], Miche Baker-Harvey wrote:
+> Amit,
+> 
+> Ah, indeed.  I am not using MSI-X, so virtio_pci::vp_try_to_find_vqs()
+> calls vp_request_intx() and sets up an interrupt callback.  From
+> there, when an interrupt occurs, the stack looks something like this:
+> 
+> virtio_pci::vp_interrupt()
+>   virtio_pci::vp_vring_interrupt()
+>     virtio_ring::vring_interrupt()
+>       vq->vq.callback()  <-- in this case, that's virtio_console::control_intr()
+>         workqueue::schedule_work()
+>           workqueue::queue_work()
+>             queue_work_on(get_cpu())  <-- queues the work on the current CPU.
+> 
+> I'm not doing anything to keep multiple control message from being
+> sent concurrently to the guest, and we will take those interrupts on
+> any CPU. I've confirmed that the two instances of
+> handle_control_message() are occurring on different CPUs.
 
-I believe Kumar was waiting on your review of 5/5. I'll let you guys discus=
-s.
+Hi Miche,
 
--M=
+Here's a quick-and-dirty hack that should help.  I've not tested this,
+and it's not yet signed-off-by.  Let me know if this helps.
+
+>From 16708fa247c0dd34aa55d78166d65e463f9be6d6 Mon Sep 17 00:00:00 2001
+Message-Id: <16708fa247c0dd34aa55d78166d65e463f9be6d6.1324015123.git.amit.shah@redhat.com>
+From: Amit Shah <amit.shah@redhat.com>
+Date: Fri, 16 Dec 2011 11:27:04 +0530
+Subject: [PATCH 1/1] virtio: console: Serialise control work
+
+We currently allow multiple instances of the control work handler to run
+in parallel.  This isn't expected to work; serialise access by disabling
+interrupts on new packets from the Host and enable them when all the
+existing ones are consumed.
+---
+ drivers/char/virtio_console.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+index 8e3c46d..72d396c 100644
+--- a/drivers/char/virtio_console.c
++++ b/drivers/char/virtio_console.c
+@@ -1466,6 +1466,7 @@ static void control_work_handler(struct work_struct *work)
+ 	portdev = container_of(work, struct ports_device, control_work);
+ 	vq = portdev->c_ivq;
+ 
++ start:
+ 	spin_lock(&portdev->cvq_lock);
+ 	while ((buf = virtqueue_get_buf(vq, &len))) {
+ 		spin_unlock(&portdev->cvq_lock);
+@@ -1483,6 +1484,10 @@ static void control_work_handler(struct work_struct *work)
+ 		}
+ 	}
+ 	spin_unlock(&portdev->cvq_lock);
++	if (unlikely(!virtqueue_enable_cb(vq))) {
++		virtqueue_disable_cb(vq);
++		goto start;
++	}
+ }
+ 
+ static void out_intr(struct virtqueue *vq)
+@@ -1533,6 +1538,7 @@ static void control_intr(struct virtqueue *vq)
+ {
+ 	struct ports_device *portdev;
+ 
++	virtqueue_disable_cb(vq);
+ 	portdev = vq->vdev->priv;
+ 	schedule_work(&portdev->control_work);
+ }
+-- 
+1.7.7.4
+
+
+
+		Amit
