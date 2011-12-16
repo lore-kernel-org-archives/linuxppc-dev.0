@@ -1,21 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C80A91007D4
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Dec 2011 07:33:59 +1100 (EST)
-Date: Fri, 16 Dec 2011 15:32:54 -0500 (EST)
-Message-Id: <20111216.153254.1998330487051662169.davem@davemloft.net>
-To: timur@freescale.com
-Subject: Re: [PATCH] phylib: update mdiobus_alloc() to allocate extra
- private space
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4EEA2A61.8050302@freescale.com>
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+ [216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 878711007D4
+ for <linuxppc-dev@ozlabs.org>; Sat, 17 Dec 2011 07:37:43 +1100 (EST)
+Message-ID: <4EEBAC0C.4020104@freescale.com>
+Date: Fri, 16 Dec 2011 14:37:32 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] phylib: update mdiobus_alloc() to allocate extra private
+ space
 References: <1323967895-5205-1-git-send-email-timur@freescale.com>
  <8ABCAC4C-1D11-41AD-AE46-96EB9D40588D@freescale.com>
  <4EEA2A61.8050302@freescale.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ <20111216.153254.1998330487051662169.davem@davemloft.net>
+In-Reply-To: <20111216.153254.1998330487051662169.davem@davemloft.net>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: netdev@vger.kernel.org, afleming@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,27 +28,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Timur Tabi <timur@freescale.com>
-Date: Thu, 15 Dec 2011 11:12:01 -0600
+David Miller wrote:
+> Make the change how I suggested, where mdiobus_alloc() retains it's current
+> function signature and semantics.  Then you can edit drivers as needed rather
+> than from the beginning.
 
-> Andy Fleming wrote:
->> Why? Doesn't this just obfuscate things a little, while providing no immediate benefit?
-> 
-> I see code like this frequently:
-> 
-> 	bus = mdiobus_alloc();
-> 	if (bus == NULL)
-> 		return -ENOMEM;
-> 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-> 	if (priv == NULL) {
-> 		err = -ENOMEM;
-> 		goto out_free;
-> 	}
-> 	bus->priv = priv;
+Yes, your approach makes much more sense.  I should have thought of it.
 
-Where "frequently", all of the mdiobus_alloc() call sites in your patch just
-get translated to pass "0" for the private size.
-
-Make the change how I suggested, where mdiobus_alloc() retains it's current
-function signature and semantics.  Then you can edit drivers as needed rather
-than from the beginning.
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
