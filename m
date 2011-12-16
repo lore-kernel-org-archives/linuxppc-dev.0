@@ -1,21 +1,22 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Thu, 15 Dec 2011 22:44:01 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: linux-next bad Kconfig for drivers/hid
-Message-ID: <20111215114401.GA3089@thor.bakeyournoodle.com>
-References: <20111209012746.GC20353@thor.bakeyournoodle.com>
- <4EE19DA0.5010705@goop.org>
- <alpine.LNX.2.00.1112120020330.21970@pobox.suse.cz>
- <20111212003140.GA16353@thor.bakeyournoodle.com>
- <alpine.LNX.2.00.1112151107020.21970@pobox.suse.cz>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 124B91007D6
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Dec 2011 12:58:08 +1100 (EST)
+Message-ID: <4EEAA585.700@windriver.com>
+Date: Fri, 16 Dec 2011 09:57:25 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
-In-Reply-To: <alpine.LNX.2.00.1112151107020.21970@pobox.suse.cz>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel ML <linux-kernel@vger.kernel.org>
+To: Vineeth <vneethv@gmail.com>
+Subject: Re: Linux port availability for p5010 processor
+References: <CAFbQSaALfZ-6-_g5aC1GgbUaoHyuBwaT342OFMTSf0iqtakDGA@mail.gmail.com>
+ <4EE7A776.70609@freescale.com>
+ <CAFbQSaA6yK7d+O0C6-BguKamRcBNnsU-yimO48cQV8G_evmJjw@mail.gmail.com>
+In-Reply-To: <CAFbQSaA6yK7d+O0C6-BguKamRcBNnsU-yimO48cQV8G_evmJjw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Vineeth wrote:
+> found p5020_ds.c in platforms/85xx;
+> why is it a part of 85xx directory ? the core of P5020 is E5500 where the
+> core of 85xx is e500;
+> 
 
---OgqxwSJOaUobr8KG
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+e5500 is e500mc-64bit Power Architecture core.
 
-On Thu, Dec 15, 2011 at 11:08:08AM +0100, Jiri Kosina wrote:
-=20
-> Tony,
->=20
-> have you actually tested this one to work in the configuration you have=
-=20
-> been seeing it to fail?
->=20
-> I don't seem to be able to find any use of '=3D=3D' in other Kconfig file=
-s=20
-> (and never used it myself), so I'd like to have confirmation that it=20
-> actually works and fixes the problem before I apply it :)
+> Do we have the processor initialization code (start.S, head.S) files, port
+> available with linux ?
+> 
 
-Sorry I used '=3D' instead of '=3D=3D' and that worked.  I figured the '=3D=
-=3D'
-was just a typo.
+So it should go head_64.S/entry_64.S with CONFIG_PPC_BOOK3E.
 
-Yours Tony
-
---OgqxwSJOaUobr8KG
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO6d2BAAoJEEsCiJRY75GK/QgP/3FzHR7duM7jp6hH8xwwr3pI
-dctYJTjnx3+cnjKBoCtqrVaobAswHcvzHuDv2vK/orcwL69LmGNYekBMSwY2HFG+
-ZF+AyEN2wcDV2yPwsMLXm0LJuSuywMz5k/X8zGMub2vYyWaEWtjUOIpEeIu2Ys0f
-NbXee9KZ0o8Na7plAR7zHlrBTBB9F9mbgd9JD5HCrI2WlsGmIsaqPC6kWy5LiPnd
-eN/Df3kw4HLPWsWRqN9TKpSgVS0QGmRb03GGKI9TW6TpLmlkjCOSvRhkJ/BitZki
-Kk4apNqL/YB7ODbHWeOgyFg4A7xV30rvDV34sqPUoOxUoeCKjEEw5VeoE1NOSkYX
-YHJIdHNMJwgzCl4/i0XFnnAJwO5wu619J7sldb4CyarRpCtPeuWW/6RVC2ZCipv1
-0pknFBXopiPYafbRZAJ13zJFVNV2peeW9lbd1d0YDkXYW7vcDpf13sC5z5ouUXPB
-/+UzYs6WN/RUwCDwJHjLm1TvDYgmMZzoA0j/mkoYvwuLCnP9G3o6uSOPe4spVrYe
-L9XtO+QxY/u4EQd3rpRlGVHdJMxWJcPC2UwYlUHsfaanwPtdTfubZtF39T33yC5E
-GQoGsitZ++RhbWfO2gW8JarVMB+P5UcPmMmTaHuY7eJWu/ZPVoZiuidz/1OsWqgc
-EQvuzn6eo3Jsnpc47TDd
-=ymIJ
------END PGP SIGNATURE-----
-
---OgqxwSJOaUobr8KG--
+Tiejun
