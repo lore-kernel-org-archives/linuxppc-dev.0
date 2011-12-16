@@ -1,24 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EB23E1007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2011 14:35:51 +1100 (EST)
-Message-ID: <1324006543.4875.1.camel@pasglop>
+Return-Path: <B29882@freescale.com>
+Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+ [65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 3E9471007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2011 14:42:42 +1100 (EST)
+From: McClintock Matthew-B29882 <B29882@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH v2] powerpc/setup_{32, 64}.c: remove unneeded
  boot_cpuid{, _phys}
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: McClintock Matthew-B29882 <B29882@freescale.com>
-Date: Fri, 16 Dec 2011 14:35:43 +1100
-In-Reply-To: <CAEsOVNcZPH_MJUdy0q7AjwomHTZhg2DoHSV+y9xatq-2SohC2A@mail.gmail.com>
+Date: Fri, 16 Dec 2011 03:42:35 +0000
+Message-ID: <CAEsOVNdb2RMJzW3syOzWmfdrnc_XBxOp4uwM+2VFbWFT=G-fTQ@mail.gmail.com>
 References: <1322192477.32635.15.camel@pasglop>
  <1322540669-6834-1-git-send-email-msm@freescale.com>
  <1324005174.4875.0.camel@pasglop>
  <CAEsOVNcZPH_MJUdy0q7AjwomHTZhg2DoHSV+y9xatq-2SohC2A@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+ <1324006543.4875.1.camel@pasglop>
+In-Reply-To: <1324006543.4875.1.camel@pasglop>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: McClintock Matthew-B29882 <B29882@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-12-16 at 03:29 +0000, McClintock Matthew-B29882 wrote:
-> On Thu, Dec 15, 2011 at 9:12 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Mon, 2011-11-28 at 22:24 -0600, Matthew McClintock wrote:
-> >> boot_cpuid and init_thread_info.cpu are redundant, just use the
-> >> var that stays around longer and add a define to make boot_cpuid
-> >> point at the correct value
-> >>
-> >> boot_cpudid_phys is not needed and can completly go away from the
-> >> SMP case, we leave it there for the non-SMP case since the paca
-> >> struct is not around to store this info
-> >>
-> >> This patch also has the effect of having the logical cpu number
-> >> of the boot cpu be updated correctly independently of the ordering
-> >> of the cpu nodes in the device tree.
-> >
-> > So what about head_fsl_booke.S comparing boot_cpuid to -1 ? That seems
-> > to be broken now in at least 2 ways, boot_cpuid doesn't exist anymore
-> > and you don't initialize it to -1 either...
-> 
-> This is 4/5 which is also waiting for your review.
-> 
-> http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-October/093474.html
+On Thu, Dec 15, 2011 at 9:35 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>> This is 4/5 which is also waiting for your review.
+>>
+>> http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-October/093474.html
+>
+> Ah missed that. This is FSL specific, I'd need Kumar and/or Scott's ack
+> for that one.
 
-Ah missed that. This is FSL specific, I'd need Kumar and/or Scott's ack
-for that one.
+I believe Kumar was waiting on your review of 5/5. I'll let you guys discus=
+s.
 
-Cheers,
-Ben.
+-M=
