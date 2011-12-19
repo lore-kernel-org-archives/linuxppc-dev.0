@@ -1,36 +1,23 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
- [209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id DAED11007DB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Dec 2011 03:39:15 +1100 (EST)
-Received: by iaae16 with SMTP id e16so5054053iaa.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2011 08:39:13 -0800 (PST)
-Message-ID: <1324140039.4240.79.camel@sauron.fi.intel.com>
-Subject: RE: [PATCH v2] Integrated Flash Controller support
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Li Yang-R58472 <r58472@freescale.com>
-Date: Sat, 17 Dec 2011 18:40:39 +0200
-In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F056964B0@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1320053901-23801-1-git-send-email-b35362@freescale.com>
- <CCF7C6DB-437C-4140-894F-2F497AD610DC@kernel.crashing.org>
- <8EDB3DC6-63E5-4D5C-BB52-15F32B85C5DD@kernel.crashing.org>
- <1322602860.2150.10.camel@koala> <4ED5531C.6030104@freescale.com>
- <EFF451D9-552A-4820-90D3-BF3156D5B25F@kernel.crashing.org>
- <1322643080.24797.413.camel@sauron.fi.intel.com>
- <94F013E7935FF44C83EBE7784D62AD3F056964B0@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-TKiVDr+89xRzipLIeYF+"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E7801B703E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2011 14:01:07 +1100 (EST)
+Message-ID: <1324263652.30454.13.camel@pasglop>
+Subject: Re: [PATCH] powerpc: POWER7 optimised copy_to_user/copy_from_user
+ using VMX
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+Date: Mon, 19 Dec 2011 14:00:52 +1100
+In-Reply-To: <20111208171145.3ab3c423@kryten>
+References: <20111208160227.2ef2d526@kryten>
+ <FC884692-A7C3-47F6-BDD5-9E3D955ABF9B@kernel.crashing.org>
+ <5188.1323323649@neuling.org> <20111208171145.3ab3c423@kryten>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Liu Shuo-B35362 <B35362@freescale.com>,
- "linux-kernel@vger.kernel.org Kernel" <linux-kernel@vger.kernel.org>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Woodhouse <dwmw2@infradead.org>
-Reply-To: dedekind1@gmail.com
+Cc: Michael Neuling <mikey@neuling.org>, paulus@samba.org,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,65 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2011-12-08 at 17:11 +1100, Anton Blanchard wrote:
+> Implement a POWER7 optimised copy_to_user/copy_from_user using VMX.
+> For large aligned copies this new loop is over 10% faster, and for
+> large unaligned copies it is over 200% faster.
 
---=-TKiVDr+89xRzipLIeYF+
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Breaks !CONFIG_ALTIVEC build an pops some WARN's with preempt & lockdep,
+this seems to fix them:
 
-On Wed, 2011-12-14 at 11:13 +0000, Li Yang-R58472 wrote:
-> >-----Original Message-----
-> >From: Artem Bityutskiy [mailto:dedekind1@gmail.com]
-> >Sent: Wednesday, November 30, 2011 4:51 PM
-> >To: Kumar Gala
-> >Cc: Wood Scott-B07421; Li Yang-R58472; Liu Shuo-B35362; linux-
-> >kernel@vger.kernel.org Kernel; linux-mtd@lists.infradead.org; Andrew
-> >Morton; David Woodhouse; linuxppc-dev@lists.ozlabs.org list
-> >Subject: Re: [PATCH v2] Integrated Flash Controller support
-> >
-> >On Tue, 2011-11-29 at 19:47 -0600, Kumar Gala wrote:
-> >> As Scott said, I was more asking about the 2nd patch in the
-> sequence
-> >> which did touch MTD.  Since that one is dependent on this patch,
-> >> wondering how we wanted to handle them.
-> >
-> >I do not have time to review it, but it looks OK, so I'd suggest to
-> >merge it vie the same tree as the rest of the patches.
->=20
-> Hi Artem,
->=20
-> So what is your suggestion on this patch?  Can we regard your previous
-> email as an ACK and merge it through the powerpc tree?  Or do you
-> prefer to merge them through the MTD tree with Kumar's ACK instead?
-
-I am fine if it is merged via PPC tree. I do not have bandwith to look
-at it closely, so I cannot ack it, although I also do not have reasons
-to nack it :-)
-
---=20
-Best Regards,
-Artem Bityutskiy
-
---=-TKiVDr+89xRzipLIeYF+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJO7MYHAAoJECmIfjd9wqK0TVsP/159t9dLDdXVM5hX8sUQhHCS
-JN/1GvYyMC0gAvbR/4nPrHViJUv4bFpjlxWH99ktXlyLiPhriMhmkLLW0QFcASzM
-O+ZpHTgc8Z9cBa4w5Z9CmRLgZMqIO+6bOWQDCffPSqB7yLoD6Oj7ydRq53yOdKks
-098m++7kWsaBPVIrQ90ilFl6hRRkr64CJ8WARTy4IftUWfOX9Q+OaWUHv5UJpLGl
-BBioc/CuYgly3uN5gF0/dODrlbEBN6HJ7iLioOssdxBfqCNY6LDF8iPmaxDrqarw
-I22IQVFKjogB77YOGrqRfOGmqVJUTXjqhsudo8B+2fN2wSdFsFTcwmqpODTzpJu5
-p7VWKje0SnhASmqZOgkYsnUntOCz8KaeEPWrWv1MTaU4ltJr3Ts6magZ653V2tHV
-9Mej5HH2FSAQVVgQSjCr/HssJjYkY1m2UDbDihDjvCijeBqA08eCpHml4ctWaxrV
-gspck0KN39rLVeusPLQtdYp6QnFSgMRuaaVjkvEnGdooctX80aSReBe14rsX4Mzp
-EqEQBP6Y5LbOQJNjkwprLRfVi9ofoVNDkb0VDjC5khqteAzyYcKOCbsuRLfO5CO4
-ekoIWG9q7o6UMw0DxvDiL3zTXS/fFGvGfOJTQyutzaHl5zsZF9oMyIfMHcrCfiuv
-ePiUYJHy5ovIrRf9g+/9
-=FXqb
------END PGP SIGNATURE-----
-
---=-TKiVDr+89xRzipLIeYF+--
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index b90b3e7..7735a2c 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -17,13 +17,14 @@ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+ obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
+ 			   checksum_wrappers_64.o hweight_64.o \
+-			   copyuser_power7.o copyuser_power7_vmx.o
++			   copyuser_power7.o
+ obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
+ obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
+ 
+ ifeq ($(CONFIG_PPC64),y)
+ obj-$(CONFIG_SMP)	+= locks.o
++obj-$(CONFIG_ALTIVEC)	+= copyuser_power7_vmx.o
+ endif
+ 
+ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+diff --git a/arch/powerpc/lib/copyuser_power7.S b/arch/powerpc/lib/copyuser_power7.S
+index 4395939..9a21b08 100644
+--- a/arch/powerpc/lib/copyuser_power7.S
++++ b/arch/powerpc/lib/copyuser_power7.S
+@@ -85,6 +85,7 @@
+ 
+ 
+ _GLOBAL(__copy_tofrom_user_power7)
++#ifdef CONFIG_ALTIVEC
+ 	cmpldi	r5,16
+ 	cmpldi	cr1,r5,4096
+ 
+@@ -94,6 +95,15 @@ _GLOBAL(__copy_tofrom_user_power7)
+ 
+ 	blt	.Lshort_copy
+ 	bgt	cr1,.Lvmx_copy
++#else
++	cmpldi	r5,16
++
++	std	r3,48(r1)
++	std	r4,56(r1)
++	std	r5,64(r1)
++
++	blt	.Lshort_copy
++#endif
+ 
+ .Lnonvmx_copy:
+ 	/* Get the source 8B aligned */
+@@ -273,6 +283,7 @@ err1;	stb	r0,0(r3)
+ 	addi	r1,r1,STACKFRAMESIZE
+ 	b	.Lnonvmx_copy
+ 
++#ifdef CONFIG_ALTIVEC
+ .Lvmx_copy:
+ 	mflr	r0
+ 	std	r0,16(r1)
+@@ -667,3 +678,4 @@ err3;	stb	r0,0(r3)
+ 
+ 15:	addi	r1,r1,STACKFRAMESIZE
+ 	b	.exit_vmx_copy		/* tail call optimise */
++#endif /* CONFiG_ALTIVEC */
+diff --git a/arch/powerpc/lib/copyuser_power7_vmx.c b/arch/powerpc/lib/copyuser_power7_vmx.c
+index c37b949..6e1efad 100644
+--- a/arch/powerpc/lib/copyuser_power7_vmx.c
++++ b/arch/powerpc/lib/copyuser_power7_vmx.c
+@@ -26,10 +26,16 @@ int enter_vmx_copy(void)
+ 	if (in_interrupt())
+ 		return 0;
+ 
+-	enable_kernel_altivec();
+-
++	/* This acts as preempt_disable() as well and will make
++	 * enable_kernel_altivec(). We need to disable page faults
++	 * as they can call schedule and thus make us lose the VMX
++	 * context. So on page faults, we just fail which will cause
++	 * a fallback to the normal non-vmx copy.
++	 */
+ 	pagefault_disable();
+ 
++	enable_kernel_altivec();
++
+ 	return 1;
+ }
+ 
