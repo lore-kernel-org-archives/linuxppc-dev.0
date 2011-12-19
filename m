@@ -1,19 +1,32 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
- by ozlabs.org (Postfix) with ESMTP id 832CFB703F
- for <linuxppc-dev@ozlabs.org>; Mon, 19 Dec 2011 19:08:41 +1100 (EST)
-Date: Mon, 19 Dec 2011 09:08:27 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: liguohu <liguohu@live.com>
-Subject: Re: Help needed with porting ether-net driver from ADS5121 to
- TWR-MPC5125
-Message-ID: <20111219090827.79997677@wker>
-In-Reply-To: <BLU0-SMTP14243F8B3BC45B200DD0EF8C6A00@phx.gbl>
-References: <BLU0-SMTP14243F8B3BC45B200DD0EF8C6A00@phx.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id D62EFB702E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2011 22:05:31 +1100 (EST)
+Received: by eekb57 with SMTP id b57so4994755eek.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2011 03:05:26 -0800 (PST)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <4EEB8704.8030201@freescale.com>
+References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
+ <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
+ <4EDEAEB9.6020703@freescale.com> <1323724195.2297.11.camel@koala>
+ <4EE66EFE.1050608@freescale.com> <1323724784.2297.20.camel@koala>
+ <4EE6725C.3050706@freescale.com> <4EE6BC9B.4000602@freescale.com>
+ <4EE8612C.9050104@freescale.com> <4EE903CE.1010903@freescale.com>
+ <4EEAB076.30000@freescale.com> <4EEB8704.8030201@freescale.com>
+Date: Mon, 19 Dec 2011 19:05:26 +0800
+Message-ID: <CADRPPNT-akj5KBQKdRaFrA2XpLU6-xtuRduzDYEWjv_dzVmTAA@mail.gmail.com>
+Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
+ large-page Nand chip
+From: Li Yang <leoli@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Artem.Bityutskiy@nokia.com, dedekind1@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, LiuShuo <b35362@freescale.com>,
+ linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
+ linux-mtd@lists.infradead.org, akpm@linux-foundation.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Sat, Dec 17, 2011 at 1:59 AM, Scott Wood <scottwood@freescale.com> wrote=
+:
+> On 12/15/2011 08:44 PM, LiuShuo wrote:
+>> hi Artem,
+>> Could this patch be applied now and we make a independent patch for =C2=
+=A0bad
+>> block information
+>> migration later?
+>
+> This patch is not safe to use without migration.
 
-On Fri, 16 Dec 2011 08:38:58 +0800
-G.H.Lee <liguohu@live.com> wrote:
-...
-> I am a new user of the board TWR-MPC5125 made by freescale. Now I am trying to porting the new kernel, i.e. the version 3.0.4, to this board. I have porting the serial driver and the nand flash driver successfully. And I can also mount the root file system. But I can not use the ether-net interface now. I have tried to port the ether-net driver based on the ether-net driver for ADS 5121, which is provided by the new kernel 3.0.4. The only thing I have to do in the porting is that I should change the MII mode in ADS5121 board to RMII mode in my board. And I find that I can send packages out if I use the "ping" command. But I can not receive any package for responding. And I also found that the interrupt routine for sending packages was running but the interrupt routine for receiving message was not called by the kernel. I don't know why. 
-> 
-> Can anyone help me? Should I change some other codes beyond the ether-net driver? Someone told me that I should regulate the kernel because of the differences among the different kerenl versions if the MAC was integrated inside the SOC, which was the fatto in my board. But I don't know how to regulate.
+Hi Scott,
 
-Please try following patch for fs_enet driver:
-http://patchwork.ozlabs.org/patch/87320/
+We agree it's not entirely safe without migrating the bad block flag.
+But let's consider two sides of the situation.
 
-There are also other patches for TWR-MPC5125 support:
-http://patchwork.ozlabs.org/patch/87925/
-http://patchwork.ozlabs.org/patch/87926/
-http://patchwork.ozlabs.org/patch/87321/
+Firstly, it's only unsafe when there is a need to re-built the Bad
+Block Table from scratch(old BBT broken).  But currently there is no
+easy way to do that(re-build BBT on demand), which means it's not a
+common problem that we can easily address now.
 
-Thanks,
-Anatolij
+Secondly, even if the previous said problem happens(BBT broken).  We
+can still recover all the data if we overrule the bad block flag.
+Only the card is not so good to be used again, however, it can be used
+if we take the risk of losing data from errors that ECC can't
+notice(low possibility too).
+
+Finally, I don't think this is a blocker issue but a better to have enhance=
+ment.
+
+- Leo
