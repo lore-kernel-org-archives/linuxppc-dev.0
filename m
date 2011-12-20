@@ -1,20 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id E4D31B702C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2011 16:11:28 +1100 (EST)
-Date: Tue, 20 Dec 2011 16:11:13 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: linux-next: manual merge of the cputime tree with the powerpc tree
-Message-Id: <20111220161113.3724f901fae728fb26f90407@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb"
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Andreas Schwab <schwab@linux-m68k.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <B36685@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+ [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 76514B702A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2011 17:40:50 +1100 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: "dedekind1@gmail.com" <dedekind1@gmail.com>
+Subject: RE: [PATCH 1/2] mtd/nand: fixup for fmr initialization of Freescale
+ NAND controller
+Date: Tue, 20 Dec 2011 06:40:43 +0000
+Message-ID: <3F453DDFF675A64A89321A1F352810216C9D5C@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1323682853-10750-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1324133097.4240.32.camel@sauron.fi.intel.com>
+In-Reply-To: <1324133097.4240.32.camel@sauron.fi.intel.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "dwmw2@infradead.org" <dwmw2@infradead.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,58 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Martin,
-
-Today's linux-next merge of the cputime tree got a conflict in
-arch/powerpc/include/asm/cputime.h between commit 9f5072d4f63f ("powerpc:
-Fix wrong divisor in usecs_to_cputime") from the powerpc tree and commit
-648616343cdb ("[S390] cputime: add sparse checking and cleanup") from the
-cputime tree.
-
-I fixed it up (see below) and can carry the fix as necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc arch/powerpc/include/asm/cputime.h
-index 33a3580,e94935c..0000000
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@@ -130,7 -114,7 +114,7 @@@ extern u64 __cputime_usec_factor
- =20
-  static inline unsigned long cputime_to_usecs(const cputime_t ct)
-  {
-- 	return mulhdu(ct, __cputime_usec_factor);
- -	return mulhdu((__force u64) ct, __cputime_msec_factor) * USEC_PER_MSEC;
-++	return mulhdu((__force u64) ct, __cputime_usec_factor);
-  }
- =20
-  static inline cputime_t usecs_to_cputime(const unsigned long us)
-
---Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO8BjxAAoJEECxmPOUX5FEVCQQAJJtD3EOXNIzf2H3Ma3OnCHs
-tGsBsCiKP8a7nhuFel87pGf6bKsJa/0Zjwe29FLoS1VHIci91qniEyopEmX/MOjo
-l+YDaoSnwUpspixmOLd/MEaIil5VuQnfyoRfUpc5Vh3hTa//xDdKGsmTn7ZEIx6f
-iiB7DYrcoOEJLP1I8GDAjOZTe4UYpJAVwokRfaUCgDXNwAAZliKxI+UBjYFpAWPd
-zMtzQA9wbY0eWG96pfbIQkYQDmqE8hyGxRl16DV8uIo0+udpZ8qC+agAPZZt65IX
-xAwJvXP3ihiQus3Z+aeAgur75n1ByScI1G3PKVW1TnG/xzprJtmB/15RIu4scGA2
-uYugXq1l9BWv5etvdiXBG4CfcxUswQaYNgCP3qaNKw9HmzUhpEjdHew+/mKcZ2xB
-XSSvCZcX4WVp+jdZL5vusftP2sGzD3oCrn3gQoUKBbJekXDw9zBeJIC8tSuHxLl2
-l+dF5lYy5tYsogX/SHWvHAQ5ZtoP+QirhT70i7wJXalWD8BkWg7ykQnPvbJfsTf+
-elMjFGUMvMbOEStr8zTC0zX5zAlNAwKZ7f6LxnYxzFkbYbXL6P5VparLAh9XhA77
-Ed3tZo0FS8b+zncWDFNOrUj5Y694kywwhe9kviuL35Ewn0kC78T+MsrZusZKfWRc
-6hJwOOTUVKvtmbFduS0c
-=cdFm
------END PGP SIGNATURE-----
-
---Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb--
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEFydGVtIEJpdHl1dHNraXkg
+W21haWx0bzpkZWRla2luZDFAZ21haWwuY29tXQ0KPiBTZW50OiBTYXR1cmRheSwgRGVjZW1iZXIg
+MTcsIDIwMTEgMTA6NDUgUE0NCj4gVG86IExpdSBTaGVuZ3pob3UtQjM2Njg1DQo+IENjOiBsaW51
+eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjE7DQo+IGR3bXcyQGlu
+ZnJhZGVhZC5vcmc7IEdhbGEgS3VtYXItQjExNzgwOyBsaW51eC1tdGRAbGlzdHMuaW5mcmFkZWFk
+Lm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvMl0gbXRkL25hbmQ6IGZpeHVwIGZvciBmbXIg
+aW5pdGlhbGl6YXRpb24gb2YNCj4gRnJlZXNjYWxlIE5BTkQgY29udHJvbGxlcg0KPiANCj4gT24g
+TW9uLCAyMDExLTEyLTEyIGF0IDE3OjQwICswODAwLCBTaGVuZ3pob3UgTGl1IHdyb3RlOg0KPiA+
+IFRoZXJlIHdhcyBhIGJ1ZyBmb3IgZm1yIGluaXRpYWxpemF0aW9uLCB3aGljaCBsZWFkIHRvICBm
+bXIgd2FzIGFsd2F5cw0KPiA+IDB4MTAwIGluIGZzbF9lbGJjX2NoaXBfaW5pdCgpIGFuZCBjYXVz
+ZWQgRkNNIGNvbW1hbmQgdGltZW91dCBiZWZvcmUNCj4gPiBjYWxsaW5nIGZzbF9lbGJjX2NoaXBf
+aW5pdF90YWlsKCksIG5vdyB3ZSBpbml0aWFsaXplIENXVE8gdG8gbWF4aW11bQ0KPiA+IHRpbWVv
+dXQgdmFsdWUgYW5kIG5vdCByZWx5aW5nIG9uIHRoZSBzZXR0aW5nIG9mIGJvb3Rsb2FkZXIuDQo+
+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBTaGVuZ3pob3UgTGl1IDxTaGVuZ3pob3UuTGl1QGZyZWVz
+Y2FsZS5jb20+DQo+IA0KPiBQdXNoZWQgYm90aCB0byBsMi1tdGQtMi42LmdpdCwgdGhhbmtzIQ0K
+PiANCj4gLS0NCj4gQmVzdCBSZWdhcmRzLA0KPiBBcnRlbSBCaXR5dXRza2l5DQoNCkkgbm90ZWQg
+aXQgaGFkIGJlZW4gYXBwbGllZCBpbiBsaW51eC1uZXh0LmdpdCB0cmVlLg0KRG9lcyBpdCBzdGls
+bCBuZWVkIHRvIGwyLW10ZC0yLjYuZ2l0PyANClRoYW5rcy4NCg0KQmVzdCBSZWdhcmRzLA0KU2hl
+bmd6aG91IExpdQ0K
