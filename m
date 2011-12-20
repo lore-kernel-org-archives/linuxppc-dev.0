@@ -1,29 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
- [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 0C93EB700B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2011 05:42:27 +1100 (EST)
-Message-ID: <4EEF858C.1070600@freescale.com>
-Date: Mon, 19 Dec 2011 12:42:20 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: <dedekind1@gmail.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
- <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
- <4EDEAEB9.6020703@freescale.com> <1323724195.2297.11.camel@koala>
- <4EE66EFE.1050608@freescale.com> <1323724784.2297.20.camel@koala>
- <4EE6725C.3050706@freescale.com>
- <1324132520.4240.26.camel@sauron.fi.intel.com>
- <4EEF849B.7030804@freescale.com>
-In-Reply-To: <4EEF849B.7030804@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Artem.Bityutskiy@nokia.com, dwmw2@infradead.org,
- linux-kernel@vger.kernel.org, shuo.liu@freescale.com,
- linux-mtd@lists.infradead.org, akpm@linux-foundation.org,
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+ [IPv6:2402:b800:7003:1::15])
+ by ozlabs.org (Postfix) with ESMTP id E4D31B702C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2011 16:11:28 +1100 (EST)
+Date: Tue, 20 Dec 2011 16:11:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: linux-next: manual merge of the cputime tree with the powerpc tree
+Message-Id: <20111220161113.3724f901fae728fb26f90407@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Andreas Schwab <schwab@linux-m68k.org>, Paul Mackerras <paulus@samba.org>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,17 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/19/2011 12:38 PM, Scott Wood wrote:
-> On 12/17/2011 08:35 AM, Artem Bityutskiy wrote:
->> It looks like currently you can re-define chip->read_page, so I guess
->> you should rework MTD and make chip->write_page re-definable?
-> 
-> Unless something has changed very recently, there is no chip->read_page
-> or chip->write_page.  There is chip->ecc.read_page and
-> chip->ecc.write_page, but they are too low-level.  What we'd need to
-> replace is a portion of nand_do_read_ops()/nand_do_write_ops().
+--Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry, chip->write_page does exist -- it's chip->read_page that would
-need to be made similarly redefinable.
+Hi Martin,
 
--Scott
+Today's linux-next merge of the cputime tree got a conflict in
+arch/powerpc/include/asm/cputime.h between commit 9f5072d4f63f ("powerpc:
+Fix wrong divisor in usecs_to_cputime") from the powerpc tree and commit
+648616343cdb ("[S390] cputime: add sparse checking and cleanup") from the
+cputime tree.
+
+I fixed it up (see below) and can carry the fix as necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/powerpc/include/asm/cputime.h
+index 33a3580,e94935c..0000000
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@@ -130,7 -114,7 +114,7 @@@ extern u64 __cputime_usec_factor
+ =20
+  static inline unsigned long cputime_to_usecs(const cputime_t ct)
+  {
+- 	return mulhdu(ct, __cputime_usec_factor);
+ -	return mulhdu((__force u64) ct, __cputime_msec_factor) * USEC_PER_MSEC;
+++	return mulhdu((__force u64) ct, __cputime_usec_factor);
+  }
+ =20
+  static inline cputime_t usecs_to_cputime(const unsigned long us)
+
+--Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJO8BjxAAoJEECxmPOUX5FEVCQQAJJtD3EOXNIzf2H3Ma3OnCHs
+tGsBsCiKP8a7nhuFel87pGf6bKsJa/0Zjwe29FLoS1VHIci91qniEyopEmX/MOjo
+l+YDaoSnwUpspixmOLd/MEaIil5VuQnfyoRfUpc5Vh3hTa//xDdKGsmTn7ZEIx6f
+iiB7DYrcoOEJLP1I8GDAjOZTe4UYpJAVwokRfaUCgDXNwAAZliKxI+UBjYFpAWPd
+zMtzQA9wbY0eWG96pfbIQkYQDmqE8hyGxRl16DV8uIo0+udpZ8qC+agAPZZt65IX
+xAwJvXP3ihiQus3Z+aeAgur75n1ByScI1G3PKVW1TnG/xzprJtmB/15RIu4scGA2
+uYugXq1l9BWv5etvdiXBG4CfcxUswQaYNgCP3qaNKw9HmzUhpEjdHew+/mKcZ2xB
+XSSvCZcX4WVp+jdZL5vusftP2sGzD3oCrn3gQoUKBbJekXDw9zBeJIC8tSuHxLl2
+l+dF5lYy5tYsogX/SHWvHAQ5ZtoP+QirhT70i7wJXalWD8BkWg7ykQnPvbJfsTf+
+elMjFGUMvMbOEStr8zTC0zX5zAlNAwKZ7f6LxnYxzFkbYbXL6P5VparLAh9XhA77
+Ed3tZo0FS8b+zncWDFNOrUj5Y694kywwhe9kviuL35Ewn0kC78T+MsrZusZKfWRc
+6hJwOOTUVKvtmbFduS0c
+=cdFm
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__20_Dec_2011_16_11_13_+1100_/89oeNuyWBR0m+qb--
