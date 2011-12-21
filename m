@@ -1,15 +1,16 @@
 Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
- [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+ [213.199.154.144])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id A5E0CB7149
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:34:56 +1100 (EST)
-Date: Tue, 20 Dec 2011 19:34:39 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 37434B7571
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:34:57 +1100 (EST)
+Date: Tue, 20 Dec 2011 19:34:45 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: <agraf@suse.de>
-Subject: [RFC PATCH 12/16] KVM: PPC: e500: emulate tlbilx
-Message-ID: <20111221013438.GL8378@schlenkerla.am.freescale.net>
+Subject: [RFC PATCH 15/16] KVM: PPC: booke: standard PPC floating point support
+Message-ID: <20111221013445.GO8378@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20111221013340.GA8368@schlenkerla.am.freescale.net>
@@ -23,127 +24,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-tlbilx is the new, preferred invalidation instruction.  It is not
-found on e500 prior to e500mc, but there should be no harm in
-supporting it on all e500.
+e500mc has a normal PPC FPU, rather than SPE which is found
+on e500v1/v2.
 
-Based on code from Ashish Kalra <Ashish.Kalra@freescale.com>.
+Based on code from Liu Yu <yu.liu@freescale.com>.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kvm/e500.h         |    1 +
- arch/powerpc/kvm/e500_emulate.c |    9 ++++++
- arch/powerpc/kvm/e500_tlb.c     |   52 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 62 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/system.h |    1 +
+ arch/powerpc/kvm/booke.c          |   44 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/booke.h          |   30 +++++++++++++++++++++++++
+ 3 files changed, 75 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index f4dee55..ce3f163 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -124,6 +124,7 @@ int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500,
- int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
- int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
- int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
-+int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb);
- int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
- int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
- void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index c80794d..af02c18 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -22,6 +22,7 @@
- #define XOP_TLBSX   914
- #define XOP_TLBRE   946
- #define XOP_TLBWE   978
-+#define XOP_TLBILX  18
- 
- int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
-                            unsigned int inst, int *advance)
-@@ -29,6 +30,7 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	int emulated = EMULATE_DONE;
- 	int ra;
- 	int rb;
-+	int rt;
- 
- 	switch (get_op(inst)) {
- 	case 31:
-@@ -47,6 +49,13 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			emulated = kvmppc_e500_emul_tlbsx(vcpu,rb);
- 			break;
- 
-+		case XOP_TLBILX:
-+			ra = get_ra(inst);
-+			rb = get_rb(inst);
-+			rt = get_rt(inst);
-+			emulated = kvmppc_e500_emul_tlbilx(vcpu, rt, ra, rb);
-+			break;
-+
- 		case XOP_TLBIVAX:
- 			ra = get_ra(inst);
- 			rb = get_rb(inst);
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 031fd5b..121cd68 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -631,6 +631,58 @@ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb)
- 	return EMULATE_DONE;
- }
- 
-+static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
-+		       int pid, int rt)
-+{
-+	struct kvm_book3e_206_tlb_entry *tlbe;
-+	int tid, esel;
-+
-+	/* invalidate all entries */
-+	for (esel = 0; esel < vcpu_e500->gtlb_params[tlbsel].entries; esel++) {
-+		tlbe = get_entry(vcpu_e500, tlbsel, esel);
-+		tid = get_tlb_tid(tlbe);
-+		if (rt == 0 || tid == pid) {
-+			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
-+			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
-+		}
-+	}
-+}
-+
-+static void tlbilx_one(struct kvmppc_vcpu_e500 *vcpu_e500, int pid,
-+		       int ra, int rb)
-+{
-+	int tlbsel, esel;
-+	gva_t ea;
-+
-+	ea = kvmppc_get_gpr(&vcpu_e500->vcpu, rb);
-+	if (ra)
-+		ea += kvmppc_get_gpr(&vcpu_e500->vcpu, ra);
-+
-+	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
-+		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, -1);
-+		if (esel >= 0) {
-+			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
-+			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
-+			break;
-+		}
-+	}
-+}
-+
-+int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb)
-+{
-+	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
-+	int pid = get_cur_spid(vcpu);
-+
-+	if (rt == 0 || rt == 1) {
-+		tlbilx_all(vcpu_e500, 0, pid, rt);
-+		tlbilx_all(vcpu_e500, 1, pid, rt);
-+	} else if (rt == 3) {
-+		tlbilx_one(vcpu_e500, pid, ra, rb);
-+	}
-+
-+	return EMULATE_DONE;
-+}
-+
- int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
+index e30a13d..0561356 100644
+--- a/arch/powerpc/include/asm/system.h
++++ b/arch/powerpc/include/asm/system.h
+@@ -140,6 +140,7 @@ extern void via_cuda_init(void);
+ extern void read_rtc_time(void);
+ extern void pmac_find_display(void);
+ extern void giveup_fpu(struct task_struct *);
++extern void load_up_fpu(void);
+ extern void disable_kernel_fp(void);
+ extern void enable_kernel_fp(void);
+ extern void flush_fp_to_thread(struct task_struct *);
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index cf63b93..4bf43f9 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -460,6 +460,11 @@ void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
  {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+ 	int ret;
++#ifdef CONFIG_PPC_FPU
++	unsigned int fpscr;
++	int fpexc_mode;
++	u64 fpr[32];
++#endif
+ 
+ 	if (!vcpu->arch.sane) {
+ 		kvm_run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
+@@ -482,7 +487,46 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	}
+ 
+ 	kvm_guest_enter();
++
++#ifdef CONFIG_PPC_FPU
++	/* Save userspace FPU state in stack */
++	enable_kernel_fp();
++	memcpy(fpr, current->thread.fpr, sizeof(current->thread.fpr));
++	fpscr = current->thread.fpscr.val;
++	fpexc_mode = current->thread.fpexc_mode;
++
++	/* Restore guest FPU state to thread */
++	memcpy(current->thread.fpr, vcpu->arch.fpr, sizeof(vcpu->arch.fpr));
++	current->thread.fpscr.val = vcpu->arch.fpscr;
++
++	/*
++	 * Since we can't trap on MSR_FP in GS-mode, we consider the guest
++	 * as always using the FPU.  Kernel usage of FP (via
++	 * enable_kernel_fp()) in this thread must not occur while
++	 * vcpu->fpu_active is set.
++	 */
++	vcpu->fpu_active = 1;
++
++	kvmppc_load_guest_fp(vcpu);
++#endif
++
+ 	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
++
++#ifdef CONFIG_PPC_FPU
++	kvmppc_save_guest_fp(vcpu);
++
++	vcpu->fpu_active = 0;
++
++	/* Save guest FPU state from thread */
++	memcpy(vcpu->arch.fpr, current->thread.fpr, sizeof(vcpu->arch.fpr));
++	vcpu->arch.fpscr = current->thread.fpscr.val;
++
++	/* Restore userspace FPU state from stack */
++	memcpy(current->thread.fpr, fpr, sizeof(current->thread.fpr));
++	current->thread.fpscr.val = fpscr;
++	current->thread.fpexc_mode = fpexc_mode;
++#endif
++
+ 	kvm_guest_exit();
+ 
+ out:
+diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
+index d53bcf2..3bf5eda 100644
+--- a/arch/powerpc/kvm/booke.h
++++ b/arch/powerpc/kvm/booke.h
+@@ -96,4 +96,34 @@ enum int_class {
+ 
+ void kvmppc_set_pending_interrupt(struct kvm_vcpu *vcpu, enum int_class type);
+ 
++/*
++ * Load up guest vcpu FP state if it's needed.
++ * It also set the MSR_FP in thread so that host know
++ * we're holding FPU, and then host can help to save
++ * guest vcpu FP state if other threads require to use FPU.
++ * This simulates an FP unavailable fault.
++ *
++ * It requires to be called with preemption disabled.
++ */
++static inline void kvmppc_load_guest_fp(struct kvm_vcpu *vcpu)
++{
++#ifdef CONFIG_PPC_FPU
++	if (vcpu->fpu_active && !(current->thread.regs->msr & MSR_FP)) {
++		load_up_fpu();
++		current->thread.regs->msr |= MSR_FP;
++	}
++#endif
++}
++
++/*
++ * Save guest vcpu FP state into thread.
++ * It requires to be called with preemption disabled.
++ */
++static inline void kvmppc_save_guest_fp(struct kvm_vcpu *vcpu)
++{
++#ifdef CONFIG_PPC_FPU
++	if (vcpu->fpu_active && (current->thread.regs->msr & MSR_FP))
++		giveup_fpu(current);
++#endif
++}
+ #endif /* __KVM_BOOKE_H__ */
 -- 
 1.7.7.rc3.4.g8d714
