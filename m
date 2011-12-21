@@ -1,17 +1,15 @@
 Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
- [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+ [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 88CEDB7136
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:34:50 +1100 (EST)
-Date: Tue, 20 Dec 2011 19:34:40 -0600
+ by ozlabs.org (Postfix) with ESMTPS id A5E0CB7149
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:34:56 +1100 (EST)
+Date: Tue, 20 Dec 2011 19:34:39 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: <agraf@suse.de>
-Subject: [RFC PATCH 13/16] powerpc/booke: Provide exception macros with
- interrupt name
-Message-ID: <20111221013440.GM8378@schlenkerla.am.freescale.net>
+Subject: [RFC PATCH 12/16] KVM: PPC: e500: emulate tlbilx
+Message-ID: <20111221013438.GL8378@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20111221013340.GA8368@schlenkerla.am.freescale.net>
@@ -25,351 +23,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DO_KVM will need to identify the particular exception type.
+tlbilx is the new, preferred invalidation instruction.  It is not
+found on e500 prior to e500mc, but there should be no harm in
+supporting it on all e500.
 
-There is an existing set of arbitrary numbers that Linux passes,
-but it's an undocumented mess that sort of corresponds to server/classic
-exception vectors but not really.
-
-FIXME: Replace the existing trap numbering rather than add to it.
+Based on code from Ashish Kalra <Ashish.Kalra@freescale.com>.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/head_44x.S       |   23 +++++++++------
- arch/powerpc/kernel/head_booke.h     |   41 ++++++++++++++------------
- arch/powerpc/kernel/head_fsl_booke.S |   52 +++++++++++++++++++++-------------
- 3 files changed, 68 insertions(+), 48 deletions(-)
+ arch/powerpc/kvm/e500.h         |    1 +
+ arch/powerpc/kvm/e500_emulate.c |    9 ++++++
+ arch/powerpc/kvm/e500_tlb.c     |   52 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 62 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index b725dab..51a49f6 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -160,10 +160,11 @@ _ENTRY(_start);
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index f4dee55..ce3f163 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -124,6 +124,7 @@ int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500,
+ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
+ int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
+ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
++int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb);
+ int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
+ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
+ void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index c80794d..af02c18 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -22,6 +22,7 @@
+ #define XOP_TLBSX   914
+ #define XOP_TLBRE   946
+ #define XOP_TLBWE   978
++#define XOP_TLBILX  18
  
- interrupt_base:
- 	/* Critical Input Interrupt */
--	CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
-+	CRITICAL_EXCEPTION(0x0100, CRITICAL, CriticalInput, unknown_exception)
+ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
+                            unsigned int inst, int *advance)
+@@ -29,6 +30,7 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	int emulated = EMULATE_DONE;
+ 	int ra;
+ 	int rb;
++	int rt;
  
- 	/* Machine Check Interrupt */
--	CRITICAL_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
-+	CRITICAL_EXCEPTION(0x0200, MACHINE_CHECK, MachineCheck, \
-+			   machine_check_exception)
- 	MCHECK_EXCEPTION(0x0210, MachineCheckA, machine_check_exception)
+ 	switch (get_op(inst)) {
+ 	case 31:
+@@ -47,6 +49,13 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			emulated = kvmppc_e500_emul_tlbsx(vcpu,rb);
+ 			break;
  
- 	/* Data Storage Interrupt */
-@@ -173,7 +174,8 @@ interrupt_base:
- 	INSTRUCTION_STORAGE_EXCEPTION
- 
- 	/* External Input Interrupt */
--	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
-+	EXCEPTION(0x0500, BOOKE_INTERRUPT_EXTERNAL, ExternalInput, \
-+		  do_IRQ, EXC_XFER_LITE)
- 
- 	/* Alignment Interrupt */
- 	ALIGNMENT_EXCEPTION
-@@ -185,29 +187,32 @@ interrupt_base:
- #ifdef CONFIG_PPC_FPU
- 	FP_UNAVAILABLE_EXCEPTION
- #else
--	EXCEPTION(0x2010, FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x2010, BOOKE_INTERRUPT_FP_UNAVAIL, \
-+		  FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
- #endif
- 	/* System Call Interrupt */
- 	START_EXCEPTION(SystemCall)
--	NORMAL_EXCEPTION_PROLOG
-+	NORMAL_EXCEPTION_PROLOG(BOOKE_INTERRUPT_SYSCALL)
- 	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
- 
- 	/* Auxiliary Processor Unavailable Interrupt */
--	EXCEPTION(0x2020, AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x2020, BOOKE_INTERRUPT_AP_UNAVAIL, \
-+		  AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
- 
- 	/* Decrementer Interrupt */
- 	DECREMENTER_EXCEPTION
- 
- 	/* Fixed Internal Timer Interrupt */
- 	/* TODO: Add FIT support */
--	EXCEPTION(0x1010, FixedIntervalTimer, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x1010, BOOKE_INTERRUPT_FIT, FixedIntervalTimer, \
-+		  unknown_exception, EXC_XFER_EE)
- 
- 	/* Watchdog Timer Interrupt */
- 	/* TODO: Add watchdog support */
- #ifdef CONFIG_BOOKE_WDT
--	CRITICAL_EXCEPTION(0x1020, WatchdogTimer, WatchdogException)
-+	CRITICAL_EXCEPTION(0x1020, WATCHDOG, WatchdogTimer, WatchdogException)
- #else
--	CRITICAL_EXCEPTION(0x1020, WatchdogTimer, unknown_exception)
-+	CRITICAL_EXCEPTION(0x1020, WATCHDOG, WatchdogTimer, unknown_exception)
- #endif
- 
- 	/* Data TLB Error Interrupt */
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index fc921bf..06ab353 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -2,6 +2,8 @@
- #define __HEAD_BOOKE_H__
- 
- #include <asm/ptrace.h>	/* for STACK_FRAME_REGS_MARKER */
-+#include <asm/kvm_asm.h>
++		case XOP_TLBILX:
++			ra = get_ra(inst);
++			rb = get_rb(inst);
++			rt = get_rt(inst);
++			emulated = kvmppc_e500_emul_tlbilx(vcpu, rt, ra, rb);
++			break;
 +
- /*
-  * Macros used for common Book-e exception handling
-  */
-@@ -28,7 +30,7 @@
-  */
- #define THREAD_NORMSAVE(offset)	(THREAD_NORMSAVES + (offset * 4))
+ 		case XOP_TLBIVAX:
+ 			ra = get_ra(inst);
+ 			rb = get_rb(inst);
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 031fd5b..121cd68 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -631,6 +631,58 @@ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb)
+ 	return EMULATE_DONE;
+ }
  
--#define NORMAL_EXCEPTION_PROLOG						     \
-+#define NORMAL_EXCEPTION_PROLOG(intno)						     \
- 	mtspr	SPRN_SPRG_WSCRATCH0, r10;	/* save one register */	     \
- 	mfspr	r10, SPRN_SPRG_THREAD;					     \
- 	stw	r11, THREAD_NORMSAVE(0)(r10);				     \
-@@ -113,7 +115,7 @@
-  * registers as the normal prolog above. Instead we use a portion of the
-  * critical/machine check exception stack at low physical addresses.
-  */
--#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
-+#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, intno, exc_level_srr0, exc_level_srr1) \
- 	mtspr	SPRN_SPRG_WSCRATCH_##exc_level,r8;			     \
- 	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
- 	stw	r9,GPR9(r8);		/* save various registers	   */\
-@@ -162,12 +164,13 @@
- 	SAVE_4GPRS(3, r11);						     \
- 	SAVE_2GPRS(7, r11)
- 
--#define CRITICAL_EXCEPTION_PROLOG \
--		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1)
-+#define CRITICAL_EXCEPTION_PROLOG(intno) \
-+		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, intno, SPRN_CSRR0, SPRN_CSRR1)
- #define DEBUG_EXCEPTION_PROLOG \
--		EXC_LEVEL_EXCEPTION_PROLOG(DBG, SPRN_DSRR0, SPRN_DSRR1)
-+		EXC_LEVEL_EXCEPTION_PROLOG(DBG, DEBUG, SPRN_DSRR0, SPRN_DSRR1)
- #define MCHECK_EXCEPTION_PROLOG \
--		EXC_LEVEL_EXCEPTION_PROLOG(MC, SPRN_MCSRR0, SPRN_MCSRR1)
-+		EXC_LEVEL_EXCEPTION_PROLOG(MC, MACHINE_CHECK, \
-+			SPRN_MCSRR0, SPRN_MCSRR1)
- 
- /*
-  * Exception vectors.
-@@ -181,16 +184,16 @@ label:
- 	.long	func;						\
- 	.long	ret_from_except_full
- 
--#define EXCEPTION(n, label, hdlr, xfer)				\
-+#define EXCEPTION(n, intno, label, hdlr, xfer)			\
- 	START_EXCEPTION(label);					\
--	NORMAL_EXCEPTION_PROLOG;				\
-+	NORMAL_EXCEPTION_PROLOG(intno);				\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
- 	xfer(n, hdlr)
- 
--#define CRITICAL_EXCEPTION(n, label, hdlr)			\
--	START_EXCEPTION(label);					\
--	CRITICAL_EXCEPTION_PROLOG;				\
--	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
-+#define CRITICAL_EXCEPTION(n, intno, label, hdlr)			\
-+	START_EXCEPTION(label);						\
-+	CRITICAL_EXCEPTION_PROLOG(intno);				\
-+	addi	r3,r1,STACK_FRAME_OVERHEAD;				\
- 	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
- 			  NOCOPY, crit_transfer_to_handler, \
- 			  ret_from_crit_exc)
-@@ -302,7 +305,7 @@ label:
- 
- #define DEBUG_CRIT_EXCEPTION						      \
- 	START_EXCEPTION(DebugCrit);					      \
--	CRITICAL_EXCEPTION_PROLOG;					      \
-+	CRITICAL_EXCEPTION_PROLOG(DEBUG);				      \
- 									      \
- 	/*								      \
- 	 * If there is a single step or branch-taken exception in an	      \
-@@ -355,7 +358,7 @@ label:
- 
- #define DATA_STORAGE_EXCEPTION						      \
- 	START_EXCEPTION(DataStorage)					      \
--	NORMAL_EXCEPTION_PROLOG;					      \
-+	NORMAL_EXCEPTION_PROLOG(DATA_STORAGE);		      \
- 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
- 	stw	r5,_ESR(r11);						      \
- 	mfspr	r4,SPRN_DEAR;		/* Grab the DEAR */		      \
-@@ -363,7 +366,7 @@ label:
- 
- #define INSTRUCTION_STORAGE_EXCEPTION					      \
- 	START_EXCEPTION(InstructionStorage)				      \
--	NORMAL_EXCEPTION_PROLOG;					      \
-+	NORMAL_EXCEPTION_PROLOG(INST_STORAGE);		      \
- 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
- 	stw	r5,_ESR(r11);						      \
- 	mr      r4,r12;                 /* Pass SRR0 as arg2 */		      \
-@@ -372,7 +375,7 @@ label:
- 
- #define ALIGNMENT_EXCEPTION						      \
- 	START_EXCEPTION(Alignment)					      \
--	NORMAL_EXCEPTION_PROLOG;					      \
-+	NORMAL_EXCEPTION_PROLOG(ALIGNMENT);		      \
- 	mfspr   r4,SPRN_DEAR;           /* Grab the DEAR and save it */	      \
- 	stw     r4,_DEAR(r11);						      \
- 	addi    r3,r1,STACK_FRAME_OVERHEAD;				      \
-@@ -380,7 +383,7 @@ label:
- 
- #define PROGRAM_EXCEPTION						      \
- 	START_EXCEPTION(Program)					      \
--	NORMAL_EXCEPTION_PROLOG;					      \
-+	NORMAL_EXCEPTION_PROLOG(PROGRAM);		      \
- 	mfspr	r4,SPRN_ESR;		/* Grab the ESR and save it */	      \
- 	stw	r4,_ESR(r11);						      \
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
-@@ -388,7 +391,7 @@ label:
- 
- #define DECREMENTER_EXCEPTION						      \
- 	START_EXCEPTION(Decrementer)					      \
--	NORMAL_EXCEPTION_PROLOG;					      \
-+	NORMAL_EXCEPTION_PROLOG(DECREMENTER);		      \
- 	lis     r0,TSR_DIS@h;           /* Setup the DEC interrupt mask */    \
- 	mtspr   SPRN_TSR,r0;		/* Clear the DEC interrupt */	      \
- 	addi    r3,r1,STACK_FRAME_OVERHEAD;				      \
-@@ -396,7 +399,7 @@ label:
- 
- #define FP_UNAVAILABLE_EXCEPTION					      \
- 	START_EXCEPTION(FloatingPointUnavailable)			      \
--	NORMAL_EXCEPTION_PROLOG;					      \
-+	NORMAL_EXCEPTION_PROLOG(FP_UNAVAIL);		      \
- 	beq	1f;							      \
- 	bl	load_up_fpu;		/* if from user, just load it up */   \
- 	b	fast_exception_return;					      \
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 9f5d210..5701e87 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -301,19 +301,20 @@ _ENTRY(__early_start)
- 
- interrupt_base:
- 	/* Critical Input Interrupt */
--	CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
-+	CRITICAL_EXCEPTION(0x0100, CRITICAL, CriticalInput, unknown_exception)
- 
- 	/* Machine Check Interrupt */
- #ifdef CONFIG_E200
- 	/* no RFMCI, MCSRRs on E200 */
--	CRITICAL_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
-+	CRITICAL_EXCEPTION(0x0200, MACHINE_CHECK, MachineCheck, \
-+			   machine_check_exception)
- #else
- 	MCHECK_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
- #endif
- 
- 	/* Data Storage Interrupt */
- 	START_EXCEPTION(DataStorage)
--	NORMAL_EXCEPTION_PROLOG
-+	NORMAL_EXCEPTION_PROLOG(DATA_STORAGE)
- 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
- 	stw	r5,_ESR(r11)
- 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
-@@ -328,7 +329,7 @@ interrupt_base:
- 	INSTRUCTION_STORAGE_EXCEPTION
- 
- 	/* External Input Interrupt */
--	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
-+	EXCEPTION(0x0500, EXTERNAL, ExternalInput, do_IRQ, EXC_XFER_LITE)
- 
- 	/* Alignment Interrupt */
- 	ALIGNMENT_EXCEPTION
-@@ -342,32 +343,36 @@ interrupt_base:
- #else
- #ifdef CONFIG_E200
- 	/* E200 treats 'normal' floating point instructions as FP Unavail exception */
--	EXCEPTION(0x0800, FloatingPointUnavailable, program_check_exception, EXC_XFER_EE)
-+	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
-+		  program_check_exception, EXC_XFER_EE)
- #else
--	EXCEPTION(0x0800, FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
-+		  unknown_exception, EXC_XFER_EE)
- #endif
- #endif
- 
- 	/* System Call Interrupt */
- 	START_EXCEPTION(SystemCall)
--	NORMAL_EXCEPTION_PROLOG
-+	NORMAL_EXCEPTION_PROLOG(SYSCALL)
- 	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
- 
- 	/* Auxiliary Processor Unavailable Interrupt */
--	EXCEPTION(0x2900, AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x2900, AP_UNAVAIL, AuxillaryProcessorUnavailable, \
-+		  unknown_exception, EXC_XFER_EE)
- 
- 	/* Decrementer Interrupt */
- 	DECREMENTER_EXCEPTION
- 
- 	/* Fixed Internal Timer Interrupt */
- 	/* TODO: Add FIT support */
--	EXCEPTION(0x3100, FixedIntervalTimer, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x3100, FIT, FixedIntervalTimer, \
-+		  unknown_exception, EXC_XFER_EE)
- 
- 	/* Watchdog Timer Interrupt */
- #ifdef CONFIG_BOOKE_WDT
--	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, WatchdogException)
-+	CRITICAL_EXCEPTION(0x3200, WATCHDOG, WatchdogTimer, WatchdogException)
- #else
--	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, unknown_exception)
-+	CRITICAL_EXCEPTION(0x3200, WATCHDOG, WatchdogTimer, unknown_exception)
- #endif
- 
- 	/* Data TLB Error Interrupt */
-@@ -538,31 +543,38 @@ interrupt_base:
- #ifdef CONFIG_SPE
- 	/* SPE Unavailable */
- 	START_EXCEPTION(SPEUnavailable)
--	NORMAL_EXCEPTION_PROLOG
-+	NORMAL_EXCEPTION_PROLOG(SPE_UNAVAIL)
- 	bne	load_up_spe
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_EE_LITE(0x2010, KernelSPE)
- #else
--	EXCEPTION(0x2020, SPEUnavailable, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x2020, SPE_UNAVAIL, SPEUnavailable, \
-+		  unknown_exception, EXC_XFER_EE)
- #endif /* CONFIG_SPE */
- 
- 	/* SPE Floating Point Data */
- #ifdef CONFIG_SPE
--	EXCEPTION(0x2030, SPEFloatingPointData, SPEFloatingPointException, EXC_XFER_EE);
-+	EXCEPTION(0x2030, SPE_FP_DATA, SPEFloatingPointData, \
-+		  SPEFloatingPointException, EXC_XFER_EE);
- 
- 	/* SPE Floating Point Round */
--	EXCEPTION(0x2050, SPEFloatingPointRound, SPEFloatingPointRoundException, EXC_XFER_EE)
-+	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
-+		  SPEFloatingPointRoundException, EXC_XFER_EE)
- #else
--	EXCEPTION(0x2040, SPEFloatingPointData, unknown_exception, EXC_XFER_EE)
--	EXCEPTION(0x2050, SPEFloatingPointRound, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x2040, SPE_FP_DATA, SPEFloatingPointData, \
-+		  unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
-+		  unknown_exception, EXC_XFER_EE)
- #endif /* CONFIG_SPE */
- 
- 	/* Performance Monitor */
--	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
-+	EXCEPTION(0x2060, PERFORMANCE_MONITOR, PerformanceMonitor, \
-+		  performance_monitor_exception, EXC_XFER_STD)
- 
--	EXCEPTION(0x2070, Doorbell, doorbell_exception, EXC_XFER_STD)
-+	EXCEPTION(0x2070, DOORBELL, Doorbell, doorbell_exception, EXC_XFER_STD)
- 
--	CRITICAL_EXCEPTION(0x2080, CriticalDoorbell, unknown_exception)
-+	CRITICAL_EXCEPTION(0x2080, DOORBELL_CRITICAL, \
-+			   CriticalDoorbell, unknown_exception)
- 
- 	/* Debug Interrupt */
- 	DEBUG_DEBUG_EXCEPTION
++static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
++		       int pid, int rt)
++{
++	struct kvm_book3e_206_tlb_entry *tlbe;
++	int tid, esel;
++
++	/* invalidate all entries */
++	for (esel = 0; esel < vcpu_e500->gtlb_params[tlbsel].entries; esel++) {
++		tlbe = get_entry(vcpu_e500, tlbsel, esel);
++		tid = get_tlb_tid(tlbe);
++		if (rt == 0 || tid == pid) {
++			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
++			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
++		}
++	}
++}
++
++static void tlbilx_one(struct kvmppc_vcpu_e500 *vcpu_e500, int pid,
++		       int ra, int rb)
++{
++	int tlbsel, esel;
++	gva_t ea;
++
++	ea = kvmppc_get_gpr(&vcpu_e500->vcpu, rb);
++	if (ra)
++		ea += kvmppc_get_gpr(&vcpu_e500->vcpu, ra);
++
++	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
++		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, -1);
++		if (esel >= 0) {
++			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
++			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
++			break;
++		}
++	}
++}
++
++int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++	int pid = get_cur_spid(vcpu);
++
++	if (rt == 0 || rt == 1) {
++		tlbilx_all(vcpu_e500, 0, pid, rt);
++		tlbilx_all(vcpu_e500, 1, pid, rt);
++	} else if (rt == 3) {
++		tlbilx_one(vcpu_e500, pid, ra, rb);
++	}
++
++	return EMULATE_DONE;
++}
++
+ int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
 -- 
 1.7.7.rc3.4.g8d714
