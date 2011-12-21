@@ -1,35 +1,23 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9A565B7092
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Dec 2011 11:55:24 +1100 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <dwg@au1.ibm.com>;
- Wed, 21 Dec 2011 00:52:22 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pBL0tAsP4931704
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Dec 2011 11:55:10 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pBL0t9Zq022384
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Dec 2011 11:55:10 +1100
-Date: Wed, 21 Dec 2011 11:55:02 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature
- flag
-Message-ID: <20111221005502.GE5188@truffala.fritz.box>
-References: <20111208111212.GB3720@in.ibm.com>
- <20111208112330.GB24484@in.ibm.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 23EACB7092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:11:21 +1100 (EST)
+Received: by wgbds13 with SMTP id ds13so10781384wgb.14
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2011 17:11:17 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111208112330.GB24484@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+In-Reply-To: <20111221111349.c9d73384a0a2c89cd211239e@canb.auug.org.au>
+References: <20111221111349.c9d73384a0a2c89cd211239e@canb.auug.org.au>
+Date: Tue, 20 Dec 2011 20:11:17 -0500
+Message-ID: <CA+5PVA7NhzxwxR5WGDmUQ432NehNnzRT+y05wve+FBXHyGaiwA@mail.gmail.com>
+Subject: Re: linux-next: build warnings after merge of the 4xx tree
+From: Josh Boyer <jwboyer@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Suzuki Poulose <suzuki@in.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,20 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 08, 2011 at 04:53:30PM +0530, K.Prasad wrote:
-> While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
-> PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
-> user-space debuggers (like GDB) who may want to use it. Hence we introduce a
-> new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
-> "features" member of "struct ppc_debug_info" to advertise support for the
-> same on Book3E PowerPC processors.
+On Tue, Dec 20, 2011 at 7:13 PM, Stephen Rothwell <sfr@canb.auug.org.au> wr=
+ote:
+> Hi Josh,
+>
+> After merging the 4xx tree, today's linux-next build (powerpc ppc64_defco=
+nfig)
+> produced these warnings:
+>
+> WARN: Uncompressed kernel (size 0xe32858) overlaps the address of the wra=
+pper()
+> WARN: Fixing the link_address of wrapper to (0xf00000)
+> WARN: Uncompressed kernel (size 0xd6c9e8) overlaps the address of the wra=
+pper(0x400000)
+> WARN: Fixing the link_address of wrapper to (0xe00000)
+>
+> Introduced by commit c55aef0e5bc6 ("powerpc/boot: Change the load address
+> for the wrapper to fit the kernel"). =A0 Maybe "WARN" is not the best
+> prefix for this. =A0To me it implies that something may go wrong and ther=
+e
+> is something to be fixed ... =A0If this is purely informational, then may=
+be
+> "INFO" would be better.
 
-Hrm.  I had assumed the reason there wasn't a feature bit for EXACT
-originally was that EXACT breakpoints were *always* supposed to be
-supported by the new interface.
+INFO indeed would be better.  I'll try and whip up a patch tomorrow
+unless Suzie beats me to it.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Sorry about that.  I saw the WARN during my testing, but the commit
+log explicitly mentioned it an brainwashed me into thinking it was OK.
+ I blame holiday-itis.
+
+josh
