@@ -1,34 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C8F36B6FCA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 06:48:24 +1100 (EST)
-Message-ID: <4EF0E67B.5080002@freescale.com>
-Date: Tue, 20 Dec 2011 13:48:11 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 3/3] mtd/nand : workaround for Freescale FCM to support
- large-page Nand chip
-References: <1322973098-2528-1-git-send-email-shuo.liu@freescale.com>
- <1322973098-2528-3-git-send-email-shuo.liu@freescale.com>
- <4EDEAEB9.6020703@freescale.com> <1323724195.2297.11.camel@koala>
- <4EE66EFE.1050608@freescale.com> <1323724784.2297.20.camel@koala>
- <4EE6725C.3050706@freescale.com> <4EE6BC9B.4000602@freescale.com>
- <4EE8612C.9050104@freescale.com> <4EE903CE.1010903@freescale.com>
- <4EEAB076.30000@freescale.com> <4EEB8704.8030201@freescale.com>
- <CADRPPNT-akj5KBQKdRaFrA2XpLU6-xtuRduzDYEWjv_dzVmTAA@mail.gmail.com>
- <4EEF6AAA.3030806@freescale.com>
- <CADRPPNQtuuh5yR1WVNccoFhnQZnMenaFkFnHmFKWicSBoj35JQ@mail.gmail.com>
-In-Reply-To: <CADRPPNQtuuh5yR1WVNccoFhnQZnMenaFkFnHmFKWicSBoj35JQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: dedekind1@gmail.com, linuxppc-dev@lists.ozlabs.org,
- LiuShuo <b35362@freescale.com>, linux-kernel@vger.kernel.org,
- shuo.liu@freescale.com, linux-mtd@lists.infradead.org,
- akpm@linux-foundation.org, dwmw2@infradead.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+ [IPv6:2402:b800:7003:1::15])
+ by ozlabs.org (Postfix) with ESMTP id 1F3E5B6F74
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 11:13:58 +1100 (EST)
+Date: Wed, 21 Dec 2011 11:13:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: linux-next: build warnings after merge of the 4xx tree
+Message-Id: <20111221111349.c9d73384a0a2c89cd211239e@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__21_Dec_2011_11_13_49_+1100_v28VHEAqYHF3mQu2"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Suzuki Poulose <suzuki@in.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,132 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/20/2011 03:08 AM, Li Yang wrote:
-> On Tue, Dec 20, 2011 at 12:47 AM, Scott Wood <scottwood@freescale.com> wrote:
->> On 12/19/2011 05:05 AM, Li Yang wrote:
->>> On Sat, Dec 17, 2011 at 1:59 AM, Scott Wood <scottwood@freescale.com> wrote:
->>>> On 12/15/2011 08:44 PM, LiuShuo wrote:
->>>>> hi Artem,
->>>>> Could this patch be applied now and we make a independent patch for  bad
->>>>> block information
->>>>> migration later?
->>>>
->>>> This patch is not safe to use without migration.
->>>
->>> Hi Scott,
->>>
->>> We agree it's not entirely safe without migrating the bad block flag.
->>> But let's consider two sides of the situation.
->>>
->>> Firstly, it's only unsafe when there is a need to re-built the Bad
->>> Block Table from scratch(old BBT broken).
->>
->> No, it's unsafe in the presence of bad blocks.
->>
-> 
-> Instead of migrating the factory bad block markers I proposed to
-> modify the code of building BBT to make it different for 4K page, so
-> that the default BBT can correctly covers the factory bad blocks.  It
-> is the easiest way with nearly no harm to the functionality.
+--Signature=_Wed__21_Dec_2011_11_13_49_+1100_v28VHEAqYHF3mQu2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Even if we were to agree to that (I disagree with "nearly no harm"),
-this patch doesn't implement that.  As is, this patch simply ignores the
-issue.
+Hi Josh,
 
-Note that besides possibly tossing away bad block information during
-development, the BBT-only approach will not work for booting from NAND,
-as we don't use the BBT in that case (need to keep the code minimal to
-fit the 4k boot block).  Yes, this ignores blocks that were marked bad
-by software, but that's usually OK since that part of the chip isn't
-managed by a software layer such as jffs2 that will mark blocks as bad.
+After merging the 4xx tree, today's linux-next build (powerpc ppc64_defconf=
+ig)
+produced these warnings:
 
->> The BBT erasure issue relates to how me mark the flash as migrated, not
->> whether we migrate in the first place.
-> 
-> It is connected to whether we do the migration at all.  I mentioned in
-> earlier mail that if we are doing the migration, we need to make sure
-> the migration only happens once.  And it need to be done before the
-> flash is used for the first time and before BBT is created.  If we
-> can't guarantee these condition, we are marking good blocks as bad by
-> doing the migration.  Even worse than doing nothing.
+WARN: Uncompressed kernel (size 0xe32858) overlaps the address of the wrapp=
+er()
+WARN: Fixing the link_address of wrapper to (0xf00000)
+WARN: Uncompressed kernel (size 0xd6c9e8) overlaps the address of the wrapp=
+er(0x400000)
+WARN: Fixing the link_address of wrapper to (0xe00000)
 
-You also can't do the special BBT scan once the flash has been written
-to with normal data.  This patch does not implement the special BBT scan.
+Introduced by commit c55aef0e5bc6 ("powerpc/boot: Change the load address
+for the wrapper to fit the kernel").   Maybe "WARN" is not the best
+prefix for this.  To me it implies that something may go wrong and there
+is something to be fixed ...  If this is purely informational, then maybe
+"INFO" would be better.
 
->>>  But currently there is no
->>> easy way to do that(re-build BBT on demand),
->>
->> You scrub the blocks with U-Boot.  It's not supposed to be *easy*, it's
->> a developer recovery mechanism.
-> 
-> Scrub clears the factory bad block markers also.  
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Only if you scrub bad blocks.  I was talking about scrubbing the BBT
-specifically, not the entire chip.
+--Signature=_Wed__21_Dec_2011_11_13_49_+1100_v28VHEAqYHF3mQu2
+Content-Type: application/pgp-signature
 
->>> Secondly, even if the previous said problem happens(BBT broken).  We
->>> can still recover all the data if we overrule the bad block flag.
->>
->> How so?  The bad block markers -- including ones legitimately written to
->> the BBT after the fact -- are used for block skipping with certain types
->> of writes.  Without the knowledge of which blocks were marked bad, how
->> do we know which blocks were skipped?
-> 
-> This is not supposed to be *easy*.  We might get more information in
-> the file system level.  Or we check the content of the blocks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-If you need to take special, non-automatic steps to recover the data,
-that counts as data loss.
+iQIcBAEBCAAGBQJO8SS9AAoJEECxmPOUX5FEAG8P/1U/McLvI066uiG1yqiIHkcy
+WtOr0RLXtW76TVfubMhCU+XzrOebWR09zLbTmKu1dBhjN7mZvIyvRmvAMjHIVvo8
+HSDEs7PT+HMIEg7ZS9BMAbXTJfwEaOILt2Yw46Xw0UOylsHopU77aOuKLJ6L4x2q
+YxxtWMcJMSPrxFcFBd5yqL2sY5TCFflmrnZ40Tovj+oxX/Yjy0xG6KkmfZmOCbiX
+XAsYxOlZZ0UTW4VjKkgjIKBNrbxr/fH151+/AixyGQAwfd0FxCMfjPrE1s6lnCeT
+pfRdqBBU16XbsUUVria2snt+n6twqVgf2YVCa579ztEkdHdBp2owNGNHFD54EWr7
+XGWnoiPmDKfvq5BlWOhlpeQX851mez5xXZli0msVLNC4SovQ8uRAJl0pGzcpxfKF
+7M3yKiMDQjiSnblLMQ3LDYau9MkoRVafbIcgG11EVomv9Z7q16UKZwkvQh3uHM2g
+ONu/IMoyCA4mkJVlh4sgJPyba694fUsoSM34+5/sODP8NmJfyuzacIjpBQT626ku
+C6ucCl8wiZF/IOqXY6eioJqJnc1L8Zn28PpwwBCel7yUqt7dJjGQa9e+eNU06Rac
++UDdF7o8pThyr8G0eOdnMmoj17xCl1i3PlE6qbEUa2Ate1BmOURDUhbOWRYiAC0E
+XGVOtCruXawgxFuqwfzm
+=yhDc
+-----END PGP SIGNATURE-----
 
->>> however, it can be used
->>> if we take the risk of losing data from errors that ECC can't
->>> notice(low possibility too).
->>
->> Can you quantify "low possibility" here?
->>
->> Note that any block that *was* marked bad will have a multi-bit error
->> from the marker itself, since it will be embedded in the main data area.
-> 
-> I found the definition of bad block from one NAND chip manual: Bad
-> Blocks are blocks that contain one or more invalid bits whose
-> reliability is not guaranteed.
-> 
-> There is no mentioning that the bad block has to have multi-bit error.
-
-"It's not guaranteed to fail" is rather different from "low possibility
-of failure".
-
->  Although the factory bad blocks might have worse error than wear-off
-> bad blocks, it's not what I can tell.
-
-Why would they have such a mechanism to mark blocks bad, if it's not needed?
-
->> Why is it so critical that it be merged now, and not in a few weeks (or
->> next merge window) when I have a chance to do the migration code
->> (assuming nobody else does it first) and add a suitable check for the
->> migration marker in the Linux driver?
-> 
-> A few weeks might be ok.  But I feared that the merge can be further
-> delayed and might finally goes no where.
-
-And I fear that the bad block handling will be forgotten about if enough
-gets merged for this to sort-of work.
-
-> And as I argued above, I'm not sure if migrating is necessary in the first place.
-> 
-> In general.  We are not trying to get unqualified code merged.  But I
-> also don't agree we need to perfect all things before any of the code
-> can be merged.
-
-I'm not asking for it to be perfect -- this just seems like a difficult
-thing to fix once people start using the feature (similar to getting a
-userspace API merged, we want to get it right first), and I'm not
-comfortable with the risks of people using it without bad block handling.
-
-> My understanding is that even if certain code is not
-> complete in feature or have certain drawbacks, if the current chunk
-> provided some useful features and the drawbacks are acceptable,
-
-Whether "the drawbacks are acceptable" is the issue.
-
--Scott
+--Signature=_Wed__21_Dec_2011_11_13_49_+1100_v28VHEAqYHF3mQu2--
