@@ -1,16 +1,16 @@
 Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E291DB708D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:34:44 +1100 (EST)
-Date: Tue, 20 Dec 2011 19:34:37 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 879DEB70F0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:34:47 +1100 (EST)
+Date: Tue, 20 Dec 2011 19:34:34 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: <agraf@suse.de>
-Subject: [RFC PATCH 11/16] KVM: PPC: e500: Track TLB1 entries with a bitmap
-Message-ID: <20111221013437.GK8378@schlenkerla.am.freescale.net>
+Subject: [RFC PATCH 10/16] KVM: PPC: e500: refactor core-specific TLB code
+Message-ID: <20111221013434.GJ8378@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20111221013340.GA8368@schlenkerla.am.freescale.net>
@@ -24,210 +24,1284 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rather than invalidate everything when a TLB1 entry needs to be
-taken down, keep track of which host TLB1 entries are used for
-a given guest TLB1 entry, and invalidate just those entries.
+The PID handling is e500v1/v2-specific, and is moved to e500.c.
 
-Based on code from Ashish Kalra <Ashish.Kalra@freescale.com>
-and Liu Yu <yu.liu@freescale.com>.
+The MMU sregs code and kvmppc_core_vcpu_translate will be shared with
+e500mc, and is moved from e500.c to e500_tlb.c.
+
+Partially based on patches from Liu Yu <yu.liu@freescale.com>.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kvm/e500.h     |    5 +++
- arch/powerpc/kvm/e500_tlb.c |   72 ++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 72 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |    2 +
+ arch/powerpc/kvm/e500.c             |  358 +++++++++++++++++++++++----
+ arch/powerpc/kvm/e500.h             |   55 ++++-
+ arch/powerpc/kvm/e500_emulate.c     |    7 +-
+ arch/powerpc/kvm/e500_tlb.c         |  461 +++++++++--------------------------
+ 5 files changed, 473 insertions(+), 410 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index 34cef08..f4dee55 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -2,6 +2,7 @@
-  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Author: Yu Liu <yu.liu@freescale.com>
-+ *         Ashish Kalra <ashish.kalra@freescale.com>
-  *
-  * Description:
-  * This file is based on arch/powerpc/kvm/44x_tlb.h and
-@@ -25,6 +26,7 @@
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 443f007..ad4d671 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -415,6 +415,8 @@ struct kvm_vcpu_arch {
+ 	ulong fault_esr;
+ 	ulong queued_dear;
+ 	ulong queued_esr;
++	u32 tlbcfg[4];
++	u32 mmucfg;
+ #endif
+ 	gpa_t paddr_accessed;
  
- #define E500_TLB_VALID 1
- #define E500_TLB_DIRTY 2
-+#define E500_TLB_BITMAP 4
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index faa32df..77e3134 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -20,12 +20,283 @@
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+ #include <asm/tlbflush.h>
+-#include <asm/kvm_e500.h>
+ #include <asm/kvm_ppc.h>
  
- struct tlbe_ref {
- 	pfn_t pfn;
-@@ -82,6 +84,9 @@ struct kvmppc_vcpu_e500 {
- 	struct page **shared_tlb_pages;
- 	int num_shared_tlb_pages;
++#include "../mm/mmu_decl.h"
+ #include "booke.h"
+ #include "e500.h"
  
-+	u64 *g2h_tlb1_map;
-+	unsigned int *h2g_tlb1_rmap;
++struct id {
++	unsigned long val;
++	struct id **pentry;
++};
 +
- #ifdef CONFIG_KVM_E500
- 	u32 pid[E500_PID_NUM];
- 
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index b306270..031fd5b 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -2,6 +2,7 @@
-  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Author: Yu Liu, yu.liu@freescale.com
-+ *         Ashish Kalra, ashish.kalra@freescale.com
-  *
-  * Description:
-  * This file is based on arch/powerpc/kvm/44x_tlb.c,
-@@ -175,8 +176,28 @@ static void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	struct kvm_book3e_206_tlb_entry *gtlbe =
- 		get_entry(vcpu_e500, tlbsel, esel);
- 
--	if (tlbsel == 1) {
--		kvmppc_e500_tlbil_all(vcpu_e500);
-+	if (tlbsel == 1 &&
-+	    vcpu_e500->gtlb_priv[1][esel].ref.flags & E500_TLB_BITMAP) {
-+		u64 tmp = vcpu_e500->g2h_tlb1_map[esel];
-+		int hw_tlb_indx;
-+		unsigned long flags;
++#define NUM_TIDS 256
++
++/*
++ * This table provide mappings from:
++ * (guestAS,guestTID,guestPR) --> ID of physical cpu
++ * guestAS	[0..1]
++ * guestTID	[0..255]
++ * guestPR	[0..1]
++ * ID		[1..255]
++ * Each vcpu keeps one vcpu_id_table.
++ */
++struct vcpu_id_table {
++	struct id id[2][NUM_TIDS][2];
++};
++
++/*
++ * This table provide reversed mappings of vcpu_id_table:
++ * ID --> address of vcpu_id_table item.
++ * Each physical core has one pcpu_id_table.
++ */
++struct pcpu_id_table {
++	struct id *entry[NUM_TIDS];
++};
++
++static DEFINE_PER_CPU(struct pcpu_id_table, pcpu_sids);
++
++/* This variable keeps last used shadow ID on local core.
++ * The valid range of shadow ID is [1..255] */
++static DEFINE_PER_CPU(unsigned long, pcpu_last_used_sid);
++
++/*
++ * Allocate a free shadow id and setup a valid sid mapping in given entry.
++ * A mapping is only valid when vcpu_id_table and pcpu_id_table are match.
++ *
++ * The caller must have preemption disabled, and keep it that way until
++ * it has finished with the returned shadow id (either written into the
++ * TLB or arch.shadow_pid, or discarded).
++ */
++static inline int local_sid_setup_one(struct id *entry)
++{
++	unsigned long sid;
++	int ret = -1;
++
++	sid = ++(__get_cpu_var(pcpu_last_used_sid));
++	if (sid < NUM_TIDS) {
++		__get_cpu_var(pcpu_sids).entry[sid] = entry;
++		entry->val = sid;
++		entry->pentry = &__get_cpu_var(pcpu_sids).entry[sid];
++		ret = sid;
++	}
++
++	/*
++	 * If sid == NUM_TIDS, we've run out of sids.  We return -1, and
++	 * the caller will invalidate everything and start over.
++	 *
++	 * sid > NUM_TIDS indicates a race, which we disable preemption to
++	 * avoid.
++	 */
++	WARN_ON(sid > NUM_TIDS);
++
++	return ret;
++}
++
++/*
++ * Check if given entry contain a valid shadow id mapping.
++ * An ID mapping is considered valid only if
++ * both vcpu and pcpu know this mapping.
++ *
++ * The caller must have preemption disabled, and keep it that way until
++ * it has finished with the returned shadow id (either written into the
++ * TLB or arch.shadow_pid, or discarded).
++ */
++static inline int local_sid_lookup(struct id *entry)
++{
++	if (entry && entry->val != 0 &&
++	    __get_cpu_var(pcpu_sids).entry[entry->val] == entry &&
++	    entry->pentry == &__get_cpu_var(pcpu_sids).entry[entry->val])
++		return entry->val;
++	return -1;
++}
++
++/* Invalidate all id mappings on local core -- call with preempt disabled */
++static inline void local_sid_destroy_all(void)
++{
++	__get_cpu_var(pcpu_last_used_sid) = 0;
++	memset(&__get_cpu_var(pcpu_sids), 0, sizeof(__get_cpu_var(pcpu_sids)));
++}
++
++static void *kvmppc_e500_id_table_alloc(struct kvmppc_vcpu_e500 *vcpu_e500)
++{
++	vcpu_e500->idt = kzalloc(sizeof(struct vcpu_id_table), GFP_KERNEL);
++	return vcpu_e500->idt;
++}
++
++static void kvmppc_e500_id_table_free(struct kvmppc_vcpu_e500 *vcpu_e500)
++{
++	kfree(vcpu_e500->idt);
++	vcpu_e500->idt = NULL;
++}
++
++/* Map guest pid to shadow.
++ * We use PID to keep shadow of current guest non-zero PID,
++ * and use PID1 to keep shadow of guest zero PID.
++ * So that guest tlbe with TID=0 can be accessed at any time */
++static void kvmppc_e500_recalc_shadow_pid(struct kvmppc_vcpu_e500 *vcpu_e500)
++{
++	preempt_disable();
++	vcpu_e500->vcpu.arch.shadow_pid = kvmppc_e500_get_sid(vcpu_e500,
++			get_cur_as(&vcpu_e500->vcpu),
++			get_cur_pid(&vcpu_e500->vcpu),
++			get_cur_pr(&vcpu_e500->vcpu), 1);
++	vcpu_e500->vcpu.arch.shadow_pid1 = kvmppc_e500_get_sid(vcpu_e500,
++			get_cur_as(&vcpu_e500->vcpu), 0,
++			get_cur_pr(&vcpu_e500->vcpu), 1);
++	preempt_enable();
++}
++
++/* Invalidate all mappings on vcpu */
++static void kvmppc_e500_id_table_reset_all(struct kvmppc_vcpu_e500 *vcpu_e500)
++{
++	memset(vcpu_e500->idt, 0, sizeof(struct vcpu_id_table));
++
++	/* Update shadow pid when mappings are changed */
++	kvmppc_e500_recalc_shadow_pid(vcpu_e500);
++}
++
++/* Invalidate one ID mapping on vcpu */
++static inline void kvmppc_e500_id_table_reset_one(
++			       struct kvmppc_vcpu_e500 *vcpu_e500,
++			       int as, int pid, int pr)
++{
++	struct vcpu_id_table *idt = vcpu_e500->idt;
++
++	BUG_ON(as >= 2);
++	BUG_ON(pid >= NUM_TIDS);
++	BUG_ON(pr >= 2);
++
++	idt->id[as][pid][pr].val = 0;
++	idt->id[as][pid][pr].pentry = NULL;
++
++	/* Update shadow pid when mappings are changed */
++	kvmppc_e500_recalc_shadow_pid(vcpu_e500);
++}
++
++/*
++ * Map guest (vcpu,AS,ID,PR) to physical core shadow id.
++ * This function first lookup if a valid mapping exists,
++ * if not, then creates a new one.
++ *
++ * The caller must have preemption disabled, and keep it that way until
++ * it has finished with the returned shadow id (either written into the
++ * TLB or arch.shadow_pid, or discarded).
++ */
++unsigned int kvmppc_e500_get_sid(struct kvmppc_vcpu_e500 *vcpu_e500,
++				 unsigned int as, unsigned int gid,
++				 unsigned int pr, int avoid_recursion)
++{
++	struct vcpu_id_table *idt = vcpu_e500->idt;
++	int sid;
++
++	BUG_ON(as >= 2);
++	BUG_ON(gid >= NUM_TIDS);
++	BUG_ON(pr >= 2);
++
++	sid = local_sid_lookup(&idt->id[as][gid][pr]);
++
++	while (sid <= 0) {
++		/* No mapping yet */
++		sid = local_sid_setup_one(&idt->id[as][gid][pr]);
++		if (sid <= 0) {
++			_tlbil_all();
++			local_sid_destroy_all();
++		}
++
++		/* Update shadow pid when mappings are changed */
++		if (!avoid_recursion)
++			kvmppc_e500_recalc_shadow_pid(vcpu_e500);
++	}
++
++	return sid;
++}
++
++unsigned int kvmppc_e500_get_tlb_stid(struct kvm_vcpu *vcpu,
++				      struct kvm_book3e_206_tlb_entry *gtlbe)
++{
++	return kvmppc_e500_get_sid(to_e500(vcpu), get_tlb_ts(gtlbe),
++				   get_tlb_tid(gtlbe), get_cur_pr(vcpu), 0);
++}
++
++void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 pid)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++
++	if (vcpu->arch.pid != pid) {
++		vcpu_e500->pid[0] = vcpu->arch.pid = pid;
++		kvmppc_e500_recalc_shadow_pid(vcpu_e500);
++	}
++}
++
++/* gtlbe must not be mapped by more than one host tlbe */
++void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
++                           struct kvm_book3e_206_tlb_entry *gtlbe)
++{
++	struct vcpu_id_table *idt = vcpu_e500->idt;
++	unsigned int pr, tid, ts, pid;
++	u32 val, eaddr;
++	unsigned long flags;
++
++	ts = get_tlb_ts(gtlbe);
++	tid = get_tlb_tid(gtlbe);
++
++	preempt_disable();
++
++	/* One guest ID may be mapped to two shadow IDs */
++	for (pr = 0; pr < 2; pr++) {
++		/*
++		 * The shadow PID can have a valid mapping on at most one
++		 * host CPU.  In the common case, it will be valid on this
++		 * CPU, in which case we do a local invalidation of the
++		 * specific address.
++		 *
++		 * If the shadow PID is not valid on the current host CPU,
++		 * we invalidate the entire shadow PID.
++		 */
++		pid = local_sid_lookup(&idt->id[ts][tid][pr]);
++		if (pid <= 0) {
++			kvmppc_e500_id_table_reset_one(vcpu_e500, ts, tid, pr);
++			continue;
++		}
++
++		/*
++		 * The guest is invalidating a 4K entry which is in a PID
++		 * that has a valid shadow mapping on this host CPU.  We
++		 * search host TLB to invalidate it's shadow TLB entry,
++		 * similar to __tlbil_va except that we need to look in AS1.
++		 */
++		val = (pid << MAS6_SPID_SHIFT) | MAS6_SAS;
++		eaddr = get_tlb_eaddr(gtlbe);
 +
 +		local_irq_save(flags);
-+		while (tmp) {
-+			hw_tlb_indx = __ilog2_u64(tmp & -tmp);
-+			mtspr(SPRN_MAS0,
-+			      MAS0_TLBSEL(1) |
-+			      MAS0_ESEL(to_htlb1_esel(hw_tlb_indx)));
-+			mtspr(SPRN_MAS1, 0);
-+			asm volatile("tlbwe");
-+			vcpu_e500->h2g_tlb1_rmap[hw_tlb_indx] = 0;
-+			tmp &= tmp - 1;
-+		}
-+		mb();
-+		vcpu_e500->g2h_tlb1_map[esel] = 0;
-+		vcpu_e500->gtlb_priv[1][esel].ref.flags &= ~E500_TLB_BITMAP;
-+		local_irq_restore(flags);
 +
- 		return;
++		mtspr(SPRN_MAS6, val);
++		asm volatile("tlbsx 0, %[eaddr]" : : [eaddr] "r" (eaddr));
++		val = mfspr(SPRN_MAS1);
++		if (val & MAS1_VALID) {
++			mtspr(SPRN_MAS1, val & ~MAS1_VALID);
++			asm volatile("tlbwe");
++		}
++
++		local_irq_restore(flags);
++	}
++
++	preempt_enable();
++}
++
++void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500)
++{
++	kvmppc_e500_id_table_reset_all(vcpu_e500);
++}
++
++void kvmppc_mmu_msr_notify(struct kvm_vcpu *vcpu, u32 old_msr)
++{
++	/* Recalc shadow pid since MSR changes */
++	kvmppc_e500_recalc_shadow_pid(to_e500(vcpu));
++}
++
+ void kvmppc_core_load_host_debugstate(struct kvm_vcpu *vcpu)
+ {
+ }
+@@ -37,13 +308,13 @@ void kvmppc_core_load_guest_debugstate(struct kvm_vcpu *vcpu)
+ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
+ 	kvmppc_booke_vcpu_load(vcpu, cpu);
+-	kvmppc_e500_tlb_load(vcpu, cpu);
++
++	/* Shadow PID may be expired on local core */
++	kvmppc_e500_recalc_shadow_pid(to_e500(vcpu));
+ }
+ 
+ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+ {
+-	kvmppc_e500_tlb_put(vcpu);
+-
+ #ifdef CONFIG_SPE
+ 	if (vcpu->arch.shadow_msr & MSR_SPE)
+ 		kvmppc_vcpu_disable_spe(vcpu);
+@@ -64,6 +335,23 @@ int kvmppc_core_check_processor_compat(void)
+ 	return r;
+ }
+ 
++static void kvmppc_e500_tlb_setup(struct kvmppc_vcpu_e500 *vcpu_e500)
++{
++	struct kvm_book3e_206_tlb_entry *tlbe;
++
++	/* Insert large initial mapping for guest. */
++	tlbe = get_entry(vcpu_e500, 1, 0);
++	tlbe->mas1 = MAS1_VALID | MAS1_TSIZE(BOOK3E_PAGESZ_256M);
++	tlbe->mas2 = 0;
++	tlbe->mas7_3 = E500_TLB_SUPER_PERM_MASK;
++
++	/* 4K map for serial output. Used by kernel wrapper. */
++	tlbe = get_entry(vcpu_e500, 1, 1);
++	tlbe->mas1 = MAS1_VALID | MAS1_TSIZE(BOOK3E_PAGESZ_4K);
++	tlbe->mas2 = (0xe0004500 & 0xFFFFF000) | MAS2_I | MAS2_G;
++	tlbe->mas7_3 = (0xe0004500 & 0xFFFFF000) | E500_TLB_SUPER_PERM_MASK;
++}
++
+ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+@@ -79,32 +367,6 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
+ 	return 0;
+ }
+ 
+-/* 'linear_address' is actually an encoding of AS|PID|EADDR . */
+-int kvmppc_core_vcpu_translate(struct kvm_vcpu *vcpu,
+-                               struct kvm_translation *tr)
+-{
+-	int index;
+-	gva_t eaddr;
+-	u8 pid;
+-	u8 as;
+-
+-	eaddr = tr->linear_address;
+-	pid = (tr->linear_address >> 32) & 0xff;
+-	as = (tr->linear_address >> 40) & 0x1;
+-
+-	index = kvmppc_e500_tlb_search(vcpu, eaddr, pid, as);
+-	if (index < 0) {
+-		tr->valid = 0;
+-		return 0;
+-	}
+-
+-	tr->physical_address = kvmppc_mmu_xlate(vcpu, index, eaddr);
+-	/* XXX what does "writeable" and "usermode" even mean? */
+-	tr->valid = 1;
+-
+-	return 0;
+-}
+-
+ void kvmppc_core_get_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+@@ -118,19 +380,6 @@ void kvmppc_core_get_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
+ 	sregs->u.e.impl.fsl.hid0 = vcpu_e500->hid0;
+ 	sregs->u.e.impl.fsl.mcar = vcpu_e500->mcar;
+ 
+-	sregs->u.e.mas0 = vcpu->arch.shared->mas0;
+-	sregs->u.e.mas1 = vcpu->arch.shared->mas1;
+-	sregs->u.e.mas2 = vcpu->arch.shared->mas2;
+-	sregs->u.e.mas7_3 = vcpu->arch.shared->mas7_3;
+-	sregs->u.e.mas4 = vcpu->arch.shared->mas4;
+-	sregs->u.e.mas6 = vcpu->arch.shared->mas6;
+-
+-	sregs->u.e.mmucfg = mfspr(SPRN_MMUCFG);
+-	sregs->u.e.tlbcfg[0] = vcpu_e500->tlb0cfg;
+-	sregs->u.e.tlbcfg[1] = vcpu_e500->tlb1cfg;
+-	sregs->u.e.tlbcfg[2] = 0;
+-	sregs->u.e.tlbcfg[3] = 0;
+-
+ 	sregs->u.e.ivor_high[0] = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL];
+ 	sregs->u.e.ivor_high[1] = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA];
+ 	sregs->u.e.ivor_high[2] = vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_ROUND];
+@@ -138,11 +387,13 @@ void kvmppc_core_get_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
+ 		vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR];
+ 
+ 	kvmppc_get_sregs_ivor(vcpu, sregs);
++	kvmppc_get_sregs_e500_tlb(vcpu, sregs);
+ }
+ 
+ int kvmppc_core_set_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++	int ret;
+ 
+ 	if (sregs->u.e.impl_id == KVM_SREGS_E_IMPL_FSL) {
+ 		vcpu_e500->svr = sregs->u.e.impl.fsl.svr;
+@@ -150,14 +401,9 @@ int kvmppc_core_set_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
+ 		vcpu_e500->mcar = sregs->u.e.impl.fsl.mcar;
  	}
  
-@@ -282,6 +303,16 @@ static inline void kvmppc_e500_ref_release(struct tlbe_ref *ref)
+-	if (sregs->u.e.features & KVM_SREGS_E_ARCH206_MMU) {
+-		vcpu->arch.shared->mas0 = sregs->u.e.mas0;
+-		vcpu->arch.shared->mas1 = sregs->u.e.mas1;
+-		vcpu->arch.shared->mas2 = sregs->u.e.mas2;
+-		vcpu->arch.shared->mas7_3 = sregs->u.e.mas7_3;
+-		vcpu->arch.shared->mas4 = sregs->u.e.mas4;
+-		vcpu->arch.shared->mas6 = sregs->u.e.mas6;
+-	}
++	ret = kvmppc_set_sregs_e500_tlb(vcpu, sregs);
++	if (ret < 0)
++		return ret;
+ 
+ 	if (!(sregs->u.e.features & KVM_SREGS_E_IVOR))
+ 		return 0;
+@@ -196,9 +442,12 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	if (err)
+ 		goto free_vcpu;
+ 
++	if (kvmppc_e500_id_table_alloc(vcpu_e500) == NULL)
++		goto uninit_vcpu;
++
+ 	err = kvmppc_e500_tlb_init(vcpu_e500);
+ 	if (err)
+-		goto uninit_vcpu;
++		goto uninit_id;
+ 
+ 	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
+ 	if (!vcpu->arch.shared)
+@@ -208,6 +457,8 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 
+ uninit_tlb:
+ 	kvmppc_e500_tlb_uninit(vcpu_e500);
++uninit_id:
++	kvmppc_e500_id_table_free(vcpu_e500);
+ uninit_vcpu:
+ 	kvm_vcpu_uninit(vcpu);
+ free_vcpu:
+@@ -221,8 +472,9 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+ 
+ 	free_page((unsigned long)vcpu->arch.shared);
+-	kvm_vcpu_uninit(vcpu);
+ 	kvmppc_e500_tlb_uninit(vcpu_e500);
++	kvmppc_e500_id_table_free(vcpu_e500);
++	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
+ }
+ 
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index 6b53a88..34cef08 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -35,7 +35,9 @@ struct tlbe_priv {
+ 	struct tlbe_ref ref; /* TLB0 only -- TLB1 uses tlb_refs */
+ };
+ 
++#ifdef CONFIG_KVM_E500
+ struct vcpu_id_table;
++#endif
+ 
+ struct kvmppc_e500_tlb_params {
+ 	int entries, ways, sets;
+@@ -70,20 +72,22 @@ struct kvmppc_vcpu_e500 {
+ 	struct tlbe_ref *tlb_refs[E500_TLB_NUM];
+ 	unsigned int host_tlb1_nv;
+ 
+-	u32 host_pid[E500_PID_NUM];
+-	u32 pid[E500_PID_NUM];
+ 	u32 svr;
+-
+ 	u32 l1csr0;
+ 	u32 l1csr1;
+ 	u32 hid0;
+ 	u32 hid1;
+-	u32 tlb0cfg;
+-	u32 tlb1cfg;
+ 	u64 mcar;
+ 
+ 	struct page **shared_tlb_pages;
+ 	int num_shared_tlb_pages;
++
++#ifdef CONFIG_KVM_E500
++	u32 pid[E500_PID_NUM];
++
++	/* vcpu id table */
++	struct vcpu_id_table *idt;
++#endif
+ };
+ 
+ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
+@@ -116,13 +120,19 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
+ int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
+ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
+ int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
+-int kvmppc_e500_tlb_search(struct kvm_vcpu *, gva_t, unsigned int, int);
+ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
+ void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
+ 
+ void kvmppc_get_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
+ int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
+ 
++
++#ifdef CONFIG_KVM_E500
++unsigned int kvmppc_e500_get_sid(struct kvmppc_vcpu_e500 *vcpu_e500,
++				 unsigned int as, unsigned int gid,
++				 unsigned int pr, int avoid_recursion);
++#endif
++
+ /* TLB helper functions */
+ static inline unsigned int
+ get_tlb_size(const struct kvm_book3e_206_tlb_entry *tlbe)
+@@ -176,6 +186,12 @@ get_tlb_iprot(const struct kvm_book3e_206_tlb_entry *tlbe)
+ 	return (tlbe->mas1 >> 30) & 0x1;
+ }
+ 
++static inline unsigned int
++get_tlb_tsize(const struct kvm_book3e_206_tlb_entry *tlbe)
++{
++	return (tlbe->mas1 & MAS1_TSIZE_MASK) >> MAS1_TSIZE_SHIFT;
++}
++
+ static inline unsigned int get_cur_pid(struct kvm_vcpu *vcpu)
+ {
+ 	return vcpu->arch.pid & 0xff;
+@@ -241,4 +257,31 @@ static inline int tlbe_is_host_safe(const struct kvm_vcpu *vcpu,
+ 	return 1;
+ }
+ 
++static inline struct kvm_book3e_206_tlb_entry *get_entry(
++	struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel, int entry)
++{
++	int offset = vcpu_e500->gtlb_offset[tlbsel];
++	return &vcpu_e500->gtlb_arch[offset + entry];
++}
++
++void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
++			   struct kvm_book3e_206_tlb_entry *gtlbe);
++void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500);
++
++#ifdef CONFIG_KVM_E500
++unsigned int kvmppc_e500_get_tlb_stid(struct kvm_vcpu *vcpu,
++				      struct kvm_book3e_206_tlb_entry *gtlbe);
++
++static inline unsigned int get_tlbmiss_tid(struct kvm_vcpu *vcpu)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++	unsigned int tidseld = (vcpu->arch.shared->mas4 >> 16) & 0xf;
++
++	return vcpu_e500->pid[tidseld];
++}
++
++/* Force TS=1 for all guest mappings. */
++#define get_tlb_sts(gtlbe)              (MAS1_TS)
++#endif /* CONFIG_KVM_E500 */
++
+ #endif /* KVM_E500_H */
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 2a1a228..c80794d 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -14,7 +14,6 @@
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/disassemble.h>
+-#include <asm/kvm_e500.h>
+ 
+ #include "booke.h"
+ #include "e500.h"
+@@ -175,9 +174,9 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 		kvmppc_set_gpr(vcpu, rt, val);
+ 		break;
+ 	case SPRN_TLB0CFG:
+-		kvmppc_set_gpr(vcpu, rt, vcpu_e500->tlb0cfg); break;
++		kvmppc_set_gpr(vcpu, rt, vcpu->arch.tlbcfg[0]); break;
+ 	case SPRN_TLB1CFG:
+-		kvmppc_set_gpr(vcpu, rt, vcpu_e500->tlb1cfg); break;
++		kvmppc_set_gpr(vcpu, rt, vcpu->arch.tlbcfg[1]); break;
+ 	case SPRN_L1CSR0:
+ 		kvmppc_set_gpr(vcpu, rt, vcpu_e500->l1csr0); break;
+ 	case SPRN_L1CSR1:
+@@ -193,7 +192,7 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 		kvmppc_set_gpr(vcpu, rt, 0); break;
+ 
+ 	case SPRN_MMUCFG:
+-		kvmppc_set_gpr(vcpu, rt, mfspr(SPRN_MMUCFG)); break;
++		kvmppc_set_gpr(vcpu, rt, vcpu->arch.mmucfg); break;
+ 
+ 	/* extra exceptions */
+ 	case SPRN_IVOR32:
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 3ec3ad6..b306270 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -26,210 +26,15 @@
+ #include <linux/vmalloc.h>
+ #include <linux/hugetlb.h>
+ #include <asm/kvm_ppc.h>
+-#include <asm/kvm_e500.h>
+ 
+-#include "../mm/mmu_decl.h"
+ #include "e500.h"
+ #include "trace.h"
+ #include "timing.h"
+ 
+ #define to_htlb1_esel(esel) (host_tlb_params[1].entries - (esel) - 1)
+ 
+-struct id {
+-	unsigned long val;
+-	struct id **pentry;
+-};
+-
+-#define NUM_TIDS 256
+-
+-/*
+- * This table provide mappings from:
+- * (guestAS,guestTID,guestPR) --> ID of physical cpu
+- * guestAS	[0..1]
+- * guestTID	[0..255]
+- * guestPR	[0..1]
+- * ID		[1..255]
+- * Each vcpu keeps one vcpu_id_table.
+- */
+-struct vcpu_id_table {
+-	struct id id[2][NUM_TIDS][2];
+-};
+-
+-/*
+- * This table provide reversed mappings of vcpu_id_table:
+- * ID --> address of vcpu_id_table item.
+- * Each physical core has one pcpu_id_table.
+- */
+-struct pcpu_id_table {
+-	struct id *entry[NUM_TIDS];
+-};
+-
+-static DEFINE_PER_CPU(struct pcpu_id_table, pcpu_sids);
+-
+-/* This variable keeps last used shadow ID on local core.
+- * The valid range of shadow ID is [1..255] */
+-static DEFINE_PER_CPU(unsigned long, pcpu_last_used_sid);
+-
+ static struct kvmppc_e500_tlb_params host_tlb_params[E500_TLB_NUM];
+ 
+-static struct kvm_book3e_206_tlb_entry *get_entry(
+-	struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel, int entry)
+-{
+-	int offset = vcpu_e500->gtlb_offset[tlbsel];
+-	return &vcpu_e500->gtlb_arch[offset + entry];
+-}
+-
+-/*
+- * Allocate a free shadow id and setup a valid sid mapping in given entry.
+- * A mapping is only valid when vcpu_id_table and pcpu_id_table are match.
+- *
+- * The caller must have preemption disabled, and keep it that way until
+- * it has finished with the returned shadow id (either written into the
+- * TLB or arch.shadow_pid, or discarded).
+- */
+-static inline int local_sid_setup_one(struct id *entry)
+-{
+-	unsigned long sid;
+-	int ret = -1;
+-
+-	sid = ++(__get_cpu_var(pcpu_last_used_sid));
+-	if (sid < NUM_TIDS) {
+-		__get_cpu_var(pcpu_sids).entry[sid] = entry;
+-		entry->val = sid;
+-		entry->pentry = &__get_cpu_var(pcpu_sids).entry[sid];
+-		ret = sid;
+-	}
+-
+-	/*
+-	 * If sid == NUM_TIDS, we've run out of sids.  We return -1, and
+-	 * the caller will invalidate everything and start over.
+-	 *
+-	 * sid > NUM_TIDS indicates a race, which we disable preemption to
+-	 * avoid.
+-	 */
+-	WARN_ON(sid > NUM_TIDS);
+-
+-	return ret;
+-}
+-
+-/*
+- * Check if given entry contain a valid shadow id mapping.
+- * An ID mapping is considered valid only if
+- * both vcpu and pcpu know this mapping.
+- *
+- * The caller must have preemption disabled, and keep it that way until
+- * it has finished with the returned shadow id (either written into the
+- * TLB or arch.shadow_pid, or discarded).
+- */
+-static inline int local_sid_lookup(struct id *entry)
+-{
+-	if (entry && entry->val != 0 &&
+-	    __get_cpu_var(pcpu_sids).entry[entry->val] == entry &&
+-	    entry->pentry == &__get_cpu_var(pcpu_sids).entry[entry->val])
+-		return entry->val;
+-	return -1;
+-}
+-
+-/* Invalidate all id mappings on local core -- call with preempt disabled */
+-static inline void local_sid_destroy_all(void)
+-{
+-	__get_cpu_var(pcpu_last_used_sid) = 0;
+-	memset(&__get_cpu_var(pcpu_sids), 0, sizeof(__get_cpu_var(pcpu_sids)));
+-}
+-
+-static void *kvmppc_e500_id_table_alloc(struct kvmppc_vcpu_e500 *vcpu_e500)
+-{
+-	vcpu_e500->idt = kzalloc(sizeof(struct vcpu_id_table), GFP_KERNEL);
+-	return vcpu_e500->idt;
+-}
+-
+-static void kvmppc_e500_id_table_free(struct kvmppc_vcpu_e500 *vcpu_e500)
+-{
+-	kfree(vcpu_e500->idt);
+-}
+-
+-/* Invalidate all mappings on vcpu */
+-static void kvmppc_e500_id_table_reset_all(struct kvmppc_vcpu_e500 *vcpu_e500)
+-{
+-	memset(vcpu_e500->idt, 0, sizeof(struct vcpu_id_table));
+-
+-	/* Update shadow pid when mappings are changed */
+-	kvmppc_e500_recalc_shadow_pid(vcpu_e500);
+-}
+-
+-/* Invalidate one ID mapping on vcpu */
+-static inline void kvmppc_e500_id_table_reset_one(
+-			       struct kvmppc_vcpu_e500 *vcpu_e500,
+-			       int as, int pid, int pr)
+-{
+-	struct vcpu_id_table *idt = vcpu_e500->idt;
+-
+-	BUG_ON(as >= 2);
+-	BUG_ON(pid >= NUM_TIDS);
+-	BUG_ON(pr >= 2);
+-
+-	idt->id[as][pid][pr].val = 0;
+-	idt->id[as][pid][pr].pentry = NULL;
+-
+-	/* Update shadow pid when mappings are changed */
+-	kvmppc_e500_recalc_shadow_pid(vcpu_e500);
+-}
+-
+-/*
+- * Map guest (vcpu,AS,ID,PR) to physical core shadow id.
+- * This function first lookup if a valid mapping exists,
+- * if not, then creates a new one.
+- *
+- * The caller must have preemption disabled, and keep it that way until
+- * it has finished with the returned shadow id (either written into the
+- * TLB or arch.shadow_pid, or discarded).
+- */
+-static unsigned int kvmppc_e500_get_sid(struct kvmppc_vcpu_e500 *vcpu_e500,
+-					unsigned int as, unsigned int gid,
+-					unsigned int pr, int avoid_recursion)
+-{
+-	struct vcpu_id_table *idt = vcpu_e500->idt;
+-	int sid;
+-
+-	BUG_ON(as >= 2);
+-	BUG_ON(gid >= NUM_TIDS);
+-	BUG_ON(pr >= 2);
+-
+-	sid = local_sid_lookup(&idt->id[as][gid][pr]);
+-
+-	while (sid <= 0) {
+-		/* No mapping yet */
+-		sid = local_sid_setup_one(&idt->id[as][gid][pr]);
+-		if (sid <= 0) {
+-			_tlbil_all();
+-			local_sid_destroy_all();
+-		}
+-
+-		/* Update shadow pid when mappings are changed */
+-		if (!avoid_recursion)
+-			kvmppc_e500_recalc_shadow_pid(vcpu_e500);
+-	}
+-
+-	return sid;
+-}
+-
+-/* Map guest pid to shadow.
+- * We use PID to keep shadow of current guest non-zero PID,
+- * and use PID1 to keep shadow of guest zero PID.
+- * So that guest tlbe with TID=0 can be accessed at any time */
+-void kvmppc_e500_recalc_shadow_pid(struct kvmppc_vcpu_e500 *vcpu_e500)
+-{
+-	preempt_disable();
+-	vcpu_e500->vcpu.arch.shadow_pid = kvmppc_e500_get_sid(vcpu_e500,
+-			get_cur_as(&vcpu_e500->vcpu),
+-			get_cur_pid(&vcpu_e500->vcpu),
+-			get_cur_pr(&vcpu_e500->vcpu), 1);
+-	vcpu_e500->vcpu.arch.shadow_pid1 = kvmppc_e500_get_sid(vcpu_e500,
+-			get_cur_as(&vcpu_e500->vcpu), 0,
+-			get_cur_pr(&vcpu_e500->vcpu), 1);
+-	preempt_enable();
+-}
+-
+ static inline unsigned int gtlb0_get_next_victim(
+ 		struct kvmppc_vcpu_e500 *vcpu_e500)
+ {
+@@ -337,6 +142,7 @@ static inline void write_host_tlbe(struct kvmppc_vcpu_e500 *vcpu_e500,
  	}
  }
  
-+static void clear_tlb1_bitmap(struct kvmppc_vcpu_e500 *vcpu_e500)
-+{
-+	if (vcpu_e500->g2h_tlb1_map)
-+		memset(vcpu_e500->g2h_tlb1_map,
-+		       sizeof(u64) * vcpu_e500->gtlb_params[1].entries, 0);
-+	if (vcpu_e500->h2g_tlb1_rmap)
-+		memset(vcpu_e500->h2g_tlb1_rmap,
-+		       sizeof(unsigned int) * host_tlb_params[1].entries, 0);
-+}
-+
- static void clear_tlb_privs(struct kvmppc_vcpu_e500 *vcpu_e500)
++#ifdef CONFIG_KVM_E500
+ void kvmppc_map_magic(struct kvm_vcpu *vcpu)
  {
- 	int tlbsel = 0;
-@@ -511,7 +542,7 @@ static void kvmppc_e500_tlb0_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- /* XXX for both one-one and one-to-many , for now use TLB1 */
- static int kvmppc_e500_tlb1_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 		u64 gvaddr, gfn_t gfn, struct kvm_book3e_206_tlb_entry *gtlbe,
--		struct kvm_book3e_206_tlb_entry *stlbe)
-+		struct kvm_book3e_206_tlb_entry *stlbe, int esel)
- {
- 	struct tlbe_ref *ref;
- 	unsigned int victim;
-@@ -524,6 +555,14 @@ static int kvmppc_e500_tlb1_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	ref = &vcpu_e500->tlb_refs[1][victim];
- 	kvmppc_e500_shadow_map(vcpu_e500, gvaddr, gfn, gtlbe, 1, stlbe, ref);
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+@@ -361,75 +167,21 @@ void kvmppc_map_magic(struct kvm_vcpu *vcpu)
+ 	__write_host_tlbe(&magic, MAS0_TLBSEL(1) | MAS0_ESEL(tlbcam_index));
+ 	preempt_enable();
+ }
+-
+-void kvmppc_e500_tlb_load(struct kvm_vcpu *vcpu, int cpu)
+-{
+-	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+-
+-	/* Shadow PID may be expired on local core */
+-	kvmppc_e500_recalc_shadow_pid(vcpu_e500);
+-}
+-
+-void kvmppc_e500_tlb_put(struct kvm_vcpu *vcpu)
+-{
+-}
++#endif
  
-+	vcpu_e500->g2h_tlb1_map[esel] |= (u64)1 << victim;
-+	vcpu_e500->gtlb_priv[1][esel].ref.flags |= E500_TLB_BITMAP;
-+	if (vcpu_e500->h2g_tlb1_rmap[victim]) {
-+		unsigned int idx = vcpu_e500->h2g_tlb1_rmap[victim];
-+		vcpu_e500->g2h_tlb1_map[idx] &= ~(1ULL << victim);
-+	}
-+	vcpu_e500->h2g_tlb1_rmap[victim] = esel;
-+
+ static void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 				int tlbsel, int esel)
+ {
+ 	struct kvm_book3e_206_tlb_entry *gtlbe =
+ 		get_entry(vcpu_e500, tlbsel, esel);
+-	struct vcpu_id_table *idt = vcpu_e500->idt;
+-	unsigned int pr, tid, ts, pid;
+-	u32 val, eaddr;
+-	unsigned long flags;
+ 
+-	ts = get_tlb_ts(gtlbe);
+-	tid = get_tlb_tid(gtlbe);
+-
+-	preempt_disable();
+-
+-	/* One guest ID may be mapped to two shadow IDs */
+-	for (pr = 0; pr < 2; pr++) {
+-		/*
+-		 * The shadow PID can have a valid mapping on at most one
+-		 * host CPU.  In the common case, it will be valid on this
+-		 * CPU, in which case (for TLB0) we do a local invalidation
+-		 * of the specific address.
+-		 *
+-		 * If the shadow PID is not valid on the current host CPU, or
+-		 * if we're invalidating a TLB1 entry, we invalidate the
+-		 * entire shadow PID.
+-		 */
+-		if (tlbsel == 1 ||
+-		    (pid = local_sid_lookup(&idt->id[ts][tid][pr])) <= 0) {
+-			kvmppc_e500_id_table_reset_one(vcpu_e500, ts, tid, pr);
+-			continue;
+-		}
+-
+-		/*
+-		 * The guest is invalidating a TLB0 entry which is in a PID
+-		 * that has a valid shadow mapping on this host CPU.  We
+-		 * search host TLB0 to invalidate it's shadow TLB entry,
+-		 * similar to __tlbil_va except that we need to look in AS1.
+-		 */
+-		val = (pid << MAS6_SPID_SHIFT) | MAS6_SAS;
+-		eaddr = get_tlb_eaddr(gtlbe);
+-
+-		local_irq_save(flags);
+-
+-		mtspr(SPRN_MAS6, val);
+-		asm volatile("tlbsx 0, %[eaddr]" : : [eaddr] "r" (eaddr));
+-		val = mfspr(SPRN_MAS1);
+-		if (val & MAS1_VALID) {
+-			mtspr(SPRN_MAS1, val & ~MAS1_VALID);
+-			asm volatile("tlbwe");
+-		}
+-
+-		local_irq_restore(flags);
++	if (tlbsel == 1) {
++		kvmppc_e500_tlbil_all(vcpu_e500);
++		return;
+ 	}
+ 
+-	preempt_enable();
++	/* Guest tlbe is backed by at most one host tlbe per shadow pid. */
++	kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
+ }
+ 
+ static int tlb0_set_base(gva_t addr, int sets, int ways)
+@@ -547,7 +299,7 @@ static void clear_tlb_refs(struct kvmppc_vcpu_e500 *vcpu_e500)
+ 	int stlbsel = 1;
+ 	int i;
+ 
+-	kvmppc_e500_id_table_reset_all(vcpu_e500);
++	kvmppc_e500_tlbil_all(vcpu_e500);
+ 
+ 	for (i = 0; i < host_tlb_params[stlbsel].entries; i++) {
+ 		struct tlbe_ref *ref =
+@@ -562,19 +314,18 @@ static inline void kvmppc_e500_deliver_tlb_miss(struct kvm_vcpu *vcpu,
+ 		unsigned int eaddr, int as)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+-	unsigned int victim, pidsel, tsized;
++	unsigned int victim, tsized;
+ 	int tlbsel;
+ 
+ 	/* since we only have two TLBs, only lower bit is used. */
+ 	tlbsel = (vcpu->arch.shared->mas4 >> 28) & 0x1;
+ 	victim = (tlbsel == 0) ? gtlb0_get_next_victim(vcpu_e500) : 0;
+-	pidsel = (vcpu->arch.shared->mas4 >> 16) & 0xf;
+ 	tsized = (vcpu->arch.shared->mas4 >> 7) & 0x1f;
+ 
+ 	vcpu->arch.shared->mas0 = MAS0_TLBSEL(tlbsel) | MAS0_ESEL(victim)
+ 		| MAS0_NV(vcpu_e500->gtlb_nv[tlbsel]);
+ 	vcpu->arch.shared->mas1 = MAS1_VALID | (as ? MAS1_TS : 0)
+-		| MAS1_TID(vcpu_e500->pid[pidsel])
++		| MAS1_TID(get_tlbmiss_tid(vcpu))
+ 		| MAS1_TSIZE(tsized);
+ 	vcpu->arch.shared->mas2 = (eaddr & MAS2_EPN)
+ 		| (vcpu->arch.shared->mas4 & MAS2_ATTRIB_MASK);
+@@ -586,23 +337,22 @@ static inline void kvmppc_e500_deliver_tlb_miss(struct kvm_vcpu *vcpu,
+ 
+ /* TID must be supplied by the caller */
+ static inline void kvmppc_e500_setup_stlbe(
+-	struct kvmppc_vcpu_e500 *vcpu_e500,
++	struct kvm_vcpu *vcpu,
+ 	struct kvm_book3e_206_tlb_entry *gtlbe,
+ 	int tsize, struct tlbe_ref *ref, u64 gvaddr,
+ 	struct kvm_book3e_206_tlb_entry *stlbe)
+ {
+ 	pfn_t pfn = ref->pfn;
++	u32 pr = vcpu->arch.shared->msr & MSR_PR;
+ 
+ 	BUG_ON(!(ref->flags & E500_TLB_VALID));
+ 
+-	/* Force TS=1 IPROT=0 for all guest mappings. */
+-	stlbe->mas1 = MAS1_TSIZE(tsize) | MAS1_TS | MAS1_VALID;
+-	stlbe->mas2 = (gvaddr & MAS2_EPN)
+-		| e500_shadow_mas2_attrib(gtlbe->mas2,
+-				vcpu_e500->vcpu.arch.shared->msr & MSR_PR);
+-	stlbe->mas7_3 = ((u64)pfn << PAGE_SHIFT)
+-		| e500_shadow_mas3_attrib(gtlbe->mas7_3,
+-				vcpu_e500->vcpu.arch.shared->msr & MSR_PR);
++	/* Force IPROT=0 for all guest mappings. */
++	stlbe->mas1 = MAS1_TSIZE(tsize) | get_tlb_sts(gtlbe) | MAS1_VALID;
++	stlbe->mas2 = (gvaddr & MAS2_EPN) |
++		      e500_shadow_mas2_attrib(gtlbe->mas2, pr);
++	stlbe->mas7_3 = ((u64)pfn << PAGE_SHIFT) |
++			e500_shadow_mas3_attrib(gtlbe->mas7_3, pr);
+ }
+ 
+ static inline void kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+@@ -736,7 +486,8 @@ static inline void kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	kvmppc_e500_ref_release(ref);
+ 	kvmppc_e500_ref_setup(ref, gtlbe, pfn);
+ 
+-	kvmppc_e500_setup_stlbe(vcpu_e500, gtlbe, tsize, ref, gvaddr, stlbe);
++	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
++				ref, gvaddr, stlbe);
+ }
+ 
+ /* XXX only map the one-one case, for now use TLB0 */
+@@ -776,14 +527,6 @@ static int kvmppc_e500_tlb1_map(struct kvmppc_vcpu_e500 *vcpu_e500,
  	return victim;
  }
  
-@@ -728,7 +767,7 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
+-void kvmppc_mmu_msr_notify(struct kvm_vcpu *vcpu, u32 old_msr)
+-{
+-	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+-
+-	/* Recalc shadow pid since MSR changes */
+-	kvmppc_e500_recalc_shadow_pid(vcpu_e500);
+-}
+-
+ static inline int kvmppc_e500_gtlbe_invalidate(
+ 				struct kvmppc_vcpu_e500 *vcpu_e500,
+ 				int tlbsel, int esel)
+@@ -811,7 +554,7 @@ int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500, ulong value)
+ 			kvmppc_e500_gtlbe_invalidate(vcpu_e500, 1, esel);
+ 
+ 	/* Invalidate all vcpu id mappings */
+-	kvmppc_e500_id_table_reset_all(vcpu_e500);
++	kvmppc_e500_tlbil_all(vcpu_e500);
+ 
+ 	return EMULATE_DONE;
+ }
+@@ -844,7 +587,7 @@ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb)
+ 	}
+ 
+ 	/* Invalidate all vcpu id mappings */
+-	kvmppc_e500_id_table_reset_all(vcpu_e500);
++	kvmppc_e500_tlbil_all(vcpu_e500);
+ 
+ 	return EMULATE_DONE;
+ }
+@@ -929,9 +672,7 @@ static void write_stlbe(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	int stid;
+ 
+ 	preempt_disable();
+-	stid = kvmppc_e500_get_sid(vcpu_e500, get_tlb_ts(gtlbe),
+-				   get_tlb_tid(gtlbe),
+-				   get_cur_pr(&vcpu_e500->vcpu), 0);
++	stid = kvmppc_e500_get_tlb_stid(&vcpu_e500->vcpu, gtlbe);
+ 
+ 	stlbe->mas1 |= MAS1_TID(stid);
+ 	write_host_tlbe(vcpu_e500, stlbsel, sesel, stlbe);
+@@ -941,8 +682,8 @@ static void write_stlbe(struct kvmppc_vcpu_e500 *vcpu_e500,
+ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+-	struct kvm_book3e_206_tlb_entry *gtlbe;
+-	int tlbsel, esel;
++	struct kvm_book3e_206_tlb_entry *gtlbe, stlbe;
++	int tlbsel, esel, stlbsel, sesel;
+ 
+ 	tlbsel = get_tlb_tlbsel(vcpu);
+ 	esel = get_tlb_esel(vcpu, tlbsel);
+@@ -961,8 +702,6 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
+ 
+ 	/* Invalidate shadow mappings for the about-to-be-clobbered TLBE. */
+ 	if (tlbe_is_host_safe(vcpu, gtlbe)) {
+-		struct kvm_book3e_206_tlb_entry stlbe;
+-		int stlbsel, sesel;
+ 		u64 eaddr;
+ 		u64 raddr;
+ 
+@@ -989,7 +728,7 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
  			 * are mapped on the fly. */
  			stlbsel = 1;
  			sesel = kvmppc_e500_tlb1_map(vcpu_e500, eaddr,
--				    raddr >> PAGE_SHIFT, gtlbe, &stlbe);
-+				    raddr >> PAGE_SHIFT, gtlbe, &stlbe, esel);
+-					raddr >> PAGE_SHIFT, gtlbe, &stlbe);
++				    raddr >> PAGE_SHIFT, gtlbe, &stlbe);
  			break;
  
  		default:
-@@ -856,7 +895,7 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
+@@ -1003,6 +742,48 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
+ 	return EMULATE_DONE;
+ }
  
- 		stlbsel = 1;
- 		sesel = kvmppc_e500_tlb1_map(vcpu_e500, eaddr, gfn,
--					     gtlbe, &stlbe);
-+					     gtlbe, &stlbe, esel);
++static int kvmppc_e500_tlb_search(struct kvm_vcpu *vcpu,
++				  gva_t eaddr, unsigned int pid, int as)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++	int esel, tlbsel;
++
++	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
++		esel = kvmppc_e500_tlb_index(vcpu_e500, eaddr, tlbsel, pid, as);
++		if (esel >= 0)
++			return index_of(tlbsel, esel);
++	}
++
++	return -1;
++}
++
++/* 'linear_address' is actually an encoding of AS|PID|EADDR . */
++int kvmppc_core_vcpu_translate(struct kvm_vcpu *vcpu,
++                               struct kvm_translation *tr)
++{
++	int index;
++	gva_t eaddr;
++	u8 pid;
++	u8 as;
++
++	eaddr = tr->linear_address;
++	pid = (tr->linear_address >> 32) & 0xff;
++	as = (tr->linear_address >> 40) & 0x1;
++
++	index = kvmppc_e500_tlb_search(vcpu, eaddr, pid, as);
++	if (index < 0) {
++		tr->valid = 0;
++		return 0;
++	}
++
++	tr->physical_address = kvmppc_mmu_xlate(vcpu, index, eaddr);
++	/* XXX what does "writeable" and "usermode" even mean? */
++	tr->valid = 1;
++
++	return 0;
++}
++
++
+ int kvmppc_mmu_itlb_index(struct kvm_vcpu *vcpu, gva_t eaddr)
+ {
+ 	unsigned int as = !!(vcpu->arch.shared->msr & MSR_IS);
+@@ -1066,7 +847,7 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
+ 		sesel = 0; /* unused */
+ 		priv = &vcpu_e500->gtlb_priv[tlbsel][esel];
+ 
+-		kvmppc_e500_setup_stlbe(vcpu_e500, gtlbe, BOOK3E_PAGESZ_4K,
++		kvmppc_e500_setup_stlbe(vcpu, gtlbe, BOOK3E_PAGESZ_4K,
+ 					&priv->ref, eaddr, &stlbe);
  		break;
- 	}
  
-@@ -872,6 +911,9 @@ static void free_gtlb(struct kvmppc_vcpu_e500 *vcpu_e500)
+@@ -1087,48 +868,6 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
+ 	write_stlbe(vcpu_e500, gtlbe, &stlbe, stlbsel, sesel);
+ }
+ 
+-int kvmppc_e500_tlb_search(struct kvm_vcpu *vcpu,
+-				gva_t eaddr, unsigned int pid, int as)
+-{
+-	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+-	int esel, tlbsel;
+-
+-	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
+-		esel = kvmppc_e500_tlb_index(vcpu_e500, eaddr, tlbsel, pid, as);
+-		if (esel >= 0)
+-			return index_of(tlbsel, esel);
+-	}
+-
+-	return -1;
+-}
+-
+-void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 pid)
+-{
+-	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+-
+-	if (vcpu->arch.pid != pid) {
+-		vcpu_e500->pid[0] = vcpu->arch.pid = pid;
+-		kvmppc_e500_recalc_shadow_pid(vcpu_e500);
+-	}
+-}
+-
+-void kvmppc_e500_tlb_setup(struct kvmppc_vcpu_e500 *vcpu_e500)
+-{
+-	struct kvm_book3e_206_tlb_entry *tlbe;
+-
+-	/* Insert large initial mapping for guest. */
+-	tlbe = get_entry(vcpu_e500, 1, 0);
+-	tlbe->mas1 = MAS1_VALID | MAS1_TSIZE(BOOK3E_PAGESZ_256M);
+-	tlbe->mas2 = 0;
+-	tlbe->mas7_3 = E500_TLB_SUPER_PERM_MASK;
+-
+-	/* 4K map for serial output. Used by kernel wrapper. */
+-	tlbe = get_entry(vcpu_e500, 1, 1);
+-	tlbe->mas1 = MAS1_VALID | MAS1_TSIZE(BOOK3E_PAGESZ_4K);
+-	tlbe->mas2 = (0xe0004500 & 0xFFFFF000) | MAS2_I | MAS2_G;
+-	tlbe->mas7_3 = (0xe0004500 & 0xFFFFF000) | E500_TLB_SUPER_PERM_MASK;
+-}
+-
+ static void free_gtlb(struct kvmppc_vcpu_e500 *vcpu_e500)
  {
  	int i;
+@@ -1155,6 +894,36 @@ static void free_gtlb(struct kvmppc_vcpu_e500 *vcpu_e500)
+ 	vcpu_e500->gtlb_arch = NULL;
+ }
  
-+	clear_tlb1_bitmap(vcpu_e500);
-+	kfree(vcpu_e500->g2h_tlb1_map);
++void kvmppc_get_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
++{
++	sregs->u.e.mas0 = vcpu->arch.shared->mas0;
++	sregs->u.e.mas1 = vcpu->arch.shared->mas1;
++	sregs->u.e.mas2 = vcpu->arch.shared->mas2;
++	sregs->u.e.mas7_3 = vcpu->arch.shared->mas7_3;
++	sregs->u.e.mas4 = vcpu->arch.shared->mas4;
++	sregs->u.e.mas6 = vcpu->arch.shared->mas6;
 +
- 	clear_tlb_refs(vcpu_e500);
- 	kfree(vcpu_e500->gtlb_priv[0]);
- 	kfree(vcpu_e500->gtlb_priv[1]);
-@@ -932,6 +974,7 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- 	char *virt;
- 	struct page **pages;
- 	struct tlbe_priv *privs[2] = {};
-+	u64 *g2h_bitmap = NULL;
- 	size_t array_len;
- 	u32 sets;
- 	int num_pages, ret, i;
-@@ -993,10 +1036,16 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- 	if (!privs[0] || !privs[1])
- 		goto err_put_page;
- 
-+	g2h_bitmap = kzalloc(sizeof(u64) * params.tlb_sizes[1],
-+	                     GFP_KERNEL);
-+	if (!g2h_bitmap)
-+		goto err_put_page;
++	sregs->u.e.mmucfg = vcpu->arch.mmucfg;
++	sregs->u.e.tlbcfg[0] = vcpu->arch.tlbcfg[0];
++	sregs->u.e.tlbcfg[1] = vcpu->arch.tlbcfg[1];
++	sregs->u.e.tlbcfg[2] = 0;
++	sregs->u.e.tlbcfg[3] = 0;
++}
 +
- 	free_gtlb(vcpu_e500);
++int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
++{
++	if (sregs->u.e.features & KVM_SREGS_E_ARCH206_MMU) {
++		vcpu->arch.shared->mas0 = sregs->u.e.mas0;
++		vcpu->arch.shared->mas1 = sregs->u.e.mas1;
++		vcpu->arch.shared->mas2 = sregs->u.e.mas2;
++		vcpu->arch.shared->mas7_3 = sregs->u.e.mas7_3;
++		vcpu->arch.shared->mas4 = sregs->u.e.mas4;
++		vcpu->arch.shared->mas6 = sregs->u.e.mas6;
++	}
++
++	return 0;
++}
++
+ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 			      struct kvm_config_tlb *cfg)
+ {
+@@ -1238,14 +1007,16 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 	vcpu_e500->gtlb_offset[0] = 0;
+ 	vcpu_e500->gtlb_offset[1] = params.tlb_sizes[0];
  
- 	vcpu_e500->gtlb_priv[0] = privs[0];
- 	vcpu_e500->gtlb_priv[1] = privs[1];
-+	vcpu_e500->g2h_tlb1_map = g2h_bitmap;
+-	vcpu_e500->tlb0cfg &= ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
++	vcpu->arch.mmucfg = mfspr(SPRN_MMUCFG) & ~MMUCFG_LPIDSIZE;
++
++	vcpu->arch.tlbcfg[0] &= ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
+ 	if (params.tlb_sizes[0] <= 2048)
+-		vcpu_e500->tlb0cfg |= params.tlb_sizes[0];
+-	vcpu_e500->tlb0cfg |= params.tlb_ways[0] << TLBnCFG_ASSOC_SHIFT;
++		vcpu->arch.tlbcfg[0] |= params.tlb_sizes[0];
++	vcpu->arch.tlbcfg[0] |= params.tlb_ways[0] << TLBnCFG_ASSOC_SHIFT;
  
- 	vcpu_e500->gtlb_arch = (struct kvm_book3e_206_tlb_entry *)
- 		(virt + (cfg->array & (PAGE_SIZE - 1)));
-@@ -1129,6 +1178,18 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
+-	vcpu_e500->tlb1cfg &= ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
+-	vcpu_e500->tlb1cfg |= params.tlb_sizes[1];
+-	vcpu_e500->tlb1cfg |= params.tlb_ways[1] << TLBnCFG_ASSOC_SHIFT;
++	vcpu->arch.tlbcfg[1] &= ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
++	vcpu->arch.tlbcfg[1] |= params.tlb_sizes[1];
++	vcpu->arch.tlbcfg[1] |= params.tlb_ways[1] << TLBnCFG_ASSOC_SHIFT;
+ 
+ 	vcpu_e500->shared_tlb_pages = pages;
+ 	vcpu_e500->num_shared_tlb_pages = num_pages;
+@@ -1281,6 +1052,7 @@ int kvm_vcpu_ioctl_dirty_tlb(struct kvm_vcpu *vcpu,
+ 
+ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
+ {
++	struct kvm_vcpu *vcpu = &vcpu_e500->vcpu;
+ 	int entry_size = sizeof(struct kvm_book3e_206_tlb_entry);
+ 	int entries = KVM_E500_TLB0_SIZE + KVM_E500_TLB1_SIZE;
+ 
+@@ -1357,20 +1129,17 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
  	if (!vcpu_e500->gtlb_priv[1])
  		goto err;
  
-+	vcpu_e500->g2h_tlb1_map = kzalloc(sizeof(unsigned int) *
-+					  vcpu_e500->gtlb_params[1].entries,
-+					  GFP_KERNEL);
-+	if (!vcpu_e500->g2h_tlb1_map)
-+		goto err;
-+
-+	vcpu_e500->h2g_tlb1_rmap = kzalloc(sizeof(unsigned int) *
-+					   host_tlb_params[1].entries,
-+					   GFP_KERNEL);
-+	if (!vcpu_e500->h2g_tlb1_rmap)
-+		goto err;
-+
+-	if (kvmppc_e500_id_table_alloc(vcpu_e500) == NULL)
+-		goto err;
+-
  	/* Init TLB configuration register */
- 	vcpu->arch.tlbcfg[0] = mfspr(SPRN_TLB0CFG) &
+-	vcpu_e500->tlb0cfg = mfspr(SPRN_TLB0CFG) &
++	vcpu->arch.tlbcfg[0] = mfspr(SPRN_TLB0CFG) &
  			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-@@ -1154,6 +1215,7 @@ err:
+-	vcpu_e500->tlb0cfg |= vcpu_e500->gtlb_params[0].entries;
+-	vcpu_e500->tlb0cfg |=
++	vcpu->arch.tlbcfg[0] |= vcpu_e500->gtlb_params[0].entries;
++	vcpu->arch.tlbcfg[0] |=
+ 		vcpu_e500->gtlb_params[0].ways << TLBnCFG_ASSOC_SHIFT;
+ 
+-	vcpu_e500->tlb1cfg = mfspr(SPRN_TLB1CFG) &
++	vcpu->arch.tlbcfg[1] = mfspr(SPRN_TLB1CFG) &
+ 			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
+-	vcpu_e500->tlb0cfg |= vcpu_e500->gtlb_params[1].entries;
+-	vcpu_e500->tlb0cfg |=
++	vcpu->arch.tlbcfg[0] |= vcpu_e500->gtlb_params[1].entries;
++	vcpu->arch.tlbcfg[0] |=
+ 		vcpu_e500->gtlb_params[1].ways << TLBnCFG_ASSOC_SHIFT;
+ 
+ 	return 0;
+@@ -1385,8 +1154,6 @@ err:
  void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500)
  {
  	free_gtlb(vcpu_e500);
-+	kfree(vcpu_e500->h2g_tlb1_rmap);
+-	kvmppc_e500_id_table_free(vcpu_e500);
+-
  	kfree(vcpu_e500->tlb_refs[0]);
  	kfree(vcpu_e500->tlb_refs[1]);
  }
