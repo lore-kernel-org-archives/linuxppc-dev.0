@@ -1,21 +1,35 @@
-Return-Path: <hughd@google.com>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
- [209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 1CA14B7171
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 23:07:27 +1100 (EST)
-Received: by ggnv5 with SMTP id v5so6244406ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 04:07:24 -0800 (PST)
-Date: Thu, 22 Dec 2011 04:07:22 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: next BUG: using smp_processor_id() in preemptible
-In-Reply-To: <alpine.LSU.2.00.1112051539100.3938@sister.anvils>
-Message-ID: <alpine.LSU.2.00.1112220405410.23876@eggly.anvils>
-References: <alpine.LSU.2.00.1112051539100.3938@sister.anvils>
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp14.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E7A29B6F7E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Dec 2011 03:18:20 +1100 (EST)
+Received: from /spool/local
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
+ Thu, 22 Dec 2011 16:18:09 -0000
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by d06nrmr1507.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ pBMGHT5K2490392
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 16:17:29 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pBMGHSfp022411
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 09:17:28 -0700
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+ [9.149.104.171])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ pBMGHSCh022408
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 09:17:28 -0700
+Subject: AUTO: Michael Barry is out of the office (returning 04/01/2012)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OF01B4D8FC.382A2992-ON8025796E.00597B5E-8025796E.00597B5E@ie.ibm.com>
+Date: Thu, 22 Dec 2011 16:17:22 +0000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +39,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 5 Dec 2011, Hugh Dickins wrote:
 
-> 3.2.0-rc3-next-20111202 with CONFIG_DEBUG_PREEMPT=y gives me lots of
-> 
-> Dec  4 20:03:19 thorn kernel: BUG: using smp_processor_id() in preemptible [00000000] code: startpar/1365
-> Dec  4 20:03:19 thorn kernel: caller is .arch_local_irq_restore+0x44/0x90
-> Dec  4 20:03:19 thorn kernel: Call Trace:
-> Dec  4 20:03:19 thorn kernel: [c0000001b45a7c60] [c000000000011fe8] .show_stack+0x6c/0x16c (unreliable)
-> Dec  4 20:03:19 thorn kernel: [c0000001b45a7d10] [c00000000024318c] .debug_smp_processor_id+0xe4/0x11c
-> Dec  4 20:03:19 thorn kernel: [c0000001b45a7da0] [c00000000000e2e8] .arch_local_irq_restore+0x44/0x90
-> Dec  4 20:03:19 thorn kernel: [c0000001b45a7e30] [c000000000005870] .do_hash_page+0x70/0x74
-> Dec  4 20:03:21 thorn kernel: debug_smp_processor_id: 21950 callbacks suppressed
-> 
-> from the u64 *next_tb = &__get_cpu_var(decrementers_next_tb)
-> in decrementer_check_overflow(): I've no idea whether it's safe
-> just to use get_cpu_var then put_cpu_var there instead,
-> but no hurry, I can survive with DEBUG_PREEMPT off.
+I am out of the office until 04/01/2012.
 
-Still a problem in 3.2.0-rc6-next-20111222
 
-Hugh
+
+
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 88, Issue 109" sent on 20/12/2011 19:28:09.
+
+This is the only notification you will receive while this person is away.
