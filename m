@@ -1,25 +1,35 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id 027DDB7146
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 16:33:15 +1100 (EST)
-Date: Thu, 22 Dec 2011 16:33:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: linux-next: build warnings after merge of the final tree
-Message-Id: <20111222163304.26be6d0f5e514fefb078c0a6@canb.auug.org.au>
-In-Reply-To: <4EE8D305.8020407@zytor.com>
-References: <20111214181545.6e13bc954cb7ddce9086e861@canb.auug.org.au>
- <1323880322.23971.33.camel@gandalf.stny.rr.com>
- <4EE8D305.8020407@zytor.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst"
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 9D179B714E
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2011 20:35:12 +1100 (EST)
+Received: from /spool/local
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <prasad@linux.vnet.ibm.com>;
+ Thu, 22 Dec 2011 07:35:04 -0200
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id pBM9Zxi82003216
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2011 07:35:59 -0200
+Received: from d24av04.br.ibm.com (loopback [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ pBM9YlUS026458
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2011 07:34:47 -0200
+Date: Thu, 22 Dec 2011 15:04:47 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
+ Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>, dwg@au1.ibm.com
+Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature
+ flag
+Message-ID: <20111222093447.GD26407@in.ibm.com>
+References: <20111208111212.GB3720@in.ibm.com>
+ <20111208112330.GB24484@in.ibm.com>
+ <20111221005502.GE5188@truffala.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111221005502.GE5188@truffala.fritz.box>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Peter,
-
-On Wed, 14 Dec 2011 08:47:01 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
+On Wed, Dec 21, 2011 at 11:55:02AM +1100, David Gibson wrote:
+> On Thu, Dec 08, 2011 at 04:53:30PM +0530, K.Prasad wrote:
+> > While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
+> > PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
+> > user-space debuggers (like GDB) who may want to use it. Hence we introduce a
+> > new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
+> > "features" member of "struct ppc_debug_info" to advertise support for the
+> > same on Book3E PowerPC processors.
+> 
+> Hrm.  I had assumed the reason there wasn't a feature bit for EXACT
+> originally was that EXACT breakpoints were *always* supposed to be
+> supported by the new interface.
 >
-> On 12/14/2011 08:32 AM, Steven Rostedt wrote:
-> > On Wed, 2011-12-14 at 18:15 +1100, Stephen Rothwell wrote:
-> >=20
-> >> Maybe caused by commit d5e553d6e0a4 ("trace: Include <asm/asm-offsets.=
-h>
-> >> in trace_syscalls.c") from the tip tree.  These warnings may have been
-> >> here for a while as it is hard to catch the new ones among the flood.
-> >>
-> >=20
-> > hpa,
-> >=20
-> > Was this change only needed for x86? If so, could you put that into
-> > asm/ftrace.h instead?
-> >=20
->=20
-> Yes (on both accounts).  It was part of the syscall changes; I'll move
-> the include.
 
-Ping?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Okay. Although BookS doesn't support EXACT breakpoints, it is possible
+(after the introduction of new hw-breakpoint interfaces) to request for
+a breakpoint of length 1 Byte.
 
---Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst
-Content-Type: application/pgp-signature
+The hw-breakpoint infrastructure would take care of filtering the
+extraneous interrupts arising out of accesses in the neighbourhood, in
+such a case.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+David,
+	Can you Ack this patch too, if you find the changes acceptable?
 
-iQIcBAEBCAAGBQJO8sEQAAoJEECxmPOUX5FEV/oP/iI+sI2uZzvXPxhT907a/jCa
-WNrIlfq/NWLFUaQ6km62qXiPkkSTLNDwlM+YWABXkf45SLR/oOVLntH673DV216P
-nSOms0qvfTifHpYF0yQRN43s8isL3PoxQKtbsPErhA5A1xjgOBO/SFlG26WlHZKd
-pKwkFLjkywRgrnLdKLh7rk6cApncL7Qv3I4kcrsOGtLLSnF6lDPuovMrVdalScEq
-ZyO68ZPfj1JQNqNd2MSwPSnKRpcmb499BKZExC/0GRrxUH1iLK3MGoRc85WzQbHd
-7fLSyj2bSx0qhC+L1Z3TpKwR8VIuAB6Q9c7FEaz4vjdG+WdTqq/YiQdxadGxnWGz
-MqBqYmkhn0lKy3kWol37KCBfx6E8T3skc+yIDvDINUL+7FXrMsE9MO/9rzQMsWK1
-JQuSO/rU0tx1uNk0aYNBGxOaSLFwcT0Uw4qyoBy5q//8X2EyjgbAlKCDchoDv37L
-A6c99AyXXnxFIgbMvzuFU4PwUD5WwsB3EOr3vLHdnd9CbAMYlDOMq+X5xuAG+vqs
-BXcDEVPkL8LQ5R+W557Z0cTmgwVm3NWj30f9S9h2yvl7ZhzuPagkbYL/p2FeekZY
-/UoZLSs9WcgSd7E5DvzpKhiDF1kxP6FnNFhwjIhwNTZopNOpu2/PvZiP9MpmFtzi
-J4llKVp8xALM40bAn2tG
-=R18X
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst--
+Thanks,
+K.Prasad
+ 
