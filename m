@@ -1,22 +1,29 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id DEB0BB719F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Dec 2011 05:01:50 +1100 (EST)
-Received: by wgbds13 with SMTP id ds13so13058840wgb.14
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 10:01:46 -0800 (PST)
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 53E11B71A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Dec 2011 05:11:45 +1100 (EST)
+Received: from mail181-ch1 (localhost [127.0.0.1])	by
+ mail181-ch1-R.bigfish.com (Postfix) with ESMTP id 6B28C4201EA	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 18:12:05 +0000 (UTC)
+Received: from CH1EHSMHS012.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.242])	by mail181-ch1.bigfish.com (Postfix) with ESMTP id
+ 1A09C40042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 18:12:04 +0000 (UTC)
+Message-ID: <4EF372D5.3010404@freescale.com>
+Date: Thu, 22 Dec 2011 12:11:33 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1324570881-11503-1-git-send-email-Kyle.D.Moffett@boeing.com>
-References: <1324570881-11503-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Date: Thu, 22 Dec 2011 13:01:45 -0500
-Message-ID: <CA+5PVA7ZzDEsLrN_W=fo_GzSwV4Nj7KBT7zJRoVs0b4TcZvwBQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/currituck: Fix up missing MPIC_PRIMARY flag
-From: Josh Boyer <jwboyer@gmail.com>
-To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v3 4/4] fsl_pmc: update device bindings
+References: <1324554214-19502-1-git-send-email-chenhui.zhao@freescale.com>
+ <1324554214-19502-4-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1324554214-19502-4-git-send-email-chenhui.zhao@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 22, 2011 at 11:21 AM, Kyle Moffett
-<Kyle.D.Moffett@boeing.com> wrote:
-> The 44x/currituck platform didn't get updated when the MPIC code
-> inverted the flag from MPIC_PRIMARY =3D> !MPIC_SECONDARY. =A0Fix it up.
->
-> Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+On 12/22/2011 05:43 AM, Zhao Chenhui wrote:
+>    Compatibility does not include bit assignments in SCCR/PMCDR/DEVDISR; these
+> -  bit assignments are indicated via the sleep specifier in each device's
+> -  sleep property.
+> +  bit assignments are indicated via the clock nodes.  Device which has a
+> +  controllable clock source should have a "clk-handle" property pointing
+> +  to the clock node.
 
-I already included this fixup in my 4xx tree 'next' branch.  A pull
-request was sent to Ben as well.
+fsl,pmc-handle
 
-http://git.infradead.org/users/jwboyer/powerpc-4xx.git/commitdiff/eb975652b=
-8fa0c4f08a52744d34bdebf66589d4b
+>  - reg: For devices compatible with "fsl,mpc8349-pmc", the first resource
+>    is the PMC block, and the second resource is the Clock Configuration
+>    block.
+>  
+> -  For devices compatible with "fsl,mpc8548-pmc", the first resource
+> -  is a 32-byte block beginning with DEVDISR.
+> +  For devices compatible with "fsl,mpc8548-pmc", the second resource
+> +  is a 32-byte block beginning with DEVDISR if supported.
 
-josh
+What's going on here?
+
+-Scott
