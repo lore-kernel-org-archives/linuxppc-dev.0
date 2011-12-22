@@ -1,31 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id DE0E1B7140
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 07:20:07 +1100 (EST)
-Received: by wgbds13 with SMTP id ds13so11880153wgb.14
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2011 12:20:03 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <e10be3d24de889e9e80d2fd76de9dcd8@mail.gmail.com>
-References: <1324385081-30824-1-git-send-email-vhtnguyen@apm.com>
- <CA+5PVA41Haf-_H3UoR1O3VFbC3XtgScyo5hekNjt0VWxunL-fg@mail.gmail.com>
- <e10be3d24de889e9e80d2fd76de9dcd8@mail.gmail.com>
-Date: Wed, 21 Dec 2011 15:20:03 -0500
-Message-ID: <CA+5PVA4cjiUvn4YavkFs6Jx87YpO8yHZZbm4pcPJQn1r1cggUA@mail.gmail.com>
-Subject: Re: [PATCH 3/3] powerpc/44x: Add support PCI-E for APM821xx SoC and
- Bluestone board
-From: Josh Boyer <jwboyer@gmail.com>
-To: Vinh Huu Tuong Nguyen <vhtnguyen@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Ayman El-Khashab <ayman@elkhashab.com>,
- Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
- Lucas De Marchi <lucas.demarchi@profusion.mobi>,
- Rob Herring <rob.herring@calxeda.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+ [IPv6:2402:b800:7003:1::15])
+ by ozlabs.org (Postfix) with ESMTP id 98078B7001
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 11:21:25 +1100 (EST)
+Date: Thu, 22 Dec 2011 11:21:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: boot failure for next-20111216
+Message-Id: <20111222112118.d93f4b31c0c5beaeb62244c6@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB"
+Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,120 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 20, 2011 at 11:47 PM, Vinh Huu Tuong Nguyen
-<vhtnguyen@apm.com> wrote:
->> +
->> + =A0 =A0 =A0 mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mfdcri(SDR0, port->sdr_base + PESDRn_RCSSE=
-T) |
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 (PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTPY=
-N));
->> +
->> + =A0 =A0 =A0 /* Poll for PHY reset */
->> + =A0 =A0 =A0 timeout =3D 0;
->> + =A0 =A0 =A0 while ((!(mfdcri(SDR0, PESDR0_460EX_RSTSTA +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (port->index * 0x55)) & 0x=
-1)) &&
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(timeout < PCIE_PHY_RESET_TIMEOUT)) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 timeout++;
->> + =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 if (timeout < PCIE_PHY_RESET_TIMEOUT) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mtdcri(SDR0, port->sdr_base + PESDRn_RCSSE=
-T,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (mfdcri(SDR0, port->sdr_ba=
-se + PESDRn_RCSSET) &
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ~(PESDRx_RCSSET_RSTGU | PE=
-SDRx_RCSSET_RSTDL)) |
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 PESDRx_RCSSET_RSTPYN);
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 port->has_ibpre =3D 1;
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
->> + =A0 =A0 =A0 } else {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO "PCIE: Can't reset PHY\n"=
-);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
->> + =A0 =A0 =A0 }
->
-> If we can't reset the PHY, does this whole function essentially fail?
-> Do the devices not get renumbered, etc? =A0If so, you probably want to
-> make that KERN_ERR.
-> [Vinh Nguyen] if we can't reset the PHY, maybe the device can't work
-> properly. I will update codes to return the error in case PHY can't reset=
-.
+--Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK.
+Hi all,
 
->> @@ -1751,9 +1856,9 @@ static void __init
-> ppc4xx_configure_pciex_PIMs(struct ppc4xx_pciex_port *port,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * if it works
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM0LAL, 0x0000000=
-0);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM0LAH, 0x00000000=
-);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM0LAH, 0x00000008=
-); /* Moving
-> on HB */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM1LAL, 0x0000000=
-0);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM1LAH, 0x00000000=
-);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM1LAH, 0x0000000c=
-); /* Moving
-> on HB */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM01SAH, 0xffff00=
-00);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM01SAL, 0x000000=
-00);
->
-> Why are these values changed, and are those changes only needed on
-> APM821xx?
-> [Vinh Nguyen] In system memory map of 460EX chip, we have an "alias DDR
-> SDRAM" area that is Local Memory Alias for HB(high bandwidth), so we trie=
-d
-> to initialize it for speedup. For APM821xx, although we didn't mention
-> about this area, this configuration still works well. So we keep it.
+next-20111216 (and all later so far) fails to boot on a Power7 blade
+server like this:
 
-This function isn't just called for 460EX or APM821xx SoCs.  It's
-called on any 4xx SoC with PCIe configured.
-Is this change going to work on them all?  If not, it needs to be
-conditionalized.
+calling  .serial8250_init+0x0/0x1e0 @ 1
+Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+INFO: rcu_sched detected stalls on CPUs/tasks: { 3 4 6 7 8 9 10 11 12 13 14=
+ 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31} (detected by 5, t=3D60=
+02 jiffies)
+Call Trace:
+[c0000003fd9e74e0] [c000000000015054] .show_stack+0x74/0x1c0 (unreliable)
+[c0000003fd9e7590] [c00000000012ad2c] .__rcu_pending+0x49c/0x4b0
+[c0000003fd9e7650] [c00000000012ae94] .rcu_check_callbacks+0x154/0x250
+[c0000003fd9e76f0] [c0000000000b8ab4] .update_process_times+0x44/0xa0
+[c0000003fd9e7780] [c0000000000fcdbc] .tick_sched_timer+0x7c/0x100
+[c0000003fd9e7820] [c0000000000d5b38] .__run_hrtimer+0xb8/0x270
+[c0000003fd9e78d0] [c0000000000d6068] .hrtimer_interrupt+0x138/0x2d0
+[c0000003fd9e79e0] [c00000000001e4d0] .timer_interrupt+0x130/0x300
+[c0000003fd9e7a90] [c0000000000038e4] decrementer_common+0x164/0x180
+--- Exception: 901 at .arch_local_irq_restore+0xd8/0x140
+    LR =3D .cpu_idle+0x180/0x220
+[c0000003fd9e7d80] [c000000000c7c368] wireless_seq_fops+0x109a8/0x2f418 (un=
+reliable)
+[c0000003fd9e7e20] [c000000000017970] .cpu_idle+0x180/0x220
+[c0000003fd9e7ed0] [c0000000008369e8] .start_secondary+0x3a4/0x3b0
+[c0000003fd9e7f90] [c0000000000093f4] .start_secondary_prolog+0x10/0x14
 
->> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.h
-> b/arch/powerpc/sysdev/ppc4xx_pci.h
->> index 32ce763..faf3017 100644
->> --- a/arch/powerpc/sysdev/ppc4xx_pci.h
->> +++ b/arch/powerpc/sysdev/ppc4xx_pci.h
->> @@ -441,6 +441,7 @@
->> =A0/*
->> =A0* Config space register offsets
->> =A0*/
->> +#define PECFG_ECDEVCTL =A0 =A0 =A0 =A0 0x060
->> =A0#define PECFG_ECRTCTL =A0 =A0 =A0 =A0 =A00x074
->>
->> =A0#define PECFG_BAR0LMPA =A0 =A0 =A0 =A0 0x210
->> @@ -448,6 +449,7 @@
->> =A0#define PECFG_BAR1MPA =A0 =A0 =A0 =A0 =A00x218
->> =A0#define PECFG_BAR2LMPA =A0 =A0 =A0 =A0 0x220
->> =A0#define PECFG_BAR2HMPA =A0 =A0 =A0 =A0 0x224
->> +#define PECFG_ECDEVCAPPA =A0 =A0 =A0 0x25c
->>
->> =A0#define PECFG_PIMEN =A0 =A0 =A0 =A0 =A0 =A00x33c
->> =A0#define PECFG_PIM0LAL =A0 =A0 =A0 =A0 =A00x340
->> @@ -494,5 +496,7 @@ enum
->> =A0 =A0 =A0 =A0LNKW_X8 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D 0x8
->> =A0};
->>
->> +/* Timout for reset phy */
->> +#define PCIE_PHY_RESET_TIMEOUT 10
->
-> Is this value applicable to all the 44x devices with PCI-e?
-> [Vinh Nguyen] At this time, we only checked this on APM821xx chips.
+There are quite a few more rcu stalls after this and the boot never
+completes (at least not before our automated test system steps in and
+reboots the server).
 
-Then it should probably be conditionalized somehow.  Or put as a
-worst-case value that will work for them all.
+So the obvious first place to point the finger would be changes to the
+8250 code ... but there is nothing too obvious there.
 
-josh
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJO8nf+AAoJEECxmPOUX5FEgTUP/2KFNiVv8yEDma0s62tYzFEr
+9Q+puo+tr1kSd6WazEPJ/THJvTSSuHZ5K1PmhrJe6n6pXxt4b88FuQXwv4vtjBCu
+DpH6/Z8S45nQAQmEzrfJgnKsAYnxQqL+PK/4IHsX4VNFAezOWj26eknJQVjsKRbU
+8mqpI+nCgLTknYpmbwpzEus970BN4imItA3PdT+xiT950xijAmk//whd+LggVcBB
+3tqbLGm5FVE1bY6sOOnyFWLWkv6OywY4NQlQoHF9ihM3s55tZYUid9Vj4PS7AJp2
+Xfvf84nZOkhDaNBQDVE4vlMMlkOwJCGn5wlvVDuYj1kUN9/oRTJ4cnu243a4hafN
+zEmW+ijeFnbQkV1zox+CdhVHGiWAMBLYwBdVzl4ATWBa5V3rtvVrMkqIJI8SIPRk
+MA3z1baushcSkGOsuFKWSp89JfKyQmjkJw1Clnhlohq4fQGuFORwzOUczk0HCxKp
+gLk8vtOjdO5AoZQ38JHQBD+Ue7hqr8/3qq8clZyH0u4/TYr8sSfs5qkUEvu/qO+U
+7fK3/bHeNJVvNkyffqV9As7MlqEtLa51+O1lHq1+5GtUe82C/tyUBwuyM/3banbR
+xCcceZJw+Yz4RRQpXTH0CSRTR6lgE0E1Xx1jTdhJaDKB0xd5QyfPnv3gfd+pgtCr
+owI1Ns/HUI87NUtJsuxf
+=Frim
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB--
