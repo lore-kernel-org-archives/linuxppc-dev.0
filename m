@@ -1,17 +1,18 @@
 Return-Path: <Kyle.D.Moffett@boeing.com>
 From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/6] fsl/mpic: Document and use the "big-endian" device-tree
- flag
-Date: Thu, 22 Dec 2011 15:19:10 -0500
-Message-Id: <1324585155-13453-3-git-send-email-Kyle.D.Moffett@boeing.com>
+Subject: [PATCH 3/6] fsl/mpic: Create and document the "single-cpu-affinity"
+ device-tree flag
+Date: Thu, 22 Dec 2011 15:19:11 -0500
+Message-Id: <1324585155-13453-4-git-send-email-Kyle.D.Moffett@boeing.com>
 In-Reply-To: <1324585155-13453-1-git-send-email-Kyle.D.Moffett@boeing.com>
 References: <1324585155-13453-1-git-send-email-Kyle.D.Moffett@boeing.com>
 Cc: linux-doc@vger.kernel.org, Lucas De Marchi <lucas.demarchi@profusion.mobi>,
  linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
  Rob Herring <rob.herring@calxeda.com>,
  Stuart Yoder <stuart.yoder@freescale.com>, Randy Dunlap <rdunlap@xenotime.net>,
- Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+ Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
+ Kyle Moffett <Kyle.D.Moffett@boeing.com>, Scott Wood <scottwood@freescale.com>,
  Josh Boyer <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,55 +23,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MPIC code checks for a "big-endian" property and sets the flag
-MPIC_BIG_ENDIAN if one is present, although prior to the "mpic->flags"
-fixup that would never have worked anways.
+The Freescale MPIC (and perhaps others in the future) is incapable of
+routing non-IPI interrupts to more than once CPU at a time.  Currently
+all of the Freescale boards msut pass the MPIC_SINGLE_DEST_CPU flag to
+mpic_alloc(), but that information should really be present in the
+device-tree.
 
-Unfortunately, even now that it works properly, the Freescale mpic
-device-node (the "PowerQUICC-III"-compatible one) does not specify it,
-so all of the board ports need to manually pass it to mpic_alloc().
-
-Document the flag and add it to the pq3 device tree.  Existing code will
-still need to pass the MPIC_BIG_ENDIAN flag because their dtb may not
-have this property, but new platforms shouldn't need to do so.
+Older board code can't rely on the device-tree having the property set,
+but newer platforms won't need it manually specified in the code.
 
 Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 ---
- .../devicetree/bindings/powerpc/fsl/mpic.txt       |    9 ++++++++-
+ .../devicetree/bindings/powerpc/fsl/mpic.txt       |    6 ++++++
  arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi            |    1 +
- 2 files changed, 9 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/mpic.c                         |    8 +++++---
+ 3 files changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-index 2cf38bd..ebafba2 100644
+index ebafba2..b393ccf 100644
 --- a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
 +++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-@@ -56,7 +56,14 @@ PROPERTIES
-           to the client.  The presence of this property also mandates
-           that any initialization related to interrupt sources shall
-           be limited to sources explicitly referenced in the device tree.
--       
-+
-+  - big-endian
+@@ -64,6 +64,12 @@ PROPERTIES
+           device-trees omit this property on MPIC nodes even when the MPIC is
+           in fact big-endian, so certain boards override this property.
+ 
++  - single-cpu-affinity
 +      Usage: optional
 +      Value type: <empty>
-+          If present the MPIC will be assumed to be big-endian.  Some
-+          device-trees omit this property on MPIC nodes even when the MPIC is
-+          in fact big-endian, so certain boards override this property.
++          If present the MPIC will be assumed to only be able to route
++          non-IPI interrupts to a single CPU at a time (EG: Freescale MPIC).
 +
  INTERRUPT SPECIFIER DEFINITION
  
    Interrupt specifiers consists of 4 cells encoded as
 diff --git a/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
-index 5c80460..47f2b67 100644
+index 47f2b67..658bd81 100644
 --- a/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
 +++ b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
-@@ -39,6 +39,7 @@ mpic: pic@40000 {
- 	reg = <0x40000 0x40000>;
+@@ -40,6 +40,7 @@ mpic: pic@40000 {
  	compatible = "fsl,mpic";
  	device_type = "open-pic";
-+	big-endian;
+ 	big-endian;
++	single-cpu-affinity;
  };
  
  timer@41100 {
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 9dd7f76..c297a52 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1183,11 +1183,13 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	}
+ 
+ 	/* Read extra device-tree properties into the flags variable */
+-	if (of_get_property(mpic->node, "big-endian", NULL))
++	if (of_get_property(node, "big-endian", NULL))
+ 		flags |= MPIC_BIG_ENDIAN;
+-	if (of_get_property(mpic->node, "pic-no-reset", NULL))
++	if (of_get_property(node, "pic-no-reset", NULL))
+ 		flags |= MPIC_NO_RESET;
+-	if (of_device_is_compatible(mpic->node, "fsl,mpic"))
++	if (of_get_property(node, "single-cpu-affinity", NULL))
++		flags |= MPIC_SINGLE_DEST_CPU;
++	if (of_device_is_compatible(node, "fsl,mpic"))
+ 		flags |= MPIC_FSL;
+ 
+ 	mpic = kzalloc(sizeof(struct mpic), GFP_KERNEL);
 -- 
 1.7.7.3
