@@ -1,35 +1,17 @@
-Return-Path: <michael_barry@ie.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp14.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E7A29B6F7E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Dec 2011 03:18:20 +1100 (EST)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
- Thu, 22 Dec 2011 16:18:09 -0000
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by d06nrmr1507.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- pBMGHT5K2490392
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 16:17:29 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (loopback [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pBMGHSfp022411
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 09:17:28 -0700
-Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
- [9.149.104.171])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- pBMGHSCh022408
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 09:17:28 -0700
-Subject: AUTO: Michael Barry is out of the office (returning 04/01/2012)
-From: Michael Barry <michael_barry@ie.ibm.com>
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from border.exmeritus.com (border.exmeritus.com
+ [IPv6:2002:46a7:f11a:ffff::])
+ by ozlabs.org (Postfix) with ESMTP id 7CDCDB6F7E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Dec 2011 03:21:52 +1100 (EST)
+From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <OF01B4D8FC.382A2992-ON8025796E.00597B5E-8025796E.00597B5E@ie.ibm.com>
-Date: Thu, 22 Dec 2011 16:17:22 +0000
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Subject: [PATCH] arch/powerpc/kvm/e500: Additional module.h => export.h fixup
+Date: Thu, 22 Dec 2011 11:21:03 -0500
+Message-Id: <1324570863-11447-1-git-send-email-Kyle.D.Moffett@boeing.com>
+Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Avi Kivity <avi@redhat.com>, Kyle Moffett <Kyle.D.Moffett@boeing.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,13 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This file, like many others, needs to include <linux/export.h>.
 
-I am out of the office until 04/01/2012.
+Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+---
+ arch/powerpc/kvm/e500.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-
-
-
-Note: This is an automated response to your message  "Linuxppc-dev Digest,
-Vol 88, Issue 109" sent on 20/12/2011 19:28:09.
-
-This is the only notification you will receive while this person is away.
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index 26d2090..387c383 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -13,6 +13,7 @@
+  */
+ 
+ #include <linux/kvm_host.h>
++#include <linux/export.h>
+ #include <linux/slab.h>
+ #include <linux/err.h>
+ 
+-- 
+1.7.7.3
