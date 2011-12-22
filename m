@@ -1,35 +1,31 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp05.br.ibm.com", Issuer "GeoTrust SSL CA" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9D179B714E
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2011 20:35:12 +1100 (EST)
-Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <prasad@linux.vnet.ibm.com>;
- Thu, 22 Dec 2011 07:35:04 -0200
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id pBM9Zxi82003216
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2011 07:35:59 -0200
-Received: from d24av04.br.ibm.com (loopback [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- pBM9YlUS026458
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2011 07:34:47 -0200
-Date: Thu, 22 Dec 2011 15:04:47 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>, dwg@au1.ibm.com
-Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature
- flag
-Message-ID: <20111222093447.GD26407@in.ibm.com>
-References: <20111208111212.GB3720@in.ibm.com>
- <20111208112330.GB24484@in.ibm.com>
- <20111221005502.GE5188@truffala.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111221005502.GE5188@truffala.fritz.box>
-Reply-To: prasad@linux.vnet.ibm.com
+Return-Path: <dedekind1@gmail.com>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+ [209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 481FEB7151
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 21:22:27 +1100 (EST)
+Received: by ggnv5 with SMTP id v5so6191653ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 02:22:23 -0800 (PST)
+Message-ID: <1324549440.10300.74.camel@sauron.fi.intel.com>
+Subject: RE: [PATCH 1/2] mtd/nand: fixup for fmr initialization of Freescale
+ NAND controller
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: Liu Shengzhou-B36685 <B36685@freescale.com>
+Date: Thu, 22 Dec 2011 12:24:00 +0200
+In-Reply-To: <3F453DDFF675A64A89321A1F352810216C9D5C@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1323682853-10750-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1324133097.4240.32.camel@sauron.fi.intel.com>
+ <3F453DDFF675A64A89321A1F352810216C9D5C@039-SN1MPN1-005.039d.mgd.msft.net>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-hKQ4YhiJxusiMRUOX8cp"
+Mime-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "dwmw2@infradead.org" <dwmw2@infradead.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,31 +35,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 21, 2011 at 11:55:02AM +1100, David Gibson wrote:
-> On Thu, Dec 08, 2011 at 04:53:30PM +0530, K.Prasad wrote:
-> > While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
-> > PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
-> > user-space debuggers (like GDB) who may want to use it. Hence we introduce a
-> > new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
-> > "features" member of "struct ppc_debug_info" to advertise support for the
-> > same on Book3E PowerPC processors.
-> 
-> Hrm.  I had assumed the reason there wasn't a feature bit for EXACT
-> originally was that EXACT breakpoints were *always* supposed to be
-> supported by the new interface.
->
 
-Okay. Although BookS doesn't support EXACT breakpoints, it is possible
-(after the introduction of new hw-breakpoint interfaces) to request for
-a breakpoint of length 1 Byte.
+--=-hKQ4YhiJxusiMRUOX8cp
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The hw-breakpoint infrastructure would take care of filtering the
-extraneous interrupts arising out of accesses in the neighbourhood, in
-such a case.
+On Tue, 2011-12-20 at 06:40 +0000, Liu Shengzhou-B36685 wrote:
+> > -----Original Message-----
+> > From: Artem Bityutskiy [mailto:dedekind1@gmail.com]
+> > Sent: Saturday, December 17, 2011 10:45 PM
+> > To: Liu Shengzhou-B36685
+> > Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
+> > dwmw2@infradead.org; Gala Kumar-B11780; linux-mtd@lists.infradead.org
+> > Subject: Re: [PATCH 1/2] mtd/nand: fixup for fmr initialization of
+> > Freescale NAND controller
+> >=20
+> > On Mon, 2011-12-12 at 17:40 +0800, Shengzhou Liu wrote:
+> > > There was a bug for fmr initialization, which lead to  fmr was always
+> > > 0x100 in fsl_elbc_chip_init() and caused FCM command timeout before
+> > > calling fsl_elbc_chip_init_tail(), now we initialize CWTO to maximum
+> > > timeout value and not relying on the setting of bootloader.
+> > >
+> > > Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> >=20
+> > Pushed both to l2-mtd-2.6.git, thanks!
+> >=20
+> > --
+> > Best Regards,
+> > Artem Bityutskiy
+>=20
+> I noted it had been applied in linux-next.git tree.
+> Does it still need to l2-mtd-2.6.git?=20
+> Thanks.
 
-David,
-	Can you Ack this patch too, if you find the changes acceptable?
+It is in linux-next because it is pulled there from l2-mtd-2.6.git.
+Thanks for head up, but no, it should stay in the l2-mtd-2.6.git.
+David Woodhouse then should take care of merging the l2 tree upstream.
 
-Thanks,
-K.Prasad
- 
+--=20
+Best Regards,
+Artem Bityutskiy
+
+--=-hKQ4YhiJxusiMRUOX8cp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJO8wVAAAoJECmIfjd9wqK0b3sQALv1+62DO8rqyM/R9DMiy38T
+breXjzaUgzKLhLGyAdEFFM2ryaEosQIMrQCIzdQq/Q3pPwcWNHH6IidAw/BDXvhV
+HDfd6uFTg/3lc1wZWWDEUwaPOJ15ADYyShxDV4Bey9NmeTSW8XAm0hiNwEyZ47nw
+1z14vyGtQ9gdFTu1gTS/VB13OR3ZqAbRntyK3qETTNSsbQEdNPAPArJQnGWN792v
+ybXGzg7XaPRIk+CstLLeMgkxr08q8gGZRd3cNb4h0jbOj9uNZKeV+6umpEU7cW6h
+XTBRd6RWJXhFXjm9huVmqIFYCBOv12tP6sUex8P/KseC8J4iOTHbepi5ydQkrl9V
+ZbsImHxTLCqOU6bFVwuKl9uUEWThwevGjtN+WJI0YYWkD1HgdsNDS/uhrURf4l1D
+F4nPdDyCNc+x5Jg2aaFVpg+IK69TUmK9JZtL7mUDyg+3K2H21RHabxOYpwtPvqS5
+sirmRlMCMLVyQDtuYLJhklfo9zUrATmA0+tSqDyw1mCrmMjh7AaHawLHNUhRMH1g
+lQwZhE3Novw2OEEZB9y+eOdvGVVYBjkU6/1Agdcgc1F2Oo0XqAZEoQ1nClDA1Kyn
+CYgBejMvaH64UwzR7FrMvRNO9RjnYycdK3eIFVnClkvNSsZ+UUe87ZsAoEnw4huD
+Ef6EbYj0iwH20cYGJfpX
+=0njV
+-----END PGP SIGNATURE-----
+
+--=-hKQ4YhiJxusiMRUOX8cp--
