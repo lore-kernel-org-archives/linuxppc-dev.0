@@ -1,19 +1,25 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from calzone.tip.net.au (calzone.tip.net.au
  [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id 98078B7001
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 11:21:25 +1100 (EST)
-Date: Thu, 22 Dec 2011 11:21:18 +1100
+ by ozlabs.org (Postfix) with ESMTP id 027DDB7146
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2011 16:33:15 +1100 (EST)
+Date: Thu, 22 Dec 2011 16:33:04 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: boot failure for next-20111216
-Message-Id: <20111222112118.d93f4b31c0c5beaeb62244c6@canb.auug.org.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: linux-next: build warnings after merge of the final tree
+Message-Id: <20111222163304.26be6d0f5e514fefb078c0a6@canb.auug.org.au>
+In-Reply-To: <4EE8D305.8020407@zytor.com>
+References: <20111214181545.6e13bc954cb7ddce9086e861@canb.auug.org.au>
+ <1323880322.23971.33.camel@gandalf.stny.rr.com>
+ <4EE8D305.8020407@zytor.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB"
-Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Alan Cox <alan@lxorguk.ukuu.org.uk>
+ boundary="Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst"
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB
+--Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Hi Peter,
 
-next-20111216 (and all later so far) fails to boot on a Power7 blade
-server like this:
+On Wed, 14 Dec 2011 08:47:01 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
+>
+> On 12/14/2011 08:32 AM, Steven Rostedt wrote:
+> > On Wed, 2011-12-14 at 18:15 +1100, Stephen Rothwell wrote:
+> >=20
+> >> Maybe caused by commit d5e553d6e0a4 ("trace: Include <asm/asm-offsets.=
+h>
+> >> in trace_syscalls.c") from the tip tree.  These warnings may have been
+> >> here for a while as it is hard to catch the new ones among the flood.
+> >>
+> >=20
+> > hpa,
+> >=20
+> > Was this change only needed for x86? If so, could you put that into
+> > asm/ftrace.h instead?
+> >=20
+>=20
+> Yes (on both accounts).  It was part of the syscall changes; I'll move
+> the include.
 
-calling  .serial8250_init+0x0/0x1e0 @ 1
-Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-INFO: rcu_sched detected stalls on CPUs/tasks: { 3 4 6 7 8 9 10 11 12 13 14=
- 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31} (detected by 5, t=3D60=
-02 jiffies)
-Call Trace:
-[c0000003fd9e74e0] [c000000000015054] .show_stack+0x74/0x1c0 (unreliable)
-[c0000003fd9e7590] [c00000000012ad2c] .__rcu_pending+0x49c/0x4b0
-[c0000003fd9e7650] [c00000000012ae94] .rcu_check_callbacks+0x154/0x250
-[c0000003fd9e76f0] [c0000000000b8ab4] .update_process_times+0x44/0xa0
-[c0000003fd9e7780] [c0000000000fcdbc] .tick_sched_timer+0x7c/0x100
-[c0000003fd9e7820] [c0000000000d5b38] .__run_hrtimer+0xb8/0x270
-[c0000003fd9e78d0] [c0000000000d6068] .hrtimer_interrupt+0x138/0x2d0
-[c0000003fd9e79e0] [c00000000001e4d0] .timer_interrupt+0x130/0x300
-[c0000003fd9e7a90] [c0000000000038e4] decrementer_common+0x164/0x180
---- Exception: 901 at .arch_local_irq_restore+0xd8/0x140
-    LR =3D .cpu_idle+0x180/0x220
-[c0000003fd9e7d80] [c000000000c7c368] wireless_seq_fops+0x109a8/0x2f418 (un=
-reliable)
-[c0000003fd9e7e20] [c000000000017970] .cpu_idle+0x180/0x220
-[c0000003fd9e7ed0] [c0000000008369e8] .start_secondary+0x3a4/0x3b0
-[c0000003fd9e7f90] [c0000000000093f4] .start_secondary_prolog+0x10/0x14
-
-There are quite a few more rcu stalls after this and the boot never
-completes (at least not before our automated test system steps in and
-reboots the server).
-
-So the obvious first place to point the finger would be changes to the
-8250 code ... but there is nothing too obvious there.
-
+Ping?
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB
+--Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBCAAGBQJO8nf+AAoJEECxmPOUX5FEgTUP/2KFNiVv8yEDma0s62tYzFEr
-9Q+puo+tr1kSd6WazEPJ/THJvTSSuHZ5K1PmhrJe6n6pXxt4b88FuQXwv4vtjBCu
-DpH6/Z8S45nQAQmEzrfJgnKsAYnxQqL+PK/4IHsX4VNFAezOWj26eknJQVjsKRbU
-8mqpI+nCgLTknYpmbwpzEus970BN4imItA3PdT+xiT950xijAmk//whd+LggVcBB
-3tqbLGm5FVE1bY6sOOnyFWLWkv6OywY4NQlQoHF9ihM3s55tZYUid9Vj4PS7AJp2
-Xfvf84nZOkhDaNBQDVE4vlMMlkOwJCGn5wlvVDuYj1kUN9/oRTJ4cnu243a4hafN
-zEmW+ijeFnbQkV1zox+CdhVHGiWAMBLYwBdVzl4ATWBa5V3rtvVrMkqIJI8SIPRk
-MA3z1baushcSkGOsuFKWSp89JfKyQmjkJw1Clnhlohq4fQGuFORwzOUczk0HCxKp
-gLk8vtOjdO5AoZQ38JHQBD+Ue7hqr8/3qq8clZyH0u4/TYr8sSfs5qkUEvu/qO+U
-7fK3/bHeNJVvNkyffqV9As7MlqEtLa51+O1lHq1+5GtUe82C/tyUBwuyM/3banbR
-xCcceZJw+Yz4RRQpXTH0CSRTR6lgE0E1Xx1jTdhJaDKB0xd5QyfPnv3gfd+pgtCr
-owI1Ns/HUI87NUtJsuxf
-=Frim
+iQIcBAEBCAAGBQJO8sEQAAoJEECxmPOUX5FEV/oP/iI+sI2uZzvXPxhT907a/jCa
+WNrIlfq/NWLFUaQ6km62qXiPkkSTLNDwlM+YWABXkf45SLR/oOVLntH673DV216P
+nSOms0qvfTifHpYF0yQRN43s8isL3PoxQKtbsPErhA5A1xjgOBO/SFlG26WlHZKd
+pKwkFLjkywRgrnLdKLh7rk6cApncL7Qv3I4kcrsOGtLLSnF6lDPuovMrVdalScEq
+ZyO68ZPfj1JQNqNd2MSwPSnKRpcmb499BKZExC/0GRrxUH1iLK3MGoRc85WzQbHd
+7fLSyj2bSx0qhC+L1Z3TpKwR8VIuAB6Q9c7FEaz4vjdG+WdTqq/YiQdxadGxnWGz
+MqBqYmkhn0lKy3kWol37KCBfx6E8T3skc+yIDvDINUL+7FXrMsE9MO/9rzQMsWK1
+JQuSO/rU0tx1uNk0aYNBGxOaSLFwcT0Uw4qyoBy5q//8X2EyjgbAlKCDchoDv37L
+A6c99AyXXnxFIgbMvzuFU4PwUD5WwsB3EOr3vLHdnd9CbAMYlDOMq+X5xuAG+vqs
+BXcDEVPkL8LQ5R+W557Z0cTmgwVm3NWj30f9S9h2yvl7ZhzuPagkbYL/p2FeekZY
+/UoZLSs9WcgSd7E5DvzpKhiDF1kxP6FnNFhwjIhwNTZopNOpu2/PvZiP9MpmFtzi
+J4llKVp8xALM40bAn2tG
+=R18X
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__22_Dec_2011_11_21_18_+1100_Yejhgkup8I_LdVFB--
+--Signature=_Thu__22_Dec_2011_16_33_04_+1100_t4Tvbnz4kJCvcKst--
