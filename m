@@ -1,19 +1,29 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id F416FB7238
- for <linuxppc-dev@ozlabs.org>; Sat, 24 Dec 2011 00:36:23 +1100 (EST)
-Subject: Re: [PATCH 0/5] Make use of hardware reference and change bits in HPT
-Mime-Version: 1.0 (Apple Message framework v1084)
+ (Client CN "mail.parisc-linux.org",
+ Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 286BBB71C4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2011 03:40:55 +1100 (EST)
+Date: Fri, 23 Dec 2011 09:35:16 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 00/14] DMA-mapping framework redesign preparation
+Message-ID: <20111223163516.GO20129@parisc-linux.org>
+References: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20111215120018.GA20629@bloggs.ozlabs.ibm.com>
-Date: Fri, 23 Dec 2011 14:36:19 +0100
-Message-Id: <BEBB9A49-5273-42AF-A1FC-E0566EBB8316@suse.de>
-References: <20111215120018.GA20629@bloggs.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+ linaro-mm-sig@lists.linaro.org, Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ discuss@x86-64.org, linux-kernel@vger.kernel.org,
+ Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Dec 23, 2011 at 01:27:19PM +0100, Marek Szyprowski wrote:
+> The first issue we identified is the fact that on some platform (again,
+> mainly ARM) there are several functions for allocating DMA buffers:
+> dma_alloc_coherent, dma_alloc_writecombine and dma_alloc_noncoherent
 
-On 15.12.2011, at 13:00, Paul Mackerras wrote:
+Is this write-combining from the point of view of the device (ie iommu),
+or from the point of view of the CPU, or both?
 
-> This series of patches builds on top of my previous series and
-> modifies the Book3S HV memory management code to use the hardware
-> reference and change bits in the guest hashed page table.  This makes
-> kvm_age_hva() more efficient, lets us implement the dirty page
-> tracking properly (which in turn means that things like VGA emulation
-> in qemu can work), and also means that we can supply hardware
-> reference and change information to the guest -- not that Linux guests
-> currently use that information, but possibly they will want it in
-> future, and there is an interface defined in PAPR for it.
+> The next step in dma mapping framework update is the introduction of
+> dma_mmap/dma_mmap_attrs() function. There are a number of drivers
+> (mainly V4L2 and ALSA) that only exports the DMA buffers to user space.
+> Creating a userspace mapping with correct page attributes is not an easy
+> task for the driver. Also the DMA-mapping framework is the only place
+> where the complete information about the allocated pages is available,
+> especially if the implementation uses IOMMU controller to provide a
+> contiguous buffer in DMA address space which is scattered in physical
+> memory space.
 
-I applied Patches 1-4 to kvm-ppc-next.
+Surely we only need a helper which drivrs can call from their mmap routine to solve this?
 
+> Usually these drivers don't touch the buffer data at all, so the mapping
+> in kernel virtual address space is not needed. We can introduce
+> DMA_ATTRIB_NO_KERNEL_MAPPING attribute which lets kernel to skip/ignore
+> creation of kernel virtual mapping. This way we can save previous
+> vmalloc area and simply some mapping operation on a few architectures.
 
-Alex
+I really think this wants to be a separate function.  dma_alloc_coherent
+is for allocating memory to be shared between the kernel and a driver;
+we already have dma_map_sg for mapping userspace I/O as an alternative
+interface.  This feels like it's something different again rather than
+an option to dma_alloc_coherent.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
