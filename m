@@ -2,23 +2,18 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 193C6B7218
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2011 00:35:11 +1100 (EST)
-Subject: Re: [PATCH] arch/powerpc/kvm/e500: Additional module.h => export.h
- fixup
+ by ozlabs.org (Postfix) with ESMTPS id F416FB7238
+ for <linuxppc-dev@ozlabs.org>; Sat, 24 Dec 2011 00:36:23 +1100 (EST)
+Subject: Re: [PATCH 0/5] Make use of hardware reference and change bits in HPT
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1324570863-11447-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Date: Fri, 23 Dec 2011 14:35:06 +0100
-Message-Id: <26A61517-48D0-45D4-B3A3-D6C51FC1F91A@suse.de>
-References: <1324570863-11447-1-git-send-email-Kyle.D.Moffett@boeing.com>
-To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-Cc: KVM list <kvm@vger.kernel.org>, Marcelo Tosatti <mtosatti@redhat.com>,
- "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Avi Kivity <avi@redhat.com>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20111215120018.GA20629@bloggs.ozlabs.ibm.com>
+Date: Fri, 23 Dec 2011 14:36:19 +0100
+Message-Id: <BEBB9A49-5273-42AF-A1FC-E0566EBB8316@suse.de>
+References: <20111215120018.GA20629@bloggs.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +24,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 22.12.2011, at 17:21, Kyle Moffett wrote:
+On 15.12.2011, at 13:00, Paul Mackerras wrote:
 
-> This file, like many others, needs to include <linux/export.h>.
-> 
-> Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+> This series of patches builds on top of my previous series and
+> modifies the Book3S HV memory management code to use the hardware
+> reference and change bits in the guest hashed page table.  This makes
+> kvm_age_hva() more efficient, lets us implement the dirty page
+> tracking properly (which in turn means that things like VGA emulation
+> in qemu can work), and also means that we can supply hardware
+> reference and change information to the guest -- not that Linux guests
+> currently use that information, but possibly they will want it in
+> future, and there is an interface defined in PAPR for it.
 
-Thanks, I already applied a patch from Scott that addresses the same issue.
+I applied Patches 1-4 to kvm-ppc-next.
 
 
 Alex
