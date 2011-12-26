@@ -1,21 +1,30 @@
-Return-Path: <B29237@freescale.com>
-Received: from VA3EHSOBE007.bigfish.com (va3ehsobe006.messaging.microsoft.com
- [216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 901E9B6FE0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2011 17:49:43 +1100 (EST)
-From: <b29237@freescale.com>
-To: <iws@ovro.caltech.edu>, <vinod.koul@intel.com>,
- <dan.j.williams@intel.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fsldma: fix performance degradation by optimizing spinlock
- use.
-Date: Mon, 26 Dec 2011 14:01:03 +0800
-Message-ID: <1324879263-11845-1-git-send-email-b29237@freescale.com>
+Return-Path: <vhtnguyen@apm.com>
+Received: from exprod5og103.obsmtp.com (exprod5og103.obsmtp.com [64.18.0.145])
+ by ozlabs.org (Postfix) with SMTP id 4213EB7040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2011 19:00:43 +1100 (EST)
+Received: by qadb15 with SMTP id b15so7130297qad.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2011 00:00:40 -0800 (PST)
+From: Vinh Huu Tuong Nguyen <vhtnguyen@apm.com>
+References: <1324385081-30824-1-git-send-email-vhtnguyen@apm.com>
+ <CA+5PVA41Haf-_H3UoR1O3VFbC3XtgScyo5hekNjt0VWxunL-fg@mail.gmail.com>
+ <e10be3d24de889e9e80d2fd76de9dcd8@mail.gmail.com>
+ <CA+5PVA4cjiUvn4YavkFs6Jx87YpO8yHZZbm4pcPJQn1r1cggUA@mail.gmail.com>
+In-Reply-To: <CA+5PVA4cjiUvn4YavkFs6Jx87YpO8yHZZbm4pcPJQn1r1cggUA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Forrest shi <b29237@freescale.com>
+Date: Mon, 26 Dec 2011 15:00:38 +0700
+Message-ID: <adc28ecd196e3cb9af86094e039f01b6@mail.gmail.com>
+Subject: RE: [PATCH 3/3] powerpc/44x: Add support PCI-E for APM821xx SoC and
+ Bluestone board
+To: Josh Boyer <jwboyer@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Ayman El-Khashab <ayman@elkhashab.com>,
+ Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+ Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +34,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Forrest shi <b29237@freescale.com>
+-----Original Message-----
+From: Josh Boyer [mailto:jwboyer@gmail.com]
+Sent: Thursday, December 22, 2011 3:20 AM
+To: Vinh Huu Tuong Nguyen
+Cc: Benjamin Herrenschmidt; Paul Mackerras; Matt Porter; Kumar Gala; Paul
+Gortmaker; Anton Blanchard; Dave Kleikamp; Grant Likely; Tony Breeds; Rob
+Herring; Jiri Kosina; Lucas De Marchi; Ayman El-Khashab;
+linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] powerpc/44x: Add support PCI-E for APM821xx SoC
+and Bluestone board
 
-    dma status check function fsl_tx_status is heavily called in
-    a tight loop and the desc lock in fsl_tx_status contended by
-    the dma status update function. this caused the dma performance
-    degrades much.
+On Tue, Dec 20, 2011 at 11:47 PM, Vinh Huu Tuong Nguyen
+<vhtnguyen@apm.com> wrote:
+>> +
+>> + =A0 =A0 =A0 mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mfdcri(SDR0, port->sdr_base + PESDRn_RCSSE=
+T) |
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 (PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTPY=
+N));
+>> +
+>> + =A0 =A0 =A0 /* Poll for PHY reset */
+>> + =A0 =A0 =A0 timeout =3D 0;
+>> + =A0 =A0 =A0 while ((!(mfdcri(SDR0, PESDR0_460EX_RSTSTA +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (port->index * 0x55)) & 0x=
+1)) &&
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(timeout < PCIE_PHY_RESET_TIMEOUT)) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 timeout++;
+>> + =A0 =A0 =A0 }
+>> +
+>> + =A0 =A0 =A0 if (timeout < PCIE_PHY_RESET_TIMEOUT) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mtdcri(SDR0, port->sdr_base + PESDRn_RCSSE=
+T,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (mfdcri(SDR0, port->sdr_ba=
+se + PESDRn_RCSSET) &
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ~(PESDRx_RCSSET_RSTGU | PE=
+SDRx_RCSSET_RSTDL)) |
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 PESDRx_RCSSET_RSTPYN);
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 port->has_ibpre =3D 1;
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+>> + =A0 =A0 =A0 } else {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO "PCIE: Can't reset PHY\n"=
+);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
+>> + =A0 =A0 =A0 }
+>
+> If we can't reset the PHY, does this whole function essentially fail?
+> Do the devices not get renumbered, etc? =A0If so, you probably want to
+> make that KERN_ERR.
+> [Vinh Nguyen] if we can't reset the PHY, maybe the device can't work
+> properly. I will update codes to return the error in case PHY can't
+reset.
 
-    this patch releases the lock in the fsl_tx_status function, and
-    introduce the smp_mb() to avoid possible memory inconsistency.
+OK.
 
-    Signed-off-by: Forrest Shi <xuelin.shi@freescale.com>
----
- drivers/dma/fsldma.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+>> @@ -1751,9 +1856,9 @@ static void __init
+> ppc4xx_configure_pciex_PIMs(struct ppc4xx_pciex_port *port,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * if it works
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM0LAL, 0x0000000=
+0);
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM0LAH, 0x00000000=
+);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM0LAH, 0x00000008=
+); /* Moving
+> on HB */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM1LAL, 0x0000000=
+0);
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM1LAH, 0x00000000=
+);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM1LAH, 0x0000000c=
+); /* Moving
+> on HB */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM01SAH, 0xffff00=
+00);
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM01SAL, 0x000000=
+00);
+>
+> Why are these values changed, and are those changes only needed on
+> APM821xx?
+> [Vinh Nguyen] In system memory map of 460EX chip, we have an "alias DDR
+> SDRAM" area that is Local Memory Alias for HB(high bandwidth), so we
+tried
+> to initialize it for speedup. For APM821xx, although we didn't mention
+> about this area, this configuration still works well. So we keep it.
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 8a78154..008fb5e 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -986,15 +986,11 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
- 	dma_cookie_t last_complete;
- 	dma_cookie_t last_used;
--	unsigned long flags;
--
--	spin_lock_irqsave(&chan->desc_lock, flags);
- 
-	last_complete = chan->completed_cookie;
-+	smp_mb();
-	last_used = dchan->cookie;
- 
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
--
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 	return dma_async_is_complete(cookie, last_complete, last_used);
-}
--- 
-1.7.0.4
+This function isn't just called for 460EX or APM821xx SoCs.  It's
+called on any 4xx SoC with PCIe configured.
+Is this change going to work on them all?  If not, it needs to be
+conditionalized.
+[Vinh Nguyen] I will update my codes as your comments. Please see next
+submitted                                     codes.
+>> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.h
+> b/arch/powerpc/sysdev/ppc4xx_pci.h
+>> index 32ce763..faf3017 100644
+>> --- a/arch/powerpc/sysdev/ppc4xx_pci.h
+>> +++ b/arch/powerpc/sysdev/ppc4xx_pci.h
+>> @@ -441,6 +441,7 @@
+>> =A0/*
+>> =A0* Config space register offsets
+>> =A0*/
+>> +#define PECFG_ECDEVCTL =A0 =A0 =A0 =A0 0x060
+>> =A0#define PECFG_ECRTCTL =A0 =A0 =A0 =A0 =A00x074
+>>
+>> =A0#define PECFG_BAR0LMPA =A0 =A0 =A0 =A0 0x210
+>> @@ -448,6 +449,7 @@
+>> =A0#define PECFG_BAR1MPA =A0 =A0 =A0 =A0 =A00x218
+>> =A0#define PECFG_BAR2LMPA =A0 =A0 =A0 =A0 0x220
+>> =A0#define PECFG_BAR2HMPA =A0 =A0 =A0 =A0 0x224
+>> +#define PECFG_ECDEVCAPPA =A0 =A0 =A0 0x25c
+>>
+>> =A0#define PECFG_PIMEN =A0 =A0 =A0 =A0 =A0 =A00x33c
+>> =A0#define PECFG_PIM0LAL =A0 =A0 =A0 =A0 =A00x340
+>> @@ -494,5 +496,7 @@ enum
+>> =A0 =A0 =A0 =A0LNKW_X8 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D 0x8
+>> =A0};
+>>
+>> +/* Timout for reset phy */
+>> +#define PCIE_PHY_RESET_TIMEOUT 10
+>
+> Is this value applicable to all the 44x devices with PCI-e?
+> [Vinh Nguyen] At this time, we only checked this on APM821xx chips.
+
+Then it should probably be conditionalized somehow.  Or put as a
+worst-case value that will work for them all.
+[Vinh Nguyen] At this time, this definition is called in
+apm821xx_pciex_init_port_hw function that is used only for apm821xx chip.
+So I think it's ok, but as your recommendation, I'll check with various
+boards that I have to get the best value and update it in next submitted
+codes.
+Best regards,
+Vinh Nguyen.
