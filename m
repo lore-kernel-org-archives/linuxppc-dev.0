@@ -1,30 +1,18 @@
-Return-Path: <vhtnguyen@apm.com>
-Received: from exprod5og103.obsmtp.com (exprod5og103.obsmtp.com [64.18.0.145])
- by ozlabs.org (Postfix) with SMTP id 4213EB7040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2011 19:00:43 +1100 (EST)
-Received: by qadb15 with SMTP id b15so7130297qad.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2011 00:00:40 -0800 (PST)
-From: Vinh Huu Tuong Nguyen <vhtnguyen@apm.com>
-References: <1324385081-30824-1-git-send-email-vhtnguyen@apm.com>
- <CA+5PVA41Haf-_H3UoR1O3VFbC3XtgScyo5hekNjt0VWxunL-fg@mail.gmail.com>
- <e10be3d24de889e9e80d2fd76de9dcd8@mail.gmail.com>
- <CA+5PVA4cjiUvn4YavkFs6Jx87YpO8yHZZbm4pcPJQn1r1cggUA@mail.gmail.com>
-In-Reply-To: <CA+5PVA4cjiUvn4YavkFs6Jx87YpO8yHZZbm4pcPJQn1r1cggUA@mail.gmail.com>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 30F7DB7037
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Dec 2011 00:22:53 +1100 (EST)
+Message-ID: <4EF87528.8000305@redhat.com>
+Date: Mon, 26 Dec 2011 15:22:48 +0200
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
-Date: Mon, 26 Dec 2011 15:00:38 +0700
-Message-ID: <adc28ecd196e3cb9af86094e039f01b6@mail.gmail.com>
-Subject: RE: [PATCH 3/3] powerpc/44x: Add support PCI-E for APM821xx SoC and
- Bluestone board
-To: Josh Boyer <jwboyer@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] KVM: Move gfn_to_memslot() to kvm_host.h
+References: <20111220092102.GA5626@bloggs.ozlabs.ibm.com>
+In-Reply-To: <20111220092102.GA5626@bloggs.ozlabs.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Ayman El-Khashab <ayman@elkhashab.com>,
- Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
- Lucas De Marchi <lucas.demarchi@profusion.mobi>,
- Rob Herring <rob.herring@calxeda.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,137 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------Original Message-----
-From: Josh Boyer [mailto:jwboyer@gmail.com]
-Sent: Thursday, December 22, 2011 3:20 AM
-To: Vinh Huu Tuong Nguyen
-Cc: Benjamin Herrenschmidt; Paul Mackerras; Matt Porter; Kumar Gala; Paul
-Gortmaker; Anton Blanchard; Dave Kleikamp; Grant Likely; Tony Breeds; Rob
-Herring; Jiri Kosina; Lucas De Marchi; Ayman El-Khashab;
-linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] powerpc/44x: Add support PCI-E for APM821xx SoC
-and Bluestone board
-
-On Tue, Dec 20, 2011 at 11:47 PM, Vinh Huu Tuong Nguyen
-<vhtnguyen@apm.com> wrote:
->> +
->> + =A0 =A0 =A0 mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mfdcri(SDR0, port->sdr_base + PESDRn_RCSSE=
-T) |
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 (PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTPY=
-N));
->> +
->> + =A0 =A0 =A0 /* Poll for PHY reset */
->> + =A0 =A0 =A0 timeout =3D 0;
->> + =A0 =A0 =A0 while ((!(mfdcri(SDR0, PESDR0_460EX_RSTSTA +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (port->index * 0x55)) & 0x=
-1)) &&
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(timeout < PCIE_PHY_RESET_TIMEOUT)) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 timeout++;
->> + =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 if (timeout < PCIE_PHY_RESET_TIMEOUT) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mtdcri(SDR0, port->sdr_base + PESDRn_RCSSE=
-T,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (mfdcri(SDR0, port->sdr_ba=
-se + PESDRn_RCSSET) &
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ~(PESDRx_RCSSET_RSTGU | PE=
-SDRx_RCSSET_RSTDL)) |
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 PESDRx_RCSSET_RSTPYN);
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 port->has_ibpre =3D 1;
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
->> + =A0 =A0 =A0 } else {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO "PCIE: Can't reset PHY\n"=
-);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
->> + =A0 =A0 =A0 }
+On 12/20/2011 11:21 AM, Paul Mackerras wrote:
+> This moves gfn_to_memslot(), and the functions it calls, that is,
+> search_memslots() and __gfn_to_memslot(), from kvm_main.c to kvm_host.h
+> so that gfn_to_memslot() can be called from non-modular code even
+> when KVM is a module.  On powerpc, the Book3S HV style of KVM has
+> code that is called from real mode which needs to call gfn_to_memslot()
+> and thus needs this.  (Module code is allocated in the vmalloc region,
+> which can't be accessed in real mode.)
 >
-> If we can't reset the PHY, does this whole function essentially fail?
-> Do the devices not get renumbered, etc? =A0If so, you probably want to
-> make that KERN_ERR.
-> [Vinh Nguyen] if we can't reset the PHY, maybe the device can't work
-> properly. I will update codes to return the error in case PHY can't
-reset.
+> With this, we can remove builtin_gfn_to_memslot() from book3s_hv_rm_mmu.c
+> and thus eliminate a little bit of duplication.
 
-OK.
+Those functions are too big to be inlined IMO.  How about moving them to
+another C file, and making it builtin for ppc?
 
->> @@ -1751,9 +1856,9 @@ static void __init
-> ppc4xx_configure_pciex_PIMs(struct ppc4xx_pciex_port *port,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * if it works
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM0LAL, 0x0000000=
-0);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM0LAH, 0x00000000=
-);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM0LAH, 0x00000008=
-); /* Moving
-> on HB */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM1LAL, 0x0000000=
-0);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM1LAH, 0x00000000=
-);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_le32(mbase + PECFG_PIM1LAH, 0x0000000c=
-); /* Moving
-> on HB */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM01SAH, 0xffff00=
-00);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_le32(mbase + PECFG_PIM01SAL, 0x000000=
-00);
->
-> Why are these values changed, and are those changes only needed on
-> APM821xx?
-> [Vinh Nguyen] In system memory map of 460EX chip, we have an "alias DDR
-> SDRAM" area that is Local Memory Alias for HB(high bandwidth), so we
-tried
-> to initialize it for speedup. For APM821xx, although we didn't mention
-> about this area, this configuration still works well. So we keep it.
+The only issue is what to call it. virt/kvm/builtin-for-ppc seems silly.
 
-This function isn't just called for 460EX or APM821xx SoCs.  It's
-called on any 4xx SoC with PCIe configured.
-Is this change going to work on them all?  If not, it needs to be
-conditionalized.
-[Vinh Nguyen] I will update my codes as your comments. Please see next
-submitted                                     codes.
->> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.h
-> b/arch/powerpc/sysdev/ppc4xx_pci.h
->> index 32ce763..faf3017 100644
->> --- a/arch/powerpc/sysdev/ppc4xx_pci.h
->> +++ b/arch/powerpc/sysdev/ppc4xx_pci.h
->> @@ -441,6 +441,7 @@
->> =A0/*
->> =A0* Config space register offsets
->> =A0*/
->> +#define PECFG_ECDEVCTL =A0 =A0 =A0 =A0 0x060
->> =A0#define PECFG_ECRTCTL =A0 =A0 =A0 =A0 =A00x074
->>
->> =A0#define PECFG_BAR0LMPA =A0 =A0 =A0 =A0 0x210
->> @@ -448,6 +449,7 @@
->> =A0#define PECFG_BAR1MPA =A0 =A0 =A0 =A0 =A00x218
->> =A0#define PECFG_BAR2LMPA =A0 =A0 =A0 =A0 0x220
->> =A0#define PECFG_BAR2HMPA =A0 =A0 =A0 =A0 0x224
->> +#define PECFG_ECDEVCAPPA =A0 =A0 =A0 0x25c
->>
->> =A0#define PECFG_PIMEN =A0 =A0 =A0 =A0 =A0 =A00x33c
->> =A0#define PECFG_PIM0LAL =A0 =A0 =A0 =A0 =A00x340
->> @@ -494,5 +496,7 @@ enum
->> =A0 =A0 =A0 =A0LNKW_X8 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D 0x8
->> =A0};
->>
->> +/* Timout for reset phy */
->> +#define PCIE_PHY_RESET_TIMEOUT 10
->
-> Is this value applicable to all the 44x devices with PCI-e?
-> [Vinh Nguyen] At this time, we only checked this on APM821xx chips.
+Or we could move the implementation into a header file, with an extra __
+prefix, and have the C stubs call those inlines, so we have exactly on
+instantiation.  Your real mode code can then call the inlines.
 
-Then it should probably be conditionalized somehow.  Or put as a
-worst-case value that will work for them all.
-[Vinh Nguyen] At this time, this definition is called in
-apm821xx_pciex_init_port_hw function that is used only for apm821xx chip.
-So I think it's ok, but as your recommendation, I'll check with various
-boards that I have to get the best value and update it in next submitted
-codes.
-Best regards,
-Vinh Nguyen.
+-- 
+error compiling committee.c: too many arguments to function
