@@ -1,20 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6DE17B6FFB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 05:01:50 +1100 (EST)
-Date: Tue, 27 Dec 2011 12:59:40 -0500 (EST)
-Message-Id: <20111227.125940.1585324652948148302.davem@davemloft.net>
-To: X.Xie@freescale.com
-Subject: Re: [PATCH] net/ucc_geth: some fix in current kernel
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1324979328-32081-1-git-send-email-X.Xie@freescale.com>
-References: <y>
-	<1324979328-32081-1-git-send-email-X.Xie@freescale.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id A5367B6FF1
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Dec 2011 07:02:58 +1100 (EST)
+Received: from bzq-79-181-238-16.red.bezeqint.net ([79.181.238.16]:32980
+ helo=felix.lan) by sh78.surpasshosting.com with esmtpa (Exim 4.69)
+ (envelope-from <felix@embedded-sol.com>) id 1Rfcpl-0003jl-AZ
+ for linuxppc-dev@ozlabs.org; Tue, 27 Dec 2011 14:37:13 -0500
+Message-ID: <4EFA1E70.6020203@embedded-sol.com>
+Date: Tue, 27 Dec 2011 21:37:20 +0200
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: NAND or other high density storage on MPC8260
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xie Xiaobo <X.Xie@freescale.com>
-Date: Tue, 27 Dec 2011 17:48:48 +0800
+Hi,
 
-> * Revert commit "ucc_geth: Fix hangs after switching from full to half duplex"
->   This commit impacted the driver in all link state change more than
->   duplex change.
-> * Change some parameters.
->   Increased the BD ring length.
-> 
-> Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+On a custom board based on MPC8260 I have to replace end-of-life
+2GB Sandisk mDoc H3 by other storage device of comparable density.
+The most natural choice seems to be NAND connected to UPM.
+However FSL UPM NAND driver in mainline does not support MPC82xx.
+I have several questions in this regard:
 
-Please, one major change per patch.
+1. How difficult would be to modify mainline UPM NAND driver to work
+     on MPC8260 ?
+2. What other options are feasible and cost effective? I was thinking 
+about
+     SPI NOR and Compact Flash on UPM.
+
+Thanks.
+
+Felix.
