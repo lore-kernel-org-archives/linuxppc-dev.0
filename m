@@ -1,13 +1,21 @@
-Return-Path: <B35336@freescale.com>
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v3] gianfar: add support for wake-on-packet
-Date: Tue, 27 Dec 2011 19:30:55 +0800
-Message-ID: <1324985455-26258-1-git-send-email-chenhui.zhao@freescale.com>
+Return-Path: <b32579@nmglablinux19.freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+ [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7219DB6FF7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2011 23:09:29 +1100 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-mtd@lists.infradead.org>
+Subject: [PATCH 1/2][v2] Integrated Flash Controller support
+Date: Tue, 27 Dec 2011 17:39:12 +0530
+Message-ID: <1324987753-30318-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- afleming@freescale.com
+Cc: Scott Wood <scottwood@freescale.com>,
+ Dipen Dudhat <Dipen.Dudhat@freescale.com>, Liu Shuo <b35362@freescale.com>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,725 +25,1214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On certain chip like MPC8536 and P1022, system can be waked up from
-sleep by user-defined packet and Magic Patcket.(The eTSEC cannot
-supports both types of wake-up event simultaneously.) This patch
-implements wake-up on user-defined patcket including ARP request
-packet and unicast patcket to this station.
+Integrated Flash Controller supports various flashes like NOR, NAND
+and other devices using NOR, NAND and GPCM Machine available on it.
+IFC supports four chip selects.
 
-When entering suspend state, the gianfar driver sets receive queue
-filer table to filter all of packets except ARP request packet and
-unicast patcket to this station. The driver temporarily uses the last
-receive queue to receive the user defined packet.
-
-In suspend state, the receive part of eTSEC keeps working. When
-receiving a user defined packet, it generates an interrupt to
-wake up the system.
-
-The rule of the filer table is as below.
-  if (arp request to local ip address)
-      accept it to the last queue
-  elif (unicast packet to local mac address)
-      accept it to the last queue
-  else
-      reject it
-  endif
-Note: The local ip/mac address is the ethernet primary IP/MAC address of
-the station. Do not support multiple IP/MAC addresses.
-
-Here is an example of enabling and testing wake up on user defined packet.
-  ifconfig eth0 10.193.20.169
-  ethtool -s eth0 wol a
-  echo standby > /sys/power/state or echo mem > /sys/power/state
-
-Ping from PC host to wake up the station:
-  ping 10.193.20.169
-
-Signed-off-by: Dave Liu <daveliu@freescale.com>
-Signed-off-by: Jin Qing <b24347@freescale.com>
+Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-Acked-by: Andy Fleming <afleming@freescale.com>
+Signed-off-by: Liu Shuo <b35362@freescale.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 ---
-This patch depends on my previous patches related to power management.
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch next)
 
-Changes for v3:
- - Add "CONFIG_FSL_PMC"
+ Tested on P1010RDB
 
- .../devicetree/bindings/net/fsl-tsec-phy.txt       |    3 +
- drivers/net/ethernet/freescale/gianfar.c           |  363 +++++++++++++++++---
- drivers/net/ethernet/freescale/gianfar.h           |   33 ++-
- drivers/net/ethernet/freescale/gianfar_ethtool.c   |   52 ++-
- 4 files changed, 373 insertions(+), 78 deletions(-)
+ Changes for v2: Incorporated Artem Bityutskiy's comment
+	- Error handling in fsl_ifc_ctrl_probe
+	- Use module_platform_driver() insted of module_init and module_exit
 
-diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-index 2c6be03..543e36c 100644
---- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-+++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-@@ -56,6 +56,9 @@ Properties:
-     hardware.
-   - fsl,magic-packet : If present, indicates that the hardware supports
-     waking up via magic packet.
-+  - fsl,wake-on-filer : If present, indicates that the hardware supports
-+    waking up via arp request to local ip address or unicast packet to
-+    local mac address.
-   - bd-stash : If present, indicates that the hardware supports stashing
-     buffer descriptors in the L2.
-   - rx-stash-len : Denotes the number of bytes of a received buffer to stash
-diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-index 83199fd..d0a46d8 100644
---- a/drivers/net/ethernet/freescale/gianfar.c
-+++ b/drivers/net/ethernet/freescale/gianfar.c
-@@ -85,6 +85,8 @@
- #include <linux/tcp.h>
- #include <linux/udp.h>
- #include <linux/in.h>
-+#include <linux/inetdevice.h>
-+#include <sysdev/fsl_soc.h>
- #include <linux/net_tstamp.h>
+ arch/powerpc/Kconfig               |    4 +
+ arch/powerpc/include/asm/fsl_ifc.h |  834 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/Makefile       |    1 +
+ arch/powerpc/sysdev/fsl_ifc.c      |  310 +++++++++++++
+ 4 files changed, 1149 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/fsl_ifc.h
+ create mode 100644 arch/powerpc/sysdev/fsl_ifc.c
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 7c93c7e..d78cb6e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -688,6 +688,10 @@ config FSL_LBC
+ 	  controller.  Also contains some common code used by
+ 	  drivers for specific local bus peripherals.
  
- #include <asm/io.h>
-@@ -147,6 +149,17 @@ static void gfar_clear_exact_match(struct net_device *dev);
- static void gfar_set_mac_for_addr(struct net_device *dev, int num,
- 				  const u8 *addr);
- static int gfar_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
-+static void gfar_schedule_cleanup(struct gfar_priv_grp *gfargrp);
++config FSL_IFC
++	bool
++        depends on FSL_SOC
 +
-+#ifdef CONFIG_PM
-+static void gfar_halt_rx(struct net_device *dev);
-+static void gfar_rx_start(struct net_device *dev);
-+static void gfar_enable_filer(struct net_device *dev);
-+static void gfar_disable_filer(struct net_device *dev);
-+static void gfar_config_filer_table(struct net_device *dev);
-+static void gfar_restore_filer_table(struct net_device *dev);
-+static int gfar_get_ip(struct net_device *dev);
-+#endif
- 
- MODULE_AUTHOR("Freescale Semiconductor, Inc");
- MODULE_DESCRIPTION("Gianfar Ethernet Driver");
-@@ -751,7 +764,6 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
- 			FSL_GIANFAR_DEV_HAS_PADDING |
- 			FSL_GIANFAR_DEV_HAS_CSUM |
- 			FSL_GIANFAR_DEV_HAS_VLAN |
--			FSL_GIANFAR_DEV_HAS_MAGIC_PACKET |
- 			FSL_GIANFAR_DEV_HAS_EXTENDED_HASH |
- 			FSL_GIANFAR_DEV_HAS_TIMER;
- 
-@@ -763,9 +775,21 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
- 	else
- 		priv->interface = PHY_INTERFACE_MODE_MII;
- 
--	if (of_get_property(np, "fsl,magic-packet", NULL))
-+	/* Init Wake-on-LAN */
-+	priv->wol_opts = 0;
-+	priv->wol_supported = 0;
-+#ifdef CONFIG_FSL_PMC
-+	if (of_get_property(np, "fsl,magic-packet", NULL)) {
- 		priv->device_flags |= FSL_GIANFAR_DEV_HAS_MAGIC_PACKET;
-+		priv->wol_supported |= GIANFAR_WOL_MAGIC;
-+	}
- 
-+	if (of_get_property(np, "fsl,wake-on-filer", NULL)) {
-+		priv->device_flags |= FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER;
-+		priv->wol_supported |= GIANFAR_WOL_ARP;
-+		priv->wol_supported |= GIANFAR_WOL_UCAST;
-+	}
-+#endif
- 	priv->phy_node = of_parse_phandle(np, "phy-handle", 0);
- 
- 	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
-@@ -1168,8 +1192,10 @@ static int gfar_probe(struct platform_device *ofdev)
- 		goto register_fail;
- 	}
- 
--	device_init_wakeup(&dev->dev,
--		priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+	if (priv->wol_supported) {
-+		device_set_wakeup_capable(&ofdev->dev, true);
-+		device_set_wakeup_enable(&ofdev->dev, false);
-+	}
- 
- 	/* fill out IRQ number and name fields */
- 	len_devname = strlen(dev->name);
-@@ -1260,6 +1286,143 @@ static int gfar_remove(struct platform_device *ofdev)
- }
- 
- #ifdef CONFIG_PM
-+static void gfar_enable_filer(struct net_device *dev)
+ config FSL_GTM
+ 	bool
+ 	depends on PPC_83xx || QUICC_ENGINE || CPM2
+diff --git a/arch/powerpc/include/asm/fsl_ifc.h b/arch/powerpc/include/asm/fsl_ifc.h
+new file mode 100644
+index 0000000..b955012
+--- /dev/null
++++ b/arch/powerpc/include/asm/fsl_ifc.h
+@@ -0,0 +1,834 @@
++/* Freescale Integrated Flash Controller
++ *
++ * Copyright 2011 Freescale Semiconductor, Inc
++ *
++ * Author: Dipen Dudhat <dipen.dudhat@freescale.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#ifndef __ASM_FSL_IFC_H
++#define __ASM_FSL_IFC_H
++
++#include <linux/compiler.h>
++#include <linux/types.h>
++#include <linux/io.h>
++
++#include <linux/of_platform.h>
++#include <linux/interrupt.h>
++
++#define FSL_IFC_BANK_COUNT 4
++
++/*
++ * CSPR - Chip Select Property Register
++ */
++#define CSPR_BA				0xFFFF0000
++#define CSPR_BA_SHIFT			16
++#define CSPR_PORT_SIZE			0x00000180
++#define CSPR_PORT_SIZE_SHIFT		7
++/* Port Size 8 bit */
++#define CSPR_PORT_SIZE_8		0x00000080
++/* Port Size 16 bit */
++#define CSPR_PORT_SIZE_16		0x00000100
++/* Port Size 32 bit */
++#define CSPR_PORT_SIZE_32		0x00000180
++/* Write Protect */
++#define CSPR_WP				0x00000040
++#define CSPR_WP_SHIFT			6
++/* Machine Select */
++#define CSPR_MSEL			0x00000006
++#define CSPR_MSEL_SHIFT			1
++/* NOR */
++#define CSPR_MSEL_NOR			0x00000000
++/* NAND */
++#define CSPR_MSEL_NAND			0x00000002
++/* GPCM */
++#define CSPR_MSEL_GPCM			0x00000004
++/* Bank Valid */
++#define CSPR_V				0x00000001
++#define CSPR_V_SHIFT			0
++
++/*
++ * Address Mask Register
++ */
++#define IFC_AMASK_MASK			0xFFFF0000
++#define IFC_AMASK_SHIFT			16
++#define IFC_AMASK(n)			(IFC_AMASK_MASK << \
++					(__ilog2(n) - IFC_AMASK_SHIFT))
++
++/*
++ * Chip Select Option Register IFC_NAND Machine
++ */
++/* Enable ECC Encoder */
++#define CSOR_NAND_ECC_ENC_EN		0x80000000
++#define CSOR_NAND_ECC_MODE_MASK		0x30000000
++/* 4 bit correction per 520 Byte sector */
++#define CSOR_NAND_ECC_MODE_4		0x00000000
++/* 8 bit correction per 528 Byte sector */
++#define CSOR_NAND_ECC_MODE_8		0x10000000
++/* Enable ECC Decoder */
++#define CSOR_NAND_ECC_DEC_EN		0x04000000
++/* Row Address Length */
++#define CSOR_NAND_RAL_MASK		0x01800000
++#define CSOR_NAND_RAL_SHIFT		20
++#define CSOR_NAND_RAL_1			0x00000000
++#define CSOR_NAND_RAL_2			0x00800000
++#define CSOR_NAND_RAL_3			0x01000000
++#define CSOR_NAND_RAL_4			0x01800000
++/* Page Size 512b, 2k, 4k */
++#define CSOR_NAND_PGS_MASK		0x00180000
++#define CSOR_NAND_PGS_SHIFT		16
++#define CSOR_NAND_PGS_512		0x00000000
++#define CSOR_NAND_PGS_2K		0x00080000
++#define CSOR_NAND_PGS_4K		0x00100000
++/* Spare region Size */
++#define CSOR_NAND_SPRZ_MASK		0x0000E000
++#define CSOR_NAND_SPRZ_SHIFT		13
++#define CSOR_NAND_SPRZ_16		0x00000000
++#define CSOR_NAND_SPRZ_64		0x00002000
++#define CSOR_NAND_SPRZ_128		0x00004000
++#define CSOR_NAND_SPRZ_210		0x00006000
++#define CSOR_NAND_SPRZ_218		0x00008000
++#define CSOR_NAND_SPRZ_224		0x0000A000
++/* Pages Per Block */
++#define CSOR_NAND_PB_MASK		0x00000700
++#define CSOR_NAND_PB_SHIFT		8
++#define CSOR_NAND_PB(n)		((__ilog2(n) - 5) << CSOR_NAND_PB_SHIFT)
++/* Time for Read Enable High to Output High Impedance */
++#define CSOR_NAND_TRHZ_MASK		0x0000001C
++#define CSOR_NAND_TRHZ_SHIFT		2
++#define CSOR_NAND_TRHZ_20		0x00000000
++#define CSOR_NAND_TRHZ_40		0x00000004
++#define CSOR_NAND_TRHZ_60		0x00000008
++#define CSOR_NAND_TRHZ_80		0x0000000C
++#define CSOR_NAND_TRHZ_100		0x00000010
++/* Buffer control disable */
++#define CSOR_NAND_BCTLD			0x00000001
++
++/*
++ * Chip Select Option Register - NOR Flash Mode
++ */
++/* Enable Address shift Mode */
++#define CSOR_NOR_ADM_SHFT_MODE_EN	0x80000000
++/* Page Read Enable from NOR device */
++#define CSOR_NOR_PGRD_EN		0x10000000
++/* AVD Toggle Enable during Burst Program */
++#define CSOR_NOR_AVD_TGL_PGM_EN		0x01000000
++/* Address Data Multiplexing Shift */
++#define CSOR_NOR_ADM_MASK		0x0003E000
++#define CSOR_NOR_ADM_SHIFT_SHIFT	13
++#define CSOR_NOR_ADM_SHIFT(n)	((n) << CSOR_NOR_ADM_SHIFT_SHIFT)
++/* Type of the NOR device hooked */
++#define CSOR_NOR_NOR_MODE_AYSNC_NOR	0x00000000
++#define CSOR_NOR_NOR_MODE_AVD_NOR	0x00000020
++/* Time for Read Enable High to Output High Impedance */
++#define CSOR_NOR_TRHZ_MASK		0x0000001C
++#define CSOR_NOR_TRHZ_SHIFT		2
++#define CSOR_NOR_TRHZ_20		0x00000000
++#define CSOR_NOR_TRHZ_40		0x00000004
++#define CSOR_NOR_TRHZ_60		0x00000008
++#define CSOR_NOR_TRHZ_80		0x0000000C
++#define CSOR_NOR_TRHZ_100		0x00000010
++/* Buffer control disable */
++#define CSOR_NOR_BCTLD			0x00000001
++
++/*
++ * Chip Select Option Register - GPCM Mode
++ */
++/* GPCM Mode - Normal */
++#define CSOR_GPCM_GPMODE_NORMAL		0x00000000
++/* GPCM Mode - GenericASIC */
++#define CSOR_GPCM_GPMODE_ASIC		0x80000000
++/* Parity Mode odd/even */
++#define CSOR_GPCM_PARITY_EVEN		0x40000000
++/* Parity Checking enable/disable */
++#define CSOR_GPCM_PAR_EN		0x20000000
++/* GPCM Timeout Count */
++#define CSOR_GPCM_GPTO_MASK		0x0F000000
++#define CSOR_GPCM_GPTO_SHIFT		24
++#define CSOR_GPCM_GPTO(n)	((__ilog2(n) - 8) << CSOR_GPCM_GPTO_SHIFT)
++/* GPCM External Access Termination mode for read access */
++#define CSOR_GPCM_RGETA_EXT		0x00080000
++/* GPCM External Access Termination mode for write access */
++#define CSOR_GPCM_WGETA_EXT		0x00040000
++/* Address Data Multiplexing Shift */
++#define CSOR_GPCM_ADM_MASK		0x0003E000
++#define CSOR_GPCM_ADM_SHIFT_SHIFT	13
++#define CSOR_GPCM_ADM_SHIFT(n)	((n) << CSOR_GPCM_ADM_SHIFT_SHIFT)
++/* Generic ASIC Parity error indication delay */
++#define CSOR_GPCM_GAPERRD_MASK		0x00000180
++#define CSOR_GPCM_GAPERRD_SHIFT		7
++#define CSOR_GPCM_GAPERRD(n)	(((n) - 1) << CSOR_GPCM_GAPERRD_SHIFT)
++/* Time for Read Enable High to Output High Impedance */
++#define CSOR_GPCM_TRHZ_MASK		0x0000001C
++#define CSOR_GPCM_TRHZ_20		0x00000000
++#define CSOR_GPCM_TRHZ_40		0x00000004
++#define CSOR_GPCM_TRHZ_60		0x00000008
++#define CSOR_GPCM_TRHZ_80		0x0000000C
++#define CSOR_GPCM_TRHZ_100		0x00000010
++/* Buffer control disable */
++#define CSOR_GPCM_BCTLD			0x00000001
++
++/*
++ * Ready Busy Status Register (RB_STAT)
++ */
++/* CSn is READY */
++#define IFC_RB_STAT_READY_CS0		0x80000000
++#define IFC_RB_STAT_READY_CS1		0x40000000
++#define IFC_RB_STAT_READY_CS2		0x20000000
++#define IFC_RB_STAT_READY_CS3		0x10000000
++
++/*
++ * General Control Register (GCR)
++ */
++#define IFC_GCR_MASK			0x8000F800
++/* reset all IFC hardware */
++#define IFC_GCR_SOFT_RST_ALL		0x80000000
++/* Turnaroud Time of external buffer */
++#define IFC_GCR_TBCTL_TRN_TIME		0x0000F800
++#define IFC_GCR_TBCTL_TRN_TIME_SHIFT	11
++
++/*
++ * Common Event and Error Status Register (CM_EVTER_STAT)
++ */
++/* Chip select error */
++#define IFC_CM_EVTER_STAT_CSER		0x80000000
++
++/*
++ * Common Event and Error Enable Register (CM_EVTER_EN)
++ */
++/* Chip select error checking enable */
++#define IFC_CM_EVTER_EN_CSEREN		0x80000000
++
++/*
++ * Common Event and Error Interrupt Enable Register (CM_EVTER_INTR_EN)
++ */
++/* Chip select error interrupt enable */
++#define IFC_CM_EVTER_INTR_EN_CSERIREN	0x80000000
++
++/*
++ * Common Transfer Error Attribute Register-0 (CM_ERATTR0)
++ */
++/* transaction type of error Read/Write */
++#define IFC_CM_ERATTR0_ERTYP_READ	0x80000000
++#define IFC_CM_ERATTR0_ERAID		0x0FF00000
++#define IFC_CM_ERATTR0_ERAID_SHIFT	20
++#define IFC_CM_ERATTR0_ESRCID		0x0000FF00
++#define IFC_CM_ERATTR0_ESRCID_SHIFT	8
++
++/*
++ * Clock Control Register (CCR)
++ */
++#define IFC_CCR_MASK			0x0F0F8800
++/* Clock division ratio */
++#define IFC_CCR_CLK_DIV_MASK		0x0F000000
++#define IFC_CCR_CLK_DIV_SHIFT		24
++#define IFC_CCR_CLK_DIV(n)		((n-1) << IFC_CCR_CLK_DIV_SHIFT)
++/* IFC Clock Delay */
++#define IFC_CCR_CLK_DLY_MASK		0x000F0000
++#define IFC_CCR_CLK_DLY_SHIFT		16
++#define IFC_CCR_CLK_DLY(n)		((n) << IFC_CCR_CLK_DLY_SHIFT)
++/* Invert IFC clock before sending out */
++#define IFC_CCR_INV_CLK_EN		0x00008000
++/* Fedback IFC Clock */
++#define IFC_CCR_FB_IFC_CLK_SEL		0x00000800
++
++/*
++ * Clock Status Register (CSR)
++ */
++/* Clk is stable */
++#define IFC_CSR_CLK_STAT_STABLE		0x80000000
++
++/*
++ * IFC_NAND Machine Specific Registers
++ */
++/*
++ * NAND Configuration Register (NCFGR)
++ */
++/* Auto Boot Mode */
++#define IFC_NAND_NCFGR_BOOT		0x80000000
++/* Addressing Mode-ROW0+n/COL0 */
++#define IFC_NAND_NCFGR_ADDR_MODE_RC0	0x00000000
++/* Addressing Mode-ROW0+n/COL0+n */
++#define IFC_NAND_NCFGR_ADDR_MODE_RC1	0x00400000
++/* Number of loop iterations of FIR sequences for multi page operations */
++#define IFC_NAND_NCFGR_NUM_LOOP_MASK	0x0000F000
++#define IFC_NAND_NCFGR_NUM_LOOP_SHIFT	12
++#define IFC_NAND_NCFGR_NUM_LOOP(n)	((n) << IFC_NAND_NCFGR_NUM_LOOP_SHIFT)
++/* Number of wait cycles */
++#define IFC_NAND_NCFGR_NUM_WAIT_MASK	0x000000FF
++#define IFC_NAND_NCFGR_NUM_WAIT_SHIFT	0
++
++/*
++ * NAND Flash Command Registers (NAND_FCR0/NAND_FCR1)
++ */
++/* General purpose FCM flash command bytes CMD0-CMD7 */
++#define IFC_NAND_FCR0_CMD0		0xFF000000
++#define IFC_NAND_FCR0_CMD0_SHIFT	24
++#define IFC_NAND_FCR0_CMD1		0x00FF0000
++#define IFC_NAND_FCR0_CMD1_SHIFT	16
++#define IFC_NAND_FCR0_CMD2		0x0000FF00
++#define IFC_NAND_FCR0_CMD2_SHIFT	8
++#define IFC_NAND_FCR0_CMD3		0x000000FF
++#define IFC_NAND_FCR0_CMD3_SHIFT	0
++#define IFC_NAND_FCR1_CMD4		0xFF000000
++#define IFC_NAND_FCR1_CMD4_SHIFT	24
++#define IFC_NAND_FCR1_CMD5		0x00FF0000
++#define IFC_NAND_FCR1_CMD5_SHIFT	16
++#define IFC_NAND_FCR1_CMD6		0x0000FF00
++#define IFC_NAND_FCR1_CMD6_SHIFT	8
++#define IFC_NAND_FCR1_CMD7		0x000000FF
++#define IFC_NAND_FCR1_CMD7_SHIFT	0
++
++/*
++ * Flash ROW and COL Address Register (ROWn, COLn)
++ */
++/* Main/spare region locator */
++#define IFC_NAND_COL_MS			0x80000000
++/* Column Address */
++#define IFC_NAND_COL_CA_MASK		0x00000FFF
++
++/*
++ * NAND Flash Byte Count Register (NAND_BC)
++ */
++/* Byte Count for read/Write */
++#define IFC_NAND_BC			0x000001FF
++
++/*
++ * NAND Flash Instruction Registers (NAND_FIR0/NAND_FIR1/NAND_FIR2)
++ */
++/* NAND Machine specific opcodes OP0-OP14*/
++#define IFC_NAND_FIR0_OP0		0xFC000000
++#define IFC_NAND_FIR0_OP0_SHIFT		26
++#define IFC_NAND_FIR0_OP1		0x03F00000
++#define IFC_NAND_FIR0_OP1_SHIFT		20
++#define IFC_NAND_FIR0_OP2		0x000FC000
++#define IFC_NAND_FIR0_OP2_SHIFT		14
++#define IFC_NAND_FIR0_OP3		0x00003F00
++#define IFC_NAND_FIR0_OP3_SHIFT		8
++#define IFC_NAND_FIR0_OP4		0x000000FC
++#define IFC_NAND_FIR0_OP4_SHIFT		2
++#define IFC_NAND_FIR1_OP5		0xFC000000
++#define IFC_NAND_FIR1_OP5_SHIFT		26
++#define IFC_NAND_FIR1_OP6		0x03F00000
++#define IFC_NAND_FIR1_OP6_SHIFT		20
++#define IFC_NAND_FIR1_OP7		0x000FC000
++#define IFC_NAND_FIR1_OP7_SHIFT		14
++#define IFC_NAND_FIR1_OP8		0x00003F00
++#define IFC_NAND_FIR1_OP8_SHIFT		8
++#define IFC_NAND_FIR1_OP9		0x000000FC
++#define IFC_NAND_FIR1_OP9_SHIFT		2
++#define IFC_NAND_FIR2_OP10		0xFC000000
++#define IFC_NAND_FIR2_OP10_SHIFT	26
++#define IFC_NAND_FIR2_OP11		0x03F00000
++#define IFC_NAND_FIR2_OP11_SHIFT	20
++#define IFC_NAND_FIR2_OP12		0x000FC000
++#define IFC_NAND_FIR2_OP12_SHIFT	14
++#define IFC_NAND_FIR2_OP13		0x00003F00
++#define IFC_NAND_FIR2_OP13_SHIFT	8
++#define IFC_NAND_FIR2_OP14		0x000000FC
++#define IFC_NAND_FIR2_OP14_SHIFT	2
++
++/*
++ * Instruction opcodes to be programmed
++ * in FIR registers- 6bits
++ */
++enum ifc_nand_fir_opcodes {
++	IFC_FIR_OP_NOP,
++	IFC_FIR_OP_CA0,
++	IFC_FIR_OP_CA1,
++	IFC_FIR_OP_CA2,
++	IFC_FIR_OP_CA3,
++	IFC_FIR_OP_RA0,
++	IFC_FIR_OP_RA1,
++	IFC_FIR_OP_RA2,
++	IFC_FIR_OP_RA3,
++	IFC_FIR_OP_CMD0,
++	IFC_FIR_OP_CMD1,
++	IFC_FIR_OP_CMD2,
++	IFC_FIR_OP_CMD3,
++	IFC_FIR_OP_CMD4,
++	IFC_FIR_OP_CMD5,
++	IFC_FIR_OP_CMD6,
++	IFC_FIR_OP_CMD7,
++	IFC_FIR_OP_CW0,
++	IFC_FIR_OP_CW1,
++	IFC_FIR_OP_CW2,
++	IFC_FIR_OP_CW3,
++	IFC_FIR_OP_CW4,
++	IFC_FIR_OP_CW5,
++	IFC_FIR_OP_CW6,
++	IFC_FIR_OP_CW7,
++	IFC_FIR_OP_WBCD,
++	IFC_FIR_OP_RBCD,
++	IFC_FIR_OP_BTRD,
++	IFC_FIR_OP_RDSTAT,
++	IFC_FIR_OP_NWAIT,
++	IFC_FIR_OP_WFR,
++	IFC_FIR_OP_SBRD,
++	IFC_FIR_OP_UA,
++	IFC_FIR_OP_RB,
++};
++
++/*
++ * NAND Chip Select Register (NAND_CSEL)
++ */
++#define IFC_NAND_CSEL			0x0C000000
++#define IFC_NAND_CSEL_SHIFT		26
++#define IFC_NAND_CSEL_CS0		0x00000000
++#define IFC_NAND_CSEL_CS1		0x04000000
++#define IFC_NAND_CSEL_CS2		0x08000000
++#define IFC_NAND_CSEL_CS3		0x0C000000
++
++/*
++ * NAND Operation Sequence Start (NANDSEQ_STRT)
++ */
++/* NAND Flash Operation Start */
++#define IFC_NAND_SEQ_STRT_FIR_STRT	0x80000000
++/* Automatic Erase */
++#define IFC_NAND_SEQ_STRT_AUTO_ERS	0x00800000
++/* Automatic Program */
++#define IFC_NAND_SEQ_STRT_AUTO_PGM	0x00100000
++/* Automatic Copyback */
++#define IFC_NAND_SEQ_STRT_AUTO_CPB	0x00020000
++/* Automatic Read Operation */
++#define IFC_NAND_SEQ_STRT_AUTO_RD	0x00004000
++/* Automatic Status Read */
++#define IFC_NAND_SEQ_STRT_AUTO_STAT_RD	0x00000800
++
++/*
++ * NAND Event and Error Status Register (NAND_EVTER_STAT)
++ */
++/* Operation Complete */
++#define IFC_NAND_EVTER_STAT_OPC		0x80000000
++/* Flash Timeout Error */
++#define IFC_NAND_EVTER_STAT_FTOER	0x08000000
++/* Write Protect Error */
++#define IFC_NAND_EVTER_STAT_WPER	0x04000000
++/* ECC Error */
++#define IFC_NAND_EVTER_STAT_ECCER	0x02000000
++/* RCW Load Done */
++#define IFC_NAND_EVTER_STAT_RCW_DN	0x00008000
++/* Boot Loadr Done */
++#define IFC_NAND_EVTER_STAT_BOOT_DN	0x00004000
++/* Bad Block Indicator search select */
++#define IFC_NAND_EVTER_STAT_BBI_SRCH_SE	0x00000800
++
++/*
++ * NAND Flash Page Read Completion Event Status Register
++ * (PGRDCMPL_EVT_STAT)
++ */
++#define PGRDCMPL_EVT_STAT_MASK		0xFFFF0000
++/* Small Page 0-15 Done */
++#define PGRDCMPL_EVT_STAT_SECTION_SP(n)	(1 << (31 - (n)))
++/* Large Page(2K) 0-3 Done */
++#define PGRDCMPL_EVT_STAT_LP_2K(n)	(0xF << (28 - (n)*4))
++/* Large Page(4K) 0-1 Done */
++#define PGRDCMPL_EVT_STAT_LP_4K(n)	(0xFF << (24 - (n)*8))
++
++/*
++ * NAND Event and Error Enable Register (NAND_EVTER_EN)
++ */
++/* Operation complete event enable */
++#define IFC_NAND_EVTER_EN_OPC_EN	0x80000000
++/* Page read complete event enable */
++#define IFC_NAND_EVTER_EN_PGRDCMPL_EN	0x20000000
++/* Flash Timeout error enable */
++#define IFC_NAND_EVTER_EN_FTOER_EN	0x08000000
++/* Write Protect error enable */
++#define IFC_NAND_EVTER_EN_WPER_EN	0x04000000
++/* ECC error logging enable */
++#define IFC_NAND_EVTER_EN_ECCER_EN	0x02000000
++
++/*
++ * NAND Event and Error Interrupt Enable Register (NAND_EVTER_INTR_EN)
++ */
++/* Enable interrupt for operation complete */
++#define IFC_NAND_EVTER_INTR_OPCIR_EN		0x80000000
++/* Enable interrupt for Page read complete */
++#define IFC_NAND_EVTER_INTR_PGRDCMPLIR_EN	0x20000000
++/* Enable interrupt for Flash timeout error */
++#define IFC_NAND_EVTER_INTR_FTOERIR_EN		0x08000000
++/* Enable interrupt for Write protect error */
++#define IFC_NAND_EVTER_INTR_WPERIR_EN		0x04000000
++/* Enable interrupt for ECC error*/
++#define IFC_NAND_EVTER_INTR_ECCERIR_EN		0x02000000
++
++/*
++ * NAND Transfer Error Attribute Register-0 (NAND_ERATTR0)
++ */
++#define IFC_NAND_ERATTR0_MASK		0x0C080000
++/* Error on CS0-3 for NAND */
++#define IFC_NAND_ERATTR0_ERCS_CS0	0x00000000
++#define IFC_NAND_ERATTR0_ERCS_CS1	0x04000000
++#define IFC_NAND_ERATTR0_ERCS_CS2	0x08000000
++#define IFC_NAND_ERATTR0_ERCS_CS3	0x0C000000
++/* Transaction type of error Read/Write */
++#define IFC_NAND_ERATTR0_ERTTYPE_READ	0x00080000
++
++/*
++ * NAND Flash Status Register (NAND_FSR)
++ */
++/* First byte of data read from read status op */
++#define IFC_NAND_NFSR_RS0		0xFF000000
++/* Second byte of data read from read status op */
++#define IFC_NAND_NFSR_RS1		0x00FF0000
++
++/*
++ * ECC Error Status Registers (ECCSTAT0-ECCSTAT3)
++ */
++/* Number of ECC errors on sector n (n = 0-15) */
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR0_MASK	0x0F000000
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR0_SHIFT	24
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR1_MASK	0x000F0000
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR1_SHIFT	16
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR2_MASK	0x00000F00
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR2_SHIFT	8
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR3_MASK	0x0000000F
++#define IFC_NAND_ECCSTAT0_ERRCNT_SECTOR3_SHIFT	0
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR4_MASK	0x0F000000
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR4_SHIFT	24
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR5_MASK	0x000F0000
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR5_SHIFT	16
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR6_MASK	0x00000F00
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR6_SHIFT	8
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR7_MASK	0x0000000F
++#define IFC_NAND_ECCSTAT1_ERRCNT_SECTOR7_SHIFT	0
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR8_MASK	0x0F000000
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR8_SHIFT	24
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR9_MASK	0x000F0000
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR9_SHIFT	16
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR10_MASK	0x00000F00
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR10_SHIFT	8
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR11_MASK	0x0000000F
++#define IFC_NAND_ECCSTAT2_ERRCNT_SECTOR11_SHIFT	0
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR12_MASK	0x0F000000
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR12_SHIFT	24
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR13_MASK	0x000F0000
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR13_SHIFT	16
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR14_MASK	0x00000F00
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR14_SHIFT	8
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR15_MASK	0x0000000F
++#define IFC_NAND_ECCSTAT3_ERRCNT_SECTOR15_SHIFT	0
++
++/*
++ * NAND Control Register (NANDCR)
++ */
++#define IFC_NAND_NCR_FTOCNT_MASK	0x1E000000
++#define IFC_NAND_NCR_FTOCNT_SHIFT	25
++#define IFC_NAND_NCR_FTOCNT(n)	((_ilog2(n) - 8)  << IFC_NAND_NCR_FTOCNT_SHIFT)
++
++/*
++ * NAND_AUTOBOOT_TRGR
++ */
++/* Trigger RCW load */
++#define IFC_NAND_AUTOBOOT_TRGR_RCW_LD	0x80000000
++/* Trigget Auto Boot */
++#define IFC_NAND_AUTOBOOT_TRGR_BOOT_LD	0x20000000
++
++/*
++ * NAND_MDR
++ */
++/* 1st read data byte when opcode SBRD */
++#define IFC_NAND_MDR_RDATA0		0xFF000000
++/* 2nd read data byte when opcode SBRD */
++#define IFC_NAND_MDR_RDATA1		0x00FF0000
++
++/*
++ * NOR Machine Specific Registers
++ */
++/*
++ * NOR Event and Error Status Register (NOR_EVTER_STAT)
++ */
++/* NOR Command Sequence Operation Complete */
++#define IFC_NOR_EVTER_STAT_OPC_NOR	0x80000000
++/* Write Protect Error */
++#define IFC_NOR_EVTER_STAT_WPER		0x04000000
++/* Command Sequence Timeout Error */
++#define IFC_NOR_EVTER_STAT_STOER	0x01000000
++
++/*
++ * NOR Event and Error Enable Register (NOR_EVTER_EN)
++ */
++/* NOR Command Seq complete event enable */
++#define IFC_NOR_EVTER_EN_OPCEN_NOR	0x80000000
++/* Write Protect Error Checking Enable */
++#define IFC_NOR_EVTER_EN_WPEREN		0x04000000
++/* Timeout Error Enable */
++#define IFC_NOR_EVTER_EN_STOEREN	0x01000000
++
++/*
++ * NOR Event and Error Interrupt Enable Register (NOR_EVTER_INTR_EN)
++ */
++/* Enable interrupt for OPC complete */
++#define IFC_NOR_EVTER_INTR_OPCEN_NOR	0x80000000
++/* Enable interrupt for write protect error */
++#define IFC_NOR_EVTER_INTR_WPEREN	0x04000000
++/* Enable interrupt for timeout error */
++#define IFC_NOR_EVTER_INTR_STOEREN	0x01000000
++
++/*
++ * NOR Transfer Error Attribute Register-0 (NOR_ERATTR0)
++ */
++/* Source ID for error transaction */
++#define IFC_NOR_ERATTR0_ERSRCID		0xFF000000
++/* AXI ID for error transation */
++#define IFC_NOR_ERATTR0_ERAID		0x000FF000
++/* Chip select corresponds to NOR error */
++#define IFC_NOR_ERATTR0_ERCS_CS0	0x00000000
++#define IFC_NOR_ERATTR0_ERCS_CS1	0x00000010
++#define IFC_NOR_ERATTR0_ERCS_CS2	0x00000020
++#define IFC_NOR_ERATTR0_ERCS_CS3	0x00000030
++/* Type of transaction read/write */
++#define IFC_NOR_ERATTR0_ERTYPE_READ	0x00000001
++
++/*
++ * NOR Transfer Error Attribute Register-2 (NOR_ERATTR2)
++ */
++#define IFC_NOR_ERATTR2_ER_NUM_PHASE_EXP	0x000F0000
++#define IFC_NOR_ERATTR2_ER_NUM_PHASE_PER	0x00000F00
++
++/*
++ * NOR Control Register (NORCR)
++ */
++#define IFC_NORCR_MASK			0x0F0F0000
++/* No. of Address/Data Phase */
++#define IFC_NORCR_NUM_PHASE_MASK	0x0F000000
++#define IFC_NORCR_NUM_PHASE_SHIFT	24
++#define IFC_NORCR_NUM_PHASE(n)	((n-1) << IFC_NORCR_NUM_PHASE_SHIFT)
++/* Sequence Timeout Count */
++#define IFC_NORCR_STOCNT_MASK		0x000F0000
++#define IFC_NORCR_STOCNT_SHIFT		16
++#define IFC_NORCR_STOCNT(n)	((__ilog2(n) - 8) << IFC_NORCR_STOCNT_SHIFT)
++
++/*
++ * GPCM Machine specific registers
++ */
++/*
++ * GPCM Event and Error Status Register (GPCM_EVTER_STAT)
++ */
++/* Timeout error */
++#define IFC_GPCM_EVTER_STAT_TOER	0x04000000
++/* Parity error */
++#define IFC_GPCM_EVTER_STAT_PER		0x01000000
++
++/*
++ * GPCM Event and Error Enable Register (GPCM_EVTER_EN)
++ */
++/* Timeout error enable */
++#define IFC_GPCM_EVTER_EN_TOER_EN	0x04000000
++/* Parity error enable */
++#define IFC_GPCM_EVTER_EN_PER_EN	0x01000000
++
++/*
++ * GPCM Event and Error Interrupt Enable Register (GPCM_EVTER_INTR_EN)
++ */
++/* Enable Interrupt for timeout error */
++#define IFC_GPCM_EEIER_TOERIR_EN	0x04000000
++/* Enable Interrupt for Parity error */
++#define IFC_GPCM_EEIER_PERIR_EN		0x01000000
++
++/*
++ * GPCM Transfer Error Attribute Register-0 (GPCM_ERATTR0)
++ */
++/* Source ID for error transaction */
++#define IFC_GPCM_ERATTR0_ERSRCID	0xFF000000
++/* AXI ID for error transaction */
++#define IFC_GPCM_ERATTR0_ERAID		0x000FF000
++/* Chip select corresponds to GPCM error */
++#define IFC_GPCM_ERATTR0_ERCS_CS0	0x00000000
++#define IFC_GPCM_ERATTR0_ERCS_CS1	0x00000040
++#define IFC_GPCM_ERATTR0_ERCS_CS2	0x00000080
++#define IFC_GPCM_ERATTR0_ERCS_CS3	0x000000C0
++/* Type of transaction read/Write */
++#define IFC_GPCM_ERATTR0_ERTYPE_READ	0x00000001
++
++/*
++ * GPCM Transfer Error Attribute Register-2 (GPCM_ERATTR2)
++ */
++/* On which beat of address/data parity error is observed */
++#define IFC_GPCM_ERATTR2_PERR_BEAT		0x00000C00
++/* Parity Error on byte */
++#define IFC_GPCM_ERATTR2_PERR_BYTE		0x000000F0
++/* Parity Error reported in addr or data phase */
++#define IFC_GPCM_ERATTR2_PERR_DATA_PHASE	0x00000001
++
++/*
++ * GPCM Status Register (GPCM_STAT)
++ */
++#define IFC_GPCM_STAT_BSY		0x80000000  /* GPCM is busy */
++
++/*
++ * IFC Controller NAND Machine registers
++ */
++struct fsl_ifc_nand {
++	__be32 ncfgr;
++	u32 res1[0x4];
++	__be32 nand_fcr0;
++	__be32 nand_fcr1;
++	u32 res2[0x8];
++	__be32 row0;
++	u32 res3;
++	__be32 col0;
++	u32 res4;
++	__be32 row1;
++	u32 res5;
++	__be32 col1;
++	u32 res6;
++	__be32 row2;
++	u32 res7;
++	__be32 col2;
++	u32 res8;
++	__be32 row3;
++	u32 res9;
++	__be32 col3;
++	u32 res10[0x24];
++	__be32 nand_fbcr;
++	u32 res11;
++	__be32 nand_fir0;
++	__be32 nand_fir1;
++	__be32 nand_fir2;
++	u32 res12[0x10];
++	__be32 nand_csel;
++	u32 res13;
++	__be32 nandseq_strt;
++	u32 res14;
++	__be32 nand_evter_stat;
++	u32 res15;
++	__be32 pgrdcmpl_evt_stat;
++	u32 res16[0x2];
++	__be32 nand_evter_en;
++	u32 res17[0x2];
++	__be32 nand_evter_intr_en;
++	u32 res18[0x2];
++	__be32 nand_erattr0;
++	__be32 nand_erattr1;
++	u32 res19[0x10];
++	__be32 nand_fsr;
++	u32 res20;
++	__be32 nand_eccstat[4];
++	u32 res21[0x20];
++	__be32 nanndcr;
++	u32 res22[0x2];
++	__be32 nand_autoboot_trgr;
++	u32 res23;
++	__be32 nand_mdr;
++	u32 res24[0x5C];
++};
++
++/*
++ * IFC controller NOR Machine registers
++ */
++struct fsl_ifc_nor {
++	__be32 nor_evter_stat;
++	u32 res1[0x2];
++	__be32 nor_evter_en;
++	u32 res2[0x2];
++	__be32 nor_evter_intr_en;
++	u32 res3[0x2];
++	__be32 nor_erattr0;
++	__be32 nor_erattr1;
++	__be32 nor_erattr2;
++	u32 res4[0x4];
++	__be32 norcr;
++	u32 res5[0xEF];
++};
++
++/*
++ * IFC controller GPCM Machine registers
++ */
++struct fsl_ifc_gpcm {
++	__be32 gpcm_evter_stat;
++	u32 res1[0x2];
++	__be32 gpcm_evter_en;
++	u32 res2[0x2];
++	__be32 gpcm_evter_intr_en;
++	u32 res3[0x2];
++	__be32 gpcm_erattr0;
++	__be32 gpcm_erattr1;
++	__be32 gpcm_erattr2;
++	__be32 gpcm_stat;
++	u32 res4[0x1F3];
++};
++
++/*
++ * IFC Controller Registers
++ */
++struct fsl_ifc_regs {
++	__be32 ifc_rev;
++	u32 res1[0x3];
++	struct {
++		__be32 cspr;
++		u32 res2[0x2];
++	} cspr_cs[FSL_IFC_BANK_COUNT];
++	u32 res3[0x18];
++	struct {
++		__be32 amask;
++		u32 res4[0x2];
++	} amask_cs[FSL_IFC_BANK_COUNT];
++	u32 res5[0x18];
++	struct {
++		__be32 csor;
++		u32 res6[0x2];
++	} csor_cs[FSL_IFC_BANK_COUNT];
++	u32 res7[0x18];
++	struct {
++		__be32 ftim[4];
++		u32 res8[0x8];
++	} ftim_cs[FSL_IFC_BANK_COUNT];
++	u32 res9[0x60];
++	__be32 rb_stat;
++	u32 res10[0x2];
++	__be32 ifc_gcr;
++	u32 res11[0x2];
++	__be32 cm_evter_stat;
++	u32 res12[0x2];
++	__be32 cm_evter_en;
++	u32 res13[0x2];
++	__be32 cm_evter_intr_en;
++	u32 res14[0x2];
++	__be32 cm_erattr0;
++	__be32 cm_erattr1;
++	u32 res15[0x2];
++	__be32 ifc_ccr;
++	__be32 ifc_csr;
++	u32 res16[0x2EB];
++	struct fsl_ifc_nand ifc_nand;
++	struct fsl_ifc_nor ifc_nor;
++	struct fsl_ifc_gpcm ifc_gpcm;
++};
++
++extern unsigned int convert_ifc_address(phys_addr_t addr_base);
++extern int fsl_ifc_find(phys_addr_t addr_base);
++
++/* overview of the fsl ifc controller */
++
++struct fsl_ifc_ctrl {
++	/* device info */
++	struct device			*dev;
++	struct fsl_ifc_regs __iomem	*regs;
++	int				irq;
++	int				nand_irq;
++	spinlock_t			lock;
++	void				*nand;
++
++	u32 nand_stat;
++	wait_queue_head_t nand_wait;
++};
++
++extern struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
++
++
++#endif /* __ASM_FSL_IFC_H */
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 8dea593..5e37b47 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -17,6 +17,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
+ obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
+ obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
++obj-$(CONFIG_FSL_IFC)		+= fsl_ifc.o
+ obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+ obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
+ obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
+diff --git a/arch/powerpc/sysdev/fsl_ifc.c b/arch/powerpc/sysdev/fsl_ifc.c
+new file mode 100644
+index 0000000..b31f19f
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_ifc.c
+@@ -0,0 +1,310 @@
++/*
++ * Copyright 2011 Freescale Semiconductor, Inc
++ *
++ * Freescale Integrated Flash Controller
++ *
++ * Author: Dipen Dudhat <Dipen.Dudhat@freescale.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/compiler.h>
++#include <linux/spinlock.h>
++#include <linux/types.h>
++#include <linux/slab.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <asm/prom.h>
++#include <asm/fsl_ifc.h>
++
++struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
++EXPORT_SYMBOL(fsl_ifc_ctrl_dev);
++
++/*
++ * convert_ifc_address - convert the base address
++ * @addr_base:	base address of the memory bank
++ */
++unsigned int convert_ifc_address(phys_addr_t addr_base)
 +{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 temp;
++	return addr_base & CSPR_BA;
++}
++EXPORT_SYMBOL(convert_ifc_address);
 +
-+	lock_rx_qs(priv);
++/*
++ * fsl_ifc_find - find IFC bank
++ * @addr_base:	base address of the memory bank
++ *
++ * This function walks IFC banks comparing "Base address" field of the CSPR
++ * registers with the supplied addr_base argument. When bases match this
++ * function returns bank number (starting with 0), otherwise it returns
++ * appropriate errno value.
++ */
++int fsl_ifc_find(phys_addr_t addr_base)
++{
++	int i = 0;
 +
-+	temp = gfar_read(&regs->rctrl);
-+	temp &= ~(RCTRL_FSQEN | RCTRL_PRSDEP_MASK);
-+	temp |= RCTRL_FILREN | RCTRL_PRSDEP_L2L3;
-+	gfar_write(&regs->rctrl, temp);
++	if (!fsl_ifc_ctrl_dev || !fsl_ifc_ctrl_dev->regs)
++		return -ENODEV;
 +
-+	unlock_rx_qs(priv);
++	for (i = 0; i < ARRAY_SIZE(fsl_ifc_ctrl_dev->regs->cspr_cs); i++) {
++		__be32 cspr = in_be32(&fsl_ifc_ctrl_dev->regs->cspr_cs[i].cspr);
++		if (cspr & CSPR_V && (cspr & CSPR_BA) ==
++				convert_ifc_address(addr_base))
++			return i;
++	}
++
++	return -ENOENT;
++}
++EXPORT_SYMBOL(fsl_ifc_find);
++
++static int __devinit fsl_ifc_ctrl_init(struct fsl_ifc_ctrl *ctrl)
++{
++	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++
++	/*
++	 * Clear all the common status and event registers
++	 */
++	if (in_be32(&ifc->cm_evter_stat) & IFC_CM_EVTER_STAT_CSER)
++		out_be32(&ifc->cm_evter_stat, IFC_CM_EVTER_STAT_CSER);
++
++	/* enable all error and events */
++	out_be32(&ifc->cm_evter_en, IFC_CM_EVTER_EN_CSEREN);
++
++	/* enable all error and event interrupts */
++	out_be32(&ifc->cm_evter_intr_en, IFC_CM_EVTER_INTR_EN_CSERIREN);
++	out_be32(&ifc->cm_erattr0, 0x0);
++	out_be32(&ifc->cm_erattr1, 0x0);
++
++	return 0;
 +}
 +
-+static void gfar_disable_filer(struct net_device *dev)
++static int fsl_ifc_ctrl_remove(struct platform_device *dev)
 +{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 temp;
++	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(&dev->dev);
 +
-+	lock_rx_qs(priv);
++	free_irq(ctrl->nand_irq, ctrl);
++	free_irq(ctrl->irq, ctrl);
 +
-+	temp = gfar_read(&regs->rctrl);
-+	temp &= ~RCTRL_FILREN;
-+	gfar_write(&regs->rctrl, temp);
++	irq_dispose_mapping(ctrl->nand_irq);
++	irq_dispose_mapping(ctrl->irq);
 +
-+	unlock_rx_qs(priv);
++	iounmap(ctrl->regs);
++
++	dev_set_drvdata(&dev->dev, NULL);
++	kfree(ctrl);
++
++	return 0;
 +}
 +
-+static int gfar_get_ip(struct net_device *dev)
++/*
++ * NAND events are split between an operational interrupt which only
++ * receives OPC, and an error interrupt that receives everything else,
++ * including non-NAND errors.  Whichever interrupt gets to it first
++ * records the status and wakes the wait queue.
++ */
++static DEFINE_SPINLOCK(nand_irq_lock);
++
++static u32 check_nand_stat(struct fsl_ifc_ctrl *ctrl)
 +{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct in_device *in_dev;
-+	int ret = -ENOENT;
++	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	unsigned long flags;
++	u32 stat;
 +
-+	in_dev = in_dev_get(dev);
-+	if (!in_dev)
-+		return ret;
++	spin_lock_irqsave(&nand_irq_lock, flags);
 +
-+	/* Get the primary IP address */
-+	for_primary_ifa(in_dev) {
-+		priv->ip_addr = ifa->ifa_address;
-+		ret = 0;
-+		break;
-+	} endfor_ifa(in_dev);
++	stat = in_be32(&ifc->ifc_nand.nand_evter_stat);
++	if (stat) {
++		out_be32(&ifc->ifc_nand.nand_evter_stat, stat);
++		ctrl->nand_stat = stat;
++		wake_up(&ctrl->nand_wait);
++	}
 +
-+	in_dev_put(in_dev);
++	spin_unlock_irqrestore(&nand_irq_lock, flags);
++
++	return stat;
++}
++
++static irqreturn_t fsl_ifc_nand_irq(int irqno, void *data)
++{
++	struct fsl_ifc_ctrl *ctrl = data;
++
++	if (check_nand_stat(ctrl))
++		return IRQ_HANDLED;
++
++	return IRQ_NONE;
++}
++
++/*
++ * NOTE: This interrupt is used to report ifc events of various kinds,
++ * such as transaction errors on the chipselects.
++ */
++static irqreturn_t fsl_ifc_ctrl_irq(int irqno, void *data)
++{
++	struct fsl_ifc_ctrl *ctrl = data;
++	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
++	u32 err_axiid, err_srcid, status, cs_err, err_addr;
++	irqreturn_t ret = IRQ_NONE;
++
++	/* read for chip select error */
++	cs_err = in_be32(&ifc->cm_evter_stat);
++	if (cs_err) {
++		dev_err(ctrl->dev, "transaction sent to IFC is not mapped to"
++				"any memory bank 0x%08X\n", cs_err);
++		/* clear the chip select error */
++		out_be32(&ifc->cm_evter_stat, IFC_CM_EVTER_STAT_CSER);
++
++		/* read error attribute registers print the error information */
++		status = in_be32(&ifc->cm_erattr0);
++		err_addr = in_be32(&ifc->cm_erattr1);
++
++		if (status & IFC_CM_ERATTR0_ERTYP_READ)
++			dev_err(ctrl->dev, "Read transaction error"
++				"CM_ERATTR0 0x%08X\n", status);
++		else
++			dev_err(ctrl->dev, "Write transaction error"
++				"CM_ERATTR0 0x%08X\n", status);
++
++		err_axiid = (status & IFC_CM_ERATTR0_ERAID) >>
++					IFC_CM_ERATTR0_ERAID_SHIFT;
++		dev_err(ctrl->dev, "AXI ID of the error"
++					"transaction 0x%08X\n", err_axiid);
++
++		err_srcid = (status & IFC_CM_ERATTR0_ESRCID) >>
++					IFC_CM_ERATTR0_ESRCID_SHIFT;
++		dev_err(ctrl->dev, "SRC ID of the error"
++					"transaction 0x%08X\n", err_srcid);
++
++		dev_err(ctrl->dev, "Transaction Address corresponding to error"
++					"ERADDR 0x%08X\n", err_addr);
++
++		ret = IRQ_HANDLED;
++	}
++
++	if (check_nand_stat(ctrl))
++		ret = IRQ_HANDLED;
++
 +	return ret;
 +}
 +
-+static void gfar_restore_filer_table(struct net_device *dev)
++/*
++ * fsl_ifc_ctrl_probe
++ *
++ * called by device layer when it finds a device matching
++ * one our driver can handled. This code allocates all of
++ * the resources needed for the controller only.  The
++ * resources for the NAND banks themselves are allocated
++ * in the chip probe function.
++*/
++static int __devinit fsl_ifc_ctrl_probe(struct platform_device *dev)
 +{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	u32 rqfcr, rqfpr;
-+	int i;
++	int ret = 0;
 +
-+	lock_rx_qs(priv);
 +
-+	for (i = 0; i <= MAX_FILER_IDX; i++) {
-+		rqfcr = priv->ftp_rqfcr[i];
-+		rqfpr = priv->ftp_rqfpr[i];
-+		gfar_write_filer(priv, i, rqfcr, rqfpr);
++	dev_info(&dev->dev, "Freescale Integrated Flash Controller\n");
++
++	fsl_ifc_ctrl_dev = kzalloc(sizeof(*fsl_ifc_ctrl_dev), GFP_KERNEL);
++	if (!fsl_ifc_ctrl_dev)
++		return -ENOMEM;
++
++	dev_set_drvdata(&dev->dev, fsl_ifc_ctrl_dev);
++
++	/* IOMAP the entire IFC region */
++	fsl_ifc_ctrl_dev->regs = of_iomap(dev->dev.of_node, 0);
++	if (!fsl_ifc_ctrl_dev->regs) {
++		dev_err(&dev->dev, "failed to get memory region\n");
++		ret = -ENODEV;
++		goto err;
 +	}
 +
-+	unlock_rx_qs(priv);
++	/* get the Controller level irq */
++	fsl_ifc_ctrl_dev->irq = irq_of_parse_and_map(dev->dev.of_node, 0);
++	if (fsl_ifc_ctrl_dev->irq == NO_IRQ) {
++		dev_err(&dev->dev, "failed to get irq resource "
++							"for IFC\n");
++		ret = -ENODEV;
++		goto err;
++	}
++
++	/* get the nand machine irq */
++	fsl_ifc_ctrl_dev->nand_irq =
++			irq_of_parse_and_map(dev->dev.of_node, 1);
++	if (fsl_ifc_ctrl_dev->nand_irq == NO_IRQ) {
++		dev_err(&dev->dev, "failed to get irq resource "
++						"for NAND Machine\n");
++		ret = -ENODEV;
++		goto err;
++	}
++
++	fsl_ifc_ctrl_dev->dev = &dev->dev;
++
++	ret = fsl_ifc_ctrl_init(fsl_ifc_ctrl_dev);
++	if (ret < 0)
++		goto err;
++
++	init_waitqueue_head(&fsl_ifc_ctrl_dev->nand_wait);
++
++	ret = request_irq(fsl_ifc_ctrl_dev->irq, fsl_ifc_ctrl_irq, IRQF_SHARED,
++			  "fsl-ifc", fsl_ifc_ctrl_dev);
++	if (ret != 0) {
++		dev_err(&dev->dev, "failed to install irq (%d)\n",
++			fsl_ifc_ctrl_dev->irq);
++		goto err_irq;
++	}
++
++	ret = request_irq(fsl_ifc_ctrl_dev->nand_irq, fsl_ifc_nand_irq, 0,
++			  "fsl-ifc-nand", fsl_ifc_ctrl_dev);
++	if (ret != 0) {
++		dev_err(&dev->dev, "failed to install irq (%d)\n",
++			fsl_ifc_ctrl_dev->nand_irq);
++		goto err_nandirq;
++	}
++
++	return 0;
++
++err_nandirq:
++	free_irq(fsl_ifc_ctrl_dev->nand_irq, fsl_ifc_ctrl_dev);
++	irq_dispose_mapping(fsl_ifc_ctrl_dev->nand_irq);
++err_irq:
++	free_irq(fsl_ifc_ctrl_dev->irq, fsl_ifc_ctrl_dev);
++	irq_dispose_mapping(fsl_ifc_ctrl_dev->irq);
++err:
++	return ret;
 +}
 +
-+static void gfar_config_filer_table(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	u32 dest_mac_addr;
-+	u32 rqfcr, rqfpr;
-+	u8  rqfcr_queue = priv->num_rx_queues - 1;
-+	unsigned int index;
++static const struct of_device_id fsl_ifc_match[] = {
++	{
++		.compatible = "fsl,ifc",
++	},
++	{},
++};
 +
-+	if (gfar_get_ip(dev)) {
-+		netif_err(priv, wol, dev, "WOL: get the ip address error\n");
-+		return;
-+	}
++static struct platform_driver fsl_ifc_ctrl_driver = {
++	.driver = {
++		.name	= "fsl-ifc",
++		.of_match_table = fsl_ifc_match,
++	},
++	.probe       = fsl_ifc_ctrl_probe,
++	.remove      = fsl_ifc_ctrl_remove,
++};
 +
-+	lock_rx_qs(priv);
++module_platform_driver(fsl_ifc_ctrl_driver);
 +
-+	/* init filer table */
-+	rqfcr = RQFCR_RJE | RQFCR_CMP_MATCH;
-+	rqfpr = 0x0;
-+	for (index = 0; index <= MAX_FILER_IDX; index++)
-+		gfar_write_filer(priv, index, rqfcr, rqfpr);
-+
-+	index = 0;
-+	if (priv->wol_opts & GIANFAR_WOL_ARP) {
-+		/* ARP request filer, filling the packet to the last queue */
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_MASK;
-+		rqfpr = RQFPR_ARQ;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_PARSE;
-+		rqfpr = RQFPR_ARQ;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		/*
-+		 * DEST_IP address in ARP packet,
-+		 * filling it to the last queue.
-+		 */
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_MASK;
-+		rqfpr = FPR_FILER_MASK;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_GPI |
-+					RQFCR_CMP_EXACT | RQFCR_PID_DIA;
-+		rqfpr = priv->ip_addr;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+	}
-+
-+	if (priv->wol_opts & GIANFAR_WOL_UCAST) {
-+		/* Unicast packet, filling it to the last queue */
-+		dest_mac_addr = (dev->dev_addr[0] << 16) |
-+				(dev->dev_addr[1] << 8) | dev->dev_addr[2];
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_AND |
-+					RQFCR_CMP_EXACT | RQFCR_PID_DAH;
-+		rqfpr = dest_mac_addr;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+
-+		dest_mac_addr = (dev->dev_addr[3] << 16) |
-+				(dev->dev_addr[4] << 8) | dev->dev_addr[5];
-+		rqfcr = (rqfcr_queue << 10) | RQFCR_GPI |
-+					RQFCR_CMP_EXACT | RQFCR_PID_DAL;
-+		rqfpr = dest_mac_addr;
-+		gfar_write_filer(priv, index++, rqfcr, rqfpr);
-+	}
-+
-+	unlock_rx_qs(priv);
-+}
- 
- static int gfar_suspend(struct device *dev)
- {
-@@ -1269,48 +1432,43 @@ static int gfar_suspend(struct device *dev)
- 	unsigned long flags;
- 	u32 tempval;
- 
--	int magic_packet = priv->wol_en &&
--		(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
--
- 	netif_device_detach(ndev);
- 
--	if (netif_running(ndev)) {
--
--		local_irq_save(flags);
--		lock_tx_qs(priv);
--		lock_rx_qs(priv);
--
--		gfar_halt_nodisable(ndev);
--
--		/* Disable Tx, and Rx if wake-on-LAN is disabled. */
--		tempval = gfar_read(&regs->maccfg1);
--
--		tempval &= ~MACCFG1_TX_EN;
-+	if (!netif_running(ndev))
-+		return 0;
- 
--		if (!magic_packet)
--			tempval &= ~MACCFG1_RX_EN;
-+	local_irq_save(flags);
-+	lock_tx_qs(priv);
-+	lock_rx_qs(priv);
- 
--		gfar_write(&regs->maccfg1, tempval);
-+	gfar_halt(ndev);
- 
--		unlock_rx_qs(priv);
--		unlock_tx_qs(priv);
--		local_irq_restore(flags);
-+	unlock_rx_qs(priv);
-+	unlock_tx_qs(priv);
-+	local_irq_restore(flags);
- 
--		disable_napi(priv);
-+	disable_napi(priv);
- 
--		if (magic_packet) {
--			/* Enable interrupt on Magic Packet */
--			gfar_write(&regs->imask, IMASK_MAG);
-+	if (!priv->wol_opts && priv->phydev) {
-+		phy_stop(priv->phydev);
-+		return 0;
-+	}
- 
--			/* Enable Magic Packet mode */
--			tempval = gfar_read(&regs->maccfg2);
--			tempval |= MACCFG2_MPEN;
--			gfar_write(&regs->maccfg2, tempval);
--		} else {
--			phy_stop(priv->phydev);
--		}
-+	mpc85xx_pmc_set_wake(priv->ofdev, 1);
-+	if (priv->wol_opts & GIANFAR_WOL_MAGIC) {
-+		/* Enable Magic Packet mode */
-+		tempval = gfar_read(&regs->maccfg2);
-+		tempval |= MACCFG2_MPEN;
-+		gfar_write(&regs->maccfg2, tempval);
- 	}
- 
-+	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
-+		mpc85xx_pmc_set_lossless_ethernet(1);
-+		gfar_disable_filer(ndev);
-+		gfar_config_filer_table(ndev);
-+		gfar_enable_filer(ndev);
-+	}
-+	gfar_rx_start(ndev);
- 	return 0;
- }
- 
-@@ -1320,39 +1478,49 @@ static int gfar_resume(struct device *dev)
- 	struct net_device *ndev = priv->ndev;
- 	struct gfar __iomem *regs = priv->gfargrp[0].regs;
- 	unsigned long flags;
--	u32 tempval;
--	int magic_packet = priv->wol_en &&
--		(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+	u32 tempval, i;
- 
- 	if (!netif_running(ndev)) {
- 		netif_device_attach(ndev);
- 		return 0;
- 	}
- 
--	if (!magic_packet && priv->phydev)
-+	if (!priv->wol_opts && priv->phydev) {
- 		phy_start(priv->phydev);
-+		goto out;
-+	}
-+
-+	mpc85xx_pmc_set_wake(priv->ofdev, 0);
- 
--	/* Disable Magic Packet mode, in case something
--	 * else woke us up.
--	 */
- 	local_irq_save(flags);
--	lock_tx_qs(priv);
- 	lock_rx_qs(priv);
--
--	tempval = gfar_read(&regs->maccfg2);
--	tempval &= ~MACCFG2_MPEN;
--	gfar_write(&regs->maccfg2, tempval);
--
--	gfar_start(ndev);
--
-+	gfar_halt_rx(ndev);
- 	unlock_rx_qs(priv);
--	unlock_tx_qs(priv);
- 	local_irq_restore(flags);
- 
--	netif_device_attach(ndev);
-+	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
-+		mpc85xx_pmc_set_lossless_ethernet(0);
-+		gfar_disable_filer(ndev);
-+		gfar_restore_filer_table(ndev);
-+	}
-+
-+	if (priv->wol_opts & GIANFAR_WOL_MAGIC) {
-+		/* Disable Magic Packet mode */
-+		tempval = gfar_read(&regs->maccfg2);
-+		tempval &= ~MACCFG2_MPEN;
-+		gfar_write(&regs->maccfg2, tempval);
-+	}
- 
-+out:
-+	gfar_start(ndev);
-+	netif_device_attach(ndev);
- 	enable_napi(priv);
- 
-+	if (priv->wol_opts & (GIANFAR_WOL_ARP | GIANFAR_WOL_UCAST)) {
-+		/* send requests to process the received packets */
-+		for (i = 0; i < priv->num_grps; i++)
-+			gfar_schedule_cleanup(&priv->gfargrp[i]);
-+	}
- 	return 0;
- }
- 
-@@ -1602,6 +1770,48 @@ static int __gfar_is_rx_idle(struct gfar_private *priv)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+/* Halt the receive queues */
-+static void gfar_halt_rx(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 tempval;
-+	int i = 0;
-+
-+	for (i = 0; i < priv->num_grps; i++) {
-+		regs = priv->gfargrp[i].regs;
-+		/* Mask all interrupts */
-+		gfar_write(&regs->imask, IMASK_INIT_CLEAR);
-+
-+		/* Clear all interrupts */
-+		gfar_write(&regs->ievent, IEVENT_INIT_CLEAR);
-+	}
-+
-+	regs = priv->gfargrp[0].regs;
-+	/* Stop the DMA, and wait for it to stop */
-+	tempval = gfar_read(&regs->dmactrl);
-+	if ((tempval & DMACTRL_GRS) != DMACTRL_GRS) {
-+		int ret;
-+
-+		tempval |= DMACTRL_GRS;
-+		gfar_write(&regs->dmactrl, tempval);
-+
-+		do {
-+			ret = spin_event_timeout(((gfar_read(&regs->ievent) &
-+				IEVENT_GRSC) == IEVENT_GRSC), 1000000, 0);
-+			if (!ret && !(gfar_read(&regs->ievent) & IEVENT_GRSC))
-+				ret = __gfar_is_rx_idle(priv);
-+		} while (!ret);
-+	}
-+
-+	/* Disable Rx in MACCFG1  */
-+	tempval = gfar_read(&regs->maccfg1);
-+	tempval &= ~MACCFG1_RX_EN;
-+	gfar_write(&regs->maccfg1, tempval);
-+}
-+#endif
-+
- /* Halt the receive and transmit queues */
- static void gfar_halt_nodisable(struct net_device *dev)
- {
-@@ -1808,6 +2018,40 @@ void gfar_start(struct net_device *dev)
- 	dev->trans_start = jiffies; /* prevent tx timeout */
- }
- 
-+#ifdef CONFIG_PM
-+void gfar_rx_start(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->gfargrp[0].regs;
-+	u32 tempval;
-+	int i = 0;
-+
-+	/* Enable Rx in MACCFG1 */
-+	tempval = gfar_read(&regs->maccfg1);
-+	tempval |= MACCFG1_RX_EN;
-+	gfar_write(&regs->maccfg1, tempval);
-+
-+	/* Initialize DMACTRL to have WWR and WOP */
-+	tempval = gfar_read(&regs->dmactrl);
-+	tempval |= DMACTRL_INIT_SETTINGS;
-+	gfar_write(&regs->dmactrl, tempval);
-+
-+	/* Make sure we aren't stopped */
-+	tempval = gfar_read(&regs->dmactrl);
-+	tempval &= ~DMACTRL_GRS;
-+	gfar_write(&regs->dmactrl, tempval);
-+
-+	for (i = 0; i < priv->num_grps; i++) {
-+		regs = priv->gfargrp[i].regs;
-+		/* Clear RHLT, so that the DMA starts polling now */
-+		gfar_write(&regs->rstat, priv->gfargrp[i].rstat);
-+
-+		/* Unmask the interrupts we look for */
-+		gfar_write(&regs->imask, IMASK_DEFAULT);
-+	}
-+}
-+#endif
-+
- void gfar_configure_coalescing(struct gfar_private *priv,
- 	unsigned long tx_mask, unsigned long rx_mask)
- {
-@@ -1970,7 +2214,7 @@ static int gfar_enet_open(struct net_device *dev)
- 
- 	netif_tx_start_all_queues(dev);
- 
--	device_set_wakeup_enable(&dev->dev, priv->wol_en);
-+	device_set_wakeup_enable(&priv->ofdev->dev, priv->wol_opts);
- 
- 	return err;
- }
-@@ -2657,6 +2901,17 @@ static inline void count_errors(unsigned short status, struct net_device *dev)
- 
- irqreturn_t gfar_receive(int irq, void *grp_id)
- {
-+	struct gfar_priv_grp *gfargrp = grp_id;
-+	struct gfar __iomem *regs = gfargrp->regs;
-+	u32 ievent;
-+
-+	ievent = gfar_read(&regs->ievent);
-+
-+	if ((ievent & IEVENT_FGPI) == IEVENT_FGPI) {
-+		gfar_write(&regs->ievent, ievent & IEVENT_RX_MASK);
-+		return IRQ_HANDLED;
-+	}
-+
- 	gfar_schedule_cleanup((struct gfar_priv_grp *)grp_id);
- 	return IRQ_HANDLED;
- }
-diff --git a/drivers/net/ethernet/freescale/gianfar.h b/drivers/net/ethernet/freescale/gianfar.h
-index 9aa4377..1abebc4 100644
---- a/drivers/net/ethernet/freescale/gianfar.h
-+++ b/drivers/net/ethernet/freescale/gianfar.h
-@@ -232,6 +232,13 @@ extern const char gfar_driver_version[];
- #define RQUEUE_EN7		0x00000001
- #define RQUEUE_EN_ALL		0x000000FF
- 
-+/* Wake-On-Lan options */
-+#define GIANFAR_WOL_UCAST	0x00000001	/* Unicast wakeup */
-+#define GIANFAR_WOL_MCAST	0x00000002	/* Multicast wakeup */
-+#define GIANFAR_WOL_BCAST	0x00000004	/* Broadcase wakeup */
-+#define GIANFAR_WOL_ARP		0x00000008	/* ARP request wakeup */
-+#define GIANFAR_WOL_MAGIC	0x00000010	/* Magic packet wakeup */
-+
- /* Init to do tx snooping for buffers and descriptors */
- #define DMACTRL_INIT_SETTINGS   0x000000c3
- #define DMACTRL_GRS             0x00000010
-@@ -277,11 +284,15 @@ extern const char gfar_driver_version[];
- #define RCTRL_PAL_MASK		0x001f0000
- #define RCTRL_VLEX		0x00002000
- #define RCTRL_FILREN		0x00001000
-+#define RCTRL_FSQEN		0x00000800
- #define RCTRL_GHTX		0x00000400
- #define RCTRL_IPCSEN		0x00000200
- #define RCTRL_TUCSEN		0x00000100
- #define RCTRL_PRSDEP_MASK	0x000000c0
- #define RCTRL_PRSDEP_INIT	0x000000c0
-+#define RCTRL_PRSDEP_L2		0x00000040
-+#define RCTRL_PRSDEP_L2L3	0x00000080
-+#define RCTRL_PRSDEP_L2L3L4	0x000000c0
- #define RCTRL_PRSFM		0x00000020
- #define RCTRL_PROM		0x00000008
- #define RCTRL_EMEN		0x00000002
-@@ -327,18 +338,20 @@ extern const char gfar_driver_version[];
- #define IEVENT_MAG		0x00000800
- #define IEVENT_GRSC		0x00000100
- #define IEVENT_RXF0		0x00000080
-+#define IEVENT_FGPI		0x00000010
- #define IEVENT_FIR		0x00000008
- #define IEVENT_FIQ		0x00000004
- #define IEVENT_DPE		0x00000002
- #define IEVENT_PERR		0x00000001
--#define IEVENT_RX_MASK          (IEVENT_RXB0 | IEVENT_RXF0 | IEVENT_BSY)
-+#define IEVENT_RX_MASK          (IEVENT_RXB0 | IEVENT_RXF0 | \
-+					IEVENT_FGPI | IEVENT_BSY)
- #define IEVENT_TX_MASK          (IEVENT_TXB | IEVENT_TXF)
- #define IEVENT_RTX_MASK         (IEVENT_RX_MASK | IEVENT_TX_MASK)
- #define IEVENT_ERR_MASK         \
--(IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
-- IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC \
-- | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR \
-- | IEVENT_MAG | IEVENT_BABR)
-+	(IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
-+	 IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC | \
-+	 IEVENT_CRL | IEVENT_XFUN | IEVENT_FIR | IEVENT_FIQ | \
-+	 IEVENT_DPE | IEVENT_PERR | IEVENT_MAG | IEVENT_BABR)
- 
- #define IMASK_INIT_CLEAR	0x00000000
- #define IMASK_BABR              0x80000000
-@@ -359,14 +372,15 @@ extern const char gfar_driver_version[];
- #define IMASK_MAG		0x00000800
- #define IMASK_GRSC              0x00000100
- #define IMASK_RXFEN0		0x00000080
-+#define IMASK_FGPI		0x00000010
- #define IMASK_FIR		0x00000008
- #define IMASK_FIQ		0x00000004
- #define IMASK_DPE		0x00000002
- #define IMASK_PERR		0x00000001
- #define IMASK_DEFAULT  (IMASK_TXEEN | IMASK_TXFEN | IMASK_TXBEN | \
- 		IMASK_RXFEN0 | IMASK_BSY | IMASK_EBERR | IMASK_BABR | \
--		IMASK_XFUN | IMASK_RXC | IMASK_BABT | IMASK_DPE \
--		| IMASK_PERR)
-+		IMASK_XFUN | IMASK_RXC | IMASK_BABT | IMASK_FGPI | \
-+		IMASK_FIR | IMASK_FIQ | IMASK_DPE | IMASK_PERR | IMASK_MAG)
- #define IMASK_RTX_DISABLED ((~(IMASK_RXFEN0 | IMASK_TXFEN | IMASK_BSY)) \
- 			   & IMASK_DEFAULT)
- 
-@@ -883,6 +897,7 @@ struct gfar {
- #define FSL_GIANFAR_DEV_HAS_BD_STASHING		0x00000200
- #define FSL_GIANFAR_DEV_HAS_BUF_STASHING	0x00000400
- #define FSL_GIANFAR_DEV_HAS_TIMER		0x00000800
-+#define FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER	0x00001000
- 
- #if (MAXGROUPS == 2)
- #define DEFAULT_MAPPING 	0xAA
-@@ -1115,6 +1130,10 @@ struct gfar_private {
- 
- 	struct work_struct reset_task;
- 
-+	u32 ip_addr;
-+	u32 wol_opts;
-+	u32 wol_supported;
-+
- 	/* Network Statistics */
- 	struct gfar_extra_stats extra_stats;
- 
-diff --git a/drivers/net/ethernet/freescale/gianfar_ethtool.c b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-index 212736b..296e762 100644
---- a/drivers/net/ethernet/freescale/gianfar_ethtool.c
-+++ b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-@@ -29,6 +29,7 @@
- #include <linux/skbuff.h>
- #include <linux/spinlock.h>
- #include <linux/mm.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/irq.h>
-@@ -577,32 +578,49 @@ static void gfar_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
- 
--	if (priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) {
--		wol->supported = WAKE_MAGIC;
--		wol->wolopts = priv->wol_en ? WAKE_MAGIC : 0;
--	} else {
--		wol->supported = wol->wolopts = 0;
--	}
-+	wol->supported = 0;
-+	wol->wolopts = 0;
-+
-+	if (!priv->wol_supported || !device_can_wakeup(&priv->ofdev->dev))
-+		return;
-+
-+	if (priv->wol_supported & GIANFAR_WOL_MAGIC)
-+		wol->supported |= WAKE_MAGIC;
-+
-+	if (priv->wol_supported & GIANFAR_WOL_ARP)
-+		wol->supported |= WAKE_ARP;
-+
-+	if (priv->wol_supported & GIANFAR_WOL_UCAST)
-+		wol->supported |= WAKE_UCAST;
-+
-+	if (priv->wol_opts & GIANFAR_WOL_MAGIC)
-+		wol->wolopts |= WAKE_MAGIC;
-+
-+	if (priv->wol_opts & GIANFAR_WOL_ARP)
-+		wol->wolopts |= WAKE_ARP;
-+
-+	if (priv->wol_opts & GIANFAR_WOL_UCAST)
-+		wol->wolopts |= WAKE_UCAST;
- }
- 
- static int gfar_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
--	unsigned long flags;
- 
--	if (!(priv->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) &&
--	    wol->wolopts != 0)
--		return -EINVAL;
--
--	if (wol->wolopts & ~WAKE_MAGIC)
--		return -EINVAL;
-+	if (!priv->wol_supported || !device_can_wakeup(&priv->ofdev->dev) ||
-+		(wol->wolopts & ~(WAKE_MAGIC | WAKE_ARP | WAKE_UCAST)))
-+		return -EOPNOTSUPP;
- 
--	device_set_wakeup_enable(&dev->dev, wol->wolopts & WAKE_MAGIC);
-+	priv->wol_opts = 0;
- 
--	spin_lock_irqsave(&priv->bflock, flags);
--	priv->wol_en =  !!device_may_wakeup(&dev->dev);
--	spin_unlock_irqrestore(&priv->bflock, flags);
-+	if (wol->wolopts & WAKE_MAGIC)
-+		priv->wol_opts |= GIANFAR_WOL_MAGIC;
-+	if (wol->wolopts & WAKE_ARP)
-+		priv->wol_opts |= GIANFAR_WOL_ARP;
-+	if (wol->wolopts & WAKE_UCAST)
-+		priv->wol_opts |= GIANFAR_WOL_UCAST;
- 
-+	device_set_wakeup_enable(&priv->ofdev->dev, (u32)priv->wol_opts);
- 	return 0;
- }
- #endif
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Freescale Semiconductor");
++MODULE_DESCRIPTION("Freescale Integrated Flash Controller driver");
 -- 
-1.6.4.1
+1.7.5.4
