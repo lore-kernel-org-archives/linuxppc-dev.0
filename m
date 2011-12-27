@@ -1,16 +1,18 @@
 Return-Path: <b32579@nmglablinux19.freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
- [213.199.154.140])
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+ [213.199.154.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 7219DB6FF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2011 23:09:29 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 06BEDB7049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2011 23:09:36 +1100 (EST)
 From: Prabhakar Kushwaha <prabhakar@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-mtd@lists.infradead.org>
 Subject: [PATCH 1/2][v2] Integrated Flash Controller support
-Date: Tue, 27 Dec 2011 17:39:12 +0530
-Message-ID: <1324987753-30318-1-git-send-email-prabhakar@freescale.com>
+Date: Tue, 27 Dec 2011 17:39:13 +0530
+Message-ID: <1324987753-30318-2-git-send-email-prabhakar@freescale.com>
+In-Reply-To: <1324987753-30318-1-git-send-email-prabhakar@freescale.com>
+References: <1324987753-30318-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Scott Wood <scottwood@freescale.com>,
