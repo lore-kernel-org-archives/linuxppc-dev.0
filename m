@@ -1,21 +1,36 @@
-Return-Path: <B29237@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
- [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 0B07BB6FD3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2011 18:19:31 +1100 (EST)
-From: <b29237@freescale.com>
-To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <r58472@freescale.com>
-Subject: [PATCH] 	dmaengine: async_xor,
- fix zero address issue when xor highmem page
-Date: Tue, 27 Dec 2011 14:30:46 +0800
-Message-ID: <1324967446-28939-1-git-send-email-b29237@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Forrest shi <b29237@freescale.com>
+Return-Path: <m.szyprowski@samsung.com>
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12]) by ozlabs.org (Postfix) with ESMTP id D6323B6FAA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2011 19:25:43 +1100 (EST)
+Received: from euspt1 (mailout2.w1.samsung.com [210.118.77.12])
+ by mailout2.w1.samsung.com
+ (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+ with ESMTP id <0LWU00KQHSQQRV@mailout2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Dec 2011 08:25:38 +0000 (GMT)
+Received: from linux.samsung.com ([106.116.38.10])
+ by spt1.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
+ 2004)) with ESMTPA id <0LWU00IWXSQQN9@spt1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Dec 2011 08:25:38 +0000 (GMT)
+Date: Tue, 27 Dec 2011 09:25:25 +0100
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH 00/14] DMA-mapping framework redesign preparation
+In-reply-to: <20111223163516.GO20129@parisc-linux.org>
+To: 'Matthew Wilcox' <matthew@wil.cx>
+Message-id: <000901ccc471$15db8bc0$4192a340$%szyprowski@samsung.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
+ <20111223163516.GO20129@parisc-linux.org>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, 'Stephen Rothwell' <sfr@canb.auug.org.au>,
+ 'Jonathan Corbet' <corbet@lwn.net>, x86@kernel.org,
+ 'Arnd Bergmann' <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+ linaro-mm-sig@lists.linaro.org, Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ 'Thomas Gleixner' <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ discuss@x86-64.org, linux-kernel@vger.kernel.org,
+ 'Kyungmin Park' <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
+ 'Andrew Morton' <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +40,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Forrest shi <b29237@freescale.com>
+Hello,
 
-	we may do_sync_xor high mem pages, in this case, page_address will
-        return zero address which cause a failure.
+On Friday, December 23, 2011 5:35 PM Matthew Wilcox wrote:
 
-	this patch uses kmap_atomic before xor the pages and kunmap_atomic
-        after it.
+> On Fri, Dec 23, 2011 at 01:27:19PM +0100, Marek Szyprowski wrote:
+> > The first issue we identified is the fact that on some platform (again,
+> > mainly ARM) there are several functions for allocating DMA buffers:
+> > dma_alloc_coherent, dma_alloc_writecombine and dma_alloc_noncoherent
+> 
+> Is this write-combining from the point of view of the device (ie iommu),
+> or from the point of view of the CPU, or both?
 
-	Signed-off-by: b29237@freescale.com <xuelin.shi@freescale.com>
----
- crypto/async_tx/async_xor.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+It is about write-combining from the CPU point of view. Right now there are
+no devices with such advanced memory interface to do write combining on the
+DMA side, but I believe that they might appear at some point in the future 
+as well.
 
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index bc28337..5b416d1 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -26,6 +26,7 @@
- #include <linux/kernel.h>
- #include <linux/interrupt.h>
- #include <linux/mm.h>
-+#include <linux/highmem.h>
- #include <linux/dma-mapping.h>
- #include <linux/raid/xor.h>
- #include <linux/async_tx.h>
-@@ -126,7 +127,7 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 	    int src_cnt, size_t len, struct async_submit_ctl *submit)
- {
- 	int i;
--	int xor_src_cnt = 0;
-+	int xor_src_cnt = 0, kmap_cnt=0;
- 	int src_off = 0;
- 	void *dest_buf;
- 	void **srcs;
-@@ -138,11 +139,13 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 
- 	/* convert to buffer pointers */
- 	for (i = 0; i < src_cnt; i++)
--		if (src_list[i])
--			srcs[xor_src_cnt++] = page_address(src_list[i]) + offset;
-+		if (src_list[i]) {
-+			srcs[xor_src_cnt++] = kmap_atomic(src_list[i], KM_USER1) + offset;
-+		}
-+	kmap_cnt = xor_src_cnt;
- 	src_cnt = xor_src_cnt;
- 	/* set destination address */
--	dest_buf = page_address(dest) + offset;
-+	dest_buf = kmap_atomic(dest, KM_USER0) + offset;
- 
- 	if (submit->flags & ASYNC_TX_XOR_ZERO_DST)
- 		memset(dest_buf, 0, len);
-@@ -157,6 +160,11 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 		src_off += xor_src_cnt;
- 	}
- 
-+	kunmap_atomic(dest_buf, KM_USER0);
-+	for (i = 0; i < kmap_cnt; i++) 
-+		if (src_list[i])
-+			kunmap_atomic(srcs[i], KM_USER1);
-+
- 	async_tx_sync_epilog(submit);
- }
- 
+> > The next step in dma mapping framework update is the introduction of
+> > dma_mmap/dma_mmap_attrs() function. There are a number of drivers
+> > (mainly V4L2 and ALSA) that only exports the DMA buffers to user space.
+> > Creating a userspace mapping with correct page attributes is not an easy
+> > task for the driver. Also the DMA-mapping framework is the only place
+> > where the complete information about the allocated pages is available,
+> > especially if the implementation uses IOMMU controller to provide a
+> > contiguous buffer in DMA address space which is scattered in physical
+> > memory space.
+> 
+> Surely we only need a helper which drivrs can call from their mmap routine
+> to solve this?
+
+On ARM architecture it is already implemented this way and a bunch of drivers
+use dma_mmap_coherent/dma_mmap_writecombine calls. We would like to standardize
+these calls across all architectures.
+
+> > Usually these drivers don't touch the buffer data at all, so the mapping
+> > in kernel virtual address space is not needed. We can introduce
+> > DMA_ATTRIB_NO_KERNEL_MAPPING attribute which lets kernel to skip/ignore
+> > creation of kernel virtual mapping. This way we can save previous
+> > vmalloc area and simply some mapping operation on a few architectures.
+> 
+> I really think this wants to be a separate function.  dma_alloc_coherent
+> is for allocating memory to be shared between the kernel and a driver;
+> we already have dma_map_sg for mapping userspace I/O as an alternative
+> interface.  This feels like it's something different again rather than
+> an option to dma_alloc_coherent.
+
+That is just a starting point for the discussion. 
+
+I thought about this API a bit and came to conclusion that there is no much
+difference between a dma_alloc_coherent which creates a mapping in kernel
+virtual space and the one that does not. It is just a hint from the driver
+that it will not use that mapping at all. Of course this attribute makes sense
+only together with adding a dma_mmap_attrs() call, because otherwise drivers
+won't be able to get access to the buffer data.
+
+On coherent architectures where dma_alloc_coherent is just a simple wrapper
+around alloc_pages_exact() such attribute can be simply ignored without any
+impact on the drivers (that's the main idea behind dma attributes!).
+However such hint will help a lot on non-coherent architectures where 
+additional work need to be done to provide a cohenent mapping in kernel 
+address space. It also saves some precious kernel resources like vmalloc
+address range.
+
+Best regards
 -- 
-1.7.0.4
+Marek Szyprowski
+Samsung Poland R&D Center
