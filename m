@@ -1,29 +1,20 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 64A25B6F68
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 05:01:21 +1100 (EST)
-Subject: RE: [PATCH 00/14] DMA-mapping framework redesign preparation
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-In-Reply-To: <000901ccc471$15db8bc0$4192a340$%szyprowski@samsung.com>
-References: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
- <20111223163516.GO20129@parisc-linux.org>
- <000901ccc471$15db8bc0$4192a340$%szyprowski@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Dec 2011 17:53:13 +0000
-Message-ID: <1325008393.14252.5.camel@dabdike>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6DE17B6FFB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 05:01:50 +1100 (EST)
+Date: Tue, 27 Dec 2011 12:59:40 -0500 (EST)
+Message-Id: <20111227.125940.1585324652948148302.davem@davemloft.net>
+To: X.Xie@freescale.com
+Subject: Re: [PATCH] net/ucc_geth: some fix in current kernel
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1324979328-32081-1-git-send-email-X.Xie@freescale.com>
+References: <y>
+	<1324979328-32081-1-git-send-email-X.Xie@freescale.com>
 Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, 'Stephen Rothwell' <sfr@canb.auug.org.au>,
- 'Jonathan Corbet' <corbet@lwn.net>, x86@kernel.org,
- 'Arnd Bergmann' <arnd@arndb.de>, 'Matthew Wilcox' <matthew@wil.cx>,
- microblaze-uclinux@itee.uq.edu.au, linaro-mm-sig@lists.linaro.org,
- Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
- 'Thomas Gleixner' <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- discuss@x86-64.org, linux-kernel@vger.kernel.org,
- 'Kyungmin Park' <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
- 'Andrew Morton' <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,45 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-12-27 at 09:25 +0100, Marek Szyprowski wrote:
-[...]
-> > > Usually these drivers don't touch the buffer data at all, so the mapping
-> > > in kernel virtual address space is not needed. We can introduce
-> > > DMA_ATTRIB_NO_KERNEL_MAPPING attribute which lets kernel to skip/ignore
-> > > creation of kernel virtual mapping. This way we can save previous
-> > > vmalloc area and simply some mapping operation on a few architectures.
-> > 
-> > I really think this wants to be a separate function.  dma_alloc_coherent
-> > is for allocating memory to be shared between the kernel and a driver;
-> > we already have dma_map_sg for mapping userspace I/O as an alternative
-> > interface.  This feels like it's something different again rather than
-> > an option to dma_alloc_coherent.
+From: Xie Xiaobo <X.Xie@freescale.com>
+Date: Tue, 27 Dec 2011 17:48:48 +0800
+
+> * Revert commit "ucc_geth: Fix hangs after switching from full to half duplex"
+>   This commit impacted the driver in all link state change more than
+>   duplex change.
+> * Change some parameters.
+>   Increased the BD ring length.
 > 
-> That is just a starting point for the discussion. 
-> 
-> I thought about this API a bit and came to conclusion that there is no much
-> difference between a dma_alloc_coherent which creates a mapping in kernel
-> virtual space and the one that does not. It is just a hint from the driver
-> that it will not use that mapping at all. Of course this attribute makes sense
-> only together with adding a dma_mmap_attrs() call, because otherwise drivers
-> won't be able to get access to the buffer data.
+> Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
 
-This depends.  On Virtually indexed systems like PA-RISC, there are two
-ways of making a DMA range coherent.  One is to make the range uncached.
-This is incredibly slow and not what we do by default, but it can be
-used to make multiple mappings coherent.  The other is to load the
-virtual address up as a coherence index into the IOMMU.  This makes it a
-full peer in the coherence process, but means we can only designate a
-single virtual range to be coherent (not multiple mappings unless they
-happen to be congruent).  Perhaps it doesn't matter that much, since I
-don't see a use for this on PA, but if any other architecture works the
-same, you'd have to designate a single mapping as the coherent one and
-essentially promise not to use the other mapping if we followed our
-normal coherence protocols.
-
-Obviously, the usual range we currently make coherent is the kernel
-mapping (that's actually the only virtual address we have by the time
-we're deep in the iommu code), so designating a different virtual
-address would need some surgery to the guts of the iommu code.
-
-James
+Please, one major change per patch.
