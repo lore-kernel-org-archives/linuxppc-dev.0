@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E877FB6FD0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 21:08:16 +1100 (EST)
-Message-ID: <1325066887.6632.37.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 3BCC7B6FD8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 21:10:24 +1100 (EST)
+Message-ID: <1325067016.6632.38.camel@pasglop>
 Subject: [PATCH] offb: Fix setting of the pseudo-palette for >8bpp
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-fbdev-devel@lists.sourceforge.net
-Date: Wed, 28 Dec 2011 21:08:07 +1100
+To: linux-fbdev@vger.kernel.org
+Date: Wed, 28 Dec 2011 21:10:16 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
@@ -35,6 +35,12 @@ qemu does it).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
+
+(resent to the right list)
+
+BTW. Do we have a maintainer to pick up those offb patches I sent ? I'm
+happy to carry them in -powerpc instead, it would actually make it easier
+for me....
 
 diff --git a/drivers/video/offb.c b/drivers/video/offb.c
 index cb163a5..24e1fc6 100644
