@@ -1,20 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from calzone.tip.net.au (calzone.tip.net.au
- [IPv6:2402:b800:7003:1::15])
- by ozlabs.org (Postfix) with ESMTP id 46FB9B6FA7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 19:49:56 +1100 (EST)
-Date: Wed, 28 Dec 2011 19:49:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the final tree (powerpc
- related)
-Message-Id: <20111228194949.ff20a609745e816c266f7d91@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__28_Dec_2011_19_49_49_+1100_UydnkmtpD6GOxCBy"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <Farrukh_Arshad@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "relay1.mentorg.com",
+ Issuer "Entrust Certification Authority - L1B" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 34A58B6FE1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 20:26:16 +1100 (EST)
+From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
+Subject: RE: Kernel not booting when supplying boot parameter mem
+Date: Wed, 28 Dec 2011 09:26:10 +0000
+Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CB51F@EU-MBX-03.mgc.mentorg.com>
+References: <93CD5F41FDBC6042A6B449764F3B35CC050C9F21@EU-MBX-03.mgc.mentorg.com>
+ <4EF9A6F2.8020708@windriver.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CB4E4@EU-MBX-03.mgc.mentorg.com>
+ <4EFAB4B9.1020205@windriver.com>
+In-Reply-To: <4EFAB4B9.1020205@windriver.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__28_Dec_2011_19_49_49_+1100_UydnkmtpD6GOxCBy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi ,
-
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
-
-kernel/built-in.o: In function `irq_dispose_mapping':
-(.opd+0x159f0): multiple definition of `irq_dispose_mapping'
-arch/powerpc/kernel/built-in.o:(.opd+0x960): first defined here
-kernel/built-in.o: In function `irq_create_of_mapping':
-(.opd+0x15a20): multiple definition of `irq_create_of_mapping'
-arch/powerpc/kernel/built-in.o:(.opd+0x9a8): first defined here
-kernel/built-in.o: In function `.irq_create_of_mapping':
-(.text+0x147030): multiple definition of `.irq_create_of_mapping'
-arch/powerpc/kernel/built-in.o:(.text+0x9de0): first defined here
-kernel/built-in.o: In function `.irq_dispose_mapping':
-(.text+0x146f4c): multiple definition of `.irq_dispose_mapping'
-arch/powerpc/kernel/built-in.o:(.text+0x9684): first defined here
-
-I am not sure what caused this. And have just left it broken.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__28_Dec_2011_19_49_49_+1100_UydnkmtpD6GOxCBy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJO+tgtAAoJEECxmPOUX5FEdx8P/1eTRXmj1hKoxaUq2WiQ4ZDz
-qIZ/ktbMolhwkemwJ345R69KiGSBJc0DPug0PcGveTN0dTEFT9gazlAMhTpwjE+0
-4RBtyOrCgN8ubVX7mv0x9UVUzPrBvxZel1zvKMCxuBO7YOlBWZdZF8Qt7SewZGDW
-3l+1NJmCO40Vv2hVqmI7SYSFGipVx2b2XwpkFZdtMuR9jvd/4b3sbwqmwLxY9omR
-HnJQQiLetiFcTkrS2unlPLOeKGQvmJWkKv+SKNaNOPh37Yk0dIirC2XLXSRj+/bu
-EKPfKJoglUlxgZhN96MaQDjF2QWFZljxtJqjKzbbzBJLvpoThRh4XMcxTcg1XI5i
-W9YY2CiBmKQcnWtKXbFbU0RotufTX24ejPcab6yJsYjQuHsSEeo009RlUdJFzbA4
-gcgnoSnYn61iSpShbLFTX7pvRhV8wiL3yUTx3jDO6sXg39S2QA95w44vhP3vwQVb
-QDsYP4zYMVcphVOiv/wNl396fYJ8eRCKtOuoLnlFMpLAvYX2Iy/V8v7w40tGFC7c
-10KHT/TP0FkkDrXb+IAcIFeBeopE9CON824S2pGKDNayj49VhyPP0v9MRzkj/UZf
-hGexcNrWXNAGO7Ns6ypxAzaGUGcI6YxZLxhxMkxLHdaYWp3uspYEt+73ZiuuSAJm
-viq+DQsQTa6KnBtYbQiS
-=TzMH
------END PGP SIGNATURE-----
-
---Signature=_Wed__28_Dec_2011_19_49_49_+1100_UydnkmtpD6GOxCBy--
+Pj4gUGxlYXNlIGNoZWNrIGlmIHRoZSBmb2xsb3dpbmcgY29tbWl0IGlzIGFscmVhZHkgaW4geW91
+ciBrZXJuZWw6DQo+PiAtLS0tLS0NCj4+ICAgICBwb3dlcnBjOiBGaXggbWVtb3J5IGxpbWl0cyB3
+aGVuIHN0YXJ0aW5nIGF0IGEgbm9uLXplcm8gYWRkcmVzcw0KDQo+PiAgICAgbWVtYmxvY2tfZW5m
+b3JjZV9tZW1vcnlfbGltaXQoKSB0YWtlcyB0aGUgZGVzaXJlZCBtYXhpbXVtIHF1YW50aXR5IG9m
+IG1lbW9yeQ0KPj4gICAgIHRvIGVuZCB1cCB3aXRoLCBub3QgYW4gYWRkcmVzcyBhYm92ZSB3aGlj
+aCBtZW1vcnkgd2lsbCBub3QgYmUgdXNlZC4NCg0KVGhhbmtzIFRpZWp1biwgVGhpcyBmaXggd2Fz
+IG5vdCB0aGVyZSBpbiB0aGUga2VybmVsIGFuZCB3aXRoIHRoaXMgZml4IG15IGJvdGgga2VybmVs
+cyBhcmUgbG9hZGluZyB3aGVuIHByb3ZpZGluZyBtZW0gcGFyYW1ldGVyIGluIHRoZSBrZXJuZWwg
+Ym9vdCBwYXJtYXMuDQoNClJlZ2FyZHMsDQpGYXJydWtoIEFyc2hhZA0KDQoNCi0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQpGcm9tOiB0aWVqdW4uY2hlbiBbbWFpbHRvOnRpZWp1bi5jaGVuQHdp
+bmRyaXZlci5jb21dIA0KU2VudDogV2VkbmVzZGF5LCBEZWNlbWJlciAyOCwgMjAxMSAxMToxOSBB
+TQ0KVG86IEFyc2hhZCwgRmFycnVraA0KQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+DQpTdWJqZWN0OiBSZTogS2VybmVsIG5vdCBib290aW5nIHdoZW4gc3VwcGx5aW5nIGJvb3QgcGFy
+YW1ldGVyIG1lbQ0KDQpBcnNoYWQsIEZhcnJ1a2ggd3JvdGU6DQo+IEhpIFRpZWp1biwNCj4gDQo+
+IFRoYW5rcyBmb3IgeW91ciByZXNwb25zZS4gWWVzLCBJIGFtIHJ1bm5pbmcgdHdvIGtlcm5lbHMg
+b25lIG9uIGVhY2ggY29yZSBpbiBTQU1QIGNvbmZpZ3VyYXRpb24gb24gUDEwMjJSREsgYm9hcmQu
+IEdpdmVuIGlzIG15IG1lbW9yeSBwYXJ0aXRpb25pbmcuIENvcmUgMCBpcyBsb2FkaW5nIGZpbmUg
+YnV0IENvcmUgMSBpcyBub3QgbG9hZGluZy4gQ09ORklHX1JFTE9DQVRBQkxFIGlzIG5vdCBzZXQu
+DQo+IA0KPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gQ29y
+ZSAgICAgICAgICAgICAgICAgICAgICAJfCBCYXNlIEFkZHJlc3MgIAl8ICAgIFNpemUgICAgICAg
+ICAgICAgICAgIAkJCXwgVWJvb3QgcGFyYW1ldGVycwkJCQkJfCBLZXJuZWwgQ29uZmlndXJhdGlv
+bgkJCQkJCQkJCXwNCj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS18LS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tfC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS18LS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tfC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tfA0K
+PiBDb3JlIDAgKE1FTCBSVCBLZXJuZWwpIAl8IDB4MDAwMCwwMDAwICAgCQl8IDB4MTAwMCwwMDAw
+IC0gMjU2IChNQikgICAJfGJvb3RtX2xvdyA9IDB4MDAwMCwwMDAwLCBib290bV9zaXplID0gMHgx
+MDAwLDAwMDAJfCBDT05GSUdfUEhZU0lDQUxfU1RBUlQgPSAweDAwMDAsMDAwMCwgQ09ORklHX0tF
+Uk5FTF9TVEFSVCA9IDB4QzAwMCwwMDAwCXwNCj4gQ29yZSAxIChMVElCIEtlcm5lbCkgICAgICAJ
+fDB4MTAwMCwwMDAwICAgIAkJfCAweDA4MDAsMDAwMCAtIDEyOCAoTUIpICAgCXxib290bV9sb3cg
+PSAweDEwMDAsMDAwMCwgYm9vdG1fc2l6ZSA9IDB4MDgwMCwwMDAwCXwgQ09ORklHX1BIWVNJQ0FM
+X1NUQVJUID0gMHgxMDAwLDAwMDAsIENPTkZJR19LRVJORUxfU1RBUlQgPSAweEMwMDAsMDAwMAl8
+DQo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiANCg0KUGxl
+YXNlIGNoZWNrIGlmIHRoZSBmb2xsb3dpbmcgY29tbWl0IGlzIGFscmVhZHkgaW4geW91ciBrZXJu
+ZWw6DQotLS0tLS0NCiAgICBwb3dlcnBjOiBGaXggbWVtb3J5IGxpbWl0cyB3aGVuIHN0YXJ0aW5n
+IGF0IGEgbm9uLXplcm8gYWRkcmVzcw0KDQogICAgbWVtYmxvY2tfZW5mb3JjZV9tZW1vcnlfbGlt
+aXQoKSB0YWtlcyB0aGUgZGVzaXJlZCBtYXhpbXVtIHF1YW50aXR5IG9mIG1lbW9yeQ0KICAgIHRv
+IGVuZCB1cCB3aXRoLCBub3QgYW4gYWRkcmVzcyBhYm92ZSB3aGljaCBtZW1vcnkgd2lsbCBub3Qg
+YmUgdXNlZC4NCg0KVGllanVuDQo=
