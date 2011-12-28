@@ -1,17 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3BCC7B6FD8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 21:10:24 +1100 (EST)
-Message-ID: <1325067016.6632.38.camel@pasglop>
-Subject: [PATCH] offb: Fix setting of the pseudo-palette for >8bpp
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-fbdev@vger.kernel.org
-Date: Wed, 28 Dec 2011 21:10:16 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B21989@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 03CF7B6FE0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 21:30:30 +1100 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <linux-mmc@vger.kernel.org>
+Subject: [PATCH] mmc:sdhci: restore the enabled dma when do reset all
+Date: Wed, 28 Dec 2011 17:41:21 +0800
+Message-ID: <1325065281-17785-1-git-send-email-Shaohui.Xie@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,88 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using a >8bpp framebuffer, offb advertises truecolor, not directcolor,
-and doesn't touch the color map even if it has a corresponding access method
-for the real hardware.
+If dma is enabled, it'll be cleared when reset all is performed, this can
+be observed on some platforms, such as P2041 which has a version 2.3
+controller, but platform like P4080 which has a version 2.2 controller,
+does not suffer this, so we will check if the dma is enabled, we should
+restore it after reset all.
 
-Thus it needs to set the pseudo-palette with all 3 components of the color,
-like other truecolor framebuffers, not with copies of the color index like
-a directcolor framebuffer would do.
-
-This went unnoticed for a long time because it's pretty hard to get offb
-to kick in with anything but 8bpp (old BootX under MacOS will do that and
-qemu does it).
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 ---
+based on http://git.kernel.org/pub/scm/linux/kernel/git/cjb/mmc.git,
+branch 'for-linus'.
 
-(resent to the right list)
+ drivers/mmc/host/sdhci.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-BTW. Do we have a maintainer to pick up those offb patches I sent ? I'm
-happy to carry them in -powerpc instead, it would actually make it easier
-for me....
-
-diff --git a/drivers/video/offb.c b/drivers/video/offb.c
-index cb163a5..24e1fc6 100644
---- a/drivers/video/offb.c
-+++ b/drivers/video/offb.c
-@@ -100,36 +100,32 @@ static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 			  u_int transp, struct fb_info *info)
- {
- 	struct offb_par *par = (struct offb_par *) info->par;
--	int i, depth;
--	u32 *pal = info->pseudo_palette;
--
--	depth = info->var.bits_per_pixel;
--	if (depth == 16)
--		depth = (info->var.green.length == 5) ? 15 : 16;
--
--	if (regno > 255 ||
--	    (depth == 16 && regno > 63) ||
--	    (depth == 15 && regno > 31))
--		return 1;
--
--	if (regno < 16) {
--		switch (depth) {
--		case 15:
--			pal[regno] = (regno << 10) | (regno << 5) | regno;
--			break;
--		case 16:
--			pal[regno] = (regno << 11) | (regno << 5) | regno;
--			break;
--		case 24:
--			pal[regno] = (regno << 16) | (regno << 8) | regno;
--			break;
--		case 32:
--			i = (regno << 8) | regno;
--			pal[regno] = (i << 16) | i;
--			break;
-+
-+	if (info->fix.visual == FB_VISUAL_TRUECOLOR) {
-+		u32 *pal = info->pseudo_palette;
-+		u32 cr = red >> (16 - info->var.red.length);
-+		u32 cg = green >> (16 - info->var.green.length);
-+		u32 cb = blue >> (16 - info->var.blue.length);
-+		u32 value;
-+
-+		if (regno >= 16)
-+			return -EINVAL;
-+
-+		value = (cr << info->var.red.offset) |
-+			(cg << info->var.green.offset) |
-+			(cb << info->var.blue.offset);
-+		if (info->var.transp.length > 0) {
-+			u32 mask = (1 << info->var.transp.length) - 1;
-+			mask <<= info->var.transp.offset;
-+			value |= mask;
- 		}
-+		pal[regno] = value;
-+		return 0;
- 	}
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 19ed580..22033c3 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -29,6 +29,7 @@
+ #include <linux/mmc/host.h>
  
-+	if (regno > 255)
-+		return -EINVAL;
+ #include "sdhci.h"
++#include "sdhci-esdhc.h"
+ 
+ #define DRIVER_NAME "sdhci"
+ 
+@@ -176,6 +177,7 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ {
+ 	unsigned long timeout;
+ 	u32 uninitialized_var(ier);
++	u32 uninitialized_var(dma);
+ 
+ 	if (host->quirks & SDHCI_QUIRK_NO_CARD_NO_RESET) {
+ 		if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) &
+@@ -189,6 +191,8 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 	if (host->ops->platform_reset_enter)
+ 		host->ops->platform_reset_enter(host, mask);
+ 
++	dma = sdhci_readl(host, ESDHC_DMA_SYSCTL);
 +
- 	red >>= 8;
- 	green >>= 8;
- 	blue >>= 8;
+ 	sdhci_writeb(host, mask, SDHCI_SOFTWARE_RESET);
+ 
+ 	if (mask & SDHCI_RESET_ALL)
+@@ -214,6 +218,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 
+ 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+ 		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
++
++	if ((dma & ESDHC_DMA_SNOOP) && (mask & SDHCI_RESET_ALL))
++		sdhci_writel(host, dma, ESDHC_DMA_SYSCTL);
+ }
+ 
+ static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios);
+-- 
+1.6.4
