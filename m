@@ -1,20 +1,21 @@
-Return-Path: <Farrukh_Arshad@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1B" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C7C37B6FD1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 17:05:14 +1100 (EST)
-From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: RE: Kernel not booting when supplying boot parameter mem
-Date: Wed, 28 Dec 2011 06:05:07 +0000
-Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CB4E4@EU-MBX-03.mgc.mentorg.com>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1916BB6FE8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 17:18:37 +1100 (EST)
+Message-ID: <4EFAB4B9.1020205@windriver.com>
+Date: Wed, 28 Dec 2011 14:18:33 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+Subject: Re: Kernel not booting when supplying boot parameter mem
 References: <93CD5F41FDBC6042A6B449764F3B35CC050C9F21@EU-MBX-03.mgc.mentorg.com>
  <4EF9A6F2.8020708@windriver.com>
-In-Reply-To: <4EF9A6F2.8020708@windriver.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <93CD5F41FDBC6042A6B449764F3B35CC050CB4E4@EU-MBX-03.mgc.mentorg.com>
+In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050CB4E4@EU-MBX-03.mgc.mentorg.com>
+Content-Type: text/plain; charset="UTF-8"
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,50 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgVGllanVuLA0KDQpUaGFua3MgZm9yIHlvdXIgcmVzcG9uc2UuIFllcywgSSBhbSBydW5uaW5n
-IHR3byBrZXJuZWxzIG9uZSBvbiBlYWNoIGNvcmUgaW4gU0FNUCBjb25maWd1cmF0aW9uIG9uIFAx
-MDIyUkRLIGJvYXJkLiBHaXZlbiBpcyBteSBtZW1vcnkgcGFydGl0aW9uaW5nLiBDb3JlIDAgaXMg
-bG9hZGluZyBmaW5lIGJ1dCBDb3JlIDEgaXMgbm90IGxvYWRpbmcuIENPTkZJR19SRUxPQ0FUQUJM
-RSBpcyBub3Qgc2V0Lg0KDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0NCkNvcmUgICAgICAgICAgICAgICAgICAgICAgCXwgQmFzZSBBZGRyZXNzICAJfCAgICBTaXpl
-ICAgICAgICAgICAgICAgICAJCQl8IFVib290IHBhcmFtZXRlcnMJCQkJCXwgS2VybmVsIENvbmZp
-Z3VyYXRpb24JCQkJCQkJCQl8DQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLXwtLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS18LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LXwtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS18LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS18DQpDb3JlIDAgKE1FTCBSVCBLZXJuZWwpIAl8IDB4MDAwMCwwMDAwICAgCQl8IDB4MTAwMCww
-MDAwIC0gMjU2IChNQikgICAJfGJvb3RtX2xvdyA9IDB4MDAwMCwwMDAwLCBib290bV9zaXplID0g
-MHgxMDAwLDAwMDAJfCBDT05GSUdfUEhZU0lDQUxfU1RBUlQgPSAweDAwMDAsMDAwMCwgQ09ORklH
-X0tFUk5FTF9TVEFSVCA9IDB4QzAwMCwwMDAwCXwNCkNvcmUgMSAoTFRJQiBLZXJuZWwpICAgICAg
-CXwweDEwMDAsMDAwMCAgICAJCXwgMHgwODAwLDAwMDAgLSAxMjggKE1CKSAgIAl8Ym9vdG1fbG93
-ID0gMHgxMDAwLDAwMDAsIGJvb3RtX3NpemUgPSAweDA4MDAsMDAwMAl8IENPTkZJR19QSFlTSUNB
-TF9TVEFSVCA9IDB4MTAwMCwwMDAwLCBDT05GSUdfS0VSTkVMX1NUQVJUID0gMHhDMDAwLDAwMDAJ
-fA0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQoNClJlZ2FyZHMs
-DQpGYXJydWtoIEFyc2hhZA0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogdGll
-anVuLmNoZW4gW21haWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXSANClNlbnQ6IFR1ZXNk
-YXksIERlY2VtYmVyIDI3LCAyMDExIDQ6MDggUE0NClRvOiBBcnNoYWQsIEZhcnJ1a2gNCkNjOiBs
-aW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KU3ViamVjdDogUmU6IEtlcm5lbCBub3QgYm9v
-dGluZyB3aGVuIHN1cHBseWluZyBib290IHBhcmFtZXRlciBtZW0NCg0KQXJzaGFkLCBGYXJydWto
-IHdyb3RlOg0KPiBHcmVldGluZ3MgQWxsLA0KPiANCj4gSSBoYXZlIGEgYmFzaWMgcXVlc3Rpb24u
-IEkgaGF2ZSA1MTIgTUIgbWVtb3J5LiBJIHdhbnQgbXkga2VybmVsIHRvIHVzZSBvbmx5IGxhc3Qg
-MTI4IE1CIG9mIG1lbW9yeSBzdGFydGluZyBmcm9tIGFkZHJlc3MgMHgxMDAwMDAwMC4gSSBoYXZl
-IGNvbmZpZ3VyZWQgdGhlIGtlcm5lbCBDT05GSUdfUEhZU0lDQUxfU1RBUlQ9MHgxMDAwMDAwMCBh
-bmQgaW4ga2VybmVsIGJvb3QgcGFyYW1ldGVyIEkgaGF2ZSBzZXQgbWVtPTEyOE0uIEluIHRoaXMg
-c2NlbmFyaW8gbXkga2VybmVsIGlzIG5vdCBib290aW5nIGFuZCBpdCBqdXN0IHN0dWNrIGFmdGVy
-IHVuY29tcHJlc3NpbmcgaXQuIElmIEkgZG8gbm90IHByb3ZpZGUgbWVtPTEyOE0gYm9vdCBwYXJh
-bWV0ZXIgbXkga2VybmVsIGJvb3RzIGZpbmUsIGJ1dCBpbiB0aGF0IGNhc2UgSSBjYW4gbm90IHJl
-c3RyaWN0IGtlcm5lbCB0byB1c2Ugb25seSAxMjhNIG1lbW9yeS4gV2h5IHN1cHBseWluZyBtZW09
-MTI4TSBjYXVzaW5nIGtlcm5lbCB0byBmYWlsLg0KPiANCg0KQW55IGtlcm5lbCBvcHRpb24gZWxz
-ZSBpcyBjb25maWd1cmVkLCBzdWNoIGFzIENPTkZJR19LRVJORUxfU1RBUlQgYW5kIENPTkZJR19S
-RUxPQ0FUQUJMRT8NCg0KT3IgYW55IHUtYm9vdCBhcmd1bWVudCBpcyByZWNvbmZpZ3VyZWQsIHN1
-Y2ggYXMgJ2Jvb3RtX2xvdycsICdib290bV9tYXBzaXplJyBhbmQgJ2Jvb3RtX3NpemUnLg0KDQpU
-aWVqdW4NCg==
+Arshad, Farrukh wrote:
+> Hi Tiejun,
+> 
+> Thanks for your response. Yes, I am running two kernels one on each core in SAMP configuration on P1022RDK board. Given is my memory partitioning. Core 0 is loading fine but Core 1 is not loading. CONFIG_RELOCATABLE is not set.
+> 
+> ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+> Core                      	| Base Address  	|    Size                 			| Uboot parameters					| Kernel Configuration									|
+> -----------------------------|---------------------------|-------------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+> Core 0 (MEL RT Kernel) 	| 0x0000,0000   		| 0x1000,0000 - 256 (MB)   	|bootm_low = 0x0000,0000, bootm_size = 0x1000,0000	| CONFIG_PHYSICAL_START = 0x0000,0000, CONFIG_KERNEL_START = 0xC000,0000	|
+> Core 1 (LTIB Kernel)      	|0x1000,0000    		| 0x0800,0000 - 128 (MB)   	|bootm_low = 0x1000,0000, bootm_size = 0x0800,0000	| CONFIG_PHYSICAL_START = 0x1000,0000, CONFIG_KERNEL_START = 0xC000,0000	|
+> ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+> 
+
+Please check if the following commit is already in your kernel:
+------
+    powerpc: Fix memory limits when starting at a non-zero address
+
+    memblock_enforce_memory_limit() takes the desired maximum quantity of memory
+    to end up with, not an address above which memory will not be used.
+
+Tiejun
