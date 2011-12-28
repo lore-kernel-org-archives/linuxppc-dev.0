@@ -1,18 +1,22 @@
-Return-Path: <B21989@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 03CF7B6FE0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 21:30:30 +1100 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linux-mmc@vger.kernel.org>
-Subject: [PATCH] mmc:sdhci: restore the enabled dma when do reset all
-Date: Wed, 28 Dec 2011 17:41:21 +0800
-Message-ID: <1325065281-17785-1-git-send-email-Shaohui.Xie@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Shaohui Xie <Shaohui.Xie@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A2CB0B6FA6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 21:32:32 +1100 (EST)
+Message-ID: <1325068334.6632.43.camel@pasglop>
+Subject: Re: linux-next: build failure after merge of the final tree
+ (powerpc related)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 28 Dec 2011 21:32:14 +1100
+In-Reply-To: <20111228194949.ff20a609745e816c266f7d91@canb.auug.org.au>
+References: <20111228194949.ff20a609745e816c266f7d91@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If dma is enabled, it'll be cleared when reset all is performed, this can
-be observed on some platforms, such as P2041 which has a version 2.3
-controller, but platform like P4080 which has a version 2.2 controller,
-does not suffer this, so we will check if the dma is enabled, we should
-restore it after reset all.
+On Wed, 2011-12-28 at 19:49 +1100, Stephen Rothwell wrote:
+> Hi ,
+> 
+> After merging the final tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+> 
+> kernel/built-in.o: In function `irq_dispose_mapping':
+> (.opd+0x159f0): multiple definition of `irq_dispose_mapping'
+> arch/powerpc/kernel/built-in.o:(.opd+0x960): first defined here
+> kernel/built-in.o: In function `irq_create_of_mapping':
+> (.opd+0x15a20): multiple definition of `irq_create_of_mapping'
+> arch/powerpc/kernel/built-in.o:(.opd+0x9a8): first defined here
+> kernel/built-in.o: In function `.irq_create_of_mapping':
+> (.text+0x147030): multiple definition of `.irq_create_of_mapping'
+> arch/powerpc/kernel/built-in.o:(.text+0x9de0): first defined here
+> kernel/built-in.o: In function `.irq_dispose_mapping':
+> (.text+0x146f4c): multiple definition of `.irq_dispose_mapping'
+> arch/powerpc/kernel/built-in.o:(.text+0x9684): first defined here
+> 
+> I am not sure what caused this. And have just left it broken.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-based on http://git.kernel.org/pub/scm/linux/kernel/git/cjb/mmc.git,
-branch 'for-linus'.
+Grant, is your irq remapper misbehaving ?
 
- drivers/mmc/host/sdhci.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 19ed580..22033c3 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -29,6 +29,7 @@
- #include <linux/mmc/host.h>
- 
- #include "sdhci.h"
-+#include "sdhci-esdhc.h"
- 
- #define DRIVER_NAME "sdhci"
- 
-@@ -176,6 +177,7 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
- {
- 	unsigned long timeout;
- 	u32 uninitialized_var(ier);
-+	u32 uninitialized_var(dma);
- 
- 	if (host->quirks & SDHCI_QUIRK_NO_CARD_NO_RESET) {
- 		if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) &
-@@ -189,6 +191,8 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
- 	if (host->ops->platform_reset_enter)
- 		host->ops->platform_reset_enter(host, mask);
- 
-+	dma = sdhci_readl(host, ESDHC_DMA_SYSCTL);
-+
- 	sdhci_writeb(host, mask, SDHCI_SOFTWARE_RESET);
- 
- 	if (mask & SDHCI_RESET_ALL)
-@@ -214,6 +218,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
- 
- 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
- 		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
-+
-+	if ((dma & ESDHC_DMA_SNOOP) && (mask & SDHCI_RESET_ALL))
-+		sdhci_writel(host, dma, ESDHC_DMA_SYSCTL);
- }
- 
- static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios);
--- 
-1.6.4
+Cheers,
+Ben.
