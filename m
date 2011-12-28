@@ -1,23 +1,17 @@
-Return-Path: <Farrukh_Arshad@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1B" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 34A58B6FE1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 20:26:16 +1100 (EST)
-From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: RE: Kernel not booting when supplying boot parameter mem
-Date: Wed, 28 Dec 2011 09:26:10 +0000
-Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CB51F@EU-MBX-03.mgc.mentorg.com>
-References: <93CD5F41FDBC6042A6B449764F3B35CC050C9F21@EU-MBX-03.mgc.mentorg.com>
- <4EF9A6F2.8020708@windriver.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CB4E4@EU-MBX-03.mgc.mentorg.com>
- <4EFAB4B9.1020205@windriver.com>
-In-Reply-To: <4EFAB4B9.1020205@windriver.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E877FB6FD0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2011 21:08:16 +1100 (EST)
+Message-ID: <1325066887.6632.37.camel@pasglop>
+Subject: [PATCH] offb: Fix setting of the pseudo-palette for >8bpp
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Date: Wed, 28 Dec 2011 21:08:07 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pj4gUGxlYXNlIGNoZWNrIGlmIHRoZSBmb2xsb3dpbmcgY29tbWl0IGlzIGFscmVhZHkgaW4geW91
-ciBrZXJuZWw6DQo+PiAtLS0tLS0NCj4+ICAgICBwb3dlcnBjOiBGaXggbWVtb3J5IGxpbWl0cyB3
-aGVuIHN0YXJ0aW5nIGF0IGEgbm9uLXplcm8gYWRkcmVzcw0KDQo+PiAgICAgbWVtYmxvY2tfZW5m
-b3JjZV9tZW1vcnlfbGltaXQoKSB0YWtlcyB0aGUgZGVzaXJlZCBtYXhpbXVtIHF1YW50aXR5IG9m
-IG1lbW9yeQ0KPj4gICAgIHRvIGVuZCB1cCB3aXRoLCBub3QgYW4gYWRkcmVzcyBhYm92ZSB3aGlj
-aCBtZW1vcnkgd2lsbCBub3QgYmUgdXNlZC4NCg0KVGhhbmtzIFRpZWp1biwgVGhpcyBmaXggd2Fz
-IG5vdCB0aGVyZSBpbiB0aGUga2VybmVsIGFuZCB3aXRoIHRoaXMgZml4IG15IGJvdGgga2VybmVs
-cyBhcmUgbG9hZGluZyB3aGVuIHByb3ZpZGluZyBtZW0gcGFyYW1ldGVyIGluIHRoZSBrZXJuZWwg
-Ym9vdCBwYXJtYXMuDQoNClJlZ2FyZHMsDQpGYXJydWtoIEFyc2hhZA0KDQoNCi0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQpGcm9tOiB0aWVqdW4uY2hlbiBbbWFpbHRvOnRpZWp1bi5jaGVuQHdp
-bmRyaXZlci5jb21dIA0KU2VudDogV2VkbmVzZGF5LCBEZWNlbWJlciAyOCwgMjAxMSAxMToxOSBB
-TQ0KVG86IEFyc2hhZCwgRmFycnVraA0KQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
-DQpTdWJqZWN0OiBSZTogS2VybmVsIG5vdCBib290aW5nIHdoZW4gc3VwcGx5aW5nIGJvb3QgcGFy
-YW1ldGVyIG1lbQ0KDQpBcnNoYWQsIEZhcnJ1a2ggd3JvdGU6DQo+IEhpIFRpZWp1biwNCj4gDQo+
-IFRoYW5rcyBmb3IgeW91ciByZXNwb25zZS4gWWVzLCBJIGFtIHJ1bm5pbmcgdHdvIGtlcm5lbHMg
-b25lIG9uIGVhY2ggY29yZSBpbiBTQU1QIGNvbmZpZ3VyYXRpb24gb24gUDEwMjJSREsgYm9hcmQu
-IEdpdmVuIGlzIG15IG1lbW9yeSBwYXJ0aXRpb25pbmcuIENvcmUgMCBpcyBsb2FkaW5nIGZpbmUg
-YnV0IENvcmUgMSBpcyBub3QgbG9hZGluZy4gQ09ORklHX1JFTE9DQVRBQkxFIGlzIG5vdCBzZXQu
-DQo+IA0KPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gQ29y
-ZSAgICAgICAgICAgICAgICAgICAgICAJfCBCYXNlIEFkZHJlc3MgIAl8ICAgIFNpemUgICAgICAg
-ICAgICAgICAgIAkJCXwgVWJvb3QgcGFyYW1ldGVycwkJCQkJfCBLZXJuZWwgQ29uZmlndXJhdGlv
-bgkJCQkJCQkJCXwNCj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS18LS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tfC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS18LS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tfC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tfA0K
-PiBDb3JlIDAgKE1FTCBSVCBLZXJuZWwpIAl8IDB4MDAwMCwwMDAwICAgCQl8IDB4MTAwMCwwMDAw
-IC0gMjU2IChNQikgICAJfGJvb3RtX2xvdyA9IDB4MDAwMCwwMDAwLCBib290bV9zaXplID0gMHgx
-MDAwLDAwMDAJfCBDT05GSUdfUEhZU0lDQUxfU1RBUlQgPSAweDAwMDAsMDAwMCwgQ09ORklHX0tF
-Uk5FTF9TVEFSVCA9IDB4QzAwMCwwMDAwCXwNCj4gQ29yZSAxIChMVElCIEtlcm5lbCkgICAgICAJ
-fDB4MTAwMCwwMDAwICAgIAkJfCAweDA4MDAsMDAwMCAtIDEyOCAoTUIpICAgCXxib290bV9sb3cg
-PSAweDEwMDAsMDAwMCwgYm9vdG1fc2l6ZSA9IDB4MDgwMCwwMDAwCXwgQ09ORklHX1BIWVNJQ0FM
-X1NUQVJUID0gMHgxMDAwLDAwMDAsIENPTkZJR19LRVJORUxfU1RBUlQgPSAweEMwMDAsMDAwMAl8
-DQo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiANCg0KUGxl
-YXNlIGNoZWNrIGlmIHRoZSBmb2xsb3dpbmcgY29tbWl0IGlzIGFscmVhZHkgaW4geW91ciBrZXJu
-ZWw6DQotLS0tLS0NCiAgICBwb3dlcnBjOiBGaXggbWVtb3J5IGxpbWl0cyB3aGVuIHN0YXJ0aW5n
-IGF0IGEgbm9uLXplcm8gYWRkcmVzcw0KDQogICAgbWVtYmxvY2tfZW5mb3JjZV9tZW1vcnlfbGlt
-aXQoKSB0YWtlcyB0aGUgZGVzaXJlZCBtYXhpbXVtIHF1YW50aXR5IG9mIG1lbW9yeQ0KICAgIHRv
-IGVuZCB1cCB3aXRoLCBub3QgYW4gYWRkcmVzcyBhYm92ZSB3aGljaCBtZW1vcnkgd2lsbCBub3Qg
-YmUgdXNlZC4NCg0KVGllanVuDQo=
+When using a >8bpp framebuffer, offb advertises truecolor, not directcolor,
+and doesn't touch the color map even if it has a corresponding access method
+for the real hardware.
+
+Thus it needs to set the pseudo-palette with all 3 components of the color,
+like other truecolor framebuffers, not with copies of the color index like
+a directcolor framebuffer would do.
+
+This went unnoticed for a long time because it's pretty hard to get offb
+to kick in with anything but 8bpp (old BootX under MacOS will do that and
+qemu does it).
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+diff --git a/drivers/video/offb.c b/drivers/video/offb.c
+index cb163a5..24e1fc6 100644
+--- a/drivers/video/offb.c
++++ b/drivers/video/offb.c
+@@ -100,36 +100,32 @@ static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			  u_int transp, struct fb_info *info)
+ {
+ 	struct offb_par *par = (struct offb_par *) info->par;
+-	int i, depth;
+-	u32 *pal = info->pseudo_palette;
+-
+-	depth = info->var.bits_per_pixel;
+-	if (depth == 16)
+-		depth = (info->var.green.length == 5) ? 15 : 16;
+-
+-	if (regno > 255 ||
+-	    (depth == 16 && regno > 63) ||
+-	    (depth == 15 && regno > 31))
+-		return 1;
+-
+-	if (regno < 16) {
+-		switch (depth) {
+-		case 15:
+-			pal[regno] = (regno << 10) | (regno << 5) | regno;
+-			break;
+-		case 16:
+-			pal[regno] = (regno << 11) | (regno << 5) | regno;
+-			break;
+-		case 24:
+-			pal[regno] = (regno << 16) | (regno << 8) | regno;
+-			break;
+-		case 32:
+-			i = (regno << 8) | regno;
+-			pal[regno] = (i << 16) | i;
+-			break;
++
++	if (info->fix.visual == FB_VISUAL_TRUECOLOR) {
++		u32 *pal = info->pseudo_palette;
++		u32 cr = red >> (16 - info->var.red.length);
++		u32 cg = green >> (16 - info->var.green.length);
++		u32 cb = blue >> (16 - info->var.blue.length);
++		u32 value;
++
++		if (regno >= 16)
++			return -EINVAL;
++
++		value = (cr << info->var.red.offset) |
++			(cg << info->var.green.offset) |
++			(cb << info->var.blue.offset);
++		if (info->var.transp.length > 0) {
++			u32 mask = (1 << info->var.transp.length) - 1;
++			mask <<= info->var.transp.offset;
++			value |= mask;
+ 		}
++		pal[regno] = value;
++		return 0;
+ 	}
+ 
++	if (regno > 255)
++		return -EINVAL;
++
+ 	red >>= 8;
+ 	green >>= 8;
+ 	blue >>= 8;
