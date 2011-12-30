@@ -1,19 +1,19 @@
-Return-Path: <B21989@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id E41D3B6FA0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Dec 2011 20:22:40 +1100 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linux-mmc@vger.kernel.org>
-Subject: [PATCH][v2] mmc:sdhci: restore the enabled dma when do reset all
-Date: Thu, 29 Dec 2011 16:33:00 +0800
-Message-ID: <1325147580-31281-1-git-send-email-Shaohui.Xie@freescale.com>
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
+ [203.91.198.74])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DAD1AB6FAF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Dec 2011 00:07:40 +1100 (EST)
+From: <smitha.vanga@wipro.com>
+To: <scottwood@freescale.com>
+Subject: Mac address in the DTS file
+Date: Fri, 30 Dec 2011 12:51:55 +0000
+Message-ID: <40631E9A2581F14BA60888C87A76A1FE01C6BB@HYD-MKD-MBX4.wipro.com>
+In-Reply-To: <4E57FD3D.6090809@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If dma is enabled, it'll be cleared when reset all is performed, this can
-be observed on some platforms, such as P2041 which has a version 2.3
-controller, but platform like P4080 which has a version 2.2 controller,
-does not suffer this, so we will check if the dma is enabled, we should
-restore it after reset all.
-
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-based on http://git.kernel.org/pub/scm/linux/kernel/git/cjb/mmc.git,
-branch 'for-linus'.
-
-changes for v2:
-call the wrapper API instead of access the register directly.
-
- drivers/mmc/host/sdhci.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 19ed580..cf6a048 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -214,6 +214,11 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
  
- 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
- 		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
-+
-+	if (host->flags & (SDHCI_USE_SDMA | SDHCI_USE_ADMA)) {
-+		if ((host->ops->enable_dma) && (mask & SDHCI_RESET_ALL))
-+			host->ops->enable_dma(host);
-+	}
- }
- 
- static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios);
--- 
-1.6.4
+Hi Scott,
+
+In my DTS file for mpc8247 I have defined the ether MAC in the node as below=
+.
+
+ethernet@24000 {
+                       #address-cells =3D <1>;
+                       #size-cells =3D <0>;
+                       device_type =3D "network";
+                       device-id =3D <1>;
+                       compatible =3D "fs_enet";
+                       model =3D "FCC";
+                       reg =3D <11300 20 8400 100 11380 30>;
+                       mac-address =3D [ 00 e0 ee 00 05 2e ];
+                       interrupts =3D <20 2>;
+                       interrupt-parent =3D <10c00>;
+                       phy-handle =3D <2452000>;
+                       rx-clock =3D <13>;
+                       tx-clock =3D <12>;
+               };
+
+
+The driver is working and everything is fine. But as I defined the mac-addre=
+ss as 00:e0:ee:00:05:2e
+Its constant. Am not able to change this mac -address in linux once the targ=
+et is up with LINUX.
+How do I change the MAC address. If different targets boards are connected o=
+n the network then every board will have the same MAC address as  the .dtb f=
+ile is the same. How to go about this problem?
+It would be a great help if you answer soon.
+
+Regards,
+Smitha 
+
+
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
