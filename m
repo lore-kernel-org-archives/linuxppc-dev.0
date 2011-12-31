@@ -1,14 +1,15 @@
-Return-Path: <manuel.pezzin@free.fr>
-Message-ID: <4EFECF84.4070705@free.fr>
-Date: Sat, 31 Dec 2011 10:01:56 +0100
-From: manu <manuel.pezzin@free.fr>
+Return-Path: <linuxppcemb@lkmail.de>
+Message-ID: <4EFEEF14.3070707@lkmail.de>
+Date: Sat, 31 Dec 2011 12:16:36 +0100
+From: Lorenz Kolb <linuxppcemb@lkmail.de>
 MIME-Version: 1.0
-CC: Linuxppc-dev@lists.ozlabs.org
+To: "Wang, Junhua H. (NSN - CN/Hangzhou)" <junhua.h.wang@nsn.com>
 Subject: Re: Ask a technical problem happened on PPC board
 References: <E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net>
 In-Reply-To: <E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net>
 Content-Type: multipart/alternative;
- boundary="------------060200020306040806060804"
+ boundary="------------030204040203040409060301"
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,27 +20,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------060200020306040806060804
+--------------030204040203040409060301
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
 Hi,
-it looks like a memory interface problem. This is a typical issue with 
-FPGA-based PPC systems.
-You should check/monitor carefully the hardware :
-  - power supplies
-  - memory controller configuration (RAS, CAS, banks...)
-  - timing of pins connected to external memory
-Prior to boot a linux kernel, you should test your board with an 
-exhaustive standalone test program running from internal BRAM. In 
-particular, you should run an intensive test of your external memory 
-with cache enabled. Cache must be configured in copy back mode and test 
-code must be written so that it causes a lot of cache misses.
-Hope this helps.
 
-Manu
+first of all: have you tried doing a standalone memory test application?
+ From what I see you are using either a Virtex-4FX or Virtex-5FXT 
+device, correct?
 
-Le 31/12/2011 05:15, Wang, Junhua H. (NSN - CN/Hangzhou) a écrit :
+So I'd highly recommend doing a standalone test prior to booting Linux 
+to verify the memory controller timings of the FPGA based SoC.
+
+Apart from this: your Linux-Kernel and gcc seem to be pretty outdated. 
+Using a more recent Linux and toolchain often solves a lot of issues (my 
+experience, esp. with PowerPC Linux for Xilinx FPGAs).
+
+Regards,
+
+Lorenz
+Missing Link Electronics
+
+On 12/31/2011 5:15 AM, Wang, Junhua H. (NSN - CN/Hangzhou) wrote:
 >
 > HI, all:
 >
@@ -112,40 +115,43 @@ Le 31/12/2011 05:15, Wang, Junhua H. (NSN - CN/Hangzhou) a écrit :
 > /Seat:4076/
 >
 >
+>
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@lists.ozlabs.org
 > https://lists.ozlabs.org/listinfo/linuxppc-dev
 
---------------060200020306040806060804
+
+--------------030204040203040409060301
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
     <meta content="text/html; charset=ISO-8859-1"
       http-equiv="Content-Type">
-    <title></title>
   </head>
-  <body bgcolor="#ffffff" text="#000000">
+  <body bgcolor="#FFFFFF" text="#000000">
     Hi,<br>
-    it looks like a memory interface problem. This is a typical issue
-    with FPGA-based PPC systems.<br>
-    You should check/monitor carefully the hardware :<br>
-    &nbsp;- power supplies<br>
-    &nbsp;- memory controller configuration (RAS, CAS, banks...)<br>
-    &nbsp;- timing of pins connected to external memory<br>
-    Prior to boot a linux kernel, you should test your board with an
-    exhaustive standalone test program running from internal BRAM. In
-    particular, you should run an intensive test of your external memory
-    with cache enabled. Cache must be configured in copy back mode and
-    test code must be written so that it causes a lot of cache misses.<br>
-    Hope this helps.<br>
     <br>
-    Manu<br>
+    first of all: have you tried doing a standalone memory test
+    application?<br>
+    From what I see you are using either a Virtex-4FX or Virtex-5FXT
+    device, correct?<br>
     <br>
-    Le 31/12/2011 05:15, Wang, Junhua H. (NSN - CN/Hangzhou) a &eacute;crit&nbsp;:
+    So I'd highly recommend doing a standalone test prior to booting
+    Linux to verify the memory controller timings of the FPGA based SoC.<br>
+    <br>
+    Apart from this: your Linux-Kernel and gcc seem to be pretty
+    outdated. Using a more recent Linux and toolchain often solves a lot
+    of issues (my experience, esp. with PowerPC Linux for Xilinx FPGAs).<br>
+    <br>
+    Regards,<br>
+    <br>
+    Lorenz<br>
+    Missing Link Electronics<br>
+    <br>
+    On 12/31/2011 5:15 AM, Wang, Junhua H. (NSN - CN/Hangzhou) wrote:
     <blockquote
 cite="mid:E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net"
       type="cite">
@@ -155,8 +161,8 @@ cite="mid:E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net"
         6.5.7654.12">
       <title>Ask a technical problem happened on PPC board</title>
       <!-- Converted from text/rtf format -->
-      <p dir="LTR"><span lang="en-us"><font color="#1f497d"
-            face="Calibri">HI, all:</font></span><span lang="en-us"></span></p>
+      <p dir="LTR"><span lang="en-us"><font face="Calibri"
+            color="#1F497D">HI, all:</font></span><span lang="en-us"></span></p>
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"></span><span
           lang="en-us"></span><span lang="en-us"><font face="Calibri">&nbsp;</font>
           <font face="Calibri">Sorry to disturb all of you in the
@@ -189,9 +195,9 @@ cite="mid:E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net"
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"><font
             face="Calibri">Uboot download linux kernel and initramfs
             --&gt; cmd "bootm" to start linux --&gt;</font></span><span
-          lang="en-us"></span><span lang="en-us"> <font color="#ff0000"
-            face="Calibri">after kernel start complete, mount initramfs,
-            run init process(pid 1)</font></span></p>
+          lang="en-us"></span><span lang="en-us"> <font face="Calibri"
+            color="#FF0000">after kernel start complete, mount
+            initramfs, run init process(pid 1)</font></span></p>
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"></span><span
           lang="en-us"><font face="Calibri">--&gt; It will write 20
             Mbytes dat</font><font face="Calibri">a(0XFF) to 'TEST0.IMG'
@@ -204,13 +210,13 @@ cite="mid:E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net"
             data modified:</font></span></p>
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"><font
             face="Calibri">first place:&nbsp;</font></span><span lang="en-us"></span><span
-          lang="en-us"> <font color="#ff0000" face="Calibri">1C 00 FF
+          lang="en-us"> <font face="Calibri" color="#FF0000">1C 00 FF
             FF FF FF FF FF 00 00 00 040 80 ..</font></span><span
           lang="en-us"></span><span lang="en-us">.</span></p>
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"><font
             face="Calibri">Second place:</font></span><span lang="en-us"></span><span
-          lang="en-us"> <font color="#ff0000" face="Calibri">FF FF FF F</font><font
-            color="#ff0000" face="Calibri">F FF FF 00 A0 ....</font></span><span
+          lang="en-us"> <font face="Calibri" color="#FF0000">FF FF FF F</font><font
+            face="Calibri" color="#FF0000">F FF FF 00 A0 ....</font></span><span
           lang="en-us"></span><span lang="en-us"></span></p>
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"><font
             face="Calibri">Sometimes, there will be 2 pair of data
@@ -228,12 +234,12 @@ cite="mid:E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net"
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"><font
             face="Calibri">Used</font><font face="Calibri"> kernel:
             linux-2.6.21</font></span><span lang="en-us"></span><span
-          lang="en-us"></span><span lang="en-us"><font color="#000000"
-            face="SimSun" size="2"> &lt;&lt;init process write_read
+          lang="en-us"></span><span lang="en-us"><font face="SimSun"
+            color="#000000" size="2"> &lt;&lt;init process write_read
             file(20Mbytes) error2.txt&gt;&gt; </font></span><span
           lang="en-us"></span><span lang="en-us"></span><span
           lang="en-us"></span><span lang="en-us"></span><span
-          lang="en-us"><font color="#000000" face="SimSun" size="2">
+          lang="en-us"><font face="SimSun" color="#000000" size="2">
             &lt;&lt;init process write_read file(20Mbytes)
             error.txt&gt;&gt; </font></span><span lang="en-us"></span><span
           lang="en-us"></span><span lang="en-us"></span></p>
@@ -243,30 +249,33 @@ cite="mid:E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net"
             face="Calibri">Wang Junhua</font></span></p>
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"></span></p>
       <p dir="LTR"><span lang="en-us"></span><span lang="en-us"></span><b><span
-            lang="en-us"></span><span lang="en-us"><font color="#808080"
-              face="Arial Black">Wang Junhua (Jonny)</font></span></b><span
+            lang="en-us"></span><span lang="en-us"><font face="Arial
+              Black" color="#808080">Wang Junhua (Jonny)</font></span></b><span
           lang="en-us"></span><span lang="en-us"></span><i><span
             lang="en-us"></span></i></p>
-      <p dir="LTR"><i><span lang="en-us"><font color="#808080"
-              face="Arial">-----------------------------------------</font></span></i></p>
-      <p dir="LTR"><i><span lang="en-us"><font color="#808080"
-              face="Arial">LINDX</font></span></i></p>
-      <p dir="LTR"><i><span lang="en-us"><font color="#808080"
-              face="Arial">DX 200 R&amp;D HZ Area E </font></span></i></p>
-      <p dir="LTR"><i><span lang="en-us"><font color="#808080"
-              face="Arial">MP: +8615967154143</font></span></i></p>
-      <p dir="LTR"><i><span lang="en-us"><font color="#808080"
-              face="Arial">Seat:4076</font></span></i><span lang="en-us"></span><span
-          lang="en-us"></span><span lang="en-us"></span></p>
+      <p dir="LTR"><i><span lang="en-us"><font face="Arial"
+              color="#808080">-----------------------------------------</font></span></i></p>
+      <p dir="LTR"><i><span lang="en-us"><font face="Arial"
+              color="#808080">LINDX</font></span></i></p>
+      <p dir="LTR"><i><span lang="en-us"><font face="Arial"
+              color="#808080">DX 200 R&amp;D HZ Area E </font></span></i></p>
+      <p dir="LTR"><i><span lang="en-us"><font face="Arial"
+              color="#808080">MP: +8615967154143</font></span></i></p>
+      <p dir="LTR"><i><span lang="en-us"><font face="Arial"
+              color="#808080">Seat:4076</font></span></i><span
+          lang="en-us"></span><span lang="en-us"></span><span
+          lang="en-us"></span></p>
       <p dir="LTR" align="JUSTIFY"><span lang="en-us"></span></p>
-      <pre wrap="">
-<fieldset class="mimeAttachmentHeader"></fieldset>
-_______________________________________________
+      <br>
+      <fieldset class="mimeAttachmentHeader"></fieldset>
+      <br>
+      <pre wrap="">_______________________________________________
 Linuxppc-dev mailing list
 <a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a>
 <a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></pre>
     </blockquote>
+    <br>
   </body>
 </html>
 
---------------060200020306040806060804--
+--------------030204040203040409060301--
