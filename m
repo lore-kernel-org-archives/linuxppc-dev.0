@@ -1,11 +1,21 @@
-Return-Path: <junhua.h.wang@nsn.com>
+Return-Path: <jinzhengxiong@gmail.com>
+Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
+ [209.85.212.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 99F2AB6FC8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Dec 2011 17:43:43 +1100 (EST)
+Received: by wibhm4 with SMTP id hm4so7778827wib.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Dec 2011 22:43:38 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01CCC772.E4BDACDF"
-Subject: Ask a technical problem happened on PPC board
-Date: Sat, 31 Dec 2011 12:15:55 +0800
-Message-ID: <E2D908A47720CD488BC2AFD11DB6A1B540E9A1@CNBEEXC007.nsn-intra.net>
-From: "Wang, Junhua H. (NSN - CN/Hangzhou)" <junhua.h.wang@nsn.com>
-To: <Linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1325263910-14057-83-git-send-email-Jason.jin@freescale.com>
+References: <1325263910-14057-1-git-send-email-Jason.jin@freescale.com>
+ <1325263910-14057-83-git-send-email-Jason.jin@freescale.com>
+Date: Sat, 31 Dec 2011 14:43:38 +0800
+Message-ID: <CAOwjui1g26ScD9=YAz-iqoJXk-SPZy0O5WjebXAEFKRqnht89Q@mail.gmail.com>
+Subject: Re: [PATCH 82/94] USB: ehci-fsl: Fix 'have_sysif_regs' detection
+From: Jason Jin <jinzhengxiong@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=f46d04428cf4603fe504b55dabd2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,831 +25,313 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+--f46d04428cf4603fe504b55dabd2
+Content-Type: text/plain; charset=ISO-8859-1
 
-------_=_NextPart_001_01CCC772.E4BDACDF
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_002_01CCC772.E4BDACDF"
+Please ignore this mail, It's wrongly sent out. Thanks.
+
+On Sat, Dec 31, 2011 at 12:51 AM, Jason Jin <Jason.jin@freescale.com> wrote:
+
+> From: Pan Jiafei <Jiafei.Pan@freescale.com>
+>
+> extract from vendor drop QorIQ-DPAA-SDK-20111026-systembuilder.iso
+>
+> Previously a check was done on an ID register at the base of a CPU's
+> internal USB registers to determine if system interface regsiters were
+> present.  The check looked for an ID register that had the format
+> ID[0:5] == ~ID[8:13] as described in the MPC5121 User's Manual to
+> determine if a MPC5121 or MPC83xx/85xx was being used.
+>
+> There are two issues with this method:
+> - The ID register is not defined on the MPC83xx/85xx CPUs, so its
+>  unclear what is being checked on them.
+> - Newer CPUs such as the P4080 also don't document the ID register, but
+>  do share the same format as the MPC5121.  Thus the previous code did
+>  not set 'have_sysif_regs' properly which results in the P4080 not
+>  properly initializing its USB ports.
+>
+> Using the device tree 'compatible' node is a cleaner way to determine if
+> 'have_sysif_regs' should be set and resolves the USB initialization issue
+> seen on the P4080.
+>
+> Tested on a P4080-based system and compile tested on mpc512x_defconfig
+> with Freescale EHCI driver enabled.
+>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Integrated-by: Pan Jiafei <Jiafei.Pan@freescale.com>
+> ---
+>  drivers/usb/host/ehci-fsl.c      |   13 -------------
+>  drivers/usb/host/ehci-fsl.h      |    3 ---
+>  drivers/usb/host/fsl-mph-dr-of.c |   11 ++++++++---
+>  3 files changed, 8 insertions(+), 19 deletions(-)
+>
+> diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+> index ac5f38d..22baaec 100644
+> --- a/drivers/usb/host/ehci-fsl.c
+> +++ b/drivers/usb/host/ehci-fsl.c
+> @@ -52,7 +52,6 @@ static int usb_hcd_fsl_probe(const struct hc_driver
+> *driver,
+>        struct resource *res;
+>        int irq;
+>        int retval;
+> -       unsigned int temp;
+>
+>        pr_debug("initializing FSL-SOC USB Controller\n");
+>
+> @@ -126,18 +125,6 @@ static int usb_hcd_fsl_probe(const struct hc_driver
+> *driver,
+>                goto err3;
+>        }
+>
+> -       /*
+> -        * Check if it is MPC5121 SoC, otherwise set pdata->have_sysif_regs
+> -        * flag for 83xx or 8536 system interface registers.
+> -        */
+> -       if (pdata->big_endian_mmio)
+> -               temp = in_be32(hcd->regs + FSL_SOC_USB_ID);
+> -       else
+> -               temp = in_le32(hcd->regs + FSL_SOC_USB_ID);
+> -
+> -       if ((temp & ID_MSK) != (~((temp & NID_MSK) >> 8) & ID_MSK))
+> -               pdata->have_sysif_regs = 1;
+> -
+>        /* Enable USB controller, 83xx or 8536 */
+>        if (pdata->have_sysif_regs)
+>                setbits32(hcd->regs + FSL_SOC_USB_CTRL, 0x4);
+> diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
+> index 2c83537..3fabed3 100644
+> --- a/drivers/usb/host/ehci-fsl.h
+> +++ b/drivers/usb/host/ehci-fsl.h
+> @@ -19,9 +19,6 @@
+>  #define _EHCI_FSL_H
+>
+>  /* offsets for the non-ehci registers in the FSL SOC USB controller */
+> -#define FSL_SOC_USB_ID         0x0
+> -#define ID_MSK                 0x3f
+> -#define NID_MSK                        0x3f00
+>  #define FSL_SOC_USB_ULPIVP     0x170
+>  #define FSL_SOC_USB_PORTSC1    0x184
+>  #define PORT_PTS_MSK           (3<<30)
+> diff --git a/drivers/usb/host/fsl-mph-dr-of.c
+> b/drivers/usb/host/fsl-mph-dr-of.c
+> index 574b99e..79a66d6 100644
+> --- a/drivers/usb/host/fsl-mph-dr-of.c
+> +++ b/drivers/usb/host/fsl-mph-dr-of.c
+> @@ -262,19 +262,24 @@ static void fsl_usb2_mpc5121_exit(struct
+> platform_device *pdev)
+>        }
+>  }
+>
+> -struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
+> +static struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
+>        .big_endian_desc = 1,
+>        .big_endian_mmio = 1,
+>        .es = 1,
+> +       .have_sysif_regs = 0,
+>        .le_setup_buf = 1,
+>        .init = fsl_usb2_mpc5121_init,
+>        .exit = fsl_usb2_mpc5121_exit,
+>  };
+>  #endif /* CONFIG_PPC_MPC512x */
+>
+> +static struct fsl_usb2_platform_data fsl_usb2_mpc8xxx_pd = {
+> +       .have_sysif_regs = 1,
+> +};
+> +
+>  static const struct of_device_id fsl_usb2_mph_dr_of_match[] = {
+> -       { .compatible = "fsl-usb2-mph", },
+> -       { .compatible = "fsl-usb2-dr", },
+> +       { .compatible = "fsl-usb2-mph", .data = &fsl_usb2_mpc8xxx_pd, },
+> +       { .compatible = "fsl-usb2-dr", .data = &fsl_usb2_mpc8xxx_pd, },
+>  #ifdef CONFIG_PPC_MPC512x
+>        { .compatible = "fsl,mpc5121-usb2-dr", .data =
+> &fsl_usb2_mpc5121_pd, },
+>  #endif
+> --
+> 1.7.5.1
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
 
 
-------_=_NextPart_002_01CCC772.E4BDACDF
-Content-Type: text/plain;
-	charset="us-ascii"
+
+-- 
+Best Regards,
+Zhengxiong Jin
+
+--f46d04428cf4603fe504b55dabd2
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-HI, all:
-  Sorry to disturb all of you in the linuxppc-dev mail group. I am a new
-member from linuxppc-dev from China, and I have a very weird problem, it
-have been bothering me for a long time.  I will be very grateful if you
-can help me to analyse it.
-  1) Problem description:
-a) FRIU(a circuit board) unit is a ppc(powerpc) unit, 256 M bytes Ram,
-bootloader is uboot, kernel linux-2.6.21 filesystem: initramfs
-The main problem is that when kernel start up and mount initramfs, run
-the init process(pid 1), when the process(init) write file(20 M bytes)
-to filesystem(initramfs),
-sometimes it will find some data modified when check the file's contents
-by read it.=20
-b) I have write a test init process which will write 20 Mbytes
-data(0xFF) to "/TEST0.IMG" and check it's contents. Sometimes, the
-contents will by modified.
-c) Here is the test procedure:=20
-Uboot download linux kernel and initramfs --> cmd "bootm" to start linux
---> after kernel start complete, mount initramfs, run init process(pid
-1)
---> It will write 20 Mbytes data(0XFF) to 'TEST0.IMG' and check it's
-contents, If there is error, the error data will be printed.
+Please ignore this mail, It&#39;s wrongly sent out. Thanks.=A0<br><br><div =
+class=3D"gmail_quote">On Sat, Dec 31, 2011 at 12:51 AM, Jason Jin <span dir=
+=3D"ltr">&lt;<a href=3D"mailto:Jason.jin@freescale.com">Jason.jin@freescale=
+.com</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">From: Pan Jiafei &lt;<a href=3D"mailto:Jiafe=
+i.Pan@freescale.com">Jiafei.Pan@freescale.com</a>&gt;<br>
+<br>
+extract from vendor drop QorIQ-DPAA-SDK-20111026-systembuilder.iso<br>
+<br>
+Previously a check was done on an ID register at the base of a CPU&#39;s<br=
+>
+internal USB registers to determine if system interface regsiters were<br>
+present. =A0The check looked for an ID register that had the format<br>
+ID[0:5] =3D=3D ~ID[8:13] as described in the MPC5121 User&#39;s Manual to<b=
+r>
+determine if a MPC5121 or MPC83xx/85xx was being used.<br>
+<br>
+There are two issues with this method:<br>
+- The ID register is not defined on the MPC83xx/85xx CPUs, so its<br>
+ =A0unclear what is being checked on them.<br>
+- Newer CPUs such as the P4080 also don&#39;t document the ID register, but=
+<br>
+ =A0do share the same format as the MPC5121. =A0Thus the previous code did<=
+br>
+ =A0not set &#39;have_sysif_regs&#39; properly which results in the P4080 n=
+ot<br>
+ =A0properly initializing its USB ports.<br>
+<br>
+Using the device tree &#39;compatible&#39; node is a cleaner way to determi=
+ne if<br>
+&#39;have_sysif_regs&#39; should be set and resolves the USB initialization=
+ issue<br>
+seen on the P4080.<br>
+<br>
+Tested on a P4080-based system and compile tested on mpc512x_defconfig<br>
+with Freescale EHCI driver enabled.<br>
+<br>
+Cc: Anatolij Gustschin &lt;<a href=3D"mailto:agust@denx.de">agust@denx.de</=
+a>&gt;<br>
+Cc: David Brownell &lt;<a href=3D"mailto:dbrownell@users.sourceforge.net">d=
+brownell@users.sourceforge.net</a>&gt;<br>
+Cc: Kumar Gala &lt;<a href=3D"mailto:galak@kernel.crashing.org">galak@kerne=
+l.crashing.org</a>&gt;<br>
+Cc: <a href=3D"mailto:linuxppc-dev@lists.ozlabs.org">linuxppc-dev@lists.ozl=
+abs.org</a><br>
+Signed-off-by: Peter Tyser &lt;<a href=3D"mailto:ptyser@xes-inc.com">ptyser=
+@xes-inc.com</a>&gt;<br>
+Signed-off-by: Greg Kroah-Hartman &lt;<a href=3D"mailto:gregkh@suse.de">gre=
+gkh@suse.de</a>&gt;<br>
+Integrated-by: Pan Jiafei &lt;<a href=3D"mailto:Jiafei.Pan@freescale.com">J=
+iafei.Pan@freescale.com</a>&gt;<br>
+---<br>
+=A0drivers/usb/host/ehci-fsl.c =A0 =A0 =A0| =A0 13 -------------<br>
+=A0drivers/usb/host/ehci-fsl.h =A0 =A0 =A0| =A0 =A03 ---<br>
+=A0drivers/usb/host/fsl-mph-dr-of.c | =A0 11 ++++++++---<br>
+=A03 files changed, 8 insertions(+), 19 deletions(-)<br>
+<br>
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c<br>
+index ac5f38d..22baaec 100644<br>
+--- a/drivers/usb/host/ehci-fsl.c<br>
++++ b/drivers/usb/host/ehci-fsl.c<br>
+@@ -52,7 +52,6 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driv=
+er,<br>
+ =A0 =A0 =A0 =A0struct resource *res;<br>
+ =A0 =A0 =A0 =A0int irq;<br>
+ =A0 =A0 =A0 =A0int retval;<br>
+- =A0 =A0 =A0 unsigned int temp;<br>
+<br>
+ =A0 =A0 =A0 =A0pr_debug(&quot;initializing FSL-SOC USB Controller\n&quot;)=
+;<br>
+<br>
+@@ -126,18 +125,6 @@ static int usb_hcd_fsl_probe(const struct hc_driver *d=
+river,<br>
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err3;<br>
+ =A0 =A0 =A0 =A0}<br>
+<br>
+- =A0 =A0 =A0 /*<br>
+- =A0 =A0 =A0 =A0* Check if it is MPC5121 SoC, otherwise set pdata-&gt;have=
+_sysif_regs<br>
+- =A0 =A0 =A0 =A0* flag for 83xx or 8536 system interface registers.<br>
+- =A0 =A0 =A0 =A0*/<br>
+- =A0 =A0 =A0 if (pdata-&gt;big_endian_mmio)<br>
+- =A0 =A0 =A0 =A0 =A0 =A0 =A0 temp =3D in_be32(hcd-&gt;regs + FSL_SOC_USB_I=
+D);<br>
+- =A0 =A0 =A0 else<br>
+- =A0 =A0 =A0 =A0 =A0 =A0 =A0 temp =3D in_le32(hcd-&gt;regs + FSL_SOC_USB_I=
+D);<br>
+-<br>
+- =A0 =A0 =A0 if ((temp &amp; ID_MSK) !=3D (~((temp &amp; NID_MSK) &gt;&gt;=
+ 8) &amp; ID_MSK))<br>
+- =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata-&gt;have_sysif_regs =3D 1;<br>
+-<br>
+ =A0 =A0 =A0 =A0/* Enable USB controller, 83xx or 8536 */<br>
+ =A0 =A0 =A0 =A0if (pdata-&gt;have_sysif_regs)<br>
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0setbits32(hcd-&gt;regs + FSL_SOC_USB_CTRL, =
+0x4);<br>
+diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h<br>
+index 2c83537..3fabed3 100644<br>
+--- a/drivers/usb/host/ehci-fsl.h<br>
++++ b/drivers/usb/host/ehci-fsl.h<br>
+@@ -19,9 +19,6 @@<br>
+=A0#define _EHCI_FSL_H<br>
+<br>
+=A0/* offsets for the non-ehci registers in the FSL SOC USB controller */<b=
+r>
+-#define FSL_SOC_USB_ID =A0 =A0 =A0 =A0 0x0<br>
+-#define ID_MSK =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0x3f<br>
+-#define NID_MSK =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x3f00<br>
+=A0#define FSL_SOC_USB_ULPIVP =A0 =A0 0x170<br>
+=A0#define FSL_SOC_USB_PORTSC1 =A0 =A00x184<br>
+=A0#define PORT_PTS_MSK =A0 =A0 =A0 =A0 =A0 (3&lt;&lt;30)<br>
+diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr=
+-of.c<br>
+index 574b99e..79a66d6 100644<br>
+--- a/drivers/usb/host/fsl-mph-dr-of.c<br>
++++ b/drivers/usb/host/fsl-mph-dr-of.c<br>
+@@ -262,19 +262,24 @@ static void fsl_usb2_mpc5121_exit(struct platform_dev=
+ice *pdev)<br>
+ =A0 =A0 =A0 =A0}<br>
+=A0}<br>
+<br>
+-struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd =3D {<br>
++static struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd =3D {<br>
+ =A0 =A0 =A0 =A0.big_endian_desc =3D 1,<br>
+ =A0 =A0 =A0 =A0.big_endian_mmio =3D 1,<br>
+ =A0 =A0 =A0 =A0.es =3D 1,<br>
++ =A0 =A0 =A0 .have_sysif_regs =3D 0,<br>
+ =A0 =A0 =A0 =A0.le_setup_buf =3D 1,<br>
+ =A0 =A0 =A0 =A0.init =3D fsl_usb2_mpc5121_init,<br>
+ =A0 =A0 =A0 =A0.exit =3D fsl_usb2_mpc5121_exit,<br>
+=A0};<br>
+=A0#endif /* CONFIG_PPC_MPC512x */<br>
+<br>
++static struct fsl_usb2_platform_data fsl_usb2_mpc8xxx_pd =3D {<br>
++ =A0 =A0 =A0 .have_sysif_regs =3D 1,<br>
++};<br>
++<br>
+=A0static const struct of_device_id fsl_usb2_mph_dr_of_match[] =3D {<br>
+- =A0 =A0 =A0 { .compatible =3D &quot;fsl-usb2-mph&quot;, },<br>
+- =A0 =A0 =A0 { .compatible =3D &quot;fsl-usb2-dr&quot;, },<br>
++ =A0 =A0 =A0 { .compatible =3D &quot;fsl-usb2-mph&quot;, .data =3D &amp;fs=
+l_usb2_mpc8xxx_pd, },<br>
++ =A0 =A0 =A0 { .compatible =3D &quot;fsl-usb2-dr&quot;, .data =3D &amp;fsl=
+_usb2_mpc8xxx_pd, },<br>
+=A0#ifdef CONFIG_PPC_MPC512x<br>
+ =A0 =A0 =A0 =A0{ .compatible =3D &quot;fsl,mpc5121-usb2-dr&quot;, .data =
+=3D &amp;fsl_usb2_mpc5121_pd, },<br>
+=A0#endif<br>
+<font color=3D"#888888">--<br>
+1.7.5.1<br>
+<br>
+<br>
+_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.=
+org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
+">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
+</font></blockquote></div><br><br clear=3D"all"><div><br></div>-- <br>Best =
+Regards,<br>Zhengxiong Jin<br>
 
-2) Error data:
-a) Every time the error happened, a pair of data modified:
-first place:  1C 00 FF FF FF FF FF FF 00 00 00 040 80 ...
-Second place: FF FF FF FF FF FF 00 A0 ....
-Sometimes, there will be 2 pair of data modified.
-b) The error happens not very often, but it happens sometime.
-
-3)
-Could you give me some advice on how to investigate it or which part you
-think will have problem?=20
-Thanks very much!
-Used kernel: linux-2.6.21 <<init process write_read file(20Mbytes)
-error2.txt>>  <<init process write_read file(20Mbytes) error.txt>>=20
-
-Br,
-Wang Junhua
-
-
-Wang Junhua (Jonny)
------------------------------------------
-LINDX
-DX 200 R&D HZ Area E=20
-MP: +8615967154143
-Seat:4076
-
-
-------_=_NextPart_002_01CCC772.E4BDACDF
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7654.12">
-<TITLE>Ask a technical problem happened on PPC board</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT COLOR=3D"#1F497D" =
-FACE=3D"Calibri">HI, all:</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">&nbsp;</FONT> <FONT FACE=3D"Calibri">Sorry to disturb =
-all of you in the linuxppc-dev mail group. I am a new member from =
-linuxppc-dev from China, and I have a very weird problem, it have been =
-bothering me for a long time.&nbsp; I will be very grateful if you can =
-help me to analyse it.</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">&nbsp; 1) Problem</FONT> <FONT =
-FACE=3D"Calibri">description:</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">a) FRIU(a circuit board) unit is a ppc(powerpc) unit, =
-256 M bytes Ram, bootloader is uboot, kernel linux-2.6.21 filesystem: =
-initramfs</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">The main problem is that when kernel start up and mount =
-initramfs, run the init process(pid 1), when the proc</FONT><FONT =
-FACE=3D"Calibri">ess(init) write file(20 M bytes) to =
-filesystem(initramfs),</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">sometimes it will find some data modified when check =
-the file</FONT><FONT FACE=3D"Calibri">&#8217;</FONT><FONT =
-FACE=3D"Calibri">s contents by read it. </FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">b) I have write a test init process which will write 20 =
-Mbytes data(0xFF) to &quot;/TEST0.IMG&quot; and check it's =
-conten</FONT><FONT FACE=3D"Calibri">ts. Sometimes, the contents will by =
-modified.</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">c) Here is the test procedure: </FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Uboot download linux kernel and initramfs --&gt; cmd =
-&quot;bootm&quot; to start linux --&gt;</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT COLOR=3D"#FF0000" =
-FACE=3D"Calibri">after kernel start complete, mount initramfs, run init =
-process(pid 1)</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT FACE=3D"Calibri">--&gt; It will write 20 Mbytes =
-dat</FONT><FONT FACE=3D"Calibri">a(0XFF) to 'TEST0.IMG' and check it's =
-contents, If there is error, the error data will be =
-printed.</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">2) Error data:</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">a) Every time the error happened, a pair of data =
-modified:</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">first place:&nbsp;</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT COLOR=3D"#FF0000" =
-FACE=3D"Calibri">1C 00 FF FF FF FF FF FF 00 00 00 040 80 =
-..</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us">.</SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Second place:</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT COLOR=3D"#FF0000" =
-FACE=3D"Calibri">FF FF FF F</FONT><FONT COLOR=3D"#FF0000" =
-FACE=3D"Calibri">F FF FF 00 A0 ....</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Sometimes, there will be 2 pair of data =
-modified.</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">b) The error happens not very often, but it happens =
-sometime.</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">3)</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Could you give me some advice on how to investigate it =
-or which part you think will have problem? </FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Thanks very much!</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Used</FONT><FONT FACE=3D"Calibri"> kernel: =
-linux-2.6.21</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT FACE=3D"SimSun" =
-SIZE=3D2 COLOR=3D"#000000"> &lt;&lt;init process write_read =
-file(20Mbytes) error2.txt&gt;&gt; </FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT FACE=3D"SimSun" SIZE=3D2 COLOR=3D"#000000"> =
-&lt;&lt;init process write_read file(20Mbytes) error.txt&gt;&gt; =
-</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Br,</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"><FONT =
-FACE=3D"Calibri">Wang Junhua</FONT></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"></SPAN></P>
-
-<P DIR=3DLTR><SPAN LANG=3D"en-us"><B></B></SPAN><SPAN =
-LANG=3D"en-us"><B></B></SPAN><B><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT COLOR=3D"#808080" FACE=3D"Arial Black">Wang Junhua =
-(Jonny)</FONT></SPAN></B><SPAN LANG=3D"en-us"><I></I></SPAN><SPAN =
-LANG=3D"en-us"><I></I></SPAN><I><SPAN LANG=3D"en-us"></SPAN></I></P>
-
-<P DIR=3DLTR><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#808080" =
-FACE=3D"Arial">-----------------------------------------</FONT></SPAN></I=
-></P>
-
-<P DIR=3DLTR><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#808080" =
-FACE=3D"Arial">LINDX</FONT></SPAN></I></P>
-
-<P DIR=3DLTR><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#808080" =
-FACE=3D"Arial">DX 200 R&amp;D HZ Area E </FONT></SPAN></I></P>
-
-<P DIR=3DLTR><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#808080" =
-FACE=3D"Arial">MP: +8615967154143</FONT></SPAN></I></P>
-
-<P DIR=3DLTR><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#808080" =
-FACE=3D"Arial">Seat:4076</FONT></SPAN></I><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN></P>
-
-<P DIR=3DLTR ALIGN=3DJUSTIFY><SPAN LANG=3D"en-us"></SPAN></P>
-
-</BODY>
-</HTML>
-------_=_NextPart_002_01CCC772.E4BDACDF--
-
-------_=_NextPart_001_01CCC772.E4BDACDF
-Content-Type: text/plain;
-	name="init process write_read file(20Mbytes) error2.txt"
-Content-Transfer-Encoding: base64
-Content-Description: init process write_read file(20Mbytes) error2.txt
-Content-Disposition: attachment;
-	filename="init process write_read file(20Mbytes) error2.txt"
-
-KiQNCg0KVS1Cb290ICBAKGlucGgpQlNQX1ZFUlNJT05fSU5GTz1SMi4wLjMgU1gwMTgyNy1YMDYg
-VjIuMC4zIChTZXAgMzAgMjAxMSAtIDE2OjEzOjM0KQ0KDQoNCj8jIyBJbnRlcnBoYXNlIDM2MzIg
-RlINCkZQR0E6ICBCdWlsZCgwKSB2ZXIgMi4wLjINCkJNQyBXYXRjaGRvZyBFbmFibGVkLi4uDQpE
-UkFNOiAgMjU2IE1CDQovLU5vdyBydW5uaW5nIGluIFJBTSAtIFUtQm9vdCBhdDogMGZmNmEwMDAN
-CkZMQVNIOiAxMjggTUINCk5FVENPTlNPTEU6IChkZXY9J25jJykNCkluOiAgICBzZXJpYWwNCk91
-dDogICBzZXJpYWwNCkVycjogICBzZXJpYWwNCk1NQzogSW5pdGlhbGl6aW5nDQo/DQpQT1NUOiBE
-aXNhYmxlDQo/DQpCRURCVUc6cmVhZHkNCkhpdCBhbnkga2V5IHRvIHN0b3AgYXV0b2Jvb3Q6ICAz
-ICAyICAxICAwIA0KU2V0dGluZyBib290bSB3ZG9nIGRpc2FibGUgZmxhZy4NCmNvbW1hbmQgc3Vj
-Y2VzcyENCkJPT1RQIGJyb2FkY2FzdCAxDQpCT09UUCBicm9hZGNhc3QgMg0KQk9PVFAgYnJvYWRj
-YXN0IDMNCkJPT1RQIGJyb2FkY2FzdCA0DQpCT09UUCBicm9hZGNhc3QgNQ0KDQpSZXRyeSBjb3Vu
-dCBleGNlZWRlZDsgc3RhcnRpbmcgYWdhaW4gW1RyeSAjMV0NCkJPT1RQIGJyb2FkY2FzdCAxDQpC
-T09UUCBicm9hZGNhc3QgMg0KQk9PVFAgYnJvYWRjYXN0IDMNCkJPT1RQIGJyb2FkY2FzdCA0DQpC
-T09UUCBicm9hZGNhc3QgNQ0KDQpSZXRyeSBjb3VudCBleGNlZWRlZDsgc3RhcnRpbmcgYWdhaW4g
-W1RyeSAjMl0NCkJPT1RQIGJyb2FkY2FzdCAxDQpCT09UUCBicm9hZGNhc3QgMg0KQk9PVFAgYnJv
-YWRjYXN0IDMNCkJPT1RQIGJyb2FkY2FzdCA0DQpCT09UUCBicm9hZGNhc3QgNQ0KDQpSZXRyeSBj
-b3VudCBleGNlZWRlZDsgc3RhcnRpbmcgYWdhaW4gW1RyeSAjM10NCkJPT1RQIGJyb2FkY2FzdCAx
-DQpCT09UUCBicm9hZGNhc3QgMg0KQk9PVFAgYnJvYWRjYXN0IDMNCkJPT1RQIGJyb2FkY2FzdCA0
-DQpCT09UUCBicm9hZGNhc3QgNQ0KDQpSZXRyeSBjb3VudCBleGNlZWRlZDsgc3RhcnRpbmcgYWdh
-aW4gW1RyeSAjNF0NCkJPT1RQIGJyb2FkY2FzdCAxDQpCT09UUCBicm9hZGNhc3QgMg0KQk9PVFAg
-YnJvYWRjYXN0IDMNCj9CT09UUCBicm9hZGNhc3QgNA0KQk9PVFAgYnJvYWRjYXN0IDUNCg0KUmV0
-cnkgY291bnQgZXhjZWVkZWQ7IHN0YXJ0aW5nIGFnYWluIFtUcnkgIzVdDQoqJA0KDQpVLUJvb3Qg
-IEAoaW5waClCU1BfVkVSU0lPTl9JTkZPPVIyLjAuMyBTWDAxODI3LVgwNiBWMi4wLjMgKFNlcCAz
-MCAyMDExIC0gMTY6MTM6MzQpDQoNCg0KPyMjIEludGVycGhhc2UgMzYzMiBGUg0KRlBHQTogIEJ1
-aWxkKDApIHZlciAyLjAuMg0KQk1DIFdhdGNoZG9nIEVuYWJsZWQuLi4NCkRSQU06ICAyNTYgTUIN
-Ci8tTm93IHJ1bm5pbmcgaW4gUkFNIC0gVS1Cb290IGF0OiAwZmY2YTAwMA0KRkxBU0g6IDEyOCBN
-Qg0KTkVUQ09OU09MRTogKGRldj0nbmMnKQ0KSW46ICAgIHNlcmlhbA0KT3V0OiAgIHNlcmlhbA0K
-RXJyOiAgIHNlcmlhbA0KTU1DOiBJbml0aWFsaXppbmcNCj8NClBPU1Q6IERpc2FibGUNCj8NCkJF
-REJVRzpyZWFkeQ0KSGl0IGFueSBrZXkgdG8gc3RvcCBhdXRvYm9vdDogIDMgIDIgIDEgIDAgDQpT
-ZXR0aW5nIGJvb3RtIHdkb2cgZGlzYWJsZSBmbGFnLg0KY29tbWFuZCBzdWNjZXNzIQ0KQk9PVFAg
-YnJvYWRjYXN0IDENCkRIQ1AgY2xpZW50IGJvdW5kIHRvIGFkZHJlc3MgMTAuMTUwLjE1MS4xMDAN
-ClRGVFAgZnJvbSBzZXJ2ZXIgMTAuMTUwLjE1MS4xOyBvdXIgSVAgYWRkcmVzcyBpcyAxMC4xNTAu
-MTUxLjEwMA0KRmlsZW5hbWUgJy9CTENPREUvTE5YU0NSMDYuSU1HJy4odWJvb3Qgc2NyaXB0KQ0K
-TG9hZCBhZGRyZXNzOiAweDQwMDAwMA0KTG9hZGluZzogKiMNCmRvbmUNCkJ5dGVzIHRyYW5zZmVy
-cmVkID0gMTAyMCAoM2ZjIGhleCkNCiMjIEV4ZWN1dGluZyBzY3JpcHQgYXQgMDA0MDAwNzgNClRG
-VFAgZnJvbSBzZXJ2ZXIgMTAuMTUwLjE1MS4xOyBvdXIgSVAgYWRkcmVzcyBpcyAxMC4xNTAuMTUx
-LjEwMA0KRmlsZW5hbWUgJ0JMQ09ERS9MTlhVQk8wNi5JTUcnLihrZXJuZWwpDQpMb2FkIGFkZHJl
-c3M6IDB4M2ZmZjg4DQpMb2FkaW5nOiAqIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMNCiAgICAgICAgICAjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIw0KICAg
-ICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjDQogICAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMNCiAgICAgICAgICAjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjDQpkb25lDQpCeXRlcyB0cmFuc2ZlcnJlZCA9
-IDE1MzE1MzAgKDE3NWU4YSBoZXgpDQpURlRQIGZyb20gc2VydmVyIDEwLjE1MC4xNTEuMTsgb3Vy
-IElQIGFkZHJlc3MgaXMgMTAuMTUwLjE1MS4xMDANCkZpbGVuYW1lICdCTENPREUvTE5YSUZTRzMu
-SU1HJy4oaW5pdHJhbWZzKQ0KTG9hZCBhZGRyZXNzOiAweDdmZmY4OA0KTG9hZGluZzogKiMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMNCmRvbmUNCkJ5
-dGVzIHRyYW5zZmVycmVkID0gMjYyNjUwICg0MDFmYSBoZXgpDQojIyBCb290aW5nIGltYWdlIGF0
-IDAwNDAwMDAwIC4uLg0KICAgSW1hZ2UgTmFtZTogICBMaW51eC0yLjYuMjEuNy1ocnQxLWNmcy12
-MjItZ3JzZQ0KICAgSW1hZ2UgVHlwZTogICBQb3dlclBDIExpbnV4IEtlcm5lbCBJbWFnZSAoZ3pp
-cCBjb21wcmVzc2VkKQ0KICAgRGF0YSBTaXplOiAgICAxNTMxMTI4IEJ5dGVzID0gIDEuNSBNQg0K
-ICAgTG9hZCBBZGRyZXNzOiAwMDAwMDAwMA0KICAgRW50cnkgUG9pbnQ6ICAwMDAwMDAwMA0KICAg
-VmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPSw0KICAgVW5jb21wcmVzc2luZyBLZXJuZWwgSW1hZ2Ug
-Li4uIE9LDQojIyBMb2FkaW5nIFJBTURpc2sgSW1hZ2UgYXQgMDA4MDAwMDAgLi4uDQogICBJbWFn
-ZSBOYW1lOiAgIFNDTk1BLUMgTGludXggaW5pdHJhbWZzIDIwMTEuMTEuDQogICBJbWFnZSBUeXBl
-OiAgIFBvd2VyUEMgTGludXggUkFNRGlzayBJbWFnZSAodW5jb21wcmVzc2VkKQ0KICAgRGF0YSBT
-aXplOiAgICAyNjIzMjcgQnl0ZXMgPSAyNTYuMiBrQg0KICAgTG9hZCBBZGRyZXNzOiAwMDAwMDAw
-MA0KICAgRW50cnkgUG9pbnQ6ICAwMDAwMDAwMA0KICAgVmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBP
-Sw0KICAgTG9hZGluZyBSYW1kaXNrIHRvIDBmNzA5MDAwLCBlbmQgMGY3NDkwYjcgLi4uIE9LDQoj
-IyBUcmFuc2ZlcnJpbmcgY29udHJvbCB0byBMaW51eCAoYXQgYWRkcmVzcyAwMDAwMDAwMCkgLi4u
-DQpMaW51eCB2ZXJzaW9uIDIuNi4yMS43LWhydDEtY2ZzLXYyMi1ncnNlYy1XUjIuMGJsX2NnbCAo
-dGRhaWduZWF1bHRAZ2l6bW8pIChnY2MgdmVyc2lvbiA0LjEuMiAoV2luZCBSaXZlciBMaW51eCBT
-b3VyY2VyeSBHKysgNC4xLTg0KSkgIzEgRnJpIFNlcCAzMCAxNjoxMjoyMyBDRFQgMjAxMQ0KWm9u
-ZSBQRk4gcmFuZ2VzOg0KICBETUEgICAgICAgICAgICAgMCAtPiAgICA2NTUzNg0KICBOb3JtYWwg
-ICAgICA2NTUzNiAtPiAgICA2NTUzNg0KZWFybHlfbm9kZV9tYXBbMV0gYWN0aXZlIFBGTiByYW5n
-ZXMNCiAgICAwOiAgICAgICAgMCAtPiAgICA2NTUzNg0KQnVpbHQgMSB6b25lbGlzdHMuICBUb3Rh
-bCBwYWdlczogNjUwMjQNCktlcm5lbCBjb21tYW5kIGxpbmU6IGRteF9ic3A9MDYgZG14X2FyY2hp
-dGVjdHVyZT0zIGNvbnNvbGU9dHR5VUwwLDM4NDAwIHJvb3Q9L2Rldi9yYW0wIHJ3IG10ZHBhcnRz
-PXBoeXNtYXAtZmxhc2guMDo1TSwyTSw0OE0sOE0sMTI4SywxMjhLLDc2OEssNU0sMk0sNDhNLDhN
-LDEyOEssMTI4Syw3NjhLIGlwPTEwLjE1MC4xNTEuMTAwOjEwLjE1MC4xNTEuMToxMC4xNTAuMTUx
-LjE6MjU1LjI1NS4yNTUuMDppcGgzNjMyOmV0aDA6b24gZW52YmFzZT0weGZmZjAwMDAwIHNlcnZl
-cl9pcD0xMC4xNTAuMTUxLjENClhpbGlueCBJTlRDICMwIGF0IDB4NTAwMDAwMDAgbWFwcGVkIHRv
-IDB4RkRGRkYwMDANClBJRCBoYXNoIHRhYmxlIGVudHJpZXM6IDEwMjQgKG9yZGVyOiAxMCwgNDA5
-NiBieXRlcykNCkNvbnNvbGU6IGNvbG91ciBkdW1teSBkZXZpY2UgODB4MjUNCkRlbnRyeSBjYWNo
-ZSBoYXNoIHRhYmxlIGVudHJpZXM6IDMyNzY4IChvcmRlcjogNSwgMTMxMDcyIGJ5dGVzKQ0KSW5v
-ZGUtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVz
-KQ0KTWVtb3J5OiAyNTYwMDBrIGF2YWlsYWJsZSAoMjQwMGsga2VybmVsIGNvZGUsIDkyNGsgZGF0
-YSwgMTE2ayBpbml0LCAwayBoaWdobWVtKQ0KU2VjdXJpdHkgRnJhbWV3b3JrIHYxLjAuMCBpbml0
-aWFsaXplZA0KQ2FwYWJpbGl0eSBMU00gaW5pdGlhbGl6ZWQNCk1vdW50LWNhY2hlIGhhc2ggdGFi
-bGUgZW50cmllczogNTEyDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2DQpHZW5l
-cmljIFBIWTogUmVnaXN0ZXJlZCBuZXcgZHJpdmVyDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wg
-ZmFtaWx5IDINCklQIHJvdXRlIGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogMjA0OCAob3JkZXI6
-IDEsIDgxOTIgYnl0ZXMpDQpUQ1AgZXN0YWJsaXNoZWQgaGFzaCB0YWJsZSBlbnRyaWVzOiA4MTky
-IChvcmRlcjogNCwgNjU1MzYgYnl0ZXMpDQpUQ1AgYmluZCBoYXNoIHRhYmxlIGVudHJpZXM6IDgx
-OTIgKG9yZGVyOiAzLCAzMjc2OCBieXRlcykNClRDUDogSGFzaCB0YWJsZXMgY29uZmlndXJlZCAo
-ZXN0YWJsaXNoZWQgODE5MiBiaW5kIDgxOTIpDQpUQ1AgcmVubyByZWdpc3RlcmVkDQpjaGVja2lu
-ZyBpZiBpbWFnZSBpcyBpbml0cmFtZnMuLi4gaXQgaXMNCkZyZWVpbmcgaW5pdHJkIG1lbW9yeTog
-MjU2ayBmcmVlZA0KUmVnaXN0ZXJpbmcgR0RCIHN5c3JxIGhhbmRsZXINCkpGRlMyIHZlcnNpb24g
-Mi4yLiAoTkFORCkgKEMpIDIwMDEtMjAwNiBSZWQgSGF0LCBJbmMuDQppbyBzY2hlZHVsZXIgbm9v
-cCByZWdpc3RlcmVkDQppbyBzY2hlZHVsZXIgYW50aWNpcGF0b3J5IHJlZ2lzdGVyZWQNCmlvIHNj
-aGVkdWxlciBkZWFkbGluZSByZWdpc3RlcmVkDQppbyBzY2hlZHVsZXIgY2ZxIHJlZ2lzdGVyZWQg
-KGRlZmF1bHQpDQpMVFQgOiBsdHQtZmFjaWxpdGllcyBpbml0DQpMVFQgOiBsdHQtcmVsYXkgaW5p
-dA0KeGlsaW54X3NwaSAwOiBhdCAweDQwMjAwMDAwIG1hcHBlZCB0byAweEQxMDYwMDAwLCBpcnE9
-NQ0KdWFydGxpdGUuMDogdHR5VUwwIGF0IE1NSU8gbWFwIDB4NDA2MDAwMDAgbWVtIDB4ZDEwNWMw
-MDAgKGlycSA9IDIpIGlzIGEgdWFydGxpdGUNCnVhcnRsaXRlLjE6IHR0eVVMMSBhdCBNTUlPIG1h
-cCAweDQwNjIwMDAwIG1lbSAweGQxMDVlMDAwIChpcnEgPSAwKSBpcyBhIHVhcnRsaXRlDQp1YXJ0
-bGl0ZS4yOiB0dHlVTDIgYXQgTU1JTyBtYXAgMHg0MDY0MDAwMCBtZW0gMHhkMTA3MjAwMCAoaXJx
-ID0gMSkgaXMgYSB1YXJ0bGl0ZQ0KUkFNRElTSyBkcml2ZXIgaW5pdGlhbGl6ZWQ6IDggUkFNIGRp
-c2tzIG9mIDMyNzY4SyBzaXplIDEwMjQgYmxvY2tzaXplDQp0ZW1hY19wcm9iZTogLSB0ZW1hY1sw
-XSBbdjEuMC42XQ0KdGVtYWNfcHJvYmU6IC0gdGVtYWNbMF0gaW9iYXNlIHJlZyAweDcwMDAwMDAw
-IC0+IDB4ZDEwODAwMDANCnRlbWFjX3Byb2JlOiAtIHRlbWFjWzBdIFNETUEgcmVnIDB4MmMwMDAw
-MDAgLT4gMHhkMTA3NDAwMA0KdGVtYWNfcHJvYmU6IC0gdGVtYWNbMF0gRE1BIGlycXMgdHggPSAx
-MSwgcnggPSAxMg0KdGVtYWNfcHJvYmU6IC0gdGVtYWNbMF0gTUFDIGFkZHJlc3MgPSAgMDAgMDAg
-NzcgYjMgZjYgN2MNCnRlbWFjX3Byb2JlOiAtIHRlbWFjWzBdIGRyaXZlciBsb2FkZWQNCnRlbWFj
-X3Byb2JlOiAtIHRlbWFjWzFdIFt2MS4wLjZdDQp0ZW1hY19wcm9iZTogLSB0ZW1hY1sxXSBpb2Jh
-c2UgcmVnIDB4ODAwMDAwMDAgLT4gMHhkMTE4MDAwMA0KdGVtYWNfcHJvYmU6IC0gdGVtYWNbMV0g
-U0RNQSByZWcgMHgyYzAxMDAwMCAtPiAweGQxMDc2MDAwDQp0ZW1hY19wcm9iZTogLSB0ZW1hY1sx
-XSBETUEgaXJxcyB0eCA9IDksIHJ4ID0gMTANCnRlbWFjX3Byb2JlOiAtIHRlbWFjWzFdIE1BQyBh
-ZGRyZXNzID0gIDAwIDAwIDc3IGIzIGY2IDdkDQp0ZW1hY19wcm9iZTogLSB0ZW1hY1sxXSBkcml2
-ZXIgbG9hZGVkDQp0ZW1hY19wcm9iZTogLSB0ZW1hY1syXSBbdjEuMC42XQ0KdGVtYWNfcHJvYmU6
-IC0gdGVtYWNbMl0gaW9iYXNlIHJlZyAweDgwMDAwMDQwIC0+IDB4ZDEyODAwNDANCnRlbWFjX3By
-b2JlOiAtIHRlbWFjWzJdIFNETUEgcmVnIDB4MmMwMjAwMDAgLT4gMHhkMTA3ODAwMA0KdGVtYWNf
-cHJvYmU6IC0gdGVtYWNbMl0gRE1BIGlycXMgdHggPSA3LCByeCA9IDgNCnRlbWFjX3Byb2JlOiAt
-IHRlbWFjWzJdIE1BQyBhZGRyZXNzID0gIDAwIDAwIDc3IGIzIGY2IDdlDQp0ZW1hY19wcm9iZTog
-LSB0ZW1hY1syXSBkcml2ZXIgbG9hZGVkDQpuZXRjb25zb2xlOiBub3QgY29uZmlndXJlZCwgYWJv
-cnRpbmcNCmkyYyAvZGV2IGVudHJpZXMgZHJpdmVyDQpwaHlzbWFwIHBsYXRmb3JtIGZsYXNoIGRl
-dmljZTogMDgwMDAwMDAgYXQgZjgwMDAwMDANCnBoeXNtYXAtZmxhc2guMDogRm91bmQgMSB4MTYg
-ZGV2aWNlcyBhdCAweDAgaW4gMTYtYml0IGJhbmsNCiBBbWQvRnVqaXRzdSBFeHRlbmRlZCBRdWVy
-eSBUYWJsZSBhdCAweDAwNDANCnBoeXNtYXAtZmxhc2guMDogQ0ZJIGRvZXMgbm90IGNvbnRhaW4g
-Ym9vdCBiYW5rIGxvY2F0aW9uLiBBc3N1bWluZyB0b3AuDQpudW1iZXIgb2YgQ0ZJIGNoaXBzOiAx
-DQpjZmlfY21kc2V0XzAwMDI6IERpc2FibGluZyBlcmFzZS1zdXNwZW5kLXByb2dyYW0gZHVlIHRv
-IGNvZGUgYnJva2VubmVzcy4NCjE0IGNtZGxpbmVwYXJ0IHBhcnRpdGlvbnMgZm91bmQgb24gTVRE
-IGRldmljZSBwaHlzbWFwLWZsYXNoLjANCkNyZWF0aW5nIDE0IE1URCBwYXJ0aXRpb25zIG9uICJw
-aHlzbWFwLWZsYXNoLjAiOg0KMHgwMDAwMDAwMC0weDAwNTAwMDAwIDogIlBhcnRpdGlvbl8wMDAi
-DQoweDAwNTAwMDAwLTB4MDA3MDAwMDAgOiAiUGFydGl0aW9uXzAwMSINCjB4MDA3MDAwMDAtMHgw
-MzcwMDAwMCA6ICJQYXJ0aXRpb25fMDAyIg0KMHgwMzcwMDAwMC0weDAzZjAwMDAwIDogIlBhcnRp
-dGlvbl8wMDMiDQoweDAzZjAwMDAwLTB4MDNmMjAwMDAgOiAiUGFydGl0aW9uXzAwNCINCjB4MDNm
-MjAwMDAtMHgwM2Y0MDAwMCA6ICJQYXJ0aXRpb25fMDA1Ig0KMHgwM2Y0MDAwMC0weDA0MDAwMDAw
-IDogIlBhcnRpdGlvbl8wMDYiDQoweDA0MDAwMDAwLTB4MDQ1MDAwMDAgOiAiUGFydGl0aW9uXzAw
-NyINCjB4MDQ1MDAwMDAtMHgwNDcwMDAwMCA6ICJQYXJ0aXRpb25fMDA4Ig0KMHgwNDcwMDAwMC0w
-eDA3NzAwMDAwIDogIlBhcnRpdGlvbl8wMDkiDQoweDA3NzAwMDAwLTB4MDdmMDAwMDAgOiAiUGFy
-dGl0aW9uXzAxMCINCjB4MDdmMDAwMDAtMHgwN2YyMDAwMCA6ICJQYXJ0aXRpb25fMDExIg0KMHgw
-N2YyMDAwMC0weDA3ZjQwMDAwIDogIlBhcnRpdGlvbl8wMTIiDQoweDA3ZjQwMDAwLTB4MDgwMDAw
-MDAgOiAiUGFydGl0aW9uXzAxMyINClRDUCBjdWJpYyByZWdpc3RlcmVkDQpORVQ6IFJlZ2lzdGVy
-ZWQgcHJvdG9jb2wgZmFtaWx5IDENCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTcN
-CiBldGgwOiBQcm9taXNjdW91cyBtb2RlIGRpc2FibGVkLg0KIGV0aDA6IGluaXRpYWxpemVkLg0K
-IGV0aDA6IERPV04NCklQLUNvbmZpZzogQ29tcGxldGU6DQogICAgICBkZXZpY2U9ZXRoMCwgYWRk
-cj0xMC4xNTAuMTUxLjEwMCwgbWFzaz0yNTUuMjU1LjI1NS4wLCBndz0xMC4xNTAuMTUxLjEsDQog
-ICAgIGhvc3Q9aXBoMzYzMiwgZG9tYWluPSwgbmlzLWRvbWFpbj0obm9uZSksDQogICAgIGJvb3Rz
-ZXJ2ZXI9MTAuMTUwLjE1MS4xLCByb290c2VydmVyPTEwLjE1MC4xNTEuMSwgcm9vdHBhdGg9DQpG
-cmVlaW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5b3Rlc3Qgc3RhcnQhDQp0ZXN0OiAwLCBmaWxlIGxl
-bmd0aDogMTI1IE0gbmFtZTogL1RFU1QwLklNRw0KIGV0aDA6IFVQDQpyZWFkOiAwLCBuYW1lOiAv
-VEVTVDAuSU1HDQplcnJvciBmb3VuZCBhdCBvZmZzZXQ6IDB4NTQ5NDAwDQogMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-DQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQog
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAxYyAgIDAgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAg
-IDAgICAwICAgMCAgIDQgICA4ICAgMCAgZmQgIGJlICA0NSAgIDAgICAyICA1MiAgDQogMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-DQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQogMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgDQoNCmVycm9yIHBv
-czogNTU0MzMwOA0KZXJyb3IgZm91bmQgYXQgb2Zmc2V0OiAweDU0QTAwMA0KIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-IA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0K
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-IA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgMWMgICAwICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgICAwICAgMCAgIDAgICA0ICAgOCAg
-IDAgIGZkICBiZSAgNDUgICAwICAgMiAgNTIgIA0KIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KIDAgICAwICAgMCAgIDAgICAw
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAgIA0KPw0KZXJyb3Ig
-cG9zOiA1NTQ2NDQ0DQp0ZXN0OiAxLCBmaWxlIGxlbmd0aDogMTI1IE0gbmFtZTogL1RFU1QwLklN
-Rw0KcmVhZDogMSwgbmFtZTogL1RFU1QwLklNRw0KdGVzdDogMiwgZmlsZSBsZW5ndGg6IDEyNSBN
-IG5hbWU6IC9URVNUMC5JTUcNCnJlYWQ6IDIsIG5hbWU6IC9URVNUMC5JTUcNCnRlc3Q6IDMsIGZp
-bGUgbGVuZ3RoOiAxMjUgTSBuYW1lOiAvVEVTVDAuSU1HDQpyZWFkOiAzLCBuYW1lOiAvVEVTVDAu
-SU1HDQp0ZXN0OiA0LCBmaWxlIGxlbmd0aDogMTI1IE0gbmFtZTogL1RFU1QwLklNRw0KcmVhZDog
-NCwgbmFtZTogL1RFU1QwLklNRw0KdGVzdDogNSwgZmlsZSBsZW5ndGg6IDEyNSBNIG5hbWU6IC9U
-RVNUMC5JTUcNCnJlYWQ6IDUsIG5hbWU6IC9URVNUMC5JTUcNCnRlc3Q6IDYsIGZpbGUgbGVuZ3Ro
-OiAxMjUgTSBuYW1lOiAvVEVTVDAuSU1HDQpyZWFkOiA2LCBuYW1lOiAvVEVTVDAuSU1HDQp0ZXN0
-OiA3LCBmaWxlIGxlbmd0aDogMTI1IE0gbmFtZTogL1RFU1QwLklNRw0KcmVhZDogNywgbmFtZTog
-L1RFU1QwLklNRw0KdGVzdDogOCwgZmlsZSBsZW5ndGg6IDEyNSBNIG5hbWU6IC9URVNUMC5JTUcN
-CnJlYWQ6IDgsIG5hbWU6IC9URVNUMC5JTUcNCg==
-
-------_=_NextPart_001_01CCC772.E4BDACDF
-Content-Type: text/plain;
-	name="init process write_read file(20Mbytes) error.txt"
-Content-Transfer-Encoding: base64
-Content-Description: init process write_read file(20Mbytes) error.txt
-Content-Disposition: attachment;
-	filename="init process write_read file(20Mbytes) error.txt"
-
-KiQNCg0KVS1Cb290ICBAKGlucGgpQlNQX1ZFUlNJT05fSU5GTz1SMi4wLjQgU1gwMTgyNy1BMDIg
-VjIuMC40ICAoTm92ICAzIDIwMTEgLSAxMzo0Mzo1MSkNCg0KDQo/IyMgSW50ZXJwaGFzZSAzNjMy
-IEZSDQpGUEdBOiAgQnVpbGQoMCkgdmVyIDIuMC4zDQpCTUMgV2F0Y2hkb2cgRW5hYmxlZC4uLg0K
-RFJBTTogIDI1NiBNQg0KCC8ILQhOb3cgcnVubmluZyBpbiBSQU0gLSBVLUJvb3QgYXQ6IDBmZjY5
-MDAwDQpGTEFTSDogMTI4IE1CDQpORVRDT05TT0xFOiAoZGV2PSduYycpDQpJbjogICAgc2VyaWFs
-DQpPdXQ6ICAgc2VyaWFsDQpFcnI6ICAgc2VyaWFsDQpNTUM6IEluaXRpYWxpemluZw0KDQpQT1NU
-OiBEaXNhYmxlDQoNCkJFREJVRzpyZWFkeQ0KSGl0IGFueSBrZXkgdG8gc3RvcCBhdXRvYm9vdDog
-IDMgCAgIIDIgCAgIIDEgCAgIIDAgDQpTZXR0aW5nIGJvb3RtIHdkb2cgZGlzYWJsZSBmbGFnLg0K
-Y29tbWFuZCBzdWNjZXNzIQ0KQk9PVFAgYnJvYWRjYXN0IDENCkRIQ1AgY2xpZW50IGJvdW5kIHRv
-IGFkZHJlc3MgMTAuMTUwLjE1MS4xMDQNClRGVFAgZnJvbSBzZXJ2ZXIgMTAuMTUwLjE1MS4xOyBv
-dXIgSVAgYWRkcmVzcyBpcyAxMC4xNTAuMTUxLjEwNA0KRmlsZW5hbWUgJy9CTENPREUvTE5YU0NS
-MDYuSU1HJy4NCkxvYWQgYWRkcmVzczogMHg0MDAwMDANCkxvYWRpbmc6ICoIIw0KZG9uZQ0KQnl0
-ZXMgdHJhbnNmZXJyZWQgPSA1MTAgKDFmZSBoZXgpDQojIyBFeGVjdXRpbmcgc2NyaXB0IGF0IDAw
-NDAwMDc4DQpURlRQIGZyb20gc2VydmVyIDEwLjE1MC4xNTEuMTsgb3VyIElQIGFkZHJlc3MgaXMg
-MTAuMTUwLjE1MS4xMDQNCkZpbGVuYW1lICdCTENPREUvTE5YVUJPMDYuSU1HJy4NCkxvYWQgYWRk
-cmVzczogMHgzZmZmODgNCkxvYWRpbmc6ICoIIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMNCgkgIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMNCgkgIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMNCgkgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMNCgkgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIw0KZG9u
-ZQ0KQnl0ZXMgdHJhbnNmZXJyZWQgPSAxNTA0NTAwICgxNmY0ZjQgaGV4KQ0KVEZUUCBmcm9tIHNl
-cnZlciAxMC4xNTAuMTUxLjE7IG91ciBJUCBhZGRyZXNzIGlzIDEwLjE1MC4xNTEuMTA0DQpGaWxl
-bmFtZSAnQkxDT0RFL0xOWElGU0czLklNRycuDQpMb2FkIGFkZHJlc3M6IDB4N2ZmZjg4DQpMb2Fk
-aW5nOiAqCCMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjDQpkb25lDQpCeXRlcyB0cmFuc2ZlcnJlZCA9IDI2NjczMCAoNDExZWEgaGV4KQ0KIyMgQm9v
-dGluZyBpbWFnZSBhdCAwMDQwMDAwMCAuLi4NCiAgIEltYWdlIE5hbWU6ICAgTGludXgtMi42LjIx
-LjctaHJ0MS1jZnMtdjIyLWdyc2UNCiAgIEltYWdlIFR5cGU6ICAgUG93ZXJQQyBMaW51eCBLZXJu
-ZWwgSW1hZ2UgKGd6aXAgY29tcHJlc3NlZCkNCiAgIERhdGEgU2l6ZTogICAgMTUwNDE5MSBCeXRl
-cyA9ICAxLjQgTUINCiAgIExvYWQgQWRkcmVzczogMDAwMDAwMDANCiAgIEVudHJ5IFBvaW50OiAg
-MDAwMDAwMDANCiAgIFZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sNCiAgIFVuY29tcHJlc3Npbmcg
-S2VybmVsIEltYWdlIC4uLiBPSw0KIyMgTG9hZGluZyBSQU1EaXNrIEltYWdlIGF0IDAwODAwMDAw
-IC4uLg0KICAgSW1hZ2UgTmFtZTogICBNYWtpbmcgVS1Cb290IEhlYWQNCiAgIEltYWdlIFR5cGU6
-ICAgUG93ZXJQQyBMaW51eCBSQU1EaXNrIEltYWdlICh1bmNvbXByZXNzZWQpDQogICBEYXRhIFNp
-emU6ICAgIDI2NjE1NSBCeXRlcyA9IDI1OS45IGtCDQogICBMb2FkIEFkZHJlc3M6IDAwMDAwMDAw
-DQogICBFbnRyeSBQb2ludDogIDAwMDAwMDAwDQogICBWZXJpZnlpbmcgQ2hlY2tzdW0gLi4uIE9L
-DQogICBMb2FkaW5nIFJhbWRpc2sgdG8gMGY3MDcwMDAsIGVuZCAwZjc0N2ZhYiAuLi4gT0sNCiMj
-IFRyYW5zZmVycmluZyBjb250cm9sIHRvIExpbnV4IChhdCBhZGRyZXNzIDAwMDAwMDAwKSAuLi4N
-CkluaXRpYWxpemluZyBjb250YWluZXIgc3Vic3lzIGNwdQ0KTGludXggdmVyc2lvbiAyLjYuMjEu
-Ny1ocnQxLWNmcy12MjItZ3JzZWMtV1IyLjBhcV9jZ2wgKGp1bmh1YXdhQGh6bGluZzA4LmNoaW5h
-Lm5zbi1uZXQubmV0KSAoZ2NjIHZlcnNpb24gNC4xLjIgKFdpbmQgUml2ZXIgTGludXggU291cmNl
-cnkgRysrIDQuMS0xODIpKSAjMSBQUkVFTVBUIFdlZCBEZWMgMjggMTY6MTY6NTUgQ1NUIDIwMTEN
-ClpvbmUgUEZOIHJhbmdlczoNCiAgRE1BICAgICAgICAgICAgIDAgLT4gICAgNjU1MzYNCiAgTm9y
-bWFsICAgICAgNjU1MzYgLT4gICAgNjU1MzYNCmVhcmx5X25vZGVfbWFwWzFdIGFjdGl2ZSBQRk4g
-cmFuZ2VzDQogICAgMDogICAgICAgIDAgLT4gICAgNjU1MzYNCkJ1aWx0IDEgem9uZWxpc3RzLiAg
-VG90YWwgcGFnZXM6IDY1MDI0DQpLZXJuZWwgY29tbWFuZCBsaW5lOiBkbXhfYnNwPTA2IGRteF9h
-cmNoaXRlY3R1cmU9MyBjb25zb2xlPXR0eVVMMCwzODQwMCByb290PS9kZXYvcmFtMCBydyANClhp
-bGlueCBJTlRDICMwIGF0IDB4NTAwMDAwMDAgbWFwcGVkIHRvIDB4RkRGRkYwMDANClBJRCBoYXNo
-IHRhYmxlIGVudHJpZXM6IDEwMjQgKG9yZGVyOiAxMCwgNDA5NiBieXRlcykNCkNvbnNvbGU6IGNv
-bG91ciBkdW1teSBkZXZpY2UgODB4MjUNCkRlbnRyeSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6
-IDMyNzY4IChvcmRlcjogNSwgMTMxMDcyIGJ5dGVzKQ0KSW5vZGUtY2FjaGUgaGFzaCB0YWJsZSBl
-bnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQ0KTWVtb3J5OiAyNTYwMDBrIGF2
-YWlsYWJsZSAoMjQ0OGsga2VybmVsIGNvZGUsIDg1MmsgZGF0YSwgMTA4ayBpbml0LCAwayBoaWdo
-bWVtKQ0KU2VjdXJpdHkgRnJhbWV3b3JrIHYxLjAuMCBpbml0aWFsaXplZA0KTW91bnQtY2FjaGUg
-aGFzaCB0YWJsZSBlbnRyaWVzOiA1MTINCkluaXRpYWxpemluZyBjb250YWluZXIgc3Vic3lzIGRl
-YnVnDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2DQpORVQ6IFJlZ2lzdGVyZWQg
-cHJvdG9jb2wgZmFtaWx5IDINCklQIHJvdXRlIGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogMjA0
-OCAob3JkZXI6IDEsIDgxOTIgYnl0ZXMpDQpUQ1AgZXN0YWJsaXNoZWQgaGFzaCB0YWJsZSBlbnRy
-aWVzOiA4MTkyIChvcmRlcjogNCwgNjU1MzYgYnl0ZXMpDQpUQ1AgYmluZCBoYXNoIHRhYmxlIGVu
-dHJpZXM6IDgxOTIgKG9yZGVyOiAzLCAzMjc2OCBieXRlcykNClRDUDogSGFzaCB0YWJsZXMgY29u
-ZmlndXJlZCAoZXN0YWJsaXNoZWQgODE5MiBiaW5kIDgxOTIpDQpUQ1AgcmVubyByZWdpc3RlcmVk
-DQpjaGVja2luZyBpZiBpbWFnZSBpcyBpbml0cmFtZnMuLi4gaXQgaXMNCkZyZWVpbmcgaW5pdHJk
-IG1lbW9yeTogMjU5ayBmcmVlZA0KUmVnaXN0ZXJpbmcgR0RCIHN5c3JxIGhhbmRsZXINCmlvIHNj
-aGVkdWxlciBub29wIHJlZ2lzdGVyZWQNCmlvIHNjaGVkdWxlciBhbnRpY2lwYXRvcnkgcmVnaXN0
-ZXJlZA0KaW8gc2NoZWR1bGVyIGRlYWRsaW5lIHJlZ2lzdGVyZWQNCmlvIHNjaGVkdWxlciBjZnEg
-cmVnaXN0ZXJlZCAoZGVmYXVsdCkNCkxUVCA6IGx0dC1mYWNpbGl0aWVzIGluaXQNCkxUVCA6IGx0
-dC1yZWxheSBpbml0DQp4aWxpbnhfc3BpIDA6IGF0IDB4NDAyMDAwMDAgbWFwcGVkIHRvIDB4RDEw
-MDAwMDAsIGlycT01DQp1YXJ0bGl0ZS4wOiB0dHlVTDAgYXQgTU1JTyBtYXAgMHg0MDYwMDAwMCBt
-ZW0gMHhkMTAxMjAwMCAoaXJxID0gMikgaXMgYSB1YXJ0bGl0ZQ0KdWFydGxpdGUuMTogdHR5VUwx
-IGF0IE1NSU8gbWFwIDB4NDA2MjAwMDAgbWVtIDB4ZDEwMTQwMDAgKGlycSA9IDApIGlzIGEgdWFy
-dGxpdGUNCnVhcnRsaXRlLjI6IHR0eVVMMiBhdCBNTUlPIG1hcCAweDQwNjQwMDAwIG1lbSAweGQx
-MDE2MDAwIChpcnEgPSAxKSBpcyBhIHVhcnRsaXRlDQpSQU1ESVNLIGRyaXZlciBpbml0aWFsaXpl
-ZDogOCBSQU0gZGlza3Mgb2YgMzI3NjhLIHNpemUgMTAyNCBibG9ja3NpemUNCmkyYyAvZGV2IGVu
-dHJpZXMgZHJpdmVyDQpwaHlzbWFwIHBsYXRmb3JtIGZsYXNoIGRldmljZTogMDgwMDAwMDAgYXQg
-ZjgwMDAwMDANCnBoeXNtYXAtZmxhc2guMDogRm91bmQgMSB4MTYgZGV2aWNlcyBhdCAweDAgaW4g
-MTYtYml0IGJhbmsNCiBBbWQvRnVqaXRzdSBFeHRlbmRlZCBRdWVyeSBUYWJsZSBhdCAweDAwNDAN
-CnBoeXNtYXAtZmxhc2guMDogQ0ZJIGRvZXMgbm90IGNvbnRhaW4gYm9vdCBiYW5rIGxvY2F0aW9u
-LiBBc3N1bWluZyB0b3AuDQpudW1iZXIgb2YgQ0ZJIGNoaXBzOiAxDQpjZmlfY21kc2V0XzAwMDI6
-IERpc2FibGluZyBlcmFzZS1zdXNwZW5kLXByb2dyYW0gZHVlIHRvIGNvZGUgYnJva2VubmVzcy4N
-ClRDUCBjdWJpYyByZWdpc3RlcmVkDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDEN
-Ck5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTcNCkZyZWVpbmcgdW51c2VkIGtlcm5l
-bCBtZW1vcnkNCnRlc3QgMCBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiAwLCBmaWxlIGxlbmd0aDog
-MjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDogMCwgbmFt
-ZTogL1RFU1QwLklNRw0KDQp0ZXN0IDEgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogMSwgZmlsZSBs
-ZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6
-IDEsIG5hbWU6IC9URVNUMC5JTUcNCg0KdGVzdCAyIHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDIs
-IGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAw
-DQpyZWFkOiAyLCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3QgMyBzdGFydDovVEVTVDAuSU1HDQp0
-ZXN0OiAzLCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4
-MTQwMDAwMA0KcmVhZDogMywgbmFtZTogL1RFU1QwLklNRw0KDQp0ZXN0IDQgc3RhcnQ6L1RFU1Qw
-LklNRw0KdGVzdDogNCwgZmlsZSBsZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBz
-aXplOiAweDE0MDAwMDANCnJlYWQ6IDQsIG5hbWU6IC9URVNUMC5JTUcNCg0KdGVzdCA1IHN0YXJ0
-Oi9URVNUMC5JTUcNCnRlc3Q6IDUsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcN
-CmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFkOiA1LCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3Qg
-NiBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiA2LCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAvVEVT
-VDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDogNiwgbmFtZTogL1RFU1QwLklNRw0K
-DQp0ZXN0IDcgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogNywgZmlsZSBsZW5ndGg6IDIwIE0gbmFt
-ZTogL1RFU1QwLklNRw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6IDcsIG5hbWU6IC9URVNU
-MC5JTUcNCg0KdGVzdCA4IHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDgsIGZpbGUgbGVuZ3RoOiAy
-MCBNIG5hbWU6IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFkOiA4LCBuYW1l
-OiAvVEVTVDAuSU1HDQoNCnRlc3QgOSBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiA5LCBmaWxlIGxl
-bmd0aDogMjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDog
-OSwgbmFtZTogL1RFU1QwLklNRw0KDQp0ZXN0IDEwIHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDEw
-LCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAw
-MA0KcmVhZDogMTAsIG5hbWU6IC9URVNUMC5JTUcNCg0KdGVzdCAxMSBzdGFydDovVEVTVDAuSU1H
-DQp0ZXN0OiAxMSwgZmlsZSBsZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBzaXpl
-OiAweDE0MDAwMDANCnJlYWQ6IDExLCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3QgMTIgc3RhcnQ6
-L1RFU1QwLklNRw0KdGVzdDogMTIsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcN
-CmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFkOiAxMiwgbmFtZTogL1RFU1QwLklNRw0KDQp0ZXN0
-IDEzIHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDEzLCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAv
-VEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDogMTMsIG5hbWU6IC9URVNUMC5J
-TUcNCg0KdGVzdCAxNCBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiAxNCwgZmlsZSBsZW5ndGg6IDIw
-IE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6IDE0LCBuYW1l
-OiAvVEVTVDAuSU1HDQoNCnRlc3QgMTUgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogMTUsIGZpbGUg
-bGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFk
-OiAxNSwgbmFtZTogL1RFU1QwLklNRw0KDQp0ZXN0IDE2IHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6
-IDE2LCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQw
-MDAwMA0KcmVhZDogMTYsIG5hbWU6IC9URVNUMC5JTUcNCg0KdGVzdCAxNyBzdGFydDovVEVTVDAu
-SU1HDQp0ZXN0OiAxNywgZmlsZSBsZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBz
-aXplOiAweDE0MDAwMDANCnJlYWQ6IDE3LCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3QgMTggc3Rh
-cnQ6L1RFU1QwLklNRw0KdGVzdDogMTgsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5J
-TUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFkOiAxOCwgbmFtZTogL1RFU1QwLklNRw0KDQp0
-ZXN0IDE5IHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDE5LCBmaWxlIGxlbmd0aDogMjAgTSBuYW1l
-OiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDogMTksIG5hbWU6IC9URVNU
-MC5JTUcNCg0KdGVzdCAyMCBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiAyMCwgZmlsZSBsZW5ndGg6
-IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6IDIwLCBu
-YW1lOiAvVEVTVDAuSU1HDQoNCnRlc3QgMjEgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogMjEsIGZp
-bGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpy
-ZWFkOiAyMSwgbmFtZTogL1RFU1QwLklNRw0KDQp0ZXN0IDIyIHN0YXJ0Oi9URVNUMC5JTUcNCnRl
-c3Q6IDIyLCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4
-MTQwMDAwMA0KcmVhZDogMjIsIG5hbWU6IC9URVNUMC5JTUcNCg0KdGVzdCAyMyBzdGFydDovVEVT
-VDAuSU1HDQp0ZXN0OiAyMywgZmlsZSBsZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmls
-ZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6IDIzLCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3QgMjQg
-c3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogMjQsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNU
-MC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFkOiAyNCwgbmFtZTogL1RFU1QwLklNRw0K
-DQp0ZXN0IDI1IHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDI1LCBmaWxlIGxlbmd0aDogMjAgTSBu
-YW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDogMjUsIG5hbWU6IC9U
-RVNUMC5JTUcNCg0KdGVzdCAyNiBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiAyNiwgZmlsZSBsZW5n
-dGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6IDI2
-LCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3QgMjcgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogMjcs
-IGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAw
-DQpyZWFkOiAyNywgbmFtZTogL1RFU1QwLklNRw0KDQp0ZXN0IDI4IHN0YXJ0Oi9URVNUMC5JTUcN
-CnRlc3Q6IDI4LCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6
-IDB4MTQwMDAwMA0KcmVhZDogMjgsIG5hbWU6IC9URVNUMC5JTUcNCg0KdGVzdCAyOSBzdGFydDov
-VEVTVDAuSU1HDQp0ZXN0OiAyOSwgZmlsZSBsZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0K
-ZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6IDI5LCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3Qg
-MzAgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogMzAsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9U
-RVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFkOiAzMCwgbmFtZTogL1RFU1QwLklN
-Rw0KDQp0ZXN0IDMxIHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDMxLCBmaWxlIGxlbmd0aDogMjAg
-TSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDogMzEsIG5hbWU6
-IC9URVNUMC5JTUcNCg0KdGVzdCAzMiBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiAzMiwgZmlsZSBs
-ZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6
-IDMyLCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRlc3QgMzMgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDog
-MzMsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAw
-MDAwDQpyZWFkOiAzMywgbmFtZTogL1RFU1QwLklNRw0KDQp0ZXN0IDM0IHN0YXJ0Oi9URVNUMC5J
-TUcNCnRlc3Q6IDM0LCBmaWxlIGxlbmd0aDogMjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNp
-emU6IDB4MTQwMDAwMA0KcmVhZDogMzQsIG5hbWU6IC9URVNUMC5JTUcNCg0KdGVzdCAzNSBzdGFy
-dDovVEVTVDAuSU1HDQp0ZXN0OiAzNSwgZmlsZSBsZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklN
-Rw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJlYWQ6IDM1LCBuYW1lOiAvVEVTVDAuSU1HDQoNCnRl
-c3QgMzYgc3RhcnQ6L1RFU1QwLklNRw0KdGVzdDogMzYsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6
-IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTogMHgxNDAwMDAwDQpyZWFkOiAzNiwgbmFtZTogL1RFU1Qw
-LklNRw0KDQp0ZXN0IDM3IHN0YXJ0Oi9URVNUMC5JTUcNCnRlc3Q6IDM3LCBmaWxlIGxlbmd0aDog
-MjAgTSBuYW1lOiAvVEVTVDAuSU1HDQpmaWxlIHNpemU6IDB4MTQwMDAwMA0KcmVhZDogMzcsIG5h
-bWU6IC9URVNUMC5JTUcNCg0KdGVzdCAzOCBzdGFydDovVEVTVDAuSU1HDQp0ZXN0OiAzOCwgZmls
-ZSBsZW5ndGg6IDIwIE0gbmFtZTogL1RFU1QwLklNRw0KZmlsZSBzaXplOiAweDE0MDAwMDANCnJl
-YWQ6IDM4LCBuYW1lOiAvVEVTVDAuSU1HDQplcnJvciBmb3VuZCBhdCBvZmZzZXQ6IDB4QkVEODAw
-IGJ5dGVzDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-DQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICAxYyAgIDAgIGZmICBm
-ZiAgDQpmZiAgZmYgIGZmICBmZiAgIDAgICAwICAgMCAgIDQgICA4ICAgNiAgZGYgIDk5ICAgMCAg
-IDEgICAwICAzYyAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-DQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgDQoNCmVycm9yIGZvdW5kIGF0IG9mZnNldDogMHhCRURFMDAgYnl0ZXMNCmZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICAN
-CmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICAN
-CmZmICBmZiAgZmYgIGZmICBmZiAgZmYgICAwICBhMCAgYTUgIDY1ICAgMyAgNzggICA4ICAgNiAg
-IDAgICAxICANCiA4ICAgMCAgIDYgICA0ICAgMCAgIDEgICAwICBhMCAgYTUgIDY1ICAgMyAgNzgg
-ICBhICAgYSAgIGEgICAxICANCiAwICAgMCAgIDAgICAwICAgMCAgIDAgICBhICAgYSAgIGEgICAx
-ICAgMCAgIDAgICAwICAgMCAgIDAgICAwICANCiAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAg
-MCAgIDAgICAwICAgMCAgIDAgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCg0K
-ZXJyb3IgZm91bmQgYXQgb2Zmc2V0OiAweEJFRTQwMCBieXRlcw0KZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0K
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0K
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgMWMg
-ICAwICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgICAwICAgMCAgIDAgICA0ICAgOCAgIDYgIGRm
-ICA5OSAgIDAgICAxICAgMCAgM2MgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIA0KDQplcnJvciBmb3VuZCBh
-dCBvZmZzZXQ6IDB4QkVFQTAwIGJ5dGVzDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-DQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgDQpmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-DQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgDQpmZiAgZmYgIGZmICBmZiAgZmYgIGZmICAgMCAgYTAgIGE1ICA2NSAgIDMgIDc4
-ICAgOCAgIDYgICAwICAgMSAgDQogOCAgIDAgICA2ICAgNCAgIDAgICAxICAgMCAgYTAgIGE1ICA2
-NSAgIDMgIDc4ICAgYSAgIGEgICBhICAgMSAgDQoNCmVycm9yIGZvdW5kIGF0IG9mZnNldDogMHhC
-RUVDMDAgYnl0ZXMNCiAwICAgMCAgIDAgICAwICAgMCAgIDAgICBhICAgYSAgIGEgICAxICAgMCAg
-IDAgICAwICAgMCAgIDAgICAwICANCiAwICAgMCAgIDAgICAwICAgMCAgIDAgICAwICAgMCAgIDAg
-ICAwICAgMCAgIDAgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICAN
-CmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICAN
-CmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBm
-ZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAg
-ZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZmICBmZiAgZmYg
-IGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICANCmZm
-ICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYg
-IGZmICANCmZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZmICBmZiAgZmYgIGZm
-ICBmZiAgZmYgIGZmICANCg0KZm91bmQgZXJyb3INCg0KdGVzdCAwIHN0YXJ0Oi9URVNUMC5JTUcN
-CnRlc3Q6IDAsIGZpbGUgbGVuZ3RoOiAyMCBNIG5hbWU6IC9URVNUMC5JTUcNCmZpbGUgc2l6ZTog
-MHgxNDAwMDAwDQpyZWFkOiAwLCBuYW1lOiAvVEVTVDAuSU1HDQpmb3VuZCBlcnJvcg0KS2VybmVs
-IHBhbmljIC0gbm90IHN5bmNpbmc6IEF0dGVtcHRlZCB0byBraWxsIGluaXQhDQpSZWJvb3Rpbmcg
-aW4gMTgwIHNlY29uZHMuLiokDQo=
-
-------_=_NextPart_001_01CCC772.E4BDACDF--
+--f46d04428cf4603fe504b55dabd2--
