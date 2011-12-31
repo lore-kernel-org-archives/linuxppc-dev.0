@@ -1,18 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
- by ozlabs.org (Postfix) with ESMTP id AD8C8B6FBE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Dec 2011 05:28:15 +1100 (EST)
-To: smitha.vanga@wipro.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Mac address in the DTS file
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 31 Dec 2011 11:44:28 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+Subject: Re: [PATCH 4/5] KVM: PPC: Book3s HV: Implement get_dirty_log using
+ hardware changed bit
+Message-ID: <20111231004427.GA28401@bloggs.ozlabs.ibm.com>
+References: <20111215120018.GA20629@bloggs.ozlabs.ibm.com>
+ <20111215120322.GE20629@bloggs.ozlabs.ibm.com>
+ <C59FE93D-AD1B-4382-BE8B-FF2DDD22930E@suse.de>
+ <20111225233524.GA5348@sammy.paulus.ozlabs.org>
+ <4EF80090.7050008@oss.ntt.co.jp>
 MIME-Version: 1.0
-Content-type: text/plain; charset=UTF-8
-In-reply-to: <40631E9A2581F14BA60888C87A76A1FE01C6BB@HYD-MKD-MBX4.wipro.com>
-References: <40631E9A2581F14BA60888C87A76A1FE01C6BB@HYD-MKD-MBX4.wipro.com>
-Date: Fri, 30 Dec 2011 19:28:06 +0100
-Message-Id: <20111230182806.21CF61931810@gemini.denx.de>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4EF80090.7050008@oss.ntt.co.jp>
+Cc: linuxppc-dev@ozlabs.org, Takuya Yoshikawa <takuya.yoshikawa@gmail.com>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear smitha.vanga@wipro.com,
+On Mon, Dec 26, 2011 at 02:05:20PM +0900, Takuya Yoshikawa wrote:
 
-In message <40631E9A2581F14BA60888C87A76A1FE01C6BB@HYD-MKD-MBX4.wipro.com> you wrote:
->  
-> In my DTS file for mpc8247 I have defined the ether MAC in the node as below.
+> From my x86 dirty logging experience I have some concern about your code:
+> your code looks slow even when there is no/few dirty pages in the slot.
+> 
+> +	for (i = 0; i < memslot->npages; ++i) {
+> +		if (kvm_test_clear_dirty(kvm, rmapp))
+> +			__set_bit_le(i, map);
+> +		++rmapp;
+> +	}
+> 
+> The check is being done for each page and this can be very expensive because
+> the number of pages is not small.
+> 
+> 	When we scan the dirty_bitmap 64 pages are checked at once and
+> 	the problem is not so significant.
+> 
+> Though I do not know well what kvm-ppc's dirty logging is aiming at, I guess
+> reporting cleanliness without noticeable delay to the user-space is important.
+> 
+> 	E.g. for VGA most of the cases are clean.  For live migration, the
+> 	chance of seeing complete clean slot is small but almost all cases
+> 	are sparse.
 
-On a MPC82xx there is a chance that you are using U-Boot as boot
-loader...
+The alternative approach is not to use the hardware changed bit but
+instead to install read-only HPTEs when the guest requests a
+read/write mapping, and then when the guest writes to the page we
+intercept the protection fault, mark the page dirty and change the
+HPTE to allow writing.  Then when harvesting the dirty bits we have to
+change any dirty page back to a read-only HPTE.
 
-> How do I change the MAC address. If different targets boards are
+That is all quite doable, but I was worried about the performance
+impact of the extra faults.  We intend to do some performance studies
+to see whether the alternative approach would give better performance.
+There is a trade-off in that the alternative approach would slow down
+normal operation a little in order to speed up the harvesting of the
+dirty log.  That may in fact be worthwhile.
 
-U-Boot can store (it the environment variables) MAC addresses and
-update the DT with this information.
+For now, the patch I posted at least gets the dirty page tracking
+working, so we can use VGA emulation.
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Beware of bugs in the above code; I have only proved it correct, not
-tried it."                                             - Donald Knuth
+Paul.
