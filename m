@@ -1,28 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 547D71007D2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jan 2012 19:46:32 +1100 (EST)
-Received: by dadv40 with SMTP id v40so3732699dad.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jan 2012 00:46:29 -0800 (PST)
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
+ [203.91.198.75])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 91CF5B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jan 2012 22:25:28 +1100 (EST)
+From: <smitha.vanga@wipro.com>
+To: <scottwood@freescale.com>
+Subject: Mac address change in linux
+Date: Mon, 2 Jan 2012 11:24:27 +0000
+Message-ID: <40631E9A2581F14BA60888C87A76A1FE01C96A@HYD-MKD-MBX4.wipro.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20120102082514.GG18381@ponder.secretlab.ca>
-References: <20111228194949.ff20a609745e816c266f7d91@canb.auug.org.au>
- <1325068334.6632.43.camel@pasglop>
- <20120102082514.GG18381@ponder.secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 2 Jan 2012 01:39:06 -0700
-Message-ID: <CACxGe6txjt62u8fm8UBEfBDHmftgXO0XJJKQmAmh2Cy86ZfRaA@mail.gmail.com>
-Subject: Re: linux-next: build failure after merge of the final tree (powerpc
- related)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Benoit Cousson <b-cousson@ti.com>,
- linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,52 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 2, 2012 at 1:25 AM, Grant Likely <grant.likely@secretlab.ca> wr=
-ote:
-> On Wed, Dec 28, 2011 at 09:32:14PM +1100, Benjamin Herrenschmidt wrote:
->> On Wed, 2011-12-28 at 19:49 +1100, Stephen Rothwell wrote:
->> > Hi ,
->> >
->> > After merging the final tree, today's linux-next build (powerpc
->> > allyesconfig) failed like this:
->> >
->> > kernel/built-in.o: In function `irq_dispose_mapping':
->> > (.opd+0x159f0): multiple definition of `irq_dispose_mapping'
->> > arch/powerpc/kernel/built-in.o:(.opd+0x960): first defined here
->> > kernel/built-in.o: In function `irq_create_of_mapping':
->> > (.opd+0x15a20): multiple definition of `irq_create_of_mapping'
->> > arch/powerpc/kernel/built-in.o:(.opd+0x9a8): first defined here
->> > kernel/built-in.o: In function `.irq_create_of_mapping':
->> > (.text+0x147030): multiple definition of `.irq_create_of_mapping'
->> > arch/powerpc/kernel/built-in.o:(.text+0x9de0): first defined here
->> > kernel/built-in.o: In function `.irq_dispose_mapping':
->> > (.text+0x146f4c): multiple definition of `.irq_dispose_mapping'
->> > arch/powerpc/kernel/built-in.o:(.text+0x9684): first defined here
->> >
->> > I am not sure what caused this. And have just left it broken.
->>
->> Grant, is your irq remapper misbehaving ?
->
-> Hmmmm, that's odd. =A0I've not touched it. =A0I'll investigate.
+Hi Scott,
 
-It looks like CONFIG_IRQ_DOMAIN is getting selected by TWL4030_CORE.
-Drivers must not select that config symbol.  It looks like commit
-da28adbd (mfd: twl-core: Add initial DT support for twl4030/twl6030)
-is the culprit.
+When I execute below statements in linux to change the mac address I get the=
+ error Host name look up error.
+Below are the commands I execute to change the mac address and the console o=
+utput.
 
-The following patch should solve the problem:
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 13c468e..e43a570 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -200,8 +200,7 @@ config MENELAUS
+1. ifconfig eth0.246 down
+2. ifconfig eth0.246 hw ether 00:11:22:33:44:55
+   ifconfig: hw: Host name lookup failure
 
- config TWL4030_CORE
- 	bool "Texas Instruments TWL4030/TWL5030/TWL6030/TPS659x0 Support"
--	depends on I2C=3Dy && GENERIC_HARDIRQS
--	select IRQ_DOMAIN
-+	depends on I2C=3Dy && GENERIC_HARDIRQS && IRQ_DOMAIN
- 	help
- 	  Say yes here if you have TWL4030 / TWL6030 family chip on your board.
- 	  This core driver provides register access and IRQ handling
+sh-3.1# ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:E0:EE:00:05:2E
+          inet addr:172.16.52.20  Bcast:172.16.53.255  Mask:255.255.254.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:999 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:93661 (91.4 KiB)  TX bytes:0 (0.0 B)
+
+eth0.246  Link encap:Ethernet  HWaddr 00:E0:EE:00:05:2E
+          inet addr:172.16.52.20  Bcast:172.16.53.255  Mask:255.255.254.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:4 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:248 (248.0 B)  TX bytes:248 (248.0 B)
+
+sh-3.1# ifconfig eth0.246 down
+sh-3.1# ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:E0:EE:00:05:2E
+          inet addr:172.16.52.20  Bcast:172.16.53.255  Mask:255.255.254.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1005 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:94205 (91.9 KiB)  TX bytes:0 (0.0 B)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:4 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:248 (248.0 B)  TX bytes:248 (248.0 B)
+
+sh-3.1# ifconfig eth0.246 hw ether 00:11:22:33:44:55 ifconfig eth0.246 up
+ifconfig: hw: Host name lookup failure
+sh-3.1# 
+
+
+Regards,
+Smitha
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
