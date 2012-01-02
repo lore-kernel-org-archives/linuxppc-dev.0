@@ -2,22 +2,20 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 976E41007D4
- for <linuxppc-dev@ozlabs.org>; Tue,  3 Jan 2012 02:20:38 +1100 (EST)
-Subject: Re: p1020 unstable with 3.2
+ by ozlabs.org (Postfix) with ESMTPS id 408CC1007D9
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Jan 2012 02:23:19 +1100 (EST)
+Subject: Re: [PATCH] KVM: Move gfn_to_memslot() to kvm_host.h
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1325048474.6632.33.camel@pasglop>
-Date: Mon, 2 Jan 2012 16:20:26 +0100
-Message-Id: <0604E140-675B-481B-9E19-4791F0538AC3@suse.de>
-References: <0048E411-D82D-4EA4-B9BA-EF233AC6ED34@suse.de>
- <1324709633.6632.20.camel@pasglop>
- <025812DC-AB8E-4B60-9B16-50C3DE4DD561@suse.de>
- <1325048474.6632.33.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Fleming Andy-AFLEMING <afleming@freescale.com>
+In-Reply-To: <4EF87528.8000305@redhat.com>
+Date: Mon, 2 Jan 2012 16:23:11 +0100
+Message-Id: <6918CBBE-19AF-4323-BFE7-0F8739E32008@suse.de>
+References: <20111220092102.GA5626@bloggs.ozlabs.ibm.com>
+ <4EF87528.8000305@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +26,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 28.12.2011, at 06:01, Benjamin Herrenschmidt wrote:
+On 26.12.2011, at 14:22, Avi Kivity wrote:
 
-> On Sun, 2011-12-25 at 11:48 +0100, Alexander Graf wrote:
->> On 24.12.2011, at 07:53, Benjamin Herrenschmidt wrote:
+> On 12/20/2011 11:21 AM, Paul Mackerras wrote:
+>> This moves gfn_to_memslot(), and the functions it calls, that is,
+>> search_memslots() and __gfn_to_memslot(), from kvm_main.c to kvm_host.h
+>> so that gfn_to_memslot() can be called from non-modular code even
+>> when KVM is a module.  On powerpc, the Book3S HV style of KVM has
+>> code that is called from real mode which needs to call gfn_to_memslot()
+>> and thus needs this.  (Module code is allocated in the vmalloc region,
+>> which can't be accessed in real mode.)
 >> 
->>> On Fri, 2011-12-23 at 17:54 +0100, Alexander Graf wrote:
->>>> Hi guys,
->>>> 
->>>> While trying to test my latest patch queue for ppc kvm, I realized
->>>> that even though the device trees got updated, the p1020 box still is
->>>> unstable. The trace below is the one I've seen the most. It only
->>>> occurs during network I/O which happens a lot on that box, since I'm
->>>> running it using NFS root.
->>>> 
->>>> As for configuration, I use kumar's "merge" branch from today and the
->>>> p1020rdb.dts device tree provided in that tree.
->>>> 
->>>> The last known good configuration I'm aware of is 3.0.
->>>> 
->>>> Any ideas what's going wrong here?
->>> 
->>> Try SLAB instead of SLUB and let me know. It -could- be a bogon in SLUB
->>> that should be fixed upstream now but I think did hit 3.2
->> 
->> Yup, things seem a lot more stable with SLAB now :).
+>> With this, we can remove builtin_gfn_to_memslot() from book3s_hv_rm_mmu.c
+>> and thus eliminate a little bit of duplication.
 > 
-> BTW. Fix for slub should be upstream:
+> Those functions are too big to be inlined IMO.  How about moving them to
+> another C file, and making it builtin for ppc?
 > 
-> 42d623a8cd08eb93ab221d22cee5a62618895bbf
+> The only issue is what to call it. virt/kvm/builtin-for-ppc seems silly.
 
-Yup, works like a charm now again. Thanks a lot!
+Yeah - and it makes it pretty confusing to find the functions then.
+
+> Or we could move the implementation into a header file, with an extra __
+> prefix, and have the C stubs call those inlines, so we have exactly on
+> instantiation.  Your real mode code can then call the inlines.
+
+I like this version. That way everyone should be happy :)
 
 
 Alex
