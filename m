@@ -1,18 +1,23 @@
-Return-Path: <smitha.vanga@wipro.com>
-Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
- [203.91.198.75])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 91CF5B6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jan 2012 22:25:28 +1100 (EST)
-From: <smitha.vanga@wipro.com>
-To: <scottwood@freescale.com>
-Subject: Mac address change in linux
-Date: Mon, 2 Jan 2012 11:24:27 +0000
-Message-ID: <40631E9A2581F14BA60888C87A76A1FE01C96A@HYD-MKD-MBX4.wipro.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 976E41007D4
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Jan 2012 02:20:38 +1100 (EST)
+Subject: Re: p1020 unstable with 3.2
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1325048474.6632.33.camel@pasglop>
+Date: Mon, 2 Jan 2012 16:20:26 +0100
+Message-Id: <0604E140-675B-481B-9E19-4791F0538AC3@suse.de>
+References: <0048E411-D82D-4EA4-B9BA-EF233AC6ED34@suse.de>
+ <1324709633.6632.20.camel@pasglop>
+ <025812DC-AB8E-4B60-9B16-50C3DE4DD561@suse.de>
+ <1325048474.6632.33.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+ Fleming Andy-AFLEMING <afleming@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,80 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
 
-When I execute below statements in linux to change the mac address I get the=
- error Host name look up error.
-Below are the commands I execute to change the mac address and the console o=
-utput.
+On 28.12.2011, at 06:01, Benjamin Herrenschmidt wrote:
 
+> On Sun, 2011-12-25 at 11:48 +0100, Alexander Graf wrote:
+>> On 24.12.2011, at 07:53, Benjamin Herrenschmidt wrote:
+>> 
+>>> On Fri, 2011-12-23 at 17:54 +0100, Alexander Graf wrote:
+>>>> Hi guys,
+>>>> 
+>>>> While trying to test my latest patch queue for ppc kvm, I realized
+>>>> that even though the device trees got updated, the p1020 box still is
+>>>> unstable. The trace below is the one I've seen the most. It only
+>>>> occurs during network I/O which happens a lot on that box, since I'm
+>>>> running it using NFS root.
+>>>> 
+>>>> As for configuration, I use kumar's "merge" branch from today and the
+>>>> p1020rdb.dts device tree provided in that tree.
+>>>> 
+>>>> The last known good configuration I'm aware of is 3.0.
+>>>> 
+>>>> Any ideas what's going wrong here?
+>>> 
+>>> Try SLAB instead of SLUB and let me know. It -could- be a bogon in SLUB
+>>> that should be fixed upstream now but I think did hit 3.2
+>> 
+>> Yup, things seem a lot more stable with SLAB now :).
+> 
+> BTW. Fix for slub should be upstream:
+> 
+> 42d623a8cd08eb93ab221d22cee5a62618895bbf
 
-1. ifconfig eth0.246 down
-2. ifconfig eth0.246 hw ether 00:11:22:33:44:55
-   ifconfig: hw: Host name lookup failure
-
-sh-3.1# ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:E0:EE:00:05:2E
-          inet addr:172.16.52.20  Bcast:172.16.53.255  Mask:255.255.254.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:999 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:93661 (91.4 KiB)  TX bytes:0 (0.0 B)
-
-eth0.246  Link encap:Ethernet  HWaddr 00:E0:EE:00:05:2E
-          inet addr:172.16.52.20  Bcast:172.16.53.255  Mask:255.255.254.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:4 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:248 (248.0 B)  TX bytes:248 (248.0 B)
-
-sh-3.1# ifconfig eth0.246 down
-sh-3.1# ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:E0:EE:00:05:2E
-          inet addr:172.16.52.20  Bcast:172.16.53.255  Mask:255.255.254.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:1005 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:94205 (91.9 KiB)  TX bytes:0 (0.0 B)
-
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:4 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:248 (248.0 B)  TX bytes:248 (248.0 B)
-
-sh-3.1# ifconfig eth0.246 hw ether 00:11:22:33:44:55 ifconfig eth0.246 up
-ifconfig: hw: Host name lookup failure
-sh-3.1# 
+Yup, works like a charm now again. Thanks a lot!
 
 
-Regards,
-Smitha
-Please do not print this email unless it is absolutely necessary. =0A=
-=0A=
-The information contained in this electronic message and any attachments to=
- this message are intended for the exclusive use of the addressee(s) and may=
- contain proprietary, confidential or privileged information. If you are not=
- the intended recipient, you should not disseminate, distribute or copy this=
- e-mail. Please notify the sender immediately and destroy all copies of this=
- message and any attachments. =0A=
-=0A=
-WARNING: Computer viruses can be transmitted via email. The recipient should=
- check this email and any attachments for the presence of viruses. The compa=
-ny accepts no liability for any damage caused by any virus transmitted by th=
-is email. =0A=
-=0A=
-www.wipro.com
+Alex
