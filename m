@@ -1,22 +1,23 @@
-Return-Path: <Farrukh_Arshad@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1B" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 415E61007D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2012 06:10:40 +1100 (EST)
-Received: from svr-orw-fem-01.mgc.mentorg.com ([147.34.98.93])
- by relay1.mentorg.com with esmtp
- id 1RhnHI-0005XB-F2 from Farrukh_Arshad@mentor.com
- for linuxppc-dev@lists.ozlabs.org; Mon, 02 Jan 2012 11:10:36 -0800
-From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Problem in getting shared memory access on P1022RDK
-Date: Mon, 2 Jan 2012 19:10:33 +0000
-Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
-Content-Type: multipart/alternative;
- boundary="_000_93CD5F41FDBC6042A6B449764F3B35CC050CCA22EUMBX03mgcmento_"
-MIME-Version: 1.0
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5FEBCB6FA5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2012 11:54:31 +1100 (EST)
+Message-ID: <1325552057.23910.5.camel@pasglop>
+Subject: Re: [PATCH powerpc] fix unpaired __trace_hcall_entry and
+ __trace_hcall_exit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Date: Tue, 03 Jan 2012 11:54:17 +1100
+In-Reply-To: <1324260407.3006.17.camel@ThinkPad-T61>
+References: <1324260407.3006.17.camel@ThinkPad-T61>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,117 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_93CD5F41FDBC6042A6B449764F3B35CC050CCA22EUMBX03mgcmento_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2011-12-19 at 10:06 +0800, Li Zhong wrote:
+> Unpaired calling of __trace_hcall_entry and __trace_hcall_exit could
+> cause incorrect preempt count. And it might happen as the global
+> variable hcall_tracepoint_refcount is checked separately before calling
+> them. 
+> 
+> I don't know much about the powerpc arch. But the idea here is to store
+> the hcall_tracepoint_refcount locally, so __trace_hcall_entry and
+> __trace_hcall_exit will be called or not called in pair by checking the
+> same value. 
 
-Greetings All,
+Can you re-use an existing spot in the stack frame rather than adding
+this entry ? There's plenty of unused spots :-) For example the link
+editor doubleword is never going to be used in that function, we could
+hijack it safely. It would make the patch (and the code) simpler.
 
-Please excuse me for a 'not very precise' question but I just need some clu=
-e or point to look for the trouble.
-I am running linux in AMP configuration on P1022RDK dual core. My memory pa=
-rtitioning is given below
+Cheers,
+Ben.
 
-Core Base Address (CONFIG_PHYSICAL_START / bootm_low) Size (bootm_size / me=
-m kernel boot parameter)
-Core 0 0x0000,0000 0x1000,0000
-Core 1 0x1000,0000 0x0C00,0000
-Shared Memory 0x1C00,0000 0x0400,0000
-
-I have set bootm_low / bootm_size and provided mem parameter in both kernel=
- configurations, both
-kernels are booting up fine. I have a shared memory driver running in both =
-cores. My shared memory
-driver just exposes the physical memory (0x1C00,0000) to user-space.
-
-The problem I am facing is I can not get access to same shared memory in us=
-er-space on both kernels.
-I have verified my shared memory driver on another platform (p1022ds) and i=
-t works perfect. I have also
-tried using non-cached memory mapping in shared memory driver but that does=
- not work as well.
-
-To me it seems one of my kernels is going beyond its defined memory partiti=
-on (which I have set above), I have
-set kernel's partitioning as CONFIG_PHYSICAL_START, bootm_size, bootm_low a=
-nd mem kernel boot param.
-
-Besides the shared memory driver, can anyone suggest or give me clue where =
-should I look for the
-trouble in the kernel.
-
-Regards,
-Farrukh Arshad.
-
---_000_93CD5F41FDBC6042A6B449764F3B35CC050CCA22EUMBX03mgcmento_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html dir=3D"ltr">
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
-1">
-<style type=3D"text/css" id=3D"owaParaStyle"></style>
-</head>
-<body fpstyle=3D"1" ocsi=3D"0">
-<div style=3D"direction: ltr;font-family: Tahoma;color: #000000;font-size: =
-10pt;">
-<div>Greetings All,</div>
-<div><br>
-</div>
-<div>Please excuse me for a 'not very precise' question but I just need som=
-e clue or point to look for the trouble.</div>
-<div>I am running linux in AMP configuration on P1022RDK dual core. My memo=
-ry partitioning is given below</div>
-<div><br>
-</div>
-<div>Core<span class=3D"Apple-tab-span" style=3D"white-space:pre"> </span>B=
-ase Address (CONFIG_PHYSICAL_START / bootm_low)<span class=3D"Apple-tab-spa=
-n" style=3D"white-space:pre">
-</span>Size (bootm_size / mem kernel boot parameter)</div>
-<div>Core 0<span class=3D"Apple-tab-span" style=3D"white-space:pre"> </span=
->0x0000,0000<span class=3D"Apple-tab-span" style=3D"white-space:pre">
-</span>0x1000,0000</div>
-<div>Core 1<span class=3D"Apple-tab-span" style=3D"white-space:pre"> </span=
->0x1000,0000<span class=3D"Apple-tab-span" style=3D"white-space:pre">
-</span>0x0C00,0000</div>
-<div>Shared Memory<span class=3D"Apple-tab-span" style=3D"white-space:pre">=
- </span>0x1C00,0000<span class=3D"Apple-tab-span" style=3D"white-space:pre"=
->
-</span>0x0400,0000</div>
-<div><br>
-</div>
-<div>I have set bootm_low / bootm_size and provided mem parameter in both k=
-ernel configurations, both&nbsp;</div>
-<div>kernels are booting up fine. I have a shared memory driver running in =
-both cores. My shared memory&nbsp;</div>
-<div>driver just exposes the physical memory (0x1C00,0000) to user-space.&n=
-bsp;</div>
-<div><br>
-</div>
-<div>The problem I am facing is I can not get access to same shared memory =
-in user-space on both kernels.</div>
-<div>I have verified my shared memory driver on another platform (p1022ds) =
-and it works perfect. I have also&nbsp;</div>
-<div>tried using non-cached memory mapping in shared memory driver but that=
- does not work as well.&nbsp;</div>
-<div><br>
-</div>
-<div>To me it seems one of my kernels is going beyond its defined memory pa=
-rtition (which I have set above), I have&nbsp;</div>
-<div>set kernel's partitioning as CONFIG_PHYSICAL_START, bootm_size, bootm_=
-low and mem kernel boot param.</div>
-<div><br>
-</div>
-<div>Besides the shared memory driver, can anyone suggest or give me clue w=
-here should I look for the&nbsp;</div>
-<div>trouble in the kernel.</div>
-<div><br>
-</div>
-<div>Regards,</div>
-<div>Farrukh Arshad.</div>
-</div>
-</body>
-</html>
-
---_000_93CD5F41FDBC6042A6B449764F3B35CC050CCA22EUMBX03mgcmento_--
+> Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/hvCall.S |   20 +++++++++++---------
+>  1 files changed, 11 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
+> index fd05fde..1240bd2 100644
+> --- a/arch/powerpc/platforms/pseries/hvCall.S
+> +++ b/arch/powerpc/platforms/pseries/hvCall.S
+> @@ -14,6 +14,7 @@
+>  #include <asm/ptrace.h>
+>  	
+>  #define STK_PARM(i)     (48 + ((i)-3)*8)
+> +#define REG_SIZE        (2*8)
+>  
+>  #ifdef CONFIG_TRACEPOINTS
+>  
+> @@ -32,11 +33,12 @@ hcall_tracepoint_refcount:
+>   * unconditional cpu feature.
+>   */
+>  #define HCALL_INST_PRECALL(FIRST_REG)				\
+> +	std	r31,-8(r1);					\
+>  BEGIN_FTR_SECTION;						\
+>  	b	1f;						\
+>  END_FTR_SECTION(0, 1);						\
+> -	ld      r12,hcall_tracepoint_refcount@toc(r2);		\
+> -	cmpdi	r12,0;						\
+> +	ld      r31,hcall_tracepoint_refcount@toc(r2);		\
+> +	cmpdi	r31,0;						\
+>  	beq+	1f;						\
+>  	mflr	r0;						\
+>  	std	r3,STK_PARM(r3)(r1);				\
+> @@ -49,9 +51,9 @@ END_FTR_SECTION(0, 1);						\
+>  	std	r10,STK_PARM(r10)(r1);				\
+>  	std	r0,16(r1);					\
+>  	addi	r4,r1,STK_PARM(FIRST_REG);			\
+> -	stdu	r1,-STACK_FRAME_OVERHEAD(r1);			\
+> +	stdu	r1,-STACK_FRAME_OVERHEAD-REG_SIZE(r1);		\
+>  	bl	.__trace_hcall_entry;				\
+> -	addi	r1,r1,STACK_FRAME_OVERHEAD;			\
+> +	addi	r1,r1,STACK_FRAME_OVERHEAD+REG_SIZE;		\
+>  	ld	r0,16(r1);					\
+>  	ld	r3,STK_PARM(r3)(r1);				\
+>  	ld	r4,STK_PARM(r4)(r1);				\
+> @@ -74,8 +76,7 @@ END_FTR_SECTION(0, 1);						\
+>  BEGIN_FTR_SECTION;						\
+>  	b	1f;						\
+>  END_FTR_SECTION(0, 1);						\
+> -	ld      r12,hcall_tracepoint_refcount@toc(r2);		\
+> -	cmpdi	r12,0;						\
+> +	cmpdi	r31,0;						\
+>  	beq+	1f;						\
+>  	mflr	r0;						\
+>  	ld	r6,STK_PARM(r3)(r1);				\
+> @@ -83,13 +84,14 @@ END_FTR_SECTION(0, 1);						\
+>  	mr	r4,r3;						\
+>  	mr	r3,r6;						\
+>  	std	r0,16(r1);					\
+> -	stdu	r1,-STACK_FRAME_OVERHEAD(r1);			\
+> +	stdu	r1,-STACK_FRAME_OVERHEAD-REG_SIZE(r1);		\
+>  	bl	.__trace_hcall_exit;				\
+> -	addi	r1,r1,STACK_FRAME_OVERHEAD;			\
+> +	addi	r1,r1,STACK_FRAME_OVERHEAD+REG_SIZE;		\
+>  	ld	r0,16(r1);					\
+>  	ld	r3,STK_PARM(r3)(r1);				\
+>  	mtlr	r0;						\
+> -1:
+> +1:								\
+> +	ld	r31,-8(r1);
+>  
+>  #define HCALL_INST_POSTCALL_NORETS				\
+>  	li	r5,0;						\
