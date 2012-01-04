@@ -1,22 +1,26 @@
-Return-Path: <Farrukh_Arshad@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1B" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5989AB6FAF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 17:49:51 +1100 (EST)
-From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: Problem in getting shared memory access on P1022RDK
-Date: Wed, 4 Jan 2012 06:49:45 +0000
-Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CCB2E@EU-MBX-03.mgc.mentorg.com>
-References: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CCA80@EU-MBX-03.mgc.mentorg.com>
- <4F033685.6000509@freescale.com>
-In-Reply-To: <4F033685.6000509@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from calzone.tip.net.au (calzone.tip.net.au
+ [IPv6:2402:b800:7003:1::15])
+ by ozlabs.org (Postfix) with ESMTP id 1F590B6FAC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 19:06:24 +1100 (EST)
+Date: Wed, 4 Jan 2012 19:06:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: linux-next: build warnings after merge of the final tree
+Message-Id: <20120104190613.2e76daaa000ccf61121fdcc1@canb.auug.org.au>
+In-Reply-To: <20111222163304.26be6d0f5e514fefb078c0a6@canb.auug.org.au>
+References: <20111214181545.6e13bc954cb7ddce9086e861@canb.auug.org.au>
+ <1323880322.23971.33.camel@gandalf.stny.rr.com>
+ <4EE8D305.8020407@zytor.com>
+ <20111222163304.26be6d0f5e514fefb078c0a6@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__4_Jan_2012_19_06_13_+1100_=XMCdw1VstOWS2uq"
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +30,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-How can I verify if the memory mapped is coherent on both cores. My memory =
-partitioning is given below
+--Signature=_Wed__4_Jan_2012_19_06_13_+1100_=XMCdw1VstOWS2uq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Core		Base Address		Size
-Core 0		0x0000,0000		0x1000,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
-=3D Base Address
-Core 1		0x1000,0000		0x0C00,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
-=3D Base Address
-Shared Mem	0x1C00,0000		0x0400,0000
+Hi again,
 
-Regards,
-Farrukh Arshad
-
------Original Message-----
-From: Scott Wood [mailto:scottwood@freescale.com]=20
-Sent: Tuesday, January 03, 2012 10:10 PM
-To: Arshad, Farrukh
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Problem in getting shared memory access on P1022RDK
-
-On 01/03/2012 03:42 AM, Arshad, Farrukh wrote:
-> Adding more to it,
+On Thu, 22 Dec 2011 16:33:04 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> On Wed, 14 Dec 2011 08:47:01 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
+> >
+> > On 12/14/2011 08:32 AM, Steven Rostedt wrote:
+> > > On Wed, 2011-12-14 at 18:15 +1100, Stephen Rothwell wrote:
+> > >=20
+> > >> Maybe caused by commit d5e553d6e0a4 ("trace: Include <asm/asm-offset=
+s.h>
+> > >> in trace_syscalls.c") from the tip tree.  These warnings may have be=
+en
+> > >> here for a while as it is hard to catch the new ones among the flood.
+> > >>
+> > >=20
+> > > hpa,
+> > >=20
+> > > Was this change only needed for x86? If so, could you put that into
+> > > asm/ftrace.h instead?
+> >=20
+> > Yes (on both accounts).  It was part of the syscall changes; I'll move
+> > the include.
 >=20
-> =20
->=20
-> When I write from Core 1 on the shared memory region it is visible at=20
-> Core 0 and it can read what I have written from Core 1 but when I=20
-> write from Core 0 on this shared memory it is not visible on Core 1.
+> Ping?
 
-Is the memory mapped coherent on both cores?
+Can we please have this fixed ...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--Scott
+--Signature=_Wed__4_Jan_2012_19_06_13_+1100_=XMCdw1VstOWS2uq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPBAh1AAoJEECxmPOUX5FEeBsP/3LXm2GIoBX9+SjaarruwAH1
+L/VRiNp8e+OfBb2U69bbL+si9KQAp+mp3gikaaVQnCdHrxZH9mSQqN/2BE8TOz2w
+FGb5zPUp/kqyDqIJ0/ixNOU9SK7o89KvTGKaFMK6FpoQv1Q/bIiyCr0MWUnrpwuP
+jAHx7TUODds8d5oJHEt2y6pBjxUL3lKEB38sVNUrpPmIZYMkzERprkoCn0bq+aqV
+mg44TjJoBbRbxXvt2kSrKN0hQhCvgiXZtELo2MUtxdm7KEmayWhgcUnCE39vsEmR
+OclwJ/ds9JvvoqUIxQMm/YzTAl0zpLJCc4hXQJB3gLcboGzo5wHkc73+7KK+Dl7q
+Oygw1iBk9NUCH/dsp6tUz+aBKANya/rOO6bnOb7xqd6cu+rAOqg+RG1AtD2ozz8c
+P3sIUnNI/SCZCEGWPtW2zJHr7KUyk4ILKoPaQFcfpNOKviLPpwH0ApSlfW7wRzGu
+M2FJFS+Fnn1MpoFwxWXVIEqwnAdiNfGIqyln8/uLyOR/5toONlatJE4pH42svF8J
+RvB9557FMWgIGDgeI1l8uLQp6G9VMGgksiiXI7q4IXINmvqoniijcO1uE4MyPhrK
+2VvigityJXJzi6Ppmsh4nSfPghadu2k+aQQ1dVDnY/bOFULQKBSwCZpzukTeHPwM
+jIUUD/ljv2vp2dTK9gNN
+=P/Hx
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__4_Jan_2012_19_06_13_+1100_=XMCdw1VstOWS2uq--
