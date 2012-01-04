@@ -1,23 +1,22 @@
-Return-Path: <B32579@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 57972B6FAC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 15:59:49 +1100 (EST)
-Message-ID: <4F03DC8B.3030407@freescale.com>
-Date: Wed, 4 Jan 2012 10:28:51 +0530
-From: Prabhakar <prabhakar@freescale.com>
-MIME-Version: 1.0
+Return-Path: <Farrukh_Arshad@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "relay1.mentorg.com",
+ Issuer "Entrust Certification Authority - L1B" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5989AB6FAF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 17:49:51 +1100 (EST)
+From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] mtd/nand: Fix IFC driver to support 2K NAND page
-References: <1325134779-3571-1-git-send-email-prabhakar@freescale.com>
- <1325134779-3571-3-git-send-email-prabhakar@freescale.com>
- <4F035BDF.5070207@freescale.com>
-In-Reply-To: <4F035BDF.5070207@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Subject: RE: Problem in getting shared memory access on P1022RDK
+Date: Wed, 4 Jan 2012 06:49:45 +0000
+Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CCB2E@EU-MBX-03.mgc.mentorg.com>
+References: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CCA80@EU-MBX-03.mgc.mentorg.com>
+ <4F033685.6000509@freescale.com>
+In-Reply-To: <4F033685.6000509@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,81 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 04 January 2012 01:19 AM, Scott Wood wrote:
-> On 12/28/2011 10:59 PM, Prabhakar Kushwaha wrote:
->> 1) OOB area should be updated irrespective of NAND page size. Earlier it was
->> updated only for 512byte NAND page.
->>
->> 2) During OOB update fbcr should be equal to OOB size.
->>
->> Signed-off-by: Poonam Aggrwal<poonam.aggrwal@freescale.com>
->> Signed-off-by: Prabhakar Kushwaha<prabhakar@freescale.com>
->> ---
->>   git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch next)
-> The IFC driver hasn't been merged into that tree that I can see.
+How can I verify if the memory mapped is coherent on both cores. My memory =
+partitioning is given below
 
-This patch is created on top of IFC driver patch (already floated in 
-mailing list). Please find there link:
+Core		Base Address		Size
+Core 0		0x0000,0000		0x1000,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
+=3D Base Address
+Core 1		0x1000,0000		0x0C00,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
+=3D Base Address
+Shared Mem	0x1C00,0000		0x0400,0000
 
-http://patchwork.ozlabs.org/patch/133315/
-http://patchwork.ozlabs.org/patch/133316/
+Regards,
+Farrukh Arshad
 
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com]=20
+Sent: Tuesday, January 03, 2012 10:10 PM
+To: Arshad, Farrukh
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Problem in getting shared memory access on P1022RDK
 
->>   Tested on P1010RDB
->>
->>   drivers/mtd/nand/fsl_ifc_nand.c |   20 ++++++++------------
->>   1 files changed, 8 insertions(+), 12 deletions(-)
->>
->> diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
->> index 2df7206..2c02168 100644
->> --- a/drivers/mtd/nand/fsl_ifc_nand.c
->> +++ b/drivers/mtd/nand/fsl_ifc_nand.c
->> @@ -439,20 +439,16 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->>   			out_be32(&ifc->ifc_nand.nand_fir1,
->>   				 (IFC_FIR_OP_CW1<<  IFC_NAND_FIR1_OP5_SHIFT));
->>
->> -			if (column>= mtd->writesize) {
->> -				/* OOB area -->  READOOB */
->> -				column -= mtd->writesize;
->> -				nand_fcr0 |= NAND_CMD_READOOB<<
->> -						IFC_NAND_FCR0_CMD0_SHIFT;
->> -				ifc_nand_ctrl->oob = 1;
->> -			} else if (column<  256)
->> +			if (column<  256)
->>   				/* First 256 bytes -->  READ0 */
->>   				nand_fcr0 |=
->>   				NAND_CMD_READ0<<  IFC_NAND_FCR0_CMD0_SHIFT;
->> -			else
->> -				/* Second 256 bytes -->  READ1 */
->> -				nand_fcr0 |=
->> -				NAND_CMD_READ1<<  IFC_NAND_FCR0_CMD0_SHIFT;
->> +		}
->> +
->> +		if (column>= mtd->writesize) {
->> +			/* OOB area -->  READOOB */
->> +			column -= mtd->writesize;
->> +			ifc_nand_ctrl->oob = 1;
->>   		}
-> Where is NAND_CMD_READOOB going to be set in the small-page case?
+On 01/03/2012 03:42 AM, Arshad, Farrukh wrote:
+> Adding more to it,
+>=20
+> =20
+>=20
+> When I write from Core 1 on the shared memory region it is visible at=20
+> Core 0 and it can read what I have written from Core 1 but when I=20
+> write from Core 0 on this shared memory it is not visible on Core 1.
 
-2K NAND flash does not require NAND_CMD_READOOB. So i thought same 
-should be applied to 512byte NAND. but i am wrong.
-Thanks for pointing it out :)
+Is the memory mapped coherent on both cores?
 
->
-> The small-page code should read something like:
->
-> 	if (column>= mtd->writesize) {
-> 		nand_fcr0 |=
-> 			NAND_CMD_READOOB<<  IFC_NAND_FCR0_CMD0_SHIFT;
-> 	} else {
-> 		nand_fcr0 |=
-> 			NAND_CMD_READ0<<  IFC_NAND_FCR0_CMD0_SHIFT;
-> 	}
->
-> It looks like we can get rid of ctrl->column, BTW.
->
-
-  I will take care this in next patch release
-
---Prabhakar
+-Scott
