@@ -1,21 +1,17 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 4C3111007D7
- for <linuxppc-dev@ozlabs.org>; Thu,  5 Jan 2012 08:09:10 +1100 (EST)
-Message-ID: <4F04BFEA.1050009@freescale.com>
-Date: Wed, 4 Jan 2012 15:08:58 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 14524B6F69
+ for <linuxppc-dev@ozlabs.org>; Thu,  5 Jan 2012 09:09:56 +1100 (EST)
+Date: Wed, 4 Jan 2012 16:06:13 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git next branch
+Message-ID: <alpine.LFD.2.00.1201041605230.15492@right.am.freescale.net>
 MIME-Version: 1.0
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Subject: Re: Cannot wake-up from standby with MPC8313
-References: <4F047BF8.7090400@aimvalley.nl>
-In-Reply-To: <4F047BF8.7090400@aimvalley.nl>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +21,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/04/2012 10:19 AM, Norbert van Bolhuis wrote:
-> 
-> after entering:
-> 
-> echo standby > /sys/power/state
-> 
-> I'm unable to wake up the MPC8313 (on our custom designed
-> MPC8313 board).
-> 
-> I need it to wake up through GPIO IRQ.
-> I cause multiple GPIO interrupts (all properly handled by an isr),
-> but the MPC8313 does not wake up.
-> 
-> How should one wake up via GPGIO IRQ ?
-> 
-> I'm using v2.6.29 and I wonder whether this is related to
-> our custom 8313 board and/or v2.6.29 and/or missing kernel
-> patches or maybe this never worked ?
-> 
-> Also, I do not understand line 220 of arch/powerpc/platforms/83xx/suspend.c
-> 
-> 219         } else {
-> 220                 out_be32(&pmc_regs->mask, PMCER_PMCI);
-> 221
-> 222                 mpc6xx_enter_standby();
-> 
-> How can wake up ever work if TSEC/GPIO/TIMER/etc.. wake up events
-> are disabled ?
-> 
-> changing this into "out_be32(&pmc_regs->mask, PMCER_PMCI|PMCER_GPIO);"
-> gives same result.
+The following changes since commit e4f387d8db3ba3c2dae4d8bdfe7bb5f4fe1bcb0d:
 
-It's been a while since I've touched this, but IIRC the PMC events are
-mainly important for deep sleep, and for normal sleep (standby) you can
-wake from any interrupt other than core interrupts like timebase.  I'm
-not sure to what extent setting PMCCR[SLPEN] affects this -- I don't see
-where the documentation says what "system low power state" means.  I
-would be surprised if GPIO were affected, though, since it's supported
-as a wakeup source even in deep sleep.  I think I was able to wake from
-standby on a UART interrupt even with SLPEN set.
+  powerpc: Fix unpaired probe_hcall_entry and probe_hcall_exit (2012-01-03 12:09:27 +1100)
 
-Are you sure the GPIO block is asserting an interrupt, and that it
-hasn't been masked during the preparation for standby?
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-What happens if you modify mpc6xx_enter_standby() to not actually set
-MSR_POW?
+Andy Fleming (1):
+      powerpc: Add TBI PHY node to first MDIO bus
 
--Scott
+Julia Lawall (1):
+      arch/powerpc/sysdev/fsl_rmu.c: introduce missing kfree
+
+Kumar Gala (3):
+      powerpc/fsl-pci: Allow 64-bit PCIe devices to DMA to any memory address
+      powerpc/fsl: Update defconfigs to enable some standard FSL HW features
+      powerpc/fsl: update compatiable on fsl 16550 uart nodes
+
+Michael Neuling (1):
+      powerpc: fix compile error with 85xx/p1023_rds.c
+
+Paul Gortmaker (1):
+      sbc834x: put full compat string in board match check
+
+Prabhakar Kushwaha (1):
+      powerpc/fsl: Add support for Integrated Flash Controller
+
+Timur Tabi (3):
+      powerpc/85xx: re-enable ePAPR byte channel driver in corenet32_smp_defconfig
+      powerpc/85xx: fix PCI and localbus properties in p1022ds.dts
+      powerpc/fsl: add MSI support for the Freescale hypervisor
+
+Tony Breeds (1):
+      powerpc: fix compile error with 85xx/p1010rdb.c
+
+ arch/powerpc/Kconfig                         |    4 +
+ arch/powerpc/boot/dts/asp834x-redboot.dts    |    4 +-
+ arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi   |    4 +-
+ arch/powerpc/boot/dts/fsl/qoriq-duart-0.dtsi |    4 +-
+ arch/powerpc/boot/dts/fsl/qoriq-duart-1.dtsi |    4 +-
+ arch/powerpc/boot/dts/gef_ppc9a.dts          |    4 +-
+ arch/powerpc/boot/dts/gef_sbc310.dts         |    4 +-
+ arch/powerpc/boot/dts/gef_sbc610.dts         |    4 +-
+ arch/powerpc/boot/dts/kmeter1.dts            |    2 +-
+ arch/powerpc/boot/dts/kuroboxHD.dts          |    4 +-
+ arch/powerpc/boot/dts/kuroboxHG.dts          |    4 +-
+ arch/powerpc/boot/dts/mpc8308_p1m.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8308rdb.dts         |    4 +-
+ arch/powerpc/boot/dts/mpc8313erdb.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8315erdb.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc832x_mds.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc832x_rdb.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8349emitx.dts       |    4 +-
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    4 +-
+ arch/powerpc/boot/dts/mpc834x_mds.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc836x_mds.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc836x_rdk.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8377_mds.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8377_wlan.dts       |    4 +-
+ arch/powerpc/boot/dts/mpc8378_mds.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8379_mds.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts        |    4 +-
+ arch/powerpc/boot/dts/mpc8540ads.dts         |    4 +-
+ arch/powerpc/boot/dts/mpc8541cds.dts         |    4 +-
+ arch/powerpc/boot/dts/mpc8555cds.dts         |    4 +-
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts       |    4 +-
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts       |    4 +-
+ arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts   |    4 +-
+ arch/powerpc/boot/dts/p1010rdb.dtsi          |    5 +
+ arch/powerpc/boot/dts/p1020rdb.dtsi          |    5 +
+ arch/powerpc/boot/dts/p1021mds.dts           |    4 +
+ arch/powerpc/boot/dts/p1022ds.dts            |   12 +-
+ arch/powerpc/boot/dts/p2020rdb.dts           |    8 +-
+ arch/powerpc/boot/dts/sbc8349.dts            |    4 +-
+ arch/powerpc/boot/dts/sbc8548.dts            |    4 +-
+ arch/powerpc/boot/dts/sbc8641d.dts           |    4 +-
+ arch/powerpc/boot/dts/socrates.dts           |    4 +-
+ arch/powerpc/boot/dts/storcenter.dts         |    4 +-
+ arch/powerpc/boot/dts/stxssa8555.dts         |    4 +-
+ arch/powerpc/boot/dts/tqm8540.dts            |    4 +-
+ arch/powerpc/boot/dts/tqm8541.dts            |    4 +-
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts   |    4 +-
+ arch/powerpc/boot/dts/tqm8548.dts            |    4 +-
+ arch/powerpc/boot/dts/tqm8555.dts            |    4 +-
+ arch/powerpc/boot/dts/xcalibur1501.dts       |    4 +-
+ arch/powerpc/boot/dts/xpedite5200.dts        |    4 +-
+ arch/powerpc/boot/dts/xpedite5200_xmon.dts   |    4 +-
+ arch/powerpc/boot/dts/xpedite5301.dts        |    4 +-
+ arch/powerpc/boot/dts/xpedite5330.dts        |    4 +-
+ arch/powerpc/boot/dts/xpedite5370.dts        |    4 +-
+ arch/powerpc/configs/corenet32_smp_defconfig |   10 +-
+ arch/powerpc/configs/corenet64_smp_defconfig |    3 +-
+ arch/powerpc/configs/mpc85xx_defconfig       |   16 +-
+ arch/powerpc/configs/mpc85xx_smp_defconfig   |   17 +-
+ arch/powerpc/include/asm/fsl_ifc.h           |  834 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/sbc834x.c        |    4 +-
+ arch/powerpc/platforms/85xx/p1010rdb.c       |    2 -
+ arch/powerpc/platforms/85xx/p1023_rds.c      |    1 -
+ arch/powerpc/sysdev/Makefile                 |    1 +
+ arch/powerpc/sysdev/fsl_ifc.c                |  310 ++++++++++
+ arch/powerpc/sysdev/fsl_msi.c                |   68 ++-
+ arch/powerpc/sysdev/fsl_msi.h                |    7 +-
+ arch/powerpc/sysdev/fsl_pci.c                |   84 +++
+ arch/powerpc/sysdev/fsl_rmu.c                |    1 +
+ 71 files changed, 1448 insertions(+), 150 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/fsl_ifc.h
+ create mode 100644 arch/powerpc/sysdev/fsl_ifc.c
