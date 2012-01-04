@@ -1,31 +1,21 @@
-Return-Path: <B35336@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
- [216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id F0C6A1007D6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 20:34:12 +1100 (EST)
-Received: from mail122-va3 (localhost [127.0.0.1])	by
- mail122-va3-R.bigfish.com (Postfix) with ESMTP id 11EE33C009A	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 09:34:07 +0000 (UTC)
-Received: from VA3EHSMHS015.bigfish.com (unknown [10.7.14.248])	by
- mail122-va3.bigfish.com (Postfix) with ESMTP id AF11140043	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 09:34:06 +0000 (UTC)
-From: Zhao Chenhui-B35336 <B35336@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v3] powerpc/85xx: add support to JOG feature using
- cpufreq interface
-Date: Wed, 4 Jan 2012 09:34:05 +0000
-Message-ID: <BD213C8CF658C24091429A9C376C468D0C6268@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1324985129-26219-1-git-send-email-chenhui.zhao@freescale.com>
- <4F037DB8.4080207@freescale.com>
-In-Reply-To: <4F037DB8.4080207@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <Farrukh_Arshad@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "relay1.mentorg.com",
+ Issuer "Entrust Certification Authority - L1B" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B28261007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 20:56:22 +1100 (EST)
+From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: Problem in getting shared memory access on P1022RDK
+Date: Wed, 4 Jan 2012 09:56:17 +0000
+Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CCB7C@EU-MBX-03.mgc.mentorg.com>
+References: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CCA80@EU-MBX-03.mgc.mentorg.com>
+ <4F033685.6000509@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Huang Changming-R66093 <r66093@freescale.com>,
- Liu Dave-R63238 <r63238@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,101 +25,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBPbiAxMi8yNy8yMDExIDA1OjI1IEFNLCBaaGFvIENoZW5odWkgd3JvdGU6DQo+ID4gICogVGhl
-IGRyaXZlciBkb2Vzbid0IHN1cHBvcnQgTVBDODUzNiBSZXYgMS4wIGR1ZSB0byBhIEpPRyBlcnJh
-dHVtLg0KPiA+ICAgIFN1YnNlcXVlbnQgcmV2aXNpb25zIG9mIE1QQzg1MzYgaGF2ZSBjb3JyZWN0
-ZWQgdGhlIGVycmF0dW0uDQo+IA0KPiBXaGVyZSBkbyB5b3UgY2hlY2sgZm9yIHRoaXM/DQoNCk5v
-d2hlcmUuIEkganVzdCBub3RpZnkgdGhpcyBwYXRjaCBkb24ndCBzdXBwb3J0IE1QQzg1MzYgUmV2
-IDEuMC4NCg0KPiANCj4gPiArI2RlZmluZSBQT1dNR1RDU1JfTE9TU0xFU1NfTUFTSwkweDAwNDAw
-MDAwDQo+ID4gKyNkZWZpbmUgUE9XTUdUQ1NSX0pPR19NQVNLCTB4MDAyMDAwMDANCj4gDQo+IEFy
-ZSB0aGVzZSByZWFsbHkgbWFza3MsIG9yIGp1c3QgdmFsdWVzIHRvIHVzZT8NCg0KVGhleSBhcmUg
-bWFza3MuDQoNCj4gDQo+ID4gKyNkZWZpbmUgUE9XTUdUQ1NSX0NPUkUwX0lSUV9NU0sJMHg4MDAw
-MDAwMA0KPiA+ICsjZGVmaW5lIFBPV01HVENTUl9DT1JFMF9DSV9NU0sJMHg0MDAwMDAwMA0KPiA+
-ICsjZGVmaW5lIFBPV01HVENTUl9DT1JFMF9ET1pJTkcJMHgwMDAwMDAwOA0KPiA+ICsjZGVmaW5l
-IFBPV01HVENTUl9DT1JFMF9OQVBQSU5HCTB4MDAwMDAwMDQNCj4gPiArDQo+ID4gKyNkZWZpbmUg
-UE9XTUdUQ1NSX0NPUkVfSU5UX01TSwkweDAwMDAwODAwDQo+ID4gKyNkZWZpbmUgUE9XTUdUQ1NS
-X0NPUkVfQ0lOVF9NU0sJMHgwMDAwMDQwMA0KPiA+ICsjZGVmaW5lIFBPV01HVENTUl9DT1JFX1VE
-RV9NU0sJMHgwMDAwMDIwMA0KPiA+ICsjZGVmaW5lIFBPV01HVENTUl9DT1JFX01DUF9NU0sJMHgw
-MDAwMDEwMA0KPiA+ICsjZGVmaW5lIFAxMDIyX1BPV01HVENTUl9NU0sJKFBPV01HVENTUl9DT1JF
-X0lOVF9NU0sgfCBcDQo+ID4gKwkJCQkgUE9XTUdUQ1NSX0NPUkVfQ0lOVF9NU0sgfCBcDQo+ID4g
-KwkJCQkgUE9XTUdUQ1NSX0NPUkVfVURFX01TSyB8IFwNCj4gPiArCQkJCSBQT1dNR1RDU1JfQ09S
-RV9NQ1BfTVNLKQ0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQga2VlcF93YWtpbmdfdXAodm9pZCAq
-ZHVtbXkpDQo+ID4gK3sNCj4gPiArCXVuc2lnbmVkIGxvbmcgZmxhZ3M7DQo+ID4gKw0KPiA+ICsJ
-bG9jYWxfaXJxX3NhdmUoZmxhZ3MpOw0KPiA+ICsJbWIoKTsNCj4gPiArDQo+ID4gKwlpbl9qb2df
-cHJvY2VzcyA9IDE7DQo+ID4gKwltYigpOw0KPiA+ICsNCj4gPiArCXdoaWxlIChpbl9qb2dfcHJv
-Y2VzcyAhPSAwKQ0KPiA+ICsJCW1iKCk7DQo+ID4gKw0KPiA+ICsJbG9jYWxfaXJxX3Jlc3RvcmUo
-ZmxhZ3MpOw0KPiA+ICt9DQo+IA0KPiBQbGVhc2UgZG9jdW1lbnQgdGhpcy4gIENvbXBhcmUgaW5f
-am9nX3Byb2Nlc3MgPT0gMSwgbm90ICE9IDAgLS0gaXQncw0KPiB1bmxpa2VseSwgYnV0IHdoYXQg
-aWYgdGhlIG90aGVyIGNwdSBzZWVzIHRoYXQgaW5fam9nX3Byb2Nlc3MgaGFzIGJlZW4NCj4gc2V0
-IHRvIDEsIGV4aXRzIGFuZCBzZXRzIGluX2pvZ19wcm9jZXNzIHRvIDAsIHRoZW4gcmUtZW50ZXJz
-IHNldF9wbGwgYW5kDQo+IHNldHMgaW5fam9nX3Byb2Nlc3MgdG8gLTEgYWdhaW4gYmVmb3JlIHRo
-aXMgZnVuY3Rpb24gZG9lcyBhbm90aGVyIGxvYWQNCj4gb2YgaW5fam9nX3Byb2Nlc3M/DQoNClRo
-YW5rcy4gSSdsbCBmaXggaXQuDQoNCj4gDQo+IERvIHlvdSByZWFsbHkgbmVlZCBhbGwgdGhlc2Ug
-bWIoKXM/ICBJIHRoaW5rIHRoaXMgd291bGQgc3VmZmljZToNCj4gDQo+IAlsb2NhbF9pcnFfc2F2
-ZShmbGFncyk7DQo+IA0KPiAJaW5fam9nX3Byb2Nlc3MgPSAxOw0KPiANCj4gCXdoaWxlIChpbl9q
-b2dfcHJvY2VzcyA9PSAxKQ0KPiAJCWJhcnJpZXIoKTsNCj4gDQo+IAlsb2NhbF9pcnFfcmVzdG9y
-ZSgpOw0KPiANCj4gSXQncyBub3QgcmVhbGx5IGEgcGVyZm9ybWFuY2UgaXNzdWUsIGp1c3Qgc2lt
-cGxpY2l0eS4NCj4gDQo+ID4gK3N0YXRpYyBpbnQgcDEwMjJfc2V0X3BsbCh1bnNpZ25lZCBpbnQg
-Y3B1LCB1bnNpZ25lZCBpbnQgcGxsKQ0KPiA+ICt7DQo+ID4gKwlpbnQgaW5kZXgsIGh3X2NwdSA9
-IGdldF9oYXJkX3NtcF9wcm9jZXNzb3JfaWQoY3B1KTsNCj4gPiArCWludCBzaGlmdDsNCj4gPiAr
-CXUzMiBjb3JlZnJlcSwgdmFsLCBtYXNrID0gMDsNCj4gPiArCXVuc2lnbmVkIGludCBjdXJfcGxs
-ID0gZ2V0X3BsbChod19jcHUpOw0KPiA+ICsJdW5zaWduZWQgbG9uZyBmbGFnczsNCj4gPiArCWlu
-dCByZXQgPSAwOw0KPiA+ICsNCj4gPiArCWlmIChwbGwgPT0gY3VyX3BsbCkNCj4gPiArCQlyZXR1
-cm4gMDsNCj4gPiArDQo+ID4gKwlzaGlmdCA9IGh3X2NwdSAqIENPUkVfUkFUSU9fQklUUyArIENP
-UkUwX1JBVElPX1NISUZUOw0KPiA+ICsJdmFsID0gKHBsbCAmIENPUkVfUkFUSU9fTUFTSykgPDwg
-c2hpZnQ7DQo+ID4gKw0KPiA+ICsJY29yZWZyZXEgPSBzeXNmcmVxICogcGxsIC8gMjsNCj4gPiAr
-CS8qDQo+ID4gKwkgKiBTZXQgdGhlIENPUkV4X1NQRCBiaXQgaWYgdGhlIHJlcXVlc3RlZCBjb3Jl
-IGZyZXF1ZW5jeQ0KPiA+ICsJICogaXMgbGFyZ2VyIHRoYW4gdGhlIHRocmVzaG9sZCBmcmVxdWVu
-Y3kuDQo+ID4gKwkgKi8NCj4gPiArCWlmIChjb3JlZnJlcSA+IEZSRVFfNTMzTUh6KQ0KPiA+ICsJ
-CXZhbCB8PSBQTUpDUl9DT1JFMF9TUERfTUFTSyA8PCBod19jcHU7DQo+IA0KPiBQMTAyMiBtYW51
-YWwgc2F5cyB0aGUgdGhyZXNob2xkIGlzIDUwMCBNSHogKGJ1dCBkb2Vzbid0IHNheSBob3cgdG8g
-c2V0DQo+IHRoZSBiaXQgaWYgdGhlIGZyZXF1ZW5jeSBpcyBleGFjdGx5IDUwMCBNSHopLiAgV2hl
-cmUgZGlkIDUzMzM0MDAwMCBjb21lDQo+IGZyb20/DQoNClBsZWFzZSByZWZlciB0byBDaGFwdGVy
-IDI1ICIyNS40LjEuMTEgUG93ZXIgTWFuYWdlbWVudCBKb2cgQ29udHJvbCBSZWdpc3RlciAoUE1K
-Q1IpIi4NCg0KPiANCj4gPiArDQo+ID4gKwltYXNrID0gKENPUkVfUkFUSU9fTUFTSyA8PCBzaGlm
-dCkgfCAoUE1KQ1JfQ09SRTBfU1BEX01BU0sgPDwNCj4gaHdfY3B1KTsNCj4gPiArCWNscnNldGJp
-dHNfYmUzMihndXRzICsgUE1KQ1IsIG1hc2ssIHZhbCk7DQo+ID4gKw0KPiA+ICsJLyogcmVhZGJh
-Y2sgdG8gc3luYyB3cml0ZSAqLw0KPiA+ICsJdmFsID0gaW5fYmUzMihndXRzICsgUE1KQ1IpOw0K
-PiANCj4gWW91IGRvbid0IHVzZSB2YWwgYWZ0ZXIgdGhpcyAtLSBqdXN0IGlnbm9yZSB0aGUgcmV0
-dXJuIHZhbHVlIGZyb20NCj4gaW5fYmUzMigpLg0KDQpPSy4NCg0KPiANCj4gPiArCS8qDQo+ID4g
-KwkgKiBBIEpvZyByZXF1ZXN0IGNhbiBub3QgYmUgYXNzZXJ0ZWQgd2hlbiBhbnkgY29yZSBpcyBp
-biBhIGxvdw0KPiA+ICsJICogcG93ZXIgc3RhdGUgb24gUDEwMjIuIEJlZm9yZSBleGVjdXRpbmcg
-YSBqb2cgcmVxdWVzdCwgYW55DQo+ID4gKwkgKiBjb3JlIHdoaWNoIGlzIGluIGEgbG93IHBvd2Vy
-IHN0YXRlIG11c3QgYmUgd2FrZWQgYnkgYQ0KPiA+ICsJICogaW50ZXJydXB0LCBhbmQga2VlcCB3
-YWtpbmcgdXAgdW50aWwgdGhlIHNlcXVlbmNlIGlzDQo+ID4gKwkgKiBmaW5pc2hlZC4NCj4gPiAr
-CSAqLw0KPiA+ICsJZm9yX2VhY2hfcHJlc2VudF9jcHUoaW5kZXgpIHsNCj4gPiArCQlpZiAoIWNw
-dV9vbmxpbmUoaW5kZXgpKQ0KPiA+ICsJCQlyZXR1cm4gLUVGQVVMVDsNCj4gPiArCX0NCj4gDQo+
-IEVGQVVMVCBpcyBub3QgdGhlIGFwcHJvcHJpYXRlIGVycm9yIGNvZGUgLS0gaXQgaXMgZm9yIHdo
-ZW4gdXNlcnNwYWNlDQo+IHBhc3NlcyBhIGJhZCB2aXJ0dWFsIGFkZHJlc3MuDQo+IA0KPiBCZXR0
-ZXIsIGRvbid0IGZhaWwgaGVyZSAtLSBicmluZyB0aGUgb3RoZXIgY29yZSBvdXQgb2YgdGhlIGxv
-dyBwb3dlcg0KPiBzdGF0ZSBpbiBvcmRlciB0byBkbyB0aGUgam9nLiAgY3B1ZnJlcSBzaG91bGRu
-J3Qgc3RvcCB3b3JraW5nIGp1c3QNCj4gYmVjYXVzZSB3ZSB0b29rIGEgY29yZSBvZmZsaW5lLg0K
-PiANCj4gV2hhdCBwcmV2ZW50cyBhIGNvcmUgZnJvbSBnb2luZyBvZmZsaW5lIGp1c3QgYWZ0ZXIg
-eW91IGNoZWNrIGhlcmU/DQo+IA0KPiA+ICsJaW5fam9nX3Byb2Nlc3MgPSAtMTsNCj4gPiArCW1i
-KCk7DQo+ID4gKwlzbXBfY2FsbF9mdW5jdGlvbihrZWVwX3dha2luZ191cCwgTlVMTCwgMCk7DQo+
-IA0KPiBXaGF0IGRvZXMgImtlZXAgd2FraW5nIHVwIiBtZWFuPyAgU29tZXRoaW5nIGxpa2Ugc3Bp
-bl93aGlsZV9qb2dnaW5nDQo+IG1pZ2h0IGJlIGNsZWFyZXIuDQo+IA0KPiA+ICsJbG9jYWxfaXJx
-X3NhdmUoZmxhZ3MpOw0KPiA+ICsJbWIoKTsNCj4gPiArCS8qIFdhaXQgZm9yIHRoZSBvdGhlciBj
-b3JlIHRvIHdha2UuICovDQo+ID4gKwl3aGlsZSAoaW5fam9nX3Byb2Nlc3MgIT0gMSkNCj4gPiAr
-CQltYigpOw0KPiANCj4gVGltZW91dD8gIEFuZCBtb3JlIHVubmVjZXNzYXJ5IG1iKClzLg0KPiAN
-Cj4gTWlnaHQgYmUgbmljZSB0byBzdXBwb3J0IG1vcmUgdGhhbiB0d28gY29yZXMsIGV2ZW4gaWYg
-dGhpcyBjb2RlIGlzbid0DQo+IGN1cnJlbnRseSBleHBlY3RlZCB0byBiZSB1c2VkIG9uIHN1Y2gg
-aGFyZHdhcmUgKGl0J3MganVzdCBhIGdlbmVyaWMNCj4gImhvbGQgb3RoZXIgY3B1cyIgbG9vcDsg
-bWlnaHQgYXMgd2VsbCBtYWtlIGl0IHJldXNhYmxlKS4gIFlvdSBjb3VsZCBkbw0KPiB0aGlzIGJ5
-IHVzaW5nIGFuIGF0b21pYyBjb3VudCBmb3Igb3RoZXIgY29yZXMgdG8gY2hlY2sgaW4gYW5kIG91
-dCBvZiB0aGUNCj4gc3BpbiBsb29wLg0KDQpUaGlzIGlzIGp1c3QgZm9yIFAxMDIyLCBhIGR1YWwt
-Y29yZSBjaGlwLiBBIHNlcGFyYXRlIHBhdGNoIHdpbGwNCnN1cHBvcnQgbXVsdGktY29yZSBjaGlw
-cywgc3VjaCBhcyBQNDA4MCwgZXRjLg0KDQo+IA0KPiA+ICsJb3V0X2JlMzIoZ3V0cyArIFBPV01H
-VENTUiwgUE9XTUdUQ1NSX0pPR19NQVNLIHwNCj4gUDEwMjJfUE9XTUdUQ1NSX01TSyk7DQo+ID4g
-Kw0KPiA+ICsJaWYgKCFzcGluX2V2ZW50X3RpbWVvdXQoKChpbl9iZTMyKGd1dHMgKyBQT1dNR1RD
-U1IpICYNCj4gPiArCSAgICBQT1dNR1RDU1JfSk9HX01BU0spID09IDApLCAxMDAwMCwgMTApKSB7
-DQo+ID4gKwkJcHJfZXJyKCIlczogRmFpbCB0byBzd2l0Y2ggdGhlIGNvcmUgZnJlcXVlbmN5Llxu
-IiwgX19mdW5jX18pOw0KPiA+ICsJCXJldCA9IC1FRkFVTFQ7DQo+ID4gKwl9DQo+ID4gKw0KPiA+
-ICsJY2xyYml0czMyKGd1dHMgKyBQT1dNR1RDU1IsIFAxMDIyX1BPV01HVENTUl9NU0spOw0KPiA+
-ICsJaW5fam9nX3Byb2Nlc3MgPSAwOw0KPiA+ICsJbWIoKTsNCj4gDQo+IFRoaXMgbWIoKSAob3Ig
-YmV0dGVyLCBhIHJlYWRiYWNrIG9mIFBPV01HVENTUikgc2hvdWxkIGJlIGJlZm9yZSB5b3UNCj4g
-Y2xlYXIgaW5fam9nX3Byb2Nlc3MuICBGb3IgY2xhcml0eSBvZiBpdHMgcHVycG9zZSwgdGhlIGNs
-ZWFyaW5nIG9mDQo+IFBPV01HVENTUiBzaG91bGQgZ28gaW4gdGhlIGZhaWx1cmUgYnJhbmNoIG9m
-IHNwaW5fZXZlbnRfdGltZW91dCgpLg0KDQpBY2NvcmRpbmcgdG8gdGhlIG1hbnVhbCwgUDEwMjJf
-UE9XTUdUQ1NSX01TSyBzaG91bGQgYmUgcmVzZXQNCmJ5IHNvZnR3YXJlIHJlZ2FyZGxlc3Mgb2Yg
-ZmFpbHVyZSBvciBzdWNjZXNzLg0KDQotY2hlbmh1aQ0K
+Some of the other things which I am experiencing which may help to trace th=
+is issue.=20
+
+1: For Core 0 printk is not working in setup_arch "just before call to pagi=
+ng_init", where as on Core 1 printk is working in the same function. I see =
+the source uses ppc_md.progress to display debug messages so it seems print=
+k will not work then why it is working on Core 1.=20
+2: During kernel boot of both cores boot messages of Core 0 are mixed in Co=
+re 1 messages.=20
+3: If I change memory partitioning to following, then on Core 1 when I mmap=
+ shared memory area (starting 0x0C00,0000) I receive error that can not mma=
+p RAM. If my both systems memory partitions are defined clearly then this a=
+rea does not belong to system RAM then I shouldn't receive this error in th=
+is memory partitioning.
+
+Core		Base Address		Size
+Core 0		0x0000,0000		0x0C00,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
+=3D Base Address
+Shared Mem	0x0C00,0000		0x0400,0000
+Core 1		0x1000,0000		0x1000,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
+=3D Base Address
+
+I believe there is some bug / or patch which I am missing in both kernels m=
+emory initialization which is causing all these issues. Kernel sources / co=
+nfiguration of both cores are 100% same except (CONFIG_PHYSICAL_START) para=
+m and kernel version is 2.6.32.13.=20
+
+Any thoughts.
+
+Regards,
+Farrukh Arshad
+
+
+-----Original Message-----
+From: Arshad, Farrukh=20
+Sent: Wednesday, January 04, 2012 11:50 AM
+To: 'Scott Wood'
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: RE: Problem in getting shared memory access on P1022RDK
+
+How can I verify if the memory mapped is coherent on both cores. My memory =
+partitioning is given below
+
+Core		Base Address		Size
+Core 0		0x0000,0000		0x1000,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
+=3D Base Address
+Core 1		0x1000,0000		0x0C00,0000	--> CONFIG_PHYSICAL_START =3D bootm_low =
+=3D Base Address
+Shared Mem	0x1C00,0000		0x0400,0000
+
+Regards,
+Farrukh Arshad
+
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com]
+Sent: Tuesday, January 03, 2012 10:10 PM
+To: Arshad, Farrukh
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Problem in getting shared memory access on P1022RDK
+
+On 01/03/2012 03:42 AM, Arshad, Farrukh wrote:
+> Adding more to it,
+>=20
+> =20
+>=20
+> When I write from Core 1 on the shared memory region it is visible at=20
+> Core 0 and it can read what I have written from Core 1 but when I=20
+> write from Core 0 on this shared memory it is not visible on Core 1.
+
+Is the memory mapped coherent on both cores?
+
+-Scott
