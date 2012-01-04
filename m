@@ -1,25 +1,25 @@
 Return-Path: <r66093@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
- [213.199.154.208])
+Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
+ [213.199.154.209])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 3A86AB6F65
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 14:11:46 +1100 (EST)
-Received: from mail92-am1 (localhost [127.0.0.1])	by mail92-am1-R.bigfish.com
- (Postfix) with ESMTP id 25564640410	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2012 03:11:40 +0000 (UTC)
-Received: from AM1EHSMHS011.bigfish.com (unknown [10.3.201.249])	by
- mail92-am1.bigfish.com (Postfix) with ESMTP id 04626440043	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 03:11:40 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 484F91007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 14:14:30 +1100 (EST)
+Received: from mail84-am1 (localhost [127.0.0.1])	by mail84-am1-R.bigfish.com
+ (Postfix) with ESMTP id 7434940161	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2012 03:14:24 +0000 (UTC)
+Received: from AM1EHSMHS010.bigfish.com (unknown [10.3.201.242])	by
+ mail84-am1.bigfish.com (Postfix) with ESMTP id 5BD15280049	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 03:14:24 +0000 (UTC)
 From: Huang Changming-R66093 <r66093@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
 Subject: RE: [PATCH] DTS: fix the bug and add the chip compatible for eSDHC
-Date: Wed, 4 Jan 2012 03:11:34 +0000
-Message-ID: <8A2FC72B45BB5A4C9F801431E06AE48F1165E56C@039-SN1MPN1-005.039d.mgd.msft.net>
+Date: Wed, 4 Jan 2012 03:14:20 +0000
+Message-ID: <8A2FC72B45BB5A4C9F801431E06AE48F1165E585@039-SN1MPN1-005.039d.mgd.msft.net>
 References: <1324620659-7135-1-git-send-email-r66093@freescale.com>
- <4F01F721.7090407@freescale.com>
-In-Reply-To: <4F01F721.7090407@freescale.com>
+ <CAOZdJXXXvTuJO_ZpyeRatWxTMbmcEVokA9qx7ajNdzKyiEgBhw@mail.gmail.com>
+In-Reply-To: <CAOZdJXXXvTuJO_ZpyeRatWxTMbmcEVokA9qx7ajNdzKyiEgBhw@mail.gmail.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -35,47 +35,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 > -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, January 03, 2012 2:28 AM
+> From: Tabi Timur-B04825
+> Sent: Tuesday, January 03, 2012 4:30 AM
 > To: Huang Changming-R66093
 > Cc: linuxppc-dev@lists.ozlabs.org; Huang Changming-R66093
 > Subject: Re: [PATCH] DTS: fix the bug and add the chip compatible for
 > eSDHC
 >=20
-> On 12/23/2011 12:10 AM, r66093@freescale.com wrote:
-> > From: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> On Fri, Dec 23, 2011 at 12:10 AM,  <r66093@freescale.com> wrote:
 > >
 > > Accordint to latest kernel, the auto-cmd12 property should be
 > > "sdhci,auto-cmd12", and according to the SDHC binding and the
 > > workaround for the special chip, add the chip compatible for eSDHC:
 > > "fsl,p1022-esdhc", "fsl,mpc8536-esdhc", "fsl,p2020-esdhc" and
 > "fsl,p1010-esdhc".
-> >
-> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> > ---
-> >  arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |    4 ++++
-> >  arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   |    3 ++-
-> >  arch/powerpc/boot/dts/fsl/p1022si-post.dtsi   |    3 ++-
-> >  arch/powerpc/boot/dts/fsl/p2020si-post.dtsi   |    4 ++++
-> >  4 files changed, 12 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-> > b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-> > index 89af626..44e0ed9 100644
-> > --- a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-> > +++ b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-> > @@ -236,6 +236,10 @@
-> >  	};
-> >
-> >  /include/ "pq3-esdhc-0.dtsi"
-> > +	sdhc@2e000 {
-> > +		compatible =3D "fsl,esdhc", "fsl,mpc8536-esdhc";
-> > +	};
 >=20
-> More-specific compatible entries should come first.
-
-I don't understand you, why more-specific compatible entries should come?
-The Documentation/devicetree/bindings/mmc/fsl-esdhc.txt has introduced it:
-  - compatible : should be
-    "fsl,<chip>-esdhc", "fsl,esdhc"
-I don't think I should introduce new entries.
+> Please do not use the phrase "fix the bug" in patch summaries.
+>=20
+Then, could you tell me how to describe it?
