@@ -1,28 +1,24 @@
-Return-Path: <greg@kroah.com>
-Received: from out5.smtp.messagingengine.com (out5.smtp.messagingengine.com
- [66.111.4.29])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2739B1007D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2012 10:16:24 +1100 (EST)
-Received: from compute2.internal (compute2.nyi.mail.srv.osa [10.202.2.42])
- by gateway1.nyi.mail.srv.osa (Postfix) with ESMTP id B470F20D9A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2012 18:09:23 -0500 (EST)
-Date: Wed, 4 Jan 2012 15:08:09 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the driver-core tree with the
- powerpc tree
-Message-ID: <20120104230809.GF24583@kroah.com>
-References: <20111228165102.fbb6433fd94d11240134327e@canb.auug.org.au>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 206A51007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2012 13:09:06 +1100 (EST)
+Message-ID: <4F050653.6010601@windriver.com>
+Date: Thu, 5 Jan 2012 10:09:23 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111228165102.fbb6433fd94d11240134327e@canb.auug.org.au>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
- Trinabh Gupta <g.trinabh@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>,
- linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
+To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+Subject: Re: Problem in getting shared memory access on P1022RDK
+References: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CCA80@EU-MBX-03.mgc.mentorg.com>
+ <4F033685.6000509@freescale.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CCB2E@EU-MBX-03.mgc.mentorg.com>
+In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050CCB2E@EU-MBX-03.mgc.mentorg.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,18 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 28, 2011 at 04:51:02PM +1100, Stephen Rothwell wrote:
-> Hi Greg,
+Arshad, Farrukh wrote:
+> How can I verify if the memory mapped is coherent on both cores. My memory partitioning is given below
 > 
-> Today's linux-next merge of the driver-core tree got a conflict in
-> arch/powerpc/kernel/sysfs.c between commit 595fe91447b0 ("powerpc: Export
-> PIR data through sysfs") from the powerpc tree and commits 8a25a2fd126c
-> ("cpu: convert 'cpu' and 'machinecheck' sysdev_class to a regular
-> subsystem") and 707827f3387d ("powerpc/cpuidle: cpuidle driver for
-> pSeries") from the driver-core tree.
+> Core		Base Address		Size
+> Core 0		0x0000,0000		0x1000,0000	--> CONFIG_PHYSICAL_START = bootm_low = Base Address
+> Core 1		0x1000,0000		0x0C00,0000	--> CONFIG_PHYSICAL_START = bootm_low = Base Address
+> Shared Mem	0x1C00,0000		0x0400,0000
+
+Was the kernel option, CONFIG_SMP, enabled for both two kernels?
+
+CONFIG_SMP would affect the memory attribute for cache coherency. Maybe you
+should make sure if kernel have a appropriate memory attribute by dumping TLB entry.
+
+Tiejun
+
 > 
-> I fixed it up (see below) and can carry the fix as necessary.
-
-Looks good, thanks.
-
-greg k-h
+> Regards,
+> Farrukh Arshad
+> 
+> -----Original Message-----
+> From: Scott Wood [mailto:scottwood@freescale.com] 
+> Sent: Tuesday, January 03, 2012 10:10 PM
+> To: Arshad, Farrukh
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: Problem in getting shared memory access on P1022RDK
+> 
+> On 01/03/2012 03:42 AM, Arshad, Farrukh wrote:
+>> Adding more to it,
+>>
+>>  
+>>
+>> When I write from Core 1 on the shared memory region it is visible at 
+>> Core 0 and it can read what I have written from Core 1 but when I 
+>> write from Core 0 on this shared memory it is not visible on Core 1.
+> 
+> Is the memory mapped coherent on both cores?
+> 
+> -Scott
