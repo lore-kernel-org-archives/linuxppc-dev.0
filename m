@@ -1,15 +1,17 @@
 Return-Path: <B13201@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id D2DAF1007D7
- for <linuxppc-dev@ozlabs.org>; Thu,  5 Jan 2012 20:57:30 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id EDE591007D6
+ for <linuxppc-dev@ozlabs.org>; Thu,  5 Jan 2012 20:57:31 +1100 (EST)
 From: Liu Yu <yu.liu@freescale.com>
 To: <agraf@suse.de>, <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>
-Subject: [PATCH 1/3] KVM: PPC: epapr: Factor out the epapr init
-Date: Thu, 5 Jan 2012 17:06:51 +0800
-Message-ID: <1325754412-29963-1-git-send-email-yu.liu@freescale.com>
+Subject: [PATCH v2 3/3] KVM: PPC: epapr: install ev_idle hcall for e500 guest
+Date: Thu, 5 Jan 2012 17:06:52 +0800
+Message-ID: <1325754412-29963-2-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1325754412-29963-1-git-send-email-yu.liu@freescale.com>
+References: <1325754412-29963-1-git-send-email-yu.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org,
@@ -23,134 +25,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-from the kvm guest paravirt init code.
+If the guest hypervisor node contains "has-idle" property.
 
 Signed-off-by: Liu Yu <yu.liu@freescale.com>
 ---
- arch/powerpc/include/asm/epapr_hcalls.h |    8 +++++
- arch/powerpc/kernel/Makefile            |    1 +
- arch/powerpc/kernel/epapr_para.c        |   45 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/kvm.c               |    9 +++++-
- 4 files changed, 62 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/kernel/epapr_para.c
+v2:
+1. move the idle code into assembly.
+2. move the part that check "has-idle" into epapr code.
+
+ arch/powerpc/include/asm/epapr_hcalls.h |    1 +
+ arch/powerpc/include/asm/machdep.h      |    5 +++++
+ arch/powerpc/kernel/epapr_para.c        |    4 ++++
+ arch/powerpc/kernel/idle_e500.S         |   17 +++++++++++++++++
+ arch/powerpc/kernel/kvm.c               |   24 ++++++++++++++++++++++++
+ 5 files changed, 51 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
-index f3b0c2c..c4b86e4 100644
+index c4b86e4..566805e 100644
 --- a/arch/powerpc/include/asm/epapr_hcalls.h
 +++ b/arch/powerpc/include/asm/epapr_hcalls.h
-@@ -148,6 +148,14 @@
- #define EV_HCALL_CLOBBERS2 EV_HCALL_CLOBBERS3, "r5"
- #define EV_HCALL_CLOBBERS1 EV_HCALL_CLOBBERS2, "r4"
+@@ -150,6 +150,7 @@
  
-+extern u32 *epapr_hcall_insts;
-+extern int epapr_hcall_insts_len;
-+
-+static inline void epapr_get_hcall_insts(u32 **instp, int *lenp)
-+{
-+	*instp = epapr_hcall_insts;
-+	*lenp = epapr_hcall_insts_len;
-+}
+ extern u32 *epapr_hcall_insts;
+ extern int epapr_hcall_insts_len;
++extern bool epapr_hcall_has_idle;
+ 
+ static inline void epapr_get_hcall_insts(u32 **instp, int *lenp)
+ {
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 47cacdd..7e56abf 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -255,6 +255,11 @@ extern void power4_idle(void);
+ extern void power7_idle(void);
+ extern void ppc6xx_idle(void);
+ extern void book3e_idle(void);
++#ifdef CONFIG_KVM_GUEST
++extern void e500_ev_idle(unsigned long *, unsigned long *, unsigned long,
++                         unsigned long (*)(unsigned long *, unsigned long *,
++                                          unsigned long));
++#endif
  
  /*
-  * We use "uintptr_t" to define a register because it's guaranteed to be a
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index ce4f7f1..1052bbc 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -134,6 +134,7 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
- obj-y				+= ppc_save_regs.o
- endif
- 
-+obj-$(CONFIG_BOOKE)		+= epapr_para.o
- obj-$(CONFIG_KVM_GUEST)		+= kvm.o kvm_emul.o
- 
- # Disable GCOV in odd or sensitive code
+  * ppc_md contains a copy of the machine description structure for the
 diff --git a/arch/powerpc/kernel/epapr_para.c b/arch/powerpc/kernel/epapr_para.c
-new file mode 100644
-index 0000000..714dcb3
---- /dev/null
+index 714dcb3..1f37ddf 100644
+--- a/arch/powerpc/kernel/epapr_para.c
 +++ b/arch/powerpc/kernel/epapr_para.c
-@@ -0,0 +1,45 @@
+@@ -22,6 +22,7 @@
+ 
+ u32 *epapr_hcall_insts;
+ int epapr_hcall_insts_len;
++bool epapr_hcall_has_idle;
+ 
+ static int __init epapr_para_init(void)
+ {
+@@ -39,6 +40,9 @@ static int __init epapr_para_init(void)
+ 		epapr_hcall_insts_len = len;
+ 	}
+ 
++	if (of_get_property(hyper_node, "has-idle", NULL))
++		epapr_hcall_has_idle = true;
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
+index 3e2b95c..6ea95f0 100644
+--- a/arch/powerpc/kernel/idle_e500.S
++++ b/arch/powerpc/kernel/idle_e500.S
+@@ -85,6 +85,23 @@ END_FTR_SECTION_IFSET(CPU_FTR_L2CSR|CPU_FTR_CAN_NAP)
+ 2:	b	2b
+ #endif /* !E500MC */
+ 
++#ifdef CONFIG_KVM_GUEST
 +/*
-+ * ePAPR para-virtualization support.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright (C) 2012 Freescale Semiconductor, Inc.
++ * r3 contains the pointer to in[8]
++ * r4 contains the pointer to out[8]
++ * r5 contains the hcall vendor and nr
++ * r6 contains the handler which send hcall
 + */
++_GLOBAL(e500_ev_idle)
++	rlwinm	r7,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
++	lwz	r8,TI_LOCAL_FLAGS(r7)	/* set napping bit */
++	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
++	stw	r8,TI_LOCAL_FLAGS(r7)	/* it will return to our caller */
++	wrteei	1
++	mtctr	r6
++	bctr
++#endif /* KVM_GUEST */
 +
-+#include <linux/of.h>
-+#include <asm/epapr_hcalls.h>
-+
-+u32 *epapr_hcall_insts;
-+int epapr_hcall_insts_len;
-+
-+static int __init epapr_para_init(void)
-+{
-+	struct device_node *hyper_node;
-+	u32 *insts;
-+	int len;
-+
-+	hyper_node = of_find_node_by_path("/hypervisor");
-+	if (!hyper_node)
-+		return -ENODEV;
-+
-+	insts = (u32*)of_get_property(hyper_node, "hcall-instructions", &len);
-+	if (!(len % 4) && (len >= (4 * 4))) {
-+		epapr_hcall_insts = insts;
-+		epapr_hcall_insts_len = len;
-+	}
-+
-+	return 0;
-+}
-+
-+early_initcall(epapr_para_init);
+ /*
+  * Return from NAP/DOZE mode, restore some CPU specific registers,
+  * r2 containing physical address of current.
 diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index b06bdae..82a9137 100644
+index 82a9137..8952e12 100644
 --- a/arch/powerpc/kernel/kvm.c
 +++ b/arch/powerpc/kernel/kvm.c
-@@ -28,6 +28,7 @@
- #include <asm/sections.h>
+@@ -29,6 +29,7 @@
  #include <asm/cacheflush.h>
  #include <asm/disassemble.h>
-+#include <asm/epapr_hcalls.h>
+ #include <asm/epapr_hcalls.h>
++#include <asm/machdep.h>
  
  #define KVM_MAGIC_PAGE		(-4096L)
  #define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct kvm_vcpu_arch_shared, x)
-@@ -535,9 +536,10 @@ EXPORT_SYMBOL_GPL(kvm_hypercall);
- static int kvm_para_setup(void)
- {
- 	extern u32 kvm_hypercall_start;
--	struct device_node *hyper_node;
- 	u32 *insts;
- 	int len, i;
-+#ifndef CONFIG_BOOKE
-+	struct device_node *hyper_node;
+@@ -578,6 +579,25 @@ static __init void kvm_free_tmp(void)
+ 	}
+ }
  
- 	hyper_node = of_find_node_by_path("/hypervisor");
- 	if (!hyper_node)
-@@ -548,6 +550,11 @@ static int kvm_para_setup(void)
- 		return -1;
- 	if (len > (4 * 4))
- 		return -1;
++static void kvm_hcall_idle(void)
++{
++#ifdef CONFIG_KVM_E500
++	ulong in[8];
++	ulong out[8];
++
++	e500_ev_idle(in, out, HC_VENDOR_EPAPR | HC_EV_IDLE, kvm_hypercall);
++#endif
++}
++
++static bool kvm_para_has_idle(void)
++{
++#ifdef CONFIG_BOOKE
++	return epapr_hcall_has_idle;
 +#else
-+	epapr_get_hcall_insts(&insts, &len);
-+	if (insts == NULL)
-+		return -1;
-+#endif	/* !BOOKE */
++	return false;
++#endif
++}
++
+ static int __init kvm_guest_init(void)
+ {
+ 	if (!kvm_para_available())
+@@ -594,6 +614,10 @@ static int __init kvm_guest_init(void)
+ 	powersave_nap = 1;
+ #endif
  
- 	for (i = 0; i < (len / 4); i++)
- 		kvm_patch_ins(&(&kvm_hypercall_start)[i], insts[i]);
++	/* Install hcall based power_save for guest kernel */
++	if (kvm_para_has_idle())
++		ppc_md.power_save = kvm_hcall_idle;
++
+ free_tmp:
+ 	kvm_free_tmp();
+ 
 -- 
 1.6.4
