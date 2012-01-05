@@ -1,18 +1,20 @@
-Return-Path: <nvbolhuis@aimvalley.nl>
-Received: from mika.eatserver.nl (mika.eatserver.nl [195.20.9.75])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AE888B6FB4
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2012 02:59:03 +1100 (EST)
-Message-ID: <4F05C8C2.9070401@aimvalley.nl>
-Date: Thu, 05 Jan 2012 16:58:58 +0100
-From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 796771007D6
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2012 05:22:41 +1100 (EST)
+Message-ID: <4F05EA6B.9040902@freescale.com>
+Date: Thu, 5 Jan 2012 12:22:35 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 Subject: Re: Cannot wake-up from standby with MPC8313
 References: <4F047BF8.7090400@aimvalley.nl> <4F04BFEA.1050009@freescale.com>
-In-Reply-To: <4F04BFEA.1050009@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ <4F05C8C2.9070401@aimvalley.nl>
+In-Reply-To: <4F05C8C2.9070401@aimvalley.nl>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,42 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/04/12 22:08, Scott Wood wrote:
+On 01/05/2012 09:58 AM, Norbert van Bolhuis wrote:
+> thanks for your response.
+> 
+> not setting MSR_POW gives same result.
 
-...
+OK, so you're not getting an interrupt regardless of low-power state.
 
-> It's been a while since I've touched this, but IIRC the PMC events are
-> mainly important for deep sleep, and for normal sleep (standby) you can
-> wake from any interrupt other than core interrupts like timebase.  I'm
-> not sure to what extent setting PMCCR[SLPEN] affects this -- I don't see
-> where the documentation says what "system low power state" means.  I
-> would be surprised if GPIO were affected, though, since it's supported
-> as a wakeup source even in deep sleep.  I think I was able to wake from
-> standby on a UART interrupt even with SLPEN set.
->
-> Are you sure the GPIO block is asserting an interrupt, and that it
-> hasn't been masked during the preparation for standby?
->
-> What happens if you modify mpc6xx_enter_standby() to not actually set
-> MSR_POW?
->
+Check whether the interrupt is getting masked during standby preparation.
 
+Does the interrupt handler run when you're not trying to enter standby?
 
-thanks for your response.
+> if I set kernel.powersave-nap=1 it works fine,
 
-not setting MSR_POW gives same result.
+What is "it"?  Do you mean that powersave-nap doesn't break things, or
+that standby works when you specify that?
 
-if I set kernel.powersave-nap=1 it works fine, so apparently
-NAP/DOZE mode does work (if CPU is idle). This saves almost no
-power though. Standby mode saves about 300-500 mW.
+> so apparently NAP/DOZE mode does work (if CPU is idle). This saves almost no
+> power though. Standby mode saves about 300-500 mW.
+> 
+> The problem could well be our board though, today I learned it does
+> work by connecting an (inactive) JTAG debugger.
+> Also, on another board it always works.
 
-The problem could well be our board though, today I learned it does
-work by connecting an (inactive) JTAG debugger.
-Also, on another board it always works.
+You mean connecting a JTAG but not doing anything with it made
+wake-from-standby work?
 
-And indeed wake-up occurs through GPIO interrupt or UART interrupt
-(key press on console).
+There was a bug like that on early revisions of the mpc8313erdb board --
+though in that case if you had a bad board the system would hang
+whenever you access any PMC register.  I'm not sure what the mechanism
+of failure was; IIRC the fix was adding a resistor.
 
-
----
-NvBolhuis
+-Scott
