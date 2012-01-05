@@ -1,21 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 796771007D6
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2012 05:22:41 +1100 (EST)
-Message-ID: <4F05EA6B.9040902@freescale.com>
-Date: Thu, 5 Jan 2012 12:22:35 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Subject: Re: Cannot wake-up from standby with MPC8313
-References: <4F047BF8.7090400@aimvalley.nl> <4F04BFEA.1050009@freescale.com>
- <4F05C8C2.9070401@aimvalley.nl>
-In-Reply-To: <4F05C8C2.9070401@aimvalley.nl>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH] fsl/mpic: Document and use the "big-endian" device-tree
+ flag
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1324571123-11577-1-git-send-email-Kyle.D.Moffett@boeing.com>
+Date: Thu, 5 Jan 2012 12:35:30 -0600
+Message-Id: <DE2E2CDA-D373-4E48-82EA-B8E1F05236D9@kernel.crashing.org>
+References: <1324571123-11577-1-git-send-email-Kyle.D.Moffett@boeing.com>
+To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Cc: linux-doc@vger.kernel.org, Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+ devicetree-discuss@lists.ozlabs.org, Stuart Yoder <stuart.yoder@freescale.com>,
+ Rob Herring <rob.herring@calxeda.com>, linux-kernel@vger.kernel.org,
+ Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>,
+ Josh Boyer <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/05/2012 09:58 AM, Norbert van Bolhuis wrote:
-> thanks for your response.
+
+On Dec 22, 2011, at 10:25 AM, Kyle Moffett wrote:
+
+> The MPIC code checks for a "big-endian" property and sets the flag
+> MPIC_BIG_ENDIAN if one is present.  Unfortunately, the PowerQUICC-III
+> compatible device-tree does not specify it, so all of the board ports
+> need to manually set that flag when calling mpic_alloc().
 > 
-> not setting MSR_POW gives same result.
-
-OK, so you're not getting an interrupt regardless of low-power state.
-
-Check whether the interrupt is getting masked during standby preparation.
-
-Does the interrupt handler run when you're not trying to enter standby?
-
-> if I set kernel.powersave-nap=1 it works fine,
-
-What is "it"?  Do you mean that powersave-nap doesn't break things, or
-that standby works when you specify that?
-
-> so apparently NAP/DOZE mode does work (if CPU is idle). This saves almost no
-> power though. Standby mode saves about 300-500 mW.
+> Document the flag and add it to the pq3 device tree.  Existing code
+> will still need to pass the MPIC_BIG_ENDIAN flag because their dtb may
+> not have this property, but new platforms shouldn't need to do so.
 > 
-> The problem could well be our board though, today I learned it does
-> work by connecting an (inactive) JTAG debugger.
-> Also, on another board it always works.
+> Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+> ---
+> .../devicetree/bindings/powerpc/fsl/mpic.txt       |    9 ++++++++-
+> arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi            |    1 +
+> 2 files changed, 9 insertions(+), 1 deletions(-)
 
-You mean connecting a JTAG but not doing anything with it made
-wake-from-standby work?
+need to update arch/powerpc/boot/dts/fsl/qoriq-mpic.dtsi
 
-There was a bug like that on early revisions of the mpc8313erdb board --
-though in that case if you had a bad board the system would hang
-whenever you access any PMC register.  I'm not sure what the mechanism
-of failure was; IIRC the fix was adding a resistor.
-
--Scott
+- k
