@@ -1,23 +1,13 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
- [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 9318AB6F71
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Jan 2012 08:03:14 +1100 (EST)
-Message-ID: <4F076187.2080308@freescale.com>
-Date: Fri, 6 Jan 2012 15:03:03 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Subject: Re: Cannot wake-up from standby with MPC8313
-References: <4F047BF8.7090400@aimvalley.nl> <4F04BFEA.1050009@freescale.com>
- <4F05C8C2.9070401@aimvalley.nl> <4F05EA6B.9040902@freescale.com>
- <4F06FCBC.4090302@aimvalley.nl>
-In-Reply-To: <4F06FCBC.4090302@aimvalley.nl>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 837DBB6F68
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jan 2012 09:34:09 +1100 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: fix kernel log of oops/panic instruction dump
+Date: Fri,  6 Jan 2012 14:34:07 -0800
+Message-Id: <1325889247-17205-1-git-send-email-iws@ovro.caltech.edu>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +17,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/06/2012 07:53 AM, Norbert van Bolhuis wrote:
-> On 01/05/12 19:22, Scott Wood wrote:
->> On 01/05/2012 09:58 AM, Norbert van Bolhuis wrote:
->>> thanks for your response.
->>>
->>> not setting MSR_POW gives same result.
->>
->> OK, so you're not getting an interrupt regardless of low-power state.
->>
->> Check whether the interrupt is getting masked during standby preparation.
->>
->> Does the interrupt handler run when you're not trying to enter standby?
->>
-> 
-> 
-> The GPIO/UART interrupt nor the PMC interrupt are being masked during
-> standby
-> preperation.
-> The GPIO/UART interrupt works fine in "operational" mode.
-> The PMC interrupt I do not know, is it possible to to get PMC interrupt
-> without going to standby or deep-sleep ?
+A kernel oops/panic prints an instruction dump showing several
+instructions before and after the instruction which caused the
+oops/panic.
 
-The PMC interrupt is mainly of interest when running as a PCI agent, to
-be notified when the host changed the desired suspend state in config space.
+The code intended that the faulting instruction be enclosed in angle
+brackets, however a bug caused the faulting instruction to be
+interpreted by printk() as the message log level.
 
-What changes from operational mode to the test where you omit setting
-MSR_POW?
+To fix this, the KERN_CONT log level is added before the actualy text of
+the printed message.
 
-Try dumping SIPNR/SIMSR and GPIER/GPIMR/GPDAT at various points.
+=== Before the patch ===
 
--Scott
+[ 1081.587266] Instruction dump:
+[ 1081.590236] 7c000110 7c0000f8 5400077c 552907f6 7d290378 992b0003 4e800020 38000001
+[ 1081.598034] 3d20c03a 9009a114 7c0004ac 39200000
+[ 1081.602500]  4e800020 3803ffd0 2b800009
+
+<4>[ 1081.587266] Instruction dump:
+<4>[ 1081.590236] 7c000110 7c0000f8 5400077c 552907f6 7d290378 992b0003 4e800020 38000001
+<4>[ 1081.598034] 3d20c03a 9009a114 7c0004ac 39200000
+<98090000>[ 1081.602500]  4e800020 3803ffd0 2b800009
+
+=== After the patch ===
+
+[   51.385216] Instruction dump:
+[   51.388186] 7c000110 7c0000f8 5400077c 552907f6 7d290378 992b0003 4e800020 38000001
+[   51.395986] 3d20c03a 9009a114 7c0004ac 39200000 <98090000> 4e800020 3803ffd0 2b800009
+
+<4>[   51.385216] Instruction dump:
+<4>[   51.388186] 7c000110 7c0000f8 5400077c 552907f6 7d290378 992b0003 4e800020 38000001
+<4>[   51.395986] 3d20c03a 9009a114 7c0004ac 39200000 <98090000> 4e800020 3803ffd0 2b800009
+
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+
+In the above examples, the first block is what is shown on the serial
+console as the machine dies. The second block is the dump as captured by
+mtdoops.
+
+ arch/powerpc/kernel/process.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 6457574..271f809 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -566,12 +566,12 @@ static void show_instructions(struct pt_regs *regs)
+ 		 */
+ 		if (!__kernel_text_address(pc) ||
+ 		     __get_user(instr, (unsigned int __user *)pc)) {
+-			printk("XXXXXXXX ");
++			printk(KERN_CONT "XXXXXXXX ");
+ 		} else {
+ 			if (regs->nip == pc)
+-				printk("<%08x> ", instr);
++				printk(KERN_CONT "<%08x> ", instr);
+ 			else
+-				printk("%08x ", instr);
++				printk(KERN_CONT "%08x ", instr);
+ 		}
+ 
+ 		pc += sizeof(int);
+-- 
+1.7.3.4
