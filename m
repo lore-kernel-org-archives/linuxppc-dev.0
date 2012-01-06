@@ -1,22 +1,17 @@
-Return-Path: <B21989@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
- [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 42D4A1007D6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2012 18:57:58 +1100 (EST)
-From: Xie Shaohui-B21989 <B21989@freescale.com>
-To: "cjb@laptop.org" <cjb@laptop.org>, "linux-mmc@vger.kernel.org"
- <linux-mmc@vger.kernel.org>
-Subject: RE: [PATCH][v2] mmc:sdhci: restore the enabled dma when do reset all
-Date: Fri, 6 Jan 2012 07:57:51 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C901D7D0@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1325147580-31281-1-git-send-email-Shaohui.Xie@freescale.com>
-In-Reply-To: <1325147580-31281-1-git-send-email-Shaohui.Xie@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <matthias.fuchs@esd.eu>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+ [212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 004A51007D6
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2012 23:09:06 +1100 (EST)
+Message-ID: <4F06E132.5070905@esd.eu>
+Date: Fri, 06 Jan 2012 12:55:30 +0100
+From: Matthias Fuchs <matthias.fuchs@esd.eu>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <B21989@freescale.com>
+To: Greg KH <greg@kroah.com>
+Subject: Re: Problem with full speed devices on PowerPC MPC5121 host port
+References: <4EF3191D.9040508@esd.eu> <20111222173900.GD28856@kroah.com>
+In-Reply-To: <20111222173900.GD28856@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Chris,
+On 22.12.2011 18:39, Greg KH wrote:
+> On Thu, Dec 22, 2011 at 12:48:45PM +0100, Matthias Fuchs wrote:
+>> Hi,
+>>
+>> I ran into trouble when using the MPC5121 with full speed
+>> USB devices. I've seen the issue with USB serial converters
+>> based on FTDI and Prolific chips.
+>>
+>> After connecting the device they first work fine. But when
+>> I stress the converter communications stalls. I can even force
+>> this behavior when doing a flood ping against the device.
+>> Then it only takes a few seconds until USB gets weird.
+>>
+>> After some time and several CTRL-C to stop the application
+>> that uses the ttyUSBx port I get a kernel message:
+>>
+>> 	ftdi_sio ttyUSB0: error from flowcontrol urb
+>>
+>> The only thing that reanimates the USB port is doing a reboot.
+> 
+> Not removing and inserting the device again?  unloading the ftdi_sio
+> driver and reloading it?
+Right. First I used a monolithic kernel with ftdi_sio and ehci_hcd build
+in. Now I did the test again with fsl_mph_dr_of, ehci_hcd, usbserial and
+ftdi_sio loaded as modules. After the error occured, I
+removed the device and unloaded the modules. After reloading them
+USB is still weird.
 
-Do you have any concern for this patch?
+usb 1-1: new full-speed USB device number 2 using fsl-ehci
+usb 1-1: device descriptor read/64, error -110
+usb 1-1: device descriptor read/64, error -110
+usb 1-1: new full-speed USB device number 3 using fsl-ehci
+usb 1-1: device descriptor read/64, error -110
 
+> If you look at the data using usbmon, does anything look odd?
+As long as everything works fine usbmon outputs data like this. It stops
+a short time after I started the flood ping to the board.
+df9c16c0 697164417 C Bi:1:002:1 0 2 = 0160
+df9c16c0 697164436 S Bi:1:002:1 -115 512 <
+df9c16c0 697165417 C Bi:1:002:1 0 2 = 0160
+df9c16c0 697165441 S Bi:1:002:1 -115 512 <
+df9c16c0 697166417 C Bi:1:002:1 0 2 = 0160
+df9c16c0 697166435 S Bi:1:002:1 -115 512 <
+df9c16c0 697167417 C Bi:1:002:1 0 9 = 01605f54 48452051 55
+df9c16c0 697167450 S Bi:1:002:1 -115 512 <
+df9c16c0 697168417 C Bi:1:002:1 0 14 = 01604943 4b204252 4f574e20 464f
+df9c16c0 697168450 S Bi:1:002:1 -115 512 <
+df9c16c0 697169420 C Bi:1:002:1 0 13 = 01605820 4a554d50 53204f56 45
+df9c16c0 697169453 S Bi:1:002:1 -115 512 <
+df9c16c0 697170418 C Bi:1:002:1 0 14 = 01605220 54484520 4c415a59 2044
+df9c16c0 697170451 S Bi:1:002:1 -115 512 <
+df9c16c0 697171417 C Bi:1:002:1 0 14 = 01604f47 20313233 34353637 3839
+df9c16c0 697171450 S Bi:1:002:1 -115 512 <
 
-Best Regards,=20
-Shaohui Xie=20
+Then I try to abort my application. This result in
 
->-----Original Message-----
->From: Xie Shaohui-B21989
->Sent: Thursday, December 29, 2011 4:33 PM
->To: linux-mmc@vger.kernel.org
->Cc: linuxppc-dev@lists.ozlabs.org; Xie Shaohui-B21989
->Subject: [PATCH][v2] mmc:sdhci: restore the enabled dma when do reset all
->
->If dma is enabled, it'll be cleared when reset all is performed, this can
->be observed on some platforms, such as P2041 which has a version 2.3
->controller, but platform like P4080 which has a version 2.2 controller,
->does not suffer this, so we will check if the dma is enabled, we should
->restore it after reset all.
->
->Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
->---
->based on http://git.kernel.org/pub/scm/linux/kernel/git/cjb/mmc.git,
->branch 'for-linus'.
->
->changes for v2:
->call the wrapper API instead of access the register directly.
->
-> drivers/mmc/host/sdhci.c |    5 +++++
-> 1 files changed, 5 insertions(+), 0 deletions(-)
->
->diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c index
->19ed580..cf6a048 100644
->--- a/drivers/mmc/host/sdhci.c
->+++ b/drivers/mmc/host/sdhci.c
->@@ -214,6 +214,11 @@ static void sdhci_reset(struct sdhci_host *host, u8
->mask)
->
-> 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
-> 		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
->+
->+	if (host->flags & (SDHCI_USE_SDMA | SDHCI_USE_ADMA)) {
->+		if ((host->ops->enable_dma) && (mask & SDHCI_RESET_ALL))
->+			host->ops->enable_dma(host);
->+	}
-> }
->
-> static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios);
->--
->1.6.4
+df9c1340 712766944 S Co:1:002:0 s 40 02 0000 0000 0000 0
+df9c1340 717776208 C Co:1:002:0 -2 0
+df9c1340 717776503 S Co:1:002:0 s 40 01 0300 0000 0000 0
+df9c1340 722786213 C Co:1:002:0 -2 8 >
+df9c16c0 722796202 C Bi:1:002:1 -2 0
+
+And finally I try to restart my application:
+
+df9c12c0 791192447 S Co:1:002:0 s 40 00 0000 0000 0000 0
+df9c12c0 796202240 C Co:1:002:0 -2 0
+df9c12c0 796203289 S Co:1:002:0 s 40 02 0000 0000 0000 0
+df9c12c0 801213213 C Co:1:002:0 -2 0
+df9c16c0 801213518 S Bi:1:002:1 -115 512 <
+df9c12c0 801213560 S Co:1:002:0 s 40 01 0303 0000 0000 0
+df9c12c0 806223208 C Co:1:002:0 -2 0
+df9c12c0 806223411 S Co:1:002:0 s 40 02 0000 0000 0000 0
+df9c12c0 811233210 C Co:1:002:0 -2 0
+df9c1440 821344904 S Co:1:002:0 s 40 02 0000 0000 0000 0
+df9c1440 826354209 C Co:1:002:0 -2 8 >
+df9c1440 826354515 S Co:1:002:0 s 40 01 0300 0000 0000 0
+df9c1440 831364204 C Co:1:002:0 -2 0
+df9c16c0 831374203 C Bi:1:002:1 -2 0
+
+> And what kernel version are you using here?
+Now I switched to 3.2.0 with only minimal changes for our hardware.
+But (as expected) I get the same problems.
+
+For my eyes it does not really look like a general USB issue.
+It looks like a problem with the Freescale EHCI implementation that is
+influenced by high interrupt or internal bus load caused by the flood ping.
+
+I put linuxppc-dev on CC. Perhaps soneone in that community can double
+check it on a Freescale evaluation board.
+
+Matthias
