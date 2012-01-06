@@ -1,26 +1,20 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Message-ID: <1325854981.2442.25.camel@twins>
-Subject: Re: [RFC PATCH 0/9] Remove useless on_each_cpu return value
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Gilad Ben-Yossef <gilad@benyossef.com>
-Date: Fri, 06 Jan 2012 14:03:01 +0100
-In-Reply-To: <1325600353-10895-1-git-send-email-gilad@benyossef.com>
-References: <1325600353-10895-1-git-send-email-gilad@benyossef.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, David Airlie <airlied@linux.ie>,
- Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
- devicetree-discuss@lists.ozlabs.org, Michal Nazarewicz <mina86@mina86.com>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Rob Herring <rob.herring@calxeda.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <nvbolhuis@aimvalley.nl>
+Received: from mika.eatserver.nl (mika.eatserver.nl [195.20.9.75])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DED9BB6FB9
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Jan 2012 00:53:08 +1100 (EST)
+Message-ID: <4F06FCBC.4090302@aimvalley.nl>
+Date: Fri, 06 Jan 2012 14:53:00 +0100
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Cannot wake-up from standby with MPC8313
+References: <4F047BF8.7090400@aimvalley.nl> <4F04BFEA.1050009@freescale.com>
+ <4F05C8C2.9070401@aimvalley.nl> <4F05EA6B.9040902@freescale.com>
+In-Reply-To: <4F05EA6B.9040902@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-01-03 at 16:19 +0200, Gilad Ben-Yossef wrote:
-> on_each_cpu() returns as its own return value the return value of=20
-> smp_call_function(). smp_call_function() in turn returns a hard=20
-> coded value of zero.
->=20
-> Some callers to on_each_cpu() waste cycles and bloat code space
-> by checking the return value to on_each_cpu(), probably for=20
-> historical reasons.
+On 01/05/12 19:22, Scott Wood wrote:
+> On 01/05/2012 09:58 AM, Norbert van Bolhuis wrote:
+>> thanks for your response.
+>>
+>> not setting MSR_POW gives same result.
+>
+> OK, so you're not getting an interrupt regardless of low-power state.
+>
+> Check whether the interrupt is getting masked during standby preparation.
+>
+> Does the interrupt handler run when you're not trying to enter standby?
+>
 
-hysterical raisins,, yumm! :-)
 
-> This patch set refactors callers to not test on_each_cpu()
-> (fixed) return value and then refactors on_each_cpu to
-> return void to avoid confusing future users.
->=20
+The GPIO/UART interrupt nor the PMC interrupt are being masked during standby
+preperation.
+The GPIO/UART interrupt works fine in "operational" mode.
+The PMC interrupt I do not know, is it possible to to get PMC interrupt
+without going to standby or deep-sleep ?
+In anyway there is no PMC interrupt for NAP mode (if kernel.powersave-nap=1).
 
-Seems sane enough, fwiw:
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>> if I set kernel.powersave-nap=1 it works fine,
+>
+> What is "it"?  Do you mean that powersave-nap doesn't break things, or
+> that standby works when you specify that?
+>
+
+
+I mean powersave-nap itself seems to work and does not break things.
+
+
+>> so apparently NAP/DOZE mode does work (if CPU is idle). This saves almost no
+>> power though. Standby mode saves about 300-500 mW.
+>>
+>> The problem could well be our board though, today I learned it does
+>> work by connecting an (inactive) JTAG debugger.
+>> Also, on another board it always works.
+>
+> You mean connecting a JTAG but not doing anything with it made
+> wake-from-standby work?
+>
+> There was a bug like that on early revisions of the mpc8313erdb board --
+> though in that case if you had a bad board the system would hang
+> whenever you access any PMC register.  I'm not sure what the mechanism
+> of failure was; IIRC the fix was adding a resistor.
+>
+
+
+yes, connecting a JTAG but not doing anything with it makes
+wake-from-standby work.
+
+I don't know what's wrong with (some of) our boards... it looks
+like external interrupts are blocked and/or core stays in reset..
+
+I doubt there's a SW PMC race/deadlock that causes this.
+
+
+---
+NvBolhuis
