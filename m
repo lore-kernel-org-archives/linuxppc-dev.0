@@ -1,12 +1,25 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git next branch
-In-reply-to: <alpine.LFD.2.00.1201041605230.15492@right.am.freescale.net>
-References: <alpine.LFD.2.00.1201041605230.15492@right.am.freescale.net>
-Date: Mon, 09 Jan 2012 10:58:01 +1100
-Message-ID: <13121.1326067081@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <b29397@nchen-desktop.ap.freescale.net>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 0DEC0B6F71
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 13:12:55 +1100 (EST)
+Date: Mon, 9 Jan 2012 10:12:21 +0800
+From: Peter Chen <peter.chen@freescale.com>
+To: Nikolai Zhubr <n-a-zhubr@yandex.ru>
+Subject: Re: Driver(s) for Synopsys' DesignWare USB OTG
+Message-ID: <20120109021220.GA10198@nchen-desktop>
+References: <4F088122.4080505@yandex.ru>
+ <CAL411-riz_Cf1hYMYwEKrJKNHTV3EYup4u5DjmBhdpH+4xcd7g@mail.gmail.com>
+ <4F099291.6060803@yandex.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <4F099291.6060803@yandex.ru>
+Cc: support@amlogic.com, linux-usb@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, openwrt-devel@lists.openwrt.org,
+ Peter Chen <hzpeterchen@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,131 +29,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar,
+On Sun, Jan 08, 2012 at 04:56:49PM +0400, Nikolai Zhubr wrote:
+> Hello Piter,
+> 
+> 08.01.2012 7:12, you wrote:
+> >2012/1/8 Nikolai Zhubr<n-a-zhubr@yandex.ru>:
+> >
+> >Please see:
+> >http://marc.info/?l=linux-usb&m=129906859817430&w=2
+> Ah, thanks. So sadly uncoordinated work in this area is quite
+> common. However, in case of Synopsys the situation is even more
+> disappointing because initially it _was_ a single driver! What
+> probably lacked was some shared repository and proper communication
+> between developers to stay in sync. Maybe there were also licensing
+> issues at some point, though currently file headers contain rather
+> reasonable (imho) permissive license from Synopsys.
+> 
+> >I am not sure we can combine all Synopsys USB drivers to single file, but we
+> 
+> Synopsys driver which I examine consists of 16 files (each of 2
+> versions), 200k lines total. I've already perpared some few smaller
+> files for version merging. So probably it is doable, but quite a lot
+> of work, therefore I wouldn't like it to be wasted.
+I mean one file is just a common udc driver for all Synopsys, not all usb file.
+For ehci, I think it will be easier to use single file as well as 
+some specific SoC's quirks if needed.
+For udc, as there is no standard spec for how usb device should be designed,
+maybe different Synopsys IPs have a little different for work flow.
+For otg, it  should be not difficult after we split PHY's operation
+from the otg, as common otg operation is the same.
+> 
+> >can try combine similar IP versions to one file, this work may need all Synopsys
+> >USB IP driver maintainer work together.
+> 
+> Exactly. This is why I'm now trying to find all relevant people to
+> begin with.
+I know someone(@Pengutronix and @linux.intel.com) is doing that. I think first
+we should find which driver file at current code base is most capable and
+compatible. I would like to help it, and verify it at Freescale i.MX SoCs.
+> 
+> Thank you.
+> Nikolai.
+> 
+> Please CC me, I'm not subscribed to the lists.
+> 
+> 
+> >
+> >
+> >>Thank you.
+> >>Nikolai.
+> >>--
+> >>To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> >>the body of a message to majordomo@vger.kernel.org
+> >>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> >
+> >
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Can you pick up this one too.  Current Linus tree breaks compiling
-mpc85xx_defconfig
+-- 
 
-  powerpc: fix compile error with 85xx/p1022_ds.c
-  http://patchwork.ozlabs.org/patch/130620/
-
-Mikey
-
-In message <alpine.LFD.2.00.1201041605230.15492@right.am.freescale.net> you wro
-te:
-> The following changes since commit e4f387d8db3ba3c2dae4d8bdfe7bb5f4fe1bcb0d:
-> 
->   powerpc: Fix unpaired probe_hcall_entry and probe_hcall_exit (2012-01-03 12:09:27 +1100)
-> 
-> are available in the git repository at:
->   git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
-> 
-> Andy Fleming (1):
->       powerpc: Add TBI PHY node to first MDIO bus
-> 
-> Julia Lawall (1):
->       arch/powerpc/sysdev/fsl_rmu.c: introduce missing kfree
-> 
-> Kumar Gala (3):
->       powerpc/fsl-pci: Allow 64-bit PCIe devices to DMA to any memory address
->       powerpc/fsl: Update defconfigs to enable some standard FSL HW features
->       powerpc/fsl: update compatiable on fsl 16550 uart nodes
-> 
-> Michael Neuling (1):
->       powerpc: fix compile error with 85xx/p1023_rds.c
-> 
-> Paul Gortmaker (1):
->       sbc834x: put full compat string in board match check
-> 
-> Prabhakar Kushwaha (1):
->       powerpc/fsl: Add support for Integrated Flash Controller
-> 
-> Timur Tabi (3):
->       powerpc/85xx: re-enable ePAPR byte channel driver in corenet32_smp_defc
-onfig
->       powerpc/85xx: fix PCI and localbus properties in p1022ds.dts
->       powerpc/fsl: add MSI support for the Freescale hypervisor
-> 
-> Tony Breeds (1):
->       powerpc: fix compile error with 85xx/p1010rdb.c
-> 
->  arch/powerpc/Kconfig                         |    4 +
->  arch/powerpc/boot/dts/asp834x-redboot.dts    |    4 +-
->  arch/powerpc/boot/dts/fsl/pq3-duart-0.dtsi   |    4 +-
->  arch/powerpc/boot/dts/fsl/qoriq-duart-0.dtsi |    4 +-
->  arch/powerpc/boot/dts/fsl/qoriq-duart-1.dtsi |    4 +-
->  arch/powerpc/boot/dts/gef_ppc9a.dts          |    4 +-
->  arch/powerpc/boot/dts/gef_sbc310.dts         |    4 +-
->  arch/powerpc/boot/dts/gef_sbc610.dts         |    4 +-
->  arch/powerpc/boot/dts/kmeter1.dts            |    2 +-
->  arch/powerpc/boot/dts/kuroboxHD.dts          |    4 +-
->  arch/powerpc/boot/dts/kuroboxHG.dts          |    4 +-
->  arch/powerpc/boot/dts/mpc8308_p1m.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8308rdb.dts         |    4 +-
->  arch/powerpc/boot/dts/mpc8313erdb.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8315erdb.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc832x_mds.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc832x_rdb.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8349emitx.dts       |    4 +-
->  arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    4 +-
->  arch/powerpc/boot/dts/mpc834x_mds.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc836x_mds.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc836x_rdk.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8377_mds.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8377_rdb.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8377_wlan.dts       |    4 +-
->  arch/powerpc/boot/dts/mpc8378_mds.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8378_rdb.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8379_mds.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8379_rdb.dts        |    4 +-
->  arch/powerpc/boot/dts/mpc8540ads.dts         |    4 +-
->  arch/powerpc/boot/dts/mpc8541cds.dts         |    4 +-
->  arch/powerpc/boot/dts/mpc8555cds.dts         |    4 +-
->  arch/powerpc/boot/dts/mpc8610_hpcd.dts       |    4 +-
->  arch/powerpc/boot/dts/mpc8641_hpcn.dts       |    4 +-
->  arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts   |    4 +-
->  arch/powerpc/boot/dts/p1010rdb.dtsi          |    5 +
->  arch/powerpc/boot/dts/p1020rdb.dtsi          |    5 +
->  arch/powerpc/boot/dts/p1021mds.dts           |    4 +
->  arch/powerpc/boot/dts/p1022ds.dts            |   12 +-
->  arch/powerpc/boot/dts/p2020rdb.dts           |    8 +-
->  arch/powerpc/boot/dts/sbc8349.dts            |    4 +-
->  arch/powerpc/boot/dts/sbc8548.dts            |    4 +-
->  arch/powerpc/boot/dts/sbc8641d.dts           |    4 +-
->  arch/powerpc/boot/dts/socrates.dts           |    4 +-
->  arch/powerpc/boot/dts/storcenter.dts         |    4 +-
->  arch/powerpc/boot/dts/stxssa8555.dts         |    4 +-
->  arch/powerpc/boot/dts/tqm8540.dts            |    4 +-
->  arch/powerpc/boot/dts/tqm8541.dts            |    4 +-
->  arch/powerpc/boot/dts/tqm8548-bigflash.dts   |    4 +-
->  arch/powerpc/boot/dts/tqm8548.dts            |    4 +-
->  arch/powerpc/boot/dts/tqm8555.dts            |    4 +-
->  arch/powerpc/boot/dts/xcalibur1501.dts       |    4 +-
->  arch/powerpc/boot/dts/xpedite5200.dts        |    4 +-
->  arch/powerpc/boot/dts/xpedite5200_xmon.dts   |    4 +-
->  arch/powerpc/boot/dts/xpedite5301.dts        |    4 +-
->  arch/powerpc/boot/dts/xpedite5330.dts        |    4 +-
->  arch/powerpc/boot/dts/xpedite5370.dts        |    4 +-
->  arch/powerpc/configs/corenet32_smp_defconfig |   10 +-
->  arch/powerpc/configs/corenet64_smp_defconfig |    3 +-
->  arch/powerpc/configs/mpc85xx_defconfig       |   16 +-
->  arch/powerpc/configs/mpc85xx_smp_defconfig   |   17 +-
->  arch/powerpc/include/asm/fsl_ifc.h           |  834 ++++++++++++++++++++++++
-++
->  arch/powerpc/platforms/83xx/sbc834x.c        |    4 +-
->  arch/powerpc/platforms/85xx/p1010rdb.c       |    2 -
->  arch/powerpc/platforms/85xx/p1023_rds.c      |    1 -
->  arch/powerpc/sysdev/Makefile                 |    1 +
->  arch/powerpc/sysdev/fsl_ifc.c                |  310 ++++++++++
->  arch/powerpc/sysdev/fsl_msi.c                |   68 ++-
->  arch/powerpc/sysdev/fsl_msi.h                |    7 +-
->  arch/powerpc/sysdev/fsl_pci.c                |   84 +++
->  arch/powerpc/sysdev/fsl_rmu.c                |    1 +
->  71 files changed, 1448 insertions(+), 150 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/fsl_ifc.h
->  create mode 100644 arch/powerpc/sysdev/fsl_ifc.c
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Best Regards,
+Peter Chen
