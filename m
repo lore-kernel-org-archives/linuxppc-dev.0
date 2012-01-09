@@ -1,15 +1,16 @@
 Return-Path: <B37781@freescale.com>
-Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
- [216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id C63B0B6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 17:49:39 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 56695B6F68
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 17:50:33 +1100 (EST)
 From: Xu Jiucheng <B37781@freescale.com>
 To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [SDK v1.2][PATCH 1/2 v3] powerpc/85xx: Add dts for P1021RDB-PC board
-Date: Mon, 9 Jan 2012 14:53:41 +0800
-Message-ID: <1326092022-10085-1-git-send-email-B37781@freescale.com>
+Subject: [PATCH 1/2] powerpc/85xx: Add dts for P1021RDB-PC board
+Date: Mon, 9 Jan 2012 14:54:43 +0800
+Message-ID: <1326092084-10150-1-git-send-email-B37781@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Cc: Matthew McClintock <msm@freescale.com>, Xu Jiucheng <B37781@freescale.com>
