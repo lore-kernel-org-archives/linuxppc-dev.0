@@ -1,21 +1,20 @@
-Return-Path: <n-a-zhubr@yandex.ru>
-Received: from forward14.mail.yandex.net (forward14.mail.yandex.net
- [IPv6:2a02:6b8:0:801::4])
- by ozlabs.org (Postfix) with ESMTP id EF2BEB6F68
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 23:39:02 +1100 (EST)
-Message-ID: <4F0AE110.7010106@yandex.ru>
-Date: Mon, 09 Jan 2012 16:44:00 +0400
-From: Nikolai Zhubr <n-a-zhubr@yandex.ru>
-MIME-Version: 1.0
-To: Leo Li <pku.leo@gmail.com>
-Subject: Re: Driver(s) for Synopsys' DesignWare USB OTG
-References: <4F088122.4080505@yandex.ru>	<CAL411-riz_Cf1hYMYwEKrJKNHTV3EYup4u5DjmBhdpH+4xcd7g@mail.gmail.com>	<4F099291.6060803@yandex.ru>
- <CADRPPNRLKhDEU=mVDjbxaNtOD+665hQodhQzpVBc11120GpuJQ@mail.gmail.com>
-In-Reply-To: <CADRPPNRLKhDEU=mVDjbxaNtOD+665hQodhQzpVBc11120GpuJQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: support@amlogic.com, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, openwrt-devel@lists.openwrt.org,
- Peter Chen <hzpeterchen@gmail.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id A559AB6FA5
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2012 00:50:20 +1100 (EST)
+Subject: Re: [PATCH 1/3] KVM: PPC: epapr: Factor out the epapr init
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1325754412-29963-1-git-send-email-yu.liu@freescale.com>
+Date: Mon, 9 Jan 2012 14:50:12 +0100
+Message-Id: <83E67B5B-C09A-4EB6-9DD6-79B3D20FC59F@suse.de>
+References: <1325754412-29963-1-git-send-email-yu.liu@freescale.com>
+To: Liu Yu <yu.liu@freescale.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ scottwood@freescale.com, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,59 +24,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Leo,
 
-09.01.2012 9:17, Leo Li:
-> On Sun, Jan 8, 2012 at 8:56 PM, Nikolai Zhubr<n-a-zhubr@yandex.ru>  wrote:
->>> 2012/1/8 Nikolai Zhubr<n-a-zhubr@yandex.ru>:
->>>>
->>>> Hello developers,
->>>>
->>>> I'm trying to find/combine/fix a driver for Synopsys' DesignWare USB
->>>> controller. This thing is USB 2.0 host/slave/otg capable and is used in
->>>> various SoCs including Amlogic 8726M, Ralink RT305x, and probably more.
->>>>
-[...trim...]
->
-> I think the challenge of cooperation in situation like this is that
-> most companies don't like to advertise the source of the licensed IP
-> block.  Even the owner of the IP block doesn't list all users of the
-> block(maybe business requirement). It was really hard to find out if
-> the same IP has been used by anyone else.  Also the owner of this USB
-> IP block has been changed for several times(ARC, TDI, ChipIdea, and
-> Synopsys) which made it even more difficult to tell.
+On 05.01.2012, at 10:06, Liu Yu wrote:
 
-Ah, I see. It explains.
-But communicating in private and keeping some public repository up to 
-date would still be allowed I suppose?
+> from the kvm guest paravirt init code.
 
->
->>
->>
->>> I am not sure we can combine all Synopsys USB drivers to single file, but
->>> we
->>
->>
->> Synopsys driver which I examine consists of 16 files (each of 2 versions),
->> 200k lines total. I've already perpared some few smaller files for version
->> merging. So probably it is doable, but quite a lot of work, therefore I
->> wouldn't like it to be wasted.
->
-> I didn't examine the Synopsys driver myself.  But if it is so complex
-> as you described, it might be better to start with the in-tree drivers
-> IMO.
+Your patch description could be slightly more ... verbose :)
 
-Unfortunately its far beyond my capabilities at the moment. Besides, it 
-looks like huge effort has already been invested into the existing 
-driver, so to me it seems fixing it rather than starting from scratch 
-would be more realistic anyway (unless a company with unlimited 
-resources step in...)
+>=20
+> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+> ---
+> arch/powerpc/include/asm/epapr_hcalls.h |    8 +++++
+> arch/powerpc/kernel/Makefile            |    1 +
+> arch/powerpc/kernel/epapr_para.c        |   45 =
++++++++++++++++++++++++++++++++
+> arch/powerpc/kernel/kvm.c               |    9 +++++-
+> 4 files changed, 62 insertions(+), 1 deletions(-)
+> create mode 100644 arch/powerpc/kernel/epapr_para.c
+>=20
+> diff --git a/arch/powerpc/include/asm/epapr_hcalls.h =
+b/arch/powerpc/include/asm/epapr_hcalls.h
+> index f3b0c2c..c4b86e4 100644
+> --- a/arch/powerpc/include/asm/epapr_hcalls.h
+> +++ b/arch/powerpc/include/asm/epapr_hcalls.h
+> @@ -148,6 +148,14 @@
+> #define EV_HCALL_CLOBBERS2 EV_HCALL_CLOBBERS3, "r5"
+> #define EV_HCALL_CLOBBERS1 EV_HCALL_CLOBBERS2, "r4"
+>=20
+> +extern u32 *epapr_hcall_insts;
+> +extern int epapr_hcall_insts_len;
+> +
+> +static inline void epapr_get_hcall_insts(u32 **instp, int *lenp)
+> +{
+> +	*instp =3D epapr_hcall_insts;
+> +	*lenp =3D epapr_hcall_insts_len;
+
+Why do we need this? Can't we just directly access the variables?
+
+> +}
+>=20
+> /*
+>  * We use "uintptr_t" to define a register because it's guaranteed to =
+be a
+> diff --git a/arch/powerpc/kernel/Makefile =
+b/arch/powerpc/kernel/Makefile
+> index ce4f7f1..1052bbc 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -134,6 +134,7 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
+> obj-y				+=3D ppc_save_regs.o
+> endif
+>=20
+> +obj-$(CONFIG_BOOKE)		+=3D epapr_para.o
+> obj-$(CONFIG_KVM_GUEST)		+=3D kvm.o kvm_emul.o
+>=20
+> # Disable GCOV in odd or sensitive code
+> diff --git a/arch/powerpc/kernel/epapr_para.c =
+b/arch/powerpc/kernel/epapr_para.c
+> new file mode 100644
+> index 0000000..714dcb3
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/epapr_para.c
+> @@ -0,0 +1,45 @@
+> +/*
+> + * ePAPR para-virtualization support.
+> + *
+> + * This program is free software; you can redistribute it and/or =
+modify
+> + * it under the terms of the GNU General Public License, version 2, =
+as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  =
+02110-1301, USA.
+> + *
+> + * Copyright (C) 2012 Freescale Semiconductor, Inc.
+> + */
+> +
+> +#include <linux/of.h>
+> +#include <asm/epapr_hcalls.h>
+> +
+> +u32 *epapr_hcall_insts;
+> +int epapr_hcall_insts_len;
+> +
+> +static int __init epapr_para_init(void)
+> +{
+> +	struct device_node *hyper_node;
+> +	u32 *insts;
+> +	int len;
+> +
+> +	hyper_node =3D of_find_node_by_path("/hypervisor");
+> +	if (!hyper_node)
+> +		return -ENODEV;
+> +
+> +	insts =3D (u32*)of_get_property(hyper_node, =
+"hcall-instructions", &len);
+> +	if (!(len % 4) && (len >=3D (4 * 4))) {
+> +		epapr_hcall_insts =3D insts;
+> +		epapr_hcall_insts_len =3D len;
+> +	}
+
+else error()?
+
+> +
+> +	return 0;
+> +}
+> +
+> +early_initcall(epapr_para_init);
+> diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+> index b06bdae..82a9137 100644
+> --- a/arch/powerpc/kernel/kvm.c
+> +++ b/arch/powerpc/kernel/kvm.c
+> @@ -28,6 +28,7 @@
+> #include <asm/sections.h>
+> #include <asm/cacheflush.h>
+> #include <asm/disassemble.h>
+> +#include <asm/epapr_hcalls.h>
+>=20
+> #define KVM_MAGIC_PAGE		(-4096L)
+> #define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct =
+kvm_vcpu_arch_shared, x)
+> @@ -535,9 +536,10 @@ EXPORT_SYMBOL_GPL(kvm_hypercall);
+> static int kvm_para_setup(void)
+> {
+> 	extern u32 kvm_hypercall_start;
+> -	struct device_node *hyper_node;
+> 	u32 *insts;
+> 	int len, i;
+> +#ifndef CONFIG_BOOKE
+
+Ugh - now you're duplicating even more code. Why not completely unify it =
+and always call epapr_get_hcall_insts() on all ppc platforms?
 
 
-Thank you.
-Nikolai.
-
->
-> - Leo
->
->
+> +	struct device_node *hyper_node;
+>=20
+> 	hyper_node =3D of_find_node_by_path("/hypervisor");
+> 	if (!hyper_node)
+> @@ -548,6 +550,11 @@ static int kvm_para_setup(void)
+> 		return -1;
+> 	if (len > (4 * 4))
+> 		return -1;
+> +#else
+> +	epapr_get_hcall_insts(&insts, &len);
+> +	if (insts =3D=3D NULL)
+> +		return -1;
+> +#endif	/* !BOOKE */
+>=20
+> 	for (i =3D 0; i < (len / 4); i++)
+> 		kvm_patch_ins(&(&kvm_hypercall_start)[i], insts[i]);
+> --=20
+> 1.6.4
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
