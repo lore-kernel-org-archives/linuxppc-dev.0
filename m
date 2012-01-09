@@ -1,28 +1,22 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DFD0FB6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 06:42:15 +1100 (EST)
-Message-Id: <E1RkKQN-0000nM-2c@jdl.com>
-To: Stephen Warren <swarren@nvidia.com>
-Subject: Re: [PATCH 1/2] dtc: Implement -d option to write out a dependency
- file
-In-reply-to: <1326134295-15547-1-git-send-email-swarren@nvidia.com>
-References: <1326134295-15547-1-git-send-email-swarren@nvidia.com>
-Date: Mon, 09 Jan 2012 12:58:27 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Cc: Michal Marek <mmarek@suse.cz>, Jonas Bonn <jonas@southpole.se>,
- Michal Simek <monstr@monstr.eu>, Russell King <linux@arm.linux.org.uk>,
- linux-c6x-dev@linux-c6x.org, Arnd Bergmann <arnd@arndb.de>,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Devicetree Discuss <devicetree-discuss@lists.ozlabs.org>,
- linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Paul Mackerras <paulus@samba.org>,
- Mark Salter <msalter@redhat.com>, microblaze-uclinux@itee.uq.edu.au,
- linuxppc-dev@lists.ozlabs.org, linux@lists.openrisc.net,
- linux-arm-kernel@lists.infradead.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id F2B2FB6F74
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 07:55:12 +1100 (EST)
+Message-ID: <4F0B541C.1050001@freescale.com>
+Date: Mon, 9 Jan 2012 14:54:52 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Xu Jiucheng <B37781@freescale.com>
+Subject: Re: [SDK v1.2][PATCH 1/2 v3] powerpc/85xx: Add dts for P1021RDB-PC
+ board
+References: <1326092022-10085-1-git-send-email-B37781@freescale.com>
+In-Reply-To: <1326092022-10085-1-git-send-email-B37781@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,18 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> This will allow callers to rebuild .dtb files when any of the /include/d
-> .dtsi files are modified, not just the top-level .dts file.
-> 
-> Signed-off-by: Stephen Warren <swarren@nvidia.com>
-> ---
-> This patch is against the Linux kernel's copy of dtc, but it applies to
-> upstream dtc with a couple of trivial conflicts. I can post a version for
-> upstream dtc as well if desired.
+On 01/09/2012 12:53 AM, Xu Jiucheng wrote:
+> +	nand@1,0 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		compatible = "fsl,p1020-fcm-nand",
+> +			     "fsl,elbc-fcm-nand";
 
-If it does go upstream into Linux proper, we should
-definitely have it in the main DTC repository.
-So if you would, please send me a path that applies there.
+s/p1020/p1021/
 
-Thanks,
-jdl
+-Scott
