@@ -1,16 +1,15 @@
 Return-Path: <B32579@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+ [65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 6572EB6F74
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 23:24:29 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 745DFB6FCC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 23:24:38 +1100 (EST)
 From: Prabhakar Kushwaha <prabhakar@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-mtd@lists.infradead.org>
-Subject: [PATCH 1/2][v2] mtd/nand:Fix wrong address read in is_blank()
-Date: Mon, 9 Jan 2012 17:54:07 +0530
-Message-ID: <1326111847-13085-1-git-send-email-prabhakar@freescale.com>
+Subject: [PATCH 2/2][v2] mtd/nand: Fix IFC driver to support 2K NAND page
+Date: Mon, 9 Jan 2012 17:54:26 +0530
+Message-ID: <1326111866-13120-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, Poonam Aggrwal <poonam.aggrwal@freescale.com>,
@@ -24,19 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IFC NAND Machine calculates ECC on 512byte sector. Same is taken care in
-fsl_ifc_run_command() while ECC status verification. Here buffer number is
-calculated assuming 512byte sector and same is passed to is_blank.
-However in is_blank() buffer address is calculated using mdt->writesize which is
-wrong. It should be calculated on basis of ecc sector size.
+1) OOB area should be updated irrespective of NAND page size. Earlier it was
+updated only for 512byte NAND page.
 
-Also, in fsl_ifc_run_command() bufferpage is calculated on the basis of ecc sector
-size instead of hard coded value.
+2) During OOB update fbcr should be equal to OOB size.
 
 Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 ---
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch next)
+ git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch next)
 
  This patch is created on top of IFC driver patch (already floated in mailing
  list). Please find their link:
@@ -45,67 +40,56 @@ Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 
  Tested on P1010RDB
 
- Changes for v2: Incorporated Scott's comments
- 	- Updated copyright
-	- is_blank - works on ecc buffer block 
-	- check_read_ecc() - Calculate actual ecc buffer number
+  Changes for v2: Incorporated Scott's comments
+ 	- Added missed NAND_CMD_READOOB
+	- Updated function as per Scott's advice
 
- drivers/mtd/nand/fsl_ifc_nand.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/mtd/nand/fsl_ifc_nand.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
-index 8475b88..c0529ea 100644
+index c0529ea..52bd706d 100644
 --- a/drivers/mtd/nand/fsl_ifc_nand.c
 +++ b/drivers/mtd/nand/fsl_ifc_nand.c
-@@ -1,7 +1,7 @@
- /*
-  * Freescale Integrated Flash Controller NAND driver
-  *
-- * Copyright 2011 Freescale Semiconductor, Inc
-+ * Copyright 2011,2012 Freescale Semiconductor, Inc
-  *
-  * Author: Dipen Dudhat <Dipen.Dudhat@freescale.com>
-  *
-@@ -191,12 +191,12 @@ static int is_blank(struct mtd_info *mtd, unsigned int bufnum)
- {
- 	struct nand_chip *chip = mtd->priv;
- 	struct fsl_ifc_mtd *priv = chip->priv;
--	u8 __iomem *addr = priv->vbase + bufnum * (mtd->writesize * 2);
-+	u8 __iomem *addr = priv->vbase + bufnum * chip->ecc.size;
- 	u32 __iomem *mainarea = (u32 *)addr;
- 	u8 __iomem *oob = addr + mtd->writesize;
- 	int i;
+@@ -440,22 +440,19 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 			out_be32(&ifc->ifc_nand.nand_fir1,
+ 				 (IFC_FIR_OP_CW1 << IFC_NAND_FIR1_OP5_SHIFT));
  
--	for (i = 0; i < mtd->writesize / 4; i++) {
-+	for (i = 0; i < chip->ecc.size / 4; i++) {
- 		if (__raw_readl(&mainarea[i]) != 0xffffffff)
- 			return 0;
- 	}
-@@ -215,12 +215,15 @@ static int is_blank(struct mtd_info *mtd, unsigned int bufnum)
- static int check_read_ecc(struct mtd_info *mtd, struct fsl_ifc_ctrl *ctrl,
- 			  u32 *eccstat, unsigned int bufnum)
- {
-+	struct nand_chip *chip = mtd->priv;
-+	int bufperpage = mtd->writesize / chip->ecc.size;
-+	int eccbuf_num = bufnum + (bufnum / bufperpage) * bufperpage;
- 	u32 reg = eccstat[bufnum / 4];
- 	int errors = (reg >> ((3 - bufnum % 4) * 8)) & 15;
+-			if (column >= mtd->writesize) {
+-				/* OOB area --> READOOB */
+-				column -= mtd->writesize;
+-				nand_fcr0 |= NAND_CMD_READOOB <<
+-						IFC_NAND_FCR0_CMD0_SHIFT;
+-				ifc_nand_ctrl->oob = 1;
+-			} else if (column < 256)
+-				/* First 256 bytes --> READ0 */
++			if (column >= mtd->writesize)
+ 				nand_fcr0 |=
+-				NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT;
++				NAND_CMD_READOOB << IFC_NAND_FCR0_CMD0_SHIFT;
+ 			else
+-				/* Second 256 bytes --> READ1 */
+ 				nand_fcr0 |=
+-				NAND_CMD_READ1 << IFC_NAND_FCR0_CMD0_SHIFT;
++				NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT;
+ 		}
  
- 	if (errors == 15) { /* uncorrectable */
- 		/* Blank pages fail hw ECC checks */
--		if (is_blank(mtd, bufnum))
-+		if (is_blank(mtd, eccbuf_num))
- 			return 1;
- 
- 		/*
-@@ -273,7 +276,7 @@ static void fsl_ifc_run_command(struct mtd_info *mtd)
- 		dev_err(priv->dev, "NAND Flash Write Protect Error\n");
- 
- 	if (nctrl->eccread) {
--		int bufperpage = mtd->writesize / 512;
-+		int bufperpage = mtd->writesize / chip->ecc.size;
- 		int bufnum = (nctrl->page & priv->bufnum_mask) * bufperpage;
- 		int bufnum_end = bufnum + bufperpage - 1;
- 
++		if (column >= mtd->writesize) {
++			/* OOB area --> READOOB */
++			column -= mtd->writesize;
++			ifc_nand_ctrl->oob = 1;
++		}
+ 		out_be32(&ifc->ifc_nand.nand_fcr0, nand_fcr0);
+ 		set_addr(mtd, column, page_addr, ifc_nand_ctrl->oob);
+ 		return;
+@@ -466,7 +463,7 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 		int full_page;
+ 		if (ifc_nand_ctrl->oob) {
+ 			out_be32(&ifc->ifc_nand.nand_fbcr,
+-					ifc_nand_ctrl->index);
++				ifc_nand_ctrl->index - ifc_nand_ctrl->column);
+ 			full_page = 0;
+ 		} else {
+ 			out_be32(&ifc->ifc_nand.nand_fbcr, 0);
 -- 
 1.7.5.4
