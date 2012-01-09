@@ -1,27 +1,24 @@
-Return-Path: <swarren@nvidia.com>
-Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
- [IPv6:2001:470:1f0f:bd7::2])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3A0C8B6FAC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 05:47:02 +1100 (EST)
-From: Stephen Warren <swarren@nvidia.com>
-To: Michal Marek <mmarek@suse.cz>, Jon Loeliger <jdl@jdl.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/2] Kbuild: Use dtc's -d (dependency) option
-Date: Mon,  9 Jan 2012 11:38:15 -0700
-Message-Id: <1326134295-15547-2-git-send-email-swarren@nvidia.com>
-In-Reply-To: <1326134295-15547-1-git-send-email-swarren@nvidia.com>
-References: <1326134295-15547-1-git-send-email-swarren@nvidia.com>
-Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- Arnd Bergmann <arnd@arndb.de>, Aurelien Jacquiot <a-jacquiot@ti.com>,
- Devicetree Discuss <devicetree-discuss@lists.ozlabs.org>,
- microblaze-uclinux@itee.uq.edu.au, linux-kbuild@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Paul Mackerras <paulus@samba.org>, Mark Salter <msalter@redhat.com>,
- Stephen Warren <swarren@nvidia.com>, linuxppc-dev@lists.ozlabs.org,
- linux@lists.openrisc.net, linux-arm-kernel@lists.infradead.org
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+ by ozlabs.org (Postfix) with ESMTPS id 7C43EB6FDD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 09:47:29 +1100 (EST)
+Subject: Re: [RFC PATCH 15/16] KVM: PPC: booke: standard PPC floating point
+ support
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <4F0B6C91.1090102@freescale.com>
+Date: Mon, 9 Jan 2012 23:47:21 +0100
+Message-Id: <96605829-1BD3-4668-AEB8-7D27775C2868@suse.de>
+References: <20111221013445.GO8378@schlenkerla.am.freescale.net>
+ <F0432B7A-E742-48B0-8016-3F2D0A800553@suse.de>
+ <4F0B60A5.1040208@freescale.com>
+ <08DCCAC0-82FA-46FC-974C-E7CCA53474A3@suse.de>
+ <4F0B6C91.1090102@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,112 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This hooks dtc into Kbuild's dependency system.
 
-Thus, for example, "make dtbs" will rebuild tegra-harmony.dtb if only
-tegra20.dtsi has changed yet tegra-harmony.dts has not. The previous
-lack of this feature recently caused me to have very confusing "git
-bisect" results.
+On 09.01.2012, at 23:39, Scott Wood wrote:
 
-For ARM, it's obvious what to add to $(targets). I'm not familiar enough
-with other architectures to know what to add there. Powerpc appears to
-already add various .dtb files into $(targets), but the other archs may
-need something added to $(targets) to work.
+> On 01/09/2012 04:17 PM, Alexander Graf wrote:
+>>=20
+>> On 09.01.2012, at 22:48, Scott Wood wrote:
+>>=20
+>>> On 01/09/2012 11:48 AM, Alexander Graf wrote:
+>>>>=20
+>>>> Do you think it's possible to combine this with the book3s_pr code, =
+so we don't duplicate too much here?
+>>>=20
+>>> book3s_pr is a bit different in that it can trap when the guest sets
+>>> MSR[FP].
+>>=20
+>> Ah, there's no doorbell? So you always have to swap fpu registers? =
+You still have to enable it manually when preempting in, right? IIRC =
+ppc32 does lazy fpu activation.
+>=20
+> Right.
+>=20
+> Preempting in is handled by calling kvmppc_load_guest_fp() (which =
+should
+> be renamed to be booke-specific, since the semantics are tied to
+> booke.c) from kvmppc_core_vcpu_load() in e500mc.c.
 
-Signed-off-by: Stephen Warren <swarren@nvidia.com>
----
-I have only tested this series for ARM.
+Ah, and that one's called on sched_in. All is well then :).
 
- arch/arm/boot/Makefile        |    6 ++++--
- arch/c6x/boot/Makefile        |    2 +-
- arch/microblaze/boot/Makefile |    2 +-
- arch/openrisc/boot/Makefile   |    4 ++--
- arch/powerpc/boot/Makefile    |    4 ++--
- scripts/Makefile.lib          |    2 +-
- 6 files changed, 11 insertions(+), 9 deletions(-)
+>=20
+>>>> I'm having a hard time to grasp when shared->msr, shadow_msr and =
+regs->msr is used in your code :).
+>>>=20
+>>> shadow_msr is the real MSR.
+>>>=20
+>>> shared->msr is the guest's view of MSR.
+>=20
+> Correction -- this applies to PR-mode (e500v2).
+>=20
+> In GS-mode, shadow_msr is not used.  The guest sees the real MSR (hw
+> silently prevents it from modifying certain bits), which gets saved on
+> exit into shared->msr.
 
-diff --git a/arch/arm/boot/Makefile b/arch/arm/boot/Makefile
-index 1338cf0..c72730d 100644
---- a/arch/arm/boot/Makefile
-+++ b/arch/arm/boot/Makefile
-@@ -62,9 +62,11 @@ $(obj)/zImage-dtb.%:	$(obj)/%.dtb $(obj)/zImage
- 
- endif
- 
-+targets += $(dtb-y)
-+
- # Rule to build device tree blobs
--$(obj)/%.dtb: $(src)/dts/%.dts
--	$(call cmd,dtc)
-+$(obj)/%.dtb: $(src)/dts/%.dts FORCE
-+	$(call if_changed_dep,dtc)
- 
- $(obj)/dtbs: $(addprefix $(obj)/, $(dtb-y))
- 
-diff --git a/arch/c6x/boot/Makefile b/arch/c6x/boot/Makefile
-index ecca820..6891257 100644
---- a/arch/c6x/boot/Makefile
-+++ b/arch/c6x/boot/Makefile
-@@ -13,7 +13,7 @@ obj-y += linked_dtb.o
- endif
- 
- $(obj)/%.dtb: $(src)/dts/%.dts FORCE
--	$(call cmd,dtc)
-+	$(call if_changed_dep,dtc)
- 
- quiet_cmd_cp = CP      $< $@$2
- 	cmd_cp = cat $< >$@$2 || (rm -f $@ && echo false)
-diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
-index 4c4e58e..0c796cf 100644
---- a/arch/microblaze/boot/Makefile
-+++ b/arch/microblaze/boot/Makefile
-@@ -53,6 +53,6 @@ $(obj)/simpleImage.%: vmlinux FORCE
- DTC_FLAGS := -p 1024
- 
- $(obj)/%.dtb: $(src)/dts/%.dts FORCE
--	$(call cmd,dtc)
-+	$(call if_changed_dep,dtc)
- 
- clean-files += *.dtb simpleImage.*.unstrip linux.bin.ub
-diff --git a/arch/openrisc/boot/Makefile b/arch/openrisc/boot/Makefile
-index 98ca185..0995835 100644
---- a/arch/openrisc/boot/Makefile
-+++ b/arch/openrisc/boot/Makefile
-@@ -11,5 +11,5 @@ clean-files := *.dtb.S
- 
- #DTC_FLAGS ?= -p 1024
- 
--$(obj)/%.dtb: $(src)/dts/%.dts
--	$(call cmd,dtc)
-+$(obj)/%.dtb: $(src)/dts/%.dts FORCE
-+	$(call if_changed_dep,dtc)
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 15986e7..8844a17 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -345,8 +345,8 @@ $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
- 	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb)
- 
- # Rule to build device tree blobs
--$(obj)/%.dtb: $(src)/dts/%.dts
--	$(call cmd,dtc)
-+$(obj)/%.dtb: $(src)/dts/%.dts FORCE
-+	$(call if_changed_dep,dtc)
- 
- # If there isn't a platform selected then just strip the vmlinux.
- ifeq (,$(image-y))
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 5d986d9..7bae316 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -264,7 +264,7 @@ $(obj)/%.dtb.S: $(obj)/%.dtb
- 	$(call cmd,dt_S_dtb)
- 
- quiet_cmd_dtc = DTC     $@
--cmd_dtc = $(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 $(DTC_FLAGS) $<
-+cmd_dtc = $(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 $(DTC_FLAGS) -d $(depfile) $<
- 
- # Bzip2
- # ---------------------------------------------------------------------------
--- 
-1.7.0.4
+Hrm. Can we maybe #ifdef out shadow_msr on HV then? I'm really getting =
+confused with having 3 potential msr variables in the vcpu struct.
+
+
+Alex
