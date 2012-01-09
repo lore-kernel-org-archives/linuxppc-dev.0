@@ -1,19 +1,21 @@
-Return-Path: <B32579@freescale.com>
-Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
- [65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 745DFB6FCC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 23:24:38 +1100 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-mtd@lists.infradead.org>
-Subject: [PATCH 2/2][v2] mtd/nand: Fix IFC driver to support 2K NAND page
-Date: Mon, 9 Jan 2012 17:54:26 +0530
-Message-ID: <1326111866-13120-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <n-a-zhubr@yandex.ru>
+Received: from forward11.mail.yandex.net (forward11.mail.yandex.net
+ [95.108.130.93]) by ozlabs.org (Postfix) with ESMTP id 96313B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2012 23:36:57 +1100 (EST)
+Message-ID: <4F0AE08D.3040701@yandex.ru>
+Date: Mon, 09 Jan 2012 16:41:49 +0400
+From: Nikolai Zhubr <n-a-zhubr@yandex.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+To: Peter Chen <peter.chen@freescale.com>
+Subject: Re: Driver(s) for Synopsys' DesignWare USB OTG
+References: <4F088122.4080505@yandex.ru>
+ <CAL411-riz_Cf1hYMYwEKrJKNHTV3EYup4u5DjmBhdpH+4xcd7g@mail.gmail.com>
+ <4F099291.6060803@yandex.ru> <20120109021220.GA10198@nchen-desktop>
+In-Reply-To: <20120109021220.GA10198@nchen-desktop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: support@amlogic.com, linux-usb@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, openwrt-devel@lists.openwrt.org,
+ Peter Chen <hzpeterchen@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,73 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-1) OOB area should be updated irrespective of NAND page size. Earlier it was
-updated only for 512byte NAND page.
+Hello Peter,
 
-2) During OOB update fbcr should be equal to OOB size.
+09.01.2012 6:12, Peter Chen:
+>>> I am not sure we can combine all Synopsys USB drivers to single file, but we
+>>
+>> Synopsys driver which I examine consists of 16 files (each of 2
+>> versions), 200k lines total. I've already perpared some few smaller
+>> files for version merging. So probably it is doable, but quite a lot
+>> of work, therefore I wouldn't like it to be wasted.
+> I mean one file is just a common udc driver for all Synopsys, not all usb file.
+> For ehci, I think it will be easier to use single file as well as
+> some specific SoC's quirks if needed.
+> For udc, as there is no standard spec for how usb device should be designed,
+> maybe different Synopsys IPs have a little different for work flow.
+> For otg, it  should be not difficult after we split PHY's operation
+> from the otg, as common otg operation is the same.
+>>
+>>> can try combine similar IP versions to one file, this work may need all Synopsys
+>>> USB IP driver maintainer work together.
+>>
+>> Exactly. This is why I'm now trying to find all relevant people to
+>> begin with.
+> I know someone(@Pengutronix and @linux.intel.com) is doing that. I think first
+> we should find which driver file at current code base is most capable and
+> compatible. I would like to help it, and verify it at Freescale i.MX SoCs.
 
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch next)
+Ok. Because my resources are limited (and my knowledge is actually 
+limited too) I'll list what exactly I'm able (and willing) to do:
 
- This patch is created on top of IFC driver patch (already floated in mailing
- list). Please find their link:
- http://patchwork.ozlabs.org/patch/133315/
- http://patchwork.ozlabs.org/patch/133316/
+- split formatting/naming/uninteresting changes from algorythmical 
+changes, prepare clean diffs as necessary (boring work, but anyway);
+- bisect changes which make the driver stop working on my tablet;
+- try whichever driver parameters and see what happens to my tablet;
+- connect the tablet to a regular linux PC with USB cable, do some 
+tests, capture traffic dumps as necessary;
+- connect some devices to the tablet, do tests, report results;
 
- Tested on P1010RDB
+and with some luck:
+- prepare bufixes (depending very much on how simple is the bug).
 
-  Changes for v2: Incorporated Scott's comments
- 	- Added missed NAND_CMD_READOOB
-	- Updated function as per Scott's advice
+So basically my effort would probably only be usefull in cooperation 
+with someone with more knowledge and understanding of the situation in 
+whole. Otherwise it would be more wasting of time.
 
- drivers/mtd/nand/fsl_ifc_nand.c |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
+If usb issues were solved, it might make some sense to try to create 
+e.g. a generic openwrt target for 8726m-based tablet. (Of course it 
+wouldn't allow to use the device for its intended purpose yet, but still 
+might be interesting as kind of devel/testing reference option)
 
-diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
-index c0529ea..52bd706d 100644
---- a/drivers/mtd/nand/fsl_ifc_nand.c
-+++ b/drivers/mtd/nand/fsl_ifc_nand.c
-@@ -440,22 +440,19 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 			out_be32(&ifc->ifc_nand.nand_fir1,
- 				 (IFC_FIR_OP_CW1 << IFC_NAND_FIR1_OP5_SHIFT));
- 
--			if (column >= mtd->writesize) {
--				/* OOB area --> READOOB */
--				column -= mtd->writesize;
--				nand_fcr0 |= NAND_CMD_READOOB <<
--						IFC_NAND_FCR0_CMD0_SHIFT;
--				ifc_nand_ctrl->oob = 1;
--			} else if (column < 256)
--				/* First 256 bytes --> READ0 */
-+			if (column >= mtd->writesize)
- 				nand_fcr0 |=
--				NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT;
-+				NAND_CMD_READOOB << IFC_NAND_FCR0_CMD0_SHIFT;
- 			else
--				/* Second 256 bytes --> READ1 */
- 				nand_fcr0 |=
--				NAND_CMD_READ1 << IFC_NAND_FCR0_CMD0_SHIFT;
-+				NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT;
- 		}
- 
-+		if (column >= mtd->writesize) {
-+			/* OOB area --> READOOB */
-+			column -= mtd->writesize;
-+			ifc_nand_ctrl->oob = 1;
-+		}
- 		out_be32(&ifc->ifc_nand.nand_fcr0, nand_fcr0);
- 		set_addr(mtd, column, page_addr, ifc_nand_ctrl->oob);
- 		return;
-@@ -466,7 +463,7 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
- 		int full_page;
- 		if (ifc_nand_ctrl->oob) {
- 			out_be32(&ifc->ifc_nand.nand_fbcr,
--					ifc_nand_ctrl->index);
-+				ifc_nand_ctrl->index - ifc_nand_ctrl->column);
- 			full_page = 0;
- 		} else {
- 			out_be32(&ifc->ifc_nand.nand_fbcr, 0);
--- 
-1.7.5.4
+
+Thank you.
+Nikolai.
+
+
+>>
+>> Thank you.
+>> Nikolai.
+>>
+>> Please CC me, I'm not subscribed to the lists.
+>>
+>>
+>>>
+>>>
+>>>> Thank you.
+>>>> Nikolai.
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>
+>>>
+>>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>
