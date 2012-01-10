@@ -1,19 +1,20 @@
-Return-Path: <smitha.vanga@wipro.com>
-Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
- [203.91.198.75])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AD7BDB6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 20:37:41 +1100 (EST)
-From: <smitha.vanga@wipro.com>
-To: <wd@denx.de>
-Subject: Mac address in the DT
-Date: Tue, 10 Jan 2012 09:37:14 +0000
-Message-ID: <40631E9A2581F14BA60888C87A76A1FE01D3F2@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <20120109224027.A8B591167AA4@gemini.denx.de>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id EEFABB6FB9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 20:47:49 +1100 (EST)
+In-Reply-To: <40631E9A2581F14BA60888C87A76A1FE01D3F2@HYD-MKD-MBX4.wipro.com>
+References: <20120109224027.A8B591167AA4@gemini.denx.de>
+ <40631E9A2581F14BA60888C87A76A1FE01D3F2@HYD-MKD-MBX4.wipro.com>
+Subject: Re: Mac address in the DT
+To: <smitha.vanga@wipro.com>
+Message-ID: <OFDB5E45AF.2DA9B286-ONC1257981.0035AFE6-C1257981.0035CCF2@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 10 Jan 2012 10:47:38 +0100
 MIME-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi,
+<smitha.vanga@wipro.com> wrote on 2012/01/10 10:37:14:
+>
+>
+> Hi,
+>
+> The fdt_fixup_ethernet() is not supported in the older version of u-boot. So how to go about it in u-boot 1.3.0 version.
 
-The fdt_fixup_ethernet() is not supported in the older version of u-boot. So=
- how to go about it in u-boot 1.3.0 version.
-
-Regards,
-Smitha
-Please do not print this email unless it is absolutely necessary. =0A=
-=0A=
-The information contained in this electronic message and any attachments to=
- this message are intended for the exclusive use of the addressee(s) and may=
- contain proprietary, confidential or privileged information. If you are not=
- the intended recipient, you should not disseminate, distribute or copy this=
- e-mail. Please notify the sender immediately and destroy all copies of this=
- message and any attachments. =0A=
-=0A=
-WARNING: Computer viruses can be transmitted via email. The recipient should=
- check this email and any attachments for the presence of viruses. The compa=
-ny accepts no liability for any damage caused by any virus transmitted by th=
-is email. =0A=
-=0A=
-www.wipro.com
+Upgrade or find out how its done in your older version, I have no idea.
