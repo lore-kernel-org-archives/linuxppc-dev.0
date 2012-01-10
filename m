@@ -1,20 +1,34 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 81D14B6FAB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 19:37:22 +1100 (EST)
-Message-ID: <4F0BF8BB.4080309@redhat.com>
-Date: Tue, 10 Jan 2012 10:37:15 +0200
-From: Avi Kivity <avi@redhat.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC PATCH 16/16] KVM: PPC: e500mc support
-References: <20111221013447.GP8378@schlenkerla.am.freescale.net>
- <4F0B16D7.2000709@redhat.com> <4F0B4002.4050407@freescale.com>
-In-Reply-To: <4F0B4002.4050407@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Liu Yu <yu.liu@freescale.com>, kvm@vger.kernel.org, agraf@suse.de,
- kvm-ppc@vger.kernel.org, Varun Sethi <varun.sethi@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <m.szyprowski@samsung.com>
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14]) by ozlabs.org (Postfix) with ESMTP id 66F76B6FB9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 19:42:37 +1100 (EST)
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Received: from euspt1 ([210.118.77.14]) by mailout4.w1.samsung.com
+ (Sun Java(tm) System Messaging Server 6.3-8.04 (built Jul 29 2009; 32bit))
+ with ESMTP id <0LXK00HGYQUWG430@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 10 Jan 2012 08:42:32 +0000 (GMT)
+Received: from linux.samsung.com ([106.116.38.10])
+ by spt1.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
+ 2004)) with ESMTPA id <0LXK003JRQUW88@spt1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 10 Jan 2012 08:42:32 +0000 (GMT)
+Date: Tue, 10 Jan 2012 09:42:28 +0100
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH 00/14] DMA-mapping framework redesign preparation
+In-reply-to: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org
+Message-id: <012501cccf73$c90246a0$5b06d3e0$%szyprowski@samsung.com>
+References: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
+Cc: linux-arch@vger.kernel.org, 'Stephen Rothwell' <sfr@canb.auug.org.au>,
+ linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
+ 'Arnd Bergmann' <arnd@arndb.de>, linux-sh@vger.kernel.org, x86@kernel.org,
+ Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ 'Jonathan Corbet' <corbet@lwn.net>, linaro-mm-sig@lists.linaro.org,
+ linux-mm@kvack.org, 'Kyungmin Park' <kyungmin.park@samsung.com>,
+ linux-mips@linux-mips.org, microblaze-uclinux@itee.uq.edu.au,
+ sparclinux@vger.kernel.org, 'Thomas Gleixner' <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, 'Andrew Morton' <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org, discuss@x86-64.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +38,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/09/2012 09:29 PM, Scott Wood wrote:
-> > 
-> > Best to include their signoffs, if possible.
->
-> These patches are based in part on a bunch of different patches from
-> these people (for which I did receive signoffs).  I was reluctant to put
-> their signoff directly on the new patches, since I didn't want to make
-> it look like they had submitted the patch in anything resembling its
-> current form.  I wanted to give them credit for what they did, but not
-> blame for what I did with their code.
->
+Hello,
 
-Signoffs are for assigning neither credit nor blame, but for attributing
-authorship and affirming that a contributor has the right to contribute
-code or pass it along.  Please read the DCO at
-https://lwn.net/Articles/437739/.
+To help everyone in testing and adapting our patches for his hardware 
+platform I've rebased our patches onto the latest v3.2 Linux kernel and
+prepared a few GIT branches in our public repository. These branches
+contain our memory management related patches posted in the following
+threads:
 
-It's okay to miss them from time to time, especially for established
-contributors, but avoid it whenever possible.
+"[PATCHv18 0/11] Contiguous Memory Allocator":
+http://www.spinics.net/lists/linux-mm/msg28125.html
+later called CMAv18,
 
+"[PATCH 00/14] DMA-mapping framework redesign preparation":
+http://www.spinics.net/lists/linux-sh/msg09777.html
+and
+"[PATCH 0/8 v4] ARM: DMA-mapping framework redesign":
+http://www.spinics.net/lists/arm-kernel/msg151147.html
+with the following update:
+http://www.spinics.net/lists/arm-kernel/msg154889.html
+later called DMAv5.
+
+These branches are available in our public GIT repository:
+
+git://git.infradead.org/users/kmpark/linux-samsung
+http://git.infradead.org/users/kmpark/linux-samsung/
+
+The following branches are available:
+
+1) 3.2-cma-v18
+Vanilla Linux v3.2 with fixed CMA v18 patches (first patch replaced
+with the one from v17 to fix SMP issues, see the respective thread).
+
+2) 3.2-dma-v5
+Vanilla Linux v3.2 + iommu/next (IOMMU maintainer's patches) branch
+with DMA-preparation and DMA-mapping framework redesign patches.
+
+3) 3.2-cma-v18-dma-v5
+Previous two branches merged together (DMA-mapping on top of CMA)
+
+4) 3.2-cma-v18-dma-v5-exynos
+Previous branch rebased on top of iommu/next + kgene/for-next (Samsung
+SoC platform maintainer's patches) with new Exynos4 IOMMU driver by 
+KyongHo Cho and relevant glue code.
+
+5) 3.2-dma-v5-exynos
+Branch from point 2 rebased on top of iommu/next + kgene/for-next 
+(Samsung SoC maintainer's patches) with new Exynos4 IOMMU driver by 
+KyongHo Cho and relevant glue code.
+
+I hope everyone will find a branch that suits his needs. :)
+
+Best regards
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Marek Szyprowski
+Samsung Poland R&D Center
