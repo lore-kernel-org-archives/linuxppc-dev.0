@@ -1,26 +1,12 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
- by ozlabs.org (Postfix) with ESMTPS id 06CEBB6FBC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2012 09:56:23 +1100 (EST)
-Subject: Re: [RFC PATCH 15/16] KVM: PPC: booke: standard PPC floating point
- support
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <4F0B700B.7020006@freescale.com>
-Date: Mon, 9 Jan 2012 23:56:15 +0100
-Message-Id: <71600EC1-EE7C-417D-93DD-C1BBC9E5E760@suse.de>
-References: <20111221013445.GO8378@schlenkerla.am.freescale.net>
- <F0432B7A-E742-48B0-8016-3F2D0A800553@suse.de>
- <4F0B60A5.1040208@freescale.com>
- <08DCCAC0-82FA-46FC-974C-E7CCA53474A3@suse.de>
- <4F0B6C91.1090102@freescale.com>
- <96605829-1BD3-4668-AEB8-7D27775C2868@suse.de>
- <4F0B700B.7020006@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <anton@samba.org>
+Date: Tue, 10 Jan 2012 11:29:15 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, paulmck@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: Fix RCU idle and hcall tracing
+Message-ID: <20120110112915.387e8b1c@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,46 +17,107 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 09.01.2012, at 23:54, Scott Wood wrote:
+Tracepoints should not be called inside an rcu_idle_enter/rcu_idle_exit
+region. Since pSeries calls H_CEDE in the idle loop, we were violating
+this rule.
 
-> On 01/09/2012 04:47 PM, Alexander Graf wrote:
->>=20
->> On 09.01.2012, at 23:39, Scott Wood wrote:
->>=20
->>> On 01/09/2012 04:17 PM, Alexander Graf wrote:
->>>>=20
->>>> On 09.01.2012, at 22:48, Scott Wood wrote:
->>>>=20
->>>>> On 01/09/2012 11:48 AM, Alexander Graf wrote:
->>>>>> I'm having a hard time to grasp when shared->msr, shadow_msr and =
-regs->msr is used in your code :).
->>>>>=20
->>>>> shadow_msr is the real MSR.
->>>>>=20
->>>>> shared->msr is the guest's view of MSR.
->>>=20
->>> Correction -- this applies to PR-mode (e500v2).
->>>=20
->>> In GS-mode, shadow_msr is not used.  The guest sees the real MSR (hw
->>> silently prevents it from modifying certain bits), which gets saved =
-on
->>> exit into shared->msr.
->>=20
->> Hrm. Can we maybe #ifdef out shadow_msr on HV then? I'm really =
-getting confused with having 3 potential msr variables in the vcpu =
-struct.
->=20
-> An ifdef would take us further down the road of not being able to
-> support both in the same kernel image (not sure whether that's a
-> long-term goal -- probably won't happen any time soon with =
-e500v2+e500mc
-> even disregarding KVM, but maybe it'll be relevant on some other =
-chips),
-> and in general increase the mess in the struct definition.  How about =
-a
-> comment?
+commit a7b152d5342c (powerpc: Tell RCU about idle after hcall tracing)
+tried to work around it by delaying the rcu_idle_enter until after we
+called the hcall tracepoint, but there are a number of issues with it.
 
-Well, I'd like to make sure we don't accidentally access the wrong =
-field. But yes, a comment should be ok.
+The hcall tracepoint trampoline code is called conditionally when the
+tracepoint is enabled. If the tracepoint is not enabled we never call
+rcu_idle_enter. The idle_uses_rcu check was also done at compile time
+which breaks multiplatform builds.
 
-Alex
+The simple fix is to avoid tracing H_CEDE and rely on other tracepoints
+and the hypervisor dispatch trace log to work out if we called H_CEDE.
+
+This fixes a hang during boot on pSeries.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-build/arch/powerpc/kernel/idle.c
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/idle.c	2012-01-10 11:07:22.091615183 +1100
++++ linux-build/arch/powerpc/kernel/idle.c	2012-01-10 11:07:57.172264229 +1100
+@@ -50,12 +50,6 @@ static int __init powersave_off(char *ar
+ }
+ __setup("powersave=off", powersave_off);
+ 
+-#if defined(CONFIG_PPC_PSERIES) && defined(CONFIG_TRACEPOINTS)
+-static const bool idle_uses_rcu = 1;
+-#else
+-static const bool idle_uses_rcu;
+-#endif
+-
+ /*
+  * The body of the idle task.
+  */
+@@ -67,8 +61,7 @@ void cpu_idle(void)
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 	while (1) {
+ 		tick_nohz_idle_enter();
+-		if (!idle_uses_rcu)
+-			rcu_idle_enter();
++		rcu_idle_enter();
+ 
+ 		while (!need_resched() && !cpu_should_die()) {
+ 			ppc64_runlatch_off();
+@@ -106,8 +99,7 @@ void cpu_idle(void)
+ 
+ 		HMT_medium();
+ 		ppc64_runlatch_on();
+-		if (!idle_uses_rcu)
+-			rcu_idle_exit();
++		rcu_idle_exit();
+ 		tick_nohz_idle_exit();
+ 		preempt_enable_no_resched();
+ 		if (cpu_should_die())
+Index: linux-build/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- linux-build.orig/arch/powerpc/platforms/pseries/lpar.c	2012-01-10 11:07:22.079614961 +1100
++++ linux-build/arch/powerpc/platforms/pseries/lpar.c	2012-01-10 11:16:55.710226236 +1100
+@@ -546,6 +546,13 @@ void __trace_hcall_entry(unsigned long o
+ 	unsigned long flags;
+ 	unsigned int *depth;
+ 
++	/*
++	 * We cannot call tracepoints inside RCU idle regions which
++	 * means we must not trace H_CEDE.
++	 */
++	if (opcode == H_CEDE)
++		return;
++
+ 	local_irq_save(flags);
+ 
+ 	depth = &__get_cpu_var(hcall_trace_depth);
+@@ -556,8 +563,6 @@ void __trace_hcall_entry(unsigned long o
+ 	(*depth)++;
+ 	preempt_disable();
+ 	trace_hcall_entry(opcode, args);
+-	if (opcode == H_CEDE)
+-		rcu_idle_enter();
+ 	(*depth)--;
+ 
+ out:
+@@ -570,6 +575,9 @@ void __trace_hcall_exit(long opcode, uns
+ 	unsigned long flags;
+ 	unsigned int *depth;
+ 
++	if (opcode == H_CEDE)
++		return;
++
+ 	local_irq_save(flags);
+ 
+ 	depth = &__get_cpu_var(hcall_trace_depth);
+@@ -578,8 +586,6 @@ void __trace_hcall_exit(long opcode, uns
+ 		goto out;
+ 
+ 	(*depth)++;
+-	if (opcode == H_CEDE)
+-		rcu_idle_exit();
+ 	trace_hcall_exit(opcode, retval, retbuf);
+ 	preempt_enable();
+ 	(*depth)--;
