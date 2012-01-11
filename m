@@ -1,25 +1,22 @@
-Return-Path: <B29237@freescale.com>
+Return-Path: <B21989@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 21EEAB6EF2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2012 18:55:12 +1100 (EST)
-From: Shi Xuelin-B29237 <B29237@freescale.com>
-To: "iws@ovro.caltech.edu" <iws@ovro.caltech.edu>
-Subject: RE: [PATCH]     fsldma: fix performance degradation by optimizing
- spinlock use.
-Date: Wed, 11 Jan 2012 07:54:55 +0000
-Message-ID: <DBB740589CE8814680DECFE34BE197AB1665A3@039-SN1MPN1-006.039d.mgd.msft.net>
-References: <1324879263-11845-1-git-send-email-b29237@freescale.com>
-In-Reply-To: <1324879263-11845-1-git-send-email-b29237@freescale.com>
-Content-Type: text/plain; charset="iso-2022-jp"
+ by ozlabs.org (Postfix) with ESMTPS id A941FB6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2012 20:12:09 +1100 (EST)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: "cjb@laptop.org" <cjb@laptop.org>, "linux-mmc@vger.kernel.org"
+ <linux-mmc@vger.kernel.org>
+Subject: RE: [PATCH][v2] mmc:sdhci: restore the enabled dma when do reset all
+Date: Wed, 11 Jan 2012 09:12:03 +0000
+Message-ID: <ED492CCEAF882048BC2237DE806547C901FD38@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1325147580-31281-1-git-send-email-Shaohui.Xie@freescale.com> 
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Shaohui-B21989 <B21989@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +26,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Iris,
+Hello, Chris,
 
-As we discussed in the previous patch, I add one smp_mb() in fsl_tx_status.
-In my testing with iozone, this smp_mb() could cause 1%~2% performance degr=
-adation.
-Anyway it is acceptable for me. Do you have any other comments?
+May I have your attention to this patch, please?
 
-Thanks,
-Forrest
 
------Original Message-----
-From: Shi Xuelin-B29237=20
-Sent: 2011=1B$BG/=1B(B12=1B$B7n=1B(B26=1B$BF|=1B(B 14:01
-To: iws@ovro.caltech.edu; vinod.koul@intel.com; dan.j.williams@intel.com; l=
-inuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-Cc: Shi Xuelin-B29237
-Subject: [PATCH] fsldma: fix performance degradation by optimizing spinlock=
- use.
+Best Regards,=20
+Shaohui Xie=20
 
-From: Forrest shi <b29237@freescale.com>
 
-    dma status check function fsl_tx_status is heavily called in
-    a tight loop and the desc lock in fsl_tx_status contended by
-    the dma status update function. this caused the dma performance
-    degrades much.
-
-    this patch releases the lock in the fsl_tx_status function, and
-    introduce the smp_mb() to avoid possible memory inconsistency.
-
-    Signed-off-by: Forrest Shi <xuelin.shi@freescale.com>
----
- drivers/dma/fsldma.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index 8a78154..008=
-fb5e 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -986,15 +986,11 @@ static enum dma_status fsl_tx_status(struct dma_chan =
-*dchan,
- 	struct fsldma_chan *chan =3D to_fsl_chan(dchan);
- 	dma_cookie_t last_complete;
- 	dma_cookie_t last_used;
--	unsigned long flags;
--
--	spin_lock_irqsave(&chan->desc_lock, flags);
-=20
-	last_complete =3D chan->completed_cookie;
-+	smp_mb();
-	last_used =3D dchan->cookie;
-=20
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
--
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 	return dma_async_is_complete(cookie, last_complete, last_used); }
---
-1.7.0.4
+>-----Original Message-----
+>From: Xie Shaohui-B21989
+>Sent: Friday, January 06, 2012 3:58 PM
+>To: 'cjb@laptop.org'; linux-mmc@vger.kernel.org
+>Cc: linuxppc-dev@lists.ozlabs.org; Xie Shaohui-B21989
+>Subject: RE: [PATCH][v2] mmc:sdhci: restore the enabled dma when do reset
+>all
+>
+>Hello, Chris,
+>
+>Do you have any concern for this patch?
+>
+>
+>Best Regards,
+>Shaohui Xie
+>
+>>-----Original Message-----
+>>From: Xie Shaohui-B21989
+>>Sent: Thursday, December 29, 2011 4:33 PM
+>>To: linux-mmc@vger.kernel.org
+>>Cc: linuxppc-dev@lists.ozlabs.org; Xie Shaohui-B21989
+>>Subject: [PATCH][v2] mmc:sdhci: restore the enabled dma when do reset
+>>all
+>>
+>>If dma is enabled, it'll be cleared when reset all is performed, this
+>>can be observed on some platforms, such as P2041 which has a version
+>>2.3 controller, but platform like P4080 which has a version 2.2
+>>controller, does not suffer this, so we will check if the dma is
+>>enabled, we should restore it after reset all.
+>>
+>>Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+>>---
+>>based on http://git.kernel.org/pub/scm/linux/kernel/git/cjb/mmc.git,
+>>branch 'for-linus'.
+>>
+>>changes for v2:
+>>call the wrapper API instead of access the register directly.
+>>
+>> drivers/mmc/host/sdhci.c |    5 +++++
+>> 1 files changed, 5 insertions(+), 0 deletions(-)
+>>
+>>diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c index
+>>19ed580..cf6a048 100644
+>>--- a/drivers/mmc/host/sdhci.c
+>>+++ b/drivers/mmc/host/sdhci.c
+>>@@ -214,6 +214,11 @@ static void sdhci_reset(struct sdhci_host *host,
+>>u8
+>>mask)
+>>
+>> 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+>> 		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
+>>+
+>>+	if (host->flags & (SDHCI_USE_SDMA | SDHCI_USE_ADMA)) {
+>>+		if ((host->ops->enable_dma) && (mask & SDHCI_RESET_ALL))
+>>+			host->ops->enable_dma(host);
+>>+	}
+>> }
+>>
+>> static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios);
+>>--
+>>1.6.4
