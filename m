@@ -1,18 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9F9E6B6EF1
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2012 12:05:48 +1100 (EST)
-Message-ID: <1326243935.23910.85.camel@pasglop>
-Subject: [PATCH] cpuidle: Default y for pseries
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 11 Jan 2012 12:05:35 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Shaohua Li <shaohua.li@intel.com>,
- linux-pm@vger.kernel.org, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Return-Path: <B29983@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+ [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 90652B6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2012 13:41:55 +1100 (EST)
+Received: from mail14-am1 (localhost [127.0.0.1])	by mail14-am1-R.bigfish.com
+ (Postfix) with ESMTP id C412F34011D	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 11 Jan 2012 02:41:48 +0000 (UTC)
+Received: from AM1EHSMHS004.bigfish.com (unknown [10.3.201.249])	by
+ mail14-am1.bigfish.com (Postfix) with ESMTP id A516A640043	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2012 02:41:48 +0000 (UTC)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx: Add P1024rdb dts support
+Date: Wed, 11 Jan 2012 02:41:46 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B024805@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1326098258-32097-1-git-send-email-b29983@freescale.com>
+ <4F0B561A.7060903@freescale.com>
+ <D07C73A334FF604B95B3CBD2A545D07B02444B@039-SN2MPN1-013.039d.mgd.msft.net>
+ <4F0C7928.1020803@freescale.com>
+In-Reply-To: <4F0C7928.1020803@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We just replaced the pseries platform idle loops with a cpuidle backend,
-however that means that you won't get any power saving and won't return
-any unused idle time to the hypervisor unless cpuidle is enabled.
 
-Thus is should default to y when pseries is enabled. I prefer that to
-a select so we can still make it modular if we want to.
+> >
+> > P1020rdb has vitesse-7385 switch.
+>=20
+> I'm talking about the SoC, not the board.
+>=20
+> > fsl/p1020si-post.dtsi can be used for both boards.
+>=20
+> What are you basing this on?  Has someone looked over both manuals in
+> detail and concluded that every device described is 100% compatible?
+>=20
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+I ported this from the dts in kernel 2.6.35.=20
+I found they are 100% compatible from dts point of view.
 
-Linus, do you want to just pick that up or should I put it into powerpc.git
-and ask you to pull ? I will have 2 or 3 other fixes there later today,
-but I wanted to make sure you were ok with the approach with this
-specific one.
-
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 7dbc4a8..62ca70d 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -1,7 +1,8 @@
- 
- config CPU_IDLE
- 	bool "CPU idle PM support"
--	default ACPI
-+	default y if ACPI
-+	default y if PPC_PSERIES
- 	help
- 	  CPU idle is a generic framework for supporting software-controlled
- 	  idle processor power management.  It includes modular cross-platform
+Regards,
+Yuantian
