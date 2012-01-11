@@ -1,30 +1,20 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp02.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7526FB6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 06:10:35 +1100 (EST)
-Received: from /spool/local
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Wed, 11 Jan 2012 17:10:25 -0200
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q0BJ6j6a2736184
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2012 16:06:45 -0300
-Received: from d24av03.br.ibm.com (loopback [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q0BJAUdW030168
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2012 17:10:31 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] ppc/eeh: fix crash when error happens during device probe
-Date: Wed, 11 Jan 2012 17:09:58 -0200
-Message-Id: <1326308998-24263-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- linux-kernel@vger.kernel.org,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Return-Path: <cjb@laptop.org>
+Received: from void.printf.net (void.printf.net [89.145.121.20])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 7F175B6EF7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 06:59:13 +1100 (EST)
+From: Chris Ball <cjb@laptop.org>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH][v2] mmc:sdhci: restore the enabled dma when do reset all
+References: <1325147580-31281-1-git-send-email-Shaohui.Xie@freescale.com>
+Date: Wed, 11 Jan 2012 14:25:34 -0500
+In-Reply-To: <1325147580-31281-1-git-send-email-Shaohui.Xie@freescale.com>
+ (Shaohui Xie's message of "Thu, 29 Dec 2011 16:33:00 +0800")
+Message-ID: <m2zkdudosx.fsf@bob.laptop.org>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mmc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,51 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EEH may happen during a PCI driver probe. If the driver is trying to
-access some register in a loop, the EEH code will try to print the
-driver name. But the driver pointer in struct pci_dev is not set until
-probe returns successfully.
+Hi Shaohui,
 
-Use a function to test if the device and the driver pointer is NULL
-before accessing the driver's name.
+On Thu, Dec 29 2011, Shaohui Xie wrote:
+> If dma is enabled, it'll be cleared when reset all is performed, this can
+> be observed on some platforms, such as P2041 which has a version 2.3
+> controller, but platform like P4080 which has a version 2.2 controller,
+> does not suffer this, so we will check if the dma is enabled, we should
+> restore it after reset all.
+>
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> ---
+> based on http://git.kernel.org/pub/scm/linux/kernel/git/cjb/mmc.git,
+> branch 'for-linus'.
+>
+> changes for v2:
+> call the wrapper API instead of access the register directly.
+>
+>  drivers/mmc/host/sdhci.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index 19ed580..cf6a048 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -214,6 +214,11 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+>  
+>  	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+>  		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
+> +
+> +	if (host->flags & (SDHCI_USE_SDMA | SDHCI_USE_ADMA)) {
+> +		if ((host->ops->enable_dma) && (mask & SDHCI_RESET_ALL))
+> +			host->ops->enable_dma(host);
+> +	}
+>  }
+>  
+>  static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios);
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/ppc-pci.h   |    5 +++++
- arch/powerpc/platforms/pseries/eeh.c |    4 ++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+Thanks, I'll merge this for 3.3.
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 43268f1..6d42297 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -142,6 +142,11 @@ static inline const char *eeh_pci_name(struct pci_dev *pdev)
- 	return pdev ? pci_name(pdev) : "<null>";
- } 
- 
-+static inline const char *eeh_driver_name(struct pci_dev *pdev)
-+{
-+	return (pdev && pdev->driver) ? pdev->driver->name : "<null>";
-+}
-+
- #endif /* CONFIG_EEH */
- 
- #else /* CONFIG_PCI */
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 5658690..c0b40af 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -551,9 +551,9 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 			printk (KERN_ERR "EEH: %d reads ignored for recovering device at "
- 				"location=%s driver=%s pci addr=%s\n",
- 				pdn->eeh_check_count, location,
--				dev->driver->name, eeh_pci_name(dev));
-+				eeh_driver_name(dev), eeh_pci_name(dev));
- 			printk (KERN_ERR "EEH: Might be infinite loop in %s driver\n",
--				dev->driver->name);
-+				eeh_driver_name(dev));
- 			dump_stack();
- 		}
- 		goto dn_unlock;
+- Chris.
 -- 
-1.7.4.4
+Chris Ball   <cjb@laptop.org>   <http://printf.net/>
+One Laptop Per Child
