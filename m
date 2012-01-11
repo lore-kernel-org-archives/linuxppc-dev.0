@@ -1,19 +1,23 @@
-Return-Path: <smitha.vanga@wipro.com>
-Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
- [203.91.198.74])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 59A80B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2012 17:04:11 +1100 (EST)
-From: <smitha.vanga@wipro.com>
-To: <wd@denx.de>
-Subject: RE: Mac address in the DT
-Date: Wed, 11 Jan 2012 06:03:45 +0000
-Message-ID: <40631E9A2581F14BA60888C87A76A1FE01D4FC@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <20120110215509.2D08D1167AA4@gemini.denx.de>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <linus971@gmail.com>
+Received: from mail-we0-f170.google.com (mail-we0-f170.google.com
+ [74.125.82.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 45B0DB6EEA
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2012 17:08:41 +1100 (EST)
+Received: by wera13 with SMTP id a13so299069wer.15
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2012 22:08:37 -0800 (PST)
 MIME-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Sender: linus971@gmail.com
+In-Reply-To: <1326243935.23910.85.camel@pasglop>
+References: <1326243935.23910.85.camel@pasglop>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 10 Jan 2012 22:08:14 -0800
+Message-ID: <CA+55aFycfYKFagVgckrEm3dAFHNZEvm0Hkw0UbH+XfKQu8Cvzg@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: Default y for pseries
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Shaohua Li <shaohua.li@intel.com>,
+ linux-pm@vger.kernel.org, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
+On Tue, Jan 10, 2012 at 5:05 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> Linus, do you want to just pick that up or should I put it into powerpc.git
+> and ask you to pull ? I will have 2 or 3 other fixes there later today,
+> but I wanted to make sure you were ok with the approach with this
+> specific one.
 
-Hi,
+It doesn't seem to be all that different from the "default y if ACPI"
+case, so I guess it works ok.
 
-I am using 2.6.21 linux kernel with this bootloader.
-The ethernet driver in the kernel reads the mac address from the .dtb file.
+That said, I wonder if the right approach wouldn't be
 
-Regards,
-Smitha
-Please do not print this email unless it is absolutely necessary. =0A=
-=0A=
-The information contained in this electronic message and any attachments to=
- this message are intended for the exclusive use of the addressee(s) and may=
- contain proprietary, confidential or privileged information. If you are not=
- the intended recipient, you should not disseminate, distribute or copy this=
- e-mail. Please notify the sender immediately and destroy all copies of this=
- message and any attachments. =0A=
-=0A=
-WARNING: Computer viruses can be transmitted via email. The recipient should=
- check this email and any attachments for the presence of viruses. The compa=
-ny accepts no liability for any damage caused by any virus transmitted by th=
-is email. =0A=
-=0A=
-www.wipro.com
+   default y if SUPPORT_CPU_IDLE
+
+or something along those lines. And then both ACPI and PPC_PSERIES
+could just select that instead. Because I do hate having random
+board-level knowledge in something like this. I dunno.
+
+                   Linus
