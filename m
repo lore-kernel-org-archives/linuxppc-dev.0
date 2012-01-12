@@ -1,21 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F1D6B6F65
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2012 01:57:28 +1100 (EST)
-Message-ID: <4F0EF4D4.5030406@suse.de>
-Date: Thu, 12 Jan 2012 15:57:24 +0100
-From: Alexander Graf <agraf@suse.de>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 2A869B6EE8
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2012 02:47:23 +1100 (EST)
+Message-ID: <4F0F0087.7030300@redhat.com>
+Date: Thu, 12 Jan 2012 17:47:19 +0200
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [PATCH] KVM: Move gfn_to_memslot() to kvm_host.h
 References: <20111220092102.GA5626@bloggs.ozlabs.ibm.com>
  <20120112104115.GA32021@bloggs.ozlabs.ibm.com>
 In-Reply-To: <20120112104115.GA32021@bloggs.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Avi Kivity <avi@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,7 +23,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/12/2012 11:41 AM, Paul Mackerras wrote:
+On 01/12/2012 12:41 PM, Paul Mackerras wrote:
 > This moves __gfn_to_memslot() and search_memslots() from kvm_main.c to
 > kvm_host.h to reduce the code duplication caused by the need for
 > non-modular code in arch/powerpc/kvm/book3s_hv_rm_mmu.c to call
@@ -43,11 +41,31 @@ On 01/12/2012 11:41 AM, Paul Mackerras wrote:
 > (Module code is allocated in the vmalloc region, which can't be
 > accessed in real mode.)
 >
-> With this, we can remove builtin_gfn_to_memslot() from book3s_hv_rm_mmu.c.
->
-> Signed-off-by: Paul Mackerras<paulus@samba.org>
+>  
+> +static inline struct kvm_memory_slot *
+> +search_memslots(struct kvm_memslots *slots, gfn_t gfn)
+> +{
+> +	struct kvm_memory_slot *memslot;
+> +
+> +	kvm_for_each_memslot(memslot, slots)
+> +		if (gfn >= memslot->base_gfn &&
+> +		      gfn < memslot->base_gfn + memslot->npages)
+> +			return memslot;
+> +
+> +	return NULL;
+> +}
+> +
+> +static inline struct kvm_memory_slot *
+> +__gfn_to_memslot(struct kvm_memslots *slots, gfn_t gfn)
+> +{
+> +	return search_memslots(slots, gfn);
+> +}
 
-Confusing to review, but looks correct :). Avi, please ack.
+Please add a comment here explaining why these functions are inlined. 
+There's also the call to kvm_gfn_to_hva_cache_init(), which should be
+changed to gfn_to_memslot(), to avoid code bloat.
 
 
-Alex
+
+-- 
+error compiling committee.c: too many arguments to function
