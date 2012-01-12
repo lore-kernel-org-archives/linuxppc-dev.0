@@ -1,26 +1,26 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 685ECB6F62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 18:11:03 +1100 (EST)
-References: <20111221013443.GN8378@schlenkerla.am.freescale.net>
- <1A656B06-E290-4B75-8F98-F8FAB8B817F1@suse.de> <4F0B8B7D.4@freescale.com>
- <A1483A2E-FF86-4E25-93CC-9EA1BA4925D4@suse.de>
- <1326350666.23910.209.camel@pasglop>
-In-Reply-To: <1326350666.23910.209.camel@pasglop>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Message-Id: <5A04869E-DC5E-4B67-88EC-978D858E12CE@suse.de>
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [RFC PATCH 14/16] KVM: PPC: booke: category E.HV (GS-mode) support
-Date: Thu, 12 Jan 2012 08:11:11 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 88077B6EF7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 19:08:55 +1100 (EST)
+Message-ID: <4F0E9539.7090205@windriver.com>
+Date: Thu, 12 Jan 2012 16:09:29 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+Subject: Re: Problem in getting shared memory access on P1022RDK
+References: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CCA80@EU-MBX-03.mgc.mentorg.com>
+ <4F033685.6000509@freescale.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CCB2E@EU-MBX-03.mgc.mentorg.com>
+ <4F050653.6010601@windriver.com>
+ <93CD5F41FDBC6042A6B449764F3B35CC050CD375@EU-MBX-03.mgc.mentorg.com>
+In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050CD375@EU-MBX-03.mgc.mentorg.com>
+Content-Type: text/plain; charset="UTF-8"
 Cc: Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Arshad, Farrukh wrote:
+> Adding more it, 
+> 
+> I have removed the shared memory kernel driver dependency just to narrow down the problem area and I have written a small piece of code in user space. A writer & a reader application which access the shared memory and I got the same behavior as with the shared memory kernel driver. Interestingly, my user space application work fine on P1022DS but not on P1022RDK however both using the same CPU modules.
+> 
+> When I write a simple string on shared memory from Core 1 it is read at Core 0 properly
+> When I write a simple string on shared memory from Core 0 it is not read at Core 1. 
+>
 
+Did you dump TLB entry to check page memory coherence attribute for a shared
+memory as I mentioned previously? This should be consistent on both sides.
 
-On 12.01.2012, at 07:44, Benjamin Herrenschmidt <benh@kernel.crashing.org> w=
-rote:
+> With this test now I am sure the problem lies in the kernel itself. Any pointers to look for the troubled area ?
+> 
+> My application code is (error checking and other code is omitted)
+> 
+> #define 	SHM_BASE 	0x1C000000
+> #define	SHM_SIZE 	0x400000		// 4 MB of Shared Memory
+> #define 	PAGE_SIZE 	(4*1024)
+> 
+> fd = open(device, O_RDWR);
 
-> On Tue, 2012-01-10 at 04:11 +0100, Alexander Graf wrote:
->> This is what book3s does:
->>=20
->>                case EMULATE_FAIL:
->>                        printk(KERN_CRIT "%s: emulation at %lx failed
->> (%08x)\n",
->>                               __func__, kvmppc_get_pc(vcpu),
->> kvmppc_get_last_inst(vcpu));
->>                        kvmppc_core_queue_program(vcpu, flags);
->>                        r =3D RESUME_GUEST;
->>=20
->> which also doesn't throttle the printk, but I think injecting a
->> program fault into the guest is the most sensible thing to do if we
->> don't know what the instruction is supposed to do. Best case we get an
->> oops inside the guest telling us what broke :).
->=20
-> You can also fallback to a slow path that reads the guest TLB,
-> translates then reads the instruction. Of course you have to be careful
-> as such a manual translate + read + execute needs to be somewhat
-> synchronized with a possible TLB invalidation :-)
+You may need to add with 'O_SYNC'.
 
-Well we do want to be fast on the default path though. So yes, what you're s=
-aying is what book3s does, but as a fallback in case the fast path didn't wo=
-rk.
+Tiejun
 
-The problem here however is that we don't know if the fast path failed; we o=
-ops.
-
-
->=20
-> (MMIO emulation is broken in this regard too btw)
-
-Huh?
-
-Alex
-
->=20
-> Cheers,
-> Ben.
->=20
->=20
+> 
+> shm = malloc(SHM_SIZE + (PAGE_SIZE - 1));
+> if ( (unsigned long) shm % PAGE_SIZE) {
+> 	shm += PAGE_SIZE - ((unsigned long)shm % PAGE_SIZE);
+> }
+> 
+> shm = mmap(shm, SHM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, SHM_BASE);
+> ......
+> ...... write some string at shm.
+> 
+> My memory partitioning for both systems is 
+> 
+> Core                 		Base Address         	Size
+> Core 0               		0x0000,0000          	0x1000,0000
+> Core 1               		0x1000,0000          	0x0C00,0000
+> Shared Memory    	0x1C00,0000          	0x0400,0000
+> 
+> Regards,
+> Farrukh Arshad.
+> Mentor Graphics Pakistan
