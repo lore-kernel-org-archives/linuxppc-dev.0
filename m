@@ -1,26 +1,20 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 88077B6EF7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 19:08:55 +1100 (EST)
-Message-ID: <4F0E9539.7090205@windriver.com>
-Date: Thu, 12 Jan 2012 16:09:29 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <B32736@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+ [216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EAB5CB6EF2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 20:57:50 +1100 (EST)
+From: Zhicheng Fan <B32736@freescale.com>
+To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [SDK v1.2][PATCH] powerpc/dts: update dts for p1020rdb
+Date: Thu, 12 Jan 2012 18:00:59 +0800
+Message-ID: <1326362459-9654-1-git-send-email-B32736@freescale.com>
+In-Reply-To: <y>
+References: <y>
 MIME-Version: 1.0
-To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-Subject: Re: Problem in getting shared memory access on P1022RDK
-References: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CCA80@EU-MBX-03.mgc.mentorg.com>
- <4F033685.6000509@freescale.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CCB2E@EU-MBX-03.mgc.mentorg.com>
- <4F050653.6010601@windriver.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CD375@EU-MBX-03.mgc.mentorg.com>
-In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050CD375@EU-MBX-03.mgc.mentorg.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Zhicheng Fan <B32736@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arshad, Farrukh wrote:
-> Adding more it, 
-> 
-> I have removed the shared memory kernel driver dependency just to narrow down the problem area and I have written a small piece of code in user space. A writer & a reader application which access the shared memory and I got the same behavior as with the shared memory kernel driver. Interestingly, my user space application work fine on P1022DS but not on P1022RDK however both using the same CPU modules.
-> 
-> When I write a simple string on shared memory from Core 1 it is read at Core 0 properly
-> When I write a simple string on shared memory from Core 0 it is not read at Core 1. 
->
+nand: Sync base address with U-boot
+sdhc: Add suppot auto cmd12
 
-Did you dump TLB entry to check page memory coherence attribute for a shared
-memory as I mentioned previously? This should be consistent on both sides.
+Signed-off-by: Zhicheng Fan <B32736@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/p1020si-post.dtsi |    3 +++
+ arch/powerpc/boot/dts/p1020rdb.dts          |    2 +-
+ arch/powerpc/boot/dts/p1020rdb_36b.dts      |    2 +-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
-> With this test now I am sure the problem lies in the kernel itself. Any pointers to look for the troubled area ?
-> 
-> My application code is (error checking and other code is omitted)
-> 
-> #define 	SHM_BASE 	0x1C000000
-> #define	SHM_SIZE 	0x400000		// 4 MB of Shared Memory
-> #define 	PAGE_SIZE 	(4*1024)
-> 
-> fd = open(device, O_RDWR);
-
-You may need to add with 'O_SYNC'.
-
-Tiejun
-
-> 
-> shm = malloc(SHM_SIZE + (PAGE_SIZE - 1));
-> if ( (unsigned long) shm % PAGE_SIZE) {
-> 	shm += PAGE_SIZE - ((unsigned long)shm % PAGE_SIZE);
-> }
-> 
-> shm = mmap(shm, SHM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, SHM_BASE);
-> ......
-> ...... write some string at shm.
-> 
-> My memory partitioning for both systems is 
-> 
-> Core                 		Base Address         	Size
-> Core 0               		0x0000,0000          	0x1000,0000
-> Core 1               		0x1000,0000          	0x0C00,0000
-> Shared Memory    	0x1C00,0000          	0x0400,0000
-> 
-> Regards,
-> Farrukh Arshad.
-> Mentor Graphics Pakistan
+diff --git a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+index fc924c5..8e56ad2 100644
+--- a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+@@ -145,6 +145,9 @@
+ /include/ "pq3-usb2-dr-1.dtsi"
+ 
+ /include/ "pq3-esdhc-0.dtsi"
++	sdhc@2e000 {
++		sdhci,auto-cmd12;
++	};
+ /include/ "pq3-sec3.3-0.dtsi"
+ 
+ /include/ "pq3-mpic.dtsi"
+diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
+index 518bf99..19b8c77 100644
+--- a/arch/powerpc/boot/dts/p1020rdb.dts
++++ b/arch/powerpc/boot/dts/p1020rdb.dts
+@@ -23,7 +23,7 @@
+ 
+ 		/* NOR, NAND Flashes and Vitesse 5 port L2 switch */
+ 		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
+-			  0x1 0x0 0x0 0xffa00000 0x00040000
++			  0x1 0x0 0x0 0xff800000 0x00040000
+ 			  0x2 0x0 0x0 0xffb00000 0x00020000>;
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/p1020rdb_36b.dts b/arch/powerpc/boot/dts/p1020rdb_36b.dts
+index bdbdb60..7c53ad7 100644
+--- a/arch/powerpc/boot/dts/p1020rdb_36b.dts
++++ b/arch/powerpc/boot/dts/p1020rdb_36b.dts
+@@ -23,7 +23,7 @@
+ 
+ 		/* NOR, NAND Flashes and Vitesse 5 port L2 switch */
+ 		ranges = <0x0 0x0 0xf 0xef000000 0x01000000
+-			  0x1 0x0 0xf 0xffa00000 0x00040000
++			  0x1 0x0 0xf 0xff800000 0x00040000
+ 			  0x2 0x0 0xf 0xffb00000 0x00020000>;
+ 	};
+ 
+-- 
+1.6.4
