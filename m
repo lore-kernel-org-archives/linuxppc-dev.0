@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 89ED9B6F9C
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2012 17:21:43 +1100 (EST)
-Message-ID: <1326435694.23910.229.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 13 Jan 2012 17:21:34 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6D6BEB6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 20:36:58 +1100 (EST)
+Received: by eekb45 with SMTP id b45so232916eek.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 01:36:52 -0800 (PST)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <1326443147-26645-1-git-send-email-qiang.liu@freescale.com>
+References: <1326443147-26645-1-git-send-email-qiang.liu@freescale.com>
+Date: Fri, 13 Jan 2012 17:36:52 +0800
+Message-ID: <CADRPPNQsVB-2jR0UaX6RB_4PCf9kt4UXvAXnxaVk=LsBcwGowg@mail.gmail.com>
+Subject: Re: [PATCH][SDK v1.2] sata: I/O load balancing
+From: Li Yang <leoli@freescale.com>
+To: Qiang Liu <qiang.liu@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, jgarzik@pobox.com,
+ linux-kernel@vger.kernel.org, Qiang Liu <b32616@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Fri, Jan 13, 2012 at 4:25 PM, Qiang Liu <qiang.liu@freescale.com> wrote:
+> From: Qiang Liu <b32616@freescale.com>
+>
+> Reduce interrupt singnals through reset Interrupt Coalescing Control Reg.
+> Increase the threshold value of interrupt and timer will reduce the number
+> of complete interrupt sharply. Improve the system performance effectively.
 
-Please pull this couple of important bug fixes (a commit
-that went in breaks booting on some machines, this fixes
-it properly).
+There is always a trade off of throughput and latency by using
+interrupt coalescing.  It's not reasonable to assume that the
+throughput is the only factor to be considered and set the coalescing
+threshold and timeout to the max value by default.  Have you carried
+out other benchmark like copying many small files?
 
-Thanks !
+It will be safer to make the coalescing runtime configurable like the
+sata_mv driver, IMO.
 
-Cheers,
-Ben.
-
-The following changes since commit 7b3480f8b701170c046e1ed362946f5f0d005e13:
-
-  Merge tag 'for-linus-3.3' of git://git.infradead.org/mtd-2.6 (2012-01-10 13:45:22 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Anton Blanchard (1):
-      powerpc: Fix RCU idle and hcall tracing
-
-Li Zhong (1):
-      powerpc: Fix unpaired __trace_hcall_entry and __trace_hcall_exit
-
- arch/powerpc/kernel/idle.c              |   12 ++----------
- arch/powerpc/platforms/pseries/hvCall.S |    3 ++-
- arch/powerpc/platforms/pseries/lpar.c   |   14 ++++++++++----
- 3 files changed, 14 insertions(+), 15 deletions(-)
+- Leo
