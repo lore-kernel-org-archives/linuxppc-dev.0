@@ -1,20 +1,20 @@
 Return-Path: <B32616@freescale.com>
-Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
- [213.199.154.209])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0FF34B6EE6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 20:03:23 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1414DB6F6F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 20:07:11 +1100 (EST)
 From: Qiang Liu <qiang.liu@freescale.com>
 To: <jgarzik@pobox.com>, <linux-ide@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
 Subject: [PATCH][SDK v1.2] sata: I/O load balancing
-Date: Fri, 13 Jan 2012 16:21:57 +0800
-Message-ID: <1326442917-26562-1-git-send-email-qiang.liu@freescale.com>
+Date: Fri, 13 Jan 2012 16:25:47 +0800
+Message-ID: <1326443147-26645-1-git-send-email-qiang.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Qiang Liu <b32616@freescale.com>, Qiang Liu <qiang.liu@freescale.net>
+Cc: Qiang Liu <qiang.liu@freescale.com>, Qiang Liu <b32616@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,7 +30,7 @@ Reduce interrupt singnals through reset Interrupt Coalescing Control Reg.
 Increase the threshold value of interrupt and timer will reduce the number
 of complete interrupt sharply. Improve the system performance effectively.
 
-Signed-off-by: Qiang Liu <qiang.liu@freescale.net>
+Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
 ---
 Description:
   1. sata-fsl interrupt will be raised 130 thousand times when write 8G file
