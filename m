@@ -1,23 +1,19 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D6BEB6F13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 20:36:58 +1100 (EST)
-Received: by eekb45 with SMTP id b45so232916eek.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 01:36:52 -0800 (PST)
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og112.obsmtp.com (exprod5og112.obsmtp.com [64.18.0.24])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6B18AB6F67
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 20:37:28 +1100 (EST)
+Message-ID: <4F0FFA19.7070606@ge.com>
+Date: Fri, 13 Jan 2012 09:32:09 +0000
+From: Martyn Welch <martyn.welch@ge.com>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <1326443147-26645-1-git-send-email-qiang.liu@freescale.com>
-References: <1326443147-26645-1-git-send-email-qiang.liu@freescale.com>
-Date: Fri, 13 Jan 2012 17:36:52 +0800
-Message-ID: <CADRPPNQsVB-2jR0UaX6RB_4PCf9kt4UXvAXnxaVk=LsBcwGowg@mail.gmail.com>
-Subject: Re: [PATCH][SDK v1.2] sata: I/O load balancing
-From: Li Yang <leoli@freescale.com>
-To: Qiang Liu <qiang.liu@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, jgarzik@pobox.com,
- linux-kernel@vger.kernel.org, Qiang Liu <b32616@freescale.com>
+To: Michael Remski <mremski@comcast.net>
+Subject: Re: spi device from handle
+References: <alpine.BSF.2.00.1201121056330.21456@payne.remski.net>
+In-Reply-To: <alpine.BSF.2.00.1201121056330.21456@payne.remski.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 13, 2012 at 4:25 PM, Qiang Liu <qiang.liu@freescale.com> wrote:
-> From: Qiang Liu <b32616@freescale.com>
->
-> Reduce interrupt singnals through reset Interrupt Coalescing Control Reg.
-> Increase the threshold value of interrupt and timer will reduce the number
-> of complete interrupt sharply. Improve the system performance effectively.
+On 12/01/12 16:02, Michael Remski wrote:
+> kernel 2.6.33
+> 
+> relevant section of dts has:
+> spi@7000 {
+>     fpga0: fpga@0 {
+>         #address-cells = <1>;
+>         #size-cells = <0>;
+>         compatible = "fsl, espi-fpga";
+>         reg = <0>;
+>         linux,modalias = "spidev";
+>         spi-max-frequency = <1572864>;
+>     };
+> }
+> 
+> 
+> I have another device driver that needs to talk to this fpga device, but for
+> the life of me I can't figure out the appropriate hooks to get there. The
+> device can be talked to from userland via /dev/spixyx.k, but how do I get to
+> the device from another driver?
+> 
+> Any little hints would be appreciated.  Upgrading kernel is not an option
+> (sorry).
+> 
 
-There is always a trade off of throughput and latency by using
-interrupt coalescing.  It's not reasonable to assume that the
-throughput is the only factor to be considered and set the coalescing
-threshold and timeout to the max value by default.  Have you carried
-out other benchmark like copying many small files?
+We have a FPGA that provides a number of different functions. Each function is
+provided in a distinct register set. We have multiple entries in the DTS, one
+for each piece of functionality. The drivers are then able to bind separately
+against the required registers. So in the case of
+"arch/powerpc/boot/dts/gef_ppc9a.dts", "fpga@4,0", "wdt@4,2000", "wdt@4,2010",
+"pic@4,4000" and "gpio@7,14000" are all provided by the same FPGA and each has
+it's own driver. However, I've just realised our FPGA is memory mapped and
+looking at your DTS snippet yours isn't.
 
-It will be safer to make the coalescing runtime configurable like the
-sata_mv driver, IMO.
+The only clean way I can think about doing it via spi would be to have a
+driver that provides an in-kernel interface to access the functionality in the
+FPGA (which binds to this entry in the DTS), then modify the driver providing
+the user space access to use that and also use that interface for other
+drivers needing access to the FPGA. Depending on the level of extrapolation
+provided by the existing user space driver, this may be possible without
+breaking anything in user space.
 
-- Leo
+Martyn
+
+-- 
+Martyn Welch (Lead Software Engineer)  | Registered in England and Wales
+GE Intelligent Platforms               | (3828642) at 100 Barbirolli Square
+T +44(0)1327322748                     | Manchester, M2 3AB
+E martyn.welch@ge.com                  | VAT:GB 927559189
