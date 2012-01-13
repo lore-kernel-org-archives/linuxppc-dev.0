@@ -1,30 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
- [209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 37039B6FCC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 13:20:40 +1100 (EST)
-Received: by ggnf2 with SMTP id f2so1448997ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 18:20:37 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Thu, 12 Jan 2012 19:20:34 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [RFC 13/14] irq_domain: Remove 'new' irq_domain in favour of the
- ppc one
-Message-ID: <20120113022034.GA25999@ponder.secretlab.ca>
-References: <1326313337-24603-1-git-send-email-grant.likely@secretlab.ca>
- <1326313337-24603-14-git-send-email-grant.likely@secretlab.ca>
- <4F0DFC0F.2090005@gmail.com>
- <CACxGe6vVSO0cTgPurr6jFoo9QF_W02UaABOFYadCTQGU9dcwmg@mail.gmail.com>
- <4F0F7B60.5040701@gmail.com>
+Return-Path: <B29882@freescale.com>
+Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D6810B6FB7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 16:05:25 +1100 (EST)
+From: Matthew McClintock <msm@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/mm: Fix parse_arg build error
+Date: Thu, 12 Jan 2012 23:05:15 -0600
+Message-ID: <1326431115-425-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4F0F7B60.5040701@gmail.com>
-Cc: sfr@canb.auug.org.au, Russell King <linux@arm.linux.org.uk>,
- linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 12, 2012 at 06:31:28PM -0600, Rob Herring wrote:
-> Adding lakml...
-> 
-> On 01/11/2012 03:27 PM, Grant Likely wrote:
-> > On Wed, Jan 11, 2012 at 2:15 PM, Rob Herring <robherring2@gmail.com> wrote:
-> >> Grant,
-> >>
-> >> On 01/11/2012 02:22 PM, Grant Likely wrote:
-> >>> This patch removes the simplistic implementation of irq_domains and enables
-> >>> the powerpc infrastructure for all irq_domain users.  The powerpc
-> >>> infrastructure includes support for complex mappings between Linux and
-> >>> hardware irq numbers, and can manage allocation of irq_descs.
-> >>>
-> >>> This patch also converts the few users of irq_domain_add()/irq_domain_del()
-> >>> to call irq_domain_add_legacy() instead.
-> >>
-> >> So what is the non-legacy way? Legacy implies we don't want to do it
-> >> that way. I guess until we remove all non-DT platforms with GIC we are
-> >> stuck with legacy. That seems like it could be a ways out until we get
-> >> there.
-> > 
-> > Non-legacy is letting the irq_domain manage the irq_desc allocations.
-> > Some of the controllers will be easy to convert, some will be more
-> > difficult.  The primary thing that really blocks getting away from the
-> > legacy method is anything that expects hardcoded #defined irq numbers.
-> >  The goal is to convert all users over to the linear revmap method.
-> > 
-> 
-> So I gave this a spin on highbank. I ran into a couple problems.
-> 
-> I had to revert "irqdesc: Consolidate irq reservation logic" which is in
-> your branch, but not this series. irq_alloc_desc_from was returning -EEXIST.
+This fixes this build issue:
 
-Gah, I flubbed that patch too.  Try this on top of it:
+arch/powerpc/mm/hugetlbpage.c: In function 'reserve_hugetlb_gpages':
+arch/powerpc/mm/hugetlbpage.c:312:2: error: implicit declaration of function 'parse_args'
+make[1]: *** [arch/powerpc/mm/hugetlbpage.o] Error 1
 
+Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
+This is for benh next tree
 
-diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
-index 8a9e2ec..11feb2f 100644
---- a/kernel/irq/irqdesc.c
-+++ b/kernel/irq/irqdesc.c
-@@ -375,6 +375,9 @@ __irq_reserve_irqs(int irq, unsigned int from, unsigned int cnt)
- 	}
- 
- 	bitmap_set(allocated_irqs, start, cnt);
-+	mutex_unlock(&sparse_irq_lock);
-+	return start;
-+
- err:
- 	mutex_unlock(&sparse_irq_lock);
- 	return ret;
-@@ -408,7 +411,8 @@ EXPORT_SYMBOL_GPL(__irq_alloc_descs);
-  */
- int irq_reserve_irqs(unsigned int from, unsigned int cnt)
- {
--	return __irq_reserve_irqs(from, from, cnt);
-+	int start = __irq_reserve_irqs(from, from, cnt);
-+	return start < 0 ? start : 0;
- }
- 
- /**
+ arch/powerpc/mm/hugetlbpage.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 79c575d..a8b3cc7 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -15,6 +15,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/memblock.h>
+ #include <linux/bootmem.h>
++#include <linux/moduleparam.h>
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlb.h>
+-- 
+1.7.6.1
