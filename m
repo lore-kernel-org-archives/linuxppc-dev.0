@@ -1,30 +1,27 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
- [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 80DD5B6FCC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 11:53:44 +1100 (EST)
-Received: by yhoo47 with SMTP id o47so24197yho.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 16:53:42 -0800 (PST)
-Message-ID: <4F0F8093.7010902@gmail.com>
-Date: Thu, 12 Jan 2012 18:53:39 -0600
-From: Rob Herring <robherring2@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id D6757B6FDB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 11:54:20 +1100 (EST)
+Received: by dadv40 with SMTP id v40so1614423dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 16:54:18 -0800 (PST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC 13/14] irq_domain: Remove 'new' irq_domain in favour of
- the ppc one
+Sender: glikely@secretlab.ca
+In-Reply-To: <4F0F7CC5.5080900@gmail.com>
 References: <1326313337-24603-1-git-send-email-grant.likely@secretlab.ca>
- <1326313337-24603-14-git-send-email-grant.likely@secretlab.ca>
- <4F0DFC0F.2090005@gmail.com>
- <CACxGe6vVSO0cTgPurr6jFoo9QF_W02UaABOFYadCTQGU9dcwmg@mail.gmail.com>
- <4F0F7B60.5040701@gmail.com>
- <CACxGe6vER6hTr0ez9_=bTL+F1n3DZHCa9Yc9fVGQ36i=X62sVQ@mail.gmail.com>
-In-Reply-To: <CACxGe6vER6hTr0ez9_=bTL+F1n3DZHCa9Yc9fVGQ36i=X62sVQ@mail.gmail.com>
+ <1326313337-24603-13-git-send-email-grant.likely@secretlab.ca>
+ <4F0F7CC5.5080900@gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 12 Jan 2012 17:53:57 -0700
+Message-ID: <CACxGe6tQ2U-u6-=3qGFTxXFViPAS2Y1g4i8MUNhPJdE_WzkA3A@mail.gmail.com>
+Subject: Re: [RFC 12/14] irq_domain: Add support for base irq and hwirq in
+ legacy mappings
+To: Rob Herring <robherring2@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: sfr@canb.auug.org.au, Russell King <linux@arm.linux.org.uk>,
  linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,85 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/12/2012 06:47 PM, Grant Likely wrote:
-> On Thu, Jan 12, 2012 at 5:31 PM, Rob Herring <robherring2@gmail.com> wrote:
->> Adding lakml...
+On Thu, Jan 12, 2012 at 5:37 PM, Rob Herring <robherring2@gmail.com> wrote:
+> On 01/11/2012 02:22 PM, Grant Likely wrote:
+>> Add support for a legacy mapping where irq =3D (hwirq - first_hwirq + fi=
+rst_irq)
+>> so that a controller driver can allocate a fixed range of irq_descs and =
+use
+>> a simple calculation to translate back and forth between linux and hw ir=
+q
+>> numbers. =A0This is needed to use an irq_domain with many of the ARM int=
+errupt
+>> controller drivers that manage their own irq_desc allocations. =A0Ultima=
+tely
+>> the goal is to migrate those drivers to use the linear revmap, but doing=
+ it
+>> this way allows each driver to be converted separately which makes the
+>> migration path easier.
 >>
->> On 01/11/2012 03:27 PM, Grant Likely wrote:
->>> On Wed, Jan 11, 2012 at 2:15 PM, Rob Herring <robherring2@gmail.com> wrote:
->>>> Grant,
->>>>
->>>> On 01/11/2012 02:22 PM, Grant Likely wrote:
->>>>> This patch removes the simplistic implementation of irq_domains and enables
->>>>> the powerpc infrastructure for all irq_domain users.  The powerpc
->>>>> infrastructure includes support for complex mappings between Linux and
->>>>> hardware irq numbers, and can manage allocation of irq_descs.
->>>>>
->>>>> This patch also converts the few users of irq_domain_add()/irq_domain_del()
->>>>> to call irq_domain_add_legacy() instead.
->>>>
->>>> So what is the non-legacy way? Legacy implies we don't want to do it
->>>> that way. I guess until we remove all non-DT platforms with GIC we are
->>>> stuck with legacy. That seems like it could be a ways out until we get
->>>> there.
->>>
->>> Non-legacy is letting the irq_domain manage the irq_desc allocations.
->>> Some of the controllers will be easy to convert, some will be more
->>> difficult.  The primary thing that really blocks getting away from the
->>> legacy method is anything that expects hardcoded #defined irq numbers.
->>>  The goal is to convert all users over to the linear revmap method.
->>>
+>> This patch generalizes the IRQ_DOMAIN_MAP_LEGACY method to use
+>> (first_irq-first_hwirq) as the offset between hwirq and linux irq number=
+,
+>> and adds checks to make sure that the hwirq number does not exceed range
+>> assigned to the controller.
 >>
->> So I gave this a spin on highbank. I ran into a couple problems.
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> ---
+>> =A0arch/powerpc/include/asm/irq.h =A0 | =A0 =A03 -
+>> =A0arch/powerpc/sysdev/i8259.c =A0 =A0 =A0| =A0 =A02 +-
+>> =A0arch/powerpc/sysdev/tsi108_pci.c | =A0 =A02 +-
+>> =A0include/linux/irqdomain.h =A0 =A0 =A0 =A0| =A0 20 +++++++++-
+>> =A0kernel/irq/irqdomain.c =A0 =A0 =A0 =A0 =A0 | =A0 78 +++++++++++++++++=
+++++++++-------------
+>> =A05 files changed, 73 insertions(+), 32 deletions(-)
 >>
->> I had to revert "irqdesc: Consolidate irq reservation logic" which is in
->> your branch, but not this series. irq_alloc_desc_from was returning -EEXIST.
-> 
-> Hmmm... I thought I sorted that out.  Thanks for letting me know.
-> 
+>
+> snip...
+>
+>> @@ -454,8 +477,11 @@ unsigned int irq_find_mapping(struct irq_domain *do=
+main,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
 >>
->> The GIC code did not work which I think is specific to using gic_of_init
->> which makes irq_start = -1. With that it still doesn't work. It dies in
->> gic_set_type... I've found one problem which I'll reply inline to, but I
->> think this is a dead end path anyway.
-> 
-> Haha, I'm not surprised.  That last patch was only compile tested on
-> platforms using the gic.  I'm not surprised that I flubbed it.
-> 
->> You have removed the irq_alloc_descs call from the GIC which is a step
->> backwards. Several of the ARM DT enabled platforms are at the point they
->> can fully support dynamic virq base for each irqchip. I changed the
->> domain from legacy to linear and got things working.
->> The issue with
-> 
-> I hadn't actually intended to remove the irq_alloc_descs in this
-> patch.  That was a leftover hunk from when I was playing with going
-> straight to irq_domain_add_linear().  For this specific patch, I'll
-> put the alloc back in and test it that way.  A follow-on patch can do
-> a proper conversion to the linear revmap.
-> 
->> linear is for SPARSE_IRQ. The default behavior on ARM for SPARSE_IRQ is
->> all nr_irqs are allocated at boot time before any controller is
->> initialized. The only platform with a GIC and requiring SPARSE_IRQ is
->> shmobile, but it is also the only one that calls irq_alloc_desc
->> functions for it's interrupts. So I think we are okay there. The problem
->> occurs when enabling SPARSE_IRQ for a non-DT platform with a GIC and
->> with irqchips that don't call irq_alloc_desc for their irqs. IMHO, this
->> should be an okay trade-off. There's no advantage to enabling SPARSE_IRQ
->> on ARM for platforms that don't require it. All the platforms with a GIC
->> have active work to convert to DT (except shmobile which I think is
->> okay), so it's a temporary issue.
-> 
-> Actually, I believe Thomas' long term goal is to always enable
-> SPARSE_IRQ and remove the option entirely, so it should still be
-> properly resolved. I'll take a look next week if I don't get to it
-> tomorrow.  I need to resurrect my vexpress qemu test environment so I
-> can test the permutations.
-> 
+>> =A0 =A0 =A0 /* legacy -> bail early */
+>> - =A0 =A0 if (domain->revmap_type =3D=3D IRQ_DOMAIN_MAP_LEGACY)
+>> - =A0 =A0 =A0 =A0 =A0 =A0 return hwirq;
+>> + =A0 =A0 if (domain->revmap_type =3D=3D IRQ_DOMAIN_MAP_LEGACY) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (hwirq > domain->revmap_data.legacy.size)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return domain->revmap_data.legacy.first_irq + =
+hwirq;
+>
+> This needs a "- domain->revmap_data.legacy.first_hwirq"
 
-Agreed. I think that is the path to the removing include of mach/irqs.h
-as well, and I have a patch series to do just that when SPARSE_IRQ is
-enabled. It also has the problem of breaking platforms which don't NEED
-to enable SPARSE_IRQ. I'll try to get it sent out soon.
-
-Rob
+Good catch, thanks.
+g.
