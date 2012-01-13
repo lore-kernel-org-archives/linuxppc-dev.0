@@ -1,25 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D42F8B6EFF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 03:26:24 +1100 (EST)
-Date: Thu, 12 Jan 2012 10:26:14 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 14/16] KVM: PPC: booke: category E.HV (GS-mode) support
-Message-ID: <20120112162614.GB23595@schlenkerla.am.freescale.net>
-References: <20111221013443.GN8378@schlenkerla.am.freescale.net>
- <1A656B06-E290-4B75-8F98-F8FAB8B817F1@suse.de>
- <4F0B8B7D.4@freescale.com>
- <A1483A2E-FF86-4E25-93CC-9EA1BA4925D4@suse.de>
- <1326350666.23910.209.camel@pasglop>
+Return-Path: <robherring2@gmail.com>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+ [209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 177C1B6FD0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 11:31:34 +1100 (EST)
+Received: by ggnf2 with SMTP id f2so1413913ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2012 16:31:31 -0800 (PST)
+Message-ID: <4F0F7B60.5040701@gmail.com>
+Date: Thu, 12 Jan 2012 18:31:28 -0600
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1326350666.23910.209.camel@pasglop>
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC 13/14] irq_domain: Remove 'new' irq_domain in favour of
+ the ppc one
+References: <1326313337-24603-1-git-send-email-grant.likely@secretlab.ca>
+ <1326313337-24603-14-git-send-email-grant.likely@secretlab.ca>
+ <4F0DFC0F.2090005@gmail.com>
+ <CACxGe6vVSO0cTgPurr6jFoo9QF_W02UaABOFYadCTQGU9dcwmg@mail.gmail.com>
+In-Reply-To: <CACxGe6vVSO0cTgPurr6jFoo9QF_W02UaABOFYadCTQGU9dcwmg@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sfr@canb.auug.org.au, Russell King <linux@arm.linux.org.uk>,
+ linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 12, 2012 at 05:44:26PM +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2012-01-10 at 04:11 +0100, Alexander Graf wrote:
-> > This is what book3s does:
-> > 
-> >                 case EMULATE_FAIL:
-> >                         printk(KERN_CRIT "%s: emulation at %lx failed
-> > (%08x)\n",
-> >                                __func__, kvmppc_get_pc(vcpu),
-> > kvmppc_get_last_inst(vcpu));
-> >                         kvmppc_core_queue_program(vcpu, flags);
-> >                         r = RESUME_GUEST;
-> > 
-> > which also doesn't throttle the printk, but I think injecting a
-> > program fault into the guest is the most sensible thing to do if we
-> > don't know what the instruction is supposed to do. Best case we get an
-> > oops inside the guest telling us what broke :).
+Adding lakml...
+
+On 01/11/2012 03:27 PM, Grant Likely wrote:
+> On Wed, Jan 11, 2012 at 2:15 PM, Rob Herring <robherring2@gmail.com> wrote:
+>> Grant,
+>>
+>> On 01/11/2012 02:22 PM, Grant Likely wrote:
+>>> This patch removes the simplistic implementation of irq_domains and enables
+>>> the powerpc infrastructure for all irq_domain users.  The powerpc
+>>> infrastructure includes support for complex mappings between Linux and
+>>> hardware irq numbers, and can manage allocation of irq_descs.
+>>>
+>>> This patch also converts the few users of irq_domain_add()/irq_domain_del()
+>>> to call irq_domain_add_legacy() instead.
+>>
+>> So what is the non-legacy way? Legacy implies we don't want to do it
+>> that way. I guess until we remove all non-DT platforms with GIC we are
+>> stuck with legacy. That seems like it could be a ways out until we get
+>> there.
 > 
-> You can also fallback to a slow path that reads the guest TLB,
-> translates then reads the instruction. Of course you have to be careful
-> as such a manual translate + read + execute needs to be somewhat
-> synchronized with a possible TLB invalidation :-)
+> Non-legacy is letting the irq_domain manage the irq_desc allocations.
+> Some of the controllers will be easy to convert, some will be more
+> difficult.  The primary thing that really blocks getting away from the
+> legacy method is anything that expects hardcoded #defined irq numbers.
+>  The goal is to convert all users over to the linear revmap method.
+> 
 
-That's how we should deal with a failure to read the instruction due to
-it being execute-only (once we add the ability to fix up a fault on a
-booke KVM instruction fetch) -- but the above code is dealing with the
-case where we read the instruction successfully, but don't have an
-emulation handler for it.
+So I gave this a spin on highbank. I ran into a couple problems.
 
--Scott
+I had to revert "irqdesc: Consolidate irq reservation logic" which is in
+your branch, but not this series. irq_alloc_desc_from was returning -EEXIST.
+
+The GIC code did not work which I think is specific to using gic_of_init
+which makes irq_start = -1. With that it still doesn't work. It dies in
+gic_set_type... I've found one problem which I'll reply inline to, but I
+think this is a dead end path anyway.
+
+You have removed the irq_alloc_descs call from the GIC which is a step
+backwards. Several of the ARM DT enabled platforms are at the point they
+can fully support dynamic virq base for each irqchip. I changed the
+domain from legacy to linear and got things working. The issue with
+linear is for SPARSE_IRQ. The default behavior on ARM for SPARSE_IRQ is
+all nr_irqs are allocated at boot time before any controller is
+initialized. The only platform with a GIC and requiring SPARSE_IRQ is
+shmobile, but it is also the only one that calls irq_alloc_desc
+functions for it's interrupts. So I think we are okay there. The problem
+occurs when enabling SPARSE_IRQ for a non-DT platform with a GIC and
+with irqchips that don't call irq_alloc_desc for their irqs. IMHO, this
+should be an okay trade-off. There's no advantage to enabling SPARSE_IRQ
+on ARM for platforms that don't require it. All the platforms with a GIC
+have active work to convert to DT (except shmobile which I think is
+okay), so it's a temporary issue.
+
+Rob
