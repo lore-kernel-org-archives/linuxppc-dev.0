@@ -1,19 +1,20 @@
-Return-Path: <mremski@comcast.net>
-Received: from qmta01.westchester.pa.mail.comcast.net
- (qmta02.westchester.pa.mail.comcast.net [76.96.62.24])
- by ozlabs.org (Postfix) with ESMTP id F37D8B6EFE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 20:53:38 +1100 (EST)
-Date: Fri, 13 Jan 2012 04:53:32 -0500 (EST)
-From: Michael Remski <mremski@comcast.net>
-To: Martyn Welch <martyn.welch@ge.com>
-Subject: Re: spi device from handle
-In-Reply-To: <4F0FFA19.7070606@ge.com>
-Message-ID: <alpine.BSF.2.00.1201130451250.24364@payne.remski.net>
-References: <alpine.BSF.2.00.1201121056330.21456@payne.remski.net>
- <4F0FFA19.7070606@ge.com>
+Return-Path: <B32616@freescale.com>
+Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
+ [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0FF34B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2012 20:03:23 +1100 (EST)
+From: Qiang Liu <qiang.liu@freescale.com>
+To: <jgarzik@pobox.com>, <linux-ide@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH][SDK v1.2] sata: I/O load balancing
+Date: Fri, 13 Jan 2012 16:21:57 +0800
+Message-ID: <1326442917-26562-1-git-send-email-qiang.liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Qiang Liu <b32616@freescale.com>, Qiang Liu <qiang.liu@freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,60 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Martyn.  I'll look at that.  The userspace interface is covered by 
-the existing "spidev" driver.  The fpga child gets enumerated and added to 
-the spi bus as it should, it's just trying to get the "struct spi_device" 
-is confounding me.
+From: Qiang Liu <b32616@freescale.com>
 
-On Fri, 13 Jan 2012, Martyn Welch wrote:
+Reduce interrupt singnals through reset Interrupt Coalescing Control Reg.
+Increase the threshold value of interrupt and timer will reduce the number
+of complete interrupt sharply. Improve the system performance effectively.
 
-> On 12/01/12 16:02, Michael Remski wrote:
->> kernel 2.6.33
->>
->> relevant section of dts has:
->> spi@7000 {
->>     fpga0: fpga@0 {
->>         #address-cells = <1>;
->>         #size-cells = <0>;
->>         compatible = "fsl, espi-fpga";
->>         reg = <0>;
->>         linux,modalias = "spidev";
->>         spi-max-frequency = <1572864>;
->>     };
->> }
->>
->>
->> I have another device driver that needs to talk to this fpga device, but for
->> the life of me I can't figure out the appropriate hooks to get there. The
->> device can be talked to from userland via /dev/spixyx.k, but how do I get to
->> the device from another driver?
->>
->> Any little hints would be appreciated.  Upgrading kernel is not an option
->> (sorry).
->>
->
-> We have a FPGA that provides a number of different functions. Each function is
-> provided in a distinct register set. We have multiple entries in the DTS, one
-> for each piece of functionality. The drivers are then able to bind separately
-> against the required registers. So in the case of
-> "arch/powerpc/boot/dts/gef_ppc9a.dts", "fpga@4,0", "wdt@4,2000", "wdt@4,2010",
-> "pic@4,4000" and "gpio@7,14000" are all provided by the same FPGA and each has
-> it's own driver. However, I've just realised our FPGA is memory mapped and
-> looking at your DTS snippet yours isn't.
->
-> The only clean way I can think about doing it via spi would be to have a
-> driver that provides an in-kernel interface to access the functionality in the
-> FPGA (which binds to this entry in the DTS), then modify the driver providing
-> the user space access to use that and also use that interface for other
-> drivers needing access to the FPGA. Depending on the level of extrapolation
-> provided by the existing user space driver, this may be possible without
-> breaking anything in user space.
->
-> Martyn
->
-> -- 
-> Martyn Welch (Lead Software Engineer)  | Registered in England and Wales
-> GE Intelligent Platforms               | (3828642) at 100 Barbirolli Square
-> T +44(0)1327322748                     | Manchester, M2 3AB
-> E martyn.welch@ge.com                  | VAT:GB 927559189
->
+Signed-off-by: Qiang Liu <qiang.liu@freescale.net>
+---
+Description:
+  1. sata-fsl interrupt will be raised 130 thousand times when write 8G file
+(dd if=/dev/zero of=/dev/sda2 bs=128K count=65536);
+  2. most of interrupts raised because of only 1-4 commands completed;
+  3. only 30 thousand times will be raised after set max interrupt threshold,
+more interrupts are coalesced as the description of ICC;
+
+Performance Improvement:
+  use top command,
+  [root@p2020ds root]# dd if=/dev/zero of=/dev/sda2 bs=128K count=65536 &
+  [root@p2020ds root]# top
+
+   CPU %  |  dd   |  flush-8:0 | softirq
+  ---------------------------------------
+   before | 20-22 |    17-19   |    7
+  ---------------------------------------
+   after  | 18-21 |    15-16   |    5
+  ---------------------------------------
+
+ drivers/ata/sata_fsl.c |   19 ++++++++++++++++++-
+ 1 files changed, 18 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index 3547000..93f8b00 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -6,7 +6,7 @@
+  * Author: Ashish Kalra <ashish.kalra@freescale.com>
+  * Li Yang <leoli@freescale.com>
+  *
+- * Copyright (c) 2006-2007, 2011 Freescale Semiconductor, Inc.
++ * Copyright (c) 2006-2007, 2011-2012 Freescale Semiconductor, Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -162,6 +162,16 @@ enum {
+ };
+
+ /*
++ * Interrupt Coalescing Control Register bitdefs
++ */
++enum {
++	ICC_MIN_INT_THRESHOLD_COUNT = (1 << 24),
++	ICC_MAX_INT_THRESHOLD_COUNT = (((1 << 4) - 1) << 24),
++	ICC_MIN_INT_THRESHOLD_TIMER = 1,
++	ICC_MAX_INT_THRESHOLD_TIMER = ((1 << 18) - 1),
++};
++
++/*
+  * SATA Superset Registers
+  */
+ enum {
+@@ -460,6 +470,13 @@ static unsigned int sata_fsl_qc_issue(struct ata_queued_cmd *qc)
+ 	/* Simply queue command to the controller/device */
+ 	iowrite32(1 << tag, CQ + hcr_base);
+
++	/*
++	 * reset the number of command complete bits which will cause the
++	 * interrupt to be signaled
++	 */
++	iowrite32(ICC_MAX_INT_THRESHOLD_COUNT | ICC_MAX_INT_THRESHOLD_TIMER,
++			ICC + hcr_base);
++
+ 	VPRINTK("xx_qc_issue called, tag=%d, CQ=0x%x, CA=0x%x\n",
+ 		tag, ioread32(CQ + hcr_base), ioread32(CA + hcr_base));
+
+--
+1.6.4
