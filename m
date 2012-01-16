@@ -1,25 +1,22 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1D7FB6EFF
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2012 03:13:04 +1100 (EST)
-Message-ID: <4F144C86.5000403@freescale.com>
-Date: Mon, 16 Jan 2012 10:12:54 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>, Florian Tobias Schandinat
- <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
-References: <19504.1326673788@neuling.org> <4F1370C9.9010400@freescale.com>
- <21913.1326675139@neuling.org> <4F138CBB.1080901@freescale.com>
- <21370.1326683320@neuling.org>
-In-Reply-To: <21370.1326683320@neuling.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C78CCB6EEC
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2012 06:25:26 +1100 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1326435694.23910.229.camel@pasglop>
+Date: Mon, 16 Jan 2012 13:21:51 -0600
+Message-Id: <5742F9CB-77C0-40AF-9719-B55AB2C17D8C@kernel.crashing.org>
+References: <1326435694.23910.229.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,20 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling wrote:
-> From: Michael Neuling <mikey@neuling.org>
-> 
-> [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
-> 
-> Fix a compiler errors introduced in:
->   commit ddd3d905436b572ebadc09dcf2d12ca5b37020a0
->   Author: Timur Tabi <timur@freescale.com>
->   drivers/video: fsl-diu-fb: merge all allocated data into one block
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Acked-by: Timur Tabi <timur@freescale.com>
+On Jan 13, 2012, at 12:21 AM, Benjamin Herrenschmidt wrote:
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+> Hi Linus !
+>=20
+> Please pull this couple of important bug fixes (a commit
+> that went in breaks booting on some machines, this fixes
+> it properly).
+>=20
+> Thanks !
+>=20
+> Cheers,
+> Ben.
+>=20
+> The following changes since commit =
+7b3480f8b701170c046e1ed362946f5f0d005e13:
+>=20
+>  Merge tag 'for-linus-3.3' of git://git.infradead.org/mtd-2.6 =
+(2012-01-10 13:45:22 -0800)
+>=20
+> are available in the git repository at:
+>=20
+>  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+>=20
+> Anton Blanchard (1):
+>      powerpc: Fix RCU idle and hcall tracing
+>=20
+> Li Zhong (1):
+>      powerpc: Fix unpaired __trace_hcall_entry and __trace_hcall_exit
+>=20
+> arch/powerpc/kernel/idle.c              |   12 ++----------
+> arch/powerpc/platforms/pseries/hvCall.S |    3 ++-
+> arch/powerpc/platforms/pseries/lpar.c   |   14 ++++++++++----
+> 3 files changed, 14 insertions(+), 15 deletions(-)
+
+Ben,
+
+This doesnt appear to have the compile fix for p1022_ds.c.
+
+- k=
