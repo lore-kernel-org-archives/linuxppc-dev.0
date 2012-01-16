@@ -1,22 +1,24 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D2FA91007D2
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2012 00:30:46 +1100 (EST)
-Subject: Re: [PATCH v3] KVM: Move gfn_to_memslot() to kvm_host.h
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20120113060951.GB15875@drongo>
-Date: Mon, 16 Jan 2012 14:30:41 +0100
-Message-Id: <E1127F8D-E42E-44C7-B869-2B46C2812C8F@suse.de>
-References: <20111220092102.GA5626@bloggs.ozlabs.ibm.com>
- <20120112104115.GA32021@bloggs.ozlabs.ibm.com>
- <20120113060951.GB15875@drongo>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Avi Kivity <avi@redhat.com>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4F4DCB6EFF
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2012 03:12:33 +1100 (EST)
+Message-ID: <4F144C6B.4020706@freescale.com>
+Date: Mon, 16 Jan 2012 10:12:27 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
+References: <19504.1326673788@neuling.org> <4F1370C9.9010400@freescale.com>
+ <21913.1326675139@neuling.org> <4F138CBB.1080901@freescale.com>
+ <21370.1326683320@neuling.org>
+In-Reply-To: <21370.1326683320@neuling.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael Neuling wrote:
+> drivers/video/fsl-diu-fb.c: In function 'fsl_diu_suspend':
+> drivers/video/fsl-diu-fb.c:1435: error: incompatible type for argument 1 of 'disable_lcdc'
+> drivers/video/fsl-diu-fb.c:592: note: expected 'struct fb_info *' but argument is of type 'struct fb_info'
+> drivers/video/fsl-diu-fb.c: In function 'fsl_diu_resume':
+> drivers/video/fsl-diu-fb.c:1445: error: incompatible type for argument 1 of 'enable_lcdc'
+> drivers/video/fsl-diu-fb.c:583: note: expected 'struct fb_info *' but argument is of type 'struct fb_info'
 
-On 13.01.2012, at 07:09, Paul Mackerras wrote:
+I figured out what the problem is.  I never compiled a configuration with
+CONFIG_PM enabled.  For some reason, CONFIG_PM is disabled when SMP is
+enabled, and I only tested with mpc85xx_smp_defconfig.
 
-> This moves __gfn_to_memslot() and search_memslots() from kvm_main.c to
-> kvm_host.h to reduce the code duplication caused by the need for
-> non-modular code in arch/powerpc/kvm/book3s_hv_rm_mmu.c to call
-> gfn_to_memslot() in real mode.
->=20
-> Rather than putting gfn_to_memslot() itself in a header, which would
-> lead to increased code size, this puts __gfn_to_memslot() in a header.
-> Then, the non-modular uses of gfn_to_memslot() are changed to call
-> __gfn_to_memslot() instead.  This way there is only one place in the
-> source code that needs to be changed should the gfn_to_memslot()
-> implementation need to be modified.
->=20
-> On powerpc, the Book3S HV style of KVM has code that is called from
-> real mode which needs to call gfn_to_memslot() and thus needs this.
-> (Module code is allocated in the vmalloc region, which can't be
-> accessed in real mode.)
->=20
-> With this, we can remove builtin_gfn_to_memslot() from =
-book3s_hv_rm_mmu.c.
-
-Which tree is this against? I got this diff between your patch and the =
-patch when applied on my tree:
-
--@@ -97,7 +78,7 @@ static void remove_revmap_chain(struct kvm *kvm, long =
-pte_index,
-- 	rev =3D real_vmalloc_addr(&kvm->arch.revmap[pte_index]);
-- 	ptel =3D rev->guest_rpte;
-+@@ -99,7 +80,7 @@ static void remove_revmap_chain(struct kvm *kvm, long =
-pte_index,
-+ 	rcbits =3D hpte_r & (HPTE_R_R | HPTE_R_C);
-+ 	ptel =3D rev->guest_rpte |=3D rcbits;
-
-Since this is completely unrelated to the actual change, I'll apply the =
-patch either way. It'd just be interesting to know.
-
-
-Alex
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
