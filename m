@@ -1,22 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C78CCB6EEC
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2012 06:25:26 +1100 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1326435694.23910.229.camel@pasglop>
-Date: Mon, 16 Jan 2012 13:21:51 -0600
-Message-Id: <5742F9CB-77C0-40AF-9719-B55AB2C17D8C@kernel.crashing.org>
-References: <1326435694.23910.229.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2DE221007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2012 06:37:24 +1100 (EST)
+Message-ID: <4F147C49.40008@freescale.com>
+Date: Mon, 16 Jan 2012 13:36:41 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Xu Jiucheng <B37781@freescale.com>
+Subject: Re: [PATCH 1/2 v2] powerpc/85xx: Add dts for P1021RDB-PC board
+References: <1326697208-1519-1-git-send-email-B37781@freescale.com>
+In-Reply-To: <1326697208-1519-1-git-send-email-B37781@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 01/16/2012 01:00 AM, Xu Jiucheng wrote:
+> +	mdio@24000 {
+> +		phy0: ethernet-phy@0 {
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <3 1>;
+> +			reg = <0x0>;
+> +		};
+> +
+> +		phy1: ethernet-phy@1 {
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <2 1>;
+> +			reg = <0x1>;
+> +		};
 
-On Jan 13, 2012, at 12:21 AM, Benjamin Herrenschmidt wrote:
+pq3-mpic.dtsi (included by p1021si-post.dtsi) uses 4-cell interrupt
+specifiers, so they need to be used everywhere.
 
-> Hi Linus !
->=20
-> Please pull this couple of important bug fixes (a commit
-> that went in breaks booting on some machines, this fixes
-> it properly).
->=20
-> Thanks !
->=20
-> Cheers,
-> Ben.
->=20
-> The following changes since commit =
-7b3480f8b701170c046e1ed362946f5f0d005e13:
->=20
->  Merge tag 'for-linus-3.3' of git://git.infradead.org/mtd-2.6 =
-(2012-01-10 13:45:22 -0800)
->=20
-> are available in the git repository at:
->=20
->  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
->=20
-> Anton Blanchard (1):
->      powerpc: Fix RCU idle and hcall tracing
->=20
-> Li Zhong (1):
->      powerpc: Fix unpaired __trace_hcall_entry and __trace_hcall_exit
->=20
-> arch/powerpc/kernel/idle.c              |   12 ++----------
-> arch/powerpc/platforms/pseries/hvCall.S |    3 ++-
-> arch/powerpc/platforms/pseries/lpar.c   |   14 ++++++++++----
-> 3 files changed, 14 insertions(+), 15 deletions(-)
-
-Ben,
-
-This doesnt appear to have the compile fix for p1022_ds.c.
-
-- k=
+-Scott
