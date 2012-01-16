@@ -1,22 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CB449B6F65
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2012 16:05:28 +1100 (EST)
-Message-ID: <1326603920.26116.18.camel@pasglop>
-Subject: Re: next BUG: using smp_processor_id() in preemptible
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hughd@google.com>
-Date: Sun, 15 Jan 2012 16:05:20 +1100
-In-Reply-To: <alpine.LSU.2.00.1201141419530.1266@eggly.anvils>
-References: <alpine.LSU.2.00.1112051539100.3938@sister.anvils>
- <alpine.LSU.2.00.1112220405410.23876@eggly.anvils>
- <1324588672.6632.8.camel@pasglop>
- <alpine.LSU.2.00.1201141419530.1266@eggly.anvils>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+Subject: [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
+Date: Mon, 16 Jan 2012 11:29:48 +1100
+Message-ID: <19504.1326673788@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +16,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-01-14 at 14:21 -0800, Hugh Dickins wrote:
-> On Fri, 23 Dec 2011, Benjamin Herrenschmidt wrote:
-> > On Thu, 2011-12-22 at 04:07 -0800, Hugh Dickins wrote:
-> > > On Mon, 5 Dec 2011, Hugh Dickins wrote:
-> > > 
-> > > > 3.2.0-rc3-next-20111202 with CONFIG_DEBUG_PREEMPT=y gives me lots of
-> > > > 
-> > > > Dec  4 20:03:19 thorn kernel: BUG: using smp_processor_id() in preemptible [00000000] code: startpar/1365
-> > > > Dec  4 20:03:19 thorn kernel: caller is .arch_local_irq_restore+0x44/0x90
-> > > > Dec  4 20:03:19 thorn kernel: Call Trace:
-> > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7c60] [c000000000011fe8] .show_stack+0x6c/0x16c (unreliable)
-> > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7d10] [c00000000024318c] .debug_smp_processor_id+0xe4/0x11c
-> > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7da0] [c00000000000e2e8] .arch_local_irq_restore+0x44/0x90
-> > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7e30] [c000000000005870] .do_hash_page+0x70/0x74
-> > > > Dec  4 20:03:21 thorn kernel: debug_smp_processor_id: 21950 callbacks suppressed
-> > > > 
-> > > > from the u64 *next_tb = &__get_cpu_var(decrementers_next_tb)
-> > > > in decrementer_check_overflow(): I've no idea whether it's safe
-> > > > just to use get_cpu_var then put_cpu_var there instead,
-> > > > but no hurry, I can survive with DEBUG_PREEMPT off.
-> > > 
-> > > Still a problem in 3.2.0-rc6-next-20111222
-> > 
-> > Ah forgot about that, I'll have a look. Thanks for the reminder.
-> 
-> I'm afraid it's now blighting Linus's tree for 3.3.
+Fix a bunch of compiler errors and warnings introduced in:
+  commit ddd3d905436b572ebadc09dcf2d12ca5b37020a0
+  Author: Timur Tabi <timur@freescale.com>
+  drivers/video: fsl-diu-fb: merge all allocated data into one block
 
-Grrr, my memory is a colander... And now am in Ballarat for the week
-with a semi working 3g connection. I'll see what I can do.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Timur: you do compile test your patches, right? :-P
 
-Cheers,
-Ben.
+This is effecting mpc85xx_defconfig on mainline (and has been in
+linux-next for while already).
+
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index acf292b..78cac52 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -366,7 +366,7 @@ struct mfb_info {
+  */
+ struct fsl_diu_data {
+ 	dma_addr_t dma_addr;
+-	struct fb_info fsl_diu_info[NUM_AOIS];
++	struct fb_info *fsl_diu_info[NUM_AOIS];
+ 	struct mfb_info mfb[NUM_AOIS];
+ 	struct device_attribute dev_attr;
+ 	unsigned int irq;
+@@ -608,8 +608,8 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
+ 	int lower_aoi_is_open, upper_aoi_is_open;
+ 	__u32 base_plane_width, base_plane_height, upper_aoi_height;
+ 
+-	base_plane_width = data->fsl_diu_info[0].var.xres;
+-	base_plane_height = data->fsl_diu_info[0].var.yres;
++	base_plane_width = data->fsl_diu_info[0]->var.xres;
++	base_plane_height = data->fsl_diu_info[0]->var.yres;
+ 
+ 	if (mfbi->x_aoi_d < 0)
+ 		mfbi->x_aoi_d = 0;
+@@ -624,7 +624,7 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
+ 		break;
+ 	case PLANE1_AOI0:
+ 	case PLANE2_AOI0:
+-		lower_aoi_mfbi = data->fsl_diu_info[index+1].par;
++		lower_aoi_mfbi = data->fsl_diu_info[index+1]->par;
+ 		lower_aoi_is_open = lower_aoi_mfbi->count > 0 ? 1 : 0;
+ 		if (var->xres > base_plane_width)
+ 			var->xres = base_plane_width;
+@@ -642,8 +642,8 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
+ 		break;
+ 	case PLANE1_AOI1:
+ 	case PLANE2_AOI1:
+-		upper_aoi_mfbi = data->fsl_diu_info[index-1].par;
+-		upper_aoi_height = data->fsl_diu_info[index-1].var.yres;
++		upper_aoi_mfbi = data->fsl_diu_info[index-1]->par;
++		upper_aoi_height = data->fsl_diu_info[index-1]->var.yres;
+ 		upper_aoi_bottom = upper_aoi_mfbi->y_aoi_d + upper_aoi_height;
+ 		upper_aoi_is_open = upper_aoi_mfbi->count > 0 ? 1 : 0;
+ 		if (var->xres > base_plane_width)
+@@ -1469,7 +1469,7 @@ static ssize_t store_monitor(struct device *device,
+ 		unsigned int i;
+ 
+ 		for (i=0; i < NUM_AOIS; i++)
+-			fsl_diu_set_par(&data->fsl_diu_info[i]);
++			fsl_diu_set_par(data->fsl_diu_info[i]);
+ 	}
+ 	return count;
+ }
+@@ -1524,7 +1524,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	spin_lock_init(&data->reg_lock);
+ 
+ 	for (i = 0; i < NUM_AOIS; i++) {
+-		struct fb_info *info = &data->fsl_diu_info[i];
++		struct fb_info *info = data->fsl_diu_info[i];
+ 
+ 		info->device = &pdev->dev;
+ 		info->par = &data->mfb[i];
+@@ -1597,7 +1597,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	out_be32(&data->diu_reg->desc[2], data->dummy_ad.paddr);
+ 
+ 	for (i = 0; i < NUM_AOIS; i++) {
+-		ret = install_fb(&data->fsl_diu_info[i]);
++		ret = install_fb(data->fsl_diu_info[i]);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "could not register fb %d\n", i);
+ 			goto error;
+@@ -1625,7 +1625,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 
+ error:
+ 	for (i = 0; i < NUM_AOIS; i++)
+-		uninstall_fb(&data->fsl_diu_info[i]);
++		uninstall_fb(data->fsl_diu_info[i]);
+ 
+ 	iounmap(data->diu_reg);
+ 
+@@ -1641,11 +1641,11 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 	int i;
+ 
+ 	data = dev_get_drvdata(&pdev->dev);
+-	disable_lcdc(&data->fsl_diu_info[0]);
++	disable_lcdc(data->fsl_diu_info[0]);
+ 	free_irq_local(data);
+ 
+ 	for (i = 0; i < NUM_AOIS; i++)
+-		uninstall_fb(&data->fsl_diu_info[i]);
++		uninstall_fb(data->fsl_diu_info[i]);
+ 
+ 	iounmap(data->diu_reg);
+ 
