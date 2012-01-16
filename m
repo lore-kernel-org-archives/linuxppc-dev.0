@@ -1,21 +1,25 @@
-Return-Path: <B37781@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 516151007D3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2012 17:57:51 +1100 (EST)
-From: Xu Jiucheng <B37781@freescale.com>
-To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2 v2] powerpc/85xx: Added P1021RDB-PC Platform support
-Date: Mon, 16 Jan 2012 15:00:08 +0800
-Message-ID: <1326697208-1519-2-git-send-email-B37781@freescale.com>
-In-Reply-To: <1326697208-1519-1-git-send-email-B37781@freescale.com>
-References: <1326697208-1519-1-git-send-email-B37781@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 16 Jan 2012 12:57:10 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 01/14] common: dma-mapping: introduce alloc_attrs and
+ free_attrs methods
+Message-ID: <20120116015710.GD4512@truffala.fritz.box>
+References: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
+ <1324643253-3024-2-git-send-email-m.szyprowski@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Xu Jiucheng <B37781@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1324643253-3024-2-git-send-email-m.szyprowski@samsung.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+ linaro-mm-sig@lists.linaro.org, Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ discuss@x86-64.org, linux-kernel@vger.kernel.org,
+ Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Xu Jiucheng <B37781@freescale.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+On Fri, Dec 23, 2011 at 01:27:20PM +0100, Marek Szyprowski wrote:
+> Introduce new generic alloc and free methods with attributes argument.
+> 
+> Existing alloc_coherent and free_coherent can be implemented on top of the
+> new calls with NULL attributes argument. Later also dma_alloc_non_coherent
+> can be implemented using DMA_ATTR_NONCOHERENT attribute as well as
+> dma_alloc_writecombine with separate DMA_ATTR_WRITECOMBINE attribute.
+> 
+> This way the drivers will get more generic, platform independent way of
+> allocating dma buffers with specific parameters.
+> 
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index ccf520e..1273381 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -90,6 +90,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
- 
- machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
- machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
-+machine_device_initcall(p1021_rdb_pc, mpc85xx_common_publish_devices);
- 
- /*
-  * Called very early, device-tree isn't unflattened
-@@ -112,6 +113,15 @@ static int __init p1020_rdb_probe(void)
- 	return 0;
- }
- 
-+static int __init p1021_rdb_pc_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (of_flat_dt_is_compatible(root, "fsl,P1021RDB-PC"))
-+		return 1;
-+	return 0;
-+}
-+
- define_machine(p2020_rdb) {
- 	.name			= "P2020 RDB",
- 	.probe			= p2020_rdb_probe,
-@@ -139,3 +149,17 @@ define_machine(p1020_rdb) {
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
- };
-+
-+define_machine(p1021_rdb_pc) {
-+	.name			= "P1021 RDB-PC",
-+	.probe			= p1021_rdb_pc_probe,
-+	.setup_arch		= mpc85xx_rdb_setup_arch,
-+	.init_IRQ		= mpc85xx_rdb_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
+Looks sensible to me.
+
+Reviewed-by: David Gibson <david@gibson.dropbear.ud.au>
 -- 
-1.6.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
