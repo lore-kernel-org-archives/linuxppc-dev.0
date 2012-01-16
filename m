@@ -1,37 +1,21 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 10ECE10088E
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2012 22:52:32 +1100 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <dwg@au1.ibm.com>;
- Mon, 16 Jan 2012 11:48:40 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q0GBqNfe5251106
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2012 22:52:23 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q0GBqMVX007951
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2012 22:52:23 +1100
-Date: Mon, 16 Jan 2012 19:18:33 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature
- flag
-Message-ID: <20120116081833.GG4512@truffala.fritz.box>
-References: <20111208111212.GB3720@in.ibm.com>
- <20111208112330.GB24484@in.ibm.com>
- <20111221005502.GE5188@truffala.fritz.box>
- <20111222093447.GD26407@in.ibm.com>
-MIME-Version: 1.0
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 368421007D3
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2012 00:04:37 +1100 (EST)
+Subject: Re: [RFC PATCH 1/2] KVM: PPC: Book3S HV: Make virtual processor area
+ registration more robust
+Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111222093447.GD26407@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thiago Jung Bauermann <bauerman@br.ibm.com>,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <20111220102257.GC5626@bloggs.ozlabs.ibm.com>
+Date: Mon, 16 Jan 2012 14:04:29 +0100
+Message-Id: <1A57B98F-A4C7-457D-A52A-4F67D5902E32@suse.de>
+References: <20111220102142.GB5626@bloggs.ozlabs.ibm.com>
+ <20111220102257.GC5626@bloggs.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,36 +25,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 22, 2011 at 03:04:47PM +0530, K.Prasad wrote:
-> On Wed, Dec 21, 2011 at 11:55:02AM +1100, David Gibson wrote:
-> > On Thu, Dec 08, 2011 at 04:53:30PM +0530, K.Prasad wrote:
-> > > While PPC_PTRACE_SETHWDEBUG ptrace flag in PowerPC accepts
-> > > PPC_BREAKPOINT_MODE_EXACT mode of breakpoint, the same is not intimated to the
-> > > user-space debuggers (like GDB) who may want to use it. Hence we introduce a
-> > > new PPC_DEBUG_FEATURE_DATA_BP_EXACT flag which will be populated on the
-> > > "features" member of "struct ppc_debug_info" to advertise support for the
-> > > same on Book3E PowerPC processors.
-> > 
-> > Hrm.  I had assumed the reason there wasn't a feature bit for EXACT
-> > originally was that EXACT breakpoints were *always* supposed to be
-> > supported by the new interface.
-> >
-> 
-> Okay. Although BookS doesn't support EXACT breakpoints, it is possible
-> (after the introduction of new hw-breakpoint interfaces) to request for
-> a breakpoint of length 1 Byte.
 
-Hrm.  An EXACT breakpoint is not exactly the same as a range
-breakpoint of length 1 (consider unaligned accesses).  But despite
-that, it should be possible to implement exact breakpoints on Book3S
-server hardware with some software filtering.
+On 20.12.2011, at 11:22, Paul Mackerras wrote:
 
-And since that leaves no hardware that *can't* implement exact
-breakpoints (directly or indirectly), I'm not yet convinced of the
-need for a flag bit.
+> The PAPR API allows three sorts of per-virtual-processor areas to be
+> registered (VPA, SLB shadow buffer, and dispatch trace log), and
+> furthermore, these can be registered and unregistered for another
+> virtual CPU.  Currently we just update the vcpu fields pointing to
+> these areas at the time of registration or unregistration.  If this
+> is done on another vcpu, there is the possibility that the target vcpu
+> is using those fields at the time and could end up using a bogus
+> pointer and corrupting memory.
+>=20
+> This fixes the race by making the target cpu itself do the update, so
+> we can be sure that the update happens at a time when the fields =
+aren't
+> being used.  These are updated from a set of 'next_*' fields, which
+> are protected by a spinlock.  (We could have just taken the spinlock
+> when using the vpa, slb_shadow or dtl fields, but that would mean
+> taking the spinlock on every guest entry and exit.)
+>=20
+> The code in do_h_register_vpa now takes the spinlock and updates the
+> 'next_*' fields.  There is also a set of '*_pending' flags to indicate
+> that an update is pending.
+>=20
+> This also changes 'struct dtl' (which was undefined) to 'struct =
+dtl_entry',
+> which is what the rest of the kernel uses.
+>=20
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> arch/powerpc/include/asm/kvm_host.h |   15 +++-
+> arch/powerpc/kvm/book3s_hv.c        |  167 =
++++++++++++++++++++++++++----------
+> 2 files changed, 131 insertions(+), 51 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/kvm_host.h =
+b/arch/powerpc/include/asm/kvm_host.h
+> index 1cb6e52..b1126c1 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -82,7 +82,7 @@ struct kvm_vcpu;
+>=20
+> struct lppaca;
+> struct slb_shadow;
+> -struct dtl;
+> +struct dtl_entry;
+>=20
+> struct kvm_vm_stat {
+> 	u32 remote_tlb_flush;
+> @@ -449,9 +449,18 @@ struct kvm_vcpu_arch {
+> 	u32 last_inst;
+>=20
+> 	struct lppaca *vpa;
+> +	struct lppaca *next_vpa;
+> 	struct slb_shadow *slb_shadow;
+> -	struct dtl *dtl;
+> -	struct dtl *dtl_end;
+> +	struct slb_shadow *next_slb_shadow;
+> +	struct dtl_entry *dtl;
+> +	struct dtl_entry *dtl_end;
+> +	struct dtl_entry *dtl_ptr;
+> +	struct dtl_entry *next_dtl;
+> +	struct dtl_entry *next_dtl_end;
+> +	u8 vpa_pending;
+> +	u8 slb_shadow_pending;
+> +	u8 dtl_pending;
+> +	spinlock_t vpa_update_lock;
+>=20
+> 	wait_queue_head_t *wqp;
+> 	struct kvmppc_vcore *vcore;
+> diff --git a/arch/powerpc/kvm/book3s_hv.c =
+b/arch/powerpc/kvm/book3s_hv.c
+> index c11d960..6f6e88d 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -140,7 +140,7 @@ static unsigned long do_h_register_vpa(struct =
+kvm_vcpu *vcpu,
+> {
+> 	struct kvm *kvm =3D vcpu->kvm;
+> 	unsigned long len, nb;
+> -	void *va;
+> +	void *va, *free_va, *tvpa, *dtl, *ss;
+> 	struct kvm_vcpu *tvcpu;
+> 	int err =3D H_PARAMETER;
+>=20
+> @@ -152,6 +152,8 @@ static unsigned long do_h_register_vpa(struct =
+kvm_vcpu *vcpu,
+> 	flags &=3D 7;
+> 	if (flags =3D=3D 0 || flags =3D=3D 4)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+This could probably use a new variable name. Also, what do 0 and 4 mean? =
+Constant defines would be nice here.
+
+> 		return H_PARAMETER;
+> +	free_va =3D va =3D NULL;
+> +	len =3D 0;
+> 	if (flags < 4) {
+> 		if (vpa & 0x7f)
+> 			return H_PARAMETER;
+> @@ -165,65 +167,122 @@ static unsigned long do_h_register_vpa(struct =
+kvm_vcpu *vcpu,
+
+[pasted from real source]
+>                 va =3D kvmppc_pin_guest_page(kvm, vpa, &nb);
+
+Here you're pinning the page, setting va to that temporarily available =
+address.
+
+[...]
+
+> 			len =3D *(unsigned short *)(va + 4);
+
+This is a condition on (flags <=3D 1). We bail out on flags =3D=3D 0 a =
+few lines up. Just move this whole thing into the respective function =
+handlers.
+
+> 		else
+> 			len =3D *(unsigned int *)(va + 4);
+
+va + 4 isn't really descriptive. Is this a defined struct? Why not =
+actually define one which you can just read data from? Or at least make =
+this a define too. Reading random numbers in code is barely readable.
+
+> +		free_va =3D va;
+
+Now free_va is the temporarily available address.
+
+> 		if (len > nb)
+> 			goto out_unpin;
+> -		switch (flags) {
+> -		case 1:		/* register VPA */
+> -			if (len < 640)
+> -				goto out_unpin;
+> -			if (tvcpu->arch.vpa)
+> -				kvmppc_unpin_guest_page(kvm, =
+vcpu->arch.vpa);
+> -			tvcpu->arch.vpa =3D va;
+> -			init_vpa(vcpu, va);
+> -			break;
+> -		case 2:		/* register DTL */
+> -			if (len < 48)
+> -				goto out_unpin;
+> -			len -=3D len % 48;
+> -			if (tvcpu->arch.dtl)
+> -				kvmppc_unpin_guest_page(kvm, =
+vcpu->arch.dtl);
+> -			tvcpu->arch.dtl =3D va;
+> -			tvcpu->arch.dtl_end =3D va + len;
+> +	}
+> +
+> +	spin_lock(&tvcpu->arch.vpa_update_lock);
+> +
+> +	switch (flags) {
+> +	case 1:		/* register VPA */
+
+Yeah, these could also use defines :)
+
+
+> +		if (len < 640)
+> 			break;
+> -		case 3:		/* register SLB shadow buffer */
+> -			if (len < 16)
+> -				goto out_unpin;
+> -			if (tvcpu->arch.slb_shadow)
+> -				kvmppc_unpin_guest_page(kvm, =
+vcpu->arch.slb_shadow);
+> -			tvcpu->arch.slb_shadow =3D va;
+> +		free_va =3D tvcpu->arch.next_vpa;
+> +		tvcpu->arch.next_vpa =3D va;
+
+Now you're setting next_vpa to this temporarily available address? But =
+next_vpa will be used after va is getting free'd, no? Or is that why you =
+have free_va?
+
+Wouldn't it be easier to just map it every time we actually use it and =
+only shove the GPA around? We could basically save ourselves a lot of =
+the logic here.
+
+
+Alex
