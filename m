@@ -1,22 +1,29 @@
-Return-Path: <nvbolhuis@aimvalley.nl>
-Received: from mika.eatserver.nl (mika.eatserver.nl [195.20.9.75])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4E508B6F62
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2012 03:56:37 +1100 (EST)
-Message-ID: <4F15A83C.7020805@aimvalley.nl>
-Date: Tue, 17 Jan 2012 17:56:28 +0100
-From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Return-Path: <swarren@nvidia.com>
+From: Stephen Warren <swarren@nvidia.com>
+To: Michal Marek <mmarek@suse.cz>, Mark Salter <msalter@redhat.com>
+Date: Tue, 17 Jan 2012 09:20:47 -0800
+Subject: RE: [PATCH 2/2] Kbuild: Use dtc's -d (dependency) option
+Message-ID: <74CDBE0F657A3D45AFBB94109FB122FF17801D2255@HQMAIL01.nvidia.com>
+References: <1326134295-15547-1-git-send-email-swarren@nvidia.com>
+ <1326134295-15547-2-git-send-email-swarren@nvidia.com>
+ <1326310587.2535.291.camel@deneb.redhat.com> <4F1206F1.5090405@suse.cz>
+In-Reply-To: <4F1206F1.5090405@suse.cz>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Cannot wake-up from standby with MPC8313
-References: <4F047BF8.7090400@aimvalley.nl> <4F04BFEA.1050009@freescale.com>
- <4F05C8C2.9070401@aimvalley.nl> <4F05EA6B.9040902@freescale.com>
- <4F06FCBC.4090302@aimvalley.nl> <4F076187.2080308@freescale.com>
- <4F103C17.3080003@aimvalley.nl> <4F1486F1.7000406@freescale.com>
-In-Reply-To: <4F1486F1.7000406@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: Jonas Bonn <jonas@southpole.se>, Jon Loeliger <jdl@jdl.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>,
+ Arnd Bergmann <arnd@arndb.de>, Aurelien Jacquiot <a-jacquiot@ti.com>,
+ "linux@openrisc.net" <linux@openrisc.net>,
+ "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
+ Michal Simek <monstr@monstr.eu>, Rob Herring <rob.herring@calxeda.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Devicetree Discuss <devicetree-discuss@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/16/12 21:22, Scott Wood wrote:
-> On 01/13/2012 08:13 AM, Norbert van Bolhuis wrote:
->> I dumped SIPNR/SIMSR and uart IIR/EIR (since console triggers wake-up)
->> but they do not change just before entering standby (via
->> mpc6xx_enter_standby
->> which omits setting MSR_POW). uart IRQ is always enabled, unmasked and
->> not pending.
->>
->> I tried to log to physical memory to see what's going on whenever the
->> board fails to wake-up.
->> (I can examine physical memory after CPU is stuck in sleep, by connecting
->>   a JTAG debugger, start u-boot and stop after DDR2 SDRAM ctrl is
->>   re-configured)
->
-> Are you sure this isn't going to disturb anything?  Why does U-Boot need
-> to be involved, and the SDRAM reconfigured?
->
+Michal Marek wrote at Saturday, January 14, 2012 3:51 PM:
+> On 11.1.2012 20:36, Mark Salter wrote:
+> > On Mon, 2012-01-09 at 11:38 -0700, Stephen Warren wrote:
+> >> This hooks dtc into Kbuild's dependency system.
+> >>
+> >> Thus, for example, "make dtbs" will rebuild tegra-harmony.dtb if only
+> >> tegra20.dtsi has changed yet tegra-harmony.dts has not. The previous
+> >> lack of this feature recently caused me to have very confusing "git
+> >> bisect" results.
+> >>
+> >> For ARM, it's obvious what to add to $(targets). I'm not familiar enou=
+gh
+> >> with other architectures to know what to add there. Powerpc appears to
+> >> already add various .dtb files into $(targets), but the other archs ma=
+y
+> >> need something added to $(targets) to work.
+> >>
+> >> Signed-off-by: Stephen Warren <swarren@nvidia.com>
+> >>
+> >
+> > Acked-by: Mark Salter <msalter@redhat.com>
+> >
+> > For the arch/c6x bit.
+>=20
+> As the C6X port has been merged in this merge window, I can't easily
+> apply this patch to my kbuild branch and at the same time please Linus
+> by basing the pull request on a tagged release. So I'm going to drop the
+> arch/c6x part to keep the kbuild branch "pretty" and let either Mark or
+> Stephen send the patch to Linus directly, once he has merged the kbuild
+> branch. Would that work?
 
+I was assuming my patches were for 3.4 rather than 3.3, since it's pretty
+late for new features in 3.3. In that case, there wouldn't be an issue,
+right?
 
-If CPU is stuck in sleep, JTAG will send HRESET or SRESET (i'm nor sure
-which one it is) and u-boot is needed to reconfigure CPU and DDR2 SDRAM ctrl.
-SDRAM contents (for physical memory "unknown" to u-boot and linux) seems to
-survive such a soft-reset.
+If you do want to go ahead and push my patches into 3.3, your proposal
+looks fine to me. Mark, do you want me to push the patch to Linus, or
+do you want to pick it up?
 
+Thanks.
 
->> It looks like an interupt does occur, but do_IRQ seems to be stuck
->> in ppc_md.get_irq=ipic_get_irq where it reads SIVCR.
->
-> Stuck as in the load never completes, or as in ipic_get_irq() gets
-> called repeatedly?  If the latter, what value is it reading out?  Is the
-> interrupt pending in SIPNR at this point?
->
-
-
-I think I was wrong. I enabled tracing do_IRQ just a little bit too soon
-(in suspend_enter). The interrupt I saw was probably one that occured
-just before CPU entered sleep (mpc6xx_enter_standby).
-
-Right now I see no external interrupt happening, so that brings us back
-where we were before: I'm not getting an interrupt regardless of low-power state.
-So now my main question is: how can JTAG and/or any other external signal
-cause this ?
-
-Another weird thing I noticed is that whenever I dump CPU memmap
-(which starts at 0xe0000000) under linux it always crashes with a "check stop"
-when it is displaying somewhere at 0xe0000800-0xe0001000
-If I connect our JTAG debugger it never crashes and dumping CPU memmap
-always works.
-
-
----
-NvBolhuis
+--=20
+nvpublic
