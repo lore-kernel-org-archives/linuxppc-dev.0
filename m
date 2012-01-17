@@ -1,25 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 81A811007D4
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2012 23:19:24 +1100 (EST)
-Subject: Re: [RFC PATCH 1/2] KVM: PPC: Book3S HV: Make virtual processor area
- registration more robust
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20120117113140.GA9093@bloggs.ozlabs.ibm.com>
-Date: Tue, 17 Jan 2012 13:19:14 +0100
-Message-Id: <10F7042F-3E8C-485D-AF5F-7B6441CADC66@suse.de>
-References: <20111220102142.GB5626@bloggs.ozlabs.ibm.com>
- <20111220102257.GC5626@bloggs.ozlabs.ibm.com>
- <1A57B98F-A4C7-457D-A52A-4F67D5902E32@suse.de> <20120117055654.GB9170@drongo>
- <6D049B19-8A91-445A-9FBB-E4851D4F586E@suse.de>
- <20120117113140.GA9093@bloggs.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <matthias.fuchs@esd.eu>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+ [212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 80625B6EEC
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2012 01:14:06 +1100 (EST)
+Message-ID: <4F1581E2.9030400@esd.eu>
+Date: Tue, 17 Jan 2012 15:12:50 +0100
+From: Matthias Fuchs <matthias.fuchs@esd.eu>
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Problem with full speed devices on PowerPC MPC5121 host port
+References: <Pine.LNX.4.44L0.1201061258040.1326-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1201061258040.1326-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06.01.2012 19:03, Alan Stern wrote:
+> On Fri, 6 Jan 2012, Matthias Fuchs wrote:
+> 
+>> For my eyes it does not really look like a general USB issue.
+>> It looks like a problem with the Freescale EHCI implementation that is
+>> influenced by high interrupt or internal bus load caused by the flood ping.
+> 
+> Indeed, it might be a problem with the built-in Transaction Translator.  
+> That would explain why it affect full-speed devices.
+> 
+> However, I would expect the resetting the controller hardware (which 
+> happens when you reload the ehci-fsl driver) would fix any such issues.  
+> It's hard to imagine how a problem could survive a reset like that.
 
-On 17.01.2012, at 12:31, Paul Mackerras wrote:
+I did the tests again. When the error occured I reloaded the ehci-hcd driver and reconnected the device. It ends up with some kernel messages 
+that come up time after time:
 
-> On Tue, Jan 17, 2012 at 10:27:26AM +0100, Alexander Graf wrote:
->=20
->> The thing I was getting at was not the map during the lifetime, but
->> the map during registration. Currently we have:
->>=20
->> 1) Set VPA to x
->> 2) Assign feature y to VPA
->> 3) Use VPA
->>=20
->> 1 and 2 are the slow path, 3 occurs more frequently. So we want 3 to
->> be fast. 1 and 2 don't matter that much wrt performance.
->>=20
->> You are currently mapping the VPA at /, which gets you into this
->> map/unmap mess trying to free the previous mapping. If you moved the
->> map to step 2 and only stored the GPA at step 1, all map+unmap
->> operations except for final unmaps would be in one spot, so you
->> wouldn't need to construct this big complex state machine.
->=20
-> That might simplify things - I'll try it and see.  The worry with
-> doing the map/pin at 2 is that if anything goes wrong we no longer
-> have the opportunity to return an error for the H_REGISTER_VPA call,
-> so I'll have to at least do some checking in 1, leading to possibly
-> more code overall.
+usb 1-1: new full-speed USB device number 2 using fsl-ehci
+usb 1-1: device descriptor read/64, error -110
+usb 1-1: device descriptor read/64, error -110
+usb 1-1: new full-speed USB device number 3 using fsl-ehci
+usb 1-1: device descriptor read/64, error -110
+usb 1-1: device descriptor read/64, error -110
+usb 1-1: new full-speed USB device number 4 using fsl-ehci
+usb 1-1: device not accepting address 4, error -110
+usb 1-1: new full-speed USB device number 5 using fsl-ehci
+usb 1-1: device not accepting address 5, error -110
+hub 1-0:1.0: unable to enumerate USB device on port 1
 
-Well, then map and unmap it in step 1 and map it in step 2 again. We're =
-in the slow path so performance isn't critical. Readability and =
-maintainability however are :)
+A recommondation from freescale was to check the TXFILLTUNING register settings ("Initialization of this registers can produce problem if full-speed device is used").
 
+So I tried various values in the TXFILLTUNING register (I added this
+code to ehci_reset()). Finally I disabled USB streaming mode in the USBMODE register (set bit USBMODE_SDIS - btw., it should be defined as "1 << 4" in ehci_def.h at least for the MPC5121).
 
-Alex
+All this does not fix the problem or even have an impact.
+
+This is my stripped down version of the test:
+
+on the MPC5121 unit I do nothing but:
+
+$~ stty -F /dev/ttyUSB0 -echo -crtscts -cstopb
+$~ stty -F /dev/ttyUSB0 115200
+$~ while true; do \
+        read LINE < /dev/ttyUSB0 \
+        echo $LINE > /dev/ttyUSB0 \
+done
+
+The other side looks like this:
+
+$~ while true; do \
+	echo "_THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG 1234567890#" > /dev/ttyS0 \
+done
+
+and also I start a flood ping against the MPC5121 unit (.. to speed things up).
+
+Can anybody with a MPC5121 board try to reproduce this?
+
+Matthias
