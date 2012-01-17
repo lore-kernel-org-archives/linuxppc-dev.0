@@ -1,19 +1,16 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E65041009F2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2012 09:41:48 +1100 (EST)
-Subject: Re: [PATCH] powerpc/dts: update dts for p1020rdb
+Subject: Re: [PATCH 12/15] arch/powerpc/sysdev/fsl_pci.c: add missing iounmap
 Mime-Version: 1.0 (Apple Message framework v1251.1)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1326362665-9715-1-git-send-email-B32736@freescale.com>
-Date: Tue, 17 Jan 2012 16:41:50 -0600
-Message-Id: <11EACF46-96B0-467B-B397-7443EA3802B5@kernel.crashing.org>
-References: <y> <1326362665-9715-1-git-send-email-B32736@freescale.com>
-To: Zhicheng Fan <B32736@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1326362117-29371-12-git-send-email-Julia.Lawall@lip6.fr>
+Date: Tue, 17 Jan 2012 16:41:59 -0600
+Message-Id: <7BBF25FC-7FFA-4B35-A064-04D616327F12@kernel.crashing.org>
+References: <1326362117-29371-12-git-send-email-Julia.Lawall@lip6.fr>
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +21,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 12, 2012, at 4:04 AM, Zhicheng Fan wrote:
+On Jan 12, 2012, at 3:55 AM, Julia Lawall wrote:
 
-> nand: Sync base address with U-boot
-> sdhc: Add suppot auto cmd12
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 > 
-> Signed-off-by: Zhicheng Fan <B32736@freescale.com>
+> Add missing iounmap in error handling code, in a case where the function
+> already preforms iounmap on some other execution path.
+> 
+> A simplified version of the semantic match that finds this problem is as
+> follows: (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression e;
+> statement S,S1;
+> int ret;
+> @@
+> e = \(ioremap\|ioremap_nocache\)(...)
+> ... when != iounmap(e)
+> if (<+...e...+>) S
+> ... when any
+>    when != iounmap(e)
+> *if (...)
+>   { ... when != iounmap(e)
+>     return ...; }
+> ... when any
+> iounmap(e);
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
 > ---
-> arch/powerpc/boot/dts/fsl/p1020si-post.dtsi |    3 +++
-> arch/powerpc/boot/dts/p1020rdb.dts          |    2 +-
-> arch/powerpc/boot/dts/p1020rdb_36b.dts      |    2 +-
-> 3 files changed, 5 insertions(+), 2 deletions(-)
+> arch/powerpc/sysdev/fsl_pci.c |    5 +++--
+> 1 file changed, 3 insertions(+), 2 deletions(-)
 
 applied to merge
 
