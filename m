@@ -2,16 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 13C8FB6EFF
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2012 09:29:53 +1100 (EST)
-Date: Tue, 17 Jan 2012 16:26:17 -0600 (CST)
+ by ozlabs.org (Postfix) with ESMTPS id D4C2B1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2012 09:41:42 +1100 (EST)
+Subject: Re: [PATCH v2] DTS: fix cmd12 bug and add the chip compatible for
+ eSDHC
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Message-ID: <alpine.LFD.2.00.1201171625100.8416@right.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1325727656-18672-1-git-send-email-r66093@freescale.com>
+Date: Tue, 17 Jan 2012 16:41:42 -0600
+Message-Id: <B889992E-1181-4C1A-8E93-8C7784D91EAA@kernel.crashing.org>
+References: <1325727656-18672-1-git-send-email-r66093@freescale.com>
+To: "<r66093@freescale.com>" <r66093@freescale.com>
+Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,40 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
 
-Pulled in a few other minor fixes, in addition the the compile issue on
-p1022.
+On Jan 4, 2012, at 7:40 PM, <r66093@freescale.com> =
+<r66093@freescale.com> wrote:
 
-- k
+> From: Jerry Huang <Chang-Ming.Huang@freescale.com>
+>=20
+> Accordint to latest kernel, the auto-cmd12 property should be
+> "sdhci,auto-cmd12", and according to the SDHC binding and the =
+workaround for
+> the special chip, add the chip compatible for eSDHC: =
+"fsl,p1022-esdhc",
+> "fsl,mpc8536-esdhc", "fsl,p2020-esdhc" and "fsl,p1010-esdhc".
+>=20
+> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> ---
+> changes for v2:
+> 	- reverse the special compatible entries
+>=20
+> arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |    4 ++++
+> arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   |    3 ++-
+> arch/powerpc/boot/dts/fsl/p1022si-post.dtsi   |    3 ++-
+> arch/powerpc/boot/dts/fsl/p2020si-post.dtsi   |    4 ++++
+> 4 files changed, 12 insertions(+), 2 deletions(-)
 
-The following changes since commit c2bc3a316a7281f67e36b34dac2802cbe36a9128:
+applied to merge
 
-  Merge branch 'x86/rdrand' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip (2012-01-16 18:23:09 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
-
-Jerry Huang (1):
-      powerpc/85xx: Fix cmd12 bug and add the chip compatible for eSDHC
-
-Julia Lawall (1):
-      arch/powerpc/sysdev/fsl_pci.c: add missing iounmap
-
-Michael Neuling (1):
-      powerpc: fix compile error with 85xx/p1022_ds.c
-
-Zhicheng Fan (1):
-      powerpc/85xx: Fix minor issues in P1020RDB device tree
-
- arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |    4 ++++
- arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   |    3 ++-
- arch/powerpc/boot/dts/fsl/p1020si-post.dtsi   |    3 +++
- arch/powerpc/boot/dts/fsl/p1022si-post.dtsi   |    3 ++-
- arch/powerpc/boot/dts/fsl/p2020si-post.dtsi   |    4 ++++
- arch/powerpc/boot/dts/p1020rdb.dts            |    2 +-
- arch/powerpc/boot/dts/p1020rdb_36b.dts        |    2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c        |    1 +
- arch/powerpc/sysdev/fsl_pci.c                 |    5 +++--
- 9 files changed, 21 insertions(+), 6 deletions(-)
+- k=
