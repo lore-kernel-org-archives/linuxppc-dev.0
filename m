@@ -1,35 +1,18 @@
-Return-Path: <michael_barry@ie.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp11.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B3D61007D3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2012 15:01:39 +1100 (EST)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
- Tue, 17 Jan 2012 04:01:34 -0000
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by d06nrmr1507.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q0H41Wnv2334860
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2012 04:01:32 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (loopback [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q0H41W0t016283
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2012 21:01:32 -0700
-Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
- [9.149.104.171])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- q0H41Wsv016274
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2012 21:01:32 -0700
-Subject: AUTO: Michael Barry is out of the office (returning 18/01/2012)
-From: Michael Barry <michael_barry@ie.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <OFC78E68E4.D049F130-ON80257988.001618AF-80257988.001618AF@ie.ibm.com>
-Date: Tue, 17 Jan 2012 04:01:21 +0000
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 17 Jan 2012 16:02:19 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH v3] KVM: Move gfn_to_memslot() to kvm_host.h
+Message-ID: <20120117050219.GA9170@drongo>
+References: <20111220092102.GA5626@bloggs.ozlabs.ibm.com>
+ <20120112104115.GA32021@bloggs.ozlabs.ibm.com>
+ <20120113060951.GB15875@drongo>
+ <E1127F8D-E42E-44C7-B869-2B46C2812C8F@suse.de>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1127F8D-E42E-44C7-B869-2B46C2812C8F@suse.de>
+Cc: linuxppc-dev@ozlabs.org, Avi Kivity <avi@redhat.com>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,13 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jan 16, 2012 at 02:30:41PM +0100, Alexander Graf wrote:
 
-I am out of the office until 18/01/2012.
+> Which tree is this against? I got this diff between your patch and the patch when applied on my tree:
 
+It's against your tree (previously) plus my first 13-patch series, but
+not the second series of 5 patches, which presumably why you got the
+difference.  Sounds like you got it applied OK; if not let me know and
+I'll rebase against your current tree.
 
-
-
-Note: This is an automated response to your message  "Linuxppc-dev Digest,
-Vol 89, Issue 49" sent on 17/1/2012 1:00:02.
-
-This is the only notification you will receive while this person is away.
+Paul.
