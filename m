@@ -1,13 +1,34 @@
-Return-Path: <B31383@freescale.com>
-From: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx:Add dr_mode property in USB nodes
-Date: Wed, 18 Jan 2012 12:18:46 +0530
-Message-ID: <1326869326-4271-1-git-send-email-ramneek.mehresh@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-tul01m020-f179.google.com (mail-tul01m020-f179.google.com
+ [209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 37B701007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2012 17:50:40 +1100 (EST)
+Received: by obcwn6 with SMTP id wn6so2164160obc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2012 22:50:38 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree-discuss@lists.ozlabs.org,
- Ramneek Mehresh <ramneek.mehresh@freescale.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1326853009.26116.30.camel@pasglop>
+References: <1326313337-24603-1-git-send-email-grant.likely@secretlab.ca>
+ <1326313337-24603-14-git-send-email-grant.likely@secretlab.ca>
+ <4F0DFC0F.2090005@gmail.com>
+ <CACxGe6vVSO0cTgPurr6jFoo9QF_W02UaABOFYadCTQGU9dcwmg@mail.gmail.com>
+ <4F0F7B60.5040701@gmail.com> <4F14E05C.30207@codeaurora.org>
+ <1326771731.26116.29.camel@pasglop>
+ <CACxGe6ufk+BUoXZBKm5Q-O1Aj1j=18fJ5KjOC-fKQMbpw4z=mw@mail.gmail.com>
+ <1326853009.26116.30.camel@pasglop>
+Date: Tue, 17 Jan 2012 23:50:37 -0700
+Message-ID: <CACxGe6u5MEYYLyEij=TEDmrWb3A5yapm3SPiBXGzWTVZ1yUkig@mail.gmail.com>
+Subject: Re: [RFC 13/14] irq_domain: Remove 'new' irq_domain in favour of the
+ ppc one
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/alternative; boundary=f46d0447887783d36404b6c7dd7b
+Cc: sfr@canb.auug.org.au, Russell King <linux@arm.linux.org.uk>,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robherring2@gmail.com>, Michael Bohan <mbohan@codeaurora.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,101 +38,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add usb2 controller node for P1020RDB, P2020RDB, P2020DS, P1021MDS
+--f46d0447887783d36404b6c7dd7b
+Content-Type: text/plain; charset=ISO-8859-1
 
-Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
----
-Applies on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-(branch next)
+On Jan 17, 2012 7:17 PM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+wrote:
+>
+> On Tue, 2012-01-17 at 17:28 -0700, Grant Likely wrote:
+> > BTW: Ben, if you can carve out some time, I'd appreciate a look over
+> > my series and make sure you're okay with it.  Once it's had some
+> > testing by arm and ppc folks, I want to get it into linux-next.
+>
+> I intend to do so but not while I'm at LCA :-)
 
- arch/powerpc/boot/dts/p1020rdb.dtsi |    2 ++
- arch/powerpc/boot/dts/p1021mds.dts  |    3 ++-
- arch/powerpc/boot/dts/p2020ds.dtsi  |    3 ++-
- arch/powerpc/boot/dts/p2020rdb.dts  |    3 ++-
- 4 files changed, 8 insertions(+), 3 deletions(-)
+Pish... slacker.
 
-diff --git a/arch/powerpc/boot/dts/p1020rdb.dtsi b/arch/powerpc/boot/dts/p1020rdb.dtsi
-index 17559c4..1fb7e0e 100644
---- a/arch/powerpc/boot/dts/p1020rdb.dtsi
-+++ b/arch/powerpc/boot/dts/p1020rdb.dtsi
-@@ -190,6 +190,7 @@
- 
- 	usb@22000 {
- 		phy_type = "ulpi";
-+		dr_mode = "host";
- 	};
- 
- 	/* USB2 is shared with localbus. It is used
-@@ -197,6 +198,7 @@
- 	   appropriate device-tree fixup done by uboot */
- 	usb@23000 {
- 		phy_type = "ulpi";
-+		dr_mode = "host";
- 	};
- 
- 	mdio@24000 {
-diff --git a/arch/powerpc/boot/dts/p1021mds.dts b/arch/powerpc/boot/dts/p1021mds.dts
-index d954079..97116f1 100644
---- a/arch/powerpc/boot/dts/p1021mds.dts
-+++ b/arch/powerpc/boot/dts/p1021mds.dts
-@@ -1,7 +1,7 @@
- /*
-  * P1021 MDS Device Tree Source
-  *
-- * Copyright 2010 Freescale Semiconductor Inc.
-+ * Copyright 2010,2012 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the
-@@ -151,6 +151,7 @@
- 
- 		usb@22000 {
- 			phy_type = "ulpi";
-+			dr_mode = "host";
- 		};
- 
- 		mdio@24000 {
-diff --git a/arch/powerpc/boot/dts/p2020ds.dtsi b/arch/powerpc/boot/dts/p2020ds.dtsi
-index c1cf6ce..d3b939c 100644
---- a/arch/powerpc/boot/dts/p2020ds.dtsi
-+++ b/arch/powerpc/boot/dts/p2020ds.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P2020DS Device Tree Source stub (no addresses or top-level ranges)
-  *
-- * Copyright 2011 Freescale Semiconductor Inc.
-+ * Copyright 2011-2012 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -134,6 +134,7 @@
- &board_soc {
- 	usb@22000 {
- 		phy_type = "ulpi";
-+		dr_mode = "host";
- 	};
- 
- 	mdio@24520 {
-diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
-index 26759a5..eb8a6aa 100644
---- a/arch/powerpc/boot/dts/p2020rdb.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb.dts
-@@ -1,7 +1,7 @@
- /*
-  * P2020 RDB Device Tree Source
-  *
-- * Copyright 2009-2011 Freescale Semiconductor Inc.
-+ * Copyright 2009-2012 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -197,6 +197,7 @@
- 
- 		usb@22000 {
- 			phy_type = "ulpi";
-+			dr_mode = "host";
- 		};
- 
- 		mdio@24520 {
--- 
-1.7.1
+:-p
+
+No problem, enjoy LCA. One of these years I need to make it over there.
+
+g.
+
+--f46d0447887783d36404b6c7dd7b
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<p><br>
+On Jan 17, 2012 7:17 PM, &quot;Benjamin Herrenschmidt&quot; &lt;<a href=3D"=
+mailto:benh@kernel.crashing.org">benh@kernel.crashing.org</a>&gt; wrote:<br=
+>
+&gt;<br>
+&gt; On Tue, 2012-01-17 at 17:28 -0700, Grant Likely wrote:<br>
+&gt; &gt; BTW: Ben, if you can carve out some time, I&#39;d appreciate a lo=
+ok over<br>
+&gt; &gt; my series and make sure you&#39;re okay with it. =A0Once it&#39;s=
+ had some<br>
+&gt; &gt; testing by arm and ppc folks, I want to get it into linux-next.<b=
+r>
+&gt;<br>
+&gt; I intend to do so but not while I&#39;m at LCA :-)</p>
+<p>Pish... slacker.</p>
+<p> :-p<br></p>
+<p>No problem, enjoy LCA. One of these years I need to make it over there.<=
+/p>
+<p>g.<br>
+</p>
+
+--f46d0447887783d36404b6c7dd7b--
