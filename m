@@ -1,27 +1,30 @@
-Return-Path: <jgpobox@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
- [209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DF92F1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2012 12:45:09 +1100 (EST)
-Received: by vcbfl13 with SMTP id fl13so1320662vcb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2012 17:45:06 -0800 (PST)
-Sender: Jeff Garzik <jgpobox@gmail.com>
-Message-ID: <4F162420.9020302@pobox.com>
-Date: Tue, 17 Jan 2012 20:45:04 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Liu Qiang-B32616 <B32616@freescale.com>
-Subject: Re: [PATCH][SDK v1.2] sata: I/O load balancing
-References: <1326443147-26645-1-git-send-email-qiang.liu@freescale.com>,
- <CADRPPNQsVB-2jR0UaX6RB_4PCf9kt4UXvAXnxaVk=LsBcwGowg@mail.gmail.com>
- <BCB48C05FCE8BC4D9E61E841ECBE6DB701320C@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <BCB48C05FCE8BC4D9E61E841ECBE6DB701320C@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 42582B6EFE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2012 13:17:31 +1100 (EST)
+Message-ID: <1326853009.26116.30.camel@pasglop>
+Subject: Re: [RFC 13/14] irq_domain: Remove 'new' irq_domain in favour of
+ the ppc one
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 18 Jan 2012 13:16:49 +1100
+In-Reply-To: <CACxGe6ufk+BUoXZBKm5Q-O1Aj1j=18fJ5KjOC-fKQMbpw4z=mw@mail.gmail.com>
+References: <1326313337-24603-1-git-send-email-grant.likely@secretlab.ca>
+ <1326313337-24603-14-git-send-email-grant.likely@secretlab.ca>
+ <4F0DFC0F.2090005@gmail.com>
+ <CACxGe6vVSO0cTgPurr6jFoo9QF_W02UaABOFYadCTQGU9dcwmg@mail.gmail.com>
+ <4F0F7B60.5040701@gmail.com> <4F14E05C.30207@codeaurora.org>
+ <1326771731.26116.29.camel@pasglop>
+ <CACxGe6ufk+BUoXZBKm5Q-O1Aj1j=18fJ5KjOC-fKQMbpw4z=mw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: sfr@canb.auug.org.au, Russell King <linux@arm.linux.org.uk>,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robherring2@gmail.com>, Michael Bohan <mbohan@codeaurora.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,8 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/13/2012 04:57 AM, Liu Qiang-B32616 wrote:
-> No, I didn't test small file. I think this won't affect system load. I can have a test
-> and describe the result in next patch.
+On Tue, 2012-01-17 at 17:28 -0700, Grant Likely wrote:
+> BTW: Ben, if you can carve out some time, I'd appreciate a look over
+> my series and make sure you're okay with it.  Once it's had some
+> testing by arm and ppc folks, I want to get it into linux-next.
 
-Please do...
+I intend to do so but not while I'm at LCA :-)
+
+Cheers,
+Ben.
