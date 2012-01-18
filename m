@@ -1,34 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-tul01m020-f179.google.com (mail-tul01m020-f179.google.com
- [209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 37B701007D1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2012 17:50:40 +1100 (EST)
-Received: by obcwn6 with SMTP id wn6so2164160obc.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2012 22:50:38 -0800 (PST)
+Return-Path: <B32736@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 85AEBB6F67
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2012 20:00:00 +1100 (EST)
+From: Zhicheng Fan <B32736@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] P1025RDB: Add p1025rdb platform support
+Date: Wed, 18 Jan 2012 17:01:57 +0800
+Message-ID: <1326877318-21352-1-git-send-email-B32736@freescale.com>
+In-Reply-To: <y>
+References: <y>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1326853009.26116.30.camel@pasglop>
-References: <1326313337-24603-1-git-send-email-grant.likely@secretlab.ca>
- <1326313337-24603-14-git-send-email-grant.likely@secretlab.ca>
- <4F0DFC0F.2090005@gmail.com>
- <CACxGe6vVSO0cTgPurr6jFoo9QF_W02UaABOFYadCTQGU9dcwmg@mail.gmail.com>
- <4F0F7B60.5040701@gmail.com> <4F14E05C.30207@codeaurora.org>
- <1326771731.26116.29.camel@pasglop>
- <CACxGe6ufk+BUoXZBKm5Q-O1Aj1j=18fJ5KjOC-fKQMbpw4z=mw@mail.gmail.com>
- <1326853009.26116.30.camel@pasglop>
-Date: Tue, 17 Jan 2012 23:50:37 -0700
-Message-ID: <CACxGe6u5MEYYLyEij=TEDmrWb3A5yapm3SPiBXGzWTVZ1yUkig@mail.gmail.com>
-Subject: Re: [RFC 13/14] irq_domain: Remove 'new' irq_domain in favour of the
- ppc one
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/alternative; boundary=f46d0447887783d36404b6c7dd7b
-Cc: sfr@canb.auug.org.au, Russell King <linux@arm.linux.org.uk>,
- linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Rob Herring <robherring2@gmail.com>, Michael Bohan <mbohan@codeaurora.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
+Cc: Fanzc <b32736@freeescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,50 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d0447887783d36404b6c7dd7b
-Content-Type: text/plain; charset=ISO-8859-1
+From: Fanzc <b32736@freeescale.com>
 
-On Jan 17, 2012 7:17 PM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-wrote:
->
-> On Tue, 2012-01-17 at 17:28 -0700, Grant Likely wrote:
-> > BTW: Ben, if you can carve out some time, I'd appreciate a look over
-> > my series and make sure you're okay with it.  Once it's had some
-> > testing by arm and ppc folks, I want to get it into linux-next.
->
-> I intend to do so but not while I'm at LCA :-)
+Signed-off-by: Fanzc <b32736@freeescale.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
 
-Pish... slacker.
-
-:-p
-
-No problem, enjoy LCA. One of these years I need to make it over there.
-
-g.
-
---f46d0447887783d36404b6c7dd7b
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<p><br>
-On Jan 17, 2012 7:17 PM, &quot;Benjamin Herrenschmidt&quot; &lt;<a href=3D"=
-mailto:benh@kernel.crashing.org">benh@kernel.crashing.org</a>&gt; wrote:<br=
->
-&gt;<br>
-&gt; On Tue, 2012-01-17 at 17:28 -0700, Grant Likely wrote:<br>
-&gt; &gt; BTW: Ben, if you can carve out some time, I&#39;d appreciate a lo=
-ok over<br>
-&gt; &gt; my series and make sure you&#39;re okay with it. =A0Once it&#39;s=
- had some<br>
-&gt; &gt; testing by arm and ppc folks, I want to get it into linux-next.<b=
-r>
-&gt;<br>
-&gt; I intend to do so but not while I&#39;m at LCA :-)</p>
-<p>Pish... slacker.</p>
-<p> :-p<br></p>
-<p>No problem, enjoy LCA. One of these years I need to make it over there.<=
-/p>
-<p>g.<br>
-</p>
-
---f46d0447887783d36404b6c7dd7b--
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index ccf520e..1950076 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -90,6 +90,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 
+ machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
+ machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
++machine_device_initcall(p1025_rdb, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+@@ -112,6 +113,15 @@ static int __init p1020_rdb_probe(void)
+ 	return 0;
+ }
+ 
++static int __init p1025_rdb_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (of_flat_dt_is_compatible(root, "fsl,P1025RDB"))
++		return 1;
++	return 0;
++}
++
+ define_machine(p2020_rdb) {
+ 	.name			= "P2020 RDB",
+ 	.probe			= p2020_rdb_probe,
+@@ -139,3 +149,17 @@ define_machine(p1020_rdb) {
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
++
++define_machine(p1025_rdb) {
++	.name			= "P1025 RDB",
++	.probe			= p1025_rdb_probe,
++	.setup_arch		= mpc85xx_rdb_setup_arch,
++	.init_IRQ		= mpc85xx_rdb_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++#endif
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
+-- 
+1.7.0.4
