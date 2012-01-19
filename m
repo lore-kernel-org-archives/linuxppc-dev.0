@@ -1,22 +1,23 @@
-Return-Path: <B10716@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 58A581007D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2012 00:18:29 +1100 (EST)
-Message-ID: <4F181815.7000704@freescale.com>
-Date: Thu, 19 Jan 2012 15:18:13 +0200
-From: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
+Return-Path: <b08248@gmail.com>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+ [209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BEB6F1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2012 06:22:00 +1100 (EST)
+Received: by qadz32 with SMTP id z32so278737qad.17
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2012 11:21:57 -0800 (PST)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/booke64: Configurable lazy interrupt disabling
+In-Reply-To: <1326921026.26116.34.camel@pasglop>
 References: <1326897306-3924-1-git-send-email-Laurentiu.Tudor@freescale.com>
  <1326921026.26116.34.camel@pasglop>
-In-Reply-To: <1326921026.26116.34.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 19 Jan 2012 13:21:57 -0600
+Message-ID: <CALRxmdC_E4Z==4R_2MGHAi3T7mdF9oHx3rBE6Meb+3R1gWF5VQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/booke64: Configurable lazy interrupt disabling
+From: Stuart Yoder <b08248@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,9 +27,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-On 01/18/2012 11:10 PM, Benjamin Herrenschmidt wrote:
+On Wed, Jan 18, 2012 at 3:10 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
 > On Wed, 2012-01-18 at 16:35 +0200, Laurentiu Tudor wrote:
 >> This patch adds a menuconfig option that allows controlling
 >> the lazy interrupt disabling feature implemented by this
@@ -36,27 +36,39 @@ On 01/18/2012 11:10 PM, Benjamin Herrenschmidt wrote:
 >>
 >> commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
 >> Author: Paul Mackerras
->> Date:   Wed Oct 4 16:47:49 2006 +1000
+>> Date: =A0 Wed Oct 4 16:47:49 2006 +1000
 >>
->>      [POWERPC] Lazy interrupt disabling for 64-bit machines
+>> =A0 =A0 [POWERPC] Lazy interrupt disabling for 64-bit machines
 >>
 >> The code in 'powerpc/include/asm/hw_irq.h' was rearranged and
 >> cleaned-up a bit in order to reduce the number of needed #ifdef's.
 >
-> It's still nasty.
-
-Yep, there is still room for improvement. Perhaps trimming some of those 
-various interrupt enable/disable functions & macros. However I don't 
-think I have enough experience to do this ... so, any suggestions are 
-welcomed.
-
-> Do you have numbers showing that it's worth disabling
+> It's still nasty. Do you have numbers showing that it's worth disabling
 > on BookE ?
 
-On fsl's p5020 there should be some performance gains because disabling 
-"lazy ee" allows enabling the "external proxy" feature.
-The thing is I can't prove this because I have no idea what benchmark to 
-run. Let me know if you guys know of any relevant benchmark I could try.
+It's not just about bare metal performance-- some platforms such as
+the Freescale
+Topaz hypervisor don't provide legacy IACK type interrupt
+acknowledgment, and expect
+the guest to support the external proxy mechanism.
 
----
-Best Regards, Laurentiu
+With Topaz, interrupts go directly to guests and we don't want to require a
+trap/hcall to do an IACK, as that adds potentially thousands of cycles of
+latency to every interrupt.
+
+As you know, with external proxy interrupts are acknowledged by the
+hardware and it becomes problematic to replay the interrupt in
+the context of lazy EE when interrupts are re-enabled.   The interrupt
+will not fire again when you enable EE.
+
+That is currently the issue, as we can't run the 64-bit kernel on Topaz.
+Our option are:
+  1) to provide an option to disable lazy EE
+  2) do some kind of hack to replay interrupts with lazy EE
+  3) change Topaz to support legacy IACK, but this gets ugly for
+      various reasons.
+
+Providing a config option to disable lazy EE seemed to be a good
+approach.
+
+Stuart
