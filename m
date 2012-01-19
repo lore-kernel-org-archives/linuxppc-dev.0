@@ -1,20 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
- by ozlabs.org (Postfix) with ESMTP id 3C8AAB6F13
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2012 20:34:16 +1100 (EST)
-Date: Thu, 19 Jan 2012 10:34:05 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Matthias Fuchs <matthias.fuchs@esd.eu>
-Subject: Re: Problem with full speed devices on PowerPC MPC5121 host port
-Message-ID: <20120119103405.2256d750@wker>
-In-Reply-To: <4F16CC3C.6060005@esd.eu>
-References: <Pine.LNX.4.44L0.1201061258040.1326-100000@iolanthe.rowland.org>
- <4F1581E2.9030400@esd.eu> <20120118120811.04f7c601@wker>
- <4F16CC3C.6060005@esd.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Return-Path: <B10716@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 58A581007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2012 00:18:29 +1100 (EST)
+Message-ID: <4F181815.7000704@freescale.com>
+Date: Thu, 19 Jan 2012 15:18:13 +0200
+From: Tudor Laurentiu <Laurentiu.Tudor@freescale.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/booke64: Configurable lazy interrupt disabling
+References: <1326897306-3924-1-git-send-email-Laurentiu.Tudor@freescale.com>
+ <1326921026.26116.34.camel@pasglop>
+In-Reply-To: <1326921026.26116.34.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Matthias,
+Hi Ben,
 
-On Wed, 18 Jan 2012 14:42:20 +0100
-Matthias Fuchs <matthias.fuchs@esd.eu> wrote:
-...
-> > Can you try the attached patch? Does it have an impact?
-> 
-> Yes, in deed, it solved my problem :-) Finally I noticed that
-> the problem is listed in the CPU's errata document.
-> 
-> You could update the comment and commit message to "... when there is
-> heavy simultaneus PATA write or network activity".
-> 
-> I vote for getting this mainline.
-> 
-> Tested-by: Matthias Fuchs <matthias.fuchs@esd.ue>
+On 01/18/2012 11:10 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2012-01-18 at 16:35 +0200, Laurentiu Tudor wrote:
+>> This patch adds a menuconfig option that allows controlling
+>> the lazy interrupt disabling feature implemented by this
+>> commit:
+>>
+>> commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
+>> Author: Paul Mackerras
+>> Date:   Wed Oct 4 16:47:49 2006 +1000
+>>
+>>      [POWERPC] Lazy interrupt disabling for 64-bit machines
+>>
+>> The code in 'powerpc/include/asm/hw_irq.h' was rearranged and
+>> cleaned-up a bit in order to reduce the number of needed #ifdef's.
+>
+> It's still nasty.
 
-Thanks for testing! I'll rework to remove ifdef in the patch
-and fix commit message and then resubmit.
+Yep, there is still room for improvement. Perhaps trimming some of those 
+various interrupt enable/disable functions & macros. However I don't 
+think I have enough experience to do this ... so, any suggestions are 
+welcomed.
 
-Anatolij
+> Do you have numbers showing that it's worth disabling
+> on BookE ?
+
+On fsl's p5020 there should be some performance gains because disabling 
+"lazy ee" allows enabling the "external proxy" feature.
+The thing is I can't prove this because I have no idea what benchmark to 
+run. Let me know if you guys know of any relevant benchmark I could try.
+
+---
+Best Regards, Laurentiu
