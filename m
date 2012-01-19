@@ -1,22 +1,20 @@
-Return-Path: <B32736@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 75F3C1007D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2012 20:06:19 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] P1020RDB-PC: Add p1020rdb-pc platform support
-Date: Thu, 19 Jan 2012 17:06:57 +0800
-Message-ID: <1326964017-615-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1326964017-615-1-git-send-email-B32736@freescale.com>
-References: <y>
- <1326964017-615-1-git-send-email-B32736@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Fanzc <b32736@freeescale.com>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
+ by ozlabs.org (Postfix) with ESMTP id 3C8AAB6F13
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2012 20:34:16 +1100 (EST)
+Date: Thu, 19 Jan 2012 10:34:05 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Matthias Fuchs <matthias.fuchs@esd.eu>
+Subject: Re: Problem with full speed devices on PowerPC MPC5121 host port
+Message-ID: <20120119103405.2256d750@wker>
+In-Reply-To: <4F16CC3C.6060005@esd.eu>
+References: <Pine.LNX.4.44L0.1201061258040.1326-100000@iolanthe.rowland.org>
+ <4F1581E2.9030400@esd.eu> <20120118120811.04f7c601@wker>
+ <4F16CC3C.6060005@esd.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Fanzc <b32736@freeescale.com>
+Hi Matthias,
 
-Signed-off-by: Fanzc <b32736@freeescale.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   27 ++++++++++++++++++++++++++-
- 1 files changed, 26 insertions(+), 1 deletions(-)
+On Wed, 18 Jan 2012 14:42:20 +0100
+Matthias Fuchs <matthias.fuchs@esd.eu> wrote:
+...
+> > Can you try the attached patch? Does it have an impact?
+> 
+> Yes, in deed, it solved my problem :-) Finally I noticed that
+> the problem is listed in the CPU's errata document.
+> 
+> You could update the comment and commit message to "... when there is
+> heavy simultaneus PATA write or network activity".
+> 
+> I vote for getting this mainline.
+> 
+> Tested-by: Matthias Fuchs <matthias.fuchs@esd.ue>
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index ccf520e..0583d38 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -1,7 +1,7 @@
- /*
-  * MPC85xx RDB Board Setup
-  *
-- * Copyright 2009 Freescale Semiconductor Inc.
-+ * Copyright 2009,2012 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -90,6 +90,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
- 
- machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
- machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
-+machine_device_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
- 
- /*
-  * Called very early, device-tree isn't unflattened
-@@ -112,6 +113,15 @@ static int __init p1020_rdb_probe(void)
- 	return 0;
- }
- 
-+static int __init p1020_rdb_pc_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (of_flat_dt_is_compatible(root, "fsl,P1020RDB-PC"))
-+		return 1;
-+	return 0;
-+}
-+
- define_machine(p2020_rdb) {
- 	.name			= "P2020 RDB",
- 	.probe			= p2020_rdb_probe,
-@@ -139,3 +149,18 @@ define_machine(p1020_rdb) {
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
- };
-+
-+define_machine(p1020_rdb_pc) {
-+	.name			= "P1020RDB-PC",
-+	.probe			= p1020_rdb_pc_probe,
-+	.setup_arch		= mpc85xx_rdb_setup_arch,
-+	.init_IRQ		= mpc85xx_rdb_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
-+
--- 
-1.7.0.4
+Thanks for testing! I'll rework to remove ifdef in the patch
+and fix commit message and then resubmit.
+
+Anatolij
