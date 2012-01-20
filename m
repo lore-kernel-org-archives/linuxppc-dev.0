@@ -1,24 +1,18 @@
-Return-Path: <matthias.fuchs@esd.eu>
-Received: from mo-p05-ob6.rzone.de (mo-p05-ob6.rzone.de
- [IPv6:2a01:238:20a:202:53f5::1])
- (using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9E0F91007D1
- for <linuxppc-dev@ozlabs.org>; Fri, 20 Jan 2012 08:40:05 +1100 (EST)
-Received: from bunny.home (p5B03C256.dip.t-dialin.net [91.3.194.86])
- by smtp.strato.de (fruni mo20) (RZmta 27.5 DYNA|AUTH)
- with (EDH-RSA-DES-CBC3-SHA encrypted) ESMTPA id z07282o0JJo56X
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2012 22:28:50 +0100 (MET)
-Received: from [192.168.2.13] (fox.home [192.168.2.13])
- by bunny.home (Postfix) with ESMTPS id 6B77225100FA
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2012 22:28:28 +0100 (CET)
-Message-ID: <4F188B11.6080403@esd.eu>
-Date: Thu, 19 Jan 2012 22:28:49 +0100
-From: Matthias Fuchs <matthias.fuchs@esd.eu>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: ata/ide driver for MPC512x
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F31341007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2012 12:23:33 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: galak@kernel.crashing.org, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc/85xx: fix Kconfig warning about missing 8250
+ dependency
+Date: Thu, 19 Jan 2012 20:23:20 -0500
+Message-Id: <1327022600-24206-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,9 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The SERIAL_8250_EXTENDED option just enables access to other
+less regularly used options, like SERIAL_8250_SHARE_IRQ.
+Select it to get rid of this warning when selecting the child
+option living underneath it.
 
-do we have an ata/ide driver for MPC512x internal ATA controller?
-So something that is compatible to "fsl,mpc5121-pata"?
+  warning: (FSL_SOC_BOOKE && SERIAL_8250_RM9K) selects
+  SERIAL_8250_SHARE_IRQ which has unmet direct dependencies
+  (HAS_IOMEM && SERIAL_8250_EXTENDED)
 
-Matthias
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index d7946be..b221236 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -6,6 +6,7 @@ menuconfig FSL_SOC_BOOKE
+ 	select MPIC
+ 	select PPC_PCI_CHOICE
+ 	select FSL_PCI if PCI
++	select SERIAL_8250_EXTENDED if SERIAL_8250
+ 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
+ 	default y
+ 
+-- 
+1.7.7.2
