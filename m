@@ -1,17 +1,19 @@
-Return-Path: <nvbolhuis@aimvalley.nl>
-Received: from mika.eatserver.nl (mika.eatserver.nl [195.20.9.75])
+Return-Path: <ehodys@hmisemi.com>
+Received: from ananke.kreativmedia.ch (ns97.kreativmedia.ch [80.74.159.189])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 262D9B6FAB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2012 21:30:34 +1100 (EST)
-Message-ID: <9a7992e1b1d1c19efb0e2c8e4f35c28f.squirrel@intranet.aimsys.nl>
-Date: Mon, 23 Jan 2012 10:34:06 +0100
-Subject: Cannot wake-up from standby with MPC8313
-From: nvbolhuis@aimvalley.nl
-To: scottwood@freescale.com
+ (Client CN "*.kreativmedia.ch", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4D3FBB6FBD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2012 05:02:17 +1100 (EST)
+Message-ID: <20120123190159.183579yqg3c2e4kk@webmail.hmisemi.com>
+Date: Mon, 23 Jan 2012 19:01:59 +0100
+From: ehodys@hmisemi.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Problem with ADS512101 : Switch from serial I/O to LCD
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,19 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello all,
 
->
-> It is mentioned in the MPC8313E manual (4.2.2 step #10) that TRST must
-> not be asserted except when PORESET is asserted.  The mpc8313erdb bug
-> was that the board was not complying with this.
->
+I am newbie about porting Linux on a ADS512101 Dev tool and I don't  
+know how to put the video display at work. The only thing that works  
+is the serial interface and I find no information to switch to the LCD  
+display.
 
-ok, I see.
+Can some one help me please, thank you.
 
-The board did not comply to the spec and as a side-effect PMC
-registers could not be accessed.
+Best regards
 
-Thanks again for all help!
-
----
-NvBolhuis
+Edgar
