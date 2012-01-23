@@ -1,23 +1,22 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
- [209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4D8CBB6EFE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jan 2012 02:50:05 +1100 (EST)
-Received: by ghbz2 with SMTP id z2so718940ghb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2012 07:50:02 -0800 (PST)
+Return-Path: <Farrukh_Arshad@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "relay1.mentorg.com",
+ Issuer "Entrust Certification Authority - L1B" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0CE08B6F9B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2012 18:49:21 +1100 (EST)
+Received: from svr-orw-exc-10.mgc.mentorg.com ([147.34.98.58])
+ by relay1.mentorg.com with esmtp
+ id 1RpEeS-0004ye-Rj from Farrukh_Arshad@mentor.com
+ for linuxppc-dev@lists.ozlabs.org; Sun, 22 Jan 2012 23:49:16 -0800
+From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Searching TLB entry for a page frame number.
+Date: Mon, 23 Jan 2012 07:49:14 +0000
+Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CDFE1@EU-MBX-03.mgc.mentorg.com>
+Content-Type: multipart/alternative;
+ boundary="_000_93CD5F41FDBC6042A6B449764F3B35CC050CDFE1EUMBX03mgcmento_"
 MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <1327157528-12312-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1327157528-12312-1-git-send-email-paul.gortmaker@windriver.com>
-Date: Sat, 21 Jan 2012 10:50:02 -0500
-Message-ID: <CAP=VYLrjismj5PBfm=3LcVtC7pL4EXkt+JGKQNUuSJu1OU68MA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/85xx: fix build failure from p1022 in SMP
- defconfig
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: galak@kernel.crashing.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +26,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jan 21, 2012 at 9:52 AM, Paul Gortmaker
-<paul.gortmaker@windriver.com> wrote:
-> Using the configs/mpc85xx_smp_defconfig shows this build error:
->
-> arch/powerpc/platforms/85xx/p1022_ds.c:341: error: 'udbg_progress' undecl=
-ared here (not in a function)
->
-> Adding in the obvious missing header <asm/udbg.h> fixes it.
+--_000_93CD5F41FDBC6042A6B449764F3B35CC050CDFE1EUMBX03mgcmento_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I just noticed this fix is a duplicate, it seems that it was already
-queued back in Dec 11th last year:
+Greetings All,
 
-http://patchwork.ozlabs.org/patch/130620/
+I have a quick question regarding TLB dump for P1022. Please excuse me for =
+being na=EFve. I want to dump the TLB entry for a page number. I know my pa=
+ge frame number. If I read TLB0 dump using tlbre instruction, the instructi=
+on output TLB0 entries in MAS0 - MAS3 registers. After the tlbre instructio=
+n the value of MAS3 register [32-51] RPN, Is this Real Page Number is the p=
+age frame number for which I am searching the TLB entry.
 
-...but for one reason or another didn't make it into 3.3-rc1.
 
-P.
+Best Regards
 
->
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->
-> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platfo=
-rms/85xx/p1022_ds.c
-> index bb3d84f..aa4022e 100644
-> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
-> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-> @@ -26,6 +26,7 @@
-> =A0#include <sysdev/fsl_soc.h>
-> =A0#include <sysdev/fsl_pci.h>
-> =A0#include <asm/fsl_guts.h>
-> +#include <asm/udbg.h>
-> =A0#include "smp.h"
->
-> =A0#include "mpc85xx.h"
-> --
-> 1.7.7.2
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Farrukh Arshad
+Sr. Software Development Engineer
+Mentor Graphics Pakistan
+Ph:   +92 - 423 - 609 - 92 - 09
+Cell: +92 - 303 - 444 - 77 - 05
+
+
+--_000_93CD5F41FDBC6042A6B449764F3B35CC050CDFE1EUMBX03mgcmento_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1">
+<meta name=3D"Generator" content=3D"Microsoft Word 14 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"Felix Titling";
+	panose-1:4 6 5 5 6 2 2 2 10 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-family:"Calibri","sans-serif";}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal">Greetings All,<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">I have a quick question regarding TLB dump for P1022=
+. Please excuse me for being na=EFve. I want to dump the TLB entry for a pa=
+ge number. I know my page frame number. If I read TLB0 dump using tlbre ins=
+truction, the instruction output TLB0
+ entries in MAS0 &#8211; MAS3 registers. After the tlbre instruction the va=
+lue of MAS3 register [32-51] RPN, Is this Real Page Number is the page fram=
+e number for which I am searching the TLB entry.<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Best Regards<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:10.0pt;font-family:&quot=
+;Felix Titling&quot;;color:#943634">Farrukh</span></b><b><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Felix Titling&quot;"> Arshad<o:p></o:p></sp=
+an></b></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:10.0pt;font-family:&quot;Co=
+urier New&quot;">Sr. Software Development Engineer<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:10.0pt;font-family:&quot;Co=
+urier New&quot;">Mentor Graphics Pakistan<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:10.0pt;font-family:&quot;Co=
+urier New&quot;">Ph:&nbsp;&nbsp; &#43;92 &#8211; 423 &#8211; 609 &#8211; 92=
+ - 09<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:10.0pt;font-family:&quot;Co=
+urier New&quot;">Cell: &#43;92 &#8211; 303 &#8211; 444 &#8211; 77 &#8211; 0=
+5<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+</div>
+</body>
+</html>
+
+--_000_93CD5F41FDBC6042A6B449764F3B35CC050CDFE1EUMBX03mgcmento_--
