@@ -1,16 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <sridhar_a@yahoo.com>
+Received: from nm16-vm1.bullet.mail.ne1.yahoo.com
+ (nm16-vm1.bullet.mail.ne1.yahoo.com [98.138.91.47])
+ by ozlabs.org (Postfix) with SMTP id 9022CB6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2012 16:34:17 +1100 (EST)
+Message-ID: <1327383250.37748.YahooMailNeo@web120206.mail.ne1.yahoo.com>
+Date: Mon, 23 Jan 2012 21:34:10 -0800 (PST)
+From: Sridhar Addagada <sridhar_a@yahoo.com>
+Subject: arch/powerpc/platforms/83xx/misc.c
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 23 Jan 2012 15:08:14 -0700
-Message-ID: <CACxGe6tTMSR1sRTg2qGLBD-a=M7ZHErOm_7F_kfir16ojsD=Sg@mail.gmail.com>
-Subject: RFC v2 irq_domain rework posted to linux-kernel. (Was: [RFCv2 00/14])
-To: Rob Herring <robherring2@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Benoit Cousson <b-cousson@ti.com>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Shawn Guo <shawn.guo@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/alternative;
+ boundary="121646022-206359311-1327383250=:37748"
+Reply-To: Sridhar Addagada <sridhar_a@yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,200 +21,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 23, 2012 at 2:53 PM, Rob Herring <robherring2@gmail.com> wrote:
-> On 01/23/2012 03:07 PM, Grant Likely wrote:
->>
->> Hey everyone,
->>
->> Here's the second RFC for the irq_domain patches. =A0I could use some
->> help testing now. =A0I still expect there will be a few bugs. =A0The
->> series is based on v3.3-rc1, and I've pushed it out to my git server:
->>
->> git://git.secretlab.ca/git/linux-2.6.git irqdomain/next
->
-> Can you post to linux-arm-kernel too so people are aware of this work
-> and stop posting dead-end irqdomain patches.
+--121646022-206359311-1327383250=:37748
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Oops, I had intended to do so.  Apparently I forgot to set the subject
-line of the cover letter too.  :-(  I don't want to irritate folks
-with an immediate repost of the whole series, but I'm cc'ing the
-linux-arm-kernel list on this email.  I'll repost a v3 and include
-linux-arm-kernel before I ask Stephen to pull this stuff into
-linux-next.
+I have a hang problem on my board based on MPC8377EWLAN, here is how i ran =
+into problem. We are using u-boot to load the kernel, rootfs and device tre=
+e.=A0 The kernel parameters have been set =0A=0A=0Aroot=3D/dev/ram rw rootf=
+stype=3Dext2 ramdisk_size=3D131322 console=3DttyS0,115200=0A=0Abut I load t=
+he rootfs image generated of rootfs.jffs2 (we use buildroot), which results=
+ in kernel spitting the following message and hang.=A0 I even enabled the W=
+DT (mpc83xx_wdt.c) the board does not get reset.=0A=0AAny ideas would be ap=
+preciated.=0A=0AThanks=0ASridhar=0A=0A=0A=0ATCP cubic registered=0AInitiali=
+zing XFRM netlink socket=0ANET: Registered protocol family 17=0ANET: Regist=
+ered protocol family 15=0A8021q: 802.1Q VLAN Support v1.8=0Alib80211: commo=
+n routines for IEEE802.11 drivers=0ARegistering the dns_resolver key type=
+=0Artc-m41t80 0-0068: setting system clock to 2012-01-23 20:32:26 UTC (1327=
+350746)=0ARAMDISK: Couldn't find valid RAM disk image starting at 0.=0AList=
+ of all partitions:=0A1f00=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 512 mtdblock=
+0=A0 (driver?)=0A1f01=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 128 mtdblock1=A0 =
+(driver?)=0A1f02=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 5120 mtdblock2=A0 (driver=
+?)=0A1f03=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 10240 mtdblock3=A0 (driver?)=0A1f04=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 128 mtdblock4=A0 (driver?)=0A1f05=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 5120 mtdblock5=A0 (driver?)=0A1f06=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 10240 mtdblock6=A0 (driver?)=0A1f07=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0 128 mtdblock7=A0 (driver?)=0A1f08=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0 128 mtdblock8=A0 (driver?)=0A1f09=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0 99328 mtdblock9=A0 (driver?)=0ANo filesystem could mount root, tried=
+:=A0 ext2 squashfs=0AKernel panic - not syncing: VFS: Unable to mount root =
+fs on unknown-block(1,0)=0ACall Trace:=0A[cf82bef0] [c0007fa0] show_stack+0=
+x4c/0x144 (unreliable)=0A[cf82bf30] [c02e8074] panic+0xac/0x1f8=0A[cf82bf80=
+] [c03c3df0] mount_block_root+0x288/0x2ac=0A[cf82bfc0] [c03c401c] prepare_n=
+amespace+0x1a0/0x1ec=0A[cf82bfe0] [c03c3248] kernel_init+0x114/0x130=0A[cf8=
+2bff0] [c000d768] kernel_thread+0x4c/0x68=0ARebooting in 180 seconds..
+--121646022-206359311-1327383250=:37748
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-For anyone who is doing irq_domain work, please be aware of these
-patches that are probably going to be merged for v3.4.  You'll need to
-coordinate with me before your patches hit linux-next, otherwise you
-will have a build failure.  The patches can be found here:
-
-http://thread.gmane.org/gmane.linux.kernel/1242692
-
-g.
-
->
-> I tested what you had as of this morning and it works fine for me. Looks
-> like the only diff is the VExpress code. I'm working on rebasing my
-> domain support for generic irqchip now.
->
-> Rob
->
->> On Wed, Jan 11, 2012 at 1:22 PM, Grant Likely <grant.likely@secretlab.ca=
-> wrote:
->>> Here are the patches that I've been working on to finish up the creatio=
-n
->>> of the generic irq_domain infrastructure.
->>>
->>> I'm taking a different approach that I originally intended.
->>> Originally I intended to start with the basic design of irq_host from
->>> powerpc, but there were some things about the implementation that I
->>> didn't like, so I was going to reimplement those bits and then migrate
->>> powerpc over to use it. =A0That was a mistake and would have resulted i=
-n
->>> a lot more work. =A0Instead, I should have started with the powerpc
->>> irq_host code, moved it to a common location, and then reworked it in
->>> place. =A0The powerpc code is working and well tested. =A0It is a lot l=
-ess
->>> risky to use it as the starting point with a nicely bisectable series
->>> of changes to make it do what other architectures need.
->>
->> [RFCv2 01/14] irq_domain: add documentation and MAINTAINERS entry.
->> [RFCv2 02/14] dt: Make irqdomain less verbose
->> [RFCv2 03/14] irq_domain: Make irq_domain structure match powerpc's
->> [RFCv2 04/14] irq_domain: convert microblaze from irq_host to
->> [RFCv2 05/14] irq_domain/powerpc: Use common irq_domain structure
->> [RFCv2 06/14] irq_domain/powerpc: eliminate irq_map; use
->> [RFCv2 07/14] irq_domain/powerpc: Eliminate virq_is_host()
->> [RFCv2 08/14] irq_domain: Move irq_domain code from powerpc to
->> [RFCv2 09/14] irqdomain: remove NO_IRQ from irq domain code
->> [RFCv2 10/14] irq_domain: Remove references to old irq_host names
->> [RFCv2 11/14] irq_domain: Replace irq_alloc_host() with
->> [RFCv2 12/14] irq_domain: Add support for base irq and hwirq in
->> [RFCv2 13/14] irq_domain: Remove 'new' irq_domain in favour of the
->> [RFCv2 14/14] irq_domain: Remove irq_domain_add_simple()
->>
->> =A0Documentation/IRQ-domain.txt =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-| =A0113 ++++
->> =A0MAINTAINERS =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0| =A0 =A09 +
->> =A0arch/arm/common/gic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0| =A0 97 ++--
->> =A0arch/arm/common/vic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0| =A0 16 +-
->> =A0arch/arm/include/asm/hardware/gic.h =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =
-=A04 +-
->> =A0arch/arm/include/asm/hardware/vic.h =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =
-=A02 +
->> =A0arch/arm/mach-exynos/common.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-| =A0 =A02 +-
->> =A0arch/arm/mach-imx/mach-imx6q.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A03 +-
->> =A0arch/arm/mach-msm/board-msm8x60.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 =A08 +-
->> =A0arch/arm/mach-mx5/imx51-dt.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-| =A0 =A04 +-
->> =A0arch/arm/mach-mx5/imx53-dt.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-| =A0 =A04 +-
->> =A0arch/arm/mach-omap2/board-generic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =
-=A02 +-
->> =A0arch/arm/mach-prima2/irq.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 | =A0 =A02 +-
->> =A0arch/arm/mach-versatile/core.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A05 +-
->> =A0arch/microblaze/include/asm/irq.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 =A04 +-
->> =A0arch/microblaze/kernel/irq.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-| =A0 =A02 +-
->> =A0arch/microblaze/kernel/setup.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A02 -
->> =A0arch/powerpc/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 | =A0 =A01 +
->> =A0arch/powerpc/include/asm/ehv_pic.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
-=A02 +-
->> =A0arch/powerpc/include/asm/i8259.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A02 +-
->> =A0arch/powerpc/include/asm/irq.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0247 +-------
->> =A0arch/powerpc/include/asm/mpic.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 =A02 +-
->> =A0arch/powerpc/include/asm/xics.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 =A02 +-
->> =A0arch/powerpc/kernel/irq.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0| =A0617 +------------------
->> =A0arch/powerpc/platforms/512x/mpc5121_ads_cpld.c =A0 | =A0 12 +-
->> =A0arch/powerpc/platforms/52xx/media5200.c =A0 =A0 =A0 =A0 =A0| =A0 15 +=
--
->> =A0arch/powerpc/platforms/52xx/mpc52xx_gpt.c =A0 =A0 =A0 =A0| =A0 16 +-
->> =A0arch/powerpc/platforms/52xx/mpc52xx_pic.c =A0 =A0 =A0 =A0| =A0 12 +-
->> =A0arch/powerpc/platforms/82xx/pq2ads-pci-pic.c =A0 =A0 | =A0 14 +-
->> =A0arch/powerpc/platforms/85xx/socrates_fpga_pic.c =A0| =A0 15 +-
->> =A0arch/powerpc/platforms/86xx/gef_pic.c =A0 =A0 =A0 =A0 =A0 =A0| =A0 15=
- +-
->> =A0arch/powerpc/platforms/cell/axon_msi.c =A0 =A0 =A0 =A0 =A0 | =A0 29 +=
--
->> =A0arch/powerpc/platforms/cell/beat_interrupt.c =A0 =A0 | =A0 16 +-
->> =A0arch/powerpc/platforms/cell/interrupt.c =A0 =A0 =A0 =A0 =A0| =A0 16 +=
--
->> =A0arch/powerpc/platforms/cell/spider-pic.c =A0 =A0 =A0 =A0 | =A0 14 +-
->> =A0arch/powerpc/platforms/embedded6xx/flipper-pic.c | =A0 30 +-
->> =A0arch/powerpc/platforms/embedded6xx/hlwd-pic.c =A0 =A0| =A0 35 +-
->> =A0arch/powerpc/platforms/iseries/irq.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 11=
- +-
->> =A0arch/powerpc/platforms/powermac/pic.c =A0 =A0 =A0 =A0 =A0 =A0| =A0 15=
- +-
->> =A0arch/powerpc/platforms/powermac/smp.c =A0 =A0 =A0 =A0 =A0 =A0| =A0 =
-=A09 +-
->> =A0arch/powerpc/platforms/ps3/interrupt.c =A0 =A0 =A0 =A0 =A0 | =A0 11 +=
--
->> =A0arch/powerpc/platforms/wsp/opb_pic.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 15=
- +-
->> =A0arch/powerpc/sysdev/cpm1.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 | =A0 =A09 +-
->> =A0arch/powerpc/sysdev/cpm2_pic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 11 +-
->> =A0arch/powerpc/sysdev/ehv_pic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-| =A0 14 +-
->> =A0arch/powerpc/sysdev/fsl_msi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-| =A0 10 +-
->> =A0arch/powerpc/sysdev/fsl_msi.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-| =A0 =A02 +-
->> =A0arch/powerpc/sysdev/i8259.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0| =A0 15 +-
->> =A0arch/powerpc/sysdev/ipic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 | =A0 15 +-
->> =A0arch/powerpc/sysdev/ipic.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 | =A0 =A02 +-
->> =A0arch/powerpc/sysdev/mpc8xx_pic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 11 +-
->> =A0arch/powerpc/sysdev/mpic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 | =A0 17 +-
->> =A0arch/powerpc/sysdev/mpic_msi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A02 +-
->> =A0arch/powerpc/sysdev/mv64x60_pic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 11 +-
->> =A0arch/powerpc/sysdev/qe_lib/qe_ic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
-13 +-
->> =A0arch/powerpc/sysdev/qe_lib/qe_ic.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
-=A02 +-
->> =A0arch/powerpc/sysdev/tsi108_pci.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 13 +-
->> =A0arch/powerpc/sysdev/uic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0| =A0 14 +-
->> =A0arch/powerpc/sysdev/xics/xics-common.c =A0 =A0 =A0 =A0 =A0 | =A0 25 +=
--
->> =A0arch/powerpc/sysdev/xilinx_intc.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 19 +-
->> =A0drivers/gpio/gpio-mpc8xxx.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0| =A0 15 +-
->> =A0drivers/mfd/twl-core.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 | =A0 12 +-
->> =A0include/linux/irqdomain.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0| =A0180 ++++--
->> =A0kernel/irq/irqdomain.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 | =A0757 ++++++++++++++++++----
->> =A064 files changed, 1207 insertions(+), 1414 deletions(-)
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+<html><body><div style=3D"color:#000; background-color:#fff; font-family:Co=
+urier New, courier, monaco, monospace, sans-serif;font-size:10pt"><div>I ha=
+ve a hang problem on my board based on MPC8377EWLAN, here is how i ran into=
+ problem. We are using u-boot to load the kernel, rootfs and device tree.&n=
+bsp; The kernel parameters have been set <br></div><div><br></div><div>root=
+=3D/dev/ram rw rootfstype=3Dext2 ramdisk_size=3D131322 console=3DttyS0,1152=
+00</div><div><br></div><div>but I load the rootfs image generated of rootfs=
+.jffs2 (we use buildroot), which results in kernel spitting the following m=
+essage and hang.&nbsp; I even enabled the WDT (mpc83xx_wdt.c) the board doe=
+s not get reset.</div><div><br></div><div>Any ideas would be appreciated.</=
+div><div><br></div><div>Thanks</div><div>Sridhar<br></div><div><br></div><d=
+iv><br></div><div>TCP cubic registered<br>Initializing XFRM netlink socket<=
+br>NET: Registered protocol family 17<br>NET: Registered protocol family
+ 15<br>8021q: 802.1Q VLAN Support v1.8<br>lib80211: common routines for IEE=
+E802.11 drivers<br>Registering the dns_resolver key type<br>rtc-m41t80 0-00=
+68: setting system clock to 2012-01-23 20:32:26 UTC (1327350746)<br>RAMDISK=
+: Couldn't find valid RAM disk image starting at 0.<br>List of all partitio=
+ns:<br>1f00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp; 512 mtdblock0&nbsp; (driver?)<br>1f01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 128 mtdblock1&nbsp; (driver?)<b=
+r>1f02&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 51=
+20 mtdblock2&nbsp; (driver?)<br>1f03&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp; 10240 mtdblock3&nbsp; (driver?)<br>1f04&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 128 mtdblock4&nb=
+sp; (driver?)<br>1f05&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; 5120 mtdblock5&nbsp;
+ (driver?)<br>1f06&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp; 10240 mtdblock6&nbsp; (driver?)<br>1f07&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 128 mtdblock7&nbsp; (driver?)<br>1=
+f08&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+ 128 mtdblock8&nbsp; (driver?)<br>1f09&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; 99328 mtdblock9&nbsp; (driver?)<br>No filesystem co=
+uld mount root, tried:&nbsp; ext2 squashfs<br>Kernel panic - not syncing: V=
+FS: Unable to mount root fs on unknown-block(1,0)<br>Call Trace:<br>[cf82be=
+f0] [c0007fa0] show_stack+0x4c/0x144 (unreliable)<br>[cf82bf30] [c02e8074] =
+panic+0xac/0x1f8<br>[cf82bf80] [c03c3df0] mount_block_root+0x288/0x2ac<br>[=
+cf82bfc0] [c03c401c] prepare_namespace+0x1a0/0x1ec<br>[cf82bfe0] [c03c3248]=
+ kernel_init+0x114/0x130<br>[cf82bff0] [c000d768] kernel_thread+0x4c/0x68<b=
+r>Rebooting in 180
+ seconds..<br></div><div><br></div></div></body></html>
+--121646022-206359311-1327383250=:37748--
