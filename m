@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6A0BAB6F65
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 10:08:31 +1100 (EST)
-Subject: Re: [PATCH] powerpc/85xx: fix Kconfig warning about missing 8250
- dependency
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1327022600-24206-1-git-send-email-paul.gortmaker@windriver.com>
-Date: Tue, 24 Jan 2012 17:08:24 -0600
-Message-Id: <D5B3B1A1-2D30-470E-B6EF-9F7A64228DEF@kernel.crashing.org>
-References: <1327022600-24206-1-git-send-email-paul.gortmaker@windriver.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 42939B6F65
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 10:18:46 +1100 (EST)
+Message-ID: <1327447120.19850.46.camel@pasglop>
+Subject: Re: error: 'cpus_in_crash' defined but not used
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Date: Wed, 25 Jan 2012 10:18:40 +1100
+In-Reply-To: <alpine.DEB.2.01.1201201642580.2895@trent.utfs.org>
+References: <alpine.DEB.2.01.1201172006310.2895@trent.utfs.org>
+ <alpine.DEB.2.01.1201172104410.2895@trent.utfs.org>
+ <alpine.DEB.2.01.1201201642580.2895@trent.utfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Jan 19, 2012, at 7:23 PM, Paul Gortmaker wrote:
-
-> The SERIAL_8250_EXTENDED option just enables access to other
-> less regularly used options, like SERIAL_8250_SHARE_IRQ.
-> Select it to get rid of this warning when selecting the child
-> option living underneath it.
+On Fri, 2012-01-20 at 16:45 -0800, Christian Kujau wrote:
+> > On Tue, 17 Jan 2012 at 20:13, Christian Kujau wrote:
+> > > 
+> > > compiling today's git (mainline, a25a2b8) on powerpc32 gives:
+> > > 
+> > >   CC      arch/powerpc/kernel/crash.o
+> > > cc1: warnings being treated as errors
+> > > /usr/local/src/linux-2.6-git/arch/powerpc/kernel/crash.c:49: error: 
+> > > ‘cpus_in_crash’ defined but not used
+> > > make[2]: *** [arch/powerpc/kernel/crash.o] Error 1
+> > > make[1]: *** [arch/powerpc/kernel] Error 2
+> > > make: *** [sub-make] Error 2
 > 
->  warning: (FSL_SOC_BOOKE && SERIAL_8250_RM9K) selects
->  SERIAL_8250_SHARE_IRQ which has unmet direct dependencies
->  (HAS_IOMEM && SERIAL_8250_EXTENDED)
+> This still happens in 3.3.0-rc1 and is fixed by the patch below.
 > 
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> .config is here: http://nerdbynature.de/bits/3.2.0/
+> 
+> Thoughts?
 
-applied to merge
+Applying now, thanks.
 
-- k
+Cheers,
+Ben.
+
+> Thanks,
+> Christian.
+> 
+> > I could not find cpus_in_crash anywhere in the sourcetree, except for 
+> > arch/powerpc/kernel/crash.c. Moving the definition into the CONFIG_SMP 
+> > ifdef helps on my UP system, of course - not sure about other machines 
+> > though:
+> > 
+> > diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+> > index 28be345..abef751 100644
+> > --- a/arch/powerpc/kernel/crash.c
+> > +++ b/arch/powerpc/kernel/crash.c
+> > @@ -46,7 +46,6 @@
+> >  
+> >  /* This keeps a track of which one is the crashing cpu. */
+> >  int crashing_cpu = -1;
+> > -static atomic_t cpus_in_crash;
+> >  static int time_to_dump;
+> >  
+> >  #define CRASH_HANDLER_MAX 3
+> > @@ -66,6 +65,7 @@ static int handle_fault(struct pt_regs *regs)
+> >  
+> >  #ifdef CONFIG_SMP
+> >  
+> > +static atomic_t cpus_in_crash;
+> >  void crash_ipi_callback(struct pt_regs *regs)
+> >  {
+> >  	static cpumask_t cpus_state_saved = CPU_MASK_NONE;
+> > 
+> > 
+> > Christian.
+> > -- 
+> > BOFH excuse #272:
+> > 
+> > Netscape has crashed
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
