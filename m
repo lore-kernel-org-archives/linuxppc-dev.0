@@ -1,24 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 39BD1B6F65
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 10:01:57 +1100 (EST)
-Message-ID: <1327446104.19850.45.camel@pasglop>
-Subject: Re: [PATCH] powerpc/85xx: fix build failure from p1022 in SMP
- defconfig
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 25 Jan 2012 10:01:44 +1100
-In-Reply-To: <C8785E6B-CA31-4B61-91F5-97BEAE30D2E9@kernel.crashing.org>
-References: <1327157528-12312-1-git-send-email-paul.gortmaker@windriver.com>
- <CAP=VYLrjismj5PBfm=3LcVtC7pL4EXkt+JGKQNUuSJu1OU68MA@mail.gmail.com>
- <C8785E6B-CA31-4B61-91F5-97BEAE30D2E9@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 6A0BAB6F65
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 10:08:31 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: fix Kconfig warning about missing 8250
+ dependency
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1327022600-24206-1-git-send-email-paul.gortmaker@windriver.com>
+Date: Tue, 24 Jan 2012 17:08:24 -0600
+Message-Id: <D5B3B1A1-2D30-470E-B6EF-9F7A64228DEF@kernel.crashing.org>
+References: <1327022600-24206-1-git-send-email-paul.gortmaker@windriver.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,11 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-01-24 at 16:55 -0600, Kumar Gala wrote:
-> Ben just missed my pull request with it before 3.3-rc1.  Should get
-> into rc2 or I'll have to get someone in ozlabs to beat ben for me ;)
 
-Working on it :-)
+On Jan 19, 2012, at 7:23 PM, Paul Gortmaker wrote:
 
-Cheers,
-Ben.
+> The SERIAL_8250_EXTENDED option just enables access to other
+> less regularly used options, like SERIAL_8250_SHARE_IRQ.
+> Select it to get rid of this warning when selecting the child
+> option living underneath it.
+> 
+>  warning: (FSL_SOC_BOOKE && SERIAL_8250_RM9K) selects
+>  SERIAL_8250_SHARE_IRQ which has unmet direct dependencies
+>  (HAS_IOMEM && SERIAL_8250_EXTENDED)
+> 
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+
+applied to merge
+
+- k
