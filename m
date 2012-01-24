@@ -1,21 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
- [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E605B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 06:33:33 +1100 (EST)
-Message-ID: <4F1F0782.3010601@freescale.com>
-Date: Tue, 24 Jan 2012 13:33:22 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <robherring2@gmail.com>
+Message-ID: <4F1F24DD.5030904@gmail.com>
+Date: Tue, 24 Jan 2012 15:38:37 -0600
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-To: Sridhar Addagada <sridhar_a@yahoo.com>
-Subject: Re: arch/powerpc/platforms/83xx/misc.c
-References: <1327383250.37748.YahooMailNeo@web120206.mail.ne1.yahoo.com>
-In-Reply-To: <1327383250.37748.YahooMailNeo@web120206.mail.ne1.yahoo.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFCv2 03/14] irq_domain: Make irq_domain structure match
+ powerpc's irq_host
+References: <1327352870-14687-1-git-send-email-grant.likely@secretlab.ca>
+ <1327352870-14687-4-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1327352870-14687-4-git-send-email-grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, linuxppc-dev@lists.ozlabs.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/23/2012 11:34 PM, Sridhar Addagada wrote:
-> I have a hang problem on my board based on MPC8377EWLAN, here is how i
-> ran into problem. We are using u-boot to load the kernel, rootfs and
-> device tree.  The kernel parameters have been set
+On 01/23/2012 03:07 PM, Grant Likely wrote:
+> Part of the series to unify the irq remapping mechanisms in the
+> kernel.  A follow up patch will copy the powerpc implementation into
+> kernel/irq/irqdomain.c, which will be a lot easier if the structures
+> are identical.
 > 
-> root=/dev/ram rw rootfstype=ext2 ramdisk_size=131322 console=ttyS0,115200
+> Where they differ, I've chose to use the powerpc names since there is
+> a lot more code using those names.
 > 
-> but I load the rootfs image generated of rootfs.jffs2
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>  arch/arm/common/gic.c     |   14 ++++----
+>  include/linux/irqdomain.h |   84 ++++++++++++++++++++++++++++++++++-----------
+>  kernel/irq/irqdomain.c    |   14 ++++----
+>  3 files changed, 78 insertions(+), 34 deletions(-)
+> 
 
-JFFS2 is for use directly from flash, not as a ramdisk.  If you want to
-use JFFS2, burn it to flash and specify the appropriate mtd device.  If
-you want to use an initial ramdisk, use ext2.  Or better, use initramfs
-(gzipped CPIO archive).
+snip...
 
--Scott
+> @@ -126,7 +126,7 @@ void irq_dispose_mapping(unsigned int irq)
+>  }
+>  EXPORT_SYMBOL_GPL(irq_dispose_mapping);
+>  
+> -int irq_domain_simple_dt_translate(struct irq_domain *d,
+> +int irq_domain_simple_xlate(struct irq_domain *d,
+>  			    struct device_node *controller,
+>  			    const u32 *intspec, unsigned int intsize,
+>  			    unsigned long *out_hwirq, unsigned int *out_type)
+
+This needs a declaration in irqdomain.h (as well as EXPORT?). There
+could be others as well, but this is the one I'm using for generic irq chip.
+
+Rob
+
+> @@ -181,7 +181,7 @@ EXPORT_SYMBOL_GPL(irq_domain_generate_simple);
+>  
+>  struct irq_domain_ops irq_domain_simple_ops = {
+>  #ifdef CONFIG_OF_IRQ
+> -	.dt_translate = irq_domain_simple_dt_translate,
+> +	.xlate = irq_domain_simple_xlate,
+>  #endif /* CONFIG_OF_IRQ */
+>  };
+>  EXPORT_SYMBOL_GPL(irq_domain_simple_ops);
