@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 42939B6F65
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 10:18:46 +1100 (EST)
-Message-ID: <1327447120.19850.46.camel@pasglop>
-Subject: Re: error: 'cpus_in_crash' defined but not used
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Kujau <lists@nerdbynature.de>
-Date: Wed, 25 Jan 2012 10:18:40 +1100
-In-Reply-To: <alpine.DEB.2.01.1201201642580.2895@trent.utfs.org>
-References: <alpine.DEB.2.01.1201172006310.2895@trent.utfs.org>
- <alpine.DEB.2.01.1201172104410.2895@trent.utfs.org>
- <alpine.DEB.2.01.1201201642580.2895@trent.utfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+ [209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DB847B6EF7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 11:18:50 +1100 (EST)
+Received: by ghbz2 with SMTP id z2so2171671ghb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2012 16:18:47 -0800 (PST)
+MIME-Version: 1.0
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [RFC 1/2] irq_domain: Create common xlate functions that device
+ drivers can use
+Date: Tue, 24 Jan 2012 17:18:38 -0700
+Message-Id: <1327450719-25590-1-git-send-email-grant.likely@secretlab.ca>
+Cc: Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +25,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-01-20 at 16:45 -0800, Christian Kujau wrote:
-> > On Tue, 17 Jan 2012 at 20:13, Christian Kujau wrote:
-> > > 
-> > > compiling today's git (mainline, a25a2b8) on powerpc32 gives:
-> > > 
-> > >   CC      arch/powerpc/kernel/crash.o
-> > > cc1: warnings being treated as errors
-> > > /usr/local/src/linux-2.6-git/arch/powerpc/kernel/crash.c:49: error: 
-> > > ‘cpus_in_crash’ defined but not used
-> > > make[2]: *** [arch/powerpc/kernel/crash.o] Error 1
-> > > make[1]: *** [arch/powerpc/kernel] Error 2
-> > > make: *** [sub-make] Error 2
-> 
-> This still happens in 3.3.0-rc1 and is fixed by the patch below.
-> 
-> .config is here: http://nerdbynature.de/bits/3.2.0/
-> 
-> Thoughts?
+Rather than having each interrupt controller driver creating its own barely
+unique .xlate function for irq_domain, create a library of translators which
+any driver can use directly.
 
-Applying now, thanks.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Cheers,
-Ben.
+This builds on top of my irq_domain series and will be included with it when
+I post v3.  Rob, does this serve your needs for generic irq controller DT
+support?
 
-> Thanks,
-> Christian.
-> 
-> > I could not find cpus_in_crash anywhere in the sourcetree, except for 
-> > arch/powerpc/kernel/crash.c. Moving the definition into the CONFIG_SMP 
-> > ifdef helps on my UP system, of course - not sure about other machines 
-> > though:
-> > 
-> > diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-> > index 28be345..abef751 100644
-> > --- a/arch/powerpc/kernel/crash.c
-> > +++ b/arch/powerpc/kernel/crash.c
-> > @@ -46,7 +46,6 @@
-> >  
-> >  /* This keeps a track of which one is the crashing cpu. */
-> >  int crashing_cpu = -1;
-> > -static atomic_t cpus_in_crash;
-> >  static int time_to_dump;
-> >  
-> >  #define CRASH_HANDLER_MAX 3
-> > @@ -66,6 +65,7 @@ static int handle_fault(struct pt_regs *regs)
-> >  
-> >  #ifdef CONFIG_SMP
-> >  
-> > +static atomic_t cpus_in_crash;
-> >  void crash_ipi_callback(struct pt_regs *regs)
-> >  {
-> >  	static cpumask_t cpus_state_saved = CPU_MASK_NONE;
-> > 
-> > 
-> > Christian.
-> > -- 
-> > BOFH excuse #272:
-> > 
-> > Netscape has crashed
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> 
+g.
+
+ include/linux/irqdomain.h |   15 ++++++++++
+ kernel/irq/irqdomain.c    |   69 +++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 76 insertions(+), 8 deletions(-)
+
+diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
+index e7379a3..5e497a0 100644
+--- a/include/linux/irqdomain.h
++++ b/include/linux/irqdomain.h
+@@ -110,6 +110,9 @@ struct irq_domain {
+ 	void *host_data;
+ 	irq_hw_number_t inval_irq;
+ 
++	/* Data for common irq xlate functions */
++	unsigned int xlate_type;
++
+ 	/* Optional device node pointer */
+ 	struct device_node *of_node;
+ };
+@@ -163,6 +166,18 @@ extern unsigned int irq_linear_revmap(struct irq_domain *host,
+ 				      irq_hw_number_t hwirq);
+ 
+ extern struct irq_domain_ops irq_domain_simple_ops;
++
++/* stock xlate functions */
++int irq_domain_xlate_onecell(struct irq_domain *d, struct device_node *ctrlr,
++			const u32 *intspec, unsigned int intsize,
++			irq_hw_number_t *out_hwirq, unsigned int *out_type);
++int irq_domain_xlate_twocell(struct irq_domain *d, struct device_node *ctrlr,
++			const u32 *intspec, unsigned int intsize,
++			irq_hw_number_t *out_hwirq, unsigned int *out_type);
++int irq_domain_xlate_onetwocell(struct irq_domain *d, struct device_node *ctrlr,
++			const u32 *intspec, unsigned int intsize,
++			irq_hw_number_t *out_hwirq, unsigned int *out_type);
++
+ #if defined(CONFIG_OF_IRQ)
+ extern void irq_domain_generate_simple(const struct of_device_id *match,
+ 					u64 phys_base, unsigned int irq_start);
+diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+index def8e7b..df80205 100644
+--- a/kernel/irq/irqdomain.c
++++ b/kernel/irq/irqdomain.c
+@@ -53,6 +53,7 @@ static struct irq_domain *irq_domain_alloc(struct device_node *of_node,
+ 	domain->ops = ops;
+ 	domain->host_data = host_data;
+ 	domain->of_node = of_node_get(of_node);
++	domain->xlate_type = IRQ_TYPE_NONE;
+ 
+ 	if (domain->ops->match == NULL)
+ 		domain->ops->match = default_irq_domain_match;
+@@ -690,25 +691,77 @@ int irq_domain_simple_map(struct irq_domain *d, unsigned int irq,
+ 	return 0;
+ }
+ 
+-int irq_domain_simple_xlate(struct irq_domain *d,
+-			    struct device_node *controller,
+-			    const u32 *intspec, unsigned int intsize,
+-			    unsigned long *out_hwirq, unsigned int *out_type)
++/**
++ * irq_domain_xlate_onecell() - Generic xlate for direct one cell bindings
++ *
++ * Device Tree IRQ specifier translation function which works with one cell
++ * bindings where the cell value maps directly to the hwirq number.
++ */
++int irq_domain_xlate_onecell(struct irq_domain *d, struct device_node *ctrlr,
++			     const u32 *intspec, unsigned int intsize,
++			     unsigned long *out_hwirq, unsigned int *out_type)
++{
++	if (WARN(intsize < 1, "Bad intspec for %s: intsize=%i < 1\n",
++		 ctrlr->full_name, intsize))
++		return -EINVAL;
++	*out_hwirq = intspec[0];
++	*out_type = d->xlate_type;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(irq_domain_xlate_onecell);
++
++/**
++ * irq_domain_xlate_twocell() - Generic xlate for direct two cell bindings
++ *
++ * Device Tree IRQ specifier translation function which works with two cell
++ * bindings where the cell values map directly to the hwirq number
++ * and linux irq flags.
++ */
++int irq_domain_xlate_twocell(struct irq_domain *d, struct device_node *ctrlr,
++			const u32 *intspec, unsigned int intsize,
++			irq_hw_number_t *out_hwirq, unsigned int *out_type)
+ {
+-	if (d->of_node != controller)
++	if (WARN(intsize < 2, "Bad intspec for %s: intsize=%i < 2\n",
++		 ctrlr->full_name, intsize))
++		return -EINVAL;
++	if (intsize < 2)
+ 		return -EINVAL;
+-	if (intsize < 1)
++	*out_hwirq = intspec[0];
++	*out_type = intspec[1] & IRQ_TYPE_SENSE_MASK;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(irq_domain_xlate_twocell);
++
++/**
++ * irq_domain_xlate_onetwocell() - Generic xlate for one or two cell bindings
++ *
++ * Device Tree IRQ specifier translation function which works with either one
++ * or two cell bindings where the cell values map directly to the hwirq number
++ * and linux irq flags.
++ *
++ * Note: don't use this function unless your interrupt controller explicitly
++ * supports both one and two cell bindings.  For the majority of controllers
++ * the _onecell() or _twocell() variants above should be used.
++ */
++int irq_domain_xlate_onetwocell(struct irq_domain *d,
++				struct device_node *ctrlr,
++				const u32 *intspec, unsigned int intsize,
++				unsigned long *out_hwirq, unsigned int *out_type)
++{
++	if (WARN(intsize < 1, "Bad intspec for %s: intsize=%i < 1\n",
++		 ctrlr->full_name, intsize))
+ 		return -EINVAL;
+ 	*out_hwirq = intspec[0];
+-	*out_type = IRQ_TYPE_NONE;
++	*out_type = d->xlate_type;
+ 	if (intsize > 1)
+ 		*out_type = intspec[1] & IRQ_TYPE_SENSE_MASK;
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(irq_domain_xlate_onetwocell);
+ 
+ struct irq_domain_ops irq_domain_simple_ops = {
+ 	.map = irq_domain_simple_map,
+-	.xlate = irq_domain_simple_xlate,
++	.xlate = irq_domain_xlate_onetwocell,
+ };
+ EXPORT_SYMBOL_GPL(irq_domain_simple_ops);
+ 
+-- 
+1.7.5.4
