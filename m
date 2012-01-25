@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DD75EB6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 13:36:14 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q0P2a9dk007587
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2012 20:36:10 -0600
-Message-ID: <1327458969.19850.48.camel@pasglop>
-Subject: [PATCH] powerpc/powernv: Fix PCI resource handling
+ by ozlabs.org (Postfix) with ESMTPS id A1F79B6F68
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2012 14:01:25 +1100 (EST)
+Message-ID: <1327460475.19850.51.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 25 Jan 2012 13:36:09 +1100
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 25 Jan 2012 14:01:15 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,85 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Recent changes to the handling of PCI resources for host bridges
-are breaking the PowerNV code for assigning resources on IODA.
+Hi Linus !
 
-The root of the problem is that the pci_bus attached to a host
-bridge no longer has its "legacy" resource pointers populated
-but only uses the newer list instead.
+Here are a few fixes on top of rc1, a couple of important compile
+regressions and a couple of minor embedded additions.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |   43 ++++++++++++++++++-----------
- 1 files changed, 27 insertions(+), 16 deletions(-)
+Cheers,
+Ben.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index f31162c..5e155df 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -204,11 +204,10 @@ static void __devinit pnv_ioda_offset_bus(struct pci_bus *bus,
- 	pr_devel("  -> OBR %s [%x] +%016llx\n",
- 		 bus->self ? pci_name(bus->self) : "root", flags, offset);
- 
--	for (i = 0; i < 2; i++) {
--		r = bus->resource[i];
-+	pci_bus_for_each_resource(bus, r, i) {
- 		if (r && (r->flags & flags)) {
--			bus->resource[i]->start += offset;
--			bus->resource[i]->end += offset;
-+			r->start += offset;
-+			r->end += offset;
- 		}
- 	}
- 	list_for_each_entry(dev, &bus->devices, bus_list)
-@@ -288,12 +287,17 @@ static void __devinit pnv_ioda_calc_bus(struct pci_bus *bus, unsigned int flags,
- 	 * assignment algorithm is going to be uber-trivial for now, we
- 	 * can try to be smarter later at filling out holes.
- 	 */
--	start = bus->self ? 0 : bus->resource[bres]->start;
--
--	/* Don't hand out IO 0 */
--	if ((flags & IORESOURCE_IO) && !bus->self)
--		start += 0x1000;
--
-+	if (bus->self) {
-+		/* No offset for downstream bridges */
-+		start = 0;
-+	} else {
-+		/* Offset from the root */
-+		if (flags & IORESOURCE_IO)
-+			/* Don't hand out IO 0 */
-+			start = hose->io_resource.start + 0x1000;
-+		else
-+			start = hose->mem_resources[0].start;
-+	}
- 	while(!list_empty(&head)) {
- 		w = list_first_entry(&head, struct resource_wrap, link);
- 		list_del(&w->link);
-@@ -321,13 +325,20 @@ static void __devinit pnv_ioda_calc_bus(struct pci_bus *bus, unsigned int flags,
-  empty:
- 	/* Only setup P2P's, not the PHB itself */
- 	if (bus->self) {
--		WARN_ON(bus->resource[bres] == NULL);
--		bus->resource[bres]->start = 0;
--		bus->resource[bres]->flags = (*size) ? flags : 0;
--		bus->resource[bres]->end = (*size) ? (*size - 1) : 0;
-+		struct resource *res = bus->resource[bres];
-+
-+		if (WARN_ON(res == NULL))
-+			return;
- 
--		/* Clear prefetch bus resources for now */
--		bus->resource[2]->flags = 0;
-+		/*
-+		 * FIXME: We should probably export and call
-+		 * pci_bridge_check_ranges() to properly re-initialize
-+		 * the PCI portion of the flags here, and to detect
-+		 * what the bridge actually supports.
-+		 */
-+		res->start = 0;
-+		res->flags = (*size) ? flags : 0;
-+		res->end = (*size) ? (*size - 1) : 0;
- 	}
- 
- 	pr_devel("<- CBR %s [%x] *size=%016llx *align=%016llx\n",
+The following changes since commit 4a7cbb56fdbd92a47f57ca8b25bf5db35f0d6518:
+
+  regulator: Fix documentation for of_node parameter of regulator_register() (2012-01-24 10:40:06 -0800)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Benjamin Herrenschmidt (3):
+      Merge remote-tracking branch 'kumar/merge' into merge
+      powerpc/powernv: Fix PCI resource handling
+      powerpc: Fix build on some non-freescale platforms
+
+Christian Kujau (1):
+      powerpc/crash: Fix build error without SMP
+
+Deepthi Dharwar (1):
+      powerpc/cpuidle: Make it a bool, not a tristate
+
+Jerry Huang (1):
+      powerpc/85xx: Fix cmd12 bug and add the chip compatible for eSDHC
+
+Julia Lawall (1):
+      arch/powerpc/sysdev/fsl_pci.c: add missing iounmap
+
+Michael Neuling (1):
+      powerpc: fix compile error with 85xx/p1022_ds.c
+
+Ramneek Mehresh (2):
+      powerpc/85xx: Enable USB2 controller node for P1020RDB
+      powerpc/85xx: Add dr_mode property in USB nodes
+
+ arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |    4 ++
+ arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   |    3 +-
+ arch/powerpc/boot/dts/fsl/p1020si-post.dtsi   |    4 ++
+ arch/powerpc/boot/dts/fsl/p1022si-post.dtsi   |    3 +-
+ arch/powerpc/boot/dts/fsl/p2020si-post.dtsi   |    4 ++
+ arch/powerpc/boot/dts/p1020rdb.dtsi           |   13 +++----
+ arch/powerpc/boot/dts/p1021mds.dts            |    3 +-
+ arch/powerpc/boot/dts/p2020ds.dtsi            |    3 +-
+ arch/powerpc/boot/dts/p2020rdb.dts            |    3 +-
+ arch/powerpc/kernel/crash.c                   |    2 +-
+ arch/powerpc/kernel/legacy_serial.c           |    2 +
+ arch/powerpc/platforms/85xx/p1022_ds.c        |    1 +
+ arch/powerpc/platforms/powernv/pci-ioda.c     |   43 +++++++++++++++---------
+ arch/powerpc/platforms/pseries/Kconfig        |    2 +-
+ arch/powerpc/sysdev/fsl_pci.c                 |    5 ++-
+ 15 files changed, 63 insertions(+), 32 deletions(-)
