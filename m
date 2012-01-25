@@ -1,20 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
+ by ozlabs.org (Postfix) with ESMTP id E6161B6F65
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 11:38:25 +1100 (EST)
+Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
+ by duster.selinc.com (8.14.4/8.14.4) with ESMTP id q0P0BuSq015800
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2012 16:11:56 -0800
+To: linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4F1F2C3A.3060607@gmail.com>
-References: <1327352870-14687-1-git-send-email-grant.likely@secretlab.ca>
- <1327352870-14687-14-git-send-email-grant.likely@secretlab.ca>
- <4F1F2C3A.3060607@gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 24 Jan 2012 17:26:37 -0700
-Message-ID: <CACxGe6sP0p1r6u6uG5fhTf0jC85F=vX7Nj_YezQFE65caH+2Zg@mail.gmail.com>
-Subject: Re: [RFCv2 13/14] irq_domain: Remove 'new' irq_domain in favour of
- the ppc one
-To: Rob Herring <robherring2@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: FSL SPI driver question
+Message-ID: <OF74786861.90D91C05-ON8825798F.0083A71E-88257990.000118E7@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Tue, 24 Jan 2012 16:11:58 -0800
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,70 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 24, 2012 at 3:10 PM, Rob Herring <robherring2@gmail.com> wrote:
-> On 01/23/2012 03:07 PM, Grant Likely wrote:
->> This patch removes the simplistic implementation of irq_domains and enab=
-les
->> the powerpc infrastructure for all irq_domain users. =A0The powerpc
->> infrastructure includes support for complex mappings between Linux and
->> hardware irq numbers, and can manage allocation of irq_descs.
->>
->> This patch also converts the few users of irq_domain_add()/irq_domain_de=
-l()
->> to call irq_domain_add_legacy() instead.
->>
->> v2: Fix removal of irq_alloc_descs() call in gic driver
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> ---
->> =A0arch/arm/common/gic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 85 ++++++++--=
----------
->> =A0arch/arm/common/vic.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 16 +---
->> =A0arch/arm/include/asm/hardware/gic.h | =A0 =A04 +-
->> =A0arch/arm/include/asm/hardware/vic.h | =A0 =A02 +
->> =A0arch/arm/mach-exynos/common.c =A0 =A0 =A0 | =A0 =A02 +-
->> =A0arch/arm/mach-versatile/core.c =A0 =A0 =A0| =A0 =A05 +-
->> =A0drivers/mfd/twl-core.c =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 12 +--
->> =A0include/linux/irqdomain.h =A0 =A0 =A0 =A0 =A0 | =A0 45 +---------
->> =A0kernel/irq/irqdomain.c =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0159 +++-------=
--------------------------
->> =A09 files changed, 69 insertions(+), 261 deletions(-)
->>
->> diff --git a/arch/arm/common/gic.c b/arch/arm/common/gic.c
->
-> snip
->
->> @@ -716,17 +708,17 @@ void __init gic_init_bases(unsigned int gic_nr, in=
-t irq_start,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 gic_irqs =3D 1020;
->> =A0 =A0 =A0 gic->gic_irqs =3D gic_irqs;
->>
->> - =A0 =A0 domain->nr_irq =3D gic_irqs - domain->hwirq_base;
->> - =A0 =A0 domain->irq_base =3D irq_alloc_descs(irq_start, 16, domain->nr=
-_irq,
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0numa_node_id());
->> - =A0 =A0 if (IS_ERR_VALUE(domain->irq_base)) {
->> + =A0 =A0 irq_base =3D irq_alloc_descs(irq_start, 16, gic_irqs - hwirq_b=
-ase,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0numa_no=
-de_id());
->> + =A0 =A0 if (IS_ERR_VALUE(irq_base)) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 WARN(1, "Cannot allocate irq_descs @ IRQ%d, =
-assuming pre-allocated\n",
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0irq_start);
->> - =A0 =A0 =A0 =A0 =A0 =A0 domain->irq_base =3D irq_start;
->> + =A0 =A0 =A0 =A0 =A0 =A0 irq_base =3D irq_start;
->> =A0 =A0 =A0 }
->> - =A0 =A0 domain->host_data =3D gic;
->> - =A0 =A0 domain->ops =3D &gic_irq_domain_ops;
->> - =A0 =A0 irq_domain_add(domain);
->> + =A0 =A0 gic->domain =3D irq_domain_add_legacy(node, gic_irqs, irq_base=
-,
->
-> gic_irqs is wrong here. It needs 16 or 32 subtracted off. This patch
-> will fix things:
+Good afternoon,
 
-Good catch, I've integrated this into my series.
+I'm using the 3.0.3 kernel running on an MPC8308 and am trying to 
+interface to a Cypress CY14B256Q2A non-volatile RAM via SPI.  I've got the 
+SPI infrastructure, the Freescale SPI driver (drivers/spi/spi_fsl_spi.c), 
+and spidev built into the kernel and everything on the user space/kernel 
+side appears to be working correctly (at least when I try to read the 
+NvRAM's config register all the right places in the kernel get hit and I 
+see the SPI signals active with an o-scope).
 
-g.
+I think what I'm hitting is a lack of understanding/documentation on the 
+SPI controller in the 8308.  To read data from the NvRAM, the Master (the 
+8308 in this case) needs to clock out a byte long "read" command, two 
+bytes of address, and then clock in the data from the NvRAM.  However, I 
+never get any data back.  I think the problem is that (direct quote from 
+the 8308 reference manual) "SPICLK is a gated clock, active only during 
+data transfers".  So once the read command and address are sent, the 8308 
+considers the data transfer complete and gates off SPICLK.  Without 
+SPICLK, the NvRAM has no way to clock out it's data.  I think it's ready 
+to, it just can't.
+
+So the question is, how do I use spidev (or any other means) to get the 
+8308 SPI controller to keep SPICLK active so that the output data from the 
+NvRAM gets clocked out to the 8308?
+
+Thanks.
+
+Bruce
