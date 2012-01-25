@@ -1,17 +1,18 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <4F204F1C.70908@gmail.com>
-Date: Wed, 25 Jan 2012 12:51:08 -0600
-From: Rob Herring <robherring2@gmail.com>
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
+ by ozlabs.org (Postfix) with ESMTP id 0A14EB6F67
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 06:49:40 +1100 (EST)
+In-Reply-To: <4F2004B1.5030607@aimvalley.nl>
+References: <OF74786861.90D91C05-ON8825798F.0083A71E-88257990.000118E7@selinc.com>
+ <4F2004B1.5030607@aimvalley.nl>
+To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 MIME-Version: 1.0
-To: "Cousson, Benoit" <b-cousson@ti.com>
-Subject: Re: [RFCv2 00/14]
-References: <1327352870-14687-1-git-send-email-grant.likely@secretlab.ca>
- <4F1DD6DF.4080706@gmail.com> <4F200DFD.7070407@ti.com>
-In-Reply-To: <4F200DFD.7070407@ti.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Shawn Guo <shawn.guo@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
+Subject: Re: FSL SPI driver question
+Message-ID: <OF248EC14B.3E5BA3A6-ON88257990.006C779B-88257990.006CE971@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Wed, 25 Jan 2012 11:49:36 -0800
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,40 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/25/2012 08:13 AM, Cousson, Benoit wrote:
-> On 1/23/2012 10:53 PM, Rob Herring wrote:
->> On 01/23/2012 03:07 PM, Grant Likely wrote:
->>>
->>> Hey everyone,
->>>
->>> Here's the second RFC for the irq_domain patches.  I could use some
->>> help testing now.  I still expect there will be a few bugs.  The
->>> series is based on v3.3-rc1, and I've pushed it out to my git server:
->>>
->>> git://git.secretlab.ca/git/linux-2.6.git irqdomain/next
->>
->> Can you post to linux-arm-kernel too so people are aware of this work
->> and stop posting dead-end irqdomain patches.
-> 
-> Good point, I have two pending series that are using the
-> irq_domain_add() so far, so it will be good to have that branch pulled
-> in arm-soc.
-> 
->> I tested what you had as of this morning and it works fine for me. Looks
->> like the only diff is the VExpress code. I'm working on rebasing my
->> domain support for generic irqchip now.
-> 
-> In fact your generic irqchip should even avoid us to use
-> irq_domain_add_legacy() since both GPIO and OMAP3 intc are already using
-> the irqchip.
-> 
-> I guess you are not going to change the interface so the patches I did
-> on your previous branch to try them should be good already, isn't it?
+Hi Norbert,
 
-I've got it rebased on top of Grant's tree. I will send it out soon.
+> >
+> > So the question is, how do I use spidev (or any other means) to get 
+the
+> > 8308 SPI controller to keep SPICLK active so that the output data from 
+the
+> > NvRAM gets clocked out to the 8308?
+> >
+> 
+> Did you see Documentation/spi/spidev_fdx.c:do_msg ?
+> it perform a full-duplex (actually half-duplex) 1 byte transfer.
+> 
+> In your case you need a transfer that outputs 3 bytes (read cmd + 
+address)
+> and inputs 1? byte.
+> 
+> If you do it this way I would expect the SPICLK to be active
+> during the 2nd part of the transfer (whenever the CPU "reads" the
+> data from SPI client).
+> 
 
-One problem that still remains is it breaks x86 and any platform using
-generic irq chip, but not selecting IRQ_DOMAIN. Grant, do you plan to
-enable IRQ_DOMAIN for x86 in your series? MIPS may also need fixing.
+Thanks for the reply.  Yes I did find spidev_fdx.c and in fact copied it 
+for my tests.  I still see SPICLK active only during the time the 8308 is 
+sending data (read cmd + address).  Nothing happens with the clock after 
+that when the NvRAM is ready to send data.
 
-Rob
+Bruce
