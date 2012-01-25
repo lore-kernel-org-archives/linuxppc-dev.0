@@ -1,27 +1,19 @@
-Return-Path: <Farrukh_Arshad@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <nvbolhuis@aimvalley.nl>
+Received: from mika.eatserver.nl (mika.eatserver.nl [195.20.9.75])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1B" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FADAB6F74
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 22:04:48 +1100 (EST)
-From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: RE: Problem in getting shared memory access on P1022RDK
-Date: Wed, 25 Jan 2012 11:04:41 +0000
-Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CE2CD@EU-MBX-03.mgc.mentorg.com>
-References: <93CD5F41FDBC6042A6B449764F3B35CC050CCA22@EU-MBX-03.mgc.mentorg.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CCA80@EU-MBX-03.mgc.mentorg.com>
- <4F033685.6000509@freescale.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CCB2E@EU-MBX-03.mgc.mentorg.com>
- <4F050653.6010601@windriver.com>
- <93CD5F41FDBC6042A6B449764F3B35CC050CD375@EU-MBX-03.mgc.mentorg.com>
- <4F0E9539.7090205@windriver.com>
-In-Reply-To: <4F0E9539.7090205@windriver.com>
-Content-Type: text/plain; charset="utf-8"
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C6F6BB6EE8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 00:33:45 +1100 (EST)
+Message-ID: <4F2004B1.5030607@aimvalley.nl>
+Date: Wed, 25 Jan 2012 14:33:37 +0100
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 MIME-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Bruce_Leonard@selinc.com
+Subject: Re: FSL SPI driver question
+References: <OF74786861.90D91C05-ON8825798F.0083A71E-88257990.000118E7@selinc.com>
+In-Reply-To: <OF74786861.90D91C05-ON8825798F.0083A71E-88257990.000118E7@selinc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SSBoYXZlIGR1bXBlZCBUTEIgZW50cmllcyB3aGlsZSBtYXBwaW5nIHNoYXJlZCBtZW1vcnkuIE9u
-IGJvdGggY29yZXMgTS1CaXQgKE1BUzJbNjFdKSBpcyBzZXQgaW4gVExCMCBlbnRyaWVzLiBPbiBi
-b3RoIGNvcmVzIE0tQml0IGlzIHNldCBmb3IgYWxsIHZhbGlkIFRMQjEgZW50cmllcy4gVExCMSBk
-b2VzIGNvbnRhaW5zIHNvbWUgaW52YWxpZCBlbnRyaWVzIHdoaWNoIGhhcyBNLUJpdCBjbGVhcmVk
-LiBTbyBJIGJlbGlldmUgYXQgdGhpcyB0aW1lIHRoZSBjb2hlcmVuY3kgaXMgbm90IHRoZSBpc3N1
-ZS4gQW55IGZ1cnRoZXIgdGhvdWdodHMgb24gdGhlIGlzc3VlID8NCg0KSSBoYXZlIG1vZGlmaWVk
-IGR1bXBfdGxiX2Jvb2szZSBmdW5jdGlvbiAoZm91bmQgaW4gYXJjaC9wb3dlcnBjL3htb24veG1v
-bi5jKSBmdW5jdGlvbiBmb3IgQm9va0UgTU1VIHRvIGR1bXAgVExCIGVudHJpZXMuDQoNClJlZ2Fy
-ZHMsDQpGYXJydWtoIEFyc2hhZA0KDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9t
-OiB0aWVqdW4uY2hlbiBbbWFpbHRvOnRpZWp1bi5jaGVuQHdpbmRyaXZlci5jb21dIA0KU2VudDog
-VGh1cnNkYXksIEphbnVhcnkgMTIsIDIwMTIgMTowOSBQTQ0KVG86IEFyc2hhZCwgRmFycnVraA0K
-Q2M6IFNjb3R0IFdvb2Q7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQpTdWJqZWN0OiBS
-ZTogUHJvYmxlbSBpbiBnZXR0aW5nIHNoYXJlZCBtZW1vcnkgYWNjZXNzIG9uIFAxMDIyUkRLDQoN
-CkFyc2hhZCwgRmFycnVraCB3cm90ZToNCj4gQWRkaW5nIG1vcmUgaXQsDQo+IA0KPiBJIGhhdmUg
-cmVtb3ZlZCB0aGUgc2hhcmVkIG1lbW9yeSBrZXJuZWwgZHJpdmVyIGRlcGVuZGVuY3kganVzdCB0
-byBuYXJyb3cgZG93biB0aGUgcHJvYmxlbSBhcmVhIGFuZCBJIGhhdmUgd3JpdHRlbiBhIHNtYWxs
-IHBpZWNlIG9mIGNvZGUgaW4gdXNlciBzcGFjZS4gQSB3cml0ZXIgJiBhIHJlYWRlciBhcHBsaWNh
-dGlvbiB3aGljaCBhY2Nlc3MgdGhlIHNoYXJlZCBtZW1vcnkgYW5kIEkgZ290IHRoZSBzYW1lIGJl
-aGF2aW9yIGFzIHdpdGggdGhlIHNoYXJlZCBtZW1vcnkga2VybmVsIGRyaXZlci4gSW50ZXJlc3Rp
-bmdseSwgbXkgdXNlciBzcGFjZSBhcHBsaWNhdGlvbiB3b3JrIGZpbmUgb24gUDEwMjJEUyBidXQg
-bm90IG9uIFAxMDIyUkRLIGhvd2V2ZXIgYm90aCB1c2luZyB0aGUgc2FtZSBDUFUgbW9kdWxlcy4N
-Cj4gDQo+IFdoZW4gSSB3cml0ZSBhIHNpbXBsZSBzdHJpbmcgb24gc2hhcmVkIG1lbW9yeSBmcm9t
-IENvcmUgMSBpdCBpcyByZWFkIA0KPiBhdCBDb3JlIDAgcHJvcGVybHkgV2hlbiBJIHdyaXRlIGEg
-c2ltcGxlIHN0cmluZyBvbiBzaGFyZWQgbWVtb3J5IGZyb20gQ29yZSAwIGl0IGlzIG5vdCByZWFk
-IGF0IENvcmUgMS4NCj4NCg0KRGlkIHlvdSBkdW1wIFRMQiBlbnRyeSB0byBjaGVjayBwYWdlIG1l
-bW9yeSBjb2hlcmVuY2UgYXR0cmlidXRlIGZvciBhIHNoYXJlZCBtZW1vcnkgYXMgSSBtZW50aW9u
-ZWQgcHJldmlvdXNseT8gVGhpcyBzaG91bGQgYmUgY29uc2lzdGVudCBvbiBib3RoIHNpZGVzLg0K
-DQo+IFdpdGggdGhpcyB0ZXN0IG5vdyBJIGFtIHN1cmUgdGhlIHByb2JsZW0gbGllcyBpbiB0aGUg
-a2VybmVsIGl0c2VsZi4gQW55IHBvaW50ZXJzIHRvIGxvb2sgZm9yIHRoZSB0cm91YmxlZCBhcmVh
-ID8NCj4gDQo+IE15IGFwcGxpY2F0aW9uIGNvZGUgaXMgKGVycm9yIGNoZWNraW5nIGFuZCBvdGhl
-ciBjb2RlIGlzIG9taXR0ZWQpDQo+IA0KPiAjZGVmaW5lIAlTSE1fQkFTRSAJMHgxQzAwMDAwMA0K
-PiAjZGVmaW5lCVNITV9TSVpFIAkweDQwMDAwMAkJLy8gNCBNQiBvZiBTaGFyZWQgTWVtb3J5DQo+
-ICNkZWZpbmUgCVBBR0VfU0laRSAJKDQqMTAyNCkNCj4gDQo+IGZkID0gb3BlbihkZXZpY2UsIE9f
-UkRXUik7DQoNCllvdSBtYXkgbmVlZCB0byBhZGQgd2l0aCAnT19TWU5DJy4NCg0KVGllanVuDQoN
-Cj4gDQo+IHNobSA9IG1hbGxvYyhTSE1fU0laRSArIChQQUdFX1NJWkUgLSAxKSk7IGlmICggKHVu
-c2lnbmVkIGxvbmcpIHNobSAlIA0KPiBQQUdFX1NJWkUpIHsNCj4gCXNobSArPSBQQUdFX1NJWkUg
-LSAoKHVuc2lnbmVkIGxvbmcpc2htICUgUEFHRV9TSVpFKTsgfQ0KPiANCj4gc2htID0gbW1hcChz
-aG0sIFNITV9TSVpFLCBQUk9UX1JFQUR8UFJPVF9XUklURSwgTUFQX1NIQVJFRCB8IA0KPiBNQVBf
-RklYRUQsIGZkLCBTSE1fQkFTRSk7IC4uLi4uLg0KPiAuLi4uLi4gd3JpdGUgc29tZSBzdHJpbmcg
-YXQgc2htLg0KPiANCj4gTXkgbWVtb3J5IHBhcnRpdGlvbmluZyBmb3IgYm90aCBzeXN0ZW1zIGlz
-DQo+IA0KPiBDb3JlICAgICAgICAgICAgICAgICAJCUJhc2UgQWRkcmVzcyAgICAgICAgIAlTaXpl
-DQo+IENvcmUgMCAgICAgICAgICAgICAgIAkJMHgwMDAwLDAwMDAgICAgICAgICAgCTB4MTAwMCww
-MDAwDQo+IENvcmUgMSAgICAgICAgICAgICAgIAkJMHgxMDAwLDAwMDAgICAgICAgICAgCTB4MEMw
-MCwwMDAwDQo+IFNoYXJlZCBNZW1vcnkgICAgCTB4MUMwMCwwMDAwICAgICAgICAgIAkweDA0MDAs
-MDAwMA0KPiANCj4gUmVnYXJkcywNCj4gRmFycnVraCBBcnNoYWQuDQo+IE1lbnRvciBHcmFwaGlj
-cyBQYWtpc3Rhbg0KDQo=
+On 01/25/12 01:11, Bruce_Leonard@selinc.com wrote:
+> Good afternoon,
+>
+> I'm using the 3.0.3 kernel running on an MPC8308 and am trying to
+> interface to a Cypress CY14B256Q2A non-volatile RAM via SPI.  I've got the
+> SPI infrastructure, the Freescale SPI driver (drivers/spi/spi_fsl_spi.c),
+> and spidev built into the kernel and everything on the user space/kernel
+> side appears to be working correctly (at least when I try to read the
+> NvRAM's config register all the right places in the kernel get hit and I
+> see the SPI signals active with an o-scope).
+>
+> I think what I'm hitting is a lack of understanding/documentation on the
+> SPI controller in the 8308.  To read data from the NvRAM, the Master (the
+> 8308 in this case) needs to clock out a byte long "read" command, two
+> bytes of address, and then clock in the data from the NvRAM.  However, I
+> never get any data back.  I think the problem is that (direct quote from
+> the 8308 reference manual) "SPICLK is a gated clock, active only during
+> data transfers".  So once the read command and address are sent, the 8308
+> considers the data transfer complete and gates off SPICLK.  Without
+> SPICLK, the NvRAM has no way to clock out it's data.  I think it's ready
+> to, it just can't.
+>
+> So the question is, how do I use spidev (or any other means) to get the
+> 8308 SPI controller to keep SPICLK active so that the output data from the
+> NvRAM gets clocked out to the 8308?
+>
+> Thanks.
+>
+> Bruce
+
+
+Did you see Documentation/spi/spidev_fdx.c:do_msg ?
+it perform a full-duplex (actually half-duplex) 1 byte transfer.
+
+In your case you need a transfer that outputs 3 bytes (read cmd + address)
+and inputs 1? byte.
+
+If you do it this way I would expect the SPICLK to be active
+during the 2nd part of the transfer (whenever the CPU "reads" the
+data from SPI client).
+
+hth.
+
+---
+NvBolhuis
