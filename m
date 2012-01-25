@@ -1,17 +1,23 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
- by ozlabs.org (Postfix) with ESMTP id E6161B6F65
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 11:38:25 +1100 (EST)
-Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
- by duster.selinc.com (8.14.4/8.14.4) with ESMTP id q0P0BuSq015800
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2012 16:11:56 -0800
-To: linuxppc-dev@lists.ozlabs.org
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1EFBD1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 12:50:39 +1100 (EST)
+Received: by yhoo47 with SMTP id o47so2189912yho.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2012 17:50:36 -0800 (PST)
+Message-ID: <4F1F5FE0.9090901@gmail.com>
+Date: Tue, 24 Jan 2012 19:50:24 -0600
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-Subject: FSL SPI driver question
-Message-ID: <OF74786861.90D91C05-ON8825798F.0083A71E-88257990.000118E7@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Tue, 24 Jan 2012 16:11:58 -0800
-Content-Type: text/plain; charset="US-ASCII"
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC 1/2] irq_domain: Create common xlate functions that device
+ drivers can use
+References: <1327450719-25590-1-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1327450719-25590-1-git-send-email-grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +27,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Good afternoon,
 
-I'm using the 3.0.3 kernel running on an MPC8308 and am trying to 
-interface to a Cypress CY14B256Q2A non-volatile RAM via SPI.  I've got the 
-SPI infrastructure, the Freescale SPI driver (drivers/spi/spi_fsl_spi.c), 
-and spidev built into the kernel and everything on the user space/kernel 
-side appears to be working correctly (at least when I try to read the 
-NvRAM's config register all the right places in the kernel get hit and I 
-see the SPI signals active with an o-scope).
 
-I think what I'm hitting is a lack of understanding/documentation on the 
-SPI controller in the 8308.  To read data from the NvRAM, the Master (the 
-8308 in this case) needs to clock out a byte long "read" command, two 
-bytes of address, and then clock in the data from the NvRAM.  However, I 
-never get any data back.  I think the problem is that (direct quote from 
-the 8308 reference manual) "SPICLK is a gated clock, active only during 
-data transfers".  So once the read command and address are sent, the 8308 
-considers the data transfer complete and gates off SPICLK.  Without 
-SPICLK, the NvRAM has no way to clock out it's data.  I think it's ready 
-to, it just can't.
+On 01/24/2012 06:18 PM, Grant Likely wrote:
+> Rather than having each interrupt controller driver creating its own barely
+> unique .xlate function for irq_domain, create a library of translators which
+> any driver can use directly.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> This builds on top of my irq_domain series and will be included with it when
+> I post v3.  Rob, does this serve your needs for generic irq controller DT
+> support?
+> 
 
-So the question is, how do I use spidev (or any other means) to get the 
-8308 SPI controller to keep SPICLK active so that the output data from the 
-NvRAM gets clocked out to the 8308?
+Yes, but comments below.
 
-Thanks.
+> g.
+> 
+>  include/linux/irqdomain.h |   15 ++++++++++
+>  kernel/irq/irqdomain.c    |   69 +++++++++++++++++++++++++++++++++++++++-----
+>  2 files changed, 76 insertions(+), 8 deletions(-)
+> 
+> diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
+> index e7379a3..5e497a0 100644
+> --- a/include/linux/irqdomain.h
+> +++ b/include/linux/irqdomain.h
+> @@ -110,6 +110,9 @@ struct irq_domain {
+>  	void *host_data;
+>  	irq_hw_number_t inval_irq;
+>  
+> +	/* Data for common irq xlate functions */
+> +	unsigned int xlate_type;
+> +
 
-Bruce
+How does this get set? Do we want interrupt controllers messing with the
+domain struct directly long term?
+
+>  	/* Optional device node pointer */
+>  	struct device_node *of_node;
+>  };
+> @@ -163,6 +166,18 @@ extern unsigned int irq_linear_revmap(struct irq_domain *host,
+>  				      irq_hw_number_t hwirq);
+>  
+>  extern struct irq_domain_ops irq_domain_simple_ops;
+> +
+> +/* stock xlate functions */
+> +int irq_domain_xlate_onecell(struct irq_domain *d, struct device_node *ctrlr,
+> +			const u32 *intspec, unsigned int intsize,
+> +			irq_hw_number_t *out_hwirq, unsigned int *out_type);
+> +int irq_domain_xlate_twocell(struct irq_domain *d, struct device_node *ctrlr,
+> +			const u32 *intspec, unsigned int intsize,
+> +			irq_hw_number_t *out_hwirq, unsigned int *out_type);
+> +int irq_domain_xlate_onetwocell(struct irq_domain *d, struct device_node *ctrlr,
+> +			const u32 *intspec, unsigned int intsize,
+> +			irq_hw_number_t *out_hwirq, unsigned int *out_type);
+> +
+>  #if defined(CONFIG_OF_IRQ)
+>  extern void irq_domain_generate_simple(const struct of_device_id *match,
+>  					u64 phys_base, unsigned int irq_start);
+> diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+> index def8e7b..df80205 100644
+> --- a/kernel/irq/irqdomain.c
+> +++ b/kernel/irq/irqdomain.c
+> @@ -53,6 +53,7 @@ static struct irq_domain *irq_domain_alloc(struct device_node *of_node,
+>  	domain->ops = ops;
+>  	domain->host_data = host_data;
+>  	domain->of_node = of_node_get(of_node);
+> +	domain->xlate_type = IRQ_TYPE_NONE;
+>  
+>  	if (domain->ops->match == NULL)
+>  		domain->ops->match = default_irq_domain_match;
+> @@ -690,25 +691,77 @@ int irq_domain_simple_map(struct irq_domain *d, unsigned int irq,
+>  	return 0;
+>  }
+>  
+> -int irq_domain_simple_xlate(struct irq_domain *d,
+> -			    struct device_node *controller,
+> -			    const u32 *intspec, unsigned int intsize,
+> -			    unsigned long *out_hwirq, unsigned int *out_type)
+> +/**
+> + * irq_domain_xlate_onecell() - Generic xlate for direct one cell bindings
+> + *
+> + * Device Tree IRQ specifier translation function which works with one cell
+> + * bindings where the cell value maps directly to the hwirq number.
+> + */
+> +int irq_domain_xlate_onecell(struct irq_domain *d, struct device_node *ctrlr,
+> +			     const u32 *intspec, unsigned int intsize,
+> +			     unsigned long *out_hwirq, unsigned int *out_type)
+> +{
+> +	if (WARN(intsize < 1, "Bad intspec for %s: intsize=%i < 1\n",
+> +		 ctrlr->full_name, intsize))
+> +		return -EINVAL;
+> +	*out_hwirq = intspec[0];
+> +	*out_type = d->xlate_type;
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(irq_domain_xlate_onecell);
+> +
+> +/**
+> + * irq_domain_xlate_twocell() - Generic xlate for direct two cell bindings
+> + *
+> + * Device Tree IRQ specifier translation function which works with two cell
+> + * bindings where the cell values map directly to the hwirq number
+> + * and linux irq flags.
+> + */
+> +int irq_domain_xlate_twocell(struct irq_domain *d, struct device_node *ctrlr,
+> +			const u32 *intspec, unsigned int intsize,
+> +			irq_hw_number_t *out_hwirq, unsigned int *out_type)
+>  {
+> -	if (d->of_node != controller)
+> +	if (WARN(intsize < 2, "Bad intspec for %s: intsize=%i < 2\n",
+> +		 ctrlr->full_name, intsize))
+> +		return -EINVAL;
+> +	if (intsize < 2)
+
+You've already checked this...
+
+>  		return -EINVAL;
+> -	if (intsize < 1)
+> +	*out_hwirq = intspec[0];
+> +	*out_type = intspec[1] & IRQ_TYPE_SENSE_MASK;
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(irq_domain_xlate_twocell);
+> +
+> +/**
+> + * irq_domain_xlate_onetwocell() - Generic xlate for one or two cell bindings
+> + *
+> + * Device Tree IRQ specifier translation function which works with either one
+> + * or two cell bindings where the cell values map directly to the hwirq number
+> + * and linux irq flags.
+> + *
+> + * Note: don't use this function unless your interrupt controller explicitly
+> + * supports both one and two cell bindings.  For the majority of controllers
+> + * the _onecell() or _twocell() variants above should be used.
+
+This comment is confusing since you turn around and use it for simple
+ops below.
+
+> + */
+> +int irq_domain_xlate_onetwocell(struct irq_domain *d,
+> +				struct device_node *ctrlr,
+> +				const u32 *intspec, unsigned int intsize,
+> +				unsigned long *out_hwirq, unsigned int *out_type)
+> +{
+> +	if (WARN(intsize < 1, "Bad intspec for %s: intsize=%i < 1\n",
+> +		 ctrlr->full_name, intsize))
+>  		return -EINVAL;
+
+Isn't this check redundant with the check in of_irq_map_raw:
+
+	if (ointsize != intsize)
+		return -EINVAL;
+
+The only diff in these functions is really checking the size. So I
+really don't think we need 3 versions if that can be factored out where
+you know value of #interrupt-cells.
+
+Rob
+
+>  	*out_hwirq = intspec[0];
+> -	*out_type = IRQ_TYPE_NONE;
+> +	*out_type = d->xlate_type;
+>  	if (intsize > 1)
+>  		*out_type = intspec[1] & IRQ_TYPE_SENSE_MASK;
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL_GPL(irq_domain_xlate_onetwocell);
+>  
+>  struct irq_domain_ops irq_domain_simple_ops = {
+>  	.map = irq_domain_simple_map,
+> -	.xlate = irq_domain_simple_xlate,
+> +	.xlate = irq_domain_xlate_onetwocell,
+>  };
+>  EXPORT_SYMBOL_GPL(irq_domain_simple_ops);
+>  
