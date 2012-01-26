@@ -1,16 +1,24 @@
-Return-Path: <msalter@redhat.com>
-Subject: Re: [RFCv2 00/14]
-From: Mark Salter <msalter@redhat.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 25 Jan 2012 17:53:29 -0500
-In-Reply-To: <1327352870-14687-1-git-send-email-grant.likely@secretlab.ca>
-References: <1327352870-14687-1-git-send-email-grant.likely@secretlab.ca>
-Content-Type: text/plain; charset="us-ascii"
-Message-ID: <1327532011.24169.6.camel@deneb.redhat.com>
-Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <robherring2@gmail.com>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+ [209.85.160.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6374EB6F6F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 13:59:09 +1100 (EST)
+Received: by ghbz2 with SMTP id z2so53770ghb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 18:59:06 -0800 (PST)
+From: Rob Herring <robherring2@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] irq: make SPARSE_IRQ an optionally hidden option
+Date: Wed, 25 Jan 2012 20:58:47 -0600
+Message-Id: <1327546727-31681-1-git-send-email-robherring2@gmail.com>
+Cc: Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
+ Aurelien Jacquiot <a-jacquiot@ti.com>, linux-sh@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Rob Herring <rob.herring@calxeda.com>,
+ Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+ Mark Salter <msalter@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +28,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-01-23 at 14:07 -0700, Grant Likely wrote:
-> Hey everyone,
-> 
-> Here's the second RFC for the irq_domain patches.  I could use some
-> help testing now.  I still expect there will be a few bugs.  The
-> series is based on v3.3-rc1, and I've pushed it out to my git server:
+From: Rob Herring <rob.herring@calxeda.com>
 
-Hi Grant,
+On ARM, we don't want SPARSE_IRQ to be a user visible option. Make
+SPARSE_IRQ visible based on MAY_HAVE_SPARSE_IRQ instead of depending
+on HAVE_SPARSE_IRQ.
 
-I converted arch/c6x over to the generic irq_domain support and have not
-had any problems in testing. The c6x virtual irq support was a nearly
-identical copy of the powerpc code, so the patch I ended up with mostly
-copied what you did in arch/powerpc. The c6x patch is on the tip of:
+With this, SPARSE_IRQ is not visible on C6X and ARM.
 
-  git@linux-c6x.org:/git/projects/linux-c6x-upstreaming irq-testing
+Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Mark Salter <msalter@redhat.com>
+Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-c6x-dev@linux-c6x.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-sh@vger.kernel.org
+---
 
-I think this probably belongs in your series, but I can push it
-separately if not.
+This is part of an irq include consolidation series for ARM:
 
---Mark
+http://www.spinics.net/lists/arm-kernel/msg156492.html
+
+Rob
+
+ arch/arm/Kconfig     |    1 -
+ arch/c6x/Kconfig     |    2 +-
+ arch/powerpc/Kconfig |    2 +-
+ arch/sh/Kconfig      |    2 +-
+ arch/x86/Kconfig     |    1 -
+ kernel/irq/Kconfig   |    5 ++---
+ 6 files changed, 5 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 24626b0..30e7840 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -28,7 +28,6 @@ config ARM
+ 	select HAVE_HW_BREAKPOINT if (PERF_EVENTS && (CPU_V6 || CPU_V6K || CPU_V7))
+ 	select HAVE_C_RECORDMCOUNT
+ 	select HAVE_GENERIC_HARDIRQS
+-	select HAVE_SPARSE_IRQ
+ 	select GENERIC_IRQ_SHOW
+ 	select CPU_PM if (SUSPEND || CPU_IDLE)
+ 	select GENERIC_PCI_IOMAP
+diff --git a/arch/c6x/Kconfig b/arch/c6x/Kconfig
+index 26e67f0..2f58c61 100644
+--- a/arch/c6x/Kconfig
++++ b/arch/c6x/Kconfig
+@@ -11,7 +11,7 @@ config TMS320C6X
+ 	select HAVE_DMA_API_DEBUG
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select HAVE_MEMBLOCK
+-	select HAVE_SPARSE_IRQ
++	select SPARSE_IRQ
+ 	select OF
+ 	select OF_EARLY_FLATTREE
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 1919634..06c1cf0 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -133,7 +133,7 @@ config PPC
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
+ 	select HAVE_GENERIC_HARDIRQS
+-	select HAVE_SPARSE_IRQ
++	select MAY_HAVE_SPARSE_IRQ
+ 	select IRQ_PER_CPU
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 3c8db65..21b82a8 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -22,7 +22,7 @@ config SUPERH
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_GENERIC_HARDIRQS
+-	select HAVE_SPARSE_IRQ
++	select MAY_HAVE_SPARSE_IRQ
+ 	select IRQ_FORCED_THREADING
+ 	select RTC_LIB
+ 	select GENERIC_ATOMIC64
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 864cc6e..fb2da44 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -69,7 +69,6 @@ config X86
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_TEXT_POKE_SMP
+ 	select HAVE_GENERIC_HARDIRQS
+-	select HAVE_SPARSE_IRQ
+ 	select SPARSE_IRQ
+ 	select GENERIC_FIND_FIRST_BIT
+ 	select GENERIC_IRQ_PROBE
+diff --git a/kernel/irq/Kconfig b/kernel/irq/Kconfig
+index 5a38bf4..1f2dece 100644
+--- a/kernel/irq/Kconfig
++++ b/kernel/irq/Kconfig
+@@ -13,7 +13,7 @@ config GENERIC_HARDIRQS
+ # Options selectable by the architecture code
+ 
+ # Make sparse irq Kconfig switch below available
+-config HAVE_SPARSE_IRQ
++config MAY_HAVE_SPARSE_IRQ
+        bool
+ 
+ # Enable the generic irq autoprobe mechanism
+@@ -61,8 +61,7 @@ config IRQ_FORCED_THREADING
+        bool
+ 
+ config SPARSE_IRQ
+-	bool "Support sparse irq numbering"
+-	depends on HAVE_SPARSE_IRQ
++	bool "Support sparse irq numbering" if MAY_HAVE_SPARSE_IRQ
+ 	---help---
+ 
+ 	  Sparse irq numbering is useful for distro kernels that want
+-- 
+1.7.5.4
