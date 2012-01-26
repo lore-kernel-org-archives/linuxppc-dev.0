@@ -1,19 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4F204F1C.70908@gmail.com>
-References: <1327352870-14687-1-git-send-email-grant.likely@secretlab.ca>
- <4F1DD6DF.4080706@gmail.com> <4F200DFD.7070407@ti.com>
- <4F204F1C.70908@gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 26 Jan 2012 14:33:20 -0700
-Message-ID: <CACxGe6vA6CSCAU82uuMaycqDBt+JG3KvXzAURDWQ0Deyeg13Ow@mail.gmail.com>
-Subject: Re: [RFCv2 00/14]
-To: Rob Herring <robherring2@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "Cousson, Benoit" <b-cousson@ti.com>, devicetree-discuss@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
- Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 09E08B6EF2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 08:39:08 +1100 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, vinod.koul@intel.com,
+ dan.j.williams@intel.com
+Subject: [RFC] dmaengine/dma_slave: add context parameter to prep_slave_sg
+ callback
+Date: Thu, 26 Jan 2012 16:22:26 -0500
+Message-Id: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Jassi Brar <jaswinder.singh@linaro.org>,
+ Alexandre Bounine <alexandre.bounine@idt.com>,
+ Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2012 at 11:51 AM, Rob Herring <robherring2@gmail.com> wrote=
-:
-> On 01/25/2012 08:13 AM, Cousson, Benoit wrote:
->> On 1/23/2012 10:53 PM, Rob Herring wrote:
->>> On 01/23/2012 03:07 PM, Grant Likely wrote:
->>>>
->>>> Hey everyone,
->>>>
->>>> Here's the second RFC for the irq_domain patches. =A0I could use some
->>>> help testing now. =A0I still expect there will be a few bugs. =A0The
->>>> series is based on v3.3-rc1, and I've pushed it out to my git server:
->>>>
->>>> git://git.secretlab.ca/git/linux-2.6.git irqdomain/next
->>>
->>> Can you post to linux-arm-kernel too so people are aware of this work
->>> and stop posting dead-end irqdomain patches.
->>
->> Good point, I have two pending series that are using the
->> irq_domain_add() so far, so it will be good to have that branch pulled
->> in arm-soc.
->>
->>> I tested what you had as of this morning and it works fine for me. Look=
-s
->>> like the only diff is the VExpress code. I'm working on rebasing my
->>> domain support for generic irqchip now.
->>
->> In fact your generic irqchip should even avoid us to use
->> irq_domain_add_legacy() since both GPIO and OMAP3 intc are already using
->> the irqchip.
->>
->> I guess you are not going to change the interface so the patches I did
->> on your previous branch to try them should be good already, isn't it?
->
-> I've got it rebased on top of Grant's tree. I will send it out soon.
->
-> One problem that still remains is it breaks x86 and any platform using
-> generic irq chip, but not selecting IRQ_DOMAIN. Grant, do you plan to
-> enable IRQ_DOMAIN for x86 in your series? MIPS may also need fixing.
+As we agreed during our discussion about adding DMA Engine support for RapidIO
+subsystem, RapidIO and similar clients may benefit from adding an extra context
+parameter to device_prep_slave_sg() callback.
+See https://lkml.org/lkml/2011/10/24/275 for more details.
 
-I've got the x86 fix in my tree now.  It will be part of the next
-merge.  MIPS, Microblaze and OpenRISC cannot turn on CONFIG_IRQ_DOMAIN
-without rework.  I just hacked together the microblaze version, but
-Michal will have to verify that it is correct.  I just posted it.  It
-will be similar for the other two.
+Adding the context parameter will allow to pass client/target specific
+information associated with an individual data transfer request.
 
-The real problem is sparc which does something entirely different for
-irqs.  Rather than resolving irqs on-demand, it calculates the Linux
-irq numbers at boot time for every node in the tree.  The irq_domains
-will need to be set up for all interrupt controllers before sparc
-begins it's big walk of the tree to resolve interrupts.  I haven't dug
-into everything that needs to be done to support this.
+In the case of RapidIO support this additional information consists of target
+destination ID and its buffer address (which is not mapped into the local CPU
+memory space). Because a single RapidIO-capable DMA channel may queue data
+transfer requests to different target devices, the per-request configuration
+is required.
 
-I don't think you can count on turning on IRQ_DOMAIN on all
-architectures just yet.  Adding irq_domain support directly to
-irq_generic_chip is going to be difficult for that reason.  However,
-it would be useful to have an irq_domain+irq_generic_chip wrapper that
-can be enabled only when IRQ_DOMAIN is enabled.
+The proposed change eliminates need for new subsystem-specific API.
+Existing DMA_SLAVE clients will ignore the new parameter.
 
-g.
+This RFC only demonstrates the API change and does not include corresponding
+changes to existing DMA_SLAVE clients. Complete set of patches will be provided
+after (if) this API change is accepted.
+
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Jassi Brar <jaswinder.singh@linaro.org>
+Cc: Russell King <rmk@arm.linux.org.uk> 
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+---
+ include/linux/dmaengine.h |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 679b349..79d71bb 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -575,7 +575,7 @@ struct dma_device {
+ 	struct dma_async_tx_descriptor *(*device_prep_slave_sg)(
+ 		struct dma_chan *chan, struct scatterlist *sgl,
+ 		unsigned int sg_len, enum dma_transfer_direction direction,
+-		unsigned long flags);
++		unsigned long flags, void *context);
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_cyclic)(
+ 		struct dma_chan *chan, dma_addr_t buf_addr, size_t buf_len,
+ 		size_t period_len, enum dma_transfer_direction direction);
+@@ -607,12 +607,13 @@ static inline int dmaengine_slave_config(struct dma_chan *chan,
+ 
+ static inline struct dma_async_tx_descriptor *dmaengine_prep_slave_single(
+ 	struct dma_chan *chan, void *buf, size_t len,
+-	enum dma_transfer_direction dir, unsigned long flags)
++	enum dma_transfer_direction dir, unsigned long flags, void *context)
+ {
+ 	struct scatterlist sg;
+ 	sg_init_one(&sg, buf, len);
+ 
+-	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags);
++	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags,
++						  context);
+ }
+ 
+ static inline int dmaengine_terminate_all(struct dma_chan *chan)
+-- 
+1.7.8.4
