@@ -1,20 +1,13 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
- by ozlabs.org (Postfix) with ESMTP id B9D8E1007D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 06:50:05 +1100 (EST)
-In-Reply-To: <4F216C25.6000303@aimvalley.nl>
-References: <OF74786861.90D91C05-ON8825798F.0083A71E-88257990.000118E7@selinc.com>
- <4F2004B1.5030607@aimvalley.nl>
- <OF248EC14B.3E5BA3A6-ON88257990.006C779B-88257990.006CE971@selinc.com>
- <4F216C25.6000303@aimvalley.nl>
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-MIME-Version: 1.0
-Subject: Re: FSL SPI driver question
-Message-ID: <OF144DE79D.27C5CEDA-ON88257991.006C677F-88257991.006CF2C1@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Thu, 26 Jan 2012 11:49:59 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 1F26BB6EE8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 07:58:44 +1100 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/1] fsldma: ignore end of segments interrupt
+Date: Thu, 26 Jan 2012 12:58:40 -0800
+Message-Id: <1327611520-18256-1-git-send-email-iws@ovro.caltech.edu>
+Cc: Dan Williams <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +17,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Norbert,
+The mpc8349ea has been observed to generate spurious end of segments
+interrupts despite the fact that they are not enabled by this driver.
+Check for them and ignore them to avoid a kernel error message.
 
-> 
-> ok, then I don't know.
-> 
-> I doubt this is a spidev or FSP SPI driver problem though.
-> 
-> Questions like:
-> 
-> Could it be a HW problem ?
-> Is the correct SPI mode used ?
-> Does it work in u-boot ?
-> 
-> Come to mind in a situation like this.
-> 
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Cc: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/dma/fsldma.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Thanks for the suggestions.  I finally found it in the wee hours this 
-morning, and it was operator error.  The CY14 by default powers up in the 
-write protect state and from the factory is erased to all zeros.  So my 
-writes and subsequent reads appeared to fail by the "fact" that I could 
-never read what I wrote.  Guess I need better reading glasses in my old 
-age :-/
-
-Anyway, I'm happily up and talking using the Freescale SPI driver and 
-spidev.  Thanks for the help and sorry for the noise on the list.
-
-Bruce
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 8a78154..7dc9689 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1052,6 +1052,16 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
+ 		stat &= ~FSL_DMA_SR_EOLNI;
+ 	}
+ 
++	/*
++	 * This driver does not use this feature, therefore we shouldn't
++	 * ever see this bit set in the status register. However, it has
++	 * been observed on MPC8349EA parts.
++	 */
++	if (stat & FSL_DMA_SR_EOSI) {
++		chan_dbg(chan, "irq: End-of-Segments INT\n");
++		stat &= ~FSL_DMA_SR_EOSI;
++	}
++
+ 	/* check that the DMA controller is really idle */
+ 	if (!dma_is_idle(chan))
+ 		chan_err(chan, "irq: controller not idle!\n");
+-- 
+1.7.3.4
