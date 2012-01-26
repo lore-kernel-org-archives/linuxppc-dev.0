@@ -1,20 +1,22 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 09E08B6EF2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 08:39:08 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, vinod.koul@intel.com,
- dan.j.williams@intel.com
-Subject: [RFC] dmaengine/dma_slave: add context parameter to prep_slave_sg
- callback
-Date: Thu, 26 Jan 2012 16:22:26 -0500
-Message-Id: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Jassi Brar <jaswinder.singh@linaro.org>,
- Alexandre Bounine <alexandre.bounine@idt.com>,
- Russell King <rmk@arm.linux.org.uk>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BEEE2100810
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 08:39:25 +1100 (EST)
+Message-ID: <1327613953.24487.9.camel@pasglop>
+Subject: Re: tlb flushing on Power
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Brian King <brking@linux.vnet.ibm.com>
+Date: Fri, 27 Jan 2012 08:39:13 +1100
+In-Reply-To: <4F216620.2010509@linux.vnet.ibm.com>
+References: <4F2160B3.60708@linux.vnet.ibm.com>
+ <4F216620.2010509@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Seth Jennings <sjenning@linux.vnet.ibm.com>,
+ Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,65 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As we agreed during our discussion about adding DMA Engine support for RapidIO
-subsystem, RapidIO and similar clients may benefit from adding an extra context
-parameter to device_prep_slave_sg() callback.
-See https://lkml.org/lkml/2011/10/24/275 for more details.
+On Thu, 2012-01-26 at 08:41 -0600, Brian King wrote:
+> CC'ing linuxppc-dev...
+> 
+> 
+> On 01/26/2012 08:18 AM, Seth Jennings wrote:
+> > Hey Dave,
+> > 
+> > So I submitted the zsmalloc patches to lkml at the beginning
+> > of the year
+> > 
+> > https://lkml.org/lkml/2012/1/9/389
+> > 
+> > I found there are two functions Nitin used in the mapping
+> > functions that are not supported in the powerpc arch:
+> > set_pte() and __flush_tlb_one().
 
-Adding the context parameter will allow to pass client/target specific
-information associated with an individual data transfer request.
+ .../...
 
-In the case of RapidIO support this additional information consists of target
-destination ID and its buffer address (which is not mapped into the local CPU
-memory space). Because a single RapidIO-capable DMA channel may queue data
-transfer requests to different target devices, the per-request configuration
-is required.
+The arch management of page tables can be tricky indeed :-) I need to
+have a better understanding of what you are doing to see how I can try
+to adapt it to power.
 
-The proposed change eliminates need for new subsystem-specific API.
-Existing DMA_SLAVE clients will ignore the new parameter.
+set_pte() is long gone on all archs really (or if it's still there it's
+not meant to be used as is), use set_pte_at().
 
-This RFC only demonstrates the API change and does not include corresponding
-changes to existing DMA_SLAVE clients. Complete set of patches will be provided
-after (if) this API change is accepted.
+__flush_tlb_one() doesn't mean anything as an arch independent
+functionality. We have a local_flush_tlb_page() that -might- do what you
+want but why in hell is that patch not using proper existing
+interfaces ?
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Jassi Brar <jaswinder.singh@linaro.org>
-Cc: Russell King <rmk@arm.linux.org.uk> 
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>
----
- include/linux/dmaengine.h |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+Can you explain to me a bit more the whole business in this patch set
+about doing kmap_atomic() vs. manually trying to populate the PTEs ? Why
+not just use two kmap atomic entries ? If interrupts are disabled
+kmap_atomic() should give you contiguous ones I suppose (unless NMIs are
+allowed to use kmap_atomic, are they ?)
 
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 679b349..79d71bb 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -575,7 +575,7 @@ struct dma_device {
- 	struct dma_async_tx_descriptor *(*device_prep_slave_sg)(
- 		struct dma_chan *chan, struct scatterlist *sgl,
- 		unsigned int sg_len, enum dma_transfer_direction direction,
--		unsigned long flags);
-+		unsigned long flags, void *context);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_cyclic)(
- 		struct dma_chan *chan, dma_addr_t buf_addr, size_t buf_len,
- 		size_t period_len, enum dma_transfer_direction direction);
-@@ -607,12 +607,13 @@ static inline int dmaengine_slave_config(struct dma_chan *chan,
- 
- static inline struct dma_async_tx_descriptor *dmaengine_prep_slave_single(
- 	struct dma_chan *chan, void *buf, size_t len,
--	enum dma_transfer_direction dir, unsigned long flags)
-+	enum dma_transfer_direction dir, unsigned long flags, void *context)
- {
- 	struct scatterlist sg;
- 	sg_init_one(&sg, buf, len);
- 
--	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags);
-+	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags,
-+						  context);
- }
- 
- static inline int dmaengine_terminate_all(struct dma_chan *chan)
--- 
-1.7.8.4
+Cheers,
+Ben.
