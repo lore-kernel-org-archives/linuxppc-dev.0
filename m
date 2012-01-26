@@ -1,24 +1,24 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
- [209.85.160.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6374EB6F6F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 13:59:09 +1100 (EST)
-Received: by ghbz2 with SMTP id z2so53770ghb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2012 18:59:06 -0800 (PST)
-From: Rob Herring <robherring2@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] irq: make SPARSE_IRQ an optionally hidden option
-Date: Wed, 25 Jan 2012 20:58:47 -0600
-Message-Id: <1327546727-31681-1-git-send-email-robherring2@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- Aurelien Jacquiot <a-jacquiot@ti.com>, linux-sh@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Rob Herring <rob.herring@calxeda.com>,
- Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
- Mark Salter <msalter@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <dan.j.williams@intel.com>
+Received: from azsmga102.ch.intel.com (mga12.intel.com [143.182.124.36])
+ by ozlabs.org (Postfix) with ESMTP id 9A2CB1007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 20:22:47 +1100 (EST)
+Received: by iabz7 with SMTP id z7so477899iab.25
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 01:12:12 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <DBB740589CE8814680DECFE34BE197AB166593@039-SN1MPN1-006.039d.mgd.msft.net>
+References: <1324967446-28939-1-git-send-email-b29237@freescale.com>
+ <DBB740589CE8814680DECFE34BE197AB166593@039-SN1MPN1-006.039d.mgd.msft.net>
+Date: Thu, 26 Jan 2012 01:12:11 -0800
+Message-ID: <CABE8wwv+iA_apPUCrLHgG-QiyHTuOfvZwPbJ7=zbTEQ3TgKQCw@mail.gmail.com>
+Subject: Re: [PATCH] dmaengine: async_xor, fix zero address issue when xor
+ highmem page
+From: Dan Williams <dan.j.williams@intel.com>
+To: Shi Xuelin-B29237 <B29237@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,130 +28,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rob Herring <rob.herring@calxeda.com>
+2012/1/10 Shi Xuelin-B29237 <B29237@freescale.com>:
+> Hello Dan Williams,
+>
+> Do you have any comment about this patch?
 
-On ARM, we don't want SPARSE_IRQ to be a user visible option. Make
-SPARSE_IRQ visible based on MAY_HAVE_SPARSE_IRQ instead of depending
-on HAVE_SPARSE_IRQ.
+Hi, sorrry for the delay.
 
-With this, SPARSE_IRQ is not visible on C6X and ARM.
+>
+> Thanks,
+> Forrest
+>
+> -----Original Message-----
+> From: Shi Xuelin-B29237
+> Sent: 2011=E5=B9=B412=E6=9C=8827=E6=97=A5 14:31
+> To: vinod.koul@intel.com; dan.j.williams@intel.com; linuxppc-dev@lists.oz=
+labs.org; linux-kernel@vger.kernel.org; Li Yang-R58472
+> Cc: Shi Xuelin-B29237
+> Subject: [PATCH] dmaengine: async_xor, fix zero address issue when xor hi=
+ghmem page
+>
+> From: Forrest shi <b29237@freescale.com>
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0we may do_sync_xor high mem pages, in this cas=
+e, page_address will
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0return zero address which cause a failure.
 
-Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Mark Salter <msalter@redhat.com>
-Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-c6x-dev@linux-c6x.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-sh@vger.kernel.org
----
+In what scenarios do we xor highmem?
 
-This is part of an irq include consolidation series for ARM:
+In the case of raid we currently always xor on kmalloc'd memory.
 
-http://www.spinics.net/lists/arm-kernel/msg156492.html
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0this patch uses kmap_atomic before xor the pag=
+es and kunmap_atomic
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0after it.
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0Signed-off-by: b29237@freescale.com <xuelin.sh=
+i@freescale.com>
+> ---
+> =C2=A0crypto/async_tx/async_xor.c | =C2=A0 16 ++++++++++++----
+> =C2=A01 files changed, 12 insertions(+), 4 deletions(-)
+>
+> diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c in=
+dex bc28337..5b416d1 100644
+> --- a/crypto/async_tx/async_xor.c
+> +++ b/crypto/async_tx/async_xor.c
+> @@ -26,6 +26,7 @@
+> =C2=A0#include <linux/kernel.h>
+> =C2=A0#include <linux/interrupt.h>
+> =C2=A0#include <linux/mm.h>
+> +#include <linux/highmem.h>
+> =C2=A0#include <linux/dma-mapping.h>
+> =C2=A0#include <linux/raid/xor.h>
+> =C2=A0#include <linux/async_tx.h>
+> @@ -126,7 +127,7 @@ do_sync_xor(struct page *dest, struct page **src_list=
+, unsigned int offset,
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0int src_cnt, size_t len, struct =
+async_submit_ctl *submit) =C2=A0{
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0int i;
+> - =C2=A0 =C2=A0 =C2=A0 int xor_src_cnt =3D 0;
+> + =C2=A0 =C2=A0 =C2=A0 int xor_src_cnt =3D 0, kmap_cnt=3D0;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0int src_off =3D 0;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0void *dest_buf;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0void **srcs;
+> @@ -138,11 +139,13 @@ do_sync_xor(struct page *dest, struct page **src_li=
+st, unsigned int offset,
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0/* convert to buffer pointers */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0for (i =3D 0; i < src_cnt; i++)
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (src_list[i])
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 srcs[xor_src_cnt++] =3D page_address(src_list[i]) + offset;
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (src_list[i]) {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 srcs[xor_src_cnt++] =3D kmap_atomic(src_list[i], KM_USER1) + offset;
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 }
+> + =C2=A0 =C2=A0 =C2=A0 kmap_cnt =3D xor_src_cnt;
 
-Rob
+I guess this works now that we have stack based kmap_atomic, but on
+older kernels you could not simultaneously map that many buffers with
+a single kmap slot.  So if you resend, drop the second parameter to
+kmap_atomic.
 
- arch/arm/Kconfig     |    1 -
- arch/c6x/Kconfig     |    2 +-
- arch/powerpc/Kconfig |    2 +-
- arch/sh/Kconfig      |    2 +-
- arch/x86/Kconfig     |    1 -
- kernel/irq/Kconfig   |    5 ++---
- 6 files changed, 5 insertions(+), 8 deletions(-)
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 24626b0..30e7840 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -28,7 +28,6 @@ config ARM
- 	select HAVE_HW_BREAKPOINT if (PERF_EVENTS && (CPU_V6 || CPU_V6K || CPU_V7))
- 	select HAVE_C_RECORDMCOUNT
- 	select HAVE_GENERIC_HARDIRQS
--	select HAVE_SPARSE_IRQ
- 	select GENERIC_IRQ_SHOW
- 	select CPU_PM if (SUSPEND || CPU_IDLE)
- 	select GENERIC_PCI_IOMAP
-diff --git a/arch/c6x/Kconfig b/arch/c6x/Kconfig
-index 26e67f0..2f58c61 100644
---- a/arch/c6x/Kconfig
-+++ b/arch/c6x/Kconfig
-@@ -11,7 +11,7 @@ config TMS320C6X
- 	select HAVE_DMA_API_DEBUG
- 	select HAVE_GENERIC_HARDIRQS
- 	select HAVE_MEMBLOCK
--	select HAVE_SPARSE_IRQ
-+	select SPARSE_IRQ
- 	select OF
- 	select OF_EARLY_FLATTREE
- 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1919634..06c1cf0 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -133,7 +133,7 @@ config PPC
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
- 	select HAVE_GENERIC_HARDIRQS
--	select HAVE_SPARSE_IRQ
-+	select MAY_HAVE_SPARSE_IRQ
- 	select IRQ_PER_CPU
- 	select GENERIC_IRQ_SHOW
- 	select GENERIC_IRQ_SHOW_LEVEL
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 3c8db65..21b82a8 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -22,7 +22,7 @@ config SUPERH
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_GENERIC_HARDIRQS
--	select HAVE_SPARSE_IRQ
-+	select MAY_HAVE_SPARSE_IRQ
- 	select IRQ_FORCED_THREADING
- 	select RTC_LIB
- 	select GENERIC_ATOMIC64
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 864cc6e..fb2da44 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -69,7 +69,6 @@ config X86
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_TEXT_POKE_SMP
- 	select HAVE_GENERIC_HARDIRQS
--	select HAVE_SPARSE_IRQ
- 	select SPARSE_IRQ
- 	select GENERIC_FIND_FIRST_BIT
- 	select GENERIC_IRQ_PROBE
-diff --git a/kernel/irq/Kconfig b/kernel/irq/Kconfig
-index 5a38bf4..1f2dece 100644
---- a/kernel/irq/Kconfig
-+++ b/kernel/irq/Kconfig
-@@ -13,7 +13,7 @@ config GENERIC_HARDIRQS
- # Options selectable by the architecture code
- 
- # Make sparse irq Kconfig switch below available
--config HAVE_SPARSE_IRQ
-+config MAY_HAVE_SPARSE_IRQ
-        bool
- 
- # Enable the generic irq autoprobe mechanism
-@@ -61,8 +61,7 @@ config IRQ_FORCED_THREADING
-        bool
- 
- config SPARSE_IRQ
--	bool "Support sparse irq numbering"
--	depends on HAVE_SPARSE_IRQ
-+	bool "Support sparse irq numbering" if MAY_HAVE_SPARSE_IRQ
- 	---help---
- 
- 	  Sparse irq numbering is useful for distro kernels that want
--- 
-1.7.5.4
+...but unless you have a non md/raid456 use case in mind, or have
+patches to convert md/raid to xor straight out of the incoming biovecs
+I don't think this patch is needed right?
