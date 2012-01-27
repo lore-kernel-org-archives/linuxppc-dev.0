@@ -6,9 +6,11 @@ To: linux-kernel@vger.kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
  Rob Herring <rob.herring@calxeda.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH v3 00/25] irq_domain generalization and refinement
-Date: Fri, 27 Jan 2012 14:35:54 -0700
-Message-Id: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH v3 01/25] irq_domain: add documentation and MAINTAINERS entry.
+Date: Fri, 27 Jan 2012 14:35:55 -0700
+Message-Id: <1327700179-17454-2-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
 Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,134 +22,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hey everyone,
+Documentation for irq_domain library which will be created in subsequent
+patches.
 
-This patch series is ready for much wider consumption now.  I'd like
-to get it into linux-next ASAP because there will be ARM board support
-depending on it.  I'll wait a few days before I ask Stephen to pull
-this in.
-
-Stephen/Milton/Ben, any testing you can help with here would be
-appreciated since you've got access to a wider variety of Power
-machines than I do.
-
-Thomas, I think it makes sense to maintain this in a separate branch
-from other irq changes until the next merge window.  If you prefer,
-I'm happy to maintain this branch until then.
-
-Cheers,
-g.
-
-The following changes since commit dcd6c92267155e70a94b3927bce681ce74b80d1f:
-
-  Linux 3.3-rc1 (2012-01-19 15:04:48 -0800)
-
-are available in the git repository at:
-  git://git.secretlab.ca/git/linux-2.6 irqdomain/next
-
-Grant Likely (24):
-      irq_domain: add documentation and MAINTAINERS entry.
-      dt: Make irqdomain less verbose
-      irq_domain: Make irq_domain structure match powerpc's irq_host
-      irq_domain: convert microblaze from irq_host to irq_domain
-      irq_domain/powerpc: Use common irq_domain structure instead of irq_host
-      irq_domain/powerpc: eliminate irq_map; use irq_alloc_desc() instead
-      irq_domain/powerpc: Eliminate virq_is_host()
-      irq_domain: Move irq_domain code from powerpc to kernel/irq
-      irqdomain: remove NO_IRQ from irq domain code
-      irq_domain: Remove references to old irq_host names
-      irq_domain: Replace irq_alloc_host() with revmap-specific initializers
-      irq_domain: Add support for base irq and hwirq in legacy mappings
-      irq_domain: Remove 'new' irq_domain in favour of the ppc one
-      irq_domain: Remove irq_domain_add_simple()
-      irq_domain: Create common xlate functions that device drivers can use
-      irq_domain: constify irq_domain_ops
-      irq_domain/c6x: constify irq_domain structures
-      irq_domain/c6x: Use library of xlate functions
-      irq_domain/powerpc: constify irq_domain_ops
-      irqdomain/powerpc: Replace custom xlate functions with library functions
-      irq_domain/x86: Convert x86 (embedded) to use common irq_domain
-      irq_domain: Include hwirq number in /proc/interrupts
-      irq_domain: remove "hint" when allocating irq numbers
-      irq_domain: mostly eliminate slow-path revmap lookups
-
-Mark Salter (1):
-      irq_domain/c6x: Convert c6x to use generic irq_domain support.
-
- Documentation/IRQ-domain.txt                     |  113 +++
- MAINTAINERS                                      |    9 +
- arch/arm/common/gic.c                            |   95 ++--
- arch/arm/common/vic.c                            |   16 +-
- arch/arm/include/asm/hardware/gic.h              |    4 +-
- arch/arm/include/asm/hardware/vic.h              |    2 +
- arch/arm/mach-exynos/common.c                    |    2 +-
- arch/arm/mach-imx/mach-imx6q.c                   |    3 +-
- arch/arm/mach-msm/board-msm8x60.c                |    8 +-
- arch/arm/mach-mx5/imx51-dt.c                     |    4 +-
- arch/arm/mach-mx5/imx53-dt.c                     |    4 +-
- arch/arm/mach-omap2/board-generic.c              |    2 +-
- arch/arm/mach-prima2/irq.c                       |    2 +-
- arch/arm/mach-versatile/core.c                   |    5 +-
- arch/c6x/Kconfig                                 |    1 +
- arch/c6x/include/asm/irq.h                       |  245 +-------
- arch/c6x/kernel/irq.c                            |  612 +----------------
- arch/c6x/platforms/megamod-pic.c                 |   25 +-
- arch/microblaze/include/asm/irq.h                |    4 +-
- arch/microblaze/kernel/irq.c                     |    2 +-
- arch/microblaze/kernel/setup.c                   |    2 -
- arch/powerpc/Kconfig                             |    1 +
- arch/powerpc/include/asm/ehv_pic.h               |    2 +-
- arch/powerpc/include/asm/i8259.h                 |    2 +-
- arch/powerpc/include/asm/irq.h                   |  247 +-------
- arch/powerpc/include/asm/mpic.h                  |    2 +-
- arch/powerpc/include/asm/xics.h                  |    2 +-
- arch/powerpc/kernel/irq.c                        |  617 +----------------
- arch/powerpc/platforms/512x/mpc5121_ads_cpld.c   |   12 +-
- arch/powerpc/platforms/52xx/media5200.c          |   15 +-
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c        |   16 +-
- arch/powerpc/platforms/52xx/mpc52xx_pic.c        |   12 +-
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c     |   14 +-
- arch/powerpc/platforms/85xx/socrates_fpga_pic.c  |   15 +-
- arch/powerpc/platforms/86xx/gef_pic.c            |   15 +-
- arch/powerpc/platforms/cell/axon_msi.c           |   29 +-
- arch/powerpc/platforms/cell/beat_interrupt.c     |   16 +-
- arch/powerpc/platforms/cell/interrupt.c          |   16 +-
- arch/powerpc/platforms/cell/spider-pic.c         |   14 +-
- arch/powerpc/platforms/embedded6xx/flipper-pic.c |   30 +-
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c    |   35 +-
- arch/powerpc/platforms/iseries/irq.c             |   11 +-
- arch/powerpc/platforms/powermac/pic.c            |   26 +-
- arch/powerpc/platforms/powermac/smp.c            |    9 +-
- arch/powerpc/platforms/ps3/interrupt.c           |   11 +-
- arch/powerpc/platforms/wsp/opb_pic.c             |   26 +-
- arch/powerpc/sysdev/cpm1.c                       |    9 +-
- arch/powerpc/sysdev/cpm2_pic.c                   |   23 +-
- arch/powerpc/sysdev/ehv_pic.c                    |   14 +-
- arch/powerpc/sysdev/fsl_msi.c                    |   10 +-
- arch/powerpc/sysdev/fsl_msi.h                    |    2 +-
- arch/powerpc/sysdev/i8259.c                      |   15 +-
- arch/powerpc/sysdev/ipic.c                       |   31 +-
- arch/powerpc/sysdev/ipic.h                       |    2 +-
- arch/powerpc/sysdev/mpc8xx_pic.c                 |   11 +-
- arch/powerpc/sysdev/mpic.c                       |   17 +-
- arch/powerpc/sysdev/mpic_msi.c                   |    2 +-
- arch/powerpc/sysdev/mv64x60_pic.c                |   11 +-
- arch/powerpc/sysdev/qe_lib/qe_ic.c               |   26 +-
- arch/powerpc/sysdev/qe_lib/qe_ic.h               |    2 +-
- arch/powerpc/sysdev/tsi108_pci.c                 |   22 +-
- arch/powerpc/sysdev/uic.c                        |   26 +-
- arch/powerpc/sysdev/xics/xics-common.c           |   28 +-
- arch/powerpc/sysdev/xilinx_intc.c                |   19 +-
- arch/x86/Kconfig                                 |    2 +
- arch/x86/include/asm/irq_controller.h            |   12 -
- arch/x86/include/asm/prom.h                      |   10 -
- arch/x86/kernel/devicetree.c                     |  101 +--
- drivers/gpio/gpio-mpc8xxx.c                      |   30 +-
- drivers/mfd/twl-core.c                           |   12 +-
- drivers/net/phy/mdio-gpio.c                      |    4 +-
- include/linux/irqdomain.h                        |  190 ++++--
- kernel/irq/irqdomain.c                           |  816 +++++++++++++++++++---
- kernel/irq/proc.c                                |    3 +
- 74 files changed, 1334 insertions(+), 2471 deletions(-)
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Milton Miller <miltonm@bga.com>
+---
+ Documentation/IRQ-domain.txt |  113 ++++++++++++++++++++++++++++++++++++++++++
+ MAINTAINERS                  |    9 +++
+ 2 files changed, 122 insertions(+), 0 deletions(-)
  create mode 100644 Documentation/IRQ-domain.txt
- delete mode 100644 arch/x86/include/asm/irq_controller.h
+
+diff --git a/Documentation/IRQ-domain.txt b/Documentation/IRQ-domain.txt
+new file mode 100644
+index 0000000..247f32a
+--- /dev/null
++++ b/Documentation/IRQ-domain.txt
+@@ -0,0 +1,113 @@
++irq_domain interrupt number mapping library
++
++The current design of the Linux kernel uses a single large number
++space where each separate IRQ source is assigned a different number.
++This is simple when there is only one interrupt controller, but in
++systems with controllers the kernel must ensure that each one does not
++get assigned overlapping allocations of Linux irq numbers.
++
++The irq_alloc_desc*() and irq_free_desc*() API provides allocation of
++irq numbers, but it doesn't provide any support for reverse mapping of
++the controller-local irq (hwirq) number into the Linux irq number
++space.
++
++The irq_domain library adds mapping between hwirq and irq numbers on
++top of the irq_alloc_desc*() API.  An irq_domain to manage mapping is
++preferred over interrupt controller drivers open coding their own
++reverse mapping scheme.
++
++irq_domain also implements translation from Device Tree interrupt
++specifiers to hwirq numbers, and can be easily extended to support
++other irq topology data sources.
++
++=== irq_domain usage ===
++An interrupt controller driver creates and registers an irq_domain by
++calling one of the irq_domain_add_*() functions (each mapping method
++has a different allocator function, more on that later).  The function
++will return a pointer to the irq_domain on success.  It must provide
++the allocator function with an irq_domain_ops structure with the .map
++callback populated as a minimum.
++
++In most cases, the irq_domain will begin empty without any mappings
++between hwirq and irq numbers.  Mappings are added to the irq_domain
++by calling irq_create_mapping() which accepts the irq_domain and a
++hwirq number as arguments.  If a mapping for the hwirq doesn't already
++exist then it will allocate a new linux irq_desc, associate it with
++the hwirq, and call the .map() callback so the driver can perform any
++required hardware setup.
++
++When an interrupt is received, irq_find_mapping() function should
++be used to find the Linux irq number from the hwirq number.
++
++If the driver has the Linux irq number or the irq_data pointer, and
++needs to know the associated hwirq number (such as in the irq_chip
++callbacks) then it can be directly obtained from irq_data->hwirq.
++
++=== Types of irq_domain mappings ===
++There are several mechanisms available for reverse mapping from hwirq
++to Linux irq, and each mechanism uses a different allocation function.
++Which reverse map type should be used depends on the use case.  Each
++of the reverse map types are described below:
++
++==== Linear ====
++irq_domain_add_linear()
++
++The linear reverse map maintains a fixed size table indexed by the
++hwirq number.  When a hwirq is mapped, an irq_desc is allocated for
++the hwirq, and the irq number is stored in the table.
++
++The Linear map is a good choice when the maximum number of hwirqs is
++fixed and a relatively small number (~ < 256).  The advantages of this
++map are fixed time lookup for irq numbers, and irq_descs are only
++allocated for in-use irqs.  The disadvantage is that the table must be
++as large as the largest possible hwirq number.
++
++The majority of drivers should use the linear map.
++
++==== Tree ====
++irq_domain_add_tree()
++
++The irq_domain maintains a radix tree map from hwirq numbers to linux
++irqs.  When an hwirq is mapped, and irq_desc is allocated and the
++hwirq is used as the lookup key for the radix tree.
++
++The tree map is a good choice if the hwirq number can be very large
++since it doesn't need to allocate a table as large as the largest
++hwirq number.  The disadvantage is that hwirq to irq number lookup is
++dependent on how many entries are in the table.
++
++Very few drivers should need this mapping.  At the moment, powerpc
++iseries is the only user.
++
++==== No Map ===-
++irq_domain_add_nomap()
++
++The No Map mapping is to be used when the hwirq number is
++programmable in the hardware.  In this case it is best to program the
++Linux irq number into the hardware itself so that no mapping is
++required.  Calling irq_create_direct_mapping() will allocate a linux
++irq number and call the .map() callback so that driver can program the
++Linux irq number into the hardware.
++
++Most drivers cannot use this mapping.
++
++==== Legacy ====
++irq_domain_add_legacy()
++irq_domain_add_legacy_isa()
++
++The Legacy mapping is a special case for drivers that already have a
++range of irq_descs allocated for the hwirqs.  It is used when the
++driver cannot be immediately converted to use the linear mapping, such
++as when the driver is used in a system with fixed irq number
++assignments, as is typical in many embedded system board files.
++
++The legacy map assumes a contiguous range of irq numbers has already
++been allocated for the controller and that the irq number can be
++calculated by adding a fixed offset to the hwirq number, and
++visa-versa.  The disadvantage is that it requires the interrupt
++controller to manage irq allocations and it requires an irq_desc to be
++allocated for every hwirq, even if it is unused.
++
++Drivers should only use the legacy map if they have fixed irq mappings
++(#define IRQ_* in embedded board files).  For example, ISA controllers
++mapped to Linux irqs 0-15 would use the legacy map.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 89b70df..d308f0f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3626,6 +3626,15 @@ S:	Maintained
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git irq/core
+ F:	kernel/irq/
+ 
++IRQ DOMAINS (IRQ NUMBER MAPPING LIBRARY)
++M:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
++M:	Grant Likely <grant.likely@secretlab.ca>
++T:	git git://git.secretlab.ca/git/linux-2.6.git irqdomain/next
++S:	Maintained
++F:	Documentation/IRQ-domain.txt
++F:	include/linux/irqdomain.h
++F:	kernel/irq/irqdomain.c
++
+ ISAPNP
+ M:	Jaroslav Kysela <perex@perex.cz>
+ S:	Maintained
+-- 
+1.7.5.4
