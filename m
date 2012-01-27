@@ -1,16 +1,16 @@
-Return-Path: <joey@joescan.com>
-Received: from exprod7og114.obsmtp.com (exprod7og114.obsmtp.com [64.18.2.215])
- by ozlabs.org (Postfix) with SMTP id 71C04B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2012 07:43:28 +1100 (EST)
-Received: by vbbfq11 with SMTP id fq11so2089320vbb.37
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 12:43:26 -0800 (PST)
-MIME-Version: 1.0
-Date: Fri, 27 Jan 2012 12:14:35 -0800
-Message-ID: <CAL_WD7hYZoaB87vZzj4Fk9nsHYSoe+qWq87g72ERLAkMur5vYg@mail.gmail.com>
-Subject: MPC5200B FEC TX packets getting stuck
-From: Joey Nelson <joey@joescan.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=bcaec5015f2b42ac9d04b78825b0
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+To: linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH v3 00/25] irq_domain generalization and refinement
+Date: Fri, 27 Jan 2012 14:35:54 -0700
+Message-Id: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,70 +20,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---bcaec5015f2b42ac9d04b78825b0
-Content-Type: text/plain; charset=ISO-8859-1
+Hey everyone,
 
-In my application, I have a PC connected through TCP to a MPC5200B based
-system.  The PC sends a short request, the MPC5200B receives the request
-and sends the data back.  It is doing this about 300 times per second.
- Normally exchange happens in just handful of milliseconds.  But randomly
-every 2 to 15 minutes the MPC5200B sends all but the last packet of the
-response, and about 200ms later the PC sends a delayed ACK, and the
-MPC5200B TCP stack figures the packet was lost.  It then sends two nearly
-identical packets (The IP header Identification and Checksum fields are
-incremented).  I can also see that RetransSegs in /proc/net/snmp increments
-by one for each of these delays.
+This patch series is ready for much wider consumption now.  I'd like
+to get it into linux-next ASAP because there will be ARM board support
+depending on it.  I'll wait a few days before I ask Stephen to pull
+this in.
 
-My theory is that the packet is getting suck somewhere in the network stack
-(most likely toward the bottom).  Then when another packet is sent, the
-suck one gets pushed out.
+Stephen/Milton/Ben, any testing you can help with here would be
+appreciated since you've got access to a wider variety of Power
+machines than I do.
 
-I've done a test where I have another task on the MPC5200B sending UDP
-packets to a different PC every 10ms.  This eliminated the long delays, and
-seems to support my stuck packet theory.
+Thomas, I think it makes sense to maintain this in a separate branch
+from other irq changes until the next merge window.  If you prefer,
+I'm happy to maintain this branch until then.
 
-I'm seeing the same issue with 2.6.23 and 3.1.6.
+Cheers,
+g.
 
-I'm getting ready to dive into the hairy world of Bestcomm and FEC, but I
-figured I'd see if anyone else has any suggestions before I make my decent.
- Has anyone seen this behavior before?  Any likely candidates for where the
-packet is getting stuck?  General advice for reference materials (I've
-started on Linux Device Drivers 3rd Ed, BestComm AN2604, and the Datasheets)
+The following changes since commit dcd6c92267155e70a94b3927bce681ce74b80d1f:
 
-Thanks in advance.
+  Linux 3.3-rc1 (2012-01-19 15:04:48 -0800)
 
-Joey Nelson
-joey@joescan.com
+are available in the git repository at:
+  git://git.secretlab.ca/git/linux-2.6 irqdomain/next
 
---bcaec5015f2b42ac9d04b78825b0
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Grant Likely (24):
+      irq_domain: add documentation and MAINTAINERS entry.
+      dt: Make irqdomain less verbose
+      irq_domain: Make irq_domain structure match powerpc's irq_host
+      irq_domain: convert microblaze from irq_host to irq_domain
+      irq_domain/powerpc: Use common irq_domain structure instead of irq_host
+      irq_domain/powerpc: eliminate irq_map; use irq_alloc_desc() instead
+      irq_domain/powerpc: Eliminate virq_is_host()
+      irq_domain: Move irq_domain code from powerpc to kernel/irq
+      irqdomain: remove NO_IRQ from irq domain code
+      irq_domain: Remove references to old irq_host names
+      irq_domain: Replace irq_alloc_host() with revmap-specific initializers
+      irq_domain: Add support for base irq and hwirq in legacy mappings
+      irq_domain: Remove 'new' irq_domain in favour of the ppc one
+      irq_domain: Remove irq_domain_add_simple()
+      irq_domain: Create common xlate functions that device drivers can use
+      irq_domain: constify irq_domain_ops
+      irq_domain/c6x: constify irq_domain structures
+      irq_domain/c6x: Use library of xlate functions
+      irq_domain/powerpc: constify irq_domain_ops
+      irqdomain/powerpc: Replace custom xlate functions with library functions
+      irq_domain/x86: Convert x86 (embedded) to use common irq_domain
+      irq_domain: Include hwirq number in /proc/interrupts
+      irq_domain: remove "hint" when allocating irq numbers
+      irq_domain: mostly eliminate slow-path revmap lookups
 
-<div><br></div><div>In my application, I have a PC connected through TCP to=
- a MPC5200B based system. =A0The PC sends a short request, the MPC5200B=A0r=
-eceives=A0the request and sends the data back. =A0It is doing this about 30=
-0 times per second. =A0Normally exchange happens in just handful of millise=
-conds. =A0But randomly every 2 to 15 minutes the MPC5200B sends all but the=
- last packet of the response, and about 200ms later the PC sends a delayed =
-ACK, and the MPC5200B TCP stack figures the packet was lost. =A0It then sen=
-ds two nearly identical packets (The IP header Identification and Checksum =
-fields are incremented). =A0I can also see that RetransSegs in /proc/net/sn=
-mp increments by one for each of these delays.</div>
-<div><br></div><div>My theory is that the packet is getting suck somewhere =
-in the network stack (most likely toward the bottom). =A0Then when another =
-packet is sent, the suck one gets pushed out.</div><div><br></div><div>I&#3=
-9;ve done a test where I have another task on the MPC5200B sending UDP pack=
-ets to a different PC every 10ms. =A0This eliminated the long delays, and s=
-eems to support my stuck packet theory.</div>
-<div><br></div><div>I&#39;m seeing the same issue with 2.6.23 and 3.1.6.</d=
-iv><div><br></div><div>I&#39;m getting ready to dive into the hairy world o=
-f Bestcomm and FEC, but I figured I&#39;d see if anyone else has any sugges=
-tions before I make my decent. =A0Has anyone seen this=A0behavior=A0before?=
- =A0Any likely candidates for where the packet is getting stuck? =A0General=
- advice for reference materials (I&#39;ve started on Linux Device Drivers 3=
-rd Ed, BestComm AN2604, and the Datasheets)</div>
-<div><br></div><div>Thanks in advance.</div><br clear=3D"all">Joey Nelson<d=
-iv><a href=3D"mailto:joey@joescan.com">joey@joescan.com</a><br><br>
-</div>
+Mark Salter (1):
+      irq_domain/c6x: Convert c6x to use generic irq_domain support.
 
---bcaec5015f2b42ac9d04b78825b0--
+ Documentation/IRQ-domain.txt                     |  113 +++
+ MAINTAINERS                                      |    9 +
+ arch/arm/common/gic.c                            |   95 ++--
+ arch/arm/common/vic.c                            |   16 +-
+ arch/arm/include/asm/hardware/gic.h              |    4 +-
+ arch/arm/include/asm/hardware/vic.h              |    2 +
+ arch/arm/mach-exynos/common.c                    |    2 +-
+ arch/arm/mach-imx/mach-imx6q.c                   |    3 +-
+ arch/arm/mach-msm/board-msm8x60.c                |    8 +-
+ arch/arm/mach-mx5/imx51-dt.c                     |    4 +-
+ arch/arm/mach-mx5/imx53-dt.c                     |    4 +-
+ arch/arm/mach-omap2/board-generic.c              |    2 +-
+ arch/arm/mach-prima2/irq.c                       |    2 +-
+ arch/arm/mach-versatile/core.c                   |    5 +-
+ arch/c6x/Kconfig                                 |    1 +
+ arch/c6x/include/asm/irq.h                       |  245 +-------
+ arch/c6x/kernel/irq.c                            |  612 +----------------
+ arch/c6x/platforms/megamod-pic.c                 |   25 +-
+ arch/microblaze/include/asm/irq.h                |    4 +-
+ arch/microblaze/kernel/irq.c                     |    2 +-
+ arch/microblaze/kernel/setup.c                   |    2 -
+ arch/powerpc/Kconfig                             |    1 +
+ arch/powerpc/include/asm/ehv_pic.h               |    2 +-
+ arch/powerpc/include/asm/i8259.h                 |    2 +-
+ arch/powerpc/include/asm/irq.h                   |  247 +-------
+ arch/powerpc/include/asm/mpic.h                  |    2 +-
+ arch/powerpc/include/asm/xics.h                  |    2 +-
+ arch/powerpc/kernel/irq.c                        |  617 +----------------
+ arch/powerpc/platforms/512x/mpc5121_ads_cpld.c   |   12 +-
+ arch/powerpc/platforms/52xx/media5200.c          |   15 +-
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c        |   16 +-
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c        |   12 +-
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c     |   14 +-
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c  |   15 +-
+ arch/powerpc/platforms/86xx/gef_pic.c            |   15 +-
+ arch/powerpc/platforms/cell/axon_msi.c           |   29 +-
+ arch/powerpc/platforms/cell/beat_interrupt.c     |   16 +-
+ arch/powerpc/platforms/cell/interrupt.c          |   16 +-
+ arch/powerpc/platforms/cell/spider-pic.c         |   14 +-
+ arch/powerpc/platforms/embedded6xx/flipper-pic.c |   30 +-
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c    |   35 +-
+ arch/powerpc/platforms/iseries/irq.c             |   11 +-
+ arch/powerpc/platforms/powermac/pic.c            |   26 +-
+ arch/powerpc/platforms/powermac/smp.c            |    9 +-
+ arch/powerpc/platforms/ps3/interrupt.c           |   11 +-
+ arch/powerpc/platforms/wsp/opb_pic.c             |   26 +-
+ arch/powerpc/sysdev/cpm1.c                       |    9 +-
+ arch/powerpc/sysdev/cpm2_pic.c                   |   23 +-
+ arch/powerpc/sysdev/ehv_pic.c                    |   14 +-
+ arch/powerpc/sysdev/fsl_msi.c                    |   10 +-
+ arch/powerpc/sysdev/fsl_msi.h                    |    2 +-
+ arch/powerpc/sysdev/i8259.c                      |   15 +-
+ arch/powerpc/sysdev/ipic.c                       |   31 +-
+ arch/powerpc/sysdev/ipic.h                       |    2 +-
+ arch/powerpc/sysdev/mpc8xx_pic.c                 |   11 +-
+ arch/powerpc/sysdev/mpic.c                       |   17 +-
+ arch/powerpc/sysdev/mpic_msi.c                   |    2 +-
+ arch/powerpc/sysdev/mv64x60_pic.c                |   11 +-
+ arch/powerpc/sysdev/qe_lib/qe_ic.c               |   26 +-
+ arch/powerpc/sysdev/qe_lib/qe_ic.h               |    2 +-
+ arch/powerpc/sysdev/tsi108_pci.c                 |   22 +-
+ arch/powerpc/sysdev/uic.c                        |   26 +-
+ arch/powerpc/sysdev/xics/xics-common.c           |   28 +-
+ arch/powerpc/sysdev/xilinx_intc.c                |   19 +-
+ arch/x86/Kconfig                                 |    2 +
+ arch/x86/include/asm/irq_controller.h            |   12 -
+ arch/x86/include/asm/prom.h                      |   10 -
+ arch/x86/kernel/devicetree.c                     |  101 +--
+ drivers/gpio/gpio-mpc8xxx.c                      |   30 +-
+ drivers/mfd/twl-core.c                           |   12 +-
+ drivers/net/phy/mdio-gpio.c                      |    4 +-
+ include/linux/irqdomain.h                        |  190 ++++--
+ kernel/irq/irqdomain.c                           |  816 +++++++++++++++++++---
+ kernel/irq/proc.c                                |    3 +
+ 74 files changed, 1334 insertions(+), 2471 deletions(-)
+ create mode 100644 Documentation/IRQ-domain.txt
+ delete mode 100644 arch/x86/include/asm/irq_controller.h
