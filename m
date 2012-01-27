@@ -1,16 +1,16 @@
 Return-Path: <Bruce_Leonard@selinc.com>
 Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
- by ozlabs.org (Postfix) with ESMTP id 653421007D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 15:29:08 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id DCF28B6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 15:31:01 +1100 (EST)
 Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
- by duster.selinc.com (8.14.4/8.14.4) with ESMTP id q0R4T37X021558
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 20:29:03 -0800
+ by duster.selinc.com (8.14.4/8.14.4) with ESMTP id q0R4UvQj025628
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 20:30:57 -0800
 To: linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-Subject: 
-Message-ID: <OF646F0969.8511A42B-ON88257992.0016EA28-88257992.0018A35C@selinc.com>
+Subject: Question about GPIO Lib
+Message-ID: <OF2BD13139.450D178D-ON88257992.0018BB93-88257992.0018CFCA@selinc.com>
 From: Bruce_Leonard@selinc.com
-Date: Thu, 26 Jan 2012 20:29:06 -0800
+Date: Thu, 26 Jan 2012 20:31:00 -0800
 Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,6 +21,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+(This time with a subject line, sorry)
+
 Hi,
 
 I'm using the 3.0.3 kernel on an MPC8308 and have turned on GPIO support 
@@ -28,6 +30,7 @@ I'm using the 3.0.3 kernel on an MPC8308 and have turned on GPIO support
 GPIO pin I'm using as a CS to a NvRAM part.  I also have some jumpers on 
 the processor GPIO pins and I thought it would be really slick to use the 
 built in GPIO support in the kernel rather than roll my own driver to read 
+
 five pins.  So I've got GPIO sysfs support turned on (CONFIG_GPIO_SYSFS = 
 Y) and everything shows up in /sys/class/gpio and works as advertised. 
 Really nice.
