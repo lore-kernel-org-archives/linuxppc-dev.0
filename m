@@ -6,13 +6,13 @@ To: linux-kernel@vger.kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
  Rob Herring <rob.herring@calxeda.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH v3 19/25] irq_domain/c6x: Use library of xlate functions
-Date: Fri, 27 Jan 2012 14:36:13 -0700
-Message-Id: <1327700179-17454-20-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH v3 23/25] irq_domain: Include hwirq number in /proc/interrupts
+Date: Fri, 27 Jan 2012 14:36:17 -0700
+Message-Id: <1327700179-17454-24-git-send-email-grant.likely@secretlab.ca>
 In-Reply-To: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
 References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
 Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, Mark Salter <msalter@redhat.com>
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,55 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The c6x irq controllers don't need to define custom .xlate hooks
+Add the hardware interrupt number to the output of /proc/interrupts.
+It is often important to have access to the hardware interrupt number because
+it identifies exactly how an interrupt signal is wired up to the interrupt
+controller.  This is especially important when using irq_domains since irq
+numbers get dynamically allocated in that case, and have no relation to the
+actual hardware number.
+
+Note: This output is currently conditional on whether or not the irq_domain
+pointer is set; however hwirq could still be used without irq_domain.  It
+may be worthwhile to always output the hwirq number regardless of the
+domain pointer.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Mark Salter <msalter@redhat.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/c6x/kernel/irq.c            |    1 +
- arch/c6x/platforms/megamod-pic.c |   14 +-------------
- 2 files changed, 2 insertions(+), 13 deletions(-)
+ kernel/irq/proc.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/c6x/kernel/irq.c b/arch/c6x/kernel/irq.c
-index c6b36e8..d77bcfd 100644
---- a/arch/c6x/kernel/irq.c
-+++ b/arch/c6x/kernel/irq.c
-@@ -88,6 +88,7 @@ static int core_domain_map(struct irq_domain *h, unsigned int virq,
+diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
+index 4bd4faa..2ec61d0 100644
+--- a/kernel/irq/proc.c
++++ b/kernel/irq/proc.c
+@@ -472,6 +472,9 @@ int show_interrupts(struct seq_file *p, void *v)
+ 	if (desc->name)
+ 		seq_printf(p, "-%-8s", desc->name);
  
- static const struct irq_domain_ops core_domain_ops = {
- 	.map = core_domain_map,
-+	.xlate = irq_domain_xlate_onecell,
- };
- 
- void __init init_IRQ(void)
-diff --git a/arch/c6x/platforms/megamod-pic.c b/arch/c6x/platforms/megamod-pic.c
-index 9f35fbf..c1c4e2a 100644
---- a/arch/c6x/platforms/megamod-pic.c
-+++ b/arch/c6x/platforms/megamod-pic.c
-@@ -136,21 +136,9 @@ static int megamod_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
- 
--static int megamod_xlate(struct irq_domain *h, struct device_node *ct,
--			 const u32 *intspec, unsigned int intsize,
--			 irq_hw_number_t *out_hwirq, unsigned int *out_type)
--
--{
--	/* megamod intspecs must have 1 cell */
--	BUG_ON(intsize != 1);
--	*out_hwirq = intspec[0];
--	*out_type = IRQ_TYPE_NONE;
--	return 0;
--}
--
- static const struct irq_domain_ops megamod_domain_ops = {
- 	.map	= megamod_map,
--	.xlate	= megamod_xlate,
-+	.xlate	= irq_domain_xlate_onecell,
- };
- 
- static void __init set_megamod_mux(struct megamod_pic *pic, int src, int output)
++	if (desc->irq_data.domain)
++		seq_printf(p, " %-8d", (int) desc->irq_data.hwirq);
++
+ 	if (action) {
+ 		seq_printf(p, "  %s", action->name);
+ 		while ((action = action->next) != NULL)
 -- 
 1.7.5.4
