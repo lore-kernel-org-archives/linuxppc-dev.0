@@ -1,23 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 579D01007D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 13:40:50 +1100 (EST)
-Message-ID: <1327632040.24487.11.camel@pasglop>
-Subject: Re: tlb flushing on Power
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Fri, 27 Jan 2012 13:40:40 +1100
-In-Reply-To: <4F21D3F4.7020904@linux.vnet.ibm.com>
-References: <4F2160B3.60708@linux.vnet.ibm.com>
- <4F216620.2010509@linux.vnet.ibm.com> <1327613953.24487.9.camel@pasglop>
- <4F21D3F4.7020904@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Brian King <brking@linux.vnet.ibm.com>,
- Seth Jennings <sjenning@linux.vnet.ibm.com>,
- Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
+ by ozlabs.org (Postfix) with ESMTP id 653421007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2012 15:29:08 +1100 (EST)
+Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
+ by duster.selinc.com (8.14.4/8.14.4) with ESMTP id q0R4T37X021558
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2012 20:29:03 -0800
+To: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Subject: 
+Message-ID: <OF646F0969.8511A42B-ON88257992.0016EA28-88257992.0018A35C@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Thu, 26 Jan 2012 20:29:06 -0800
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-01-26 at 14:30 -0800, Dave Hansen wrote:
-> On 01/26/2012 01:39 PM, Benjamin Herrenschmidt wrote:
-> > Can you explain to me a bit more the whole business in this patch set
-> > about doing kmap_atomic() vs. manually trying to populate the PTEs ? 
-> 
-> They're compressing pages and the allocator is trying getting very poor
-> packing of compressed pages in to PAGE_SIZE chunks.  So, they're moving
-> to 2-page allocations that they need to be mapped contiguously to make
-> it easier on the users of the allocator.
-> 
-> > Why not just use two kmap atomic entries ? If interrupts are disabled
-> > kmap_atomic() should give you contiguous ones I suppose
-> 
-> I think you and I are at least on the same page on this one:
-> 
-> https://lkml.org/lkml/2012/1/26/355
+Hi,
 
-Right. We probably want to document this somewhere if we start relying
-on that behaviour or at the very least add a WARN_ON() and fail from the
-compressed allocator if we end up with non-contiguous pages.
+I'm using the 3.0.3 kernel on an MPC8308 and have turned on GPIO support 
+(CONFIG_GPIOLIB = Y) because the SPI sub-system needed to use it for the 
+GPIO pin I'm using as a CS to a NvRAM part.  I also have some jumpers on 
+the processor GPIO pins and I thought it would be really slick to use the 
+built in GPIO support in the kernel rather than roll my own driver to read 
+five pins.  So I've got GPIO sysfs support turned on (CONFIG_GPIO_SYSFS = 
+Y) and everything shows up in /sys/class/gpio and works as advertised. 
+Really nice.
 
-> > (unless NMIs are allowed to use kmap_atomic, are they ?)
-> 
-> Surely they can't be.  Even if they could use it, they'd have to return
-> the __kmap_atomic_idx back to the place where it started before they
-> returned, so the interrupted code wouldn't notice.
+The problem is we've got a number of other things hooked up to the GPIO 
+pins that it would be very bad if someone from user space played with 
+them, like our FPGA configuration pin.  Some one toggles that and our box 
+goes stupid.  So what I'm wondering is if there's a way, preferably via 
+the device tree, to limit the GPIOs that GPIO Lib exposes to user space?
 
-Ah indeed, that's for talking before I had breakfast :-)
+I tried the following in my device tree without success:
 
-Cheers,
-Ben.
+      gpio1: gpio@c00 {
+         #gpio-cells = <2>;
+         device_type = "gpio";
+         compatible = "fsl,mpc8308-gpio", "fsl,mpc8349-gpio";
+         reg = <0xc00 0x18>;
+         interrupts = <74 0x8>;
+         interrupt-parent = <&ipic>;
+         gpio-controller;
+         gpios = <&gpio1 0 0
+                  &gpio1 1 0
+                  &gpio1 2 0
+                  &gpio1 3 0
+                  &gpio1 4 0
+                  &gpio1 5 0
+                  &gpio1 6 0>;
+      };
+
+I also thought maybe a separate child node of the gpio1 node, but I think 
+it would require a "compatible" attribute which would mean a driver to 
+bind it to, and the whole point is to avoid writing a driver if someone 
+else has already got something that will work.
+
+Thanks.
+
+Bruce
