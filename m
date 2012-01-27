@@ -6,13 +6,13 @@ To: linux-kernel@vger.kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
  Rob Herring <rob.herring@calxeda.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH v3 16/25] irq_domain: constify irq_domain_ops
-Date: Fri, 27 Jan 2012 14:36:10 -0700
-Message-Id: <1327700179-17454-17-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH v3 19/25] irq_domain/c6x: Use library of xlate functions
+Date: Fri, 27 Jan 2012 14:36:13 -0700
+Message-Id: <1327700179-17454-20-git-send-email-grant.likely@secretlab.ca>
 In-Reply-To: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
 References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
 Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ linux-arm-kernel@lists.infradead.org, Mark Salter <msalter@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,179 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make irq_domain_ops pointer a constant to make it safer for multiple
-instances to share the same ops pointer and change the irq_domain code
-so that it does not modify the ops.
+The c6x irq controllers don't need to define custom .xlate hooks
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Mark Salter <msalter@redhat.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Milton Miller <miltonm@bga.com>
 ---
- include/linux/irqdomain.h |   14 +++++++-------
- kernel/irq/irqdomain.c    |   31 +++++++++++++++----------------
- 2 files changed, 22 insertions(+), 23 deletions(-)
+ arch/c6x/kernel/irq.c            |    1 +
+ arch/c6x/platforms/megamod-pic.c |   14 +-------------
+ 2 files changed, 2 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index 1db30df..0b00f83 100644
---- a/include/linux/irqdomain.h
-+++ b/include/linux/irqdomain.h
-@@ -106,7 +106,7 @@ struct irq_domain {
- 		} linear;
- 		struct radix_tree_root tree;
- 	} revmap_data;
--	struct irq_domain_ops *ops;
-+	const struct irq_domain_ops *ops;
- 	void *host_data;
- 	irq_hw_number_t inval_irq;
+diff --git a/arch/c6x/kernel/irq.c b/arch/c6x/kernel/irq.c
+index c6b36e8..d77bcfd 100644
+--- a/arch/c6x/kernel/irq.c
++++ b/arch/c6x/kernel/irq.c
+@@ -88,6 +88,7 @@ static int core_domain_map(struct irq_domain *h, unsigned int virq,
  
-@@ -119,17 +119,17 @@ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
- 					 unsigned int size,
- 					 unsigned int first_irq,
- 					 irq_hw_number_t first_hwirq,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data);
- struct irq_domain *irq_domain_add_linear(struct device_node *of_node,
- 					 unsigned int size,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data);
- struct irq_domain *irq_domain_add_nomap(struct device_node *of_node,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data);
- struct irq_domain *irq_domain_add_tree(struct device_node *of_node,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data);
+ static const struct irq_domain_ops core_domain_ops = {
+ 	.map = core_domain_map,
++	.xlate = irq_domain_xlate_onecell,
+ };
  
- extern struct irq_domain *irq_find_host(struct device_node *node);
-@@ -138,7 +138,7 @@ extern void irq_set_virq_count(unsigned int count);
+ void __init init_IRQ(void)
+diff --git a/arch/c6x/platforms/megamod-pic.c b/arch/c6x/platforms/megamod-pic.c
+index 9f35fbf..c1c4e2a 100644
+--- a/arch/c6x/platforms/megamod-pic.c
++++ b/arch/c6x/platforms/megamod-pic.c
+@@ -136,21 +136,9 @@ static int megamod_map(struct irq_domain *h, unsigned int virq,
+ 	return 0;
+ }
  
- static inline struct irq_domain *irq_domain_add_legacy_isa(
- 				struct device_node *of_node,
--				struct irq_domain_ops *ops,
-+				const struct irq_domain_ops *ops,
- 				void *host_data)
- {
- 	return irq_domain_add_legacy(of_node, NUM_ISA_INTERRUPTS, 0, 0, ops,
-@@ -162,7 +162,7 @@ extern unsigned int irq_radix_revmap_lookup(struct irq_domain *host,
- extern unsigned int irq_linear_revmap(struct irq_domain *host,
- 				      irq_hw_number_t hwirq);
- 
--extern struct irq_domain_ops irq_domain_simple_ops;
-+extern const struct irq_domain_ops irq_domain_simple_ops;
- 
- /* stock xlate functions */
- int irq_domain_xlate_onecell(struct irq_domain *d, struct device_node *ctrlr,
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index b0ed3be..bf181ef 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -21,11 +21,6 @@ static DEFINE_MUTEX(revmap_trees_mutex);
- static unsigned int irq_virq_count = NR_IRQS;
- static struct irq_domain *irq_default_domain;
- 
--static int default_irq_domain_match(struct irq_domain *d, struct device_node *np)
+-static int megamod_xlate(struct irq_domain *h, struct device_node *ct,
+-			 const u32 *intspec, unsigned int intsize,
+-			 irq_hw_number_t *out_hwirq, unsigned int *out_type)
+-
 -{
--	return d->of_node != NULL && d->of_node == np;
+-	/* megamod intspecs must have 1 cell */
+-	BUG_ON(intsize != 1);
+-	*out_hwirq = intspec[0];
+-	*out_type = IRQ_TYPE_NONE;
+-	return 0;
 -}
 -
- /**
-  * irq_domain_alloc() - Allocate a new irq_domain data structure
-  * @of_node: optional device-tree node of the interrupt controller
-@@ -39,7 +34,7 @@ static int default_irq_domain_match(struct irq_domain *d, struct device_node *np
-  */
- static struct irq_domain *irq_domain_alloc(struct device_node *of_node,
- 					   unsigned int revmap_type,
--					   struct irq_domain_ops *ops,
-+					   const struct irq_domain_ops *ops,
- 					   void *host_data)
- {
- 	struct irq_domain *domain;
-@@ -54,9 +49,6 @@ static struct irq_domain *irq_domain_alloc(struct device_node *of_node,
- 	domain->host_data = host_data;
- 	domain->of_node = of_node_get(of_node);
- 
--	if (domain->ops->match == NULL)
--		domain->ops->match = default_irq_domain_match;
--
- 	return domain;
- }
- 
-@@ -99,7 +91,7 @@ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
- 					 unsigned int size,
- 					 unsigned int first_irq,
- 					 irq_hw_number_t first_hwirq,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data)
- {
- 	struct irq_domain *domain;
-@@ -165,7 +157,7 @@ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
-  */
- struct irq_domain *irq_domain_add_linear(struct device_node *of_node,
- 					 unsigned int size,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data)
- {
- 	struct irq_domain *domain;
-@@ -187,7 +179,7 @@ struct irq_domain *irq_domain_add_linear(struct device_node *of_node,
- }
- 
- struct irq_domain *irq_domain_add_nomap(struct device_node *of_node,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data)
- {
- 	struct irq_domain *domain = irq_domain_alloc(of_node,
-@@ -206,7 +198,7 @@ struct irq_domain *irq_domain_add_nomap(struct device_node *of_node,
-  * (the reverse mapping will use the slow path until that happens).
-  */
- struct irq_domain *irq_domain_add_tree(struct device_node *of_node,
--					 struct irq_domain_ops *ops,
-+					 const struct irq_domain_ops *ops,
- 					 void *host_data)
- {
- 	struct irq_domain *domain = irq_domain_alloc(of_node,
-@@ -225,6 +217,7 @@ struct irq_domain *irq_domain_add_tree(struct device_node *of_node,
- struct irq_domain *irq_find_host(struct device_node *node)
- {
- 	struct irq_domain *h, *found = NULL;
-+	int rc;
- 
- 	/* We might want to match the legacy controller last since
- 	 * it might potentially be set to match all interrupts in
-@@ -232,11 +225,17 @@ struct irq_domain *irq_find_host(struct device_node *node)
- 	 * yet though...
- 	 */
- 	mutex_lock(&irq_domain_mutex);
--	list_for_each_entry(h, &irq_domain_list, link)
--		if (h->ops->match(h, node)) {
-+	list_for_each_entry(h, &irq_domain_list, link) {
-+		if (h->ops->match)
-+			rc = h->ops->match(h, node);
-+		else
-+			rc = (h->of_node != NULL) && (h->of_node == node);
-+
-+		if (rc) {
- 			found = h;
- 			break;
- 		}
-+	}
- 	mutex_unlock(&irq_domain_mutex);
- 	return found;
- }
-@@ -766,7 +765,7 @@ int irq_domain_xlate_pci(struct irq_domain *d, struct device_node *ctrlr,
- }
- EXPORT_SYMBOL_GPL(irq_domain_xlate_pci);
- 
--struct irq_domain_ops irq_domain_simple_ops = {
-+const struct irq_domain_ops irq_domain_simple_ops = {
- 	.map = irq_domain_simple_map,
- 	.xlate = irq_domain_xlate_onetwocell,
+ static const struct irq_domain_ops megamod_domain_ops = {
+ 	.map	= megamod_map,
+-	.xlate	= megamod_xlate,
++	.xlate	= irq_domain_xlate_onecell,
  };
+ 
+ static void __init set_megamod_mux(struct megamod_pic *pic, int src, int output)
 -- 
 1.7.5.4
