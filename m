@@ -1,20 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
- [209.85.213.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A25F1B6FB6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 08:28:48 +1100 (EST)
-Received: by mail-yw0-f51.google.com with SMTP id o47so2113115yho.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2012 13:28:48 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC] powerpc: Make SPARSE_IRQ required
-Date: Mon, 30 Jan 2012 11:02:19 -0700
-Message-Id: <1327946539-17614-1-git-send-email-grant.likely@secretlab.ca>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <rob.herring@calxeda.com>
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+ [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 29737B6F65
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 08:47:21 +1100 (EST)
+Message-ID: <4F270FDC.8030906@freescale.com>
+Date: Mon, 30 Jan 2012 15:47:08 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/booke64: Configurable lazy interrupt disabling
+References: <1326897306-3924-1-git-send-email-Laurentiu.Tudor@freescale.com>
+ <1326921026.26116.34.camel@pasglop>
+ <CALRxmdC_E4Z==4R_2MGHAi3T7mdF9oHx3rBE6Meb+3R1gWF5VQ@mail.gmail.com>
+ <CALRxmdA9mh6x5YGK1oFHvgmV-RsnN6WkxhpZbcRJv1S8Y0RH1w@mail.gmail.com>
+ <1327100755.2923.6.camel@pasglop> <4F1DB344.9030709@freescale.com>
+ <1327351831.19850.9.camel@pasglop>
+In-Reply-To: <1327351831.19850.9.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +31,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All IRQs on powerpc are managed via irq_domain anyway, there isn't really
-any advantage to turning SPARSE_IRQ off, and it's the direction we want
-to take the kernel design anyway.  This patch makes powerpc always use
-SPARSE_IRQ.
+On 01/23/2012 02:50 PM, Benjamin Herrenschmidt wrote:
+> On Mon, 2012-01-23 at 13:21 -0600, Scott Wood wrote:
+>> Perhaps the issues with a higher priority interrupt intervening can be
+>> addressed by messing around with current task priority at the MPIC (with
+>> an hcall introduced for the hv case, since currently task priority is
+>> not exposed to the guest).  I haven't had time to revisit this, and
+>> don't expect to soon.  If someone else wants to try, fine.  In the
+>> meantime, lazy EE is causing problems.
+> 
+> Or by storing pending interrupts in an array.
 
-On pseries_defconfig, SPARSE_IRQ adds only about 0x300 bytes to the
-.text sections, and removes about 0x20000 from the data section for the
-static irq_desc table.
+Only the first one will happen in a context where we want to store.  The
+issue is if we get another higher priority interrupt when we enable, and
+that enables interrupts and we get the doorbell that wants to run the
+saved irq.  If we get priorities out of order we'll EOI the wrong interrupt.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- arch/powerpc/Kconfig      |    2 +-
- arch/powerpc/kernel/irq.c |    4 ----
- 2 files changed, 1 insertions(+), 5 deletions(-)
+IIRC we now never enable interrupts while servicing one (are individual
+handlers banned from doing this too?), in which case it shouldn't be an
+issue.  I'm a bit hesitant to rely on that, but oh well.  Beats having
+to add CTPR support to the hypervisor just for this.  We could throw a
+WARN_ONCE if we see a stored interrupt when we take an external
+interrupt exception.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 303703d..1aa840d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -133,7 +133,7 @@ config PPC
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
- 	select HAVE_GENERIC_HARDIRQS
--	select HAVE_SPARSE_IRQ
-+	select SPARSE_IRQ
- 	select IRQ_PER_CPU
- 	select IRQ_DOMAIN
- 	select GENERIC_IRQ_SHOW
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index e3673ff..282fb39 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -93,10 +93,6 @@ extern int tau_interrupts(int);
- 
- #ifdef CONFIG_PPC64
- 
--#ifndef CONFIG_SPARSE_IRQ
--EXPORT_SYMBOL(irq_desc);
--#endif
--
- int distribute_irqs = 1;
- 
- static inline notrace unsigned long get_hard_enabled(void)
--- 
-1.7.5.4
+>> and book3s decrementers 
+> 
+> Book3s decrementer is level sensitive based on the sign bit of the
+> decrementer (a bit odd but heh....) at least on 64-bit processors.
+
+So what's up with "On server, re-trigger the decrementer if it went
+negative since some processors only trigger on edge transitions of the
+sign bit" in arch_local_irq_restore()?
+
+>> and other hypervisors... 
+> 
+> I wouldn't take the PS3 HV and legacy iseries HV as good design
+> examples :-) The later was working around limited HW functionality at
+> the time as well. 
+
+Just pointing out we're not the first. :-)
+
+>> and you force
+>> all functions that enable interrupts to create a stack frame to deal
+>> with this.
+> 
+> Right, but overall this is still more efficient performance wise on most
+> processors than whacking the MSR.
+
+Laurentiu ran lmbench on e5500 with/without lazy EE and the results were
+mixed.  No large differences either way, but probably at least as many
+tests were slower with lazy EE as were faster with lazy EE.  Or possibly
+there was no significant difference and it was just noise from one run
+to another (I'm not sure how many times he ran it or what the variation
+was).
+
+He did claim a noticeable increase in networking performance with
+external proxy enabled.
+
+I guess hard-EE is worse on some other chips?
+
+> However the main thing is that this significantly improves the quality
+> of the samples obtained from performance interrupts which can now act as
+> pseudo-NMI up to a certain point.
+
+Which is compensation for the hardware not doing it right with a proper
+critical interrupt or equivalent, but yeah, that's a benefit.
+
+>> What is the compelling reason for forcing lazy EE on us?  Why is it tied
+>> to 64-bit?
+> 
+> Because that's where we historically implemented it and because iSeries
+> more/less required to begin with. And I don't want to have a split
+> scheme, especially not a compile time one.
+
+We can probably live with it in this case -- the patch to disable lazy
+EE was largely an artifact of my not having time to try a new approach,
+and other people here wanting some fix sooner.
+
+In general, though, I hope that the history of previously having 64-bit
+to yourself doesn't mean that our 64-bit chips are treated second class
+citizens, having to live with design decisions oriented around the chips
+that got there first, with a mandate that there be no special kernel
+builds, even just for optimization[1].  No, I don't want to go back to
+one kernel per board, but some build-time configuration is reasonable on
+embedded IMHO, as long as the possibilities are limited.  We're already
+running a different build from book3s.
+
+If the issue is just that you think making this particular feature
+configurable would be a mess, fine (though I think it would have been
+managable).
+
+-Scott
+
+[1] The hypervisor's issues with guest IACK should be fixable with an
+hv-internal CTPR hack if anyone cares enough, but there would be a
+performance cost to not using external proxy.
