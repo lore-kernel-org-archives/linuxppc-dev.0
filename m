@@ -1,25 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe004.messaging.microsoft.com
- [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B8DC41007D1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2012 23:32:20 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Fan Zhicheng-B32736 <B32736@freescale.com>
-Subject: Re: [PATCH 2/2] powerpc: Abstract common define of signal multiplex
- control for qe
-Date: Mon, 30 Jan 2012 12:32:12 +0000
-Message-ID: <4F268DC9.3010402@freescale.com>
-References: <1327035611-22794-1-git-send-email-B32736@freescale.com>
- <1327035611-22794-2-git-send-email-B32736@freescale.com>
- <CAOZdJXVw2zPb-arZ_JbanwAk0eguezxzZ301fBXG_JoFgcPLWQ@mail.gmail.com>
- <4F262D4D.8070306@freescale.com>
-In-Reply-To: <4F262D4D.8070306@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <bhelgaas@google.com>
+Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
+ [209.85.212.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E6FD31007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 02:44:28 +1100 (EST)
+Received: by wibhj6 with SMTP id hj6so3614610wib.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2012 07:44:24 -0800 (PST)
 MIME-Version: 1.0
-Cc: McClintock Matthew-B29882 <B29882@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1327718971-9598-7-git-send-email-yinghai@kernel.org>
+References: <1327718971-9598-1-git-send-email-yinghai@kernel.org>
+ <1327718971-9598-7-git-send-email-yinghai@kernel.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Mon, 30 Jan 2012 07:44:04 -0800
+Message-ID: <CAErSpo44qjFk5SQ+VWD=Y+Fg_xyykmh-ZOdFsfN-nELE29YP-A@mail.gmail.com>
+Subject: Re: [PATCH 06/13] PCI, powerpc: Register busn_res for root buses
+To: Yinghai Lu <yinghai@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Jesse Barnes <jbarnes@virtuousgeek.org>, Paul Mackerras <paulus@samba.org>,
+ linux-pci@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-fanzc wrote:
->>
->>> Signed-off-by: Fanzc<b32736@freeescale.com>
->> Please fix this.  There are only two e's in freescale.  In addition,
->> please use your full name.
->>
-> Hi Timur,
+On Fri, Jan 27, 2012 at 6:49 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+> =A0arch/powerpc/kernel/pci-common.c | =A0 =A07 ++++++-
+> =A01 files changed, 6 insertions(+), 1 deletions(-)
 >
->        You mean that need to remove the define to other file or create ne=
-w
-> file?
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-c=
+ommon.c
+> index cce98d7..501f29b 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -1732,6 +1732,8 @@ void __devinit pcibios_scan_phb(struct pci_controll=
+er *hose)
+> =A0 =A0 =A0 =A0bus->secondary =3D hose->first_busno;
+> =A0 =A0 =A0 =A0hose->bus =3D bus;
+>
+> + =A0 =A0 =A0 pci_bus_insert_busn_res(bus, hose->first_busno, hose->last_=
+busno);
 
-No, I mean you're signed-off-by should be this:
+The pci_create_root_bus() call is a few lines above this.  So this is
+a case of "create the root bus" followed by "fix something that's
+wrong with the bus we just created."  I'm trying to get rid of that
+pattern because it's just an opportunity for bugs.  I'd rather create
+the root bus with all the information it needs up front.
 
-Signed-off-by: Zhicheng Fan <b32736@freescale.com>
+And pci_bus_insert_busn_res() is not really architecture-specific, so
+I'd like this better if that call were done in the PCI core somewhere.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+> =A0 =A0 =A0 =A0/* Get probe mode and perform scan */
+> =A0 =A0 =A0 =A0mode =3D PCI_PROBE_NORMAL;
+> =A0 =A0 =A0 =A0if (node && ppc_md.pci_probe_mode)
+> @@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_control=
+ler *hose)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_scan_bus(node, bus);
+> =A0 =A0 =A0 =A0}
+>
+> - =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL)
+> + =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, 255);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hose->last_busno =3D bus->subordinate =3D =
+pci_scan_child_bus(bus);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, bus->subor=
+dinate);
+> + =A0 =A0 =A0 }
+>
+> =A0 =A0 =A0 =A0/* Platform gets a chance to do some global fixups before
+> =A0 =A0 =A0 =A0 * we proceed to resource allocation
+> --
+> 1.7.7
+>
