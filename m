@@ -1,26 +1,23 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E6FD31007D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 02:44:28 +1100 (EST)
-Received: by wibhj6 with SMTP id hj6so3614610wib.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2012 07:44:24 -0800 (PST)
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CC4951007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 04:06:50 +1100 (EST)
 MIME-Version: 1.0
-In-Reply-To: <1327718971-9598-7-git-send-email-yinghai@kernel.org>
-References: <1327718971-9598-1-git-send-email-yinghai@kernel.org>
- <1327718971-9598-7-git-send-email-yinghai@kernel.org>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 30 Jan 2012 07:44:04 -0800
-Message-ID: <CAErSpo44qjFk5SQ+VWD=Y+Fg_xyykmh-ZOdFsfN-nELE29YP-A@mail.gmail.com>
-Subject: Re: [PATCH 06/13] PCI, powerpc: Register busn_res for root buses
-To: Yinghai Lu <yinghai@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jesse Barnes <jbarnes@virtuousgeek.org>, Paul Mackerras <paulus@samba.org>,
- linux-pci@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="utf-8"
+Subject: RE: [RFC] dmaengine/dma_slave: add context parameter to prep_slave_sg
+ callback
+Date: Mon, 30 Jan 2012 08:55:48 -0800
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E5520281DD5B@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1327915849.1527.17.camel@vkoul-udesk3>
+References: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
+ <1327915849.1527.17.camel@vkoul-udesk3>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Vinod Koul <vinod.koul@intel.com>
+Cc: linux-kernel@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ dan.j.williams@intel.com, Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 27, 2012 at 6:49 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
-> =A0arch/powerpc/kernel/pci-common.c | =A0 =A07 ++++++-
-> =A01 files changed, 6 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-c=
-ommon.c
-> index cce98d7..501f29b 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1732,6 +1732,8 @@ void __devinit pcibios_scan_phb(struct pci_controll=
-er *hose)
-> =A0 =A0 =A0 =A0bus->secondary =3D hose->first_busno;
-> =A0 =A0 =A0 =A0hose->bus =3D bus;
->
-> + =A0 =A0 =A0 pci_bus_insert_busn_res(bus, hose->first_busno, hose->last_=
-busno);
-
-The pci_create_root_bus() call is a few lines above this.  So this is
-a case of "create the root bus" followed by "fix something that's
-wrong with the bus we just created."  I'm trying to get rid of that
-pattern because it's just an opportunity for bugs.  I'd rather create
-the root bus with all the information it needs up front.
-
-And pci_bus_insert_busn_res() is not really architecture-specific, so
-I'd like this better if that call were done in the PCI core somewhere.
-
-> =A0 =A0 =A0 =A0/* Get probe mode and perform scan */
-> =A0 =A0 =A0 =A0mode =3D PCI_PROBE_NORMAL;
-> =A0 =A0 =A0 =A0if (node && ppc_md.pci_probe_mode)
-> @@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_control=
-ler *hose)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_scan_bus(node, bus);
-> =A0 =A0 =A0 =A0}
->
-> - =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL)
-> + =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, 255);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hose->last_busno =3D bus->subordinate =3D =
-pci_scan_child_bus(bus);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, bus->subor=
-dinate);
-> + =A0 =A0 =A0 }
->
-> =A0 =A0 =A0 =A0/* Platform gets a chance to do some global fixups before
-> =A0 =A0 =A0 =A0 * we proceed to resource allocation
-> --
-> 1.7.7
->
+T24gTW9uZGF5LCBKYW51YXJ5IDMwLCAyMDEyIGF0IDQ6MzEgQU0sIFZpbm9kIEtvdWwgd3JvdGU6
+DQo+IA0KPiBPbiBUaHUsIDIwMTItMDEtMjYgYXQgMTY6MjIgLTA1MDAsIEFsZXhhbmRyZSBCb3Vu
+aW5lIHdyb3RlOg0KPiA+IEFzIHdlIGFncmVlZCBkdXJpbmcgb3VyIGRpc2N1c3Npb24gYWJvdXQg
+YWRkaW5nIERNQSBFbmdpbmUgc3VwcG9ydCBmb3IgUmFwaWRJTw0KPiA+IHN1YnN5c3RlbSwgUmFw
+aWRJTyBhbmQgc2ltaWxhciBjbGllbnRzIG1heSBiZW5lZml0IGZyb20gYWRkaW5nIGFuIGV4dHJh
+IGNvbnRleHQNCj4gPiBwYXJhbWV0ZXIgdG8gZGV2aWNlX3ByZXBfc2xhdmVfc2coKSBjYWxsYmFj
+ay4NCj4gPiBTZWUgaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTEvMTAvMjQvMjc1IGZvciBtb3Jl
+IGRldGFpbHMuDQo+ID4NCj4gPiBBZGRpbmcgdGhlIGNvbnRleHQgcGFyYW1ldGVyIHdpbGwgYWxs
+b3cgdG8gcGFzcyBjbGllbnQvdGFyZ2V0IHNwZWNpZmljDQo+ID4gaW5mb3JtYXRpb24gYXNzb2Np
+YXRlZCB3aXRoIGFuIGluZGl2aWR1YWwgZGF0YSB0cmFuc2ZlciByZXF1ZXN0Lg0KPiA+DQo+ID4g
+SW4gdGhlIGNhc2Ugb2YgUmFwaWRJTyBzdXBwb3J0IHRoaXMgYWRkaXRpb25hbCBpbmZvcm1hdGlv
+biBjb25zaXN0cyBvZiB0YXJnZXQNCj4gPiBkZXN0aW5hdGlvbiBJRCBhbmQgaXRzIGJ1ZmZlciBh
+ZGRyZXNzICh3aGljaCBpcyBub3QgbWFwcGVkIGludG8gdGhlIGxvY2FsIENQVQ0KPiA+IG1lbW9y
+eSBzcGFjZSkuIEJlY2F1c2UgYSBzaW5nbGUgUmFwaWRJTy1jYXBhYmxlIERNQSBjaGFubmVsIG1h
+eSBxdWV1ZSBkYXRhDQo+ID4gdHJhbnNmZXIgcmVxdWVzdHMgdG8gZGlmZmVyZW50IHRhcmdldCBk
+ZXZpY2VzLCB0aGUgcGVyLXJlcXVlc3QgY29uZmlndXJhdGlvbg0KPiA+IGlzIHJlcXVpcmVkLg0K
+PiA+DQo+ID4gVGhlIHByb3Bvc2VkIGNoYW5nZSBlbGltaW5hdGVzIG5lZWQgZm9yIG5ldyBzdWJz
+eXN0ZW0tc3BlY2lmaWMgQVBJLg0KPiA+IEV4aXN0aW5nIERNQV9TTEFWRSBjbGllbnRzIHdpbGwg
+aWdub3JlIHRoZSBuZXcgcGFyYW1ldGVyLg0KPiA+DQo+ID4gVGhpcyBSRkMgb25seSBkZW1vbnN0
+cmF0ZXMgdGhlIEFQSSBjaGFuZ2UgYW5kIGRvZXMgbm90IGluY2x1ZGUgY29ycmVzcG9uZGluZw0K
+PiA+IGNoYW5nZXMgdG8gZXhpc3RpbmcgRE1BX1NMQVZFIGNsaWVudHMuIENvbXBsZXRlIHNldCBv
+ZiBwYXRjaGVzIHdpbGwgYmUgcHJvdmlkZWQNCj4gPiBhZnRlciAoaWYpIHRoaXMgQVBJIGNoYW5n
+ZSBpcyBhY2NlcHRlZC4NCj4NCj4gVGhpcyBsb29rcyBnb29kIHRvIG1lLiBCdXQgd2FzIHRoaW5r
+aW5nIGlmIHdlIG5lZWQgdG8gYWRkIHRoaXMgbmV3DQo+IHBhcmFtZXRlciBmb3Igb3RoZXIgc2xh
+dmUgY2FsbHMgKGNpcmN1bGFyLCBpbnRlcmxlYXZlZCwgbWVtY3B5Li4uKQ0KPiANCg0KSSBhZ3Jl
+ZSB0aGF0IGN5Y2xpYyBhbmQgaW50ZXJsZWF2ZWQgY2FsbHMgbWF5IGJlbmVmaXQgZnJvbSBhZGRp
+bmcgdGhhdCBwYXJhbWV0ZXIgYXMgd2VsbC4NCkJlbmVmaXRzIHRvIHRoZSBjeWNsaWMgY2FsbCBh
+cmUgc3RyYWlnaHRmb3J3YXJkIC0gc2FtZSBhcyBkbWFfc2xhdmUuDQpBZGRpbmcgYSBjb250ZXh0
+IHBhcmFtZXRlciB0byB0aGUgaW50ZXJsZWF2ZWQgdHJhbnNmZXJzIG1heSBiZSBtb3JlIGZ1dHVy
+ZSBwcm9vZmluZyBvcHRpb24NCnRoYW4gYW4gaW1tZWRpYXRlIG5lZWQuIE1lbWNvcHkgYW5kIG90
+aGVyIGNhbGxzIHRoYXQgZGVhbCB3aXRoIGxvY2FsIG1lbW9yeSB0cmFuc2ZlcnMNCnByb2JhYmx5
+IHNob3VsZCBiZSBsZWZ0IHVudG91Y2hlZC4NCg0KV2hhdCBpZiB3ZSBsaW1pdCBtb2RpZmljYXRp
+b25zIHRvOg0KMSkgdGhyZWUgY2FsbHMgKHNsYXZlLCBjeWNsaWMgYW5kIGludGVybGVhdmVkKSBP
+Ug0KMikgdHdvIChzbGF2ZSBhbmQgY3ljbGljKSBhdCB0aGlzIG1vbWVudD8NCg0KSSBhbSBqdXN0
+IG1vcmUgZm9jdXNlZCBvbiBkbWFfc2xhdmUganVzdCBiZWNhdXNlIGl0IGZpdHMgd2VsbCB0byBw
+cm92aWRlIFJETUENCm92ZXIgUmFwaWRJTyBmYWJyaWMuDQoNCklmIGV2ZXJ5Ym9keSBhZ3JlZXMs
+IEkgY2FuIGdvIGFoZWFkIGFuZCBtYWtlIGNoYW5nZXMgdG8gYWxsIHRocmVlIGF0IG9uY2UuDQoN
+CkFsZXguDQoNCg0K
