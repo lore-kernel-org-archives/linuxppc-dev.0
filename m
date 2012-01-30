@@ -1,22 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A25F1B6FB6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 08:28:48 +1100 (EST)
+Received: by mail-yw0-f51.google.com with SMTP id o47so2113115yho.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2012 13:28:48 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Mon, 30 Jan 2012 12:58:42 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH v3 22/25] irq_domain/x86: Convert x86 (embedded) to use
- common irq_domain
-Message-ID: <20120130195842.GT28397@ponder.secretlab.ca>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <1327700179-17454-23-git-send-email-grant.likely@secretlab.ca>
- <20120128164405.GA20763@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120128164405.GA20763@linutronix.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [RFC] powerpc: Make SPARSE_IRQ required
+Date: Mon, 30 Jan 2012 11:02:19 -0700
+Message-Id: <1327946539-17614-1-git-send-email-grant.likely@secretlab.ca>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,80 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jan 28, 2012 at 05:44:05PM +0100, Sebastian Andrzej Siewior wrote:
-> * Grant Likely | 2012-01-27 14:36:16 [-0700]:
-> 
-> >This patch removes the x86-specific definition of irq_domain and replaces
-> >it with the common implementation.
-> 
-> I pulled your devicetree/next tree. After this patch I get:
-> 
-> |Hierarchical RCU implementation.
-> |NR_IRQS:2304 nr_irqs:256 16
-> |------------[ cut here ]------------
-> |WARNING: at /home/bigeasy/work/shiva/git/linux-2.6-tip/kernel/irq/irqdomain.c:114 irq_domain_add_legacy+0x75/0x150()
-> |Modules linked in:
-> |Pid: 0, comm: swapper/0 Not tainted 3.3.0-rc1+ #65
-> |Call Trace:
-> | [<c15044e0>] ? printk+0x18/0x1a
-> | [<c102cdbd>] warn_slowpath_common+0x6d/0xa0
-> | [<c1095575>] ? irq_domain_add_legacy+0x75/0x150
-> | [<c1095575>] ? irq_domain_add_legacy+0x75/0x150
-> | [<c102ce0d>] warn_slowpath_null+0x1d/0x20
-> | [<c1095575>] irq_domain_add_legacy+0x75/0x150
-> | [<c1714824>] x86_add_irq_domains+0x96/0xd6
-> | [<c1708df2>] init_IRQ+0x8/0x33
-> | [<c170557f>] start_kernel+0x191/0x2e1
-> | [<c170517f>] ? loglevel+0x2b/0x2b
-> | [<c1705081>] i386_start_kernel+0x81/0x86
-> |---[ end trace 4eaa2a86a8e2da22 ]---
-> |------------[ cut here ]------------
-> |kernel BUG at /home/bigeasy/work/shiva/git/linux-2.6-tip/arch/x86/kernel/devicetree.c:367!
-> 
-> The warning is comming from this piece in irq_domain_add_legacy()
-> |for (i = 0; i < size; i++) {
-> |                 int irq = first_irq + i;
-> |                 struct irq_data *irq_data = irq_get_irq_data(irq);
-> | 
-> |                 if (WARN_ON(!irq_data || irq_data->domain)) {
-> 
-> irq_data is NULL here.
-> 
-> |                         mutex_unlock(&irq_domain_mutex);
-> |                         of_node_put(domain->of_node);
-> |                         kfree(domain);
-> |                         return NULL;
-> |                 }
-> |         }
-> | 
-> 
-> This is not always the case. arch_early_irq_init() in [0] sets up the
-> first 16 entries. The reminaing few (there is a toal of 24 irqs for
-> first ioapic and a second ioapic) are not initialized. This happens
-> later via ->xlate, ioapic_xlate() => io_apic_setup_irq_pin() =>
-> alloc_irq_and_cfg_at() calls irq_set_chip_data() on demand.
-> 
-> [0] arch/x86/kernel/apic/io_apic.c
+All IRQs on powerpc are managed via irq_domain anyway, there isn't really
+any advantage to turning SPARSE_IRQ off, and it's the direction we want
+to take the kernel design anyway.  This patch makes powerpc always use
+SPARSE_IRQ.
 
-Ugh.  This isn't easy.  The legacy mapping really needs all the
-irq_desc structures to be allocated.  You could call irq_alloc_descs()
-before calling irq_domain_add_legacy(), but that causes all the
-irq_descs to be allocated (regardless of whether they are used), and
-it will break io_apic_setup_irq_pin() which also wants to call
-irq_alloc_desc().
+On pseries_defconfig, SPARSE_IRQ adds only about 0x300 bytes to the
+.text sections, and removes about 0x20000 from the data section for the
+static irq_desc table.
 
-Ideally irq_domain support would be rolled directly into ioapic.
-That's more work though, and a greater change of breaking x86 on
-non-embedded.  Looking at the ioapic code, it seems to me that it
-could be simplified quite a bit by switching to irq_domain instead of
-using the custom irq_cfg linked list.  Faster too since it could use
-the irq_data->hwirq to go from linux irq to the hw irq number.  It
-doesn't look like it would be even that hard, but of course the devil
-is in the details and I don't have sufficient time right now to dig
-into the guts of the ioapic.  Maybe after connect, but it would help
-if you can find time to look at it.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/powerpc/Kconfig      |    2 +-
+ arch/powerpc/kernel/irq.c |    4 ----
+ 2 files changed, 1 insertions(+), 5 deletions(-)
 
-If integrated into the ioapic code, then the irq_domain linear map is
-probably the type of irq_domain to use.
-
-g.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 303703d..1aa840d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -133,7 +133,7 @@ config PPC
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
+ 	select HAVE_GENERIC_HARDIRQS
+-	select HAVE_SPARSE_IRQ
++	select SPARSE_IRQ
+ 	select IRQ_PER_CPU
+ 	select IRQ_DOMAIN
+ 	select GENERIC_IRQ_SHOW
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index e3673ff..282fb39 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -93,10 +93,6 @@ extern int tau_interrupts(int);
+ 
+ #ifdef CONFIG_PPC64
+ 
+-#ifndef CONFIG_SPARSE_IRQ
+-EXPORT_SYMBOL(irq_desc);
+-#endif
+-
+ int distribute_irqs = 1;
+ 
+ static inline notrace unsigned long get_hard_enabled(void)
+-- 
+1.7.5.4
