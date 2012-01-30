@@ -1,21 +1,20 @@
-Return-Path: <FlorianSchandinat@gmx.de>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
- by ozlabs.org (Postfix) with SMTP id 47172B6EFF
- for <linuxppc-dev@ozlabs.org>; Mon, 30 Jan 2012 16:21:42 +1100 (EST)
-Message-ID: <4F26274B.2040401@gmx.de>
-Date: Mon, 30 Jan 2012 05:14:51 +0000
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
-References: <19504.1326673788@neuling.org> <4F1370C9.9010400@freescale.com>
- <21913.1326675139@neuling.org> <4F138CBB.1080901@freescale.com>
- <21370.1326683320@neuling.org>
-In-Reply-To: <21370.1326683320@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- Tabi Timur-B04825 <B04825@freescale.com>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id 33EFD1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2012 20:39:50 +1100 (EST)
+Subject: Re: [RFC] dmaengine/dma_slave: add context parameter to
+ prep_slave_sg callback
+From: Vinod Koul <vinod.koul@intel.com>
+To: Alexandre Bounine <alexandre.bounine@idt.com>
+In-Reply-To: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
+References: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Jan 2012 15:00:49 +0530
+Message-ID: <1327915849.1527.17.camel@vkoul-udesk3>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ dan.j.williams@intel.com, Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +24,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/16/2012 03:08 AM, Michael Neuling wrote:
-[...]
-> From: Michael Neuling <mikey@neuling.org>
+On Thu, 2012-01-26 at 16:22 -0500, Alexandre Bounine wrote:
+> As we agreed during our discussion about adding DMA Engine support for RapidIO
+> subsystem, RapidIO and similar clients may benefit from adding an extra context
+> parameter to device_prep_slave_sg() callback.
+> See https://lkml.org/lkml/2011/10/24/275 for more details.
 > 
-> [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
+> Adding the context parameter will allow to pass client/target specific
+> information associated with an individual data transfer request.
 > 
-> Fix a compiler errors introduced in:
->   commit ddd3d905436b572ebadc09dcf2d12ca5b37020a0
->   Author: Timur Tabi <timur@freescale.com>
->   drivers/video: fsl-diu-fb: merge all allocated data into one block
+> In the case of RapidIO support this additional information consists of target
+> destination ID and its buffer address (which is not mapped into the local CPU
+> memory space). Because a single RapidIO-capable DMA channel may queue data
+> transfer requests to different target devices, the per-request configuration
+> is required.
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-
-Applied.
-
-
-Thanks,
-
-Florian Tobias Schandinat
+> The proposed change eliminates need for new subsystem-specific API.
+> Existing DMA_SLAVE clients will ignore the new parameter.
+> 
+> This RFC only demonstrates the API change and does not include corresponding
+> changes to existing DMA_SLAVE clients. Complete set of patches will be provided
+> after (if) this API change is accepted.
+This looks good to me. But was thinking if we need to add this new
+parameter for other slave calls (circular, interleaved, memcpy...)
 
 > 
-> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-> index acf292b..6af3f16 100644
-> --- a/drivers/video/fsl-diu-fb.c
-> +++ b/drivers/video/fsl-diu-fb.c
-> @@ -1432,7 +1432,7 @@ static int fsl_diu_suspend(struct platform_device *ofdev, pm_message_t state)
->  	struct fsl_diu_data *data;
+> Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+> Cc: Jassi Brar <jaswinder.singh@linaro.org>
+> Cc: Russell King <rmk@arm.linux.org.uk> 
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Matt Porter <mporter@kernel.crashing.org>
+> Cc: Li Yang <leoli@freescale.com>
+> ---
+>  include/linux/dmaengine.h |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+> index 679b349..79d71bb 100644
+> --- a/include/linux/dmaengine.h
+> +++ b/include/linux/dmaengine.h
+> @@ -575,7 +575,7 @@ struct dma_device {
+>  	struct dma_async_tx_descriptor *(*device_prep_slave_sg)(
+>  		struct dma_chan *chan, struct scatterlist *sgl,
+>  		unsigned int sg_len, enum dma_transfer_direction direction,
+> -		unsigned long flags);
+> +		unsigned long flags, void *context);
+>  	struct dma_async_tx_descriptor *(*device_prep_dma_cyclic)(
+>  		struct dma_chan *chan, dma_addr_t buf_addr, size_t buf_len,
+>  		size_t period_len, enum dma_transfer_direction direction);
+> @@ -607,12 +607,13 @@ static inline int dmaengine_slave_config(struct dma_chan *chan,
 >  
->  	data = dev_get_drvdata(&ofdev->dev);
-> -	disable_lcdc(data->fsl_diu_info[0]);
-> +	disable_lcdc(data->fsl_diu_info);
+>  static inline struct dma_async_tx_descriptor *dmaengine_prep_slave_single(
+>  	struct dma_chan *chan, void *buf, size_t len,
+> -	enum dma_transfer_direction dir, unsigned long flags)
+> +	enum dma_transfer_direction dir, unsigned long flags, void *context)
+>  {
+>  	struct scatterlist sg;
+>  	sg_init_one(&sg, buf, len);
 >  
->  	return 0;
+> -	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags);
+> +	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags,
+> +						  context);
 >  }
-> @@ -1442,7 +1442,7 @@ static int fsl_diu_resume(struct platform_device *ofdev)
->  	struct fsl_diu_data *data;
 >  
->  	data = dev_get_drvdata(&ofdev->dev);
-> -	enable_lcdc(data->fsl_diu_info[0]);
-> +	enable_lcdc(data->fsl_diu_info);
->  
->  	return 0;
->  }
-> 
+>  static inline int dmaengine_terminate_all(struct dma_chan *chan)
+
+
+-- 
+~Vinod
