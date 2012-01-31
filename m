@@ -1,21 +1,19 @@
-Return-Path: <r65073@freescale.com>
-Date: Tue, 31 Jan 2012 21:58:22 +0800
-From: Shawn Guo <shawn.guo@freescale.com>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v3 14/25] irq_domain: Remove irq_domain_add_simple()
-Message-ID: <20120131135821.GA24804@S2100-06.ap.freescale.net>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <1327700179-17454-15-git-send-email-grant.likely@secretlab.ca>
- <20120131124500.GA28571@S2101-09.ap.freescale.net>
- <4F27E96E.9010204@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4F27E96E.9010204@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Thomas Gleixner <tglx@linutronix.de>,
- Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4CF6BB6EF7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 02:55:50 +1100 (EST)
+Subject: Re: [PATCH 1/2 v2] powerpc/dts: Add dts for p1025rdb board
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1328003481-31821-1-git-send-email-B32736@freescale.com>
+Date: Tue, 31 Jan 2012 09:55:54 -0600
+Message-Id: <DDC3CACD-1B1C-4826-A839-65D42395ACEA@kernel.crashing.org>
+References: <1328003481-31821-1-git-send-email-B32736@freescale.com>
+To: Zhicheng Fan <B32736@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Zhicheng Fan <b32736@freeescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 31, 2012 at 07:15:26AM -0600, Rob Herring wrote:
-...
-> >> --- a/arch/arm/mach-mx5/imx51-dt.c
-> >> +++ b/arch/arm/mach-mx5/imx51-dt.c
-> >> @@ -47,7 +47,7 @@ static const struct of_dev_auxdata imx51_auxdata_lookup[] __initconst = {
-> >>  static int __init imx51_tzic_add_irq_domain(struct device_node *np,
-> >>  				struct device_node *interrupt_parent)
-> >>  {
-> >> -	irq_domain_add_simple(np, 0);
-> >> +	irq_domain_add_legacy(np, 32, 0, 0, &irq_domain_simple_ops, NULL);
-> >>  	return 0;
-> >>  }
-> >>  
-> >> @@ -57,7 +57,7 @@ static int __init imx51_gpio_add_irq_domain(struct device_node *np,
-> >>  	static int gpio_irq_base = MXC_GPIO_IRQ_START + ARCH_NR_GPIOS;
-> >>  
-> >>  	gpio_irq_base -= 32;
-> >> -	irq_domain_add_simple(np, gpio_irq_base);
-> >> +	irq_domain_add_legacy(np, 32, gpio_irq_base, 0, &irq_domain_simple_ops, NULL);
-> > 
-> > The tzic on imx5 gets 128 irq lines rather than 32 here.  The current
-> > code will make any hwirq that is > 32 hit the WARN_ON below in
-> > irq_domain_legacy_revmap().
-> 
-> But this is the gpio controller code? Really this should be 4 domains,
-> but this temp fix is probably fine until you use my generic irq chip
-> support.
-> 
-Sorry.  The comment was put at the wrong place.  It should be against
-imx51_tzic_add_irq_domain() just above.
 
--- 
-Regards,
-Shawn
+On Jan 31, 2012, at 3:51 AM, Zhicheng Fan wrote:
+
+> From: Zhicheng Fan <b32736@freeescale.com>
+>=20
+> P1025RDB Overview
+> ------------------
+> 1Gbyte DDR3 SDRAM
+> 32 Mbyte NAND flash
+> 16Mbyte NOR flash
+> 16 Mbyte SPI flash
+> SD connector to interface with the SD memory card
+> Real-time clock on I2C bus
+>=20
+> PCIe:
+> - x1 PCIe slot
+> - x1 mini-PCIe slot
+>=20
+> 10/100/1000 BaseT Ethernet ports:
+> - eTSEC1, RGMII: one 10/100/1000 port using AtherosTM AR8021
+> - eTSEC2, SGMII: one 10/100/1000 port using VitesseTM VSC8221
+> - eTSEC3, RGMII: one 10/100/1000 port using AtherosTM AR8021
+>=20
+> USB 2.0 port:
+> - Two USB2.0 Type A receptacles
+> - One USB2.0 signal to Mini PCIe slot
+>=20
+> Dual RJ45 UART ports:
+> - DUART interface: supports two UARTs up to 115200 bps for console =
+display
+>=20
+> Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
+> ---
+> arch/powerpc/boot/dts/fsl/p1025si-post.dtsi |  228 =
++++++++++++++++++++++
+> arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi  |   70 +++++++
+> arch/powerpc/boot/dts/p1025rdb.dts          |  137 +++++++++++++
+> arch/powerpc/boot/dts/p1025rdb.dtsi         |  286 =
++++++++++++++++++++++++++++
+> arch/powerpc/boot/dts/p1025rdb_36b.dts      |   88 ++++++++
+> 5 files changed, 809 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-post.dtsi
+> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi
+> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dts
+> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dtsi
+> create mode 100644 arch/powerpc/boot/dts/p1025rdb_36b.dts
+
+For the p1024 & p1025 I do NOT want to add new dts/fsl/p1025si*.dtsi =
+files.  We should use the p1020 and p1021 as they are identical.
+
+- k=
