@@ -1,22 +1,18 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id 2ADC6B6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 14:12:58 +1100 (EST)
-Subject: RE: [RFC] dmaengine/dma_slave: add context parameter to
- prep_slave_sg callback
-From: Vinod Koul <vinod.koul@intel.com>
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E5520281DD5B@CORPEXCH1.na.ads.idt.com>
-References: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
- <1327915849.1527.17.camel@vkoul-udesk3>
- <0CE8B6BE3C4AD74AB97D9D29BD24E5520281DD5B@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 31 Jan 2012 08:44:00 +0530
-Message-ID: <1327979640.1527.51.camel@vkoul-udesk3>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- dan.j.williams@intel.com, Russell King <rmk@arm.linux.org.uk>
+Return-Path: <olof@lixom.net>
+Date: Mon, 30 Jan 2012 20:53:44 -0800
+From: Olof Johansson <olof@lixom.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 00/25] irq_domain generalization and refinement
+Message-ID: <20120131045344.GA27609@quad.lixom.net>
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-01-30 at 08:55 -0800, Bounine, Alexandre wrote:
-> On Monday, January 30, 2012 at 4:31 AM, Vinod Koul wrote:
-> > 
-> > On Thu, 2012-01-26 at 16:22 -0500, Alexandre Bounine wrote:
-> > > As we agreed during our discussion about adding DMA Engine support for RapidIO
-> > > subsystem, RapidIO and similar clients may benefit from adding an extra context
-> > > parameter to device_prep_slave_sg() callback.
-> > > See https://lkml.org/lkml/2011/10/24/275 for more details.
-> > >
-> > > Adding the context parameter will allow to pass client/target specific
-> > > information associated with an individual data transfer request.
-> > >
-> > > In the case of RapidIO support this additional information consists of target
-> > > destination ID and its buffer address (which is not mapped into the local CPU
-> > > memory space). Because a single RapidIO-capable DMA channel may queue data
-> > > transfer requests to different target devices, the per-request configuration
-> > > is required.
-> > >
-> > > The proposed change eliminates need for new subsystem-specific API.
-> > > Existing DMA_SLAVE clients will ignore the new parameter.
-> > >
-> > > This RFC only demonstrates the API change and does not include corresponding
-> > > changes to existing DMA_SLAVE clients. Complete set of patches will be provided
-> > > after (if) this API change is accepted.
-> >
-> > This looks good to me. But was thinking if we need to add this new
-> > parameter for other slave calls (circular, interleaved, memcpy...)
-> > 
+On Fri, Jan 27, 2012 at 02:35:54PM -0700, Grant Likely wrote:
+> Hey everyone,
 > 
-> I agree that cyclic and interleaved calls may benefit from adding that parameter as well.
-> Benefits to the cyclic call are straightforward - same as dma_slave.
-> Adding a context parameter to the interleaved transfers may be more future proofing option
-> than an immediate need. Memcopy and other calls that deal with local memory transfers
-> probably should be left untouched.
+> This patch series is ready for much wider consumption now.  I'd like
+> to get it into linux-next ASAP because there will be ARM board support
+> depending on it.  I'll wait a few days before I ask Stephen to pull
+> this in.
 > 
-> What if we limit modifications to:
-> 1) three calls (slave, cyclic and interleaved) OR
-> 2) two (slave and cyclic) at this moment?
-> 
-> I am just more focused on dma_slave just because it fits well to provide RDMA
-> over RapidIO fabric.
-> 
-> If everybody agrees, I can go ahead and make changes to all three at once.
-For now we need at least slave and cyclic, so pls go ahead and make these changes.
-For interleaved, we might need it sooner [1], but I would think it would
-need few more changes to the API, so it can be rolled as part of those
-changes.
+> Stephen/Milton/Ben, any testing you can help with here would be
+> appreciated since you've got access to a wider variety of Power
+> machines than I do.
 
--- 
-~Vinod
+This series has been:
 
-[1]: https://lkml.org/lkml/2012/1/30/48
+Tested-by: Olof Johansson <olof@lixom.net>
+
+On powerpc/pasemi (it's the only one I still have easy access to).
+
+
+-Olof
