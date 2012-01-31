@@ -1,27 +1,19 @@
-Return-Path: <b08782@zro04cle141.ea.freescale.net>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33801100886
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 21:15:52 +1100 (EST)
-Received: from mail104-tx2 (localhost [127.0.0.1])	by
- mail104-tx2-R.bigfish.com (Postfix) with ESMTP id 0FF343005D6	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 10:15:45 +0000 (UTC)
-Received: from TX2EHSMHS025.bigfish.com (unknown [10.9.14.246])	by
- mail104-tx2.bigfish.com (Postfix) with ESMTP id 20CBA18004A	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 10:15:43 +0000 (UTC)
-Received: from zro04cle141.ea.freescale.net (udp157456uds.ea.freescale.net
- [140.101.223.141])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
- q0VAFe8Q011302	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 04:15:40
- -0600 (CST)
-From: Claudiu Manoil <claudiu.manoil@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx: Fix compiler error with THIS_MODULE and related
-Date: Tue, 31 Jan 2012 12:15:39 +0200
-Message-ID: <1328004939-29766-1-git-send-email-claudiu.manoil@freescale.com>
+Return-Path: <shawn.guo@linaro.org>
+Date: Tue, 31 Jan 2012 20:45:03 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 14/25] irq_domain: Remove irq_domain_add_simple()
+Message-ID: <20120131124500.GA28571@S2101-09.ap.freescale.net>
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+ <1327700179-17454-15-git-send-email-grant.likely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1327700179-17454-15-git-send-email-grant.likely@secretlab.ca>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,60 +23,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-   CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:209:13: error: 'THIS_MODULE' undeclared here (not in a function)
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:20: error: expected declaration specifiers or '...' before string constant
-cc1: warnings being treated as errors
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:1: error: data definition has no type or storage class
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:1: error: type defaults to 'int' in declaration of 'MODULE_DESCRIPTION'
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:20: error: function declaration isn't a prototype
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:16: error: expected declaration specifiers or '...' before string constant
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:1: error: data definition has no type or storage class
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:1: error: type defaults to 'int' in declaration of 'MODULE_LICENSE'
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:16: error: function declaration isn't a prototype
-make[1]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
-
+On Fri, Jan 27, 2012 at 02:36:08PM -0700, Grant Likely wrote:
+> irq_domain_add_simple() was a stop-gap measure until complete irq_domain
+> support was complete.  This patch removes the irq_domain_add_simple()
+> interface.
+> 
+> v2: Updated to pass in host_data pointer on irq_domain allocation.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Milton Miller <miltonm@bga.com>
+> ---
+>  arch/arm/mach-imx/mach-imx6q.c      |    3 ++-
+>  arch/arm/mach-msm/board-msm8x60.c   |    8 ++------
+>  arch/arm/mach-mx5/imx51-dt.c        |    4 ++--
+>  arch/arm/mach-mx5/imx53-dt.c        |    4 ++--
+>  arch/arm/mach-omap2/board-generic.c |    2 +-
+>  arch/arm/mach-prima2/irq.c          |    2 +-
+>  drivers/mfd/twl-core.c              |    2 +-
+>  include/linux/irqdomain.h           |    1 -
+>  kernel/irq/irqdomain.c              |   10 ++--------
+>  9 files changed, 13 insertions(+), 23 deletions(-)
+> 
 ...
+> --- a/arch/arm/mach-mx5/imx51-dt.c
+> +++ b/arch/arm/mach-mx5/imx51-dt.c
+> @@ -47,7 +47,7 @@ static const struct of_dev_auxdata imx51_auxdata_lookup[] __initconst = {
+>  static int __init imx51_tzic_add_irq_domain(struct device_node *np,
+>  				struct device_node *interrupt_parent)
+>  {
+> -	irq_domain_add_simple(np, 0);
+> +	irq_domain_add_legacy(np, 32, 0, 0, &irq_domain_simple_ops, NULL);
+>  	return 0;
+>  }
+>  
+> @@ -57,7 +57,7 @@ static int __init imx51_gpio_add_irq_domain(struct device_node *np,
+>  	static int gpio_irq_base = MXC_GPIO_IRQ_START + ARCH_NR_GPIOS;
+>  
+>  	gpio_irq_base -= 32;
+> -	irq_domain_add_simple(np, gpio_irq_base);
+> +	irq_domain_add_legacy(np, 32, gpio_irq_base, 0, &irq_domain_simple_ops, NULL);
 
-  CC      arch/powerpc/sysdev/fsl_85xx_cache_sram.o
-cc1: warnings being treated as errors
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: data definition has no type or storage class
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: type defaults to 'int' in declaration of 'EXPORT_SYMBOL'
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: parameter names (without types) in function declaration
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: data definition has no type or storage class
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: type defaults to 'int' in declaration of 'EXPORT_SYMBOL'
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: parameter names (without types) in function declaration
-make[1]: *** [arch/powerpc/sysdev/fsl_85xx_cache_sram.o] Error 1
+The tzic on imx5 gets 128 irq lines rather than 32 here.  The current
+code will make any hwirq that is > 32 hit the WARN_ON below in
+irq_domain_legacy_revmap().
 
-Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
----
- arch/powerpc/sysdev/fsl_85xx_cache_sram.c |    1 +
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+	WARN_ON(hwirq < first_hwirq || hwirq >= first_hwirq + size)
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-index 1164158..92cce8d 100644
---- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-@@ -24,6 +24,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/err.h>
- #include <linux/of_platform.h>
-diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-index 5f88797..1957e53 100644
---- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-@@ -21,6 +21,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/of_platform.h>
- #include <asm/io.h>
- 
--- 
-1.6.6
+The first_hwirq is 0 and size is 32 in this case.
+
+Changing 32 to 128 seems fixing the problem.
+
+>  
+>  	return 0;
+>  }
+> diff --git a/arch/arm/mach-mx5/imx53-dt.c b/arch/arm/mach-mx5/imx53-dt.c
+> index 05ebb3e..89de5d4 100644
+> --- a/arch/arm/mach-mx5/imx53-dt.c
+> +++ b/arch/arm/mach-mx5/imx53-dt.c
+> @@ -51,7 +51,7 @@ static const struct of_dev_auxdata imx53_auxdata_lookup[] __initconst = {
+>  static int __init imx53_tzic_add_irq_domain(struct device_node *np,
+>  				struct device_node *interrupt_parent)
+>  {
+> -	irq_domain_add_simple(np, 0);
+> +	irq_domain_add_legacy(np, 32, 0, 0, &irq_domain_simple_ops, NULL);
+
+Ditto
+
+Regards,
+Shawn
+
+>  	return 0;
+>  }
+>  
+> @@ -61,7 +61,7 @@ static int __init imx53_gpio_add_irq_domain(struct device_node *np,
+>  	static int gpio_irq_base = MXC_GPIO_IRQ_START + ARCH_NR_GPIOS;
+>  
+>  	gpio_irq_base -= 32;
+> -	irq_domain_add_simple(np, gpio_irq_base);
+> +	irq_domain_add_legacy(np, 32, gpio_irq_base, 0, &irq_domain_simple_ops, NULL);
+>  
+>  	return 0;
+>  }
