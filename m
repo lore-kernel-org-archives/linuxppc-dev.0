@@ -1,15 +1,22 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 6104BB6FA1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 08:30:42 +1100 (EST)
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] fsldma: ignore end of segments interrupt
-Date: Tue, 31 Jan 2012 13:30:39 -0800
-Message-Id: <1328045439-7668-1-git-send-email-iws@ovro.caltech.edu>
-In-Reply-To: <1327611520-18256-1-git-send-email-iws@ovro.caltech.edu>
-References: <1327611520-18256-1-git-send-email-iws@ovro.caltech.edu>
-Cc: Dan Williams <dan.j.williams@intel.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3DC3EB6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 10:44:07 +1100 (EST)
+Subject: Re: [PATCH 1/2 v2] powerpc/dts: Add dts for p1025rdb board
+Mime-Version: 1.0 (Apple Message framework v1251.1)
+Content-Type: text/plain; charset=iso-8859-1
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4F283CB7.4050908@freescale.com>
+Date: Tue, 31 Jan 2012 17:44:11 -0600
+Message-Id: <7D155016-AC91-440A-A88F-FEEF85C13184@kernel.crashing.org>
+References: <1328003481-31821-1-git-send-email-B32736@freescale.com>
+ <DDC3CACD-1B1C-4826-A839-65D42395ACEA@kernel.crashing.org>
+ <4F283CB7.4050908@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Zhicheng Fan <b32736@freeescale.com>,
+ Zhicheng Fan <B32736@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,68 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mpc8349ea has been observed to generate spurious end of segments
-interrupts despite the fact that they are not enabled by this driver.
-Check for them and ignore them to avoid a kernel error message.
 
-Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
-Cc: Dan Williams <dan.j.williams@intel.com>
----
+On Jan 31, 2012, at 1:10 PM, Scott Wood wrote:
 
-Changes v1 -> v2:
-- skip the descriptor cleanup tasklet if the controller is not yet idle
+> On 01/31/2012 09:55 AM, Kumar Gala wrote:
+>>=20
+>> On Jan 31, 2012, at 3:51 AM, Zhicheng Fan wrote:
+>>> Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
+>>> ---
+>>> arch/powerpc/boot/dts/fsl/p1025si-post.dtsi |  228 =
++++++++++++++++++++++
+>>> arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi  |   70 +++++++
+>>> arch/powerpc/boot/dts/p1025rdb.dts          |  137 +++++++++++++
+>>> arch/powerpc/boot/dts/p1025rdb.dtsi         |  286 =
++++++++++++++++++++++++++++
+>>> arch/powerpc/boot/dts/p1025rdb_36b.dts      |   88 ++++++++
+>>> 5 files changed, 809 insertions(+), 0 deletions(-)
+>>> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-post.dtsi
+>>> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi
+>>> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dts
+>>> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dtsi
+>>> create mode 100644 arch/powerpc/boot/dts/p1025rdb_36b.dts
+>>=20
+>> For the p1024 & p1025 I do NOT want to add new dts/fsl/p1025si*.dtsi =
+files.  We should use the p1020 and p1021 as they are identical.
+>=20
+> Are they sufficiently software compatible that we want to use
+> p1020/p1021 in all the compatible strings?  If yes, how was this =
+verified?
 
- drivers/dma/fsldma.c |   27 ++++++++++++++++++++++++---
- 1 files changed, 24 insertions(+), 3 deletions(-)
+They are the identical silicon just in different physical packages.  It =
+was verified by me asking the FSL marketing team.
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 8a78154..037631a 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1052,20 +1052,41 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
- 		stat &= ~FSL_DMA_SR_EOLNI;
- 	}
- 
--	/* check that the DMA controller is really idle */
--	if (!dma_is_idle(chan))
--		chan_err(chan, "irq: controller not idle!\n");
-+	/*
-+	 * This driver does not use this feature, therefore we shouldn't
-+	 * ever see this bit set in the status register. However, it has
-+	 * been observed on MPC8349EA parts.
-+	 */
-+	if (stat & FSL_DMA_SR_EOSI) {
-+		chan_dbg(chan, "irq: End-of-Segments INT\n");
-+		stat &= ~FSL_DMA_SR_EOSI;
-+	}
- 
- 	/* check that we handled all of the bits */
- 	if (stat)
- 		chan_err(chan, "irq: unhandled sr 0x%08x\n", stat);
- 
- 	/*
-+	 * Check that the DMA controller is really idle
-+	 *
-+	 * Occasionally on MPC8349EA parts, a spurious End-of-Segments
-+	 * interrupt is generated. When this happens, the controller is
-+	 * still busy. In this case, we shouldn't run the tasklet to
-+	 * clean up idle descriptors, since the controller is not yet idle.
-+	 */
-+	if (!dma_is_idle(chan)) {
-+		chan_err(chan, "irq: controller not idle!\n");
-+		goto out_skip_tasklet;
-+	}
-+
-+	/*
- 	 * Schedule the tasklet to handle all cleanup of the current
- 	 * transaction. It will start a new transaction if there is
- 	 * one pending.
- 	 */
- 	tasklet_schedule(&chan->tasklet);
-+
-+out_skip_tasklet:
- 	chan_dbg(chan, "irq: Exit\n");
- 	return IRQ_HANDLED;
- }
--- 
-1.7.3.4
+I'll work up a patch to add some comments to the p1020 & p1021si dts =
+files about being the same for p1024/p1025.
+
+- k=
