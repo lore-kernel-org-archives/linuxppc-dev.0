@@ -1,21 +1,24 @@
-Return-Path: <B32736@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe003.messaging.microsoft.com
- [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3B01D1007EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 18:08:15 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH 2/2 v2] P1020RDB-PC: Add p1020rdb-pc platform support
-Date: Tue, 31 Jan 2012 15:06:54 +0800
-Message-ID: <1327993614-25915-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1327993614-25915-1-git-send-email-B32736@freescale.com>
-References: <y>
- <1327993614-25915-1-git-send-email-B32736@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhicheng Fan <b32736@freeescale.com>
+Return-Path: <yinghai@kernel.org>
+Received: from acsinet15.oracle.com (acsinet15.oracle.com [141.146.126.227])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "acsinet15.oracle.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 137DAB6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 18:43:32 +1100 (EST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Tony Luck <tony.luck@intel.com>
+Subject: [PATCH 07/14] PCI, powerpc: Register busn_res for root buses
+Date: Mon, 30 Jan 2012 23:42:45 -0800
+Message-Id: <1327995772-11388-8-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1327995772-11388-1-git-send-email-yinghai@kernel.org>
+References: <1327995772-11388-1-git-send-email-yinghai@kernel.org>
+Cc: linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,64 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhicheng Fan <b32736@freeescale.com>
-
-Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   26 +++++++++++++++++++++++++-
- 1 files changed, 25 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/pci-common.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index ccf520e..0d3d7c6 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -1,7 +1,7 @@
- /*
-  * MPC85xx RDB Board Setup
-  *
-- * Copyright 2009 Freescale Semiconductor Inc.
-+ * Copyright 2009,2012 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -90,10 +90,20 @@ static void __init mpc85xx_rdb_setup_arch(void)
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index cce98d7..501f29b 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1732,6 +1732,8 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ 	bus->secondary = hose->first_busno;
+ 	hose->bus = bus;
  
- machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
- machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
-+machine_device_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
++	pci_bus_insert_busn_res(bus, hose->first_busno, hose->last_busno);
++
+ 	/* Get probe mode and perform scan */
+ 	mode = PCI_PROBE_NORMAL;
+ 	if (node && ppc_md.pci_probe_mode)
+@@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ 		of_scan_bus(node, bus);
+ 	}
  
- /*
-  * Called very early, device-tree isn't unflattened
-  */
-+static int __init p1020_rdb_pc_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (of_flat_dt_is_compatible(root, "fsl,P1020RDB-PC"))
-+		return 1;
-+	return 0;
-+}
-+
- static int __init p2020_rdb_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-@@ -139,3 +149,17 @@ define_machine(p1020_rdb) {
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
- };
-+
-+define_machine(p1020_rdb_pc) {
-+	.name			= "P1020RDB-PC",
-+	.probe			= p1020_rdb_pc_probe,
-+	.setup_arch		= mpc85xx_rdb_setup_arch,
-+	.init_IRQ		= mpc85xx_rdb_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
+-	if (mode == PCI_PROBE_NORMAL)
++	if (mode == PCI_PROBE_NORMAL) {
++		pci_bus_update_busn_res_end(bus, 255);
+ 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
++		pci_bus_update_busn_res_end(bus, bus->subordinate);
++	}
+ 
+ 	/* Platform gets a chance to do some global fixups before
+ 	 * we proceed to resource allocation
 -- 
-1.7.0.4
+1.7.7
