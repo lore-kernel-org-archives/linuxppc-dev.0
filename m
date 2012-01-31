@@ -1,21 +1,29 @@
-Return-Path: <B32736@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
- [213.199.154.139])
+Return-Path: <b08782@zro04cle141.ea.freescale.net>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FF6EB6EFE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 20:52:11 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH 2/2 v2] P1025RDB: Add p1025rdb platform support
-Date: Tue, 31 Jan 2012 17:51:21 +0800
-Message-ID: <1328003481-31821-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1328003481-31821-1-git-send-email-B32736@freescale.com>
-References: <1328003481-31821-1-git-send-email-B32736@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id D720F1007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 21:15:46 +1100 (EST)
+Received: from mail163-ch1 (localhost [127.0.0.1])	by
+ mail163-ch1-R.bigfish.com (Postfix) with ESMTP id A8E163A01B5	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 10:15:37 +0000 (UTC)
+Received: from CH1EHSMHS023.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.236])	by mail163-ch1.bigfish.com (Postfix) with ESMTP id
+ 17A06360049	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 10:15:35
+ +0000 (UTC)
+Received: from zro04cle141.ea.freescale.net (udp157456uds.ea.freescale.net
+ [140.101.223.141])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+ q0VAFLnI011164	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 04:15:21
+ -0600 (CST)
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/85xx: Add missing config option for CACHE SRAM code
+Date: Tue, 31 Jan 2012 12:15:20 +0200
+Message-ID: <1328004920-29727-1-git-send-email-claudiu.manoil@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Zhicheng Fan <b32736@freeescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhicheng Fan <b32736@freeescale.com>
+fsl_85xx_l2ctlr.o and fsl_85xx_cache_sram.o are built only
+if CONFIG_FSL_85XX_CACHE_SRAM is defined. The driver that
+qualifies and wants to make use of the CACHE SRAM's exported
+API (i.e. a freescale net driver) should (be able to) select
+this config option.
 
-Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
+Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/85xx/Kconfig |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 0d3d7c6..3381a80 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -91,6 +91,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
- machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
- machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
- machine_device_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
-+machine_device_initcall(p1025_rdb, mpc85xx_common_publish_devices);
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index d7946be..6e2eecd 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -13,6 +13,15 @@ if FSL_SOC_BOOKE
  
- /*
-  * Called very early, device-tree isn't unflattened
-@@ -122,6 +123,15 @@ static int __init p1020_rdb_probe(void)
- 	return 0;
- }
+ if PPC32
  
-+static int __init p1025_rdb_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++config FSL_85XX_CACHE_SRAM
++	bool
++	select PPC_LIB_RHEAP
++	help
++	  When selected, this option enables cache-sram support
++	  for memory allocation on P1/P2 QorIQ platforms.
++	  cache-sram-size and cache-sram-offset kernel boot
++	  parameters should be passed when this option is enabled.
 +
-+	if (of_flat_dt_is_compatible(root, "fsl,P1025RDB"))
-+		return 1;
-+	return 0;
-+}
-+
- define_machine(p2020_rdb) {
- 	.name			= "P2020 RDB",
- 	.probe			= p2020_rdb_probe,
-@@ -163,3 +173,17 @@ define_machine(p1020_rdb_pc) {
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
- };
-+
-+define_machine(p1025_rdb) {
-+	.name			= "P1025 RDB",
-+	.probe			= p1025_rdb_probe,
-+	.setup_arch		= mpc85xx_rdb_setup_arch,
-+	.init_IRQ		= mpc85xx_rdb_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
+ config MPC8540_ADS
+ 	bool "Freescale MPC8540 ADS"
+ 	select DEFAULT_UIMAGE
 -- 
-1.7.0.4
+1.6.6
