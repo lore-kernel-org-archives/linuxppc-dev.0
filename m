@@ -1,20 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Tue, 31 Jan 2012 17:07:42 -0700
+Date: Tue, 31 Jan 2012 17:08:48 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v3 00/25] irq_domain generalization and refinement
-Message-ID: <20120201000742.GM22611@ponder.secretlab.ca>
+To: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: [PATCH v3 14/25] irq_domain: Remove irq_domain_add_simple()
+Message-ID: <20120201000848.GN22611@ponder.secretlab.ca>
 References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <20120131045344.GA27609@quad.lixom.net>
+ <1327700179-17454-15-git-send-email-grant.likely@secretlab.ca>
+ <20120131124500.GA28571@S2101-09.ap.freescale.net>
+ <4F27E96E.9010204@gmail.com>
+ <20120131135821.GA24804@S2100-06.ap.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120131045344.GA27609@quad.lixom.net>
+In-Reply-To: <20120131135821.GA24804@S2100-06.ap.freescale.net>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
  devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ Milton Miller <miltonm@bga.com>, Rob Herring <robherring2@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Shawn Guo <shawn.guo@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 30, 2012 at 08:53:44PM -0800, Olof Johansson wrote:
-> On Fri, Jan 27, 2012 at 02:35:54PM -0700, Grant Likely wrote:
-> > Hey everyone,
+On Tue, Jan 31, 2012 at 09:58:22PM +0800, Shawn Guo wrote:
+> On Tue, Jan 31, 2012 at 07:15:26AM -0600, Rob Herring wrote:
+> ...
+> > >> --- a/arch/arm/mach-mx5/imx51-dt.c
+> > >> +++ b/arch/arm/mach-mx5/imx51-dt.c
+> > >> @@ -47,7 +47,7 @@ static const struct of_dev_auxdata imx51_auxdata_lookup[] __initconst = {
+> > >>  static int __init imx51_tzic_add_irq_domain(struct device_node *np,
+> > >>  				struct device_node *interrupt_parent)
+> > >>  {
+> > >> -	irq_domain_add_simple(np, 0);
+> > >> +	irq_domain_add_legacy(np, 32, 0, 0, &irq_domain_simple_ops, NULL);
+> > >>  	return 0;
+> > >>  }
+> > >>  
+> > >> @@ -57,7 +57,7 @@ static int __init imx51_gpio_add_irq_domain(struct device_node *np,
+> > >>  	static int gpio_irq_base = MXC_GPIO_IRQ_START + ARCH_NR_GPIOS;
+> > >>  
+> > >>  	gpio_irq_base -= 32;
+> > >> -	irq_domain_add_simple(np, gpio_irq_base);
+> > >> +	irq_domain_add_legacy(np, 32, gpio_irq_base, 0, &irq_domain_simple_ops, NULL);
+> > > 
+> > > The tzic on imx5 gets 128 irq lines rather than 32 here.  The current
+> > > code will make any hwirq that is > 32 hit the WARN_ON below in
+> > > irq_domain_legacy_revmap().
 > > 
-> > This patch series is ready for much wider consumption now.  I'd like
-> > to get it into linux-next ASAP because there will be ARM board support
-> > depending on it.  I'll wait a few days before I ask Stephen to pull
-> > this in.
+> > But this is the gpio controller code? Really this should be 4 domains,
+> > but this temp fix is probably fine until you use my generic irq chip
+> > support.
 > > 
-> > Stephen/Milton/Ben, any testing you can help with here would be
-> > appreciated since you've got access to a wider variety of Power
-> > machines than I do.
-> 
-> This series has been:
-> 
-> Tested-by: Olof Johansson <olof@lixom.net>
-> 
-> On powerpc/pasemi (it's the only one I still have easy access to).
+> Sorry.  The comment was put at the wrong place.  It should be against
+> imx51_tzic_add_irq_domain() just above.
 
-Excellent, thanks Olof!
+I didn't know how large the bank was, so I just assumed 32.  If it should
+be 128 then I'll change it.  Please confirm (or reply with a fixup patch)
 
 g.
