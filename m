@@ -1,26 +1,29 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D7FC0B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 17:12:41 +1100 (EST)
-Received: by dady9 with SMTP id y9so616500dad.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2012 22:12:38 -0800 (PST)
-Date: Tue, 31 Jan 2012 22:12:20 -0800 (PST)
-From: Hugh Dickins <hughd@google.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: next BUG: using smp_processor_id() in preemptible
-In-Reply-To: <1326603920.26116.18.camel@pasglop>
-Message-ID: <alpine.LSU.2.00.1201312208270.1859@eggly.anvils>
-References: <alpine.LSU.2.00.1112051539100.3938@sister.anvils>
- <alpine.LSU.2.00.1112220405410.23876@eggly.anvils>
- <1324588672.6632.8.camel@pasglop>
- <alpine.LSU.2.00.1201141419530.1266@eggly.anvils>
- <1326603920.26116.18.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <lethal@linux-sh.org>
+Received: from linux-sh.org (linux-sh.org [111.68.239.195])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2205FB6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 17:29:42 +1100 (EST)
+Date: Wed, 1 Feb 2012 14:42:21 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PULL] ARM mach/irqs.h cleanup for 3.4
+Message-ID: <20120201054221.GA3531@linux-sh.org>
+References: <4F284532.90303@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4F284532.90303@gmail.com>
+Cc: Aurelien Jacquiot <a-jacquiot@ti.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, jamie@jamieiles.com,
+ Robert Jarzmik <robert.jarzmik@free.fr>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
+ linux-sh@vger.kernel.org, Haojian Zhuang <haojian.zhuang@marvell.com>,
+ Marek Vasut <marek.vasut@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+ Mark Salter <msalter@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Eric Miao <eric.y.miao@gmail.com>,
+ Nicolas Pitre <nico@fluxnic.net>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 15 Jan 2012, Benjamin Herrenschmidt wrote:
-> On Sat, 2012-01-14 at 14:21 -0800, Hugh Dickins wrote:
-> > On Fri, 23 Dec 2011, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2011-12-22 at 04:07 -0800, Hugh Dickins wrote:
-> > > > On Mon, 5 Dec 2011, Hugh Dickins wrote:
-> > > > 
-> > > > > 3.2.0-rc3-next-20111202 with CONFIG_DEBUG_PREEMPT=y gives me lots of
-> > > > > 
-> > > > > Dec  4 20:03:19 thorn kernel: BUG: using smp_processor_id() in preemptible [00000000] code: startpar/1365
-> > > > > Dec  4 20:03:19 thorn kernel: caller is .arch_local_irq_restore+0x44/0x90
-> > > > > Dec  4 20:03:19 thorn kernel: Call Trace:
-> > > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7c60] [c000000000011fe8] .show_stack+0x6c/0x16c (unreliable)
-> > > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7d10] [c00000000024318c] .debug_smp_processor_id+0xe4/0x11c
-> > > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7da0] [c00000000000e2e8] .arch_local_irq_restore+0x44/0x90
-> > > > > Dec  4 20:03:19 thorn kernel: [c0000001b45a7e30] [c000000000005870] .do_hash_page+0x70/0x74
-> > > > > Dec  4 20:03:21 thorn kernel: debug_smp_processor_id: 21950 callbacks suppressed
-> > > > > 
-> > > > > from the u64 *next_tb = &__get_cpu_var(decrementers_next_tb)
-> > > > > in decrementer_check_overflow(): I've no idea whether it's safe
-> > > > > just to use get_cpu_var then put_cpu_var there instead,
-> > > > > but no hurry, I can survive with DEBUG_PREEMPT off.
-> > > > 
-> > > > Still a problem in 3.2.0-rc6-next-20111222
-> > > 
-> > > Ah forgot about that, I'll have a look. Thanks for the reminder.
-> > 
-> > I'm afraid it's now blighting Linus's tree for 3.3.
+On Tue, Jan 31, 2012 at 01:46:58PM -0600, Rob Herring wrote:
+> Can you please pull mach/irqs.h clean-up for 3.4. I've gotten little to
+> no response from the affected platform maintainers. It's primarily
+> superh and shmobile that have any significant changes though.
 > 
-> Grrr, my memory is a colander... And now am in Ballarat for the week
-> with a semi working 3g connection. I'll see what I can do.
-
-Sorry to be such a bore - you can guess what I have to say about 3.3-rc2 :()
-
-Hugh
+Sorry about that, it's been in my backlog. The changes as they are are
+fine with me, I've got some pending work that switches to dynamic use off
+of nr_irqs that will make most of it redundant that I had hoped to have
+done in time, but it can be done incrementally at a later point in time,
+too.
