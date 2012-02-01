@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Tue, 31 Jan 2012 17:08:48 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Shawn Guo <shawn.guo@freescale.com>
-Subject: Re: [PATCH v3 14/25] irq_domain: Remove irq_domain_add_simple()
-Message-ID: <20120201000848.GN22611@ponder.secretlab.ca>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <1327700179-17454-15-git-send-email-grant.likely@secretlab.ca>
- <20120131124500.GA28571@S2101-09.ap.freescale.net>
- <4F27E96E.9010204@gmail.com>
- <20120131135821.GA24804@S2100-06.ap.freescale.net>
+Return-Path: <SRS0=XCUx=AL=gmx.de=g.liakhovetski@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+ by ozlabs.org (Postfix) with ESMTP id 229DCB6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 11:15:11 +1100 (EST)
+Date: Wed, 1 Feb 2012 01:09:15 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [RFC] dmaengine/dma_slave: add context parameter to prep_slave_sg
+ callback
+In-Reply-To: <1327915849.1527.17.camel@vkoul-udesk3>
+Message-ID: <Pine.LNX.4.64.1202010022310.31226@axis700.grange>
+References: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
+ <1327915849.1527.17.camel@vkoul-udesk3>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120131135821.GA24804@S2100-06.ap.freescale.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Rob Herring <robherring2@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Shawn Guo <shawn.guo@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Jassi Brar <jaswinder.singh@linaro.org>, linux-kernel@vger.kernel.org,
+ Alexandre Bounine <alexandre.bounine@idt.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, dan.j.williams@intel.com,
+ Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +26,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 31, 2012 at 09:58:22PM +0800, Shawn Guo wrote:
-> On Tue, Jan 31, 2012 at 07:15:26AM -0600, Rob Herring wrote:
-> ...
-> > >> --- a/arch/arm/mach-mx5/imx51-dt.c
-> > >> +++ b/arch/arm/mach-mx5/imx51-dt.c
-> > >> @@ -47,7 +47,7 @@ static const struct of_dev_auxdata imx51_auxdata_lookup[] __initconst = {
-> > >>  static int __init imx51_tzic_add_irq_domain(struct device_node *np,
-> > >>  				struct device_node *interrupt_parent)
-> > >>  {
-> > >> -	irq_domain_add_simple(np, 0);
-> > >> +	irq_domain_add_legacy(np, 32, 0, 0, &irq_domain_simple_ops, NULL);
-> > >>  	return 0;
-> > >>  }
-> > >>  
-> > >> @@ -57,7 +57,7 @@ static int __init imx51_gpio_add_irq_domain(struct device_node *np,
-> > >>  	static int gpio_irq_base = MXC_GPIO_IRQ_START + ARCH_NR_GPIOS;
-> > >>  
-> > >>  	gpio_irq_base -= 32;
-> > >> -	irq_domain_add_simple(np, gpio_irq_base);
-> > >> +	irq_domain_add_legacy(np, 32, gpio_irq_base, 0, &irq_domain_simple_ops, NULL);
-> > > 
-> > > The tzic on imx5 gets 128 irq lines rather than 32 here.  The current
-> > > code will make any hwirq that is > 32 hit the WARN_ON below in
-> > > irq_domain_legacy_revmap().
-> > 
-> > But this is the gpio controller code? Really this should be 4 domains,
-> > but this temp fix is probably fine until you use my generic irq chip
-> > support.
-> > 
-> Sorry.  The comment was put at the wrong place.  It should be against
-> imx51_tzic_add_irq_domain() just above.
+On Mon, 30 Jan 2012, Vinod Koul wrote:
 
-I didn't know how large the bank was, so I just assumed 32.  If it should
-be 128 then I'll change it.  Please confirm (or reply with a fixup patch)
+> On Thu, 2012-01-26 at 16:22 -0500, Alexandre Bounine wrote:
+> > As we agreed during our discussion about adding DMA Engine support for RapidIO
+> > subsystem, RapidIO and similar clients may benefit from adding an extra context
+> > parameter to device_prep_slave_sg() callback.
+> > See https://lkml.org/lkml/2011/10/24/275 for more details.
+> > 
+> > Adding the context parameter will allow to pass client/target specific
+> > information associated with an individual data transfer request.
+> > 
+> > In the case of RapidIO support this additional information consists of target
+> > destination ID and its buffer address (which is not mapped into the local CPU
+> > memory space). Because a single RapidIO-capable DMA channel may queue data
+> > transfer requests to different target devices, the per-request configuration
+> > is required.
+> > 
+> > The proposed change eliminates need for new subsystem-specific API.
+> > Existing DMA_SLAVE clients will ignore the new parameter.
+> > 
+> > This RFC only demonstrates the API change and does not include corresponding
+> > changes to existing DMA_SLAVE clients. Complete set of patches will be provided
+> > after (if) this API change is accepted.
+> This looks good to me. But was thinking if we need to add this new
+> parameter for other slave calls (circular, interleaved, memcpy...)
 
-g.
+Yes, we (shdma.c) also need to pass additional slave configuration 
+information to the dmaengine driver and I also was thinking about 
+extending the existing API, but my ideas were going more in the direction 
+of adding a parameter to __dma_request_channel() along the lines of
+
+-struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, void *fn_param);
++struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, void *fn_param,
++					struct dma_slave_desc *slave);
+
+where struct dma_slave_desc would basically just contain an opaque slave 
+ID and would be embedded by dmaengine drivers in their specific 
+slave-configuration types. The main difference to the API change being 
+proposed here is, that I was going to configure DMA channels only once for 
+each slave upon channel allocation, whereas the proposed change does this 
+on a per-transfer basis. Therefore my question: do I understand the 
+explanation of the RapidIO DMA architecture from the above quoted thread 
+right, that DMA channels can be freely used by client drivers, without 
+binding them to specific DSP cards? In which case you, probably, don't use 
+DMA_PRIVATE? But that the decision - to which DSP card this specific 
+transfer is directed - is made by configuring the DMA channels rather than 
+embedded in the actual data?
+
+Thanks
+Guennadi
+
+> 
+> > 
+> > Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+> > Cc: Jassi Brar <jaswinder.singh@linaro.org>
+> > Cc: Russell King <rmk@arm.linux.org.uk> 
+> > Cc: Kumar Gala <galak@kernel.crashing.org>
+> > Cc: Matt Porter <mporter@kernel.crashing.org>
+> > Cc: Li Yang <leoli@freescale.com>
+> > ---
+> >  include/linux/dmaengine.h |    7 ++++---
+> >  1 files changed, 4 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+> > index 679b349..79d71bb 100644
+> > --- a/include/linux/dmaengine.h
+> > +++ b/include/linux/dmaengine.h
+> > @@ -575,7 +575,7 @@ struct dma_device {
+> >  	struct dma_async_tx_descriptor *(*device_prep_slave_sg)(
+> >  		struct dma_chan *chan, struct scatterlist *sgl,
+> >  		unsigned int sg_len, enum dma_transfer_direction direction,
+> > -		unsigned long flags);
+> > +		unsigned long flags, void *context);
+> >  	struct dma_async_tx_descriptor *(*device_prep_dma_cyclic)(
+> >  		struct dma_chan *chan, dma_addr_t buf_addr, size_t buf_len,
+> >  		size_t period_len, enum dma_transfer_direction direction);
+> > @@ -607,12 +607,13 @@ static inline int dmaengine_slave_config(struct dma_chan *chan,
+> >  
+> >  static inline struct dma_async_tx_descriptor *dmaengine_prep_slave_single(
+> >  	struct dma_chan *chan, void *buf, size_t len,
+> > -	enum dma_transfer_direction dir, unsigned long flags)
+> > +	enum dma_transfer_direction dir, unsigned long flags, void *context)
+> >  {
+> >  	struct scatterlist sg;
+> >  	sg_init_one(&sg, buf, len);
+> >  
+> > -	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags);
+> > +	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags,
+> > +						  context);
+> >  }
+> >  
+> >  static inline int dmaengine_terminate_all(struct dma_chan *chan)
+> 
+> 
+> -- 
+> ~Vinod
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
