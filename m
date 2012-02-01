@@ -1,19 +1,22 @@
-Return-Path: <B36685@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 57219B6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 20:21:14 +1100 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linux-usb@vger.kernel.org>
-Subject: [PATCH] powerpc/usb: fix issue of CPU halt when missing USB PHY clock
-Date: Wed, 1 Feb 2012 17:20:17 +0800
-Message-ID: <1328088017-9262-1-git-send-email-Shengzhou.Liu@freescale.com>
+Return-Path: <pkondeti@codeaurora.org>
+Received: from wolverine02.qualcomm.com (wolverine02.qualcomm.com
+ [199.106.114.251])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "wolverine02.qualcomm.com",
+ Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 82DC9B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 21:11:46 +1100 (EST)
+Message-ID: <4F290FCF.1040406@codeaurora.org>
+Date: Wed, 01 Feb 2012 15:41:27 +0530
+From: Pavan Kondeti <pkondeti@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Subject: Re: [PATCH] powerpc/usb: fix issue of CPU halt when missing USB PHY
+ clock
+References: <1328088017-9262-1-git-send-email-Shengzhou.Liu@freescale.com>
+In-Reply-To: <1328088017-9262-1-git-send-email-Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,60 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-when missing USB PHY clock, kernel booting up will halt during USB
-initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid
-CPU hang in this case.
+On 2/1/2012 2:50 PM, Shengzhou Liu wrote:
+> diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+> index b556a72..834237e 100644
+> --- a/drivers/usb/host/ehci-fsl.c
+> +++ b/drivers/usb/host/ehci-fsl.c
+> @@ -239,7 +239,7 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
+>  	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
+>  }
+>  
+> -static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
+> +static int ehci_fsl_usb_setup(struct ehci_hcd *ehci)
+>  {
+>  	struct usb_hcd *hcd = ehci_to_hcd(ehci);
+>  	struct fsl_usb2_platform_data *pdata;
+> @@ -299,12 +299,19 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
+>  #endif
+>  		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
+>  	}
+> +
+> +	if (!(in_be32(non_ehci + FSL_SOC_USB_CTRL) & CTRL_PHY_CLK_VALID)) {
+> +		printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
+> +		return -1;
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
- drivers/usb/host/ehci-fsl.c |   11 +++++++++--
- drivers/usb/host/ehci-fsl.h |    1 +
- 2 files changed, 10 insertions(+), 2 deletions(-)
+Please return a proper error code. -ENODEV ?
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index b556a72..834237e 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -239,7 +239,7 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
- 	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
- }
- 
--static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
-+static int ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- {
- 	struct usb_hcd *hcd = ehci_to_hcd(ehci);
- 	struct fsl_usb2_platform_data *pdata;
-@@ -299,12 +299,19 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- #endif
- 		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
- 	}
-+
-+	if (!(in_be32(non_ehci + FSL_SOC_USB_CTRL) & CTRL_PHY_CLK_VALID)) {
-+		printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
-+		return -1;
-+	}
-+	return 0;
- }
- 
- /* called after powerup, by probe or system-pm "wakeup" */
- static int ehci_fsl_reinit(struct ehci_hcd *ehci)
- {
--	ehci_fsl_usb_setup(ehci);
-+	if (ehci_fsl_usb_setup(ehci))
-+		return -1;
- 	ehci_port_power(ehci, 0);
- 
- 	return 0;
-diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-index 4918062..dd3dc47 100644
---- a/drivers/usb/host/ehci-fsl.h
-+++ b/drivers/usb/host/ehci-fsl.h
-@@ -45,5 +45,6 @@
- #define FSL_SOC_USB_PRICTRL	0x40c	/* NOTE: big-endian */
- #define FSL_SOC_USB_SICTRL	0x410	/* NOTE: big-endian */
- #define FSL_SOC_USB_CTRL	0x500	/* NOTE: big-endian */
-+#define CTRL_PHY_CLK_VALID      (1 << 17)
- #define SNOOP_SIZE_2GB		0x1e
- #endif				/* _EHCI_FSL_H */
+> +	}
+> +	return 0;
+>  }
+>  
+
+
 -- 
-1.6.4
+Sent by a consultant of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
