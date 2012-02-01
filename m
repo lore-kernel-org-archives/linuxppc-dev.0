@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3DC3EB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 10:44:07 +1100 (EST)
-Subject: Re: [PATCH 1/2 v2] powerpc/dts: Add dts for p1025rdb board
-Mime-Version: 1.0 (Apple Message framework v1251.1)
-Content-Type: text/plain; charset=iso-8859-1
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4F283CB7.4050908@freescale.com>
-Date: Tue, 31 Jan 2012 17:44:11 -0600
-Message-Id: <7D155016-AC91-440A-A88F-FEEF85C13184@kernel.crashing.org>
-References: <1328003481-31821-1-git-send-email-B32736@freescale.com>
- <DDC3CACD-1B1C-4826-A839-65D42395ACEA@kernel.crashing.org>
- <4F283CB7.4050908@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Zhicheng Fan <b32736@freeescale.com>,
- Zhicheng Fan <B32736@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Tue, 31 Jan 2012 17:07:42 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH v3 00/25] irq_domain generalization and refinement
+Message-ID: <20120201000742.GM22611@ponder.secretlab.ca>
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+ <20120131045344.GA27609@quad.lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120131045344.GA27609@quad.lixom.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jan 30, 2012 at 08:53:44PM -0800, Olof Johansson wrote:
+> On Fri, Jan 27, 2012 at 02:35:54PM -0700, Grant Likely wrote:
+> > Hey everyone,
+> > 
+> > This patch series is ready for much wider consumption now.  I'd like
+> > to get it into linux-next ASAP because there will be ARM board support
+> > depending on it.  I'll wait a few days before I ask Stephen to pull
+> > this in.
+> > 
+> > Stephen/Milton/Ben, any testing you can help with here would be
+> > appreciated since you've got access to a wider variety of Power
+> > machines than I do.
+> 
+> This series has been:
+> 
+> Tested-by: Olof Johansson <olof@lixom.net>
+> 
+> On powerpc/pasemi (it's the only one I still have easy access to).
 
-On Jan 31, 2012, at 1:10 PM, Scott Wood wrote:
+Excellent, thanks Olof!
 
-> On 01/31/2012 09:55 AM, Kumar Gala wrote:
->>=20
->> On Jan 31, 2012, at 3:51 AM, Zhicheng Fan wrote:
->>> Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
->>> ---
->>> arch/powerpc/boot/dts/fsl/p1025si-post.dtsi |  228 =
-+++++++++++++++++++++
->>> arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi  |   70 +++++++
->>> arch/powerpc/boot/dts/p1025rdb.dts          |  137 +++++++++++++
->>> arch/powerpc/boot/dts/p1025rdb.dtsi         |  286 =
-+++++++++++++++++++++++++++
->>> arch/powerpc/boot/dts/p1025rdb_36b.dts      |   88 ++++++++
->>> 5 files changed, 809 insertions(+), 0 deletions(-)
->>> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-post.dtsi
->>> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi
->>> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dts
->>> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dtsi
->>> create mode 100644 arch/powerpc/boot/dts/p1025rdb_36b.dts
->>=20
->> For the p1024 & p1025 I do NOT want to add new dts/fsl/p1025si*.dtsi =
-files.  We should use the p1020 and p1021 as they are identical.
->=20
-> Are they sufficiently software compatible that we want to use
-> p1020/p1021 in all the compatible strings?  If yes, how was this =
-verified?
-
-They are the identical silicon just in different physical packages.  It =
-was verified by me asking the FSL marketing team.
-
-I'll work up a patch to add some comments to the p1020 & p1021si dts =
-files about being the same for p1024/p1025.
-
-- k=
+g.
