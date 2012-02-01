@@ -1,22 +1,26 @@
-Return-Path: <SRS0=XCUx=AL=gmx.de=g.liakhovetski@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
- by ozlabs.org (Postfix) with ESMTP id 229DCB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 11:15:11 +1100 (EST)
-Date: Wed, 1 Feb 2012 01:09:15 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [RFC] dmaengine/dma_slave: add context parameter to prep_slave_sg
- callback
-In-Reply-To: <1327915849.1527.17.camel@vkoul-udesk3>
-Message-ID: <Pine.LNX.4.64.1202010022310.31226@axis700.grange>
-References: <1327612946-29397-1-git-send-email-alexandre.bounine@idt.com>
- <1327915849.1527.17.camel@vkoul-udesk3>
+Return-Path: <r61911@freescale.com>
+Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+ [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9B9FAB6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2012 13:10:54 +1100 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH 1/2 v2] powerpc/dts: Add dts for p1025rdb board
+Date: Wed, 1 Feb 2012 02:10:23 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB00203CFE2@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1328003481-31821-1-git-send-email-B32736@freescale.com>
+ <DDC3CACD-1B1C-4826-A839-65D42395ACEA@kernel.crashing.org>
+ <4F283CB7.4050908@freescale.com>
+ <7D155016-AC91-440A-A88F-FEEF85C13184@kernel.crashing.org>
+In-Reply-To: <7D155016-AC91-440A-A88F-FEEF85C13184@kernel.crashing.org>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Jassi Brar <jaswinder.singh@linaro.org>, linux-kernel@vger.kernel.org,
- Alexandre Bounine <alexandre.bounine@idt.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, dan.j.williams@intel.com,
- Russell King <rmk@arm.linux.org.uk>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Fan Zhicheng-B32736 <B32736@freescale.com>,
+ Zhicheng Fan <b32736@freeescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,111 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 30 Jan 2012, Vinod Koul wrote:
 
-> On Thu, 2012-01-26 at 16:22 -0500, Alexandre Bounine wrote:
-> > As we agreed during our discussion about adding DMA Engine support for RapidIO
-> > subsystem, RapidIO and similar clients may benefit from adding an extra context
-> > parameter to device_prep_slave_sg() callback.
-> > See https://lkml.org/lkml/2011/10/24/275 for more details.
-> > 
-> > Adding the context parameter will allow to pass client/target specific
-> > information associated with an individual data transfer request.
-> > 
-> > In the case of RapidIO support this additional information consists of target
-> > destination ID and its buffer address (which is not mapped into the local CPU
-> > memory space). Because a single RapidIO-capable DMA channel may queue data
-> > transfer requests to different target devices, the per-request configuration
-> > is required.
-> > 
-> > The proposed change eliminates need for new subsystem-specific API.
-> > Existing DMA_SLAVE clients will ignore the new parameter.
-> > 
-> > This RFC only demonstrates the API change and does not include corresponding
-> > changes to existing DMA_SLAVE clients. Complete set of patches will be provided
-> > after (if) this API change is accepted.
-> This looks good to me. But was thinking if we need to add this new
-> parameter for other slave calls (circular, interleaved, memcpy...)
 
-Yes, we (shdma.c) also need to pass additional slave configuration 
-information to the dmaengine driver and I also was thinking about 
-extending the existing API, but my ideas were going more in the direction 
-of adding a parameter to __dma_request_channel() along the lines of
-
--struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, void *fn_param);
-+struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, void *fn_param,
-+					struct dma_slave_desc *slave);
-
-where struct dma_slave_desc would basically just contain an opaque slave 
-ID and would be embedded by dmaengine drivers in their specific 
-slave-configuration types. The main difference to the API change being 
-proposed here is, that I was going to configure DMA channels only once for 
-each slave upon channel allocation, whereas the proposed change does this 
-on a per-transfer basis. Therefore my question: do I understand the 
-explanation of the RapidIO DMA architecture from the above quoted thread 
-right, that DMA channels can be freely used by client drivers, without 
-binding them to specific DSP cards? In which case you, probably, don't use 
-DMA_PRIVATE? But that the decision - to which DSP card this specific 
-transfer is directed - is made by configuring the DMA channels rather than 
-embedded in the actual data?
-
-Thanks
-Guennadi
-
-> 
-> > 
-> > Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-> > Cc: Jassi Brar <jaswinder.singh@linaro.org>
-> > Cc: Russell King <rmk@arm.linux.org.uk> 
-> > Cc: Kumar Gala <galak@kernel.crashing.org>
-> > Cc: Matt Porter <mporter@kernel.crashing.org>
-> > Cc: Li Yang <leoli@freescale.com>
-> > ---
-> >  include/linux/dmaengine.h |    7 ++++---
-> >  1 files changed, 4 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-> > index 679b349..79d71bb 100644
-> > --- a/include/linux/dmaengine.h
-> > +++ b/include/linux/dmaengine.h
-> > @@ -575,7 +575,7 @@ struct dma_device {
-> >  	struct dma_async_tx_descriptor *(*device_prep_slave_sg)(
-> >  		struct dma_chan *chan, struct scatterlist *sgl,
-> >  		unsigned int sg_len, enum dma_transfer_direction direction,
-> > -		unsigned long flags);
-> > +		unsigned long flags, void *context);
-> >  	struct dma_async_tx_descriptor *(*device_prep_dma_cyclic)(
-> >  		struct dma_chan *chan, dma_addr_t buf_addr, size_t buf_len,
-> >  		size_t period_len, enum dma_transfer_direction direction);
-> > @@ -607,12 +607,13 @@ static inline int dmaengine_slave_config(struct dma_chan *chan,
-> >  
-> >  static inline struct dma_async_tx_descriptor *dmaengine_prep_slave_single(
-> >  	struct dma_chan *chan, void *buf, size_t len,
-> > -	enum dma_transfer_direction dir, unsigned long flags)
-> > +	enum dma_transfer_direction dir, unsigned long flags, void *context)
-> >  {
-> >  	struct scatterlist sg;
-> >  	sg_init_one(&sg, buf, len);
-> >  
-> > -	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags);
-> > +	return chan->device->device_prep_slave_sg(chan, &sg, 1, dir, flags,
-> > +						  context);
-> >  }
-> >  
-> >  static inline int dmaengine_terminate_all(struct dma_chan *chan)
-> 
-> 
-> -- 
-> ~Vinod
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+> -----Original Message-----
+> From: linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.org
+> [mailto:linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.or=
+g]
+> On Behalf Of Kumar Gala
+> Sent: Wednesday, February 01, 2012 7:44 AM
+> To: Wood Scott-B07421
+> Cc: linuxppc-dev@lists.ozlabs.org; Zhicheng Fan; Fan Zhicheng-B32736
+> Subject: Re: [PATCH 1/2 v2] powerpc/dts: Add dts for p1025rdb board
+>=20
+>=20
+> On Jan 31, 2012, at 1:10 PM, Scott Wood wrote:
+>=20
+> > On 01/31/2012 09:55 AM, Kumar Gala wrote:
+> >>
+> >> On Jan 31, 2012, at 3:51 AM, Zhicheng Fan wrote:
+> >>> Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
+> >>> ---
+> >>> arch/powerpc/boot/dts/fsl/p1025si-post.dtsi |  228
+> +++++++++++++++++++++
+> >>> arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi  |   70 +++++++
+> >>> arch/powerpc/boot/dts/p1025rdb.dts          |  137 +++++++++++++
+> >>> arch/powerpc/boot/dts/p1025rdb.dtsi         |  286
+> +++++++++++++++++++++++++++
+> >>> arch/powerpc/boot/dts/p1025rdb_36b.dts      |   88 ++++++++
+> >>> 5 files changed, 809 insertions(+), 0 deletions(-)
+> >>> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-post.dtsi
+> >>> create mode 100644 arch/powerpc/boot/dts/fsl/p1025si-pre.dtsi
+> >>> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dts
+> >>> create mode 100644 arch/powerpc/boot/dts/p1025rdb.dtsi
+> >>> create mode 100644 arch/powerpc/boot/dts/p1025rdb_36b.dts
+> >>
+> >> For the p1024 & p1025 I do NOT want to add new dts/fsl/p1025si*.dtsi
+> files.  We should use the p1020 and p1021 as they are identical.
+> >
+> > Are they sufficiently software compatible that we want to use
+> > p1020/p1021 in all the compatible strings?  If yes, how was this verifi=
+ed?
+>=20
+> They are the identical silicon just in different physical packages.  It w=
+as
+> verified by me asking the FSL marketing team.
+>=20
+> I'll work up a patch to add some comments to the p1020 & p1021si dts file=
+s
+> about being the same for p1024/p1025.
+Should we expose the information "p1024/p1025 are identical to p1020/p1021"=
+ to our customer?
+Thanks.
+Roy
