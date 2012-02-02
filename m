@@ -1,23 +1,21 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D4289104785
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2012 22:41:02 +1100 (EST)
-Received: by bkcjc3 with SMTP id jc3so2023353bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2012 03:40:58 -0800 (PST)
-Message-ID: <4F2A7604.9060102@mvista.com>
-Date: Thu, 02 Feb 2012 15:39:48 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+Return-Path: <B29882@freescale.com>
+Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+ [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 40ED2B71A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2012 03:07:19 +1100 (EST)
+From: McClintock Matthew-B29882 <B29882@freescale.com>
+To: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+Subject: Re: General question : Debugging Kernel on PPC
+Date: Thu, 2 Feb 2012 16:07:10 +0000
+Message-ID: <CAEsOVNd32ga5D-8Ymo9ZKTzuASk6KNSy2usT9_R7E8E0kM4VhA@mail.gmail.com>
+References: <93CD5F41FDBC6042A6B449764F3B35CC050CECE7@EU-MBX-03.mgc.mentorg.com>
+In-Reply-To: <93CD5F41FDBC6042A6B449764F3B35CC050CECE7@EU-MBX-03.mgc.mentorg.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Subject: Re: [PATCH v2] powerpc/usb: fix issue of CPU halt when missing USB
- PHY clock
-References: <1328152994-2879-1-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1328152994-2879-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On Thu, Feb 2, 2012 at 2:59 AM, Arshad, Farrukh
+<Farrukh_Arshad@mentor.com> wrote:
+> Greetings All,
+>
+> I have general question regarding kernel debugging on PowerPC platform.
+> Except printk what are other ways for kernel / kernel modules debugging o=
+n
+> PowerPC architecture (i.e P1022DS/RDK boards). I am specifically referrin=
+g
+> to the option of connecting hardware probe and debug the kernel / kernel
+> module via gdb/kgdb or some IDE. Please suggest any probe & IDE which
+> provide this facility.
 
-On 02-02-2012 7:23, Shengzhou Liu wrote:
+BDI(2|3)000 and gdb works pretty well, then there are USBTAPs from
+Freescale and CodeWarrior. You could also use an RTL simulator like
+simics for this part which has a lot of advanced features.
 
-> when missing USB PHY clock, kernel booting up will halt during USB
-> initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid
-> CPU hang in this case.
-
-> Signed-off-by: Shengzhou Liu<Shengzhou.Liu@freescale.com>
-[...]
-
-> diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-> index 4918062..dd3dc47 100644
-> --- a/drivers/usb/host/ehci-fsl.h
-> +++ b/drivers/usb/host/ehci-fsl.h
-> @@ -45,5 +45,6 @@
->   #define FSL_SOC_USB_PRICTRL	0x40c	/* NOTE: big-endian */
->   #define FSL_SOC_USB_SICTRL	0x410	/* NOTE: big-endian */
->   #define FSL_SOC_USB_CTRL	0x500	/* NOTE: big-endian */
-> +#define CTRL_PHY_CLK_VALID      (1 << 17)
-
-    Indent the macro value with tabs please.
-
-WBR, Sergei
+-M=
