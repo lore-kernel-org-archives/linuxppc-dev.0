@@ -1,23 +1,19 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe001.messaging.microsoft.com
- [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A41B104785
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2012 08:51:07 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: acrux <acrux_it@libero.it>
-Subject: Re: Efika (mpc5200b): sound doesn't build/work from linux-2.6.38.x
-Date: Thu, 2 Feb 2012 21:50:02 +0000
-Message-ID: <CAOZdJXU+kiQgsM9F3JVG3o8LV4oejSA1D85bFX+ZsqB7f9j_Ew@mail.gmail.com>
-References: <20120202034803.2fb7690b.acrux_it@libero.it>
- <20120202175751.2c6e4bb9.acrux_it@libero.it>
-In-Reply-To: <20120202175751.2c6e4bb9.acrux_it@libero.it>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 647F3104792
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2012 11:00:13 +1100 (EST)
+Message-ID: <4F2B1138.2090004@windriver.com>
+Date: Thu, 2 Feb 2012 17:42:00 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jon Smirl <jonsmirl@gmail.com>
+To: <leoli@freescale.com>
+Subject: [RFC] Multi queue support in ethernet/freescale/ucc_geth.c
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 2, 2012 at 10:57 AM, acrux <acrux_it@libero.it> wrote:
+Hi Li,
 
+A while back DaveM mentioned that it would be good to
+break out the ring allocations[1] in this driver.
 
-> well, i got the same error with also linux-2.6.37. Btw, this was already =
-reported about a year ago:
-> http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-February/088415.html
+I was looking at it, and in the process noticed this:
 
-I think this was fixed already.  You're using an obsolete kernel.
+$ grep 'numQueues.*=' drivers/net/ethernet/freescale/ucc_geth.c 
+        .numQueuesTx = 1,
+        .numQueuesRx = 1,
+$ 
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+My interpretation of the above is that there is no way
+(aside from a code edit) to enable multi queue support.
+They are only ever assigned one time, to a value of one.
+
+Assuming I'm not missing something obvious, is the multi
+queue support functional and tested, or just old code
+that never got tested and subsequently enabled?
+
+The reason I ask, is that the ring allocation code gets rid
+of the loop wrapping it, if the driver is really only meant
+to ever have just single queues for Rx/Tx. And other areas
+of the driver can also be simplified accordingly as well.
+
+Thanks,
+Paul.
+
+[1] http://lists.openwall.net/netdev/2010/09/06/45
