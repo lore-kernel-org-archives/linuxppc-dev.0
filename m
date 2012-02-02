@@ -1,24 +1,22 @@
-Return-Path: <B36685@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe006.messaging.microsoft.com
- [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BFB94B71A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2012 14:32:13 +1100 (EST)
-From: Liu Shengzhou-B36685 <B36685@freescale.com>
-To: Pavan Kondeti <pkondeti@codeaurora.org>
-Subject: RE: [PATCH] powerpc/usb: fix issue of CPU halt when missing USB PHY
- clock
-Date: Thu, 2 Feb 2012 03:31:32 +0000
-Message-ID: <3F453DDFF675A64A89321A1F352810216EDA8B@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1328088017-9262-1-git-send-email-Shengzhou.Liu@freescale.com>
- <4F290FCF.1040406@codeaurora.org>
-In-Reply-To: <4F290FCF.1040406@codeaurora.org>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <Farrukh_Arshad@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "relay1.mentorg.com",
+ Issuer "Entrust Certification Authority - L1B" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E8D6D104785
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2012 19:59:28 +1100 (EST)
+Received: from svr-orw-fem-01.mgc.mentorg.com ([147.34.98.93])
+ by relay1.mentorg.com with esmtp
+ id 1RssVp-0000Se-Un from Farrukh_Arshad@mentor.com
+ for linuxppc-dev@lists.ozlabs.org; Thu, 02 Feb 2012 00:59:25 -0800
+From: "Arshad, Farrukh" <Farrukh_Arshad@mentor.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: General question : Debugging Kernel on PPC
+Date: Thu, 2 Feb 2012 08:59:22 +0000
+Message-ID: <93CD5F41FDBC6042A6B449764F3B35CC050CECE7@EU-MBX-03.mgc.mentorg.com>
+Content-Type: multipart/alternative;
+ boundary="_000_93CD5F41FDBC6042A6B449764F3B35CC050CECE7EUMBX03mgcmento_"
 MIME-Version: 1.0
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--_000_93CD5F41FDBC6042A6B449764F3B35CC050CECE7EUMBX03mgcmento_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> -----Original Message-----
-> From: Pavan Kondeti [mailto:pkondeti@codeaurora.org]
-> Sent: Wednesday, February 01, 2012 6:11 PM
-> To: Liu Shengzhou-B36685
-> Cc: linux-usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH] powerpc/usb: fix issue of CPU halt when missing
-> USB PHY clock
->=20
-> On 2/1/2012 2:50 PM, Shengzhou Liu wrote:
-> > diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-
-> fsl.c
-> > index b556a72..834237e 100644
-> > --- a/drivers/usb/host/ehci-fsl.c
-> > +++ b/drivers/usb/host/ehci-fsl.c
-> > @@ -239,7 +239,7 @@ static void ehci_fsl_setup_phy(struct ehci_hcd
-> *ehci,
-> >  	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
-> >  }
-> >
-> > -static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
-> > +static int ehci_fsl_usb_setup(struct ehci_hcd *ehci)
-> >  {
-> >  	struct usb_hcd *hcd =3D ehci_to_hcd(ehci);
-> >  	struct fsl_usb2_platform_data *pdata; @@ -299,12 +299,19 @@
-> static
-> > void ehci_fsl_usb_setup(struct ehci_hcd *ehci)  #endif
-> >  		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
-> >  	}
-> > +
-> > +	if (!(in_be32(non_ehci + FSL_SOC_USB_CTRL) & CTRL_PHY_CLK_VALID))
-> {
-> > +		printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
-> > +		return -1;
->=20
-> Please return a proper error code. -ENODEV ?
+Greetings All,
 
-[Shengzhou] Ok, updated in v2, thanks.
->=20
-> > +	}
-> > +	return 0;
-> >  }
-> >
-> --
-> Sent by a consultant of the Qualcomm Innovation Center, Inc.
-> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora
-> Forum.
+I have general question regarding kernel debugging on PowerPC platform. Exc=
+ept printk what are other ways for kernel / kernel modules debugging on Pow=
+erPC architecture (i.e P1022DS/RDK boards). I am specifically referring to =
+the option of connecting hardware probe and debug the kernel / kernel modul=
+e via gdb/kgdb or some IDE. Please suggest any probe & IDE which provide th=
+is facility.
+
+Best Regards
+
+Farrukh Arshad
+
+
+--_000_93CD5F41FDBC6042A6B449764F3B35CC050CECE7EUMBX03mgcmento_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta name=3D"Generator" content=3D"Microsoft Word 14 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"Felix Titling";
+	panose-1:4 6 5 5 6 2 2 2 10 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-family:"Calibri","sans-serif";}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal">Greetings All,<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">I have general question regarding kernel debugging o=
+n PowerPC platform. Except printk what are other ways for kernel / kernel m=
+odules debugging on PowerPC architecture (i.e P1022DS/RDK boards). I am spe=
+cifically referring to the option
+ of connecting hardware probe and debug the kernel / kernel module via gdb/=
+kgdb or some IDE. Please suggest any probe &amp; IDE which provide this fac=
+ility.<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Best Regards<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:10.0pt;font-family:&quot=
+;Felix Titling&quot;;color:#943634">Farrukh</span></b><b><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Felix Titling&quot;"> Arshad<o:p></o:p></sp=
+an></b></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+</div>
+</body>
+</html>
+
+--_000_93CD5F41FDBC6042A6B449764F3B35CC050CECE7EUMBX03mgcmento_--
