@@ -1,24 +1,19 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
- [209.85.160.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3F688104796
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2012 04:56:41 +1100 (EST)
-Received: by ghbg19 with SMTP id g19so1346149ghb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2012 09:56:38 -0800 (PST)
+Return-Path: <joey@joescan.com>
+Received: from exprod7og119.obsmtp.com (exprod7og119.obsmtp.com [64.18.2.16])
+ by ozlabs.org (Postfix) with SMTP id E4575104792
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2012 05:43:56 +1100 (EST)
+Received: by vcbfk13 with SMTP id fk13so4210030vcb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2012 10:43:52 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1327117828-27085-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1327117828-27085-1-git-send-email-paul.gortmaker@windriver.com>
-Date: Thu, 2 Feb 2012 12:56:38 -0500
-Message-ID: <CAP=VYLrPMwfEe09uW0=4NKNDPHkNEFcGjGBfDVa_rEFT3kMkZw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: dont include 8250 pre-setup if 8250 driver isn't
- enabled.
-From: Paul Gortmaker <paul.gortmaker@gmail.com>
-To: benh@kernel.crashing.org, paulus@samba.org
+In-Reply-To: <CAL_WD7iJceKMOX9dWDM-SuiO5a_M-3Kp4FnZqS+AuEKvphq_-w@mail.gmail.com>
+References: <CAL_WD7hYZoaB87vZzj4Fk9nsHYSoe+qWq87g72ERLAkMur5vYg@mail.gmail.com>
+ <CAL_WD7iJceKMOX9dWDM-SuiO5a_M-3Kp4FnZqS+AuEKvphq_-w@mail.gmail.com>
+Date: Thu, 2 Feb 2012 10:43:52 -0800
+Message-ID: <CAL_WD7hkuhi4D2CPuoLyG2-7w8JmSQDnxiYbqKxzGNep5ONsrg@mail.gmail.com>
+Subject: Re: MPC5200B FEC TX packets getting stuck
+From: Joey Nelson <joey@joescan.com>
+To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,72 +23,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 20, 2012 at 10:50 PM, Paul Gortmaker
-<paul.gortmaker@windriver.com> wrote:
-> The legacy_serial code was setting things up based on the assumption
-> that the main 8250 driver would be loaded shortly after. =A0But some
-> randconfigs exposed an issue where early debug (UDB) UART support was
-> enabled, yet the core UART 8250 support was disabled.
+I ran my test overnight with the TX irq time-stamping and finally got
+one delayed packet. Based on the time-stamp data the packets are
+getting stuck in the FEC TX FIFO.
 
-Hi Ben,
+The calls to the xmit function are spaced our on about 150 us interval
+for a larger TCP socket write.  The BestComm tx irq is handled within
+about 115us of the xmit (so for TCP at least there is unlikely to be
+more than 1 skb in the ring).  The "stuck" packet generates a tx irq
+just like normal.  Which tells me that BestComm has copied it to the
+FEC TX fifo, but for some reason the FEC has decided to just sit on
+it.  But BestComm starts adding another packet, it the FEC starts to
+transmit the "stuck" packet.
 
-Can you mark this in patchworks as Superseded?  It is at:
+This testing has been on Kernel 3.1.6 (but I've seen the same problem
+on a kernel based on the OLEAS pcm030 2.6.23 kernel).  The hardware is
+a custom board with 16 bit wide DDR SDRAM.
 
-http://patchwork.ozlabs.org/patch/137142/
-
-You fixed it independently with this:
-
-http://git.kernel.org/?p=3Dlinux/kernel/git/benh/powerpc.git;a=3Dcommit;h=
-=3D3493c85366ba09c9d0972c919e7123367a39982a
-
-Thanks,
-Paul.
+CPU:   MPC5200B v2.2, Core v1.4 at 396 MHz
+      Bus 132 MHz, IPB 132 MHz, PCI 33 MHz
 
 
+Joey Nelson
+
+On Wed, Feb 1, 2012 at 6:33 PM, Joey Nelson <joey@joescan.com> wrote:
+> First I think the spin_locks in the irq handlers should be
+> spin_lock_irqsave(), because the same lock is used in multiple irq
+> handlers. =A0If we get an rx interrupt while the tx interrupt holds the
+> spin lock, this would seem to be a problem. =A0In this case maybe not
+> because it is a single processor system and spin_locks should compile
+> to nothing(I haven't verified this), and the rx and tx handlers don't
+> really touch any common data elements. =A0I haven't tested changing
+> this, because I've currently running a long test.
 >
-> In theory a person could care about _really_ early UART output for
-> early debug, but not care about generic console output via UART on
-> embedded devices, so fix things so it is a valid combination.
+> On another front, I put some time stamp tracing into the
+> mpc52xx_fec_start_xmit, and verified that the delay is happening after
+> the packet is added the the BestComm ring buffer. =A0There will be 3
+> quick calls to the xmit, but I'll only see 2 packets at the PC, until
+> 200 - 400 ms later, when I'll get another xmit call (for the
+> retransmit), and then get two duplicate packets at pc.
 >
-> While this might seem like a pointless randconfig change, there are
-> some existing default configs that actually reflect the above setup.
+> Attempting to add time stamping to the TX irq handler have revealed
+> this to be a Heisenbug of sorts. After the following changes, I
+> haven't seen any delays two hours of running. =A0Previously every minute
+> of so.
 >
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> I'll let it run over night and see if I see an additional delays.
+> Next I'll remove the timestamp code, and attempt to capture the state
+> of the ring buffer and BestComm at the point the retransmit packet is
+> handed off to the driver. =A0The delayed packet has to be somewhere at
+> that point. =A0I could be in the FEC Queue, as I don't think I've seen a
+> delayed packet larger than 1k.
 >
-> diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/le=
-gacy_serial.c
-> index 3fea368..9a82a49 100644
-> --- a/arch/powerpc/kernel/legacy_serial.c
-> +++ b/arch/powerpc/kernel/legacy_serial.c
-> @@ -413,6 +413,14 @@ void __init find_legacy_serial_ports(void)
-> =A0 =A0 =A0 =A0DBG(" <- find_legacy_serial_port()\n");
-> =A0}
+> @@ -382,6 +414,8 @@
+> =A0=A0 =A0 =A0dev_kfree_skb_irq(skb);
+> =A0=A0 }
+> =A0=A0 spin_unlock(&priv->lock);
+> + =A0 js_irq_timestamps[js_irq_idx] =3D get_tbl();
+> + =A0 js_irq_idx =3D (js_irq_idx+1 =3D=3D TS_COUNT)? 0 : js_irq_idx+1;
 >
-> +/*
-> + * In theory, one could have the early debugging enabled, but yet not ca=
-re
-> + * about 8250 after that, i.e. PPC_UDBG_16550=3Dy but "SERIAL_8250 is no=
-t set".
-> + * Mostly appears in randconfig builds, but some defconfigs have this.
-> + */
-> +
-> +#ifdef CONFIG_SERIAL_8250
-> +
-> =A0static struct platform_device serial_device =3D {
-> =A0 =A0 =A0 =A0.name =A0 =3D "serial8250",
-> =A0 =A0 =A0 =A0.id =A0 =A0 =3D PLAT8250_DEV_PLATFORM,
-> @@ -523,6 +531,7 @@ static int __init serial_dev_init(void)
-> =A0}
-> =A0device_initcall(serial_dev_init);
+> =A0 =A0 netif_wake_queue(dev);
 >
-> +#endif /* CONFIG_SERIAL_8250 */
+> @@ -409,6 +443,7 @@
 >
-> =A0#ifdef CONFIG_SERIAL_8250_CONSOLE
-> =A0/*
-> --
-> 1.7.7.2
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+> Joey Nelson
+>
+>
+>
+> On Fri, Jan 27, 2012 at 12:14 PM, Joey Nelson <joey@joescan.com> wrote:
+>>
+>>
+>> In my application, I have a PC connected through TCP to a MPC5200B based=
+ system. =A0The PC sends a short request, the MPC5200B=A0receives=A0the req=
+uest and sends the data back. =A0It is doing this about 300 times per secon=
+d. =A0Normally exchange happens in just handful of milliseconds. =A0But ran=
+domly every 2 to 15 minutes the MPC5200B sends all but the last packet of t=
+he response, and about 200ms later the PC sends a delayed ACK, and the MPC5=
+200B TCP stack figures the packet was lost. =A0It then sends two nearly ide=
+ntical packets (The IP header Identification and Checksum fields are increm=
+ented). =A0I can also see that RetransSegs in /proc/net/snmp increments by =
+one for each of these delays.
+>>
+>> My theory is that the packet is getting suck somewhere in the network st=
+ack (most likely toward the bottom). =A0Then when another packet is sent, t=
+he suck one gets pushed out.
+>>
+>> I've done a test where I have another task on the MPC5200B sending UDP p=
+ackets to a different PC every 10ms. =A0This eliminated the long delays, an=
+d seems to support my stuck packet theory.
+>>
+>> I'm seeing the same issue with 2.6.23 and 3.1.6.
+>>
+>> I'm getting ready to dive into the hairy world of Bestcomm and FEC, but =
+I figured I'd see if anyone else has any suggestions before I make my decen=
+t. =A0Has anyone seen this=A0behavior=A0before? =A0Any likely candidates fo=
+r where the packet is getting stuck? =A0General advice for reference materi=
+als (I've started on Linux Device Drivers 3rd Ed, BestComm AN2604, and the =
+Datasheets)
+>>
+>> Thanks in advance.
+>>
+>> Joey Nelson
+>> joey@joescan.com
+>>
