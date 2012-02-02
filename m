@@ -1,23 +1,24 @@
-Return-Path: <vapier@gentoo.org>
-Received: from smtp.gentoo.org (smtp.gentoo.org [140.211.166.183])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 60D75104796
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2012 04:02:18 +1100 (EST)
-From: Mike Frysinger <vapier@gentoo.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Implement GET_IP/SET_IP for powerpc architecture.
-Date: Thu, 2 Feb 2012 12:02:13 -0500
-References: <20120202144125.GA6221@linux.vnet.ibm.com>
- <201202021128.49188.vapier@gentoo.org>
- <20120202163659.GD31984@linux.vnet.ibm.com>
-In-Reply-To: <20120202163659.GD31984@linux.vnet.ibm.com>
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+ [209.85.160.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3F688104796
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2012 04:56:41 +1100 (EST)
+Received: by ghbg19 with SMTP id g19so1346149ghb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2012 09:56:38 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11996328.L8tORn9GJu";
- protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <201202021202.16848.vapier@gentoo.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>
+In-Reply-To: <1327117828-27085-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1327117828-27085-1-git-send-email-paul.gortmaker@windriver.com>
+Date: Thu, 2 Feb 2012 12:56:38 -0500
+Message-ID: <CAP=VYLrPMwfEe09uW0=4NKNDPHkNEFcGjGBfDVa_rEFT3kMkZw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: dont include 8250 pre-setup if 8250 driver isn't
+ enabled.
+From: Paul Gortmaker <paul.gortmaker@gmail.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart11996328.L8tORn9GJu
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jan 20, 2012 at 10:50 PM, Paul Gortmaker
+<paul.gortmaker@windriver.com> wrote:
+> The legacy_serial code was setting things up based on the assumption
+> that the main 8250 driver would be loaded shortly after. =A0But some
+> randconfigs exposed an issue where early debug (UDB) UART support was
+> enabled, yet the core UART 8250 support was disabled.
 
-On Thursday 02 February 2012 11:36:59 Srikar Dronamraju wrote:
-> * Mike Frysinger <vapier@gentoo.org> [2012-02-02 11:28:46]:
-> > On Thursday 02 February 2012 09:41:25 Srikar Dronamraju wrote:
-> > > +#define profile_pc(regs) GET_IP(regs)
-> >=20
-> > pretty sure you don't need this as asm-generic/ptrace.h already has a
-> > definition for you
->=20
-> On ppc64, profile_pc is an extern function if CONFIG_SMP is set.
-> else its same as whats defined in asm-generic/ptrace.h
+Hi Ben,
 
-the code i quoted was from !CONFIG_SMP
-=2Dmike
+Can you mark this in patchworks as Superseded?  It is at:
 
---nextPart11996328.L8tORn9GJu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+http://patchwork.ozlabs.org/patch/137142/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (GNU/Linux)
+You fixed it independently with this:
 
-iQIcBAABAgAGBQJPKsGYAAoJEEFjO5/oN/WBDSAQAJoRkJ0iZH0GXu6Ud17AYsV/
-OXtDbGZKNZd8c1I/QRacXA8j4R0s0ABG4WZg9Q1NSk+VPF4biFjAXlj3VtwyjERf
-Ikrcz15Gj0FknFZ1gyLghHpI+tsmfx3+SpQSGNeXSJvc2ZPcFw92ZMpMhRrbB5/R
-n+opRJPFt3ba8L9PV105kbyWOA4YCx9gtbR/bDMc514rOTMMeBYy6h1nO8nzW5q0
-IoIUuRZEW6nMdoct7uYVtJC08TN3M7b2Un7pgcK0Qi28ypFGDjtdtMi7h2O22NnA
-7JrsWxAT5aXb4ZvGfo/yp3ggqkp0vTwWUWkgaESAyiieSZkrAsg+hG6Xo4p4LufK
-fOX35VM6tKwN8hljgM2BQRazDH1QAUr0SodtAWTJF/IhHKgCdaunIz10ga5R6cx/
-Tg9kMBlV2ArFClJ4ngJn0OgDGRi7yVD+MUDG2XbhQOZMDq3TThp/wgElpbLqI2p8
-eGPEfDMGKjZRqjS7T/lQLrRktYeTC3wMhuxpz8T4G37e70NhsJ4o4DgSn4XxBoUq
-6HBEjuMOil1IKq9a5sV04dpBo4qSRWUG0cY/dhAl7q2CdJBVKKyN3hPjrnaSdP2w
-URFSbmVlWPm9J3e1D6uCPq/C+xwOww3PG76MEDfZcAUvAYx/d4RmJjCS9SImU6vB
-/gohvFOOpX8mFUc9XSWd
-=zMFp
------END PGP SIGNATURE-----
+http://git.kernel.org/?p=3Dlinux/kernel/git/benh/powerpc.git;a=3Dcommit;h=
+=3D3493c85366ba09c9d0972c919e7123367a39982a
 
---nextPart11996328.L8tORn9GJu--
+Thanks,
+Paul.
+
+
+>
+> In theory a person could care about _really_ early UART output for
+> early debug, but not care about generic console output via UART on
+> embedded devices, so fix things so it is a valid combination.
+>
+> While this might seem like a pointless randconfig change, there are
+> some existing default configs that actually reflect the above setup.
+>
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>
+> diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/le=
+gacy_serial.c
+> index 3fea368..9a82a49 100644
+> --- a/arch/powerpc/kernel/legacy_serial.c
+> +++ b/arch/powerpc/kernel/legacy_serial.c
+> @@ -413,6 +413,14 @@ void __init find_legacy_serial_ports(void)
+> =A0 =A0 =A0 =A0DBG(" <- find_legacy_serial_port()\n");
+> =A0}
+>
+> +/*
+> + * In theory, one could have the early debugging enabled, but yet not ca=
+re
+> + * about 8250 after that, i.e. PPC_UDBG_16550=3Dy but "SERIAL_8250 is no=
+t set".
+> + * Mostly appears in randconfig builds, but some defconfigs have this.
+> + */
+> +
+> +#ifdef CONFIG_SERIAL_8250
+> +
+> =A0static struct platform_device serial_device =3D {
+> =A0 =A0 =A0 =A0.name =A0 =3D "serial8250",
+> =A0 =A0 =A0 =A0.id =A0 =A0 =3D PLAT8250_DEV_PLATFORM,
+> @@ -523,6 +531,7 @@ static int __init serial_dev_init(void)
+> =A0}
+> =A0device_initcall(serial_dev_init);
+>
+> +#endif /* CONFIG_SERIAL_8250 */
+>
+> =A0#ifdef CONFIG_SERIAL_8250_CONSOLE
+> =A0/*
+> --
+> 1.7.7.2
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
