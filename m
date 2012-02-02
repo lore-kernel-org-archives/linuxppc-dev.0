@@ -1,18 +1,23 @@
-Return-Path: <joey@joescan.com>
-Received: from exprod7og124.obsmtp.com (exprod7og124.obsmtp.com [64.18.2.26])
- by ozlabs.org (Postfix) with SMTP id 8BA7D104785
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2012 13:33:17 +1100 (EST)
-Received: by mail-vw0-f52.google.com with SMTP id h1so1974885vbi.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Feb 2012 18:33:13 -0800 (PST)
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
+ [209.85.214.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6DEE41007D1
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Feb 2012 13:34:58 +1100 (EST)
+Received: by bkat2 with SMTP id t2so1697209bka.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 01 Feb 2012 18:34:55 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <CAL_WD7hYZoaB87vZzj4Fk9nsHYSoe+qWq87g72ERLAkMur5vYg@mail.gmail.com>
-References: <CAL_WD7hYZoaB87vZzj4Fk9nsHYSoe+qWq87g72ERLAkMur5vYg@mail.gmail.com>
-Date: Wed, 1 Feb 2012 18:33:13 -0800
-Message-ID: <CAL_WD7iJceKMOX9dWDM-SuiO5a_M-3Kp4FnZqS+AuEKvphq_-w@mail.gmail.com>
-Subject: Re: MPC5200B FEC TX packets getting stuck
-From: Joey Nelson <joey@joescan.com>
-To: linuxppc-dev@lists.ozlabs.org
+Sender: paul.gortmaker@gmail.com
+In-Reply-To: <1328115915-16172-1-git-send-email-claudiu.manoil@freescale.com>
+References: <1328115915-16172-1-git-send-email-claudiu.manoil@freescale.com>
+Date: Wed, 1 Feb 2012 21:34:53 -0500
+Message-ID: <CAP=VYLpR2=OwdX3BruRq47HQKgTEnjD_OQizvJz7Zng50RZ_jA@mail.gmail.com>
+Subject: Re: [PATCH][v2] powerpc/85xx: Fix compiler error with THIS_MODULE and
+ related
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Claudiu Manoil <claudiu.manoil@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,84 +27,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-First I think the spin_locks in the irq handlers should be
-spin_lock_irqsave(), because the same lock is used in multiple irq
-handlers.  If we get an rx interrupt while the tx interrupt holds the
-spin lock, this would seem to be a problem.  In this case maybe not
-because it is a single processor system and spin_locks should compile
-to nothing(I haven't verified this), and the rx and tx handlers don't
-really touch any common data elements.  I haven't tested changing
-this, because I've currently running a long test.
+On Wed, Feb 1, 2012 at 12:05 PM, Claudiu Manoil
+<claudiu.manoil@freescale.com> wrote:
+> CC =A0 =A0 =A0arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:209:13: error: 'THIS_MODULE' undecl=
+ared here (not in a function)
 
-On another front, I put some time stamp tracing into the
-mpc52xx_fec_start_xmit, and verified that the delay is happening after
-the packet is added the the BestComm ring buffer.  There will be 3
-quick calls to the xmit, but I'll only see 2 packets at the PC, until
-200 - 400 ms later, when I'll get another xmit call (for the
-retransmit), and then get two duplicate packets at pc.
+Looks OK to me -- must be the 1st time this code has been
+merged into the 3.2 baseline, since the export.h change was
+news in the last release, and not anything new for 3.3.
 
-Attempting to add time stamping to the TX irq handler have revealed
-this to be a Heisenbug of sorts. After the following changes, I
-haven't seen any delays two hours of running.  Previously every minute
-of so.
+Acked-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-I'll let it run over night and see if I see an additional delays.
-Next I'll remove the timestamp code, and attempt to capture the state
-of the ring buffer and BestComm at the point the retransmit packet is
-handed off to the driver.  The delayed packet has to be somewhere at
-that point.  I could be in the FEC Queue, as I don't think I've seen a
-delayed packet larger than 1k.
-
-@@ -382,6 +414,8 @@
- =A0 =A0 =A0dev_kfree_skb_irq(skb);
- =A0 }
- =A0 spin_unlock(&priv->lock);
-+ =A0 js_irq_timestamps[js_irq_idx] =3D get_tbl();
-+ =A0 js_irq_idx =3D (js_irq_idx+1 =3D=3D TS_COUNT)? 0 : js_irq_idx+1;
-
-=A0 =A0 netif_wake_queue(dev);
-
-@@ -409,6 +443,7 @@
+Paul.
 
 
-
-Joey Nelson
-
-
-
-On Fri, Jan 27, 2012 at 12:14 PM, Joey Nelson <joey@joescan.com> wrote:
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:20: error: expected declaration=
+ specifiers or '...' before string constant
+> cc1: warnings being treated as errors
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:1: error: data definition has n=
+o type or storage class
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:1: error: type defaults to 'int=
+' in declaration of 'MODULE_DESCRIPTION'
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:20: error: function declaration=
+ isn't a prototype
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:16: error: expected declaration=
+ specifiers or '...' before string constant
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:1: error: data definition has n=
+o type or storage class
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:1: error: type defaults to 'int=
+' in declaration of 'MODULE_LICENSE'
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:16: error: function declaration=
+ isn't a prototype
+> make[1]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
+>
+> ...
+>
+> =A0CC =A0 =A0 =A0arch/powerpc/sysdev/fsl_85xx_cache_sram.o
+> cc1: warnings being treated as errors
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: data definition ha=
+s no type or storage class
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: type defaults to '=
+int' in declaration of 'EXPORT_SYMBOL'
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: parameter names (w=
+ithout types) in function declaration
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: data definition ha=
+s no type or storage class
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: type defaults to '=
+int' in declaration of 'EXPORT_SYMBOL'
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: parameter names (w=
+ithout types) in function declaration
+> make[1]: *** [arch/powerpc/sysdev/fsl_85xx_cache_sram.o] Error 1
+>
+> Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+> ---
+> Replaced <linux/module.h> with <linux/export.h> for fsl_85xx_cache_sram.c=
+.
+>
+> =A0arch/powerpc/sysdev/fsl_85xx_cache_sram.c | =A0 =A01 +
+> =A0arch/powerpc/sysdev/fsl_85xx_l2ctlr.c =A0 =A0 | =A0 =A01 +
+> =A02 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sys=
+dev/fsl_85xx_cache_sram.c
+> index 1164158..37a6909 100644
+> --- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+> +++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+> @@ -24,6 +24,7 @@
+> =A0*/
+>
+> =A0#include <linux/kernel.h>
+> +#include <linux/export.h>
+> =A0#include <linux/slab.h>
+> =A0#include <linux/err.h>
+> =A0#include <linux/of_platform.h>
+> diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/=
+fsl_85xx_l2ctlr.c
+> index 5f88797..1957e53 100644
+> --- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+> +++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+> @@ -21,6 +21,7 @@
+> =A0*/
+>
+> =A0#include <linux/kernel.h>
+> +#include <linux/module.h>
+> =A0#include <linux/of_platform.h>
+> =A0#include <asm/io.h>
+>
+> --
+> 1.6.6
 >
 >
-> In my application, I have a PC connected through TCP to a MPC5200B based =
-system. =A0The PC sends a short request, the MPC5200B=A0receives=A0the requ=
-est and sends the data back. =A0It is doing this about 300 times per second=
-. =A0Normally exchange happens in just handful of milliseconds. =A0But rand=
-omly every 2 to 15 minutes the MPC5200B sends all but the last packet of th=
-e response, and about 200ms later the PC sends a delayed ACK, and the MPC52=
-00B TCP stack figures the packet was lost. =A0It then sends two nearly iden=
-tical packets (The IP header Identification and Checksum fields are increme=
-nted). =A0I can also see that RetransSegs in /proc/net/snmp increments by o=
-ne for each of these delays.
->
-> My theory is that the packet is getting suck somewhere in the network sta=
-ck (most likely toward the bottom). =A0Then when another packet is sent, th=
-e suck one gets pushed out.
->
-> I've done a test where I have another task on the MPC5200B sending UDP pa=
-ckets to a different PC every 10ms. =A0This eliminated the long delays, and=
- seems to support my stuck packet theory.
->
-> I'm seeing the same issue with 2.6.23 and 3.1.6.
->
-> I'm getting ready to dive into the hairy world of Bestcomm and FEC, but I=
- figured I'd see if anyone else has any suggestions before I make my decent=
-. =A0Has anyone seen this=A0behavior=A0before? =A0Any likely candidates for=
- where the packet is getting stuck? =A0General advice for reference materia=
-ls (I've started on Linux Device Drivers 3rd Ed, BestComm AN2604, and the D=
-atasheets)
->
-> Thanks in advance.
->
-> Joey Nelson
-> joey@joescan.com
->
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
