@@ -1,20 +1,20 @@
-Return-Path: <majianpeng@gmail.com>
-Received: from mail-tul01m020-f179.google.com (mail-tul01m020-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1A531104792
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2012 17:45:27 +1100 (EST)
-Received: by obbup6 with SMTP id up6so4178267obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2012 22:45:24 -0800 (PST)
-Date: Fri, 3 Feb 2012 14:46:00 +0800
-From: "majianpeng" <majianpeng@gmail.com>
-To: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
-Subject: Using existing function instead statement
-Message-ID: <201202031445537184460@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Return-Path: <b-cousson@ti.com>
+Message-ID: <4F2BF3A9.8030200@ti.com>
+Date: Fri, 3 Feb 2012 15:48:09 +0100
+From: "Cousson, Benoit" <b-cousson@ti.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 13/25] irq_domain: Remove 'new' irq_domain in favour
+ of the ppc one
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+ <1327700179-17454-14-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1327700179-17454-14-git-send-email-grant.likely@secretlab.ca>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +24,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 53bcbc301e72ed951f67abb6428199e7edfccc16 Mon Sep 17 00:00:00 2001
-From: majianpeng <majianpeng@gmail.com>
-Date: Fri, 3 Feb 2012 14:35:59 +0000
-Subject: [PATCH] Using existing function instead statement.
+Hi Grant,
+
+I finally had the time to rebase most of the OMAP3 and OMAP4 DT patches 
+on your latest irq_domain series and found a couple of minors 
+regressions that breaks OMAP3 boot.
+
+On 1/27/2012 10:36 PM, Grant Likely wrote:
+
+[...]
+
+> diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
+> index e04e04dd..aab236f 100644
+> --- a/drivers/mfd/twl-core.c
+> +++ b/drivers/mfd/twl-core.c
+> @@ -263,8 +263,6 @@ struct twl_client {
+>
+>   static struct twl_client twl_modules[TWL_NUM_SLAVES];
+>
+> -static struct irq_domain domain;
+> -
+>   /* mapping the module id to slave id and base address */
+>   struct twl_mapping {
+>   	unsigned char sid;	/* Slave ID */
+> @@ -1225,14 +1223,8 @@ twl_probe(struct i2c_client *client, const struct i2c_device_id *id)
+>
+>   	pdata->irq_base = status;
+>   	pdata->irq_end = pdata->irq_base + nr_irqs;
+> -
+> -	domain.irq_base = pdata->irq_base;
+> -	domain.nr_irq = nr_irqs;
+> -#ifdef CONFIG_OF_IRQ
+> -	domain.of_node = of_node_get(node);
+> -	domain.ops =&irq_domain_simple_ops;
+> -#endif
+> -	irq_domain_add(&domain);
+> +	irq_domain_add_legacy(node, nr_irqs, pdata->irq_base, 0,
+> +			&irq_domain_simple_ops);
+
+This commit cannot build due to the missing last parameter.
+
+And in fact you fixed that in the next commit (#14), but the will break 
+git bisect and anyway that fix does not really belong to this commit.
+
+[PATCH v3 14/25] irq_domain: Remove irq_domain_add_simple()
+
+  	irq_domain_add_legacy(node, nr_irqs, pdata->irq_base, 0,
+-			      &irq_domain_simple_ops);
++			      &irq_domain_simple_ops, NULL);
 
 
-Signed-off-by: majianpeng <majianpeng@gmail.com>
+Moreover, it looks like this new irq_domain code is checking the number 
+of hwirq and is not as lazy as the previous one :-)
+
+Because of that and because of the wrong number of IRQs I put for the 
+twl4030 :-(, it does not handle properly the children of the twl4030 now 
+and print a big warning at boot time due to the following check.
+
+   WARN_ON(hwirq < first_hwirq || hwirq >= first_hwirq + size)
+
+In fact 8 was just the number for the core functionality, but that chip 
+does have some other interrupts for sub function like GPIOs and power 
+events.
+
+With the following fix, it works fine.
+
+Regards,
+Benoit
+
+
 ---
- drivers/macintosh/adb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ From 12781619d2ab8d6d724acabc6873954f0f9f4347 Mon Sep 17 00:00:00 2001
+From: Benoit Cousson <b-cousson@ti.com>
+Date: Fri, 3 Feb 2012 14:58:17 +0100
+Subject: [PATCH] mfd: twl-core.c: Fix the number of interrupts managed 
+by twl4030
 
-diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index 75049e7..b026896 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -710,7 +710,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	req = NULL;
- 	spin_lock_irqsave(&state->lock, flags);
- 	add_wait_queue(&state->wait_queue, &wait);
--	current->state = TASK_INTERRUPTIBLE;
-+	set_current_state(TASK_INTERRUPTIBLE);
- 
- 	for (;;) {
- 		req = state->completed;
-@@ -734,7 +734,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 		spin_lock_irqsave(&state->lock, flags);
- 	}
- 
--	current->state = TASK_RUNNING;
-+	set_current_state(TASK_RUNNING);
- 	remove_wait_queue(&state->wait_queue, &wait);
- 	spin_unlock_irqrestore(&state->lock, flags);
- 	
+TWL4030 does handle 3 different interrupts ranges: 8 for the core, 8 for 
+the power events and 18 for the GPIOs.
+
+Change the total number of interrupts managed by TWL4030 from 8 to 34.
+
+Signed-off-by: Benoit Cousson <b-cousson@ti.com>
+---
+  drivers/mfd/twl-core.c |    2 +-
+  1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
+index e63b408..66f9bff 100644
+--- a/drivers/mfd/twl-core.c
++++ b/drivers/mfd/twl-core.c
+@@ -149,7 +149,7 @@
+
+  #define TWL_MODULE_LAST TWL4030_MODULE_LAST
+
+-#define TWL4030_NR_IRQS    8
++#define TWL4030_NR_IRQS    34 /* core:8, power:8, gpio: 18 */
+  #define TWL6030_NR_IRQS    20
+
+  /* Base Address defns for twl4030_map[] */
 -- 
-1.7.3
-
- 				
---------------
-majianpeng
-2012-02-03
+1.7.0.4
