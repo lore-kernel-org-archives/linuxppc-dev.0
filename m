@@ -1,25 +1,23 @@
-Return-Path: <yinghai@kernel.org>
-Received: from rcsinet15.oracle.com (rcsinet15.oracle.com [148.87.113.117])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "rcsinet15.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 520A7B7243
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2012 17:59:47 +1100 (EST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Tony Luck <tony.luck@intel.com>
-Subject: [PATCH 09/24] PCI, powerpc: Register busn_res for root buses
-Date: Sat,  4 Feb 2012 22:57:53 -0800
-Message-Id: <1328425088-6562-10-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
-References: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
- linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
- Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+ [65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 785B8B7224
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2012 02:25:13 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: acrux <acrux_it@libero.it>
+Subject: Re: Efika (mpc5200b): sound doesn't build/work from linux-2.6.38.x
+Date: Sun, 5 Feb 2012 15:25:00 +0000
+Message-ID: <CAOZdJXVJdb0NsXQO-Dw4uT50B6eCCDLVGgALyP9oACACv0aXuA@mail.gmail.com>
+References: <20120202034803.2fb7690b.acrux_it@libero.it>
+ <20120202175751.2c6e4bb9.acrux_it@libero.it>
+ <CAOZdJXU+kiQgsM9F3JVG3o8LV4oejSA1D85bFX+ZsqB7f9j_Ew@mail.gmail.com>
+ <20120204030207.0d5cec19.acrux_it@libero.it>
+In-Reply-To: <20120204030207.0d5cec19.acrux_it@libero.it>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/pci-common.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+On Fri, Feb 3, 2012 at 8:02 PM, acrux <acrux_it@libero.it> wrote:
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index cce98d7..501f29b 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1732,6 +1732,8 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 	bus->secondary = hose->first_busno;
- 	hose->bus = bus;
- 
-+	pci_bus_insert_busn_res(bus, hose->first_busno, hose->last_busno);
-+
- 	/* Get probe mode and perform scan */
- 	mode = PCI_PROBE_NORMAL;
- 	if (node && ppc_md.pci_probe_mode)
-@@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 		of_scan_bus(node, bus);
- 	}
- 
--	if (mode == PCI_PROBE_NORMAL)
-+	if (mode == PCI_PROBE_NORMAL) {
-+		pci_bus_update_busn_res_end(bus, 255);
- 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
-+		pci_bus_update_busn_res_end(bus, bus->subordinate);
-+	}
- 
- 	/* Platform gets a chance to do some global fixups before
- 	 * we proceed to resource allocation
--- 
-1.7.7
+> as i said [1] it seems to be fixed only in 3.x instead the last working o=
+ne is the obsolete 2.6.36.x .
+> Anyway, alog the sound/soc/fsl/mpc5200_dma.c now builds the sound is stil=
+l broken.
+
+Ok, I missed that part in your email.
+
+The Efika sound driver was not being compiled by default for a very
+long time, so I think everyone just forgot about it.  I posted a patch
+to enable it by default and fix the compilation errors, but I'm pretty
+sure that it's succumbed to bit rot.  ALSA has changed, especially
+with the introduction of device trees, and so now someone needs to fix
+the Efika driver.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
