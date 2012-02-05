@@ -1,16 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
-In-reply-to: <4F26274B.2040401@gmx.de>
-References: <19504.1326673788@neuling.org> <4F1370C9.9010400@freescale.com>
- <21913.1326675139@neuling.org> <4F138CBB.1080901@freescale.com>
- <21370.1326683320@neuling.org> <4F26274B.2040401@gmx.de>
-Date: Mon, 06 Feb 2012 09:25:28 +1100
-Message-ID: <8068.1328480728@neuling.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- Tabi Timur-B04825 <B04825@freescale.com>
+Return-Path: <w@1wt.eu>
+Received: from 1wt.eu (1wt.eu [62.212.114.60])
+ by ozlabs.org (Postfix) with ESMTP id 01B03B71D5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2012 09:35:43 +1100 (EST)
+Message-Id: <20120205220950.472021223@pcw.home.local>
+Date: Sun, 05 Feb 2012 23:10:13 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: [PATCH 24/91] seqlock: Dont smp_rmb in seqlock reader spin loop
+In-Reply-To: <0635750f5f06ed2ca212b91fcb5c4483@local>
+Cc: Nick Piggin <npiggin@kernel.dk>, Eric Dumazet <eric.dumazet@gmail.com>,
+ Greg KH <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Milton Miller <miltonm@bga.com>, Andi Kleen <andi@firstfloor.org>,
+ Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,26 +23,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <4F26274B.2040401@gmx.de> you wrote:
-> On 01/16/2012 03:08 AM, Michael Neuling wrote:
-> [...]
-> > From: Michael Neuling <mikey@neuling.org>
-> > 
-> > [PATCH] drivers/video: compile fixes for fsl-diu-fb.c
-> > 
-> > Fix a compiler errors introduced in:
-> >   commit ddd3d905436b572ebadc09dcf2d12ca5b37020a0
-> >   Author: Timur Tabi <timur@freescale.com>
-> >   drivers/video: fsl-diu-fb: merge all allocated data into one block
-> > 
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> 
-> Applied.
+2.6.27-longterm review patch.  If anyone has any objections, please let us know.
 
-Florian,
+------------------
 
-I've not seen this appear in mainline as yet.  
+commit 5db1256a5131d3b133946fa02ac9770a784e6eb2 upstream.
 
-When do you expect to send a pull request?
+Move the smp_rmb after cpu_relax loop in read_seqlock and add
+ACCESS_ONCE to make sure the test and return are consistent.
 
-Mikey
+A multi-threaded core in the lab didn't like the update
+from 2.6.35 to 2.6.36, to the point it would hang during
+boot when multiple threads were active.  Bisection showed
+af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
+Remove the per cpu tick skew) as the culprit and it is
+supported with stack traces showing xtime_lock waits including
+tick_do_update_jiffies64 and/or update_vsyscall.
+
+Experimentation showed the combination of cpu_relax and smp_rmb
+was significantly slowing the progress of other threads sharing
+the core, and this patch is effective in avoiding the hang.
+
+A theory is the rmb is affecting the whole core while the
+cpu_relax is causing a resource rebalance flush, together they
+cause an interfernce cadance that is unbroken when the seqlock
+reader has interrupts disabled.
+
+At first I was confused why the refactor in
+3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
+seqlock) didn't affect this patch application, but after some
+study that affected seqcount not seqlock. The new seqcount was
+not factored back into the seqlock.  I defer that the future.
+
+While the removal of the timer interrupt offset created
+contention for the xtime lock while a cpu does the
+additonal work to update the system clock, the seqlock
+implementation with the tight rmb spin loop goes back much
+further, and is just waiting for the right trigger.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Nick Piggin <npiggin@kernel.dk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
+Link: http://lkml.kernel.org/r/%3Cseqlock-rmb%40mdm.bga.com%3E
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ include/linux/seqlock.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: longterm-2.6.27/include/linux/seqlock.h
+===================================================================
+--- longterm-2.6.27.orig/include/linux/seqlock.h	2012-02-05 22:34:34.295914918 +0100
++++ longterm-2.6.27/include/linux/seqlock.h	2012-02-05 22:34:38.288914818 +0100
+@@ -88,12 +88,12 @@
+ 	unsigned ret;
+ 
+ repeat:
+-	ret = sl->sequence;
+-	smp_rmb();
++	ret = ACCESS_ONCE(sl->sequence);
+ 	if (unlikely(ret & 1)) {
+ 		cpu_relax();
+ 		goto repeat;
+ 	}
++	smp_rmb();
+ 
+ 	return ret;
+ }
