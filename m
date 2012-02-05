@@ -1,24 +1,17 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 12256B724D
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2012 09:32:01 +1100 (EST)
-Date: Sat, 4 Feb 2012 22:31:25 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <benh@kernel.crashing.org>
+Message-ID: <1328400065.30631.9.camel@pasglop>
 Subject: Re: [PATCH v3 00/25] irq_domain generalization and refinement
-Message-ID: <20120204223125.GO14129@n2100.arm.linux.org.uk>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Sun, 05 Feb 2012 11:01:05 +1100
+In-Reply-To: <20120204221748.GN14129@n2100.arm.linux.org.uk>
 References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
  <20120204221748.GN14129@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120204221748.GN14129@n2100.arm.linux.org.uk>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
  devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
  Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,7 +23,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Feb 04, 2012 at 10:17:48PM +0000, Russell King - ARM Linux wrote:
+On Sat, 2012-02-04 at 22:17 +0000, Russell King - ARM Linux wrote:
 > On Fri, Jan 27, 2012 at 02:35:54PM -0700, Grant Likely wrote:
 > > Hey everyone,
 > > 
@@ -42,28 +35,26 @@ On Sat, Feb 04, 2012 at 10:17:48PM +0000, Russell King - ARM Linux wrote:
 > Grant,
 > 
 > Can you answer me this: does this irqdomain support require DT?
-> 
+
+The original powerpc code this is based on didn't require it. It was an
+explicit design decision and I remember insisting that Grant follows it,
+but I haven't yet reviewed his last batch.
+
+DT is orthogonal. You have "helpers" that use the DT to resolve the
+domain of an interrupt source and do the mapping for you, but I made
+sure that you call always still create domains and map interrupts using
+explicit domain pointers & hw numbers.
+
+(And I need them to deal with ancient broken device-tree's on some
+platforms such as oldworld PowerMacs).
+
 > The question comes up because OMAP has converted some of their support
 > to require irq domain support for their PMICs, and it seems irq domain
 > support requires DT.  This seems to have made the whole of OMAP
 > essentially become a DT-only platform.
-> 
-> Removing the dependency on IRQ_DOMAIN brings up these build errors
-> in the twl-core code (that being the PMIC for OMAP CPUs):
-> 
-> drivers/mfd/twl-core.c: In function 'twl_probe':
-> drivers/mfd/twl-core.c:1229: error: invalid use of undefined type 'struct irq_domain'
-> drivers/mfd/twl-core.c:1230: error: invalid use of undefined type 'struct irq_domain'
-> drivers/mfd/twl-core.c:1235: error: implicit declaration of function 'irq_domain_add'
-> 
-> That's a bit of a problem, because afaik there aren't the DT descriptions
-> for the boards I have yet, so it's causing me to see regressions when
-> building and booting kernels with CONFIG_OF=n.
-> 
-> The more core-code we end up with which requires DT, the worse this
-> problem is going to become - and obviously saying "everyone must now
-> convert to DT" is, even today, a mammoth task.
-> 
+
+ .../...
+
 > Now, here's the thing: I believe that IRQ domains - at least as far as
 > the hwirq stuff - should be available irrespective of whether we have
 > the rest of the IRQ domain support code in place, so that IRQ support
@@ -76,75 +67,13 @@ On Sat, Feb 04, 2012 at 10:17:48PM +0000, Russell King - ARM Linux wrote:
 > 
 > How we fix this regression for 3.4 I've no idea at present, I'm trying
 > to work out what the real dependencies are for OMAP on this stuff.
+> 
+> Finally, do we need asm/irq.h in our asm/prom.h ?  That's causing
+> fragility between DT and non-DT builds, because people are finding
+> that their DT builds work without their mach/irqs.h includes but
+> fail when built with non-DT.  The only thing which DT might need -
+> at the most - is NR_IRQS, but I'd hope with things like irq domains
+> it doesn't actually require it.
 
-Actually, it turns out to be not that hard, because twl doesn't actually
-make use of the IRQ domain stuff:
-
-commit aeb5032b3f8b9ab69daa545777433fa94b3494c4
-Author:     Benoit Cousson <b-cousson@ti.com>
-AuthorDate: Mon Aug 29 16:20:23 2011 +0200
-Commit:     Samuel Ortiz <sameo@linux.intel.com>
-CommitDate: Mon Jan 9 00:37:40 2012 +0100
-
-    mfd: twl-core: Add initial DT support for twl4030/twl6030
-
-    [grant.likely@secretlab.ca: Fix IRQ_DOMAIN dependency in kconfig]
-
-Adding any dependency - especially one which wouldn't be enabled - for
-a new feature which wasn't required before is going to break existing
-users, so this shouldn't have been done in the first place.
-
-A better fix to preserve existing users would've been as below - yes
-it means more ifdefs, but if irq domain is to remain a DT only thing
-then we're going to end up with _lots_ of this stuff.
-
-I'd much prefer to see irq domain become more widely available so it
-doesn't require these ifdefs everywhere.
-
- drivers/mfd/Kconfig    |    2 +-
- drivers/mfd/twl-core.c |    4 ++++
- 2 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 28a301b..bd60ce0 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -200,7 +200,7 @@ config MENELAUS
- 
- config TWL4030_CORE
- 	bool "Texas Instruments TWL4030/TWL5030/TWL6030/TPS659x0 Support"
--	depends on I2C=y && GENERIC_HARDIRQS && IRQ_DOMAIN
-+	depends on I2C=y && GENERIC_HARDIRQS
- 	help
- 	  Say yes here if you have TWL4030 / TWL6030 family chip on your board.
- 	  This core driver provides register access and IRQ handling
-diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
-index e04e04d..5913aaa 100644
---- a/drivers/mfd/twl-core.c
-+++ b/drivers/mfd/twl-core.c
-@@ -263,7 +263,9 @@ struct twl_client {
- 
- static struct twl_client twl_modules[TWL_NUM_SLAVES];
- 
-+#ifdef CONFIG_IRQ_DOMAIN
- static struct irq_domain domain;
-+#endif
- 
- /* mapping the module id to slave id and base address */
- struct twl_mapping {
-@@ -1226,6 +1228,7 @@ twl_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 	pdata->irq_base = status;
- 	pdata->irq_end = pdata->irq_base + nr_irqs;
- 
-+#ifdef CONFIG_IRQ_DOMAIN
- 	domain.irq_base = pdata->irq_base;
- 	domain.nr_irq = nr_irqs;
- #ifdef CONFIG_OF_IRQ
-@@ -1233,6 +1236,7 @@ twl_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 	domain.ops = &irq_domain_simple_ops;
- #endif
- 	irq_domain_add(&domain);
-+#endif
- 
- 	if (i2c_check_functionality(client->adapter, I2C_FUNC_I2C) == 0) {
- 		dev_dbg(&client->dev, "can't talk I2C?\n");
+Cheers,
+Ben.
