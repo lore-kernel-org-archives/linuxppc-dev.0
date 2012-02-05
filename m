@@ -1,19 +1,17 @@
-Return-Path: <w@1wt.eu>
-Received: from 1wt.eu (1wt.eu [62.212.114.60])
- by ozlabs.org (Postfix) with ESMTP id 01B03B71D5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2012 09:35:43 +1100 (EST)
-Message-Id: <20120205220950.472021223@pcw.home.local>
-Date: Sun, 05 Feb 2012 23:10:13 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH 24/91] seqlock: Dont smp_rmb in seqlock reader spin loop
-In-Reply-To: <0635750f5f06ed2ca212b91fcb5c4483@local>
-Cc: Nick Piggin <npiggin@kernel.dk>, Eric Dumazet <eric.dumazet@gmail.com>,
- Greg KH <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- Milton Miller <miltonm@bga.com>, Andi Kleen <andi@firstfloor.org>,
- Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E76AFB7240
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2012 10:50:09 +1100 (EST)
+Message-ID: <1328485804.30631.10.camel@pasglop>
+Subject: [PATCH] powerpc/wsp: Permanently enable PCI class code workaround
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 06 Feb 2012 10:50:04 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jimi Xenidis <jimix@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,76 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.27-longterm review patch.  If anyone has any objections, please let us know.
+It appears that on the Chroma card, the class code of the root
+complex is still wrong even on DD2 or later chips. This could
+be a firmware issue, but that breaks resource allocation so let's
+unconditionally fix it up.
 
-------------------
-
-commit 5db1256a5131d3b133946fa02ac9770a784e6eb2 upstream.
-
-Move the smp_rmb after cpu_relax loop in read_seqlock and add
-ACCESS_ONCE to make sure the test and return are consistent.
-
-A multi-threaded core in the lab didn't like the update
-from 2.6.35 to 2.6.36, to the point it would hang during
-boot when multiple threads were active.  Bisection showed
-af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
-Remove the per cpu tick skew) as the culprit and it is
-supported with stack traces showing xtime_lock waits including
-tick_do_update_jiffies64 and/or update_vsyscall.
-
-Experimentation showed the combination of cpu_relax and smp_rmb
-was significantly slowing the progress of other threads sharing
-the core, and this patch is effective in avoiding the hang.
-
-A theory is the rmb is affecting the whole core while the
-cpu_relax is causing a resource rebalance flush, together they
-cause an interfernce cadance that is unbroken when the seqlock
-reader has interrupts disabled.
-
-At first I was confused why the refactor in
-3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
-seqlock) didn't affect this patch application, but after some
-study that affected seqcount not seqlock. The new seqcount was
-not factored back into the seqlock.  I defer that the future.
-
-While the removal of the timer interrupt offset created
-contention for the xtime lock while a cpu does the
-additonal work to update the system clock, the seqlock
-implementation with the tight rmb spin loop goes back much
-further, and is just waiting for the right trigger.
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@kernel.dk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
-Link: http://lkml.kernel.org/r/%3Cseqlock-rmb%40mdm.bga.com%3E
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- include/linux/seqlock.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/wsp/wsp_pci.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: longterm-2.6.27/include/linux/seqlock.h
-===================================================================
---- longterm-2.6.27.orig/include/linux/seqlock.h	2012-02-05 22:34:34.295914918 +0100
-+++ longterm-2.6.27/include/linux/seqlock.h	2012-02-05 22:34:38.288914818 +0100
-@@ -88,12 +88,12 @@
- 	unsigned ret;
+diff --git a/arch/powerpc/platforms/wsp/wsp_pci.c b/arch/powerpc/platforms/wsp/wsp_pci.c
+index e0262cd..d24b3ac 100644
+--- a/arch/powerpc/platforms/wsp/wsp_pci.c
++++ b/arch/powerpc/platforms/wsp/wsp_pci.c
+@@ -468,15 +468,15 @@ static void __init wsp_pcie_configure_hw(struct pci_controller *hose)
+ #define DUMP_REG(x) \
+ 	pr_debug("%-30s : 0x%016llx\n", #x, in_be64(hose->cfg_data + x))
  
- repeat:
--	ret = sl->sequence;
--	smp_rmb();
-+	ret = ACCESS_ONCE(sl->sequence);
- 	if (unlikely(ret & 1)) {
- 		cpu_relax();
- 		goto repeat;
- 	}
-+	smp_rmb();
+-#ifdef CONFIG_WSP_DD1_WORKAROUND_BAD_PCIE_CLASS
+-	/* WSP DD1 has a bogus class code by default in the PCI-E
+-	 * root complex's built-in P2P bridge */
++	/*
++	 * Some WSP variants  has a bogus class code by default in the PCI-E
++	 * root complex's built-in P2P bridge
++	 */
+ 	val = in_be64(hose->cfg_data + PCIE_REG_SYS_CFG1);
+ 	pr_debug("PCI-E SYS_CFG1 : 0x%llx\n", val);
+ 	out_be64(hose->cfg_data + PCIE_REG_SYS_CFG1,
+ 		 (val & ~PCIE_REG_SYS_CFG1_CLASS_CODE) | (PCI_CLASS_BRIDGE_PCI << 8));
+ 	pr_debug("PCI-E SYS_CFG1 : 0x%llx\n", in_be64(hose->cfg_data + PCIE_REG_SYS_CFG1));
+-#endif /* CONFIG_WSP_DD1_WORKAROUND_BAD_PCIE_CLASS */
  
- 	return ret;
- }
+ #ifdef CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS
+ 	/* XXX Disable TCE caching, it doesn't work on DD1 */
+-- 
+1.7.7.3
