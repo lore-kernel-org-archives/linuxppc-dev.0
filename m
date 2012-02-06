@@ -1,17 +1,20 @@
-Return-Path: <dhdang@apm.com>
-Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
- by ozlabs.org (Postfix) with SMTP id DEF86B7228
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2012 15:19:29 +1100 (EST)
-Received: by dadp19 with SMTP id p19so6684911dad.9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Feb 2012 20:19:27 -0800 (PST)
-From: Duc Dang <dhdang@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/2] powerpc/44x: Add more changes for APM821XX EMAC driver
-Date: Mon,  6 Feb 2012 11:10:57 +0700
-Message-Id: <1328501457-11516-1-git-send-email-dhdang@apm.com>
-Cc: Duc Dang <dhdang@apm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Sun, 5 Feb 2012 22:56:09 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v3 00/25] irq_domain generalization and refinement
+Message-ID: <20120206055609.GA21449@ponder.secretlab.ca>
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+ <20120204221748.GN14129@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120204221748.GN14129@n2100.arm.linux.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,148 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch includes:
+On Sat, Feb 04, 2012 at 10:17:48PM +0000, Russell King - ARM Linux wrote:
+> On Fri, Jan 27, 2012 at 02:35:54PM -0700, Grant Likely wrote:
+> > Hey everyone,
+> > 
+> > This patch series is ready for much wider consumption now.  I'd like
+> > to get it into linux-next ASAP because there will be ARM board support
+> > depending on it.  I'll wait a few days before I ask Stephen to pull
+> > this in.
+> 
+> Grant,
+> 
+> Can you answer me this: does this irqdomain support require DT?
 
-  Configure EMAC PHY clock source (clock from PHY or internal clock).
+No, it should not.  Any situation where it does is a bug.
 
-  Do not advertise PHY half duplex capability as APM821XX EMAC does not
-support half duplex mode.
+> Now, here's the thing: I believe that IRQ domains - at least as far as
+> the hwirq stuff - should be available irrespective of whether we have
+> the rest of the IRQ domain support code in place, so that IRQ support
+> code doesn't have to keep playing games to decode from the global
+> space to the per-controller number space.
 
-  Add changes to support configuring jumbo frame for APM821XX EMAC.
+Correct.  That's the intent.  My new series flushes out irq_domain quite a
+bit better and gets all architectures doing the same thing if they use
+irq_domains.  I've done some testing on both CONFIG_OF and !CONFIG_OF builds,
+but I'm going to do some more to make sure I've not missed anything.
 
-Signed-off-by: Duc Dang <dhdang@apm.com>
----
- drivers/net/ethernet/ibm/emac/core.c |   26 +++++++++++++++++++++++++-
- drivers/net/ethernet/ibm/emac/core.h |   13 +++++++++++--
- drivers/net/ethernet/ibm/emac/emac.h |    5 ++++-
- 3 files changed, 40 insertions(+), 4 deletions(-)
+> I believe that would certainly help the current OMAP problems, where
+> the current lack of CONFIG_IRQ_DOMAIN basically makes the kernel oops
+> on boot.
+> 
+> How we fix this regression for 3.4 I've no idea at present, I'm trying
+> to work out what the real dependencies are for OMAP on this stuff.
+> 
+> Finally, do we need asm/irq.h in our asm/prom.h ?  That's causing
+> fragility between DT and non-DT builds, because people are finding
+> that their DT builds work without their mach/irqs.h includes but
+> fail when built with non-DT.  The only thing which DT might need -
+> at the most - is NR_IRQS, but I'd hope with things like irq domains
+> it doesn't actually require it.
 
-diff --git a/drivers/net/ethernet/ibm/emac/core.c b/drivers/net/ethernet/ibm/emac/core.c
-index ed79b2d..de620f1 100644
---- a/drivers/net/ethernet/ibm/emac/core.c
-+++ b/drivers/net/ethernet/ibm/emac/core.c
-@@ -434,6 +434,11 @@ static inline u32 emac_iff2rmr(struct net_device *ndev)
- 	else if (!netdev_mc_empty(ndev))
- 		r |= EMAC_RMR_MAE;
- 
-+	if (emac_has_feature(dev, EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE)) {
-+		r &= ~EMAC4_RMR_MJS_MASK;
-+		r |= EMAC4_RMR_MJS(ndev->mtu);
-+	}
-+
- 	return r;
- }
- 
-@@ -965,6 +970,7 @@ static int emac_resize_rx_ring(struct emac_instance *dev, int new_mtu)
- 	int rx_sync_size = emac_rx_sync_size(new_mtu);
- 	int rx_skb_size = emac_rx_skb_size(new_mtu);
- 	int i, ret = 0;
-+	int mr1_jumbo_bit_change = 0;
- 
- 	mutex_lock(&dev->link_lock);
- 	emac_netif_stop(dev);
-@@ -1013,7 +1019,14 @@ static int emac_resize_rx_ring(struct emac_instance *dev, int new_mtu)
- 	}
-  skip:
- 	/* Check if we need to change "Jumbo" bit in MR1 */
--	if ((new_mtu > ETH_DATA_LEN) ^ (dev->ndev->mtu > ETH_DATA_LEN)) {
-+	if (emac_has_feature(dev, EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE))
-+		mr1_jumbo_bit_change = (new_mtu > ETH_DATA_LEN) ||
-+				(dev->ndev->mtu > ETH_DATA_LEN);
-+	else
-+		mr1_jumbo_bit_change = (new_mtu > ETH_DATA_LEN) ^
-+				(dev->ndev->mtu > ETH_DATA_LEN);
-+
-+	if (mr1_jumbo_bit_change) {
- 		/* This is to prevent starting RX channel in emac_rx_enable() */
- 		set_bit(MAL_COMMAC_RX_STOPPED, &dev->commac.flags);
- 
-@@ -2471,6 +2484,7 @@ static int __devinit emac_init_phy(struct emac_instance *dev)
- 
- 	/* Disable any PHY features not supported by the platform */
- 	dev->phy.def->features &= ~dev->phy_feat_exc;
-+	dev->phy.features &= ~dev->phy_feat_exc;
- 
- 	/* Setup initial link parameters */
- 	if (dev->phy.features & SUPPORTED_Autoneg) {
-@@ -2568,6 +2582,10 @@ static int __devinit emac_init_config(struct emac_instance *dev)
- 		if (of_device_is_compatible(np, "ibm,emac-405ex") ||
- 		    of_device_is_compatible(np, "ibm,emac-405exr"))
- 			dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
-+		if (of_device_is_compatible(np, "ibm,emac-apm821xx"))
-+			dev->features |= (EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE
-+					| EMAC_FTR_APM821XX_NO_HALF_DUPLEX
-+					| EMAC_FTR_460EX_PHY_CLK_FIX);
- 	} else if (of_device_is_compatible(np, "ibm,emac4")) {
- 		dev->features |= EMAC_FTR_EMAC4;
- 		if (of_device_is_compatible(np, "ibm,emac-440gx"))
-@@ -2818,6 +2836,12 @@ static int __devinit emac_probe(struct platform_device *ofdev)
- 	dev->stop_timeout = STOP_TIMEOUT_100;
- 	INIT_DELAYED_WORK(&dev->link_work, emac_link_timer);
- 
-+	/* Some SoCs like APM821xx does not support Half Duplex mode. */
-+	if (emac_has_feature(dev, EMAC_FTR_APM821XX_NO_HALF_DUPLEX))
-+		dev->phy_feat_exc = (SUPPORTED_1000baseT_Half
-+					| SUPPORTED_100baseT_Half
-+					| SUPPORTED_10baseT_Half);
-+
- 	/* Find PHY if any */
- 	err = emac_init_phy(dev);
- 	if (err != 0)
-diff --git a/drivers/net/ethernet/ibm/emac/core.h b/drivers/net/ethernet/ibm/emac/core.h
-index fa3ec57..9dea85a 100644
---- a/drivers/net/ethernet/ibm/emac/core.h
-+++ b/drivers/net/ethernet/ibm/emac/core.h
-@@ -325,7 +325,14 @@ struct emac_instance {
-  * Set if we need phy clock workaround for 460ex or 460gt
-  */
- #define EMAC_FTR_460EX_PHY_CLK_FIX	0x00000400
--
-+/*
-+ * APM821xx requires Jumbo frame size set explicitly
-+ */
-+#define EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE	0x00000800
-+/*
-+ * APM821xx does not support Half Duplex mode
-+ */
-+#define EMAC_FTR_APM821XX_NO_HALF_DUPLEX	0x00001000
- 
- /* Right now, we don't quite handle the always/possible masks on the
-  * most optimal way as we don't have a way to say something like
-@@ -353,7 +360,9 @@ enum {
- 	    EMAC_FTR_NO_FLOW_CONTROL_40x |
- #endif
- 	EMAC_FTR_460EX_PHY_CLK_FIX |
--	EMAC_FTR_440EP_PHY_CLK_FIX,
-+	EMAC_FTR_440EP_PHY_CLK_FIX |
-+	EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE |
-+	EMAC_FTR_APM821XX_NO_HALF_DUPLEX,
- };
- 
- static inline int emac_has_feature(struct emac_instance *dev,
-diff --git a/drivers/net/ethernet/ibm/emac/emac.h b/drivers/net/ethernet/ibm/emac/emac.h
-index 1568278..36bcd69 100644
---- a/drivers/net/ethernet/ibm/emac/emac.h
-+++ b/drivers/net/ethernet/ibm/emac/emac.h
-@@ -212,7 +212,10 @@ struct emac_regs {
- #define EMAC4_RMR_RFAF_64_1024		0x00000006
- #define EMAC4_RMR_RFAF_128_2048		0x00000007
- #define EMAC4_RMR_BASE			EMAC4_RMR_RFAF_128_2048
--
-+#if defined(CONFIG_APM821xx)
-+#define EMAC4_RMR_MJS_MASK              0x0001fff8
-+#define EMAC4_RMR_MJS(s)                (((s) << 3) & EMAC4_RMR_MJS_MASK)
-+#endif
- /* EMACx_ISR & EMACx_ISER */
- #define EMAC4_ISR_TXPE			0x20000000
- #define EMAC4_ISR_RXPE			0x10000000
--- 
-1.7.5.4
+I don't think so.  There may be a file or two that break because they're
+not including everything they need, but I don't think anything in the
+header requires it.
 
-CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, 
-is for the sole use of the intended recipient(s) and contains information 
-that is confidential and proprietary to AppliedMicro Corporation or its subsidiaries. 
-It is to be used solely for the purpose of furthering the parties' business relationship. 
-All unauthorized review, use, disclosure or distribution is prohibited. 
-If you are not the intended recipient, please contact the sender by reply e-mail 
-and destroy all copies of the original message.
+The irq_domain code is well isolated.  The header file doesn't need to
+be including it.
+
+g.
