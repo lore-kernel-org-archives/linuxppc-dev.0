@@ -1,19 +1,18 @@
-Return-Path: <smitha.vanga@wipro.com>
-Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
- [203.91.198.74])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AD6E6B7223
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2012 01:26:05 +1100 (EST)
-From: <smitha.vanga@wipro.com>
-To: <wd@denx.de>
-Subject: Erase flash boot from default env
-Date: Mon, 6 Feb 2012 14:25:44 +0000
-Message-ID: <40631E9A2581F14BA60888C87A76A1FE02B32D@HYD-MKD-MBX4.wipro.com>
-In-Reply-To: <20120110215509.2D08D1167AA4@gemini.denx.de>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE001.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6C06EB725D
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Feb 2012 06:18:05 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/fsl: add PAMUBYPENR register definition to fsl_guts.h
+Date: Mon, 6 Feb 2012 13:17:52 -0600
+Message-ID: <1328555872-9616-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi ,
+Add a defintion of register PAMUBYPENR (offset 0x604) to the global
+utilities structure.
 
-When I run flinfo in bootloader I get  some locatios indicated with RO meani=
-ng read only.
-Can I erase these locations. Actually I tried to erase and could not erase e=
-ven when I set protect off for this address
-Range in the environment parameters.
+PAMUBYPENR is the PAMU bypass enable register.  It contains control
+bits for enabling bypass mode on each PAMU.
 
-I want to get the bootloader to boot with the default enironment parameters.=
- Insetad of the saved environment params. How to go about this.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/include/asm/fsl_guts.h |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-Regards,
-Smitha
-Please do not print this email unless it is absolutely necessary. =0A=
-=0A=
-The information contained in this electronic message and any attachments to=
- this message are intended for the exclusive use of the addressee(s) and may=
- contain proprietary, confidential or privileged information. If you are not=
- the intended recipient, you should not disseminate, distribute or copy this=
- e-mail. Please notify the sender immediately and destroy all copies of this=
- message and any attachments. =0A=
-=0A=
-WARNING: Computer viruses can be transmitted via email. The recipient should=
- check this email and any attachments for the presence of viruses. The compa=
-ny accepts no liability for any damage caused by any virus transmitted by th=
-is email. =0A=
-=0A=
-www.wipro.com
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index bebd124..a9a85ef 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -85,7 +85,9 @@ struct ccsr_guts_86xx {
+ 	u8	res0c4[0x224 - 0xc4];
+ 	__be32  iodelay1;	/* 0x.0224 - IO delay control register 1 */
+ 	__be32  iodelay2;	/* 0x.0228 - IO delay control register 2 */
+-	u8	res22c[0x800 - 0x22c];
++	u8	res22c[0x604 - 0x22c];
++	__be32	pamubypenr;	/* 0x.0604 - PAMU bypass enable register */
++	u8	res608[0x800 - 0x608];
+ 	__be32	clkdvdr;	/* 0x.0800 - Clock Divide Register */
+ 	u8	res804[0x900 - 0x804];
+ 	__be32	ircr;		/* 0x.0900 - Infrared Control Register */
+-- 
+1.7.3.4
