@@ -1,19 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id CC0A91007D2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2012 11:31:12 +1100 (EST)
-Date: Mon, 6 Feb 2012 11:30:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/wsp: Permanently enable PCI class code workaround
-Message-Id: <20120206113059.346b449e6bc7f2a5086fcfa3@canb.auug.org.au>
-In-Reply-To: <1328485804.30631.10.camel@pasglop>
-References: <1328485804.30631.10.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__6_Feb_2012_11_30_59_+1100_cC7zNw3U197w6b50"
-Cc: Jimi Xenidis <jimix@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <robherring2@gmail.com>
+Message-ID: <4F2F2424.3060702@gmail.com>
+Date: Sun, 05 Feb 2012 18:51:48 -0600
+From: Rob Herring <robherring2@gmail.com>
+MIME-Version: 1.0
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v3 00/25] irq_domain generalization and refinement
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+ <20120204221748.GN14129@n2100.arm.linux.org.uk>
+In-Reply-To: <20120204221748.GN14129@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +23,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__6_Feb_2012_11_30_59_+1100_cC7zNw3U197w6b50
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Russell,
 
-Hi Ben,
+On 02/04/2012 04:17 PM, Russell King - ARM Linux wrote:
+> On Fri, Jan 27, 2012 at 02:35:54PM -0700, Grant Likely wrote:
+>> Hey everyone,
+>>
+>> This patch series is ready for much wider consumption now.  I'd like
+>> to get it into linux-next ASAP because there will be ARM board support
+>> depending on it.  I'll wait a few days before I ask Stephen to pull
+>> this in.
+> 
+> Grant,
+> 
+> Can you answer me this: does this irqdomain support require DT?
+> 
 
-Just a small grammar correction:
+No. It's the other way around, DT requires irqdomain. The GIC and VIC
+code for example can be built with or w/o DT enabled, but both select
+IRQ_DOMAIN.
 
-On Mon, 06 Feb 2012 10:50:04 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> -	/* WSP DD1 has a bogus class code by default in the PCI-E
-> -	 * root complex's built-in P2P bridge */
-> +	/*
-> +	 * Some WSP variants  has a bogus class code by default in the PCI-E
-                             ^^^^
-have
+FYI, I just submitted a patch that selects IRQ_DOMAIN for all of ARM:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.gossamer-threads.com/lists/linux/kernel/1487231?page=last
 
---Signature=_Mon__6_Feb_2012_11_30_59_+1100_cC7zNw3U197w6b50
-Content-Type: application/pgp-signature
+Either we do that or we select IRQ_DOMAIN one irq_chip at a time. With
+the "new" irq_domain code, we could probably do better to shrink the
+code needed in the non-DT case.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+> The question comes up because OMAP has converted some of their support
+> to require irq domain support for their PMICs, and it seems irq domain
+> support requires DT.  This seems to have made the whole of OMAP
+> essentially become a DT-only platform.
 
-iQIcBAEBCAAGBQJPLx9DAAoJEECxmPOUX5FEbvYP/RhvmTO8yyh1kt9Hp8Q/udYZ
-+w+PlgeqaZYWL0jwabNnKFk79W5uXz9xBDTvgSXWVi11NaN2WkieBbwix4mhG/qu
-gCWHhd/cc1g5nBMlNJ8w1sY7y3lbaJrwDM/n1Vb+NLDCaMU9wUI1bFsZsPpmS0vo
-TyMl9bOTvPcq82K4hmk4o7RSo5H8fiT3D/lZEfAbm+kLxlxaTwXkRsHwhAMDy1W+
-Dz6hmgJDA3ZZupbsW5tu/p27cxtwfkTjvi0NaroyKKMzK0414vw85LHdQN6t+ciD
-t1zKfxLCcWeiQHeezpincuXLqRn6KBTlDFiL38tyr4gQasBmIVC6ZM3tzH5ift6X
-tfA1/2N5NERQuNjx/wQgkoHQz7onXfWsX+oMt3KFmisye8ojmWJfwl6zLhCKCCaV
-LIUy9vgyZdqvcC81nmIn7OEt3Le1yIyzOGfi8Mi4fF7fx4Bd/o7brhUPNYgwnPGW
-QNrzNFpGC2A2QuFjVmK5KhZLtoohi6B2KpDaBNRdZ3I2HD10yTqjJQTNZqA9FKbr
-wutvv3fnNjNZEBn2PjD/FQOfR6EEKn8phGdlR6mo62QP4TzoaZiHQueHxqruK3NB
-e2XSuO+nGmu7X91ww83eWRsZ5Q8PZ2+yxrEZVZ8zbecu20+gr4RYDQE//O9lH0Gl
-Ndm4SoD1Txke4vcmJLTM
-=usUR
------END PGP SIGNATURE-----
+I think we should select DT or not at the sub-arch level. Trying to
+support both builds is a needless headache.
 
---Signature=_Mon__6_Feb_2012_11_30_59_+1100_cC7zNw3U197w6b50--
+> 
+> Removing the dependency on IRQ_DOMAIN brings up these build errors
+> in the twl-core code (that being the PMIC for OMAP CPUs):
+> 
+> drivers/mfd/twl-core.c: In function 'twl_probe':
+> drivers/mfd/twl-core.c:1229: error: invalid use of undefined type 'struct irq_domain'
+> drivers/mfd/twl-core.c:1230: error: invalid use of undefined type 'struct irq_domain'
+> drivers/mfd/twl-core.c:1235: error: implicit declaration of function 'irq_domain_add'
+> 
+> That's a bit of a problem, because afaik there aren't the DT descriptions
+> for the boards I have yet, so it's causing me to see regressions when
+> building and booting kernels with CONFIG_OF=n.
+> 
+> The more core-code we end up with which requires DT, the worse this
+> problem is going to become - and obviously saying "everyone must now
+> convert to DT" is, even today, a mammoth task.
+> 
+> Now, here's the thing: I believe that IRQ domains - at least as far as
+> the hwirq stuff - should be available irrespective of whether we have
+> the rest of the IRQ domain support code in place, so that IRQ support
+> code doesn't have to keep playing games to decode from the global
+> space to the per-controller number space.
+> 
+> I believe that would certainly help the current OMAP problems, where
+> the current lack of CONFIG_IRQ_DOMAIN basically makes the kernel oops
+> on boot.
+> 
+> How we fix this regression for 3.4 I've no idea at present, I'm trying
+> to work out what the real dependencies are for OMAP on this stuff.
+> 
+> Finally, do we need asm/irq.h in our asm/prom.h ?  That's causing
+> fragility between DT and non-DT builds, because people are finding
+> that their DT builds work without their mach/irqs.h includes but
+> fail when built with non-DT.  The only thing which DT might need -
+> at the most - is NR_IRQS, but I'd hope with things like irq domains
+> it doesn't actually require it.
+
+Doesn't look like it is needed.
+
+Rob
+
+> _______________________________________________
+> devicetree-discuss mailing list
+> devicetree-discuss@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/devicetree-discuss
