@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Sun, 5 Feb 2012 23:00:04 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH v3 21/25] irqdomain/powerpc: Replace custom xlate
- functions with library functions
-Message-ID: <20120206060004.GB21449@ponder.secretlab.ca>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <1327700179-17454-22-git-send-email-grant.likely@secretlab.ca>
- <24476.1328505761@neuling.org>
+Return-Path: <smitha.vanga@wipro.com>
+Received: from wipro-blr-out01.wipro.com (wipro-blr-out01.wipro.com
+ [203.91.198.74])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AD6E6B7223
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2012 01:26:05 +1100 (EST)
+From: <smitha.vanga@wipro.com>
+To: <wd@denx.de>
+Subject: Erase flash boot from default env
+Date: Mon, 6 Feb 2012 14:25:44 +0000
+Message-ID: <40631E9A2581F14BA60888C87A76A1FE02B32D@HYD-MKD-MBX4.wipro.com>
+In-Reply-To: <20120110215509.2D08D1167AA4@gemini.denx.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <24476.1328505761@neuling.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 06, 2012 at 04:22:41PM +1100, Michael Neuling wrote:
-> >  static const struct irq_domain_ops pmac_pic_host_ops = {
-> >  	.match = pmac_pic_host_match,
-> >  	.map = pmac_pic_host_map,
-> > -	.xlate = pmac_pic_host_xlate,
-> > +	.xlate = irq_domain_xlate_onecell;
-> >  };
-> >  
-> 
-> This causes a compile fail (in next-20120206):
->   arch/powerpc/platforms/powermac/pic.c:294: error: expected '}' before ';' token
-> Trivial fix below:
+ 
+Hi ,
 
-fixed, thanks.
+When I run flinfo in bootloader I get  some locatios indicated with RO meani=
+ng read only.
+Can I erase these locations. Actually I tried to erase and could not erase e=
+ven when I set protect off for this address
+Range in the environment parameters.
 
-g.
+I want to get the bootloader to boot with the default enironment parameters.=
+ Insetad of the saved environment params. How to go about this.
 
-> 
-> 
-> 
-> irqdomain/powerpc: Fix compile error in powermac/pic.c
-> 
-> Error introduced in:
->   commit 72d6b477675374eafd206720d6c9146520df18ce
->   Author: Grant Likely <grant.likely@secretlab.ca>
->   irqdomain/powerpc: Replace custom xlate functions with library functions
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> 
-> diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
-> index 3af29d1..92afc38 100644
-> --- a/arch/powerpc/platforms/powermac/pic.c
-> +++ b/arch/powerpc/platforms/powermac/pic.c
-> @@ -291,7 +291,7 @@ static int pmac_pic_host_map(struct irq_domain *h, unsigned int virq,
->  static const struct irq_domain_ops pmac_pic_host_ops = {
->  	.match = pmac_pic_host_match,
->  	.map = pmac_pic_host_map,
-> -	.xlate = irq_domain_xlate_onecell;
-> +	.xlate = irq_domain_xlate_onecell,
->  };
->  
->  static void __init pmac_pic_probe_oldstyle(void)
+Regards,
+Smitha
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
