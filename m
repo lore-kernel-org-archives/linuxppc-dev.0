@@ -1,23 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe006.messaging.microsoft.com
- [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F296B71AB
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2012 06:25:52 +1100 (EST)
-Message-ID: <4F317AB1.7080208@freescale.com>
-Date: Tue, 7 Feb 2012 13:25:37 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <nicolas.ferre@atmel.com>
+Received: from sjogate2.atmel.com (newsmtp5.atmel.com [204.2.163.5])
+ by ozlabs.org (Postfix) with ESMTP id BF99FB71AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2012 05:33:38 +1100 (EST)
+Message-ID: <4F316848.4060100@atmel.com>
+Date: Tue, 07 Feb 2012 19:07:04 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/fsl: add PAMUBYPENR register definition to
- fsl_guts.h
-References: <1328555872-9616-1-git-send-email-timur@freescale.com>
- <Pine.LNX.4.64.1202071221150.22169@gate.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.1202071221150.22169@gate.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 24/25] irq_domain: remove "hint" when allocating irq
+ numbers
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+ <1327700179-17454-25-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1327700179-17454-25-git-send-email-grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> What code will use this?  Once such code exists, have this patch in that
-> patch series.
+On 01/27/2012 10:36 PM, Grant Likely :
+> The 'hint' used to try and line up irq numbers with hw irq numbers is
+> rather a hack and not very useful.  Now that /proc/interrupts also outputs
+> the hwirq number, it is even less useful to keep around the 'hint' heuristic.
+> 
+> This patch removes it.
 
-Isn't this patch harmless?  I'm not adding any code, and there already are
-plenty of fields defined in that struct that aren't used anywhere.
+Grant,
 
-The register is for the PAMU driver, which is nowhere near ready for
-upstream anyway.  I was hoping to get the this patch in the pipeline ahead
-of schedule.
+While trying your patch series in conjunction with Rob one, I do not
+find this patch in your irqdomain/next branch (and a couple of others).
+Can you tell me if this v3 series is available as a git tree?
 
-So if you don't mind, I'd like you to consider this patch as-is.
-
+Thanks, best regards,
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Nicolas Ferre
