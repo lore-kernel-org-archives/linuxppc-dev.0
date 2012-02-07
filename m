@@ -1,22 +1,20 @@
-Return-Path: <broonie@sirena.org.uk>
-Date: Tue, 7 Feb 2012 15:26:27 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v3 00/25] irq_domain generalization and refinement
-Message-ID: <20120207152627.GA17825@sirena.org.uk>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <20120204221748.GN14129@n2100.arm.linux.org.uk>
- <20120204223125.GO14129@n2100.arm.linux.org.uk>
- <20120205013853.GQ20333@atomide.com>
- <20120205161348.GZ889@n2100.arm.linux.org.uk>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 87667B6F9F
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2012 05:21:55 +1100 (EST)
+Date: Tue, 7 Feb 2012 12:21:43 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl: add PAMUBYPENR register definition to
+ fsl_guts.h
+In-Reply-To: <1328555872-9616-1-git-send-email-timur@freescale.com>
+Message-ID: <Pine.LNX.4.64.1202071221150.22169@gate.crashing.org>
+References: <1328555872-9616-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120205161348.GZ889@n2100.arm.linux.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Tony Lindgren <tony@atomide.com>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 05, 2012 at 04:13:48PM +0000, Russell King - ARM Linux wrote:
 
-> It's not quite correct, because OMAP4 has issues in this area as well
-> (which does select IRQ_DOMAIN but can be without OF.)  The result is
-> an oops from irq_domain_add() because domain->ops is NULL.
 
-> The right solution is three fold:
+On Mon, 6 Feb 2012, Timur Tabi wrote:
 
-> 1. Wrap the bits of code in CONFIG_IRQ_DOMAIN
-> 2. Get rid of the #ifdef CONFIG_OF there, so the 'ops' member can be
->    initialized.
-> 3. Fix the OMAP vp code not to oops when voltdm->pmic is NULL
+> Add a defintion of register PAMUBYPENR (offset 0x604) to the global
+> utilities structure.
+>
+> PAMUBYPENR is the PAMU bypass enable register.  It contains control
+> bits for enabling bypass mode on each PAMU.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>  arch/powerpc/include/asm/fsl_guts.h |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+>
 
-> which I have in my combined patch for fixing OMAP so far.
+What code will use this?  Once such code exists, have this patch in that
+patch series.
 
-It'd also help if we supported null ops, I sent patches for that a few
-times over the 3.3 cycle since I was running into it on my systems but
-apparently to /dev/null and further changes in this area have made the
-patches not apply any more.
+- k
