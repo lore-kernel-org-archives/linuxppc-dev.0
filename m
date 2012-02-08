@@ -1,29 +1,30 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe002.messaging.microsoft.com
- [213.199.154.140])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A156BB71AB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2012 03:39:53 +1100 (EST)
-Received: from mail36-db3 (localhost [127.0.0.1])	by mail36-db3-R.bigfish.com
- (Postfix) with ESMTP id CC0EEC0572	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Feb 2012 16:39:47 +0000 (UTC)
-Received: from DB3EHSMHS007.bigfish.com (unknown [10.3.81.253])	by
- mail36-db3.bigfish.com (Postfix) with ESMTP id 450122C004C	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2012 16:39:46 +0000 (UTC)
-Message-ID: <4F32A54F.5090305@freescale.com>
-Date: Wed, 8 Feb 2012 10:39:43 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+ [209.85.212.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 01018B71B2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2012 04:31:38 +1100 (EST)
+Received: by vbbfo1 with SMTP id fo1so513870vbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2012 09:31:35 -0800 (PST)
 MIME-Version: 1.0
-To: Jia Hongtao <B38951@freescale.com>
-Subject: Re: [linuxppc-release] [PATCH 2/2] powerpc/85xx: update SEC node
- in dts for MPC8572DS
-References: <1328693276-12057-1-git-send-email-B38951@freescale.com>
- <1328693276-12057-2-git-send-email-B38951@freescale.com>
-In-Reply-To: <1328693276-12057-2-git-send-email-B38951@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
+References: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
+ <1328425088-6562-10-git-send-email-yinghai@kernel.org>
+ <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
+Date: Wed, 8 Feb 2012 09:31:35 -0800
+Message-ID: <CAE9FiQVnJ2PpBSUoRZeEy2p44xv3mHVYRgn9tKzr1yeXmwMYbA@mail.gmail.com>
+Subject: Re: [PATCH 09/24] PCI, powerpc: Register busn_res for root buses
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Paul Mackerras <paulus@samba.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+ linux-pci@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +34,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jia Hongtao wrote:
-> Add sec3.1 support
-> 
-> Signed-off-by: Jin Qing <b24347@freescale.com>
-> Signed-off-by: Zhao Chenhui <b35336@freescale.com>
-> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
->  arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
-> index d44e25a..cdda34f 100644
-> --- a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
-> +++ b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
-> @@ -184,7 +184,7 @@
->  /include/ "pq3-etsec1-1.dtsi"
->  /include/ "pq3-etsec1-2.dtsi"
->  /include/ "pq3-etsec1-3.dtsi"
-> -/include/ "pq3-sec3.0-0.dtsi"
-> +/include/ "pq3-sec3.1-0.dtsi"
+On Wed, Feb 8, 2012 at 7:58 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+> On Sat, Feb 4, 2012 at 10:57 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> ---
+>> =A0arch/powerpc/kernel/pci-common.c | =A0 =A07 ++++++-
+>> =A01 files changed, 6 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-=
+common.c
+>> index cce98d7..501f29b 100644
+>> --- a/arch/powerpc/kernel/pci-common.c
+>> +++ b/arch/powerpc/kernel/pci-common.c
+>> @@ -1732,6 +1732,8 @@ void __devinit pcibios_scan_phb(struct pci_control=
+ler *hose)
+>> =A0 =A0 =A0 =A0bus->secondary =3D hose->first_busno;
+>> =A0 =A0 =A0 =A0hose->bus =3D bus;
+>>
+>> + =A0 =A0 =A0 pci_bus_insert_busn_res(bus, hose->first_busno, hose->last=
+_busno);
+>> +
+>> =A0 =A0 =A0 =A0/* Get probe mode and perform scan */
+>> =A0 =A0 =A0 =A0mode =3D PCI_PROBE_NORMAL;
+>> =A0 =A0 =A0 =A0if (node && ppc_md.pci_probe_mode)
+>> @@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_contro=
+ller *hose)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_scan_bus(node, bus);
+>> =A0 =A0 =A0 =A0}
+>>
+>> - =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL)
+>> + =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, 255);
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hose->last_busno =3D bus->subordinate =3D=
+ pci_scan_child_bus(bus);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, bus->subo=
+rdinate);
+>> + =A0 =A0 =A0 }
+>
+> The only architecture-specific thing here is discovering the range of
+> bus numbers below a host bridge. =A0The architecture should not have to
+> mess around with pci_bus_update_busn_res_end() like this. =A0It should
+> be able to say "here's my bus number range" (and of course the PCI
+> core can default to 0-255 if the arch doesn't supply a range) and the
+> core should take care of the rest.
 
-This is not "adding SEC 3.1 support".  This patch is saying that the 8572
-DTS was using the *wrong* SEC version.  If that's true, you need to
-explain why it was wrong.
+during the pci_scan_child_bus,  child bus busn_res will be inserted
+under parent bus busn_res.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+So need to make sure parent busn_res.end is bigger enough.
+
+
+Yinghai
