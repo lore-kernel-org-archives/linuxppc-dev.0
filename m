@@ -1,20 +1,21 @@
-Return-Path: <joey@joescan.com>
-Received: from exprod7og116.obsmtp.com (exprod7og116.obsmtp.com [64.18.2.219])
- by ozlabs.org (Postfix) with SMTP id 87CD4B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2012 13:47:07 +1100 (EST)
-Received: by mail-lpp01m010-f43.google.com with SMTP id p5so109505lag.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2012 18:47:04 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <CAL_WD7hkuhi4D2CPuoLyG2-7w8JmSQDnxiYbqKxzGNep5ONsrg@mail.gmail.com>
-References: <CAL_WD7hYZoaB87vZzj4Fk9nsHYSoe+qWq87g72ERLAkMur5vYg@mail.gmail.com>
- <CAL_WD7iJceKMOX9dWDM-SuiO5a_M-3Kp4FnZqS+AuEKvphq_-w@mail.gmail.com>
- <CAL_WD7hkuhi4D2CPuoLyG2-7w8JmSQDnxiYbqKxzGNep5ONsrg@mail.gmail.com>
-Date: Tue, 7 Feb 2012 18:47:04 -0800
-Message-ID: <CAL_WD7jdk78ba9HJ0rYxc1fvVS-PBY4zK6MWhF3H2B_dzFkv_g@mail.gmail.com>
-Subject: Re: MPC5200B FEC TX packets getting stuck
-From: Joey Nelson <joey@joescan.com>
+Return-Path: <ppc@mindchasers.com>
+Received: from vms173015pub.verizon.net (vms173015pub.verizon.net
+ [206.46.173.15]) by ozlabs.org (Postfix) with ESMTP id E9691B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2012 14:14:01 +1100 (EST)
+Received: from [192.168.1.3] ([unknown] [108.25.174.63])
+ by vms173015.mailsrvcs.net
+ (Sun Java(tm) System Messaging Server 7u2-7.02 32bit (built Apr 16 2009))
+ with ESMTPA id <0LZ100BO9Y6BPR21@vms173015.mailsrvcs.net> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 07 Feb 2012 20:13:28 -0600 (CST)
+Message-id: <4F31DA43.2030504@mindchasers.com>
+Date: Tue, 07 Feb 2012 21:13:23 -0500
+From: Bob Cochran <ppc@mindchasers.com>
+MIME-version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Question about fsl_pq_mdio_probe and dts file for p1010rdb...
+References: <1328555872-9616-1-git-send-email-timur@freescale.com>
+In-reply-to: <1328555872-9616-1-git-send-email-timur@freescale.com>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've revisited my testing, and found I was wrong about the packets
-getting stuck in the FEC queue.  The packets are getting stuck in the
-bestcomm.
+Hello,
 
-I generate a timestamp for each skb's ip_hdr->id at the beginning of
-mpc52xx_fec_start_xmit, and for each skb retrieved from the bestcomm.
+Using the mainline kernel & p1010rdb.dts, fsl_pq_mdio_probe returns busy 
+on my P1010RDB when first probing the MDIO during kernel boot.  On the 
+console, the error is reported as:
 
-Typically the packets make it through bestcomm in under 200us.  But
-sometimes a single packet will sit in bestcomm until the next packet
-added.  In the case of a delayed ACK this can be around 400ms.
-
-When I look at the state of the registers when this condition is
-detected (before adding the next bd):
-
-tx_dmatsk->flags = 1
-tcr[1] = 0x20c1
-
-Both of these values seem to indicate the the TX task is disabled.
-I'm pretty sure that nothing in the kernel is disabling the task, so
-it must be an automatic behavior.  I notice that
-bcom_submit_next_buffer() checks the task->flags and if the LSB is set
-it enables the task.  So I'm guessing that is what gets things moving
-again when the freeze happens.
-
-My best guess is this is a race condition between the driver and the
-dma controller.  Is there any risk to just calling bcom_enable(tsk).
-Maybe after a short sleep.
+"fsl-pq_mdio: probe of ffe24000.mdio failed with error -16"
 
 
-Joey Nelson
+I have determined that the failure occurs in the 
+for_each_child_of_node() loop shown below, which is part of the 
+fsl_pq_mdio_probe routine.  It turns out that tbi->type is always <NULL> 
+although tbi->name will be "tbi-phy" when scanning the last child node ( 
+I have also attached the relevant portion of the p1010rdb.dtsi file 
+below).   Since tbi-type is never "tbi-phy", the "if (tbi)" statement is 
+always false, and err is subsequently set to EBUSY below.
+
+Can someone please tell me whether this is an issue with the dts file, 
+the of library, or the probe function?  Any direction on the right way 
+to patch this would be appreciated.
+
+
+// from fsl_pq_mdio.c:
+
+for_each_child_of_node(np, tbi) {
+                 if (!strncmp(tbi->type, "tbi-phy", 8))
+                         break;
+         }
+
+         if (tbi) {
+                 const u32 *prop = of_get_property(tbi, "reg", NULL);
+
+                 if (prop)
+                         tbiaddr = *prop;
+         }
+
+         if (tbiaddr == -1) {
+                 err = -EBUSY;
+                 goto err_free_irqs;
+         } else {
+                 out_be32(tbipa, tbiaddr);
+         }
+
+
+// from p1010rdb.dtsi:
+
+mdio@24000 {
+                 phy0: ethernet-phy@0 {
+                         interrupts = <3 1 0 0>;
+                         reg = <0x1>;
+                 };
+
+                 phy1: ethernet-phy@1 {
+                         interrupts = <2 1 0 0>;
+                         reg = <0x0>;
+                 };
+
+                 phy2: ethernet-phy@2 {
+                         interrupts = <2 1 0 0>;
+                         reg = <0x2>;
+                 };
+
+                 tbi-phy@3 {
+                         device-type = "tbi-phy";
+                         reg = <0x3>;
+                 };
+         };
