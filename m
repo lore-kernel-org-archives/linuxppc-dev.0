@@ -1,27 +1,29 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BC1D8B71B4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2012 02:59:45 +1100 (EST)
-Received: by wgbdt12 with SMTP id dt12so636091wgb.14
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2012 07:59:41 -0800 (PST)
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7019AB71A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2012 03:38:57 +1100 (EST)
+Received: from mail153-ch1 (localhost [127.0.0.1])	by
+ mail153-ch1-R.bigfish.com (Postfix) with ESMTP id 2B2453600D6	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2012 16:38:52 +0000 (UTC)
+Received: from CH1EHSMHS028.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.249])	by mail153-ch1.bigfish.com (Postfix) with ESMTP id
+ 3E776140045	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2012 16:38:49
+ +0000 (UTC)
+Message-ID: <4F32A509.3050108@freescale.com>
+Date: Wed, 8 Feb 2012 10:38:33 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1328425088-6562-10-git-send-email-yinghai@kernel.org>
-References: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
- <1328425088-6562-10-git-send-email-yinghai@kernel.org>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 8 Feb 2012 07:58:21 -0800
-Message-ID: <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
-Subject: Re: [PATCH 09/24] PCI, powerpc: Register busn_res for root buses
-To: Yinghai Lu <yinghai@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Paul Mackerras <paulus@samba.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
- linux-pci@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+To: Jia Hongtao <B38951@freescale.com>
+Subject: Re: [linuxppc-release] [PATCH 1/2] powerpc/85xx: Change style of
+ partition nodes in dts for MPC8572DS
+References: <1328693276-12057-1-git-send-email-B38951@freescale.com>
+In-Reply-To: <1328693276-12057-1-git-send-email-B38951@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Feb 4, 2012 at 10:57 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
-> =A0arch/powerpc/kernel/pci-common.c | =A0 =A07 ++++++-
-> =A01 files changed, 6 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-c=
-ommon.c
-> index cce98d7..501f29b 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1732,6 +1732,8 @@ void __devinit pcibios_scan_phb(struct pci_controll=
-er *hose)
-> =A0 =A0 =A0 =A0bus->secondary =3D hose->first_busno;
-> =A0 =A0 =A0 =A0hose->bus =3D bus;
->
-> + =A0 =A0 =A0 pci_bus_insert_busn_res(bus, hose->first_busno, hose->last_=
-busno);
-> +
-> =A0 =A0 =A0 =A0/* Get probe mode and perform scan */
-> =A0 =A0 =A0 =A0mode =3D PCI_PROBE_NORMAL;
-> =A0 =A0 =A0 =A0if (node && ppc_md.pci_probe_mode)
-> @@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_control=
-ler *hose)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_scan_bus(node, bus);
-> =A0 =A0 =A0 =A0}
->
-> - =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL)
-> + =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, 255);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hose->last_busno =3D bus->subordinate =3D =
-pci_scan_child_bus(bus);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, bus->subor=
-dinate);
-> + =A0 =A0 =A0 }
+Jia Hongtao wrote:
+> -			read-only;
+> +			label = "ramdisk-nor";
 
-The only architecture-specific thing here is discovering the range of
-bus numbers below a host bridge.  The architecture should not have to
-mess around with pci_bus_update_busn_res_end() like this.  It should
-be able to say "here's my bus number range" (and of course the PCI
-core can default to 0-255 if the arch doesn't supply a range) and the
-core should take care of the rest.
+This is not a "style change".  Please explain this patch better.
 
-Bjorn
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
