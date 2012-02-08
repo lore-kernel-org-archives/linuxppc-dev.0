@@ -1,21 +1,21 @@
-Return-Path: <B32736@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C41B6B7503
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2012 20:55:38 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2 v2] P1025RDB: Add Quicc Engine support
-Date: Wed, 8 Feb 2012 17:52:59 +0800
-Message-ID: <1328694779-24024-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1328694779-24024-1-git-send-email-B32736@freescale.com>
-References: <1328694779-24024-1-git-send-email-B32736@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhicheng Fan <b32736@freeescale.com>
+Return-Path: <w@1wt.eu>
+Received: from 1wt.eu (1wt.eu [62.212.114.60])
+ by ozlabs.org (Postfix) with ESMTP id 4375CB6EE6
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2012 20:58:00 +1100 (EST)
+Date: Wed, 8 Feb 2012 10:44:26 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 00/14] Backport 8xx TLB to 2.4
+Message-ID: <20120208094426.GC1379@1wt.eu>
+References: <1318246220-4839-1-git-send-email-Joakim.Tjernlund@transmode.se>
+ <OF6B6562C0.926C4B3C-ONC1257963.005F34B1-C1257963.005F34B2@transmode.se>
+ <20111211173346.GC9019@1wt.eu>
+ <OF173F1835.8171C985-ONC125799E.002FE8C7-C125799E.0030008A@transmode.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF173F1835.8171C985-ONC125799E.002FE8C7-C125799E.0030008A@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Dan Malek <ppc6dev@digitaldans.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,131 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhicheng Fan <b32736@freeescale.com>
+Hi Joakim,
 
-Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   80 ++++++++++++++++++++++++++++-
- 1 files changed, 79 insertions(+), 1 deletions(-)
+On Wed, Feb 08, 2012 at 09:44:18AM +0100, Joakim Tjernlund wrote:
+> Willy Tarreau <w@1wt.eu> wrote on 2011/12/11 18:33:46:
+> >
+> > Hi Joakim,
+> >
+> > On Sun, Dec 11, 2011 at 06:19:54PM +0100, Joakim Tjernlund wrote:
+> > > > To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > > > From: Willy Tarreau <w@1wt.eu>
+> > > >
+> > > > Hi Joakim,  On Mon, Oct 10, 2011 at 01:30:06PM +0200, Joakim Tjernlund wrote: > This is a
+> > > > backport from 2.6 which I did to overcome 8xx CPU > bugs. 8xx does not update the DAR register
+> > > > when taking a TLB > error caused by dcbX and icbi insns which makes it very > tricky to use these
+> > > > insns. Also the dcbst wrongly sets the > the store bit when faulting into DTLB error. > A few
+> > > > more bugs very found during development. >  > I know 2.4 is in strict maintenance mode and 8xx is
+> > > > obsolete > but as it is still in use I wanted 8xx to age with grace.  Thank you. I must admit I
+> > > > was hoping those patches would come in for a last release before the end of the year :-)  Unless
+> > > > there is any objection from anyone, I'll merge them when kernel.org is back online.  Cheers,
+> > > > Willy
+> > >
+> > > Did this go anywhere?
+> >
+> > Not yet, I just need to find some time to release another 2.4 with these
+> > patches.
+> 
+> Ping? There should be a tree somewhere by now :)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 1950076..4c27b3b 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -26,6 +26,9 @@
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/mpic.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
-+#include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -47,6 +50,10 @@ void __init mpc85xx_rdb_pic_init(void)
- 	struct mpic *mpic;
- 	unsigned long root = of_get_flat_dt_root();
- 
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
- 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
- 		mpic = mpic_alloc(NULL, 0,
- 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
-@@ -62,6 +69,18 @@ void __init mpc85xx_rdb_pic_init(void)
- 
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+
-+	} else
-+		pr_err("Could not find qe-ic node\n");
-+#endif
-+
- }
- 
- /*
-@@ -69,7 +88,7 @@ void __init mpc85xx_rdb_pic_init(void)
-  */
- static void __init mpc85xx_rdb_setup_arch(void)
- {
--#ifdef CONFIG_PCI
-+#if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
- 	struct device_node *np;
- #endif
- 
-@@ -85,6 +104,65 @@ static void __init mpc85xx_rdb_setup_arch(void)
- #endif
- 
- 	mpc85xx_smp_init();
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+	if (!np) {
-+		pr_err("Could not find Quicc Engine node\n");
-+		goto qe_fail;
-+	}
-+
-+	qe_reset();
-+	of_node_put(np);
-+
-+	np = of_find_node_by_name(NULL, "par_io");
-+	if (np) {
-+		struct device_node *ucc;
-+
-+		par_io_init(np);
-+		of_node_put(np);
-+
-+		for_each_node_by_name(ucc, "ucc")
-+			par_io_of_config(ucc);
-+
-+	}
-+	if (machine_is(p1025_rdb)) {
-+
-+		__be32 __iomem *pmuxcr;
-+
-+		np = of_find_node_by_name(NULL, "global-utilities");
-+
-+		if (np) {
-+			pmuxcr = of_iomap(np, 0) + MPC85xx_PMUXCR_OFFSET;
-+
-+			if (!pmuxcr)
-+				pr_err(KERN_EMERG "Error: Alternate function"
-+					" signal multiplex control register not"
-+					" mapped!\n");
-+			else {
-+#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
-+			/* P1025 has pins muxed for QE and other functions. To
-+			* enable QE UEC mode, we need to set bit QE0 for UCC1
-+			* in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
-+			* and QE12 for QE MII management singals in PMUXCR
-+			* register.
-+			*/
-+				setbits32(pmuxcr, MPC85xx_PMUXCR_QE0 |
-+						MPC85xx_PMUXCR_QE3 |
-+						MPC85xx_PMUXCR_QE9 |
-+						MPC85xx_PMUXCR_QE12);
-+#endif
-+			}
-+
-+			iounmap(pmuxcr);
-+			of_node_put(np);
-+		}
-+
-+	}
-+
-+qe_fail:
-+#endif	/* CONFIG_QUICC_ENGINE */
-+
- 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
- }
- 
--- 
-1.7.0.4
+I'm planning on doing 2.4.37.12 once I'm finished with 2.6.27.60. However I'll
+have to find another place to host it, as the 2.4 tree was never completely
+recovered from master.kernel.org after the break-in, and admins there have
+many more important things to do than to spend their time restoring the 2.4
+files. Probably that I'll put that into my account.
+
+BTW, since you're asking, you seem to still be using 2.4. Do you think it's
+worth pursuing maintenance over 2.4.37.12 and if so for how long ? I'm asking
+because until the break-in, I felt like almost nobody was using it anymore,
+but since the break-in, I received a number of mails asking where to download
+it. So now I assume that there are still users, but they're too much silent.
+
+Regards,
+Willy
