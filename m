@@ -1,28 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EFAC3B6EE6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 08:36:17 +1100 (EST)
-Message-ID: <1328823358.2903.77.camel@pasglop>
-Subject: Re: [PATCH 09/24] PCI, powerpc: Register busn_res for root buses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 10 Feb 2012 08:35:58 +1100
-In-Reply-To: <CAErSpo7ekGn-+Mnyz7KL=fVFH3Ed19AeE3MKkZWJ4bd0Jo7kCw@mail.gmail.com>
-References: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
- <1328425088-6562-10-git-send-email-yinghai@kernel.org>
- <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
- <1328738567.2903.45.camel@pasglop>
- <CAErSpo7ekGn-+Mnyz7KL=fVFH3Ed19AeE3MKkZWJ4bd0Jo7kCw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- Yinghai Lu <yinghai@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
- Paul Mackerras <paulus@samba.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
- linux-pci@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <hughd@google.com>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 037E8B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 09:25:35 +1100 (EST)
+Received: by dady9 with SMTP id y9so1957688dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Feb 2012 14:25:33 -0800 (PST)
+Date: Thu, 9 Feb 2012 14:25:02 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix WARN_ON in decrementer_check_overflow
+In-Reply-To: <1328765653.2903.59.camel@pasglop>
+Message-ID: <alpine.LSU.2.00.1202091411170.1263@eggly.anvils>
+References: <1328765653.2903.59.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-02-09 at 11:24 -0800, Bjorn Helgaas wrote:
-> My point is that the interface between the arch and the PCI core
-> should be simply the arch telling the core "this is the range of bus
-> numbers you can use."  If the firmware doesn't give you the HW limits,
-> that's the arch's problem.  If you want to assume 0..255 are
-> available, again, that's the arch's decision.
+On Thu, 9 Feb 2012, Benjamin Herrenschmidt wrote:
+> We use __get_cpu_var() which triggers a false positive warning
+> in smp_processor_id() thinking interrupts are enabled (at this
+> point, they are soft-enabled but hard-disabled).
 > 
-> But the answer to the question "what bus numbers are available to me"
-> depends only on the host bridge HW configuration.  It does not depend
-> on what pci_scan_child_bus() found.  Therefore, I think we can come up
-> with a design where pci_bus_update_busn_res_end() is unnecessary.
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> I was initially planning to fix that with a more in-depth rework
+> of how we do lazy irq disabling on powerpc, but that patch is
+> becoming too complex for this release so I'll apply this as a
+> stop-gap and leave the full rework for -next
 
-In an ideal world yes. In a world where there are reverse engineered
-platforms on which we aren't 100% sure how thing actually work under the
-hood and have the code just adapt on "what's there" (and try to fix it
-up -sometimes-), thinks can get a bit murky :-)
+Okay, thanks for the update, that's equivalent to the get_cpu_var
+plus put_cpu_var patch I had generally been running with successfully.
 
-But yes, I see your point. As for what is the "correct" setting that
-needs to be done so that the patch doesn't end up a regression for us,
-I'll have to dig into some ancient HW to dbl check a few things. I hope
-0...255 will just work but I can't guarantee it.
+(I was not at all confident that it was a sufficient fix, and have
+to say "generally" above because one time I got something that looked
+like recursive calls overflowing the stack, and IIRC something "irq"
+did appear in each frame of the trace.  But probably no connection,
+never seen again, and I don't recall even which -rc or -next it was.)
 
-What I'll probably do is constraint the core to the values in
-hose->min/max, and update selected platforms to put 0..255 in there when
-I know for sure they can cope.
+Hugh
 
-Cheers,
-Ben.
+>  
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 701d4ac..01e2877 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -118,10 +118,14 @@ static inline notrace void set_soft_enabled(unsigned long enable)
+>  static inline notrace void decrementer_check_overflow(void)
+>  {
+>  	u64 now = get_tb_or_rtc();
+> -	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+> +	u64 *next_tb;
+> +
+> +	preempt_disable();
+> +	next_tb = &__get_cpu_var(decrementers_next_tb);
+>  
+>  	if (now >= *next_tb)
+>  		set_dec(1);
+> +	preempt_enable();
+>  }
+>  
+>  notrace void arch_local_irq_restore(unsigned long en)
