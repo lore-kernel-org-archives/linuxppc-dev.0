@@ -1,17 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ED6FDB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2012 16:34:21 +1100 (EST)
-Message-ID: <1328765653.2903.59.camel@pasglop>
-Subject: [PATCH] powerpc: Fix WARN_ON in decrementer_check_overflow
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 09 Feb 2012 16:34:13 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Hugh Dickins <hughd@google.com>
+Return-Path: <B32736@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6F938B6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2012 16:43:07 +1100 (EST)
+From: Zhicheng Fan <B32736@freescale.com>
+To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2 v4] powerpc/85xx: Add p1020rdb-pc platform support
+Date: Thu, 9 Feb 2012 13:40:35 +0800
+Message-ID: <1328766036-17697-1-git-send-email-B32736@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Zhicheng Fan <b32736@freeescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,35 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use __get_cpu_var() which triggers a false positive warning
-in smp_processor_id() thinking interrupts are enabled (at this
-point, they are soft-enabled but hard-disabled).
+From: Zhicheng Fan <b32736@freeescale.com>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Zhicheng Fan <b32736@freeescale.com>
 ---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   26 +++++++++++++++++++++++++-
+ 1 files changed, 25 insertions(+), 1 deletions(-)
 
-I was initially planning to fix that with a more in-depth rework
-of how we do lazy irq disabling on powerpc, but that patch is
-becoming too complex for this release so I'll apply this as a
-stop-gap and leave the full rework for -next
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index dce8aaf..a0b9c92 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -1,7 +1,7 @@
+ /*
+  * MPC85xx RDB Board Setup
+  *
+- * Copyright 2009 Freescale Semiconductor Inc.
++ * Copyright 2009,2012 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -168,10 +168,20 @@ qe_fail:
  
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 701d4ac..01e2877 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -118,10 +118,14 @@ static inline notrace void set_soft_enabled(unsigned long enable)
- static inline notrace void decrementer_check_overflow(void)
- {
- 	u64 now = get_tb_or_rtc();
--	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
-+	u64 *next_tb;
+ machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
+ machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
++machine_device_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+  */
++static int __init p1020_rdb_pc_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
 +
-+	preempt_disable();
-+	next_tb = &__get_cpu_var(decrementers_next_tb);
- 
- 	if (now >= *next_tb)
- 		set_dec(1);
-+	preempt_enable();
- }
- 
- notrace void arch_local_irq_restore(unsigned long en)
++	if (of_flat_dt_is_compatible(root, "fsl,P1020RDB-PC"))
++		return 1;
++	return 0;
++}
++
+ static int __init p2020_rdb_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+@@ -217,3 +227,17 @@ define_machine(p1020_rdb) {
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
++
++define_machine(p1020_rdb_pc) {
++	.name			= "P1020RDB-PC",
++	.probe			= p1020_rdb_pc_probe,
++	.setup_arch		= mpc85xx_rdb_setup_arch,
++	.init_IRQ		= mpc85xx_rdb_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++#endif
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
+-- 
+1.7.0.4
