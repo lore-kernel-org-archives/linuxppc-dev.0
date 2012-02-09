@@ -1,19 +1,17 @@
 Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE006.bigfish.com (am1ehsobe005.messaging.microsoft.com
- [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe004.messaging.microsoft.com
+ [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BA32FB6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 03:08:41 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F413DB6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 03:10:03 +1100 (EST)
 From: Tabi Timur-B04825 <B04825@freescale.com>
 To: Fan Zhicheng-B32736 <B32736@freescale.com>
-Subject: Re: [PATCH 2/2 v4] powerpc/dts: Add dts for p1020rdb-pc board
-Date: Thu, 9 Feb 2012 16:08:27 +0000
-Message-ID: <CAOZdJXVkGJmokD6176uoW7G0UHxA9H_=-MUL1_YxgR6aNJ8dmQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v4] powerpc/85xx: Add p1020rdb-pc platform support
+Date: Thu, 9 Feb 2012 16:09:52 +0000
+Message-ID: <CAOZdJXWUSiBRuVWpErOG8eYMLjLd+_FxQ+JPwm=YmTWSvZ-zAA@mail.gmail.com>
 References: <1328766036-17697-1-git-send-email-B32736@freescale.com>
- <1328766036-17697-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1328766036-17697-2-git-send-email-B32736@freescale.com>
+In-Reply-To: <1328766036-17697-1-git-send-email-B32736@freescale.com>
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -28,19 +26,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, Feb 8, 2012 at 11:40 PM, Zhicheng Fan <B32736@freescale.com> wrote:
->
-> =A0arch/powerpc/boot/dts/p1020rdb-pc.dts =A0 =A0 =A0 =A0 =A0 =A0| =A0 90 =
-++++++++
-> =A0arch/powerpc/boot/dts/p1020rdb-pc.dtsi =A0 =A0 =A0 =A0 =A0 | =A0247 ++=
-++++++++++++++++++++
-> =A0arch/powerpc/boot/dts/p1020rdb-pc_36b.dts =A0 =A0 =A0 =A0| =A0 90 ++++=
-++++
 
-If we're going to support both 32-bit and 36-bit dts files, then we
-have to label both DTS files properly.  Do not assume that 32-bit is
-the "default", because on some platforms, 36-bit is the default.
+> +static int __init p1020_rdb_pc_probe(void)
+> +{
+> + =A0 =A0 =A0 unsigned long root =3D of_get_flat_dt_root();
+> +
+> + =A0 =A0 =A0 if (of_flat_dt_is_compatible(root, "fsl,P1020RDB-PC"))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 1;
+> + =A0 =A0 =A0 return 0;
+> +}
 
-p1020rdb-pc.dts should be called p1020rdb-pc_32b.dts.
+static int __init p1020_rdb_pc_probe(void)
+{
+       unsigned long root =3D of_get_flat_dt_root();
+
+       return of_flat_dt_is_compatible(root, "fsl,P1020RDB-PC");
+}
 
 --=20
 Timur Tabi
