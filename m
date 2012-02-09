@@ -1,26 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <vapier@gentoo.org>
+Received: from smtp.gentoo.org (smtp.gentoo.org [140.211.166.183])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 39C8FB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2012 09:03:08 +1100 (EST)
-Message-ID: <1328738567.2903.45.camel@pasglop>
-Subject: Re: [PATCH 09/24] PCI, powerpc: Register busn_res for root buses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 09 Feb 2012 09:02:47 +1100
-In-Reply-To: <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
-References: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
- <1328425088-6562-10-git-send-email-yinghai@kernel.org>
- <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- Yinghai Lu <yinghai@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
- Paul Mackerras <paulus@samba.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
- linux-pci@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+ by ozlabs.org (Postfix) with ESMTPS id 35E60B6EEC
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Feb 2012 13:56:26 +1100 (EST)
+From: Mike Frysinger <vapier@gentoo.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 ] Implement GET_IP/SET_IP for powerpc architecture.
+Date: Wed, 8 Feb 2012 21:56:23 -0500
+References: <20120202144125.GA6221@linux.vnet.ibm.com>
+ <20120208145124.GA16600@linux.vnet.ibm.com>
+In-Reply-To: <20120208145124.GA16600@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart41554173.qJsSN2ZmZu";
+ protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <201202082156.26384.vapier@gentoo.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-02-08 at 07:58 -0800, Bjorn Helgaas wrote:
-> The only architecture-specific thing here is discovering the range of
-> bus numbers below a host bridge.  The architecture should not have to
-> mess around with pci_bus_update_busn_res_end() like this.  It should
-> be able to say "here's my bus number range" (and of course the PCI
-> core can default to 0-255 if the arch doesn't supply a range) and the
-> core should take care of the rest. 
+--nextPart41554173.qJsSN2ZmZu
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-So it's a bit messy in here because we deal with several things.
+Acked-by: Mike Frysinger <vapier@gentoo.org>
+-mike
 
-What the firmware gives us is the range it assigned, but that isn't
-necessarily the HW limits (almost never is in fact).
+--nextPart41554173.qJsSN2ZmZu
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-In some cases we honor it, for example when in "probe only" mode where
-we prevent any reassigning, and in some case, we ignore it and let the
-PCI core renumber things (typically because the FW "forgot" to set aside
-bus numbers for a cardbus slot for example, that sort of things).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.17 (GNU/Linux)
 
-So it's a bit of a tricky situation.
+iQIcBAABAgAGBQJPMzXaAAoJEEFjO5/oN/WBJ0AP/j5lUTVWt+ANbTFAVwXJPezS
+4JxadWPzZ0tkDT1uytnKuVSQu8u+SR++bLvdGL0P2ylHE2pl9pOet/km1DAlFfw8
+G2Xv2yItPZnFNZ0o3de1DpKYAVW+ZjnzU4l3IlxnyMzmvzwNjAZd7mbGDEbndYt3
++Eg87U9lzH+XpRM6zvx2nNDUSJ+JLzB2G6bcODzUc2j9Bykh4q2168XcgyeO3tgX
++KUrIjRnUMzK3WVzLkX/x5QyhR1mKUJrmr6GfhGNFhewL86jX7gX9KsFQAKmL305
+bUIugpLukY6m710oLg5c72CMmc/zWoiVF//GkAqlH1t4iC06ykEFWJ/kQunnM0bh
+ooVKTl7jWazdKyrWo/UilGak2rL0lg9ZbCS54R75sAXCxb0JHNU92UNNJNabfkCn
+SkFtJNpXIrwcDmA9Frd66ytDHAOX1vZalNMacOx1aOCTyiB1lpAxTYM+FXTyIFSF
+eWOCl/Gr0FYGlZMCOA0C8bIjKZVw8oAqvaOAUrksU7DCK79H0QQHn4KwfYEOXiAZ
+p2kB4lhxFZb9flWYIf++8Hcud8Nvrxf89J80reET62g9AqMHlGiEvcEBLxdswbWh
+0O/yTdqWNnrDlq6hSqSiaYkZtXIe5TOiRxkza25Sq5gnWtHasSAyFzFZUPMZTtvd
+xcVi2vObLik8jlYffulA
+=1CXe
+-----END PGP SIGNATURE-----
 
-Off the top of my head, I'm pretty sure that most if not all of our PCI
-host bridges simply support a full 0...255 range and there is no sharing
-between bridges like on x86, they are just different domains.
-
-But I can't vouch 100% for some of the oddball cases like Pegasos or
-some freescale gear.
-
-Cheers,
-Ben.
+--nextPart41554173.qJsSN2ZmZu--
