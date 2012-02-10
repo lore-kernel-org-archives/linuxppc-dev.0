@@ -1,23 +1,18 @@
-Return-Path: <B13201@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
- [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B32736@freescale.com>
+Received: from VA3EHSOBE002.bigfish.com (va3ehsobe002.messaging.microsoft.com
+ [216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 92B63B7267
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Feb 2012 21:05:17 +1100 (EST)
-From: Liu Yu <yu.liu@freescale.com>
-To: <agraf@suse.de>, <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>
-Subject: [PATCH v3 3/3] KVM: PPC: epapr: install ev_idle hcall for e500 guest
-Date: Fri, 10 Feb 2012 18:02:21 +0800
-Message-ID: <1328868141-17364-3-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1328868141-17364-2-git-send-email-yu.liu@freescale.com>
-References: <1328868141-17364-1-git-send-email-yu.liu@freescale.com>
- <1328868141-17364-2-git-send-email-yu.liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2627CB6EF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 21:21:08 +1100 (EST)
+From: Zhicheng Fan <B32736@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 1/2 v3] powerpc/85xx: Add p1025rdb platform support
+Date: Fri, 10 Feb 2012 18:18:15 +0800
+Message-ID: <1328869096-23994-1-git-send-email-B32736@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, Liu Yu <yu.liu@freescale.com>,
- B07421@freescale.com
+Cc: Zhicheng Fan <b32736@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,126 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the guest hypervisor node contains "has-idle" property.
+From: Zhicheng Fan <b32736@freescale.com>
 
-Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Zhicheng Fan <b32736@freescale.com>
 ---
-v3:
-1. apply the hcall idle for all ppc platform
-2. add a loop to prevent spurious wakeups
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
 
- arch/powerpc/kernel/Makefile     |    2 +-
- arch/powerpc/kernel/epapr.S      |   47 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/epapr_para.c |   14 ++++++++++-
- 3 files changed, 61 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/kernel/epapr.S
-
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 1e41c76..65e24be 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -134,7 +134,7 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
- obj-y				+= ppc_save_regs.o
- endif
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index d54772e..e95aef7 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -91,6 +91,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
+ machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
+ machine_device_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
++machine_device_initcall(p1025_rdb, mpc85xx_common_publish_devices);
  
--obj-$(CONFIG_EPAPR_PARA)	+= epapr_para.o
-+obj-$(CONFIG_EPAPR_PARA)	+= epapr_para.o epapr.o
- obj-$(CONFIG_KVM_GUEST)		+= kvm.o kvm_emul.o
- 
- # Disable GCOV in odd or sensitive code
-diff --git a/arch/powerpc/kernel/epapr.S b/arch/powerpc/kernel/epapr.S
-new file mode 100644
-index 0000000..34cc54f
---- /dev/null
-+++ b/arch/powerpc/kernel/epapr.S
-@@ -0,0 +1,47 @@
-+/*
-+ * Copyright (C) 2012 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/threads.h>
-+#include <asm/reg.h>
-+#include <asm/page.h>
-+#include <asm/cputable.h>
-+#include <asm/thread_info.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/asm-offsets.h>
-+
-+#define HC_VENDOR_EPAPR		(1 << 16)
-+#define HC_EV_IDLE		16
-+
-+_GLOBAL(epapr_ev_idle)
-+epapr_ev_idle:
-+#ifdef CONFIG_E500
-+	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
-+	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
-+	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
-+	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
-+#endif
-+	wrteei	1
-+
-+idle_loop:
-+	LOAD_REG_IMMEDIATE(r11, HC_VENDOR_EPAPR | HC_EV_IDLE)
-+
-+/* Hypercall entry point. Will be patched with device tree instructions. */
-+.global epapr_hypercall_start
-+epapr_hypercall_start:
-+	li	r3, -1
-+	nop
-+	nop
-+	nop
-+
-+	/*
-+	 * Guard against spurious wakeups (e.g. from a hypervisor) --
-+	 * any real interrupt will cause us to return to LR due to
-+	 * _TLF_NAPPING.
-+	 */
-+	b	idle_loop
-diff --git a/arch/powerpc/kernel/epapr_para.c b/arch/powerpc/kernel/epapr_para.c
-index 7e1561a..ff8fb78 100644
---- a/arch/powerpc/kernel/epapr_para.c
-+++ b/arch/powerpc/kernel/epapr_para.c
-@@ -20,6 +20,10 @@
- #include <linux/of.h>
- #include <asm/epapr_hcalls.h>
- #include <asm/cacheflush.h>
-+#include <asm/machdep.h>
-+
-+extern void epapr_ev_idle(void);
-+extern u32 epapr_hypercall_start[];
- 
- u32 *epapr_hcall_insts;
- int epapr_hcall_insts_len;
-@@ -28,7 +32,7 @@ static int __init epapr_para_init(void)
- {
- 	struct device_node *hyper_node;
- 	u32 *insts;
--	int len;
-+	int len, i;
- 
- 	hyper_node = of_find_node_by_path("/hypervisor");
- 	if (!hyper_node)
-@@ -38,8 +42,16 @@ static int __init epapr_para_init(void)
- 	if (!(len % 4) && (len >= (4 * 4))) {
- 		epapr_hcall_insts = insts;
- 		epapr_hcall_insts_len = len;
-+
-+		for (i = 0; i < (len / 4); i++)
-+			epapr_hypercall_start[i] = insts[i];
-+		flush_icache_range((ulong)epapr_hypercall_start,
-+		                   (ulong)epapr_hypercall_start + len);
- 	}
- 
-+	if (of_get_property(hyper_node, "has-idle", NULL))
-+		ppc_md.power_save = epapr_ev_idle;
-+
+ /*
+  * Called very early, device-tree isn't unflattened
+@@ -120,6 +121,13 @@ static int __init p1020_rdb_probe(void)
  	return 0;
  }
  
++static int __init p1025_rdb_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "fsl,P1025RDB");
++}
++
+ define_machine(p2020_rdb) {
+ 	.name			= "P2020 RDB",
+ 	.probe			= p2020_rdb_probe,
+@@ -161,3 +169,17 @@ define_machine(p1020_rdb_pc) {
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
++
++define_machine(p1025_rdb) {
++	.name			= "P1025 RDB",
++	.probe			= p1025_rdb_probe,
++	.setup_arch		= mpc85xx_rdb_setup_arch,
++	.init_IRQ		= mpc85xx_rdb_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++#endif
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
 -- 
 1.7.0.4
