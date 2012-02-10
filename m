@@ -1,34 +1,22 @@
-Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
- [210.118.77.11]) by ozlabs.org (Postfix) with ESMTP id 93FE0B6ED0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Feb 2012 05:32:41 +1100 (EST)
-Received: from euspt1 (mailout1.w1.samsung.com [210.118.77.11])
- by mailout1.w1.samsung.com
- (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
- with ESMTP id <0LZ600G7VWUD42@mailout1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 10 Feb 2012 18:32:37 +0000 (GMT)
-Received: from linux.samsung.com ([106.116.38.10])
- by spt1.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
- 2004)) with ESMTPA id <0LZ600EE5WUC1A@spt1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 10 Feb 2012 18:32:37 +0000 (GMT)
-Date: Fri, 10 Feb 2012 19:32:17 +0100
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PULL REQUEST] DMA-mapping framework redesign preparation patches
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Message-id: <1328898737-15854-1-git-send-email-m.szyprowski@samsung.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, linux-next@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
- linaro-mm-sig@lists.linaro.org, Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- discuss@x86-64.org, linux-kernel@vger.kernel.org,
- FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
- Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 62A4CB6F98
+ for <linuxppc-dev@ozlabs.org>; Sat, 11 Feb 2012 05:40:10 +1100 (EST)
+Message-ID: <4F356477.7010809@freescale.com>
+Date: Fri, 10 Feb 2012 12:39:51 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Liu Yu <yu.liu@freescale.com>
+Subject: Re: [PATCH v3 1/3] KVM: PPC: epapr: Factor out the epapr init
+References: <1328868141-17364-1-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1328868141-17364-1-git-send-email-yu.liu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@ozlabs.org, B07421@freescale.com, agraf@suse.de,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,90 +26,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Stephen,
+On 02/10/2012 04:02 AM, Liu Yu wrote:
+> from the kvm guest paravirt init code.
+> 
+> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+> ---
+> v3:
+> apply the epapr init for all ppc platform
+> 
+>  arch/powerpc/Kconfig                    |    4 +++
+>  arch/powerpc/include/asm/epapr_hcalls.h |    8 +++++
+>  arch/powerpc/kernel/Makefile            |    1 +
+>  arch/powerpc/kernel/epapr_para.c        |   46 +++++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/kvm.c               |   13 +++------
+>  arch/powerpc/kvm/Kconfig                |    1 +
+>  6 files changed, 64 insertions(+), 9 deletions(-)
+>  create mode 100644 arch/powerpc/kernel/epapr_para.c
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 47682b6..00bd508 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -196,6 +196,10 @@ config EPAPR_BOOT
+>  	  Used to allow a board to specify it wants an ePAPR compliant wrapper.
+>  	default n
+>  
+> +config EPAPR_PARA
+> +	bool
+> +	default n
 
-Our patches with DMA-mapping framework redesign proposal have been
-hanging for over a month with just a few comments. We would like to go
-further in the development, but first I would like to ask You to give
-them a try in the linux-next kernel.
+EPAPR_PARAVIRT
 
-For everyone interested in this patch series, here is the relevant
-thread: https://lkml.org/lkml/2011/12/23/97
+>  config DEFAULT_UIMAGE
+>  	bool
+>  	help
+> diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
+> index f3b0c2c..c4b86e4 100644
+> --- a/arch/powerpc/include/asm/epapr_hcalls.h
+> +++ b/arch/powerpc/include/asm/epapr_hcalls.h
+> @@ -148,6 +148,14 @@
+>  #define EV_HCALL_CLOBBERS2 EV_HCALL_CLOBBERS3, "r5"
+>  #define EV_HCALL_CLOBBERS1 EV_HCALL_CLOBBERS2, "r4"
+>  
+> +extern u32 *epapr_hcall_insts;
+> +extern int epapr_hcall_insts_len;
+> +
+> +static inline void epapr_get_hcall_insts(u32 **instp, int *lenp)
+> +{
+> +	*instp = epapr_hcall_insts;
+> +	*lenp = epapr_hcall_insts_len;
+> +}
 
-If there are any problems with our git tree, please contact Marek 
-Szyprowski <m.szyprowski@samsung.com> or alternatively Kyungmin Park
-<kyungmin.park@samsung.com>.
+Why do we need a function for this?  Why is the public interface
+anything other than "invoke a hypercall"?
 
-The following changes since commit 62aa2b537c6f5957afd98e29f96897419ed5ebab:
+> +static int __init epapr_para_init(void)
+> +{
+> +	struct device_node *hyper_node;
+> +	u32 *insts;
+> +	int len;
+> +
+> +	hyper_node = of_find_node_by_path("/hypervisor");
+> +	if (!hyper_node)
+> +		return -ENODEV;
+> +
+> +	insts = (u32*)of_get_property(hyper_node, "hcall-instructions", &len);
 
-  Linux 3.3-rc2 (2012-01-31 13:31:54 -0800)
+Do not cast away that const.
 
-are available in the git repository at:
-  git://git.infradead.org/users/kmpark/linux-samsung dma-mapping-next
+> @@ -535,18 +536,12 @@ EXPORT_SYMBOL_GPL(kvm_hypercall);
+>  static int kvm_para_setup(void)
+>  {
+>  	extern u32 kvm_hypercall_start;
+> -	struct device_node *hyper_node;
+>  	u32 *insts;
+>  	int len, i;
+>  
+> -	hyper_node = of_find_node_by_path("/hypervisor");
+> -	if (!hyper_node)
+> -		return -1;
+> -
+> -	insts = (u32*)of_get_property(hyper_node, "hcall-instructions", &len);
+> -	if (len % 4)
+> -		return -1;
+> -	if (len > (4 * 4))
+> +	insts = epapr_hcall_insts;
+> +	len = epapr_hcall_insts_len;
+> +	if (insts == NULL)
+>  		return -1;
+>  
+>  	for (i = 0; i < (len / 4); i++)
 
-Andrzej Pietrasiewicz (9):
-      X86: adapt for dma_map_ops changes
-      MIPS: adapt for dma_map_ops changes
-      PowerPC: adapt for dma_map_ops changes
-      IA64: adapt for dma_map_ops changes
-      SPARC: adapt for dma_map_ops changes
-      Alpha: adapt for dma_map_ops changes
-      SH: adapt for dma_map_ops changes
-      Microblaze: adapt for dma_map_ops changes
-      Unicore32: adapt for dma_map_ops changes
+Why are you still doing the patching inside kvm.c?
 
-Marek Szyprowski (5):
-      common: dma-mapping: introduce alloc_attrs and free_attrs methods
-      common: dma-mapping: remove old alloc_coherent and free_coherent methods
-      common: dma-mapping: introduce mmap method
-      common: DMA-mapping: add WRITE_COMBINE attribute
-      common: DMA-mapping: add NON-CONSISTENT attribute
-
- Documentation/DMA-attributes.txt          |   19 +++++++++++++++++++
- arch/alpha/include/asm/dma-mapping.h      |   18 ++++++++++++------
- arch/alpha/kernel/pci-noop.c              |   10 ++++++----
- arch/alpha/kernel/pci_iommu.c             |   10 ++++++----
- arch/ia64/hp/common/sba_iommu.c           |   11 ++++++-----
- arch/ia64/include/asm/dma-mapping.h       |   18 ++++++++++++------
- arch/ia64/kernel/pci-swiotlb.c            |    9 +++++----
- arch/ia64/sn/pci/pci_dma.c                |    9 +++++----
- arch/microblaze/include/asm/dma-mapping.h |   18 ++++++++++++------
- arch/microblaze/kernel/dma.c              |   10 ++++++----
- arch/mips/include/asm/dma-mapping.h       |   18 ++++++++++++------
- arch/mips/mm/dma-default.c                |    8 ++++----
- arch/powerpc/include/asm/dma-mapping.h    |   24 ++++++++++++++++--------
- arch/powerpc/kernel/dma-iommu.c           |   10 ++++++----
- arch/powerpc/kernel/dma-swiotlb.c         |    4 ++--
- arch/powerpc/kernel/dma.c                 |   10 ++++++----
- arch/powerpc/kernel/ibmebus.c             |   10 ++++++----
- arch/powerpc/platforms/cell/iommu.c       |   16 +++++++++-------
- arch/powerpc/platforms/ps3/system-bus.c   |   13 +++++++------
- arch/sh/include/asm/dma-mapping.h         |   28 ++++++++++++++++++----------
- arch/sh/kernel/dma-nommu.c                |    4 ++--
- arch/sh/mm/consistent.c                   |    6 ++++--
- arch/sparc/include/asm/dma-mapping.h      |   18 ++++++++++++------
- arch/sparc/kernel/iommu.c                 |   10 ++++++----
- arch/sparc/kernel/ioport.c                |   18 ++++++++++--------
- arch/sparc/kernel/pci_sun4v.c             |    9 +++++----
- arch/unicore32/include/asm/dma-mapping.h  |   18 ++++++++++++------
- arch/unicore32/mm/dma-swiotlb.c           |    4 ++--
- arch/x86/include/asm/dma-mapping.h        |   26 ++++++++++++++++----------
- arch/x86/kernel/amd_gart_64.c             |   11 ++++++-----
- arch/x86/kernel/pci-calgary_64.c          |    9 +++++----
- arch/x86/kernel/pci-dma.c                 |    3 ++-
- arch/x86/kernel/pci-nommu.c               |    6 +++---
- arch/x86/kernel/pci-swiotlb.c             |   12 +++++++-----
- arch/x86/xen/pci-swiotlb-xen.c            |    4 ++--
- drivers/iommu/amd_iommu.c                 |   10 ++++++----
- drivers/iommu/intel-iommu.c               |    9 +++++----
- drivers/xen/swiotlb-xen.c                 |    5 +++--
- include/linux/dma-attrs.h                 |    2 ++
- include/linux/dma-mapping.h               |   13 +++++++++----
- include/linux/swiotlb.h                   |    6 ++++--
- include/xen/swiotlb-xen.h                 |    6 ++++--
- lib/swiotlb.c                             |    5 +++--
- 43 files changed, 305 insertions(+), 182 deletions(-)
-
-Best regards
-Marek Szyprowski
-Samsung Poland R&D Center
+-Scott
