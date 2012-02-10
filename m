@@ -1,27 +1,23 @@
-Return-Path: <B29983@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe005.messaging.microsoft.com
- [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B32616@freescale.com>
+Received: from AM1EHSOBE001.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F43AB6EF7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 19:02:56 +1100 (EST)
-Received: from mail139-tx2 (localhost [127.0.0.1])	by
- mail139-tx2-R.bigfish.com (Postfix) with ESMTP id C0005200118	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 08:02:39 +0000 (UTC)
-Received: from TX2EHSMHS009.bigfish.com (unknown [10.9.14.239])	by
- mail139-tx2.bigfish.com (Postfix) with ESMTP id 15D944E0046	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 08:02:38 +0000 (UTC)
-From: <b29983@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2 V3] powerpc/85xx: Add p2020rdb-pc dts support
-Date: Fri, 10 Feb 2012 15:59:57 +0800
-Message-ID: <1328860797-9283-1-git-send-email-b29983@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 55274B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 19:51:32 +1100 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: Liu Qiang-B32616 <B32616@freescale.com>, "jgarzik@pobox.com"
+ <jgarzik@pobox.com>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Subject: RE: [PATCH V2] fsl-sata: I/O load balancing
+Date: Fri, 10 Feb 2012 08:51:17 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB701E91A@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1327025958-10605-1-git-send-email-qiang.liu@freescale.com>
+In-Reply-To: <1327025958-10605-1-git-send-email-qiang.liu@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tang Yuantian <b29983@freescale.com>,
- Tang Yuantian <Yuantian.Tang@freescale.com>,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,473 +27,263 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+Hi Jeff,
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-Signed-off-by: Tang Yuantian <b29983@freescale.com>
----
-v3:
-	-correct the patch author
+Do you have any suggestion about this patch :)
 
- arch/powerpc/boot/dts/p2020rdb-pc.dtsi    |  241 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |   96 ++++++++++++
- arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |   96 ++++++++++++
- 3 files changed, 433 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
 
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-new file mode 100644
-index 0000000..c21d1c7
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-@@ -0,0 +1,241 @@
-+/*
-+ * P2020 RDB-PC Device Tree Source stub (no addresses or top-level ranges)
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&lbc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x1000000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 256KB for Vitesse 7385 Switch firmware */
-+			reg = <0x0 0x00040000>;
-+			label = "NOR Vitesse-7385 Firmware";
-+			read-only;
-+		};
-+
-+		partition@40000 {
-+			/* 256KB for DTB Image */
-+			reg = <0x00040000 0x00040000>;
-+			label = "NOR DTB Image";
-+		};
-+
-+		partition@80000 {
-+			/* 3.5 MB for Linux Kernel Image */
-+			reg = <0x00080000 0x00380000>;
-+			label = "NOR Linux Kernel Image";
-+		};
-+
-+		partition@400000 {
-+			/* 11MB for JFFS2 based Root file System */
-+			reg = <0x00400000 0x00b00000>;
-+			label = "NOR JFFS2 Root File System";
-+		};
-+
-+		partition@f00000 {
-+			/* This location must not be altered  */
-+			/* 512KB for u-boot Bootloader Image */
-+			/* 512KB for u-boot Environment Variables */
-+			reg = <0x00f00000 0x00100000>;
-+			label = "NOR U-Boot Image";
-+			read-only;
-+		};
-+	};
-+
-+	nand@1,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,p2020-fcm-nand",
-+				 "fsl,elbc-fcm-nand";
-+		reg = <0x1 0x0 0x40000>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 1MB for u-boot Bootloader Image */
-+			reg = <0x0 0x00100000>;
-+			label = "NAND U-Boot Image";
-+			read-only;
-+		};
-+
-+		partition@100000 {
-+			/* 1MB for DTB Image */
-+			reg = <0x00100000 0x00100000>;
-+			label = "NAND DTB Image";
-+		};
-+
-+		partition@200000 {
-+			/* 4MB for Linux Kernel Image */
-+			reg = <0x00200000 0x00400000>;
-+			label = "NAND Linux Kernel Image";
-+		};
-+
-+		partition@600000 {
-+			/* 4MB for Compressed Root file System Image */
-+			reg = <0x00600000 0x00400000>;
-+			label = "NAND Compressed RFS Image";
-+		};
-+
-+		partition@a00000 {
-+			/* 7MB for JFFS2 based Root file System */
-+			reg = <0x00a00000 0x00700000>;
-+			label = "NAND JFFS2 Root File System";
-+		};
-+
-+		partition@1100000 {
-+			/* 15MB for JFFS2 based Root file System */
-+			reg = <0x01100000 0x00f00000>;
-+			label = "NAND Writable User area";
-+		};
-+	};
-+
-+	L2switch@2,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "vitesse-7385";
-+		reg = <0x2 0x0 0x20000>;
-+	};
-+
-+	cpld@3,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cpld";
-+		reg = <0x3 0x0 0x20000>;
-+		read-only;
-+	};
-+};
-+
-+&soc {
-+	i2c@3000 {
-+		rtc@68 {
-+			compatible = "pericom,pt7c4338";
-+			reg = <0x68>;
-+		};
-+	};
-+
-+	spi@7000 {
-+		flash@0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "spansion,m25p80";
-+			reg = <0>;
-+			spi-max-frequency = <40000000>;
-+
-+			partition@0 {
-+				/* 512KB for u-boot Bootloader Image */
-+				reg = <0x0 0x00080000>;
-+				label = "SPI U-Boot Image";
-+				read-only;
-+			};
-+
-+			partition@80000 {
-+				/* 512KB for DTB Image */
-+				reg = <0x00080000 0x00080000>;
-+				label = "SPI DTB Image";
-+			};
-+
-+			partition@100000 {
-+				/* 4MB for Linux Kernel Image */
-+				reg = <0x00100000 0x00400000>;
-+				label = "SPI Linux Kernel Image";
-+			};
-+
-+			partition@500000 {
-+				/* 4MB for Compressed RFS Image */
-+				reg = <0x00500000 0x00400000>;
-+				label = "SPI Compressed RFS Image";
-+			};
-+
-+			partition@900000 {
-+				/* 7MB for JFFS2 based RFS */
-+				reg = <0x00900000 0x00700000>;
-+				label = "SPI JFFS2 RFS";
-+			};
-+		};
-+	};
-+
-+	usb@22000 {
-+		phy_type = "ulpi";
-+	};
-+
-+	mdio@24520 {
-+		phy0: ethernet-phy@0 {
-+			interrupts = <3 1 0 0>;
-+			reg = <0x0>;
-+			};
-+		phy1: ethernet-phy@1 {
-+			interrupts = <2 1 0 0>;
-+			reg = <0x1>;
-+			};
-+	};
-+
-+	mdio@25520 {
-+		tbi0: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@26520 {
-+		status = "disabled";
-+	};
-+
-+	ptp_clock@24e00 {
-+		fsl,tclk-period = <5>;
-+		fsl,tmr-prsc = <200>;
-+		fsl,tmr-add = <0xCCCCCCCD>;
-+		fsl,tmr-fiper1 = <0x3B9AC9FB>;
-+		fsl,tmr-fiper2 = <0x0001869B>;
-+		fsl,max-adj = <249999999>;
-+	};
-+
-+	enet0: ethernet@24000 {
-+		fixed-link = <1 1 1000 0 0>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	enet1: ethernet@25000 {
-+		tbi-handle = <&tbi0>;
-+		phy-handle = <&phy0>;
-+		phy-connection-type = "sgmii";
-+	};
-+
-+	enet2: ethernet@26000 {
-+		phy-handle = <&phy1>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-new file mode 100644
-index 0000000..852e5b2
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-@@ -0,0 +1,96 @@
-+/*
-+ * P2020 RDB-PC 32Bit Physical Address Map Device Tree Source
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p2020si-pre.dtsi"
-+
-+/ {
-+	model = "fsl,P2020RDB";
-+	compatible = "fsl,P2020RDB-PC";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@ffe05000 {
-+		reg = <0 0xffe05000 0 0x1000>;
-+
-+		/* NOR and NAND Flashes */
-+		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
-+			  0x1 0x0 0x0 0xff800000 0x00040000
-+			  0x2 0x0 0x0 0xffb00000 0x00020000
-+			  0x3 0x0 0x0 0xffa00000 0x00020000>;
-+	};
-+
-+	soc: soc@ffe00000 {
-+		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@ffe08000 {
-+		reg = <0 0xffe08000 0 0x1000>;
-+		status = "disabled";
-+	};
-+
-+	pci1: pcie@ffe09000 {
-+		reg = <0 0xffe09000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe0a000 {
-+		reg = <0 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "p2020rdb-pc.dtsi"
-+/include/ "fsl/p2020si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
-new file mode 100644
-index 0000000..b5a56ca
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
-@@ -0,0 +1,96 @@
-+/*
-+ * P2020 RDB-PC 36Bit Physical Address Map Device Tree Source
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p2020si-pre.dtsi"
-+
-+/ {
-+	model = "fsl,P2020RDB";
-+	compatible = "fsl,P2020RDB-PC";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@fffe05000 {
-+		reg = <0xf 0xffe05000 0 0x1000>;
-+
-+		/* NOR and NAND Flashes */
-+		ranges = <0x0 0x0 0xf 0xef000000 0x01000000
-+			  0x1 0x0 0xf 0xff800000 0x00040000
-+			  0x2 0x0 0xf 0xffb00000 0x00020000
-+			  0x3 0x0 0xf 0xffa00000 0x00020000>;
-+	};
-+
-+	soc: soc@fffe00000 {
-+		ranges = <0x0 0xf 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@fffe08000 {
-+		reg = <0xf 0xffe08000 0 0x1000>;
-+		status = "disabled";
-+	};
-+
-+	pci1: pcie@fffe09000 {
-+		reg = <0xf 0xffe09000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci2: pcie@fffe0a000 {
-+		reg = <0xf 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "p2020rdb-pc.dtsi"
-+/include/ "fsl/p2020si-post.dtsi"
--- 
-1.6.4
+> -----Original Message-----
+> From: Liu Qiang-B32616
+> Sent: Friday, January 20, 2012 10:19 AM
+> To: jgarzik@pobox.com; linux-ide@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Liu
+> Qiang-B32616
+> Subject: [PATCH V2] fsl-sata: I/O load balancing
+>=20
+> From: Qiang Liu <qiang.liu@freescale.com>
+>=20
+> Reduce interrupt signals through reset Interrupt Coalescing Control Reg.
+> Provide dynamic method to adjust interrupt signals and timer ticks by
+> sysfs.
+> It is a tradeoff for different applications.
+>=20
+> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> ---
+>=20
+> change for V2
+> 	support dynamic config interrupt coalescing register by /sysfs
+> 	test random small file with iometer
+> Description:
+>   1. fsl-sata interrupt will be raised 130 thousand times when write 8G
+> file
+>     (dd if=3D/dev/zero of=3D/dev/sda2 bs=3D128K count=3D65536);
+>   2. most of interrupts raised because of only 1-4 commands completed;
+>   3. only 30 thousand times will be raised after set max interrupt
+> threshold,
+>     more interrupts are coalesced as the description of ICC;
+>=20
+> Test methods and results:
+>   1. test sequential large file performance,
+>   [root@p2020ds root]# echo 31 524287 > \
+>   	/sys/devices/soc.0/ffe18000.sata/intr_coalescing
+>   [root@p2020ds root]# dd if=3D/dev/zero of=3D/dev/sda2 bs=3D128K count=
+=3D65536 &
+>   [root@p2020ds root]# top
+>=20
+>   CPU %  |  dd   |  flush-8:0 | softirq
+>   ---------------------------------------
+>   before | 20-22 |    17-19   |    7
+>   ---------------------------------------
+>   after  | 18-21 |    15-16   |    5
+>   ---------------------------------------
+>   2. test random small file with iometer,  iometer paramters:
+>    4 I/Os burst length, 1MB transfer request size, 100% write, 2MB file
+> size
+>    as default configuration of interrupt coalescing register, 1
+> interrupts and  no timeout config, total write performance is 119MB per
+> second,
+>    after config with the maximum value, write performance is 110MB per
+> second.
+>=20
+>   After compare the test results, a configuable interrupt coalescing
+> should be
+>   better when cope with flexible context.
+>=20
+>  drivers/ata/sata_fsl.c |  111
+> ++++++++++++++++++++++++++++++++++++++++++++++--
+>  1 files changed, 107 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c index
+> 3547000..41ca495 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -6,7 +6,7 @@
+>   * Author: Ashish Kalra <ashish.kalra@freescale.com>
+>   * Li Yang <leoli@freescale.com>
+>   *
+> - * Copyright (c) 2006-2007, 2011 Freescale Semiconductor, Inc.
+> + * Copyright (c) 2006-2007, 2011-2012 Freescale Semiconductor, Inc.
+>   *
+>   * This program is free software; you can redistribute  it and/or modify
+> it
+>   * under  the terms of  the GNU General  Public License as published by
+> the @@ -26,6 +26,15 @@  #include <asm/io.h>  #include
+> <linux/of_platform.h>
+>=20
+> +static unsigned int intr_coalescing_count;
+> +module_param(intr_coalescing_count, int, S_IRUGO);
+> +MODULE_PARM_DESC(intr_coalescing_count,
+> +				 "INT coalescing count threshold (1..31)");
+> +
+> +static unsigned int intr_coalescing_ticks;
+> +module_param(intr_coalescing_ticks, int, S_IRUGO);
+> +MODULE_PARM_DESC(intr_coalescing_ticks,
+> +				 "INT coalescing timer threshold in AHB ticks");
+>  /* Controller information */
+>  enum {
+>  	SATA_FSL_QUEUE_DEPTH	=3D 16,
+> @@ -83,6 +92,16 @@ enum {
+>  };
+>=20
+>  /*
+> + * Interrupt Coalescing Control Register bitdefs  */ enum {
+> +	ICC_MIN_INT_COUNT_THRESHOLD	=3D 1,
+> +	ICC_MAX_INT_COUNT_THRESHOLD	=3D ((1 << 5) - 1),
+> +	ICC_MIN_INT_TICKS_THRESHOLD	=3D 0,
+> +	ICC_MAX_INT_TICKS_THRESHOLD	=3D ((1 << 19) - 1),
+> +	ICC_SAFE_INT_TICKS		=3D 1,
+> +};
+> +
+> +/*
+>  * Host Controller command register set - per port  */  enum { @@ -263,9
+> +282,66 @@ struct sata_fsl_host_priv {
+>  	int irq;
+>  	int data_snoop;
+>  	u32 quirks;
+> +	struct device_attribute intr_coalescing;
+>  #define SATA_FSL_QUIRK_P3P5_ERRATA	(1 << 0)
+>  };
+>=20
+> +static void fsl_sata_set_irq_coalescing(struct ata_host *host,
+> +		unsigned int count, unsigned int ticks) {
+> +	struct sata_fsl_host_priv *host_priv =3D host->private_data;
+> +	void __iomem *hcr_base =3D host_priv->hcr_base;
+> +
+> +	if (count > ICC_MAX_INT_COUNT_THRESHOLD)
+> +		count =3D ICC_MAX_INT_COUNT_THRESHOLD;
+> +	else if (count < ICC_MIN_INT_COUNT_THRESHOLD)
+> +		count =3D ICC_MIN_INT_COUNT_THRESHOLD;
+> +
+> +	if (ticks > ICC_MAX_INT_TICKS_THRESHOLD)
+> +		ticks =3D ICC_MAX_INT_TICKS_THRESHOLD;
+> +	else if ((ICC_MIN_INT_TICKS_THRESHOLD =3D=3D ticks) &&
+> +			(count > ICC_MIN_INT_COUNT_THRESHOLD))
+> +		ticks =3D ICC_SAFE_INT_TICKS;
+> +
+> +	spin_lock(&host->lock);
+> +	iowrite32((count << 24 | ticks), hcr_base + ICC);
+> +
+> +	intr_coalescing_count =3D count;
+> +	intr_coalescing_ticks =3D ticks;
+> +	spin_unlock(&host->lock);
+> +
+> +	DPRINTK("intrrupt coalescing, count =3D 0x%x, ticks =3D %x\n",
+> +			intr_coalescing_count, intr_coalescing_ticks);
+> +	DPRINTK("ICC register status: (hcr base: 0x%x) =3D 0x%x\n",
+> +			hcr_base, ioread32(hcr_base + ICC)); }
+> +
+> +static ssize_t fsl_sata_intr_coalescing_show(struct device *dev,
+> +		struct device_attribute *attr, char *buf) {
+> +	return sprintf(buf, "%d	%d\n",
+> +			intr_coalescing_count, intr_coalescing_ticks); }
+> +
+> +static ssize_t fsl_sata_intr_coalescing_store(struct device *dev,
+> +		struct device_attribute *attr,
+> +		const char *buf, size_t count)
+> +{
+> +	unsigned int coalescing_count,	coalescing_ticks;
+> +
+> +	if (sscanf(buf, "%d%d",
+> +				&coalescing_count,
+> +				&coalescing_ticks) !=3D 2) {
+> +		printk(KERN_ERR "fsl-sata: wrong parameter format.\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	fsl_sata_set_irq_coalescing(dev_get_drvdata(dev),
+> +			coalescing_count, coalescing_ticks);
+> +
+> +	return strlen(buf);
+> +}
+> +
+>  static void sata_fsl_dev_config(struct ata_device *dev)  {
+>  		dev->max_sectors =3D 16;
+> @@ -352,11 +428,11 @@ static unsigned int sata_fsl_fill_sg(struct
+> ata_queued_cmd *qc, void *cmd_desc,
+>  			(unsigned long long)sg_addr, sg_len);
+>=20
+>  		/* warn if each s/g element is not dword aligned */
+> -		if (sg_addr & 0x03)
+> +		if (unlikely(sg_addr & 0x03))
+>  			ata_port_printk(qc->ap, KERN_ERR,
+>  					"s/g addr unaligned : 0x%llx\n",
+>  					(unsigned long long)sg_addr);
+> -		if (sg_len & 0x03)
+> +		if (unlikely(sg_len & 0x03))
+>  			ata_port_printk(qc->ap, KERN_ERR,
+>  					"s/g len unaligned : 0x%x\n", sg_len);
+>=20
+> @@ -1305,6 +1381,13 @@ static int sata_fsl_init_controller(struct
+> ata_host *host)
+>  	iowrite32(0x00000FFFF, hcr_base + DE);
+>=20
+>  	/*
+> +	 * reset the number of command complete bits which will cause the
+> +	 * interrupt to be signaled
+> +	 */
+> +	fsl_sata_set_irq_coalescing(host, intr_coalescing_count,
+> +			intr_coalescing_ticks);
+> +
+> +	/*
+>  	 * host controller will be brought on-line, during xx_port_start()
+>  	 * callback, that should also initiate the OOB, COMINIT sequence
+>  	 */
+> @@ -1368,7 +1451,7 @@ static int sata_fsl_probe(struct platform_device
+> *ofdev)
+>  	void __iomem *csr_base =3D NULL;
+>  	struct sata_fsl_host_priv *host_priv =3D NULL;
+>  	int irq;
+> -	struct ata_host *host;
+> +	struct ata_host *host =3D NULL;
+>  	u32 temp;
+>=20
+>  	struct ata_port_info pi =3D sata_fsl_port_info[0]; @@ -1430,6
+> +1513,10 @@ static int sata_fsl_probe(struct platform_device *ofdev)
+>=20
+>  	/* allocate host structure */
+>  	host =3D ata_host_alloc_pinfo(&ofdev->dev, ppi, SATA_FSL_MAX_PORTS);
+> +	if (!host) {
+> +		retval =3D -ENOMEM;
+> +		goto error_exit_with_cleanup;
+> +	}
+>=20
+>  	/* host->iomap is not used currently */
+>  	host->private_data =3D host_priv;
+> @@ -1447,10 +1534,24 @@ static int sata_fsl_probe(struct platform_device
+> *ofdev)
+>=20
+>  	dev_set_drvdata(&ofdev->dev, host);
+>=20
+> +	host_priv->intr_coalescing.show =3D fsl_sata_intr_coalescing_show;
+> +	host_priv->intr_coalescing.store =3D fsl_sata_intr_coalescing_store;
+> +	sysfs_attr_init(&host_priv->intr_coalescing.attr);
+> +	host_priv->intr_coalescing.attr.name =3D "intr_coalescing";
+> +	host_priv->intr_coalescing.attr.mode =3D S_IRUGO | S_IWUSR;
+> +	retval =3D device_create_file(host->dev, &host_priv->intr_coalescing);
+> +	if (retval)
+> +		goto error_exit_with_cleanup;
+> +
+>  	return 0;
+>=20
+>  error_exit_with_cleanup:
+>=20
+> +	if (host) {
+> +		dev_set_drvdata(&ofdev->dev, NULL);
+> +		ata_host_detach(host);
+> +	}
+> +
+>  	if (hcr_base)
+>  		iounmap(hcr_base);
+>  	if (host_priv)
+> @@ -1464,6 +1565,8 @@ static int sata_fsl_remove(struct platform_device
+> *ofdev)
+>  	struct ata_host *host =3D dev_get_drvdata(&ofdev->dev);
+>  	struct sata_fsl_host_priv *host_priv =3D host->private_data;
+>=20
+> +	device_remove_file(&ofdev->dev, &host_priv->intr_coalescing);
+> +
+>  	ata_host_detach(host);
+>=20
+>  	dev_set_drvdata(&ofdev->dev, NULL);
+> --
+> 1.7.5.1
