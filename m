@@ -1,30 +1,27 @@
-Return-Path: <mylinux@10.ap.freescale.net>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe001.messaging.microsoft.com
- [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B29983@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe005.messaging.microsoft.com
+ [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 67BE1B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 19:01:42 +1100 (EST)
-Received: from mail97-am1 (localhost [127.0.0.1])	by mail97-am1-R.bigfish.com
- (Postfix) with ESMTP id 1A2BAE0558	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 10 Feb 2012 08:01:30 +0000 (UTC)
-Received: from AM1EHSMHS007.bigfish.com (unknown [10.3.201.229])	by
- mail97-am1.bigfish.com (Postfix) with ESMTP id 8AD7F1A004A	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 08:01:28 +0000 (UTC)
-Received: from 10.ap.freescale.net ([10.213.130.145])	by
- az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id q1A81Nrg003063	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 02:01:24 -0600 (CST)
+ by ozlabs.org (Postfix) with ESMTPS id 9F43AB6EF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 19:02:56 +1100 (EST)
+Received: from mail139-tx2 (localhost [127.0.0.1])	by
+ mail139-tx2-R.bigfish.com (Postfix) with ESMTP id C0005200118	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 08:02:39 +0000 (UTC)
+Received: from TX2EHSMHS009.bigfish.com (unknown [10.9.14.239])	by
+ mail139-tx2.bigfish.com (Postfix) with ESMTP id 15D944E0046	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 08:02:38 +0000 (UTC)
 From: <b29983@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2 V3] powerpc/85xx: Add P1024rdb dts support
-Date: Fri, 10 Feb 2012 16:00:51 +0800
-Message-ID: <1328860851-392-1-git-send-email-b29983@freescale.com>
+Subject: [PATCH 2/2 V3] powerpc/85xx: Add p2020rdb-pc dts support
+Date: Fri, 10 Feb 2012 15:59:57 +0800
+Message-ID: <1328860797-9283-1-git-send-email-b29983@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>,
- Jin Qing <b24347@freescale.com>
+Cc: Tang Yuantian <b29983@freescale.com>,
+ Tang Yuantian <Yuantian.Tang@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,29 +33,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tang Yuantian <Yuantian.Tang@freescale.com>
 
-Signed-off-by: Jin Qing <b24347@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Signed-off-by: Tang Yuantian <b29983@freescale.com>
 ---
 v3:
 	-correct the patch author
 
- arch/powerpc/boot/dts/p1024rdb.dtsi    |  228 ++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1024rdb_32b.dts |   87 ++++++++++++
- arch/powerpc/boot/dts/p1024rdb_36b.dts |   87 ++++++++++++
- 3 files changed, 402 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1024rdb.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1024rdb_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1024rdb_36b.dts
+ arch/powerpc/boot/dts/p2020rdb-pc.dtsi    |  241 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |   96 ++++++++++++
+ arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |   96 ++++++++++++
+ 3 files changed, 433 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
 
-diff --git a/arch/powerpc/boot/dts/p1024rdb.dtsi b/arch/powerpc/boot/dts/p1024rdb.dtsi
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
 new file mode 100644
-index 0000000..eb3141d
+index 0000000..c21d1c7
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/p1024rdb.dtsi
-@@ -0,0 +1,228 @@
++++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+@@ -0,0 +1,241 @@
 +/*
-+ * P1024 RDB Device Tree Source stub (no addresses or top-level ranges)
++ * P2020 RDB-PC Device Tree Source stub (no addresses or top-level ranges)
 + *
 + * Copyright 2011 Freescale Semiconductor Inc.
 + *
@@ -139,7 +136,7 @@ index 0000000..eb3141d
 +	nand@1,0 {
 +		#address-cells = <1>;
 +		#size-cells = <1>;
-+		compatible = "fsl,p1020-fcm-nand",
++		compatible = "fsl,p2020-fcm-nand",
 +				 "fsl,elbc-fcm-nand";
 +		reg = <0x1 0x0 0x40000>;
 +
@@ -170,20 +167,42 @@ index 0000000..eb3141d
 +		};
 +
 +		partition@a00000 {
-+			/* 15MB for JFFS2 based Root file System */
-+			reg = <0x00a00000 0x00f00000>;
++			/* 7MB for JFFS2 based Root file System */
++			reg = <0x00a00000 0x00700000>;
 +			label = "NAND JFFS2 Root File System";
 +		};
 +
-+		partition@1900000 {
-+			/* 7MB for User Writable Area */
-+			reg = <0x01900000 0x00700000>;
++		partition@1100000 {
++			/* 15MB for JFFS2 based Root file System */
++			reg = <0x01100000 0x00f00000>;
 +			label = "NAND Writable User area";
 +		};
++	};
++
++	L2switch@2,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "vitesse-7385";
++		reg = <0x2 0x0 0x20000>;
++	};
++
++	cpld@3,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "cpld";
++		reg = <0x3 0x0 0x20000>;
++		read-only;
 +	};
 +};
 +
 +&soc {
++	i2c@3000 {
++		rtc@68 {
++			compatible = "pericom,pt7c4338";
++			reg = <0x68>;
++		};
++	};
++
 +	spi@7000 {
 +		flash@0 {
 +			#address-cells = <1>;
@@ -225,74 +244,65 @@ index 0000000..eb3141d
 +		};
 +	};
 +
-+	i2c@3000 {
-+		rtc@68 {
-+			compatible = "dallas,ds1339";
-+			reg = <0x68>;
-+		};
-+	};
-+
 +	usb@22000 {
 +		phy_type = "ulpi";
 +	};
 +
-+	usb@23000 {
-+		status = "disabled";
-+	};
-+
-+	mdio@24000 {
++	mdio@24520 {
 +		phy0: ethernet-phy@0 {
 +			interrupts = <3 1 0 0>;
 +			reg = <0x0>;
-+		};
++			};
 +		phy1: ethernet-phy@1 {
 +			interrupts = <2 1 0 0>;
 +			reg = <0x1>;
-+		};
-+		phy2: ethernet-phy@2 {
-+			interrupts = <1 1 0 0>;
-+			reg = <0x2>;
-+		};
++			};
 +	};
 +
-+	mdio@25000 {
++	mdio@25520 {
 +		tbi0: tbi-phy@11 {
 +			reg = <0x11>;
 +			device_type = "tbi-phy";
 +		};
 +	};
 +
-+	mdio@26000 {
-+		tbi1: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
++	mdio@26520 {
++		status = "disabled";
 +	};
 +
-+	ethernet@b0000 {
-+		phy-handle = <&phy2>;
++	ptp_clock@24e00 {
++		fsl,tclk-period = <5>;
++		fsl,tmr-prsc = <200>;
++		fsl,tmr-add = <0xCCCCCCCD>;
++		fsl,tmr-fiper1 = <0x3B9AC9FB>;
++		fsl,tmr-fiper2 = <0x0001869B>;
++		fsl,max-adj = <249999999>;
++	};
++
++	enet0: ethernet@24000 {
++		fixed-link = <1 1 1000 0 0>;
 +		phy-connection-type = "rgmii-id";
 +	};
 +
-+	ethernet@b1000 {
-+		phy-handle = <&phy0>;
++	enet1: ethernet@25000 {
 +		tbi-handle = <&tbi0>;
++		phy-handle = <&phy0>;
 +		phy-connection-type = "sgmii";
 +	};
 +
-+	ethernet@b2000 {
++	enet2: ethernet@26000 {
 +		phy-handle = <&phy1>;
 +		phy-connection-type = "rgmii-id";
 +	};
 +};
-diff --git a/arch/powerpc/boot/dts/p1024rdb_32b.dts b/arch/powerpc/boot/dts/p1024rdb_32b.dts
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
 new file mode 100644
-index 0000000..2f86327
+index 0000000..852e5b2
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/p1024rdb_32b.dts
-@@ -0,0 +1,87 @@
++++ b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+@@ -0,0 +1,96 @@
 +/*
-+ * P1024 RDB 32Bit Physical Address Map Device Tree Source
++ * P2020 RDB-PC 32Bit Physical Address Map Device Tree Source
 + *
 + * Copyright 2011 Freescale Semiconductor Inc.
 + *
@@ -325,29 +335,39 @@ index 0000000..2f86327
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+/include/ "fsl/p1020si-pre.dtsi"
++/include/ "fsl/p2020si-pre.dtsi"
++
 +/ {
-+	model = "fsl,P1024RDB";
-+	compatible = "fsl,P1024RDB";
++	model = "fsl,P2020RDB";
++	compatible = "fsl,P2020RDB-PC";
 +
 +	memory {
 +		device_type = "memory";
 +	};
 +
 +	lbc: localbus@ffe05000 {
-+		reg = <0x0 0xffe05000 0 0x1000>;
++		reg = <0 0xffe05000 0 0x1000>;
++
++		/* NOR and NAND Flashes */
 +		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
-+			  0x1 0x0 0x0 0xff800000 0x00040000>;
++			  0x1 0x0 0x0 0xff800000 0x00040000
++			  0x2 0x0 0x0 0xffb00000 0x00020000
++			  0x3 0x0 0x0 0xffa00000 0x00020000>;
 +	};
 +
 +	soc: soc@ffe00000 {
 +		ranges = <0x0 0x0 0xffe00000 0x100000>;
 +	};
 +
-+	pci0: pcie@ffe09000 {
-+		reg = <0x0 0xffe09000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
++	pci0: pcie@ffe08000 {
++		reg = <0 0xffe08000 0 0x1000>;
++		status = "disabled";
++	};
++
++	pci1: pcie@ffe09000 {
++		reg = <0 0xffe09000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
 +		pcie@0 {
 +			ranges = <0x2000000 0x0 0xe0000000
 +				  0x2000000 0x0 0xe0000000
@@ -359,12 +379,11 @@ index 0000000..2f86327
 +		};
 +	};
 +
-+	pci1: pcie@ffe0a000 {
-+		reg = <0xf 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
++	pci2: pcie@ffe0a000 {
++		reg = <0 0xffe0a000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
 +		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
 +			ranges = <0x2000000 0x0 0xe0000000
 +				  0x2000000 0x0 0xe0000000
 +				  0x0 0x20000000
@@ -376,16 +395,16 @@ index 0000000..2f86327
 +	};
 +};
 +
-+/include/ "p1024rdb.dtsi"
-+/include/ "fsl/p1020si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1024rdb_36b.dts b/arch/powerpc/boot/dts/p1024rdb_36b.dts
++/include/ "p2020rdb-pc.dtsi"
++/include/ "fsl/p2020si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
 new file mode 100644
-index 0000000..550495e
+index 0000000..b5a56ca
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/p1024rdb_36b.dts
-@@ -0,0 +1,87 @@
++++ b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
+@@ -0,0 +1,96 @@
 +/*
-+ * P1024 RDB 36Bit Physical Address Map Device Tree Source
++ * P2020 RDB-PC 36Bit Physical Address Map Device Tree Source
 + *
 + * Copyright 2011 Freescale Semiconductor Inc.
 + *
@@ -418,10 +437,11 @@ index 0000000..550495e
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+/include/ "fsl/p1020si-pre.dtsi"
++/include/ "fsl/p2020si-pre.dtsi"
++
 +/ {
-+	model = "fsl,P1024RDB";
-+	compatible = "fsl,P1024RDB";
++	model = "fsl,P2020RDB";
++	compatible = "fsl,P2020RDB-PC";
 +
 +	memory {
 +		device_type = "memory";
@@ -429,15 +449,24 @@ index 0000000..550495e
 +
 +	lbc: localbus@fffe05000 {
 +		reg = <0xf 0xffe05000 0 0x1000>;
++
++		/* NOR and NAND Flashes */
 +		ranges = <0x0 0x0 0xf 0xef000000 0x01000000
-+			  0x1 0x0 0xf 0xff800000 0x00040000>;
++			  0x1 0x0 0xf 0xff800000 0x00040000
++			  0x2 0x0 0xf 0xffb00000 0x00020000
++			  0x3 0x0 0xf 0xffa00000 0x00020000>;
 +	};
 +
 +	soc: soc@fffe00000 {
 +		ranges = <0x0 0xf 0xffe00000 0x100000>;
 +	};
 +
-+	pci0: pcie@fffe09000 {
++	pci0: pcie@fffe08000 {
++		reg = <0xf 0xffe08000 0 0x1000>;
++		status = "disabled";
++	};
++
++	pci1: pcie@fffe09000 {
 +		reg = <0xf 0xffe09000 0 0x1000>;
 +		ranges = <0x2000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
 +			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
@@ -452,12 +481,11 @@ index 0000000..550495e
 +		};
 +	};
 +
-+	pci1: pcie@fffe0a000 {
++	pci2: pcie@fffe0a000 {
 +		reg = <0xf 0xffe0a000 0 0x1000>;
 +		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
 +			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
 +		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
 +			ranges = <0x2000000 0x0 0xe0000000
 +				  0x2000000 0x0 0xe0000000
 +				  0x0 0x20000000
@@ -469,7 +497,7 @@ index 0000000..550495e
 +	};
 +};
 +
-+/include/ "p1024rdb.dtsi"
-+/include/ "fsl/p1020si-post.dtsi"
++/include/ "p2020rdb-pc.dtsi"
++/include/ "fsl/p2020si-post.dtsi"
 -- 
 1.6.4
