@@ -1,25 +1,20 @@
-Return-Path: <B38951@freescale.com>
-Received: from VA3EHSOBE010.bigfish.com (va3ehsobe003.messaging.microsoft.com
- [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B29983@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+ [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BFD81B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 13:27:33 +1100 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH SDK1.2 1/3] powerpc/fsl-pci: Unify pci/pcie
- initialization code
-Date: Fri, 10 Feb 2012 02:27:22 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D019ADE0E@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1324451458-4644-1-git-send-email-B38951@freescale.com>
- <1324451458-4644-2-git-send-email-B38951@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D010060C9@039-SN1MPN1-005.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D010060C9@039-SN1MPN1-005.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 27A8EB6EF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 14:26:41 +1100 (EST)
+From: <b29983@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/2 V2] powerpc/85xx: Add p2020rdb-pc dts support
+Date: Fri, 10 Feb 2012 11:23:46 +0800
+Message-ID: <1328844226-22739-1-git-send-email-b29983@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+Content-Type: text/plain
+Cc: crazytyt <tforjob@163.com>, Tang Yuantian <b29983@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,172 +24,474 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
-This series of patches have been pending for a long time.
-I'd like to know whether they are look good or not so I can do the further =
-work on it.
-It's kind of emergency things for me.
-Thanks a lot for your attention.
+From: crazytyt <tforjob@163.com>
 
------Original Message-----
-From: Jia Hongtao-B38951=20
-Sent: Tuesday, January 10, 2012 3:31 PM
-To: Gala Kumar-B11780
-Cc: Li Yang-R58472; Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org
-Subject: RE: [PATCH SDK1.2 1/3] powerpc/fsl-pci: Unify pci/pcie initializat=
-ion code
-
-Hi Kumar,
-Do you have any idea on this series of patches?
-Looking forward to your answer.
-Thanks.
-
---Jia Hongtao.
-
------Original Message-----
-From: Jia Hongtao-B38951
-Sent: Wednesday, December 21, 2011 3:11 PM
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Li Yang-R58472; Gala Kumar-B11780; Jia Hongtao-B38951
-Subject: [PATCH SDK1.2 1/3] powerpc/fsl-pci: Unify pci/pcie initialization =
-code
-
-We unified the Freescale pci/pcie initialization by changing the fsl_pci to=
- a platform driver.
-
-In previous version pci/pcie initialization is in platform code which Initi=
-alize pci bridge base on EP/RC or host/agent settings.
-
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Signed-off-by: Tang Yuantian <b29983@freescale.com>
 ---
- arch/powerpc/platforms/85xx/p1022_ds.c |   39 +++++++----------------
- arch/powerpc/sysdev/fsl_pci.c          |   53 ++++++++++++++++++++++++++++=
-++++
- 2 files changed, 65 insertions(+), 27 deletions(-)
+V1 vs V2:
+	-rename dts from .dts to _32b.dts
+	-remove amp dts
 
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platform=
-s/85xx/p1022_ds.c
-index 2bf4342..41de2c1 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -277,32 +277,9 @@ void __init mpc85xx_smp_init(void);
-  */
- static void __init p1022_ds_setup_arch(void)  { -#ifdef CONFIG_PCI
--	struct device_node *np;
--#endif
--	dma_addr_t max =3D 0xffffffff;
--
- 	if (ppc_md.progress)
- 		ppc_md.progress("p1022_ds_setup_arch()", 0);
-=20
--#ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,p1022-pcie") {
--		struct resource rsrc;
--		struct pci_controller *hose;
--
--		of_address_to_resource(np, 0, &rsrc);
--
--		if ((rsrc.start & 0xfffff) =3D=3D 0x8000)
--			fsl_add_bridge(np, 1);
--		else
--			fsl_add_bridge(np, 0);
--
--		hose =3D pci_find_hose_for_OF_device(np);
--		max =3D min(max, hose->dma_window_base_cur +
--			  hose->dma_window_size);
--	}
--#endif
--
- #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
- 	diu_ops.get_pixel_format	=3D p1022ds_get_pixel_format;
- 	diu_ops.set_gamma_table		=3D p1022ds_set_gamma_table;
-@@ -316,11 +293,8 @@ static void __init p1022_ds_setup_arch(void)  #endif
-=20
- #ifdef CONFIG_SWIOTLB
--	if (memblock_end_of_DRAM() > max) {
-+	if (memblock_end_of_DRAM() > 0xffffffff)
- 		ppc_swiotlb_enable =3D 1;
--		set_pci_dma_ops(&swiotlb_dma_ops);
--		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
--	}
- #endif
-=20
- 	pr_info("Freescale P1022 DS reference board\n"); @@ -339,6 +313,17 @@ sta=
-tic int __init p1022_ds_publish_devices(void)  }  machine_device_initcall(p=
-1022_ds, p1022_ds_publish_devices);
-=20
-+static struct of_device_id __initdata p1022_pci_ids[] =3D {
-+	{ .compatible =3D "fsl,p1022-pcie", },
-+	{},
+ arch/powerpc/boot/dts/p2020rdb-pc.dtsi    |  241 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |   96 ++++++++++++
+ arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |   96 ++++++++++++
+ 3 files changed, 433 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
+
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+new file mode 100644
+index 0000000..c21d1c7
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+@@ -0,0 +1,241 @@
++/*
++ * P2020 RDB-PC Device Tree Source stub (no addresses or top-level ranges)
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&lbc {
++	nor@0,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "cfi-flash";
++		reg = <0x0 0x0 0x1000000>;
++		bank-width = <2>;
++		device-width = <1>;
++
++		partition@0 {
++			/* This location must not be altered  */
++			/* 256KB for Vitesse 7385 Switch firmware */
++			reg = <0x0 0x00040000>;
++			label = "NOR Vitesse-7385 Firmware";
++			read-only;
++		};
++
++		partition@40000 {
++			/* 256KB for DTB Image */
++			reg = <0x00040000 0x00040000>;
++			label = "NOR DTB Image";
++		};
++
++		partition@80000 {
++			/* 3.5 MB for Linux Kernel Image */
++			reg = <0x00080000 0x00380000>;
++			label = "NOR Linux Kernel Image";
++		};
++
++		partition@400000 {
++			/* 11MB for JFFS2 based Root file System */
++			reg = <0x00400000 0x00b00000>;
++			label = "NOR JFFS2 Root File System";
++		};
++
++		partition@f00000 {
++			/* This location must not be altered  */
++			/* 512KB for u-boot Bootloader Image */
++			/* 512KB for u-boot Environment Variables */
++			reg = <0x00f00000 0x00100000>;
++			label = "NOR U-Boot Image";
++			read-only;
++		};
++	};
++
++	nand@1,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,p2020-fcm-nand",
++				 "fsl,elbc-fcm-nand";
++		reg = <0x1 0x0 0x40000>;
++
++		partition@0 {
++			/* This location must not be altered  */
++			/* 1MB for u-boot Bootloader Image */
++			reg = <0x0 0x00100000>;
++			label = "NAND U-Boot Image";
++			read-only;
++		};
++
++		partition@100000 {
++			/* 1MB for DTB Image */
++			reg = <0x00100000 0x00100000>;
++			label = "NAND DTB Image";
++		};
++
++		partition@200000 {
++			/* 4MB for Linux Kernel Image */
++			reg = <0x00200000 0x00400000>;
++			label = "NAND Linux Kernel Image";
++		};
++
++		partition@600000 {
++			/* 4MB for Compressed Root file System Image */
++			reg = <0x00600000 0x00400000>;
++			label = "NAND Compressed RFS Image";
++		};
++
++		partition@a00000 {
++			/* 7MB for JFFS2 based Root file System */
++			reg = <0x00a00000 0x00700000>;
++			label = "NAND JFFS2 Root File System";
++		};
++
++		partition@1100000 {
++			/* 15MB for JFFS2 based Root file System */
++			reg = <0x01100000 0x00f00000>;
++			label = "NAND Writable User area";
++		};
++	};
++
++	L2switch@2,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "vitesse-7385";
++		reg = <0x2 0x0 0x20000>;
++	};
++
++	cpld@3,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "cpld";
++		reg = <0x3 0x0 0x20000>;
++		read-only;
++	};
 +};
 +
-+static int __init p1022_ds_publish_pci_device(void) {
-+	return of_platform_bus_probe(NULL, p1022_pci_ids, NULL); }=20
-+machine_arch_initcall(p1022_ds, p1022_ds_publish_pci_device);
++&soc {
++	i2c@3000 {
++		rtc@68 {
++			compatible = "pericom,pt7c4338";
++			reg = <0x68>;
++		};
++	};
 +
- machine_arch_initcall(p1022_ds, swiotlb_setup_bus_notifier);
-=20
- /*
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c =
-index 4ce547e..a0f305d 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -712,3 +712,56 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
-=20
- 	return 0;
- }
++	spi@7000 {
++		flash@0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "spansion,m25p80";
++			reg = <0>;
++			spi-max-frequency = <40000000>;
 +
-+static const struct of_device_id pci_ids[] =3D {
-+	{ .compatible =3D "fsl,mpc8540-pci", },
-+	{ .compatible =3D "fsl,mpc8548-pcie", },
-+	{ .compatible =3D "fsl,p1022-pcie", },
-+	{},
++			partition@0 {
++				/* 512KB for u-boot Bootloader Image */
++				reg = <0x0 0x00080000>;
++				label = "SPI U-Boot Image";
++				read-only;
++			};
++
++			partition@80000 {
++				/* 512KB for DTB Image */
++				reg = <0x00080000 0x00080000>;
++				label = "SPI DTB Image";
++			};
++
++			partition@100000 {
++				/* 4MB for Linux Kernel Image */
++				reg = <0x00100000 0x00400000>;
++				label = "SPI Linux Kernel Image";
++			};
++
++			partition@500000 {
++				/* 4MB for Compressed RFS Image */
++				reg = <0x00500000 0x00400000>;
++				label = "SPI Compressed RFS Image";
++			};
++
++			partition@900000 {
++				/* 7MB for JFFS2 based RFS */
++				reg = <0x00900000 0x00700000>;
++				label = "SPI JFFS2 RFS";
++			};
++		};
++	};
++
++	usb@22000 {
++		phy_type = "ulpi";
++	};
++
++	mdio@24520 {
++		phy0: ethernet-phy@0 {
++			interrupts = <3 1 0 0>;
++			reg = <0x0>;
++			};
++		phy1: ethernet-phy@1 {
++			interrupts = <2 1 0 0>;
++			reg = <0x1>;
++			};
++	};
++
++	mdio@25520 {
++		tbi0: tbi-phy@11 {
++			reg = <0x11>;
++			device_type = "tbi-phy";
++		};
++	};
++
++	mdio@26520 {
++		status = "disabled";
++	};
++
++	ptp_clock@24e00 {
++		fsl,tclk-period = <5>;
++		fsl,tmr-prsc = <200>;
++		fsl,tmr-add = <0xCCCCCCCD>;
++		fsl,tmr-fiper1 = <0x3B9AC9FB>;
++		fsl,tmr-fiper2 = <0x0001869B>;
++		fsl,max-adj = <249999999>;
++	};
++
++	enet0: ethernet@24000 {
++		fixed-link = <1 1 1000 0 0>;
++		phy-connection-type = "rgmii-id";
++	};
++
++	enet1: ethernet@25000 {
++		tbi-handle = <&tbi0>;
++		phy-handle = <&phy0>;
++		phy-connection-type = "sgmii";
++	};
++
++	enet2: ethernet@26000 {
++		phy-handle = <&phy1>;
++		phy-connection-type = "rgmii-id";
++	};
++};
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+new file mode 100644
+index 0000000..852e5b2
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+@@ -0,0 +1,96 @@
++/*
++ * P2020 RDB-PC 32Bit Physical Address Map Device Tree Source
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/p2020si-pre.dtsi"
++
++/ {
++	model = "fsl,P2020RDB";
++	compatible = "fsl,P2020RDB-PC";
++
++	memory {
++		device_type = "memory";
++	};
++
++	lbc: localbus@ffe05000 {
++		reg = <0 0xffe05000 0 0x1000>;
++
++		/* NOR and NAND Flashes */
++		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
++			  0x1 0x0 0x0 0xff800000 0x00040000
++			  0x2 0x0 0x0 0xffb00000 0x00020000
++			  0x3 0x0 0x0 0xffa00000 0x00020000>;
++	};
++
++	soc: soc@ffe00000 {
++		ranges = <0x0 0x0 0xffe00000 0x100000>;
++	};
++
++	pci0: pcie@ffe08000 {
++		reg = <0 0xffe08000 0 0x1000>;
++		status = "disabled";
++	};
++
++	pci1: pcie@ffe09000 {
++		reg = <0 0xffe09000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
++
++	pci2: pcie@ffe0a000 {
++		reg = <0 0xffe0a000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
 +};
 +
-+static int __devinit fsl_pci_probe(struct platform_device *pdev) {
-+	struct pci_controller *hose;
++/include/ "p2020rdb-pc.dtsi"
++/include/ "fsl/p2020si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
+new file mode 100644
+index 0000000..b5a56ca
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
+@@ -0,0 +1,96 @@
++/*
++ * P2020 RDB-PC 36Bit Physical Address Map Device Tree Source
++ *
++ * Copyright 2011 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
 +
-+	if (of_match_node(pci_ids, pdev->dev.of_node)) {
-+		struct resource rsrc;
-+		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
-+		if ((rsrc.start & 0xfffff) =3D=3D 8000)
-+			fsl_add_bridge(pdev->dev.of_node, 1);
-+		else
-+			fsl_add_bridge(pdev->dev.of_node, 0);
++/include/ "fsl/p2020si-pre.dtsi"
 +
-+#ifdef CONFIG_SWIOTLB
-+		hose =3D pci_find_hose_for_OF_device(pdev->dev.of_node);
-+		/*
-+		 * if we couldn't map all of DRAM via the dma windows
-+		 * we need SWIOTLB to handle buffers located outside of
-+		 * dma capable memory region
-+		 */
-+		if (memblock_end_of_DRAM() > hose->dma_window_base_cur
-+				+ hose->dma_window_size) {
-+			ppc_swiotlb_enable =3D 1;
-+			set_pci_dma_ops(&swiotlb_dma_ops);
-+			ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
-+		}
-+#endif
++/ {
++	model = "fsl,P2020RDB";
++	compatible = "fsl,P2020RDB-PC";
 +
-+	}
++	memory {
++		device_type = "memory";
++	};
 +
-+	return 0;
-+}
++	lbc: localbus@fffe05000 {
++		reg = <0xf 0xffe05000 0 0x1000>;
 +
-+static struct platform_driver fsl_pci_driver =3D {
-+	.driver =3D {
-+		.name =3D "fsl-pci",
-+		.of_match_table =3D pci_ids,
-+	},
-+	.probe =3D fsl_pci_probe,
++		/* NOR and NAND Flashes */
++		ranges = <0x0 0x0 0xf 0xef000000 0x01000000
++			  0x1 0x0 0xf 0xff800000 0x00040000
++			  0x2 0x0 0xf 0xffb00000 0x00020000
++			  0x3 0x0 0xf 0xffa00000 0x00020000>;
++	};
++
++	soc: soc@fffe00000 {
++		ranges = <0x0 0xf 0xffe00000 0x100000>;
++	};
++
++	pci0: pcie@fffe08000 {
++		reg = <0xf 0xffe08000 0 0x1000>;
++		status = "disabled";
++	};
++
++	pci1: pcie@fffe09000 {
++		reg = <0xf 0xffe09000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
++
++	pci2: pcie@fffe0a000 {
++		reg = <0xf 0xffe0a000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
 +};
 +
-+static int __init fsl_pci_init(void)
-+{
-+	return platform_driver_register(&fsl_pci_driver);
-+}
-+arch_initcall(fsl_pci_init);
---
-1.7.5.1
++/include/ "p2020rdb-pc.dtsi"
++/include/ "fsl/p2020si-post.dtsi"
+-- 
+1.6.4
