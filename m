@@ -1,28 +1,23 @@
-Return-Path: <mylinux@10.ap.freescale.net>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe003.messaging.microsoft.com
- [65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9999B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 14:34:25 +1100 (EST)
-Received: from mail172-tx2 (localhost [127.0.0.1])	by
- mail172-tx2-R.bigfish.com (Postfix) with ESMTP id C114448061F	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 03:34:05 +0000 (UTC)
-Received: from TX2EHSMHS043.bigfish.com (unknown [10.9.14.253])	by
- mail172-tx2.bigfish.com (Postfix) with ESMTP id 9EA2B4C0045	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 03:34:03 +0000 (UTC)
-Received: from 10.ap.freescale.net ([10.213.130.145])	by
- az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id q1A3Xv5u025813	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Feb 2012 21:33:59 -0600 (CST)
-From: <b29983@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2 V2] powerpc/85xx: Add P1024rdb dts support
-Date: Fri, 10 Feb 2012 11:33:21 +0800
-Message-ID: <1328844801-22939-1-git-send-email-b29983@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: crazytyt <tforjob@163.com>, Jin Qing <b24347@freescale.com>,
- Tang Yuantian <Yuantian.Tang@freescale.com>
+Return-Path: <amwang@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id CE126B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2012 16:41:56 +1100 (EST)
+From: Cong Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 05/60] powerpc: remove the second argument of k[un]map_atomic()
+Date: Fri, 10 Feb 2012 13:39:26 +0800
+Message-Id: <1328852421-19678-6-git-send-email-amwang@redhat.com>
+In-Reply-To: <1328852421-19678-1-git-send-email-amwang@redhat.com>
+References: <1328852421-19678-1-git-send-email-amwang@redhat.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+ Dave Carroll <dcarroll@astekcorp.com>, Cong Wang <amwang@redhat.com>,
+ Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, Avi Kivity <avi@redhat.com>,
+ kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,444 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: crazytyt <tforjob@163.com>
-
-Signed-off-by: Jin Qing <b24347@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Cong Wang <amwang@redhat.com>
 ---
-v1 vs v2:
-	-remove amp dts
-	-rename the dts from .dts to _32b.dts
-	-remove p1024si-pre.dtsi
+ arch/powerpc/kvm/book3s_pr.c      |    4 ++--
+ arch/powerpc/mm/dma-noncoherent.c |    5 ++---
+ arch/powerpc/mm/hugetlbpage.c     |    4 ++--
+ arch/powerpc/mm/mem.c             |    4 ++--
+ 4 files changed, 8 insertions(+), 9 deletions(-)
 
- arch/powerpc/boot/dts/p1024rdb.dtsi    |  228 ++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1024rdb_32b.dts |   87 ++++++++++++
- arch/powerpc/boot/dts/p1024rdb_36b.dts |   87 ++++++++++++
- 3 files changed, 402 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1024rdb.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1024rdb_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1024rdb_36b.dts
-
-diff --git a/arch/powerpc/boot/dts/p1024rdb.dtsi b/arch/powerpc/boot/dts/p1024rdb.dtsi
-new file mode 100644
-index 0000000..eb3141d
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1024rdb.dtsi
-@@ -0,0 +1,228 @@
-+/*
-+ * P1024 RDB Device Tree Source stub (no addresses or top-level ranges)
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&lbc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x1000000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 256KB for Vitesse 7385 Switch firmware */
-+			reg = <0x0 0x00040000>;
-+			label = "NOR Vitesse-7385 Firmware";
-+			read-only;
-+		};
-+
-+		partition@40000 {
-+			/* 256KB for DTB Image */
-+			reg = <0x00040000 0x00040000>;
-+			label = "NOR DTB Image";
-+		};
-+
-+		partition@80000 {
-+			/* 3.5 MB for Linux Kernel Image */
-+			reg = <0x00080000 0x00380000>;
-+			label = "NOR Linux Kernel Image";
-+		};
-+
-+		partition@400000 {
-+			/* 11MB for JFFS2 based Root file System */
-+			reg = <0x00400000 0x00b00000>;
-+			label = "NOR JFFS2 Root File System";
-+		};
-+
-+		partition@f00000 {
-+			/* This location must not be altered  */
-+			/* 512KB for u-boot Bootloader Image */
-+			/* 512KB for u-boot Environment Variables */
-+			reg = <0x00f00000 0x00100000>;
-+			label = "NOR U-Boot Image";
-+			read-only;
-+		};
-+	};
-+
-+	nand@1,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,p1020-fcm-nand",
-+				 "fsl,elbc-fcm-nand";
-+		reg = <0x1 0x0 0x40000>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 1MB for u-boot Bootloader Image */
-+			reg = <0x0 0x00100000>;
-+			label = "NAND U-Boot Image";
-+			read-only;
-+		};
-+
-+		partition@100000 {
-+			/* 1MB for DTB Image */
-+			reg = <0x00100000 0x00100000>;
-+			label = "NAND DTB Image";
-+		};
-+
-+		partition@200000 {
-+			/* 4MB for Linux Kernel Image */
-+			reg = <0x00200000 0x00400000>;
-+			label = "NAND Linux Kernel Image";
-+		};
-+
-+		partition@600000 {
-+			/* 4MB for Compressed Root file System Image */
-+			reg = <0x00600000 0x00400000>;
-+			label = "NAND Compressed RFS Image";
-+		};
-+
-+		partition@a00000 {
-+			/* 15MB for JFFS2 based Root file System */
-+			reg = <0x00a00000 0x00f00000>;
-+			label = "NAND JFFS2 Root File System";
-+		};
-+
-+		partition@1900000 {
-+			/* 7MB for User Writable Area */
-+			reg = <0x01900000 0x00700000>;
-+			label = "NAND Writable User area";
-+		};
-+	};
-+};
-+
-+&soc {
-+	spi@7000 {
-+		flash@0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "spansion,m25p80";
-+			reg = <0>;
-+			spi-max-frequency = <40000000>;
-+
-+			partition@0 {
-+				/* 512KB for u-boot Bootloader Image */
-+				reg = <0x0 0x00080000>;
-+				label = "SPI U-Boot Image";
-+				read-only;
-+			};
-+
-+			partition@80000 {
-+				/* 512KB for DTB Image */
-+				reg = <0x00080000 0x00080000>;
-+				label = "SPI DTB Image";
-+			};
-+
-+			partition@100000 {
-+				/* 4MB for Linux Kernel Image */
-+				reg = <0x00100000 0x00400000>;
-+				label = "SPI Linux Kernel Image";
-+			};
-+
-+			partition@500000 {
-+				/* 4MB for Compressed RFS Image */
-+				reg = <0x00500000 0x00400000>;
-+				label = "SPI Compressed RFS Image";
-+			};
-+
-+			partition@900000 {
-+				/* 7MB for JFFS2 based RFS */
-+				reg = <0x00900000 0x00700000>;
-+				label = "SPI JFFS2 RFS";
-+			};
-+		};
-+	};
-+
-+	i2c@3000 {
-+		rtc@68 {
-+			compatible = "dallas,ds1339";
-+			reg = <0x68>;
-+		};
-+	};
-+
-+	usb@22000 {
-+		phy_type = "ulpi";
-+	};
-+
-+	usb@23000 {
-+		status = "disabled";
-+	};
-+
-+	mdio@24000 {
-+		phy0: ethernet-phy@0 {
-+			interrupts = <3 1 0 0>;
-+			reg = <0x0>;
-+		};
-+		phy1: ethernet-phy@1 {
-+			interrupts = <2 1 0 0>;
-+			reg = <0x1>;
-+		};
-+		phy2: ethernet-phy@2 {
-+			interrupts = <1 1 0 0>;
-+			reg = <0x2>;
-+		};
-+	};
-+
-+	mdio@25000 {
-+		tbi0: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@26000 {
-+		tbi1: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	ethernet@b0000 {
-+		phy-handle = <&phy2>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	ethernet@b1000 {
-+		phy-handle = <&phy0>;
-+		tbi-handle = <&tbi0>;
-+		phy-connection-type = "sgmii";
-+	};
-+
-+	ethernet@b2000 {
-+		phy-handle = <&phy1>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p1024rdb_32b.dts b/arch/powerpc/boot/dts/p1024rdb_32b.dts
-new file mode 100644
-index 0000000..2f86327
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1024rdb_32b.dts
-@@ -0,0 +1,87 @@
-+/*
-+ * P1024 RDB 32Bit Physical Address Map Device Tree Source
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1020si-pre.dtsi"
-+/ {
-+	model = "fsl,P1024RDB";
-+	compatible = "fsl,P1024RDB";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@ffe05000 {
-+		reg = <0x0 0xffe05000 0 0x1000>;
-+		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
-+			  0x1 0x0 0x0 0xff800000 0x00040000>;
-+	};
-+
-+	soc: soc@ffe00000 {
-+		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		reg = <0x0 0xffe09000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		reg = <0xf 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "p1024rdb.dtsi"
-+/include/ "fsl/p1020si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1024rdb_36b.dts b/arch/powerpc/boot/dts/p1024rdb_36b.dts
-new file mode 100644
-index 0000000..550495e
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1024rdb_36b.dts
-@@ -0,0 +1,87 @@
-+/*
-+ * P1024 RDB 36Bit Physical Address Map Device Tree Source
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1020si-pre.dtsi"
-+/ {
-+	model = "fsl,P1024RDB";
-+	compatible = "fsl,P1024RDB";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@fffe05000 {
-+		reg = <0xf 0xffe05000 0 0x1000>;
-+		ranges = <0x0 0x0 0xf 0xef000000 0x01000000
-+			  0x1 0x0 0xf 0xff800000 0x00040000>;
-+	};
-+
-+	soc: soc@fffe00000 {
-+		ranges = <0x0 0xf 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@fffe09000 {
-+		reg = <0xf 0xffe09000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@fffe0a000 {
-+		reg = <0xf 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "p1024rdb.dtsi"
-+/include/ "fsl/p1020si-post.dtsi"
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index e2cfb9e..220fcdf 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -227,14 +227,14 @@ static void kvmppc_patch_dcbz(struct kvm_vcpu *vcpu, struct kvmppc_pte *pte)
+ 	hpage_offset /= 4;
+ 
+ 	get_page(hpage);
+-	page = kmap_atomic(hpage, KM_USER0);
++	page = kmap_atomic(hpage);
+ 
+ 	/* patch dcbz into reserved instruction, so we trap */
+ 	for (i=hpage_offset; i < hpage_offset + (HW_PAGE_SIZE / 4); i++)
+ 		if ((page[i] & 0xff0007ff) == INS_DCBZ)
+ 			page[i] &= 0xfffffff7;
+ 
+-	kunmap_atomic(page, KM_USER0);
++	kunmap_atomic(page);
+ 	put_page(hpage);
+ }
+ 
+diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+index 329be36..6747eec 100644
+--- a/arch/powerpc/mm/dma-noncoherent.c
++++ b/arch/powerpc/mm/dma-noncoherent.c
+@@ -365,12 +365,11 @@ static inline void __dma_sync_page_highmem(struct page *page,
+ 	local_irq_save(flags);
+ 
+ 	do {
+-		start = (unsigned long)kmap_atomic(page + seg_nr,
+-				KM_PPC_SYNC_PAGE) + seg_offset;
++		start = (unsigned long)kmap_atomic(page + seg_nr) + seg_offset;
+ 
+ 		/* Sync this buffer segment */
+ 		__dma_sync((void *)start, seg_size, direction);
+-		kunmap_atomic((void *)start, KM_PPC_SYNC_PAGE);
++		kunmap_atomic((void *)start);
+ 		seg_nr++;
+ 
+ 		/* Calculate next buffer segment size */
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index a8b3cc7..57c7465 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -910,9 +910,9 @@ void flush_dcache_icache_hugepage(struct page *page)
+ 		if (!PageHighMem(page)) {
+ 			__flush_dcache_icache(page_address(page+i));
+ 		} else {
+-			start = kmap_atomic(page+i, KM_PPC_SYNC_ICACHE);
++			start = kmap_atomic(page+i);
+ 			__flush_dcache_icache(start);
+-			kunmap_atomic(start, KM_PPC_SYNC_ICACHE);
++			kunmap_atomic(start);
+ 		}
+ 	}
+ }
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index d974b79..baaafde 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -458,9 +458,9 @@ void flush_dcache_icache_page(struct page *page)
+ #endif
+ #ifdef CONFIG_BOOKE
+ 	{
+-		void *start = kmap_atomic(page, KM_PPC_SYNC_ICACHE);
++		void *start = kmap_atomic(page);
+ 		__flush_dcache_icache(start);
+-		kunmap_atomic(start, KM_PPC_SYNC_ICACHE);
++		kunmap_atomic(start);
+ 	}
+ #elif defined(CONFIG_8xx) || defined(CONFIG_PPC64)
+ 	/* On 8xx there is no need to kmap since highmem is not supported */
 -- 
-1.6.4
+1.7.7.6
