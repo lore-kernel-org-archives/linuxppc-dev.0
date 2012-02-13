@@ -1,22 +1,37 @@
-Return-Path: <arjan@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id 053FFB6FA7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 07:26:53 +1100 (EST)
-Message-ID: <4F396FA9.90606@linux.intel.com>
-Date: Mon, 13 Feb 2012 12:16:41 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 50399B6FD1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 08:42:50 +1100 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 14 Feb 2012 03:12:44 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1DLgdtN4489404
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 03:12:39 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1DLgbCH017287
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 03:12:38 +0530
+Message-ID: <4F3983CA.2070403@linux.vnet.ibm.com>
+Date: Tue, 14 Feb 2012 03:12:34 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: Boot failure with next-20120208
 References: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
- <16788.1329102254@neuling.org> <4F391BBA.5020506@linux.intel.com>
- <20120213120549.eab7e2b9.akpm@linux-foundation.org>
-In-Reply-To: <20120213120549.eab7e2b9.akpm@linux-foundation.org>
+In-Reply-To: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, gregkh@linuxfoundation.org,
- LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: mikey@neuling.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ gregkh@linuxfoundation.org, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Milton Miller <miltonm@bga.com>,
+ LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ Arjan van de Ven <arjan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,119 +41,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On 02/12/2012 06:08 AM, Stephen Rothwell wrote:
 
-On 2/13/2012 12:05 PM, Andrew Morton wrote:
-> On Mon, 13 Feb 2012 06:18:34 -0800 Arjan van de Ven
-> <arjan@linux.intel.com> wrote:
+> Hi all,
 > 
->> On 2/12/2012 7:04 PM, Michael Neuling wrote:
->>>> Just a quick note to say I got a boot OOPs with next-20120208
->>>> and 9 on a Power7 blade (my other PowerPC boot tests are ok.
->>>> I'll investigate this further on Monday.
+> Just a quick note to say I got a boot OOPs with next-20120208 and 9 on a
+> Power7 blade (my other PowerPC boot tests are ok.  I'll investigate this
+> further on Monday.
 > 
-> Thanks for testing linux-next.  Very useful.
+> The line referenced below is:
 > 
->>>> The line referenced below is:
->>>> 
->>>> BUG_ON(!kobj || !kobj->sd || !attr);
->>>> 
->>>> in sysfs_create_file().
+> BUG_ON(!kobj || !kobj->sd || !attr);
 > 
-> Yes, this is exactly why we should never use BUG_ON(a || b).  We
-> don't know which of those three expressions triggered.
+> in sysfs_create_file().
 > 
->>>> calling  .topology_init+0x0/0x1ac @ 1 initcall
->>>> 7_.async_cpu_up+0x0/0x40 returned 0 after 9765 usecs 
->>>> async_continuing @ 20 after 9765 usec ------------[ cut here
->>>> ]------------ kernel BUG at fs/sysfs/file.c:573! Oops:
->>>> Exception in kernel mode, sig: 5 [#1] SMP NR_CPUS=32 NUMA
->>>> pSeries Modules linked in: NIP: c00000000024a35c LR:
->>>> c0000000004ee050 CTR: c00000000083ca24 REGS: c0000003fd9e7560
->>>> TRAP: 0700   Not tainted  (3.3.0-rc2-autokern1) MSR:
->>>> 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 88002082  XER:
->>>> 0000000f CFAR: c00000000024a370 TASK = c0000003fd9e8000[20]
->>>> 'kworker/u:6' THREAD: c0000003fd9e4000 CPU: 0 GPR00:
->>>> 0000000000000001 c0000003fd9e77e0 c000000000d19bb8
->>>> 0000000000000000 GPR04: c000000000bf37a8 0000000000000008
->>>> 8000000002096400 0000000000000000 GPR08: 0000000000000000
->>>> c000000000f80028 c000000000d52bd8 0000000000000000 GPR12:
->>>> 0000000048002088 c00000000f33b000 0000000001affa78
->>>> 00000000009aa000 GPR16: 0000000000e1f3c8 0000000002d517f0
->>>> 0000000001aff984 0000000000000060 GPR20: 0000000000000000
->>>> ffffffffffffffff 0000000000000000 c000000000c45128 GPR24:
->>>> 0000000000000000 0000000000000008 0000000000000000
->>>> c000000000c44200 GPR28: c000000000f80028 0000000000000008
->>>> c000000000c85038 0000000000000002 NIP [c00000000024a35c]
->>>> .sysfs_create_file+0x1c/0x40 LR [c0000000004ee050]
->>>> .device_create_file+0x20/0x40 Call Trace: [c0000003fd9e77e0]
->>>> [c0000003fd9e78a0] 0xc0000003fd9e78a0 (unreliable) 
->>>> [c0000003fd9e7850] [c00000000083c9a4]
->>>> .register_cpu_online+0x1d0/0x250 [c0000003fd9e7900]
->>>> [c00000000083ca8c] .sysfs_cpu_notify+0x68/0x28c 
->>>> [c0000003fd9e79b0] [c00000000083769c]
->>>> .notifier_call_chain+0x9c/0x100 [c0000003fd9e7a50]
->>>> [c0000000000a5878] .__cpu_notify+0x38/0x80 [c0000003fd9e7ad0]
->>>> [c00000000083e124] ._cpu_up+0x10c/0x178 [c0000003fd9e7b90]
->>>> [c00000000083e2c8] .cpu_up+0x138/0x164 [c0000003fd9e7c20]
->>>> [c000000000ba46d0] .async_cpu_up+0x28/0x40 [c0000003fd9e7ca0]
->>>> [c0000000000d81ec] .async_run_entry_fn+0xbc/0x1f0 
->>>> [c0000003fd9e7d50] [c0000000000c7cbc]
->>>> .process_one_work+0x19c/0x590 [c0000003fd9e7e10]
->>>> [c0000000000c8618] .worker_thread+0x188/0x4b0 
->>>> [c0000003fd9e7ed0] [c0000000000ce57c] .kthread+0xbc/0xd0 
->>>> [c0000003fd9e7f90] [c000000000021448]
->>>> .kernel_thread+0x54/0x70 Instruction dump: 7fa3eb78 ebe1fff8
->>>> eba1ffe8 7c0803a6 4e800020 2c230000 41820024 e8630030 
->>>> 7c800074 7800d182 2fa30000 419e0014 <0b000000> 38a00002
->>>> 4bfffebc e8630030 ---[ end trace 31fd0ba7d8756001 ]--- 
->>>> initcall .topology_init+0x0/0x1ac returned 0 after 0 usecs 
->>>> calling  .pcibios_init+0x0/0xe8 @ 1 PCI: Probing PCI
->>>> hardware PCI: Probing PCI hardware done initcall
->>>> .pcibios_init+0x0/0xe8 returned 0 after 0 usecs calling
->>>> .add_system_ram_resources+0x0/0x140 @ 1 initcall
->>>> .add_system_ram_resources+0x0/0x140 returned 0 after 0 usecs 
->>>> calling
->>>> .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8
->>>> @ 1 initcall
->>>> .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8
->>>> returned 0 after 0 usecs calling  .opal_init+0x0/0x1cc @ 1 
->>>> opal: Node not found initcall .opal_init+0x0/0x1cc returned
->>>> -19 after 0 usecs calling
->>>> .__machine_initcall_pseries_ioei_init+0x0/0xa0 @ 1
->>> 
->>> Reverting "smp: start up non-boot CPUs asynchronously"
->>> (8de7a96405 from next-20120208) fixes this problem for me.
->>> 
->> if that fixes it, it means PPC has a race somewhere in the cpu
->> hotplug code, since all the patch does is hotplug the cpus one by
->> one (which the normal kernel also does, just not in parallel with
->> other work)
+> calling  .topology_init+0x0/0x1ac @ 1
+> initcall 7_.async_cpu_up+0x0/0x40 returned 0 after 9765 usecs
+> async_continuing @ 20 after 9765 usec
+> ------------[ cut here ]------------
+> kernel BUG at fs/sysfs/file.c:573!
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> SMP NR_CPUS=32 NUMA pSeries
+> Modules linked in:
+> NIP: c00000000024a35c LR: c0000000004ee050 CTR: c00000000083ca24
+> REGS: c0000003fd9e7560 TRAP: 0700   Not tainted  (3.3.0-rc2-autokern1)
+> MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 88002082  XER: 0000000f
+> CFAR: c00000000024a370
+> TASK = c0000003fd9e8000[20] 'kworker/u:6' THREAD: c0000003fd9e4000 CPU: 0
+> GPR00: 0000000000000001 c0000003fd9e77e0 c000000000d19bb8 0000000000000000 
+> GPR04: c000000000bf37a8 0000000000000008 8000000002096400 0000000000000000 
+> GPR08: 0000000000000000 c000000000f80028 c000000000d52bd8 0000000000000000 
+> GPR12: 0000000048002088 c00000000f33b000 0000000001affa78 00000000009aa000 
+> GPR16: 0000000000e1f3c8 0000000002d517f0 0000000001aff984 0000000000000060 
+> GPR20: 0000000000000000 ffffffffffffffff 0000000000000000 c000000000c45128 
+> GPR24: 0000000000000000 0000000000000008 0000000000000000 c000000000c44200 
+> GPR28: c000000000f80028 0000000000000008 c000000000c85038 0000000000000002 
+> NIP [c00000000024a35c] .sysfs_create_file+0x1c/0x40
+> LR [c0000000004ee050] .device_create_file+0x20/0x40
+> Call Trace:
+> [c0000003fd9e77e0] [c0000003fd9e78a0] 0xc0000003fd9e78a0 (unreliable)
+> [c0000003fd9e7850] [c00000000083c9a4] .register_cpu_online+0x1d0/0x250
+> [c0000003fd9e7900] [c00000000083ca8c] .sysfs_cpu_notify+0x68/0x28c
+> [c0000003fd9e79b0] [c00000000083769c] .notifier_call_chain+0x9c/0x100
+> [c0000003fd9e7a50] [c0000000000a5878] .__cpu_notify+0x38/0x80
+> [c0000003fd9e7ad0] [c00000000083e124] ._cpu_up+0x10c/0x178
+> [c0000003fd9e7b90] [c00000000083e2c8] .cpu_up+0x138/0x164
+> [c0000003fd9e7c20] [c000000000ba46d0] .async_cpu_up+0x28/0x40
+> [c0000003fd9e7ca0] [c0000000000d81ec] .async_run_entry_fn+0xbc/0x1f0
+> [c0000003fd9e7d50] [c0000000000c7cbc] .process_one_work+0x19c/0x590
+> [c0000003fd9e7e10] [c0000000000c8618] .worker_thread+0x188/0x4b0
+> [c0000003fd9e7ed0] [c0000000000ce57c] .kthread+0xbc/0xd0
+> [c0000003fd9e7f90] [c000000000021448] .kernel_thread+0x54/0x70
+> Instruction dump:
+> 7fa3eb78 ebe1fff8 eba1ffe8 7c0803a6 4e800020 2c230000 41820024 e8630030 
+> 7c800074 7800d182 2fa30000 419e0014 <0b000000> 38a00002 4bfffebc e8630030 
+> ---[ end trace 31fd0ba7d8756001 ]---
+> initcall .topology_init+0x0/0x1ac returned 0 after 0 usecs
+> calling  .pcibios_init+0x0/0xe8 @ 1
+> PCI: Probing PCI hardware
+> PCI: Probing PCI hardware done
+> initcall .pcibios_init+0x0/0xe8 returned 0 after 0 usecs
+> calling  .add_system_ram_resources+0x0/0x140 @ 1
+> initcall .add_system_ram_resources+0x0/0x140 returned 0 after 0 usecs
+> calling  .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8 @ 1
+> initcall .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8 returned 0 after 0 usecs
+> calling  .opal_init+0x0/0x1cc @ 1
+> opal: Node not found
+> initcall .opal_init+0x0/0x1cc returned -19 after 0 usecs
+> calling  .__machine_initcall_pseries_ioei_init+0x0/0xa0 @ 1
 > 
-> The bug looks pretty generic, nothing very PPC-specific there.  It 
-> might affect other architectures - we won't know until we find out
-> wht caused it.
-
-well one half of the race looks pretty generic...
-..... doesn't mean the other half of the race is though....
 
 
-> 
-> Ho hum, I suppose I should pull the patch out of linux-next, to
-> avoid disrupting other testing.  This means it's going to be hard
-> to get the bug fixed.
+I took a brief look.. This looks like a race in register_cpu_online().
 
-it means losing this one big PPC machine indeed.... until they hit
-that same race some other way with regular real cpu hotplug ;-(
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (MingW32)
+init/main.c: calls smp_init() followed by do_basic_setup().
+do_basic_setup() executes all the post-smp initcalls.
 
-iQEcBAEBAgAGBQJPOW+pAAoJEEHdSxh4DVnEJXEIAKHFQwrGw1R66bEjTMxfgOpH
-ZlUwjciyNlo2KpqgaUgulHDHNzWQa29nzjPfuk6qG7mHGKnbgyn/IBCnUD5uJqri
-6yu7Md0vekwJnoilZQvEuvF6qHrOYOcaWvW60x2y3W+fBesa5zxpqwDLbKj4Qvu3
-YAbxeMaAr0W/d7pKEubKds3YJnr1S06qbK8Jw7DF92YEd7xDTBTSpuSF3vA6BlLQ
-jEV1xwxVwnLEa6A/DnkvQ67Kayj0zfC2CSCqlt2T2BiDl81XkCPC/U3yHuHb/ISI
-ykwFHy4L2VH54n5dQH8S6qfzNS1vh8IQ0xzVtJH6CHh8XXK7T97T07jZZ/LWMWI=
-=GQrj
------END PGP SIGNATURE-----
+arch/powerpc/kernel/sysfs.c:topology_init() is a subsys_initcall.
+Hence it gets run from do_basic_setup().
+
+And topology_init() does 2 things:
+It calls register_cpu_notifier() and also calls register_cpu_online()
+inside a 'for' loop.
+
+And the sysfs_cpu_notify() function also calls register_cpu_online().
+
+This was safe as long as topology_init() and CPU hotplug were run serially,
+(ie., smp_init() finishing all cpu onlining and only then calling
+do_basic_setup(), as was done previous to Arjan's patch).
+
+But Arjan's patch makes these 2 things to run in parallel and since
+register_cpu_online() doesn't have any protection, we hit the race
+condition.
+
+I'll try to take a deeper look into this tomorrow...
+
+Regards,
+Srivatsa S. Bhat
+IBM Linux Technology Center
