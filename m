@@ -1,36 +1,21 @@
-Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
- [210.118.77.11]) by ozlabs.org (Postfix) with ESMTP id B4CF3B6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 23:42:28 +1100 (EST)
-Received: from euspt1 (mailout1.w1.samsung.com [210.118.77.11])
- by mailout1.w1.samsung.com
- (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
- with ESMTP id <0LZC002ZW0MNMW@mailout1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 13 Feb 2012 12:42:23 +0000 (GMT)
-Received: from linux.samsung.com ([106.116.38.10])
- by spt1.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
- 2004)) with ESMTPA id <0LZC00DUY0MMLE@spt1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 13 Feb 2012 12:42:23 +0000 (GMT)
-Date: Mon, 13 Feb 2012 13:41:55 +0100
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 03/14 v3] MIPS: adapt for dma_map_ops changes
-In-reply-to: <4F38E8E1.3070004@mvista.com>
-To: linux-kernel@vger.kernel.org
-Message-id: <1329136915-24824-1-git-send-email-m.szyprowski@samsung.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN
-References: <4F38E8E1.3070004@mvista.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
- Stephen Rothwell <sfr@canb.auug.org.au>, Jonathan Corbet <corbet@lwn.net>,
- x86@kernel.org, Arnd Bergmann <arnd@arndb.de>,
- microblaze-uclinux@itee.uq.edu.au, linaro-mm-sig@lists.linaro.org,
- Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- discuss@x86-64.org, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
- Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <arjan@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id 6BA5C1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 01:18:44 +1100 (EST)
+Message-ID: <4F391BBA.5020506@linux.intel.com>
+Date: Mon, 13 Feb 2012 06:18:34 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Boot failure with next-20120208
+References: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
+ <16788.1329102254@neuling.org>
+In-Reply-To: <16788.1329102254@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@linuxfoundation.org,
+ LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+ linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,157 +25,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
-
-Adapt core MIPS architecture code for dma_map_ops changes: replace
-alloc/free_coherent with generic alloc/free methods.
-
-Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
-[added missing changes to arch/mips/cavium-octeon/dma-octeon.c,
- fixed attrs argument in dma-mapping.h]
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/mips/cavium-octeon/dma-octeon.c |   16 ++++++++--------
- arch/mips/include/asm/dma-mapping.h  |   18 ++++++++++++------
- arch/mips/mm/dma-default.c           |    8 ++++----
- 3 files changed, 24 insertions(+), 18 deletions(-)
-
-diff --git a/arch/mips/cavium-octeon/dma-octeon.c b/arch/mips/cavium-octeon/dma-octeon.c
-index b6bb92c..df70600 100644
---- a/arch/mips/cavium-octeon/dma-octeon.c
-+++ b/arch/mips/cavium-octeon/dma-octeon.c
-@@ -157,7 +157,7 @@ static void octeon_dma_sync_sg_for_device(struct device *dev,
- }
- 
- static void *octeon_dma_alloc_coherent(struct device *dev, size_t size,
--	dma_addr_t *dma_handle, gfp_t gfp)
-+	dma_addr_t *dma_handle, gfp_t gfp, struct dma_attrs *attrs)
- {
- 	void *ret;
- 
-@@ -184,7 +184,7 @@ static void *octeon_dma_alloc_coherent(struct device *dev, size_t size,
- 	/* Don't invoke OOM killer */
- 	gfp |= __GFP_NORETRY;
- 
--	ret = swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
-+	ret = swiotlb_alloc_coherent(dev, size, dma_handle, gfp, attrs);
- 
- 	mb();
- 
-@@ -192,14 +192,14 @@ static void *octeon_dma_alloc_coherent(struct device *dev, size_t size,
- }
- 
- static void octeon_dma_free_coherent(struct device *dev, size_t size,
--	void *vaddr, dma_addr_t dma_handle)
-+	void *vaddr, dma_addr_t dma_handle, struct dma_attrs *attrs)
- {
- 	int order = get_order(size);
- 
- 	if (dma_release_from_coherent(dev, order, vaddr))
- 		return;
- 
--	swiotlb_free_coherent(dev, size, vaddr, dma_handle);
-+	swiotlb_free_coherent(dev, size, vaddr, dma_handle, attrs);
- }
- 
- static dma_addr_t octeon_unity_phys_to_dma(struct device *dev, phys_addr_t paddr)
-@@ -240,8 +240,8 @@ EXPORT_SYMBOL(dma_to_phys);
- 
- static struct octeon_dma_map_ops octeon_linear_dma_map_ops = {
- 	.dma_map_ops = {
--		.alloc_coherent = octeon_dma_alloc_coherent,
--		.free_coherent = octeon_dma_free_coherent,
-+		.alloc = octeon_dma_alloc_coherent,
-+		.free = octeon_dma_free_coherent,
- 		.map_page = octeon_dma_map_page,
- 		.unmap_page = swiotlb_unmap_page,
- 		.map_sg = octeon_dma_map_sg,
-@@ -325,8 +325,8 @@ void __init plat_swiotlb_setup(void)
- #ifdef CONFIG_PCI
- static struct octeon_dma_map_ops _octeon_pci_dma_map_ops = {
- 	.dma_map_ops = {
--		.alloc_coherent = octeon_dma_alloc_coherent,
--		.free_coherent = octeon_dma_free_coherent,
-+		.alloc = octeon_dma_alloc_coherent,
-+		.free = octeon_dma_free_coherent,
- 		.map_page = octeon_dma_map_page,
- 		.unmap_page = swiotlb_unmap_page,
- 		.map_sg = octeon_dma_map_sg,
-diff --git a/arch/mips/include/asm/dma-mapping.h b/arch/mips/include/asm/dma-mapping.h
-index 7aa37dd..be39a12 100644
---- a/arch/mips/include/asm/dma-mapping.h
-+++ b/arch/mips/include/asm/dma-mapping.h
-@@ -57,25 +57,31 @@ dma_set_mask(struct device *dev, u64 mask)
- extern void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 	       enum dma_data_direction direction);
- 
--static inline void *dma_alloc_coherent(struct device *dev, size_t size,
--				       dma_addr_t *dma_handle, gfp_t gfp)
-+#define dma_alloc_coherent(d,s,h,f)	dma_alloc_attrs(d,s,h,f,NULL)
-+
-+static inline void *dma_alloc_attrs(struct device *dev, size_t size,
-+				    dma_addr_t *dma_handle, gfp_t gfp,
-+				    struct dma_attrs *attrs)
- {
- 	void *ret;
- 	struct dma_map_ops *ops = get_dma_ops(dev);
- 
--	ret = ops->alloc_coherent(dev, size, dma_handle, gfp);
-+	ret = ops->alloc(dev, size, dma_handle, gfp, attrs);
- 
- 	debug_dma_alloc_coherent(dev, size, *dma_handle, ret);
- 
- 	return ret;
- }
- 
--static inline void dma_free_coherent(struct device *dev, size_t size,
--				     void *vaddr, dma_addr_t dma_handle)
-+#define dma_free_coherent(d,s,c,h) dma_free_attrs(d,s,c,h,NULL)
-+
-+static inline void dma_free_attrs(struct device *dev, size_t size,
-+				  void *vaddr, dma_addr_t dma_handle,
-+				  struct dma_attrs *attrs)
- {
- 	struct dma_map_ops *ops = get_dma_ops(dev);
- 
--	ops->free_coherent(dev, size, vaddr, dma_handle);
-+	ops->free(dev, size, vaddr, dma_handle, attrs);
- 
- 	debug_dma_free_coherent(dev, size, vaddr, dma_handle);
- }
-diff --git a/arch/mips/mm/dma-default.c b/arch/mips/mm/dma-default.c
-index 4608491..3fab204 100644
---- a/arch/mips/mm/dma-default.c
-+++ b/arch/mips/mm/dma-default.c
-@@ -98,7 +98,7 @@ void *dma_alloc_noncoherent(struct device *dev, size_t size,
- EXPORT_SYMBOL(dma_alloc_noncoherent);
- 
- static void *mips_dma_alloc_coherent(struct device *dev, size_t size,
--	dma_addr_t * dma_handle, gfp_t gfp)
-+	dma_addr_t * dma_handle, gfp_t gfp, struct dma_attrs *attrs)
- {
- 	void *ret;
- 
-@@ -132,7 +132,7 @@ void dma_free_noncoherent(struct device *dev, size_t size, void *vaddr,
- EXPORT_SYMBOL(dma_free_noncoherent);
- 
- static void mips_dma_free_coherent(struct device *dev, size_t size, void *vaddr,
--	dma_addr_t dma_handle)
-+	dma_addr_t dma_handle, struct dma_attrs *attrs)
- {
- 	unsigned long addr = (unsigned long) vaddr;
- 	int order = get_order(size);
-@@ -323,8 +323,8 @@ void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- EXPORT_SYMBOL(dma_cache_sync);
- 
- static struct dma_map_ops mips_default_dma_map_ops = {
--	.alloc_coherent = mips_dma_alloc_coherent,
--	.free_coherent = mips_dma_free_coherent,
-+	.alloc = mips_dma_alloc_coherent,
-+	.free = mips_dma_free_coherent,
- 	.map_page = mips_dma_map_page,
- 	.unmap_page = mips_dma_unmap_page,
- 	.map_sg = mips_dma_map_sg,
--- 
-1.7.1.569.g6f426
+On 2/12/2012 7:04 PM, Michael Neuling wrote:
+>> Just a quick note to say I got a boot OOPs with next-20120208 and 9 on a
+>> Power7 blade (my other PowerPC boot tests are ok.  I'll investigate this
+>> further on Monday.
+>>
+>> The line referenced below is:
+>>
+>> BUG_ON(!kobj || !kobj->sd || !attr);
+>>
+>> in sysfs_create_file().
+>>
+>> calling  .topology_init+0x0/0x1ac @ 1
+>> initcall 7_.async_cpu_up+0x0/0x40 returned 0 after 9765 usecs
+>> async_continuing @ 20 after 9765 usec
+>> ------------[ cut here ]------------
+>> kernel BUG at fs/sysfs/file.c:573!
+>> Oops: Exception in kernel mode, sig: 5 [#1]
+>> SMP NR_CPUS=32 NUMA pSeries
+>> Modules linked in:
+>> NIP: c00000000024a35c LR: c0000000004ee050 CTR: c00000000083ca24
+>> REGS: c0000003fd9e7560 TRAP: 0700   Not tainted  (3.3.0-rc2-autokern1)
+>> MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 88002082  XER: 0000000f
+>> CFAR: c00000000024a370
+>> TASK = c0000003fd9e8000[20] 'kworker/u:6' THREAD: c0000003fd9e4000 CPU: 0
+>> GPR00: 0000000000000001 c0000003fd9e77e0 c000000000d19bb8 0000000000000000 
+>> GPR04: c000000000bf37a8 0000000000000008 8000000002096400 0000000000000000 
+>> GPR08: 0000000000000000 c000000000f80028 c000000000d52bd8 0000000000000000 
+>> GPR12: 0000000048002088 c00000000f33b000 0000000001affa78 00000000009aa000 
+>> GPR16: 0000000000e1f3c8 0000000002d517f0 0000000001aff984 0000000000000060 
+>> GPR20: 0000000000000000 ffffffffffffffff 0000000000000000 c000000000c45128 
+>> GPR24: 0000000000000000 0000000000000008 0000000000000000 c000000000c44200 
+>> GPR28: c000000000f80028 0000000000000008 c000000000c85038 0000000000000002 
+>> NIP [c00000000024a35c] .sysfs_create_file+0x1c/0x40
+>> LR [c0000000004ee050] .device_create_file+0x20/0x40
+>> Call Trace:
+>> [c0000003fd9e77e0] [c0000003fd9e78a0] 0xc0000003fd9e78a0 (unreliable)
+>> [c0000003fd9e7850] [c00000000083c9a4] .register_cpu_online+0x1d0/0x250
+>> [c0000003fd9e7900] [c00000000083ca8c] .sysfs_cpu_notify+0x68/0x28c
+>> [c0000003fd9e79b0] [c00000000083769c] .notifier_call_chain+0x9c/0x100
+>> [c0000003fd9e7a50] [c0000000000a5878] .__cpu_notify+0x38/0x80
+>> [c0000003fd9e7ad0] [c00000000083e124] ._cpu_up+0x10c/0x178
+>> [c0000003fd9e7b90] [c00000000083e2c8] .cpu_up+0x138/0x164
+>> [c0000003fd9e7c20] [c000000000ba46d0] .async_cpu_up+0x28/0x40
+>> [c0000003fd9e7ca0] [c0000000000d81ec] .async_run_entry_fn+0xbc/0x1f0
+>> [c0000003fd9e7d50] [c0000000000c7cbc] .process_one_work+0x19c/0x590
+>> [c0000003fd9e7e10] [c0000000000c8618] .worker_thread+0x188/0x4b0
+>> [c0000003fd9e7ed0] [c0000000000ce57c] .kthread+0xbc/0xd0
+>> [c0000003fd9e7f90] [c000000000021448] .kernel_thread+0x54/0x70
+>> Instruction dump:
+>> 7fa3eb78 ebe1fff8 eba1ffe8 7c0803a6 4e800020 2c230000 41820024 e8630030 
+>> 7c800074 7800d182 2fa30000 419e0014 <0b000000> 38a00002 4bfffebc e8630030 
+>> ---[ end trace 31fd0ba7d8756001 ]---
+>> initcall .topology_init+0x0/0x1ac returned 0 after 0 usecs
+>> calling  .pcibios_init+0x0/0xe8 @ 1
+>> PCI: Probing PCI hardware
+>> PCI: Probing PCI hardware done
+>> initcall .pcibios_init+0x0/0xe8 returned 0 after 0 usecs
+>> calling  .add_system_ram_resources+0x0/0x140 @ 1
+>> initcall .add_system_ram_resources+0x0/0x140 returned 0 after 0 usecs
+>> calling  .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8 @ 1
+>> initcall .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8 returned 0 after 0 usecs
+>> calling  .opal_init+0x0/0x1cc @ 1
+>> opal: Node not found
+>> initcall .opal_init+0x0/0x1cc returned -19 after 0 usecs
+>> calling  .__machine_initcall_pseries_ioei_init+0x0/0xa0 @ 1
+> 
+> Reverting "smp: start up non-boot CPUs asynchronously" (8de7a96405 from
+> next-20120208) fixes this problem for me.  
+> 
+if that fixes it, it means PPC has a race somewhere in the cpu hotplug
+code, since all the patch does is hotplug the cpus one by one (which the
+normal kernel also does, just not in parallel with other work)
