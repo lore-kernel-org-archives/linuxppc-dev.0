@@ -1,16 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Arjan van de Ven <arjan@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Boot failure with next-20120208
-In-reply-to: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
-References: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
-Date: Mon, 13 Feb 2012 14:04:14 +1100
-Message-ID: <16788.1329102254@neuling.org>
-Cc: gregkh@linuxfoundation.org, linux-next@vger.kernel.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
- Milton Miller <miltonm@bga.com>
+Return-Path: <B32736@freescale.com>
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe002.messaging.microsoft.com
+ [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 88C19B6FA9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 16:36:53 +1100 (EST)
+From: Zhicheng Fan <B32736@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 2/2 v3] powerpc/85xx: Abstract common define of signal
+ multiplex control for qe
+Date: Mon, 13 Feb 2012 13:33:28 +0800
+Message-ID: <1329111208-5320-2-git-send-email-B32736@freescale.com>
+In-Reply-To: <1329111208-5320-1-git-send-email-B32736@freescale.com>
+References: <1329111208-5320-1-git-send-email-B32736@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Zhicheng Fan <b32736@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,77 +26,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Just a quick note to say I got a boot OOPs with next-20120208 and 9 on a
-> Power7 blade (my other PowerPC boot tests are ok.  I'll investigate this
-> further on Monday.
->
-> The line referenced below is:
->
-> BUG_ON(!kobj || !kobj->sd || !attr);
->
-> in sysfs_create_file().
-> 
-> calling  .topology_init+0x0/0x1ac @ 1
-> initcall 7_.async_cpu_up+0x0/0x40 returned 0 after 9765 usecs
-> async_continuing @ 20 after 9765 usec
-> ------------[ cut here ]------------
-> kernel BUG at fs/sysfs/file.c:573!
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> SMP NR_CPUS=32 NUMA pSeries
-> Modules linked in:
-> NIP: c00000000024a35c LR: c0000000004ee050 CTR: c00000000083ca24
-> REGS: c0000003fd9e7560 TRAP: 0700   Not tainted  (3.3.0-rc2-autokern1)
-> MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 88002082  XER: 0000000f
-> CFAR: c00000000024a370
-> TASK = c0000003fd9e8000[20] 'kworker/u:6' THREAD: c0000003fd9e4000 CPU: 0
-> GPR00: 0000000000000001 c0000003fd9e77e0 c000000000d19bb8 0000000000000000 
-> GPR04: c000000000bf37a8 0000000000000008 8000000002096400 0000000000000000 
-> GPR08: 0000000000000000 c000000000f80028 c000000000d52bd8 0000000000000000 
-> GPR12: 0000000048002088 c00000000f33b000 0000000001affa78 00000000009aa000 
-> GPR16: 0000000000e1f3c8 0000000002d517f0 0000000001aff984 0000000000000060 
-> GPR20: 0000000000000000 ffffffffffffffff 0000000000000000 c000000000c45128 
-> GPR24: 0000000000000000 0000000000000008 0000000000000000 c000000000c44200 
-> GPR28: c000000000f80028 0000000000000008 c000000000c85038 0000000000000002 
-> NIP [c00000000024a35c] .sysfs_create_file+0x1c/0x40
-> LR [c0000000004ee050] .device_create_file+0x20/0x40
-> Call Trace:
-> [c0000003fd9e77e0] [c0000003fd9e78a0] 0xc0000003fd9e78a0 (unreliable)
-> [c0000003fd9e7850] [c00000000083c9a4] .register_cpu_online+0x1d0/0x250
-> [c0000003fd9e7900] [c00000000083ca8c] .sysfs_cpu_notify+0x68/0x28c
-> [c0000003fd9e79b0] [c00000000083769c] .notifier_call_chain+0x9c/0x100
-> [c0000003fd9e7a50] [c0000000000a5878] .__cpu_notify+0x38/0x80
-> [c0000003fd9e7ad0] [c00000000083e124] ._cpu_up+0x10c/0x178
-> [c0000003fd9e7b90] [c00000000083e2c8] .cpu_up+0x138/0x164
-> [c0000003fd9e7c20] [c000000000ba46d0] .async_cpu_up+0x28/0x40
-> [c0000003fd9e7ca0] [c0000000000d81ec] .async_run_entry_fn+0xbc/0x1f0
-> [c0000003fd9e7d50] [c0000000000c7cbc] .process_one_work+0x19c/0x590
-> [c0000003fd9e7e10] [c0000000000c8618] .worker_thread+0x188/0x4b0
-> [c0000003fd9e7ed0] [c0000000000ce57c] .kthread+0xbc/0xd0
-> [c0000003fd9e7f90] [c000000000021448] .kernel_thread+0x54/0x70
-> Instruction dump:
-> 7fa3eb78 ebe1fff8 eba1ffe8 7c0803a6 4e800020 2c230000 41820024 e8630030 
-> 7c800074 7800d182 2fa30000 419e0014 <0b000000> 38a00002 4bfffebc e8630030 
-> ---[ end trace 31fd0ba7d8756001 ]---
-> initcall .topology_init+0x0/0x1ac returned 0 after 0 usecs
-> calling  .pcibios_init+0x0/0xe8 @ 1
-> PCI: Probing PCI hardware
-> PCI: Probing PCI hardware done
-> initcall .pcibios_init+0x0/0xe8 returned 0 after 0 usecs
-> calling  .add_system_ram_resources+0x0/0x140 @ 1
-> initcall .add_system_ram_resources+0x0/0x140 returned 0 after 0 usecs
-> calling  .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8 @ 1
-> initcall .__machine_initcall_powermac_pmac_i2c_create_platform_devices+0x0/0xc8 returned 0 after 0 usecs
-> calling  .opal_init+0x0/0x1cc @ 1
-> opal: Node not found
-> initcall .opal_init+0x0/0x1cc returned -19 after 0 usecs
-> calling  .__machine_initcall_pseries_ioei_init+0x0/0xa0 @ 1
+From: Zhicheng Fan <b32736@freescale.com>
 
-Reverting "smp: start up non-boot CPUs asynchronously" (8de7a96405 from
-next-20120208) fixes this problem for me.  
+The mpc85xx_rdb and mpc85xx_mds have commom define of signal multiplex for qe ,so
+they need to go in common header, the patch abstract them to fsl_guts.h
 
-Only hit it when on a 32 thread (8 core 4 thread) POWER7 box.  Smaller
-configs didn't hit it.
+Signed-off-by: Zhicheng Fan <b32736@freescale.com>
+---
+ arch/powerpc/include/asm/fsl_guts.h       |   18 ++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |   21 ++++++++-------------
+ 2 files changed, 26 insertions(+), 13 deletions(-)
 
-Adding Arjan who owns this to the CC.
-
-Mikey
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index bebd124..8c78ee2 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -114,6 +114,24 @@ struct ccsr_guts_86xx {
+ 	__be32	srds2cr1;	/* 0x.0f44 - SerDes2 Control Register 0 */
+ } __attribute__ ((packed));
+ 
++#ifdef CONFIG_PPC_85xx
++
++/* Alternate function signal multiplex control */
++#define MPC85xx_PMUXCR_QE0              0x00008000
++#define MPC85xx_PMUXCR_QE2              0x00002000
++#define MPC85xx_PMUXCR_QE3              0x00001000
++#define MPC85xx_PMUXCR_QE4              0x00000800
++#define MPC85xx_PMUXCR_QE5              0x00000400
++#define MPC85xx_PMUXCR_QE6              0x00000200
++#define MPC85xx_PMUXCR_QE7              0x00000100
++#define MPC85xx_PMUXCR_QE8              0x00000080
++#define MPC85xx_PMUXCR_QE9              0x00000040
++#define MPC85xx_PMUXCR_QE10             0x00000020
++#define MPC85xx_PMUXCR_QE11             0x00000010
++#define MPC85xx_PMUXCR_QE12             0x00000008
++
++#endif
++
+ #ifdef CONFIG_PPC_86xx
+ 
+ #define CCSR_GUTS_DMACR_DEV_SSI	0	/* DMA controller/channel set to SSI */
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 1d15a0c..dc5421c 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -51,6 +51,7 @@
+ #include <asm/qe_ic.h>
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
++#include <asm/fsl_guts.h>
+ #include "smp.h"
+ 
+ #include "mpc85xx.h"
+@@ -268,22 +269,16 @@ static void __init mpc85xx_mds_qe_init(void)
+ 	mpc85xx_mds_reset_ucc_phys();
+ 
+ 	if (machine_is(p1021_mds)) {
+-#define MPC85xx_PMUXCR_OFFSET           0x60
+-#define MPC85xx_PMUXCR_QE0              0x00008000
+-#define MPC85xx_PMUXCR_QE3              0x00001000
+-#define MPC85xx_PMUXCR_QE9              0x00000040
+-#define MPC85xx_PMUXCR_QE12             0x00000008
+-		static __be32 __iomem *pmuxcr;
++
++		struct ccsr_guts_85xx __iomem *guts;
+ 
+ 		np = of_find_node_by_name(NULL, "global-utilities");
+ 
+ 		if (np) {
+-			pmuxcr = of_iomap(np, 0) + MPC85xx_PMUXCR_OFFSET;
++			guts = of_iomap(np, 0);
+ 
+-			if (!pmuxcr)
+-				printk(KERN_EMERG "Error: Alternate function"
+-					" signal multiplex control register not"
+-					" mapped!\n");
++			if (!guts)
++				pr_err("mpc85xx-rdb: could not map global utilties register!\n");
+ 			else
+ 			/* P1021 has pins muxed for QE and other functions. To
+ 			 * enable QE UEC mode, we need to set bit QE0 for UCC1
+@@ -291,11 +286,11 @@ static void __init mpc85xx_mds_qe_init(void)
+ 			 * and QE12 for QE MII management signals in PMUXCR
+ 			 * register.
+ 			 */
+-				setbits32(pmuxcr, MPC85xx_PMUXCR_QE0 |
++				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE0 |
+ 						  MPC85xx_PMUXCR_QE3 |
+ 						  MPC85xx_PMUXCR_QE9 |
+ 						  MPC85xx_PMUXCR_QE12);
+-
++			iounmap(guts);
+ 			of_node_put(np);
+ 		}
+ 
+-- 
+1.7.0.4
