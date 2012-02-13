@@ -1,23 +1,36 @@
-Return-Path: <B32616@freescale.com>
-Received: from VA3EHSOBE010.bigfish.com (va3ehsobe004.messaging.microsoft.com
- [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1229B1007D2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 21:03:06 +1100 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: RE: [PATCH V2] fsl-sata: I/O load balancing
-Date: Mon, 13 Feb 2012 10:02:58 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB7024E94@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1327025958-10605-1-git-send-email-qiang.liu@freescale.com>
- <4F356139.9000609@pobox.com>
-In-Reply-To: <4F356139.9000609@pobox.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <m.szyprowski@samsung.com>
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12]) by ozlabs.org (Postfix) with ESMTP id 5D935B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 21:36:23 +1100 (EST)
+Received: from euspt2 (mailout2.w1.samsung.com [210.118.77.12])
+ by mailout2.w1.samsung.com
+ (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+ with ESMTP id <0LZB00F89USDPT@mailout2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 13 Feb 2012 10:36:13 +0000 (GMT)
+Received: from linux.samsung.com ([106.116.38.10])
+ by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
+ 2004)) with ESMTPA id <0LZB00BABUSCGJ@spt2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 13 Feb 2012 10:36:13 +0000 (GMT)
+Date: Mon, 13 Feb 2012 11:35:28 +0100
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 03/14 v2] MIPS: adapt for dma_map_ops changes
+In-reply-to: <1324643253-3024-4-git-send-email-m.szyprowski@samsung.com>
+To: linux-kernel@vger.kernel.org
+Message-id: <1329129329-25205-1-git-send-email-m.szyprowski@samsung.com>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN
+References: <1324643253-3024-4-git-send-email-m.szyprowski@samsung.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Jonathan Corbet <corbet@lwn.net>,
+ x86@kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ microblaze-uclinux@itee.uq.edu.au, linaro-mm-sig@lists.linaro.org,
+ Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ discuss@x86-64.org, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+ Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,79 +40,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linux-ide-owner@vger.kernel.org [mailto:linux-ide-
-> owner@vger.kernel.org] On Behalf Of Jeff Garzik
-> Sent: Saturday, February 11, 2012 2:26 AM
-> To: Liu Qiang-B32616
-> Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org
-> Subject: Re: [PATCH V2] fsl-sata: I/O load balancing
->=20
-> On 01/19/2012 09:19 PM, qiang.liu@freescale.com wrote:
-> > From: Qiang Liu<qiang.liu@freescale.com>
-> >
-> > Reduce interrupt signals through reset Interrupt Coalescing Control Reg=
-.
-> > Provide dynamic method to adjust interrupt signals and timer ticks by
-> sysfs.
-> > It is a tradeoff for different applications.
-> >
-> > Signed-off-by: Qiang Liu<qiang.liu@freescale.com>
-> > ---
-> >
-> > change for V2
-> > 	support dynamic config interrupt coalescing register by /sysfs
-> > 	test random small file with iometer
-> > Description:
-> >    1. fsl-sata interrupt will be raised 130 thousand times when write
-> 8G file
-> >      (dd if=3D/dev/zero of=3D/dev/sda2 bs=3D128K count=3D65536);
-> >    2. most of interrupts raised because of only 1-4 commands completed;
-> >    3. only 30 thousand times will be raised after set max interrupt
-> threshold,
-> >      more interrupts are coalesced as the description of ICC;
-> >
-> > Test methods and results:
-> >    1. test sequential large file performance,
-> >    [root@p2020ds root]# echo 31 524287>  \
-> >    	/sys/devices/soc.0/ffe18000.sata/intr_coalescing
-> >    [root@p2020ds root]# dd if=3D/dev/zero of=3D/dev/sda2 bs=3D128K
-> count=3D65536&
-> >    [root@p2020ds root]# top
-> >
-> >    CPU %  |  dd   |  flush-8:0 | softirq
-> >    ---------------------------------------
-> >    before | 20-22 |    17-19   |    7
-> >    ---------------------------------------
-> >    after  | 18-21 |    15-16   |    5
-> >    ---------------------------------------
-> >    2. test random small file with iometer,
-> >   iometer paramters:
-> >     4 I/Os burst length, 1MB transfer request size, 100% write, 2MB
-> file size
-> >     as default configuration of interrupt coalescing register, 1
-> interrupts and
-> >   no timeout config, total write performance is 119MB per second,
-> >     after config with the maximum value, write performance is 110MB per
-> second.
-> >
-> >    After compare the test results, a configuable interrupt coalescing
-> should be
-> >    better when cope with flexible context.
-> >
-> >   drivers/ata/sata_fsl.c |  111
-> ++++++++++++++++++++++++++++++++++++++++++++++--
-> >   1 files changed, 107 insertions(+), 4 deletions(-)
->=20
-> Doesn't seem to apply to upstream, or another less recent -rc...
-Thanks, I will resend it latterly.
->=20
-> 	Jeff
->=20
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org More majordomo info at
-> http://vger.kernel.org/majordomo-info.html
+From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+
+Adapt core MIPS architecture code for dma_map_ops changes: replace
+alloc/free_coherent with generic alloc/free methods.
+
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+[added missing changes to arch/mips/cavium-octeon/dma-octeon.c]
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ arch/mips/cavium-octeon/dma-octeon.c |   16 ++++++++--------
+ arch/mips/include/asm/dma-mapping.h  |   18 ++++++++++++------
+ arch/mips/mm/dma-default.c           |    8 ++++----
+ 3 files changed, 24 insertions(+), 18 deletions(-)
+
+diff --git a/arch/mips/cavium-octeon/dma-octeon.c b/arch/mips/cavium-octeon/dma-octeon.c
+index b6bb92c..df70600 100644
+--- a/arch/mips/cavium-octeon/dma-octeon.c
++++ b/arch/mips/cavium-octeon/dma-octeon.c
+@@ -157,7 +157,7 @@ static void octeon_dma_sync_sg_for_device(struct device *dev,
+ }
+ 
+ static void *octeon_dma_alloc_coherent(struct device *dev, size_t size,
+-	dma_addr_t *dma_handle, gfp_t gfp)
++	dma_addr_t *dma_handle, gfp_t gfp, struct dma_attrs *attrs)
+ {
+ 	void *ret;
+ 
+@@ -184,7 +184,7 @@ static void *octeon_dma_alloc_coherent(struct device *dev, size_t size,
+ 	/* Don't invoke OOM killer */
+ 	gfp |= __GFP_NORETRY;
+ 
+-	ret = swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
++	ret = swiotlb_alloc_coherent(dev, size, dma_handle, gfp, attrs);
+ 
+ 	mb();
+ 
+@@ -192,14 +192,14 @@ static void *octeon_dma_alloc_coherent(struct device *dev, size_t size,
+ }
+ 
+ static void octeon_dma_free_coherent(struct device *dev, size_t size,
+-	void *vaddr, dma_addr_t dma_handle)
++	void *vaddr, dma_addr_t dma_handle, struct dma_attrs *attrs)
+ {
+ 	int order = get_order(size);
+ 
+ 	if (dma_release_from_coherent(dev, order, vaddr))
+ 		return;
+ 
+-	swiotlb_free_coherent(dev, size, vaddr, dma_handle);
++	swiotlb_free_coherent(dev, size, vaddr, dma_handle, attrs);
+ }
+ 
+ static dma_addr_t octeon_unity_phys_to_dma(struct device *dev, phys_addr_t paddr)
+@@ -240,8 +240,8 @@ EXPORT_SYMBOL(dma_to_phys);
+ 
+ static struct octeon_dma_map_ops octeon_linear_dma_map_ops = {
+ 	.dma_map_ops = {
+-		.alloc_coherent = octeon_dma_alloc_coherent,
+-		.free_coherent = octeon_dma_free_coherent,
++		.alloc = octeon_dma_alloc_coherent,
++		.free = octeon_dma_free_coherent,
+ 		.map_page = octeon_dma_map_page,
+ 		.unmap_page = swiotlb_unmap_page,
+ 		.map_sg = octeon_dma_map_sg,
+@@ -325,8 +325,8 @@ void __init plat_swiotlb_setup(void)
+ #ifdef CONFIG_PCI
+ static struct octeon_dma_map_ops _octeon_pci_dma_map_ops = {
+ 	.dma_map_ops = {
+-		.alloc_coherent = octeon_dma_alloc_coherent,
+-		.free_coherent = octeon_dma_free_coherent,
++		.alloc = octeon_dma_alloc_coherent,
++		.free = octeon_dma_free_coherent,
+ 		.map_page = octeon_dma_map_page,
+ 		.unmap_page = swiotlb_unmap_page,
+ 		.map_sg = octeon_dma_map_sg,
+diff --git a/arch/mips/include/asm/dma-mapping.h b/arch/mips/include/asm/dma-mapping.h
+index 7aa37dd..cbd41f5 100644
+--- a/arch/mips/include/asm/dma-mapping.h
++++ b/arch/mips/include/asm/dma-mapping.h
+@@ -57,25 +57,31 @@ dma_set_mask(struct device *dev, u64 mask)
+ extern void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ 	       enum dma_data_direction direction);
+ 
+-static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+-				       dma_addr_t *dma_handle, gfp_t gfp)
++#define dma_alloc_coherent(d,s,h,f)	dma_alloc_attrs(d,s,h,f,NULL)
++
++static inline void *dma_alloc_attrs(struct device *dev, size_t size,
++				    dma_addr_t *dma_handle, gfp_t gfp,
++				    struct dma_attrs *attrs)
+ {
+ 	void *ret;
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
+-	ret = ops->alloc_coherent(dev, size, dma_handle, gfp);
++	ret = ops->alloc(dev, size, dma_handle, gfp, NULL);
+ 
+ 	debug_dma_alloc_coherent(dev, size, *dma_handle, ret);
+ 
+ 	return ret;
+ }
+ 
+-static inline void dma_free_coherent(struct device *dev, size_t size,
+-				     void *vaddr, dma_addr_t dma_handle)
++#define dma_free_coherent(d,s,c,h) dma_free_attrs(d,s,c,h,NULL)
++
++static inline void dma_free_attrs(struct device *dev, size_t size,
++				  void *vaddr, dma_addr_t dma_handle,
++				  struct dma_attrs *attrs)
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
+-	ops->free_coherent(dev, size, vaddr, dma_handle);
++	ops->free(dev, size, vaddr, dma_handle, NULL);
+ 
+ 	debug_dma_free_coherent(dev, size, vaddr, dma_handle);
+ }
+diff --git a/arch/mips/mm/dma-default.c b/arch/mips/mm/dma-default.c
+index 4608491..3fab204 100644
+--- a/arch/mips/mm/dma-default.c
++++ b/arch/mips/mm/dma-default.c
+@@ -98,7 +98,7 @@ void *dma_alloc_noncoherent(struct device *dev, size_t size,
+ EXPORT_SYMBOL(dma_alloc_noncoherent);
+ 
+ static void *mips_dma_alloc_coherent(struct device *dev, size_t size,
+-	dma_addr_t * dma_handle, gfp_t gfp)
++	dma_addr_t * dma_handle, gfp_t gfp, struct dma_attrs *attrs)
+ {
+ 	void *ret;
+ 
+@@ -132,7 +132,7 @@ void dma_free_noncoherent(struct device *dev, size_t size, void *vaddr,
+ EXPORT_SYMBOL(dma_free_noncoherent);
+ 
+ static void mips_dma_free_coherent(struct device *dev, size_t size, void *vaddr,
+-	dma_addr_t dma_handle)
++	dma_addr_t dma_handle, struct dma_attrs *attrs)
+ {
+ 	unsigned long addr = (unsigned long) vaddr;
+ 	int order = get_order(size);
+@@ -323,8 +323,8 @@ void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ EXPORT_SYMBOL(dma_cache_sync);
+ 
+ static struct dma_map_ops mips_default_dma_map_ops = {
+-	.alloc_coherent = mips_dma_alloc_coherent,
+-	.free_coherent = mips_dma_free_coherent,
++	.alloc = mips_dma_alloc_coherent,
++	.free = mips_dma_free_coherent,
+ 	.map_page = mips_dma_map_page,
+ 	.unmap_page = mips_dma_unmap_page,
+ 	.map_sg = mips_dma_map_sg,
+-- 
+1.7.1.569.g6f426
