@@ -1,24 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D1B4CB6FDF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 16:47:23 +1100 (EST)
-Date: Mon, 13 Feb 2012 16:47:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <w@1wt.eu>
+Received: from 1wt.eu (1wt.eu [62.212.114.60])
+ by ozlabs.org (Postfix) with ESMTP id E8AA4B6FAB
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2012 17:35:49 +1100 (EST)
+Date: Mon, 13 Feb 2012 07:35:28 +0100
+From: Willy Tarreau <w@1wt.eu>
 To: Michael Neuling <mikey@neuling.org>
-Subject: Re: Boot failure with next-20120208
-Message-Id: <20120213164714.dfb835bf2343ef2e6f24cde1@canb.auug.org.au>
-In-Reply-To: <16788.1329102254@neuling.org>
-References: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
- <16788.1329102254@neuling.org>
+Subject: Re: [PATCH stable-2.6.27] powerpc: Add more Power7 specific
+ definitions
+Message-ID: <20120213063528.GU21225@1wt.eu>
+References: <8849.1329094322@neuling.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8"
-Cc: gregkh@linuxfoundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Arjan van de Ven <arjan@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8849.1329094322@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, stable@kernel.org,
+ Eric B Munson <emunson@mgebm.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Feb 13, 2012 at 11:52:02AM +1100, Michael Neuling wrote:
+> stable-2.6.27.60 added c24cb8e5 which uses PV_POWER7 but it's not
+> defined.  Following patch adds these definitions.
 
-On Mon, 13 Feb 2012 14:04:14 +1100 Michael Neuling <mikey@neuling.org> wrot=
-e:
->
-> Reverting "smp: start up non-boot CPUs asynchronously" (8de7a96405 from
-> next-20120208) fixes this problem for me.
+Thank you for the report Michael, I have no PPC toolchain so I have
+not tested this one. Added now.
 
-I have reverted that commit (and the following -fix commit) from -next
-today.
+Just one question, with this release, no -rc patch was emitted. Do you
+think you would have built it in time if I had provided a way to retrieve
+the -rc patch ? I'm asking because it's much more difficult right now to
+put it somewhere, but for instance it can be emitted with the announcement
+mail.
 
-Thanks for tracking it down, Mikey.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPOKPiAAoJEECxmPOUX5FEQyYP/j4i492ndRYNAYqG/nqOZq2G
-X32x3AU5WRnceoNZ0/QgWSnAI4EfjZtX6s83XfuUneLRuUfeju1bI3P5qwkjG3bK
-7QT+NpY6Z0gIEIT/TKrQLggGQx3Gaata0Xl/6flXRGyHDHXFBlzJFtqovx/uIS8K
-WG0/HQBxAjkWJ6kkySxVVYdfZxLRCabTX00aAgXiidd/FsiV9o3ooPTKKfUhf4KO
-BgIhgA5T21/L9BG1SSl2Jxp2P16/v8cRNo4enogYQvzQIexunhcRfVxPnbXwew5L
-cvUEdiLxiqBSHK2Jny6tqupgpFKl2AGdKsu41QYwiQXkPfUxDjYYpnh2yVFIWCZ4
-5FMVynjclwKybFuQJFuGZFwfSDE1gEm1FoNW8f4IV0KMN6kZoLMt9PabmG2HC8RB
-G/T0F3MT/NUe4rjmMgyyymLz9XKpsuswBw+sNtaILx6uzTkRwS/dWmR+5uJds5E2
-fOAF88ly5dBNMbwNc6c2JPWs39Iivt9jhLMSq7CUa84Qp/VMY+ydQI2uB+CcIj8A
-BGBvbwd0IcOQEp4aLkSi9aTcN023xLtYQvrAwxKgeJCQTD3QXQflkBuKYKNbfDop
-5Y9vLpu59I0+we7PudxPfNPoB0zL5BAIRFBVgl1SMgfDgF0BSUNoluc1rjV7Xj0X
-AMN5IUM4bUkMaQ/I/hfz
-=tjIa
------END PGP SIGNATURE-----
-
---Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8--
+Regards,
+Willy
