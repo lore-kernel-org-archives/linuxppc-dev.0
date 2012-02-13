@@ -1,25 +1,24 @@
-Return-Path: <B13201@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe005.messaging.microsoft.com
- [213.199.154.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CDC3DB6FAB
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2012 16:47:18 +1100 (EST)
-From: Liu Yu-B13201 <B13201@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v3 1/3] KVM: PPC: epapr: Factor out the epapr init
-Date: Mon, 13 Feb 2012 05:47:08 +0000
-Message-ID: <4CA99838F21AB847ACC344051E231709057158DE@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1328868141-17364-1-git-send-email-yu.liu@freescale.com>
- <4F356477.7010809@freescale.com>
-In-Reply-To: <4F356477.7010809@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id D1B4CB6FDF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 16:47:23 +1100 (EST)
+Date: Mon, 13 Feb 2012 16:47:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Boot failure with next-20120208
+Message-Id: <20120213164714.dfb835bf2343ef2e6f24cde1@canb.auug.org.au>
+In-Reply-To: <16788.1329102254@neuling.org>
+References: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
+ <16788.1329102254@neuling.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8"
+Cc: gregkh@linuxfoundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+ linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Arjan van de Ven <arjan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogU2F0dXJkYXksIEZlYnJ1YXJ5IDExLCAyMDEyIDI6NDAgQU0NCj4gVG86IExp
-dSBZdS1CMTMyMDENCj4gQ2M6IGFncmFmQHN1c2UuZGU7IGt2bS1wcGNAdmdlci5rZXJuZWwub3Jn
-OyBrdm1Admdlci5rZXJuZWwub3JnOw0KPiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsgV29vZCBT
-Y290dC1CMDc0MjENCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAxLzNdIEtWTTogUFBDOiBlcGFw
-cjogRmFjdG9yIG91dCB0aGUgZXBhcHIgaW5pdA0KPiANCj4gT24gMDIvMTAvMjAxMiAwNDowMiBB
-TSwgTGl1IFl1IHdyb3RlOg0KPiA+IGZyb20gdGhlIGt2bSBndWVzdCBwYXJhdmlydCBpbml0IGNv
-ZGUuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMaXUgWXUgPHl1LmxpdUBmcmVlc2NhbGUuY29t
-Pg0KPiA+IC0tLQ0KPiA+IHYzOg0KPiA+IGFwcGx5IHRoZSBlcGFwciBpbml0IGZvciBhbGwgcHBj
-IHBsYXRmb3JtDQo+ID4NCj4gPiAgYXJjaC9wb3dlcnBjL0tjb25maWcgICAgICAgICAgICAgICAg
-ICAgIHwgICAgNCArKysNCj4gPiAgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2VwYXByX2hjYWxs
-cy5oIHwgICAgOCArKysrKw0KPiA+ICBhcmNoL3Bvd2VycGMva2VybmVsL01ha2VmaWxlICAgICAg
-ICAgICAgfCAgICAxICsNCj4gPiAgYXJjaC9wb3dlcnBjL2tlcm5lbC9lcGFwcl9wYXJhLmMgICAg
-ICAgIHwgICA0Ng0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIGFyY2gv
-cG93ZXJwYy9rZXJuZWwva3ZtLmMgICAgICAgICAgICAgICB8ICAgMTMgKysrLS0tLS0tDQo+ID4g
-IGFyY2gvcG93ZXJwYy9rdm0vS2NvbmZpZyAgICAgICAgICAgICAgICB8ICAgIDEgKw0KPiA+ICA2
-IGZpbGVzIGNoYW5nZWQsIDY0IGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0pICBjcmVhdGUg
-bW9kZSAxMDA2NDQNCj4gPiBhcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX3BhcmEuYw0KPiA+DQo+
-ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9LY29uZmlnIGIvYXJjaC9wb3dlcnBjL0tjb25m
-aWcgaW5kZXgNCj4gPiA0NzY4MmI2Li4wMGJkNTA4IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93
-ZXJwYy9LY29uZmlnDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL0tjb25maWcNCj4gPiBAQCAtMTk2
-LDYgKzE5NiwxMCBAQCBjb25maWcgRVBBUFJfQk9PVA0KPiA+ICAJICBVc2VkIHRvIGFsbG93IGEg
-Ym9hcmQgdG8gc3BlY2lmeSBpdCB3YW50cyBhbiBlUEFQUiBjb21wbGlhbnQNCj4gd3JhcHBlci4N
-Cj4gPiAgCWRlZmF1bHQgbg0KPiA+DQo+ID4gK2NvbmZpZyBFUEFQUl9QQVJBDQo+ID4gKwlib29s
-DQo+ID4gKwlkZWZhdWx0IG4NCj4gDQo+IEVQQVBSX1BBUkFWSVJUDQo+IA0KPiA+ICBjb25maWcg
-REVGQVVMVF9VSU1BR0UNCj4gPiAgCWJvb2wNCj4gPiAgCWhlbHANCj4gPiBkaWZmIC0tZ2l0IGEv
-YXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2VwYXByX2hjYWxscy5oDQo+ID4gYi9hcmNoL3Bvd2Vy
-cGMvaW5jbHVkZS9hc20vZXBhcHJfaGNhbGxzLmgNCj4gPiBpbmRleCBmM2IwYzJjLi5jNGI4NmU0
-IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9lcGFwcl9oY2FsbHMu
-aA0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9lcGFwcl9oY2FsbHMuaA0KPiA+
-IEBAIC0xNDgsNiArMTQ4LDE0IEBADQo+ID4gICNkZWZpbmUgRVZfSENBTExfQ0xPQkJFUlMyIEVW
-X0hDQUxMX0NMT0JCRVJTMywgInI1Ig0KPiA+ICAjZGVmaW5lIEVWX0hDQUxMX0NMT0JCRVJTMSBF
-Vl9IQ0FMTF9DTE9CQkVSUzIsICJyNCINCj4gPg0KPiA+ICtleHRlcm4gdTMyICplcGFwcl9oY2Fs
-bF9pbnN0czsNCj4gPiArZXh0ZXJuIGludCBlcGFwcl9oY2FsbF9pbnN0c19sZW47DQo+ID4gKw0K
-PiA+ICtzdGF0aWMgaW5saW5lIHZvaWQgZXBhcHJfZ2V0X2hjYWxsX2luc3RzKHUzMiAqKmluc3Rw
-LCBpbnQgKmxlbnApIHsNCj4gPiArCSppbnN0cCA9IGVwYXByX2hjYWxsX2luc3RzOw0KPiA+ICsJ
-KmxlbnAgPSBlcGFwcl9oY2FsbF9pbnN0c19sZW47DQo+ID4gK30NCj4gDQo+IFdoeSBkbyB3ZSBu
-ZWVkIGEgZnVuY3Rpb24gZm9yIHRoaXM/ICBXaHkgaXMgdGhlIHB1YmxpYyBpbnRlcmZhY2UgYW55
-dGhpbmcNCj4gb3RoZXIgdGhhbiAiaW52b2tlIGEgaHlwZXJjYWxsIj8NCj4gDQo+ID4gK3N0YXRp
-YyBpbnQgX19pbml0IGVwYXByX3BhcmFfaW5pdCh2b2lkKSB7DQo+ID4gKwlzdHJ1Y3QgZGV2aWNl
-X25vZGUgKmh5cGVyX25vZGU7DQo+ID4gKwl1MzIgKmluc3RzOw0KPiA+ICsJaW50IGxlbjsNCj4g
-PiArDQo+ID4gKwloeXBlcl9ub2RlID0gb2ZfZmluZF9ub2RlX2J5X3BhdGgoIi9oeXBlcnZpc29y
-Iik7DQo+ID4gKwlpZiAoIWh5cGVyX25vZGUpDQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4g
-Kw0KPiA+ICsJaW5zdHMgPSAodTMyKilvZl9nZXRfcHJvcGVydHkoaHlwZXJfbm9kZSwgImhjYWxs
-LWluc3RydWN0aW9ucyIsDQo+ID4gKyZsZW4pOw0KPiANCj4gRG8gbm90IGNhc3QgYXdheSB0aGF0
-IGNvbnN0Lg0KPiANCj4gPiBAQCAtNTM1LDE4ICs1MzYsMTIgQEAgRVhQT1JUX1NZTUJPTF9HUEwo
-a3ZtX2h5cGVyY2FsbCk7ICBzdGF0aWMgaW50DQo+ID4ga3ZtX3BhcmFfc2V0dXAodm9pZCkgIHsN
-Cj4gPiAgCWV4dGVybiB1MzIga3ZtX2h5cGVyY2FsbF9zdGFydDsNCj4gPiAtCXN0cnVjdCBkZXZp
-Y2Vfbm9kZSAqaHlwZXJfbm9kZTsNCj4gPiAgCXUzMiAqaW5zdHM7DQo+ID4gIAlpbnQgbGVuLCBp
-Ow0KPiA+DQo+ID4gLQloeXBlcl9ub2RlID0gb2ZfZmluZF9ub2RlX2J5X3BhdGgoIi9oeXBlcnZp
-c29yIik7DQo+ID4gLQlpZiAoIWh5cGVyX25vZGUpDQo+ID4gLQkJcmV0dXJuIC0xOw0KPiA+IC0N
-Cj4gPiAtCWluc3RzID0gKHUzMiopb2ZfZ2V0X3Byb3BlcnR5KGh5cGVyX25vZGUsICJoY2FsbC1p
-bnN0cnVjdGlvbnMiLA0KPiAmbGVuKTsNCj4gPiAtCWlmIChsZW4gJSA0KQ0KPiA+IC0JCXJldHVy
-biAtMTsNCj4gPiAtCWlmIChsZW4gPiAoNCAqIDQpKQ0KPiA+ICsJaW5zdHMgPSBlcGFwcl9oY2Fs
-bF9pbnN0czsNCj4gPiArCWxlbiA9IGVwYXByX2hjYWxsX2luc3RzX2xlbjsNCj4gPiArCWlmIChp
-bnN0cyA9PSBOVUxMKQ0KPiA+ICAJCXJldHVybiAtMTsNCj4gPg0KPiA+ICAJZm9yIChpID0gMDsg
-aSA8IChsZW4gLyA0KTsgaSsrKQ0KPiANCj4gV2h5IGFyZSB5b3Ugc3RpbGwgZG9pbmcgdGhlIHBh
-dGNoaW5nIGluc2lkZSBrdm0uYz8NCj4gDQoNCkRvIHlvdSBtZWFuIHdlIHNob3VsZCBtb3ZlIGt2
-bV9oeXBlcmNhbGxfc3RhcnQoKSBpbnRvIGVwYXByIGJpdD8NCg0KVGhhbmtzLA0KWXUNCg==
+--Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 13 Feb 2012 14:04:14 +1100 Michael Neuling <mikey@neuling.org> wrot=
+e:
+>
+> Reverting "smp: start up non-boot CPUs asynchronously" (8de7a96405 from
+> next-20120208) fixes this problem for me.
+
+I have reverted that commit (and the following -fix commit) from -next
+today.
+
+Thanks for tracking it down, Mikey.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPOKPiAAoJEECxmPOUX5FEQyYP/j4i492ndRYNAYqG/nqOZq2G
+X32x3AU5WRnceoNZ0/QgWSnAI4EfjZtX6s83XfuUneLRuUfeju1bI3P5qwkjG3bK
+7QT+NpY6Z0gIEIT/TKrQLggGQx3Gaata0Xl/6flXRGyHDHXFBlzJFtqovx/uIS8K
+WG0/HQBxAjkWJ6kkySxVVYdfZxLRCabTX00aAgXiidd/FsiV9o3ooPTKKfUhf4KO
+BgIhgA5T21/L9BG1SSl2Jxp2P16/v8cRNo4enogYQvzQIexunhcRfVxPnbXwew5L
+cvUEdiLxiqBSHK2Jny6tqupgpFKl2AGdKsu41QYwiQXkPfUxDjYYpnh2yVFIWCZ4
+5FMVynjclwKybFuQJFuGZFwfSDE1gEm1FoNW8f4IV0KMN6kZoLMt9PabmG2HC8RB
+G/T0F3MT/NUe4rjmMgyyymLz9XKpsuswBw+sNtaILx6uzTkRwS/dWmR+5uJds5E2
+fOAF88ly5dBNMbwNc6c2JPWs39Iivt9jhLMSq7CUa84Qp/VMY+ydQI2uB+CcIj8A
+BGBvbwd0IcOQEp4aLkSi9aTcN023xLtYQvrAwxKgeJCQTD3QXQflkBuKYKNbfDop
+5Y9vLpu59I0+we7PudxPfNPoB0zL5BAIRFBVgl1SMgfDgF0BSUNoluc1rjV7Xj0X
+AMN5IUM4bUkMaQ/I/hfz
+=tjIa
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__13_Feb_2012_16_47_14_+1100_mJyW/hvsWYR.b_k8--
