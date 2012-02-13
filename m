@@ -1,12 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: stable@kernel.org
-MIME-Version: 1.0
-Subject: [PATCH stable-2.6.27] powerpc: Add more Power7 specific definitions
-Date: Mon, 13 Feb 2012 11:52:02 +1100
-Message-ID: <8849.1329094322@neuling.org>
-Cc: Willy Tarreau <w@1wt.eu>, Eric B Munson <emunson@mgebm.net>,
- linuxppc-dev@ozlabs.org
+Return-Path: <ppc@mindchasers.com>
+Received: from vms173003pub.verizon.net (vms173003pub.verizon.net
+ [206.46.173.3]) by ozlabs.org (Postfix) with ESMTP id A7A82B6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 12:40:23 +1100 (EST)
+Received: from [192.168.1.3] ([unknown] [108.25.174.63])
+ by vms173003.mailsrvcs.net
+ (Sun Java(tm) System Messaging Server 7u2-7.02 32bit (built Apr 16 2009))
+ with ESMTPA id <0LZB00BUW5YWAPK1@vms173003.mailsrvcs.net> for
+ linuxppc-dev@lists.ozlabs.org; Sun, 12 Feb 2012 19:40:09 -0600 (CST)
+Message-id: <4F3869F8.6080802@mindchasers.com>
+Date: Sun, 12 Feb 2012 20:40:08 -0500
+From: Bob Cochran <ppc@mindchasers.com>
+MIME-version: 1.0
+To: b29983@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ Tang Yuantian <Yuantian.Tang@freescale.com>, Jin Qing <b24347@freescale.com>
+Subject: Re: [PATCH 1/2 V3] powerpc/85xx: Add P1024rdb dts support
+References: <1328860851-392-1-git-send-email-b29983@freescale.com>
+In-reply-to: <1328860851-392-1-git-send-email-b29983@freescale.com>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,111 +26,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-stable-2.6.27.60 added c24cb8e5 which uses PV_POWER7 but it's not
-defined.  Following patch adds these definitions.
+On 02/10/2012 03:00 AM, b29983@freescale.com wrote:
+> From: Tang Yuantian<Yuantian.Tang@freescale.com>
+>
+> Signed-off-by: Jin Qing<b24347@freescale.com>
+> Signed-off-by: Li Yang<leoli@freescale.com>
+> Signed-off-by: Tang Yuantian<Yuantian.Tang@freescale.com>
+> ---
+> v3:
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-commit 50fb8ebe7c4ad60d147700d253f78bd1e615a526 upstream
 
-powerpc: Add more Power7 specific definitions
+I'm curious how fsl_pq_mdio_probe returns successfully when probing the 
+phys on the first pass (mdio@24000).  I don't have a P1024 to test with, 
+but I believe it has the same ETSEC configuration as the P1010 that I 
+work with.
 
-This adds more SPR definitions used on newer processors when running
-in hypervisor mode. Along with some other P7 specific bits and pieces
+Inside the fsl_pq_mdio_probe routine (fsl_pq_mdio.c), a successful 
+search of a tbi child node is required with a tbi->type of "tby-phy". 
+If it doesn't find this node, the probe routine will return an error of 
+EBUSY.  The logic from the routine is provided below:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/include/asm/ppc_asm.h |    1 
- arch/powerpc/include/asm/reg.h     |   45 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 45 insertions(+), 1 deletion(-)
 
-Index: clone1/arch/powerpc/include/asm/ppc_asm.h
-===================================================================
---- clone1.orig/arch/powerpc/include/asm/ppc_asm.h
-+++ clone1/arch/powerpc/include/asm/ppc_asm.h
-@@ -166,6 +166,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);
- #define HMT_MEDIUM	or	2,2,2
- #define HMT_MEDIUM_HIGH or	5,5,5		# medium high priority
- #define HMT_HIGH	or	3,3,3
-+#define HMT_EXTRA_HIGH	or	7,7,7		# power7 only
- 
- /* handle instructions that older assemblers may not know */
- #define RFCI		.long 0x4c000066	/* rfci instruction */
-Index: clone1/arch/powerpc/include/asm/reg.h
-===================================================================
---- clone1.orig/arch/powerpc/include/asm/reg.h
-+++ clone1/arch/powerpc/include/asm/reg.h
-@@ -172,8 +172,43 @@
- #define SPRN_TBWL	0x11C	/* Time Base Lower Register (super, R/W) */
- #define SPRN_TBWU	0x11D	/* Time Base Upper Register (super, R/W) */
- #define SPRN_SPURR	0x134	/* Scaled PURR */
-+#define SPRN_HSPRG0	0x130	/* Hypervisor Scratch 0 */
-+#define SPRN_HSPRG1	0x131	/* Hypervisor Scratch 1 */
-+#define SPRN_HDSISR     0x132
-+#define SPRN_HDAR       0x133
-+#define SPRN_HDEC	0x136	/* Hypervisor Decrementer */
- #define SPRN_HIOR	0x137	/* 970 Hypervisor interrupt offset */
-+#define SPRN_RMOR	0x138	/* Real mode offset register */
-+#define SPRN_HRMOR	0x139	/* Real mode offset register */
-+#define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
-+#define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
- #define SPRN_LPCR	0x13E	/* LPAR Control Register */
-+#define   LPCR_VPM0	(1ul << (63-0))
-+#define   LPCR_VPM1	(1ul << (63-1))
-+#define   LPCR_ISL	(1ul << (63-2))
-+#define   LPCR_DPFD_SH	(63-11)
-+#define   LPCR_VRMA_L	(1ul << (63-12))
-+#define   LPCR_VRMA_LP0	(1ul << (63-15))
-+#define   LPCR_VRMA_LP1	(1ul << (63-16))
-+#define   LPCR_RMLS    0x1C000000      /* impl dependent rmo limit sel */
-+#define   LPCR_ILE     0x02000000      /* !HV irqs set MSR:LE */
-+#define   LPCR_PECE	0x00007000	/* powersave exit cause enable */
-+#define     LPCR_PECE0	0x00004000	/* ext. exceptions can cause exit */
-+#define     LPCR_PECE1	0x00002000	/* decrementer can cause exit */
-+#define     LPCR_PECE2	0x00001000	/* machine check etc can cause exit */
-+#define   LPCR_MER	0x00000800	/* Mediated External Exception */
-+#define   LPCR_LPES0   0x00000008      /* LPAR Env selector 0 */
-+#define   LPCR_LPES1   0x00000004      /* LPAR Env selector 1 */
-+#define   LPCR_RMI     0x00000002      /* real mode is cache inhibit */
-+#define   LPCR_HDICE   0x00000001      /* Hyp Decr enable (HV,PR,EE) */
-+#define SPRN_LPID	0x13F	/* Logical Partition Identifier */
-+#define	SPRN_HMER	0x150	/* Hardware m? error recovery */
-+#define	SPRN_HMEER	0x151	/* Hardware m? enable error recovery */
-+#define	SPRN_HEIR	0x153	/* Hypervisor Emulated Instruction Register */
-+#define SPRN_TLBINDEXR	0x154	/* P7 TLB control register */
-+#define SPRN_TLBVPNR	0x155	/* P7 TLB control register */
-+#define SPRN_TLBRPNR	0x156	/* P7 TLB control register */
-+#define SPRN_TLBLPIDR	0x157	/* P7 TLB control register */
- #define SPRN_DBAT0L	0x219	/* Data BAT 0 Lower Register */
- #define SPRN_DBAT0U	0x218	/* Data BAT 0 Upper Register */
- #define SPRN_DBAT1L	0x21B	/* Data BAT 1 Lower Register */
-@@ -392,12 +427,18 @@
- #define SPRN_SRR0	0x01A	/* Save/Restore Register 0 */
- #define SPRN_SRR1	0x01B	/* Save/Restore Register 1 */
- #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
--#define   SRR1_WAKERESET	0x00380000 /* System reset */
- #define   SRR1_WAKESYSERR	0x00300000 /* System error */
- #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
- #define   SRR1_WAKEMT		0x00280000 /* mtctrl */
-+#define	  SRR1_WAKEHMI		0x00280000 /* Hypervisor maintenance */
- #define   SRR1_WAKEDEC		0x00180000 /* Decrementer interrupt */
- #define   SRR1_WAKETHERM	0x00100000 /* Thermal management interrupt */
-+#define	  SRR1_WAKERESET	0x00100000 /* System reset */
-+#define	  SRR1_WAKESTATE	0x00030000 /* Powersave exit mask [46:47] */
-+#define	  SRR1_WS_DEEPEST	0x00030000 /* Some resources not maintained,
-+					  * may not be recoverable */
-+#define	  SRR1_WS_DEEPER	0x00020000 /* Some resources not maintained */
-+#define	  SRR1_WS_DEEP		0x00010000 /* All resources maintained */
- #define SPRN_HSRR0	0x13A	/* Save/Restore Register 0 */
- #define SPRN_HSRR1	0x13B	/* Save/Restore Register 1 */
- 
-@@ -698,6 +739,8 @@
- #define PV_POWER5	0x003A
- #define PV_POWER5p	0x003B
- #define PV_970FX	0x003C
-+#define PV_POWER6	0x003E
-+#define PV_POWER7	0x003F
- #define PV_630		0x0040
- #define PV_630p	0x0041
- #define PV_970MP	0x0044
+for_each_child_of_node(np, tbi) {
+                 if (!strncmp(tbi->type, "tbi-phy", 8))
+                         break;
+         }
+
+         if (tbi) {
+                 const u32 *prop = of_get_property(tbi, "reg", NULL);
+
+                 if (prop)
+                         tbiaddr = *prop;
+         }
+
+         if (tbiaddr == -1) {
+                 err = -EBUSY;
+                 goto err_free_irqs;
+         } else {
+                 out_be32(tbipa, tbiaddr);
+         }
+
+
+If I look at the p1010rdb.dtsi file, I see that a tbi-phy child node was 
+added inside mdio@24000; however, I don't see this inside your 
+p1024rdb.dtsi.
+
+On top of this, the current p1010rdb mdio@24000 node in p1024rdb.dtsi 
+doesn't yield a successful probe (as I reported on this mail list on 
+2/7/12).
+
+So, it seems to me that a tbi child node needs to be added to your 
+mdio@24000 node similar to what was done with the p1010rdb,
+
+but it also requires some additional tweaking or perhaps a fix inside 
+the fsl_pq_mdio_probe routine or of library (It's not clear to me how to 
+best produce a successful probe given the circumstances).
+
+
+
+> +
+> +	mdio@24000 {
+> +		phy0: ethernet-phy@0 {
+> +			interrupts =<3 1 0 0>;
+> +			reg =<0x0>;
+> +		};
+> +		phy1: ethernet-phy@1 {
+> +			interrupts =<2 1 0 0>;
+> +			reg =<0x1>;
+> +		};
+> +		phy2: ethernet-phy@2 {
+> +			interrupts =<1 1 0 0>;
+> +			reg =<0x2>;
+> +		};
+> +	};
+> +
+> +	mdio@25000 {
+> +		tbi0: tbi-phy@11 {
+> +			reg =<0x11>;
+> +			device_type = "tbi-phy";
+> +		};
+> +	};
+> +
+> +	mdio@26000 {
+> +		tbi1: tbi-phy@11 {
+> +			reg =<0x11>;
+> +			device_type = "tbi-phy";
+> +		};
+> +	};
+> +
+> +	ethernet@b0000 {
+> +		phy-handle =<&phy2>;
+> +		phy-connection-type = "rgmii-id";
+> +	};
+> +
