@@ -1,19 +1,25 @@
-Return-Path: <B32736@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe006.messaging.microsoft.com
- [213.199.154.144])
+Return-Path: <B13201@freescale.com>
+Received: from DB3EHSOBE001.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 889F9B6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Feb 2012 16:36:53 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH 1/2 v3] powerpc/85xx: Add Quicc Engine support for p1025rdb
-Date: Mon, 13 Feb 2012 13:33:27 +0800
-Message-ID: <1329111208-5320-1-git-send-email-B32736@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id CDC3DB6FAB
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2012 16:47:18 +1100 (EST)
+From: Liu Yu-B13201 <B13201@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v3 1/3] KVM: PPC: epapr: Factor out the epapr init
+Date: Mon, 13 Feb 2012 05:47:08 +0000
+Message-ID: <4CA99838F21AB847ACC344051E231709057158DE@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1328868141-17364-1-git-send-email-yu.liu@freescale.com>
+ <4F356477.7010809@freescale.com>
+In-Reply-To: <4F356477.7010809@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhicheng Fan <b32736@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,129 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhicheng Fan <b32736@freescale.com>
-
-Signed-off-by: Zhicheng Fan <b32736@freescale.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   78 ++++++++++++++++++++++++++++-
- 1 files changed, 77 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index e95aef7..c9dfdcc 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -26,6 +26,9 @@
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/mpic.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
-+#include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -47,6 +50,10 @@ void __init mpc85xx_rdb_pic_init(void)
- 	struct mpic *mpic;
- 	unsigned long root = of_get_flat_dt_root();
- 
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
- 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
- 		mpic = mpic_alloc(NULL, 0,
- 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
-@@ -62,6 +69,18 @@ void __init mpc85xx_rdb_pic_init(void)
- 
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+
-+	} else
-+		pr_err("%s: Could not find qe-ic node\n", __func__);
-+#endif
-+
- }
- 
- /*
-@@ -69,7 +88,7 @@ void __init mpc85xx_rdb_pic_init(void)
-  */
- static void __init mpc85xx_rdb_setup_arch(void)
- {
--#ifdef CONFIG_PCI
-+#if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
- 	struct device_node *np;
- #endif
- 
-@@ -85,6 +104,63 @@ static void __init mpc85xx_rdb_setup_arch(void)
- #endif
- 
- 	mpc85xx_smp_init();
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+	if (!np) {
-+		pr_err("%s: Could not find Quicc Engine node\n", __func__);
-+		goto qe_fail;
-+	}
-+
-+	qe_reset();
-+	of_node_put(np);
-+
-+	np = of_find_node_by_name(NULL, "par_io");
-+	if (np) {
-+		struct device_node *ucc;
-+
-+		par_io_init(np);
-+		of_node_put(np);
-+
-+		for_each_node_by_name(ucc, "ucc")
-+			par_io_of_config(ucc);
-+
-+	}
-+	if (machine_is(p1025_rdb)) {
-+
-+		struct ccsr_guts_85xx __iomem *guts;
-+
-+		np = of_find_node_by_name(NULL, "global-utilities");
-+		if (np) {
-+
-+			guts = of_iomap(np, 0);
-+			if (!guts) {
-+
-+				pr_err("mpc85xx-rdb: could not map global utilties register!\n");
-+
-+			} else {
-+#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
-+			/* P1025 has pins muxed for QE and other functions. To
-+			* enable QE UEC mode, we need to set bit QE0 for UCC1
-+			* in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
-+			* and QE12 for QE MII management singals in PMUXCR
-+			* register.
-+			*/
-+				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE0 |
-+						MPC85xx_PMUXCR_QE3 |
-+						MPC85xx_PMUXCR_QE9 |
-+						MPC85xx_PMUXCR_QE12);
-+#endif
-+			}
-+			iounmap(guts);
-+			of_node_put(np);
-+		}
-+
-+	}
-+
-+qe_fail:
-+#endif	/* CONFIG_QUICC_ENGINE */
-+
- 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
- }
- 
--- 
-1.7.0.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogU2F0dXJkYXksIEZlYnJ1YXJ5IDExLCAyMDEyIDI6NDAgQU0NCj4gVG86IExp
+dSBZdS1CMTMyMDENCj4gQ2M6IGFncmFmQHN1c2UuZGU7IGt2bS1wcGNAdmdlci5rZXJuZWwub3Jn
+OyBrdm1Admdlci5rZXJuZWwub3JnOw0KPiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsgV29vZCBT
+Y290dC1CMDc0MjENCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAxLzNdIEtWTTogUFBDOiBlcGFw
+cjogRmFjdG9yIG91dCB0aGUgZXBhcHIgaW5pdA0KPiANCj4gT24gMDIvMTAvMjAxMiAwNDowMiBB
+TSwgTGl1IFl1IHdyb3RlOg0KPiA+IGZyb20gdGhlIGt2bSBndWVzdCBwYXJhdmlydCBpbml0IGNv
+ZGUuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMaXUgWXUgPHl1LmxpdUBmcmVlc2NhbGUuY29t
+Pg0KPiA+IC0tLQ0KPiA+IHYzOg0KPiA+IGFwcGx5IHRoZSBlcGFwciBpbml0IGZvciBhbGwgcHBj
+IHBsYXRmb3JtDQo+ID4NCj4gPiAgYXJjaC9wb3dlcnBjL0tjb25maWcgICAgICAgICAgICAgICAg
+ICAgIHwgICAgNCArKysNCj4gPiAgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2VwYXByX2hjYWxs
+cy5oIHwgICAgOCArKysrKw0KPiA+ICBhcmNoL3Bvd2VycGMva2VybmVsL01ha2VmaWxlICAgICAg
+ICAgICAgfCAgICAxICsNCj4gPiAgYXJjaC9wb3dlcnBjL2tlcm5lbC9lcGFwcl9wYXJhLmMgICAg
+ICAgIHwgICA0Ng0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIGFyY2gv
+cG93ZXJwYy9rZXJuZWwva3ZtLmMgICAgICAgICAgICAgICB8ICAgMTMgKysrLS0tLS0tDQo+ID4g
+IGFyY2gvcG93ZXJwYy9rdm0vS2NvbmZpZyAgICAgICAgICAgICAgICB8ICAgIDEgKw0KPiA+ICA2
+IGZpbGVzIGNoYW5nZWQsIDY0IGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0pICBjcmVhdGUg
+bW9kZSAxMDA2NDQNCj4gPiBhcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX3BhcmEuYw0KPiA+DQo+
+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9LY29uZmlnIGIvYXJjaC9wb3dlcnBjL0tjb25m
+aWcgaW5kZXgNCj4gPiA0NzY4MmI2Li4wMGJkNTA4IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93
+ZXJwYy9LY29uZmlnDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL0tjb25maWcNCj4gPiBAQCAtMTk2
+LDYgKzE5NiwxMCBAQCBjb25maWcgRVBBUFJfQk9PVA0KPiA+ICAJICBVc2VkIHRvIGFsbG93IGEg
+Ym9hcmQgdG8gc3BlY2lmeSBpdCB3YW50cyBhbiBlUEFQUiBjb21wbGlhbnQNCj4gd3JhcHBlci4N
+Cj4gPiAgCWRlZmF1bHQgbg0KPiA+DQo+ID4gK2NvbmZpZyBFUEFQUl9QQVJBDQo+ID4gKwlib29s
+DQo+ID4gKwlkZWZhdWx0IG4NCj4gDQo+IEVQQVBSX1BBUkFWSVJUDQo+IA0KPiA+ICBjb25maWcg
+REVGQVVMVF9VSU1BR0UNCj4gPiAgCWJvb2wNCj4gPiAgCWhlbHANCj4gPiBkaWZmIC0tZ2l0IGEv
+YXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2VwYXByX2hjYWxscy5oDQo+ID4gYi9hcmNoL3Bvd2Vy
+cGMvaW5jbHVkZS9hc20vZXBhcHJfaGNhbGxzLmgNCj4gPiBpbmRleCBmM2IwYzJjLi5jNGI4NmU0
+IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9lcGFwcl9oY2FsbHMu
+aA0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9lcGFwcl9oY2FsbHMuaA0KPiA+
+IEBAIC0xNDgsNiArMTQ4LDE0IEBADQo+ID4gICNkZWZpbmUgRVZfSENBTExfQ0xPQkJFUlMyIEVW
+X0hDQUxMX0NMT0JCRVJTMywgInI1Ig0KPiA+ICAjZGVmaW5lIEVWX0hDQUxMX0NMT0JCRVJTMSBF
+Vl9IQ0FMTF9DTE9CQkVSUzIsICJyNCINCj4gPg0KPiA+ICtleHRlcm4gdTMyICplcGFwcl9oY2Fs
+bF9pbnN0czsNCj4gPiArZXh0ZXJuIGludCBlcGFwcl9oY2FsbF9pbnN0c19sZW47DQo+ID4gKw0K
+PiA+ICtzdGF0aWMgaW5saW5lIHZvaWQgZXBhcHJfZ2V0X2hjYWxsX2luc3RzKHUzMiAqKmluc3Rw
+LCBpbnQgKmxlbnApIHsNCj4gPiArCSppbnN0cCA9IGVwYXByX2hjYWxsX2luc3RzOw0KPiA+ICsJ
+KmxlbnAgPSBlcGFwcl9oY2FsbF9pbnN0c19sZW47DQo+ID4gK30NCj4gDQo+IFdoeSBkbyB3ZSBu
+ZWVkIGEgZnVuY3Rpb24gZm9yIHRoaXM/ICBXaHkgaXMgdGhlIHB1YmxpYyBpbnRlcmZhY2UgYW55
+dGhpbmcNCj4gb3RoZXIgdGhhbiAiaW52b2tlIGEgaHlwZXJjYWxsIj8NCj4gDQo+ID4gK3N0YXRp
+YyBpbnQgX19pbml0IGVwYXByX3BhcmFfaW5pdCh2b2lkKSB7DQo+ID4gKwlzdHJ1Y3QgZGV2aWNl
+X25vZGUgKmh5cGVyX25vZGU7DQo+ID4gKwl1MzIgKmluc3RzOw0KPiA+ICsJaW50IGxlbjsNCj4g
+PiArDQo+ID4gKwloeXBlcl9ub2RlID0gb2ZfZmluZF9ub2RlX2J5X3BhdGgoIi9oeXBlcnZpc29y
+Iik7DQo+ID4gKwlpZiAoIWh5cGVyX25vZGUpDQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4g
+Kw0KPiA+ICsJaW5zdHMgPSAodTMyKilvZl9nZXRfcHJvcGVydHkoaHlwZXJfbm9kZSwgImhjYWxs
+LWluc3RydWN0aW9ucyIsDQo+ID4gKyZsZW4pOw0KPiANCj4gRG8gbm90IGNhc3QgYXdheSB0aGF0
+IGNvbnN0Lg0KPiANCj4gPiBAQCAtNTM1LDE4ICs1MzYsMTIgQEAgRVhQT1JUX1NZTUJPTF9HUEwo
+a3ZtX2h5cGVyY2FsbCk7ICBzdGF0aWMgaW50DQo+ID4ga3ZtX3BhcmFfc2V0dXAodm9pZCkgIHsN
+Cj4gPiAgCWV4dGVybiB1MzIga3ZtX2h5cGVyY2FsbF9zdGFydDsNCj4gPiAtCXN0cnVjdCBkZXZp
+Y2Vfbm9kZSAqaHlwZXJfbm9kZTsNCj4gPiAgCXUzMiAqaW5zdHM7DQo+ID4gIAlpbnQgbGVuLCBp
+Ow0KPiA+DQo+ID4gLQloeXBlcl9ub2RlID0gb2ZfZmluZF9ub2RlX2J5X3BhdGgoIi9oeXBlcnZp
+c29yIik7DQo+ID4gLQlpZiAoIWh5cGVyX25vZGUpDQo+ID4gLQkJcmV0dXJuIC0xOw0KPiA+IC0N
+Cj4gPiAtCWluc3RzID0gKHUzMiopb2ZfZ2V0X3Byb3BlcnR5KGh5cGVyX25vZGUsICJoY2FsbC1p
+bnN0cnVjdGlvbnMiLA0KPiAmbGVuKTsNCj4gPiAtCWlmIChsZW4gJSA0KQ0KPiA+IC0JCXJldHVy
+biAtMTsNCj4gPiAtCWlmIChsZW4gPiAoNCAqIDQpKQ0KPiA+ICsJaW5zdHMgPSBlcGFwcl9oY2Fs
+bF9pbnN0czsNCj4gPiArCWxlbiA9IGVwYXByX2hjYWxsX2luc3RzX2xlbjsNCj4gPiArCWlmIChp
+bnN0cyA9PSBOVUxMKQ0KPiA+ICAJCXJldHVybiAtMTsNCj4gPg0KPiA+ICAJZm9yIChpID0gMDsg
+aSA8IChsZW4gLyA0KTsgaSsrKQ0KPiANCj4gV2h5IGFyZSB5b3Ugc3RpbGwgZG9pbmcgdGhlIHBh
+dGNoaW5nIGluc2lkZSBrdm0uYz8NCj4gDQoNCkRvIHlvdSBtZWFuIHdlIHNob3VsZCBtb3ZlIGt2
+bV9oeXBlcmNhbGxfc3RhcnQoKSBpbnRvIGVwYXByIGJpdD8NCg0KVGhhbmtzLA0KWXUNCg==
