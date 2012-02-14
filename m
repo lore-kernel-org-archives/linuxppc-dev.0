@@ -1,20 +1,42 @@
-Return-Path: <B32736@freescale.com>
-Received: from VA3EHSOBE002.bigfish.com (va3ehsobe004.messaging.microsoft.com
- [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7F5861007D5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 19:10:04 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH 2/2 v4] powerpc/dts: Add dts for p1025rdb board
-Date: Tue, 14 Feb 2012 16:06:23 +0800
-Message-ID: <1329206783-12190-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1329206783-12190-1-git-send-email-B32736@freescale.com>
-References: <1329206783-12190-1-git-send-email-B32736@freescale.com>
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 857001007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 19:17:38 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 14 Feb 2012 13:47:32 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1E8HQIp3829876
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 13:47:26 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1E8HMWI009588
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 19:17:25 +1100
+Message-ID: <4F3A1891.8060001@linux.vnet.ibm.com>
+Date: Tue, 14 Feb 2012 13:47:21 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhicheng Fan <b32736@freescale.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: smp: Start up non-boot CPUs asynchronously
+References: <20120130205444.22f5e26a@infradead.org>
+ <20120131125232.GD4408@elte.hu>	<20120131054155.371e8307@infradead.org>
+ <20120131143130.GF13676@elte.hu>	<20120131072216.1ce78e50@infradead.org>
+ <20120131161207.GA18357@elte.hu> <20120131082439.575978c0@infradead.org>
+In-Reply-To: <20120131082439.575978c0@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mikey@neuling.org,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, gregkh@linuxfoundation.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ arjanvandeven@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,569 +46,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhicheng Fan <b32736@freescale.com>
+On 01/31/2012 09:54 PM, Arjan van de Ven wrote:
 
-P1025RDB Overview
-------------------
-1Gbyte DDR3 SDRAM
-32 Mbyte NAND flash
-16Mbyte NOR flash
-16 Mbyte SPI flash
-SD connector to interface with the SD memory card
-Real-time clock on I2C bus
+> From ee65be59057c920042747d46dc174c5a5a56c744 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Mon, 30 Jan 2012 20:44:51 -0800
+> Subject: [PATCH] smp: Start up non-boot CPUs asynchronously
+> 
+> The starting of the "not first" CPUs actually takes a lot of boot time
+> of the kernel... upto "minutes" on some of the bigger SGI boxes.
+> Right now, this is a fully sequential operation with the rest of the kernel
+> boot.
+> 
+> This patch turns this bringup of the other cpus into an asynchronous operation.
+> With some other changes (not in this patch) this can save significant kernel
+> boot time (upto 40% on my laptop!!).
+> Basically now CPUs could get brought up in parallel to disk enumeration, graphic
+> mode bringup etc etc etc.
+> 
+> Note that the implementation in this patch still waits for all CPUs to
+> be brought up before starting userspace; I would love to remove that
+> restriction over time (technically that is simple), but that becomes
+> then a change in behavior... I'd like to see more discussion on that
+> being a good idea before I write that patch.
+> 
+> Second note on version 2 of the patch:
+> This patch does currently not save any boot time, due to a situation
+> where the cpu hotplug lock gets taken for write by the cpu bringup code,
+> which starves out readers of this lock throughout the kernel.
+> Ingo specifically requested this behavior to expose this lock problem.
+> 
+> CC: Milton Miller <miltonm@bga.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: Ingo Molnar <mingo@elte.hu>
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  kernel/smp.c |   21 ++++++++++++++++++++-
+>  1 files changed, 20 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/smp.c b/kernel/smp.c
+> index db197d6..ea48418 100644
+> --- a/kernel/smp.c
+> +++ b/kernel/smp.c
+> @@ -12,6 +12,8 @@
+>  #include <linux/gfp.h>
+>  #include <linux/smp.h>
+>  #include <linux/cpu.h>
+> +#include <linux/async.h>
+> +#include <linux/delay.h>
+> 
+>  #ifdef CONFIG_USE_GENERIC_SMP_HELPERS
+>  static struct {
+> @@ -664,17 +666,34 @@ void __init setup_nr_cpu_ids(void)
+>  	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
+>  }
+> 
+> +void __init async_cpu_up(void *data, async_cookie_t cookie)
+> +{
+> +	unsigned long nr = (unsigned long) data;
+> +	/*
+> +	 * we can only up one cpu at a time, as enforced by the hotplug
+> +	 * lock; it's better to wait for all earlier CPUs to be done before
+> +	 * we bring up ours, so that the bring up order is predictable.
+> +	 */
+> +	async_synchronize_cookie(cookie);
+> +	cpu_up(nr);
+> +}
+> +
+>  /* Called by boot processor to activate the rest. */
+>  void __init smp_init(void)
+>  {
+>  	unsigned int cpu;
+> 
+>  	/* FIXME: This should be done in userspace --RR */
+> +
+> +	/*
+> +	 * But until we do this in userspace, we're going to do this
+> +	 * in parallel to the rest of the kernel boot up.-- Arjan
+> +	 */
+>  	for_each_present_cpu(cpu) {
+>  		if (num_online_cpus() >= setup_max_cpus)
+>  			break;
+>  		if (!cpu_online(cpu))
+> -			cpu_up(cpu);
+> +			async_schedule(async_cpu_up, (void *) cpu);
+>  	}
+> 
+>  	/* Any cleanup work */
 
-PCIe:
-- x1 PCIe slot
-- x1 mini-PCIe slot
 
-10/100/1000 BaseT Ethernet ports:
-- eTSEC1, RGMII: one 10/100/1000 port using AtherosTM AR8021
-- eTSEC2, SGMII: one 10/100/1000 port using VitesseTM VSC8221
-- eTSEC3, RGMII: one 10/100/1000 port using AtherosTM AR8021
+If I understand correctly, with this patch, the booting of non-boot CPUs
+will happen in parallel with the rest of the kernel boot, but bringing up
+of individual CPU is still serialized (due to hotplug lock).
 
-USB 2.0 port:
-- Two USB2.0 Type A receptacles
-- One USB2.0 signal to Mini PCIe slot
+If that is correct, I see several issues with this patch:
 
-Dual RJ45 UART ports:
-- DUART interface: supports two UARTs up to 115200 bps for console display
+1. In smp_init(), after the comment "Any cleanup work" (see above), we print:
+printk(KERN_INFO "Brought up %ld CPUs\n", (long)num_online_cpus());
+So this can potentially print less than expected number of CPUs and might
+surprise users.
 
-Signed-off-by: Zhicheng Fan <b32736@freescale.com>
----
- arch/powerpc/boot/dts/p1025rdb.dtsi    |  286 ++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1025rdb_32b.dts |  135 +++++++++++++++
- arch/powerpc/boot/dts/p1025rdb_36b.dts |   88 ++++++++++
- 3 files changed, 509 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1025rdb.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1025rdb_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1025rdb_36b.dts
+2. Just below that we have smp_cpus_done(setup_max_cpus); and this translates
+to native_smp_cpus_done() under x86, which calls impress_friends().
+And that means, the bogosum calculation and the total activated processor
+count which is printed, may get messed up.
 
-diff --git a/arch/powerpc/boot/dts/p1025rdb.dtsi b/arch/powerpc/boot/dts/p1025rdb.dtsi
-new file mode 100644
-index 0000000..cf3676f
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1025rdb.dtsi
-@@ -0,0 +1,286 @@
-+/*
-+ * P1025 RDB Device Tree Source stub (no addresses or top-level ranges)
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&lbc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x1000000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 256KB for Vitesse 7385 Switch firmware */
-+			reg = <0x0 0x00040000>;
-+			label = "NOR Vitesse-7385 Firmware";
-+			read-only;
-+		};
-+
-+		partition@40000 {
-+			/* 256KB for DTB Image */
-+			reg = <0x00040000 0x00040000>;
-+			label = "NOR DTB Image";
-+		};
-+
-+		partition@80000 {
-+			/* 3.5 MB for Linux Kernel Image */
-+			reg = <0x00080000 0x00380000>;
-+			label = "NOR Linux Kernel Image";
-+		};
-+
-+		partition@400000 {
-+			/* 11MB for JFFS2 based Root file System */
-+			reg = <0x00400000 0x00b00000>;
-+			label = "NOR JFFS2 Root File System";
-+		};
-+
-+		partition@f00000 {
-+			/* This location must not be altered  */
-+			/* 512KB for u-boot Bootloader Image */
-+			/* 512KB for u-boot Environment Variables */
-+			reg = <0x00f00000 0x00100000>;
-+			label = "NOR U-Boot Image";
-+			read-only;
-+		};
-+	};
-+
-+	nand@1,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,p1025-fcm-nand",
-+			     "fsl,elbc-fcm-nand";
-+		reg = <0x1 0x0 0x40000>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 1MB for u-boot Bootloader Image */
-+			reg = <0x0 0x00100000>;
-+			label = "NAND U-Boot Image";
-+			read-only;
-+		};
-+
-+		partition@100000 {
-+			/* 1MB for DTB Image */
-+			reg = <0x00100000 0x00100000>;
-+			label = "NAND DTB Image";
-+		};
-+
-+		partition@200000 {
-+			/* 4MB for Linux Kernel Image */
-+			reg = <0x00200000 0x00400000>;
-+			label = "NAND Linux Kernel Image";
-+		};
-+
-+		partition@600000 {
-+			/* 4MB for Compressed Root file System Image */
-+			reg = <0x00600000 0x00400000>;
-+			label = "NAND Compressed RFS Image";
-+		};
-+
-+		partition@a00000 {
-+			/* 7MB for JFFS2 based Root file System */
-+			reg = <0x00a00000 0x00700000>;
-+			label = "NAND JFFS2 Root File System";
-+		};
-+
-+		partition@1100000 {
-+			/* 15MB for JFFS2 based Root file System */
-+			reg = <0x01100000 0x00f00000>;
-+			label = "NAND Writable User area";
-+		};
-+	};
-+
-+};
-+
-+&soc {
-+	i2c@3000 {
-+		rtc@68 {
-+			compatible = "dallas,ds1339";
-+			reg = <0x68>;
-+		};
-+	};
-+
-+	spi@7000 {
-+		flash@0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "spansion,s25sl12801";
-+			reg = <0>;
-+			spi-max-frequency = <40000000>; /* input clock */
-+
-+			partition@u-boot {
-+				/* 512KB for u-boot Bootloader Image */
-+				reg = <0x0 0x00080000>;
-+				label = "u-boot";
-+				read-only;
-+			};
-+
-+			partition@dtb {
-+				/* 512KB for DTB Image */
-+				reg = <0x00080000 0x00080000>;
-+				label = "dtb";
-+			};
-+
-+			partition@kernel {
-+				/* 4MB for Linux Kernel Image */
-+				reg = <0x00100000 0x00400000>;
-+				label = "kernel";
-+			};
-+
-+			partition@fs {
-+				/* 4MB for Compressed RFS Image */
-+				reg = <0x00500000 0x00400000>;
-+				label = "file system";
-+			};
-+
-+			partition@jffs-fs {
-+				/* 7MB for JFFS2 based RFS */
-+				reg = <0x00900000 0x00700000>;
-+				label = "file system jffs2";
-+			};
-+		};
-+	};
-+
-+	usb@22000 {
-+		phy_type = "ulpi";
-+	};
-+
-+	/* USB2 is shared with localbus, so it must be disabled
-+	   by default. We can't put 'status = "disabled";' here
-+	   since U-Boot doesn't clear the status property when
-+	   it enables USB2. OTOH, U-Boot does create a new node
-+	   when there isn't any. So, just comment it out.
-+	usb@23000 {
-+		phy_type = "ulpi";
-+	};
-+	*/
-+
-+	mdio@24000 {
-+		phy0: ethernet-phy@0 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <3 1>;
-+			reg = <0x0>;
-+		};
-+
-+		phy1: ethernet-phy@1 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 1>;
-+			reg = <0x1>;
-+		};
-+
-+		tbi0: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@25000 {
-+		tbi1: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@26000 {
-+		tbi2: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet0: ethernet@b0000 {
-+		fixed-link = <1 1 1000 0 0>;
-+		phy-connection-type = "rgmii-id";
-+
-+	};
-+
-+	enet1: ethernet@b1000 {
-+		phy-handle = <&phy0>;
-+		tbi-handle = <&tbi1>;
-+		phy-connection-type = "sgmii";
-+	};
-+
-+	enet2: ethernet@b2000 {
-+		phy-handle = <&phy1>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	par_io@e0100 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		reg = <0xe0100 0x60>;
-+		ranges = <0x0 0xe0100 0x60>;
-+		device_type = "par_io";
-+		num-ports = <3>;
-+		pio1: ucc_pin@01 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x13 0x1  0x0  0x1  0x0    /* QE_MUX_MDC */
-+				0x1  0x14 0x3  0x0  0x1  0x0    /* QE_MUX_MDIO */
-+				0x0  0x17 0x2  0x0  0x2  0x0    /* CLK12 */
-+				0x0  0x18 0x2  0x0  0x1  0x0    /* CLK9 */
-+				0x0  0x7  0x1  0x0  0x2  0x0    /* ENET1_TXD0_SER1_TXD0 */
-+				0x0  0x9  0x1  0x0  0x2  0x0    /* ENET1_TXD1_SER1_TXD1 */
-+				0x0  0xb  0x1  0x0  0x2  0x0    /* ENET1_TXD2_SER1_TXD2 */
-+				0x0  0xc  0x1  0x0  0x2  0x0    /* ENET1_TXD3_SER1_TXD3 */
-+				0x0  0x6  0x2  0x0  0x2  0x0    /* ENET1_RXD0_SER1_RXD0 */
-+				0x0  0xa  0x2  0x0  0x2  0x0    /* ENET1_RXD1_SER1_RXD1 */
-+				0x0  0xe  0x2  0x0  0x2  0x0    /* ENET1_RXD2_SER1_RXD2 */
-+				0x0  0xf  0x2  0x0  0x2  0x0    /* ENET1_RXD3_SER1_RXD3 */
-+				0x0  0x5  0x1  0x0  0x2  0x0    /* ENET1_TX_EN_SER1_RTS_B */
-+				0x0  0xd  0x1  0x0  0x2  0x0    /* ENET1_TX_ER */
-+				0x0  0x4  0x2  0x0  0x2  0x0    /* ENET1_RX_DV_SER1_CTS_B */
-+				0x0  0x8  0x2  0x0  0x2  0x0    /* ENET1_RX_ER_SER1_CD_B */
-+				0x0  0x11 0x2  0x0  0x2  0x0    /* ENET1_CRS */
-+				0x0  0x10 0x2  0x0  0x2  0x0>;    /* ENET1_COL */
-+		};
-+
-+		pio2: ucc_pin@02 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x13 0x1  0x0  0x1  0x0    /* QE_MUX_MDC */
-+				0x1  0x14 0x3  0x0  0x1  0x0    /* QE_MUX_MDIO */
-+				0x1  0xb  0x2  0x0  0x1  0x0    /* CLK13 */
-+				0x1  0x7  0x1  0x0  0x2  0x0    /* ENET5_TXD0_SER5_TXD0 */
-+				0x1  0xa  0x1  0x0  0x2  0x0    /* ENET5_TXD1_SER5_TXD1 */
-+				0x1  0x6  0x2  0x0  0x2  0x0    /* ENET5_RXD0_SER5_RXD0 */
-+				0x1  0x9  0x2  0x0  0x2  0x0    /* ENET5_RXD1_SER5_RXD1 */
-+				0x1  0x5  0x1  0x0  0x2  0x0    /* ENET5_TX_EN_SER5_RTS_B */
-+				0x1  0x4  0x2  0x0  0x2  0x0    /* ENET5_RX_DV_SER5_CTS_B */
-+				0x1  0x8  0x2  0x0  0x2  0x0>;    /* ENET5_RX_ER_SER5_CD_B */
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p1025rdb_32b.dts b/arch/powerpc/boot/dts/p1025rdb_32b.dts
-new file mode 100644
-index 0000000..ac5729c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1025rdb_32b.dts
-@@ -0,0 +1,135 @@
-+/*
-+ * P1025 RDB Device Tree Source (32-bit address map)
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1021si-pre.dtsi"
-+/ {
-+	model = "fsl,P1025RDB";
-+	compatible = "fsl,P1025RDB";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@ffe05000 {
-+		reg = <0 0xffe05000 0 0x1000>;
-+
-+		/* NOR, NAND Flashes */
-+		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
-+			  0x1 0x0 0x0 0xff800000 0x00040000>;
-+	};
-+
-+	soc: soc@ffe00000 {
-+		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		ranges = <0x2000000 0x0 0xe0000000 0 0xe0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
-+		reg = <0 0xffe09000 0 0x1000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		reg = <0 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0 0xe0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	qe: qe@ffe80000 {
-+		ranges = <0x0 0x0 0xffe80000 0x40000>;
-+		reg = <0 0xffe80000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+		status = "disabled"; /* no firmware loaded */
-+
-+		enet3: ucc@2000 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			rx-clock-name = "clk12";
-+			tx-clock-name = "clk9";
-+			pio-handle = <&pio1>;
-+			phy-handle = <&qe_phy0>;
-+			phy-connection-type = "mii";
-+		};
-+
-+		mdio@2120 {
-+			qe_phy0: ethernet-phy@0 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <4 1 0 0>;
-+				reg = <0x6>;
-+				device_type = "ethernet-phy";
-+			};
-+			qe_phy1: ethernet-phy@03 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <5 1 0 0>;
-+				reg = <0x3>;
-+				device_type = "ethernet-phy";
-+			};
-+			tbi-phy@11 {
-+				reg = <0x11>;
-+				device_type = "tbi-phy";
-+			};
-+		};
-+
-+		enet4: ucc@2400 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			rx-clock-name = "none";
-+			tx-clock-name = "clk13";
-+			pio-handle = <&pio2>;
-+			phy-handle = <&qe_phy1>;
-+			phy-connection-type = "rmii";
-+		};
-+	};
-+};
-+
-+/include/ "p1025rdb.dtsi"
-+/include/ "fsl/p1021si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1025rdb_36b.dts b/arch/powerpc/boot/dts/p1025rdb_36b.dts
-new file mode 100644
-index 0000000..4ce4bfa
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1025rdb_36b.dts
-@@ -0,0 +1,88 @@
-+/*
-+ * P1025 RDB Device Tree Source (36-bit address map)
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1021si-pre.dtsi"
-+/ {
-+	model = "fsl,P1025RDB";
-+	compatible = "fsl,P1025RDB";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@fffe05000 {
-+		reg = <0xf 0xffe05000 0 0x1000>;
-+
-+		/* NOR, NAND Flashes */
-+		ranges = <0x0 0x0 0xf 0xef000000 0x01000000
-+			  0x1 0x0 0xf 0xff800000 0x00040000>;
-+	};
-+
-+	soc: soc@fffe00000 {
-+		ranges = <0x0 0xf 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@fffe09000 {
-+		reg = <0xf 0xffe09000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xe 0x20000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@fffe0a000 {
-+		reg = <0xf 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "p1025rdb.dtsi"
-+/include/ "fsl/p1021si-post.dtsi"
--- 
-1.7.0.4
+3. sched_init_smp() is called immediately after smp_init(). And that calls
+init_sched_domains(cpu_active_mask). Of course, it registers a hotplug
+notifier callback to handle hot-added cpus.. but with this patch, boot up can
+actually become unnecessarily slow at this point - what could have been done
+in one go with an appropriately filled up cpu_active_mask, needs to be done
+again and again using notifier callbacks. IOW, building sched domains can
+potentially become a bottleneck, especially if there are lots and lots of
+cpus in the machine.
+
+4. There is an unhandled race condition (tiny window) in sched_init_smp():
+
+get_online_cpus();
+...
+init_sched_domains(cpu_active_mask);
+...
+put_online_cpus();
+                                           <<<<<<<<<<<<<<<<<<<<<<<< There!
+
+hotcpu_notifier(cpuset_cpu_active, CPU_PRI_CPUSET_ACTIVE);
+hotcpu_notifier(cpuset_cpu_inactive, CPU_PRI_CPUSET_INACTIVE);
+
+At the point shown above, some non-boot cpus can get booted up, without
+being noticed by the scheduler.
+
+5. And in powerpc, it creates a new race condition, as explained in
+https://lkml.org/lkml/2012/2/13/383
+(Of course, we can fix it trivially by using get/put_online_cpus().)
+
+There could be many more things that this patch breaks.. I haven't checked
+thoroughly.
+
+Regards,
+Srivatsa S. Bhat
