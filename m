@@ -1,14 +1,44 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 67B4A1007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 06:33:16 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Wed, 15 Feb 2012 01:03:13 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1EJWYYG3776622
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 01:02:35 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1EJWWuV001643
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 01:02:34 +0530
+Message-ID: <4F3AB6CA.5090808@linux.vnet.ibm.com>
+Date: Wed, 15 Feb 2012 01:02:26 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] of: Only compile OF_DYNAMIC on PowerPC pseries and iseries
-Date: Tue, 14 Feb 2012 10:25:30 -0700
-Message-Id: <1329240330-3539-1-git-send-email-grant.likely@secretlab.ca>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Rob Herring <rob.herring@calxeda.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: smp: Start up non-boot CPUs asynchronously
+References: <20120130205444.22f5e26a@infradead.org>
+ <20120131125232.GD4408@elte.hu>	<20120131054155.371e8307@infradead.org>
+ <20120131143130.GF13676@elte.hu>	<20120131072216.1ce78e50@infradead.org>
+ <20120131161207.GA18357@elte.hu> <20120131082439.575978c0@infradead.org>
+ <4F3A1891.8060001@linux.vnet.ibm.com> <4F3A2DFB.5000209@linux.vnet.ibm.com>
+In-Reply-To: <4F3A2DFB.5000209@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mikey@neuling.org,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, gregkh@linuxfoundation.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ arjanvandeven@gmail.com, Ingo Molnar <mingo@elte.hu>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,118 +48,225 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only two architectures use the OF node reference counting and reclaim bits.
-There is no need to compile it for the rest of the PowerPC platforms or for
-any of the other architectures.  This patch makes iseries and pseries
-select CONFIG_OF_DYNAMIC, and makes it default to off for everything else.
+On 02/14/2012 03:18 PM, Srivatsa S. Bhat wrote:
 
-It is still safe to turn on CONFIG_OF_DYNAMIC on all architectures, it just
-isn't necessary.
+> On 02/14/2012 01:47 PM, Srivatsa S. Bhat wrote:
+> 
+>> On 01/31/2012 09:54 PM, Arjan van de Ven wrote:
+>>
+>>> From ee65be59057c920042747d46dc174c5a5a56c744 Mon Sep 17 00:00:00 2001
+>>> From: Arjan van de Ven <arjan@linux.intel.com>
+>>> Date: Mon, 30 Jan 2012 20:44:51 -0800
+>>> Subject: [PATCH] smp: Start up non-boot CPUs asynchronously
+>>>
+>>> The starting of the "not first" CPUs actually takes a lot of boot time
+>>> of the kernel... upto "minutes" on some of the bigger SGI boxes.
+>>> Right now, this is a fully sequential operation with the rest of the kernel
+>>> boot.
+>>>
+>>> This patch turns this bringup of the other cpus into an asynchronous operation.
+>>> With some other changes (not in this patch) this can save significant kernel
+>>> boot time (upto 40% on my laptop!!).
+>>> Basically now CPUs could get brought up in parallel to disk enumeration, graphic
+>>> mode bringup etc etc etc.
+>>>
+>>> Note that the implementation in this patch still waits for all CPUs to
+>>> be brought up before starting userspace; I would love to remove that
+>>> restriction over time (technically that is simple), but that becomes
+>>> then a change in behavior... I'd like to see more discussion on that
+>>> being a good idea before I write that patch.
+>>>
+>>> Second note on version 2 of the patch:
+>>> This patch does currently not save any boot time, due to a situation
+>>> where the cpu hotplug lock gets taken for write by the cpu bringup code,
+>>> which starves out readers of this lock throughout the kernel.
+>>> Ingo specifically requested this behavior to expose this lock problem.
+>>>
+>>> CC: Milton Miller <miltonm@bga.com>
+>>> CC: Andrew Morton <akpm@linux-foundation.org>
+>>> CC: Ingo Molnar <mingo@elte.hu>
+>>>
+>>> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+>>> ---
+>>>  kernel/smp.c |   21 ++++++++++++++++++++-
+>>>  1 files changed, 20 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/kernel/smp.c b/kernel/smp.c
+>>> index db197d6..ea48418 100644
+>>> --- a/kernel/smp.c
+>>> +++ b/kernel/smp.c
+>>> @@ -12,6 +12,8 @@
+>>>  #include <linux/gfp.h>
+>>>  #include <linux/smp.h>
+>>>  #include <linux/cpu.h>
+>>> +#include <linux/async.h>
+>>> +#include <linux/delay.h>
+>>>
+>>>  #ifdef CONFIG_USE_GENERIC_SMP_HELPERS
+>>>  static struct {
+>>> @@ -664,17 +666,34 @@ void __init setup_nr_cpu_ids(void)
+>>>  	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
+>>>  }
+>>>
+>>> +void __init async_cpu_up(void *data, async_cookie_t cookie)
+>>> +{
+>>> +	unsigned long nr = (unsigned long) data;
+>>> +	/*
+>>> +	 * we can only up one cpu at a time, as enforced by the hotplug
+>>> +	 * lock; it's better to wait for all earlier CPUs to be done before
+>>> +	 * we bring up ours, so that the bring up order is predictable.
+>>> +	 */
+>>> +	async_synchronize_cookie(cookie);
+>>> +	cpu_up(nr);
+>>> +}
+>>> +
+>>>  /* Called by boot processor to activate the rest. */
+>>>  void __init smp_init(void)
+>>>  {
+>>>  	unsigned int cpu;
+>>>
+>>>  	/* FIXME: This should be done in userspace --RR */
+>>> +
+>>> +	/*
+>>> +	 * But until we do this in userspace, we're going to do this
+>>> +	 * in parallel to the rest of the kernel boot up.-- Arjan
+>>> +	 */
+>>>  	for_each_present_cpu(cpu) {
+>>>  		if (num_online_cpus() >= setup_max_cpus)
+>>>  			break;
+>>>  		if (!cpu_online(cpu))
+>>> -			cpu_up(cpu);
+>>> +			async_schedule(async_cpu_up, (void *) cpu);
+>>>  	}
+>>>
+>>>  	/* Any cleanup work */
+>>
+>>
+>> If I understand correctly, with this patch, the booting of non-boot CPUs
+>> will happen in parallel with the rest of the kernel boot, but bringing up
+>> of individual CPU is still serialized (due to hotplug lock).
+>>
+>> If that is correct, I see several issues with this patch:
+>>
+>> 1. In smp_init(), after the comment "Any cleanup work" (see above), we print:
+>> printk(KERN_INFO "Brought up %ld CPUs\n", (long)num_online_cpus());
+>> So this can potentially print less than expected number of CPUs and might
+>> surprise users.
+>>
+>> 2. Just below that we have smp_cpus_done(setup_max_cpus); and this translates
+>> to native_smp_cpus_done() under x86, which calls impress_friends().
+>> And that means, the bogosum calculation and the total activated processor
+>> count which is printed, may get messed up.
+>>
+>> 3. sched_init_smp() is called immediately after smp_init(). And that calls
+>> init_sched_domains(cpu_active_mask). Of course, it registers a hotplug
+>> notifier callback to handle hot-added cpus.. but with this patch, boot up can
+>> actually become unnecessarily slow at this point - what could have been done
+>> in one go with an appropriately filled up cpu_active_mask, needs to be done
+>> again and again using notifier callbacks. IOW, building sched domains can
+>> potentially become a bottleneck, especially if there are lots and lots of
+>> cpus in the machine.
+>>
+>> 4. There is an unhandled race condition (tiny window) in sched_init_smp():
+>>
+>> get_online_cpus();
+>> ...
+>> init_sched_domains(cpu_active_mask);
+>> ...
+>> put_online_cpus();
+>>                                            <<<<<<<<<<<<<<<<<<<<<<<< There!
+>>
+>> hotcpu_notifier(cpuset_cpu_active, CPU_PRI_CPUSET_ACTIVE);
+>> hotcpu_notifier(cpuset_cpu_inactive, CPU_PRI_CPUSET_INACTIVE);
+>>
+>> At the point shown above, some non-boot cpus can get booted up, without
+>> being noticed by the scheduler.
+>>
+>> 5. And in powerpc, it creates a new race condition, as explained in
+>> https://lkml.org/lkml/2012/2/13/383
+>> (Of course, we can fix it trivially by using get/put_online_cpus().)
+>>
+> 
+> 
+> Actually, this one is trickier than that, to get it perfectly right.
+> [see point 8 below].
+> 
+> 6. I also observed that in powerpc, a distinction is made implicitly between
+> a cpu booting for the first time vs a soft CPU online event. That is, for
+> freshly booted cpus, the following 3 functions are called:
+> (Refer arch/powerpc/kernel/sysfs.c: topology_init)
+> 
+> 	register_cpu(c, cpu);
+> 	device_create_file(&c->dev, &dev_attr_physical_id);
+> 	register_cpu_online(cpu);
+> 
+> However, for a soft CPU Online event, only the last function is called.
+> (And that looks correct because it matches properly with what is done
+> upon CPU offline - only unregister_cpu_online() is called).
+> 
+> IOW, with this patch it becomes necessary to carefully examine all code
+> with such implicit assumptions and modify them to handle the async boot up
+> properly.
+> 
+> 7. And whichever code between smp_init() and async_synchronize_full() didn't
+> care about CPU hotplug till today but depended on all cpus being online must
+> suddenly start worrying about CPU Hotplug. They must register a cpu notifier
+> and handle callbacks etc etc.. Or if they are not worth that complexity, they
+> should atleast be redesigned or moved around - like the print statements that
+> tell how many cpus came up, for example.
+> 
+> 8. And we should provide a way in which a piece of code can easily "catch" all
+> CPU_ONLINE/UP_PREPARE events without missing any of them due to race
+> conditions. Of course register_cpu_notifier() and friends are provided for
+> that purpose, but they can't be used as it is in this boot up code..
+> And calling register_cpu_notifier() within get/put_online_cpus() would be a
+> disaster since that could lead to ABBA deadlock between cpu_add_remove_lock
+> and cpu_hotplug.lock
+> 
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Rob Herring <rob.herring@calxeda.com>
----
- arch/powerpc/platforms/iseries/Kconfig |    1 +
- arch/powerpc/platforms/pseries/Kconfig |    1 +
- drivers/of/Kconfig                     |    5 +++--
- drivers/of/base.c                      |    4 ++--
- include/linux/of.h                     |   14 ++++++--------
- 5 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
-index b57cda3..63835e0 100644
---- a/arch/powerpc/platforms/iseries/Kconfig
-+++ b/arch/powerpc/platforms/iseries/Kconfig
-@@ -1,6 +1,7 @@
- config PPC_ISERIES
- 	bool "IBM Legacy iSeries"
- 	depends on PPC64 && PPC_BOOK3S
-+	select OF_DYNAMIC
- 	select PPC_SMP_MUXED_IPI
- 	select PPC_INDIRECT_PIO
- 	select PPC_INDIRECT_MMIO
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 31f22c1..f255625 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -3,6 +3,7 @@ config PPC_PSERIES
- 	bool "IBM pSeries & new (POWER5-based) iSeries"
- 	select HAVE_PCSPKR_PLATFORM
- 	select MPIC
-+	select OF_DYNAMIC
- 	select PCI_MSI
- 	select PPC_XICS
- 	select PPC_ICP_NATIVE
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index 268163d..6ea51dc 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -35,9 +35,10 @@ config OF_EARLY_FLATTREE
- config OF_PROMTREE
- 	bool
+9. With this patch, the second statement below in Documentation/cpu-hotplug.txt
+won't be true anymore:
+
+Init functions could be of two types:
+1. early init (init function called when only the boot processor is online).
+2. late init (init function called _after_ all the CPUs are online).
+
+And hence, those parts of the code which depend on this will have to be revisited.
+
+10. Further down, in Documentation/cpu-hotplug.txt, we see:
+(referring to early init as first case and late init as second case)
+
+"For the first case, you should add the following to your init function
+
+        register_cpu_notifier(&foobar_cpu_notifier);
+
+For the second case, you should add the following to your init function
+
+        register_hotcpu_notifier(&foobar_cpu_notifier); "
+
+And as of now, hotcpu notifiers are nothing but regular cpu notifiers.
+I wonder why do we even have something called hotcpu notifiers, when they do
+nothing different.. rather, the distinction between "hotcpu add" vs "just
+normal booting" was implicitly handled by choosing when we register our
+callbacks:
+register at early init => "normal booting" + "hotcpu, including soft online"
+register at late init => "hotcpu, including soft online"
+
+So, earlier we had some control over which CPU hotplug events we wanted to be
+notified of, by choosing when we register the notifiers. But with this patch,
+"careful placement" of our callback registration doesn't make any difference
+anymore because late initcalls could run in parallel with smp boot up...
+
+The point I am making is, what was already bad with respect to callback
+registration, is made even worse by this patch.
+(Btw, this issue is in the light of point 6 above).
+
+>> There could be many more things that this patch breaks.. I haven't checked
+>> thoroughly.
+>>
+
+
  
-+# Hardly any platforms need this.  It is safe to select, but only do so if you
-+# need it.
- config OF_DYNAMIC
--	def_bool y
--	depends on PPC_OF
-+	bool
- 
- config OF_ADDRESS
- 	def_bool y
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 133908a..df6da08 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -88,7 +88,7 @@ int of_n_size_cells(struct device_node *np)
- }
- EXPORT_SYMBOL(of_n_size_cells);
- 
--#if !defined(CONFIG_SPARC)   /* SPARC doesn't do ref counting (yet) */
-+#if defined(CONFIG_OF_DYNAMIC)
- /**
-  *	of_node_get - Increment refcount of a node
-  *	@node:	Node to inc refcount, NULL is supported to
-@@ -161,7 +161,7 @@ void of_node_put(struct device_node *node)
- 		kref_put(&node->kref, of_node_release);
- }
- EXPORT_SYMBOL(of_node_put);
--#endif /* !CONFIG_SPARC */
-+#endif /* CONFIG_OF_DYNAMIC */
- 
- struct property *of_find_property(const struct device_node *np,
- 				  const char *name,
-diff --git a/include/linux/of.h b/include/linux/of.h
-index a75a831..b6ff1f7 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -72,19 +72,17 @@ struct of_phandle_args {
- 	uint32_t args[MAX_PHANDLE_ARGS];
- };
- 
--#if defined(CONFIG_SPARC) || !defined(CONFIG_OF)
-+#ifdef CONFIG_OF_DYNAMIC
-+extern struct device_node *of_node_get(struct device_node *node);
-+extern void of_node_put(struct device_node *node);
-+#else /* CONFIG_OF_DYNAMIC */
- /* Dummy ref counting routines - to be implemented later */
- static inline struct device_node *of_node_get(struct device_node *node)
- {
- 	return node;
- }
--static inline void of_node_put(struct device_node *node)
--{
--}
--#else
--extern struct device_node *of_node_get(struct device_node *node);
--extern void of_node_put(struct device_node *node);
--#endif
-+static inline void of_node_put(struct device_node *node) { }
-+#endif /* !CONFIG_OF_DYNAMIC */
- 
- #ifdef CONFIG_OF
- 
--- 
-1.7.9
+Regards,
+Srivatsa S. Bhat
