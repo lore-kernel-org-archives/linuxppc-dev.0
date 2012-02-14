@@ -1,33 +1,33 @@
-Return-Path: <arjan@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id B734FB6FEB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 08:03:21 +1100 (EST)
-Message-ID: <4F3ACC02.9020003@linux.intel.com>
-Date: Tue, 14 Feb 2012 13:02:58 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-MIME-Version: 1.0
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0B8BDB6FE0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 08:29:15 +1100 (EST)
+Message-ID: <1329254900.3772.10.camel@pasglop>
 Subject: Re: smp: Start up non-boot CPUs asynchronously
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Date: Wed, 15 Feb 2012 08:28:20 +1100
+In-Reply-To: <4F3A2DFB.5000209@linux.vnet.ibm.com>
 References: <20120130205444.22f5e26a@infradead.org>
  <20120131125232.GD4408@elte.hu>	<20120131054155.371e8307@infradead.org>
  <20120131143130.GF13676@elte.hu>	<20120131072216.1ce78e50@infradead.org>
- <20120131161207.GA18357@elte.hu>	<20120131082439.575978c0@infradead.org>
- <4F3A1891.8060001@linux.vnet.ibm.com>	<4F3A2DFB.5000209@linux.vnet.ibm.com>
- <CADyApD0o4UYsTkqf2H2yJZ-d05NAyRAEc6z+m1gJEogc=cZLqQ@mail.gmail.com>
- <4F3ABCC1.5020000@linux.vnet.ibm.com>
-In-Reply-To: <4F3ABCC1.5020000@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ <20120131161207.GA18357@elte.hu> <20120131082439.575978c0@infradead.org>
+ <4F3A1891.8060001@linux.vnet.ibm.com> <4F3A2DFB.5000209@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mikey@neuling.org,
  Peter Zijlstra <a.p.zijlstra@chello.nl>, gregkh@linuxfoundation.org,
- Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
  Milton Miller <miltonm@bga.com>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjanvandeven@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Andrew Morton <akpm@linux-foundation.org>,
- Arjan van de Ven <arjan@infradead.org>
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, arjanvandeven@gmail.com,
+ Ingo Molnar <mingo@elte.hu>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,29 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/14/2012 11:57 AM, Srivatsa S. Bhat wrote:
+On Tue, 2012-02-14 at 15:18 +0530, Srivatsa S. Bhat wrote:
 
->> In addition to this, the reality is that the whole "bring cpus up"
->> sequence needs to be changed; the current one is very messy and requires
->> the hotplug lock for the whole bring up of each individual cpu... which
->> is a very unfortunate design; a much better design would be to only take
->> the lock for the actual registration of the newly brought up CPU to the
->> kernel, while running the physical bringup without the global lock.
->> If/when that change gets made, we can do the physical bring up in
->> parallel (with each other, but also with the rest of the kernel boot),
->> and do the registration en-mass at some convenient time in the boot,
->> potentially late.
->>
-> 
-> 
-> Sounds like a good idea, but how will we take care of CPU_UP_PREPARE and
-> CPU_STARTING callbacks then? Because, CPU_UP_PREPARE callbacks are run
-> before bringing up the cpu and CPU_STARTING is called from the cpu that is
-> coming up. Also, CPU_UP_PREPARE callbacks can be failed, which can lead
-> to that particular cpu boot getting aborted. With the "late commissioning
-> of CPUs" idea you proposed above, retaining such semantics could become
-> very challenging.
+> > 2. Just below that we have smp_cpus_done(setup_max_cpus); and this translates
+> > to native_smp_cpus_done() under x86, which calls impress_friends().
+> > And that means, the bogosum calculation and the total activated processor
+> > count which is printed, may get messed up.
 
-some of these callbacks may need to be redesigned as well; or at least,
-we may need to decouple the "physical" state of the CPU that's getting
-brought up from the "logical" OS visible one.
+We also have code on powerpc that relies on the bringup having been
+completed in smp_cpus_done(), especially on platforms that don't support
+CPU hotplug (or fake it using sleep loops).
+
+In some case we unmap MMIO space or close access to components (i2c for
+example) that we use during the bringup for things like hard synchro of
+CPU timebases, etc... on some G5s we disable the elastic interface on
+the northbridge for CPUs that weren't brought up, that sort of thing...
+
+So this patch will break a LOT of stuff for us, it must at least be a
+config option for now, until we find another way to fix these things.
+
+Cheers,
+Ben.
