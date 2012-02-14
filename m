@@ -2,18 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 51E42B6FD1
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2012 17:21:09 +1100 (EST)
-Message-ID: <1329200460.3772.1.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
+ by ozlabs.org (Postfix) with ESMTPS id 9A3B6B6FD6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 17:42:29 +1100 (EST)
+Message-ID: <1329201738.3772.3.camel@pasglop>
+Subject: [PATCH] powerpc: Disable interrupts early in Program Check
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 14 Feb 2012 17:21:00 +1100
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 14 Feb 2012 17:42:18 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Anton Blanchard <anton@au1.ibm.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Program Check exceptions are the result of WARNs, BUGs, some
+type of breakpoints, kprobe, and other illegal instructions.
 
-Here are a few powerpc fixes for 3.3, all pretty trivial. I also
-added the patch to define GET_IP/SET_IP so we can use some more
-asm-generic goodness.
+We want interrupts (and thus preemption) to remain disabled
+while doing the initial stage of testing the reason and
+branching off to a debugger or kprobe, so we are still on
+the original CPU which makes debugging easier in various cases.
 
-Cheers,
-Ben.
+This is how the code was intended, hence the local_irq_enable()
+right in the middle of program_check_exception().
 
-The following changes since commit 3ec1e88b33a3bdd852ce8e014052acec7a9da8b5:
+However, the assembly exception prologue for that exception was
+incorrectly marked as enabling interrupts, which defeats that
+(and records a redundant enable with lockdep).
 
-  Merge branch 'for-linus' of git://git.kernel.dk/linux-block (2012-02-11 10:07:11 -0800)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/exceptions-64s.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 778a785f02ad846446e91dab49331bd7d853c514:
-
-  powerpc/pseries/eeh: Fix crash when error happens during device probe (2012-02-14 15:01:39 +1100)
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (3):
-      powerpc/wsp: Permanently enable PCI class code workaround
-      powerpc/wsp: Fix IRQ affinity setting
-      powerpc: Fix WARN_ON in decrementer_check_overflow
-
-Brian King (1):
-      powerpc/pseries: Fix partition migration hang in stop_topology_update
-
-Michael Ellerman (1):
-      powerpc/powernv: Disable interrupts while taking phb->lock
-
-Srikar Dronamraju (1):
-      powerpc: Implement GET_IP/SET_IP
-
-Thadeu Lima de Souza Cascardo (1):
-      powerpc/pseries/eeh: Fix crash when error happens during device probe
-
- arch/powerpc/include/asm/ppc-pci.h       |    5 +++++
- arch/powerpc/include/asm/ptrace.h        |   20 ++++++++++++--------
- arch/powerpc/kernel/irq.c                |    6 +++++-
- arch/powerpc/kernel/rtas.c               |    5 +++--
- arch/powerpc/platforms/powernv/pci.c     |   22 ++++++++++++++--------
- arch/powerpc/platforms/pseries/eeh.c     |    4 ++--
- arch/powerpc/platforms/pseries/suspend.c |    6 +++++-
- arch/powerpc/platforms/wsp/ics.c         |    2 +-
- arch/powerpc/platforms/wsp/wsp_pci.c     |    8 ++++----
- 9 files changed, 51 insertions(+), 27 deletions(-)
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index d4be7bb..3844ca7 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -775,7 +775,7 @@ program_check_common:
+ 	EXCEPTION_PROLOG_COMMON(0x700, PACA_EXGEN)
+ 	bl	.save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	ENABLE_INTS
++	DISABLE_INTS
+ 	bl	.program_check_exception
+ 	b	.ret_from_except
+ 
