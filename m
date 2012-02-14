@@ -1,21 +1,19 @@
-Return-Path: <B29397@freescale.com>
+Return-Path: <B32736@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
  (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1AB7B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 20:11:54 +1100 (EST)
-From: Peter Chen <peter.chen@freescale.com>
-To: <stern@rowland.harvard.edu>, <agust@denx.de>
-Subject: [RFC] usb: Fix build error due to dma_mask is not at pdev_archdata at
- ARM
-Date: Tue, 14 Feb 2012 17:11:35 +0800
-Message-ID: <1329210695-14492-1-git-send-email-peter.chen@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id B4B301007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 20:23:57 +1100 (EST)
+From: Zhicheng Fan <B32736@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 1/2 v4] powerpc/85xx: Add Quicc Engine support for p1025rdb
+Date: Tue, 14 Feb 2012 17:20:19 +0800
+Message-ID: <1329211220-15660-1-git-send-email-B32736@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: fabio.estevam@freescale.com, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de, B31383@freescale.com
+Cc: Zhicheng Fan <b32736@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +23,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When build i.mx platform with imx_v6_v7_defconfig, and after adding
-USB Gadget support, it has below build error:
+From: Zhicheng Fan <b32736@freescale.com>
 
-CC      drivers/usb/host/fsl-mph-dr-of.o
-drivers/usb/host/fsl-mph-dr-of.c: In function 'fsl_usb2_device_register':
-drivers/usb/host/fsl-mph-dr-of.c:97: error: 'struct pdev_archdata'
-has no member named 'dma_mask'
-
-It has discussed at: http://www.spinics.net/lists/linux-usb/msg57302.html
-
-For PowerPC, there is dma_mask at struct pdev_archdata, but there is
-no dma_mask at struct pdev_archdata for ARM. The pdev_archdata is
-related to specific platform, it should NOT be accessed by
-cross platform drivers, like USB.
-
-The code for pdev_archdata should be useless, as for PowerPC,
-it has already gotten the value for pdev->dev.dma_mask at function
-arch_setup_pdev_archdata of arch/powerpc/kernel/setup-common.c.
-
-Anyone who has PowerPC hardware with USB host enabled, and uses this code
-can help me a test? Thank you
-
-Signed-off-by: Peter Chen <peter.chen@freescale.com>
+Signed-off-by: Zhicheng Fan <b32736@freescale.com>
 ---
- drivers/usb/host/fsl-mph-dr-of.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   78 ++++++++++++++++++++++++++++-
+ 1 files changed, 77 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
-index 7916e56..ab333ac 100644
---- a/drivers/usb/host/fsl-mph-dr-of.c
-+++ b/drivers/usb/host/fsl-mph-dr-of.c
-@@ -94,7 +94,6 @@ struct platform_device * __devinit fsl_usb2_device_register(
- 	pdev->dev.parent = &ofdev->dev;
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index e95aef7..52d5745 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -26,6 +26,9 @@
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
++#include <asm/qe.h>
++#include <asm/qe_ic.h>
++#include <asm/fsl_guts.h>
  
- 	pdev->dev.coherent_dma_mask = ofdev->dev.coherent_dma_mask;
--	pdev->dev.dma_mask = &pdev->archdata.dma_mask;
- 	*pdev->dev.dma_mask = *ofdev->dev.dma_mask;
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+@@ -47,6 +50,10 @@ void __init mpc85xx_rdb_pic_init(void)
+ 	struct mpic *mpic;
+ 	unsigned long root = of_get_flat_dt_root();
  
- 	retval = platform_device_add_data(pdev, pdata, sizeof(*pdata));
++#ifdef CONFIG_QUICC_ENGINE
++	struct device_node *np;
++#endif
++
+ 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
+ 		mpic = mpic_alloc(NULL, 0,
+ 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+@@ -62,6 +69,18 @@ void __init mpc85xx_rdb_pic_init(void)
+ 
+ 	BUG_ON(mpic == NULL);
+ 	mpic_init(mpic);
++
++#ifdef CONFIG_QUICC_ENGINE
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (np) {
++		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
++				qe_ic_cascade_high_mpic);
++		of_node_put(np);
++
++	} else
++		pr_err("%s: Could not find qe-ic node\n", __func__);
++#endif
++
+ }
+ 
+ /*
+@@ -69,7 +88,7 @@ void __init mpc85xx_rdb_pic_init(void)
+  */
+ static void __init mpc85xx_rdb_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
++#if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
+ 	struct device_node *np;
+ #endif
+ 
+@@ -85,6 +104,63 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ #endif
+ 
+ 	mpc85xx_smp_init();
++
++#ifdef CONFIG_QUICC_ENGINE
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!np) {
++		pr_err("%s: Could not find Quicc Engine node\n", __func__);
++		goto qe_fail;
++	}
++
++	qe_reset();
++	of_node_put(np);
++
++	np = of_find_node_by_name(NULL, "par_io");
++	if (np) {
++		struct device_node *ucc;
++
++		par_io_init(np);
++		of_node_put(np);
++
++		for_each_node_by_name(ucc, "ucc")
++			par_io_of_config(ucc);
++
++	}
++#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
++	if (machine_is(p1025_rdb)) {
++
++		struct ccsr_guts_85xx __iomem *guts;
++
++		np = of_find_node_by_name(NULL, "global-utilities");
++		if (np) {
++
++			guts = of_iomap(np, 0);
++			if (!guts) {
++
++				pr_err("mpc85xx-rdb: could not map global utilties register!\n");
++
++			} else {
++			/* P1025 has pins muxed for QE and other functions. To
++			* enable QE UEC mode, we need to set bit QE0 for UCC1
++			* in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
++			* and QE12 for QE MII management singals in PMUXCR
++			* register.
++			*/
++				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE0 |
++						MPC85xx_PMUXCR_QE3 |
++						MPC85xx_PMUXCR_QE9 |
++						MPC85xx_PMUXCR_QE12);
++#endif
++				iounmap(guts);
++			}
++			of_node_put(np);
++		}
++
++	}
++
++qe_fail:
++#endif	/* CONFIG_QUICC_ENGINE */
++
+ 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
+ }
+ 
 -- 
 1.7.0.4
