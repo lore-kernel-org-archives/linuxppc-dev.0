@@ -1,18 +1,19 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 14 Feb 2012 09:44:19 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [PATCH stable-2.6.27] powerpc: Add more Power7 specific
- definitions
-Message-ID: <20120213224418.GA22646@thor.bakeyournoodle.com>
-References: <8849.1329094322@neuling.org>
- <20120213063528.GU21225@1wt.eu>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
-In-Reply-To: <20120213063528.GU21225@1wt.eu>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
- stable@kernel.org, Eric B Munson <emunson@mgebm.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 51E42B6FD1
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2012 17:21:09 +1100 (EST)
+Message-ID: <1329200460.3772.1.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 14 Feb 2012 17:21:00 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Linus !
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Here are a few powerpc fixes for 3.3, all pretty trivial. I also
+added the patch to define GET_IP/SET_IP so we can use some more
+asm-generic goodness.
 
-On Mon, Feb 13, 2012 at 07:35:28AM +0100, Willy Tarreau wrote:
-> On Mon, Feb 13, 2012 at 11:52:02AM +1100, Michael Neuling wrote:
-> > stable-2.6.27.60 added c24cb8e5 which uses PV_POWER7 but it's not
-> > defined.  Following patch adds these definitions.
->=20
-> Thank you for the report Michael, I have no PPC toolchain so I have
-> not tested this one. Added now.
+Cheers,
+Ben.
 
-Just pimping the cross toolchains I build:
-	http://kernel.org/pub/tools/crosstool/files/bin/
+The following changes since commit 3ec1e88b33a3bdd852ce8e014052acec7a9da8b5:
 
-Yours Tony
+  Merge branch 'for-linus' of git://git.kernel.dk/linux-block (2012-02-11 10:07:11 -0800)
 
---J2SCkAp4GZ/dPZZf
-Content-Type: application/pgp-signature
+are available in the git repository at:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPOZJCAAoJEEsCiJRY75GKlnYP/R3cHYFHtjkMv01X9n2S5jIB
-1B/KaznGQiWFBMuR6XN0JE0UINUqGsgsobmZ+o7Yn9JVcUZ6zwweldodE2+RVJZC
-3GCL3NfhQjplH+C0iLyzMU+adSkQt9Tp9w8VWTRGsnpPS97fQ/WTgYC/NDSdOiB4
-DqEpKAjWiR++k39kJCuaVSQrTgYwwfPQQzoCVcAelUyHuMdyu6tiv6KDfDHSn/fh
-etfYg+TP37OvuoRLH705K03G14MyjDbQgxs7VBAJ6RR5I52nUE0Kp/b+v7gq/fvI
-VpOzI7ISWqGSEPwVT8oKkiaBJR8AzSMCjvkCZInZE/QT92m6V38Gqw0syMIcaEi/
-XyT5HO3PQQ5XZqAbv4FRmWq4ztkiH481A8l7rFFFOYW3uq++aSd9zuJRcxT06X0P
-wWeVUSeJH958VGCC8wavhJUYyEVDW1fZfOr0PehPY61CykCaFqcVNtlfq1pbxOvb
-PCXaAT8mbq5WPOprz/6eVPC/NHkg35R40VDfMeVSSlg4bxWlPt5f3XIh3XkK8ruz
-V3B3gwFsIVV62cmrylHXk//Y2+ViM/+nPk0QtazZ3c7ldvhFKjkf5t+p9lQVgwPR
-Squ3wGGpHpqKW3SWlQbn7vKWCJp6LgdEDQrqJKvkfFacANEqJLItNIGHkp175oXP
-O391IEilQIVvfBzftiFL
-=AM1u
------END PGP SIGNATURE-----
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
---J2SCkAp4GZ/dPZZf--
+for you to fetch changes up to 778a785f02ad846446e91dab49331bd7d853c514:
+
+  powerpc/pseries/eeh: Fix crash when error happens during device probe (2012-02-14 15:01:39 +1100)
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (3):
+      powerpc/wsp: Permanently enable PCI class code workaround
+      powerpc/wsp: Fix IRQ affinity setting
+      powerpc: Fix WARN_ON in decrementer_check_overflow
+
+Brian King (1):
+      powerpc/pseries: Fix partition migration hang in stop_topology_update
+
+Michael Ellerman (1):
+      powerpc/powernv: Disable interrupts while taking phb->lock
+
+Srikar Dronamraju (1):
+      powerpc: Implement GET_IP/SET_IP
+
+Thadeu Lima de Souza Cascardo (1):
+      powerpc/pseries/eeh: Fix crash when error happens during device probe
+
+ arch/powerpc/include/asm/ppc-pci.h       |    5 +++++
+ arch/powerpc/include/asm/ptrace.h        |   20 ++++++++++++--------
+ arch/powerpc/kernel/irq.c                |    6 +++++-
+ arch/powerpc/kernel/rtas.c               |    5 +++--
+ arch/powerpc/platforms/powernv/pci.c     |   22 ++++++++++++++--------
+ arch/powerpc/platforms/pseries/eeh.c     |    4 ++--
+ arch/powerpc/platforms/pseries/suspend.c |    6 +++++-
+ arch/powerpc/platforms/wsp/ics.c         |    2 +-
+ arch/powerpc/platforms/wsp/wsp_pci.c     |    8 ++++----
+ 9 files changed, 51 insertions(+), 27 deletions(-)
