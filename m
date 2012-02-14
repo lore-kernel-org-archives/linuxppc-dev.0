@@ -1,40 +1,14 @@
-Return-Path: <arjanvandeven@gmail.com>
-Received: from mail-tul01m020-f179.google.com (mail-tul01m020-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CCD5A1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 03:01:15 +1100 (EST)
-Received: by obbup6 with SMTP id up6so126841obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 08:01:13 -0800 (PST)
-References: <20120130205444.22f5e26a@infradead.org>
- <20120131125232.GD4408@elte.hu> <20120131054155.371e8307@infradead.org>
- <20120131143130.GF13676@elte.hu> <20120131072216.1ce78e50@infradead.org>
- <20120131161207.GA18357@elte.hu> <20120131082439.575978c0@infradead.org>
- <4F3A1891.8060001@linux.vnet.ibm.com> <4F3A2DFB.5000209@linux.vnet.ibm.com>
- <CADyApD0o4UYsTkqf2H2yJZ-d05NAyRAEc6z+m1gJEogc=cZLqQ@mail.gmail.com>
- <1329232814.2293.7.camel@twins>
-In-Reply-To: <1329232814.2293.7.camel@twins>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----DZZ16CRZC4ZGWWUMWJK89K065RC5A7"
-Subject: Re: smp: Start up non-boot CPUs asynchronously
-From: Arjan van de Ven <arjanvandeven@gmail.com>
-Date: Tue, 14 Feb 2012 08:01:04 -0800
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Message-ID: <5b5fa04c-492b-4566-929e-5c92dc7916fc@email.android.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mikey@neuling.org,
- gregkh@linuxfoundation.org, Ingo Molnar <mingo@elte.hu>,
- linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
- Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Arjan van de Ven <arjan@linux.intel.com>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Arjan van de Ven <arjan@infradead.org>
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+To: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] of: Only compile OF_DYNAMIC on PowerPC pseries and iseries
+Date: Tue, 14 Feb 2012 10:25:30 -0700
+Message-Id: <1329240330-3539-1-git-send-email-grant.likely@secretlab.ca>
+Cc: "David S. Miller" <davem@davemloft.net>,
+ Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,44 +18,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------DZZ16CRZC4ZGWWUMWJK89K065RC5A7
-Content-Type: text/plain;
- charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Only two architectures use the OF node reference counting and reclaim bits.
+There is no need to compile it for the rest of the PowerPC platforms or for
+any of the other architectures.  This patch makes iseries and pseries
+select CONFIG_OF_DYNAMIC, and makes it default to off for everything else.
 
-Its more than acpi ... machine checks can do it too etc
+It is still safe to turn on CONFIG_OF_DYNAMIC on all architectures, it just
+isn't necessary.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rob Herring <rob.herring@calxeda.com>
+---
+ arch/powerpc/platforms/iseries/Kconfig |    1 +
+ arch/powerpc/platforms/pseries/Kconfig |    1 +
+ drivers/of/Kconfig                     |    5 +++--
+ drivers/of/base.c                      |    4 ++--
+ include/linux/of.h                     |   14 ++++++--------
+ 5 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+index b57cda3..63835e0 100644
+--- a/arch/powerpc/platforms/iseries/Kconfig
++++ b/arch/powerpc/platforms/iseries/Kconfig
+@@ -1,6 +1,7 @@
+ config PPC_ISERIES
+ 	bool "IBM Legacy iSeries"
+ 	depends on PPC64 && PPC_BOOK3S
++	select OF_DYNAMIC
+ 	select PPC_SMP_MUXED_IPI
+ 	select PPC_INDIRECT_PIO
+ 	select PPC_INDIRECT_MMIO
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 31f22c1..f255625 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -3,6 +3,7 @@ config PPC_PSERIES
+ 	bool "IBM pSeries & new (POWER5-based) iSeries"
+ 	select HAVE_PCSPKR_PLATFORM
+ 	select MPIC
++	select OF_DYNAMIC
+ 	select PCI_MSI
+ 	select PPC_XICS
+ 	select PPC_ICP_NATIVE
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index 268163d..6ea51dc 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -35,9 +35,10 @@ config OF_EARLY_FLATTREE
+ config OF_PROMTREE
+ 	bool
+ 
++# Hardly any platforms need this.  It is safe to select, but only do so if you
++# need it.
+ config OF_DYNAMIC
+-	def_bool y
+-	depends on PPC_OF
++	bool
+ 
+ config OF_ADDRESS
+ 	def_bool y
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 133908a..df6da08 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -88,7 +88,7 @@ int of_n_size_cells(struct device_node *np)
+ }
+ EXPORT_SYMBOL(of_n_size_cells);
+ 
+-#if !defined(CONFIG_SPARC)   /* SPARC doesn't do ref counting (yet) */
++#if defined(CONFIG_OF_DYNAMIC)
+ /**
+  *	of_node_get - Increment refcount of a node
+  *	@node:	Node to inc refcount, NULL is supported to
+@@ -161,7 +161,7 @@ void of_node_put(struct device_node *node)
+ 		kref_put(&node->kref, of_node_release);
+ }
+ EXPORT_SYMBOL(of_node_put);
+-#endif /* !CONFIG_SPARC */
++#endif /* CONFIG_OF_DYNAMIC */
+ 
+ struct property *of_find_property(const struct device_node *np,
+ 				  const char *name,
+diff --git a/include/linux/of.h b/include/linux/of.h
+index a75a831..b6ff1f7 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -72,19 +72,17 @@ struct of_phandle_args {
+ 	uint32_t args[MAX_PHANDLE_ARGS];
+ };
+ 
+-#if defined(CONFIG_SPARC) || !defined(CONFIG_OF)
++#ifdef CONFIG_OF_DYNAMIC
++extern struct device_node *of_node_get(struct device_node *node);
++extern void of_node_put(struct device_node *node);
++#else /* CONFIG_OF_DYNAMIC */
+ /* Dummy ref counting routines - to be implemented later */
+ static inline struct device_node *of_node_get(struct device_node *node)
+ {
+ 	return node;
+ }
+-static inline void of_node_put(struct device_node *node)
+-{
+-}
+-#else
+-extern struct device_node *of_node_get(struct device_node *node);
+-extern void of_node_put(struct device_node *node);
+-#endif
++static inline void of_node_put(struct device_node *node) { }
++#endif /* !CONFIG_OF_DYNAMIC */
+ 
+ #ifdef CONFIG_OF
+ 
 -- 
-Sent from my Android phone with K-9 Mail. Please excuse my brevity.
-
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-On Tue, 2012-02-14 at 06:31 -0800, Arjan van de Ven wrote:
-> 
-> frankly, such code HAS to worry about cpus going online and offline
-> even today; the firmware, at least on X86, can start taking cores
-> offline/online once ACPI is initialized.... (as controlled by a data
-> center manager from outside the box, usually done based on thermal or
-> power conditions on a datacenter level). Now, no doubt that we have
-> bugs in this space, since this only happened very rarely before. 
-
-Which frankly is an utter piece of crap, that ACPI spec is total garbage
-and completely useless. You might have noticed that the ACPI code
-supporting that failure carries a big nacked-by from me.
-
-That's not to say we shouldn't try to fix hotplug, but bringing that
-ACPI nonsense to the table makes me care less, not more.
-
-I mean, really, that spec is broken, the support is worse.
-
-
-------DZZ16CRZC4ZGWWUMWJK89K065RC5A7
-Content-Type: text/html;
- charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-<html><head></head><body>Its more than acpi ... machine checks can do it too etc<br>
--- <br>
-Sent from my Android phone with K-9 Mail. Please excuse my brevity.<br><br><div class="gmail_quote">Peter Zijlstra &lt;a.p.zijlstra@chello.nl&gt; wrote:<blockquote class="gmail_quote" style="margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
-<pre style="white-space: pre-wrap; word-wrap:break-word; font-family: sans-serif">On Tue, 2012-02-14 at 06:31 -0800, Arjan van de Ven wrote:<br />&gt; <br />&gt; frankly, such code HAS to worry about cpus going online and offline<br />&gt; even today; the firmware, at least on X86, can start taking cores<br />&gt; offline/online once ACPI is initialized.... (as controlled by a data<br />&gt; center manager from outside the box, usually done based on thermal or<br />&gt; power conditions on a datacenter level). Now, no doubt that we have<br />&gt; bugs in this space, since this only happened very rarely before. <br /><br />Which frankly is an utter piece of crap, that ACPI spec is total garbage<br />and completely useless. You might have noticed that the ACPI code<br />supporting that failure carries a big nacked-by from me.<br /><br />That's not to say we shouldn't try to fix hotplug, but bringing that<br />ACPI nonsense to the table makes me care less, not more.<br /><br />I mean,
-really, that spec is broken, the support is worse.<br /></pre></blockquote></div></body></html>
-------DZZ16CRZC4ZGWWUMWJK89K065RC5A7--
+1.7.9
