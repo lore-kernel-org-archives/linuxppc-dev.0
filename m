@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C689A1009E1
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2012 15:22:27 +1100 (EST)
-Message-ID: <1329279740.3772.24.camel@pasglop>
-Subject: [PATCH 1/3] powerpc/fsl/pci: Fix PCIe fixup regression
+ by ozlabs.org (Postfix) with ESMTPS id 39E481008F9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 15:23:00 +1100 (EST)
+Message-ID: <1329279770.3772.25.camel@pasglop>
+Subject: [PATCH 2/3] powerpc/fsl/pci: Improve PCIe host bridge quirks
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Date: Wed, 15 Feb 2012 15:22:20 +1100
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 15 Feb 2012 15:22:50 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,77 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Upstream changes to the way PHB resources are registered
-broke the resource fixup for FSL boards.
+The current quirk is a header quirk which runs after
+pci_setup_device(). This means that we can warnings
+from the later due to an unrecognized class code,
+and some parts of pci_dev aren't setup properly.
 
-We can no longer rely on the resource pointer array for the PHB's
-pci_bus structure, so let's leave it alone and go straight for
-the PHB resources instead. This also makes the code generally
-more readable.
+On the other hand, we somewhat rely on that later on
+as this causes "pci_read_bases" to not be called, thus
+not bringing in the bogus BAR 0 of the root complex.
+
+This breaks up the quirk in two. One is an early quirk
+and fixes up the class code. The other one remains a
+header quirk and removes the bogus resource.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/fsl_pci.c |   47 ++++++++++++++++++++++++----------------
- 1 files changed, 28 insertions(+), 19 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |   34 +++++++++++++++++++++++++++++-----
+ 1 files changed, 29 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 30eb17e..b392144 100644
+index b392144..a1da340 100644
 --- a/arch/powerpc/sysdev/fsl_pci.c
 +++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -385,26 +385,35 @@ static void __init setup_pci_cmd(struct pci_controller *hose)
- void fsl_pcibios_fixup_bus(struct pci_bus *bus)
+@@ -36,23 +36,48 @@
+ 
+ static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
+ 
+-static void __init quirk_fsl_pcie_header(struct pci_dev *dev)
++static int __devinit __quirk_is_fsl_pcie_host(struct pci_dev *dev)
  {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
--	int i;
--
--	if ((bus->parent == hose->bus) &&
--	    ((fsl_pcie_bus_fixup &&
--	      early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) ||
--	     (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)))
--	{
--		for (i = 0; i < 4; ++i) {
-+	int i, is_pcie = 0, no_link;
+ 	u8 progif;
+ 
++	/* We aren't a root complex, don't bother */
++	if (dev->bus->self)
++		return 0;
 +
-+	/* The root complex bridge comes up with bogus resources,
-+	 * we copy the PHB ones in.
-+	 *
-+	 * With the current generic PCI code, the PHB bus no longer
-+	 * has bus->resource[0..4] set, so things are a bit more
-+	 * tricky.
-+	 */
+ 	/* if we aren't a PCIe don't bother */
+ 	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
+-		return;
++		return 0;
+ 
+ 	/* if we aren't in host mode don't bother */
+ 	pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
+ 	if (progif & 0x1)
++		return 0;
 +
-+	if (fsl_pcie_bus_fixup)
-+		is_pcie = early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP);
-+	no_link = !!(hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK);
++	return 1;
++}
 +
-+	if (bus->parent == hose->bus && (is_pcie || no_link)) {
-+		for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; ++i) {
- 			struct resource *res = bus->resource[i];
--			struct resource *par = bus->parent->resource[i];
--			if (res) {
--				res->start = 0;
--				res->end   = 0;
--				res->flags = 0;
--			}
--			if (res && par) {
--				res->start = par->start;
--				res->end   = par->end;
--				res->flags = par->flags;
--			}
-+			struct resource *par;
++static void __devinit quirk_fsl_pcie_early(struct pci_dev *dev)
++{
 +
-+			if (!res)
-+				continue;
-+			if (!i)
-+				par = &hose->io_resource;
-+			else
-+				par = &hose->mem_resources[i-1];
-+
-+			res->start = par->start;
-+			res->end   = par->end;
-+			res->flags = par->flags;
- 		}
- 	}
++	if (!__quirk_is_fsl_pcie_host(dev))
+ 		return;
+ 
++	/* Fix incorrect class code */
+ 	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
+ 	fsl_pcie_bus_fixup = 1;
+-	return;
  }
++DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, quirk_fsl_pcie_early);
++
++static void __devinit quirk_fsl_pcie_header(struct pci_dev *dev)
++{
++	if (!__quirk_is_fsl_pcie_host(dev))
++		return;
++
++	/* Hide resource 0 */
++	dev->resource[0].start = dev->resource[0].end = 0;
++	dev->resource[0].flags = 0;
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, quirk_fsl_pcie_header);
+ 
+ static int __init fsl_pcie_check_link(struct pci_controller *hose)
+ {
+@@ -81,6 +106,7 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ 	 */
+ 	if ((dev->bus == &pci_bus_type) &&
+ 	    dma_mask >= DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)) {
++		dev_info(dev, "Switching PCI device to direct DMA ops\n");
+ 		set_dma_ops(dev, &dma_direct_ops);
+ 		set_dma_offset(dev, pci64_dma_offset);
+ 	}
+@@ -496,8 +522,6 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ }
+ #endif /* CONFIG_FSL_SOC_BOOKE || CONFIG_PPC_86xx */
+ 
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, quirk_fsl_pcie_header);
+-
+ #if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x)
+ struct mpc83xx_pcie_priv {
+ 	void __iomem *cfg_type0;
 -- 
 1.7.7.3
