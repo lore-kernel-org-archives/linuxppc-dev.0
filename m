@@ -1,18 +1,15 @@
 Return-Path: <B32736@freescale.com>
-Received: from VA3EHSOBE002.bigfish.com (va3ehsobe001.messaging.microsoft.com
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe001.messaging.microsoft.com
  [216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4FA55B6FC8
+ by ozlabs.org (Postfix) with ESMTPS id 4F8B6B6F13
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 18:02:03 +1100 (EST)
 From: Zhicheng Fan <B32736@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH 2/2 v5] powerpc/85xx: Abstract common define of signal
- multiplex control for qe
-Date: Wed, 15 Feb 2012 14:58:11 +0800
-Message-ID: <1329289091-26231-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1329289091-26231-1-git-send-email-B32736@freescale.com>
-References: <1329289091-26231-1-git-send-email-B32736@freescale.com>
+Subject: [PATCH 1/2 v5] powerpc/85xx: Add Quicc Engine support for p1025rdb
+Date: Wed, 15 Feb 2012 14:58:10 +0800
+Message-ID: <1329289091-26231-1-git-send-email-B32736@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Zhicheng Fan <b32736@freescale.com>
@@ -27,116 +24,127 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Zhicheng Fan <b32736@freescale.com>
 
-The mpc85xx_rdb and mpc85xx_mds have commom define of signal multiplex for qe, so
-they need to go in common header, the patch abstract them to fsl_guts.h
-
 Signed-off-by: Zhicheng Fan <b32736@freescale.com>
 ---
- arch/powerpc/include/asm/fsl_guts.h       |   20 +++++++++++++++++++-
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |   27 ++++++++++++---------------
- 2 files changed, 31 insertions(+), 16 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   78 ++++++++++++++++++++++++++++-
+ 1 files changed, 77 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
-index bebd124..dcd5b70 100644
---- a/arch/powerpc/include/asm/fsl_guts.h
-+++ b/arch/powerpc/include/asm/fsl_guts.h
-@@ -4,7 +4,7 @@
-  * Authors: Jeff Brown
-  *          Timur Tabi <timur@freescale.com>
-  *
-- * Copyright 2004,2007 Freescale Semiconductor, Inc
-+ * Copyright 2004,2007,2012 Freescale Semiconductor, Inc
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -114,6 +114,24 @@ struct ccsr_guts_86xx {
- 	__be32	srds2cr1;	/* 0x.0f44 - SerDes2 Control Register 0 */
- } __attribute__ ((packed));
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index e95aef7..b85180e 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -26,6 +26,9 @@
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
++#include <asm/qe.h>
++#include <asm/qe_ic.h>
++#include <asm/fsl_guts.h>
  
-+#ifdef CONFIG_PPC_85xx
-+
-+/* Alternate function signal multiplex control */
-+#define MPC85xx_PMUXCR_QE0              0x00008000
-+#define MPC85xx_PMUXCR_QE2              0x00002000
-+#define MPC85xx_PMUXCR_QE3              0x00001000
-+#define MPC85xx_PMUXCR_QE4              0x00000800
-+#define MPC85xx_PMUXCR_QE5              0x00000400
-+#define MPC85xx_PMUXCR_QE6              0x00000200
-+#define MPC85xx_PMUXCR_QE7              0x00000100
-+#define MPC85xx_PMUXCR_QE8              0x00000080
-+#define MPC85xx_PMUXCR_QE9              0x00000040
-+#define MPC85xx_PMUXCR_QE10             0x00000020
-+#define MPC85xx_PMUXCR_QE11             0x00000010
-+#define MPC85xx_PMUXCR_QE12             0x00000008
-+
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+@@ -47,6 +50,10 @@ void __init mpc85xx_rdb_pic_init(void)
+ 	struct mpic *mpic;
+ 	unsigned long root = of_get_flat_dt_root();
+ 
++#ifdef CONFIG_QUICC_ENGINE
++	struct device_node *np;
 +#endif
 +
- #ifdef CONFIG_PPC_86xx
+ 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
+ 		mpic = mpic_alloc(NULL, 0,
+ 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+@@ -62,6 +69,18 @@ void __init mpc85xx_rdb_pic_init(void)
  
- #define CCSR_GUTS_DMACR_DEV_SSI	0	/* DMA controller/channel set to SSI */
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 1d15a0c..d55f869 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -1,5 +1,6 @@
+ 	BUG_ON(mpic == NULL);
+ 	mpic_init(mpic);
++
++#ifdef CONFIG_QUICC_ENGINE
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (np) {
++		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
++				qe_ic_cascade_high_mpic);
++		of_node_put(np);
++
++	} else
++		pr_err("%s: Could not find qe-ic node\n", __func__);
++#endif
++
+ }
+ 
  /*
-- * Copyright (C) Freescale Semicondutor, Inc. 2006-2010. All rights reserved.
-+ * Copyright (C) 2006-2010, 2012 Freescale Semicondutor, Inc.
-+ * All rights reserved.
-  *
-  * Author: Andy Fleming <afleming@freescale.com>
-  *
-@@ -51,6 +52,7 @@
- #include <asm/qe_ic.h>
- #include <asm/mpic.h>
- #include <asm/swiotlb.h>
-+#include <asm/fsl_guts.h>
- #include "smp.h"
+@@ -69,7 +88,7 @@ void __init mpc85xx_rdb_pic_init(void)
+  */
+ static void __init mpc85xx_rdb_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
++#if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
+ 	struct device_node *np;
+ #endif
  
- #include "mpc85xx.h"
-@@ -268,34 +270,29 @@ static void __init mpc85xx_mds_qe_init(void)
- 	mpc85xx_mds_reset_ucc_phys();
+@@ -85,6 +104,63 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ #endif
  
- 	if (machine_is(p1021_mds)) {
--#define MPC85xx_PMUXCR_OFFSET           0x60
--#define MPC85xx_PMUXCR_QE0              0x00008000
--#define MPC85xx_PMUXCR_QE3              0x00001000
--#define MPC85xx_PMUXCR_QE9              0x00000040
--#define MPC85xx_PMUXCR_QE12             0x00000008
--		static __be32 __iomem *pmuxcr;
+ 	mpc85xx_smp_init();
++
++#ifdef CONFIG_QUICC_ENGINE
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!np) {
++		pr_err("%s: Could not find Quicc Engine node\n", __func__);
++		goto qe_fail;
++	}
++
++	qe_reset();
++	of_node_put(np);
++
++	np = of_find_node_by_name(NULL, "par_io");
++	if (np) {
++		struct device_node *ucc;
++
++		par_io_init(np);
++		of_node_put(np);
++
++		for_each_node_by_name(ucc, "ucc")
++			par_io_of_config(ucc);
++
++	}
++#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
++	if (machine_is(p1025_rdb)) {
 +
 +		struct ccsr_guts_85xx __iomem *guts;
- 
- 		np = of_find_node_by_name(NULL, "global-utilities");
- 
- 		if (np) {
--			pmuxcr = of_iomap(np, 0) + MPC85xx_PMUXCR_OFFSET;
++
++		np = of_find_node_by_name(NULL, "global-utilities");
++		if (np) {
++
 +			guts = of_iomap(np, 0);
- 
--			if (!pmuxcr)
--				printk(KERN_EMERG "Error: Alternate function"
--					" signal multiplex control register not"
--					" mapped!\n");
--			else
-+			if (!guts)
++			if (!guts) {
++
 +				pr_err("mpc85xx-rdb: could not map global utilties register!\n");
-+			else{
- 			/* P1021 has pins muxed for QE and other functions. To
- 			 * enable QE UEC mode, we need to set bit QE0 for UCC1
- 			 * in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
- 			 * and QE12 for QE MII management signals in PMUXCR
- 			 * register.
- 			 */
--				setbits32(pmuxcr, MPC85xx_PMUXCR_QE0 |
++
++			} else {
++			/* P1025 has pins muxed for QE and other functions. To
++			* enable QE UEC mode, we need to set bit QE0 for UCC1
++			* in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
++			* and QE12 for QE MII management singals in PMUXCR
++			* register.
++			*/
 +				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE0 |
- 						  MPC85xx_PMUXCR_QE3 |
- 						  MPC85xx_PMUXCR_QE9 |
- 						  MPC85xx_PMUXCR_QE12);
--
++						MPC85xx_PMUXCR_QE3 |
++						MPC85xx_PMUXCR_QE9 |
++						MPC85xx_PMUXCR_QE12);
 +				iounmap(guts);
 +			}
- 			of_node_put(np);
- 		}
++			of_node_put(np);
++		}
++
++	}
++#endif
++
++qe_fail:
++#endif	/* CONFIG_QUICC_ENGINE */
++
+ 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
+ }
  
 -- 
 1.7.0.4
