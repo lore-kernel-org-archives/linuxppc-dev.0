@@ -1,19 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 15 Feb 2012 15:16:09 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v6 00/10] fadump: Firmware-assisted dump support for
- Powerpc.
-Message-ID: <20120215041608.GA15258@bloggs.ozlabs.ibm.com>
-References: <20111210064301.10195.3344.stgit@mars.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20111210064301.10195.3344.stgit@mars.in.ibm.com>
-Cc: Amerigo Wang <amwang@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
- Anton Blanchard <anton@samba.org>, Vivek Goyal <vgoyal@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C689A1009E1
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2012 15:22:27 +1100 (EST)
+Message-ID: <1329279740.3772.24.camel@pasglop>
+Subject: [PATCH 1/3] powerpc/fsl/pci: Fix PCIe fixup regression
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Date: Wed, 15 Feb 2012 15:22:20 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +20,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 10, 2011 at 12:19:59PM +0530, Mahesh J Salgaonkar wrote:
+Upstream changes to the way PHB resources are registered
+broke the resource fixup for FSL boards.
 
-> The most of the code implementation has been adapted from phyp assisted dump
-> implementation written by Linas Vepstas and Manish Ahuja.
+We can no longer rely on the resource pointer array for the PHB's
+pci_bus structure, so let's leave it alone and go straight for
+the PHB resources instead. This also makes the code generally
+more readable.
 
-When you repost the series, please be explicit about what the
-relationship between the new fadump facility and the old phyp-dump
-is, both in the documentation you're adding and in the patch
-descriptions.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/fsl_pci.c |   47 ++++++++++++++++++++++++----------------
+ 1 files changed, 28 insertions(+), 19 deletions(-)
 
-I gather that fadump uses the same firmware interfaces as phyp-dump,
-and can be characterised as a rewrite of phyp-dump.  It would be good
-if you would explicitly mention:
-
-- What advantages fadump has over phyp-dump
-- Whether there are any capabilities that phyp-dump does that fadump
-  doesn't
-- What is different between fadump and phyp-dump in the interface to
-  usermode code
-- Any user-visible differences between how fadump operates compared to
-  phyp-dump.  For example, will users see a difference in how much
-  memory is available to the kernel?
-
-Paul.
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 30eb17e..b392144 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -385,26 +385,35 @@ static void __init setup_pci_cmd(struct pci_controller *hose)
+ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+-	int i;
+-
+-	if ((bus->parent == hose->bus) &&
+-	    ((fsl_pcie_bus_fixup &&
+-	      early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) ||
+-	     (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)))
+-	{
+-		for (i = 0; i < 4; ++i) {
++	int i, is_pcie = 0, no_link;
++
++	/* The root complex bridge comes up with bogus resources,
++	 * we copy the PHB ones in.
++	 *
++	 * With the current generic PCI code, the PHB bus no longer
++	 * has bus->resource[0..4] set, so things are a bit more
++	 * tricky.
++	 */
++
++	if (fsl_pcie_bus_fixup)
++		is_pcie = early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP);
++	no_link = !!(hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK);
++
++	if (bus->parent == hose->bus && (is_pcie || no_link)) {
++		for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; ++i) {
+ 			struct resource *res = bus->resource[i];
+-			struct resource *par = bus->parent->resource[i];
+-			if (res) {
+-				res->start = 0;
+-				res->end   = 0;
+-				res->flags = 0;
+-			}
+-			if (res && par) {
+-				res->start = par->start;
+-				res->end   = par->end;
+-				res->flags = par->flags;
+-			}
++			struct resource *par;
++
++			if (!res)
++				continue;
++			if (!i)
++				par = &hose->io_resource;
++			else
++				par = &hose->mem_resources[i-1];
++
++			res->start = par->start;
++			res->end   = par->end;
++			res->flags = par->flags;
+ 		}
+ 	}
+ }
+-- 
+1.7.7.3
