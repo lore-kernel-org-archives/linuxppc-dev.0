@@ -1,22 +1,41 @@
-Return-Path: <shawn.guo@linaro.org>
-Date: Wed, 15 Feb 2012 13:50:02 -0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 24/25] irq_domain: remove "hint" when allocating irq
- numbers
-Message-ID: <20120215215001.GA30946@r65073-Latitude-D630>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <1327700179-17454-25-git-send-email-grant.likely@secretlab.ca>
- <4F316848.4060100@atmel.com> <4F3BC97C.6030203@atmel.com>
- <20120215202145.GH25779@ponder.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120215202145.GH25779@ponder.secretlab.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- devicetree-discuss@lists.ozlabs.org, Nicolas Ferre <nicolas.ferre@atmel.com>,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Milton Miller <miltonm@bga.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <bauerman@br.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp01.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 02CFB1007D4
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 09:19:02 +1100 (EST)
+Received: from /spool/local
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <bauerman@br.ibm.com>;
+ Wed, 15 Feb 2012 20:18:57 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id D6912352004A
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2012 20:18:54 -0200 (BRST)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1FMIshZ25428068
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2012 20:18:54 -0200
+Received: from d24av03.br.ibm.com (loopback [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1FKJ8WZ016824
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Feb 2012 18:19:08 -0200
+Message-ID: <1329344331.10157.22.camel@hactar>
+Subject: Re: [PATCH 2/2] [PowerPC Book3E] Introduce new ptrace debug feature
+ flag
+From: Thiago Jung Bauermann <bauerman@br.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Date: Wed, 15 Feb 2012 20:18:51 -0200
+In-Reply-To: <20120116081833.GG4512@truffala.fritz.box>
+References: <20111208111212.GB3720@in.ibm.com>
+ <20111208112330.GB24484@in.ibm.com>
+ <20111221005502.GE5188@truffala.fritz.box>
+ <20111222093447.GD26407@in.ibm.com>
+ <20120116081833.GG4512@truffala.fritz.box>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+ Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +45,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 15, 2012 at 01:21:45PM -0700, Grant Likely wrote:
-> On Wed, Feb 15, 2012 at 04:04:28PM +0100, Nicolas Ferre wrote:
-> > On 02/07/2012 07:07 PM, Nicolas Ferre :
-> > > On 01/27/2012 10:36 PM, Grant Likely :
-> > >> The 'hint' used to try and line up irq numbers with hw irq numbers is
-> > >> rather a hack and not very useful.  Now that /proc/interrupts also outputs
-> > >> the hwirq number, it is even less useful to keep around the 'hint' heuristic.
-> > >>
-> > >> This patch removes it.
-> > > 
-> > > Grant,
-> > > 
-> > > While trying your patch series in conjunction with Rob one, I do not
-> > > find this patch in your irqdomain/next branch (and a couple of others).
-> > > Can you tell me if this v3 series is available as a git tree?
-> > 
-> > I am still interested by patch 24-25 of this series but still cannot
-> > find them in your irqdomain/next branch:
-> > Are they also expected to join the 3.4 merge window material?
+On Mon, 2012-01-16 at 19:18 +1100, David Gibson wrote:
+> Hrm.  An EXACT breakpoint is not exactly the same as a range
+> breakpoint of length 1 (consider unaligned accesses).  But despite
+> that, it should be possible to implement exact breakpoints on Book3S
+> server hardware with some software filtering.
 > 
-> I've held off on putting them in irqdomain/next because they are a bit more
-> risky than the other patches, and I want an explicit ack from Ben for patches
-> 24 & 25.  However, that shouldn't really cause any issues since the changes
-> in 24 & 25 don't impact the irq_domain functionality or API.  They are just
-> optimizations.
-> 
-I'm seeing that patch 24 does impact on irq_domain functionality
-a little bit.  On next tree which has no this patch yet,
-irq_create_mapping can reasonably create virq in range 1..15, while
-irq_find_mapping will only try to find the virq from 16
-(NUM_ISA_INTERRUPTS).  This will result in that any hwirq that is < 16
-gets multiple entries in the mapping table with different virq numbers
-mapped to the same one hwirq.
+> And since that leaves no hardware that *can't* implement exact
+> breakpoints (directly or indirectly), I'm not yet convinced of the
+> need for a flag bit.
 
-That's why I have to apply patch #24 (with one line change below) on
-top of next tree to get my imx irqdomain series work properly.
-
-@@ -371,7 +371,7 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
-                return irq_domain_legacy_revmap(domain, hwirq);
- 
-        /* Allocate a virtual interrupt number */
--       virq = irq_alloc_desc(0);
-+       virq = irq_alloc_desc_from(1, 0);
-        if (!virq) {
-                pr_debug("irq: -> virq allocation failed\n");
-                return 0;
-
-I need this line of change, because the first call on irq_alloc_desc
-will always return 0 to virq and in turn irq_create_mapping fails.
-On imx, that's the mapping for timer irq.  Hence, the system will hang
-there due to irq mapping failure.
+I agree.
 
 -- 
-Regards,
-Shawn
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
