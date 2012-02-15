@@ -1,18 +1,24 @@
-Return-Path: <B32736@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe001.messaging.microsoft.com
- [216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F8B6B6F13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 18:02:03 +1100 (EST)
-From: Zhicheng Fan <B32736@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH 1/2 v5] powerpc/85xx: Add Quicc Engine support for p1025rdb
-Date: Wed, 15 Feb 2012 14:58:10 +0800
-Message-ID: <1329289091-26231-1-git-send-email-B32736@freescale.com>
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+ [209.85.215.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F16A41007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 18:22:28 +1100 (EST)
+Received: by eaan11 with SMTP id n11so223048eaa.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2012 23:22:22 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhicheng Fan <b32736@freescale.com>
+Sender: pku.leo@gmail.com
+In-Reply-To: <1329284944-17943-1-git-send-email-qiang.liu@freescale.com>
+References: <1329284944-17943-1-git-send-email-qiang.liu@freescale.com>
+Date: Wed, 15 Feb 2012 15:22:22 +0800
+Message-ID: <CADRPPNQ8LUr13J4k8fsBYSSxXVuxFdEvKyL4abxZpY32Meh=uQ@mail.gmail.com>
+Subject: Re: [PATCH V2 RESEND] fsl-sata: I/O load balancing
+From: Li Yang <leoli@freescale.com>
+To: Qiang Liu <qiang.liu@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,129 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhicheng Fan <b32736@freescale.com>
+On Wed, Feb 15, 2012 at 1:49 PM, Qiang Liu <qiang.liu@freescale.com> wrote:
 
-Signed-off-by: Zhicheng Fan <b32736@freescale.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   78 ++++++++++++++++++++++++++++-
- 1 files changed, 77 insertions(+), 1 deletions(-)
+Hi Liu Qiang,
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index e95aef7..b85180e 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -26,6 +26,9 @@
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/mpic.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
-+#include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -47,6 +50,10 @@ void __init mpc85xx_rdb_pic_init(void)
- 	struct mpic *mpic;
- 	unsigned long root = of_get_flat_dt_root();
- 
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
- 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
- 		mpic = mpic_alloc(NULL, 0,
- 			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
-@@ -62,6 +69,18 @@ void __init mpc85xx_rdb_pic_init(void)
- 
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+
-+	} else
-+		pr_err("%s: Could not find qe-ic node\n", __func__);
-+#endif
-+
- }
- 
- /*
-@@ -69,7 +88,7 @@ void __init mpc85xx_rdb_pic_init(void)
-  */
- static void __init mpc85xx_rdb_setup_arch(void)
- {
--#ifdef CONFIG_PCI
-+#if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
- 	struct device_node *np;
- #endif
- 
-@@ -85,6 +104,63 @@ static void __init mpc85xx_rdb_setup_arch(void)
- #endif
- 
- 	mpc85xx_smp_init();
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+	if (!np) {
-+		pr_err("%s: Could not find Quicc Engine node\n", __func__);
-+		goto qe_fail;
-+	}
-+
-+	qe_reset();
-+	of_node_put(np);
-+
-+	np = of_find_node_by_name(NULL, "par_io");
-+	if (np) {
-+		struct device_node *ucc;
-+
-+		par_io_init(np);
-+		of_node_put(np);
-+
-+		for_each_node_by_name(ucc, "ucc")
-+			par_io_of_config(ucc);
-+
-+	}
-+#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
-+	if (machine_is(p1025_rdb)) {
-+
-+		struct ccsr_guts_85xx __iomem *guts;
-+
-+		np = of_find_node_by_name(NULL, "global-utilities");
-+		if (np) {
-+
-+			guts = of_iomap(np, 0);
-+			if (!guts) {
-+
-+				pr_err("mpc85xx-rdb: could not map global utilties register!\n");
-+
-+			} else {
-+			/* P1025 has pins muxed for QE and other functions. To
-+			* enable QE UEC mode, we need to set bit QE0 for UCC1
-+			* in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
-+			* and QE12 for QE MII management singals in PMUXCR
-+			* register.
-+			*/
-+				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE0 |
-+						MPC85xx_PMUXCR_QE3 |
-+						MPC85xx_PMUXCR_QE9 |
-+						MPC85xx_PMUXCR_QE12);
-+				iounmap(guts);
-+			}
-+			of_node_put(np);
-+		}
-+
-+	}
-+#endif
-+
-+qe_fail:
-+#endif	/* CONFIG_QUICC_ENGINE */
-+
- 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
- }
- 
--- 
-1.7.0.4
+The patch is fine except for the title and comment.  It's too vague to
+say I/O load balancing.  You need explicit description like "add
+interrupt coalescing support" as title.
+
+> Reduce interrupt signals through reset Interrupt Coalescing Control Reg.
+> Provide dynamic method to adjust interrupt signals and timer ticks by sysfs.
+> It is a tradeoff for different applications.
+
+How about:
+
+Adds support for interrupt coalescing feature to reduce interrupt
+events.  Provides mechanism of adjusting coalescing count and timeout
+tick by sysfs on runtime, so that tradeoff of latency and CPU load can
+be made depending on applications.
+
+- Leo
