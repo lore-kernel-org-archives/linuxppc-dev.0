@@ -1,23 +1,22 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5C1341007D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2012 06:40:37 +1100 (EST)
-Message-ID: <4F3C0A2B.9000105@freescale.com>
-Date: Wed, 15 Feb 2012 13:40:27 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Wed, 15 Feb 2012 13:21:45 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH v3 24/25] irq_domain: remove "hint" when allocating irq
+ numbers
+Message-ID: <20120215202145.GH25779@ponder.secretlab.ca>
+References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
+ <1327700179-17454-25-git-send-email-grant.likely@secretlab.ca>
+ <4F316848.4060100@atmel.com> <4F3BC97C.6030203@atmel.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [RFC PATCH 14/16] KVM: PPC: booke: category E.HV (GS-mode) support
-References: <20111221013443.GN8378@schlenkerla.am.freescale.net>
- <1A656B06-E290-4B75-8F98-F8FAB8B817F1@suse.de> <4F0B8B7D.4@freescale.com>
- <ADC42EDC-6F11-419E-9F31-B9E23D80FFE1@suse.de>
-In-Reply-To: <ADC42EDC-6F11-419E-9F31-B9E23D80FFE1@suse.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4F3BC97C.6030203@atmel.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/15/2012 01:36 PM, Alexander Graf wrote:
+On Wed, Feb 15, 2012 at 04:04:28PM +0100, Nicolas Ferre wrote:
+> On 02/07/2012 07:07 PM, Nicolas Ferre :
+> > On 01/27/2012 10:36 PM, Grant Likely :
+> >> The 'hint' used to try and line up irq numbers with hw irq numbers is
+> >> rather a hack and not very useful.  Now that /proc/interrupts also outputs
+> >> the hwirq number, it is even less useful to keep around the 'hint' heuristic.
+> >>
+> >> This patch removes it.
+> > 
+> > Grant,
+> > 
+> > While trying your patch series in conjunction with Rob one, I do not
+> > find this patch in your irqdomain/next branch (and a couple of others).
+> > Can you tell me if this v3 series is available as a git tree?
 > 
-> On 10.01.2012, at 01:51, Scott Wood wrote:
->> I was thinking we'd check ESR[EPID] or SRR1[IS] as appropriate, and
->> treat it as a kernel fault (search exception table) -- but this works
->> too and is a bit cleaner (could be other uses of external pid), at the
->> expense of a couple extra instructions in the emulation path (but
->> probably a slightly faster host TLB handler).
->>
->> The check wouldn't go in DO_KVM, though, since on bookehv that only
->> deals with diverting flow when xSRR1[GS] is set, which wouldn't be the
->> case here.
-> 
-> Thinking about it a bit more, how is this different from a failed get_user()? We can just use the same fixup mechanism as there, right?
+> I am still interested by patch 24-25 of this series but still cannot
+> find them in your irqdomain/next branch:
+> Are they also expected to join the 3.4 merge window material?
 
-The fixup mechanism can be the same (we'd like to know whether it failed
-due to TLB miss or DSI, so we know which to reflect -- but if necessary
-I think we can figure that out with a tlbsx).  What's different is that
-the page fault handler needs to know that any external pid (or AS1)
-fault is bad, same as if the address were in the kernel area, and it
-should go directly to searching the exception tables instead of trying
-to page something in.
+I've held off on putting them in irqdomain/next because they are a bit more
+risky than the other patches, and I want an explicit ack from Ben for patches
+24 & 25.  However, that shouldn't really cause any issues since the changes
+in 24 & 25 don't impact the irq_domain functionality or API.  They are just
+optimizations.
 
--Scott
+Also on 25, I'm not yet convinced that breaking out the revmap functions
+into ops is the right thing to do.  It actually makes the .text size quite
+a bit larger.  I may very well rewrite it.
+
+g.
