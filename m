@@ -2,32 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0B8BDB6FE0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 08:29:15 +1100 (EST)
-Message-ID: <1329254900.3772.10.camel@pasglop>
-Subject: Re: smp: Start up non-boot CPUs asynchronously
+ by ozlabs.org (Postfix) with ESMTPS id EE7991007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 11:02:14 +1100 (EST)
+Message-ID: <1329264105.3772.12.camel@pasglop>
+Subject: Re: [PATCH v3] powerpc: Rework lazy-interrupt handling
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Date: Wed, 15 Feb 2012 08:28:20 +1100
-In-Reply-To: <4F3A2DFB.5000209@linux.vnet.ibm.com>
-References: <20120130205444.22f5e26a@infradead.org>
- <20120131125232.GD4408@elte.hu>	<20120131054155.371e8307@infradead.org>
- <20120131143130.GF13676@elte.hu>	<20120131072216.1ce78e50@infradead.org>
- <20120131161207.GA18357@elte.hu> <20120131082439.575978c0@infradead.org>
- <4F3A1891.8060001@linux.vnet.ibm.com> <4F3A2DFB.5000209@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 15 Feb 2012 11:01:45 +1100
+In-Reply-To: <1329201969.3772.7.camel@pasglop>
+References: <1329201969.3772.7.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mikey@neuling.org,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, gregkh@linuxfoundation.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- "H. Peter Anvin" <hpa@zytor.com>, arjanvandeven@gmail.com,
- Ingo Molnar <mingo@elte.hu>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Thomas Gleixner <tglx@linutronix.de>
+Cc: Scott Wood <scottwood@freescale.com>, Stuart Yoder <b08248@gmail.com>,
+ Anton Blanchard <anton@au1.ibm.com>,
+ Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
+ Paul Mackerras <pmac@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,24 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-02-14 at 15:18 +0530, Srivatsa S. Bhat wrote:
+On Tue, 2012-02-14 at 17:46 +1100, Benjamin Herrenschmidt wrote:
+> The current implementation of lazy interrupts handling has some
+> issues that this tries to address.
+> 
+> Except on iSeries, we don't do the various workarounds we need to
+> do on re-enable when returning from an interrupt, which can do an
+> implicit re-enable, and thus we may still lose or get delayed
+> decrementer or doorbell interrupts.
 
-> > 2. Just below that we have smp_cpus_done(setup_max_cpus); and this translates
-> > to native_smp_cpus_done() under x86, which calls impress_friends().
-> > And that means, the bogosum calculation and the total activated processor
-> > count which is printed, may get messed up.
+ .../...
 
-We also have code on powerpc that relies on the bringup having been
-completed in smp_cpus_done(), especially on platforms that don't support
-CPU hotplug (or fake it using sleep loops).
-
-In some case we unmap MMIO space or close access to components (i2c for
-example) that we use during the bringup for things like hard synchro of
-CPU timebases, etc... on some G5s we disable the elastic interface on
-the northbridge for CPUs that weren't brought up, that sort of thing...
-
-So this patch will break a LOT of stuff for us, it must at least be a
-config option for now, until we find another way to fix these things.
+So we were still losing doorbells on BookE due to a st00pid thinko on my
+part :-) New patch following, hopefully that one's good !
 
 Cheers,
 Ben.
