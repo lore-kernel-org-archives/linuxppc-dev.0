@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D0396100807
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 13:31:22 +1100 (EST)
-Message-ID: <1329273064.3772.18.camel@pasglop>
-Subject: RE: [PATCH] powerpc/usb: fix issue of CPU halt when missing USB PHY
- clock
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Liu Shengzhou-B36685 <B36685@freescale.com>
-Date: Wed, 15 Feb 2012 13:31:04 +1100
-In-Reply-To: <3F453DDFF675A64A89321A1F352810216EDA8B@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1328088017-9262-1-git-send-email-Shengzhou.Liu@freescale.com>
- <4F290FCF.1040406@codeaurora.org>
- <3F453DDFF675A64A89321A1F352810216EDA8B@039-SN1MPN1-005.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- Pavan Kondeti <pkondeti@codeaurora.org>
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 15 Feb 2012 15:16:09 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v6 00/10] fadump: Firmware-assisted dump support for
+ Powerpc.
+Message-ID: <20120215041608.GA15258@bloggs.ozlabs.ibm.com>
+References: <20111210064301.10195.3344.stgit@mars.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20111210064301.10195.3344.stgit@mars.in.ibm.com>
+Cc: Amerigo Wang <amwang@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Randy Dunlap <rdunlap@xenotime.net>,
+ Anton Blanchard <anton@samba.org>, Vivek Goyal <vgoyal@redhat.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Dec 10, 2011 at 12:19:59PM +0530, Mahesh J Salgaonkar wrote:
 
-> > > +	if (!(in_be32(non_ehci + FSL_SOC_USB_CTRL) & CTRL_PHY_CLK_VALID))
-> > {
-> > > +		printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
-> > > +		return -1;
-> > 
-> > Please return a proper error code. -ENODEV ?
-> 
-> [Shengzhou] Ok, updated in v2, thanks.
-> >
+> The most of the code implementation has been adapted from phyp assisted dump
+> implementation written by Linas Vepstas and Manish Ahuja.
 
-Note that I just got a p5020ds from FSL, and with it's default
-configuration, when I build & boot current upstream with FSL USB
-support (64-bit kernel) it hangs when initializing USB.
+When you repost the series, please be explicit about what the
+relationship between the new fadump facility and the old phyp-dump
+is, both in the documentation you're adding and in the patch
+descriptions.
 
-With or without this patch.
+I gather that fadump uses the same firmware interfaces as phyp-dump,
+and can be characterised as a rewrite of phyp-dump.  It would be good
+if you would explicitly mention:
 
-It complains about invalid dr-mode (there's two USB nodes in the .dts
-coming from uboot, an "mph" and "dr", the former has no dr-mode property
-in the device-tree.
+- What advantages fadump has over phyp-dump
+- Whether there are any capabilities that phyp-dump does that fadump
+  doesn't
+- What is different between fadump and phyp-dump in the interface to
+  usermode code
+- Any user-visible differences between how fadump operates compared to
+  phyp-dump.  For example, will users see a difference in how much
+  memory is available to the kernel?
 
-Is the current kernel incompatible with old device-tree's ? (that would
-be a shame...)
-
-Cheers,
-Ben.
+Paul.
