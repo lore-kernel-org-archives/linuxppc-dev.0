@@ -1,35 +1,26 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9D046B6FD5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 20:21:42 +1100 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Wed, 15 Feb 2012 09:19:21 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1F9GDtP3457134
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 20:16:15 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1F9LNML011703
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 20:21:24 +1100
-Message-ID: <4F3B790F.1040907@linux.vnet.ibm.com>
-Date: Wed, 15 Feb 2012 14:51:19 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <B31383@freescale.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+ [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DF4341007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 19:47:27 +1100 (EST)
+From: Mehresh Ramneek-B31383 <B31383@freescale.com>
+To: Chen Peter-B29397 <B29397@freescale.com>, "stern@rowland.harvard.edu"
+ <stern@rowland.harvard.edu>, "agust@denx.de" <agust@denx.de>
+Subject: RE: [RFC] usb: Fix build error due to dma_mask is not at
+ pdev_archdata at ARM
+Date: Wed, 15 Feb 2012 08:47:17 +0000
+Message-ID: <75A6930FC6B2FE479E2BC468C9240CE0026C19@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1329210695-14492-1-git-send-email-peter.chen@freescale.com>
+In-Reply-To: <1329210695-14492-1-git-send-email-peter.chen@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 6/12] arch/powerpc: remove references to cpu_*_map.
-References: <1329281884.20466.rusty@rustcorp.com.au>
-In-Reply-To: <1329281884.20466.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Venkatesh Pallipadi <venki@google.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,20 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/15/2012 10:28 AM, Rusty Russell wrote:
-
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> This has been obsolescent for a while; time for the final push.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
 
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+-----Original Message-----
+From: Chen Peter-B29397=20
+Sent: Tuesday, February 14, 2012 2:42 PM
+To: stern@rowland.harvard.edu; agust@denx.de
+Cc: kernel@pengutronix.de; linuxppc-dev@lists.ozlabs.org; Mehresh Ramneek-B=
+31383; Estevam Fabio-R49496; linux-usb@vger.kernel.org
+Subject: [RFC] usb: Fix build error due to dma_mask is not at pdev_archdata=
+ at ARM
 
-Regards,
-Srivatsa S. Bhat
+When build i.mx platform with imx_v6_v7_defconfig, and after adding USB Gad=
+get support, it has below build error:
+
+CC      drivers/usb/host/fsl-mph-dr-of.o
+drivers/usb/host/fsl-mph-dr-of.c: In function 'fsl_usb2_device_register':
+drivers/usb/host/fsl-mph-dr-of.c:97: error: 'struct pdev_archdata'
+has no member named 'dma_mask'
+
+It has discussed at: http://www.spinics.net/lists/linux-usb/msg57302.html
+
+For PowerPC, there is dma_mask at struct pdev_archdata, but there is no dma=
+_mask at struct pdev_archdata for ARM. The pdev_archdata is related to spec=
+ific platform, it should NOT be accessed by cross platform drivers, like US=
+B.
+
+The code for pdev_archdata should be useless, as for PowerPC, it has alread=
+y gotten the value for pdev->dev.dma_mask at function arch_setup_pdev_archd=
+ata of arch/powerpc/kernel/setup-common.c.
+
+Anyone who has PowerPC hardware with USB host enabled, and uses this code c=
+an help me a test? Thank you
+
+[Ramneek]: Hi Peter, the code is working for Host stack on PowerPC.
+=20
+Signed-off-by: Peter Chen <peter.chen@freescale.com>
+---
+ drivers/usb/host/fsl-mph-dr-of.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr=
+-of.c
+index 7916e56..ab333ac 100644
+--- a/drivers/usb/host/fsl-mph-dr-of.c
++++ b/drivers/usb/host/fsl-mph-dr-of.c
+@@ -94,7 +94,6 @@ struct platform_device * __devinit fsl_usb2_device_regist=
+er(
+ 	pdev->dev.parent =3D &ofdev->dev;
+=20
+ 	pdev->dev.coherent_dma_mask =3D ofdev->dev.coherent_dma_mask;
+-	pdev->dev.dma_mask =3D &pdev->archdata.dma_mask;
+ 	*pdev->dev.dma_mask =3D *ofdev->dev.dma_mask;
+=20
+ 	retval =3D platform_device_add_data(pdev, pdata, sizeof(*pdata));
+--
+1.7.0.4
