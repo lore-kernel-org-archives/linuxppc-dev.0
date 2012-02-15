@@ -1,18 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D547B1007D1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 13:31:18 +1100 (EST)
-Date: Wed, 15 Feb 2012 13:31:09 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: remove legacy iSeries from ppc64_defconfig
-Message-Id: <20120215133109.7f4adf05b76a076e92c4efe3@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D0396100807
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 13:31:22 +1100 (EST)
+Message-ID: <1329273064.3772.18.camel@pasglop>
+Subject: RE: [PATCH] powerpc/usb: fix issue of CPU halt when missing USB PHY
+ clock
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Liu Shengzhou-B36685 <B36685@freescale.com>
+Date: Wed, 15 Feb 2012 13:31:04 +1100
+In-Reply-To: <3F453DDFF675A64A89321A1F352810216EDA8B@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1328088017-9262-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <4F290FCF.1040406@codeaurora.org>
+ <3F453DDFF675A64A89321A1F352810216EDA8B@039-SN1MPN1-005.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__15_Feb_2012_13_31_09_+1100_aixVvt8SXC5ROI6j"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ Pavan Kondeti <pkondeti@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,69 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__15_Feb_2012_13_31_09_+1100_aixVvt8SXC5ROI6j
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Since we are heading towards removing the Legacy iSeries platform, start
-by no longer building it for ppc64_defconfig.
+> > > +	if (!(in_be32(non_ehci + FSL_SOC_USB_CTRL) & CTRL_PHY_CLK_VALID))
+> > {
+> > > +		printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
+> > > +		return -1;
+> > 
+> > Please return a proper error code. -ENODEV ?
+> 
+> [Shengzhou] Ok, updated in v2, thanks.
+> >
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/configs/ppc64_defconfig |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+Note that I just got a p5020ds from FSL, and with it's default
+configuration, when I build & boot current upstream with FSL USB
+support (64-bit kernel) it hangs when initializing USB.
 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/pp=
-c64_defconfig
-index 2156e07..1acf650 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -24,10 +24,6 @@ CONFIG_PPC_SPLPAR=3Dy
- CONFIG_SCANLOG=3Dm
- CONFIG_PPC_SMLPAR=3Dy
- CONFIG_DTL=3Dy
--CONFIG_PPC_ISERIES=3Dy
--CONFIG_VIODASD=3Dy
--CONFIG_VIOCD=3Dm
--CONFIG_VIOTAPE=3Dm
- CONFIG_PPC_MAPLE=3Dy
- CONFIG_PPC_PASEMI=3Dy
- CONFIG_PPC_PASEMI_IOMMU=3Dy
-@@ -259,7 +255,6 @@ CONFIG_PASEMI_MAC=3Dy
- CONFIG_MLX4_EN=3Dm
- CONFIG_QLGE=3Dm
- CONFIG_BE2NET=3Dm
--CONFIG_ISERIES_VETH=3Dm
- CONFIG_PPP=3Dm
- CONFIG_PPP_ASYNC=3Dm
- CONFIG_PPP_SYNC_TTY=3Dm
---=20
-1.7.9
+With or without this patch.
 
---=20
+It complains about invalid dr-mode (there's two USB nodes in the .dts
+coming from uboot, an "mph" and "dr", the former has no dr-mode property
+in the device-tree.
+
+Is the current kernel incompatible with old device-tree's ? (that would
+be a shame...)
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Wed__15_Feb_2012_13_31_09_+1100_aixVvt8SXC5ROI6j
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPOxjtAAoJEECxmPOUX5FEHq4P/i7Hf4xqd0Ki55BHFWH0rr6b
-yT/IQLI+wNaPDr0Dg1qVjGCSjdyA/g3W+K9c0IRaHY1CRHIGPl9j/MCMY7qPEfFa
-AVPgmJoqzIwLvS0S3+emKA+LwQ3FC560ocMnPw2HvAmX/TX5eyA/HUHwwQNgS4yL
-51aFSZzV+V3a0Kj/y6CGG21RkyqgC9mbfNWcmsg90eIZBVRyCN2TH1b3ssXJk56R
-fvu9DGgogDpEQTo93nX/SO8lUN2PZXAQgjrcdMk4Xyv4/F0DqqjxYkzMvqbi+Tdj
-i/hWTWpDo8h7X3bnq3sGMev+hXzBnkK7gnMHtQjiMHyvf+6PZoBrWcdNoR4SQ5P2
-8Ti5ow/CSW0zk8PgZibEf+2zLPVNqjBLjLejewzOAXJQQaxE4xBCymunGsfRHPdR
-/WsPXnegNkOhhTLnBMMSiLZwM2XZC0bFOW3+LmIy2T6KFgVkKauoox4N1osCQiVv
-Stv/t/uLfXyFB6brlIrgMg9z0sKoBolGrNoZfQPrrgg8pJ9x+h/8ymAX31Zex2VY
-FfSOH52cKL14ajCAtneo1gaHMM+dCWUl96tPqE9MtI/++wD41DJAvFtdXU9CNA36
-gzLvytS4N3GAHoC4oX1g7Y6qSGVdJLwkaphQBs4H1r7qCDBxk9+Zf2XAAVCrBXIr
-bCGsvfrm1TOn8AaftG15
-=WqGi
------END PGP SIGNATURE-----
-
---Signature=_Wed__15_Feb_2012_13_31_09_+1100_aixVvt8SXC5ROI6j--
+Ben.
