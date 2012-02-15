@@ -1,20 +1,21 @@
-Return-Path: <B32616@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe002.messaging.microsoft.com
- [213.199.154.140])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B32736@freescale.com>
+Received: from VA3EHSOBE002.bigfish.com (va3ehsobe001.messaging.microsoft.com
+ [216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 785DC1007D5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 16:52:55 +1100 (EST)
-From: Qiang Liu <qiang.liu@freescale.com>
-To: <jgarzik@pobox.com>, <linux-ide@vger.kernel.org>
-Subject: [PATCH V2 RESEND] fsl-sata: I/O load balancing
-Date: Wed, 15 Feb 2012 13:49:04 +0800
-Message-ID: <1329284944-17943-1-git-send-email-qiang.liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4FA55B6FC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2012 18:02:03 +1100 (EST)
+From: Zhicheng Fan <B32736@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 2/2 v5] powerpc/85xx: Abstract common define of signal
+ multiplex control for qe
+Date: Wed, 15 Feb 2012 14:58:11 +0800
+Message-ID: <1329289091-26231-2-git-send-email-B32736@freescale.com>
+In-Reply-To: <1329289091-26231-1-git-send-email-B32736@freescale.com>
+References: <1329289091-26231-1-git-send-email-B32736@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Qiang Liu <qiang.liu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Zhicheng Fan <b32736@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,241 +25,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reduce interrupt signals through reset Interrupt Coalescing Control Reg.
-Provide dynamic method to adjust interrupt signals and timer ticks by sysfs.
-It is a tradeoff for different applications.
+From: Zhicheng Fan <b32736@freescale.com>
 
-Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+The mpc85xx_rdb and mpc85xx_mds have commom define of signal multiplex for qe, so
+they need to go in common header, the patch abstract them to fsl_guts.h
+
+Signed-off-by: Zhicheng Fan <b32736@freescale.com>
 ---
-change for V2
-	support dynamic config interrupt coalescing register by /sysfs
-	test random small file with iometer
-	adjust kernel source baseline for apply upstream
-Description:
-  1. fsl-sata interrupt will be raised 130 thousand times when write 8G file
-    (dd if=/dev/zero of=/dev/sda2 bs=128K count=65536);
-  2. most of interrupts raised because of only 1-4 commands completed;
-  3. only 30 thousand times will be raised after set max interrupt threshold,
-    more interrupts are coalesced as the description of ICC;
-Test methods and results:
-  1. test sequential large file performance,
-  [root@p2020ds root]# echo 31 524287 > \
-	/sys/devices/soc.0/ffe18000.sata/intr_coalescing
-  [root@p2020ds root]# dd if=/dev/zero of=/dev/sda2 bs=128K count=65536 &
-  [root@p2020ds root]# top
+ arch/powerpc/include/asm/fsl_guts.h       |   20 +++++++++++++++++++-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |   27 ++++++++++++---------------
+ 2 files changed, 31 insertions(+), 16 deletions(-)
 
-   CPU %  |  dd   |  flush-8:0 | softirq
-   ---------------------------------------
-   before | 20-22 |    17-19   |    7
-   ---------------------------------------
-   after  | 18-21 |    15-16   |    5
-   ---------------------------------------
-   2. test random small file with iometer,
-   iometer paramters:
-   4 I/Os burst length, 1MB transfer request size, 100% write, 2MB file size
-     as default configuration of interrupt coalescing register, 1 interrupts and
-   no timeout config, total write performance is 119MB per second,
-     after config with the maximum value, write performance is 110MB per second.
-
-   After compare the test results, a configuable interrupt coalescing should be
-   better when cope with flexible context.
-
-
- drivers/ata/sata_fsl.c |  111 ++++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 107 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 0120b0d..d6577b9 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -6,7 +6,7 @@
-  * Author: Ashish Kalra <ashish.kalra@freescale.com>
-  * Li Yang <leoli@freescale.com>
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index bebd124..dcd5b70 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -4,7 +4,7 @@
+  * Authors: Jeff Brown
+  *          Timur Tabi <timur@freescale.com>
   *
-- * Copyright (c) 2006-2007, 2011 Freescale Semiconductor, Inc.
-+ * Copyright (c) 2006-2007, 2011-2012 Freescale Semiconductor, Inc.
+- * Copyright 2004,2007 Freescale Semiconductor, Inc
++ * Copyright 2004,2007,2012 Freescale Semiconductor, Inc
   *
   * This program is free software; you can redistribute  it and/or modify it
   * under  the terms of  the GNU General  Public License as published by the
-@@ -26,6 +26,15 @@
- #include <asm/io.h>
- #include <linux/of_platform.h>
-
-+static unsigned int intr_coalescing_count;
-+module_param(intr_coalescing_count, int, S_IRUGO);
-+MODULE_PARM_DESC(intr_coalescing_count,
-+				 "INT coalescing count threshold (1..31)");
+@@ -114,6 +114,24 @@ struct ccsr_guts_86xx {
+ 	__be32	srds2cr1;	/* 0x.0f44 - SerDes2 Control Register 0 */
+ } __attribute__ ((packed));
+ 
++#ifdef CONFIG_PPC_85xx
 +
-+static unsigned int intr_coalescing_ticks;
-+module_param(intr_coalescing_ticks, int, S_IRUGO);
-+MODULE_PARM_DESC(intr_coalescing_ticks,
-+				 "INT coalescing timer threshold in AHB ticks");
- /* Controller information */
- enum {
- 	SATA_FSL_QUEUE_DEPTH	= 16,
-@@ -83,6 +92,16 @@ enum {
- };
-
++/* Alternate function signal multiplex control */
++#define MPC85xx_PMUXCR_QE0              0x00008000
++#define MPC85xx_PMUXCR_QE2              0x00002000
++#define MPC85xx_PMUXCR_QE3              0x00001000
++#define MPC85xx_PMUXCR_QE4              0x00000800
++#define MPC85xx_PMUXCR_QE5              0x00000400
++#define MPC85xx_PMUXCR_QE6              0x00000200
++#define MPC85xx_PMUXCR_QE7              0x00000100
++#define MPC85xx_PMUXCR_QE8              0x00000080
++#define MPC85xx_PMUXCR_QE9              0x00000040
++#define MPC85xx_PMUXCR_QE10             0x00000020
++#define MPC85xx_PMUXCR_QE11             0x00000010
++#define MPC85xx_PMUXCR_QE12             0x00000008
++
++#endif
++
+ #ifdef CONFIG_PPC_86xx
+ 
+ #define CCSR_GUTS_DMACR_DEV_SSI	0	/* DMA controller/channel set to SSI */
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 1d15a0c..d55f869 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -1,5 +1,6 @@
  /*
-+ * Interrupt Coalescing Control Register bitdefs  */
-+enum {
-+	ICC_MIN_INT_COUNT_THRESHOLD	= 1,
-+	ICC_MAX_INT_COUNT_THRESHOLD	= ((1 << 5) - 1),
-+	ICC_MIN_INT_TICKS_THRESHOLD	= 0,
-+	ICC_MAX_INT_TICKS_THRESHOLD	= ((1 << 19) - 1),
-+	ICC_SAFE_INT_TICKS		= 1,
-+};
+- * Copyright (C) Freescale Semicondutor, Inc. 2006-2010. All rights reserved.
++ * Copyright (C) 2006-2010, 2012 Freescale Semicondutor, Inc.
++ * All rights reserved.
+  *
+  * Author: Andy Fleming <afleming@freescale.com>
+  *
+@@ -51,6 +52,7 @@
+ #include <asm/qe_ic.h>
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
++#include <asm/fsl_guts.h>
+ #include "smp.h"
+ 
+ #include "mpc85xx.h"
+@@ -268,34 +270,29 @@ static void __init mpc85xx_mds_qe_init(void)
+ 	mpc85xx_mds_reset_ucc_phys();
+ 
+ 	if (machine_is(p1021_mds)) {
+-#define MPC85xx_PMUXCR_OFFSET           0x60
+-#define MPC85xx_PMUXCR_QE0              0x00008000
+-#define MPC85xx_PMUXCR_QE3              0x00001000
+-#define MPC85xx_PMUXCR_QE9              0x00000040
+-#define MPC85xx_PMUXCR_QE12             0x00000008
+-		static __be32 __iomem *pmuxcr;
 +
-+/*
- * Host Controller command register set - per port
- */
- enum {
-@@ -263,8 +282,65 @@ struct sata_fsl_host_priv {
- 	void __iomem *csr_base;
- 	int irq;
- 	int data_snoop;
-+	struct device_attribute intr_coalescing;
- };
-
-+static void fsl_sata_set_irq_coalescing(struct ata_host *host,
-+		unsigned int count, unsigned int ticks)
-+{
-+	struct sata_fsl_host_priv *host_priv = host->private_data;
-+	void __iomem *hcr_base = host_priv->hcr_base;
-+
-+	if (count > ICC_MAX_INT_COUNT_THRESHOLD)
-+		count = ICC_MAX_INT_COUNT_THRESHOLD;
-+	else if (count < ICC_MIN_INT_COUNT_THRESHOLD)
-+		count = ICC_MIN_INT_COUNT_THRESHOLD;
-+
-+	if (ticks > ICC_MAX_INT_TICKS_THRESHOLD)
-+		ticks = ICC_MAX_INT_TICKS_THRESHOLD;
-+	else if ((ICC_MIN_INT_TICKS_THRESHOLD == ticks) &&
-+			(count > ICC_MIN_INT_COUNT_THRESHOLD))
-+		ticks = ICC_SAFE_INT_TICKS;
-+
-+	spin_lock(&host->lock);
-+	iowrite32((count << 24 | ticks), hcr_base + ICC);
-+
-+	intr_coalescing_count = count;
-+	intr_coalescing_ticks = ticks;
-+	spin_unlock(&host->lock);
-+
-+	DPRINTK("intrrupt coalescing, count = 0x%x, ticks = %x\n",
-+			intr_coalescing_count, intr_coalescing_ticks);
-+	DPRINTK("ICC register status: (hcr base: 0x%x) = 0x%x\n",
-+			hcr_base, ioread32(hcr_base + ICC));
-+}
-+
-+static ssize_t fsl_sata_intr_coalescing_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%d	%d\n",
-+			intr_coalescing_count, intr_coalescing_ticks);
-+}
-+
-+static ssize_t fsl_sata_intr_coalescing_store(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t count)
-+{
-+	unsigned int coalescing_count,	coalescing_ticks;
-+
-+	if (sscanf(buf, "%d%d",
-+				&coalescing_count,
-+				&coalescing_ticks) != 2) {
-+		printk(KERN_ERR "fsl-sata: wrong parameter format.\n");
-+		return -EINVAL;
-+	}
-+
-+	fsl_sata_set_irq_coalescing(dev_get_drvdata(dev),
-+			coalescing_count, coalescing_ticks);
-+
-+	return strlen(buf);
-+}
-+
- static inline unsigned int sata_fsl_tag(unsigned int tag,
- 					void __iomem *hcr_base)
- {
-@@ -346,10 +422,10 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
- 			(unsigned long long)sg_addr, sg_len);
-
- 		/* warn if each s/g element is not dword aligned */
--		if (sg_addr & 0x03)
-+		if (unlikely(sg_addr & 0x03))
- 			ata_port_err(qc->ap, "s/g addr unaligned : 0x%llx\n",
- 				     (unsigned long long)sg_addr);
--		if (sg_len & 0x03)
-+		if (unlikely(sg_len & 0x03))
- 			ata_port_err(qc->ap, "s/g len unaligned : 0x%x\n",
- 				     sg_len);
-
-@@ -1245,6 +1321,13 @@ static int sata_fsl_init_controller(struct ata_host *host)
- 	iowrite32(0x00000FFFF, hcr_base + CE);
- 	iowrite32(0x00000FFFF, hcr_base + DE);
-
-+ 	/*
-+	 * reset the number of command complete bits which will cause the
-+	 * interrupt to be signaled
-+	 */
-+	fsl_sata_set_irq_coalescing(host, intr_coalescing_count,
-+			intr_coalescing_ticks);
-+
- 	/*
- 	 * host controller will be brought on-line, during xx_port_start()
- 	 * callback, that should also initiate the OOB, COMINIT sequence
-@@ -1309,7 +1392,7 @@ static int sata_fsl_probe(struct platform_device *ofdev)
- 	void __iomem *csr_base = NULL;
- 	struct sata_fsl_host_priv *host_priv = NULL;
- 	int irq;
--	struct ata_host *host;
-+	struct ata_host *host = NULL;
- 	u32 temp;
-
- 	struct ata_port_info pi = sata_fsl_port_info[0];
-@@ -1356,6 +1439,10 @@ static int sata_fsl_probe(struct platform_device *ofdev)
-
- 	/* allocate host structure */
- 	host = ata_host_alloc_pinfo(&ofdev->dev, ppi, SATA_FSL_MAX_PORTS);
-+	if (!host) {
-+		retval = -ENOMEM;
-+		goto error_exit_with_cleanup;
-+	}
-
- 	/* host->iomap is not used currently */
- 	host->private_data = host_priv;
-@@ -1373,10 +1460,24 @@ static int sata_fsl_probe(struct platform_device *ofdev)
-
- 	dev_set_drvdata(&ofdev->dev, host);
-
-+	host_priv->intr_coalescing.show = fsl_sata_intr_coalescing_show;
-+	host_priv->intr_coalescing.store = fsl_sata_intr_coalescing_store;
-+	sysfs_attr_init(&host_priv->intr_coalescing.attr);
-+	host_priv->intr_coalescing.attr.name = "intr_coalescing";
-+	host_priv->intr_coalescing.attr.mode = S_IRUGO | S_IWUSR;
-+	retval = device_create_file(host->dev, &host_priv->intr_coalescing);
-+	if (retval)
-+		goto error_exit_with_cleanup;
-+
- 	return 0;
-
- error_exit_with_cleanup:
-
-+	if (host) {
-+		dev_set_drvdata(&ofdev->dev, NULL);
-+		ata_host_detach(host);
-+	}
-+
- 	if (hcr_base)
- 		iounmap(hcr_base);
- 	if (host_priv)
-@@ -1390,6 +1491,8 @@ static int sata_fsl_remove(struct platform_device *ofdev)
- 	struct ata_host *host = dev_get_drvdata(&ofdev->dev);
- 	struct sata_fsl_host_priv *host_priv = host->private_data;
-
-+	device_remove_file(&ofdev->dev, &host_priv->intr_coalescing);
-+
- 	ata_host_detach(host);
-
- 	dev_set_drvdata(&ofdev->dev, NULL);
---
-1.6.4
++		struct ccsr_guts_85xx __iomem *guts;
+ 
+ 		np = of_find_node_by_name(NULL, "global-utilities");
+ 
+ 		if (np) {
+-			pmuxcr = of_iomap(np, 0) + MPC85xx_PMUXCR_OFFSET;
++			guts = of_iomap(np, 0);
+ 
+-			if (!pmuxcr)
+-				printk(KERN_EMERG "Error: Alternate function"
+-					" signal multiplex control register not"
+-					" mapped!\n");
+-			else
++			if (!guts)
++				pr_err("mpc85xx-rdb: could not map global utilties register!\n");
++			else{
+ 			/* P1021 has pins muxed for QE and other functions. To
+ 			 * enable QE UEC mode, we need to set bit QE0 for UCC1
+ 			 * in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
+ 			 * and QE12 for QE MII management signals in PMUXCR
+ 			 * register.
+ 			 */
+-				setbits32(pmuxcr, MPC85xx_PMUXCR_QE0 |
++				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE0 |
+ 						  MPC85xx_PMUXCR_QE3 |
+ 						  MPC85xx_PMUXCR_QE9 |
+ 						  MPC85xx_PMUXCR_QE12);
+-
++				iounmap(guts);
++			}
+ 			of_node_put(np);
+ 		}
+ 
+-- 
+1.7.0.4
