@@ -1,21 +1,17 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 23E23B6FEF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 08:07:37 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Fan Zhicheng-B32736 <B32736@freescale.com>
-Subject: Re: [PATCH 1/2 v4] powerpc/85xx: Add p1025rdb platform support
-Date: Thu, 16 Feb 2012 21:07:29 +0000
-Message-ID: <CAOZdJXV+CJvCBShO9sPMn2mptgeewO+=a53PEFV7KegOLfHRWA@mail.gmail.com>
-References: <1329206783-12190-1-git-send-email-B32736@freescale.com>
-In-Reply-To: <1329206783-12190-1-git-send-email-B32736@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <akpm@linux-foundation.org>
+Date: Thu, 16 Feb 2012 14:52:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v5 00/27] irq_domain generalization and rework
+Message-Id: <20120216145219.0f1c1b98.akpm@linux-foundation.org>
+In-Reply-To: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Russell King <rmk@arm.linux.org.uk>, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+ Rob Herring <rob.herring@calxeda.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,14 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 14, 2012 at 2:06 AM, Zhicheng Fan <B32736@freescale.com> wrote:
-> From: Zhicheng Fan <b32736@freescale.com>
->
-> Signed-off-by: Zhicheng Fan <b32736@freescale.com>
-> ---
+On Thu, 16 Feb 2012 02:09:01 -0700
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-Acked-by: Timur Tabi <timur@freescale.com>
+> 
+> This series generalizes the "irq_host" infrastructure from powerpc
+> so that it can be used by all architectures and renames it to "irq_domain".
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+drivers/mfd/twl-core.c is fairly horked on i386 allmodconfig:
+
+drivers/mfd/twl-core.c: In function 'twl_probe':
+drivers/mfd/twl-core.c:1218: error: implicit declaration of function 'irq_alloc_descs'
+drivers/mfd/twl-core.c:1226: error: implicit declaration of function 'irq_domain_add_legacy'
+drivers/mfd/twl-core.c:1227: error: 'irq_domain_simple_ops' undeclared (first use in this function)
+drivers/mfd/twl-core.c:1227: error: (Each undeclared identifier is reported only once
+drivers/mfd/twl-core.c:1227: error: for each function it appears in.)
+
+
+This is today's linux-next so it has rmk's "ARM: omap: fix broken
+twl-core dependencies and ifdefs" in there, which looks like it
+attempts to repair this stuff.
+
+It's looking for things which are in both linux/irq.h and in
+linux/irqdomain.h.
+
+
+
+btw, Russell, regarding this comment in include/linux/irq.h:
+
+/*
+ * Please do not include this file in generic code.  There is currently
+ * no requirement for any architecture to implement anything held
+ * within this file.
+ *
+ * Thanks. --rmk
+ */
+
+A quick grep indicates that we've lost this battle ;) Is the comments
+still true?  Should we stop discouraging inclusion of linux/irq.h? 
+Does anyone even know that it's discouraged ;)
