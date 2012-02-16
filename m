@@ -7,13 +7,12 @@ To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
  Rob Herring <rob.herring@calxeda.com>
-Subject: [PATCH v5 17/27] irq_domain: Create common xlate functions that
- device drivers can use
-Date: Thu, 16 Feb 2012 02:09:18 -0700
-Message-Id: <1329383368-12122-18-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH v5 27/27] irq_domain: For NOMAP revmap,
+ allow users to specify the largest usable virq
+Date: Thu, 16 Feb 2012 02:09:28 -0700
+Message-Id: <1329383368-12122-28-git-send-email-grant.likely@secretlab.ca>
 In-Reply-To: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
 References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
-Cc: Mark Salter <msalter@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,131 +22,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rather than having each interrupt controller driver creating its own barely
-unique .xlate function for irq_domain, create a library of translators which
-any driver can use directly.
-
-v5: - Remove irq_domain_xlate_pci().  It was incorrect.
+This patch replaces the old global setting of irq_virq_count that is only
+used by the NOMAP mapping and instead uses a revmap_data property so that
+the maximum NOMAP allocation can be set per NOMAP irq_domain.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Rob Herring <rob.herring@calxeda.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Mark Salter <msalter@redhat.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Milton Miller <miltonm@bga.com>
-Tested-by: Olof Johansson <olof@lixom.net>
 ---
- include/linux/irqdomain.h |   12 ++++++++
- kernel/irq/irqdomain.c    |   65 ++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 67 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/cell/axon_msi.c       |    2 +-
+ arch/powerpc/platforms/cell/beat_interrupt.c |    2 +-
+ arch/powerpc/platforms/iseries/irq.c         |    8 +------
+ arch/powerpc/platforms/powermac/smp.c        |    2 +-
+ arch/powerpc/platforms/ps3/interrupt.c       |    3 +-
+ include/linux/irqdomain.h                    |    7 ++---
+ kernel/irq/irqdomain.c                       |   29 ++++++-------------------
+ 7 files changed, 15 insertions(+), 38 deletions(-)
 
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index db360fc..369df06 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -392,7 +392,7 @@ static int axon_msi_probe(struct platform_device *device)
+ 	}
+ 	memset(msic->fifo_virt, 0xff, MSIC_FIFO_SIZE_BYTES);
+ 
+-	msic->irq_domain = irq_domain_add_nomap(dn, &msic_host_ops, msic);
++	msic->irq_domain = irq_domain_add_nomap(dn, &msic_host_ops, msic, ~0);
+ 	if (!msic->irq_domain) {
+ 		printk(KERN_ERR "axon_msi: couldn't allocate irq_domain for %s\n",
+ 		       dn->full_name);
+diff --git a/arch/powerpc/platforms/cell/beat_interrupt.c b/arch/powerpc/platforms/cell/beat_interrupt.c
+index e5c3a2c..4315349 100644
+--- a/arch/powerpc/platforms/cell/beat_interrupt.c
++++ b/arch/powerpc/platforms/cell/beat_interrupt.c
+@@ -239,7 +239,7 @@ void __init beatic_init_IRQ(void)
+ 	ppc_md.get_irq = beatic_get_irq;
+ 
+ 	/* Allocate an irq host */
+-	beatic_host = irq_domain_add_nomap(NULL, &beatic_pic_host_ops, NULL);
++	beatic_host = irq_domain_add_nomap(NULL, &beatic_pic_host_ops, NULL, ~0);
+ 	BUG_ON(beatic_host == NULL);
+ 	irq_set_default_host(beatic_host);
+ }
+diff --git a/arch/powerpc/platforms/iseries/irq.c b/arch/powerpc/platforms/iseries/irq.c
+index 05ce516..db48abe 100644
+--- a/arch/powerpc/platforms/iseries/irq.c
++++ b/arch/powerpc/platforms/iseries/irq.c
+@@ -371,16 +371,10 @@ void __init iSeries_init_IRQ(void)
+ 	struct irq_domain *host;
+ 	int ret;
+ 
+-	/*
+-	 * The Hypervisor only allows us up to 256 interrupt
+-	 * sources (the irq number is passed in a u8).
+-	 */
+-	irq_set_virq_count(256);
+-
+ 	/* Create irq host. No need for a revmap since HV will give us
+ 	 * back our virtual irq number
+ 	 */
+-	host = irq_domain_add_nomap(NULL, &iseries_irq_domain_ops, NULL);
++	host = irq_domain_add_nomap(NULL, &iseries_irq_domain_ops, NULL, 256);
+ 	BUG_ON(host == NULL);
+ 	irq_set_default_host(host);
+ 
+diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+index a81e5a8..40f12af 100644
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -192,7 +192,7 @@ static int psurge_secondary_ipi_init(void)
+ {
+ 	int rc = -ENOMEM;
+ 
+-	psurge_host = irq_domain_add_nomap(NULL, &psurge_host_ops, NULL);
++	psurge_host = irq_domain_add_nomap(NULL, &psurge_host_ops, NULL, ~0);
+ 
+ 	if (psurge_host)
+ 		psurge_secondary_virq = irq_create_direct_mapping(psurge_host);
+diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
+index 2a4ff86..0700a98 100644
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -753,9 +753,8 @@ void __init ps3_init_IRQ(void)
+ 	unsigned cpu;
+ 	struct irq_domain *host;
+ 
+-	host = irq_domain_add_nomap(NULL, &ps3_host_ops, NULL);
++	host = irq_domain_add_nomap(NULL, &ps3_host_ops, NULL, PS3_PLUG_MAX + 1);
+ 	irq_set_default_host(host);
+-	irq_set_virq_count(PS3_PLUG_MAX + 1);
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		struct ps3_private *pd = &per_cpu(ps3_private, cpu);
 diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index e7379a3..ea58f36 100644
+index 47af458..80bb917 100644
 --- a/include/linux/irqdomain.h
 +++ b/include/linux/irqdomain.h
-@@ -163,6 +163,18 @@ extern unsigned int irq_linear_revmap(struct irq_domain *host,
- 				      irq_hw_number_t hwirq);
+@@ -105,6 +105,7 @@ struct irq_domain {
+ 			unsigned int *revmap;
+ 		} linear;
+ 		struct radix_tree_root tree;
++		unsigned int nomap_max_virq;
+ 	} revmap_data;
+ 	const struct irq_domain_ops *ops;
+ 	void *host_data;
+@@ -126,15 +127,14 @@ struct irq_domain *irq_domain_add_linear(struct device_node *of_node,
+ 					 const struct irq_domain_ops *ops,
+ 					 void *host_data);
+ struct irq_domain *irq_domain_add_nomap(struct device_node *of_node,
+-					 const struct irq_domain_ops *ops,
+-					 void *host_data);
++					const struct irq_domain_ops *ops,
++					void *host_data, unsigned int max_virq);
+ struct irq_domain *irq_domain_add_tree(struct device_node *of_node,
+ 					 const struct irq_domain_ops *ops,
+ 					 void *host_data);
  
- extern struct irq_domain_ops irq_domain_simple_ops;
-+
-+/* stock xlate functions */
-+int irq_domain_xlate_onecell(struct irq_domain *d, struct device_node *ctrlr,
-+			const u32 *intspec, unsigned int intsize,
-+			irq_hw_number_t *out_hwirq, unsigned int *out_type);
-+int irq_domain_xlate_twocell(struct irq_domain *d, struct device_node *ctrlr,
-+			const u32 *intspec, unsigned int intsize,
-+			irq_hw_number_t *out_hwirq, unsigned int *out_type);
-+int irq_domain_xlate_onetwocell(struct irq_domain *d, struct device_node *ctrlr,
-+			const u32 *intspec, unsigned int intsize,
-+			irq_hw_number_t *out_hwirq, unsigned int *out_type);
-+
- #if defined(CONFIG_OF_IRQ)
- extern void irq_domain_generate_simple(const struct of_device_id *match,
- 					u64 phys_base, unsigned int irq_start);
+ extern struct irq_domain *irq_find_host(struct device_node *node);
+ extern void irq_set_default_host(struct irq_domain *host);
+-extern void irq_set_virq_count(unsigned int count);
+ 
+ static inline struct irq_domain *irq_domain_add_legacy_isa(
+ 				struct device_node *of_node,
+@@ -146,7 +146,6 @@ static inline struct irq_domain *irq_domain_add_legacy_isa(
+ }
+ extern struct irq_domain *irq_find_host(struct device_node *node);
+ extern void irq_set_default_host(struct irq_domain *host);
+-extern void irq_set_virq_count(unsigned int count);
+ 
+ 
+ extern unsigned int irq_create_mapping(struct irq_domain *host,
 diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index 03f571a..9a8f95e 100644
+index e7d8e96..e820b53 100644
 --- a/kernel/irq/irqdomain.c
 +++ b/kernel/irq/irqdomain.c
-@@ -699,25 +699,70 @@ int irq_domain_simple_map(struct irq_domain *d, unsigned int irq,
- 	return 0;
- }
+@@ -23,7 +23,6 @@ static LIST_HEAD(irq_domain_list);
+ static DEFINE_MUTEX(irq_domain_mutex);
  
--int irq_domain_simple_xlate(struct irq_domain *d,
--			    struct device_node *controller,
--			    const u32 *intspec, unsigned int intsize,
--			    unsigned long *out_hwirq, unsigned int *out_type)
-+/**
-+ * irq_domain_xlate_onecell() - Generic xlate for direct one cell bindings
-+ *
-+ * Device Tree IRQ specifier translation function which works with one cell
-+ * bindings where the cell value maps directly to the hwirq number.
-+ */
-+int irq_domain_xlate_onecell(struct irq_domain *d, struct device_node *ctrlr,
-+			     const u32 *intspec, unsigned int intsize,
-+			     unsigned long *out_hwirq, unsigned int *out_type)
+ static DEFINE_MUTEX(revmap_trees_mutex);
+-static unsigned int irq_virq_count = NR_IRQS;
+ static struct irq_domain *irq_default_domain;
+ 
+ /**
+@@ -185,12 +184,14 @@ struct irq_domain *irq_domain_add_linear(struct device_node *of_node,
+ 
+ struct irq_domain *irq_domain_add_nomap(struct device_node *of_node,
+ 					 const struct irq_domain_ops *ops,
+-					 void *host_data)
++					 void *host_data, unsigned int max_virq)
  {
--	if (d->of_node != controller)
--		return -EINVAL;
--	if (intsize < 1)
-+	if (WARN_ON(intsize < 1))
- 		return -EINVAL;
- 	*out_hwirq = intspec[0];
- 	*out_type = IRQ_TYPE_NONE;
--	if (intsize > 1)
--		*out_type = intspec[1] & IRQ_TYPE_SENSE_MASK;
- 	return 0;
+ 	struct irq_domain *domain = irq_domain_alloc(of_node,
+ 					IRQ_DOMAIN_MAP_NOMAP, ops, host_data);
+-	if (domain)
++	if (domain) {
++		domain->revmap_data.nomap_max_virq = max_virq;
+ 		irq_domain_add(domain);
++	}
+ 	return domain;
  }
-+EXPORT_SYMBOL_GPL(irq_domain_xlate_onecell);
-+
-+/**
-+ * irq_domain_xlate_twocell() - Generic xlate for direct two cell bindings
-+ *
-+ * Device Tree IRQ specifier translation function which works with two cell
-+ * bindings where the cell values map directly to the hwirq number
-+ * and linux irq flags.
-+ */
-+int irq_domain_xlate_twocell(struct irq_domain *d, struct device_node *ctrlr,
-+			const u32 *intspec, unsigned int intsize,
-+			irq_hw_number_t *out_hwirq, unsigned int *out_type)
-+{
-+	if (WARN_ON(intsize < 2))
-+		return -EINVAL;
-+	*out_hwirq = intspec[0];
-+	*out_type = intspec[1] & IRQ_TYPE_SENSE_MASK;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(irq_domain_xlate_twocell);
-+
-+/**
-+ * irq_domain_xlate_onetwocell() - Generic xlate for one or two cell bindings
-+ *
-+ * Device Tree IRQ specifier translation function which works with either one
-+ * or two cell bindings where the cell values map directly to the hwirq number
-+ * and linux irq flags.
-+ *
-+ * Note: don't use this function unless your interrupt controller explicitly
-+ * supports both one and two cell bindings.  For the majority of controllers
-+ * the _onecell() or _twocell() variants above should be used.
-+ */
-+int irq_domain_xlate_onetwocell(struct irq_domain *d,
-+				struct device_node *ctrlr,
-+				const u32 *intspec, unsigned int intsize,
-+				unsigned long *out_hwirq, unsigned int *out_type)
-+{
-+	if (WARN_ON(intsize < 1))
-+		return -EINVAL;
-+	*out_hwirq = intspec[0];
-+	*out_type = (intsize > 1) ? intspec[1] : IRQ_TYPE_NONE;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(irq_domain_xlate_onetwocell);
  
- struct irq_domain_ops irq_domain_simple_ops = {
- 	.map = irq_domain_simple_map,
--	.xlate = irq_domain_simple_xlate,
-+	.xlate = irq_domain_xlate_onetwocell,
- };
- EXPORT_SYMBOL_GPL(irq_domain_simple_ops);
+@@ -262,22 +263,6 @@ void irq_set_default_host(struct irq_domain *domain)
+ 	irq_default_domain = domain;
+ }
  
+-/**
+- * irq_set_virq_count() - Set the maximum number of linux irqs
+- * @count: number of linux irqs, capped with NR_IRQS
+- *
+- * This is mainly for use by platforms like iSeries who want to program
+- * the virtual irq number in the controller to avoid the reverse mapping
+- */
+-void irq_set_virq_count(unsigned int count)
+-{
+-	pr_debug("irq: Trying to set virq count to %d\n", count);
+-
+-	BUG_ON(count < NUM_ISA_INTERRUPTS);
+-	if (count < NR_IRQS)
+-		irq_virq_count = count;
+-}
+-
+ static int irq_setup_virq(struct irq_domain *domain, unsigned int virq,
+ 			    irq_hw_number_t hwirq)
+ {
+@@ -321,9 +306,9 @@ unsigned int irq_create_direct_mapping(struct irq_domain *domain)
+ 		pr_debug("irq: create_direct virq allocation failed\n");
+ 		return 0;
+ 	}
+-	if (virq >= irq_virq_count) {
++	if (virq > domain->revmap_data.nomap_max_virq) {
+ 		pr_err("ERROR: no free irqs available below %i maximum\n",
+-			irq_virq_count);
++			domain->revmap_data.nomap_max_virq);
+ 		irq_free_desc(virq);
+ 		return 0;
+ 	}
+@@ -549,7 +534,7 @@ static unsigned int irq_find_mapping_slow(struct irq_domain *domain,
+ 	unsigned int i;
+ 
+ 	/* Slow path does a linear search of the map */
+-	for (i = 0; i < irq_virq_count; i++)  {
++	for (i = 0; i < nr_irqs; i++)  {
+ 		struct irq_data *data = irq_get_irq_data(i);
+ 		if (data && (data->domain == domain) && (data->hwirq == hwirq))
+ 			return i;
 -- 
 1.7.9
