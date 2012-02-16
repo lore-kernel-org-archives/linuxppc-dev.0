@@ -1,24 +1,24 @@
 Return-Path: <r58472@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe004.messaging.microsoft.com
+ [213.199.154.142])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0483AB700C
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 22:20:14 +1100 (EST)
-Received: from mail131-ch1 (localhost [127.0.0.1])	by
- mail131-ch1-R.bigfish.com (Postfix) with ESMTP id 7CC593C01AA	for
- <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 11:20:11 +0000 (UTC)
-Received: from CH1EHSMHS030.bigfish.com (snatpool3.int.messaging.microsoft.com
- [10.43.68.225])	by mail131-ch1.bigfish.com (Postfix) with ESMTP id
- 82DD6C0048
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 11:20:09 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id F3019B700C
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 22:20:18 +1100 (EST)
+Received: from mail110-db3 (localhost [127.0.0.1])	by
+ mail110-db3-R.bigfish.com (Postfix) with ESMTP id DA1281801A9	for
+ <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 11:20:14 +0000 (UTC)
+Received: from DB3EHSMHS015.bigfish.com (unknown [10.3.81.245])	by
+ mail110-db3.bigfish.com (Postfix) with ESMTP id 2364C140048	for
+ <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 11:20:13 +0000 (UTC)
 From: Li Yang <leoli@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT from
- configurable
-Date: Thu, 16 Feb 2012 20:10:09 +0800
-Message-ID: <1329394210-1014-1-git-send-email-leoli@freescale.com>
+Subject: [PATCH 2/2] powerpc/85xx: add a 36-bit corenet default config
+Date: Thu, 16 Feb 2012 20:10:10 +0800
+Message-ID: <1329394210-1014-2-git-send-email-leoli@freescale.com>
+In-Reply-To: <1329394210-1014-1-git-send-email-leoli@freescale.com>
+References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,76 +30,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix the problem that large physical address support cannot be
-disabled when some platforms which only provides 36-bit support
-are selected.  According to the philosophy of kernel config
-enabling a platform support doesn't mean the kernel is only
-running on that platform.  Remove the auto selection of PHYS_64BIT
-option for these platforms.  They will need to use a 36bit default
-config that selects PHYS_64BIT explicitly.
-
-The reason why we need to keep PHYS_64BIT option configurable is
-that enabling it cause negative performance impact on various
-aspects like TLB miss and physical address manipulating.  We should
-not enable it unless really needed, e.g. use large memory of 4GB
-or bigger.
+This default config should be used by platforms that only
+provides 36-bit software support in tree, such as P3041DS,
+P3060QDS, P4080DS, P5020DS, and etc.
 
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/platforms/85xx/Kconfig |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+ arch/powerpc/configs/corenet36_smp_defconfig |  185 ++++++++++++++++++++++++++
+ 1 files changed, 185 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/configs/corenet36_smp_defconfig
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index d7946be..d9bc0bd 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -80,7 +80,6 @@ config P1010_RDB
- config P1022_DS
- 	bool "Freescale P1022 DS"
- 	select DEFAULT_UIMAGE
--	select PHYS_64BIT	# The DTS has 36-bit addresses
- 	select SWIOTLB
- 	help
- 	  This option enables support for the Freescale P1022DS reference board.
-@@ -175,7 +174,6 @@ config P2041_RDB
- 	bool "Freescale P2041 RDB"
- 	select DEFAULT_UIMAGE
- 	select PPC_E500MC
--	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
- 	select GPIO_MPC8XXX
-@@ -188,7 +186,6 @@ config P3041_DS
- 	bool "Freescale P3041 DS"
- 	select DEFAULT_UIMAGE
- 	select PPC_E500MC
--	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
- 	select GPIO_MPC8XXX
-@@ -201,7 +198,6 @@ config P3060_QDS
- 	bool "Freescale P3060 QDS"
- 	select DEFAULT_UIMAGE
- 	select PPC_E500MC
--	select PHYS_64BIT
- 	select SWIOTLB
- 	select GPIO_MPC8XXX
- 	select HAS_RAPIDIO
-@@ -213,7 +209,6 @@ config P4080_DS
- 	bool "Freescale P4080 DS"
- 	select DEFAULT_UIMAGE
- 	select PPC_E500MC
--	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
- 	select GPIO_MPC8XXX
-@@ -229,7 +224,6 @@ config P5020_DS
- 	select DEFAULT_UIMAGE
- 	select E500
- 	select PPC_E500MC
--	select PHYS_64BIT
- 	select SWIOTLB
- 	select ARCH_REQUIRE_GPIOLIB
- 	select GPIO_MPC8XXX
+diff --git a/arch/powerpc/configs/corenet36_smp_defconfig b/arch/powerpc/configs/corenet36_smp_defconfig
+new file mode 100644
+index 0000000..9765b4d
+--- /dev/null
++++ b/arch/powerpc/configs/corenet36_smp_defconfig
+@@ -0,0 +1,185 @@
++CONFIG_PPC_85xx=y
++CONFIG_PHYS_64BIT=y
++CONFIG_SMP=y
++CONFIG_NR_CPUS=8
++CONFIG_EXPERIMENTAL=y
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_BSD_PROCESS_ACCT=y
++CONFIG_AUDIT=y
++CONFIG_SPARSE_IRQ=y
++CONFIG_RCU_TRACE=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_KALLSYMS_ALL=y
++CONFIG_EMBEDDED=y
++CONFIG_PERF_EVENTS=y
++CONFIG_SLAB=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++CONFIG_MODVERSIONS=y
++# CONFIG_BLK_DEV_BSG is not set
++CONFIG_P2041_RDB=y
++CONFIG_P3041_DS=y
++CONFIG_P3060_QDS=y
++CONFIG_P4080_DS=y
++CONFIG_P5020_DS=y
++CONFIG_HIGHMEM=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
++CONFIG_BINFMT_MISC=m
++CONFIG_KEXEC=y
++CONFIG_FORCE_MAX_ZONEORDER=13
++CONFIG_FSL_LBC=y
++CONFIG_PCI=y
++CONFIG_PCIEPORTBUS=y
++# CONFIG_PCIEASPM is not set
++CONFIG_RAPIDIO=y
++CONFIG_FSL_RIO=y
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_XFRM_USER=y
++CONFIG_XFRM_SUB_POLICY=y
++CONFIG_XFRM_STATISTICS=y
++CONFIG_NET_KEY=y
++CONFIG_NET_KEY_MIGRATE=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_IP_ADVANCED_ROUTER=y
++CONFIG_IP_MULTIPLE_TABLES=y
++CONFIG_IP_ROUTE_MULTIPATH=y
++CONFIG_IP_ROUTE_VERBOSE=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++CONFIG_IP_PNP_RARP=y
++CONFIG_NET_IPIP=y
++CONFIG_IP_MROUTE=y
++CONFIG_IP_PIMSM_V1=y
++CONFIG_IP_PIMSM_V2=y
++CONFIG_ARPD=y
++CONFIG_INET_AH=y
++CONFIG_INET_ESP=y
++CONFIG_INET_IPCOMP=y
++# CONFIG_INET_LRO is not set
++CONFIG_IPV6=y
++CONFIG_IP_SCTP=m
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_MTD=y
++CONFIG_MTD_CMDLINE_PARTS=y
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLOCK=y
++CONFIG_MTD_CFI=y
++CONFIG_MTD_CFI_AMDSTD=y
++CONFIG_MTD_PHYSMAP_OF=y
++CONFIG_MTD_M25P80=y
++CONFIG_PROC_DEVICETREE=y
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZE=131072
++CONFIG_MISC_DEVICES=y
++CONFIG_BLK_DEV_SD=y
++CONFIG_CHR_DEV_ST=y
++CONFIG_BLK_DEV_SR=y
++CONFIG_CHR_DEV_SG=y
++CONFIG_SCSI_MULTI_LUN=y
++CONFIG_SCSI_LOGGING=y
++CONFIG_SCSI_SYM53C8XX_2=y
++CONFIG_ATA=y
++CONFIG_SATA_AHCI=y
++CONFIG_SATA_FSL=y
++CONFIG_SATA_SIL24=y
++CONFIG_SATA_SIL=y
++CONFIG_PATA_SIL680=y
++CONFIG_NETDEVICES=y
++CONFIG_FSL_PQ_MDIO=y
++CONFIG_E1000=y
++CONFIG_E1000E=y
++CONFIG_VITESSE_PHY=y
++CONFIG_FIXED_PHY=y
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++CONFIG_SERIO_LIBPS2=y
++# CONFIG_LEGACY_PTYS is not set
++CONFIG_PPC_EPAPR_HV_BYTECHAN=y
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_EXTENDED=y
++CONFIG_SERIAL_8250_MANY_PORTS=y
++CONFIG_SERIAL_8250_DETECT_IRQ=y
++CONFIG_SERIAL_8250_RSA=y
++CONFIG_HW_RANDOM=y
++CONFIG_NVRAM=y
++CONFIG_I2C=y
++CONFIG_I2C_MPC=y
++CONFIG_SPI=y
++CONFIG_SPI_GPIO=y
++CONFIG_SPI_FSL_SPI=y
++CONFIG_SPI_FSL_ESPI=y
++# CONFIG_HWMON is not set
++CONFIG_VIDEO_OUTPUT_CONTROL=y
++CONFIG_USB_HID=m
++CONFIG_USB=y
++CONFIG_USB_DEVICEFS=y
++CONFIG_USB_MON=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_FSL=y
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
++CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
++CONFIG_USB_STORAGE=y
++CONFIG_MMC=y
++CONFIG_MMC_SDHCI=y
++CONFIG_EDAC=y
++CONFIG_EDAC_MM_EDAC=y
++CONFIG_EDAC_MPC85XX=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_DS3232=y
++CONFIG_RTC_DRV_CMOS=y
++CONFIG_UIO=y
++CONFIG_STAGING=y
++CONFIG_VIRT_DRIVERS=y
++CONFIG_FSL_HV_MANAGER=y
++CONFIG_EXT2_FS=y
++CONFIG_EXT3_FS=y
++# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
++CONFIG_ISO9660_FS=m
++CONFIG_JOLIET=y
++CONFIG_ZISOFS=y
++CONFIG_UDF_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=y
++CONFIG_NTFS_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_TMPFS=y
++CONFIG_HUGETLBFS=y
++CONFIG_JFFS2_FS=y
++CONFIG_CRAMFS=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++CONFIG_NFS_V4=y
++CONFIG_ROOT_NFS=y
++CONFIG_NFSD=m
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_MAC_PARTITION=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS_UTF8=m
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_SHIRQ=y
++CONFIG_DETECT_HUNG_TASK=y
++CONFIG_DEBUG_INFO=y
++CONFIG_SYSCTL_SYSCALL_CHECK=y
++CONFIG_CRYPTO_NULL=y
++CONFIG_CRYPTO_PCBC=m
++CONFIG_CRYPTO_MD4=y
++CONFIG_CRYPTO_SHA256=y
++CONFIG_CRYPTO_SHA512=y
++CONFIG_CRYPTO_AES=y
++# CONFIG_CRYPTO_ANSI_CPRNG is not set
++CONFIG_CRYPTO_DEV_FSL_CAAM=y
 -- 
 1.5.4.3
