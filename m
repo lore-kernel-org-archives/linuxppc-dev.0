@@ -1,26 +1,23 @@
-Return-Path: <B29397@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0CE29B6FCF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2012 12:12:48 +1100 (EST)
-From: Chen Peter-B29397 <B29397@freescale.com>
-To: Mehresh Ramneek-B31383 <B31383@freescale.com>, "stern@rowland.harvard.edu"
- <stern@rowland.harvard.edu>, "agust@denx.de" <agust@denx.de>
-Subject: RE: [RFC] usb: Fix build error due to dma_mask is not at
- pdev_archdata at ARM
-Date: Thu, 16 Feb 2012 01:12:36 +0000
-Message-ID: <F281D0F91ED19E4D8E63A7504E8A649804880F@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1329210695-14492-1-git-send-email-peter.chen@freescale.com>
- <75A6930FC6B2FE479E2BC468C9240CE0026C19@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <75A6930FC6B2FE479E2BC468C9240CE0026C19@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kernel@pengutronix.de" <kernel@pengutronix.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 068261007D6
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 13:14:47 +1100 (EST)
+Date: Thu, 16 Feb 2012 13:14:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Build fail in hugetlbpage.c with linux-next and mpc85xx_defconfig
+Message-Id: <20120216131438.12149a2218f8fe4e7e46d83e@canb.auug.org.au>
+In-Reply-To: <20120216111513.918494b07a5331eabe3d32ac@canb.auug.org.au>
+References: <14174.1329347321@neuling.org>
+ <20120216111513.918494b07a5331eabe3d32ac@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__16_Feb_2012_13_14_38_+1100_AfalFEsfqRczIY8x"
+Cc: Michael Neuling <mikey@neuling.org>, Pawel Moll <pawel.moll@arm.com>,
+ linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+ McClintock Matthew-B29882 <B29882@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> When build i.mx platform with imx_v6_v7_defconfig, and after adding USB
-> Gadget support, it has below build error:
->=20
-> CC      drivers/usb/host/fsl-mph-dr-of.o
-> drivers/usb/host/fsl-mph-dr-of.c: In function 'fsl_usb2_device_register':
-> drivers/usb/host/fsl-mph-dr-of.c:97: error: 'struct pdev_archdata'
-> has no member named 'dma_mask'
->=20
-> It has discussed at: http://www.spinics.net/lists/linux-usb/msg57302.html
->=20
-> For PowerPC, there is dma_mask at struct pdev_archdata, but there is no
-> dma_mask at struct pdev_archdata for ARM. The pdev_archdata is related to
-> specific platform, it should NOT be accessed by cross platform drivers,
-> like USB.
->=20
-> The code for pdev_archdata should be useless, as for PowerPC, it has
-> already gotten the value for pdev->dev.dma_mask at function
-> arch_setup_pdev_archdata of arch/powerpc/kernel/setup-common.c.
->=20
-> Anyone who has PowerPC hardware with USB host enabled, and uses this code
-> can help me a test? Thank you
->=20
-> [Ramneek]: Hi Peter, the code is working for Host stack on PowerPC.
-=20
-Thanks, Ramneek. I will post PATCH and add:
-Tested-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+--Signature=_Thu__16_Feb_2012_13_14_38_+1100_AfalFEsfqRczIY8x
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Rusty,
+
+On Thu, 16 Feb 2012 11:15:13 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> This was broken by commit b8076966e8e1 ("params: <level>_initcall-like
+> kernel parameters") from the rr tree which changed the parse_args() API w=
+ithout fixing all
+> the callers ....
+
+I have reverted the above commit (and the following fix one) for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__16_Feb_2012_13_14_38_+1100_AfalFEsfqRczIY8x
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPPGaOAAoJEECxmPOUX5FE0gkP/2GHxozEHNP1IwLtOEwrVlYr
+AEICalZIaLbcj8Tm5jZb0CtBmQjZGPgIAUSVlrd9e8yhKQDG37vSN0JnHf/GFpS1
+Xy1YGkLWsrNwn+f0xXNKLFmCqj2CpZRQa5F37Dr2+9ojuX1XmeRq53bCu1dXD6ZE
+WJMEVshXHNpgKgmfybwTcO2vDbm20TQs8wIDvVGeFuauze+1Q9wk1STZiwDLKFAp
+rp3sI4hwal531S0RA5diRBBsqLnZ8xedbCxQarqVhO1UV3tTtfucMsw1zygykCcU
+XmlMD2vLDVbagCkUk2JKYpRPZQwitgLsvtzQAqxK1weKUolfzU9mVhXC2KejgufO
+G8AQTTUzA/X8fSHcQAH7VvdikaI1ML67gMgcuqBuS+ir6By17Kl0/qmQZ6Fzmms1
+xLC28RXjsyaIFXFrSMg7wloZH+fi6yTL+iOuaxlQFhcajt4ATeRoVECgJio580Nl
+4sKrXruuSh4g441sbO35o41D5KozvDdWiw4Gz0m0H5H5ezxqyIFU/VUIEGfnEUqh
+YqVLcRrfzqdEmu0JvpjoASTeh6dHQWgs/lKzgAXKWH0ijUcZbJ+2QmnegIQadEtJ
+/1b/Lv1v8ih91vBV2vlct6Cq08sZC29J23I0nPK/EI8LOorkWTyYKRrYVMlCutnK
+pswQ8MSj5haE3NPVrwQx
+=I1nu
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__16_Feb_2012_13_14_38_+1100_AfalFEsfqRczIY8x--
