@@ -1,26 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 25CE6100810
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 21:23:48 +1100 (EST)
-References: <1329384365-4028-1-git-send-email-yu.liu@freescale.com>
- <1329384365-4028-2-git-send-email-yu.liu@freescale.com>
- <1329384365-4028-3-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1329384365-4028-3-git-send-email-yu.liu@freescale.com>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Message-Id: <EAC043A1-A04F-4A27-8488-3C42D99D175E@suse.de>
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH v4 3/3] KVM: PPC: epapr: install ev_idle hcall for e500
- guest
-Date: Thu, 16 Feb 2012 11:24:28 +0100
-To: Liu Yu <yu.liu@freescale.com>
-Cc: "<linuxppc-dev@ozlabs.org>" <linuxppc-dev@ozlabs.org>,
- Liu Yu <yu.liu@freescale.com>, "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
- "<B07421@freescale.com>" <B07421@freescale.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 20D60B6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2012 21:39:24 +1100 (EST)
+Message-ID: <1329388755.2892.15.camel@pasglop>
+Subject: Re: [PATCH] powerpc/usb: fix bug of kernel hang when initializing usb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Date: Thu, 16 Feb 2012 21:39:15 +1100
+In-Reply-To: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
+References: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,109 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2012-02-16 at 18:02 +0800, Shengzhou Liu wrote:
+> If USB UTMI PHY is not enable, writing to portsc register will lead to
+> kernel hang during boot up.
 
+Thanks, I'll try that tomorrow.
 
-On 16.02.2012, at 10:26, Liu Yu <yu.liu@freescale.com> wrote:
+Greg, you're picking that up or should I ?
 
-> If the guest hypervisor node contains "has-idle" property.
->=20
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Cheers,
+Ben.
+
+> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 > ---
-> v4:
-> 1. discard the CONFIG_E500 to make code for all powerpc platform
-> 2. code cleanup
->=20
-> arch/powerpc/kernel/epapr.S      |   29 +++++++++++++++++++++++++++++
-> arch/powerpc/kernel/epapr_para.c |   13 ++++++++++++-
-> 2 files changed, 41 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/epapr.S b/arch/powerpc/kernel/epapr.S
-> index 697b390..f06d636 100644
-> --- a/arch/powerpc/kernel/epapr.S
-> +++ b/arch/powerpc/kernel/epapr.S
-> @@ -15,6 +15,35 @@
-> #include <asm/ppc_asm.h>
-> #include <asm/asm-offsets.h>
->=20
-> +#define HC_VENDOR_EPAPR        (1 << 16)
-> +#define HC_EV_IDLE        16
-> +
-> +_GLOBAL(epapr_ev_idle)
-> +epapr_ev_idle:
-> +    rlwinm    r3,r1,0,0,31-THREAD_SHIFT    /* current thread_info */
-> +    lwz    r4,TI_LOCAL_FLAGS(r3)    /* set napping bit */
-> +    ori    r4,r4,_TLF_NAPPING    /* so when we take an exception */
-> +    stw    r4,TI_LOCAL_FLAGS(r3)    /* it will return to our caller */
-> +
-> +    wrteei    1
-> +
-> +idle_loop:
-> +    LOAD_REG_IMMEDIATE(r11, HC_VENDOR_EPAPR | HC_EV_IDLE)
-> +
-> +.global epapr_ev_idle_start
-> +epapr_ev_idle_start:
-> +    li    r3, -1
-> +    nop
-> +    nop
-> +    nop
-
-Can't you just bl into epapr_hypercall_start? You don't even have to save th=
-e old lr. because we never return anyways :)
-
-Alex
-
-> +
-> +    /*
-> +     * Guard against spurious wakeups (e.g. from a hypervisor) --
-> +     * any real interrupt will cause us to return to LR due to
-> +     * _TLF_NAPPING.
-> +     */
-> +    b    idle_loop
-> +
-> /* Hypercall entry point. Will be patched with device tree instructions. *=
-/
-> .global epapr_hypercall_start
-> epapr_hypercall_start:
-> diff --git a/arch/powerpc/kernel/epapr_para.c b/arch/powerpc/kernel/epapr_=
-para.c
-> index ea13cac..adee4f1 100644
-> --- a/arch/powerpc/kernel/epapr_para.c
-> +++ b/arch/powerpc/kernel/epapr_para.c
-> @@ -20,6 +20,10 @@
-> #include <linux/of.h>
-> #include <asm/epapr_hcalls.h>
-> #include <asm/cacheflush.h>
-> +#include <asm/machdep.h>
-> +
-> +extern void epapr_ev_idle(void);
-> +extern u32 epapr_ev_idle_start[];
->=20
-> bool epapr_para_enabled =3D false;
->=20
-> @@ -35,10 +39,17 @@ static int __init epapr_para_init(void)
->=20
->    insts =3D of_get_property(hyper_node, "hcall-instructions", &len);
->    if (!(len % 4) && (len >=3D (4 * 4))) {
-> -        for (i =3D 0; i < (len / 4); i++)
-> +        for (i =3D 0; i < (len / 4); i++) {
->            epapr_hypercall_start[i] =3D insts[i];
-> +            epapr_ev_idle_start[i] =3D insts[i];
-> +        }
->        flush_icache_range((ulong)epapr_hypercall_start,
->                           (ulong)epapr_hypercall_start + len);
-> +        flush_icache_range((ulong)epapr_ev_idle_start,
-> +                           (ulong)epapr_ev_idle_start + len);
-> +
-> +        if (of_get_property(hyper_node, "has-idle", NULL))
-> +            ppc_md.power_save =3D epapr_ev_idle;
->=20
->        epapr_para_enabled =3D true;
->    }
-> --=20
-> 1.7.0.4
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Apply for master branch of git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git 
+> Tested on P5020DS, the issue was reported by Benjamin Herrenschmidt. 
+> 
+>  drivers/usb/host/ehci-fsl.c |    4 ++++
+>  drivers/usb/host/ehci-fsl.h |    1 +
+>  2 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+> index c26a82e..0090ed2 100644
+> --- a/drivers/usb/host/ehci-fsl.c
+> +++ b/drivers/usb/host/ehci-fsl.c
+> @@ -216,6 +216,8 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
+>  			       unsigned int port_offset)
+>  {
+>  	u32 portsc;
+> +	struct usb_hcd *hcd = ehci_to_hcd(ehci);
+> +	void __iomem *non_ehci = hcd->regs;
+>  
+>  	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
+>  	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
+> @@ -231,6 +233,8 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
+>  		portsc |= PORT_PTS_PTW;
+>  		/* fall through */
+>  	case FSL_USB2_PHY_UTMI:
+> +		/* enable UTMI PHY */
+> +		setbits32(non_ehci + FSL_SOC_USB_CTRL, CTRL_UTMI_PHY_EN);
+>  		portsc |= PORT_PTS_UTMI;
+>  		break;
+>  	case FSL_USB2_PHY_NONE:
+> diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
+> index bdf43e2..0e400c2 100644
+> --- a/drivers/usb/host/ehci-fsl.h
+> +++ b/drivers/usb/host/ehci-fsl.h
+> @@ -45,6 +45,7 @@
+>  #define FSL_SOC_USB_PRICTRL	0x40c	/* NOTE: big-endian */
+>  #define FSL_SOC_USB_SICTRL	0x410	/* NOTE: big-endian */
+>  #define FSL_SOC_USB_CTRL	0x500	/* NOTE: big-endian */
+> +#define CTRL_UTMI_PHY_EN	(1<<9)
+>  #define CTRL_PHY_CLK_VALID	(1 << 17)
+>  #define SNOOP_SIZE_2GB		0x1e
+>  #endif				/* _EHCI_FSL_H */
