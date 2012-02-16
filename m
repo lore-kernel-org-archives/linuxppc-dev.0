@@ -1,21 +1,18 @@
-Return-Path: <B13201@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B36685@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe005.messaging.microsoft.com
+ [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1245D1013BF
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 20:31:36 +1100 (EST)
-From: Liu Yu <yu.liu@freescale.com>
-To: <agraf@suse.de>, <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>
-Subject: [PATCH v4 2/3] KVM: PPC: epapr: Add idle hcall support for host
-Date: Thu, 16 Feb 2012 17:26:01 +0800
-Message-ID: <1329384365-4028-2-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1329384365-4028-1-git-send-email-yu.liu@freescale.com>
-References: <1329384365-4028-1-git-send-email-yu.liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 41A87B6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2012 21:06:29 +1100 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linux-usb@vger.kernel.org>
+Subject: [PATCH] powerpc/usb: fix bug of kernel hang when initializing usb
+Date: Thu, 16 Feb 2012 18:02:20 +0800
+Message-ID: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, Liu Yu <yu.liu@freescale.com>,
- B07421@freescale.com
+Cc: linuxppc-dev@lists.ozlabs.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,83 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And add a new flag definition in kvm_ppc_pvinfo to indicate
-whether host support EV_IDLE hcall.
+If USB UTMI PHY is not enable, writing to portsc register will lead to
+kernel hang during boot up.
 
-Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
-v4:
-no change
+Apply for master branch of git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git 
+Tested on P5020DS, the issue was reported by Benjamin Herrenschmidt. 
 
- arch/powerpc/include/asm/kvm_para.h |   14 ++++++++++++--
- arch/powerpc/kvm/powerpc.c          |    8 ++++++++
- include/linux/kvm.h                 |    2 ++
- 3 files changed, 22 insertions(+), 2 deletions(-)
+ drivers/usb/host/ehci-fsl.c |    4 ++++
+ drivers/usb/host/ehci-fsl.h |    1 +
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 7b754e7..81a34c9 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -75,9 +75,19 @@ struct kvm_vcpu_arch_shared {
- };
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index c26a82e..0090ed2 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -216,6 +216,8 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
+ 			       unsigned int port_offset)
+ {
+ 	u32 portsc;
++	struct usb_hcd *hcd = ehci_to_hcd(ehci);
++	void __iomem *non_ehci = hcd->regs;
  
- #define KVM_SC_MAGIC_R0		0x4b564d21 /* "KVM!" */
--#define HC_VENDOR_KVM		(42 << 16)
-+
-+#include <asm/epapr_hcalls.h>
-+
-+/* ePAPR Hypercall Vendor ID */
-+#define HC_VENDOR_EPAPR		(EV_EPAPR_VENDOR_ID << 16)
-+#define HC_VENDOR_KVM		(EV_KVM_VENDOR_ID << 16)
-+
-+/* ePAPR Hypercall Token */
-+#define HC_EV_IDLE		EV_IDLE
-+
-+/* ePAPR Hypercall Return Codes */
- #define HC_EV_SUCCESS		0
--#define HC_EV_UNIMPLEMENTED	12
-+#define HC_EV_UNIMPLEMENTED	EV_UNIMPLEMENTED
- 
- #define KVM_FEATURE_MAGIC_PAGE	1
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 0e21d15..03ebd5d 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -81,6 +81,10 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 
- 		/* Second return value is in r4 */
+ 	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
+ 	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
+@@ -231,6 +233,8 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
+ 		portsc |= PORT_PTS_PTW;
+ 		/* fall through */
+ 	case FSL_USB2_PHY_UTMI:
++		/* enable UTMI PHY */
++		setbits32(non_ehci + FSL_SOC_USB_CTRL, CTRL_UTMI_PHY_EN);
+ 		portsc |= PORT_PTS_UTMI;
  		break;
-+	case HC_VENDOR_EPAPR | HC_EV_IDLE:
-+		r = HC_EV_SUCCESS;
-+		kvm_vcpu_block(vcpu);
-+		break;
- 	default:
- 		r = HC_EV_UNIMPLEMENTED;
- 		break;
-@@ -746,6 +750,10 @@ static int kvm_vm_ioctl_get_pvinfo(struct kvm_ppc_pvinfo *pvinfo)
- 	pvinfo->hcall[2] = inst_sc;
- 	pvinfo->hcall[3] = inst_nop;
- 
-+#ifdef CONFIG_BOOKE
-+	pvinfo->flags |= KVM_PPC_PVINFO_FLAGS_EV_IDLE;
-+#endif
-+
- 	return 0;
- }
- 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index acbe429..6b2c70e 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -449,6 +449,8 @@ struct kvm_ppc_pvinfo {
- 	__u8  pad[108];
- };
- 
-+#define KVM_PPC_PVINFO_FLAGS_EV_IDLE   (1<<0)
-+
- #define KVMIO 0xAE
- 
- /* machine type bits, to be used as argument to KVM_CREATE_VM */
+ 	case FSL_USB2_PHY_NONE:
+diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
+index bdf43e2..0e400c2 100644
+--- a/drivers/usb/host/ehci-fsl.h
++++ b/drivers/usb/host/ehci-fsl.h
+@@ -45,6 +45,7 @@
+ #define FSL_SOC_USB_PRICTRL	0x40c	/* NOTE: big-endian */
+ #define FSL_SOC_USB_SICTRL	0x410	/* NOTE: big-endian */
+ #define FSL_SOC_USB_CTRL	0x500	/* NOTE: big-endian */
++#define CTRL_UTMI_PHY_EN	(1<<9)
+ #define CTRL_PHY_CLK_VALID	(1 << 17)
+ #define SNOOP_SIZE_2GB		0x1e
+ #endif				/* _EHCI_FSL_H */
 -- 
-1.7.0.4
+1.6.4
