@@ -1,19 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 20D60B6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2012 21:39:24 +1100 (EST)
-Message-ID: <1329388755.2892.15.camel@pasglop>
-Subject: Re: [PATCH] powerpc/usb: fix bug of kernel hang when initializing usb
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Date: Thu, 16 Feb 2012 21:39:15 +1100
-In-Reply-To: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 49C59B6F13
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 22:15:07 +1100 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 16 Feb 2012 16:45:03 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1GBExWL1548468
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 16:44:59 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1GBExlY012443
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 16:44:59 +0530
+Subject: [RFC PATCH v7 00/10] fadump: Firmware-assisted dump support for
+ Powerpc.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 16 Feb 2012 16:44:06 +0530
+Message-ID: <20120216111050.4733.38034.stgit@mars>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Anton Blanchard <anton@samba.org>, Amerigo Wang <amwang@redhat.com>,
+ Kexec-ml <kexec@lists.infradead.org>, Milton Miller <miltonm@bga.com>,
+ Randy Dunlap <rdunlap@xenotime.net>, Paul Mackerras <paulus@samba.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,57 +40,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-02-16 at 18:02 +0800, Shengzhou Liu wrote:
-> If USB UTMI PHY is not enable, writing to portsc register will lead to
-> kernel hang during boot up.
+Hi All,
 
-Thanks, I'll try that tomorrow.
+Please find the version 7 of the patchset that implements firmware-assisted
+dump mechanism to capture kernel crash dump for Powerpc architecture.
+Firmware-assisted dump is a robust mechanism to get reliable kernel crash
+dump with the assistance of firmware. This approach does not use kexec,
+instead firmware assists in booting the kdump kernel while preserving memory
+contents.
 
-Greg, you're picking that up or should I ?
+- Firmware assisted dump (fadump) infrastructure is intended to replace
+  the existing phyp assisted dump.
+- Fadump uses the same firmware interfaces and memory reservation model
+  as phyp assisted dump.
+- Unlike phyp dump, fadump exports the memory dump through /proc/vmcore
+  in the ELF format in the same way as kdump. This helps us reuse the
+  kdump infrastructure for dump capture and filtering.
+- Unlike phyp dump, userspace tool does not need to refer any sysfs
+  interface while reading /proc/vmcore.
+- Unlike phyp dump, fadump allows user to release all the memory reserved
+  for dump, with a single operation of echo 1 > /sys/kernel/fadump_release_mem.
+- Once enabled through kernel boot parameter, fadump can be
+  started/stopped through /sys/kernel/fadump_registered interface and
+  can be easily integrated with kdump service start/stop init scripts.
+- Once the dump is copied out, the memory that held the dump is
+  immediately available to the running kernel. And therefore, unlike
+  kdump, fadump doesn't need a 2nd reboot to get back the system to
+  the production configuration.
 
-Cheers,
-Ben.
+Fadump reuses much of the code written by Manish Ahuja and Linas Vepstas
+for the phyp assisted dump.
 
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
-> Apply for master branch of git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git 
-> Tested on P5020DS, the issue was reported by Benjamin Herrenschmidt. 
-> 
->  drivers/usb/host/ehci-fsl.c |    4 ++++
->  drivers/usb/host/ehci-fsl.h |    1 +
->  2 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-> index c26a82e..0090ed2 100644
-> --- a/drivers/usb/host/ehci-fsl.c
-> +++ b/drivers/usb/host/ehci-fsl.c
-> @@ -216,6 +216,8 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
->  			       unsigned int port_offset)
->  {
->  	u32 portsc;
-> +	struct usb_hcd *hcd = ehci_to_hcd(ehci);
-> +	void __iomem *non_ehci = hcd->regs;
->  
->  	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
->  	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
-> @@ -231,6 +233,8 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
->  		portsc |= PORT_PTS_PTW;
->  		/* fall through */
->  	case FSL_USB2_PHY_UTMI:
-> +		/* enable UTMI PHY */
-> +		setbits32(non_ehci + FSL_SOC_USB_CTRL, CTRL_UTMI_PHY_EN);
->  		portsc |= PORT_PTS_UTMI;
->  		break;
->  	case FSL_USB2_PHY_NONE:
-> diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-> index bdf43e2..0e400c2 100644
-> --- a/drivers/usb/host/ehci-fsl.h
-> +++ b/drivers/usb/host/ehci-fsl.h
-> @@ -45,6 +45,7 @@
->  #define FSL_SOC_USB_PRICTRL	0x40c	/* NOTE: big-endian */
->  #define FSL_SOC_USB_SICTRL	0x410	/* NOTE: big-endian */
->  #define FSL_SOC_USB_CTRL	0x500	/* NOTE: big-endian */
-> +#define CTRL_UTMI_PHY_EN	(1<<9)
->  #define CTRL_PHY_CLK_VALID	(1 << 17)
->  #define SNOOP_SIZE_2GB		0x1e
->  #endif				/* _EHCI_FSL_H */
+I have tested the patches on following system configuration:
+1. LPAR on Power6 with 4GB RAM and 8 CPUs
+2. LPAR on Power7 with 2GB RAM and 20 CPUs
+3. LPAR on Power7 with 1TB RAM and 896 CPUs
+
+Please review the patchset and let me know your comments.
+
+
+ChangeLog:
+
+Change in v7:
+-------------
+- Updated the documentation explaining the enhancement in fadump over old
+  phyp dump.
+- Re-based patches to commit d65b4e98d7 (v3.3-rc3)
+
+Change in v6:
+-------------
+- Use of_read_number and of_read_ulong while reading the dump sizes
+  from rtas node ibm,configure-kernel-kdump-sizes and few minor changes.
+- Kernel command line option 'fadump' now uses on/off values to
+  enable/disable fadump.
+- Added the last patch in this series 10/10 to remove phyp dump code.
+
+Change in v5:
+-------------
+- Added 'fadump_' prefix to all static functions defined.
+
+patch 02/10:
+- Merged patch 10/10 which introduces a config option CONFIG_FA_DUMP
+  for firmware assisted dump feature on Powerpc (ppc64) architecture.
+- Increased MIN_BOOT_MEM by 64M to avoid OOM issue during network
+  dump capture. When kdump infrastructure is configured to save vmcore
+  over network, we run into OOM issue while loading modules related to
+  network setup.
+
+Changes in v4:
+--------------
+patch 04/10:
+- Move the init_elfcore_header() function and 'memblock_num_regions' macro
+ from generic code to power specific code as these are used only by
+ firmware assisted dump implementation which is power specific feature.
+
+patch 05/10:
+- Fixes a issue where memblock_free() is invoked from build_cpu_notes()
+  function during error_out path. Invoke cpu_notes_buf_free() in error_out
+  path instead of memblock_free().
+
+Changes in v3:
+-------------
+- Re-factored the implementation to work with kdump service start/stop.
+  Introduce fadump_registered sysfs control file which will be used by
+  kdump init scripts to start/stop firmware assisted dump. echo 1 to
+  /sys/kernel/fadump_registered file for fadump registration and
+  echo 0 to /sys/kernel/fadump_registered file for fadump un-registration.
+- Introduced the locking mechanism to handle simultaneous writes to
+  sysfs control files fadump_registered and fadump_release_mem
+
+  Affected patches are: 01/10, 03/10, 08/10.
+
+Changes in v2:
+-------------
+patch 01/10:
+- Modified the documentation to reflect the change of fadump_region
+  file under debugfs filesystem.
+
+patch 02/10:
+- Modified to use standard pr_debug() macro.
+- Modified early_init_dt_scan_fw_dump() to get the size of
+  "ibm,configure-kernel-dump-sizes" property and use it to iterate through
+  an array of dump sections.
+- Introduced boot option 'fadump_reserve_mem=' to let user specify the
+  fadump boot memory to be reserved.
+
+patch 03/10:
+- Removed few debug print statements.
+- Moved the setup_fadump() call from setup_system() and now calling it
+  subsys_initcall.
+- Moved fadump_region attribute under debugfs.
+- Clear the TCE entries if firmware assisted dump is active.
+
+patch 05/10:
+- Moved the crash_fadump() invocation from generic code to panic notifier.
+- Introduced cpu_notes_buf_alloc() function to allocate cpu notes buffer
+  using get_free_pages().
+
+patch 08/10:
+- Introduced cpu_notes_buf_free() function to free memory allocated for
+  cpu notes buffer.
+
+Thanks,
+-Mahesh.
+
+---
+
+Mahesh Salgaonkar (10):
+      fadump: Add documentation for firmware-assisted dump.
+      fadump: Reserve the memory for firmware assisted dump.
+      fadump: Register for firmware assisted dump.
+      fadump: Initialize elfcore header and add PT_LOAD program headers.
+      fadump: Convert firmware-assisted cpu state dump data into elf notes.
+      fadump: Add PT_NOTE program header for vmcoreinfo
+      fadump: Introduce cleanup routine to invalidate /proc/vmcore.
+      fadump: Invalidate registration and release reserved memory for general use.
+      fadump: Invalidate the fadump registration during machine shutdown.
+      fadump: Remove the phyp assisted dump code.
+
+
+ Documentation/powerpc/firmware-assisted-dump.txt |  270 +++++
+ Documentation/powerpc/phyp-assisted-dump.txt     |  127 --
+ arch/powerpc/Kconfig                             |   17 
+ arch/powerpc/include/asm/fadump.h                |  218 ++++
+ arch/powerpc/include/asm/phyp_dump.h             |   47 -
+ arch/powerpc/kernel/Makefile                     |    1 
+ arch/powerpc/kernel/fadump.c                     | 1312 ++++++++++++++++++++++
+ arch/powerpc/kernel/iommu.c                      |    8 
+ arch/powerpc/kernel/prom.c                       |   98 --
+ arch/powerpc/kernel/setup-common.c               |   14 
+ arch/powerpc/kernel/traps.c                      |    3 
+ arch/powerpc/mm/hash_utils_64.c                  |   11 
+ arch/powerpc/platforms/pseries/Makefile          |    1 
+ arch/powerpc/platforms/pseries/phyp_dump.c       |  513 ---------
+ fs/proc/vmcore.c                                 |   23 
+ 15 files changed, 1881 insertions(+), 782 deletions(-)
+ create mode 100644 Documentation/powerpc/firmware-assisted-dump.txt
+ delete mode 100644 Documentation/powerpc/phyp-assisted-dump.txt
+ create mode 100644 arch/powerpc/include/asm/fadump.h
+ delete mode 100644 arch/powerpc/include/asm/phyp_dump.h
+ create mode 100644 arch/powerpc/kernel/fadump.c
+ delete mode 100644 arch/powerpc/platforms/pseries/phyp_dump.c
+
+-- 
+-Mahesh
