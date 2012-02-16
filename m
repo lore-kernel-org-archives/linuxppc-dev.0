@@ -1,26 +1,20 @@
-Return-Path: <r58472@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe004.messaging.microsoft.com
- [213.199.154.142])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F3019B700C
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 22:20:18 +1100 (EST)
-Received: from mail110-db3 (localhost [127.0.0.1])	by
- mail110-db3-R.bigfish.com (Postfix) with ESMTP id DA1281801A9	for
- <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 11:20:14 +0000 (UTC)
-Received: from DB3EHSMHS015.bigfish.com (unknown [10.3.81.245])	by
- mail110-db3.bigfish.com (Postfix) with ESMTP id 2364C140048	for
- <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 11:20:13 +0000 (UTC)
-From: Li Yang <leoli@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/2] powerpc/85xx: add a 36-bit corenet default config
-Date: Thu, 16 Feb 2012 20:10:10 +0800
-Message-ID: <1329394210-1014-2-git-send-email-leoli@freescale.com>
-In-Reply-To: <1329394210-1014-1-git-send-email-leoli@freescale.com>
-References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: glikely@secretlab.ca
+In-Reply-To: <1329383368-12122-9-git-send-email-grant.likely@secretlab.ca>
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-9-git-send-email-grant.likely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 16 Feb 2012 06:23:50 -0700
+Message-ID: <CACxGe6sKzDzxKUxs2ZVNpf07bzaJSsJ8m+3mdPkU+4mf3EajdQ@mail.gmail.com>
+Subject: Re: [PATCH v5 08/27] irq_domain: Move irq_domain code from powerpc to
+ kernel/irq
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,206 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This default config should be used by platforms that only
-provides 36-bit software support in tree, such as P3041DS,
-P3060QDS, P4080DS, P5020DS, and etc.
+On Thu, Feb 16, 2012 at 2:09 AM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> This patch only moves the code. =A0It doesn't make any changes, and the
+> code is still only compiled for powerpc. =A0Follow-on patches will genera=
+lize
+> the code for other architectures.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Milton Miller <miltonm@bga.com>
+> Tested-by: Olof Johansson <olof@lixom.net>
+> ---
+> +unsigned int irq_find_mapping(struct irq_domain *host,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_hw_number_t=
+ hwirq)
+> +{
+> + =A0 =A0 =A0 unsigned int i;
+> + =A0 =A0 =A0 unsigned int hint =3D hwirq % irq_virq_count;
+> +
+> + =A0 =A0 =A0 /* Look for default host if nececssary */
+> + =A0 =A0 =A0 if (host =3D=3D NULL)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 host =3D irq_default_host;
+> + =A0 =A0 =A0 if (host =3D=3D NULL)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NO_IRQ;
+> +
+> + =A0 =A0 =A0 /* legacy -> bail early */
+> + =A0 =A0 =A0 if (host->revmap_type =3D=3D IRQ_DOMAIN_MAP_LEGACY)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return hwirq;
+> +
+> + =A0 =A0 =A0 /* Slow path does a linear search of the map */
+> + =A0 =A0 =A0 if (hint =3D=3D 0)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 hint =3D 1;
+> + =A0 =A0 =A0 i =3D hint;
+> + =A0 =A0 =A0 do {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct irq_data *data =3D irq_get_irq_data(=
+i);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (data && (data->domain =3D=3D host) && (=
+data->hwirq =3D=3D hwirq))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return i;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 i++;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (i >=3D irq_virq_count)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 i =3D 1
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/configs/corenet36_smp_defconfig |  185 ++++++++++++++++++++++++++
- 1 files changed, 185 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/configs/corenet36_smp_defconfig
+Typo on this line; missing semicolon.  Fixed in my tree now.
 
-diff --git a/arch/powerpc/configs/corenet36_smp_defconfig b/arch/powerpc/configs/corenet36_smp_defconfig
-new file mode 100644
-index 0000000..9765b4d
---- /dev/null
-+++ b/arch/powerpc/configs/corenet36_smp_defconfig
-@@ -0,0 +1,185 @@
-+CONFIG_PPC_85xx=y
-+CONFIG_PHYS_64BIT=y
-+CONFIG_SMP=y
-+CONFIG_NR_CPUS=8
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_SYSVIPC=y
-+CONFIG_POSIX_MQUEUE=y
-+CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_AUDIT=y
-+CONFIG_SPARSE_IRQ=y
-+CONFIG_RCU_TRACE=y
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_KALLSYMS_ALL=y
-+CONFIG_EMBEDDED=y
-+CONFIG_PERF_EVENTS=y
-+CONFIG_SLAB=y
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODULE_FORCE_UNLOAD=y
-+CONFIG_MODVERSIONS=y
-+# CONFIG_BLK_DEV_BSG is not set
-+CONFIG_P2041_RDB=y
-+CONFIG_P3041_DS=y
-+CONFIG_P3060_QDS=y
-+CONFIG_P4080_DS=y
-+CONFIG_P5020_DS=y
-+CONFIG_HIGHMEM=y
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
-+CONFIG_BINFMT_MISC=m
-+CONFIG_KEXEC=y
-+CONFIG_FORCE_MAX_ZONEORDER=13
-+CONFIG_FSL_LBC=y
-+CONFIG_PCI=y
-+CONFIG_PCIEPORTBUS=y
-+# CONFIG_PCIEASPM is not set
-+CONFIG_RAPIDIO=y
-+CONFIG_FSL_RIO=y
-+CONFIG_NET=y
-+CONFIG_PACKET=y
-+CONFIG_UNIX=y
-+CONFIG_XFRM_USER=y
-+CONFIG_XFRM_SUB_POLICY=y
-+CONFIG_XFRM_STATISTICS=y
-+CONFIG_NET_KEY=y
-+CONFIG_NET_KEY_MIGRATE=y
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+CONFIG_IP_ADVANCED_ROUTER=y
-+CONFIG_IP_MULTIPLE_TABLES=y
-+CONFIG_IP_ROUTE_MULTIPATH=y
-+CONFIG_IP_ROUTE_VERBOSE=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
-+CONFIG_IP_PNP_RARP=y
-+CONFIG_NET_IPIP=y
-+CONFIG_IP_MROUTE=y
-+CONFIG_IP_PIMSM_V1=y
-+CONFIG_IP_PIMSM_V2=y
-+CONFIG_ARPD=y
-+CONFIG_INET_AH=y
-+CONFIG_INET_ESP=y
-+CONFIG_INET_IPCOMP=y
-+# CONFIG_INET_LRO is not set
-+CONFIG_IPV6=y
-+CONFIG_IP_SCTP=m
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_MTD=y
-+CONFIG_MTD_CMDLINE_PARTS=y
-+CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLOCK=y
-+CONFIG_MTD_CFI=y
-+CONFIG_MTD_CFI_AMDSTD=y
-+CONFIG_MTD_PHYSMAP_OF=y
-+CONFIG_MTD_M25P80=y
-+CONFIG_PROC_DEVICETREE=y
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_SIZE=131072
-+CONFIG_MISC_DEVICES=y
-+CONFIG_BLK_DEV_SD=y
-+CONFIG_CHR_DEV_ST=y
-+CONFIG_BLK_DEV_SR=y
-+CONFIG_CHR_DEV_SG=y
-+CONFIG_SCSI_MULTI_LUN=y
-+CONFIG_SCSI_LOGGING=y
-+CONFIG_SCSI_SYM53C8XX_2=y
-+CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
-+CONFIG_SATA_FSL=y
-+CONFIG_SATA_SIL24=y
-+CONFIG_SATA_SIL=y
-+CONFIG_PATA_SIL680=y
-+CONFIG_NETDEVICES=y
-+CONFIG_FSL_PQ_MDIO=y
-+CONFIG_E1000=y
-+CONFIG_E1000E=y
-+CONFIG_VITESSE_PHY=y
-+CONFIG_FIXED_PHY=y
-+# CONFIG_INPUT_MOUSEDEV is not set
-+# CONFIG_INPUT_KEYBOARD is not set
-+# CONFIG_INPUT_MOUSE is not set
-+CONFIG_SERIO_LIBPS2=y
-+# CONFIG_LEGACY_PTYS is not set
-+CONFIG_PPC_EPAPR_HV_BYTECHAN=y
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_SERIAL_8250_EXTENDED=y
-+CONFIG_SERIAL_8250_MANY_PORTS=y
-+CONFIG_SERIAL_8250_DETECT_IRQ=y
-+CONFIG_SERIAL_8250_RSA=y
-+CONFIG_HW_RANDOM=y
-+CONFIG_NVRAM=y
-+CONFIG_I2C=y
-+CONFIG_I2C_MPC=y
-+CONFIG_SPI=y
-+CONFIG_SPI_GPIO=y
-+CONFIG_SPI_FSL_SPI=y
-+CONFIG_SPI_FSL_ESPI=y
-+# CONFIG_HWMON is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=y
-+CONFIG_USB_HID=m
-+CONFIG_USB=y
-+CONFIG_USB_DEVICEFS=y
-+CONFIG_USB_MON=y
-+CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_EHCI_FSL=y
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
-+CONFIG_USB_STORAGE=y
-+CONFIG_MMC=y
-+CONFIG_MMC_SDHCI=y
-+CONFIG_EDAC=y
-+CONFIG_EDAC_MM_EDAC=y
-+CONFIG_EDAC_MPC85XX=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS3232=y
-+CONFIG_RTC_DRV_CMOS=y
-+CONFIG_UIO=y
-+CONFIG_STAGING=y
-+CONFIG_VIRT_DRIVERS=y
-+CONFIG_FSL_HV_MANAGER=y
-+CONFIG_EXT2_FS=y
-+CONFIG_EXT3_FS=y
-+# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-+CONFIG_ISO9660_FS=m
-+CONFIG_JOLIET=y
-+CONFIG_ZISOFS=y
-+CONFIG_UDF_FS=m
-+CONFIG_MSDOS_FS=m
-+CONFIG_VFAT_FS=y
-+CONFIG_NTFS_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_TMPFS=y
-+CONFIG_HUGETLBFS=y
-+CONFIG_JFFS2_FS=y
-+CONFIG_CRAMFS=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+CONFIG_NFS_V4=y
-+CONFIG_ROOT_NFS=y
-+CONFIG_NFSD=m
-+CONFIG_PARTITION_ADVANCED=y
-+CONFIG_MAC_PARTITION=y
-+CONFIG_NLS_ISO8859_1=y
-+CONFIG_NLS_UTF8=m
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_DEBUG_SHIRQ=y
-+CONFIG_DETECT_HUNG_TASK=y
-+CONFIG_DEBUG_INFO=y
-+CONFIG_SYSCTL_SYSCALL_CHECK=y
-+CONFIG_CRYPTO_NULL=y
-+CONFIG_CRYPTO_PCBC=m
-+CONFIG_CRYPTO_MD4=y
-+CONFIG_CRYPTO_SHA256=y
-+CONFIG_CRYPTO_SHA512=y
-+CONFIG_CRYPTO_AES=y
-+# CONFIG_CRYPTO_ANSI_CPRNG is not set
-+CONFIG_CRYPTO_DEV_FSL_CAAM=y
--- 
-1.5.4.3
+g.
