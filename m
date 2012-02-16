@@ -1,17 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <B13201@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C539A101334
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 20:31:06 +1100 (EST)
+From: Liu Yu <yu.liu@freescale.com>
+To: <agraf@suse.de>, <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>
+Subject: [PATCH v4 3/3] KVM: PPC: epapr: install ev_idle hcall for e500 guest
+Date: Thu, 16 Feb 2012 17:26:02 +0800
+Message-ID: <1329384365-4028-3-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1329384365-4028-2-git-send-email-yu.liu@freescale.com>
+References: <1329384365-4028-1-git-send-email-yu.liu@freescale.com>
+ <1329384365-4028-2-git-send-email-yu.liu@freescale.com>
 MIME-Version: 1.0
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
- Rob Herring <rob.herring@calxeda.com>
-Subject: [PATCH v5 26/27] irq_domain: mostly eliminate slow-path revmap lookups
-Date: Thu, 16 Feb 2012 02:09:27 -0700
-Message-Id: <1329383368-12122-27-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, Liu Yu <yu.liu@freescale.com>,
+ B07421@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,266 +27,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the current state of irq_domain, the reverse map is always updated
-when new IRQs get mapped.  This means that the irq_find_mapping() function
-can be simplified to always execute the revmap-specific lookup function.
+If the guest hypervisor node contains "has-idle" property.
 
-This patch adds lookup functions for the revmaps that don't yet have one
-and removes the slow path lookup from most of the code paths.  The only
-place where the slow path legitimately remains is where the linear map
-is used with a hwirq number larger than the revmap size.
-
-v5: rewrite to not use a ->revmap() callback.  It is simpler, smaller,
-    safer and faster to open code each of the revmap lookups directly into
-    irq_find_mapping() via a switch statement.
-v4: Fix build failure on incorrect variable reference.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Milton Miller <miltonm@bga.com>
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
 ---
- arch/powerpc/sysdev/xics/icp-hv.c      |    2 +-
- arch/powerpc/sysdev/xics/icp-native.c  |    2 +-
- arch/powerpc/sysdev/xics/xics-common.c |    3 -
- include/linux/irqdomain.h              |    4 -
- kernel/irq/irqdomain.c                 |  121 ++++++++++++--------------------
- 5 files changed, 48 insertions(+), 84 deletions(-)
+v4:
+1. discard the CONFIG_E500 to make code for all powerpc platform
+2. code cleanup
 
-diff --git a/arch/powerpc/sysdev/xics/icp-hv.c b/arch/powerpc/sysdev/xics/icp-hv.c
-index 253dce9..14469cf 100644
---- a/arch/powerpc/sysdev/xics/icp-hv.c
-+++ b/arch/powerpc/sysdev/xics/icp-hv.c
-@@ -111,7 +111,7 @@ static unsigned int icp_hv_get_irq(void)
- 	if (vec == XICS_IRQ_SPURIOUS)
- 		return NO_IRQ;
+ arch/powerpc/kernel/epapr.S      |   29 +++++++++++++++++++++++++++++
+ arch/powerpc/kernel/epapr_para.c |   13 ++++++++++++-
+ 2 files changed, 41 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/epapr.S b/arch/powerpc/kernel/epapr.S
+index 697b390..f06d636 100644
+--- a/arch/powerpc/kernel/epapr.S
++++ b/arch/powerpc/kernel/epapr.S
+@@ -15,6 +15,35 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
  
--	irq = irq_radix_revmap_lookup(xics_host, vec);
-+	irq = irq_find_mapping(xics_host, vec);
- 	if (likely(irq != NO_IRQ)) {
- 		xics_push_cppr(vec);
- 		return irq;
-diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-index 4c79b6f..48861d3 100644
---- a/arch/powerpc/sysdev/xics/icp-native.c
-+++ b/arch/powerpc/sysdev/xics/icp-native.c
-@@ -119,7 +119,7 @@ static unsigned int icp_native_get_irq(void)
- 	if (vec == XICS_IRQ_SPURIOUS)
- 		return NO_IRQ;
- 
--	irq = irq_radix_revmap_lookup(xics_host, vec);
-+	irq = irq_find_mapping(xics_host, vec);
- 	if (likely(irq != NO_IRQ)) {
- 		xics_push_cppr(vec);
- 		return irq;
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index ea5e204..1d7067d 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -330,9 +330,6 @@ static int xics_host_map(struct irq_domain *h, unsigned int virq,
- 
- 	pr_devel("xics: map virq %d, hwirq 0x%lx\n", virq, hw);
- 
--	/* Insert the interrupt mapping into the radix tree for fast lookup */
--	irq_radix_revmap_insert(xics_host, virq, hw);
--
- 	/* They aren't all level sensitive but we just don't really know */
- 	irq_set_status_flags(virq, IRQ_LEVEL);
- 
-diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index 5245488..47af458 100644
---- a/include/linux/irqdomain.h
-+++ b/include/linux/irqdomain.h
-@@ -155,10 +155,6 @@ extern void irq_dispose_mapping(unsigned int virq);
- extern unsigned int irq_find_mapping(struct irq_domain *host,
- 				     irq_hw_number_t hwirq);
- extern unsigned int irq_create_direct_mapping(struct irq_domain *host);
--extern void irq_radix_revmap_insert(struct irq_domain *host, unsigned int virq,
--				    irq_hw_number_t hwirq);
--extern unsigned int irq_radix_revmap_lookup(struct irq_domain *host,
--					    irq_hw_number_t hwirq);
- extern unsigned int irq_linear_revmap(struct irq_domain *host,
- 				      irq_hw_number_t hwirq);
- 
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index db7adb2..e7d8e96 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -313,7 +313,8 @@ unsigned int irq_create_direct_mapping(struct irq_domain *domain)
- 		domain = irq_default_domain;
- 
- 	BUG_ON(domain == NULL);
--	WARN_ON(domain->revmap_type != IRQ_DOMAIN_MAP_NOMAP);
-+	if (WARN_ON(domain->revmap_type != IRQ_DOMAIN_MAP_NOMAP))
-+		return 0;
- 
- 	virq = irq_alloc_desc_from(1, 0);
- 	if (!virq) {
-@@ -389,6 +390,18 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
- 		return 0;
- 	}
- 
-+	switch(domain->revmap_type) {
-+	case IRQ_DOMAIN_MAP_LINEAR:
-+		if (hwirq < domain->revmap_data.linear.size)
-+			domain->revmap_data.linear.revmap[hwirq] = virq;
-+		break;
-+	case IRQ_DOMAIN_MAP_TREE:
-+		mutex_lock(&revmap_trees_mutex);
-+		radix_tree_insert(&domain->revmap_data.tree, hwirq,
-+				  irq_get_irq_data(virq));
-+		mutex_unlock(&revmap_trees_mutex);
-+		break;
-+	}
- 	pr_debug("irq: irq %lu on domain %s mapped to virtual irq %u\n",
- 		hwirq, domain->of_node ? domain->of_node->full_name : "null", virq);
- 
-@@ -497,7 +510,7 @@ EXPORT_SYMBOL_GPL(irq_dispose_mapping);
- unsigned int irq_find_mapping(struct irq_domain *domain,
- 			      irq_hw_number_t hwirq)
- {
--	unsigned int i;
-+	struct irq_data *data;
- 
- 	/* Look for default domain if nececssary */
- 	if (domain == NULL)
-@@ -505,74 +518,43 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
- 	if (domain == NULL)
- 		return 0;
- 
--	/* legacy -> bail early */
--	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
-+	switch (domain->revmap_type) {
-+	case IRQ_DOMAIN_MAP_LEGACY:
- 		return irq_domain_legacy_revmap(domain, hwirq);
--
--	/* Slow path does a linear search of the map */
--	for (i = 0; i < irq_virq_count; i++)  {
--		struct irq_data *data = irq_get_irq_data(i);
-+	case IRQ_DOMAIN_MAP_LINEAR:
-+		return irq_linear_revmap(domain, hwirq);
-+	case IRQ_DOMAIN_MAP_TREE:
-+		rcu_read_lock();
-+		data = radix_tree_lookup(&domain->revmap_data.tree, hwirq);
-+		rcu_read_unlock();
-+		if (data)
-+			return data->irq;
-+		break;
-+	case IRQ_DOMAIN_MAP_NOMAP:
-+		data = irq_get_irq_data(hwirq);
- 		if (data && (data->domain == domain) && (data->hwirq == hwirq))
--			return i;
-+			return hwirq;
-+		break;
- 	}
++#define HC_VENDOR_EPAPR		(1 << 16)
++#define HC_EV_IDLE		16
 +
-+	WARN(1, "ERROR: irq revmap went horribly wrong. revmap_type=%i\n",
-+		domain->revmap_type);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(irq_find_mapping);
++_GLOBAL(epapr_ev_idle)
++epapr_ev_idle:
++	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
++	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
++	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
++	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
++
++	wrteei	1
++
++idle_loop:
++	LOAD_REG_IMMEDIATE(r11, HC_VENDOR_EPAPR | HC_EV_IDLE)
++
++.global epapr_ev_idle_start
++epapr_ev_idle_start:
++	li	r3, -1
++	nop
++	nop
++	nop
++
++	/*
++	 * Guard against spurious wakeups (e.g. from a hypervisor) --
++	 * any real interrupt will cause us to return to LR due to
++	 * _TLF_NAPPING.
++	 */
++	b	idle_loop
++
+ /* Hypercall entry point. Will be patched with device tree instructions. */
+ .global epapr_hypercall_start
+ epapr_hypercall_start:
+diff --git a/arch/powerpc/kernel/epapr_para.c b/arch/powerpc/kernel/epapr_para.c
+index ea13cac..adee4f1 100644
+--- a/arch/powerpc/kernel/epapr_para.c
++++ b/arch/powerpc/kernel/epapr_para.c
+@@ -20,6 +20,10 @@
+ #include <linux/of.h>
+ #include <asm/epapr_hcalls.h>
+ #include <asm/cacheflush.h>
++#include <asm/machdep.h>
++
++extern void epapr_ev_idle(void);
++extern u32 epapr_ev_idle_start[];
  
--/**
-- * irq_radix_revmap_lookup() - Find a linux irq from a hw irq number.
-- * @domain: domain owning this hardware interrupt
-- * @hwirq: hardware irq number in that domain space
-- *
-- * This is a fast path, for use by irq controller code that uses radix tree
-- * revmaps
-- */
--unsigned int irq_radix_revmap_lookup(struct irq_domain *domain,
--				     irq_hw_number_t hwirq)
-+static unsigned int irq_find_mapping_slow(struct irq_domain *domain,
-+					  irq_hw_number_t hwirq)
- {
--	struct irq_data *irq_data;
--
--	if (WARN_ON_ONCE(domain->revmap_type != IRQ_DOMAIN_MAP_TREE))
--		return irq_find_mapping(domain, hwirq);
--
--	/*
--	 * Freeing an irq can delete nodes along the path to
--	 * do the lookup via call_rcu.
--	 */
--	rcu_read_lock();
--	irq_data = radix_tree_lookup(&domain->revmap_data.tree, hwirq);
--	rcu_read_unlock();
--
--	/*
--	 * If found in radix tree, then fine.
--	 * Else fallback to linear lookup - this should not happen in practice
--	 * as it means that we failed to insert the node in the radix tree.
--	 */
--	return irq_data ? irq_data->irq : irq_find_mapping(domain, hwirq);
--}
--
--/**
-- * irq_radix_revmap_insert() - Insert a hw irq to linux irq number mapping.
-- * @domain: domain owning this hardware interrupt
-- * @virq: linux irq number
-- * @hwirq: hardware irq number in that domain space
-- *
-- * This is for use by irq controllers that use a radix tree reverse
-- * mapping for fast lookup.
-- */
--void irq_radix_revmap_insert(struct irq_domain *domain, unsigned int virq,
--			     irq_hw_number_t hwirq)
--{
--	struct irq_data *irq_data = irq_get_irq_data(virq);
--
--	if (WARN_ON(domain->revmap_type != IRQ_DOMAIN_MAP_TREE))
--		return;
-+	unsigned int i;
+ bool epapr_para_enabled = false;
  
--	if (virq) {
--		mutex_lock(&revmap_trees_mutex);
--		radix_tree_insert(&domain->revmap_data.tree, hwirq, irq_data);
--		mutex_unlock(&revmap_trees_mutex);
-+	/* Slow path does a linear search of the map */
-+	for (i = 0; i < irq_virq_count; i++)  {
-+		struct irq_data *data = irq_get_irq_data(i);
-+		if (data && (data->domain == domain) && (data->hwirq == hwirq))
-+			return i;
+@@ -35,10 +39,17 @@ static int __init epapr_para_init(void)
+ 
+ 	insts = of_get_property(hyper_node, "hcall-instructions", &len);
+ 	if (!(len % 4) && (len >= (4 * 4))) {
+-		for (i = 0; i < (len / 4); i++)
++		for (i = 0; i < (len / 4); i++) {
+ 			epapr_hypercall_start[i] = insts[i];
++			epapr_ev_idle_start[i] = insts[i];
++		}
+ 		flush_icache_range((ulong)epapr_hypercall_start,
+ 		                   (ulong)epapr_hypercall_start + len);
++		flush_icache_range((ulong)epapr_ev_idle_start,
++		                   (ulong)epapr_ev_idle_start + len);
++
++		if (of_get_property(hyper_node, "has-idle", NULL))
++			ppc_md.power_save = epapr_ev_idle;
+ 
+ 		epapr_para_enabled = true;
  	}
-+	return 0;
- }
- 
- /**
-@@ -581,31 +563,20 @@ void irq_radix_revmap_insert(struct irq_domain *domain, unsigned int virq,
-  * @hwirq: hardware irq number in that domain space
-  *
-  * This is a fast path, for use by irq controller code that uses linear
-- * revmaps. It does fallback to the slow path if the revmap doesn't exist
-- * yet and will create the revmap entry with appropriate locking
-+ * revmaps. It does fallback to the slow path if the hwirq number is outside
-+ * the range of the hwirq numbers.
-  */
- unsigned int irq_linear_revmap(struct irq_domain *domain,
- 			       irq_hw_number_t hwirq)
- {
--	unsigned int *revmap;
--
- 	if (WARN_ON_ONCE(domain->revmap_type != IRQ_DOMAIN_MAP_LINEAR))
- 		return irq_find_mapping(domain, hwirq);
- 
- 	/* Check revmap bounds */
- 	if (unlikely(hwirq >= domain->revmap_data.linear.size))
--		return irq_find_mapping(domain, hwirq);
--
--	/* Check if revmap was allocated */
--	revmap = domain->revmap_data.linear.revmap;
--	if (unlikely(revmap == NULL))
--		return irq_find_mapping(domain, hwirq);
--
--	/* Fill up revmap with slow path if no mapping found */
--	if (unlikely(!revmap[hwirq]))
--		revmap[hwirq] = irq_find_mapping(domain, hwirq);
-+		return irq_find_mapping_slow(domain, hwirq);
- 
--	return revmap[hwirq];
-+	return domain->revmap_data.linear.revmap[hwirq];
- }
- 
- #ifdef CONFIG_VIRQ_DEBUG
 -- 
-1.7.9
+1.7.0.4
