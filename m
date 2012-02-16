@@ -1,29 +1,30 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DDBE0B6FBA
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 22:16:25 +1100 (EST)
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CAD2CB6FD8
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 22:16:26 +1100 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 16 Feb 2012 16:46:23 +0530
+ Thu, 16 Feb 2012 16:46:24 +0530
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1GBFkks4006046
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 16:45:46 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1GBFrJZ1069120
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 16:45:53 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1GBFiKp014659
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 16:45:45 +0530
-Subject: [RFC PATCH v7 06/10] fadump: Add PT_NOTE program header for vmcoreinfo
+ q1GBFq11015006
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 16:45:53 +0530
+Subject: [RFC PATCH v7 07/10] fadump: Introduce cleanup routine to invalidate
+ /proc/vmcore.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Linux Kernel <linux-kernel@vger.kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 16 Feb 2012 16:44:53 +0530
-Message-ID: <20120216111452.4733.91579.stgit@mars>
+Date: Thu, 16 Feb 2012 16:45:00 +0530
+Message-ID: <20120216111459.4733.83147.stgit@mars>
 In-Reply-To: <20120216111050.4733.38034.stgit@mars>
 References: <20120216111050.4733.38034.stgit@mars>
 MIME-Version: 1.0
@@ -43,60 +44,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Introduce a PT_NOTE program header that points to physical address of
-vmcoreinfo_note buffer declared in kernel/kexec.c. The vmcoreinfo
-note buffer is populated during crash_fadump() at the time of system
-crash.
+With the firmware-assisted dump support we don't require a reboot when we
+are in second kernel after crash. The second kernel after crash is a normal
+kernel boot and has knowledge about entire system RAM with the page tables
+initialized for entire system RAM. Hence once the dump is saved to disk, we
+can just release the reserved memory area for general use and continue
+with second kernel as production kernel.
+
+Hence when we release the reserved memory that contains dump data, the
+'/proc/vmcore' will not be valid anymore. Hence this patch introduces
+a cleanup routine that invalidates and removes the /proc/vmcore file. This
+routine will be invoked before we release the reserved dump memory area.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/fadump.c |   29 +++++++++++++++++++++++++++++
- 1 files changed, 29 insertions(+), 0 deletions(-)
+ fs/proc/vmcore.c |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index cab56e7..5689954 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -814,6 +814,19 @@ static void fadump_setup_crash_memory_ranges(void)
- 	}
+diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
+index b0f450a..0d5071d 100644
+--- a/fs/proc/vmcore.c
++++ b/fs/proc/vmcore.c
+@@ -700,3 +700,26 @@ static int __init vmcore_init(void)
+ 	return 0;
  }
- 
-+/*
-+ * If the given physical address falls within the boot memory region then
-+ * return the relocated address that points to the dump region reserved
-+ * for saving initial boot memory contents.
-+ */
-+static inline unsigned long fadump_relocate(unsigned long paddr)
+ module_init(vmcore_init)
++
++/* Cleanup function for vmcore module. */
++void vmcore_cleanup(void)
 +{
-+	if (paddr > RMA_START && paddr < fw_dump.boot_memory_size)
-+		return fdm.rmr_region.destination_address + paddr;
-+	else
-+		return paddr;
++	struct list_head *pos, *next;
++
++	if (proc_vmcore) {
++		remove_proc_entry(proc_vmcore->name, proc_vmcore->parent);
++		proc_vmcore = NULL;
++	}
++
++	/* clear the vmcore list. */
++	list_for_each_safe(pos, next, &vmcore_list) {
++		struct vmcore *m;
++
++		m = list_entry(pos, struct vmcore, list);
++		list_del(&m->list);
++		kfree(m);
++	}
++	kfree(elfcorebuf);
++	elfcorebuf = NULL;
 +}
-+
- static int fadump_create_elfcore_headers(char *bufp)
- {
- 	struct elfhdr *elf;
-@@ -845,6 +858,22 @@ static int fadump_create_elfcore_headers(char *bufp)
- 
- 	(elf->e_phnum)++;
- 
-+	/* setup ELF PT_NOTE for vmcoreinfo */
-+	phdr = (struct elf_phdr *)bufp;
-+	bufp += sizeof(struct elf_phdr);
-+	phdr->p_type	= PT_NOTE;
-+	phdr->p_flags	= 0;
-+	phdr->p_vaddr	= 0;
-+	phdr->p_align	= 0;
-+
-+	phdr->p_paddr	= fadump_relocate(paddr_vmcoreinfo_note());
-+	phdr->p_offset	= phdr->p_paddr;
-+	phdr->p_memsz	= vmcoreinfo_max_size;
-+	phdr->p_filesz	= vmcoreinfo_max_size;
-+
-+	/* Increment number of program headers. */
-+	(elf->e_phnum)++;
-+
- 	/* setup PT_LOAD sections. */
- 
- 	for (i = 0; i < crash_mem_ranges; i++) {
++EXPORT_SYMBOL_GPL(vmcore_cleanup);
