@@ -1,24 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 15 Feb 2012 22:32:43 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v3 24/25] irq_domain: remove "hint" when allocating irq
- numbers
-Message-ID: <20120216053243.GM25779@ponder.secretlab.ca>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <1327700179-17454-25-git-send-email-grant.likely@secretlab.ca>
- <4F316848.4060100@atmel.com> <4F3BC97C.6030203@atmel.com>
- <20120215202145.GH25779@ponder.secretlab.ca>
- <20120215215001.GA30946@r65073-Latitude-D630>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120215215001.GA30946@r65073-Latitude-D630>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- devicetree-discuss@lists.ozlabs.org, Nicolas Ferre <nicolas.ferre@atmel.com>,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Milton Miller <miltonm@bga.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A6647B6F9C
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 16:38:13 +1100 (EST)
+Message-ID: <1329370678.3772.50.camel@pasglop>
+Subject: [PATCH v2] powerpc/fsl/pci: Fix PCIe fixup regression
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Date: Thu, 16 Feb 2012 16:37:58 +1100
+In-Reply-To: <1329279740.3772.24.camel@pasglop>
+References: <1329279740.3772.24.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 15, 2012 at 01:50:02PM -0800, Shawn Guo wrote:
-> On Wed, Feb 15, 2012 at 01:21:45PM -0700, Grant Likely wrote:
-> > On Wed, Feb 15, 2012 at 04:04:28PM +0100, Nicolas Ferre wrote:
-> > > On 02/07/2012 07:07 PM, Nicolas Ferre :
-> > > > On 01/27/2012 10:36 PM, Grant Likely :
-> > > >> The 'hint' used to try and line up irq numbers with hw irq numbers is
-> > > >> rather a hack and not very useful.  Now that /proc/interrupts also outputs
-> > > >> the hwirq number, it is even less useful to keep around the 'hint' heuristic.
-> > > >>
-> > > >> This patch removes it.
-> > > > 
-> > > > Grant,
-> > > > 
-> > > > While trying your patch series in conjunction with Rob one, I do not
-> > > > find this patch in your irqdomain/next branch (and a couple of others).
-> > > > Can you tell me if this v3 series is available as a git tree?
-> > > 
-> > > I am still interested by patch 24-25 of this series but still cannot
-> > > find them in your irqdomain/next branch:
-> > > Are they also expected to join the 3.4 merge window material?
-> > 
-> > I've held off on putting them in irqdomain/next because they are a bit more
-> > risky than the other patches, and I want an explicit ack from Ben for patches
-> > 24 & 25.  However, that shouldn't really cause any issues since the changes
-> > in 24 & 25 don't impact the irq_domain functionality or API.  They are just
-> > optimizations.
-> > 
-> I'm seeing that patch 24 does impact on irq_domain functionality
-> a little bit.  On next tree which has no this patch yet,
-> irq_create_mapping can reasonably create virq in range 1..15, while
-> irq_find_mapping will only try to find the virq from 16
-> (NUM_ISA_INTERRUPTS).  This will result in that any hwirq that is < 16
-> gets multiple entries in the mapping table with different virq numbers
-> mapped to the same one hwirq.
+Upstream changes to the way PHB resources are registered
+broke the resource fixup for FSL boards.
 
-That's a bug then.  The implementation should work without patch 24.  Does
-this patch fix it?
+We can no longer rely on the resource pointer array for the PHB's
+pci_bus structure, so let's leave it alone and go straight for
+the PHB resources instead. This also makes the code generally
+more readable.
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index 2c1d6f8..2d3dfff 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -516,8 +516,8 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
- 		return irq_domain_legacy_revmap(domain, hwirq);
- 
- 	/* Slow path does a linear search of the map */
--	if (hint < NUM_ISA_INTERRUPTS)
--		hint = NUM_ISA_INTERRUPTS;
-+	if (hint == 0)
-+		hint = 1;
- 	i = hint;
- 	do {
- 		struct irq_data *data = irq_get_irq_data(i);
-@@ -525,7 +525,7 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
- 			return i;
- 		i++;
- 		if (i >= irq_virq_count)
--			i = NUM_ISA_INTERRUPTS;
-+			i = 1
- 	} while(i != hint);
- 	return 0;
+v2: Properly clear resources above what's in the PHB
+
+With this, I got a radeon and a e1000 working with upstream.
+
+Let's my other patch (the one changing the header quirk) for now
+as it seems to be breaking DMA, I'll investigate.
+
+Kumar, can I have an ack for this ?
+
+ arch/powerpc/sysdev/fsl_pci.c |   48 ++++++++++++++++++++++++----------------
+ 1 files changed, 29 insertions(+), 19 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 30eb17e..6073288 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -385,26 +385,36 @@ static void __init setup_pci_cmd(struct pci_controller *hose)
+ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+-	int i;
+-
+-	if ((bus->parent == hose->bus) &&
+-	    ((fsl_pcie_bus_fixup &&
+-	      early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) ||
+-	     (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)))
+-	{
+-		for (i = 0; i < 4; ++i) {
++	int i, is_pcie = 0, no_link;
++
++	/* The root complex bridge comes up with bogus resources,
++	 * we copy the PHB ones in.
++	 *
++	 * With the current generic PCI code, the PHB bus no longer
++	 * has bus->resource[0..4] set, so things are a bit more
++	 * tricky.
++	 */
++
++	if (fsl_pcie_bus_fixup)
++		is_pcie = early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP);
++	no_link = !!(hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK);
++
++	if (bus->parent == hose->bus && (is_pcie || no_link)) {
++		for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; ++i) {
+ 			struct resource *res = bus->resource[i];
+-			struct resource *par = bus->parent->resource[i];
+-			if (res) {
+-				res->start = 0;
+-				res->end   = 0;
+-				res->flags = 0;
+-			}
+-			if (res && par) {
+-				res->start = par->start;
+-				res->end   = par->end;
+-				res->flags = par->flags;
+-			}
++			struct resource *par;
++
++			if (!res)
++				continue;
++			if (i == 0)
++				par = &hose->io_resource;
++			else if (i < 4)
++				par = &hose->mem_resources[i-1];
++			else par = NULL;
++
++			res->start = par ? par->start : 0;
++			res->end   = par ? par->end   : 0;
++			res->flags = par ? par->flags : 0;
+ 		}
+ 	}
  }
+-- 
+1.7.9
