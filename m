@@ -1,20 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE003.bigfish.com (va3ehsobe006.messaging.microsoft.com
+ [216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C6A51B6EF1
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Feb 2012 02:58:04 +1100 (EST)
+Received: from mail50-va3 (localhost [127.0.0.1])	by mail50-va3-R.bigfish.com
+ (Postfix) with ESMTP id B9F473E0222	for <linuxppc-dev@ozlabs.org>;
+ Thu, 16 Feb 2012 15:58:00 +0000 (UTC)
+Received: from VA3EHSMHS002.bigfish.com (unknown [10.7.14.252])	by
+ mail50-va3.bigfish.com (Postfix) with ESMTP id 184AB4C004B	for
+ <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2012 15:57:59 +0000 (UTC)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
+ from configurable
+Date: Thu, 16 Feb 2012 15:57:53 +0000
+Message-ID: <CAOZdJXVo_UdD5U35_ro63_x=O8Ee_-SZ_3N_=-t_kwEEWbNVdg@mail.gmail.com>
+References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
+ <CAOZdJXX6sY4MxsqhjJZf26vrDxu6pxh2DtCqEERJ5JxbBFjEKA@mail.gmail.com>
+In-Reply-To: <CAOZdJXX6sY4MxsqhjJZf26vrDxu6pxh2DtCqEERJ5JxbBFjEKA@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1329383368-12122-9-git-send-email-grant.likely@secretlab.ca>
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-9-git-send-email-grant.likely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 16 Feb 2012 06:23:50 -0700
-Message-ID: <CACxGe6sKzDzxKUxs2ZVNpf07bzaJSsJ8m+3mdPkU+4mf3EajdQ@mail.gmail.com>
-Subject: Re: [PATCH v5 08/27] irq_domain: Move irq_domain code from powerpc to
- kernel/irq
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 16, 2012 at 2:09 AM, Grant Likely <grant.likely@secretlab.ca> w=
+On Thu, Feb 16, 2012 at 9:56 AM, Tabi Timur-B04825 <b04825@freescale.com> w=
 rote:
-> This patch only moves the code. =A0It doesn't make any changes, and the
-> code is still only compiled for powerpc. =A0Follow-on patches will genera=
-lize
-> the code for other architectures.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Milton Miller <miltonm@bga.com>
-> Tested-by: Olof Johansson <olof@lixom.net>
-> ---
-> +unsigned int irq_find_mapping(struct irq_domain *host,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_hw_number_t=
- hwirq)
-> +{
-> + =A0 =A0 =A0 unsigned int i;
-> + =A0 =A0 =A0 unsigned int hint =3D hwirq % irq_virq_count;
-> +
-> + =A0 =A0 =A0 /* Look for default host if nececssary */
-> + =A0 =A0 =A0 if (host =3D=3D NULL)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 host =3D irq_default_host;
-> + =A0 =A0 =A0 if (host =3D=3D NULL)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NO_IRQ;
-> +
-> + =A0 =A0 =A0 /* legacy -> bail early */
-> + =A0 =A0 =A0 if (host->revmap_type =3D=3D IRQ_DOMAIN_MAP_LEGACY)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return hwirq;
-> +
-> + =A0 =A0 =A0 /* Slow path does a linear search of the map */
-> + =A0 =A0 =A0 if (hint =3D=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 hint =3D 1;
-> + =A0 =A0 =A0 i =3D hint;
-> + =A0 =A0 =A0 do {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct irq_data *data =3D irq_get_irq_data(=
-i);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (data && (data->domain =3D=3D host) && (=
-data->hwirq =3D=3D hwirq))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return i;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 i++;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (i >=3D irq_virq_count)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 i =3D 1
+> I think we should make 36-bit the only option for the upstream
+> defconfigs, and if we want a 32-bit "optimized" kernel for the SDK,
+> then we provide that on the SDK only.
 
-Typo on this line; missing semicolon.  Fixed in my tree now.
+Oops, I meant to post this as a reply to "powerpc/85xx: add a 36-bit
+corenet default config".
 
-g.
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
