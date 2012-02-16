@@ -7,9 +7,10 @@ To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
  Rob Herring <rob.herring@calxeda.com>
-Subject: [PATCH v5 07/27] irq_domain/powerpc: Eliminate virq_is_host()
-Date: Thu, 16 Feb 2012 02:09:08 -0700
-Message-Id: <1329383368-12122-8-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH v5 12/27] irq_domain: Add support for base irq and hwirq in
+ legacy mappings
+Date: Thu, 16 Feb 2012 02:09:13 -0700
+Message-Id: <1329383368-12122-13-git-send-email-grant.likely@secretlab.ca>
 In-Reply-To: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
 References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,75 +22,293 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is only one user, and it is trivial to open-code.
+Add support for a legacy mapping where irq = (hwirq - first_hwirq + first_irq)
+so that a controller driver can allocate a fixed range of irq_descs and use
+a simple calculation to translate back and forth between linux and hw irq
+numbers.  This is needed to use an irq_domain with many of the ARM interrupt
+controller drivers that manage their own irq_desc allocations.  Ultimately
+the goal is to migrate those drivers to use the linear revmap, but doing it
+this way allows each driver to be converted separately which makes the
+migration path easier.
+
+This patch generalizes the IRQ_DOMAIN_MAP_LEGACY method to use
+(first_irq-first_hwirq) as the offset between hwirq and linux irq number,
+and adds checks to make sure that the hwirq number does not exceed range
+assigned to the controller.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Rob Herring <rob.herring@calxeda.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Milton Miller <miltonm@bga.com>
 Tested-by: Olof Johansson <olof@lixom.net>
 ---
- arch/powerpc/include/asm/irq.h         |    1 -
- arch/powerpc/kernel/irq.c              |    7 -------
- arch/powerpc/sysdev/xics/xics-common.c |   12 ++++++------
- 3 files changed, 6 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/irq.h   |    3 -
+ arch/powerpc/sysdev/i8259.c      |    2 +-
+ arch/powerpc/sysdev/tsi108_pci.c |    2 +-
+ include/linux/irqdomain.h        |   20 ++++++++-
+ kernel/irq/irqdomain.c           |   96 +++++++++++++++++++++++++-------------
+ 5 files changed, 85 insertions(+), 38 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index abdd7ef..f80f262 100644
+index 728cc30..fe0b09d 100644
 --- a/arch/powerpc/include/asm/irq.h
 +++ b/arch/powerpc/include/asm/irq.h
-@@ -58,7 +58,6 @@ extern atomic_t ppc_n_lost_interrupts;
- struct irq_data;
- extern irq_hw_number_t irqd_to_hwirq(struct irq_data *d);
- extern irq_hw_number_t virq_to_hw(unsigned int virq);
--extern bool virq_is_host(unsigned int virq, struct irq_domain *host);
+@@ -36,9 +36,6 @@ extern atomic_t ppc_n_lost_interrupts;
+ /* Total number of virq in the platform */
+ #define NR_IRQS		CONFIG_NR_IRQS
  
- /**
-  * irq_alloc_host - Allocate a new irq_domain data structure
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 03c95f0..269fbd5 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -510,13 +510,6 @@ irq_hw_number_t virq_to_hw(unsigned int virq)
- }
- EXPORT_SYMBOL_GPL(virq_to_hw);
- 
--bool virq_is_host(unsigned int virq, struct irq_domain *host)
--{
--	struct irq_data *irq_data = irq_get_irq_data(virq);
--	return irq_data ? irq_data->domain == host : false;
--}
--EXPORT_SYMBOL_GPL(virq_is_host);
+-/* Number of irqs reserved for the legacy controller */
+-#define NUM_ISA_INTERRUPTS	16
 -
- static int default_irq_host_match(struct irq_domain *h, struct device_node *np)
+ /* Same thing, used by the generic IRQ code */
+ #define NR_IRQS_LEGACY		NUM_ISA_INTERRUPTS
+ 
+diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
+index 573a73b..997df6a 100644
+--- a/arch/powerpc/sysdev/i8259.c
++++ b/arch/powerpc/sysdev/i8259.c
+@@ -263,7 +263,7 @@ void i8259_init(struct device_node *node, unsigned long intack_addr)
+ 	raw_spin_unlock_irqrestore(&i8259_lock, flags);
+ 
+ 	/* create a legacy host */
+-	i8259_host = irq_domain_add_legacy(node, &i8259_host_ops, NULL);
++	i8259_host = irq_domain_add_legacy_isa(node, &i8259_host_ops, NULL);
+ 	if (i8259_host == NULL) {
+ 		printk(KERN_ERR "i8259: failed to allocate irq host !\n");
+ 		return;
+diff --git a/arch/powerpc/sysdev/tsi108_pci.c b/arch/powerpc/sysdev/tsi108_pci.c
+index 1be26f4..188012c 100644
+--- a/arch/powerpc/sysdev/tsi108_pci.c
++++ b/arch/powerpc/sysdev/tsi108_pci.c
+@@ -419,7 +419,7 @@ void __init tsi108_pci_int_init(struct device_node *node)
  {
- 	return h->of_node != NULL && h->of_node == np;
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index c4b3ce1..fb2e303 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -212,16 +212,16 @@ void xics_migrate_irqs_away(void)
- 		/* We can't set affinity on ISA interrupts */
- 		if (virq < NUM_ISA_INTERRUPTS)
- 			continue;
--		if (!virq_is_host(virq, xics_host))
--			continue;
--		irq = (unsigned int)virq_to_hw(virq);
--		/* We need to get IPIs still. */
--		if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
--			continue;
- 		desc = irq_to_desc(virq);
- 		/* We only need to migrate enabled IRQS */
- 		if (!desc || !desc->action)
- 			continue;
-+		if (desc->irq_data.domain != xics_host)
+ 	DBG("Tsi108_pci_int_init: initializing PCI interrupts\n");
+ 
+-	pci_irq_host = irq_domain_add_legacy(node, &pci_irq_domain_ops, NULL);
++	pci_irq_host = irq_domain_add_legacy_isa(node, &pci_irq_domain_ops, NULL);
+ 	if (pci_irq_host == NULL) {
+ 		printk(KERN_ERR "pci_irq_host: failed to allocate irq domain!\n");
+ 		return;
+diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
+index f95553f..7fef39e 100644
+--- a/include/linux/irqdomain.h
++++ b/include/linux/irqdomain.h
+@@ -39,6 +39,9 @@ struct device_node;
+ struct irq_domain;
+ struct of_device_id;
+ 
++/* Number of irqs reserved for a legacy isa controller */
++#define NUM_ISA_INTERRUPTS	16
++
+ /* This type is the placeholder for a hardware interrupt number. It has to
+  * be big enough to enclose whatever representation is used by a given
+  * platform.
+@@ -98,6 +101,11 @@ struct irq_domain {
+ 	union {
+ 		struct {
+ 			unsigned int size;
++			unsigned int first_irq;
++			irq_hw_number_t first_hwirq;
++		} legacy;
++		struct {
++			unsigned int size;
+ 			unsigned int *revmap;
+ 		} linear;
+ 		struct radix_tree_root tree;
+@@ -117,6 +125,9 @@ struct irq_domain {
+ #ifdef CONFIG_IRQ_DOMAIN
+ #ifdef CONFIG_PPC
+ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
++					 unsigned int size,
++					 unsigned int first_irq,
++					 irq_hw_number_t first_hwirq,
+ 					 struct irq_domain_ops *ops,
+ 					 void *host_data);
+ struct irq_domain *irq_domain_add_linear(struct device_node *of_node,
+@@ -130,11 +141,18 @@ struct irq_domain *irq_domain_add_tree(struct device_node *of_node,
+ 					 struct irq_domain_ops *ops,
+ 					 void *host_data);
+ 
+-
+ extern struct irq_domain *irq_find_host(struct device_node *node);
+ extern void irq_set_default_host(struct irq_domain *host);
+ extern void irq_set_virq_count(unsigned int count);
+ 
++static inline struct irq_domain *irq_domain_add_legacy_isa(
++				struct device_node *of_node,
++				struct irq_domain_ops *ops,
++				void *host_data)
++{
++	return irq_domain_add_legacy(of_node, NUM_ISA_INTERRUPTS, 0, 0, ops,
++				     host_data);
++}
+ 
+ extern unsigned int irq_create_mapping(struct irq_domain *host,
+ 				       irq_hw_number_t hwirq);
+diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+index 47fce43..92ec291 100644
+--- a/kernel/irq/irqdomain.c
++++ b/kernel/irq/irqdomain.c
+@@ -13,7 +13,8 @@
+ #include <linux/smp.h>
+ #include <linux/fs.h>
+ 
+-#define IRQ_DOMAIN_MAP_LEGACY 0 /* legacy 8259, gets irqs 1..15 */
++#define IRQ_DOMAIN_MAP_LEGACY 0 /* driver allocated fixed range of irqs.
++				 * ie. legacy 8259, gets irqs 1..15 */
+ #define IRQ_DOMAIN_MAP_NOMAP 1 /* no fast reverse mapping */
+ #define IRQ_DOMAIN_MAP_LINEAR 2 /* linear map of interrupts */
+ #define IRQ_DOMAIN_MAP_TREE 3 /* radix tree */
+@@ -74,9 +75,25 @@ static void irq_domain_add(struct irq_domain *domain)
+ 		 domain->revmap_type, domain);
+ }
+ 
++static unsigned int irq_domain_legacy_revmap(struct irq_domain *domain,
++					     irq_hw_number_t hwirq)
++{
++	irq_hw_number_t first_hwirq = domain->revmap_data.legacy.first_hwirq;
++	int size = domain->revmap_data.legacy.size;
++
++	if (WARN_ON(hwirq < first_hwirq || hwirq >= first_hwirq + size))
++		return 0;
++	return hwirq - first_hwirq + domain->revmap_data.legacy.first_irq;
++}
++
+ /**
+  * irq_domain_add_legacy() - Allocate and register a legacy revmap irq_domain.
+  * @of_node: pointer to interrupt controller's device tree node.
++ * @size: total number of irqs in legacy mapping
++ * @first_irq: first number of irq block assigned to the domain
++ * @first_hwirq: first hwirq number to use for the translation. Should normally
++ *               be '0', but a positive integer can be used if the effective
++ *               hwirqs numbering does not begin at zero.
+  * @ops: map/unmap domain callbacks
+  * @host_data: Controller private data pointer
+  *
+@@ -85,44 +102,64 @@ static void irq_domain_add(struct irq_domain *domain)
+  * a legacy controller).
+  */
+ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
++					 unsigned int size,
++					 unsigned int first_irq,
++					 irq_hw_number_t first_hwirq,
+ 					 struct irq_domain_ops *ops,
+ 					 void *host_data)
+ {
+-	struct irq_domain *domain, *h;
++	struct irq_domain *domain;
+ 	unsigned int i;
+ 
+ 	domain = irq_domain_alloc(of_node, IRQ_DOMAIN_MAP_LEGACY, ops, host_data);
+ 	if (!domain)
+ 		return NULL;
+ 
++	domain->revmap_data.legacy.first_irq = first_irq;
++	domain->revmap_data.legacy.first_hwirq = first_hwirq;
++	domain->revmap_data.legacy.size = size;
++
+ 	mutex_lock(&irq_domain_mutex);
+-	/* Make sure only one legacy controller can be created */
+-	list_for_each_entry(h, &irq_domain_list, link) {
+-		if (WARN_ON(h->revmap_type == IRQ_DOMAIN_MAP_LEGACY)) {
++	/* Verify that all the irqs are available */
++	for (i = 0; i < size; i++) {
++		int irq = first_irq + i;
++		struct irq_data *irq_data = irq_get_irq_data(irq);
++
++		if (WARN_ON(!irq_data || irq_data->domain)) {
+ 			mutex_unlock(&irq_domain_mutex);
+ 			of_node_put(domain->of_node);
+ 			kfree(domain);
+ 			return NULL;
+ 		}
+ 	}
+-	list_add(&domain->link, &irq_domain_list);
+-	mutex_unlock(&irq_domain_mutex);
+ 
+-	/* setup us as the domain for all legacy interrupts */
+-	for (i = 1; i < NUM_ISA_INTERRUPTS; i++) {
+-		struct irq_data *irq_data = irq_get_irq_data(i);
+-		irq_data->hwirq = i;
++	/* Claim all of the irqs before registering a legacy domain */
++	for (i = 0; i < size; i++) {
++		struct irq_data *irq_data = irq_get_irq_data(first_irq + i);
++		irq_data->hwirq = first_hwirq + i;
+ 		irq_data->domain = domain;
++	}
++	mutex_unlock(&irq_domain_mutex);
++
++	for (i = 0; i < size; i++) {
++		int irq = first_irq + i;
++		int hwirq = first_hwirq + i;
++
++		/* IRQ0 gets ignored */
++		if (!irq)
 +			continue;
-+		irq = desc->irq_data.hwirq;
-+		/* We need to get IPIs still. */
-+		if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
-+			continue;
- 		chip = irq_desc_get_chip(desc);
- 		if (!chip || !chip->irq_set_affinity)
- 			continue;
+ 
+ 		/* Legacy flags are left to default at this point,
+ 		 * one can then use irq_create_mapping() to
+ 		 * explicitly change them
+ 		 */
+-		ops->map(domain, i, i);
++		ops->map(domain, irq, hwirq);
+ 
+ 		/* Clear norequest flags */
+-		irq_clear_status_flags(i, IRQ_NOREQUEST);
++		irq_clear_status_flags(irq, IRQ_NOREQUEST);
+ 	}
++
++	irq_domain_add(domain);
+ 	return domain;
+ }
+ 
+@@ -338,24 +375,19 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
+ 	}
+ 
+ 	/* Get a virtual interrupt number */
+-	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY) {
+-		/* Handle legacy */
+-		virq = (unsigned int)hwirq;
+-		if (virq == 0 || virq >= NUM_ISA_INTERRUPTS)
+-			return 0;
+-		return virq;
+-	} else {
+-		/* Allocate a virtual interrupt number */
+-		hint = hwirq % irq_virq_count;
+-		if (hint == 0)
+-			hint++;
+-		virq = irq_alloc_desc_from(hint, 0);
+-		if (!virq)
+-			virq = irq_alloc_desc_from(1, 0);
+-		if (!virq) {
+-			pr_debug("irq: -> virq allocation failed\n");
+-			return 0;
+-		}
++	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
++		return irq_domain_legacy_revmap(domain, hwirq);
++
++	/* Allocate a virtual interrupt number */
++	hint = hwirq % irq_virq_count;
++	if (hint == 0)
++		hint++;
++	virq = irq_alloc_desc_from(hint, 0);
++	if (!virq)
++		virq = irq_alloc_desc_from(1, 0);
++	if (!virq) {
++		pr_debug("irq: -> virq allocation failed\n");
++		return 0;
+ 	}
+ 
+ 	if (irq_setup_virq(domain, virq, hwirq)) {
+@@ -483,7 +515,7 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
+ 
+ 	/* legacy -> bail early */
+ 	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
+-		return hwirq;
++		return irq_domain_legacy_revmap(domain, hwirq);
+ 
+ 	/* Slow path does a linear search of the map */
+ 	if (hint == 0)
 -- 
 1.7.9
