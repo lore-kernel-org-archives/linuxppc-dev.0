@@ -1,22 +1,20 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DF2D5B6F99
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 04:50:56 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH 1/1] fsldma: ignore end of segments interrupt
-Date: Thu, 16 Feb 2012 17:50:47 +0000
-Message-ID: <CAOZdJXVccE0GqZU2PvAz3RTh+X9ZYZr-9YufxS+mYWJkhSOGEQ@mail.gmail.com>
-References: <1327611520-18256-1-git-send-email-iws@ovro.caltech.edu>
-In-Reply-To: <1327611520-18256-1-git-send-email-iws@ovro.caltech.edu>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <b-cousson@ti.com>
+Message-ID: <4F3D424C.2020306@ti.com>
+Date: Thu, 16 Feb 2012 18:52:12 +0100
+From: "Cousson, Benoit" <b-cousson@ti.com>
 MIME-Version: 1.0
-Cc: Dan Williams <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v5 08/27] irq_domain: Move irq_domain code from powerpc
+ to kernel/irq
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-9-git-send-email-grant.likely@secretlab.ca>
+ <4F3D3F21.3060905@ti.com>
+In-Reply-To: <4F3D3F21.3060905@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 26, 2012 at 2:58 PM, Ira W. Snyder <iws@ovro.caltech.edu> wrote=
-:
-> The mpc8349ea has been observed to generate spurious end of segments
-> interrupts despite the fact that they are not enabled by this driver.
-> Check for them and ignore them to avoid a kernel error message.
+OK, forget about it, I've just seen your email on that and pulled your 
+latest update.
 
-When this happens, are there any other status bits set?  It seems
-weird that there are spurious interrupts from an internal block,
-especially since it's the same block on all 83xx parts.
+Regards,
+Benoit
 
-I wonder if the EOSI bit just happens to be set when the interrupt
-occurs for some other reason.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+On 2/16/2012 6:38 PM, Cousson, Benoit wrote:
+> Hi Grant,
+>
+> It looks like there is a small regression in that update, it cannot
+> build due to a missing semi-colon.
+>
+> On 2/16/2012 10:09 AM, Grant Likely wrote:
+>> +/**
+>> + * irq_find_mapping() - Find a linux irq from an hw irq number.
+>> + * @host: domain owning this hardware interrupt
+>> + * @hwirq: hardware irq number in that host space
+>> + *
+>> + * This is a slow path, for use by generic code. It's expected that an
+>> + * irq controller implementation directly calls the appropriate low
+>> level
+>> + * mapping function.
+>> + */
+>> +unsigned int irq_find_mapping(struct irq_domain *host,
+>> + irq_hw_number_t hwirq)
+>> +{
+>> + unsigned int i;
+>> + unsigned int hint = hwirq % irq_virq_count;
+>> +
+>> + /* Look for default host if nececssary */
+>> + if (host == NULL)
+>> + host = irq_default_host;
+>> + if (host == NULL)
+>> + return NO_IRQ;
+>> +
+>> + /* legacy -> bail early */
+>> + if (host->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
+>> + return hwirq;
+>> +
+>> + /* Slow path does a linear search of the map */
+>> + if (hint == 0)
+>> + hint = 1;
+>> + i = hint;
+>> + do {
+>> + struct irq_data *data = irq_get_irq_data(i);
+>> + if (data&& (data->domain == host)&& (data->hwirq == hwirq))
+>> + return i;
+>> + i++;
+>> + if (i>= irq_virq_count)
+>> + i = 1
+>
+> The ";" is missing.
+>
+> Regards,
+> Benoit
