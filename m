@@ -1,16 +1,24 @@
 Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1329361982.3772.44.camel@pasglop>
-Subject: Re: [PATCH] of: Only compile OF_DYNAMIC on PowerPC pseries and iseries
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AC5671007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2012 14:29:22 +1100 (EST)
+Message-ID: <1329362944.3772.45.camel@pasglop>
+Subject: Re: [PATCH 6/12] arch/powerpc: remove references to cpu_*_map.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 16 Feb 2012 14:13:02 +1100
-In-Reply-To: <1329240330-3539-1-git-send-email-grant.likely@secretlab.ca>
-References: <1329240330-3539-1-git-send-email-grant.likely@secretlab.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Date: Thu, 16 Feb 2012 14:29:04 +1100
+In-Reply-To: <4F3B790F.1040907@linux.vnet.ibm.com>
+References: <1329281884.20466.rusty@rustcorp.com.au>
+ <4F3B790F.1040907@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- "David S. Miller" <davem@davemloft.net>
+Cc: Venkatesh Pallipadi <venki@google.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-02-14 at 10:25 -0700, Grant Likely wrote:
-> Only two architectures use the OF node reference counting and reclaim bits.
-> There is no need to compile it for the rest of the PowerPC platforms or for
-> any of the other architectures.  This patch makes iseries and pseries
-> select CONFIG_OF_DYNAMIC, and makes it default to off for everything else.
+On Wed, 2012-02-15 at 14:51 +0530, Srivatsa S. Bhat wrote:
+> On 02/15/2012 10:28 AM, Rusty Russell wrote:
 > 
-> It is still safe to turn on CONFIG_OF_DYNAMIC on all architectures, it just
-> isn't necessary.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> Cc: "David S. Miller" <davem@davemloft.net>
+> > From: Rusty Russell <rusty@rustcorp.com.au>
+> > 
+> > This has been obsolescent for a while; time for the final push.
+> > 
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Want me to stick that in -powerpc ? If yes, now or -next ?
 
 Cheers,
 Ben.
