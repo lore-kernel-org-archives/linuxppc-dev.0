@@ -7,10 +7,10 @@ To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
  Rob Herring <rob.herring@calxeda.com>
-Subject: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
- use irq_alloc_desc() instead
-Date: Thu, 16 Feb 2012 02:09:07 -0700
-Message-Id: <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH v5 03/27] irq_domain: Make irq_domain structure match
+ powerpc's irq_host
+Date: Thu, 16 Feb 2012 02:09:04 -0700
+Message-Id: <1329383368-12122-4-git-send-email-grant.likely@secretlab.ca>
 In-Reply-To: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
 References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,539 +22,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch drops the powerpc-specific irq_map table and replaces it with
-directly using the irq_alloc_desc()/irq_free_desc() interfaces for allocating
-and freeing irq_desc structures.
+Part of the series to unify the irq remapping mechanisms in the
+kernel.  A follow up patch will copy the powerpc implementation into
+kernel/irq/irqdomain.c, which will be a lot easier if the structures
+are identical.
 
-This patch is a preparation step for generalizing the powerpc-specific virq
-infrastructure to become irq_domains.
-
-As part of this change, the irq_big_lock is changed to a mutex from a raw
-spinlock.  There is no longer any need to use a spin lock since the irq_desc
-allocation code is now responsible for the critical section of finding
-an unused range of irq numbers.
-
-The radix lookup table is also changed to store the irq_data pointer instead
-of the irq_map entry since the irq_map is removed.  This should end up being
-functionally equivalent since only allocated irq_descs are ever added to the
-radix tree.
-
-v5: - Really don't ever allocate virq 0.  The previous version could still
-      do it if hint == 0
-    - Respect irq_virq_count setting for NOMAP.  Some NOMAP domains cannot
-      use virq values above irq_virq_count.
-    - Use numa_node_id() when allocating irq_descs.  Ideally the API should
-      obtain that value from the caller, but that touches a lot of call sites
-      so will be deferred to a follow-on patch.
-    - Fix irq_find_mapping() to include irq numbers lower than
-      NUM_ISA_INTERRUPTS.  With the switch to irq_alloc_desc*(), the lowest
-      possible allocated irq is now returned by arch_probe_nr_irqs().
-v4: - Fix incorrect access to irq_data structure in debugfs code
-    - Don't ever allocate virq 0
+Where they differ, I've chose to use the powerpc names since there is
+a lot more code using those names.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Rob Herring <rob.herring@calxeda.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Milton Miller <miltonm@bga.com>
 Tested-by: Olof Johansson <olof@lixom.net>
 ---
- arch/powerpc/include/asm/irq.h |   27 -----
- arch/powerpc/kernel/irq.c      |  240 ++++++++++++----------------------------
- 2 files changed, 69 insertions(+), 198 deletions(-)
+ arch/arm/common/gic.c     |   14 ++++----
+ include/linux/irqdomain.h |   84 ++++++++++++++++++++++++++++++++++-----------
+ kernel/irq/irqdomain.c    |   14 ++++----
+ 3 files changed, 78 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index cb06b39..abdd7ef 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -191,33 +191,6 @@ extern unsigned int irq_linear_revmap(struct irq_domain *host,
- 				      irq_hw_number_t hwirq);
+diff --git a/arch/arm/common/gic.c b/arch/arm/common/gic.c
+index c47d619..dc19862 100644
+--- a/arch/arm/common/gic.c
++++ b/arch/arm/common/gic.c
+@@ -619,10 +619,10 @@ static void __init gic_pm_init(struct gic_chip_data *gic)
+ #endif
  
+ #ifdef CONFIG_OF
+-static int gic_irq_domain_dt_translate(struct irq_domain *d,
+-				       struct device_node *controller,
+-				       const u32 *intspec, unsigned int intsize,
+-				       unsigned long *out_hwirq, unsigned int *out_type)
++static int gic_irq_domain_xlate(struct irq_domain *d,
++				struct device_node *controller,
++				const u32 *intspec, unsigned int intsize,
++				unsigned long *out_hwirq, unsigned int *out_type)
+ {
+ 	if (d->of_node != controller)
+ 		return -EINVAL;
+@@ -641,9 +641,9 @@ static int gic_irq_domain_dt_translate(struct irq_domain *d,
+ }
+ #endif
  
--
--/**
-- * irq_alloc_virt - Allocate virtual irq numbers
-- * @host: host owning these new virtual irqs
-- * @count: number of consecutive numbers to allocate
-- * @hint: pass a hint number, the allocator will try to use a 1:1 mapping
-- *
-- * This is a low level function that is used internally by irq_create_mapping()
-- * and that can be used by some irq controllers implementations for things
-- * like allocating ranges of numbers for MSIs. The revmaps are left untouched.
-- */
--extern unsigned int irq_alloc_virt(struct irq_domain *host,
--				   unsigned int count,
--				   unsigned int hint);
--
--/**
-- * irq_free_virt - Free virtual irq numbers
-- * @virq: virtual irq number of the first interrupt to free
-- * @count: number of interrupts to free
-- *
-- * This function is the opposite of irq_alloc_virt. It will not clear reverse
-- * maps, this should be done previously by unmap'ing the interrupt. In fact,
-- * all interrupts covered by the range being freed should have been unmapped
-- * prior to calling this.
-- */
--extern void irq_free_virt(unsigned int virq, unsigned int count);
--
+-const struct irq_domain_ops gic_irq_domain_ops = {
++struct irq_domain_ops gic_irq_domain_ops = {
+ #ifdef CONFIG_OF
+-	.dt_translate = gic_irq_domain_dt_translate,
++	.xlate = gic_irq_domain_xlate,
+ #endif
+ };
+ 
+@@ -721,7 +721,7 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
+ 		     irq_start);
+ 		domain->irq_base = irq_start;
+ 	}
+-	domain->priv = gic;
++	domain->host_data = gic;
+ 	domain->ops = &gic_irq_domain_ops;
+ 	irq_domain_add(domain);
+ 
+diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
+index bd4272b..35b9ff3 100644
+--- a/include/linux/irqdomain.h
++++ b/include/linux/irqdomain.h
+@@ -9,61 +9,105 @@
+  * representation into a hardware irq number that can be mapped back to a
+  * Linux irq number without any extra platform support code.
+  *
+- * irq_domain is expected to be embedded in an interrupt controller's private
+- * data structure.
++ * Interrupt controller "domain" data structure. This could be defined as a
++ * irq domain controller. That is, it handles the mapping between hardware
++ * and virtual interrupt numbers for a given interrupt domain. The domain
++ * structure is generally created by the PIC code for a given PIC instance
++ * (though a domain can cover more than one PIC if they have a flat number
++ * model). It's the domain callbacks that are responsible for setting the
++ * irq_chip on a given irq_desc after it's been mapped.
+  */
++
+ #ifndef _LINUX_IRQDOMAIN_H
+ #define _LINUX_IRQDOMAIN_H
+ 
+-#include <linux/irq.h>
+-#include <linux/mod_devicetable.h>
++#include <linux/types.h>
++#include <linux/radix-tree.h>
+ 
+-#ifdef CONFIG_IRQ_DOMAIN
+ struct device_node;
+ struct irq_domain;
++struct of_device_id;
++
++/* This type is the placeholder for a hardware interrupt number. It has to
++ * be big enough to enclose whatever representation is used by a given
++ * platform.
++ */
++typedef unsigned long irq_hw_number_t;
+ 
  /**
-  * irq_early_init - Init irq remapping subsystem
+  * struct irq_domain_ops - Methods for irq_domain objects
++ * @match: Match an interrupt controller device node to a host, returns
++ *         1 on a match
++ * @map: Create or update a mapping between a virtual irq number and a hw
++ *       irq number. This is called only once for a given mapping.
++ * @unmap: Dispose of such a mapping
+  * @to_irq: (optional) given a local hardware irq number, return the linux
+  *          irq number.  If to_irq is not implemented, then the irq_domain
+  *          will use this translation: irq = (domain->irq_base + hwirq)
+- * @dt_translate: Given a device tree node and interrupt specifier, decode
+- *                the hardware irq number and linux irq type value.
++ * @xlate: Given a device tree node and interrupt specifier, decode
++ *         the hardware irq number and linux irq type value.
++ *
++ * Functions below are provided by the driver and called whenever a new mapping
++ * is created or an old mapping is disposed. The driver can then proceed to
++ * whatever internal data structures management is required. It also needs
++ * to setup the irq_desc when returning from map().
   */
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 7305f2f..03c95f0 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -491,38 +491,29 @@ void do_softirq(void)
-  * IRQ controller and virtual interrupts
+ struct irq_domain_ops {
++	int (*match)(struct irq_domain *d, struct device_node *node);
++	int (*map)(struct irq_domain *d, unsigned int virq, irq_hw_number_t hw);
++	void (*unmap)(struct irq_domain *d, unsigned int virq);
+ 	unsigned int (*to_irq)(struct irq_domain *d, unsigned long hwirq);
+-
+-#ifdef CONFIG_OF
+-	int (*dt_translate)(struct irq_domain *d, struct device_node *node,
+-			    const u32 *intspec, unsigned int intsize,
+-			    unsigned long *out_hwirq, unsigned int *out_type);
+-#endif /* CONFIG_OF */
++	int (*xlate)(struct irq_domain *d, struct device_node *node,
++		     const u32 *intspec, unsigned int intsize,
++		     unsigned long *out_hwirq, unsigned int *out_type);
+ };
+ 
+ /**
+  * struct irq_domain - Hardware interrupt number translation object
+- * @list: Element in global irq_domain list.
++ * @link: Element in global irq_domain list.
++ * @revmap_type: Method used for reverse mapping hwirq numbers to linux irq. This
++ *               will be one of the IRQ_DOMAIN_MAP_* values.
++ * @revmap_data: Revmap method specific data.
++ * @ops: pointer to irq_domain methods
++ * @host_data: private data pointer for use by owner.  Not touched by irq_domain
++ *             core code.
+  * @irq_base: Start of irq_desc range assigned to the irq_domain.  The creator
+  *            of the irq_domain is responsible for allocating the array of
+  *            irq_desc structures.
+  * @nr_irq: Number of irqs managed by the irq domain
+  * @hwirq_base: Starting number for hwirqs managed by the irq domain
+- * @ops: pointer to irq_domain methods
+- * @priv: private data pointer for use by owner.  Not touched by irq_domain
+- *        core code.
+  * @of_node: (optional) Pointer to device tree nodes associated with the
+  *           irq_domain.  Used when decoding device tree interrupt specifiers.
   */
+ struct irq_domain {
+-	struct list_head list;
++	struct list_head link;
++
++	/* type of reverse mapping_technique */
++	unsigned int revmap_type;
++#define IRQ_DOMAIN_MAP_LEGACY 0 /* legacy 8259, gets irqs 1..15 */
++#define IRQ_DOMAIN_MAP_NOMAP 1 /* no fast reverse mapping */
++#define IRQ_DOMAIN_MAP_LINEAR 2 /* linear map of interrupts */
++#define IRQ_DOMAIN_MAP_TREE 3 /* radix tree */
++	union {
++		struct {
++			unsigned int size;
++			unsigned int *revmap;
++		} linear;
++		struct radix_tree_root tree;
++	} revmap_data;
++	struct irq_domain_ops *ops;
++	void *host_data;
++	irq_hw_number_t inval_irq;
++
+ 	unsigned int irq_base;
+ 	unsigned int nr_irq;
+ 	unsigned int hwirq_base;
+-	const struct irq_domain_ops *ops;
+-	void *priv;
++
++	/* Optional device node pointer */
+ 	struct device_node *of_node;
+ };
  
--/* The main irq map itself is an array of NR_IRQ entries containing the
-- * associate host and irq number. An entry with a host of NULL is free.
-- * An entry can be allocated if it's free, the allocator always then sets
-- * hwirq first to the host's invalid irq number and then fills ops.
-- */
--struct irq_map_entry {
--	irq_hw_number_t	hwirq;
--	struct irq_domain	*host;
--};
--
- static LIST_HEAD(irq_domain_list);
--static DEFINE_RAW_SPINLOCK(irq_big_lock);
-+static DEFINE_MUTEX(irq_domain_mutex);
- static DEFINE_MUTEX(revmap_trees_mutex);
--static struct irq_map_entry irq_map[NR_IRQS];
- static unsigned int irq_virq_count = NR_IRQS;
- static struct irq_domain *irq_default_host;
- 
- irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
- {
--	return irq_map[d->irq].hwirq;
-+	return d->hwirq;
- }
- EXPORT_SYMBOL_GPL(irqd_to_hwirq);
- 
- irq_hw_number_t virq_to_hw(unsigned int virq)
- {
--	return irq_map[virq].hwirq;
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	return WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
- }
- EXPORT_SYMBOL_GPL(virq_to_hw);
- 
- bool virq_is_host(unsigned int virq, struct irq_domain *host)
- {
--	return irq_map[virq].host == host;
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	return irq_data ? irq_data->domain == host : false;
- }
- EXPORT_SYMBOL_GPL(virq_is_host);
- 
-@@ -537,11 +528,10 @@ struct irq_domain *irq_alloc_host(struct device_node *of_node,
- 				struct irq_domain_ops *ops,
- 				irq_hw_number_t inval_irq)
- {
--	struct irq_domain *host;
-+	struct irq_domain *host, *h;
- 	unsigned int size = sizeof(struct irq_domain);
- 	unsigned int i;
- 	unsigned int *rmap;
--	unsigned long flags;
- 
- 	/* Allocate structure and revmap table if using linear mapping */
- 	if (revmap_type == IRQ_DOMAIN_MAP_LINEAR)
-@@ -559,23 +549,20 @@ struct irq_domain *irq_alloc_host(struct device_node *of_node,
- 	if (host->ops->match == NULL)
- 		host->ops->match = default_irq_host_match;
- 
--	raw_spin_lock_irqsave(&irq_big_lock, flags);
--
--	/* If it's a legacy controller, check for duplicates and
--	 * mark it as allocated (we use irq 0 host pointer for that
--	 */
-+	mutex_lock(&irq_domain_mutex);
-+	/* Make sure only one legacy controller can be created */
- 	if (revmap_type == IRQ_DOMAIN_MAP_LEGACY) {
--		if (irq_map[0].host != NULL) {
--			raw_spin_unlock_irqrestore(&irq_big_lock, flags);
--			of_node_put(host->of_node);
--			kfree(host);
--			return NULL;
-+		list_for_each_entry(h, &irq_domain_list, link) {
-+			if (WARN_ON(h->revmap_type == IRQ_DOMAIN_MAP_LEGACY)) {
-+				mutex_unlock(&irq_domain_mutex);
-+				of_node_put(host->of_node);
-+				kfree(host);
-+				return NULL;
-+			}
- 		}
--		irq_map[0].host = host;
++#ifdef CONFIG_IRQ_DOMAIN
+ /**
+  * irq_domain_to_irq() - Translate from a hardware irq to a linux irq number
+  *
+diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+index cc2cd43..509adb8 100644
+--- a/kernel/irq/irqdomain.c
++++ b/kernel/irq/irqdomain.c
+@@ -43,7 +43,7 @@ void irq_domain_add(struct irq_domain *domain)
  	}
--
- 	list_add(&host->link, &irq_domain_list);
--	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-+	mutex_unlock(&irq_domain_mutex);
  
- 	/* Additional setups per revmap type */
- 	switch(revmap_type) {
-@@ -584,10 +571,9 @@ struct irq_domain *irq_alloc_host(struct device_node *of_node,
- 		host->inval_irq = 0;
- 		/* setup us as the host for all legacy interrupts */
- 		for (i = 1; i < NUM_ISA_INTERRUPTS; i++) {
--			irq_map[i].hwirq = i;
--			smp_wmb();
--			irq_map[i].host = host;
--			smp_wmb();
-+			struct irq_data *irq_data = irq_get_irq_data(i);
-+			irq_data->hwirq = i;
-+			irq_data->domain = host;
+ 	mutex_lock(&irq_domain_mutex);
+-	list_add(&domain->list, &irq_domain_list);
++	list_add(&domain->link, &irq_domain_list);
+ 	mutex_unlock(&irq_domain_mutex);
+ }
  
- 			/* Legacy flags are left to default at this point,
- 			 * one can then use irq_create_mapping() to
-@@ -604,7 +590,6 @@ struct irq_domain *irq_alloc_host(struct device_node *of_node,
- 		for (i = 0; i < revmap_arg; i++)
- 			rmap[i] = NO_IRQ;
- 		host->revmap_data.linear.size = revmap_arg;
--		smp_wmb();
- 		host->revmap_data.linear.revmap = rmap;
- 		break;
- 	case IRQ_DOMAIN_MAP_TREE:
-@@ -622,20 +607,19 @@ struct irq_domain *irq_alloc_host(struct device_node *of_node,
- struct irq_domain *irq_find_host(struct device_node *node)
- {
- 	struct irq_domain *h, *found = NULL;
--	unsigned long flags;
+@@ -57,7 +57,7 @@ void irq_domain_del(struct irq_domain *domain)
+ 	int hwirq, irq;
  
- 	/* We might want to match the legacy controller last since
- 	 * it might potentially be set to match all interrupts in
- 	 * the absence of a device node. This isn't a problem so far
- 	 * yet though...
- 	 */
--	raw_spin_lock_irqsave(&irq_big_lock, flags);
-+	mutex_lock(&irq_domain_mutex);
- 	list_for_each_entry(h, &irq_domain_list, link)
- 		if (h->ops->match(h, node)) {
- 			found = h;
+ 	mutex_lock(&irq_domain_mutex);
+-	list_del(&domain->list);
++	list_del(&domain->link);
+ 	mutex_unlock(&irq_domain_mutex);
+ 
+ 	/* Clear the irq_domain assignments */
+@@ -88,10 +88,10 @@ unsigned int irq_create_of_mapping(struct device_node *controller,
+ 
+ 	/* Find a domain which can translate the irq spec */
+ 	mutex_lock(&irq_domain_mutex);
+-	list_for_each_entry(domain, &irq_domain_list, list) {
+-		if (!domain->ops->dt_translate)
++	list_for_each_entry(domain, &irq_domain_list, link) {
++		if (!domain->ops->xlate)
+ 			continue;
+-		rc = domain->ops->dt_translate(domain, controller,
++		rc = domain->ops->xlate(domain, controller,
+ 					intspec, intsize, &hwirq, &type);
+ 		if (rc == 0)
  			break;
- 		}
--	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-+	mutex_unlock(&irq_domain_mutex);
- 	return found;
- }
- EXPORT_SYMBOL_GPL(irq_find_host);
-@@ -659,33 +643,20 @@ void irq_set_virq_count(unsigned int count)
- static int irq_setup_virq(struct irq_domain *host, unsigned int virq,
- 			    irq_hw_number_t hwirq)
- {
--	int res;
--
--	res = irq_alloc_desc_at(virq, 0);
--	if (res != virq) {
--		pr_debug("irq: -> allocating desc failed\n");
--		goto error;
--	}
--
--	/* map it */
--	smp_wmb();
--	irq_map[virq].hwirq = hwirq;
--	smp_mb();
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
- 
-+	irq_data->hwirq = hwirq;
-+	irq_data->domain = host;
- 	if (host->ops->map(host, virq, hwirq)) {
- 		pr_debug("irq: -> mapping failed, freeing\n");
--		goto errdesc;
-+		irq_data->domain = NULL;
-+		irq_data->hwirq = 0;
-+		return -1;
- 	}
- 
- 	irq_clear_status_flags(virq, IRQ_NOREQUEST);
- 
- 	return 0;
--
--errdesc:
--	irq_free_descs(virq, 1);
--error:
--	irq_free_virt(virq, 1);
--	return -1;
- }
- 
- unsigned int irq_create_direct_mapping(struct irq_domain *host)
-@@ -698,16 +669,24 @@ unsigned int irq_create_direct_mapping(struct irq_domain *host)
- 	BUG_ON(host == NULL);
- 	WARN_ON(host->revmap_type != IRQ_DOMAIN_MAP_NOMAP);
- 
--	virq = irq_alloc_virt(host, 1, 0);
-+	virq = irq_alloc_desc_from(1, 0);
- 	if (virq == NO_IRQ) {
- 		pr_debug("irq: create_direct virq allocation failed\n");
- 		return NO_IRQ;
- 	}
-+	if (virq >= irq_virq_count) {
-+		pr_err("ERROR: no free irqs available below %i maximum\n",
-+			irq_virq_count);
-+		irq_free_desc(virq);
-+		return 0;
-+	}
- 
- 	pr_debug("irq: create_direct obtained virq %d\n", virq);
- 
--	if (irq_setup_virq(host, virq, virq))
-+	if (irq_setup_virq(host, virq, virq)) {
-+		irq_free_desc(virq);
- 		return NO_IRQ;
-+	}
- 
- 	return virq;
- }
-@@ -747,15 +726,22 @@ unsigned int irq_create_mapping(struct irq_domain *host,
- 	} else {
- 		/* Allocate a virtual interrupt number */
- 		hint = hwirq % irq_virq_count;
--		virq = irq_alloc_virt(host, 1, hint);
-+		if (hint == 0)
-+			hint = 1;
-+		virq = irq_alloc_desc_from(hint, 0);
-+		if (!virq)
-+			virq = irq_alloc_desc_from(1, 0);
- 		if (virq == NO_IRQ) {
- 			pr_debug("irq: -> virq allocation failed\n");
- 			return NO_IRQ;
- 		}
- 	}
- 
--	if (irq_setup_virq(host, virq, hwirq))
-+	if (irq_setup_virq(host, virq, hwirq)) {
-+		if (host->revmap_type != IRQ_DOMAIN_MAP_LEGACY)
-+			irq_free_desc(virq);
- 		return NO_IRQ;
-+	}
- 
- 	pr_debug("irq: irq %lu on host %s mapped to virtual irq %u\n",
- 		hwirq, host->of_node ? host->of_node->full_name : "null", virq);
-@@ -806,13 +792,14 @@ EXPORT_SYMBOL_GPL(irq_create_of_mapping);
- 
- void irq_dispose_mapping(unsigned int virq)
- {
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
- 	struct irq_domain *host;
- 	irq_hw_number_t hwirq;
- 
--	if (virq == NO_IRQ)
-+	if (virq == NO_IRQ || !irq_data)
- 		return;
- 
--	host = irq_map[virq].host;
-+	host = irq_data->domain;
- 	if (WARN_ON(host == NULL))
- 		return;
- 
-@@ -834,7 +821,7 @@ void irq_dispose_mapping(unsigned int virq)
- 	smp_mb();
- 
- 	/* Clear reverse map */
--	hwirq = irq_map[virq].hwirq;
-+	hwirq = irq_data->hwirq;
- 	switch(host->revmap_type) {
- 	case IRQ_DOMAIN_MAP_LINEAR:
- 		if (hwirq < host->revmap_data.linear.size)
-@@ -848,12 +835,9 @@ void irq_dispose_mapping(unsigned int virq)
- 	}
- 
- 	/* Destroy map */
--	smp_mb();
--	irq_map[virq].hwirq = host->inval_irq;
-+	irq_data->hwirq = host->inval_irq;
- 
--	irq_free_descs(virq, 1);
--	/* Free it */
--	irq_free_virt(virq, 1);
-+	irq_free_desc(virq);
+@@ -126,7 +126,7 @@ void irq_dispose_mapping(unsigned int irq)
  }
  EXPORT_SYMBOL_GPL(irq_dispose_mapping);
  
-@@ -874,16 +858,16 @@ unsigned int irq_find_mapping(struct irq_domain *host,
- 		return hwirq;
+-int irq_domain_simple_dt_translate(struct irq_domain *d,
++int irq_domain_simple_xlate(struct irq_domain *d,
+ 			    struct device_node *controller,
+ 			    const u32 *intspec, unsigned int intsize,
+ 			    unsigned long *out_hwirq, unsigned int *out_type)
+@@ -181,7 +181,7 @@ EXPORT_SYMBOL_GPL(irq_domain_generate_simple);
  
- 	/* Slow path does a linear search of the map */
--	if (hint < NUM_ISA_INTERRUPTS)
--		hint = NUM_ISA_INTERRUPTS;
-+	if (hint == 0)
-+		hint = 1;
- 	i = hint;
--	do  {
--		if (irq_map[i].host == host &&
--		    irq_map[i].hwirq == hwirq)
-+	do {
-+		struct irq_data *data = irq_get_irq_data(i);
-+		if (data && (data->domain == host) && (data->hwirq == hwirq))
- 			return i;
- 		i++;
- 		if (i >= irq_virq_count)
--			i = NUM_ISA_INTERRUPTS;
-+			i = 1;
- 	} while(i != hint);
- 	return NO_IRQ;
- }
-@@ -928,19 +912,17 @@ int irq_choose_cpu(const struct cpumask *mask)
- unsigned int irq_radix_revmap_lookup(struct irq_domain *host,
- 				     irq_hw_number_t hwirq)
- {
--	struct irq_map_entry *ptr;
--	unsigned int virq;
-+	struct irq_data *irq_data;
- 
- 	if (WARN_ON_ONCE(host->revmap_type != IRQ_DOMAIN_MAP_TREE))
- 		return irq_find_mapping(host, hwirq);
- 
- 	/*
--	 * The ptr returned references the static global irq_map.
--	 * but freeing an irq can delete nodes along the path to
-+	 * Freeing an irq can delete nodes along the path to
- 	 * do the lookup via call_rcu.
- 	 */
- 	rcu_read_lock();
--	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
-+	irq_data = radix_tree_lookup(&host->revmap_data.tree, hwirq);
- 	rcu_read_unlock();
- 
- 	/*
-@@ -948,24 +930,20 @@ unsigned int irq_radix_revmap_lookup(struct irq_domain *host,
- 	 * Else fallback to linear lookup - this should not happen in practice
- 	 * as it means that we failed to insert the node in the radix tree.
- 	 */
--	if (ptr)
--		virq = ptr - irq_map;
--	else
--		virq = irq_find_mapping(host, hwirq);
--
--	return virq;
-+	return irq_data ? irq_data->irq : irq_find_mapping(host, hwirq);
- }
- 
- void irq_radix_revmap_insert(struct irq_domain *host, unsigned int virq,
- 			     irq_hw_number_t hwirq)
- {
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+
- 	if (WARN_ON(host->revmap_type != IRQ_DOMAIN_MAP_TREE))
- 		return;
- 
- 	if (virq != NO_IRQ) {
- 		mutex_lock(&revmap_trees_mutex);
--		radix_tree_insert(&host->revmap_data.tree, hwirq,
--				  &irq_map[virq]);
-+		radix_tree_insert(&host->revmap_data.tree, hwirq, irq_data);
- 		mutex_unlock(&revmap_trees_mutex);
- 	}
- }
-@@ -994,86 +972,6 @@ unsigned int irq_linear_revmap(struct irq_domain *host,
- 	return revmap[hwirq];
- }
- 
--unsigned int irq_alloc_virt(struct irq_domain *host,
--			    unsigned int count,
--			    unsigned int hint)
--{
--	unsigned long flags;
--	unsigned int i, j, found = NO_IRQ;
--
--	if (count == 0 || count > (irq_virq_count - NUM_ISA_INTERRUPTS))
--		return NO_IRQ;
--
--	raw_spin_lock_irqsave(&irq_big_lock, flags);
--
--	/* Use hint for 1 interrupt if any */
--	if (count == 1 && hint >= NUM_ISA_INTERRUPTS &&
--	    hint < irq_virq_count && irq_map[hint].host == NULL) {
--		found = hint;
--		goto hint_found;
--	}
--
--	/* Look for count consecutive numbers in the allocatable
--	 * (non-legacy) space
--	 */
--	for (i = NUM_ISA_INTERRUPTS, j = 0; i < irq_virq_count; i++) {
--		if (irq_map[i].host != NULL)
--			j = 0;
--		else
--			j++;
--
--		if (j == count) {
--			found = i - count + 1;
--			break;
--		}
--	}
--	if (found == NO_IRQ) {
--		raw_spin_unlock_irqrestore(&irq_big_lock, flags);
--		return NO_IRQ;
--	}
-- hint_found:
--	for (i = found; i < (found + count); i++) {
--		irq_map[i].hwirq = host->inval_irq;
--		smp_wmb();
--		irq_map[i].host = host;
--	}
--	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
--	return found;
--}
--
--void irq_free_virt(unsigned int virq, unsigned int count)
--{
--	unsigned long flags;
--	unsigned int i;
--
--	WARN_ON (virq < NUM_ISA_INTERRUPTS);
--	WARN_ON (count == 0 || (virq + count) > irq_virq_count);
--
--	if (virq < NUM_ISA_INTERRUPTS) {
--		if (virq + count < NUM_ISA_INTERRUPTS)
--			return;
--		count  =- NUM_ISA_INTERRUPTS - virq;
--		virq = NUM_ISA_INTERRUPTS;
--	}
--
--	if (count > irq_virq_count || virq > irq_virq_count - count) {
--		if (virq > irq_virq_count)
--			return;
--		count = irq_virq_count - virq;
--	}
--
--	raw_spin_lock_irqsave(&irq_big_lock, flags);
--	for (i = virq; i < (virq + count); i++) {
--		struct irq_domain *host;
--
--		host = irq_map[i].host;
--		irq_map[i].hwirq = host->inval_irq;
--		smp_wmb();
--		irq_map[i].host = NULL;
--	}
--	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
--}
--
- int arch_early_irq_init(void)
- {
- 	return 0;
-@@ -1103,7 +1001,7 @@ static int virq_debug_show(struct seq_file *m, void *private)
- 			struct irq_chip *chip;
- 
- 			seq_printf(m, "%5d  ", i);
--			seq_printf(m, "0x%05lx  ", irq_map[i].hwirq);
-+			seq_printf(m, "0x%05lx  ", desc->irq_data.hwirq);
- 
- 			chip = irq_desc_get_chip(desc);
- 			if (chip && chip->name)
-@@ -1115,8 +1013,8 @@ static int virq_debug_show(struct seq_file *m, void *private)
- 			data = irq_desc_get_chip_data(desc);
- 			seq_printf(m, "0x%16p  ", data);
- 
--			if (irq_map[i].host && irq_map[i].host->of_node)
--				p = irq_map[i].host->of_node->full_name;
-+			if (desc->irq_data.domain->of_node)
-+				p = desc->irq_data.domain->of_node->full_name;
- 			else
- 				p = none;
- 			seq_printf(m, "%s\n", p);
+ struct irq_domain_ops irq_domain_simple_ops = {
+ #ifdef CONFIG_OF_IRQ
+-	.dt_translate = irq_domain_simple_dt_translate,
++	.xlate = irq_domain_simple_xlate,
+ #endif /* CONFIG_OF_IRQ */
+ };
+ EXPORT_SYMBOL_GPL(irq_domain_simple_ops);
 -- 
 1.7.9
