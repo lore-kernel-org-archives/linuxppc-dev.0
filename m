@@ -1,25 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C592B6FBE
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Feb 2012 13:20:24 +1100 (EST)
-Subject: Re: [PATCH v4 2/3] KVM: PPC: epapr: Add idle hcall support for host
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <4CA99838F21AB847ACC344051E2317090571EB39@039-SN2MPN1-022.039d.mgd.msft.net>
-Date: Fri, 17 Feb 2012 03:20:19 +0100
-Message-Id: <D74699B5-5DA1-4E9D-8FDB-4A0C18613C21@suse.de>
-References: <1329384365-4028-1-git-send-email-yu.liu@freescale.com>
- <1329384365-4028-2-git-send-email-yu.liu@freescale.com>
- <F0023B33-6AF3-4805-B50E-2ED285F8B1B0@suse.de>
- <4CA99838F21AB847ACC344051E2317090571EB39@039-SN2MPN1-022.039d.mgd.msft.net>
-To: Liu Yu-B13201 <B13201@freescale.com>
-Cc: "<linuxppc-dev@ozlabs.org>" <linuxppc-dev@ozlabs.org>,
- "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
- Wood Scott-B07421 <B07421@freescale.com>
+Return-Path: <B36685@freescale.com>
+Received: from VA3EHSOBE010.bigfish.com (va3ehsobe005.messaging.microsoft.com
+ [216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B2A03B6FC4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 13:32:47 +1100 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH] powerpc/usb: fix bug of kernel hang when initializing usb
+Date: Fri, 17 Feb 2012 02:32:38 +0000
+Message-ID: <3F453DDFF675A64A89321A1F3528102170A6FF@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1329433132.2892.30.camel@pasglop> <1329436955.2892.32.camel@pasglop>
+In-Reply-To: <1329436955.2892.32.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,102 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 17.02.2012, at 03:13, Liu Yu-B13201 wrote:
-
->=20
->=20
->> -----Original Message-----
->> From: Alexander Graf [mailto:agraf@suse.de]
->> Sent: Thursday, February 16, 2012 6:20 PM
->> To: Liu Yu-B13201
->> Cc: <kvm-ppc@vger.kernel.org>; <kvm@vger.kernel.org>; <linuxppc-
->> dev@ozlabs.org>; Wood Scott-B07421; Liu Yu-B13201
->> Subject: Re: [PATCH v4 2/3] KVM: PPC: epapr: Add idle hcall support =
-for
->> host
->>=20
->>=20
->>=20
->> On 16.02.2012, at 10:26, Liu Yu <yu.liu@freescale.com> wrote:
->>=20
->>> And add a new flag definition in kvm_ppc_pvinfo to indicate whether
->>> host support EV_IDLE hcall.
->>>=20
->>> Signed-off-by: Liu Yu <yu.liu@freescale.com>
->>> ---
->>> v4:
->>> no change
->>>=20
->>> arch/powerpc/include/asm/kvm_para.h |   14 ++++++++++++--
->>> arch/powerpc/kvm/powerpc.c          |    8 ++++++++
->>> include/linux/kvm.h                 |    2 ++
->>> 3 files changed, 22 insertions(+), 2 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/include/asm/kvm_para.h
->>> b/arch/powerpc/include/asm/kvm_para.h
->>> index 7b754e7..81a34c9 100644
->>> --- a/arch/powerpc/include/asm/kvm_para.h
->>> +++ b/arch/powerpc/include/asm/kvm_para.h
->>> @@ -75,9 +75,19 @@ struct kvm_vcpu_arch_shared { };
->>>=20
->>> #define KVM_SC_MAGIC_R0        0x4b564d21 /* "KVM!" */
->>> -#define HC_VENDOR_KVM        (42 << 16)
->>> +
->>> +#include <asm/epapr_hcalls.h>
->>> +
->>> +/* ePAPR Hypercall Vendor ID */
->>> +#define HC_VENDOR_EPAPR        (EV_EPAPR_VENDOR_ID << 16)
->>> +#define HC_VENDOR_KVM        (EV_KVM_VENDOR_ID << 16)
->>> +
->>> +/* ePAPR Hypercall Token */
->>> +#define HC_EV_IDLE        EV_IDLE
->>> +
->>> +/* ePAPR Hypercall Return Codes */
->>> #define HC_EV_SUCCESS        0
->>> -#define HC_EV_UNIMPLEMENTED    12
->>> +#define HC_EV_UNIMPLEMENTED    EV_UNIMPLEMENTED
->>>=20
->>> #define KVM_FEATURE_MAGIC_PAGE    1
->>>=20
->>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->>> index 0e21d15..03ebd5d 100644
->>> --- a/arch/powerpc/kvm/powerpc.c
->>> +++ b/arch/powerpc/kvm/powerpc.c
->>> @@ -81,6 +81,10 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
->>>=20
->>>       /* Second return value is in r4 */
->>>       break;
->>> +    case HC_VENDOR_EPAPR | HC_EV_IDLE:
->>> +        r =3D HC_EV_SUCCESS;
->>> +        kvm_vcpu_block(vcpu);
->>> +        break;
->>>   default:
->>>       r =3D HC_EV_UNIMPLEMENTED;
->>>       break;
->>> @@ -746,6 +750,10 @@ static int kvm_vm_ioctl_get_pvinfo(struct
->> kvm_ppc_pvinfo *pvinfo)
->>>   pvinfo->hcall[2] =3D inst_sc;
->>>   pvinfo->hcall[3] =3D inst_nop;
->>>=20
->>> +#ifdef CONFIG_BOOKE
->>> +    pvinfo->flags |=3D KVM_PPC_PVINFO_FLAGS_EV_IDLE; #endif
->>> +
->>>   return 0;
->>> }>=20
->>=20
->> Why limit it to booke? The less ifdefs our code has, the better :)
->=20
-> The code here tells userspace that kvm support ev_idle.
-> But I'm not sure if the ev_idle code works for other platforms.
->=20
-> So I think we should keep the ifdef until other platform test the code =
-:)
-
-But the implementation is in generic code and is not #ifdef'ed, so a =
-guest could still call it just fine. It looks simple enough to work =
-without major testing on different platforms, so I'd say just expose it =
-and be done :)
-
-
-Alex
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJlbmphbWluIEhlcnJlbnNj
+aG1pZHQgW21haWx0bzpiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+IFNlbnQ6IEZyaWRheSwg
+RmVicnVhcnkgMTcsIDIwMTIgODowMyBBTQ0KPiBUbzogTGl1IFNoZW5nemhvdS1CMzY2ODUNCj4g
+Q2M6IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
+b3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvdXNiOiBmaXggYnVnIG9mIGtlcm5l
+bCBoYW5nIHdoZW4NCj4gaW5pdGlhbGl6aW5nIHVzYg0KPiANCj4gT24gRnJpLCAyMDEyLTAyLTE3
+IGF0IDA5OjU4ICsxMTAwLCBCZW5qYW1pbiBIZXJyZW5zY2htaWR0IHdyb3RlOg0KPiA+IE9uIFRo
+dSwgMjAxMi0wMi0xNiBhdCAxODowMiArMDgwMCwgU2hlbmd6aG91IExpdSB3cm90ZToNCj4gPiA+
+IElmIFVTQiBVVE1JIFBIWSBpcyBub3QgZW5hYmxlLCB3cml0aW5nIHRvIHBvcnRzYyByZWdpc3Rl
+ciB3aWxsIGxlYWQNCj4gPiA+IHRvIGtlcm5lbCBoYW5nIGR1cmluZyBib290IHVwLg0KPiA+ID4N
+Cj4gPiA+IFNpZ25lZC1vZmYtYnk6IFNoZW5nemhvdSBMaXUgPFNoZW5nemhvdS5MaXVAZnJlZXNj
+YWxlLmNvbT4NCj4gPiA+IC0tLQ0KPiA+ID4gQXBwbHkgZm9yIG1hc3RlciBicmFuY2ggb2YNCj4g
+PiA+IGdpdDovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC90b3J2YWxk
+cy9saW51eC0NCj4gMi42LmdpdA0KPiA+ID4gVGVzdGVkIG9uIFA1MDIwRFMsIHRoZSBpc3N1ZSB3
+YXMgcmVwb3J0ZWQgYnkgQmVuamFtaW4gSGVycmVuc2NobWlkdC4NCj4gPg0KPiA+IFRoaXMgZml4
+ZXMgdGhlIGhhbmcsIGJ1dCBzYWRseSBkb2Vzbid0IG1ha2UgVVNCIHdvcmsuIEkgbm93IGdldDoN
+Cj4gDQo+ICAuLi4vLi4uDQo+IA0KPiBPaywgZm91bmQgdGhlIHByb2JsZW0uDQo+IA0KPiBGaXJz
+dCwgdGhlIFNESyBrZXJuZWwgaGFkIGEgZGVsYXkgYWZ0ZXIgc2V0dGluZyB0aGF0IGJpdCwgSSBh
+ZGRlZCB0aGF0DQo+IGJhY2sgaW4uIFRoaXMgaXMgbm90IHdoYXQgZml4ZWQgaXQgYnV0IGl0IGxv
+b2tzIGxpa2UgdGhlIHJpZ2h0IHRoaW5nIHRvDQo+IGRvLCB0aG91Z2ggcGxlYXNlLCB1c2UgbXNs
+ZWVwIHJhdGhlciB0aGFuIHVkZWxheSBoZXJlIGlmIHBvc3NpYmxlIChub3QNCj4gaW4gYXRvbWlj
+IGNvbnRleHQpLg0KPiANCj4gVGhlbiwgdGhlIHJlYWwgY3VscHJpdCBpcyAoQ0MnaW5nIEt1bWFy
+IGFuZCBTY290dCB0byBmaWd1cmUgb3V0IHdoeSkNCj4gdGhpcyBzdGF0ZW1lbnQ6DQo+IA0KPiAj
+aWYgZGVmaW5lZChDT05GSUdfUFBDMzIpICYmICFkZWZpbmVkKENPTkZJR19OT1RfQ09IRVJFTlRf
+Q0FDSEUpDQo+IAkvKg0KPiAJICogVHVybiBvbiBjYWNoZSBzbm9vcGluZyBoYXJkd2FyZSwgc2lu
+Y2Ugc29tZSBQb3dlclBDIHBsYXRmb3Jtcw0KPiAJICogd2hvbGx5IHJlbHkgb24gaGFyZHdhcmUg
+dG8gZGVhbCB3aXRoIGNhY2hlIGNvaGVyZW50DQo+IAkgKi8NCj4gDQo+IAkvKiBTZXR1cCBTbm9v
+cGluZyBmb3IgYWxsIHRoZSA0R0Igc3BhY2UgKi8NCj4gCS8qIFNOT09QMSBzdGFydHMgZnJvbSAw
+eDAsIHNpemUgMkcgKi8NCj4gCW91dF9iZTMyKG5vbl9laGNpICsgRlNMX1NPQ19VU0JfU05PT1Ax
+LCAweDAgfCBTTk9PUF9TSVpFXzJHQik7DQo+IAkvKiBTTk9PUDIgc3RhcnRzIGZyb20gMHg4MDAw
+MDAwMCwgc2l6ZSAyRyAqLw0KPiAJb3V0X2JlMzIobm9uX2VoY2kgKyBGU0xfU09DX1VTQl9TTk9P
+UDIsIDB4ODAwMDAwMDAgfA0KPiBTTk9PUF9TSVpFXzJHQik7ICNlbmRpZg0KPiANCj4gSSdtIGJ1
+aWxkaW5nIGEgNjQtYml0IGtlcm5lbCBzbyB0aGlzIGlzbid0IGNvbXBpbGVkIGFuZCBpdCBsb29r
+cyBsaWtlDQo+IHRoZSBFSENJIGlzIHRodXMgbm90IHNub29waW5nLg0KPiANCj4gQnkgcmVtb3Zp
+bmcgdGhlIGRlZmluZWQoQ09ORklHX1BQQzMyKSBwYXJ0IG9mIHRoZSBzdGF0ZW1lbnQsIG15IHBy
+b2JsZW0NCj4gZ29lcyBhd2F5Lg0KPiANCj4gQ2hlZXJzLA0KPiBCZW4uDQo+IA0KPiANCg0KW1No
+ZW5nemhvdV0gSSB0ZXN0ZWQgdGhlIHBhdGNoIHdpdGggMzJiaXQgUDUwMjBEUywgVVNCIHdvcmtl
+ZCB3ZWxsLiBOb3QgdGVzdGVkIHdpdGggNjQtYml0IGtlcm5lbC4NCkdsYWQgdG8geW91IGhhZCBm
+b3VuZCB0aGUgcHJvYmxlbSBpbiBjYXNlIG9mIDY0LWJpdCwgdGhhbmtzIQ0K
