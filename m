@@ -1,24 +1,25 @@
-Return-Path: <B32616@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe002.messaging.microsoft.com
- [216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B13201@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 12B0E1007D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 12:54:56 +1100 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH V2 RESEND] fsl-sata: I/O load balancing
-Date: Fri, 17 Feb 2012 01:54:47 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB702B97D@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1329284944-17943-1-git-send-email-qiang.liu@freescale.com>
- <1329439216.2892.36.camel@pasglop>
-In-Reply-To: <1329439216.2892.36.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 2876FB6FB9
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Feb 2012 13:14:26 +1100 (EST)
+From: Liu Yu-B13201 <B13201@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH v4 2/3] KVM: PPC: epapr: Add idle hcall support for host
+Date: Fri, 17 Feb 2012 02:13:43 +0000
+Message-ID: <4CA99838F21AB847ACC344051E2317090571EB39@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1329384365-4028-1-git-send-email-yu.liu@freescale.com>
+ <1329384365-4028-2-git-send-email-yu.liu@freescale.com>
+ <F0023B33-6AF3-4805-B50E-2ED285F8B1B0@suse.de>
+In-Reply-To: <F0023B33-6AF3-4805-B50E-2ED285F8B1B0@suse.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "jgarzik@pobox.com" <jgarzik@pobox.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "<linuxppc-dev@ozlabs.org>" <linuxppc-dev@ozlabs.org>,
+ "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
+ Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,153 +29,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBGcmlkYXksIEZl
-YnJ1YXJ5IDE3LCAyMDEyIDg6NDAgQU0NCj4gVG86IExpdSBRaWFuZy1CMzI2MTYNCj4gQ2M6IGpn
-YXJ6aWtAcG9ib3guY29tOyBsaW51eC1pZGVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4g
-ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3Vi
-amVjdDogUmU6IFtQQVRDSCBWMiBSRVNFTkRdIGZzbC1zYXRhOiBJL08gbG9hZCBiYWxhbmNpbmcN
-Cj4gDQo+IE9uIFdlZCwgMjAxMi0wMi0xNSBhdCAxMzo0OSArMDgwMCwgUWlhbmcgTGl1IHdyb3Rl
-Og0KPiBdDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYXRhL3NhdGFfZnNsLmMgYi9kcml2ZXJz
-L2F0YS9zYXRhX2ZzbC5jIGluZGV4DQo+ID4gMDEyMGIwZC4uZDY1NzdiOSAxMDA2NDQNCj4gPiAt
-LS0gYS9kcml2ZXJzL2F0YS9zYXRhX2ZzbC5jDQo+ID4gKysrIGIvZHJpdmVycy9hdGEvc2F0YV9m
-c2wuYw0KPiA+IEBAIC02LDcgKzYsNyBAQA0KPiA+ICAgKiBBdXRob3I6IEFzaGlzaCBLYWxyYSA8
-YXNoaXNoLmthbHJhQGZyZWVzY2FsZS5jb20+DQo+ID4gICAqIExpIFlhbmcgPGxlb2xpQGZyZWVz
-Y2FsZS5jb20+DQo+ID4gICAqDQo+ID4gLSAqIENvcHlyaWdodCAoYykgMjAwNi0yMDA3LCAyMDEx
-IEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yLCBJbmMuDQo+ID4gKyAqIENvcHlyaWdodCAoYykgMjAw
-Ni0yMDA3LCAyMDExLTIwMTIgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IsIEluYy4NCj4gPiAgICoN
-Cj4gPiAgICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmli
-dXRlICBpdCBhbmQvb3INCj4gbW9kaWZ5IGl0DQo+ID4gICAqIHVuZGVyICB0aGUgdGVybXMgb2Yg
-IHRoZSBHTlUgR2VuZXJhbCAgUHVibGljIExpY2Vuc2UgYXMgcHVibGlzaGVkDQo+ID4gYnkgdGhl
-IEBAIC0yNiw2ICsyNiwxNSBAQCAgI2luY2x1ZGUgPGFzbS9pby5oPiAgI2luY2x1ZGUNCj4gPiA8
-bGludXgvb2ZfcGxhdGZvcm0uaD4NCj4gPg0KPiA+ICtzdGF0aWMgdW5zaWduZWQgaW50IGludHJf
-Y29hbGVzY2luZ19jb3VudDsNCj4gPiArbW9kdWxlX3BhcmFtKGludHJfY29hbGVzY2luZ19jb3Vu
-dCwgaW50LCBTX0lSVUdPKTsNCj4gPiArTU9EVUxFX1BBUk1fREVTQyhpbnRyX2NvYWxlc2Npbmdf
-Y291bnQsDQo+ID4gKwkJCQkgIklOVCBjb2FsZXNjaW5nIGNvdW50IHRocmVzaG9sZCAoMS4uMzEp
-Iik7DQo+ID4gKw0KPiA+ICtzdGF0aWMgdW5zaWduZWQgaW50IGludHJfY29hbGVzY2luZ190aWNr
-czsNCj4gPiArbW9kdWxlX3BhcmFtKGludHJfY29hbGVzY2luZ190aWNrcywgaW50LCBTX0lSVUdP
-KTsNCj4gPiArTU9EVUxFX1BBUk1fREVTQyhpbnRyX2NvYWxlc2NpbmdfdGlja3MsDQo+ID4gKwkJ
-CQkgIklOVCBjb2FsZXNjaW5nIHRpbWVyIHRocmVzaG9sZCBpbiBBSEIgdGlja3MiKTsNCj4gDQo+
-IFlvdSBkb24ndCBzZWVtIHRvIHByb3ZpZGUgdmVyeSB1c2VmdWwgZGVmYXVsdHMuLi4gZm9yIGV4
-YW1wbGUsDQo+IGludHJfY29hbGVzY2luZ19jb3VudCBzdGFydHMgYXQgMCB3aGljaCBpc24ndCBl
-dmVuIGluIHJhbmdlICh0aGUgY29kZQ0KPiBmaXhlcyB0aGF0IHVwIGJ1dCBzdGlsbC4uLikuDQo+
-IA0KPiBJIHRyaWVkIGEgZGViaWFuIGluc3RhbGwgb24gdGhlIHA1MDIwZHMgaGVyZSBhbmQgSSBm
-aW5kIFNBVEEgdG8gYmUNCj4gZXh0cmVtZWx5IHNsb3csIGdlbmVyYXRpbmcgbWlsbGlvbnMgb2Yg
-aW50ZXJydXB0cy4gSSB0aGluayB0aGUgZGVmYXVsdHMNCj4gc2hvdWxkIGJlIGEgbG90IG1vcmUg
-YWdncmVzc2l2ZSBhdCBjb2FsZXNjaW5nLg0KDQpIZWxsbyBCZW4sDQoNClRoZSBkZWZhdWx0IHdp
-bGwgYmUgc2V0IGluIGEgY29tbW9uIGludGVyZmFjZSBmc2xfc2F0YV9zZXRfaXJxX2NvYWxlc2Np
-bmcgd2hlbg0KaW5pdGlhbGl6ZSB0aGUgY29udHJvbGxlci4gVGhpcyBpbnRlcmZhY2Ugd2lsbCBj
-aGVjayB0aGUgcmFuZ2Ugb2YgaW50ciBjb3VudA0KYW5kIHRpY2tzIGFuZCBtYWtlIHN1cmUgdGhl
-IHZhbHVlcyBhcmUgcmVhc29uYWJseS4NCg0KSXQncyBoYXJkIHRvIGZpbmQgYSBhZ2dyZXNzaXZl
-IHZhbHVlIHRvIGFkYXB0IGFsbCBzY2VuYXJpb3MsIHNvIEkgdXNlIGVjaG8gdG8gYWRqdXN0DQp0
-aGUgdmFsdWUuIEkgcmVtZW1iZXIgUDUwMjAgaGF2ZSBzb21lIHBlcmZvcm1hbmNlIGlzc3VlLCBJ
-IHdpbGwgY2hlY2sgaXQuDQpCVFcsIHdoaWNoIGZpbGVzeXN0ZW0gZG8geW91IHVzZT8gRXh0MiBp
-cyBsb3dlciB0aGFuIGV4dDQgYmVjYXVzZSBtZXRhZGF0YSBpcyANCmNvbnRpbnVvdXNseSB3cm90
-ZSB0byBkaXNrLiBZb3UgY2FuIHRyeSBleHQ0IG9yIHhmcy4NCg0KVGhhbmtzLg0KDQo+IA0KPiBD
-aGVlcnMsDQo+IEJlbi4NCj4gDQo+ID4gIC8qIENvbnRyb2xsZXIgaW5mb3JtYXRpb24gKi8NCj4g
-PiAgZW51bSB7DQo+ID4gIAlTQVRBX0ZTTF9RVUVVRV9ERVBUSAk9IDE2LA0KPiA+IEBAIC04Myw2
-ICs5MiwxNiBAQCBlbnVtIHsNCj4gPiAgfTsNCj4gPg0KPiA+ICAvKg0KPiA+ICsgKiBJbnRlcnJ1
-cHQgQ29hbGVzY2luZyBDb250cm9sIFJlZ2lzdGVyIGJpdGRlZnMgICovIGVudW0gew0KPiA+ICsJ
-SUNDX01JTl9JTlRfQ09VTlRfVEhSRVNIT0xECT0gMSwNCj4gPiArCUlDQ19NQVhfSU5UX0NPVU5U
-X1RIUkVTSE9MRAk9ICgoMSA8PCA1KSAtIDEpLA0KPiA+ICsJSUNDX01JTl9JTlRfVElDS1NfVEhS
-RVNIT0xECT0gMCwNCj4gPiArCUlDQ19NQVhfSU5UX1RJQ0tTX1RIUkVTSE9MRAk9ICgoMSA8PCAx
-OSkgLSAxKSwNCj4gPiArCUlDQ19TQUZFX0lOVF9USUNLUwkJPSAxLA0KPiA+ICt9Ow0KPiA+ICsN
-Cj4gPiArLyoNCj4gPiAgKiBIb3N0IENvbnRyb2xsZXIgY29tbWFuZCByZWdpc3RlciBzZXQgLSBw
-ZXIgcG9ydCAgKi8gIGVudW0geyBAQA0KPiA+IC0yNjMsOCArMjgyLDY1IEBAIHN0cnVjdCBzYXRh
-X2ZzbF9ob3N0X3ByaXYgew0KPiA+ICAJdm9pZCBfX2lvbWVtICpjc3JfYmFzZTsNCj4gPiAgCWlu
-dCBpcnE7DQo+ID4gIAlpbnQgZGF0YV9zbm9vcDsNCj4gPiArCXN0cnVjdCBkZXZpY2VfYXR0cmli
-dXRlIGludHJfY29hbGVzY2luZzsNCj4gPiAgfTsNCj4gPg0KPiA+ICtzdGF0aWMgdm9pZCBmc2xf
-c2F0YV9zZXRfaXJxX2NvYWxlc2Npbmcoc3RydWN0IGF0YV9ob3N0ICpob3N0LA0KPiA+ICsJCXVu
-c2lnbmVkIGludCBjb3VudCwgdW5zaWduZWQgaW50IHRpY2tzKSB7DQo+ID4gKwlzdHJ1Y3Qgc2F0
-YV9mc2xfaG9zdF9wcml2ICpob3N0X3ByaXYgPSBob3N0LT5wcml2YXRlX2RhdGE7DQo+ID4gKwl2
-b2lkIF9faW9tZW0gKmhjcl9iYXNlID0gaG9zdF9wcml2LT5oY3JfYmFzZTsNCj4gPiArDQo+ID4g
-KwlpZiAoY291bnQgPiBJQ0NfTUFYX0lOVF9DT1VOVF9USFJFU0hPTEQpDQo+ID4gKwkJY291bnQg
-PSBJQ0NfTUFYX0lOVF9DT1VOVF9USFJFU0hPTEQ7DQo+ID4gKwllbHNlIGlmIChjb3VudCA8IElD
-Q19NSU5fSU5UX0NPVU5UX1RIUkVTSE9MRCkNCj4gPiArCQljb3VudCA9IElDQ19NSU5fSU5UX0NP
-VU5UX1RIUkVTSE9MRDsNCj4gPiArDQo+ID4gKwlpZiAodGlja3MgPiBJQ0NfTUFYX0lOVF9USUNL
-U19USFJFU0hPTEQpDQo+ID4gKwkJdGlja3MgPSBJQ0NfTUFYX0lOVF9USUNLU19USFJFU0hPTEQ7
-DQo+ID4gKwllbHNlIGlmICgoSUNDX01JTl9JTlRfVElDS1NfVEhSRVNIT0xEID09IHRpY2tzKSAm
-Jg0KPiA+ICsJCQkoY291bnQgPiBJQ0NfTUlOX0lOVF9DT1VOVF9USFJFU0hPTEQpKQ0KPiA+ICsJ
-CXRpY2tzID0gSUNDX1NBRkVfSU5UX1RJQ0tTOw0KPiA+ICsNCj4gPiArCXNwaW5fbG9jaygmaG9z
-dC0+bG9jayk7DQo+ID4gKwlpb3dyaXRlMzIoKGNvdW50IDw8IDI0IHwgdGlja3MpLCBoY3JfYmFz
-ZSArIElDQyk7DQo+ID4gKw0KPiA+ICsJaW50cl9jb2FsZXNjaW5nX2NvdW50ID0gY291bnQ7DQo+
-ID4gKwlpbnRyX2NvYWxlc2NpbmdfdGlja3MgPSB0aWNrczsNCj4gPiArCXNwaW5fdW5sb2NrKCZo
-b3N0LT5sb2NrKTsNCj4gPiArDQo+ID4gKwlEUFJJTlRLKCJpbnRycnVwdCBjb2FsZXNjaW5nLCBj
-b3VudCA9IDB4JXgsIHRpY2tzID0gJXhcbiIsDQo+ID4gKwkJCWludHJfY29hbGVzY2luZ19jb3Vu
-dCwgaW50cl9jb2FsZXNjaW5nX3RpY2tzKTsNCj4gPiArCURQUklOVEsoIklDQyByZWdpc3RlciBz
-dGF0dXM6IChoY3IgYmFzZTogMHgleCkgPSAweCV4XG4iLA0KPiA+ICsJCQloY3JfYmFzZSwgaW9y
-ZWFkMzIoaGNyX2Jhc2UgKyBJQ0MpKTsgfQ0KPiA+ICsNCj4gPiArc3RhdGljIHNzaXplX3QgZnNs
-X3NhdGFfaW50cl9jb2FsZXNjaW5nX3Nob3coc3RydWN0IGRldmljZSAqZGV2LA0KPiA+ICsJCXN0
-cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLCBjaGFyICpidWYpIHsNCj4gPiArCXJldHVybiBz
-cHJpbnRmKGJ1ZiwgIiVkCSVkXG4iLA0KPiA+ICsJCQlpbnRyX2NvYWxlc2NpbmdfY291bnQsIGlu
-dHJfY29hbGVzY2luZ190aWNrcyk7IH0NCj4gPiArDQo+ID4gK3N0YXRpYyBzc2l6ZV90IGZzbF9z
-YXRhX2ludHJfY29hbGVzY2luZ19zdG9yZShzdHJ1Y3QgZGV2aWNlICpkZXYsDQo+ID4gKwkJc3Ry
-dWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsDQo+ID4gKwkJY29uc3QgY2hhciAqYnVmLCBzaXpl
-X3QgY291bnQpDQo+ID4gK3sNCj4gPiArCXVuc2lnbmVkIGludCBjb2FsZXNjaW5nX2NvdW50LAlj
-b2FsZXNjaW5nX3RpY2tzOw0KPiA+ICsNCj4gPiArCWlmIChzc2NhbmYoYnVmLCAiJWQlZCIsDQo+
-ID4gKwkJCQkmY29hbGVzY2luZ19jb3VudCwNCj4gPiArCQkJCSZjb2FsZXNjaW5nX3RpY2tzKSAh
-PSAyKSB7DQo+ID4gKwkJcHJpbnRrKEtFUk5fRVJSICJmc2wtc2F0YTogd3JvbmcgcGFyYW1ldGVy
-IGZvcm1hdC5cbiIpOw0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsJfQ0KPiA+ICsNCj4g
-PiArCWZzbF9zYXRhX3NldF9pcnFfY29hbGVzY2luZyhkZXZfZ2V0X2RydmRhdGEoZGV2KSwNCj4g
-PiArCQkJY29hbGVzY2luZ19jb3VudCwgY29hbGVzY2luZ190aWNrcyk7DQo+ID4gKw0KPiA+ICsJ
-cmV0dXJuIHN0cmxlbihidWYpOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICBzdGF0aWMgaW5saW5lIHVu
-c2lnbmVkIGludCBzYXRhX2ZzbF90YWcodW5zaWduZWQgaW50IHRhZywNCj4gPiAgCQkJCQl2b2lk
-IF9faW9tZW0gKmhjcl9iYXNlKQ0KPiA+ICB7DQo+ID4gQEAgLTM0NiwxMCArNDIyLDEwIEBAIHN0
-YXRpYyB1bnNpZ25lZCBpbnQgc2F0YV9mc2xfZmlsbF9zZyhzdHJ1Y3QNCj4gYXRhX3F1ZXVlZF9j
-bWQgKnFjLCB2b2lkICpjbWRfZGVzYywNCj4gPiAgCQkJKHVuc2lnbmVkIGxvbmcgbG9uZylzZ19h
-ZGRyLCBzZ19sZW4pOw0KPiA+DQo+ID4gIAkJLyogd2FybiBpZiBlYWNoIHMvZyBlbGVtZW50IGlz
-IG5vdCBkd29yZCBhbGlnbmVkICovDQo+ID4gLQkJaWYgKHNnX2FkZHIgJiAweDAzKQ0KPiA+ICsJ
-CWlmICh1bmxpa2VseShzZ19hZGRyICYgMHgwMykpDQo+ID4gIAkJCWF0YV9wb3J0X2VycihxYy0+
-YXAsICJzL2cgYWRkciB1bmFsaWduZWQgOiAweCVsbHhcbiIsDQo+ID4gIAkJCQkgICAgICh1bnNp
-Z25lZCBsb25nIGxvbmcpc2dfYWRkcik7DQo+ID4gLQkJaWYgKHNnX2xlbiAmIDB4MDMpDQo+ID4g
-KwkJaWYgKHVubGlrZWx5KHNnX2xlbiAmIDB4MDMpKQ0KPiA+ICAJCQlhdGFfcG9ydF9lcnIocWMt
-PmFwLCAicy9nIGxlbiB1bmFsaWduZWQgOiAweCV4XG4iLA0KPiA+ICAJCQkJICAgICBzZ19sZW4p
-Ow0KPiA+DQo+ID4gQEAgLTEyNDUsNiArMTMyMSwxMyBAQCBzdGF0aWMgaW50IHNhdGFfZnNsX2lu
-aXRfY29udHJvbGxlcihzdHJ1Y3QNCj4gYXRhX2hvc3QgKmhvc3QpDQo+ID4gIAlpb3dyaXRlMzIo
-MHgwMDAwMEZGRkYsIGhjcl9iYXNlICsgQ0UpOw0KPiA+ICAJaW93cml0ZTMyKDB4MDAwMDBGRkZG
-LCBoY3JfYmFzZSArIERFKTsNCj4gPg0KPiA+ICsgCS8qDQo+ID4gKwkgKiByZXNldCB0aGUgbnVt
-YmVyIG9mIGNvbW1hbmQgY29tcGxldGUgYml0cyB3aGljaCB3aWxsIGNhdXNlIHRoZQ0KPiA+ICsJ
-ICogaW50ZXJydXB0IHRvIGJlIHNpZ25hbGVkDQo+ID4gKwkgKi8NCj4gPiArCWZzbF9zYXRhX3Nl
-dF9pcnFfY29hbGVzY2luZyhob3N0LCBpbnRyX2NvYWxlc2NpbmdfY291bnQsDQo+ID4gKwkJCWlu
-dHJfY29hbGVzY2luZ190aWNrcyk7DQo+ID4gKw0KPiA+ICAJLyoNCj4gPiAgCSAqIGhvc3QgY29u
-dHJvbGxlciB3aWxsIGJlIGJyb3VnaHQgb24tbGluZSwgZHVyaW5nIHh4X3BvcnRfc3RhcnQoKQ0K
-PiA+ICAJICogY2FsbGJhY2ssIHRoYXQgc2hvdWxkIGFsc28gaW5pdGlhdGUgdGhlIE9PQiwgQ09N
-SU5JVCBzZXF1ZW5jZSBAQA0KPiA+IC0xMzA5LDcgKzEzOTIsNyBAQCBzdGF0aWMgaW50IHNhdGFf
-ZnNsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKm9mZGV2KQ0KPiA+ICAJdm9pZCBf
-X2lvbWVtICpjc3JfYmFzZSA9IE5VTEw7DQo+ID4gIAlzdHJ1Y3Qgc2F0YV9mc2xfaG9zdF9wcml2
-ICpob3N0X3ByaXYgPSBOVUxMOw0KPiA+ICAJaW50IGlycTsNCj4gPiAtCXN0cnVjdCBhdGFfaG9z
-dCAqaG9zdDsNCj4gPiArCXN0cnVjdCBhdGFfaG9zdCAqaG9zdCA9IE5VTEw7DQo+ID4gIAl1MzIg
-dGVtcDsNCj4gPg0KPiA+ICAJc3RydWN0IGF0YV9wb3J0X2luZm8gcGkgPSBzYXRhX2ZzbF9wb3J0
-X2luZm9bMF07IEBAIC0xMzU2LDYNCj4gKzE0MzksMTANCj4gPiBAQCBzdGF0aWMgaW50IHNhdGFf
-ZnNsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKm9mZGV2KQ0KPiA+DQo+ID4gIAkvKiBh
-bGxvY2F0ZSBob3N0IHN0cnVjdHVyZSAqLw0KPiA+ICAJaG9zdCA9IGF0YV9ob3N0X2FsbG9jX3Bp
-bmZvKCZvZmRldi0+ZGV2LCBwcGksIFNBVEFfRlNMX01BWF9QT1JUUyk7DQo+ID4gKwlpZiAoIWhv
-c3QpIHsNCj4gPiArCQlyZXR2YWwgPSAtRU5PTUVNOw0KPiA+ICsJCWdvdG8gZXJyb3JfZXhpdF93
-aXRoX2NsZWFudXA7DQo+ID4gKwl9DQo+ID4NCj4gPiAgCS8qIGhvc3QtPmlvbWFwIGlzIG5vdCB1
-c2VkIGN1cnJlbnRseSAqLw0KPiA+ICAJaG9zdC0+cHJpdmF0ZV9kYXRhID0gaG9zdF9wcml2Ow0K
-PiA+IEBAIC0xMzczLDEwICsxNDYwLDI0IEBAIHN0YXRpYyBpbnQgc2F0YV9mc2xfcHJvYmUoc3Ry
-dWN0DQo+ID4gcGxhdGZvcm1fZGV2aWNlICpvZmRldikNCj4gPg0KPiA+ICAJZGV2X3NldF9kcnZk
-YXRhKCZvZmRldi0+ZGV2LCBob3N0KTsNCj4gPg0KPiA+ICsJaG9zdF9wcml2LT5pbnRyX2NvYWxl
-c2Npbmcuc2hvdyA9IGZzbF9zYXRhX2ludHJfY29hbGVzY2luZ19zaG93Ow0KPiA+ICsJaG9zdF9w
-cml2LT5pbnRyX2NvYWxlc2Npbmcuc3RvcmUgPSBmc2xfc2F0YV9pbnRyX2NvYWxlc2Npbmdfc3Rv
-cmU7DQo+ID4gKwlzeXNmc19hdHRyX2luaXQoJmhvc3RfcHJpdi0+aW50cl9jb2FsZXNjaW5nLmF0
-dHIpOw0KPiA+ICsJaG9zdF9wcml2LT5pbnRyX2NvYWxlc2NpbmcuYXR0ci5uYW1lID0gImludHJf
-Y29hbGVzY2luZyI7DQo+ID4gKwlob3N0X3ByaXYtPmludHJfY29hbGVzY2luZy5hdHRyLm1vZGUg
-PSBTX0lSVUdPIHwgU19JV1VTUjsNCj4gPiArCXJldHZhbCA9IGRldmljZV9jcmVhdGVfZmlsZSho
-b3N0LT5kZXYsICZob3N0X3ByaXYtPmludHJfY29hbGVzY2luZyk7DQo+ID4gKwlpZiAocmV0dmFs
-KQ0KPiA+ICsJCWdvdG8gZXJyb3JfZXhpdF93aXRoX2NsZWFudXA7DQo+ID4gKw0KPiA+ICAJcmV0
-dXJuIDA7DQo+ID4NCj4gPiAgZXJyb3JfZXhpdF93aXRoX2NsZWFudXA6DQo+ID4NCj4gPiArCWlm
-IChob3N0KSB7DQo+ID4gKwkJZGV2X3NldF9kcnZkYXRhKCZvZmRldi0+ZGV2LCBOVUxMKTsNCj4g
-PiArCQlhdGFfaG9zdF9kZXRhY2goaG9zdCk7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICAJaWYgKGhj
-cl9iYXNlKQ0KPiA+ICAJCWlvdW5tYXAoaGNyX2Jhc2UpOw0KPiA+ICAJaWYgKGhvc3RfcHJpdikN
-Cj4gPiBAQCAtMTM5MCw2ICsxNDkxLDggQEAgc3RhdGljIGludCBzYXRhX2ZzbF9yZW1vdmUoc3Ry
-dWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqb2ZkZXYpDQo+ID4gIAlzdHJ1Y3QgYXRhX2hvc3QgKmhv
-c3QgPSBkZXZfZ2V0X2RydmRhdGEoJm9mZGV2LT5kZXYpOw0KPiA+ICAJc3RydWN0IHNhdGFfZnNs
-X2hvc3RfcHJpdiAqaG9zdF9wcml2ID0gaG9zdC0+cHJpdmF0ZV9kYXRhOw0KPiA+DQo+ID4gKwlk
-ZXZpY2VfcmVtb3ZlX2ZpbGUoJm9mZGV2LT5kZXYsICZob3N0X3ByaXYtPmludHJfY29hbGVzY2lu
-Zyk7DQo+ID4gKw0KPiA+ICAJYXRhX2hvc3RfZGV0YWNoKGhvc3QpOw0KPiA+DQo+ID4gIAlkZXZf
-c2V0X2RydmRhdGEoJm9mZGV2LT5kZXYsIE5VTEwpOw0KPiA+IC0tDQo+ID4gMS42LjQNCj4gPg0K
-PiA+DQo+ID4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18N
-Cj4gPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+ID4gTGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmcNCj4gPiBodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMt
-ZGV2DQo+IA0KPiANCg0K
+
+
+> -----Original Message-----
+> From: Alexander Graf [mailto:agraf@suse.de]
+> Sent: Thursday, February 16, 2012 6:20 PM
+> To: Liu Yu-B13201
+> Cc: <kvm-ppc@vger.kernel.org>; <kvm@vger.kernel.org>; <linuxppc-
+> dev@ozlabs.org>; Wood Scott-B07421; Liu Yu-B13201
+> Subject: Re: [PATCH v4 2/3] KVM: PPC: epapr: Add idle hcall support for
+> host
+>=20
+>=20
+>=20
+> On 16.02.2012, at 10:26, Liu Yu <yu.liu@freescale.com> wrote:
+>=20
+> > And add a new flag definition in kvm_ppc_pvinfo to indicate whether
+> > host support EV_IDLE hcall.
+> >
+> > Signed-off-by: Liu Yu <yu.liu@freescale.com>
+> > ---
+> > v4:
+> > no change
+> >
+> > arch/powerpc/include/asm/kvm_para.h |   14 ++++++++++++--
+> > arch/powerpc/kvm/powerpc.c          |    8 ++++++++
+> > include/linux/kvm.h                 |    2 ++
+> > 3 files changed, 22 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/kvm_para.h
+> > b/arch/powerpc/include/asm/kvm_para.h
+> > index 7b754e7..81a34c9 100644
+> > --- a/arch/powerpc/include/asm/kvm_para.h
+> > +++ b/arch/powerpc/include/asm/kvm_para.h
+> > @@ -75,9 +75,19 @@ struct kvm_vcpu_arch_shared { };
+> >
+> > #define KVM_SC_MAGIC_R0        0x4b564d21 /* "KVM!" */
+> > -#define HC_VENDOR_KVM        (42 << 16)
+> > +
+> > +#include <asm/epapr_hcalls.h>
+> > +
+> > +/* ePAPR Hypercall Vendor ID */
+> > +#define HC_VENDOR_EPAPR        (EV_EPAPR_VENDOR_ID << 16)
+> > +#define HC_VENDOR_KVM        (EV_KVM_VENDOR_ID << 16)
+> > +
+> > +/* ePAPR Hypercall Token */
+> > +#define HC_EV_IDLE        EV_IDLE
+> > +
+> > +/* ePAPR Hypercall Return Codes */
+> > #define HC_EV_SUCCESS        0
+> > -#define HC_EV_UNIMPLEMENTED    12
+> > +#define HC_EV_UNIMPLEMENTED    EV_UNIMPLEMENTED
+> >
+> > #define KVM_FEATURE_MAGIC_PAGE    1
+> >
+> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> > index 0e21d15..03ebd5d 100644
+> > --- a/arch/powerpc/kvm/powerpc.c
+> > +++ b/arch/powerpc/kvm/powerpc.c
+> > @@ -81,6 +81,10 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
+> >
+> >        /* Second return value is in r4 */
+> >        break;
+> > +    case HC_VENDOR_EPAPR | HC_EV_IDLE:
+> > +        r =3D HC_EV_SUCCESS;
+> > +        kvm_vcpu_block(vcpu);
+> > +        break;
+> >    default:
+> >        r =3D HC_EV_UNIMPLEMENTED;
+> >        break;
+> > @@ -746,6 +750,10 @@ static int kvm_vm_ioctl_get_pvinfo(struct
+> kvm_ppc_pvinfo *pvinfo)
+> >    pvinfo->hcall[2] =3D inst_sc;
+> >    pvinfo->hcall[3] =3D inst_nop;
+> >
+> > +#ifdef CONFIG_BOOKE
+> > +    pvinfo->flags |=3D KVM_PPC_PVINFO_FLAGS_EV_IDLE; #endif
+> > +
+> >    return 0;
+> > }>=20
+>
+> Why limit it to booke? The less ifdefs our code has, the better :)
+
+The code here tells userspace that kvm support ev_idle.
+But I'm not sure if the ev_idle code works for other platforms.
+
+So I think we should keep the ifdef until other platform test the code :)
+
+Thanks,
+Yu
