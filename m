@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C0D43B6FD2
+ by ozlabs.org (Postfix) with ESMTPS id C3444B6FD3
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:01 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 01/30] powerpc/booke: Set CPU_FTR_DEBUG_LVL_EXC on 32-bit
-Date: Fri, 17 Feb 2012 18:13:28 +0100
-Message-Id: <1329498837-11717-2-git-send-email-agraf@suse.de>
+Subject: [PATCH 04/30] KVM: PPC: booke: add booke-level vcpu load/put
+Date: Fri, 17 Feb 2012 18:13:31 +0100
+Message-Id: <1329498837-11717-5-git-send-email-agraf@suse.de>
 In-Reply-To: <1329498837-11717-1-git-send-email-agraf@suse.de>
 References: <1329498837-11717-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -24,38 +24,92 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-Currently 32-bit only cares about this for choice of exception
-vector, which is done in core-specific code.  However, KVM will
-want to distinguish as well.
+This gives us a place to put load/put actions that correspond to
+code that is booke-specific but not specific to a particular core.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/cputable.h |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/44x.c   |    3 +++
+ arch/powerpc/kvm/booke.c |    8 ++++++++
+ arch/powerpc/kvm/booke.h |    3 +++
+ arch/powerpc/kvm/e500.c  |    3 +++
+ 4 files changed, 17 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index ad55a1c..6a034a2 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -376,7 +376,8 @@ extern const char *powerpc_base_platform;
- #define CPU_FTRS_47X	(CPU_FTRS_440x6)
- #define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
- 	    CPU_FTR_NODSISRALIGN | CPU_FTR_COHERENT_ICACHE | \
--	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE)
-+	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE | \
-+	    CPU_FTR_DEBUG_LVL_EXC)
- #define CPU_FTRS_E500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_NOEXECUTE)
-@@ -385,7 +386,7 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_E500MC	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
--	    CPU_FTR_DBELL)
-+	    CPU_FTR_DBELL | CPU_FTR_DEBUG_LVL_EXC)
- #define CPU_FTRS_E5500	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
- 	    CPU_FTR_DBELL | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+index 7b612a7..879a1a7 100644
+--- a/arch/powerpc/kvm/44x.c
++++ b/arch/powerpc/kvm/44x.c
+@@ -29,15 +29,18 @@
+ #include <asm/kvm_ppc.h>
+ 
+ #include "44x_tlb.h"
++#include "booke.h"
+ 
+ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
++	kvmppc_booke_vcpu_load(vcpu, cpu);
+ 	kvmppc_44x_tlb_load(vcpu);
+ }
+ 
+ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ 	kvmppc_44x_tlb_put(vcpu);
++	kvmppc_booke_vcpu_put(vcpu);
+ }
+ 
+ int kvmppc_core_check_processor_compat(void)
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index ee9e1ee..a2456c7 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -968,6 +968,14 @@ void kvmppc_decrementer_func(unsigned long data)
+ 	kvmppc_set_tsr_bits(vcpu, TSR_DIS);
+ }
+ 
++void kvmppc_booke_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
++{
++}
++
++void kvmppc_booke_vcpu_put(struct kvm_vcpu *vcpu)
++{
++}
++
+ int __init kvmppc_booke_init(void)
+ {
+ 	unsigned long ivor[16];
+diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
+index 2fe2027..05d1d99 100644
+--- a/arch/powerpc/kvm/booke.h
++++ b/arch/powerpc/kvm/booke.h
+@@ -71,4 +71,7 @@ void kvmppc_save_guest_spe(struct kvm_vcpu *vcpu);
+ /* high-level function, manages flags, host state */
+ void kvmppc_vcpu_disable_spe(struct kvm_vcpu *vcpu);
+ 
++void kvmppc_booke_vcpu_load(struct kvm_vcpu *vcpu, int cpu);
++void kvmppc_booke_vcpu_put(struct kvm_vcpu *vcpu);
++
+ #endif /* __KVM_BOOKE_H__ */
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index ddcd896..2d5fe04 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -36,6 +36,7 @@ void kvmppc_core_load_guest_debugstate(struct kvm_vcpu *vcpu)
+ 
+ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
++	kvmppc_booke_vcpu_load(vcpu, cpu);
+ 	kvmppc_e500_tlb_load(vcpu, cpu);
+ }
+ 
+@@ -47,6 +48,8 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+ 	if (vcpu->arch.shadow_msr & MSR_SPE)
+ 		kvmppc_vcpu_disable_spe(vcpu);
+ #endif
++
++	kvmppc_booke_vcpu_put(vcpu);
+ }
+ 
+ int kvmppc_core_check_processor_compat(void)
 -- 
 1.6.0.2
