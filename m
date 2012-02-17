@@ -1,23 +1,20 @@
-Return-Path: <r58472@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5CC88B6FCB
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Feb 2012 15:33:01 +1100 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
- from configurable
-Date: Fri, 17 Feb 2012 04:32:53 +0000
-Message-ID: <94F013E7935FF44C83EBE7784D62AD3F057427B6@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
- <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
-In-Reply-To: <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 5E0BBB6FC4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 16:31:06 +1100 (EST)
+Date: Fri, 17 Feb 2012 16:30:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: build failure after merge of the final tree (akpm tree
+ related)
+Message-Id: <20120217163057.8af53b853b36365b7fff203c@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__17_Feb_2012_16_30_57_+1100_dcNCxK3e+SxyxTon"
+Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents
->PHYS_64BIT from configurable
->
->
->On Feb 16, 2012, at 6:10 AM, Li Yang wrote:
->
->> Fix the problem that large physical address support cannot be disabled
->> when some platforms which only provides 36-bit support are selected.
->> According to the philosophy of kernel config enabling a platform
->> support doesn't mean the kernel is only running on that platform.
->> Remove the auto selection of PHYS_64BIT option for these platforms.
->> They will need to use a 36bit default config that selects PHYS_64BIT
->> explicitly.
->>
->> The reason why we need to keep PHYS_64BIT option configurable is that
->> enabling it cause negative performance impact on various aspects like
->> TLB miss and physical address manipulating.  We should not enable it
->> unless really needed, e.g. use large memory of 4GB or bigger.
->>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->> arch/powerpc/platforms/85xx/Kconfig |    6 ------
->> 1 files changed, 0 insertions(+), 6 deletions(-)
->
->Nak, this isn't correct.
->
->For some of these platforms like P2041RDB, P3041DS, P3060QDS, P4080DS, &
->P5020DS only a 36-bit physical address map is supported by u-boot and the
->device tree.  This was a decision that was made to NOT support 32-bit
->address map for these boards and accept the performance implication of it
->to reduce the # of builds, etc.
+--Signature=_Fri__17_Feb_2012_16_30_57_+1100_dcNCxK3e+SxyxTon
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok.  Although personally I don't think # of builds matters that much.
+Hi Andrew,
 
->
->Additionally, outside of maybe P2041RDB I believe the majority of these
->boards ship with 4G of DDR (but that off the top of my head) and thus
->require the 36-bit / PHYS_64BIT support to be enabled.
+After merging the final tree, today's linux-next build (powerpc
+allnoconfig) failed like this:
 
-I know that current support of DPAA boards requires 36-bit.  But I don't th=
-ink they need to select the PHYS_64BIT option directly and make it not conf=
-igurable.  It's conflicting with the logic that enabling a platform support=
- doesn't mean the kernel is only running on that platform.  Btw: what's you=
-r recommendations on solving this?
+In file included from include/linux/posix_types.h:47:0,
+                 from include/linux/types.h:17,
+                 from include/linux/page-flags.h:8,
+                 from kernel/bounds.c:9:
+arch/powerpc/include/asm/posix_types.h:15:14: error: conflicting types for =
+'__kernel_size_t'
+arch/powerpc/include/asm/posix_types.h:14:22: note: previous declaration of=
+ '__kernel_size_t' was here
+In file included from include/linux/page-flags.h:8:0,
+                 from kernel/bounds.c:9:
+include/linux/types.h:68:1: error: unknown type name '__kernel_ssize_t'
 
-- Leo
+Caused by commit a9dbe86e5995 ("powerpc: use generic posix_types.h").
+
+This think was pointed out a couple of days ago, so maybe Andrew needs a
+newer version of the patch.
+
+I added this fix patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 17 Feb 2012 16:25:48 +1100
+Subject: [PATCH] powerpc: use generic posix_types.h fix
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/posix_types.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/posix_types.h b/arch/powerpc/include/=
+asm/posix_types.h
+index 1fbe027f..f139325 100644
+--- a/arch/powerpc/include/asm/posix_types.h
++++ b/arch/powerpc/include/asm/posix_types.h
+@@ -12,7 +12,7 @@ typedef unsigned long	__kernel_old_dev_t;
+ #define __kernel_old_dev_t __kernel_old_dev_t
+ #else
+ typedef unsigned int	__kernel_size_t;
+-typedef int		__kernel_size_t;
++typedef int		__kernel_ssize_t;
+ typedef long		__kernel_ptrdiff_t;
+ #define __kernel_size_t __kernel_size_t
+=20
+--=20
+1.7.9
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Fri__17_Feb_2012_16_30_57_+1100_dcNCxK3e+SxyxTon
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPPeYRAAoJEECxmPOUX5FEphcQAKWrh5laCcgFtW5AStztIa1s
+hH1d0dEC0cQHs8vC49AC0eF1tM8QzNbCU18yd6uSJ93WI47gQnvX4ohT4BBP8l4F
+oRfyp8fsjMQXodHfH2avb2l7UideeAfRpYxuismHm9HsQJ5YJTCHPOSYWBbsMCkV
+pdiIE1E9tBQEnVChnsYYdXCkjmGuU7pLLep64DjuoaGUPiKauczjea/cRHEynkTe
+bUC59DxUUtzwlOdf5qm6NL4plbAcefTZxIFvjoQUIHnfG5nC/apkqESbchqCNeRT
+O8pFf5vLBc8pUGjWBi1IxRus2gu6iM5wySM9A4R/nppPBRNsLUSIfmjh06y/badI
+Tt9NSzdv+hR6+8yBcgM1a2R6tN7hy/+jtUZcm8GWDf5JBnkXkA/3nsVsYH5qL6m1
+WU8xUv7DsnYI3FByKBbZjnmD847BCwfp4uS8RePzoE8bqDuLA/rFjl2DAE/VXFsw
+zv9l27IULJaDLxzf6vHOZAMfHnwL7XIus28tbcWWK02B4BuMM7kpEJDvTjJA9wE7
+9oMm/VCyGgjwchurOmizCdBdHtpnE9CQItwWfEXWIzIRW3JN3pGxkYcK7nao5O4r
+m7HCfdjsjIyYj0xxvuRpCGQGzukyywW/c8+0h1/HyRofiXzJRrpORc70iq1oZ6e8
+alGQAEOQkwvuuTghVA3x
+=Dz09
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__17_Feb_2012_16_30_57_+1100_dcNCxK3e+SxyxTon--
