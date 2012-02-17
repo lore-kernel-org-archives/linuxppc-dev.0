@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3C0901007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 17:07:57 +1100 (EST)
-Message-ID: <1329458860.2892.57.camel@pasglop>
-Subject: Re: linux-next: build failure after merge of the final tree (akpm
- tree related)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 17 Feb 2012 17:07:40 +1100
-In-Reply-To: <20120217163057.8af53b853b36365b7fff203c@canb.auug.org.au>
-References: <20120217163057.8af53b853b36365b7fff203c@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 004E2B6FCB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 17:56:40 +1100 (EST)
+Received: by eekd49 with SMTP id d49so1151465eek.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2012 22:56:36 -0800 (PST)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <1329458236-4619-1-git-send-email-Jiafei.Pan@freescale.com>
+References: <1329458236-4619-1-git-send-email-Jiafei.Pan@freescale.com>
+Date: Fri, 17 Feb 2012 14:56:35 +0800
+Message-ID: <CADRPPNTtAuQCjB5_NgBbJj7YT1cBxAVXAwQbm9r+8tdGxuyeog@mail.gmail.com>
+Subject: Re: [PATCH] USB: ehci-fsl: Turn on cache snooping on MPC8xxx
+From: Li Yang <leoli@freescale.com>
+To: Pan Jiafei <Jiafei.Pan@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +26,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-02-17 at 16:30 +1100, Stephen Rothwell wrote:
-> Hi Andrew,
-> 
-> After merging the final tree, today's linux-next build (powerpc
-> allnoconfig) failed like this:
-> 
-> In file included from include/linux/posix_types.h:47:0,
->                  from include/linux/types.h:17,
->                  from include/linux/page-flags.h:8,
->                  from kernel/bounds.c:9:
-> arch/powerpc/include/asm/posix_types.h:15:14: error: conflicting types for '__kernel_size_t'
-> arch/powerpc/include/asm/posix_types.h:14:22: note: previous declaration of '__kernel_size_t' was here
-> In file included from include/linux/page-flags.h:8:0,
->                  from kernel/bounds.c:9:
-> include/linux/types.h:68:1: error: unknown type name '__kernel_ssize_t'
-> 
-> Caused by commit a9dbe86e5995 ("powerpc: use generic posix_types.h").
-> 
-> This think was pointed out a couple of days ago, so maybe Andrew needs a
-> newer version of the patch.
+On Fri, Feb 17, 2012 at 1:57 PM, Pan Jiafei <Jiafei.Pan@freescale.com> wrot=
+e:
+> If a MPC8xxx was being used, 'have_sysif_regs' should be set and
+> it should setup cache snooping for all the 4GB space on both PPC32
+> and PPC64.
+>
+> Signed-off-by: Pan Jiafei <Jiafei.Pan@freescale.com>
 
-Yes, I pointed that out to Peter a while back, maybe it got lost ...
+Hi Jiafei,
 
-Cheers,
-Ben.
+You should have sent this patch upstream earlier.  I remember you
+asked about it a few months ago. :)
 
-> I added this fix patch for today:
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 17 Feb 2012 16:25:48 +1100
-> Subject: [PATCH] powerpc: use generic posix_types.h fix
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Acked-by: Li Yang <leoli@freescale.com>
+
 > ---
->  arch/powerpc/include/asm/posix_types.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/posix_types.h b/arch/powerpc/include/asm/posix_types.h
-> index 1fbe027f..f139325 100644
-> --- a/arch/powerpc/include/asm/posix_types.h
-> +++ b/arch/powerpc/include/asm/posix_types.h
-> @@ -12,7 +12,7 @@ typedef unsigned long	__kernel_old_dev_t;
->  #define __kernel_old_dev_t __kernel_old_dev_t
->  #else
->  typedef unsigned int	__kernel_size_t;
-> -typedef int		__kernel_size_t;
-> +typedef int		__kernel_ssize_t;
->  typedef long		__kernel_ptrdiff_t;
->  #define __kernel_size_t __kernel_size_t
->  
-> -- 
-> 1.7.9
-> 
+> =C2=A0drivers/usb/host/ehci-fsl.c | =C2=A0 23 ++++++++++-------------
+> =C2=A01 files changed, 10 insertions(+), 13 deletions(-)
+>
+> diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+> index c26a82e..8327d3e 100644
+> --- a/drivers/usb/host/ehci-fsl.c
+> +++ b/drivers/usb/host/ehci-fsl.c
+> @@ -252,21 +252,18 @@ static int ehci_fsl_usb_setup(struct ehci_hcd *ehci=
+)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (pdata->have_sysif_regs) {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0temp =3D in_be32(n=
+on_ehci + FSL_SOC_USB_CTRL);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0out_be32(non_ehci =
++ FSL_SOC_USB_CTRL, temp | 0x00000004);
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FS=
+L_SOC_USB_SNOOP1, 0x0000001b);
+> - =C2=A0 =C2=A0 =C2=A0 }
+>
+> -#if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
+> - =C2=A0 =C2=A0 =C2=A0 /*
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0* Turn on cache snooping hardware, since som=
+e PowerPC platforms
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0* wholly rely on hardware to deal with cache=
+ coherent
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0*/
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /*
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 * Turn on cache snoopi=
+ng hardware, since some PowerPC platforms
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 * wholly rely on hardw=
+are to deal with cache coherent
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 */
+>
+> - =C2=A0 =C2=A0 =C2=A0 /* Setup Snooping for all the 4GB space */
+> - =C2=A0 =C2=A0 =C2=A0 /* SNOOP1 starts from 0x0, size 2G */
+> - =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0 | SNOO=
+P_SIZE_2GB);
+> - =C2=A0 =C2=A0 =C2=A0 /* SNOOP2 starts from 0x80000000, size 2G */
+> - =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FSL_SOC_USB_SNOOP2, 0x80000000=
+ | SNOOP_SIZE_2GB);
+> -#endif
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* Setup Snooping for =
+all the 4GB space */
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* SNOOP1 starts from =
+0x0, size 2G */
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FS=
+L_SOC_USB_SNOOP1, 0x0 | SNOOP_SIZE_2GB);
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* SNOOP2 starts from =
+0x80000000, size 2G */
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FS=
+L_SOC_USB_SNOOP2, 0x80000000 | SNOOP_SIZE_2GB);
+> + =C2=A0 =C2=A0 =C2=A0 }
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0if ((pdata->operating_mode =3D=3D FSL_USB2_DR_=
+HOST) ||
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0(pdata->operating_mode =3D=3D FSL_USB2_DR_OTG))
+> --
+> 1.7.5.1
