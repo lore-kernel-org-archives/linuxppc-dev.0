@@ -1,19 +1,22 @@
-Return-Path: <B37022@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A596D1007D5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 17:02:15 +1100 (EST)
-From: Pan Jiafei <Jiafei.Pan@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] USB: ehci-fsl: Turn on cache snooping on MPC8xxx
-Date: Fri, 17 Feb 2012 13:57:16 +0800
-Message-ID: <1329458236-4619-1-git-send-email-Jiafei.Pan@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-usb@vger.kernel.org, Pan Jiafei <Jiafei.Pan@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3C0901007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 17:07:57 +1100 (EST)
+Message-ID: <1329458860.2892.57.camel@pasglop>
+Subject: Re: linux-next: build failure after merge of the final tree (akpm
+ tree related)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 17 Feb 2012 17:07:40 +1100
+In-Reply-To: <20120217163057.8af53b853b36365b7fff203c@canb.auug.org.au>
+References: <20120217163057.8af53b853b36365b7fff203c@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a MPC8xxx was being used, 'have_sysif_regs' should be set and
-it should setup cache snooping for all the 4GB space on both PPC32
-and PPC64.
+On Fri, 2012-02-17 at 16:30 +1100, Stephen Rothwell wrote:
+> Hi Andrew,
+> 
+> After merging the final tree, today's linux-next build (powerpc
+> allnoconfig) failed like this:
+> 
+> In file included from include/linux/posix_types.h:47:0,
+>                  from include/linux/types.h:17,
+>                  from include/linux/page-flags.h:8,
+>                  from kernel/bounds.c:9:
+> arch/powerpc/include/asm/posix_types.h:15:14: error: conflicting types for '__kernel_size_t'
+> arch/powerpc/include/asm/posix_types.h:14:22: note: previous declaration of '__kernel_size_t' was here
+> In file included from include/linux/page-flags.h:8:0,
+>                  from kernel/bounds.c:9:
+> include/linux/types.h:68:1: error: unknown type name '__kernel_ssize_t'
+> 
+> Caused by commit a9dbe86e5995 ("powerpc: use generic posix_types.h").
+> 
+> This think was pointed out a couple of days ago, so maybe Andrew needs a
+> newer version of the patch.
 
-Signed-off-by: Pan Jiafei <Jiafei.Pan@freescale.com>
----
- drivers/usb/host/ehci-fsl.c |   23 ++++++++++-------------
- 1 files changed, 10 insertions(+), 13 deletions(-)
+Yes, I pointed that out to Peter a while back, maybe it got lost ...
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index c26a82e..8327d3e 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -252,21 +252,18 @@ static int ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- 	if (pdata->have_sysif_regs) {
- 		temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
- 		out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
--		out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
--	}
- 
--#if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
--	/*
--	 * Turn on cache snooping hardware, since some PowerPC platforms
--	 * wholly rely on hardware to deal with cache coherent
--	 */
-+		/*
-+		* Turn on cache snooping hardware, since some PowerPC platforms
-+		* wholly rely on hardware to deal with cache coherent
-+		*/
- 
--	/* Setup Snooping for all the 4GB space */
--	/* SNOOP1 starts from 0x0, size 2G */
--	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0 | SNOOP_SIZE_2GB);
--	/* SNOOP2 starts from 0x80000000, size 2G */
--	out_be32(non_ehci + FSL_SOC_USB_SNOOP2, 0x80000000 | SNOOP_SIZE_2GB);
--#endif
-+		/* Setup Snooping for all the 4GB space */
-+		/* SNOOP1 starts from 0x0, size 2G */
-+		out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0 | SNOOP_SIZE_2GB);
-+		/* SNOOP2 starts from 0x80000000, size 2G */
-+		out_be32(non_ehci + FSL_SOC_USB_SNOOP2, 0x80000000 | SNOOP_SIZE_2GB);
-+	}
- 
- 	if ((pdata->operating_mode == FSL_USB2_DR_HOST) ||
- 			(pdata->operating_mode == FSL_USB2_DR_OTG))
--- 
-1.7.5.1
+Cheers,
+Ben.
+
+> I added this fix patch for today:
+> 
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Fri, 17 Feb 2012 16:25:48 +1100
+> Subject: [PATCH] powerpc: use generic posix_types.h fix
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/include/asm/posix_types.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/posix_types.h b/arch/powerpc/include/asm/posix_types.h
+> index 1fbe027f..f139325 100644
+> --- a/arch/powerpc/include/asm/posix_types.h
+> +++ b/arch/powerpc/include/asm/posix_types.h
+> @@ -12,7 +12,7 @@ typedef unsigned long	__kernel_old_dev_t;
+>  #define __kernel_old_dev_t __kernel_old_dev_t
+>  #else
+>  typedef unsigned int	__kernel_size_t;
+> -typedef int		__kernel_size_t;
+> +typedef int		__kernel_ssize_t;
+>  typedef long		__kernel_ptrdiff_t;
+>  #define __kernel_size_t __kernel_size_t
+>  
+> -- 
+> 1.7.9
+> 
