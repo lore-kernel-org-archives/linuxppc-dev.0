@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 22BB7B6FC8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:07 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 58E5DB6FD0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:08 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: <kvm-ppc@vger.kernel.org> <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 07/30] KVM: PPC: e500: merge <asm/kvm_e500.h> into
- arch/powerpc/kvm/e500.h
-Date: Fri, 17 Feb 2012 17:56:35 +0100
-Message-Id: <1329497818-9729-8-git-send-email-agraf@suse.de>
+Subject: [PATCH 12/30] powerpc/booke: Provide exception macros with interrupt
+ name
+Date: Fri, 17 Feb 2012 17:56:40 +0100
+Message-Id: <1329497818-9729-13-git-send-email-agraf@suse.de>
 In-Reply-To: <1329497818-9729-1-git-send-email-agraf@suse.de>
 References: <1329497818-9729-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -25,264 +25,350 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-Keeping two separate headers for e500-specific things was a
-pain, and wasn't even organized along any logical boundary.
+DO_KVM will need to identify the particular exception type.
 
-There was TLB stuff in <asm/kvm_e500.h> despite the existence of
-arch/powerpc/kvm/e500_tlb.h, and nothing in <asm/kvm_e500.h> needed
-to be referenced from outside arch/powerpc/kvm.
+There is an existing set of arbitrary numbers that Linux passes,
+but it's an undocumented mess that sort of corresponds to server/classic
+exception vectors but not really.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
-[agraf: fix bisectability]
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_e500.h |   96 -----------------------------------
- arch/powerpc/kvm/e500.c             |    1 -
- arch/powerpc/kvm/e500.h             |   82 ++++++++++++++++++++++++++++--
- arch/powerpc/kvm/e500_emulate.c     |    1 -
- arch/powerpc/kvm/e500_tlb.c         |    1 -
- 5 files changed, 78 insertions(+), 103 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/kvm_e500.h
+ arch/powerpc/kernel/head_44x.S       |   23 +++++++++------
+ arch/powerpc/kernel/head_booke.h     |   41 ++++++++++++++------------
+ arch/powerpc/kernel/head_fsl_booke.S |   52 +++++++++++++++++++++-------------
+ 3 files changed, 68 insertions(+), 48 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_e500.h b/arch/powerpc/include/asm/kvm_e500.h
-deleted file mode 100644
-index 8cd50a5..0000000
---- a/arch/powerpc/include/asm/kvm_e500.h
-+++ /dev/null
-@@ -1,96 +0,0 @@
--/*
-- * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-- *
-- * Author: Yu Liu, <yu.liu@freescale.com>
-- *
-- * Description:
-- * This file is derived from arch/powerpc/include/asm/kvm_44x.h,
-- * by Hollis Blanchard <hollisb@us.ibm.com>.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License, version 2, as
-- * published by the Free Software Foundation.
-- */
--
--#ifndef __ASM_KVM_E500_H__
--#define __ASM_KVM_E500_H__
--
--#include <linux/kvm_host.h>
--
--#define BOOKE_INTERRUPT_SIZE 36
--
--#define E500_PID_NUM   3
--#define E500_TLB_NUM   2
--
--#define E500_TLB_VALID 1
--#define E500_TLB_DIRTY 2
--
--struct tlbe_ref {
--	pfn_t pfn;
--	unsigned int flags; /* E500_TLB_* */
--};
--
--struct tlbe_priv {
--	struct tlbe_ref ref; /* TLB0 only -- TLB1 uses tlb_refs */
--};
--
--struct vcpu_id_table;
--
--struct kvmppc_e500_tlb_params {
--	int entries, ways, sets;
--};
--
--struct kvmppc_vcpu_e500 {
--	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
--	struct kvm_book3e_206_tlb_entry *gtlb_arch;
--
--	/* Starting entry number in gtlb_arch[] */
--	int gtlb_offset[E500_TLB_NUM];
--
--	/* KVM internal information associated with each guest TLB entry */
--	struct tlbe_priv *gtlb_priv[E500_TLB_NUM];
--
--	struct kvmppc_e500_tlb_params gtlb_params[E500_TLB_NUM];
--
--	unsigned int gtlb_nv[E500_TLB_NUM];
--
--	/*
--	 * information associated with each host TLB entry --
--	 * TLB1 only for now.  If/when guest TLB1 entries can be
--	 * mapped with host TLB0, this will be used for that too.
--	 *
--	 * We don't want to use this for guest TLB0 because then we'd
--	 * have the overhead of doing the translation again even if
--	 * the entry is still in the guest TLB (e.g. we swapped out
--	 * and back, and our host TLB entries got evicted).
--	 */
--	struct tlbe_ref *tlb_refs[E500_TLB_NUM];
--	unsigned int host_tlb1_nv;
--
--	u32 host_pid[E500_PID_NUM];
--	u32 pid[E500_PID_NUM];
--	u32 svr;
--
--	/* vcpu id table */
--	struct vcpu_id_table *idt;
--
--	u32 l1csr0;
--	u32 l1csr1;
--	u32 hid0;
--	u32 hid1;
--	u32 tlb0cfg;
--	u32 tlb1cfg;
--	u64 mcar;
--
--	struct page **shared_tlb_pages;
--	int num_shared_tlb_pages;
--
--	struct kvm_vcpu vcpu;
--};
--
--static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
--{
--	return container_of(vcpu, struct kvmppc_vcpu_e500, vcpu);
--}
--
--#endif /* __ASM_KVM_E500_H__ */
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 5c450ba..76b35d8 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -20,7 +20,6 @@
- #include <asm/reg.h>
- #include <asm/cputable.h>
- #include <asm/tlbflush.h>
--#include <asm/kvm_e500.h>
- #include <asm/kvm_ppc.h>
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 7dd2981..d1192c5 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -248,10 +248,11 @@ _ENTRY(_start);
  
- #include "booke.h"
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index 02ecde2..51d13bd 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -1,11 +1,12 @@
+ interrupt_base:
+ 	/* Critical Input Interrupt */
+-	CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
++	CRITICAL_EXCEPTION(0x0100, CRITICAL, CriticalInput, unknown_exception)
+ 
+ 	/* Machine Check Interrupt */
+-	CRITICAL_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
++	CRITICAL_EXCEPTION(0x0200, MACHINE_CHECK, MachineCheck, \
++			   machine_check_exception)
+ 	MCHECK_EXCEPTION(0x0210, MachineCheckA, machine_check_exception)
+ 
+ 	/* Data Storage Interrupt */
+@@ -261,7 +262,8 @@ interrupt_base:
+ 	INSTRUCTION_STORAGE_EXCEPTION
+ 
+ 	/* External Input Interrupt */
+-	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
++	EXCEPTION(0x0500, BOOKE_INTERRUPT_EXTERNAL, ExternalInput, \
++		  do_IRQ, EXC_XFER_LITE)
+ 
+ 	/* Alignment Interrupt */
+ 	ALIGNMENT_EXCEPTION
+@@ -273,29 +275,32 @@ interrupt_base:
+ #ifdef CONFIG_PPC_FPU
+ 	FP_UNAVAILABLE_EXCEPTION
+ #else
+-	EXCEPTION(0x2010, FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2010, BOOKE_INTERRUPT_FP_UNAVAIL, \
++		  FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
+ #endif
+ 	/* System Call Interrupt */
+ 	START_EXCEPTION(SystemCall)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(BOOKE_INTERRUPT_SYSCALL)
+ 	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+ 
+ 	/* Auxiliary Processor Unavailable Interrupt */
+-	EXCEPTION(0x2020, AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2020, BOOKE_INTERRUPT_AP_UNAVAIL, \
++		  AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Decrementer Interrupt */
+ 	DECREMENTER_EXCEPTION
+ 
+ 	/* Fixed Internal Timer Interrupt */
+ 	/* TODO: Add FIT support */
+-	EXCEPTION(0x1010, FixedIntervalTimer, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x1010, BOOKE_INTERRUPT_FIT, FixedIntervalTimer, \
++		  unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Watchdog Timer Interrupt */
+ 	/* TODO: Add watchdog support */
+ #ifdef CONFIG_BOOKE_WDT
+-	CRITICAL_EXCEPTION(0x1020, WatchdogTimer, WatchdogException)
++	CRITICAL_EXCEPTION(0x1020, WATCHDOG, WatchdogTimer, WatchdogException)
+ #else
+-	CRITICAL_EXCEPTION(0x1020, WatchdogTimer, unknown_exception)
++	CRITICAL_EXCEPTION(0x1020, WATCHDOG, WatchdogTimer, unknown_exception)
+ #endif
+ 
+ 	/* Data TLB Error Interrupt */
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index fc921bf..06ab353 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -2,6 +2,8 @@
+ #define __HEAD_BOOKE_H__
+ 
+ #include <asm/ptrace.h>	/* for STACK_FRAME_REGS_MARKER */
++#include <asm/kvm_asm.h>
++
  /*
-  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-  *
-- * Author: Yu Liu, yu.liu@freescale.com
-+ * Author: Yu Liu <yu.liu@freescale.com>
-  *
-  * Description:
-- * This file is based on arch/powerpc/kvm/44x_tlb.h,
-- * by Hollis Blanchard <hollisb@us.ibm.com>.
-+ * This file is based on arch/powerpc/kvm/44x_tlb.h and
-+ * arch/powerpc/include/asm/kvm_44x.h by Hollis Blanchard <hollisb@us.ibm.com>,
-+ * Copyright IBM Corp. 2007-2008
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License, version 2, as
-@@ -18,7 +19,80 @@
- #include <linux/kvm_host.h>
- #include <asm/mmu-book3e.h>
- #include <asm/tlb.h>
--#include <asm/kvm_e500.h>
-+
-+#define E500_PID_NUM   3
-+#define E500_TLB_NUM   2
-+
-+#define E500_TLB_VALID 1
-+#define E500_TLB_DIRTY 2
-+
-+struct tlbe_ref {
-+	pfn_t pfn;
-+	unsigned int flags; /* E500_TLB_* */
-+};
-+
-+struct tlbe_priv {
-+	struct tlbe_ref ref; /* TLB0 only -- TLB1 uses tlb_refs */
-+};
-+
-+struct vcpu_id_table;
-+
-+struct kvmppc_e500_tlb_params {
-+	int entries, ways, sets;
-+};
-+
-+struct kvmppc_vcpu_e500 {
-+	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
-+	struct kvm_book3e_206_tlb_entry *gtlb_arch;
-+
-+	/* Starting entry number in gtlb_arch[] */
-+	int gtlb_offset[E500_TLB_NUM];
-+
-+	/* KVM internal information associated with each guest TLB entry */
-+	struct tlbe_priv *gtlb_priv[E500_TLB_NUM];
-+
-+	struct kvmppc_e500_tlb_params gtlb_params[E500_TLB_NUM];
-+
-+	unsigned int gtlb_nv[E500_TLB_NUM];
-+
-+	/*
-+	 * information associated with each host TLB entry --
-+	 * TLB1 only for now.  If/when guest TLB1 entries can be
-+	 * mapped with host TLB0, this will be used for that too.
-+	 *
-+	 * We don't want to use this for guest TLB0 because then we'd
-+	 * have the overhead of doing the translation again even if
-+	 * the entry is still in the guest TLB (e.g. we swapped out
-+	 * and back, and our host TLB entries got evicted).
-+	 */
-+	struct tlbe_ref *tlb_refs[E500_TLB_NUM];
-+	unsigned int host_tlb1_nv;
-+
-+	u32 host_pid[E500_PID_NUM];
-+	u32 pid[E500_PID_NUM];
-+	u32 svr;
-+
-+	/* vcpu id table */
-+	struct vcpu_id_table *idt;
-+
-+	u32 l1csr0;
-+	u32 l1csr1;
-+	u32 hid0;
-+	u32 hid1;
-+	u32 tlb0cfg;
-+	u32 tlb1cfg;
-+	u64 mcar;
-+
-+	struct page **shared_tlb_pages;
-+	int num_shared_tlb_pages;
-+
-+	struct kvm_vcpu vcpu;
-+};
-+
-+static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
-+{
-+	return container_of(vcpu, struct kvmppc_vcpu_e500, vcpu);
-+}
+  * Macros used for common Book-e exception handling
+  */
+@@ -28,7 +30,7 @@
+  */
+ #define THREAD_NORMSAVE(offset)	(THREAD_NORMSAVES + (offset * 4))
  
- /* This geometry is the legacy default -- can be overridden by userspace */
- #define KVM_E500_TLB0_WAY_SIZE		128
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index 2a1a228..7e2d592 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -14,7 +14,6 @@
+-#define NORMAL_EXCEPTION_PROLOG						     \
++#define NORMAL_EXCEPTION_PROLOG(intno)						     \
+ 	mtspr	SPRN_SPRG_WSCRATCH0, r10;	/* save one register */	     \
+ 	mfspr	r10, SPRN_SPRG_THREAD;					     \
+ 	stw	r11, THREAD_NORMSAVE(0)(r10);				     \
+@@ -113,7 +115,7 @@
+  * registers as the normal prolog above. Instead we use a portion of the
+  * critical/machine check exception stack at low physical addresses.
+  */
+-#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
++#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, intno, exc_level_srr0, exc_level_srr1) \
+ 	mtspr	SPRN_SPRG_WSCRATCH_##exc_level,r8;			     \
+ 	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
+ 	stw	r9,GPR9(r8);		/* save various registers	   */\
+@@ -162,12 +164,13 @@
+ 	SAVE_4GPRS(3, r11);						     \
+ 	SAVE_2GPRS(7, r11)
  
- #include <asm/kvm_ppc.h>
- #include <asm/disassemble.h>
--#include <asm/kvm_e500.h>
+-#define CRITICAL_EXCEPTION_PROLOG \
+-		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1)
++#define CRITICAL_EXCEPTION_PROLOG(intno) \
++		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, intno, SPRN_CSRR0, SPRN_CSRR1)
+ #define DEBUG_EXCEPTION_PROLOG \
+-		EXC_LEVEL_EXCEPTION_PROLOG(DBG, SPRN_DSRR0, SPRN_DSRR1)
++		EXC_LEVEL_EXCEPTION_PROLOG(DBG, DEBUG, SPRN_DSRR0, SPRN_DSRR1)
+ #define MCHECK_EXCEPTION_PROLOG \
+-		EXC_LEVEL_EXCEPTION_PROLOG(MC, SPRN_MCSRR0, SPRN_MCSRR1)
++		EXC_LEVEL_EXCEPTION_PROLOG(MC, MACHINE_CHECK, \
++			SPRN_MCSRR0, SPRN_MCSRR1)
  
- #include "booke.h"
- #include "e500.h"
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 1d623a0..7d4a918 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -26,7 +26,6 @@
- #include <linux/vmalloc.h>
- #include <linux/hugetlb.h>
- #include <asm/kvm_ppc.h>
--#include <asm/kvm_e500.h>
+ /*
+  * Exception vectors.
+@@ -181,16 +184,16 @@ label:
+ 	.long	func;						\
+ 	.long	ret_from_except_full
  
- #include "../mm/mmu_decl.h"
- #include "e500.h"
+-#define EXCEPTION(n, label, hdlr, xfer)				\
++#define EXCEPTION(n, intno, label, hdlr, xfer)			\
+ 	START_EXCEPTION(label);					\
+-	NORMAL_EXCEPTION_PROLOG;				\
++	NORMAL_EXCEPTION_PROLOG(intno);				\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	xfer(n, hdlr)
+ 
+-#define CRITICAL_EXCEPTION(n, label, hdlr)			\
+-	START_EXCEPTION(label);					\
+-	CRITICAL_EXCEPTION_PROLOG;				\
+-	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
++#define CRITICAL_EXCEPTION(n, intno, label, hdlr)			\
++	START_EXCEPTION(label);						\
++	CRITICAL_EXCEPTION_PROLOG(intno);				\
++	addi	r3,r1,STACK_FRAME_OVERHEAD;				\
+ 	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
+ 			  NOCOPY, crit_transfer_to_handler, \
+ 			  ret_from_crit_exc)
+@@ -302,7 +305,7 @@ label:
+ 
+ #define DEBUG_CRIT_EXCEPTION						      \
+ 	START_EXCEPTION(DebugCrit);					      \
+-	CRITICAL_EXCEPTION_PROLOG;					      \
++	CRITICAL_EXCEPTION_PROLOG(DEBUG);				      \
+ 									      \
+ 	/*								      \
+ 	 * If there is a single step or branch-taken exception in an	      \
+@@ -355,7 +358,7 @@ label:
+ 
+ #define DATA_STORAGE_EXCEPTION						      \
+ 	START_EXCEPTION(DataStorage)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(DATA_STORAGE);		      \
+ 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r5,_ESR(r11);						      \
+ 	mfspr	r4,SPRN_DEAR;		/* Grab the DEAR */		      \
+@@ -363,7 +366,7 @@ label:
+ 
+ #define INSTRUCTION_STORAGE_EXCEPTION					      \
+ 	START_EXCEPTION(InstructionStorage)				      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(INST_STORAGE);		      \
+ 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r5,_ESR(r11);						      \
+ 	mr      r4,r12;                 /* Pass SRR0 as arg2 */		      \
+@@ -372,7 +375,7 @@ label:
+ 
+ #define ALIGNMENT_EXCEPTION						      \
+ 	START_EXCEPTION(Alignment)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(ALIGNMENT);		      \
+ 	mfspr   r4,SPRN_DEAR;           /* Grab the DEAR and save it */	      \
+ 	stw     r4,_DEAR(r11);						      \
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD;				      \
+@@ -380,7 +383,7 @@ label:
+ 
+ #define PROGRAM_EXCEPTION						      \
+ 	START_EXCEPTION(Program)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(PROGRAM);		      \
+ 	mfspr	r4,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r4,_ESR(r11);						      \
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+@@ -388,7 +391,7 @@ label:
+ 
+ #define DECREMENTER_EXCEPTION						      \
+ 	START_EXCEPTION(Decrementer)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(DECREMENTER);		      \
+ 	lis     r0,TSR_DIS@h;           /* Setup the DEC interrupt mask */    \
+ 	mtspr   SPRN_TSR,r0;		/* Clear the DEC interrupt */	      \
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD;				      \
+@@ -396,7 +399,7 @@ label:
+ 
+ #define FP_UNAVAILABLE_EXCEPTION					      \
+ 	START_EXCEPTION(FloatingPointUnavailable)			      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(FP_UNAVAIL);		      \
+ 	beq	1f;							      \
+ 	bl	load_up_fpu;		/* if from user, just load it up */   \
+ 	b	fast_exception_return;					      \
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index d5d78c4..418931f 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -301,19 +301,20 @@ _ENTRY(__early_start)
+ 
+ interrupt_base:
+ 	/* Critical Input Interrupt */
+-	CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
++	CRITICAL_EXCEPTION(0x0100, CRITICAL, CriticalInput, unknown_exception)
+ 
+ 	/* Machine Check Interrupt */
+ #ifdef CONFIG_E200
+ 	/* no RFMCI, MCSRRs on E200 */
+-	CRITICAL_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
++	CRITICAL_EXCEPTION(0x0200, MACHINE_CHECK, MachineCheck, \
++			   machine_check_exception)
+ #else
+ 	MCHECK_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
+ #endif
+ 
+ 	/* Data Storage Interrupt */
+ 	START_EXCEPTION(DataStorage)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(DATA_STORAGE)
+ 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+ 	stw	r5,_ESR(r11)
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
+@@ -328,7 +329,7 @@ interrupt_base:
+ 	INSTRUCTION_STORAGE_EXCEPTION
+ 
+ 	/* External Input Interrupt */
+-	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
++	EXCEPTION(0x0500, EXTERNAL, ExternalInput, do_IRQ, EXC_XFER_LITE)
+ 
+ 	/* Alignment Interrupt */
+ 	ALIGNMENT_EXCEPTION
+@@ -342,32 +343,36 @@ interrupt_base:
+ #else
+ #ifdef CONFIG_E200
+ 	/* E200 treats 'normal' floating point instructions as FP Unavail exception */
+-	EXCEPTION(0x0800, FloatingPointUnavailable, program_check_exception, EXC_XFER_EE)
++	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
++		  program_check_exception, EXC_XFER_EE)
+ #else
+-	EXCEPTION(0x0800, FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
++		  unknown_exception, EXC_XFER_EE)
+ #endif
+ #endif
+ 
+ 	/* System Call Interrupt */
+ 	START_EXCEPTION(SystemCall)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(SYSCALL)
+ 	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+ 
+ 	/* Auxiliary Processor Unavailable Interrupt */
+-	EXCEPTION(0x2900, AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2900, AP_UNAVAIL, AuxillaryProcessorUnavailable, \
++		  unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Decrementer Interrupt */
+ 	DECREMENTER_EXCEPTION
+ 
+ 	/* Fixed Internal Timer Interrupt */
+ 	/* TODO: Add FIT support */
+-	EXCEPTION(0x3100, FixedIntervalTimer, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x3100, FIT, FixedIntervalTimer, \
++		  unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Watchdog Timer Interrupt */
+ #ifdef CONFIG_BOOKE_WDT
+-	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, WatchdogException)
++	CRITICAL_EXCEPTION(0x3200, WATCHDOG, WatchdogTimer, WatchdogException)
+ #else
+-	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, unknown_exception)
++	CRITICAL_EXCEPTION(0x3200, WATCHDOG, WatchdogTimer, unknown_exception)
+ #endif
+ 
+ 	/* Data TLB Error Interrupt */
+@@ -538,31 +543,38 @@ interrupt_base:
+ #ifdef CONFIG_SPE
+ 	/* SPE Unavailable */
+ 	START_EXCEPTION(SPEUnavailable)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(SPE_UNAVAIL)
+ 	bne	load_up_spe
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_EE_LITE(0x2010, KernelSPE)
+ #else
+-	EXCEPTION(0x2020, SPEUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2020, SPE_UNAVAIL, SPEUnavailable, \
++		  unknown_exception, EXC_XFER_EE)
+ #endif /* CONFIG_SPE */
+ 
+ 	/* SPE Floating Point Data */
+ #ifdef CONFIG_SPE
+-	EXCEPTION(0x2030, SPEFloatingPointData, SPEFloatingPointException, EXC_XFER_EE);
++	EXCEPTION(0x2030, SPE_FP_DATA, SPEFloatingPointData, \
++		  SPEFloatingPointException, EXC_XFER_EE);
+ 
+ 	/* SPE Floating Point Round */
+-	EXCEPTION(0x2050, SPEFloatingPointRound, SPEFloatingPointRoundException, EXC_XFER_EE)
++	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
++		  SPEFloatingPointRoundException, EXC_XFER_EE)
+ #else
+-	EXCEPTION(0x2040, SPEFloatingPointData, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x2050, SPEFloatingPointRound, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2040, SPE_FP_DATA, SPEFloatingPointData, \
++		  unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
++		  unknown_exception, EXC_XFER_EE)
+ #endif /* CONFIG_SPE */
+ 
+ 	/* Performance Monitor */
+-	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
++	EXCEPTION(0x2060, PERFORMANCE_MONITOR, PerformanceMonitor, \
++		  performance_monitor_exception, EXC_XFER_STD)
+ 
+-	EXCEPTION(0x2070, Doorbell, doorbell_exception, EXC_XFER_STD)
++	EXCEPTION(0x2070, DOORBELL, Doorbell, doorbell_exception, EXC_XFER_STD)
+ 
+-	CRITICAL_EXCEPTION(0x2080, CriticalDoorbell, unknown_exception)
++	CRITICAL_EXCEPTION(0x2080, DOORBELL_CRITICAL, \
++			   CriticalDoorbell, unknown_exception)
+ 
+ 	/* Debug Interrupt */
+ 	DEBUG_DEBUG_EXCEPTION
 -- 
 1.6.0.2
