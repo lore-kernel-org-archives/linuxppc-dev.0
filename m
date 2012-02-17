@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 93496B6FD1
+ by ozlabs.org (Postfix) with ESMTPS id D593BB6FCA
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:05 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 08/30] KVM: PPC: e500: clean up arch/powerpc/kvm/e500.h
-Date: Fri, 17 Feb 2012 18:13:35 +0100
-Message-Id: <1329498837-11717-9-git-send-email-agraf@suse.de>
+Subject: [PATCH 06/30] KVM: PPC: e500: rename e500_tlb.h to e500.h
+Date: Fri, 17 Feb 2012 18:13:33 +0100
+Message-Id: <1329498837-11717-7-git-send-email-agraf@suse.de>
 In-Reply-To: <1329498837-11717-1-git-send-email-agraf@suse.de>
 References: <1329498837-11717-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -24,72 +24,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-Move vcpu to the beginning of vcpu_e500 to give it appropriate
-prominence, especially if more fields end up getting added to the
-end of vcpu_e500 (and vcpu ends up in the middle).
-
-Remove gratuitous "extern" and add parameter names to prototypes.
+This is in preparation for merging in the contents of
+arch/powerpc/include/asm/kvm_e500.h.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
-[agraf: fix bisectability]
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/e500.h |   25 ++++++++++++++-----------
- 1 files changed, 14 insertions(+), 11 deletions(-)
+ arch/powerpc/kvm/e500.c                 |    2 +-
+ arch/powerpc/kvm/{e500_tlb.h => e500.h} |    6 +++---
+ arch/powerpc/kvm/e500_emulate.c         |    2 +-
+ arch/powerpc/kvm/e500_tlb.c             |    2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+ rename arch/powerpc/kvm/{e500_tlb.h => e500.h} (98%)
 
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index 51d13bd..a48af00 100644
---- a/arch/powerpc/kvm/e500.h
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index ac6c9ae..5c450ba 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -24,7 +24,7 @@
+ #include <asm/kvm_ppc.h>
+ 
+ #include "booke.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ 
+ void kvmppc_core_load_host_debugstate(struct kvm_vcpu *vcpu)
+ {
+diff --git a/arch/powerpc/kvm/e500_tlb.h b/arch/powerpc/kvm/e500.h
+similarity index 98%
+rename from arch/powerpc/kvm/e500_tlb.h
+rename to arch/powerpc/kvm/e500.h
+index 5c6d2d7..02ecde2 100644
+--- a/arch/powerpc/kvm/e500_tlb.h
 +++ b/arch/powerpc/kvm/e500.h
-@@ -42,6 +42,8 @@ struct kvmppc_e500_tlb_params {
- };
+@@ -12,8 +12,8 @@
+  * published by the Free Software Foundation.
+  */
  
- struct kvmppc_vcpu_e500 {
-+	struct kvm_vcpu vcpu;
-+
- 	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
- 	struct kvm_book3e_206_tlb_entry *gtlb_arch;
+-#ifndef __KVM_E500_TLB_H__
+-#define __KVM_E500_TLB_H__
++#ifndef KVM_E500_H
++#define KVM_E500_H
  
-@@ -85,8 +87,6 @@ struct kvmppc_vcpu_e500 {
+ #include <linux/kvm_host.h>
+ #include <asm/mmu-book3e.h>
+@@ -171,4 +171,4 @@ static inline int tlbe_is_host_safe(const struct kvm_vcpu *vcpu,
+ 	return 1;
+ }
  
- 	struct page **shared_tlb_pages;
- 	int num_shared_tlb_pages;
--
--	struct kvm_vcpu vcpu;
- };
+-#endif /* __KVM_E500_TLB_H__ */
++#endif /* KVM_E500_H */
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 6d0b2bd..2a1a228 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -17,7 +17,7 @@
+ #include <asm/kvm_e500.h>
  
- static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
-@@ -113,19 +113,22 @@ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
- 	  (MAS3_U0 | MAS3_U1 | MAS3_U2 | MAS3_U3 \
- 	   | E500_TLB_USER_PERM_MASK | E500_TLB_SUPER_PERM_MASK)
+ #include "booke.h"
+-#include "e500_tlb.h"
++#include "e500.h"
  
--extern void kvmppc_dump_tlbs(struct kvm_vcpu *);
--extern int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *, ulong);
--extern int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *);
--extern int kvmppc_e500_emul_tlbre(struct kvm_vcpu *);
--extern int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *, int, int);
--extern int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *, int);
--extern int kvmppc_e500_tlb_search(struct kvm_vcpu *, gva_t, unsigned int, int);
- extern void kvmppc_e500_tlb_put(struct kvm_vcpu *);
- extern void kvmppc_e500_tlb_load(struct kvm_vcpu *, int);
--extern int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *);
--extern void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *);
- extern void kvmppc_e500_tlb_setup(struct kvmppc_vcpu_e500 *);
- extern void kvmppc_e500_recalc_shadow_pid(struct kvmppc_vcpu_e500 *);
-+int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500,
-+				ulong value);
-+int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
-+int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
-+int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
-+int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
-+int kvmppc_e500_tlb_search(struct kvm_vcpu *, gva_t, unsigned int, int);
-+int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
-+void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
-+
-+void kvmppc_get_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
-+int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
+ #define XOP_TLBIVAX 786
+ #define XOP_TLBSX   914
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 6e53e41..1d623a0 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -29,7 +29,7 @@
+ #include <asm/kvm_e500.h>
  
- /* TLB helper functions */
- static inline unsigned int
+ #include "../mm/mmu_decl.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ #include "trace.h"
+ #include "timing.h"
+ 
 -- 
 1.6.0.2
