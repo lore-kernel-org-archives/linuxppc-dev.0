@@ -1,24 +1,19 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe006.messaging.microsoft.com
- [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A6CB1007D6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 09:32:46 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 21/30] KVM: PPC: make e500v2 and e500mc mutually exclusive
-Date: Fri, 17 Feb 2012 22:32:37 +0000
-Message-ID: <CAOZdJXXxC5vdWrpz-sU0O+5oXS211DLYywqkQLwq0JOtRZyBHQ@mail.gmail.com>
-References: <1329497818-9729-1-git-send-email-agraf@suse.de>
- <1329497818-9729-22-git-send-email-agraf@suse.de>
-In-Reply-To: <1329497818-9729-22-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, list <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B4F761007D7
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2012 09:37:01 +1100 (EST)
+Message-ID: <1329518214.3980.7.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 18 Feb 2012 09:36:54 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 17, 2012 at 10:56 AM, Alexander Graf <agraf@suse.de> wrote:
+Hi Linus !
 
-> =A0config KVM_E500MC
-> =A0 =A0 =A0 =A0bool "KVM support for PowerPC E500MC/E5500 processors"
-> - =A0 =A0 =A0 depends on EXPERIMENTAL && PPC_E500MC
-> + =A0 =A0 =A0 depends on EXPERIMENTAL && PPC_E500MC && !KVM_E500V2
+Here are a few more fixes for powerpc. Some are regressions, the rest is
+simple/obvious/nasty enough that I deemed it good to go now.
 
-There was a patch floating around that made a similar change to the
-platform support, so that you could either build an e500v2 kernel and
-enable support only for e500v2 board, or you could build an e500mc
-kernel and enable support only for e500mc boards.  Last I heard, the
-patch wasn't quite working, but that was a while ago.
+Here's also step one of deprecating legacy iSeries support: we are
+removing it from the main defconfig.
 
-Is there a connection between this patch and that one?
+Nobody seems to be using it anymore and the code is nasty to maintain,
+(involves horrible hacks in various low level areas of the kernel) so we
+plan to actually rip it out at some point. For now let's just avoid
+building it by default. Stephen will proceed to do the actual removal
+later (probably 3.4 or 3.5).
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Cheers,
+Ben.
+
+The following changes since commit 778a785f02ad846446e91dab49331bd7d853c514:
+
+  powerpc/pseries/eeh: Fix crash when error happens during device probe (2012-02-14 15:01:39 +1100)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 9a45a9407c69d068500923480884661e2b9cc421:
+
+  powerpc/perf: power_pmu_start restores incorrect values, breaking frequency events (2012-02-16 16:24:35 +1100)
+
+----------------------------------------------------------------
+Anton Blanchard (1):
+      powerpc/perf: power_pmu_start restores incorrect values, breaking frequency events
+
+Benjamin Herrenschmidt (2):
+      powerpc/fsl/pci: Fix PCIe fixup regression
+      powerpc: Disable interrupts early in Program Check
+
+Ira Snyder (1):
+      powerpc: Fix kernel log of oops/panic instruction dump
+
+Stephen Rothwell (1):
+      powerpc: Remove legacy iSeries from ppc64_defconfig
+
+majianpeng (1):
+      powerpc/adb: Use set_current_state()
+
+ arch/powerpc/configs/ppc64_defconfig |    5 ---
+ arch/powerpc/kernel/exceptions-64s.S |    2 +-
+ arch/powerpc/kernel/perf_event.c     |    8 +++++-
+ arch/powerpc/kernel/process.c        |    6 ++--
+ arch/powerpc/sysdev/fsl_pci.c        |   48 ++++++++++++++++++++-------------
+ drivers/macintosh/adb.c              |    4 +-
+ 6 files changed, 42 insertions(+), 31 deletions(-)
