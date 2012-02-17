@@ -1,22 +1,22 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe003.messaging.microsoft.com
- [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6C11CB6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 10:17:16 +1100 (EST)
-Message-ID: <4F3EDFEE.3040106@freescale.com>
-Date: Fri, 17 Feb 2012 17:17:02 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <afleming@gmail.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 19/30] KVM: PPC: e500mc: add load inst fixup
-References: <1329498837-11717-1-git-send-email-agraf@suse.de>
- <1329498837-11717-20-git-send-email-agraf@suse.de>
-In-Reply-To: <1329498837-11717-20-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <CAOZdJXVvL98vNG5UvT2t1dgJw1D204-5BCgDsxqD04szhHueBQ@mail.gmail.com>
+References: <1329208640-32209-1-git-send-email-prabhakar@freescale.com>
+ <CAOZdJXVvL98vNG5UvT2t1dgJw1D204-5BCgDsxqD04szhHueBQ@mail.gmail.com>
+Date: Fri, 17 Feb 2012 17:26:02 -0600
+Message-ID: <CAKWjMd70yAkbY4fbMaumih86YEujjDti4YRrnH4Yycj7-NEBPw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/85xx:Add PSC9131 RDB Support
+From: Andy Fleming <afleming@gmail.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ Srivastava Rajan-B34330 <B34330@freescale.com>,
+ Mehresh Ramneek-B31383 <B31383@freescale.com>,
+ Goyal Akhil-B35197 <B35197@freescale.com>,
+ Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ Jain Priyanka-B32167 <B32167@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,77 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/17/2012 11:13 AM, Alexander Graf wrote:
-> There's always a chance we're unable to read a guest instruction. The guest
-> could have its TLB mapped execute-, but not readable, something odd happens
-> and our TLB gets flushed. So it's a good idea to be prepared for that case
-> and have a fallback that allows us to fix things up in that case.
-> 
-> Add fixup code that keeps guest code from potentially crashing our host kernel.
-> 
-> Signed-off-by: Alexander Graf <agraf@suse.de>
-> ---
->  arch/powerpc/kvm/bookehv_interrupts.S |   30 +++++++++++++++++++++++++++++-
->  1 files changed, 29 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-> index 63023ae..e0f484c 100644
-> --- a/arch/powerpc/kvm/bookehv_interrupts.S
-> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
-> @@ -28,6 +28,7 @@
->  #include <asm/asm-compat.h>
->  #include <asm/asm-offsets.h>
->  #include <asm/bitsperlong.h>
-> +#include <asm/thread_info.h>
->  
->  #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
->  
-> @@ -171,9 +172,36 @@
->  	PPC_STL	r30, VCPU_GPR(r30)(r4)
->  	PPC_STL	r31, VCPU_GPR(r31)(r4)
->  	mtspr	SPRN_EPLC, r8
-> +
-> +	/* disable preemption, so we are sure we hit the fixup handler */
-> +#ifdef CONFIG_PPC64
-> +	clrrdi	r8,r1,THREAD_SHIFT
-> +#else
-> +	rlwinm	r8,r1,0,0,31-THREAD_SHIFT       /* current thread_info */
-> +#endif
-> +        lwz     r6,TI_PREEMPT(r8)
-> +	addi	r7,r6,1
-> +        stw     r7,TI_PREEMPT(r8)
+On Fri, Feb 17, 2012 at 1:20 PM, Tabi Timur-B04825 <B04825@freescale.com> w=
+rote:
+> On Tue, Feb 14, 2012 at 2:37 AM, Prabhakar Kushwaha
+> <prabhakar@freescale.com> wrote:
+>>
+>> =A0Applied on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerp=
+c.git branch next
+>
+> This is actually a false statement. =A0"Applied" is past tense, so you
+> are saying that this patch has *already* been applied to Kumar's
+> powerpc.git repository. =A0But this is not true -- Kumar's repository
+> has not been updated in the last three weeks, and this patch is
+> nowhere to be found.
 
-Whitespace
+I'm pretty sure the sentence should read:
 
-The preempt count had better already be zero here, so we can just store
-1 now, and 0 later, and avoid the stall on load results.
+Based on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+branch next
 
-> +
->  	isync
-> -	lwepx	r9, 0, r5
-> +
-> +	/*
-> +	 * In case the read goes wrong, we catch it and write an invalid value
-> +	 * in LAST_INST instead.
-> +	 */
-> +1:	lwepx	r9, 0, r5
-> +2:
-> +.section .fixup, "ax"
-> +3:	li r9, KVM_INST_FETCH_FAILED
-> +	b 2b
+Good idea to correct that for future submissions, as it is otherwise
+confusing. Could also say "Developed against" instead of "Based on".
 
-Please tab after the opcode
-
-> +.previous
-> +.section __ex_table,"a"
-> +	PPC_LONG_ALIGN
-> +	PPC_LONG 1b,3b
-> +.previous
-> +
->  	mtspr	SPRN_EPLC, r3
-> +        stw     r6,TI_PREEMPT(r8)
->  	stw	r9, VCPU_LAST_INST(r4)
-
-Whitespace
-
--Scott
+Andy
