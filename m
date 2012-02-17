@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B23F2B700F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:09 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6B0E4B7012
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:10 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 18/30] KVM: PPC: e500mc: Move r1/r2 restoration very early
-Date: Fri, 17 Feb 2012 18:13:45 +0100
-Message-Id: <1329498837-11717-19-git-send-email-agraf@suse.de>
+Subject: [PATCH 24/30] KVM: PPC: booke: call resched after every exit
+Date: Fri, 17 Feb 2012 18:13:51 +0100
+Message-Id: <1329498837-11717-25-git-send-email-agraf@suse.de>
 In-Reply-To: <1329498837-11717-1-git-send-email-agraf@suse.de>
 References: <1329498837-11717-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,57 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we hit any exception whatsoever in the restore path and r1/r2 aren't the
-host registers, we don't get a working oops. So it's always a good idea to
-restore them as early as possible.
-
-This time, it actually has practical reasons to do so too, since we need to
-have the host page fault handler fix up our guest instruction read code. And
-for that to work we need r1/r2 restored.
+Instead of checking whether we should reschedule only when we exited
+due to an interrupt, let's always check before entering the guest back
+again. This gets the target more in line with the other archs.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/bookehv_interrupts.S |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/booke.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 9eaeebd..63023ae 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -67,6 +67,12 @@
-  * saved in vcpu: cr, ctr, r3-r13
-  */
- .macro kvm_handler_common intno, srr0, flags
-+	/* Restore host stack pointer */
-+	PPC_STL	r1, VCPU_GPR(r1)(r4)
-+	PPC_STL	r2, VCPU_GPR(r2)(r4)
-+	PPC_LL	r1, VCPU_HOST_STACK(r4)
-+	PPC_LL	r2, HOST_R2(r1)
-+
- 	mfspr	r10, SPRN_PID
- 	lwz	r8, VCPU_HOST_PID(r4)
- 	PPC_LL	r11, VCPU_SHARED(r4)
-@@ -290,10 +296,8 @@ _GLOBAL(kvmppc_resume_host)
- 	/* Save remaining volatile guest register state to vcpu. */
- 	mfspr	r3, SPRN_VRSAVE
- 	PPC_STL	r0, VCPU_GPR(r0)(r4)
--	PPC_STL	r1, VCPU_GPR(r1)(r4)
- 	mflr	r5
- 	mfspr	r6, SPRN_SPRG4
--	PPC_STL	r2, VCPU_GPR(r2)(r4)
- 	PPC_STL	r5, VCPU_LR(r4)
- 	mfspr	r7, SPRN_SPRG5
- 	PPC_STL	r3, VCPU_VRSAVE(r4)
-@@ -334,10 +338,6 @@ _GLOBAL(kvmppc_resume_host)
- 	mtspr	SPRN_EPCR, r3
- 	isync
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index bfb2092..de30b6d 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -572,6 +572,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+                        unsigned int exit_nr)
+ {
+ 	int r = RESUME_HOST;
++	int resched_needed = 1;
  
--	/* Restore host stack pointer */
--	PPC_LL	r1, VCPU_HOST_STACK(r4)
--	PPC_LL	r2, HOST_R2(r1)
--
- 	/* Switch to kernel stack and jump to handler. */
- 	PPC_LL	r3, HOST_RUN(r1)
- 	mr	r5, r14 /* intno */
+ 	/* update before a new last_exit_type is rewritten */
+ 	kvmppc_update_timing_stats(vcpu);
+@@ -602,25 +603,21 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 	switch (exit_nr) {
+ 	case BOOKE_INTERRUPT_MACHINE_CHECK:
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_EXTERNAL:
+ 		kvmppc_account_exit(vcpu, EXT_INTR_EXITS);
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_DECREMENTER:
+ 		kvmppc_account_exit(vcpu, DEC_EXITS);
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_DOORBELL:
+ 		kvmppc_account_exit(vcpu, DBELL_EXITS);
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+@@ -869,8 +866,16 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		BUG();
+ 	}
+ 
+-	local_irq_disable();
++	/* make sure we reschedule if we need to */
++	while (resched_needed) {
++		local_irq_disable();
+ 
++		resched_needed = need_resched();
++		if (resched_needed) {
++			local_irq_enable();
++			cond_resched();
++		}
++	}
+ 	kvmppc_core_prepare_to_enter(vcpu);
+ 
+ 	if (!(r & RESUME_HOST)) {
 -- 
 1.6.0.2
