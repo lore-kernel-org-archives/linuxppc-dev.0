@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B4F761007D7
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2012 09:37:01 +1100 (EST)
-Message-ID: <1329518214.3980.7.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 18 Feb 2012 09:36:54 +1100
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE005.bigfish.com (am1ehsobe002.messaging.microsoft.com
+ [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F13711007D9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 10:00:35 +1100 (EST)
+Message-ID: <4F3EDC01.5000400@freescale.com>
+Date: Fri, 17 Feb 2012 17:00:17 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 24/30] KVM: PPC: booke: call resched after every exit
+References: <1329498837-11717-1-git-send-email-agraf@suse.de>
+ <1329498837-11717-25-git-send-email-agraf@suse.de>
+In-Reply-To: <1329498837-11717-25-git-send-email-agraf@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +26,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On 02/17/2012 11:13 AM, Alexander Graf wrote:
+> Instead of checking whether we should reschedule only when we exited
+> due to an interrupt, let's always check before entering the guest back
+> again. This gets the target more in line with the other archs.
+> 
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+> ---
+>  arch/powerpc/kvm/booke.c |   15 ++++++++++-----
+>  1 files changed, 10 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index bfb2092..de30b6d 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -572,6 +572,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>                         unsigned int exit_nr)
+>  {
+>  	int r = RESUME_HOST;
+> +	int resched_needed = 1;
+>  
+>  	/* update before a new last_exit_type is rewritten */
+>  	kvmppc_update_timing_stats(vcpu);
+> @@ -602,25 +603,21 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  
+>  	switch (exit_nr) {
+>  	case BOOKE_INTERRUPT_MACHINE_CHECK:
+> -		kvm_resched(vcpu);
+>  		r = RESUME_GUEST;
+>  		break;
+>  
+>  	case BOOKE_INTERRUPT_EXTERNAL:
+>  		kvmppc_account_exit(vcpu, EXT_INTR_EXITS);
+> -		kvm_resched(vcpu);
+>  		r = RESUME_GUEST;
+>  		break;
+>  
+>  	case BOOKE_INTERRUPT_DECREMENTER:
+>  		kvmppc_account_exit(vcpu, DEC_EXITS);
+> -		kvm_resched(vcpu);
+>  		r = RESUME_GUEST;
+>  		break;
+>  
+>  	case BOOKE_INTERRUPT_DOORBELL:
+>  		kvmppc_account_exit(vcpu, DBELL_EXITS);
+> -		kvm_resched(vcpu);
+>  		r = RESUME_GUEST;
+>  		break;
+>  
+> @@ -869,8 +866,16 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  		BUG();
+>  	}
+>  
+> -	local_irq_disable();
+> +	/* make sure we reschedule if we need to */
+> +	while (resched_needed) {
+> +		local_irq_disable();
+>  
+> +		resched_needed = need_resched();
+> +		if (resched_needed) {
+> +			local_irq_enable();
+> +			cond_resched();
+> +		}
+> +	}
+>  	kvmppc_core_prepare_to_enter(vcpu);
+>  
+>  	if (!(r & RESUME_HOST)) {
 
-Here are a few more fixes for powerpc. Some are regressions, the rest is
-simple/obvious/nasty enough that I deemed it good to go now.
+kvmppc_core_prepare_to_enter can enable interrupts (and block) if guest
+MSR_WE is set.  We may take an interrupt that wants a resched after
+waking but before interrupts are disabled again.
 
-Here's also step one of deprecating legacy iSeries support: we are
-removing it from the main defconfig.
+We also want to check for a resched in kvmppc_vcpu_run.  So, the resched
+check belongs in kvmppc_core_prepare_to_enter, something like:
 
-Nobody seems to be using it anymore and the code is nasty to maintain,
-(involves horrible hacks in various low level areas of the kernel) so we
-plan to actually rip it out at some point. For now let's just avoid
-building it by default. Stephen will proceed to do the actual removal
-later (probably 3.4 or 3.5).
+/* Check pending exceptions and deliver one, if possible. */
+void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+{
+	WARN_ON_ONCE(!irqs_disabled());
 
-Cheers,
-Ben.
+	while (true) {
+		if (signal_pending(current))
+			break;
 
-The following changes since commit 778a785f02ad846446e91dab49331bd7d853c514:
+		if (need_resched()) {
+			local_irq_enable();
+			cond_resched();
+			local_irq_disable();
+			continue;
+		}
 
-  powerpc/pseries/eeh: Fix crash when error happens during device probe (2012-02-14 15:01:39 +1100)
+		kvmppc_core_check_exceptions(vcpu);
 
-are available in the git repository at:
+		if (vcpu->arch.shared->msr & MSR_WE) {
+			local_irq_enable();
+			kvm_vcpu_block(vcpu);
+			local_irq_disable();
+	
+			kvmppc_set_exit_type(vcpu,
+				EMULATED_MTMSRWE_EXITS);
+			continue;
+		}
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+		break;
+	}
+}
 
-for you to fetch changes up to 9a45a9407c69d068500923480884661e2b9cc421:
+It would be simpler (both here and in the idle hcall) if we could just
+drop support for CONFIG_PREEMPT=n. :-P
 
-  powerpc/perf: power_pmu_start restores incorrect values, breaking frequency events (2012-02-16 16:24:35 +1100)
-
-----------------------------------------------------------------
-Anton Blanchard (1):
-      powerpc/perf: power_pmu_start restores incorrect values, breaking frequency events
-
-Benjamin Herrenschmidt (2):
-      powerpc/fsl/pci: Fix PCIe fixup regression
-      powerpc: Disable interrupts early in Program Check
-
-Ira Snyder (1):
-      powerpc: Fix kernel log of oops/panic instruction dump
-
-Stephen Rothwell (1):
-      powerpc: Remove legacy iSeries from ppc64_defconfig
-
-majianpeng (1):
-      powerpc/adb: Use set_current_state()
-
- arch/powerpc/configs/ppc64_defconfig |    5 ---
- arch/powerpc/kernel/exceptions-64s.S |    2 +-
- arch/powerpc/kernel/perf_event.c     |    8 +++++-
- arch/powerpc/kernel/process.c        |    6 ++--
- arch/powerpc/sysdev/fsl_pci.c        |   48 ++++++++++++++++++++-------------
- drivers/macintosh/adb.c              |    4 +-
- 6 files changed, 42 insertions(+), 31 deletions(-)
+-Scott
