@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 22B2FB6FC5
+ by ozlabs.org (Postfix) with ESMTPS id 22ABCB6FC4
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:07 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: <kvm-ppc@vger.kernel.org> <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 08/30] KVM: PPC: e500: clean up arch/powerpc/kvm/e500.h
-Date: Fri, 17 Feb 2012 17:56:36 +0100
-Message-Id: <1329497818-9729-9-git-send-email-agraf@suse.de>
+Subject: [PATCH 01/30] powerpc/booke: Set CPU_FTR_DEBUG_LVL_EXC on 32-bit
+Date: Fri, 17 Feb 2012 17:56:29 +0100
+Message-Id: <1329497818-9729-2-git-send-email-agraf@suse.de>
 In-Reply-To: <1329497818-9729-1-git-send-email-agraf@suse.de>
 References: <1329497818-9729-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -24,72 +24,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-Move vcpu to the beginning of vcpu_e500 to give it appropriate
-prominence, especially if more fields end up getting added to the
-end of vcpu_e500 (and vcpu ends up in the middle).
-
-Remove gratuitous "extern" and add parameter names to prototypes.
+Currently 32-bit only cares about this for choice of exception
+vector, which is done in core-specific code.  However, KVM will
+want to distinguish as well.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
-[agraf: fix bisectability]
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/e500.h |   25 ++++++++++++++-----------
- 1 files changed, 14 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/cputable.h |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index 51d13bd..a48af00 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -42,6 +42,8 @@ struct kvmppc_e500_tlb_params {
- };
- 
- struct kvmppc_vcpu_e500 {
-+	struct kvm_vcpu vcpu;
-+
- 	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
- 	struct kvm_book3e_206_tlb_entry *gtlb_arch;
- 
-@@ -85,8 +87,6 @@ struct kvmppc_vcpu_e500 {
- 
- 	struct page **shared_tlb_pages;
- 	int num_shared_tlb_pages;
--
--	struct kvm_vcpu vcpu;
- };
- 
- static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
-@@ -113,19 +113,22 @@ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
- 	  (MAS3_U0 | MAS3_U1 | MAS3_U2 | MAS3_U3 \
- 	   | E500_TLB_USER_PERM_MASK | E500_TLB_SUPER_PERM_MASK)
- 
--extern void kvmppc_dump_tlbs(struct kvm_vcpu *);
--extern int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *, ulong);
--extern int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *);
--extern int kvmppc_e500_emul_tlbre(struct kvm_vcpu *);
--extern int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *, int, int);
--extern int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *, int);
--extern int kvmppc_e500_tlb_search(struct kvm_vcpu *, gva_t, unsigned int, int);
- extern void kvmppc_e500_tlb_put(struct kvm_vcpu *);
- extern void kvmppc_e500_tlb_load(struct kvm_vcpu *, int);
--extern int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *);
--extern void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *);
- extern void kvmppc_e500_tlb_setup(struct kvmppc_vcpu_e500 *);
- extern void kvmppc_e500_recalc_shadow_pid(struct kvmppc_vcpu_e500 *);
-+int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500,
-+				ulong value);
-+int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
-+int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
-+int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
-+int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
-+int kvmppc_e500_tlb_search(struct kvm_vcpu *, gva_t, unsigned int, int);
-+int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
-+void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
-+
-+void kvmppc_get_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
-+int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
- 
- /* TLB helper functions */
- static inline unsigned int
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index ad55a1c..6a034a2 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -376,7 +376,8 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTRS_47X	(CPU_FTRS_440x6)
+ #define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
+ 	    CPU_FTR_NODSISRALIGN | CPU_FTR_COHERENT_ICACHE | \
+-	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE)
++	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE | \
++	    CPU_FTR_DEBUG_LVL_EXC)
+ #define CPU_FTRS_E500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
+ 	    CPU_FTR_NOEXECUTE)
+@@ -385,7 +386,7 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_E500MC	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
+ 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
+-	    CPU_FTR_DBELL)
++	    CPU_FTR_DBELL | CPU_FTR_DEBUG_LVL_EXC)
+ #define CPU_FTRS_E5500	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
+ 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
+ 	    CPU_FTR_DBELL | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
 -- 
 1.6.0.2
