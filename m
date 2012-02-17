@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 164E2B6F9F
+ by ozlabs.org (Postfix) with ESMTPS id 16280B6F98
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:03 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: <kvm-ppc@vger.kernel.org> <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 05/30] KVM: PPC: booke: Move vm core init/destroy out of
- booke.c
-Date: Fri, 17 Feb 2012 17:56:33 +0100
-Message-Id: <1329497818-9729-6-git-send-email-agraf@suse.de>
+Subject: [PATCH 04/30] KVM: PPC: booke: add booke-level vcpu load/put
+Date: Fri, 17 Feb 2012 17:56:32 +0100
+Message-Id: <1329497818-9729-5-git-send-email-agraf@suse.de>
 In-Reply-To: <1329497818-9729-1-git-send-email-agraf@suse.de>
 References: <1329497818-9729-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -25,75 +24,92 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-e500mc will want to do lpid allocation/deallocation here.
+This gives us a place to put load/put actions that correspond to
+code that is booke-specific but not specific to a particular core.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/44x.c   |    9 +++++++++
- arch/powerpc/kvm/booke.c |    9 ---------
- arch/powerpc/kvm/e500.c  |    9 +++++++++
- 3 files changed, 18 insertions(+), 9 deletions(-)
+ arch/powerpc/kvm/44x.c   |    3 +++
+ arch/powerpc/kvm/booke.c |    8 ++++++++
+ arch/powerpc/kvm/booke.h |    3 +++
+ arch/powerpc/kvm/e500.c  |    3 +++
+ 4 files changed, 17 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index 879a1a7..50e7dbc 100644
+index 7b612a7..879a1a7 100644
 --- a/arch/powerpc/kvm/44x.c
 +++ b/arch/powerpc/kvm/44x.c
-@@ -163,6 +163,15 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+@@ -29,15 +29,18 @@
+ #include <asm/kvm_ppc.h>
+ 
+ #include "44x_tlb.h"
++#include "booke.h"
+ 
+ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
++	kvmppc_booke_vcpu_load(vcpu, cpu);
+ 	kvmppc_44x_tlb_load(vcpu);
  }
  
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
-+
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- static int __init kvmppc_44x_init(void)
+ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
  {
- 	int r;
+ 	kvmppc_44x_tlb_put(vcpu);
++	kvmppc_booke_vcpu_put(vcpu);
+ }
+ 
+ int kvmppc_core_check_processor_compat(void)
 diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index a2456c7..2ee9bae 100644
+index ee9e1ee..a2456c7 100644
 --- a/arch/powerpc/kvm/booke.c
 +++ b/arch/powerpc/kvm/booke.c
-@@ -932,15 +932,6 @@ void kvmppc_core_commit_memory_region(struct kvm *kvm,
- {
+@@ -968,6 +968,14 @@ void kvmppc_decrementer_func(unsigned long data)
+ 	kvmppc_set_tsr_bits(vcpu, TSR_DIS);
  }
  
--int kvmppc_core_init_vm(struct kvm *kvm)
--{
--	return 0;
--}
--
--void kvmppc_core_destroy_vm(struct kvm *kvm)
--{
--}
--
- void kvmppc_set_tcr(struct kvm_vcpu *vcpu, u32 new_tcr)
++void kvmppc_booke_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
++{
++}
++
++void kvmppc_booke_vcpu_put(struct kvm_vcpu *vcpu)
++{
++}
++
+ int __init kvmppc_booke_init(void)
  {
- 	vcpu->arch.tcr = new_tcr;
+ 	unsigned long ivor[16];
+diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
+index 2fe2027..05d1d99 100644
+--- a/arch/powerpc/kvm/booke.h
++++ b/arch/powerpc/kvm/booke.h
+@@ -71,4 +71,7 @@ void kvmppc_save_guest_spe(struct kvm_vcpu *vcpu);
+ /* high-level function, manages flags, host state */
+ void kvmppc_vcpu_disable_spe(struct kvm_vcpu *vcpu);
+ 
++void kvmppc_booke_vcpu_load(struct kvm_vcpu *vcpu, int cpu);
++void kvmppc_booke_vcpu_put(struct kvm_vcpu *vcpu);
++
+ #endif /* __KVM_BOOKE_H__ */
 diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 2d5fe04..ac6c9ae 100644
+index ddcd896..2d5fe04 100644
 --- a/arch/powerpc/kvm/e500.c
 +++ b/arch/powerpc/kvm/e500.c
-@@ -226,6 +226,15 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
+@@ -36,6 +36,7 @@ void kvmppc_core_load_guest_debugstate(struct kvm_vcpu *vcpu)
+ 
+ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
++	kvmppc_booke_vcpu_load(vcpu, cpu);
+ 	kvmppc_e500_tlb_load(vcpu, cpu);
  }
  
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
+@@ -47,6 +48,8 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+ 	if (vcpu->arch.shadow_msr & MSR_SPE)
+ 		kvmppc_vcpu_disable_spe(vcpu);
+ #endif
 +
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- static int __init kvmppc_e500_init(void)
- {
- 	int r, i;
++	kvmppc_booke_vcpu_put(vcpu);
+ }
+ 
+ int kvmppc_core_check_processor_compat(void)
 -- 
 1.6.0.2
