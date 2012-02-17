@@ -1,26 +1,23 @@
-Return-Path: <B37022@freescale.com>
-Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe005.messaging.microsoft.com
- [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <r58472@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B14C1007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 14:54:46 +1100 (EST)
-From: Pan Jiafei-B37022 <B37022@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH] powerpc/usb: fix bug of kernel hang when initializing usb
-Date: Fri, 17 Feb 2012 03:54:38 +0000
-Message-ID: <4F9F958A64F25C4DA463F3D6931E53314082C5@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
- <1329433132.2892.30.camel@pasglop> <1329436955.2892.32.camel@pasglop>
- <3F453DDFF675A64A89321A1F3528102170A6FF@039-SN1MPN1-004.039d.mgd.msft.net>
- <4F9F958A64F25C4DA463F3D6931E533140828E@039-SN1MPN1-003.039d.mgd.msft.net>
- <1329450178.2892.50.camel@pasglop>
-In-Reply-To: <1329450178.2892.50.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 5CC88B6FCB
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Feb 2012 15:33:01 +1100 (EST)
+From: Li Yang-R58472 <r58472@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
+ from configurable
+Date: Fri, 17 Feb 2012 04:32:53 +0000
+Message-ID: <94F013E7935FF44C83EBE7784D62AD3F057427B6@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
+ <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
+In-Reply-To: <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Cc: Liu Shengzhou-B36685 <B36685@freescale.com>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBGcmlkYXksIEZl
-YnJ1YXJ5IDE3LCAyMDEyIDExOjQzIEFNDQo+IFRvOiBQYW4gSmlhZmVpLUIzNzAyMg0KPiBDYzog
-TGl1IFNoZW5nemhvdS1CMzY2ODU7IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBj
-LQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSRTogW1BBVENIXSBwb3dlcnBj
-L3VzYjogZml4IGJ1ZyBvZiBrZXJuZWwgaGFuZyB3aGVuDQo+IGluaXRpYWxpemluZyB1c2INCj4g
-DQo+IE9uIEZyaSwgMjAxMi0wMi0xNyBhdCAwMzoyMCArMDAwMCwgUGFuIEppYWZlaS1CMzcwMjIg
-d3JvdGU6DQo+ID4gRllJLCBJIG9uY2UgZml4ZWQgdGhpcyBpc3N1ZSB3aGVuIGJhY2twb3J0IFA1
-MDIwIEJTUCBmb3IgV1IgTGludXgsIFRoZQ0KPiA+IGZvbGxvd2luZyBpcyB0aGUgcGF0Y2ggd2hp
-Y2ggSSBoYXZlIHN1Ym1pdHRlZCB0byBsaW51eGJqLWludGVybmFsLg0KPiANCj4gU2hvdWxkIEkg
-anVzdCBhcHBseSB0aGlzIHRvIHVwc3RyZWFtID8NCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiAN
-CltQYW4gSmlhZmVpLUIzNzAyMl0gDQpPaywgdGhhbmtzLCBJIHdpbGwgcmVzZW5kIHRoZSBwYXRj
-aCBmb3JtYWxseSENCg0KQmVzdCBSZWdhcmRzLg0KSmlhZmVpLg0KDQo+ID4gRnJvbTogbGludXhi
-ai1pbnRlcm5hbC1ib3VuY2VzQGxpbnV4LmZyZWVzY2FsZS5uZXQNCj4gPiBbbWFpbHRvOmxpbnV4
-YmotaW50ZXJuYWwtYm91bmNlc0BsaW51eC5mcmVlc2NhbGUubmV0XSBPbiBCZWhhbGYgT2YgUGFu
-DQo+ID4gSmlhZmVpLUIzNzAyMg0KPiA+IFNlbnQ6IEZyaWRheSwgRGVjZW1iZXIgMTYsIDIwMTEg
-MTI6NDkgUE0NCj4gPiBUbzogbGludXhiai1pbnRlcm5hbEBsaW51eC5mcmVlc2NhbGUubmV0DQo+
-ID4gQ2M6IFBhbiBKaWFmZWktQjM3MDIyDQo+ID4gU3ViamVjdDogW0xpbnV4YmotaW50ZXJuYWxd
-IFtQQVRDSF0gVVNCOiBlaGNpLWZzbDogVHVybiBvbiBjYWNoZQ0KPiA+IHNub29waW5nIG9uIE1Q
-Qzh4eHgNCj4gPg0KPiA+IElmIGEgTVBDOHh4eCB3YXMgYmVpbmcgdXNlZCwgJ2hhdmVfc3lzaWZf
-cmVncycgc2hvdWxkIGJlIHNldCBhbmQgaXQNCj4gPiBzaG91bGQgc2V0dXAgY2FjaGUgc25vb3Bp
-bmcgZm9yIGFsbCB0aGUgNEdCIHNwYWNlIG9uIGJvdGggUFBDMzIgYW5kDQo+ID4gUFBDNjQuDQo+
-ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBQYW4gSmlhZmVpIDxKaWFmZWkuUGFuQGZyZWVzY2FsZS5j
-b20+DQo+ID4gLS0tDQo+ID4gZHJpdmVycy91c2IvaG9zdC9laGNpLWZzbC5jIHwgICAyMyArKysr
-KysrKysrLS0tLS0tLS0tLS0tLQ0KPiA+IDEgZmlsZXMgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygr
-KSwgMTMgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy91c2IvaG9z
-dC9laGNpLWZzbC5jIGIvZHJpdmVycy91c2IvaG9zdC9laGNpLWZzbC5jDQo+ID4gaW5kZXggOTA1
-MzRjYy4uZWUxNGZhNyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3VzYi9ob3N0L2VoY2ktZnNs
-LmMNCj4gPiArKysgYi9kcml2ZXJzL3VzYi9ob3N0L2VoY2ktZnNsLmMNCj4gPiBAQCAtMjYwLDIx
-ICsyNjAsMTggQEAgc3RhdGljIHZvaWQgZWhjaV9mc2xfdXNiX3NldHVwKHN0cnVjdCBlaGNpX2hj
-ZA0KPiAqZWhjaSkNCj4gPiAgICAgaWYgKHBkYXRhLT5oYXZlX3N5c2lmX3JlZ3MpIHsNCj4gPiAg
-ICAgICAgICAgdGVtcCA9IGluX2JlMzIobm9uX2VoY2kgKyBGU0xfU09DX1VTQl9DVFJMKTsNCj4g
-PiAgICAgICAgICAgb3V0X2JlMzIobm9uX2VoY2kgKyBGU0xfU09DX1VTQl9DVFJMLCB0ZW1wIHwg
-MHgwMDAwMDAwNCk7DQo+ID4gLSAgICAgICAgICBvdXRfYmUzMihub25fZWhjaSArIEZTTF9TT0Nf
-VVNCX1NOT09QMSwgMHgwMDAwMDAxYik7DQo+ID4gLSAgICB9DQo+ID4NCj4gPiAtI2lmIGRlZmlu
-ZWQoQ09ORklHX1BQQzMyKSAmJiAhZGVmaW5lZChDT05GSUdfTk9UX0NPSEVSRU5UX0NBQ0hFKQ0K
-PiA+IC0gICAgLyoNCj4gPiAtICAgICogVHVybiBvbiBjYWNoZSBzbm9vcGluZyBoYXJkd2FyZSwg
-c2luY2Ugc29tZSBQb3dlclBDIHBsYXRmb3Jtcw0KPiA+IC0gICAgKiB3aG9sbHkgcmVseSBvbiBo
-YXJkd2FyZSB0byBkZWFsIHdpdGggY2FjaGUgY29oZXJlbnQNCj4gPiAtICAgICovDQo+ID4gKyAg
-ICAgICAgICAvKg0KPiA+ICsgICAgICAgICAgKiBUdXJuIG9uIGNhY2hlIHNub29waW5nIGhhcmR3
-YXJlLCBzaW5jZSBzb21lIFBvd2VyUEMNCj4gcGxhdGZvcm1zDQo+ID4gKyAgICAgICAgICAqIHdo
-b2xseSByZWx5IG9uIGhhcmR3YXJlIHRvIGRlYWwgd2l0aCBjYWNoZSBjb2hlcmVudA0KPiA+ICsg
-ICAgICAgICAgKi8NCj4gPg0KPiA+IC0gICAgLyogU2V0dXAgU25vb3BpbmcgZm9yIGFsbCB0aGUg
-NEdCIHNwYWNlICovDQo+ID4gLSAgICAvKiBTTk9PUDEgc3RhcnRzIGZyb20gMHgwLCBzaXplIDJH
-ICovDQo+ID4gLSAgICBvdXRfYmUzMihub25fZWhjaSArIEZTTF9TT0NfVVNCX1NOT09QMSwgMHgw
-IHwgU05PT1BfU0laRV8yR0IpOw0KPiA+IC0gICAgLyogU05PT1AyIHN0YXJ0cyBmcm9tIDB4ODAw
-MDAwMDAsIHNpemUgMkcgKi8NCj4gPiAtICAgIG91dF9iZTMyKG5vbl9laGNpICsgRlNMX1NPQ19V
-U0JfU05PT1AyLCAweDgwMDAwMDAwIHwNCj4gU05PT1BfU0laRV8yR0IpOw0KPiA+IC0jZW5kaWYN
-Cj4gPiArICAgICAgICAgIC8qIFNldHVwIFNub29waW5nIGZvciBhbGwgdGhlIDRHQiBzcGFjZSAq
-Lw0KPiA+ICsgICAgICAgICAgLyogU05PT1AxIHN0YXJ0cyBmcm9tIDB4MCwgc2l6ZSAyRyAqLw0K
-PiA+ICsgICAgICAgICAgb3V0X2JlMzIobm9uX2VoY2kgKyBGU0xfU09DX1VTQl9TTk9PUDEsIDB4
-MCB8DQo+IFNOT09QX1NJWkVfMkdCKTsNCj4gPiArICAgICAgICAgIC8qIFNOT09QMiBzdGFydHMg
-ZnJvbSAweDgwMDAwMDAwLCBzaXplIDJHICovDQo+ID4gKyAgICAgICAgICBvdXRfYmUzMihub25f
-ZWhjaSArIEZTTF9TT0NfVVNCX1NOT09QMiwgMHg4MDAwMDAwMCB8DQo+IFNOT09QX1NJWkVfMkdC
-KTsNCj4gPiArICAgIH0NCj4gPg0KPiA+ICAgICAgaWYgKChwZGF0YS0+b3BlcmF0aW5nX21vZGUg
-PT0gRlNMX1VTQjJfRFJfSE9TVCkgfHwNCj4gPiAgICAgICAgICAgICAgICAocGRhdGEtPm9wZXJh
-dGluZ19tb2RlID09IEZTTF9VU0IyX0RSX09URykpDQo+IA0KPiANCg0K
+>Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents
+>PHYS_64BIT from configurable
+>
+>
+>On Feb 16, 2012, at 6:10 AM, Li Yang wrote:
+>
+>> Fix the problem that large physical address support cannot be disabled
+>> when some platforms which only provides 36-bit support are selected.
+>> According to the philosophy of kernel config enabling a platform
+>> support doesn't mean the kernel is only running on that platform.
+>> Remove the auto selection of PHYS_64BIT option for these platforms.
+>> They will need to use a 36bit default config that selects PHYS_64BIT
+>> explicitly.
+>>
+>> The reason why we need to keep PHYS_64BIT option configurable is that
+>> enabling it cause negative performance impact on various aspects like
+>> TLB miss and physical address manipulating.  We should not enable it
+>> unless really needed, e.g. use large memory of 4GB or bigger.
+>>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> arch/powerpc/platforms/85xx/Kconfig |    6 ------
+>> 1 files changed, 0 insertions(+), 6 deletions(-)
+>
+>Nak, this isn't correct.
+>
+>For some of these platforms like P2041RDB, P3041DS, P3060QDS, P4080DS, &
+>P5020DS only a 36-bit physical address map is supported by u-boot and the
+>device tree.  This was a decision that was made to NOT support 32-bit
+>address map for these boards and accept the performance implication of it
+>to reduce the # of builds, etc.
+
+Ok.  Although personally I don't think # of builds matters that much.
+
+>
+>Additionally, outside of maybe P2041RDB I believe the majority of these
+>boards ship with 4G of DDR (but that off the top of my head) and thus
+>require the 36-bit / PHYS_64BIT support to be enabled.
+
+I know that current support of DPAA boards requires 36-bit.  But I don't th=
+ink they need to select the PHYS_64BIT option directly and make it not conf=
+igurable.  It's conflicting with the logic that enabling a platform support=
+ doesn't mean the kernel is only running on that platform.  Btw: what's you=
+r recommendations on solving this?
+
+- Leo
