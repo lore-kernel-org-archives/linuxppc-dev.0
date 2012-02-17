@@ -1,23 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe001.messaging.microsoft.com
- [213.199.154.139])
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe005.messaging.microsoft.com
+ [213.199.154.143])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6F896101673
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 05:21:18 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Fan Zhicheng-B32736 <B32736@freescale.com>
-Subject: Re: [PATCH 2/2 v5] powerpc/85xx: Abstract common define of signal
- multiplex control for qe
-Date: Fri, 17 Feb 2012 18:21:06 +0000
-Message-ID: <CAOZdJXUi9_MNuJytYuaHmi2HUCmRV8ePbWdo2Jp4N4D2L8=ewQ@mail.gmail.com>
-References: <1329289091-26231-1-git-send-email-B32736@freescale.com>
- <1329289091-26231-2-git-send-email-B32736@freescale.com>
-In-Reply-To: <1329289091-26231-2-git-send-email-B32736@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by ozlabs.org (Postfix) with ESMTPS id 2A865B6F62
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2012 05:59:09 +1100 (EST)
+Message-ID: <4F3EA36E.50109@freescale.com>
+Date: Fri, 17 Feb 2012 12:58:54 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Liu Yu-B13201 <B13201@freescale.com>
+Subject: Re: [PATCH v4 1/3] KVM: PPC: epapr: Factor out the epapr init
+References: <1329384365-4028-1-git-send-email-yu.liu@freescale.com>
+ <4F3D3933.3020501@freescale.com>
+ <4CA99838F21AB847ACC344051E2317090571F056@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <4CA99838F21AB847ACC344051E2317090571F056@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 15, 2012 at 12:58 AM, Zhicheng Fan <B32736@freescale.com> wrote=
-:
+On 02/17/2012 04:03 AM, Liu Yu-B13201 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Friday, February 17, 2012 1:13 AM
+>> To: Liu Yu-B13201
+>> Cc: agraf@suse.de; kvm-ppc@vger.kernel.org; kvm@vger.kernel.org;
+>> linuxppc-dev@ozlabs.org; Wood Scott-B07421
+>> Subject: Re: [PATCH v4 1/3] KVM: PPC: epapr: Factor out the epapr init
+>>
+>> On 02/16/2012 03:26 AM, Liu Yu wrote:
+>>> from the kvm guest paravirt init code.
+>>>
+>>> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+>>> ---
+>>> v4:
+>>> 1. code cleanup
+>>> 2. move kvm_hypercall_start() to epapr_hypercall_start()
+>>>
+>>>  arch/powerpc/Kconfig                    |    4 ++
+>>>  arch/powerpc/include/asm/epapr_hcalls.h |    2 +
+>>>  arch/powerpc/kernel/Makefile            |    1 +
+>>>  arch/powerpc/kernel/epapr.S             |   25 ++++++++++++++++
+>>>  arch/powerpc/kernel/epapr_para.c        |   49
+>> +++++++++++++++++++++++++++++++
+>>>  arch/powerpc/kernel/kvm.c               |   28 ++----------------
+>>>  arch/powerpc/kernel/kvm_emul.S          |   10 ------
+>>>  arch/powerpc/kvm/Kconfig                |    1 +
+>>>  8 files changed, 85 insertions(+), 35 deletions(-)  create mode
+>>> 100644 arch/powerpc/kernel/epapr.S  create mode 100644
+>>> arch/powerpc/kernel/epapr_para.c
+>>
+>> The comment about spelling out "paravirt" wasnn't meant to be restricted
+>> to the kconfig symbol.  There are lots of words that begin with "para",
+>> and ePAPR isn't just about virtualization.
+> 
+> What do you mean? Do you suggest that we should name it epapr_paravirt.c?
 
-> @@ -114,6 +114,24 @@ struct ccsr_guts_86xx {
-> =A0 =A0 =A0 =A0__be32 =A0srds2cr1; =A0 =A0 =A0 /* 0x.0f44 - SerDes2 Contr=
-ol Register 0 */
-> =A0} __attribute__ ((packed));
->
-> +#ifdef CONFIG_PPC_85xx
-> +
+Yes, and likewise with variables and functions and such (at least
+anything that is exposed outside a single file).
 
-Remove this #ifdef.  It doesn't really help, and it makes things more
-complicated.
-
-> +/* Alternate function signal multiplex control */
-> +#define MPC85xx_PMUXCR_QE0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00008000
-> +#define MPC85xx_PMUXCR_QE2 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00002000
-> +#define MPC85xx_PMUXCR_QE3 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00001000
-> +#define MPC85xx_PMUXCR_QE4 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000800
-> +#define MPC85xx_PMUXCR_QE5 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000400
-> +#define MPC85xx_PMUXCR_QE6 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000200
-> +#define MPC85xx_PMUXCR_QE7 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000100
-> +#define MPC85xx_PMUXCR_QE8 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000080
-> +#define MPC85xx_PMUXCR_QE9 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000040
-> +#define MPC85xx_PMUXCR_QE10 =A0 =A0 =A0 =A0 =A0 =A0 0x00000020
-> +#define MPC85xx_PMUXCR_QE11 =A0 =A0 =A0 =A0 =A0 =A0 0x00000010
-> +#define MPC85xx_PMUXCR_QE12 =A0 =A0 =A0 =A0 =A0 =A0 0x00000008
-
-#define MPC85xx_PMUXCR_QE(x) (0x8000 >> (x))
-
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("mpc=
-85xx-rdb: could not map global utilties register!\n");
-
-No exclamation marks (!) in kernel messages.
-
-You misspelled "utilities".
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+-Scott
