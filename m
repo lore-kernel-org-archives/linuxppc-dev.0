@@ -1,18 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 009CD100839
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:12 +1100 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 26/30] KVM: PPC: bookehv: fix exit timing
-Date: Fri, 17 Feb 2012 18:13:53 +0100
-Message-Id: <1329498837-11717-27-git-send-email-agraf@suse.de>
-In-Reply-To: <1329498837-11717-1-git-send-email-agraf@suse.de>
-References: <1329498837-11717-1-git-send-email-agraf@suse.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+Return-Path: <b-cousson@ti.com>
+Message-ID: <4F3E9187.9080308@ti.com>
+Date: Fri, 17 Feb 2012 18:42:31 +0100
+From: "Cousson, Benoit" <b-cousson@ti.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v5 00/27] irq_domain generalization and rework
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <20120216145219.0f1c1b98.akpm@linux-foundation.org>
+In-Reply-To: <20120216145219.0f1c1b98.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>, Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using exit timing stats, we clobber r9 in the NEED_EMU case,
-so better move that part down a few lines and fix it that way.
+Hi Grant,
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
+On 2/16/2012 11:52 PM, Andrew Morton wrote:
+> On Thu, 16 Feb 2012 02:09:01 -0700
+> Grant Likely<grant.likely@secretlab.ca>  wrote:
+> 
+>>
+>> This series generalizes the "irq_host" infrastructure from powerpc
+>> so that it can be used by all architectures and renames it to "irq_domain".
+> 
+> drivers/mfd/twl-core.c is fairly horked on i386 allmodconfig:
+> 
+> drivers/mfd/twl-core.c: In function 'twl_probe':
+> drivers/mfd/twl-core.c:1218: error: implicit declaration of function 'irq_alloc_descs'
+> drivers/mfd/twl-core.c:1226: error: implicit declaration of function 'irq_domain_add_legacy'
+> drivers/mfd/twl-core.c:1227: error: 'irq_domain_simple_ops' undeclared (first use in this function)
+> drivers/mfd/twl-core.c:1227: error: (Each undeclared identifier is reported only once
+> drivers/mfd/twl-core.c:1227: error: for each function it appears in.)
+> 
+> 
+> This is today's linux-next so it has rmk's "ARM: omap: fix broken
+> twl-core dependencies and ifdefs" in there, which looks like it
+> attempts to repair this stuff.
+
+If we cannot assume this driver will be used only on architecture that does support IRQ_DOMAIN, we have to keep the #ifdef and then add the missing linux/irq.h.
+
+Since this driver is using IRQ_DOMAIN only for Device Tree support, we can still avoid using irq_domain_add_legacy for the legacy non-DT case.
+That's too bad because I was expecting to use irq_domain to clean the cascading IRQ scheme used in that driver, but that can wait.
+
+The fix is trivial, but here it is just in case.
+
+Regards,
+Benoit
+
+
 ---
- arch/powerpc/kvm/bookehv_interrupts.S |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+>From 0faf51f8475025260d5db808b1651a38b409803d Mon Sep 17 00:00:00 2001
+From: Benoit Cousson <b-cousson@ti.com>
+Date: Fri, 17 Feb 2012 18:13:31 +0100
+Subject: [PATCH] mfd: twl-core: Fix IRQ_DOMAIN dependency
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index e0f484c..9cf7ed7 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -83,10 +83,6 @@
- 	stw	r10, VCPU_GUEST_PID(r4)
- 	mtspr	SPRN_PID, r8
+TWL chips might be potentially used on architecture that does not support
+ird_domain yet.
+
+Do not call ird_domain API in that case.
+
+Include <linux/irq.h> directly since it will not be included anymore by
+<linux/irqdomain.h> if !IRQ_DOMAIN.
  
--	.if	\flags & NEED_EMU
--	lwz	r9, VCPU_KVM(r4)
--	.endif
--
- #ifdef CONFIG_KVM_EXIT_TIMING
- 	/* save exit time */
- 1:	mfspr	r7, SPRN_TBRU
-@@ -98,6 +94,10 @@
- 	PPC_STL	r9, VCPU_TIMING_EXIT_TBU(r4)
- #endif
+Signed-off-by: Benoit Cousson <b-cousson@ti.com>
+---
+ drivers/mfd/twl-core.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
+index 59888f5..61441e2 100644
+--- a/drivers/mfd/twl-core.c
++++ b/drivers/mfd/twl-core.c
+@@ -38,6 +38,7 @@
+ #include <linux/of.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
++#include <linux/irq.h>
+ #include <linux/irqdomain.h>
  
-+	.if	\flags & NEED_EMU
-+	lwz	r9, VCPU_KVM(r4)
-+	.endif
-+
- 	oris	r8, r6, MSR_CE@h
- #ifndef CONFIG_64BIT
- 	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
+ #include <linux/regulator/machine.h>
+@@ -1237,8 +1238,10 @@ twl_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 
+ 	pdata->irq_base = status;
+ 	pdata->irq_end = pdata->irq_base + nr_irqs;
++#ifdef IRQ_DOMAIN
+ 	irq_domain_add_legacy(node, nr_irqs, pdata->irq_base, 0,
+ 			      &irq_domain_simple_ops, NULL);
++#endif
+ 
+ 	if (i2c_check_functionality(client->adapter, I2C_FUNC_I2C) == 0) {
+ 		dev_dbg(&client->dev, "can't talk I2C?\n");
 -- 
-1.6.0.2
+1.7.5.4
