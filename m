@@ -1,26 +1,22 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe003.messaging.microsoft.com
+ [213.199.154.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0EB1E1007D5
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2012 10:01:16 +1100 (EST)
-Message-ID: <4F3EDC35.5070904@freescale.com>
-Date: Fri, 17 Feb 2012 17:01:09 -0600
-From: Timur Tabi <b04825@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6C11CB6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 10:17:16 +1100 (EST)
+Message-ID: <4F3EDFEE.3040106@freescale.com>
+Date: Fri, 17 Feb 2012 17:17:02 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
- from configurable
-References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
- <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
- <CAOZdJXWQzxWXhU_4WmeKXx1mfTxGQx=-JZx0AkZcF7CmRrp1gQ@mail.gmail.com>
- <1329513033.3980.1.camel@pasglop>
-In-Reply-To: <1329513033.3980.1.camel@pasglop>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 19/30] KVM: PPC: e500mc: add load inst fixup
+References: <1329498837-11717-1-git-send-email-agraf@suse.de>
+ <1329498837-11717-20-git-send-email-agraf@suse.de>
+In-Reply-To: <1329498837-11717-20-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +26,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So I noticed something else.  PHYS_64BIT is not defined in
-mpc85xx_smp_defconfig.  This means that if we want to build a 36-bit
-kernel, we need to have "select PHYS_64BIT" in the Kconfig for that board.
- This is what we have today for the P1022DS.
+On 02/17/2012 11:13 AM, Alexander Graf wrote:
+> There's always a chance we're unable to read a guest instruction. The guest
+> could have its TLB mapped execute-, but not readable, something odd happens
+> and our TLB gets flushed. So it's a good idea to be prepared for that case
+> and have a fallback that allows us to fix things up in that case.
+> 
+> Add fixup code that keeps guest code from potentially crashing our host kernel.
+> 
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+> ---
+>  arch/powerpc/kvm/bookehv_interrupts.S |   30 +++++++++++++++++++++++++++++-
+>  1 files changed, 29 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+> index 63023ae..e0f484c 100644
+> --- a/arch/powerpc/kvm/bookehv_interrupts.S
+> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
+> @@ -28,6 +28,7 @@
+>  #include <asm/asm-compat.h>
+>  #include <asm/asm-offsets.h>
+>  #include <asm/bitsperlong.h>
+> +#include <asm/thread_info.h>
+>  
+>  #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
+>  
+> @@ -171,9 +172,36 @@
+>  	PPC_STL	r30, VCPU_GPR(r30)(r4)
+>  	PPC_STL	r31, VCPU_GPR(r31)(r4)
+>  	mtspr	SPRN_EPLC, r8
+> +
+> +	/* disable preemption, so we are sure we hit the fixup handler */
+> +#ifdef CONFIG_PPC64
+> +	clrrdi	r8,r1,THREAD_SHIFT
+> +#else
+> +	rlwinm	r8,r1,0,0,31-THREAD_SHIFT       /* current thread_info */
+> +#endif
+> +        lwz     r6,TI_PREEMPT(r8)
+> +	addi	r7,r6,1
+> +        stw     r7,TI_PREEMPT(r8)
 
-However, that select statement also means that we can't build a 32-bit
-kernel.  This is a problem for mpc85xx_defconfig, because that defconfig
-includes support for the MPC8540ADS.  The 8540 has an e500v1 core which
-doesn't support MAS7 (i.e. no 36-bit physical addresses).
+Whitespace
 
-So any patch that removes "select PHYS_64BIT" from an mpc85xx_defconfig
-board must also turn on that option in the defconfig.  The patches from me
-and Leo don't do that.
+The preempt count had better already be zero here, so we can just store
+1 now, and 0 later, and avoid the stall on load results.
 
+> +
+>  	isync
+> -	lwepx	r9, 0, r5
+> +
+> +	/*
+> +	 * In case the read goes wrong, we catch it and write an invalid value
+> +	 * in LAST_INST instead.
+> +	 */
+> +1:	lwepx	r9, 0, r5
+> +2:
+> +.section .fixup, "ax"
+> +3:	li r9, KVM_INST_FETCH_FAILED
+> +	b 2b
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Please tab after the opcode
+
+> +.previous
+> +.section __ex_table,"a"
+> +	PPC_LONG_ALIGN
+> +	PPC_LONG 1b,3b
+> +.previous
+> +
+>  	mtspr	SPRN_EPLC, r3
+> +        stw     r6,TI_PREEMPT(r8)
+>  	stw	r9, VCPU_LAST_INST(r4)
+
+Whitespace
+
+-Scott
