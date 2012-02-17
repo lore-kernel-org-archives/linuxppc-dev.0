@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3A3111007D5
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2012 08:10:48 +1100 (EST)
-Message-ID: <1329513033.3980.1.camel@pasglop>
-Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
- from configurable
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Date: Sat, 18 Feb 2012 08:10:33 +1100
-In-Reply-To: <CAOZdJXWQzxWXhU_4WmeKXx1mfTxGQx=-JZx0AkZcF7CmRrp1gQ@mail.gmail.com>
-References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
- <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
- <CAOZdJXWQzxWXhU_4WmeKXx1mfTxGQx=-JZx0AkZcF7CmRrp1gQ@mail.gmail.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 938CA100840
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 08:12:13 +1100 (EST)
+Message-ID: <4F3EC2A1.7080702@freescale.com>
+Date: Fri, 17 Feb 2012 15:12:01 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 13/30] KVM: PPC: booke: category E.HV (GS-mode) support
+References: <1329498837-11717-1-git-send-email-agraf@suse.de>
+ <1329498837-11717-14-git-send-email-agraf@suse.de>
+In-Reply-To: <1329498837-11717-14-git-send-email-agraf@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +26,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-02-17 at 16:22 +0000, Tabi Timur-B04825 wrote:
-> Was this a Freescale internal decision, or is this a generic 85xx
-> decision?
+On 02/17/2012 11:13 AM, Alexander Graf wrote:
+> From: Scott Wood <scottwood@freescale.com>
 > 
-> For the record, I'm in favor in leaving out support for 32-bit address
-> map in the upstream kernel, and having it be an option on the SDK
-> only.  However, in order to do that, we cannot have "select
-> PHYS_64BIT" in the Kconfigs.  It needs to be in the defconfigs
-> instead.  Putting it in the defconfig will eliminate the need to have
-> it in every Kconfig block, so I think that's an improvement.
+> Chips such as e500mc that implement category E.HV in Power ISA 2.06
+> provide hardware virtualization features, including a new MSR mode for
+> guest state.  The guest OS can perform many operations without trapping
+> into the hypervisor, including transitions to and from guest userspace.
 > 
-> Then the SDK can include a defconfig that does not have PHYS_64BIT
-> defined.  And the SDK can include 32-bit U-Boots and 32-bit device
-> trees for any board where Freescale determines there is a need.
+> Since we can use SRR1[GS] to reliably tell whether an exception came from
+> guest state, instead of messing around with IVPR, we use DO_KVM similarly
+> to book3s.
 > 
-> I think Leo's patch simplifies things for everyone. 
+> Current issues include:
+>  - Machine checks from guest state are not routed to the host handler.
+>  - The guest can cause a host oops by executing an emulated instruction
+>    in a page that lacks read permission.  Existing e500/4xx support has
+>    the same problem.
+> 
+> Includes work by Ashish Kalra <Ashish.Kalra@freescale.com>,
+> Varun Sethi <Varun.Sethi@freescale.com>, and
+> Liu Yu <yu.liu@freescale.com>.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> [agraf: remove pt_regs usage]
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+> ---
 
-Sorry, I fail to see how... it basically makes all those boards
-non-functional even when enabled...
+Thanks for picking this up!
 
-What's wrong with the current scheme ?
+> +static unsigned long get_guest_esr(struct kvm_vcpu *vcpu)
+> +{
+> +#ifdef CONFIG_KVM_BOOKE_HV
+> +	return mfspr(SPRN_ESR);
+> +#else
+> +	return vcpu->arch.shared->esr;
+> +#endif
+> +}
 
-Ben.
+s/SPRN_ESR/SPRN_GESR/
+
+>  int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>                         unsigned int exit_nr)
+>  {
+> -	enum emulation_result er;
+>  	int r = RESUME_HOST;
+>  
+>  	/* update before a new last_exit_type is rewritten */
+>  	kvmppc_update_timing_stats(vcpu);
+>  
+> +	switch (exit_nr) {
+> +	case BOOKE_INTERRUPT_EXTERNAL:
+> +		do_IRQ(current->thread.regs);
+> +		break;
+
+What will current->thread.regs point to here?  Something on the stack
+from the last normal host exception entry?
+
+We probably want to create a pt_regs on the stack and at least provide
+PC, LR, and r1 for perfmon interrupts and such.
+
+> @@ -384,30 +558,56 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  
+>  	switch (exit_nr) {
+>  	case BOOKE_INTERRUPT_MACHINE_CHECK:
+> -		printk("MACHINE CHECK: %lx\n", mfspr(SPRN_MCSR));
+> -		kvmppc_dump_vcpu(vcpu);
+> -		r = RESUME_HOST;
+> +		kvm_resched(vcpu);
+> +		r = RESUME_GUEST;
+>  		break;
+
+Leave this bit out (proper machine check handling will come later).
+
+>  	case BOOKE_INTERRUPT_PROGRAM:
+> -		if (vcpu->arch.shared->msr & MSR_PR) {
+> +		if (vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) {
+>  			/* Program traps generated by user-level software must be handled
+>  			 * by the guest kernel. */
+>  			kvmppc_core_queue_program(vcpu, vcpu->arch.fault_esr);
+
+Should update the comment for why we're checking GS (i.e. we get a
+different trap for emulation with GS-mode).
+
+> +#define SET_VCPU(vcpu)		\
+> +        PPC_STL	vcpu, (THREAD + THREAD_KVM_VCPU)(r2)
+
+Change spaces to tab before PPC_STL
+
+> +#define LONGBYTES		(BITS_PER_LONG / 8)
+> +
+> +#define VCPU_GPR(n)     	(VCPU_GPRS + (n * LONGBYTES))
+> +#define VCPU_GUEST_SPRG(n)	(VCPU_GUEST_SPRGS + (n * LONGBYTES))
+> +
+> +/* The host stack layout: */
+> +#define HOST_R1         (0 * LONGBYTES) /* Implied by stwu. */
+> +#define HOST_CALLEE_LR  (1 * LONGBYTES)
+> +#define HOST_RUN        (2 * LONGBYTES) /* struct kvm_run */
+> +/*
+> + * r2 is special: it holds 'current', and it made nonvolatile in the
+> + * kernel with the -ffixed-r2 gcc option.
+> + */
+> +#define HOST_R2         (3 * LONGBYTES)
+> +#define HOST_NV_GPRS    (4 * LONGBYTES)
+> +#define HOST_NV_GPR(n)  (HOST_NV_GPRS + ((n - 14) * LONGBYTES))
+> +#define HOST_MIN_STACK_SIZE (HOST_NV_GPR(31) + LONGBYTES)
+> +#define HOST_STACK_SIZE ((HOST_MIN_STACK_SIZE + 15) & ~15) /* Align. */
+> +#define HOST_STACK_LR   (HOST_STACK_SIZE + LONGBYTES) /* In caller stack frame. */
+> +
+> +#define NEED_EMU		0x00000001 /* emulation -- save nv regs */
+> +#define NEED_DEAR		0x00000002 /* save faulting DEAR */
+> +#define NEED_ESR		0x00000004 /* save faulting ESR */
+> +
+> +/*
+> + * On entry:
+> + * r4 = vcpu, r5 = srr0, r6 = srr1
+> + * saved in vcpu: cr, ctr, r3-r13
+> + */
+> +.macro kvm_handler_common intno, srr0, flags
+> +	mfspr	r10, SPRN_PID
+> +	lwz	r8, VCPU_HOST_PID(r4)
+> +	PPC_LL	r11, VCPU_SHARED(r4)
+> +	PPC_STL	r14, VCPU_GPR(r14)(r4) /* We need a non-volatile GPR. */
+> +	li	r14, \intno
+> +
+> +	stw	r10, VCPU_GUEST_PID(r4)
+> +	mtspr	SPRN_PID, r8
+> +
+> +	.if	\flags & NEED_EMU
+> +	lwz	r9, VCPU_KVM(r4)
+> +	.endif
+> +
+> +#ifdef CONFIG_KVM_EXIT_TIMING
+> +	/* save exit time */
+> +1:	mfspr	r7, SPRN_TBRU
+> +	mfspr	r8, SPRN_TBRL
+> +	mfspr	r9, SPRN_TBRU
+> +	cmpw	r9, r7
+> +	PPC_STL	r8, VCPU_TIMING_EXIT_TBL(r4)
+> +	bne-	1b
+> +	PPC_STL	r9, VCPU_TIMING_EXIT_TBU(r4)
+> +#endif
+
+As you pointed out to me last time, r9 is clobbered if exit timing is
+enabled (but see below, the load of VCPU_KVM can be removed along with
+the subsequent load of LVM_LPID(r9)).
+
+> +	oris	r8, r6, MSR_CE@h
+> +#ifndef CONFIG_64BIT
+> +	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
+> +#else
+> +	std	r6, (VCPU_SHARED_MSR)(r11)
+> +#endif
+> +	ori	r8, r8, MSR_ME | MSR_RI
+> +	PPC_STL	r5, VCPU_PC(r4)
+> +
+> +	/*
+> +	 * Make sure CE/ME/RI are set (if appropriate for exception type)
+> +	 * whether or not the guest had it set.  Since mfmsr/mtmsr are
+> +	 * somewhat expensive, skip in the common case where the guest
+> +	 * had all these bits set (and thus they're still set if
+> +	 * appropriate for the exception type).
+> +	 */
+> +	cmpw	r6, r8
+> +	.if	\flags & NEED_EMU
+> +	lwz	r9, KVM_LPID(r9)
+> +	.endif
+
+Where do we use r9?  This is probably left over from something old.
+
+-Scott
