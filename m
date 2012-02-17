@@ -1,24 +1,25 @@
 Return-Path: <B37022@freescale.com>
-Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
- [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE010.bigfish.com (va3ehsobe003.messaging.microsoft.com
+ [216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C77411007DE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 14:20:34 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A6899B6FC3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 14:47:05 +1100 (EST)
 From: Pan Jiafei-B37022 <B37022@freescale.com>
-To: Liu Shengzhou-B36685 <B36685@freescale.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: RE: [PATCH] powerpc/usb: fix bug of kernel hang when initializing usb
-Date: Fri, 17 Feb 2012 03:20:18 +0000
-Message-ID: <4F9F958A64F25C4DA463F3D6931E533140828E@039-SN1MPN1-003.039d.mgd.msft.net>
+Date: Fri, 17 Feb 2012 03:46:52 +0000
+Message-ID: <4F9F958A64F25C4DA463F3D6931E53314082B1@039-SN1MPN1-003.039d.mgd.msft.net>
 References: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
  <1329433132.2892.30.camel@pasglop> <1329436955.2892.32.camel@pasglop>
  <3F453DDFF675A64A89321A1F3528102170A6FF@039-SN1MPN1-004.039d.mgd.msft.net>
-In-Reply-To: <3F453DDFF675A64A89321A1F3528102170A6FF@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+ <4F9F958A64F25C4DA463F3D6931E533140828E@039-SN1MPN1-003.039d.mgd.msft.net>
+ <1329450178.2892.50.camel@pasglop>
+In-Reply-To: <1329450178.2892.50.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+Cc: Liu Shengzhou-B36685 <B36685@freescale.com>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,142 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-FYI, I once fixed this issue when backport P5020 BSP for WR Linux, The foll=
-owing is the patch which I have submitted to linuxbj-internal.
-
-
-From: linuxbj-internal-bounces@linux.freescale.net [mailto:linuxbj-internal=
--bounces@linux.freescale.net] On Behalf Of Pan Jiafei-B37022
-Sent: Friday, December 16, 2011 12:49 PM
-To: linuxbj-internal@linux.freescale.net
-Cc: Pan Jiafei-B37022
-Subject: [Linuxbj-internal] [PATCH] USB: ehci-fsl: Turn on cache snooping o=
-n MPC8xxx
-
-If a MPC8xxx was being used, 'have_sysif_regs' should be set and
-it should setup cache snooping for all the 4GB space on both PPC32
-and PPC64.
-
-Signed-off-by: Pan Jiafei <Jiafei.Pan@freescale.com>
----
-drivers/usb/host/ehci-fsl.c |   23 ++++++++++-------------
-1 files changed, 10 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index 90534cc..ee14fa7 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -260,21 +260,18 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
-    if (pdata->have_sysif_regs) {
-          temp =3D in_be32(non_ehci + FSL_SOC_USB_CTRL);
-          out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
--          out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
--    }
-
--#if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
--    /*
--    * Turn on cache snooping hardware, since some PowerPC platforms
--    * wholly rely on hardware to deal with cache coherent
--    */
-+          /*
-+          * Turn on cache snooping hardware, since some PowerPC platforms
-+          * wholly rely on hardware to deal with cache coherent
-+          */
-
--    /* Setup Snooping for all the 4GB space */
--    /* SNOOP1 starts from 0x0, size 2G */
--    out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0 | SNOOP_SIZE_2GB);
--    /* SNOOP2 starts from 0x80000000, size 2G */
--    out_be32(non_ehci + FSL_SOC_USB_SNOOP2, 0x80000000 | SNOOP_SIZE_2GB);
--#endif
-+          /* Setup Snooping for all the 4GB space */
-+          /* SNOOP1 starts from 0x0, size 2G */
-+          out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0 | SNOOP_SIZE_2GB);
-+          /* SNOOP2 starts from 0x80000000, size 2G */
-+          out_be32(non_ehci + FSL_SOC_USB_SNOOP2, 0x80000000 | SNOOP_SIZE_=
-2GB);
-+    }
-
-     if ((pdata->operating_mode =3D=3D FSL_USB2_DR_HOST) ||
-               (pdata->operating_mode =3D=3D FSL_USB2_DR_OTG))
---=20
-1.7.5.1
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+jiafei.pan=3Dfreescale.com@lists.ozlabs.org
-> [mailto:linuxppc-dev-bounces+jiafei.pan=3Dfreescale.com@lists.ozlabs.org]
-> On Behalf Of Liu Shengzhou-B36685
-> Sent: Friday, February 17, 2012 10:33 AM
-> To: Benjamin Herrenschmidt
-> Cc: linux-usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> Subject: RE: [PATCH] powerpc/usb: fix bug of kernel hang when
-> initializing usb
->=20
->=20
-> > -----Original Message-----
-> > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> > Sent: Friday, February 17, 2012 8:03 AM
-> > To: Liu Shengzhou-B36685
-> > Cc: linux-usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH] powerpc/usb: fix bug of kernel hang when
-> > initializing usb
-> >
-> > On Fri, 2012-02-17 at 09:58 +1100, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2012-02-16 at 18:02 +0800, Shengzhou Liu wrote:
-> > > > If USB UTMI PHY is not enable, writing to portsc register will
-> > > > lead to kernel hang during boot up.
-> > > >
-> > > > Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> > > > ---
-> > > > Apply for master branch of
-> > > > git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-
-> > 2.6.git
-> > > > Tested on P5020DS, the issue was reported by Benjamin Herrenschmidt=
-.
-> > >
-> > > This fixes the hang, but sadly doesn't make USB work. I now get:
-> >
-> >  .../...
-> >
-> > Ok, found the problem.
-> >
-> > First, the SDK kernel had a delay after setting that bit, I added that
-> > back in. This is not what fixed it but it looks like the right thing
-> > to do, though please, use msleep rather than udelay here if possible
-> > (not in atomic context).
-> >
-> > Then, the real culprit is (CC'ing Kumar and Scott to figure out why)
-> > this statement:
-> >
-> > #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
-> > 	/*
-> > 	 * Turn on cache snooping hardware, since some PowerPC platforms
-> > 	 * wholly rely on hardware to deal with cache coherent
-> > 	 */
-> >
-> > 	/* Setup Snooping for all the 4GB space */
-> > 	/* SNOOP1 starts from 0x0, size 2G */
-> > 	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0 | SNOOP_SIZE_2GB);
-> > 	/* SNOOP2 starts from 0x80000000, size 2G */
-> > 	out_be32(non_ehci + FSL_SOC_USB_SNOOP2, 0x80000000 |
-> SNOOP_SIZE_2GB);
-> > #endif
-> >
-> > I'm building a 64-bit kernel so this isn't compiled and it looks like
-> > the EHCI is thus not snooping.
-> >
-> > By removing the defined(CONFIG_PPC32) part of the statement, my
-> > problem goes away.
-> >
-> > Cheers,
-> > Ben.
-> >
-> >
->=20
-> [Shengzhou] I tested the patch with 32bit P5020DS, USB worked well. Not
-> tested with 64-bit kernel.
-> Glad to you had found the problem in case of 64-bit, thanks!
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogRnJpZGF5
+LCBGZWJydWFyeSAxNywgMjAxMiAxMTo0MyBBTQ0KPiBUbzogUGFuIEppYWZlaS1CMzcwMjINCj4g
+Q2M6IExpdSBTaGVuZ3pob3UtQjM2Njg1OyBsaW51eC11c2JAdmdlci5rZXJuZWwub3JnOyBsaW51
+eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUkU6IFtQQVRDSF0gcG93
+ZXJwYy91c2I6IGZpeCBidWcgb2Yga2VybmVsIGhhbmcgd2hlbg0KPiBpbml0aWFsaXppbmcgdXNi
+DQo+IA0KPiBPbiBGcmksIDIwMTItMDItMTcgYXQgMDM6MjAgKzAwMDAsIFBhbiBKaWFmZWktQjM3
+MDIyIHdyb3RlOg0KPiA+IEZZSSwgSSBvbmNlIGZpeGVkIHRoaXMgaXNzdWUgd2hlbiBiYWNrcG9y
+dCBQNTAyMCBCU1AgZm9yIFdSIExpbnV4LCBUaGUNCj4gPiBmb2xsb3dpbmcgaXMgdGhlIHBhdGNo
+IHdoaWNoIEkgaGF2ZSBzdWJtaXR0ZWQgdG8gbGludXhiai1pbnRlcm5hbC4NCj4gDQo+IFNob3Vs
+ZCBJIGp1c3QgYXBwbHkgdGhpcyB0byB1cHN0cmVhbSA/DQo+IA0KPiBDaGVlcnMsDQo+IEJlbi4N
+Cj4gDQpbUGFuIEppYWZlaS1CMzcwMjJdIA0KRmVlbCBmcmVlIHRvIGFwcGx5IHRoaXMgdG8gdXBz
+dHJlYW0sIHRoYW5rcw0KDQpCZXN0IFJlZ2FyZHMuDQpKaWFmZWkNCg0KPiA+IEZyb206IGxpbnV4
+YmotaW50ZXJuYWwtYm91bmNlc0BsaW51eC5mcmVlc2NhbGUubmV0DQo+ID4gW21haWx0bzpsaW51
+eGJqLWludGVybmFsLWJvdW5jZXNAbGludXguZnJlZXNjYWxlLm5ldF0gT24gQmVoYWxmIE9mIFBh
+bg0KPiA+IEppYWZlaS1CMzcwMjINCj4gPiBTZW50OiBGcmlkYXksIERlY2VtYmVyIDE2LCAyMDEx
+IDEyOjQ5IFBNDQo+ID4gVG86IGxpbnV4YmotaW50ZXJuYWxAbGludXguZnJlZXNjYWxlLm5ldA0K
+PiA+IENjOiBQYW4gSmlhZmVpLUIzNzAyMg0KPiA+IFN1YmplY3Q6IFtMaW51eGJqLWludGVybmFs
+XSBbUEFUQ0hdIFVTQjogZWhjaS1mc2w6IFR1cm4gb24gY2FjaGUNCj4gPiBzbm9vcGluZyBvbiBN
+UEM4eHh4DQo+ID4NCj4gPiBJZiBhIE1QQzh4eHggd2FzIGJlaW5nIHVzZWQsICdoYXZlX3N5c2lm
+X3JlZ3MnIHNob3VsZCBiZSBzZXQgYW5kIGl0DQo+ID4gc2hvdWxkIHNldHVwIGNhY2hlIHNub29w
+aW5nIGZvciBhbGwgdGhlIDRHQiBzcGFjZSBvbiBib3RoIFBQQzMyIGFuZA0KPiA+IFBQQzY0Lg0K
+PiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogUGFuIEppYWZlaSA8SmlhZmVpLlBhbkBmcmVlc2NhbGUu
+Y29tPg0KPiA+IC0tLQ0KPiA+IGRyaXZlcnMvdXNiL2hvc3QvZWhjaS1mc2wuYyB8ICAgMjMgKysr
+KysrKysrKy0tLS0tLS0tLS0tLS0NCj4gPiAxIGZpbGVzIGNoYW5nZWQsIDEwIGluc2VydGlvbnMo
+KyksIDEzIGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdXNiL2hv
+c3QvZWhjaS1mc2wuYyBiL2RyaXZlcnMvdXNiL2hvc3QvZWhjaS1mc2wuYw0KPiA+IGluZGV4IDkw
+NTM0Y2MuLmVlMTRmYTcgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy91c2IvaG9zdC9laGNpLWZz
+bC5jDQo+ID4gKysrIGIvZHJpdmVycy91c2IvaG9zdC9laGNpLWZzbC5jDQo+ID4gQEAgLTI2MCwy
+MSArMjYwLDE4IEBAIHN0YXRpYyB2b2lkIGVoY2lfZnNsX3VzYl9zZXR1cChzdHJ1Y3QgZWhjaV9o
+Y2QNCj4gKmVoY2kpDQo+ID4gICAgIGlmIChwZGF0YS0+aGF2ZV9zeXNpZl9yZWdzKSB7DQo+ID4g
+ICAgICAgICAgIHRlbXAgPSBpbl9iZTMyKG5vbl9laGNpICsgRlNMX1NPQ19VU0JfQ1RSTCk7DQo+
+ID4gICAgICAgICAgIG91dF9iZTMyKG5vbl9laGNpICsgRlNMX1NPQ19VU0JfQ1RSTCwgdGVtcCB8
+IDB4MDAwMDAwMDQpOw0KPiA+IC0gICAgICAgICAgb3V0X2JlMzIobm9uX2VoY2kgKyBGU0xfU09D
+X1VTQl9TTk9PUDEsIDB4MDAwMDAwMWIpOw0KPiA+IC0gICAgfQ0KPiA+DQo+ID4gLSNpZiBkZWZp
+bmVkKENPTkZJR19QUEMzMikgJiYgIWRlZmluZWQoQ09ORklHX05PVF9DT0hFUkVOVF9DQUNIRSkN
+Cj4gPiAtICAgIC8qDQo+ID4gLSAgICAqIFR1cm4gb24gY2FjaGUgc25vb3BpbmcgaGFyZHdhcmUs
+IHNpbmNlIHNvbWUgUG93ZXJQQyBwbGF0Zm9ybXMNCj4gPiAtICAgICogd2hvbGx5IHJlbHkgb24g
+aGFyZHdhcmUgdG8gZGVhbCB3aXRoIGNhY2hlIGNvaGVyZW50DQo+ID4gLSAgICAqLw0KPiA+ICsg
+ICAgICAgICAgLyoNCj4gPiArICAgICAgICAgICogVHVybiBvbiBjYWNoZSBzbm9vcGluZyBoYXJk
+d2FyZSwgc2luY2Ugc29tZSBQb3dlclBDDQo+IHBsYXRmb3Jtcw0KPiA+ICsgICAgICAgICAgKiB3
+aG9sbHkgcmVseSBvbiBoYXJkd2FyZSB0byBkZWFsIHdpdGggY2FjaGUgY29oZXJlbnQNCj4gPiAr
+ICAgICAgICAgICovDQo+ID4NCj4gPiAtICAgIC8qIFNldHVwIFNub29waW5nIGZvciBhbGwgdGhl
+IDRHQiBzcGFjZSAqLw0KPiA+IC0gICAgLyogU05PT1AxIHN0YXJ0cyBmcm9tIDB4MCwgc2l6ZSAy
+RyAqLw0KPiA+IC0gICAgb3V0X2JlMzIobm9uX2VoY2kgKyBGU0xfU09DX1VTQl9TTk9PUDEsIDB4
+MCB8IFNOT09QX1NJWkVfMkdCKTsNCj4gPiAtICAgIC8qIFNOT09QMiBzdGFydHMgZnJvbSAweDgw
+MDAwMDAwLCBzaXplIDJHICovDQo+ID4gLSAgICBvdXRfYmUzMihub25fZWhjaSArIEZTTF9TT0Nf
+VVNCX1NOT09QMiwgMHg4MDAwMDAwMCB8DQo+IFNOT09QX1NJWkVfMkdCKTsNCj4gPiAtI2VuZGlm
+DQo+ID4gKyAgICAgICAgICAvKiBTZXR1cCBTbm9vcGluZyBmb3IgYWxsIHRoZSA0R0Igc3BhY2Ug
+Ki8NCj4gPiArICAgICAgICAgIC8qIFNOT09QMSBzdGFydHMgZnJvbSAweDAsIHNpemUgMkcgKi8N
+Cj4gPiArICAgICAgICAgIG91dF9iZTMyKG5vbl9laGNpICsgRlNMX1NPQ19VU0JfU05PT1AxLCAw
+eDAgfA0KPiBTTk9PUF9TSVpFXzJHQik7DQo+ID4gKyAgICAgICAgICAvKiBTTk9PUDIgc3RhcnRz
+IGZyb20gMHg4MDAwMDAwMCwgc2l6ZSAyRyAqLw0KPiA+ICsgICAgICAgICAgb3V0X2JlMzIobm9u
+X2VoY2kgKyBGU0xfU09DX1VTQl9TTk9PUDIsIDB4ODAwMDAwMDAgfA0KPiBTTk9PUF9TSVpFXzJH
+Qik7DQo+ID4gKyAgICB9DQo+ID4NCj4gPiAgICAgIGlmICgocGRhdGEtPm9wZXJhdGluZ19tb2Rl
+ID09IEZTTF9VU0IyX0RSX0hPU1QpIHx8DQo+ID4gICAgICAgICAgICAgICAgKHBkYXRhLT5vcGVy
+YXRpbmdfbW9kZSA9PSBGU0xfVVNCMl9EUl9PVEcpKQ0KPiANCj4gDQoNCg==
