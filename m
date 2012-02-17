@@ -1,22 +1,23 @@
-Return-Path: <afleming@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <CAOZdJXVvL98vNG5UvT2t1dgJw1D204-5BCgDsxqD04szhHueBQ@mail.gmail.com>
-References: <1329208640-32209-1-git-send-email-prabhakar@freescale.com>
- <CAOZdJXVvL98vNG5UvT2t1dgJw1D204-5BCgDsxqD04szhHueBQ@mail.gmail.com>
-Date: Fri, 17 Feb 2012 17:26:02 -0600
-Message-ID: <CAKWjMd70yAkbY4fbMaumih86YEujjDti4YRrnH4Yycj7-NEBPw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/85xx:Add PSC9131 RDB Support
-From: Andy Fleming <afleming@gmail.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 833671007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 10:27:39 +1100 (EST)
+Subject: Re: [PATCH 21/30] KVM: PPC: make e500v2 and e500mc mutually exclusive
+Mime-Version: 1.0 (Apple Message framework v1257)
+Content-Type: text/plain; charset=iso-8859-1
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <CAOZdJXXxC5vdWrpz-sU0O+5oXS211DLYywqkQLwq0JOtRZyBHQ@mail.gmail.com>
+Date: Sat, 18 Feb 2012 00:27:34 +0100
+Message-Id: <52BB4C90-450E-41A1-82B5-EA04FADA8CE6@suse.de>
+References: <1329497818-9729-1-git-send-email-agraf@suse.de>
+ <1329497818-9729-22-git-send-email-agraf@suse.de>
+ <CAOZdJXXxC5vdWrpz-sU0O+5oXS211DLYywqkQLwq0JOtRZyBHQ@mail.gmail.com>
 To: Tabi Timur-B04825 <B04825@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
- Srivastava Rajan-B34330 <B34330@freescale.com>,
- Mehresh Ramneek-B31383 <B31383@freescale.com>,
- Goyal Akhil-B35197 <B35197@freescale.com>,
- Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- Jain Priyanka-B32167 <B32167@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, list <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 17, 2012 at 1:20 PM, Tabi Timur-B04825 <B04825@freescale.com> w=
-rote:
-> On Tue, Feb 14, 2012 at 2:37 AM, Prabhakar Kushwaha
-> <prabhakar@freescale.com> wrote:
->>
->> =A0Applied on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerp=
-c.git branch next
->
-> This is actually a false statement. =A0"Applied" is past tense, so you
-> are saying that this patch has *already* been applied to Kumar's
-> powerpc.git repository. =A0But this is not true -- Kumar's repository
-> has not been updated in the last three weeks, and this patch is
-> nowhere to be found.
 
-I'm pretty sure the sentence should read:
+On 17.02.2012, at 23:32, Tabi Timur-B04825 wrote:
 
-Based on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-branch next
+> On Fri, Feb 17, 2012 at 10:56 AM, Alexander Graf <agraf@suse.de> =
+wrote:
+>=20
+>>  config KVM_E500MC
+>>        bool "KVM support for PowerPC E500MC/E5500 processors"
+>> -       depends on EXPERIMENTAL && PPC_E500MC
+>> +       depends on EXPERIMENTAL && PPC_E500MC && !KVM_E500V2
+>=20
+> There was a patch floating around that made a similar change to the
+> platform support, so that you could either build an e500v2 kernel and
+> enable support only for e500v2 board, or you could build an e500mc
+> kernel and enable support only for e500mc boards.  Last I heard, the
+> patch wasn't quite working, but that was a while ago.
+>=20
+> Is there a connection between this patch and that one?
 
-Good idea to correct that for future submissions, as it is otherwise
-confusing. Could also say "Developed against" instead of "Based on".
+No, and the code paths are quite orthogonal. While today it's impossible =
+to build a kernel that can drive e500v2 and e500mc systems, it might be =
+possible one day. That still doesn't buy us KVM compatibility between =
+the two though. And vice versa. We could improve the KVM code to =
+actually be versatile between the two platforms, but then you still =
+couldn't run the same kernel on both ;).
 
-Andy
+
+Alex
