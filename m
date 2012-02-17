@@ -1,23 +1,18 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe005.messaging.microsoft.com
- [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D5C34B6F13
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2012 03:22:31 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
- from configurable
-Date: Fri, 17 Feb 2012 16:22:21 +0000
-Message-ID: <CAOZdJXWQzxWXhU_4WmeKXx1mfTxGQx=-JZx0AkZcF7CmRrp1gQ@mail.gmail.com>
-References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
- <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
-In-Reply-To: <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1A428B6FA2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:03 +1100 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: <kvm-ppc@vger.kernel.org> <kvm-ppc@vger.kernel.org>
+Subject: [PATCH 06/30] KVM: PPC: e500: rename e500_tlb.h to e500.h
+Date: Fri, 17 Feb 2012 17:56:34 +0100
+Message-Id: <1329497818-9729-7-git-send-email-agraf@suse.de>
+In-Reply-To: <1329497818-9729-1-git-send-email-agraf@suse.de>
+References: <1329497818-9729-1-git-send-email-agraf@suse.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 16, 2012 at 7:27 PM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
+From: Scott Wood <scottwood@freescale.com>
 
-> For some of these platforms like P2041RDB, P3041DS, P3060QDS, P4080DS, & =
-P5020DS only a 36-bit physical address map is supported by u-boot and the d=
-evice tree. =A0This was a decision that was made to NOT support 32-bit addr=
-ess map for these boards and accept the performance implication of it to re=
-duce the # of builds, etc.
+This is in preparation for merging in the contents of
+arch/powerpc/include/asm/kvm_e500.h.
 
-Was this a Freescale internal decision, or is this a generic 85xx decision?
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kvm/e500.c                 |    2 +-
+ arch/powerpc/kvm/{e500_tlb.h => e500.h} |    6 +++---
+ arch/powerpc/kvm/e500_emulate.c         |    2 +-
+ arch/powerpc/kvm/e500_tlb.c             |    2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+ rename arch/powerpc/kvm/{e500_tlb.h => e500.h} (98%)
 
-For the record, I'm in favor in leaving out support for 32-bit address
-map in the upstream kernel, and having it be an option on the SDK
-only.  However, in order to do that, we cannot have "select
-PHYS_64BIT" in the Kconfigs.  It needs to be in the defconfigs
-instead.  Putting it in the defconfig will eliminate the need to have
-it in every Kconfig block, so I think that's an improvement.
-
-Then the SDK can include a defconfig that does not have PHYS_64BIT
-defined.  And the SDK can include 32-bit U-Boots and 32-bit device
-trees for any board where Freescale determines there is a need.
-
-I think Leo's patch simplifies things for everyone.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index ac6c9ae..5c450ba 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -24,7 +24,7 @@
+ #include <asm/kvm_ppc.h>
+ 
+ #include "booke.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ 
+ void kvmppc_core_load_host_debugstate(struct kvm_vcpu *vcpu)
+ {
+diff --git a/arch/powerpc/kvm/e500_tlb.h b/arch/powerpc/kvm/e500.h
+similarity index 98%
+rename from arch/powerpc/kvm/e500_tlb.h
+rename to arch/powerpc/kvm/e500.h
+index 5c6d2d7..02ecde2 100644
+--- a/arch/powerpc/kvm/e500_tlb.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -12,8 +12,8 @@
+  * published by the Free Software Foundation.
+  */
+ 
+-#ifndef __KVM_E500_TLB_H__
+-#define __KVM_E500_TLB_H__
++#ifndef KVM_E500_H
++#define KVM_E500_H
+ 
+ #include <linux/kvm_host.h>
+ #include <asm/mmu-book3e.h>
+@@ -171,4 +171,4 @@ static inline int tlbe_is_host_safe(const struct kvm_vcpu *vcpu,
+ 	return 1;
+ }
+ 
+-#endif /* __KVM_E500_TLB_H__ */
++#endif /* KVM_E500_H */
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 6d0b2bd..2a1a228 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -17,7 +17,7 @@
+ #include <asm/kvm_e500.h>
+ 
+ #include "booke.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ 
+ #define XOP_TLBIVAX 786
+ #define XOP_TLBSX   914
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 6e53e41..1d623a0 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -29,7 +29,7 @@
+ #include <asm/kvm_e500.h>
+ 
+ #include "../mm/mmu_decl.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ #include "trace.h"
+ #include "timing.h"
+ 
+-- 
+1.6.0.2
