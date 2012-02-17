@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AD081B6FDD
+ by ozlabs.org (Postfix) with ESMTPS id 93496B6FD1
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:05 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 05/30] KVM: PPC: booke: Move vm core init/destroy out of
- booke.c
-Date: Fri, 17 Feb 2012 18:13:32 +0100
-Message-Id: <1329498837-11717-6-git-send-email-agraf@suse.de>
+Subject: [PATCH 08/30] KVM: PPC: e500: clean up arch/powerpc/kvm/e500.h
+Date: Fri, 17 Feb 2012 18:13:35 +0100
+Message-Id: <1329498837-11717-9-git-send-email-agraf@suse.de>
 In-Reply-To: <1329498837-11717-1-git-send-email-agraf@suse.de>
 References: <1329498837-11717-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -25,75 +24,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-e500mc will want to do lpid allocation/deallocation here.
+Move vcpu to the beginning of vcpu_e500 to give it appropriate
+prominence, especially if more fields end up getting added to the
+end of vcpu_e500 (and vcpu ends up in the middle).
+
+Remove gratuitous "extern" and add parameter names to prototypes.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
+[agraf: fix bisectability]
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/44x.c   |    9 +++++++++
- arch/powerpc/kvm/booke.c |    9 ---------
- arch/powerpc/kvm/e500.c  |    9 +++++++++
- 3 files changed, 18 insertions(+), 9 deletions(-)
+ arch/powerpc/kvm/e500.h |   25 ++++++++++++++-----------
+ 1 files changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index 879a1a7..50e7dbc 100644
---- a/arch/powerpc/kvm/44x.c
-+++ b/arch/powerpc/kvm/44x.c
-@@ -163,6 +163,15 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
- }
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index 51d13bd..a48af00 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -42,6 +42,8 @@ struct kvmppc_e500_tlb_params {
+ };
  
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
+ struct kvmppc_vcpu_e500 {
++	struct kvm_vcpu vcpu;
 +
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- static int __init kvmppc_44x_init(void)
- {
- 	int r;
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index a2456c7..2ee9bae 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -932,15 +932,6 @@ void kvmppc_core_commit_memory_region(struct kvm *kvm,
- {
- }
+ 	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
+ 	struct kvm_book3e_206_tlb_entry *gtlb_arch;
  
--int kvmppc_core_init_vm(struct kvm *kvm)
--{
--	return 0;
--}
+@@ -85,8 +87,6 @@ struct kvmppc_vcpu_e500 {
+ 
+ 	struct page **shared_tlb_pages;
+ 	int num_shared_tlb_pages;
 -
--void kvmppc_core_destroy_vm(struct kvm *kvm)
--{
--}
--
- void kvmppc_set_tcr(struct kvm_vcpu *vcpu, u32 new_tcr)
- {
- 	vcpu->arch.tcr = new_tcr;
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 2d5fe04..ac6c9ae 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -226,6 +226,15 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
- }
+-	struct kvm_vcpu vcpu;
+ };
  
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
+ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
+@@ -113,19 +113,22 @@ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
+ 	  (MAS3_U0 | MAS3_U1 | MAS3_U2 | MAS3_U3 \
+ 	   | E500_TLB_USER_PERM_MASK | E500_TLB_SUPER_PERM_MASK)
+ 
+-extern void kvmppc_dump_tlbs(struct kvm_vcpu *);
+-extern int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *, ulong);
+-extern int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *);
+-extern int kvmppc_e500_emul_tlbre(struct kvm_vcpu *);
+-extern int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *, int, int);
+-extern int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *, int);
+-extern int kvmppc_e500_tlb_search(struct kvm_vcpu *, gva_t, unsigned int, int);
+ extern void kvmppc_e500_tlb_put(struct kvm_vcpu *);
+ extern void kvmppc_e500_tlb_load(struct kvm_vcpu *, int);
+-extern int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *);
+-extern void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *);
+ extern void kvmppc_e500_tlb_setup(struct kvmppc_vcpu_e500 *);
+ extern void kvmppc_e500_recalc_shadow_pid(struct kvmppc_vcpu_e500 *);
++int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500,
++				ulong value);
++int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
++int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
++int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
++int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
++int kvmppc_e500_tlb_search(struct kvm_vcpu *, gva_t, unsigned int, int);
++int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
++void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
 +
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- static int __init kvmppc_e500_init(void)
- {
- 	int r, i;
++void kvmppc_get_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
++int kvmppc_set_sregs_e500_tlb(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
+ 
+ /* TLB helper functions */
+ static inline unsigned int
 -- 
 1.6.0.2
