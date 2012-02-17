@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3CF1DB6FC9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:07 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 78236B6FD3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:08 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: <kvm-ppc@vger.kernel.org> <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 03/30] KVM: PPC: factor out lpid allocator from
- book3s_64_mmu_hv
-Date: Fri, 17 Feb 2012 17:56:31 +0100
-Message-Id: <1329497818-9729-4-git-send-email-agraf@suse.de>
+Subject: [PATCH 18/30] KVM: PPC: e500mc: Move r1/r2 restoration very early
+Date: Fri, 17 Feb 2012 17:56:46 +0100
+Message-Id: <1329497818-9729-19-git-send-email-agraf@suse.de>
 In-Reply-To: <1329497818-9729-1-git-send-email-agraf@suse.de>
 References: <1329497818-9729-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -23,174 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Scott Wood <scottwood@freescale.com>
+If we hit any exception whatsoever in the restore path and r1/r2 aren't the
+host registers, we don't get a working oops. So it's always a good idea to
+restore them as early as possible.
 
-We'll use it on e500mc as well.
+This time, it actually has practical reasons to do so too, since we need to
+have the host page fault handler fix up our guest instruction read code. And
+for that to work we need r1/r2 restored.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_book3s.h |    3 ++
- arch/powerpc/include/asm/kvm_booke.h  |    3 ++
- arch/powerpc/include/asm/kvm_ppc.h    |    5 ++++
- arch/powerpc/kvm/book3s_64_mmu_hv.c   |   26 +++++++++---------------
- arch/powerpc/kvm/powerpc.c            |   34 +++++++++++++++++++++++++++++++++
- 5 files changed, 55 insertions(+), 16 deletions(-)
+ arch/powerpc/kvm/bookehv_interrupts.S |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index aa795cc..046041f 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -452,4 +452,7 @@ static inline bool kvmppc_critical_section(struct kvm_vcpu *vcpu)
- 
- #define INS_DCBZ			0x7c0007ec
- 
-+/* LPIDs we support with this build -- runtime limit may be lower */
-+#define KVMPPC_NR_LPIDS			(LPID_RSVD + 1)
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 9eaeebd..63023ae 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -67,6 +67,12 @@
+  * saved in vcpu: cr, ctr, r3-r13
+  */
+ .macro kvm_handler_common intno, srr0, flags
++	/* Restore host stack pointer */
++	PPC_STL	r1, VCPU_GPR(r1)(r4)
++	PPC_STL	r2, VCPU_GPR(r2)(r4)
++	PPC_LL	r1, VCPU_HOST_STACK(r4)
++	PPC_LL	r2, HOST_R2(r1)
 +
- #endif /* __ASM_KVM_BOOK3S_H__ */
-diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
-index a90e091..b7cd335 100644
---- a/arch/powerpc/include/asm/kvm_booke.h
-+++ b/arch/powerpc/include/asm/kvm_booke.h
-@@ -23,6 +23,9 @@
- #include <linux/types.h>
- #include <linux/kvm_host.h>
+ 	mfspr	r10, SPRN_PID
+ 	lwz	r8, VCPU_HOST_PID(r4)
+ 	PPC_LL	r11, VCPU_SHARED(r4)
+@@ -290,10 +296,8 @@ _GLOBAL(kvmppc_resume_host)
+ 	/* Save remaining volatile guest register state to vcpu. */
+ 	mfspr	r3, SPRN_VRSAVE
+ 	PPC_STL	r0, VCPU_GPR(r0)(r4)
+-	PPC_STL	r1, VCPU_GPR(r1)(r4)
+ 	mflr	r5
+ 	mfspr	r6, SPRN_SPRG4
+-	PPC_STL	r2, VCPU_GPR(r2)(r4)
+ 	PPC_STL	r5, VCPU_LR(r4)
+ 	mfspr	r7, SPRN_SPRG5
+ 	PPC_STL	r3, VCPU_VRSAVE(r4)
+@@ -334,10 +338,6 @@ _GLOBAL(kvmppc_resume_host)
+ 	mtspr	SPRN_EPCR, r3
+ 	isync
  
-+/* LPIDs we support with this build -- runtime limit may be lower */
-+#define KVMPPC_NR_LPIDS                        64
-+
- static inline void kvmppc_set_gpr(struct kvm_vcpu *vcpu, int num, ulong val)
- {
- 	vcpu->arch.gpr[num] = val;
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 9d6dee0..731e920 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -204,4 +204,9 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- int kvm_vcpu_ioctl_dirty_tlb(struct kvm_vcpu *vcpu,
- 			     struct kvm_dirty_tlb *cfg);
- 
-+long kvmppc_alloc_lpid(void);
-+void kvmppc_claim_lpid(long lpid);
-+void kvmppc_free_lpid(long lpid);
-+void kvmppc_init_lpid(unsigned long nr_lpids);
-+
- #endif /* __POWERPC_KVM_PPC_H__ */
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index ddc485a..d031ce1 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -36,13 +36,11 @@
- 
- /* POWER7 has 10-bit LPIDs, PPC970 has 6-bit LPIDs */
- #define MAX_LPID_970	63
--#define NR_LPIDS	(LPID_RSVD + 1)
--unsigned long lpid_inuse[BITS_TO_LONGS(NR_LPIDS)];
- 
- long kvmppc_alloc_hpt(struct kvm *kvm)
- {
- 	unsigned long hpt;
--	unsigned long lpid;
-+	long lpid;
- 	struct revmap_entry *rev;
- 	struct kvmppc_linear_info *li;
- 
-@@ -72,14 +70,9 @@ long kvmppc_alloc_hpt(struct kvm *kvm)
- 	}
- 	kvm->arch.revmap = rev;
- 
--	/* Allocate the guest's logical partition ID */
--	do {
--		lpid = find_first_zero_bit(lpid_inuse, NR_LPIDS);
--		if (lpid >= NR_LPIDS) {
--			pr_err("kvm_alloc_hpt: No LPIDs free\n");
--			goto out_freeboth;
--		}
--	} while (test_and_set_bit(lpid, lpid_inuse));
-+	lpid = kvmppc_alloc_lpid();
-+	if (lpid < 0)
-+		goto out_freeboth;
- 
- 	kvm->arch.sdr1 = __pa(hpt) | (HPT_ORDER - 18);
- 	kvm->arch.lpid = lpid;
-@@ -96,7 +89,7 @@ long kvmppc_alloc_hpt(struct kvm *kvm)
- 
- void kvmppc_free_hpt(struct kvm *kvm)
- {
--	clear_bit(kvm->arch.lpid, lpid_inuse);
-+	kvmppc_free_lpid(kvm->arch.lpid);
- 	vfree(kvm->arch.revmap);
- 	if (kvm->arch.hpt_li)
- 		kvm_release_hpt(kvm->arch.hpt_li);
-@@ -171,8 +164,7 @@ int kvmppc_mmu_hv_init(void)
- 	if (!cpu_has_feature(CPU_FTR_HVMODE))
- 		return -EINVAL;
- 
--	memset(lpid_inuse, 0, sizeof(lpid_inuse));
+-	/* Restore host stack pointer */
+-	PPC_LL	r1, VCPU_HOST_STACK(r4)
+-	PPC_LL	r2, HOST_R2(r1)
 -
-+	/* POWER7 has 10-bit LPIDs, PPC970 and e500mc have 6-bit LPIDs */
- 	if (cpu_has_feature(CPU_FTR_ARCH_206)) {
- 		host_lpid = mfspr(SPRN_LPID);	/* POWER7 */
- 		rsvd_lpid = LPID_RSVD;
-@@ -181,9 +173,11 @@ int kvmppc_mmu_hv_init(void)
- 		rsvd_lpid = MAX_LPID_970;
- 	}
- 
--	set_bit(host_lpid, lpid_inuse);
-+	kvmppc_init_lpid(rsvd_lpid + 1);
-+
-+	kvmppc_claim_lpid(host_lpid);
- 	/* rsvd_lpid is reserved for use in partition switching */
--	set_bit(rsvd_lpid, lpid_inuse);
-+	kvmppc_claim_lpid(rsvd_lpid);
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 00d7e34..9806ea5 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -808,6 +808,40 @@ out:
- 	return r;
- }
- 
-+static unsigned long lpid_inuse[BITS_TO_LONGS(KVMPPC_NR_LPIDS)];
-+static unsigned long nr_lpids;
-+
-+long kvmppc_alloc_lpid(void)
-+{
-+	long lpid;
-+
-+	do {
-+		lpid = find_first_zero_bit(lpid_inuse, KVMPPC_NR_LPIDS);
-+		if (lpid >= nr_lpids) {
-+			pr_err("%s: No LPIDs free\n", __func__);
-+			return -ENOMEM;
-+		}
-+	} while (test_and_set_bit(lpid, lpid_inuse));
-+
-+	return lpid;
-+}
-+
-+void kvmppc_claim_lpid(long lpid)
-+{
-+	set_bit(lpid, lpid_inuse);
-+}
-+
-+void kvmppc_free_lpid(long lpid)
-+{
-+	clear_bit(lpid, lpid_inuse);
-+}
-+
-+void kvmppc_init_lpid(unsigned long nr_lpids_param)
-+{
-+	nr_lpids = min_t(unsigned long, KVMPPC_NR_LPIDS, nr_lpids_param);
-+	memset(lpid_inuse, 0, sizeof(lpid_inuse));
-+}
-+
- int kvm_arch_init(void *opaque)
- {
- 	return 0;
+ 	/* Switch to kernel stack and jump to handler. */
+ 	PPC_LL	r3, HOST_RUN(r1)
+ 	mr	r5, r14 /* intno */
 -- 
 1.6.0.2
