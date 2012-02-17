@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 72651B6FDC
+ by ozlabs.org (Postfix) with ESMTPS id 8820DB6FDE
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 03:57:12 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: <kvm-ppc@vger.kernel.org> <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 19/30] KVM: PPC: e500mc: add load inst fixup
-Date: Fri, 17 Feb 2012 17:56:47 +0100
-Message-Id: <1329497818-9729-20-git-send-email-agraf@suse.de>
+Subject: [PATCH 27/30] KVM: PPC: bookehv: remove negation for CONFIG_64BIT
+Date: Fri, 17 Feb 2012 17:56:55 +0100
+Message-Id: <1329497818-9729-28-git-send-email-agraf@suse.de>
 In-Reply-To: <1329497818-9729-1-git-send-email-agraf@suse.de>
 References: <1329497818-9729-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -22,67 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There's always a chance we're unable to read a guest instruction. The guest
-could have its TLB mapped execute-, but not readable, something odd happens
-and our TLB gets flushed. So it's a good idea to be prepared for that case
-and have a fallback that allows us to fix things up in that case.
+Instead if doing
 
-Add fixup code that keeps guest code from potentially crashing our host kernel.
+  #ifndef CONFIG_64BIT
+  ...
+  #else
+  ...
+  #endif
+
+we should rather do
+
+  #ifdef CONFIG_64BIT
+  ...
+  #else
+  ...
+  #endif
+
+which is a lot easier to read. Change the bookehv implementation to
+stick with this rule.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/bookehv_interrupts.S |   30 +++++++++++++++++++++++++++++-
- 1 files changed, 29 insertions(+), 1 deletions(-)
+ arch/powerpc/kvm/bookehv_interrupts.S |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 63023ae..e0f484c 100644
+index 9cf7ed7..01d15a2 100644
 --- a/arch/powerpc/kvm/bookehv_interrupts.S
 +++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -28,6 +28,7 @@
- #include <asm/asm-compat.h>
- #include <asm/asm-offsets.h>
- #include <asm/bitsperlong.h>
-+#include <asm/thread_info.h>
- 
- #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
- 
-@@ -171,9 +172,36 @@
- 	PPC_STL	r30, VCPU_GPR(r30)(r4)
- 	PPC_STL	r31, VCPU_GPR(r31)(r4)
- 	mtspr	SPRN_EPLC, r8
-+
-+	/* disable preemption, so we are sure we hit the fixup handler */
-+#ifdef CONFIG_PPC64
-+	clrrdi	r8,r1,THREAD_SHIFT
-+#else
-+	rlwinm	r8,r1,0,0,31-THREAD_SHIFT       /* current thread_info */
-+#endif
-+        lwz     r6,TI_PREEMPT(r8)
-+	addi	r7,r6,1
-+        stw     r7,TI_PREEMPT(r8)
-+
- 	isync
--	lwepx	r9, 0, r5
-+
-+	/*
-+	 * In case the read goes wrong, we catch it and write an invalid value
-+	 * in LAST_INST instead.
-+	 */
-+1:	lwepx	r9, 0, r5
-+2:
-+.section .fixup, "ax"
-+3:	li r9, KVM_INST_FETCH_FAILED
-+	b 2b
-+.previous
-+.section __ex_table,"a"
-+	PPC_LONG_ALIGN
-+	PPC_LONG 1b,3b
-+.previous
-+
- 	mtspr	SPRN_EPLC, r3
-+        stw     r6,TI_PREEMPT(r8)
- 	stw	r9, VCPU_LAST_INST(r4)
+@@ -99,10 +99,10 @@
  	.endif
  
+ 	oris	r8, r6, MSR_CE@h
+-#ifndef CONFIG_64BIT
+-	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	std	r6, (VCPU_SHARED_MSR)(r11)
++#else
++	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
+ #endif
+ 	ori	r8, r8, MSR_ME | MSR_RI
+ 	PPC_STL	r5, VCPU_PC(r4)
+@@ -344,10 +344,10 @@ _GLOBAL(kvmppc_resume_host)
+ 	stw	r5, VCPU_SHARED_MAS0(r11)
+ 	mfspr	r7, SPRN_MAS2
+ 	stw	r6, VCPU_SHARED_MAS1(r11)
+-#ifndef CONFIG_64BIT
+-	stw	r7, (VCPU_SHARED_MAS2 + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	std	r7, (VCPU_SHARED_MAS2)(r11)
++#else
++	stw	r7, (VCPU_SHARED_MAS2 + 4)(r11)
+ #endif
+ 	mfspr	r5, SPRN_MAS3
+ 	mfspr	r6, SPRN_MAS4
+@@ -530,10 +530,10 @@ lightweight_exit:
+ 	stw	r3, VCPU_HOST_MAS6(r4)
+ 	lwz	r3, VCPU_SHARED_MAS0(r11)
+ 	lwz	r5, VCPU_SHARED_MAS1(r11)
+-#ifndef CONFIG_64BIT
+-	lwz	r6, (VCPU_SHARED_MAS2 + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	ld	r6, (VCPU_SHARED_MAS2)(r11)
++#else
++	lwz	r6, (VCPU_SHARED_MAS2 + 4)(r11)
+ #endif
+ 	lwz	r7, VCPU_SHARED_MAS7_3+4(r11)
+ 	lwz	r8, VCPU_SHARED_MAS4(r11)
+@@ -572,10 +572,10 @@ lightweight_exit:
+ 	PPC_LL	r6, VCPU_CTR(r4)
+ 	PPC_LL	r7, VCPU_CR(r4)
+ 	PPC_LL	r8, VCPU_PC(r4)
+-#ifndef CONFIG_64BIT
+-	lwz	r9, (VCPU_SHARED_MSR + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	ld	r9, (VCPU_SHARED_MSR)(r11)
++#else
++	lwz	r9, (VCPU_SHARED_MSR + 4)(r11)
+ #endif
+ 	PPC_LL	r0, VCPU_GPR(r0)(r4)
+ 	PPC_LL	r1, VCPU_GPR(r1)(r4)
 -- 
 1.6.0.2
