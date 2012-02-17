@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8CF1AB7005
+ by ozlabs.org (Postfix) with ESMTPS id B23F2B700F
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:09 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 17/30] KVM: PPC: e500mc: implicitly set MSR_GS
-Date: Fri, 17 Feb 2012 18:13:44 +0100
-Message-Id: <1329498837-11717-18-git-send-email-agraf@suse.de>
+Subject: [PATCH 18/30] KVM: PPC: e500mc: Move r1/r2 restoration very early
+Date: Fri, 17 Feb 2012 18:13:45 +0100
+Message-Id: <1329498837-11717-19-git-send-email-agraf@suse.de>
 In-Reply-To: <1329498837-11717-1-git-send-email-agraf@suse.de>
 References: <1329498837-11717-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,69 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When setting MSR for an e500mc guest, we implicitly always set MSR_GS
-to make sure the guest is in guest state. Since we have this implicit
-rule there, we don't need to explicitly pass MSR_GS to set_msr().
+If we hit any exception whatsoever in the restore path and r1/r2 aren't the
+host registers, we don't get a working oops. So it's always a good idea to
+restore them as early as possible.
 
-Remove all explicit setters of MSR_GS.
+This time, it actually has practical reasons to do so too, since we need to
+have the host page fault handler fix up our guest instruction read code. And
+for that to work we need r1/r2 restored.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/booke.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/bookehv_interrupts.S |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index ce1599d..ecfcf6d 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -280,7 +280,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
-                                         unsigned int priority)
- {
- 	int allowed = 0;
--	ulong uninitialized_var(msr_mask);
-+	ulong msr_mask = 0;
- 	bool update_esr = false, update_dear = false;
- 	ulong crit_raw = vcpu->arch.shared->critical;
- 	ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
-@@ -322,7 +322,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	case BOOKE_IRQPRIO_AP_UNAVAIL:
- 	case BOOKE_IRQPRIO_ALIGNMENT:
- 		allowed = 1;
--		msr_mask = MSR_GS | MSR_CE | MSR_ME | MSR_DE;
-+		msr_mask = MSR_CE | MSR_ME | MSR_DE;
- 		int_class = INT_CLASS_NONCRIT;
- 		break;
- 	case BOOKE_IRQPRIO_CRITICAL:
-@@ -331,13 +331,12 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- #endif
- 		allowed = vcpu->arch.shared->msr & MSR_CE;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS | MSR_ME;
-+		msr_mask = MSR_ME;
- 		int_class = INT_CLASS_CRIT;
- 		break;
- 	case BOOKE_IRQPRIO_MACHINE_CHECK:
- 		allowed = vcpu->arch.shared->msr & MSR_ME;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS;
- 		int_class = INT_CLASS_MC;
- 		break;
- 	case BOOKE_IRQPRIO_DECREMENTER:
-@@ -350,13 +349,13 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- #endif
- 		allowed = vcpu->arch.shared->msr & MSR_EE;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS | MSR_CE | MSR_ME | MSR_DE;
-+		msr_mask = MSR_CE | MSR_ME | MSR_DE;
- 		int_class = INT_CLASS_NONCRIT;
- 		break;
- 	case BOOKE_IRQPRIO_DEBUG:
- 		allowed = vcpu->arch.shared->msr & MSR_DE;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS | MSR_ME;
-+		msr_mask = MSR_ME;
- 		int_class = INT_CLASS_CRIT;
- 		break;
- 	}
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 9eaeebd..63023ae 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -67,6 +67,12 @@
+  * saved in vcpu: cr, ctr, r3-r13
+  */
+ .macro kvm_handler_common intno, srr0, flags
++	/* Restore host stack pointer */
++	PPC_STL	r1, VCPU_GPR(r1)(r4)
++	PPC_STL	r2, VCPU_GPR(r2)(r4)
++	PPC_LL	r1, VCPU_HOST_STACK(r4)
++	PPC_LL	r2, HOST_R2(r1)
++
+ 	mfspr	r10, SPRN_PID
+ 	lwz	r8, VCPU_HOST_PID(r4)
+ 	PPC_LL	r11, VCPU_SHARED(r4)
+@@ -290,10 +296,8 @@ _GLOBAL(kvmppc_resume_host)
+ 	/* Save remaining volatile guest register state to vcpu. */
+ 	mfspr	r3, SPRN_VRSAVE
+ 	PPC_STL	r0, VCPU_GPR(r0)(r4)
+-	PPC_STL	r1, VCPU_GPR(r1)(r4)
+ 	mflr	r5
+ 	mfspr	r6, SPRN_SPRG4
+-	PPC_STL	r2, VCPU_GPR(r2)(r4)
+ 	PPC_STL	r5, VCPU_LR(r4)
+ 	mfspr	r7, SPRN_SPRG5
+ 	PPC_STL	r3, VCPU_VRSAVE(r4)
+@@ -334,10 +338,6 @@ _GLOBAL(kvmppc_resume_host)
+ 	mtspr	SPRN_EPCR, r3
+ 	isync
+ 
+-	/* Restore host stack pointer */
+-	PPC_LL	r1, VCPU_HOST_STACK(r4)
+-	PPC_LL	r2, HOST_R2(r1)
+-
+ 	/* Switch to kernel stack and jump to handler. */
+ 	PPC_LL	r3, HOST_RUN(r1)
+ 	mr	r5, r14 /* intno */
 -- 
 1.6.0.2
