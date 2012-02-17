@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C00ABB7013
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:10 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3AAF2100806
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 04:14:12 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 23/30] KVM: PPC: booke: deliver program int on emulation
- failure
-Date: Fri, 17 Feb 2012 18:13:50 +0100
-Message-Id: <1329498837-11717-24-git-send-email-agraf@suse.de>
+Subject: [PATCH 30/30] KVM: PPC: bookehv: add comment about shadow_msr
+Date: Fri, 17 Feb 2012 18:13:57 +0100
+Message-Id: <1329498837-11717-31-git-send-email-agraf@suse.de>
 In-Reply-To: <1329498837-11717-1-git-send-email-agraf@suse.de>
 References: <1329498837-11717-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -23,38 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we fail to emulate an instruction for the guest, we better go in and
-tell it that we failed to emulate it, by throwing an illegal instruction
-exception.
+For BookE HV the guest visible MSR is shared->msr and is identical to
+the MSR that is in use while the guest is running, because we can't trap
+reads from/to MSR.
 
-Please beware that we basically never get around to telling the guest that
-we failed thanks to the debugging code right above it. If user space however
-decides that it wants to ignore the debug, we would at least do "the right
-thing" afterwards.
+So shadow_msr is unused there. Indicate that with a comment.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/booke.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 4c1e2bc..bfb2092 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -549,13 +549,13 @@ static int emulation_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 		return RESUME_HOST;
- 
- 	case EMULATE_FAIL:
--		/* XXX Deliver Program interrupt to guest. */
- 		printk(KERN_CRIT "%s: emulation at %lx failed (%08x)\n",
- 		       __func__, vcpu->arch.pc, vcpu->arch.last_inst);
- 		/* For debugging, encode the failing instruction and
- 		 * report it to userspace. */
- 		run->hw.hardware_exit_reason = ~0ULL << 32;
- 		run->hw.hardware_exit_reason |= vcpu->arch.last_inst;
-+		kvmppc_core_queue_program(vcpu, ESR_PIL);
- 		return RESUME_HOST;
- 
- 	default:
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index ed95f53..633d68f 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -386,6 +386,7 @@ struct kvm_vcpu_arch {
+ #endif
+ 	u32 vrsave; /* also USPRG0 */
+ 	u32 mmucr;
++	/* shadow_msr is unused for BookE HV */
+ 	ulong shadow_msr;
+ 	ulong csrr0;
+ 	ulong csrr1;
 -- 
 1.6.0.2
