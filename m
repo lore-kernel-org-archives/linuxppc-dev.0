@@ -1,19 +1,23 @@
-Return-Path: <sam@ravnborg.org>
-Date: Fri, 17 Feb 2012 19:05:38 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v5 00/27] irq_domain generalization and rework
-Message-ID: <20120217180538.GA11520@merkur.ravnborg.org>
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <20120216145219.0f1c1b98.akpm@linux-foundation.org>
- <20120216232648.GM27825@n2100.arm.linux.org.uk>
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe001.messaging.microsoft.com
+ [213.199.154.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6F896101673
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 05:21:18 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Fan Zhicheng-B32736 <B32736@freescale.com>
+Subject: Re: [PATCH 2/2 v5] powerpc/85xx: Abstract common define of signal
+ multiplex control for qe
+Date: Fri, 17 Feb 2012 18:21:06 +0000
+Message-ID: <CAOZdJXUi9_MNuJytYuaHmi2HUCmRV8ePbWdo2Jp4N4D2L8=ewQ@mail.gmail.com>
+References: <1329289091-26231-1-git-send-email-B32736@freescale.com>
+ <1329289091-26231-2-git-send-email-B32736@freescale.com>
+In-Reply-To: <1329289091-26231-2-git-send-email-B32736@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120216232648.GM27825@n2100.arm.linux.org.uk>
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > 
-> > /*
-> >  * Please do not include this file in generic code.  There is currently
-> >  * no requirement for any architecture to implement anything held
-> >  * within this file.
-> >  *
-> >  * Thanks. --rmk
-> >  */
-> > 
-> > A quick grep indicates that we've lost this battle ;) Is the comments
-> > still true?  Should we stop discouraging inclusion of linux/irq.h? 
-> > Does anyone even know that it's discouraged ;)
-> 
-> It's still true for any platform which hasn't been converted to genirq,
-> as such a platform would not have asm/hw_irq.h.
+On Wed, Feb 15, 2012 at 12:58 AM, Zhicheng Fan <B32736@freescale.com> wrote=
+:
 
-In-tree only s390 is not using genirq.
-All the rest are converted and provide hw_irq.h -
-most of the new archs provide hw_irq via asm-generic so it does
-not show up unless you look in the Kbuild file,.
+> @@ -114,6 +114,24 @@ struct ccsr_guts_86xx {
+> =A0 =A0 =A0 =A0__be32 =A0srds2cr1; =A0 =A0 =A0 /* 0x.0f44 - SerDes2 Contr=
+ol Register 0 */
+> =A0} __attribute__ ((packed));
+>
+> +#ifdef CONFIG_PPC_85xx
+> +
 
-	Sam
+Remove this #ifdef.  It doesn't really help, and it makes things more
+complicated.
+
+> +/* Alternate function signal multiplex control */
+> +#define MPC85xx_PMUXCR_QE0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00008000
+> +#define MPC85xx_PMUXCR_QE2 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00002000
+> +#define MPC85xx_PMUXCR_QE3 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00001000
+> +#define MPC85xx_PMUXCR_QE4 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000800
+> +#define MPC85xx_PMUXCR_QE5 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000400
+> +#define MPC85xx_PMUXCR_QE6 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000200
+> +#define MPC85xx_PMUXCR_QE7 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000100
+> +#define MPC85xx_PMUXCR_QE8 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000080
+> +#define MPC85xx_PMUXCR_QE9 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000040
+> +#define MPC85xx_PMUXCR_QE10 =A0 =A0 =A0 =A0 =A0 =A0 0x00000020
+> +#define MPC85xx_PMUXCR_QE11 =A0 =A0 =A0 =A0 =A0 =A0 0x00000010
+> +#define MPC85xx_PMUXCR_QE12 =A0 =A0 =A0 =A0 =A0 =A0 0x00000008
+
+#define MPC85xx_PMUXCR_QE(x) (0x8000 >> (x))
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("mpc=
+85xx-rdb: could not map global utilties register!\n");
+
+No exclamation marks (!) in kernel messages.
+
+You misspelled "utilities".
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
