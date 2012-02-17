@@ -1,23 +1,19 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id A011AB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 11:57:43 +1100 (EST)
-Date: Thu, 16 Feb 2012 16:57:37 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Timur Tabi <b04825@freescale.com>
-Subject: Re: [PATCH 1/1] fsldma: ignore end of segments interrupt
-Message-ID: <20120217005736.GG9262@ovro.caltech.edu>
-References: <1327611520-18256-1-git-send-email-iws@ovro.caltech.edu>
- <CAOZdJXVccE0GqZU2PvAz3RTh+X9ZYZr-9YufxS+mYWJkhSOGEQ@mail.gmail.com>
- <20120216190040.GA9262@ovro.caltech.edu>
- <4F3D5A28.4010905@freescale.com>
- <20120216194655.GD9262@ovro.caltech.edu>
- <4F3D5D84.2040609@freescale.com>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CF6CE1007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2012 12:22:01 +1100 (EST)
+Subject: Re: 5020 SATA fix
+Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4F3D5D84.2040609@freescale.com>
-Cc: Dan Williams <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1329438578.2892.34.camel@pasglop>
+Date: Thu, 16 Feb 2012 19:21:46 -0600
+Message-Id: <73CC1DE0-8D18-4810-97B6-30F0EB6A35F1@kernel.crashing.org>
+References: <1329438578.2892.34.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Xulei <B33228@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 16, 2012 at 01:48:20PM -0600, Timur Tabi wrote:
-> Ira W. Snyder wrote:
-> 
-> > No. I don't have the ability to connect my P2020 up to an FPGA to
-> > recreate the DMA workload that causes this on my 8349EA. I can run the
-> > dmatest module, if you'd like.
-> 
-> I just want to make sure your patch doesn't break 85xx.
-> 
 
-I tried both with and without this patch on my P2020 COM Express board.
-With both kernels, the board locks up after 20 minutes or so, no
-messages to the serial console.
+On Feb 16, 2012, at 6:29 PM, Benjamin Herrenschmidt wrote:
 
-I wouldn't be surprised if there are some memory problems with this
-board. In any case, I don't have any reason to believe that this patch
-causes any trouble: the board dies without it.
+> Hi Lei !
+>=20
+> In your SDK kernel I see this commit:
+>=20
+> 92c0ce1e599e788ffc0908739db9bd5e0dbdad69
+> sata_fsl: Add the workaround for SATA-A005 erratum on =
+P2040/P3041/P5020
+>=20
+> Without this commit, SATA doesn't work on the p5020ds board that FSL
+> just sent me. I see this was committed in June last year, any reason =
+why
+> this is not upstream yet ?
+>=20
+> Any objection to me just sending it upstream ?
+>=20
+> Cheers,
+> Ben.
+>=20
 
-However, the patch doesn't break DMA on 85xx. If I unload the dmatest
-module after 10 minutes or so, it claims to have passed many thousands
-of tests without problems.
+In general we've avoided sending erratum fixes for non-production =
+silicon upstream.
 
-My 8349EA test boards (15 of them) have been running their normal DMA
-workload plus dmatest on the unused 4th channel, all without errors, for
-several hours. ~2.5 million successful tests per board, as I write this.
-
-Ira
+- k
