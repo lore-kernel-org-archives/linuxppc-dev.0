@@ -1,25 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3173CB6F99
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2012 13:20:36 +1100 (EST)
-Message-ID: <1329531557.3980.16.camel@pasglop>
-Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
- from configurable
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Sat, 18 Feb 2012 13:19:17 +1100
-In-Reply-To: <4F3EF72C.2090305@freescale.com>
-References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
- <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
- <CAOZdJXWQzxWXhU_4WmeKXx1mfTxGQx=-JZx0AkZcF7CmRrp1gQ@mail.gmail.com>
- <1329513033.3980.1.camel@pasglop> <4F3EDC35.5070904@freescale.com>
- <4F3EF72C.2090305@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Timur Tabi <b04825@freescale.com>, Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <hzpeterchen@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+ [209.85.215.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3ED6DB6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 21:22:48 +1100 (EST)
+Received: by eaan11 with SMTP id n11so1462477eaa.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 02:22:43 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1329356512-31527-1-git-send-email-peter.chen@freescale.com>
+References: <1329356512-31527-1-git-send-email-peter.chen@freescale.com>
+Date: Sat, 18 Feb 2012 18:22:41 +0800
+Message-ID: <CAL411-rL8N4i-sRnnWL5wKZTk9Ac=Go41SEHpcNepN38+MZi9w@mail.gmail.com>
+Subject: Re: [PATCH] usb: Fix build error due to dma_mask is not at
+ pdev_archdata at ARM
+From: Peter Chen <hzpeterchen@gmail.com>
+To: Peter Chen <peter.chen@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: fabio.estevam@freescale.com, linux-usb@vger.kernel.org,
+ stern@rowland.harvard.edu, ramneek.mehresh@freescale.com, agust@denx.de,
+ linuxppc-dev@lists.ozlabs.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,16 +30,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-02-17 at 18:56 -0600, Scott Wood wrote:
-> Yes, or maybe make it "default y", and/or require an "I know what I'm
-> doing" option to be set for it to be unset if a board otherwise wants it.
-> 
-> The ability to turn it off is potentially useful for any board, since
-> the address map is determined by boot software which can be changed, but
-> we shouldn't make it too easy to fail to select it for boards that
-> normally require it.
+On Thu, Feb 16, 2012 at 9:41 AM, Peter Chen <peter.chen@freescale.com> wrot=
+e:
+> When build i.mx platform with imx_v6_v7_defconfig, and after adding
+> USB Gadget support, it has below build error:
+>
+> CC =A0 =A0 =A0drivers/usb/host/fsl-mph-dr-of.o
+> drivers/usb/host/fsl-mph-dr-of.c: In function 'fsl_usb2_device_register':
+> drivers/usb/host/fsl-mph-dr-of.c:97: error: 'struct pdev_archdata'
+> has no member named 'dma_mask'
+>
+> It has discussed at: http://www.spinics.net/lists/linux-usb/msg57302.html
+>
+> For PowerPC, there is dma_mask at struct pdev_archdata, but there is
+> no dma_mask at struct pdev_archdata for ARM. The pdev_archdata is
+> related to specific platform, it should NOT be accessed by
+> cross platform drivers, like USB.
+>
+> The code for pdev_archdata should be useless, as for PowerPC,
+> it has already gotten the value for pdev->dev.dma_mask at function
+> arch_setup_pdev_archdata of arch/powerpc/kernel/setup-common.c.
+>
+> Tested-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+> Signed-off-by: Peter Chen <peter.chen@freescale.com>
+> ---
+> =A0drivers/usb/host/fsl-mph-dr-of.c | =A0 =A01 -
+> =A01 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-=
+dr-of.c
+> index 7916e56..ab333ac 100644
+> --- a/drivers/usb/host/fsl-mph-dr-of.c
+> +++ b/drivers/usb/host/fsl-mph-dr-of.c
+> @@ -94,7 +94,6 @@ struct platform_device * __devinit fsl_usb2_device_regi=
+ster(
+> =A0 =A0 =A0 =A0pdev->dev.parent =3D &ofdev->dev;
+>
+> =A0 =A0 =A0 =A0pdev->dev.coherent_dma_mask =3D ofdev->dev.coherent_dma_ma=
+sk;
+> - =A0 =A0 =A0 pdev->dev.dma_mask =3D &pdev->archdata.dma_mask;
+> =A0 =A0 =A0 =A0*pdev->dev.dma_mask =3D *ofdev->dev.dma_mask;
+>
+> =A0 =A0 =A0 =A0retval =3D platform_device_add_data(pdev, pdata, sizeof(*p=
+data));
+Hi Leo, can your guys give me an ACK for it?  Then, Alan can apply it.
+Ramneek has already tested it, and confirmed it did not break host
+function at his platform.
 
-Don't we have CONFIG_EMBEDDED to make that sort of option visible ?
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
 
-Cheers,
-Ben.
+
+
+--=20
+BR,
+Peter Chen
