@@ -1,22 +1,22 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4A721B6F99
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2012 02:40:28 +1100 (EST)
-Received: by bkcjc3 with SMTP id jc3so3986323bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2012 07:40:20 -0800 (PST)
-Message-ID: <4F3FC619.8050809@mvista.com>
-Date: Sat, 18 Feb 2012 19:39:05 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+Return-Path: <B32579@freescale.com>
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: Andy Fleming <afleming@gmail.com>, Tabi Timur-B04825 <B04825@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx:Add PSC9131 RDB Support
+Date: Sat, 18 Feb 2012 16:45:10 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F8745285BD@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1329208640-32209-1-git-send-email-prabhakar@freescale.com>
+ <CAOZdJXVvL98vNG5UvT2t1dgJw1D204-5BCgDsxqD04szhHueBQ@mail.gmail.com>
+ <CAKWjMd70yAkbY4fbMaumih86YEujjDti4YRrnH4Yycj7-NEBPw@mail.gmail.com>
+In-Reply-To: <CAKWjMd70yAkbY4fbMaumih86YEujjDti4YRrnH4Yycj7-NEBPw@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Subject: Re: [PATCH] powerpc/usb: fix bug of kernel hang when initializing usb
-References: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1329386540-12341-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ Srivastava Rajan-B34330 <B34330@freescale.com>,
+ Mehresh Ramneek-B31383 <B31383@freescale.com>,
+ Goyal Akhil-B35197 <B35197@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ Jain Priyanka-B32167 <B32167@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+Thanks Andy and Timur for correcting the statement.
+I will make sure of this in future patches.
 
-On 16-02-2012 14:02, Shengzhou Liu wrote:
 
-> If USB UTMI PHY is not enable, writing to portsc register will lead to
-> kernel hang during boot up.
+--Prabhakar
 
-> Signed-off-by: Shengzhou Liu<Shengzhou.Liu@freescale.com>
-[...]
-
-> diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-> index bdf43e2..0e400c2 100644
-> --- a/drivers/usb/host/ehci-fsl.h
-> +++ b/drivers/usb/host/ehci-fsl.h
-> @@ -45,6 +45,7 @@
->   #define FSL_SOC_USB_PRICTRL	0x40c	/* NOTE: big-endian */
->   #define FSL_SOC_USB_SICTRL	0x410	/* NOTE: big-endian */
->   #define FSL_SOC_USB_CTRL	0x500	/* NOTE: big-endian */
-> +#define CTRL_UTMI_PHY_EN	(1<<9)
-
-    Please put spaces around << like below.
-
->   #define CTRL_PHY_CLK_VALID	(1<<  17)
->   #define SNOOP_SIZE_2GB		0x1e
->   #endif				/* _EHCI_FSL_H */
-
-WBR, Sergei
+> -----Original Message-----
+> From: Andy Fleming [mailto:afleming@gmail.com]
+> Sent: Saturday, February 18, 2012 4:56 AM
+> To: Tabi Timur-B04825
+> Cc: Kushwaha Prabhakar-B32579; Goyal Akhil-B35197; Aggrwal Poonam-B10812;
+> Srivastava Rajan-B34330; Mehresh Ramneek-B31383; devicetree-
+> discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org; Jain Priyanka-
+> B32167
+> Subject: Re: [PATCH] powerpc/85xx:Add PSC9131 RDB Support
+>=20
+> On Fri, Feb 17, 2012 at 1:20 PM, Tabi Timur-B04825 <B04825@freescale.com>
+> wrote:
+> > On Tue, Feb 14, 2012 at 2:37 AM, Prabhakar Kushwaha
+> > <prabhakar@freescale.com> wrote:
+> >>
+> >> =A0Applied on
+> >> git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+> >> branch next
+> >
+> > This is actually a false statement. =A0"Applied" is past tense, so you
+> > are saying that this patch has *already* been applied to Kumar's
+> > powerpc.git repository. =A0But this is not true -- Kumar's repository
+> > has not been updated in the last three weeks, and this patch is
+> > nowhere to be found.
+>=20
+> I'm pretty sure the sentence should read:
+>=20
+> Based on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+> branch next
+>=20
+> Good idea to correct that for future submissions, as it is otherwise
+> confusing. Could also say "Developed against" instead of "Based on".
+>=20
+> Andy
