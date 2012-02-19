@@ -1,19 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D24C0B6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2012 07:07:28 +1100 (EST)
-Date: Mon, 20 Feb 2012 07:07:21 +1100
+ by ozlabs.org (Postfix) with ESMTP id C50C3B6FA5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2012 07:22:45 +1100 (EST)
+Date: Mon, 20 Feb 2012 07:22:38 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: warnings from drivers/tty/ehv_bytechan.c
-Message-Id: <20120220070721.4357dceb3bde318f694fbfac@canb.auug.org.au>
+To: gregkh@linuxfoundation.org
+Subject: [PATCH] tty/powerpc: early udbg consoles can't be modules
+Message-Id: <20120220072238.b68316862f0f1619e56ab41d@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Mon__20_Feb_2012_07_07_21_+1100_ZMhhK5rQ75IWVVIx"
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
+ boundary="Signature=_Mon__20_Feb_2012_07_22_38_+1100_g/gdUOQ2J4KDY=9z"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Timur Tabi <timur@freescale.com>,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__20_Feb_2012_07_07_21_+1100_ZMhhK5rQ75IWVVIx
+--Signature=_Mon__20_Feb_2012_07_22_38_+1100_g/gdUOQ2J4KDY=9z
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Timur,
+Fixes these build errors:
 
-If you build drivers/tty/ehv_bytechan.c as a module, it produces these warm=
-ings:
+ERROR: ".udbg_printf" [drivers/tty/ehv_bytechan.ko] undefined!
+ERROR: ".register_early_udbg_console" [drivers/tty/ehv_bytechan.ko] undefin=
+ed!
+ERROR: "udbg_putc" [drivers/tty/ehv_bytechan.ko] undefined!
 
-drivers/tty/ehv_bytechan.c:362:1: warning: data definition has no type or s=
-torage class
-drivers/tty/ehv_bytechan.c:362:1: warning: type defaults to 'int' in declar=
-ation of 'console_initcall'
-drivers/tty/ehv_bytechan.c:362:1: warning: parameter names (without types) =
-in function declaration
-drivers/tty/ehv_bytechan.c:334:19: warning: 'ehv_bc_console_init' defined b=
-ut not used
+Cc: Timur Tabi <timur@freescale.com>
+Cc: stable@vger.kernel.org (v3.2)
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/tty/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-console_initcall() is not defined for modules.
+Resent with Greg's correct new address.
+
+diff --git a/drivers/tty/Kconfig b/drivers/tty/Kconfig
+index b3d1741..830cd62 100644
+--- a/drivers/tty/Kconfig
++++ b/drivers/tty/Kconfig
+@@ -365,7 +365,7 @@ config PPC_EPAPR_HV_BYTECHAN
+=20
+ config PPC_EARLY_DEBUG_EHV_BC
+ 	bool "Early console (udbg) support for ePAPR hypervisors"
+-	depends on PPC_EPAPR_HV_BYTECHAN
++	depends on PPC_EPAPR_HV_BYTECHAN=3Dy
+ 	help
+ 	  Select this option to enable early console (a.k.a. "udbg") support
+ 	  via an ePAPR byte channel.  You also need to choose the byte channel
+--=20
+1.7.9
+
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Mon__20_Feb_2012_07_07_21_+1100_ZMhhK5rQ75IWVVIx
+--Signature=_Mon__20_Feb_2012_07_22_38_+1100_g/gdUOQ2J4KDY=9z
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPQVZ5AAoJEECxmPOUX5FEvBEP/R4w8LvDYmHQIs8zO9GyYx9f
-mFe3FAaEtH31KSfsUpHr9P+yyBegeCZn5gCZ8vbqfE6mrvNiF+T7nlc67liMffv4
-jR/nPfjk1zadbtDBGwYjh62MZo2BQ6puwl5u5RIE7La45KJ+b9iEAnTqhEjYYijN
-YIN0GMEeOMdo/WDRmBBwU2f0R9MY76CHeODNK0m3XUbEr8/4EneAkJXg0zowZ0ST
-uq9iRjGDKl4eIHBj8Vh38HNzmXFDC2o7inN/hnf07G46mki9I6mLUWDZgb5MyDY5
-X8Y078KgxdqzPjZ8BVLkrCMobrPzphxhme5biFkKtFRqS5HhDwiZjMuqtKFCsXW/
-p62jE8YL3MRxb/0FbI5iJOGM3KT5JI6weBVWjMtdwCNeEoW03k0ebY3OuqQ9GwPS
-Uw6ybHBFbSBXIp0w0TXNEyhG7Yw9kXGqu3JAqiJqfHhECxAoiM+GVYwZSUQLoj93
-kZEc0GXLyUSdOzAcf+l2pCJeoUncOhsm4HAGF9lRlLB1qziyYoH1QpstamMjXelY
-yEEh5XatQFde8klhoHkAgn9qzfMTZ+dlsCliTmoVOLPyNeVoiZk3MC36li9zVcX4
-SS5KUXRI9wcuTP4oskOQF23zp/dlkTInZ5Y0qn60qHYysNzq1ki1jMjOH7QKiWPw
-epJ4vhQTNJGUpxOom6Hx
-=ks0Q
+iQIcBAEBCAAGBQJPQVoOAAoJEECxmPOUX5FEobgQAJ+ai7pDTPNTFzWBfOHbqqrU
+JHYctHswFdTLvOwqDdNsds1K4HrezeJp4Ufn8zmw4wunFZliVC3FWO+rPDRXWtco
+ZvLIZyBcCx/dlGRUltT+CuKvJO3XQOpfWNr9KigRUfZI2kOiBlAu4J2wWZJjNQY3
+Jb/TpzZCTLkMIawv3SOng9LII9HhInan19uQ3RGOn1dk9FLjQe0fu4alzxLC0BvD
+BAh3F8PSMDl/rPk1zgtjQRMdtUZX+GCK0r5A5omih2E8iCYCJOlMYiuvVYfI1REn
+i6IKylF1KnAP46svchUzgePK4Av8Wy22xlRaaGVs/lOxtE8sCIgwsV3amHtkMner
+wpQyllNcw5FNcO5lmSVYW2eFx0SevoSG/VoCyWxrgWtfS8AEVZx0HlnEuOy7lhBx
+LE0KHd2M55sZ6tcmQEtlJI4zQtUZcyl+8T7ORqdCvBorwmtcHVVYRiT3Wxgm7WOO
+c9Zv4jN1MyFtejs3YPH9WBg+Q8gncW7o0tuJ3y34hXvX3j5UmTzjiVTW+VIPWS+T
+QlRvLEVvoadY26qrwYgHtZyhhBoJcfkuIbrvU1S0YoeN5eH+FVDMqLNCvNgCfuv8
+Wwq7+AiYX91Zpd0PDMt+W8f6JdwkKC4tUC5jLniiYBXEbjFonSEOPdoKCPd6Tm3P
+DlSBdMaxUc6PevvpalZ0
+=OdDD
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__20_Feb_2012_07_07_21_+1100_ZMhhK5rQ75IWVVIx--
+--Signature=_Mon__20_Feb_2012_07_22_38_+1100_g/gdUOQ2J4KDY=9z--
