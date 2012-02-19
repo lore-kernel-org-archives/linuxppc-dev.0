@@ -1,22 +1,28 @@
-Return-Path: <B32579@freescale.com>
-From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-To: Andy Fleming <afleming@gmail.com>, Tabi Timur-B04825 <B04825@freescale.com>
-Subject: RE: [PATCH] powerpc/85xx:Add PSC9131 RDB Support
-Date: Sat, 18 Feb 2012 16:45:10 +0000
-Message-ID: <071A08F2C6A57E4E94D980ECA553F8745285BD@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1329208640-32209-1-git-send-email-prabhakar@freescale.com>
- <CAOZdJXVvL98vNG5UvT2t1dgJw1D204-5BCgDsxqD04szhHueBQ@mail.gmail.com>
- <CAKWjMd70yAkbY4fbMaumih86YEujjDti4YRrnH4Yycj7-NEBPw@mail.gmail.com>
-In-Reply-To: <CAKWjMd70yAkbY4fbMaumih86YEujjDti4YRrnH4Yycj7-NEBPw@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <eranian@google.com>
+Received: from mail-lpp01m010-f51.google.com (mail-lpp01m010-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 78B37B6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2012 22:13:27 +1100 (EST)
+Received: by lags15 with SMTP id s15so5254606lag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Feb 2012 03:13:18 -0800 (PST)
 MIME-Version: 1.0
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
- Srivastava Rajan-B34330 <B34330@freescale.com>,
- Mehresh Ramneek-B31383 <B31383@freescale.com>,
- Goyal Akhil-B35197 <B35197@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- Jain Priyanka-B32167 <B32167@freescale.com>
+In-Reply-To: <20120216045749.GA25364@bloggs.ozlabs.ibm.com>
+References: <20120216154822.5bfad11d@kryten>
+ <20120216045749.GA25364@bloggs.ozlabs.ibm.com>
+Date: Sun, 19 Feb 2012 12:13:18 +0100
+Message-ID: <CABPqkBR=Sv79YqnCG+374WdNcAJgk9VvZr7JCPxNebYMzD4Jrw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: perf: power_pmu_start restores incorrect values,
+ breaking frequency events
+From: Stephane Eranian <eranian@google.com>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: gleb@redhat.com, peterz@infradead.org, vince@deater.net,
+ linux-kernel@vger.kernel.org, andi@firstfloor.org,
+ Anton Blanchard <anton@samba.org>, imunsie@au1.ibm.com, mingo@elte.hu,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, wcohen@redhat.com,
+ asharma@fb.com, emunson@mgebm.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Andy and Timur for correcting the statement.
-I will make sure of this in future patches.
+Glad to see you fixed the PPC problem.
 
-
---Prabhakar
-
-> -----Original Message-----
-> From: Andy Fleming [mailto:afleming@gmail.com]
-> Sent: Saturday, February 18, 2012 4:56 AM
-> To: Tabi Timur-B04825
-> Cc: Kushwaha Prabhakar-B32579; Goyal Akhil-B35197; Aggrwal Poonam-B10812;
-> Srivastava Rajan-B34330; Mehresh Ramneek-B31383; devicetree-
-> discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org; Jain Priyanka-
-> B32167
-> Subject: Re: [PATCH] powerpc/85xx:Add PSC9131 RDB Support
->=20
-> On Fri, Feb 17, 2012 at 1:20 PM, Tabi Timur-B04825 <B04825@freescale.com>
-> wrote:
-> > On Tue, Feb 14, 2012 at 2:37 AM, Prabhakar Kushwaha
-> > <prabhakar@freescale.com> wrote:
-> >>
-> >> =A0Applied on
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-> >> branch next
-> >
-> > This is actually a false statement. =A0"Applied" is past tense, so you
-> > are saying that this patch has *already* been applied to Kumar's
-> > powerpc.git repository. =A0But this is not true -- Kumar's repository
-> > has not been updated in the last three weeks, and this patch is
-> > nowhere to be found.
->=20
-> I'm pretty sure the sentence should read:
->=20
-> Based on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-> branch next
->=20
-> Good idea to correct that for future submissions, as it is otherwise
-> confusing. Could also say "Developed against" instead of "Based on".
->=20
-> Andy
+On Thu, Feb 16, 2012 at 5:57 AM, Paul Mackerras <paulus@samba.org> wrote:
+> On Thu, Feb 16, 2012 at 03:48:22PM +1100, Anton Blanchard wrote:
+>>
+>> perf on POWER stopped working after commit e050e3f0a71b (perf: Fix
+>> broken interrupt rate throttling). That patch exposed a bug in
+>> the POWER perf_events code.
+>>
+>> Since the PMCs count upwards and take an exception when the top bit
+>> is set, we want to write 0x80000000 - left in power_pmu_start. We were
+>> instead programming in left which effectively disables the counter
+>> until we eventually hit 0x80000000. This could take seconds or longer.
+>>
+>> With the patch applied I get the expected number of samples:
+>>
+>> # taskset -c 0 yes > /dev/null &
+>> # perf record -C 0 -a sleep 10
+>> # perf report -D | grep SAMPLE | tail -1
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 SAMPLE events: =C2=A0 =C2=A0 =C2=A0 9=
+948
+>>
+>> Signed-off-by: Anton Blanchard <anton@samba.org>
+>
+> Acked-by: Paul Mackerras <paulus@samba.org>
