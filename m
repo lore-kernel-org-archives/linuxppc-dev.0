@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Mon, 20 Feb 2012 11:02:51 +1100
+Date: Mon, 20 Feb 2012 10:47:51 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v7 03/10] fadump: Register for firmware assisted dump.
-Message-ID: <20120220000250.GB10186@bloggs.ozlabs.ibm.com>
+Subject: Re: [RFC PATCH v7 00/10] fadump: Firmware-assisted dump support for
+ Powerpc.
+Message-ID: <20120219234751.GA10186@bloggs.ozlabs.ibm.com>
 References: <20120216111050.4733.38034.stgit@mars>
- <20120216111429.4733.24480.stgit@mars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120216111429.4733.24480.stgit@mars>
+In-Reply-To: <20120216111050.4733.38034.stgit@mars>
 Cc: Anton Blanchard <anton@samba.org>, Amerigo Wang <amwang@redhat.com>,
  Kexec-ml <kexec@lists.infradead.org>,
  Linux Kernel <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
@@ -23,39 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 16, 2012 at 04:44:30PM +0530, Mahesh J Salgaonkar wrote:
+On Thu, Feb 16, 2012 at 04:44:06PM +0530, Mahesh J Salgaonkar wrote:
 
-> +/*
-> + * Prepare for firmware-assisted dump.
-> + */
-> +int __init setup_fadump(void)
-> +{
-> +	if (!fw_dump.fadump_supported) {
-> +		printk(KERN_ERR "Firmware-assisted dump is not supported on"
-> +			" this hardware\n");
-> +		return 0;
-> +	}
-> +
-> +	fadump_show_config();
-> +	/* Initialize the kernel dump memory structure for FAD registration. */
-> +	if (fw_dump.reserve_dump_area_size)
-> +		init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
-> +	fadump_init_files();
-> +
-> +	return 1;
-> +}
-> +subsys_initcall(setup_fadump);
+> Please find the version 7 of the patchset that implements firmware-assisted
+> dump mechanism to capture kernel crash dump for Powerpc architecture.
+> Firmware-assisted dump is a robust mechanism to get reliable kernel crash
+> dump with the assistance of firmware. This approach does not use kexec,
+> instead firmware assists in booting the kdump kernel while preserving memory
+> contents.
 
-If I have read the code correctly, we are going to get this printk on
-non-pSeries machines or on older pSeries machines, even if the user
-has not put the fadump=on option on the kernel command line.  The
-printk will be annoying since there is no actual error condition.  It
-seems to me that the condition for the printk should include
-fw_dump.fadump_enabled.  In other words you should probably add
+For the series:
 
-	if (!fw_dump.fadump_enabled)
-		return 0;
+Reviewed-by: Paul Mackerras <paulus@samba.org>
 
-at the beginning of the function.
+I think it's pretty much good enough to go in now.  I have one relatively
+minor comment about a printk which could be addressed if you decide to
+do another version of the series.
 
 Paul.
