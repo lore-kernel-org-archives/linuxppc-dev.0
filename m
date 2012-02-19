@@ -1,11 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Jimi Xenidis <jimix@pobox.com>, grant.likely@secretlab.ca
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 6/12] arch/powerpc: remove references to cpu_*_map.
+In-Reply-To: <1329362944.3772.45.camel@pasglop>
+References: <1329281884.20466.rusty@rustcorp.com.au>
+ <4F3B790F.1040907@linux.vnet.ibm.com> <1329362944.3772.45.camel@pasglop>
+Date: Mon, 20 Feb 2012 09:15:03 +1030
+Message-ID: <87pqda8mts.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/of: add OF_DYNAMIC for chroma
-Date: Mon, 20 Feb 2012 09:48:01 +1100
-Message-ID: <5145.1329691681@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Venkatesh Pallipadi <venki@google.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,24 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-linux next-20120217 compiling ppc64e_defconfig fails with:
+On Thu, 16 Feb 2012 14:29:04 +1100, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Wed, 2012-02-15 at 14:51 +0530, Srivatsa S. Bhat wrote:
+> > On 02/15/2012 10:28 AM, Rusty Russell wrote:
+> > 
+> > > From: Rusty Russell <rusty@rustcorp.com.au>
+> > > 
+> > > This has been obsolescent for a while; time for the final push.
+> > > 
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Want me to stick that in -powerpc ? If yes, now or -next ?
 
-arch/powerpc/platforms/wsp/h8.c: In function 'wsp_h8_getaddr':
-arch/powerpc/platforms/wsp/h8.c:116: error: implicit declaration of function 'of_detach_node'
+Please, in -next.
 
-The below fixes this by selecting the new OF_DYNAMIC when PPC_CHROMA.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-
-diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
-index 57d22a2..79d2225 100644
---- a/arch/powerpc/platforms/wsp/Kconfig
-+++ b/arch/powerpc/platforms/wsp/Kconfig
-@@ -25,6 +25,7 @@ config PPC_CHROMA
- 	bool "PowerEN PCIe Chroma Card"
- 	select EPAPR_BOOT
- 	select PPC_WSP
-+	select OF_DYNAMIC
- 	default y
- 
- endmenu
+Cheers,
+Rusty.
