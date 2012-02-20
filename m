@@ -1,27 +1,13 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 79735B6F98
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2012 07:30:40 +1100 (EST)
-Message-ID: <4F42AD63.7050907@freescale.com>
-Date: Mon, 20 Feb 2012 14:30:27 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc/85xx: fix problem that prevents PHYS_64BIT
- from configurable
-References: <1329394210-1014-1-git-send-email-leoli@freescale.com>
- <EDB74FED-002D-4F94-B134-995BFB4C0A6B@kernel.crashing.org>
- <CAOZdJXWQzxWXhU_4WmeKXx1mfTxGQx=-JZx0AkZcF7CmRrp1gQ@mail.gmail.com>
- <1329513033.3980.1.camel@pasglop> <4F3EDC35.5070904@freescale.com>
- <4F3EF72C.2090305@freescale.com> <1329531557.3980.16.camel@pasglop>
-In-Reply-To: <1329531557.3980.16.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Timur Tabi <b04825@freescale.com>, Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Jimi Xenidis <jimix@pobox.com>
+Subject: Re: [PATCH] powerpc/of: add OF_DYNAMIC for chroma
+In-reply-to: <5A594805-C5CE-46E7-A15F-DF86E6FE6C42@pobox.com>
+References: <5145.1329691681@neuling.org>
+ <5A594805-C5CE-46E7-A15F-DF86E6FE6C42@pobox.com>
+Date: Tue, 21 Feb 2012 10:16:10 +1100
+Message-ID: <7970.1329779770@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,31 +17,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/17/2012 08:19 PM, Benjamin Herrenschmidt wrote:
-> On Fri, 2012-02-17 at 18:56 -0600, Scott Wood wrote:
->> Yes, or maybe make it "default y", and/or require an "I know what I'm
->> doing" option to be set for it to be unset if a board otherwise wants it.
->>
->> The ability to turn it off is potentially useful for any board, since
->> the address map is determined by boot software which can be changed, but
->> we shouldn't make it too easy to fail to select it for boards that
->> normally require it.
+Grant, 
+
+This seems to be broken in your tree (since 301b605ff6), so you should
+probably pick up this patch.
+
+Mikey
+
+
+In message <5A594805-C5CE-46E7-A15F-DF86E6FE6C42@pobox.com> you wrote:
 > 
-> Don't we have CONFIG_EMBEDDED to make that sort of option visible ?
-
-OK, so:
-
-config WANT_PHYS_64BIT
-select PHYS_64BIT if !EMBEDDED
-
-config PHYS_64BIT
-default y if WANT_PHYS_64BIT
-
-...and "select WANT_PHYS_64BIT" on boards that normally have 36-bit
-address maps?
-
-What about 86xx?  It looks like PHYS_64BIT can't be enabled if it's
-sharing a kernel image with 82xx or 83xx (why these specific SoCs but
-not 603 in general?).
-
--Scott
+> On Feb 19, 2012, at 4:48 PM, Michael Neuling wrote:
+> 
+> > linux next-20120217 compiling ppc64e_defconfig fails with:
+> >=20
+> > arch/powerpc/platforms/wsp/h8.c: In function 'wsp_h8_getaddr':
+> > arch/powerpc/platforms/wsp/h8.c:116: error: implicit declaration of =
+> function 'of_detach_node'
+> >=20
+> > The below fixes this by selecting the new OF_DYNAMIC when PPC_CHROMA.
+> >=20
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+> Acked-by: Jimi Xenidis <jimix@pobox.com>
+> 
+> >=20
+> > diff --git a/arch/powerpc/platforms/wsp/Kconfig =
+> b/arch/powerpc/platforms/wsp/Kconfig
+> > index 57d22a2..79d2225 100644
+> > --- a/arch/powerpc/platforms/wsp/Kconfig
+> > +++ b/arch/powerpc/platforms/wsp/Kconfig
+> > @@ -25,6 +25,7 @@ config PPC_CHROMA
+> > 	bool "PowerEN PCIe Chroma Card"
+> > 	select EPAPR_BOOT
+> > 	select PPC_WSP
+> > +	select OF_DYNAMIC
+> > 	default y
+> >=20
+> > endmenu
+> 
