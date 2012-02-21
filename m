@@ -1,24 +1,25 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+Return-Path: <b-cousson@ti.com>
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 27741B6FAA
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2012 23:11:12 +1100 (EST)
-Message-ID: <4F4377AD.4000501@windriver.com>
-Date: Tue, 21 Feb 2012 18:53:33 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 348ECB6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2012 01:59:22 +1100 (EST)
+Message-ID: <4F43AF71.4060207@ti.com>
+Date: Tue, 21 Feb 2012 15:51:29 +0100
+From: "Cousson, Benoit" <b-cousson@ti.com>
 MIME-Version: 1.0
-To: Liu Yu <yu.liu@freescale.com>
-Subject: Re: [PATCH v5 3/4] KVM: PPC: epapr: install ev_idle hcall for e500
- guest
-References: <1329799573-8820-1-git-send-email-yu.liu@freescale.com>
- <1329799573-8820-2-git-send-email-yu.liu@freescale.com>
- <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@ozlabs.org, B07421@freescale.com, agraf@suse.de,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v5 00/27] irq_domain generalization and rework
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <20120216145219.0f1c1b98.akpm@linux-foundation.org> <4F3E9187.9080308@ti.com>
+ <20120217175550.GQ27825@n2100.arm.linux.org.uk>
+In-Reply-To: <20120217175550.GQ27825@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,96 +29,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Liu Yu wrote:
-> If the guest hypervisor node contains "has-idle" property.
+On 2/17/2012 6:55 PM, Russell King - ARM Linux wrote:
+> On Fri, Feb 17, 2012 at 06:42:31PM +0100, Cousson, Benoit wrote:
+
+[...]
+
+>> @@ -1237,8 +1238,10 @@ twl_probe(struct i2c_client *client, const struct i2c_device_id *id)
+>>
+>>   	pdata->irq_base = status;
+>>   	pdata->irq_end = pdata->irq_base + nr_irqs;
+>> +#ifdef IRQ_DOMAIN
+>>   	irq_domain_add_legacy(node, nr_irqs, pdata->irq_base, 0,
+>>   			&irq_domain_simple_ops, NULL);
+>> +#endif
 > 
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> ---
-> v5: no change
-> 
->  arch/powerpc/kernel/epapr_hcalls.S   |   29 +++++++++++++++++++++++++++++
->  arch/powerpc/kernel/epapr_paravirt.c |   11 ++++++++++-
->  2 files changed, 39 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
-> index 697b390..72fa234 100644
-> --- a/arch/powerpc/kernel/epapr_hcalls.S
-> +++ b/arch/powerpc/kernel/epapr_hcalls.S
-> @@ -15,6 +15,35 @@
->  #include <asm/ppc_asm.h>
->  #include <asm/asm-offsets.h>
->  
-> +#define HC_VENDOR_EPAPR		(1 << 16)
-> +#define HC_EV_IDLE		16
+> Do you really need this?  If you've tested this, then apparantly the answer
+> is no, because it won't ever be built like that.  (You're missing a
+> CONFIG_ prefix.)
 
-Why not use 'EV_IDLE' directly?
+Ooops, sorry about that.
+It was indeed working fine in every cases except for the DT boot :-(
 
-> +
-> +_GLOBAL(epapr_ev_idle)
-> +epapr_ev_idle:
-> +	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
-> +	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
-> +	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
-> +	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
-> +
-> +	wrteei	1
-> +
-> +idle_loop:
-> +	LOAD_REG_IMMEDIATE(r11, HC_VENDOR_EPAPR | HC_EV_IDLE)
+As explain before, for the moment the interrupt domain is used only for the DT boot. It is mandatory do get the interrupt binding to work properly for all the TWL sub modules (RTC...).
 
-And could this line be simplified as something like this:
+> Maybe the only solution to the x86 problem is to ensure that the driver
+> includes linux/irq.h ?
 
-LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
+Both will be needed to allow a DT boot with OMAP. Here is the updated version.
 
-If so, even we can remove the previous HC_VENDOR_EPAPR definition as well.
+Regards,
+Benoit
 
-Tiejun
+---
+>From d844a8fc84d4514884356c935967f59d88a00124 Mon Sep 17 00:00:00 2001
+From: Benoit Cousson <b-cousson@ti.com>
+Date: Mon, 20 Feb 2012 10:58:34 +0100
+Subject: [PATCH] mfd: twl-core: Fix IRQ_DOMAIN dependency
 
-> +
-> +.global epapr_ev_idle_start
-> +epapr_ev_idle_start:
-> +	li	r3, -1
-> +	nop
-> +	nop
-> +	nop
-> +
-> +	/*
-> +	 * Guard against spurious wakeups from a hypervisor --
-> +	 * only interrupt will cause us to return to LR due to
-> +	 * _TLF_NAPPING.
-> +	 */
-> +	b	idle_loop
-> +
->  /* Hypercall entry point. Will be patched with device tree instructions. */
->  .global epapr_hypercall_start
->  epapr_hypercall_start:
-> diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
-> index e601da7..43d875e 100644
-> --- a/arch/powerpc/kernel/epapr_paravirt.c
-> +++ b/arch/powerpc/kernel/epapr_paravirt.c
-> @@ -21,6 +21,10 @@
->  #include <asm/epapr_hcalls.h>
->  #include <asm/cacheflush.h>
->  #include <asm/code-patching.h>
-> +#include <asm/machdep.h>
-> +
-> +extern void epapr_ev_idle(void);
-> +extern u32 epapr_ev_idle_start[];
->  
->  bool epapr_para_enabled = false;
->  
-> @@ -39,8 +43,13 @@ static int __init epapr_para_init(void)
->  
->  	insts = of_get_property(hyper_node, "hcall-instructions", &len);
->  	if (insts && !(len % 4) && len <= (4 * 4)) {
-> -		for (i = 0; i < (len / 4); i++)
-> +		for (i = 0; i < (len / 4); i++) {
->  			patch_instruction(epapr_hypercall_start + i, insts[i]);
-> +			patch_instruction(epapr_ev_idle_start + i, insts[i]);
-> +		}
-> +
-> +		if (of_get_property(hyper_node, "has-idle", NULL))
-> +			ppc_md.power_save = epapr_ev_idle;
->  
->  		epapr_para_enabled = true;
->  	} else {
+TWL chips might be potentially used on architecture that does not support
+ird_domain yet.
+
+Do not call ird_domain API in that case.
+
+Include <linux/irq.h> directly since it will not be included anymore by
+<linux/irqdomain.h> if !IRQ_DOMAIN.
+
+Signed-off-by: Benoit Cousson <b-cousson@ti.com>
+---
+ drivers/mfd/twl-core.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
+index 66f9bff..18c4f93 100644
+--- a/drivers/mfd/twl-core.c
++++ b/drivers/mfd/twl-core.c
+@@ -38,6 +38,7 @@
+ #include <linux/of.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
++#include <linux/irq.h>
+ #include <linux/irqdomain.h>
+ 
+ #include <linux/regulator/machine.h>
+@@ -1223,8 +1224,10 @@ twl_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 
+ 	pdata->irq_base = status;
+ 	pdata->irq_end = pdata->irq_base + nr_irqs;
++#ifdef CONFIG_IRQ_DOMAIN
+ 	irq_domain_add_legacy(node, nr_irqs, pdata->irq_base, 0,
+ 			      &irq_domain_simple_ops, NULL);
++#endif
+ 
+ 	if (i2c_check_functionality(client->adapter, I2C_FUNC_I2C) == 0) {
+ 		dev_dbg(&client->dev, "can't talk I2C?\n");
+-- 
+1.7.0.4
