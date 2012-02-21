@@ -1,20 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 65098B6FA2
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2012 19:20:04 +1100 (EST)
-Message-ID: <1329812389.3980.51.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Fix program check handling when lockdep is
- enabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 21 Feb 2012 19:19:49 +1100
-In-Reply-To: <1329809550-29336-1-git-send-email-michael@ellerman.id.au>
-References: <1329809550-29336-1-git-send-email-michael@ellerman.id.au>
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 27741B6FAA
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2012 23:11:12 +1100 (EST)
+Message-ID: <4F4377AD.4000501@windriver.com>
+Date: Tue, 21 Feb 2012 18:53:33 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Liu Yu <yu.liu@freescale.com>
+Subject: Re: [PATCH v5 3/4] KVM: PPC: epapr: install ev_idle hcall for e500
+ guest
+References: <1329799573-8820-1-git-send-email-yu.liu@freescale.com>
+ <1329799573-8820-2-git-send-email-yu.liu@freescale.com>
+ <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, B07421@freescale.com, agraf@suse.de,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +28,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-02-21 at 18:32 +1100, Michael Ellerman wrote:
-> In commit 54321242afe ("Disable interrupts early in Program Check"), we
-> switched from enabling to disabling interrupts in program_check_common.
+Liu Yu wrote:
+> If the guest hypervisor node contains "has-idle" property.
 > 
-> Whereas ENABLE_INTS leaves r3 untouched, if lockdep is enabled DISABLE_INTS
-> calls into lockdep code and will clobber r3. That means we pass a bogus
-> struct pt_regs* into program_check_exception() and all hell breaks loose.
-> 
-> So load our regs pointer into r3 after we call DISABLE_INTS.
-
-Ah nice catch, thanks !
-
-Cheers,
-Ben.
-
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> Signed-off-by: Liu Yu <yu.liu@freescale.com>
 > ---
->  arch/powerpc/kernel/exceptions-64s.S |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> v5: no change
 > 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 3844ca7..15c5a4f 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -774,8 +774,8 @@ alignment_common:
->  program_check_common:
->  	EXCEPTION_PROLOG_COMMON(0x700, PACA_EXGEN)
->  	bl	.save_nvgprs
-> -	addi	r3,r1,STACK_FRAME_OVERHEAD
->  	DISABLE_INTS
-> +	addi	r3,r1,STACK_FRAME_OVERHEAD
->  	bl	.program_check_exception
->  	b	.ret_from_except
+>  arch/powerpc/kernel/epapr_hcalls.S   |   29 +++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/epapr_paravirt.c |   11 ++++++++++-
+>  2 files changed, 39 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
+> index 697b390..72fa234 100644
+> --- a/arch/powerpc/kernel/epapr_hcalls.S
+> +++ b/arch/powerpc/kernel/epapr_hcalls.S
+> @@ -15,6 +15,35 @@
+>  #include <asm/ppc_asm.h>
+>  #include <asm/asm-offsets.h>
 >  
+> +#define HC_VENDOR_EPAPR		(1 << 16)
+> +#define HC_EV_IDLE		16
+
+Why not use 'EV_IDLE' directly?
+
+> +
+> +_GLOBAL(epapr_ev_idle)
+> +epapr_ev_idle:
+> +	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
+> +	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
+> +	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
+> +	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
+> +
+> +	wrteei	1
+> +
+> +idle_loop:
+> +	LOAD_REG_IMMEDIATE(r11, HC_VENDOR_EPAPR | HC_EV_IDLE)
+
+And could this line be simplified as something like this:
+
+LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
+
+If so, even we can remove the previous HC_VENDOR_EPAPR definition as well.
+
+Tiejun
+
+> +
+> +.global epapr_ev_idle_start
+> +epapr_ev_idle_start:
+> +	li	r3, -1
+> +	nop
+> +	nop
+> +	nop
+> +
+> +	/*
+> +	 * Guard against spurious wakeups from a hypervisor --
+> +	 * only interrupt will cause us to return to LR due to
+> +	 * _TLF_NAPPING.
+> +	 */
+> +	b	idle_loop
+> +
+>  /* Hypercall entry point. Will be patched with device tree instructions. */
+>  .global epapr_hypercall_start
+>  epapr_hypercall_start:
+> diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
+> index e601da7..43d875e 100644
+> --- a/arch/powerpc/kernel/epapr_paravirt.c
+> +++ b/arch/powerpc/kernel/epapr_paravirt.c
+> @@ -21,6 +21,10 @@
+>  #include <asm/epapr_hcalls.h>
+>  #include <asm/cacheflush.h>
+>  #include <asm/code-patching.h>
+> +#include <asm/machdep.h>
+> +
+> +extern void epapr_ev_idle(void);
+> +extern u32 epapr_ev_idle_start[];
+>  
+>  bool epapr_para_enabled = false;
+>  
+> @@ -39,8 +43,13 @@ static int __init epapr_para_init(void)
+>  
+>  	insts = of_get_property(hyper_node, "hcall-instructions", &len);
+>  	if (insts && !(len % 4) && len <= (4 * 4)) {
+> -		for (i = 0; i < (len / 4); i++)
+> +		for (i = 0; i < (len / 4); i++) {
+>  			patch_instruction(epapr_hypercall_start + i, insts[i]);
+> +			patch_instruction(epapr_ev_idle_start + i, insts[i]);
+> +		}
+> +
+> +		if (of_get_property(hyper_node, "has-idle", NULL))
+> +			ppc_md.power_save = epapr_ev_idle;
+>  
+>  		epapr_para_enabled = true;
+>  	} else {
