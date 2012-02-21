@@ -1,15 +1,20 @@
 Return-Path: <B13201@freescale.com>
-Received: from VA3EHSOBE002.bigfish.com (va3ehsobe002.messaging.microsoft.com
- [216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B041B6FA4
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2012 15:51:20 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8C65EB6FAB
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2012 15:51:22 +1100 (EST)
 From: Liu Yu <yu.liu@freescale.com>
 To: <agraf@suse.de>, <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>
-Subject: [PATCH v5 1/4] KVM: PPC: epapr: Factor out the epapr init
-Date: Tue, 21 Feb 2012 12:46:10 +0800
-Message-ID: <1329799573-8820-1-git-send-email-yu.liu@freescale.com>
+Subject: [PATCH v5 4/4] KVM: PPC: epapr: Update other hypercall invoking
+Date: Tue, 21 Feb 2012 12:46:13 +0800
+Message-ID: <1329799573-8820-4-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
+References: <1329799573-8820-1-git-send-email-yu.liu@freescale.com>
+ <1329799573-8820-2-git-send-email-yu.liu@freescale.com>
+ <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@ozlabs.org, Liu Yu <yu.liu@freescale.com>,
@@ -23,249 +28,285 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-from the kvm guest paravirt init code.
+Discard the old way that invoke hypercall,
+instead, use epapr paravirt.
 
 Signed-off-by: Liu Yu <yu.liu@freescale.com>
 ---
-v5:
-1. fix the if test
-2. use patch_instruction()
-3. code cleanup
-4. rename the files
-5. make epapr paravirt user-selectable
+v5: new patch
 
- arch/powerpc/include/asm/epapr_hcalls.h |    2 +
- arch/powerpc/kernel/Makefile            |    1 +
- arch/powerpc/kernel/epapr_hcalls.S      |   25 ++++++++++++++
- arch/powerpc/kernel/epapr_paravirt.c    |   54 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/kvm.c               |   28 ++--------------
- arch/powerpc/kernel/kvm_emul.S          |   10 ------
- arch/powerpc/platforms/Kconfig          |    7 ++++
- 7 files changed, 92 insertions(+), 35 deletions(-)
- create mode 100644 arch/powerpc/kernel/epapr_hcalls.S
- create mode 100644 arch/powerpc/kernel/epapr_paravirt.c
+ arch/powerpc/include/asm/epapr_hcalls.h |   22 +++++++++---------
+ arch/powerpc/include/asm/fsl_hcalls.h   |   36 +++++++++++++++---------------
+ 2 files changed, 29 insertions(+), 29 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
-index f3b0c2c..0ff3f24 100644
+index 0ff3f24..42f2328 100644
 --- a/arch/powerpc/include/asm/epapr_hcalls.h
 +++ b/arch/powerpc/include/asm/epapr_hcalls.h
-@@ -148,6 +148,8 @@
- #define EV_HCALL_CLOBBERS2 EV_HCALL_CLOBBERS3, "r5"
- #define EV_HCALL_CLOBBERS1 EV_HCALL_CLOBBERS2, "r4"
+@@ -188,7 +188,7 @@ static inline unsigned int ev_int_set_config(unsigned int interrupt,
+ 	r5  = priority;
+ 	r6  = destination;
  
-+extern bool epapr_para_enabled;
-+extern u32 epapr_hypercall_start[];
- 
- /*
-  * We use "uintptr_t" to define a register because it's guaranteed to be a
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index ee728e4..ba8fa43 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -136,6 +136,7 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
- obj-y				+= ppc_save_regs.o
- endif
- 
-+obj-$(CONFIG_EPAPR_PARAVIRT)	+= epapr_paravirt.o epapr_hcalls.o
- obj-$(CONFIG_KVM_GUEST)		+= kvm.o kvm_emul.o
- 
- # Disable GCOV in odd or sensitive code
-diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
-new file mode 100644
-index 0000000..697b390
---- /dev/null
-+++ b/arch/powerpc/kernel/epapr_hcalls.S
-@@ -0,0 +1,25 @@
-+/*
-+ * Copyright (C) 2012 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/threads.h>
-+#include <asm/reg.h>
-+#include <asm/page.h>
-+#include <asm/cputable.h>
-+#include <asm/thread_info.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/asm-offsets.h>
-+
-+/* Hypercall entry point. Will be patched with device tree instructions. */
-+.global epapr_hypercall_start
-+epapr_hypercall_start:
-+	li	r3, -1
-+	nop
-+	nop
-+	nop
-+	blr
-diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
-new file mode 100644
-index 0000000..e601da7
---- /dev/null
-+++ b/arch/powerpc/kernel/epapr_paravirt.c
-@@ -0,0 +1,54 @@
-+/*
-+ * ePAPR para-virtualization support.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright (C) 2012 Freescale Semiconductor, Inc.
-+ */
-+
-+#include <linux/of.h>
-+#include <asm/epapr_hcalls.h>
-+#include <asm/cacheflush.h>
-+#include <asm/code-patching.h>
-+
-+bool epapr_para_enabled = false;
-+
-+static int __init epapr_para_init(void)
-+{
-+	struct device_node *hyper_node;
-+	const u32 *insts;
-+	int len, i;
-+
-+	hyper_node = of_find_node_by_path("/hypervisor");
-+	if (!hyper_node) {
-+		printk(KERN_WARNING
-+		       "ePAPR paravirt disabled: No hypervisor node found\n");
-+		return -ENODEV;
-+	}
-+
-+	insts = of_get_property(hyper_node, "hcall-instructions", &len);
-+	if (insts && !(len % 4) && len <= (4 * 4)) {
-+		for (i = 0; i < (len / 4); i++)
-+			patch_instruction(epapr_hypercall_start + i, insts[i]);
-+
-+		epapr_para_enabled = true;
-+	} else {
-+		printk(KERN_WARNING
-+		       "ePAPR paravirt disabled: No hypervisor inst found\n");
-+	}
-+
-+	return 0;
-+}
-+
-+early_initcall(epapr_para_init);
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 62bdf23..9dfc24a 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -31,6 +31,7 @@
- #include <asm/cacheflush.h>
- #include <asm/disassemble.h>
- #include <asm/ppc-opcode.h>
-+#include <asm/epapr_hcalls.h>
- 
- #define KVM_MAGIC_PAGE		(-4096L)
- #define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct kvm_vcpu_arch_shared, x)
-@@ -726,7 +727,7 @@ unsigned long kvm_hypercall(unsigned long *in,
- 	unsigned long register r11 asm("r11") = nr;
- 	unsigned long register r12 asm("r12");
- 
--	asm volatile("bl	kvm_hypercall_start"
+-	__asm__ __volatile__ ("sc 1"
 +	asm volatile("bl	epapr_hypercall_start"
- 		     : "=r"(r0), "=r"(r3), "=r"(r4), "=r"(r5), "=r"(r6),
- 		       "=r"(r7), "=r"(r8), "=r"(r9), "=r"(r10), "=r"(r11),
- 		       "=r"(r12)
-@@ -747,29 +748,6 @@ unsigned long kvm_hypercall(unsigned long *in,
- }
- EXPORT_SYMBOL_GPL(kvm_hypercall);
+ 		: "+r" (r11), "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6)
+ 		: : EV_HCALL_CLOBBERS4
+ 	);
+@@ -217,7 +217,7 @@ static inline unsigned int ev_int_get_config(unsigned int interrupt,
+ 	r11 = EV_HCALL_TOKEN(EV_INT_GET_CONFIG);
+ 	r3 = interrupt;
  
--static int kvm_para_setup(void)
--{
--	extern u32 kvm_hypercall_start;
--	struct device_node *hyper_node;
--	u32 *insts;
--	int len, i;
--
--	hyper_node = of_find_node_by_path("/hypervisor");
--	if (!hyper_node)
--		return -1;
--
--	insts = (u32*)of_get_property(hyper_node, "hcall-instructions", &len);
--	if (len % 4)
--		return -1;
--	if (len > (4 * 4))
--		return -1;
--
--	for (i = 0; i < (len / 4); i++)
--		kvm_patch_ins(&(&kvm_hypercall_start)[i], insts[i]);
--
--	return 0;
--}
--
- static __init void kvm_free_tmp(void)
- {
- 	unsigned long start, end;
-@@ -791,7 +769,7 @@ static int __init kvm_guest_init(void)
- 	if (!kvm_para_available())
- 		goto free_tmp;
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "=r" (r4), "=r" (r5), "=r" (r6)
+ 		: : EV_HCALL_CLOBBERS4
+ 	);
+@@ -247,7 +247,7 @@ static inline unsigned int ev_int_set_mask(unsigned int interrupt,
+ 	r3 = interrupt;
+ 	r4 = mask;
  
--	if (kvm_para_setup())
-+	if (!epapr_para_enabled)
- 		goto free_tmp;
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "+r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -272,7 +272,7 @@ static inline unsigned int ev_int_get_mask(unsigned int interrupt,
+ 	r11 = EV_HCALL_TOKEN(EV_INT_GET_MASK);
+ 	r3 = interrupt;
  
- 	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
-diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-index e291cf3..62ceb2a 100644
---- a/arch/powerpc/kernel/kvm_emul.S
-+++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -24,16 +24,6 @@
- #include <asm/page.h>
- #include <asm/asm-offsets.h>
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "=r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -300,7 +300,7 @@ static inline unsigned int ev_int_eoi(unsigned int interrupt)
+ 	r11 = EV_HCALL_TOKEN(EV_INT_EOI);
+ 	r3 = interrupt;
  
--/* Hypercall entry point. Will be patched with device tree instructions. */
--
--.global kvm_hypercall_start
--kvm_hypercall_start:
--	li	r3, -1
--	nop
--	nop
--	nop
--	blr
--
- #define KVM_MAGIC_PAGE		(-4096)
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -339,7 +339,7 @@ static inline unsigned int ev_byte_channel_send(unsigned int handle,
+ 	r7 = be32_to_cpu(p[2]);
+ 	r8 = be32_to_cpu(p[3]);
  
- #ifdef CONFIG_64BIT
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 0cfb46d..f20963c 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -26,6 +26,7 @@ source "arch/powerpc/platforms/wsp/Kconfig"
- config KVM_GUEST
- 	bool "KVM Guest support"
- 	default n
-+	select EPAPR_PARAVIRT
- 	---help---
- 	  This option enables various optimizations for running under the KVM
- 	  hypervisor. Overhead for the kernel when not running inside KVM should
-@@ -33,6 +34,12 @@ config KVM_GUEST
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3),
+ 		  "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7), "+r" (r8)
+ 		: : EV_HCALL_CLOBBERS6
+@@ -378,7 +378,7 @@ static inline unsigned int ev_byte_channel_receive(unsigned int handle,
+ 	r3 = handle;
+ 	r4 = *count;
  
- 	  In case of doubt, say Y
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "+r" (r4),
+ 		  "=r" (r5), "=r" (r6), "=r" (r7), "=r" (r8)
+ 		: : EV_HCALL_CLOBBERS6
+@@ -416,7 +416,7 @@ static inline unsigned int ev_byte_channel_poll(unsigned int handle,
+ 	r11 = EV_HCALL_TOKEN(EV_BYTE_CHANNEL_POLL);
+ 	r3 = handle;
  
-+config EPAPR_PARAVIRT
-+	bool "ePAPR para-virtualization support"
-+	default n
-+	help
-+	  Used to enalbe ePAPR complied para-virtualization support for guest.
-+
- config PPC_NATIVE
- 	bool
- 	depends on 6xx || PPC64
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "=r" (r4), "=r" (r5)
+ 		: : EV_HCALL_CLOBBERS3
+ 	);
+@@ -449,7 +449,7 @@ static inline unsigned int ev_int_iack(unsigned int handle,
+ 	r11 = EV_HCALL_TOKEN(EV_INT_IACK);
+ 	r3 = handle;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "=r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -473,7 +473,7 @@ static inline unsigned int ev_doorbell_send(unsigned int handle)
+ 	r11 = EV_HCALL_TOKEN(EV_DOORBELL_SEND);
+ 	r3 = handle;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -493,7 +493,7 @@ static inline unsigned int ev_idle(void)
+ 
+ 	r11 = EV_HCALL_TOKEN(EV_IDLE);
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "=r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+diff --git a/arch/powerpc/include/asm/fsl_hcalls.h b/arch/powerpc/include/asm/fsl_hcalls.h
+index 922d9b5..3abb583 100644
+--- a/arch/powerpc/include/asm/fsl_hcalls.h
++++ b/arch/powerpc/include/asm/fsl_hcalls.h
+@@ -96,7 +96,7 @@ static inline unsigned int fh_send_nmi(unsigned int vcpu_mask)
+ 	r11 = FH_HCALL_TOKEN(FH_SEND_NMI);
+ 	r3 = vcpu_mask;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -151,7 +151,7 @@ static inline unsigned int fh_partition_get_dtprop(int handle,
+ 	r9 = (uint32_t)propvalue_addr;
+ 	r10 = *propvalue_len;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11),
+ 		  "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7),
+ 		  "+r" (r8), "+r" (r9), "+r" (r10)
+@@ -205,7 +205,7 @@ static inline unsigned int fh_partition_set_dtprop(int handle,
+ 	r9 = (uint32_t)propvalue_addr;
+ 	r10 = propvalue_len;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11),
+ 		  "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7),
+ 		  "+r" (r8), "+r" (r9), "+r" (r10)
+@@ -229,7 +229,7 @@ static inline unsigned int fh_partition_restart(unsigned int partition)
+ 	r11 = FH_HCALL_TOKEN(FH_PARTITION_RESTART);
+ 	r3 = partition;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -262,7 +262,7 @@ static inline unsigned int fh_partition_get_status(unsigned int partition,
+ 	r11 = FH_HCALL_TOKEN(FH_PARTITION_GET_STATUS);
+ 	r3 = partition;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "=r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -295,7 +295,7 @@ static inline unsigned int fh_partition_start(unsigned int partition,
+ 	r4 = entry_point;
+ 	r5 = load;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "+r" (r4), "+r" (r5)
+ 		: : EV_HCALL_CLOBBERS3
+ 	);
+@@ -317,7 +317,7 @@ static inline unsigned int fh_partition_stop(unsigned int partition)
+ 	r11 = FH_HCALL_TOKEN(FH_PARTITION_STOP);
+ 	r3 = partition;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -376,7 +376,7 @@ static inline unsigned int fh_partition_memcpy(unsigned int source,
+ #endif
+ 	r7 = count;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11),
+ 		  "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7)
+ 		: : EV_HCALL_CLOBBERS5
+@@ -399,7 +399,7 @@ static inline unsigned int fh_dma_enable(unsigned int liodn)
+ 	r11 = FH_HCALL_TOKEN(FH_DMA_ENABLE);
+ 	r3 = liodn;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -421,7 +421,7 @@ static inline unsigned int fh_dma_disable(unsigned int liodn)
+ 	r11 = FH_HCALL_TOKEN(FH_DMA_DISABLE);
+ 	r3 = liodn;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -447,7 +447,7 @@ static inline unsigned int fh_vmpic_get_msir(unsigned int interrupt,
+ 	r11 = FH_HCALL_TOKEN(FH_VMPIC_GET_MSIR);
+ 	r3 = interrupt;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "=r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -469,7 +469,7 @@ static inline unsigned int fh_system_reset(void)
+ 
+ 	r11 = FH_HCALL_TOKEN(FH_SYSTEM_RESET);
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "=r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -506,7 +506,7 @@ static inline unsigned int fh_err_get_info(int queue, uint32_t *bufsize,
+ 	r6 = addr_lo;
+ 	r7 = peek;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6),
+ 		  "+r" (r7)
+ 		: : EV_HCALL_CLOBBERS5
+@@ -542,7 +542,7 @@ static inline unsigned int fh_get_core_state(unsigned int handle,
+ 	r3 = handle;
+ 	r4 = vcpu;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "+r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -572,7 +572,7 @@ static inline unsigned int fh_enter_nap(unsigned int handle, unsigned int vcpu)
+ 	r3 = handle;
+ 	r4 = vcpu;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "+r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -597,7 +597,7 @@ static inline unsigned int fh_exit_nap(unsigned int handle, unsigned int vcpu)
+ 	r3 = handle;
+ 	r4 = vcpu;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3), "+r" (r4)
+ 		: : EV_HCALL_CLOBBERS2
+ 	);
+@@ -618,7 +618,7 @@ static inline unsigned int fh_claim_device(unsigned int handle)
+ 	r11 = FH_HCALL_TOKEN(FH_CLAIM_DEVICE);
+ 	r3 = handle;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
+@@ -645,7 +645,7 @@ static inline unsigned int fh_partition_stop_dma(unsigned int handle)
+ 	r11 = FH_HCALL_TOKEN(FH_PARTITION_STOP_DMA);
+ 	r3 = handle;
+ 
+-	__asm__ __volatile__ ("sc 1"
++	asm volatile("bl	epapr_hypercall_start"
+ 		: "+r" (r11), "+r" (r3)
+ 		: : EV_HCALL_CLOBBERS1
+ 	);
 -- 
 1.7.0.4
