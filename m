@@ -1,25 +1,22 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe004.messaging.microsoft.com
- [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6E2A3B6F98
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2012 05:28:55 +1100 (EST)
-Message-ID: <4F4533DB.7000505@freescale.com>
-Date: Wed, 22 Feb 2012 12:28:43 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Liu Yu-B13201 <B13201@freescale.com>
-Subject: Re: [PATCH v5 1/4] KVM: PPC: epapr: Factor out the epapr init
-References: <1329799573-8820-1-git-send-email-yu.liu@freescale.com>
- <4F44130B.5020300@freescale.com>
- <4CA99838F21AB847ACC344051E23170905749AD7@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <4CA99838F21AB847ACC344051E23170905749AD7@039-SN2MPN1-022.039d.mgd.msft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B0105B6FA7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 08:41:49 +1100 (EST)
+Message-ID: <1329946899.20389.9.camel@pasglop>
+Subject: Re: [PATCH v1 09/11] powerpc/PCI: replace pci_probe_only with
+ pci_flags
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 23 Feb 2012 08:41:39 +1100
+In-Reply-To: <20120222181948.27513.96215.stgit@bhelgaas.mtv.corp.google.com>
+References: <20120222181556.27513.9413.stgit@bhelgaas.mtv.corp.google.com>
+ <20120222181948.27513.96215.stgit@bhelgaas.mtv.corp.google.com>
 Content-Type: text/plain; charset="UTF-8"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/21/2012 08:33 PM, Liu Yu-B13201 wrote:
->>> +bool epapr_para_enabled = false;
->>
->> No need to explicitly initialize to false.
-> 
-> Why not make code more readable?
+On Wed, 2012-02-22 at 11:19 -0700, Bjorn Helgaas wrote:
+>  int maple_pci_get_legacy_ide_irq(struct pci_dev *pdev, int channel)
+> diff --git a/arch/powerpc/platforms/pasemi/pci.c
+> b/arch/powerpc/platforms/pasemi/pci.c
+> index b6a0ec4..b27d886 100644
+> --- a/arch/powerpc/platforms/pasemi/pci.c
+> +++ b/arch/powerpc/platforms/pasemi/pci.c
+> @@ -231,7 +231,7 @@ void __init pas_pci_init(void)
+>         pci_devs_phb_init();
+>  
+>         /* Use the common resource allocation mechanism */
+> -       pci_probe_only = 1;
+> +       pci_add_flags(PCI_PROBE_ONLY);
+>  }
 
-It's common kernel style to not explicitly initialize global data to
-zero or equivalent.  Historically this was due to toolchain issues that
-are no longer relevant, but people still seem to prefer it that way.
-It's subjective whether readability is enhanced by being explicit or by
-being concise.
+Olof, do you remember why you used to set that on pasemi ?
 
->> Do not warn just because there's no hypervisor or hcall-instructions.
->> There's nothing wrong with that.  Only warn if they are present but wrong.
->>
-> 
-> I see that it's not proper to warn in host.
-> But if user forget to add hypervisor node or inst, how can he know something is wrong?
+I would have expected it to be clear, so the kernel can re-assign things
+if needed. We really only want it set for pseries because of the
+hypervisor being a PITA :-)
 
-Print a message when paravirt is enabled (I think KVM already does
-this).  This is no different than a user forgetting to add a certain
-device to the device tree -- you'll silently just not get that device.
-
-Ideally the hypervisor would take care of adding this stuff to the
-device tree anyway, no user action required.
-
--Scott
+Cheers,
+Ben.
