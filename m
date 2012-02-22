@@ -1,24 +1,26 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 424C4B6F9D
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2012 13:52:22 +1100 (EST)
-Message-ID: <4F445845.8030606@windriver.com>
-Date: Wed, 22 Feb 2012 10:51:49 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Liu Yu-B13201 <B13201@freescale.com>
-Subject: Re: [PATCH v5 3/4] KVM: PPC: epapr: install ev_idle hcall for e500
+Return-Path: <B13201@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E070DB6F9F
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2012 13:59:11 +1100 (EST)
+From: Liu Yu-B13201 <B13201@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
+Subject: RE: [PATCH v5 3/4] KVM: PPC: epapr: install ev_idle hcall for e500
  guest
+Date: Wed, 22 Feb 2012 02:59:02 +0000
+Message-ID: <4CA99838F21AB847ACC344051E23170905749B1E@039-SN2MPN1-022.039d.mgd.msft.net>
 References: <1329799573-8820-1-git-send-email-yu.liu@freescale.com>
  <1329799573-8820-2-git-send-email-yu.liu@freescale.com>
  <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
  <4F4377AD.4000501@windriver.com>
  <4CA99838F21AB847ACC344051E23170905749AB6@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <4CA99838F21AB847ACC344051E23170905749AB6@039-SN2MPN1-022.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+ <4F445845.8030606@windriver.com>
+In-Reply-To: <4F445845.8030606@windriver.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
  Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
@@ -32,69 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Liu Yu-B13201 wrote:
-> 
->> -----Original Message-----
->> From: tiejun.chen [mailto:tiejun.chen@windriver.com]
->> Sent: Tuesday, February 21, 2012 6:54 PM
->> To: Liu Yu-B13201
->> Cc: agraf@suse.de; kvm-ppc@vger.kernel.org; kvm@vger.kernel.org;
->> linuxppc-dev@ozlabs.org; Wood Scott-B07421
->> Subject: Re: [PATCH v5 3/4] KVM: PPC: epapr: install ev_idle hcall for
->> e500 guest
->>
->> Liu Yu wrote:
->>> If the guest hypervisor node contains "has-idle" property.
->>>
->>> Signed-off-by: Liu Yu <yu.liu@freescale.com>
->>> ---
->>> v5: no change
->>>
->>>  arch/powerpc/kernel/epapr_hcalls.S   |   29
->> +++++++++++++++++++++++++++++
->>>  arch/powerpc/kernel/epapr_paravirt.c |   11 ++++++++++-
->>>  2 files changed, 39 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/epapr_hcalls.S
->>> b/arch/powerpc/kernel/epapr_hcalls.S
->>> index 697b390..72fa234 100644
->>> --- a/arch/powerpc/kernel/epapr_hcalls.S
->>> +++ b/arch/powerpc/kernel/epapr_hcalls.S
->>> @@ -15,6 +15,35 @@
->>>  #include <asm/ppc_asm.h>
->>>  #include <asm/asm-offsets.h>
->>>
->>> +#define HC_VENDOR_EPAPR		(1 << 16)
->>> +#define HC_EV_IDLE		16
->> Why not use 'EV_IDLE' directly?
->>
->>> +
->>> +_GLOBAL(epapr_ev_idle)
->>> +epapr_ev_idle:
->>> +	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
->>> +	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
->>> +	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
->>> +	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
->>> +
->>> +	wrteei	1
->>> +
->>> +idle_loop:
->>> +	LOAD_REG_IMMEDIATE(r11, HC_VENDOR_EPAPR | HC_EV_IDLE)
->> And could this line be simplified as something like this:
->>
->> LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
->>
->> If so, even we can remove the previous HC_VENDOR_EPAPR definition as well.
->>
-> 
-> Because the epapr_hcalls.h contains C functions,
-> so it cannot be included by assembly code.
-
-These common definitions are already covered in epapr_hcalls.h, but looks you
-redefine the same items many times, in kvm_para.h/epapr_hcalls.S. And I think
-maybe we'll also reuse these generics elsewhere lately.
-
-So can we limit that with __ASSEMBLY__ in epapr_hcalls.h? Or other way. If so it
-makes our life easy in the future.
-
-Tiejun
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
+aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIEZlYnJ1
+YXJ5IDIyLCAyMDEyIDEwOjUyIEFNDQo+IFRvOiBMaXUgWXUtQjEzMjAxDQo+IENjOiBhZ3JhZkBz
+dXNlLmRlOyBrdm0tcHBjQHZnZXIua2VybmVsLm9yZzsga3ZtQHZnZXIua2VybmVsLm9yZzsNCj4g
+bGludXhwcGMtZGV2QG96bGFicy5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFN1YmplY3Q6IFJl
+OiBbUEFUQ0ggdjUgMy80XSBLVk06IFBQQzogZXBhcHI6IGluc3RhbGwgZXZfaWRsZSBoY2FsbCBm
+b3INCj4gZTUwMCBndWVzdA0KPiANCj4gTGl1IFl1LUIxMzIwMSB3cm90ZToNCj4gPg0KPiA+PiAt
+LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiB0aWVqdW4uY2hlbiBbbWFpbHRv
+OnRpZWp1bi5jaGVuQHdpbmRyaXZlci5jb21dDQo+ID4+IFNlbnQ6IFR1ZXNkYXksIEZlYnJ1YXJ5
+IDIxLCAyMDEyIDY6NTQgUE0NCj4gPj4gVG86IExpdSBZdS1CMTMyMDENCj4gPj4gQ2M6IGFncmFm
+QHN1c2UuZGU7IGt2bS1wcGNAdmdlci5rZXJuZWwub3JnOyBrdm1Admdlci5rZXJuZWwub3JnOw0K
+PiA+PiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjENCj4gPj4gU3Vi
+amVjdDogUmU6IFtQQVRDSCB2NSAzLzRdIEtWTTogUFBDOiBlcGFwcjogaW5zdGFsbCBldl9pZGxl
+IGhjYWxsDQo+ID4+IGZvciBlNTAwIGd1ZXN0DQo+ID4+DQo+ID4+IExpdSBZdSB3cm90ZToNCj4g
+Pj4+IElmIHRoZSBndWVzdCBoeXBlcnZpc29yIG5vZGUgY29udGFpbnMgImhhcy1pZGxlIiBwcm9w
+ZXJ0eS4NCj4gPj4+DQo+ID4+PiBTaWduZWQtb2ZmLWJ5OiBMaXUgWXUgPHl1LmxpdUBmcmVlc2Nh
+bGUuY29tPg0KPiA+Pj4gLS0tDQo+ID4+PiB2NTogbm8gY2hhbmdlDQo+ID4+Pg0KPiA+Pj4gIGFy
+Y2gvcG93ZXJwYy9rZXJuZWwvZXBhcHJfaGNhbGxzLlMgICB8ICAgMjkNCj4gPj4gKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysNCj4gPj4+ICBhcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX3Bh
+cmF2aXJ0LmMgfCAgIDExICsrKysrKysrKystDQo+ID4+PiAgMiBmaWxlcyBjaGFuZ2VkLCAzOSBp
+bnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQ0KPiA+Pj4NCj4gPj4+IGRpZmYgLS1naXQgYS9h
+cmNoL3Bvd2VycGMva2VybmVsL2VwYXByX2hjYWxscy5TDQo+ID4+PiBiL2FyY2gvcG93ZXJwYy9r
+ZXJuZWwvZXBhcHJfaGNhbGxzLlMNCj4gPj4+IGluZGV4IDY5N2IzOTAuLjcyZmEyMzQgMTAwNjQ0
+DQo+ID4+PiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX2hjYWxscy5TDQo+ID4+PiAr
+KysgYi9hcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX2hjYWxscy5TDQo+ID4+PiBAQCAtMTUsNiAr
+MTUsMzUgQEANCj4gPj4+ICAjaW5jbHVkZSA8YXNtL3BwY19hc20uaD4NCj4gPj4+ICAjaW5jbHVk
+ZSA8YXNtL2FzbS1vZmZzZXRzLmg+DQo+ID4+Pg0KPiA+Pj4gKyNkZWZpbmUgSENfVkVORE9SX0VQ
+QVBSCQkoMSA8PCAxNikNCj4gPj4+ICsjZGVmaW5lIEhDX0VWX0lETEUJCTE2DQo+ID4+IFdoeSBu
+b3QgdXNlICdFVl9JRExFJyBkaXJlY3RseT8NCj4gPj4NCj4gPj4+ICsNCj4gPj4+ICtfR0xPQkFM
+KGVwYXByX2V2X2lkbGUpDQo+ID4+PiArZXBhcHJfZXZfaWRsZToNCj4gPj4+ICsJcmx3aW5tCXIz
+LHIxLDAsMCwzMS1USFJFQURfU0hJRlQJLyogY3VycmVudCB0aHJlYWRfaW5mbyAqLw0KPiA+Pj4g
+Kwlsd3oJcjQsVElfTE9DQUxfRkxBR1MocjMpCS8qIHNldCBuYXBwaW5nIGJpdCAqLw0KPiA+Pj4g
+KwlvcmkJcjQscjQsX1RMRl9OQVBQSU5HCS8qIHNvIHdoZW4gd2UgdGFrZSBhbiBleGNlcHRpb24g
+Ki8NCj4gPj4+ICsJc3R3CXI0LFRJX0xPQ0FMX0ZMQUdTKHIzKQkvKiBpdCB3aWxsIHJldHVybiB0
+byBvdXIgY2FsbGVyICovDQo+ID4+PiArDQo+ID4+PiArCXdydGVlaQkxDQo+ID4+PiArDQo+ID4+
+PiAraWRsZV9sb29wOg0KPiA+Pj4gKwlMT0FEX1JFR19JTU1FRElBVEUocjExLCBIQ19WRU5ET1Jf
+RVBBUFIgfCBIQ19FVl9JRExFKQ0KPiA+PiBBbmQgY291bGQgdGhpcyBsaW5lIGJlIHNpbXBsaWZp
+ZWQgYXMgc29tZXRoaW5nIGxpa2UgdGhpczoNCj4gPj4NCj4gPj4gTE9BRF9SRUdfSU1NRURJQVRF
+KHIxMSwgRVZfSENBTExfVE9LRU4oRVZfSURMRSkpDQo+ID4+DQo+ID4+IElmIHNvLCBldmVuIHdl
+IGNhbiByZW1vdmUgdGhlIHByZXZpb3VzIEhDX1ZFTkRPUl9FUEFQUiBkZWZpbml0aW9uIGFzDQo+
+IHdlbGwuDQo+ID4+DQo+ID4NCj4gPiBCZWNhdXNlIHRoZSBlcGFwcl9oY2FsbHMuaCBjb250YWlu
+cyBDIGZ1bmN0aW9ucywgc28gaXQgY2Fubm90IGJlDQo+ID4gaW5jbHVkZWQgYnkgYXNzZW1ibHkg
+Y29kZS4NCj4gDQo+IFRoZXNlIGNvbW1vbiBkZWZpbml0aW9ucyBhcmUgYWxyZWFkeSBjb3ZlcmVk
+IGluIGVwYXByX2hjYWxscy5oLCBidXQgbG9va3MNCj4geW91IHJlZGVmaW5lIHRoZSBzYW1lIGl0
+ZW1zIG1hbnkgdGltZXMsIGluIGt2bV9wYXJhLmgvZXBhcHJfaGNhbGxzLlMuIEFuZA0KPiBJIHRo
+aW5rIG1heWJlIHdlJ2xsIGFsc28gcmV1c2UgdGhlc2UgZ2VuZXJpY3MgZWxzZXdoZXJlIGxhdGVs
+eS5cDQoNClRoZSBvbmVzIGluIGt2bV9wYXJhLmggYXJlIGFsaWFzLCBub3QgcmVkZWZpbmUuDQpC
+ZWNhdXNlIGt2bSBoYXMgaXRzIG93biBuYW1lIHJ1bGUuDQoNCj4gDQo+IFNvIGNhbiB3ZSBsaW1p
+dCB0aGF0IHdpdGggX19BU1NFTUJMWV9fIGluIGVwYXByX2hjYWxscy5oPyBPciBvdGhlciB3YXku
+DQo+IElmIHNvIGl0IG1ha2VzIG91ciBsaWZlIGVhc3kgaW4gdGhlIGZ1dHVyZS4NCj4gDQoNClll
+cy4gVGhpcyB3b3VsZCBiZSBoZWxwZnVsLg0KDQpUaGFua3MsDQpZdQ0K
