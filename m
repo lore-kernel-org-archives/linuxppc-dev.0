@@ -1,30 +1,17 @@
-Return-Path: <B13201@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E070DB6F9F
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2012 13:59:11 +1100 (EST)
-From: Liu Yu-B13201 <B13201@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: RE: [PATCH v5 3/4] KVM: PPC: epapr: install ev_idle hcall for e500
- guest
-Date: Wed, 22 Feb 2012 02:59:02 +0000
-Message-ID: <4CA99838F21AB847ACC344051E23170905749B1E@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1329799573-8820-1-git-send-email-yu.liu@freescale.com>
- <1329799573-8820-2-git-send-email-yu.liu@freescale.com>
- <1329799573-8820-3-git-send-email-yu.liu@freescale.com>
- <4F4377AD.4000501@windriver.com>
- <4CA99838F21AB847ACC344051E23170905749AB6@039-SN2MPN1-022.039d.mgd.msft.net>
- <4F445845.8030606@windriver.com>
-In-Reply-To: <4F445845.8030606@windriver.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BEF66B6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2012 15:44:39 +1100 (EST)
+Message-ID: <1329885727.20389.3.camel@pasglop>
+Subject: [PATCH]  powerpc: Fix various issues with return to userspace
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 22 Feb 2012 15:42:07 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,54 +21,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
-aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIEZlYnJ1
-YXJ5IDIyLCAyMDEyIDEwOjUyIEFNDQo+IFRvOiBMaXUgWXUtQjEzMjAxDQo+IENjOiBhZ3JhZkBz
-dXNlLmRlOyBrdm0tcHBjQHZnZXIua2VybmVsLm9yZzsga3ZtQHZnZXIua2VybmVsLm9yZzsNCj4g
-bGludXhwcGMtZGV2QG96bGFicy5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFN1YmplY3Q6IFJl
-OiBbUEFUQ0ggdjUgMy80XSBLVk06IFBQQzogZXBhcHI6IGluc3RhbGwgZXZfaWRsZSBoY2FsbCBm
-b3INCj4gZTUwMCBndWVzdA0KPiANCj4gTGl1IFl1LUIxMzIwMSB3cm90ZToNCj4gPg0KPiA+PiAt
-LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiB0aWVqdW4uY2hlbiBbbWFpbHRv
-OnRpZWp1bi5jaGVuQHdpbmRyaXZlci5jb21dDQo+ID4+IFNlbnQ6IFR1ZXNkYXksIEZlYnJ1YXJ5
-IDIxLCAyMDEyIDY6NTQgUE0NCj4gPj4gVG86IExpdSBZdS1CMTMyMDENCj4gPj4gQ2M6IGFncmFm
-QHN1c2UuZGU7IGt2bS1wcGNAdmdlci5rZXJuZWwub3JnOyBrdm1Admdlci5rZXJuZWwub3JnOw0K
-PiA+PiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjENCj4gPj4gU3Vi
-amVjdDogUmU6IFtQQVRDSCB2NSAzLzRdIEtWTTogUFBDOiBlcGFwcjogaW5zdGFsbCBldl9pZGxl
-IGhjYWxsDQo+ID4+IGZvciBlNTAwIGd1ZXN0DQo+ID4+DQo+ID4+IExpdSBZdSB3cm90ZToNCj4g
-Pj4+IElmIHRoZSBndWVzdCBoeXBlcnZpc29yIG5vZGUgY29udGFpbnMgImhhcy1pZGxlIiBwcm9w
-ZXJ0eS4NCj4gPj4+DQo+ID4+PiBTaWduZWQtb2ZmLWJ5OiBMaXUgWXUgPHl1LmxpdUBmcmVlc2Nh
-bGUuY29tPg0KPiA+Pj4gLS0tDQo+ID4+PiB2NTogbm8gY2hhbmdlDQo+ID4+Pg0KPiA+Pj4gIGFy
-Y2gvcG93ZXJwYy9rZXJuZWwvZXBhcHJfaGNhbGxzLlMgICB8ICAgMjkNCj4gPj4gKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysNCj4gPj4+ICBhcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX3Bh
-cmF2aXJ0LmMgfCAgIDExICsrKysrKysrKystDQo+ID4+PiAgMiBmaWxlcyBjaGFuZ2VkLCAzOSBp
-bnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQ0KPiA+Pj4NCj4gPj4+IGRpZmYgLS1naXQgYS9h
-cmNoL3Bvd2VycGMva2VybmVsL2VwYXByX2hjYWxscy5TDQo+ID4+PiBiL2FyY2gvcG93ZXJwYy9r
-ZXJuZWwvZXBhcHJfaGNhbGxzLlMNCj4gPj4+IGluZGV4IDY5N2IzOTAuLjcyZmEyMzQgMTAwNjQ0
-DQo+ID4+PiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX2hjYWxscy5TDQo+ID4+PiAr
-KysgYi9hcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX2hjYWxscy5TDQo+ID4+PiBAQCAtMTUsNiAr
-MTUsMzUgQEANCj4gPj4+ICAjaW5jbHVkZSA8YXNtL3BwY19hc20uaD4NCj4gPj4+ICAjaW5jbHVk
-ZSA8YXNtL2FzbS1vZmZzZXRzLmg+DQo+ID4+Pg0KPiA+Pj4gKyNkZWZpbmUgSENfVkVORE9SX0VQ
-QVBSCQkoMSA8PCAxNikNCj4gPj4+ICsjZGVmaW5lIEhDX0VWX0lETEUJCTE2DQo+ID4+IFdoeSBu
-b3QgdXNlICdFVl9JRExFJyBkaXJlY3RseT8NCj4gPj4NCj4gPj4+ICsNCj4gPj4+ICtfR0xPQkFM
-KGVwYXByX2V2X2lkbGUpDQo+ID4+PiArZXBhcHJfZXZfaWRsZToNCj4gPj4+ICsJcmx3aW5tCXIz
-LHIxLDAsMCwzMS1USFJFQURfU0hJRlQJLyogY3VycmVudCB0aHJlYWRfaW5mbyAqLw0KPiA+Pj4g
-Kwlsd3oJcjQsVElfTE9DQUxfRkxBR1MocjMpCS8qIHNldCBuYXBwaW5nIGJpdCAqLw0KPiA+Pj4g
-KwlvcmkJcjQscjQsX1RMRl9OQVBQSU5HCS8qIHNvIHdoZW4gd2UgdGFrZSBhbiBleGNlcHRpb24g
-Ki8NCj4gPj4+ICsJc3R3CXI0LFRJX0xPQ0FMX0ZMQUdTKHIzKQkvKiBpdCB3aWxsIHJldHVybiB0
-byBvdXIgY2FsbGVyICovDQo+ID4+PiArDQo+ID4+PiArCXdydGVlaQkxDQo+ID4+PiArDQo+ID4+
-PiAraWRsZV9sb29wOg0KPiA+Pj4gKwlMT0FEX1JFR19JTU1FRElBVEUocjExLCBIQ19WRU5ET1Jf
-RVBBUFIgfCBIQ19FVl9JRExFKQ0KPiA+PiBBbmQgY291bGQgdGhpcyBsaW5lIGJlIHNpbXBsaWZp
-ZWQgYXMgc29tZXRoaW5nIGxpa2UgdGhpczoNCj4gPj4NCj4gPj4gTE9BRF9SRUdfSU1NRURJQVRF
-KHIxMSwgRVZfSENBTExfVE9LRU4oRVZfSURMRSkpDQo+ID4+DQo+ID4+IElmIHNvLCBldmVuIHdl
-IGNhbiByZW1vdmUgdGhlIHByZXZpb3VzIEhDX1ZFTkRPUl9FUEFQUiBkZWZpbml0aW9uIGFzDQo+
-IHdlbGwuDQo+ID4+DQo+ID4NCj4gPiBCZWNhdXNlIHRoZSBlcGFwcl9oY2FsbHMuaCBjb250YWlu
-cyBDIGZ1bmN0aW9ucywgc28gaXQgY2Fubm90IGJlDQo+ID4gaW5jbHVkZWQgYnkgYXNzZW1ibHkg
-Y29kZS4NCj4gDQo+IFRoZXNlIGNvbW1vbiBkZWZpbml0aW9ucyBhcmUgYWxyZWFkeSBjb3ZlcmVk
-IGluIGVwYXByX2hjYWxscy5oLCBidXQgbG9va3MNCj4geW91IHJlZGVmaW5lIHRoZSBzYW1lIGl0
-ZW1zIG1hbnkgdGltZXMsIGluIGt2bV9wYXJhLmgvZXBhcHJfaGNhbGxzLlMuIEFuZA0KPiBJIHRo
-aW5rIG1heWJlIHdlJ2xsIGFsc28gcmV1c2UgdGhlc2UgZ2VuZXJpY3MgZWxzZXdoZXJlIGxhdGVs
-eS5cDQoNClRoZSBvbmVzIGluIGt2bV9wYXJhLmggYXJlIGFsaWFzLCBub3QgcmVkZWZpbmUuDQpC
-ZWNhdXNlIGt2bSBoYXMgaXRzIG93biBuYW1lIHJ1bGUuDQoNCj4gDQo+IFNvIGNhbiB3ZSBsaW1p
-dCB0aGF0IHdpdGggX19BU1NFTUJMWV9fIGluIGVwYXByX2hjYWxscy5oPyBPciBvdGhlciB3YXku
-DQo+IElmIHNvIGl0IG1ha2VzIG91ciBsaWZlIGVhc3kgaW4gdGhlIGZ1dHVyZS4NCj4gDQoNClll
-cy4gVGhpcyB3b3VsZCBiZSBoZWxwZnVsLg0KDQpUaGFua3MsDQpZdQ0K
+We have a few problems when returning to userspace. This is a
+quick set of fixes for 3.3, I'll look into a more comprehensive
+rework for 3.4. This fixes:
+
+ - We kept interrupts soft-disabled when schedule'ing or calling
+do_signal when returning to userspace as a result of a hardware
+interrupt.
+
+ - Rename do_signal to do_notify_resume like all other archs (and
+do_signal_pending back to do_signal, which it was before Roland
+changed it).
+
+ - Add the missing call to key_replace_session_keyring() to
+do_notify_resume().
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 4f80cf1..3e57a00 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -1213,7 +1213,7 @@ do_user_signal:			/* r10 contains MSR_KERNEL here */
+ 	stw	r3,_TRAP(r1)
+ 2:	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	mr	r4,r9
+-	bl	do_signal
++	bl	do_notify_resume
+ 	REST_NVGPRS(r1)
+ 	b	recheck
+ 
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index d834425..6597464 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -751,12 +751,16 @@ user_work:
+ 
+ 	andi.	r0,r4,_TIF_NEED_RESCHED
+ 	beq	1f
++	li	r5,1
++	TRACE_AND_RESTORE_IRQ(r5);	
+ 	bl	.schedule
+ 	b	.ret_from_except_lite
+ 
+ 1:	bl	.save_nvgprs
++	li	r5,1
++	TRACE_AND_RESTORE_IRQ(r5);	
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.do_signal
++	bl	.do_notify_resume
+ 	b	.ret_from_except
+ 
+ unrecov_restore:
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 2300426..ac6e437 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/tracehook.h>
+ #include <linux/signal.h>
++#include <linux/key.h>
+ #include <asm/hw_breakpoint.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -113,8 +114,9 @@ static void check_syscall_restart(struct pt_regs *regs, struct k_sigaction *ka,
+ 	}
+ }
+ 
+-static int do_signal_pending(sigset_t *oldset, struct pt_regs *regs)
++static int do_signal(struct pt_regs *regs)
+ {
++	sigset_t *oldset;
+ 	siginfo_t info;
+ 	int signr;
+ 	struct k_sigaction ka;
+@@ -123,7 +125,7 @@ static int do_signal_pending(sigset_t *oldset, struct pt_regs *regs)
+ 
+ 	if (current_thread_info()->local_flags & _TLF_RESTORE_SIGMASK)
+ 		oldset = &current->saved_sigmask;
+-	else if (!oldset)
++	else
+ 		oldset = &current->blocked;
+ 
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+@@ -191,14 +193,16 @@ static int do_signal_pending(sigset_t *oldset, struct pt_regs *regs)
+ 	return ret;
+ }
+ 
+-void do_signal(struct pt_regs *regs, unsigned long thread_info_flags)
++void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+ {
+ 	if (thread_info_flags & _TIF_SIGPENDING)
+-		do_signal_pending(NULL, regs);
++		do_signal(regs);
+ 
+ 	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
+ 		clear_thread_flag(TIF_NOTIFY_RESUME);
+ 		tracehook_notify_resume(regs);
++		if (current->replacement_session_keyring)
++			key_replace_session_keyring();
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
+index 6c0ddfc..da7d838 100644
+--- a/arch/powerpc/kernel/signal.h
++++ b/arch/powerpc/kernel/signal.h
+@@ -12,8 +12,6 @@
+ 
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+ 
+-extern void do_signal(struct pt_regs *regs, unsigned long thread_info_flags);
+-
+ extern void __user * get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
+ 				  size_t frame_size, int is_32);
+ extern void restore_sigmask(sigset_t *set);
