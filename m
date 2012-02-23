@@ -1,25 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-tul01m020-f179.google.com (mail-tul01m020-f179.google.com
- [209.85.214.179])
+Return-Path: <bhelgaas@google.com>
+Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
+ [209.85.212.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D4E61B70A5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 07:27:38 +1100 (EST)
-Received: by obbup6 with SMTP id up6so1895519obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 12:27:36 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 5F0D6B6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 07:51:54 +1100 (EST)
+Received: by wibhj6 with SMTP id hj6so1131250wib.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 12:51:50 -0800 (PST)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20120223202534.GE22562@n2100.arm.linux.org.uk>
-References: <20120223112915.GT22562@n2100.arm.linux.org.uk>
- <1330028339.20389.28.camel@pasglop>
- <20120223202534.GE22562@n2100.arm.linux.org.uk>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 23 Feb 2012 13:27:16 -0700
-Message-ID: <CACxGe6s7H7i9TRNDCNXPxuz1WUfMbQxkBy5jCeMrE_3HY4hkQg@mail.gmail.com>
-Subject: Re: in_be32() etc
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+In-Reply-To: <20120223122536.6a2a7a6b@jbarnes-desktop>
+References: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
+ <1328425088-6562-10-git-send-email-yinghai@kernel.org>
+ <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
+ <1328738567.2903.45.camel@pasglop>
+ <CAErSpo7ekGn-+Mnyz7KL=fVFH3Ed19AeE3MKkZWJ4bd0Jo7kCw@mail.gmail.com>
+ <1328823358.2903.77.camel@pasglop> <20120223122536.6a2a7a6b@jbarnes-desktop>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 23 Feb 2012 12:51:30 -0800
+Message-ID: <CAErSpo7_WGjitDZz4XH+77f65Uz1ynd5_USN+D17D09Eux1iQQ@mail.gmail.com>
+Subject: Re: [PATCH 09/24] PCI, powerpc: Register busn_res for root buses
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +36,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 23, 2012 at 1:25 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Fri, Feb 24, 2012 at 07:18:59AM +1100, Benjamin Herrenschmidt wrote:
->> On Thu, 2012-02-23 at 11:29 +0000, Russell King - ARM Linux wrote:
->> > What's this stuff doing in generic drivers?
->>
->> Well, I suppose that's because the xilinx stuff used to be ppc
->> only ? :-)
+On Thu, Feb 23, 2012 at 12:25 PM, Jesse Barnes <jbarnes@virtuousgeek.org> w=
+rote:
+> On Fri, 10 Feb 2012 08:35:58 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 >
-> Note that's just the first one grep turned up. =A0I've no idea which spec=
-ific
-> drivers the ST SPEAr people are wanting these accessors for (they didn't
-> include that information in their submission adding them to ARM.)
+>> On Thu, 2012-02-09 at 11:24 -0800, Bjorn Helgaas wrote:
+>> > My point is that the interface between the arch and the PCI core
+>> > should be simply the arch telling the core "this is the range of bus
+>> > numbers you can use." =A0If the firmware doesn't give you the HW limit=
+s,
+>> > that's the arch's problem. =A0If you want to assume 0..255 are
+>> > available, again, that's the arch's decision.
+>> >
+>> > But the answer to the question "what bus numbers are available to me"
+>> > depends only on the host bridge HW configuration. =A0It does not depen=
+d
+>> > on what pci_scan_child_bus() found. =A0Therefore, I think we can come =
+up
+>> > with a design where pci_bus_update_busn_res_end() is unnecessary.
+>>
+>> In an ideal world yes. In a world where there are reverse engineered
+>> platforms on which we aren't 100% sure how thing actually work under the
+>> hood and have the code just adapt on "what's there" (and try to fix it
+>> up -sometimes-), thinks can get a bit murky :-)
+>>
+>> But yes, I see your point. As for what is the "correct" setting that
+>> needs to be done so that the patch doesn't end up a regression for us,
+>> I'll have to dig into some ancient HW to dbl check a few things. I hope
+>> 0...255 will just work but I can't guarantee it.
+>>
+>> What I'll probably do is constraint the core to the values in
+>> hose->min/max, and update selected platforms to put 0..255 in there when
+>> I know for sure they can cope.
 >
->> > See drivers/gpio/gpio-xilinx.c:
->> > static int xgpio_get(struct gpio_chip *gc, unsigned int gpio)
->> > {
->> > =A0 =A0 =A0 =A0 struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(g=
-c);
->> >
->> > =A0 =A0 =A0 =A0 return (in_be32(mm_gc->regs + XGPIO_DATA_OFFSET) >> gp=
-io) & 1;
->> > }
->> >
->> > include/linux/of_gpio.h:
->> > struct of_mm_gpio_chip {
->> > =A0 =A0 =A0 =A0 struct gpio_chip gc;
->> > =A0 =A0 =A0 =A0 void (*save_regs)(struct of_mm_gpio_chip *mm_gc);
->> > =A0 =A0 =A0 =A0 void __iomem *regs;
->> > };
->> >
->> > Why am I being asked to add in_be32() etc to ARMs io.h ? =A0Why do we =
-need
->> > yet another set of IO accessors? =A0Is there something wrong with
->> > ioread*()/ioread*be() etc?
->>
->> Nope, nothing wrong with them, the driver should be fixed. in_be* is
->> historical ppc stuff.
->>
->> > My guess is this stems from a lack of proper review
->>
->> That or history. Our readX/writeX used to be more PCI specific (have
->> infrastructure to work around PCI bridge bugs) which some drivers
->> avoided using the in_/out_ variants, in some case it's just pure
->> history, etc... Some of these things are ancient.
+> But I think the point is, can't we intiialize the busn resource after
+> the first & last bus numbers have been determined? =A0E.g. rather than
+> Yinghai's current:
+> + =A0 =A0 =A0 pci_bus_insert_busn_res(bus, hose->first_busno, hose->last_=
+busno);
+> +
+> =A0 =A0 =A0 =A0/* Get probe mode and perform scan */
+> =A0 =A0 =A0 =A0mode =3D PCI_PROBE_NORMAL;
+> =A0 =A0 =A0 =A0if (node && ppc_md.pci_probe_mode)
+> @@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_control=
+ler *hose)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_scan_bus(node, bus);
+> =A0 =A0 =A0 =A0}
 >
-> So, if I tell the SPEAr people that any driver they come across using
-> these old in_XX should be converted to use ioread*() you'll be happy
-> for that to happen?
+> - =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL)
+> + =A0 =A0 =A0 if (mode =3D=3D PCI_PROBE_NORMAL) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, 255);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hose->last_busno =3D bus->subordinate =3D =
+pci_scan_child_bus(bus);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pci_bus_update_busn_res_end(bus, bus->subor=
+dinate);
+> + =A0 =A0 =A0 }
+>
+> we'd have something more like:
+>
+> =A0 =A0 =A0 =A0/* Get probe mode and perform scan */
+> =A0 =A0 =A0 =A0mode =3D PCI_PROBE_NORMAL;
+> =A0 =A0 =A0 =A0if (node && ppc_md.pci_probe_mode)
+> @@ -1742,8 +1744,11 @@ void __devinit pcibios_scan_phb(struct pci_control=
+ler *hose)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_scan_bus(node, bus);
+> =A0 =A0 =A0 =A0}
+>
+> =A0 =A0 =A0 =A0if (mode =3D=3D PCI_PROBE_NORMAL)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hose->last_busno =3D bus->subordinate =3D =
+pci_scan_child_bus(bus);
+>
+> + =A0 =A0 =A0 pci_bus_insert_busn_res(bus, hose->first_busno, hose->last_=
+busno);
+>
+> since we should have the final bus range by then? =A0Setting the end to
+> 255 and then changing it again doesn't make sense; and definitely makes
+> the code hard to follow.
 
-yes
+I have two issues here:
 
-g.
+1) hose->last_busno is currently the highest bus number found by
+pci_scan_child_bus().  If I understand correctly,
+pci_bus_insert_busn_res() is supposed to update the core's idea of the
+host bridge's bus number aperture.  (Actually, I guess it just updates
+the *end* of the aperture, since we supply the start directly to
+pci_scan_root_bus()).  The aperture and the highest bus number we
+found are not related, except that we should have:
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+    hose->first_busno <=3D bus->subordinate <=3D hose->last_busno
+
+If we set the aperture to [first_busno - last_busno], we artificially
+prevent some hotplug.
+
+2) We already have a way to add resources to a root bus: the
+pci_add_resource() used to add I/O port and MMIO apertures.  I think
+it'd be a lot simpler to just use that same interface for the bus
+number aperture, e.g.,
+
+    pci_add_resource(&resources, hose->io_space);
+    pci_add_resource(&resources, hose->mem_space);
+    pci_add_resource(&resources, hose->busnr_space);
+    bus =3D pci_scan_root_bus(dev, next_busno, pci_ops, sysdata, &resources=
+);
+
+This is actually a bit redundant, since "next_busno" should be the
+same as hose->busnr_space->start.  So if we adopted this approach, we
+might want to eventually drop the "next_busno" argument.
+
+ Bjorn
