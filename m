@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 32C9DB6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 11:10:21 +1100 (EST)
-Date: Thu, 23 Feb 2012 11:10:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: remove CONFIG_PPC_ISERIES from the architecture
- Kconfig files
-Message-Id: <20120223111012.cf31162aeef3737bc7bc8b19@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 58270B6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 11:13:28 +1100 (EST)
+Message-ID: <1329955991.20389.17.camel@pasglop>
+Subject: Re: [PATCH] powerpc: remove CONFIG_PPC_ISERIES from the
+ architecture Kconfig files
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 23 Feb 2012 11:13:11 +1100
+In-Reply-To: <20120223111012.cf31162aeef3737bc7bc8b19@canb.auug.org.au>
+References: <20120223111012.cf31162aeef3737bc7bc8b19@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__23_Feb_2012_11_10_12_+1100_YaIZsaE1ztcY_.nL"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,407 +24,378 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__23_Feb_2012_11_10_12_+1100_YaIZsaE1ztcY_.nL
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2012-02-23 at 11:10 +1100, Stephen Rothwell wrote:
+> After this, we can remove the legacy iSeries code more easily.
 
-After this, we can remove the legacy iSeries code more easily.
+This is the LAST CALL for objections ... I intend to put that in
+-next early next week so speak up NOW if you disagree.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/Kconfig                   |    2 +-
- arch/powerpc/Kconfig.debug             |    7 -
- arch/powerpc/configs/iseries_defconfig |  236 ----------------------------=
-----
- arch/powerpc/platforms/Kconfig         |    3 +-
- arch/powerpc/platforms/iseries/Kconfig |   38 -----
- arch/powerpc/platforms/pseries/Kconfig |    2 +-
- 6 files changed, 3 insertions(+), 285 deletions(-)
- delete mode 100644 arch/powerpc/configs/iseries_defconfig
- delete mode 100644 arch/powerpc/platforms/iseries/Kconfig
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1919634..e640107 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -611,7 +611,7 @@ endmenu
-=20
- config ISA_DMA_API
- 	bool
--	default !PPC_ISERIES || PCI
-+	default PCI
-=20
- menu "Bus options"
-=20
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 4ccb2a0..72d55db 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -196,13 +196,6 @@ config PPC_EARLY_DEBUG_MAPLE
- 	help
- 	  Select this to enable early debugging for Maple.
-=20
--config PPC_EARLY_DEBUG_ISERIES
--	bool "iSeries HV Console"
--	depends on PPC_ISERIES
--	help
--	  Select this to enable early debugging for legacy iSeries. You need
--	  to hit "Ctrl-x Ctrl-x" to see the messages on the console.
--
- config PPC_EARLY_DEBUG_PAS_REALMODE
- 	bool "PA Semi real mode"
- 	depends on PPC_PASEMI
-diff --git a/arch/powerpc/configs/iseries_defconfig b/arch/powerpc/configs/=
-iseries_defconfig
-deleted file mode 100644
-index 27c46d6..0000000
---- a/arch/powerpc/configs/iseries_defconfig
-+++ /dev/null
-@@ -1,236 +0,0 @@
--CONFIG_PPC64=3Dy
--CONFIG_SMP=3Dy
--CONFIG_EXPERIMENTAL=3Dy
--CONFIG_SYSVIPC=3Dy
--CONFIG_POSIX_MQUEUE=3Dy
--CONFIG_AUDIT=3Dy
--CONFIG_AUDITSYSCALL=3Dy
--CONFIG_IKCONFIG=3Dy
--CONFIG_IKCONFIG_PROC=3Dy
--CONFIG_BLK_DEV_INITRD=3Dy
--# CONFIG_COMPAT_BRK is not set
--CONFIG_MODULES=3Dy
--CONFIG_MODULE_UNLOAD=3Dy
--CONFIG_MODVERSIONS=3Dy
--CONFIG_MODULE_SRCVERSION_ALL=3Dy
--# CONFIG_PPC_PSERIES is not set
--CONFIG_LPARCFG=3Dy
--CONFIG_PPC_ISERIES=3Dy
--CONFIG_VIODASD=3Dy
--CONFIG_VIOCD=3Dm
--CONFIG_VIOTAPE=3Dm
--# CONFIG_PPC_PMAC is not set
--CONFIG_NO_HZ=3Dy
--CONFIG_HIGH_RES_TIMERS=3Dy
--CONFIG_IRQ_ALL_CPUS=3Dy
--# CONFIG_MIGRATION is not set
--CONFIG_PACKET=3Dy
--CONFIG_UNIX=3Dy
--CONFIG_XFRM_USER=3Dm
--CONFIG_XFRM_SUB_POLICY=3Dy
--CONFIG_NET_KEY=3Dm
--CONFIG_INET=3Dy
--CONFIG_IP_MULTICAST=3Dy
--CONFIG_NET_IPIP=3Dy
--CONFIG_SYN_COOKIES=3Dy
--CONFIG_INET_AH=3Dm
--CONFIG_INET_ESP=3Dm
--CONFIG_INET_IPCOMP=3Dm
--CONFIG_INET_XFRM_MODE_BEET=3Dm
--# CONFIG_INET_LRO is not set
--# CONFIG_IPV6 is not set
--CONFIG_NETFILTER=3Dy
--CONFIG_NETFILTER_NETLINK_QUEUE=3Dm
--CONFIG_NETFILTER_NETLINK_LOG=3Dm
--CONFIG_NF_CONNTRACK=3Dm
--CONFIG_NF_CONNTRACK_EVENTS=3Dy
--# CONFIG_NF_CT_PROTO_SCTP is not set
--CONFIG_NF_CONNTRACK_FTP=3Dm
--CONFIG_NF_CONNTRACK_IRC=3Dm
--CONFIG_NF_CONNTRACK_TFTP=3Dm
--CONFIG_NF_CT_NETLINK=3Dm
--CONFIG_NETFILTER_TPROXY=3Dm
--CONFIG_NETFILTER_XT_TARGET_CLASSIFY=3Dm
--CONFIG_NETFILTER_XT_TARGET_CONNMARK=3Dm
--CONFIG_NETFILTER_XT_TARGET_DSCP=3Dm
--CONFIG_NETFILTER_XT_TARGET_MARK=3Dm
--CONFIG_NETFILTER_XT_TARGET_NFQUEUE=3Dm
--CONFIG_NETFILTER_XT_TARGET_TPROXY=3Dm
--CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP=3Dm
--CONFIG_NETFILTER_XT_MATCH_COMMENT=3Dm
--CONFIG_NETFILTER_XT_MATCH_CONNMARK=3Dm
--CONFIG_NETFILTER_XT_MATCH_CONNTRACK=3Dm
--CONFIG_NETFILTER_XT_MATCH_DSCP=3Dm
--CONFIG_NETFILTER_XT_MATCH_IPRANGE=3Dm
--CONFIG_NETFILTER_XT_MATCH_LENGTH=3Dm
--CONFIG_NETFILTER_XT_MATCH_LIMIT=3Dm
--CONFIG_NETFILTER_XT_MATCH_MAC=3Dm
--CONFIG_NETFILTER_XT_MATCH_MARK=3Dm
--CONFIG_NETFILTER_XT_MATCH_OWNER=3Dm
--CONFIG_NETFILTER_XT_MATCH_PKTTYPE=3Dm
--CONFIG_NETFILTER_XT_MATCH_RATEEST=3Dm
--CONFIG_NETFILTER_XT_MATCH_REALM=3Dm
--CONFIG_NETFILTER_XT_MATCH_RECENT=3Dm
--CONFIG_NETFILTER_XT_MATCH_STRING=3Dm
--CONFIG_NETFILTER_XT_MATCH_TCPMSS=3Dm
--CONFIG_NETFILTER_XT_MATCH_TIME=3Dm
--CONFIG_NF_CONNTRACK_IPV4=3Dm
--CONFIG_IP_NF_QUEUE=3Dm
--CONFIG_IP_NF_IPTABLES=3Dm
--CONFIG_IP_NF_MATCH_ADDRTYPE=3Dm
--CONFIG_IP_NF_MATCH_ECN=3Dm
--CONFIG_IP_NF_MATCH_TTL=3Dm
--CONFIG_IP_NF_FILTER=3Dm
--CONFIG_IP_NF_TARGET_REJECT=3Dm
--CONFIG_IP_NF_TARGET_LOG=3Dm
--CONFIG_IP_NF_TARGET_ULOG=3Dm
--CONFIG_NF_NAT=3Dm
--CONFIG_IP_NF_TARGET_MASQUERADE=3Dm
--CONFIG_IP_NF_TARGET_NETMAP=3Dm
--CONFIG_IP_NF_TARGET_REDIRECT=3Dm
--CONFIG_IP_NF_MANGLE=3Dm
--CONFIG_IP_NF_TARGET_CLUSTERIP=3Dm
--CONFIG_IP_NF_TARGET_ECN=3Dm
--CONFIG_IP_NF_TARGET_TTL=3Dm
--CONFIG_IP_NF_RAW=3Dm
--CONFIG_IP_NF_ARPTABLES=3Dm
--CONFIG_IP_NF_ARPFILTER=3Dm
--CONFIG_IP_NF_ARP_MANGLE=3Dm
--CONFIG_UEVENT_HELPER_PATH=3D"/sbin/hotplug"
--CONFIG_PROC_DEVICETREE=3Dy
--CONFIG_BLK_DEV_LOOP=3Dy
--CONFIG_BLK_DEV_NBD=3Dm
--CONFIG_BLK_DEV_RAM=3Dy
--CONFIG_BLK_DEV_RAM_SIZE=3D65536
--CONFIG_SCSI=3Dy
--CONFIG_BLK_DEV_SD=3Dy
--CONFIG_CHR_DEV_ST=3Dy
--CONFIG_BLK_DEV_SR=3Dy
--CONFIG_BLK_DEV_SR_VENDOR=3Dy
--CONFIG_CHR_DEV_SG=3Dy
--CONFIG_SCSI_MULTI_LUN=3Dy
--CONFIG_SCSI_CONSTANTS=3Dy
--CONFIG_SCSI_SPI_ATTRS=3Dy
--CONFIG_SCSI_FC_ATTRS=3Dy
--CONFIG_SCSI_SAS_LIBSAS=3Dm
--CONFIG_SCSI_IBMVSCSI=3Dm
--CONFIG_MD=3Dy
--CONFIG_BLK_DEV_MD=3Dy
--CONFIG_MD_LINEAR=3Dy
--CONFIG_MD_RAID0=3Dy
--CONFIG_MD_RAID1=3Dy
--CONFIG_MD_RAID10=3Dm
--CONFIG_MD_MULTIPATH=3Dm
--CONFIG_MD_FAULTY=3Dm
--CONFIG_BLK_DEV_DM=3Dy
--CONFIG_DM_CRYPT=3Dm
--CONFIG_DM_SNAPSHOT=3Dm
--CONFIG_DM_MIRROR=3Dm
--CONFIG_DM_ZERO=3Dm
--CONFIG_NETDEVICES=3Dy
--CONFIG_DUMMY=3Dm
--CONFIG_BONDING=3Dm
--CONFIG_TUN=3Dm
--CONFIG_NET_ETHERNET=3Dy
--CONFIG_NET_PCI=3Dy
--CONFIG_PCNET32=3Dy
--CONFIG_E100=3Dy
--CONFIG_ACENIC=3Dm
--CONFIG_E1000=3Dm
--CONFIG_ISERIES_VETH=3Dy
--CONFIG_PPP=3Dm
--CONFIG_PPP_ASYNC=3Dm
--CONFIG_PPP_SYNC_TTY=3Dm
--CONFIG_PPP_DEFLATE=3Dm
--CONFIG_PPP_BSDCOMP=3Dm
--CONFIG_PPPOE=3Dm
--CONFIG_NETCONSOLE=3Dy
--CONFIG_NETPOLL_TRAP=3Dy
--# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--# CONFIG_SERIO is not set
--CONFIG_SERIAL_ICOM=3Dm
--# CONFIG_HW_RANDOM is not set
--CONFIG_GEN_RTC=3Dy
--CONFIG_RAW_DRIVER=3Dy
--# CONFIG_HWMON is not set
--# CONFIG_HID_SUPPORT is not set
--# CONFIG_USB_SUPPORT is not set
--CONFIG_EXT2_FS=3Dy
--CONFIG_EXT2_FS_XATTR=3Dy
--CONFIG_EXT2_FS_POSIX_ACL=3Dy
--CONFIG_EXT2_FS_SECURITY=3Dy
--CONFIG_EXT2_FS_XIP=3Dy
--CONFIG_EXT3_FS=3Dy
--CONFIG_EXT3_FS_POSIX_ACL=3Dy
--CONFIG_EXT3_FS_SECURITY=3Dy
--CONFIG_EXT4_FS=3Dy
--CONFIG_REISERFS_FS=3Dy
--CONFIG_REISERFS_FS_XATTR=3Dy
--CONFIG_REISERFS_FS_POSIX_ACL=3Dy
--CONFIG_REISERFS_FS_SECURITY=3Dy
--CONFIG_JFS_FS=3Dm
--CONFIG_JFS_POSIX_ACL=3Dy
--CONFIG_JFS_SECURITY=3Dy
--CONFIG_XFS_FS=3Dm
--CONFIG_XFS_POSIX_ACL=3Dy
--CONFIG_GFS2_FS=3Dm
--CONFIG_AUTOFS_FS=3Dm
--CONFIG_ISO9660_FS=3Dy
--CONFIG_JOLIET=3Dy
--CONFIG_ZISOFS=3Dy
--CONFIG_UDF_FS=3Dm
--CONFIG_MSDOS_FS=3Dy
--CONFIG_VFAT_FS=3Dy
--CONFIG_PROC_KCORE=3Dy
--CONFIG_TMPFS=3Dy
--CONFIG_TMPFS_POSIX_ACL=3Dy
--CONFIG_CRAMFS=3Dy
--CONFIG_NFS_FS=3Dy
--CONFIG_NFS_V3=3Dy
--CONFIG_NFS_V3_ACL=3Dy
--CONFIG_NFS_V4=3Dy
--CONFIG_NFSD=3Dm
--CONFIG_NFSD_V3_ACL=3Dy
--CONFIG_NFSD_V4=3Dy
--CONFIG_RPCSEC_GSS_SPKM3=3Dm
--CONFIG_CIFS=3Dm
--CONFIG_CIFS_XATTR=3Dy
--CONFIG_CIFS_POSIX=3Dy
--CONFIG_NLS_CODEPAGE_437=3Dy
--CONFIG_NLS_ASCII=3Dy
--CONFIG_NLS_ISO8859_1=3Dy
--CONFIG_DLM=3Dm
--CONFIG_CRC_T10DIF=3Dy
--CONFIG_MAGIC_SYSRQ=3Dy
--CONFIG_DEBUG_FS=3Dy
--CONFIG_DEBUG_KERNEL=3Dy
--# CONFIG_RCU_CPU_STALL_DETECTOR is not set
--CONFIG_LATENCYTOP=3Dy
--CONFIG_SYSCTL_SYSCALL_CHECK=3Dy
--CONFIG_DEBUG_STACKOVERFLOW=3Dy
--CONFIG_DEBUG_STACK_USAGE=3Dy
--CONFIG_CRYPTO_NULL=3Dm
--CONFIG_CRYPTO_TEST=3Dm
--CONFIG_CRYPTO_ECB=3Dm
--CONFIG_CRYPTO_PCBC=3Dm
--CONFIG_CRYPTO_HMAC=3Dy
--CONFIG_CRYPTO_MD4=3Dm
--CONFIG_CRYPTO_MICHAEL_MIC=3Dm
--CONFIG_CRYPTO_SHA256=3Dm
--CONFIG_CRYPTO_SHA512=3Dm
--CONFIG_CRYPTO_TGR192=3Dm
--CONFIG_CRYPTO_WP512=3Dm
--CONFIG_CRYPTO_AES=3Dm
--CONFIG_CRYPTO_ANUBIS=3Dm
--CONFIG_CRYPTO_ARC4=3Dm
--CONFIG_CRYPTO_BLOWFISH=3Dm
--CONFIG_CRYPTO_CAST6=3Dm
--CONFIG_CRYPTO_KHAZAD=3Dm
--CONFIG_CRYPTO_SEED=3Dm
--CONFIG_CRYPTO_SERPENT=3Dm
--CONFIG_CRYPTO_TEA=3Dm
--CONFIG_CRYPTO_TWOFISH=3Dm
--# CONFIG_CRYPTO_ANSI_CPRNG is not set
--# CONFIG_CRYPTO_HW is not set
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 0cfb46d..236ab67 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -2,7 +2,6 @@ menu "Platform support"
-=20
- source "arch/powerpc/platforms/powernv/Kconfig"
- source "arch/powerpc/platforms/pseries/Kconfig"
--source "arch/powerpc/platforms/iseries/Kconfig"
- source "arch/powerpc/platforms/chrp/Kconfig"
- source "arch/powerpc/platforms/512x/Kconfig"
- source "arch/powerpc/platforms/52xx/Kconfig"
-@@ -138,7 +137,7 @@ config MPIC_BROKEN_REGREAD
- 	  of the register contents in software.
-=20
- config IBMVIO
--	depends on PPC_PSERIES || PPC_ISERIES
-+	depends on PPC_PSERIES
- 	bool
- 	default y
-=20
-diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platform=
-s/iseries/Kconfig
-deleted file mode 100644
-index b57cda3..0000000
---- a/arch/powerpc/platforms/iseries/Kconfig
-+++ /dev/null
-@@ -1,38 +0,0 @@
--config PPC_ISERIES
--	bool "IBM Legacy iSeries"
--	depends on PPC64 && PPC_BOOK3S
--	select PPC_SMP_MUXED_IPI
--	select PPC_INDIRECT_PIO
--	select PPC_INDIRECT_MMIO
--	select PPC_PCI_CHOICE if EXPERT
--
--menu "iSeries device drivers"
--	depends on PPC_ISERIES
--
--config VIODASD
--	tristate "iSeries Virtual I/O disk support"
--	depends on BLOCK
--	select VIOPATH
--	help
--	  If you are running on an iSeries system and you want to use
--	  virtual disks created and managed by OS/400, say Y.
--
--config VIOCD
--	tristate "iSeries Virtual I/O CD support"
--	depends on BLOCK
--	select VIOPATH
--	help
--	  If you are running Linux on an IBM iSeries system and you want to
--	  read a CD drive owned by OS/400, say Y here.
--
--config VIOTAPE
--	tristate "iSeries Virtual Tape Support"
--	select VIOPATH
--	help
--	  If you are running Linux on an iSeries system and you want Linux
--	  to read and/or write a tape drive owned by OS/400, say Y here.
--
--endmenu
--
--config VIOPATH
--	bool
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platform=
-s/pseries/Kconfig
-index 31f22c1..9c28847 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -72,7 +72,7 @@ config IO_EVENT_IRQ
-=20
- config LPARCFG
- 	bool "LPAR Configuration Data"
--	depends on PPC_PSERIES || PPC_ISERIES
-+	depends on PPC_PSERIES
- 	help
- 	Provide system capacity information via human readable
- 	<key word>=3D<value> pairs through a /proc/ppc64/lparcfg interface.
---=20
-1.7.9.1
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
 
---Signature=_Thu__23_Feb_2012_11_10_12_+1100_YaIZsaE1ztcY_.nL
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPRYPkAAoJEECxmPOUX5FEUiQP/14kbgNkrf7/viwwf+8uQ6SY
-L2tA/CjGT2fWgO84oVIBTJ0IyW2DZ75jSA5G1fjmnainKkk2so7w0Om1rjnW5dcs
-bsbKAHo51vJHHnd/Z83ggt3HciSSQeJWieMzCu/IQfqZ24iVF29mT03/MxSpquyI
-uav1ch7lAnLMSnuvx5gg35chBscJV2l8yFsq3SSWVMmdIUemI2eEtBO4euwt+f8i
-Fcbx9WOrPpRN25J9T3H6j5PPbCQ4Yja2QzpclHDkk3Fve6iCt48l2DaN+sp9254K
-MhOm9tp92w52ic/iDe2FXKk2IV6ZQb7Qa/YH7NHAesuI0aCahs7rR3kkmicYxkda
-T4PYjlTB05KEki2I2tXtUtKlPVGQIJ5PCwbxsgNb034tOEPd9jZZ2VBJ+3RwGg8T
-ZElEIllKmHelrU5+RKQIyWS5UlQW+jUDLrHYbGvO10uwQ01oFbI9ZH9srkYV4geU
-pX7OqEgOnPNdaE6q/rwTJoHcuGMYuQKcsc0NpPSeyIIJgjKCb3MdR66oECXCNSTL
-2Wxhvkhv6QDrKCOqsAnO6LuCTOX320rgd0NSwc2upM8iPmW/SZuAVaZpO8IHFNmE
-/kDwnrIIBbIlLSDyuIATs5lWgR92M5aVPn/7vXm4rosgJiGR5nn1Zj5CkJpnx9kZ
-b3GfvJX+QloCn/JY1W88
-=qIYi
------END PGP SIGNATURE-----
-
---Signature=_Thu__23_Feb_2012_11_10_12_+1100_YaIZsaE1ztcY_.nL--
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/Kconfig                   |    2 +-
+>  arch/powerpc/Kconfig.debug             |    7 -
+>  arch/powerpc/configs/iseries_defconfig |  236 --------------------------------
+>  arch/powerpc/platforms/Kconfig         |    3 +-
+>  arch/powerpc/platforms/iseries/Kconfig |   38 -----
+>  arch/powerpc/platforms/pseries/Kconfig |    2 +-
+>  6 files changed, 3 insertions(+), 285 deletions(-)
+>  delete mode 100644 arch/powerpc/configs/iseries_defconfig
+>  delete mode 100644 arch/powerpc/platforms/iseries/Kconfig
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 1919634..e640107 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -611,7 +611,7 @@ endmenu
+>  
+>  config ISA_DMA_API
+>  	bool
+> -	default !PPC_ISERIES || PCI
+> +	default PCI
+>  
+>  menu "Bus options"
+>  
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index 4ccb2a0..72d55db 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -196,13 +196,6 @@ config PPC_EARLY_DEBUG_MAPLE
+>  	help
+>  	  Select this to enable early debugging for Maple.
+>  
+> -config PPC_EARLY_DEBUG_ISERIES
+> -	bool "iSeries HV Console"
+> -	depends on PPC_ISERIES
+> -	help
+> -	  Select this to enable early debugging for legacy iSeries. You need
+> -	  to hit "Ctrl-x Ctrl-x" to see the messages on the console.
+> -
+>  config PPC_EARLY_DEBUG_PAS_REALMODE
+>  	bool "PA Semi real mode"
+>  	depends on PPC_PASEMI
+> diff --git a/arch/powerpc/configs/iseries_defconfig b/arch/powerpc/configs/iseries_defconfig
+> deleted file mode 100644
+> index 27c46d6..0000000
+> --- a/arch/powerpc/configs/iseries_defconfig
+> +++ /dev/null
+> @@ -1,236 +0,0 @@
+> -CONFIG_PPC64=y
+> -CONFIG_SMP=y
+> -CONFIG_EXPERIMENTAL=y
+> -CONFIG_SYSVIPC=y
+> -CONFIG_POSIX_MQUEUE=y
+> -CONFIG_AUDIT=y
+> -CONFIG_AUDITSYSCALL=y
+> -CONFIG_IKCONFIG=y
+> -CONFIG_IKCONFIG_PROC=y
+> -CONFIG_BLK_DEV_INITRD=y
+> -# CONFIG_COMPAT_BRK is not set
+> -CONFIG_MODULES=y
+> -CONFIG_MODULE_UNLOAD=y
+> -CONFIG_MODVERSIONS=y
+> -CONFIG_MODULE_SRCVERSION_ALL=y
+> -# CONFIG_PPC_PSERIES is not set
+> -CONFIG_LPARCFG=y
+> -CONFIG_PPC_ISERIES=y
+> -CONFIG_VIODASD=y
+> -CONFIG_VIOCD=m
+> -CONFIG_VIOTAPE=m
+> -# CONFIG_PPC_PMAC is not set
+> -CONFIG_NO_HZ=y
+> -CONFIG_HIGH_RES_TIMERS=y
+> -CONFIG_IRQ_ALL_CPUS=y
+> -# CONFIG_MIGRATION is not set
+> -CONFIG_PACKET=y
+> -CONFIG_UNIX=y
+> -CONFIG_XFRM_USER=m
+> -CONFIG_XFRM_SUB_POLICY=y
+> -CONFIG_NET_KEY=m
+> -CONFIG_INET=y
+> -CONFIG_IP_MULTICAST=y
+> -CONFIG_NET_IPIP=y
+> -CONFIG_SYN_COOKIES=y
+> -CONFIG_INET_AH=m
+> -CONFIG_INET_ESP=m
+> -CONFIG_INET_IPCOMP=m
+> -CONFIG_INET_XFRM_MODE_BEET=m
+> -# CONFIG_INET_LRO is not set
+> -# CONFIG_IPV6 is not set
+> -CONFIG_NETFILTER=y
+> -CONFIG_NETFILTER_NETLINK_QUEUE=m
+> -CONFIG_NETFILTER_NETLINK_LOG=m
+> -CONFIG_NF_CONNTRACK=m
+> -CONFIG_NF_CONNTRACK_EVENTS=y
+> -# CONFIG_NF_CT_PROTO_SCTP is not set
+> -CONFIG_NF_CONNTRACK_FTP=m
+> -CONFIG_NF_CONNTRACK_IRC=m
+> -CONFIG_NF_CONNTRACK_TFTP=m
+> -CONFIG_NF_CT_NETLINK=m
+> -CONFIG_NETFILTER_TPROXY=m
+> -CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+> -CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
+> -CONFIG_NETFILTER_XT_TARGET_DSCP=m
+> -CONFIG_NETFILTER_XT_TARGET_MARK=m
+> -CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
+> -CONFIG_NETFILTER_XT_TARGET_TPROXY=m
+> -CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP=m
+> -CONFIG_NETFILTER_XT_MATCH_COMMENT=m
+> -CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
+> -CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
+> -CONFIG_NETFILTER_XT_MATCH_DSCP=m
+> -CONFIG_NETFILTER_XT_MATCH_IPRANGE=m
+> -CONFIG_NETFILTER_XT_MATCH_LENGTH=m
+> -CONFIG_NETFILTER_XT_MATCH_LIMIT=m
+> -CONFIG_NETFILTER_XT_MATCH_MAC=m
+> -CONFIG_NETFILTER_XT_MATCH_MARK=m
+> -CONFIG_NETFILTER_XT_MATCH_OWNER=m
+> -CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
+> -CONFIG_NETFILTER_XT_MATCH_RATEEST=m
+> -CONFIG_NETFILTER_XT_MATCH_REALM=m
+> -CONFIG_NETFILTER_XT_MATCH_RECENT=m
+> -CONFIG_NETFILTER_XT_MATCH_STRING=m
+> -CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+> -CONFIG_NETFILTER_XT_MATCH_TIME=m
+> -CONFIG_NF_CONNTRACK_IPV4=m
+> -CONFIG_IP_NF_QUEUE=m
+> -CONFIG_IP_NF_IPTABLES=m
+> -CONFIG_IP_NF_MATCH_ADDRTYPE=m
+> -CONFIG_IP_NF_MATCH_ECN=m
+> -CONFIG_IP_NF_MATCH_TTL=m
+> -CONFIG_IP_NF_FILTER=m
+> -CONFIG_IP_NF_TARGET_REJECT=m
+> -CONFIG_IP_NF_TARGET_LOG=m
+> -CONFIG_IP_NF_TARGET_ULOG=m
+> -CONFIG_NF_NAT=m
+> -CONFIG_IP_NF_TARGET_MASQUERADE=m
+> -CONFIG_IP_NF_TARGET_NETMAP=m
+> -CONFIG_IP_NF_TARGET_REDIRECT=m
+> -CONFIG_IP_NF_MANGLE=m
+> -CONFIG_IP_NF_TARGET_CLUSTERIP=m
+> -CONFIG_IP_NF_TARGET_ECN=m
+> -CONFIG_IP_NF_TARGET_TTL=m
+> -CONFIG_IP_NF_RAW=m
+> -CONFIG_IP_NF_ARPTABLES=m
+> -CONFIG_IP_NF_ARPFILTER=m
+> -CONFIG_IP_NF_ARP_MANGLE=m
+> -CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+> -CONFIG_PROC_DEVICETREE=y
+> -CONFIG_BLK_DEV_LOOP=y
+> -CONFIG_BLK_DEV_NBD=m
+> -CONFIG_BLK_DEV_RAM=y
+> -CONFIG_BLK_DEV_RAM_SIZE=65536
+> -CONFIG_SCSI=y
+> -CONFIG_BLK_DEV_SD=y
+> -CONFIG_CHR_DEV_ST=y
+> -CONFIG_BLK_DEV_SR=y
+> -CONFIG_BLK_DEV_SR_VENDOR=y
+> -CONFIG_CHR_DEV_SG=y
+> -CONFIG_SCSI_MULTI_LUN=y
+> -CONFIG_SCSI_CONSTANTS=y
+> -CONFIG_SCSI_SPI_ATTRS=y
+> -CONFIG_SCSI_FC_ATTRS=y
+> -CONFIG_SCSI_SAS_LIBSAS=m
+> -CONFIG_SCSI_IBMVSCSI=m
+> -CONFIG_MD=y
+> -CONFIG_BLK_DEV_MD=y
+> -CONFIG_MD_LINEAR=y
+> -CONFIG_MD_RAID0=y
+> -CONFIG_MD_RAID1=y
+> -CONFIG_MD_RAID10=m
+> -CONFIG_MD_MULTIPATH=m
+> -CONFIG_MD_FAULTY=m
+> -CONFIG_BLK_DEV_DM=y
+> -CONFIG_DM_CRYPT=m
+> -CONFIG_DM_SNAPSHOT=m
+> -CONFIG_DM_MIRROR=m
+> -CONFIG_DM_ZERO=m
+> -CONFIG_NETDEVICES=y
+> -CONFIG_DUMMY=m
+> -CONFIG_BONDING=m
+> -CONFIG_TUN=m
+> -CONFIG_NET_ETHERNET=y
+> -CONFIG_NET_PCI=y
+> -CONFIG_PCNET32=y
+> -CONFIG_E100=y
+> -CONFIG_ACENIC=m
+> -CONFIG_E1000=m
+> -CONFIG_ISERIES_VETH=y
+> -CONFIG_PPP=m
+> -CONFIG_PPP_ASYNC=m
+> -CONFIG_PPP_SYNC_TTY=m
+> -CONFIG_PPP_DEFLATE=m
+> -CONFIG_PPP_BSDCOMP=m
+> -CONFIG_PPPOE=m
+> -CONFIG_NETCONSOLE=y
+> -CONFIG_NETPOLL_TRAP=y
+> -# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
+> -# CONFIG_INPUT_KEYBOARD is not set
+> -# CONFIG_INPUT_MOUSE is not set
+> -# CONFIG_SERIO is not set
+> -CONFIG_SERIAL_ICOM=m
+> -# CONFIG_HW_RANDOM is not set
+> -CONFIG_GEN_RTC=y
+> -CONFIG_RAW_DRIVER=y
+> -# CONFIG_HWMON is not set
+> -# CONFIG_HID_SUPPORT is not set
+> -# CONFIG_USB_SUPPORT is not set
+> -CONFIG_EXT2_FS=y
+> -CONFIG_EXT2_FS_XATTR=y
+> -CONFIG_EXT2_FS_POSIX_ACL=y
+> -CONFIG_EXT2_FS_SECURITY=y
+> -CONFIG_EXT2_FS_XIP=y
+> -CONFIG_EXT3_FS=y
+> -CONFIG_EXT3_FS_POSIX_ACL=y
+> -CONFIG_EXT3_FS_SECURITY=y
+> -CONFIG_EXT4_FS=y
+> -CONFIG_REISERFS_FS=y
+> -CONFIG_REISERFS_FS_XATTR=y
+> -CONFIG_REISERFS_FS_POSIX_ACL=y
+> -CONFIG_REISERFS_FS_SECURITY=y
+> -CONFIG_JFS_FS=m
+> -CONFIG_JFS_POSIX_ACL=y
+> -CONFIG_JFS_SECURITY=y
+> -CONFIG_XFS_FS=m
+> -CONFIG_XFS_POSIX_ACL=y
+> -CONFIG_GFS2_FS=m
+> -CONFIG_AUTOFS_FS=m
+> -CONFIG_ISO9660_FS=y
+> -CONFIG_JOLIET=y
+> -CONFIG_ZISOFS=y
+> -CONFIG_UDF_FS=m
+> -CONFIG_MSDOS_FS=y
+> -CONFIG_VFAT_FS=y
+> -CONFIG_PROC_KCORE=y
+> -CONFIG_TMPFS=y
+> -CONFIG_TMPFS_POSIX_ACL=y
+> -CONFIG_CRAMFS=y
+> -CONFIG_NFS_FS=y
+> -CONFIG_NFS_V3=y
+> -CONFIG_NFS_V3_ACL=y
+> -CONFIG_NFS_V4=y
+> -CONFIG_NFSD=m
+> -CONFIG_NFSD_V3_ACL=y
+> -CONFIG_NFSD_V4=y
+> -CONFIG_RPCSEC_GSS_SPKM3=m
+> -CONFIG_CIFS=m
+> -CONFIG_CIFS_XATTR=y
+> -CONFIG_CIFS_POSIX=y
+> -CONFIG_NLS_CODEPAGE_437=y
+> -CONFIG_NLS_ASCII=y
+> -CONFIG_NLS_ISO8859_1=y
+> -CONFIG_DLM=m
+> -CONFIG_CRC_T10DIF=y
+> -CONFIG_MAGIC_SYSRQ=y
+> -CONFIG_DEBUG_FS=y
+> -CONFIG_DEBUG_KERNEL=y
+> -# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+> -CONFIG_LATENCYTOP=y
+> -CONFIG_SYSCTL_SYSCALL_CHECK=y
+> -CONFIG_DEBUG_STACKOVERFLOW=y
+> -CONFIG_DEBUG_STACK_USAGE=y
+> -CONFIG_CRYPTO_NULL=m
+> -CONFIG_CRYPTO_TEST=m
+> -CONFIG_CRYPTO_ECB=m
+> -CONFIG_CRYPTO_PCBC=m
+> -CONFIG_CRYPTO_HMAC=y
+> -CONFIG_CRYPTO_MD4=m
+> -CONFIG_CRYPTO_MICHAEL_MIC=m
+> -CONFIG_CRYPTO_SHA256=m
+> -CONFIG_CRYPTO_SHA512=m
+> -CONFIG_CRYPTO_TGR192=m
+> -CONFIG_CRYPTO_WP512=m
+> -CONFIG_CRYPTO_AES=m
+> -CONFIG_CRYPTO_ANUBIS=m
+> -CONFIG_CRYPTO_ARC4=m
+> -CONFIG_CRYPTO_BLOWFISH=m
+> -CONFIG_CRYPTO_CAST6=m
+> -CONFIG_CRYPTO_KHAZAD=m
+> -CONFIG_CRYPTO_SEED=m
+> -CONFIG_CRYPTO_SERPENT=m
+> -CONFIG_CRYPTO_TEA=m
+> -CONFIG_CRYPTO_TWOFISH=m
+> -# CONFIG_CRYPTO_ANSI_CPRNG is not set
+> -# CONFIG_CRYPTO_HW is not set
+> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+> index 0cfb46d..236ab67 100644
+> --- a/arch/powerpc/platforms/Kconfig
+> +++ b/arch/powerpc/platforms/Kconfig
+> @@ -2,7 +2,6 @@ menu "Platform support"
+>  
+>  source "arch/powerpc/platforms/powernv/Kconfig"
+>  source "arch/powerpc/platforms/pseries/Kconfig"
+> -source "arch/powerpc/platforms/iseries/Kconfig"
+>  source "arch/powerpc/platforms/chrp/Kconfig"
+>  source "arch/powerpc/platforms/512x/Kconfig"
+>  source "arch/powerpc/platforms/52xx/Kconfig"
+> @@ -138,7 +137,7 @@ config MPIC_BROKEN_REGREAD
+>  	  of the register contents in software.
+>  
+>  config IBMVIO
+> -	depends on PPC_PSERIES || PPC_ISERIES
+> +	depends on PPC_PSERIES
+>  	bool
+>  	default y
+>  
+> diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+> deleted file mode 100644
+> index b57cda3..0000000
+> --- a/arch/powerpc/platforms/iseries/Kconfig
+> +++ /dev/null
+> @@ -1,38 +0,0 @@
+> -config PPC_ISERIES
+> -	bool "IBM Legacy iSeries"
+> -	depends on PPC64 && PPC_BOOK3S
+> -	select PPC_SMP_MUXED_IPI
+> -	select PPC_INDIRECT_PIO
+> -	select PPC_INDIRECT_MMIO
+> -	select PPC_PCI_CHOICE if EXPERT
+> -
+> -menu "iSeries device drivers"
+> -	depends on PPC_ISERIES
+> -
+> -config VIODASD
+> -	tristate "iSeries Virtual I/O disk support"
+> -	depends on BLOCK
+> -	select VIOPATH
+> -	help
+> -	  If you are running on an iSeries system and you want to use
+> -	  virtual disks created and managed by OS/400, say Y.
+> -
+> -config VIOCD
+> -	tristate "iSeries Virtual I/O CD support"
+> -	depends on BLOCK
+> -	select VIOPATH
+> -	help
+> -	  If you are running Linux on an IBM iSeries system and you want to
+> -	  read a CD drive owned by OS/400, say Y here.
+> -
+> -config VIOTAPE
+> -	tristate "iSeries Virtual Tape Support"
+> -	select VIOPATH
+> -	help
+> -	  If you are running Linux on an iSeries system and you want Linux
+> -	  to read and/or write a tape drive owned by OS/400, say Y here.
+> -
+> -endmenu
+> -
+> -config VIOPATH
+> -	bool
+> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> index 31f22c1..9c28847 100644
+> --- a/arch/powerpc/platforms/pseries/Kconfig
+> +++ b/arch/powerpc/platforms/pseries/Kconfig
+> @@ -72,7 +72,7 @@ config IO_EVENT_IRQ
+>  
+>  config LPARCFG
+>  	bool "LPAR Configuration Data"
+> -	depends on PPC_PSERIES || PPC_ISERIES
+> +	depends on PPC_PSERIES
+>  	help
+>  	Provide system capacity information via human readable
+>  	<key word>=<value> pairs through a /proc/ppc64/lparcfg interface.
+> -- 
+> 1.7.9.1
+> 
