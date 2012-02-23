@@ -1,25 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-tul01m020-f179.google.com (mail-tul01m020-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8EA00B6EEA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 13:00:07 +1100 (EST)
-Received: by obbup6 with SMTP id up6so867744obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2012 18:00:05 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1329962108.20389.19.camel@pasglop>
-References: <1329954613.20389.15.camel@pasglop>
- <20120223013947.GC3212@ponder.secretlab.ca>
- <1329962108.20389.19.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 22 Feb 2012 18:59:45 -0700
-Message-ID: <CACxGe6uKuZA3NUZdh7b+W43e22vreWp-dzjsxXvsRoTBadUbhw@mail.gmail.com>
-Subject: Re: powerpc/mpic: Fix allocation of reverse-map for multi-ISU mpics
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3E395B6FBC
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2012 15:58:09 +1100 (EST)
+Message-ID: <1329973080.20389.23.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 23 Feb 2012 15:58:00 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 22, 2012 at 6:55 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2012-02-22 at 18:39 -0700, Grant Likely wrote:
->>
->> Looks fine to me. =A0This will conflict with the irqdomain tree in linux=
--next,
->> but it will be a trivial fixup. =A0Still, if you prefer I can pick this
->> up into my tree.
->
-> Well, I'm also going to carry a slightly modified variant of Kyle's
-> mpic series so we'll have to deal with conflicts regardless, I'll
-> keep that one.
->
-> What I might do tho is pull your tree in powerpc-next at some point,
-> when you tell me it's frozen solid, this will potentially make my life
-> easier.
+Hi Linus !
 
-It's frozen solid now.  Any changes from this point on will be new
-patches on top.
+Here are a few more powerpc bits for you. A stupid regression I
+introduced with my previous commit to "fix" program check exceptions
+(brown paper bag for me), fix the cpuidle default, a bug fix for
+something that isn't strictly speaking a regression but some
+upstream changes causes it to show in lockdep now while it didn't
+before, and finally a trivial one for rusty to make his life
+easier later on removing the old cpumask cruft.
 
-g.
+Cheers,
+Ben.
+
+The following changes since commit 27e74da9800289e69ba907777df1e2085231eff7:
+
+  i387: export 'fpu_owner_task' per-cpu variable (2012-02-20 19:34:10 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 18b246fa60dd4bfc71c78d669e2ffaa5df454d6a:
+
+  powerpc: Fix various issues with return to userspace (2012-02-22 16:48:53 +1100)
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (2):
+      cpuidle: Default y on powerpc pSeries
+      powerpc: Fix various issues with return to userspace
+
+Michael Ellerman (1):
+      powerpc: Fix program check handling when lockdep is enabled
+
+Rusty Russell (1):
+      powerpc: Remove references to cpu_*_map
+
+ arch/powerpc/kernel/entry_32.S       |    2 +-
+ arch/powerpc/kernel/entry_64.S       |    6 +++++-
+ arch/powerpc/kernel/exceptions-64s.S |    2 +-
+ arch/powerpc/kernel/signal.c         |   12 ++++++++----
+ arch/powerpc/kernel/signal.h         |    2 +-
+ arch/powerpc/platforms/wsp/smp.c     |    2 +-
+ drivers/cpuidle/Kconfig              |    2 +-
+ 7 files changed, 18 insertions(+), 10 deletions(-)
