@@ -1,19 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3E395B6FBC
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2012 15:58:09 +1100 (EST)
-Message-ID: <1329973080.20389.23.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 23 Feb 2012 15:58:00 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <r66093@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2D9A9B6EE7
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2012 17:25:52 +1100 (EST)
+From: Huang Changming-R66093 <r66093@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>, "galak@kernel.crashing.org"
+ <galak@kernel.crashing.org>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, Wood Scott-B07421 <B07421@freescale.com>, Li
+ Yang-R58472 <r58472@freescale.com>, "linuxppc-dev@ozlabs.org"
+ <linuxppc-dev@ozlabs.org>
+Subject: RE: [PATCH] powerpc/85xx: allow CONFIG_PHYS_64BIT to be selectable
+Date: Thu, 23 Feb 2012 06:25:45 +0000
+Message-ID: <110EED8CC96DFC488B7E717A2027A27C02C5E8@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1329853995-7533-1-git-send-email-timur@freescale.com>
+In-Reply-To: <1329853995-7533-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+I have one similar patch to remove the "select PHYS_64BIT".
+http://patchwork.ozlabs.org/patch/132351/
 
-Here are a few more powerpc bits for you. A stupid regression I
-introduced with my previous commit to "fix" program check exceptions
-(brown paper bag for me), fix the cpuidle default, a bug fix for
-something that isn't strictly speaking a regression but some
-upstream changes causes it to show in lockdep now while it didn't
-before, and finally a trivial one for rusty to make his life
-easier later on removing the old cpumask cruft.
 
-Cheers,
-Ben.
+Thanks
+Jerry Huang
 
-The following changes since commit 27e74da9800289e69ba907777df1e2085231eff7:
 
-  i387: export 'fpu_owner_task' per-cpu variable (2012-02-20 19:34:10 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 18b246fa60dd4bfc71c78d669e2ffaa5df454d6a:
-
-  powerpc: Fix various issues with return to userspace (2012-02-22 16:48:53 +1100)
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (2):
-      cpuidle: Default y on powerpc pSeries
-      powerpc: Fix various issues with return to userspace
-
-Michael Ellerman (1):
-      powerpc: Fix program check handling when lockdep is enabled
-
-Rusty Russell (1):
-      powerpc: Remove references to cpu_*_map
-
- arch/powerpc/kernel/entry_32.S       |    2 +-
- arch/powerpc/kernel/entry_64.S       |    6 +++++-
- arch/powerpc/kernel/exceptions-64s.S |    2 +-
- arch/powerpc/kernel/signal.c         |   12 ++++++++----
- arch/powerpc/kernel/signal.h         |    2 +-
- arch/powerpc/platforms/wsp/smp.c     |    2 +-
- drivers/cpuidle/Kconfig              |    2 +-
- 7 files changed, 18 insertions(+), 10 deletions(-)
+> -----Original Message-----
+> From: linuxppc-dev-bounces+r66093=3Dfreescale.com@lists.ozlabs.org
+> [mailto:linuxppc-dev-bounces+r66093=3Dfreescale.com@lists.ozlabs.org] On
+> Behalf Of Timur Tabi
+> Sent: Wednesday, February 22, 2012 3:53 AM
+> To: galak@kernel.crashing.org; benh@kernel.crashing.org; Wood Scott-
+> B07421; Li Yang-R58472; linuxppc-dev@ozlabs.org
+> Subject: [PATCH] powerpc/85xx: allow CONFIG_PHYS_64BIT to be selectable
+>=20
+> Remove the "select PHYS_64BIT" from the Kconfig entry for the P1022DS, so
+> that large physical address support is a selectable option for non-
+> CoreNet reference boards.
+>=20
+> The option is enabled in mpc85xx_[smp_]defconfig so that the default is
+> unchanged.  However, now it can be deselected.
+>=20
+> The P1022DS had this option defined because the default device tree for
+> this board uses 36-bit addresses.  This had the side-effect of forcing
+> this option on for all boards that use mpc85xx_[smp_]defconfig.  Some
+> users may want to disable this feature to create an optimized
+> configuration for boards with <=3D 2GB of RAM.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>  arch/powerpc/configs/mpc85xx_defconfig     |    1 +
+>  arch/powerpc/configs/mpc85xx_smp_defconfig |    1 +
+>  arch/powerpc/platforms/85xx/Kconfig        |    1 -
+>  3 files changed, 2 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/configs/mpc85xx_defconfig
+> b/arch/powerpc/configs/mpc85xx_defconfig
+> index f37a2ab..5fb0c8a 100644
+> --- a/arch/powerpc/configs/mpc85xx_defconfig
+> +++ b/arch/powerpc/configs/mpc85xx_defconfig
+> @@ -1,4 +1,5 @@
+>  CONFIG_PPC_85xx=3Dy
+> +CONFIG_PHYS_64BIT=3Dy
+>  CONFIG_EXPERIMENTAL=3Dy
+>  CONFIG_SYSVIPC=3Dy
+>  CONFIG_POSIX_MQUEUE=3Dy
+> diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig
+> b/arch/powerpc/configs/mpc85xx_smp_defconfig
+> index abdcd31..fb51bc9 100644
+> --- a/arch/powerpc/configs/mpc85xx_smp_defconfig
+> +++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+> @@ -1,4 +1,5 @@
+>  CONFIG_PPC_85xx=3Dy
+> +CONFIG_PHYS_64BIT=3Dy
+>  CONFIG_SMP=3Dy
+>  CONFIG_NR_CPUS=3D8
+>  CONFIG_EXPERIMENTAL=3Dy
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig
+> b/arch/powerpc/platforms/85xx/Kconfig
+> index d7946be..93d27e2 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -80,7 +80,6 @@ config P1010_RDB
+>  config P1022_DS
+>  	bool "Freescale P1022 DS"
+>  	select DEFAULT_UIMAGE
+> -	select PHYS_64BIT	# The DTS has 36-bit addresses
+>  	select SWIOTLB
+>  	help
+>  	  This option enables support for the Freescale P1022DS reference
+> board.
+> --
+> 1.7.3.4
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
