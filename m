@@ -1,18 +1,19 @@
 Return-Path: <B13201@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe003.messaging.microsoft.com
+ [213.199.154.141])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 04F0BB6FAC
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2012 20:27:51 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4F3D5B6FD4
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2012 20:27:57 +1100 (EST)
 From: Liu Yu <yu.liu@freescale.com>
 To: <agraf@suse.de>, <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>
-Subject: [PATCH v6 2/4] KVM: PPC: epapr: Add idle hcall support for host
-Date: Thu, 23 Feb 2012 17:22:20 +0800
-Message-ID: <1329988942-19610-2-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1329988942-19610-1-git-send-email-yu.liu@freescale.com>
+Subject: [PATCH v6 3/4] KVM: PPC: epapr: install ev_idle hcall for e500 guest
+Date: Thu, 23 Feb 2012 17:22:21 +0800
+Message-ID: <1329988942-19610-3-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1329988942-19610-2-git-send-email-yu.liu@freescale.com>
 References: <1329988942-19610-1-git-send-email-yu.liu@freescale.com>
+ <1329988942-19610-2-git-send-email-yu.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@ozlabs.org, Liu Yu <yu.liu@freescale.com>,
@@ -26,92 +27,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And add a new flag definition in kvm_ppc_pvinfo to indicate
-whether host support EV_IDLE hcall.
+If the guest hypervisor node contains "has-idle" property.
 
 Signed-off-by: Liu Yu <yu.liu@freescale.com>
 ---
-v6: no change
+v6:
+reuse the EV_IDLE definition
 
- arch/powerpc/include/asm/Kbuild     |    1 +
- arch/powerpc/include/asm/kvm_para.h |   14 ++++++++++++--
- arch/powerpc/kvm/powerpc.c          |    6 ++++++
- include/linux/kvm.h                 |    2 ++
- 4 files changed, 21 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/epapr_hcalls.h |   11 ++++++-----
+ arch/powerpc/kernel/epapr_hcalls.S      |   27 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/epapr_paravirt.c    |   11 ++++++++++-
+ 3 files changed, 43 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-index 7e313f1..13d6b7b 100644
---- a/arch/powerpc/include/asm/Kbuild
-+++ b/arch/powerpc/include/asm/Kbuild
-@@ -34,5 +34,6 @@ header-y += termios.h
- header-y += types.h
- header-y += ucontext.h
- header-y += unistd.h
-+header-y += epapr_hcalls.h
+diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
+index 2173d4c..78460ac 100644
+--- a/arch/powerpc/include/asm/epapr_hcalls.h
++++ b/arch/powerpc/include/asm/epapr_hcalls.h
+@@ -50,10 +50,6 @@
+ #ifndef _EPAPR_HCALLS_H
+ #define _EPAPR_HCALLS_H
  
- generic-y += rwsem.h
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 7b754e7..81a34c9 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -75,9 +75,19 @@ struct kvm_vcpu_arch_shared {
- };
+-#include <linux/types.h>
+-#include <linux/errno.h>
+-#include <asm/byteorder.h>
+-
+ #define EV_BYTE_CHANNEL_SEND		1
+ #define EV_BYTE_CHANNEL_RECEIVE		2
+ #define EV_BYTE_CHANNEL_POLL		3
+@@ -108,6 +104,11 @@
+ #define EV_UNIMPLEMENTED	12	/* Unimplemented hypercall */
+ #define EV_BUFFER_OVERFLOW	13	/* Caller-supplied buffer too small */
  
- #define KVM_SC_MAGIC_R0		0x4b564d21 /* "KVM!" */
--#define HC_VENDOR_KVM		(42 << 16)
++#ifndef __ASSEMBLY__
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <asm/byteorder.h>
 +
-+#include <asm/epapr_hcalls.h>
-+
-+/* ePAPR Hypercall Vendor ID */
-+#define HC_VENDOR_EPAPR		(EV_EPAPR_VENDOR_ID << 16)
-+#define HC_VENDOR_KVM		(EV_KVM_VENDOR_ID << 16)
-+
-+/* ePAPR Hypercall Token */
-+#define HC_EV_IDLE		EV_IDLE
-+
-+/* ePAPR Hypercall Return Codes */
- #define HC_EV_SUCCESS		0
--#define HC_EV_UNIMPLEMENTED	12
-+#define HC_EV_UNIMPLEMENTED	EV_UNIMPLEMENTED
+ /*
+  * Hypercall register clobber list
+  *
+@@ -500,5 +501,5 @@ static inline unsigned int ev_idle(void)
  
- #define KVM_FEATURE_MAGIC_PAGE	1
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 0e21d15..7098840 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -81,6 +81,10 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 
- 		/* Second return value is in r4 */
- 		break;
-+	case HC_VENDOR_EPAPR | HC_EV_IDLE:
-+		r = HC_EV_SUCCESS;
-+		kvm_vcpu_block(vcpu);
-+		break;
- 	default:
- 		r = HC_EV_UNIMPLEMENTED;
- 		break;
-@@ -746,6 +750,8 @@ static int kvm_vm_ioctl_get_pvinfo(struct kvm_ppc_pvinfo *pvinfo)
- 	pvinfo->hcall[2] = inst_sc;
- 	pvinfo->hcall[3] = inst_nop;
- 
-+	pvinfo->flags = KVM_PPC_PVINFO_FLAGS_EV_IDLE;
-+
- 	return 0;
+ 	return r3;
  }
+-
++#endif /* !__ASSEMBLY__ */
+ #endif
+diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
+index 697b390..bf643ed 100644
+--- a/arch/powerpc/kernel/epapr_hcalls.S
++++ b/arch/powerpc/kernel/epapr_hcalls.S
+@@ -8,6 +8,7 @@
+  */
  
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index acbe429..6b2c70e 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -449,6 +449,8 @@ struct kvm_ppc_pvinfo {
- 	__u8  pad[108];
- };
+ #include <linux/threads.h>
++#include <asm/epapr_hcalls.h>
+ #include <asm/reg.h>
+ #include <asm/page.h>
+ #include <asm/cputable.h>
+@@ -15,6 +16,32 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
  
-+#define KVM_PPC_PVINFO_FLAGS_EV_IDLE   (1<<0)
++_GLOBAL(epapr_ev_idle)
++epapr_ev_idle:
++	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
++	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
++	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
++	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
 +
- #define KVMIO 0xAE
++	wrteei	1
++
++idle_loop:
++	LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
++
++.global epapr_ev_idle_start
++epapr_ev_idle_start:
++	li	r3, -1
++	nop
++	nop
++	nop
++
++	/*
++	 * Guard against spurious wakeups from a hypervisor --
++	 * only interrupt will cause us to return to LR due to
++	 * _TLF_NAPPING.
++	 */
++	b	idle_loop
++
+ /* Hypercall entry point. Will be patched with device tree instructions. */
+ .global epapr_hypercall_start
+ epapr_hypercall_start:
+diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
+index 45eb439..c3e6e25 100644
+--- a/arch/powerpc/kernel/epapr_paravirt.c
++++ b/arch/powerpc/kernel/epapr_paravirt.c
+@@ -21,6 +21,10 @@
+ #include <asm/epapr_hcalls.h>
+ #include <asm/cacheflush.h>
+ #include <asm/code-patching.h>
++#include <asm/machdep.h>
++
++extern void epapr_ev_idle(void);
++extern u32 epapr_ev_idle_start[];
  
- /* machine type bits, to be used as argument to KVM_CREATE_VM */
+ bool epapr_paravirt_enabled;
+ 
+@@ -39,8 +43,13 @@ static int __init epapr_paravirt_init(void)
+ 		return 0;
+ 
+ 	if (!(len % 4) && len <= (4 * 4)) {
+-		for (i = 0; i < (len / 4); i++)
++		for (i = 0; i < (len / 4); i++) {
+ 			patch_instruction(epapr_hypercall_start + i, insts[i]);
++			patch_instruction(epapr_ev_idle_start + i, insts[i]);
++		}
++
++		if (of_get_property(hyper_node, "has-idle", NULL))
++			ppc_md.power_save = epapr_ev_idle;
+ 
+ 		epapr_paravirt_enabled = true;
+ 	} else {
 -- 
 1.7.0.4
