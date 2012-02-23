@@ -1,24 +1,20 @@
-Return-Path: <B13201@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe003.messaging.microsoft.com
- [213.199.154.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CCD28B6EEC
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2012 20:27:58 +1100 (EST)
-From: Liu Yu <yu.liu@freescale.com>
-To: <agraf@suse.de>, <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>
-Subject: [PATCH v6 4/4] KVM: PPC: epapr: Update other hypercall invoking
-Date: Thu, 23 Feb 2012 17:22:22 +0800
-Message-ID: <1329988942-19610-4-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1329988942-19610-3-git-send-email-yu.liu@freescale.com>
-References: <1329988942-19610-1-git-send-email-yu.liu@freescale.com>
- <1329988942-19610-2-git-send-email-yu.liu@freescale.com>
- <1329988942-19610-3-git-send-email-yu.liu@freescale.com>
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3EB34B6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 22:29:40 +1100 (EST)
+Date: Thu, 23 Feb 2012 11:29:15 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Grant Likely <grant.likely@secretlab.ca>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: in_be32() etc
+Message-ID: <20120223112915.GT22562@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, Liu Yu <yu.liu@freescale.com>,
- B07421@freescale.com
+Content-Type: text/plain; charset=us-ascii
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,299 +24,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Discard the old way that invoke hypercall,
-instead, use epapr paravirt.
+What's this stuff doing in generic drivers?
 
-Signed-off-by: Liu Yu <yu.liu@freescale.com>
----
-v6:
-select epapr_paravirt when enable fsl_hv driver
+See drivers/gpio/gpio-xilinx.c:
+static int xgpio_get(struct gpio_chip *gc, unsigned int gpio)
+{
+        struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
 
- arch/powerpc/include/asm/epapr_hcalls.h |   22 +++++++++---------
- arch/powerpc/include/asm/fsl_hcalls.h   |   36 +++++++++++++++---------------
- drivers/virt/Kconfig                    |    1 +
- 3 files changed, 30 insertions(+), 29 deletions(-)
+        return (in_be32(mm_gc->regs + XGPIO_DATA_OFFSET) >> gpio) & 1;
+}
 
-diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
-index 78460ac..b95758d 100644
---- a/arch/powerpc/include/asm/epapr_hcalls.h
-+++ b/arch/powerpc/include/asm/epapr_hcalls.h
-@@ -189,7 +189,7 @@ static inline unsigned int ev_int_set_config(unsigned int interrupt,
- 	r5  = priority;
- 	r6  = destination;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6)
- 		: : EV_HCALL_CLOBBERS4
- 	);
-@@ -218,7 +218,7 @@ static inline unsigned int ev_int_get_config(unsigned int interrupt,
- 	r11 = EV_HCALL_TOKEN(EV_INT_GET_CONFIG);
- 	r3 = interrupt;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "=r" (r4), "=r" (r5), "=r" (r6)
- 		: : EV_HCALL_CLOBBERS4
- 	);
-@@ -248,7 +248,7 @@ static inline unsigned int ev_int_set_mask(unsigned int interrupt,
- 	r3 = interrupt;
- 	r4 = mask;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -273,7 +273,7 @@ static inline unsigned int ev_int_get_mask(unsigned int interrupt,
- 	r11 = EV_HCALL_TOKEN(EV_INT_GET_MASK);
- 	r3 = interrupt;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "=r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -301,7 +301,7 @@ static inline unsigned int ev_int_eoi(unsigned int interrupt)
- 	r11 = EV_HCALL_TOKEN(EV_INT_EOI);
- 	r3 = interrupt;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -340,7 +340,7 @@ static inline unsigned int ev_byte_channel_send(unsigned int handle,
- 	r7 = be32_to_cpu(p[2]);
- 	r8 = be32_to_cpu(p[3]);
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3),
- 		  "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7), "+r" (r8)
- 		: : EV_HCALL_CLOBBERS6
-@@ -379,7 +379,7 @@ static inline unsigned int ev_byte_channel_receive(unsigned int handle,
- 	r3 = handle;
- 	r4 = *count;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4),
- 		  "=r" (r5), "=r" (r6), "=r" (r7), "=r" (r8)
- 		: : EV_HCALL_CLOBBERS6
-@@ -417,7 +417,7 @@ static inline unsigned int ev_byte_channel_poll(unsigned int handle,
- 	r11 = EV_HCALL_TOKEN(EV_BYTE_CHANNEL_POLL);
- 	r3 = handle;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "=r" (r4), "=r" (r5)
- 		: : EV_HCALL_CLOBBERS3
- 	);
-@@ -450,7 +450,7 @@ static inline unsigned int ev_int_iack(unsigned int handle,
- 	r11 = EV_HCALL_TOKEN(EV_INT_IACK);
- 	r3 = handle;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "=r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -474,7 +474,7 @@ static inline unsigned int ev_doorbell_send(unsigned int handle)
- 	r11 = EV_HCALL_TOKEN(EV_DOORBELL_SEND);
- 	r3 = handle;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -494,7 +494,7 @@ static inline unsigned int ev_idle(void)
- 
- 	r11 = EV_HCALL_TOKEN(EV_IDLE);
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "=r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-diff --git a/arch/powerpc/include/asm/fsl_hcalls.h b/arch/powerpc/include/asm/fsl_hcalls.h
-index 922d9b5..3abb583 100644
---- a/arch/powerpc/include/asm/fsl_hcalls.h
-+++ b/arch/powerpc/include/asm/fsl_hcalls.h
-@@ -96,7 +96,7 @@ static inline unsigned int fh_send_nmi(unsigned int vcpu_mask)
- 	r11 = FH_HCALL_TOKEN(FH_SEND_NMI);
- 	r3 = vcpu_mask;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -151,7 +151,7 @@ static inline unsigned int fh_partition_get_dtprop(int handle,
- 	r9 = (uint32_t)propvalue_addr;
- 	r10 = *propvalue_len;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11),
- 		  "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7),
- 		  "+r" (r8), "+r" (r9), "+r" (r10)
-@@ -205,7 +205,7 @@ static inline unsigned int fh_partition_set_dtprop(int handle,
- 	r9 = (uint32_t)propvalue_addr;
- 	r10 = propvalue_len;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11),
- 		  "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7),
- 		  "+r" (r8), "+r" (r9), "+r" (r10)
-@@ -229,7 +229,7 @@ static inline unsigned int fh_partition_restart(unsigned int partition)
- 	r11 = FH_HCALL_TOKEN(FH_PARTITION_RESTART);
- 	r3 = partition;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -262,7 +262,7 @@ static inline unsigned int fh_partition_get_status(unsigned int partition,
- 	r11 = FH_HCALL_TOKEN(FH_PARTITION_GET_STATUS);
- 	r3 = partition;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "=r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -295,7 +295,7 @@ static inline unsigned int fh_partition_start(unsigned int partition,
- 	r4 = entry_point;
- 	r5 = load;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4), "+r" (r5)
- 		: : EV_HCALL_CLOBBERS3
- 	);
-@@ -317,7 +317,7 @@ static inline unsigned int fh_partition_stop(unsigned int partition)
- 	r11 = FH_HCALL_TOKEN(FH_PARTITION_STOP);
- 	r3 = partition;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -376,7 +376,7 @@ static inline unsigned int fh_partition_memcpy(unsigned int source,
- #endif
- 	r7 = count;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11),
- 		  "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6), "+r" (r7)
- 		: : EV_HCALL_CLOBBERS5
-@@ -399,7 +399,7 @@ static inline unsigned int fh_dma_enable(unsigned int liodn)
- 	r11 = FH_HCALL_TOKEN(FH_DMA_ENABLE);
- 	r3 = liodn;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -421,7 +421,7 @@ static inline unsigned int fh_dma_disable(unsigned int liodn)
- 	r11 = FH_HCALL_TOKEN(FH_DMA_DISABLE);
- 	r3 = liodn;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -447,7 +447,7 @@ static inline unsigned int fh_vmpic_get_msir(unsigned int interrupt,
- 	r11 = FH_HCALL_TOKEN(FH_VMPIC_GET_MSIR);
- 	r3 = interrupt;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "=r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -469,7 +469,7 @@ static inline unsigned int fh_system_reset(void)
- 
- 	r11 = FH_HCALL_TOKEN(FH_SYSTEM_RESET);
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "=r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -506,7 +506,7 @@ static inline unsigned int fh_err_get_info(int queue, uint32_t *bufsize,
- 	r6 = addr_lo;
- 	r7 = peek;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4), "+r" (r5), "+r" (r6),
- 		  "+r" (r7)
- 		: : EV_HCALL_CLOBBERS5
-@@ -542,7 +542,7 @@ static inline unsigned int fh_get_core_state(unsigned int handle,
- 	r3 = handle;
- 	r4 = vcpu;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -572,7 +572,7 @@ static inline unsigned int fh_enter_nap(unsigned int handle, unsigned int vcpu)
- 	r3 = handle;
- 	r4 = vcpu;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -597,7 +597,7 @@ static inline unsigned int fh_exit_nap(unsigned int handle, unsigned int vcpu)
- 	r3 = handle;
- 	r4 = vcpu;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3), "+r" (r4)
- 		: : EV_HCALL_CLOBBERS2
- 	);
-@@ -618,7 +618,7 @@ static inline unsigned int fh_claim_device(unsigned int handle)
- 	r11 = FH_HCALL_TOKEN(FH_CLAIM_DEVICE);
- 	r3 = handle;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-@@ -645,7 +645,7 @@ static inline unsigned int fh_partition_stop_dma(unsigned int handle)
- 	r11 = FH_HCALL_TOKEN(FH_PARTITION_STOP_DMA);
- 	r3 = handle;
- 
--	__asm__ __volatile__ ("sc 1"
-+	asm volatile("bl	epapr_hypercall_start"
- 		: "+r" (r11), "+r" (r3)
- 		: : EV_HCALL_CLOBBERS1
- 	);
-diff --git a/drivers/virt/Kconfig b/drivers/virt/Kconfig
-index 2dcdbc9..99ebdde 100644
---- a/drivers/virt/Kconfig
-+++ b/drivers/virt/Kconfig
-@@ -15,6 +15,7 @@ if VIRT_DRIVERS
- config FSL_HV_MANAGER
- 	tristate "Freescale hypervisor management driver"
- 	depends on FSL_SOC
-+	select EPAPR_PARAVIRT
- 	help
-           The Freescale hypervisor management driver provides several services
- 	  to drivers and applications related to the Freescale hypervisor:
--- 
-1.7.0.4
+include/linux/of_gpio.h:
+struct of_mm_gpio_chip {
+        struct gpio_chip gc;
+        void (*save_regs)(struct of_mm_gpio_chip *mm_gc);
+        void __iomem *regs;
+};
+
+Why am I being asked to add in_be32() etc to ARMs io.h ?  Why do we need
+yet another set of IO accessors?  Is there something wrong with
+ioread*()/ioread*be() etc?
+
+My guess is this stems from a lack of proper review:
+/*
+ * Low level MMIO accessors
+ *
+ * This provides the non-bus specific accessors to MMIO. Those are PowerPC
+ * specific and thus shouldn't be used in generic code. The accessors
+ * provided here are:
+ *
+ *      in_8, in_le16, in_be16, in_le32, in_be32, in_le64, in_be64
+ *      out_8, out_le16, out_be16, out_le32, out_be32, out_le64, out_be64
+ *      _insb, _insw_ns, _insl_ns, _outsb, _outsw_ns, _outsl_ns
+
+$ grep '\(out\|in\)_be32' drivers/ -rl
+drivers/media/video/fsl-viu.c
+drivers/macintosh/via-pmu.c
+drivers/gpio/gpio-mpc8xxx.c
+drivers/gpio/gpio-mpc5200.c
+drivers/gpio/gpio-xilinx.c
+drivers/edac/mpc85xx_edac.c
+drivers/tty/serial/mpc52xx_uart.c
+drivers/tty/serial/ucc_uart.c
+drivers/tty/serial/cpm_uart/cpm_uart_core.c
+drivers/scsi/mvme16x_scsi.c
+drivers/char/xilinx_hwicap/buffer_icap.c
+drivers/char/xilinx_hwicap/fifo_icap.c
+drivers/rtc/rtc-mpc5121.c
+drivers/pcmcia/m8xx_pcmcia.c
+drivers/ata/pata_scc.c
+drivers/ata/pata_mpc52xx.c
+drivers/ide/scc_pata.c
+drivers/net/ethernet/xilinx/xilinx_emaclite.c
+drivers/net/ethernet/xilinx/ll_temac_main.c
+drivers/net/ethernet/freescale/ucc_geth.c
+drivers/net/ethernet/freescale/fsl_pq_mdio.c
+drivers/net/ethernet/freescale/fec_mpc52xx.c
+drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
+drivers/net/ethernet/freescale/fs_enet/mii-fec.c
+drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+drivers/net/ethernet/freescale/fec_mpc52xx_phy.c
+drivers/net/ethernet/freescale/gianfar.h
+drivers/net/ethernet/freescale/ucc_geth_ethtool.c
+drivers/net/ethernet/tundra/tsi108_eth.h
+drivers/net/ethernet/ibm/emac/tah.c
+drivers/net/ethernet/ibm/emac/zmii.c
+drivers/net/ethernet/ibm/emac/rgmii.c
+drivers/net/ethernet/ibm/emac/core.c
+drivers/net/ethernet/ibm/emac/debug.c
+drivers/net/ethernet/toshiba/spider_net.c
+drivers/net/can/flexcan.c
+drivers/net/can/mscan/mpc5xxx_can.c
+drivers/video/xilinxfb.c
+drivers/video/fsl-diu-fb.c
+drivers/video/platinumfb.c
+drivers/spi/spi-fsl-spi.c
+drivers/spi/spi-fsl-lib.h
+drivers/spi/spi-mpc52xx-psc.c
+drivers/spi/spi-mpc512x-psc.c
+drivers/watchdog/mpc8xxx_wdt.c
+drivers/watchdog/pika_wdt.c
+drivers/mmc/host/sdhci-pltfm.h
+drivers/mmc/host/sdhci-of-esdhc.c
+drivers/crypto/caam/regs.h
+drivers/crypto/talitos.c
+drivers/usb/gadget/fsl_qe_udc.c
+drivers/usb/gadget/fsl_udc_core.c
+drivers/usb/host/fhci-hcd.c
+drivers/usb/host/ehci-fsl.c
+drivers/usb/host/ehci-ppc-of.c
+drivers/usb/host/fhci-tds.c
+drivers/usb/host/fsl-mph-dr-of.c
+drivers/usb/otg/fsl_otg.c
+drivers/dma/fsldma.c
+drivers/dma/fsldma.h
+drivers/dma/mpc512x_dma.c
+drivers/i2c/busses/i2c-mpc.c
+drivers/i2c/busses/i2c-cpm.c
+drivers/input/serio/xilinx_ps2.c
+drivers/isdn/hisax/avm_pci.c
+drivers/mtd/nand/ppchameleonevb.c
+drivers/mtd/nand/fsl_elbc_nand.c
+drivers/mtd/nand/mpc5121_nfc.c
+drivers/mtd/nand/ndfc.c
+drivers/mtd/nand/socrates_nand.c
