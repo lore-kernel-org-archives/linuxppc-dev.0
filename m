@@ -1,26 +1,22 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
- [74.125.82.179])
+Received: from mail-gy0-f201.google.com (mail-gy0-f201.google.com
+ [209.85.160.201])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2BEAFB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 05:49:32 +1100 (EST)
-Received: by wera1 with SMTP id a1so1045016wer.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 10:49:27 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1329946899.20389.9.camel@pasglop>
-References: <20120222181556.27513.9413.stgit@bhelgaas.mtv.corp.google.com>
- <20120222181948.27513.96215.stgit@bhelgaas.mtv.corp.google.com>
- <1329946899.20389.9.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 0AE1AB6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 06:43:56 +1100 (EST)
+Received: by ghbz10 with SMTP id z10so118803ghb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 11:43:54 -0800 (PST)
+Subject: [PATCH v2 10/12] powerpc/PCI: replace pci_probe_only with pci_flags
+To: linux-pci@vger.kernel.org
 From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 23 Feb 2012 10:49:07 -0800
-Message-ID: <CAErSpo6=ADAx0LPWQz-YGBm2opoKAMaPGDY6yqvkNY8riF9ZFQ@mail.gmail.com>
-Subject: Re: [PATCH v1 09/11] powerpc/PCI: replace pci_probe_only with
- pci_flags
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
- Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 23 Feb 2012 12:43:53 -0700
+Message-ID: <20120223194353.20708.48000.stgit@bhelgaas.mtv.corp.google.com>
+In-Reply-To: <20120223194209.20708.54480.stgit@bhelgaas.mtv.corp.google.com>
+References: <20120223194209.20708.54480.stgit@bhelgaas.mtv.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +26,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 22, 2012 at 1:41 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2012-02-22 at 11:19 -0700, Bjorn Helgaas wrote:
->> =A0int maple_pci_get_legacy_ide_irq(struct pci_dev *pdev, int channel)
->> diff --git a/arch/powerpc/platforms/pasemi/pci.c
->> b/arch/powerpc/platforms/pasemi/pci.c
->> index b6a0ec4..b27d886 100644
->> --- a/arch/powerpc/platforms/pasemi/pci.c
->> +++ b/arch/powerpc/platforms/pasemi/pci.c
->> @@ -231,7 +231,7 @@ void __init pas_pci_init(void)
->> =A0 =A0 =A0 =A0 pci_devs_phb_init();
->>
->> =A0 =A0 =A0 =A0 /* Use the common resource allocation mechanism */
->> - =A0 =A0 =A0 pci_probe_only =3D 1;
->> + =A0 =A0 =A0 pci_add_flags(PCI_PROBE_ONLY);
->> =A0}
->
-> Olof, do you remember why you used to set that on pasemi ?
->
-> I would have expected it to be clear, so the kernel can re-assign things
-> if needed. We really only want it set for pseries because of the
-> hypervisor being a PITA :-)
+We already use pci_flags, so this just sets pci_flags directly and removes
+the intermediate step of figuring out pci_probe_only, then using it to set
+pci_flags.
 
-Speaking of the hypervisor, powerpc has this of_scan_bus() thing which
-seems to discover PCI devices using the OF device tree rather than
-using PCI config accesses.  This seems related to the "pci_probe_only"
-idea.
+The PCI core provides a pci_flags definition (currently __weak), so drop
+the powerpc definitions in favor of that.
 
-I wonder whether it would be possible/feasible/desirable to implement
-this by using config space accessors that would internally look at the
-OF device tree.  Then we possibly could use the standard PCI scan bus
-path.  Maybe the core could detect non-changeable BARs somehow and
-mark them, e.g., with IORESOURCE_PCI_FIXED.
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ arch/powerpc/include/asm/ppc-pci.h        |    2 --
+ arch/powerpc/kernel/pci-common.c          |    3 ---
+ arch/powerpc/kernel/pci_64.c              |    5 -----
+ arch/powerpc/kernel/rtas_pci.c            |   10 +++++++---
+ arch/powerpc/platforms/iseries/pci.c      |    2 +-
+ arch/powerpc/platforms/maple/pci.c        |    2 +-
+ arch/powerpc/platforms/pasemi/pci.c       |    2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c |    5 ++---
+ arch/powerpc/platforms/powernv/pci.c      |    2 +-
+ arch/powerpc/platforms/pseries/setup.c    |    4 ++--
+ 10 files changed, 15 insertions(+), 22 deletions(-)
 
-Just a pie-in-the sky thought for now; I have no concrete plans to do
-anything like this, but it seems like it might allow more unification
-if it were possible.
-
-Bjorn
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 6d42297..a96d012 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -45,8 +45,6 @@ extern void init_pci_config_tokens (void);
+ extern unsigned long get_phb_buid (struct device_node *);
+ extern int rtas_setup_phb(struct pci_controller *phb);
+ 
+-extern unsigned long pci_probe_only;
+-
+ /* ---- EEH internal-use-only related routines ---- */
+ #ifdef CONFIG_EEH
+ 
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index cce98d7..6d03da4 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -50,9 +50,6 @@ static int global_phb_number;		/* Global phb counter */
+ /* ISA Memory physical address */
+ resource_size_t isa_mem_base;
+ 
+-/* Default PCI flags is 0 on ppc32, modified at boot on ppc64 */
+-unsigned int pci_flags = 0;
+-
+ 
+ static struct dma_map_ops *pci_dma_ops = &dma_direct_ops;
+ 
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index f627eb7..75417fd 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -33,8 +33,6 @@
+ #include <asm/machdep.h>
+ #include <asm/ppc-pci.h>
+ 
+-unsigned long pci_probe_only = 0;
+-
+ /* pci_io_base -- the base address from which io bars are offsets.
+  * This is the lowest I/O base address (so bar values are always positive),
+  * and it *must* be the start of ISA space if an ISA bus exists because
+@@ -55,9 +53,6 @@ static int __init pcibios_init(void)
+ 	 */
+ 	ppc_md.phys_mem_access_prot = pci_phys_mem_access_prot;
+ 
+-	if (pci_probe_only)
+-		pci_add_flags(PCI_PROBE_ONLY);
+-
+ 	/* On ppc64, we always enable PCI domains and we keep domain 0
+ 	 * backward compatible in /proc for video cards
+ 	 */
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index 6cd8f01..140735c 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -276,7 +276,7 @@ void __init find_and_init_phbs(void)
+ 	pci_devs_phb_init();
+ 
+ 	/*
+-	 * pci_probe_only and pci_assign_all_buses can be set via properties
++	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
+ 	 * in chosen.
+ 	 */
+ 	if (of_chosen) {
+@@ -284,8 +284,12 @@ void __init find_and_init_phbs(void)
+ 
+ 		prop = of_get_property(of_chosen,
+ 				"linux,pci-probe-only", NULL);
+-		if (prop)
+-			pci_probe_only = *prop;
++		if (prop) {
++			if (*prop)
++				pci_add_flags(PCI_PROBE_ONLY);
++			else
++				pci_clear_flags(PCI_PROBE_ONLY);
++		}
+ 
+ #ifdef CONFIG_PPC32 /* Will be made generic soon */
+ 		prop = of_get_property(of_chosen,
+diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
+index c754128..171b2f3 100644
+--- a/arch/powerpc/platforms/iseries/pci.c
++++ b/arch/powerpc/platforms/iseries/pci.c
+@@ -868,7 +868,7 @@ void __init iSeries_pcibios_init(void)
+ 	/* Install IO hooks */
+ 	ppc_pci_io = iseries_pci_io;
+ 
+-	pci_probe_only = 1;
++	pci_add_flags(PCI_PROBE_ONLY);
+ 
+ 	/* iSeries has no IO space in the common sense, it needs to set
+ 	 * the IO base to 0
+diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
+index 401e3f3..465ee8f 100644
+--- a/arch/powerpc/platforms/maple/pci.c
++++ b/arch/powerpc/platforms/maple/pci.c
+@@ -620,7 +620,7 @@ void __init maple_pci_init(void)
+ 	}
+ 
+ 	/* Tell pci.c to not change any resource allocations.  */
+-	pci_probe_only = 1;
++	pci_add_flags(PCI_PROBE_ONLY);
+ }
+ 
+ int maple_pci_get_legacy_ide_irq(struct pci_dev *pdev, int channel)
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index b6a0ec4..b27d886 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -231,7 +231,7 @@ void __init pas_pci_init(void)
+ 	pci_devs_phb_init();
+ 
+ 	/* Use the common resource allocation mechanism */
+-	pci_probe_only = 1;
++	pci_add_flags(PCI_PROBE_ONLY);
+ }
+ 
+ void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 5e155df..fbdd74d 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1299,15 +1299,14 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
+ 	/* Setup MSI support */
+ 	pnv_pci_init_ioda_msis(phb);
+ 
+-	/* We set both probe_only and PCI_REASSIGN_ALL_RSRC. This is an
++	/* We set both PCI_PROBE_ONLY and PCI_REASSIGN_ALL_RSRC. This is an
+ 	 * odd combination which essentially means that we skip all resource
+ 	 * fixups and assignments in the generic code, and do it all
+ 	 * ourselves here
+ 	 */
+-	pci_probe_only = 1;
+ 	ppc_md.pcibios_fixup_phb = pnv_pci_ioda_fixup_phb;
+ 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
+-	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
++	pci_add_flags(PCI_PROBE_ONLY | PCI_REASSIGN_ALL_RSRC);
+ 
+ 	/* Reset IODA tables to a clean state */
+ 	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 94ed056..15f4e73 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -561,7 +561,7 @@ void __init pnv_pci_init(void)
+ {
+ 	struct device_node *np;
+ 
+-	pci_set_flags(PCI_CAN_SKIP_ISA_ALIGN);
++	pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
+ 
+ 	/* OPAL absent, try POPAL first then RTAS detection of PHBs */
+ 	if (!firmware_has_feature(FW_FEATURE_OPAL)) {
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 386e265..fc2a6f6 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -380,8 +380,8 @@ static void __init pSeries_setup_arch(void)
+ 
+ 	fwnmi_init();
+ 
+-	/* By default, only probe PCI (can be overriden by rtas_pci */
+-	pci_probe_only = 1;
++	/* By default, only probe PCI (can be overriden by rtas_pci) */
++	pci_add_flags(PCI_PROBE_ONLY);
+ 
+ 	/* Find and initialize PCI host bridges */
+ 	init_pci_config_tokens();
