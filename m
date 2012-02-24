@@ -1,27 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-tul01m020-f179.google.com (mail-tul01m020-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8FFBAB6FC8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 17:08:16 +1100 (EST)
-Received: by obbup6 with SMTP id up6so2401055obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2012 22:08:11 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20120224163042.4cc2633945c9799b997ff4e7@canb.auug.org.au>
-References: <20120224162504.49480de981431c3fd95601a2@canb.auug.org.au>
- <20120224163042.4cc2633945c9799b997ff4e7@canb.auug.org.au>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 23 Feb 2012 23:07:51 -0700
-Message-ID: <CACxGe6tgrAj+sHJ211=pRcqYBSM0xq2f1ycctK4RXLT7rSNhww@mail.gmail.com>
-Subject: Re: linux-next: manual merge of the irqdomain tree with the powerpc
- tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AA73AB6FCB
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 20:38:29 +1100 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Fri, 24 Feb 2012 15:08:26 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1O9cLOI2564108
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 15:08:22 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1O9cLtV005614
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 20:38:21 +1100
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v4 00/21] EEH reorganization
+Date: Fri, 24 Feb 2012 17:37:57 +0800
+Message-Id: <1330076298-7006-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: kernel.crashing.org@shangw, shangw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,62 +32,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 23, 2012 at 10:30 PM, Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
-> [Just adding the PPC guys]
->
-> On Fri, 24 Feb 2012 16:25:04 +1100 Stephen Rothwell <sfr@canb.auug.org.au=
-> wrote:
->>
->> Hi Grant,
->>
->> Today's linux-next merge of the irqdomain tree got a conflict in
->> arch/powerpc/sysdev/mpic.c between commits 3a7a7176e840 ("powerpc/mpic:
->> Fix use of "flags" variable in mpic_alloc()") and c1b8d45db4db
->> ("powerpc/mpic: Add "last-interrupt-source" property to override
->> hardware") from the powerpc tree and commit a8db8cf0d894 ("irq_domain:
->> Replace irq_alloc_host() with revmap-specific initializers") from the
->> irqdomain tree.
->>
->> I fixed it up (see below) and can carry the fix as necessary.
+This series of patches is going to reorganize EEH so that it could support
+multiple platforms in future. The requirements were raised from the aspects.
 
-Thanks Stephen.
+	* The original EEH implementation only support pSeries platform, which
+	  would be regarded as guest system. Platform powernv is coming and EEH
+	  needs to be supported on powernv as well.
+	* Different platforms might be running based on variable firmware.Further
+	  more, the firmware would supply different EEH interfaces to kernel.
+	  Therefore, we have to do necessary abstraction on current EEH implementation.
 
-g.
+In order to accomodate the requirements, the series of patches have reorganized
+current EEH implementation.
 
->> --
->> Cheers,
->> Stephen Rothwell =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0sfr@canb.auug.or=
-g.au
->>
->> diff --cc arch/powerpc/sysdev/mpic.c
->> index b9b989d,c83a512..0000000
->> --- a/arch/powerpc/sysdev/mpic.c
->> +++ b/arch/powerpc/sysdev/mpic.c
->> @@@ -1351,9 -1345,9 +1351,8 @@@ struct mpic * __init mpic_alloc(struct
->> =A0 =A0 =A0 mpic->isu_shift =3D 1 + __ilog2(mpic->isu_size - 1);
->> =A0 =A0 =A0 mpic->isu_mask =3D (1 << mpic->isu_shift) - 1;
->>
->> - =A0 =A0 mpic->irqhost =3D irq_alloc_host(mpic->node, IRQ_HOST_MAP_LINE=
-AR,
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0mpic->isu_size, &mpic_host_ops,
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0intvec_top + 1);
->> + =A0 =A0 mpic->irqhost =3D irq_domain_add_linear(mpic->node,
->> =A0- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- isu_size ? isu_size : mpic->num_sources,
->> =A0- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- &mpic_host_ops, mpic);
->> ++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 m=
-pic->isu_size, &mpic_host_ops, mpic);
->>
->> =A0 =A0 =A0 /*
->> =A0 =A0 =A0 =A0* FIXME: The code leaks the MPIC object and mappings here=
-; this
+	* The original implementation looks not clean enough. Necessary cleanup
+	  will be done in some of the patches.
+	* struct eeh_ops has been introduced so that EEH core components and platform
+	  dependent implementation could be split up. That make it possible for EEH
+	  to be supported on multiple platforms.
+	* struct eeh_dev has been introduced to replace struct pci_dn so that EEH module
+	  works independently as much as possible.
+	* EEH global statistics will be maintained in a collective fashion.
+
+v1 -> v2:
+
+	* If possible, to add "eeh_" prefix for function names.
+	* The format of leading function comments won't be changed in order not to
+	  break kernel document automatic generation (e.g. by "make pdfdocs").
+	* The name of local variables won't be changed if there're no explicit reasons.
+	* Represent the PE's state in bitmap fasion.
+	* Some function names have been adjusted so that they look shorter and
+	  meaningful.
+	* Platform operation name has been changed to "pseries".
+	* Merge those patches for cleanup if possible.
+	* The line length is kept as appropriately short if possible.
+	* Fixup on alignment & spacing issues.
+
+v2 -> v3:
+	* Split cleanup patch into 2: one for comment cleanup and another one for
+	  renaming function names.
+	* Try to use pr_warning/pr_info/pr_debug instead of printk() function call.
+	* Function names are adjusted a little bit so that they looks more meaningful
+	  according to comments from Michael/Ben.
+	* Useful comment has been kept according to Michael's comments.
+	* struct eeh_ops::set_eeh has been changed to eeh_ops::set_option.
+	* struct eeh_ops::name has been changed to "char *".
+	* Remove file name from the source file.
+	* Copyright (C) format has been changed since "(C)" isn't encouraged to use.
+	* The header files included in the source file have been sorted alphabetically.
+	* eeh_platform_init() has been replaced by eeh_pseries_init() to avoid duplicate
+	  functions when kernel supports multiple platforms.
+	* "F/W" has been changed to "Firmware".
+	* The maximal wait time to retrieve PE's state has been covered by macro.
+	* It also include changes according to the minor comments from Michael.
+
+v3 -> v4:
+	* Fix some typo included in the commit messages.
+	* Reduce code nesting according to Ram's suggestions.
+	* Addtinal pr_warning on failure of configuring bridges.
+
+The series of patches (v4) has been verified on Firebird-L machine. In order to carry out
+the test, you have to install IBM Power Tools from IBM internal yum source. Following
+command is used to force EEH check on ethernet interface, which could be recovered eventually
+by EEH and device driver successfully. You could keep pinging to the blade before issuing
+the following command to force EEH. You should see the network interface can't be reached for
+a moment and everything will be recovered couple of seconds after the forced EEH error. At the
+same time, you should see EEH error log out of system console. 
+
+	* errinjct eeh -v -f 0 -p U78AE.001.WZS00M9-P1-C18-L1-T2 -a 0x0 -m 0x0
 
 
+-------------
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+arch/powerpc/include/asm/device.h            |    3 -
+arch/powerpc/include/asm/eeh.h               |  143 +---
+arch/powerpc/include/asm/eeh_event.h         |   33 +-
+arch/powerpc/include/asm/ppc-pci.h           |   89 ++-
+arch/powerpc/kernel/of_platform.c            |    3 -
+arch/powerpc/kernel/rtas_pci.c               |    3 -
+arch/powerpc/platforms/pseries/Makefile      |    3 +-
+arch/powerpc/platforms/pseries/eeh.c         | 1016 +++++++++++++++-----------
+arch/powerpc/platforms/pseries/eeh_cache.c   |   44 +-
+arch/powerpc/platforms/pseries/eeh_driver.c  |  213 +++---
+arch/powerpc/platforms/pseries/eeh_event.c   |   55 +-
+arch/powerpc/platforms/pseries/eeh_pseries.c |  565 --------------
+arch/powerpc/platforms/pseries/eeh_sysfs.c   |   25 +-
+arch/powerpc/platforms/pseries/msi.c         |    2 +-
+arch/powerpc/platforms/pseries/pci_dlpar.c   |    3 -
+arch/powerpc/platforms/pseries/setup.c       |    7 +-
+include/linux/of.h                           |    3 -
+17 files changed, 861 insertions(+), 1349 deletions(-)
+
+Thanks,
+Gavin
