@@ -1,33 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C787DB6F62
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 15:11:36 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: allow CONFIG_PHYS_64BIT to be selectable
-Date: Fri, 24 Feb 2012 04:11:13 +0000
-Message-ID: <4F470DDD.2060803@freescale.com>
-References: <1329853995-7533-1-git-send-email-timur@freescale.com>
- <110EED8CC96DFC488B7E717A2027A27C02C5E8@039-SN1MPN1-002.039d.mgd.msft.net>
- <4F463006.7060507@freescale.com>
- <110EED8CC96DFC488B7E717A2027A27C02E4A8@039-SN1MPN1-002.039d.mgd.msft.net>
- <94F013E7935FF44C83EBE7784D62AD3F0578CD9A@039-SN2MPN1-023.039d.mgd.msft.net>
- <4F46F9CF.6040600@freescale.com>
- <94F013E7935FF44C83EBE7784D62AD3F0578CFD9@039-SN2MPN1-023.039d.mgd.msft.net>
- <4F46FE3E.1050605@freescale.com>
- <94F013E7935FF44C83EBE7784D62AD3F0578D305@039-SN2MPN1-023.039d.mgd.msft.net>
- <4F470910.9080008@freescale.com>
- <94F013E7935FF44C83EBE7784D62AD3F0578D5BD@039-SN2MPN1-023.039d.mgd.msft.net>
-In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F0578D5BD@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Huang Changming-R66093 <r66093@freescale.com>,
- Wood Scott-B07421 <B07421@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 85D35B6FAC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 16:30:57 +1100 (EST)
+Date: Fri, 24 Feb 2012 16:30:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: linux-next: manual merge of the irqdomain tree with the powerpc
+ tree
+Message-Id: <20120224163042.4cc2633945c9799b997ff4e7@canb.auug.org.au>
+In-Reply-To: <20120224162504.49480de981431c3fd95601a2@canb.auug.org.au>
+References: <20120224162504.49480de981431c3fd95601a2@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__24_Feb_2012_16_30_42_+1100_rry5wsoH8ZSGPnTX"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Li Yang-R58472 wrote:
+--Signature=_Fri__24_Feb_2012_16_30_42_+1100_rry5wsoH8ZSGPnTX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> It's a good point.  Why can't we decide to use 32-bit/36-bit TLB at runti=
-me even for e500v2?
+[Just adding the PPC guys]
 
-That's not what PHYS_64BIT does.  PHYS_64BIT determines whether=20
-phys_addr_t is a u64 or a u32.  This is something that must be determined=20
-at compilation time.
-
->> Please remember that the Kconfig for the P1022DS already forced
->> PHYS_64BIT for all mpc85xx platforms.  All we're doing is making it
->> possible to deselect PHYS_64BIT.
+On Fri, 24 Feb 2012 16:25:04 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
 >
-> I think it's a side-effect introduced by P1022DS support and need to be f=
-ixed.
+> Hi Grant,
+>=20
+> Today's linux-next merge of the irqdomain tree got a conflict in
+> arch/powerpc/sysdev/mpic.c between commits 3a7a7176e840 ("powerpc/mpic:
+> Fix use of "flags" variable in mpic_alloc()") and c1b8d45db4db
+> ("powerpc/mpic: Add "last-interrupt-source" property to override
+> hardware") from the powerpc tree and commit a8db8cf0d894 ("irq_domain:
+> Replace irq_alloc_host() with revmap-specific initializers") from the
+> irqdomain tree.
+>=20
+> I fixed it up (see below) and can carry the fix as necessary.
+> --=20
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+>=20
+> diff --cc arch/powerpc/sysdev/mpic.c
+> index b9b989d,c83a512..0000000
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@@ -1351,9 -1345,9 +1351,8 @@@ struct mpic * __init mpic_alloc(struct=20
+>   	mpic->isu_shift =3D 1 + __ilog2(mpic->isu_size - 1);
+>   	mpic->isu_mask =3D (1 << mpic->isu_shift) - 1;
+>  =20
+> - 	mpic->irqhost =3D irq_alloc_host(mpic->node, IRQ_HOST_MAP_LINEAR,
+> - 				       mpic->isu_size, &mpic_host_ops,
+> - 				       intvec_top + 1);
+> + 	mpic->irqhost =3D irq_domain_add_linear(mpic->node,
+>  -				       isu_size ? isu_size : mpic->num_sources,
+>  -				       &mpic_host_ops, mpic);
+> ++				       mpic->isu_size, &mpic_host_ops, mpic);
+>  =20
+>   	/*
+>   	 * FIXME: The code leaks the MPIC object and mappings here; this
 
-Exactly.  That's what these patches do.  And these patches have been=20
-applied to the SDK.  I'm just waiting for Kumar to apply them to his=20
-repository.
+--Signature=_Fri__24_Feb_2012_16_30_42_+1100_rry5wsoH8ZSGPnTX
+Content-Type: application/pgp-signature
 
-> There was no mentioning of enforcing 36-bit for all mpc85xx platforms.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-It's not enforcing, it's just the default.  If you build with=20
-mpc85xx_smp_defconfig, then you'll get a 36-bit kernel.  But now you can=20
-also use menuconfig to turn off PHYS_64BIT.  Before these fixes, that was=20
-not possible.
+iQIcBAEBCAAGBQJPRyCCAAoJEECxmPOUX5FEtHAP/iUKG3bxrEgZBOX26nxQFsKH
+44vzuO6jahrDV9c4cwKaCXrFxzt2Qj8fXaqDFvfVNaEGZsxmE+rr7rE4DUpky0r/
+278qQiSTj3r0VB8HG+lnxNL8mf+Ml1wcs1avefwY/Oxdrm8Gpc+BZBnyFmrG3y/l
+/PWuTs3Z7w0cdDh6a9Ljr1L8sl73/cab4cc3WHK9M2HKdPihsj1h50K4BSMpObBV
+p3AP6NHFfVI0E1DGmAwtWkOPgYoqSm7KsorcLTVkh5xtn5onVrnTsILRcjRNXM3C
+2PdqkCuPtavPSRyCXVUO8kUGvdna7mwJE/5krvfqFY4gPsMm7ZPKrooyz5ZRTZ6j
+bEmM4LCYBDUIoaMo+5od4cXIMDYSxu1GgmRtmHYc6seSUYwktQPMKRPrAvzZcXlD
+Yfo5rEvZUWpDGLcQ11RwBL5atLAa9LtPmHICr9Ftkaz4qVcVil6s4tUwntBJWEHo
+xo0SAr84FytUU96d01Fdqbmw+vNkbpvVk9zbVzGTxkRO4r3KELmOH00TQJDy7mM2
+oy2+6d8NMLkItKimvNbHdhyRWcbzG2Je72kilwkTDE9g17ZxJA1hv13mcWkJzLiY
+tkPWpLGnvTQf/nOjS/NbIMlJH3RbCnWgLLeaEZAUGVmdaYOvVb+bcqqWKOnVH6fT
+acaC0KILN9PpLb7Q+0mN
+=KWLG
+-----END PGP SIGNATURE-----
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+--Signature=_Fri__24_Feb_2012_16_30_42_+1100_rry5wsoH8ZSGPnTX--
