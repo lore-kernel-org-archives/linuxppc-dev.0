@@ -1,20 +1,20 @@
 Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe003.messaging.microsoft.com
- [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+ [65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E2337B6FAF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 10:34:22 +1100 (EST)
-Message-ID: <4F481E66.8010408@freescale.com>
-Date: Fri, 24 Feb 2012 17:33:58 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 3DF78B6FAC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 10:40:27 +1100 (EST)
+Message-ID: <4F481FE1.1080404@freescale.com>
+Date: Fri, 24 Feb 2012 17:40:17 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 35/37] KVM: PPC: booke: Support perfmon interrupts
+Subject: Re: [PATCH 36/37] KVM: PPC: booke: expose guest registers on irq
+ reinject
 References: <1330093591-19523-1-git-send-email-agraf@suse.de>
- <1330093591-19523-36-git-send-email-agraf@suse.de>
-In-Reply-To: <1330093591-19523-36-git-send-email-agraf@suse.de>
+ <1330093591-19523-37-git-send-email-agraf@suse.de>
+In-Reply-To: <1330093591-19523-37-git-send-email-agraf@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,32 +27,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 02/24/2012 08:26 AM, Alexander Graf wrote:
-> When during guest context we get a performance monitor interrupt, we
-> currently bail out and oops. Let's route it to its correct handler
-> instead.
-> 
-> Signed-off-by: Alexander Graf <agraf@suse.de>
-> ---
->  arch/powerpc/kvm/booke.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index 7adef28..423701b 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -677,6 +677,10 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  		r = RESUME_GUEST;
->  		break;
+> +static void kvmppc_fill_pt_regs(struct kvm_vcpu *vcpu, struct pt_regs *regs)
+>  {
+> -	int r = RESUME_HOST;
+> +	int i;
 >  
-> +	case BOOKE_INTERRUPT_PERFORMANCE_MONITOR:
-> +		r = RESUME_GUEST;
-> +		break;
-> +
->  	case BOOKE_INTERRUPT_HV_PRIV:
->  		r = emulation_exit(run, vcpu);
->  		break;
+> -	/* update before a new last_exit_type is rewritten */
+> -	kvmppc_update_timing_stats(vcpu);
+> +	for (i = 0; i < 32; i++)
+> +		regs->gpr[i] = kvmppc_get_gpr(vcpu, i);
+> +	regs->nip = vcpu->arch.pc;
+> +	regs->msr = vcpu->arch.shared->msr;
+> +	regs->ctr = vcpu->arch.ctr;
+> +	regs->link = vcpu->arch.lr;
+> +	regs->xer = kvmppc_get_xer(vcpu);
+> +	regs->ccr = kvmppc_get_cr(vcpu);
+> +	regs->dar = get_guest_dear(vcpu);
+> +	regs->dsisr = get_guest_esr(vcpu);
+> +}
 
-Why do we need to call timer_interrupt() explicitly, but can rely on
-automatic retriggering for perfmon?
+How much overhead does this add to every interrupt?  Can't we keep this
+to the minimum that perf cares about?
+
+> +
+> +static void kvmppc_restart_interrupt(struct kvm_vcpu *vcpu,
+> +				     unsigned int exit_nr)
+> +{
+> +	struct pt_regs regs = *current->thread.regs;
+>  
+> +	kvmppc_fill_pt_regs(vcpu, &regs);
+
+Why are you copying out of current->thread.regs?  That's old junk data,
+set by some previous exception and possibly overwritten since.
 
 -Scott
