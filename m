@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3669FB6FDF
+ by ozlabs.org (Postfix) with ESMTPS id 136B4B6FDB
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 01:26:41 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 11/37] KVM: PPC: e500: emulate tlbilx
-Date: Fri, 24 Feb 2012 15:26:05 +0100
-Message-Id: <1330093591-19523-12-git-send-email-agraf@suse.de>
+Subject: [PATCH 10/37] KVM: PPC: e500: Track TLB1 entries with a bitmap
+Date: Fri, 24 Feb 2012 15:26:04 +0100
+Message-Id: <1330093591-19523-11-git-send-email-agraf@suse.de>
 In-Reply-To: <1330093591-19523-1-git-send-email-agraf@suse.de>
 References: <1330093591-19523-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -24,128 +24,213 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-tlbilx is the new, preferred invalidation instruction.  It is not
-found on e500 prior to e500mc, but there should be no harm in
-supporting it on all e500.
+Rather than invalidate everything when a TLB1 entry needs to be
+taken down, keep track of which host TLB1 entries are used for
+a given guest TLB1 entry, and invalidate just those entries.
 
-Based on code from Ashish Kalra <Ashish.Kalra@freescale.com>.
+Based on code from Ashish Kalra <Ashish.Kalra@freescale.com>
+and Liu Yu <yu.liu@freescale.com>.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/e500.h         |    1 +
- arch/powerpc/kvm/e500_emulate.c |    9 ++++++
- arch/powerpc/kvm/e500_tlb.c     |   52 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 62 insertions(+), 0 deletions(-)
+ arch/powerpc/kvm/e500.h     |    5 +++
+ arch/powerpc/kvm/e500_tlb.c |   72 ++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 72 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index f4dee55..ce3f163 100644
+index 34cef08..f4dee55 100644
 --- a/arch/powerpc/kvm/e500.h
 +++ b/arch/powerpc/kvm/e500.h
-@@ -124,6 +124,7 @@ int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500,
- int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
- int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
- int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
-+int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb);
- int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
- int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
- void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index c80794d..af02c18 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -22,6 +22,7 @@
- #define XOP_TLBSX   914
- #define XOP_TLBRE   946
- #define XOP_TLBWE   978
-+#define XOP_TLBILX  18
+@@ -2,6 +2,7 @@
+  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Author: Yu Liu <yu.liu@freescale.com>
++ *         Ashish Kalra <ashish.kalra@freescale.com>
+  *
+  * Description:
+  * This file is based on arch/powerpc/kvm/44x_tlb.h and
+@@ -25,6 +26,7 @@
  
- int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
-                            unsigned int inst, int *advance)
-@@ -29,6 +30,7 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	int emulated = EMULATE_DONE;
- 	int ra;
- 	int rb;
-+	int rt;
+ #define E500_TLB_VALID 1
+ #define E500_TLB_DIRTY 2
++#define E500_TLB_BITMAP 4
  
- 	switch (get_op(inst)) {
- 	case 31:
-@@ -47,6 +49,13 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			emulated = kvmppc_e500_emul_tlbsx(vcpu,rb);
- 			break;
+ struct tlbe_ref {
+ 	pfn_t pfn;
+@@ -82,6 +84,9 @@ struct kvmppc_vcpu_e500 {
+ 	struct page **shared_tlb_pages;
+ 	int num_shared_tlb_pages;
  
-+		case XOP_TLBILX:
-+			ra = get_ra(inst);
-+			rb = get_rb(inst);
-+			rt = get_rt(inst);
-+			emulated = kvmppc_e500_emul_tlbilx(vcpu, rt, ra, rb);
-+			break;
++	u64 *g2h_tlb1_map;
++	unsigned int *h2g_tlb1_rmap;
 +
- 		case XOP_TLBIVAX:
- 			ra = get_ra(inst);
- 			rb = get_rb(inst);
+ #ifdef CONFIG_KVM_E500
+ 	u32 pid[E500_PID_NUM];
+ 
 diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index c8ce51d..6eb5d65 100644
+index 9925fc6..c8ce51d 100644
 --- a/arch/powerpc/kvm/e500_tlb.c
 +++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -631,6 +631,58 @@ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb)
- 	return EMULATE_DONE;
+@@ -2,6 +2,7 @@
+  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Author: Yu Liu, yu.liu@freescale.com
++ *         Ashish Kalra, ashish.kalra@freescale.com
+  *
+  * Description:
+  * This file is based on arch/powerpc/kvm/44x_tlb.c,
+@@ -175,8 +176,28 @@ static void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	struct kvm_book3e_206_tlb_entry *gtlbe =
+ 		get_entry(vcpu_e500, tlbsel, esel);
+ 
+-	if (tlbsel == 1) {
+-		kvmppc_e500_tlbil_all(vcpu_e500);
++	if (tlbsel == 1 &&
++	    vcpu_e500->gtlb_priv[1][esel].ref.flags & E500_TLB_BITMAP) {
++		u64 tmp = vcpu_e500->g2h_tlb1_map[esel];
++		int hw_tlb_indx;
++		unsigned long flags;
++
++		local_irq_save(flags);
++		while (tmp) {
++			hw_tlb_indx = __ilog2_u64(tmp & -tmp);
++			mtspr(SPRN_MAS0,
++			      MAS0_TLBSEL(1) |
++			      MAS0_ESEL(to_htlb1_esel(hw_tlb_indx)));
++			mtspr(SPRN_MAS1, 0);
++			asm volatile("tlbwe");
++			vcpu_e500->h2g_tlb1_rmap[hw_tlb_indx] = 0;
++			tmp &= tmp - 1;
++		}
++		mb();
++		vcpu_e500->g2h_tlb1_map[esel] = 0;
++		vcpu_e500->gtlb_priv[1][esel].ref.flags &= ~E500_TLB_BITMAP;
++		local_irq_restore(flags);
++
+ 		return;
+ 	}
+ 
+@@ -282,6 +303,16 @@ static inline void kvmppc_e500_ref_release(struct tlbe_ref *ref)
+ 	}
  }
  
-+static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
-+		       int pid, int rt)
++static void clear_tlb1_bitmap(struct kvmppc_vcpu_e500 *vcpu_e500)
 +{
-+	struct kvm_book3e_206_tlb_entry *tlbe;
-+	int tid, esel;
-+
-+	/* invalidate all entries */
-+	for (esel = 0; esel < vcpu_e500->gtlb_params[tlbsel].entries; esel++) {
-+		tlbe = get_entry(vcpu_e500, tlbsel, esel);
-+		tid = get_tlb_tid(tlbe);
-+		if (rt == 0 || tid == pid) {
-+			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
-+			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
-+		}
-+	}
++	if (vcpu_e500->g2h_tlb1_map)
++		memset(vcpu_e500->g2h_tlb1_map,
++		       sizeof(u64) * vcpu_e500->gtlb_params[1].entries, 0);
++	if (vcpu_e500->h2g_tlb1_rmap)
++		memset(vcpu_e500->h2g_tlb1_rmap,
++		       sizeof(unsigned int) * host_tlb_params[1].entries, 0);
 +}
 +
-+static void tlbilx_one(struct kvmppc_vcpu_e500 *vcpu_e500, int pid,
-+		       int ra, int rb)
-+{
-+	int tlbsel, esel;
-+	gva_t ea;
-+
-+	ea = kvmppc_get_gpr(&vcpu_e500->vcpu, rb);
-+	if (ra)
-+		ea += kvmppc_get_gpr(&vcpu_e500->vcpu, ra);
-+
-+	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
-+		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, -1);
-+		if (esel >= 0) {
-+			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
-+			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
-+			break;
-+		}
-+	}
-+}
-+
-+int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb)
-+{
-+	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
-+	int pid = get_cur_spid(vcpu);
-+
-+	if (rt == 0 || rt == 1) {
-+		tlbilx_all(vcpu_e500, 0, pid, rt);
-+		tlbilx_all(vcpu_e500, 1, pid, rt);
-+	} else if (rt == 3) {
-+		tlbilx_one(vcpu_e500, pid, ra, rb);
-+	}
-+
-+	return EMULATE_DONE;
-+}
-+
- int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu)
+ static void clear_tlb_privs(struct kvmppc_vcpu_e500 *vcpu_e500)
  {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+ 	int tlbsel = 0;
+@@ -511,7 +542,7 @@ static void kvmppc_e500_tlb0_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ /* XXX for both one-one and one-to-many , for now use TLB1 */
+ static int kvmppc_e500_tlb1_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 		u64 gvaddr, gfn_t gfn, struct kvm_book3e_206_tlb_entry *gtlbe,
+-		struct kvm_book3e_206_tlb_entry *stlbe)
++		struct kvm_book3e_206_tlb_entry *stlbe, int esel)
+ {
+ 	struct tlbe_ref *ref;
+ 	unsigned int victim;
+@@ -524,6 +555,14 @@ static int kvmppc_e500_tlb1_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	ref = &vcpu_e500->tlb_refs[1][victim];
+ 	kvmppc_e500_shadow_map(vcpu_e500, gvaddr, gfn, gtlbe, 1, stlbe, ref);
+ 
++	vcpu_e500->g2h_tlb1_map[esel] |= (u64)1 << victim;
++	vcpu_e500->gtlb_priv[1][esel].ref.flags |= E500_TLB_BITMAP;
++	if (vcpu_e500->h2g_tlb1_rmap[victim]) {
++		unsigned int idx = vcpu_e500->h2g_tlb1_rmap[victim];
++		vcpu_e500->g2h_tlb1_map[idx] &= ~(1ULL << victim);
++	}
++	vcpu_e500->h2g_tlb1_rmap[victim] = esel;
++
+ 	return victim;
+ }
+ 
+@@ -728,7 +767,7 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
+ 			 * are mapped on the fly. */
+ 			stlbsel = 1;
+ 			sesel = kvmppc_e500_tlb1_map(vcpu_e500, eaddr,
+-				    raddr >> PAGE_SHIFT, gtlbe, &stlbe);
++				    raddr >> PAGE_SHIFT, gtlbe, &stlbe, esel);
+ 			break;
+ 
+ 		default:
+@@ -856,7 +895,7 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
+ 
+ 		stlbsel = 1;
+ 		sesel = kvmppc_e500_tlb1_map(vcpu_e500, eaddr, gfn,
+-					     gtlbe, &stlbe);
++					     gtlbe, &stlbe, esel);
+ 		break;
+ 	}
+ 
+@@ -872,6 +911,9 @@ static void free_gtlb(struct kvmppc_vcpu_e500 *vcpu_e500)
+ {
+ 	int i;
+ 
++	clear_tlb1_bitmap(vcpu_e500);
++	kfree(vcpu_e500->g2h_tlb1_map);
++
+ 	clear_tlb_refs(vcpu_e500);
+ 	kfree(vcpu_e500->gtlb_priv[0]);
+ 	kfree(vcpu_e500->gtlb_priv[1]);
+@@ -932,6 +974,7 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 	char *virt;
+ 	struct page **pages;
+ 	struct tlbe_priv *privs[2] = {};
++	u64 *g2h_bitmap = NULL;
+ 	size_t array_len;
+ 	u32 sets;
+ 	int num_pages, ret, i;
+@@ -993,10 +1036,16 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 	if (!privs[0] || !privs[1])
+ 		goto err_put_page;
+ 
++	g2h_bitmap = kzalloc(sizeof(u64) * params.tlb_sizes[1],
++	                     GFP_KERNEL);
++	if (!g2h_bitmap)
++		goto err_put_page;
++
+ 	free_gtlb(vcpu_e500);
+ 
+ 	vcpu_e500->gtlb_priv[0] = privs[0];
+ 	vcpu_e500->gtlb_priv[1] = privs[1];
++	vcpu_e500->g2h_tlb1_map = g2h_bitmap;
+ 
+ 	vcpu_e500->gtlb_arch = (struct kvm_book3e_206_tlb_entry *)
+ 		(virt + (cfg->array & (PAGE_SIZE - 1)));
+@@ -1129,6 +1178,18 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
+ 	if (!vcpu_e500->gtlb_priv[1])
+ 		goto err;
+ 
++	vcpu_e500->g2h_tlb1_map = kzalloc(sizeof(unsigned int) *
++					  vcpu_e500->gtlb_params[1].entries,
++					  GFP_KERNEL);
++	if (!vcpu_e500->g2h_tlb1_map)
++		goto err;
++
++	vcpu_e500->h2g_tlb1_rmap = kzalloc(sizeof(unsigned int) *
++					   host_tlb_params[1].entries,
++					   GFP_KERNEL);
++	if (!vcpu_e500->h2g_tlb1_rmap)
++		goto err;
++
+ 	/* Init TLB configuration register */
+ 	vcpu->arch.tlbcfg[0] = mfspr(SPRN_TLB0CFG) &
+ 			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
+@@ -1154,6 +1215,7 @@ err:
+ void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500)
+ {
+ 	free_gtlb(vcpu_e500);
++	kfree(vcpu_e500->h2g_tlb1_rmap);
+ 	kfree(vcpu_e500->tlb_refs[0]);
+ 	kfree(vcpu_e500->tlb_refs[1]);
+ }
 -- 
 1.6.0.2
