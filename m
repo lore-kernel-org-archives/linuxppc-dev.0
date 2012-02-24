@@ -1,27 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Thu, 23 Feb 2012 14:39:04 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH v3 22/25] irq_domain/x86: Convert x86 (embedded) to use
- common irq_domain
-Message-ID: <20120223213904.GD25293@ponder.secretlab.ca>
-References: <1327700179-17454-1-git-send-email-grant.likely@secretlab.ca>
- <1327700179-17454-23-git-send-email-grant.likely@secretlab.ca>
- <20120128164405.GA20763@linutronix.de>
- <20120130195842.GT28397@ponder.secretlab.ca>
- <20120201141705.GF9587@linutronix.de>
- <CACxGe6vZxWXUG-WJFWDaoH3+PYBGWOXb291_jn9TdjrSF=p_JQ@mail.gmail.com>
- <CACxGe6tQvBZBMynXbknWx1o1s5TPEN7rXrNOOAjC5F_dz9B51w@mail.gmail.com>
- <4F46AE07.2000105@linutronix.de>
+Return-Path: <r66093@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 491C2B6EEA
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 12:54:30 +1100 (EST)
+From: Huang Changming-R66093 <r66093@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx: allow CONFIG_PHYS_64BIT to be selectable
+Date: Fri, 24 Feb 2012 01:54:24 +0000
+Message-ID: <110EED8CC96DFC488B7E717A2027A27C02E4A8@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1329853995-7533-1-git-send-email-timur@freescale.com>
+ <110EED8CC96DFC488B7E717A2027A27C02C5E8@039-SN1MPN1-002.039d.mgd.msft.net>
+ <4F463006.7060507@freescale.com>
+In-Reply-To: <4F463006.7060507@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4F46AE07.2000105@linutronix.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,109 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 23, 2012 at 10:22:15PM +0100, Sebastian Andrzej Siewior wrote:
-> On 02/23/2012 08:56 PM, Grant Likely wrote:
-> >On Wed, Feb 1, 2012 at 11:06 AM, Grant Likely<grant.likely@secretlab.ca>  wrote:
-> >>On Wed, Feb 1, 2012 at 7:17 AM, Sebastian Andrzej Siewior
-> >><bigeasy@linutronix.de>  wrote:
-> >>>* Grant Likely | 2012-01-30 12:58:42 [-0700]:
-> >>>
-> >>>>Ugh.  This isn't easy.  The legacy mapping really needs all the
-> >>>
-> >>>Feel free to merge this patch. I don't have the time to look at this now
-> >>>so I take a look at the ioapic later.
-> >>
-> >>There's no rush here.  I can leave it as-is with IRQ_DOMAIN turned off
-> >>for x86 for now.
-> >
-> >Turns out I have to enable IRQ_DOMAIN for x86 because the TI TWL4030
-> >driver needs it.  I do need to apply this patch.  Until something
-> >better can be implemented, can I change ioapic_add_ofnode() so that it
-> >allocates all irq_descs immediately.  It's not ideal, but every other
-> >approach I've looked at results in nasty hacks.
-> >
-> >Looking at the ioapic code, it appears to handle preallocated
-> >irq_descs gracefully.
-> 
-> Please merge your initial patch as-it.
 
-Okay, will do.
 
-> >Does adding this loop help (apologies if it is whitespace damaged, I
-> >cut&paste it):
-> >
-> >diff --git a/arch/x86/kernel/devicetree.c b/arch/x86/kernel/devicetree.c
-> >index 3ae2ced..89c1310 100644
-> >--- a/arch/x86/kernel/devicetree.c
-> >+++ b/arch/x86/kernel/devicetree.c
-> >@@ -345,7 +345,7 @@ const struct irq_domain_ops ioapic_irq_domain_ops = {
-> >  static void __init ioapic_add_ofnode(struct device_node *np)
-> >  {
-> >  	struct resource r;
-> >-	int i, ret;
-> >+	int i, j, ret;
-> >
-> >  	ret = of_address_to_resource(np, 0,&r);
-> >  	if (ret) {
-> >@@ -361,6 +361,14 @@ static void __init ioapic_add_ofnode(struct
-> >device_node *np)
-> >
-> >  			gsi_cfg = mp_ioapic_gsi_routing(i);
-> >
-> >+			/*
-> >+			 * Preallocate irq_descs so that the legacy mapping
-> >+			 * works, but don't set them up.
-> >+			 * io_apic_setup_irq_pin_once() will finish the set up.
-> >+			 */
-> >+			for (j = 0; j<  32; j++)
-> 
-> It is not 32. If I remember correctly the first ioapic had 24 pins so
-> did the second. This is ioapic specifc.
-
-Is this better (bigger diffstat, but mostly due to renaming a local varable):
-
----
-
-diff --git a/arch/x86/kernel/devicetree.c b/arch/x86/kernel/devicetree.c
-index 3ae2ced..4028dc6 100644
---- a/arch/x86/kernel/devicetree.c
-+++ b/arch/x86/kernel/devicetree.c
-@@ -345,7 +345,7 @@ const struct irq_domain_ops ioapic_irq_domain_ops = {
- static void __init ioapic_add_ofnode(struct device_node *np)
- {
- 	struct resource r;
--	int i, ret;
-+	int i, irq, ret;
- 
- 	ret = of_address_to_resource(np, 0, &r);
- 	if (ret) {
-@@ -357,13 +357,22 @@ static void __init ioapic_add_ofnode(struct device_node *np)
- 	for (i = 0; i < nr_ioapics; i++) {
- 		if (r.start == mpc_ioapic_addr(i)) {
- 			struct irq_domain *id;
--			struct mp_ioapic_gsi *gsi_cfg;
--
--			gsi_cfg = mp_ioapic_gsi_routing(i);
--
--			id = irq_domain_add_legacy(np, 32, gsi_cfg->gsi_base, 0,
--						   &ioapic_irq_domain_ops,
--						   (void*)i);
-+			struct mp_ioapic_gsi *cfg;
-+
-+			cfg = mp_ioapic_gsi_routing(i);
-+
-+			/*
-+			 * Preallocate irq_descs so that the legacy mapping
-+			 * works, but don't set them up.
-+			 * io_apic_setup_irq_pin_once() will finish the set up.
-+			 */
-+			for (irq = cfg->gsi_base; irq <= cfg->gsi_end; irq++)
-+				irq_alloc_desc_at(irq, cpu_to_node(0));
-+
-+			id = irq_domain_add_legacy(np,
-+					cfg->gsi_end - cfg->gsi_base + 1,
-+					cfg->gsi_base, 0,
-+					&ioapic_irq_domain_ops, (void*)i);
- 			BUG_ON(!id);
- 			return;
- 		}
+> -----Original Message-----
+> From: Tabi Timur-B04825
+> Sent: Thursday, February 23, 2012 8:25 PM
+> To: Huang Changming-R66093
+> Cc: galak@kernel.crashing.org; benh@kernel.crashing.org; Wood Scott-
+> B07421; Li Yang-R58472; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] powerpc/85xx: allow CONFIG_PHYS_64BIT to be
+> selectable
+>=20
+> Huang Changming-R66093 wrote:
+> > I have one similar patch to remove the "select PHYS_64BIT".
+> > http://patchwork.ozlabs.org/patch/132351/
+>=20
+> That one doesn't update the defconfigs, which means that the default
+> kernel will not have PHYS_64BIT enabled.
+I think it is not necessary to enable the 64BIT,
+if customer want to enable it, he can do it manually.=20
