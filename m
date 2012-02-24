@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 05180B7004
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 01:26:51 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 489ADB7008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 01:26:50 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 34/37] KVM: PPC: e500: fix typo in tlb code
-Date: Fri, 24 Feb 2012 15:26:28 +0100
-Message-Id: <1330093591-19523-35-git-send-email-agraf@suse.de>
+Subject: [PATCH 27/37] KVM: PPC: bookehv: remove negation for CONFIG_64BIT
+Date: Fri, 24 Feb 2012 15:26:21 +0100
+Message-Id: <1330093591-19523-28-git-send-email-agraf@suse.de>
 In-Reply-To: <1330093591-19523-1-git-send-email-agraf@suse.de>
 References: <1330093591-19523-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,28 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The tlbncfg registers should be populated with their respective TLB's
-values. Fix the obvious typo.
+Instead if doing
+
+  #ifndef CONFIG_64BIT
+  ...
+  #else
+  ...
+  #endif
+
+we should rather do
+
+  #ifdef CONFIG_64BIT
+  ...
+  #else
+  ...
+  #endif
+
+which is a lot easier to read. Change the bookehv implementation to
+stick with this rule.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/e500_tlb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/bookehv_interrupts.S |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 279e10a..e05232b 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -1268,8 +1268,8 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 215381e..c5a0796 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -99,10 +99,10 @@
+ 	.endif
  
- 	vcpu->arch.tlbcfg[1] = mfspr(SPRN_TLB1CFG) &
- 			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
--	vcpu->arch.tlbcfg[0] |= vcpu_e500->gtlb_params[1].entries;
--	vcpu->arch.tlbcfg[0] |=
-+	vcpu->arch.tlbcfg[1] |= vcpu_e500->gtlb_params[1].entries;
-+	vcpu->arch.tlbcfg[1] |=
- 		vcpu_e500->gtlb_params[1].ways << TLBnCFG_ASSOC_SHIFT;
- 
- 	return 0;
+ 	oris	r8, r6, MSR_CE@h
+-#ifndef CONFIG_64BIT
+-	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	std	r6, (VCPU_SHARED_MSR)(r11)
++#else
++	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
+ #endif
+ 	ori	r8, r8, MSR_ME | MSR_RI
+ 	PPC_STL	r5, VCPU_PC(r4)
+@@ -344,10 +344,10 @@ _GLOBAL(kvmppc_resume_host)
+ 	stw	r5, VCPU_SHARED_MAS0(r11)
+ 	mfspr	r7, SPRN_MAS2
+ 	stw	r6, VCPU_SHARED_MAS1(r11)
+-#ifndef CONFIG_64BIT
+-	stw	r7, (VCPU_SHARED_MAS2 + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	std	r7, (VCPU_SHARED_MAS2)(r11)
++#else
++	stw	r7, (VCPU_SHARED_MAS2 + 4)(r11)
+ #endif
+ 	mfspr	r5, SPRN_MAS3
+ 	mfspr	r6, SPRN_MAS4
+@@ -530,10 +530,10 @@ lightweight_exit:
+ 	stw	r3, VCPU_HOST_MAS6(r4)
+ 	lwz	r3, VCPU_SHARED_MAS0(r11)
+ 	lwz	r5, VCPU_SHARED_MAS1(r11)
+-#ifndef CONFIG_64BIT
+-	lwz	r6, (VCPU_SHARED_MAS2 + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	ld	r6, (VCPU_SHARED_MAS2)(r11)
++#else
++	lwz	r6, (VCPU_SHARED_MAS2 + 4)(r11)
+ #endif
+ 	lwz	r7, VCPU_SHARED_MAS7_3+4(r11)
+ 	lwz	r8, VCPU_SHARED_MAS4(r11)
+@@ -572,10 +572,10 @@ lightweight_exit:
+ 	PPC_LL	r6, VCPU_CTR(r4)
+ 	PPC_LL	r7, VCPU_CR(r4)
+ 	PPC_LL	r8, VCPU_PC(r4)
+-#ifndef CONFIG_64BIT
+-	lwz	r9, (VCPU_SHARED_MSR + 4)(r11)
+-#else
++#ifdef CONFIG_64BIT
+ 	ld	r9, (VCPU_SHARED_MSR)(r11)
++#else
++	lwz	r9, (VCPU_SHARED_MSR + 4)(r11)
+ #endif
+ 	PPC_LL	r0, VCPU_GPR(r0)(r4)
+ 	PPC_LL	r1, VCPU_GPR(r1)(r4)
 -- 
 1.6.0.2
