@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1D39DB6FA2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 01:26:42 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 52732B6FE3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 01:26:41 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 07/37] KVM: PPC: e500: merge <asm/kvm_e500.h> into
- arch/powerpc/kvm/e500.h
-Date: Fri, 24 Feb 2012 15:26:01 +0100
-Message-Id: <1330093591-19523-8-git-send-email-agraf@suse.de>
+Subject: [PATCH 15/37] KVM: PPC: e500mc support
+Date: Fri, 24 Feb 2012 15:26:09 +0100
+Message-Id: <1330093591-19523-16-git-send-email-agraf@suse.de>
 In-Reply-To: <1330093591-19523-1-git-send-email-agraf@suse.de>
 References: <1330093591-19523-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -25,264 +24,811 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-Keeping two separate headers for e500-specific things was a
-pain, and wasn't even organized along any logical boundary.
+Add processor support for e500mc, using hardware virtualization support
+(GS-mode).
 
-There was TLB stuff in <asm/kvm_e500.h> despite the existence of
-arch/powerpc/kvm/e500_tlb.h, and nothing in <asm/kvm_e500.h> needed
-to be referenced from outside arch/powerpc/kvm.
+Current issues include:
+ - No support for external proxy (coreint) interrupt mode in the guest.
+
+Includes work by Ashish Kalra <Ashish.Kalra@freescale.com>,
+Varun Sethi <Varun.Sethi@freescale.com>, and
+Liu Yu <yu.liu@freescale.com>.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
-[agraf: fix bisectability]
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_e500.h |   96 -----------------------------------
- arch/powerpc/kvm/e500.c             |    1 -
- arch/powerpc/kvm/e500.h             |   82 ++++++++++++++++++++++++++++--
- arch/powerpc/kvm/e500_emulate.c     |    1 -
- arch/powerpc/kvm/e500_tlb.c         |    1 -
- 5 files changed, 78 insertions(+), 103 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/kvm_e500.h
+ arch/powerpc/include/asm/cputable.h       |    6 +-
+ arch/powerpc/include/asm/kvm.h            |    1 +
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S |    1 +
+ arch/powerpc/kernel/head_fsl_booke.S      |   46 ++++
+ arch/powerpc/kvm/Kconfig                  |   17 ++-
+ arch/powerpc/kvm/Makefile                 |   11 +
+ arch/powerpc/kvm/e500.h                   |   13 +-
+ arch/powerpc/kvm/e500_emulate.c           |   24 ++-
+ arch/powerpc/kvm/e500_tlb.c               |   21 ++-
+ arch/powerpc/kvm/e500mc.c                 |  342 +++++++++++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c                |    6 +-
+ 11 files changed, 476 insertions(+), 12 deletions(-)
+ create mode 100644 arch/powerpc/kvm/e500mc.c
 
-diff --git a/arch/powerpc/include/asm/kvm_e500.h b/arch/powerpc/include/asm/kvm_e500.h
-deleted file mode 100644
-index 8cd50a5..0000000
---- a/arch/powerpc/include/asm/kvm_e500.h
-+++ /dev/null
-@@ -1,96 +0,0 @@
--/*
-- * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-- *
-- * Author: Yu Liu, <yu.liu@freescale.com>
-- *
-- * Description:
-- * This file is derived from arch/powerpc/include/asm/kvm_44x.h,
-- * by Hollis Blanchard <hollisb@us.ibm.com>.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License, version 2, as
-- * published by the Free Software Foundation.
-- */
--
--#ifndef __ASM_KVM_E500_H__
--#define __ASM_KVM_E500_H__
--
--#include <linux/kvm_host.h>
--
--#define BOOKE_INTERRUPT_SIZE 36
--
--#define E500_PID_NUM   3
--#define E500_TLB_NUM   2
--
--#define E500_TLB_VALID 1
--#define E500_TLB_DIRTY 2
--
--struct tlbe_ref {
--	pfn_t pfn;
--	unsigned int flags; /* E500_TLB_* */
--};
--
--struct tlbe_priv {
--	struct tlbe_ref ref; /* TLB0 only -- TLB1 uses tlb_refs */
--};
--
--struct vcpu_id_table;
--
--struct kvmppc_e500_tlb_params {
--	int entries, ways, sets;
--};
--
--struct kvmppc_vcpu_e500 {
--	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
--	struct kvm_book3e_206_tlb_entry *gtlb_arch;
--
--	/* Starting entry number in gtlb_arch[] */
--	int gtlb_offset[E500_TLB_NUM];
--
--	/* KVM internal information associated with each guest TLB entry */
--	struct tlbe_priv *gtlb_priv[E500_TLB_NUM];
--
--	struct kvmppc_e500_tlb_params gtlb_params[E500_TLB_NUM];
--
--	unsigned int gtlb_nv[E500_TLB_NUM];
--
--	/*
--	 * information associated with each host TLB entry --
--	 * TLB1 only for now.  If/when guest TLB1 entries can be
--	 * mapped with host TLB0, this will be used for that too.
--	 *
--	 * We don't want to use this for guest TLB0 because then we'd
--	 * have the overhead of doing the translation again even if
--	 * the entry is still in the guest TLB (e.g. we swapped out
--	 * and back, and our host TLB entries got evicted).
--	 */
--	struct tlbe_ref *tlb_refs[E500_TLB_NUM];
--	unsigned int host_tlb1_nv;
--
--	u32 host_pid[E500_PID_NUM];
--	u32 pid[E500_PID_NUM];
--	u32 svr;
--
--	/* vcpu id table */
--	struct vcpu_id_table *idt;
--
--	u32 l1csr0;
--	u32 l1csr1;
--	u32 hid0;
--	u32 hid1;
--	u32 tlb0cfg;
--	u32 tlb1cfg;
--	u64 mcar;
--
--	struct page **shared_tlb_pages;
--	int num_shared_tlb_pages;
--
--	struct kvm_vcpu vcpu;
--};
--
--static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
--{
--	return container_of(vcpu, struct kvmppc_vcpu_e500, vcpu);
--}
--
--#endif /* __ASM_KVM_E500_H__ */
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 5c450ba..76b35d8 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -20,7 +20,6 @@
- #include <asm/reg.h>
- #include <asm/cputable.h>
- #include <asm/tlbflush.h>
--#include <asm/kvm_e500.h>
- #include <asm/kvm_ppc.h>
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 2022f2d..598cd24 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -168,6 +168,7 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTR_LWSYNC			ASM_CONST(0x0000000008000000)
+ #define CPU_FTR_NOEXECUTE		ASM_CONST(0x0000000010000000)
+ #define CPU_FTR_INDEXED_DCR		ASM_CONST(0x0000000020000000)
++#define CPU_FTR_EMB_HV			ASM_CONST(0x0000000040000000)
  
- #include "booke.h"
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index 02ecde2..51d13bd 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -1,11 +1,12 @@
  /*
-  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-  *
-- * Author: Yu Liu, yu.liu@freescale.com
-+ * Author: Yu Liu <yu.liu@freescale.com>
-  *
-  * Description:
-- * This file is based on arch/powerpc/kvm/44x_tlb.h,
-- * by Hollis Blanchard <hollisb@us.ibm.com>.
-+ * This file is based on arch/powerpc/kvm/44x_tlb.h and
-+ * arch/powerpc/include/asm/kvm_44x.h by Hollis Blanchard <hollisb@us.ibm.com>,
-+ * Copyright IBM Corp. 2007-2008
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License, version 2, as
-@@ -18,7 +19,80 @@
- #include <linux/kvm_host.h>
- #include <asm/mmu-book3e.h>
- #include <asm/tlb.h>
--#include <asm/kvm_e500.h>
+  * Add the 64-bit processor unique features in the top half of the word;
+@@ -386,11 +387,11 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_E500MC	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
+ 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
+-	    CPU_FTR_DBELL | CPU_FTR_DEBUG_LVL_EXC)
++	    CPU_FTR_DBELL | CPU_FTR_DEBUG_LVL_EXC | CPU_FTR_EMB_HV)
+ #define CPU_FTRS_E5500	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
+ 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
+ 	    CPU_FTR_DBELL | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+-	    CPU_FTR_DEBUG_LVL_EXC)
++	    CPU_FTR_DEBUG_LVL_EXC | CPU_FTR_EMB_HV)
+ #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+ 
+ /* 64-bit CPUs */
+@@ -535,6 +536,7 @@ enum {
+ #ifdef CONFIG_PPC_E500MC
+ 	    CPU_FTRS_E500MC & CPU_FTRS_E5500 &
+ #endif
++	    ~CPU_FTR_EMB_HV &	/* can be removed at runtime */
+ 	    CPU_FTRS_POSSIBLE,
+ };
+ #endif /* __powerpc64__ */
+diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/asm/kvm.h
+index b921c3f..1bea4d8 100644
+--- a/arch/powerpc/include/asm/kvm.h
++++ b/arch/powerpc/include/asm/kvm.h
+@@ -277,6 +277,7 @@ struct kvm_sync_regs {
+ #define KVM_CPU_E500V2		2
+ #define KVM_CPU_3S_32		3
+ #define KVM_CPU_3S_64		4
++#define KVM_CPU_E500MC		5
+ 
+ /* for KVM_CAP_SPAPR_TCE */
+ struct kvm_create_spapr_tce {
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index 8053db0..69fdd23 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -73,6 +73,7 @@ _GLOBAL(__setup_cpu_e500v2)
+ 	mtlr	r4
+ 	blr
+ _GLOBAL(__setup_cpu_e500mc)
++	mr	r5, r4
+ 	mflr	r4
+ 	bl	__e500_icache_setup
+ 	bl	__e500_dcache_setup
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 418931f..88c0a35 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -380,10 +380,16 @@ interrupt_base:
+ 	mtspr	SPRN_SPRG_WSCRATCH0, r10 /* Save some working registers */
+ 	mfspr	r10, SPRN_SPRG_THREAD
+ 	stw	r11, THREAD_NORMSAVE(0)(r10)
++#ifdef CONFIG_KVM_BOOKE_HV
++BEGIN_FTR_SECTION
++	mfspr	r11, SPRN_SRR1
++END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
++#endif
+ 	stw	r12, THREAD_NORMSAVE(1)(r10)
+ 	stw	r13, THREAD_NORMSAVE(2)(r10)
+ 	mfcr	r13
+ 	stw	r13, THREAD_NORMSAVE(3)(r10)
++	DO_KVM	BOOKE_INTERRUPT_DTLB_MISS SPRN_SRR1
+ 	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+@@ -468,10 +474,16 @@ interrupt_base:
+ 	mtspr	SPRN_SPRG_WSCRATCH0, r10 /* Save some working registers */
+ 	mfspr	r10, SPRN_SPRG_THREAD
+ 	stw	r11, THREAD_NORMSAVE(0)(r10)
++#ifdef CONFIG_KVM_BOOKE_HV
++BEGIN_FTR_SECTION
++	mfspr	r11, SPRN_SRR1
++END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
++#endif
+ 	stw	r12, THREAD_NORMSAVE(1)(r10)
+ 	stw	r13, THREAD_NORMSAVE(2)(r10)
+ 	mfcr	r13
+ 	stw	r13, THREAD_NORMSAVE(3)(r10)
++	DO_KVM	BOOKE_INTERRUPT_ITLB_MISS SPRN_SRR1
+ 	mfspr	r10, SPRN_SRR0		/* Get faulting address */
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+@@ -580,6 +592,17 @@ interrupt_base:
+ 	DEBUG_DEBUG_EXCEPTION
+ 	DEBUG_CRIT_EXCEPTION
+ 
++	GUEST_DOORBELL_EXCEPTION
 +
-+#define E500_PID_NUM   3
-+#define E500_TLB_NUM   2
++	CRITICAL_EXCEPTION(0, GUEST_DBELL_CRIT, CriticalGuestDoorbell, \
++			   unknown_exception)
 +
-+#define E500_TLB_VALID 1
-+#define E500_TLB_DIRTY 2
++	/* Hypercall */
++	EXCEPTION(0, HV_SYSCALL, Hypercall, unknown_exception, EXC_XFER_EE)
 +
-+struct tlbe_ref {
-+	pfn_t pfn;
-+	unsigned int flags; /* E500_TLB_* */
-+};
++	/* Embedded Hypervisor Privilege */
++	EXCEPTION(0, HV_PRIV, Ehvpriv, unknown_exception, EXC_XFER_EE)
 +
-+struct tlbe_priv {
-+	struct tlbe_ref ref; /* TLB0 only -- TLB1 uses tlb_refs */
-+};
-+
-+struct vcpu_id_table;
-+
-+struct kvmppc_e500_tlb_params {
-+	int entries, ways, sets;
-+};
-+
-+struct kvmppc_vcpu_e500 {
-+	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
-+	struct kvm_book3e_206_tlb_entry *gtlb_arch;
-+
-+	/* Starting entry number in gtlb_arch[] */
-+	int gtlb_offset[E500_TLB_NUM];
-+
-+	/* KVM internal information associated with each guest TLB entry */
-+	struct tlbe_priv *gtlb_priv[E500_TLB_NUM];
-+
-+	struct kvmppc_e500_tlb_params gtlb_params[E500_TLB_NUM];
-+
-+	unsigned int gtlb_nv[E500_TLB_NUM];
+ /*
+  * Local functions
+  */
+@@ -883,8 +906,31 @@ _GLOBAL(__setup_e500mc_ivors)
+ 	mtspr	SPRN_IVOR36,r3
+ 	li	r3,CriticalDoorbell@l
+ 	mtspr	SPRN_IVOR37,r3
 +
 +	/*
-+	 * information associated with each host TLB entry --
-+	 * TLB1 only for now.  If/when guest TLB1 entries can be
-+	 * mapped with host TLB0, this will be used for that too.
-+	 *
-+	 * We don't want to use this for guest TLB0 because then we'd
-+	 * have the overhead of doing the translation again even if
-+	 * the entry is still in the guest TLB (e.g. we swapped out
-+	 * and back, and our host TLB entries got evicted).
++	 * We only want to touch IVOR38-41 if we're running on hardware
++	 * that supports category E.HV.  The architectural way to determine
++	 * this is MMUCFG[LPIDSIZE].
 +	 */
-+	struct tlbe_ref *tlb_refs[E500_TLB_NUM];
-+	unsigned int host_tlb1_nv;
-+
-+	u32 host_pid[E500_PID_NUM];
-+	u32 pid[E500_PID_NUM];
-+	u32 svr;
-+
-+	/* vcpu id table */
-+	struct vcpu_id_table *idt;
-+
-+	u32 l1csr0;
-+	u32 l1csr1;
-+	u32 hid0;
-+	u32 hid1;
-+	u32 tlb0cfg;
-+	u32 tlb1cfg;
-+	u64 mcar;
-+
-+	struct page **shared_tlb_pages;
-+	int num_shared_tlb_pages;
-+
-+	struct kvm_vcpu vcpu;
-+};
-+
-+static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
-+{
-+	return container_of(vcpu, struct kvmppc_vcpu_e500, vcpu);
-+}
++	mfspr	r3, SPRN_MMUCFG
++	andis.	r3, r3, MMUCFG_LPIDSIZE@h
++	beq	no_hv
++	li	r3,GuestDoorbell@l
++	mtspr	SPRN_IVOR38,r3
++	li	r3,CriticalGuestDoorbell@l
++	mtspr	SPRN_IVOR39,r3
++	li	r3,Hypercall@l
++	mtspr	SPRN_IVOR40,r3
++	li	r3,Ehvpriv@l
++	mtspr	SPRN_IVOR41,r3
++skip_hv_ivors:
+ 	sync
+ 	blr
++no_hv:
++	lwz	r3, CPU_SPEC_FEATURES(r5)
++	rlwinm	r3, r3, 0, ~CPU_FTR_EMB_HV
++	stw	r3, CPU_SPEC_FEATURES(r5)
++	b	skip_hv_ivors
  
+ /*
+  * extern void giveup_altivec(struct task_struct *prev)
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 2c33cd3..58f6e68 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -109,7 +109,7 @@ config KVM_440
+ 
+ config KVM_EXIT_TIMING
+ 	bool "Detailed exit timing"
+-	depends on KVM_440 || KVM_E500
++	depends on KVM_440 || KVM_E500 || KVM_E500MC
+ 	---help---
+ 	  Calculate elapsed time for every exit/enter cycle. A per-vcpu
+ 	  report is available in debugfs kvm/vm#_vcpu#_timing.
+@@ -132,6 +132,21 @@ config KVM_E500
+ 
+ 	  If unsure, say N.
+ 
++config KVM_E500MC
++	bool "KVM support for PowerPC E500MC/E5500 processors"
++	depends on EXPERIMENTAL && PPC_E500MC
++	select KVM
++	select KVM_MMIO
++	select KVM_BOOKE_HV
++	---help---
++	  Support running unmodified E500MC/E5500 (32-bit) guest kernels in
++	  virtual machines on E500MC/E5500 host processors.
++
++	  This module provides access to the hardware capabilities through
++	  a character device node named /dev/kvm.
++
++	  If unsure, say N.
++
+ source drivers/vhost/Kconfig
+ 
+ endif # VIRTUALIZATION
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 3688aee..62febd7 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -38,6 +38,16 @@ kvm-e500-objs := \
+ 	e500_emulate.o
+ kvm-objs-$(CONFIG_KVM_E500) := $(kvm-e500-objs)
+ 
++kvm-e500mc-objs := \
++	$(common-objs-y) \
++	booke.o \
++	booke_emulate.o \
++	bookehv_interrupts.o \
++	e500mc.o \
++	e500_tlb.o \
++	e500_emulate.o
++kvm-objs-$(CONFIG_KVM_E500MC) := $(kvm-e500mc-objs)
++
+ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
+ 	../../../virt/kvm/coalesced_mmio.o \
+ 	fpu.o \
+@@ -89,6 +99,7 @@ kvm-objs := $(kvm-objs-m) $(kvm-objs-y)
+ 
+ obj-$(CONFIG_KVM_440) += kvm.o
+ obj-$(CONFIG_KVM_E500) += kvm.o
++obj-$(CONFIG_KVM_E500MC) += kvm.o
+ obj-$(CONFIG_KVM_BOOK3S_64) += kvm.o
+ obj-$(CONFIG_KVM_BOOK3S_32) += kvm.o
+ 
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index ce3f163..3143085 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -2,7 +2,9 @@
+  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Author: Yu Liu <yu.liu@freescale.com>
++ *         Scott Wood <scottwood@freescale.com>
+  *         Ashish Kalra <ashish.kalra@freescale.com>
++ *         Varun Sethi <varun.sethi@freescale.com>
+  *
+  * Description:
+  * This file is based on arch/powerpc/kvm/44x_tlb.h and
+@@ -100,6 +102,7 @@ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
+ 	return container_of(vcpu, struct kvmppc_vcpu_e500, vcpu);
+ }
+ 
++
  /* This geometry is the legacy default -- can be overridden by userspace */
  #define KVM_E500_TLB0_WAY_SIZE		128
+ #define KVM_E500_TLB0_WAY_NUM		2
+@@ -250,10 +253,12 @@ static inline int tlbe_is_host_safe(const struct kvm_vcpu *vcpu,
+ 	if (!get_tlb_v(tlbe))
+ 		return 0;
+ 
++#ifndef CONFIG_KVM_BOOKE_HV
+ 	/* Does it match current guest AS? */
+ 	/* XXX what about IS != DS? */
+ 	if (get_tlb_ts(tlbe) != !!(vcpu->arch.shared->msr & MSR_IS))
+ 		return 0;
++#endif
+ 
+ 	gpa = get_tlb_raddr(tlbe);
+ 	if (!gfn_to_memslot(vcpu->kvm, gpa >> PAGE_SHIFT))
+@@ -274,7 +279,11 @@ void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 			   struct kvm_book3e_206_tlb_entry *gtlbe);
+ void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500);
+ 
+-#ifdef CONFIG_KVM_E500
++#ifdef CONFIG_KVM_BOOKE_HV
++#define kvmppc_e500_get_tlb_stid(vcpu, gtlbe)       get_tlb_tid(gtlbe)
++#define get_tlbmiss_tid(vcpu)           get_cur_pid(vcpu)
++#define get_tlb_sts(gtlbe)              (gtlbe->mas1 & MAS1_TS)
++#else
+ unsigned int kvmppc_e500_get_tlb_stid(struct kvm_vcpu *vcpu,
+ 				      struct kvm_book3e_206_tlb_entry *gtlbe);
+ 
+@@ -288,6 +297,6 @@ static inline unsigned int get_tlbmiss_tid(struct kvm_vcpu *vcpu)
+ 
+ /* Force TS=1 for all guest mappings. */
+ #define get_tlb_sts(gtlbe)              (MAS1_TS)
+-#endif /* CONFIG_KVM_E500 */
++#endif /* !BOOKE_HV */
+ 
+ #endif /* KVM_E500_H */
 diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index 2a1a228..7e2d592 100644
+index af02c18..98b6c1c 100644
 --- a/arch/powerpc/kvm/e500_emulate.c
 +++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -14,7 +14,6 @@
+@@ -85,6 +85,7 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 	ulong spr_val = kvmppc_get_gpr(vcpu, rs);
  
- #include <asm/kvm_ppc.h>
- #include <asm/disassemble.h>
--#include <asm/kvm_e500.h>
+ 	switch (sprn) {
++#ifndef CONFIG_KVM_BOOKE_HV
+ 	case SPRN_PID:
+ 		kvmppc_set_pid(vcpu, spr_val);
+ 		break;
+@@ -114,6 +115,7 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 		vcpu->arch.shared->mas7_3 &= (u64)0xffffffff;
+ 		vcpu->arch.shared->mas7_3 |= (u64)spr_val << 32;
+ 		break;
++#endif
+ 	case SPRN_L1CSR0:
+ 		vcpu_e500->l1csr0 = spr_val;
+ 		vcpu_e500->l1csr0 &= ~(L1CSR0_DCFI | L1CSR0_CLFC);
+@@ -143,7 +145,14 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 	case SPRN_IVOR35:
+ 		vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR] = spr_val;
+ 		break;
+-
++#ifdef CONFIG_KVM_BOOKE_HV
++	case SPRN_IVOR36:
++		vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL] = spr_val;
++		break;
++	case SPRN_IVOR37:
++		vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL_CRIT] = spr_val;
++		break;
++#endif
+ 	default:
+ 		emulated = kvmppc_booke_emulate_mtspr(vcpu, sprn, rs);
+ 	}
+@@ -155,9 +164,11 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+ 	int emulated = EMULATE_DONE;
+-	unsigned long val;
  
- #include "booke.h"
- #include "e500.h"
+ 	switch (sprn) {
++#ifndef CONFIG_KVM_BOOKE_HV
++		unsigned long val;
++
+ 	case SPRN_PID:
+ 		kvmppc_set_gpr(vcpu, rt, vcpu_e500->pid[0]); break;
+ 	case SPRN_PID1:
+@@ -182,6 +193,7 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 		val = vcpu->arch.shared->mas7_3 >> 32;
+ 		kvmppc_set_gpr(vcpu, rt, val);
+ 		break;
++#endif
+ 	case SPRN_TLB0CFG:
+ 		kvmppc_set_gpr(vcpu, rt, vcpu->arch.tlbcfg[0]); break;
+ 	case SPRN_TLB1CFG:
+@@ -216,6 +228,14 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 	case SPRN_IVOR35:
+ 		kvmppc_set_gpr(vcpu, rt, vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR]);
+ 		break;
++#ifdef CONFIG_KVM_BOOKE_HV
++	case SPRN_IVOR36:
++		kvmppc_set_gpr(vcpu, rt, vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL]);
++		break;
++	case SPRN_IVOR37:
++		kvmppc_set_gpr(vcpu, rt, vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL_CRIT]);
++		break;
++#endif
+ 	default:
+ 		emulated = kvmppc_booke_emulate_mfspr(vcpu, sprn, rt);
+ 	}
 diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 1d623a0..7d4a918 100644
+index 6eb5d65..e232bb4 100644
 --- a/arch/powerpc/kvm/e500_tlb.c
 +++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -26,7 +26,6 @@
- #include <linux/vmalloc.h>
- #include <linux/hugetlb.h>
- #include <asm/kvm_ppc.h>
--#include <asm/kvm_e500.h>
+@@ -2,7 +2,9 @@
+  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Author: Yu Liu, yu.liu@freescale.com
++ *         Scott Wood, scottwood@freescale.com
+  *         Ashish Kalra, ashish.kalra@freescale.com
++ *         Varun Sethi, varun.sethi@freescale.com
+  *
+  * Description:
+  * This file is based on arch/powerpc/kvm/44x_tlb.c,
+@@ -64,6 +66,7 @@ static inline u32 e500_shadow_mas3_attrib(u32 mas3, int usermode)
+ 	/* Mask off reserved bits. */
+ 	mas3 &= MAS3_ATTRIB_MASK;
  
- #include "../mm/mmu_decl.h"
- #include "e500.h"
++#ifndef CONFIG_KVM_BOOKE_HV
+ 	if (!usermode) {
+ 		/* Guest is in supervisor mode,
+ 		 * so we need to translate guest
+@@ -71,8 +74,9 @@ static inline u32 e500_shadow_mas3_attrib(u32 mas3, int usermode)
+ 		mas3 &= ~E500_TLB_USER_PERM_MASK;
+ 		mas3 |= (mas3 & E500_TLB_SUPER_PERM_MASK) << 1;
+ 	}
+-
+-	return mas3 | E500_TLB_SUPER_PERM_MASK;
++	mas3 |= E500_TLB_SUPER_PERM_MASK;
++#endif
++	return mas3;
+ }
+ 
+ static inline u32 e500_shadow_mas2_attrib(u32 mas2, int usermode)
+@@ -98,7 +102,16 @@ static inline void __write_host_tlbe(struct kvm_book3e_206_tlb_entry *stlbe,
+ 	mtspr(SPRN_MAS2, (unsigned long)stlbe->mas2);
+ 	mtspr(SPRN_MAS3, (u32)stlbe->mas7_3);
+ 	mtspr(SPRN_MAS7, (u32)(stlbe->mas7_3 >> 32));
++#ifdef CONFIG_KVM_BOOKE_HV
++	mtspr(SPRN_MAS8, stlbe->mas8);
++#endif
+ 	asm volatile("isync; tlbwe" : : : "memory");
++
++#ifdef CONFIG_KVM_BOOKE_HV
++	/* Must clear mas8 for other host tlbwe's */
++	mtspr(SPRN_MAS8, 0);
++	isync();
++#endif
+ 	local_irq_restore(flags);
+ 
+ 	trace_kvm_booke206_stlb_write(mas0, stlbe->mas8, stlbe->mas1,
+@@ -384,6 +397,10 @@ static inline void kvmppc_e500_setup_stlbe(
+ 		      e500_shadow_mas2_attrib(gtlbe->mas2, pr);
+ 	stlbe->mas7_3 = ((u64)pfn << PAGE_SHIFT) |
+ 			e500_shadow_mas3_attrib(gtlbe->mas7_3, pr);
++
++#ifdef CONFIG_KVM_BOOKE_HV
++	stlbe->mas8 = MAS8_TGS | vcpu->kvm->arch.lpid;
++#endif
+ }
+ 
+ static inline void kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+new file mode 100644
+index 0000000..fe6c1de
+--- /dev/null
++++ b/arch/powerpc/kvm/e500mc.c
+@@ -0,0 +1,342 @@
++/*
++ * Copyright (C) 2010 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: Varun Sethi, <varun.sethi@freescale.com>
++ *
++ * Description:
++ * This file is derived from arch/powerpc/kvm/e500.c,
++ * by Yu Liu <yu.liu@freescale.com>.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kvm_host.h>
++#include <linux/slab.h>
++#include <linux/err.h>
++#include <linux/export.h>
++
++#include <asm/reg.h>
++#include <asm/cputable.h>
++#include <asm/tlbflush.h>
++#include <asm/kvm_ppc.h>
++#include <asm/dbell.h>
++
++#include "booke.h"
++#include "e500.h"
++
++void kvmppc_set_pending_interrupt(struct kvm_vcpu *vcpu, enum int_class type)
++{
++	enum ppc_dbell dbell_type;
++	unsigned long tag;
++
++	switch (type) {
++	case INT_CLASS_NONCRIT:
++		dbell_type = PPC_G_DBELL;
++		break;
++	case INT_CLASS_CRIT:
++		dbell_type = PPC_G_DBELL_CRIT;
++		break;
++	case INT_CLASS_MC:
++		dbell_type = PPC_G_DBELL_MC;
++		break;
++	default:
++		WARN_ONCE(1, "%s: unknown int type %d\n", __func__, type);
++		return;
++	}
++
++
++	tag = PPC_DBELL_LPID(vcpu->kvm->arch.lpid) | vcpu->vcpu_id;
++	mb();
++	ppc_msgsnd(dbell_type, 0, tag);
++}
++
++/* gtlbe must not be mapped by more than one host tlb entry */
++void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
++			   struct kvm_book3e_206_tlb_entry *gtlbe)
++{
++	unsigned int tid, ts;
++	u32 val, eaddr, lpid;
++	unsigned long flags;
++
++	ts = get_tlb_ts(gtlbe);
++	tid = get_tlb_tid(gtlbe);
++	lpid = vcpu_e500->vcpu.kvm->arch.lpid;
++
++	/* We search the host TLB to invalidate its shadow TLB entry */
++	val = (tid << 16) | ts;
++	eaddr = get_tlb_eaddr(gtlbe);
++
++	local_irq_save(flags);
++
++	mtspr(SPRN_MAS6, val);
++	mtspr(SPRN_MAS5, MAS5_SGS | lpid);
++
++	asm volatile("tlbsx 0, %[eaddr]\n" : : [eaddr] "r" (eaddr));
++	val = mfspr(SPRN_MAS1);
++	if (val & MAS1_VALID) {
++		mtspr(SPRN_MAS1, val & ~MAS1_VALID);
++		asm volatile("tlbwe");
++	}
++	mtspr(SPRN_MAS5, 0);
++	/* NOTE: tlbsx also updates mas8, so clear it for host tlbwe */
++	mtspr(SPRN_MAS8, 0);
++	isync();
++
++	local_irq_restore(flags);
++}
++
++void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	mtspr(SPRN_MAS5, MAS5_SGS | vcpu_e500->vcpu.kvm->arch.lpid);
++	asm volatile("tlbilxlpid");
++	mtspr(SPRN_MAS5, 0);
++	local_irq_restore(flags);
++}
++
++void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 pid)
++{
++	vcpu->arch.pid = pid;
++}
++
++void kvmppc_mmu_msr_notify(struct kvm_vcpu *vcpu, u32 old_msr)
++{
++}
++
++void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++
++	kvmppc_booke_vcpu_load(vcpu, cpu);
++
++	mtspr(SPRN_LPID, vcpu->kvm->arch.lpid);
++	mtspr(SPRN_EPCR, vcpu->arch.shadow_epcr);
++	mtspr(SPRN_GPIR, vcpu->vcpu_id);
++	mtspr(SPRN_MSRP, vcpu->arch.shadow_msrp);
++	mtspr(SPRN_EPLC, vcpu->arch.eplc);
++	mtspr(SPRN_EPSC, vcpu->arch.epsc);
++
++	mtspr(SPRN_GIVPR, vcpu->arch.ivpr);
++	mtspr(SPRN_GIVOR2, vcpu->arch.ivor[BOOKE_IRQPRIO_DATA_STORAGE]);
++	mtspr(SPRN_GIVOR8, vcpu->arch.ivor[BOOKE_IRQPRIO_SYSCALL]);
++	mtspr(SPRN_GSPRG0, (unsigned long)vcpu->arch.shared->sprg0);
++	mtspr(SPRN_GSPRG1, (unsigned long)vcpu->arch.shared->sprg1);
++	mtspr(SPRN_GSPRG2, (unsigned long)vcpu->arch.shared->sprg2);
++	mtspr(SPRN_GSPRG3, (unsigned long)vcpu->arch.shared->sprg3);
++
++	mtspr(SPRN_GSRR0, vcpu->arch.shared->srr0);
++	mtspr(SPRN_GSRR1, vcpu->arch.shared->srr1);
++
++	mtspr(SPRN_GEPR, vcpu->arch.epr);
++	mtspr(SPRN_GDEAR, vcpu->arch.shared->dar);
++	mtspr(SPRN_GESR, vcpu->arch.shared->esr);
++
++	if (vcpu->arch.oldpir != mfspr(SPRN_PIR))
++		kvmppc_e500_tlbil_all(vcpu_e500);
++
++	kvmppc_load_guest_fp(vcpu);
++}
++
++void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
++{
++	vcpu->arch.eplc = mfspr(SPRN_EPLC);
++	vcpu->arch.epsc = mfspr(SPRN_EPSC);
++
++	vcpu->arch.shared->sprg0 = mfspr(SPRN_GSPRG0);
++	vcpu->arch.shared->sprg1 = mfspr(SPRN_GSPRG1);
++	vcpu->arch.shared->sprg2 = mfspr(SPRN_GSPRG2);
++	vcpu->arch.shared->sprg3 = mfspr(SPRN_GSPRG3);
++
++	vcpu->arch.shared->srr0 = mfspr(SPRN_GSRR0);
++	vcpu->arch.shared->srr1 = mfspr(SPRN_GSRR1);
++
++	vcpu->arch.epr = mfspr(SPRN_GEPR);
++	vcpu->arch.shared->dar = mfspr(SPRN_GDEAR);
++	vcpu->arch.shared->esr = mfspr(SPRN_GESR);
++
++	vcpu->arch.oldpir = mfspr(SPRN_PIR);
++
++	kvmppc_booke_vcpu_put(vcpu);
++}
++
++int kvmppc_core_check_processor_compat(void)
++{
++	int r;
++
++	if (strcmp(cur_cpu_spec->cpu_name, "e500mc") == 0)
++		r = 0;
++	else if (strcmp(cur_cpu_spec->cpu_name, "e5500") == 0)
++		r = 0;
++	else
++		r = -ENOTSUPP;
++
++	return r;
++}
++
++int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++
++	vcpu->arch.shadow_epcr = SPRN_EPCR_DSIGS | SPRN_EPCR_DGTMI | \
++				 SPRN_EPCR_DUVD;
++	vcpu->arch.shadow_msrp = MSRP_UCLEP | MSRP_DEP | MSRP_PMMP;
++	vcpu->arch.eplc = EPC_EGS | (vcpu->kvm->arch.lpid << EPC_ELPID_SHIFT);
++	vcpu->arch.epsc = vcpu->arch.eplc;
++
++	vcpu->arch.pvr = mfspr(SPRN_PVR);
++	vcpu_e500->svr = mfspr(SPRN_SVR);
++
++	vcpu->arch.cpu_type = KVM_CPU_E500MC;
++
++	return 0;
++}
++
++void kvmppc_core_get_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++
++	sregs->u.e.features |= KVM_SREGS_E_ARCH206_MMU | KVM_SREGS_E_PM |
++			       KVM_SREGS_E_PC;
++	sregs->u.e.impl_id = KVM_SREGS_E_IMPL_FSL;
++
++	sregs->u.e.impl.fsl.features = 0;
++	sregs->u.e.impl.fsl.svr = vcpu_e500->svr;
++	sregs->u.e.impl.fsl.hid0 = vcpu_e500->hid0;
++	sregs->u.e.impl.fsl.mcar = vcpu_e500->mcar;
++
++	kvmppc_get_sregs_e500_tlb(vcpu, sregs);
++
++	sregs->u.e.ivor_high[3] =
++		vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR];
++	sregs->u.e.ivor_high[4] = vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL];
++	sregs->u.e.ivor_high[5] = vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL_CRIT];
++
++	kvmppc_get_sregs_ivor(vcpu, sregs);
++}
++
++int kvmppc_core_set_sregs(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++	int ret;
++
++	if (sregs->u.e.impl_id == KVM_SREGS_E_IMPL_FSL) {
++		vcpu_e500->svr = sregs->u.e.impl.fsl.svr;
++		vcpu_e500->hid0 = sregs->u.e.impl.fsl.hid0;
++		vcpu_e500->mcar = sregs->u.e.impl.fsl.mcar;
++	}
++
++	ret = kvmppc_set_sregs_e500_tlb(vcpu, sregs);
++	if (ret < 0)
++		return ret;
++
++	if (!(sregs->u.e.features & KVM_SREGS_E_IVOR))
++		return 0;
++
++	if (sregs->u.e.features & KVM_SREGS_E_PM) {
++		vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR] =
++			sregs->u.e.ivor_high[3];
++	}
++
++	if (sregs->u.e.features & KVM_SREGS_E_PC) {
++		vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL] =
++			sregs->u.e.ivor_high[4];
++		vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL_CRIT] =
++			sregs->u.e.ivor_high[5];
++	}
++
++	return kvmppc_set_sregs_ivor(vcpu, sregs);
++}
++
++struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500;
++	struct kvm_vcpu *vcpu;
++	int err;
++
++	vcpu_e500 = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
++	if (!vcpu_e500) {
++		err = -ENOMEM;
++		goto out;
++	}
++	vcpu = &vcpu_e500->vcpu;
++
++	/* Invalid PIR value -- this LPID dosn't have valid state on any cpu */
++	vcpu->arch.oldpir = 0xffffffff;
++
++	err = kvm_vcpu_init(vcpu, kvm, id);
++	if (err)
++		goto free_vcpu;
++
++	err = kvmppc_e500_tlb_init(vcpu_e500);
++	if (err)
++		goto uninit_vcpu;
++
++	vcpu->arch.shared = (void *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
++	if (!vcpu->arch.shared)
++		goto uninit_tlb;
++
++	return vcpu;
++
++uninit_tlb:
++	kvmppc_e500_tlb_uninit(vcpu_e500);
++uninit_vcpu:
++	kvm_vcpu_uninit(vcpu);
++
++free_vcpu:
++	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
++out:
++	return ERR_PTR(err);
++}
++
++void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
++{
++	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++
++	free_page((unsigned long)vcpu->arch.shared);
++	kvmppc_e500_tlb_uninit(vcpu_e500);
++	kvm_vcpu_uninit(vcpu);
++	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
++}
++
++int kvmppc_core_init_vm(struct kvm *kvm)
++{
++	int lpid;
++
++	lpid = kvmppc_alloc_lpid();
++	if (lpid < 0)
++		return lpid;
++
++	kvm->arch.lpid = lpid;
++	return 0;
++}
++
++void kvmppc_core_destroy_vm(struct kvm *kvm)
++{
++	kvmppc_free_lpid(kvm->arch.lpid);
++}
++
++static int __init kvmppc_e500mc_init(void)
++{
++	int r;
++
++	r = kvmppc_booke_init();
++	if (r)
++		return r;
++
++	kvmppc_init_lpid(64);
++	kvmppc_claim_lpid(0); /* host */
++
++	return kvm_init(NULL, sizeof(struct kvmppc_vcpu_e500), 0, THIS_MODULE);
++}
++
++static void __exit kvmppc_e500mc_exit(void)
++{
++	kvmppc_booke_exit();
++}
++
++module_init(kvmppc_e500mc_init);
++module_exit(kvmppc_e500mc_exit);
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index a5c5ceb..58a084f 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -230,7 +230,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_PPC_PAIRED_SINGLES:
+ 	case KVM_CAP_PPC_OSI:
+ 	case KVM_CAP_PPC_GET_PVINFO:
+-#ifdef CONFIG_KVM_E500
++#if defined(CONFIG_KVM_E500) || defined(CONFIG_KVM_E500MC)
+ 	case KVM_CAP_SW_TLB:
+ #endif
+ 		r = 1;
+@@ -638,7 +638,7 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
+ 		r = 0;
+ 		vcpu->arch.papr_enabled = true;
+ 		break;
+-#ifdef CONFIG_KVM_E500
++#if defined(CONFIG_KVM_E500) || defined(CONFIG_KVM_E500MC)
+ 	case KVM_CAP_SW_TLB: {
+ 		struct kvm_config_tlb cfg;
+ 		void __user *user_ptr = (void __user *)(uintptr_t)cap->args[0];
+@@ -715,7 +715,7 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 		break;
+ 	}
+ 
+-#ifdef CONFIG_KVM_E500
++#if defined(CONFIG_KVM_E500) || defined(CONFIG_KVM_E500MC)
+ 	case KVM_DIRTY_TLB: {
+ 		struct kvm_dirty_tlb dirty;
+ 		r = -EFAULT;
 -- 
 1.6.0.2
