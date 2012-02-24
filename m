@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D460B700A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 01:26:50 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 05180B7004
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 01:26:51 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 29/37] KVM: PPC: bookehv: disable MAS register updates early
-Date: Fri, 24 Feb 2012 15:26:23 +0100
-Message-Id: <1330093591-19523-30-git-send-email-agraf@suse.de>
+Subject: [PATCH 34/37] KVM: PPC: e500: fix typo in tlb code
+Date: Fri, 24 Feb 2012 15:26:28 +0100
+Message-Id: <1330093591-19523-35-git-send-email-agraf@suse.de>
 In-Reply-To: <1330093591-19523-1-git-send-email-agraf@suse.de>
 References: <1330093591-19523-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,53 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to make sure that no MAS updates happen automatically while we
-have the guest MAS registers loaded. So move the disabling code a bit
-higher up so that it covers the full time we have guest values in MAS
-registers.
-
-The race this patch fixes should never occur, but it makes the code a
-bit more logical to do it this way around.
+The tlbncfg registers should be populated with their respective TLB's
+values. Fix the obvious typo.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/bookehv_interrupts.S |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/e500_tlb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 469bd3f..021d087 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -358,6 +358,7 @@ _GLOBAL(kvmppc_resume_host)
- 	mtspr	SPRN_MAS4, r6
- 	stw	r5, VCPU_SHARED_MAS7_3+0(r11)
- 	mtspr	SPRN_MAS6, r8
-+	/* Enable MAS register updates via exception */
- 	mfspr	r3, SPRN_EPCR
- 	rlwinm	r3, r3, 0, ~SPRN_EPCR_DMIUH
- 	mtspr	SPRN_EPCR, r3
-@@ -515,6 +516,11 @@ lightweight_exit:
- 	mtspr	SPRN_PID, r3
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 279e10a..e05232b 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -1268,8 +1268,8 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
  
- 	PPC_LL	r11, VCPU_SHARED(r4)
-+	/* Disable MAS register updates via exception */
-+	mfspr	r3, SPRN_EPCR
-+	oris	r3, r3, SPRN_EPCR_DMIUH@h
-+	mtspr	SPRN_EPCR, r3
-+	isync
- 	/* Save host mas4 and mas6 and load guest MAS registers */
- 	mfspr	r3, SPRN_MAS4
- 	stw	r3, VCPU_HOST_MAS4(r4)
-@@ -538,10 +544,6 @@ lightweight_exit:
- 	lwz	r5, VCPU_SHARED_MAS7_3+0(r11)
- 	mtspr	SPRN_MAS6, r3
- 	mtspr	SPRN_MAS7, r5
--	/* Disable MAS register updates via exception */
--	mfspr	r3, SPRN_EPCR
--	oris	r3, r3, SPRN_EPCR_DMIUH@h
--	mtspr	SPRN_EPCR, r3
+ 	vcpu->arch.tlbcfg[1] = mfspr(SPRN_TLB1CFG) &
+ 			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
+-	vcpu->arch.tlbcfg[0] |= vcpu_e500->gtlb_params[1].entries;
+-	vcpu->arch.tlbcfg[0] |=
++	vcpu->arch.tlbcfg[1] |= vcpu_e500->gtlb_params[1].entries;
++	vcpu->arch.tlbcfg[1] |=
+ 		vcpu_e500->gtlb_params[1].ways << TLBnCFG_ASSOC_SHIFT;
  
- 	/*
- 	 * Host interrupt handlers may have clobbered these guest-readable
+ 	return 0;
 -- 
 1.6.0.2
