@@ -1,27 +1,27 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 56029B6FD3
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 08259B6FBA
  for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 20:38:32 +1100 (EST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 24 Feb 2012 15:08:27 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1O9cMhI4559010
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 15:08:22 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1O9cLan005630
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 20:38:21 +1100
+ Fri, 24 Feb 2012 15:08:31 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1O9cPQR2859028
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 15:08:25 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1O9cOD2008275
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 20:38:25 +1100
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/21] Platform dependent EEH operations
-Date: Fri, 24 Feb 2012 17:38:00 +0800
-Message-Id: <1330076298-7006-4-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 20/21] Introduce struct eeh_stats for EEH
+Date: Fri, 24 Feb 2012 17:38:17 +0800
+Message-Id: <1330076298-7006-21-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1330076298-7006-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1330076298-7006-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: kernel.crashing.org@shangw, shangw@linux.vnet.ibm.com
@@ -34,375 +34,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EEH has been implemented on RTAS-compliant pSeries platform.
-That's to say, the EEH operations will be implemented through RTAS
-calls eventually. The situation limited feasible extension on EEH.
-In order to support EEH on multiple platforms like pseries and powernv
-simutaneously. We have to split the platform dependent EEH options
-up out of current implementation.
+With the original EEH implementation, the EEH global statistics
+are maintained by individual global variables. That makes the
+code a little hard to maintain.
 
-The patch addresses supporting EEH on multiple platforms. The pseries
-platform dependent EEH operations will be abstracted by struct eeh_ops.
-EEH core components will be built based on the registered EEH operations.
-With the mechanism, what the individual platform needs to do is implement
-platform dependent EEH operations.
-
-For now, the pseries platform is covered under the mechanism. That means
-we have to think about other platforms to support EEH, like powernv.
-Besides, we only have framework for the mechanism and we have to implement
-it for pseries platform later.
+The patch introduces extra struct eeh_stats for the EEH global
+statistics so that it can be maintained in collective fashion.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |   32 +++++
- arch/powerpc/platforms/pseries/Makefile      |    2 +-
- arch/powerpc/platforms/pseries/eeh.c         |   53 ++++++++
- arch/powerpc/platforms/pseries/eeh_pseries.c |  183 ++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/setup.c       |    1 +
- 5 files changed, 270 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/eeh_pseries.c
+ arch/powerpc/include/asm/eeh.h       |   15 +++++++++++++
+ arch/powerpc/platforms/pseries/eeh.c |   37 +++++++++++++++------------------
+ 2 files changed, 32 insertions(+), 20 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 2328877..0666c52 100644
+index 1310971..226c9a5 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -31,6 +31,26 @@ struct device_node;
- 
- #ifdef CONFIG_EEH
+@@ -98,6 +98,21 @@ struct eeh_ops {
+ 	int (*configure_bridge)(struct device_node *dn);
+ };
  
 +/*
-+ * The struct is used to trace the registered EEH operation
-+ * callback functions. Actually, those operation callback
-+ * functions are heavily platform dependent. That means the
-+ * platform should register its own EEH operation callback
-+ * functions before any EEH further operations.
++ * The struct is used to maintain the EEH global statistic
++ * information. Besides, the EEH global statistics will be
++ * exported to user space through procfs
 + */
-+struct eeh_ops {
-+	char *name;
-+	int (*init)(void);
-+	int (*set_option)(struct device_node *dn, int option);
-+	int (*get_pe_addr)(struct device_node *dn);
-+	int (*get_state)(struct device_node *dn, int *state);
-+	int (*reset)(struct device_node *dn, int option);
-+	int (*wait_state)(struct device_node *dn, int max_wait);
-+	int (*get_log)(struct device_node *dn, int severity, char *drv_log, unsigned long len);
-+	int (*configure_bridge)(struct device_node *dn);
++struct eeh_stats {
++	unsigned long no_device;	/* PCI device not found		*/
++	unsigned long no_dn;		/* OF node not found		*/
++	unsigned long no_cfg_addr;	/* Config address not found	*/
++	unsigned long ignored_check;	/* EEH check skipped		*/
++	unsigned long total_mmio_ffs;	/* Total EEH checks		*/
++	unsigned long false_positives;	/* Unnecessary EEH checks	*/
++	unsigned long slot_resets;	/* PE reset			*/
 +};
 +
-+extern struct eeh_ops *eeh_ops;
+ extern struct eeh_ops *eeh_ops;
  extern int eeh_subsystem_enabled;
  
- /* Values for eeh_mode bits in device_node */
-@@ -47,6 +67,11 @@ extern int eeh_subsystem_enabled;
- #define EEH_MAX_ALLOWED_FREEZES 5
- 
- void __init eeh_init(void);
-+#ifdef CONFIG_PPC_PSERIES
-+int __init eeh_pseries_init(void);
-+#endif
-+int __init eeh_ops_register(struct eeh_ops *ops);
-+int __exit eeh_ops_unregister(const char *name);
- unsigned long eeh_check_failure(const volatile void __iomem *token,
- 				unsigned long val);
- int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev);
-@@ -73,6 +98,13 @@ void eeh_remove_bus_device(struct pci_dev *);
- #else /* !CONFIG_EEH */
- static inline void eeh_init(void) { }
- 
-+#ifdef CONFIG_PPC_PSERIES
-+static inline int eeh_pseries_init(void)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_PPC_PSERIES */
-+
- static inline unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned long val)
- {
- 	return val;
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 236db46..9aa5581 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -6,7 +6,7 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   firmware.o power.o dlpar.o mobility.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
--obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o eeh_driver.o eeh_event.o eeh_sysfs.o
-+obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o eeh_driver.o eeh_event.o eeh_sysfs.o eeh_pseries.o
- obj-$(CONFIG_KEXEC)	+= kexec.o
- obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
- obj-$(CONFIG_PSERIES_MSI)	+= msi.o
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index fa88589..b0e3fb0 100644
+index 759d5af..a8a8c27 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -97,6 +97,9 @@ static int ibm_get_config_addr_info2;
- static int ibm_configure_bridge;
- static int ibm_configure_pe;
+@@ -102,14 +102,8 @@ static DEFINE_RAW_SPINLOCK(confirm_error_lock);
+ #define EEH_PCI_REGS_LOG_LEN 4096
+ static unsigned char pci_regs_buf[EEH_PCI_REGS_LOG_LEN];
  
-+/* Platform dependent EEH operations */
-+struct eeh_ops *eeh_ops = NULL;
-+
- int eeh_subsystem_enabled;
- EXPORT_SYMBOL(eeh_subsystem_enabled);
+-/* System monitoring statistics */
+-static unsigned long no_device;
+-static unsigned long no_dn;
+-static unsigned long no_cfg_addr;
+-static unsigned long ignored_check;
+-static unsigned long total_mmio_ffs;
+-static unsigned long false_positives;
+-static unsigned long slot_resets;
++/* EEH global statiscs */
++static struct eeh_stats eeh_stats;
  
-@@ -1208,6 +1211,56 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
- }
+ #define IS_BRIDGE(class_code) (((class_code)<<16) == PCI_BASE_CLASS_BRIDGE)
  
- /**
-+ * eeh_ops_register - Register platform dependent EEH operations
-+ * @ops: platform dependent EEH operations
-+ *
-+ * Register the platform dependent EEH operation callback
-+ * functions. The platform should call this function before
-+ * any other EEH operations.
-+ */
-+int __init eeh_ops_register(struct eeh_ops *ops)
-+{
-+	if (!ops->name) {
-+		pr_warning("%s: Invalid EEH ops name for %p\n",
-+			__func__, ops);
-+		return -EINVAL;
-+	}
-+
-+	if (eeh_ops && eeh_ops != ops) {
-+		pr_warning("%s: EEH ops of platform %s already existing (%s)\n",
-+			__func__, eeh_ops->name, ops->name);
-+		return -EEXIST;
-+	}
-+
-+	eeh_ops = ops;
-+
-+	return 0;
-+}
-+
-+/**
-+ * eeh_ops_unregister - Unreigster platform dependent EEH operations
-+ * @name: name of EEH platform operations
-+ *
-+ * Unregister the platform dependent EEH operation callback
-+ * functions.
-+ */
-+int __exit eeh_ops_unregister(const char *name)
-+{
-+	if (!name || !strlen(name)) {
-+		pr_warning("%s: Invalid EEH ops name\n",
-+			__func__);
-+		return -EINVAL;
-+	}
-+
-+	if (eeh_ops && !strcmp(eeh_ops->name, name)) {
-+		eeh_ops = NULL;
-+		return 0;
-+	}
-+
-+	return -EEXIST;
-+}
-+
-+/**
-  * eeh_init - EEH initialization
-  *
-  * Initialize EEH by trying to enable it for all of the adapters in the system.
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-new file mode 100644
-index 0000000..61a9050
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -0,0 +1,183 @@
-+/*
-+ * The file intends to implement the platform dependent EEH operations on pseries.
-+ * Actually, the pseries platform is built based on RTAS heavily. That means the
-+ * pseries platform dependent EEH operations will be built on RTAS calls. The functions
-+ * are devired from arch/powerpc/platforms/pseries/eeh.c and necessary cleanup has
-+ * been done.
-+ *
-+ * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2011.
-+ * Copyright IBM Corporation 2001, 2005, 2006
-+ * Copyright Dave Engebretsen & Todd Inglett 2001
-+ * Copyright Linas Vepstas 2005, 2006
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/atomic.h>
-+#include <linux/delay.h>
-+#include <linux/export.h>
-+#include <linux/init.h>
-+#include <linux/list.h>
-+#include <linux/of.h>
-+#include <linux/pci.h>
-+#include <linux/proc_fs.h>
-+#include <linux/rbtree.h>
-+#include <linux/sched.h>
-+#include <linux/seq_file.h>
-+#include <linux/spinlock.h>
-+
-+#include <asm/eeh.h>
-+#include <asm/eeh_event.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ppc-pci.h>
-+#include <asm/rtas.h>
-+
-+/**
-+ * pseries_eeh_init - EEH platform dependent initialization
-+ *
-+ * EEH platform dependent initialization on pseries.
-+ */
-+static int pseries_eeh_init(void)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * pseries_eeh_set_option - Initialize EEH or MMIO/DMA reenable
-+ * @dn: device node
-+ * @option: operation to be issued
-+ *
-+ * The function is used to control the EEH functionality globally.
-+ * Currently, following options are support according to PAPR:
-+ * Enable EEH, Disable EEH, Enable MMIO and Enable DMA
-+ */
-+static int pseries_eeh_set_option(struct device_node *dn, int option)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * pseries_eeh_get_pe_addr - Retrieve PE address
-+ * @dn: device node
-+ *
-+ * Retrieve the assocated PE address. Actually, there're 2 RTAS
-+ * function calls dedicated for the purpose. We need implement
-+ * it through the new function and then the old one. Besides,
-+ * you should make sure the config address is figured out from
-+ * FDT node before calling the function.
-+ *
-+ * It's notable that zero'ed return value means invalid PE config
-+ * address.
-+ */
-+static int pseries_eeh_get_pe_addr(struct device_node *dn)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * pseries_eeh_get_state - Retrieve PE state
-+ * @dn: PE associated device node
-+ * @state: return value
-+ *
-+ * Retrieve the state of the specified PE. On RTAS compliant
-+ * pseries platform, there already has one dedicated RTAS function
-+ * for the purpose. It's notable that the associated PE config address
-+ * might be ready when calling the function. Therefore, endeavour to
-+ * use the PE config address if possible. Further more, there're 2
-+ * RTAS calls for the purpose, we need to try the new one and back
-+ * to the old one if the new one couldn't work properly.
-+ */
-+static int pseries_eeh_get_state(struct device_node *dn, int *state)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * pseries_eeh_reset - Reset the specified PE
-+ * @dn: PE associated device node
-+ * @option: reset option
-+ *
-+ * Reset the specified PE
-+ */
-+static int pseries_eeh_reset(struct device_node *dn, int option)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * pseries_eeh_wait_state - Wait for PE state
-+ * @dn: PE associated device node
-+ * @max_wait: maximal period in microsecond
-+ *
-+ * Wait for the state of associated PE. It might take some time
-+ * to retrieve the PE's state.
-+ */
-+static int pseries_eeh_wait_state(struct device_node *dn, int max_wait)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * pseries_eeh_get_log - Retrieve error log
-+ * @dn: device node
-+ * @severity: temporary or permanent error log
-+ * @drv_log: driver log to be combined with retrieved error log
-+ * @len: length of driver log
-+ *
-+ * Retrieve the temporary or permanent error from the PE.
-+ * Actually, the error will be retrieved through the dedicated
-+ * RTAS call.
-+ */
-+static int pseries_eeh_get_log(struct device_node *dn, int severity, char *drv_log, unsigned long len)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * pseries_eeh_configure_bridge - Configure PCI bridges in the indicated PE
-+ * @dn: PE associated device node
-+ *
-+ * The function will be called to reconfigure the bridges included
-+ * in the specified PE so that the mulfunctional PE would be recovered
-+ * again.
-+ */
-+static int pseries_eeh_configure_bridge(struct device_node *dn)
-+{
-+	return 0;
-+}
-+
-+static struct eeh_ops pseries_eeh_ops = {
-+	.name			= "pseries",
-+	.init			= pseries_eeh_init,
-+	.set_option		= pseries_eeh_set_option,
-+	.get_pe_addr		= pseries_eeh_get_pe_addr,
-+	.get_state		= pseries_eeh_get_state,
-+	.reset			= pseries_eeh_reset,
-+	.wait_state		= pseries_eeh_wait_state,
-+	.get_log		= pseries_eeh_get_log,
-+	.configure_bridge	= pseries_eeh_configure_bridge
-+};
-+
-+/**
-+ * eeh_pseries_init - Register platform dependent EEH operations
-+ *
-+ * EEH initialization on pseries platform. This function should be
-+ * called before any EEH related functions.
-+ */
-+int __init eeh_pseries_init(void)
-+{
-+	return eeh_ops_register(&pseries_eeh_ops);
-+}
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index f79f127..809d9d9 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -382,6 +382,7 @@ static void __init pSeries_setup_arch(void)
+@@ -392,13 +386,13 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
+ 	int rc = 0;
+ 	const char *location;
  
- 	/* Find and initialize PCI host bridges */
- 	init_pci_config_tokens();
-+	eeh_pseries_init();
- 	find_and_init_phbs();
- 	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
- 	eeh_init();
+-	total_mmio_ffs++;
++	eeh_stats.total_mmio_ffs++;
+ 
+ 	if (!eeh_subsystem_enabled)
+ 		return 0;
+ 
+ 	if (!dn) {
+-		no_dn++;
++		eeh_stats.no_dn++;
+ 		return 0;
+ 	}
+ 	dn = eeh_find_device_pe(dn);
+@@ -407,14 +401,14 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
+ 	/* Access to IO BARs might get this far and still not want checking. */
+ 	if (!(edev->mode & EEH_MODE_SUPPORTED) ||
+ 	    edev->mode & EEH_MODE_NOCHECK) {
+-		ignored_check++;
++		eeh_stats.ignored_check++;
+ 		pr_debug("EEH: Ignored check (%x) for %s %s\n",
+ 			edev->mode, eeh_pci_name(dev), dn->full_name);
+ 		return 0;
+ 	}
+ 
+ 	if (!edev->config_addr && !edev->pe_config_addr) {
+-		no_cfg_addr++;
++		eeh_stats.no_cfg_addr++;
+ 		return 0;
+ 	}
+ 
+@@ -460,13 +454,13 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
+ 	    (ret == EEH_STATE_NOT_SUPPORT) ||
+ 	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
+ 	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
+-		false_positives++;
++		eeh_stats.false_positives++;
+ 		edev->false_positives ++;
+ 		rc = 0;
+ 		goto dn_unlock;
+ 	}
+ 
+-	slot_resets++;
++	eeh_stats.slot_resets++;
+  
+ 	/* Avoid repeated reports of this failure, including problems
+ 	 * with other functions on this device, and functions under
+@@ -513,7 +507,7 @@ unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned lon
+ 	addr = eeh_token_to_phys((unsigned long __force) token);
+ 	dev = pci_addr_cache_get_device(addr);
+ 	if (!dev) {
+-		no_device++;
++		eeh_stats.no_device++;
+ 		return val;
+ 	}
+ 
+@@ -1174,7 +1168,7 @@ static int proc_eeh_show(struct seq_file *m, void *v)
+ {
+ 	if (0 == eeh_subsystem_enabled) {
+ 		seq_printf(m, "EEH Subsystem is globally disabled\n");
+-		seq_printf(m, "eeh_total_mmio_ffs=%ld\n", total_mmio_ffs);
++		seq_printf(m, "eeh_total_mmio_ffs=%ld\n", eeh_stats.total_mmio_ffs);
+ 	} else {
+ 		seq_printf(m, "EEH Subsystem is enabled\n");
+ 		seq_printf(m,
+@@ -1185,10 +1179,13 @@ static int proc_eeh_show(struct seq_file *m, void *v)
+ 				"eeh_total_mmio_ffs=%ld\n"
+ 				"eeh_false_positives=%ld\n"
+ 				"eeh_slot_resets=%ld\n",
+-				no_device, no_dn, no_cfg_addr, 
+-				ignored_check, total_mmio_ffs, 
+-				false_positives,
+-				slot_resets);
++				eeh_stats.no_device,
++				eeh_stats.no_dn,
++				eeh_stats.no_cfg_addr,
++				eeh_stats.ignored_check,
++				eeh_stats.total_mmio_ffs,
++				eeh_stats.false_positives,
++				eeh_stats.slot_resets);
+ 	}
+ 
+ 	return 0;
 -- 
 1.7.5.4
