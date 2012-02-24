@@ -1,20 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D8B6EB6EEC
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2012 23:50:19 +1100 (EST)
-Date: Fri, 24 Feb 2012 23:50:12 +1100
+ by ozlabs.org (Postfix) with ESMTP id 32EBDB6EEA
+ for <linuxppc-dev@ozlabs.org>; Sat, 25 Feb 2012 00:01:43 +1100 (EST)
+Date: Sat, 25 Feb 2012 00:01:41 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH 14/21] Introduce EEH device
-Message-Id: <20120224235012.63b01e51749cb09bc0195d38@canb.auug.org.au>
-In-Reply-To: <1330076298-7006-15-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH 20/21] Introduce struct eeh_stats for EEH
+Message-Id: <20120225000141.73c0de577597e675a0fb5021@canb.auug.org.au>
+In-Reply-To: <1330076298-7006-21-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1330076298-7006-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1330076298-7006-15-git-send-email-shangw@linux.vnet.ibm.com>
+ <1330076298-7006-21-git-send-email-shangw@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Fri__24_Feb_2012_23_50_12_+1100_7=QtrWHYX1iyf7ND"
+ boundary="Signature=_Sat__25_Feb_2012_00_01_41_+1100_w47A9HzlpmU6Vcr6"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,67 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__24_Feb_2012_23_50_12_+1100_7=QtrWHYX1iyf7ND
+--Signature=_Sat__25_Feb_2012_00_01_41_+1100_w47A9HzlpmU6Vcr6
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Gavin,
 
-On Fri, 24 Feb 2012 17:38:11 +0800 Gavin Shan <shangw@linux.vnet.ibm.com> w=
+On Fri, 24 Feb 2012 17:38:17 +0800 Gavin Shan <shangw@linux.vnet.ibm.com> w=
 rote:
 >
-> diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm=
-/device.h
-> index d57c08a..4668344 100644
-> --- a/arch/powerpc/include/asm/device.h
-> +++ b/arch/powerpc/include/asm/device.h
-> @@ -31,6 +31,9 @@ struct dev_archdata {
->  #ifdef CONFIG_SWIOTLB
->  	dma_addr_t		max_direct_dma_addr;
->  #endif
-> +#ifdef CONFIG_EEH
-> +	void			*edev;
-> +#endif
->  };
-> =20
->  struct pdev_archdata {
 > diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/ee=
 h.h
-> index ad8f318..1310971 100644
+> index 1310971..226c9a5 100644
 > --- a/arch/powerpc/include/asm/eeh.h
 > +++ b/arch/powerpc/include/asm/eeh.h
-> +#define OF_NODE_TO_EEH_DEV(dn)		((struct eeh_dev *)(dn->edev))
-> +#define PCI_DEV_TO_EEH_DEV(pdev)	((struct eeh_dev *)(pdev->dev.archdata.=
-edev))
+> @@ -98,6 +98,21 @@ struct eeh_ops {
+>  	int (*configure_bridge)(struct device_node *dn);
+>  };
+> =20
+> +/*
+> + * The struct is used to maintain the EEH global statistic
+> + * information. Besides, the EEH global statistics will be
+> + * exported to user space through procfs
+> + */
+> +struct eeh_stats {
+> +	unsigned long no_device;	/* PCI device not found		*/
+> +	unsigned long no_dn;		/* OF node not found		*/
+> +	unsigned long no_cfg_addr;	/* Config address not found	*/
+> +	unsigned long ignored_check;	/* EEH check skipped		*/
+> +	unsigned long total_mmio_ffs;	/* Total EEH checks		*/
+> +	unsigned long false_positives;	/* Unnecessary EEH checks	*/
+> +	unsigned long slot_resets;	/* PE reset			*/
+> +};
 
-If the edev fields of dev_archdata and device_node are always going to be
-"struct eeh_dev *", why not declare then as such and avoid the casting?
+If this is used in only one place, there is not much point in putting it
+in a header file.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Fri__24_Feb_2012_23_50_12_+1100_7=QtrWHYX1iyf7ND
+--Signature=_Sat__25_Feb_2012_00_01_41_+1100_w47A9HzlpmU6Vcr6
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPR4eEAAoJEECxmPOUX5FEJNkP/Rzpo8/DrJ6aoBgn3Zfb1eC2
-Ccg0PY5p6SDO6P09AqhkX776Alh/y2EgNUdwvS8Z8dVrc4mEru5WhLHabO27cy8K
-u2M73nlOLPevn+KQ7+TDtem9YT6ajKxKXVyTvmOPVhTy075dIvNI10mTjXKbC3bs
-XivzIms76+846j1OvQsjSJoE8RmiYujbuUGQfvIiu4TswqB/f/PNq7Z+B5RErQXr
-7Tw4mjYgoIInqU47+Ola7ae5ViiKRjZt/GlB28NM3by1apEsIL5AWX/6reqMafme
-lctMMa6nlTWZpLpH8r0ctbqrt5G7FM4VDOze7YEaTtVp5w40xy1oPPsKnXDeF4by
-3li6IWTydKaw1ZhMQURSoBhXqj+K3QDCFzTdKKg+ujQ+2/HLfNWiL2vlHaMutuq7
-0/nSZJDQcy2vNI9EgDJ6LSsqdurwiN1rSbydFAofi+qFx+LCVwHGQu5zWvP1vtcZ
-7OsckXQ3aAHluantOEv/S0pDNOq6u2ogkcQqjqOfKxn9KrjlU3l7DF0/WtyjGOPD
-703Mow1DSLGGF+P9lZWrz5YrnYrx5Cf5Fkkerq73RHWAPqZcfi5jv2Ar4B3rjLuy
-phE5qLd/JZ2Z5NqzMMUR1fjrj9YMLHlQzrGRpZjF1Owjv3BcBd8a7W/aI1ij8Yrr
-9WKgdx3VSDWV37yAmDIV
-=/RjC
+iQIcBAEBCAAGBQJPR4o1AAoJEECxmPOUX5FEfdMP/j3v2oG4cUfhT/rNJ1nIs3sD
+lYFXvznLvjmlwzYWkogAY5Zs8qlZQcS9YJgjM4IuU0qSagcMg/9j0bEKGf3eSOWP
+JiuD6buLLvWYH2Pp/60X0BhIsp1KIUE9OacPWyYiLskOx8RB8kHBOVuL1SIlvk4J
+7vS/snaJXBMQGP3HAIKxR/7GtqopLKcgKXLfxXYYQMOEv+V/ul5Bpb8GsG3cG3ky
+9iSSNyGVdkc6yBn3SZigEEilnNBhMUVogZE6l0A+frXywIZwPfPYZI4VQRacdR/V
+1gIYf2YenpJ7d3M22PCd3UAEy4vbz0qKakAeMrvpafBigm4T7MKdxH0imyS+ZE0v
+VwprHqj59VNKMBQkrvVOR7w9Qz+ut5aGQlLxdEZFeyAR8dLW8umb/g7sVamjfsMX
+zNhyIVwuoqnSZEq7gDMlCBZqs8TPErARuwr6H3cdidfBCQDCZn04Bz0RIJy1cyF4
+EVKu1ghTKwCs10Re8Pv16pmVHwY1edMwnc9YHSIJcgjCb5cLCJsRFUrQ004dx8KF
+tqm8xIVXGXoonH20BWDKnZJ6xYThhy7Vxn5Wen5V+4S+dN4dOtXuB3pOrVaIHNBP
+zOQqr19gnqYXvtp8ZlX7M5ar6DX2mupwDIYbn5+QbIpKQ9Dfq3j0L4T4CZ6+alLp
+oi+3xS+JQJOyvYMgpQAH
+=H6v4
 -----END PGP SIGNATURE-----
 
---Signature=_Fri__24_Feb_2012_23_50_12_+1100_7=QtrWHYX1iyf7ND--
+--Signature=_Sat__25_Feb_2012_00_01_41_+1100_w47A9HzlpmU6Vcr6--
