@@ -1,32 +1,36 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A61A8B6FAC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 11:23:52 +1100 (EST)
-Received: from /spool/local
- by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 24 Feb 2012 19:23:48 -0500
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id EB2FB6E804C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 19:23:44 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1P0NjAO3035138
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 19:23:45 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1P0Ni2K020965
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 22:23:45 -0200
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc/prom: bump up maximum size of properties
-Date: Fri, 24 Feb 2012 16:23:42 -0800
-Message-Id: <1330129422-2648-1-git-send-email-nacc@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Robert Jennings <rcj@linux.vnet.ibm.com>
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+ [209.85.161.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 64024B6FB6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2012 18:47:29 +1100 (EST)
+Received: by ggni2 with SMTP id i2so1039281ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2012 23:47:26 -0800 (PST)
+MIME-Version: 1.0
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <20120224142430.58f5e5ef@jbarnes-desktop>
+References: <1328425088-6562-1-git-send-email-yinghai@kernel.org>
+ <1328425088-6562-10-git-send-email-yinghai@kernel.org>
+ <CAErSpo6BwznWf3rq4J2Ao+rrgR4yWqQ0mQGygkd2KmBuA1OD8g@mail.gmail.com>
+ <1328738567.2903.45.camel@pasglop>
+ <CAErSpo7ekGn-+Mnyz7KL=fVFH3Ed19AeE3MKkZWJ4bd0Jo7kCw@mail.gmail.com>
+ <1328823358.2903.77.camel@pasglop>
+ <20120223122536.6a2a7a6b@jbarnes-desktop>
+ <CAErSpo7_WGjitDZz4XH+77f65Uz1ynd5_USN+D17D09Eux1iQQ@mail.gmail.com>
+ <20120224142430.58f5e5ef@jbarnes-desktop>
+Date: Fri, 24 Feb 2012 23:47:26 -0800
+Message-ID: <CAE9FiQXx6wXaes1pbpM7SAHzndgr=N2D2g6LEWsB2_pf8+mgSA@mail.gmail.com>
+Subject: Re: [PATCH 09/24] PCI, powerpc: Register busn_res for root buses
+From: Yinghai Lu <yinghai@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +40,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a 16TB system (using AMS/CMO), I get:
+On Fri, Feb 24, 2012 at 2:24 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wr=
+ote:
+> On Thu, 23 Feb 2012 12:51:30 -0800
+> Bjorn Helgaas <bhelgaas@google.com> wrote:
+>> 2) We already have a way to add resources to a root bus: the
+>> pci_add_resource() used to add I/O port and MMIO apertures. =A0I think
+>> it'd be a lot simpler to just use that same interface for the bus
+>> number aperture, e.g.,
+>>
+>> =A0 =A0 pci_add_resource(&resources, hose->io_space);
+>> =A0 =A0 pci_add_resource(&resources, hose->mem_space);
+>> =A0 =A0 pci_add_resource(&resources, hose->busnr_space);
+>> =A0 =A0 bus =3D pci_scan_root_bus(dev, next_busno, pci_ops, sysdata, &re=
+sources);
+>>
+>> This is actually a bit redundant, since "next_busno" should be the
+>> same as hose->busnr_space->start. =A0So if we adopted this approach, we
+>> might want to eventually drop the "next_busno" argument.
+>
+> Yeah that would be nice, the call would certainly make more sense that
+> way.
 
-WARNING: ignoring large property [/ibm,dynamic-reconfiguration-memory] ibm,dynamic-memory length 0x000000000017ffec
+no, I don't think so.
 
-and significantly less memory is thus shown to the partition. As far as
-I can tell, the constant used is arbitrary, but bump it up to 2MB, which
-covers the above property (approximately 1.5MB).
+using pci_add_resource will need to create dummy resource abut bus range.
 
-With this patch, the kernel does see all of the system memory on the
-16TB system.
+there is lots of pci_scan_root_bus(),  and those user does not bus end
+yet before scan.
+so could just hide pci_insert_busn_res in pci_scan_root_bus, and
+update busn_res end there.
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Robert Jennings <rcj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/prom_init.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+other arch like x86, ia64, powerpc, sparc, will insert exact bus range
+between pci_create_root_bus and
+pci_scan_child_bus, will not need to update busn_res end.
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index eca626e..0bf0ccc 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -53,7 +53,7 @@
-  * ensure that we don't lose things like the interrupt-map property
-  * on a PCI-PCI bridge.
-  */
--#define MAX_PROPERTY_LENGTH	(1UL * 1024 * 1024)
-+#define MAX_PROPERTY_LENGTH	(2UL * 1024 * 1024)
- 
- /*
-  * Eventually bump that one up
--- 
-1.7.5.4
+please check v7 of this patchset.
+
+    	git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-yinghai.gi=
+t
+for-pci-busn-alloc
+
+It should be clean and have minimum lines of change.
+
+Thanks
+
+      Yinghai
