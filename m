@@ -1,25 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BE4BB6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 06:45:49 +1100 (EST)
-Message-ID: <4F4BDD63.4020801@freescale.com>
-Date: Mon, 27 Feb 2012 13:45:39 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 36/37] KVM: PPC: booke: expose guest registers on irq
- reinject
-References: <1330093591-19523-1-git-send-email-agraf@suse.de>
- <1330093591-19523-37-git-send-email-agraf@suse.de>
- <4F481FE1.1080404@freescale.com>
- <810950A7-CD5A-46A5-865B-1209A5532DCC@suse.de>
-In-Reply-To: <810950A7-CD5A-46A5-865B-1209A5532DCC@suse.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7435DB700C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 06:47:21 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH net-next] ibm emac: delete module references;
+ phy.c only supported as built-in
+Date: Mon, 27 Feb 2012 14:47:04 -0500
+Message-Id: <1330372024-30974-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,63 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/26/2012 05:59 AM, Alexander Graf wrote:
-> 
-> On 25.02.2012, at 00:40, Scott Wood wrote:
-> 
->> On 02/24/2012 08:26 AM, Alexander Graf wrote:
->>> +static void kvmppc_fill_pt_regs(struct kvm_vcpu *vcpu, struct pt_regs *regs)
->>> {
->>> -	int r = RESUME_HOST;
->>> +	int i;
->>>
->>> -	/* update before a new last_exit_type is rewritten */
->>> -	kvmppc_update_timing_stats(vcpu);
->>> +	for (i = 0; i < 32; i++)
->>> +		regs->gpr[i] = kvmppc_get_gpr(vcpu, i);
->>> +	regs->nip = vcpu->arch.pc;
->>> +	regs->msr = vcpu->arch.shared->msr;
->>> +	regs->ctr = vcpu->arch.ctr;
->>> +	regs->link = vcpu->arch.lr;
->>> +	regs->xer = kvmppc_get_xer(vcpu);
->>> +	regs->ccr = kvmppc_get_cr(vcpu);
->>> +	regs->dar = get_guest_dear(vcpu);
->>> +	regs->dsisr = get_guest_esr(vcpu);
->>> +}
->>
->> How much overhead does this add to every interrupt?  Can't we keep this
->> to the minimum that perf cares about?
-> 
-> I would rather not make assumptions on what perf cares about - maybe we want to one day implement "perf kvm" and then perf could rely on pretty much anything in there.
+The Makefile has it as "ibm_emac-y := mal.o core.o phy.o" so there is
+no way this can be built modular, so remove all references to module
+support.
 
-In that case I think we should be populating a real pt_regs from the
-start, as in my original patchset.
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-I only agreed to take it out because I thought the set of things we'd
-copy would be minimal.  This seems like a lot of overhead.
-
-I'm not familiar with "perf kvm", but if it's kvm-specific surely the
-KVM code should know/dictate what it can rely on?  Or maybe there can be
-a debug option that enables full pt_regs (similar to exit timing)?
-
-Could we just set regs to NULL when the debug option isn't enabled?
-
->>> +static void kvmppc_restart_interrupt(struct kvm_vcpu *vcpu,
->>> +				     unsigned int exit_nr)
->>> +{
->>> +	struct pt_regs regs = *current->thread.regs;
->>>
->>> +	kvmppc_fill_pt_regs(vcpu, &regs);
->>
->> Why are you copying out of current->thread.regs?  That's old junk data,
->> set by some previous exception and possibly overwritten since.
-> 
-> Because it gives us good default values for anything we don't set. Do you have other recommendations?
-
-It does not give good default values for anything.  It is junk,
-unallocated memory, overwritten by who knows what.  Same as the memory
-you're copying to.
-
-To avoid garbage in fields we don't set, fill it with zeroes first.
-
--Scott
+diff --git a/drivers/net/ethernet/ibm/emac/phy.c b/drivers/net/ethernet/ibm/emac/phy.c
+index d3b9d10..fb96387 100644
+--- a/drivers/net/ethernet/ibm/emac/phy.c
++++ b/drivers/net/ethernet/ibm/emac/phy.c
+@@ -11,13 +11,15 @@
+  * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
+  *                <benh@kernel.crashing.org>
+  *
++ * Originally listed as MODULE_LICENSE("GPL") in the code, but that
++ * was removed, since this code is only supported as non-modular.
++ *
+  * Based on the arch/ppc version of the driver:
+  *
+  * (c) 2003, Benjamin Herrenscmidt (benh@kernel.crashing.org)
+  * (c) 2004-2005, Eugene Surovegin <ebs@ebshome.net>
+  *
+  */
+-#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/netdevice.h>
+@@ -537,5 +539,3 @@ int emac_mii_phy_probe(struct mii_phy *phy, int address)
+ 
+ 	return 0;
+ }
+-
+-MODULE_LICENSE("GPL");
+-- 
+1.7.9.1
