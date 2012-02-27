@@ -1,21 +1,24 @@
 Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe002.messaging.microsoft.com
- [213.199.154.140])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AD83BB6FA9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 06:28:42 +1100 (EST)
-Message-ID: <4F4BD95B.9010809@freescale.com>
-Date: Mon, 27 Feb 2012 13:28:27 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 7BE4BB6FA5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 06:45:49 +1100 (EST)
+Message-ID: <4F4BDD63.4020801@freescale.com>
+Date: Mon, 27 Feb 2012 13:45:39 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 24/37] KVM: PPC: booke: rework rescheduling checks
+Subject: Re: [PATCH 36/37] KVM: PPC: booke: expose guest registers on irq
+ reinject
 References: <1330093591-19523-1-git-send-email-agraf@suse.de>
- <1330093591-19523-25-git-send-email-agraf@suse.de>
-In-Reply-To: <1330093591-19523-25-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset="UTF-8"
+ <1330093591-19523-37-git-send-email-agraf@suse.de>
+ <4F481FE1.1080404@freescale.com>
+ <810950A7-CD5A-46A5-865B-1209A5532DCC@suse.de>
+In-Reply-To: <810950A7-CD5A-46A5-865B-1209A5532DCC@suse.de>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,77 +29,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/24/2012 08:26 AM, Alexander Graf wrote:
-> -void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
-> +int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
->  {
->  	unsigned long *pending = &vcpu->arch.pending_exceptions;
->  	unsigned long old_pending = vcpu->arch.pending_exceptions;
-> @@ -283,6 +283,8 @@ void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
->  
->  	/* Tell the guest about our interrupt status */
->  	kvmppc_update_int_pending(vcpu, *pending, old_pending);
-> +
-> +	return 0;
->  }
->  
->  pfn_t kvmppc_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn)
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index 9979be1..3fcec2c 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -439,8 +439,9 @@ static void kvmppc_core_check_exceptions(struct kvm_vcpu *vcpu)
->  }
->  
->  /* Check pending exceptions and deliver one, if possible. */
-> -void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
-> +int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
->  {
-> +	int r = 0;
->  	WARN_ON_ONCE(!irqs_disabled());
->  
->  	kvmppc_core_check_exceptions(vcpu);
-> @@ -451,8 +452,44 @@ void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
->  		local_irq_disable();
->  
->  		kvmppc_set_exit_type(vcpu, EMULATED_MTMSRWE_EXITS);
-> -		kvmppc_core_check_exceptions(vcpu);
-> +		r = 1;
->  	};
-> +
-> +	return r;
-> +}
-> +
-> +/*
-> + * Common checks before entering the guest world.  Call with interrupts
-> + * disabled.
-> + *
-> + * returns !0 if a signal is pending and check_signal is true
-> + */
-> +static int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu, bool check_signal)
-> +{
-> +	int r = 0;
-> +
-> +	WARN_ON_ONCE(!irqs_disabled());
-> +	while (true) {
-> +		if (need_resched()) {
-> +			local_irq_enable();
-> +			cond_resched();
-> +			local_irq_disable();
-> +			continue;
-> +		}
-> +
-> +		if (kvmppc_core_prepare_to_enter(vcpu)) {
-> +			/* interrupts got enabled in between, so we
-> +			   are back at square 1 */
-> +			continue;
-> +		}
-> +
-> +
-> +		if (check_signal && signal_pending(current))
-> +			r = 1;
+On 02/26/2012 05:59 AM, Alexander Graf wrote:
+> 
+> On 25.02.2012, at 00:40, Scott Wood wrote:
+> 
+>> On 02/24/2012 08:26 AM, Alexander Graf wrote:
+>>> +static void kvmppc_fill_pt_regs(struct kvm_vcpu *vcpu, struct pt_regs *regs)
+>>> {
+>>> -	int r = RESUME_HOST;
+>>> +	int i;
+>>>
+>>> -	/* update before a new last_exit_type is rewritten */
+>>> -	kvmppc_update_timing_stats(vcpu);
+>>> +	for (i = 0; i < 32; i++)
+>>> +		regs->gpr[i] = kvmppc_get_gpr(vcpu, i);
+>>> +	regs->nip = vcpu->arch.pc;
+>>> +	regs->msr = vcpu->arch.shared->msr;
+>>> +	regs->ctr = vcpu->arch.ctr;
+>>> +	regs->link = vcpu->arch.lr;
+>>> +	regs->xer = kvmppc_get_xer(vcpu);
+>>> +	regs->ccr = kvmppc_get_cr(vcpu);
+>>> +	regs->dar = get_guest_dear(vcpu);
+>>> +	regs->dsisr = get_guest_esr(vcpu);
+>>> +}
+>>
+>> How much overhead does this add to every interrupt?  Can't we keep this
+>> to the minimum that perf cares about?
+> 
+> I would rather not make assumptions on what perf cares about - maybe we want to one day implement "perf kvm" and then perf could rely on pretty much anything in there.
 
-If there is a signal pending and MSR[WE] is set, we'll loop forever
-without reaching this check.
+In that case I think we should be populating a real pt_regs from the
+start, as in my original patchset.
+
+I only agreed to take it out because I thought the set of things we'd
+copy would be minimal.  This seems like a lot of overhead.
+
+I'm not familiar with "perf kvm", but if it's kvm-specific surely the
+KVM code should know/dictate what it can rely on?  Or maybe there can be
+a debug option that enables full pt_regs (similar to exit timing)?
+
+Could we just set regs to NULL when the debug option isn't enabled?
+
+>>> +static void kvmppc_restart_interrupt(struct kvm_vcpu *vcpu,
+>>> +				     unsigned int exit_nr)
+>>> +{
+>>> +	struct pt_regs regs = *current->thread.regs;
+>>>
+>>> +	kvmppc_fill_pt_regs(vcpu, &regs);
+>>
+>> Why are you copying out of current->thread.regs?  That's old junk data,
+>> set by some previous exception and possibly overwritten since.
+> 
+> Because it gives us good default values for anything we don't set. Do you have other recommendations?
+
+It does not give good default values for anything.  It is junk,
+unallocated memory, overwritten by who knows what.  Same as the memory
+you're copying to.
+
+To avoid garbage in fields we don't set, fill it with zeroes first.
 
 -Scott
