@@ -1,16 +1,22 @@
-Return-Path: <f.fainelli@gmail.com>
-Sender: Florian Fainelli <f.fainelli@gmail.com>
-Message-ID: <4F4B9748.8020509@openwrt.org>
-Date: Mon, 27 Feb 2012 15:46:32 +0100
-From: Florian Fainelli <florian@openwrt.org>
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE007.bigfish.com (va3ehsobe004.messaging.microsoft.com
+ [216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5B94BB6FA9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 02:50:58 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Yin Olivia-R63875 <r63875@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/e500: make load_up_spe a normal fuction
+Date: Mon, 27 Feb 2012 15:50:41 +0000
+Message-ID: <CAOZdJXW5-EivLztzkMHHr8zZ2zb+MwW-1VOQ4_h4SFqW3x-6tA@mail.gmail.com>
+References: <1330340388-30296-1-git-send-email-hong-hua.yin@freescale.com>
+In-Reply-To: <1330340388-30296-1-git-send-email-hong-hua.yin@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Baruch Siach <baruch@tkos.co.il>
-Subject: Re: [PATCH] of/mdio: fix fixed link bus name
-References: <8ebe6a3f11343c392a7353581d5f648980206e8e.1330346765.git.baruch@tkos.co.il>
-In-Reply-To: <8ebe6a3f11343c392a7353581d5f648980206e8e.1330346765.git.baruch@tkos.co.il>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,32 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Feb 27, 2012 at 4:59 AM, Olivia Yin <hong-hua.yin@freescale.com> wr=
+ote:
+> So that we can call it in kernel.
 
+And why would we want that?
 
-Le 02/27/12 13:48, Baruch Siach a écrit :
-> Since 9e6c643b (phy/fixed: use an unique MDIO bus name) the name of the fixed
-> PHY bus is "fixed-0". Teach of_phy_connect_fixed_link() the new name.
->
-> Tested on a P1020RDB PowerPC system.
->
-> Signed-off-by: Baruch Siach<baruch@tkos.co.il>
-
-Acked-by: Florian Fainelli <florian@openwrt.org>
-
-> ---
->   drivers/of/of_mdio.c |    2 +-
->   1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
-> index 980c079..483c0ad 100644
-> --- a/drivers/of/of_mdio.c
-> +++ b/drivers/of/of_mdio.c
-> @@ -182,7 +182,7 @@ struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
->   	if (!phy_id || sz<  sizeof(*phy_id))
->   		return NULL;
->
-> -	sprintf(bus_id, PHY_ID_FMT, "0", be32_to_cpu(phy_id[0]));
-> +	sprintf(bus_id, PHY_ID_FMT, "fixed-0", be32_to_cpu(phy_id[0]));
->
->   	phy = phy_connect(dev, bus_id, hndlr, 0, iface);
->   	return IS_ERR(phy) ? NULL : phy;
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
