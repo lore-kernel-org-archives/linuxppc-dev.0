@@ -1,20 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AB77EB6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2012 10:47:54 +1100 (EST)
-Message-ID: <1330300068.20389.63.camel@pasglop>
-Subject: Re: [PATCH] powerpc: icswx: fix race condition where threads do not
- get their ACOP register updated in time.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jimi Xenidis <jimix@pobox.com>
-Date: Mon, 27 Feb 2012 10:47:48 +1100
-In-Reply-To: <1329948466-325-1-git-send-email-jimix@pobox.com>
-References: <1329948466-325-1-git-send-email-jimix@pobox.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C38D2B6FCC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2012 12:26:49 +1100 (EST)
+Received: by dady9 with SMTP id y9so1268131dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2012 17:26:47 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1329865853-17277-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1329865853-17277-1-git-send-email-paul.gortmaker@windriver.com>
+Date: Sun, 26 Feb 2012 20:26:47 -0500
+Message-ID: <CAP=VYLroaEKncpy7VBobJdXijnDS5UdTV7qPG2A--SicnGvFSg@mail.gmail.com>
+Subject: Re: [PATCH/RFC] rapidio: temporarily exclude FSL_RIO from 64 bit
+ builds
+From: Paul Gortmaker <paul.gortmaker@gmail.com>
+To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Gang.Liu@freescale.com, linux-next@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +28,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Ben,
 
->  
-> +	/*
-> +	 * We could be here because another thread has enabled acop
-> +	 * but the ACOP register has yet to be updated.
-> +	 *
-> +	 * This should have been taken care of by the IPI to sync all
-> +	 * the threads (see smp_call_function(sync_cop, mm, 1)), but
-> +	 * that could take forever if there are a significant amount
-> +	 * of threads.
-> +	 *
-> +	 * Given the number of threads on some of these systems,
-> +	 * perhaps this is the best way to sync ACOP rather than whack
-> +	 * every thread with an IPI.
-> +	 */
+Given a week has passed with the absence of any feedback
+with respect to SRIO on 64 bit, are you OK with applying the
+below patch[1] pretty much as-is?
 
-This is actually pretty standard stuff... If it was me I would make it
-all lazy and avoid the IPI completely but it doesn't necessarily hurt
-that much. In any case the "recovery" is indeed needed and you should
-probably also remove the pr_debug, it's really just spam.
- 
-> +	if (acop_copro_type_bit(ct) && current->active_mm->context.acop) {
+Thanks,
+Paul.
 
-Shouldn't that be "&" ? In fact, gcc would even warn so either make
-it acop_check_copro(acop, ct) or do a (x & y) != 0
+[1] http://patchwork.ozlabs.org/patch/142383/
 
-Cheers,
-Ben.
+---
 
-> +		pr_debug("%s[%d]: Spurrious ACOP Fault, CT: %d, bit: 0x%llx "
-> +			"SPR: 0x%lx, mm->acop: 0x%lx\n",
-> +			current->comm, current->pid,
-> +			ct, acop_copro_type_bit(ct), mfspr(SPRN_ACOP),
-> +			current->active_mm->context.acop);
-> +
-> +		sync_cop(current->active_mm);
-> +		return 0;
-> +	}
-> +
-> +	/* check for alternate policy */
->  	if (!acop_use_cop(ct))
->  		return 0;
->  
->  	/* at this point the CT is unknown to the system */
-> -	pr_warn("%s[%d]: Coprocessor %d is unavailable",
-> +	pr_warn("%s[%d]: Coprocessor %d is unavailable\n",
->  		current->comm, current->pid, ct);
->  
->  	/* get inst if we don't already have it */
-> diff --git a/arch/powerpc/mm/icswx.h b/arch/powerpc/mm/icswx.h
-> index 42176bd..6dedc08 100644
-> --- a/arch/powerpc/mm/icswx.h
-> +++ b/arch/powerpc/mm/icswx.h
-> @@ -59,4 +59,10 @@ extern void free_cop_pid(int free_pid);
->  
->  extern int acop_handle_fault(struct pt_regs *regs, unsigned long address,
->  			     unsigned long error_code);
-> +
-> +static inline u64 acop_copro_type_bit(unsigned int type)
-> +{
-> +	return 1ULL << (63 - type);
-> +}
-> +
->  #endif /* !_ARCH_POWERPC_MM_ICSWX_H_ */
+On Tue, Feb 21, 2012 at 6:10 PM, Paul Gortmaker
+<paul.gortmaker@windriver.com> wrote:
+> The following are seen while using the corenet64_smp_defconfig:
+>
+> arch/powerpc/sysdev/fsl_rmu.c:315: error: cast from pointer to integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:320: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:320: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:320: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:330: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:332: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:339: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:340: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:341: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:348: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:348: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:348: error: cast to pointer from integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:659: error: cast from pointer to integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:659: error: format '%8.8x' expects type 'un=
+signed int', but argument 5 has type 'size_t'
+> arch/powerpc/sysdev/fsl_rmu.c:985: error: cast from pointer to integer of=
+ different size
+> arch/powerpc/sysdev/fsl_rmu.c:997: error: cast to pointer from integer of=
+ different size
+>
+> A quick inspection of the code leaves one with the impression
+> that it was not explicitly written with 64 bit support in mind,
+> so just block that as a possible config selection for now.
+>
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>
+> ---
+>
+> [This is seen in linux-next -- not sure if this is the right way to go
+> =A0but at least it will give the issue some visibility to the right ppl.]
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 75f061e..5ad8013 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -773,7 +773,7 @@ config RAPIDIO
+>
+> =A0config FSL_RIO
+> =A0 =A0 =A0 =A0bool "Freescale Embedded SRIO Controller support"
+> - =A0 =A0 =A0 depends on RAPIDIO && HAS_RAPIDIO
+> + =A0 =A0 =A0 depends on RAPIDIO && HAS_RAPIDIO && (BROKEN || !PPC64)
+> =A0 =A0 =A0 =A0default "n"
+> =A0 =A0 =A0 =A0---help---
+> =A0 =A0 =A0 =A0 =A0Include support for RapidIO controller on Freescale em=
+bedded
+> --
+> 1.7.9.1
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
