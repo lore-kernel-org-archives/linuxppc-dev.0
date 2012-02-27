@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8C804B6FB9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2012 12:50:12 +1100 (EST)
-Message-ID: <1330307396.20389.67.camel@pasglop>
-Subject: Re: [PATCH/RFC] rapidio: temporarily exclude FSL_RIO from 64 bit
- builds
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Gortmaker <paul.gortmaker@gmail.com>
-Date: Mon, 27 Feb 2012 12:49:56 +1100
-In-Reply-To: <CAP=VYLroaEKncpy7VBobJdXijnDS5UdTV7qPG2A--SicnGvFSg@mail.gmail.com>
-References: <1329865853-17277-1-git-send-email-paul.gortmaker@windriver.com>
- <CAP=VYLroaEKncpy7VBobJdXijnDS5UdTV7qPG2A--SicnGvFSg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 571BDB6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2012 17:37:55 +1100 (EST)
+Date: Mon, 27 Feb 2012 17:37:47 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: linux-next: build failure after merge of the final tree
+Message-Id: <20120227173747.853e7fbe3ce3afab8939720b@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Gang.Liu@freescale.com, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__27_Feb_2012_17_37_47_+1100_mDbqlloX2hPDZ6Xe"
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-next@vger.kernel.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,75 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-02-26 at 20:26 -0500, Paul Gortmaker wrote:
-> Hi Ben,
-> 
-> Given a week has passed with the absence of any feedback
-> with respect to SRIO on 64 bit, are you OK with applying the
-> below patch[1] pretty much as-is?
+--Signature=_Mon__27_Feb_2012_17_37_47_+1100_mDbqlloX2hPDZ6Xe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It can't hurt, I'll put it in. That's normally Kumar's side of things
-but then with him leaving FSL things are a bit in flux right now.
+Hi all,
 
+After merging the final tree, today's linux-next build (powerpc
+ppc44x_defconfig) failed like this:
+
+arch/powerpc/kernel/pci-common.c: In function 'pcibios_setup_phb_resources':
+arch/powerpc/kernel/pci-common.c:1520:4: error: cast from pointer to intege=
+r of different size [-Werror=3Dpointer-to-int-cast]
+
+Caused by commit 6c5705fec63d ("powerpc/PCI: get rid of device resource
+fixups") from the pci tree.  In this build, resource_size_t is 64 bits
+while pointers are only 32.
+
+I applied the following fix patch.
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 27 Feb 2012 17:33:48 +1100
+Subject: [PATCH] powerpc/PCI: fix up for mismatch between resource_size_t a=
+nd
+ pointer size
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/pci-common.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-com=
+mon.c
+index 910b9de..808ecbb 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1517,7 +1517,7 @@ static void __devinit pcibios_setup_phb_resources(str=
+uct pci_controller *hose, s
+ 		 (unsigned long long)res->end,
+ 		 (unsigned long)res->flags);
+ 	pci_add_resource_offset(resources, res,
+-			(resource_size_t) hose->io_base_virt - _IO_BASE);
++			(resource_size_t)(unsigned long)hose->io_base_virt - _IO_BASE);
+=20
+ 	/* Hookup PHB Memory resources */
+ 	for (i =3D 0; i < 3; ++i) {
+--=20
+1.7.9.1
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-> Thanks,
-> Paul.
-> 
-> [1] http://patchwork.ozlabs.org/patch/142383/
-> 
-> ---
-> 
-> On Tue, Feb 21, 2012 at 6:10 PM, Paul Gortmaker
-> <paul.gortmaker@windriver.com> wrote:
-> > The following are seen while using the corenet64_smp_defconfig:
-> >
-> > arch/powerpc/sysdev/fsl_rmu.c:315: error: cast from pointer to integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:320: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:320: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:320: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:330: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:332: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:339: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:340: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:341: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:348: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:348: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:348: error: cast to pointer from integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:659: error: cast from pointer to integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:659: error: format '%8.8x' expects type 'unsigned int', but argument 5 has type 'size_t'
-> > arch/powerpc/sysdev/fsl_rmu.c:985: error: cast from pointer to integer of different size
-> > arch/powerpc/sysdev/fsl_rmu.c:997: error: cast to pointer from integer of different size
-> >
-> > A quick inspection of the code leaves one with the impression
-> > that it was not explicitly written with 64 bit support in mind,
-> > so just block that as a possible config selection for now.
-> >
-> > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> >
-> > ---
-> >
-> > [This is seen in linux-next -- not sure if this is the right way to go
-> >  but at least it will give the issue some visibility to the right ppl.]
-> >
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 75f061e..5ad8013 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -773,7 +773,7 @@ config RAPIDIO
-> >
-> >  config FSL_RIO
-> >        bool "Freescale Embedded SRIO Controller support"
-> > -       depends on RAPIDIO && HAS_RAPIDIO
-> > +       depends on RAPIDIO && HAS_RAPIDIO && (BROKEN || !PPC64)
-> >        default "n"
-> >        ---help---
-> >          Include support for RapidIO controller on Freescale embedded
-> > --
-> > 1.7.9.1
-> >
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+--Signature=_Mon__27_Feb_2012_17_37_47_+1100_mDbqlloX2hPDZ6Xe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPSyS7AAoJEECxmPOUX5FEAGUQAJNogIeDFNyXgPhvo7O/gpfV
+AYLdvSJw4TEdL76Gp630/UcXcWgTOrDgROvfVzSh/aj7RdaHK8v2EP10H/682FAy
+uXJZdr0vqAjd5vndsZhuaFAh//5L8GhgCopMYePuG8xT21gQI1tb1oGVuG5kPXn+
+FPIKrb0QCGlOJPwei3F05qWQ7du/lqOHhdYZDVem8KDI8yU80bhCzOFKXUGnCQT+
+RvrGyHOCkwO+kkudFAir7op1XN0M++qMUyG2sPPqWpBSAEm15w85u6puqVoxG3c6
+LiS5Iv5yPloTBKCsgVknR0tcCj/FAGuP6/hnSjw+8Fp1+YWl4j7GzBc0zz6rqLVR
+DwiRtKl2wOrAluLJ+EihlC8yETrwZT89+TE6sAkPJgDGJ5MghRojzQbi59T6wUOS
+0/hb/4iQvh1vXnj7c+K0IcomqqFYoGvQU8SouXQhYL1D7eW8+xLV8m4rEO4vkrqz
+qJhYnN+gg1lxfn3SOu0IFMyjc2Oae+nRUKsYz0TaJ2gtFpZ9SWa5ks0hO/pS0fJ+
+5I4C86ViXOf0lvBAcp2NCw0lPju0TXBUppWhS9mZQIH8Jg5gTITr9fbEqjis5Tii
+DWKVJ7BCD0JGzAVy25wbm30SIf246mBakNnI3IB1iS24lzZh9I1MTsA1hKpdjOnq
+ZR7FOw9p3PBWtq2lpAZ/
+=+o2U
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__27_Feb_2012_17_37_47_+1100_mDbqlloX2hPDZ6Xe--
