@@ -1,20 +1,21 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from ocex02.SolarFlarecom.com (unknown [216.237.3.220])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "WEBMAIL.SOLARFLARE.COM",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A0C4EB6FC5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 07:03:21 +1100 (EST)
-Message-ID: <1330372595.2720.1.camel@bwh-desktop>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A5685B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 07:49:50 +1100 (EST)
+Date: Mon, 27 Feb 2012 15:49:42 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: David Miller <davem@davemloft.net>
 Subject: Re: [PATCH net-next] ibm emac: delete module references; phy.c only
  supported as built-in
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Mon, 27 Feb 2012 19:56:35 +0000
-In-Reply-To: <1330372024-30974-1-git-send-email-paul.gortmaker@windriver.com>
+Message-ID: <20120227204941.GA29529@windriver.com>
 References: <1330372024-30974-1-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
+ <20120227.145753.1111293673513137413.davem@davemloft.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20120227.145753.1111293673513137413.davem@davemloft.net>
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,47 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-02-27 at 14:47 -0500, Paul Gortmaker wrote:
-> The Makefile has it as "ibm_emac-y := mal.o core.o phy.o" so there is
-> no way this can be built modular, so remove all references to module
-> support.
+[Re: [PATCH net-next] ibm emac: delete module references; phy.c only supported as built-in] On 27/02/2012 (Mon 14:57) David Miller wrote:
 
-No, that's nonsense.  You need to look at whether ibm_emac.o can be
-added to obj-m (which it can).
-
-Ben.
-
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> From: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Date: Mon, 27 Feb 2012 14:47:04 -0500
 > 
-> diff --git a/drivers/net/ethernet/ibm/emac/phy.c b/drivers/net/ethernet/ibm/emac/phy.c
-> index d3b9d10..fb96387 100644
-> --- a/drivers/net/ethernet/ibm/emac/phy.c
-> +++ b/drivers/net/ethernet/ibm/emac/phy.c
-> @@ -11,13 +11,15 @@
->   * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
->   *                <benh@kernel.crashing.org>
->   *
-> + * Originally listed as MODULE_LICENSE("GPL") in the code, but that
-> + * was removed, since this code is only supported as non-modular.
-> + *
->   * Based on the arch/ppc version of the driver:
->   *
->   * (c) 2003, Benjamin Herrenscmidt (benh@kernel.crashing.org)
->   * (c) 2004-2005, Eugene Surovegin <ebs@ebshome.net>
->   *
->   */
-> -#include <linux/module.h>
->  #include <linux/kernel.h>
->  #include <linux/types.h>
->  #include <linux/netdevice.h>
-> @@ -537,5 +539,3 @@ int emac_mii_phy_probe(struct mii_phy *phy, int address)
->  
->  	return 0;
->  }
-> -
-> -MODULE_LICENSE("GPL");
+> > The Makefile has it as "ibm_emac-y := mal.o core.o phy.o" so there is
+> > no way this can be built modular, so remove all references to module
+> > support.
+> 
+> That doesn't mean it's only buildable statically.
+> 
+> "ibm_emacs-y :=" is merely a way to tell make what objects go into ibm_emac.{o,ko}
+> 
+> IBM_EMAC is tristate
 
--- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Argh, yes.  Sorry for the noise.  Since phy.c doesn't call any modular
+functionality directly, the patch "worked" and I didn't catch the
+error in my reasoning.
+
+Paul.
