@@ -1,22 +1,16 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og115.obsmtp.com (exprod5og115.obsmtp.com [64.18.0.246])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 28B4EB6FA2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 00:57:14 +1100 (EST)
-Message-ID: <4F4B8BB2.1060004@ge.com>
-Date: Mon, 27 Feb 2012 13:57:06 +0000
-From: Martyn Welch <martyn.welch@ge.com>
+Return-Path: <f.fainelli@gmail.com>
+Sender: Florian Fainelli <f.fainelli@gmail.com>
+Message-ID: <4F4B9748.8020509@openwrt.org>
+Date: Mon, 27 Feb 2012 15:46:32 +0100
+From: Florian Fainelli <florian@openwrt.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc: Move GE GPIO and PIC drivers
-References: <1328614121-17803-1-git-send-email-martyn.welch@ge.com>	
- <1328614121-17803-2-git-send-email-martyn.welch@ge.com>
- <1330299464.20389.58.camel@pasglop>
-In-Reply-To: <1330299464.20389.58.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Wim Van Sebroeck <wim@iguana.be>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Baruch Siach <baruch@tkos.co.il>
+Subject: Re: [PATCH] of/mdio: fix fixed link bus name
+References: <8ebe6a3f11343c392a7353581d5f648980206e8e.1330346765.git.baruch@tkos.co.il>
+In-Reply-To: <8ebe6a3f11343c392a7353581d5f648980206e8e.1330346765.git.baruch@tkos.co.il>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,60 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/02/12 23:37, Benjamin Herrenschmidt wrote:
-> On Tue, 2012-02-07 at 11:28 +0000, Martyn Welch wrote:
->> Move the GE GPIO and PIC drivers to allow these to be used by non-86xx
->> boards.
-> 
-> Hi, Sorry for the late review...
-> 
 
-No problem, thanks for the review!
 
->> Signed-off-by: Martyn Welch <martyn.welch@ge.com>
->> ---
->>  arch/powerpc/platforms/86xx/Kconfig      |    3 +
->>  arch/powerpc/platforms/86xx/Makefile     |    7 +-
->>  arch/powerpc/platforms/86xx/gef_gpio.c   |  171 --------------------
->>  arch/powerpc/platforms/86xx/gef_pic.c    |  252 ------------------------------
->>  arch/powerpc/platforms/86xx/gef_pic.h    |   11 --
->>  arch/powerpc/platforms/86xx/gef_ppc9a.c  |    3 +-
->>  arch/powerpc/platforms/86xx/gef_sbc310.c |    3 +-
->>  arch/powerpc/platforms/86xx/gef_sbc610.c |    3 +-
->>  arch/powerpc/platforms/Kconfig           |    7 +
->>  arch/powerpc/platforms/Makefile          |    3 +
->>  arch/powerpc/platforms/ge_gpio.c         |  171 ++++++++++++++++++++
->>  arch/powerpc/platforms/ge_pic.c          |  252 ++++++++++++++++++++++++++++++
->>  arch/powerpc/platforms/ge_pic.h          |   11 ++
-> 
-> So I don't like having files showing up there. In fact, I want to move
-> the only other one here, it's not the right place for it
-> (fsl_uli1575.c).
-> 
+Le 02/27/12 13:48, Baruch Siach a écrit :
+> Since 9e6c643b (phy/fixed: use an unique MDIO bus name) the name of the fixed
+> PHY bus is "fixed-0". Teach of_phy_connect_fixed_link() the new name.
+>
+> Tested on a P1020RDB PowerPC system.
+>
+> Signed-off-by: Baruch Siach<baruch@tkos.co.il>
 
-This patch (or one like it) has been around for a while now. Kumar wanted me
-to put them here rather than sysdev[1], but I'm easy either way.
+Acked-by: Florian Fainelli <florian@openwrt.org>
 
-> Please contemplate using arch/powerpc/sysdev instead. Maybe make a
-> subdir in there (geip or something like that ?)
-> 
-
-I'd rather avoid "geip" (we seem to have a habit of renaming divisions), would
-"ge" be acceptable?
-
-> Also, use git mv so that the file moves appear as such in the history,
-> this will make review easier by clearly separating the move from actual
-> changes to the files.
-> 
-
-Hmm, thought I'd done that. Will try again.
-
-Martyn
-
-[1] http://old.nabble.com/GE-GPIO-and-PIC-support.-td27212938.html
-
--- 
-Martyn Welch (Lead Software Engineer)  | Registered in England and Wales
-GE Intelligent Platforms               | (3828642) at 100 Barbirolli Square
-T +44(0)1327322748                     | Manchester, M2 3AB
-E martyn.welch@ge.com                  | VAT:GB 927559189
+> ---
+>   drivers/of/of_mdio.c |    2 +-
+>   1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+> index 980c079..483c0ad 100644
+> --- a/drivers/of/of_mdio.c
+> +++ b/drivers/of/of_mdio.c
+> @@ -182,7 +182,7 @@ struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
+>   	if (!phy_id || sz<  sizeof(*phy_id))
+>   		return NULL;
+>
+> -	sprintf(bus_id, PHY_ID_FMT, "0", be32_to_cpu(phy_id[0]));
+> +	sprintf(bus_id, PHY_ID_FMT, "fixed-0", be32_to_cpu(phy_id[0]));
+>
+>   	phy = phy_connect(dev, bus_id, hndlr, 0, iface);
+>   	return IS_ERR(phy) ? NULL : phy;
