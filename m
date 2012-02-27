@@ -1,24 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE010.bigfish.com (va3ehsobe005.messaging.microsoft.com
- [216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0FDDBB6FA9
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 06:50:13 +1100 (EST)
-Message-ID: <4F4BDE6D.1060202@freescale.com>
-Date: Mon, 27 Feb 2012 13:50:05 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Liu Yu <yu.liu@freescale.com>
-Subject: Re: [PATCH v6 4/4] KVM: PPC: epapr: Update other hypercall invoking
-References: <1329988942-19610-1-git-send-email-yu.liu@freescale.com>
- <1329988942-19610-2-git-send-email-yu.liu@freescale.com>
- <1329988942-19610-3-git-send-email-yu.liu@freescale.com>
- <1329988942-19610-4-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1329988942-19610-4-git-send-email-yu.liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@ozlabs.org, B07421@freescale.com, agraf@suse.de,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 812CFB6FD2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 07:00:09 +1100 (EST)
+Date: Mon, 27 Feb 2012 14:57:53 -0500 (EST)
+Message-Id: <20120227.145753.1111293673513137413.davem@davemloft.net>
+To: paul.gortmaker@windriver.com
+Subject: Re: [PATCH net-next] ibm emac: delete module references; phy.c
+ only supported as built-in
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1330372024-30974-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1330372024-30974-1-git-send-email-paul.gortmaker@windriver.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/23/2012 03:22 AM, Liu Yu wrote:
-> diff --git a/drivers/virt/Kconfig b/drivers/virt/Kconfig
-> index 2dcdbc9..99ebdde 100644
-> --- a/drivers/virt/Kconfig
-> +++ b/drivers/virt/Kconfig
-> @@ -15,6 +15,7 @@ if VIRT_DRIVERS
->  config FSL_HV_MANAGER
->  	tristate "Freescale hypervisor management driver"
->  	depends on FSL_SOC
-> +	select EPAPR_PARAVIRT
->  	help
->            The Freescale hypervisor management driver provides several services
->  	  to drivers and applications related to the Freescale hypervisor:
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Mon, 27 Feb 2012 14:47:04 -0500
 
-What about the byte channel driver, and possibly others?
+> The Makefile has it as "ibm_emac-y := mal.o core.o phy.o" so there is
+> no way this can be built modular, so remove all references to module
+> support.
 
-Grep for the hypercalls to make sure you got everything that uses this.
+That doesn't mean it's only buildable statically.
 
--Scott
+"ibm_emacs-y :=" is merely a way to tell make what objects go into ibm_emac.{o,ko}
+
+IBM_EMAC is tristate
