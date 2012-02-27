@@ -1,25 +1,25 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 74F50B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 04:57:06 +1100 (EST)
-Received: by dady9 with SMTP id y9so2127691dad.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2012 09:57:04 -0800 (PST)
-Sender: Jimi Xenidis <xenidis@gmail.com>
-Subject: Re: [PATCH] powerpc: icswx: fix race condition where threads do not
- get their ACOP register updated in time.
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <1330300068.20389.63.camel@pasglop>
-Date: Mon, 27 Feb 2012 11:56:58 -0600
-Message-Id: <A8E3F067-7E3B-419C-B070-26F629B95CF0@pobox.com>
-References: <1329948466-325-1-git-send-email-jimix@pobox.com>
- <1330300068.20389.63.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F30D9B6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 05:23:31 +1100 (EST)
+Message-ID: <4F4BCA1F.5040905@suse.de>
+Date: Mon, 27 Feb 2012 19:23:27 +0100
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: [PATCH 24/37] KVM: PPC: booke: rework rescheduling checks
+References: <1330093591-19523-1-git-send-email-agraf@suse.de>
+ <1330093591-19523-25-git-send-email-agraf@suse.de>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D141083@039-SN2MPN1-023.039d.mgd.msft.net>
+ <4F4BBE55.6020204@suse.de>
+In-Reply-To: <4F4BBE55.6020204@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,89 +29,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 02/27/2012 06:33 PM, Alexander Graf wrote:
+> On 02/27/2012 05:34 PM, Bhushan Bharat-R65777 wrote:
+>>
+>>> +}
+>>> +
+>>> +/*
+>>> + * Common checks before entering the guest world.  Call with 
+>>> interrupts
+>>> + * disabled.
+>>> + *
+>>> + * returns !0 if a signal is pending and check_signal is true  */
+>>> +static int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu, bool
+>>> +check_signal) {
+>>> +    int r = 0;
+>>> +
+>>> +    WARN_ON_ONCE(!irqs_disabled());
+>>> +    while (true) {
+>>> +        if (need_resched()) {
+>>> +            local_irq_enable();
+>>> +            cond_resched();
+>>> +            local_irq_disable();
+>>> +            continue;
+>>> +        }
+>>> +
+>>> +        if (kvmppc_core_prepare_to_enter(vcpu)) {
+>> kvmppc_prepare_to_enter() is called even on heavyweight_exit. Should 
+>> not this be called only on lightweight_exit?
+>
+> Yeah, we don't need to call it when exiting anyways. That's a 
+> functional change though, which this patch is trying not to introduce. 
+> So we should rather do that as a patch on top.
 
-On Feb 26, 2012, at 5:47 PM, Benjamin Herrenschmidt wrote:
-
->=20
->>=20
->> +	/*
->> +	 * We could be here because another thread has enabled acop
->> +	 * but the ACOP register has yet to be updated.
->> +	 *
->> +	 * This should have been taken care of by the IPI to sync all
->> +	 * the threads (see smp_call_function(sync_cop, mm, 1)), but
->> +	 * that could take forever if there are a significant amount
->> +	 * of threads.
->> +	 *
->> +	 * Given the number of threads on some of these systems,
->> +	 * perhaps this is the best way to sync ACOP rather than whack
->> +	 * every thread with an IPI.
->> +	 */
->=20
-> This is actually pretty standard stuff... If it was me I would make it
-> all lazy and avoid the IPI completely but it doesn't necessarily hurt
-> that much.
-
-I'm happy to get rid of the IPI completely if Anton (or someone else) =
-agrees to test on his end.
-If not, do you want me to reduce the comment?
+So how about this (warning! broken whitespace)?
 
 
-> In any case the "recovery" is indeed needed and you should
-> probably also remove the pr_debug, it's really just spam.
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 7a16b56..616aa2d 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -464,7 +464,7 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+   *
+   * returns !0 if a signal is pending and check_signal is true
+   */
+-static int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu, bool 
+check_signal)
++static int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+  {
+         int r = 0;
 
-ack
+@@ -483,7 +483,7 @@ static int kvmppc_prepare_to_enter(struct kvm_vcpu 
+*vcpu, bool check_signal)
+                         continue;
+                 }
 
->=20
->> +	if (acop_copro_type_bit(ct) && current->active_mm->context.acop) =
-{
->=20
-> Shouldn't that be "&" ? In fact, gcc would even warn so either make
-> it acop_check_copro(acop, ct) or do a (x & y) !=3D 0
+-               if (check_signal && signal_pending(current))
++               if (signal_pending(current))
+                         r = 1;
 
-Ach!! nice catch!
--jx
+                 break;
+@@ -507,7 +507,7 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct 
+kvm_vcpu *vcpu)
+         }
 
->=20
-> Cheers,
-> Ben.
->=20
->> +		pr_debug("%s[%d]: Spurrious ACOP Fault, CT: %d, bit: =
-0x%llx "
->> +			"SPR: 0x%lx, mm->acop: 0x%lx\n",
->> +			current->comm, current->pid,
->> +			ct, acop_copro_type_bit(ct), mfspr(SPRN_ACOP),
->> +			current->active_mm->context.acop);
->> +
->> +		sync_cop(current->active_mm);
->> +		return 0;
->> +	}
->> +
->> +	/* check for alternate policy */
->> 	if (!acop_use_cop(ct))
->> 		return 0;
->>=20
->> 	/* at this point the CT is unknown to the system */
->> -	pr_warn("%s[%d]: Coprocessor %d is unavailable",
->> +	pr_warn("%s[%d]: Coprocessor %d is unavailable\n",
->> 		current->comm, current->pid, ct);
->>=20
->> 	/* get inst if we don't already have it */
->> diff --git a/arch/powerpc/mm/icswx.h b/arch/powerpc/mm/icswx.h
->> index 42176bd..6dedc08 100644
->> --- a/arch/powerpc/mm/icswx.h
->> +++ b/arch/powerpc/mm/icswx.h
->> @@ -59,4 +59,10 @@ extern void free_cop_pid(int free_pid);
->>=20
->> extern int acop_handle_fault(struct pt_regs *regs, unsigned long =
-address,
->> 			     unsigned long error_code);
->> +
->> +static inline u64 acop_copro_type_bit(unsigned int type)
->> +{
->> +	return 1ULL << (63 - type);
->> +}
->> +
->> #endif /* !_ARCH_POWERPC_MM_ICSWX_H_ */
->=20
->=20
+         local_irq_disable();
+-       if (kvmppc_prepare_to_enter(vcpu, true)) {
++       if (kvmppc_prepare_to_enter(vcpu)) {
+                 kvm_run->exit_reason = KVM_EXIT_INTR;
+                 ret = -EINTR;
+                 goto out;
+@@ -941,13 +941,16 @@ int kvmppc_handle_exit(struct kvm_run *run, struct 
+kvm_vcpu *vcpu,
+          * To avoid clobbering exit_reason, only check for signals if we
+          * aren't already exiting to userspace for some other reason.
+          */
+-       local_irq_disable();
+-       if (kvmppc_prepare_to_enter(vcpu, !(r & RESUME_HOST))) {
+-               run->exit_reason = KVM_EXIT_INTR;
+-               r = (-EINTR << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
+-               kvmppc_account_exit(vcpu, SIGNAL_EXITS);
++       if (!(r & RESUME_HOST)) {
++               local_irq_disable();
++               if (kvmppc_prepare_to_enter(vcpu)) {
++                       run->exit_reason = KVM_EXIT_INTR;
++                       r = (-EINTR << 2) | RESUME_HOST | (r & 
+RESUME_FLAG_NV);
++                       kvmppc_account_exit(vcpu, SIGNAL_EXITS);
++               }
+         }
+
++out:
+         return r;
+  }
