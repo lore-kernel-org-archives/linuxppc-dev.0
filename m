@@ -1,19 +1,18 @@
-Return-Path: <hannes@cmpxchg.org>
-Received: from zene.cmpxchg.org (zene.cmpxchg.org
- [IPv6:2a01:238:4224:fa00:ca1f:9ef3:caee:a2bd])
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3F807B6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 01:17:08 +1100 (EST)
-Date: Tue, 28 Feb 2012 14:53:26 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5B573B6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 02:47:47 +1100 (EST)
+Date: Tue, 28 Feb 2012 15:47:32 +0000
+From: Mel Gorman <mgorman@suse.de>
 To: Nishanth Aravamudan <nacc@us.ibm.com>
 Subject: Re: [PATCH] sparsemem/bootmem: catch greater than section size
  allocations
-Message-ID: <20120228135326.GE1702@cmpxchg.org>
+Message-ID: <20120228154732.GE1199@suse.de>
 References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 In-Reply-To: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
 Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
  linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
@@ -72,182 +71,51 @@ On Fri, Feb 24, 2012 at 11:33:58AM -0800, Nishanth Aravamudan wrote:
 > defined, we'll BUG_ON() instead. A simple solution appears to be to
 > disable the limit check if the size of the allocation in
 > alloc_bootmem_secition exceeds the section size.
+> 
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> Cc: Dave Hansen <haveblue@us.ibm.com>
+> Cc: Anton Blanchard <anton@au1.ibm.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Robert Jennings <rcj@linux.vnet.ibm.com>
+> Cc: linux-mm@kvack.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  include/linux/mmzone.h |    2 ++
+>  mm/bootmem.c           |    5 ++++-
+>  2 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 650ba2f..4176834 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -967,6 +967,8 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
+>   * PA_SECTION_SHIFT		physical address to/from section number
+>   * PFN_SECTION_SHIFT		pfn to/from section number
+>   */
+> +#define BYTES_PER_SECTION	(1UL << SECTION_SIZE_BITS)
+> +
+>  #define SECTIONS_SHIFT		(MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
+>  
+>  #define PA_SECTION_SHIFT	(SECTION_SIZE_BITS)
+> diff --git a/mm/bootmem.c b/mm/bootmem.c
+> index 668e94d..5cbbc76 100644
+> --- a/mm/bootmem.c
+> +++ b/mm/bootmem.c
+> @@ -770,7 +770,10 @@ void * __init alloc_bootmem_section(unsigned long size,
+>  
+>  	pfn = section_nr_to_pfn(section_nr);
+>  	goal = pfn << PAGE_SHIFT;
+> -	limit = section_nr_to_pfn(section_nr + 1) << PAGE_SHIFT;
+> +	if (size > BYTES_PER_SECTION)
+> +		limit = 0;
+> +	else
+> +		limit = section_nr_to_pfn(section_nr + 1) << PAGE_SHIFT;
 
-It makes sense to allow the usemaps to spill over to subsequent
-sections instead of panicking, so FWIW:
+As it's ok to spill the allocation over to an adjacent section, why not
+just make limit==0 unconditionally. That would avoid defining
+BYTES_PER_SECTION.
 
-Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-
-That being said, it would be good if check_usemap_section_nr() printed
-the cross-dependencies between pgdats and sections when the usemaps of
-a node spilled over to other sections than the ones holding the pgdat.
-
-How about this?
-
----
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: sparsemem/bootmem: catch greater than section size allocations fix
-
-If alloc_bootmem_section() no longer guarantees section-locality, we
-need check_usemap_section_nr() to print possible cross-dependencies
-between node descriptors and the usemaps allocated through it.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
-
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 61d7cde..9e032dc 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -359,6 +359,7 @@ static void __init sparse_early_usemaps_alloc_node(unsigned long**usemap_map,
- 				continue;
- 			usemap_map[pnum] = usemap;
- 			usemap += size;
-+			check_usemap_section_nr(nodeid, usemap_map[pnum]);
- 		}
- 		return;
- 	}
-
----
-
-Furthermore, I wonder if we can remove the sparse-specific stuff from
-bootmem.c as well, as now even more so than before, calculating the
-desired area is really none of bootmem's business.
-
-Would something like this be okay?
-
----
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: [patch] mm: remove sparsemem allocation details from the bootmem allocator
-
-alloc_bootmem_section() derives allocation area constraints from the
-specified sparsemem section.  This is a bit specific for a generic
-memory allocator like bootmem, though, so move it over to sparsemem.
-
-Since __alloc_bootmem_node() already retries failed allocations with
-relaxed area constraints, the fallback code in sparsemem.c can be
-removed and the code becomes a bit more compact overall.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
- include/linux/bootmem.h |    3 ---
- mm/bootmem.c            |   26 --------------------------
- mm/sparse.c             |   29 +++++++++--------------------
- 3 files changed, 9 insertions(+), 49 deletions(-)
-
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index ab344a5..001c248 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -135,9 +135,6 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
- extern int reserve_bootmem_generic(unsigned long addr, unsigned long size,
- 				   int flags);
- 
--extern void *alloc_bootmem_section(unsigned long size,
--				   unsigned long section_nr);
--
- #ifdef CONFIG_HAVE_ARCH_ALLOC_REMAP
- extern void *alloc_remap(int nid, unsigned long size);
- #else
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 7bc0557..d34026c 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -756,32 +756,6 @@ void * __init __alloc_bootmem_node_high(pg_data_t *pgdat, unsigned long size,
- 
- }
- 
--#ifdef CONFIG_SPARSEMEM
--/**
-- * alloc_bootmem_section - allocate boot memory from a specific section
-- * @size: size of the request in bytes
-- * @section_nr: sparse map section to allocate from
-- *
-- * Return NULL on failure.
-- */
--void * __init alloc_bootmem_section(unsigned long size,
--				    unsigned long section_nr)
--{
--	bootmem_data_t *bdata;
--	unsigned long pfn, goal, limit;
--
--	pfn = section_nr_to_pfn(section_nr);
--	goal = pfn << PAGE_SHIFT;
--	if (size > BYTES_PER_SECTION)
--		limit = 0;
--	else
--		limit = section_nr_to_pfn(section_nr + 1) << PAGE_SHIFT;
--	bdata = &bootmem_node_data[early_pfn_to_nid(pfn)];
--
--	return alloc_bootmem_core(bdata, size, SMP_CACHE_BYTES, goal, limit);
--}
--#endif
--
- void * __init __alloc_bootmem_node_nopanic(pg_data_t *pgdat, unsigned long size,
- 				   unsigned long align, unsigned long goal)
- {
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 9e032dc..ac0d5a3 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -273,10 +273,10 @@ static unsigned long *__kmalloc_section_usemap(void)
- #ifdef CONFIG_MEMORY_HOTREMOVE
- static unsigned long * __init
- sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
--					 unsigned long count)
-+					 unsigned long size)
- {
--	unsigned long section_nr;
--
-+	pg_data_t *host_pgdat;
-+	unsigned long goal;
- 	/*
- 	 * A page may contain usemaps for other sections preventing the
- 	 * page being freed and making a section unremovable while
-@@ -287,8 +287,9 @@ sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
- 	 * from the same section as the pgdat where possible to avoid
- 	 * this problem.
- 	 */
--	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
--	return alloc_bootmem_section(usemap_size() * count, section_nr);
-+	goal = __pa(pgdat) & PAGE_SECTION_MASK;
-+	host_pgdat = NODE_DATA(early_pfn_to_nid(goal));
-+	return __alloc_bootmem_node(host_pgdat, size, SMP_CACHE_BYTES, goal);
- }
- 
- static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
-@@ -332,9 +333,9 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
- #else
- static unsigned long * __init
- sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
--					 unsigned long count)
-+					 unsigned long size)
- {
--	return NULL;
-+	return alloc_bootmem_node(pgdat, size);
- }
- 
- static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
-@@ -352,19 +353,7 @@ static void __init sparse_early_usemaps_alloc_node(unsigned long**usemap_map,
- 	int size = usemap_size();
- 
- 	usemap = sparse_early_usemaps_alloc_pgdat_section(NODE_DATA(nodeid),
--								 usemap_count);
--	if (usemap) {
--		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
--			if (!present_section_nr(pnum))
--				continue;
--			usemap_map[pnum] = usemap;
--			usemap += size;
--			check_usemap_section_nr(nodeid, usemap_map[pnum]);
--		}
--		return;
--	}
--
--	usemap = alloc_bootmem_node(NODE_DATA(nodeid), size * usemap_count);
-+							  size * usemap_count);
- 	if (usemap) {
- 		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
- 			if (!present_section_nr(pnum))
 -- 
-1.7.7.6
+Mel Gorman
+SUSE Labs
