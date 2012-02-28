@@ -1,32 +1,33 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 57E60B6EEC
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 12:23:03 +1100 (EST)
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F1872B6FA5
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 12:26:40 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 28 Feb 2012 06:53:00 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1S1Mv4O3014862
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 06:52:57 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1S1MuFQ015486
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 12:22:56 +1100
-Date: Tue, 28 Feb 2012 09:22:55 +0800
+ Tue, 28 Feb 2012 01:22:46 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1S1QSFr712786
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 12:26:28 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1S1QSci025644
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 12:26:28 +1100
+Date: Tue, 28 Feb 2012 09:26:26 +0800
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: David Laight <David.Laight@aculab.com>
-Subject: Re: [PATCH 20/21] Introduce struct eeh_stats for EEH
-Message-ID: <20120228012255.GC3457@shangw>
-References: <1330076298-7006-21-git-send-email-shangw@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B6E79@saturn3.aculab.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 14/21] Introduce EEH device
+Message-ID: <20120228012626.GD3457@shangw>
+References: <1330076298-7006-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1330076298-7006-15-git-send-email-shangw@linux.vnet.ibm.com>
+ <20120224235012.63b01e51749cb09bc0195d38@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6E79@saturn3.aculab.com>
+In-Reply-To: <20120224235012.63b01e51749cb09bc0195d38@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,39 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->  
-> > +/*
-> > + * The struct is used to maintain the EEH global statistic
-> > + * information. Besides, the EEH global statistics will be
-> > + * exported to user space through procfs
-> > + */
-> > +struct eeh_stats {
-> > +	unsigned long no_device;	/* PCI device not found
-> */
-> > +	unsigned long no_dn;		/* OF node not found
-> */
-> > +	unsigned long no_cfg_addr;	/* Config address not  found
-> */
-> > +	unsigned long ignored_check;	/* EEH check skipped
-> */
-> > +	unsigned long total_mmio_ffs;	/* Total EEH checks
-> */
-> > +	unsigned long false_positives;	/* Unnecessary EEH checks
-> */
-> > +	unsigned long slot_resets;	/* PE reset
-> */
-> > +};
+> Hi Gavin,
 > 
-> Why 'unsigned long', surely either 'unsigned int'
-> or a fixed-width type.
+> On Fri, 24 Feb 2012 17:38:11 +0800 Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
+> >
+> > diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+> > index d57c08a..4668344 100644
+> > --- a/arch/powerpc/include/asm/device.h
+> > +++ b/arch/powerpc/include/asm/device.h
+> > @@ -31,6 +31,9 @@ struct dev_archdata {
+> >  #ifdef CONFIG_SWIOTLB
+> >  	dma_addr_t		max_direct_dma_addr;
+> >  #endif
+> > +#ifdef CONFIG_EEH
+> > +	void			*edev;
+> > +#endif
+> >  };
+> >  
+> >  struct pdev_archdata {
+> > diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+> > index ad8f318..1310971 100644
+> > --- a/arch/powerpc/include/asm/eeh.h
+> > +++ b/arch/powerpc/include/asm/eeh.h
+> > +#define OF_NODE_TO_EEH_DEV(dn)		((struct eeh_dev *)(dn->edev))
+> > +#define PCI_DEV_TO_EEH_DEV(pdev)	((struct eeh_dev *)(pdev->dev.archdata.edev))
+> 
+> If the edev fields of dev_archdata and device_node are always going to be
+> "struct eeh_dev *", why not declare then as such and avoid the casting?
 > 
 
-Thanks, David. Could you pls give more information on
-how the fixed-width types benefits us?
+Thanks for your comments, Stephen. I'll change it in next revision accordingly.
 
 Thanks,
 Gavin
- 
-> 	David
-> 
-> 
+
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
