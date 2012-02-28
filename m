@@ -1,42 +1,27 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <yinghai@kernel.org>
+Received: from rcsinet15.oracle.com (rcsinet15.oracle.com [148.87.113.117])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EBBDAB6EEA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 07:19:35 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 28 Feb 2012 13:19:30 -0700
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 37A8619D80C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 13:12:05 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1SKBsmq109822
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 13:11:55 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1SKBrQW029941
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 13:11:54 -0700
-Date: Tue, 28 Feb 2012 12:11:51 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH] sparsemem/bootmem: catch greater than section size
- allocations
-Message-ID: <20120228201151.GC5136@linux.vnet.ibm.com>
-References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
- <20120228135326.GE1702@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120228135326.GE1702@cmpxchg.org>
-Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Nishanth Aravamudan <nacc@us.ibm.com>,
+ (Client CN "rcsinet15.oracle.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 29F84B6FA3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 09:08:37 +1100 (EST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
+ x86 <x86@kernel.org>
+Subject: [PATCH 14/24] PCI, powerpc: Register busn_res for root buses
+Date: Tue, 28 Feb 2012 14:07:33 -0800
+Message-Id: <1330466863-28469-15-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1330466863-28469-1-git-send-email-yinghai@kernel.org>
+References: <1330466863-28469-1-git-send-email-yinghai@kernel.org>
+Cc: linux-arch@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, Paul Mackerras <paulus@samba.org>,
  Andrew Morton <akpm@linux-foundation.org>,
- Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,118 +31,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28.02.2012 [14:53:26 +0100], Johannes Weiner wrote:
-> On Fri, Feb 24, 2012 at 11:33:58AM -0800, Nishanth Aravamudan wrote:
-> > While testing AMS (Active Memory Sharing) / CMO (Cooperative Memory
-> > Overcommit) on powerpc, we tripped the following:
-> > 
-> > kernel BUG at mm/bootmem.c:483!
-> > cpu 0x0: Vector: 700 (Program Check) at [c000000000c03940]
-> >     pc: c000000000a62bd8: .alloc_bootmem_core+0x90/0x39c
-> >     lr: c000000000a64bcc: .sparse_early_usemaps_alloc_node+0x84/0x29c
-> >     sp: c000000000c03bc0
-> >    msr: 8000000000021032
-> >   current = 0xc000000000b0cce0
-> >   paca    = 0xc000000001d80000
-> >     pid   = 0, comm = swapper
-> > kernel BUG at mm/bootmem.c:483!
-> > enter ? for help
-> > [c000000000c03c80] c000000000a64bcc
-> > .sparse_early_usemaps_alloc_node+0x84/0x29c
-> > [c000000000c03d50] c000000000a64f10 .sparse_init+0x12c/0x28c
-> > [c000000000c03e20] c000000000a474f4 .setup_arch+0x20c/0x294
-> > [c000000000c03ee0] c000000000a4079c .start_kernel+0xb4/0x460
-> > [c000000000c03f90] c000000000009670 .start_here_common+0x1c/0x2c
-> > 
-> > This is
-> > 
-> >         BUG_ON(limit && goal + size > limit);
-> > 
-> > and after some debugging, it seems that
-> > 
-> > 	goal = 0x7ffff000000
-> > 	limit = 0x80000000000
-> > 
-> > and sparse_early_usemaps_alloc_node ->
-> > sparse_early_usemaps_alloc_pgdat_section -> alloc_bootmem_section calls
-> > 
-> > 	return alloc_bootmem_section(usemap_size() * count, section_nr);
-> > 
-> > This is on a system with 8TB available via the AMS pool, and as a quirk
-> > of AMS in firmware, all of that memory shows up in node 0. So, we end up
-> > with an allocation that will fail the goal/limit constraints. In theory,
-> > we could "fall-back" to alloc_bootmem_node() in
-> > sparse_early_usemaps_alloc_node(), but since we actually have HOTREMOVE
-> > defined, we'll BUG_ON() instead. A simple solution appears to be to
-> > disable the limit check if the size of the allocation in
-> > alloc_bootmem_secition exceeds the section size.
-> 
-> It makes sense to allow the usemaps to spill over to subsequent
-> sections instead of panicking, so FWIW:
-> 
-> Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-> 
-> That being said, it would be good if check_usemap_section_nr() printed
-> the cross-dependencies between pgdats and sections when the usemaps of
-> a node spilled over to other sections than the ones holding the pgdat.
-> 
-> How about this?
-> 
-> ---
-> From: Johannes Weiner <hannes@cmpxchg.org>
-> Subject: sparsemem/bootmem: catch greater than section size allocations fix
-> 
-> If alloc_bootmem_section() no longer guarantees section-locality, we
-> need check_usemap_section_nr() to print possible cross-dependencies
-> between node descriptors and the usemaps allocated through it.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> ---
-> 
-> diff --git a/mm/sparse.c b/mm/sparse.c
-> index 61d7cde..9e032dc 100644
-> --- a/mm/sparse.c
-> +++ b/mm/sparse.c
-> @@ -359,6 +359,7 @@ static void __init sparse_early_usemaps_alloc_node(unsigned long**usemap_map,
->  				continue;
->  			usemap_map[pnum] = usemap;
->  			usemap += size;
-> +			check_usemap_section_nr(nodeid, usemap_map[pnum]);
->  		}
->  		return;
->  	}
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/include/asm/pci-bridge.h |    1 +
+ arch/powerpc/kernel/pci-common.c      |   10 +++++++++-
+ 2 files changed, 10 insertions(+), 1 deletions(-)
 
-This makes sense to me -- ok if I fold it into the re-worked patch
-(based upon Mel's comments)?
-
-> ---
-> 
-> Furthermore, I wonder if we can remove the sparse-specific stuff from
-> bootmem.c as well, as now even more so than before, calculating the
-> desired area is really none of bootmem's business.
-> 
-> Would something like this be okay?
-> 
-> ---
-> From: Johannes Weiner <hannes@cmpxchg.org>
-> Subject: [patch] mm: remove sparsemem allocation details from the bootmem allocator
-> 
-> alloc_bootmem_section() derives allocation area constraints from the
-> specified sparsemem section.  This is a bit specific for a generic
-> memory allocator like bootmem, though, so move it over to sparsemem.
-> 
-> Since __alloc_bootmem_node() already retries failed allocations with
-> relaxed area constraints, the fallback code in sparsemem.c can be
-> removed and the code becomes a bit more compact overall.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-
-I've not tested it, but the intention seems sensible. I think it should
-remain a separate change.
-
-Thanks,
-Nish
-
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 5d48765..11cebf0 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -30,6 +30,7 @@ struct pci_controller {
+ 	int first_busno;
+ 	int last_busno;
+ 	int self_busno;
++	struct resource busn;
+ 
+ 	void __iomem *io_base_virt;
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 910b9de..ee8c0c9 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1648,6 +1648,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ 	/* Wire up PHB bus resources */
+ 	pcibios_setup_phb_resources(hose, &resources);
+ 
++	hose->busn.start = hose->first_busno;
++	hose->busn.end	 = hose->last_busno;
++	hose->busn.flags = IORESOURCE_BUS;
++	pci_add_resource(&resources, &hose->busn);
++
+ 	/* Create an empty bus for the toplevel */
+ 	bus = pci_create_root_bus(hose->parent, hose->first_busno,
+ 				  hose->ops, hose, &resources);
+@@ -1670,8 +1675,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ 		of_scan_bus(node, bus);
+ 	}
+ 
+-	if (mode == PCI_PROBE_NORMAL)
++	if (mode == PCI_PROBE_NORMAL) {
++		pci_bus_update_busn_res_end(bus, 255);
+ 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
++		pci_bus_update_busn_res_end(bus, bus->subordinate);
++	}
+ 
+ 	/* Platform gets a chance to do some global fixups before
+ 	 * we proceed to resource allocation
 -- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+1.7.7
