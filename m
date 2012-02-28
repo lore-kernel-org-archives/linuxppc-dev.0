@@ -2,13 +2,13 @@ Return-Path: <gustavo@zacarias.com.ar>
 Received: from loknar.toptech.com.ar (loknar.toptech.com.ar [74.118.36.95])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.toptech.com.ar", Issuer "mail.toptech.com.ar" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 22DFBB6EE6
+ by ozlabs.org (Postfix) with ESMTPS id 22E14B6EF1
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 06:48:44 +1100 (EST)
 From: Gustavo Zacarias <gustavo@zacarias.com.ar>
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [PATCH] powerpc/boot: fix typo in p1010rdb.dtsi
-Date: Tue, 28 Feb 2012 16:43:08 -0300
-Message-Id: <1330458188-17265-1-git-send-email-gustavo@zacarias.com.ar>
+Date: Tue, 28 Feb 2012 16:44:40 -0300
+Message-Id: <1330458280-17335-1-git-send-email-gustavo@zacarias.com.ar>
 Cc: Gustavo Zacarias <gustavo@zacarias.com.ar>, afleming@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
