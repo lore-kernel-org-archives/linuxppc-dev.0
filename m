@@ -1,23 +1,15 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B573B6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 02:47:47 +1100 (EST)
-Date: Tue, 28 Feb 2012 15:47:32 +0000
-From: Mel Gorman <mgorman@suse.de>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: Re: [PATCH] sparsemem/bootmem: catch greater than section size
- allocations
-Message-ID: <20120228154732.GE1199@suse.de>
-References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <gustavo@zacarias.com.ar>
+Received: from loknar.toptech.com.ar (loknar.toptech.com.ar [74.118.36.95])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.toptech.com.ar", Issuer "mail.toptech.com.ar" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 22DFBB6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 06:48:44 +1100 (EST)
+From: Gustavo Zacarias <gustavo@zacarias.com.ar>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/boot: fix typo in p1010rdb.dtsi
+Date: Tue, 28 Feb 2012 16:43:08 -0300
+Message-Id: <1330458188-17265-1-git-send-email-gustavo@zacarias.com.ar>
+Cc: Gustavo Zacarias <gustavo@zacarias.com.ar>, afleming@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,95 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 24, 2012 at 11:33:58AM -0800, Nishanth Aravamudan wrote:
-> While testing AMS (Active Memory Sharing) / CMO (Cooperative Memory
-> Overcommit) on powerpc, we tripped the following:
-> 
-> kernel BUG at mm/bootmem.c:483!
-> cpu 0x0: Vector: 700 (Program Check) at [c000000000c03940]
->     pc: c000000000a62bd8: .alloc_bootmem_core+0x90/0x39c
->     lr: c000000000a64bcc: .sparse_early_usemaps_alloc_node+0x84/0x29c
->     sp: c000000000c03bc0
->    msr: 8000000000021032
->   current = 0xc000000000b0cce0
->   paca    = 0xc000000001d80000
->     pid   = 0, comm = swapper
-> kernel BUG at mm/bootmem.c:483!
-> enter ? for help
-> [c000000000c03c80] c000000000a64bcc
-> .sparse_early_usemaps_alloc_node+0x84/0x29c
-> [c000000000c03d50] c000000000a64f10 .sparse_init+0x12c/0x28c
-> [c000000000c03e20] c000000000a474f4 .setup_arch+0x20c/0x294
-> [c000000000c03ee0] c000000000a4079c .start_kernel+0xb4/0x460
-> [c000000000c03f90] c000000000009670 .start_here_common+0x1c/0x2c
-> 
-> This is
-> 
->         BUG_ON(limit && goal + size > limit);
-> 
-> and after some debugging, it seems that
-> 
-> 	goal = 0x7ffff000000
-> 	limit = 0x80000000000
-> 
-> and sparse_early_usemaps_alloc_node ->
-> sparse_early_usemaps_alloc_pgdat_section -> alloc_bootmem_section calls
-> 
-> 	return alloc_bootmem_section(usemap_size() * count, section_nr);
-> 
-> This is on a system with 8TB available via the AMS pool, and as a quirk
-> of AMS in firmware, all of that memory shows up in node 0. So, we end up
-> with an allocation that will fail the goal/limit constraints. In theory,
-> we could "fall-back" to alloc_bootmem_node() in
-> sparse_early_usemaps_alloc_node(), but since we actually have HOTREMOVE
-> defined, we'll BUG_ON() instead. A simple solution appears to be to
-> disable the limit check if the size of the allocation in
-> alloc_bootmem_secition exceeds the section size.
-> 
-> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> Cc: Dave Hansen <haveblue@us.ibm.com>
-> Cc: Anton Blanchard <anton@au1.ibm.com>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Robert Jennings <rcj@linux.vnet.ibm.com>
-> Cc: linux-mm@kvack.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  include/linux/mmzone.h |    2 ++
->  mm/bootmem.c           |    5 ++++-
->  2 files changed, 6 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index 650ba2f..4176834 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -967,6 +967,8 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
->   * PA_SECTION_SHIFT		physical address to/from section number
->   * PFN_SECTION_SHIFT		pfn to/from section number
->   */
-> +#define BYTES_PER_SECTION	(1UL << SECTION_SIZE_BITS)
-> +
->  #define SECTIONS_SHIFT		(MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
->  
->  #define PA_SECTION_SHIFT	(SECTION_SIZE_BITS)
-> diff --git a/mm/bootmem.c b/mm/bootmem.c
-> index 668e94d..5cbbc76 100644
-> --- a/mm/bootmem.c
-> +++ b/mm/bootmem.c
-> @@ -770,7 +770,10 @@ void * __init alloc_bootmem_section(unsigned long size,
->  
->  	pfn = section_nr_to_pfn(section_nr);
->  	goal = pfn << PAGE_SHIFT;
-> -	limit = section_nr_to_pfn(section_nr + 1) << PAGE_SHIFT;
-> +	if (size > BYTES_PER_SECTION)
-> +		limit = 0;
-> +	else
-> +		limit = section_nr_to_pfn(section_nr + 1) << PAGE_SHIFT;
+Fix typo introduced by "powerpc: Add TBI PHY node to first MDIO bus"
+from Andy Fleming.
+It's device_type rather than device-type, which causes the mdio probe to
+fail thus making all gianfar ethernet interfaces unusable.
 
-As it's ok to spill the allocation over to an adjacent section, why not
-just make limit==0 unconditionally. That would avoid defining
-BYTES_PER_SECTION.
+Signed-off-by: Gustavo Zacarias <gustavo@zacarias.com.ar>
+---
+ arch/powerpc/boot/dts/p1010rdb.dtsi |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
+index d4c4a77..9e0a0b7 100644
+--- a/arch/powerpc/boot/dts/p1010rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
+@@ -196,7 +196,7 @@
+ 		};
+ 
+ 		tbi-phy@3 {
+-			device-type = "tbi-phy";
++			device_type = "tbi-phy";
+ 			reg = <0x3>;
+ 		};
+ 	};
 -- 
-Mel Gorman
-SUSE Labs
+1.7.3.4
