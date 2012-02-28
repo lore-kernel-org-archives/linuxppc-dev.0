@@ -1,27 +1,27 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 97B67B6FFA
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0C405B7005
  for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:33 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 28 Feb 2012 06:00:28 +1000
+ Tue, 28 Feb 2012 05:59:18 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1S5wtL23424470
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 16:58:55 +1100
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1S64OTF1151076
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:24 +1100
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1S64LVi019027
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:21 +1100
+ q1S64NkM019059
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:23 +1100
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/21] pSeries platform PE state retrieval
-Date: Tue, 28 Feb 2012 14:03:57 +0800
-Message-Id: <1330409051-8941-8-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 10/21] pSeries platform EEH error log retrieval
+Date: Tue, 28 Feb 2012 14:04:00 +0800
+Message-Id: <1330409051-8941-11-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: shangw@linux.vnet.ibm.com
@@ -34,313 +34,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On pSeries platform, there're 2 dedicated RTAS calls introduced to
-retrieve the corresponding PE's state: ibm,read-slot-reset-state and
-ibm,read-slot-reset-state2.
+On RTAS compliant pSeries platform, one dedicated RTAS call has
+been introduced to retrieve EEH temporary or permanent error log.
 
-The patch implements the retrieval of PE's state according to the
-given PE address. Besides, the implementation has been abstracted by
-struct eeh_ops::get_state so that EEH core components could support
-multiple platforms in future.
+The patch implements the function of retriving EEH error log through
+RTAS call. Besides, it has been abstracted by struct eeh_ops::get_log
+so that EEH core components could support multiple platforms in future.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |    8 ++
- arch/powerpc/platforms/pseries/eeh.c         |   96 ++++---------------------
- arch/powerpc/platforms/pseries/eeh_driver.c  |    2 +-
- arch/powerpc/platforms/pseries/eeh_pseries.c |   70 ++++++++++++++++++-
- 4 files changed, 94 insertions(+), 82 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |    2 +
+ arch/powerpc/include/asm/ppc-pci.h           |    2 -
+ arch/powerpc/platforms/pseries/eeh.c         |   63 +-------------------------
+ arch/powerpc/platforms/pseries/eeh_driver.c  |    4 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c |   47 +++++++++++++++++++-
+ 5 files changed, 51 insertions(+), 67 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 76f7b3f..1d3c9e5 100644
+index 894ea6c..ad8f318 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -42,6 +42,14 @@ struct device_node;
- #define EEH_OPT_ENABLE		1	/* EEH enable	*/
- #define EEH_OPT_THAW_MMIO	2	/* MMIO enable	*/
- #define EEH_OPT_THAW_DMA	3	/* DMA enable	*/
-+#define EEH_STATE_UNAVAILABLE	(1 << 0)	/* State unavailable	*/
-+#define EEH_STATE_NOT_SUPPORT	(1 << 1)	/* EEH not supported	*/
-+#define EEH_STATE_RESET_ACTIVE	(1 << 2)	/* Active reset		*/
-+#define EEH_STATE_MMIO_ACTIVE	(1 << 3)	/* Active MMIO		*/
-+#define EEH_STATE_DMA_ACTIVE	(1 << 4)	/* Active DMA		*/
-+#define EEH_STATE_MMIO_ENABLED	(1 << 5)	/* MMIO enabled		*/
-+#define EEH_STATE_DMA_ENABLED	(1 << 6)	/* DMA enabled		*/
-+
+@@ -52,6 +52,8 @@ struct device_node;
+ #define EEH_RESET_DEACTIVATE	0	/* Deactivate the PE reset	*/
+ #define EEH_RESET_HOT		1	/* Hot reset			*/
+ #define EEH_RESET_FUNDAMENTAL	3	/* Fundamental reset		*/
++#define EEH_LOG_TEMP		1	/* EEH temporary error log	*/
++#define EEH_LOG_PERM		2	/* EEH permanent error log	*/
+ 
  struct eeh_ops {
  	char *name;
- 	int (*init)(void);
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 1cfb2b0..bd1a84f 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -53,8 +53,6 @@ void pci_addr_cache_insert_device(struct pci_dev *dev);
+ void pci_addr_cache_remove_device(struct pci_dev *dev);
+ void pci_addr_cache_build(void);
+ struct pci_dev *pci_get_device_by_addr(unsigned long addr);
+-#define EEH_LOG_TEMP_FAILURE 1
+-#define EEH_LOG_PERM_FAILURE 2
+ void eeh_slot_error_detail (struct pci_dn *pdn, int severity);
+ int eeh_pci_enable(struct pci_dn *pdn, int function);
+ int eeh_reset_pe(struct pci_dn *);
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 00797e0..8d11f1f 100644
+index 4f329f5..39fcecb 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -88,8 +88,6 @@
+@@ -87,7 +87,6 @@
+ #define PCI_BUS_RESET_WAIT_MSEC (60*1000)
  
  /* RTAS tokens */
- static int ibm_set_slot_reset;
--static int ibm_read_slot_reset_state;
--static int ibm_read_slot_reset_state2;
- static int ibm_slot_error_detail;
+-static int ibm_slot_error_detail;
  static int ibm_configure_bridge;
  static int ibm_configure_pe;
-@@ -289,37 +287,6 @@ void eeh_slot_error_detail(struct pci_dn *pdn, int severity)
- }
+ 
+@@ -100,14 +99,6 @@ EXPORT_SYMBOL(eeh_subsystem_enabled);
+ /* Lock to avoid races due to multiple reports of an error */
+ static DEFINE_RAW_SPINLOCK(confirm_error_lock);
+ 
+-/* Buffer for reporting slot-error-detail rtas calls. Its here
+- * in BSS, and not dynamically alloced, so that it ends up in
+- * RMO where RTAS can access it.
+- */
+-static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
+-static DEFINE_SPINLOCK(slot_errbuf_lock);
+-static int eeh_error_buf_size;
+-
+ /* Buffer for reporting pci register dumps. Its here in BSS, and
+  * not dynamically alloced, so that it ends up in RMO where RTAS
+  * can access it.
+@@ -127,46 +118,6 @@ static unsigned long slot_resets;
+ #define IS_BRIDGE(class_code) (((class_code)<<16) == PCI_BASE_CLASS_BRIDGE)
  
  /**
-- * eeh_read_slot_reset_state - Read the reset state of a device node's slot
-- * @dn: device node to read
-- * @rets: array to return results in
+- * eeh_rtas_slot_error_detail - Retrieve error log through RTAS call
+- * @pdn: device node
+- * @severity: temporary or permanent error log
+- * @driver_log: driver log to be combined with the retrieved error log
+- * @loglen: length of driver log
 - *
-- * Read the reset state of a device node's slot through platform dependent
-- * function call.
+- * This routine should be called to retrieve error log through the dedicated
+- * RTAS call.
 - */
--static int eeh_read_slot_reset_state(struct pci_dn *pdn, int rets[])
+-static void eeh_rtas_slot_error_detail(struct pci_dn *pdn, int severity,
+-                                   char *driver_log, size_t loglen)
 -{
--	int token, outputs;
 -	int config_addr;
+-	unsigned long flags;
+-	int rc;
 -
--	if (ibm_read_slot_reset_state2 != RTAS_UNKNOWN_SERVICE) {
--		token = ibm_read_slot_reset_state2;
--		outputs = 4;
--	} else {
--		token = ibm_read_slot_reset_state;
--		rets[2] = 0; /* fake PE Unavailable info */
--		outputs = 3;
--	}
+-	/* Log the error with the rtas logger */
+-	spin_lock_irqsave(&slot_errbuf_lock, flags);
+-	memset(slot_errbuf, 0, eeh_error_buf_size);
 -
 -	/* Use PE configuration address, if present */
 -	config_addr = pdn->eeh_config_addr;
 -	if (pdn->eeh_pe_config_addr)
 -		config_addr = pdn->eeh_pe_config_addr;
 -
--	return rtas_call(token, 3, outputs, rets, config_addr,
--			 BUID_HI(pdn->phb->buid), BUID_LO(pdn->phb->buid));
+-	rc = rtas_call(ibm_slot_error_detail,
+-	               8, 1, NULL, config_addr,
+-	               BUID_HI(pdn->phb->buid),
+-	               BUID_LO(pdn->phb->buid),
+-	               virt_to_phys(driver_log), loglen,
+-	               virt_to_phys(slot_errbuf),
+-	               eeh_error_buf_size,
+-	               severity);
+-
+-	if (rc == 0)
+-		log_error(slot_errbuf, ERR_TYPE_RTAS_LOG, 0);
+-	spin_unlock_irqrestore(&slot_errbuf_lock, flags);
 -}
 -
 -/**
-  * eeh_wait_for_slot_status - Returns error status of slot
-  * @pdn: pci device node
-  * @max_wait_msecs: maximum number to millisecs to wait
-@@ -335,21 +302,15 @@ static int eeh_read_slot_reset_state(struct pci_dn *pdn, int rets[])
- int eeh_wait_for_slot_status(struct pci_dn *pdn, int max_wait_msecs)
- {
- 	int rc;
--	int rets[3];
- 	int mwait;
+  * eeh_gather_pci_data - Copy assorted PCI config space registers to buff
+  * @pdn: device to report data for
+  * @buf: point to buffer in which to log
+@@ -282,7 +233,7 @@ void eeh_slot_error_detail(struct pci_dn *pdn, int severity)
+ 	eeh_restore_bars(pdn);
+ 	loglen = eeh_gather_pci_data(pdn, pci_regs_buf, EEH_PCI_REGS_LOG_LEN);
  
- 	while (1) {
--		rc = eeh_read_slot_reset_state(pdn, rets);
--		if (rc) return rc;
--		if (rets[1] == 0) return -1;  /* EEH is not supported */
--
--		if (rets[0] != 5) return rets[0]; /* return actual status */
--
--		if (rets[2] == 0) return -1; /* permanently unavailable */
-+		rc = eeh_ops->get_state(pdn->node, &mwait);
-+		if (rc != EEH_STATE_UNAVAILABLE)
-+			return rc;
+-	eeh_rtas_slot_error_detail(pdn, severity, pci_regs_buf, loglen);
++	eeh_ops->get_log(pdn->node, severity, pci_regs_buf, loglen);
+ }
  
- 		if (max_wait_msecs <= 0) break;
+ /**
+@@ -1071,26 +1022,14 @@ void __init eeh_init(void)
+ 	}
  
--		mwait = rets[2];
- 		if (mwait <= 0) {
- 			printk(KERN_WARNING "EEH: Firmware returned bad wait value=%d\n",
- 				mwait);
-@@ -522,7 +483,6 @@ void eeh_clear_slot(struct device_node *dn, int mode_flag)
- int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- {
- 	int ret;
--	int rets[3];
- 	unsigned long flags;
- 	struct pci_dn *pdn;
- 	int rc = 0;
-@@ -584,40 +544,18 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	 * function zero of a multi-function device.
- 	 * In any case they must share a common PHB.
- 	 */
--	ret = eeh_read_slot_reset_state(pdn, rets);
--
--	/* If the call to firmware failed, punt */
--	if (ret != 0) {
--		printk(KERN_WARNING "EEH: eeh_read_slot_reset_state() failed; rc=%d dn=%s\n",
--		       ret, dn->full_name);
--		false_positives++;
--		pdn->eeh_false_positives ++;
--		rc = 0;
--		goto dn_unlock;
--	}
-+	ret = eeh_ops->get_state(pdn->node, NULL);
+ 	raw_spin_lock_init(&confirm_error_lock);
+-	spin_lock_init(&slot_errbuf_lock);
  
- 	/* Note that config-io to empty slots may fail;
- 	 * they are empty when they don't have children.
-+	 * We will punt with the following conditions: Failure to get
-+	 * PE's state, EEH not support and Permanently unavailable
-+	 * state, PE is in good state.
- 	 */
--	if ((rets[0] == 5) && (rets[2] == 0) && (dn->child == NULL)) {
--		false_positives++;
--		pdn->eeh_false_positives ++;
--		rc = 0;
--		goto dn_unlock;
--	}
--
--	/* If EEH is not supported on this device, punt. */
--	if (rets[1] != 1) {
--		printk(KERN_WARNING "EEH: event on unsupported device, rc=%d dn=%s\n",
--		       ret, dn->full_name);
--		false_positives++;
--		pdn->eeh_false_positives ++;
--		rc = 0;
--		goto dn_unlock;
--	}
--
--	/* If not the kind of error we know about, punt. */
--	if (rets[0] != 1 && rets[0] != 2 && rets[0] != 4 && rets[0] != 5) {
-+	if ((ret < 0) ||
-+	    (ret == EEH_STATE_NOT_SUPPORT) ||
-+	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
-+	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
- 		false_positives++;
- 		pdn->eeh_false_positives ++;
- 		rc = 0;
-@@ -703,7 +641,8 @@ int eeh_pci_enable(struct pci_dn *pdn, int function)
- 		        function, rc, pdn->node->full_name);
- 
- 	rc = eeh_wait_for_slot_status(pdn, PCI_BUS_RESET_WAIT_MSEC);
--	if ((rc == 4) && (function == EEH_OPT_THAW_MMIO))
-+	if (rc > 0 && (rc & EEH_STATE_MMIO_ENABLED) &&
-+	   (function == EEH_OPT_THAW_MMIO))
- 		return 0;
- 
- 	return rc;
-@@ -900,7 +839,7 @@ int eeh_reset_pe(struct pci_dn *pdn)
- 		eeh_reset_pe_once(pdn);
- 
- 		rc = eeh_wait_for_slot_status(pdn, PCI_BUS_RESET_WAIT_MSEC);
--		if (rc == 0)
-+		if (rc == (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
- 			return 0;
- 
- 		if (rc < 0) {
-@@ -1057,7 +996,6 @@ void eeh_configure_bridge(struct pci_dn *pdn)
-  */
- static void *eeh_early_enable(struct device_node *dn, void *data)
- {
--	unsigned int rets[3];
- 	int ret;
- 	const u32 *class_code = of_get_property(dn, "class-code", NULL);
- 	const u32 *vendor_id = of_get_property(dn, "vendor-id", NULL);
-@@ -1109,8 +1047,8 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
- 			 * where EEH is not supported. Verify support
- 			 * explicitly.
- 			 */
--			ret = eeh_read_slot_reset_state(pdn, rets);
--			if ((ret == 0) && (rets[1] == 1))
-+			ret = eeh_ops->get_state(pdn->node, NULL);
-+			if (ret > 0 && ret != EEH_STATE_NOT_SUPPORT)
- 				enable = 1;
- 		}
- 
-@@ -1232,8 +1170,6 @@ void __init eeh_init(void)
+ 	np = of_find_node_by_path("/rtas");
+ 	if (np == NULL)
  		return;
  
- 	ibm_set_slot_reset = rtas_token("ibm,set-slot-reset");
--	ibm_read_slot_reset_state2 = rtas_token("ibm,read-slot-reset-state2");
--	ibm_read_slot_reset_state = rtas_token("ibm,read-slot-reset-state");
- 	ibm_slot_error_detail = rtas_token("ibm,slot-error-detail");
+-	ibm_slot_error_detail = rtas_token("ibm,slot-error-detail");
  	ibm_configure_bridge = rtas_token("ibm,configure-bridge");
  	ibm_configure_pe = rtas_token("ibm,configure-pe");
+ 
+-	eeh_error_buf_size = rtas_token("rtas-error-log-max");
+-	if (eeh_error_buf_size == RTAS_UNKNOWN_SERVICE) {
+-		eeh_error_buf_size = 1024;
+-	}
+-	if (eeh_error_buf_size > RTAS_ERROR_LOG_MAX) {
+-		printk(KERN_WARNING "EEH: rtas-error-log-max is bigger than allocated "
+-		      "buffer ! (%d vs %d)", eeh_error_buf_size, RTAS_ERROR_LOG_MAX);
+-		eeh_error_buf_size = RTAS_ERROR_LOG_MAX;
+-	}
+-
+ 	/* Enable EEH for all adapters.  Note that eeh requires buid's */
+ 	for (phb = of_find_node_by_name(NULL, "pci"); phb;
+ 	     phb = of_find_node_by_name(phb, "pci")) {
 diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
-index 02eab3b..4c6e0c1c 100644
+index 584defe..6840357 100644
 --- a/arch/powerpc/platforms/pseries/eeh_driver.c
 +++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -397,7 +397,7 @@ struct pci_dn * handle_eeh_events (struct eeh_event *event)
- 	/* Get the current PCI slot state. This can take a long time,
- 	 * sometimes over 3 seconds for certain systems. */
- 	rc = eeh_wait_for_slot_status (frozen_pdn, MAX_WAIT_FOR_RECOVERY*1000);
--	if (rc < 0) {
-+	if (rc < 0 || rc == EEH_STATE_NOT_SUPPORT) {
- 		printk(KERN_WARNING "EEH: Permanent failure\n");
- 		goto hard_fail;
- 	}
+@@ -406,7 +406,7 @@ struct pci_dn * handle_eeh_events (struct eeh_event *event)
+ 	 * don't post the error log until after all dev drivers
+ 	 * have been informed.
+ 	 */
+-	eeh_slot_error_detail(frozen_pdn, EEH_LOG_TEMP_FAILURE);
++	eeh_slot_error_detail(frozen_pdn, EEH_LOG_TEMP);
+ 
+ 	/* If all device drivers were EEH-unaware, then shut
+ 	 * down all of the device drivers, and hope they
+@@ -497,7 +497,7 @@ hard_fail:
+ 		location, drv_str, pci_str);
+ 
+ perm_error:
+-	eeh_slot_error_detail(frozen_pdn, EEH_LOG_PERM_FAILURE);
++	eeh_slot_error_detail(frozen_pdn, EEH_LOG_PERM);
+ 
+ 	/* Notify all devices that they're about to go down. */
+ 	pci_walk_bus(frozen_bus, eeh_report_failure, NULL);
 diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 2b9543a..39567b2 100644
+index 6643e06..7c8434f 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -238,7 +238,75 @@ static int pseries_eeh_get_pe_addr(struct device_node *dn)
+@@ -56,6 +56,15 @@ static int ibm_get_config_addr_info2;
+ static int ibm_configure_bridge;
+ static int ibm_configure_pe;
+ 
++/*
++ * Buffer for reporting slot-error-detail rtas calls. Its here
++ * in BSS, and not dynamically alloced, so that it ends up in
++ * RMO where RTAS can access it.
++ */
++static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
++static DEFINE_SPINLOCK(slot_errbuf_lock);
++static int eeh_error_buf_size;
++
+ /**
+  * pseries_eeh_init - EEH platform dependent initialization
+  *
+@@ -107,6 +116,19 @@ static int pseries_eeh_init(void)
+ 		return -EINVAL;
+ 	}
+ 
++	/* Initialize error log lock and size */
++	spin_lock_init(&slot_errbuf_lock);
++	eeh_error_buf_size = rtas_token("rtas-error-log-max");
++	if (eeh_error_buf_size == RTAS_UNKNOWN_SERVICE) {
++		pr_warning("%s: unknown EEH error log size\n",
++			__func__);
++		eeh_error_buf_size = 1024;
++	} else if (eeh_error_buf_size > RTAS_ERROR_LOG_MAX) {
++		pr_warning("%s: EEH error log size %d exceeds the maximal %d\n",
++			__func__, eeh_error_buf_size, RTAS_ERROR_LOG_MAX);
++		eeh_error_buf_size = RTAS_ERROR_LOG_MAX;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -415,7 +437,30 @@ static int pseries_eeh_wait_state(struct device_node *dn, int max_wait)
   */
- static int pseries_eeh_get_state(struct device_node *dn, int *state)
+ static int pseries_eeh_get_log(struct device_node *dn, int severity, char *drv_log, unsigned long len)
  {
 -	return 0;
 +	struct pci_dn *pdn;
 +	int config_addr;
++	unsigned long flags;
 +	int ret;
-+	int rets[4];
-+	int result;
 +
-+	/* Figure out PE config address if possible */
 +	pdn = PCI_DN(dn);
++	spin_lock_irqsave(&slot_errbuf_lock, flags);
++	memset(slot_errbuf, 0, eeh_error_buf_size);
++
++	/* Figure out the PE address */
 +	config_addr = pdn->eeh_config_addr;
 +	if (pdn->eeh_pe_config_addr)
 +		config_addr = pdn->eeh_pe_config_addr;
 +
-+	if (ibm_read_slot_reset_state2 != RTAS_UNKNOWN_SERVICE) {
-+		ret = rtas_call(ibm_read_slot_reset_state2, 3, 4, rets,
-+				config_addr, BUID_HI(pdn->phb->buid),
-+				BUID_LO(pdn->phb->buid));
-+	} else if (ibm_read_slot_reset_state != RTAS_UNKNOWN_SERVICE) {
-+		/* Fake PE unavailable info */
-+		rets[2] = 0;
-+		ret = rtas_call(ibm_read_slot_reset_state, 3, 3, rets,
-+				config_addr, BUID_HI(pdn->phb->buid),
-+				BUID_LO(pdn->phb->buid));
-+	} else {
-+		return EEH_STATE_NOT_SUPPORT;
-+	}
++	ret = rtas_call(ibm_slot_error_detail, 8, 1, NULL, config_addr,
++			BUID_HI(pdn->phb->buid), BUID_LO(pdn->phb->buid),
++			virt_to_phys(drv_log), len,
++			virt_to_phys(slot_errbuf), eeh_error_buf_size,
++			severity);
++	if (!ret)
++		log_error(slot_errbuf, ERR_TYPE_RTAS_LOG, 0);
++	spin_unlock_irqrestore(&slot_errbuf_lock, flags);
 +
-+	if (ret)
-+		return ret;
-+
-+	/* Parse the result out */
-+	result = 0;
-+	if (rets[1]) {
-+		switch(rets[0]) {
-+		case 0:
-+			result &= ~EEH_STATE_RESET_ACTIVE;
-+			result |= EEH_STATE_MMIO_ACTIVE;
-+			result |= EEH_STATE_DMA_ACTIVE;
-+			break;
-+		case 1:
-+			result |= EEH_STATE_RESET_ACTIVE;
-+			result |= EEH_STATE_MMIO_ACTIVE;
-+			result |= EEH_STATE_DMA_ACTIVE;
-+			break;
-+		case 2:
-+			result &= ~EEH_STATE_RESET_ACTIVE;
-+			result &= ~EEH_STATE_MMIO_ACTIVE;
-+			result &= ~EEH_STATE_DMA_ACTIVE;
-+			break;
-+		case 4:
-+			result &= ~EEH_STATE_RESET_ACTIVE;
-+			result &= ~EEH_STATE_MMIO_ACTIVE;
-+			result &= ~EEH_STATE_DMA_ACTIVE;
-+			result |= EEH_STATE_MMIO_ENABLED;
-+			break;
-+		case 5:
-+			if (rets[2]) {
-+				if (state) *state = rets[2];
-+				result = EEH_STATE_UNAVAILABLE;
-+			} else {
-+				result = EEH_STATE_NOT_SUPPORT;
-+			}
-+		default:
-+			result = EEH_STATE_NOT_SUPPORT;
-+		}
-+	} else {
-+		result = EEH_STATE_NOT_SUPPORT;
-+	}
-+
-+	return result;
++	return ret;
  }
  
  /**
