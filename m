@@ -1,21 +1,21 @@
-Return-Path: <r63875@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 55F4DB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 18:13:40 +1100 (EST)
-From: Yin Olivia-R63875 <r63875@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: Recall: [PATCH 1/2] powerpc/e500: make load_up_spe a normal fuction
-Date: Tue, 28 Feb 2012 07:13:29 +0000
-Message-ID: <B5012D5F6E2BBC4DBF16B3E6037A5B7316CD0B@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id AD8E5B6EEA
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 21:04:50 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 10853-06 for <linuxppc-dev@ozlabs.org>;
+ Tue, 28 Feb 2012 10:04:43 +0000 (GMT)
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 20/21] Introduce struct eeh_stats for EEH
+Date: Tue, 28 Feb 2012 10:04:00 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6E82@saturn3.aculab.com>
+In-Reply-To: <1330409051-8941-21-git-send-email-shangw@linux.vnet.ibm.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Gavin Shan" <shangw@linux.vnet.ibm.com>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,5 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yin Olivia-R63875 would like to recall the message, "[PATCH 1/2] powerpc/e5=
-00: make load_up_spe a normal fuction".=
+=20
+> +struct eeh_stats {
+> +	unsigned int no_device;		/* PCI device not found */
+...
+> +				"no device           =3D%d\n"
+...
+
+Use %u (for all the stats), you really don't want negative
+values printed.
+I've NFI how long wrapping these counters might take!
+If it is feasable (maybe much above 100Hz) then you
+need 64bit counters.
+
+	David
