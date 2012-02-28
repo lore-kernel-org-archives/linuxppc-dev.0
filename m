@@ -1,27 +1,20 @@
-Return-Path: <yinghai@kernel.org>
-Received: from rcsinet15.oracle.com (rcsinet15.oracle.com [148.87.113.117])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "rcsinet15.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 29F84B6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 09:08:37 +1100 (EST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
- x86 <x86@kernel.org>
-Subject: [PATCH 14/24] PCI, powerpc: Register busn_res for root buses
-Date: Tue, 28 Feb 2012 14:07:33 -0800
-Message-Id: <1330466863-28469-15-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1330466863-28469-1-git-send-email-yinghai@kernel.org>
-References: <1330466863-28469-1-git-send-email-yinghai@kernel.org>
-Cc: linux-arch@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <xenidis@gmail.com>
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 18FBBB6FA3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 10:10:42 +1100 (EST)
+Received: by pbcxa12 with SMTP id xa12so6175545pbc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2012 15:10:39 -0800 (PST)
+Sender: Jimi Xenidis <xenidis@gmail.com>
+From: Jimi Xenidis <jimix@pobox.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] [PATCH v2] powerpc: icswx: fix race condition where threads
+ do not get their ACOP register updated in time.
+Date: Tue, 28 Feb 2012 17:27:07 -0600
+Message-Id: <1330471627-16737-1-git-send-email-jimix@pobox.com>
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,55 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/pci-bridge.h |    1 +
- arch/powerpc/kernel/pci-common.c      |   10 +++++++++-
- 2 files changed, 10 insertions(+), 1 deletions(-)
+There is a race where a thread causes a coprocessor type to be valid
+in its own ACOP _and_ in the current context, but it does not
+propagate to the ACOP register of other threads in time for them to
+use it.  The original code tries to solve this by sending an IPI to
+all threads on the system, which is heavy handed, but unfortunately
+still provides a window where the icswx is issued by other threads and
+the ACOP is not up to date.
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 5d48765..11cebf0 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -30,6 +30,7 @@ struct pci_controller {
- 	int first_busno;
- 	int last_busno;
- 	int self_busno;
-+	struct resource busn;
+This patch detects that the ACOP DSI fault was a "false positive" and
+syncs the ACOP and causes the icswx to be replayed.
+
+Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+---
+Re: benh
+ - fix typo in logic where I used "&&" and not "&"
+ - remove pr_debug
+---
+ arch/powerpc/mm/icswx.c |   23 +++++++++++++++++++++--
+ arch/powerpc/mm/icswx.h |    6 ++++++
+ 2 files changed, 27 insertions(+), 2 deletions(-)
+
+diff --git arch/powerpc/mm/icswx.c arch/powerpc/mm/icswx.c
+index 5d9a59e..8cdbd86 100644
+--- arch/powerpc/mm/icswx.c
++++ arch/powerpc/mm/icswx.c
+@@ -163,7 +163,7 @@ EXPORT_SYMBOL_GPL(drop_cop);
  
- 	void __iomem *io_base_virt;
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 910b9de..ee8c0c9 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1648,6 +1648,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 	/* Wire up PHB bus resources */
- 	pcibios_setup_phb_resources(hose, &resources);
+ static int acop_use_cop(int ct)
+ {
+-	/* todo */
++	/* There is no alternate policy, yet */
+ 	return -1;
+ }
  
-+	hose->busn.start = hose->first_busno;
-+	hose->busn.end	 = hose->last_busno;
-+	hose->busn.flags = IORESOURCE_BUS;
-+	pci_add_resource(&resources, &hose->busn);
-+
- 	/* Create an empty bus for the toplevel */
- 	bus = pci_create_root_bus(hose->parent, hose->first_busno,
- 				  hose->ops, hose, &resources);
-@@ -1670,8 +1675,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 		of_scan_bus(node, bus);
+@@ -227,11 +227,30 @@ int acop_handle_fault(struct pt_regs *regs, unsigned long address,
+ 		ct = (ccw >> 16) & 0x3f;
  	}
  
--	if (mode == PCI_PROBE_NORMAL)
-+	if (mode == PCI_PROBE_NORMAL) {
-+		pci_bus_update_busn_res_end(bus, 255);
- 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
-+		pci_bus_update_busn_res_end(bus, bus->subordinate);
++	/*
++	 * We could be here because another thread has enabled acop
++	 * but the ACOP register has yet to be updated.
++	 *
++	 * This should have been taken care of by the IPI to sync all
++	 * the threads (see smp_call_function(sync_cop, mm, 1)), but
++	 * that could take forever if there are a significant amount
++	 * of threads.
++	 *
++	 * Given the number of threads on some of these systems,
++	 * perhaps this is the best way to sync ACOP rather than whack
++	 * every thread with an IPI.
++	 */
++	if ((acop_copro_type_bit(ct) & current->active_mm->context.acop) != 0) {
++		sync_cop(current->active_mm);
++		return 0;
 +	}
++
++	/* check for alternate policy */
+ 	if (!acop_use_cop(ct))
+ 		return 0;
  
- 	/* Platform gets a chance to do some global fixups before
- 	 * we proceed to resource allocation
+ 	/* at this point the CT is unknown to the system */
+-	pr_warn("%s[%d]: Coprocessor %d is unavailable",
++	pr_warn("%s[%d]: Coprocessor %d is unavailable\n",
+ 		current->comm, current->pid, ct);
+ 
+ 	/* get inst if we don't already have it */
+diff --git arch/powerpc/mm/icswx.h arch/powerpc/mm/icswx.h
+index 42176bd..6dedc08 100644
+--- arch/powerpc/mm/icswx.h
++++ arch/powerpc/mm/icswx.h
+@@ -59,4 +59,10 @@ extern void free_cop_pid(int free_pid);
+ 
+ extern int acop_handle_fault(struct pt_regs *regs, unsigned long address,
+ 			     unsigned long error_code);
++
++static inline u64 acop_copro_type_bit(unsigned int type)
++{
++	return 1ULL << (63 - type);
++}
++
+ #endif /* !_ARCH_POWERPC_MM_ICSWX_H_ */
 -- 
-1.7.7
+1.7.0.4
