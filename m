@@ -2,7 +2,7 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 502DDB7048
+ by ozlabs.org (Postfix) with ESMTPS id 7042FB700A
  for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:45 +1100 (EST)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -11,17 +11,17 @@ Received: from /spool/local
  Tue, 28 Feb 2012 05:59:33 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1S64UNK692426
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:30 +1100
+ q1S64RIt1089776
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:27 +1100
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1S64Tfo019263
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:29 +1100
+ q1S64RUt019178
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:27 +1100
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 20/21] Introduce struct eeh_stats for EEH
-Date: Tue, 28 Feb 2012 14:04:10 +0800
-Message-Id: <1330409051-8941-21-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 16/21] Replace pci_dn with eeh_dev for EEH address cache
+Date: Tue, 28 Feb 2012 14:04:06 +0800
+Message-Id: <1330409051-8941-17-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: shangw@linux.vnet.ibm.com
@@ -34,147 +34,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the original EEH implementation, the EEH global statistics
-are maintained by individual global variables. That makes the
-code a little hard to maintain.
+With original EEH implementation, struct pci_dn is used while building
+PCI I/O address cache, which helps on searching the corresponding
+PCI device according to the given physical I/O address. Besides, pci_dn
+is associated with the corresponding PCI device while building its
+I/O cache.
 
-The patch introduces extra struct eeh_stats for the EEH global
-statistics so that it can be maintained in collective fashion.
+The patch replaces struct pci_dn with struct eeh_dev so that EEH address
+cache won't depend on struct pci_dn. That will help EEH to become an
+independent module in future. Besides, the binding of eeh_dev and PCI
+device is done while building PCI device I/O cache.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/eeh.c |   65 ++++++++++++++++++++--------------
- 1 files changed, 38 insertions(+), 27 deletions(-)
+ arch/powerpc/platforms/pseries/eeh_cache.c |   27 ++++++++++++++++++++-------
+ 1 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 9b1fd0c..ca05890 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -102,14 +102,22 @@ static DEFINE_RAW_SPINLOCK(confirm_error_lock);
- #define EEH_PCI_REGS_LOG_LEN 4096
- static unsigned char pci_regs_buf[EEH_PCI_REGS_LOG_LEN];
- 
--/* System monitoring statistics */
--static unsigned long no_device;
--static unsigned long no_dn;
--static unsigned long no_cfg_addr;
--static unsigned long ignored_check;
--static unsigned long total_mmio_ffs;
--static unsigned long false_positives;
--static unsigned long slot_resets;
-+/*
-+ * The struct is used to maintain the EEH global statistic
-+ * information. Besides, the EEH global statistics will be
-+ * exported to user space through procfs
-+ */
-+struct eeh_stats {
-+	unsigned int no_device;		/* PCI device not found		*/
-+	unsigned int no_dn;		/* OF node not found		*/
-+	unsigned int no_cfg_addr;	/* Config address not found	*/
-+	unsigned int ignored_check;	/* EEH check skipped		*/
-+	unsigned int total_mmio_ffs;	/* Total EEH checks		*/
-+	unsigned int false_positives;	/* Unnecessary EEH checks	*/
-+	unsigned int slot_resets;	/* PE reset			*/
-+};
-+
-+static struct eeh_stats eeh_stats;
- 
- #define IS_BRIDGE(class_code) (((class_code)<<16) == PCI_BASE_CLASS_BRIDGE)
- 
-@@ -392,13 +400,13 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	int rc = 0;
- 	const char *location;
- 
--	total_mmio_ffs++;
-+	eeh_stats.total_mmio_ffs++;
- 
- 	if (!eeh_subsystem_enabled)
- 		return 0;
- 
- 	if (!dn) {
--		no_dn++;
-+		eeh_stats.no_dn++;
- 		return 0;
- 	}
- 	dn = eeh_find_device_pe(dn);
-@@ -407,14 +415,14 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	/* Access to IO BARs might get this far and still not want checking. */
- 	if (!(edev->mode & EEH_MODE_SUPPORTED) ||
- 	    edev->mode & EEH_MODE_NOCHECK) {
--		ignored_check++;
-+		eeh_stats.ignored_check++;
- 		pr_debug("EEH: Ignored check (%x) for %s %s\n",
- 			edev->mode, eeh_pci_name(dev), dn->full_name);
- 		return 0;
- 	}
- 
- 	if (!edev->config_addr && !edev->pe_config_addr) {
--		no_cfg_addr++;
-+		eeh_stats.no_cfg_addr++;
- 		return 0;
- 	}
- 
-@@ -460,13 +468,13 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	    (ret == EEH_STATE_NOT_SUPPORT) ||
- 	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
- 	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
--		false_positives++;
-+		eeh_stats.false_positives++;
- 		edev->false_positives ++;
- 		rc = 0;
- 		goto dn_unlock;
- 	}
- 
--	slot_resets++;
-+	eeh_stats.slot_resets++;
-  
- 	/* Avoid repeated reports of this failure, including problems
- 	 * with other functions on this device, and functions under
-@@ -513,7 +521,7 @@ unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned lon
- 	addr = eeh_token_to_phys((unsigned long __force) token);
- 	dev = pci_addr_cache_get_device(addr);
- 	if (!dev) {
--		no_device++;
-+		eeh_stats.no_device++;
- 		return val;
- 	}
- 
-@@ -1174,21 +1182,24 @@ static int proc_eeh_show(struct seq_file *m, void *v)
+diff --git a/arch/powerpc/platforms/pseries/eeh_cache.c b/arch/powerpc/platforms/pseries/eeh_cache.c
+index 7c36a9c..e5ae1c6 100644
+--- a/arch/powerpc/platforms/pseries/eeh_cache.c
++++ b/arch/powerpc/platforms/pseries/eeh_cache.c
+@@ -175,7 +175,7 @@ pci_addr_cache_insert(struct pci_dev *dev, unsigned long alo,
+ static void __pci_addr_cache_insert_device(struct pci_dev *dev)
  {
- 	if (0 == eeh_subsystem_enabled) {
- 		seq_printf(m, "EEH Subsystem is globally disabled\n");
--		seq_printf(m, "eeh_total_mmio_ffs=%ld\n", total_mmio_ffs);
-+		seq_printf(m, "eeh_total_mmio_ffs=%d\n", eeh_stats.total_mmio_ffs);
- 	} else {
- 		seq_printf(m, "EEH Subsystem is enabled\n");
- 		seq_printf(m,
--				"no device=%ld\n"
--				"no device node=%ld\n"
--				"no config address=%ld\n"
--				"check not wanted=%ld\n"
--				"eeh_total_mmio_ffs=%ld\n"
--				"eeh_false_positives=%ld\n"
--				"eeh_slot_resets=%ld\n",
--				no_device, no_dn, no_cfg_addr, 
--				ignored_check, total_mmio_ffs, 
--				false_positives,
--				slot_resets);
-+				"no device           =%d\n"
-+				"no device node      =%d\n"
-+				"no config address   =%d\n"
-+				"check not wanted    =%d\n"
-+				"eeh_total_mmio_ffs  =%d\n"
-+				"eeh_false_positives =%d\n"
-+				"eeh_slot_resets     =%d\n",
-+				eeh_stats.no_device,
-+				eeh_stats.no_dn,
-+				eeh_stats.no_cfg_addr,
-+				eeh_stats.ignored_check,
-+				eeh_stats.total_mmio_ffs,
-+				eeh_stats.false_positives,
-+				eeh_stats.slot_resets);
+ 	struct device_node *dn;
+-	struct pci_dn *pdn;
++	struct eeh_dev *edev;
+ 	int i;
+ 
+ 	dn = pci_device_to_OF_node(dev);
+@@ -184,13 +184,19 @@ static void __pci_addr_cache_insert_device(struct pci_dev *dev)
+ 		return;
  	}
  
- 	return 0;
++	edev = of_node_to_eeh_dev(dn);
++	if (!edev) {
++		pr_warning("PCI: no EEH dev found for dn=%s\n",
++			dn->full_name);
++		return;
++	}
++
+ 	/* Skip any devices for which EEH is not enabled. */
+-	pdn = PCI_DN(dn);
+-	if (!(pdn->eeh_mode & EEH_MODE_SUPPORTED) ||
+-	    pdn->eeh_mode & EEH_MODE_NOCHECK) {
++	if (!(edev->mode & EEH_MODE_SUPPORTED) ||
++	    edev->mode & EEH_MODE_NOCHECK) {
+ #ifdef DEBUG
+-		printk(KERN_INFO "PCI: skip building address cache for=%s - %s\n",
+-		       pci_name(dev), pdn->node->full_name);
++		pr_info("PCI: skip building address cache for=%s - %s\n",
++			pci_name(dev), dn->full_name);
+ #endif
+ 		return;
+ 	}
+@@ -281,6 +287,7 @@ void pci_addr_cache_remove_device(struct pci_dev *dev)
+ void __init pci_addr_cache_build(void)
+ {
+ 	struct device_node *dn;
++	struct eeh_dev *edev;
+ 	struct pci_dev *dev = NULL;
+ 
+ 	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
+@@ -291,8 +298,14 @@ void __init pci_addr_cache_build(void)
+ 		dn = pci_device_to_OF_node(dev);
+ 		if (!dn)
+ 			continue;
++
++		edev = of_node_to_eeh_dev(dn);
++		if (!edev)
++			continue;
++
+ 		pci_dev_get(dev);  /* matching put is in eeh_remove_device() */
+-		PCI_DN(dn)->pcidev = dev;
++		dev->dev.archdata.edev = edev;
++		edev->pdev = dev;
+ 
+ 		eeh_sysfs_add_device(dev);
+ 	}
 -- 
 1.7.5.4
