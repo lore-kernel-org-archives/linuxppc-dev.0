@@ -2,26 +2,26 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7F59EB6FD5
+ by ozlabs.org (Postfix) with ESMTPS id 866D4B6FD7
  for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 17:04:31 +1100 (EST)
 Received: from /spool/local
  by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 28 Feb 2012 11:34:24 +0530
+ Tue, 28 Feb 2012 11:34:26 +0530
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1S64Kug4436200
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 11:34:20 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1S64MMm4341762
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 11:34:22 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1S64KjX005415
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 11:34:20 +0530
+ q1S64Lma005508
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2012 11:34:21 +0530
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/21] pSeries platform EEH PE address retrieval
-Date: Tue, 28 Feb 2012 14:03:56 +0800
-Message-Id: <1330409051-8941-7-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 08/21] pSeries platform EEH wait PE state
+Date: Tue, 28 Feb 2012 14:03:58 +0800
+Message-Id: <1330409051-8941-9-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: shangw@linux.vnet.ibm.com
@@ -34,212 +34,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There're 2 types of addresses used for EEH operations. The first
-one would be BDF (Bus/Device/Function) address which is retrieved
-from the reg property of the corresponding FDT node. Another one
-is PE address that should be enquired from firmware through RTAS
-call on pSeries platform. When issuing EEH operation, the PE address
-has precedence over BDF address.
+On pSeries platform, the PE state might be temporarily unavailable.
+In that case, the firmware will return the corresponding wait time.
+That means the kernel has to wait for appropriate time in order to
+get the PE state.
 
-The patch implements retrieving PE address according to the given
-BDF address on pSeries platform. Also, the struct eeh_early_enable_info
-has been removed since the information can be figured out from
-dn->pdn->phb->buid directly and that simplifies the code.
+The patch does the implementation for that. Besides, the function
+has been abstracted through struct eeh_ops::wait_state so that EEH core
+components could support multiple platforms in future.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/eeh.c         |   67 +------------------------
- arch/powerpc/platforms/pseries/eeh_pseries.c |   46 +++++++++++++++++-
- 2 files changed, 48 insertions(+), 65 deletions(-)
+ arch/powerpc/include/asm/ppc-pci.h           |    1 -
+ arch/powerpc/platforms/pseries/eeh.c         |   46 +------------------------
+ arch/powerpc/platforms/pseries/eeh_driver.c  |    2 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c |   47 +++++++++++++++++++++++++-
+ 4 files changed, 49 insertions(+), 47 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 6150349..1cfb2b0 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -58,7 +58,6 @@ struct pci_dev *pci_get_device_by_addr(unsigned long addr);
+ void eeh_slot_error_detail (struct pci_dn *pdn, int severity);
+ int eeh_pci_enable(struct pci_dn *pdn, int function);
+ int eeh_reset_pe(struct pci_dn *);
+-int eeh_wait_for_slot_status(struct pci_dn *pdn, int max_wait_msecs);
+ void eeh_restore_bars(struct pci_dn *);
+ void eeh_configure_bridge(struct pci_dn *);
+ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 70a9617..00797e0 100644
+index 8d11f1f..b5b03d4 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -91,8 +91,6 @@ static int ibm_set_slot_reset;
- static int ibm_read_slot_reset_state;
- static int ibm_read_slot_reset_state2;
- static int ibm_slot_error_detail;
--static int ibm_get_config_addr_info;
--static int ibm_get_config_addr_info2;
- static int ibm_configure_bridge;
- static int ibm_configure_pe;
- 
-@@ -1048,56 +1046,6 @@ void eeh_configure_bridge(struct pci_dn *pdn)
- 	}
+@@ -287,48 +287,6 @@ void eeh_slot_error_detail(struct pci_dn *pdn, int severity)
  }
  
--#define EEH_ENABLE 1
--
--struct eeh_early_enable_info {
--	unsigned int buid_hi;
--	unsigned int buid_lo;
--};
--
--/**
-- * eeh_get_pe_addr - Retrieve PE address with given BDF address
-- * @config_addr: BDF address
-- * @info: BUID of the associated PHB
+ /**
+- * eeh_wait_for_slot_status - Returns error status of slot
+- * @pdn: pci device node
+- * @max_wait_msecs: maximum number to millisecs to wait
 - *
-- * There're 2 kinds of addresses existing in EEH core components:
-- * BDF address and PE address. Besides, there has dedicated platform
-- * dependent function call to retrieve the PE address according to
-- * the given BDF address. Further more, we prefer PE address on BDF
-- * address in EEH core components.
+- * Return negative value if a permanent error, else return
+- * Partition Endpoint (PE) status value.
+- *
+- * If @max_wait_msecs is positive, then this routine will
+- * sleep until a valid status can be obtained, or until
+- * the max allowed wait time is exceeded, in which case
+- * a -2 is returned.
 - */
--static int eeh_get_pe_addr(int config_addr,
--                        struct eeh_early_enable_info *info)
+-int eeh_wait_for_slot_status(struct pci_dn *pdn, int max_wait_msecs)
 -{
--	unsigned int rets[3];
--	int ret;
+-	int rc;
+-	int mwait;
 -
--	/* Use latest config-addr token on power6 */
--	if (ibm_get_config_addr_info2 != RTAS_UNKNOWN_SERVICE) {
--		/* Make sure we have a PE in hand */
--		ret = rtas_call(ibm_get_config_addr_info2, 4, 2, rets,
--			config_addr, info->buid_hi, info->buid_lo, 1);
--		if (ret || (rets[0]==0))
--			return 0;
+-	while (1) {
+-		rc = eeh_ops->get_state(pdn->node, &mwait);
+-		if (rc != EEH_STATE_UNAVAILABLE)
+-			return rc;
 -
--		ret = rtas_call(ibm_get_config_addr_info2, 4, 2, rets,
--			config_addr, info->buid_hi, info->buid_lo, 0);
--		if (ret)
--			return 0;
--		return rets[0];
+-		if (max_wait_msecs <= 0) break;
+-
+-		if (mwait <= 0) {
+-			printk(KERN_WARNING "EEH: Firmware returned bad wait value=%d\n",
+-				mwait);
+-			mwait = 1000;
+-		} else if (mwait > 300*1000) {
+-			printk(KERN_WARNING "EEH: Firmware is taking too long, time=%d\n",
+-				mwait);
+-			mwait = 300*1000;
+-		}
+-		max_wait_msecs -= mwait;
+-		msleep(mwait);
 -	}
 -
--	/* Use older config-addr token on power5 */
--	if (ibm_get_config_addr_info != RTAS_UNKNOWN_SERVICE) {
--		ret = rtas_call(ibm_get_config_addr_info, 4, 2, rets,
--			config_addr, info->buid_hi, info->buid_lo, 0);
--		if (ret)
--			return 0;
--		return rets[0];
--	}
--	return 0;
+-	printk(KERN_WARNING "EEH: Timed out waiting for slot status\n");
+-	return -2;
 -}
 -
- /**
-  * eeh_early_enable - Early enable EEH on the indicated device
-  * @dn: device node
-@@ -1110,7 +1058,6 @@ static int eeh_get_pe_addr(int config_addr,
- static void *eeh_early_enable(struct device_node *dn, void *data)
- {
- 	unsigned int rets[3];
--	struct eeh_early_enable_info *info = data;
- 	int ret;
- 	const u32 *class_code = of_get_property(dn, "class-code", NULL);
- 	const u32 *vendor_id = of_get_property(dn, "vendor-id", NULL);
-@@ -1155,7 +1102,7 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
- 			/* If the newer, better, ibm,get-config-addr-info is supported, 
- 			 * then use that instead.
- 			 */
--			pdn->eeh_pe_config_addr = eeh_get_pe_addr(pdn->eeh_config_addr, info);
-+			pdn->eeh_pe_config_addr = eeh_ops->get_pe_addr(dn);
+-/**
+  * eeh_token_to_phys - Convert EEH address token to phys address
+  * @token: I/O token, should be address in the form 0xA....
+  *
+@@ -640,7 +598,7 @@ int eeh_pci_enable(struct pci_dn *pdn, int function)
+ 		printk(KERN_WARNING "EEH: Unexpected state change %d, err=%d dn=%s\n",
+ 		        function, rc, pdn->node->full_name);
  
- 			/* Some older systems (Power4) allow the
- 			 * ibm,set-eeh-option call to succeed even on nodes
-@@ -1264,7 +1211,6 @@ int __exit eeh_ops_unregister(const char *name)
- void __init eeh_init(void)
- {
- 	struct device_node *phb, *np;
--	struct eeh_early_enable_info info;
- 	int ret;
+-	rc = eeh_wait_for_slot_status(pdn, PCI_BUS_RESET_WAIT_MSEC);
++	rc = eeh_ops->wait_state(pdn->node, PCI_BUS_RESET_WAIT_MSEC);
+ 	if (rc > 0 && (rc & EEH_STATE_MMIO_ENABLED) &&
+ 	   (function == EEH_OPT_THAW_MMIO))
+ 		return 0;
+@@ -838,7 +796,7 @@ int eeh_reset_pe(struct pci_dn *pdn)
+ 	for (i=0; i<3; i++) {
+ 		eeh_reset_pe_once(pdn);
  
- 	/* call platform initialization function */
-@@ -1289,8 +1235,6 @@ void __init eeh_init(void)
- 	ibm_read_slot_reset_state2 = rtas_token("ibm,read-slot-reset-state2");
- 	ibm_read_slot_reset_state = rtas_token("ibm,read-slot-reset-state");
- 	ibm_slot_error_detail = rtas_token("ibm,slot-error-detail");
--	ibm_get_config_addr_info = rtas_token("ibm,get-config-addr-info");
--	ibm_get_config_addr_info2 = rtas_token("ibm,get-config-addr-info2");
- 	ibm_configure_bridge = rtas_token("ibm,configure-bridge");
- 	ibm_configure_pe = rtas_token("ibm,configure-pe");
+-		rc = eeh_wait_for_slot_status(pdn, PCI_BUS_RESET_WAIT_MSEC);
++		rc = eeh_ops->wait_state(pdn->node, PCI_BUS_RESET_WAIT_MSEC);
+ 		if (rc == (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
+ 			return 0;
  
-@@ -1313,9 +1257,7 @@ void __init eeh_init(void)
- 		if (buid == 0 || PCI_DN(phb) == NULL)
- 			continue;
+diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
+index 4c6e0c1c..584defe 100644
+--- a/arch/powerpc/platforms/pseries/eeh_driver.c
++++ b/arch/powerpc/platforms/pseries/eeh_driver.c
+@@ -396,7 +396,7 @@ struct pci_dn * handle_eeh_events (struct eeh_event *event)
  
--		info.buid_lo = BUID_LO(buid);
--		info.buid_hi = BUID_HI(buid);
--		traverse_pci_devices(phb, eeh_early_enable, &info);
-+		traverse_pci_devices(phb, eeh_early_enable, NULL);
- 	}
- 
- 	if (eeh_subsystem_enabled)
-@@ -1339,7 +1281,6 @@ void __init eeh_init(void)
- static void eeh_add_device_early(struct device_node *dn)
- {
- 	struct pci_controller *phb;
--	struct eeh_early_enable_info info;
- 
- 	if (!dn || !PCI_DN(dn))
- 		return;
-@@ -1349,9 +1290,7 @@ static void eeh_add_device_early(struct device_node *dn)
- 	if (NULL == phb || 0 == phb->buid)
- 		return;
- 
--	info.buid_hi = BUID_HI(phb->buid);
--	info.buid_lo = BUID_LO(phb->buid);
--	eeh_early_enable(dn, &info);
-+	eeh_early_enable(dn, NULL);
- }
- 
- /**
+ 	/* Get the current PCI slot state. This can take a long time,
+ 	 * sometimes over 3 seconds for certain systems. */
+-	rc = eeh_wait_for_slot_status (frozen_pdn, MAX_WAIT_FOR_RECOVERY*1000);
++	rc = eeh_ops->wait_state(frozen_pdn->node, MAX_WAIT_FOR_RECOVERY*1000);
+ 	if (rc < 0 || rc == EEH_STATE_NOT_SUPPORT) {
+ 		printk(KERN_WARNING "EEH: Permanent failure\n");
+ 		goto hard_fail;
 diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index c48a9e6..2b9543a 100644
+index 39567b2..7b60131 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -176,7 +176,51 @@ static int pseries_eeh_set_option(struct device_node *dn, int option)
+@@ -331,7 +331,52 @@ static int pseries_eeh_reset(struct device_node *dn, int option)
   */
- static int pseries_eeh_get_pe_addr(struct device_node *dn)
+ static int pseries_eeh_wait_state(struct device_node *dn, int max_wait)
  {
 -	return 0;
-+	struct pci_dn *pdn;
-+	int ret = 0;
-+	int rets[3];
++	int ret;
++	int mwait;
 +
-+	pdn = PCI_DN(dn);
++	/*
++	 * According to PAPR, the state of PE might be temporarily
++	 * unavailable. Under the circumstance, we have to wait
++	 * for indicated time determined by firmware. The maximal
++	 * wait time is 5 minutes, which is acquired from the original
++	 * EEH implementation. Also, the original implementation
++	 * also defined the minimal wait time as 1 second.
++	 */
++#define EEH_STATE_MIN_WAIT_TIME	(1000)
++#define EEH_STATE_MAX_WAIT_TIME	(300 * 1000)
 +
-+	if (ibm_get_config_addr_info2 != RTAS_UNKNOWN_SERVICE) {
++	while (1) {
++		ret = pseries_eeh_get_state(dn, &mwait);
++
 +		/*
-+		 * First of all, we need to make sure there has one PE
-+		 * associated with the device. Otherwise, PE address is
-+		 * meaningless.
++		 * If the PE's state is temporarily unavailable,
++		 * we have to wait for the specified time. Otherwise,
++		 * the PE's state will be returned immediately.
 +		 */
-+		ret = rtas_call(ibm_get_config_addr_info2, 4, 2, rets,
-+				pdn->eeh_config_addr, BUID_HI(pdn->phb->buid),
-+				BUID_LO(pdn->phb->buid), 1);
-+		if (ret || (rets[0] == 0))
-+			return 0;
++		if (ret != EEH_STATE_UNAVAILABLE)
++			return ret;
 +
-+		/* Retrieve the associated PE config address */
-+		ret = rtas_call(ibm_get_config_addr_info2, 4, 2, rets,
-+				pdn->eeh_config_addr, BUID_HI(pdn->phb->buid),
-+				BUID_LO(pdn->phb->buid), 0);
-+		if (ret) {
-+			pr_warning("%s: Failed to get PE address for %s\n",
-+				__func__, dn->full_name);
-+			return 0;
++		if (max_wait <= 0) {
++			pr_warning("%s: Timeout when getting PE's state (%d)\n",
++				__func__, max_wait);
++			return EEH_STATE_NOT_SUPPORT;
 +		}
 +
-+		return rets[0];
-+	}
-+
-+	if (ibm_get_config_addr_info != RTAS_UNKNOWN_SERVICE) {
-+		ret = rtas_call(ibm_get_config_addr_info, 4, 2, rets,
-+				pdn->eeh_config_addr, BUID_HI(pdn->phb->buid),
-+				BUID_LO(pdn->phb->buid), 0);
-+		if (ret) {
-+			pr_warning("%s: Failed to get PE address for %s\n",
-+				__func__, dn->full_name);
-+			return 0;
++		if (mwait <= 0) {
++			pr_warning("%s: Firmware returned bad wait value %d\n",
++				__func__, mwait);
++			mwait = EEH_STATE_MIN_WAIT_TIME;
++		} else if (mwait > EEH_STATE_MAX_WAIT_TIME) {
++			pr_warning("%s: Firmware returned too long wait value %d\n",
++				__func__, mwait);
++			mwait = EEH_STATE_MAX_WAIT_TIME;
 +		}
 +
-+		return rets[0];
++		max_wait -= mwait;
++		msleep(mwait);
 +	}
 +
-+	return ret;
++	return EEH_STATE_NOT_SUPPORT;
  }
  
  /**
