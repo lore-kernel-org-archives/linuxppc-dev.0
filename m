@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 06EBEB6FE2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8B40AB6FDB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:15 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 05/38] KVM: PPC: booke: Move vm core init/destroy out of
- booke.c
-Date: Wed, 29 Feb 2012 01:09:33 +0100
-Message-Id: <1330474206-14794-6-git-send-email-agraf@suse.de>
+Subject: [PATCH 06/38] KVM: PPC: e500: rename e500_tlb.h to e500.h
+Date: Wed, 29 Feb 2012 01:09:34 +0100
+Message-Id: <1330474206-14794-7-git-send-email-agraf@suse.de>
 In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
 References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -25,75 +24,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-e500mc will want to do lpid allocation/deallocation here.
+This is in preparation for merging in the contents of
+arch/powerpc/include/asm/kvm_e500.h.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/44x.c   |    9 +++++++++
- arch/powerpc/kvm/booke.c |    9 ---------
- arch/powerpc/kvm/e500.c  |    9 +++++++++
- 3 files changed, 18 insertions(+), 9 deletions(-)
+ arch/powerpc/kvm/e500.c                 |    2 +-
+ arch/powerpc/kvm/{e500_tlb.h => e500.h} |    6 +++---
+ arch/powerpc/kvm/e500_emulate.c         |    2 +-
+ arch/powerpc/kvm/e500_tlb.c             |    2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+ rename arch/powerpc/kvm/{e500_tlb.h => e500.h} (98%)
 
-diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index 879a1a7..50e7dbc 100644
---- a/arch/powerpc/kvm/44x.c
-+++ b/arch/powerpc/kvm/44x.c
-@@ -163,6 +163,15 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
- }
- 
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
-+
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- static int __init kvmppc_44x_init(void)
- {
- 	int r;
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index a2456c7..2ee9bae 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -932,15 +932,6 @@ void kvmppc_core_commit_memory_region(struct kvm *kvm,
- {
- }
- 
--int kvmppc_core_init_vm(struct kvm *kvm)
--{
--	return 0;
--}
--
--void kvmppc_core_destroy_vm(struct kvm *kvm)
--{
--}
--
- void kvmppc_set_tcr(struct kvm_vcpu *vcpu, u32 new_tcr)
- {
- 	vcpu->arch.tcr = new_tcr;
 diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 2d5fe04..ac6c9ae 100644
+index ac6c9ae..5c450ba 100644
 --- a/arch/powerpc/kvm/e500.c
 +++ b/arch/powerpc/kvm/e500.c
-@@ -226,6 +226,15 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
+@@ -24,7 +24,7 @@
+ #include <asm/kvm_ppc.h>
+ 
+ #include "booke.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ 
+ void kvmppc_core_load_host_debugstate(struct kvm_vcpu *vcpu)
+ {
+diff --git a/arch/powerpc/kvm/e500_tlb.h b/arch/powerpc/kvm/e500.h
+similarity index 98%
+rename from arch/powerpc/kvm/e500_tlb.h
+rename to arch/powerpc/kvm/e500.h
+index 5c6d2d7..02ecde2 100644
+--- a/arch/powerpc/kvm/e500_tlb.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -12,8 +12,8 @@
+  * published by the Free Software Foundation.
+  */
+ 
+-#ifndef __KVM_E500_TLB_H__
+-#define __KVM_E500_TLB_H__
++#ifndef KVM_E500_H
++#define KVM_E500_H
+ 
+ #include <linux/kvm_host.h>
+ #include <asm/mmu-book3e.h>
+@@ -171,4 +171,4 @@ static inline int tlbe_is_host_safe(const struct kvm_vcpu *vcpu,
+ 	return 1;
  }
  
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
-+
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- static int __init kvmppc_e500_init(void)
- {
- 	int r, i;
+-#endif /* __KVM_E500_TLB_H__ */
++#endif /* KVM_E500_H */
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 6d0b2bd..2a1a228 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -17,7 +17,7 @@
+ #include <asm/kvm_e500.h>
+ 
+ #include "booke.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ 
+ #define XOP_TLBIVAX 786
+ #define XOP_TLBSX   914
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 6e53e41..1d623a0 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -29,7 +29,7 @@
+ #include <asm/kvm_e500.h>
+ 
+ #include "../mm/mmu_decl.h"
+-#include "e500_tlb.h"
++#include "e500.h"
+ #include "trace.h"
+ #include "timing.h"
+ 
 -- 
 1.6.0.2
