@@ -1,33 +1,16 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D855C1007D1
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 12:08:44 +1100 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 29 Feb 2012 06:38:41 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q1T18dKZ2678938
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 06:38:39 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q1T18c8b016445
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 12:08:39 +1100
-Date: Wed, 29 Feb 2012 09:08:37 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: David Laight <David.Laight@aculab.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 20/21] Introduce struct eeh_stats for EEH
-Message-ID: <20120229010837.GA3146@shangw>
-References: <1330409051-8941-21-git-send-email-shangw@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B6E82@saturn3.aculab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6E82@saturn3.aculab.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E6D89B6FB7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 13:16:14 +1100 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Don't sync timebase when inside KVM
+Date: Wed, 29 Feb 2012 03:16:09 +0100
+Message-Id: <1330481769-24390-1-git-send-email-agraf@suse.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,28 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->  
-> > +struct eeh_stats {
-> > +	unsigned int no_device;		/* PCI device not found */
-> ...
-> > +				"no device           =%d\n"
-> ...
-> 
-> Use %u (for all the stats), you really don't want negative
-> values printed.
+When we know that we're running inside of a KVM guest, we don't have to
+worry about synchronizing timebases between different CPUs, since the
+host already took care of that.
 
-Yes. 
+This fixes CPU overcommit scenarios where vCPUs could hang forever trying
+to sync each other while not being scheduled.
 
-> I've NFI how long wrapping these counters might take!
-> If it is feasable (maybe much above 100Hz) then you
-> need 64bit counters.
-> 
+Reported-by: Stuart Yoder <B08248@freescale.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kernel/smp.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-I think it's better to use "u64" here ;-)
-
-> 	David
-> 
-
-Thanks,
-Gavin
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 46695fe..670b453 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -49,6 +49,8 @@
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ #endif
++#include <linux/kvm_para.h>
++#include <asm/kvm_para.h>
  
+ #ifdef DEBUG
+ #include <asm/udbg.h>
+@@ -541,7 +543,7 @@ int __cpuinit __cpu_up(unsigned int cpu)
+ 
+ 	DBG("Processor %u found.\n", cpu);
+ 
+-	if (smp_ops->give_timebase)
++	if (!kvm_para_available() && smp_ops->give_timebase)
+ 		smp_ops->give_timebase();
+ 
+ 	/* Wait until cpu puts itself in the online map */
+@@ -626,7 +628,7 @@ void __devinit start_secondary(void *unused)
+ 
+ 	if (smp_ops->setup_cpu)
+ 		smp_ops->setup_cpu(cpu);
+-	if (smp_ops->take_timebase)
++	if (!kvm_para_available() && smp_ops->take_timebase)
+ 		smp_ops->take_timebase();
+ 
+ 	secondary_cpu_time_init();
+-- 
+1.6.0.2
