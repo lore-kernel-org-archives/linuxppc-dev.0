@@ -1,27 +1,24 @@
-Return-Path: <hannes@cmpxchg.org>
-Received: from zene.cmpxchg.org (zene.cmpxchg.org
- [IPv6:2a01:238:4224:fa00:ca1f:9ef3:caee:a2bd])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0B07BB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 20:17:56 +1100 (EST)
-Date: Wed, 29 Feb 2012 10:17:31 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sparsemem/bootmem: catch greater than section size
- allocations
-Message-ID: <20120229091731.GA1673@cmpxchg.org>
-References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
- <20120228135326.GE1702@cmpxchg.org>
- <20120228201151.GC5136@linux.vnet.ibm.com>
+Return-Path: <mla@apm.com>
+Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
+ by ozlabs.org (Postfix) with SMTP id 0F11FB6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 19:56:36 +1100 (EST)
+Received: by mail-pz0-f50.google.com with SMTP id d2so1713066dal.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 00:56:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120228201151.GC5136@linux.vnet.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Nishanth Aravamudan <nacc@us.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Mai La <mla@apm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Tirumala R Marri <tmarri@apm.com>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Michael Neuling <mikey@neuling.org>,
+ Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] powerpc/44x: Add PCI MSI node for APM821xx SoC and
+ Bluestone board in DTS
+Date: Wed, 29 Feb 2012 15:47:43 +0700
+Message-Id: <1330505263-3718-1-git-send-email-mla@apm.com>
+Cc: open-source-review@apm.com, Mai La <mla@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,114 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 28, 2012 at 12:11:51PM -0800, Nishanth Aravamudan wrote:
-> On 28.02.2012 [14:53:26 +0100], Johannes Weiner wrote:
-> > On Fri, Feb 24, 2012 at 11:33:58AM -0800, Nishanth Aravamudan wrote:
-> > > While testing AMS (Active Memory Sharing) / CMO (Cooperative Memory
-> > > Overcommit) on powerpc, we tripped the following:
-> > > 
-> > > kernel BUG at mm/bootmem.c:483!
-> > > cpu 0x0: Vector: 700 (Program Check) at [c000000000c03940]
-> > >     pc: c000000000a62bd8: .alloc_bootmem_core+0x90/0x39c
-> > >     lr: c000000000a64bcc: .sparse_early_usemaps_alloc_node+0x84/0x29c
-> > >     sp: c000000000c03bc0
-> > >    msr: 8000000000021032
-> > >   current = 0xc000000000b0cce0
-> > >   paca    = 0xc000000001d80000
-> > >     pid   = 0, comm = swapper
-> > > kernel BUG at mm/bootmem.c:483!
-> > > enter ? for help
-> > > [c000000000c03c80] c000000000a64bcc
-> > > .sparse_early_usemaps_alloc_node+0x84/0x29c
-> > > [c000000000c03d50] c000000000a64f10 .sparse_init+0x12c/0x28c
-> > > [c000000000c03e20] c000000000a474f4 .setup_arch+0x20c/0x294
-> > > [c000000000c03ee0] c000000000a4079c .start_kernel+0xb4/0x460
-> > > [c000000000c03f90] c000000000009670 .start_here_common+0x1c/0x2c
-> > > 
-> > > This is
-> > > 
-> > >         BUG_ON(limit && goal + size > limit);
-> > > 
-> > > and after some debugging, it seems that
-> > > 
-> > > 	goal = 0x7ffff000000
-> > > 	limit = 0x80000000000
-> > > 
-> > > and sparse_early_usemaps_alloc_node ->
-> > > sparse_early_usemaps_alloc_pgdat_section -> alloc_bootmem_section calls
-> > > 
-> > > 	return alloc_bootmem_section(usemap_size() * count, section_nr);
-> > > 
-> > > This is on a system with 8TB available via the AMS pool, and as a quirk
-> > > of AMS in firmware, all of that memory shows up in node 0. So, we end up
-> > > with an allocation that will fail the goal/limit constraints. In theory,
-> > > we could "fall-back" to alloc_bootmem_node() in
-> > > sparse_early_usemaps_alloc_node(), but since we actually have HOTREMOVE
-> > > defined, we'll BUG_ON() instead. A simple solution appears to be to
-> > > disable the limit check if the size of the allocation in
-> > > alloc_bootmem_secition exceeds the section size.
-> > 
-> > It makes sense to allow the usemaps to spill over to subsequent
-> > sections instead of panicking, so FWIW:
-> > 
-> > Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-> > 
-> > That being said, it would be good if check_usemap_section_nr() printed
-> > the cross-dependencies between pgdats and sections when the usemaps of
-> > a node spilled over to other sections than the ones holding the pgdat.
-> > 
-> > How about this?
-> > 
-> > ---
-> > From: Johannes Weiner <hannes@cmpxchg.org>
-> > Subject: sparsemem/bootmem: catch greater than section size allocations fix
-> > 
-> > If alloc_bootmem_section() no longer guarantees section-locality, we
-> > need check_usemap_section_nr() to print possible cross-dependencies
-> > between node descriptors and the usemaps allocated through it.
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > ---
-> > 
-> > diff --git a/mm/sparse.c b/mm/sparse.c
-> > index 61d7cde..9e032dc 100644
-> > --- a/mm/sparse.c
-> > +++ b/mm/sparse.c
-> > @@ -359,6 +359,7 @@ static void __init sparse_early_usemaps_alloc_node(unsigned long**usemap_map,
-> >  				continue;
-> >  			usemap_map[pnum] = usemap;
-> >  			usemap += size;
-> > +			check_usemap_section_nr(nodeid, usemap_map[pnum]);
-> >  		}
-> >  		return;
-> >  	}
-> 
-> This makes sense to me -- ok if I fold it into the re-worked patch
-> (based upon Mel's comments)?
 
-Sure thing!
+Signed-off-by: Mai La <mla@apm.com>
+---
+ arch/powerpc/boot/dts/bluestone.dts |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
 
-> > Furthermore, I wonder if we can remove the sparse-specific stuff from
-> > bootmem.c as well, as now even more so than before, calculating the
-> > desired area is really none of bootmem's business.
-> > 
-> > Would something like this be okay?
-> > 
-> > ---
-> > From: Johannes Weiner <hannes@cmpxchg.org>
-> > Subject: [patch] mm: remove sparsemem allocation details from the bootmem allocator
-> > 
-> > alloc_bootmem_section() derives allocation area constraints from the
-> > specified sparsemem section.  This is a bit specific for a generic
-> > memory allocator like bootmem, though, so move it over to sparsemem.
-> > 
-> > Since __alloc_bootmem_node() already retries failed allocations with
-> > relaxed area constraints, the fallback code in sparsemem.c can be
-> > removed and the code becomes a bit more compact overall.
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> 
-> I've not tested it, but the intention seems sensible. I think it should
-> remain a separate change.
+diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
+index 2a56a0d..8ea6325 100644
+--- a/arch/powerpc/boot/dts/bluestone.dts
++++ b/arch/powerpc/boot/dts/bluestone.dts
+@@ -250,5 +250,29 @@
+ 			};
+ 		};
+ 
++		MSI: ppc4xx-msi@C10000000 {
++			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
++			reg = < 0xC 0x10000000 0x100
++				0xC 0x10000000 0x100>;
++			sdr-base = <0x36C>;
++			msi-data = <0x00004440>;
++			msi-mask = <0x0000ffe0>;
++			interrupts =<0 1 2 3 4 5 6 7>;
++			interrupt-parent = <&MSI>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			msi-available-ranges = <0x0 0x100>;
++			interrupt-map = <
++				0 &UIC3 0x18 1
++				1 &UIC3 0x19 1
++				2 &UIC3 0x1A 1
++				3 &UIC3 0x1B 1
++				4 &UIC3 0x1C 1
++				5 &UIC3 0x1D 1
++				6 &UIC3 0x1E 1
++				7 &UIC3 0x1F 1
++			>;
++		};
+ 	};
+ };
+-- 
+1.7.3.4
 
-Yes, I agree.  I'll resend it in a bit as stand-alone patch.
+CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, 
+is for the sole use of the intended recipient(s) and contains information 
+that is confidential and proprietary to AppliedMicro Corporation or its subsidiaries. 
+It is to be used solely for the purpose of furthering the parties' business relationship. 
+All unauthorized review, use, disclosure or distribution is prohibited. 
+If you are not the intended recipient, please contact the sender by reply e-mail 
+and destroy all copies of the original message.
