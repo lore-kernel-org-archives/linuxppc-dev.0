@@ -1,21 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 37037B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 05:27:25 +1100 (EST)
-Date: Wed, 29 Feb 2012 13:25:13 -0500 (EST)
-Message-Id: <20120229.132513.1607879808995168004.davem@davemloft.net>
-To: jwboyer@gmail.com
-Subject: Re: [PATCH 2/2] powerpc/44x: Add more changes for APM821XX EMAC driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <CA+5PVA5hciQSvfkodX-oP_kUZueiTp=0+t8X_0iHQ+ehU0ecOQ@mail.gmail.com>
-References: <1329466058-15969-1-git-send-email-dhdang@apm.com>
- <CA+5PVA5hciQSvfkodX-oP_kUZueiTp=0+t8X_0iHQ+ehU0ecOQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: dhdang@apm.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E5351B6FD9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 05:27:33 +1100 (EST)
+References: <1330481769-24390-1-git-send-email-agraf@suse.de>
+ <4F4E6574.5050604@freescale.com>
+In-Reply-To: <4F4E6574.5050604@freescale.com>
+Mime-Version: 1.0 (1.0)
+Content-Type: text/plain;
+	charset=us-ascii
+Message-Id: <39AA9511-4D56-4087-BC98-4BB32EF048AA@suse.de>
+From: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] KVM: PPC: Don't sync timebase when inside KVM
+Date: Wed, 29 Feb 2012 19:28:20 +0100
+To: Scott Wood <scottwood@freescale.com>
+Cc: "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>,
+ "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Josh Boyer <jwboyer@gmail.com>
-Date: Wed, 29 Feb 2012 08:43:46 -0500
 
-> On Fri, Feb 17, 2012 at 3:07 AM, Duc Dang <dhdang@apm.com> wrote:
->> This patch includes:
->>
->> =A0Configure EMAC PHY clock source (clock from PHY or internal clock=
-).
->>
->> =A0Do not advertise PHY half duplex capability as APM821XX EMAC does=
- not
->> support half duplex mode.
->>
->> =A0Add changes to support configuring jumbo frame for APM821XX EMAC.=
 
->>
->> Signed-off-by: Duc Dang <dhdang@apm.com>
-> =
+On 29.02.2012, at 18:50, Scott Wood <scottwood@freescale.com> wrote:
 
-> This should have been sent to netdev.  CC'ing them now.
-> =
+> On 02/28/2012 08:16 PM, Alexander Graf wrote:
+>> When we know that we're running inside of a KVM guest, we don't have to
+>> worry about synchronizing timebases between different CPUs, since the
+>> host already took care of that.
+>> 
+>> This fixes CPU overcommit scenarios where vCPUs could hang forever trying
+>> to sync each other while not being scheduled.
+>> 
+>> Reported-by: Stuart Yoder <B08248@freescale.com>
+>> Signed-off-by: Alexander Graf <agraf@suse.de>
+> 
+> This should apply to any hypervisor, not just KVM.  
 
-> Ben and David, I can take this change through the 4xx tree if it look=
-s OK to
-> both of you.  The pre-requisite DTS patch will go through my tree, so=
- it might
-> make sense to keep them together.
+Sure, but do you have a generic function to evaluate that? :)
 
-Well the patch has coding style problems, for one:
+> On book3e, Power ISA
+> says timebase is read-only on virtualized implementations.  My
+> understanding is that book3s is paravirt-only (guest state is not
+> considered an implementation of the Power ISA), and it says "Writing the
+> Time Base is privileged, and can be done only in hypervisor state".
 
->> +			dev->features |=3D (EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE
->> +					| EMAC_FTR_APM821XX_NO_HALF_DUPLEX
->> +					| EMAC_FTR_460EX_PHY_CLK_FIX);
+For PR non-PAPR KVM, we are non-paravirt, but ignore tb writes iirc.
 
-Should be:
+> 
+> Which platforms are you seeing this on?  If it's on Freescale chips,
+> U-Boot should be doing the sync and Linux should never do it, even in
+> the absence of a hypervisor.
 
->> +			dev->features |=3D (EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE |
->> +					  EMAC_FTR_APM821XX_NO_HALF_DUPLEX |
->> +					  EMAC_FTR_460EX_PHY_CLK_FIX);
+This is on e500mc.
 
-And this:
+Alex
 
->> +		dev->phy_feat_exc =3D (SUPPORTED_1000baseT_Half
->> +					| SUPPORTED_100baseT_Half
->> +					| SUPPORTED_10baseT_Half);
-
-Should be:
-
->> +		dev->phy_feat_exc =3D (SUPPORTED_1000baseT_Half |
->> +				     SUPPORTED_100baseT_Half |
->> +				     SUPPORTED_10baseT_Half);
+> 
+> -Scott
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
