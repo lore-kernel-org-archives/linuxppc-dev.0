@@ -1,24 +1,17 @@
-Return-Path: <mla@apm.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
- by ozlabs.org (Postfix) with SMTP id A6AACB6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 19:57:02 +1100 (EST)
-Received: by dang27 with SMTP id g27so1647480dan.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 00:56:59 -0800 (PST)
-MIME-Version: 1.0
-From: Mai La <mla@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Matt Porter <mporter@kernel.crashing.org>,
- Tirumala R Marri <tmarri@apm.com>,
- Grant Likely <grant.likely@secretlab.ca>,
- Michael Neuling <mikey@neuling.org>,
- Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] powerpc/44x: Fix PCI MSI support for APM821xx SoC and
- Bluestone board
-Date: Wed, 29 Feb 2012 15:47:01 +0700
-Message-Id: <1330505221-3678-1-git-send-email-mla@apm.com>
-Cc: open-source-review@apm.com, Mai La <mla@apm.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1330520204.15023.16.camel@concordia>
+Subject: Re: [PATCH 20/21] Introduce struct eeh_stats for EEH
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Wed, 29 Feb 2012 23:56:44 +1100
+In-Reply-To: <1330409051-8941-21-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1330409051-8941-21-git-send-email-shangw@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-sDBsaO329znndT0Y1e6B"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,123 +21,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch consists of:
-- Enable PCI MSI as default for Bluestone board 
-- Define number of MSI interrupt for Maui APM821xx
-- Fix returning ENODEV as finding MSI node
-- Fix MSI physical high and low address
-- Keep MSI data logically
 
-Signed-off-by: Mai La <mla@apm.com>
----
- arch/powerpc/platforms/44x/Kconfig |    2 ++
- arch/powerpc/sysdev/ppc4xx_msi.c   |   28 ++++++++++++++++++----------
- 2 files changed, 20 insertions(+), 10 deletions(-)
+--=-sDBsaO329znndT0Y1e6B
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index fcf6bf2..9f04ce3 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -23,6 +23,8 @@ config BLUESTONE
- 	default n
- 	select PPC44x_SIMPLE
- 	select APM821xx
-+	select PCI_MSI
-+	select PPC4xx_MSI
- 	select IBM_EMAC_RGMII
- 	help
- 	  This option enables support for the APM APM821xx Evaluation board.
-diff --git a/arch/powerpc/sysdev/ppc4xx_msi.c b/arch/powerpc/sysdev/ppc4xx_msi.c
-index 1c2d7af..6103908 100644
---- a/arch/powerpc/sysdev/ppc4xx_msi.c
-+++ b/arch/powerpc/sysdev/ppc4xx_msi.c
-@@ -31,7 +31,7 @@
- #include <asm/prom.h>
- #include <asm/hw_irq.h>
- #include <asm/ppc-pci.h>
--#include <boot/dcr.h>
-+#include <asm/dcr.h>
- #include <asm/dcr-regs.h>
- #include <asm/msi_bitmap.h>
- 
-@@ -43,7 +43,12 @@
- #define PEIH_FLUSH0	0x30
- #define PEIH_FLUSH1	0x38
- #define PEIH_CNTRST	0x48
-+
-+#ifdef CONFIG_APM821xx
-+#define NR_MSI_IRQS	8
-+#else
- #define NR_MSI_IRQS	4
-+#endif
- 
- struct ppc4xx_msi {
- 	u32 msi_addr_lo;
-@@ -150,12 +155,11 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
- 	if (!sdr_addr)
- 		return -1;
- 
--	SDR0_WRITE(sdr_addr, (u64)res.start >> 32);	 /*HIGH addr */
--	SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
--
-+	mtdcri(SDR0, *sdr_addr, res.start >> 32);	/*HIGH addr */
-+	mtdcri(SDR0, *sdr_addr + 1, res.start & 0xFFFFFFFF);/* Low addr */
- 
- 	msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
--	if (msi->msi_dev)
-+	if (!msi->msi_dev)
- 		return -ENODEV;
- 
- 	msi->msi_regs = of_iomap(msi->msi_dev, 0);
-@@ -167,9 +171,12 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
- 		(u32) (msi->msi_regs + PEIH_TERMADH), (u32) (msi->msi_regs));
- 
- 	msi_virt = dma_alloc_coherent(&dev->dev, 64, &msi_phys, GFP_KERNEL);
--	msi->msi_addr_hi = 0x0;
--	msi->msi_addr_lo = (u32) msi_phys;
--	dev_dbg(&dev->dev, "PCIE-MSI: msi address 0x%x\n", msi->msi_addr_lo);
-+	if (!msi_virt)
-+		return -ENOMEM;
-+	msi->msi_addr_hi = (u32)(msi_phys >> 32);
-+	msi->msi_addr_lo = (u32)(msi_phys & 0xffffffff);
-+	dev_dbg(&dev->dev, "PCIE-MSI: msi address high 0x%x, low 0x%x\n",
-+		msi->msi_addr_hi, msi->msi_addr_lo);
- 
- 	/* Progam the Interrupt handler Termination addr registers */
- 	out_be32(msi->msi_regs + PEIH_TERMADH, msi->msi_addr_hi);
-@@ -185,6 +192,8 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
- 	out_be32(msi->msi_regs + PEIH_MSIED, *msi_data);
- 	out_be32(msi->msi_regs + PEIH_MSIMK, *msi_mask);
- 
-+	dma_free_coherent(&dev->dev, 64, msi_virt, msi_phys);
-+
- 	return 0;
- }
- 
-@@ -215,8 +224,6 @@ static int __devinit ppc4xx_msi_probe(struct platform_device *dev)
- 	struct resource res;
- 	int err = 0;
- 
--	msi = &ppc4xx_msi;/*keep the msi data for further use*/
--
- 	dev_dbg(&dev->dev, "PCIE-MSI: Setting up MSI support...\n");
- 
- 	msi = kzalloc(sizeof(struct ppc4xx_msi), GFP_KERNEL);
-@@ -242,6 +249,7 @@ static int __devinit ppc4xx_msi_probe(struct platform_device *dev)
- 		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
- 		goto error_out;
- 	}
-+	ppc4xx_msi = *msi;
- 
- 	ppc_md.setup_msi_irqs = ppc4xx_setup_msi_irqs;
- 	ppc_md.teardown_msi_irqs = ppc4xx_teardown_msi_irqs;
--- 
-1.7.3.4
+On Tue, 2012-02-28 at 14:04 +0800, Gavin Shan wrote:
+> With the original EEH implementation, the EEH global statistics
+> are maintained by individual global variables. That makes the
+> code a little hard to maintain.
 
-CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, 
-is for the sole use of the intended recipient(s) and contains information 
-that is confidential and proprietary to AppliedMicro Corporation or its subsidiaries. 
-It is to be used solely for the purpose of furthering the parties' business relationship. 
-All unauthorized review, use, disclosure or distribution is prohibited. 
-If you are not the intended recipient, please contact the sender by reply e-mail 
-and destroy all copies of the original message.
+Hi Gavin,
+
+> @@ -1174,21 +1182,24 @@ static int proc_eeh_show(struct seq_file *m, void=
+ *v)
+>  {
+>  	if (0 =3D=3D eeh_subsystem_enabled) {
+>  		seq_printf(m, "EEH Subsystem is globally disabled\n");
+> -		seq_printf(m, "eeh_total_mmio_ffs=3D%ld\n", total_mmio_ffs);
+> +		seq_printf(m, "eeh_total_mmio_ffs=3D%d\n", eeh_stats.total_mmio_ffs);
+>  	} else {
+>  		seq_printf(m, "EEH Subsystem is enabled\n");
+>  		seq_printf(m,
+> -				"no device=3D%ld\n"
+> -				"no device node=3D%ld\n"
+> -				"no config address=3D%ld\n"
+> -				"check not wanted=3D%ld\n"
+> -				"eeh_total_mmio_ffs=3D%ld\n"
+> -				"eeh_false_positives=3D%ld\n"
+> -				"eeh_slot_resets=3D%ld\n",
+> -				no_device, no_dn, no_cfg_addr,=20
+> -				ignored_check, total_mmio_ffs,=20
+> -				false_positives,
+> -				slot_resets);
+> +				"no device           =3D%d\n"
+> +				"no device node      =3D%d\n"
+> +				"no config address   =3D%d\n"
+> +				"check not wanted    =3D%d\n"
+> +				"eeh_total_mmio_ffs  =3D%d\n"
+> +				"eeh_false_positives =3D%d\n"
+> +				"eeh_slot_resets     =3D%d\n",
+
+There *might* be tools out there that parse this output, so I'd say
+don't change it unless you have to - and I don't think you have to?
+
+cheers
+
+--=-sDBsaO329znndT0Y1e6B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCAAGBQJPTiCMAAoJEFHr6jzI4aWAzn4P/3cdUDFqDDU/euXo8FmBO104
+L/wKdDfqbCEwm9vmRDbsKR3tXxWWo6bPHosvoy0Bl1tMr0SJGYPIFM6MYZ0Xc3cE
+tMLOM30SsIk4DrxQEYCN9e5gVctBHcqnWiS/rfGIzvJ12wf0pEOc5GXuQeoS8+st
+BFjRdlnPT4bEmAnnqp29r3pJGi3R2AMVnjAv9vV30NkIkaUD/yZ/Ms7MyPUZial5
+UUtmmu4cYc9QZ1JjSX0MagfE3U848j97ADjGcTjmvDySfkW5xrLNWVHbszes0kzo
+KTpxCSJyNWBveQ3DCAEZOzgDxRMVyxcSPjRGK15GnrzHYjrhENjVvErDnetmCcJs
+uaQ65MZ3FrUsQHr/pW6Y72L2Qze+uEXUI66ehB0eh0RMj2l+ivuPOD8g+rHk9jdI
+0o0Os8EIsFvAxXvMoMfTG3axmCSshZiVIztf6EYaIEWT8YvbXfYhtVg4hGfmpOV3
+mtW/Rqare9mrbwBK2drPNYl3Pcfl5x50ZsaO+QwVfbNSXNOaq6AwgeSgmr/nSBx0
+TpET2PknXMaiQnxsdSbkVKh/7v5CApSqZ69p/jHnKAw/qwJMU65dvfmuAJsb3IDX
+9nwwH1fRG1e5eKAxbQ73hGlighDYznlaP4MiAEvxO88K5PQ7A/sz1HFz5qm+wY1o
++Koh1QRxGapu/whOZPBT
+=kaEN
+-----END PGP SIGNATURE-----
+
+--=-sDBsaO329znndT0Y1e6B--
