@@ -2,13 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F3AEB6FE7
+ by ozlabs.org (Postfix) with ESMTPS id 1A552B6FE5
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:16 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 14/38] KVM: PPC: booke: standard PPC floating point support
-Date: Wed, 29 Feb 2012 01:09:42 +0100
-Message-Id: <1330474206-14794-15-git-send-email-agraf@suse.de>
+Subject: [PATCH 12/38] powerpc/booke: Provide exception macros with interrupt
+ name
+Date: Wed, 29 Feb 2012 01:09:40 +0100
+Message-Id: <1330474206-14794-13-git-send-email-agraf@suse.de>
 In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
 References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -24,132 +25,350 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Scott Wood <scottwood@freescale.com>
 
-e500mc has a normal PPC FPU, rather than SPE which is found
-on e500v1/v2.
+DO_KVM will need to identify the particular exception type.
 
-Based on code from Liu Yu <yu.liu@freescale.com>.
+There is an existing set of arbitrary numbers that Linux passes,
+but it's an undocumented mess that sort of corresponds to server/classic
+exception vectors but not really.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/system.h |    1 +
- arch/powerpc/kvm/booke.c          |   44 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/booke.h          |   30 +++++++++++++++++++++++++
- 3 files changed, 75 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/head_44x.S       |   23 +++++++++------
+ arch/powerpc/kernel/head_booke.h     |   41 ++++++++++++++------------
+ arch/powerpc/kernel/head_fsl_booke.S |   52 +++++++++++++++++++++-------------
+ 3 files changed, 68 insertions(+), 48 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
-index c377457..73eee86 100644
---- a/arch/powerpc/include/asm/system.h
-+++ b/arch/powerpc/include/asm/system.h
-@@ -140,6 +140,7 @@ extern void via_cuda_init(void);
- extern void read_rtc_time(void);
- extern void pmac_find_display(void);
- extern void giveup_fpu(struct task_struct *);
-+extern void load_up_fpu(void);
- extern void disable_kernel_fp(void);
- extern void enable_kernel_fp(void);
- extern void flush_fp_to_thread(struct task_struct *);
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 75dbaeb..0b77be1 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -457,6 +457,11 @@ void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
- int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- {
- 	int ret;
-+#ifdef CONFIG_PPC_FPU
-+	unsigned int fpscr;
-+	int fpexc_mode;
-+	u64 fpr[32];
-+#endif
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 7dd2981..d1192c5 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -248,10 +248,11 @@ _ENTRY(_start);
  
- 	if (!vcpu->arch.sane) {
- 		kvm_run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
-@@ -479,7 +484,46 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	}
+ interrupt_base:
+ 	/* Critical Input Interrupt */
+-	CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
++	CRITICAL_EXCEPTION(0x0100, CRITICAL, CriticalInput, unknown_exception)
  
- 	kvm_guest_enter();
-+
-+#ifdef CONFIG_PPC_FPU
-+	/* Save userspace FPU state in stack */
-+	enable_kernel_fp();
-+	memcpy(fpr, current->thread.fpr, sizeof(current->thread.fpr));
-+	fpscr = current->thread.fpscr.val;
-+	fpexc_mode = current->thread.fpexc_mode;
-+
-+	/* Restore guest FPU state to thread */
-+	memcpy(current->thread.fpr, vcpu->arch.fpr, sizeof(vcpu->arch.fpr));
-+	current->thread.fpscr.val = vcpu->arch.fpscr;
-+
-+	/*
-+	 * Since we can't trap on MSR_FP in GS-mode, we consider the guest
-+	 * as always using the FPU.  Kernel usage of FP (via
-+	 * enable_kernel_fp()) in this thread must not occur while
-+	 * vcpu->fpu_active is set.
-+	 */
-+	vcpu->fpu_active = 1;
-+
-+	kvmppc_load_guest_fp(vcpu);
-+#endif
-+
- 	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
-+
-+#ifdef CONFIG_PPC_FPU
-+	kvmppc_save_guest_fp(vcpu);
-+
-+	vcpu->fpu_active = 0;
-+
-+	/* Save guest FPU state from thread */
-+	memcpy(vcpu->arch.fpr, current->thread.fpr, sizeof(vcpu->arch.fpr));
-+	vcpu->arch.fpscr = current->thread.fpscr.val;
-+
-+	/* Restore userspace FPU state from stack */
-+	memcpy(current->thread.fpr, fpr, sizeof(current->thread.fpr));
-+	current->thread.fpscr.val = fpscr;
-+	current->thread.fpexc_mode = fpexc_mode;
-+#endif
-+
- 	kvm_guest_exit();
+ 	/* Machine Check Interrupt */
+-	CRITICAL_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
++	CRITICAL_EXCEPTION(0x0200, MACHINE_CHECK, MachineCheck, \
++			   machine_check_exception)
+ 	MCHECK_EXCEPTION(0x0210, MachineCheckA, machine_check_exception)
  
- out:
-diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
-index d53bcf2..3bf5eda 100644
---- a/arch/powerpc/kvm/booke.h
-+++ b/arch/powerpc/kvm/booke.h
-@@ -96,4 +96,34 @@ enum int_class {
+ 	/* Data Storage Interrupt */
+@@ -261,7 +262,8 @@ interrupt_base:
+ 	INSTRUCTION_STORAGE_EXCEPTION
  
- void kvmppc_set_pending_interrupt(struct kvm_vcpu *vcpu, enum int_class type);
+ 	/* External Input Interrupt */
+-	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
++	EXCEPTION(0x0500, BOOKE_INTERRUPT_EXTERNAL, ExternalInput, \
++		  do_IRQ, EXC_XFER_LITE)
  
-+/*
-+ * Load up guest vcpu FP state if it's needed.
-+ * It also set the MSR_FP in thread so that host know
-+ * we're holding FPU, and then host can help to save
-+ * guest vcpu FP state if other threads require to use FPU.
-+ * This simulates an FP unavailable fault.
-+ *
-+ * It requires to be called with preemption disabled.
-+ */
-+static inline void kvmppc_load_guest_fp(struct kvm_vcpu *vcpu)
-+{
-+#ifdef CONFIG_PPC_FPU
-+	if (vcpu->fpu_active && !(current->thread.regs->msr & MSR_FP)) {
-+		load_up_fpu();
-+		current->thread.regs->msr |= MSR_FP;
-+	}
-+#endif
-+}
+ 	/* Alignment Interrupt */
+ 	ALIGNMENT_EXCEPTION
+@@ -273,29 +275,32 @@ interrupt_base:
+ #ifdef CONFIG_PPC_FPU
+ 	FP_UNAVAILABLE_EXCEPTION
+ #else
+-	EXCEPTION(0x2010, FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2010, BOOKE_INTERRUPT_FP_UNAVAIL, \
++		  FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
+ #endif
+ 	/* System Call Interrupt */
+ 	START_EXCEPTION(SystemCall)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(BOOKE_INTERRUPT_SYSCALL)
+ 	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+ 
+ 	/* Auxiliary Processor Unavailable Interrupt */
+-	EXCEPTION(0x2020, AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2020, BOOKE_INTERRUPT_AP_UNAVAIL, \
++		  AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Decrementer Interrupt */
+ 	DECREMENTER_EXCEPTION
+ 
+ 	/* Fixed Internal Timer Interrupt */
+ 	/* TODO: Add FIT support */
+-	EXCEPTION(0x1010, FixedIntervalTimer, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x1010, BOOKE_INTERRUPT_FIT, FixedIntervalTimer, \
++		  unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Watchdog Timer Interrupt */
+ 	/* TODO: Add watchdog support */
+ #ifdef CONFIG_BOOKE_WDT
+-	CRITICAL_EXCEPTION(0x1020, WatchdogTimer, WatchdogException)
++	CRITICAL_EXCEPTION(0x1020, WATCHDOG, WatchdogTimer, WatchdogException)
+ #else
+-	CRITICAL_EXCEPTION(0x1020, WatchdogTimer, unknown_exception)
++	CRITICAL_EXCEPTION(0x1020, WATCHDOG, WatchdogTimer, unknown_exception)
+ #endif
+ 
+ 	/* Data TLB Error Interrupt */
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index fc921bf..06ab353 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -2,6 +2,8 @@
+ #define __HEAD_BOOKE_H__
+ 
+ #include <asm/ptrace.h>	/* for STACK_FRAME_REGS_MARKER */
++#include <asm/kvm_asm.h>
 +
-+/*
-+ * Save guest vcpu FP state into thread.
-+ * It requires to be called with preemption disabled.
-+ */
-+static inline void kvmppc_save_guest_fp(struct kvm_vcpu *vcpu)
-+{
-+#ifdef CONFIG_PPC_FPU
-+	if (vcpu->fpu_active && (current->thread.regs->msr & MSR_FP))
-+		giveup_fpu(current);
-+#endif
-+}
- #endif /* __KVM_BOOKE_H__ */
+ /*
+  * Macros used for common Book-e exception handling
+  */
+@@ -28,7 +30,7 @@
+  */
+ #define THREAD_NORMSAVE(offset)	(THREAD_NORMSAVES + (offset * 4))
+ 
+-#define NORMAL_EXCEPTION_PROLOG						     \
++#define NORMAL_EXCEPTION_PROLOG(intno)						     \
+ 	mtspr	SPRN_SPRG_WSCRATCH0, r10;	/* save one register */	     \
+ 	mfspr	r10, SPRN_SPRG_THREAD;					     \
+ 	stw	r11, THREAD_NORMSAVE(0)(r10);				     \
+@@ -113,7 +115,7 @@
+  * registers as the normal prolog above. Instead we use a portion of the
+  * critical/machine check exception stack at low physical addresses.
+  */
+-#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
++#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, intno, exc_level_srr0, exc_level_srr1) \
+ 	mtspr	SPRN_SPRG_WSCRATCH_##exc_level,r8;			     \
+ 	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
+ 	stw	r9,GPR9(r8);		/* save various registers	   */\
+@@ -162,12 +164,13 @@
+ 	SAVE_4GPRS(3, r11);						     \
+ 	SAVE_2GPRS(7, r11)
+ 
+-#define CRITICAL_EXCEPTION_PROLOG \
+-		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1)
++#define CRITICAL_EXCEPTION_PROLOG(intno) \
++		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, intno, SPRN_CSRR0, SPRN_CSRR1)
+ #define DEBUG_EXCEPTION_PROLOG \
+-		EXC_LEVEL_EXCEPTION_PROLOG(DBG, SPRN_DSRR0, SPRN_DSRR1)
++		EXC_LEVEL_EXCEPTION_PROLOG(DBG, DEBUG, SPRN_DSRR0, SPRN_DSRR1)
+ #define MCHECK_EXCEPTION_PROLOG \
+-		EXC_LEVEL_EXCEPTION_PROLOG(MC, SPRN_MCSRR0, SPRN_MCSRR1)
++		EXC_LEVEL_EXCEPTION_PROLOG(MC, MACHINE_CHECK, \
++			SPRN_MCSRR0, SPRN_MCSRR1)
+ 
+ /*
+  * Exception vectors.
+@@ -181,16 +184,16 @@ label:
+ 	.long	func;						\
+ 	.long	ret_from_except_full
+ 
+-#define EXCEPTION(n, label, hdlr, xfer)				\
++#define EXCEPTION(n, intno, label, hdlr, xfer)			\
+ 	START_EXCEPTION(label);					\
+-	NORMAL_EXCEPTION_PROLOG;				\
++	NORMAL_EXCEPTION_PROLOG(intno);				\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	xfer(n, hdlr)
+ 
+-#define CRITICAL_EXCEPTION(n, label, hdlr)			\
+-	START_EXCEPTION(label);					\
+-	CRITICAL_EXCEPTION_PROLOG;				\
+-	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
++#define CRITICAL_EXCEPTION(n, intno, label, hdlr)			\
++	START_EXCEPTION(label);						\
++	CRITICAL_EXCEPTION_PROLOG(intno);				\
++	addi	r3,r1,STACK_FRAME_OVERHEAD;				\
+ 	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
+ 			  NOCOPY, crit_transfer_to_handler, \
+ 			  ret_from_crit_exc)
+@@ -302,7 +305,7 @@ label:
+ 
+ #define DEBUG_CRIT_EXCEPTION						      \
+ 	START_EXCEPTION(DebugCrit);					      \
+-	CRITICAL_EXCEPTION_PROLOG;					      \
++	CRITICAL_EXCEPTION_PROLOG(DEBUG);				      \
+ 									      \
+ 	/*								      \
+ 	 * If there is a single step or branch-taken exception in an	      \
+@@ -355,7 +358,7 @@ label:
+ 
+ #define DATA_STORAGE_EXCEPTION						      \
+ 	START_EXCEPTION(DataStorage)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(DATA_STORAGE);		      \
+ 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r5,_ESR(r11);						      \
+ 	mfspr	r4,SPRN_DEAR;		/* Grab the DEAR */		      \
+@@ -363,7 +366,7 @@ label:
+ 
+ #define INSTRUCTION_STORAGE_EXCEPTION					      \
+ 	START_EXCEPTION(InstructionStorage)				      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(INST_STORAGE);		      \
+ 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r5,_ESR(r11);						      \
+ 	mr      r4,r12;                 /* Pass SRR0 as arg2 */		      \
+@@ -372,7 +375,7 @@ label:
+ 
+ #define ALIGNMENT_EXCEPTION						      \
+ 	START_EXCEPTION(Alignment)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(ALIGNMENT);		      \
+ 	mfspr   r4,SPRN_DEAR;           /* Grab the DEAR and save it */	      \
+ 	stw     r4,_DEAR(r11);						      \
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD;				      \
+@@ -380,7 +383,7 @@ label:
+ 
+ #define PROGRAM_EXCEPTION						      \
+ 	START_EXCEPTION(Program)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(PROGRAM);		      \
+ 	mfspr	r4,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r4,_ESR(r11);						      \
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+@@ -388,7 +391,7 @@ label:
+ 
+ #define DECREMENTER_EXCEPTION						      \
+ 	START_EXCEPTION(Decrementer)					      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(DECREMENTER);		      \
+ 	lis     r0,TSR_DIS@h;           /* Setup the DEC interrupt mask */    \
+ 	mtspr   SPRN_TSR,r0;		/* Clear the DEC interrupt */	      \
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD;				      \
+@@ -396,7 +399,7 @@ label:
+ 
+ #define FP_UNAVAILABLE_EXCEPTION					      \
+ 	START_EXCEPTION(FloatingPointUnavailable)			      \
+-	NORMAL_EXCEPTION_PROLOG;					      \
++	NORMAL_EXCEPTION_PROLOG(FP_UNAVAIL);		      \
+ 	beq	1f;							      \
+ 	bl	load_up_fpu;		/* if from user, just load it up */   \
+ 	b	fast_exception_return;					      \
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index d5d78c4..418931f 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -301,19 +301,20 @@ _ENTRY(__early_start)
+ 
+ interrupt_base:
+ 	/* Critical Input Interrupt */
+-	CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
++	CRITICAL_EXCEPTION(0x0100, CRITICAL, CriticalInput, unknown_exception)
+ 
+ 	/* Machine Check Interrupt */
+ #ifdef CONFIG_E200
+ 	/* no RFMCI, MCSRRs on E200 */
+-	CRITICAL_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
++	CRITICAL_EXCEPTION(0x0200, MACHINE_CHECK, MachineCheck, \
++			   machine_check_exception)
+ #else
+ 	MCHECK_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
+ #endif
+ 
+ 	/* Data Storage Interrupt */
+ 	START_EXCEPTION(DataStorage)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(DATA_STORAGE)
+ 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+ 	stw	r5,_ESR(r11)
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
+@@ -328,7 +329,7 @@ interrupt_base:
+ 	INSTRUCTION_STORAGE_EXCEPTION
+ 
+ 	/* External Input Interrupt */
+-	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
++	EXCEPTION(0x0500, EXTERNAL, ExternalInput, do_IRQ, EXC_XFER_LITE)
+ 
+ 	/* Alignment Interrupt */
+ 	ALIGNMENT_EXCEPTION
+@@ -342,32 +343,36 @@ interrupt_base:
+ #else
+ #ifdef CONFIG_E200
+ 	/* E200 treats 'normal' floating point instructions as FP Unavail exception */
+-	EXCEPTION(0x0800, FloatingPointUnavailable, program_check_exception, EXC_XFER_EE)
++	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
++		  program_check_exception, EXC_XFER_EE)
+ #else
+-	EXCEPTION(0x0800, FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
++		  unknown_exception, EXC_XFER_EE)
+ #endif
+ #endif
+ 
+ 	/* System Call Interrupt */
+ 	START_EXCEPTION(SystemCall)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(SYSCALL)
+ 	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+ 
+ 	/* Auxiliary Processor Unavailable Interrupt */
+-	EXCEPTION(0x2900, AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2900, AP_UNAVAIL, AuxillaryProcessorUnavailable, \
++		  unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Decrementer Interrupt */
+ 	DECREMENTER_EXCEPTION
+ 
+ 	/* Fixed Internal Timer Interrupt */
+ 	/* TODO: Add FIT support */
+-	EXCEPTION(0x3100, FixedIntervalTimer, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x3100, FIT, FixedIntervalTimer, \
++		  unknown_exception, EXC_XFER_EE)
+ 
+ 	/* Watchdog Timer Interrupt */
+ #ifdef CONFIG_BOOKE_WDT
+-	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, WatchdogException)
++	CRITICAL_EXCEPTION(0x3200, WATCHDOG, WatchdogTimer, WatchdogException)
+ #else
+-	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, unknown_exception)
++	CRITICAL_EXCEPTION(0x3200, WATCHDOG, WatchdogTimer, unknown_exception)
+ #endif
+ 
+ 	/* Data TLB Error Interrupt */
+@@ -538,31 +543,38 @@ interrupt_base:
+ #ifdef CONFIG_SPE
+ 	/* SPE Unavailable */
+ 	START_EXCEPTION(SPEUnavailable)
+-	NORMAL_EXCEPTION_PROLOG
++	NORMAL_EXCEPTION_PROLOG(SPE_UNAVAIL)
+ 	bne	load_up_spe
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_EE_LITE(0x2010, KernelSPE)
+ #else
+-	EXCEPTION(0x2020, SPEUnavailable, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2020, SPE_UNAVAIL, SPEUnavailable, \
++		  unknown_exception, EXC_XFER_EE)
+ #endif /* CONFIG_SPE */
+ 
+ 	/* SPE Floating Point Data */
+ #ifdef CONFIG_SPE
+-	EXCEPTION(0x2030, SPEFloatingPointData, SPEFloatingPointException, EXC_XFER_EE);
++	EXCEPTION(0x2030, SPE_FP_DATA, SPEFloatingPointData, \
++		  SPEFloatingPointException, EXC_XFER_EE);
+ 
+ 	/* SPE Floating Point Round */
+-	EXCEPTION(0x2050, SPEFloatingPointRound, SPEFloatingPointRoundException, EXC_XFER_EE)
++	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
++		  SPEFloatingPointRoundException, EXC_XFER_EE)
+ #else
+-	EXCEPTION(0x2040, SPEFloatingPointData, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x2050, SPEFloatingPointRound, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2040, SPE_FP_DATA, SPEFloatingPointData, \
++		  unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
++		  unknown_exception, EXC_XFER_EE)
+ #endif /* CONFIG_SPE */
+ 
+ 	/* Performance Monitor */
+-	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
++	EXCEPTION(0x2060, PERFORMANCE_MONITOR, PerformanceMonitor, \
++		  performance_monitor_exception, EXC_XFER_STD)
+ 
+-	EXCEPTION(0x2070, Doorbell, doorbell_exception, EXC_XFER_STD)
++	EXCEPTION(0x2070, DOORBELL, Doorbell, doorbell_exception, EXC_XFER_STD)
+ 
+-	CRITICAL_EXCEPTION(0x2080, CriticalDoorbell, unknown_exception)
++	CRITICAL_EXCEPTION(0x2080, DOORBELL_CRITICAL, \
++			   CriticalDoorbell, unknown_exception)
+ 
+ 	/* Debug Interrupt */
+ 	DEBUG_DEBUG_EXCEPTION
 -- 
 1.6.0.2
