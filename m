@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 17320B6FE3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E47F9B6FE1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:15 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 17/38] KVM: PPC: e500mc: implicitly set MSR_GS
-Date: Wed, 29 Feb 2012 01:09:45 +0100
-Message-Id: <1330474206-14794-18-git-send-email-agraf@suse.de>
+Subject: [PATCH 02/38] powerpc/e500: split CPU_FTRS_ALWAYS/CPU_FTRS_POSSIBLE
+Date: Wed, 29 Feb 2012 01:09:30 +0100
+Message-Id: <1330474206-14794-3-git-send-email-agraf@suse.de>
 In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
 References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,68 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When setting MSR for an e500mc guest, we implicitly always set MSR_GS
-to make sure the guest is in guest state. Since we have this implicit
-rule there, we don't need to explicitly pass MSR_GS to set_msr().
+From: Scott Wood <scottwood@freescale.com>
 
-Remove all explicit setters of MSR_GS.
+Split e500 (v1/v2) and e500mc/e5500 to allow optimization of feature
+checks that differ between the two.
 
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/booke.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/cputable.h |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 85bd5b8..fcbe928 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -280,7 +280,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
-                                         unsigned int priority)
- {
- 	int allowed = 0;
--	ulong uninitialized_var(msr_mask);
-+	ulong msr_mask = 0;
- 	bool update_esr = false, update_dear = false;
- 	ulong crit_raw = vcpu->arch.shared->critical;
- 	ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
-@@ -322,20 +322,19 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	case BOOKE_IRQPRIO_AP_UNAVAIL:
- 	case BOOKE_IRQPRIO_ALIGNMENT:
- 		allowed = 1;
--		msr_mask = MSR_GS | MSR_CE | MSR_ME | MSR_DE;
-+		msr_mask = MSR_CE | MSR_ME | MSR_DE;
- 		int_class = INT_CLASS_NONCRIT;
- 		break;
- 	case BOOKE_IRQPRIO_CRITICAL:
- 	case BOOKE_IRQPRIO_DBELL_CRIT:
- 		allowed = vcpu->arch.shared->msr & MSR_CE;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS | MSR_ME;
-+		msr_mask = MSR_ME;
- 		int_class = INT_CLASS_CRIT;
- 		break;
- 	case BOOKE_IRQPRIO_MACHINE_CHECK:
- 		allowed = vcpu->arch.shared->msr & MSR_ME;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS;
- 		int_class = INT_CLASS_MC;
- 		break;
- 	case BOOKE_IRQPRIO_DECREMENTER:
-@@ -346,13 +345,13 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	case BOOKE_IRQPRIO_DBELL:
- 		allowed = vcpu->arch.shared->msr & MSR_EE;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS | MSR_CE | MSR_ME | MSR_DE;
-+		msr_mask = MSR_CE | MSR_ME | MSR_DE;
- 		int_class = INT_CLASS_NONCRIT;
- 		break;
- 	case BOOKE_IRQPRIO_DEBUG:
- 		allowed = vcpu->arch.shared->msr & MSR_DE;
- 		allowed = allowed && !crit;
--		msr_mask = MSR_GS | MSR_ME;
-+		msr_mask = MSR_ME;
- 		int_class = INT_CLASS_CRIT;
- 		break;
- 	}
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 6a034a2..2022f2d 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -483,8 +483,10 @@ enum {
+ 	    CPU_FTRS_E200 |
+ #endif
+ #ifdef CONFIG_E500
+-	    CPU_FTRS_E500 | CPU_FTRS_E500_2 | CPU_FTRS_E500MC |
+-	    CPU_FTRS_E5500 |
++	    CPU_FTRS_E500 | CPU_FTRS_E500_2 |
++#endif
++#ifdef CONFIG_PPC_E500MC
++	    CPU_FTRS_E500MC | CPU_FTRS_E5500 |
+ #endif
+ 	    0,
+ };
+@@ -528,8 +530,10 @@ enum {
+ 	    CPU_FTRS_E200 &
+ #endif
+ #ifdef CONFIG_E500
+-	    CPU_FTRS_E500 & CPU_FTRS_E500_2 & CPU_FTRS_E500MC &
+-	    CPU_FTRS_E5500 &
++	    CPU_FTRS_E500 & CPU_FTRS_E500_2 &
++#endif
++#ifdef CONFIG_PPC_E500MC
++	    CPU_FTRS_E500MC & CPU_FTRS_E5500 &
+ #endif
+ 	    CPU_FTRS_POSSIBLE,
+ };
 -- 
 1.6.0.2
