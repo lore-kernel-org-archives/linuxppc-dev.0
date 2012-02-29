@@ -2,13 +2,16 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A4315B6FAA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:10 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A6537B6FB4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:11 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 00/38] KVM: PPC: e500mc support v3
-Date: Wed, 29 Feb 2012 01:09:28 +0100
-Message-Id: <1330474206-14794-1-git-send-email-agraf@suse.de>
+Subject: [PATCH 07/38] KVM: PPC: e500: merge <asm/kvm_e500.h> into
+ arch/powerpc/kvm/e500.h
+Date: Wed, 29 Feb 2012 01:09:35 +0100
+Message-Id: <1330474206-14794-8-git-send-email-agraf@suse.de>
+In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
+References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
  kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,118 +23,266 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is Scott's e500mc RFC patch set rebased, berobbed of its pt_regs
-parts and fixed for bisectability. On top of them, I addressed all the
-comments that I had on the code and that came up in his code as FIXMEs.
+From: Scott Wood <scottwood@freescale.com>
 
-I verified that this patch set works just fine on e500mc and doesn't
-break e500v2, so I would say it's good to go as it is, unless someone
-has strong objections to how things are done. Everything hereafter
-I would prefer to do based on a working upstream version rather than
-a downstream fork, as that way exposure is a lot higher.
+Keeping two separate headers for e500-specific things was a
+pain, and wasn't even organized along any logical boundary.
 
-v1 -> v2:
+There was TLB stuff in <asm/kvm_e500.h> despite the existence of
+arch/powerpc/kvm/e500_tlb.h, and nothing in <asm/kvm_e500.h> needed
+to be referenced from outside arch/powerpc/kvm.
 
-  - ESR -> GESR
-  - introduce and use constants for doorbell
-  - drop e500mc ifdefs for doorbell
-  - fix whitespace
-  - use explicit preempt counts in inst fixup
-  - rework e500v2 kconfig patch
-  - add patches 31-37
-
-v2 -> v3:
-
-  - add patch 38
-  - check for signals earlier
-  - also remove "lwz	r9, VCPU_KVM(r4)" which was as superfluous
-  - sync host state instead of guest state to pt_regs
-  - optimize reinject code path to get out fast when not reinjecting
-
-Alexander Graf (23):
-  KVM: PPC: e500mc: Add doorbell emulation support
-  KVM: PPC: e500mc: implicitly set MSR_GS
-  KVM: PPC: e500mc: Move r1/r2 restoration very early
-  KVM: PPC: e500mc: add load inst fixup
-  KVM: PPC: rename CONFIG_KVM_E500 -> CONFIG_KVM_E500V2
-  KVM: PPC: make e500v2 kvm and e500mc cpu mutually exclusive
-  KVM: PPC: booke: remove leftover debugging
-  KVM: PPC: booke: deliver program int on emulation failure
-  KVM: PPC: booke: rework rescheduling checks
-  KVM: PPC: booke: BOOKE_IRQPRIO_MAX is n+1
-  KVM: PPC: bookehv: fix exit timing
-  KVM: PPC: bookehv: remove negation for CONFIG_64BIT
-  KVM: PPC: bookehv: remove SET_VCPU
-  KVM: PPC: bookehv: disable MAS register updates early
-  KVM: PPC: bookehv: add comment about shadow_msr
-  KVM: PPC: booke: Readd debug abort code for machine check
-  KVM: PPC: booke: add GS documentation for program interrupt
-  KVM: PPC: bookehv: remove unused code
-  KVM: PPC: e500: fix typo in tlb code
-  KVM: PPC: booke: Support perfmon interrupts
-  KVM: PPC: booke: expose good state on irq reinject
-  KVM: PPC: booke: Reinject performance monitor interrupts
-  KVM: PPC: Booke: only prepare to enter when we enter
-
-Scott Wood (15):
-  powerpc/booke: Set CPU_FTR_DEBUG_LVL_EXC on 32-bit
-  powerpc/e500: split CPU_FTRS_ALWAYS/CPU_FTRS_POSSIBLE
-  KVM: PPC: factor out lpid allocator from book3s_64_mmu_hv
-  KVM: PPC: booke: add booke-level vcpu load/put
-  KVM: PPC: booke: Move vm core init/destroy out of booke.c
-  KVM: PPC: e500: rename e500_tlb.h to e500.h
-  KVM: PPC: e500: merge <asm/kvm_e500.h> into arch/powerpc/kvm/e500.h
-  KVM: PPC: e500: clean up arch/powerpc/kvm/e500.h
-  KVM: PPC: e500: refactor core-specific TLB code
-  KVM: PPC: e500: Track TLB1 entries with a bitmap
-  KVM: PPC: e500: emulate tlbilx
-  powerpc/booke: Provide exception macros with interrupt name
-  KVM: PPC: booke: category E.HV (GS-mode) support
-  KVM: PPC: booke: standard PPC floating point support
-  KVM: PPC: e500mc support
-
- arch/powerpc/include/asm/cputable.h         |   21 +-
- arch/powerpc/include/asm/dbell.h            |    3 +
- arch/powerpc/include/asm/hw_irq.h           |    1 +
- arch/powerpc/include/asm/kvm.h              |    1 +
- arch/powerpc/include/asm/kvm_asm.h          |    8 +
- arch/powerpc/include/asm/kvm_book3s.h       |    3 +
- arch/powerpc/include/asm/kvm_booke.h        |    3 +
- arch/powerpc/include/asm/kvm_booke_hv_asm.h |   49 +++
- arch/powerpc/include/asm/kvm_e500.h         |   96 -----
- arch/powerpc/include/asm/kvm_host.h         |   22 +-
- arch/powerpc/include/asm/kvm_ppc.h          |   10 +-
- arch/powerpc/include/asm/mmu-book3e.h       |    6 +
- arch/powerpc/include/asm/processor.h        |    3 +
- arch/powerpc/include/asm/reg.h              |    2 +
- arch/powerpc/include/asm/reg_booke.h        |   34 ++
- arch/powerpc/include/asm/system.h           |    1 +
- arch/powerpc/kernel/asm-offsets.c           |   15 +-
- arch/powerpc/kernel/cpu_setup_fsl_booke.S   |    1 +
- arch/powerpc/kernel/head_44x.S              |   23 +-
- arch/powerpc/kernel/head_booke.h            |   69 ++-
- arch/powerpc/kernel/head_fsl_booke.S        |   98 ++++-
- arch/powerpc/kvm/44x.c                      |   12 +
- arch/powerpc/kvm/Kconfig                    |   28 +-
- arch/powerpc/kvm/Makefile                   |   15 +-
- arch/powerpc/kvm/book3s.c                   |    4 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c         |   26 +-
- arch/powerpc/kvm/booke.c                    |  469 +++++++++++++++++----
- arch/powerpc/kvm/booke.h                    |   57 +++-
- arch/powerpc/kvm/booke_emulate.c            |   23 +-
- arch/powerpc/kvm/bookehv_interrupts.S       |  602 +++++++++++++++++++++++++++
- arch/powerpc/kvm/e500.c                     |  372 ++++++++++++++---
- arch/powerpc/kvm/e500.h                     |  302 ++++++++++++++
- arch/powerpc/kvm/e500_emulate.c             |  110 +++++-
- arch/powerpc/kvm/e500_tlb.c                 |  588 +++++++++++---------------
- arch/powerpc/kvm/e500_tlb.h                 |  174 --------
- arch/powerpc/kvm/e500mc.c                   |  342 +++++++++++++++
- arch/powerpc/kvm/powerpc.c                  |   47 ++-
- arch/powerpc/kvm/timing.h                   |    6 +
- 38 files changed, 2796 insertions(+), 850 deletions(-)
- create mode 100644 arch/powerpc/include/asm/kvm_booke_hv_asm.h
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+[agraf: fix bisectability]
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/include/asm/kvm_e500.h |   96 -----------------------------------
+ arch/powerpc/kvm/e500.c             |    1 -
+ arch/powerpc/kvm/e500.h             |   82 ++++++++++++++++++++++++++++--
+ arch/powerpc/kvm/e500_emulate.c     |    1 -
+ arch/powerpc/kvm/e500_tlb.c         |    1 -
+ 5 files changed, 78 insertions(+), 103 deletions(-)
  delete mode 100644 arch/powerpc/include/asm/kvm_e500.h
- create mode 100644 arch/powerpc/kvm/bookehv_interrupts.S
- create mode 100644 arch/powerpc/kvm/e500.h
- delete mode 100644 arch/powerpc/kvm/e500_tlb.h
- create mode 100644 arch/powerpc/kvm/e500mc.c
+
+diff --git a/arch/powerpc/include/asm/kvm_e500.h b/arch/powerpc/include/asm/kvm_e500.h
+deleted file mode 100644
+index 8cd50a5..0000000
+--- a/arch/powerpc/include/asm/kvm_e500.h
++++ /dev/null
+@@ -1,96 +0,0 @@
+-/*
+- * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
+- *
+- * Author: Yu Liu, <yu.liu@freescale.com>
+- *
+- * Description:
+- * This file is derived from arch/powerpc/include/asm/kvm_44x.h,
+- * by Hollis Blanchard <hollisb@us.ibm.com>.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License, version 2, as
+- * published by the Free Software Foundation.
+- */
+-
+-#ifndef __ASM_KVM_E500_H__
+-#define __ASM_KVM_E500_H__
+-
+-#include <linux/kvm_host.h>
+-
+-#define BOOKE_INTERRUPT_SIZE 36
+-
+-#define E500_PID_NUM   3
+-#define E500_TLB_NUM   2
+-
+-#define E500_TLB_VALID 1
+-#define E500_TLB_DIRTY 2
+-
+-struct tlbe_ref {
+-	pfn_t pfn;
+-	unsigned int flags; /* E500_TLB_* */
+-};
+-
+-struct tlbe_priv {
+-	struct tlbe_ref ref; /* TLB0 only -- TLB1 uses tlb_refs */
+-};
+-
+-struct vcpu_id_table;
+-
+-struct kvmppc_e500_tlb_params {
+-	int entries, ways, sets;
+-};
+-
+-struct kvmppc_vcpu_e500 {
+-	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
+-	struct kvm_book3e_206_tlb_entry *gtlb_arch;
+-
+-	/* Starting entry number in gtlb_arch[] */
+-	int gtlb_offset[E500_TLB_NUM];
+-
+-	/* KVM internal information associated with each guest TLB entry */
+-	struct tlbe_priv *gtlb_priv[E500_TLB_NUM];
+-
+-	struct kvmppc_e500_tlb_params gtlb_params[E500_TLB_NUM];
+-
+-	unsigned int gtlb_nv[E500_TLB_NUM];
+-
+-	/*
+-	 * information associated with each host TLB entry --
+-	 * TLB1 only for now.  If/when guest TLB1 entries can be
+-	 * mapped with host TLB0, this will be used for that too.
+-	 *
+-	 * We don't want to use this for guest TLB0 because then we'd
+-	 * have the overhead of doing the translation again even if
+-	 * the entry is still in the guest TLB (e.g. we swapped out
+-	 * and back, and our host TLB entries got evicted).
+-	 */
+-	struct tlbe_ref *tlb_refs[E500_TLB_NUM];
+-	unsigned int host_tlb1_nv;
+-
+-	u32 host_pid[E500_PID_NUM];
+-	u32 pid[E500_PID_NUM];
+-	u32 svr;
+-
+-	/* vcpu id table */
+-	struct vcpu_id_table *idt;
+-
+-	u32 l1csr0;
+-	u32 l1csr1;
+-	u32 hid0;
+-	u32 hid1;
+-	u32 tlb0cfg;
+-	u32 tlb1cfg;
+-	u64 mcar;
+-
+-	struct page **shared_tlb_pages;
+-	int num_shared_tlb_pages;
+-
+-	struct kvm_vcpu vcpu;
+-};
+-
+-static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
+-{
+-	return container_of(vcpu, struct kvmppc_vcpu_e500, vcpu);
+-}
+-
+-#endif /* __ASM_KVM_E500_H__ */
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index 5c450ba..76b35d8 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -20,7 +20,6 @@
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+ #include <asm/tlbflush.h>
+-#include <asm/kvm_e500.h>
+ #include <asm/kvm_ppc.h>
+ 
+ #include "booke.h"
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index 02ecde2..51d13bd 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -1,11 +1,12 @@
+ /*
+  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
+  *
+- * Author: Yu Liu, yu.liu@freescale.com
++ * Author: Yu Liu <yu.liu@freescale.com>
+  *
+  * Description:
+- * This file is based on arch/powerpc/kvm/44x_tlb.h,
+- * by Hollis Blanchard <hollisb@us.ibm.com>.
++ * This file is based on arch/powerpc/kvm/44x_tlb.h and
++ * arch/powerpc/include/asm/kvm_44x.h by Hollis Blanchard <hollisb@us.ibm.com>,
++ * Copyright IBM Corp. 2007-2008
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License, version 2, as
+@@ -18,7 +19,80 @@
+ #include <linux/kvm_host.h>
+ #include <asm/mmu-book3e.h>
+ #include <asm/tlb.h>
+-#include <asm/kvm_e500.h>
++
++#define E500_PID_NUM   3
++#define E500_TLB_NUM   2
++
++#define E500_TLB_VALID 1
++#define E500_TLB_DIRTY 2
++
++struct tlbe_ref {
++	pfn_t pfn;
++	unsigned int flags; /* E500_TLB_* */
++};
++
++struct tlbe_priv {
++	struct tlbe_ref ref; /* TLB0 only -- TLB1 uses tlb_refs */
++};
++
++struct vcpu_id_table;
++
++struct kvmppc_e500_tlb_params {
++	int entries, ways, sets;
++};
++
++struct kvmppc_vcpu_e500 {
++	/* Unmodified copy of the guest's TLB -- shared with host userspace. */
++	struct kvm_book3e_206_tlb_entry *gtlb_arch;
++
++	/* Starting entry number in gtlb_arch[] */
++	int gtlb_offset[E500_TLB_NUM];
++
++	/* KVM internal information associated with each guest TLB entry */
++	struct tlbe_priv *gtlb_priv[E500_TLB_NUM];
++
++	struct kvmppc_e500_tlb_params gtlb_params[E500_TLB_NUM];
++
++	unsigned int gtlb_nv[E500_TLB_NUM];
++
++	/*
++	 * information associated with each host TLB entry --
++	 * TLB1 only for now.  If/when guest TLB1 entries can be
++	 * mapped with host TLB0, this will be used for that too.
++	 *
++	 * We don't want to use this for guest TLB0 because then we'd
++	 * have the overhead of doing the translation again even if
++	 * the entry is still in the guest TLB (e.g. we swapped out
++	 * and back, and our host TLB entries got evicted).
++	 */
++	struct tlbe_ref *tlb_refs[E500_TLB_NUM];
++	unsigned int host_tlb1_nv;
++
++	u32 host_pid[E500_PID_NUM];
++	u32 pid[E500_PID_NUM];
++	u32 svr;
++
++	/* vcpu id table */
++	struct vcpu_id_table *idt;
++
++	u32 l1csr0;
++	u32 l1csr1;
++	u32 hid0;
++	u32 hid1;
++	u32 tlb0cfg;
++	u32 tlb1cfg;
++	u64 mcar;
++
++	struct page **shared_tlb_pages;
++	int num_shared_tlb_pages;
++
++	struct kvm_vcpu vcpu;
++};
++
++static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
++{
++	return container_of(vcpu, struct kvmppc_vcpu_e500, vcpu);
++}
+ 
+ /* This geometry is the legacy default -- can be overridden by userspace */
+ #define KVM_E500_TLB0_WAY_SIZE		128
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 2a1a228..7e2d592 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -14,7 +14,6 @@
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/disassemble.h>
+-#include <asm/kvm_e500.h>
+ 
+ #include "booke.h"
+ #include "e500.h"
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 1d623a0..7d4a918 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -26,7 +26,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/hugetlb.h>
+ #include <asm/kvm_ppc.h>
+-#include <asm/kvm_e500.h>
+ 
+ #include "../mm/mmu_decl.h"
+ #include "e500.h"
+-- 
+1.6.0.2
