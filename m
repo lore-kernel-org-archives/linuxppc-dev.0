@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D89FAB6FDA
+ by ozlabs.org (Postfix) with ESMTPS id C7E98B6FC4
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:20 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 29/38] KVM: PPC: bookehv: disable MAS register updates early
-Date: Wed, 29 Feb 2012 01:09:57 +0100
-Message-Id: <1330474206-14794-30-git-send-email-agraf@suse.de>
+Subject: [PATCH 24/38] KVM: PPC: booke: rework rescheduling checks
+Date: Wed, 29 Feb 2012 01:09:52 +0100
+Message-Id: <1330474206-14794-25-git-send-email-agraf@suse.de>
 In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
 References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,53 +22,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to make sure that no MAS updates happen automatically while we
-have the guest MAS registers loaded. So move the disabling code a bit
-higher up so that it covers the full time we have guest values in MAS
-registers.
+Instead of checking whether we should reschedule only when we exited
+due to an interrupt, let's always check before entering the guest back
+again. This gets the target more in line with the other archs.
 
-The race this patch fixes should never occur, but it makes the code a
-bit more logical to do it this way around.
+Also while at it, generalize the whole thing so that eventually we could
+have a single kvmppc_prepare_to_enter function for all ppc targets that
+does signal and reschedule checking for us.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/kvm/bookehv_interrupts.S |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 469bd3f..021d087 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -358,6 +358,7 @@ _GLOBAL(kvmppc_resume_host)
- 	mtspr	SPRN_MAS4, r6
- 	stw	r5, VCPU_SHARED_MAS7_3+0(r11)
- 	mtspr	SPRN_MAS6, r8
-+	/* Enable MAS register updates via exception */
- 	mfspr	r3, SPRN_EPCR
- 	rlwinm	r3, r3, 0, ~SPRN_EPCR_DMIUH
- 	mtspr	SPRN_EPCR, r3
-@@ -515,6 +516,11 @@ lightweight_exit:
- 	mtspr	SPRN_PID, r3
+---
+
+v2 -> v3:
+
+  - check for signals earlier
+---
+ arch/powerpc/include/asm/kvm_ppc.h |    2 +-
+ arch/powerpc/kvm/book3s.c          |    4 +-
+ arch/powerpc/kvm/booke.c           |   72 +++++++++++++++++++++++++-----------
+ 3 files changed, 54 insertions(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index e709975..7f0a3da 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -95,7 +95,7 @@ extern int kvmppc_core_vcpu_translate(struct kvm_vcpu *vcpu,
+ extern void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu);
+ extern void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu);
  
- 	PPC_LL	r11, VCPU_SHARED(r4)
-+	/* Disable MAS register updates via exception */
-+	mfspr	r3, SPRN_EPCR
-+	oris	r3, r3, SPRN_EPCR_DMIUH@h
-+	mtspr	SPRN_EPCR, r3
-+	isync
- 	/* Save host mas4 and mas6 and load guest MAS registers */
- 	mfspr	r3, SPRN_MAS4
- 	stw	r3, VCPU_HOST_MAS4(r4)
-@@ -538,10 +544,6 @@ lightweight_exit:
- 	lwz	r5, VCPU_SHARED_MAS7_3+0(r11)
- 	mtspr	SPRN_MAS6, r3
- 	mtspr	SPRN_MAS7, r5
--	/* Disable MAS register updates via exception */
--	mfspr	r3, SPRN_EPCR
--	oris	r3, r3, SPRN_EPCR_DMIUH@h
--	mtspr	SPRN_EPCR, r3
+-extern void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu);
++extern int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu);
+ extern int kvmppc_core_pending_dec(struct kvm_vcpu *vcpu);
+ extern void kvmppc_core_queue_program(struct kvm_vcpu *vcpu, ulong flags);
+ extern void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu);
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 7d54f4e..c8ead7b 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -258,7 +258,7 @@ static bool clear_irqprio(struct kvm_vcpu *vcpu, unsigned int priority)
+ 	return true;
+ }
  
- 	/*
- 	 * Host interrupt handlers may have clobbered these guest-readable
+-void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
++int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long *pending = &vcpu->arch.pending_exceptions;
+ 	unsigned long old_pending = vcpu->arch.pending_exceptions;
+@@ -283,6 +283,8 @@ void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+ 
+ 	/* Tell the guest about our interrupt status */
+ 	kvmppc_update_int_pending(vcpu, *pending, old_pending);
++
++	return 0;
+ }
+ 
+ pfn_t kvmppc_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn)
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 9979be1..3da0e42 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -439,8 +439,9 @@ static void kvmppc_core_check_exceptions(struct kvm_vcpu *vcpu)
+ }
+ 
+ /* Check pending exceptions and deliver one, if possible. */
+-void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
++int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+ {
++	int r = 0;
+ 	WARN_ON_ONCE(!irqs_disabled());
+ 
+ 	kvmppc_core_check_exceptions(vcpu);
+@@ -451,8 +452,46 @@ void kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+ 		local_irq_disable();
+ 
+ 		kvmppc_set_exit_type(vcpu, EMULATED_MTMSRWE_EXITS);
+-		kvmppc_core_check_exceptions(vcpu);
++		r = 1;
+ 	};
++
++	return r;
++}
++
++/*
++ * Common checks before entering the guest world.  Call with interrupts
++ * disabled.
++ *
++ * returns !0 if a signal is pending and check_signal is true
++ */
++static int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu, bool check_signal)
++{
++	int r = 0;
++
++	WARN_ON_ONCE(!irqs_disabled());
++	while (true) {
++		if (need_resched()) {
++			local_irq_enable();
++			cond_resched();
++			local_irq_disable();
++			continue;
++		}
++
++		if (check_signal && signal_pending(current)) {
++			r = 1;
++			break;
++		}
++
++		if (kvmppc_core_prepare_to_enter(vcpu)) {
++			/* interrupts got enabled in between, so we
++			   are back at square 1 */
++			continue;
++		}
++
++		break;
++	}
++
++	return r;
+ }
+ 
+ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+@@ -470,10 +509,7 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	}
+ 
+ 	local_irq_disable();
+-
+-	kvmppc_core_prepare_to_enter(vcpu);
+-
+-	if (signal_pending(current)) {
++	if (kvmppc_prepare_to_enter(vcpu, true)) {
+ 		kvm_run->exit_reason = KVM_EXIT_INTR;
+ 		ret = -EINTR;
+ 		goto out;
+@@ -598,25 +634,21 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 	switch (exit_nr) {
+ 	case BOOKE_INTERRUPT_MACHINE_CHECK:
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_EXTERNAL:
+ 		kvmppc_account_exit(vcpu, EXT_INTR_EXITS);
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_DECREMENTER:
+ 		kvmppc_account_exit(vcpu, DEC_EXITS);
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_DOORBELL:
+ 		kvmppc_account_exit(vcpu, DBELL_EXITS);
+-		kvm_resched(vcpu);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+@@ -865,19 +897,15 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		BUG();
+ 	}
+ 
++	/*
++	 * To avoid clobbering exit_reason, only check for signals if we
++	 * aren't already exiting to userspace for some other reason.
++	 */
+ 	local_irq_disable();
+-
+-	kvmppc_core_prepare_to_enter(vcpu);
+-
+-	if (!(r & RESUME_HOST)) {
+-		/* To avoid clobbering exit_reason, only check for signals if
+-		 * we aren't already exiting to userspace for some other
+-		 * reason. */
+-		if (signal_pending(current)) {
+-			run->exit_reason = KVM_EXIT_INTR;
+-			r = (-EINTR << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
+-			kvmppc_account_exit(vcpu, SIGNAL_EXITS);
+-		}
++	if (kvmppc_prepare_to_enter(vcpu, !(r & RESUME_HOST))) {
++		run->exit_reason = KVM_EXIT_INTR;
++		r = (-EINTR << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
++		kvmppc_account_exit(vcpu, SIGNAL_EXITS);
+ 	}
+ 
+ 	return r;
 -- 
 1.6.0.2
