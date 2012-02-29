@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8B40AB6FDB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:15 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5CCDFB6FBC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:16 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 06/38] KVM: PPC: e500: rename e500_tlb.h to e500.h
-Date: Wed, 29 Feb 2012 01:09:34 +0100
-Message-Id: <1330474206-14794-7-git-send-email-agraf@suse.de>
+Subject: [PATCH 18/38] KVM: PPC: e500mc: Move r1/r2 restoration very early
+Date: Wed, 29 Feb 2012 01:09:46 +0100
+Message-Id: <1330474206-14794-19-git-send-email-agraf@suse.de>
 In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
 References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,83 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Scott Wood <scottwood@freescale.com>
+If we hit any exception whatsoever in the restore path and r1/r2 aren't the
+host registers, we don't get a working oops. So it's always a good idea to
+restore them as early as possible.
 
-This is in preparation for merging in the contents of
-arch/powerpc/include/asm/kvm_e500.h.
+This time, it actually has practical reasons to do so too, since we need to
+have the host page fault handler fix up our guest instruction read code. And
+for that to work we need r1/r2 restored.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/e500.c                 |    2 +-
- arch/powerpc/kvm/{e500_tlb.h => e500.h} |    6 +++---
- arch/powerpc/kvm/e500_emulate.c         |    2 +-
- arch/powerpc/kvm/e500_tlb.c             |    2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
- rename arch/powerpc/kvm/{e500_tlb.h => e500.h} (98%)
+ arch/powerpc/kvm/bookehv_interrupts.S |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index ac6c9ae..5c450ba 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -24,7 +24,7 @@
- #include <asm/kvm_ppc.h>
- 
- #include "booke.h"
--#include "e500_tlb.h"
-+#include "e500.h"
- 
- void kvmppc_core_load_host_debugstate(struct kvm_vcpu *vcpu)
- {
-diff --git a/arch/powerpc/kvm/e500_tlb.h b/arch/powerpc/kvm/e500.h
-similarity index 98%
-rename from arch/powerpc/kvm/e500_tlb.h
-rename to arch/powerpc/kvm/e500.h
-index 5c6d2d7..02ecde2 100644
---- a/arch/powerpc/kvm/e500_tlb.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -12,8 +12,8 @@
-  * published by the Free Software Foundation.
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 9eaeebd..63023ae 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -67,6 +67,12 @@
+  * saved in vcpu: cr, ctr, r3-r13
   */
+ .macro kvm_handler_common intno, srr0, flags
++	/* Restore host stack pointer */
++	PPC_STL	r1, VCPU_GPR(r1)(r4)
++	PPC_STL	r2, VCPU_GPR(r2)(r4)
++	PPC_LL	r1, VCPU_HOST_STACK(r4)
++	PPC_LL	r2, HOST_R2(r1)
++
+ 	mfspr	r10, SPRN_PID
+ 	lwz	r8, VCPU_HOST_PID(r4)
+ 	PPC_LL	r11, VCPU_SHARED(r4)
+@@ -290,10 +296,8 @@ _GLOBAL(kvmppc_resume_host)
+ 	/* Save remaining volatile guest register state to vcpu. */
+ 	mfspr	r3, SPRN_VRSAVE
+ 	PPC_STL	r0, VCPU_GPR(r0)(r4)
+-	PPC_STL	r1, VCPU_GPR(r1)(r4)
+ 	mflr	r5
+ 	mfspr	r6, SPRN_SPRG4
+-	PPC_STL	r2, VCPU_GPR(r2)(r4)
+ 	PPC_STL	r5, VCPU_LR(r4)
+ 	mfspr	r7, SPRN_SPRG5
+ 	PPC_STL	r3, VCPU_VRSAVE(r4)
+@@ -334,10 +338,6 @@ _GLOBAL(kvmppc_resume_host)
+ 	mtspr	SPRN_EPCR, r3
+ 	isync
  
--#ifndef __KVM_E500_TLB_H__
--#define __KVM_E500_TLB_H__
-+#ifndef KVM_E500_H
-+#define KVM_E500_H
- 
- #include <linux/kvm_host.h>
- #include <asm/mmu-book3e.h>
-@@ -171,4 +171,4 @@ static inline int tlbe_is_host_safe(const struct kvm_vcpu *vcpu,
- 	return 1;
- }
- 
--#endif /* __KVM_E500_TLB_H__ */
-+#endif /* KVM_E500_H */
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index 6d0b2bd..2a1a228 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -17,7 +17,7 @@
- #include <asm/kvm_e500.h>
- 
- #include "booke.h"
--#include "e500_tlb.h"
-+#include "e500.h"
- 
- #define XOP_TLBIVAX 786
- #define XOP_TLBSX   914
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 6e53e41..1d623a0 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -29,7 +29,7 @@
- #include <asm/kvm_e500.h>
- 
- #include "../mm/mmu_decl.h"
--#include "e500_tlb.h"
-+#include "e500.h"
- #include "trace.h"
- #include "timing.h"
- 
+-	/* Restore host stack pointer */
+-	PPC_LL	r1, VCPU_HOST_STACK(r4)
+-	PPC_LL	r2, HOST_R2(r1)
+-
+ 	/* Switch to kernel stack and jump to handler. */
+ 	PPC_LL	r3, HOST_RUN(r1)
+ 	mr	r5, r14 /* intno */
 -- 
 1.6.0.2
