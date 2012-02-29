@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5C045B6FBB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:23 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4668FB6FCA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:24 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 10/38] KVM: PPC: e500: Track TLB1 entries with a bitmap
-Date: Wed, 29 Feb 2012 01:09:38 +0100
-Message-Id: <1330474206-14794-11-git-send-email-agraf@suse.de>
+Subject: [PATCH 36/38] KVM: PPC: booke: expose good state on irq reinject
+Date: Wed, 29 Feb 2012 01:10:04 +0100
+Message-Id: <1330474206-14794-37-git-send-email-agraf@suse.de>
 In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
 References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,215 +22,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Scott Wood <scottwood@freescale.com>
+When reinjecting an interrupt into the host interrupt handler after we're
+back in host kernel land, we need to tell the kernel where the interrupt
+happened. We can't tell it that we were in guest state, because that might
+lead to random code walking host addresses. So instead, we tell it that
+we came from the interrupt reinject code.
 
-Rather than invalidate everything when a TLB1 entry needs to be
-taken down, keep track of which host TLB1 entries are used for
-a given guest TLB1 entry, and invalidate just those entries.
+This helps getting reasonable numbers out of perf.
 
-Based on code from Ashish Kalra <Ashish.Kalra@freescale.com>
-and Liu Yu <yu.liu@freescale.com>.
-
-Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/kvm/e500.h     |    5 +++
- arch/powerpc/kvm/e500_tlb.c |   72 ++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 72 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index 34cef08..f4dee55 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -2,6 +2,7 @@
-  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Author: Yu Liu <yu.liu@freescale.com>
-+ *         Ashish Kalra <ashish.kalra@freescale.com>
-  *
-  * Description:
-  * This file is based on arch/powerpc/kvm/44x_tlb.h and
-@@ -25,6 +26,7 @@
- 
- #define E500_TLB_VALID 1
- #define E500_TLB_DIRTY 2
-+#define E500_TLB_BITMAP 4
- 
- struct tlbe_ref {
- 	pfn_t pfn;
-@@ -82,6 +84,9 @@ struct kvmppc_vcpu_e500 {
- 	struct page **shared_tlb_pages;
- 	int num_shared_tlb_pages;
- 
-+	u64 *g2h_tlb1_map;
-+	unsigned int *h2g_tlb1_rmap;
-+
- #ifdef CONFIG_KVM_E500
- 	u32 pid[E500_PID_NUM];
- 
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 9925fc6..c8ce51d 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -2,6 +2,7 @@
-  * Copyright (C) 2008-2011 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Author: Yu Liu, yu.liu@freescale.com
-+ *         Ashish Kalra, ashish.kalra@freescale.com
-  *
-  * Description:
-  * This file is based on arch/powerpc/kvm/44x_tlb.c,
-@@ -175,8 +176,28 @@ static void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	struct kvm_book3e_206_tlb_entry *gtlbe =
- 		get_entry(vcpu_e500, tlbsel, esel);
- 
--	if (tlbsel == 1) {
--		kvmppc_e500_tlbil_all(vcpu_e500);
-+	if (tlbsel == 1 &&
-+	    vcpu_e500->gtlb_priv[1][esel].ref.flags & E500_TLB_BITMAP) {
-+		u64 tmp = vcpu_e500->g2h_tlb1_map[esel];
-+		int hw_tlb_indx;
-+		unsigned long flags;
-+
-+		local_irq_save(flags);
-+		while (tmp) {
-+			hw_tlb_indx = __ilog2_u64(tmp & -tmp);
-+			mtspr(SPRN_MAS0,
-+			      MAS0_TLBSEL(1) |
-+			      MAS0_ESEL(to_htlb1_esel(hw_tlb_indx)));
-+			mtspr(SPRN_MAS1, 0);
-+			asm volatile("tlbwe");
-+			vcpu_e500->h2g_tlb1_rmap[hw_tlb_indx] = 0;
-+			tmp &= tmp - 1;
-+		}
-+		mb();
-+		vcpu_e500->g2h_tlb1_map[esel] = 0;
-+		vcpu_e500->gtlb_priv[1][esel].ref.flags &= ~E500_TLB_BITMAP;
-+		local_irq_restore(flags);
-+
- 		return;
- 	}
- 
-@@ -282,6 +303,16 @@ static inline void kvmppc_e500_ref_release(struct tlbe_ref *ref)
+---
+
+v2 -> v3:
+
+  - actually sync host state
+  - no need for vcpu in sync
+---
+ arch/powerpc/kvm/booke.c |   56 +++++++++++++++++++++++++++++++++------------
+ 1 files changed, 41 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index ee39c8a..488936b 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -595,37 +595,63 @@ static int emulation_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
  	}
  }
  
-+static void clear_tlb1_bitmap(struct kvmppc_vcpu_e500 *vcpu_e500)
-+{
-+	if (vcpu_e500->g2h_tlb1_map)
-+		memset(vcpu_e500->g2h_tlb1_map,
-+		       sizeof(u64) * vcpu_e500->gtlb_params[1].entries, 0);
-+	if (vcpu_e500->h2g_tlb1_rmap)
-+		memset(vcpu_e500->h2g_tlb1_rmap,
-+		       sizeof(unsigned int) * host_tlb_params[1].entries, 0);
+-/**
+- * kvmppc_handle_exit
+- *
+- * Return value is in the form (errcode<<2 | RESUME_FLAG_HOST | RESUME_FLAG_NV)
+- */
+-int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+-                       unsigned int exit_nr)
++static void kvmppc_fill_pt_regs(struct pt_regs *regs)
+ {
+-	int r = RESUME_HOST;
++	ulong r1, ip, msr, lr;
++
++	asm("mr %0, 1" : "=r"(r1));
++	asm("mflr %0" : "=r"(lr));
++	asm("mfmsr %0" : "=r"(msr));
++	asm("bl 1f; 1: mflr %0" : "=r"(ip));
++
++	memset(regs, 0, sizeof(*regs));
++	regs->gpr[1] = r1;
++	regs->nip = ip;
++	regs->msr = msr;
++	regs->link = lr;
 +}
-+
- static void clear_tlb_privs(struct kvmppc_vcpu_e500 *vcpu_e500)
- {
- 	int tlbsel = 0;
-@@ -511,7 +542,7 @@ static void kvmppc_e500_tlb0_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- /* XXX for both one-one and one-to-many , for now use TLB1 */
- static int kvmppc_e500_tlb1_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 		u64 gvaddr, gfn_t gfn, struct kvm_book3e_206_tlb_entry *gtlbe,
--		struct kvm_book3e_206_tlb_entry *stlbe)
-+		struct kvm_book3e_206_tlb_entry *stlbe, int esel)
- {
- 	struct tlbe_ref *ref;
- 	unsigned int victim;
-@@ -524,6 +555,14 @@ static int kvmppc_e500_tlb1_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	ref = &vcpu_e500->tlb_refs[1][victim];
- 	kvmppc_e500_shadow_map(vcpu_e500, gvaddr, gfn, gtlbe, 1, stlbe, ref);
  
-+	vcpu_e500->g2h_tlb1_map[esel] |= (u64)1 << victim;
-+	vcpu_e500->gtlb_priv[1][esel].ref.flags |= E500_TLB_BITMAP;
-+	if (vcpu_e500->h2g_tlb1_rmap[victim]) {
-+		unsigned int idx = vcpu_e500->h2g_tlb1_rmap[victim];
-+		vcpu_e500->g2h_tlb1_map[idx] &= ~(1ULL << victim);
-+	}
-+	vcpu_e500->h2g_tlb1_rmap[victim] = esel;
-+
- 	return victim;
- }
+-	/* update before a new last_exit_type is rewritten */
+-	kvmppc_update_timing_stats(vcpu);
++static void kvmppc_restart_interrupt(struct kvm_vcpu *vcpu,
++				     unsigned int exit_nr)
++{
++	struct pt_regs regs;
  
-@@ -728,7 +767,7 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
- 			 * are mapped on the fly. */
- 			stlbsel = 1;
- 			sesel = kvmppc_e500_tlb1_map(vcpu_e500, eaddr,
--				    raddr >> PAGE_SHIFT, gtlbe, &stlbe);
-+				    raddr >> PAGE_SHIFT, gtlbe, &stlbe, esel);
- 			break;
- 
- 		default:
-@@ -856,7 +895,7 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
- 
- 		stlbsel = 1;
- 		sesel = kvmppc_e500_tlb1_map(vcpu_e500, eaddr, gfn,
--					     gtlbe, &stlbe);
-+					     gtlbe, &stlbe, esel);
+ 	switch (exit_nr) {
+ 	case BOOKE_INTERRUPT_EXTERNAL:
+-		do_IRQ(current->thread.regs);
++		kvmppc_fill_pt_regs(&regs);
++		do_IRQ(&regs);
+ 		break;
+-
+ 	case BOOKE_INTERRUPT_DECREMENTER:
+-		timer_interrupt(current->thread.regs);
++		kvmppc_fill_pt_regs(&regs);
++		timer_interrupt(&regs);
+ 		break;
+-
+ #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3E_64)
+ 	case BOOKE_INTERRUPT_DOORBELL:
+-		doorbell_exception(current->thread.regs);
++		kvmppc_fill_pt_regs(&regs);
++		doorbell_exception(&regs);
+ 		break;
+ #endif
+ 	case BOOKE_INTERRUPT_MACHINE_CHECK:
+ 		/* FIXME */
  		break;
  	}
- 
-@@ -872,6 +911,9 @@ static void free_gtlb(struct kvmppc_vcpu_e500 *vcpu_e500)
- {
- 	int i;
- 
-+	clear_tlb1_bitmap(vcpu_e500);
-+	kfree(vcpu_e500->g2h_tlb1_map);
++}
 +
- 	clear_tlb_refs(vcpu_e500);
- 	kfree(vcpu_e500->gtlb_priv[0]);
- 	kfree(vcpu_e500->gtlb_priv[1]);
-@@ -932,6 +974,7 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- 	char *virt;
- 	struct page **pages;
- 	struct tlbe_priv *privs[2] = {};
-+	u64 *g2h_bitmap = NULL;
- 	size_t array_len;
- 	u32 sets;
- 	int num_pages, ret, i;
-@@ -993,10 +1036,16 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- 	if (!privs[0] || !privs[1])
- 		goto err_put_page;
- 
-+	g2h_bitmap = kzalloc(sizeof(u64) * params.tlb_sizes[1],
-+	                     GFP_KERNEL);
-+	if (!g2h_bitmap)
-+		goto err_put_page;
++/**
++ * kvmppc_handle_exit
++ *
++ * Return value is in the form (errcode<<2 | RESUME_FLAG_HOST | RESUME_FLAG_NV)
++ */
++int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
++                       unsigned int exit_nr)
++{
++	int r = RESUME_HOST;
 +
- 	free_gtlb(vcpu_e500);
- 
- 	vcpu_e500->gtlb_priv[0] = privs[0];
- 	vcpu_e500->gtlb_priv[1] = privs[1];
-+	vcpu_e500->g2h_tlb1_map = g2h_bitmap;
- 
- 	vcpu_e500->gtlb_arch = (struct kvm_book3e_206_tlb_entry *)
- 		(virt + (cfg->array & (PAGE_SIZE - 1)));
-@@ -1129,6 +1178,18 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
- 	if (!vcpu_e500->gtlb_priv[1])
- 		goto err;
- 
-+	vcpu_e500->g2h_tlb1_map = kzalloc(sizeof(unsigned int) *
-+					  vcpu_e500->gtlb_params[1].entries,
-+					  GFP_KERNEL);
-+	if (!vcpu_e500->g2h_tlb1_map)
-+		goto err;
++	/* update before a new last_exit_type is rewritten */
++	kvmppc_update_timing_stats(vcpu);
 +
-+	vcpu_e500->h2g_tlb1_rmap = kzalloc(sizeof(unsigned int) *
-+					   host_tlb_params[1].entries,
-+					   GFP_KERNEL);
-+	if (!vcpu_e500->h2g_tlb1_rmap)
-+		goto err;
-+
- 	/* Init TLB configuration register */
- 	vcpu->arch.tlbcfg[0] = mfspr(SPRN_TLB0CFG) &
- 			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
-@@ -1154,6 +1215,7 @@ err:
- void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500)
- {
- 	free_gtlb(vcpu_e500);
-+	kfree(vcpu_e500->h2g_tlb1_rmap);
- 	kfree(vcpu_e500->tlb_refs[0]);
- 	kfree(vcpu_e500->tlb_refs[1]);
- }
++	/* restart interrupts if they were meant for the host */
++	kvmppc_restart_interrupt(vcpu, exit_nr);
+ 
+ 	local_irq_enable();
+ 
 -- 
 1.6.0.2
