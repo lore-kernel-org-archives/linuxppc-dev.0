@@ -1,18 +1,33 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A084B6FBB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:24 +1100 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 35/38] KVM: PPC: booke: Support perfmon interrupts
-Date: Wed, 29 Feb 2012 01:10:03 +0100
-Message-Id: <1330474206-14794-36-git-send-email-agraf@suse.de>
-In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
-References: <1330474206-14794-1-git-send-email-agraf@suse.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D855C1007D1
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 12:08:44 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 29 Feb 2012 06:38:41 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1T18dKZ2678938
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 06:38:39 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1T18c8b016445
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 12:08:39 +1100
+Date: Wed, 29 Feb 2012 09:08:37 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: David Laight <David.Laight@aculab.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 20/21] Introduce struct eeh_stats for EEH
+Message-ID: <20120229010837.GA3146@shangw>
+References: <1330409051-8941-21-git-send-email-shangw@linux.vnet.ibm.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B6E82@saturn3.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6E82@saturn3.aculab.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When during guest context we get a performance monitor interrupt, we
-currently bail out and oops. Let's route it to its correct handler
-instead.
+>  
+> > +struct eeh_stats {
+> > +	unsigned int no_device;		/* PCI device not found */
+> ...
+> > +				"no device           =%d\n"
+> ...
+> 
+> Use %u (for all the stats), you really don't want negative
+> values printed.
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/kvm/booke.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Yes. 
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 7df3f3a..ee39c8a 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -679,6 +679,10 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		r = RESUME_GUEST;
- 		break;
+> I've NFI how long wrapping these counters might take!
+> If it is feasable (maybe much above 100Hz) then you
+> need 64bit counters.
+> 
+
+I think it's better to use "u64" here ;-)
+
+> 	David
+> 
+
+Thanks,
+Gavin
  
-+	case BOOKE_INTERRUPT_PERFORMANCE_MONITOR:
-+		r = RESUME_GUEST;
-+		break;
-+
- 	case BOOKE_INTERRUPT_HV_PRIV:
- 		r = emulation_exit(run, vcpu);
- 		break;
--- 
-1.6.0.2
