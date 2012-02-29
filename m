@@ -1,25 +1,33 @@
-Return-Path: <B32616@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe003.messaging.microsoft.com
- [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33F40B6FC9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 13:55:19 +1100 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: "jgarzik@pobox.com" <jgarzik@pobox.com>
-Subject: RE: [PATCH V3] fsl-sata: add support for interrupt coalsecing feature
-Date: Wed, 29 Feb 2012 02:54:58 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70424A8@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1329291634-883-1-git-send-email-qiang.liu@freescale.com>
- <CADRPPNTmRvPVymJmW4vagU+2M4DmqeDSEj=4=R_=YDJekOTccQ@mail.gmail.com>
-In-Reply-To: <CADRPPNTmRvPVymJmW4vagU+2M4DmqeDSEj=4=R_=YDJekOTccQ@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5618BB6ED0
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 14:04:53 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 29 Feb 2012 08:34:50 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q1T34hWi4329726
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 08:34:44 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q1T34hZg025420
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Feb 2012 14:04:43 +1100
+Date: Wed, 29 Feb 2012 11:04:41 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH v5 00/21] EEH reorganization
+Message-ID: <20120229030402.GA27904@shangw>
+References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +37,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgSmVmZiwNCg0KRG8geW91IHBsYW4gdG8gYXBwbHkgaXQgdG8gdXBzdHJlYW0sIG9yIGFueSBz
-dWdnZXN0aW9ucz8gVGhhbmtzLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
-b206IGxpbnV4LWlkZS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1pZGUtDQo+
-IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIExpIFlhbmcNCj4gU2VudDogV2Vk
-bmVzZGF5LCBGZWJydWFyeSAxNSwgMjAxMiAzOjUxIFBNDQo+IFRvOiBMaXUgUWlhbmctQjMyNjE2
-DQo+IENjOiBqZ2FyemlrQHBvYm94LmNvbTsgbGludXgtaWRlQHZnZXIua2VybmVsLm9yZzsgbGlu
-dXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjNdIGZzbC1zYXRhOiBhZGQgc3VwcG9ydCBmb3Ig
-aW50ZXJydXB0IGNvYWxzZWNpbmcNCj4gZmVhdHVyZQ0KPiANCj4gT24gV2VkLCBGZWIgMTUsIDIw
-MTIgYXQgMzo0MCBQTSwgUWlhbmcgTGl1IDxxaWFuZy5saXVAZnJlZXNjYWxlLmNvbT4NCj4gd3Jv
-dGU6DQo+ID4gQWRkcyBzdXBwb3J0IGZvciBpbnRlcnJ1cHQgY29hbGVzY2luZyBmZWF0dXJlIHRv
-IHJlZHVjZSBpbnRlcnJ1cHQNCj4gZXZlbnRzLg0KPiA+IFByb3ZpZGVzIGEgbWVjaGFuaXNtIG9m
-IGFkanVzdGluZyBjb2FsZXNjaW5nIGNvdW50IGFuZCB0aW1lb3V0IHRpY2sgYnkNCj4gPiBzeXNm
-cyBhdCBydW50aW1lLCBzbyB0aGF0IHRyYWRlb2ZmIG9mIGxhdGVuY3kgYW5kIENQVSBsb2FkIGNh
-biBiZSBtYWRlDQo+ID4gZGVwZW5kaW5nIG9uIGRpZmZlcmVudCBhcHBsaWNhdGlvbnMuDQo+ID4N
-Cj4gPiBTaWduZWQtb2ZmLWJ5OiBRaWFuZyBMaXUgPHFpYW5nLmxpdUBmcmVlc2NhbGUuY29tPg0K
-PiANCj4gQWNrZWQtYnk6IExpIFlhbmcgPGxlb2xpQGZyZWVzY2FsZS5jb20+DQo+IA0KPiAtIExl
-bw0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAi
-dW5zdWJzY3JpYmUgbGludXgtaWRlIiBpbg0KPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFq
-b3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0DQo+IGh0dHA6Ly92
-Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
+Hi Ben,
+
+Could you pls take a look on this when you have time?
+
+Thanks,
+Gavin
+
+> This series of patches is going to reorganize EEH so that it could support
+> multiple platforms in future. The requirements were raised from the aspects.
+> 
+> 	* The original EEH implementation only support pSeries platform, which
+> 	  would be regarded as guest system. Platform powernv is coming and EEH
+> 	  needs to be supported on powernv as well.
+> 	* Different platforms might be running based on variable firmware.Further
+> 	  more, the firmware would supply different EEH interfaces to kernel.
+> 	  Therefore, we have to do necessary abstraction on current EEH implementation.
+> 
+> In order to accomodate the requirements, the series of patches have reorganized
+> current EEH implementation.
+> 
+> 	* The original implementation looks not clean enough. Necessary cleanup
+> 	  will be done in some of the patches.
+> 	* struct eeh_ops has been introduced so that EEH core components and platform
+> 	  dependent implementation could be split up. That make it possible for EEH
+> 	  to be supported on multiple platforms.
+> 	* struct eeh_dev has been introduced to replace struct pci_dn so that EEH module
+> 	  works independently as much as possible.
+> 	* EEH global statistics will be maintained in a collective fashion.
+> 
+> v1 -> v2:
+> 
+> 	* If possible, to add "eeh_" prefix for function names.
+> 	* The format of leading function comments won't be changed in order not to
+> 	  break kernel document automatic generation (e.g. by "make pdfdocs").
+> 	* The name of local variables won't be changed if there're no explicit reasons.
+> 	* Represent the PE's state in bitmap fasion.
+> 	* Some function names have been adjusted so that they look shorter and
+> 	  meaningful.
+> 	* Platform operation name has been changed to "pseries".
+> 	* Merge those patches for cleanup if possible.
+> 	* The line length is kept as appropriately short if possible.
+> 	* Fixup on alignment & spacing issues.
+> 
+> v2 -> v3:
+> 	* Split cleanup patch into 2: one for comment cleanup and another one for
+> 	  renaming function names.
+> 	* Try to use pr_warning/pr_info/pr_debug instead of printk() function call.
+> 	* Function names are adjusted a little bit so that they looks more meaningful
+> 	  according to comments from Michael/Ben.
+> 	* Useful comment has been kept according to Michael's comments.
+> 	* struct eeh_ops::set_eeh has been changed to eeh_ops::set_option.
+> 	* struct eeh_ops::name has been changed to "char *".
+> 	* Remove file name from the source file.
+> 	* Copyright (C) format has been changed since "(C)" isn't encouraged to use.
+> 	* The header files included in the source file have been sorted alphabetically.
+> 	* eeh_platform_init() has been replaced by eeh_pseries_init() to avoid duplicate
+> 	  functions when kernel supports multiple platforms.
+> 	* "F/W" has been changed to "Firmware".
+> 	* The maximal wait time to retrieve PE's state has been covered by macro.
+> 	* It also include changes according to the minor comments from Michael.
+> 
+> v3 -> v4:
+> 	* Fix some typo included in the commit messages.
+> 	* Reduce code nesting according to Ram's suggestions.
+> 	* Addtinal pr_warning on failure of configuring bridges.
+> 
+> v4 -> v5:
+> 	* OF node and PCI device are tracing the corresponding eeh device.
+> 	  That has been changed to "struct eeh_dev *" instead of the original
+> 	  "void *".
+> 	* The conversion between OF node, PCI device, eeh device is changed
+> 	  to inline functions instead of the original macros.
+> 	* The "struct eeh_stats" has been moved from eeh.h to eeh.c. Besides,
+> 	  the individual members of the struct have been changed to fixed-type
+> 	  "unsigned int". 
+> 
+> 
+> The series of patches (v5) has been verified on Firebird-L machine. In order to carry out
+> the test, you have to install IBM Power Tools from IBM internal yum source. Following
+> command is used to force EEH check on ethernet interface, which could be recovered eventually
+> by EEH and device driver successfully. You could keep pinging to the blade before issuing
+> the following command to force EEH. You should see the network interface can't be reached for
+> a moment and everything will be recovered couple of seconds after the forced EEH error. At the
+> same time, you should see EEH error log out of system console. 
+> 
+> 	* errinjct eeh -v -f 0 -p U78AE.001.WZS00M9-P1-C18-L1-T2 -a 0x0 -m 0x0
+> 
+> -----
+> 
+> arch/powerpc/include/asm/device.h            |    3 +
+> arch/powerpc/include/asm/eeh.h               |  134 +++-
+> arch/powerpc/include/asm/eeh_event.h         |   33 +-
+> arch/powerpc/include/asm/ppc-pci.h           |   89 +--
+> arch/powerpc/kernel/of_platform.c            |    3 +
+> arch/powerpc/kernel/rtas_pci.c               |    3 +
+> arch/powerpc/platforms/pseries/Makefile      |    3 +-
+> arch/powerpc/platforms/pseries/eeh.c         | 1044 ++++++++++++--------------
+> arch/powerpc/platforms/pseries/eeh_cache.c   |   44 +-
+> arch/powerpc/platforms/pseries/eeh_dev.c     |  102 +++
+> arch/powerpc/platforms/pseries/eeh_driver.c  |  213 +++---
+> arch/powerpc/platforms/pseries/eeh_event.c   |   55 +-
+> arch/powerpc/platforms/pseries/eeh_pseries.c |  565 ++++++++++++++
+> arch/powerpc/platforms/pseries/eeh_sysfs.c   |   25 +-
+> arch/powerpc/platforms/pseries/msi.c         |    2 +-
+> arch/powerpc/platforms/pseries/pci_dlpar.c   |    3 +
+> arch/powerpc/platforms/pseries/setup.c       |    7 +-
+> include/linux/of.h                           |   10 +
+> include/linux/pci.h                          |    7 +
+> 19 files changed, 1477 insertions(+), 868 deletions(-)
+> 
+> Thanks,
+> Gavin
