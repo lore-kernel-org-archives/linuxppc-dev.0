@@ -2,13 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 72710B6FEA
+ by ozlabs.org (Postfix) with ESMTPS id 6E11FB6FE6
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 11:10:20 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 26/38] KVM: PPC: bookehv: fix exit timing
-Date: Wed, 29 Feb 2012 01:09:54 +0100
-Message-Id: <1330474206-14794-27-git-send-email-agraf@suse.de>
+Subject: [PATCH 23/38] KVM: PPC: booke: deliver program int on emulation
+ failure
+Date: Wed, 29 Feb 2012 01:09:51 +0100
+Message-Id: <1330474206-14794-24-git-send-email-agraf@suse.de>
 In-Reply-To: <1330474206-14794-1-git-send-email-agraf@suse.de>
 References: <1330474206-14794-1-git-send-email-agraf@suse.de>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -22,39 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using exit timing stats, we clobber r9 in the NEED_EMU case,
-so better move that part down a few lines and fix it that way.
+When we fail to emulate an instruction for the guest, we better go in and
+tell it that we failed to emulate it, by throwing an illegal instruction
+exception.
+
+Please beware that we basically never get around to telling the guest that
+we failed thanks to the debugging code right above it. If user space however
+decides that it wants to ignore the debug, we would at least do "the right
+thing" afterwards.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/bookehv_interrupts.S |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/booke.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index f7dc3f6..215381e 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -83,10 +83,6 @@
- 	stw	r10, VCPU_GUEST_PID(r4)
- 	mtspr	SPRN_PID, r8
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 17d5318..9979be1 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -545,13 +545,13 @@ static int emulation_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 		return RESUME_HOST;
  
--	.if	\flags & NEED_EMU
--	lwz	r9, VCPU_KVM(r4)
--	.endif
--
- #ifdef CONFIG_KVM_EXIT_TIMING
- 	/* save exit time */
- 1:	mfspr	r7, SPRN_TBRU
-@@ -98,6 +94,10 @@
- 	PPC_STL	r9, VCPU_TIMING_EXIT_TBU(r4)
- #endif
+ 	case EMULATE_FAIL:
+-		/* XXX Deliver Program interrupt to guest. */
+ 		printk(KERN_CRIT "%s: emulation at %lx failed (%08x)\n",
+ 		       __func__, vcpu->arch.pc, vcpu->arch.last_inst);
+ 		/* For debugging, encode the failing instruction and
+ 		 * report it to userspace. */
+ 		run->hw.hardware_exit_reason = ~0ULL << 32;
+ 		run->hw.hardware_exit_reason |= vcpu->arch.last_inst;
++		kvmppc_core_queue_program(vcpu, ESR_PIL);
+ 		return RESUME_HOST;
  
-+	.if	\flags & NEED_EMU
-+	lwz	r9, VCPU_KVM(r4)
-+	.endif
-+
- 	oris	r8, r6, MSR_CE@h
- #ifndef CONFIG_64BIT
- 	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
+ 	default:
 -- 
 1.6.0.2
