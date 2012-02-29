@@ -1,25 +1,23 @@
-Return-Path: <yinghai@kernel.org>
-Received: from rcsinet15.oracle.com (rcsinet15.oracle.com [148.87.113.117])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "rcsinet15.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D696CB6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 10:08:44 +1100 (EST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
- x86 <x86@kernel.org>
-Subject: [PATCH 28/39] PCI, powerpc: Register busn_res for root buses
-Date: Wed, 29 Feb 2012 15:07:27 -0800
-Message-Id: <1330556858-11768-29-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1330556858-11768-1-git-send-email-yinghai@kernel.org>
-References: <1330556858-11768-1-git-send-email-yinghai@kernel.org>
-Cc: linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Yinghai Lu <yinghai@kernel.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 9B93DB6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 10:28:33 +1100 (EST)
+Date: Wed, 29 Feb 2012 15:28:30 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] bootmem/sparsemem: remove limit constraint in
+ alloc_bootmem_section
+Message-Id: <20120229152830.22fc72a2.akpm@linux-foundation.org>
+In-Reply-To: <20120229181233.GF5136@linux.vnet.ibm.com>
+References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
+ <20120228154732.GE1199@suse.de>
+ <20120229181233.GF5136@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+ stable@vger.kernel.org, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+ Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/pci-bridge.h |    1 +
- arch/powerpc/kernel/pci-common.c      |   10 +++++++++-
- 2 files changed, 10 insertions(+), 1 deletions(-)
+On Wed, 29 Feb 2012 10:12:33 -0800
+Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 5d48765..11cebf0 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -30,6 +30,7 @@ struct pci_controller {
- 	int first_busno;
- 	int last_busno;
- 	int self_busno;
-+	struct resource busn;
+> While testing AMS (Active Memory Sharing) / CMO (Cooperative Memory
+> Overcommit) on powerpc, we tripped the following:
+> 
+> kernel BUG at mm/bootmem.c:483!
+>
+> ...
+> 
+> This is
+> 
+>         BUG_ON(limit && goal + size > limit);
+> 
+> and after some debugging, it seems that
+> 
+> 	goal = 0x7ffff000000
+> 	limit = 0x80000000000
+> 
+> and sparse_early_usemaps_alloc_node ->
+> sparse_early_usemaps_alloc_pgdat_section calls
+> 
+> 	return alloc_bootmem_section(usemap_size() * count, section_nr);
+> 
+> This is on a system with 8TB available via the AMS pool, and as a quirk
+> of AMS in firmware, all of that memory shows up in node 0. So, we end up
+> with an allocation that will fail the goal/limit constraints. In theory,
+> we could "fall-back" to alloc_bootmem_node() in
+> sparse_early_usemaps_alloc_node(), but since we actually have HOTREMOVE
+> defined, we'll BUG_ON() instead. A simple solution appears to be to
+> unconditionally remove the limit condition in alloc_bootmem_section,
+> meaning allocations are allowed to cross section boundaries (necessary
+> for systems of this size).
+> 
+> Johannes Weiner pointed out that if alloc_bootmem_section() no longer
+> guarantees section-locality, we need check_usemap_section_nr() to print
+> possible cross-dependencies between node descriptors and the usemaps
+> allocated through it. That makes the two loops in
+> sparse_early_usemaps_alloc_node() identical, so re-factor the code a
+> bit.
+
+The patch is a bit scary now, so I think we should merge it into
+3.4-rc1 and then backport it into 3.3.1 if nothing blows up.
+
+Do you think it should be backported into 3.3.x?  Earlier kernels?
+
+Also, this?
+
+--- a/mm/bootmem.c~bootmem-sparsemem-remove-limit-constraint-in-alloc_bootmem_section-fix
++++ a/mm/bootmem.c
+@@ -766,14 +766,13 @@ void * __init alloc_bootmem_section(unsi
+ 				    unsigned long section_nr)
+ {
+ 	bootmem_data_t *bdata;
+-	unsigned long pfn, goal, limit;
++	unsigned long pfn, goal;
  
- 	void __iomem *io_base_virt;
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 910b9de..ee8c0c9 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1648,6 +1648,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 	/* Wire up PHB bus resources */
- 	pcibios_setup_phb_resources(hose, &resources);
+ 	pfn = section_nr_to_pfn(section_nr);
+ 	goal = pfn << PAGE_SHIFT;
+-	limit = 0;
+ 	bdata = &bootmem_node_data[early_pfn_to_nid(pfn)];
  
-+	hose->busn.start = hose->first_busno;
-+	hose->busn.end	 = hose->last_busno;
-+	hose->busn.flags = IORESOURCE_BUS;
-+	pci_add_resource(&resources, &hose->busn);
-+
- 	/* Create an empty bus for the toplevel */
- 	bus = pci_create_root_bus(hose->parent, hose->first_busno,
- 				  hose->ops, hose, &resources);
-@@ -1670,8 +1675,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 		of_scan_bus(node, bus);
- 	}
+-	return alloc_bootmem_core(bdata, size, SMP_CACHE_BYTES, goal, limit);
++	return alloc_bootmem_core(bdata, size, SMP_CACHE_BYTES, goal, 0);
+ }
+ #endif
  
--	if (mode == PCI_PROBE_NORMAL)
-+	if (mode == PCI_PROBE_NORMAL) {
-+		pci_bus_update_busn_res_end(bus, 255);
- 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
-+		pci_bus_update_busn_res_end(bus, bus->subordinate);
-+	}
- 
- 	/* Platform gets a chance to do some global fixups before
- 	 * we proceed to resource allocation
--- 
-1.7.7
+_
