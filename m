@@ -1,42 +1,35 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D8874B6F98
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 11:04:20 +1100 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EA493B6ED0
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 Mar 2012 12:14:57 +1100 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 29 Feb 2012 19:04:14 -0500
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9F7BE6E8057
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 19:03:51 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2103pud195368
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 19:03:51 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2103oDf021661
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 21:03:51 -0300
-Date: Wed, 29 Feb 2012 16:03:46 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] bootmem/sparsemem: remove limit constraint in
- alloc_bootmem_section
-Message-ID: <20120301000346.GA8375@linux.vnet.ibm.com>
-References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
- <20120228154732.GE1199@suse.de>
- <20120229181233.GF5136@linux.vnet.ibm.com>
- <20120229152830.22fc72a2.akpm@linux-foundation.org>
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Thu, 1 Mar 2012 01:09:31 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q211EgNu1360040
+ for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2012 12:14:42 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q211EgSe021965
+ for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2012 12:14:42 +1100
+Date: Thu, 1 Mar 2012 09:14:40 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 20/21] Introduce struct eeh_stats for EEH
+Message-ID: <20120301011440.GA2805@shangw>
+References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1330409051-8941-21-git-send-email-shangw@linux.vnet.ibm.com>
+ <1330520204.15023.16.camel@concordia>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120229152830.22fc72a2.akpm@linux-foundation.org>
-Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
- stable@vger.kernel.org, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
- Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1330520204.15023.16.camel@concordia>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,88 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29.02.2012 [15:28:30 -0800], Andrew Morton wrote:
-> On Wed, 29 Feb 2012 10:12:33 -0800
-> Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
+> > With the original EEH implementation, the EEH global statistics
+> > are maintained by individual global variables. That makes the
+> > code a little hard to maintain.
 > 
-> > While testing AMS (Active Memory Sharing) / CMO (Cooperative Memory
-> > Overcommit) on powerpc, we tripped the following:
-> > 
-> > kernel BUG at mm/bootmem.c:483!
-> >
-> > ...
-> > 
-> > This is
-> > 
-> >         BUG_ON(limit && goal + size > limit);
-> > 
-> > and after some debugging, it seems that
-> > 
-> > 	goal = 0x7ffff000000
-> > 	limit = 0x80000000000
-> > 
-> > and sparse_early_usemaps_alloc_node ->
-> > sparse_early_usemaps_alloc_pgdat_section calls
-> > 
-> > 	return alloc_bootmem_section(usemap_size() * count, section_nr);
-> > 
-> > This is on a system with 8TB available via the AMS pool, and as a quirk
-> > of AMS in firmware, all of that memory shows up in node 0. So, we end up
-> > with an allocation that will fail the goal/limit constraints. In theory,
-> > we could "fall-back" to alloc_bootmem_node() in
-> > sparse_early_usemaps_alloc_node(), but since we actually have HOTREMOVE
-> > defined, we'll BUG_ON() instead. A simple solution appears to be to
-> > unconditionally remove the limit condition in alloc_bootmem_section,
-> > meaning allocations are allowed to cross section boundaries (necessary
-> > for systems of this size).
-> > 
-> > Johannes Weiner pointed out that if alloc_bootmem_section() no longer
-> > guarantees section-locality, we need check_usemap_section_nr() to print
-> > possible cross-dependencies between node descriptors and the usemaps
-> > allocated through it. That makes the two loops in
-> > sparse_early_usemaps_alloc_node() identical, so re-factor the code a
-> > bit.
+> Hi Gavin,
 > 
-> The patch is a bit scary now, so I think we should merge it into
-> 3.4-rc1 and then backport it into 3.3.1 if nothing blows up.
-
-I think that's fair.
-
-> Do you think it should be backported into 3.3.x?  Earlier kernels?
-
-3.3.x seems reasonable. If I had to guess, I think this could be hit on
-any kernels with this functionality -- that is, sparsemem in general?
-Not sure how far back it's worth backporting.
-
-> Also, this?
-
-Urgh, yeah, that's way better.
-
-Acked-by: Nishanth Aravamudan <nacc@us.ibm.com>
-
-> --- a/mm/bootmem.c~bootmem-sparsemem-remove-limit-constraint-in-alloc_bootmem_section-fix
-> +++ a/mm/bootmem.c
-> @@ -766,14 +766,13 @@ void * __init alloc_bootmem_section(unsi
->  				    unsigned long section_nr)
->  {
->  	bootmem_data_t *bdata;
-> -	unsigned long pfn, goal, limit;
-> +	unsigned long pfn, goal;
+> > @@ -1174,21 +1182,24 @@ static int proc_eeh_show(struct seq_file *m, void *v)
+> >  {
+> >  	if (0 == eeh_subsystem_enabled) {
+> >  		seq_printf(m, "EEH Subsystem is globally disabled\n");
+> > -		seq_printf(m, "eeh_total_mmio_ffs=%ld\n", total_mmio_ffs);
+> > +		seq_printf(m, "eeh_total_mmio_ffs=%d\n", eeh_stats.total_mmio_ffs);
+> >  	} else {
+> >  		seq_printf(m, "EEH Subsystem is enabled\n");
+> >  		seq_printf(m,
+> > -				"no device=%ld\n"
+> > -				"no device node=%ld\n"
+> > -				"no config address=%ld\n"
+> > -				"check not wanted=%ld\n"
+> > -				"eeh_total_mmio_ffs=%ld\n"
+> > -				"eeh_false_positives=%ld\n"
+> > -				"eeh_slot_resets=%ld\n",
+> > -				no_device, no_dn, no_cfg_addr, 
+> > -				ignored_check, total_mmio_ffs, 
+> > -				false_positives,
+> > -				slot_resets);
+> > +				"no device           =%d\n"
+> > +				"no device node      =%d\n"
+> > +				"no config address   =%d\n"
+> > +				"check not wanted    =%d\n"
+> > +				"eeh_total_mmio_ffs  =%d\n"
+> > +				"eeh_false_positives =%d\n"
+> > +				"eeh_slot_resets     =%d\n",
 > 
->  	pfn = section_nr_to_pfn(section_nr);
->  	goal = pfn << PAGE_SHIFT;
-> -	limit = 0;
->  	bdata = &bootmem_node_data[early_pfn_to_nid(pfn)];
+> There *might* be tools out there that parse this output, so I'd say
+> don't change it unless you have to - and I don't think you have to?
 > 
-> -	return alloc_bootmem_core(bdata, size, SMP_CACHE_BYTES, goal, limit);
-> +	return alloc_bootmem_core(bdata, size, SMP_CACHE_BYTES, goal, 0);
->  }
->  #endif
 
-Thanks for all the feedback!
+Thanks for catching the point, Michael. I will change it back soon ;-)
 
--Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+Thanks,
+Gavin
