@@ -1,21 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 51085B6EE8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 09:06:51 +1100 (EST)
-Subject: Re: [PATCH] mpc836x: fix failed phy detection for ucc ethernet on MDS
-MIME-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset="us-ascii"
-From: Andy Fleming <afleming@freescale.com>
-In-Reply-To: <1330345501-24949-1-git-send-email-paul.gortmaker@windriver.com>
-Date: Thu, 1 Mar 2012 16:06:35 -0600
-Message-ID: <0CFFA9FB-E2D0-4CC3-A430-10692B62B9B0@freescale.com>
-References: <1330345501-24949-1-git-send-email-paul.gortmaker@windriver.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 1FEB7B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 10:02:59 +1100 (EST)
+Date: Thu, 1 Mar 2012 15:02:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/2] atomic: Allow atomic_inc_not_zero to be overridden
+Message-Id: <20120301150256.9a7d0b06.akpm@linux-foundation.org>
+In-Reply-To: <20120301180953.0f61576f@kryten>
+References: <20120301180953.0f61576f@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: vapier@gentoo.org, eric.dumazet@gmail.com, linux-kernel@vger.kernel.org,
+ Richard Kuo <rkuo@codeaurora.org>, paulus@samba.org,
+ linux-hexagon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, asharma@fb.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 1 Mar 2012 18:09:53 +1100
+Anton Blanchard <anton@samba.org> wrote:
 
-On Feb 27, 2012, at 6:25 AM, Paul Gortmaker wrote:
-
-> The mpc836x_mds platform has been broken since the commit
-> 6fe3264945ee63292cdfb27b6e95bc52c603bb09
->=20
-> [...]
-
+> 
+> We want to implement a ppc64 specific version of atomic_inc_not_zero
+> so wrap it in an ifdef to allow it to be overridden.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 > ---
->=20
-> [Andy: There may be other boards that could be having this problem
->  git grep -l enet.*ucc arch/powerpc/boot/dts/|xargs grep -L tbi
-> shows four possible candidates -- but I've only got the 8360MDS. ]
+> 
+> Index: linux-build/include/linux/atomic.h
+> ===================================================================
+> --- linux-build.orig/include/linux/atomic.h	2012-02-11 14:59:23.284714257 +1100
+> +++ linux-build/include/linux/atomic.h	2012-02-11 15:01:14.894764555 +1100
+> @@ -24,7 +24,9 @@ static inline int atomic_add_unless(atom
+>   * Atomically increments @v by 1, so long as @v is non-zero.
+>   * Returns non-zero if @v was non-zero, and zero otherwise.
+>   */
+> +#ifndef atomic_inc_not_zero
+>  #define atomic_inc_not_zero(v)		atomic_add_unless((v), 1, 0)
+> +#endif
+
+Please merge this via the ppc tree?
 
 
-Shoot. I will go look for those. I suspect I neglected all the =
-UCC-having SOCs in my patch.=
+And let's ask the hexagon maintainers to take a look at the definition
+in arch/hexagon/include/asm/atomic.h.  I assume that it can be removed,
+but that might cause problems with files which include asm/atomic.h
+directly.  I have found two such files in non-arch code and have queued
+fixes.  There are no such files in arch/hexagon code, so I think it's
+safe to zap the hexagon definition of atomic_inc_not_zero().
+
+
+> +static __inline__ int atomic_inc_not_zero(atomic_t *v)
+
+Curious: is there a technical reason why ppc uses "__inline__" rather
+than "inline"?
