@@ -1,22 +1,25 @@
-Return-Path: <vhtnguyen@apm.com>
-Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
- by ozlabs.org (Postfix) with SMTP id 63070B6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 13:59:26 +1100 (EST)
-Received: by mail-lpp01m010-f42.google.com with SMTP id l5so394573lah.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Feb 2012 18:59:24 -0800 (PST)
-From: Vinh Huu Tuong Nguyen <vhtnguyen@apm.com>
-References: <1324385014-30725-1-git-send-email-vhtnguyen@apm.com>
- <CA+5PVA5SZmeEdBF0XvNmvCwroCKs1EwdWNbd_nwyEDCoZGHo2Q@mail.gmail.com>
-In-Reply-To: <CA+5PVA5SZmeEdBF0XvNmvCwroCKs1EwdWNbd_nwyEDCoZGHo2Q@mail.gmail.com>
-MIME-Version: 1.0
-Date: Thu, 1 Mar 2012 09:53:27 +0700
-Message-ID: <e2fe6a6317e1ea6e04c34281b74b2277@mail.gmail.com>
-Subject: RE: [PATCH 1/3] powerpc/44x: The bug fixed support for APM821xx SoC
- and Bluestone board
-To: Josh Boyer <jwboyer@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <yinghai@kernel.org>
+Received: from acsinet15.oracle.com (acsinet15.oracle.com [141.146.126.227])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "acsinet15.oracle.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B8C19B6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 14:02:34 +1100 (EST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
+ x86 <x86@kernel.org>
+Subject: [PATCH 26/36] PCI, powerpc: Register busn_res for root buses
+Date: Wed, 29 Feb 2012 19:00:27 -0800
+Message-Id: <1330570837-26638-27-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1330570837-26638-1-git-send-email-yinghai@kernel.org>
+References: <1330570837-26638-1-git-send-email-yinghai@kernel.org>
+Cc: linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Josh Boyer [mailto:jwboyer@gmail.com]
-> Sent: Wednesday, February 29, 2012 8:54 PM
-> To: Vinh Nguyen Huu Tuong
-> Cc: Benjamin Herrenschmidt; Paul Mackerras; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH 1/3] powerpc/44x: The bug fixed support for
-> APM821xx SoC and Bluestone board
->
-> On Tue, Dec 20, 2011 at 7:43 AM, Vinh Nguyen Huu Tuong
-> <vhtnguyen@apm.com> wrote:
-> > This patch consists of:
-> > - Fix the pvr mask for checking pvr in cputable.c
-> > - Fix the cpu name as consistent with cpu name is describled in dts
-> file
-> >
-> > Signed-off-by: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
-> > ---
->
-> I was waiting to see if you would submit a new series with patch 3/3
-> fixed for
-> the comments I made.  Seems you haven't yet or I missed it entirely.
-> For now,
-> I'll take this patch as it's stand-alone.  The DTS and PCI driver
-> patches will
-> need to be submitted together again.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/include/asm/pci-bridge.h |    1 +
+ arch/powerpc/kernel/pci-common.c      |   10 +++++++++-
+ 2 files changed, 10 insertions(+), 1 deletions(-)
 
-I'm sorry for my lateness, I've been ready to submit new update 2 weeks
-ago, but when I synced up with master branch again, the version of Linux
-is changed (changed to 3.2) with some updates from Marri that made my
-update didn't work. I have to update and test again. I'll submit the new
-update within this week as your recommendation.
-
-Best regards,
-Vinh Nguyen.
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 5d48765..11cebf0 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -30,6 +30,7 @@ struct pci_controller {
+ 	int first_busno;
+ 	int last_busno;
+ 	int self_busno;
++	struct resource busn;
+ 
+ 	void __iomem *io_base_virt;
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 910b9de..ee8c0c9 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1648,6 +1648,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ 	/* Wire up PHB bus resources */
+ 	pcibios_setup_phb_resources(hose, &resources);
+ 
++	hose->busn.start = hose->first_busno;
++	hose->busn.end	 = hose->last_busno;
++	hose->busn.flags = IORESOURCE_BUS;
++	pci_add_resource(&resources, &hose->busn);
++
+ 	/* Create an empty bus for the toplevel */
+ 	bus = pci_create_root_bus(hose->parent, hose->first_busno,
+ 				  hose->ops, hose, &resources);
+@@ -1670,8 +1675,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ 		of_scan_bus(node, bus);
+ 	}
+ 
+-	if (mode == PCI_PROBE_NORMAL)
++	if (mode == PCI_PROBE_NORMAL) {
++		pci_bus_update_busn_res_end(bus, 255);
+ 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
++		pci_bus_update_busn_res_end(bus, bus->subordinate);
++	}
+ 
+ 	/* Platform gets a chance to do some global fixups before
+ 	 * we proceed to resource allocation
+-- 
+1.7.7
