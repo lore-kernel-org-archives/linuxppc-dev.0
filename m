@@ -1,24 +1,26 @@
-Return-Path: <B38951@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe005.messaging.microsoft.com
- [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A7341007D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 20:39:29 +1100 (EST)
-Received: from mail23-tx2 (localhost [127.0.0.1])	by mail23-tx2-R.bigfish.com
- (Postfix) with ESMTP id 4B812404DD	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 09:39:25 +0000 (UTC)
-Received: from TX2EHSMHS006.bigfish.com (unknown [10.9.14.241])	by
- mail23-tx2.bigfish.com (Postfix) with ESMTP id 9F0E8120051	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 09:39:22 +0000 (UTC)
-From: Jia Hongtao <B38951@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2] powerpc: document the FSL MPIC message register binding
-Date: Thu, 1 Mar 2012 17:32:34 +0800
-Message-ID: <1330594354-31095-1-git-send-email-B38951@freescale.com>
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 99B9C1007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 22:43:06 +1100 (EST)
+Date: Thu, 1 Mar 2012 11:42:54 +0000
+From: Mel Gorman <mgorman@suse.de>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] bootmem/sparsemem: remove limit constraint in
+ alloc_bootmem_section
+Message-ID: <20120301114254.GH1199@suse.de>
+References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
+ <20120228154732.GE1199@suse.de>
+ <20120229181233.GF5136@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: b38951@freescale.com
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20120229181233.GF5136@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,90 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This binding documents how the message register blocks found in some FSL
-MPIC implementations shall be represented in a device tree.
+On Wed, Feb 29, 2012 at 10:12:33AM -0800, Nishanth Aravamudan wrote:
+> <SNIP>
+>
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> 
 
-Signed-off-by: Meador Inge <meador_inge@mentor.com>
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
----
-Changes for v2:
- * Update compatible type from <string> to <string-list>.
- * Update interrupts description.
- * Update mpic-msgr-receive-mask description.
+Acked-by: Mel Gorman <mgorman@suse.de>
 
- .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   64 ++++++++++++++++++++
- 1 files changed, 64 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
-
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
-new file mode 100644
-index 0000000..d52ac48
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
-@@ -0,0 +1,64 @@
-+* FSL MPIC Message Registers
-+
-+This binding specifies what properties must be available in the device tree
-+representation of the message register blocks found in some FSL MPIC
-+implementations.
-+
-+Required properties:
-+
-+    - compatible: Specifies the compatibility list for the message register
-+      block.  The type shall be <string-list> and the value shall be of the form
-+      "fsl,mpic-v<version>-msgr", where <version> is the version number of
-+      the MPIC containing the message registers.
-+
-+    - reg: Specifies the base physical address(s) and size(s) of the
-+      message register block's addressable register space.  The type shall be
-+      <prop-encoded-array>.
-+
-+    - interrupts: Specifies a list of interrupt-specifiers which are available
-+      for receiving interrupts. Interrupt-specifier consists of two cells: first
-+      cell is interrupt-number and second cell is level-sense. The type shall be
-+      <prop-encoded-array>.
-+
-+Optional properties:
-+
-+    - mpic-msgr-receive-mask: Specifies what registers in the containing block
-+      are allowed to receive interrupts. The value is a bit mask where a set
-+      bit at bit 'n' indicates that message register 'n' can receive interrupts.
-+      Note that "bit 'n'" is numbered from LSB for PPC hardware. The type shall
-+      be <u32>. If not present, then all of the message registers in the block
-+      are available.
-+
-+Aliases:
-+
-+    An alias should be created for every message register block.  They are not
-+    required, though.  However, a particular implementation of this binding
-+    may require aliases to be present.  Aliases are of the form
-+    'mpic-msgr-block<n>', where <n> is an integer specifying the block's number.
-+    Numbers shall start at 0.
-+
-+Example:
-+
-+	aliases {
-+		mpic-msgr-block0 = &mpic_msgr_block0;
-+		mpic-msgr-block1 = &mpic_msgr_block1;
-+	};
-+
-+	mpic_msgr_block0: mpic-msgr-block@41400 {
-+		compatible = "fsl,mpic-v3.1-msgr";
-+		reg = <0x41400 0x200>;
-+		// Message registers 0 and 2 in this block can receive interrupts on
-+		// sources 0xb0 and 0xb2, respectively.
-+		interrupts = <0xb0 2 0xb2 2>;
-+		mpic-msgr-receive-mask = <0x5>;
-+	};
-+
-+	mpic_msgr_block1: mpic-msgr-block@42400 {
-+		compatible = "fsl,mpic-v3.1-msgr";
-+		reg = <0x42400 0x200>;
-+		// Message registers 0 and 2 in this block can receive interrupts on
-+		// sources 0xb4 and 0xb6, respectively.
-+		interrupts = <0xb4 2 0xb6 2>;
-+		mpic-msgr-receive-mask = <0x5>;
-+	};
-+
 -- 
-1.7.5.1
+Mel Gorman
+SUSE Labs
