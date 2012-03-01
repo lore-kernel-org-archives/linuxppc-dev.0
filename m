@@ -1,21 +1,22 @@
-Return-Path: <vapier@gentoo.org>
-Received: from smtp.gentoo.org (smtp.gentoo.org [140.211.166.183])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 442161007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 04:25:10 +1100 (EST)
-From: Mike Frysinger <vapier@gentoo.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/2] atomic: Allow atomic_inc_not_zero to be overridden
-Date: Thu, 1 Mar 2012 12:19:14 -0500
-References: <20120301180953.0f61576f@kryten>
-In-Reply-To: <20120301180953.0f61576f@kryten>
+Return-Path: <dsahern@gmail.com>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 011EA1007D6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 05:00:18 +1100 (EST)
+Received: by dady9 with SMTP id y9so1149785dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2012 10:00:16 -0800 (PST)
+Message-ID: <4F4FB92B.9080106@gmail.com>
+Date: Thu, 01 Mar 2012 11:00:11 -0700
+From: David Ahern <dsahern@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1733415.TSW5sbkbnq";
- protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <201203011219.18114.vapier@gentoo.org>
-Cc: eric.dumazet@gmail.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, asharma@fb.com
+To: Victor Jimenez <victor.javier@bsc.es>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: Sampling instruction pointer on PPC
+References: <4F4FACFA.6080209@bsc.es>
+In-Reply-To: <4F4FACFA.6080209@bsc.es>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-perf-users@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart1733415.TSW5sbkbnq
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+[Added linuxppc-dev list.]
 
-On Thursday 01 March 2012 02:09:53 Anton Blanchard wrote:
-> We want to implement a ppc64 specific version of atomic_inc_not_zero
-> so wrap it in an ifdef to allow it to be overridden.
-
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
-
---nextPart1733415.TSW5sbkbnq
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (GNU/Linux)
-
-iQIcBAABAgAGBQJPT6+VAAoJEEFjO5/oN/WB0dIP/1rmcRlyH6LDxo4zPnYU5dWE
-X4+tGDj2nD2rQ0KTQsbB+HIhNzXOKkx2RrqVf/y28XpWl+hR4HOFfeQp7N6TG1Y4
-LX0n253SFaSq0/3LUZYpuRh0WvJlqCoT9mherOr6EKd9+W4TJpaScz45MoYikgb0
-LrfOznpoPs8m+Hx1bM3Ret1L+glZZ6OQfamGd/63DDpfdPrYM0JzjcIvxsPvVMeT
-+s/9+K7DuVsT1AdORcqF7RawsStx3NigA6HDoioF9pxakdyZmfSZvginJXRCr32r
-TH7N8TEIRxbNeMk3KbYG5YzCEur/sl6p+5wN6TrPGlmseiV2YHDWZXzsSH2pPrKv
-cuBMrEab7eILakLdA9B98vMV7yRnfoujM2chESaKuAULKKiYzTfacMJyjgxY/N2k
-4QVOKwE7kUIgWTRD9VHaSP0/oVZQ0v50CI9V9YFv91+iFuAL31xHqOmRYuplu5uS
-dKqHT9FW8a0C9hwzNWqccurrOGSk5kJw92ArLI9j7FgtUTQ/02QofHCuA5sHFbzw
-w8tA9vZ4h6GO2j7yB4J3BLYgqz35j4/d6aib2CcMeQKpd08yQFd8CShsNIwA6uL7
-zl2u/A7eTB0FNIYb6Jid/iIzJrRcm0LDbpSK1gEjcg8gfnEU6t6uGKpxmx+FRlp+
-6dt4DQAZ2HdlqY7QToTU
-=op66
------END PGP SIGNATURE-----
-
---nextPart1733415.TSW5sbkbnq--
+On 3/1/12 10:08 AM, Victor Jimenez wrote:
+> I am trying to sample instruction pointer along time on a Power7 system.
+> I know that there are accurate mechanisms to do so in Intel processors
+> (e.g., PEBS and Branch Trace Store).
+>
+> Is it possible to do something similar in Power7? Will the samples be
+> accurate? I am worried that significant delays (skids) may appear.
+>
+> Thank you,
+> Victor
+>
+> WARNING / LEGAL TEXT: This message is intended only for the use of the
+> individual or entity to which it is addressed and may contain
+> information which is privileged, confidential, proprietary, or exempt
+> from disclosure under applicable law. If you are not the intended
+> recipient or the person responsible for delivering the message to the
+> intended recipient, you are strictly prohibited from disclosing,
+> distributing, copying, or in any way using this message. If you have
+> received this communication in error, please notify the sender and
+> destroy and delete any copies you may have received.
+>
+> http://www.bsc.es/disclaimer.htm
+> --
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-perf-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
