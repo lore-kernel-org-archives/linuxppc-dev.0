@@ -1,19 +1,43 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 1FEB7B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 10:02:59 +1100 (EST)
-Date: Thu, 1 Mar 2012 15:02:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/2] atomic: Allow atomic_inc_not_zero to be overridden
-Message-Id: <20120301150256.9a7d0b06.akpm@linux-foundation.org>
-In-Reply-To: <20120301180953.0f61576f@kryten>
-References: <20120301180953.0f61576f@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: vapier@gentoo.org, eric.dumazet@gmail.com, linux-kernel@vger.kernel.org,
- Richard Kuo <rkuo@codeaurora.org>, paulus@samba.org,
- linux-hexagon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, asharma@fb.com
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 556C21007D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 10:12:47 +1100 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 1 Mar 2012 16:12:42 -0700
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id ADB113E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 16:12:21 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q21NCLGi174646
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 16:12:21 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q21NCJfo002674
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 16:12:20 -0700
+Date: Thu, 1 Mar 2012 15:12:16 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] bootmem/sparsemem: remove limit constraint in
+ alloc_bootmem_section
+Message-ID: <20120301231216.GA3252@linux.vnet.ibm.com>
+References: <1330112038-18951-1-git-send-email-nacc@us.ibm.com>
+ <20120228154732.GE1199@suse.de>
+ <20120229181233.GF5136@linux.vnet.ibm.com>
+ <20120229152830.22fc72a2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120229152830.22fc72a2.akpm@linux-foundation.org>
+Cc: Anton Blanchard <anton@au1.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+ stable@vger.kernel.org, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+ Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +47,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 1 Mar 2012 18:09:53 +1100
-Anton Blanchard <anton@samba.org> wrote:
-
+On 29.02.2012 [15:28:30 -0800], Andrew Morton wrote:
+> On Wed, 29 Feb 2012 10:12:33 -0800
+> Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
 > 
-> We want to implement a ppc64 specific version of atomic_inc_not_zero
-> so wrap it in an ifdef to allow it to be overridden.
+> > While testing AMS (Active Memory Sharing) / CMO (Cooperative Memory
+> > Overcommit) on powerpc, we tripped the following:
+> > 
+> > kernel BUG at mm/bootmem.c:483!
+> >
+> > ...
+> > 
+> > This is
+> > 
+> >         BUG_ON(limit && goal + size > limit);
+> > 
+> > and after some debugging, it seems that
+> > 
+> > 	goal = 0x7ffff000000
+> > 	limit = 0x80000000000
+> > 
+> > and sparse_early_usemaps_alloc_node ->
+> > sparse_early_usemaps_alloc_pgdat_section calls
+> > 
+> > 	return alloc_bootmem_section(usemap_size() * count, section_nr);
+> > 
+> > This is on a system with 8TB available via the AMS pool, and as a quirk
+> > of AMS in firmware, all of that memory shows up in node 0. So, we end up
+> > with an allocation that will fail the goal/limit constraints. In theory,
+> > we could "fall-back" to alloc_bootmem_node() in
+> > sparse_early_usemaps_alloc_node(), but since we actually have HOTREMOVE
+> > defined, we'll BUG_ON() instead. A simple solution appears to be to
+> > unconditionally remove the limit condition in alloc_bootmem_section,
+> > meaning allocations are allowed to cross section boundaries (necessary
+> > for systems of this size).
+> > 
+> > Johannes Weiner pointed out that if alloc_bootmem_section() no longer
+> > guarantees section-locality, we need check_usemap_section_nr() to print
+> > possible cross-dependencies between node descriptors and the usemaps
+> > allocated through it. That makes the two loops in
+> > sparse_early_usemaps_alloc_node() identical, so re-factor the code a
+> > bit.
 > 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
+> The patch is a bit scary now, so I think we should merge it into
+> 3.4-rc1 and then backport it into 3.3.1 if nothing blows up.
 > 
-> Index: linux-build/include/linux/atomic.h
-> ===================================================================
-> --- linux-build.orig/include/linux/atomic.h	2012-02-11 14:59:23.284714257 +1100
-> +++ linux-build/include/linux/atomic.h	2012-02-11 15:01:14.894764555 +1100
-> @@ -24,7 +24,9 @@ static inline int atomic_add_unless(atom
->   * Atomically increments @v by 1, so long as @v is non-zero.
->   * Returns non-zero if @v was non-zero, and zero otherwise.
->   */
-> +#ifndef atomic_inc_not_zero
->  #define atomic_inc_not_zero(v)		atomic_add_unless((v), 1, 0)
-> +#endif
+> Do you think it should be backported into 3.3.x?  Earlier kernels?
 
-Please merge this via the ppc tree?
+Upon review, it would be good if we can get it pushed back to kernels
+3.0.x, 3.1.x and 3.2.x.
 
+Thanks,
+Nish
 
-And let's ask the hexagon maintainers to take a look at the definition
-in arch/hexagon/include/asm/atomic.h.  I assume that it can be removed,
-but that might cause problems with files which include asm/atomic.h
-directly.  I have found two such files in non-arch code and have queued
-fixes.  There are no such files in arch/hexagon code, so I think it's
-safe to zap the hexagon definition of atomic_inc_not_zero().
-
-
-> +static __inline__ int atomic_inc_not_zero(atomic_t *v)
-
-Curious: is there a technical reason why ppc uses "__inline__" rather
-than "inline"?
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
