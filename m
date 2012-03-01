@@ -1,49 +1,24 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C1EB6B7008
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 19:18:41 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Thu, 1 Mar 2012 13:48:37 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q218IXMF4042830
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 13:48:33 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q218IVkH006038
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 13:48:33 +0530
-Message-ID: <4F4F30D6.3000707@linux.vnet.ibm.com>
-Date: Thu, 01 Mar 2012 13:48:30 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <B38951@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe005.messaging.microsoft.com
+ [65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9A7341007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 20:39:29 +1100 (EST)
+Received: from mail23-tx2 (localhost [127.0.0.1])	by mail23-tx2-R.bigfish.com
+ (Postfix) with ESMTP id 4B812404DD	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 09:39:25 +0000 (UTC)
+Received: from TX2EHSMHS006.bigfish.com (unknown [10.9.14.241])	by
+ mail23-tx2.bigfish.com (Postfix) with ESMTP id 9F0E8120051	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 09:39:22 +0000 (UTC)
+From: Jia Hongtao <B38951@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2] powerpc: document the FSL MPIC message register binding
+Date: Thu, 1 Mar 2012 17:32:34 +0800
+Message-ID: <1330594354-31095-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 3/3] CPU hotplug,
- arch/sparc: Fix CPU hotplug callback registration
-References: <87ehtf3lqh.fsf@rustcorp.com.au>
- <20120227155338.7b5110cd.akpm@linux-foundation.org>
- <20120228084359.GJ21106@elte.hu>
- <20120228132719.f375071a.akpm@linux-foundation.org>
- <4F4DBB26.2060907@linux.vnet.ibm.com> <20120229091732.GA11505@elte.hu>
- <4F4E083A.2080304@linux.vnet.ibm.com> <4F4F2F7F.5040207@linux.vnet.ibm.com>
-In-Reply-To: <4F4F2F7F.5040207@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andi Kleen <ak@linux.intel.com>, Nick Piggin <npiggin@kernel.dk>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, sparclinux@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Arjan van de Ven <arjan.van.de.ven@intel.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain
+Cc: b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,35 +28,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This binding documents how the message register blocks found in some FSL
+MPIC implementations shall be represented in a device tree.
 
-Restructure CPU hotplug setup and callback registration in topology_init
-so as to be race-free.
-
+Signed-off-by: Meador Inge <meador_inge@mentor.com>
+Signed-off-by: Jia Hongtao <B38951@freescale.com>
 ---
+Changes for v2:
+ * Update compatible type from <string> to <string-list>.
+ * Update interrupts description.
+ * Update mpic-msgr-receive-mask description.
 
- arch/sparc/kernel/sysfs.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   64 ++++++++++++++++++++
+ 1 files changed, 64 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
 
-diff --git a/arch/sparc/kernel/sysfs.c b/arch/sparc/kernel/sysfs.c
-index 654e8aa..22cb881 100644
---- a/arch/sparc/kernel/sysfs.c
-+++ b/arch/sparc/kernel/sysfs.c
-@@ -300,16 +300,14 @@ static int __init topology_init(void)
- 
- 	check_mmu_stats();
- 
--	register_cpu_notifier(&sysfs_cpu_nb);
--
- 	for_each_possible_cpu(cpu) {
- 		struct cpu *c = &per_cpu(cpu_devices, cpu);
- 
- 		register_cpu(c, cpu);
--		if (cpu_online(cpu))
--			register_cpu_online(cpu);
- 	}
- 
-+	register_allcpu_notifier(&sysfs_cpu_nb, true, NULL);
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+new file mode 100644
+index 0000000..d52ac48
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+@@ -0,0 +1,64 @@
++* FSL MPIC Message Registers
 +
- 	return 0;
- }
- 
++This binding specifies what properties must be available in the device tree
++representation of the message register blocks found in some FSL MPIC
++implementations.
++
++Required properties:
++
++    - compatible: Specifies the compatibility list for the message register
++      block.  The type shall be <string-list> and the value shall be of the form
++      "fsl,mpic-v<version>-msgr", where <version> is the version number of
++      the MPIC containing the message registers.
++
++    - reg: Specifies the base physical address(s) and size(s) of the
++      message register block's addressable register space.  The type shall be
++      <prop-encoded-array>.
++
++    - interrupts: Specifies a list of interrupt-specifiers which are available
++      for receiving interrupts. Interrupt-specifier consists of two cells: first
++      cell is interrupt-number and second cell is level-sense. The type shall be
++      <prop-encoded-array>.
++
++Optional properties:
++
++    - mpic-msgr-receive-mask: Specifies what registers in the containing block
++      are allowed to receive interrupts. The value is a bit mask where a set
++      bit at bit 'n' indicates that message register 'n' can receive interrupts.
++      Note that "bit 'n'" is numbered from LSB for PPC hardware. The type shall
++      be <u32>. If not present, then all of the message registers in the block
++      are available.
++
++Aliases:
++
++    An alias should be created for every message register block.  They are not
++    required, though.  However, a particular implementation of this binding
++    may require aliases to be present.  Aliases are of the form
++    'mpic-msgr-block<n>', where <n> is an integer specifying the block's number.
++    Numbers shall start at 0.
++
++Example:
++
++	aliases {
++		mpic-msgr-block0 = &mpic_msgr_block0;
++		mpic-msgr-block1 = &mpic_msgr_block1;
++	};
++
++	mpic_msgr_block0: mpic-msgr-block@41400 {
++		compatible = "fsl,mpic-v3.1-msgr";
++		reg = <0x41400 0x200>;
++		// Message registers 0 and 2 in this block can receive interrupts on
++		// sources 0xb0 and 0xb2, respectively.
++		interrupts = <0xb0 2 0xb2 2>;
++		mpic-msgr-receive-mask = <0x5>;
++	};
++
++	mpic_msgr_block1: mpic-msgr-block@42400 {
++		compatible = "fsl,mpic-v3.1-msgr";
++		reg = <0x42400 0x200>;
++		// Message registers 0 and 2 in this block can receive interrupts on
++		// sources 0xb4 and 0xb6, respectively.
++		interrupts = <0xb4 2 0xb6 2>;
++		mpic-msgr-receive-mask = <0x5>;
++	};
++
+-- 
+1.7.5.1
