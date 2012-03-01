@@ -1,46 +1,45 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2FE07B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 19:13:00 +1100 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 865E8B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2012 19:15:27 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Thu, 1 Mar 2012 13:42:57 +0530
+ Thu, 1 Mar 2012 13:45:24 +0530
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q218CoCK3383516
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 13:42:51 +0530
+ q218FJbX4247748
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 13:45:19 +0530
 Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q218Cmwx018127
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 13:42:50 +0530
-Message-ID: <4F4F2F7F.5040207@linux.vnet.ibm.com>
-Date: Thu, 01 Mar 2012 13:42:47 +0530
+ q218FHb1025010
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2012 13:45:18 +0530
+Message-ID: <4F4F3014.50901@linux.vnet.ibm.com>
+Date: Thu, 01 Mar 2012 13:45:16 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] cpumask: fix lg_lock/br_lock.
+Subject: [PATCH 1/3] CPU hotplug: Fix issues with callback registration
 References: <87ehtf3lqh.fsf@rustcorp.com.au>
  <20120227155338.7b5110cd.akpm@linux-foundation.org>
  <20120228084359.GJ21106@elte.hu>
  <20120228132719.f375071a.akpm@linux-foundation.org>
  <4F4DBB26.2060907@linux.vnet.ibm.com> <20120229091732.GA11505@elte.hu>
- <4F4E083A.2080304@linux.vnet.ibm.com>
-In-Reply-To: <4F4E083A.2080304@linux.vnet.ibm.com>
+ <4F4E083A.2080304@linux.vnet.ibm.com> <4F4F2F7F.5040207@linux.vnet.ibm.com>
+In-Reply-To: <4F4F2F7F.5040207@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: sparclinux@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
- Nick Piggin <npiggin@kernel.dk>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+Cc: Andi Kleen <ak@linux.intel.com>, Nick Piggin <npiggin@kernel.dk>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Rusty Russell <rusty@rustcorp.com.au>,
  linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
  Paul Gortmaker <paul.gortmaker@windriver.com>,
  Alexander Viro <viro@zeniv.linux.org.uk>,
- Arjan van de Ven <arjan.van.de.ven@intel.com>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, sparclinux@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Arjan van de Ven <arjan.van.de.ven@intel.com>,
  ppc-dev <linuxppc-dev@lists.ozlabs.org>,
  "David S. Miller" <davem@davemloft.net>,
  Peter Zijlstra <a.p.zijlstra@chello.nl>
@@ -53,142 +52,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/29/2012 04:42 PM, Srivatsa S. Bhat wrote:
 
-> On 02/29/2012 02:47 PM, Ingo Molnar wrote:
-> 
->>
->> * Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>
->>> Hi Andrew,
->>>
->>> On 02/29/2012 02:57 AM, Andrew Morton wrote:
->>>
->>>> On Tue, 28 Feb 2012 09:43:59 +0100
->>>> Ingo Molnar <mingo@elte.hu> wrote:
->>>>
->>>>> This patch should also probably go upstream through the 
->>>>> locking/lockdep tree? Mind sending it us once you think it's 
->>>>> ready?
->>>>
->>>> Oh goody, that means you own
->>>> http://marc.info/?l=linux-kernel&m=131419353511653&w=2.
->>>>
->>>
->>>
->>> That bug got fixed sometime around Dec 2011. See commit e30e2fdf
->>> (VFS: Fix race between CPU hotplug and lglocks)
->>
->> The lglocks code is still CPU-hotplug racy AFAICS, despite the 
->> ->cpu_lock complication:
->>
->> Consider a taken global lock on a CPU:
->>
->> 	CPU#1
->> 	...
->> 	br_write_lock(vfsmount_lock);
->>
->> this takes the lock of all online CPUs: say CPU#1 and CPU#2. Now 
->> CPU#3 comes online and takes the read lock:
-> 
-> 
-> CPU#3 cannot come online! :-)
-> 
-> No new CPU can come online until that corresponding br_write_unlock()
-> is completed. That is because  br_write_lock acquires &name##_cpu_lock
-> and only br_write_unlock will release it.
-> And, CPU_UP_PREPARE callback tries to acquire that very same spinlock,
-> and hence will keep spinning until br_write_unlock() is run. And hence,
-> the CPU#3 or any new CPU online for that matter will not complete until
-> br_write_unlock() is done.
-> 
-> It is of course debatable as to how good this design really is, but IMHO,
-> the lglocks code is not CPU-hotplug racy now..
-> 
-> Here is the link to the original discussion during the development of
-> that patch: thread.gmane.org/gmane.linux.file-systems/59750/
-> 
->>
->> 			CPU#3
->> 			br_read_lock(vfsmount_lock);
->>
->> This will succeed while the br_write_lock() is still active, 
->> because CPU#1 has only taken the locks of CPU#1 and CPU#2. 
->>
->> Crash!
->>
->> The proper fix would be for CPU-online to serialize with all 
->> known lglocks, via the notifier callback, i.e. to do something 
->> like this:
->>
->>         case CPU_UP_PREPARE:                                            
->> 		for_each_online_cpu(cpu) {
->> 	                spin_lock(&name##_cpu_lock);                            
->> 	                spin_unlock(&name##_cpu_lock);
->> 		}
->> 	...
->>
->> I.e. in essence do:
->>
->>         case CPU_UP_PREPARE:                                            
->> 		name##_global_lock_online();
->> 		name##_global_unlock_online();
->>
->> Another detail I noticed, this bit:
->>
->>         register_hotcpu_notifier(&name##_lg_cpu_notifier);              \
->>         get_online_cpus();                                              \
->>         for_each_online_cpu(i)                                          \
->>                 cpu_set(i, name##_cpus);                                \
->>         put_online_cpus();                                              \
->>
->> could be something simpler and loop-less, like:
->>
->>         get_online_cpus();
->> 	cpumask_copy(name##_cpus, cpu_online_mask);
->> 	register_hotcpu_notifier(&name##_lg_cpu_notifier);
->> 	put_online_cpus();
->>
-> 
-> 
-> While the cpumask_copy is definitely better, we can't put the
-> register_hotcpu_notifier() within get/put_online_cpus() because it will
-> lead to ABBA deadlock with a newly initiated CPU Hotplug operation, the
-> 2 locks involved being the cpu_add_remove_lock and the cpu_hotplug lock.
-> 
-> IOW, at the moment there is no "absolutely race-free way" way to do
-> CPU Hotplug callback registration. Some time ago, while going through the
-> asynchronous booting patch by Arjan [1] I had written up a patch to fix
-> that race because that race got transformed from "purely theoretical"
-> to "very real" with the async boot patch, as shown by the powerpc boot
-> failures [2].
-> 
-> But then I stopped short of posting that patch to the lists because I
-> started wondering how important that race would actually turn out to be,
-> in case the async booting design takes a totally different approach
-> altogether.. [And the reason why I didn't post it is also because it
-> would require lots of changes in many parts where CPU Hotplug registration
-> is done, and that wouldn't probably be justified (I don't know..) if the
-> race remained only theoretical, as it is now.]
-> 
-> [1]. http://thread.gmane.org/gmane.linux.kernel/1246209
-> [2]. https://lkml.org/lkml/2012/2/13/383
->  
+Currently, there are several intertwined problems with CPU hotplug callback
+registration:
 
+Code which needs to get notified of CPU hotplug events and additionally wants
+to do something for each already online CPU, would typically do something like:
 
-Ok, now that I mentioned about my patch, let me as well show it some daylight..
-It is totally untested, incomplete and probably won't even compile.. (given
-that I had abandoned working on it some time ago, since I was not sure in
-what direction the async boot design was headed, which was the original
-motivation for me to try to fix this race)
+   register_cpu_notifier(&foobar_cpu_notifier);
+				<============ "A"
+   get_online_cpus();
+   for_each_online_cpu(cpu) {
+	/* Do something */
+   }
+   put_online_cpus();
 
-I really hate to post it when it is in such a state, but atleast let me get
-the idea out, now that the discussion is around it, atleast just to get some
-thoughts about whether it is even worth pursuing! 
-(I'll post the patches as a reply to this mail.)
+At the point marked as "A", a CPU hotplug event could sneak in, leaving the
+code confused. Moving the registration to after put_online_cpus() won't help
+either, because we could be losing a CPU hotplug event between put_online_cpus()
+and the callback registration. Also, doing the registration inside the
+get/put_online_cpus() block is also not going to help, because it will lead to
+ABBA deadlock with CPU hotplug, the 2 locks being cpu_add_remove_lock and
+cpu_hotplug lock.
 
-By the way, it should solve the powerpc boot failure, atleast in principle,
-considering what the root cause of the failure was..
+It is also to be noted that, at times, we might want to do different setups
+or initializations depending on whether a CPU is coming online for the first
+time (as part of booting) or whether it is being only soft-onlined at a later
+point in time. To achieve this, doing something like the code shown above,
+with the "Do something" being different than what the registered callback
+does wouldn't work out, because of the race conditions mentioned above.
 
-Regards,
-Srivatsa S. Bhat
+The solution to all this is to include "history replay upon request" within
+the CPU hotplug callback registration code, while also providing an option
+for a different callback to be invoked while replaying history.
+
+Though the above mentioned race condition was mostly theoretical before, it
+gets all real when things like asynchronous booting[1] come into the picture,
+as shown by the PowerPC boot failure in [2]. So this fix is also a step forward
+in getting cool things like asynchronous booting to work properly.
+
+References:
+[1]. https://lkml.org/lkml/2012/2/14/62
+
+---
+
+ include/linux/cpu.h |   15 +++++++++++++++
+ kernel/cpu.c        |   49 ++++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 61 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 6e53b48..90a6d76 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -124,16 +124,25 @@ enum {
+ #endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern int register_cpu_notifier(struct notifier_block *nb);
++extern int register_allcpu_notifier(struct notifier_block *nb,
++			bool replay_history, int (*history_setup)(void));
+ extern void unregister_cpu_notifier(struct notifier_block *nb);
+ #else
+ 
+ #ifndef MODULE
+ extern int register_cpu_notifier(struct notifier_block *nb);
++extern int register_allcpu_notifier(struct notifier_block *nb,
++			bool replay_history, int (*history_setup)(void));
+ #else
+ static inline int register_cpu_notifier(struct notifier_block *nb)
+ {
+ 	return 0;
+ }
++static inline int register_allcpu_notifier(struct notifier_block *nb,
++			bool replay_history, int (*history_setup)(void))
++{
++	return 0;
++}
+ #endif
+ 
+ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+@@ -155,6 +164,12 @@ static inline int register_cpu_notifier(struct notifier_block *nb)
+ 	return 0;
+ }
+ 
++static inline int register_allcpu_notifier(struct notifier_block *nb,
++			bool replay_history, int (*history_setup)(void))
++{
++	return 0;
++}
++
+ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+ {
+ }
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index d520d34..1564c1d 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -132,12 +132,56 @@ static void cpu_hotplug_done(void) {}
+ /* Need to know about CPUs going up/down? */
+ int __ref register_cpu_notifier(struct notifier_block *nb)
+ {
+-	int ret;
++	return register_allcpu_notifier(nb, false, NULL);
++}
++EXPORT_SYMBOL(register_cpu_notifier);
++
++int __ref register_allcpu_notifier(struct notifier_block *nb,
++			bool replay_history, int (*history_setup)(void))
++{
++	int cpu, ret = 0;
++
++	if (!replay_history && history_setup)
++		return -EINVAL;
++
+ 	cpu_maps_update_begin();
+-	ret = raw_notifier_chain_register(&cpu_chain, nb);
++	/*
++	 * We don't race with CPU hotplug, because we just took the
++	 * cpu_add_remove_lock.
++	 */
++
++	if (!replay_history)
++		goto Register;
++
++	if (history_setup) {
++		/*
++		 * The caller has a special setup routine to rewrite
++		 * history as he desires. Just invoke it. Don't
++		 * proceed with callback registration if this setup is
++		 * unsuccessful.
++		 */
++		ret = history_setup();
++	} else {
++		/*
++		 * Fallback to the usual callback, if a special handler
++		 * for past CPU hotplug events is not specified.
++		 * In this case, we will replay only past CPU bring-up
++		 * events.
++		 */
++		for_each_online_cpu(cpu) {
++			nb->notifier_call(nb, CPU_UP_PREPARE, cpu);
++			nb->notifier_call(nb, CPU_ONLINE, cpu);
++		}
++	}
++
++ Register:
++	if (!ret)
++		ret = raw_notifier_chain_register(&cpu_chain, nb);
++
+ 	cpu_maps_update_done();
+ 	return ret;
+ }
++EXPORT_SYMBOL(register_allcpu_notifier);
+ 
+ static int __cpu_notify(unsigned long val, void *v, int nr_to_call,
+ 			int *nr_calls)
+@@ -161,7 +205,6 @@ static void cpu_notify_nofail(unsigned long val, void *v)
+ {
+ 	BUG_ON(cpu_notify(val, v));
+ }
+-EXPORT_SYMBOL(register_cpu_notifier);
+ 
+ void __ref unregister_cpu_notifier(struct notifier_block *nb)
+ {
