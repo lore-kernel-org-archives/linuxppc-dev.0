@@ -1,31 +1,30 @@
-Return-Path: <mylinux@10.ap.freescale.net>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe001.messaging.microsoft.com
- [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9CD8EB6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 18:10:37 +1100 (EST)
-Received: from mail66-am1 (localhost [127.0.0.1])	by mail66-am1-R.bigfish.com
- (Postfix) with ESMTP id 34B41380391	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Mar 2012 07:10:30 +0000 (UTC)
-Received: from AM1EHSMHS002.bigfish.com (unknown [10.3.201.248])	by
- mail66-am1.bigfish.com (Postfix) with ESMTP id C4743200122	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 07:10:27 +0000 (UTC)
-Received: from 10.ap.freescale.net ([10.213.130.145])	by
- az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id q227ALxh006072	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Mar 2012 01:10:22 -0600 (CST)
-From: Liu Gang <Gang.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <Alexandre.Bounine@idt.com>
-Subject: [PATCH] powerpc/srio: Fix the compile errors when building with 64bit
-Date: Fri, 2 Mar 2012 15:08:47 +0800
-Message-ID: <1330672127-22172-1-git-send-email-Gang.Liu@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, r61911@freescale.com,
- linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
- Liu Gang <Gang.Liu@freescale.com>, akpm@linux-foundation.org,
- r58472@freescale.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A6D291007D8
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2012 20:36:17 +1100 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
+ Fri, 2 Mar 2012 09:19:52 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q229UaC43670188
+ for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:30:37 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q229a5Hm012137
+ for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:36:05 +1100
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 10/12] powerpc: Fix register clobbering when accumulating
+ stolen time
+Date: Fri,  2 Mar 2012 20:35:20 +1100
+Message-Id: <1330680922-6894-11-git-send-email-benh@kernel.crashing.org>
+In-Reply-To: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
+References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,78 +34,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the file "arch/powerpc/sysdev/fsl_rmu.c", there will be some compile
-errors while using the corenet64_smp_defconfig:
+When running under a hypervisor that supports stolen time accounting,
+we may call C code from the macro EXCEPTION_PROLOG_COMMON in the
+exception entry path, which clobbers CR0.
 
-.../fsl_rmu.c:315: error: cast from pointer to integer of different size
-.../fsl_rmu.c:320: error: cast to pointer from integer of different size
-.../fsl_rmu.c:320: error: cast to pointer from integer of different size
-.../fsl_rmu.c:320: error: cast to pointer from integer of different size
-.../fsl_rmu.c:330: error: cast to pointer from integer of different size
-.../fsl_rmu.c:332: error: cast to pointer from integer of different size
-.../fsl_rmu.c:339: error: cast to pointer from integer of different size
-.../fsl_rmu.c:340: error: cast to pointer from integer of different size
-.../fsl_rmu.c:341: error: cast to pointer from integer of different size
-.../fsl_rmu.c:348: error: cast to pointer from integer of different size
-.../fsl_rmu.c:348: error: cast to pointer from integer of different size
-.../fsl_rmu.c:348: error: cast to pointer from integer of different size
-.../fsl_rmu.c:659: error: cast from pointer to integer of different size
-.../fsl_rmu.c:659: error: format '%8.8x' expects type 'unsigned int',
-		   but argument 5 has type 'size_t'
-.../fsl_rmu.c:985: error: cast from pointer to integer of different size
-.../fsl_rmu.c:997: error: cast to pointer from integer of different size
+However, the FPU and vector traps rely on CR0 indicating whether we
+are coming from userspace or kernel to decide what to do.
 
-Rewrote the corresponding code with the support of 64bit building.
+So we need to restore that value after the C call
 
-Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/fsl_rmu.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/ppc_asm.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
-index 1548578..468011e 100644
---- a/arch/powerpc/sysdev/fsl_rmu.c
-+++ b/arch/powerpc/sysdev/fsl_rmu.c
-@@ -311,8 +311,8 @@ fsl_rio_dbell_handler(int irq, void *dev_instance)
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 368f72f..50f73aa 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -60,6 +60,8 @@ BEGIN_FW_FTR_SECTION;							\
+ 	cmpd	cr1,r11,r10;						\
+ 	beq+	cr1,33f;						\
+ 	bl	.accumulate_stolen_time;				\
++	ld	r12,_MSR(r1);						\
++	andi.	r10,r12,MSR_PR;		/* Restore cr0 (coming from user) */ \
+ 33:									\
+ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
  
- 	/* XXX Need to check/dispatch until queue empty */
- 	if (dsr & DOORBELL_DSR_DIQI) {
--		u32 dmsg =
--			(u32) fsl_dbell->dbell_ring.virt +
-+		unsigned long dmsg =
-+			(unsigned long) fsl_dbell->dbell_ring.virt +
- 			(in_be32(&fsl_dbell->dbell_regs->dqdpar) & 0xfff);
- 		struct rio_dbell *dbell;
- 		int found = 0;
-@@ -657,7 +657,8 @@ fsl_add_outb_message(struct rio_mport *mport, struct rio_dev *rdev, int mbox,
- 	int ret = 0;
- 
- 	pr_debug("RIO: fsl_add_outb_message(): destid %4.4x mbox %d buffer " \
--		 "%8.8x len %8.8x\n", rdev->destid, mbox, (int)buffer, len);
-+		 "%8.8lx len %8.8zx\n", rdev->destid, mbox,
-+		(unsigned long)buffer, len);
- 	if ((len < 8) || (len > RIO_MAX_MSG_SIZE)) {
- 		ret = -EINVAL;
- 		goto out;
-@@ -972,7 +973,7 @@ out:
- void *fsl_get_inb_message(struct rio_mport *mport, int mbox)
- {
- 	struct fsl_rmu *rmu = GET_RMM_HANDLE(mport);
--	u32 phys_buf, virt_buf;
-+	unsigned long phys_buf, virt_buf;
- 	void *buf = NULL;
- 	int buf_idx;
- 
-@@ -982,7 +983,7 @@ void *fsl_get_inb_message(struct rio_mport *mport, int mbox)
- 	if (phys_buf == in_be32(&rmu->msg_regs->ifqepar))
- 		goto out2;
- 
--	virt_buf = (u32) rmu->msg_rx_ring.virt + (phys_buf
-+	virt_buf = (unsigned long) rmu->msg_rx_ring.virt + (phys_buf
- 						- rmu->msg_rx_ring.phys);
- 	buf_idx = (phys_buf - rmu->msg_rx_ring.phys) / RIO_MAX_MSG_SIZE;
- 	buf = rmu->msg_rx_ring.virt_buffer[buf_idx];
 -- 
-1.7.0.4
+1.7.9
