@@ -1,30 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EB921100813
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2012 20:37:12 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
- Fri, 2 Mar 2012 09:20:49 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q229a5me1040514
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:36:07 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q229a4Vc026432
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:36:05 +1100
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 02/12] powerpc: Use the same interrupt prolog for perfmon as
- other interrupts
-Date: Fri,  2 Mar 2012 20:35:12 +1100
-Message-Id: <1330680922-6894-3-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
-References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 5C2031007D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 21:04:32 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 11051-06 for <linuxppc-dev@lists.ozlabs.org>;
+ Fri,  2 Mar 2012 09:57:50 +0000 (GMT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] powerpc/srio: Fix the compile errors when building with
+ 64bit
+Date: Fri, 2 Mar 2012 09:57:01 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6E8B@saturn3.aculab.com>
+In-Reply-To: <1330672127-22172-1-git-send-email-Gang.Liu@freescale.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Liu Gang" <Gang.Liu@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <Alexandre.Bounine@idt.com>
+Cc: r58472@freescale.com, linux-kernel@vger.kernel.org, r61911@freescale.com,
+ Paul Gortmaker <paul.gortmaker@windriver.com>, akpm@linux-foundation.org,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,72 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The perfmon interrupt is the sole user of a special variant of the
-interrupt prolog which differs from the one used by external and timer
-interrupts in that it saves the non-volatile GPRs and doesn't turn the
-runlatch on.
+=20
+> For the file "arch/powerpc/sysdev/fsl_rmu.c", there will be=20
+> some compile errors while using the corenet64_smp_defconfig:
 
-The former is unnecessary and the later is arguably incorrect, so
-let's clean that up by using the same prolog. While at it we rename
-that prolog to use the _ASYNC prefix.
+I'm sure that replacing 'u32' with 'unsigned long'
+is really the best thing to do here.
+It looks to me as though they should be some pointer type.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/exception-64s.h |   17 +++--------------
- arch/powerpc/kernel/exceptions-64s.S     |    6 +++---
- 2 files changed, 6 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index cc2bcf4..041b222 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -297,21 +297,10 @@ label##_common:						\
- 
- /*
-  * Like STD_EXCEPTION_COMMON, but for exceptions that can occur
-- * in the idle task and therefore need the special idle handling.
-+ * in the idle task and therefore need the special idle handling
-+ * (finish nap and runlatch)
-  */
--#define STD_EXCEPTION_COMMON_IDLE(trap, label, hdlr)	\
--	.align	7;					\
--	.globl label##_common;				\
--label##_common:						\
--	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
--	FINISH_NAP;					\
--	DISABLE_INTS;					\
--	bl	.save_nvgprs;				\
--	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
--	bl	hdlr;					\
--	b	.ret_from_except
--
--#define STD_EXCEPTION_COMMON_LITE(trap, label, hdlr)	\
-+#define STD_EXCEPTION_COMMON_ASYNC(trap, label, hdlr)	\
- 	.align	7;					\
- 	.globl label##_common;				\
- label##_common:						\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index fea8a69..2240d4e 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -458,15 +458,15 @@ machine_check_common:
- 	bl	.machine_check_exception
- 	b	.ret_from_except
- 
--	STD_EXCEPTION_COMMON_LITE(0x500, hardware_interrupt, do_IRQ)
--	STD_EXCEPTION_COMMON_LITE(0x900, decrementer, .timer_interrupt)
-+	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt, do_IRQ)
-+	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, .timer_interrupt)
- 	STD_EXCEPTION_COMMON(0xa00, trap_0a, .unknown_exception)
- 	STD_EXCEPTION_COMMON(0xb00, trap_0b, .unknown_exception)
- 	STD_EXCEPTION_COMMON(0xd00, single_step, .single_step_exception)
- 	STD_EXCEPTION_COMMON(0xe00, trap_0e, .unknown_exception)
-         STD_EXCEPTION_COMMON(0xe40, emulation_assist, .program_check_exception)
-         STD_EXCEPTION_COMMON(0xe60, hmi_exception, .unknown_exception)
--	STD_EXCEPTION_COMMON_IDLE(0xf00, performance_monitor, .performance_monitor_exception)
-+	STD_EXCEPTION_COMMON_ASYNC(0xf00, performance_monitor, .performance_monitor_exception)
- 	STD_EXCEPTION_COMMON(0x1300, instruction_breakpoint, .instruction_breakpoint_exception)
- #ifdef CONFIG_ALTIVEC
- 	STD_EXCEPTION_COMMON(0x1700, altivec_assist, .altivec_assist_exception)
--- 
-1.7.9
+	David
