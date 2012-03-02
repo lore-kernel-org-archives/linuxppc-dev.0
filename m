@@ -1,20 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 338BCB6F62
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 17:06:49 +1100 (EST)
-Date: Fri, 2 Mar 2012 17:06:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: linux-next: boot failure for next-20120227 and later (pci tree
- related)
-Message-Id: <20120302170638.3d172369d04335d9b921a28c@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__2_Mar_2012_17_06_38_+1100_Ufn0PLV7pLiNNAh7"
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-next@vger.kernel.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Return-Path: <mylinux@10.ap.freescale.net>
+Received: from AM1EHSOBE005.bigfish.com (am1ehsobe001.messaging.microsoft.com
+ [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9CD8EB6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 18:10:37 +1100 (EST)
+Received: from mail66-am1 (localhost [127.0.0.1])	by mail66-am1-R.bigfish.com
+ (Postfix) with ESMTP id 34B41380391	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Mar 2012 07:10:30 +0000 (UTC)
+Received: from AM1EHSMHS002.bigfish.com (unknown [10.3.201.248])	by
+ mail66-am1.bigfish.com (Postfix) with ESMTP id C4743200122	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2012 07:10:27 +0000 (UTC)
+Received: from 10.ap.freescale.net ([10.213.130.145])	by
+ az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id q227ALxh006072	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Mar 2012 01:10:22 -0600 (CST)
+From: Liu Gang <Gang.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <Alexandre.Bounine@idt.com>
+Subject: [PATCH] powerpc/srio: Fix the compile errors when building with 64bit
+Date: Fri, 2 Mar 2012 15:08:47 +0800
+Message-ID: <1330672127-22172-1-git-send-email-Gang.Liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, r61911@freescale.com,
+ linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Liu Gang <Gang.Liu@freescale.com>, akpm@linux-foundation.org,
+ r58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,219 +35,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__2_Mar_2012_17_06_38_+1100_Ufn0PLV7pLiNNAh7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For the file "arch/powerpc/sysdev/fsl_rmu.c", there will be some compile
+errors while using the corenet64_smp_defconfig:
 
-Hi Jesse,
+.../fsl_rmu.c:315: error: cast from pointer to integer of different size
+.../fsl_rmu.c:320: error: cast to pointer from integer of different size
+.../fsl_rmu.c:320: error: cast to pointer from integer of different size
+.../fsl_rmu.c:320: error: cast to pointer from integer of different size
+.../fsl_rmu.c:330: error: cast to pointer from integer of different size
+.../fsl_rmu.c:332: error: cast to pointer from integer of different size
+.../fsl_rmu.c:339: error: cast to pointer from integer of different size
+.../fsl_rmu.c:340: error: cast to pointer from integer of different size
+.../fsl_rmu.c:341: error: cast to pointer from integer of different size
+.../fsl_rmu.c:348: error: cast to pointer from integer of different size
+.../fsl_rmu.c:348: error: cast to pointer from integer of different size
+.../fsl_rmu.c:348: error: cast to pointer from integer of different size
+.../fsl_rmu.c:659: error: cast from pointer to integer of different size
+.../fsl_rmu.c:659: error: format '%8.8x' expects type 'unsigned int',
+		   but argument 5 has type 'size_t'
+.../fsl_rmu.c:985: error: cast from pointer to integer of different size
+.../fsl_rmu.c:997: error: cast to pointer from integer of different size
 
-Staring with next-20120227, one of my boot tests is failing like this:
+Rewrote the corresponding code with the support of 64bit building.
 
-Freeing unused kernel memory: 488k freed
-modprobe used greatest stack depth: 10624 bytes left
-dracut: dracut-004-32.el6
-udev: starting version 147
-udevd (1161): /proc/1161/oom_adj is deprecated, please use /proc/1161/oom_s=
-core_adj instead.
-setfont used greatest stack depth: 10528 bytes left
-dracut: Starting plymouth daemon
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2689
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 9 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2701
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 20 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2713
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 8 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2725
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 8 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2737
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 8 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2749
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 8 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2761
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 7 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2773
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 7 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2785
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 8 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2797
-initcall .wait_scan_init+0x0/0xc4 [scsi_wait_scan] returned 0 after 8 usecs
-calling  .wait_scan_init+0x0/0xc4 [scsi_wait_scan] @ 2809
+Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/sysdev/fsl_rmu.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-and eventually our test system decides the machine is dead.  This is a
-PowerPC 970 based blade system  (several other PowerPC based systems to
-not fail).  A "normal" boot only shows .wait_scan_init being called
-once.  (I have "initcall_debug=3Dy debug" on the command line).
-
-I bisected this down to:
-
-commit 6c5705fec63d83eeb165fe61e34adc92ecc2ce75
-Author: Bjorn Helgaas <bhelgaas@google.com>
-Date:   Thu Feb 23 20:19:03 2012 -0700
-
-    powerpc/PCI: get rid of device resource fixups
-   =20
-    Tell the PCI core about host bridge address translation so it can take
-    care of bus-to-resource conversion for us.
-   =20
-    CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-The only seemingly relevant differences in the boot logs (good to bad) are:
-
- pci 0000:03:02.0: supports D1 D2
-+PCI: Cannot allocate resource region 0 of PCI bridge 1, will remap
-+PCI: Cannot allocate resource region 1 of PCI bridge 1, will remap
-+PCI: Cannot allocate resource region 0 of PCI bridge 6, will remap
-+PCI: Cannot allocate resource region 1 of PCI bridge 6, will remap
-+PCI: Cannot allocate resource region 0 of PCI bridge 3, will remap
-+PCI: Cannot allocate resource region 1 of PCI bridge 3, will remap
-+PCI: Cannot allocate resource region 0 of device 0000:01:01.0, will remap
-+PCI: Cannot allocate resource region 2 of device 0000:01:01.0, will remap
-+PCI: Cannot allocate resource region 6 of device 0000:01:01.0, will remap
-+PCI: Cannot allocate resource region 0 of device 0000:03:00.0, will remap
-+PCI: Cannot allocate resource region 0 of device 0000:03:00.1, will remap
-+PCI: Cannot allocate resource region 0 of device 0000:03:02.0, will remap
-+PCI: Cannot allocate resource region 1 of device 0000:03:02.0, will remap
-+PCI: Cannot allocate resource region 2 of device 0000:03:02.0, will remap
-+PCI: Cannot allocate resource region 6 of device 0000:03:02.0, will remap
-+PCI: Cannot allocate resource region 0 of device 0000:06:04.0, will remap
-+PCI: Cannot allocate resource region 2 of device 0000:06:04.0, will remap
-+PCI: Cannot allocate resource region 0 of device 0000:06:04.1, will remap
-+PCI: Cannot allocate resource region 2 of device 0000:06:04.1, will remap
- PCI: Probing PCI hardware done
-	.
-	.
-	.
- calling  .radeonfb_init+0x0/0x248 @ 1
--radeonfb 0000:03:02.0: Invalid ROM contents
--radeonfb (0000:03:02.0): Invalid ROM signature 7272 should be 0xaa55
--radeonfb: No ATY,RefCLK property !
--xtal calculation failed: 26550
--radeonfb: Used default PLL infos
--radeonfb: Reference=3D27.00 MHz (RefDiv=3D60) Memory=3D166.00 Mhz, System=
-=3D166.00 MHz
--radeonfb: PLL min 12000 max 35000
--i2c i2c-1: unable to read EDID block.
--i2c i2c-1: unable to read EDID block.
--i2c i2c-1: unable to read EDID block.
--i2c i2c-3: unable to read EDID block.
--i2c i2c-3: unable to read EDID block.
--i2c i2c-3: unable to read EDID block.
--i2c i2c-2: unable to read EDID block.
--i2c i2c-2: unable to read EDID block.
--i2c i2c-2: unable to read EDID block.
--i2c i2c-3: unable to read EDID block.
--i2c i2c-3: unable to read EDID block.
--i2c i2c-3: unable to read EDID block.
--radeonfb: Monitor 1 type CRT found
--radeonfb: Monitor 2 type no found
--Console: switching to colour frame buffer device 80x30
--radeonfb (0000:03:02.0): ATI Radeon 515e "Q^"
-+radeonfb 0000:03:02.0: device not available (can't reserve [mem 0x00000000=
--0x07ffffff])
-+radeonfb (0000:03:02.0): Cannot enable PCI device
-+radeonfb: probe of 0000:03:02.0 failed with error -22
- initcall .radeonfb_init+0x0/0x248 returned 0 after x usecs
-	.
-	.
-	.
- ipr: IBM Power RAID SCSI Device Driver version: 2.5.2 (April 27, 2011)
--ipr 0000:01:01.0: Found IOA with IRQ: 26
--ipr 0000:01:01.0: Starting IOA initialization sequence.
--ipr 0000:01:01.0: Adapter firmware version: 06160039
--ipr 0000:01:01.0: IOA initialized.
--scsi0 : IBM 572E Storage Adapter
--scsi 0:0:1:0: Direct-Access     IBM-ESXS MAY2036RC        T106 PQ: 0 ANSI:=
- 5
--scsi: unknown device type 31
--scsi 0:255:255:255: No Device         IBM      572E001          0150 PQ: 0=
- ANSI: 0
-+ipr 0000:01:01.0: device not available (can't reserve [mem 0x00000000-0x00=
-03ffff])
-+ipr 0000:01:01.0: Cannot enable adapter
-+ipr: probe of 0000:01:01.0 failed with error -22
- initcall .ipr_init+0x0/0x68 returned 0 after x usecs
-	.
-	.
-	.
- calling  .tg3_init+0x0/0x3c @ 1
- tg3.c:v3.122 (December 7, 2011)
--tg3 0000:06:04.0: enabling device (0140 -> 0142)
--sd 0:0:1:0: [sda] 71096640 512-byte logical blocks: (36.4 GB/33.9 GiB)
--sd 0:0:1:0: [sda] Write Protect is off
--sd 0:0:1:0: [sda] Mode Sense: d7 00 00 08
--sd 0:0:1:0: [sda] Write cache: disabled, read cache: enabled, doesn't supp=
-ort DPO or FUA
-- sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 >
--sd 0:0:1:0: [sda] Attached SCSI disk
--initcall 1_.sd_probe_async+0x0/0x1d0 returned 0 after x usecs
--tg3 0000:06:04.0: eth0: Tigon3 [partno(none) rev 8100] (PCIX:133MHz:64-bit=
-) MAC address 00:14:5e:9c:21:e2
--tg3 0000:06:04.0: eth0: attached PHY is 5780 (1000Base-SX Ethernet) (WireS=
-peed[0], EEE[0])
--tg3 0000:06:04.0: eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[1] TSOcap[1]
--tg3 0000:06:04.0: eth0: dma_rwctrl[76144000] dma_mask[40-bit]
--tg3 0000:06:04.1: enabling device (0140 -> 0142)
--tg3 0000:06:04.1: eth1: Tigon3 [partno(none) rev 8100] (PCIX:133MHz:64-bit=
-) MAC address 00:14:5e:9c:21:e3
--tg3 0000:06:04.1: eth1: attached PHY is 5780 (1000Base-SX Ethernet) (WireS=
-peed[0], EEE[0])
--tg3 0000:06:04.1: eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
--tg3 0000:06:04.1: eth1: dma_rwctrl[76144000] dma_mask[40-bit]
-+tg3 0000:06:04.0: device not available (can't reserve [mem 0x00000000-0x00=
-00ffff])
-+tg3 0000:06:04.0: Cannot enable PCI device, aborting
-+tg3: probe of 0000:06:04.0 failed with error -22
-+tg3 0000:06:04.1: device not available (can't reserve [mem 0x00000000-0x00=
-00ffff])
-+tg3 0000:06:04.1: Cannot enable PCI device, aborting
-+tg3: probe of 0000:06:04.1 failed with error -22
- initcall .tg3_init+0x0/0x3c returned 0 after x usecs
-	.
-	.
-	.
- calling  .ohci_hcd_mod_init+0x0/0xfc @ 1
- ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
--ohci_hcd 0000:03:00.0: OHCI Host Controller
--ohci_hcd 0000:03:00.0: new USB bus registered, assigned bus number 1
--ohci_hcd 0000:03:00.0: irq 19, io mem 0x100a1001000
--hub 1-0:1.0: USB hub found
--hub 1-0:1.0: 3 ports detected
--ohci_hcd 0000:03:00.1: OHCI Host Controller
--ohci_hcd 0000:03:00.1: new USB bus registered, assigned bus number 2
--ohci_hcd 0000:03:00.1: irq 19, io mem 0x100a1000000
--hub 2-0:1.0: USB hub found
--hub 2-0:1.0: 3 ports detected
-+ohci_hcd 0000:03:00.0: device not available (can't reserve [mem 0x00000000=
--0x00000fff])
-+ohci_hcd 0000:03:00.1: device not available (can't reserve [mem 0x00000000=
--0x00000fff])
- initcall .ohci_hcd_mod_init+0x0/0xfc returned 0 after x usecs
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Fri__2_Mar_2012_17_06_38_+1100_Ufn0PLV7pLiNNAh7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPUGNuAAoJEECxmPOUX5FErAQQAIXby3LEEpDezrDMaKRrGZ36
-vIiEkyyh9g67UNjM/Q7aZuzgxRQ+ljqOSwkTYqmWBZ2a08kC0uE1q2I3t7lGk6bN
-UCtrHIJIt70uM4xSNbTQeE3wZ39mArsQlypKpN9UM6m0Cy3ZiIZN1dqACybvGucW
-ouMCosmxrnVQgFHCUn+bU5d+JNKSlEe/dDgLKEl+iboygDamBTLWbztfPXMzCjBY
-kXwWZF65cBuuXb5Hl9SQYpwRShJ+FJX7gSi2EE0GFYjAG8mPwGo/3GyVNTLgoANd
-aCer4XL7zJt2m5DzA7d8rQmEyyoQR53ucVgWA+SomnuY39O0BXOIBdk7S8L4K6Sj
-b5kPphTUAwQwxP8Lw+ktioFFoiCgBu4SzXAj2LXf2En8rONRkpIOaUUjbkqZgCVx
-8xnS93YKZKF4VapdplpmQIs7IQZlEzl+fPxMORK1XjEZE/2T4xBqZ4qBkx0IHI3g
-JT9PNde/GxamO6Co4PqpVaPh2HaKjxM9g7hXvWDV/xFCxPVV+NW87lv5SdmLfY0t
-RV/Wmw1hbvf6h8++bkn2HgpuTFbx65hOvYRzstq0oHAnLm2KVjpm78Wigoet5iwI
-DARSRyVD2+inV09lnLiH9dQmmFwqnT0XWM/ltaE8HrqFr/41L3Omy2k+xgW/ZVjd
-IvsywyyMYZYhVT9yuxkH
-=ilIC
------END PGP SIGNATURE-----
-
---Signature=_Fri__2_Mar_2012_17_06_38_+1100_Ufn0PLV7pLiNNAh7--
+diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
+index 1548578..468011e 100644
+--- a/arch/powerpc/sysdev/fsl_rmu.c
++++ b/arch/powerpc/sysdev/fsl_rmu.c
+@@ -311,8 +311,8 @@ fsl_rio_dbell_handler(int irq, void *dev_instance)
+ 
+ 	/* XXX Need to check/dispatch until queue empty */
+ 	if (dsr & DOORBELL_DSR_DIQI) {
+-		u32 dmsg =
+-			(u32) fsl_dbell->dbell_ring.virt +
++		unsigned long dmsg =
++			(unsigned long) fsl_dbell->dbell_ring.virt +
+ 			(in_be32(&fsl_dbell->dbell_regs->dqdpar) & 0xfff);
+ 		struct rio_dbell *dbell;
+ 		int found = 0;
+@@ -657,7 +657,8 @@ fsl_add_outb_message(struct rio_mport *mport, struct rio_dev *rdev, int mbox,
+ 	int ret = 0;
+ 
+ 	pr_debug("RIO: fsl_add_outb_message(): destid %4.4x mbox %d buffer " \
+-		 "%8.8x len %8.8x\n", rdev->destid, mbox, (int)buffer, len);
++		 "%8.8lx len %8.8zx\n", rdev->destid, mbox,
++		(unsigned long)buffer, len);
+ 	if ((len < 8) || (len > RIO_MAX_MSG_SIZE)) {
+ 		ret = -EINVAL;
+ 		goto out;
+@@ -972,7 +973,7 @@ out:
+ void *fsl_get_inb_message(struct rio_mport *mport, int mbox)
+ {
+ 	struct fsl_rmu *rmu = GET_RMM_HANDLE(mport);
+-	u32 phys_buf, virt_buf;
++	unsigned long phys_buf, virt_buf;
+ 	void *buf = NULL;
+ 	int buf_idx;
+ 
+@@ -982,7 +983,7 @@ void *fsl_get_inb_message(struct rio_mport *mport, int mbox)
+ 	if (phys_buf == in_be32(&rmu->msg_regs->ifqepar))
+ 		goto out2;
+ 
+-	virt_buf = (u32) rmu->msg_rx_ring.virt + (phys_buf
++	virt_buf = (unsigned long) rmu->msg_rx_ring.virt + (phys_buf
+ 						- rmu->msg_rx_ring.phys);
+ 	buf_idx = (phys_buf - rmu->msg_rx_ring.phys) / RIO_MAX_MSG_SIZE;
+ 	buf = rmu->msg_rx_ring.virt_buffer[buf_idx];
+-- 
+1.7.0.4
