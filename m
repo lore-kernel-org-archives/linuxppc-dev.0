@@ -1,28 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 43BA31007D3
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 972191007D3
  for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2012 20:36:18 +1100 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
- Fri, 2 Mar 2012 09:32:31 +1000
+ Fri, 2 Mar 2012 09:32:11 +1000
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q229Uabp3129580
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:30:37 +1100
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q229UWgf3543244
+ for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:30:34 +1100
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q229a5Pb005277
+ q229a4dx005257
  for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:36:05 +1100
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/12] powerpc: Disable interrupts in 64-bit kernel FP and
- vector faults
-Date: Fri,  2 Mar 2012 20:35:16 +1100
-Message-Id: <1330680922-6894-7-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 04/12] powerpc: Improve 64-bit syscall entry/exit
+Date: Fri,  2 Mar 2012 20:35:14 +1100
+Message-Id: <1330680922-6894-5-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
 References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,98 +33,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we get a floating point, altivec or vsx unavaible interrupt in
-kernel, we trigger a kernel error. There is no point preserving
-the interrupt state, in fact, that can even make debugging harder
-as the processor state might change (we may even preempt) between
-taking the exception and landing in a debugger.
+We unconditionally hard enable interrupts. This is unnecessary as
+syscalls are expected to always be called with interrupts enabled.
 
-So just make those 3 disable interrupts unconditionally.
+While at it, we add a WARN_ON if that is not the case and
+CONFIG_TRACE_IRQFLAGS is enabled (we don't want to add overhead
+to the fast path when this is not set though).
+
+Thus let's remove the enabling (and associated irq tracing) from
+the syscall entry path. Also on Book3S, replace a few mfmsr
+instructions with loads of PACAMSR from the PACA, which should be
+faster & schedule better.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/exceptions-64e.S |    8 +++-----
- arch/powerpc/kernel/exceptions-64s.S |    6 +++---
- arch/powerpc/kernel/traps.c          |    3 +++
- 3 files changed, 9 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/entry_64.S |   43 +++++++++++++++++++++------------------
+ 1 files changed, 23 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 429983c..01095e6 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -352,11 +352,10 @@ interrupt_end_book3e:
- 	START_EXCEPTION(fp_unavailable);
- 	NORMAL_EXCEPTION_PROLOG(0x800, PROLOG_ADDITION_NONE)
- 	/* we can probably do a shorter exception entry for that one... */
--	EXCEPTION_COMMON(0x800, PACA_EXGEN, INTS_KEEP)
-+	EXCEPTION_COMMON(0x800, PACA_EXGEN, INTS_DISABLE_ALL)
- 	bne	1f			/* if from user, just load it up */
- 	bl	.save_nvgprs
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
--	INTS_RESTORE_HARD
- 	bl	.kernel_fp_unavailable_exception
- 	BUG_OPCODE
- 1:	ld	r12,_MSR(r1)
-@@ -391,10 +390,9 @@ interrupt_end_book3e:
- /* Auxiliary Processor Unavailable Interrupt */
- 	START_EXCEPTION(ap_unavailable);
- 	NORMAL_EXCEPTION_PROLOG(0xf20, PROLOG_ADDITION_NONE)
--	EXCEPTION_COMMON(0xf20, PACA_EXGEN, INTS_KEEP)
--	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	EXCEPTION_COMMON(0xf20, PACA_EXGEN, INTS_DISABLE_ALL)
- 	bl	.save_nvgprs
--	INTS_RESTORE_HARD
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	.unknown_exception
- 	b	.ret_from_except
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 0c3764b..cc030b7 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -115,28 +115,33 @@ BEGIN_FW_FTR_SECTION
+ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING && CONFIG_PPC_SPLPAR */
  
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 3af80e8..bd30fc2 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -757,8 +757,8 @@ fp_unavailable_common:
- 	EXCEPTION_PROLOG_COMMON(0x800, PACA_EXGEN)
- 	bne	1f			/* if from user, just load it up */
- 	bl	.save_nvgprs
-+	DISABLE_INTS
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
--	ENABLE_INTS
- 	bl	.kernel_fp_unavailable_exception
- 	BUG_OPCODE
- 1:	bl	.load_up_fpu
-@@ -777,8 +777,8 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif
- 	bl	.save_nvgprs
-+	DISABLE_INTS
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
--	ENABLE_INTS
- 	bl	.altivec_unavailable_exception
- 	b	.ret_from_except
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-	bl	.trace_hardirqs_on
+-	REST_GPR(0,r1)
+-	REST_4GPRS(3,r1)
+-	REST_2GPRS(7,r1)
+-	addi	r9,r1,STACK_FRAME_OVERHEAD
+-	ld	r12,_MSR(r1)
+-#endif /* CONFIG_TRACE_IRQFLAGS */
+-	li	r10,1
+-	stb	r10,PACASOFTIRQEN(r13)
+-	stb	r10,PACAHARDIRQEN(r13)
+-	std	r10,SOFTE(r1)
++	/*
++	 * A syscall should always be called with interrupts enabled
++	 * so we just unconditionally hard-enable here. When some kind
++	 * of irq tracing is used, we additionally check that condition
++	 * is correct
++	 */
++#if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_BUG)
++	lbz	r10,PACASOFTIRQEN(r13)
++	xori	r10,r10,1
++1:	tdnei	r10,0
++	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
++#endif
  
-@@ -793,8 +793,8 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- #endif
- 	bl	.save_nvgprs
-+	DISABLE_INTS
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
--	ENABLE_INTS
- 	bl	.vsx_unavailable_exception
- 	b	.ret_from_except
+-	/* Hard enable interrupts */
+ #ifdef CONFIG_PPC_BOOK3E
+ 	wrteei	1
+ #else
+-	mfmsr	r11
++	ld	r11,PACAKMSR(r13)
+ 	ori	r11,r11,MSR_EE
+ 	mtmsrd	r11,1
+ #endif /* CONFIG_PPC_BOOK3E */
  
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 5d40e59..a750409 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -247,6 +247,9 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
- 				   addr, regs->nip, regs->link, code);
- 	}
- 
-+	if (!arch_irq_disabled_regs(regs))
-+		local_irq_enable();
++	/* We do need to set SOFTE in the stack frame or the return
++	 * from interrupt will be painful
++	 */
++	li	r10,1
++	std	r10,SOFTE(r1)
 +
- 	memset(&info, 0, sizeof(info));
- 	info.si_signo = signr;
- 	info.si_code = code;
+ #ifdef SHOW_SYSCALLS
+ 	bl	.do_show_syscall
+ 	REST_GPR(0,r1)
+@@ -187,16 +192,14 @@ syscall_exit:
+ 	andi.	r10,r8,MSR_RI
+ 	beq-	unrecov_restore
+ #endif
+-
+-	/* Disable interrupts so current_thread_info()->flags can't change,
++	/*
++	 * Disable interrupts so current_thread_info()->flags can't change,
+ 	 * and so that we don't get interrupted after loading SRR0/1.
+ 	 */
+ #ifdef CONFIG_PPC_BOOK3E
+ 	wrteei	0
+ #else
+-	mfmsr	r10
+-	rldicl	r10,r10,48,1
+-	rotldi	r10,r10,16
++	ld	r10,PACAKMSR(r13)
+ 	mtmsrd	r10,1
+ #endif /* CONFIG_PPC_BOOK3E */
+ 
+@@ -308,7 +311,7 @@ syscall_exit_work:
+ #ifdef CONFIG_PPC_BOOK3E
+ 	wrteei	1
+ #else
+-	mfmsr	r10
++	ld	r10,PACAKMSR(r13)
+ 	ori	r10,r10,MSR_EE
+ 	mtmsrd	r10,1
+ #endif /* CONFIG_PPC_BOOK3E */
 -- 
 1.7.9
