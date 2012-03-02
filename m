@@ -1,28 +1,28 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D61D71007DE
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2012 20:36:17 +1100 (EST)
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 43BA31007D3
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2012 20:36:18 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
- Fri, 2 Mar 2012 09:30:55 +1000
+ Fri, 2 Mar 2012 09:32:31 +1000
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q229UaV33096718
+ q229Uabp3129580
  for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:30:37 +1100
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q229a57R005287
- for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:36:06 +1100
+ q229a5Pb005277
+ for <linuxppc-dev@ozlabs.org>; Fri, 2 Mar 2012 20:36:05 +1100
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 08/12] powerpc: Add support for page fault retry and fatal
- signals
-Date: Fri,  2 Mar 2012 20:35:18 +1100
-Message-Id: <1330680922-6894-9-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 06/12] powerpc: Disable interrupts in 64-bit kernel FP and
+ vector faults
+Date: Fri,  2 Mar 2012 20:35:16 +1100
+Message-Id: <1330680922-6894-7-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
 References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,251 +34,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Other architectures such as x86 and ARM have been growing
-new support for features like retrying page faults after
-dropping the mm semaphore to break contention, or being
-able to return from a stuck page fault when a SIGKILL is
-pending.
+If we get a floating point, altivec or vsx unavaible interrupt in
+kernel, we trigger a kernel error. There is no point preserving
+the interrupt state, in fact, that can even make debugging harder
+as the processor state might change (we may even preempt) between
+taking the exception and landing in a debugger.
 
-This refactors our implementation of do_page_fault() to
-move the error handling out of line in a way similar to
-x86 and adds support for those two features.
+So just make those 3 disable interrupts unconditionally.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/mm/fault.c |  170 +++++++++++++++++++++++++++++++++--------------
- 1 files changed, 120 insertions(+), 50 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S |    8 +++-----
+ arch/powerpc/kernel/exceptions-64s.S |    6 +++---
+ arch/powerpc/kernel/traps.c          |    3 +++
+ 3 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 7e89006..19f2f94 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -105,6 +105,82 @@ static int store_updates_sp(struct pt_regs *regs)
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 429983c..01095e6 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -352,11 +352,10 @@ interrupt_end_book3e:
+ 	START_EXCEPTION(fp_unavailable);
+ 	NORMAL_EXCEPTION_PROLOG(0x800, PROLOG_ADDITION_NONE)
+ 	/* we can probably do a shorter exception entry for that one... */
+-	EXCEPTION_COMMON(0x800, PACA_EXGEN, INTS_KEEP)
++	EXCEPTION_COMMON(0x800, PACA_EXGEN, INTS_DISABLE_ALL)
+ 	bne	1f			/* if from user, just load it up */
+ 	bl	.save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	INTS_RESTORE_HARD
+ 	bl	.kernel_fp_unavailable_exception
+ 	BUG_OPCODE
+ 1:	ld	r12,_MSR(r1)
+@@ -391,10 +390,9 @@ interrupt_end_book3e:
+ /* Auxiliary Processor Unavailable Interrupt */
+ 	START_EXCEPTION(ap_unavailable);
+ 	NORMAL_EXCEPTION_PROLOG(0xf20, PROLOG_ADDITION_NONE)
+-	EXCEPTION_COMMON(0xf20, PACA_EXGEN, INTS_KEEP)
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
++	EXCEPTION_COMMON(0xf20, PACA_EXGEN, INTS_DISABLE_ALL)
+ 	bl	.save_nvgprs
+-	INTS_RESTORE_HARD
++	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.unknown_exception
+ 	b	.ret_from_except
+ 
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 3af80e8..bd30fc2 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -757,8 +757,8 @@ fp_unavailable_common:
+ 	EXCEPTION_PROLOG_COMMON(0x800, PACA_EXGEN)
+ 	bne	1f			/* if from user, just load it up */
+ 	bl	.save_nvgprs
++	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	ENABLE_INTS
+ 	bl	.kernel_fp_unavailable_exception
+ 	BUG_OPCODE
+ 1:	bl	.load_up_fpu
+@@ -777,8 +777,8 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
+ 	bl	.save_nvgprs
++	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	ENABLE_INTS
+ 	bl	.altivec_unavailable_exception
+ 	b	.ret_from_except
+ 
+@@ -793,8 +793,8 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ #endif
+ 	bl	.save_nvgprs
++	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	ENABLE_INTS
+ 	bl	.vsx_unavailable_exception
+ 	b	.ret_from_except
+ 
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 5d40e59..a750409 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -247,6 +247,9 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+ 				   addr, regs->nip, regs->link, code);
  	}
- 	return 0;
- }
-+/*
-+ * do_page_fault error handling helpers
-+ */
-+
-+#define MM_FAULT_RETURN		0
-+#define MM_FAULT_CONTINUE	-1
-+#define MM_FAULT_ERR(sig)	(sig)
-+
-+static int out_of_memory(struct pt_regs *regs)
-+{
-+	/*
-+	 * We ran out of memory, or some other thing happened to us that made
-+	 * us unable to handle the page fault gracefully.
-+	 */
-+	up_read(&current->mm->mmap_sem);
-+	if (!user_mode(regs))
-+		return MM_FAULT_ERR(SIGKILL);
-+	pagefault_out_of_memory();
-+	return MM_FAULT_RETURN;
-+}
-+
-+static int do_sigbus(struct pt_regs *regs, unsigned long address)
-+{
-+	siginfo_t info;
-+
-+	up_read(&current->mm->mmap_sem);
-+
-+	if (user_mode(regs)) {
-+		info.si_signo = SIGBUS;
-+		info.si_errno = 0;
-+		info.si_code = BUS_ADRERR;
-+		info.si_addr = (void __user *)address;
-+		force_sig_info(SIGBUS, &info, current);
-+		return MM_FAULT_RETURN;
-+	}
-+	return MM_FAULT_ERR(SIGBUS);
-+}
-+
-+static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
-+{
-+	/*
-+	 * Pagefault was interrupted by SIGKILL. We have no reason to
-+	 * continue the pagefault.
-+	 */
-+	if (fatal_signal_pending(current)) {
-+		/*
-+		 * If we have retry set, the mmap semaphore will have
-+		 * alrady been released in __lock_page_or_retry(). Else
-+		 * we release it now.
-+		 */
-+		if (!(fault & VM_FAULT_RETRY))
-+			up_read(&current->mm->mmap_sem);
-+		/* Coming from kernel, we need to deal with uaccess fixups */
-+		if (user_mode(regs))
-+			return MM_FAULT_RETURN;
-+		return MM_FAULT_ERR(SIGKILL);
-+	}
-+
-+	/* No fault: be happy */
-+	if (!(fault & VM_FAULT_ERROR))
-+		return MM_FAULT_CONTINUE;
-+
-+	/* Out of memory */
-+	if (fault & VM_FAULT_OOM)
-+		return out_of_memory(regs);
-+
-+	/* Bus error. x86 handles HWPOISON here, we'll add this if/when
-+	 * we support the feature in HW
-+	 */
-+	if (fault & VM_FAULT_SIGBUS)
-+		return do_sigbus(regs, addr);
-+
-+	/* We don't understand the fault code, this is fatal */
-+	BUG();
-+	return MM_FAULT_CONTINUE;
-+}
  
- /*
-  * For 600- and 800-family processors, the error_code parameter is DSISR
-@@ -124,11 +200,12 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- {
- 	struct vm_area_struct * vma;
- 	struct mm_struct *mm = current->mm;
--	siginfo_t info;
-+	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
- 	int code = SEGV_MAPERR;
--	int is_write = 0, ret;
-+	int is_write = 0;
- 	int trap = TRAP(regs);
-  	int is_exec = trap == 0x400;
-+	int fault;
- 
- #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
- 	/*
-@@ -145,6 +222,9 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 	is_write = error_code & ESR_DST;
- #endif /* CONFIG_4xx || CONFIG_BOOKE */
- 
-+	if (is_write)
-+		flags |= FAULT_FLAG_WRITE;
++	if (!arch_irq_disabled_regs(regs))
++		local_irq_enable();
 +
- #ifdef CONFIG_PPC_ICSWX
- 	/*
- 	 * we need to do this early because this "data storage
-@@ -152,13 +232,11 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * look at it
- 	 */
- 	if (error_code & ICSWX_DSI_UCT) {
--		int ret;
--
--		ret = acop_handle_fault(regs, address, error_code);
--		if (ret)
--			return ret;
-+		int rc = acop_handle_fault(regs, address, error_code);
-+		if (rc)
-+			return rc;
- 	}
--#endif
-+#endif /* CONFIG_PPC_ICSWX */
- 
- 	if (notify_page_fault(regs))
- 		return 0;
-@@ -216,6 +294,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 		if (!user_mode(regs) && !search_exception_tables(regs->nip))
- 			goto bad_area_nosemaphore;
- 
-+retry:
- 		down_read(&mm->mmap_sem);
- 	} else {
- 		/*
-@@ -338,30 +417,43 @@ good_area:
- 	 * make sure we exit gracefully rather than endlessly redo
- 	 * the fault.
- 	 */
--	ret = handle_mm_fault(mm, vma, address, is_write ? FAULT_FLAG_WRITE : 0);
--	if (unlikely(ret & VM_FAULT_ERROR)) {
--		if (ret & VM_FAULT_OOM)
--			goto out_of_memory;
--		else if (ret & VM_FAULT_SIGBUS)
--			goto do_sigbus;
--		BUG();
-+	fault = handle_mm_fault(mm, vma, address, flags);
-+	if (unlikely(fault & (VM_FAULT_RETRY|VM_FAULT_ERROR))) {
-+		int rc = mm_fault_error(regs, address, fault);
-+		if (rc >= MM_FAULT_RETURN)
-+			return rc;
- 	}
--	if (ret & VM_FAULT_MAJOR) {
--		current->maj_flt++;
--		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1,
--				     regs, address);
-+
-+	/*
-+	 * Major/minor page fault accounting is only done on the
-+	 * initial attempt. If we go through a retry, it is extremely
-+	 * likely that the page will be found in page cache at that point.
-+	 */
-+	if (flags & FAULT_FLAG_ALLOW_RETRY) {
-+		if (fault & VM_FAULT_MAJOR) {
-+			current->maj_flt++;
-+			perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1,
-+				      regs, address);
- #ifdef CONFIG_PPC_SMLPAR
--		if (firmware_has_feature(FW_FEATURE_CMO)) {
--			preempt_disable();
--			get_lppaca()->page_ins += (1 << PAGE_FACTOR);
--			preempt_enable();
-+			if (firmware_has_feature(FW_FEATURE_CMO)) {
-+				preempt_disable();
-+				get_lppaca()->page_ins += (1 << PAGE_FACTOR);
-+				preempt_enable();
-+			}
-+#endif /* CONFIG_PPC_SMLPAR */
-+		} else {
-+			current->min_flt++;
-+			perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1,
-+				      regs, address);
-+		}
-+		if (fault & VM_FAULT_RETRY) {
-+			/* Clear FAULT_FLAG_ALLOW_RETRY to avoid any risk
-+			 * of starvation. */
-+			flags &= ~FAULT_FLAG_ALLOW_RETRY;
-+			goto retry;
- 		}
--#endif
--	} else {
--		current->min_flt++;
--		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1,
--				     regs, address);
- 	}
-+
- 	up_read(&mm->mmap_sem);
- 	return 0;
- 
-@@ -382,28 +474,6 @@ bad_area_nosemaphore:
- 
- 	return SIGSEGV;
- 
--/*
-- * We ran out of memory, or some other thing happened to us that made
-- * us unable to handle the page fault gracefully.
-- */
--out_of_memory:
--	up_read(&mm->mmap_sem);
--	if (!user_mode(regs))
--		return SIGKILL;
--	pagefault_out_of_memory();
--	return 0;
--
--do_sigbus:
--	up_read(&mm->mmap_sem);
--	if (user_mode(regs)) {
--		info.si_signo = SIGBUS;
--		info.si_errno = 0;
--		info.si_code = BUS_ADRERR;
--		info.si_addr = (void __user *)address;
--		force_sig_info(SIGBUS, &info, current);
--		return 0;
--	}
--	return SIGBUS;
- }
- 
- /*
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = signr;
+ 	info.si_code = code;
 -- 
 1.7.9
