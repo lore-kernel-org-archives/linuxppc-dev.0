@@ -1,17 +1,22 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp209.alice.it (smtp209.alice.it [82.57.200.105])
- by ozlabs.org (Postfix) with ESMTP id 8B8CE1007D3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Mar 2012 10:11:24 +1100 (EST)
-Received: from Jay (79.11.121.164) by smtp209.alice.it (8.6.023.02)
- id 4EF08A63080AA80C for linuxppc-dev@lists.ozlabs.org;
- Sat, 3 Mar 2012 00:05:30 +0100
-Date: Sat, 3 Mar 2012 00:03:04 +0100
-From: Giuliano Pochini <pochini@shiny.it>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Which ppc board ?
-Message-ID: <20120303000304.4e5461cb@Jay>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 587F0B6EEC
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Mar 2012 10:11:16 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q24NBBAW026568
+ for <linuxppc-dev@ozlabs.org>; Sun, 4 Mar 2012 17:11:12 -0600
+Message-ID: <1330902669.11728.84.camel@pasglop>
+Subject: Re: [PATCH 12/12] powerpc: Rework lazy-interrupt handling
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Date: Mon, 05 Mar 2012 10:11:09 +1100
+In-Reply-To: <1330680922-6894-13-git-send-email-benh@kernel.crashing.org>
+References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
+ <1330680922-6894-13-git-send-email-benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,10 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2012-03-02 at 20:35 +1100, Benjamin Herrenschmidt wrote:
+>  
+> +static inline may_hard_irq_enable(void) { }
+> + 
 
-I'd like to replace my old pmac G4. Are there affordable ppc systems on the
-market today ?  Perhaps some dev board with a p4080 or newer ?
+And that works much better with a void :
 
++static inline void may_hard_irq_enable(void) { }
 
--- 
-Giuliano.
+Or 32-bit won't build ;-) With that fix it builds on both 32 and 64-bit,
+now time to test !
+
+Cheers,
+Ben.
