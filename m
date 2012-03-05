@@ -1,40 +1,23 @@
-Return-Path: <sjenning@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e34.co.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C7EE9B6FA1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 04:57:14 +1100 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sjenning@linux.vnet.ibm.com>;
- Mon, 5 Mar 2012 10:57:10 -0700
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E932BC90050
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2012 12:56:43 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q25HuhFh3457166
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2012 12:56:43 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q25HuhOD013912
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2012 14:56:43 -0300
-Message-ID: <4F54FE51.8070709@linux.vnet.ibm.com>
-Date: Mon, 05 Mar 2012 11:56:33 -0600
-From: Seth Jennings <sjenning@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A5924B6FA2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 07:18:12 +1100 (EST)
+Date: Mon, 5 Mar 2012 20:14:11 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
+Subject: [PATCH 0/9] DMA engine cookie handling cleanups
+Message-ID: <20120305201411.GA17791@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: tlb flushing on Power
-References: <4F2160B3.60708@linux.vnet.ibm.com>
- <4F216620.2010509@linux.vnet.ibm.com> <1327613953.24487.9.camel@pasglop>
- <4F32B354.7030306@linux.vnet.ibm.com> <1328735054.2903.29.camel@pasglop>
- <4F356C7E.3070608@linux.vnet.ibm.com> <4F3D38D3.4020903@linux.vnet.ibm.com>
- <1329424301.2892.23.camel@pasglop>
-In-Reply-To: <1329424301.2892.23.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Nitin Gupta <ngupta@vflare.org>, Dave Hansen <dave@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Viresh Kumar <viresh.kumar@st.com>, Stephen Warren <swarren@nvidia.com>,
+ Linus Walleij <linus.walleij@stericsson.com>,
+ Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+ Zhang Wei <zw@zh-kernel.org>, Barry Song <baohua.song@csr.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,76 +27,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hey Ben,
+This patch series cleans up the handling of cookies in DMA engine drivers.
+This is done by providing a set of inline library functions for common
+tasks:
 
-Thanks for the help!  I was wondering if you could take a look at something
-for me.
+- moving the 'last completed cookie' into struct dma_chan - everyone
+  has this in their driver private channel data structure
 
-I've been working on this staging driver (zsmalloc memory allocator)
-that does virtual mapping of two pages.
+- consolidate allocation of cookies to DMA descriptors
 
-I have a github repo with the driver and the unsubmitted changes.  I'm
-trying to make to get the pte/tlb stuff working in a portable way:
+- common way to update 'last completed cookie' value
 
-git://github.com/spartacus06/linux.git (portable branch)
+- standard way to implement tx_status callback and update the residue
 
-The experimental commits are the top 5 and the branch is based on
-Greg's staging-next + frontswap-v11 patches.
+- consolidate initialization of cookies
 
-Could you take a look at the zs_map_object() and zs_unmap_object()
-in drivers/staging/zsmalloc/zsmalloc-main.c and see if they should
-work for PPC64?
+- update implementations differing from the majority of DMA engine drivers
+  to behave the same as the majority implementation in respect of cookies
 
-I'm using set_pte_at() to map.  Then I'm using and ptep_get_and_clear()
-and local_flush_tlb_kernel_page() to unmap (I #defined 
-local_flush_tlb_kernel_page() to local_flush_tlb_page() for PPC64 which
-is a no-op).
+What this means is that we get to the point where all DMA engine drivers
+will hand out cookie value '2' as the first, and incrementing cookie
+values up to INT_MAX, returning to cookie '1' as the next cookie.
 
-It will work most of the time, but then I'll get a crash and the 
-mapped memory won't be what I expect.  I know the cause lies in the
-virtual mapping because if I reduce the max_zspage_order to
-1, preventing the "else" branch in zs_[un]map_object() from being
-called, everything is stable.
+Think of this patch series as round 1...  I am hoping over time that more
+code can be consolidated between the DMA engine drivers and end up with a
+consistent way to handle various common themes in DMA engine hardware
+(like physical channel<->peripheral request signal selection.)
 
-Any feedback you (or others) can provide would be appreciated!
+I've only build-tested this stuff on a few ARM configs, and my ability
+to run-test this stuff is even more limited by all the broken useless DMA
+engine hardware I have access to (mostly pl08x based) so having some
+tested-bys would be a great advantage.
 
-Thanks,
-Seth
+Overall, the diffstat looks like this:
 
-On 02/16/2012 02:31 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2012-02-16 at 11:11 -0600, Seth Jennings wrote:
-> 
->> Just wanted to bump you again about this.  You mentioned that if I wanted to
->> do a cpu-local flush of a single tlb entry, that there would have to be a new
->> hook.  Is that right?
->>
->> I've been looking through the powerpc arch and I thought that I might have
->> found the power analog to __flush_tlb_one() for x86 in local_flush_tlb_page()
->> with a NULL vma argument.  This doesn't seem to work though, as indicated
->> by a crash when I tried it.  After looking in tlbflush.h again, it seems
->> that local_flush_tlb_page() is a no-op when CONFIG_PPC_STD_MMU_64 is set,
->> as are almost ALL of the tlb flushing functions... which makes no sense to
->> me.
->>
->> Any help you (or anyone) can give me would be greatly appreciated.
-> 
-> On ppc64 with hash-table MMU, we handle the flushes very differently.
-> PTEs that are modified are added to a list at the time of the
-> modification and either flushed immediately if no lazy tlb batching is
-> in progress or flushed when leaving the lazy tlb op.
-> 
-> This is to avoid a problem where we might otherwise, under some
-> circumstances, create a new TLB which can be hashed in to the hash table
-> before the previous one has been flushed out. That would lead to a dup
-> in the hash table which is architecturally illegal.
-> 
-> This happens via the call to hpte_need_flush() in pte_update().
-> 
-> Unfortunately, it will always consider all kernel mappings as global,
-> so the per-cpu "optimization" won't be usable in this case, at least
-> not until we add some kind of additional argument to that function.
-> 
-> Cheers,
-> Ben.
-> 
-> 
+ arch/arm/include/asm/hardware/iop_adma.h |    2 -
+ drivers/dma/amba-pl08x.c                 |   38 ++++---------
+ drivers/dma/at_hdmac.c                   |   48 ++++------------
+ drivers/dma/at_hdmac_regs.h              |    2 -
+ drivers/dma/coh901318.c                  |   39 +++----------
+ drivers/dma/dmaengine.h                  |   89 ++++++++++++++++++++++++++++++
+ drivers/dma/dw_dmac.c                    |   43 +++-----------
+ drivers/dma/dw_dmac_regs.h               |    1 -
+ drivers/dma/ep93xx_dma.c                 |   25 ++------
+ drivers/dma/fsldma.c                     |   24 ++------
+ drivers/dma/fsldma.h                     |    1 -
+ drivers/dma/imx-dma.c                    |   32 ++---------
+ drivers/dma/imx-sdma.c                   |   23 ++------
+ drivers/dma/intel_mid_dma.c              |   37 +++---------
+ drivers/dma/intel_mid_dma_regs.h         |    2 -
+ drivers/dma/ioat/dma.c                   |   21 +++----
+ drivers/dma/ioat/dma.h                   |   23 --------
+ drivers/dma/ioat/dma_v2.c                |   13 ++---
+ drivers/dma/ioat/dma_v3.c                |   11 ++--
+ drivers/dma/iop-adma.c                   |   51 ++++-------------
+ drivers/dma/ipu/ipu_idmac.c              |   22 ++-----
+ drivers/dma/mpc512x_dma.c                |   25 +++------
+ drivers/dma/mv_xor.c                     |   34 ++---------
+ drivers/dma/mv_xor.h                     |    3 -
+ drivers/dma/mxs-dma.c                    |   23 ++------
+ drivers/dma/pch_dma.c                    |   34 ++---------
+ drivers/dma/pl330.c                      |   36 ++----------
+ drivers/dma/ppc4xx/adma.c                |   49 +++-------------
+ drivers/dma/ppc4xx/adma.h                |    2 -
+ drivers/dma/shdma.c                      |   30 +++-------
+ drivers/dma/shdma.h                      |    1 -
+ drivers/dma/sirf-dma.c                   |   23 ++------
+ drivers/dma/ste_dma40.c                  |   36 +++---------
+ drivers/dma/timb_dma.c                   |   28 +++-------
+ drivers/dma/txx9dmac.c                   |   41 +++-----------
+ drivers/dma/txx9dmac.h                   |    1 -
+ include/linux/amba/pl08x.h               |    2 -
+ include/linux/dmaengine.h                |    2 +
+ 38 files changed, 291 insertions(+), 626 deletions(-)
