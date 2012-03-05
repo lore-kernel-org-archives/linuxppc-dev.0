@@ -1,26 +1,40 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E0D3AB6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 03:14:37 +1100 (EST)
-Received: by eeke50 with SMTP id e50so1361182eek.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Mar 2012 08:14:27 -0800 (PST)
+Return-Path: <sjenning@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e34.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C7EE9B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 04:57:14 +1100 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sjenning@linux.vnet.ibm.com>;
+ Mon, 5 Mar 2012 10:57:10 -0700
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E932BC90050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2012 12:56:43 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q25HuhFh3457166
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2012 12:56:43 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q25HuhOD013912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2012 14:56:43 -0300
+Message-ID: <4F54FE51.8070709@linux.vnet.ibm.com>
+Date: Mon, 05 Mar 2012 11:56:33 -0600
+From: Seth Jennings <sjenning@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1330918440.11728.87.camel@pasglop>
-References: <20120302170638.3d172369d04335d9b921a28c@canb.auug.org.au>
- <CAErSpo6xQa4Rnv+RkkXCRjQ2HDZdBhorRv2c6pmWyXqRzhM4Vw@mail.gmail.com>
- <1330725132.11728.52.camel@pasglop> <1330918440.11728.87.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 5 Mar 2012 09:14:07 -0700
-Message-ID: <CAErSpo6g8QyEhu6YRsv6-mpQoO0mymuE2Fu6v=qqS=OLV19GFA@mail.gmail.com>
-Subject: Re: linux-next: boot failure for next-20120227 and later (pci tree
- related)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: tlb flushing on Power
+References: <4F2160B3.60708@linux.vnet.ibm.com>
+ <4F216620.2010509@linux.vnet.ibm.com> <1327613953.24487.9.camel@pasglop>
+ <4F32B354.7030306@linux.vnet.ibm.com> <1328735054.2903.29.camel@pasglop>
+ <4F356C7E.3070608@linux.vnet.ibm.com> <4F3D38D3.4020903@linux.vnet.ibm.com>
+ <1329424301.2892.23.camel@pasglop>
+In-Reply-To: <1329424301.2892.23.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Nitin Gupta <ngupta@vflare.org>, Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,77 +44,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 4, 2012 at 8:34 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Sat, 2012-03-03 at 08:52 +1100, Benjamin Herrenschmidt wrote:
->
->> Or give me a chance to dig :-) I'll have a look next week.
->
-> This is indeed what bjorn suspected on irc, this patch fixes it:
->
-> (Bjorn, please fold it in the original offending patch)
+Hey Ben,
 
-Thanks for checking this out.  Sparc should have the same problem, so
-I'll post both updates in a bit.
+Thanks for the help!  I was wondering if you could take a look at something
+for me.
 
-Bjorn
+I've been working on this staging driver (zsmalloc memory allocator)
+that does virtual mapping of two pages.
 
-> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_=
-of_scan.c
-> index b37d0b5..5dd63f1 100644
-> --- a/arch/powerpc/kernel/pci_of_scan.c
-> +++ b/arch/powerpc/kernel/pci_of_scan.c
-> @@ -75,6 +75,7 @@ static void of_pci_parse_addrs(struct device_node *node=
-, struct pci_dev *dev)
-> =A0{
-> =A0 =A0 =A0 =A0u64 base, size;
-> =A0 =A0 =A0 =A0unsigned int flags;
-> + =A0 =A0 =A0 struct pci_bus_region region;
-> =A0 =A0 =A0 =A0struct resource *res;
-> =A0 =A0 =A0 =A0const u32 *addrs;
-> =A0 =A0 =A0 =A0u32 i;
-> @@ -106,10 +107,12 @@ static void of_pci_parse_addrs(struct device_node *=
-node, struct pci_dev *dev)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0printk(KERN_ERR "PCI: bad =
-cfg reg num 0x%x\n", i);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0continue;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 res->start =3D base;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 res->end =3D base + size - 1;
-> +
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0res->flags =3D flags;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0res->name =3D pci_name(dev);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 region.start =3D base;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 region.end =3D base + size - 1;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pcibios_bus_to_resource(dev, res, &region);
-> =A0 =A0 =A0 =A0}
-> =A0}
->
-> @@ -209,6 +212,7 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev=
-)
-> =A0 =A0 =A0 =A0struct pci_bus *bus;
-> =A0 =A0 =A0 =A0const u32 *busrange, *ranges;
-> =A0 =A0 =A0 =A0int len, i, mode;
-> + =A0 =A0 =A0 struct pci_bus_region region;
-> =A0 =A0 =A0 =A0struct resource *res;
-> =A0 =A0 =A0 =A0unsigned int flags;
-> =A0 =A0 =A0 =A0u64 size;
-> @@ -270,9 +274,10 @@ void __devinit of_scan_pci_bridge(struct pci_dev *de=
-v)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0res =3D bus->resource[i];
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0++i;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 res->start =3D of_read_number(&ranges[1], 2=
-);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 res->end =3D res->start + size - 1;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0res->flags =3D flags;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 region.start =3D of_read_number(&ranges[1],=
- 2);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 region.end =3D region.start + size - 1;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pcibios_bus_to_resource(dev, res, &region);
-> =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0sprintf(bus->name, "PCI Bus %04x:%02x", pci_domain_nr(bus)=
-,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bus->number);
->
->
+I have a github repo with the driver and the unsubmitted changes.  I'm
+trying to make to get the pte/tlb stuff working in a portable way:
+
+git://github.com/spartacus06/linux.git (portable branch)
+
+The experimental commits are the top 5 and the branch is based on
+Greg's staging-next + frontswap-v11 patches.
+
+Could you take a look at the zs_map_object() and zs_unmap_object()
+in drivers/staging/zsmalloc/zsmalloc-main.c and see if they should
+work for PPC64?
+
+I'm using set_pte_at() to map.  Then I'm using and ptep_get_and_clear()
+and local_flush_tlb_kernel_page() to unmap (I #defined 
+local_flush_tlb_kernel_page() to local_flush_tlb_page() for PPC64 which
+is a no-op).
+
+It will work most of the time, but then I'll get a crash and the 
+mapped memory won't be what I expect.  I know the cause lies in the
+virtual mapping because if I reduce the max_zspage_order to
+1, preventing the "else" branch in zs_[un]map_object() from being
+called, everything is stable.
+
+Any feedback you (or others) can provide would be appreciated!
+
+Thanks,
+Seth
+
+On 02/16/2012 02:31 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2012-02-16 at 11:11 -0600, Seth Jennings wrote:
+> 
+>> Just wanted to bump you again about this.  You mentioned that if I wanted to
+>> do a cpu-local flush of a single tlb entry, that there would have to be a new
+>> hook.  Is that right?
+>>
+>> I've been looking through the powerpc arch and I thought that I might have
+>> found the power analog to __flush_tlb_one() for x86 in local_flush_tlb_page()
+>> with a NULL vma argument.  This doesn't seem to work though, as indicated
+>> by a crash when I tried it.  After looking in tlbflush.h again, it seems
+>> that local_flush_tlb_page() is a no-op when CONFIG_PPC_STD_MMU_64 is set,
+>> as are almost ALL of the tlb flushing functions... which makes no sense to
+>> me.
+>>
+>> Any help you (or anyone) can give me would be greatly appreciated.
+> 
+> On ppc64 with hash-table MMU, we handle the flushes very differently.
+> PTEs that are modified are added to a list at the time of the
+> modification and either flushed immediately if no lazy tlb batching is
+> in progress or flushed when leaving the lazy tlb op.
+> 
+> This is to avoid a problem where we might otherwise, under some
+> circumstances, create a new TLB which can be hashed in to the hash table
+> before the previous one has been flushed out. That would lead to a dup
+> in the hash table which is architecturally illegal.
+> 
+> This happens via the call to hpte_need_flush() in pte_update().
+> 
+> Unfortunately, it will always consider all kernel mappings as global,
+> so the per-cpu "optimization" won't be usable in this case, at least
+> not until we add some kind of additional argument to that function.
+> 
+> Cheers,
+> Ben.
+> 
+> 
