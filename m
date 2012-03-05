@@ -1,27 +1,16 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
- [209.85.210.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA485B70DC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 07:50:54 +1100 (EST)
-Received: by iakh37 with SMTP id h37so6430411iak.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Mar 2012 12:50:51 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20120305201411.GA17791@n2100.arm.linux.org.uk>
-References: <20120305201411.GA17791@n2100.arm.linux.org.uk>
-Date: Mon, 5 Mar 2012 21:50:51 +0100
-Message-ID: <CACRpkda9R3c0dt95w0N7Fe5es16CqbWtsCKMaFq-nwSYV4bk-w@mail.gmail.com>
-Subject: Re: [PATCH 0/9] DMA engine cookie handling cleanups
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Viresh Kumar <viresh.kumar@st.com>, Stephen Warren <swarren@nvidia.com>,
- Linus Walleij <linus.walleij@stericsson.com>,
- Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
- Vinod Koul <vinod.koul@intel.com>, Zhang Wei <zw@zh-kernel.org>,
- Barry Song <baohua.song@csr.com>, Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EA412B7177
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 07:51:26 +1100 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] rapidio/tsi721: fix bug in inbound doorbell handler
+Date: Mon,  5 Mar 2012 15:33:05 -0500
+Message-Id: <1330979585-29429-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>, Chul Kim <chul.kim@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 5, 2012 at 9:14 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
+Fixes queue wrapping bug in Inbound Doorbell handling routine.
 
-> This patch series cleans up the handling of cookies in DMA engine drivers.
-> This is done by providing a set of inline library functions for common
-> tasks:
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Chul Kim <chul.kim@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+---
+ This patch is applicable to kernel version 3.2 and after.
 
-Overall this looks good, but I have a problem:
-patch [1/9] does not appear in any subscribed accounts (it may be on
-my @stericsson.com address, will check tomorrow)
+ drivers/rapidio/devices/tsi721.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-One I get hold of an ungmangled copy I can test the series on
-ux500 and U300.
-
-Is it just stuck in moderation because of size or something like that?
-
-Yours,
-Linus Walleij
+diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
+index babbede..c746e26 100644
+--- a/drivers/rapidio/devices/tsi721.c
++++ b/drivers/rapidio/devices/tsi721.c
+@@ -406,13 +406,14 @@ static void tsi721_db_dpc(struct work_struct *work)
+ 	 */
+ 	mport = priv->mport;
+ 
+-	wr_ptr = ioread32(priv->regs + TSI721_IDQ_WP(IDB_QUEUE));
+-	rd_ptr = ioread32(priv->regs + TSI721_IDQ_RP(IDB_QUEUE));
++	wr_ptr = ioread32(priv->regs + TSI721_IDQ_WP(IDB_QUEUE)) % IDB_QSIZE;
++	rd_ptr = ioread32(priv->regs + TSI721_IDQ_RP(IDB_QUEUE)) % IDB_QSIZE;
+ 
+ 	while (wr_ptr != rd_ptr) {
+ 		idb_entry = (u64 *)(priv->idb_base +
+ 					(TSI721_IDB_ENTRY_SIZE * rd_ptr));
+ 		rd_ptr++;
++		rd_ptr %= IDB_QSIZE;
+ 		idb.msg = *idb_entry;
+ 		*idb_entry = 0;
+ 
+-- 
+1.7.8.4
