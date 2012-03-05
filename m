@@ -1,26 +1,26 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (unknown [147.11.146.13])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0568BB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2012 23:08:36 +1100 (EST)
-Message-ID: <4F548E19.6050507@windriver.com>
-Date: Mon, 5 Mar 2012 17:57:45 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <B34182@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5CB58B6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 01:22:03 +1100 (EST)
+Subject: Re: [PATCH] powerpc/srio: Fix the compile errors when building
+ with 64bit
+From: Liu Gang <Gang.Liu@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <6BFCD6C7-7675-4A99-9C4C-4E86FA5642A4@kernel.crashing.org>
+References: <1330672127-22172-1-git-send-email-Gang.Liu@freescale.com>
+ <6BFCD6C7-7675-4A99-9C4C-4E86FA5642A4@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 5 Mar 2012 22:20:22 +0800
+Message-ID: <1330957222.23420.136.camel@10.ap.freescale.net>
 MIME-Version: 1.0
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
-Subject: Re: [PATCH 13/38] KVM: PPC: booke: category E.HV (GS-mode) support
-References: <1330474206-14794-1-git-send-email-agraf@suse.de>
- <1330474206-14794-14-git-send-email-agraf@suse.de>
- <6A3DF150A5B70D4F9B66A25E3F7C888D154397@039-SN2MPN1-023.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D154397@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alexander Graf <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Cc: r58472@freescale.com, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linux-kernel@vger.kernel.org, r61911@freescale.com, Alexandre.Bounine@idt.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,80 +30,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> +	/*
->> +	 * Host interrupt handlers may have clobbered these guest-readable
->> +	 * SPRGs, so we need to reload them here with the guest's values.
->> +	 */
->> +	lwz	r3, VCPU_VRSAVE(r4)
->> +	lwz	r5, VCPU_SHARED_SPRG4(r11)
->> +	mtspr	SPRN_VRSAVE, r3
->> +	lwz	r6, VCPU_SHARED_SPRG5(r11)
->> +	mtspr	SPRN_SPRG4W, r5
->> +	lwz	r7, VCPU_SHARED_SPRG6(r11)
->> +	mtspr	SPRN_SPRG5W, r6
->> +	lwz	r8, VCPU_SHARED_SPRG7(r11)
->> +	mtspr	SPRN_SPRG6W, r7
->> +	mtspr	SPRN_SPRG7W, r8
->> +
+Hi, Kumar,
 
-That should be here.
-
->> +	/* Load some guest volatiles. */
->> +	PPC_LL	r3, VCPU_LR(r4)
->> +	PPC_LL	r5, VCPU_XER(r4)
->> +	PPC_LL	r6, VCPU_CTR(r4)
->> +	PPC_LL	r7, VCPU_CR(r4)
->> +	PPC_LL	r8, VCPU_PC(r4)
->> +#ifndef CONFIG_64BIT
->> +	lwz	r9, (VCPU_SHARED_MSR + 4)(r11)
->> +#else
->> +	ld	r9, (VCPU_SHARED_MSR)(r11)
->> +#endif
->> +	PPC_LL	r0, VCPU_GPR(r0)(r4)
->> +	PPC_LL	r1, VCPU_GPR(r1)(r4)
->> +	PPC_LL	r2, VCPU_GPR(r2)(r4)
->> +	PPC_LL	r10, VCPU_GPR(r10)(r4)
->> +	PPC_LL	r11, VCPU_GPR(r11)(r4)
->> +	PPC_LL	r12, VCPU_GPR(r12)(r4)
->> +	PPC_LL	r13, VCPU_GPR(r13)(r4)
->> +	mtlr	r3
->> +	mtxer	r5
->> +	mtctr	r6
->> +	mtcr	r7
->> +	mtsrr0	r8
->> +	mtsrr1	r9
->> +
->> +#ifdef CONFIG_KVM_EXIT_TIMING
->> +	/* save enter time */
->> +1:
->> +	mfspr	r6, SPRN_TBRU
->> +	mfspr	r7, SPRN_TBRL
->> +	mfspr	r8, SPRN_TBRU
->> +	cmpw	r8, r6
+On Fri, 2012-03-02 at 09:11 -0600, Kumar Gala wrote:
+> > diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
+> > index 1548578..468011e 100644
+> > --- a/arch/powerpc/sysdev/fsl_rmu.c
+> > +++ b/arch/powerpc/sysdev/fsl_rmu.c
+> > @@ -311,8 +311,8 @@ fsl_rio_dbell_handler(int irq, void *dev_instance)
+> > 
+> > 	/* XXX Need to check/dispatch until queue empty */
+> > 	if (dsr & DOORBELL_DSR_DIQI) {
+> > -		u32 dmsg =
+> > -			(u32) fsl_dbell->dbell_ring.virt +
+> > +		unsigned long dmsg =
+> > +			(unsigned long) fsl_dbell->dbell_ring.virt +
+> > 			(in_be32(&fsl_dbell->dbell_regs->dqdpar) & 0xfff);
+> > 		struct rio_dbell *dbell;
+> > 		int found = 0;
+> > @@ -657,7 +657,8 @@ fsl_add_outb_message(struct rio_mport *mport, struct rio_dev *rdev, int mbox,
+> > 	int ret = 0;
+> > 
+> > 	pr_debug("RIO: fsl_add_outb_message(): destid %4.4x mbox %d buffer " \
+> > -		 "%8.8x len %8.8x\n", rdev->destid, mbox, (int)buffer, len);
+> > +		 "%8.8lx len %8.8zx\n", rdev->destid, mbox,
+> > +		(unsigned long)buffer, len);
+> > 	if ((len < 8) || (len > RIO_MAX_MSG_SIZE)) {
+> > 		ret = -EINVAL;
+> > 		goto out;
 > 
-> Is not we should save guest CR after this otherwise this can corrupt it?
+> For this case it seems as if some cast should be added to DBELL_* macros
 
-I think this should be a typo since in our previous kvm implementation, we
-always did collect kvm exit timing at the above location :)
+Do you mean the DBELL_* macro should be added the cast "u16" and like
+this:
+#define DBELL_SID(x)    (u16)(*(u16 *)(x + DOORBELL_SID_OFFSET))
 
-Tiejun
-
+> > @@ -972,7 +973,7 @@ out:
+> > void *fsl_get_inb_message(struct rio_mport *mport, int mbox)
+> > {
+> > 	struct fsl_rmu *rmu = GET_RMM_HANDLE(mport);
+> > -	u32 phys_buf, virt_buf;
+> > +	unsigned long phys_buf, virt_buf;
 > 
-> Thanks
-> -Bharat
+> Do you really want to change phys_buf to an 'unsigned long'?
 > 
->> +	PPC_STL	r7, VCPU_TIMING_LAST_ENTER_TBL(r4)
->> +	bne	1b	
->> +	PPC_STL	r8, VCPU_TIMING_LAST_ENTER_TBU(r4)
->> +#endif
->> +
->> +	/* Finish loading guest volatiles and jump to guest. */
->> +	PPC_LL	r5, VCPU_GPR(r5)(r4)
->> +	PPC_LL	r6, VCPU_GPR(r6)(r4)
->> +	PPC_LL	r7, VCPU_GPR(r7)(r4)
->> +	PPC_LL	r8, VCPU_GPR(r8)(r4)	
->> +	PPC_LL	r9, VCPU_GPR(r9)(r4)
->> +
->> +	PPC_LL	r3, VCPU_GPR(r3)(r4)
->> +	PPC_LL	r4, VCPU_GPR(r4)(r4)
->> +	rfi
+> Should virt_buf really be void * here?
+
+I think you are right, the phys_buf should not be changed to 'unsigned
+long' and the virt_buf should be void *. I'll correct this in next
+version.
+
+> > @@ -982,7 +983,7 @@ void *fsl_get_inb_message(struct rio_mport *mport, int mbox)
+> 
+> The memcpy later could remove a cast if you make virt_buf a void *.
+
+Thanks a lot, will remove.
+
+Best Regards,
+
+Liu Gang
