@@ -1,26 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-ww0-f41.google.com (mail-ww0-f41.google.com [74.125.82.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7B30BB6ED0
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2012 14:59:40 +1100 (EST)
-Received: by wgbds1 with SMTP id ds1so342405wgb.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2012 19:59:36 -0800 (PST)
+Return-Path: <dhdang@apm.com>
+Received: from exprod5og117.obsmtp.com (exprod5og117.obsmtp.com [64.18.0.149])
+ by ozlabs.org (Postfix) with SMTP id 3A551B6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2012 15:00:50 +1100 (EST)
+Received: by pbbro2 with SMTP id ro2so4615938pbb.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2012 20:00:48 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20120305035451.GB32675@quad.lixom.net>
-References: <20120222181556.27513.9413.stgit@bhelgaas.mtv.corp.google.com>
- <20120222181948.27513.96215.stgit@bhelgaas.mtv.corp.google.com>
- <1329946899.20389.9.camel@pasglop>
- <20120305035451.GB32675@quad.lixom.net>
-Date: Sun, 4 Mar 2012 19:59:36 -0800
-Message-ID: <CAOesGMipY2fTcNOSKwtCmkcQBzc0OFZrrWEWk8D7vkfNdRTf9g@mail.gmail.com>
-Subject: Re: [PATCH v1 09/11] powerpc/PCI: replace pci_probe_only with
- pci_flags
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
+From: Duc Dang <dhdang@apm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>,
+ Josh Boyer <jwboyer@gmail.com>
+Subject: [PATCH v2 1/2] powerpc/44x: Add new compatible value for EMAC node of
+ APM821XX dts file.
+Date: Mon,  5 Mar 2012 11:00:19 +0700
+Message-Id: <1330920019-2957-1-git-send-email-dhdang@apm.com>
+In-Reply-To: <1329466058-15969-1-git-send-email-dhdang@apm.com>
+References: <1329466058-15969-1-git-send-email-dhdang@apm.com>
+Cc: netdev <netdev@vger.kernel.org>, Duc Dang <dhdang@apm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 4, 2012 at 7:54 PM, Olof Johansson <olof@lixom.net> wrote:
-> On Thu, Feb 23, 2012 at 08:41:39AM +1100, Benjamin Herrenschmidt wrote:
->> On Wed, 2012-02-22 at 11:19 -0700, Bjorn Helgaas wrote:
->> > =A0int maple_pci_get_legacy_ide_irq(struct pci_dev *pdev, int channel)
->> > diff --git a/arch/powerpc/platforms/pasemi/pci.c
->> > b/arch/powerpc/platforms/pasemi/pci.c
->> > index b6a0ec4..b27d886 100644
->> > --- a/arch/powerpc/platforms/pasemi/pci.c
->> > +++ b/arch/powerpc/platforms/pasemi/pci.c
->> > @@ -231,7 +231,7 @@ void __init pas_pci_init(void)
->> > =A0 =A0 =A0 =A0 pci_devs_phb_init();
->> >
->> > =A0 =A0 =A0 =A0 /* Use the common resource allocation mechanism */
->> > - =A0 =A0 =A0 pci_probe_only =3D 1;
->> > + =A0 =A0 =A0 pci_add_flags(PCI_PROBE_ONLY);
->> > =A0}
->>
->> Olof, do you remember why you used to set that on pasemi ?
->
-> Oops, going through email backlog. Sorry for the slow response.
->
->> I would have expected it to be clear, so the kernel can re-assign things
->> if needed. We really only want it set for pseries because of the
->> hypervisor being a PITA :-)
->
-> Well, we did have some hypervisor work done at PA Semi too, and chances
-> are it's from there. But it's unlikely since I think we booted pseries
-> (PAPR) kernels under rHype.
->
-> I suspect we just went with it for whatever legacy reasons and didn't
-> revisit later -- since our firmware enumerated busses reliably there
-> was no reason to redo it from the kernel.
->
-> I've booted a system with pci_probe_only off here, and it seems happy
-> enough. I'll send you a patch.
->
-> Bjorn, that means you can drop this chunk of the patch, I suppose.
+This compatible value will be used to distinguish some special features of APM821XX EMAC: no half duplex mode support, configuring jumbo frame.
 
-Sorry to comment to myself so quickly but since I just noticed that
-the patch is in -next, don't worry about rebasing your work -- we'll
-take out the flag use later.
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+v2:
+ No change since v1 patch set. Added for completeness.
 
+ arch/powerpc/boot/dts/bluestone.dts |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--Olof
+diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
+index 2a56a0d..74876f7 100644
+--- a/arch/powerpc/boot/dts/bluestone.dts
++++ b/arch/powerpc/boot/dts/bluestone.dts
+@@ -222,7 +222,7 @@
+ 
+ 			EMAC0: ethernet@ef600c00 {
+ 				device_type = "network";
+-				compatible = "ibm,emac4sync";
++				compatible = "ibm,emac-apm821xx", "ibm,emac4sync";
+ 				interrupt-parent = <&EMAC0>;
+ 				interrupts = <0x0 0x1>;
+ 				#interrupt-cells = <1>;
+-- 
+1.7.5.4
