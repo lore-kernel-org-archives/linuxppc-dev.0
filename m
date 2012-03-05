@@ -1,25 +1,24 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 11D30B6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2012 20:04:16 +1100 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Alexander Graf <agraf@suse.de>, "kvm-ppc@vger.kernel.org"
- <kvm-ppc@vger.kernel.org>
-Subject: RE: [PATCH 13/38] KVM: PPC: booke: category E.HV (GS-mode) support
-Date: Mon, 5 Mar 2012 09:04:06 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D154397@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1330474206-14794-1-git-send-email-agraf@suse.de>
- <1330474206-14794-14-git-send-email-agraf@suse.de>
-In-Reply-To: <1330474206-14794-14-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dhdang@apm.com>
+Received: from exprod5og117.obsmtp.com (exprod5og117.obsmtp.com [64.18.0.149])
+ by ozlabs.org (Postfix) with SMTP id A09CFB6EE8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2012 19:45:52 +1100 (EST)
+Received: by mail-lpp01m010-f51.google.com with SMTP id p9so4508126laa.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Mar 2012 00:45:50 -0800 (PST)
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+In-Reply-To: <201203050841.57291.sr@denx.de>
+References: <1329466058-15969-1-git-send-email-dhdang@apm.com>
+ <1330920224-3006-1-git-send-email-dhdang@apm.com>
+ <201203050841.57291.sr@denx.de>
+From: Duc Dang <dhdang@apm.com>
+Date: Mon, 5 Mar 2012 15:45:20 +0700
+Message-ID: <CADaLNDk2ObjRqdR+m6d+nNTvgS+3bjTzf+bELZ1CXC3bzF8+YQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] powerpc/44x: Add more changes for APM821XX EMAC
+ driver
+To: Stefan Roese <sr@denx.de>
+Content-Type: multipart/alternative; boundary=f46d04088ee111b2f904ba7af4ee
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ netdev <netdev@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,1803 +28,404 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--f46d04088ee111b2f904ba7af4ee
+Content-Type: text/plain; charset=ISO-8859-1
 
+Thanks, Stefan.
 
-> -----Original Message-----
-> From: kvm-owner@vger.kernel.org [mailto:kvm-owner@vger.kernel.org] On Beh=
-alf Of
-> Alexander Graf
-> Sent: Wednesday, February 29, 2012 5:40 AM
-> To: kvm-ppc@vger.kernel.org
-> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421
-> Subject: [PATCH 13/38] KVM: PPC: booke: category E.HV (GS-mode) support
->=20
-> From: Scott Wood <scottwood@freescale.com>
->=20
-> Chips such as e500mc that implement category E.HV in Power ISA 2.06
-> provide hardware virtualization features, including a new MSR mode for
-> guest state.  The guest OS can perform many operations without trapping
-> into the hypervisor, including transitions to and from guest userspace.
->=20
-> Since we can use SRR1[GS] to reliably tell whether an exception came from
-> guest state, instead of messing around with IVPR, we use DO_KVM similarly
-> to book3s.
->=20
-> Current issues include:
->  - Machine checks from guest state are not routed to the host handler.
->  - The guest can cause a host oops by executing an emulated instruction
->    in a page that lacks read permission.  Existing e500/4xx support has
->    the same problem.
->=20
-> Includes work by Ashish Kalra <Ashish.Kalra@freescale.com>,
-> Varun Sethi <Varun.Sethi@freescale.com>, and
-> Liu Yu <yu.liu@freescale.com>.
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> [agraf: remove pt_regs usage]
-> Signed-off-by: Alexander Graf <agraf@suse.de>
->=20
-> ---
->=20
-> v1 -> v2:
->=20
->   - ESR -> GESR
-> ---
->  arch/powerpc/include/asm/dbell.h            |    1 +
->  arch/powerpc/include/asm/kvm_asm.h          |    8 +
->  arch/powerpc/include/asm/kvm_booke_hv_asm.h |   49 +++
->  arch/powerpc/include/asm/kvm_host.h         |   19 +-
->  arch/powerpc/include/asm/kvm_ppc.h          |    3 +
->  arch/powerpc/include/asm/mmu-book3e.h       |    6 +
->  arch/powerpc/include/asm/processor.h        |    3 +
->  arch/powerpc/include/asm/reg.h              |    2 +
->  arch/powerpc/include/asm/reg_booke.h        |   34 ++
->  arch/powerpc/kernel/asm-offsets.c           |   15 +-
->  arch/powerpc/kernel/head_booke.h            |   28 ++-
->  arch/powerpc/kvm/Kconfig                    |    3 +
->  arch/powerpc/kvm/booke.c                    |  309 ++++++++++++---
->  arch/powerpc/kvm/booke.h                    |   24 +-
->  arch/powerpc/kvm/booke_emulate.c            |   23 +-
->  arch/powerpc/kvm/bookehv_interrupts.S       |  587 +++++++++++++++++++++=
-++++++
->  arch/powerpc/kvm/powerpc.c                  |    5 +
->  arch/powerpc/kvm/timing.h                   |    6 +
->  18 files changed, 1058 insertions(+), 67 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/kvm_booke_hv_asm.h
->  create mode 100644 arch/powerpc/kvm/bookehv_interrupts.S
->=20
-> diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/=
-dbell.h
-> index efa74ac..d7365b0 100644
-> --- a/arch/powerpc/include/asm/dbell.h
-> +++ b/arch/powerpc/include/asm/dbell.h
-> @@ -19,6 +19,7 @@
->=20
->  #define PPC_DBELL_MSG_BRDCAST	(0x04000000)
->  #define PPC_DBELL_TYPE(x)	(((x) & 0xf) << (63-36))
-> +#define PPC_DBELL_LPID(x)	((x) << (63 - 49))
->  enum ppc_dbell {
->  	PPC_DBELL =3D 0,		/* doorbell */
->  	PPC_DBELL_CRIT =3D 1,	/* critical doorbell */
-> diff --git a/arch/powerpc/include/asm/kvm_asm.h
-> b/arch/powerpc/include/asm/kvm_asm.h
-> index 7b1f0e0..0978152 100644
-> --- a/arch/powerpc/include/asm/kvm_asm.h
-> +++ b/arch/powerpc/include/asm/kvm_asm.h
-> @@ -48,6 +48,14 @@
->  #define BOOKE_INTERRUPT_SPE_FP_DATA 33
->  #define BOOKE_INTERRUPT_SPE_FP_ROUND 34
->  #define BOOKE_INTERRUPT_PERFORMANCE_MONITOR 35
-> +#define BOOKE_INTERRUPT_DOORBELL 36
-> +#define BOOKE_INTERRUPT_DOORBELL_CRITICAL 37
-> +
-> +/* booke_hv */
-> +#define BOOKE_INTERRUPT_GUEST_DBELL 38
-> +#define BOOKE_INTERRUPT_GUEST_DBELL_CRIT 39
-> +#define BOOKE_INTERRUPT_HV_SYSCALL 40
-> +#define BOOKE_INTERRUPT_HV_PRIV 41
->=20
->  /* book3s */
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-> b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-> new file mode 100644
-> index 0000000..30a600f
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-> @@ -0,0 +1,49 @@
-> +/*
-> + * Copyright 2010-2011 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License, version 2, as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#ifndef ASM_KVM_BOOKE_HV_ASM_H
-> +#define ASM_KVM_BOOKE_HV_ASM_H
-> +
-> +#ifdef __ASSEMBLY__
-> +
-> +/*
-> + * All exceptions from guest state must go through KVM
-> + * (except for those which are delivered directly to the guest) --
-> + * there are no exceptions for which we fall through directly to
-> + * the normal host handler.
-> + *
-> + * Expected inputs (normal exceptions):
-> + *   SCRATCH0 =3D saved r10
-> + *   r10 =3D thread struct
-> + *   r11 =3D appropriate SRR1 variant (currently used as scratch)
-> + *   r13 =3D saved CR
-> + *   *(r10 + THREAD_NORMSAVE(0)) =3D saved r11
-> + *   *(r10 + THREAD_NORMSAVE(2)) =3D saved r13
-> + *
-> + * Expected inputs (crit/mcheck/debug exceptions):
-> + *   appropriate SCRATCH =3D saved r8
-> + *   r8 =3D exception level stack frame
-> + *   r9 =3D *(r8 + _CCR) =3D saved CR
-> + *   r11 =3D appropriate SRR1 variant (currently used as scratch)
-> + *   *(r8 + GPR9) =3D saved r9
-> + *   *(r8 + GPR10) =3D saved r10 (r10 not yet clobbered)
-> + *   *(r8 + GPR11) =3D saved r11
-> + */
-> +.macro DO_KVM intno srr1
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +BEGIN_FTR_SECTION
-> +	mtocrf	0x80, r11	/* check MSR[GS] without clobbering reg */
-> +	bf	3, kvmppc_resume_\intno\()_\srr1
-> +	b	kvmppc_handler_\intno\()_\srr1
-> +kvmppc_resume_\intno\()_\srr1:
-> +END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
-> +#endif
-> +.endm
-> +
-> +#endif /*__ASSEMBLY__ */
-> +#endif /* ASM_KVM_BOOKE_HV_ASM_H */
-> diff --git a/arch/powerpc/include/asm/kvm_host.h
-> b/arch/powerpc/include/asm/kvm_host.h
-> index 47612cc..ed95f53 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -106,6 +106,8 @@ struct kvm_vcpu_stat {
->  	u32 dec_exits;
->  	u32 ext_intr_exits;
->  	u32 halt_wakeup;
-> +	u32 dbell_exits;
-> +	u32 gdbell_exits;
->  #ifdef CONFIG_PPC_BOOK3S
->  	u32 pf_storage;
->  	u32 pf_instruc;
-> @@ -140,6 +142,7 @@ enum kvm_exit_types {
->  	EMULATED_TLBSX_EXITS,
->  	EMULATED_TLBWE_EXITS,
->  	EMULATED_RFI_EXITS,
-> +	EMULATED_RFCI_EXITS,
->  	DEC_EXITS,
->  	EXT_INTR_EXITS,
->  	HALT_WAKEUP,
-> @@ -147,6 +150,8 @@ enum kvm_exit_types {
->  	FP_UNAVAIL,
->  	DEBUG_EXITS,
->  	TIMEINGUEST,
-> +	DBELL_EXITS,
-> +	GDBELL_EXITS,
->  	__NUMBER_OF_KVM_EXIT_TYPES
->  };
->=20
-> @@ -217,10 +222,10 @@ struct kvm_arch_memory_slot {
->  };
->=20
->  struct kvm_arch {
-> +	unsigned int lpid;
->  #ifdef CONFIG_KVM_BOOK3S_64_HV
->  	unsigned long hpt_virt;
->  	struct revmap_entry *revmap;
-> -	unsigned int lpid;
->  	unsigned int host_lpid;
->  	unsigned long host_lpcr;
->  	unsigned long sdr1;
-> @@ -345,6 +350,17 @@ struct kvm_vcpu_arch {
->  	u64 vsr[64];
->  #endif
->=20
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	u32 host_mas4;
-> +	u32 host_mas6;
-> +	u32 shadow_epcr;
-> +	u32 epcr;
-> +	u32 shadow_msrp;
-> +	u32 eplc;
-> +	u32 epsc;
-> +	u32 oldpir;
-> +#endif
-> +
->  #ifdef CONFIG_PPC_BOOK3S
->  	/* For Gekko paired singles */
->  	u32 qpr[32];
-> @@ -428,6 +444,7 @@ struct kvm_vcpu_arch {
->  	ulong queued_esr;
->  	u32 tlbcfg[4];
->  	u32 mmucfg;
-> +	u32 epr;
->  #endif
->  	gpa_t paddr_accessed;
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h
-> b/arch/powerpc/include/asm/kvm_ppc.h
-> index 731e920..e709975 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -139,6 +139,9 @@ extern int kvmppc_core_prepare_memory_region(struct k=
-vm
-> *kvm,
->  extern void kvmppc_core_commit_memory_region(struct kvm *kvm,
->  				struct kvm_userspace_memory_region *mem);
->=20
-> +extern int kvmppc_bookehv_init(void);
-> +extern void kvmppc_bookehv_exit(void);
-> +
->  /*
->   * Cuts out inst bits with ordering according to spec.
->   * That means the leftmost bit is zero. All given bits are included.
-> diff --git a/arch/powerpc/include/asm/mmu-book3e.h
-> b/arch/powerpc/include/asm/mmu-book3e.h
-> index cdb5421..eeabcdb 100644
-> --- a/arch/powerpc/include/asm/mmu-book3e.h
-> +++ b/arch/powerpc/include/asm/mmu-book3e.h
-> @@ -104,6 +104,8 @@
->  #define MAS4_TSIZED_MASK	0x00000f80	/* Default TSIZE */
->  #define MAS4_TSIZED_SHIFT	7
->=20
-> +#define MAS5_SGS		0x80000000
-> +
->  #define MAS6_SPID0		0x3FFF0000
->  #define MAS6_SPID1		0x00007FFE
->  #define MAS6_ISIZE(x)		MAS1_TSIZE(x)
-> @@ -118,6 +120,10 @@
->=20
->  #define MAS7_RPN		0xFFFFFFFF
->=20
-> +#define MAS8_TGS		0x80000000 /* Guest space */
-> +#define MAS8_VF			0x40000000 /* Virtualization Fault */
-> +#define MAS8_TLPID		0x000000ff
-> +
->  /* Bit definitions for MMUCFG */
->  #define MMUCFG_MAVN	0x00000003	/* MMU Architecture Version Number */
->  #define MMUCFG_MAVN_V1	0x00000000	/* v1.0 */
-> diff --git a/arch/powerpc/include/asm/processor.h
-> b/arch/powerpc/include/asm/processor.h
-> index b585bff..f64262b 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -243,6 +243,9 @@ struct thread_struct {
->  #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
->  	void*		kvm_shadow_vcpu; /* KVM internal data */
->  #endif /* CONFIG_KVM_BOOK3S_32_HANDLER */
-> +#if defined(CONFIG_KVM) && defined(CONFIG_BOOKE)
-> +	struct kvm_vcpu	*kvm_vcpu;
-> +#endif
->  #ifdef CONFIG_PPC64
->  	unsigned long	dscr;
->  	int		dscr_inherit;
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
-g.h
-> index 35c9309..67512f3 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -257,7 +257,9 @@
->  #define   LPCR_LPES_SH	2
->  #define   LPCR_RMI     0x00000002      /* real mode is cache inhibit */
->  #define   LPCR_HDICE   0x00000001      /* Hyp Decr enable (HV,PR,EE) */
-> +#ifndef SPRN_LPID
->  #define SPRN_LPID	0x13F	/* Logical Partition Identifier */
-> +#endif
->  #define   LPID_RSVD	0x3ff		/* Reserved LPID for partn switching */
->  #define	SPRN_HMER	0x150	/* Hardware m? error recovery */
->  #define	SPRN_HMEER	0x151	/* Hardware m? enable error recovery */
-> diff --git a/arch/powerpc/include/asm/reg_booke.h
-> b/arch/powerpc/include/asm/reg_booke.h
-> index 500fe1d..8960afc 100644
-> --- a/arch/powerpc/include/asm/reg_booke.h
-> +++ b/arch/powerpc/include/asm/reg_booke.h
-> @@ -56,17 +56,29 @@
->  #define SPRN_SPRG7W	0x117	/* Special Purpose Register General 7 Write */
->  #define SPRN_EPCR	0x133	/* Embedded Processor Control Register */
->  #define SPRN_DBCR2	0x136	/* Debug Control Register 2 */
-> +#define SPRN_MSRP	0x137	/* MSR Protect Register */
->  #define SPRN_IAC3	0x13A	/* Instruction Address Compare 3 */
->  #define SPRN_IAC4	0x13B	/* Instruction Address Compare 4 */
->  #define SPRN_DVC1	0x13E	/* Data Value Compare Register 1 */
->  #define SPRN_DVC2	0x13F	/* Data Value Compare Register 2 */
-> +#define SPRN_LPID	0x152	/* Logical Partition ID */
->  #define SPRN_MAS8	0x155	/* MMU Assist Register 8 */
->  #define SPRN_TLB0PS	0x158	/* TLB 0 Page Size Register */
->  #define SPRN_MAS5_MAS6	0x15c	/* MMU Assist Register 5 || 6 */
->  #define SPRN_MAS8_MAS1	0x15d	/* MMU Assist Register 8 || 1 */
->  #define SPRN_EPTCFG	0x15e	/* Embedded Page Table Config */
-> +#define SPRN_GSPRG0	0x170	/* Guest SPRG0 */
-> +#define SPRN_GSPRG1	0x171	/* Guest SPRG1 */
-> +#define SPRN_GSPRG2	0x172	/* Guest SPRG2 */
-> +#define SPRN_GSPRG3	0x173	/* Guest SPRG3 */
->  #define SPRN_MAS7_MAS3	0x174	/* MMU Assist Register 7 || 3 */
->  #define SPRN_MAS0_MAS1	0x175	/* MMU Assist Register 0 || 1 */
-> +#define SPRN_GSRR0	0x17A	/* Guest SRR0 */
-> +#define SPRN_GSRR1	0x17B	/* Guest SRR1 */
-> +#define SPRN_GEPR	0x17C	/* Guest EPR */
-> +#define SPRN_GDEAR	0x17D	/* Guest DEAR */
-> +#define SPRN_GPIR	0x17E	/* Guest PIR */
-> +#define SPRN_GESR	0x17F	/* Guest Exception Syndrome Register */
->  #define SPRN_IVOR0	0x190	/* Interrupt Vector Offset Register 0 */
->  #define SPRN_IVOR1	0x191	/* Interrupt Vector Offset Register 1 */
->  #define SPRN_IVOR2	0x192	/* Interrupt Vector Offset Register 2 */
-> @@ -87,6 +99,13 @@
->  #define SPRN_IVOR39	0x1B1	/* Interrupt Vector Offset Register 39 */
->  #define SPRN_IVOR40	0x1B2	/* Interrupt Vector Offset Register 40 */
->  #define SPRN_IVOR41	0x1B3	/* Interrupt Vector Offset Register 41 */
-> +#define SPRN_GIVOR2	0x1B8	/* Guest IVOR2 */
-> +#define SPRN_GIVOR3	0x1B9	/* Guest IVOR3 */
-> +#define SPRN_GIVOR4	0x1BA	/* Guest IVOR4 */
-> +#define SPRN_GIVOR8	0x1BB	/* Guest IVOR8 */
-> +#define SPRN_GIVOR13	0x1BC	/* Guest IVOR13 */
-> +#define SPRN_GIVOR14	0x1BD	/* Guest IVOR14 */
-> +#define SPRN_GIVPR	0x1BF	/* Guest IVPR */
->  #define SPRN_SPEFSCR	0x200	/* SPE & Embedded FP Status & Control */
->  #define SPRN_BBEAR	0x201	/* Branch Buffer Entry Address Register */
->  #define SPRN_BBTAR	0x202	/* Branch Buffer Target Address Register */
-> @@ -239,6 +258,10 @@
->  #define MCSR_LDG	0x00002000UL /* Guarded Load */
->  #define MCSR_TLBSYNC	0x00000002UL /* Multiple tlbsyncs detected */
->  #define MCSR_BSL2_ERR	0x00000001UL /* Backside L2 cache error */
-> +
-> +#define MSRP_UCLEP	0x04000000 /* Protect MSR[UCLE] */
-> +#define MSRP_DEP	0x00000200 /* Protect MSR[DE] */
-> +#define MSRP_PMMP	0x00000004 /* Protect MSR[PMM] */
->  #endif
->=20
->  #ifdef CONFIG_E200
-> @@ -593,6 +616,17 @@
->  #define SPRN_EPCR_DMIUH		0x00400000	/* Disable MAS Interrupt updates
->  						 * for hypervisor */
->=20
-> +/* Bit definitions for EPLC/EPSC */
-> +#define EPC_EPR		0x80000000 /* 1 =3D user, 0 =3D kernel */
-> +#define EPC_EPR_SHIFT	31
-> +#define EPC_EAS		0x40000000 /* Address Space */
-> +#define EPC_EAS_SHIFT	30
-> +#define EPC_EGS		0x20000000 /* 1 =3D guest, 0 =3D hypervisor */
-> +#define EPC_EGS_SHIFT	29
-> +#define EPC_ELPID	0x00ff0000
-> +#define EPC_ELPID_SHIFT	16
-> +#define EPC_EPID	0x00003fff
-> +#define EPC_EPID_SHIFT	0
->=20
->  /*
->   * The IBM-403 is an even more odd special case, as it is much
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-
-> offsets.c
-> index 8e0db0b..a24f2c0 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -119,6 +119,9 @@ int main(void)
->  #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
->  	DEFINE(THREAD_KVM_SVCPU, offsetof(struct thread_struct, kvm_shadow_vcpu=
-));
->  #endif
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	DEFINE(THREAD_KVM_VCPU, offsetof(struct thread_struct, kvm_vcpu));
-> +#endif
->=20
->  	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
->  	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, local_flags));
-> @@ -401,6 +404,7 @@ int main(void)
->  #ifdef CONFIG_KVM
->  	DEFINE(VCPU_HOST_STACK, offsetof(struct kvm_vcpu, arch.host_stack));
->  	DEFINE(VCPU_HOST_PID, offsetof(struct kvm_vcpu, arch.host_pid));
-> +	DEFINE(VCPU_GUEST_PID, offsetof(struct kvm_vcpu, arch.pid));
->  	DEFINE(VCPU_GPRS, offsetof(struct kvm_vcpu, arch.gpr));
->  	DEFINE(VCPU_VRSAVE, offsetof(struct kvm_vcpu, arch.vrsave));
->  	DEFINE(VCPU_FPRS, offsetof(struct kvm_vcpu, arch.fpr));
-> @@ -443,9 +447,11 @@ int main(void)
->  	DEFINE(VCPU_SHARED_MAS4, offsetof(struct kvm_vcpu_arch_shared, mas4));
->  	DEFINE(VCPU_SHARED_MAS6, offsetof(struct kvm_vcpu_arch_shared, mas6));
->=20
-> +	DEFINE(VCPU_KVM, offsetof(struct kvm_vcpu, kvm));
-> +	DEFINE(KVM_LPID, offsetof(struct kvm, arch.lpid));
-> +
->  	/* book3s */
->  #ifdef CONFIG_KVM_BOOK3S_64_HV
-> -	DEFINE(KVM_LPID, offsetof(struct kvm, arch.lpid));
->  	DEFINE(KVM_SDR1, offsetof(struct kvm, arch.sdr1));
->  	DEFINE(KVM_HOST_LPID, offsetof(struct kvm, arch.host_lpid));
->  	DEFINE(KVM_HOST_LPCR, offsetof(struct kvm, arch.host_lpcr));
-> @@ -460,7 +466,6 @@ int main(void)
->  	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
->  #endif
->  #ifdef CONFIG_PPC_BOOK3S
-> -	DEFINE(VCPU_KVM, offsetof(struct kvm_vcpu, kvm));
->  	DEFINE(VCPU_VCPUID, offsetof(struct kvm_vcpu, vcpu_id));
->  	DEFINE(VCPU_PURR, offsetof(struct kvm_vcpu, arch.purr));
->  	DEFINE(VCPU_SPURR, offsetof(struct kvm_vcpu, arch.spurr));
-> @@ -611,6 +616,12 @@ int main(void)
->  	DEFINE(VCPU_HOST_SPEFSCR, offsetof(struct kvm_vcpu, arch.host_spefscr))=
-;
->  #endif
->=20
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	DEFINE(VCPU_HOST_MAS4, offsetof(struct kvm_vcpu, arch.host_mas4));
-> +	DEFINE(VCPU_HOST_MAS6, offsetof(struct kvm_vcpu, arch.host_mas6));
-> +	DEFINE(VCPU_EPLC, offsetof(struct kvm_vcpu, arch.eplc));
-> +#endif
-> +
->  #ifdef CONFIG_KVM_EXIT_TIMING
->  	DEFINE(VCPU_TIMING_EXIT_TBU, offsetof(struct kvm_vcpu,
->  						arch.timing_exit.tv32.tbu));
-> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_=
-booke.h
-> index 06ab353..b87c335 100644
-> --- a/arch/powerpc/kernel/head_booke.h
-> +++ b/arch/powerpc/kernel/head_booke.h
-> @@ -3,6 +3,7 @@
->=20
->  #include <asm/ptrace.h>	/* for STACK_FRAME_REGS_MARKER */
->  #include <asm/kvm_asm.h>
-> +#include <asm/kvm_booke_hv_asm.h>
->=20
->  /*
->   * Macros used for common Book-e exception handling
-> @@ -36,8 +37,9 @@
->  	stw	r11, THREAD_NORMSAVE(0)(r10);				     \
->  	stw	r13, THREAD_NORMSAVE(2)(r10);				     \
->  	mfcr	r13;			/* save CR in r13 for now	   */\
-> -	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel    */\
-> -	andi.	r11,r11,MSR_PR;						     \
-> +	mfspr	r11, SPRN_SRR1;		                                     \
-> +	DO_KVM	BOOKE_INTERRUPT_##intno SPRN_SRR1;			     \
-> +	andi.	r11, r11, MSR_PR;	/* check whether user or kernel    */\
->  	mr	r11, r1;						     \
->  	beq	1f;							     \
->  	/* if from user, start at top of this thread's kernel stack */       \
-> @@ -123,8 +125,9 @@
->  	stw	r10,GPR10(r8);						     \
->  	stw	r11,GPR11(r8);						     \
->  	stw	r9,_CCR(r8);		/* save CR on stack		   */\
-> -	mfspr	r10,exc_level_srr1;	/* check whether user or kernel    */\
-> -	andi.	r10,r10,MSR_PR;						     \
-> +	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
-> +	DO_KVM	BOOKE_INTERRUPT_##intno exc_level_srr1;		             \
-> +	andi.	r11,r11,MSR_PR;						     \
->  	mfspr	r11,SPRN_SPRG_THREAD;	/* if from user, start at top of   */\
->  	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
->  	addi	r11,r11,EXC_LVL_FRAME_OVERHEAD;	/* allocate stack frame    */\
-> @@ -173,6 +176,23 @@
->  			SPRN_MCSRR0, SPRN_MCSRR1)
->=20
->  /*
-> + * Guest Doorbell -- this is a bit odd in that uses GSRR0/1 despite
-> + * being delivered to the host.  This exception can only happen
-> + * inside a KVM guest -- so we just handle up to the DO_KVM rather
-> + * than try to fit this into one of the existing prolog macros.
-> + */
-> +#define GUEST_DOORBELL_EXCEPTION \
-> +	START_EXCEPTION(GuestDoorbell);					     \
-> +	mtspr	SPRN_SPRG_WSCRATCH0, r10;	/* save one register */	     \
-> +	mfspr	r10, SPRN_SPRG_THREAD;					     \
-> +	stw	r11, THREAD_NORMSAVE(0)(r10);				     \
-> +	mfspr	r11, SPRN_SRR1;		                                     \
-> +	stw	r13, THREAD_NORMSAVE(2)(r10);				     \
-> +	mfcr	r13;			/* save CR in r13 for now	   */\
-> +	DO_KVM	BOOKE_INTERRUPT_GUEST_DBELL SPRN_GSRR1;			     \
-> +	trap
-> +
-> +/*
->   * Exception vectors.
->   */
->  #define	START_EXCEPTION(label)						     \
-> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-> index 8f64709..2c33cd3 100644
-> --- a/arch/powerpc/kvm/Kconfig
-> +++ b/arch/powerpc/kvm/Kconfig
-> @@ -90,6 +90,9 @@ config KVM_BOOK3S_64_PR
->  	depends on KVM_BOOK3S_64 && !KVM_BOOK3S_64_HV
->  	select KVM_BOOK3S_PR
->=20
-> +config KVM_BOOKE_HV
-> +	bool
-> +
->  config KVM_440
->  	bool "KVM support for PowerPC 440 processors"
->  	depends on EXPERIMENTAL && 44x
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index 2ee9bae..75dbaeb 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -17,6 +17,8 @@
->   *
->   * Authors: Hollis Blanchard <hollisb@us.ibm.com>
->   *          Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> + *          Scott Wood <scottwood@freescale.com>
-> + *          Varun Sethi <varun.sethi@freescale.com>
->   */
->=20
->  #include <linux/errno.h>
-> @@ -30,9 +32,12 @@
->  #include <asm/cputable.h>
->  #include <asm/uaccess.h>
->  #include <asm/kvm_ppc.h>
-> -#include "timing.h"
->  #include <asm/cacheflush.h>
-> +#include <asm/dbell.h>
-> +#include <asm/hw_irq.h>
-> +#include <asm/irq.h>
->=20
-> +#include "timing.h"
->  #include "booke.h"
->=20
->  unsigned long kvmppc_booke_handlers;
-> @@ -55,6 +60,8 @@ struct kvm_stats_debugfs_item debugfs_entries[] =3D {
->  	{ "dec",        VCPU_STAT(dec_exits) },
->  	{ "ext_intr",   VCPU_STAT(ext_intr_exits) },
->  	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
-> +	{ "doorbell", VCPU_STAT(dbell_exits) },
-> +	{ "guest doorbell", VCPU_STAT(gdbell_exits) },
->  	{ NULL }
->  };
->=20
-> @@ -121,6 +128,10 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u32 new_m=
-sr)
->  {
->  	u32 old_msr =3D vcpu->arch.shared->msr;
->=20
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	new_msr |=3D MSR_GS;
-> +#endif
-> +
->  	vcpu->arch.shared->msr =3D new_msr;
->=20
->  	kvmppc_mmu_msr_notify(vcpu, old_msr);
-> @@ -195,6 +206,75 @@ void kvmppc_core_dequeue_external(struct kvm_vcpu *v=
-cpu,
->  	clear_bit(BOOKE_IRQPRIO_EXTERNAL_LEVEL, &vcpu->arch.pending_exceptions)=
-;
->  }
->=20
-> +static void set_guest_srr(struct kvm_vcpu *vcpu, unsigned long srr0, u32=
- srr1)
-> +{
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	mtspr(SPRN_GSRR0, srr0);
-> +	mtspr(SPRN_GSRR1, srr1);
-> +#else
-> +	vcpu->arch.shared->srr0 =3D srr0;
-> +	vcpu->arch.shared->srr1 =3D srr1;
-> +#endif
-> +}
-> +
-> +static void set_guest_csrr(struct kvm_vcpu *vcpu, unsigned long srr0, u3=
-2 srr1)
-> +{
-> +	vcpu->arch.csrr0 =3D srr0;
-> +	vcpu->arch.csrr1 =3D srr1;
-> +}
-> +
-> +static void set_guest_dsrr(struct kvm_vcpu *vcpu, unsigned long srr0, u3=
-2 srr1)
-> +{
-> +	if (cpu_has_feature(CPU_FTR_DEBUG_LVL_EXC)) {
-> +		vcpu->arch.dsrr0 =3D srr0;
-> +		vcpu->arch.dsrr1 =3D srr1;
-> +	} else {
-> +		set_guest_csrr(vcpu, srr0, srr1);
-> +	}
-> +}
-> +
-> +static void set_guest_mcsrr(struct kvm_vcpu *vcpu, unsigned long srr0, u=
-32
-> srr1)
-> +{
-> +	vcpu->arch.mcsrr0 =3D srr0;
-> +	vcpu->arch.mcsrr1 =3D srr1;
-> +}
-> +
-> +static unsigned long get_guest_dear(struct kvm_vcpu *vcpu)
-> +{
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	return mfspr(SPRN_GDEAR);
-> +#else
-> +	return vcpu->arch.shared->dar;
-> +#endif
-> +}
-> +
-> +static void set_guest_dear(struct kvm_vcpu *vcpu, unsigned long dear)
-> +{
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	mtspr(SPRN_GDEAR, dear);
-> +#else
-> +	vcpu->arch.shared->dar =3D dear;
-> +#endif
-> +}
-> +
-> +static unsigned long get_guest_esr(struct kvm_vcpu *vcpu)
-> +{
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	return mfspr(SPRN_GESR);
-> +#else
-> +	return vcpu->arch.shared->esr;
-> +#endif
-> +}
-> +
-> +static void set_guest_esr(struct kvm_vcpu *vcpu, u32 esr)
-> +{
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	mtspr(SPRN_GESR, esr);
-> +#else
-> +	vcpu->arch.shared->esr =3D esr;
-> +#endif
-> +}
-> +
->  /* Deliver the interrupt of the corresponding priority, if possible. */
->  static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
->                                          unsigned int priority)
-> @@ -206,6 +286,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vc=
-pu
-> *vcpu,
->  	ulong crit_r1 =3D kvmppc_get_gpr(vcpu, 1);
->  	bool crit;
->  	bool keep_irq =3D false;
-> +	enum int_class int_class;
->=20
->  	/* Truncate crit indicators in 32 bit mode */
->  	if (!(vcpu->arch.shared->msr & MSR_SF)) {
-> @@ -241,16 +322,20 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_=
-vcpu
-> *vcpu,
->  	case BOOKE_IRQPRIO_AP_UNAVAIL:
->  	case BOOKE_IRQPRIO_ALIGNMENT:
->  		allowed =3D 1;
-> -		msr_mask =3D MSR_CE|MSR_ME|MSR_DE;
-> +		msr_mask =3D MSR_GS | MSR_CE | MSR_ME | MSR_DE;
-> +		int_class =3D INT_CLASS_NONCRIT;
->  		break;
->  	case BOOKE_IRQPRIO_CRITICAL:
-> -	case BOOKE_IRQPRIO_WATCHDOG:
->  		allowed =3D vcpu->arch.shared->msr & MSR_CE;
-> -		msr_mask =3D MSR_ME;
-> +		allowed =3D allowed && !crit;
-> +		msr_mask =3D MSR_GS | MSR_ME;
-> +		int_class =3D INT_CLASS_CRIT;
->  		break;
->  	case BOOKE_IRQPRIO_MACHINE_CHECK:
->  		allowed =3D vcpu->arch.shared->msr & MSR_ME;
-> -		msr_mask =3D 0;
-> +		allowed =3D allowed && !crit;
-> +		msr_mask =3D MSR_GS;
-> +		int_class =3D INT_CLASS_MC;
->  		break;
->  	case BOOKE_IRQPRIO_DECREMENTER:
->  	case BOOKE_IRQPRIO_FIT:
-> @@ -259,28 +344,62 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_=
-vcpu
-> *vcpu,
->  	case BOOKE_IRQPRIO_EXTERNAL:
->  		allowed =3D vcpu->arch.shared->msr & MSR_EE;
->  		allowed =3D allowed && !crit;
-> -		msr_mask =3D MSR_CE|MSR_ME|MSR_DE;
-> +		msr_mask =3D MSR_GS | MSR_CE | MSR_ME | MSR_DE;
-> +		int_class =3D INT_CLASS_NONCRIT;
->  		break;
->  	case BOOKE_IRQPRIO_DEBUG:
->  		allowed =3D vcpu->arch.shared->msr & MSR_DE;
-> -		msr_mask =3D MSR_ME;
-> +		allowed =3D allowed && !crit;
-> +		msr_mask =3D MSR_GS | MSR_ME;
-> +		int_class =3D INT_CLASS_CRIT;
->  		break;
->  	}
->=20
->  	if (allowed) {
-> -		vcpu->arch.shared->srr0 =3D vcpu->arch.pc;
-> -		vcpu->arch.shared->srr1 =3D vcpu->arch.shared->msr;
-> +		switch (int_class) {
-> +		case INT_CLASS_NONCRIT:
-> +			set_guest_srr(vcpu, vcpu->arch.pc,
-> +				      vcpu->arch.shared->msr);
-> +			break;
-> +		case INT_CLASS_CRIT:
-> +			set_guest_csrr(vcpu, vcpu->arch.pc,
-> +				       vcpu->arch.shared->msr);
-> +			break;
-> +		case INT_CLASS_DBG:
-> +			set_guest_dsrr(vcpu, vcpu->arch.pc,
-> +				       vcpu->arch.shared->msr);
-> +			break;
-> +		case INT_CLASS_MC:
-> +			set_guest_mcsrr(vcpu, vcpu->arch.pc,
-> +					vcpu->arch.shared->msr);
-> +			break;
-> +		}
-> +
->  		vcpu->arch.pc =3D vcpu->arch.ivpr | vcpu->arch.ivor[priority];
->  		if (update_esr =3D=3D true)
-> -			vcpu->arch.shared->esr =3D vcpu->arch.queued_esr;
-> +			set_guest_esr(vcpu, vcpu->arch.queued_esr);
->  		if (update_dear =3D=3D true)
-> -			vcpu->arch.shared->dar =3D vcpu->arch.queued_dear;
-> +			set_guest_dear(vcpu, vcpu->arch.queued_dear);
->  		kvmppc_set_msr(vcpu, vcpu->arch.shared->msr & msr_mask);
->=20
->  		if (!keep_irq)
->  			clear_bit(priority, &vcpu->arch.pending_exceptions);
->  	}
->=20
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	/*
-> +	 * If an interrupt is pending but masked, raise a guest doorbell
-> +	 * so that we are notified when the guest enables the relevant
-> +	 * MSR bit.
-> +	 */
-> +	if (vcpu->arch.pending_exceptions & BOOKE_IRQMASK_EE)
-> +		kvmppc_set_pending_interrupt(vcpu, INT_CLASS_NONCRIT);
-> +	if (vcpu->arch.pending_exceptions & BOOKE_IRQMASK_CE)
-> +		kvmppc_set_pending_interrupt(vcpu, INT_CLASS_CRIT);
-> +	if (vcpu->arch.pending_exceptions & BOOKE_IRQPRIO_MACHINE_CHECK)
-> +		kvmppc_set_pending_interrupt(vcpu, INT_CLASS_MC);
-> +#endif
-> +
->  	return allowed;
->  }
->=20
-> @@ -344,6 +463,11 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct
-> kvm_vcpu *vcpu)
->  		return -EINVAL;
->  	}
->=20
-> +	if (!current->thread.kvm_vcpu) {
-> +		WARN(1, "no vcpu\n");
-> +		return -EPERM;
-> +	}
-> +
->  	local_irq_disable();
->=20
->  	kvmppc_core_prepare_to_enter(vcpu);
-> @@ -363,6 +487,38 @@ out:
->  	return ret;
->  }
->=20
-> +static int emulation_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
-> +{
-> +	enum emulation_result er;
-> +
-> +	er =3D kvmppc_emulate_instruction(run, vcpu);
-> +	switch (er) {
-> +	case EMULATE_DONE:
-> +		/* don't overwrite subtypes, just account kvm_stats */
-> +		kvmppc_account_exit_stat(vcpu, EMULATED_INST_EXITS);
-> +		/* Future optimization: only reload non-volatiles if
-> +		 * they were actually modified by emulation. */
-> +		return RESUME_GUEST_NV;
-> +
-> +	case EMULATE_DO_DCR:
-> +		run->exit_reason =3D KVM_EXIT_DCR;
-> +		return RESUME_HOST;
-> +
-> +	case EMULATE_FAIL:
-> +		/* XXX Deliver Program interrupt to guest. */
-> +		printk(KERN_CRIT "%s: emulation at %lx failed (%08x)\n",
-> +		       __func__, vcpu->arch.pc, vcpu->arch.last_inst);
-> +		/* For debugging, encode the failing instruction and
-> +		 * report it to userspace. */
-> +		run->hw.hardware_exit_reason =3D ~0ULL << 32;
-> +		run->hw.hardware_exit_reason |=3D vcpu->arch.last_inst;
-> +		return RESUME_HOST;
-> +
-> +	default:
-> +		BUG();
-> +	}
-> +}
-> +
->  /**
->   * kvmppc_handle_exit
->   *
-> @@ -371,12 +527,30 @@ out:
->  int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
->                         unsigned int exit_nr)
->  {
-> -	enum emulation_result er;
->  	int r =3D RESUME_HOST;
->=20
->  	/* update before a new last_exit_type is rewritten */
->  	kvmppc_update_timing_stats(vcpu);
->=20
-> +	switch (exit_nr) {
-> +	case BOOKE_INTERRUPT_EXTERNAL:
-> +		do_IRQ(current->thread.regs);
-> +		break;
-> +
-> +	case BOOKE_INTERRUPT_DECREMENTER:
-> +		timer_interrupt(current->thread.regs);
-> +		break;
-> +
-> +#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3E_64)
-> +	case BOOKE_INTERRUPT_DOORBELL:
-> +		doorbell_exception(current->thread.regs);
-> +		break;
-> +#endif
-> +	case BOOKE_INTERRUPT_MACHINE_CHECK:
-> +		/* FIXME */
-> +		break;
-> +	}
-> +
->  	local_irq_enable();
->=20
->  	run->exit_reason =3D KVM_EXIT_UNKNOWN;
-> @@ -384,30 +558,56 @@ int kvmppc_handle_exit(struct kvm_run *run, struct
-> kvm_vcpu *vcpu,
->=20
->  	switch (exit_nr) {
->  	case BOOKE_INTERRUPT_MACHINE_CHECK:
-> -		printk("MACHINE CHECK: %lx\n", mfspr(SPRN_MCSR));
-> -		kvmppc_dump_vcpu(vcpu);
-> -		r =3D RESUME_HOST;
-> +		kvm_resched(vcpu);
-> +		r =3D RESUME_GUEST;
->  		break;
->=20
->  	case BOOKE_INTERRUPT_EXTERNAL:
->  		kvmppc_account_exit(vcpu, EXT_INTR_EXITS);
-> -		if (need_resched())
-> -			cond_resched();
-> +		kvm_resched(vcpu);
->  		r =3D RESUME_GUEST;
->  		break;
->=20
->  	case BOOKE_INTERRUPT_DECREMENTER:
-> -		/* Since we switched IVPR back to the host's value, the host
-> -		 * handled this interrupt the moment we enabled interrupts.
-> -		 * Now we just offer it a chance to reschedule the guest. */
->  		kvmppc_account_exit(vcpu, DEC_EXITS);
-> -		if (need_resched())
-> -			cond_resched();
-> +		kvm_resched(vcpu);
->  		r =3D RESUME_GUEST;
->  		break;
->=20
-> +	case BOOKE_INTERRUPT_DOORBELL:
-> +		kvmppc_account_exit(vcpu, DBELL_EXITS);
-> +		kvm_resched(vcpu);
-> +		r =3D RESUME_GUEST;
-> +		break;
-> +
-> +	case BOOKE_INTERRUPT_GUEST_DBELL_CRIT:
-> +		kvmppc_account_exit(vcpu, GDBELL_EXITS);
-> +
-> +		/*
-> +		 * We are here because there is a pending guest interrupt
-> +		 * which could not be delivered as MSR_CE or MSR_ME was not
-> +		 * set.  Once we break from here we will retry delivery.
-> +		 */
-> +		r =3D RESUME_GUEST;
-> +		break;
-> +
-> +	case BOOKE_INTERRUPT_GUEST_DBELL:
-> +		kvmppc_account_exit(vcpu, GDBELL_EXITS);
-> +
-> +		/*
-> +		 * We are here because there is a pending guest interrupt
-> +		 * which could not be delivered as MSR_EE was not set.  Once
-> +		 * we break from here we will retry delivery.
-> +		 */
-> +		r =3D RESUME_GUEST;
-> +		break;
-> +
-> +	case BOOKE_INTERRUPT_HV_PRIV:
-> +		r =3D emulation_exit(run, vcpu);
-> +		break;
-> +
->  	case BOOKE_INTERRUPT_PROGRAM:
-> -		if (vcpu->arch.shared->msr & MSR_PR) {
-> +		if (vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) {
->  			/* Program traps generated by user-level software must be
-> handled
->  			 * by the guest kernel. */
->  			kvmppc_core_queue_program(vcpu, vcpu->arch.fault_esr);
-> @@ -416,32 +616,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct k=
-vm_vcpu
-> *vcpu,
->  			break;
->  		}
->=20
-> -		er =3D kvmppc_emulate_instruction(run, vcpu);
-> -		switch (er) {
-> -		case EMULATE_DONE:
-> -			/* don't overwrite subtypes, just account kvm_stats */
-> -			kvmppc_account_exit_stat(vcpu, EMULATED_INST_EXITS);
-> -			/* Future optimization: only reload non-volatiles if
-> -			 * they were actually modified by emulation. */
-> -			r =3D RESUME_GUEST_NV;
-> -			break;
-> -		case EMULATE_DO_DCR:
-> -			run->exit_reason =3D KVM_EXIT_DCR;
-> -			r =3D RESUME_HOST;
-> -			break;
-> -		case EMULATE_FAIL:
-> -			/* XXX Deliver Program interrupt to guest. */
-> -			printk(KERN_CRIT "%s: emulation at %lx failed (%08x)\n",
-> -			       __func__, vcpu->arch.pc, vcpu->arch.last_inst);
-> -			/* For debugging, encode the failing instruction and
-> -			 * report it to userspace. */
-> -			run->hw.hardware_exit_reason =3D ~0ULL << 32;
-> -			run->hw.hardware_exit_reason |=3D vcpu->arch.last_inst;
-> -			r =3D RESUME_HOST;
-> -			break;
-> -		default:
-> -			BUG();
-> -		}
-> +		r =3D emulation_exit(run, vcpu);
->  		break;
->=20
->  	case BOOKE_INTERRUPT_FP_UNAVAIL:
-> @@ -506,6 +681,21 @@ int kvmppc_handle_exit(struct kvm_run *run, struct k=
-vm_vcpu
-> *vcpu,
->  		r =3D RESUME_GUEST;
->  		break;
->=20
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	case BOOKE_INTERRUPT_HV_SYSCALL:
-> +		if (!(vcpu->arch.shared->msr & MSR_PR)) {
-> +			kvmppc_set_gpr(vcpu, 3, kvmppc_kvm_pv(vcpu));
-> +		} else {
-> +			/*
-> +			 * hcall from guest userspace -- send privileged
-> +			 * instruction program check.
-> +			 */
-> +			kvmppc_core_queue_program(vcpu, ESR_PPR);
-> +		}
-> +
-> +		r =3D RESUME_GUEST;
-> +		break;
-> +#else
->  	case BOOKE_INTERRUPT_SYSCALL:
->  		if (!(vcpu->arch.shared->msr & MSR_PR) &&
->  		    (((u32)kvmppc_get_gpr(vcpu, 0)) =3D=3D KVM_SC_MAGIC_R0)) {
-> @@ -519,6 +709,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kv=
-m_vcpu
-> *vcpu,
->  		kvmppc_account_exit(vcpu, SYSCALL_EXITS);
->  		r =3D RESUME_GUEST;
->  		break;
-> +#endif
->=20
->  	case BOOKE_INTERRUPT_DTLB_MISS: {
->  		unsigned long eaddr =3D vcpu->arch.fault_dear;
-> @@ -659,12 +850,15 @@ int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
->  	int r;
->=20
->  	vcpu->arch.pc =3D 0;
-> -	vcpu->arch.shared->msr =3D 0;
-> -	vcpu->arch.shadow_msr =3D MSR_USER | MSR_DE | MSR_IS | MSR_DS;
->  	vcpu->arch.shared->pir =3D vcpu->vcpu_id;
->  	kvmppc_set_gpr(vcpu, 1, (16<<20) - 8); /* -8 for the callee-save LR slo=
-t
+Please see my answer bellow.
+
+Regards,
+Duc Dang.
+
+On Mon, Mar 5, 2012 at 2:41 PM, Stefan Roese <sr@denx.de> wrote:
+
+> On Monday 05 March 2012 05:03:44 Duc Dang wrote:
+> > This patch includes:
+> >
+> >   Configure EMAC PHY clock source (clock from PHY or internal clock).
+> >
+> >   Do not advertise PHY half duplex capability as APM821XX EMAC does not
+> > support half duplex mode.
+> >
+> >   Add changes to support configuring jumbo frame for APM821XX EMAC.
+> >
+> > Signed-off-by: Duc Dang <dhdang@apm.com>
+> > ---
+> > v2:
+> >  Fix coding style problems.
+> >
+> >  drivers/net/ethernet/ibm/emac/core.c |   26 +++++++++++++++++++++++++-
+> >  drivers/net/ethernet/ibm/emac/core.h |   13 +++++++++++--
+> >  drivers/net/ethernet/ibm/emac/emac.h |    5 ++++-
+> >  3 files changed, 40 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/ibm/emac/core.c
+> > b/drivers/net/ethernet/ibm/emac/core.c index 2abce96..ad671c5 100644
+> > --- a/drivers/net/ethernet/ibm/emac/core.c
+> > +++ b/drivers/net/ethernet/ibm/emac/core.c
+> > @@ -434,6 +434,11 @@ static inline u32 emac_iff2rmr(struct net_device
+> > *ndev) else if (!netdev_mc_empty(ndev))
+> >               r |= EMAC_RMR_MAE;
+> >
+> > +     if (emac_has_feature(dev, EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE)) {
+> > +             r &= ~EMAC4_RMR_MJS_MASK;
+> > +             r |= EMAC4_RMR_MJS(ndev->mtu);
+> > +     }
+> > +
+> >       return r;
+> >  }
+> >
+> > @@ -965,6 +970,7 @@ static int emac_resize_rx_ring(struct emac_instance
+> > *dev, int new_mtu) int rx_sync_size = emac_rx_sync_size(new_mtu);
+> >       int rx_skb_size = emac_rx_skb_size(new_mtu);
+> >       int i, ret = 0;
+> > +     int mr1_jumbo_bit_change = 0;
+> >
+> >       mutex_lock(&dev->link_lock);
+> >       emac_netif_stop(dev);
+> > @@ -1013,7 +1019,14 @@ static int emac_resize_rx_ring(struct
+> emac_instance
+> > *dev, int new_mtu) }
+> >   skip:
+> >       /* Check if we need to change "Jumbo" bit in MR1 */
+> > -     if ((new_mtu > ETH_DATA_LEN) ^ (dev->ndev->mtu > ETH_DATA_LEN)) {
+> > +     if (emac_has_feature(dev, EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE))
+> > +             mr1_jumbo_bit_change = (new_mtu > ETH_DATA_LEN) ||
+> > +                             (dev->ndev->mtu > ETH_DATA_LEN);
+> > +     else
+> > +             mr1_jumbo_bit_change = (new_mtu > ETH_DATA_LEN) ^
+> > +                             (dev->ndev->mtu > ETH_DATA_LEN);
+> > +
+> > +     if (mr1_jumbo_bit_change) {
+> >               /* This is to prevent starting RX channel in
+> emac_rx_enable()
 > */
-> +	kvmppc_set_msr(vcpu, 0);
->=20
-> +#ifndef CONFIG_KVM_BOOKE_HV
-> +	vcpu->arch.shadow_msr =3D MSR_USER | MSR_DE | MSR_IS | MSR_DS;
->  	vcpu->arch.shadow_pid =3D 1;
-> +	vcpu->arch.shared->msr =3D 0;
-> +#endif
->=20
->  	/* Eye-catching numbers so we know if the guest takes an interrupt
->  	 * before it's programmed its own IVPR/IVORs. */
-> @@ -745,8 +939,8 @@ static void get_sregs_base(struct kvm_vcpu *vcpu,
->  	sregs->u.e.csrr0 =3D vcpu->arch.csrr0;
->  	sregs->u.e.csrr1 =3D vcpu->arch.csrr1;
->  	sregs->u.e.mcsr =3D vcpu->arch.mcsr;
-> -	sregs->u.e.esr =3D vcpu->arch.shared->esr;
-> -	sregs->u.e.dear =3D vcpu->arch.shared->dar;
-> +	sregs->u.e.esr =3D get_guest_esr(vcpu);
-> +	sregs->u.e.dear =3D get_guest_dear(vcpu);
->  	sregs->u.e.tsr =3D vcpu->arch.tsr;
->  	sregs->u.e.tcr =3D vcpu->arch.tcr;
->  	sregs->u.e.dec =3D kvmppc_get_dec(vcpu, tb);
-> @@ -763,8 +957,8 @@ static int set_sregs_base(struct kvm_vcpu *vcpu,
->  	vcpu->arch.csrr0 =3D sregs->u.e.csrr0;
->  	vcpu->arch.csrr1 =3D sregs->u.e.csrr1;
->  	vcpu->arch.mcsr =3D sregs->u.e.mcsr;
-> -	vcpu->arch.shared->esr =3D sregs->u.e.esr;
-> -	vcpu->arch.shared->dar =3D sregs->u.e.dear;
-> +	set_guest_esr(vcpu, sregs->u.e.esr);
-> +	set_guest_dear(vcpu, sregs->u.e.dear);
->  	vcpu->arch.vrsave =3D sregs->u.e.vrsave;
->  	kvmppc_set_tcr(vcpu, sregs->u.e.tcr);
->=20
-> @@ -961,14 +1155,17 @@ void kvmppc_decrementer_func(unsigned long data)
->=20
->  void kvmppc_booke_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
->  {
-> +	current->thread.kvm_vcpu =3D vcpu;
->  }
->=20
->  void kvmppc_booke_vcpu_put(struct kvm_vcpu *vcpu)
->  {
-> +	current->thread.kvm_vcpu =3D NULL;
->  }
->=20
->  int __init kvmppc_booke_init(void)
->  {
-> +#ifndef CONFIG_KVM_BOOKE_HV
->  	unsigned long ivor[16];
->  	unsigned long max_ivor =3D 0;
->  	int i;
-> @@ -1011,7 +1208,7 @@ int __init kvmppc_booke_init(void)
->  	}
->  	flush_icache_range(kvmppc_booke_handlers,
->  	                   kvmppc_booke_handlers + max_ivor + kvmppc_handler_le=
-n);
-> -
-> +#endif /* !BOOKE_HV */
->  	return 0;
->  }
->=20
-> diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
-> index 05d1d99..d53bcf2 100644
-> --- a/arch/powerpc/kvm/booke.h
-> +++ b/arch/powerpc/kvm/booke.h
-> @@ -48,7 +48,20 @@
->  #define BOOKE_IRQPRIO_PERFORMANCE_MONITOR 19
->  /* Internal pseudo-irqprio for level triggered externals */
->  #define BOOKE_IRQPRIO_EXTERNAL_LEVEL 20
-> -#define BOOKE_IRQPRIO_MAX 20
-> +#define BOOKE_IRQPRIO_DBELL 21
-> +#define BOOKE_IRQPRIO_DBELL_CRIT 22
-> +#define BOOKE_IRQPRIO_MAX 23
-> +
-> +#define BOOKE_IRQMASK_EE ((1 << BOOKE_IRQPRIO_EXTERNAL_LEVEL) | \
-> +			  (1 << BOOKE_IRQPRIO_PERFORMANCE_MONITOR) | \
-> +			  (1 << BOOKE_IRQPRIO_DBELL) | \
-> +			  (1 << BOOKE_IRQPRIO_DECREMENTER) | \
-> +			  (1 << BOOKE_IRQPRIO_FIT) | \
-> +			  (1 << BOOKE_IRQPRIO_EXTERNAL))
-> +
-> +#define BOOKE_IRQMASK_CE ((1 << BOOKE_IRQPRIO_DBELL_CRIT) | \
-> +			  (1 << BOOKE_IRQPRIO_WATCHDOG) | \
-> +			  (1 << BOOKE_IRQPRIO_CRITICAL))
->=20
->  extern unsigned long kvmppc_booke_handlers;
->=20
-> @@ -74,4 +87,13 @@ void kvmppc_vcpu_disable_spe(struct kvm_vcpu *vcpu);
->  void kvmppc_booke_vcpu_load(struct kvm_vcpu *vcpu, int cpu);
->  void kvmppc_booke_vcpu_put(struct kvm_vcpu *vcpu);
->=20
-> +enum int_class {
-> +	INT_CLASS_NONCRIT,
-> +	INT_CLASS_CRIT,
-> +	INT_CLASS_MC,
-> +	INT_CLASS_DBG,
-> +};
-> +
-> +void kvmppc_set_pending_interrupt(struct kvm_vcpu *vcpu, enum int_class =
-type);
-> +
->  #endif /* __KVM_BOOKE_H__ */
-> diff --git a/arch/powerpc/kvm/booke_emulate.c b/arch/powerpc/kvm/booke_em=
-ulate.c
-> index 3e652da..904412b 100644
-> --- a/arch/powerpc/kvm/booke_emulate.c
-> +++ b/arch/powerpc/kvm/booke_emulate.c
-> @@ -99,6 +99,12 @@ int kvmppc_booke_emulate_op(struct kvm_run *run, struc=
-t
-> kvm_vcpu *vcpu,
->  	return emulated;
->  }
->=20
-> +/*
-> + * NOTE: some of these registers are not emulated on BOOKE_HV (GS-mode).
-> + * Their backing store is in real registers, and these functions
-> + * will return the wrong result if called for them in another context
-> + * (such as debugging).
-> + */
->  int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
->  {
->  	int emulated =3D EMULATE_DONE;
-> @@ -122,9 +128,11 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu=
-, int
-> sprn, int rs)
->  		kvmppc_set_tcr(vcpu, spr_val);
->  		break;
->=20
-> -	/* Note: SPRG4-7 are user-readable. These values are
-> -	 * loaded into the real SPRGs when resuming the
-> -	 * guest. */
-> +	/*
-> +	 * Note: SPRG4-7 are user-readable.
-> +	 * These values are loaded into the real SPRGs when resuming the
-> +	 * guest (PR-mode only).
-> +	 */
->  	case SPRN_SPRG4:
->  		vcpu->arch.shared->sprg4 =3D spr_val; break;
->  	case SPRN_SPRG5:
-> @@ -136,6 +144,9 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu,=
- int
-> sprn, int rs)
->=20
->  	case SPRN_IVPR:
->  		vcpu->arch.ivpr =3D spr_val;
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +		mtspr(SPRN_GIVPR, spr_val);
-> +#endif
->  		break;
->  	case SPRN_IVOR0:
->  		vcpu->arch.ivor[BOOKE_IRQPRIO_CRITICAL] =3D spr_val;
-> @@ -145,6 +156,9 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu,=
- int
-> sprn, int rs)
->  		break;
->  	case SPRN_IVOR2:
->  		vcpu->arch.ivor[BOOKE_IRQPRIO_DATA_STORAGE] =3D spr_val;
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +		mtspr(SPRN_GIVOR2, spr_val);
-> +#endif
->  		break;
->  	case SPRN_IVOR3:
->  		vcpu->arch.ivor[BOOKE_IRQPRIO_INST_STORAGE] =3D spr_val;
-> @@ -163,6 +177,9 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu,=
- int
-> sprn, int rs)
->  		break;
->  	case SPRN_IVOR8:
->  		vcpu->arch.ivor[BOOKE_IRQPRIO_SYSCALL] =3D spr_val;
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +		mtspr(SPRN_GIVOR8, spr_val);
-> +#endif
->  		break;
->  	case SPRN_IVOR9:
->  		vcpu->arch.ivor[BOOKE_IRQPRIO_AP_UNAVAIL] =3D spr_val;
-> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S
-> b/arch/powerpc/kvm/bookehv_interrupts.S
-> new file mode 100644
-> index 0000000..9eaeebd
-> --- /dev/null
-> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
-> @@ -0,0 +1,587 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License, version 2, as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, =
-USA.
-> + *
-> + * Copyright (C) 2010-2011 Freescale Semiconductor, Inc.
-> + *
-> + * Author: Varun Sethi <varun.sethi@freescale.com>
-> + * Author: Scott Wood <scotwood@freescale.com>
-> + *
-> + * This file is derived from arch/powerpc/kvm/booke_interrupts.S
-> + */
-> +
-> +#include <asm/ppc_asm.h>
-> +#include <asm/kvm_asm.h>
-> +#include <asm/reg.h>
-> +#include <asm/mmu-44x.h>
-> +#include <asm/page.h>
-> +#include <asm/asm-compat.h>
-> +#include <asm/asm-offsets.h>
-> +#include <asm/bitsperlong.h>
-> +
-> +#include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
-> +
-> +#define GET_VCPU(vcpu, thread)	\
-> +	PPC_LL	vcpu, THREAD_KVM_VCPU(thread)
-> +
-> +#define SET_VCPU(vcpu)		\
-> +        PPC_STL	vcpu, (THREAD + THREAD_KVM_VCPU)(r2)
-> +
-> +#define LONGBYTES		(BITS_PER_LONG / 8)
-> +
-> +#define VCPU_GPR(n)     	(VCPU_GPRS + (n * LONGBYTES))
-> +#define VCPU_GUEST_SPRG(n)	(VCPU_GUEST_SPRGS + (n * LONGBYTES))
-> +
-> +/* The host stack layout: */
-> +#define HOST_R1         (0 * LONGBYTES) /* Implied by stwu. */
-> +#define HOST_CALLEE_LR  (1 * LONGBYTES)
-> +#define HOST_RUN        (2 * LONGBYTES) /* struct kvm_run */
-> +/*
-> + * r2 is special: it holds 'current', and it made nonvolatile in the
-> + * kernel with the -ffixed-r2 gcc option.
-> + */
-> +#define HOST_R2         (3 * LONGBYTES)
-> +#define HOST_NV_GPRS    (4 * LONGBYTES)
-> +#define HOST_NV_GPR(n)  (HOST_NV_GPRS + ((n - 14) * LONGBYTES))
-> +#define HOST_MIN_STACK_SIZE (HOST_NV_GPR(31) + LONGBYTES)
-> +#define HOST_STACK_SIZE ((HOST_MIN_STACK_SIZE + 15) & ~15) /* Align. */
-> +#define HOST_STACK_LR   (HOST_STACK_SIZE + LONGBYTES) /* In caller stack=
- frame.
-> */
-> +
-> +#define NEED_EMU		0x00000001 /* emulation -- save nv regs */
-> +#define NEED_DEAR		0x00000002 /* save faulting DEAR */
-> +#define NEED_ESR		0x00000004 /* save faulting ESR */
-> +
-> +/*
-> + * On entry:
-> + * r4 =3D vcpu, r5 =3D srr0, r6 =3D srr1
-> + * saved in vcpu: cr, ctr, r3-r13
-> + */
-> +.macro kvm_handler_common intno, srr0, flags
-> +	mfspr	r10, SPRN_PID
-> +	lwz	r8, VCPU_HOST_PID(r4)
-> +	PPC_LL	r11, VCPU_SHARED(r4)
-> +	PPC_STL	r14, VCPU_GPR(r14)(r4) /* We need a non-volatile GPR. */
-> +	li	r14, \intno
-> +
-> +	stw	r10, VCPU_GUEST_PID(r4)
-> +	mtspr	SPRN_PID, r8
-> +
-> +	.if	\flags & NEED_EMU
-> +	lwz	r9, VCPU_KVM(r4)
-> +	.endif
-> +
-> +#ifdef CONFIG_KVM_EXIT_TIMING
-> +	/* save exit time */
-> +1:	mfspr	r7, SPRN_TBRU
-> +	mfspr	r8, SPRN_TBRL
-> +	mfspr	r9, SPRN_TBRU
-> +	cmpw	r9, r7
-> +	PPC_STL	r8, VCPU_TIMING_EXIT_TBL(r4)
-> +	bne-	1b
-> +	PPC_STL	r9, VCPU_TIMING_EXIT_TBU(r4)
-> +#endif
-> +
-> +	oris	r8, r6, MSR_CE@h
-> +#ifndef CONFIG_64BIT
-> +	stw	r6, (VCPU_SHARED_MSR + 4)(r11)
-> +#else
-> +	std	r6, (VCPU_SHARED_MSR)(r11)
-> +#endif
-> +	ori	r8, r8, MSR_ME | MSR_RI
-> +	PPC_STL	r5, VCPU_PC(r4)
-> +
-> +	/*
-> +	 * Make sure CE/ME/RI are set (if appropriate for exception type)
-> +	 * whether or not the guest had it set.  Since mfmsr/mtmsr are
-> +	 * somewhat expensive, skip in the common case where the guest
-> +	 * had all these bits set (and thus they're still set if
-> +	 * appropriate for the exception type).
-> +	 */
-> +	cmpw	r6, r8
-> +	.if	\flags & NEED_EMU
-> +	lwz	r9, KVM_LPID(r9)
-> +	.endif
-> +	beq	1f
-> +	mfmsr	r7
-> +	.if	\srr0 !=3D SPRN_MCSRR0 && \srr0 !=3D SPRN_CSRR0
-> +	oris	r7, r7, MSR_CE@h
-> +	.endif
-> +	.if	\srr0 !=3D SPRN_MCSRR0
-> +	ori	r7, r7, MSR_ME | MSR_RI
-> +	.endif
-> +	mtmsr	r7
-> +1:
-> +
-> +	.if	\flags & NEED_EMU
-> +	/*
-> +	 * This assumes you have external PID support.
-> +	 * To support a bookehv CPU without external PID, you'll
-> +	 * need to look up the TLB entry and create a temporary mapping.
-> +	 *
-> +	 * FIXME: we don't currently handle if the lwepx faults.  PR-mode
-> +	 * booke doesn't handle it either.  Since Linux doesn't use
-> +	 * broadcast tlbivax anymore, the only way this should happen is
-> +	 * if the guest maps its memory execute-but-not-read, or if we
-> +	 * somehow take a TLB miss in the middle of this entry code and
-> +	 * evict the relevant entry.  On e500mc, all kernel lowmem is
-> +	 * bolted into TLB1 large page mappings, and we don't use
-> +	 * broadcast invalidates, so we should not take a TLB miss here.
-> +	 *
-> +	 * Later we'll need to deal with faults here.  Disallowing guest
-> +	 * mappings that are execute-but-not-read could be an option on
-> +	 * e500mc, but not on chips with an LRAT if it is used.
-> +	 */
-> +
-> +	mfspr	r3, SPRN_EPLC	/* will already have correct ELPID and EGS */
-> +	PPC_STL	r15, VCPU_GPR(r15)(r4)
-> +	PPC_STL	r16, VCPU_GPR(r16)(r4)
-> +	PPC_STL	r17, VCPU_GPR(r17)(r4)
-> +	PPC_STL	r18, VCPU_GPR(r18)(r4)
-> +	PPC_STL	r19, VCPU_GPR(r19)(r4)
-> +	mr	r8, r3
-> +	PPC_STL	r20, VCPU_GPR(r20)(r4)
-> +	rlwimi	r8, r6, EPC_EAS_SHIFT - MSR_IR_LG, EPC_EAS
-> +	PPC_STL	r21, VCPU_GPR(r21)(r4)
-> +	rlwimi	r8, r6, EPC_EPR_SHIFT - MSR_PR_LG, EPC_EPR
-> +	PPC_STL	r22, VCPU_GPR(r22)(r4)
-> +	rlwimi	r8, r10, EPC_EPID_SHIFT, EPC_EPID
-> +	PPC_STL	r23, VCPU_GPR(r23)(r4)
-> +	PPC_STL	r24, VCPU_GPR(r24)(r4)
-> +	PPC_STL	r25, VCPU_GPR(r25)(r4)
-> +	PPC_STL	r26, VCPU_GPR(r26)(r4)
-> +	PPC_STL	r27, VCPU_GPR(r27)(r4)
-> +	PPC_STL	r28, VCPU_GPR(r28)(r4)
-> +	PPC_STL	r29, VCPU_GPR(r29)(r4)
-> +	PPC_STL	r30, VCPU_GPR(r30)(r4)
-> +	PPC_STL	r31, VCPU_GPR(r31)(r4)
-> +	mtspr	SPRN_EPLC, r8
-> +	isync
-> +	lwepx	r9, 0, r5
-> +	mtspr	SPRN_EPLC, r3
-> +	stw	r9, VCPU_LAST_INST(r4)
-> +	.endif
-> +
-> +	.if	\flags & NEED_ESR
-> +	mfspr	r8, SPRN_ESR
-> +	PPC_STL	r8, VCPU_FAULT_ESR(r4)
-> +	.endif
-> +
-> +	.if	\flags & NEED_DEAR
-> +	mfspr	r9, SPRN_DEAR
-> +	PPC_STL	r9, VCPU_FAULT_DEAR(r4)
-> +	.endif
-> +
-> +	b	kvmppc_resume_host
-> +.endm
-> +
-> +/*
-> + * For input register values, see arch/powerpc/include/asm/kvm_booke_hv_=
-asm.h
-> + */
-> +.macro kvm_handler intno srr0, srr1, flags
-> +_GLOBAL(kvmppc_handler_\intno\()_\srr1)
-> +	GET_VCPU(r11, r10)
-> +	PPC_STL r3, VCPU_GPR(r3)(r11)
-> +	mfspr	r3, SPRN_SPRG_RSCRATCH0
-> +	PPC_STL	r4, VCPU_GPR(r4)(r11)
-> +	PPC_LL	r4, THREAD_NORMSAVE(0)(r10)
-> +	PPC_STL	r5, VCPU_GPR(r5)(r11)
-> +	PPC_STL	r13, VCPU_CR(r11)
-> +	mfspr	r5, \srr0
-> +	PPC_STL	r3, VCPU_GPR(r10)(r11)
-> +	PPC_LL	r3, THREAD_NORMSAVE(2)(r10)
-> +	PPC_STL	r6, VCPU_GPR(r6)(r11)
-> +	PPC_STL	r4, VCPU_GPR(r11)(r11)
-> +	mfspr	r6, \srr1
-> +	PPC_STL	r7, VCPU_GPR(r7)(r11)
-> +	PPC_STL	r8, VCPU_GPR(r8)(r11)
-> +	PPC_STL	r9, VCPU_GPR(r9)(r11)
-> +	PPC_STL r3, VCPU_GPR(r13)(r11)
-> +	mfctr	r7
-> +	PPC_STL	r12, VCPU_GPR(r12)(r11)
-> +	PPC_STL	r7, VCPU_CTR(r11)
-> +	mr	r4, r11
-> +	kvm_handler_common \intno, \srr0, \flags
-> +.endm
-> +
-> +.macro kvm_lvl_handler intno scratch srr0, srr1, flags
-> +_GLOBAL(kvmppc_handler_\intno\()_\srr1)
-> +	mfspr	r10, SPRN_SPRG_THREAD
-> +	GET_VCPU(r11, r10)
-> +	PPC_STL r3, VCPU_GPR(r3)(r11)
-> +	mfspr	r3, \scratch
-> +	PPC_STL	r4, VCPU_GPR(r4)(r11)
-> +	PPC_LL	r4, GPR9(r8)
-> +	PPC_STL	r5, VCPU_GPR(r5)(r11)
-> +	PPC_STL	r9, VCPU_CR(r11)
-> +	mfspr	r5, \srr0
-> +	PPC_STL	r3, VCPU_GPR(r8)(r11)
-> +	PPC_LL	r3, GPR10(r8)
-> +	PPC_STL	r6, VCPU_GPR(r6)(r11)
-> +	PPC_STL	r4, VCPU_GPR(r9)(r11)
-> +	mfspr	r6, \srr1
-> +	PPC_LL	r4, GPR11(r8)
-> +	PPC_STL	r7, VCPU_GPR(r7)(r11)
-> +	PPC_STL	r8, VCPU_GPR(r8)(r11)
-> +	PPC_STL r3, VCPU_GPR(r10)(r11)
-> +	mfctr	r7
-> +	PPC_STL	r12, VCPU_GPR(r12)(r11)
-> +	PPC_STL	r4, VCPU_GPR(r11)(r11)
-> +	PPC_STL	r7, VCPU_CTR(r11)
-> +	mr	r4, r11
-> +	kvm_handler_common \intno, \srr0, \flags
-> +.endm
-> +
-> +kvm_lvl_handler BOOKE_INTERRUPT_CRITICAL, \
-> +	SPRN_SPRG_RSCRATCH_CRIT, SPRN_CSRR0, SPRN_CSRR1, 0
-> +kvm_lvl_handler BOOKE_INTERRUPT_MACHINE_CHECK, \
-> +	SPRN_SPRG_RSCRATCH_MC, SPRN_MCSRR0, SPRN_MCSRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_DATA_STORAGE, \
-> +	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR)
-> +kvm_handler BOOKE_INTERRUPT_INST_STORAGE, SPRN_SRR0, SPRN_SRR1, NEED_ESR
-> +kvm_handler BOOKE_INTERRUPT_EXTERNAL, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_ALIGNMENT, \
-> +	SPRN_SRR0, SPRN_SRR1, (NEED_DEAR | NEED_ESR)
-> +kvm_handler BOOKE_INTERRUPT_PROGRAM, SPRN_SRR0, SPRN_SRR1, NEED_ESR
-> +kvm_handler BOOKE_INTERRUPT_FP_UNAVAIL, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_SYSCALL, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_AP_UNAVAIL, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_DECREMENTER, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_FIT, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_lvl_handler BOOKE_INTERRUPT_WATCHDOG, \
-> +	SPRN_SPRG_RSCRATCH_CRIT, SPRN_CSRR0, SPRN_CSRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_DTLB_MISS, \
-> +	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR | NEED_ESR)
-> +kvm_handler BOOKE_INTERRUPT_ITLB_MISS, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_SPE_UNAVAIL, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_SPE_FP_DATA, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_SPE_FP_ROUND, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_PERFORMANCE_MONITOR, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_DOORBELL, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_lvl_handler BOOKE_INTERRUPT_DOORBELL_CRITICAL, \
-> +	SPRN_SPRG_RSCRATCH_CRIT, SPRN_CSRR0, SPRN_CSRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_HV_PRIV, SPRN_SRR0, SPRN_SRR1, NEED_EMU
-> +kvm_handler BOOKE_INTERRUPT_HV_SYSCALL, SPRN_SRR0, SPRN_SRR1, 0
-> +kvm_handler BOOKE_INTERRUPT_GUEST_DBELL, SPRN_GSRR0, SPRN_GSRR1, 0
-> +kvm_lvl_handler BOOKE_INTERRUPT_GUEST_DBELL_CRIT, \
-> +	SPRN_SPRG_RSCRATCH_CRIT, SPRN_CSRR0, SPRN_CSRR1, 0
-> +kvm_lvl_handler BOOKE_INTERRUPT_DEBUG, \
-> +	SPRN_SPRG_RSCRATCH_CRIT, SPRN_CSRR0, SPRN_CSRR1, 0
-> +kvm_lvl_handler BOOKE_INTERRUPT_DEBUG, \
-> +	SPRN_SPRG_RSCRATCH_DBG, SPRN_DSRR0, SPRN_DSRR1, 0
-> +
-> +
-> +/* Registers:
-> + *  SPRG_SCRATCH0: guest r10
-> + *  r4: vcpu pointer
-> + *  r11: vcpu->arch.shared
-> + *  r14: KVM exit number
-> + */
-> +_GLOBAL(kvmppc_resume_host)
-> +	/* Save remaining volatile guest register state to vcpu. */
-> +	mfspr	r3, SPRN_VRSAVE
-> +	PPC_STL	r0, VCPU_GPR(r0)(r4)
-> +	PPC_STL	r1, VCPU_GPR(r1)(r4)
-> +	mflr	r5
-> +	mfspr	r6, SPRN_SPRG4
-> +	PPC_STL	r2, VCPU_GPR(r2)(r4)
-> +	PPC_STL	r5, VCPU_LR(r4)
-> +	mfspr	r7, SPRN_SPRG5
-> +	PPC_STL	r3, VCPU_VRSAVE(r4)
-> +	PPC_STL	r6, VCPU_SHARED_SPRG4(r11)
-> +	mfspr	r8, SPRN_SPRG6
-> +	PPC_STL	r7, VCPU_SHARED_SPRG5(r11)
-> +	mfspr	r9, SPRN_SPRG7
-> +	PPC_STL	r8, VCPU_SHARED_SPRG6(r11)
-> +	mfxer	r3
-> +	PPC_STL	r9, VCPU_SHARED_SPRG7(r11)
-> +
-> +	/* save guest MAS registers and restore host mas4 & mas6 */
-> +	mfspr	r5, SPRN_MAS0
-> +	PPC_STL	r3, VCPU_XER(r4)
-> +	mfspr	r6, SPRN_MAS1
-> +	stw	r5, VCPU_SHARED_MAS0(r11)
-> +	mfspr	r7, SPRN_MAS2
-> +	stw	r6, VCPU_SHARED_MAS1(r11)
-> +#ifndef CONFIG_64BIT
-> +	stw	r7, (VCPU_SHARED_MAS2 + 4)(r11)
-> +#else
-> +	std	r7, (VCPU_SHARED_MAS2)(r11)
-> +#endif
-> +	mfspr	r5, SPRN_MAS3
-> +	mfspr	r6, SPRN_MAS4
-> +	stw	r5, VCPU_SHARED_MAS7_3+4(r11)
-> +	mfspr	r7, SPRN_MAS6
-> +	stw	r6, VCPU_SHARED_MAS4(r11)
-> +	mfspr	r5, SPRN_MAS7
-> +	lwz	r6, VCPU_HOST_MAS4(r4)
-> +	stw	r7, VCPU_SHARED_MAS6(r11)
-> +	lwz	r8, VCPU_HOST_MAS6(r4)
-> +	mtspr	SPRN_MAS4, r6
-> +	stw	r5, VCPU_SHARED_MAS7_3+0(r11)
-> +	mtspr	SPRN_MAS6, r8
-> +	mfspr	r3, SPRN_EPCR
-> +	rlwinm	r3, r3, 0, ~SPRN_EPCR_DMIUH
-> +	mtspr	SPRN_EPCR, r3
-> +	isync
-> +
-> +	/* Restore host stack pointer */
-> +	PPC_LL	r1, VCPU_HOST_STACK(r4)
-> +	PPC_LL	r2, HOST_R2(r1)
-> +
-> +	/* Switch to kernel stack and jump to handler. */
-> +	PPC_LL	r3, HOST_RUN(r1)
-> +	mr	r5, r14 /* intno */
-> +	mr	r14, r4 /* Save vcpu pointer. */
-> +	bl	kvmppc_handle_exit
-> +
-> +	/* Restore vcpu pointer and the nonvolatiles we used. */
-> +	mr	r4, r14
-> +	PPC_LL	r14, VCPU_GPR(r14)(r4)
-> +
-> +	andi.	r5, r3, RESUME_FLAG_NV
-> +	beq	skip_nv_load
-> +	PPC_LL	r15, VCPU_GPR(r15)(r4)
-> +	PPC_LL	r16, VCPU_GPR(r16)(r4)
-> +	PPC_LL	r17, VCPU_GPR(r17)(r4)
-> +	PPC_LL	r18, VCPU_GPR(r18)(r4)
-> +	PPC_LL	r19, VCPU_GPR(r19)(r4)
-> +	PPC_LL	r20, VCPU_GPR(r20)(r4)
-> +	PPC_LL	r21, VCPU_GPR(r21)(r4)
-> +	PPC_LL	r22, VCPU_GPR(r22)(r4)
-> +	PPC_LL	r23, VCPU_GPR(r23)(r4)
-> +	PPC_LL	r24, VCPU_GPR(r24)(r4)
-> +	PPC_LL	r25, VCPU_GPR(r25)(r4)
-> +	PPC_LL	r26, VCPU_GPR(r26)(r4)
-> +	PPC_LL	r27, VCPU_GPR(r27)(r4)
-> +	PPC_LL	r28, VCPU_GPR(r28)(r4)
-> +	PPC_LL	r29, VCPU_GPR(r29)(r4)
-> +	PPC_LL	r30, VCPU_GPR(r30)(r4)
-> +	PPC_LL	r31, VCPU_GPR(r31)(r4)
-> +skip_nv_load:
-> +	/* Should we return to the guest? */
-> +	andi.	r5, r3, RESUME_FLAG_HOST
-> +	beq	lightweight_exit
-> +
-> +	srawi	r3, r3, 2 /* Shift -ERR back down. */
-> +
-> +heavyweight_exit:
-> +	/* Not returning to guest. */
-> +	PPC_LL	r5, HOST_STACK_LR(r1)
-> +
-> +	/*
-> +	 * We already saved guest volatile register state; now save the
-> +	 * non-volatiles.
-> +	 */
-> +
-> +	PPC_STL	r15, VCPU_GPR(r15)(r4)
-> +	PPC_STL	r16, VCPU_GPR(r16)(r4)
-> +	PPC_STL	r17, VCPU_GPR(r17)(r4)
-> +	PPC_STL	r18, VCPU_GPR(r18)(r4)
-> +	PPC_STL	r19, VCPU_GPR(r19)(r4)
-> +	PPC_STL	r20, VCPU_GPR(r20)(r4)
-> +	PPC_STL	r21, VCPU_GPR(r21)(r4)
-> +	PPC_STL	r22, VCPU_GPR(r22)(r4)
-> +	PPC_STL	r23, VCPU_GPR(r23)(r4)
-> +	PPC_STL	r24, VCPU_GPR(r24)(r4)
-> +	PPC_STL	r25, VCPU_GPR(r25)(r4)
-> +	PPC_STL	r26, VCPU_GPR(r26)(r4)
-> +	PPC_STL	r27, VCPU_GPR(r27)(r4)
-> +	PPC_STL	r28, VCPU_GPR(r28)(r4)
-> +	PPC_STL	r29, VCPU_GPR(r29)(r4)
-> +	PPC_STL	r30, VCPU_GPR(r30)(r4)
-> +	PPC_STL	r31, VCPU_GPR(r31)(r4)
-> +
-> +	/* Load host non-volatile register state from host stack. */
-> +	PPC_LL	r14, HOST_NV_GPR(r14)(r1)
-> +	PPC_LL	r15, HOST_NV_GPR(r15)(r1)
-> +	PPC_LL	r16, HOST_NV_GPR(r16)(r1)
-> +	PPC_LL	r17, HOST_NV_GPR(r17)(r1)
-> +	PPC_LL	r18, HOST_NV_GPR(r18)(r1)
-> +	PPC_LL	r19, HOST_NV_GPR(r19)(r1)
-> +	PPC_LL	r20, HOST_NV_GPR(r20)(r1)
-> +	PPC_LL	r21, HOST_NV_GPR(r21)(r1)
-> +	PPC_LL	r22, HOST_NV_GPR(r22)(r1)
-> +	PPC_LL	r23, HOST_NV_GPR(r23)(r1)
-> +	PPC_LL	r24, HOST_NV_GPR(r24)(r1)
-> +	PPC_LL	r25, HOST_NV_GPR(r25)(r1)
-> +	PPC_LL	r26, HOST_NV_GPR(r26)(r1)
-> +	PPC_LL	r27, HOST_NV_GPR(r27)(r1)
-> +	PPC_LL	r28, HOST_NV_GPR(r28)(r1)
-> +	PPC_LL	r29, HOST_NV_GPR(r29)(r1)
-> +	PPC_LL	r30, HOST_NV_GPR(r30)(r1)
-> +	PPC_LL	r31, HOST_NV_GPR(r31)(r1)
-> +
-> +	/* Return to kvm_vcpu_run(). */
-> +	mtlr	r5
-> +	addi	r1, r1, HOST_STACK_SIZE
-> +	/* r3 still contains the return code from kvmppc_handle_exit(). */
-> +	blr
-> +
-> +/* Registers:
-> + *  r3: kvm_run pointer
-> + *  r4: vcpu pointer
-> + */
-> +_GLOBAL(__kvmppc_vcpu_run)
-> +	stwu	r1, -HOST_STACK_SIZE(r1)
-> +	PPC_STL	r1, VCPU_HOST_STACK(r4)	/* Save stack pointer to vcpu. */
-> +
-> +	/* Save host state to stack. */
-> +	PPC_STL	r3, HOST_RUN(r1)
-> +	mflr	r3
-> +	PPC_STL	r3, HOST_STACK_LR(r1)
-> +
-> +	/* Save host non-volatile register state to stack. */
-> +	PPC_STL	r14, HOST_NV_GPR(r14)(r1)
-> +	PPC_STL	r15, HOST_NV_GPR(r15)(r1)
-> +	PPC_STL	r16, HOST_NV_GPR(r16)(r1)
-> +	PPC_STL	r17, HOST_NV_GPR(r17)(r1)
-> +	PPC_STL	r18, HOST_NV_GPR(r18)(r1)
-> +	PPC_STL	r19, HOST_NV_GPR(r19)(r1)
-> +	PPC_STL	r20, HOST_NV_GPR(r20)(r1)
-> +	PPC_STL	r21, HOST_NV_GPR(r21)(r1)
-> +	PPC_STL	r22, HOST_NV_GPR(r22)(r1)
-> +	PPC_STL	r23, HOST_NV_GPR(r23)(r1)
-> +	PPC_STL	r24, HOST_NV_GPR(r24)(r1)
-> +	PPC_STL	r25, HOST_NV_GPR(r25)(r1)
-> +	PPC_STL	r26, HOST_NV_GPR(r26)(r1)
-> +	PPC_STL	r27, HOST_NV_GPR(r27)(r1)
-> +	PPC_STL	r28, HOST_NV_GPR(r28)(r1)
-> +	PPC_STL	r29, HOST_NV_GPR(r29)(r1)
-> +	PPC_STL	r30, HOST_NV_GPR(r30)(r1)
-> +	PPC_STL	r31, HOST_NV_GPR(r31)(r1)
-> +
-> +	/* Load guest non-volatiles. */
-> +	PPC_LL	r14, VCPU_GPR(r14)(r4)
-> +	PPC_LL	r15, VCPU_GPR(r15)(r4)
-> +	PPC_LL	r16, VCPU_GPR(r16)(r4)
-> +	PPC_LL	r17, VCPU_GPR(r17)(r4)
-> +	PPC_LL	r18, VCPU_GPR(r18)(r4)
-> +	PPC_LL	r19, VCPU_GPR(r19)(r4)
-> +	PPC_LL	r20, VCPU_GPR(r20)(r4)
-> +	PPC_LL	r21, VCPU_GPR(r21)(r4)
-> +	PPC_LL	r22, VCPU_GPR(r22)(r4)
-> +	PPC_LL	r23, VCPU_GPR(r23)(r4)
-> +	PPC_LL	r24, VCPU_GPR(r24)(r4)
-> +	PPC_LL	r25, VCPU_GPR(r25)(r4)
-> +	PPC_LL	r26, VCPU_GPR(r26)(r4)
-> +	PPC_LL	r27, VCPU_GPR(r27)(r4)
-> +	PPC_LL	r28, VCPU_GPR(r28)(r4)
-> +	PPC_LL	r29, VCPU_GPR(r29)(r4)
-> +	PPC_LL	r30, VCPU_GPR(r30)(r4)
-> +	PPC_LL	r31, VCPU_GPR(r31)(r4)
-> +
-> +
-> +lightweight_exit:
-> +	PPC_STL	r2, HOST_R2(r1)
-> +
-> +	mfspr	r3, SPRN_PID
-> +	stw	r3, VCPU_HOST_PID(r4)
-> +	lwz	r3, VCPU_GUEST_PID(r4)
-> +	mtspr	SPRN_PID, r3
-> +
-> +	/* Save vcpu pointer for the exception handlers
-> +	 * must be done before loading guest r2.
-> +	 */
-> +//	SET_VCPU(r4)
-> +
-> +	PPC_LL	r11, VCPU_SHARED(r4)
-> +	/* Save host mas4 and mas6 and load guest MAS registers */
-> +	mfspr	r3, SPRN_MAS4
-> +	stw	r3, VCPU_HOST_MAS4(r4)
-> +	mfspr	r3, SPRN_MAS6
-> +	stw	r3, VCPU_HOST_MAS6(r4)
-> +	lwz	r3, VCPU_SHARED_MAS0(r11)
-> +	lwz	r5, VCPU_SHARED_MAS1(r11)
-> +#ifndef CONFIG_64BIT
-> +	lwz	r6, (VCPU_SHARED_MAS2 + 4)(r11)
-> +#else
-> +	ld	r6, (VCPU_SHARED_MAS2)(r11)
-> +#endif
-> +	lwz	r7, VCPU_SHARED_MAS7_3+4(r11)
-> +	lwz	r8, VCPU_SHARED_MAS4(r11)
-> +	mtspr	SPRN_MAS0, r3
-> +	mtspr	SPRN_MAS1, r5
-> +	mtspr	SPRN_MAS2, r6
-> +	mtspr	SPRN_MAS3, r7
-> +	mtspr	SPRN_MAS4, r8
-> +	lwz	r3, VCPU_SHARED_MAS6(r11)
-> +	lwz	r5, VCPU_SHARED_MAS7_3+0(r11)
-> +	mtspr	SPRN_MAS6, r3
-> +	mtspr	SPRN_MAS7, r5
-> +	/* Disable MAS register updates via exception */
-> +	mfspr	r3, SPRN_EPCR
-> +	oris	r3, r3, SPRN_EPCR_DMIUH@h
-> +	mtspr	SPRN_EPCR, r3
-> +
-> +	/*
-> +	 * Host interrupt handlers may have clobbered these guest-readable
-> +	 * SPRGs, so we need to reload them here with the guest's values.
-> +	 */
-> +	lwz	r3, VCPU_VRSAVE(r4)
-> +	lwz	r5, VCPU_SHARED_SPRG4(r11)
-> +	mtspr	SPRN_VRSAVE, r3
-> +	lwz	r6, VCPU_SHARED_SPRG5(r11)
-> +	mtspr	SPRN_SPRG4W, r5
-> +	lwz	r7, VCPU_SHARED_SPRG6(r11)
-> +	mtspr	SPRN_SPRG5W, r6
-> +	lwz	r8, VCPU_SHARED_SPRG7(r11)
-> +	mtspr	SPRN_SPRG6W, r7
-> +	mtspr	SPRN_SPRG7W, r8
-> +
-> +	/* Load some guest volatiles. */
-> +	PPC_LL	r3, VCPU_LR(r4)
-> +	PPC_LL	r5, VCPU_XER(r4)
-> +	PPC_LL	r6, VCPU_CTR(r4)
-> +	PPC_LL	r7, VCPU_CR(r4)
-> +	PPC_LL	r8, VCPU_PC(r4)
-> +#ifndef CONFIG_64BIT
-> +	lwz	r9, (VCPU_SHARED_MSR + 4)(r11)
-> +#else
-> +	ld	r9, (VCPU_SHARED_MSR)(r11)
-> +#endif
-> +	PPC_LL	r0, VCPU_GPR(r0)(r4)
-> +	PPC_LL	r1, VCPU_GPR(r1)(r4)
-> +	PPC_LL	r2, VCPU_GPR(r2)(r4)
-> +	PPC_LL	r10, VCPU_GPR(r10)(r4)
-> +	PPC_LL	r11, VCPU_GPR(r11)(r4)
-> +	PPC_LL	r12, VCPU_GPR(r12)(r4)
-> +	PPC_LL	r13, VCPU_GPR(r13)(r4)
-> +	mtlr	r3
-> +	mtxer	r5
-> +	mtctr	r6
-> +	mtcr	r7
-> +	mtsrr0	r8
-> +	mtsrr1	r9
-> +
-> +#ifdef CONFIG_KVM_EXIT_TIMING
-> +	/* save enter time */
-> +1:
-> +	mfspr	r6, SPRN_TBRU
-> +	mfspr	r7, SPRN_TBRL
-> +	mfspr	r8, SPRN_TBRU
-> +	cmpw	r8, r6
+> >               set_bit(MAL_COMMAC_RX_STOPPED, &dev->commac.flags);
+> >
+> > @@ -2471,6 +2484,7 @@ static int __devinit emac_init_phy(struct
+> > emac_instance *dev)
+> >
+> >       /* Disable any PHY features not supported by the platform */
+> >       dev->phy.def->features &= ~dev->phy_feat_exc;
+> > +     dev->phy.features &= ~dev->phy_feat_exc;
+> >
+> >       /* Setup initial link parameters */
+> >       if (dev->phy.features & SUPPORTED_Autoneg) {
+> > @@ -2568,6 +2582,10 @@ static int __devinit emac_init_config(struct
+> > emac_instance *dev) if (of_device_is_compatible(np, "ibm,emac-405ex") ||
+> >                   of_device_is_compatible(np, "ibm,emac-405exr"))
+> >                       dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
+> > +             if (of_device_is_compatible(np, "ibm,emac-apm821xx"))
+> > +                     dev->features |=
+> (EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE
+> |
+> > +                                     EMAC_FTR_APM821XX_NO_HALF_DUPLEX |
+> > +                                     EMAC_FTR_460EX_PHY_CLK_FIX);
+>
+> Nitpick: Parentheses for multi line statement please.
+>
+[Duc Dang] I wil add parentheses as you suggested.
 
-Is not we should save guest CR after this otherwise this can corrupt it?
+>       } else if (of_device_is_compatible(np, "ibm,emac4")) {
+> >               dev->features |= EMAC_FTR_EMAC4;
+> >               if (of_device_is_compatible(np, "ibm,emac-440gx"))
+> > @@ -2818,6 +2836,12 @@ static int __devinit emac_probe(struct
+> > platform_device *ofdev) dev->stop_timeout = STOP_TIMEOUT_100;
+> >       INIT_DELAYED_WORK(&dev->link_work, emac_link_timer);
+> >
+> > +     /* Some SoCs like APM821xx does not support Half Duplex mode. */
+> > +     if (emac_has_feature(dev, EMAC_FTR_APM821XX_NO_HALF_DUPLEX))
+> > +             dev->phy_feat_exc = (SUPPORTED_1000baseT_Half |
+> > +                                     SUPPORTED_100baseT_Half |
+> > +                                     SUPPORTED_10baseT_Half);
+> > +
+>
+> Nitpick: Parentheses for multi line statement please.
+>
+> >       /* Find PHY if any */
+> >       err = emac_init_phy(dev);
+> >       if (err != 0)
+> > diff --git a/drivers/net/ethernet/ibm/emac/core.h
+> > b/drivers/net/ethernet/ibm/emac/core.h index fa3ec57..9dea85a 100644
+> > --- a/drivers/net/ethernet/ibm/emac/core.h
+> > +++ b/drivers/net/ethernet/ibm/emac/core.h
+> > @@ -325,7 +325,14 @@ struct emac_instance {
+> >   * Set if we need phy clock workaround for 460ex or 460gt
+> >   */
+> >  #define EMAC_FTR_460EX_PHY_CLK_FIX   0x00000400
+> > -
+> > +/*
+> > + * APM821xx requires Jumbo frame size set explicitly
+> > + */
+> > +#define EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE   0x00000800
+> > +/*
+> > + * APM821xx does not support Half Duplex mode
+> > + */
+> > +#define EMAC_FTR_APM821XX_NO_HALF_DUPLEX     0x00001000
+> >
+> >  /* Right now, we don't quite handle the always/possible masks on the
+> >   * most optimal way as we don't have a way to say something like
+> > @@ -353,7 +360,9 @@ enum {
+> >           EMAC_FTR_NO_FLOW_CONTROL_40x |
+> >  #endif
+> >       EMAC_FTR_460EX_PHY_CLK_FIX |
+> > -     EMAC_FTR_440EP_PHY_CLK_FIX,
+> > +     EMAC_FTR_440EP_PHY_CLK_FIX |
+> > +     EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE |
+> > +     EMAC_FTR_APM821XX_NO_HALF_DUPLEX,
+> >  };
+> >
+> >  static inline int emac_has_feature(struct emac_instance *dev,
+> > diff --git a/drivers/net/ethernet/ibm/emac/emac.h
+> > b/drivers/net/ethernet/ibm/emac/emac.h index 1568278..36bcd69 100644
+> > --- a/drivers/net/ethernet/ibm/emac/emac.h
+> > +++ b/drivers/net/ethernet/ibm/emac/emac.h
+> > @@ -212,7 +212,10 @@ struct emac_regs {
+> >  #define EMAC4_RMR_RFAF_64_1024               0x00000006
+> >  #define EMAC4_RMR_RFAF_128_2048              0x00000007
+> >  #define EMAC4_RMR_BASE                       EMAC4_RMR_RFAF_128_2048
+> > -
+> > +#if defined(CONFIG_APM821xx)
+> > +#define EMAC4_RMR_MJS_MASK              0x0001fff8
+> > +#define EMAC4_RMR_MJS(s)                (((s) << 3) &
+> EMAC4_RMR_MJS_MASK)
+> > +#endif
+>
+> Is this "#if defined" really needed? If not, I suggest you drop it.
+>
 
-Thanks
--Bharat
 
-> +	PPC_STL	r7, VCPU_TIMING_LAST_ENTER_TBL(r4)
-> +	bne	1b=09
-> +	PPC_STL	r8, VCPU_TIMING_LAST_ENTER_TBU(r4)
-> +#endif
-> +
-> +	/* Finish loading guest volatiles and jump to guest. */
-> +	PPC_LL	r5, VCPU_GPR(r5)(r4)
-> +	PPC_LL	r6, VCPU_GPR(r6)(r4)
-> +	PPC_LL	r7, VCPU_GPR(r7)(r4)
-> +	PPC_LL	r8, VCPU_GPR(r8)(r4)=09
-> +	PPC_LL	r9, VCPU_GPR(r9)(r4)
-> +
-> +	PPC_LL	r3, VCPU_GPR(r3)(r4)
-> +	PPC_LL	r4, VCPU_GPR(r4)(r4)
-> +	rfi
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 9806ea5..a5c5ceb 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -109,6 +109,11 @@ int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
->  		goto out;
->  #endif
->=20
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +	if (!cpu_has_feature(CPU_FTR_EMB_HV))
-> +		goto out;
-> +#endif
-> +
->  	r =3D true;
->=20
->  out:
-> diff --git a/arch/powerpc/kvm/timing.h b/arch/powerpc/kvm/timing.h
-> index 8167d42..bf191e7 100644
-> --- a/arch/powerpc/kvm/timing.h
-> +++ b/arch/powerpc/kvm/timing.h
-> @@ -93,6 +93,12 @@ static inline void kvmppc_account_exit_stat(struct kvm=
-_vcpu
-> *vcpu, int type)
->  	case SIGNAL_EXITS:
->  		vcpu->stat.signal_exits++;
->  		break;
-> +	case DBELL_EXITS:
-> +		vcpu->stat.dbell_exits++;
-> +		break;
-> +	case GDBELL_EXITS:
-> +		vcpu->stat.gdbell_exits++;
-> +		break;
->  	}
->  }
->=20
-> --
-> 1.6.0.2
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> [Duc Dang] Only APM821XX and later SoCs have this register field, but it
+> is no harm to drop the #if defined as 460EX/460GT/405EX have this register
+> field as reserved. So I will drop it.
+>
+
+
+> Thanks,
+> Stefan
+>
+
+--f46d04088ee111b2f904ba7af4ee
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Thanks, Stefan.<br><br>Please see my answer bellow.<br><br>Regards,<br>Duc =
+Dang.<br><br><div class=3D"gmail_quote">On Mon, Mar 5, 2012 at 2:41 PM, Ste=
+fan Roese <span dir=3D"ltr">&lt;<a href=3D"mailto:sr@denx.de">sr@denx.de</a=
+>&gt;</span> wrote:<br>
+
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">On Monday 05 March 2012 05:03:44 Duc Dang wr=
+ote:<br>
+&gt; This patch includes:<br>
+&gt;<br>
+&gt; =A0 Configure EMAC PHY clock source (clock from PHY or internal clock)=
+.<br>
+&gt;<br>
+&gt; =A0 Do not advertise PHY half duplex capability as APM821XX EMAC does =
+not<br>
+&gt; support half duplex mode.<br>
+&gt;<br>
+&gt; =A0 Add changes to support configuring jumbo frame for APM821XX EMAC.<=
+br>
+&gt;<br>
+&gt; Signed-off-by: Duc Dang &lt;<a href=3D"mailto:dhdang@apm.com">dhdang@a=
+pm.com</a>&gt;<br>
+&gt; ---<br>
+&gt; v2:<br>
+&gt; =A0Fix coding style problems.<br>
+&gt;<br>
+&gt; =A0drivers/net/ethernet/ibm/emac/core.c | =A0 26 +++++++++++++++++++++=
+++++-<br>
+&gt; =A0drivers/net/ethernet/ibm/emac/core.h | =A0 13 +++++++++++--<br>
+&gt; =A0drivers/net/ethernet/ibm/emac/emac.h | =A0 =A05 ++++-<br>
+&gt; =A03 files changed, 40 insertions(+), 4 deletions(-)<br>
+&gt;<br>
+&gt; diff --git a/drivers/net/ethernet/ibm/emac/core.c<br>
+&gt; b/drivers/net/ethernet/ibm/emac/core.c index 2abce96..ad671c5 100644<b=
+r>
+&gt; --- a/drivers/net/ethernet/ibm/emac/core.c<br>
+&gt; +++ b/drivers/net/ethernet/ibm/emac/core.c<br>
+&gt; @@ -434,6 +434,11 @@ static inline u32 emac_iff2rmr(struct net_device<=
+br>
+&gt; *ndev) else if (!netdev_mc_empty(ndev))<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 r |=3D EMAC_RMR_MAE;<br>
+&gt;<br>
+&gt; + =A0 =A0 if (emac_has_feature(dev, EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE=
+)) {<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 r &amp;=3D ~EMAC4_RMR_MJS_MASK;<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 r |=3D EMAC4_RMR_MJS(ndev-&gt;mtu);<br>
+&gt; + =A0 =A0 }<br>
+&gt; +<br>
+&gt; =A0 =A0 =A0 return r;<br>
+&gt; =A0}<br>
+&gt;<br>
+&gt; @@ -965,6 +970,7 @@ static int emac_resize_rx_ring(struct emac_instanc=
+e<br>
+&gt; *dev, int new_mtu) int rx_sync_size =3D emac_rx_sync_size(new_mtu);<br=
+>
+&gt; =A0 =A0 =A0 int rx_skb_size =3D emac_rx_skb_size(new_mtu);<br>
+&gt; =A0 =A0 =A0 int i, ret =3D 0;<br>
+&gt; + =A0 =A0 int mr1_jumbo_bit_change =3D 0;<br>
+&gt;<br>
+&gt; =A0 =A0 =A0 mutex_lock(&amp;dev-&gt;link_lock);<br>
+&gt; =A0 =A0 =A0 emac_netif_stop(dev);<br>
+&gt; @@ -1013,7 +1019,14 @@ static int emac_resize_rx_ring(struct emac_inst=
+ance<br>
+&gt; *dev, int new_mtu) }<br>
+&gt; =A0 skip:<br>
+&gt; =A0 =A0 =A0 /* Check if we need to change &quot;Jumbo&quot; bit in MR1=
+ */<br>
+&gt; - =A0 =A0 if ((new_mtu &gt; ETH_DATA_LEN) ^ (dev-&gt;ndev-&gt;mtu &gt;=
+ ETH_DATA_LEN)) {<br>
+&gt; + =A0 =A0 if (emac_has_feature(dev, EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE=
+))<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 mr1_jumbo_bit_change =3D (new_mtu &gt; ETH_D=
+ATA_LEN) ||<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (dev-&gt;nde=
+v-&gt;mtu &gt; ETH_DATA_LEN);<br>
+&gt; + =A0 =A0 else<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 mr1_jumbo_bit_change =3D (new_mtu &gt; ETH_D=
+ATA_LEN) ^<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (dev-&gt;nde=
+v-&gt;mtu &gt; ETH_DATA_LEN);<br>
+&gt; +<br>
+&gt; + =A0 =A0 if (mr1_jumbo_bit_change) {<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* This is to prevent starting RX channel =
+in emac_rx_enable()<br>
+*/<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 set_bit(MAL_COMMAC_RX_STOPPED, &amp;dev-&g=
+t;commac.flags);<br>
+&gt;<br>
+&gt; @@ -2471,6 +2484,7 @@ static int __devinit emac_init_phy(struct<br>
+&gt; emac_instance *dev)<br>
+&gt;<br>
+&gt; =A0 =A0 =A0 /* Disable any PHY features not supported by the platform =
+*/<br>
+&gt; =A0 =A0 =A0 dev-&gt;phy.def-&gt;features &amp;=3D ~dev-&gt;phy_feat_ex=
+c;<br>
+&gt; + =A0 =A0 dev-&gt;phy.features &amp;=3D ~dev-&gt;phy_feat_exc;<br>
+&gt;<br>
+&gt; =A0 =A0 =A0 /* Setup initial link parameters */<br>
+&gt; =A0 =A0 =A0 if (dev-&gt;phy.features &amp; SUPPORTED_Autoneg) {<br>
+&gt; @@ -2568,6 +2582,10 @@ static int __devinit emac_init_config(struct<br=
+>
+&gt; emac_instance *dev) if (of_device_is_compatible(np, &quot;ibm,emac-405=
+ex&quot;) ||<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_device_is_compatible(np, &quot;=
+ibm,emac-405exr&quot;))<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev-&gt;features |=3D EMAC=
+_FTR_440EP_PHY_CLK_FIX;<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 if (of_device_is_compatible(np, &quot;ibm,em=
+ac-apm821xx&quot;))<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev-&gt;features |=3D (EMAC_=
+APM821XX_REQ_JUMBO_FRAME_SIZE<br>
+|<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 EMAC_FTR_APM821XX_NO_HALF_DUPLEX |<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 EMAC_FTR_460EX_PHY_CLK_FIX);<br>
+<br>
+Nitpick: Parentheses for multi line statement please.<br></blockquote><div>=
+[Duc Dang] I wil add parentheses as you suggested.<br><br></div><blockquote=
+ class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.8ex;border-left:1px so=
+lid rgb(204,204,204);padding-left:1ex">
+
+
+&gt; =A0 =A0 =A0 } else if (of_device_is_compatible(np, &quot;ibm,emac4&quo=
+t;)) {<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev-&gt;features |=3D EMAC_FTR_EMAC4;<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (of_device_is_compatible(np, &quot;ibm,=
+emac-440gx&quot;))<br>
+&gt; @@ -2818,6 +2836,12 @@ static int __devinit emac_probe(struct<br>
+&gt; platform_device *ofdev) dev-&gt;stop_timeout =3D STOP_TIMEOUT_100;<br>
+&gt; =A0 =A0 =A0 INIT_DELAYED_WORK(&amp;dev-&gt;link_work, emac_link_timer)=
+;<br>
+&gt;<br>
+&gt; + =A0 =A0 /* Some SoCs like APM821xx does not support Half Duplex mode=
+. */<br>
+&gt; + =A0 =A0 if (emac_has_feature(dev, EMAC_FTR_APM821XX_NO_HALF_DUPLEX))=
+<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 dev-&gt;phy_feat_exc =3D (SUPPORTED_1000base=
+T_Half |<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 SUPPORTED_100baseT_Half |<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 SUPPORTED_10baseT_Half);<br>
+&gt; +<br>
+<br>
+Nitpick: Parentheses for multi line statement please.<br>
+<br>
+&gt; =A0 =A0 =A0 /* Find PHY if any */<br>
+&gt; =A0 =A0 =A0 err =3D emac_init_phy(dev);<br>
+&gt; =A0 =A0 =A0 if (err !=3D 0)<br>
+&gt; diff --git a/drivers/net/ethernet/ibm/emac/core.h<br>
+&gt; b/drivers/net/ethernet/ibm/emac/core.h index fa3ec57..9dea85a 100644<b=
+r>
+&gt; --- a/drivers/net/ethernet/ibm/emac/core.h<br>
+&gt; +++ b/drivers/net/ethernet/ibm/emac/core.h<br>
+&gt; @@ -325,7 +325,14 @@ struct emac_instance {<br>
+&gt; =A0 * Set if we need phy clock workaround for 460ex or 460gt<br>
+&gt; =A0 */<br>
+&gt; =A0#define EMAC_FTR_460EX_PHY_CLK_FIX =A0 0x00000400<br>
+&gt; -<br>
+&gt; +/*<br>
+&gt; + * APM821xx requires Jumbo frame size set explicitly<br>
+&gt; + */<br>
+&gt; +#define EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE =A0 0x00000800<br>
+&gt; +/*<br>
+&gt; + * APM821xx does not support Half Duplex mode<br>
+&gt; + */<br>
+&gt; +#define EMAC_FTR_APM821XX_NO_HALF_DUPLEX =A0 =A0 0x00001000<br>
+&gt;<br>
+&gt; =A0/* Right now, we don&#39;t quite handle the always/possible masks o=
+n the<br>
+&gt; =A0 * most optimal way as we don&#39;t have a way to say something lik=
+e<br>
+&gt; @@ -353,7 +360,9 @@ enum {<br>
+&gt; =A0 =A0 =A0 =A0 =A0 EMAC_FTR_NO_FLOW_CONTROL_40x |<br>
+&gt; =A0#endif<br>
+&gt; =A0 =A0 =A0 EMAC_FTR_460EX_PHY_CLK_FIX |<br>
+&gt; - =A0 =A0 EMAC_FTR_440EP_PHY_CLK_FIX,<br>
+&gt; + =A0 =A0 EMAC_FTR_440EP_PHY_CLK_FIX |<br>
+&gt; + =A0 =A0 EMAC_APM821XX_REQ_JUMBO_FRAME_SIZE |<br>
+&gt; + =A0 =A0 EMAC_FTR_APM821XX_NO_HALF_DUPLEX,<br>
+&gt; =A0};<br>
+&gt;<br>
+&gt; =A0static inline int emac_has_feature(struct emac_instance *dev,<br>
+&gt; diff --git a/drivers/net/ethernet/ibm/emac/emac.h<br>
+&gt; b/drivers/net/ethernet/ibm/emac/emac.h index 1568278..36bcd69 100644<b=
+r>
+&gt; --- a/drivers/net/ethernet/ibm/emac/emac.h<br>
+&gt; +++ b/drivers/net/ethernet/ibm/emac/emac.h<br>
+&gt; @@ -212,7 +212,10 @@ struct emac_regs {<br>
+&gt; =A0#define EMAC4_RMR_RFAF_64_1024 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0x000000=
+06<br>
+&gt; =A0#define EMAC4_RMR_RFAF_128_2048 =A0 =A0 =A0 =A0 =A0 =A0 =A00x000000=
+07<br>
+&gt; =A0#define EMAC4_RMR_BASE =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+EMAC4_RMR_RFAF_128_2048<br>
+&gt; -<br>
+&gt; +#if defined(CONFIG_APM821xx)<br>
+&gt; +#define EMAC4_RMR_MJS_MASK =A0 =A0 =A0 =A0 =A0 =A0 =A00x0001fff8<br>
+&gt; +#define EMAC4_RMR_MJS(s) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(((s) &lt;&lt=
+; 3) &amp; EMAC4_RMR_MJS_MASK)<br>
+&gt; +#endif<br>
+<br>
+Is this &quot;#if defined&quot; really needed? If not, I suggest you drop i=
+t.<br>
+</blockquote><div>=A0</div><blockquote class=3D"gmail_quote" style=3D"margi=
+n:0pt 0pt 0pt 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex=
+">[Duc Dang] Only APM821XX and later SoCs have this register field, but it =
+is no harm to drop the #if defined as 460EX/460GT/405EX have this register =
+field as reserved. So I will drop it.<br>
+
+</blockquote><div>=A0</div><blockquote class=3D"gmail_quote" style=3D"margi=
+n:0pt 0pt 0pt 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex=
+">
+Thanks,<br>
+Stefan<br>
+</blockquote></div><br>
+
+--f46d04088ee111b2f904ba7af4ee--
