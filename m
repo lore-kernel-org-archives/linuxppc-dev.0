@@ -1,26 +1,26 @@
 Return-Path: <hartleys@visionengravers.com>
-Received: from mail127.messagelabs.com (mail127.messagelabs.com
- [216.82.250.115])
+Received: from mail160.messagelabs.com (mail160.messagelabs.com
+ [216.82.253.99])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail127.messagelabs.com",
+ (Client CN "mail160.messagelabs.com",
  Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 012B9B6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 10:31:34 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 26140B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 10:38:38 +1100 (EST)
 From: H Hartley Sweeten <hartleys@visionengravers.com>
 To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Dan Williams
  <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
-Date: Mon, 5 Mar 2012 17:28:50 -0600
-Subject: RE: [PATCH 3/9] dmaengine: add private header file
-Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF555A9@AUSP01VMBX24.collaborationhost.net>
+Date: Mon, 5 Mar 2012 17:35:53 -0600
+Subject: RE: [PATCH 6/9] dmaengine: consolidate tx_status functions
+Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF555AF@AUSP01VMBX24.collaborationhost.net>
 References: <20120305201411.GA17791@n2100.arm.linux.org.uk>
- <E1S4eK0-0000sv-87@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1S4eK0-0000sv-87@rmk-PC.arm.linux.org.uk>
+ <E1S4eKz-0000tE-FB@rmk-PC.arm.linux.org.uk>
+In-Reply-To: <E1S4eKz-0000tE-FB@rmk-PC.arm.linux.org.uk>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: Viresh Kumar <viresh.kumar@st.com>, Stephen Warren <swarren@nvidia.com>,
  Linus Walleij <linus.walleij@stericsson.com>,
  Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
- Zhang Wei <zw@zh-kernel.org>,
+ Zhang Wei <zw@zh-kernel.org>, Barry Song <baohua.song@csr.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,117 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, March 05, 2012 1:16 PM, Russell King wrote:
+On Monday, March 05, 2012 1:17 PM, Russell King wrote:
 >
-> Add a local private header file to contain definitions and declarations
-> which should only be used by DMA engine drivers.
+> Now that we have the completed cookie in the dma_chan structure, we
+> can consolidate the tx_status functions by providing a function to set
+> the txstate structure and returning the DMA status.  We also provide
+> a separate helper to set the residue for cookies which are still in
+> progress.
 >
 > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  drivers/dma/amba-pl08x.c    |    2 ++
->  drivers/dma/at_hdmac.c      |    1 +
->  drivers/dma/coh901318.c     |    1 +
->  drivers/dma/dmaengine.h     |   10 ++++++++++
->  drivers/dma/dw_dmac.c       |    1 +
->  drivers/dma/ep93xx_dma.c    |    2 ++
->  drivers/dma/fsldma.c        |    1 +
->  drivers/dma/imx-dma.c       |    2 ++
->  drivers/dma/imx-sdma.c      |    2 ++
->  drivers/dma/intel_mid_dma.c |    2 ++
->  drivers/dma/ioat/dma.c      |    2 ++
->  drivers/dma/ioat/dma_v2.c   |    2 ++
->  drivers/dma/iop-adma.c      |    2 ++
->  drivers/dma/ipu/ipu_idmac.c |    1 +
->  drivers/dma/mpc512x_dma.c   |    2 ++
->  drivers/dma/mv_xor.c        |    2 ++
->  drivers/dma/mxs-dma.c       |    2 ++
->  drivers/dma/pch_dma.c       |    2 ++
->  drivers/dma/pl330.c         |    2 ++
->  drivers/dma/ppc4xx/adma.c   |    1 +
->  drivers/dma/shdma.c         |    2 ++
->  drivers/dma/ste_dma40.c     |    1 +
->  drivers/dma/timb_dma.c      |    2 ++
->  drivers/dma/txx9dmac.c      |    2 ++
->  24 files changed, 49 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/dma/dmaengine.h
->
-> diff --git a/drivers/dma/amba-pl08x.c b/drivers/dma/amba-pl08x.c
-> index 2b5121f..87475cb 100644
-> --- a/drivers/dma/amba-pl08x.c
-> +++ b/drivers/dma/amba-pl08x.c
-> @@ -85,6 +85,8 @@
->  #include <linux/slab.h>
->  #include <asm/hardware/pl080.h>
-> =20
-> +#include "dmaengine.h"
-> +
->  #define DRIVER_NAME	"pl08xdmac"
-> =20
->  static struct amba_driver pl08x_amba_driver;
-> diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
-> index 6baf5d7..ce26ba3 100644
-> --- a/drivers/dma/at_hdmac.c
-> +++ b/drivers/dma/at_hdmac.c
-> @@ -27,6 +27,7 @@
->  #include <linux/of_device.h>
-> =20
->  #include "at_hdmac_regs.h"
-> +#include "dmaengine.h"
-> =20
->  /*
->   * Glossary
-> diff --git a/drivers/dma/coh901318.c b/drivers/dma/coh901318.c
-> index 521434b..fb0d124 100644
-> --- a/drivers/dma/coh901318.c
-> +++ b/drivers/dma/coh901318.c
-> @@ -24,6 +24,7 @@
->  #include <mach/coh901318.h>
-> =20
->  #include "coh901318_lli.h"
-> +#include "dmaengine.h"
-> =20
->  #define COHC_2_DEV(cohc) (&cohc->chan.dev->device)
-> =20
+
+<snip>
+
 > diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
-> new file mode 100644
-> index 0000000..968570d
-> --- /dev/null
+> index 47e0997..244a2c5 100644
+> --- a/drivers/dma/dmaengine.h
 > +++ b/drivers/dma/dmaengine.h
-> @@ -0,0 +1,10 @@
-> +/*
-> + * The contents of this file are private to DMA engine drivers, and is n=
-ot
-> + * part of the API to be used by DMA engine users.
+> @@ -45,4 +45,35 @@ static inline void dma_cookie_complete(struct dma_asyn=
+c_tx_descriptor *tx)
+>  	tx->cookie =3D 0;
+>  }
+> =20
+> +/**
+> + * dma_cookie_status - report cookie status
+> + * @chan: dma channel
+> + * @cookie: cookie we are interested in
+> + * @state: dma_tx_state structure to return last/used cookies
+> + *
+> + * Report the status of the cookie, filling in the state structure if
+> + * non-NULL.  No locking is required.
 > + */
-> +#ifndef DMAENGINE_H
-> +#define DMAENGINE_H
+> +static inline enum dma_status dma_cookie_status(struct dma_chan *chan,
+> +	dma_cookie_t cookie, struct dma_tx_state *state)
+> +{
+> +	dma_cookie_t used, complete;
 > +
-> +#include <linux/dmaengine.h>
-> +
-> +#endif
+> +	used =3D chan->cookie;
+> +	complete =3D chan->complete;
 
-Russell,
+Is this supposed to be:
 
-You have an include issue here.
-
-All the dmaengine drivers have:
-
-#include <linux/dmaengine.h>
-
-Which is guarded with
-
-#ifndef DMAENGINE_H
-#define DMAENGINE_H
-
-...
-
-#endif
-
-This is the same guard you are using in the private "dmaengine.h". And it
-also includes <linux/dmaengine.h> again...
-
-This doesn't compile as-is because the "dmaengine.h" file is not used due
-to the #ifndef...
+	complete =3D chan->completed_cookie;
 
 Regards,
 Hartley
