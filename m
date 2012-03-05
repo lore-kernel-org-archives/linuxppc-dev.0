@@ -1,27 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 65943B6FB6
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 81315B6FB9
  for <linuxppc-dev@ozlabs.org>; Mon,  5 Mar 2012 13:52:43 +1100 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
- Mon, 5 Mar 2012 02:45:59 +1000
+ Mon, 5 Mar 2012 02:50:12 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q252koeL3215518
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q252kqlU3408098
  for <linuxppc-dev@ozlabs.org>; Mon, 5 Mar 2012 13:46:54 +1100
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q252qQgQ007471
+ q252qQAb007476
  for <linuxppc-dev@ozlabs.org>; Mon, 5 Mar 2012 13:52:26 +1100
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/13] powerpc: Rework runlatch code
-Date: Mon,  5 Mar 2012 13:51:21 +1100
-Message-Id: <1330915891-19523-4-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 04/13] powerpc: Improve 64-bit syscall entry/exit
+Date: Mon,  5 Mar 2012 13:51:22 +1100
+Message-Id: <1330915891-19523-5-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1330915891-19523-1-git-send-email-benh@kernel.crashing.org>
 References: <1330915891-19523-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,277 +33,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the inlines into system.h and changes the runlatch
-code to use the thread local flags (non-atomic) rather than
-the TIF flags (atomic) to keep track of the latch state.
+We unconditionally hard enable interrupts. This is unnecessary as
+syscalls are expected to always be called with interrupts enabled.
 
-The code to turn it back on in an asynchronous interrupt is
-now simplified and partially inlined.
+While at it, we add a WARN_ON if that is not the case and
+CONFIG_TRACE_IRQFLAGS is enabled (we don't want to add overhead
+to the fast path when this is not set though).
+
+Thus let's remove the enabling (and associated irq tracing) from
+the syscall entry path. Also on Book3S, replace a few mfmsr
+instructions with loads of PACAMSR from the PACA, which should be
+faster & schedule better.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/exception-64s.h |   50 ++++++++++++++++--------------
- arch/powerpc/include/asm/reg.h           |   22 +------------
- arch/powerpc/include/asm/system.h        |   38 ++++++++++++++++++++++
- arch/powerpc/include/asm/thread_info.h   |    9 +++++-
- arch/powerpc/kernel/exceptions-64s.S     |    3 ++
- arch/powerpc/kernel/process.c            |   24 ++++++--------
- 6 files changed, 89 insertions(+), 57 deletions(-)
+ arch/powerpc/kernel/entry_64.S |   43 +++++++++++++++++++++------------------
+ 1 files changed, 23 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 041b222..bdc9eeb 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -284,35 +284,39 @@ label##_hv:								\
- 	rlwimi	r11,r12,0,MSR_EE;		\
- 	mtmsrd	r11,1
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 0c3764b..cc030b7 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -115,28 +115,33 @@ BEGIN_FW_FTR_SECTION
+ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING && CONFIG_PPC_SPLPAR */
  
--#define STD_EXCEPTION_COMMON(trap, label, hdlr)		\
--	.align	7;					\
--	.globl label##_common;				\
--label##_common:						\
--	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
--	DISABLE_INTS;					\
--	bl	.save_nvgprs;				\
--	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
--	bl	hdlr;					\
--	b	.ret_from_except
-+#define ADD_NVGPRS				\
-+	bl	.save_nvgprs
-+
-+#define RUNLATCH_ON				\
-+BEGIN_FTR_SECTION				\
-+	clrrdi	r3,r1,THREAD_SHIFT;		\
-+	ld	r4,TI_LOCAL_FLAGS(r3);		\
-+	andi.	r0,r4,_TLF_RUNLATCH;		\
-+	beql	ppc64_runlatch_on_trampoline;	\
-+END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
-+
-+#define EXCEPTION_COMMON(trap, label, hdlr, ret, additions)	\
-+	.align	7;						\
-+	.globl label##_common;					\
-+label##_common:							\
-+	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);		\
-+	additions;						\
-+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
-+	bl	hdlr;						\
-+	b	ret
-+
-+#define STD_EXCEPTION_COMMON(trap, label, hdlr)			\
-+	EXCEPTION_COMMON(trap, label, hdlr, ret_from_except,	\
-+			 ADD_NVGPRS;DISABLE_INTS)
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-	bl	.trace_hardirqs_on
+-	REST_GPR(0,r1)
+-	REST_4GPRS(3,r1)
+-	REST_2GPRS(7,r1)
+-	addi	r9,r1,STACK_FRAME_OVERHEAD
+-	ld	r12,_MSR(r1)
+-#endif /* CONFIG_TRACE_IRQFLAGS */
+-	li	r10,1
+-	stb	r10,PACASOFTIRQEN(r13)
+-	stb	r10,PACAHARDIRQEN(r13)
+-	std	r10,SOFTE(r1)
++	/*
++	 * A syscall should always be called with interrupts enabled
++	 * so we just unconditionally hard-enable here. When some kind
++	 * of irq tracing is used, we additionally check that condition
++	 * is correct
++	 */
++#if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_BUG)
++	lbz	r10,PACASOFTIRQEN(r13)
++	xori	r10,r10,1
++1:	tdnei	r10,0
++	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
++#endif
  
- /*
-  * Like STD_EXCEPTION_COMMON, but for exceptions that can occur
-  * in the idle task and therefore need the special idle handling
-  * (finish nap and runlatch)
-  */
--#define STD_EXCEPTION_COMMON_ASYNC(trap, label, hdlr)	\
--	.align	7;					\
--	.globl label##_common;				\
--label##_common:						\
--	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
--	FINISH_NAP;					\
--	DISABLE_INTS;					\
--BEGIN_FTR_SECTION					\
--	bl	.ppc64_runlatch_on;			\
--END_FTR_SECTION_IFSET(CPU_FTR_CTRL)			\
--	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
--	bl	hdlr;					\
--	b	.ret_from_except_lite
-+#define STD_EXCEPTION_COMMON_ASYNC(trap, label, hdlr)		  \
-+	EXCEPTION_COMMON(trap, label, hdlr, ret_from_except_lite, \
-+			 FINISH_NAP;RUNLATCH_ON;DISABLE_INTS)
- 
- /*
-  * When the idle code in power4_idle puts the CPU into NAP mode,
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 7fdc2c0..b1a215e 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1079,30 +1079,12 @@
- 
- #define proc_trap()	asm volatile("trap")
- 
--#ifdef CONFIG_PPC64
--
--extern void ppc64_runlatch_on(void);
--extern void __ppc64_runlatch_off(void);
--
--#define ppc64_runlatch_off()					\
--	do {							\
--		if (cpu_has_feature(CPU_FTR_CTRL) &&		\
--		    test_thread_flag(TIF_RUNLATCH))		\
--			__ppc64_runlatch_off();			\
--	} while (0)
-+#define __get_SP()	({unsigned long sp; \
-+			asm volatile("mr %0,1": "=r" (sp)); sp;})
- 
- extern unsigned long scom970_read(unsigned int address);
- extern void scom970_write(unsigned int address, unsigned long value);
- 
--#else
--#define ppc64_runlatch_on()
--#define ppc64_runlatch_off()
--
--#endif /* CONFIG_PPC64 */
--
--#define __get_SP()	({unsigned long sp; \
--			asm volatile("mr %0,1": "=r" (sp)); sp;})
--
- struct pt_regs;
- 
- extern void ppc_save_regs(struct pt_regs *regs);
-diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
-index c377457..a02883d 100644
---- a/arch/powerpc/include/asm/system.h
-+++ b/arch/powerpc/include/asm/system.h
-@@ -550,5 +550,43 @@ extern void reloc_got2(unsigned long);
- 
- extern struct dentry *powerpc_debugfs_root;
- 
-+#ifdef CONFIG_PPC64
-+
-+extern void __ppc64_runlatch_on(void);
-+extern void __ppc64_runlatch_off(void);
-+
-+/*
-+ * We manually hard enable-disable, this is called
-+ * in the idle loop and we don't want to mess up
-+ * with soft-disable/enable & interrupt replay.
-+ */
-+#define ppc64_runlatch_off()					\
-+	do {							\
-+		if (cpu_has_feature(CPU_FTR_CTRL) &&		\
-+		    test_thread_local_flags(_TLF_RUNLATCH)) {	\
-+			unsigned long msr = mfmsr();		\
-+			__hard_irq_disable();			\
-+			__ppc64_runlatch_off();			\
-+			if (msr & MSR_EE)			\
-+				__hard_irq_enable();		\
-+		}      						\
-+	} while (0)
-+
-+#define ppc64_runlatch_on()					\
-+	do {							\
-+		if (cpu_has_feature(CPU_FTR_CTRL) &&		\
-+		    !test_thread_local_flags(_TLF_RUNLATCH)) {	\
-+			unsigned long msr = mfmsr();		\
-+			__hard_irq_disable();			\
-+			__ppc64_runlatch_on();			\
-+			if (msr & MSR_EE)			\
-+				__hard_irq_enable();		\
-+		}      						\
-+	} while (0)
-+#else
-+#define ppc64_runlatch_on()
-+#define ppc64_runlatch_off()
-+#endif /* CONFIG_PPC64 */
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_SYSTEM_H */
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 96471494..4a741c7 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -110,7 +110,6 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_NOERROR		12	/* Force successful syscall return */
- #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
- #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
--#define TIF_RUNLATCH		16	/* Is the runlatch enabled? */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -141,11 +140,13 @@ static inline struct thread_info *current_thread_info(void)
- #define TLF_SLEEPING		1	/* suspend code enabled SLEEP mode */
- #define TLF_RESTORE_SIGMASK	2	/* Restore signal mask in do_signal */
- #define TLF_LAZY_MMU		3	/* tlb_batch is active */
-+#define TLF_RUNLATCH		4	/* Is the runlatch enabled? */
- 
- #define _TLF_NAPPING		(1 << TLF_NAPPING)
- #define _TLF_SLEEPING		(1 << TLF_SLEEPING)
- #define _TLF_RESTORE_SIGMASK	(1 << TLF_RESTORE_SIGMASK)
- #define _TLF_LAZY_MMU		(1 << TLF_LAZY_MMU)
-+#define _TLF_RUNLATCH		(1 << TLF_RUNLATCH)
- 
- #ifndef __ASSEMBLY__
- #define HAVE_SET_RESTORE_SIGMASK	1
-@@ -156,6 +157,12 @@ static inline void set_restore_sigmask(void)
- 	set_bit(TIF_SIGPENDING, &ti->flags);
- }
- 
-+static inline bool test_thread_local_flags(unsigned int flags)
-+{
-+	struct thread_info *ti = current_thread_info();
-+	return (ti->local_flags & flags) != 0;
-+}
-+
- #ifdef CONFIG_PPC64
- #define is_32bit_task()	(test_thread_flag(TIF_32BIT))
+-	/* Hard enable interrupts */
+ #ifdef CONFIG_PPC_BOOK3E
+ 	wrteei	1
  #else
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 2240d4e..3af80e8 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -483,6 +483,9 @@ machine_check_common:
- system_call_entry:
- 	b	system_call_common
+-	mfmsr	r11
++	ld	r11,PACAKMSR(r13)
+ 	ori	r11,r11,MSR_EE
+ 	mtmsrd	r11,1
+ #endif /* CONFIG_PPC_BOOK3E */
  
-+ppc64_runlatch_on_trampoline:
-+	b	.__ppc64_runlatch_on
++	/* We do need to set SOFTE in the stack frame or the return
++	 * from interrupt will be painful
++	 */
++	li	r10,1
++	std	r10,SOFTE(r1)
 +
- /*
-  * Here we have detected that the kernel stack pointer is bad.
-  * R9 contains the saved CR, r13 points to the paca,
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index d817ab0..bf80a1d 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1220,34 +1220,32 @@ void dump_stack(void)
- EXPORT_SYMBOL(dump_stack);
- 
- #ifdef CONFIG_PPC64
--void ppc64_runlatch_on(void)
-+/* Called with hard IRQs off */
-+void __ppc64_runlatch_on(void)
- {
-+	struct thread_info *ti = current_thread_info();
- 	unsigned long ctrl;
- 
--	if (cpu_has_feature(CPU_FTR_CTRL) && !test_thread_flag(TIF_RUNLATCH)) {
--		HMT_medium();
+ #ifdef SHOW_SYSCALLS
+ 	bl	.do_show_syscall
+ 	REST_GPR(0,r1)
+@@ -187,16 +192,14 @@ syscall_exit:
+ 	andi.	r10,r8,MSR_RI
+ 	beq-	unrecov_restore
+ #endif
 -
--		ctrl = mfspr(SPRN_CTRLF);
--		ctrl |= CTRL_RUNLATCH;
--		mtspr(SPRN_CTRLT, ctrl);
-+	ctrl = mfspr(SPRN_CTRLF);
-+	ctrl |= CTRL_RUNLATCH;
-+	mtspr(SPRN_CTRLT, ctrl);
+-	/* Disable interrupts so current_thread_info()->flags can't change,
++	/*
++	 * Disable interrupts so current_thread_info()->flags can't change,
+ 	 * and so that we don't get interrupted after loading SRR0/1.
+ 	 */
+ #ifdef CONFIG_PPC_BOOK3E
+ 	wrteei	0
+ #else
+-	mfmsr	r10
+-	rldicl	r10,r10,48,1
+-	rotldi	r10,r10,16
++	ld	r10,PACAKMSR(r13)
+ 	mtmsrd	r10,1
+ #endif /* CONFIG_PPC_BOOK3E */
  
--		set_thread_flag(TIF_RUNLATCH);
--	}
-+	ti->local_flags |= TLF_RUNLATCH;
- }
- 
-+/* Called with hard IRQs off */
- void __ppc64_runlatch_off(void)
- {
-+	struct thread_info *ti = current_thread_info();
- 	unsigned long ctrl;
- 
--	HMT_medium();
--
--	clear_thread_flag(TIF_RUNLATCH);
-+	ti->local_flags &= ~TLF_RUNLATCH;
- 
- 	ctrl = mfspr(SPRN_CTRLF);
- 	ctrl &= ~CTRL_RUNLATCH;
- 	mtspr(SPRN_CTRLT, ctrl);
- }
--#endif
-+#endif /* CONFIG_PPC64 */
- 
- #if THREAD_SHIFT < PAGE_SHIFT
- 
+@@ -308,7 +311,7 @@ syscall_exit_work:
+ #ifdef CONFIG_PPC_BOOK3E
+ 	wrteei	1
+ #else
+-	mfmsr	r10
++	ld	r10,PACAKMSR(r13)
+ 	ori	r10,r10,MSR_EE
+ 	mtmsrd	r10,1
+ #endif /* CONFIG_PPC_BOOK3E */
 -- 
 1.7.9
