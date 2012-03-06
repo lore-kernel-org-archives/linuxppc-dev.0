@@ -4,19 +4,21 @@ Received: from tx2outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 65EE3B7039
+ by ozlabs.org (Postfix) with ESMTPS id AE8FAB747C
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 20:09:10 +1100 (EST)
-Received: from mail54-tx2 (localhost [127.0.0.1])	by mail54-tx2-R.bigfish.com
- (Postfix) with ESMTP id 4A0BAC0240	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Mar 2012 09:09:06 +0000 (UTC)
-Received: from TX2EHSMHS039.bigfish.com (unknown [10.9.14.238])	by
- mail54-tx2.bigfish.com (Postfix) with ESMTP id 9A60D2A004D	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 09:09:03 +0000 (UTC)
+Received: from mail55-tx2 (localhost [127.0.0.1])	by mail55-tx2-R.bigfish.com
+ (Postfix) with ESMTP id 566102C065D	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Mar 2012 09:09:08 +0000 (UTC)
+Received: from TX2EHSMHS018.bigfish.com (unknown [10.9.14.252])	by
+ mail55-tx2.bigfish.com (Postfix) with ESMTP id B11A53000A2	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 09:09:05 +0000 (UTC)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/4] powerpc/85xx: Add a head file for cpu type detection
-Date: Tue, 6 Mar 2012 17:10:53 +0800
-Message-ID: <1331025056-15983-1-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH 2/4] fsl_pci: Add a workaround for PCI 5 errata in MPC8548
+Date: Tue, 6 Mar 2012 17:10:54 +0800
+Message-ID: <1331025056-15983-2-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1331025056-15983-1-git-send-email-chenhui.zhao@freescale.com>
+References: <1331025056-15983-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,93 +32,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: chenhui zhao <chenhui.zhao@freescale.com>
 
-The workarounds need to detect the cpu type. Add these macros
-and inline routines to help cpu type detection in runtime.
+Issue:
+As a master, the PCI IP block can combine a memory write to the last PCI double
+word (4 bytes) of a cacheline with a 4 byte memory write to the first PCI double
+word of the subsequent cacheline. This affects 32-bit PCI target devices that
+blindly assert STOP on memory-write transactions, without detecting that the
+data beat being transferred is the last data beat of the transaction. It can
+cause a hang. PCI-X operation is not affected by this erratum.
 
+Workaround:
+Setting the bit MDS in the PCI Bus Function Register will disable the combining
+of crossing cacheline boundary requests into one burst transaction. Therefore,
+it can prevent the errata scenario from occurring.
+
+Refer to PCI 5 in MPC8548 errata document.
+
+Signed-off-by: Gong Chen <g.chen@freescale.com>
 Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/include/asm/mpc85xx.h |   72 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 72 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/include/asm/mpc85xx.h
+ arch/powerpc/sysdev/fsl_pci.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-new file mode 100644
-index 0000000..451777c
---- /dev/null
-+++ b/arch/powerpc/include/asm/mpc85xx.h
-@@ -0,0 +1,72 @@
-+/*
-+ * MPC85xx cpu type detection
-+ *
-+ * Copyright 2011-2012 Freescale Semiconductor, Inc.
-+ *
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __ASM_PPC_CPU_H
-+#define __ASM_PPC_CPU_H
-+
-+#define SVR_REV(svr)	((svr) & 0xFF)		/* SOC design resision */
-+#define SVR_MAJ(svr)	(((svr) >>  4) & 0xF)	/* Major revision field*/
-+#define SVR_MIN(svr)	(((svr) >>  0) & 0xF)	/* Minor revision field*/
-+
-+/* Some parts define SVR[0:23] as the SOC version */
-+#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFFFFF)	/* SOC Version fields */
-+
-+#define IS_SVR_REV(svr, maj, min) \
-+	((SVR_MAJ(svr) == (maj)) && (SVR_MIN(svr) == (min)))
-+
-+#define SVR_8533	0x803400
-+#define SVR_8533_E	0x803C00
-+#define SVR_8535	0x803701
-+#define SVR_8535_E	0x803F01
-+#define SVR_8536	0x803700
-+#define SVR_8536_E	0x803F00
-+#define SVR_8540	0x803000
-+#define SVR_8541	0x807200
-+#define SVR_8541_E	0x807A00
-+#define SVR_8543	0x803200
-+#define SVR_8543_E	0x803A00
-+#define SVR_8544	0x803401
-+#define SVR_8544_E	0x803C01
-+#define SVR_8545	0x803102
-+#define SVR_8545_E	0x803902
-+#define SVR_8547_E	0x803901
-+#define SVR_8548	0x803100
-+#define SVR_8548_E	0x803900
-+#define SVR_8555	0x807100
-+#define SVR_8555_E	0x807900
-+#define SVR_8560	0x807000
-+#define SVR_8567	0x807501
-+#define SVR_8567_E	0x807D01
-+#define SVR_8568	0x807500
-+#define SVR_8568_E	0x807D00
-+#define SVR_8569	0x808000
-+#define SVR_8569_E	0x808800
-+#define SVR_8572	0x80E000
-+#define SVR_8572_E	0x80E800
-+
-+
-+static inline int fsl_svr_is(u32 svr)
-+{
-+	u32 id = SVR_SOC_VER(mfspr(SPRN_SVR));
-+
-+	return (id == svr);
-+}
-+
-+/* Return true if current SOC revision is prior to (maj, min)  */
-+static inline int fsl_svr_older_than(u8 maj, u8 min)
-+{
-+	u32 rev = SVR_REV(mfspr(SPRN_SVR));
-+	u32 cmp = (maj << 4) | min;
-+
-+	return (rev < cmp);
-+}
-+
-+#endif
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 6073288..9bdee6d 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -31,6 +31,7 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
++#include <asm/mpc85xx.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ 
+@@ -426,6 +427,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	struct resource rsrc;
+ 	const int *bus_range;
+ 	u8 progif;
++	u16 temp;
+ 
+ 	if (!of_device_is_available(dev)) {
+ 		pr_warning("%s: disabled\n", dev->full_name);
+@@ -476,6 +478,24 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
+ 		if (fsl_pcie_check_link(hose))
+ 			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++	} else {
++		/*
++		 * Set PBFR(PCI Bus Function Register)[10] = 1 to
++		 * disable the combining of crossing cacheline
++		 * boundary requests into one burst transaction.
++		 * PCI-X operation is not affected.
++		 * Fix erratum PCI 5 on MPC8548
++		 */
++#define PCI_BUS_FUNCTION 0x44
++#define PCI_BUS_FUNCTION_MDS 0x400	/* Master disable streaming */
++		if ((fsl_svr_is(SVR_8548) || fsl_svr_is(SVR_8548_E)) &&
++		    !early_find_capability(hose, 0, 0, PCI_CAP_ID_PCIX)) {
++			early_read_config_word(hose, 0, 0,
++						PCI_BUS_FUNCTION, &temp);
++			temp |= PCI_BUS_FUNCTION_MDS;
++			early_write_config_word(hose, 0, 0,
++						PCI_BUS_FUNCTION, temp);
++		}
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
 -- 
 1.6.4.1
