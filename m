@@ -1,28 +1,31 @@
-Return-Path: <hartleys@visionengravers.com>
-Received: from mail131.messagelabs.com (mail131.messagelabs.com
- [216.82.242.99])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail131.messagelabs.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A11C4B6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 11:15:37 +1100 (EST)
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Dan Williams
- <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
-Date: Mon, 5 Mar 2012 18:12:50 -0600
-Subject: RE: [PATCH 6/9] dmaengine: consolidate tx_status functions
-Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF555BD@AUSP01VMBX24.collaborationhost.net>
-References: <20120305201411.GA17791@n2100.arm.linux.org.uk>
- <E1S4eKz-0000tE-FB@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1S4eKz-0000tE-FB@rmk-PC.arm.linux.org.uk>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <mylinux@10.ap.freescale.net>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 53C27B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 14:00:16 +1100 (EST)
+Received: from mail6-db3 (localhost [127.0.0.1])	by mail6-db3-R.bigfish.com
+ (Postfix) with ESMTP id 10A3E20487	for <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 6 Mar 2012 03:00:10 +0000 (UTC)
+Received: from DB3EHSMHS015.bigfish.com (unknown [10.3.81.251])	by
+ mail6-db3.bigfish.com (Postfix) with ESMTP id 116DF380045	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 03:00:08 +0000 (UTC)
+Received: from 10.ap.freescale.net ([10.213.130.145])	by
+ az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id q263024u011797	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2012 21:00:03 -0600 (CST)
+From: Liu Gang <Gang.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <Alexandre.Bounine@idt.com>
+Subject: [PATCH] powerpc/srio: Fix the relocation errors when building with
+ 64bit
+Date: Tue, 6 Mar 2012 10:58:12 +0800
+Message-ID: <1331002692-9061-1-git-send-email-Gang.Liu@freescale.com>
 MIME-Version: 1.0
-Cc: Viresh Kumar <viresh.kumar@st.com>, Stephen Warren <swarren@nvidia.com>,
- Linus Walleij <linus.walleij@stericsson.com>,
- Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
- Zhang Wei <zw@zh-kernel.org>, Barry Song <baohua.song@csr.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
+Cc: r58472@freescale.com, linux-kernel@vger.kernel.org, r61911@freescale.com,
+ paul.gortmaker@windriver.com, Liu Gang <Gang.Liu@freescale.com>,
+ scottwood@freescale.com, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,55 +35,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, March 05, 2012 1:17 PM, Russell King wrote:
->=20
-> Now that we have the completed cookie in the dma_chan structure, we
-> can consolidate the tx_status functions by providing a function to set
-> the txstate structure and returning the DMA status.  We also provide
-> a separate helper to set the residue for cookies which are still in
-> progress.
->
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
+For the file "arch/powerpc/sysdev/fsl_rio.c", there will be some relocation
+errors while using the corenet64_smp_defconfig:
 
-<snip>
+WARNING: modpost: Found 6 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+  GEN     .version
+  CHK     include/generated/compile.h
+  UPD     include/generated/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+arch/powerpc/sysdev/built-in.o:(__ex_table+0x0):
+	relocation truncated to fit: R_PPC64_ADDR16 against `.text'+3208
+arch/powerpc/sysdev/built-in.o:(__ex_table+0x2):
+	relocation truncated to fit: R_PPC64_ADDR16 against `.fixup'
+arch/powerpc/sysdev/built-in.o:(__ex_table+0x4):
+	relocation truncated to fit: R_PPC64_ADDR16 against `.text'+3230
+arch/powerpc/sysdev/built-in.o:(__ex_table+0x6):
+	relocation truncated to fit: R_PPC64_ADDR16 against `.fixup'+c
+arch/powerpc/sysdev/built-in.o:(__ex_table+0x8):
+	relocation truncated to fit: R_PPC64_ADDR16 against `.text'+3250
+arch/powerpc/sysdev/built-in.o:(__ex_table+0xa):
+	relocation truncated to fit: R_PPC64_ADDR16 against `.fixup'+18
 
-> diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
-> index 47e0997..244a2c5 100644
-> --- a/drivers/dma/dmaengine.h
-> +++ b/drivers/dma/dmaengine.h
-> @@ -45,4 +45,35 @@ static inline void dma_cookie_complete(struct dma_asyn=
-c_tx_descriptor *tx)
->  	tx->cookie =3D 0;
->  }
-> =20
-> +/**
-> + * dma_cookie_status - report cookie status
-> + * @chan: dma channel
-> + * @cookie: cookie we are interested in
-> + * @state: dma_tx_state structure to return last/used cookies
-> + *
-> + * Report the status of the cookie, filling in the state structure if
-> + * non-NULL.  No locking is required.
-> + */
-> +static inline enum dma_status dma_cookie_status(struct dma_chan *chan,
-> +	dma_cookie_t cookie, struct dma_tx_state *state)
-> +{
-> +	dma_cookie_t used, complete;
-> +
-> +	used =3D chan->cookie;
-> +	complete =3D chan->complete;
-> +	barrier();
-> +	if (state) {
-> +		state->last =3D complete;
-> +		state->used =3D used;
-> +		state->residue =3D 0;
-> +	}
+Rewrote the corresponding code with the support of 64bit building.
 
-Isn't this dma_set_tx_state()?
+Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_rio.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> +	return dma_async_is_complete(cookie, complete, used);
-> +}
-
-Regards,
-Hartley
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index a4c4f4a..5b6f556 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -66,8 +66,8 @@
+ 		"	li %0,%3\n"			\
+ 		"	b 2b\n"				\
+ 		".section __ex_table,\"a\"\n"		\
+-		"	.align 2\n"			\
+-		"	.long 1b,3b\n"			\
++			PPC_LONG_ALIGN "\n"		\
++			PPC_LONG "1b,3b\n"		\
+ 		".text"					\
+ 		: "=r" (err), "=r" (x)			\
+ 		: "b" (addr), "i" (-EFAULT), "0" (err))
+-- 
+1.7.0.4
