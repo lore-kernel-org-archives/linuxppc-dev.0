@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B1DEFB6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 23:13:07 +1100 (EST)
-Subject: Re: [PATCH 2/4] fsl_pci: Add a workaround for PCI 5 errata in MPC8548
+ by ozlabs.org (Postfix) with ESMTPS id 6FC94B6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 23:14:38 +1100 (EST)
+Subject: Re: [PATCH 1/9] pci_ids: Add device ID for IBM PCI-X bridge
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1331025056-15983-2-git-send-email-chenhui.zhao@freescale.com>
-Date: Tue, 6 Mar 2012 06:13:05 -0600
-Message-Id: <9449E54A-E134-45B9-A012-C824753D0C97@kernel.crashing.org>
-References: <1331025056-15983-1-git-send-email-chenhui.zhao@freescale.com>
- <1331025056-15983-2-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1331024707-15891-1-git-send-email-chenhui.zhao@freescale.com>
+Date: Tue, 6 Mar 2012 06:14:25 -0600
+Message-Id: <08B5FFBF-FFF7-45FF-A98D-181CC0E6CEBC@kernel.crashing.org>
+References: <1331024707-15891-1-git-send-email-chenhui.zhao@freescale.com>
 To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +24,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 6, 2012, at 3:10 AM, Zhao Chenhui wrote:
+On Mar 6, 2012, at 3:05 AM, Zhao Chenhui wrote:
 
-> +		if ((fsl_svr_is(SVR_8548) || fsl_svr_is(SVR_8548_E)) &&
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> ---
+> include/linux/pci_ids.h |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Should this also have 8547, 8547E, 8545, 8545E, 8543, & 8543E?
+Just merge this with the 2nd patch that actually uses the ID.
 
-> +		    !early_find_capability(hose, 0, 0, PCI_CAP_ID_PCIX)) {
-> +			early_read_config_word(hose, 0, 0,
-> +						PCI_BUS_FUNCTION, &temp);
-> +			temp |= PCI_BUS_FUNCTION_MDS;
-> +			early_write_config_word(hose, 0, 0,
-> +						PCI_BUS_FUNCTION, temp);
-> +		}
-> 	}
+- k
