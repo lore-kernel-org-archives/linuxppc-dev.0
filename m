@@ -1,27 +1,29 @@
-Return-Path: <B36685@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EF819B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 18:29:10 +1100 (EST)
-Received: from mail57-ch1 (localhost [127.0.0.1])	by mail57-ch1-R.bigfish.com
- (Postfix) with ESMTP id 0ADE8E032E	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Mar 2012 07:29:06 +0000 (UTC)
-Received: from CH1EHSMHS022.bigfish.com (snatpool2.int.messaging.microsoft.com
- [10.43.68.237])	by mail57-ch1.bigfish.com (Postfix) with ESMTP id
- D63CE100084
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 07:29:04 +0000 (UTC)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/dts: fix the compatible string of sec 4.0
-Date: Tue, 6 Mar 2012 15:21:16 +0800
-Message-ID: <1331018476-27798-1-git-send-email-Shengzhou.Liu@freescale.com>
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 61453B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 20:00:20 +1100 (EST)
+Date: Tue, 6 Mar 2012 08:59:39 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Subject: Re: [PATCH 6/9] dmaengine: consolidate tx_status functions
+Message-ID: <20120306085939.GC17370@n2100.arm.linux.org.uk>
+References: <20120305201411.GA17791@n2100.arm.linux.org.uk>
+ <E1S4eKz-0000tE-FB@rmk-PC.arm.linux.org.uk>
+ <ADE657CA350FB648AAC2C43247A983F001F41FF555BD@AUSP01VMBX24.collaborationhost.net>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Liu Shuo <shuo.liu@freescale.com>,
- Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ADE657CA350FB648AAC2C43247A983F001F41FF555BD@AUSP01VMBX24.collaborationhost.net>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Viresh Kumar <viresh.kumar@st.com>, Stephen Warren <swarren@nvidia.com>,
+ Linus Walleij <linus.walleij@stericsson.com>,
+ Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+ Vinod Koul <vinod.koul@intel.com>, Zhang Wei <zw@zh-kernel.org>,
+ Barry Song <baohua.song@csr.com>, Dan Williams <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,60 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Liu Shuo <shuo.liu@freescale.com>
+On Mon, Mar 05, 2012 at 06:12:50PM -0600, H Hartley Sweeten wrote:
+> On Monday, March 05, 2012 1:17 PM, Russell King wrote:
+> > diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
+> > index 47e0997..244a2c5 100644
+> > --- a/drivers/dma/dmaengine.h
+> > +++ b/drivers/dma/dmaengine.h
+> > @@ -45,4 +45,35 @@ static inline void dma_cookie_complete(struct dma_async_tx_descriptor *tx)
+> >  	tx->cookie = 0;
+> >  }
+> >  
+> > +/**
+> > + * dma_cookie_status - report cookie status
+> > + * @chan: dma channel
+> > + * @cookie: cookie we are interested in
+> > + * @state: dma_tx_state structure to return last/used cookies
+> > + *
+> > + * Report the status of the cookie, filling in the state structure if
+> > + * non-NULL.  No locking is required.
+> > + */
+> > +static inline enum dma_status dma_cookie_status(struct dma_chan *chan,
+> > +	dma_cookie_t cookie, struct dma_tx_state *state)
+> > +{
+> > +	dma_cookie_t used, complete;
+> > +
+> > +	used = chan->cookie;
+> > +	complete = chan->complete;
+> > +	barrier();
+> > +	if (state) {
+> > +		state->last = complete;
+> > +		state->used = used;
+> > +		state->residue = 0;
+> > +	}
+> 
+> Isn't this dma_set_tx_state()?
 
-Fix the compatible string of sec 4.0 to match with CAMM driver according
-to the documentation file Documentation/devicetree/bindings/crypto/fsl-sec4.txt.
+It's more than dma_set_tx_state().  It is my intention to get rid of
+dma_set_tx_state() in favour of these implementations.
 
-Signed-off-by: Liu Shuo <shuo.liu@freescale.com>
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
-against master branch of git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-
- arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-index bf957a7..d4c9d5d 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-@@ -33,32 +33,32 @@
-  */
- 
- crypto@30000 {
--	compatible = "fsl,sec4.4", "fsl,sec4.0";
-+	compatible = "fsl,sec-v4.4", "fsl,sec-v4.0";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x30000 0x10000>;
- 	interrupts	 = <58 2 0 0>;
- 
- 	sec_jr0: jr@1000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x1000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
- 
- 	sec_jr1: jr@2000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x2000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
- 
- 	sec_jr2: jr@3000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x3000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
- 
- 	sec_jr3: jr@4000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x4000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
--- 
-1.7.0.4
+> > +	return dma_async_is_complete(cookie, complete, used);
+> > +}
+> 
+> Regards,
+> Hartley
+> 
