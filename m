@@ -3,19 +3,18 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7C2CCB700E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 09:35:00 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3BEDEB7032
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 09:35:40 +1100 (EST)
 In-Reply-To: <20120306223321.GD15201@n2100.arm.linux.org.uk>
 References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 To: Dan Williams <dan.j.williams@intel.com>,Vinod Koul <vinod.koul@intel.com>
-Subject: [PATCH 2/9] dmaengine: move last completed cookie into generic
- dma_chan structure
+Subject: [PATCH 4/9] dmaengine: consolidate assignment of DMA cookies
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Message-Id: <E1S52xK-0002Mj-Af@rmk-PC.arm.linux.org.uk>
+Message-Id: <E1S52xy-0002Ms-Ud@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Tue, 06 Mar 2012 22:34:06 +0000
+Date: Tue, 06 Mar 2012 22:34:46 +0000
 Cc: Viresh Kumar <viresh.kumar@st.com>, Stephen Warren <swarren@nvidia.com>,
  Linus Walleij <linus.walleij@stericsson.com>,
  Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
@@ -30,1184 +29,747 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Every DMA engine implementation declares a last completed dma cookie
-in their private dma channel structures.  This is pointless, and
-forces driver specific code.  Move this out into the common dma_chan
-structure.
+Everyone deals with assigning DMA cookies in the same way (it's part of
+the API so they should be), so lets consolidate the common code into a
+helper function to avoid this duplication.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- arch/arm/include/asm/hardware/iop_adma.h |    2 --
- drivers/dma/amba-pl08x.c                 |    8 ++++----
- drivers/dma/at_hdmac.c                   |   10 +++++-----
- drivers/dma/at_hdmac_regs.h              |    2 --
- drivers/dma/coh901318.c                  |    7 +++----
- drivers/dma/dw_dmac.c                    |   10 +++++-----
- drivers/dma/dw_dmac_regs.h               |    1 -
- drivers/dma/ep93xx_dma.c                 |    8 +++-----
- drivers/dma/fsldma.c                     |    4 ++--
- drivers/dma/fsldma.h                     |    1 -
- drivers/dma/imx-dma.c                    |    7 +++----
- drivers/dma/imx-sdma.c                   |    5 ++---
- drivers/dma/intel_mid_dma.c              |    9 ++++-----
- drivers/dma/intel_mid_dma_regs.h         |    2 --
- drivers/dma/ioat/dma.c                   |    2 +-
- drivers/dma/ioat/dma.h                   |    4 +---
- drivers/dma/ioat/dma_v2.c                |    2 +-
- drivers/dma/ioat/dma_v3.c                |    2 +-
- drivers/dma/iop-adma.c                   |   10 +++++-----
- drivers/dma/ipu/ipu_idmac.c              |   10 ++++------
- drivers/dma/mpc512x_dma.c                |    7 +++----
- drivers/dma/mv_xor.c                     |    6 +++---
- drivers/dma/mv_xor.h                     |    2 --
- drivers/dma/mxs-dma.c                    |    5 ++---
- drivers/dma/pch_dma.c                    |    5 ++---
- drivers/dma/pl330.c                      |    9 +++------
- drivers/dma/ppc4xx/adma.c                |   10 +++++-----
- drivers/dma/ppc4xx/adma.h                |    2 --
- drivers/dma/shdma.c                      |   10 +++++-----
- drivers/dma/shdma.h                      |    1 -
- drivers/dma/sirf-dma.c                   |    7 +++----
- drivers/dma/ste_dma40.c                  |   10 +++-------
- drivers/dma/timb_dma.c                   |    7 +++----
- drivers/dma/txx9dmac.c                   |   10 +++++-----
- drivers/dma/txx9dmac.h                   |    1 -
- include/linux/amba/pl08x.h               |    2 --
- include/linux/dmaengine.h                |    2 ++
- 37 files changed, 83 insertions(+), 119 deletions(-)
+ drivers/dma/amba-pl08x.c    |    9 +++------
+ drivers/dma/at_hdmac.c      |   23 +----------------------
+ drivers/dma/coh901318.c     |   20 +++-----------------
+ drivers/dma/dmaengine.h     |   20 ++++++++++++++++++++
+ drivers/dma/dw_dmac.c       |   17 +----------------
+ drivers/dma/ep93xx_dma.c    |    9 +--------
+ drivers/dma/fsldma.c        |    9 +--------
+ drivers/dma/imx-dma.c       |   15 +--------------
+ drivers/dma/imx-sdma.c      |   15 +--------------
+ drivers/dma/intel_mid_dma.c |    9 +--------
+ drivers/dma/ioat/dma.c      |    7 +------
+ drivers/dma/ioat/dma_v2.c   |    8 ++------
+ drivers/dma/iop-adma.c      |   14 +-------------
+ drivers/dma/ipu/ipu_idmac.c |    9 +--------
+ drivers/dma/mpc512x_dma.c   |    8 +-------
+ drivers/dma/mv_xor.c        |   14 +-------------
+ drivers/dma/mxs-dma.c       |   15 +--------------
+ drivers/dma/pch_dma.c       |   16 +---------------
+ drivers/dma/pl330.c         |   14 ++------------
+ drivers/dma/ppc4xx/adma.c   |   19 +------------------
+ drivers/dma/shdma.c         |    8 +-------
+ drivers/dma/sirf-dma.c      |    8 +-------
+ drivers/dma/ste_dma40.c     |   13 +++----------
+ drivers/dma/timb_dma.c      |    7 +------
+ drivers/dma/txx9dmac.c      |   17 +----------------
+ 25 files changed, 52 insertions(+), 271 deletions(-)
 
-diff --git a/arch/arm/include/asm/hardware/iop_adma.h b/arch/arm/include/asm/hardware/iop_adma.h
-index 59b8c38..122f86d 100644
---- a/arch/arm/include/asm/hardware/iop_adma.h
-+++ b/arch/arm/include/asm/hardware/iop_adma.h
-@@ -49,7 +49,6 @@ struct iop_adma_device {
- /**
-  * struct iop_adma_chan - internal representation of an ADMA device
-  * @pending: allows batching of hardware operations
-- * @completed_cookie: identifier for the most recently completed operation
-  * @lock: serializes enqueue/dequeue operations to the slot pool
-  * @mmr_base: memory mapped register base
-  * @chain: device chain view of the descriptors
-@@ -62,7 +61,6 @@ struct iop_adma_device {
-  */
- struct iop_adma_chan {
- 	int pending;
--	dma_cookie_t completed_cookie;
- 	spinlock_t lock; /* protects the descriptor slot pool */
- 	void __iomem *mmr_base;
- 	struct list_head chain;
 diff --git a/drivers/dma/amba-pl08x.c b/drivers/dma/amba-pl08x.c
-index 8a28158..2b5121f 100644
+index 87475cb..5996386 100644
 --- a/drivers/dma/amba-pl08x.c
 +++ b/drivers/dma/amba-pl08x.c
-@@ -971,7 +971,7 @@ static enum dma_status pl08x_dma_tx_status(struct dma_chan *chan,
- 	u32 bytesleft = 0;
+@@ -921,13 +921,10 @@ static dma_cookie_t pl08x_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	struct pl08x_dma_chan *plchan = to_pl08x_chan(tx->chan);
+ 	struct pl08x_txd *txd = to_pl08x_txd(tx);
+ 	unsigned long flags;
++	dma_cookie_t cookie;
  
- 	last_used = plchan->chan.cookie;
--	last_complete = plchan->lc;
-+	last_complete = plchan->chan.completed_cookie;
+ 	spin_lock_irqsave(&plchan->lock, flags);
+-
+-	plchan->chan.cookie += 1;
+-	if (plchan->chan.cookie < 0)
+-		plchan->chan.cookie = 1;
+-	tx->cookie = plchan->chan.cookie;
++	cookie = dma_cookie_assign(tx);
  
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
- 	if (ret == DMA_SUCCESS) {
-@@ -983,7 +983,7 @@ static enum dma_status pl08x_dma_tx_status(struct dma_chan *chan,
- 	 * This cookie not complete yet
- 	 */
- 	last_used = plchan->chan.cookie;
--	last_complete = plchan->lc;
-+	last_complete = plchan->chan.completed_cookie;
+ 	/* Put this onto the pending list */
+ 	list_add_tail(&txd->node, &plchan->pend_list);
+@@ -947,7 +944,7 @@ static dma_cookie_t pl08x_tx_submit(struct dma_async_tx_descriptor *tx)
  
- 	/* Get number of bytes left in the active transactions and queue */
- 	bytesleft = pl08x_getbytes_chan(plchan);
-@@ -1541,7 +1541,7 @@ static void pl08x_tasklet(unsigned long data)
+ 	spin_unlock_irqrestore(&plchan->lock, flags);
  
- 	if (txd) {
- 		/* Update last completed */
--		plchan->lc = txd->tx.cookie;
-+		plchan->chan.completed_cookie = txd->tx.cookie;
- 	}
+-	return tx->cookie;
++	return cookie;
+ }
  
- 	/* If a new descriptor is queued, set it up plchan->at is NULL here */
-@@ -1723,7 +1723,7 @@ static int pl08x_dma_init_virtual_channels(struct pl08x_driver_data *pl08x,
- 
- 		chan->chan.device = dmadev;
- 		chan->chan.cookie = 0;
--		chan->lc = 0;
-+		chan->chan.completed_cookie = 0;
- 
- 		spin_lock_init(&chan->lock);
- 		INIT_LIST_HEAD(&chan->pend_list);
+ static struct dma_async_tx_descriptor *pl08x_prep_dma_interrupt(
 diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
-index f4aed5f..6baf5d7 100644
+index ce26ba3..df47e7d 100644
 --- a/drivers/dma/at_hdmac.c
 +++ b/drivers/dma/at_hdmac.c
-@@ -269,7 +269,7 @@ atc_chain_complete(struct at_dma_chan *atchan, struct at_desc *desc)
- 	dev_vdbg(chan2dev(&atchan->chan_common),
- 		"descriptor %u complete\n", txd->cookie);
+@@ -193,27 +193,6 @@ static void atc_desc_chain(struct at_desc **first, struct at_desc **prev,
+ }
  
--	atchan->completed_cookie = txd->cookie;
-+	atchan->chan_common.completed_cookie = txd->cookie;
- 
- 	/* move children to free_list */
- 	list_splice_init(&desc->tx_list, &atchan->free_list);
-@@ -1016,14 +1016,14 @@ atc_tx_status(struct dma_chan *chan,
+ /**
+- * atc_assign_cookie - compute and assign new cookie
+- * @atchan: channel we work on
+- * @desc: descriptor to assign cookie for
+- *
+- * Called with atchan->lock held and bh disabled
+- */
+-static dma_cookie_t
+-atc_assign_cookie(struct at_dma_chan *atchan, struct at_desc *desc)
+-{
+-	dma_cookie_t cookie = atchan->chan_common.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	atchan->chan_common.cookie = cookie;
+-	desc->txd.cookie = cookie;
+-
+-	return cookie;
+-}
+-
+-/**
+  * atc_dostart - starts the DMA engine for real
+  * @atchan: the channel we want to start
+  * @first: first descriptor in the list we want to begin with
+@@ -548,7 +527,7 @@ static dma_cookie_t atc_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	unsigned long		flags;
  
  	spin_lock_irqsave(&atchan->lock, flags);
+-	cookie = atc_assign_cookie(atchan, desc);
++	cookie = dma_cookie_assign(tx);
  
--	last_complete = atchan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 	last_used = chan->cookie;
- 
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
- 	if (ret != DMA_SUCCESS) {
- 		atc_cleanup_descriptors(atchan);
- 
--		last_complete = atchan->completed_cookie;
-+		last_complete = chan->completed_cookie;
- 		last_used = chan->cookie;
- 
- 		ret = dma_async_is_complete(cookie, last_complete, last_used);
-@@ -1129,7 +1129,7 @@ static int atc_alloc_chan_resources(struct dma_chan *chan)
- 	spin_lock_irqsave(&atchan->lock, flags);
- 	atchan->descs_allocated = i;
- 	list_splice(&tmp_list, &atchan->free_list);
--	atchan->completed_cookie = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
- 	spin_unlock_irqrestore(&atchan->lock, flags);
- 
- 	/* channel parameters */
-@@ -1329,7 +1329,7 @@ static int __init at_dma_probe(struct platform_device *pdev)
- 		struct at_dma_chan	*atchan = &atdma->chan[i];
- 
- 		atchan->chan_common.device = &atdma->dma_common;
--		atchan->chan_common.cookie = atchan->completed_cookie = 1;
-+		atchan->chan_common.cookie = atchan->chan_common.completed_cookie = 1;
- 		list_add_tail(&atchan->chan_common.device_node,
- 				&atdma->dma_common.channels);
- 
-diff --git a/drivers/dma/at_hdmac_regs.h b/drivers/dma/at_hdmac_regs.h
-index a8d3277..08fd8a0 100644
---- a/drivers/dma/at_hdmac_regs.h
-+++ b/drivers/dma/at_hdmac_regs.h
-@@ -208,7 +208,6 @@ enum atc_status {
-  * @save_dscr: for cyclic operations, preserve next descriptor address in
-  *             the cyclic list on suspend/resume cycle
-  * @lock: serializes enqueue/dequeue operations to descriptors lists
-- * @completed_cookie: identifier for the most recently completed operation
-  * @active_list: list of descriptors dmaengine is being running on
-  * @queue: list of descriptors ready to be submitted to engine
-  * @free_list: list of descriptors usable by the channel
-@@ -227,7 +226,6 @@ struct at_dma_chan {
- 	spinlock_t		lock;
- 
- 	/* these other elements are all protected by lock */
--	dma_cookie_t		completed_cookie;
- 	struct list_head	active_list;
- 	struct list_head	queue;
- 	struct list_head	free_list;
+ 	if (list_empty(&atchan->active_list)) {
+ 		dev_vdbg(chan2dev(tx->chan), "tx_submit: started %u\n",
 diff --git a/drivers/dma/coh901318.c b/drivers/dma/coh901318.c
-index d65a718..521434b 100644
+index fb0d124..843a1a3 100644
 --- a/drivers/dma/coh901318.c
 +++ b/drivers/dma/coh901318.c
-@@ -59,7 +59,6 @@ struct coh901318_base {
- struct coh901318_chan {
- 	spinlock_t lock;
- 	int allocated;
--	int completed;
- 	int id;
- 	int stopped;
+@@ -318,20 +318,6 @@ static int coh901318_prep_linked_list(struct coh901318_chan *cohc,
  
-@@ -705,7 +704,7 @@ static void dma_tasklet(unsigned long data)
- 	callback_param = cohd_fin->desc.callback_param;
+ 	return 0;
+ }
+-static dma_cookie_t
+-coh901318_assign_cookie(struct coh901318_chan *cohc,
+-			struct coh901318_desc *cohd)
+-{
+-	dma_cookie_t cookie = cohc->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	cohc->chan.cookie = cookie;
+-	cohd->desc.cookie = cookie;
+-
+-	return cookie;
+-}
  
- 	/* sign this job as completed on the channel */
--	cohc->completed = cohd_fin->desc.cookie;
-+	cohc->chan.completed_cookie = cohd_fin->desc.cookie;
+ static struct coh901318_desc *
+ coh901318_desc_get(struct coh901318_chan *cohc)
+@@ -966,16 +952,16 @@ coh901318_tx_submit(struct dma_async_tx_descriptor *tx)
+ 						   desc);
+ 	struct coh901318_chan *cohc = to_coh901318_chan(tx->chan);
+ 	unsigned long flags;
++	dma_cookie_t cookie;
  
- 	/* release the lli allocation and remove the descriptor */
- 	coh901318_lli_free(&cohc->base->pool, &cohd_fin->lli);
-@@ -929,7 +928,7 @@ static int coh901318_alloc_chan_resources(struct dma_chan *chan)
- 	coh901318_config(cohc, NULL);
+ 	spin_lock_irqsave(&cohc->lock, flags);
+-
+-	tx->cookie = coh901318_assign_cookie(cohc, cohd);
++	cookie = dma_cookie_assign(tx);
  
- 	cohc->allocated = 1;
--	cohc->completed = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
+ 	coh901318_desc_queue(cohc, cohd);
  
  	spin_unlock_irqrestore(&cohc->lock, flags);
  
-@@ -1169,7 +1168,7 @@ coh901318_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 	dma_cookie_t last_complete;
- 	int ret;
+-	return tx->cookie;
++	return cookie;
+ }
  
--	last_complete = cohc->completed;
-+	last_complete = chan->completed_cookie;
- 	last_used = chan->cookie;
+ static struct dma_async_tx_descriptor *
+diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
+index 968570d..7692c86 100644
+--- a/drivers/dma/dmaengine.h
++++ b/drivers/dma/dmaengine.h
+@@ -7,4 +7,24 @@
  
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
+ #include <linux/dmaengine.h>
+ 
++/**
++ * dma_cookie_assign - assign a DMA engine cookie to the descriptor
++ * @tx: descriptor needing cookie
++ *
++ * Assign a unique non-zero per-channel cookie to the descriptor.
++ * Note: caller is expected to hold a lock to prevent concurrency.
++ */
++static inline dma_cookie_t dma_cookie_assign(struct dma_async_tx_descriptor *tx)
++{
++	struct dma_chan *chan = tx->chan;
++	dma_cookie_t cookie;
++
++	cookie = chan->cookie + 1;
++	if (cookie < DMA_MIN_COOKIE)
++		cookie = DMA_MIN_COOKIE;
++	tx->cookie = chan->cookie = cookie;
++
++	return cookie;
++}
++
+ #endif
 diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
-index 9b592b0..defe574 100644
+index f10dbe1..5ee9498 100644
 --- a/drivers/dma/dw_dmac.c
 +++ b/drivers/dma/dw_dmac.c
-@@ -245,7 +245,7 @@ dwc_descriptor_complete(struct dw_dma_chan *dwc, struct dw_desc *desc,
- 	dev_vdbg(chan2dev(&dwc->chan), "descriptor %u complete\n", txd->cookie);
+@@ -152,21 +152,6 @@ static void dwc_desc_put(struct dw_dma_chan *dwc, struct dw_desc *desc)
+ 	}
+ }
+ 
+-/* Called with dwc->lock held and bh disabled */
+-static dma_cookie_t
+-dwc_assign_cookie(struct dw_dma_chan *dwc, struct dw_desc *desc)
+-{
+-	dma_cookie_t cookie = dwc->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	dwc->chan.cookie = cookie;
+-	desc->txd.cookie = cookie;
+-
+-	return cookie;
+-}
+-
+ static void dwc_initialize(struct dw_dma_chan *dwc)
+ {
+ 	struct dw_dma *dw = to_dw_dma(dwc->chan.device);
+@@ -616,7 +601,7 @@ static dma_cookie_t dwc_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	unsigned long		flags;
  
  	spin_lock_irqsave(&dwc->lock, flags);
--	dwc->completed = txd->cookie;
-+	dwc->chan.completed_cookie = txd->cookie;
- 	if (callback_required) {
- 		callback = txd->callback;
- 		param = txd->callback_param;
-@@ -955,14 +955,14 @@ dwc_tx_status(struct dma_chan *chan,
- 	dma_cookie_t		last_complete;
- 	int			ret;
- 
--	last_complete = dwc->completed;
-+	last_complete = chan->completed_cookie;
- 	last_used = chan->cookie;
- 
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
- 	if (ret != DMA_SUCCESS) {
- 		dwc_scan_descriptors(to_dw_dma(chan->device), dwc);
- 
--		last_complete = dwc->completed;
-+		last_complete = chan->completed_cookie;
- 		last_used = chan->cookie;
- 
- 		ret = dma_async_is_complete(cookie, last_complete, last_used);
-@@ -1004,7 +1004,7 @@ static int dwc_alloc_chan_resources(struct dma_chan *chan)
- 		return -EIO;
- 	}
- 
--	dwc->completed = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
+-	cookie = dwc_assign_cookie(dwc, desc);
++	cookie = dma_cookie_assign(tx);
  
  	/*
- 	 * NOTE: some controllers may have additional features that we
-@@ -1423,7 +1423,7 @@ static int __init dw_probe(struct platform_device *pdev)
- 		struct dw_dma_chan	*dwc = &dw->chan[i];
- 
- 		dwc->chan.device = &dw->dma;
--		dwc->chan.cookie = dwc->completed = 1;
-+		dwc->chan.cookie = dwc->chan.completed_cookie = 1;
- 		if (pdata->chan_allocation_order == CHAN_ALLOCATION_ASCENDING)
- 			list_add_tail(&dwc->chan.device_node,
- 					&dw->dma.channels);
-diff --git a/drivers/dma/dw_dmac_regs.h b/drivers/dma/dw_dmac_regs.h
-index 5eef694..cce1752 100644
---- a/drivers/dma/dw_dmac_regs.h
-+++ b/drivers/dma/dw_dmac_regs.h
-@@ -146,7 +146,6 @@ struct dw_dma_chan {
- 
- 	/* these other elements are all protected by lock */
- 	unsigned long		flags;
--	dma_cookie_t		completed;
- 	struct list_head	active_list;
- 	struct list_head	queue;
- 	struct list_head	free_list;
+ 	 * REVISIT: We should attempt to chain as many descriptors as
 diff --git a/drivers/dma/ep93xx_dma.c b/drivers/dma/ep93xx_dma.c
-index 59e7a96..bc45787 100644
+index 3260198..e5aaae8 100644
 --- a/drivers/dma/ep93xx_dma.c
 +++ b/drivers/dma/ep93xx_dma.c
-@@ -122,7 +122,6 @@ struct ep93xx_dma_desc {
-  * @lock: lock protecting the fields following
-  * @flags: flags for the channel
-  * @buffer: which buffer to use next (0/1)
-- * @last_completed: last completed cookie value
-  * @active: flattened chain of descriptors currently being processed
-  * @queue: pending descriptors which are handled next
-  * @free_list: list of free descriptors which can be used
-@@ -157,7 +156,6 @@ struct ep93xx_dma_chan {
- #define EP93XX_DMA_IS_CYCLIC		0
- 
- 	int				buffer;
--	dma_cookie_t			last_completed;
- 	struct list_head		active;
- 	struct list_head		queue;
- 	struct list_head		free_list;
-@@ -703,7 +701,7 @@ static void ep93xx_dma_tasklet(unsigned long data)
- 	desc = ep93xx_dma_get_active(edmac);
- 	if (desc) {
- 		if (desc->complete) {
--			edmac->last_completed = desc->txd.cookie;
-+			edmac->chan.completed_cookie = desc->txd.cookie;
- 			list_splice_init(&edmac->active, &list);
- 		}
- 		callback = desc->txd.callback;
-@@ -861,7 +859,7 @@ static int ep93xx_dma_alloc_chan_resources(struct dma_chan *chan)
- 		goto fail_clk_disable;
- 
- 	spin_lock_irq(&edmac->lock);
--	edmac->last_completed = 1;
-+	edmac->chan.completed_cookie = 1;
- 	edmac->chan.cookie = 1;
- 	ret = edmac->edma->hw_setup(edmac);
- 	spin_unlock_irq(&edmac->lock);
-@@ -1254,7 +1252,7 @@ static enum dma_status ep93xx_dma_tx_status(struct dma_chan *chan,
+@@ -783,17 +783,10 @@ static dma_cookie_t ep93xx_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	unsigned long flags;
  
  	spin_lock_irqsave(&edmac->lock, flags);
- 	last_used = chan->cookie;
--	last_completed = edmac->last_completed;
-+	last_completed = chan->completed_cookie;
- 	spin_unlock_irqrestore(&edmac->lock, flags);
+-
+-	cookie = edmac->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
++	cookie = dma_cookie_assign(tx);
  
- 	ret = dma_async_is_complete(cookie, last_completed, last_used);
+ 	desc = container_of(tx, struct ep93xx_dma_desc, txd);
+ 
+-	edmac->chan.cookie = cookie;
+-	desc->txd.cookie = cookie;
+-
+ 	/*
+ 	 * If nothing is currently prosessed, we push this descriptor
+ 	 * directly to the hardware. Otherwise we put the descriptor
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index b98070c..9b5cb8a 100644
+index 2ebbe57..04b4347 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -990,7 +990,7 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
- 
- 	spin_lock_irqsave(&chan->desc_lock, flags);
- 
--	last_complete = chan->completed_cookie;
-+	last_complete = dchan->completed_cookie;
- 	last_used = dchan->cookie;
- 
- 	spin_unlock_irqrestore(&chan->desc_lock, flags);
-@@ -1088,7 +1088,7 @@ static void dma_do_tasklet(unsigned long data)
- 		desc = to_fsl_desc(chan->ld_running.prev);
- 		cookie = desc->async_tx.cookie;
- 
--		chan->completed_cookie = cookie;
-+		chan->common.completed_cookie = cookie;
- 		chan_dbg(chan, "completed_cookie=%d\n", cookie);
+@@ -414,17 +414,10 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	 * assign cookies to all of the software descriptors
+ 	 * that make up this transaction
+ 	 */
+-	cookie = chan->common.cookie;
+ 	list_for_each_entry(child, &desc->tx_list, node) {
+-		cookie++;
+-		if (cookie < DMA_MIN_COOKIE)
+-			cookie = DMA_MIN_COOKIE;
+-
+-		child->async_tx.cookie = cookie;
++		cookie = dma_cookie_assign(&child->async_tx);
  	}
  
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index 9cb5aa5..f5c3879 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -137,7 +137,6 @@ struct fsldma_device {
- struct fsldma_chan {
- 	char name[8];			/* Channel name */
- 	struct fsldma_chan_regs __iomem *regs;
--	dma_cookie_t completed_cookie;	/* The maximum cookie completed */
- 	spinlock_t desc_lock;		/* Descriptor operation lock */
- 	struct list_head ld_pending;	/* Link descriptors queue */
- 	struct list_head ld_running;	/* Link descriptors queue */
+-	chan->common.cookie = cookie;
+-
+ 	/* put this transaction onto the tail of the pending queue */
+ 	append_ld_queue(chan, desc);
+ 
 diff --git a/drivers/dma/imx-dma.c b/drivers/dma/imx-dma.c
-index e4383ee..321fc1f 100644
+index 51251a6..42154b6 100644
 --- a/drivers/dma/imx-dma.c
 +++ b/drivers/dma/imx-dma.c
-@@ -41,7 +41,6 @@ struct imxdma_channel {
- 	struct dma_chan			chan;
- 	spinlock_t			lock;
- 	struct dma_async_tx_descriptor	desc;
--	dma_cookie_t			last_completed;
- 	enum dma_status			status;
- 	int				dma_request;
- 	struct scatterlist		*sg_list;
-@@ -65,7 +64,7 @@ static void imxdma_handle(struct imxdma_channel *imxdmac)
- {
- 	if (imxdmac->desc.callback)
- 		imxdmac->desc.callback(imxdmac->desc.callback_param);
--	imxdmac->last_completed = imxdmac->desc.cookie;
-+	imxdmac->chan.completed_cookie = imxdmac->desc.cookie;
- }
- 
- static void imxdma_irq_handler(int channel, void *data)
-@@ -158,8 +157,8 @@ static enum dma_status imxdma_tx_status(struct dma_chan *chan,
- 
- 	last_used = chan->cookie;
- 
--	ret = dma_async_is_complete(cookie, imxdmac->last_completed, last_used);
--	dma_set_tx_state(txstate, imxdmac->last_completed, last_used, 0);
-+	ret = dma_async_is_complete(cookie, chan->completed_cookie, last_used);
-+	dma_set_tx_state(txstate, chan->completed_cookie, last_used, 0);
- 
+@@ -165,19 +165,6 @@ static enum dma_status imxdma_tx_status(struct dma_chan *chan,
  	return ret;
  }
+ 
+-static dma_cookie_t imxdma_assign_cookie(struct imxdma_channel *imxdma)
+-{
+-	dma_cookie_t cookie = imxdma->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	imxdma->chan.cookie = cookie;
+-	imxdma->desc.cookie = cookie;
+-
+-	return cookie;
+-}
+-
+ static dma_cookie_t imxdma_tx_submit(struct dma_async_tx_descriptor *tx)
+ {
+ 	struct imxdma_channel *imxdmac = to_imxdma_chan(tx->chan);
+@@ -185,7 +172,7 @@ static dma_cookie_t imxdma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 
+ 	spin_lock_irq(&imxdmac->lock);
+ 
+-	cookie = imxdma_assign_cookie(imxdmac);
++	cookie = dma_cookie_assign(tx);
+ 
+ 	imx_dma_enable(imxdmac->imxdma_channel);
+ 
 diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c
-index 8bc5acf..e857904 100644
+index 9950ec3..4e4f40e 100644
 --- a/drivers/dma/imx-sdma.c
 +++ b/drivers/dma/imx-sdma.c
-@@ -266,7 +266,6 @@ struct sdma_channel {
- 	struct dma_chan			chan;
- 	spinlock_t			lock;
- 	struct dma_async_tx_descriptor	desc;
--	dma_cookie_t			last_completed;
- 	enum dma_status			status;
- 	unsigned int			chn_count;
- 	unsigned int			chn_real_count;
-@@ -523,7 +522,7 @@ static void mxc_sdma_handle_channel_normal(struct sdma_channel *sdmac)
- 	else
- 		sdmac->status = DMA_SUCCESS;
- 
--	sdmac->last_completed = sdmac->desc.cookie;
-+	sdmac->chan.completed_cookie = sdmac->desc.cookie;
- 	if (sdmac->desc.callback)
- 		sdmac->desc.callback(sdmac->desc.callback_param);
+@@ -817,19 +817,6 @@ static void sdma_enable_channel(struct sdma_engine *sdma, int channel)
+ 	__raw_writel(1 << channel, sdma->regs + SDMA_H_START);
  }
-@@ -1129,7 +1128,7 @@ static enum dma_status sdma_tx_status(struct dma_chan *chan,
  
- 	last_used = chan->cookie;
+-static dma_cookie_t sdma_assign_cookie(struct sdma_channel *sdmac)
+-{
+-	dma_cookie_t cookie = sdmac->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	sdmac->chan.cookie = cookie;
+-	sdmac->desc.cookie = cookie;
+-
+-	return cookie;
+-}
+-
+ static struct sdma_channel *to_sdma_chan(struct dma_chan *chan)
+ {
+ 	return container_of(chan, struct sdma_channel, chan);
+@@ -844,7 +831,7 @@ static dma_cookie_t sdma_tx_submit(struct dma_async_tx_descriptor *tx)
  
--	dma_set_tx_state(txstate, sdmac->last_completed, last_used,
-+	dma_set_tx_state(txstate, chan->completed_cookie, last_used,
- 			sdmac->chn_count - sdmac->chn_real_count);
+ 	spin_lock_irqsave(&sdmac->lock, flags);
  
- 	return sdmac->status;
+-	cookie = sdma_assign_cookie(sdmac);
++	cookie = dma_cookie_assign(tx);
+ 
+ 	sdma_enable_channel(sdma, sdmac->channel);
+ 
 diff --git a/drivers/dma/intel_mid_dma.c b/drivers/dma/intel_mid_dma.c
-index 74f70aa..a27ae45 100644
+index a907dd6..dfe4396 100644
 --- a/drivers/dma/intel_mid_dma.c
 +++ b/drivers/dma/intel_mid_dma.c
-@@ -288,7 +288,7 @@ static void midc_descriptor_complete(struct intel_mid_dma_chan *midc,
- 	struct intel_mid_dma_lli	*llitem;
- 	void *param_txd = NULL;
- 
--	midc->completed = txd->cookie;
-+	midc->chan.completed_cookie = txd->cookie;
- 	callback_txd = txd->callback;
- 	param_txd = txd->callback_param;
- 
-@@ -482,12 +482,11 @@ static enum dma_status intel_mid_dma_tx_status(struct dma_chan *chan,
- 						dma_cookie_t cookie,
- 						struct dma_tx_state *txstate)
- {
--	struct intel_mid_dma_chan	*midc = to_intel_mid_dma_chan(chan);
- 	dma_cookie_t		last_used;
- 	dma_cookie_t		last_complete;
- 	int				ret;
- 
--	last_complete = midc->completed;
-+	last_complete = chan->completed_cookie;
- 	last_used = chan->cookie;
- 
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
-@@ -496,7 +495,7 @@ static enum dma_status intel_mid_dma_tx_status(struct dma_chan *chan,
- 		midc_scan_descriptors(to_middma_device(chan->device), midc);
- 		spin_unlock_bh(&midc->lock);
- 
--		last_complete = midc->completed;
-+		last_complete = chan->completed_cookie;
- 		last_used = chan->cookie;
- 
- 		ret = dma_async_is_complete(cookie, last_complete, last_used);
-@@ -886,7 +885,7 @@ static int intel_mid_dma_alloc_chan_resources(struct dma_chan *chan)
- 		pm_runtime_put(&mid->pdev->dev);
- 		return -EIO;
- 	}
--	midc->completed = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
+@@ -436,14 +436,7 @@ static dma_cookie_t intel_mid_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	dma_cookie_t		cookie;
  
  	spin_lock_bh(&midc->lock);
- 	while (midc->descs_allocated < DESCS_PER_CHANNEL) {
-diff --git a/drivers/dma/intel_mid_dma_regs.h b/drivers/dma/intel_mid_dma_regs.h
-index c83d35b..1bfa926 100644
---- a/drivers/dma/intel_mid_dma_regs.h
-+++ b/drivers/dma/intel_mid_dma_regs.h
-@@ -165,7 +165,6 @@ union intel_mid_dma_cfg_hi {
-  * @dma_base: MMIO register space DMA engine base pointer
-  * @ch_id: DMA channel id
-  * @lock: channel spinlock
-- * @completed: DMA cookie
-  * @active_list: current active descriptors
-  * @queue: current queued up descriptors
-  * @free_list: current free descriptors
-@@ -183,7 +182,6 @@ struct intel_mid_dma_chan {
- 	void __iomem		*dma_base;
- 	int			ch_id;
- 	spinlock_t		lock;
--	dma_cookie_t		completed;
- 	struct list_head	active_list;
- 	struct list_head	queue;
- 	struct list_head	free_list;
+-	cookie = midc->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	midc->chan.cookie = cookie;
+-	desc->txd.cookie = cookie;
+-
++	cookie = dma_cookie_assign(tx);
+ 
+ 	if (list_empty(&midc->active_list))
+ 		list_add_tail(&desc->desc_node, &midc->active_list);
 diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
-index a4d6cb0..fab440a 100644
+index dfe411b..5c06117 100644
 --- a/drivers/dma/ioat/dma.c
 +++ b/drivers/dma/ioat/dma.c
-@@ -603,7 +603,7 @@ static void __cleanup(struct ioat_dma_chan *ioat, unsigned long phys_complete)
- 		 */
- 		dump_desc_dbg(ioat, desc);
- 		if (tx->cookie) {
--			chan->completed_cookie = tx->cookie;
-+			chan->common.completed_cookie = tx->cookie;
- 			tx->cookie = 0;
- 			ioat_dma_unmap(chan, tx->flags, desc->len, desc->hw);
- 			ioat->active -= desc->hw->tx_cnt;
-diff --git a/drivers/dma/ioat/dma.h b/drivers/dma/ioat/dma.h
-index 5216c8a..9653b6b 100644
---- a/drivers/dma/ioat/dma.h
-+++ b/drivers/dma/ioat/dma.h
-@@ -90,7 +90,6 @@ struct ioat_chan_common {
- 	void __iomem *reg_base;
- 	unsigned long last_completion;
- 	spinlock_t cleanup_lock;
--	dma_cookie_t completed_cookie;
- 	unsigned long state;
- 	#define IOAT_COMPLETION_PENDING 0
- 	#define IOAT_COMPLETION_ACK 1
-@@ -153,12 +152,11 @@ static inline enum dma_status
- ioat_tx_status(struct dma_chan *c, dma_cookie_t cookie,
- 		 struct dma_tx_state *txstate)
- {
--	struct ioat_chan_common *chan = to_chan_common(c);
- 	dma_cookie_t last_used;
- 	dma_cookie_t last_complete;
+@@ -237,12 +237,7 @@ static dma_cookie_t ioat1_tx_submit(struct dma_async_tx_descriptor *tx)
  
- 	last_used = c->cookie;
--	last_complete = chan->completed_cookie;
-+	last_complete = c->completed_cookie;
+ 	spin_lock_bh(&ioat->desc_lock);
+ 	/* cookie incr and addition to used_list must be atomic */
+-	cookie = c->cookie;
+-	cookie++;
+-	if (cookie < 0)
+-		cookie = 1;
+-	c->cookie = cookie;
+-	tx->cookie = cookie;
++	cookie = dma_cookie_assign(tx);
+ 	dev_dbg(to_dev(&ioat->base), "%s: cookie: %d\n", __func__, cookie);
  
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 
+ 	/* write address into NextDescriptor field of last desc in chain */
 diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
-index 5d65f83..d3f0aff 100644
+index 6c1e675..17ecacb 100644
 --- a/drivers/dma/ioat/dma_v2.c
 +++ b/drivers/dma/ioat/dma_v2.c
-@@ -147,7 +147,7 @@ static void __cleanup(struct ioat2_dma_chan *ioat, unsigned long phys_complete)
- 		dump_desc_dbg(ioat, desc);
- 		if (tx->cookie) {
- 			ioat_dma_unmap(chan, tx->flags, desc->len, desc->hw);
--			chan->completed_cookie = tx->cookie;
-+			chan->common.completed_cookie = tx->cookie;
- 			tx->cookie = 0;
- 			if (tx->callback) {
- 				tx->callback(tx->callback_param);
-diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
-index f519c93..d4afac7 100644
---- a/drivers/dma/ioat/dma_v3.c
-+++ b/drivers/dma/ioat/dma_v3.c
-@@ -277,7 +277,7 @@ static void __cleanup(struct ioat2_dma_chan *ioat, unsigned long phys_complete)
- 		dump_desc_dbg(ioat, desc);
- 		tx = &desc->txd;
- 		if (tx->cookie) {
--			chan->completed_cookie = tx->cookie;
-+			chan->common.completed_cookie = tx->cookie;
- 			ioat3_dma_unmap(ioat, desc, idx + i);
- 			tx->cookie = 0;
- 			if (tx->callback) {
+@@ -400,13 +400,9 @@ static dma_cookie_t ioat2_tx_submit_unlock(struct dma_async_tx_descriptor *tx)
+ 	struct dma_chan *c = tx->chan;
+ 	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
+ 	struct ioat_chan_common *chan = &ioat->base;
+-	dma_cookie_t cookie = c->cookie;
++	dma_cookie_t cookie;
+ 
+-	cookie++;
+-	if (cookie < 0)
+-		cookie = 1;
+-	tx->cookie = cookie;
+-	c->cookie = cookie;
++	cookie = dma_cookie_assign(tx);
+ 	dev_dbg(to_dev(&ioat->base), "%s: cookie: %d\n", __func__, cookie);
+ 
+ 	if (!test_and_set_bit(IOAT_COMPLETION_PENDING, &chan->state))
 diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index 04be90b..d8027c2 100644
+index 650bf1e..f2392d5 100644
 --- a/drivers/dma/iop-adma.c
 +++ b/drivers/dma/iop-adma.c
-@@ -317,7 +317,7 @@ static void __iop_adma_slot_cleanup(struct iop_adma_chan *iop_chan)
- 	}
- 
- 	if (cookie > 0) {
--		iop_chan->completed_cookie = cookie;
-+		iop_chan->common.completed_cookie = cookie;
- 		pr_debug("\tcompleted cookie %d\n", cookie);
- 	}
+@@ -440,18 +440,6 @@ iop_adma_alloc_slots(struct iop_adma_chan *iop_chan, int num_slots,
+ 	return NULL;
  }
-@@ -909,7 +909,7 @@ static enum dma_status iop_adma_status(struct dma_chan *chan,
- 	enum dma_status ret;
  
- 	last_used = chan->cookie;
--	last_complete = iop_chan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
- 	if (ret == DMA_SUCCESS)
-@@ -918,7 +918,7 @@ static enum dma_status iop_adma_status(struct dma_chan *chan,
- 	iop_adma_slot_cleanup(iop_chan);
+-static dma_cookie_t
+-iop_desc_assign_cookie(struct iop_adma_chan *iop_chan,
+-	struct iop_adma_desc_slot *desc)
+-{
+-	dma_cookie_t cookie = iop_chan->common.cookie;
+-	cookie++;
+-	if (cookie < 0)
+-		cookie = 1;
+-	iop_chan->common.cookie = desc->async_tx.cookie = cookie;
+-	return cookie;
+-}
+-
+ static void iop_adma_check_threshold(struct iop_adma_chan *iop_chan)
+ {
+ 	dev_dbg(iop_chan->device->common.dev, "pending: %d\n",
+@@ -479,7 +467,7 @@ iop_adma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	slots_per_op = grp_start->slots_per_op;
  
- 	last_used = chan->cookie;
--	last_complete = iop_chan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
+ 	spin_lock_bh(&iop_chan->lock);
+-	cookie = iop_desc_assign_cookie(iop_chan, sw_desc);
++	cookie = dma_cookie_assign(tx);
  
- 	return dma_async_is_complete(cookie, last_complete, last_used);
-@@ -1650,7 +1650,7 @@ static void iop_chan_start_null_memcpy(struct iop_adma_chan *iop_chan)
- 		/* initialize the completed cookie to be less than
- 		 * the most recently used cookie
- 		 */
--		iop_chan->completed_cookie = cookie - 1;
-+		iop_chan->common.completed_cookie = cookie - 1;
- 		iop_chan->common.cookie = sw_desc->async_tx.cookie = cookie;
- 
- 		/* channel should not be busy */
-@@ -1707,7 +1707,7 @@ static void iop_chan_start_null_xor(struct iop_adma_chan *iop_chan)
- 		/* initialize the completed cookie to be less than
- 		 * the most recently used cookie
- 		 */
--		iop_chan->completed_cookie = cookie - 1;
-+		iop_chan->common.completed_cookie = cookie - 1;
- 		iop_chan->common.cookie = sw_desc->async_tx.cookie = cookie;
- 
- 		/* channel should not be busy */
+ 	old_chain_tail = list_entry(iop_chan->chain.prev,
+ 		struct iop_adma_desc_slot, chain_node);
 diff --git a/drivers/dma/ipu/ipu_idmac.c b/drivers/dma/ipu/ipu_idmac.c
-index 6212b16..9149ade 100644
+index 0fcff65..d4620c5 100644
 --- a/drivers/dma/ipu/ipu_idmac.c
 +++ b/drivers/dma/ipu/ipu_idmac.c
-@@ -1295,7 +1295,7 @@ static irqreturn_t idmac_interrupt(int irq, void *dev_id)
- 	/* Flip the active buffer - even if update above failed */
- 	ichan->active_buffer = !ichan->active_buffer;
- 	if (done)
--		ichan->completed = desc->txd.cookie;
-+		ichan->dma_chan.completed_cookie = desc->txd.cookie;
+@@ -867,14 +867,7 @@ static dma_cookie_t idmac_tx_submit(struct dma_async_tx_descriptor *tx)
  
- 	callback = desc->txd.callback;
- 	callback_param = desc->txd.callback_param;
-@@ -1511,7 +1511,7 @@ static int idmac_alloc_chan_resources(struct dma_chan *chan)
- 	WARN_ON(ichan->status != IPU_CHANNEL_FREE);
+ 	dev_dbg(dev, "Submitting sg %p\n", &desc->sg[0]);
  
- 	chan->cookie		= 1;
--	ichan->completed	= -ENXIO;
-+	chan->completed_cookie	= -ENXIO;
- 
- 	ret = ipu_irq_map(chan->chan_id);
- 	if (ret < 0)
-@@ -1600,9 +1600,7 @@ static void idmac_free_chan_resources(struct dma_chan *chan)
- static enum dma_status idmac_tx_status(struct dma_chan *chan,
- 		       dma_cookie_t cookie, struct dma_tx_state *txstate)
- {
--	struct idmac_channel *ichan = to_idmac_chan(chan);
+-	cookie = ichan->dma_chan.cookie;
 -
--	dma_set_tx_state(txstate, ichan->completed, chan->cookie, 0);
-+	dma_set_tx_state(txstate, chan->completed_cookie, chan->cookie, 0);
- 	if (cookie != chan->cookie)
- 		return DMA_ERROR;
- 	return DMA_SUCCESS;
-@@ -1638,11 +1636,11 @@ static int __init ipu_idmac_init(struct ipu *ipu)
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	/* from dmaengine.h: "last cookie value returned to client" */
+-	ichan->dma_chan.cookie = cookie;
+-	tx->cookie = cookie;
++	cookie = dma_cookie_assign(tx);
  
- 		ichan->status		= IPU_CHANNEL_FREE;
- 		ichan->sec_chan_en	= false;
--		ichan->completed	= -ENXIO;
- 		snprintf(ichan->eof_name, sizeof(ichan->eof_name), "IDMAC EOF %d", i);
- 
- 		dma_chan->device	= &idmac->dma;
- 		dma_chan->cookie	= 1;
-+		dma_chan->completed_cookie	= -ENXIO;
- 		dma_chan->chan_id	= i;
- 		list_add_tail(&dma_chan->device_node, &dma->channels);
- 	}
+ 	/* ipu->lock can be taken under ichan->lock, but not v.v. */
+ 	spin_lock_irqsave(&ichan->lock, flags);
 diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 4d6d4cf..39a5cde 100644
+index c56b3fe..0253d5a 100644
 --- a/drivers/dma/mpc512x_dma.c
 +++ b/drivers/dma/mpc512x_dma.c
-@@ -188,7 +188,6 @@ struct mpc_dma_chan {
- 	struct list_head		completed;
- 	struct mpc_dma_tcd		*tcd;
- 	dma_addr_t			tcd_paddr;
--	dma_cookie_t			completed_cookie;
+@@ -439,13 +439,7 @@ static dma_cookie_t mpc_dma_tx_submit(struct dma_async_tx_descriptor *txd)
+ 		mpc_dma_execute(mchan);
  
- 	/* Lock for this structure */
- 	spinlock_t			lock;
-@@ -365,7 +364,7 @@ static void mpc_dma_process_completed(struct mpc_dma *mdma)
- 		/* Free descriptors */
- 		spin_lock_irqsave(&mchan->lock, flags);
- 		list_splice_tail_init(&list, &mchan->free);
--		mchan->completed_cookie = last_cookie;
-+		mchan->chan.completed_cookie = last_cookie;
- 		spin_unlock_irqrestore(&mchan->lock, flags);
- 	}
- }
-@@ -568,7 +567,7 @@ mpc_dma_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 
- 	spin_lock_irqsave(&mchan->lock, flags);
- 	last_used = mchan->chan.cookie;
--	last_complete = mchan->completed_cookie;
-+	last_complete = mchan->chan.completed_cookie;
+ 	/* Update cookie */
+-	cookie = mchan->chan.cookie + 1;
+-	if (cookie <= 0)
+-		cookie = 1;
+-
+-	mchan->chan.cookie = cookie;
+-	mdesc->desc.cookie = cookie;
+-
++	cookie = dma_cookie_assign(txd);
  	spin_unlock_irqrestore(&mchan->lock, flags);
  
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
-@@ -742,7 +741,7 @@ static int __devinit mpc_dma_probe(struct platform_device *op)
- 
- 		mchan->chan.device = dma;
- 		mchan->chan.cookie = 1;
--		mchan->completed_cookie = mchan->chan.cookie;
-+		mchan->chan.completed_cookie = mchan->chan.cookie;
- 
- 		INIT_LIST_HEAD(&mchan->free);
- 		INIT_LIST_HEAD(&mchan->prepared);
+ 	return cookie;
 diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
-index ad7d03f..c6a84da 100644
+index ee61778..d9810ce 100644
 --- a/drivers/dma/mv_xor.c
 +++ b/drivers/dma/mv_xor.c
-@@ -435,7 +435,7 @@ static void __mv_xor_slot_cleanup(struct mv_xor_chan *mv_chan)
- 	}
- 
- 	if (cookie > 0)
--		mv_chan->completed_cookie = cookie;
-+		mv_chan->common.completed_cookie = cookie;
+@@ -536,18 +536,6 @@ mv_xor_alloc_slots(struct mv_xor_chan *mv_chan, int num_slots,
+ 	return NULL;
  }
  
- static void
-@@ -825,7 +825,7 @@ static enum dma_status mv_xor_status(struct dma_chan *chan,
- 	enum dma_status ret;
+-static dma_cookie_t
+-mv_desc_assign_cookie(struct mv_xor_chan *mv_chan,
+-		      struct mv_xor_desc_slot *desc)
+-{
+-	dma_cookie_t cookie = mv_chan->common.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-	mv_chan->common.cookie = desc->async_tx.cookie = cookie;
+-	return cookie;
+-}
+-
+ /************************ DMA engine API functions ****************************/
+ static dma_cookie_t
+ mv_xor_tx_submit(struct dma_async_tx_descriptor *tx)
+@@ -565,7 +553,7 @@ mv_xor_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	grp_start = sw_desc->group_head;
  
- 	last_used = chan->cookie;
--	last_complete = mv_chan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
+ 	spin_lock_bh(&mv_chan->lock);
+-	cookie = mv_desc_assign_cookie(mv_chan, sw_desc);
++	cookie = dma_cookie_assign(tx);
  
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
-@@ -836,7 +836,7 @@ static enum dma_status mv_xor_status(struct dma_chan *chan,
- 	mv_xor_slot_cleanup(mv_chan);
- 
- 	last_used = chan->cookie;
--	last_complete = mv_chan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 	return dma_async_is_complete(cookie, last_complete, last_used);
-diff --git a/drivers/dma/mv_xor.h b/drivers/dma/mv_xor.h
-index da04ac2..654876b 100644
---- a/drivers/dma/mv_xor.h
-+++ b/drivers/dma/mv_xor.h
-@@ -78,7 +78,6 @@ struct mv_xor_device {
- /**
-  * struct mv_xor_chan - internal representation of a XOR channel
-  * @pending: allows batching of hardware operations
-- * @completed_cookie: identifier for the most recently completed operation
-  * @lock: serializes enqueue/dequeue operations to the descriptors pool
-  * @mmr_base: memory mapped register base
-  * @idx: the index of the xor channel
-@@ -93,7 +92,6 @@ struct mv_xor_device {
-  */
- struct mv_xor_chan {
- 	int			pending;
--	dma_cookie_t		completed_cookie;
- 	spinlock_t		lock; /* protects the descriptor slot pool */
- 	void __iomem		*mmr_base;
- 	unsigned int		idx;
+ 	if (list_empty(&mv_chan->chain))
+ 		list_splice_init(&sw_desc->tx_list, &mv_chan->chain);
 diff --git a/drivers/dma/mxs-dma.c b/drivers/dma/mxs-dma.c
-index b06cd4c..3696e6e 100644
+index daa84ee..4d3b6ff 100644
 --- a/drivers/dma/mxs-dma.c
 +++ b/drivers/dma/mxs-dma.c
-@@ -111,7 +111,6 @@ struct mxs_dma_chan {
- 	struct mxs_dma_ccw		*ccw;
- 	dma_addr_t			ccw_phys;
- 	int				desc_count;
--	dma_cookie_t			last_completed;
- 	enum dma_status			status;
- 	unsigned int			flags;
- #define MXS_DMA_SG_LOOP			(1 << 0)
-@@ -274,7 +273,7 @@ static irqreturn_t mxs_dma_int_handler(int irq, void *dev_id)
- 		stat1 &= ~(1 << channel);
- 
- 		if (mxs_chan->status == DMA_SUCCESS)
--			mxs_chan->last_completed = mxs_chan->desc.cookie;
-+			mxs_chan->chan.completed_cookie = mxs_chan->desc.cookie;
- 
- 		/* schedule tasklet on this channel */
- 		tasklet_schedule(&mxs_chan->tasklet);
-@@ -538,7 +537,7 @@ static enum dma_status mxs_dma_tx_status(struct dma_chan *chan,
- 	dma_cookie_t last_used;
- 
- 	last_used = chan->cookie;
--	dma_set_tx_state(txstate, mxs_chan->last_completed, last_used, 0);
-+	dma_set_tx_state(txstate, chan->completed_cookie, last_used, 0);
- 
- 	return mxs_chan->status;
+@@ -194,19 +194,6 @@ static void mxs_dma_resume_chan(struct mxs_dma_chan *mxs_chan)
+ 	mxs_chan->status = DMA_IN_PROGRESS;
  }
+ 
+-static dma_cookie_t mxs_dma_assign_cookie(struct mxs_dma_chan *mxs_chan)
+-{
+-	dma_cookie_t cookie = mxs_chan->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	mxs_chan->chan.cookie = cookie;
+-	mxs_chan->desc.cookie = cookie;
+-
+-	return cookie;
+-}
+-
+ static struct mxs_dma_chan *to_mxs_dma_chan(struct dma_chan *chan)
+ {
+ 	return container_of(chan, struct mxs_dma_chan, chan);
+@@ -218,7 +205,7 @@ static dma_cookie_t mxs_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 
+ 	mxs_dma_enable_chan(mxs_chan);
+ 
+-	return mxs_dma_assign_cookie(mxs_chan);
++	return dma_cookie_assign(tx);
+ }
+ 
+ static void mxs_dma_tasklet(unsigned long data)
 diff --git a/drivers/dma/pch_dma.c b/drivers/dma/pch_dma.c
-index 823f581..79a7185 100644
+index 2b3479d..5218e48 100644
 --- a/drivers/dma/pch_dma.c
 +++ b/drivers/dma/pch_dma.c
-@@ -105,7 +105,6 @@ struct pch_dma_chan {
+@@ -417,20 +417,6 @@ static void pdc_advance_work(struct pch_dma_chan *pd_chan)
+ 	}
+ }
  
- 	spinlock_t		lock;
+-static dma_cookie_t pdc_assign_cookie(struct pch_dma_chan *pd_chan,
+-				      struct pch_dma_desc *desc)
+-{
+-	dma_cookie_t cookie = pd_chan->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	pd_chan->chan.cookie = cookie;
+-	desc->txd.cookie = cookie;
+-
+-	return cookie;
+-}
+-
+ static dma_cookie_t pd_tx_submit(struct dma_async_tx_descriptor *txd)
+ {
+ 	struct pch_dma_desc *desc = to_pd_desc(txd);
+@@ -438,7 +424,7 @@ static dma_cookie_t pd_tx_submit(struct dma_async_tx_descriptor *txd)
+ 	dma_cookie_t cookie;
  
--	dma_cookie_t		completed_cookie;
- 	struct list_head	active_list;
- 	struct list_head	queue;
- 	struct list_head	free_list;
-@@ -544,7 +543,7 @@ static int pd_alloc_chan_resources(struct dma_chan *chan)
- 	spin_lock_irq(&pd_chan->lock);
- 	list_splice(&tmp_list, &pd_chan->free_list);
- 	pd_chan->descs_allocated = i;
--	pd_chan->completed_cookie = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
- 	spin_unlock_irq(&pd_chan->lock);
+ 	spin_lock(&pd_chan->lock);
+-	cookie = pdc_assign_cookie(pd_chan, desc);
++	cookie = dma_cookie_assign(txd);
  
- 	pdc_enable_irq(chan, 1);
-@@ -583,7 +582,7 @@ static enum dma_status pd_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 	int ret;
- 
- 	spin_lock_irq(&pd_chan->lock);
--	last_completed = pd_chan->completed_cookie;
-+	last_completed = chan->completed_cookie;
- 	last_used = chan->cookie;
- 	spin_unlock_irq(&pd_chan->lock);
- 
+ 	if (list_empty(&pd_chan->active_list)) {
+ 		list_add_tail(&desc->desc_node, &pd_chan->active_list);
 diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-index b8ec03e..bdf04f1 100644
+index d7b0af2..ec9638b 100644
 --- a/drivers/dma/pl330.c
 +++ b/drivers/dma/pl330.c
-@@ -51,9 +51,6 @@ struct dma_pl330_chan {
- 	/* DMA-Engine Channel */
- 	struct dma_chan chan;
- 
--	/* Last completed cookie */
--	dma_cookie_t completed;
--
- 	/* List of to be xfered descriptors */
- 	struct list_head work_list;
- 
-@@ -234,7 +231,7 @@ static void pl330_tasklet(unsigned long data)
- 	/* Pick up ripe tomatoes */
- 	list_for_each_entry_safe(desc, _dt, &pch->work_list, node)
- 		if (desc->status == DONE) {
--			pch->completed = desc->txd.cookie;
-+			pch->chan.completed_cookie = desc->txd.cookie;
- 			list_move_tail(&desc->node, &list);
- 		}
- 
-@@ -305,7 +302,7 @@ static int pl330_alloc_chan_resources(struct dma_chan *chan)
- 
+@@ -429,26 +429,16 @@ static dma_cookie_t pl330_tx_submit(struct dma_async_tx_descriptor *tx)
  	spin_lock_irqsave(&pch->lock, flags);
  
--	pch->completed = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
- 	pch->cyclic = false;
+ 	/* Assign cookies to all nodes */
+-	cookie = tx->chan->cookie;
+-
+ 	while (!list_empty(&last->node)) {
+ 		desc = list_entry(last->node.next, struct dma_pl330_desc, node);
  
- 	pch->pl330_chid = pl330_request_channel(&pdmac->pif);
-@@ -400,7 +397,7 @@ pl330_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 	dma_cookie_t last_done, last_used;
- 	int ret;
+-		if (++cookie < 0)
+-			cookie = 1;
+-		desc->txd.cookie = cookie;
++		dma_cookie_assign(&desc->txd);
  
--	last_done = pch->completed;
-+	last_done = chan->completed_cookie;
- 	last_used = chan->cookie;
+ 		list_move_tail(&desc->node, &pch->work_list);
+ 	}
  
- 	ret = dma_async_is_complete(cookie, last_done, last_used);
+-	if (++cookie < 0)
+-		cookie = 1;
+-	last->txd.cookie = cookie;
+-
++	cookie = dma_cookie_assign(&last->txd);
+ 	list_add_tail(&last->node, &pch->work_list);
+-
+-	tx->chan->cookie = cookie;
+-
+ 	spin_unlock_irqrestore(&pch->lock, flags);
+ 
+ 	return cookie;
 diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
-index fc457a7..f878322 100644
+index 40082ec..12e94dd 100644
 --- a/drivers/dma/ppc4xx/adma.c
 +++ b/drivers/dma/ppc4xx/adma.c
-@@ -1930,7 +1930,7 @@ static void __ppc440spe_adma_slot_cleanup(struct ppc440spe_adma_chan *chan)
- 				if (end_of_chain && slot_cnt) {
- 					/* Should wait for ZeroSum completion */
- 					if (cookie > 0)
--						chan->completed_cookie = cookie;
-+						chan->common.completed_cookie = cookie;
- 					return;
- 				}
+@@ -2151,22 +2151,6 @@ static int ppc440spe_adma_alloc_chan_resources(struct dma_chan *chan)
+ }
  
-@@ -1960,7 +1960,7 @@ static void __ppc440spe_adma_slot_cleanup(struct ppc440spe_adma_chan *chan)
- 	BUG_ON(!seen_current);
+ /**
+- * ppc440spe_desc_assign_cookie - assign a cookie
+- */
+-static dma_cookie_t ppc440spe_desc_assign_cookie(
+-		struct ppc440spe_adma_chan *chan,
+-		struct ppc440spe_adma_desc_slot *desc)
+-{
+-	dma_cookie_t cookie = chan->common.cookie;
+-
+-	cookie++;
+-	if (cookie < 0)
+-		cookie = 1;
+-	chan->common.cookie = desc->async_tx.cookie = cookie;
+-	return cookie;
+-}
+-
+-/**
+  * ppc440spe_rxor_set_region_data -
+  */
+ static void ppc440spe_rxor_set_region(struct ppc440spe_adma_desc_slot *desc,
+@@ -2236,8 +2220,7 @@ static dma_cookie_t ppc440spe_adma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	slots_per_op = group_start->slots_per_op;
  
- 	if (cookie > 0) {
--		chan->completed_cookie = cookie;
-+		chan->common.completed_cookie = cookie;
- 		pr_debug("\tcompleted cookie %d\n", cookie);
- 	}
+ 	spin_lock_bh(&chan->lock);
+-
+-	cookie = ppc440spe_desc_assign_cookie(chan, sw_desc);
++	cookie = dma_cookie_assign(tx);
  
-@@ -3950,7 +3950,7 @@ static enum dma_status ppc440spe_adma_tx_status(struct dma_chan *chan,
- 
- 	ppc440spe_chan = to_ppc440spe_adma_chan(chan);
- 	last_used = chan->cookie;
--	last_complete = ppc440spe_chan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 
-@@ -3961,7 +3961,7 @@ static enum dma_status ppc440spe_adma_tx_status(struct dma_chan *chan,
- 	ppc440spe_adma_slot_cleanup(ppc440spe_chan);
- 
- 	last_used = chan->cookie;
--	last_complete = ppc440spe_chan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
- 
-@@ -4058,7 +4058,7 @@ static void ppc440spe_chan_start_null_xor(struct ppc440spe_adma_chan *chan)
- 		/* initialize the completed cookie to be less than
- 		 * the most recently used cookie
- 		 */
--		chan->completed_cookie = cookie - 1;
-+		chan->common.completed_cookie = cookie - 1;
- 		chan->common.cookie = sw_desc->async_tx.cookie = cookie;
- 
- 		/* channel should not be busy */
-diff --git a/drivers/dma/ppc4xx/adma.h b/drivers/dma/ppc4xx/adma.h
-index 8ada5a8..26b7a5e 100644
---- a/drivers/dma/ppc4xx/adma.h
-+++ b/drivers/dma/ppc4xx/adma.h
-@@ -81,7 +81,6 @@ struct ppc440spe_adma_device {
-  * @common: common dmaengine channel object members
-  * @all_slots: complete domain of slots usable by the channel
-  * @pending: allows batching of hardware operations
-- * @completed_cookie: identifier for the most recently completed operation
-  * @slots_allocated: records the actual size of the descriptor slot pool
-  * @hw_chain_inited: h/w descriptor chain initialization flag
-  * @irq_tasklet: bottom half where ppc440spe_adma_slot_cleanup runs
-@@ -99,7 +98,6 @@ struct ppc440spe_adma_chan {
- 	struct list_head all_slots;
- 	struct ppc440spe_adma_desc_slot *last_used;
- 	int pending;
--	dma_cookie_t completed_cookie;
- 	int slots_allocated;
- 	int hw_chain_inited;
- 	struct tasklet_struct irq_tasklet;
+ 	if (unlikely(list_empty(&chan->chain))) {
+ 		/* first peer */
 diff --git a/drivers/dma/shdma.c b/drivers/dma/shdma.c
-index 812fd76..ae84c12 100644
+index c291433..96d0a4f 100644
 --- a/drivers/dma/shdma.c
 +++ b/drivers/dma/shdma.c
-@@ -764,12 +764,12 @@ static dma_async_tx_callback __ld_cleanup(struct sh_dmae_chan *sh_chan, bool all
- 			cookie = tx->cookie;
+@@ -298,13 +298,7 @@ static dma_cookie_t sh_dmae_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	else
+ 		power_up = false;
  
- 		if (desc->mark == DESC_COMPLETED && desc->chunks == 1) {
--			if (sh_chan->completed_cookie != desc->cookie - 1)
-+			if (sh_chan->common.completed_cookie != desc->cookie - 1)
- 				dev_dbg(sh_chan->dev,
- 					"Completing cookie %d, expected %d\n",
- 					desc->cookie,
--					sh_chan->completed_cookie + 1);
--			sh_chan->completed_cookie = desc->cookie;
-+					sh_chan->common.completed_cookie + 1);
-+			sh_chan->common.completed_cookie = desc->cookie;
- 		}
+-	cookie = sh_chan->common.cookie;
+-	cookie++;
+-	if (cookie < 0)
+-		cookie = 1;
+-
+-	sh_chan->common.cookie = cookie;
+-	tx->cookie = cookie;
++	cookie = dma_cookie_assign(tx);
  
- 		/* Call callback on the last chunk */
-@@ -823,7 +823,7 @@ static dma_async_tx_callback __ld_cleanup(struct sh_dmae_chan *sh_chan, bool all
- 		 * Terminating and the loop completed normally: forgive
- 		 * uncompleted cookies
- 		 */
--		sh_chan->completed_cookie = sh_chan->common.cookie;
-+		sh_chan->common.completed_cookie = sh_chan->common.cookie;
- 
- 	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
- 
-@@ -891,7 +891,7 @@ static enum dma_status sh_dmae_tx_status(struct dma_chan *chan,
- 	sh_dmae_chan_ld_cleanup(sh_chan, false);
- 
- 	/* First read completed cookie to avoid a skew */
--	last_complete = sh_chan->completed_cookie;
-+	last_complete = chan->completed_cookie;
- 	rmb();
- 	last_used = chan->cookie;
- 	BUG_ON(last_complete < 0);
-diff --git a/drivers/dma/shdma.h b/drivers/dma/shdma.h
-index 2b55a27..0b1d2c1 100644
---- a/drivers/dma/shdma.h
-+++ b/drivers/dma/shdma.h
-@@ -30,7 +30,6 @@ enum dmae_pm_state {
- };
- 
- struct sh_dmae_chan {
--	dma_cookie_t completed_cookie;	/* The maximum cookie completed */
- 	spinlock_t desc_lock;		/* Descriptor operation lock */
- 	struct list_head ld_queue;	/* Link descriptors queue */
- 	struct list_head ld_free;	/* Link descriptors free */
+ 	/* Mark all chunks of this descriptor as submitted, move to the queue */
+ 	list_for_each_entry_safe(chunk, c, desc->node.prev, node) {
 diff --git a/drivers/dma/sirf-dma.c b/drivers/dma/sirf-dma.c
-index 2333810..60473f0 100644
+index 60473f0..7bb154a 100644
 --- a/drivers/dma/sirf-dma.c
 +++ b/drivers/dma/sirf-dma.c
-@@ -59,7 +59,6 @@ struct sirfsoc_dma_chan {
- 	struct list_head		queued;
- 	struct list_head		active;
- 	struct list_head		completed;
--	dma_cookie_t			completed_cookie;
- 	unsigned long			happened_cyclic;
- 	unsigned long			completed_cyclic;
+@@ -257,13 +257,7 @@ static dma_cookie_t sirfsoc_dma_tx_submit(struct dma_async_tx_descriptor *txd)
+ 	/* Move descriptor to queue */
+ 	list_move_tail(&sdesc->node, &schan->queued);
  
-@@ -208,7 +207,7 @@ static void sirfsoc_dma_process_completed(struct sirfsoc_dma *sdma)
- 			/* Free descriptors */
- 			spin_lock_irqsave(&schan->lock, flags);
- 			list_splice_tail_init(&list, &schan->free);
--			schan->completed_cookie = last_cookie;
-+			schan->chan.completed_cookie = last_cookie;
- 			spin_unlock_irqrestore(&schan->lock, flags);
- 		} else {
- 			/* for cyclic channel, desc is always in active list */
-@@ -419,7 +418,7 @@ sirfsoc_dma_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
+-	/* Update cookie */
+-	cookie = schan->chan.cookie + 1;
+-	if (cookie <= 0)
+-		cookie = 1;
+-
+-	schan->chan.cookie = cookie;
+-	sdesc->desc.cookie = cookie;
++	cookie = dma_cookie_assign(txd);
  
- 	spin_lock_irqsave(&schan->lock, flags);
- 	last_used = schan->chan.cookie;
--	last_complete = schan->completed_cookie;
-+	last_complete = schan->chan.completed_cookie;
  	spin_unlock_irqrestore(&schan->lock, flags);
  
- 	dma_set_tx_state(txstate, last_complete, last_used, 0);
-@@ -636,7 +635,7 @@ static int __devinit sirfsoc_dma_probe(struct platform_device *op)
- 
- 		schan->chan.device = dma;
- 		schan->chan.cookie = 1;
--		schan->completed_cookie = schan->chan.cookie;
-+		schan->chan.completed_cookie = schan->chan.cookie;
- 
- 		INIT_LIST_HEAD(&schan->free);
- 		INIT_LIST_HEAD(&schan->prepared);
 diff --git a/drivers/dma/ste_dma40.c b/drivers/dma/ste_dma40.c
-index cc5ecbc..cfca2a0 100644
+index 156b98f..23e2edc 100644
 --- a/drivers/dma/ste_dma40.c
 +++ b/drivers/dma/ste_dma40.c
-@@ -220,8 +220,6 @@ struct d40_base;
-  *
-  * @lock: A spinlock to protect this struct.
-  * @log_num: The logical number, if any of this channel.
-- * @completed: Starts with 1, after first interrupt it is set to dma engine's
-- * current cookie.
-  * @pending_tx: The number of pending transfers. Used between interrupt handler
-  * and tasklet.
-  * @busy: Set to true when transfer is ongoing on this channel.
-@@ -250,8 +248,6 @@ struct d40_base;
- struct d40_chan {
- 	spinlock_t			 lock;
- 	int				 log_num;
--	/* ID of the most recent completed transfer */
--	int				 completed;
- 	int				 pending_tx;
- 	bool				 busy;
- 	struct d40_phy_res		*phy_chan;
-@@ -1357,7 +1353,7 @@ static void dma_tasklet(unsigned long data)
- 		goto err;
+@@ -1220,21 +1220,14 @@ static dma_cookie_t d40_tx_submit(struct dma_async_tx_descriptor *tx)
+ 					     chan);
+ 	struct d40_desc *d40d = container_of(tx, struct d40_desc, txd);
+ 	unsigned long flags;
++	dma_cookie_t cookie;
  
- 	if (!d40d->cyclic)
--		d40c->completed = d40d->txd.cookie;
-+		d40c->chan.completed_cookie = d40d->txd.cookie;
- 
- 	/*
- 	 * If terminating a channel pending_tx is set to zero.
-@@ -2182,7 +2178,7 @@ static int d40_alloc_chan_resources(struct dma_chan *chan)
- 	bool is_free_phy;
  	spin_lock_irqsave(&d40c->lock, flags);
+-
+-	d40c->chan.cookie++;
+-
+-	if (d40c->chan.cookie < 0)
+-		d40c->chan.cookie = 1;
+-
+-	d40d->txd.cookie = d40c->chan.cookie;
+-
++	cookie = dma_cookie_assign(tx);
+ 	d40_desc_queue(d40c, d40d);
+-
+ 	spin_unlock_irqrestore(&d40c->lock, flags);
  
--	d40c->completed = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
+-	return tx->cookie;
++	return cookie;
+ }
  
- 	/* If no dma configuration is set use default configuration (memcpy) */
- 	if (!d40c->configured) {
-@@ -2351,7 +2347,7 @@ static enum dma_status d40_tx_status(struct dma_chan *chan,
- 		return -EINVAL;
- 	}
- 
--	last_complete = d40c->completed;
-+	last_complete = chan->completed_cookie;
- 	last_used = chan->cookie;
- 
- 	if (d40_is_paused(d40c))
+ static int d40_start(struct d40_chan *d40c)
 diff --git a/drivers/dma/timb_dma.c b/drivers/dma/timb_dma.c
-index a6f9c16..a1d1559 100644
+index 4b61879..b6e83fc 100644
 --- a/drivers/dma/timb_dma.c
 +++ b/drivers/dma/timb_dma.c
-@@ -84,7 +84,6 @@ struct timb_dma_chan {
- 					especially the lists and descriptors,
- 					from races between the tasklet and calls
- 					from above */
--	dma_cookie_t		last_completed_cookie;
- 	bool			ongoing;
- 	struct list_head	active_list;
- 	struct list_head	queue;
-@@ -284,7 +283,7 @@ static void __td_finish(struct timb_dma_chan *td_chan)
- 	else
- 		iowrite32(0, td_chan->membase + TIMBDMA_OFFS_TX_DLAR);
- */
--	td_chan->last_completed_cookie = txd->cookie;
-+	td_chan->chan.completed_cookie = txd->cookie;
- 	td_chan->ongoing = false;
- 
- 	callback = txd->callback;
-@@ -481,7 +480,7 @@ static int td_alloc_chan_resources(struct dma_chan *chan)
- 	}
+@@ -350,12 +350,7 @@ static dma_cookie_t td_tx_submit(struct dma_async_tx_descriptor *txd)
+ 	dma_cookie_t cookie;
  
  	spin_lock_bh(&td_chan->lock);
--	td_chan->last_completed_cookie = 1;
-+	chan->completed_cookie = 1;
- 	chan->cookie = 1;
- 	spin_unlock_bh(&td_chan->lock);
+-
+-	cookie = txd->chan->cookie;
+-	if (++cookie < 0)
+-		cookie = 1;
+-	txd->chan->cookie = cookie;
+-	txd->cookie = cookie;
++	cookie = dma_cookie_assign(txd);
  
-@@ -523,7 +522,7 @@ static enum dma_status td_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 
- 	dev_dbg(chan2dev(chan), "%s: Entry\n", __func__);
- 
--	last_complete = td_chan->last_completed_cookie;
-+	last_complete = chan->completed_cookie;
- 	last_used = chan->cookie;
- 
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
+ 	if (list_empty(&td_chan->active_list)) {
+ 		dev_dbg(chan2dev(txd->chan), "%s: started %u\n", __func__,
 diff --git a/drivers/dma/txx9dmac.c b/drivers/dma/txx9dmac.c
-index 6122c36..a917b67 100644
+index db6d809..66f8fca 100644
 --- a/drivers/dma/txx9dmac.c
 +++ b/drivers/dma/txx9dmac.c
-@@ -424,7 +424,7 @@ txx9dmac_descriptor_complete(struct txx9dmac_chan *dc,
- 	dev_vdbg(chan2dev(&dc->chan), "descriptor %u %p complete\n",
- 		 txd->cookie, desc);
- 
--	dc->completed = txd->cookie;
-+	dc->chan.completed_cookie = txd->cookie;
- 	callback = txd->callback;
- 	param = txd->callback_param;
- 
-@@ -976,7 +976,7 @@ txx9dmac_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 	dma_cookie_t last_complete;
- 	int ret;
- 
--	last_complete = dc->completed;
-+	last_complete = chan->completed_cookie;
- 	last_used = chan->cookie;
- 
- 	ret = dma_async_is_complete(cookie, last_complete, last_used);
-@@ -985,7 +985,7 @@ txx9dmac_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 		txx9dmac_scan_descriptors(dc);
- 		spin_unlock_bh(&dc->lock);
- 
--		last_complete = dc->completed;
-+		last_complete = chan->completed_cookie;
- 		last_used = chan->cookie;
- 
- 		ret = dma_async_is_complete(cookie, last_complete, last_used);
-@@ -1057,7 +1057,7 @@ static int txx9dmac_alloc_chan_resources(struct dma_chan *chan)
- 		return -EIO;
+@@ -281,21 +281,6 @@ static void txx9dmac_desc_put(struct txx9dmac_chan *dc,
  	}
+ }
  
--	dc->completed = chan->cookie = 1;
-+	chan->completed_cookie = chan->cookie = 1;
+-/* Called with dc->lock held and bh disabled */
+-static dma_cookie_t
+-txx9dmac_assign_cookie(struct txx9dmac_chan *dc, struct txx9dmac_desc *desc)
+-{
+-	dma_cookie_t cookie = dc->chan.cookie;
+-
+-	if (++cookie < 0)
+-		cookie = 1;
+-
+-	dc->chan.cookie = cookie;
+-	desc->txd.cookie = cookie;
+-
+-	return cookie;
+-}
+-
+ /*----------------------------------------------------------------------*/
  
- 	dc->ccr = TXX9_DMA_CCR_IMMCHN | TXX9_DMA_CCR_INTENE | CCR_LE;
- 	txx9dmac_chan_set_SMPCHN(dc);
-@@ -1186,7 +1186,7 @@ static int __init txx9dmac_chan_probe(struct platform_device *pdev)
- 	dc->ddev->chan[ch] = dc;
- 	dc->chan.device = &dc->dma;
- 	list_add_tail(&dc->chan.device_node, &dc->chan.device->channels);
--	dc->chan.cookie = dc->completed = 1;
-+	dc->chan.cookie = dc->chan.completed_cookie = 1;
- 
- 	if (is_dmac64(dc))
- 		dc->ch_regs = &__txx9dmac_regs(dc->ddev)->CHAN[ch];
-diff --git a/drivers/dma/txx9dmac.h b/drivers/dma/txx9dmac.h
-index 365d423..f5a7605 100644
---- a/drivers/dma/txx9dmac.h
-+++ b/drivers/dma/txx9dmac.h
-@@ -172,7 +172,6 @@ struct txx9dmac_chan {
- 	spinlock_t		lock;
- 
- 	/* these other elements are all protected by lock */
--	dma_cookie_t		completed;
- 	struct list_head	active_list;
- 	struct list_head	queue;
- 	struct list_head	free_list;
-diff --git a/include/linux/amba/pl08x.h b/include/linux/amba/pl08x.h
-index 033f6aa..1bb134b 100644
---- a/include/linux/amba/pl08x.h
-+++ b/include/linux/amba/pl08x.h
-@@ -176,7 +176,6 @@ enum pl08x_dma_chan_state {
-  * @runtime_addr: address for RX/TX according to the runtime config
-  * @runtime_direction: current direction of this channel according to
-  * runtime config
-- * @lc: last completed transaction on this channel
-  * @pend_list: queued transactions pending on this channel
-  * @at: active transaction on this channel
-  * @lock: a lock for this channel data
-@@ -198,7 +197,6 @@ struct pl08x_dma_chan {
- 	u32 src_cctl;
- 	u32 dst_cctl;
- 	enum dma_transfer_direction runtime_direction;
--	dma_cookie_t lc;
- 	struct list_head pend_list;
- 	struct pl08x_txd *at;
- 	spinlock_t lock;
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 679b349..41d0f92 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -257,6 +257,7 @@ struct dma_chan_percpu {
-  * struct dma_chan - devices supply DMA channels, clients use them
-  * @device: ptr to the dma device who supplies this channel, always !%NULL
-  * @cookie: last cookie value returned to client
-+ * @completed_cookie: last completed cookie for this channel
-  * @chan_id: channel ID for sysfs
-  * @dev: class device for sysfs
-  * @device_node: used to add this to the device chan list
-@@ -268,6 +269,7 @@ struct dma_chan_percpu {
- struct dma_chan {
- 	struct dma_device *device;
+ static void txx9dmac_dump_regs(struct txx9dmac_chan *dc)
+@@ -740,7 +725,7 @@ static dma_cookie_t txx9dmac_tx_submit(struct dma_async_tx_descriptor *tx)
  	dma_cookie_t cookie;
-+	dma_cookie_t completed_cookie;
  
- 	/* sysfs */
- 	int chan_id;
+ 	spin_lock_bh(&dc->lock);
+-	cookie = txx9dmac_assign_cookie(dc, desc);
++	cookie = dma_cookie_assign(tx);
+ 
+ 	dev_vdbg(chan2dev(tx->chan), "tx_submit: queued %u %p\n",
+ 		 desc->txd.cookie, desc);
 -- 
 1.7.4.4
