@@ -1,25 +1,28 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
+Return-Path: <hartleys@visionengravers.com>
+Received: from mail131.messagelabs.com (mail131.messagelabs.com
+ [216.82.242.99])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B110CB6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 10:54:50 +1100 (EST)
-Date: Mon, 5 Mar 2012 23:54:14 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH 0/9] DMA engine cookie handling cleanups
-Message-ID: <20120305235414.GB17370@n2100.arm.linux.org.uk>
+ (Client CN "mail131.messagelabs.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A11C4B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 11:15:37 +1100 (EST)
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Dan Williams
+ <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
+Date: Mon, 5 Mar 2012 18:12:50 -0600
+Subject: RE: [PATCH 6/9] dmaengine: consolidate tx_status functions
+Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF555BD@AUSP01VMBX24.collaborationhost.net>
 References: <20120305201411.GA17791@n2100.arm.linux.org.uk>
+ <E1S4eKz-0000tE-FB@rmk-PC.arm.linux.org.uk>
+In-Reply-To: <E1S4eKz-0000tE-FB@rmk-PC.arm.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120305201411.GA17791@n2100.arm.linux.org.uk>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Cc: Viresh Kumar <viresh.kumar@st.com>, Stephen Warren <swarren@nvidia.com>,
  Linus Walleij <linus.walleij@stericsson.com>,
  Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
  Zhang Wei <zw@zh-kernel.org>, Barry Song <baohua.song@csr.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +32,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 05, 2012 at 08:14:11PM +0000, Russell King - ARM Linux wrote:
-> This patch series cleans up the handling of cookies in DMA engine drivers.
-> This is done by providing a set of inline library functions for common
-> tasks:
-> 
-> - moving the 'last completed cookie' into struct dma_chan - everyone
->   has this in their driver private channel data structure
-> 
-> - consolidate allocation of cookies to DMA descriptors
-> 
-> - common way to update 'last completed cookie' value
-> 
-> - standard way to implement tx_status callback and update the residue
-> 
-> - consolidate initialization of cookies
-> 
-> - update implementations differing from the majority of DMA engine drivers
->   to behave the same as the majority implementation in respect of cookies
-> 
-> What this means is that we get to the point where all DMA engine drivers
-> will hand out cookie value '2' as the first, and incrementing cookie
-> values up to INT_MAX, returning to cookie '1' as the next cookie.
-> 
-> Think of this patch series as round 1...  I am hoping over time that more
-> code can be consolidated between the DMA engine drivers and end up with a
-> consistent way to handle various common themes in DMA engine hardware
-> (like physical channel<->peripheral request signal selection.)
-> 
-> I've only build-tested this stuff on a few ARM configs, and my ability
-> to run-test this stuff is even more limited by all the broken useless DMA
-> engine hardware I have access to (mostly pl08x based) so having some
-> tested-bys would be a great advantage.
+On Monday, March 05, 2012 1:17 PM, Russell King wrote:
+>=20
+> Now that we have the completed cookie in the dma_chan structure, we
+> can consolidate the tx_status functions by providing a function to set
+> the txstate structure and returning the DMA status.  We also provide
+> a separate helper to set the residue for cookies which are still in
+> progress.
+>
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> ---
 
-Seems I'd misremembered what I'd done with this series.  I'll leave it
-as-is for the time being if people want to provide review comments instead,
-and I'll post v2 in the next couple of days.  (Quite a bit of this series
-dates from August 2011...)
+<snip>
+
+> diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
+> index 47e0997..244a2c5 100644
+> --- a/drivers/dma/dmaengine.h
+> +++ b/drivers/dma/dmaengine.h
+> @@ -45,4 +45,35 @@ static inline void dma_cookie_complete(struct dma_asyn=
+c_tx_descriptor *tx)
+>  	tx->cookie =3D 0;
+>  }
+> =20
+> +/**
+> + * dma_cookie_status - report cookie status
+> + * @chan: dma channel
+> + * @cookie: cookie we are interested in
+> + * @state: dma_tx_state structure to return last/used cookies
+> + *
+> + * Report the status of the cookie, filling in the state structure if
+> + * non-NULL.  No locking is required.
+> + */
+> +static inline enum dma_status dma_cookie_status(struct dma_chan *chan,
+> +	dma_cookie_t cookie, struct dma_tx_state *state)
+> +{
+> +	dma_cookie_t used, complete;
+> +
+> +	used =3D chan->cookie;
+> +	complete =3D chan->complete;
+> +	barrier();
+> +	if (state) {
+> +		state->last =3D complete;
+> +		state->used =3D used;
+> +		state->residue =3D 0;
+> +	}
+
+Isn't this dma_set_tx_state()?
+
+> +	return dma_async_is_complete(cookie, complete, used);
+> +}
+
+Regards,
+Hartley
