@@ -1,23 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
- [66.111.4.29])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0058DB6FA1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 01:45:04 +1100 (EST)
-Received: from compute3.internal (compute3.nyi.mail.srv.osa [10.202.2.43])
- by gateway1.nyi.mail.srv.osa (Postfix) with ESMTP id 51BF620912
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 09:45:00 -0500 (EST)
-Date: Tue, 6 Mar 2012 06:32:57 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH 1/9] pci_ids: Add device ID for IBM PCI-X bridge
-Message-ID: <20120306143257.GA23303@kroah.com>
-References: <1331024707-15891-1-git-send-email-chenhui.zhao@freescale.com>
+Return-Path: <R1AAHA@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0B4FCB6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 04:43:10 +1100 (EST)
+Date: Tue, 6 Mar 2012 11:41:12 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Subject: Re: [PATCH] powerpc/dts: fix the compatible string of sec 4.0
+Message-ID: <20120306114112.9af0bb75863f36b82e908e3d@freescale.com>
+In-Reply-To: <1331018476-27798-1-git-send-email-Shengzhou.Liu@freescale.com>
+References: <1331018476-27798-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1331024707-15891-1-git-send-email-chenhui.zhao@freescale.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, Liu Shuo <shuo.liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 06, 2012 at 05:05:07PM +0800, Zhao Chenhui wrote:
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> ---
->  include/linux/pci_ids.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index 31d77af..8f026c0 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -484,6 +484,7 @@
->  #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM	0x0251
->  #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM_PCIE 0x0361
->  #define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL	0x252
-> +#define PCI_DEVICE_ID_IBM_PCIX_BRIDGE	0x01a7
+On Tue, 6 Mar 2012 15:21:16 +0800
+Shengzhou Liu <Shengzhou.Liu@freescale.com> wrote:
 
-Did you read the comment at the top of this file?
+> From: Liu Shuo <shuo.liu@freescale.com>
+> 
+> Fix the compatible string of sec 4.0 to match with CAMM driver according
+> to the documentation file Documentation/devicetree/bindings/crypto/fsl-sec4.txt.
+
+s/the documentation file//, since it's pretty obvious from the
+pathname.
+
+Also, if you wrap your commit text to 75 chars, then people won't
+have to use the left- and right-arrow keys when browsing git log.
+
+> +++ b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
+> @@ -33,32 +33,32 @@
+>   */
+>  
+>  crypto@30000 {
+> -	compatible = "fsl,sec4.4", "fsl,sec4.0";
+> +	compatible = "fsl,sec-v4.4", "fsl,sec-v4.0";
+
+so I've tracked the original error down to v3.2-rc3-18-g5652520,
+which means v3.2 was released with the error.  Consequently, the
+driver should also be updated to check for "fsl,sec-v4.0", and,
+failing that, check for "fsl,sec4.0".  The fix should also be sent
+to stable@kernel.org [1].
+
+Thanks,
+
+Kim
+
+[1] see Documentation/stable_kernel_rules.txt
