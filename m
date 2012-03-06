@@ -1,25 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B3B98B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 18:11:57 +1100 (EST)
-Message-ID: <1331017892.11728.96.camel@pasglop>
-Subject: Re: [1/2] powerpc/44x: Fix PCI MSI support for APM821xx SoC and
- Bluestone board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-Date: Tue, 06 Mar 2012 18:11:32 +1100
-In-Reply-To: <bluehawk-msi-use-upper-lower-32@mdm.bga.com>
-References: <1331004581-23795-1-git-send-email-mla@apm.com>
- <bluehawk-msi-use-upper-lower-32@mdm.bga.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, open-source-review@apm.com,
- Tirumala R Marri <tmarri@apm.com>, linux-kernel@vger.kernel.org,
- Josh Boyer <jwboyer@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>,
- Mai La <mla@apm.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <B36685@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EF819B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 18:29:10 +1100 (EST)
+Received: from mail57-ch1 (localhost [127.0.0.1])	by mail57-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 0ADE8E032E	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Mar 2012 07:29:06 +0000 (UTC)
+Received: from CH1EHSMHS022.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.237])	by mail57-ch1.bigfish.com (Postfix) with ESMTP id
+ D63CE100084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2012 07:29:04 +0000 (UTC)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/dts: fix the compatible string of sec 4.0
+Date: Tue, 6 Mar 2012 15:21:16 +0800
+Message-ID: <1331018476-27798-1-git-send-email-Shengzhou.Liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Liu Shuo <shuo.liu@freescale.com>,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +31,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-03-05 at 22:37 -0600, Milton Miller wrote:
-> On Mon, 05 Mar 2012 about 17:29:41 -0000, Mai La wrote:
-> >  
-> > @@ -43,7 +43,12 @@
-> >  #define PEIH_FLUSH0	0x30
-> >  #define PEIH_FLUSH1	0x38
-> >  #define PEIH_CNTRST	0x48
-> > +
-> > +#ifdef CONFIG_APM821xx
-> > +#define NR_MSI_IRQS	8
-> > +#else
-> >  #define NR_MSI_IRQS	4
-> > +#endif
-> >  
-> 
-> does this need to go into the dts binding?
+From: Liu Shuo <shuo.liu@freescale.com>
 
-A compile time #define is definitely not acceptable as it would break a
-multiplatform kernel.
+Fix the compatible string of sec 4.0 to match with CAMM driver according
+to the documentation file Documentation/devicetree/bindings/crypto/fsl-sec4.txt.
 
-Ben.
+Signed-off-by: Liu Shuo <shuo.liu@freescale.com>
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+against master branch of git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
-> >  struct ppc4xx_msi {
-> >  	u32 msi_addr_lo;
-> > @@ -150,12 +155,11 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
-> >  	if (!sdr_addr)
-> >  		return -1;
-> >  
-> > -	SDR0_WRITE(sdr_addr, (u64)res.start >> 32);	 /*HIGH addr */
-> > -	SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
-> > -
-> > +	mtdcri(SDR0, *sdr_addr, (u64)res.start >> 32);	/*HIGH addr */
-> > +	mtdcri(SDR0, *sdr_addr + 1, res.start & 0xFFFFFFFF);/* Low addr */
-> 
-> Please use upper_32_bits and lower_32_bits from linux/kernel.h
-> 
-> >  	msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
-> > -	if (msi->msi_dev)
-> > +	if (!msi->msi_dev)
-> >  		return -ENODEV;
-> >  
-> >  	msi->msi_regs = of_iomap(msi->msi_dev, 0);
-> > @@ -167,9 +171,12 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
-> >  		(u32) (msi->msi_regs + PEIH_TERMADH), (u32) (msi->msi_regs));
-> >  
-> >  	msi_virt = dma_alloc_coherent(&dev->dev, 64, &msi_phys, GFP_KERNEL);
-> > -	msi->msi_addr_hi = 0x0;
-> > -	msi->msi_addr_lo = (u32) msi_phys;
-> > -	dev_dbg(&dev->dev, "PCIE-MSI: msi address 0x%x\n", msi->msi_addr_lo);
-> > +	if (!msi_virt)
-> > +		return -ENOMEM;
-> > +	msi->msi_addr_hi = (u32)(msi_phys >> 32);
-> > +	msi->msi_addr_lo = (u32)(msi_phys & 0xffffffff);
-> 
-> ditto
-> 
-> 
-> milton
+ arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
+index bf957a7..d4c9d5d 100644
+--- a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
+@@ -33,32 +33,32 @@
+  */
+ 
+ crypto@30000 {
+-	compatible = "fsl,sec4.4", "fsl,sec4.0";
++	compatible = "fsl,sec-v4.4", "fsl,sec-v4.0";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 	reg		 = <0x30000 0x10000>;
+ 	interrupts	 = <58 2 0 0>;
+ 
+ 	sec_jr0: jr@1000 {
+-		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
++		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
+ 		reg	   = <0x1000 0x1000>;
+ 		interrupts	 = <45 2 0 0>;
+ 	};
+ 
+ 	sec_jr1: jr@2000 {
+-		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
++		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
+ 		reg	   = <0x2000 0x1000>;
+ 		interrupts	 = <45 2 0 0>;
+ 	};
+ 
+ 	sec_jr2: jr@3000 {
+-		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
++		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
+ 		reg	   = <0x3000 0x1000>;
+ 		interrupts	 = <45 2 0 0>;
+ 	};
+ 
+ 	sec_jr3: jr@4000 {
+-		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
++		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
+ 		reg	   = <0x4000 0x1000>;
+ 		interrupts	 = <45 2 0 0>;
+ 	};
+-- 
+1.7.0.4
