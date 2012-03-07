@@ -1,21 +1,42 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sjenning@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AA2CEB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 08:01:47 +1100 (EST)
-Message-ID: <1331154095.3105.25.camel@pasglop>
-Subject: Re: [PATCH] spufs raises two exceptions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 08 Mar 2012 08:01:35 +1100
-In-Reply-To: <201203071248.54887.arnd@arndb.de>
-References: <4F55D84B.7030306@gmail.com> <1331092190.3105.3.camel@pasglop>
- <1331092280.3105.5.camel@pasglop> <201203071248.54887.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, masterzorag <masterzorag@gmail.com>,
- Al Viro <viro@zeniv.linux.org.uk>
+ (Client CN "e35.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 16089B6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 08:19:12 +1100 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sjenning@linux.vnet.ibm.com>;
+ Wed, 7 Mar 2012 14:19:10 -0700
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A782419D804A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 14:19:01 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q27LJ18E139914
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Mar 2012 14:19:01 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q27LJ0XI025978
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Mar 2012 14:19:01 -0700
+Message-ID: <4F57D0C0.7040108@linux.vnet.ibm.com>
+Date: Wed, 07 Mar 2012 15:18:56 -0600
+From: Seth Jennings <sjenning@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: tlb flushing on Power
+References: <4F2160B3.60708@linux.vnet.ibm.com>
+ <4F216620.2010509@linux.vnet.ibm.com> <1327613953.24487.9.camel@pasglop>
+ <4F32B354.7030306@linux.vnet.ibm.com> <1328735054.2903.29.camel@pasglop>
+ <4F356C7E.3070608@linux.vnet.ibm.com> <4F3D38D3.4020903@linux.vnet.ibm.com>
+ <1329424301.2892.23.camel@pasglop> <4F54FE51.8070709@linux.vnet.ibm.com>
+ <6006.1331098094@neuling.org>
+In-Reply-To: <6006.1331098094@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Nitin Gupta <ngupta@vflare.org>, Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,203 +46,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-> > diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-> > index d4a094c..63b4e43 100644
-> > --- a/arch/powerpc/platforms/cell/spufs/inode.c
-> > +++ b/arch/powerpc/platforms/cell/spufs/inode.c
-> > @@ -454,19 +454,16 @@ spufs_create_context(struct inode *inode, struct dentry *dentry,
-> >  	struct spu_gang *gang;
-> >  	struct spu_context *neighbor;
-> >  
-> > -	ret = -EPERM;
-> >  	if ((flags & SPU_CREATE_NOSCHED) &&
-> > -	    !capable(CAP_SYS_NICE))
-> > -		goto out_unlock;
-> > +	    !capable(CAP_SYa_NICE))
+On 03/06/2012 11:28 PM, Michael Neuling wrote:
+> Seth,
 > 
->                     ^typo
-
-Odd, probably an emacs fart
-
-> > +		return -EPERM;
-> >  
-> > -	ret = -EINVAL;
-> >  	if ((flags & (SPU_CREATE_NOSCHED | SPU_CREATE_ISOLATE))
-> >  	    == SPU_CREATE_ISOLATE)
-> > -		goto out_unlock;
-> > +		return -EINVAL;
-> >  
-> > -	ret = -ENODEV;
-> >  	if ((flags & SPU_CREATE_ISOLATE) && !isolated_loader)
-> > -		goto out_unlock;
-> > +		return -ENODEV;
-> >  
-> >  	gang = NULL;
-> >  	neighbor = NULL;
+>> Thanks for the help!  I was wondering if you could take a look at something
+>> for me.
+>>
+>> I've been working on this staging driver (zsmalloc memory allocator)
+>> that does virtual mapping of two pages.
+>>
+>> I have a github repo with the driver and the unsubmitted changes.  I'm
+>> trying to make to get the pte/tlb stuff working in a portable way:
+>>
+>> git://github.com/spartacus06/linux.git (portable branch)
+>>
+>> The experimental commits are the top 5 and the branch is based on
+>> Greg's staging-next + frontswap-v11 patches.
+>>
+>> Could you take a look at the zs_map_object() and zs_unmap_object()
+>> in drivers/staging/zsmalloc/zsmalloc-main.c and see if they should
+>> work for PPC64?
 > 
-> This mostly changes coding style, pointlessly.
+> I suggest you post the code directly to the list in reviewable chucks.
+> People are much more likely to review it if they don't have to download
+> some random git tree, checkout some branch, find the changes, etc etc.
 
-How so ? it's no longer necessary to store ret and goto out since there
-is no cleanup at all, which makes things smaller/simpler. I wouldn't
-call that 'pointlessly'.
+It's hard to summarize out of context, but I'll try.
 
-I tend to dislike the use of "goto xxxx" when the xxx: label does no
-cleanup whatsoever.
+So zsmalloc is designed to store compressed memory pages.  In order
+to do that efficiently in memory restricted environments where
+memory allocations from the buddy allocator greater than order 0 are
+very likely to fail, we have to be able to store compressed memory pages
+across non-contiguous page boundaries.
 
-> > @@ -512,10 +509,6 @@ spufs_create_context(struct inode *inode, struct dentry *dentry,
-> >  out_aff_unlock:
-> >  	if (affinity)
-> >  		mutex_unlock(&gang->aff_mutex);
-> > -out_unlock:
-> > -	mutex_unlock(&inode->i_mutex);
-> > -out:
-> > -	dput(dentry);
-> >  	return ret;
-> >  }
+zsmalloc uses virtual memory mapping to do this.  There is a per-cpu
+struct vm_struct *vm.  This vm is initialized like this:
+===
+pte_t *vm_ptes[2];
+vm = alloc_vm_area(2 * PAGE_SIZE, vm_ptes);
+===
+
+When the allocation needs to be accessed, we map the memory like this
+(with preemption disabled):
+
+set_pte_at(&init_mm, 0, vm_ptes[0], mk_pte(page1, PAGE_KERNEL));
+set_pte_at(&init_mm, 0, vm_ptes[1], mk_pte(page2, PAGE_KERNEL));
+
+Preemption remains disabled while the user manipulates the allocation.
+
+When the user is done, we unmap by doing:
+====
+ptep_get_and_clear(&init_mm, vm->addr, vm_ptes[0]);
+ptep_get_and_clear(&init_mm, vm->addr + PAGE_SIZE, vm_ptes[1]);
+
+local_flush_tlb_kernel_page(vm->addr);
+local_flush_tlb_kernel_page(vm->addr + PAGE_SIZE);
+====
+
+In my patch, I've defined local_flush_tlb_kernel_page as:
+
+#define local_flush_tlb_kernel_page(kaddr) local_flush_tlb_page(NULL, kaddr)
+
+in arch/powerpc/include/asm/tlbflush.h
+
+For PPC64 (the platform I'm testing on) local_flush_tlb_page() is a no-op
+because of the hashing tlb in that architecture; however, it isn't a no-op
+on other archs and the whole point of this change is portability.
+
+My understanding is that the tlb flush on PPC64 happens as a result of
+the pte_update() eventually called from ptep_get_and_clear().
+
+The problem is that this doesn't always seem to work.  I get corruption
+in the mapped memory from time to time.  
+
+I've isolated the issue to this mapping code.
+
+Does anyone see anything glaringly wrong with this approach?
+
+Should ptep_get_and_clear() also flush the tlb entry (asynchronously I think)?
+
+For comparison, this code is stable on x86 where local_flush_tlb_kernel_page()
+is defined to __flush_tlb_one().
+
+> If it's work in progress, mark it as an RFC patch and note what issues
+> you think still exist.  
 > 
-> The original intention of this was to always unlock in the error case. It
-> seems that Al changed this in 1ba10681 "switch do_spufs_create() to
-> user_path_create(), fix double-unlock" to never unlock early but always
-> unlock in do_spu_create, fixing a different bug, but it looks like
-> he forgot this one in the process.
-> 
-> The reason why we originally had the unlock in the leaf functions is to
-> avoid a problem with spu_forget(), which had to be called without
-> the i_mutex held to avoid deadlocks.
-
-Ok. I assumed it was fnotify that was the problem...
-
-> > @@ -600,10 +591,6 @@ static int spufs_create_gang(struct inode *inode,
-> >  		int err = simple_rmdir(inode, dentry);
-> >  		WARN_ON(err);
-> >  	}
-> > -
-> > -out:
-> > -	mutex_unlock(&inode->i_mutex);
-> > -	dput(dentry);
-> >  	return ret;
-> >  }
-> 
-> Right, this obviously goes together with the one above,
-
-Yes, whatever they do they should do the same thing.
-
-> > @@ -613,22 +600,21 @@ static struct file_system_type spufs_type;
-> >  long spufs_create(struct path *path, struct dentry *dentry
-> >  		unsigned int flags, umode_t mode, struct file *filp)
-> >  {
-> > -	int ret;
-> > +	int ret = -EINVAL;
-> >  
-> > -	ret = -EINVAL;
-> >  	/* check if we are on spufs */
-> >  	if (path->dentry->d_sb->s_type != &spufs_type)
-> > -		goto out;
-> > +		goto fail;
-> >  
-> >  	/* don't accept undefined flags */
-> >  	if (flags & (~SPU_CREATE_FLAG_ALL))
-> > -		goto out;
-> > +		goto fail;
-> >  
-> >  	/* only threads can be underneath a gang */
-> >  	if (path->dentry != path->dentry->d_sb->s_root) {
-> >  		if ((flags & SPU_CREATE_GANG) ||
-> >  		    !SPUFS_I(path->dentry->d_inode)->i_gang)
-> > -			goto out;
-> > +		goto fail;
-> >  	}
-> >  
-> >  	mode &= ~current_umask();
-> 
-> These just change coding style, and not in a helpful way.
-
-Oh I just renamed the label, it's helpful because the label is
-specifically only for the fail case, not the general exit path, hence
-"fail" is a better naming than "out". It's about code clarity.
-
-> > @@ -640,12 +626,17 @@ long spufs_create(struct path *path, struct dentry *dentry,
-> >  		ret = spufs_create_context(path->dentry->d_inode,
-> >  					    dentry, path->mnt, flags, mode,
-> >  					    filp);
-> > -	if (ret >= 0)
-> > +	if (ret >= 0) {
-> > +		/* We drop these before fsnotify */
-> > +		mutex_unlock(&inode->i_mutex);
-> > +		dput(dentry);
-> >  		fsnotify_mkdir(path->dentry->d_inode, dentry);
-> > -	return ret;
-> >  
-> > -out:
-> > -	mutex_unlock(&path->dentry->d_inode->i_mutex);
-> > +		return ret;
-> > +	}
-> > + fail:
-> > +	mutex_unlock(&inode->i_mutex);
-> > +	dput(dentry);
-> >  	return ret;
-> >  }
-> >  
-> > diff --git a/arch/powerpc/platforms/cell/spufs/syscalls.c b/arch/powerpc/platforms/cell/spufs/syscalls.c
-> > index 8591bb6..1a65ef2 100644
-> > --- a/arch/powerpc/platforms/cell/spufs/syscalls.c
-> > +++ b/arch/powerpc/platforms/cell/spufs/syscalls.c
-> > @@ -70,11 +70,8 @@ static long do_spu_create(const char __user *pathname, unsigned int flags,
-> >  	ret = PTR_ERR(dentry);
-> >  	if (!IS_ERR(dentry)) {
-> >  		ret = spufs_create(&path, dentry, flags, mode, neighbor);
-> > -		mutex_unlock(&path.dentry->d_inode->i_mutex);
-> > -		dput(dentry);
-> >  		path_put(&path);
-> >  	}
-> > -
-> >  	return ret;
-> >  }
-> 
-> This moves the unlock in front of the fsnotify_mkdir, where it was before Al's
-> change. This seems independent of the other change. 
-
-No it's not, it all goes together. spufs_create_context() always
-unlocked & dropped the dentry before returning, so I assumed the
-lock had to be dropped before fsnotify.
-
-Note that if the problem is that the lock has to be dropped before
-spu_forget(), then we should indeed move it back into the leaf functions
-and just remove all the unlock path from the top ones. It's a bit nasty
-how we drop the mutex first, then do spu_forget, then drop the dentry
-but we could go back to doing that.
-
-What I want is consistent semantics. It's just silly to have 3 different
-stacking levels which all 3 may or may not be responsible to dropping
-the lock & dentry depending on circumstances.
-
-In any case, what about this instead then:
-
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index d4a094c..114ab14 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -646,6 +646,7 @@ long spufs_create(struct path *path, struct dentry *dentry,
- 
- out:
- 	mutex_unlock(&path->dentry->d_inode->i_mutex);
-+	dput(dentry);
- 	return ret;
- }
- 
-diff --git a/arch/powerpc/platforms/cell/spufs/syscalls.c b/arch/powerpc/platforms/cell/spufs/syscalls.c
-index 8591bb6..5665dcc 100644
---- a/arch/powerpc/platforms/cell/spufs/syscalls.c
-+++ b/arch/powerpc/platforms/cell/spufs/syscalls.c
-@@ -70,8 +70,6 @@ static long do_spu_create(const char __user *pathname, unsigned int flags,
- 	ret = PTR_ERR(dentry);
- 	if (!IS_ERR(dentry)) {
- 		ret = spufs_create(&path, dentry, flags, mode, neighbor);
--		mutex_unlock(&path.dentry->d_inode->i_mutex);
--		dput(dentry);
- 		path_put(&path);
- 	}
- 
-Cheers,
-Ben.
+> Mikey
