@@ -1,25 +1,26 @@
 Return-Path: <hartleys@visionengravers.com>
-Received: from mail209.messagelabs.com (mail209.messagelabs.com [216.82.255.3])
+Received: from mail131.messagelabs.com (mail131.messagelabs.com
+ [216.82.242.99])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail209.messagelabs.com",
+ (Client CN "mail131.messagelabs.com",
  Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B1C1B6F98
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 11:55:50 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 57062B6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 11:59:09 +1100 (EST)
 From: H Hartley Sweeten <hartleys@visionengravers.com>
 To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Dan Williams
  <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
-Date: Tue, 6 Mar 2012 18:53:27 -0600
-Subject: RE: [PATCH 4/9] dmaengine: consolidate assignment of DMA cookies
-Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF559AB@AUSP01VMBX24.collaborationhost.net>
+Date: Tue, 6 Mar 2012 18:56:45 -0600
+Subject: RE: [PATCH 5/9] dmaengine: provide a common function for completing
+ a dma descriptor
+Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF559AD@AUSP01VMBX24.collaborationhost.net>
 References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
- <E1S52xy-0002Ms-Ud@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1S52xy-0002Ms-Ud@rmk-PC.arm.linux.org.uk>
+ <E1S52yJ-0002Mx-2e@rmk-PC.arm.linux.org.uk>
+In-Reply-To: <E1S52yJ-0002Mx-2e@rmk-PC.arm.linux.org.uk>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: Stephen Warren <swarren@nvidia.com>,
  Linus Walleij <linus.walleij@stericsson.com>,
  Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
- Barry Song <baohua.song@csr.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,50 +34,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Tuesday, March 06, 2012 3:35 PM, Russell King wrote:
 >
-> Everyone deals with assigning DMA cookies in the same way (it's part of
-> the API so they should be), so lets consolidate the common code into a
-> helper function to avoid this duplication.
+> Provide a common function to do the cookie mechanics for completing
+> a DMA descriptor.
 >
 > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 > ---
 
 <snip>
 
->  drivers/dma/dmaengine.h     |   20 ++++++++++++++++++++
+>  drivers/dma/dmaengine.h     |   18 ++++++++++++++++++
 
 <snip>
 
->  drivers/dma/ep93xx_dma.c    |    9 +--------
+>  drivers/dma/ep93xx_dma.c    |    2 +-
 
 <snip>
 
 > diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
-> index 968570d..7692c86 100644
+> index 7692c86..47e0997 100644
 > --- a/drivers/dma/dmaengine.h
 > +++ b/drivers/dma/dmaengine.h
-> @@ -7,4 +7,24 @@
+> @@ -5,6 +5,7 @@
+>  #ifndef DMAENGINE_H
+>  #define DMAENGINE_H
 > =20
+> +#include <linux/bug.h>
 >  #include <linux/dmaengine.h>
 > =20
+>  /**
+> @@ -27,4 +28,21 @@ static inline dma_cookie_t dma_cookie_assign(struct dm=
+a_async_tx_descriptor *tx)
+>  	return cookie;
+>  }
+> =20
 > +/**
-> + * dma_cookie_assign - assign a DMA engine cookie to the descriptor
-> + * @tx: descriptor needing cookie
+> + * dma_cookie_complete - complete a descriptor
+> + * @tx: descriptor to complete
 > + *
-> + * Assign a unique non-zero per-channel cookie to the descriptor.
+> + * Mark this descriptor complete by updating the channels completed
+> + * cookie marker.  Zero the descriptors cookie to prevent accidental
+> + * repeated completions.
+> + *
 > + * Note: caller is expected to hold a lock to prevent concurrency.
 > + */
-> +static inline dma_cookie_t dma_cookie_assign(struct dma_async_tx_descrip=
-tor *tx)
+> +static inline void dma_cookie_complete(struct dma_async_tx_descriptor *t=
+x)
 > +{
-> +	struct dma_chan *chan =3D tx->chan;
-> +	dma_cookie_t cookie;
-> +
-> +	cookie =3D chan->cookie + 1;
-> +	if (cookie < DMA_MIN_COOKIE)
-> +		cookie =3D DMA_MIN_COOKIE;
-> +	tx->cookie =3D chan->cookie =3D cookie;
-> +
-> +	return cookie;
+> +	BUG_ON(tx->cookie < DMA_MIN_COOKIE);
+> +	tx->chan->completed_cookie =3D tx->cookie;
+> +	tx->cookie =3D 0;
 > +}
 > +
 >  #endif
@@ -84,29 +90,18 @@ tor *tx)
 <snip>
 
 > diff --git a/drivers/dma/ep93xx_dma.c b/drivers/dma/ep93xx_dma.c
-> index 3260198..e5aaae8 100644
+> index e5aaae8..1c56f75 100644
 > --- a/drivers/dma/ep93xx_dma.c
 > +++ b/drivers/dma/ep93xx_dma.c
-> @@ -783,17 +783,10 @@ static dma_cookie_t ep93xx_dma_tx_submit(struct dma=
-_async_tx_descriptor *tx)
->  	unsigned long flags;
-> =20
->  	spin_lock_irqsave(&edmac->lock, flags);
-> -
-> -	cookie =3D edmac->chan.cookie;
-> -
-> -	if (++cookie < 0)
-> -		cookie =3D 1;
-> +	cookie =3D dma_cookie_assign(tx);
-> =20
->  	desc =3D container_of(tx, struct ep93xx_dma_desc, txd);
-> =20
-> -	edmac->chan.cookie =3D cookie;
-> -	desc->txd.cookie =3D cookie;
-> -
->  	/*
->  	 * If nothing is currently prosessed, we push this descriptor
->  	 * directly to the hardware. Otherwise we put the descriptor
+> @@ -703,7 +703,7 @@ static void ep93xx_dma_tasklet(unsigned long data)
+>  	desc =3D ep93xx_dma_get_active(edmac);
+>  	if (desc) {
+>  		if (desc->complete) {
+> -			edmac->chan.completed_cookie =3D desc->txd.cookie;
+> +			dma_cookie_complete(&desc->txd);
+>  			list_splice_init(&edmac->active, &list);
+>  		}
+>  		callback =3D desc->txd.callback;
 
 For ep93xx:
 
