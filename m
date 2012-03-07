@@ -1,28 +1,23 @@
-Return-Path: <hartleys@visionengravers.com>
-Received: from mail131.messagelabs.com (mail131.messagelabs.com
- [216.82.242.99])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail131.messagelabs.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 57062B6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 11:59:09 +1100 (EST)
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Dan Williams
- <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
-Date: Tue, 6 Mar 2012 18:56:45 -0600
-Subject: RE: [PATCH 5/9] dmaengine: provide a common function for completing
- a dma descriptor
-Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF559AD@AUSP01VMBX24.collaborationhost.net>
-References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
- <E1S52yJ-0002Mx-2e@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1S52yJ-0002Mx-2e@rmk-PC.arm.linux.org.uk>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <bhelgaas@google.com>
+Received: from mail-gx0-f201.google.com (mail-gx0-f201.google.com
+ [209.85.161.201])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 118ACB6FCA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 12:00:21 +1100 (EST)
+Received: by ggki24 with SMTP id i24so698196ggk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2012 17:00:18 -0800 (PST)
+Subject: [PATCH v1 2/9] powerpc/PCI: compute I/O space bus-to-resource offset
+ consistently
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 06 Mar 2012 18:00:17 -0700
+Message-ID: <20120307010017.27465.29519.stgit@bhelgaas.mtv.corp.google.com>
+In-Reply-To: <20120307005905.27465.71131.stgit@bhelgaas.mtv.corp.google.com>
+References: <20120307005905.27465.71131.stgit@bhelgaas.mtv.corp.google.com>
 MIME-Version: 1.0
-Cc: Stephen Warren <swarren@nvidia.com>,
- Linus Walleij <linus.walleij@stericsson.com>,
- Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,78 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, March 06, 2012 3:35 PM, Russell King wrote:
->
-> Provide a common function to do the cookie mechanics for completing
-> a DMA descriptor.
->
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
+Make sure we compute CPU addresses (resource start/end) the same way both
+when we set up the I/O aperture (hose->io_resource) and when we use
+pcibios_bus_to_resource() to convert BAR values into resources.
 
-<snip>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ arch/powerpc/include/asm/pci.h   |    1 +
+ arch/powerpc/kernel/pci-common.c |    8 ++++++--
+ arch/powerpc/kernel/pci_32.c     |    6 +++---
+ arch/powerpc/kernel/pci_64.c     |    2 +-
+ 4 files changed, 11 insertions(+), 6 deletions(-)
 
->  drivers/dma/dmaengine.h     |   18 ++++++++++++++++++
-
-<snip>
-
->  drivers/dma/ep93xx_dma.c    |    2 +-
-
-<snip>
-
-> diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
-> index 7692c86..47e0997 100644
-> --- a/drivers/dma/dmaengine.h
-> +++ b/drivers/dma/dmaengine.h
-> @@ -5,6 +5,7 @@
->  #ifndef DMAENGINE_H
->  #define DMAENGINE_H
-> =20
-> +#include <linux/bug.h>
->  #include <linux/dmaengine.h>
-> =20
->  /**
-> @@ -27,4 +28,21 @@ static inline dma_cookie_t dma_cookie_assign(struct dm=
-a_async_tx_descriptor *tx)
->  	return cookie;
->  }
-> =20
-> +/**
-> + * dma_cookie_complete - complete a descriptor
-> + * @tx: descriptor to complete
-> + *
-> + * Mark this descriptor complete by updating the channels completed
-> + * cookie marker.  Zero the descriptors cookie to prevent accidental
-> + * repeated completions.
-> + *
-> + * Note: caller is expected to hold a lock to prevent concurrency.
-> + */
-> +static inline void dma_cookie_complete(struct dma_async_tx_descriptor *t=
-x)
-> +{
-> +	BUG_ON(tx->cookie < DMA_MIN_COOKIE);
-> +	tx->chan->completed_cookie =3D tx->cookie;
-> +	tx->cookie =3D 0;
-> +}
-> +
->  #endif
-
-<snip>
-
-> diff --git a/drivers/dma/ep93xx_dma.c b/drivers/dma/ep93xx_dma.c
-> index e5aaae8..1c56f75 100644
-> --- a/drivers/dma/ep93xx_dma.c
-> +++ b/drivers/dma/ep93xx_dma.c
-> @@ -703,7 +703,7 @@ static void ep93xx_dma_tasklet(unsigned long data)
->  	desc =3D ep93xx_dma_get_active(edmac);
->  	if (desc) {
->  		if (desc->complete) {
-> -			edmac->chan.completed_cookie =3D desc->txd.cookie;
-> +			dma_cookie_complete(&desc->txd);
->  			list_splice_init(&edmac->active, &list);
->  		}
->  		callback =3D desc->txd.callback;
-
-For ep93xx:
-
-Tested-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Acked-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 201e352..6653f27 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -182,6 +182,7 @@ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
+ 				 const struct resource *rsrc,
+ 				 resource_size_t *start, resource_size_t *end);
+ 
++extern resource_size_t pcibios_io_space_offset(struct pci_controller *hose);
+ extern void pcibios_setup_bus_devices(struct pci_bus *bus);
+ extern void pcibios_setup_bus_self(struct pci_bus *bus);
+ extern void pcibios_setup_phb_io_space(struct pci_controller *hose);
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 910b9de..2efd52d 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1492,6 +1492,11 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ 	return pci_enable_resources(dev, mask);
+ }
+ 
++resource_size_t pcibios_io_space_offset(struct pci_controller *hose)
++{
++	return (unsigned long) hose->io_base_virt - _IO_BASE;
++}
++
+ static void __devinit pcibios_setup_phb_resources(struct pci_controller *hose, struct list_head *resources)
+ {
+ 	struct resource *res;
+@@ -1516,8 +1521,7 @@ static void __devinit pcibios_setup_phb_resources(struct pci_controller *hose, s
+ 		 (unsigned long long)res->start,
+ 		 (unsigned long long)res->end,
+ 		 (unsigned long)res->flags);
+-	pci_add_resource_offset(resources, res,
+-			(resource_size_t) hose->io_base_virt - _IO_BASE);
++	pci_add_resource_offset(resources, res, pcibios_io_space_offset(hose));
+ 
+ 	/* Hookup PHB Memory resources */
+ 	for (i = 0; i < 3; ++i) {
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index fdd1a3d..4b06ec5 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -219,9 +219,9 @@ void __devinit pcibios_setup_phb_io_space(struct pci_controller *hose)
+ 	struct resource *res = &hose->io_resource;
+ 
+ 	/* Fixup IO space offset */
+-	io_offset = (unsigned long)hose->io_base_virt - isa_io_base;
+-	res->start = (res->start + io_offset) & 0xffffffffu;
+-	res->end = (res->end + io_offset) & 0xffffffffu;
++	io_offset = pcibios_io_space_offset(hose);
++	res->start += io_offset;
++	res->end += io_offset;
+ }
+ 
+ static int __init pcibios_init(void)
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 75417fd..94a54f6 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -168,7 +168,7 @@ static int __devinit pcibios_map_phb_io_space(struct pci_controller *hose)
+ 		return -ENOMEM;
+ 
+ 	/* Fixup hose IO resource */
+-	io_virt_offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++	io_virt_offset = pcibios_io_space_offset(hose);
+ 	hose->io_resource.start += io_virt_offset;
+ 	hose->io_resource.end += io_virt_offset;
+ 
