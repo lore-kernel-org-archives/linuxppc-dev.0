@@ -1,22 +1,27 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-wi0-f201.google.com (mail-wi0-f201.google.com
- [209.85.212.201])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A7F66B703D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 12:00:28 +1100 (EST)
-Received: by wibhq7 with SMTP id hq7so219532wib.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2012 17:00:23 -0800 (PST)
-Subject: [PATCH v1 3/9] powerpc/PCI: convert devtree bus addresses to resource
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 06 Mar 2012 18:00:22 -0700
-Message-ID: <20120307010022.27465.51474.stgit@bhelgaas.mtv.corp.google.com>
-In-Reply-To: <20120307005905.27465.71131.stgit@bhelgaas.mtv.corp.google.com>
-References: <20120307005905.27465.71131.stgit@bhelgaas.mtv.corp.google.com>
+Return-Path: <hartleys@visionengravers.com>
+Received: from mail209.messagelabs.com (mail209.messagelabs.com [216.82.255.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail209.messagelabs.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A694DB6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 12:07:17 +1100 (EST)
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Dan Williams
+ <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
+Date: Tue, 6 Mar 2012 19:04:54 -0600
+Subject: RE: [PATCH 6/9] dmaengine: consolidate tx_status functions
+Message-ID: <ADE657CA350FB648AAC2C43247A983F001F41FF559AF@AUSP01VMBX24.collaborationhost.net>
+References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
+ <E1S52yd-0002N1-76@rmk-PC.arm.linux.org.uk>
+In-Reply-To: <E1S52yd-0002N1-76@rmk-PC.arm.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Warren <swarren@nvidia.com>,
+ Linus Walleij <linus.walleij@stericsson.com>,
+ Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+ Barry Song <baohua.song@csr.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +31,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Normal PCI enumeration via PCI config space uses __pci_read_base(), where
-the PCI core applies any bus-to-resource offset.  But powerpc doesn't use
-that path when enumerating via the device tree.
+On Tuesday, March 06, 2012 3:35 PM, Russell King wrote:
+>
+> Now that we have the completed cookie in the dma_chan structure, we
+> can consolidate the tx_status functions by providing a function to set
+> the txstate structure and returning the DMA status.  We also provide
+> a separate helper to set the residue for cookies which are still in
+> progress.
+>
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> ---
 
-This adds the corresponding bus-to-resource conversion in the paths that
-read BAR values from the OF device tree.
+<snip>
 
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- arch/powerpc/kernel/pci_of_scan.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+>  drivers/dma/dmaengine.h     |   31 +++++++++++++++++++++++++++++++
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index b37d0b5..89dde17 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -75,6 +75,7 @@ static void of_pci_parse_addrs(struct device_node *node, struct pci_dev *dev)
- {
- 	u64 base, size;
- 	unsigned int flags;
-+	struct pci_bus_region region;
- 	struct resource *res;
- 	const u32 *addrs;
- 	u32 i;
-@@ -106,10 +107,11 @@ static void of_pci_parse_addrs(struct device_node *node, struct pci_dev *dev)
- 			printk(KERN_ERR "PCI: bad cfg reg num 0x%x\n", i);
- 			continue;
- 		}
--		res->start = base;
--		res->end = base + size - 1;
- 		res->flags = flags;
- 		res->name = pci_name(dev);
-+		region.start = base;
-+		region.end = base + size - 1;
-+		pcibios_bus_to_resource(dev, res, &region);
- 	}
- }
- 
-@@ -209,6 +211,7 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev)
- 	struct pci_bus *bus;
- 	const u32 *busrange, *ranges;
- 	int len, i, mode;
-+	struct pci_bus_region region;
- 	struct resource *res;
- 	unsigned int flags;
- 	u64 size;
-@@ -270,9 +273,10 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev)
- 			res = bus->resource[i];
- 			++i;
- 		}
--		res->start = of_read_number(&ranges[1], 2);
--		res->end = res->start + size - 1;
- 		res->flags = flags;
-+		region.start = of_read_number(&ranges[1], 2);
-+		region.end = region.start + size - 1;
-+		pcibios_bus_to_resource(dev, res, &region);
- 	}
- 	sprintf(bus->name, "PCI Bus %04x:%02x", pci_domain_nr(bus),
- 		bus->number);
+<snip>
+
+>  drivers/dma/ep93xx_dma.c    |    7 +------
+
+<snip>
+
+> diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
+> index 47e0997..1ca5e0e 100644
+> --- a/drivers/dma/dmaengine.h
+> +++ b/drivers/dma/dmaengine.h
+> @@ -45,4 +45,35 @@ static inline void dma_cookie_complete(struct dma_asyn=
+c_tx_descriptor *tx)
+>  	tx->cookie =3D 0;
+>  }
+> =20
+> +/**
+> + * dma_cookie_status - report cookie status
+> + * @chan: dma channel
+> + * @cookie: cookie we are interested in
+> + * @state: dma_tx_state structure to return last/used cookies
+> + *
+> + * Report the status of the cookie, filling in the state structure if
+> + * non-NULL.  No locking is required.
+> + */
+> +static inline enum dma_status dma_cookie_status(struct dma_chan *chan,
+> +	dma_cookie_t cookie, struct dma_tx_state *state)
+> +{
+> +	dma_cookie_t used, complete;
+> +
+> +	used =3D chan->cookie;
+> +	complete =3D chan->completed_cookie;
+> +	barrier();
+> +	if (state) {
+> +		state->last =3D complete;
+> +		state->used =3D used;
+> +		state->residue =3D 0;
+> +	}
+> +	return dma_async_is_complete(cookie, complete, used);
+> +}
+> +
+> +static inline void dma_set_residue(struct dma_tx_state *state, u32 resid=
+ue)
+> +{
+> +	if (state)
+> +		state->residue =3D residue;
+> +}
+> +
+>  #endif
+
+<snip>
+
+> diff --git a/drivers/dma/ep93xx_dma.c b/drivers/dma/ep93xx_dma.c
+> index 1c56f75..142ebf0 100644
+> --- a/drivers/dma/ep93xx_dma.c
+> +++ b/drivers/dma/ep93xx_dma.c
+> @@ -1241,18 +1241,13 @@ static enum dma_status ep93xx_dma_tx_status(struc=
+t dma_chan *chan,
+>  					    struct dma_tx_state *state)
+>  {
+>  	struct ep93xx_dma_chan *edmac =3D to_ep93xx_dma_chan(chan);
+> -	dma_cookie_t last_used, last_completed;
+>  	enum dma_status ret;
+>  	unsigned long flags;
+> =20
+>  	spin_lock_irqsave(&edmac->lock, flags);
+> -	last_used =3D chan->cookie;
+> -	last_completed =3D chan->completed_cookie;
+> +	ret =3D dma_cookie_status(chan, cookie, state);
+>  	spin_unlock_irqrestore(&edmac->lock, flags);
+> =20
+> -	ret =3D dma_async_is_complete(cookie, last_completed, last_used);
+> -	dma_set_tx_state(state, last_completed, last_used, 0);
+> -
+>  	return ret;
+>  }
+> =20
+
+For ep93xx:
+
+Tested-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Acked-by: H Hartley Sweeten <hsweeten@visionengravers.com>
