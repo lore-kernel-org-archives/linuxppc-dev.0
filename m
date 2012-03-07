@@ -1,25 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 63B1DB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 00:19:00 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 20744-03 for <linuxppc-dev@lists.ozlabs.org>;
- Wed,  7 Mar 2012 13:18:55 +0000 (GMT)
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A8AB1B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 00:54:03 +1100 (EST)
+Message-ID: <4F576876.8030807@suse.de>
+Date: Wed, 07 Mar 2012 14:53:58 +0100
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2] powerpc/srio: Fix the compile errors when building
- with 64bit
-Date: Wed, 7 Mar 2012 13:18:01 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6E91@saturn3.aculab.com>
-In-Reply-To: <1331124924-18838-1-git-send-email-Gang.Liu@freescale.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Liu Gang" <Gang.Liu@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
- <Alexandre.Bounine@idt.com>
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, r61911@freescale.com,
- linux-kernel@vger.kernel.org, paul.gortmaker@windriver.com,
- akpm@linux-foundation.org, r58472@freescale.com
+To: Yin Olivia-R63875 <r63875@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/e500: make load_up_spe a normal fuction
+References: <1330340388-30296-1-git-send-email-hong-hua.yin@freescale.com>
+ <4F4BD726.1030805@freescale.com>
+ <B5012D5F6E2BBC4DBF16B3E6037A5B7316CCE0@039-SN1MPN1-004.039d.mgd.msft.net>
+In-Reply-To: <B5012D5F6E2BBC4DBF16B3E6037A5B7316CCE0@039-SN1MPN1-004.039d.mgd.msft.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> diff --git a/arch/powerpc/sysdev/fsl_rmu.c
-b/arch/powerpc/sysdev/fsl_rmu.c
-> index 1548578..1bba6d1 100644
-> --- a/arch/powerpc/sysdev/fsl_rmu.c
-> +++ b/arch/powerpc/sysdev/fsl_rmu.c
+On 02/28/2012 08:09 AM, Yin Olivia-R63875 wrote:
+> Hi Scott,
+>
+> This had been reviewed before and accepted by internal tree.
+> http://linux.freescale.net/patchwork/patch/11100/
+> http://git.am.freescale.net/gitolite/gitweb.cgi/sdk/kvm.git/commit/?h=for-sdk1.2&id=c5088844dc665dbdae4fa51b8d58dc203bacc17e
+>
+> I didn't change anything except the line.
+> I just commit to external kvm-ppc mailing list. Should I add my own Signed-off-by?
 
-> @@ -657,7 +658,8 @@ fsl_add_outb_message(struct rio_mport=20
-> *mport, struct rio_dev *rdev, int mbox,
->  	int ret =3D 0;
-> =20
->  	pr_debug("RIO: fsl_add_outb_message(): destid %4.4x mbox %d
-buffer " \
-> -		 "%8.8x len %8.8x\n", rdev->destid, mbox, (int)buffer,
-len);
-> +		 "%8.8lx len %8.8zx\n", rdev->destid, mbox,
-> +		(unsigned long)buffer, len);
+Yes, if you just take a patch from someone else and direct it to another 
+tree, you keep the From: line (git cherry-pick or git am should do that 
+automatically for you) and add your own SOB-line (git am -s can do that 
+for example).
 
-Should 'buffer' be printed with %p ??
+Since you're also supposed to change the description, please note that 
+between Yu's SOB line and your SOB line with something like
 
-	David
+Signed-off-by: Liu Yu<yu.liu@freescale.com>
+[olivia: change description]
+Signed-off-by: Olivia Yin<r63875@freescale.com>
+
+
+
+Alex
