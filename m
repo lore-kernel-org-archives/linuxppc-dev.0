@@ -1,20 +1,27 @@
-Return-Path: <B36685@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0ECFFB6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 16:44:35 +1100 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <stable@kernel.org>
-Subject: [PATCH v2] powerpc/dts: fix the compatible string of sec 4.0
-Date: Wed, 7 Mar 2012 13:20:06 +0800
-Message-ID: <1331097606-22407-1-git-send-email-Shengzhou.Liu@freescale.com>
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+ [209.85.210.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 568C3B6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 19:33:51 +1100 (EST)
+Received: by iakh37 with SMTP id h37so8879628iak.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2012 00:33:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Liu Shuo <shuo.liu@freescale.com>,
- Shengzhou Liu <Shengzhou.Liu@freescale.com>
+In-Reply-To: <20120306223321.GD15201@n2100.arm.linux.org.uk>
+References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
+Date: Wed, 7 Mar 2012 09:33:49 +0100
+Message-ID: <CACRpkdYry6G4gi7LdVM4gYOQBKZCoQxdzLAGg1WcjB6rVD-PPQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/9] DMA engine cookie handling cleanups
+From: Linus Walleij <linus.walleij@linaro.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Warren <swarren@nvidia.com>,
+ Linus Walleij <linus.walleij@stericsson.com>,
+ Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+ Barry Song <baohua.song@csr.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Liu Shuo <shuo.liu@freescale.com>
+On Tue, Mar 6, 2012 at 11:33 PM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
 
-Fix the compatible string of sec 4.0 to match with CAMM driver according
-to Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+> This patch series cleans up the handling of cookies in DMA engine drivers.
+> This is done by providing a set of inline library functions for common
+> tasks:
 
-Signed-off-by: Liu Shuo <shuo.liu@freescale.com>
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
-v2: refine description.
+I just applied the latest patches right off and tested with some stressy
+MMC operations on the U300 and Ux500. (I had some minor hell
+since patch 8/9 and 9/9 were uuencoded but managed to fix it...)
 
- arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+It works like a charm!
 
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-index bf957a7..d4c9d5d 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-sec4.4-0.dtsi
-@@ -33,32 +33,32 @@
-  */
- 
- crypto@30000 {
--	compatible = "fsl,sec4.4", "fsl,sec4.0";
-+	compatible = "fsl,sec-v4.4", "fsl,sec-v4.0";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 	reg		 = <0x30000 0x10000>;
- 	interrupts	 = <58 2 0 0>;
- 
- 	sec_jr0: jr@1000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x1000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
- 
- 	sec_jr1: jr@2000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x2000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
- 
- 	sec_jr2: jr@3000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x3000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
- 
- 	sec_jr3: jr@4000 {
--		compatible = "fsl,sec4.4-job-ring", "fsl,sec4.0-job-ring";
-+		compatible = "fsl,sec-v4.4-job-ring", "fsl,sec-v4.0-job-ring";
- 		reg	   = <0x4000 0x1000>;
- 		interrupts	 = <45 2 0 0>;
- 	};
--- 
-1.7.0.4
+The patches look good too.
+
+Tested-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij
