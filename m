@@ -1,17 +1,17 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-gy0-f201.google.com (mail-gy0-f201.google.com
- [209.85.160.201])
+Received: from mail-lpp01m010-f73.google.com (mail-lpp01m010-f73.google.com
+ [209.85.215.73])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F3A5BB6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 09:33:03 +1100 (EST)
-Received: by ghbg15 with SMTP id g15so836616ghb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2012 14:33:00 -0800 (PST)
-Subject: [PATCH v3 11/34] powerpc/PCI: replace pci_probe_only with pci_flags
+ by ozlabs.org (Postfix) with ESMTPS id B829CB70B1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 09:34:27 +1100 (EST)
+Received: by laah2 with SMTP id h2so234035laa.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2012 14:34:23 -0800 (PST)
+Subject: [PATCH v3 27/34] powerpc/PCI: get rid of device resource fixups
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
 From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 07 Mar 2012 15:33:00 -0700
-Message-ID: <20120307223300.25669.54100.stgit@bhelgaas.mtv.corp.google.com>
+Date: Wed, 07 Mar 2012 15:34:22 -0700
+Message-ID: <20120307223422.25669.72561.stgit@bhelgaas.mtv.corp.google.com>
 In-Reply-To: <20120307222436.25669.52282.stgit@bhelgaas.mtv.corp.google.com>
 References: <20120307222436.25669.52282.stgit@bhelgaas.mtv.corp.google.com>
 MIME-Version: 1.0
@@ -27,179 +27,282 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We already use pci_flags, so this just sets pci_flags directly and removes
-the intermediate step of figuring out pci_probe_only, then using it to set
-pci_flags.
+Tell the PCI core about host bridge address translation so it can take
+care of bus-to-resource conversion for us.
 
-The PCI core provides a pci_flags definition (currently __weak), so drop
-the powerpc definitions in favor of that.
+Previously, powerpc used a HEADER quirk to perform this address fixup
+in the following path:
+
+    pci_device_add()
+      pci_fixup_device(pci_fixup_header, dev)
+        pcibios_fixup_resources()
+	  fixup_resource()
+
+This happened for both generic (via pci_scan_child_bus()) and
+OF device tree enumeration (via of_scan_bus()).
+
+This patch removes fixup_resource(), so the HEADER quirk no longer does
+address fixup.  The generic path now does the fixup in __pci_read_base()
+using the offsets supplied with pci_add_resource_offset().  The OF path
+now does the fixup with new pcibios_bus_to_resource() calls in
+of_pci_parse_addrs() and of_scan_pci_bridge().
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 CC: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/powerpc/include/asm/ppc-pci.h        |    2 --
- arch/powerpc/kernel/pci-common.c          |    3 ---
- arch/powerpc/kernel/pci_64.c              |    5 -----
- arch/powerpc/kernel/rtas_pci.c            |   10 +++++++---
- arch/powerpc/platforms/iseries/pci.c      |    2 +-
- arch/powerpc/platforms/maple/pci.c        |    2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c |    5 ++---
- arch/powerpc/platforms/powernv/pci.c      |    2 +-
- arch/powerpc/platforms/pseries/setup.c    |    4 ++--
- 9 files changed, 14 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/pci.h    |    9 +---
+ arch/powerpc/kernel/pci-common.c  |   83 ++++---------------------------------
+ arch/powerpc/kernel/pci_32.c      |    6 +--
+ arch/powerpc/kernel/pci_64.c      |    2 -
+ arch/powerpc/kernel/pci_of_scan.c |   12 ++++-
+ 5 files changed, 23 insertions(+), 89 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 43268f1..f4f7ad8 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -45,8 +45,6 @@ extern void init_pci_config_tokens (void);
- extern unsigned long get_phb_buid (struct device_node *);
- extern int rtas_setup_phb(struct pci_controller *phb);
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index f54b3d2..21fbeeb 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -154,13 +154,7 @@ extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
  
--extern unsigned long pci_probe_only;
+ #endif /* CONFIG_PPC64 */
+ 
+-extern void pcibios_resource_to_bus(struct pci_dev *dev,
+-			struct pci_bus_region *region,
+-			struct resource *res);
 -
- /* ---- EEH internal-use-only related routines ---- */
- #ifdef CONFIG_EEH
+-extern void pcibios_bus_to_resource(struct pci_dev *dev,
+-			struct resource *res,
+-			struct pci_bus_region *region);
++#define ARCH_HAS_GENERIC_PCI_OFFSETS
  
+ extern void pcibios_claim_one_bus(struct pci_bus *b);
+ 
+@@ -190,6 +184,7 @@ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
+ 				 const struct resource *rsrc,
+ 				 resource_size_t *start, resource_size_t *end);
+ 
++extern resource_size_t pcibios_io_space_offset(struct pci_controller *hose);
+ extern void pcibios_setup_bus_devices(struct pci_bus *bus);
+ extern void pcibios_setup_bus_self(struct pci_bus *bus);
+ extern void pcibios_setup_phb_io_space(struct pci_controller *hose);
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index cce98d7..6d03da4 100644
+index 6d03da4..2efd52d 100644
 --- a/arch/powerpc/kernel/pci-common.c
 +++ b/arch/powerpc/kernel/pci-common.c
-@@ -50,9 +50,6 @@ static int global_phb_number;		/* Global phb counter */
- /* ISA Memory physical address */
- resource_size_t isa_mem_base;
- 
--/* Default PCI flags is 0 on ppc32, modified at boot on ppc64 */
--unsigned int pci_flags = 0;
--
- 
- static struct dma_map_ops *pci_dma_ops = &dma_direct_ops;
- 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index f627eb7..75417fd 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -33,8 +33,6 @@
- #include <asm/machdep.h>
- #include <asm/ppc-pci.h>
- 
--unsigned long pci_probe_only = 0;
--
- /* pci_io_base -- the base address from which io bars are offsets.
-  * This is the lowest I/O base address (so bar values are always positive),
-  * and it *must* be the start of ISA space if an ISA bus exists because
-@@ -55,9 +53,6 @@ static int __init pcibios_init(void)
- 	 */
- 	ppc_md.phys_mem_access_prot = pci_phys_mem_access_prot;
- 
--	if (pci_probe_only)
--		pci_add_flags(PCI_PROBE_ONLY);
--
- 	/* On ppc64, we always enable PCI domains and we keep domain 0
- 	 * backward compatible in /proc for video cards
- 	 */
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index 6cd8f01..140735c 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -276,7 +276,7 @@ void __init find_and_init_phbs(void)
- 	pci_devs_phb_init();
- 
- 	/*
--	 * pci_probe_only and pci_assign_all_buses can be set via properties
-+	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
- 	 * in chosen.
- 	 */
- 	if (of_chosen) {
-@@ -284,8 +284,12 @@ void __init find_and_init_phbs(void)
- 
- 		prop = of_get_property(of_chosen,
- 				"linux,pci-probe-only", NULL);
--		if (prop)
--			pci_probe_only = *prop;
-+		if (prop) {
-+			if (*prop)
-+				pci_add_flags(PCI_PROBE_ONLY);
-+			else
-+				pci_clear_flags(PCI_PROBE_ONLY);
-+		}
- 
- #ifdef CONFIG_PPC32 /* Will be made generic soon */
- 		prop = of_get_property(of_chosen,
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index c754128..171b2f3 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -868,7 +868,7 @@ void __init iSeries_pcibios_init(void)
- 	/* Install IO hooks */
- 	ppc_pci_io = iseries_pci_io;
- 
--	pci_probe_only = 1;
-+	pci_add_flags(PCI_PROBE_ONLY);
- 
- 	/* iSeries has no IO space in the common sense, it needs to set
- 	 * the IO base to 0
-diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
-index 401e3f3..465ee8f 100644
---- a/arch/powerpc/platforms/maple/pci.c
-+++ b/arch/powerpc/platforms/maple/pci.c
-@@ -620,7 +620,7 @@ void __init maple_pci_init(void)
- 	}
- 
- 	/* Tell pci.c to not change any resource allocations.  */
--	pci_probe_only = 1;
-+	pci_add_flags(PCI_PROBE_ONLY);
+@@ -846,60 +846,6 @@ int pci_proc_domain(struct pci_bus *bus)
+ 	return 1;
  }
  
- int maple_pci_get_legacy_ide_irq(struct pci_dev *pdev, int channel)
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 5e155df..fbdd74d 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1299,15 +1299,14 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
- 	/* Setup MSI support */
- 	pnv_pci_init_ioda_msis(phb);
+-void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
+-			     struct resource *res)
+-{
+-	resource_size_t offset = 0, mask = (resource_size_t)-1;
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-
+-	if (!hose)
+-		return;
+-	if (res->flags & IORESOURCE_IO) {
+-		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-		mask = 0xffffffffu;
+-	} else if (res->flags & IORESOURCE_MEM)
+-		offset = hose->pci_mem_offset;
+-
+-	region->start = (res->start - offset) & mask;
+-	region->end = (res->end - offset) & mask;
+-}
+-EXPORT_SYMBOL(pcibios_resource_to_bus);
+-
+-void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+-			     struct pci_bus_region *region)
+-{
+-	resource_size_t offset = 0, mask = (resource_size_t)-1;
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-
+-	if (!hose)
+-		return;
+-	if (res->flags & IORESOURCE_IO) {
+-		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-		mask = 0xffffffffu;
+-	} else if (res->flags & IORESOURCE_MEM)
+-		offset = hose->pci_mem_offset;
+-	res->start = (region->start + offset) & mask;
+-	res->end = (region->end + offset) & mask;
+-}
+-EXPORT_SYMBOL(pcibios_bus_to_resource);
+-
+-/* Fixup a bus resource into a linux resource */
+-static void __devinit fixup_resource(struct resource *res, struct pci_dev *dev)
+-{
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-	resource_size_t offset = 0, mask = (resource_size_t)-1;
+-
+-	if (res->flags & IORESOURCE_IO) {
+-		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-		mask = 0xffffffffu;
+-	} else if (res->flags & IORESOURCE_MEM)
+-		offset = hose->pci_mem_offset;
+-
+-	res->start = (res->start + offset) & mask;
+-	res->end = (res->end + offset) & mask;
+-}
+-
+-
+ /* This header fixup will do the resource fixup for all devices as they are
+  * probed, but not for bridge ranges
+  */
+@@ -939,18 +885,11 @@ static void __devinit pcibios_fixup_resources(struct pci_dev *dev)
+ 			continue;
+ 		}
  
--	/* We set both probe_only and PCI_REASSIGN_ALL_RSRC. This is an
-+	/* We set both PCI_PROBE_ONLY and PCI_REASSIGN_ALL_RSRC. This is an
- 	 * odd combination which essentially means that we skip all resource
- 	 * fixups and assignments in the generic code, and do it all
- 	 * ourselves here
- 	 */
--	pci_probe_only = 1;
- 	ppc_md.pcibios_fixup_phb = pnv_pci_ioda_fixup_phb;
- 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
--	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
-+	pci_add_flags(PCI_PROBE_ONLY | PCI_REASSIGN_ALL_RSRC);
+-		pr_debug("PCI:%s Resource %d %016llx-%016llx [%x] fixup...\n",
++		pr_debug("PCI:%s Resource %d %016llx-%016llx [%x]\n",
+ 			 pci_name(dev), i,
+ 			 (unsigned long long)res->start,\
+ 			 (unsigned long long)res->end,
+ 			 (unsigned int)res->flags);
+-
+-		fixup_resource(res, dev);
+-
+-		pr_debug("PCI:%s            %016llx-%016llx\n",
+-			 pci_name(dev),
+-			 (unsigned long long)res->start,
+-			 (unsigned long long)res->end);
+ 	}
  
- 	/* Reset IODA tables to a clean state */
- 	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index a053f4f..69dca5a 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -555,7 +555,7 @@ void __init pnv_pci_init(void)
+ 	/* Call machine specific resource fixup */
+@@ -1052,27 +991,18 @@ static void __devinit pcibios_fixup_bridge(struct pci_bus *bus)
+ 			continue;
+ 		}
+ 
+-		pr_debug("PCI:%s Bus rsrc %d %016llx-%016llx [%x] fixup...\n",
++		pr_debug("PCI:%s Bus rsrc %d %016llx-%016llx [%x]\n",
+ 			 pci_name(dev), i,
+ 			 (unsigned long long)res->start,\
+ 			 (unsigned long long)res->end,
+ 			 (unsigned int)res->flags);
+ 
+-		/* Perform fixup */
+-		fixup_resource(res, dev);
+-
+ 		/* Try to detect uninitialized P2P bridge resources,
+ 		 * and clear them out so they get re-assigned later
+ 		 */
+ 		if (pcibios_uninitialized_bridge_resource(bus, res)) {
+ 			res->flags = 0;
+ 			pr_debug("PCI:%s            (unassigned)\n", pci_name(dev));
+-		} else {
+-
+-			pr_debug("PCI:%s            %016llx-%016llx\n",
+-				 pci_name(dev),
+-				 (unsigned long long)res->start,
+-				 (unsigned long long)res->end);
+ 		}
+ 	}
+ }
+@@ -1562,6 +1492,11 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ 	return pci_enable_resources(dev, mask);
+ }
+ 
++resource_size_t pcibios_io_space_offset(struct pci_controller *hose)
++{
++	return (unsigned long) hose->io_base_virt - _IO_BASE;
++}
++
+ static void __devinit pcibios_setup_phb_resources(struct pci_controller *hose, struct list_head *resources)
  {
- 	struct device_node *np;
+ 	struct resource *res;
+@@ -1586,7 +1521,7 @@ static void __devinit pcibios_setup_phb_resources(struct pci_controller *hose, s
+ 		 (unsigned long long)res->start,
+ 		 (unsigned long long)res->end,
+ 		 (unsigned long)res->flags);
+-	pci_add_resource(resources, res);
++	pci_add_resource_offset(resources, res, pcibios_io_space_offset(hose));
  
--	pci_set_flags(PCI_CAN_SKIP_ISA_ALIGN);
-+	pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
+ 	/* Hookup PHB Memory resources */
+ 	for (i = 0; i < 3; ++i) {
+@@ -1609,7 +1544,7 @@ static void __devinit pcibios_setup_phb_resources(struct pci_controller *hose, s
+ 			 (unsigned long long)res->start,
+ 			 (unsigned long long)res->end,
+ 			 (unsigned long)res->flags);
+-		pci_add_resource(resources, res);
++		pci_add_resource_offset(resources, res, hose->pci_mem_offset);
+ 	}
  
- 	/* OPAL absent, try POPAL first then RTAS detection of PHBs */
- 	if (!firmware_has_feature(FW_FEATURE_OPAL)) {
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 386e265..fc2a6f6 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -380,8 +380,8 @@ static void __init pSeries_setup_arch(void)
+ 	pr_debug("PCI: PHB MEM offset     = %016llx\n",
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index fdd1a3d..4b06ec5 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -219,9 +219,9 @@ void __devinit pcibios_setup_phb_io_space(struct pci_controller *hose)
+ 	struct resource *res = &hose->io_resource;
  
- 	fwnmi_init();
+ 	/* Fixup IO space offset */
+-	io_offset = (unsigned long)hose->io_base_virt - isa_io_base;
+-	res->start = (res->start + io_offset) & 0xffffffffu;
+-	res->end = (res->end + io_offset) & 0xffffffffu;
++	io_offset = pcibios_io_space_offset(hose);
++	res->start += io_offset;
++	res->end += io_offset;
+ }
  
--	/* By default, only probe PCI (can be overriden by rtas_pci */
--	pci_probe_only = 1;
-+	/* By default, only probe PCI (can be overriden by rtas_pci) */
-+	pci_add_flags(PCI_PROBE_ONLY);
+ static int __init pcibios_init(void)
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 75417fd..94a54f6 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -168,7 +168,7 @@ static int __devinit pcibios_map_phb_io_space(struct pci_controller *hose)
+ 		return -ENOMEM;
  
- 	/* Find and initialize PCI host bridges */
- 	init_pci_config_tokens();
+ 	/* Fixup hose IO resource */
+-	io_virt_offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++	io_virt_offset = pcibios_io_space_offset(hose);
+ 	hose->io_resource.start += io_virt_offset;
+ 	hose->io_resource.end += io_virt_offset;
+ 
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index b37d0b5..89dde17 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -75,6 +75,7 @@ static void of_pci_parse_addrs(struct device_node *node, struct pci_dev *dev)
+ {
+ 	u64 base, size;
+ 	unsigned int flags;
++	struct pci_bus_region region;
+ 	struct resource *res;
+ 	const u32 *addrs;
+ 	u32 i;
+@@ -106,10 +107,11 @@ static void of_pci_parse_addrs(struct device_node *node, struct pci_dev *dev)
+ 			printk(KERN_ERR "PCI: bad cfg reg num 0x%x\n", i);
+ 			continue;
+ 		}
+-		res->start = base;
+-		res->end = base + size - 1;
+ 		res->flags = flags;
+ 		res->name = pci_name(dev);
++		region.start = base;
++		region.end = base + size - 1;
++		pcibios_bus_to_resource(dev, res, &region);
+ 	}
+ }
+ 
+@@ -209,6 +211,7 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev)
+ 	struct pci_bus *bus;
+ 	const u32 *busrange, *ranges;
+ 	int len, i, mode;
++	struct pci_bus_region region;
+ 	struct resource *res;
+ 	unsigned int flags;
+ 	u64 size;
+@@ -270,9 +273,10 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev)
+ 			res = bus->resource[i];
+ 			++i;
+ 		}
+-		res->start = of_read_number(&ranges[1], 2);
+-		res->end = res->start + size - 1;
+ 		res->flags = flags;
++		region.start = of_read_number(&ranges[1], 2);
++		region.end = region.start + size - 1;
++		pcibios_bus_to_resource(dev, res, &region);
+ 	}
+ 	sprintf(bus->name, "PCI Bus %04x:%02x", pci_domain_nr(bus),
+ 		bus->number);
