@@ -1,23 +1,27 @@
-Return-Path: <B35336@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6B7DBB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 19:41:11 +1100 (EST)
-From: Zhao Chenhui-B35336 <B35336@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 1/9] pci_ids: Add device ID for IBM PCI-X bridge
-Date: Wed, 7 Mar 2012 08:40:58 +0000
-Message-ID: <7AA2FF042C086D469F577FA6723434DA015E98@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1331024707-15891-1-git-send-email-chenhui.zhao@freescale.com>
- <08B5FFBF-FFF7-45FF-A98D-181CC0E6CEBC@kernel.crashing.org>
-In-Reply-To: <08B5FFBF-FFF7-45FF-A98D-181CC0E6CEBC@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 18627B6EE8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2012 20:07:25 +1100 (EST)
+Date: Wed, 7 Mar 2012 09:06:40 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v2 0/9] DMA engine cookie handling cleanups
+Message-ID: <20120307090640.GK17370@n2100.arm.linux.org.uk>
+References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
+ <CACRpkdYry6G4gi7LdVM4gYOQBKZCoQxdzLAGg1WcjB6rVD-PPQ@mail.gmail.com>
 MIME-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CACRpkdYry6G4gi7LdVM4gYOQBKZCoQxdzLAGg1WcjB6rVD-PPQ@mail.gmail.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Stephen Warren <swarren@nvidia.com>,
+ Linus Walleij <linus.walleij@stericsson.com>,
+ Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+ Vinod Koul <vinod.koul@intel.com>, Barry Song <baohua.song@csr.com>,
+ Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Mar 6, 2012, at 3:05 AM, Zhao Chenhui wrote:
->=20
-> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > ---
-> > include/linux/pci_ids.h |    1 +
-> > 1 files changed, 1 insertions(+), 0 deletions(-)
->=20
-> Just merge this with the 2nd patch that actually uses the ID.
->=20
-> - k
+On Wed, Mar 07, 2012 at 09:33:49AM +0100, Linus Walleij wrote:
+> On Tue, Mar 6, 2012 at 11:33 PM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+> 
+> > This patch series cleans up the handling of cookies in DMA engine drivers.
+> > This is done by providing a set of inline library functions for common
+> > tasks:
+> 
+> I just applied the latest patches right off and tested with some stressy
+> MMC operations on the U300 and Ux500. (I had some minor hell
+> since patch 8/9 and 9/9 were uuencoded but managed to fix it...)
 
-Ok. I put it in the file mpc85xx_cds.c.
-
--Chenhui
+That'll be some MTA deciding to change the encoding, probably because some
+MTA spotted UTF-8 characters in the description and decided to convert to
+base64.
