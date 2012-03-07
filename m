@@ -1,21 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2DE85B6FA2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 00:56:50 +1100 (EST)
-Message-ID: <4F57691E.1070105@suse.de>
-Date: Wed, 07 Mar 2012 14:56:46 +0100
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Olivia Yin <hong-hua.yin@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc/e500: make load_up_spe a normal fuction
-References: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
-In-Reply-To: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Liu Yu <yu.liu@freescale.com>, kvm@vger.kernel.org, B04825@freescale.com,
- kvm-ppc@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <vinod.koul@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+ by ozlabs.org (Postfix) with ESMTP id 1F8F1B6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 00:59:45 +1100 (EST)
+Subject: Re: [PATCH v2 0/9] DMA engine cookie handling cleanups
+From: Vinod Koul <vinod.koul@intel.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+In-Reply-To: <20120306223321.GD15201@n2100.arm.linux.org.uk>
+References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 07 Mar 2012 19:24:26 +0530
+Message-ID: <1331128466.24656.421.camel@vkoul-udesk3>
+Mime-Version: 1.0
+Cc: Stephen Warren <swarren@nvidia.com>,
+ Linus Walleij <linus.walleij@stericsson.com>,
+ Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+ Barry Song <baohua.song@csr.com>, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/01/2012 02:20 AM, Olivia Yin wrote:
-> From: Liu Yu<yu.liu@freescale.com>
->
-> So that we can call it when improving SPE switch like book3e did for fp switch.
+On Tue, 2012-03-06 at 22:33 +0000, Russell King - ARM Linux wrote:
+> [v2 - more or less same description.  Including lakml in cc for the full
+> set]
+> 
+> This patch series cleans up the handling of cookies in DMA engine drivers.
+> This is done by providing a set of inline library functions for common
+> tasks:
+> 
+> - moving the 'last completed cookie' into struct dma_chan - everyone
+>   has this in their driver private channel data structure
+> 
+> - consolidate allocation of cookies to DMA descriptors
+> 
+> - common way to update 'last completed cookie' value
+> 
+> - standard way to implement tx_status callback and update the residue
+> 
+> - consolidate initialization of cookies
+> 
+> - update implementations differing from the majority of DMA engine drivers
+>   to behave the same as the majority implementation in respect of cookies
+> 
+> What this means is that we get to the point where all DMA engine drivers
+> will hand out cookie value '2' as the first, and incrementing cookie
+> values up to INT_MAX, returning to cookie '1' as the next cookie.
+> 
+> Think of this patch series as round 1...  I am hoping over time that more
+> code can be consolidated between the DMA engine drivers and end up with a
+> consistent way to handle various common themes in DMA engine hardware
+> (like physical channel<->peripheral request signal selection.)
+Thanks Russell,
 
-Timur / Scott, can you please (n)ack this one?
+I have tested this on atom today, and as expected works flawlessly :)
+After all acks, I can merge or these can go thru your tree with my Ack.
+Either way is okay.
 
-Alex
+I applied the v2 on a branch and also rebased on top of slave-dma.next.
+There were few conflicts in imx-dma.c. Sacha, Javier, pls see that merge
+is right.
 
-> Signed-off-by: Liu Yu<yu.liu@freescale.com>
-> Signed-off-by: Olivia Yin<hong-hua.yin@freescale.com>
-> ---
-> v2: 	add Signed-off-by
->
->   arch/powerpc/kernel/head_fsl_booke.S |   23 ++++++-----------------
->   1 files changed, 6 insertions(+), 17 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-> index d5d78c4..c96e025 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -539,8 +539,10 @@ interrupt_base:
->   	/* SPE Unavailable */
->   	START_EXCEPTION(SPEUnavailable)
->   	NORMAL_EXCEPTION_PROLOG
-> -	bne	load_up_spe
-> -	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +	beq	1f
-> +	bl	load_up_spe
-> +	b	fast_exception_return
-> +1:	addi	r3,r1,STACK_FRAME_OVERHEAD
->   	EXC_XFER_EE_LITE(0x2010, KernelSPE)
->   #else
->   	EXCEPTION(0x2020, SPEUnavailable, unknown_exception, EXC_XFER_EE)
-> @@ -743,7 +745,7 @@ tlb_write_entry:
->   /* Note that the SPE support is closely modeled after the AltiVec
->    * support.  Changes to one are likely to be applicable to the
->    * other!  */
-> -load_up_spe:
-> +_GLOBAL(load_up_spe)
->   /*
->    * Disable SPE for the task which had SPE previously,
->    * and save its SPE registers in its thread_struct.
-> @@ -791,20 +793,7 @@ load_up_spe:
->   	subi	r4,r5,THREAD
->   	stw	r4,last_task_used_spe@l(r3)
->   #endif /* !CONFIG_SMP */
-> -	/* restore registers and return */
-> -2:	REST_4GPRS(3, r11)
-> -	lwz	r10,_CCR(r11)
-> -	REST_GPR(1, r11)
-> -	mtcr	r10
-> -	lwz	r10,_LINK(r11)
-> -	mtlr	r10
-> -	REST_GPR(10, r11)
-> -	mtspr	SPRN_SRR1,r9
-> -	mtspr	SPRN_SRR0,r12
-> -	REST_GPR(9, r11)
-> -	REST_GPR(12, r11)
-> -	lwz	r11,GPR11(r11)
-> -	rfi
-> +	blr
->
->   /*
->    * SPE unavailable trap from kernel - print a message, but let
+This branch (rmk_cookie_fixes2_rebased) is not yet pushed, as I am not
+able to connect to infradead.org, should be done when server is back.
+
+
+
+-- 
+~Vinod
