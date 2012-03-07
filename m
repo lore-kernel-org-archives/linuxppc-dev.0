@@ -1,23 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B1FDB7095
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 09:35:33 +1100 (EST)
-Received: by wgbds10 with SMTP id ds10so1104964wgb.14
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2012 14:35:29 -0800 (PST)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.8])
+ by ozlabs.org (Postfix) with ESMTP id 24D18B7031
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 09:38:03 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] spufs raises two exceptions
+Date: Wed, 7 Mar 2012 22:32:47 +0000
+References: <4F55D84B.7030306@gmail.com> <1331154095.3105.25.camel@pasglop>
+ <20120307212330.GT23916@ZenIV.linux.org.uk>
+In-Reply-To: <20120307212330.GT23916@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <20120307223255.25669.42520.stgit@bhelgaas.mtv.corp.google.com>
-References: <20120307222436.25669.52282.stgit@bhelgaas.mtv.corp.google.com>
- <20120307223255.25669.42520.stgit@bhelgaas.mtv.corp.google.com>
-Date: Wed, 7 Mar 2012 14:35:29 -0800
-Message-ID: <CAOesGMiPJg1gbsq_iBc6_6JrOtTonSoic-gGudBNpmz2BEHv8g@mail.gmail.com>
-Subject: Re: [PATCH v3 10/34] powerpc/PCI: allow reallocation on PA Semi
-From: Olof Johansson <olof@lixom.net>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201203072232.47895.arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, masterzorag <masterzorag@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,14 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 7, 2012 at 2:32 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> We believe there's no reason to prevent reallocation on PA Semi, so
-> revert to the default of "allow reallocation if necessary."
->
-> CC: Olof Johansson <olof@lixom.net>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+On Wednesday 07 March 2012, Al Viro wrote:
+> > No it's not, it all goes together. spufs_create_context() always
+> > unlocked & dropped the dentry before returning, so I assumed the
+> > lock had to be dropped before fsnotify.
+> > 
+> > Note that if the problem is that the lock has to be dropped before
+> > spu_forget(), then we should indeed move it back into the leaf functions
+> > and just remove all the unlock path from the top ones. It's a bit nasty
+> > how we drop the mutex first, then do spu_forget, then drop the dentry
+> > but we could go back to doing that.
+> > 
+> > What I want is consistent semantics. It's just silly to have 3 different
+> > stacking levels which all 3 may or may not be responsible to dropping
+> > the lock & dentry depending on circumstances.
+> 
+> Why not leave unlock/dput to the caller?  Details of deadlocks caused
+> by that approach, please...
 
-Tested-by: Olof Johansson <olof@lixom.net>
-Acked-by: Olof Johansson <olof@lixom.net>
+If only I could remember that part exactly. I think I was remembering
+0309f02d8 "spufs: fix deadlock in spu_create error path", which had a
+double lock problem in this path. Please bear with me here because it's
+been six years since I debugged that particular problem.
+
+A lot of the nastyness of spu_forget() is about the problem of having
+to give up a reference on current->mm that is held by an spu context,
+while the mm contains a vma that maps this context and holds a refence
+on the inode, in particular in case of calling exit().
+
+However, I don't see now how either of these two issues requires that
+we call spu_forget without the i_mutex held during a context creation
+failure.
+
+	Arnd
