@@ -1,21 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 62BEAB6F98
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2012 08:42:06 +1100 (EST)
-Message-ID: <4F57D621.7090505@freescale.com>
-Date: Wed, 7 Mar 2012 15:41:53 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-bk0-f73.google.com (mail-bk0-f73.google.com
+ [209.85.214.73])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 58B99B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 09:33:00 +1100 (EST)
+Received: by bkcjg15 with SMTP id jg15so234823bkc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2012 14:32:56 -0800 (PST)
+Subject: [PATCH v3 10/34] powerpc/PCI: allow reallocation on PA Semi
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 07 Mar 2012 15:32:55 -0700
+Message-ID: <20120307223255.25669.42520.stgit@bhelgaas.mtv.corp.google.com>
+In-Reply-To: <20120307222436.25669.52282.stgit@bhelgaas.mtv.corp.google.com>
+References: <20120307222436.25669.52282.stgit@bhelgaas.mtv.corp.google.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
- <scottwood@freescale.com>, <dbaryshkov@gmail.com>, <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
-References: <1322669957-8259-1-git-send-email-timur@freescale.com>
-In-Reply-To: <1322669957-8259-1-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Commit 46d026ac ("powerpc/85xx: consolidate of_platform_bus_probe calls")
-> replaced platform-specific of_device_id tables with a single function
-> that probes the most of the busses in 85xx device trees.  If a specific
-> platform needed additional busses probed, then it could call
-> of_platform_bus_probe() again.  Typically, the additional platform-specific
-> busses are children of existing busses that have already been probed.
-> of_platform_bus_probe() does not handle those child busses automatically.
-> 
-> Unfortunately, this doesn't actually work.  The second (platform-specific)
-> call to of_platform_bus_probe() never finds any of the busses it's asked
-> to find.
-> 
-> To remedy this, the platform-specific of_device_id tables are eliminated,
-> and their entries are merged into mpc85xx_common_ids[], so that all busses
-> are probed at once.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
+We believe there's no reason to prevent reallocation on PA Semi, so
+revert to the default of "allow reallocation if necessary."
 
-Kumar, without this patch, audio is broken on the P1022DS in your 'merge'
-branch.  I posted it back in November, six days after you applied the
-patch that broke the P1022DS.
+CC: Olof Johansson <olof@lixom.net>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ arch/powerpc/platforms/pasemi/pci.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-Is there any chance of getting this into 3.3?  This is a real bug fix, and
-I would hate for audio to be broken in 3.3.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index b6a0ec4..aa86271 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -229,9 +229,6 @@ void __init pas_pci_init(void)
+ 
+ 	/* Setup the linkage between OF nodes and PHBs */
+ 	pci_devs_phb_init();
+-
+-	/* Use the common resource allocation mechanism */
+-	pci_probe_only = 1;
+ }
+ 
+ void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset)
