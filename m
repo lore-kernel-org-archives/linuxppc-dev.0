@@ -2,23 +2,20 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A8AB1B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 00:54:03 +1100 (EST)
-Message-ID: <4F576876.8030807@suse.de>
-Date: Wed, 07 Mar 2012 14:53:58 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 2DE85B6FA2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 00:56:50 +1100 (EST)
+Message-ID: <4F57691E.1070105@suse.de>
+Date: Wed, 07 Mar 2012 14:56:46 +0100
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Yin Olivia-R63875 <r63875@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/e500: make load_up_spe a normal fuction
-References: <1330340388-30296-1-git-send-email-hong-hua.yin@freescale.com>
- <4F4BD726.1030805@freescale.com>
- <B5012D5F6E2BBC4DBF16B3E6037A5B7316CCE0@039-SN1MPN1-004.039d.mgd.msft.net>
-In-Reply-To: <B5012D5F6E2BBC4DBF16B3E6037A5B7316CCE0@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+To: Olivia Yin <hong-hua.yin@freescale.com>
+Subject: Re: [PATCH v2 1/2] powerpc/e500: make load_up_spe a normal fuction
+References: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
+In-Reply-To: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Liu Yu <yu.liu@freescale.com>, kvm@vger.kernel.org, B04825@freescale.com,
+ kvm-ppc@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/28/2012 08:09 AM, Yin Olivia-R63875 wrote:
-> Hi Scott,
+On 03/01/2012 02:20 AM, Olivia Yin wrote:
+> From: Liu Yu<yu.liu@freescale.com>
 >
-> This had been reviewed before and accepted by internal tree.
-> http://linux.freescale.net/patchwork/patch/11100/
-> http://git.am.freescale.net/gitolite/gitweb.cgi/sdk/kvm.git/commit/?h=for-sdk1.2&id=c5088844dc665dbdae4fa51b8d58dc203bacc17e
->
-> I didn't change anything except the line.
-> I just commit to external kvm-ppc mailing list. Should I add my own Signed-off-by?
+> So that we can call it when improving SPE switch like book3e did for fp switch.
 
-Yes, if you just take a patch from someone else and direct it to another 
-tree, you keep the From: line (git cherry-pick or git am should do that 
-automatically for you) and add your own SOB-line (git am -s can do that 
-for example).
-
-Since you're also supposed to change the description, please note that 
-between Yu's SOB line and your SOB line with something like
-
-Signed-off-by: Liu Yu<yu.liu@freescale.com>
-[olivia: change description]
-Signed-off-by: Olivia Yin<r63875@freescale.com>
-
-
+Timur / Scott, can you please (n)ack this one?
 
 Alex
+
+> Signed-off-by: Liu Yu<yu.liu@freescale.com>
+> Signed-off-by: Olivia Yin<hong-hua.yin@freescale.com>
+> ---
+> v2: 	add Signed-off-by
+>
+>   arch/powerpc/kernel/head_fsl_booke.S |   23 ++++++-----------------
+>   1 files changed, 6 insertions(+), 17 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+> index d5d78c4..c96e025 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -539,8 +539,10 @@ interrupt_base:
+>   	/* SPE Unavailable */
+>   	START_EXCEPTION(SPEUnavailable)
+>   	NORMAL_EXCEPTION_PROLOG
+> -	bne	load_up_spe
+> -	addi	r3,r1,STACK_FRAME_OVERHEAD
+> +	beq	1f
+> +	bl	load_up_spe
+> +	b	fast_exception_return
+> +1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+>   	EXC_XFER_EE_LITE(0x2010, KernelSPE)
+>   #else
+>   	EXCEPTION(0x2020, SPEUnavailable, unknown_exception, EXC_XFER_EE)
+> @@ -743,7 +745,7 @@ tlb_write_entry:
+>   /* Note that the SPE support is closely modeled after the AltiVec
+>    * support.  Changes to one are likely to be applicable to the
+>    * other!  */
+> -load_up_spe:
+> +_GLOBAL(load_up_spe)
+>   /*
+>    * Disable SPE for the task which had SPE previously,
+>    * and save its SPE registers in its thread_struct.
+> @@ -791,20 +793,7 @@ load_up_spe:
+>   	subi	r4,r5,THREAD
+>   	stw	r4,last_task_used_spe@l(r3)
+>   #endif /* !CONFIG_SMP */
+> -	/* restore registers and return */
+> -2:	REST_4GPRS(3, r11)
+> -	lwz	r10,_CCR(r11)
+> -	REST_GPR(1, r11)
+> -	mtcr	r10
+> -	lwz	r10,_LINK(r11)
+> -	mtlr	r10
+> -	REST_GPR(10, r11)
+> -	mtspr	SPRN_SRR1,r9
+> -	mtspr	SPRN_SRR0,r12
+> -	REST_GPR(9, r11)
+> -	REST_GPR(12, r11)
+> -	lwz	r11,GPR11(r11)
+> -	rfi
+> +	blr
+>
+>   /*
+>    * SPE unavailable trap from kernel - print a message, but let
