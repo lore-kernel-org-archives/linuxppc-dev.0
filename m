@@ -1,21 +1,22 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 7BBD2B6FC9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:41 +1100 (EST)
-Date: Thu, 8 Mar 2012 15:37:40 +1100
+ by ozlabs.org (Postfix) with ESMTP id E174BB6FE3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:42 +1100 (EST)
+Date: Thu, 8 Mar 2012 15:39:31 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 4/7] tty: powerpc: remove hvc_iseries
-Message-Id: <20120308153740.10af6806d245c1240a1a633a@canb.auug.org.au>
+Subject: [PATCH 5/7] tty: powerpc: remove SERIAL_ICOM dependency on PPC_ISERIES
+Message-Id: <20120308153931.b1b8b4f27d8e4a94b219bf4c@canb.auug.org.au>
 In-Reply-To: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 References: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp"
+ boundary="Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5"
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+ linux-serial@vger.kernel.org, Alan Cox <alan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,60 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp
+--Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-The PowerPC legacy iSeries platform is being removed, so this code is no
-longer needed.
+The PowerPC legacy iSeries platform is being removed so this is no
+longer selectable.
 
+Cc: Alan Cox <alan@linux.intel.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-serial@vger.kernel.org
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/tty/hvc/Kconfig       |   10 -
- drivers/tty/hvc/Makefile      |    1 -
- drivers/tty/hvc/hvc_iseries.c |  599 -------------------------------------=
-----
- 3 files changed, 0 insertions(+), 610 deletions(-)
- delete mode 100644 drivers/tty/hvc/hvc_iseries.c
+ drivers/tty/serial/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-index 4222035..8ea7f07 100644
---- a/drivers/tty/hvc/Kconfig
-+++ b/drivers/tty/hvc/Kconfig
-@@ -24,16 +24,6 @@ config HVC_OLD_HVSI
- 	depends on HVC_CONSOLE
- 	default n
+diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+index 2de9924..59e7983 100644
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -853,7 +853,7 @@ config SERIAL_MPC52xx_CONSOLE_BAUD
 =20
--config HVC_ISERIES
--	bool "iSeries Hypervisor Virtual Console support"
--	depends on PPC_ISERIES
--	default y
--	select HVC_DRIVER
--	select HVC_IRQ
--	select VIOPATH
--	help
--	  iSeries machines support a hypervisor virtual console.
--
- config HVC_OPAL
- 	bool "OPAL Console support"
- 	depends on PPC_POWERNV
-diff --git a/drivers/tty/hvc/Makefile b/drivers/tty/hvc/Makefile
-index 89abf40b..4ca3723 100644
---- a/drivers/tty/hvc/Makefile
-+++ b/drivers/tty/hvc/Makefile
-@@ -1,7 +1,6 @@
- obj-$(CONFIG_HVC_CONSOLE)	+=3D hvc_vio.o hvsi_lib.o
- obj-$(CONFIG_HVC_OPAL)		+=3D hvc_opal.o hvsi_lib.o
- obj-$(CONFIG_HVC_OLD_HVSI)	+=3D hvsi.o
--obj-$(CONFIG_HVC_ISERIES)	+=3D hvc_iseries.o
- obj-$(CONFIG_HVC_RTAS)		+=3D hvc_rtas.o
- obj-$(CONFIG_HVC_TILE)		+=3D hvc_tile.o
- obj-$(CONFIG_HVC_DCC)		+=3D hvc_dcc.o
-diff --git a/drivers/tty/hvc/hvc_iseries.c b/drivers/tty/hvc/hvc_iseries.c
-deleted file mode 100644
-index 3f4a897..0000000
+ config SERIAL_ICOM
+ 	tristate "IBM Multiport Serial Adapter"
+-	depends on PCI && (PPC_ISERIES || PPC_PSERIES)
++	depends on PCI && PPC_PSERIES
+ 	select SERIAL_CORE
+ 	select FW_LOADER
+ 	help
 --=20
 1.7.9.1
 
@@ -86,25 +62,25 @@ index 3f4a897..0000000
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp
+--Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPWDeUAAoJEECxmPOUX5FE+AIP/ig1svU5sv6uQsi8FvEj9+sa
-pO4URJ9M/PAr1GSxmHGGwmSrmbACOYhsoTWYEdMY/4sb/gXwlNTPSV3n7nQ1Hees
-zrHCQIsMRy2dJvYdlxsWUbOzgOZnW7rI9D3HakVTVCg3tO+sDyhoINZHb7lR+3Zd
-uYV8SlbDbpEUppHE+PluBZRKEJC3/NNdYOZRgVKdhQeJ7GQIy5f6qnIhBczS//nZ
-xDUm/048UcTJydrcgQhdAN0Dz+ifYi2UdNUxBMjIDdHdZWhZ8cFb79XI3kakbsDK
-/9Oq36pzIm6D/JL9MnlXLtF3jjac/2rGZCBM2YZIRwDuDiWtexhIxQp5CdZBD10p
-/uPmWo5RpjMScOx+iV6bPEMfcdAGwbElWZyQj6rrM+VfMO8coO0skUwjzFhMn3V1
-QJVxMTJGK1XDLs0pz7ULSDuvm7KNGQ6r0e+93Kf8lfwJkupIOkeUoyWyV2Jau1X2
-qEmlijQ7c3OQuzw+k1r7ZkKmy0m9QIcd923cHGTip2twZIgSoiCCbzEmgo36zkQX
-sCAe2LvDyhdStkaqbrXbzM134ffqsA+/Ws5veGdQd4PlfB48y5QvgvNvCIe30Z7T
-SOCkpX3q/XZgHKAlIczldjWn7jZO5uj6c6faa5husm5kxQxf7l8TPb+Gc0ZiBfsd
-Jw9MIDn96U7JPYIYsaEm
-=dg+2
+iQIcBAEBCAAGBQJPWDgDAAoJEECxmPOUX5FE7nEP/1VKdbI5IpjGcv13R6mszDdS
+6wvNIM1nZKE05EECB7tNys4xSB9D9vwiYFTH+H5cY7gLPdmqbDqxMZ0q/yVI2zxE
+jvbeS3ASyVVzBNiDlUByS9xy7Rpdy7gY+VYz0fvCmxad07FuRGHgqr18o2pNt7f+
+Qa9MAy+Xifn59nEGjGQhkmSXv4hpXE1NrJQmJ0rt7vhHTmtO531Q45uoJ142Yci4
+9Yy/Bc3Mh4LSihhZoikkFEgQDObZDOTpohHJ0nkfiCVTGYTXSvFf8yv8Ih77vNq6
+UGQ9RLZTUgJPm9tZHblBzWNJu5YTFVgLafa9+id7ycBVdqtrGeVaP+vAVaEVxqRs
+MoIapV9PE0isdgDuF4HtNMH8XFJXTSobsGhbOcVNdCTYkQ0PEUnFB8/Vd7FKT2Bf
+tOTkFNZEp/MjPh8omN13aLPwG1KCvv66N02JBJ0FGJ/nyNEN+7hKVFKBrEAxcDMD
+UoMHsZEisfnfEEkc8rckc+yH4+LKmRr1tHA6ClL3kyd/x1G1wA9zAZTWuBwSoEPx
+GXlK1H+FU1L8qAOF+WnlXtQA2ZedFZxclXoodxilTLnGdXZvCuYzHP0eN2yjsWut
+N5FsgMCu+X4F8eIUCHKOzfetdRr6DapQHCa5WFqAuIvPKGSdqJSDZTleFYbSphZC
+iZk0BGt2/KefUK/kOo0b
+=HssQ
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp--
+--Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5--
