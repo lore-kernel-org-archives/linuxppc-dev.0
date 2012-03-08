@@ -1,21 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id C8D87B6FA2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:43 +1100 (EST)
-Date: Thu, 8 Mar 2012 15:41:09 +1100
+ by ozlabs.org (Postfix) with ESMTP id 0D9E7B6FEB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:45 +1100 (EST)
+Date: Thu, 8 Mar 2012 15:43:10 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 6/7] driver-core: remove legacy iSeries hack
-Message-Id: <20120308154109.774ae0231cee1a98d41a7b94@canb.auug.org.au>
+Subject: [PATCH 7/7] powerpc: clean up vio.c
+Message-Id: <20120308154310.6d7b1741d2821619b835af81@canb.auug.org.au>
 In-Reply-To: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 References: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc"
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
+ boundary="Signature=_Thu__8_Mar_2012_15_43_10_+1100_GF_AcIWe4vnDakNb"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,78 +25,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc
+--Signature=_Thu__8_Mar_2012_15_43_10_+1100_GF_AcIWe4vnDakNb
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-The PowerPC legacy iSeries plateform is being removed along with the
-"one looney iseries driver", so this code can now be removed as well.
+This cleans up vio.c after the removal of the legacy iSeries platform.
+It also removes some no longer referenced include files.
 
-cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/base/driver.c  |   30 ------------------------------
- include/linux/device.h |    4 ----
- 2 files changed, 0 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/iseries/hv_call_event.h |  201 ----------------
+ arch/powerpc/include/asm/iseries/hv_lp_event.h   |  162 -------------
+ arch/powerpc/include/asm/iseries/iommu.h         |   37 ---
+ arch/powerpc/include/asm/iseries/vio.h           |  265 ------------------=
+----
+ arch/powerpc/kernel/vio.c                        |   18 +--
+ 5 files changed, 1 insertions(+), 682 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/iseries/hv_call_event.h
+ delete mode 100644 arch/powerpc/include/asm/iseries/hv_lp_event.h
+ delete mode 100644 arch/powerpc/include/asm/iseries/iommu.h
+ delete mode 100644 arch/powerpc/include/asm/iseries/vio.h
 
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index b631f7c..db4f54c 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -124,36 +124,6 @@ void driver_remove_file(struct device_driver *drv,
- EXPORT_SYMBOL_GPL(driver_remove_file);
+diff --git a/arch/powerpc/include/asm/iseries/hv_call_event.h b/arch/powerp=
+c/include/asm/iseries/hv_call_event.h
+deleted file mode 100644
+index cc029d3..0000000
+diff --git a/arch/powerpc/include/asm/iseries/hv_lp_event.h b/arch/powerpc/=
+include/asm/iseries/hv_lp_event.h
+deleted file mode 100644
+index 8f5da7d..0000000
+diff --git a/arch/powerpc/include/asm/iseries/iommu.h b/arch/powerpc/includ=
+e/asm/iseries/iommu.h
+deleted file mode 100644
+index 1b9692c..0000000
+diff --git a/arch/powerpc/include/asm/iseries/vio.h b/arch/powerpc/include/=
+asm/iseries/vio.h
+deleted file mode 100644
+index f9ac0d0..0000000
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 8b08629..bca3fc4 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -34,11 +34,6 @@
+ #include <asm/abs_addr.h>
+ #include <asm/page.h>
+ #include <asm/hvcall.h>
+-#include <asm/iseries/vio.h>
+-#include <asm/iseries/hv_types.h>
+-#include <asm/iseries/hv_lp_config.h>
+-#include <asm/iseries/hv_call_xm.h>
+-#include <asm/iseries/iommu.h>
 =20
- /**
-- * driver_add_kobj - add a kobject below the specified driver
-- * @drv: requesting device driver
-- * @kobj: kobject to add below this driver
-- * @fmt: format string that names the kobject
-- *
-- * You really don't want to do this, this is only here due to one looney
-- * iseries driver, go poke those developers if you are annoyed about
-- * this...
-- */
--int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
--		    const char *fmt, ...)
--{
--	va_list args;
--	char *name;
--	int ret;
--
--	va_start(args, fmt);
--	name =3D kvasprintf(GFP_KERNEL, fmt, args);
--	va_end(args);
--
--	if (!name)
--		return -ENOMEM;
--
--	ret =3D kobject_add(kobj, &drv->p->kobj, "%s", name);
--	kfree(name);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(driver_add_kobj);
--
--/**
-  * get_driver - increment driver reference count.
-  * @drv: driver.
-  */
-diff --git a/include/linux/device.h b/include/linux/device.h
-index b63fb39..46baa1f 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -264,10 +264,6 @@ extern int __must_check driver_create_file(struct devi=
-ce_driver *driver,
- extern void driver_remove_file(struct device_driver *driver,
- 			       const struct driver_attribute *attr);
+ static struct bus_type vio_bus_type;
 =20
--extern int __must_check driver_add_kobj(struct device_driver *drv,
--					struct kobject *kobj,
--					const char *fmt, ...);
+@@ -1042,7 +1037,6 @@ static void vio_cmo_sysfs_init(void)
+ 	vio_bus_type.bus_attrs =3D vio_cmo_bus_attrs;
+ }
+ #else /* CONFIG_PPC_SMLPAR */
+-/* Dummy functions for iSeries platform */
+ int vio_cmo_entitlement_update(size_t new_entitlement) { return 0; }
+ void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired) {}
+ static int vio_cmo_bus_probe(struct vio_dev *viodev) { return 0; }
+@@ -1060,9 +1054,6 @@ static struct iommu_table *vio_build_iommu_table(stru=
+ct vio_dev *dev)
+ 	struct iommu_table *tbl;
+ 	unsigned long offset, size;
+=20
+-	if (firmware_has_feature(FW_FEATURE_ISERIES))
+-		return vio_build_iommu_table_iseries(dev);
 -
- extern int __must_check driver_for_each_device(struct device_driver *drv,
- 					       struct device *start,
- 					       void *data,
+ 	dma_window =3D of_get_property(dev->dev.of_node,
+ 				  "ibm,my-dma-window", NULL);
+ 	if (!dma_window)
+@@ -1195,8 +1186,7 @@ static void __devinit vio_dev_release(struct device *=
+dev)
+ {
+ 	struct iommu_table *tbl =3D get_iommu_table_base(dev);
+=20
+-	/* iSeries uses a common table for all vio devices */
+-	if (!firmware_has_feature(FW_FEATURE_ISERIES) && tbl)
++	if (tbl)
+ 		iommu_free_table(tbl, dev->of_node ?
+ 			dev->of_node->full_name : dev_name(dev));
+ 	of_node_put(dev->of_node);
+@@ -1244,12 +1234,6 @@ struct vio_dev *vio_register_device_node(struct devi=
+ce_node *of_node)
+ 	viodev->name =3D of_node->name;
+ 	viodev->type =3D of_node->type;
+ 	viodev->unit_address =3D *unit_address;
+-	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
+-		unit_address =3D of_get_property(of_node,
+-				"linux,unit_address", NULL);
+-		if (unit_address !=3D NULL)
+-			viodev->unit_address =3D *unit_address;
+-	}
+ 	viodev->dev.of_node =3D of_node_get(of_node);
+=20
+ 	if (firmware_has_feature(FW_FEATURE_CMO))
 --=20
 1.7.9.1
 
@@ -104,25 +130,25 @@ ce_driver *driver,
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc
+--Signature=_Thu__8_Mar_2012_15_43_10_+1100_GF_AcIWe4vnDakNb
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPWDhlAAoJEECxmPOUX5FECgYQAKGih4RohPu6oJpWijB8zSOZ
-4ZrMdkvFMxB33gyjUXw+UEcJtRcSHHKdV7HIYeB/s0xKZO5IEhv4O+gzHZasDO7f
-54ayxQw7g98oWQNC0vuNORS7901RDm48/aoFBP3ijqmfxtZnR7cRwVf8XihRmheq
-mTkRMUJrSxphvqqit/3XkbWPeSbD2zA8+i9Bgqk06TNnvAIDkLgkXASIikmnrOKB
-Z1/etjXoMhv9Cv3AR5RH0L/vibCNrLARxAaIEqJeSBhEfaSJlPUDcqJKeXJnuYwJ
-YBGMljRNZ2kqw2ReS37nDGYPMO0t81oNiqMkMR1MVUkQ0AJh394Xaf2c+xcVhYqA
-ovgMw6uhE4tGUU4hBm53GXz+B5EvHq2lcOhYOCBpNZP812FrnZs82mVeYJthY5Vq
-YY53PuY9KEHrFvL/8MVNoLan8Ow54JL0Rx93M5iNPtYtIuXb6iDimqGQFdeT49cy
-D1rbhoapnWrVbtMGrM99IOlDpxfC9fI8jGCnTZ3HuCTK33NXp+0oGydxoRbhy5O6
-jTk5QJjSw7/YC+EUvW+fCZkWWysGc61MV6lddSNHQEqxQifx8SdHKtG2WLPJEVc7
-0dRXy0o5At1nbsWRpt44ZaLDgJO3lxrOZvzYusQ6EyuMpahJwGgHYHOLj8Gk1rgm
-RUULIOQqezk5XGIL4OR+
-=umxQ
+iQIcBAEBCAAGBQJPWDjeAAoJEECxmPOUX5FEgKsP/33FZJyaCMMaaf0DkmB7dqvq
+mmuH+R5KVd9JmEjY9jaRiGd0RS3cLzL215XYRiK+n9GCHZnNDejpzxuEUk2EbpKL
+jqybPFPAdCpXFIwuJzBgOKcEHth1LFE5bo/UPBLMzleKikgZTo1Eb48rZhUp4+Yy
+A3eQzZG8T9ICwTrU66dB3e2JeO70ve69dsmjAXL7cuHkcmg8AJaz7xTM104adGsQ
++tJFQZInsWahCvZ2us+0mxGZVlcXvPFOxbsrtE8LdfvNo803SKYlGdiMQ3Lsb927
+XS1lFGu0i9MJ/JjeixbOlEsxiBxM+6SChfFBzjyxUVC6CIxftcqW000I8/sxEeCo
+zpPZ1+AyJhtr6ta56IJpguDqiZ4tmAOOz3t6AV3gNfU+NygOsb9DhfRbi5eX2X47
+CyLmZl0SfBhcytJSfIQ6WXf+yk65UaZDQzoyn/VeFvGE7hswRhWk7JuhNN8Sj0XJ
+erouEY+/aT+NxTcmHAZKwN9+6odVPbjV0sFwT456l7TU9JUpoBkWPgguzY9JXnpU
+Kn/11GawJtZtjMpIG9LBOYXdzL87VhEbMBS5sMTyN14k22ul+ThhRskPN4pTb3Mq
+/FBY4O/6ZtjOIBMNejW/EGgCf10mNVylZ5bqXOv7UJbG+94D46PaVVftP+nTQhwq
+UcLWBbd7jucQGeT2poX7
+=4YRW
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc--
+--Signature=_Thu__8_Mar_2012_15_43_10_+1100_GF_AcIWe4vnDakNb--
