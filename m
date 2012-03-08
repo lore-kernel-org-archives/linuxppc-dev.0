@@ -1,22 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id E174BB6FE3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:42 +1100 (EST)
-Date: Thu, 8 Mar 2012 15:39:31 +1100
+ by ozlabs.org (Postfix) with ESMTP id C8D87B6FA2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:43 +1100 (EST)
+Date: Thu, 8 Mar 2012 15:41:09 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 5/7] tty: powerpc: remove SERIAL_ICOM dependency on PPC_ISERIES
-Message-Id: <20120308153931.b1b8b4f27d8e4a94b219bf4c@canb.auug.org.au>
+Subject: [PATCH 6/7] driver-core: remove legacy iSeries hack
+Message-Id: <20120308154109.774ae0231cee1a98d41a7b94@canb.auug.org.au>
 In-Reply-To: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 References: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5"
+ boundary="Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc"
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
- linux-serial@vger.kernel.org, Alan Cox <alan@linux.intel.com>
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5
+--Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-The PowerPC legacy iSeries platform is being removed so this is no
-longer selectable.
+The PowerPC legacy iSeries plateform is being removed along with the
+"one looney iseries driver", so this code can now be removed as well.
 
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-serial@vger.kernel.org
+cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/tty/serial/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/base/driver.c  |   30 ------------------------------
+ include/linux/device.h |    4 ----
+ 2 files changed, 0 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index 2de9924..59e7983 100644
---- a/drivers/tty/serial/Kconfig
-+++ b/drivers/tty/serial/Kconfig
-@@ -853,7 +853,7 @@ config SERIAL_MPC52xx_CONSOLE_BAUD
+diff --git a/drivers/base/driver.c b/drivers/base/driver.c
+index b631f7c..db4f54c 100644
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -124,36 +124,6 @@ void driver_remove_file(struct device_driver *drv,
+ EXPORT_SYMBOL_GPL(driver_remove_file);
 =20
- config SERIAL_ICOM
- 	tristate "IBM Multiport Serial Adapter"
--	depends on PCI && (PPC_ISERIES || PPC_PSERIES)
-+	depends on PCI && PPC_PSERIES
- 	select SERIAL_CORE
- 	select FW_LOADER
- 	help
+ /**
+- * driver_add_kobj - add a kobject below the specified driver
+- * @drv: requesting device driver
+- * @kobj: kobject to add below this driver
+- * @fmt: format string that names the kobject
+- *
+- * You really don't want to do this, this is only here due to one looney
+- * iseries driver, go poke those developers if you are annoyed about
+- * this...
+- */
+-int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
+-		    const char *fmt, ...)
+-{
+-	va_list args;
+-	char *name;
+-	int ret;
+-
+-	va_start(args, fmt);
+-	name =3D kvasprintf(GFP_KERNEL, fmt, args);
+-	va_end(args);
+-
+-	if (!name)
+-		return -ENOMEM;
+-
+-	ret =3D kobject_add(kobj, &drv->p->kobj, "%s", name);
+-	kfree(name);
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(driver_add_kobj);
+-
+-/**
+  * get_driver - increment driver reference count.
+  * @drv: driver.
+  */
+diff --git a/include/linux/device.h b/include/linux/device.h
+index b63fb39..46baa1f 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -264,10 +264,6 @@ extern int __must_check driver_create_file(struct devi=
+ce_driver *driver,
+ extern void driver_remove_file(struct device_driver *driver,
+ 			       const struct driver_attribute *attr);
+=20
+-extern int __must_check driver_add_kobj(struct device_driver *drv,
+-					struct kobject *kobj,
+-					const char *fmt, ...);
+-
+ extern int __must_check driver_for_each_device(struct device_driver *drv,
+ 					       struct device *start,
+ 					       void *data,
 --=20
 1.7.9.1
 
@@ -62,25 +104,25 @@ index 2de9924..59e7983 100644
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5
+--Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPWDgDAAoJEECxmPOUX5FE7nEP/1VKdbI5IpjGcv13R6mszDdS
-6wvNIM1nZKE05EECB7tNys4xSB9D9vwiYFTH+H5cY7gLPdmqbDqxMZ0q/yVI2zxE
-jvbeS3ASyVVzBNiDlUByS9xy7Rpdy7gY+VYz0fvCmxad07FuRGHgqr18o2pNt7f+
-Qa9MAy+Xifn59nEGjGQhkmSXv4hpXE1NrJQmJ0rt7vhHTmtO531Q45uoJ142Yci4
-9Yy/Bc3Mh4LSihhZoikkFEgQDObZDOTpohHJ0nkfiCVTGYTXSvFf8yv8Ih77vNq6
-UGQ9RLZTUgJPm9tZHblBzWNJu5YTFVgLafa9+id7ycBVdqtrGeVaP+vAVaEVxqRs
-MoIapV9PE0isdgDuF4HtNMH8XFJXTSobsGhbOcVNdCTYkQ0PEUnFB8/Vd7FKT2Bf
-tOTkFNZEp/MjPh8omN13aLPwG1KCvv66N02JBJ0FGJ/nyNEN+7hKVFKBrEAxcDMD
-UoMHsZEisfnfEEkc8rckc+yH4+LKmRr1tHA6ClL3kyd/x1G1wA9zAZTWuBwSoEPx
-GXlK1H+FU1L8qAOF+WnlXtQA2ZedFZxclXoodxilTLnGdXZvCuYzHP0eN2yjsWut
-N5FsgMCu+X4F8eIUCHKOzfetdRr6DapQHCa5WFqAuIvPKGSdqJSDZTleFYbSphZC
-iZk0BGt2/KefUK/kOo0b
-=HssQ
+iQIcBAEBCAAGBQJPWDhlAAoJEECxmPOUX5FECgYQAKGih4RohPu6oJpWijB8zSOZ
+4ZrMdkvFMxB33gyjUXw+UEcJtRcSHHKdV7HIYeB/s0xKZO5IEhv4O+gzHZasDO7f
+54ayxQw7g98oWQNC0vuNORS7901RDm48/aoFBP3ijqmfxtZnR7cRwVf8XihRmheq
+mTkRMUJrSxphvqqit/3XkbWPeSbD2zA8+i9Bgqk06TNnvAIDkLgkXASIikmnrOKB
+Z1/etjXoMhv9Cv3AR5RH0L/vibCNrLARxAaIEqJeSBhEfaSJlPUDcqJKeXJnuYwJ
+YBGMljRNZ2kqw2ReS37nDGYPMO0t81oNiqMkMR1MVUkQ0AJh394Xaf2c+xcVhYqA
+ovgMw6uhE4tGUU4hBm53GXz+B5EvHq2lcOhYOCBpNZP812FrnZs82mVeYJthY5Vq
+YY53PuY9KEHrFvL/8MVNoLan8Ow54JL0Rx93M5iNPtYtIuXb6iDimqGQFdeT49cy
+D1rbhoapnWrVbtMGrM99IOlDpxfC9fI8jGCnTZ3HuCTK33NXp+0oGydxoRbhy5O6
+jTk5QJjSw7/YC+EUvW+fCZkWWysGc61MV6lddSNHQEqxQifx8SdHKtG2WLPJEVc7
+0dRXy0o5At1nbsWRpt44ZaLDgJO3lxrOZvzYusQ6EyuMpahJwGgHYHOLj8Gk1rgm
+RUULIOQqezk5XGIL4OR+
+=umxQ
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__8_Mar_2012_15_39_31_+1100_R04eX+iOgbS1NNt5--
+--Signature=_Thu__8_Mar_2012_15_41_09_+1100_Qh28XMvZSrBtVnLc--
