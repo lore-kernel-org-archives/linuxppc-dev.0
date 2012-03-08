@@ -1,19 +1,25 @@
-Return-Path: <mtosatti@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id A02B3B6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 09:46:59 +1100 (EST)
-Date: Thu, 8 Mar 2012 19:36:45 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 19/38] KVM: PPC: e500mc: add load inst fixup
-Message-ID: <20120308223645.GB24183@amt.cnet>
-References: <1330474206-14794-1-git-send-email-agraf@suse.de>
- <1330474206-14794-20-git-send-email-agraf@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1330474206-14794-20-git-send-email-agraf@suse.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 723FCB6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 10:36:07 +1100 (EST)
+Message-ID: <1331249746.3105.40.camel@pasglop>
+Subject: Re: linux-next: manual merge of the powerpc tree with the arm tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 09 Mar 2012 10:35:46 +1100
+In-Reply-To: <1331185951.3105.29.camel@pasglop>
+References: <20120308120422.e071cba36425eacbee1f8d98@canb.auug.org.au>
+ <25744.1331174036@neuling.org>
+ <20120308145131.fad50bbc79c36f0b0b12d101@canb.auug.org.au>
+ <1331185951.3105.29.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,75 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 29, 2012 at 01:09:47AM +0100, Alexander Graf wrote:
-> There's always a chance we're unable to read a guest instruction. The guest
-> could have its TLB mapped execute-, but not readable, something odd happens
-> and our TLB gets flushed. So it's a good idea to be prepared for that case
-> and have a fallback that allows us to fix things up in that case.
+On Thu, 2012-03-08 at 16:52 +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2012-03-08 at 14:51 +1100, Stephen Rothwell wrote:
+> > Hi Mikey,
+> > 
+> > On Thu, 08 Mar 2012 13:33:56 +1100 Michael Neuling <mikey@neuling.org> wrote:
+> > >
+> > > Surely we only need SPARSE_IRQ now and not MAY_HAVE_SPARSE_IRQ.  
+> > > 
+> > > In fact, keeping MAY_HAVE_SPARSE_IRQ seems to make SPARSE_IRQ user
+> > > selectable, which we don't want anymore since ad5b7f1350c2.
+> > 
+> > Yes, indeed. I will fix up the merge resolution for tomorrow.
 > 
-> Add fixup code that keeps guest code from potentially crashing our host kernel.
-> 
-> Signed-off-by: Alexander Graf <agraf@suse.de>
-> 
-> ---
-> 
-> v1 -> v2:
-> 
->   - fix whitespace
+> This is my fault. Grant's patch had a collision and I manually fixed it
+> up. While doing that, I put back MAY_HAVE_SPARSE_IRQ which the patch
+> originally took out.
 
-Still broken.
+Actually, I didn't keep MAY_HAVE_SPARSE_IRQ, I kept HAVE_SPARSE_IRQ. If
+I remove it, then I get Kconfig warnings:
 
->   - use explicit preempt counts
-> ---
->  arch/powerpc/kvm/bookehv_interrupts.S |   30 +++++++++++++++++++++++++++++-
->  1 files changed, 29 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-> index 63023ae..f7dc3f6 100644
-> --- a/arch/powerpc/kvm/bookehv_interrupts.S
-> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
-> @@ -28,6 +28,7 @@
->  #include <asm/asm-compat.h>
->  #include <asm/asm-offsets.h>
->  #include <asm/bitsperlong.h>
-> +#include <asm/thread_info.h>
->  
->  #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
->  
-> @@ -171,9 +172,36 @@
->  	PPC_STL	r30, VCPU_GPR(r30)(r4)
->  	PPC_STL	r31, VCPU_GPR(r31)(r4)
->  	mtspr	SPRN_EPLC, r8
-> +
-> +	/* disable preemption, so we are sure we hit the fixup handler */
-> +#ifdef CONFIG_PPC64
-> +	clrrdi	r8,r1,THREAD_SHIFT
-> +#else
-> +	rlwinm	r8,r1,0,0,31-THREAD_SHIFT       /* current thread_info */
-> +#endif
-> +	li	r7, 1
-> +        stw	r7, TI_PREEMPT(r8)
-> +
->  	isync
-> -	lwepx	r9, 0, r5
-> +
-> +	/*
-> +	 * In case the read goes wrong, we catch it and write an invalid value
-> +	 * in LAST_INST instead.
-> +	 */
-> +1:	lwepx	r9, 0, r5
-> +2:
-> +.section .fixup, "ax"
-> +3:	li	r9, KVM_INST_FETCH_FAILED
-> +	b	2b
-> +.previous
-> +.section __ex_table,"a"
-> +	PPC_LONG_ALIGN
-> +	PPC_LONG 1b,3b
-> +.previous
-> +
->  	mtspr	SPRN_EPLC, r3
-> +	li	r7, 0
-> +        stw	r7, TI_PREEMPT(r8)
->  	stw	r9, VCPU_LAST_INST(r4)
->  	.endif
+warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies (HAVE_GENERIC_HARDIRQS && HAVE_SPARSE_IRQ)
+
+Cheers,
+Ben.
