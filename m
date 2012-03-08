@@ -1,24 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F09CAB6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 16:53:00 +1100 (EST)
-Message-ID: <1331185951.3105.29.camel@pasglop>
-Subject: Re: linux-next: manual merge of the powerpc tree with the arm tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 08 Mar 2012 16:52:31 +1100
-In-Reply-To: <20120308145131.fad50bbc79c36f0b0b12d101@canb.auug.org.au>
-References: <20120308120422.e071cba36425eacbee1f8d98@canb.auug.org.au>
- <25744.1331174036@neuling.org>
- <20120308145131.fad50bbc79c36f0b0b12d101@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Russell King <rmk@arm.linux.org.uk>
+Return-Path: <B34182@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 17753B6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 17:33:21 +1100 (EST)
+Subject: RE: [PATCH v2] powerpc/srio: Fix the compile errors when building
+ with 64bit
+From: Liu Gang <Gang.Liu@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6E91@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6026B6E91@saturn3.aculab.com>
+Content-Type: text/plain
+Date: Thu, 8 Mar 2012 14:31:17 +0800
+Message-ID: <1331188278.23420.157.camel@10.ap.freescale.net>
+MIME-Version: 1.0
+Cc: r58472@freescale.com, paul.gortmaker@windriver.com, r61911@freescale.com,
+ linux-kernel@vger.kernel.org, Alexandre.Bounine@idt.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-03-08 at 14:51 +1100, Stephen Rothwell wrote:
-> Hi Mikey,
-> 
-> On Thu, 08 Mar 2012 13:33:56 +1100 Michael Neuling <mikey@neuling.org> wrote:
-> >
-> > Surely we only need SPARSE_IRQ now and not MAY_HAVE_SPARSE_IRQ.  
-> > 
-> > In fact, keeping MAY_HAVE_SPARSE_IRQ seems to make SPARSE_IRQ user
-> > selectable, which we don't want anymore since ad5b7f1350c2.
-> 
-> Yes, indeed. I will fix up the merge resolution for tomorrow.
+Hi, David,
 
-This is my fault. Grant's patch had a collision and I manually fixed it
-up. While doing that, I put back MAY_HAVE_SPARSE_IRQ which the patch
-originally took out.
+On Wed, 2012-03-07 at 13:18 +0000, David Laight wrote:  
+> >  	pr_debug("RIO: fsl_add_outb_message(): destid %4.4x mbox %d
+> buffer " \
+> > -		 "%8.8x len %8.8x\n", rdev->destid, mbox, (int)buffer,
+> len);
+> > +		 "%8.8lx len %8.8zx\n", rdev->destid, mbox,
+> > +		(unsigned long)buffer, len);
+> 
+> Should 'buffer' be printed with %p ??
 
-Cheers,
-Ben.
+Yes, printing with "%p" can get rid of the cast, although they have the
+same print results.
+
+Thanks a lot.
+
+Liu Gang
