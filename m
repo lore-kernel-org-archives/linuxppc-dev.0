@@ -1,33 +1,19 @@
-Return-Path: <B29882@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B91BDB6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 05:46:45 +1100 (EST)
-From: McClintock Matthew-B29882 <B29882@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: Re: [PATCH] PPC: Don't sync timebase when inside VM
-Date: Thu, 8 Mar 2012 18:46:36 +0000
-Message-ID: <CAEsOVNf6WhaPf20PSdA-dndb9ibnaT3443q5nTCdAq8o1sL39w@mail.gmail.com>
-References: <1330697553-27156-1-git-send-email-agraf@suse.de>
- <20120302162058.GA24552@schlenkerla.am.freescale.net>
- <9A229F04-DFC9-485D-AB06-B1A4F0AEB348@suse.de>
- <4F5100A0.8040802@freescale.com>
- <CAEsOVNczPUdfUK6oZ7WOTGUQbA135HgrntwvnydbYd-Eo4joLg@mail.gmail.com>
- <4F58F85F.8090604@freescale.com>
- <CAEsOVNcqSBh0hmgUQcJJjD28JbreBqYygHF7Q6Y8uaFzdj2PYw@mail.gmail.com>
- <4F58FDC4.2080909@freescale.com>
-In-Reply-To: <4F58FDC4.2080909@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <mtosatti@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id A02B3B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 09:46:59 +1100 (EST)
+Date: Thu, 8 Mar 2012 19:36:45 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 19/38] KVM: PPC: e500mc: add load inst fixup
+Message-ID: <20120308223645.GB24183@amt.cnet>
+References: <1330474206-14794-1-git-send-email-agraf@suse.de>
+ <1330474206-14794-20-git-send-email-agraf@suse.de>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>, kvm list <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
- McClintock Matthew-B29882 <B29882@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1330474206-14794-20-git-send-email-agraf@suse.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,58 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 8, 2012 at 12:43 PM, Scott Wood <scottwood@freescale.com> wrote=
-:
-> On 03/08/2012 12:24 PM, McClintock Matthew-B29882 wrote:
->> On Thu, Mar 8, 2012 at 12:20 PM, Scott Wood <scottwood@freescale.com> wr=
-ote:
->>> On 03/08/2012 11:31 AM, McClintock Matthew-B29882 wrote:
->>>> On Fri, Mar 2, 2012 at 11:17 AM, Scott Wood <scottwood@freescale.com> =
-wrote:
->>>>> On 03/02/2012 10:30 AM, Alexander Graf wrote:
->>>>>>
->>>>>> On 02.03.2012, at 17:20, Scott Wood wrote:
->>>>>>> Again, for 85xx we should *never* sync the timebase in the kernel,
->>>>>>> hypervisor or no.
->>>>>>
->>>>>> The code says "if the kexec config option is enabled, do the sync". =
-I'm fairly sure it's there for a reason.
->>>>>
->>>>> Sigh. =A0I forgot about that. =A0It's because instead of doing kexec =
-the
->>>>> simple way, we actually physically reset the core. =A0We really shoul=
-dn't
->>>>> do that. =A0And we *really* shouldn't do it just because CONFIG_KEXEC=
- is
->>>>> defined, regardless of whether we're actually booting from kexec.
->>>>
->>>> How would one rocver a core that's off in the weeds?
->>>
->>> System reset?
->>
->> kdump restarts a kernel using a reserved memory region to inspect the
->> memory of the crashed kernel. Wouldn't system reset cause issues here?
->
-> Oh, kdump.
->
-> Maybe in that case, go ahead and reset the other cores (or halt them via
-> some other means), but don't do anything with them. =A0Just boot a single
-> core in the dump kernel, do the dumping, then reset the system?
+On Wed, Feb 29, 2012 at 01:09:47AM +0100, Alexander Graf wrote:
+> There's always a chance we're unable to read a guest instruction. The guest
+> could have its TLB mapped execute-, but not readable, something odd happens
+> and our TLB gets flushed. So it's a good idea to be prepared for that case
+> and have a fallback that allows us to fix things up in that case.
+> 
+> Add fixup code that keeps guest code from potentially crashing our host kernel.
+> 
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+> 
+> ---
+> 
+> v1 -> v2:
+> 
+>   - fix whitespace
 
-Yes, we could do one core here... but is it worthwhile to do kexec and
-kdump differently?
+Still broken.
 
-> Or if you must sync the timebase in Linux, do it the way U-Boot does
-> (and skip it if you don't have access to the relevant CCSR bits).
-
-Ok - I've never even looked at how the timebase sync was done in Linux
-or u-boot. Just enabled the timebase sync
-
-> Are I/O devices a problem with kdump and not resetting the system,
-> especially on some of our chips where certain I/O devices are difficult
-> to reset?
-
-Anything still occurring will be problematic and *possibly* prevent us
-from determining what caused the actual crash.
-
--M=
+>   - use explicit preempt counts
+> ---
+>  arch/powerpc/kvm/bookehv_interrupts.S |   30 +++++++++++++++++++++++++++++-
+>  1 files changed, 29 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+> index 63023ae..f7dc3f6 100644
+> --- a/arch/powerpc/kvm/bookehv_interrupts.S
+> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
+> @@ -28,6 +28,7 @@
+>  #include <asm/asm-compat.h>
+>  #include <asm/asm-offsets.h>
+>  #include <asm/bitsperlong.h>
+> +#include <asm/thread_info.h>
+>  
+>  #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
+>  
+> @@ -171,9 +172,36 @@
+>  	PPC_STL	r30, VCPU_GPR(r30)(r4)
+>  	PPC_STL	r31, VCPU_GPR(r31)(r4)
+>  	mtspr	SPRN_EPLC, r8
+> +
+> +	/* disable preemption, so we are sure we hit the fixup handler */
+> +#ifdef CONFIG_PPC64
+> +	clrrdi	r8,r1,THREAD_SHIFT
+> +#else
+> +	rlwinm	r8,r1,0,0,31-THREAD_SHIFT       /* current thread_info */
+> +#endif
+> +	li	r7, 1
+> +        stw	r7, TI_PREEMPT(r8)
+> +
+>  	isync
+> -	lwepx	r9, 0, r5
+> +
+> +	/*
+> +	 * In case the read goes wrong, we catch it and write an invalid value
+> +	 * in LAST_INST instead.
+> +	 */
+> +1:	lwepx	r9, 0, r5
+> +2:
+> +.section .fixup, "ax"
+> +3:	li	r9, KVM_INST_FETCH_FAILED
+> +	b	2b
+> +.previous
+> +.section __ex_table,"a"
+> +	PPC_LONG_ALIGN
+> +	PPC_LONG 1b,3b
+> +.previous
+> +
+>  	mtspr	SPRN_EPLC, r3
+> +	li	r7, 0
+> +        stw	r7, TI_PREEMPT(r8)
+>  	stw	r9, VCPU_LAST_INST(r4)
+>  	.endif
