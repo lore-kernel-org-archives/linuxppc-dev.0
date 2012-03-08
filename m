@@ -1,14 +1,24 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the powerpc tree with the arm tree
-In-reply-to: <20120308120422.e071cba36425eacbee1f8d98@canb.auug.org.au>
-References: <20120308120422.e071cba36425eacbee1f8d98@canb.auug.org.au>
-Date: Thu, 08 Mar 2012 13:33:56 +1100
-Message-ID: <25744.1331174036@neuling.org>
-Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Russell King <rmk@arm.linux.org.uk>
+Return-Path: <B36685@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2BC12B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 13:59:14 +1100 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Phillips Kim-R1AAHA <R1AAHA@freescale.com>
+Subject: RE: [PATCH v2] powerpc/dts: fix the compatible string of sec 4.0
+Date: Thu, 8 Mar 2012 02:59:00 +0000
+Message-ID: <3F453DDFF675A64A89321A1F35281021710920@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1331097606-22407-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <20120307172611.86985d2c22af2c3213770f35@freescale.com>
+In-Reply-To: <20120307172611.86985d2c22af2c3213770f35@freescale.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
+Cc: Liu Shuo-B35362 <B35362@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "stable@kernel.org" <stable@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,31 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Today's linux-next merge of the powerpc tree got a conflict in
-> arch/powerpc/Kconfig between commit 2ed86b16eabe ("irq: make SPARSE_IRQ
-> an optionally hidden option") from the arm tree and commit ad5b7f1350c2
-> ("powerpc: Make SPARSE_IRQ required") from the powerpc tree.
-> 
-> I fixed it up (see below) and can carry the fix as necessary.
-> --=20
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --cc arch/powerpc/Kconfig
-> index bf7dbc2,4eecaaa..0000000
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@@ -133,7 -133,8 +133,8 @@@ config PP
->   	select HAVE_REGS_AND_STACK_ACCESS_API
->   	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
->   	select HAVE_GENERIC_HARDIRQS
->  -	select HAVE_SPARSE_IRQ
->  +	select MAY_HAVE_SPARSE_IRQ
-> + 	select SPARSE_IRQ
 
-Surely we only need SPARSE_IRQ now and not MAY_HAVE_SPARSE_IRQ.  
 
-In fact, keeping MAY_HAVE_SPARSE_IRQ seems to make SPARSE_IRQ user
-selectable, which we don't want anymore since ad5b7f1350c2.
-
-Mikey
+> -----Original Message-----
+> From: Phillips Kim-R1AAHA
+> Sent: Thursday, March 08, 2012 7:26 AM
+> To: Liu Shengzhou-B36685
+> Cc: linuxppc-dev@lists.ozlabs.org; stable@kernel.org; Liu Shuo-B35362
+> Subject: Re: [PATCH v2] powerpc/dts: fix the compatible string of sec
+> 4.0
+>=20
+> On Wed, 7 Mar 2012 13:20:06 +0800
+> Shengzhou Liu <Shengzhou.Liu@freescale.com> wrote:
+>=20
+> > From: Liu Shuo <shuo.liu@freescale.com>
+> >
+> > Fix the compatible string of sec 4.0 to match with CAMM driver
+> > according to Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+> >
+> > Signed-off-by: Liu Shuo <shuo.liu@freescale.com>
+> > Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> > ---
+> > v2: refine description.
+>=20
+> can we patch the caam driver to still work with "fsl-sec4.0"?
+>=20
+> Thanks,
+>=20
+> Kim
+[Shengzhou] ok, I will post another patch for it. Thanks.
