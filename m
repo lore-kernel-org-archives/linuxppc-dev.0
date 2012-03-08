@@ -1,27 +1,21 @@
-Return-Path: <axboe@kernel.dk>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6DEA7B6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 21:37:59 +1100 (EST)
-Message-ID: <4F588BDE.3080503@kernel.dk>
-Date: Thu, 08 Mar 2012 11:37:18 +0100
-From: Jens Axboe <axboe@kernel.dk>
-MIME-Version: 1.0
+Return-Path: <alan@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id BDE51B6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 22:05:08 +1100 (EST)
+Date: Thu, 8 Mar 2012 11:18:46 +0000
+From: Alan Cox <alan@linux.intel.com>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 0/7] powerpc: remove the legacy iSeries platform specific
- drivers
+Subject: Re: [PATCH 5/7] tty: powerpc: remove SERIAL_ICOM dependency on
+ PPC_ISERIES
+Message-ID: <20120308111846.27c7cfae@bob.linux.org.uk>
+In-Reply-To: <20120308153931.b1b8b4f27d8e4a94b219bf4c@canb.auug.org.au>
 References: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
-In-Reply-To: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-scsi@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- linux-serial@vger.kernel.org, netdev@vger.kernel.org,
- Brian King <brking@linux.vnet.ibm.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
- Alan Cox <alan@linux.intel.com>
+ <20120308153931.b1b8b4f27d8e4a94b219bf4c@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,12 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/08/2012 05:28 AM, Stephen Rothwell wrote:
-> It would probably be easiest if all these patches were merged via the
-> powerpc tree to eliminate any dependencies between them.  Their impact on
-> generic code is very small.
+On Thu, 8 Mar 2012 15:39:31 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Go ahead, no point in doing otherwise.
+> The PowerPC legacy iSeries platform is being removed so this is no
+> longer selectable.
 
--- 
-Jens Axboe
+Fine by me
