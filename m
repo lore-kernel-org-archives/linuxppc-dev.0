@@ -1,23 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 7B9FAB6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:40 +1100 (EST)
-Date: Thu, 8 Mar 2012 15:35:38 +1100
+ by ozlabs.org (Postfix) with ESMTP id 7BBD2B6FC9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2012 15:43:41 +1100 (EST)
+Date: Thu, 8 Mar 2012 15:37:40 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/7] [SCSI] powerpc: remove the legacy iSeries part of ibmvscsi
-Message-Id: <20120308153538.5f466c64807973648452afa3@canb.auug.org.au>
+Subject: [PATCH 4/7] tty: powerpc: remove hvc_iseries
+Message-Id: <20120308153740.10af6806d245c1240a1a633a@canb.auug.org.au>
 In-Reply-To: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 References: <20120308152853.b5010336abbb8f90e8a2500c@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__8_Mar_2012_15_35_38_+1100_+7atrA6t1+8e+Iwa"
-Cc: Brian King <brking@linux.vnet.ibm.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-scsi@vger.kernel.org,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- LKML <linux-kernel@vger.kernel.org>
+ boundary="Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp"
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,104 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__8_Mar_2012_15_35_38_+1100_+7atrA6t1+8e+Iwa
+--Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-The PowerPC legacy iSeries platform is being removed and this code is
-no longer selectable.  There is more clean up that can be done, but this
-just gets the old code out of the way.
+The PowerPC legacy iSeries platform is being removed, so this code is no
+longer needed.
 
-Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/scsi/Kconfig                  |    3 +-
- drivers/scsi/ibmvscsi/Makefile        |    1 -
- drivers/scsi/ibmvscsi/ibmvscsi.c      |   12 +--
- drivers/scsi/ibmvscsi/ibmvscsi.h      |    1 -
- drivers/scsi/ibmvscsi/iseries_vscsi.c |  173 -----------------------------=
+ drivers/tty/hvc/Kconfig       |   10 -
+ drivers/tty/hvc/Makefile      |    1 -
+ drivers/tty/hvc/hvc_iseries.c |  599 -------------------------------------=
 ----
- 5 files changed, 3 insertions(+), 187 deletions(-)
- delete mode 100644 drivers/scsi/ibmvscsi/iseries_vscsi.c
+ 3 files changed, 0 insertions(+), 610 deletions(-)
+ delete mode 100644 drivers/tty/hvc/hvc_iseries.c
 
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index 16570aa..e38d843 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -967,9 +967,8 @@ config SCSI_IPS
+diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
+index 4222035..8ea7f07 100644
+--- a/drivers/tty/hvc/Kconfig
++++ b/drivers/tty/hvc/Kconfig
+@@ -24,16 +24,6 @@ config HVC_OLD_HVSI
+ 	depends on HVC_CONSOLE
+ 	default n
 =20
- config SCSI_IBMVSCSI
- 	tristate "IBM Virtual SCSI support"
--	depends on PPC_PSERIES || PPC_ISERIES
-+	depends on PPC_PSERIES
- 	select SCSI_SRP_ATTRS
--	select VIOPATH if PPC_ISERIES
- 	help
- 	  This is the IBM POWER Virtual SCSI Client
-=20
-diff --git a/drivers/scsi/ibmvscsi/Makefile b/drivers/scsi/ibmvscsi/Makefile
-index a423d96..ff5b5c5 100644
---- a/drivers/scsi/ibmvscsi/Makefile
-+++ b/drivers/scsi/ibmvscsi/Makefile
+-config HVC_ISERIES
+-	bool "iSeries Hypervisor Virtual Console support"
+-	depends on PPC_ISERIES
+-	default y
+-	select HVC_DRIVER
+-	select HVC_IRQ
+-	select VIOPATH
+-	help
+-	  iSeries machines support a hypervisor virtual console.
+-
+ config HVC_OPAL
+ 	bool "OPAL Console support"
+ 	depends on PPC_POWERNV
+diff --git a/drivers/tty/hvc/Makefile b/drivers/tty/hvc/Makefile
+index 89abf40b..4ca3723 100644
+--- a/drivers/tty/hvc/Makefile
++++ b/drivers/tty/hvc/Makefile
 @@ -1,7 +1,6 @@
- obj-$(CONFIG_SCSI_IBMVSCSI)	+=3D ibmvscsic.o
-=20
- ibmvscsic-y			+=3D ibmvscsi.o
--ibmvscsic-$(CONFIG_PPC_ISERIES)	+=3D iseries_vscsi.o=20
- ibmvscsic-$(CONFIG_PPC_PSERIES)	+=3D rpa_vscsi.o=20
-=20
- obj-$(CONFIG_SCSI_IBMVSCSIS)	+=3D ibmvstgt.o
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvs=
-csi.c
-index 3d391dc..e984951 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -55,13 +55,7 @@
-  * and sends a CRQ message back to inform the client that the request has
-  * completed.
-  *
-- * Note that some of the underlying infrastructure is different between
-- * machines conforming to the "RS/6000 Platform Architecture" (RPA) and
-- * the older iSeries hypervisor models.  To support both, some low level
-- * routines have been broken out into rpa_vscsi.c and iseries_vscsi.c.
-- * The Makefile should pick one, not two, not zero, of these.
-- *
-- * TODO: This is currently pretty tied to the IBM i/pSeries hypervisor
-+ * TODO: This is currently pretty tied to the IBM pSeries hypervisor
-  * interfaces.  It would be really nice to abstract this above an RDMA
-  * layer.
-  */
-@@ -2085,9 +2079,7 @@ int __init ibmvscsi_module_init(void)
- 	driver_template.can_queue =3D max_requests;
- 	max_events =3D max_requests + 2;
-=20
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		ibmvscsi_ops =3D &iseriesvscsi_ops;
--	else if (firmware_has_feature(FW_FEATURE_VIO))
-+	if (firmware_has_feature(FW_FEATURE_VIO))
- 		ibmvscsi_ops =3D &rpavscsi_ops;
- 	else
- 		return -ENODEV;
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.h b/drivers/scsi/ibmvscsi/ibmvs=
-csi.h
-index 02197a2..c503e17 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.h
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.h
-@@ -127,7 +127,6 @@ struct ibmvscsi_ops {
- 	int (*resume) (struct ibmvscsi_host_data *hostdata);
- };
-=20
--extern struct ibmvscsi_ops iseriesvscsi_ops;
- extern struct ibmvscsi_ops rpavscsi_ops;
-=20
- #endif				/* IBMVSCSI_H */
-diff --git a/drivers/scsi/ibmvscsi/iseries_vscsi.c b/drivers/scsi/ibmvscsi/=
-iseries_vscsi.c
+ obj-$(CONFIG_HVC_CONSOLE)	+=3D hvc_vio.o hvsi_lib.o
+ obj-$(CONFIG_HVC_OPAL)		+=3D hvc_opal.o hvsi_lib.o
+ obj-$(CONFIG_HVC_OLD_HVSI)	+=3D hvsi.o
+-obj-$(CONFIG_HVC_ISERIES)	+=3D hvc_iseries.o
+ obj-$(CONFIG_HVC_RTAS)		+=3D hvc_rtas.o
+ obj-$(CONFIG_HVC_TILE)		+=3D hvc_tile.o
+ obj-$(CONFIG_HVC_DCC)		+=3D hvc_dcc.o
+diff --git a/drivers/tty/hvc/hvc_iseries.c b/drivers/tty/hvc/hvc_iseries.c
 deleted file mode 100644
-index f477645..0000000
+index 3f4a897..0000000
 --=20
 1.7.9.1
 
@@ -132,25 +86,25 @@ index f477645..0000000
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Thu__8_Mar_2012_15_35_38_+1100_+7atrA6t1+8e+Iwa
+--Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPWDcaAAoJEECxmPOUX5FEPLQP/0S/CDVMUkn2Cyj719p+1eta
-A+DpHLKao+NaGMAngY4ZHdcDDyEZKPNP+7kU8okUuNG8vhj8j8RlpVIBzx5XIlSB
-w0hKHHveGO2mIHt3VrLs7RBzJP3DRr2xo1fTVp0ur22Wrby6tbcyv2tiuXzd/dMt
-EobbbN+JJsdNrwfPaXI6Z+kA47YDv3ir7um0qKGhholaHIctpUBlT1IR86mOIxm8
-6m3IxlYFxIk7i6kudRAknLfJ06E1xa4VY6rgEvG1mvozjWMiU7z6bIYyGxHOs8Oa
-cgKMiEJc0XaIbxPTJ7Ig9TMF0QZEAQhsLJg+/W29mKFkSLaA9aUYDNcA3QiPLtcy
-DRJzlQQo1E492yfNtvPiEwNFsjdW5yQGVYr3mRIoU5Ed6akRRpSzQ7D7kWbPuXhA
-NUIWu3mf0R5M+8bVbpHWg1q8nNLv6qxkSJX0OaquLtRTsrZedLBpbaqqQl2fsqFc
-ybsvnVV9K321djfsyRV7Rxok+P3NeTubwlCKJqByVHM18KgSdFa6qtr87NqCTWIv
-G9IoUA7OJWKpbqQZzoKgCWhnJ+KQpnkBWm+BqthsFqhZkZEgDvG1AehUNNUztefn
-DySrqSnJIwyX1gZIrincIYXdgO3ET0wyic1XHS9b6zpAxJWcKGHosae87KbWrzsx
-+0kQCJIWBu5aOfgkVzzb
-=UXvv
+iQIcBAEBCAAGBQJPWDeUAAoJEECxmPOUX5FE+AIP/ig1svU5sv6uQsi8FvEj9+sa
+pO4URJ9M/PAr1GSxmHGGwmSrmbACOYhsoTWYEdMY/4sb/gXwlNTPSV3n7nQ1Hees
+zrHCQIsMRy2dJvYdlxsWUbOzgOZnW7rI9D3HakVTVCg3tO+sDyhoINZHb7lR+3Zd
+uYV8SlbDbpEUppHE+PluBZRKEJC3/NNdYOZRgVKdhQeJ7GQIy5f6qnIhBczS//nZ
+xDUm/048UcTJydrcgQhdAN0Dz+ifYi2UdNUxBMjIDdHdZWhZ8cFb79XI3kakbsDK
+/9Oq36pzIm6D/JL9MnlXLtF3jjac/2rGZCBM2YZIRwDuDiWtexhIxQp5CdZBD10p
+/uPmWo5RpjMScOx+iV6bPEMfcdAGwbElWZyQj6rrM+VfMO8coO0skUwjzFhMn3V1
+QJVxMTJGK1XDLs0pz7ULSDuvm7KNGQ6r0e+93Kf8lfwJkupIOkeUoyWyV2Jau1X2
+qEmlijQ7c3OQuzw+k1r7ZkKmy0m9QIcd923cHGTip2twZIgSoiCCbzEmgo36zkQX
+sCAe2LvDyhdStkaqbrXbzM134ffqsA+/Ws5veGdQd4PlfB48y5QvgvNvCIe30Z7T
+SOCkpX3q/XZgHKAlIczldjWn7jZO5uj6c6faa5husm5kxQxf7l8TPb+Gc0ZiBfsd
+Jw9MIDn96U7JPYIYsaEm
+=dg+2
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__8_Mar_2012_15_35_38_+1100_+7atrA6t1+8e+Iwa--
+--Signature=_Thu__8_Mar_2012_15_37_40_+1100_oph5+/tFUGr8c9mp--
