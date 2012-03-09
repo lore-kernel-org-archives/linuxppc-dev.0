@@ -1,15 +1,20 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 9 Mar 2012 14:46:45 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.3.0-rc6-next-20120308 boot failure on POWER7 blade
-Message-ID: <20120309144645.5b5997d2@kryten>
-In-Reply-To: <1331263785.3105.52.camel@pasglop>
-References: <20120309142555.7ec5e0ac@kryten> <1331263785.3105.52.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id F2754B6FBC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 15:41:06 +1100 (EST)
+Date: Fri, 9 Mar 2012 15:40:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+ "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: manual merge of the tip tree with the powerpc tree
+Message-Id: <20120309154050.6c7921999366c42cd1d15446@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: sfr@ozlabs.org, linuxppc-dev@lists.ozlabs.org, yinghai@kernel.org,
- linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX"
+Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,80 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
+Hi all,
 
-> Looks like something that got fixed but the new patches from Bjorn
-> aren't in next yet. I'll fwd you the patch separately to apply on top
-> of what you have see if that helps (to confirm that's indeed the
-> issue).
+Today's linux-next merge of the tip tree got a conflict in
+arch/powerpc/platforms/iseries/setup.c between commit 8ee3e0d69623
+("powerpc: Remove the main legacy iSerie platform code") from the powerpc
+tree and commit bd2f55361f18 ("sched/rt: Use schedule_preempt_disabled()")
+from the tip tree.
 
-Thanks, confirmed that it fixes it. Patch below in case anyone else is
-hitting it.
-
-Anton
-
---
-
-On Sat, 2012-03-03 at 08:52 +1100, Benjamin Herrenschmidt wrote:
-
-> Or give me a chance to dig :-) I'll have a look next week.
-
-This is indeed what bjorn suspected on irc, this patch fixes it:
-
-(Bjorn, please fold it in the original offending patch)
-
+The former removed the file, so I did that.
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index b37d0b5..5dd63f1 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -75,6 +75,7 @@ static void of_pci_parse_addrs(struct device_node *node, struct pci_dev *dev)
- {
- 	u64 base, size;
- 	unsigned int flags;
-+	struct pci_bus_region region;
- 	struct resource *res;
- 	const u32 *addrs;
- 	u32 i;
-@@ -106,10 +107,12 @@ static void of_pci_parse_addrs(struct device_node *node, struct pci_dev *dev)
- 			printk(KERN_ERR "PCI: bad cfg reg num 0x%x\n", i);
- 			continue;
- 		}
--		res->start = base;
--		res->end = base + size - 1;
-+
- 		res->flags = flags;
- 		res->name = pci_name(dev);
-+		region.start = base;
-+		region.end = base + size - 1;
-+		pcibios_bus_to_resource(dev, res, &region);
- 	}
- }
- 
-@@ -209,6 +212,7 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev)
- 	struct pci_bus *bus;
- 	const u32 *busrange, *ranges;
- 	int len, i, mode;
-+	struct pci_bus_region region;
- 	struct resource *res;
- 	unsigned int flags;
- 	u64 size;
-@@ -270,9 +274,10 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev)
- 			res = bus->resource[i];
- 			++i;
- 		}
--		res->start = of_read_number(&ranges[1], 2);
--		res->end = res->start + size - 1;
- 		res->flags = flags;
-+		region.start = of_read_number(&ranges[1], 2);
-+		region.end = region.start + size - 1;		
-+		pcibios_bus_to_resource(dev, res, &region);
- 	}
- 	sprintf(bus->name, "PCI Bus %04x:%02x", pci_domain_nr(bus),
- 		bus->number);
+--Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
---=-aDzdhtAsqTK5gqnOark/--
+iQIcBAEBCAAGBQJPWYnSAAoJEECxmPOUX5FEQEUP/0FpHjy6Wsr79Vu38PHSw72N
+iqZSobTXGyprfZePCBWKP6/+kcVSPYvoz0+yJVqA1XPI7U4evJqlmnt82+ujK28a
+W1XbOzPCp82OLpVyR7llJ98+TXF8nzV8brG5ZUekOnYN9K5mGE2B5K5paETd+eVu
+6+9ThpZAClNW/U/nV/c48Hno1/jWQ9wCDSMAtayli9sNMLzVkO2GK4+uar4khnzI
+Q5iU6hyZfjYi9QnPse8XsBxOgJeSwyIgSYF3h8au9ue2Dhti3rlBj/83lNAa7lZ9
++Z40l7373a6/M3RSoY7BYNAZc4qjjwiBggV8whfcrPSn2Y46HCF3p84L4NfV/sEP
+7NIAxUSOtsNFh4M6alTaWAe5iqSb9nBajnFb/ymDlB5bNyZIjElJVuRxMFpkvtAj
+1aYhXa0V0VLXeEQJDOaDB5s3lFZcnPRsIEMCIS1QZLccBkwjEL7Nbdui+FmvCPFm
+xzN08h3xK3l7SlGDqMQ30wtptnIQpHdJQMfnQKVXmMacINK+BOyaicMM6r6lZTUX
+Ixaey5nh4b0wb7DuqU09ZW41f5E/u/VglroeIXM2PBzSoqFbbwQW3jfl1ETxU9KG
+AYYp6x87FJTkJPP8CKi2YrJd8jNrJAx27irpWcwC7ExfXLqChI/sHSzOPsZ4m0SN
+BbU+uZv9eLg90SGaZK+a
+=UZMA
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX--
