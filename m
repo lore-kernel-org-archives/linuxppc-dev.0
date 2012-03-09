@@ -1,20 +1,29 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from oproxy8-pub.bluehost.com (oproxy8.bluehost.com
- [IPv6:2605:dc00:100:2::a8])
- by ozlabs.org (Postfix) with SMTP id C9B06B6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 05:28:55 +1100 (EST)
-Date: Fri, 9 Mar 2012 10:28:46 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: 3.3.0-rc6-next-20120308 boot failure on POWER7 blade
-Message-ID: <20120309102846.51f0df89@jbarnes-x220>
-In-Reply-To: <20120309144645.5b5997d2@kryten>
-References: <20120309142555.7ec5e0ac@kryten> <1331263785.3105.52.camel@pasglop>
- <20120309144645.5b5997d2@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: sfr@ozlabs.org, yinghai@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <rob.herring@calxeda.com>
+Received: from smtp121.dfw.emailsrvr.com (smtp121.dfw.emailsrvr.com
+ [67.192.241.121])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DA3E5B6FA3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 04:01:35 +1100 (EST)
+Message-ID: <4F5A350F.3090905@calxeda.com>
+Date: Fri, 09 Mar 2012 10:51:27 -0600
+From: Rob Herring <rob.herring@calxeda.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: linux-next: manual merge of the powerpc tree with the arm tree
+References: <20120308120422.e071cba36425eacbee1f8d98@canb.auug.org.au>
+ <25744.1331174036@neuling.org>
+ <20120308145131.fad50bbc79c36f0b0b12d101@canb.auug.org.au>
+ <1331185951.3105.29.camel@pasglop> <1331249746.3105.40.camel@pasglop>
+ <20120309003937.GC8680@flint.arm.linux.org.uk>
+ <1331262821.3105.47.camel@pasglop>
+In-Reply-To: <1331262821.3105.47.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Neuling <mikey@neuling.org>, Paul Mundt <lethal@linux-sh.org>,
+ linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 9 Mar 2012 14:46:45 +1100
-Anton Blanchard <anton@samba.org> wrote:
+On 03/08/2012 09:13 PM, Benjamin Herrenschmidt wrote:
+> On Fri, 2012-03-09 at 00:39 +0000, Russell King wrote:
+>> On Fri, Mar 09, 2012 at 10:35:46AM +1100, Benjamin Herrenschmidt wrote:
+>>> Actually, I didn't keep MAY_HAVE_SPARSE_IRQ, I kept HAVE_SPARSE_IRQ. If
+>>> I remove it, then I get Kconfig warnings:
+>>>
+>>> warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies
+>>> (HAVE_GENERIC_HARDIRQS && HAVE_SPARSE_IRQ)
+>>
+>> Do you have commit 2ed86b16eabe4efbf80cc725a8cbb5310746a2fc ?
+> 
+> Nope, Grant patch didn't mention a dependency.
 
-> 
-> Hi Ben,
-> 
-> > Looks like something that got fixed but the new patches from Bjorn
-> > aren't in next yet. I'll fwd you the patch separately to apply on
-> > top of what you have see if that helps (to confirm that's indeed the
-> > issue).
-> 
-> Thanks, confirmed that it fixes it. Patch below in case anyone else is
-> hitting it.
-> 
-> Anton
-> 
-> --
-> 
-> On Sat, 2012-03-03 at 08:52 +1100, Benjamin Herrenschmidt wrote:
-> 
-> > Or give me a chance to dig :-) I'll have a look next week.
-> 
-> This is indeed what bjorn suspected on irc, this patch fixes it:
-> 
-> (Bjorn, please fold it in the original offending patch)
+My opinion is that SPARSE_IRQ shouldn't be user visible option, and the
+simple solution was to just make it hidden. It wasn't clear if this was
+desired or not for other arches at the time. There is a mixture of
+settings in powerpc defconfigs. SuperH selects it for 32-bit and leaves
+it user selectable for 64-bit.
 
-Thanks guys; I'll push the fixes to -next when I get to a real network
-(at the airport now about to run out of battery with a crappy
-connection).
+I'm happy to revert adding MAY_HAVE_SPARSE_IRQ and just make SPARSE_IRQ
+a hidden option. It really just needs the okay from SuperH folks.
 
-Jesse
+Rob
