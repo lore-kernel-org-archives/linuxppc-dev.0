@@ -1,23 +1,13 @@
-Return-Path: <mla@apm.com>
-Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
- by ozlabs.org (Postfix) with SMTP id 0A845B7054
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 14:19:09 +1100 (EST)
-Received: by pbcwy12 with SMTP id wy12so2887199pbc.24
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Mar 2012 19:19:08 -0800 (PST)
-From: Mai La <mla@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Matt Porter <mporter@kernel.crashing.org>,
- Tirumala R Marri <tmarri@apm.com>,
- Grant Likely <grant.likely@secretlab.ca>,
- Michael Neuling <mikey@neuling.org>,
- Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc/44x: Add PCI MSI node for Maui APM821xx SoC and
- Bluestone board in DTS
-Date: Fri,  9 Mar 2012 10:18:45 +0700
-Message-Id: <1331263125-9647-1-git-send-email-mla@apm.com>
-Cc: open-source-review@apm.com, Mai La <mla@apm.com>
+Return-Path: <anton@samba.org>
+Date: Fri, 9 Mar 2012 14:25:55 +1100
+From: Anton Blanchard <anton@samba.org>
+To: sfr@ozlabs.org, benh@kernel.crashing.org, yinghai@kernel.org,
+ jbarnes@virtuousgeek.org
+Subject: 3.3.0-rc6-next-20120308 boot failure on POWER7 blade
+Message-ID: <20120309142555.7ec5e0ac@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +18,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Mai La <mla@apm.com>
----
- arch/powerpc/boot/dts/bluestone.dts |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+Hi,
 
-diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
-index 2a56a0d..8ea6325 100644
---- a/arch/powerpc/boot/dts/bluestone.dts
-+++ b/arch/powerpc/boot/dts/bluestone.dts
-@@ -250,5 +250,29 @@
- 			};
- 		};
- 
-+		MSI: ppc4xx-msi@C10000000 {
-+			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
-+			reg = < 0xC 0x10000000 0x100
-+				0xC 0x10000000 0x100>;
-+			sdr-base = <0x36C>;
-+			msi-data = <0x00004440>;
-+			msi-mask = <0x0000ffe0>;
-+			interrupts =<0 1 2 3 4 5 6 7>;
-+			interrupt-parent = <&MSI>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			msi-available-ranges = <0x0 0x100>;
-+			interrupt-map = <
-+				0 &UIC3 0x18 1
-+				1 &UIC3 0x19 1
-+				2 &UIC3 0x1A 1
-+				3 &UIC3 0x1B 1
-+				4 &UIC3 0x1C 1
-+				5 &UIC3 0x1D 1
-+				6 &UIC3 0x1E 1
-+				7 &UIC3 0x1F 1
-+			>;
-+		};
- 	};
- };
--- 
-1.7.3.4
+I'm seeing this on a POWER7 blade booting 3.3.0-rc6-next-20120308:
+
+
+PCI host bridge to bus 0000:00
+pci_bus 0000:00: root bus resource [io  0x100000-0x10ffff] (bus address [0xf0000-0xfffff])
+pci_bus 0000:00: root bus resource [mem 0x3b0000000000-0x3b001fffffff] (bus address [0xe0000000-0xffffffff])
+IOMMU table initialized, virtual merging enabled
+PCI host bridge to bus 0001:00
+pci_bus 0001:00: root bus resource [io  0x210000-0x21ffff] (bus address [0xf0000-0xfffff])
+pci_bus 0001:00: root bus resource [mem 0x3b0080000000-0x3b00ffffffff] (bus address [0x80000000-0xffffffff])
+PCI host bridge to bus 0002:01
+pci_bus 0002:01: root bus resource [io  0x320000-0x32ffff] (bus address [0xf0000-0xfffff])
+pci_bus 0002:01: root bus resource [mem 0x3b0400000000-0x3b041fefffff] (bus address [0xe0000000-0xffefffff])
+PCI: Cannot allocate resource region 0 of device 0000:00:01.0, will remap
+PCI: Cannot allocate resource region 2 of device 0000:00:01.0, will remap
+PCI: Cannot allocate resource region 6 of device 0000:00:01.0, will remap
+PCI: Cannot allocate resource region 0 of device 0001:00:01.0, will remap
+PCI: Cannot allocate resource region 0 of device 0001:00:01.1, will remap
+PCI: Cannot allocate resource region 0 of device 0001:00:01.2, will remap
+PCI: Cannot allocate resource region 0 of device 0002:01:00.0, will remap
+PCI: Cannot allocate resource region 2 of device 0002:01:00.0, will
+remap
+
+...
+
+pci 0001:00:01.0: device not available (can't reserve [mem 0x00000000-0x00000fff])
+pci 0001:00:01.0: Can't enable PCI device, BIOS handoff failed.
+pci 0001:00:01.1: device not available (can't reserve [mem 0x00000000-0x00000fff])
+pci 0001:00:01.1: Can't enable PCI device, BIOS handoff failed.
+pci 0001:00:01.2: device not available (can't reserve [mem 0x00000000-0x000000ff])
+pci 0001:00:01.2: Can't enable PCI device, BIOS handoff failed.
+
+
+Then we fail to find the root device. I haven't had a chance
+to chase the cause of it down yet.
+
+Anton
