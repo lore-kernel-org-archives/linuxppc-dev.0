@@ -1,20 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id CEFC1B6F13
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 13:36:55 +1100 (EST)
-Date: Fri, 9 Mar 2012 13:36:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Subject: linux-next: manual merge of the net-next tree with the powerpc tree
-Message-Id: <20120309133646.fb8cc30d8c2fd0ef7784d72c@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2F3A7B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 14:14:01 +1100 (EST)
+Message-ID: <1331262821.3105.47.camel@pasglop>
+Subject: Re: linux-next: manual merge of the powerpc tree with the arm tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Russell King <rmk@arm.linux.org.uk>
+Date: Fri, 09 Mar 2012 14:13:41 +1100
+In-Reply-To: <20120309003937.GC8680@flint.arm.linux.org.uk>
+References: <20120308120422.e071cba36425eacbee1f8d98@canb.auug.org.au>
+ <25744.1331174036@neuling.org>
+ <20120308145131.fad50bbc79c36f0b0b12d101@canb.auug.org.au>
+ <1331185951.3105.29.camel@pasglop> <1331249746.3105.40.camel@pasglop>
+ <20120309003937.GC8680@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__9_Mar_2012_13_36_46_+1100_o.kx23tJ_UeCCL5P"
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Joe Perches <joe@perches.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__9_Mar_2012_13_36_46_+1100_o.kx23tJ_UeCCL5P
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2012-03-09 at 00:39 +0000, Russell King wrote:
+> On Fri, Mar 09, 2012 at 10:35:46AM +1100, Benjamin Herrenschmidt wrote:
+> > Actually, I didn't keep MAY_HAVE_SPARSE_IRQ, I kept HAVE_SPARSE_IRQ. If
+> > I remove it, then I get Kconfig warnings:
+> > 
+> > warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies
+> > (HAVE_GENERIC_HARDIRQS && HAVE_SPARSE_IRQ)
+> 
+> Do you have commit 2ed86b16eabe4efbf80cc725a8cbb5310746a2fc ?
 
-Hi all,
+Nope, Grant patch didn't mention a dependency.
 
-Today's linux-next merge of the net-next tree got a conflict in
-drivers/net/ethernet/ibm/iseries_veth.c between commit e92a665949f6
-("net: powerpc: remove the legacy iSeries ethernet driver") from the
-powerpc tree and commit 41de8d4cff21 ("drivers/net: Remove alloc_etherdev
-error messages") from the net-next tree.
-
-I just removed the file.
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Fri__9_Mar_2012_13_36_46_+1100_o.kx23tJ_UeCCL5P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPWWy+AAoJEECxmPOUX5FEdH4P/ifnYy1RxHVPjCgoKvc/4uzo
-IbDU9QiuiCs3XZKqhxuMUP5+OQONJEL9xYDbu8ymmdGqML0iiASlZXhtUUbeVNBK
-2DFcu7a+gWz9yDjZrLiRrJ7EENQXSMYQe5dBXWJ6ZdmLeUL8ILfbznkS3APV+U2q
-LFGZ42Zb6Lpv3Bjs9wHnfmzHh1HtqXiLgPn0JYtaYG0Qs6IKVEtT3oQj3pKV8QyB
-Wir9UjoiFTI6dEdSqDad4uPhfeuQznLIpzfOZD3+ZQztXsFq7/HpRYj3LMYjjvOF
-jxd/TVyjVenSg12EwmcjW+75L+WDgPKjIi443pvelkCDHrThbrhpLXeTIW50o+dG
-T8HVzjPLEKIDlj417wxYGyUSwXXxft2+yG6pepAolw3blLd1DLpGZjJVRvsv9ylM
-0LRBIOQHn7EPo1vn+dNMQjKMWvbTIVtzShiGa2pfg8sZzNV9qWqrSItyCwBJV1GK
-udMikVHd0H144elXgkARzPmK+nbhvbEIWos6NDeD6+8oFBLeVjix7U3JB5YZNVUa
-vD55XiFAalVXlGPLoTMxPbBz1GEQ6A3o4Ndb6m1vq+dIGotvXlsrtKBOh9bF9lsl
-WvCFTYOHj6hUVeoxold72Kg9J/y2r8Oo4eG0ItOyzSfZsx8HIUSuddkgoO/qEf9f
-1u5oqD8hVemCFG7ZMpsK
-=GHW+
------END PGP SIGNATURE-----
-
---Signature=_Fri__9_Mar_2012_13_36_46_+1100_o.kx23tJ_UeCCL5P--
+Ben.
