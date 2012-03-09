@@ -1,26 +1,20 @@
-Return-Path: <greg@kroah.com>
-Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
- [66.111.4.29])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9D014B6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 02:19:02 +1100 (EST)
-Received: from compute5.internal (compute5.nyi.mail.srv.osa [10.202.2.45])
- by gateway1.nyi.mail.srv.osa (Postfix) with ESMTP id B5FEA2122E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 10:18:59 -0500 (EST)
-Date: Fri, 9 Mar 2012 07:18:57 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the driver-core tree with the
- powerpc tree
-Message-ID: <20120309151857.GA12578@kroah.com>
-References: <20120309164025.dc16cfacaa2ee35cbeea14a8@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120309164025.dc16cfacaa2ee35cbeea14a8@canb.auug.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Alan Stern <stern@rowland.harvard.edu>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from oproxy8-pub.bluehost.com (oproxy8.bluehost.com
+ [IPv6:2605:dc00:100:2::a8])
+ by ozlabs.org (Postfix) with SMTP id C9B06B6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 05:28:55 +1100 (EST)
+Date: Fri, 9 Mar 2012 10:28:46 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: 3.3.0-rc6-next-20120308 boot failure on POWER7 blade
+Message-ID: <20120309102846.51f0df89@jbarnes-x220>
+In-Reply-To: <20120309144645.5b5997d2@kryten>
+References: <20120309142555.7ec5e0ac@kryten> <1331263785.3105.52.camel@pasglop>
+ <20120309144645.5b5997d2@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: sfr@ozlabs.org, yinghai@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 09, 2012 at 04:40:25PM +1100, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> Today's linux-next merge of the driver-core tree got a conflict in
-> drivers/base/driver.c between commit fcd6f7620202 ("driver-core: remove
-> legacy iSeries hack") from the powerpc tree and commit 9875bb480cc8
-> ("Eliminate get_driver() and put_driver()") from the driver-core tree.
-> 
-> Just context changes.  I fixed it up (see below) and can carry the fix as
-> necessary.
+On Fri, 9 Mar 2012 14:46:45 +1100
+Anton Blanchard <anton@samba.org> wrote:
 
-Looks good to me, thanks for doing this.
+> 
+> Hi Ben,
+> 
+> > Looks like something that got fixed but the new patches from Bjorn
+> > aren't in next yet. I'll fwd you the patch separately to apply on
+> > top of what you have see if that helps (to confirm that's indeed the
+> > issue).
+> 
+> Thanks, confirmed that it fixes it. Patch below in case anyone else is
+> hitting it.
+> 
+> Anton
+> 
+> --
+> 
+> On Sat, 2012-03-03 at 08:52 +1100, Benjamin Herrenschmidt wrote:
+> 
+> > Or give me a chance to dig :-) I'll have a look next week.
+> 
+> This is indeed what bjorn suspected on irc, this patch fixes it:
+> 
+> (Bjorn, please fold it in the original offending patch)
 
-greg k-h
+Thanks guys; I'll push the fixes to -next when I get to a real network
+(at the airport now about to run out of battery with a crappy
+connection).
+
+Jesse
