@@ -1,20 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id F2754B6FBC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 15:41:06 +1100 (EST)
-Date: Fri, 9 Mar 2012 15:40:50 +1100
+ by ozlabs.org (Postfix) with ESMTP id E5912B6FB6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2012 16:40:33 +1100 (EST)
+Date: Fri, 9 Mar 2012 16:40:25 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: linux-next: manual merge of the tip tree with the powerpc tree
-Message-Id: <20120309154050.6c7921999366c42cd1d15446@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Subject: linux-next: manual merge of the driver-core tree with the powerpc tree
+Message-Id: <20120309164025.dc16cfacaa2ee35cbeea14a8@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX"
-Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ boundary="Signature=_Fri__9_Mar_2012_16_40_25_+1100_U=1YSxDOxbeLSt43"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Alan Stern <stern@rowland.harvard.edu>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +24,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX
+--Signature=_Fri__9_Mar_2012_16_40_25_+1100_U=1YSxDOxbeLSt43
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Hi Greg,
 
-Today's linux-next merge of the tip tree got a conflict in
-arch/powerpc/platforms/iseries/setup.c between commit 8ee3e0d69623
-("powerpc: Remove the main legacy iSerie platform code") from the powerpc
-tree and commit bd2f55361f18 ("sched/rt: Use schedule_preempt_disabled()")
-from the tip tree.
+Today's linux-next merge of the driver-core tree got a conflict in
+drivers/base/driver.c between commit fcd6f7620202 ("driver-core: remove
+legacy iSeries hack") from the powerpc tree and commit 9875bb480cc8
+("Eliminate get_driver() and put_driver()") from the driver-core tree.
 
-The former removed the file, so I did that.
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX
+diff --cc drivers/base/driver.c
+index db4f54c,60e4f77..0000000
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@@ -123,34 -123,36 +123,6 @@@ void driver_remove_file(struct device_d
+  }
+  EXPORT_SYMBOL_GPL(driver_remove_file);
+ =20
+--/**
+-  * get_driver - increment driver reference count.
+-  * @drv: driver.
+-  */
+- struct device_driver *get_driver(struct device_driver *drv)
+- {
+- 	if (drv) {
+- 		struct driver_private *priv;
+- 		struct kobject *kobj;
+-=20
+- 		kobj =3D kobject_get(&drv->p->kobj);
+- 		priv =3D to_driver(kobj);
+- 		return priv->driver;
+- 	}
+- 	return NULL;
+- }
+- EXPORT_SYMBOL_GPL(get_driver);
+-=20
+- /**
+-  * put_driver - decrement driver's refcount.
+-  * @drv: driver.
+-  */
+- void put_driver(struct device_driver *drv)
+- {
+- 	kobject_put(&drv->p->kobj);
+- }
+- EXPORT_SYMBOL_GPL(put_driver);
+-=20
+ - * driver_add_kobj - add a kobject below the specified driver
+ - * @drv: requesting device driver
+ - * @kobj: kobject to add below this driver
+ - * @fmt: format string that names the kobject
+ - *
+ - * You really don't want to do this, this is only here due to one looney
+ - * iseries driver, go poke those developers if you are annoyed about
+ - * this...
+ - */
+ -int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
+ -		    const char *fmt, ...)
+ -{
+ -	va_list args;
+ -	char *name;
+ -	int ret;
+ -
+ -	va_start(args, fmt);
+ -	name =3D kvasprintf(GFP_KERNEL, fmt, args);
+ -	va_end(args);
+ -
+ -	if (!name)
+ -		return -ENOMEM;
+ -
+ -	ret =3D kobject_add(kobj, &drv->p->kobj, "%s", name);
+ -	kfree(name);
+ -	return ret;
+ -}
+ -EXPORT_SYMBOL_GPL(driver_add_kobj);
+ -
+  static int driver_add_groups(struct device_driver *drv,
+  			     const struct attribute_group **groups)
+  {
+
+--Signature=_Fri__9_Mar_2012_16_40_25_+1100_U=1YSxDOxbeLSt43
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPWYnSAAoJEECxmPOUX5FEQEUP/0FpHjy6Wsr79Vu38PHSw72N
-iqZSobTXGyprfZePCBWKP6/+kcVSPYvoz0+yJVqA1XPI7U4evJqlmnt82+ujK28a
-W1XbOzPCp82OLpVyR7llJ98+TXF8nzV8brG5ZUekOnYN9K5mGE2B5K5paETd+eVu
-6+9ThpZAClNW/U/nV/c48Hno1/jWQ9wCDSMAtayli9sNMLzVkO2GK4+uar4khnzI
-Q5iU6hyZfjYi9QnPse8XsBxOgJeSwyIgSYF3h8au9ue2Dhti3rlBj/83lNAa7lZ9
-+Z40l7373a6/M3RSoY7BYNAZc4qjjwiBggV8whfcrPSn2Y46HCF3p84L4NfV/sEP
-7NIAxUSOtsNFh4M6alTaWAe5iqSb9nBajnFb/ymDlB5bNyZIjElJVuRxMFpkvtAj
-1aYhXa0V0VLXeEQJDOaDB5s3lFZcnPRsIEMCIS1QZLccBkwjEL7Nbdui+FmvCPFm
-xzN08h3xK3l7SlGDqMQ30wtptnIQpHdJQMfnQKVXmMacINK+BOyaicMM6r6lZTUX
-Ixaey5nh4b0wb7DuqU09ZW41f5E/u/VglroeIXM2PBzSoqFbbwQW3jfl1ETxU9KG
-AYYp6x87FJTkJPP8CKi2YrJd8jNrJAx27irpWcwC7ExfXLqChI/sHSzOPsZ4m0SN
-BbU+uZv9eLg90SGaZK+a
-=UZMA
+iQIcBAEBCAAGBQJPWZfJAAoJEECxmPOUX5FE2E8QAKURz+UgWmytKfksOiFGysqH
+aA85hYHJB/oHtqyeEEeRxVWz1whNBqp/mbl3s9jSXTg/YY5Ug8ruk/Vul0fUYgwZ
+qs2kd1uzGgBm4zNLgcXOXD+GQw50qzCA7TZ/TPB1+ZafiixoA2OnqRLwMRFACmxz
+cc7AFvEKY3GyFH6aRAEnou7ni5Ly3RxdGmEy8BA5ZN9KWLLCpkpSakYSkPDfZDKA
+Nt2bpyzFuDcrZ4xawYnqOO2asjyygqkKypEoCYYdDSV9C0NqO3kHlhxzoXmr4LkK
+Jfwm2grvj2fDof1apQEpYla1xZ79nfTtxJq9xPLceTJE9sUNnjvv/heNNwSmpgm2
+Q/4mfh23xd6jmnWOsHMtHdPMMe6Xkz3uU0G/Xm/A2xbncF72zMXzuN/DP3a+rh06
+k0WMZCZrk2Qq6Y7QLbMev/i3x6SzbYVySKQZ2KuAW6gD6gM2ykVS1ReROLJtz064
+q0Jq6ItPPa9OWlHeuXHGngCliFrDFo1dx1oPPfy4xfJK9oAvt2OKUK7Z6x00Pv4B
+5/fVINgcjjXJlDBexzscReP9wOB8BEDlG83Qc8yd8uOBIirVxYilxy4iEVEHnw4/
+MHNqELawmQ1lA/MXVDm1WUcIx0XQeZiOEp0zVF8k8T7WGZ9OwelgTeV0e0b9icsh
+PsUD7dc410TWAU9MKrSW
+=8PnO
 -----END PGP SIGNATURE-----
 
---Signature=_Fri__9_Mar_2012_15_40_50_+1100_k_kpnCoKBhx6fCBX--
+--Signature=_Fri__9_Mar_2012_16_40_25_+1100_U=1YSxDOxbeLSt43--
