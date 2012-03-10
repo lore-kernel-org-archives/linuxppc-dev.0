@@ -1,24 +1,24 @@
 Return-Path: <b10812@nmglablinux19.freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B4402B6ED0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 23:57:03 +1100 (EST)
-Received: from mail80-ch1 (localhost [127.0.0.1])	by mail80-ch1-R.bigfish.com
- (Postfix) with ESMTP id 835E44803F2	for
+ by ozlabs.org (Postfix) with ESMTPS id 354D8B6FC5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 23:57:20 +1100 (EST)
+Received: from mail81-ch1 (localhost [127.0.0.1])	by mail81-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 2E04F402CA	for
  <linuxppc-dev@lists.ozlabs.org>; Sat,
- 10 Mar 2012 12:56:57 +0000 (UTC)
-Received: from CH1EHSMHS024.bigfish.com (snatpool3.int.messaging.microsoft.com
- [10.43.68.227])	by mail80-ch1.bigfish.com (Postfix) with ESMTP id
- 356F346005E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 12:56:54 +0000 (UTC)
+ 10 Mar 2012 12:57:15 +0000 (UTC)
+Received: from CH1EHSMHS016.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.247])	by mail81-ch1.bigfish.com (Postfix) with ESMTP id
+ 37BF33406D1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2012 12:57:11 +0000 (UTC)
 From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH][1/3][RFC] Adding documentation for TDM
-Date: Sat, 10 Mar 2012 18:26:46 +0530
-Message-ID: <1331384206-29623-1-git-send-email-poonam.aggrwal@freescale.com>
+Subject: [PATCH][2/3][RFC] TDM Framework
+Date: Sat, 10 Mar 2012 18:27:01 +0530
+Message-ID: <1331384221-29661-1-git-send-email-poonam.aggrwal@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Sandeep Singh <Sandeep@freescale.com>,
@@ -34,390 +34,1626 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sandeep Singh <Sandeep@freescale.com>
 
-tdm-summary.txt contains general description about TDM.
-tdm-framework.txt contains specific description of TDM framework.
+TDM Framework is an attempt to provide a platform independent layer which
+can offer a standard interface  for TDM access to different client modules.
+Beneath, the framework layer can house different types of TDM drivers to handle
+various TDM devices, the hardware intricacies of the devices being completely
+taken care by TDM drivers.
+
+This framework layer will allow any type of TDM device to hook with it.
+For example Freescale controller as on MPC8315, UCC based TDM controller, or 
+any other controller.
+
+The main functions of this Framework are:
+- provides interface to TDM clients to access TDM functionalities.
+- provides standard interface for TDM drivers to hook with the framework. 
+- handles various data handling stuff and buffer management.
+
+In future this Framework will be extended to provide Interface for Line control
+devices also. For example SLIC, E1/T1 Framers etc.
+
+Limitations/Future Work
+---------------------------
+1. Presently the framework supports only Single Port channelised mode.
+2. Also the configurability options are limited which will be extended later on.
+3. Only kernel mode TDM clients are supported currently. Support for User mode
+clients will be added later. 
 
 Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
 Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 ---
-Added the documentation to so that  reviwers get the context.
- Documentation/tdm/tdm-framework.txt |  257 +++++++++++++++++++++++++++++++++++
- Documentation/tdm/tdm-summary.txt   |  103 ++++++++++++++
- 2 files changed, 360 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/tdm/tdm-framework.txt
- create mode 100644 Documentation/tdm/tdm-summary.txt
+ A couple of todos' are left in the patch, we are working on it and will be
+addressed in the updated patch set.
+ drivers/Kconfig                 |    1 +
+ drivers/Makefile                |    1 +
+ drivers/tdm/Kconfig             |   25 +
+ drivers/tdm/tdm-core.c          | 1146 +++++++++++++++++++++++++++++++++++++++
+ include/linux/mod_devicetable.h |   11 +
+ include/linux/tdm.h             |  347 ++++++++++++
+ 6 files changed, 1531 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/tdm/Kconfig
+ create mode 100644 drivers/tdm/tdm-core.c
+ create mode 100644 include/linux/tdm.h
 
-diff --git a/Documentation/tdm/tdm-framework.txt b/Documentation/tdm/tdm-framework.txt
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index ad6c1eb..25f7f5b 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -130,4 +130,5 @@ source "drivers/virt/Kconfig"
+ 
+ source "drivers/net/dpa/NetCommSw/Kconfig"
+ 
++source "drivers/tdm/Kconfig"
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index cd546eb..362b5ed 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -102,6 +102,7 @@ obj-$(CONFIG_INFINIBAND)	+= infiniband/
+ obj-$(CONFIG_SGI_SN)		+= sn/
+ obj-y				+= firmware/
+ obj-$(CONFIG_CRYPTO)		+= crypto/
++obj-$(CONFIG_TDM)		+= tdm/
+ obj-$(CONFIG_SUPERH)		+= sh/
+ obj-$(CONFIG_ARCH_SHMOBILE)	+= sh/
+ ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
+diff --git a/drivers/tdm/Kconfig b/drivers/tdm/Kconfig
 new file mode 100644
-index 0000000..9f0ca36
+index 0000000..8db2b05
 --- /dev/null
-+++ b/Documentation/tdm/tdm-framework.txt
-@@ -0,0 +1,257 @@
-+This document gives an overview of TDM framework and its interface with
-+low level drivers and upper level users/clients.
++++ b/drivers/tdm/Kconfig
+@@ -0,0 +1,25 @@
++#
++# TDM subsystem configuration
++#
 +
-+Terminology:
-+============
-+1. Adapter or TDM adapter: Refers to an instance of TDM controller/device on
-+   the system.
-+2. TDM channel: The channel is the smallest entity on which all the TDM
-+   read/write operations will occur.
-+   Technically all channels map to a set of consecutive time slots on the
-+   physical TDM frame.
-+   The channels will be dynamically created and destroyed using
-+   tdm_open_channel and tdm_close_channel.
-+3. TDM frame: Is a set of TDM channels which is transmitted sequentially over
-+   time. The frame start is identified by a frame sync signal that is briefly
-+   asserted at the beginning of each frame.
++menuconfig TDM
++	tristate "TDM support"
++	---help---
++	  More information is contained in the directory <file:Documentation/tdm/>,
++	  especially in the file called "summary" there.
++	  If you want TDM support, you should say Y here and also to the
++	  specific driver for your bus adapter(s) below.
 +
-+X----------TDM Frame 0-------------X------TDM Frame 1-----------------X
-+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
-+| 0  | 1  | 2  | 3  | 4  | ...|  n |  0 | 1  |  2 |  3 | 4  | ...| n  |...
-+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
-+<---->                             <---->
-+ch 0                               ch 0
++	  This TDM support can also be built as a module.  If so, the module
++	  will be called tdm-core.
 +
-+4. TDM client: Application/driver which registers with TDM framework to use TDM
-+   device.
-+5. TDM port: It can be seen as a virtual device exposed to a client. At a time
-+   TDM port can work in one of the follwing configurations
-+   full/fractional/E1/T1/raw.
++if TDM
 +
-+TDM modes
-+========
-+A TDM device can operate in one of the following modes:
-+1. Single port full mode - Single user/no interleaving 2. Single port
-+channelised mode (raw, E1, T1)- many users using different
-+   channels
-+3. Single port fractional mode -
-+4. Multi port mode - multiple users using different ports in different
-+   configurations.
++config TDM_DEBUG_CORE
++	bool "TDM Core debugging messages"
++	help
++	  Say Y here if you want the TDM core to produce a bunch of debug
++	  messages to the system log.  Select this if you are having a
++	  problem with TDM support and want to see more of what is going on.
 +
-+All the above configurations differ in number of TDM client they
-+support, number of TDM channels and number of TDM ports.
-+
-+Currently we are supporting only single port channelised mode. Hence
-+all the explanations below refer to channelised mode of TDM. This
-+framework can be easily extended to support other modes.
-+
-+Single port Channelised Mode
-+==============================
-+In single port channelised mode there can be only one port and each
-+channel can have only one time slot.The number of active channels can
-+be less than the maximum supported channels/slots.
-+
-+X----------TDM Frame 0-------------X------TDM Frame 1-----------------X
-+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
-+| 0  | 1  | 2  | 3  | 4  | ...|  n |  0 | 1  |  2 |  3 | 4  | ...| n  |...
-+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
-+<----><--->                        <----><--->
-+ch0   ch1                          ch0   ch1
-+client0 client1
-+
-+TDM Subsystem Overview
-+========================
-+
-+         |-----------------------|
-+         |user mode TDM clients  |
-+         |-----------------------|
-+                ||
-+-------------------------------------------------------------------
-+  tdm-dev.c     ||
-+                ||
-+                ||                           |------------------------|
-+           client register                   | kernel mode TDM clients|
-+                ||                           |------------------------|
-+                ||                                      ||
-+                ||                                      ||
-+                ||                                 client register
-+                ||                                      ||
-+                \/                                      \/
-+      ______________________________________________________________
-+      |                                                            |
-+      |                 client interface                           |
-+      |------------------------------------------------------------|
-+      |             TDM Subsystem Framework                        |
-+      |                   (tdm-core.c)                             |
-+      |                                                            |
-+      | ->buffer handling                                          |
-+      | ->interleaving/de-interleaving                             |
-+      |                                                            |
-+      |------------------------------------------------------------|
-+      |    TDM interface                  Line control interface   |
-+      |____________________________________________________________|
-+          /\                                       /\
-+          ||                                       ||
-+    device register                          device register
-+          ||                                       ||
-+          ||                                       ||
-+
-+     fsl_tdm.c                 ucc_tdm.c         slic_zarlink.c framer.c
-+--------------------------------------------------------------------------
-+_______________________    _____________________  ________    ________
-+|                     |    |                   |  |      |    |      |
-+|[h/w] TDM controller |    |UCC TDM controller |  | SLIC |    |Framer|
-+|_____________________|    |___________________|  |______|    |______|
-+
-+
-+
-+TDM Adapter Registration:
-+=========================
-+All the TDM adapter drivers will get registered as platform drivers to Linux.
-+For every instance of the TDM adapter the relevant driver will be probed.
-+As part of probe the driver will
-+1. Do the basic initialization in terms of memory allocation for various
-+   driver specific data structures, interrupts registration, etc.
-+2. Initialize the TDM adapter and configure it in default configuration.
-+   like operating mode, number of channels, channel type, etc.
-+3. Add the TDM adapter to the TDM Framework via tdm_add_adapter() API.
-+   As a result TDM framework will add this adapter to it's queue of
-+   available adapters. As part of this adapter registration TDM framework
-+   is also supplied a list of access algorithms for the particular TDM
-+   adapter.
-+4. Notifies the clients
-+
-+TDM Client Registration:
-+========================
-+Every TDM client gets itself registered with the TDM framework layer as
-+a TDM driver using the API tdm_add_driver(). As part of this the TDM
-+client supplies to the TDM framework the adapter with which it wants to
-+hook and the function pointers of attach and detach functions which
-+must be called as soon as the requested adapter is available.
-+
-+As a result the TDM framework keeps association of TDM adapters and TDM
-+client drivers.
-+As soon as this association gets established a tasklet is created for
-+the adapter which is handled by tdm_data_tasklet_fn. The primary
-+function of this tasklet acts as an interface to transfer the TDM data
-+between the TDM adapter and the TDM client drivers.
-+
-+
-+Currently TDM adaper can only be used in the default configuration.
-+ie the configuration cannot be modified by TDM clients. This will be
-+enhanced in future.
-+
-+Data handling:
-+==============
-+Some basic assumptions about data handling:
-+
-+1. As per standard voice rate of 8Khz or 8192Hz. Which means 8192
-+samples must be sent every second. So if there are multiple clients
-+sending voice data over TDM interface the rate should be such that the
-+individual samples sent by them must be transmitted at 8Kz.
-+
-+This is defined in the driver as
-+
-+#define CH_1_MS_FRAMES         8
-+
-+2. Number of milliseconds at which TDM Rx interrupts occur This is
-+basically the time for which the TDM data is sent in one Tx or Rx cycle
-+of TDM controller hardware. In one DMA we send the data for 10ms.
-+This gives enough time so that no buffer overflow or under-run occurs
-+for transmit and receive respectively.
-+
-+#define NUM_MS                  10
-+
-+3. TDM has programmable slot length (8 bits or 16 bits). This can be
-+configured by depending on the type of sample. For example the sample
-+could be 16 bit linear or 8bit u-law encoded etc. Presently only word
-+length of 16 is supported which is the default configuration.
-+
-+4. Number of channels means the total number of channels per TDM port.
-+For example for E1 mode it will be 24, for T1 it will be 32, etc.
-+There can also be raw mode, where the use case is not E1 or T1.
-+Here the number of channels can be any number as per the use case.
-+
-+The whole framework follows a triple buffer approach to make sure that
-+TDM data is played continuously at the desired rate.
-+
-+Buffers Involved:
-+=================
-+
-+1.TDM driver or device buffers:
-+These buffers are the device level buffers. They contain the TDM data
-+which is transmitted/received on the TDM physical signals. As such
-+these buffers must be allocated from driver layer so that all the hardware requirements are met.
-+As an optimized design to remove extra memcopies, the client can pass
-+the data in the same buffers. But this is only true for full mode of
-+TDM. Where the user data can be straightaway passed to the hardware for transmission.
-+Although in other cases memcopy cannot be avoided, because the
-+framework layer will have to interleave the individual channels data to
-+create the TDM frame data buffer.For channelised mode size of this buffer will be governed by:
-+
-+-number of channels
-+-number of slots per channel
-+-number of bytes per slot
-+-number of frames per ms
-+-number of ms
-+
-+For a channelised mode with single port the size of the device level
-+buffer will be:
-+
-+channels * slots per channel * bytes per slot * frames per ms * number of ms
-+
-+There will be 3 such buffers.
-+
-+2.Channel level buffers:
-+In case the TDM device is configured for multiport/multichannel the
-+Framework layer needs to maintain the data for each channel. Hence for
-+each channel opened a Buffer Descriptor ring of 3 BDs(see note below)
-+is allocated both for transmit and receive. The client reads
-+from/writes to the buffers pointed by these BD rings.
-+
-+The framework layer maintains a Data Process Tasklet per TDM device
-+which is scheduled from every Rx interrupt. The interrupt handling
-+periodicity is governed by the TDM data buffer size configured in the
-+above section. The data tasklet when scheduled, will do Rx and Tx
-+processing to copy the data from/to the channel specific interleaved
-+buffers. The TDM controller will DMA the data which is copied in the interleaved buffers or device level buffers.
-+
-+TDM framework provides the port level APIs and channel level APIs to
-+the TDM client drivers to send and receive the respective data on different TDM slots.
-+
-+
-+num of buffers = 3
-+
-+TDM client1           TDM Client2
-+
-+buf0------->buf1       buf0------->buf1
-+^            |          ^            |
-+|            V          |            V
-+----buf2------          ------buf2----
-+     |                          |
-+     |                          |
-+     |                          |
-+     V                          V
-+-----------------------------------------
-+|                                       |
-+|          DATA Tasklet                 |
-+|                                       |
-+-----------------------------------------
-+                 |
-+                 |
-+                 V
-+-----------------------------------------
-+|     TDM buffer interleaved * 3        |
-+-----------------------------------------
-+
-+
-+Not Implemented/Future work:
-+============================
-+1. TDM client will use the default configuration which is done at init time
-+   and is not configurable. In future this should be made configurable as per
-+   the needs of client.
-+2. The TDM framework still needs to be enhanced to configure the ports and
-+   their attributes. Currently only single port channelised mode is supported.
-+3. Line control interface is not available in the framework presently.
-+   Presently it offer very minimal kind of interface.
-+4. SLIC interface will be enhanced as per Zarlink Open source APIs in future.
-diff --git a/Documentation/tdm/tdm-summary.txt b/Documentation/tdm/tdm-summary.txt
++endif # TDM
+diff --git a/drivers/tdm/tdm-core.c b/drivers/tdm/tdm-core.c
 new file mode 100644
-index 0000000..d2e6eca
+index 0000000..cdda260
 --- /dev/null
-+++ b/Documentation/tdm/tdm-summary.txt
-@@ -0,0 +1,103 @@
-+Time-Division Multiplexing (TDM)
-+=================================
++++ b/drivers/tdm/tdm-core.c
+@@ -0,0 +1,1146 @@
++/* driver/tdm/tdm-core.c
++ *
++ * Copyright (C) 2012 Freescale Semiconductor, Inc, All rights reserved.
++ *
++ * TDM core is the interface between TDM clients and TDM devices.
++ * It is also intended to serve as an interface for line controld
++ * devices later on.
++ *
++ * Author:Hemant Agrawal <hemant@freescale.com>
++ *	Rajesh Gumasta <rajesh.gumasta@freescale.com>
++ *
++ * Modified by Sandeep Kr Singh <sandeep@freescale.com>
++ *		Poonam Aggarwal <poonam.aggarwal@freescale.com>
++ * 1. Added framework based initialization of device.
++ * 2. All the init/run time configuration is now done by framework.
++ * 3. Added channel level operations.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the  GNU General Public License along
++ * with this program; if not, write  to the Free Software Foundation, Inc.,
++ * 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
 +
-+TDM is a type of digital or analog multiplexing in which two or more
-+bit streams or signals are transferred apparently simultaneously as
-+sub-channels in one communication channel, but are physically taking turns on the channel.
++/* if read write debug required */
++#undef TDM_CORE_DEBUG
 +
-+The time domain is divided into several recurrent timeslots of fixed duration.
-+These timeslot are grouped together to form a channel. A sample byte or
-+data block of channel 1 is transmitted during timeslots allocated to
-+channel 1, channel 2 during timeslot for channel 2, etc.
-+
-+One TDM frame consists of multiple channels. After the last channel the
-+cycle starts all over again with a new frame, starting with the second
-+sample, byte or data block from channel 1, and so on.
-+
-+X----------TDM Frame 0-------------X------TDM Frame 1-----------------X
-+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
-+| 0  | 1  | 2  | 3  | 4  | ...|  n |  0 | 1  |  2 |  3 | 4  | ...| n  |...
-+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
-+<---->                             <---->
-+channel 0                          channel 0
-+-------------------------------------------------------------------->
-+         Increasing Time
-+
-+Physical TDM interface
-+=======================
-+
-+Physically TDM interface is a serial full duplex interface designed to
-+communicate with variety of serial devices like industry standard
-+framers, codecs, other DSPs, and microprocessors. It is typically used
-+to transfer samples in a periodic manner. The TDM consists of
-+independent transmitter and receiver sections with independent clock generation and frame synchronization.
-+
-+External TDM signals are:
-+1. TDM_TCK: TDM Transmit clock
-+2. TDM_RCK: TDM Receive clock
-+3. TDM_TFS: TDM Tx frame sync to identify frame boundary 4. TDM_RFS:
-+TDM Rx Frame sync to identify frame boundary 5. TDM_TD: TDM Tx data 6.
-+TDM_RD: TDM Rx data
-+
-+TDM is generally used to simultaneously transmit periodic data for
-+multiple users. Common use cases would be to carry voice for various
-+telephone subscribers in the telephone networks. It is widely used to
-+carry telephonic data of various industry standards like E1/T1 data, etc.
-+
-+T1 Details
-+==========
-+T1 frame consists of 24 channels of 8 bits each plus one frame alignment bit.
-+So a T1 frame has a total of 24x8 + 1 = 193 bits. Since each T1 frame
-+contains one byte of voice data for each of 24 channels and the system
-+needs to maintain a data rate of 8000 samples/sec. This would require
-+8000 frames/sec to be sent, yielding a data rate of 8000x193 bit/sec = 1.544 Mbps.
-+
-+E1 Details
-+===========
-+E1 frame consists of 32 channels each of 8 bits. Thus having a total
-+frame length of 32x8 = 256 bits. Similar to the case of T1 it has to
-+maintain a data rate of 8000 frames/sec. Thus having a data rate of
-+8000 x 256 bits/sec =
-+2.048 Mbps.
-+
-+TDM use cases
-+=============
-+
-+With SLIC kind of devices
-+=========================
-+
-+Typically TDM systems consist of TDM controller and a line control device.
-+
-+The TDM controller interfaces to the line control device through TDM
-+interface which is digital TDM multiplexed data.
-+
-+The Line controller has the functionality to interface with the TDM
-+controller at one end and interface with the analog units at the other.
-+For example if the Line control device is a SLIC kind of device.
-+The typical setup would be:
-+
-+|------------------|
-+|                  |
-+|                  | /-------\  |---------|
-+|   TDM controller |/   TDM   \ |  SLIC   |<--------> s-ch0 analog phone 1
-+|                  |\   data  / |         |<--------> s-ch1 analog phone 2
-+|                  | \-------/  |---------|<--------> s-ch2 analog phone 3
-+|                  |<    digital    >     <analog>
-+|------------------|
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/slab.h>
++#include <linux/tdm.h>
++#include <linux/init.h>
++#include <linux/idr.h>
++#include <linux/mutex.h>
++#include <linux/completion.h>
++#include <linux/hardirq.h>
++#include <linux/irqflags.h>
++#include <linux/list.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include "device/tdm_fsl.h"
 +
 +
++static DEFINE_MUTEX(tdm_core_lock);
++static DEFINE_IDR(tdm_adapter_idr);
++/* List of TDM adapters registered with TDM framework */
++LIST_HEAD(adapter_list);
 +
-+Another use case (VoIP):
-+========================
++/* List of TDM clients registered with TDM framework */
++LIST_HEAD(driver_list);
 +
-+                             Voice packets on network
-+     |--------|     |------|  _________      |------|     |------|
-+>----|        |/---\|  TDM | (         )     | TDM  |/---\|      |----->
-+<----| SLIC   |\---/|      | ( n/w     )     |      |\---/| SLIC |-----<
-+>----|        |     |------|  ---------      |------|     |      |----->
-+     |--------|      mux                      demux       |------|
++/* In case the previous data is not fetched by the client driver, the
++ * de-interleaving function will  discard the old data and rewrite the
++ * new data */
++static int use_latest_tdm_data = 1;
 +
-+In the above figure analog phones are connected to the hosts via SLICs.
-+The voice spoken on the phones is multiplexed converted into VoIP
-+packets and sent over network. At the rendering end the multiplexed
-+data is de-multiplexed and sent to respective listeners via SLIC.
++/* this tasklet is created for each adapter instance */
++static void tdm_data_tasklet_fn(unsigned long);
++
++/* tries to match client driver with the adapter */
++static int tdm_device_match(struct tdm_driver *driver, struct tdm_adapter *adap)
++{
++	/* match on an id table if there is one */
++	if (driver->id_table && driver->id_table->name[0]) {
++		if (!(strcmp(driver->id_table->name, adap->name)))
++			return (int)driver->id_table;
++	}
++	return TDM_E_OK;
++}
++
++static int tdm_attach_driver_adap(struct tdm_driver *driver,
++					struct tdm_adapter *adap)
++{
++	/* if driver is already attached to any other adapter, return*/
++	if (driver->adapter && (driver->adapter != adap))
++		return TDM_E_OK;
++
++	driver->adapter = adap;
++
++	if (driver->attach_adapter) {
++		if (driver->attach_adapter(adap) < 0)
++			/* We ignore the return code; if it fails, too bad */
++			pr_err("attach_adapter failed for driver [%s]\n",
++				driver->name);
++	}
++	adap->drv_count++;
++
++	if (!adap->tasklet_conf) {
++		tasklet_init(&adap->tdm_data_tasklet, tdm_data_tasklet_fn,
++						(unsigned long)adap);
++		adap->tasklet_conf = 1;
++	}
++
++	return TDM_E_OK;
++}
++
++/* Detach client driver and adapter */
++static int tdm_detach_driver_adap(struct tdm_driver *driver,
++					struct tdm_adapter *adap)
++{
++	int res = TDM_E_OK;
++
++	if (!driver->adapter || (driver->adapter != adap))
++		return TDM_E_OK;
++
++	if (!driver->detach_adapter)
++		return TDM_E_OK;
++
++	adap->drv_count--;
++
++	/* If no more driver is registed with the adapter*/
++	if (!adap->drv_count && adap->tasklet_conf) {
++		tasklet_disable(&adap->tdm_data_tasklet);
++		tasklet_kill(&adap->tdm_data_tasklet);
++		adap->tasklet_conf = 0;
++	}
++
++	if (driver->detach_adapter) {
++		if (driver->detach_adapter(adap))
++			pr_err("detach_adapter failed for driver [%s]\n",
++				driver->name);
++	}
++
++	driver->adapter = NULL;
++	return res;
++}
++
++/* TDM adapter Registration/De-registration with TDM framework */
++
++static int tdm_register_adapter(struct tdm_adapter *adap)
++{
++	int res = TDM_E_OK;
++	struct tdm_driver *driver, *next;
++
++	if (!adap) {
++		pr_err("%s:Invalid handle\n", __func__);
++		return -EINVAL;
++	}
++
++	mutex_init(&adap->adap_lock);
++	INIT_LIST_HEAD(&adap->myports);
++	spin_lock_init(&adap->portlist_lock);
++
++	adap->drv_count = 0;
++	adap->tasklet_conf = 0;
++
++	list_add_tail(&adap->list, &adapter_list);
++
++	/* initialization of driver by framework in default configuration */
++	init_config_adapter(adap);
++
++	/* Notify drivers */
++	pr_info("adapter [%s] registered\n", adap->name);
++	mutex_lock(&tdm_core_lock);
++	list_for_each_entry_safe(driver, next, &driver_list, list) {
++		if (tdm_device_match(driver, adap)) {
++			res = tdm_attach_driver_adap(driver, adap);
++			pr_info(
++			"Driver(ID=%d) is attached with Adapter %s(ID = %d)\n",
++				driver->id, adap->name, adap->id);
++		}
++	}
++	mutex_unlock(&tdm_core_lock);
++
++	return res;
++}
++
++/*
++ * tdm_add_adapter - declare tdm adapter, use dynamic device number
++ * @adapter: the adapter to add
++ * Context: can sleep
++ *
++ * This routine is used to declare a TDM adapter
++ * When this returns zero, a new device number will be allocated and stored
++ * in adap->id, and the specified adapter became available for the clients.
++ * Otherwise, a negative errno value is returned.
++ */
++int tdm_add_adapter(struct tdm_adapter *adapter)
++{
++	int id, res = TDM_E_OK;
++	if (!adapter) {
++		pr_err("%s:Invalid handle\n", __func__);
++		return -EINVAL;
++	}
++
++retry:
++	if (idr_pre_get(&tdm_adapter_idr, GFP_KERNEL) == 0)
++		return -ENOMEM;
++
++	mutex_lock(&tdm_core_lock);
++	res = idr_get_new(&tdm_adapter_idr, adapter, &id);
++	mutex_unlock(&tdm_core_lock);
++
++	if (res < 0) {
++		if (res == -EAGAIN)
++			goto retry;
++		return res;
++	}
++
++	adapter->id = id;
++	return tdm_register_adapter(adapter);
++}
++EXPORT_SYMBOL(tdm_add_adapter);
++
++
++/**
++ * tdm_del_adapter - unregister TDM adapter
++ * @adap: the adapter being unregistered
++ *
++ * This unregisters an TDM adapter which was previously registered
++ * by @tdm_add_adapter.
++ */
++int tdm_del_adapter(struct tdm_adapter *adap)
++{
++	int res = TDM_E_OK;
++	struct tdm_adapter *found;
++	struct tdm_driver *driver, *next;
++
++	if (!adap) {
++		pr_err("%s:Invalid handle\n", __func__);
++		return -EINVAL;
++	}
++
++	/* First make sure that this adapter was ever added */
++	mutex_lock(&tdm_core_lock);
++	found = idr_find(&tdm_adapter_idr, adap->id);
++	mutex_unlock(&tdm_core_lock);
++	if (found != adap) {
++		pr_err("tdm-core: attempting to delete unregistered "
++			 "adapter [%s]\n", adap->name);
++		return -EINVAL;
++	}
++
++	/*disable and kill the data processing tasklet */
++	if (adap->tasklet_conf) {
++		tasklet_disable(&adap->tdm_data_tasklet);
++		tasklet_kill(&adap->tdm_data_tasklet);
++		adap->tasklet_conf = 0;
++	}
++
++	/* Detach any active ports. This can't fail, thus we do not
++	   checking the returned value. */
++	mutex_lock(&tdm_core_lock);
++	list_for_each_entry_safe(driver, next, &driver_list, list) {
++		if (tdm_device_match(driver, adap)) {
++			tdm_detach_driver_adap(driver, adap);
++			pr_info(
++			"Driver(ID=%d) is detached from Adapter %s(ID = %d)\n",
++				 driver->id, adap->name, adap->id);
++		}
++	}
++	mutex_unlock(&tdm_core_lock);
++
++	mutex_lock(&tdm_core_lock);
++	idr_remove(&tdm_adapter_idr, adap->id);
++	mutex_unlock(&tdm_core_lock);
++
++	pr_debug("adapter [%s] unregistered\n", adap->name);
++
++	list_del(&adap->list);
++	/* Clear the device structure in case this adapter is ever going to be
++	   added again */
++	adap->parent = NULL;
++
++	return res;
++}
++EXPORT_SYMBOL(tdm_del_adapter);
++
++/* TDM Client Drivers Registration/De-registration Functions */
++int tdm_register_driver(struct tdm_driver *driver)
++{
++	int res = TDM_E_OK;
++	struct tdm_adapter *adap, *next;
++
++	list_add_tail(&driver->list, &driver_list);
++
++	mutex_lock(&tdm_core_lock);
++	/* Walk the adapters that are already present */
++	list_for_each_entry_safe(adap, next, &adapter_list, list) {
++		if (tdm_device_match(driver, adap)) {
++			res = tdm_attach_driver_adap(driver, adap);
++			pr_info("TDM Driver(ID=%d)is attached with Adapter"
++				"%s(ID = %d) drv_count=%d", driver->id,
++				adap->name, adap->id, adap->drv_count);
++		break;
++		}
++	}
++	mutex_unlock(&tdm_core_lock);
++
++	return res;
++}
++EXPORT_SYMBOL(tdm_register_driver);
++
++/*
++ * tdm_unregister_driver - unregister TDM client driver from TDM framework
++ * @driver: the driver being unregistered
++ */
++void tdm_unregister_driver(struct tdm_driver *driver)
++{
++	if (!driver) {
++		pr_err("%s:Invalid handle\n", __func__);
++		return;
++	}
++       /* A driver can register to only one adapter,
++	* so no need to browse the list */
++	mutex_lock(&tdm_core_lock);
++	tdm_detach_driver_adap(driver, driver->adapter);
++	mutex_unlock(&tdm_core_lock);
++
++	list_del(&driver->list);
++
++	pr_debug("tdm-core: driver [%s] unregistered\n", driver->name);
++}
++EXPORT_SYMBOL(tdm_unregister_driver);
++
++/* TDM Framework init and exit */
++static int __init tdm_init(void)
++{
++	pr_info("%s\n", __func__);
++	return TDM_E_OK;
++}
++
++static void __exit tdm_exit(void)
++{
++	pr_info("%s\n", __func__);
++	return;
++}
++
++/* We must initialize early, because some subsystems register tdm drivers
++ * in subsys_initcall() code, but are linked (and initialized) before tdm.
++ */
++postcore_initcall(tdm_init);
++module_exit(tdm_exit);
++
++
++/* Interface to the tdm device/adapter */
++
++/* tdm_adap_send - issue a TDM write
++ * @adap: Handle to TDM device
++ * @buf: Data that will be written to the TDM device
++ * @count: How many bytes to write
++ *
++ * Returns negative errno, or else the number of bytes written.
++ */
++int tdm_adap_send(struct tdm_adapter *adap, void **buf, int count)
++{
++	int res;
++
++	if ((adap == NULL) || (buf == NULL)) { /* invalid handle*/
++		pr_err("%s: Invalid Handle\n", __func__);
++		return -ENXIO;
++	}
++
++	if (adap->algo->tdm_write)
++		res = adap->algo->tdm_write(adap, buf, count);
++	else {
++		pr_err("TDM level write not supported\n");
++		return -EOPNOTSUPP;
++	}
++
++	/* If everything went ok (i.e. frame transmitted), return #bytes
++	   transmitted, else error code. */
++	return (res == 1) ? count : res;
++}
++EXPORT_SYMBOL(tdm_adap_send);
++
++/**
++ * tdm_adap_recv - issue a TDM read
++ * @adap: Handle to TDM device
++ * @buf: Where to store data read from TDM device
++ *
++ * Returns negative errno, or else the number of bytes read.
++ */
++int tdm_adap_recv(struct tdm_adapter *adap, void **buf)
++{
++	int res;
++
++	if (adap->algo->tdm_read)
++		res = adap->algo->tdm_read(adap, (u16 **)buf);
++	else {
++		pr_err("TDM level read not supported\n");
++		return -EOPNOTSUPP;
++	}
++	/* If everything went ok (i.e. frame received), return #bytes
++	   transmitted, else error code. */
++	return res;
++}
++
++/**
++ * tdm_adap_get_write_buf - get next write TDM device buffer
++ * @adap: Handle to TDM device
++ * @buf: pointer to TDM device buffer
++ *
++ * Returns negative errno, or else size of the write buffer.
++ */
++int tdm_adap_get_write_buf(struct tdm_adapter *adap, void **buf)
++{
++	int res;
++
++	if (adap->algo->tdm_get_write_buf) {
++		res = adap->algo->tdm_get_write_buf(adap, (u16 **)buf);
++	} else {
++		pr_err("TDM level write buf get not supported\n");
++		return -EOPNOTSUPP;
++	}
++	/* If everything went ok (i.e. 1 msg received), return #bytes
++	   transmitted, else error code. */
++	return res;
++}
++EXPORT_SYMBOL(tdm_adap_get_write_buf);
++
++int tdm_adap_enable(struct tdm_driver *drv)
++{
++	int res;
++	struct tdm_adapter *adap;
++	if (drv == NULL) { /* invalid handle*/
++		pr_err("%s: Invalid Handle\n", __func__);
++		return -ENXIO;
++	}
++	adap = drv->adapter;
++
++	if (adap->algo->tdm_enable) {
++		res = adap->algo->tdm_enable(adap);
++	} else {
++		pr_err("TDM level enable not supported\n");
++		return -EOPNOTSUPP;
++	}
++	return res;
++}
++EXPORT_SYMBOL(tdm_adap_enable);
++
++int tdm_adap_disable(struct tdm_driver *drv)
++{
++	int res;
++	struct tdm_adapter *adap;
++	if (drv == NULL) { /* invalid handle*/
++		pr_err("%s: Invalid Handle\n", __func__);
++		return -ENXIO;
++	}
++	adap = drv->adapter;
++
++	if (adap->algo->tdm_disable) {
++		res = adap->algo->tdm_disable(adap);
++	} else {
++		pr_err("TDM level enable not supported\n");
++		return -EOPNOTSUPP;
++	}
++	return res;
++}
++EXPORT_SYMBOL(tdm_adap_disable);
++
++struct tdm_adapter *tdm_get_adapter(int id)
++{
++	struct tdm_adapter *adapter;
++
++	mutex_lock(&tdm_core_lock);
++	adapter = idr_find(&tdm_adapter_idr, id);
++	if (adapter && !try_module_get(adapter->owner))
++		adapter = NULL;
++
++	mutex_unlock(&tdm_core_lock);
++
++	return adapter;
++}
++EXPORT_SYMBOL(tdm_get_adapter);
++
++void tdm_put_adapter(struct tdm_adapter *adap)
++{
++	module_put(adap->owner);
++}
++EXPORT_SYMBOL(tdm_put_adapter);
++
++
++/* Port Level APIs of TDM Framework */
++unsigned int tdm_port_open(struct tdm_driver *driver, void **h_port)
++{
++	struct tdm_port *port;
++	struct tdm_adapter *adap;
++	unsigned long		flags;
++	int res = TDM_E_OK;
++
++	if (driver == NULL) {
++		pr_err("driver NULL\n");
++		return -ENODEV;
++	}
++	if (driver->adapter == NULL) {
++		pr_err("adapter NULL\n");
++		return -ENODEV;
++	}
++
++	adap = tdm_get_adapter(driver->adapter->id);
++	if (!adap)
++		return -ENODEV;
++
++	/* This creates an anonymous tdm_port, which may later be
++	 * pointed to some slot.
++	 *
++	 */
++	port = kzalloc(sizeof(*port), GFP_KERNEL);
++	if (!port) {
++		res = -ENOMEM;
++		goto out;
++	}
++
++	init_waitqueue_head(&port->ch_wait_queue);
++
++
++	port->rx_max_frames = NUM_SAMPLES_PER_FRAME;
++	port->port_cfg.port_mode = e_TDM_PORT_CHANNELIZED;
++
++	port->in_use = 1;
++
++	snprintf(driver->name, TDM_NAME_SIZE, "tdm-dev");
++	port->driver = driver;
++	port->adapter = adap;
++
++	spin_lock_irqsave(&adap->portlist_lock, flags);
++	list_add_tail(&port->list, &adap->myports);
++	spin_unlock_irqrestore(&adap->portlist_lock, flags);
++
++	INIT_LIST_HEAD(&port->mychannels);
++
++	*h_port = port;
++
++out:
++	return res;
++}
++EXPORT_SYMBOL(tdm_port_open);
++
++unsigned int tdm_port_close(void *h_port)
++{
++	struct tdm_adapter *adap;
++	struct tdm_driver *driver;
++	struct tdm_port *port;
++	struct tdm_channel *temp, *channel;
++	unsigned long		flags;
++	int res = TDM_E_OK;
++	port = (struct tdm_port *)h_port;
++
++	if (port == NULL) { /* invalid handle*/
++		pr_err("Invalid Handle");
++		return -ENXIO;
++	}
++
++	driver =  port->driver;
++
++	if (driver == NULL) {
++		pr_err("driver NULL\n");
++		res = -ENODEV;
++		goto out;
++	}
++	if (driver->adapter == NULL) {
++		pr_err("adapter NULL\n");
++		res = -ENODEV;
++		goto out;
++	}
++
++	list_for_each_entry_safe(channel, temp, &port->mychannels, list) {
++	if (channel)
++		if (channel->in_use) {
++			pr_err("%s: Cannot close port. Channel in use\n",
++								__func__);
++			res = -ENXIO;
++			goto out;
++			}
++	}
++	adap = driver->adapter;
++
++	spin_lock_irqsave(&adap->portlist_lock, flags);
++	list_del(&port->list);
++	spin_unlock_irqrestore(&adap->portlist_lock, flags);
++
++	if (port->p_port_data != NULL) {
++		int i;
++		struct tdm_bd *ch_bd;
++
++		/* If the tdm is in channelised mode,
++		de-allocate the channelised buffer */
++		ch_bd = &(port->p_port_data->rx_data_fifo[0]);
++		for (i = 0; ch_bd && i < TDM_CH_RX_BD_RING_SIZE; i++) {
++			ch_bd->flag = 0;
++			ch_bd++;
++		}
++		ch_bd = &(port->p_port_data->tx_data_fifo[0]);
++		for (i = 0; ch_bd && i < TDM_CH_TX_BD_RING_SIZE; i++) {
++			ch_bd->flag = 0;
++			ch_bd++;
++		}
++		kfree(port->p_port_data);
++	}
++	kfree(port);
++	return res;
++out:
++	if (port)
++		kfree(port->p_port_data);
++	kfree(port);
++	return res;
++}
++EXPORT_SYMBOL(tdm_port_close);
++
++unsigned int tdm_channel_read(void *h_port, void *h_channel,
++				void *p_data, u16 *size)
++{
++	struct tdm_port *port;
++	struct tdm_channel *channel;
++	struct tdm_bd *rx_bd;
++	unsigned long flags;
++	int i, res = TDM_E_OK;
++	unsigned short *buf, *buf1;
++	port = (struct tdm_port *)h_port;
++	channel = (struct tdm_channel *)h_channel;
++
++	if ((port && channel) == 0) { /* invalid handle*/
++		pr_err("%s:Invalid Handle\n", __func__);
++		return -ENXIO;
++	}
++
++	if (!port->in_use)
++		return -EIO;
++	if (!channel->p_ch_data || !channel->in_use)
++		return -EIO;
++
++	spin_lock_irqsave(&channel->p_ch_data->rx_channel_lock, flags);
++	rx_bd = channel->p_ch_data->rx_out_data;
++
++	if (rx_bd->flag) {
++		*size = rx_bd->length;
++		buf = (u16 *) p_data;
++		buf1 = (u16 *)rx_bd->p_data;
++		for (i = 0; i < NUM_SAMPLES_PER_FRAME; i++)
++			buf[i] = buf1[i];
++		rx_bd->flag = 0;
++		rx_bd->offset = 0;
++		channel->p_ch_data->rx_out_data = (rx_bd->wrap) ?
++				channel->p_ch_data->rx_data_fifo : rx_bd + 1;
++
++	} else {
++		spin_unlock_irqrestore(&channel->p_ch_data->rx_channel_lock,
++						flags);
++		pr_info("No Data Available");
++		return -EAGAIN;
++	}
++	spin_unlock_irqrestore(&channel->p_ch_data->rx_channel_lock, flags);
++
++	return res;
++}
++EXPORT_SYMBOL(tdm_channel_read);
++
++
++unsigned int tdm_channel_write(void *h_port, void *h_channel,
++				void *p_data, u16 size)
++{
++	struct tdm_port *port;
++	struct tdm_channel *channel;
++	struct tdm_bd *tx_bd;
++	unsigned long flags;
++	int err = TDM_E_OK;
++	port = (struct tdm_port *)h_port;
++	channel = (struct tdm_channel *)h_channel;
++#ifdef TDM_CORE_DEBUG
++	bool data_flag = 0;
++#endif
++
++	if ((port && channel) == 0) { /* invalid handle*/
++		pr_err("Invalid Handle");
++		return -ENXIO;
++	}
++
++	if (p_data == NULL) { /* invalid data*/
++		pr_err("Invalid Data");
++		return -EFAULT;
++	}
++
++	if (!port->in_use)
++		return -EIO;
++	if (!channel->p_ch_data || !channel->in_use)
++		return -EIO;
++
++	spin_lock_irqsave(&channel->p_ch_data->tx_channel_lock, flags);
++	tx_bd = channel->p_ch_data->tx_in_data;
++
++	if (!tx_bd->flag) {
++		tx_bd->length = size;
++		memcpy(tx_bd->p_data, p_data,
++			size * port->adapter->adapt_cfg.slot_width);
++		tx_bd->flag = 1;
++		tx_bd->offset = 0;
++		channel->p_ch_data->tx_in_data = (tx_bd->wrap) ?
++				channel->p_ch_data->tx_data_fifo : tx_bd+1;
++		port->port_stat.tx_pkt_count++;
++#ifdef TDM_CORE_DEBUG
++		data_flag = 1;
++#endif
++	} else {
++		spin_unlock_irqrestore(&channel->p_ch_data->tx_channel_lock,
++						flags);
++		port->port_stat.tx_pkt_drop_count++;
++		pr_err("E_NO_MEMORY -Failed Transmit");
++		return -ENOMEM;
++	}
++	spin_unlock_irqrestore(&channel->p_ch_data->tx_channel_lock, flags);
++
++#ifdef	TDM_CORE_DEBUG
++	if (data_flag) {
++		int k;
++		pr_info("\nTX port:%d - Write - Port TX-%d\n",
++						port->port_id, size);
++		for (k = 0; k < size; k++)
++			pr_info("%x", p_data[k]);
++		pr_info("\n");
++	}
++#endif
++	return err;
++}
++EXPORT_SYMBOL(tdm_channel_write);
++
++wait_queue_head_t *tdm_port_get_wait_queue(void  *h_port)
++{
++	struct tdm_port *port;
++	port = (struct tdm_port *)h_port;
++
++	if (port == NULL) { /* invalid handle*/
++		pr_err("Invalid Handle");
++		return NULL;
++	}
++
++	return &port->ch_wait_queue;
++
++}
++EXPORT_SYMBOL(tdm_port_get_wait_queue);
++
++/* Driver Function for select and poll. Based on Port no, it sleeps on
++ * waitqueue */
++unsigned int tdm_port_poll(void *h_port, unsigned int wait_time)
++{
++	struct tdm_port *port;
++	unsigned long timeout = msecs_to_jiffies(wait_time);
++	port = (struct tdm_port *)h_port;
++
++	if (port == NULL) { /* invalid handle*/
++		pr_err("%s: Invalid Handle\n", __func__);
++		return -ENXIO;
++	}
++	if (!port->p_port_data || !port->in_use)
++		return -EIO;
++
++	if (port->p_port_data->rx_out_data->flag) {
++		pr_debug("Data Available");
++		return TDM_E_OK;
++	}
++	if (timeout) {
++		wait_event_interruptible_timeout(port->ch_wait_queue,
++					  port->p_port_data->rx_out_data->flag,
++					  timeout);
++
++		if (port->p_port_data->rx_out_data->flag) {
++			pr_debug("Data Available");
++			return TDM_E_OK;
++		}
++	}
++	return -EAGAIN;
++}
++EXPORT_SYMBOL(tdm_port_poll);
++
++unsigned int tdm_port_get_stats(void *h_port, struct tdm_port_stats *portStat)
++{
++	struct tdm_port *port;
++	int port_num;
++	port = (struct tdm_port *)h_port;
++
++	if (port == NULL || portStat == NULL) { /* invalid handle*/
++		pr_err("Invalid Handle");
++		return -ENXIO;
++	}
++	port_num =  port->port_id;
++
++	memcpy(portStat, &port->port_stat, sizeof(struct tdm_port_stats));
++
++	pr_info("TDM Port %d Get Stats", port_num);
++
++	return TDM_E_OK;
++}
++EXPORT_SYMBOL(tdm_port_get_stats);
++
++/* Data handling functions */
++
++static int tdm_data_rx_deinterleave(struct tdm_adapter *adap)
++{
++	struct tdm_port *port, *next;
++	struct tdm_channel *channel, *temp;
++	struct tdm_bd	*ch_bd;
++
++	int i, buf_size, ch_data_len;
++	u16 *input_tdm_buffer;
++	u16 *pcm_buffer;
++	int slot_width;
++	int frame_ch_data_size;
++	bool ch_data;
++	int bytes_in_fifo_per_frame;
++	int bytes_slot_offset;
++
++	ch_data_len = NUM_SAMPLES_PER_FRAME;
++	frame_ch_data_size = NUM_SAMPLES_PER_FRAME;
++	ch_data = 0;
++
++	if (!adap) { /* invalid handle*/
++		pr_err("%s: Invalid Handle\n", __func__);
++		return -ENXIO;
++	}
++
++	slot_width = adap->adapt_cfg.slot_width;
++	buf_size = tdm_adap_recv(adap, (void **)&input_tdm_buffer);
++	if (buf_size <= 0 || !input_tdm_buffer)
++		return -EINVAL;
++
++	bytes_in_fifo_per_frame = buf_size/frame_ch_data_size;
++	bytes_slot_offset = bytes_in_fifo_per_frame/slot_width;
++
++	/* de-interleaving for all ports*/
++	list_for_each_entry_safe(port, next, &adap->myports, list) {
++
++		/* if the port is not open */
++		if (!port->in_use)
++			continue;
++
++		list_for_each_entry_safe(channel, temp, &port->mychannels,
++							list) {
++		/* if the channel is not open */
++		if (!channel->in_use || !channel->p_ch_data)
++			continue;
++		ch_bd = channel->p_ch_data->rx_in_data;
++		spin_lock(&channel->p_ch_data->rx_channel_lock);
++			/*if old data is to be discarded */
++		if (use_latest_tdm_data)
++			if (ch_bd->flag) {
++				ch_bd->flag = 0;
++				ch_bd->offset = 0;
++				if (ch_bd == channel->p_ch_data->rx_out_data)
++					channel->p_ch_data->rx_out_data =
++						ch_bd->wrap ?
++						channel->p_ch_data->rx_data_fifo
++						: ch_bd+1;
++					port->port_stat.rx_pkt_drop_count++;
++				}
++			/* if the bd is empty */
++			if (!ch_bd->flag) {
++				if (ch_bd->offset == 0)
++					ch_bd->length = port->rx_max_frames;
++
++				pcm_buffer = ch_bd->p_data + ch_bd->offset;
++				/* De-interleaving the data */
++				for (i = 0; i < ch_data_len; i++) {
++					pcm_buffer[i]
++					= input_tdm_buffer[i*bytes_slot_offset +
++						channel->ch_id];
++				}
++				ch_bd->offset += ch_data_len * slot_width;
++
++				if (ch_bd->offset >=
++					(ch_bd->length - frame_ch_data_size)*
++						(adap->adapt_cfg.slot_width)) {
++					ch_bd->flag = 1;
++					ch_bd->offset = 0;
++					channel->p_ch_data->rx_in_data =
++						ch_bd->wrap ?
++						channel->p_ch_data->rx_data_fifo
++						: ch_bd+1;
++					ch_data = 1;
++				}
++			} else {
++				port->port_stat.rx_pkt_drop_count++;
++			}
++		spin_unlock(&channel->p_ch_data->rx_channel_lock);
++		}
++
++		if (ch_data) {
++			/*	Wake up the Port Data Poll event */
++			wake_up_interruptible(&port->ch_wait_queue);
++#ifdef	TDM_CORE_DEBUG
++			pr_info("Port RX-%d-%d\n", channel->ch_id, ch_data_len);
++			for (i = 0; i < ch_data_len; i++)
++				pr_info("%x", pcm_buffer[i]);
++			pr_info("\n");
++#endif
++			port->port_stat.rx_pkt_count++;
++			ch_data = 0;
++		}
++	}
++	return TDM_E_OK;
++}
++
++static int tdm_data_tx_interleave(struct tdm_adapter *adap)
++{
++	struct tdm_port *port, *next;
++	struct tdm_channel *channel, *temp;
++	struct tdm_bd	*ch_bd;
++	int i, buf_size, ch_data_len = NUM_SAMPLES_PER_FRAME;
++	bool last_data = 0;
++	u16 *output_tdm_buffer;
++	u16 *pcm_buffer;
++	int frame_ch_data_size = NUM_SAMPLES_PER_FRAME;
++	int bytes_in_fifo_per_frame;
++	int bytes_slot_offset;
++
++#ifdef TDM_CORE_DEBUG
++	u8	data_flag = 0;
++#endif
++
++	if (adap == NULL) { /* invalid handle*/
++		pr_err("%s: Invalid Handle\n", __func__);
++		return -ENXIO;
++	}
++
++	buf_size = tdm_adap_get_write_buf(adap, (void **)&output_tdm_buffer);
++	if (buf_size <= 0 || !output_tdm_buffer)
++		return -EINVAL;
++
++	bytes_in_fifo_per_frame = buf_size/frame_ch_data_size;
++	bytes_slot_offset = bytes_in_fifo_per_frame/adap->adapt_cfg.slot_width;
++
++
++	memset(output_tdm_buffer, 0, sizeof(buf_size));
++
++	list_for_each_entry_safe(port, next, &adap->myports, list) {
++
++		/* check if the port is open */
++		if (!port->in_use)
++			continue;
++
++		list_for_each_entry_safe(channel, temp, &port->mychannels,
++								list) {
++		pr_debug("TX-Tdm %d (slots-)", channel->ch_id);
++
++
++		/* if the channel is open */
++		if (!channel->in_use || !channel->p_ch_data)
++			continue;
++
++		spin_lock(&channel->p_ch_data->tx_channel_lock);
++		if (!channel->in_use || !channel->p_ch_data)
++			continue;
++			ch_bd = channel->p_ch_data->tx_out_data;
++			if (ch_bd->flag) {
++				pcm_buffer = (u16 *)((uint8_t *)ch_bd->p_data +
++						ch_bd->offset);
++				/*if the buffer has less frames than required */
++				if (frame_ch_data_size >=
++					((ch_bd->length) - (ch_bd->offset/
++						adap->adapt_cfg.slot_width))) {
++					ch_data_len =
++					(ch_bd->length) - (ch_bd->offset/
++						adap->adapt_cfg.slot_width);
++					last_data = 1;
++				} else {
++					ch_data_len = frame_ch_data_size;
++				}
++				/* Interleaving the data */
++				for (i = 0; i < ch_data_len; i++) {
++					/* TODO- need to be generic for any size
++					   assignment*/
++					output_tdm_buffer[channel->ch_id +
++						bytes_slot_offset * i] =
++								pcm_buffer[i];
++				}
++				/* If all the data of this buffer is
++							transmitted */
++				if (last_data) {
++					ch_bd->flag = 0;
++					ch_bd->offset = 0;
++					channel->p_ch_data->tx_out_data =
++						ch_bd->wrap ?
++						channel->p_ch_data->tx_data_fifo
++						: ch_bd+1;
++					port->port_stat.tx_pkt_conf_count++;
++				} else {
++					ch_bd->offset += ch_data_len *
++						(adap->adapt_cfg.slot_width);
++				}
++#ifdef	TDM_CORE_DEBUG
++				data_flag = 1;
++#endif
++			}
++		spin_unlock(&channel->p_ch_data->tx_channel_lock);
++		}
++	}
++
++#ifdef	TDM_CORE_DEBUG
++	if (data_flag) {
++		pr_info("TX-TDM Interleaved Data-\n");
++		for (i = 0; i < 64; i++)
++			pr_info("%x", output_tdm_buffer[i]);
++		pr_info("\n");
++	  }
++#endif
++	return TDM_E_OK;
++}
++
++/* Channel Level APIs of TDM Framework */
++int tdm_channel_open(u16 chanid, u16 ch_width, struct tdm_port *port,
++				void **h_channel)
++{
++	struct tdm_channel *channel, *temp;
++	unsigned long		flags;
++	struct tdm_ch_data	*p_ch_data;
++	int res = TDM_E_OK;
++
++	if (!(port && h_channel)) {
++		pr_err("%s: Invalid handle\n", __func__);
++		return -EINVAL;
++	}
++
++	if (ch_width != 1) {
++		pr_err("%s: Mode not supported\n", __func__);
++		return -EINVAL;
++	}
++
++	list_for_each_entry_safe(channel, temp, &port->mychannels, list) {
++		if (channel->ch_id == chanid) {
++			pr_err("%s: Channel %d already open\n",
++						__func__, chanid);
++			return -EINVAL;
++		}
++	}
++
++	channel = kzalloc(sizeof(*channel), GFP_KERNEL);
++	if (!channel) {
++		res = -ENOMEM;
++		goto out;
++	}
++
++	p_ch_data = kzalloc(sizeof(struct tdm_port_data), GFP_KERNEL);
++	if (!p_ch_data) {
++		res = -ENOMEM;
++		goto outdata;
++	}
++
++	p_ch_data->rx_data_fifo[TDM_CH_RX_BD_RING_SIZE-1].wrap = 1;
++	p_ch_data->tx_data_fifo[TDM_CH_TX_BD_RING_SIZE-1].wrap = 1;
++
++	p_ch_data->rx_in_data = p_ch_data->rx_data_fifo;
++	p_ch_data->rx_out_data = p_ch_data->rx_data_fifo;
++	p_ch_data->tx_in_data = p_ch_data->tx_data_fifo;
++	p_ch_data->tx_out_data = p_ch_data->tx_data_fifo;
++	spin_lock_init(&p_ch_data->rx_channel_lock);
++	spin_lock_init(&p_ch_data->tx_channel_lock);
++
++	channel->p_ch_data = p_ch_data;
++
++	channel->ch_id = chanid;
++	channel->ch_cfg.first_slot = chanid;
++	channel->ch_cfg.num_slots = 1;	/* This is 1 for channelized mode and
++						configurable for other modes */
++	channel->port = port;
++	channel->in_use = 1;
++
++	spin_lock_irqsave(&port->ch_list_lock, flags);
++	list_add_tail(&channel->list, &port->mychannels);
++	spin_unlock_irqrestore(&port->ch_list_lock, flags);
++
++	*h_channel = channel;
++
++	return res;
++
++outdata:
++	kfree(channel);
++out:
++	return res;
++}
++EXPORT_SYMBOL(tdm_channel_open);
++
++int tdm_channel_close(u16 chanid, u16 ch_width, struct tdm_port *port,
++				struct tdm_channel *h_channel)
++{
++	struct tdm_channel *channel;
++	unsigned long		flags;
++	int res = TDM_E_OK;
++	channel = h_channel;
++
++	if (!(port && channel)) {
++		pr_err("%s: Invalid handle\n", __func__);
++		res = -EINVAL;
++		goto out;
++	}
++
++	if (ch_width != 1) {
++		pr_err("%s: Mode not supported\n", __func__);
++		res = -EINVAL;
++		goto out;
++	}
++
++	spin_lock_irqsave(&port->ch_list_lock, flags);
++	list_del(&channel->list);
++	spin_unlock_irqrestore(&port->ch_list_lock, flags);
++
++out:
++	if (channel)
++		kfree(channel->p_ch_data);
++	kfree(channel);
++	return res;
++}
++EXPORT_SYMBOL(tdm_channel_close);
++
++void init_config_adapter(struct tdm_adapter *adap)
++{
++	struct fsl_tdm_adapt_cfg default_adapt_cfg = {
++		.loopback = e_TDM_PROCESS_NORMAL,
++		.num_ch = NUM_CHANNELS,
++		.ch_size_type = CHANNEL_16BIT_LIN,
++		.frame_len = NUM_SAMPLES_PER_FRAME,
++		.num_frames = NUM_SAMPLES_PER_FRAME,
++		.adap_mode = e_TDM_ADAPTER_MODE_NONE
++			 };
++
++	default_adapt_cfg.slot_width = default_adapt_cfg.ch_size_type/3 + 1;
++
++	memcpy(&adap->adapt_cfg, &default_adapt_cfg,
++		sizeof(struct fsl_tdm_adapt_cfg));
++
++	return;
++}
++EXPORT_SYMBOL(init_config_adapter);
++
++static void tdm_data_tasklet_fn(unsigned long data)
++{
++	struct tdm_adapter *adapter;
++	adapter = (struct tdm_adapter *)data;
++	if (adapter != NULL) {
++		tdm_data_tx_interleave(adapter);
++		tdm_data_rx_deinterleave(adapter);
++	}
++}
++
++
++MODULE_AUTHOR("Hemant Agrawal <hemant@freescale.com> and "
++	"Rajesh Gumasta <rajesh.gumasta@freescale.com>");
++MODULE_DESCRIPTION("TDM Driver Framework Core");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index ae28e93..dc1a655 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -416,6 +416,17 @@ struct i2c_device_id {
+ 			__attribute__((aligned(sizeof(kernel_ulong_t))));
+ };
+ 
++/* tdm */
++
++#define TDM_NAME_SIZE   20
++#define TDM_MODULE_PREFIX "tdm:"
++
++struct tdm_device_id {
++	char name[TDM_NAME_SIZE];
++	kernel_ulong_t driver_data      /* Data private to the driver */
++			__attribute__((aligned(sizeof(kernel_ulong_t))));
++};
++
+ /* spi */
+ 
+ #define SPI_NAME_SIZE	32
+diff --git a/include/linux/tdm.h b/include/linux/tdm.h
+new file mode 100644
+index 0000000..8cf4ef5
+--- /dev/null
++++ b/include/linux/tdm.h
+@@ -0,0 +1,347 @@
++/* include/linux/tdm.h
++ *
++ * Copyright (C) 2012 Freescale Semiconductor, Inc, All rights reserved.
++ *
++ * tdm.h - definitions for the tdm-device framework interface
++ *
++ * Author:Hemant Agrawal <hemant@freescale.com>
++ *	Rajesh Gumasta <rajesh.gumasta@freescale.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the  GNU General Public License along
++ * with this program; if not, write  to the Free Software Foundation, Inc.,
++ * 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++
++#ifndef _LINUX_TDM_H
++#define _LINUX_TDM_H
++
++#ifdef __KERNEL__
++#include <linux/types.h>
++#include <linux/module.h>
++#include <linux/mod_devicetable.h>
++#include <linux/device.h>	/* for struct device */
++#include <linux/sched.h>	/* for completion */
++#include <linux/mutex.h>
++#include <linux/interrupt.h>
++
++#define CHANNEL_8BIT_LIN	0	/* 8 bit linear */
++#define CHANNEL_8BIT_ULAW	1	/* 8 bit Mu-law */
++#define CHANNEL_8BIT_ALAW	2	/* 8 bit A-law */
++#define CHANNEL_16BIT_LIN	3	/* 16 bit Linear */
++
++#define NUM_CHANNELS		16
++#define NUM_SAMPLES_PER_MS	8		/* 8 samples per milli sec per
++						 channel. Req for voice data */
++#define NUM_MS			10
++#define NUM_SAMPLES_PER_FRAME	(NUM_MS * NUM_SAMPLES_PER_MS) /* Number of
++						samples for 1 client buffer */
++#define NUM_OF_TDM_BUF		3
++
++/* General options */
++
++struct tdm_adapt_algorithm;
++struct tdm_adapter;
++struct tdm_port;
++struct tdm_driver;
++
++/* Align addr on a size boundary - adjust address up if needed */
++/* returns min value greater than size which is multiple of alignment */
++static inline int ALIGN_SIZE(u64 size, u32 alignment)
++{
++	return (size + alignment - 1) & (~(alignment - 1));
++}
++
++/**
++ * struct tdm_driver - represent an TDM device driver
++ * @class: What kind of tdm device we instantiate (for detect)
++ * @id:Driver id
++ * @name: Name of the driver
++ * @attach_adapter: Callback for device addition (for legacy drivers)
++ * @detach_adapter: Callback for device removal (for legacy drivers)
++ * @probe: Callback for device binding
++ * @remove: Callback for device unbinding
++ * @shutdown: Callback for device shutdown
++ * @suspend: Callback for device suspend
++ * @resume: Callback for device resume
++ * @command: Callback for sending commands to device
++ * @id_table: List of TDM devices supported by this driver
++ * @list: List of drivers created (for tdm-core use only)
++ */
++struct tdm_driver {
++	unsigned int class;
++	unsigned int id;
++	char name[TDM_NAME_SIZE];
++
++	int (*attach_adapter)(struct tdm_adapter *);
++	int (*detach_adapter)(struct tdm_adapter *);
++
++	/* Standard driver model interfaces */
++	int (*probe)(const struct tdm_device_id *);
++	int (*remove)(void);
++
++	/* driver model interfaces that don't relate to enumeration */
++	void (*shutdown)(void);
++	int (*suspend)(pm_message_t mesg);
++	int (*resume)(void);
++
++	/* a ioctl like command that can be used to perform specific functions
++	 * with the device.
++	 */
++	int (*command)(unsigned int cmd, void *arg);
++
++	const struct tdm_device_id *id_table;
++
++	/* The associated adapter for this driver */
++	struct tdm_adapter *adapter;
++	struct list_head list;
++};
++
++/* tdm per port statistics structure, used for providing and storing tdm port
++ * statistics.
++ */
++struct tdm_port_stats {
++	unsigned int rx_pkt_count;	/* Rx frame count per channel */
++	unsigned int rx_pkt_drop_count;	/* Rx drop count per channel to
++					 clean space for new buffer */
++	unsigned int tx_pkt_count;	/* Tx frame count per channel */
++	unsigned int tx_pkt_conf_count;	/* Tx frame confirmation count per
++					 channel */
++	unsigned int tx_pkt_drop_count;	/* Tx drop count per channel due to
++					 queue full */
++};
++
++
++/* tdm Buffer Descriptor, used for Creating Interleaved and De-interleaved
++ * FIFOs
++ */
++struct tdm_bd {
++	unsigned char flag;		/* BD is full or empty */
++	unsigned char wrap;		/* BD is last in the queue */
++	unsigned short length;	/* Length of Data in BD */
++	/*TODO: use dyanmic memory */
++	unsigned short p_data[NUM_SAMPLES_PER_FRAME];	/* Data Pointer */
++	unsigned long offset;	/* Offset of the Data Pointer to be used */
++};
++
++#define TDM_CH_RX_BD_RING_SIZE	3
++#define TDM_CH_TX_BD_RING_SIZE	3
++
++/* tdm RX-TX Channelised Data */
++struct tdm_port_data {
++	struct tdm_bd rx_data_fifo[TDM_CH_RX_BD_RING_SIZE]; /* Rx Channel Data
++								BD Ring */
++	struct tdm_bd *rx_in_data;	/* Current Channel Rx BD to be filled by
++						de-interleave function */
++	struct tdm_bd *rx_out_data;	/* Current Channel Rx BD to be
++							read by App */
++	struct tdm_bd tx_data_fifo[TDM_CH_TX_BD_RING_SIZE]; /* Tx Channel Data
++								BD Ring */
++	struct tdm_bd *tx_in_data;	/* Current Channel Tx BD to be
++						 filled by App */
++	struct tdm_bd *tx_out_data;	/* Current Channel Tx BD to be read by
++						interleave function */
++	spinlock_t rx_channel_lock;	/* Spin Lock for Rx Channel */
++	spinlock_t tx_channel_lock;	/* Spin Lock for Tx Channel */
++};
++
++/* structure tdm_port_cfg - contains configuration params for a port */
++struct tdm_port_cfg {
++	unsigned short port_mode;
++};
++
++/* struct tdm_port - represent an TDM ports for a device */
++struct tdm_port {
++	unsigned short port_id;
++	unsigned short in_use;		/* Port is enabled? */
++	uint16_t rx_max_frames;		/* Received Port frames
++					 before allowing Read Operation in
++					 Port Mode */
++
++	struct tdm_port_stats port_stat;/* A structure parameters defining
++					 TDM port statistics. */
++	struct tdm_port_data *p_port_data;	/* a structure parameters
++						defining tdm channelised data */
++	wait_queue_head_t ch_wait_queue;	/* waitQueue for RX Port Data */
++
++	struct tdm_driver *driver;	/* driver for this port */
++	struct tdm_adapter *adapter;	/* adapter for this port */
++	struct list_head list;		/* list of ports */
++	struct list_head mychannels;	/* list of channels, created on this
++					 port*/
++	spinlock_t ch_list_lock;	/* Spin Lock for channel_list */
++	struct tdm_port_cfg port_cfg;/* A structure parameters defining
++					 TDM port configuration. */
++};
++
++/* tdm RX-TX Channelised Data */
++struct tdm_ch_data {
++	struct tdm_bd rx_data_fifo[TDM_CH_RX_BD_RING_SIZE]; /* Rx Port Data BD
++								Ring */
++	struct tdm_bd *rx_in_data;	/* Current Port Rx BD to be filled by
++						de-interleave function */
++	struct tdm_bd *rx_out_data; /* Current Port Rx BD to be read by App */
++	struct tdm_bd tx_data_fifo[TDM_CH_TX_BD_RING_SIZE]; /* Tx Port Data BD
++								Ring */
++	struct tdm_bd *tx_in_data;	/* Current Port Tx BD to be filled by
++						App */
++	struct tdm_bd *tx_out_data;	/* Current Port Tx BD to be read by
++						interleave function */
++	spinlock_t rx_channel_lock;	/* Spin Lock for Rx Port */
++	spinlock_t tx_channel_lock;	/* Spin Lock for Tx Port */
++};
++
++/* Channel config params */
++struct tdm_ch_cfg {
++	unsigned short num_slots;
++	unsigned short first_slot;
++};
++
++/* struct tdm_channel- represent a TDM channel for a port */
++struct tdm_channel {
++	u16 ch_id;			/* logical channel number */
++	struct list_head list;		/* list of channels in a port*/
++	struct tdm_port *port;		/* port for this channel */
++	u16 in_use;			/* channel is enabled? */
++	struct tdm_ch_cfg ch_cfg;	/* channel configuration */
++	struct tdm_ch_data *p_ch_data;	/* data storage space for channel */
++};
++
++/* tdm_adapt_algorithm is for accessing the routines of device */
++struct tdm_adapt_algorithm {
++	u32 (*tdm_read)(struct tdm_adapter *, u16 **);
++	u32 (*tdm_get_write_buf)(struct tdm_adapter *, u16 **);
++	u32 (*tdm_write)(struct tdm_adapter *, void * , unsigned int len);
++	int (*tdm_enable)(struct tdm_adapter *);
++	int (*tdm_disable)(struct tdm_adapter *);
++};
++
++/* tdm_adapter_mode is to define in mode of the device */
++enum tdm_adapter_mode {
++	e_TDM_ADAPTER_MODE_NONE = 0x00,
++	e_TDM_ADAPTER_MODE_T1 = 0x01,
++	e_TDM_ADAPTER_MODE_E1 = 0x02,
++	e_TDM_ADAPTER_MODE_T1_RAW = 0x10,
++	e_TDM_ADAPTER_MODE_E1_RAW = 0x20,
++};
++
++/* tdm_port_mode defines the mode in which the port is configured to operate
++ * It can be channelized/full/fractional.
++ */
++enum tdm_port_mode {
++	e_TDM_PORT_CHANNELIZED = 0	/* Channelized mode */
++	, e_TDM_PORT_FULL = 1		/* Full mode */
++	, e_TDM_PORT_FRACTIONAL = 2	/* Fractional mode */
++};
++
++/* tdm_process_mode used for testing the tdm device in normal mode or internal
++ * loopback or external loopback
++ */
++enum tdm_process_mode {
++	e_TDM_PROCESS_NORMAL = 0	/* Normal mode */
++	, e_TDM_PROCESS_INT_LPB = 1	/* Internal loop mode */
++	, e_TDM_PROCESS_EXT_LPB = 2	/* External Loopback mode */
++};
++
++
++/* TDM configuration parameters */
++struct fsl_tdm_adapt_cfg {
++	u8 num_ch;		/* Number of channels in this adpater */
++	u8 ch_size_type;		/* reciever/transmit channel
++						size for all channels */
++	u8 slot_width;		/* 1 or 2 Is defined by channel type */
++	u8 frame_len;		/* Length of frame in samples */
++	u32 num_frames;
++	u8 loopback;			/* loopback or normal */
++	u8 adap_mode;			/* 0=None, 1= T1, 2= T1-FULL, 3=E1,
++						4 = E1-FULL */
++	int max_num_ports;		/* Not Used: Max Number of ports that
++					can be created on this adapter */
++	int max_timeslots;		/* Max Number of timeslots that are
++					supported on this adapter */
++};
++
++/*
++ * tdm_adapter is the structure used to identify a physical tdm device along
++ * with the access algorithms necessary to access it.
++ */
++struct tdm_adapter {
++	struct module *owner;	/* owner of the adapter module */
++	unsigned int id;	/* Adapter Id */
++	unsigned int class;	/* classes to allow probing for */
++	unsigned int drv_count;	/* Number of drivers associated with the
++				 adapter */
++
++	const struct tdm_adapt_algorithm *algo;	/* the algorithm to access the
++						 adapter*/
++
++	char name[TDM_NAME_SIZE];	/* Name of Adapter */
++	struct mutex adap_lock;
++	struct device *parent;		/*Not Used*/
++
++	struct tasklet_struct tdm_data_tasklet;	/* tasklet handle to perform
++						 data processing*/
++	int tasklet_conf;	/* flag for tasklet configuration */
++	int tdm_rx_flag;
++
++	struct list_head myports;	/* list of ports, created on this
++					 adapter */
++	struct list_head list;
++	spinlock_t portlist_lock;	/* Spin Lock for port_list */
++	void *data;
++	struct fsl_tdm_adapt_cfg adapt_cfg;
++};
++
++static inline void *tdm_get_adapdata(const struct tdm_adapter *dev)
++{
++	return dev->data;
++}
++
++static inline void tdm_set_adapdata(struct tdm_adapter *dev, void *data)
++{
++	dev->data = data;
++}
++
++/* functions exported by tdm.o */
++
++extern int tdm_add_adapter(struct tdm_adapter *);
++extern int tdm_del_adapter(struct tdm_adapter *);
++extern int tdm_register_driver(struct tdm_driver *);
++extern void tdm_del_driver(struct tdm_driver *);
++extern void tdm_unregister_driver(struct tdm_driver *);
++extern void init_config_adapter(struct tdm_adapter *);
++
++extern unsigned int tdm_port_open(struct tdm_driver *, void **);
++extern unsigned int tdm_port_close(void *);
++extern unsigned int tdm_port_ioctl(void *, unsigned int, unsigned long);
++extern unsigned int tdm_channel_read(void *, void *, void *, u16 *);
++extern unsigned int tdm_channel_write(void *, void * , void *, u16);
++extern unsigned int tdm_port_poll(void *, unsigned int);
++
++extern int tdm_channel_open(u16, u16, struct tdm_port *, void **);
++extern int tdm_channel_close(u16, u16, struct tdm_port *,
++						struct tdm_channel *);
++
++static inline int tdm_add_driver(struct tdm_driver *driver)
++{
++	return tdm_register_driver(driver);
++}
++
++extern struct tdm_adapter *tdm_get_adapter(int id);
++extern void tdm_put_adapter(struct tdm_adapter *adap);
++
++#endif /* __KERNEL__ */
++
++#define TDM_E_OK 0
++
++#endif /* _LINUX_TDM_H */
 -- 
-1.5.6.5
+1.6.5.6
