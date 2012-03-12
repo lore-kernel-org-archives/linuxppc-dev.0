@@ -1,20 +1,24 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8FB56B7062
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 04:16:42 +1100 (EST)
-Message-ID: <4F5E2F73.2000703@ge.com>
-Date: Mon, 12 Mar 2012 17:16:35 +0000
-From: Martyn Welch <martyn.welch@ge.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 0/2] powerpc: Add support for GE IMP3A
-References: <1331572380-1064-1-git-send-email-martyn.welch@ge.com>
-In-Reply-To: <1331572380-1064-1-git-send-email-martyn.welch@ge.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wim Van Sebroeck <wim@iguana.be>, Linus Walleij <linus.walleij@linaro.org>,
- linux-kernel@vger.kernel.org
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F2BB3B6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 06:29:12 +1100 (EST)
+Subject: Re: [PATCH v2 1/2] powerpc/e500: make load_up_spe a normal fuction
+Mime-Version: 1.0 (Apple Message framework v1257)
+Content-Type: text/plain; charset=iso-8859-1
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <4F5795FC.4000803@freescale.com>
+Date: Mon, 12 Mar 2012 20:29:05 +0100
+Message-Id: <1F936E46-0CFC-4C0A-A7A8-EF05C8AFCE49@suse.de>
+References: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
+ <4F57691E.1070105@suse.de> <4F5795FC.4000803@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: "kvm@vger.kernel.org list" <kvm@vger.kernel.org>,
+ Olivia Yin <hong-hua.yin@freescale.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>, kvm-ppc@vger.kernel.org,
+ Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Whoops, forgot to correct the subject. This is v3 of the patches. I got it
-right in the actual patches, just the cover letter I missed.
 
-Martyn
+On 07.03.2012, at 18:08, Scott Wood wrote:
 
-On 12/03/12 17:12, Martyn Welch wrote:
-> These patches add support for the GE IMP3A. This board (based on a Freescale
-> P2020) uses some support for FPGA logic common with the PPC9A and other 86xx
-> based boards, so this support has been moved out of the 86xx directory. A
-> config option (GE_FPGA) has been added to reduce churn on dependant drivers
-> (such as the watchdog timer) when further boards are added.
+> On 03/07/2012 07:56 AM, Alexander Graf wrote:
+>> On 03/01/2012 02:20 AM, Olivia Yin wrote:
+>>> From: Liu Yu<yu.liu@freescale.com>
+>>> 
+>>> So that we can call it when improving SPE switch like book3e did for
+>>> fp switch.
+>> 
+>> Timur / Scott, can you please (n)ack this one?
+> 
+> ACK, though as it touches non-KVM code it'd be nice to get an ack from
+> Kumar.
 
--- 
-Martyn Welch (Lead Software Engineer)  | Registered in England and Wales
-GE Intelligent Platforms               | (3828642) at 100 Barbirolli Square
-T +44(0)1327322748                     | Manchester, M2 3AB
-E martyn.welch@ge.com                  | VAT:GB 927559189
+Kumar, ping?
