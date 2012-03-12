@@ -1,22 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CE518B7005
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 03:10:28 +1100 (EST)
-Message-ID: <4F5E1FBE.20907@freescale.com>
-Date: Mon, 12 Mar 2012 11:09:34 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 12465B6FBC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 03:12:39 +1100 (EST)
+Date: Mon, 12 Mar 2012 16:11:43 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v2 0/9] DMA engine cookie handling cleanups
+Message-ID: <20120312161143.GA10830@n2100.arm.linux.org.uk>
+References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
+ <1331128466.24656.421.camel@vkoul-udesk3>
 MIME-Version: 1.0
-To: <soniccat.liu@gmail.com>
-Subject: Re: [PATCH] powerpc/fsl_msi : return proper error value when ioremap
- failed.
-References: <1331246857-5622-1-git-send-email-soniccat.liu@gmail.com>
-In-Reply-To: <1331246857-5622-1-git-send-email-soniccat.liu@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1331128466.24656.421.camel@vkoul-udesk3>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Stephen Warren <swarren@nvidia.com>,
+ Linus Walleij <linus.walleij@stericsson.com>,
+ Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+ Barry Song <baohua.song@csr.com>, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-soniccat.liu@gmail.com wrote:
-> From: Liu Shuo <soniccat.liu@gmail.com>
+On Wed, Mar 07, 2012 at 07:24:26PM +0530, Vinod Koul wrote:
+> On Tue, 2012-03-06 at 22:33 +0000, Russell King - ARM Linux wrote:
+> > [v2 - more or less same description.  Including lakml in cc for the full
+> > set]
+> > 
+> > This patch series cleans up the handling of cookies in DMA engine drivers.
+> > This is done by providing a set of inline library functions for common
+> > tasks:
+> > 
+> > - moving the 'last completed cookie' into struct dma_chan - everyone
+> >   has this in their driver private channel data structure
+> > 
+> > - consolidate allocation of cookies to DMA descriptors
+> > 
+> > - common way to update 'last completed cookie' value
+> > 
+> > - standard way to implement tx_status callback and update the residue
+> > 
+> > - consolidate initialization of cookies
+> > 
+> > - update implementations differing from the majority of DMA engine drivers
+> >   to behave the same as the majority implementation in respect of cookies
+> > 
+> > What this means is that we get to the point where all DMA engine drivers
+> > will hand out cookie value '2' as the first, and incrementing cookie
+> > values up to INT_MAX, returning to cookie '1' as the next cookie.
+> > 
+> > Think of this patch series as round 1...  I am hoping over time that more
+> > code can be consolidated between the DMA engine drivers and end up with a
+> > consistent way to handle various common themes in DMA engine hardware
+> > (like physical channel<->peripheral request signal selection.)
+> Thanks Russell,
 > 
-> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+> I have tested this on atom today, and as expected works flawlessly :)
+> After all acks, I can merge or these can go thru your tree with my Ack.
+> Either way is okay.
+> 
+> I applied the v2 on a branch and also rebased on top of slave-dma.next.
+> There were few conflicts in imx-dma.c. Sacha, Javier, pls see that merge
+> is right.
+> 
+> This branch (rmk_cookie_fixes2_rebased) is not yet pushed, as I am not
+> able to connect to infradead.org, should be done when server is back.
 
-Acked-by: Timur Tabi <timur@freescale.com>
-
-This is not a critical fix for 3.3, but it should probably be applied to
-3.3-stable.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Are you going to pick up Shawn Guo's tested-by for these patches, or are
+we saying its too late for that now?
