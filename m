@@ -1,19 +1,22 @@
-Return-Path: <soniccat.liu@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
- [209.85.210.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 77AE6B6F98
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2012 21:44:09 +1100 (EST)
-Received: by iakh37 with SMTP id h37so7350936iak.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2012 03:44:06 -0700 (PDT)
-From: soniccat.liu@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/fsl_msi : return proper error value when ioremap
+Return-Path: <B04825@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE518B7005
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 03:10:28 +1100 (EST)
+Message-ID: <4F5E1FBE.20907@freescale.com>
+Date: Mon, 12 Mar 2012 11:09:34 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: <soniccat.liu@gmail.com>
+Subject: Re: [PATCH] powerpc/fsl_msi : return proper error value when ioremap
  failed.
-Date: Thu,  8 Mar 2012 14:47:37 -0800
-Message-Id: <1331246857-5622-1-git-send-email-soniccat.liu@gmail.com>
-Cc: Liu Shuo <soniccat.liu@gmail.com>, timur@freescale.com
+References: <1331246857-5622-1-git-send-email-soniccat.liu@gmail.com>
+In-Reply-To: <1331246857-5622-1-git-send-email-soniccat.liu@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Liu Shuo <soniccat.liu@gmail.com>
+soniccat.liu@gmail.com wrote:
+> From: Liu Shuo <soniccat.liu@gmail.com>
+> 
+> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
 
-Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
----
- arch/powerpc/sysdev/fsl_msi.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Acked-by: Timur Tabi <timur@freescale.com>
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index ecb5c19..0bab156 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -410,6 +410,7 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
- 
- 		msi->msi_regs = ioremap(res.start, resource_size(&res));
- 		if (!msi->msi_regs) {
-+			err = -ENOMEM;
- 			dev_err(&dev->dev, "could not map node %s\n",
- 				dev->dev.of_node->full_name);
- 			goto error_out;
+This is not a critical fix for 3.3, but it should probably be applied to
+3.3-stable.
+
 -- 
-1.7.4.1
+Timur Tabi
+Linux kernel developer at Freescale
