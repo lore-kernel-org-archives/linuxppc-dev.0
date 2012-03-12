@@ -2,23 +2,17 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F2BB3B6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 06:29:12 +1100 (EST)
-Subject: Re: [PATCH v2 1/2] powerpc/e500: make load_up_spe a normal fuction
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=iso-8859-1
+ by ozlabs.org (Postfix) with ESMTPS id 7F17EB6FBA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 06:39:06 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <4F5795FC.4000803@freescale.com>
-Date: Mon, 12 Mar 2012 20:29:05 +0100
-Message-Id: <1F936E46-0CFC-4C0A-A7A8-EF05C8AFCE49@suse.de>
-References: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
- <4F57691E.1070105@suse.de> <4F5795FC.4000803@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: "kvm@vger.kernel.org list" <kvm@vger.kernel.org>,
- Olivia Yin <hong-hua.yin@freescale.com>,
- Tabi Timur-B04825 <B04825@freescale.com>, kvm-ppc@vger.kernel.org,
- Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH 19/38] KVM: PPC: e500mc: add load inst fixup
+Date: Mon, 12 Mar 2012 20:39:02 +0100
+Message-Id: <1331581142-27186-1-git-send-email-agraf@suse.de>
+In-Reply-To: <1330474206-14794-20-git-send-email-agraf@suse.de>
+References: <1330474206-14794-20-git-send-email-agraf@suse.de>
+Cc: Scott Wood <scottwood@freescale.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +22,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There's always a chance we're unable to read a guest instruction. The guest
+could have its TLB mapped execute-, but not readable, something odd happens
+and our TLB gets flushed. So it's a good idea to be prepared for that case
+and have a fallback that allows us to fix things up in that case.
 
-On 07.03.2012, at 18:08, Scott Wood wrote:
+Add fixup code that keeps guest code from potentially crashing our host kernel.
 
-> On 03/07/2012 07:56 AM, Alexander Graf wrote:
->> On 03/01/2012 02:20 AM, Olivia Yin wrote:
->>> From: Liu Yu<yu.liu@freescale.com>
->>> 
->>> So that we can call it when improving SPE switch like book3e did for
->>> fp switch.
->> 
->> Timur / Scott, can you please (n)ack this one?
-> 
-> ACK, though as it touches non-KVM code it'd be nice to get an ack from
-> Kumar.
+Signed-off-by: Alexander Graf <agraf@suse.de>
 
-Kumar, ping?
+---
+
+v1 -> v2:
+
+  - fix whitespace
+  - use explicit preempt counts
+
+v2 -> v3:
+
+  - fix whitespace (for real)
+
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 63023ae..e9e7350 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -28,6 +28,7 @@
+ #include <asm/asm-compat.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/bitsperlong.h>
++#include <asm/thread_info.h>
+ 
+ #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
+ 
+@@ -171,9 +172,36 @@
+ 	PPC_STL	r30, VCPU_GPR(r30)(r4)
+ 	PPC_STL	r31, VCPU_GPR(r31)(r4)
+ 	mtspr	SPRN_EPLC, r8
++
++	/* disable preemption, so we are sure we hit the fixup handler */
++#ifdef CONFIG_PPC64
++	clrrdi	r8,r1,THREAD_SHIFT
++#else
++	rlwinm	r8,r1,0,0,31-THREAD_SHIFT       /* current thread_info */
++#endif
++	li	r7, 1
++	stw	r7, TI_PREEMPT(r8)
++
+ 	isync
+-	lwepx	r9, 0, r5
++
++	/*
++	 * In case the read goes wrong, we catch it and write an invalid value
++	 * in LAST_INST instead.
++	 */
++1:	lwepx	r9, 0, r5
++2:
++.section .fixup, "ax"
++3:	li	r9, KVM_INST_FETCH_FAILED
++	b	2b
++.previous
++.section __ex_table,"a"
++	PPC_LONG_ALIGN
++	PPC_LONG 1b,3b
++.previous
++
+ 	mtspr	SPRN_EPLC, r3
++	li	r7, 0
++	stw	r7, TI_PREEMPT(r8)
+ 	stw	r9, VCPU_LAST_INST(r4)
+ 	.endif
+ 
