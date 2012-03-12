@@ -1,24 +1,28 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+Return-Path: <lethal@linux-sh.org>
+Received: from linux-sh.org (linux-sh.org [111.68.239.195])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E4E3FB6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2012 10:00:33 +1100 (EST)
-Date: Sun, 11 Mar 2012 15:56:21 -0700 (PDT)
-Message-Id: <20120311.155621.699600599796181447.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Subject: Re: linux-next: manual merge of the net-next tree with the powerpc
- tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20120309174416.2b936c5a4a116d56f9a25502@canb.auug.org.au>
-References: <20120309133646.fb8cc30d8c2fd0ef7784d72c@canb.auug.org.au>
- <20120308.221534.712157352097242982.davem@davemloft.net>
- <20120309174416.2b936c5a4a116d56f9a25502@canb.auug.org.au>
+ by ozlabs.org (Postfix) with ESMTPS id 3B834B6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2012 12:45:35 +1100 (EST)
+Date: Mon, 12 Mar 2012 10:12:25 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Rob Herring <rob.herring@calxeda.com>
+Subject: Re: linux-next: manual merge of the powerpc tree with the arm tree
+Message-ID: <20120312011224.GA9503@linux-sh.org>
+References: <20120308120422.e071cba36425eacbee1f8d98@canb.auug.org.au>
+ <25744.1331174036@neuling.org>
+ <20120308145131.fad50bbc79c36f0b0b12d101@canb.auug.org.au>
+ <1331185951.3105.29.camel@pasglop> <1331249746.3105.40.camel@pasglop>
+ <20120309003937.GC8680@flint.arm.linux.org.uk>
+ <1331262821.3105.47.camel@pasglop> <4F5A350F.3090905@calxeda.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, paulus@samba.org, joe@perches.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4F5A350F.3090905@calxeda.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Neuling <mikey@neuling.org>, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 9 Mar 2012 17:44:16 +1100
-
-> On Thu, 08 Mar 2012 22:15:34 -0800 (PST) David Miller <davem@davemloft.net> wrote:
->>
->> From: Stephen Rothwell <sfr@canb.auug.org.au>
->> Date: Fri, 9 Mar 2012 13:36:46 +1100
->> 
->> > Today's linux-next merge of the net-next tree got a conflict in
->> > drivers/net/ethernet/ibm/iseries_veth.c between commit e92a665949f6
->> > ("net: powerpc: remove the legacy iSeries ethernet driver") from the
->> > powerpc tree and commit 41de8d4cff21 ("drivers/net: Remove alloc_etherdev
->> > error messages") from the net-next tree.
->> > 
->> > I just removed the file.
->> 
->> If it makes life easier for anyone I can put the driver removal patch
->> into net-next.
+On Fri, Mar 09, 2012 at 10:51:27AM -0600, Rob Herring wrote:
+> On 03/08/2012 09:13 PM, Benjamin Herrenschmidt wrote:
+> > On Fri, 2012-03-09 at 00:39 +0000, Russell King wrote:
+> >> On Fri, Mar 09, 2012 at 10:35:46AM +1100, Benjamin Herrenschmidt wrote:
+> >>> Actually, I didn't keep MAY_HAVE_SPARSE_IRQ, I kept HAVE_SPARSE_IRQ. If
+> >>> I remove it, then I get Kconfig warnings:
+> >>>
+> >>> warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies
+> >>> (HAVE_GENERIC_HARDIRQS && HAVE_SPARSE_IRQ)
+> >>
+> >> Do you have commit 2ed86b16eabe4efbf80cc725a8cbb5310746a2fc ?
+> > 
+> > Nope, Grant patch didn't mention a dependency.
 > 
-> In this case, I think it will actually help, thanks.  Note that it won;t
-> apply cleanly to your tree, but the fixup is easy :-)
+> My opinion is that SPARSE_IRQ shouldn't be user visible option, and the
+> simple solution was to just make it hidden. It wasn't clear if this was
+> desired or not for other arches at the time. There is a mixture of
+> settings in powerpc defconfigs. SuperH selects it for 32-bit and leaves
+> it user selectable for 64-bit.
 > 
-> And I discovered that "git am" doesn't like the style of patch I did
-> (without the body of the deleted file).  If you just delete
-> drivers/net/ethernet/ibm/iseries_veth.c before trying to apply the patch
-> it will probably work.
-
-I took care of this the other night.
+> I'm happy to revert adding MAY_HAVE_SPARSE_IRQ and just make SPARSE_IRQ
+> a hidden option. It really just needs the okay from SuperH folks.
+> 
+We basically want it always-enabled for 32-bit and it doesn't matter much
+about 64-bit. In the future I'll probably fix up the 64-bit stuff to use
+it too and then we'll just leave it on all the time, but it's not such a
+big deal if it's not visible for enabling on 64-bit at the moment given
+that it's probably broken there at the moment.
