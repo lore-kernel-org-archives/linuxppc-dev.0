@@ -1,20 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 969C0B6EEA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 20:10:53 +1100 (EST)
-Date: Tue, 13 Mar 2012 20:10:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: linux-next: manual merge of the akpm tree with the powerpc tree
-Message-Id: <20120313201030.c4730c816be21a7d053ffb90@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj"
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Oleg Nesterov <oleg@redhat.com>, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+ [209.85.160.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B23A3B6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 22:51:54 +1100 (EST)
+Received: by ghbg19 with SMTP id g19so425249ghb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 04:51:51 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1331572380-1064-5-git-send-email-martyn.welch@ge.com>
+References: <1331572380-1064-1-git-send-email-martyn.welch@ge.com>
+ <1331572380-1064-5-git-send-email-martyn.welch@ge.com>
+Date: Tue, 13 Mar 2012 12:51:51 +0100
+Message-ID: <CACRpkdZv84PKts4jFscsNcOq6rggZXSYzu3CBe8NFDTPwsd1aw@mail.gmail.com>
+Subject: Re: [PATCH v3 4/4] powerpc: Board support for GE IMP3A
+From: Linus Walleij <linus.walleij@linaro.org>
+To: Martyn Welch <martyn.welch@ge.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>,
+ =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,62 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 12, 2012 at 6:13 PM, Martyn Welch <martyn.welch@ge.com> wrote:
 
-Hi Andrew,
+> Initial board support for the GE IMP3A, a 3U compactPCI card with a p2020
+> processor.
+(...)
+> +++ b/arch/powerpc/configs/ge_imp3a_defconfig
+> @@ -0,0 +1,257 @@
+> +CONFIG_PPC_85xx=y
+> +CONFIG_SMP=y
+> +CONFIG_NR_CPUS=2
+> +CONFIG_EXPERIMENTAL=y
+> +CONFIG_SYSVIPC=y
+> +CONFIG_POSIX_MQUEUE=y
+> +CONFIG_BSD_PROCESS_ACCT=y
+> +CONFIG_BSD_PROCESS_ACCT_V3=y
+> +CONFIG_SPARSE_IRQ=y
 
-Today's linux-next merge of the akpm tree got a conflict in
-arch/powerpc/platforms/pseries/eeh_event.c between commit 29f8bf1b7f79
-("powerpc/pseries: Cleanup comments in EEH aux components") from the
-powerpc tree and commit "powerpc/eeh: remove eeh_event_handler()
-->daemonize()" from the akpm tree.
+This habit of changing a lot of defconfig stuff in a patch dealing with other
+stuff is alien in the ARM world. Especially when changing a horde of stuff
+that has nothing to do with the patch subject.
 
-I fixed it up (see below) and can carry the fix as necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+But I don't really know how PPC does these things so who am I to
+speak ...
 
-diff --cc arch/powerpc/platforms/pseries/eeh_event.c
-index 4a47525,a6d33c8..0000000
---- a/arch/powerpc/platforms/pseries/eeh_event.c
-+++ b/arch/powerpc/platforms/pseries/eeh_event.c
-@@@ -56,10 -58,10 +56,10 @@@ DEFINE_MUTEX(eeh_event_mutex)
-  static int eeh_event_handler(void * dummy)
-  {
-  	unsigned long flags;
- -	struct eeh_event	*event;
- -	struct pci_dn *pdn;
- +	struct eeh_event *event;
- +	struct eeh_dev *edev;
- =20
-- 	daemonize("eehd");
-+ 	set_task_comm(current, "eehd");
-  	set_current_state(TASK_INTERRUPTIBLE);
- =20
-  	spin_lock_irqsave(&eeh_eventlist_lock, flags);
+BTW: doesn't the "make saveconfig" reduce defconfigs on PPC?
+Paging Uwe on this.
 
---Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPXw8GAAoJEECxmPOUX5FEdyoP/RiqFASdJ98+72wU7zzAT7C8
-0nUOZvDmq2YSUGhMz15J/JUHvOixKWSF9CWmH40zl0azyPdaxbYEofh0r4QhRye5
-Jayc6Dc/2ytqGx9a7ENz3U9jzEb/y6vggHIt4Q6JomC45cmjVFNToVB4HMcPx6FJ
-TPgTxHc18N/GMtMFuscQHsu4p8FHPDjBkJZgv0BBHMu7dikVVvDhgR4Wl5Z1d/QR
-vZVtCJMQ+tsrYsgYU1L55WbOf7E5VU14t6bf/4VTzuoyXfS5F45HuX/Tm2Cylok3
-mntllYA1w2xs+VDfgdu+vfVVylTOvTUrd/smGLmI6U47UBRMxm+lnW5DQpNnmyIr
-VeBG0BYJr6l3WCeLQQITI8/rVDm9uMKKGHlMht5B1DtZ6MyLy9Or5cXO148jh/Es
-ggqphdCIKMvbzNLczFUQNS4kQzkvrUnftmEnpcVbDJEZcJ/8a5hrzPc2mr84Emst
-tZKLMSM/uXKeJUSOBywRDGfaRh+bm5jWKIRtma4uRlxmcobAyAoU5rz1PdMYHnvq
-1NNKRGVVNzWM+/BhLY46blxEBTfM5wruy2BtL5XUOxcP+QhM9sJQ86LTDqEDiOMX
-nR8dHV1rHB+trFYBCyDWxc2IAprZfdLJX4fsrqTdyas5zi7oy6F45RCoGOLaR26f
-Pj4afg5ZKccwVaColiOv
-=TncX
------END PGP SIGNATURE-----
-
---Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj--
+Yours,
+Linus Walleij
