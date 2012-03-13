@@ -1,24 +1,20 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id D56BEB6F62
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 19:45:11 +1100 (EST)
-Subject: Re: [PATCH v2 0/9] DMA engine cookie handling cleanups
-From: Vinod Koul <vinod.koul@intel.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-In-Reply-To: <1331569438.1727.3.camel@vkoul-udesk3>
-References: <20120306223321.GD15201@n2100.arm.linux.org.uk>
- <1331128466.24656.421.camel@vkoul-udesk3>
- <20120312161143.GA10830@n2100.arm.linux.org.uk>
- <1331569438.1727.3.camel@vkoul-udesk3>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 13 Mar 2012 14:10:36 +0530
-Message-ID: <1331628036.1727.22.camel@vkoul-udesk3>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 969C0B6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2012 20:10:53 +1100 (EST)
+Date: Tue, 13 Mar 2012 20:10:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: manual merge of the akpm tree with the powerpc tree
+Message-Id: <20120313201030.c4730c816be21a7d053ffb90@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Stephen Warren <swarren@nvidia.com>,
- Linus Walleij <linus.walleij@stericsson.com>,
- Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
- Barry Song <baohua.song@csr.com>, Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj"
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,147 +24,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-03-12 at 21:53 +0530, Vinod Koul wrote:
-> > > I applied the v2 on a branch and also rebased on top of
-> slave-dma.next.
-> > > There were few conflicts in imx-dma.c. Sacha, Javier, pls see that
-> merge
-> > > is right.
-> > > 
-> > > This branch (rmk_cookie_fixes2_rebased) is not yet pushed, as I am
-> not
-> > > able to connect to infradead.org, should be done when server is
-> back.
-> > 
-> > Are you going to pick up Shawn Guo's tested-by for these patches, or
-> are
-> > we saying its too late for that now?
-> Sure, his and others we have received on this series.
-> Also, IIRC there was one fixup from Jassi on pl330?
-> 
-> I should be able to merge this tomorrow, if thats fine with you. 
-I have merged this to my next, but haven't pushed out yet. This is
-available on branch next_cookie2_merge.
-Also I got few (more than expected build failures) and a merge issue on
-imx driver. Sascha, Russell can you see if fix on imx is right
+--Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Please see if the below patch is the right fix for build failures in
-addition to one suggested by Jassi.
+Hi Andrew,
 
--------------------x-------------------------x----------------------
+Today's linux-next merge of the akpm tree got a conflict in
+arch/powerpc/platforms/pseries/eeh_event.c between commit 29f8bf1b7f79
+("powerpc/pseries: Cleanup comments in EEH aux components") from the
+powerpc tree and commit "powerpc/eeh: remove eeh_event_handler()
+->daemonize()" from the akpm tree.
 
->From 949ff5b8d46b5e3435d21b2651ce3a2599208d44 Mon Sep 17 00:00:00 2001
-From: Vinod Koul <vinod.koul@linux.intel.com>
-Date: Tue, 13 Mar 2012 11:58:12 +0530
-Subject: [PATCH] dmaengine: fix for cookie changes and merge
+I fixed it up (see below) and can carry the fix as necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Fixed trivial issues in drivers:
-	drivers/dma/imx-sdma.c
-	drivers/dma/intel_mid_dma.c
-	drivers/dma/ioat/dma_v3.c
-	drivers/dma/iop-adma.c
-	drivers/dma/sirf-dma.c
-	drivers/dma/timb_dma.c
+diff --cc arch/powerpc/platforms/pseries/eeh_event.c
+index 4a47525,a6d33c8..0000000
+--- a/arch/powerpc/platforms/pseries/eeh_event.c
++++ b/arch/powerpc/platforms/pseries/eeh_event.c
+@@@ -56,10 -58,10 +56,10 @@@ DEFINE_MUTEX(eeh_event_mutex)
+  static int eeh_event_handler(void * dummy)
+  {
+  	unsigned long flags;
+ -	struct eeh_event	*event;
+ -	struct pci_dn *pdn;
+ +	struct eeh_event *event;
+ +	struct eeh_dev *edev;
+ =20
+- 	daemonize("eehd");
++ 	set_task_comm(current, "eehd");
+  	set_current_state(TASK_INTERRUPTIBLE);
+ =20
+  	spin_lock_irqsave(&eeh_eventlist_lock, flags);
 
-Signed-off-by: Vinod Koul <vinod.koul@linux.intel.com>
----
- drivers/dma/imx-sdma.c      |    1 +
- drivers/dma/intel_mid_dma.c |    1 +
- drivers/dma/ioat/dma_v3.c   |    1 +
- drivers/dma/iop-adma.c      |    1 +
- drivers/dma/sirf-dma.c      |    2 ++
- drivers/dma/timb_dma.c      |    6 +-----
- 6 files changed, 7 insertions(+), 5 deletions(-)
+--Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj
+Content-Type: application/pgp-signature
 
-diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c
-index ccfc7c4..81f9d57 100644
---- a/drivers/dma/imx-sdma.c
-+++ b/drivers/dma/imx-sdma.c
-@@ -1127,6 +1127,7 @@ static void sdma_issue_pending(struct dma_chan *chan)
- 	struct sdma_engine *sdma = sdmac->sdma;
- 
- 	if (sdmac->status == DMA_IN_PROGRESS)
-+		sdma_enable_channel(sdma, sdmac->channel);
- }
- 
- #define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1	34
-diff --git a/drivers/dma/intel_mid_dma.c b/drivers/dma/intel_mid_dma.c
-index d599d96..2449812 100644
---- a/drivers/dma/intel_mid_dma.c
-+++ b/drivers/dma/intel_mid_dma.c
-@@ -477,6 +477,7 @@ static enum dma_status intel_mid_dma_tx_status(struct dma_chan *chan,
- 						dma_cookie_t cookie,
- 						struct dma_tx_state *txstate)
- {
-+	struct intel_mid_dma_chan *midc = to_intel_mid_dma_chan(chan);
- 	enum dma_status ret;
- 
- 	ret = dma_cookie_status(chan, cookie, txstate);
-diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
-index 145eda2..2c4476c 100644
---- a/drivers/dma/ioat/dma_v3.c
-+++ b/drivers/dma/ioat/dma_v3.c
-@@ -61,6 +61,7 @@
- #include <linux/dmaengine.h>
- #include <linux/dma-mapping.h>
- #include <linux/prefetch.h>
-+#include "../dmaengine.h"
- #include "registers.h"
- #include "hw.h"
- #include "dma.h"
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index 1f3a703..4499f88 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -894,6 +894,7 @@ static enum dma_status iop_adma_status(struct dma_chan *chan,
- 					struct dma_tx_state *txstate)
- {
- 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
-+	int ret;
- 
- 	ret = dma_cookie_status(chan, cookie, txstate);
- 	if (ret == DMA_SUCCESS)
-diff --git a/drivers/dma/sirf-dma.c b/drivers/dma/sirf-dma.c
-index a2cde85..45ba352 100644
---- a/drivers/dma/sirf-dma.c
-+++ b/drivers/dma/sirf-dma.c
-@@ -18,6 +18,8 @@
- #include <linux/of_platform.h>
- #include <linux/sirfsoc_dma.h>
- 
-+#include "dmaengine.h"
-+
- #define SIRFSOC_DMA_DESCRIPTORS                 16
- #define SIRFSOC_DMA_CHANNELS                    16
- 
-diff --git a/drivers/dma/timb_dma.c b/drivers/dma/timb_dma.c
-index 7805996..d408c22 100644
---- a/drivers/dma/timb_dma.c
-+++ b/drivers/dma/timb_dma.c
-@@ -510,17 +510,13 @@ static void td_free_chan_resources(struct dma_chan *chan)
- static enum dma_status td_tx_status(struct dma_chan *chan, dma_cookie_t cookie,
- 				    struct dma_tx_state *txstate)
- {
--	struct timb_dma_chan *td_chan =
--		container_of(chan, struct timb_dma_chan, chan);
- 	enum dma_status ret;
- 
- 	dev_dbg(chan2dev(chan), "%s: Entry\n", __func__);
- 
- 	ret = dma_cookie_status(chan, cookie, txstate);
- 
--	dev_dbg(chan2dev(chan),
--		"%s: exit, ret: %d, last_complete: %d, last_used: %d\n",
--		__func__, ret, last_complete, last_used);
-+	dev_dbg(chan2dev(chan), "%s: exit, ret: %d\n", 	__func__, ret);
- 
- 	return ret;
- }
--- 
-1.7.0.4
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
+iQIcBAEBCAAGBQJPXw8GAAoJEECxmPOUX5FEdyoP/RiqFASdJ98+72wU7zzAT7C8
+0nUOZvDmq2YSUGhMz15J/JUHvOixKWSF9CWmH40zl0azyPdaxbYEofh0r4QhRye5
+Jayc6Dc/2ytqGx9a7ENz3U9jzEb/y6vggHIt4Q6JomC45cmjVFNToVB4HMcPx6FJ
+TPgTxHc18N/GMtMFuscQHsu4p8FHPDjBkJZgv0BBHMu7dikVVvDhgR4Wl5Z1d/QR
+vZVtCJMQ+tsrYsgYU1L55WbOf7E5VU14t6bf/4VTzuoyXfS5F45HuX/Tm2Cylok3
+mntllYA1w2xs+VDfgdu+vfVVylTOvTUrd/smGLmI6U47UBRMxm+lnW5DQpNnmyIr
+VeBG0BYJr6l3WCeLQQITI8/rVDm9uMKKGHlMht5B1DtZ6MyLy9Or5cXO148jh/Es
+ggqphdCIKMvbzNLczFUQNS4kQzkvrUnftmEnpcVbDJEZcJ/8a5hrzPc2mr84Emst
+tZKLMSM/uXKeJUSOBywRDGfaRh+bm5jWKIRtma4uRlxmcobAyAoU5rz1PdMYHnvq
+1NNKRGVVNzWM+/BhLY46blxEBTfM5wruy2BtL5XUOxcP+QhM9sJQ86LTDqEDiOMX
+nR8dHV1rHB+trFYBCyDWxc2IAprZfdLJX4fsrqTdyas5zi7oy6F45RCoGOLaR26f
+Pj4afg5ZKccwVaColiOv
+=TncX
+-----END PGP SIGNATURE-----
 
-
-
--- 
-~Vinod
+--Signature=_Tue__13_Mar_2012_20_10_30_+1100_YqIrAXTzdwC25Ovj--
