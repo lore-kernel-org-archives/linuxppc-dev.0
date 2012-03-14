@@ -1,27 +1,29 @@
 Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3F507B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 21:24:05 +1100 (EST)
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AAA9CB6FE0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 21:24:39 +1100 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Wed, 14 Mar 2012 15:53:56 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2EAMq80962692
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 15:52:57 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2EFrEHH004484
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 02:53:15 +1100
+ Wed, 14 Mar 2012 10:20:08 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q2EANndJ1511446
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 21:23:51 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q2EANmQn023279
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 21:23:48 +1100
 From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH 0/2] Kdump support for PPC_47x
+Subject: [PATCH 2/2] [47x] Enable CRASH_DUMP
 To: jwboyer@gmail.com
-Date: Wed, 14 Mar 2012 15:52:30 +0530
-Message-ID: <20120314102121.675.92862.stgit@suzukikp.in.ibm.com>
+Date: Wed, 14 Mar 2012 15:53:42 +0530
+Message-ID: <20120314102336.675.92570.stgit@suzukikp.in.ibm.com>
+In-Reply-To: <20120314102121.675.92862.stgit@suzukikp.in.ibm.com>
+References: <20120314102121.675.92862.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -34,21 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following series implements Kexec/Kdump support for
-PPC_47x based platforms. Doesn't support SMP yet.
+Now that we have KEXEC and relocatable kernel working on 47x (!SMP)
+enable CRASH_DUMP.
 
-I have tested these patches on simics simulator for ppc476.
-
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
 ---
 
-Suzuki K. Poulose (2):
-      [47x] Enable CRASH_DUMP
-      [47x] Kernel support for KEXEC
+ arch/powerpc/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
- arch/powerpc/Kconfig          |    4 -
- arch/powerpc/kernel/misc_32.S |  197 ++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 193 insertions(+), 8 deletions(-)
-
--- 
-Suzuki K. Poulose
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 975aae5..10070d2 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -363,7 +363,7 @@ config KEXEC
+ 
+ config CRASH_DUMP
+ 	bool "Build a kdump crash kernel"
+-	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP && !PPC_47x)
++	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
+ 	select RELOCATABLE if PPC64 || 44x
+ 	select DYNAMIC_MEMSTART if FSL_BOOKE
+ 	help
