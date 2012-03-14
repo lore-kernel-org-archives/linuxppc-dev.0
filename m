@@ -2,18 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 76FEDB6FA9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 18:38:32 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q2E7cMv7008919
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 02:38:23 -0500
-Message-ID: <1331710700.3105.112.camel@pasglop>
-Subject: [PATCH] powerpc/hvc_udbg: Don't crash when udbg_putc is NULL
+ by ozlabs.org (Postfix) with ESMTPS id A7AADB6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 19:29:51 +1100 (EST)
+Message-ID: <1331713762.3105.121.camel@pasglop>
+Subject: Re: linux-next: manual merge of the devicetree tree with the
+ powerpc tree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 14 Mar 2012 18:38:20 +1100
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Wed, 14 Mar 2012 19:29:22 +1100
+In-Reply-To: <20120314015356.GA4028@shangw>
+References: <20120313160100.c8cc3fd2b3d1f485ef7e7954@canb.auug.org.au>
+ <20120313182612.0546D3E053B@localhost> <20120314015356.GA4028@shangw>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Also while at it, add some help text indicating why you shouldn't
-enable that driver under normal circumstances
+On Wed, 2012-03-14 at 09:53 +0800, Gavin Shan wrote:
+> >  +#if defined(CONFIG_EEH)
+> > >  +static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
+> > >  +{
+> > >  +  return dn->edev;
+> > >  +}
+> > >  +#endif
+> > 
+> > Ben, What is this?  I don't want the eeh_dev pointer in struct device_node.  Up to
+> > now we've avoided putting any reverse references into device_nodes.  For everything
+> > else we use a reverse lookup, particularly for devices, to avoid growing the
+> > device_node for each new type of lookup.
+> > 
+> 
+> It's used to trace the EEH device. When EEH (Enhanced Error Hanlding) is enabled,
+> EEH device will be created against PCI sensitive OF node to trace the EEH state
+> accordingly. Since you don't want see this in struct device_node, we have to change
+> struct eeh_dev for a little bit to so that all struct eeh_dev instances will form
+> a global list and we can search eeh_dev according to the given device_node through
+> the global list. 
+> 
+> I don't know the policy or rule here for much. I think we can have 2 options.
+> 
+> 1. Keep the code as being, and fix it later.
+> 2. Fix it now. 
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- drivers/tty/hvc/Kconfig    |    4 ++++
- drivers/tty/hvc/hvc_udbg.c |    8 +++++++-
- 2 files changed, 11 insertions(+), 1 deletions(-)
+My bad, it's a mis-review, I thought it was still in pci_dn, I din't
+catch Gavin moving it to device-node.
 
-diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-index 8ea7f07..48cb8d3 100644
---- a/drivers/tty/hvc/Kconfig
-+++ b/drivers/tty/hvc/Kconfig
-@@ -71,6 +71,10 @@ config HVC_UDBG
-        depends on PPC && EXPERIMENTAL
-        select HVC_DRIVER
-        default n
-+       help
-+         This is meant to be used during HW bring up or debugging when
-+	 no other console mechanism exist but udbg, to get you a quick
-+	 console for userspace. Do NOT enable in production kernels. 
- 
- config HVC_DCC
-        bool "ARM JTAG DCC console"
-diff --git a/drivers/tty/hvc/hvc_udbg.c b/drivers/tty/hvc/hvc_udbg.c
-index b0957e6..2259c6e 100644
---- a/drivers/tty/hvc/hvc_udbg.c
-+++ b/drivers/tty/hvc/hvc_udbg.c
-@@ -36,7 +36,7 @@ static int hvc_udbg_put(uint32_t vtermno, const char *buf, int count)
- {
- 	int i;
- 
--	for (i = 0; i < count; i++)
-+	for (i = 0; i < count && udbg_putc; i++)
- 		udbg_putc(buf[i]);
- 
- 	return i;
-@@ -67,6 +67,9 @@ static int __init hvc_udbg_init(void)
- {
- 	struct hvc_struct *hp;
- 
-+	if (!udbg_putc)
-+		return -ENODEV;
-+
- 	BUG_ON(hvc_udbg_dev);
- 
- 	hp = hvc_alloc(0, NO_IRQ, &hvc_udbg_ops, 16);
-@@ -88,6 +91,9 @@ module_exit(hvc_udbg_exit);
- 
- static int __init hvc_udbg_console_init(void)
- {
-+	if (!udbg_putc)
-+		return -ENODEV;
-+
- 	hvc_instantiate(0, 0, &hvc_udbg_ops);
- 	add_preferred_console("hvc", 0, NULL);
- 
--- 
-1.7.9
+Yes, Gavin, we need to do something else, a chained list we walk or
+something like that. For the "fast path" which is when we have a pci_dev
+around, we can either add it to dev_archdata or hijack the pci-dev
+platform_data (I don't think anything uses it, Grant, do you know of
+anything ?)
+
+The patches are already in -next and I won't rebase, so we need to fix
+it on top of the existing patches. Gavin, can you make a patch that puts
+it back into pci_dn to begin with, then we can contemplate what better
+long term solution we have ?
+
+Cheers,
+Ben.
