@@ -1,30 +1,38 @@
-Return-Path: <r66093@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 006ADB7008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 20:18:53 +1100 (EST)
-Received: from mail200-ch1 (localhost [127.0.0.1])	by
- mail200-ch1-R.bigfish.com (Postfix) with ESMTP id 9B3D5C0113	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 09:18:45 +0000 (UTC)
-Received: from CH1EHSMHS012.bigfish.com (snatpool3.int.messaging.microsoft.com
- [10.43.68.226])	by mail200-ch1.bigfish.com (Postfix) with ESMTP id
- 8538B460237	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 09:18:43
- +0000 (UTC)
-From: <Chang-Ming.Huang@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/4] powerpc/85xx: add the P1020UTM-PC DTS support
-Date: Wed, 14 Mar 2012 17:08:30 +0800
-Message-ID: <1331716110-25545-4-git-send-email-Chang-Ming.Huang@freescale.com>
-In-Reply-To: <1331716110-25545-3-git-send-email-Chang-Ming.Huang@freescale.com>
-References: <1331716110-25545-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1331716110-25545-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <1331716110-25545-3-git-send-email-Chang-Ming.Huang@freescale.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DF820B6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 20:40:24 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 14 Mar 2012 14:35:37 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q2E92Cxj3678220
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 14:32:13 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q2EEVvtp013016
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 20:01:58 +0530
+Date: Wed, 14 Mar 2012 17:02:07 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: linux-next: manual merge of the devicetree tree with the powerpc
+ tree
+Message-ID: <20120314090207.GA31112@shangw>
+References: <20120313160100.c8cc3fd2b3d1f485ef7e7954@canb.auug.org.au>
+ <20120313182612.0546D3E053B@localhost>
+ <20120314015356.GA4028@shangw> <1331713762.3105.121.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1331713762.3105.121.camel@pasglop>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,355 +42,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jerry Huang <Chang-Ming.Huang@freescale.com>
+>> >  +#if defined(CONFIG_EEH)
+>> > >  +static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
+>> > >  +{
+>> > >  +  return dn->edev;
+>> > >  +}
+>> > >  +#endif
+>> > 
+>> > Ben, What is this?  I don't want the eeh_dev pointer in struct device_node.  Up to
+>> > now we've avoided putting any reverse references into device_nodes.  For everything
+>> > else we use a reverse lookup, particularly for devices, to avoid growing the
+>> > device_node for each new type of lookup.
+>> > 
+>> 
+>> It's used to trace the EEH device. When EEH (Enhanced Error Hanlding) is enabled,
+>> EEH device will be created against PCI sensitive OF node to trace the EEH state
+>> accordingly. Since you don't want see this in struct device_node, we have to change
+>> struct eeh_dev for a little bit to so that all struct eeh_dev instances will form
+>> a global list and we can search eeh_dev according to the given device_node through
+>> the global list. 
+>> 
+>> I don't know the policy or rule here for much. I think we can have 2 options.
+>> 
+>> 1. Keep the code as being, and fix it later.
+>> 2. Fix it now. 
+>
+>My bad, it's a mis-review, I thought it was still in pci_dn, I din't
+>catch Gavin moving it to device-node.
+>
+>Yes, Gavin, we need to do something else, a chained list we walk or
+>something like that. For the "fast path" which is when we have a pci_dev
+>around, we can either add it to dev_archdata or hijack the pci-dev
+>platform_data (I don't think anything uses it, Grant, do you know of
+>anything ?)
+>
 
-Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
----
- arch/powerpc/boot/dts/p1020utm-pc.dtsi    |  142 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc_32b.dts |   89 ++++++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc_36b.dts |   89 ++++++++++++++++++
- 3 files changed, 320 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_36b.dts
+Yes, Ben. I'll come up another patch on top of -next. It's supposed
+to introduce global list for newly created eeh_dev and retrieve
+the corresponding eeh_dev according to the given device_node through
+it.
 
-diff --git a/arch/powerpc/boot/dts/p1020utm-pc.dtsi b/arch/powerpc/boot/dts/p1020utm-pc.dtsi
-new file mode 100644
-index 0000000..71557a6
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1020utm-pc.dtsi
-@@ -0,0 +1,142 @@
-+/*
-+ * P1020 UTM-PC Device Tree Source stub (no addresses or top-level ranges)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&lbc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x2000000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			/* 256KB for DTB Image */
-+			reg = <0x0 0x00040000>;
-+			label = "NOR (RO) DTB Image";
-+			read-only;
-+		};
-+
-+		partition@40000 {
-+			/* 3.75 MB for Linux Kernel Image */
-+			reg = <0x00040000 0x003c0000>;
-+			label = "NOR (RO) Linux Kernel Image";
-+			read-only;
-+		};
-+
-+		partition@400000 {
-+			/* 27MB for Root file System */
-+			reg = <0x00400000 0x01b00000>;
-+			label = "NOR (RW) Root File System";
-+		};
-+
-+		partition@1f00000 {
-+			/* This location must not be altered  */
-+			/* 512KB for u-boot Bootloader Image */
-+			/* 512KB for u-boot Environment Variables */
-+			reg = <0x01f00000 0x00100000>;
-+			label = "NOR (RO) U-Boot Image";
-+			read-only;
-+		};
-+	};
-+};
-+
-+&soc {
-+	i2c@3000 {
-+		rtc@68 {
-+			compatible = "dallas,ds1339";
-+			reg = <0x68>;
-+		};
-+	};
-+
-+	mdio@24000 {
-+		phy0: ethernet-phy@0 {
-+			interrupts = <3 1 0 0>;
-+			reg = <0x0>;
-+		};
-+		phy1: ethernet-phy@1 {
-+			interrupts = <2 1 0 0>;
-+			reg = <0x1>;
-+		};
-+		phy2: ethernet-phy@2 {
-+			interrupts = <1 1 0 0>;
-+			reg = <0x2>;
-+		};
-+	};
-+
-+	mdio@25000 {
-+		tbi1: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@26000 {
-+		tbi2: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet0: ethernet@b0000 {
-+		phy-handle = <&phy2>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	enet1: ethernet@b1000 {
-+		phy-handle = <&phy0>;
-+		tbi-handle = <&tbi1>;
-+		phy-connection-type = "sgmii";
-+	};
-+
-+	enet2: ethernet@b2000 {
-+		phy-handle = <&phy1>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	usb@22000 {
-+		phy_type = "ulpi";
-+	};
-+
-+	/* USB2 is shared with localbus, so it must be disabled
-+	   by default. We can't put 'status = "disabled";' here
-+	   since U-Boot doesn't clear the status property when
-+	   it enables USB2. OTOH, U-Boot does create a new node
-+	   when there isn't any. So, just comment it out.
-+	*/
-+	usb@23000 {
-+		status = "disabled";
-+		phy_type = "ulpi";
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p1020utm-pc_32b.dts b/arch/powerpc/boot/dts/p1020utm-pc_32b.dts
-new file mode 100644
-index 0000000..4bfdd89
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1020utm-pc_32b.dts
-@@ -0,0 +1,89 @@
-+/*
-+ * P1020 UTM-PC Device Tree Source (32-bit address map)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1020si-pre.dtsi"
-+/ {
-+	model = "fsl,P1020UTM-PC";
-+	compatible = "fsl,P1020UTM-PC";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@ffe05000 {
-+		reg = <0x0 0xffe05000 0x0 0x1000>;
-+
-+		/* NOR */
-+		ranges = <0x0 0x0 0x0 0xec000000 0x02000000
-+			  0x1 0x0 0x0 0xffa00000 0x00040000
-+			  0x2 0x0 0x0 0xffb00000 0x00020000>;
-+	};
-+
-+	soc: soc@ffe00000 {
-+		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		reg = <0x0 0xffe09000 0x0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		reg = <0x0 0xffe0a000 0x0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "p1020utm-pc.dtsi"
-+/include/ "fsl/p1020si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1020utm-pc_36b.dts b/arch/powerpc/boot/dts/p1020utm-pc_36b.dts
-new file mode 100644
-index 0000000..abec535
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1020utm-pc_36b.dts
-@@ -0,0 +1,89 @@
-+/*
-+ * P1020 UTM-PC Device Tree Source (36-bit address map)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1020si-pre.dtsi"
-+/ {
-+	model = "fsl,P1020UTM-PC";
-+	compatible = "fsl,P1020UTM-PC";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@fffe05000 {
-+		reg = <0xf 0xffe05000 0x0 0x1000>;
-+
-+		/* NOR */
-+		ranges = <0x0 0x0 0xf 0xec000000 0x02000000
-+			  0x1 0x0 0xf 0xffa00000 0x00040000
-+			  0x2 0x0 0xf 0xffb00000 0x00020000>;
-+	};
-+
-+	soc: soc@fffe00000 {
-+		ranges = <0x0 0xf 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@fffe09000 {
-+		reg = <0xf 0xffe09000 0x0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@fffe0a000 {
-+		reg = <0xf 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xe0000000
-+				  0x2000000 0x0 0xe0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+/include/ "p1020utm-pc.dtsi"
-+/include/ "fsl/p1020si-post.dtsi"
--- 
-1.7.5.4
+>The patches are already in -next and I won't rebase, so we need to fix
+>it on top of the existing patches. Gavin, can you make a patch that puts
+>it back into pci_dn to begin with, then we can contemplate what better
+>long term solution we have ?
+>
+
+I've had something more in my private git tree regarding this. I'll
+talk with you for your comments ;-)
+
+Thanks,
+Gavin
