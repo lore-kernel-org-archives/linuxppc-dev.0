@@ -1,38 +1,19 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DF820B6EEA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 20:40:24 +1100 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 14 Mar 2012 14:35:37 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2E92Cxj3678220
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 14:32:13 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2EEVvtp013016
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 20:01:58 +0530
-Date: Wed, 14 Mar 2012 17:02:07 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: linux-next: manual merge of the devicetree tree with the powerpc
- tree
-Message-ID: <20120314090207.GA31112@shangw>
-References: <20120313160100.c8cc3fd2b3d1f485ef7e7954@canb.auug.org.au>
- <20120313182612.0546D3E053B@localhost>
- <20120314015356.GA4028@shangw> <1331713762.3105.121.camel@pasglop>
+Return-Path: <B35336@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1A03BB6EEF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 21:13:40 +1100 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/9 v2] powerpc/mpc85xxcds: Fix PCI I/O space resource of PCI
+ bridge
+Date: Wed, 14 Mar 2012 18:15:27 +0800
+Message-ID: <1331720127-16012-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1331713762.3105.121.camel@pasglop>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,54 +23,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> >  +#if defined(CONFIG_EEH)
->> > >  +static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
->> > >  +{
->> > >  +  return dn->edev;
->> > >  +}
->> > >  +#endif
->> > 
->> > Ben, What is this?  I don't want the eeh_dev pointer in struct device_node.  Up to
->> > now we've avoided putting any reverse references into device_nodes.  For everything
->> > else we use a reverse lookup, particularly for devices, to avoid growing the
->> > device_node for each new type of lookup.
->> > 
->> 
->> It's used to trace the EEH device. When EEH (Enhanced Error Hanlding) is enabled,
->> EEH device will be created against PCI sensitive OF node to trace the EEH state
->> accordingly. Since you don't want see this in struct device_node, we have to change
->> struct eeh_dev for a little bit to so that all struct eeh_dev instances will form
->> a global list and we can search eeh_dev according to the given device_node through
->> the global list. 
->> 
->> I don't know the policy or rule here for much. I think we can have 2 options.
->> 
->> 1. Keep the code as being, and fix it later.
->> 2. Fix it now. 
->
->My bad, it's a mis-review, I thought it was still in pci_dn, I din't
->catch Gavin moving it to device-node.
->
->Yes, Gavin, we need to do something else, a chained list we walk or
->something like that. For the "fast path" which is when we have a pci_dev
->around, we can either add it to dev_archdata or hijack the pci-dev
->platform_data (I don't think anything uses it, Grant, do you know of
->anything ?)
->
+From: chenhui zhao <chenhui.zhao@freescale.com>
 
-Yes, Ben. I'll come up another patch on top of -next. It's supposed
-to introduce global list for newly created eeh_dev and retrieve
-the corresponding eeh_dev according to the given device_node through
-it.
+There is a PCI bridge(Tsi310) between the MPC8548 and a VIA
+southbridge chip.
 
->The patches are already in -next and I won't rebase, so we need to fix
->it on top of the existing patches. Gavin, can you make a patch that puts
->it back into pci_dn to begin with, then we can contemplate what better
->long term solution we have ?
->
+The bootloader sets the PCI bridge to open a window from 0x0000
+to 0x1fff on the PCI I/O space. But the kernel can't set the I/O
+resource. In the routine pci_read_bridge_io(), if the base which
+is read from PCI_IO_BASE is equal to zero, the routine don't set
+the I/O resource of the child bus.
 
-I've had something more in my private git tree regarding this. I'll
-talk with you for your comments ;-)
+To allow the legacy I/O space on the VIA southbridge to be accessed,
+use the fixup to fix the PCI I/O space of the PCI bridge.
 
-Thanks,
-Gavin
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+Changes for v2:
+ * merge patch 1/9 and 2/9
+ * rename PCI_DEVICE_ID_IBM_PCIX_BRIDGE to PCI_DEVICE_ID_IDT_TSI310
+
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   31 +++++++++++++++++++++++++++-
+ 1 files changed, 29 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 02d97e3..766b215 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -3,7 +3,7 @@
+  *
+  * Maintained by Kumar Gala (see MAINTAINERS for contact information)
+  *
+- * Copyright 2005 Freescale Semiconductor Inc.
++ * Copyright 2005, 2011-2012 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -158,6 +158,33 @@ DECLARE_PCI_FIXUP_EARLY(0x1957, 0x3fff, skip_fake_bridge);
+ DECLARE_PCI_FIXUP_EARLY(0x3fff, 0x1957, skip_fake_bridge);
+ DECLARE_PCI_FIXUP_EARLY(0xff3f, 0x5719, skip_fake_bridge);
+ 
++#define PCI_DEVICE_ID_IDT_TSI310	0x01a7
++
++/*
++ * Fix Tsi310 PCI-X bridge resource.
++ * Force the bridge to open a window from 0x0000-0x1fff in PCI I/O space.
++ * This allows legacy I/O(i8259, etc) on the VIA southbridge to be accessed.
++ */
++void mpc85xx_cds_fixup_bus(struct pci_bus *bus)
++{
++	struct pci_dev *dev = bus->self;
++	struct resource *res = bus->resource[0];
++
++	if (dev != NULL &&
++	    dev->vendor == PCI_VENDOR_ID_IBM &&
++	    dev->device == PCI_DEVICE_ID_IDT_TSI310) {
++		if (res) {
++			res->start = 0;
++			res->end   = 0x1fff;
++			res->flags = IORESOURCE_IO;
++			pr_info("mpc85xx_cds: PCI bridge resource fixup applied\n");
++			pr_info("mpc85xx_cds: %pR\n", res);
++		}
++	}
++
++	fsl_pcibios_fixup_bus(bus);
++}
++
+ #ifdef CONFIG_PPC_I8259
+ static void mpc85xx_8259_cascade_handler(unsigned int irq,
+ 					 struct irq_desc *desc)
+@@ -322,7 +349,7 @@ define_machine(mpc85xx_cds) {
+ 	.get_irq	= mpic_get_irq,
+ #ifdef CONFIG_PCI
+ 	.restart	= mpc85xx_cds_restart,
+-	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++	.pcibios_fixup_bus	= mpc85xx_cds_fixup_bus,
+ #else
+ 	.restart	= fsl_rstcr_restart,
+ #endif
+-- 
+1.6.4.1
