@@ -1,23 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A7AADB6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 19:29:51 +1100 (EST)
-Message-ID: <1331713762.3105.121.camel@pasglop>
-Subject: Re: linux-next: manual merge of the devicetree tree with the
- powerpc tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Wed, 14 Mar 2012 19:29:22 +1100
-In-Reply-To: <20120314015356.GA4028@shangw>
-References: <20120313160100.c8cc3fd2b3d1f485ef7e7954@canb.auug.org.au>
- <20120313182612.0546D3E053B@localhost> <20120314015356.GA4028@shangw>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <r66093@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 28857B6EEF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 20:18:28 +1100 (EST)
+Received: from mail167-va3 (localhost [127.0.0.1])	by
+ mail167-va3-R.bigfish.com (Postfix) with ESMTP id 8F1163C00DC	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 09:18:17 +0000 (UTC)
+Received: from VA3EHSMHS024.bigfish.com (unknown [10.7.14.251])	by
+ mail167-va3.bigfish.com (Postfix) with ESMTP id 4654020004B	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2012 09:18:15 +0000 (UTC)
+From: <Chang-Ming.Huang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/4] powerpc/85xx: add P1020UTM-PC platform support
+Date: Wed, 14 Mar 2012 17:08:28 +0800
+Message-ID: <1331716110-25545-2-git-send-email-Chang-Ming.Huang@freescale.com>
+In-Reply-To: <1331716110-25545-1-git-send-email-Chang-Ming.Huang@freescale.com>
+References: <1331716110-25545-1-git-send-email-Chang-Ming.Huang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-03-14 at 09:53 +0800, Gavin Shan wrote:
-> >  +#if defined(CONFIG_EEH)
-> > >  +static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
-> > >  +{
-> > >  +  return dn->edev;
-> > >  +}
-> > >  +#endif
-> > 
-> > Ben, What is this?  I don't want the eeh_dev pointer in struct device_node.  Up to
-> > now we've avoided putting any reverse references into device_nodes.  For everything
-> > else we use a reverse lookup, particularly for devices, to avoid growing the
-> > device_node for each new type of lookup.
-> > 
-> 
-> It's used to trace the EEH device. When EEH (Enhanced Error Hanlding) is enabled,
-> EEH device will be created against PCI sensitive OF node to trace the EEH state
-> accordingly. Since you don't want see this in struct device_node, we have to change
-> struct eeh_dev for a little bit to so that all struct eeh_dev instances will form
-> a global list and we can search eeh_dev according to the given device_node through
-> the global list. 
-> 
-> I don't know the policy or rule here for much. I think we can have 2 options.
-> 
-> 1. Keep the code as being, and fix it later.
-> 2. Fix it now. 
+From: Jerry Huang <Chang-Ming.Huang@freescale.com>
 
-My bad, it's a mis-review, I thought it was still in pci_dn, I din't
-catch Gavin moving it to device-node.
+The p1020utm-pc has the similar feature as the p1020rdb.
+Therefore, p1020utm-pc use the same platform file as the p1/p2 rdb board.
+Overview of P1020UTM-PC platform:
+        - DDR3 1GB
+        - NOR flash 32MB
+        - I2C EEPROM 256Kb
+        - eTSEC1 (RGMII PHY Atheros AR8021)
+        - eTSEC2 (SGMII PHY Vitesse VSC8221)
+        - eTSEC3 (RGMII PHY Atheros AR8021)
+        - SDHC
+        - 2 USB ports
+        - PCIe (Lane1 to dual SATA controller)
 
-Yes, Gavin, we need to do something else, a chained list we walk or
-something like that. For the "fast path" which is when we have a pci_dev
-around, we can either add it to dev_archdata or hijack the pci-dev
-platform_data (I don't think anything uses it, Grant, do you know of
-anything ?)
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
 
-The patches are already in -next and I won't rebase, so we need to fix
-it on top of the existing patches. Gavin, can you make a patch that puts
-it back into pci_dn to begin with, then we can contemplate what better
-long term solution we have ?
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index 5c6334a..e121d80 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -179,6 +179,7 @@ machine_arch_initcall(p2020_rdb, mpc85xxrdb_publish_pci_device);
+ machine_arch_initcall(p1020_rdb, mpc85xxrdb_publish_pci_device);
+ machine_arch_initcall(p1020_rdb_pc, mpc85xxrdb_publish_pci_device);
+ machine_arch_initcall(p1020_mbg_pc, mpc85xxrdb_publish_pci_device);
++machine_arch_initcall(p1020_utm_pc, mpc85xxrdb_publish_pci_device);
+ machine_arch_initcall(p2020_rdb_pc, mpc85xxrdb_publish_pci_device);
+ machine_arch_initcall(p1024_rdb, mpc85xxrdb_publish_pci_device);
+ machine_arch_initcall(p1021_rdb_pc, mpc85xxrdb_publish_pci_device);
+@@ -201,6 +202,7 @@ machine_device_initcall(p2020_rdb, mpc85xxrdb_publish_devices);
+ machine_device_initcall(p1020_rdb, mpc85xxrdb_publish_devices);
+ machine_device_initcall(p1020_rdb_pc, mpc85xxrdb_publish_devices);
+ machine_device_initcall(p1020_mbg_pc, mpc85xxrdb_publish_devices);
++machine_device_initcall(p1020_utm_pc, mpc85xxrdb_publish_devices);
+ machine_device_initcall(p2020_rdb_pc, mpc85xxrdb_publish_devices);
+ machine_device_initcall(p1024_rdb, mpc85xxrdb_publish_devices);
+ machine_device_initcall(p1021_rdb_pc, mpc85xxrdb_publish_devices);
+@@ -269,6 +271,13 @@ static int __init p1020_mbg_pc_probe(void)
+ 	return of_flat_dt_is_compatible(root, "fsl,P1020MBG-PC");
+ }
+ 
++static int __init p1020_utm_pc_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "fsl,P1020UTM-PC");
++}
++
+ define_machine(p2020_rdb) {
+ 	.name			= "P2020 RDB",
+ 	.probe			= p2020_rdb_probe,
+@@ -380,3 +389,17 @@ define_machine(p1020_mbg_pc) {
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
++
++define_machine(p1020_utm_pc) {
++	.name			= "P1020 UTM-PC",
++	.probe			= p1020_utm_pc_probe,
++	.setup_arch		= mpc85xx_rdb_setup_arch,
++	.init_IRQ		= mpc85xx_rdb_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++#endif
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
+-- 
+1.7.5.4
