@@ -1,22 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 6E785B6EF4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 09:11:28 +1100 (EST)
-Date: Fri, 16 Mar 2012 09:11:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 21/38] Disintegrate asm/system.h for PowerPC [ver #3]
-Message-Id: <20120316091121.1a204465647258dddc3bd89d@canb.auug.org.au>
-In-Reply-To: <20120315205831.28759.61679.stgit@warthog.procyon.org.uk>
-References: <20120315205514.28759.58969.stgit@warthog.procyon.org.uk>
- <20120315205831.28759.61679.stgit@warthog.procyon.org.uk>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E00F7B6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 09:28:00 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q2FMRt76014728
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 17:27:56 -0500
+Message-ID: <1331850475.3105.152.camel@pasglop>
+Subject: [PATCH] powerpc: Fix power4/970 idle code regression with lockdep
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 16 Mar 2012 09:27:55 +1100
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__16_Mar_2012_09_11_21_+1100_WMGSzLZFfEeAgF2D"
-Cc: linux-arch@vger.kernel.org, paul.gortmaker@windriver.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__16_Mar_2012_09_11_21_+1100_WMGSzLZFfEeAgF2D
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+in commit 7230c5644188cd9e3fb380cc97dde00c464a3ba7
+"powerpc: Rework lazy-interrupt handling"
 
-Hi Dave,
+I introduced a regression, accidentally calling irq tracing twice
+and not properly restoring a clobbered register (r7) later used
+for writing to the MSR.
 
-On Thu, 15 Mar 2012 20:58:32 +0000 David Howells <dhowells@redhat.com> wrot=
-e:
->
->  arch/powerpc/platforms/iseries/dt.c               |    1=20
->  arch/powerpc/platforms/iseries/lpevents.c         |    1=20
->  arch/powerpc/platforms/iseries/setup.c            |    1=20
->  arch/powerpc/platforms/iseries/smp.c              |    1=20
->  arch/powerpc/platforms/iseries/viopath.c          |    1=20
+This caused lockups when booting on a G5 with lockdep enabled.
 
-I don't expect you to change your series (now, anyway), but just a heads
-up that all those files have been removed in the powerpc tree.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/idle_power4.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__16_Mar_2012_09_11_21_+1100_WMGSzLZFfEeAgF2D
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPYmkJAAoJEECxmPOUX5FEULUP/1AR0SltRXfg2mLEuZhgz/cc
-QaRqQ3PaCIkMI6pO6Ykgib8t69V4pFl/NJn4BTK1TzY/9q0Ljo7Olq6K1ZSQ86zk
-8l8Pmx1jsOpFO5vvIcf7bMOiSiu95PNPSurzfulgxzkcXn3eNHO2Egr05pC06mML
-ZZHUgsxLA50s0hDuZZ3dHrl3qwiwnCZwe/MSioToya4y06FEB1o0x8Kf5gGXQCT2
-wQ9DfrL6JnRMkaRvJQSAtX0MHqoE0wSpuaI6aHQ+cwXud1Vcbs+ui42VoDlwp7Gm
-IDfsqx6S7W/7uFKITvYk+OBQc5/OmUftoS5VH1MbReSp0E17QC0DVSAUy860xLZe
-IfkfdtRXHqd7XmcbGHniKwi+TaVe8haADMsns/l6PY3IQCTKJ3LlKLmbB58gdJkE
-opaT32F0Spb34T6GWXOvFFKcADCJSsL07wES59+DlFnE4S76xOamCNkI/0B80V+c
-Fz7s8pCfoWe0+FZYMNt2h269EtrYgAo01ySMpGzn1ajQcf5fmXVS/iINmTn3eTyE
-tCAWY/2ttab0bnRy/ZkSZNLEOXnfR/snTQ/gDXmWrtMzsqDEBC/n3dsmOqyhhsuS
-DQH+TYf911LdUJVwr8VbG+qHrPXkDeEeW4vso/Ie1MLYRPX9kPhwaP0Ak2qn3vCp
-dtCEubzdflNaioMLlC8S
-=mdZk
------END PGP SIGNATURE-----
-
---Signature=_Fri__16_Mar_2012_09_11_21_+1100_WMGSzLZFfEeAgF2D--
+diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
+index d8cdba4c2..2c71b0f 100644
+--- a/arch/powerpc/kernel/idle_power4.S
++++ b/arch/powerpc/kernel/idle_power4.S
+@@ -50,9 +50,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	addi    r1,r1,128
+ 	ld	r0,16(r1)
+ 	mtlr	r0
++	mfmsr	r7
+ #endif /* CONFIG_TRACE_IRQFLAGS */
+ 
+-	TRACE_ENABLE_INTS
+ 	li	r0,1
+ 	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
+ BEGIN_FTR_SECTION
+-- 
+1.7.9
