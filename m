@@ -1,9 +1,9 @@
 Return-Path: <vhtnguyen@apm.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
- by ozlabs.org (Postfix) with SMTP id 12E75B6EF4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 21:56:42 +1100 (EST)
-Received: by mail-pz0-f44.google.com with SMTP id l33so4617523dak.17
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 03:56:41 -0700 (PDT)
+Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
+ by ozlabs.org (Postfix) with SMTP id DD5C8B6FAF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 21:57:29 +1100 (EST)
+Received: by yenm5 with SMTP id m5so3847606yen.17
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 03:57:27 -0700 (PDT)
 From: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
@@ -13,10 +13,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Neuling <mikey@neuling.org>,
  Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] powerpc/44x: Add additional support for APM821xx SoC and
+Subject: [PATCH 2/2] powerpc/44x: Add support PCI-E for APM821xx SoC and
  Bluestone board
-Date: Thu, 15 Mar 2012 17:56:32 +0700
-Message-Id: <1331808992-15367-1-git-send-email-vhtnguyen@apm.com>
+Date: Thu, 15 Mar 2012 17:57:19 +0700
+Message-Id: <1331809039-15405-1-git-send-email-vhtnguyen@apm.com>
 Cc: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>, open-source-review@apm.com,
  Phong Vo <pvo@apm.com>, Duc Dang <dhdang@apm.com>,
  Thang Nguyen <tqnguyen@apm.com>, Mai La <mla@apm.com>,
@@ -30,193 +30,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch updates the dts file for bluestone board with support:
-- UART1
-- L2 cache
-- NAND with NDFC
-- PCI-E
-
+This patch extends PCI-E driver to support PCI-E for APM821xx SoC on Bluestone board.
+Notes: this patch includes the fix base on Duc comment.
 Signed-off-by: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
 ---
- arch/powerpc/boot/dts/bluestone.dts |  127 ++++++++++++++++++++++++++++++++++-
- 1 files changed, 125 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/44x/Kconfig |    1 +
+ arch/powerpc/sysdev/ppc4xx_pci.c   |   70 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
-index 2a56a0d..cfa23bf 100644
---- a/arch/powerpc/boot/dts/bluestone.dts
-+++ b/arch/powerpc/boot/dts/bluestone.dts
-@@ -33,7 +33,7 @@
- 	aliases {
- 		ethernet0 = &EMAC0;
- 		serial0 = &UART0;
--		//serial1 = &UART1; --gcl missing UART1 label
-+		serial1 = &UART1;
- 	};
- 
- 	cpus {
-@@ -52,7 +52,7 @@
- 			d-cache-size = <32768>;
- 			dcr-controller;
- 			dcr-access-method = "native";
--			//next-level-cache = <&L2C0>; --gcl missing L2C0 label
-+			next-level-cache = <&L2C0>;
- 		};
- 	};
- 
-@@ -117,6 +117,16 @@
- 		dcr-reg = <0x00c 0x002>;
- 	};
- 
-+	L2C0: l2c {
-+		compatible = "ibm,l2-cache-apm82181", "ibm,l2-cache";
-+		dcr-reg = <0x020 0x008
-+			   0x030 0x008>;
-+		cache-line-size = <32>;
-+		cache-size = <262144>;
-+		interrupt-parent = <&UIC1>;
-+		interrupts = <11 1>;
-+	};
-+
- 	plb {
- 		compatible = "ibm,plb4";
- 		#address-cells = <2>;
-@@ -182,6 +192,53 @@
- 						reg = <0x001a0000 0x00060000>;
- 					};
- 				};
-+
-+				ndfc@1,0 {
-+					compatible = "ibm,ndfc";
-+					reg = <0x00000003 0x00000000 0x00002000>;
-+					ccr = <0x00001000>;
-+					bank-settings = <0x80002222>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					/* 2Gb Nand Flash */
-+					nand {
-+						#address-cells = <1>;
-+						#size-cells = <1>;
-+
-+						partition@0 {
-+							label = "firmware";
-+							reg   = <0x00000000 0x00C00000>;
-+						};
-+						partition@c00000 {
-+							label = "environment";
-+							reg   = <0x00C00000 0x00B00000>;
-+						};
-+						partition@1700000 {
-+							label = "kernel";
-+							reg   = <0x01700000 0x00E00000>;
-+						};
-+						partition@2500000 {
-+							label = "root";
-+							reg   = <0x02500000 0x08200000>;
-+						};
-+						partition@a700000 {
-+							label = "device-tree";
-+							reg   = <0x0A700000 0x00B00000>;
-+						};
-+						partition@b200000 {
-+							label = "config";
-+							reg   = <0x0B200000 0x00D00000>;
-+						};
-+						partition@bf00000 {
-+							label = "diag";
-+							reg   = <0x0BF00000 0x00C00000>;
-+						};
-+						partition@cb00000 {
-+							label = "vendor";
-+							reg   = <0x0CB00000 0x3500000>;
-+						};
-+					};
-+				};
- 			};
- 
- 			UART0: serial@ef600300 {
-@@ -195,11 +252,36 @@
- 				interrupts = <0x1 0x4>;
- 			};
- 
-+			UART1: serial@ef600400 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <0xef600400 0x00000008>;
-+				virtual-reg = <0xef600400>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>; /* Filled in by U-Boot */
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x1 0x4>;
-+			};
-+
- 			IIC0: i2c@ef600700 {
- 				compatible = "ibm,iic";
- 				reg = <0xef600700 0x00000014>;
- 				interrupt-parent = <&UIC0>;
- 				interrupts = <0x2 0x4>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				rtc@68 {
-+					compatible = "stm,m41t80";
-+					reg = <0x68>;
-+					interrupt-parent = <&UIC0>;
-+					interrupts = <0x9 0x8>;
-+				};
-+				sttm@4C {
-+					compatible = "adm,adm1032";
-+					reg = <0x4C>;
-+					interrupt-parent = <&UIC1>;
-+					interrupts = <0x1E 0x8>; /* CPU_THERNAL_L */
-+				};
- 			};
- 
- 			IIC1: i2c@ef600800 {
-@@ -250,5 +332,46 @@
- 			};
- 		};
- 
-+		PCIE0: pciex@d00000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-apm821xx", "ibm,plb-pciex";
-+			primary;
-+			port = <0x0>; /* port number */
-+			reg = <0x0000000d 0x00000000 0x20000000	/* Config space access */
-+			       0x0000000c 0x08010000 0x00001000>;	/* Registers */
-+			dcr-reg = <0x100 0x020>;
-+			sdr-base = <0x300>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x00000000 0x00000000 0x80000000
-+				  0x02000000 0x00000000 0x00000000 0x0000000f 0x00000000 0x00000000 0x00100000
-+				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80000000 0x00000000 0x00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+
-+			/* This drives busses 40 to 0x7f */
-+			bus-range = <0x40 0x7f>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
-+			interrupt-map = <
-+				0x0 0x0 0x0 0x1 &UIC3 0xc 0x4 /* swizzled int A */
-+				0x0 0x0 0x0 0x2 &UIC3 0xd 0x4 /* swizzled int B */
-+				0x0 0x0 0x0 0x3 &UIC3 0xe 0x4 /* swizzled int C */
-+				0x0 0x0 0x0 0x4 &UIC3 0xf 0x4 /* swizzled int D */>;
-+		};
- 	};
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 5d5aaf6..c1e9896 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -23,6 +23,7 @@ config BLUESTONE
+ 	default n
+ 	select PPC44x_SIMPLE
+ 	select APM821xx
++	select PPC4xx_PCI_EXPRESS
+ 	select IBM_EMAC_RGMII
+ 	help
+ 	  This option enables support for the APM APM821xx Evaluation board.
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 4f05f75..ed3ca9e 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -1050,6 +1050,74 @@ static struct ppc4xx_pciex_hwops ppc460ex_pcie_hwops __initdata =
+ 	.check_link	= ppc4xx_pciex_check_link_sdr,
  };
+ 
++static int __init apm821xx_pciex_core_init(struct device_node *np)
++{
++	/* Return the number of pcie port */
++	return 1;
++}
++
++static int apm821xx_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
++{
++	u32 val;
++
++	/*
++	 * Do a software reset on PCIe ports.
++	 * This code is to fix the issue that pci drivers doesn't re-assign
++	 * bus number for PCIE devices after Uboot
++	 * scanned and configured all the buses (eg. PCIE NIC IntelPro/1000
++	 * PT quad port, SAS LSI 1064E)
++	 */
++
++	mtdcri(SDR0, PESDR0_460EX_PHY_CTL_RST, 0x0);
++	mdelay(10);
++
++	if (port->endpoint)
++		val = PTYPE_LEGACY_ENDPOINT << 20;
++	else
++		val = PTYPE_ROOT_PORT << 20;
++
++	val |= LNKW_X1 << 12;
++
++	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET, val);
++	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, 0x00000000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x01010000);
++
++	mtdcri(SDR0, PESDR0_460EX_L0CDRCTL, 0x00003230);
++	mtdcri(SDR0, PESDR0_460EX_L0DRV, 0x00000130);
++	mtdcri(SDR0, PESDR0_460EX_L0CLK, 0x00000006);
++
++	mtdcri(SDR0, PESDR0_460EX_PHY_CTL_RST, 0x10000000);
++	mdelay(50);
++	mtdcri(SDR0, PESDR0_460EX_PHY_CTL_RST, 0x30000000);
++
++	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
++		mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) |
++		(PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTPYN));
++
++	/* Poll for PHY reset */
++	val = PESDR0_460EX_RSTSTA - port->sdr_base;
++	if (ppc4xx_pciex_wait_on_sdr(port, val, 0x1, 1,	100)) {
++		printk(KERN_WARNING "PCIE: Can't reset PHY\n");
++		return -EBUSY;
++	} else {
++		mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
++			(mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) &
++			~(PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTDL)) |
++			PESDRx_RCSSET_RSTPYN);
++
++		port->has_ibpre = 1;
++		return 0;
++	}
++}
++
++static struct ppc4xx_pciex_hwops apm821xx_pcie_hwops __initdata = {
++	.want_sdr   = true,
++	.core_init	= apm821xx_pciex_core_init,
++	.port_init_hw	= apm821xx_pciex_init_port_hw,
++	.setup_utl	= ppc460ex_pciex_init_utl,
++	.check_link = ppc4xx_pciex_check_link_sdr,
++};
++
+ static int __init ppc460sx_pciex_core_init(struct device_node *np)
+ {
+ 	/* HSS drive amplitude */
+@@ -1362,6 +1430,8 @@ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+ 		ppc4xx_pciex_hwops = &ppc460ex_pcie_hwops;
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-460sx"))
+ 		ppc4xx_pciex_hwops = &ppc460sx_pcie_hwops;
++	if (of_device_is_compatible(np, "ibm,plb-pciex-apm821xx"))
++		ppc4xx_pciex_hwops = &apm821xx_pcie_hwops;
+ #endif /* CONFIG_44x    */
+ #ifdef CONFIG_40x
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
 -- 
 1.7.2.5
