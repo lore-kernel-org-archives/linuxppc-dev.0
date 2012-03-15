@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E00F7B6F13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 09:28:00 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q2FMRt76014728
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 17:27:56 -0500
-Message-ID: <1331850475.3105.152.camel@pasglop>
-Subject: [PATCH] powerpc: Fix power4/970 idle code regression with lockdep
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 16 Mar 2012 09:27:55 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <B04825@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A03F8B6F13
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2012 09:41:18 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/epapr: add "memory" as a clobber to all hypercalls
+Date: Thu, 15 Mar 2012 17:41:02 -0500
+Message-ID: <1331851262-1806-1-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-in commit 7230c5644188cd9e3fb380cc97dde00c464a3ba7
-"powerpc: Rework lazy-interrupt handling"
+The "memory" clobber tells the compiler to ensure that all writes to memory
+are committed before the hypercall is made.
 
-I introduced a regression, accidentally calling irq tracing twice
-and not properly restoring a clobbered register (r7) later used
-for writing to the MSR.
+"memory" is only necessary for hcalls where the Hypervisor will read or
+write guest memory. However, we add it to all hcalls because the impact is
+minimal, and we want to ensure that it's present for the hcalls that need it.
 
-This caused lockups when booting on a G5 with lockdep enabled.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- arch/powerpc/kernel/idle_power4.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/epapr_hcalls.h |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index d8cdba4c2..2c71b0f 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -50,9 +50,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
- 	addi    r1,r1,128
- 	ld	r0,16(r1)
- 	mtlr	r0
-+	mfmsr	r7
- #endif /* CONFIG_TRACE_IRQFLAGS */
+diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
+index f3b0c2c..976835d 100644
+--- a/arch/powerpc/include/asm/epapr_hcalls.h
++++ b/arch/powerpc/include/asm/epapr_hcalls.h
+@@ -134,10 +134,15 @@
+  * whether they will be clobbered.
+  *
+  * Note that r11 can be used as an output parameter.
++ *
++ * The "memory" clobber is only necessary for hcalls where the Hypervisor
++ * will read or write guest memory. However, we add it to all hcalls because
++ * the impact is minimal, and we want to ensure that it's present for the
++ * hcalls that need it.
+ */
  
--	TRACE_ENABLE_INTS
- 	li	r0,1
- 	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
- BEGIN_FTR_SECTION
+ /* List of common clobbered registers.  Do not use this macro. */
+-#define EV_HCALL_CLOBBERS "r0", "r12", "xer", "ctr", "lr", "cc"
++#define EV_HCALL_CLOBBERS "r0", "r12", "xer", "ctr", "lr", "cc", "memory"
+ 
+ #define EV_HCALL_CLOBBERS8 EV_HCALL_CLOBBERS
+ #define EV_HCALL_CLOBBERS7 EV_HCALL_CLOBBERS8, "r10"
 -- 
-1.7.9
+1.7.3.4
