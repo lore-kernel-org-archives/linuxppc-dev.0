@@ -1,33 +1,33 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EBA9EB6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 01:39:48 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Thu, 15 Mar 2012 20:09:42 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2FEddIa4460602
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 20:09:40 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2FKAESJ000753
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 07:10:15 +1100
-Message-ID: <4F61FF26.6030205@in.ibm.com>
-Date: Thu, 15 Mar 2012 20:09:34 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+ [212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 7D3CCB6EF4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 03:25:41 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Chris Metcalf <cmetcalf@tilera.com>
+Subject: Re: [PATCH v3] ipc: provide generic compat versions of IPC syscalls
+Date: Thu, 15 Mar 2012 16:25:32 +0000
+References: <201112091536.pB9Fa5f7002738@farm-0002.internal.tilera.com>
+ <201112122148.pBCLmPH0023959@farm-0002.internal.tilera.com>
+ <4F6144B8.5010601@tilera.com>
+In-Reply-To: <4F6144B8.5010601@tilera.com>
 MIME-Version: 1.0
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH 0/2] Kdump support for PPC_47x
-References: <20120314102121.675.92862.stgit@suzukikp.in.ibm.com>
- <20120315061128.GA3320@thor.bakeyournoodle.com>
-In-Reply-To: <20120315061128.GA3320@thor.bakeyournoodle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201203151625.32199.arnd@arndb.de>
+Cc: linux-mips@linux-mips.org, NeilBrown <neilb@suse.de>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
+ "J. Bruce Fields" <bfields@redhat.com>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>,
+ Lucas De Marchi <lucas.demarchi@profusion.mobi>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,16 +37,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/15/2012 11:41 AM, Tony Breeds wrote:
-> On Wed, Mar 14, 2012 at 03:52:30PM +0530, Suzuki K. Poulose wrote:
->> The following series implements Kexec/Kdump support for
->> PPC_47x based platforms. Doesn't support SMP yet.
->>
->> I have tested these patches on simics simulator for ppc476.
->
-> I'll test these patches on the currituck board I have here early next
-> week.
+On Thursday 15 March 2012, Chris Metcalf wrote:
+> 
+> Somewhat belatedly, I'm looking to push this through the "tile" tree. 
+> Andrew Morton has been keeping it in his tree but I figure I should push it
+> since it directly affects "tile" and currently no one else.
 
-Thanks a lot Tony !
+Sounds good.
 
-Suzuki
+> However, it would be nice if anyone could provide a Reviewed-by or Acked-by
+> on the patch.  Thanks!
+
+As the main author of ipc/compat.c in its current form,
+
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
