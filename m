@@ -1,18 +1,26 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by ozlabs.org (Postfix) with ESMTP id 99BF4B6EE7
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2012 18:10:54 +1100 (EST)
-Date: Thu, 15 Mar 2012 15:38:08 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Cong Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH 2/5] ppc: move DEBUG code to --debug
-Message-ID: <20120315063807.GB3449@verge.net.au>
-References: <1331188782-10912-1-git-send-email-xiyou.wangcong@gmail.com>
- <1331188782-10912-2-git-send-email-xiyou.wangcong@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1331188782-10912-2-git-send-email-xiyou.wangcong@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+Return-Path: <vhtnguyen@apm.com>
+Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
+ by ozlabs.org (Postfix) with SMTP id 12E75B6EF4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 21:56:42 +1100 (EST)
+Received: by mail-pz0-f44.google.com with SMTP id l33so4617523dak.17
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2012 03:56:41 -0700 (PDT)
+From: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Tirumala R Marri <tmarri@apm.com>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Michael Neuling <mikey@neuling.org>,
+ Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] powerpc/44x: Add additional support for APM821xx SoC and
+ Bluestone board
+Date: Thu, 15 Mar 2012 17:56:32 +0700
+Message-Id: <1331808992-15367-1-git-send-email-vhtnguyen@apm.com>
+Cc: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>, open-source-review@apm.com,
+ Phong Vo <pvo@apm.com>, Duc Dang <dhdang@apm.com>,
+ Thang Nguyen <tqnguyen@apm.com>, Mai La <mla@apm.com>,
+ Sang Pham <spham@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,376 +30,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[CC linuxppc-dev@ozlabs.org]
+This patch updates the dts file for bluestone board with support:
+- UART1
+- L2 cache
+- NAND with NDFC
+- PCI-E
 
-On Thu, Mar 08, 2012 at 02:39:39PM +0800, Cong Wang wrote:
-> Like patch 1/5, this one moves code under #if DEBUG to --debug
-> on ppc arch.
-> 
-> Signed-off-by: Cong Wang <xiyou.wangcong@gmail.com>
-> ---
->  kexec/arch/ppc/crashdump-powerpc.c |   18 ++++++++----------
->  kexec/arch/ppc/fixup_dtb.c         |   25 +++++++++++--------------
->  kexec/arch/ppc/fs2dt.c             |    6 +++---
->  kexec/arch/ppc/kexec-ppc.c         |   17 ++++++++---------
->  kexec/arch/ppc/libfdt-wrapper.c    |    4 ++--
->  kexec/arch/ppc64/crashdump-ppc64.c |   16 ++++++----------
->  kexec/arch/ppc64/kexec-elf-ppc64.c |   23 +++++++++++------------
->  kexec/arch/ppc64/kexec-ppc64.c     |    9 +++------
->  8 files changed, 52 insertions(+), 66 deletions(-)
-> 
-> diff --git a/kexec/arch/ppc/crashdump-powerpc.c b/kexec/arch/ppc/crashdump-powerpc.c
-> index 7c9dbff..1bef69b 100644
-> --- a/kexec/arch/ppc/crashdump-powerpc.c
-> +++ b/kexec/arch/ppc/crashdump-powerpc.c
-> @@ -226,15 +226,15 @@ static int get_crash_memory_ranges(struct memory_range **range, int *ranges)
->  
->  	*range = crash_memory_range;
->  	*ranges = memory_ranges;
-> -#if DEBUG
-> +
->  	int j;
-> -	printf("CRASH MEMORY RANGES\n");
-> +	dbgprintf("CRASH MEMORY RANGES\n");
->  	for (j = 0; j < *ranges; j++) {
->  		start = crash_memory_range[j].start;
->  		end = crash_memory_range[j].end;
-> -		fprintf(stderr, "%016Lx-%016Lx\n", start, end);
-> +		dbgprintf("%016Lx-%016Lx\n", start, end);
->  	}
-> -#endif
-> +
->  	return 0;
->  
->  err:
-> @@ -289,9 +289,9 @@ static int add_cmdline_param(char *cmdline, unsigned long long addr,
->  	if (cmdlen > (COMMAND_LINE_SIZE - 1))
->  		die("Command line overflow\n");
->  	strcat(cmdline, str);
-> -#if DEBUG
-> -	fprintf(stderr, "Command line after adding elfcorehdr: %s\n", cmdline);
-> -#endif
-> +
-> +	dbgprintf("Command line after adding elfcorehdr: %s\n", cmdline);
-> +
->  	return 0;
->  }
->  
-> @@ -403,10 +403,8 @@ void add_usable_mem_rgns(unsigned long long base, unsigned long long size)
->  	usablemem_rgns.ranges[usablemem_rgns.size].start = base;
->  	usablemem_rgns.ranges[usablemem_rgns.size++].end = end;
->  
-> -#ifdef DEBUG
-> -	fprintf(stderr, "usable memory rgns size:%u base:%llx size:%llx\n",
-> +	dbgprintf("usable memory rgns size:%u base:%llx size:%llx\n",
->  		usablemem_rgns.size, base, size);
-> -#endif
->  }
->  
->  int is_crashkernel_mem_reserved(void)
-> diff --git a/kexec/arch/ppc/fixup_dtb.c b/kexec/arch/ppc/fixup_dtb.c
-> index 189e0c7..e5f2717 100644
-> --- a/kexec/arch/ppc/fixup_dtb.c
-> +++ b/kexec/arch/ppc/fixup_dtb.c
-> @@ -17,25 +17,26 @@
->  
->  const char proc_dts[] = "/proc/device-tree";
->  
-> -#ifdef DEBUG
->  static void print_fdt_reserve_regions(void)
->  {
->  	int i, num;
->  
-> +	if (!kexec_debug)
-> +		return;
->  	/* Print out a summary of the final reserve regions */
->  	num =  fdt_num_mem_rsv(blob_buf);
+Signed-off-by: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
+---
+ arch/powerpc/boot/dts/bluestone.dts |  127 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 125 insertions(+), 2 deletions(-)
 
-blob_buf does not exist in the context of this function.
-So clearly it hasn't been compiled or exercised for a while.
-I propose removing it altogether. It can always be re-added latter
-if someone fixes and tests it - I do not have access to any ppc hw to do so.
-
-> -	printf ("reserve regions: %d\n", num);
-> +	dbgprintf ("reserve regions: %d\n", num);
->  	for (i = 0; i < num; i++) {
->  		uint64_t offset, size;
->  
->  		if (fdt_get_mem_rsv(blob_buf, i, &offset, &size) == 0) {
-> -			printf("%d: offset: %llx, size: %llx\n", i, offset, size);
-> +			dbgprintf("%d: offset: %llx, size: %llx\n", i, offset, size);
->  		} else {
-> -			printf("Error retreiving reserved region\n");
-> +			dbgprintf("Error retreiving reserved region\n");
->  		}
->  	}
->  }
-> -#endif
-> +
->  
->  static void fixup_nodes(char *nodes[])
->  {
-> @@ -203,9 +204,7 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf)
->  
->  out:	;
->  
-> -#ifdef DEBUG
->  	print_fdt_reserve_regions();
-> -#endif
->  }
->  
->  static void fixup_memory(struct kexec_info *info, char *blob_buf)
-> @@ -369,23 +368,23 @@ char *fixup_dtb_init(struct kexec_info *info, char *blob_buf, off_t *blob_size,
->  	return blob_buf;
->  }
->  
-> -#ifdef DEBUG
->  static void save_fixed_up_dtb(char *blob_buf, off_t blob_size)
->  {
->  	FILE *fp;
->  
-> +	if (!kexec_debug)
-> +		return;
->  	fp = fopen("debug.dtb", "w");
->  	if (fp) {
->  		if ( blob_size == fwrite(blob_buf, sizeof(char), blob_size, fp)) {
-> -			printf("debug.dtb written\n");
-> +			dbgprintf("debug.dtb written\n");
->  		} else {
-> -			printf("Unable to write debug.dtb\n");
-> +			dbgprintf("Unable to write debug.dtb\n");
->  		}
->  	} else {
-> -		printf("Unable to dump flat device tree to debug.dtb\n");
-> +		dbgprintf("Unable to dump flat device tree to debug.dtb\n");
->  	}
->  }
-> -#endif
->  
->  char *fixup_dtb_finalize(struct kexec_info *info, char *blob_buf, off_t *blob_size,
->  			char *nodes[], char *cmdline)
-> @@ -400,9 +399,7 @@ char *fixup_dtb_finalize(struct kexec_info *info, char *blob_buf, off_t *blob_si
->  	blob_buf = (char *)dt_ops.finalize();
->  	*blob_size = fdt_totalsize(blob_buf);
->  
-> -#ifdef DEBUG
->  	save_fixed_up_dtb(blob_buf, *blob_size);
-> -#endif
->  
->  	return blob_buf;
->  }
-> diff --git a/kexec/arch/ppc/fs2dt.c b/kexec/arch/ppc/fs2dt.c
-> index 733515a..cdae69e 100644
-> --- a/kexec/arch/ppc/fs2dt.c
-> +++ b/kexec/arch/ppc/fs2dt.c
-> @@ -273,9 +273,9 @@ static void putprops(char *fn, struct dirent **nlist, int numlist)
->  			memcpy(dt, local_cmdline, cmd_len);
->  			len = cmd_len;
->  			*dt_len = cmd_len;
-> -#if	DEBUG
-> -			fprintf(stderr, "Modified cmdline:%s\n", local_cmdline);
-> -#endif
-> +
-> +			dbgprintf("Modified cmdline:%s\n", local_cmdline);
-> +
->  		}
->  
->  		dt += (len + 3)/4;
-> diff --git a/kexec/arch/ppc/kexec-ppc.c b/kexec/arch/ppc/kexec-ppc.c
-> index 57852dc..6075477 100644
-> --- a/kexec/arch/ppc/kexec-ppc.c
-> +++ b/kexec/arch/ppc/kexec-ppc.c
-> @@ -378,9 +378,9 @@ static int get_base_ranges(void)
->  	nr_memory_ranges = local_memory_ranges;
->  	sort_base_ranges();
->  	memory_max = base_memory_range[nr_memory_ranges - 1].end;
-> -#ifdef DEBUG
-> -	fprintf(stderr, "get base memory ranges:%d\n", nr_memory_ranges);
-> -#endif
-> +
-> +	dbgprintf("get base memory ranges:%d\n", nr_memory_ranges);
-> +
->  	return 0;
->  }
->  
-> @@ -716,13 +716,13 @@ static int get_devtree_details(unsigned long kexec_flags)
->  
->  	sort_ranges();
->  
-> -#ifdef DEBUG
-> +
->  	int k;
->  	for (k = 0; k < i; k++)
-> -		fprintf(stderr, "exclude_range sorted exclude_range[%d] "
-> +		dbgprintf("exclude_range sorted exclude_range[%d] "
->  			"start:%llx, end:%llx\n", k, exclude_range[k].start,
->  			exclude_range[k].end);
-> -#endif
-> +
->  	return 0;
->  
->  error_openfile:
-> @@ -812,13 +812,12 @@ static int setup_memory_ranges(unsigned long kexec_flags)
->  	} else
->  		nr_memory_ranges = j;
->  
-> -#ifdef DEBUG
-> +
->  	int k;
->  	for (k = 0; k < j; k++)
-> -		fprintf(stderr, "setup_memory_ranges memory_range[%d] "
-> +		dbgprintf("setup_memory_ranges memory_range[%d] "
->  				"start:%llx, end:%llx\n", k, memory_range[k].start,
->  				memory_range[k].end);
-> -#endif
->  	return 0;
->  
->  out:
-> diff --git a/kexec/arch/ppc/libfdt-wrapper.c b/kexec/arch/ppc/libfdt-wrapper.c
-> index f56ccc0..5fbd3a8 100644
-> --- a/kexec/arch/ppc/libfdt-wrapper.c
-> +++ b/kexec/arch/ppc/libfdt-wrapper.c
-> @@ -27,15 +27,15 @@
->  #include <page.h>
->  #include <libfdt.h>
->  #include "ops.h"
-> +#include "../../kexec.h"
->  
-> -#define DEBUG	0
->  #define BAD_ERROR(err)	(((err) < 0) \
->  			 && ((err) != -FDT_ERR_NOTFOUND) \
->  			 && ((err) != -FDT_ERR_EXISTS))
->  
->  #define check_err(err) \
->  	({ \
-> -		if (BAD_ERROR(err) || ((err < 0) && DEBUG)) \
-> +		if (BAD_ERROR(err) || ((err < 0) && kexec_debug)) \
->  			printf("%s():%d  %s\n\r", __func__, __LINE__, \
->  			       fdt_strerror(err)); \
->  		if (BAD_ERROR(err)) \
-> diff --git a/kexec/arch/ppc64/crashdump-ppc64.c b/kexec/arch/ppc64/crashdump-ppc64.c
-> index d52b438..5805cdb 100644
-> --- a/kexec/arch/ppc64/crashdump-ppc64.c
-> +++ b/kexec/arch/ppc64/crashdump-ppc64.c
-> @@ -304,15 +304,15 @@ static int get_crash_memory_ranges(struct memory_range **range, int *ranges)
->  
->  	*range = crash_memory_range;
->  	*ranges = memory_ranges;
-> -#if DEBUG
-> +
->  	int j;
-> -	printf("CRASH MEMORY RANGES\n");
-> +	dbgprintf("CRASH MEMORY RANGES\n");
->  	for(j = 0; j < *ranges; j++) {
->  		start = crash_memory_range[j].start;
->  		end = crash_memory_range[j].end;
-> -		fprintf(stderr, "%016Lx-%016Lx\n", start, end);
-> +		dbgprintf("%016Lx-%016Lx\n", start, end);
->  	}
-> -#endif
-> +
->  	return 0;
->  
->  err:
-> @@ -367,9 +367,7 @@ static int add_cmdline_param(char *cmdline, uint64_t addr, char *cmdstr,
->  	if (cmdlen > (COMMAND_LINE_SIZE - 1))
->  		die("Command line overflow\n");
->  	strcat(cmdline, str);
-> -#if DEBUG
-> -	fprintf(stderr, "Command line after adding elfcorehdr: %s\n", cmdline);
-> -#endif
-> +	dbgprintf("Command line after adding elfcorehdr: %s\n", cmdline);
->  	return 0;
->  }
->  
-> @@ -478,10 +476,8 @@ void add_usable_mem_rgns(unsigned long long base, unsigned long long size)
->  	usablemem_rgns.ranges[usablemem_rgns.size].start = base;
->  	usablemem_rgns.ranges[usablemem_rgns.size++].end = end;
->  
-> -#ifdef DEBUG
-> -	fprintf(stderr, "usable memory rgns size:%u base:%llx size:%llx\n",
-> +	dbgprintf("usable memory rgns size:%u base:%llx size:%llx\n",
->  		usablemem_rgns.size, base, size);
-> -#endif
->  }
->  
->  int is_crashkernel_mem_reserved(void)
-> diff --git a/kexec/arch/ppc64/kexec-elf-ppc64.c b/kexec/arch/ppc64/kexec-elf-ppc64.c
-> index abd83dd..f68f2bc 100644
-> --- a/kexec/arch/ppc64/kexec-elf-ppc64.c
-> +++ b/kexec/arch/ppc64/kexec-elf-ppc64.c
-> @@ -294,7 +294,7 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
->  
->  	/* Set debug */
->  	elf_rel_set_symbol(&info->rhdr, "debug", &my_debug, sizeof(my_debug));
-> -#ifdef DEBUG
-> +
->  	my_kernel = 0;
->  	my_dt_offset = 0;
->  	my_panic_kernel = 0;
-> @@ -318,19 +318,18 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
->  				sizeof(toc_addr));
->  	elf_rel_get_symbol(&info->rhdr, "debug", &my_debug, sizeof(my_debug));
->  
-> -	fprintf(stderr, "info->entry is %p\n", info->entry);
-> -	fprintf(stderr, "kernel is %llx\n", (unsigned long long)my_kernel);
-> -	fprintf(stderr, "dt_offset is %llx\n",
-> +	dbgprintf("info->entry is %p\n", info->entry);
-> +	dbgprintf("kernel is %llx\n", (unsigned long long)my_kernel);
-> +	dbgprintf("dt_offset is %llx\n",
->  		(unsigned long long)my_dt_offset);
-> -	fprintf(stderr, "run_at_load flag is %x\n", my_run_at_load);
-> -	fprintf(stderr, "panic_kernel is %x\n", my_panic_kernel);
-> -	fprintf(stderr, "backup_start is %llx\n",
-> +	dbgprintf("run_at_load flag is %x\n", my_run_at_load);
-> +	dbgprintf("panic_kernel is %x\n", my_panic_kernel);
-> +	dbgprintf("backup_start is %llx\n",
->  		(unsigned long long)my_backup_start);
-> -	fprintf(stderr, "stack is %llx\n", (unsigned long long)my_stack);
-> -	fprintf(stderr, "toc_addr is %llx\n", (unsigned long long)toc_addr);
-> -	fprintf(stderr, "purgatory size is %zu\n", purgatory_size);
-> -	fprintf(stderr, "debug is %d\n", my_debug);
-> -#endif
-> +	dbgprintf("stack is %llx\n", (unsigned long long)my_stack);
-> +	dbgprintf("toc_addr is %llx\n", (unsigned long long)toc_addr);
-> +	dbgprintf("purgatory size is %zu\n", purgatory_size);
-> +	dbgprintf("debug is %d\n", my_debug);
->  
->  	for (i = 0; i < info->nr_segments; i++)
->  		fprintf(stderr, "segment[%d].mem:%p memsz:%zu\n", i,
-> diff --git a/kexec/arch/ppc64/kexec-ppc64.c b/kexec/arch/ppc64/kexec-ppc64.c
-> index 48ea421..2f12907 100644
-> --- a/kexec/arch/ppc64/kexec-ppc64.c
-> +++ b/kexec/arch/ppc64/kexec-ppc64.c
-> @@ -594,13 +594,12 @@ static int get_devtree_details(unsigned long kexec_flags)
->  
->  	sort_ranges();
->  
-> -#ifdef DEBUG
->  	int k;
->  	for (k = 0; k < i; k++)
-> -		fprintf(stderr, "exclude_range sorted exclude_range[%d] "
-> +		dbgprintf("exclude_range sorted exclude_range[%d] "
->  			"start:%llx, end:%llx\n", k, exclude_range[k].start,
->  			exclude_range[k].end);
-> -#endif
-> +
->  	return 0;
->  
->  error_openfile:
-> @@ -687,13 +686,11 @@ int setup_memory_ranges(unsigned long kexec_flags)
->  	}
->  	nr_memory_ranges = j;
->  
-> -#ifdef DEBUG
->  	int k;
->  	for (k = 0; k < j; k++)
-> -		fprintf(stderr, "setup_memory_ranges memory_range[%d] "
-> +		dbgprintf("setup_memory_ranges memory_range[%d] "
->  			"start:%llx, end:%llx\n", k, memory_range[k].start,
->  			memory_range[k].end);
-> -#endif
->  	return 0;
->  
->  out:
-> 
+diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
+index 2a56a0d..cfa23bf 100644
+--- a/arch/powerpc/boot/dts/bluestone.dts
++++ b/arch/powerpc/boot/dts/bluestone.dts
+@@ -33,7 +33,7 @@
+ 	aliases {
+ 		ethernet0 = &EMAC0;
+ 		serial0 = &UART0;
+-		//serial1 = &UART1; --gcl missing UART1 label
++		serial1 = &UART1;
+ 	};
+ 
+ 	cpus {
+@@ -52,7 +52,7 @@
+ 			d-cache-size = <32768>;
+ 			dcr-controller;
+ 			dcr-access-method = "native";
+-			//next-level-cache = <&L2C0>; --gcl missing L2C0 label
++			next-level-cache = <&L2C0>;
+ 		};
+ 	};
+ 
+@@ -117,6 +117,16 @@
+ 		dcr-reg = <0x00c 0x002>;
+ 	};
+ 
++	L2C0: l2c {
++		compatible = "ibm,l2-cache-apm82181", "ibm,l2-cache";
++		dcr-reg = <0x020 0x008
++			   0x030 0x008>;
++		cache-line-size = <32>;
++		cache-size = <262144>;
++		interrupt-parent = <&UIC1>;
++		interrupts = <11 1>;
++	};
++
+ 	plb {
+ 		compatible = "ibm,plb4";
+ 		#address-cells = <2>;
+@@ -182,6 +192,53 @@
+ 						reg = <0x001a0000 0x00060000>;
+ 					};
+ 				};
++
++				ndfc@1,0 {
++					compatible = "ibm,ndfc";
++					reg = <0x00000003 0x00000000 0x00002000>;
++					ccr = <0x00001000>;
++					bank-settings = <0x80002222>;
++					#address-cells = <1>;
++					#size-cells = <1>;
++					/* 2Gb Nand Flash */
++					nand {
++						#address-cells = <1>;
++						#size-cells = <1>;
++
++						partition@0 {
++							label = "firmware";
++							reg   = <0x00000000 0x00C00000>;
++						};
++						partition@c00000 {
++							label = "environment";
++							reg   = <0x00C00000 0x00B00000>;
++						};
++						partition@1700000 {
++							label = "kernel";
++							reg   = <0x01700000 0x00E00000>;
++						};
++						partition@2500000 {
++							label = "root";
++							reg   = <0x02500000 0x08200000>;
++						};
++						partition@a700000 {
++							label = "device-tree";
++							reg   = <0x0A700000 0x00B00000>;
++						};
++						partition@b200000 {
++							label = "config";
++							reg   = <0x0B200000 0x00D00000>;
++						};
++						partition@bf00000 {
++							label = "diag";
++							reg   = <0x0BF00000 0x00C00000>;
++						};
++						partition@cb00000 {
++							label = "vendor";
++							reg   = <0x0CB00000 0x3500000>;
++						};
++					};
++				};
+ 			};
+ 
+ 			UART0: serial@ef600300 {
+@@ -195,11 +252,36 @@
+ 				interrupts = <0x1 0x4>;
+ 			};
+ 
++			UART1: serial@ef600400 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0xef600400 0x00000008>;
++				virtual-reg = <0xef600400>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC0>;
++				interrupts = <0x1 0x4>;
++			};
++
+ 			IIC0: i2c@ef600700 {
+ 				compatible = "ibm,iic";
+ 				reg = <0xef600700 0x00000014>;
+ 				interrupt-parent = <&UIC0>;
+ 				interrupts = <0x2 0x4>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				rtc@68 {
++					compatible = "stm,m41t80";
++					reg = <0x68>;
++					interrupt-parent = <&UIC0>;
++					interrupts = <0x9 0x8>;
++				};
++				sttm@4C {
++					compatible = "adm,adm1032";
++					reg = <0x4C>;
++					interrupt-parent = <&UIC1>;
++					interrupts = <0x1E 0x8>; /* CPU_THERNAL_L */
++				};
+ 			};
+ 
+ 			IIC1: i2c@ef600800 {
+@@ -250,5 +332,46 @@
+ 			};
+ 		};
+ 
++		PCIE0: pciex@d00000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pciex-apm821xx", "ibm,plb-pciex";
++			primary;
++			port = <0x0>; /* port number */
++			reg = <0x0000000d 0x00000000 0x20000000	/* Config space access */
++			       0x0000000c 0x08010000 0x00001000>;	/* Registers */
++			dcr-reg = <0x100 0x020>;
++			sdr-base = <0x300>;
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x00000000 0x00000000 0x80000000
++				  0x02000000 0x00000000 0x00000000 0x0000000f 0x00000000 0x00000000 0x00100000
++				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80000000 0x00000000 0x00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
++
++			/* This drives busses 40 to 0x7f */
++			bus-range = <0x40 0x7f>;
++
++			/* Legacy interrupts (note the weird polarity, the bridge seems
++			 * to invert PCIe legacy interrupts).
++			 * We are de-swizzling here because the numbers are actually for
++			 * port of the root complex virtual P2P bridge. But I want
++			 * to avoid putting a node for it in the tree, so the numbers
++			 * below are basically de-swizzled numbers.
++			 * The real slot is on idsel 0, so the swizzling is 1:1
++			 */
++			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
++			interrupt-map = <
++				0x0 0x0 0x0 0x1 &UIC3 0xc 0x4 /* swizzled int A */
++				0x0 0x0 0x0 0x2 &UIC3 0xd 0x4 /* swizzled int B */
++				0x0 0x0 0x0 0x3 &UIC3 0xe 0x4 /* swizzled int C */
++				0x0 0x0 0x0 0x4 &UIC3 0xf 0x4 /* swizzled int D */>;
++		};
+ 	};
+ };
+-- 
+1.7.2.5
