@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 61911B6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 06:39:42 +1100 (EST)
-Subject: Re: [PATCH] powerpc/85xx: Add missing config option for CACHE SRAM
- code
+ by ozlabs.org (Postfix) with ESMTPS id 16146B6FC5
+ for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2012 06:39:53 +1100 (EST)
+Subject: Re: [PATCH][v2] powerpc/85xx: Fix compiler error with THIS_MODULE and
+ related
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1328004920-29727-1-git-send-email-claudiu.manoil@freescale.com>
-Date: Fri, 16 Mar 2012 14:38:19 -0500
-Message-Id: <E008CEA3-768B-4E96-BAA7-E908AED28EFD@kernel.crashing.org>
-References: <1328004920-29727-1-git-send-email-claudiu.manoil@freescale.com>
+In-Reply-To: <1328115915-16172-1-git-send-email-claudiu.manoil@freescale.com>
+Date: Fri, 16 Mar 2012 14:38:29 -0500
+Message-Id: <38E15FD5-4C6F-487B-8002-7A4D10525B3D@kernel.crashing.org>
+References: <1328115915-16172-1-git-send-email-claudiu.manoil@freescale.com>
 To: Claudiu Manoil <claudiu.manoil@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +25,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 31, 2012, at 4:15 AM, Claudiu Manoil wrote:
+On Feb 1, 2012, at 11:05 AM, Claudiu Manoil wrote:
 
-> fsl_85xx_l2ctlr.o and fsl_85xx_cache_sram.o are built only
-> if CONFIG_FSL_85XX_CACHE_SRAM is defined. The driver that
-> qualifies and wants to make use of the CACHE SRAM's exported
-> API (i.e. a freescale net driver) should (be able to) select
-> this config option.
-> 
+> CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:209:13: error: 'THIS_MODULE' =
+undeclared here (not in a function)
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:20: error: expected =
+declaration specifiers or '...' before string constant
+> cc1: warnings being treated as errors
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:1: error: data definition =
+has no type or storage class
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:1: error: type defaults to =
+'int' in declaration of 'MODULE_DESCRIPTION'
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:229:20: error: function =
+declaration isn't a prototype
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:16: error: expected =
+declaration specifiers or '...' before string constant
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:1: error: data definition =
+has no type or storage class
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:1: error: type defaults to =
+'int' in declaration of 'MODULE_LICENSE'
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:230:16: error: function =
+declaration isn't a prototype
+> make[1]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
+>=20
+> ...
+>=20
+>  CC      arch/powerpc/sysdev/fsl_85xx_cache_sram.o
+> cc1: warnings being treated as errors
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: data definition =
+has no type or storage class
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: type defaults =
+to 'int' in declaration of 'EXPORT_SYMBOL'
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:69:1: error: parameter names =
+(without types) in function declaration
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: data definition =
+has no type or storage class
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: type defaults =
+to 'int' in declaration of 'EXPORT_SYMBOL'
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:80:1: error: parameter names =
+(without types) in function declaration
+> make[1]: *** [arch/powerpc/sysdev/fsl_85xx_cache_sram.o] Error 1
+>=20
 > Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/Kconfig |    9 +++++++++
-> 1 files changed, 9 insertions(+), 0 deletions(-)
+> Replaced <linux/module.h> with <linux/export.h> for =
+fsl_85xx_cache_sram.c.
+>=20
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c |    1 +
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |    1 +
+> 2 files changed, 2 insertions(+), 0 deletions(-)
+
 
 applied
 
-- k
+- k=
