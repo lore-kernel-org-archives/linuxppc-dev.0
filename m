@@ -1,18 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3EF13B6EF3
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2012 07:46:22 +1100 (EST)
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 42B1FB6EF3
+ for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2012 07:50:52 +1100 (EST)
+Message-ID: <4F63A7A4.4000205@freescale.com>
+Date: Fri, 16 Mar 2012 15:50:44 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1322669957-8259-1-git-send-email-timur@freescale.com>
-Date: Fri, 16 Mar 2012 15:46:07 -0500
-Message-Id: <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
 References: <1322669957-8259-1-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
+ <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
+In-Reply-To: <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: Scott Wood <scottwood@freescale.com>,
  Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
  linuxppc-dev list <linuxppc-dev@ozlabs.org>
@@ -25,41 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
 
-On Nov 30, 2011, at 10:19 AM, Timur Tabi wrote:
+> This seems like paper taping over the real issue.  We should be able to call of_platform_bus_probe() multiple times.
 
-> Commit 46d026ac ("powerpc/85xx: consolidate of_platform_bus_probe =
-calls")
-> replaced platform-specific of_device_id tables with a single function
-> that probes the most of the busses in 85xx device trees.  If a =
-specific
-> platform needed additional busses probed, then it could call
-> of_platform_bus_probe() again.  Typically, the additional =
-platform-specific
-> busses are children of existing busses that have already been probed.
-> of_platform_bus_probe() does not handle those child busses =
-automatically.
->=20
-> Unfortunately, this doesn't actually work.  The second =
-(platform-specific)
-> call to of_platform_bus_probe() never finds any of the busses it's =
-asked
-> to find.
->=20
-> To remedy this, the platform-specific of_device_id tables are =
-eliminated,
-> and their entries are merged into mpc85xx_common_ids[], so that all =
-busses
-> are probed at once.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
-> arch/powerpc/platforms/85xx/common.c      |    6 ++++++
-> arch/powerpc/platforms/85xx/mpc85xx_mds.c |   11 +----------
-> arch/powerpc/platforms/85xx/p1022_ds.c    |   13 +------------
-> 3 files changed, 8 insertions(+), 22 deletions(-)
+I tried debugging it, but I couldn't figure it out.  My guess is that the
+nodes probed by of_platform_bus_probe() are somehow "reserved", so that
+the second time it's called, they're skipped.  I figured that this was
+just a side-effect of the way the OF layer works.
 
-This seems like paper taping over the real issue.  We should be able to =
-call of_platform_bus_probe() multiple times.
+If someone more familiar with the OF layer wants to look at it, that's
+great.  Until then, my patch is the only one that allows the audio and
+async DMA drivers to work, and any other drivers that probe on nodes that
+are grandchildren of the root node.
 
-- k=
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
