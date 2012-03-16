@@ -1,20 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 3AD08B6EF4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 14:57:12 +1100 (EST)
-Date: Fri, 16 Mar 2012 14:56:58 +1100
+ by ozlabs.org (Postfix) with ESMTP id 654D6B6FAB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 15:22:31 +1100 (EST)
+Date: Fri, 16 Mar 2012 15:14:59 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: linux-next: manual merge of the trivial tree with the powerpc tree
-Message-Id: <20120316145658.3fb06c5213dbca29d6898c4b@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 0/5] powerpc: clean up almos all the rest of the iSeries
+ platform code
+Message-Id: <20120316151459.dab3cdcc2d5984b05e2d2b5c@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Fri__16_Mar_2012_14_56_58_+1100_sAZwT9CG=3DUQa0t"
-Cc: linux-kernel@vger.kernel.org, Masanari Iida <standby24x7@gmail.com>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+ boundary="Signature=_Fri__16_Mar_2012_15_14_59_+1100_nYywcf0viZ9qCo9Z"
+Cc: gregkh@linuxfoundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__16_Mar_2012_14_56_58_+1100_sAZwT9CG=3DUQa0t
+--Signature=_Fri__16_Mar_2012_15_14_59_+1100_nYywcf0viZ9qCo9Z
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jiri,
+Hi all,
 
-Today's linux-next merge of the trivial tree got a conflict in
-drivers/char/viotape.c between commit ba7a4822b48f ("powerpc: Remove some
-of the legacy iSeries specific device drivers") from the powerpc tree and
-commit a7ccf3775219 ("char: Fix typo in viotape.c") from the trivial tree.
+This series removes almost all the remaining code that is part of the
+legacy iSeries platform.
 
-The former commit removed the file, so I did that.
+ arch/powerpc/boot/Makefile                      |    9 +--
+ arch/powerpc/include/asm/abs_addr.h             |   21 +----
+ arch/powerpc/include/asm/dma.h                  |    4 -
+ arch/powerpc/include/asm/firmware.h             |    9 --
+ arch/powerpc/include/asm/iseries/alpaca.h       |   31 ------
+ arch/powerpc/include/asm/iseries/hv_call.h      |  111 --------------------
+ arch/powerpc/include/asm/iseries/hv_call_sc.h   |   50 ---------
+ arch/powerpc/include/asm/iseries/hv_call_xm.h   |   61 -----------
+ arch/powerpc/include/asm/iseries/hv_lp_config.h |  128 -------------------=
+----
+ arch/powerpc/include/asm/iseries/hv_types.h     |  112 --------------------
+ arch/powerpc/include/asm/iseries/it_lp_queue.h  |   78 --------------
+ arch/powerpc/include/asm/iseries/lpar_map.h     |   85 ---------------
+ arch/powerpc/include/asm/iseries/mf.h           |   51 ---------
+ arch/powerpc/include/asm/lppaca.h               |    8 --
+ arch/powerpc/include/asm/spinlock.h             |    5 +-
+ arch/powerpc/include/asm/time.h                 |   15 ---
+ arch/powerpc/kernel/asm-offsets.c               |   14 ---
+ arch/powerpc/kernel/irq.c                       |   14 ---
+ arch/powerpc/kernel/isa-bridge.c                |    3 -
+ arch/powerpc/kernel/lparcfg.c                   |  108 ++------------------
+ arch/powerpc/kernel/paca.c                      |   12 +--
+ arch/powerpc/kernel/pci-common.c                |   15 ---
+ arch/powerpc/kernel/sysfs.c                     |    7 +-
+ arch/powerpc/kernel/time.c                      |  108 +-------------------
+ arch/powerpc/lib/locks.c                        |   24 +----
+ arch/powerpc/mm/hash_utils_64.c                 |    9 +-
+ arch/powerpc/mm/slb.c                           |    6 -
+ arch/powerpc/mm/stab.c                          |    9 --
+ arch/powerpc/oprofile/common.c                  |    3 -
+ arch/powerpc/platforms/powernv/pci.c            |    1 +
+ arch/powerpc/platforms/pseries/lpar.c           |    1 +
+ arch/powerpc/xmon/xmon.c                        |   28 -----
+ drivers/tty/hvc/hvc_vio.c                       |    4 -
+ init/do_mounts_rd.c                             |    4 +-
+ 34 files changed, 31 insertions(+), 1117 deletions(-)
+
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Fri__16_Mar_2012_14_56_58_+1100_sAZwT9CG=3DUQa0t
+--Signature=_Fri__16_Mar_2012_15_14_59_+1100_nYywcf0viZ9qCo9Z
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPYroKAAoJEECxmPOUX5FEfWkP+QFOKeYx+wB+r0l46uJSglSL
-SjsDyYh/LiPOP7/fZ0TVHp+5hA76ZIZQv1nYKpjyJf3He7nH/Nm6ho9gd0y87KGm
-Y+x6rDS35JULF2tMlwSgmR5P0JEhXyDKGlC8fM9MZa9TQjsev2gCOd9CUhGr1PWS
-/rx0p3ig1+mD3rPJKvpk0pQP2KJx7zN8BWCIlKm9jukaR7PcLL1ImTfAP5UxjtDZ
-6Rl9WZEf3hHjsDJXbfGvnrLsav+gImC3e1zVJrmg0t83E1u0mWMuZnONGPflqMKF
-VxWqDULsGmzeaoEQ032sncjCzmNnDRaBBSmvKeziTMpTLBIfVYEKO6cNaNGPPdGr
-mJ5gVrXJnzpN2/jOHzLMfjd96gUeZraM7JEwotDFvxvg+9ZQaoQcvcbvqrK3h0fE
-oYC04b+Zrr5jWgXmQ/rAOPvcGM/Fm7tZSHxJUtmg3FPmELOcLGk63D6XTuioNFwG
-PfrFv7LWn2tvRdMTrRvoz+XOiFruYJGNmtGls5u9/inKsVXvxtO0Pg817Hf0e1Ug
-/iy7LfWUTfDagBHJsFOhIPOUZHbMIlmXJrBG5Zv4q7svZkygsdWU1qsRvsdVIPuF
-ZVw/LrHJPQhRhrcENDviMXnDpzS7tdUeylCzn3Lo3LwRk6cccQXGC3Ybu/WC2cbZ
-bxArC0m4hCZ/1LIhuKBJ
-=8cHa
+iQIcBAEBCAAGBQJPYr5DAAoJEECxmPOUX5FEqE4P/2HP8532neon01D4GGYfov9u
+ftk2tUsu3yacgeccjDRafNl+RJvklmisNNVRMzI1eJlPiun/zpuIoCiry5HJPNRG
+K5dz4rtSAM+p9W5y49bAVZ1uWj2OOCnxnPoT8U47ESPWEiVb1u5dGnXECq5vevl9
+6KCs+o/YOHNBo1EKVTeyVRJaXwCVFzNAaKVR1SlAJ2xA+b7aJLEGjMd7DbOMOJTi
+s4zCMFlLtAazPHyJ+rvmGffTPAmQDNAqQ6i0zwaspxNx/mkn6W4hiAH1wvm/LDu8
++Cj5v1apcaO2n0liB5d8SDpvfCfN6c1yuPltmuqVgrhy13w2eZUsHVobWdtZy+KO
+pEY5yB+TPWaC7CfHCmu/NcqgYMD9mrmcomufWJW9On9a/WqtoQzKSyHrnR8PTzSr
+FuSDmcpO8ZHjtPKk8OmIzpbOV4VXrOX8WMkViIiHMC1qLbn/l8mLQmmpep9nZHK1
+r34L78r6Nh07/ySQteI1xDj/hInTpX7+dK6o4pFb7TAHVkmjNzQBdsBfPzg7Femd
+kj2lKfxnFoc6ix9N4OfENAv7YaWFZaTcHYoC8GkBONuiuMOaojzpBjx1UlEhdfUF
+sDx6XqdblUQCbjF1c7N1m4ZiDDZKgz2KCi9tnthOWMxkMNeT3U8Yst7WxIRAOSDg
+3gz4/BUh0pthc+vNrYzE
+=f4dB
 -----END PGP SIGNATURE-----
 
---Signature=_Fri__16_Mar_2012_14_56_58_+1100_sAZwT9CG=3DUQa0t--
+--Signature=_Fri__16_Mar_2012_15_14_59_+1100_nYywcf0viZ9qCo9Z--
