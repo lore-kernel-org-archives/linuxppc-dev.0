@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 65A27B7393
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:14:32 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc/p2020rdb p1010rdb: lower spi flash freq to
- 40Mhz
+ by ozlabs.org (Postfix) with ESMTPS id 2DCC8B738F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:14:33 +1100 (EST)
+Subject: Re: [PATCH] powerpc/fsl_msi : return proper error value when ioremap
+ failed.
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1331833228-14903-2-git-send-email-bigeasy@linutronix.de>
-Date: Fri, 16 Mar 2012 10:13:56 -0500
-Message-Id: <BD7A373A-7AE9-49A1-87C0-D66A4BBE07B8@kernel.crashing.org>
-References: <1331833228-14903-1-git-send-email-bigeasy@linutronix.de>
- <1331833228-14903-2-git-send-email-bigeasy@linutronix.de>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1331246857-5622-1-git-send-email-soniccat.liu@gmail.com>
+Date: Fri, 16 Mar 2012 10:14:06 -0500
+Message-Id: <5DAF23A1-8FA4-4FAE-9A27-87A4D9E6859D@kernel.crashing.org>
+References: <1331246857-5622-1-git-send-email-soniccat.liu@gmail.com>
+To: soniccat.liu@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +25,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 15, 2012, at 12:40 PM, Sebastian Andrzej Siewior wrote:
+On Mar 8, 2012, at 4:47 PM, soniccat.liu@gmail.com wrote:
 
-> This is here most likely since the FSL bsp. Back in the FSL bsp it was
-> set to 50Mhz and working. However the driver divided the SoC freq. only
-> by 2. According to the TRM the platform clock (which the manual refers
-> in its formula) is the system clock divided by two. So in the end it has
-> to divide by 4 and this is what the fsl-spi driver in tree is doing.
-> Since then the flash is not wokring I guess. After chaning the freq from
-> 50Mhz to 40Mhz like others do then I can access the flash.
+> From: Liu Shuo <soniccat.liu@gmail.com>
 > 
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
 > ---
-> arch/powerpc/boot/dts/p1010rdb.dtsi |    2 +-
-> arch/powerpc/boot/dts/p2020rdb.dts  |    2 +-
-> 2 files changed, 2 insertions(+), 2 deletions(-)
+> arch/powerpc/sysdev/fsl_msi.c |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
 applied
 
