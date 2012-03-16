@@ -1,21 +1,15 @@
-Return-Path: <Kumar.Gala@freescale.com>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BDF32B6FA9
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2012 03:21:01 +1100 (EST)
-Subject: Re: [PATCH 3/3] [v2] powerpc/85xx: p1022ds: enable monitor switching
- via pixis indirect mode
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <Kumar.Gala@freescale.com>
-In-Reply-To: <1321638601-6861-3-git-send-email-timur@freescale.com>
-Date: Fri, 16 Mar 2012 11:20:56 -0500
-Message-Id: <5E369A6C-BF25-490B-8B4E-05ED7B800FD7@freescale.com>
-References: <1321638601-6861-1-git-send-email-timur@freescale.com>
- <1321638601-6861-3-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
+Return-Path: <B07421@freescale.com>
+Message-ID: <4F63868D.1030507@freescale.com>
+Date: Fri, 16 Mar 2012 13:29:33 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Subject: Re: [PATCH] Device Tree Bindings for Freescale TDM controller
+References: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
+In-Reply-To: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Sandeep Singh <Sandeep@freescale.com>, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +19,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Nov 18, 2011, at 11:50 AM, Timur Tabi wrote:
-
-> When the P1022's DIU video controller is active, the pixis must be =
-accessed
-> in "indirect" mode, which uses localbus chip select addresses.
->=20
-> Switching between the DVI and LVDS monitor ports is handled by the =
-pixis,
-> so that switching needs to be done via indirect mode.
->=20
-> This has the side-effect of no longer requiring U-Boot to enable the =
-DIU.
-> Now Linux can enable the DIU all by itself.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+On 03/15/2012 08:30 PM, Poonam Aggrwal wrote:
+> From: Poonam Aggrwal <poonam.aggrwal@freescale.com> 
+> 
+> This TDM controller is available in various Freescale SOCs like MPC8315, P1020,
+> P1022, P1010.
+> 
+> Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/p1022_ds.c |  132 =
-++++++++++++++++++++++++++-----
-> 1 files changed, 110 insertions(+), 22 deletions(-)
+>  Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   71 +++++++++++++++++++++
+>  1 files changed, 71 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+> new file mode 100644
+> index 0000000..61431e3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+> @@ -0,0 +1,71 @@
+> +=====================================================================
+> +TDM Device Tree Binding
+> +Copyright (C) 2012 Freescale Semiconductor Inc.
+> +
+> +NOTE: The bindings described in this document are preliminary
+> +and subject to change.
+> +
+> +=====================================================================
+> +TDM (Time Division Multiplexing)
+> +
+> +DESCRIPTION
+> +
+> +The TDM is full duplex serial port designed to allow various devices including
+> +digital signal processors (DSPs) to communicate with a variety of serial devices
+> +including industry standard framers, codecs, other DSPs and microprocessors.
+> +
+> +The below properties describe the device tree bindings for Freescale TDM
+> +controller.
+> +This TDM controller is available on various Freescale Processors like
+> +MPC8313, P1020, P1022 and P1010.
+> +
+> +PROPERTIES
+> +
+> +  - compatible
+> +      Usage: required
+> +      Value type: <string>
+> +      Definition: Should contain "fsl,mpc8315-tdm".
+> +	  So mpc8313 will have compatible = "fsl,mpc8315-tdm";
+> +	  p1010 will have compatible "fsl,p1010-tdm", "fsl,mpc8315-tdm";
 
-applied
+Shouldn't mpc8313 have:
+compatible = "fsl,mpc8313-tdm", "fsl,mpc8315-tdm"?
 
-- k=
+I thought we were going to use 8313 as the canonical implementation, not
+8315.
+
+> +  - reg
+> +      Usage: required
+> +      Value type: <tdm-reg-offset tdm-reg-size dmac-reg-offset dmac-reg-size>
+> +      Definition: A standard property. Specifies the physical address
+> +	  offset and length of the TDM registers and TDM DMAC registers for
+> +	  the device.
+
+Just say there's two reg resources, and that the first is the TDM
+registers and the second is the TDM DMAC registers.
+
+It's typically not going to be the actual physical address, but rather
+an offset that gets translated through a parent node's ranges.
+
+Remove "value type"; it's standard.
+
+> +  - clock-frequency
+> +      Usage: optional
+> +      Value type: <u32>
+> +      Definition: The frequency at which the TDM block is operating.
+
+Will this frequency ever need to be > 4GHz?
+
+Might want to specify as u32 or u64, as ePAPR suggests.
+
+> +  - interrupts
+> +      Usage: required
+> +      Value type: <tdm-err-intr tdm-err-intr-type dmac-intr dmac-intr-type>
+> +      Definition: This field defines two interrupt specifiers namely interrupt
+> +	  number and interrupt type for TDM error and TDM DMAC.
+
+What is "tdm-err-intr-type"?  The interrupt specifier encoding is
+defined by the interrupt controller.  There might be one cell, two
+cells, four cells, etc.  Remove "value type", it's standard.
+
+> +  - phy-handle
+> +      Usage: optional
+> +      Value type: <phandle>
+> +      Definition: Phandle of the line controller node or framer node eg. SLIC,
+> +	  E1\T1 etc.
+
+Use a forward slash -- this isn't a Windows filesystem path. :-)
+
+> +  - fsl-max-time-slots
+> +      Usage: required
+> +      Value type: <u32>
+> +      Definition: Maximum number of 8-bit time slots in one TDM frame.
+> +	  This is the maximum number which TDM hardware supports.
+
+fsl,tdm-max-time-slots
+
+> +
+> +EXAMPLE
+> +
+> +	tdm@16000 {
+> +		device_type = "tdm";
+
+No device_type
+
+> +		compatible = "fsl,p1010-tdm", "fsl,mpc8315-tdm";
+> +		reg = <0x16000 0x200 0x2c000 0x2000>;
+> +		clock-frequency = <0>;
+
+Show a real clock-frequency, perhaps with a comment saying it's
+typically filled in by boot software.
+
+> +		interrupts = <16 8 62 8>;
+> +		phy-handle = <zarlink1>
+
+That phy-handle is invalid syntax, perhaps you meant:
+
+	phy-handle = <&zarlink1>;
+
+> +		fsl-max-time-slots = <128>
+
+Missing semicolons on the last two properties.
+
+-Scott
