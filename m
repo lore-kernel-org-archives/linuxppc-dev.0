@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CB9E4B6FF9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:40:26 +1100 (EST)
-Subject: Re: [PATCH 3/4] powerpc/85xx: add the P1020MBG-PC DTS support
+ by ozlabs.org (Postfix) with ESMTPS id 79B9AB6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:48:36 +1100 (EST)
+Subject: Re: [PATCH 1/2] powerpc/dts: Add some DTS nodes and attributes for
+ mpc8536ds
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1331716110-25545-3-git-send-email-Chang-Ming.Huang@freescale.com>
-Date: Fri, 16 Mar 2012 10:40:18 -0500
-Message-Id: <0B285007-CCFC-4EA0-9667-79C920E347BC@kernel.crashing.org>
-References: <1331716110-25545-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1331716110-25545-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <1331716110-25545-3-git-send-email-Chang-Ming.Huang@freescale.com>
-To: "<Chang-Ming.Huang@freescale.com>" <Chang-Ming.Huang@freescale.com>
+In-Reply-To: <1326794391-6105-1-git-send-email-X.Xie@freescale.com>
+Date: Fri, 16 Mar 2012 10:48:30 -0500
+Message-Id: <C28592BE-FCA8-484E-A94E-42832DF29C9C@kernel.crashing.org>
+References: <y> <1326794391-6105-1-git-send-email-X.Xie@freescale.com>
+To: Xie Xiaobo <X.Xie@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,17 +25,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mar 14, 2012, at 4:08 AM, <Chang-Ming.Huang@freescale.com> =
-<Chang-Ming.Huang@freescale.com> wrote:
+On Jan 17, 2012, at 3:59 AM, Xie Xiaobo wrote:
 
-> +		partition@0 {
-> +			/* 128KB for DTB Image */
-> +			reg =3D <0x0 0x00020000>;
-> +			label =3D "NOR (RO) DTB Image";
-> +			read-only;
-> +		};
-> +
+> 1. Add partitions for NOR and NAND Flash.
+> 2. Additional attributes for sdhc.
+>=20
+> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+> ---
+> arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |    5 ++
+> arch/powerpc/boot/dts/mpc8536ds.dts           |    6 ++-
+> arch/powerpc/boot/dts/mpc8536ds.dtsi          |   93 =
++++++++++++++++++++++++++
+> arch/powerpc/boot/dts/mpc8536ds_36b.dts       |    8 ++-
+> 4 files changed, 109 insertions(+), 3 deletions(-)
 
-How many times are we going to say to remove '(RO)' from the labels???
+applied
 
 - k=
