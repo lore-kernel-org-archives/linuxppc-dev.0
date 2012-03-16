@@ -1,13 +1,21 @@
-Return-Path: <B35336@freescale.com>
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] fsl_pmc: update device bindings
-Date: Fri, 16 Mar 2012 17:31:02 +0800
-Message-ID: <1331890262-25391-1-git-send-email-chenhui.zhao@freescale.com>
+Return-Path: <jkosina@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2033BB6FC4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 22:10:35 +1100 (EST)
+Date: Fri, 16 Mar 2012 12:10:25 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the trivial tree with the powerpc tree
+In-Reply-To: <20120316145658.3fb06c5213dbca29d6898c4b@canb.auug.org.au>
+Message-ID: <alpine.LNX.2.00.1203161210030.18356@pobox.suse.cz>
+References: <20120316145658.3fb06c5213dbca29d6898c4b@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, Masanari Iida <standby24x7@gmail.com>,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,116 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Li Yang <leoli@freescale.com>
+On Fri, 16 Mar 2012, Stephen Rothwell wrote:
 
- * Added compatible "fsl,p1022-pmc".
- * Added clock nodes to control the clock of wake-up source.
- * Used "fsl,pmc-handle" property to connect device and clock node.
+> Today's linux-next merge of the trivial tree got a conflict in
+> drivers/char/viotape.c between commit ba7a4822b48f ("powerpc: Remove some
+> of the legacy iSeries specific device drivers") from the powerpc tree and
+> commit a7ccf3775219 ("char: Fix typo in viotape.c") from the trivial tree.
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
----
- .../devicetree/bindings/powerpc/fsl/pmc.txt        |   65 ++++++++++++--------
- 1 files changed, 40 insertions(+), 25 deletions(-)
+Dropped a7ccf3775219 in my tree, thanks for report Stephen.
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt b/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
-index 07256b7..d296e88 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
-@@ -9,22 +9,26 @@ Properties:
- 
-   "fsl,mpc8548-pmc" should be listed for any chip whose PMC is
-   compatible.  "fsl,mpc8536-pmc" should also be listed for any chip
--  whose PMC is compatible, and implies deep-sleep capability.
-+  whose PMC is compatible, and implies deep-sleep capability and
-+  wake on user defined packet(wakeup on ARP). "fsl,p1022-pmc"
-+  should be listed for any chip whose PMC is compatible, and
-+  implies lossless Ethernet capability during sleep or deep sleep.
- 
-   "fsl,mpc8641d-pmc" should be listed for any chip whose PMC is
-   compatible; all statements below that apply to "fsl,mpc8548-pmc" also
-   apply to "fsl,mpc8641d-pmc".
- 
-   Compatibility does not include bit assignments in SCCR/PMCDR/DEVDISR; these
--  bit assignments are indicated via the sleep specifier in each device's
--  sleep property.
-+  bit assignments are indicated via the clock nodes. Device which has a
-+  controllable clock source should have a "fsl,pmc-handle" property pointing
-+  to the clock node.
- 
- - reg: For devices compatible with "fsl,mpc8349-pmc", the first resource
-   is the PMC block, and the second resource is the Clock Configuration
-   block.
- 
--  For devices compatible with "fsl,mpc8548-pmc", the first resource
--  is a 32-byte block beginning with DEVDISR.
-+  For devices compatible with "fsl,mpc8548-pmc", the resource is a 32-byte
-+  block beginning with the register DEVDISR.
- 
- - interrupts: For "fsl,mpc8349-pmc"-compatible devices, the first
-   resource is the PMC block interrupt.
-@@ -33,31 +37,42 @@ Properties:
-   this is a phandle to an "fsl,gtm" node on which timer 4 can be used as
-   a wakeup source from deep sleep.
- 
--Sleep specifiers:
--
--  fsl,mpc8349-pmc: Sleep specifiers consist of one cell.  For each bit
--  that is set in the cell, the corresponding bit in SCCR will be saved
--  and cleared on suspend, and restored on resume.  This sleep controller
--  supports disabling and resuming devices at any time.
--
--  fsl,mpc8536-pmc: Sleep specifiers consist of three cells, the third of
--  which will be ORed into PMCDR upon suspend, and cleared from PMCDR
--  upon resume.  The first two cells are as described for fsl,mpc8578-pmc.
--  This sleep controller only supports disabling devices during system
--  sleep, or permanently.
-+Clock nodes:
-+The clock nodes are to describe the masks in PM controller registers for each
-+soc clock.
-+- fsl,pmcdr-mask: For "fsl,mpc8548-pmc"-compatible devices, some blocks as
-+  wake-up sources can run in low power mode. If a block used as a wake-up
-+  source in low power mode, the corresponding bit in the register PMCDR should
-+  be cleared on suspend and set on resume. If setting bits of the mask,
-+  the corresponding blocks will be used as wake-up sources.
- 
--  fsl,mpc8548-pmc: Sleep specifiers consist of one or two cells, the
--  first of which will be ORed into DEVDISR (and the second into
--  DEVDISR2, if present -- this cell should be zero or absent if the
--  hardware does not have DEVDISR2) upon a request for permanent device
--  disabling.  This sleep controller does not support configuring devices
--  to disable during system sleep (unless supported by another compatible
--  match), or dynamically.
-+- fsl,sccr-mask: For "fsl,mpc8349-pmc"-compatible devices, the corresponding
-+  bit specified by the mask in SCCR will be saved and cleared on suspend, and
-+  restored on resume.
- 
--Example:
-+- fsl,devdisr-mask: Contain one or two cells, depending on the availability of
-+  DEVDISR2 register.  For compatible devices, the mask will be ORed into DEVDISR
-+  or DEVDISR2 when the clock should be permenently disabled.
- 
-+Example 1:
- 	power@b00 {
- 		compatible = "fsl,mpc8313-pmc", "fsl,mpc8349-pmc";
- 		reg = <0xb00 0x100 0xa00 0x100>;
- 		interrupts = <80 8>;
- 	};
-+
-+Example 2:
-+	power@e0070 {
-+		compatible = "fsl,mpc8548-pmc", "fsl,mpc8536-pmc";
-+		reg = <0xe0070 0x20>;
-+
-+		etsec1_clk: soc-clk@24 {
-+			fsl,pmcdr-mask = <0x00000080>;
-+		};
-+		etsec2_clk: soc-clk@25 {
-+			fsl,pmcdr-mask = <0x00000040>;
-+		};
-+		etsec3_clk: soc-clk@26 {
-+			fsl,pmcdr-mask = <0x00000020>;
-+		};
-+	};
 -- 
-1.6.4.1
+Jiri Kosina
+SUSE Labs
