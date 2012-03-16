@@ -1,26 +1,21 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
- [209.85.213.179])
+Received: from mail-qc0-f179.google.com (mail-qc0-f179.google.com
+ [209.85.216.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA427B6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 23:41:10 +1100 (EST)
-Received: by yenl1 with SMTP id l1so4244261yen.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 05:41:07 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 150B4B6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 00:41:42 +1100 (EST)
+Received: by qcha6 with SMTP id a6so209151qch.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 06:41:38 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1331539663-29641-1-git-send-email-mla@apm.com>
-References: <1331539663-29641-1-git-send-email-mla@apm.com>
-Date: Fri, 16 Mar 2012 08:41:07 -0400
-Message-ID: <CA+5PVA7K66kKwKHUsNRjw9GLjvKBWgovmKPR4uOMMNFtiWfrzw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] [v3] powerpc/44x: Fix PCI MSI support for Maui
- APM821xx SoC and Bluestone board
+Date: Fri, 16 Mar 2012 09:41:38 -0400
+Message-ID: <CA+5PVA4n_G9mtUcExUuJoMWGuWWDh1h1hCPWe-DEy38G5qg40Q@mail.gmail.com>
+Subject: Please pull 'next' branch of 4xx tree
 From: Josh Boyer <jwboyer@gmail.com>
-To: Mai La <mla@apm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>, open-source-review@apm.com,
- Tirumala R Marri <tmarri@apm.com>, linux-kernel@vger.kernel.org,
- Josh Boyer <jwboyer@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,89 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 12, 2012 at 4:07 AM, Mai La <mla@apm.com> wrote:
-> diff --git a/arch/powerpc/sysdev/ppc4xx_msi.c b/arch/powerpc/sysdev/ppc4x=
-x_msi.c
-> index 1c2d7af..63989d0 100644
-> --- a/arch/powerpc/sysdev/ppc4xx_msi.c
-> +++ b/arch/powerpc/sysdev/ppc4xx_msi.c
-> @@ -28,10 +28,11 @@
-> =A0#include <linux/of_platform.h>
-> =A0#include <linux/interrupt.h>
-> =A0#include <linux/export.h>
-> +#include <linux/kernel.h>
-> =A0#include <asm/prom.h>
-> =A0#include <asm/hw_irq.h>
-> =A0#include <asm/ppc-pci.h>
-> -#include <boot/dcr.h>
-> +#include <asm/dcr.h>
-> =A0#include <asm/dcr-regs.h>
-> =A0#include <asm/msi_bitmap.h>
->
-> @@ -43,13 +44,14 @@
-> =A0#define PEIH_FLUSH0 =A0 =A00x30
-> =A0#define PEIH_FLUSH1 =A0 =A00x38
-> =A0#define PEIH_CNTRST =A0 =A00x48
-> -#define NR_MSI_IRQS =A0 =A04
-> +
-> +int msi_irqs;
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This should be static.
+Hi Ben,
 
-> =A0struct ppc4xx_msi {
-> =A0 =A0 =A0 =A0u32 msi_addr_lo;
-> =A0 =A0 =A0 =A0u32 msi_addr_hi;
-> =A0 =A0 =A0 =A0void __iomem *msi_regs;
-> - =A0 =A0 =A0 int msi_virqs[NR_MSI_IRQS];
-> + =A0 =A0 =A0 int *msi_virqs;
-> =A0 =A0 =A0 =A0struct msi_bitmap bitmap;
-> =A0 =A0 =A0 =A0struct device_node *msi_dev;
-> =A0};
-> @@ -61,7 +63,7 @@ static int ppc4xx_msi_init_allocator(struct platform_de=
-vice *dev,
-> =A0{
-> =A0 =A0 =A0 =A0int err;
->
-> - =A0 =A0 =A0 err =3D msi_bitmap_alloc(&msi_data->bitmap, NR_MSI_IRQS,
-> + =A0 =A0 =A0 err =3D msi_bitmap_alloc(&msi_data->bitmap, msi_irqs,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev->dev.of_no=
-de);
-> =A0 =A0 =A0 =A0if (err)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return err;
-> @@ -83,6 +85,9 @@ static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, i=
-nt nvec, int type)
-> =A0 =A0 =A0 =A0struct msi_desc *entry;
-> =A0 =A0 =A0 =A0struct ppc4xx_msi *msi_data =3D &ppc4xx_msi;
->
-> + =A0 =A0 =A0 msi_data->msi_virqs =3D kmalloc((msi_irqs) * sizeof(int),
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 GFP_KERNEL);
-> +
+A small pull request for linux-next.  This adds some commits for Bluestone
+from APM, and updates the location of my tree in MAINTAINERS back to
+kernel.org.
 
-What happens if this allocation fails?  Unlikely perhaps, but we should sti=
-ll
-probably try and handle the error.
-
-> =A0 =A0 =A0 =A0list_for_each_entry(entry, &dev->msi_list, list) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0int_no =3D msi_bitmap_alloc_hwirqs(&msi_da=
-ta->bitmap, 1);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (int_no >=3D 0)
-
-<snip>
-
-> @@ -234,6 +241,10 @@ static int __devinit ppc4xx_msi_probe(struct platfor=
-m_device *dev)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto error_out;
-> =A0 =A0 =A0 =A0}
->
-> + =A0 =A0 =A0 msi_irqs =3D of_irq_count(dev->dev.of_node);
-> + =A0 =A0 =A0 if (!msi_irqs)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
-> +
-
-Maybe return -ENODEV here instead of -1?  It probably doesn't matter at the
-moment, but if anything actually checked why the probe function failed, tha=
-t
-would be more descriptive.
+Stephen, could you change linux-next to pull from this tree instead of the
+infradead one?
 
 josh
+
+The following changes since commit 01e8ec4417d3c484986af0adaa0ae6632e0a59cd:
+
+  powerpc: Fix power4/970 idle code regression with lockdep
+(2012-03-16 09:28:17 +1100)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+
+Josh Boyer (1):
+      MAINTAINERS: Update PowerPC 4xx tree
+
+Vinh Nguyen Huu Tuong (3):
+      powerpc/44x: The bug fixed support for APM821xx SoC and Bluestone board
+      powerpc/44x: Add support PCI-E for APM821xx SoC and Bluestone board
+      powerpc/44x: Add additional device support for APM821xx SoC and
+Bluestone board
+
+ MAINTAINERS                                |    2 +-
+ arch/powerpc/boot/dts/bluestone.dts        |  127 +++++++++++++++++++++++++++-
+ arch/powerpc/kernel/cputable.c             |    2 +-
+ arch/powerpc/platforms/44x/Kconfig         |    1 +
+ arch/powerpc/platforms/44x/ppc44x_simple.c |    2 +-
+ arch/powerpc/sysdev/ppc4xx_pci.c           |   70 +++++++++++++++
+ 6 files changed, 199 insertions(+), 5 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJPY0LZAAoJEKMba9ckhs/WDZ4P/2GQjY6H939+bCfRrTE7TwiB
+U7HSyTyY4Cai6hCj02tAK8RAFQ0OQHQcPfuVSTHoc3hN3lqhtlJV4ishK7fCAwii
+2UTBXs+IAUhbx+6wJtmpEvist6Cx1sxsU4iJBVBuyqZxELF0S/5Xwg6aOKE0vwsH
+aL+hiw8zqoCYTbJZ4PE7vf18Iq+PZeVOAlYyFl9r6vKkY4KvQga7vgE2m/uNvueu
+WQevSUSLbhknHZfGaQL8MMjLA7yzGmGIyZI/rxkop7xZ2HFuvaahUNBCfsPslUAp
+vi7P8h9bPKuN6A6MeSza/l3CIR7tIUvv+uBbCNNlLYBy3+4Xpk6hT6vD94y3nvqK
+5kY2vjxTHQmHw8kh4ojnT9OaBnMCLA+dB4V+GejbtNkv/V5Aw3Flv6ILMQVu1dWq
+4588bcKY0Xj+mqQbd5yQQGVTJBGXC/k6eDLrzYhOEQU5cSogdGK5kgyv2ydc+5/Z
+I/5dQymM2htXUuR6oD0RNIEWWriFGaLvFiZbJJSnxB9s+o6o77AXossxNL0gOEPr
+cqr9ZpSuNujaGN2HzTen1TJNAwCM09PES5vhZDdxDC7prtwR+Ke7ElIbDQsRZF34
+jcj7WOeyF38C4G01epdCTYzhKe4I1WyT9ugcjE4LOvYfCuI01II142772/hwBC8+
+Icccdg6ASNE8cx62TxDl
+=SHv8
+-----END PGP SIGNATURE-----
