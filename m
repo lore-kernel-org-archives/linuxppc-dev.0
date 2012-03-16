@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 911D8B7195
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2012 02:49:12 +1100 (EST)
-Subject: Re: [PATCH 1/2] [v4] powerpc/85xx: p1022ds: disable the NOR flash
- node if video is enabled
+ by ozlabs.org (Postfix) with ESMTPS id E6113B716F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:49:18 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: Clean up partition nodes in dts for
+ MPC8572DS
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1329351948-20581-1-git-send-email-timur@freescale.com>
-Date: Fri, 16 Mar 2012 10:48:55 -0500
-Message-Id: <E802E1FF-366C-41A0-81D2-5ED0D4079BA2@kernel.crashing.org>
-References: <1329351948-20581-1-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1329790283-22962-1-git-send-email-B38951@freescale.com>
+Date: Fri, 16 Mar 2012 10:49:11 -0500
+Message-Id: <B50C3B73-1C05-4ECB-9BC9-63588D832DB0@kernel.crashing.org>
+References: <1329790283-22962-1-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +25,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 15, 2012, at 6:25 PM, Timur Tabi wrote:
+On Feb 20, 2012, at 8:11 PM, Jia Hongtao wrote:
 
-> The Freescale P1022 has a unique pin muxing "feature" where the DIU =
-video
-> controller's video signals are muxed with 24 of the local bus address =
-signals.
-> When the DIU is enabled, the bulk of the local bus is disabled, =
-preventing
-> access to memory-mapped devices like NOR flash and the pixis FPGA.
->=20
-> Therefore, if the DIU is going to be enabled, then memory-mapped =
-devices on
-> the localbus, like NOR flash, need to be disabled.
->=20
-> This also means that the localbus is not a 'simple-bus' any more, so =
-remove
-> that string from the compatible node.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> Signed-off-by: Jin Qing <b24347@freescale.com>
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
 > ---
-> arch/powerpc/boot/dts/fsl/p1022si-post.dtsi |    6 ++-
-> arch/powerpc/platforms/85xx/p1022_ds.c      |   71 =
-+++++++++++++++++++++++++++
-> 2 files changed, 76 insertions(+), 1 deletions(-)
+> arch/powerpc/boot/dts/mpc8572ds.dtsi |   50 =
++++++++++++++++++++++------------
+> 1 files changed, 32 insertions(+), 18 deletions(-)
 
 applied
 
