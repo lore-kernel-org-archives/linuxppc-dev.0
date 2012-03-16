@@ -2,17 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A8226B6FC5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 07:23:10 +1100 (EST)
-Subject: Re: [PATCH 7/9] powerpc/mpc8548cds: fix alias in mpc8548si-pre.dtsi
+ by ozlabs.org (Postfix) with ESMTPS id A6FE5B6FE2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 07:23:17 +1100 (EST)
+Subject: Re: [PATCH 8/9] powerpc/mpc8548cds: rename mpc8548cds.dts to
+ mpc8548cds_32b.dts and create mpc8548cds.dtsi
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1331024805-15926-6-git-send-email-chenhui.zhao@freescale.com>
-Date: Fri, 16 Mar 2012 15:23:06 -0500
-Message-Id: <94CF0569-2407-408C-884E-5B2F39E8E4BF@kernel.crashing.org>
+In-Reply-To: <1331024805-15926-7-git-send-email-chenhui.zhao@freescale.com>
+Date: Fri, 16 Mar 2012 15:23:13 -0500
+Message-Id: <4BBD0F3F-2C9F-4547-B739-0D48A4B0FDE9@kernel.crashing.org>
 References: <1331024805-15926-1-git-send-email-chenhui.zhao@freescale.com>
- <1331024805-15926-6-git-send-email-chenhui.zhao@freescale.com>
+ <1331024805-15926-7-git-send-email-chenhui.zhao@freescale.com>
 To: Zhao Chenhui <chenhui.zhao@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,14 +28,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Mar 6, 2012, at 3:06 AM, Zhao Chenhui wrote:
 
-> Correct ethernet1 and add ethernet2 and ethernet3.
-> 
+> * Create mpc8548cds.dtsi.
+> * Move lbc, soc and pci0 nodes to mpc8548cds_32b.dtsi.
+> * Change cuImage.mpc8548cds to cuImage.mpc8548cds_32b.
+> * Rename mpc8548cds.dts to mpc8548cds_32b.dts.
+>=20
 > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 > Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi |    4 +++-
-> 1 files changed, 3 insertions(+), 1 deletions(-)
+> arch/powerpc/boot/Makefile               |    2 +-
+> arch/powerpc/boot/dts/mpc8548cds.dts     |  357 =
+------------------------------
+> arch/powerpc/boot/dts/mpc8548cds.dtsi    |  306 =
++++++++++++++++++++++++++
+> arch/powerpc/boot/dts/mpc8548cds_32b.dts |   86 +++++++
+> 4 files changed, 393 insertions(+), 358 deletions(-)
+> delete mode 100644 arch/powerpc/boot/dts/mpc8548cds.dts
+> create mode 100644 arch/powerpc/boot/dts/mpc8548cds.dtsi
+> create mode 100644 arch/powerpc/boot/dts/mpc8548cds_32b.dts
 
 applied
 
-- k
+- k=
