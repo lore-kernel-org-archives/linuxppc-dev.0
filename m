@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 79B9AB6EEA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:48:36 +1100 (EST)
-Subject: Re: [PATCH 1/2] powerpc/dts: Add some DTS nodes and attributes for
- mpc8536ds
+ by ozlabs.org (Postfix) with ESMTPS id C2274B7101
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:49:01 +1100 (EST)
+Subject: Re: [PATCH 2/2] powerpc/dts: Add magic-packet properties for etsec
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1326794391-6105-1-git-send-email-X.Xie@freescale.com>
-Date: Fri, 16 Mar 2012 10:48:30 -0500
-Message-Id: <C28592BE-FCA8-484E-A94E-42832DF29C9C@kernel.crashing.org>
+In-Reply-To: <1326794391-6105-2-git-send-email-X.Xie@freescale.com>
+Date: Fri, 16 Mar 2012 10:48:38 -0500
+Message-Id: <66D3A796-5C32-46EF-ACE6-6B510B3279EC@kernel.crashing.org>
 References: <y> <1326794391-6105-1-git-send-email-X.Xie@freescale.com>
+ <1326794391-6105-2-git-send-email-X.Xie@freescale.com>
 To: Xie Xiaobo <X.Xie@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,17 +27,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Jan 17, 2012, at 3:59 AM, Xie Xiaobo wrote:
 
-> 1. Add partitions for NOR and NAND Flash.
-> 2. Additional attributes for sdhc.
+> The properties indicates that the hardware supports waking up via =
+magic packet.
 >=20
 > Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
 > ---
-> arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |    5 ++
-> arch/powerpc/boot/dts/mpc8536ds.dts           |    6 ++-
-> arch/powerpc/boot/dts/mpc8536ds.dtsi          |   93 =
-+++++++++++++++++++++++++
-> arch/powerpc/boot/dts/mpc8536ds_36b.dts       |    8 ++-
-> 4 files changed, 109 insertions(+), 3 deletions(-)
+> arch/powerpc/boot/dts/fsl/pq3-etsec1-0.dtsi |    3 ++-
+> arch/powerpc/boot/dts/fsl/pq3-etsec1-1.dtsi |    3 ++-
+> arch/powerpc/boot/dts/fsl/pq3-etsec1-2.dtsi |    3 ++-
+> arch/powerpc/boot/dts/fsl/pq3-etsec1-3.dtsi |    3 ++-
+> 4 files changed, 8 insertions(+), 4 deletions(-)
 
 applied
 
