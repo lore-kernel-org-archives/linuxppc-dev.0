@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 0A4D5B6EF4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 16:52:14 +1100 (EST)
-Date: Fri, 16 Mar 2012 16:52:07 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>, Arnd Bergmann <arnd@arndb.de>
-Subject: linux-next: manual merge of the char-misc tree with the powerpc tree
-Message-Id: <20120316165207.5a4f0985863b5ae7c50bdd81@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__16_Mar_2012_16_52_07_+1100_pZRK/URh1E+iqQ6N"
-Cc: linux-kernel@vger.kernel.org, Masanari Iida <standby24x7@gmail.com>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <B35336@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 40370B6FEB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2012 20:20:17 +1100 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v4 1/4] powerpc/85xx: add HOTPLUG_CPU support
+Date: Fri, 16 Mar 2012 17:22:12 +0800
+Message-ID: <1331889732-25240-1-git-send-email-chenhui.zhao@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +23,376 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__16_Mar_2012_16_52_07_+1100_pZRK/URh1E+iqQ6N
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Li Yang <leoli@freescale.com>
 
-Hi all,
+Add support to disable and re-enable individual cores at runtime
+on MPC85xx/QorIQ SMP machines. Currently support e500v1/e500v2 core.
 
-Today's linux-next merge of the char-misc tree got a conflict in
-drivers/char/viotape.c between commit ba7a4822b48f ("powerpc: Remove some
-of the legacy iSeries specific device drivers") from the powerpc tree and
-commit 5fb15db4376f ("char: Fix typo in viotape.c") from the char-misc
-tree.
+MPC85xx machines use ePAPR spin-table in boot page for CPU kick-off.
+This patch uses the boot page from bootloader to boot core at runtime.
+It supports 32-bit and 36-bit physical address.
 
-The former removed this file, so I did that.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Add generic_set_cpu_up() to set cpu_state as CPU_UP_PREPARE in kick_cpu().
 
---Signature=_Fri__16_Mar_2012_16_52_07_+1100_pZRK/URh1E+iqQ6N
-Content-Type: application/pgp-signature
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Jin Qing <b24347@freescale.com>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+---
+Changes for v4:
+ * used spin_event_timeout()
+ * fixed build problem with corenet32_smp_defconfig
+ * code cleanup
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+ arch/powerpc/Kconfig                  |    6 +-
+ arch/powerpc/include/asm/cacheflush.h |    6 ++
+ arch/powerpc/include/asm/smp.h        |    2 +
+ arch/powerpc/kernel/head_fsl_booke.S  |   28 ++++++
+ arch/powerpc/kernel/smp.c             |   10 ++
+ arch/powerpc/platforms/85xx/smp.c     |  146 ++++++++++++++++++++++++---------
+ 6 files changed, 157 insertions(+), 41 deletions(-)
 
-iQIcBAEBCAAGBQJPYtUHAAoJEECxmPOUX5FEIbMQAI7+lm2VCotsYT3Ac2hqKxZk
-AQ/hFemsdWgbvl9hgF7OO0lFHjA9A5VX7+bMyFirTjxdkE06IyPRP+vvx7edwEJt
-3h/ETOyDDlfZk2Y/oF7Z888t4KXPg9Ln4KJGaz1ZDCfHIeDNn/Ub31Aj30bvpcX+
-bcJYzmd+EiRXAQcls4oay3pt3u7gZwmEZOx7L462+GF3ATpyqpgfCbMtRFU4XkdD
-bSZ+Yn2ar5ObO2SGROvcetCXtKFl+/etJz4u96f6MhdSw92EU/C0yMLSLAbAnUBh
-5D9XVNTSDwMcOxNV+7jyUuPkkyixfm3CIRqUo8B5ZznKPgKdeTySNO3KviNIdx9C
-67qt9gGcXIB8G5TXVWqYx98HWTo5d9IL1X67j9QDK1mmG4R8KJrzoggdL4HIeiao
-3EZHgtWWP21S//rjVwQAicbeqweU38DeD2hBxw/jUv7j5DsY2ozSZYF9eVRERBce
-phC06cg1/Tnvha7SH2aghdp9f8p15IAyVpLitUqJ5hUYtz6apu0lF6VDp+j3l13o
-QfdWAU+k6eXjmawSQd1Wmw1Hbsmy6M+6tjToe18M77cxydoyyxYGNfqpoLx/u/QF
-QDHSJX4asD8GsMZpnnbc4Qacb/CdQlbo8+Q8RmrDW+JtKmFHuoUl7AXmbQ9lGV2t
-Q12qtB5lHzyojqgtNNkc
-=IPdg
------END PGP SIGNATURE-----
-
---Signature=_Fri__16_Mar_2012_16_52_07_+1100_pZRK/URh1E+iqQ6N--
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4eecaaa..3d4c497 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -219,7 +219,8 @@ config ARCH_HIBERNATION_POSSIBLE
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
+-		   (PPC_85xx && !SMP) || PPC_86xx || PPC_PSERIES || 44x || 40x
++		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
++		   || 44x || 40x
+ 
+ config PPC_DCR_NATIVE
+ 	bool
+@@ -330,7 +331,8 @@ config SWIOTLB
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
+-	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC || PPC_POWERNV)
++	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || \
++	PPC_PMAC || PPC_POWERNV || PPC_85xx)
+ 	---help---
+ 	  Say Y here to be able to disable and re-enable individual
+ 	  CPUs at runtime on SMP machines.
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index ab9e402..57b5dd7 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -30,6 +30,12 @@ extern void flush_dcache_page(struct page *page);
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+ 
++#ifdef CONFIG_FSL_BOOKE
++extern void flush_disable_L1(void);
++#else
++#define flush_disable_L1()		do { } while (0)
++#endif
++
+ extern void __flush_icache_range(unsigned long, unsigned long);
+ static inline void flush_icache_range(unsigned long start, unsigned long stop)
+ {
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index adba970..7517863 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -65,6 +65,7 @@ int generic_cpu_disable(void);
+ void generic_cpu_die(unsigned int cpu);
+ void generic_mach_cpu_die(void);
+ void generic_set_cpu_dead(unsigned int cpu);
++void generic_set_cpu_up(unsigned int cpu);
+ int generic_check_cpu_restart(unsigned int cpu);
+ #endif
+ 
+@@ -191,6 +192,7 @@ extern unsigned long __secondary_hold_spinloop;
+ extern unsigned long __secondary_hold_acknowledge;
+ extern char __secondary_hold;
+ 
++extern void __early_start(void);
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 28e6259..e654f97 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -1004,6 +1004,34 @@ _GLOBAL(flush_dcache_L1)
+ 
+ 	blr
+ 
++/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
++_GLOBAL(flush_disable_L1)
++	mflr	r10
++	bl	flush_dcache_L1	/* Flush L1 d-cache */
++	mtlr	r10
++
++	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
++	li	r5, 2
++	rlwimi	r4, r5, 0, 3
++
++	msync
++	isync
++	mtspr	SPRN_L1CSR0, r4
++	isync
++
++1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
++	andi.	r4, r4, 2
++	bne	1b
++
++	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
++	li	r5, 2
++	rlwimi	r4, r5, 0, 3
++
++	mtspr	SPRN_L1CSR1, r4
++	isync
++
++	blr
++
+ #ifdef CONFIG_SMP
+ /* When we get here, r24 needs to hold the CPU # */
+ 	.globl __secondary_start
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 46695fe..cc18a70 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -423,6 +423,16 @@ void generic_set_cpu_dead(unsigned int cpu)
+ 	per_cpu(cpu_state, cpu) = CPU_DEAD;
+ }
+ 
++/*
++ * The cpu_state should be set to CPU_UP_PREPARE in kick_cpu(), otherwise
++ * the cpu_state is always CPU_DEAD after calling generic_set_cpu_dead(),
++ * which makes the delay in generic_cpu_die() not happen.
++ */
++void generic_set_cpu_up(unsigned int cpu)
++{
++	per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
++}
++
+ int generic_check_cpu_restart(unsigned int cpu)
+ {
+ 	return per_cpu(cpu_state, cpu) == CPU_UP_PREPARE;
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index ff42490..f24b2b4 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -2,7 +2,7 @@
+  * Author: Andy Fleming <afleming@freescale.com>
+  * 	   Kumar Gala <galak@kernel.crashing.org>
+  *
+- * Copyright 2006-2008, 2011 Freescale Semiconductor Inc.
++ * Copyright 2006-2008, 2011-2012 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -17,6 +17,7 @@
+ #include <linux/of.h>
+ #include <linux/kexec.h>
+ #include <linux/highmem.h>
++#include <linux/cpu.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/pgtable.h>
+@@ -29,28 +30,59 @@
+ #include <sysdev/mpic.h>
+ #include "smp.h"
+ 
+-extern void __early_start(void);
+-
+-#define BOOT_ENTRY_ADDR_UPPER	0
+-#define BOOT_ENTRY_ADDR_LOWER	1
+-#define BOOT_ENTRY_R3_UPPER	2
+-#define BOOT_ENTRY_R3_LOWER	3
+-#define BOOT_ENTRY_RESV		4
+-#define BOOT_ENTRY_PIR		5
+-#define BOOT_ENTRY_R6_UPPER	6
+-#define BOOT_ENTRY_R6_LOWER	7
+-#define NUM_BOOT_ENTRY		8
+-#define SIZE_BOOT_ENTRY		(NUM_BOOT_ENTRY * sizeof(u32))
+-
+-static int __init
+-smp_85xx_kick_cpu(int nr)
++struct epapr_spin_table {
++	u32	addr_h;
++	u32	addr_l;
++	u32	r3_h;
++	u32	r3_l;
++	u32	reserved;
++	u32	pir;
++};
++
++static void __cpuinit smp_85xx_setup_cpu(int cpu_nr);
++
++#ifdef CONFIG_HOTPLUG_CPU
++static void __cpuinit smp_85xx_mach_cpu_die(void)
++{
++	unsigned int cpu = smp_processor_id();
++	u32 tmp;
++
++	local_irq_disable();
++	idle_task_exit();
++	generic_set_cpu_dead(cpu);
++	mb();
++
++	mtspr(SPRN_TCR, 0);
++
++	flush_disable_L1();
++	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
++	mb();
++	isync();
++	mtspr(SPRN_HID0, tmp);
++	isync();
++
++	/* Enter NAP mode. */
++	tmp = mfmsr();
++	tmp |= MSR_WE;
++	mb();
++	mtmsr(tmp);
++	isync();
++
++	while (1)
++		;
++}
++#endif
++
++static int __cpuinit smp_85xx_kick_cpu(int nr)
++
+ {
+ 	unsigned long flags;
+ 	const u64 *cpu_rel_addr;
+-	__iomem u32 *bptr_vaddr;
++	__iomem struct epapr_spin_table *spin_table;
+ 	struct device_node *np;
+-	int n = 0, hw_cpu = get_hard_smp_processor_id(nr);
++	int hw_cpu = get_hard_smp_processor_id(nr);
+ 	int ioremappable;
++	int ret = 0;
+ 
+ 	WARN_ON(nr < 0 || nr >= NR_CPUS);
+ 	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
+@@ -75,50 +107,83 @@ smp_85xx_kick_cpu(int nr)
+ 
+ 	/* Map the spin table */
+ 	if (ioremappable)
+-		bptr_vaddr = ioremap(*cpu_rel_addr, SIZE_BOOT_ENTRY);
++		spin_table = ioremap(*cpu_rel_addr,
++				sizeof(struct epapr_spin_table));
+ 	else
+-		bptr_vaddr = phys_to_virt(*cpu_rel_addr);
++		spin_table = phys_to_virt(*cpu_rel_addr);
+ 
+ 	local_irq_save(flags);
+-
+-	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, hw_cpu);
+ #ifdef CONFIG_PPC32
+-	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
++#ifdef CONFIG_HOTPLUG_CPU
++	/* Corresponding to generic_set_cpu_dead() */
++	generic_set_cpu_up(nr);
++
++	if (system_state == SYSTEM_RUNNING) {
++		out_be32(&spin_table->addr_l, 0);
++
++		/*
++		 * We don't set the BPTR register here upon it points
++		 * to the boot page properly.
++		 */
++		mpic_reset_core(hw_cpu);
++
++		/* wait until core is ready... */
++		if (!spin_event_timeout(in_be32(&spin_table->addr_l) == 1,
++						10000, 100)) {
++			pr_err("%s: timeout waiting for core %d to reset\n",
++							__func__, hw_cpu);
++			ret = -ENOENT;
++			goto out;
++		}
++
++		/*  clear the acknowledge status */
++		__secondary_hold_acknowledge = -1;
++	}
++#endif
++	out_be32(&spin_table->pir, hw_cpu);
++	out_be32(&spin_table->addr_l, __pa(__early_start));
+ 
+ 	if (!ioremappable)
+-		flush_dcache_range((ulong)bptr_vaddr,
+-				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
++		flush_dcache_range((ulong)spin_table,
++			(ulong)spin_table + sizeof(struct epapr_spin_table));
+ 
+ 	/* Wait a bit for the CPU to ack. */
+-	while ((__secondary_hold_acknowledge != hw_cpu) && (++n < 1000))
+-		mdelay(1);
++	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
++					10000, 100)) {
++		pr_err("%s: timeout waiting for core %d to ack\n",
++						__func__, hw_cpu);
++		ret = -ENOENT;
++		goto out;
++	}
++out:
+ #else
+ 	smp_generic_kick_cpu(nr);
+ 
+-	out_be64((u64 *)(bptr_vaddr + BOOT_ENTRY_ADDR_UPPER),
+-		__pa((u64)*((unsigned long long *) generic_secondary_smp_init)));
++	out_be32(&spin_table->pir, hw_cpu);
++	out_be64((u64 *)(&spin_table->addr_h),
++	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
+ 
+ 	if (!ioremappable)
+-		flush_dcache_range((ulong)bptr_vaddr,
+-				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
++		flush_dcache_range((ulong)spin_table,
++			(ulong)spin_table + sizeof(struct epapr_spin_table));
+ #endif
+ 
+ 	local_irq_restore(flags);
+ 
+ 	if (ioremappable)
+-		iounmap(bptr_vaddr);
++		iounmap(spin_table);
+ 
+-	pr_debug("waited %d msecs for CPU #%d.\n", n, nr);
+-
+-	return 0;
++	return ret;
+ }
+ 
+ struct smp_ops_t smp_85xx_ops = {
+ 	.kick_cpu = smp_85xx_kick_cpu,
+-#ifdef CONFIG_KEXEC
++#ifdef CONFIG_HOTPLUG_CPU
++	.cpu_disable	= generic_cpu_disable,
++	.cpu_die	= generic_cpu_die,
++#endif
+ 	.give_timebase	= smp_generic_give_timebase,
+ 	.take_timebase	= smp_generic_take_timebase,
+-#endif
+ };
+ 
+ #ifdef CONFIG_KEXEC
+@@ -218,8 +283,7 @@ static void mpc85xx_smp_machine_kexec(struct kimage *image)
+ }
+ #endif /* CONFIG_KEXEC */
+ 
+-static void __init
+-smp_85xx_setup_cpu(int cpu_nr)
++static void __cpuinit smp_85xx_setup_cpu(int cpu_nr)
+ {
+ 	if (smp_85xx_ops.probe == smp_mpic_probe)
+ 		mpic_setup_this_cpu();
+@@ -249,6 +313,10 @@ void __init mpc85xx_smp_init(void)
+ 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
+ 	}
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++	ppc_md.cpu_die		= smp_85xx_mach_cpu_die;
++#endif
++
+ 	smp_ops = &smp_85xx_ops;
+ 
+ #ifdef CONFIG_KEXEC
+-- 
+1.6.4.1
