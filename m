@@ -1,18 +1,13 @@
-Return-Path: <B04825@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A03F8B6F13
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2012 09:41:18 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/epapr: add "memory" as a clobber to all hypercalls
-Date: Thu, 15 Mar 2012 17:41:02 -0500
-Message-ID: <1331851262-1806-1-git-send-email-timur@freescale.com>
+Return-Path: <b10812@nmglablinux19.freescale.com>
+From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+To: <devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] Device Tree Bindings for Freescale TDM controller 
+Date: Fri, 16 Mar 2012 07:00:51 +0530
+Message-ID: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+Cc: Sandeep Singh <Sandeep@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +17,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The "memory" clobber tells the compiler to ensure that all writes to memory
-are committed before the hypercall is made.
+From: Poonam Aggrwal <poonam.aggrwal@freescale.com> 
 
-"memory" is only necessary for hcalls where the Hypervisor will read or
-write guest memory. However, we add it to all hcalls because the impact is
-minimal, and we want to ensure that it's present for the hcalls that need it.
+This TDM controller is available in various Freescale SOCs like MPC8315, P1020,
+P1022, P1010.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 ---
- arch/powerpc/include/asm/epapr_hcalls.h |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   71 +++++++++++++++++++++
+ 1 files changed, 71 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/tdm/fsl-tdm.txt
 
-diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
-index f3b0c2c..976835d 100644
---- a/arch/powerpc/include/asm/epapr_hcalls.h
-+++ b/arch/powerpc/include/asm/epapr_hcalls.h
-@@ -134,10 +134,15 @@
-  * whether they will be clobbered.
-  *
-  * Note that r11 can be used as an output parameter.
-+ *
-+ * The "memory" clobber is only necessary for hcalls where the Hypervisor
-+ * will read or write guest memory. However, we add it to all hcalls because
-+ * the impact is minimal, and we want to ensure that it's present for the
-+ * hcalls that need it.
- */
- 
- /* List of common clobbered registers.  Do not use this macro. */
--#define EV_HCALL_CLOBBERS "r0", "r12", "xer", "ctr", "lr", "cc"
-+#define EV_HCALL_CLOBBERS "r0", "r12", "xer", "ctr", "lr", "cc", "memory"
- 
- #define EV_HCALL_CLOBBERS8 EV_HCALL_CLOBBERS
- #define EV_HCALL_CLOBBERS7 EV_HCALL_CLOBBERS8, "r10"
+diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+new file mode 100644
+index 0000000..61431e3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+@@ -0,0 +1,71 @@
++=====================================================================
++TDM Device Tree Binding
++Copyright (C) 2012 Freescale Semiconductor Inc.
++
++NOTE: The bindings described in this document are preliminary
++and subject to change.
++
++=====================================================================
++TDM (Time Division Multiplexing)
++
++DESCRIPTION
++
++The TDM is full duplex serial port designed to allow various devices including
++digital signal processors (DSPs) to communicate with a variety of serial devices
++including industry standard framers, codecs, other DSPs and microprocessors.
++
++The below properties describe the device tree bindings for Freescale TDM
++controller.
++This TDM controller is available on various Freescale Processors like
++MPC8313, P1020, P1022 and P1010.
++
++PROPERTIES
++
++  - compatible
++      Usage: required
++      Value type: <string>
++      Definition: Should contain "fsl,mpc8315-tdm".
++	  So mpc8313 will have compatible = "fsl,mpc8315-tdm";
++	  p1010 will have compatible "fsl,p1010-tdm", "fsl,mpc8315-tdm";
++
++  - reg
++      Usage: required
++      Value type: <tdm-reg-offset tdm-reg-size dmac-reg-offset dmac-reg-size>
++      Definition: A standard property. Specifies the physical address
++	  offset and length of the TDM registers and TDM DMAC registers for
++	  the device.
++
++  - clock-frequency
++      Usage: optional
++      Value type: <u32>
++      Definition: The frequency at which the TDM block is operating.
++
++  - interrupts
++      Usage: required
++      Value type: <tdm-err-intr tdm-err-intr-type dmac-intr dmac-intr-type>
++      Definition: This field defines two interrupt specifiers namely interrupt
++	  number and interrupt type for TDM error and TDM DMAC.
++
++  - phy-handle
++      Usage: optional
++      Value type: <phandle>
++      Definition: Phandle of the line controller node or framer node eg. SLIC,
++	  E1\T1 etc.
++
++  - fsl-max-time-slots
++      Usage: required
++      Value type: <u32>
++      Definition: Maximum number of 8-bit time slots in one TDM frame.
++	  This is the maximum number which TDM hardware supports.
++
++EXAMPLE
++
++	tdm@16000 {
++		device_type = "tdm";
++		compatible = "fsl,p1010-tdm", "fsl,mpc8315-tdm";
++		reg = <0x16000 0x200 0x2c000 0x2000>;
++		clock-frequency = <0>;
++		interrupts = <16 8 62 8>;
++		phy-handle = <zarlink1>
++		fsl-max-time-slots = <128>
++	};
 -- 
-1.7.3.4
+1.5.6.5
