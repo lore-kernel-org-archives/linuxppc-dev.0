@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5A842B6FA1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 07:01:05 +1100 (EST)
-Subject: Re: [PATCH 1/2 v6] powerpc/85xx: Add Quicc Engine support for p1025rdb
+ by ozlabs.org (Postfix) with ESMTPS id 955F0B6FF4
+ for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2012 07:01:16 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: allow CONFIG_PHYS_64BIT to be selectable
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1329889447-1756-1-git-send-email-B32736@freescale.com>
-Date: Fri, 16 Mar 2012 15:01:01 -0500
-Message-Id: <4384032A-CA1A-4B39-80AC-860AB7142305@kernel.crashing.org>
-References: <1329889447-1756-1-git-send-email-B32736@freescale.com>
-To: Zhicheng Fan <B32736@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1329853995-7533-1-git-send-email-timur@freescale.com>
+Date: Fri, 16 Mar 2012 15:01:10 -0500
+Message-Id: <F8EF37FA-4F99-4B4E-9D87-B7BA7DF349CD@kernel.crashing.org>
+References: <1329853995-7533-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,15 +24,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 21, 2012, at 11:44 PM, Zhicheng Fan wrote:
+On Feb 21, 2012, at 1:53 PM, Timur Tabi wrote:
 
-> From: Zhicheng Fan <b32736@freescale.com>
+> Remove the "select PHYS_64BIT" from the Kconfig entry for the P1022DS,
+> so that large physical address support is a selectable option for =
+non-CoreNet
+> reference boards.
 >=20
-> Signed-off-by: Zhicheng Fan <b32736@freescale.com>
+> The option is enabled in mpc85xx_[smp_]defconfig so that the default =
+is
+> unchanged.  However, now it can be deselected.
+>=20
+> The P1022DS had this option defined because the default device tree =
+for
+> this board uses 36-bit addresses.  This had the side-effect of forcing
+> this option on for all boards that use mpc85xx_[smp_]defconfig.  Some
+> users may want to disable this feature to create an optimized =
+configuration
+> for boards with <=3D 2GB of RAM.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   77 =
-++++++++++++++++++++++++++++-
-> 1 files changed, 76 insertions(+), 1 deletions(-)
+> arch/powerpc/configs/mpc85xx_defconfig     |    1 +
+> arch/powerpc/configs/mpc85xx_smp_defconfig |    1 +
+> arch/powerpc/platforms/85xx/Kconfig        |    1 -
+> 3 files changed, 2 insertions(+), 1 deletions(-)
 
 applied
 
