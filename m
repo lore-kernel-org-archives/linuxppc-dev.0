@@ -1,21 +1,14 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8CCF6B6EEF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 02:07:05 +1100 (EST)
-Subject: Re: [PATCH 2/2 V3] powerpc/85xx: Add p2020rdb-pc dts support
+Subject: Re: [PATCH] powerpc/85xx:Add usb controller version info
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1328860797-9283-1-git-send-email-b29983@freescale.com>
-Date: Fri, 16 Mar 2012 10:06:53 -0500
-Message-Id: <058890AD-9F3C-46D5-A05D-5B8F0F73A998@kernel.crashing.org>
-References: <1328860797-9283-1-git-send-email-b29983@freescale.com>
-To: "<b29983@freescale.com>" <b29983@freescale.com>
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Prabhakar Kushwaha <prabhakar@freescale.com>,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>
+In-Reply-To: <1326865248-3333-1-git-send-email-ramneek.mehresh@freescale.com>
+Date: Fri, 16 Mar 2012 10:06:56 -0500
+Message-Id: <AB89D415-45D5-42A5-B145-83BFA80694DB@kernel.crashing.org>
+References: <1326865248-3333-1-git-send-email-ramneek.mehresh@freescale.com>
+To: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +19,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 10, 2012, at 1:59 AM, <b29983@freescale.com> =
-<b29983@freescale.com> wrote:
+On Jan 17, 2012, at 11:40 PM, Ramneek Mehresh wrote:
 
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
->=20
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> Signed-off-by: Tang Yuantian <b29983@freescale.com>
+> Add usb controller version info for the following:
+> MPC8536, P1010, P1020, P1021, P1022, P1023, P2020, P2041,
+> P3041, P3060, P5020
+> 
+> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
 > ---
-> v3:
-> 	-correct the patch author
->=20
-> arch/powerpc/boot/dts/p2020rdb-pc.dtsi    |  241 =
-+++++++++++++++++++++++++++++
-> arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |   96 ++++++++++++
-> arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |   96 ++++++++++++
-> 3 files changed, 433 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-> create mode 100644 arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
+> Applies on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+> (branch next)
+> 
+> arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |    4 ++--
+> arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   |    3 +++
+> arch/powerpc/boot/dts/fsl/p1020si-post.dtsi   |    6 ++++++
+> arch/powerpc/boot/dts/fsl/p1021si-post.dtsi   |    3 +++
+> arch/powerpc/boot/dts/fsl/p1022si-post.dtsi   |    6 ++++++
+> arch/powerpc/boot/dts/fsl/p1023si-post.dtsi   |    3 +++
+> arch/powerpc/boot/dts/fsl/p2020si-post.dtsi   |    3 +++
+> arch/powerpc/boot/dts/fsl/p2041si-post.dtsi   |    2 ++
+> arch/powerpc/boot/dts/fsl/p3041si-post.dtsi   |    2 ++
+> arch/powerpc/boot/dts/fsl/p3060si-post.dtsi   |    6 ++++++
+> arch/powerpc/boot/dts/fsl/p5020si-post.dtsi   |    2 ++
+> 11 files changed, 38 insertions(+), 2 deletions(-)
 
 applied
 
-- k=
+- k
