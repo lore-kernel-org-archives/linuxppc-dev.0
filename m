@@ -2,21 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1917DB6FA1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 07:35:26 +1100 (EST)
-Subject: Re: [PATCH] powerpc/85xx: Add machine check handler to fix PCIe
- erratum on mpc85xx
+ by ozlabs.org (Postfix) with ESMTPS id 49536B6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 07:41:26 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: check the return value of fsl_add_bridge
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1328861387-31390-1-git-send-email-shuo.liu@freesacle.com>
-Date: Fri, 16 Mar 2012 15:35:15 -0500
-Message-Id: <2F2A8FBF-BD4D-4A53-A293-F5426F8C5BAA@kernel.crashing.org>
-References: <1328861387-31390-1-git-send-email-shuo.liu@freesacle.com>
-To: "<shuo.liu@freesacle.com>" <shuo.liu@freesacle.com>
-Cc: Zhao Chenhui <b35336@freescale.com>, Liu Shuo <b35362@freescale.com>,
- r61911@freescale.com, Liu Shuo <shuo.liu@freescale.com>,
- scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1326087931-2515-1-git-send-email-r66093@freescale.com>
+Date: Fri, 16 Mar 2012 15:41:20 -0500
+Message-Id: <89D5B60B-76A1-4691-AF0A-FBAC0CBC9528@kernel.crashing.org>
+References: <1326087931-2515-1-git-send-email-r66093@freescale.com>
+To: "<r66093@freescale.com>" <r66093@freescale.com>
+Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,149 +24,101 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 10, 2012, at 2:09 AM, <shuo.liu@freesacle.com> =
-<shuo.liu@freesacle.com> wrote:
+On Jan 8, 2012, at 11:45 PM, <r66093@freescale.com> =
+<r66093@freescale.com> wrote:
 
-> From: Liu Shuo <shuo.liu@freescale.com>
+> From: Jerry Huang <Chang-Ming.Huang@freescale.com>
 >=20
-> A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
-> goes down. when the link goes down, Non-posted transactions issued
-> via the ATMU requiring completion result in an instruction stall.
-> At the same time a machine-check exception is generated to the core
-> to allow further processing by the handler. We implements the handler
-> which skips the instruction caused the stall.
+> For all mpc85xx DS/MDS boards, we should check the return value from
+> function "fsl_add_bridge", otherwise, when pcie node status is =
+disabled,
+> the kernel will panic when perform the function =
+"pci_find_hose_for_OF_device"
+> because the hose controller is NULL.
 >=20
-> Signed-off-by: Zhao Chenhui <b35336@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Liu Shuo <b35362@freescale.com>
+> below is the call trace log:
+> NIP: c05bca80 LR: c05bca78 CTR: c000ec54
+> REGS: c0615eb0 TRAP: 0300   Not tainted  =
+(3.2.0-rc3-00090-gfa8cbaa-dirty)
+> MSR: 00021000 <CE,ME>  CR: 84044022  XER: 20000000
+> DEAR: 00000110, ESR: 00000000
+> TASK =3D c05e8380[0] 'swapper' THREAD: c0614000
+> GPR00: c05bca70 c0615f60 c05e8380 00000000 c0550a08 ffffffff c0613140 =
+c061314c
+> GPR08: 00000000 00000000 00000286 c0620000 84044022 1009d368 00000000 =
+00000000
+> GPR16: c0000a00 00000014 3fffffff 03ff9000 00000015 7ff3a724 c0614000 =
+00000000
+> GPR24: 00000000 00000000 00008000 c0550a08 c0534808 efbe3834 00000000 =
+ffffffff
+> NIP [c05bca80] p1022_ds_setup_arch+0xa8/0x1ac
+> LR [c05bca78] p1022_ds_setup_arch+0xa0/0x1ac
+> Call Trace:
+> [c0615f60] [c05bca70] p1022_ds_setup_arch+0x98/0x1ac (unreliable)
+> [c0615fb0] [c05b88e0] setup_arch+0x1e8/0x224
+> [c0615fc0] [c05b4524] start_kernel+0x84/0x2d8
+> [c0615ff0] [c00003c4] skpinv+0x2b0/0x2ec
+> Instruction dump:
+> 5400033e 7f80d000 7fa3eb78 40be0010 38800001 4bffedf1 48000008 =
+4bffede9
+> 7fa3eb78 4ba53119 7f64db78 7c691b78
+> 81830114 7f85e378 8149010c
+> ---[ end trace 31fd0ba7d8756001 ]---
+> Kernel panic - not syncing: Attempted to kill the idle task!
+> Call Trace:
+> [c0615d90] [c0007b74] show_stack+0x44/0x154 (unreliable)
+> [c0615dd0] [c04495b8] panic+0xa4/0x1d4
+> [c0615e20] [c003e7b8] do_exit+0x588/0x614
+> [c0615e70] [c000a00c] die+0xc8/0x198
+> [c0615e90] [c0011a1c] bad_page_fault+0xb4/0xfc
+> [c0615ea0] [c000e2e0] handle_page_fault+0x7c/0x80
+> --- Exception: 300 at p1022_ds_setup_arch+0xa8/0x1ac
+>    LR =3D p1022_ds_setup_arch+0xa0/0x1ac
+> [c0615f60] [c05bca70] p1022_ds_setup_arch+0x98/0x1ac (unreliable)
+> [c0615fb0] [c05b88e0] setup_arch+0x1e8/0x224
+> [c0615fc0] [c05b4524] start_kernel+0x84/0x2d8
+> [c0615ff0] [c00003c4] skpinv+0x2b0/0x2ec
+>=20
+> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
 > ---
-> arch/powerpc/kernel/cpu_setup_fsl_booke.S |    2 +-
-> arch/powerpc/kernel/traps.c               |    3 ++
-> arch/powerpc/sysdev/fsl_pci.c             |   36 =
-+++++++++++++++++++++++++++++
-> arch/powerpc/sysdev/fsl_pci.h             |    6 +++++
-> 4 files changed, 46 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S =
-b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> index 2c03ac2..beef028 100644
-> --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> @@ -64,7 +64,7 @@ _GLOBAL(__setup_cpu_e500v2)
-> 	bl	__e500_icache_setup
-> 	bl	__e500_dcache_setup
-> 	bl	__setup_e500_ivors
-> -#ifdef CONFIG_FSL_RIO
-> +#if defined(CONFIG_FSL_RIO) || defined(CONFIG_FSL_PCI)
-> 	/* Ensure that RFXE is set */
-> 	mfspr	r3,SPRN_HID1
-> 	oris	r3,r3,HID1_RFXE@h
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 343c46b..1d6bcc0 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -57,6 +57,7 @@
-> #include <asm/kexec.h>
-> #include <asm/ppc-opcode.h>
-> #include <asm/rio.h>
-> +#include <sysdev/fsl_pci.h>
->=20
-> #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
-> int (*__debugger)(struct pt_regs *regs) __read_mostly;
-> @@ -525,6 +526,8 @@ int machine_check_e500(struct pt_regs *regs)
-> 	if (reason & MCSR_BUS_RBERR) {
-> 		if (fsl_rio_mcheck_exception(regs))
-> 			return 1;
-> +		if (fsl_pci_mcheck_exception(regs))
-> +			return 1;
-> 	}
->=20
-> 	printk("Machine check in kernel mode.\n");
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
-b/arch/powerpc/sysdev/fsl_pci.c
-> index 6bc3bfd..8ea23f0 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -30,6 +30,7 @@
-> #include <asm/io.h>
-> #include <asm/prom.h>
-> #include <asm/pci-bridge.h>
-> +#include <asm/ppc-pci.h>
-> #include <asm/machdep.h>
-> #include <sysdev/fsl_soc.h>
-> #include <sysdev/fsl_pci.h>
-> @@ -727,3 +728,38 @@ u64 fsl_pci_immrbar_base(struct pci_controller =
-*hose)
->=20
-> 	return 0;
-> }
-> +
-> +static int is_in_pci_mem_space(phys_addr_t addr)
-> +{
-> +	struct pci_controller *hose;
-> +	struct resource *res;
-> +	int i;
-> +
-> +	list_for_each_entry(hose, &hose_list, list_node) {
-> +		for (i =3D 0; i < 3; i++) {
-> +			res =3D &hose->mem_resources[i];
-> +			if ((res->flags & IORESOURCE_MEM) &&
-> +				addr >=3D res->start && addr <=3D =
-res->end)
-> +				return 1;
-> +		}
-> +	}
-> +	return 0;
+> arch/powerpc/platforms/85xx/corenet_ds.c   |    5 ++++-
+> arch/powerpc/platforms/85xx/mpc8536_ds.c   |   13 +++++++++----
+> arch/powerpc/platforms/85xx/mpc85xx_ds.c   |   13 +++++++++----
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c  |   13 +++++++++----
+> arch/powerpc/platforms/85xx/p1022_ds.c     |   13 +++++++++----
+> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   14 ++++++++++----
+> 6 files changed, 50 insertions(+), 21 deletions(-)
 
-just move this into fsl_pci_mcheck_exception() no need for a separate =
-function.
+We need to fixup 85xx/ge_imp3a.c as well.
 
-> +}
-> +
-> +int fsl_pci_mcheck_exception(struct pt_regs *regs)
-> +{
-> +	phys_addr_t addr =3D 0;
-> +
-> +#ifdef CONFIG_PHYS_64BIT
-> +	addr =3D mfspr(SPRN_MCARU);
-> +	addr <<=3D 32;
-> +#endif
-> +	addr +=3D mfspr(SPRN_MCAR);
-> +
-> +	if (is_in_pci_mem_space(addr)) {
-> +		regs->nip +=3D 4;
-> +		return 1;
-> +	}
-> +
-> +	return 0;
-> +}
-> diff --git a/arch/powerpc/sysdev/fsl_pci.h =
-b/arch/powerpc/sysdev/fsl_pci.h
-> index a39ed5c..96b07ce 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.h
-> +++ b/arch/powerpc/sysdev/fsl_pci.h
-> @@ -93,5 +93,11 @@ extern void fsl_pcibios_fixup_bus(struct pci_bus =
-*bus);
-> extern int mpc83xx_add_bridge(struct device_node *dev);
-> u64 fsl_pci_immrbar_base(struct pci_controller *hose);
 >=20
-> +#ifdef CONFIG_FSL_PCI
-> +extern int fsl_pci_mcheck_exception(struct pt_regs *);
-> +#else
-> +static inline int fsl_pci_mcheck_exception(struct pt_regs *regs) =
-{return 0; }
+> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c =
+b/arch/powerpc/platforms/85xx/corenet_ds.c
+> index c48b661..9d72e3a 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+> @@ -85,8 +85,11 @@ void __init corenet_ds_setup_arch(void)
+> 	for_each_node_by_type(np, "pci") {
+> 		if (of_device_is_compatible(np, "fsl,p4080-pcie") ||
+> 		    of_device_is_compatible(np, "fsl,qoriq-pcie-v2.2")) =
+{
+> -			fsl_add_bridge(np, 0);
+> +			if (fsl_add_bridge(np, 0) < 0)
+> +				continue;
+> 			hose =3D pci_find_hose_for_OF_device(np);
+> +			if (!hose)
+> +				continue;
+> 			max =3D min(max, hose->dma_window_base_cur +
+> 					hose->dma_window_size);
+> 		}
 
-Add space after {
+Can we just make this:
 
-> +#endif
-> +
-> #endif /* __POWERPC_FSL_PCI_H */
-> #endif /* __KERNEL__ */
-> --=20
-> 1.7.1
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+	fsl_add_bridge()
+	hose =3D pci_find_hose_for_OF_device(np);
+	if (hose)
+		max =3D min(...);
+
+?
+
+- k
