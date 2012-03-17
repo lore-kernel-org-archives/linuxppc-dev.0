@@ -1,20 +1,23 @@
-Return-Path: <B04825@freescale.com>
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Aggrwal Poonam-B10812 <B10812@freescale.com>
-Subject: Re: [PATCH] Device Tree Bindings for Freescale TDM controller
-Date: Sat, 17 Mar 2012 16:07:29 +0000
-Message-ID: <CAOZdJXVU=1bW8_OTMecJHuWaa6_023UnUsfQTX8MGqd3E4SRAg@mail.gmail.com>
-References: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
- <4F63868D.1030507@freescale.com>
- <ACB6D0C0104CFF42A45A5D82A0DD4F3D09D518@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <ACB6D0C0104CFF42A45A5D82A0DD4F3D09D518@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9ED9EB6FA2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 04:10:48 +1100 (EST)
+Received: by pbcwy12 with SMTP id wy12so610637pbc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 10:10:46 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Singh Sandeep-B37400 <B37400@freescale.com>
+In-Reply-To: <31B0E63E-923D-4022-8B27-76CFF2189817@kernel.crashing.org>
+References: <31B0E63E-923D-4022-8B27-76CFF2189817@kernel.crashing.org>
+Date: Sat, 17 Mar 2012 21:10:45 +0400
+Message-ID: <CALT56yMXbaxJTGhL-8Hg3Dokc=Oi2qVKo912Q6uX3X8OErgB3w@mail.gmail.com>
+Subject: Re: fsl pci edac patches
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lan Chunhe-B25806 <b25806@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 17, 2012 at 2:33 AM, Aggrwal Poonam-B10812
-<B10812@freescale.com> wrote:
+Hello,
+
+On Sat, Mar 17, 2012 at 1:13 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+> Guys,
 >
->> > + =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,p1010-tdm", "fsl,mpc8315-tdm=
-";
->> > + =A0 =A0 =A0 =A0 =A0 reg =3D <0x16000 0x200 0x2c000 0x2000>;
->> > + =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <0>;
->>
->> Show a real clock-frequency, perhaps with a comment saying it's typicall=
-y
->> filled in by boot software.
+> I'm not sure what the state of the EDAC patches and latest kernel are.. I'm going to mark the ones in patch works as 'dead' and hopefully you guys will resend if there is still an interest.
 
-> Okay.
+I don't have mpc85xx hardware to test at this point, so probably I
+don't care about 85xx EDAC binding right now.
+Strictly speaking I forgot about these patches :(
 
-Scott, are you suggesting that Poonam put a non-zero number in the DTS
-for clock-frequency?  If so, then I don't think that's a good idea, if
-U-Boot will always override it.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+-- 
+With best wishes
+Dmitry
