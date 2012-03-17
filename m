@@ -2,8 +2,8 @@ Return-Path: <B04825@freescale.com>
 From: Tabi Timur-B04825 <B04825@freescale.com>
 To: Aggrwal Poonam-B10812 <B10812@freescale.com>
 Subject: Re: [PATCH] Device Tree Bindings for Freescale TDM controller
-Date: Sat, 17 Mar 2012 16:04:54 +0000
-Message-ID: <CAOZdJXVVGOwDBAEaWzJwynvrqBgYD-qE-FiFgyPwEfTX5su9Pg@mail.gmail.com>
+Date: Sat, 17 Mar 2012 16:07:29 +0000
+Message-ID: <CAOZdJXVU=1bW8_OTMecJHuWaa6_023UnUsfQTX8MGqd3E4SRAg@mail.gmail.com>
 References: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
  <4F63868D.1030507@freescale.com>
  <ACB6D0C0104CFF42A45A5D82A0DD4F3D09D518@039-SN2MPN1-013.039d.mgd.msft.net>
@@ -27,20 +27,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On Sat, Mar 17, 2012 at 2:33 AM, Aggrwal Poonam-B10812
 <B10812@freescale.com> wrote:
 >
->> > + =A0- clock-frequency
->> > + =A0 =A0 =A0Usage: optional
->> > + =A0 =A0 =A0Value type: <u32>
->> > + =A0 =A0 =A0Definition: The frequency at which the TDM block is opera=
-ting.
+>> > + =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,p1010-tdm", "fsl,mpc8315-tdm=
+";
+>> > + =A0 =A0 =A0 =A0 =A0 reg =3D <0x16000 0x200 0x2c000 0x2000>;
+>> > + =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <0>;
 >>
->> Will this frequency ever need to be > 4GHz?
-> Don't think so, at max this will be CCB, not sure if CCB on our platforms=
- may get bigger than 4G ever.
+>> Show a real clock-frequency, perhaps with a comment saying it's typicall=
+y
+>> filled in by boot software.
 
-Apparently, 4GB is the new 640K.
+> Okay.
 
-In Poonam's defense, every clock frequency property in the device tree
-is a 32-bit integer.  I've never seen a 64-bit one.
+Scott, are you suggesting that Poonam put a non-zero number in the DTS
+for clock-frequency?  If so, then I don't think that's a good idea, if
+U-Boot will always override it.
 
 --=20
 Timur Tabi
