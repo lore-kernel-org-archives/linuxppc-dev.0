@@ -1,15 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1332026973.3105.191.camel@pasglop>
+Return-Path: <B04825@freescale.com>
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: issues calling of_platform_bus_probe() twice
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Date: Sun, 18 Mar 2012 10:29:33 +1100
-In-Reply-To: <4F649304.9010001@freescale.com>
+Date: Sat, 17 Mar 2012 23:33:42 +0000
+Message-ID: <4F651F55.1080706@freescale.com>
 References: <31B4E554-FA95-431D-B353-92680CD14A0A@kernel.crashing.org>
  <1331933034.3105.171.camel@pasglop> <20120317072717.738953E08CE@localhost>
- <4F649304.9010001@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <4F649304.9010001@freescale.com> <1332026973.3105.191.camel@pasglop>
+In-Reply-To: <1332026973.3105.191.camel@pasglop>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 Cc: "devicetree-discuss@lists.ozlabs.org
  Discuss" <devicetree-discuss@lists.ozlabs.org>,
  "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
@@ -22,27 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-03-17 at 13:35 +0000, Tabi Timur-B04825 wrote:
-> >>> >  >  Are you aware of any reason that we can't call
-> of_platform_bus_probe()
-> >>> >  >  or multiple times.  Timur's run into an issue in which all
-> devices
-> >>> >  >  don't get registered properly if we call
-> of_platform_bus_probe() times
-> >>> >  >  with different of_device_id struct's.
-> >> >
-> >> >  Nothing comes to mind... Grant ?
-> > Neither for me.  Should work.
-> 
-> I posted a work-around patch here:
-> 
-> http://patchwork.ozlabs.org/patch/128533/
-> 
-> Without this patch, drivers cannot probe on DMA *channels*, or any
-> other 
-> grandchildren of the root node. 
+Benjamin Herrenschmidt wrote:
+> Why don't you track down the actual bug instead ?
 
-Why don't you track down the actual bug instead ?
+I was hoping that someone who is very familiar with the code would take a=20
+look.  I don't know the OF layer that well.
 
-Cheers,
-Ben.
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
