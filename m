@@ -1,22 +1,20 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E5312B6FA1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 03:04:23 +1100 (EST)
-Received: by pbcwy12 with SMTP id wy12so594773pbc.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2012 09:04:21 -0700 (PDT)
+Return-Path: <B04825@freescale.com>
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Aggrwal Poonam-B10812 <B10812@freescale.com>
+Subject: Re: [PATCH] Device Tree Bindings for Freescale TDM controller
+Date: Sat, 17 Mar 2012 16:04:54 +0000
+Message-ID: <CAOZdJXVVGOwDBAEaWzJwynvrqBgYD-qE-FiFgyPwEfTX5su9Pg@mail.gmail.com>
+References: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
+ <4F63868D.1030507@freescale.com>
+ <ACB6D0C0104CFF42A45A5D82A0DD4F3D09D518@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <ACB6D0C0104CFF42A45A5D82A0DD4F3D09D518@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Date: Sat, 17 Mar 2012 20:04:21 +0400
-Message-ID: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
-Subject: Problem with framebuffer mmap on platforms with large addressing
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Josh Boyer <jwboyer@gmail.com>, Matt Porter <mporter@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Singh Sandeep-B37400 <B37400@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Sat, Mar 17, 2012 at 2:33 AM, Aggrwal Poonam-B10812
+<B10812@freescale.com> wrote:
+>
+>> > + =A0- clock-frequency
+>> > + =A0 =A0 =A0Usage: optional
+>> > + =A0 =A0 =A0Value type: <u32>
+>> > + =A0 =A0 =A0Definition: The frequency at which the TDM block is opera=
+ting.
+>>
+>> Will this frequency ever need to be > 4GHz?
+> Don't think so, at max this will be CCB, not sure if CCB on our platforms=
+ may get bigger than 4G ever.
 
-I'm trying to make framebuffer to work on PPC460EX board (canyonlands).
+Apparently, 4GB is the new 640K.
 
-The peculiarity of this platform is the fact that it has
-sizeof(unsigned long) = 4,
-but physical address on it is 36 bits width. It is a common to various pieces
-of the code to expect that unsigned long variable is able to contain physical
-address. Most of those places are easy to fix.
+In Poonam's defense, every clock frequency property in the device tree
+is a 32-bit integer.  I've never seen a 64-bit one.
 
-The problem I'm stuck with is a fb_mmap() code. To find a right memory to map
-it uses information from struct fb_fix_screeninfo provided by the driver.
-This structure uses two unsigned long fields to hold physical addresses
-(smem_start and mmio_start). It would be easy to change that structure
-to use phys_addr_t instead of unsigned long, but this structure is a part
-of userspace ABI. It is returned to userspace on FBIOGET_FSCREENINFO ioctl.
-And now I'm stuck with it.
-
-In my driver code I have just overwritten the fb_mmap function with
-driver-private
-fb_mmap callback supporting 64-bit addressing, but this doesn't look like
-a generic and correct solution.
-
-What is the best way to fix this problem? Should we break ABI with the goal
-of correctness? Should we add new FBIOGET_FSCREENINFO2, which will
-return a correct structure with phys_addr_t (or simply u64) fields and make
-FBIOGET_FSCREENINFO a wrapper returning partially bogus structure
-(with smem_start and mmio_start fields being truncated to just unsigned long)?
-What would developers recommend?
-
-
-Thank you.
-
-
--- 
-With best wishes
-Dmitry
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
