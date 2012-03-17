@@ -1,18 +1,17 @@
-Return-Path: <B10812@freescale.com>
-From: Aggrwal Poonam-B10812 <B10812@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH] Device Tree Bindings for Freescale TDM controller
-Date: Sat, 17 Mar 2012 07:33:32 +0000
-Message-ID: <ACB6D0C0104CFF42A45A5D82A0DD4F3D09D518@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
- <4F63868D.1030507@freescale.com>
-In-Reply-To: <4F63868D.1030507@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <B32579@freescale.com>
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree-discuss@lists.ozlabs.org>
+Subject: [PATCH][v2] powerpc/85xx:Add BSC9131 RDB Support
+Date: Sat, 17 Mar 2012 14:09:48 +0530
+Message-ID: <1331973588-29896-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-Cc: "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Singh Sandeep-B37400 <B37400@freescale.com>
+Content-Type: text/plain
+Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>,
+ Ramneek Mehresh <ramneek.mehresh@freescale.com>,
+ Rajan Srivastava <rajan.srivastava@freescale.com>,
+ Akhil Goyal <Akhil.Goyal@freescale.com>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,178 +21,683 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Scott for the review.
+BSC9131RDB is a Freescale reference design board for BSC9131 SoC.The BSC9131 is
+integrated SoC that targets Femto base station market. It combines Power
+Architecture e500v2 and DSP StarCore SC3850 core technologies with MAPLE-B2F
+baseband acceleration processing elements.
 
-Will send an updated revision with the comments taken care.
+The BSC9131 SoC includes the following function and features:
+    . Power Architecture subsystem including a e500 processor with 256-Kbyte shared
+      L2 cache
+    . StarCore SC3850 DSP subsystem with a 512-Kbyte private L2 cache
+    . The Multi Accelerator Platform Engine for Femto BaseStation Baseband
+      Processing (MAPLE-B2F)
+    . A multi-standard baseband algorithm accelerator for Channel Decoding/Encoding,
+      Fourier Transforms, UMTS chip rate processing, LTE UP/DL Channel processing,
+      and CRC algorithms
+    . Consists of accelerators for Convolution, Filtering, Turbo Encoding,
+      Turbo Decoding, Viterbi decoding, Chiprate processing, and Matrix Inversion
+      operations
+    . DDR3/3L memory interface with 32-bit data width without ECC and 16-bit with
+      ECC, up to 400-MHz clock/800 MHz data rate
+    . Dedicated security engine featuring trusted boot
+    . DMA controller
+    . OCNDMA with four bidirectional channels
+    . Interfaces
+    . Two triple-speed Gigabit Ethernet controllers featuring network acceleration
+      including IEEE 1588. v2 hardware support and virtualization (eTSEC)
+    . eTSEC 1 supports RGMII/RMII
+    . eTSEC 2 supports RGMII
+    . High-speed USB 2.0 host and device controller with ULPI interface
+    . Enhanced secure digital (SD/MMC) host controller (eSDHC)
+    . Antenna interface controller (AIC), supporting three industry standard
+      JESD207/three custom ADI RF interfaces (two dual port and one single port)
+      and three MAXIM's MaxPHY serial interfaces
+    . ADI lanes support both full duplex FDD support and half duplex TDD support
+    . Universal Subscriber Identity Module (USIM) interface that facilitates
+      communication to SIM cards or Eurochip pre-paid phone cards
+    . TDM with one TDM port
+    . Two DUART, four eSPI, and two I2C controllers
+    . Integrated Flash memory controller (IFC)
+    . TDM with 256 channels
+    . GPIO
+    . Sixteen 32-bit timers
 
-Regards
-Poonam
+The DSP portion of the SoC consists of DSP core (SC3850) and various
+accelerators pertaining to DSP operations.
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Saturday, March 17, 2012 12:00 AM
-> To: Aggrwal Poonam-B10812
-> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org;
-> Singh Sandeep-B37400
-> Subject: Re: [PATCH] Device Tree Bindings for Freescale TDM controller
->=20
-> On 03/15/2012 08:30 PM, Poonam Aggrwal wrote:
-> > From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> >
-> > This TDM controller is available in various Freescale SOCs like
-> > MPC8315, P1020, P1022, P1010.
-> >
-> > Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
-> > Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> > ---
-> >  Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   71
-> +++++++++++++++++++++
-> >  1 files changed, 71 insertions(+), 0 deletions(-)  create mode 100644
-> > Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-> > b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-> > new file mode 100644
-> > index 0000000..61431e3
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-> > @@ -0,0 +1,71 @@
-> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > +TDM Device Tree Binding
-> > +Copyright (C) 2012 Freescale Semiconductor Inc.
-> > +
-> > +NOTE: The bindings described in this document are preliminary and
-> > +subject to change.
-> > +
-> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > +TDM (Time Division Multiplexing)
-> > +
-> > +DESCRIPTION
-> > +
-> > +The TDM is full duplex serial port designed to allow various devices
-> > +including digital signal processors (DSPs) to communicate with a
-> > +variety of serial devices including industry standard framers, codecs,
-> other DSPs and microprocessors.
-> > +
-> > +The below properties describe the device tree bindings for Freescale
-> > +TDM controller.
-> > +This TDM controller is available on various Freescale Processors like
-> > +MPC8313, P1020, P1022 and P1010.
-> > +
-> > +PROPERTIES
-> > +
-> > +  - compatible
-> > +      Usage: required
-> > +      Value type: <string>
-> > +      Definition: Should contain "fsl,mpc8315-tdm".
-> > +	  So mpc8313 will have compatible =3D "fsl,mpc8315-tdm";
-> > +	  p1010 will have compatible "fsl,p1010-tdm", "fsl,mpc8315-tdm";
->=20
-> Shouldn't mpc8313 have:
-> compatible =3D "fsl,mpc8313-tdm", "fsl,mpc8315-tdm"?
->=20
-> I thought we were going to use 8313 as the canonical implementation, not
-> 8315.
-MPC8315 was the first FSL platform to have this controller.
-MPC8313 does not have TDM.
->=20
-> > +  - reg
-> > +      Usage: required
-> > +      Value type: <tdm-reg-offset tdm-reg-size dmac-reg-offset dmac-
-> reg-size>
-> > +      Definition: A standard property. Specifies the physical address
-> > +	  offset and length of the TDM registers and TDM DMAC registers for
-> > +	  the device.
->=20
-> Just say there's two reg resources, and that the first is the TDM
-> registers and the second is the TDM DMAC registers.
->=20
-> It's typically not going to be the actual physical address, but rather an
-> offset that gets translated through a parent node's ranges.
-Okay, I think we missed this comment, you already gave this earlier.
-Sorry for that.
->=20
-> Remove "value type"; it's standard.
->=20
-Okay. So just definition must suffice, right?
-> > +  - clock-frequency
-> > +      Usage: optional
-> > +      Value type: <u32>
-> > +      Definition: The frequency at which the TDM block is operating.
->=20
-> Will this frequency ever need to be > 4GHz?
-Don't think so, at max this will be CCB, not sure if CCB on our platforms m=
-ay get bigger than 4G ever.
->=20
-> Might want to specify as u32 or u64, as ePAPR suggests.
-Means Value type: <u32 or u64>?
-In this case the driver must always use 64bit data structure to read this. =
-Is this correct?
->=20
-> > +  - interrupts
-> > +      Usage: required
-> > +      Value type: <tdm-err-intr tdm-err-intr-type dmac-intr dmac-intr-
-> type>
-> > +      Definition: This field defines two interrupt specifiers namely
-> interrupt
-> > +	  number and interrupt type for TDM error and TDM DMAC.
->=20
-> What is "tdm-err-intr-type"?  The interrupt specifier encoding is defined
-> by the interrupt controller.  There might be one cell, two cells, four
-> cells, etc.  Remove "value type", it's standard.
->=20
-okay
-> > +  - phy-handle
-> > +      Usage: optional
-> > +      Value type: <phandle>
-> > +      Definition: Phandle of the line controller node or framer node
-> eg. SLIC,
-> > +	  E1\T1 etc.
->=20
-> Use a forward slash -- this isn't a Windows filesystem path. :-)
->=20
-Okay, agreed.
-> > +  - fsl-max-time-slots
-> > +      Usage: required
-> > +      Value type: <u32>
-> > +      Definition: Maximum number of 8-bit time slots in one TDM frame.
-> > +	  This is the maximum number which TDM hardware supports.
->=20
-> fsl,tdm-max-time-slots
-Sure. This again got missed.
->=20
-> > +
-> > +EXAMPLE
-> > +
-> > +	tdm@16000 {
-> > +		device_type =3D "tdm";
->=20
-> No device_type
-Okay.
->=20
-> > +		compatible =3D "fsl,p1010-tdm", "fsl,mpc8315-tdm";
-> > +		reg =3D <0x16000 0x200 0x2c000 0x2000>;
-> > +		clock-frequency =3D <0>;
->=20
-> Show a real clock-frequency, perhaps with a comment saying it's typically
-> filled in by boot software.
-Okay.
->=20
-> > +		interrupts =3D <16 8 62 8>;
-> > +		phy-handle =3D <zarlink1>
->=20
-> That phy-handle is invalid syntax, perhaps you meant:
->=20
-> 	phy-handle =3D <&zarlink1>;
-Yes. Will correct it.
->=20
-> > +		fsl-max-time-slots =3D <128>
->=20
-> Missing semicolons on the last two properties.
->=20
-Ok.
-> -Scott
+ BSC9131RDB Overview
+ ----------------------
+     BSC9131 SoC
+     1Gbyte DDR3 (on board DDR)
+     128Mbyte 2K page size NAND Flash
+     256 Kbit M24256 I2C EEPROM
+     128 Mbit SPI Flash memory
+     USB-ULPI
+     eTSEC1: Connected to RGMII PHY
+     eTSEC2: Connected to RGMII PHY
+     DUART interface: supports one UARTs up to 115200 bps for console display
+
+ Linux runs on e500v2 core and access some DSP peripherals like AIC
+
+Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+Signed-off-by: Akhil Goyal <Akhil.Goyal@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Signed-off-by: Rajan Srivastava <rajan.srivastava@freescale.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+---
+ Note:   Name of PSC9131 has been changed to BSC9131 because of new nomenclature
+	Please reject earlier patch"powerpc/85xx:Add PSC9131 RDB Support"
+	  http://patchwork.ozlabs.org/patch/146349/
+
+ Beased on http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+	    branch master
+
+ Changes for v2: 
+ 	- Change board file name as bsc913x_rdb.c
+	- Removed all I2C's board device. A separate patch will be send.
+	- Combined SPI's 2 RFS partition into single RFS parition
+	- Added SEC/crypto node in dts
+
+ arch/powerpc/boot/dts/bsc9131rdb.dts          |   34 +++++
+ arch/powerpc/boot/dts/bsc9131rdb.dtsi         |  142 ++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi |  193 +++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9131si-pre.dtsi  |   59 ++++++++
+ arch/powerpc/platforms/85xx/Kconfig           |    9 ++
+ arch/powerpc/platforms/85xx/Makefile          |    1 +
+ arch/powerpc/platforms/85xx/bsc913x_rdb.c     |   95 ++++++++++++
+ 7 files changed, 533 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/bsc9131rdb.dts
+ create mode 100644 arch/powerpc/boot/dts/bsc9131rdb.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/bsc9131si-pre.dtsi
+ create mode 100644 arch/powerpc/platforms/85xx/bsc913x_rdb.c
+
+diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dts b/arch/powerpc/boot/dts/bsc9131rdb.dts
+new file mode 100644
+index 0000000..e13d2d4
+--- /dev/null
++++ b/arch/powerpc/boot/dts/bsc9131rdb.dts
+@@ -0,0 +1,34 @@
++/*
++ * BSC9131 RDB Device Tree Source
++ *
++ * Copyright 2011-2012 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/include/ "fsl/bsc9131si-pre.dtsi"
++
++/ {
++	model = "fsl,bsc9131rdb";
++	compatible = "fsl,bsc9131rdb";
++
++	memory {
++		device_type = "memory";
++	};
++
++	board_ifc: ifc: ifc@ff71e000 {
++		/* NAND Flash on board */
++		ranges = <0x0 0x0 0x0 0xff800000 0x00004000>;
++		reg = <0x0 0xff71e000 0x0 0x2000>;
++	};
++
++	board_soc: soc: soc@ff700000 {
++		ranges = <0x0 0x0 0xff700000 0x100000>;
++	};
++};
++
++/include/ "bsc9131rdb.dtsi"
++/include/ "fsl/bsc9131si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+new file mode 100644
+index 0000000..8906562
+--- /dev/null
++++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+@@ -0,0 +1,142 @@
++/*
++ * BSC9131 RDB Device Tree Source stub (no addresses or top-level ranges)
++ *
++ * Copyright 2011-2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&board_ifc {
++
++	nand@0,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,ifc-nand";
++		reg = <0x0 0x0 0x4000>;
++
++		partition@0 {
++			/* This location must not be altered  */
++			/* 3MB for u-boot Bootloader Image */
++			reg = <0x0 0x00300000>;
++			label = "NAND U-Boot Image";
++			read-only;
++		};
++
++		partition@300000 {
++			/* 1MB for DTB Image */
++			reg = <0x00300000 0x00100000>;
++			label = "NAND DTB Image";
++		};
++
++		partition@400000 {
++			/* 8MB for Linux Kernel Image */
++			reg = <0x00400000 0x00800000>;
++			label = "NAND Linux Kernel Image";
++		};
++
++		partition@c00000 {
++			/* Rest space for Root file System Image */
++			reg = <0x00c00000 0x07400000>;
++			label = " NAND RFS Image";
++		};
++	};
++};
++
++&board_soc {
++	/* BSC9131RDB does not have any device on i2c@3100 */
++	i2c@3100 {
++		status = "disabled";
++	};
++
++	spi@7000 {
++		flash@0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "spansion,s25sl12801";
++			reg = <0>;
++			spi-max-frequency = <50000000>;
++
++			/* 512KB for u-boot Bootloader Image */
++			partition@0 {
++				reg = <0x0 0x00080000>;
++				label = "SPI Flash U-Boot Image";
++				read-only;
++			};
++
++			/* 512KB for DTB Image */
++			partition@80000 {
++				reg = <0x00080000 0x00080000>;
++				label = "SPI Flash DTB Image";
++			};
++
++			/* 4MB for Linux Kernel Image */
++			partition@100000 {
++				reg = <0x00100000 0x00400000>;
++				label = "SPI Flash Kernel Image";
++			};
++
++			/*11MB for RFS Image */
++			partition@500000 {
++				reg = <0x00500000 0x00B00000>;
++				label = "SPI Flash RFS Image";
++			};
++
++		};
++	};
++
++	usb@22000 {
++		phy_type = "ulpi";
++	};
++
++	mdio@24000 {
++		phy0: ethernet-phy@0 {
++			interrupts = <3 1 0 0>;
++			reg = <0x0>;
++		};
++
++		phy1: ethernet-phy@1 {
++			interrupts = <2 1 0 0>;
++			reg = <0x3>;
++		};
++	};
++
++	sdhci@2e000 {
++		status = "disabled";
++	};
++
++	enet0: ethernet@b0000 {
++		phy-handle = <&phy0>;
++		phy-connection-type = "rgmii-id";
++	};
++
++	enet1: ethernet@b1000 {
++		phy-handle = <&phy1>;
++		phy-connection-type = "rgmii-id";
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
+new file mode 100644
+index 0000000..5180d9d
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
+@@ -0,0 +1,193 @@
++/*
++ * BSC9131 Silicon/SoC Device Tree Source (post include)
++ *
++ * Copyright 2011-2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&ifc {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	compatible = "fsl,ifc", "simple-bus";
++	interrupts = <16 2 0 0 20 2 0 0>;
++};
++
++&soc {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "soc";
++	compatible = "fsl,bsc9131-immr", "simple-bus";
++	bus-frequency = <0>;		// Filled out by uboot.
++
++	ecm-law@0 {
++		compatible = "fsl,ecm-law";
++		reg = <0x0 0x1000>;
++		fsl,num-laws = <12>;
++	};
++
++	ecm@1000 {
++		compatible = "fsl,bsc9131-ecm", "fsl,ecm";
++		reg = <0x1000 0x1000>;
++		interrupts = <16 2 0 0>;
++	};
++
++	memory-controller@2000 {
++		compatible = "fsl,bsc9131-memory-controller";
++		reg = <0x2000 0x1000>;
++		interrupts = <16 2 0 0>;
++	};
++
++/include/ "pq3-i2c-0.dtsi"
++	i2c@3000 {
++		interrupts = <17 2 0 0>;
++	};
++
++/include/ "pq3-i2c-1.dtsi"
++	i2c@3100 {
++		interrupts = <17 2 0 0>;
++	};
++
++/include/ "pq3-duart-0.dtsi"
++	serial0: serial@4500 {
++		interrupts = <18 2 0 0>;
++	};
++
++	serial1: serial@4600 {
++		interrupts = <18 2 0 0 >;
++	};
++/include/ "pq3-espi-0.dtsi"
++	spi0: spi@7000 {
++		fsl,espi-num-chipselects = <1>;
++		interrupts = <22 0x2 0 0>;
++	};
++
++/include/ "pq3-gpio-0.dtsi"
++	gpio-controller@f000 {
++		interrupts = <19 0x2 0 0>;
++		};
++
++	L2: l2-cache-controller@20000 {
++		compatible = "fsl,bsc9131-l2-cache-controller";
++		reg = <0x20000 0x1000>;
++		cache-line-size = <32>;	// 32 bytes
++		cache-size = <0x40000>; // L2,256K
++		interrupts = <16 2 0 0>;
++	};
++
++/include/ "pq3-dma-0.dtsi"
++
++dma@21300 {
++
++	dma-channel@0 {
++		interrupts = <62 2 0 0>;
++	};
++
++	dma-channel@80 {
++		interrupts = <63 2 0 0>;
++	};
++
++	dma-channel@100 {
++		interrupts = <64 2 0 0>;
++	};
++
++	dma-channel@180 {
++		interrupts = <65 2 0 0>;
++	};
++};
++
++/include/ "pq3-usb2-dr-0.dtsi"
++usb@22000 {
++	compatible = "fsl-usb2-dr","fsl-usb2-dr-v2.2";
++	interrupts = <40 0x2 0 0>;
++};
++
++/include/ "pq3-esdhc-0.dtsi"
++	sdhc@2e000 {
++		fsl,sdhci-auto-cmd12;
++		interrupts = <41 0x2 0 0>;
++	};
++
++/include/ "pq3-sec4.4-0.dtsi"
++crypto@30000 {
++	interrupts	 = <57 2 0 0>;
++
++	sec_jr0: jr@1000 {
++		interrupts	 = <58 2 0 0>;
++	};
++
++	sec_jr1: jr@2000 {
++		interrupts	 = <59 2 0 0>;
++	};
++
++	sec_jr2: jr@3000 {
++		interrupts	 = <60 2 0 0>;
++	};
++
++	sec_jr3: jr@4000 {
++		interrupts	 = <61 2 0 0>;
++	};
++};
++
++/include/ "pq3-mpic.dtsi"
++
++timer@41100 {
++	compatible = "fsl,mpic-v1.2-msgr", "fsl,mpic-msg";
++	reg = <0x41400 0x200>;
++	interrupts = <
++		0xb0 2
++		0xb1 2
++		0xb2 2
++		0xb3 2>;
++};
++
++/include/ "pq3-etsec2-0.dtsi"
++enet0: ethernet@b0000 {
++	queue-group@b0000 {
++		fsl,rx-bit-map = <0xff>;
++		fsl,tx-bit-map = <0xff>;
++		interrupts = <26 2 0 0 27 2 0 0 28 2 0 0>;
++	};
++};
++
++/include/ "pq3-etsec2-1.dtsi"
++enet1: ethernet@b1000 {
++	queue-group@b1000 {
++		fsl,rx-bit-map = <0xff>;
++		fsl,tx-bit-map = <0xff>;
++		interrupts = <33 2 0 0 34 2 0 0 35 2 0 0>;
++	};
++};
++
++global-utilities@e0000 {
++		compatible = "fsl,bsc9131-guts";
++		reg = <0xe0000 0x1000>;
++		fsl,has-rstcr;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9131si-pre.dtsi b/arch/powerpc/boot/dts/fsl/bsc9131si-pre.dtsi
+new file mode 100644
+index 0000000..743e4ae
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/bsc9131si-pre.dtsi
+@@ -0,0 +1,59 @@
++/*
++ * BSC9131 Silicon/SoC Device Tree Source (pre include)
++ *
++ * Copyright 2011-2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/dts-v1/;
++/ {
++	compatible = "fsl,BSC9131";
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	aliases {
++		serial0 = &serial0;
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,BSC9131@0 {
++			device_type = "cpu";
++			compatible = "fsl,e500v2";
++			reg = <0x0>;
++			next-level-cache = <&L2>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index d7946be..9fb5b03 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -91,6 +91,15 @@ config P1023_RDS
+ 	help
+ 	  This option enables support for the P1023 RDS board
+ 
++config BSC9131_RDB
++	bool "Freescale BSC9131RDB"
++	select DEFAULT_UIMAGE
++	help
++	  This option enables support for the Freescale BSC9131RDB board.
++	  The BSC9131 is a heterogeneous SoC containing an e500v2 powerpc and a
++	  StarCore SC3850 DSP
++	  Manufacturer : Freescale Semiconductor, Inc
++
+ config SOCRATES
+ 	bool "Socrates"
+ 	select DEFAULT_UIMAGE
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 9cb2d43..25b376c 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_P3041_DS)    += p3041_ds.o corenet_ds.o
+ obj-$(CONFIG_P3060_QDS)   += p3060_qds.o corenet_ds.o
+ obj-$(CONFIG_P4080_DS)    += p4080_ds.o corenet_ds.o
+ obj-$(CONFIG_P5020_DS)    += p5020_ds.o corenet_ds.o
++obj-$(CONFIG_BSC9131_RDB) += bsc913x_rdb.o
+ obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
+ obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
+ obj-$(CONFIG_SBC8560)     += sbc8560.o
+diff --git a/arch/powerpc/platforms/85xx/bsc913x_rdb.c b/arch/powerpc/platforms/85xx/bsc913x_rdb.c
+new file mode 100644
+index 0000000..611c289
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/bsc913x_rdb.c
+@@ -0,0 +1,95 @@
++/*
++ * BSC913xRDB Board Setup
++ *
++ * Author: Priyanka Jain <Priyanka.Jain@freescale.com>
++ *
++ * Copyright 2011-2012 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/of_platform.h>
++#include <linux/pci.h>
++#include <asm/mpic.h>
++#include <sysdev/fsl_soc.h>
++#include <asm/udbg.h>
++
++void __init bsc913x_rdb_pic_init(void)
++{
++	struct mpic *mpic;
++	struct resource r;
++	struct device_node *np;
++
++	np = of_find_node_by_type(NULL, "open-pic");
++	if (!np) {
++		pr_err("bsc913x: Could not find open-pic node\n");
++		return;
++	}
++
++	if (of_address_to_resource(np, 0, &r)) {
++		pr_err("bsc913x: Failed to map mpic register space\n");
++		of_node_put(np);
++		return;
++	}
++
++	mpic = mpic_alloc(np, r.start, MPIC_WANTS_RESET |
++	  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS | MPIC_SINGLE_DEST_CPU,
++	  0, 256, " OpenPIC  ");
++
++	of_node_put(np);
++
++	if (!mpic)
++		pr_err("bsc913x: Failed to allocate MPIC structure\n");
++	else
++		mpic_init(mpic);
++}
++
++/*
++ * Setup the architecture
++ */
++static void __init bsc913x_rdb_setup_arch(void)
++{
++	if (ppc_md.progress)
++		ppc_md.progress("bsc913x_rdb_setup_arch()", 0);
++
++	pr_info("bsc913x board from Freescale Semiconductor\n");
++}
++
++static struct of_device_id __initdata bsc913x_rdb_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
++	{},
++};
++
++static int __init bsc913x_rdb_publish_devices(void)
++{
++	return of_platform_bus_probe(NULL, bsc913x_rdb_ids, NULL);
++}
++machine_device_initcall(bsc9131_rdb, bsc913x_rdb_publish_devices);
++
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++
++static int __init bsc9131_rdb_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "fsl,bsc9131rdb");
++}
++
++define_machine(bsc9131_rdb) {
++	.name			= "BSC9131 RDB",
++	.probe			= bsc9131_rdb_probe,
++	.setup_arch		= bsc913x_rdb_setup_arch,
++	.init_IRQ		= bsc913x_rdb_pic_init,
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
+-- 
+1.7.5.4
