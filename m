@@ -1,26 +1,22 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DE596B6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 08:04:08 +1100 (EST)
-Received: by lbbgn12 with SMTP id gn12so2921705lbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 14:04:05 -0700 (PDT)
-MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <1332102032.3722.53.camel@edumazet-laptop>
-References: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
- <1332089787-24086-2-git-send-email-paul.gortmaker@windriver.com>
- <1332102032.3722.53.camel@edumazet-laptop>
-Date: Sun, 18 Mar 2012 17:04:04 -0400
-Message-ID: <CAP=VYLpNhJGZ0MS6Y6gWvbzn3vg-jHP0_kSBd6_Xxq_6hRyo8g@mail.gmail.com>
-Subject: Re: [PATCH net-next 1/3] gianfar: Add support for byte queue limits.
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- therbert@google.com
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6E836B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 08:13:59 +1100 (EST)
+Date: Sun, 18 Mar 2012 22:13:50 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: hs@denx.de
+Subject: Re: [PATCH 1/4] net, phy: am79c874 support
+Message-ID: <20120318221350.15588f57@wker>
+In-Reply-To: <4E2E48A8.6070108@denx.de>
+References: <1308729311-15375-1-git-send-email-hs@denx.de>
+ <1308729311-15375-2-git-send-email-hs@denx.de>
+ <4E2E48A8.6070108@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 18, 2012 at 4:20 PM, Eric Dumazet <eric.dumazet@gmail.com> wrot=
-e:
-> Le dimanche 18 mars 2012 =E0 12:56 -0400, Paul Gortmaker a =E9crit :
->
-> ...
->
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* we add this skb back into the pool, if =
-it's the right size
->> @@ -2557,13 +2568,15 @@ static int gfar_clean_tx_ring(struct gfar_priv_t=
-x_q *tx_queue)
->> =A0 =A0 =A0 }
->>
->> =A0 =A0 =A0 /* If we freed a buffer, we can restart transmission, if nec=
-essary */
->> - =A0 =A0 if (__netif_subqueue_stopped(dev, tx_queue->qindex) && tx_queu=
-e->num_txbdfree)
->> - =A0 =A0 =A0 =A0 =A0 =A0 netif_wake_subqueue(dev, tx_queue->qindex);
->> + =A0 =A0 if (__netif_subqueue_stopped(dev, tqi) && tx_queue->num_txbdfr=
-ee)
->> + =A0 =A0 =A0 =A0 =A0 =A0 netif_wake_subqueue(dev, tqi);
->>
->
-> You can use netif_tx_queue_stopped(txq) here instead of
-> __netif_subqueue_stopped(dev, tqi)
+Hello Heiko,
 
-Yes, and it looks better too.  I will do it as a patch #4 since I think
-there is some small value in leaving the above patch chunk alone,
-since it makes it clear that it was just the introduction of a local
-variable and the code was otherwise unchanged here.
+On Tue, 26 Jul 2011 06:55:04 +0200
+Heiko Schocher <hs@denx.de> wrote:
 
-Will resend shortly....
+> Hello,
+> 
+> Heiko Schocher wrote:
+> > Signed-off-by: Heiko Schocher <hs@denx.de>
+> > cc: linux-netdev@vger.kernel.org
+> > cc: Wolfgang Denk <wd@denx.de>
+> > ---
+> >  drivers/net/phy/Kconfig  |    5 ++
+> >  drivers/net/phy/Makefile |    1 +
+> >  drivers/net/phy/amd79.c  |  109 ++++++++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 115 insertions(+), 0 deletions(-)
+> >  create mode 100644 drivers/net/phy/amd79.c
+> 
+> Are there some more comments or is this patch ready for going
+> to mainline?
+
+This patch is not ready yet and it seems it didn't reach the netdev
+list, probably because of wrong netdev address. I reworked it a bit
+and have sent a new version to the netdev list.
 
 Thanks,
-Paul.
----
-
->
->> =A0 =A0 =A0 /* Update dirty indicators */
->> =A0 =A0 =A0 tx_queue->skb_dirtytx =3D skb_dirtytx;
->> =A0 =A0 =A0 tx_queue->dirty_tx =3D bdp;
->>
->> + =A0 =A0 netdev_tx_completed_queue(txq, howmany, bytes_sent);
->> +
->> =A0 =A0 =A0 return howmany;
->> =A0}
->>
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+Anatolij
