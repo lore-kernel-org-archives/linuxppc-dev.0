@@ -3,13 +3,14 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F37ABB6FC4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 08:39:41 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 227B7B6FAA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 08:39:44 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: davem@davemloft.net, eric.dumazet@gmail.com, therbert@google.com
-Subject: [PATCH net-next 1/4] gianfar: Add support for byte queue limits.
-Date: Sun, 18 Mar 2012 17:39:18 -0400
-Message-Id: <1332106761-18293-2-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH net-next 3/4] gianfar: delete orphaned version strings and
+ dead macros
+Date: Sun, 18 Mar 2012 17:39:20 -0400
+Message-Id: <1332106761-18293-4-git-send-email-paul.gortmaker@windriver.com>
 In-Reply-To: <1332106761-18293-1-git-send-email-paul.gortmaker@windriver.com>
 References: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
  <1332106761-18293-1-git-send-email-paul.gortmaker@windriver.com>
@@ -24,95 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for byte queue limits (BQL), based on the similar
-modifications made to intel/igb/igb_main.c from Eric Dumazet
-in commit bdbc063129e811264cd6c311d8c2d9b95de01231
-	"igb: Add support for byte queue limits."
-
-A local variable for tx_queue->qindex was introduced in
-gfar_clean_tx_ring, since it is now used often enough to warrant it,
-and it cleans up the readability somewhat as well.
+There were two version strings, and neither one was being used.
+Also in the same proximity were some unused #define that were
+left over from the past.  Delete them all.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/net/ethernet/freescale/gianfar.c |   19 ++++++++++++++++---
- 1 files changed, 16 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/freescale/gianfar.c |    3 ---
+ drivers/net/ethernet/freescale/gianfar.h |    3 ---
+ 2 files changed, 0 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-index adb0ae4..a4c934b 100644
+index a4c934b..6e66cc3 100644
 --- a/drivers/net/ethernet/freescale/gianfar.c
 +++ b/drivers/net/ethernet/freescale/gianfar.c
-@@ -1755,9 +1755,12 @@ static void free_skb_resources(struct gfar_private *priv)
+@@ -104,10 +104,7 @@
+ #include "fsl_pq_mdio.h"
  
- 	/* Go through all the buffer descriptors and free their data buffers */
- 	for (i = 0; i < priv->num_tx_queues; i++) {
-+		struct netdev_queue *txq;
- 		tx_queue = priv->tx_queue[i];
-+		txq = netdev_get_tx_queue(tx_queue->dev, tx_queue->qindex);
- 		if(tx_queue->tx_skbuff)
- 			free_skb_tx_queue(tx_queue);
-+		netdev_tx_reset_queue(txq);
- 	}
+ #define TX_TIMEOUT      (1*HZ)
+-#undef BRIEF_GFAR_ERRORS
+-#undef VERBOSE_GFAR_ERRORS
  
- 	for (i = 0; i < priv->num_rx_queues; i++) {
-@@ -2217,6 +2220,8 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		lstatus |= BD_LFLAG(TXBD_CRC | TXBD_READY) | skb_headlen(skb);
- 	}
+-const char gfar_driver_name[] = "Gianfar Ethernet";
+ const char gfar_driver_version[] = "1.3";
  
-+	netdev_tx_sent_queue(txq, skb->len);
-+
- 	/*
- 	 * We can work in parallel with gfar_clean_tx_ring(), except
- 	 * when modifying num_txbdfree. Note that we didn't grab the lock
-@@ -2460,6 +2465,7 @@ static void gfar_align_skb(struct sk_buff *skb)
- static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
- {
- 	struct net_device *dev = tx_queue->dev;
-+	struct netdev_queue *txq;
- 	struct gfar_private *priv = netdev_priv(dev);
- 	struct gfar_priv_rx_q *rx_queue = NULL;
- 	struct txbd8 *bdp, *next = NULL;
-@@ -2471,10 +2477,13 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
- 	int frags = 0, nr_txbds = 0;
- 	int i;
- 	int howmany = 0;
-+	int tqi = tx_queue->qindex;
-+	unsigned int bytes_sent = 0;
- 	u32 lstatus;
- 	size_t buflen;
+ static int gfar_enet_open(struct net_device *dev);
+diff --git a/drivers/net/ethernet/freescale/gianfar.h b/drivers/net/ethernet/freescale/gianfar.h
+index 4fe0f34..fc2488a 100644
+--- a/drivers/net/ethernet/freescale/gianfar.h
++++ b/drivers/net/ethernet/freescale/gianfar.h
+@@ -78,11 +78,8 @@ struct ethtool_rx_list {
+ #define INCREMENTAL_BUFFER_SIZE 512
  
--	rx_queue = priv->rx_queue[tx_queue->qindex];
-+	rx_queue = priv->rx_queue[tqi];
-+	txq = netdev_get_tx_queue(dev, tqi);
- 	bdp = tx_queue->dirty_tx;
- 	skb_dirtytx = tx_queue->skb_dirtytx;
+ #define PHY_INIT_TIMEOUT 100000
+-#define GFAR_PHY_CHANGE_TIME 2
  
-@@ -2533,6 +2542,8 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
- 			bdp = next_txbd(bdp, base, tx_ring_size);
- 		}
+-#define DEVICE_NAME "%s: Gianfar Ethernet Controller Version 1.2, "
+ #define DRV_NAME "gfar-enet"
+-extern const char gfar_driver_name[];
+ extern const char gfar_driver_version[];
  
-+		bytes_sent += skb->len;
-+
- 		/*
- 		 * If there's room in the queue (limit it to rx_buffer_size)
- 		 * we add this skb back into the pool, if it's the right size
-@@ -2557,13 +2568,15 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
- 	}
- 
- 	/* If we freed a buffer, we can restart transmission, if necessary */
--	if (__netif_subqueue_stopped(dev, tx_queue->qindex) && tx_queue->num_txbdfree)
--		netif_wake_subqueue(dev, tx_queue->qindex);
-+	if (__netif_subqueue_stopped(dev, tqi) && tx_queue->num_txbdfree)
-+		netif_wake_subqueue(dev, tqi);
- 
- 	/* Update dirty indicators */
- 	tx_queue->skb_dirtytx = skb_dirtytx;
- 	tx_queue->dirty_tx = bdp;
- 
-+	netdev_tx_completed_queue(txq, howmany, bytes_sent);
-+
- 	return howmany;
- }
- 
+ /* MAXIMUM NUMBER OF QUEUES SUPPORTED */
 -- 
 1.7.9.1
