@@ -1,19 +1,17 @@
-Return-Path: <B04825@freescale.com>
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: issues calling of_platform_bus_probe() twice
-Date: Sun, 18 Mar 2012 16:14:23 +0000
-Message-ID: <4F6609DE.2050001@freescale.com>
-References: <31B4E554-FA95-431D-B353-92680CD14A0A@kernel.crashing.org>
- <1331933034.3105.171.camel@pasglop> <20120317072717.738953E08CE@localhost>
- <4F649304.9010001@freescale.com> <20120318090804.C70493E060A@localhost>
-In-Reply-To: <20120318090804.C70493E060A@localhost>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>,
- "devicetree-discuss@lists.ozlabs.org
- Discuss" <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 75BE7B6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 03:56:47 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: davem@davemloft.net, eric.dumazet@gmail.com, therbert@google.com
+Subject: [PATCH net-next 0/3] Gianfar byte queue limits
+Date: Sun, 18 Mar 2012 12:56:24 -0400
+Message-Id: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +21,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> That's because you're using it wrong.  of_platform_bus_probe() creates
-> platform devices at the starting level and every level below it as
-> described by the bus ids.  It is illegal to call of_platform_bus_probe()
-> twice at the same level in the DT.
+The BQL support here is unchanged from what I posted earlier as an
+RFC[1] -- with the exception of the fact that I'm now happier with
+the runtime testing vs. the simple "hey it boots" that I'd done
+for the RFC.  Plus I added a couple trivial cleanup patches.
 
-Well, *I* am not using it wrong.  Notice that my patch fixes (or works=20
-around) the commit that *did* do it wrong:
+For testing, I made a couple spiders homeless by reviving an ancient
+10baseT hub.  I connected an sbc8349 into that, and connected the
+yellowing hub into a GigE 16port, which was also connected to the
+recipient x86 box.
 
-http://patchwork.ozlabs.org/patch/126289/
+Gianfar saw the interface as follows:
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+fsl-gianfar e0024000.ethernet: eth0: mac: 00:a0:1e:a0:26:5a
+fsl-gianfar e0024000.ethernet: eth0: Running with NAPI enabled
+fsl-gianfar e0024000.ethernet: eth0: RX BD ring size for Q[0]: 256
+fsl-gianfar e0024000.ethernet: eth0: TX BD ring size for Q[0]: 256
+PHY: mdio@e0024520:19 - Link is Up - 10/Half
+
+With the sbc8349 being diskless, I simply used an scp of /proc/kcore
+to the connected x86 box as a rudimentary Tx heavy workload.
+
+BQL data was collected by changing into the dir:
+
+  /sys/devices/e0000000.soc8349/e0024000.ethernet/net/eth0/queues/tx-0/byte_queue_limits
+
+and running the following:
+
+  for i in * ; do echo -n $i": " ; cat $i ; done
+
+Running with the defaults, data like below was typical:
+
+hold_time: 1000
+inflight: 4542
+limit: 3456
+limit_max: 1879048192
+limit_min: 0
+
+hold_time: 1000
+inflight: 4542
+limit: 3378
+limit_max: 1879048192
+limit_min: 0
+
+i.e. 2 or 3 MTU sized packets in flight and the limit value lying
+somewhere between those two values.
+
+The interesting thing is that the interactive speed reported by scp
+seemed somewhat erratic, ranging from ~450 to ~700kB/s. (This was
+the only traffic on the old junk - perhaps expected oscillations such
+as those seen in isolated ARED tests?)  Average speed for 100M was:
+
+104857600 bytes (105 MB) copied, 172.616 s, 607 kB/s
+
+Anyway, back to BQL testing; setting the values as follows:
+
+hold_time: 1000
+inflight: 1514
+limit: 1400
+limit_max: 1400
+limit_min: 1000
+
+had the effect of serializing the interface to a single packet, and
+the crusty old hub seemed much happier with this arrangement, keeping
+a constant speed and achieving the following on a 100MB Tx block:
+
+104857600 bytes (105 MB) copied, 112.52 s, 932 kB/s
+
+It might be interesting to know more about why the defaults suffer
+the slowdown, but the hub could possibly be ancient spec violating
+trash.  Definitely something that nobody would ever use for anything
+today. (aside from contrived tests like this)
+
+But it did give me an example of where I could see the effects of
+changing the BQL settings, and I'm reasonably confident they are
+working as expected.
+
+Paul.
+---
+
+[1] http://lists.openwall.net/netdev/2012/01/06/64
+
+Paul Gortmaker (3):
+  gianfar: Add support for byte queue limits.
+  gianfar: constify giant block of status descriptor strings
+  gianfar: delete orphaned version strings and dead macros
+
+ drivers/net/ethernet/freescale/gianfar.c         |   22 ++++++++++++++++------
+ drivers/net/ethernet/freescale/gianfar.h         |    3 ---
+ drivers/net/ethernet/freescale/gianfar_ethtool.c |    2 +-
+ 3 files changed, 17 insertions(+), 10 deletions(-)
+
+-- 
+1.7.9.1
