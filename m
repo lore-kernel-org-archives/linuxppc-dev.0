@@ -1,25 +1,26 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B2011B6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 20:08:12 +1100 (EST)
-Received: by wibhn6 with SMTP id hn6so2133974wib.14
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 02:08:07 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: issues calling of_platform_bus_probe() twice
-To: Tabi Timur-B04825 <B04825@freescale.com>
-In-Reply-To: <4F649304.9010001@freescale.com>
-References: <31B4E554-FA95-431D-B353-92680CD14A0A@kernel.crashing.org>
- <1331933034.3105.171.camel@pasglop> <20120317072717.738953E08CE@localhost>
- <4F649304.9010001@freescale.com>
-Date: Sun, 18 Mar 2012 09:08:04 +0000
-Message-Id: <20120318090804.C70493E060A@localhost>
-Cc: "devicetree-discuss@lists.ozlabs.org Discuss"
- <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 37F9EB6FA7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 01:04:07 +1100 (EST)
+Received: by pbcwy12 with SMTP id wy12so873284pbc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 07:04:04 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1332031585.3105.197.camel@pasglop>
+References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
+ <1332031585.3105.197.camel@pasglop>
+Date: Sun, 18 Mar 2012 18:04:04 +0400
+Message-ID: <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
+Subject: Re: Problem with framebuffer mmap on platforms with large addressing
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-fbdev@vger.kernel.org,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ Tony Breeds <tbreeds@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 17 Mar 2012 13:35:02 +0000, Tabi Timur-B04825 <B04825@freescale.com> wrote:
-> Grant Likely wrote:
-> >>> >  >  Are you aware of any reason that we can't call of_platform_bus_probe()
-> >>> >  >  or multiple times.  Timur's run into an issue in which all devices
-> >>> >  >  don't get registered properly if we call of_platform_bus_probe() times
-> >>> >  >  with different of_device_id struct's.
-> >> >
-> >> >  Nothing comes to mind... Grant ?
-> > Neither for me.  Should work.
-> 
-> I posted a work-around patch here:
-> 
-> http://patchwork.ozlabs.org/patch/128533/
-> 
-> Without this patch, drivers cannot probe on DMA *channels*, or any other 
-> grandchildren of the root node.
+On Sun, Mar 18, 2012 at 4:46 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Sat, 2012-03-17 at 20:04 +0400, Dmitry Eremin-Solenikov wrote:
+>> Hello,
+>>
+>> I'm trying to make framebuffer to work on PPC460EX board (canyonlands).
+>>
+>> The peculiarity of this platform is the fact that it has
+>> sizeof(unsigned long) = 4,
+>> but physical address on it is 36 bits width. It is a common to various pieces
+>> of the code to expect that unsigned long variable is able to contain physical
+>> address. Most of those places are easy to fix.
+>
+> Yes. In fact, Tony (CC) has some patches to fix a lot of the DRM
+> infrastructure (we have radeon KMS working on a similar platform).
 
-That's because you're using it wrong.  of_platform_bus_probe() creates
-platform devices at the starting level and every level below it as
-described by the bus ids.  It is illegal to call of_platform_bus_probe()
-twice at the same level in the DT.
+That is interesting! Are those patches published or otherwise available
+somewhere? We are also very interested in enabling Canyonlands
+with Radeon KMS!
 
-g.
+>
+>> The problem I'm stuck with is a fb_mmap() code. To find a right memory to map
+>> it uses information from struct fb_fix_screeninfo provided by the driver.
+>> This structure uses two unsigned long fields to hold physical addresses
+>> (smem_start and mmio_start). It would be easy to change that structure
+>> to use phys_addr_t instead of unsigned long, but this structure is a part
+>> of userspace ABI. It is returned to userspace on FBIOGET_FSCREENINFO ioctl.
+>> And now I'm stuck with it.
+>
+> It's an old problem, which I think we described a while back on the
+> list. Back then the conclusion was to make a new version with a proper
+> __u64, a new ioctl to access is, and a "compatible" ioctl that blanks
+> the address fields (or fails) if they contain a value >32-bit.
+>
+> We just never got to actually implement it.
+
+I see. I will try to prepare patches.
+
+>
+> In fact, we could make the new structure such that it doesn't break
+> userspace compatibility with 64-bit architectures at all, ie, the "new"
+> and "compat" ioctl could remain entirely equivalent on 64-bit.
+
+I remember stuff about compat_ioctl, but I have never used/implemented
+that. Are there any details of requirements for the structures being passed?
+
+-- 
+With best wishes
+Dmitry
