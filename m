@@ -1,21 +1,20 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CEEC2B7037
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 10:25:14 +1100 (EST)
-Date: Mon, 19 Mar 2012 00:25:07 +0100
+ by ozlabs.org (Postfix) with ESMTPS id B2965B6FD8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 10:39:01 +1100 (EST)
+Date: Mon, 19 Mar 2012 00:38:57 +0100
 From: Anatolij Gustschin <agust@denx.de>
 To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH][RFC] mpc52xx, common: setup port_config and cdm
- settings through DTS
-Message-ID: <20120319002507.275d73ef@wker>
-In-Reply-To: <1303193045-20111-1-git-send-email-hs@denx.de>
-References: <1303193045-20111-1-git-send-email-hs@denx.de>
+Subject: Re: [PATCH v2 2/4] powerpc, mpc52xx: add a4m072 board support
+Message-ID: <20120319003857.7a64163f@wker>
+In-Reply-To: <1308739150-31527-1-git-send-email-hs@denx.de>
+References: <1308729311-15375-3-git-send-email-hs@denx.de>
+ <1308739150-31527-1-git-send-email-hs@denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Wolfgang Denk <wd@denx.de>
+Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +26,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Heiko,
 
-On Tue, 19 Apr 2011 08:04:05 +0200
+On Wed, 22 Jun 2011 12:39:10 +0200
 Heiko Schocher <hs@denx.de> wrote:
+...
+> diff --git a/arch/powerpc/boot/dts/a4m072.dts b/arch/powerpc/boot/dts/a4m072.dts
+> new file mode 100644
+> index 0000000..adb6746
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/a4m072.dts
+...
+> +		cdm@200 {
+> +			fsl,ext_48mhz_en = <0x0>;
+> +			fsl,fd_enable = <0x01>;
+> +			fsl,fd_counters = <0xbbbb>;
 
-> If firmware does not setup the "GPS Port Configuration Register"
-> and the "CDM 48MHz Fractional Divider Configuration Register",
-> it can be corrected through DTS.
-> 
-> Signed-off-by: Heiko Schocher <hs@denx.de>
-> cc: devictree-discuss@lists.ozlabs.org
-> cc: linuxppc-dev@lists.ozlabs.org
-> cc: Grant Likely <glikely@secretlab.ca>
-> cc: Wolfgang Denk <wd@denx.de>
-> ---
->  .../devicetree/bindings/powerpc/fsl/mpc5200.txt    |   16 +++++++++++
->  arch/powerpc/platforms/52xx/mpc52xx_common.c       |   27 ++++++++++++++++++++
->  2 files changed, 43 insertions(+), 0 deletions(-)
+When applying this patch I've fixed these properties according to
+previously added bindings (fsl,init-*-*), but one question remains:
+is fd-counters value really 0xbbbb? Here, the 3rd bit in each nibble
+should always be cleared as mentioned in the register description.
 
-Applied slightly modified patch to mpc5xxx next.
+...
+> +		timer@600 {
+> +			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+> +			reg = <0x600 0x80>;
+> +			interrupts = <1 9 0>;
+
+I've removed above three lines as these are already in the dtsi file.
 
 Thanks,
 Anatolij
