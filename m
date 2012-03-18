@@ -1,24 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A357CB703B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 07:50:21 +1100 (EST)
-Message-ID: <1332103797.3105.202.camel@pasglop>
-Subject: Re: Problem with framebuffer mmap on platforms with large addressing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 19 Mar 2012 07:49:57 +1100
-In-Reply-To: <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
-References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
- <1332031585.3105.197.camel@pasglop>
- <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-fbdev@vger.kernel.org,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Tony Breeds <tbreeds@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
+ [209.85.217.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DE596B6FB4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 08:04:08 +1100 (EST)
+Received: by lbbgn12 with SMTP id gn12so2921705lbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 14:04:05 -0700 (PDT)
+MIME-Version: 1.0
+Sender: paul.gortmaker@gmail.com
+In-Reply-To: <1332102032.3722.53.camel@edumazet-laptop>
+References: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
+ <1332089787-24086-2-git-send-email-paul.gortmaker@windriver.com>
+ <1332102032.3722.53.camel@edumazet-laptop>
+Date: Sun, 18 Mar 2012 17:04:04 -0400
+Message-ID: <CAP=VYLpNhJGZ0MS6Y6gWvbzn3vg-jHP0_kSBd6_Xxq_6hRyo8g@mail.gmail.com>
+Subject: Re: [PATCH net-next 1/3] gianfar: Add support for byte queue limits.
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ therbert@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-03-18 at 18:04 +0400, Dmitry Eremin-Solenikov wrote:
-> On Sun, Mar 18, 2012 at 4:46 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Sat, 2012-03-17 at 20:04 +0400, Dmitry Eremin-Solenikov wrote:
-> >> Hello,
-> >>
-> >> I'm trying to make framebuffer to work on PPC460EX board (canyonlands).
-> >>
-> >> The peculiarity of this platform is the fact that it has
-> >> sizeof(unsigned long) = 4,
-> >> but physical address on it is 36 bits width. It is a common to various pieces
-> >> of the code to expect that unsigned long variable is able to contain physical
-> >> address. Most of those places are easy to fix.
-> >
-> > Yes. In fact, Tony (CC) has some patches to fix a lot of the DRM
-> > infrastructure (we have radeon KMS working on a similar platform).
-> 
-> That is interesting! Are those patches published or otherwise available
-> somewhere? We are also very interested in enabling Canyonlands
-> with Radeon KMS!
+On Sun, Mar 18, 2012 at 4:20 PM, Eric Dumazet <eric.dumazet@gmail.com> wrot=
+e:
+> Le dimanche 18 mars 2012 =E0 12:56 -0400, Paul Gortmaker a =E9crit :
+>
+> ...
+>
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* we add this skb back into the pool, if =
+it's the right size
+>> @@ -2557,13 +2568,15 @@ static int gfar_clean_tx_ring(struct gfar_priv_t=
+x_q *tx_queue)
+>> =A0 =A0 =A0 }
+>>
+>> =A0 =A0 =A0 /* If we freed a buffer, we can restart transmission, if nec=
+essary */
+>> - =A0 =A0 if (__netif_subqueue_stopped(dev, tx_queue->qindex) && tx_queu=
+e->num_txbdfree)
+>> - =A0 =A0 =A0 =A0 =A0 =A0 netif_wake_subqueue(dev, tx_queue->qindex);
+>> + =A0 =A0 if (__netif_subqueue_stopped(dev, tqi) && tx_queue->num_txbdfr=
+ee)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 netif_wake_subqueue(dev, tqi);
+>>
+>
+> You can use netif_tx_queue_stopped(txq) here instead of
+> __netif_subqueue_stopped(dev, tqi)
 
-You will run into additional problems with 460 due to the fact that it's
-not cache coherent for DMA. Tony patches don't address that part of the
-problem (they were used on a 476 based platform).
+Yes, and it looks better too.  I will do it as a patch #4 since I think
+there is some small value in leaving the above patch chunk alone,
+since it makes it clear that it was just the introduction of a local
+variable and the code was otherwise unchanged here.
 
-> > In fact, we could make the new structure such that it doesn't break
-> > userspace compatibility with 64-bit architectures at all, ie, the "new"
-> > and "compat" ioctl could remain entirely equivalent on 64-bit.
-> 
-> I remember stuff about compat_ioctl, but I have never used/implemented
-> that. Are there any details of requirements for the structures being passed?
+Will resend shortly....
 
-In that specific case, I meant something else. IE. The old ioctl could
-remain unchanged, and the new ioctl make the same as the old one on
-64-bit platforms.
+Thanks,
+Paul.
+---
 
-Cheers,
-Ben.
+>
+>> =A0 =A0 =A0 /* Update dirty indicators */
+>> =A0 =A0 =A0 tx_queue->skb_dirtytx =3D skb_dirtytx;
+>> =A0 =A0 =A0 tx_queue->dirty_tx =3D bdp;
+>>
+>> + =A0 =A0 netdev_tx_completed_queue(txq, howmany, bytes_sent);
+>> +
+>> =A0 =A0 =A0 return howmany;
+>> =A0}
+>>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
