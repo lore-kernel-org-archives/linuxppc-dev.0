@@ -3,13 +3,15 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 75BE7B6F98
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 03:56:47 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 51AA6B6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 03:56:51 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: davem@davemloft.net, eric.dumazet@gmail.com, therbert@google.com
-Subject: [PATCH net-next 0/3] Gianfar byte queue limits
-Date: Sun, 18 Mar 2012 12:56:24 -0400
-Message-Id: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH net-next 1/3] gianfar: Add support for byte queue limits.
+Date: Sun, 18 Mar 2012 12:56:25 -0400
+Message-Id: <1332089787-24086-2-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,96 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The BQL support here is unchanged from what I posted earlier as an
-RFC[1] -- with the exception of the fact that I'm now happier with
-the runtime testing vs. the simple "hey it boots" that I'd done
-for the RFC.  Plus I added a couple trivial cleanup patches.
+Add support for byte queue limits (BQL), based on the similar
+modifications made to intel/igb/igb_main.c from Eric Dumazet
+in commit bdbc063129e811264cd6c311d8c2d9b95de01231
+	"igb: Add support for byte queue limits."
 
-For testing, I made a couple spiders homeless by reviving an ancient
-10baseT hub.  I connected an sbc8349 into that, and connected the
-yellowing hub into a GigE 16port, which was also connected to the
-recipient x86 box.
+A local variable for tx_queue->qindex was introduced in
+gfar_clean_tx_ring, since it is now used often enough to warrant it,
+and it cleans up the readability somewhat as well.
 
-Gianfar saw the interface as follows:
-
-fsl-gianfar e0024000.ethernet: eth0: mac: 00:a0:1e:a0:26:5a
-fsl-gianfar e0024000.ethernet: eth0: Running with NAPI enabled
-fsl-gianfar e0024000.ethernet: eth0: RX BD ring size for Q[0]: 256
-fsl-gianfar e0024000.ethernet: eth0: TX BD ring size for Q[0]: 256
-PHY: mdio@e0024520:19 - Link is Up - 10/Half
-
-With the sbc8349 being diskless, I simply used an scp of /proc/kcore
-to the connected x86 box as a rudimentary Tx heavy workload.
-
-BQL data was collected by changing into the dir:
-
-  /sys/devices/e0000000.soc8349/e0024000.ethernet/net/eth0/queues/tx-0/byte_queue_limits
-
-and running the following:
-
-  for i in * ; do echo -n $i": " ; cat $i ; done
-
-Running with the defaults, data like below was typical:
-
-hold_time: 1000
-inflight: 4542
-limit: 3456
-limit_max: 1879048192
-limit_min: 0
-
-hold_time: 1000
-inflight: 4542
-limit: 3378
-limit_max: 1879048192
-limit_min: 0
-
-i.e. 2 or 3 MTU sized packets in flight and the limit value lying
-somewhere between those two values.
-
-The interesting thing is that the interactive speed reported by scp
-seemed somewhat erratic, ranging from ~450 to ~700kB/s. (This was
-the only traffic on the old junk - perhaps expected oscillations such
-as those seen in isolated ARED tests?)  Average speed for 100M was:
-
-104857600 bytes (105 MB) copied, 172.616 s, 607 kB/s
-
-Anyway, back to BQL testing; setting the values as follows:
-
-hold_time: 1000
-inflight: 1514
-limit: 1400
-limit_max: 1400
-limit_min: 1000
-
-had the effect of serializing the interface to a single packet, and
-the crusty old hub seemed much happier with this arrangement, keeping
-a constant speed and achieving the following on a 100MB Tx block:
-
-104857600 bytes (105 MB) copied, 112.52 s, 932 kB/s
-
-It might be interesting to know more about why the defaults suffer
-the slowdown, but the hub could possibly be ancient spec violating
-trash.  Definitely something that nobody would ever use for anything
-today. (aside from contrived tests like this)
-
-But it did give me an example of where I could see the effects of
-changing the BQL settings, and I'm reasonably confident they are
-working as expected.
-
-Paul.
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
+ drivers/net/ethernet/freescale/gianfar.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
-[1] http://lists.openwall.net/netdev/2012/01/06/64
-
-Paul Gortmaker (3):
-  gianfar: Add support for byte queue limits.
-  gianfar: constify giant block of status descriptor strings
-  gianfar: delete orphaned version strings and dead macros
-
- drivers/net/ethernet/freescale/gianfar.c         |   22 ++++++++++++++++------
- drivers/net/ethernet/freescale/gianfar.h         |    3 ---
- drivers/net/ethernet/freescale/gianfar_ethtool.c |    2 +-
- 3 files changed, 17 insertions(+), 10 deletions(-)
-
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index adb0ae4..a4c934b 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -1755,9 +1755,12 @@ static void free_skb_resources(struct gfar_private *priv)
+ 
+ 	/* Go through all the buffer descriptors and free their data buffers */
+ 	for (i = 0; i < priv->num_tx_queues; i++) {
++		struct netdev_queue *txq;
+ 		tx_queue = priv->tx_queue[i];
++		txq = netdev_get_tx_queue(tx_queue->dev, tx_queue->qindex);
+ 		if(tx_queue->tx_skbuff)
+ 			free_skb_tx_queue(tx_queue);
++		netdev_tx_reset_queue(txq);
+ 	}
+ 
+ 	for (i = 0; i < priv->num_rx_queues; i++) {
+@@ -2217,6 +2220,8 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		lstatus |= BD_LFLAG(TXBD_CRC | TXBD_READY) | skb_headlen(skb);
+ 	}
+ 
++	netdev_tx_sent_queue(txq, skb->len);
++
+ 	/*
+ 	 * We can work in parallel with gfar_clean_tx_ring(), except
+ 	 * when modifying num_txbdfree. Note that we didn't grab the lock
+@@ -2460,6 +2465,7 @@ static void gfar_align_skb(struct sk_buff *skb)
+ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
+ {
+ 	struct net_device *dev = tx_queue->dev;
++	struct netdev_queue *txq;
+ 	struct gfar_private *priv = netdev_priv(dev);
+ 	struct gfar_priv_rx_q *rx_queue = NULL;
+ 	struct txbd8 *bdp, *next = NULL;
+@@ -2471,10 +2477,13 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
+ 	int frags = 0, nr_txbds = 0;
+ 	int i;
+ 	int howmany = 0;
++	int tqi = tx_queue->qindex;
++	unsigned int bytes_sent = 0;
+ 	u32 lstatus;
+ 	size_t buflen;
+ 
+-	rx_queue = priv->rx_queue[tx_queue->qindex];
++	rx_queue = priv->rx_queue[tqi];
++	txq = netdev_get_tx_queue(dev, tqi);
+ 	bdp = tx_queue->dirty_tx;
+ 	skb_dirtytx = tx_queue->skb_dirtytx;
+ 
+@@ -2533,6 +2542,8 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
+ 			bdp = next_txbd(bdp, base, tx_ring_size);
+ 		}
+ 
++		bytes_sent += skb->len;
++
+ 		/*
+ 		 * If there's room in the queue (limit it to rx_buffer_size)
+ 		 * we add this skb back into the pool, if it's the right size
+@@ -2557,13 +2568,15 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
+ 	}
+ 
+ 	/* If we freed a buffer, we can restart transmission, if necessary */
+-	if (__netif_subqueue_stopped(dev, tx_queue->qindex) && tx_queue->num_txbdfree)
+-		netif_wake_subqueue(dev, tx_queue->qindex);
++	if (__netif_subqueue_stopped(dev, tqi) && tx_queue->num_txbdfree)
++		netif_wake_subqueue(dev, tqi);
+ 
+ 	/* Update dirty indicators */
+ 	tx_queue->skb_dirtytx = skb_dirtytx;
+ 	tx_queue->dirty_tx = bdp;
+ 
++	netdev_tx_completed_queue(txq, howmany, bytes_sent);
++
+ 	return howmany;
+ }
+ 
 -- 
 1.7.9.1
