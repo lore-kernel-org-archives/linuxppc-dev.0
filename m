@@ -1,27 +1,19 @@
-Return-Path: <yinghai@kernel.org>
-Received: from acsinet15.oracle.com (acsinet15.oracle.com [141.146.126.227])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "acsinet15.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 475A2B6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 16:44:51 +1100 (EST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
- x86 <x86@kernel.org>
-Subject: [PATCH -v11 15/30] PCI, powerpc: Register busn_res for root buses
-Date: Sun, 18 Mar 2012 22:42:46 -0700
-Message-Id: <1332135781-13695-16-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1332135781-13695-1-git-send-email-yinghai@kernel.org>
-References: <1332135781-13695-1-git-send-email-yinghai@kernel.org>
-Cc: linux-arch@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <B36685@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 15542B6FC5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 17:45:37 +1100 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <stable@kernel.org>
+Subject: [PATCH] powerpc/crypto: caam - add backward compatible string sec4.0
+Date: Mon, 19 Mar 2012 14:19:33 +0800
+Message-ID: <1332137973-32660-1-git-send-email-Shengzhou.Liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,55 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/pci-bridge.h |    1 +
- arch/powerpc/kernel/pci-common.c      |   10 +++++++++-
- 2 files changed, 10 insertions(+), 1 deletions(-)
+In some device trees of previous version, there were string "fsl,sec4.0".
+To be backward compatible with device trees, we have CAAM driver first
+check "fsl,sec-v4.0", if it fails, then check for "fsl,sec4.0".
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 5d48765..11cebf0 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -30,6 +30,7 @@ struct pci_controller {
- 	int first_busno;
- 	int last_busno;
- 	int self_busno;
-+	struct resource busn;
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ drivers/crypto/caam/caamalg.c |   14 ++++++++++----
+ drivers/crypto/caam/ctrl.c    |   16 ++++++++++++++++
+ 2 files changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/crypto/caam/caamalg.c b/drivers/crypto/caam/caamalg.c
+index e73cf2e..d10d00b 100644
+--- a/drivers/crypto/caam/caamalg.c
++++ b/drivers/crypto/caam/caamalg.c
+@@ -2152,8 +2152,11 @@ static void __exit caam_algapi_exit(void)
+ 	int i, err;
  
- 	void __iomem *io_base_virt;
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 910b9de..ee8c0c9 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1648,6 +1648,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 	/* Wire up PHB bus resources */
- 	pcibios_setup_phb_resources(hose, &resources);
- 
-+	hose->busn.start = hose->first_busno;
-+	hose->busn.end	 = hose->last_busno;
-+	hose->busn.flags = IORESOURCE_BUS;
-+	pci_add_resource(&resources, &hose->busn);
-+
- 	/* Create an empty bus for the toplevel */
- 	bus = pci_create_root_bus(hose->parent, hose->first_busno,
- 				  hose->ops, hose, &resources);
-@@ -1670,8 +1675,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 		of_scan_bus(node, bus);
- 	}
- 
--	if (mode == PCI_PROBE_NORMAL)
-+	if (mode == PCI_PROBE_NORMAL) {
-+		pci_bus_update_busn_res_end(bus, 255);
- 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
-+		pci_bus_update_busn_res_end(bus, bus->subordinate);
+ 	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec-v4.0");
+-	if (!dev_node)
+-		return;
++	if (!dev_node) {
++		dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec4.0");
++		if (!dev_node)
++			return;
 +	}
  
- 	/* Platform gets a chance to do some global fixups before
- 	 * we proceed to resource allocation
+ 	pdev = of_find_device_by_node(dev_node);
+ 	if (!pdev)
+@@ -2234,8 +2237,11 @@ static int __init caam_algapi_init(void)
+ 	int i = 0, err = 0;
+ 
+ 	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec-v4.0");
+-	if (!dev_node)
+-		return -ENODEV;
++	if (!dev_node) {
++		dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec4.0");
++		if (!dev_node)
++			return -ENODEV;
++	}
+ 
+ 	pdev = of_find_device_by_node(dev_node);
+ 	if (!pdev)
+diff --git a/drivers/crypto/caam/ctrl.c b/drivers/crypto/caam/ctrl.c
+index 8ae3ba2..f078fa0 100644
+--- a/drivers/crypto/caam/ctrl.c
++++ b/drivers/crypto/caam/ctrl.c
+@@ -98,6 +98,12 @@ static int caam_probe(struct platform_device *pdev)
+ 	rspec = 0;
+ 	for_each_compatible_node(np, NULL, "fsl,sec-v4.0-job-ring")
+ 		rspec++;
++	if (!rspec) {
++		/* for backward compatible with device trees */
++		for_each_compatible_node(np, NULL, "fsl,sec4.0-job-ring")
++			rspec++;
++	}
++
+ 	ctrlpriv->jrdev = kzalloc(sizeof(struct device *) * rspec, GFP_KERNEL);
+ 	if (ctrlpriv->jrdev == NULL) {
+ 		iounmap(&topregs->ctrl);
+@@ -111,6 +117,13 @@ static int caam_probe(struct platform_device *pdev)
+ 		ctrlpriv->total_jobrs++;
+ 		ring++;
+ 	}
++	if (!ring) {
++		for_each_compatible_node(np, NULL, "fsl,sec4.0-job-ring") {
++			caam_jr_probe(pdev, np, ring);
++			ctrlpriv->total_jobrs++;
++			ring++;
++		}
++	}
+ 
+ 	/* Check to see if QI present. If so, enable */
+ 	ctrlpriv->qi_present = !!(rd_reg64(&topregs->ctrl.perfmon.comp_parms) &
+@@ -226,6 +239,9 @@ static struct of_device_id caam_match[] = {
+ 	{
+ 		.compatible = "fsl,sec-v4.0",
+ 	},
++	{
++		.compatible = "fsl,sec4.0",
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, caam_match);
 -- 
-1.7.7
+1.7.0.4
