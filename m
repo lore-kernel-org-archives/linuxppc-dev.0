@@ -1,28 +1,24 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 32E20B6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 10:53:16 +1100 (EST)
-Received: by pbcwy12 with SMTP id wy12so1022206pbc.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2012 16:53:14 -0700 (PDT)
-Message-ID: <1332114791.3597.6.camel@edumazet-laptop>
-Subject: Re: [PATCH net-next 4/4] gianfar: use netif_tx_queue_stopped
- instead of __netif_subqueue_stopped
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Sun, 18 Mar 2012 16:53:11 -0700
-In-Reply-To: <CAP=VYLpzpbLVAJ6=L1jdoZWcyAWPPKGMFTKBVU=7=HR+qTxwwA@mail.gmail.com>
-References: <1332089787-24086-1-git-send-email-paul.gortmaker@windriver.com>
- <1332106761-18293-1-git-send-email-paul.gortmaker@windriver.com>
- <1332106761-18293-5-git-send-email-paul.gortmaker@windriver.com>
- <1332107741.9397.27.camel@edumazet-glaptop>
- <CAP=VYLpzpbLVAJ6=L1jdoZWcyAWPPKGMFTKBVU=7=HR+qTxwwA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- therbert@google.com
+Return-Path: <r61911@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 489B8B6FE1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2012 13:50:39 +1100 (EST)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: fsl pci edac patches
+Date: Mon, 19 Mar 2012 02:50:33 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB0020A9F83@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <31B0E63E-923D-4022-8B27-76CFF2189817@kernel.crashing.org>
+ <CALT56yMXbaxJTGhL-8Hg3Dokc=Oi2qVKo912Q6uX3X8OErgB3w@mail.gmail.com>
+In-Reply-To: <CALT56yMXbaxJTGhL-8Hg3Dokc=Oi2qVKo912Q6uX3X8OErgB3w@mail.gmail.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
+Cc: Lan Chunhe-B25806 <B25806@freescale.com>, "linuxppc-dev@lists.ozlabs.org
+ list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le dimanche 18 mars 2012 à 19:24 -0400, Paul Gortmaker a écrit :
-> On Sun, Mar 18, 2012 at 5:55 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> > On Sun, 2012-03-18 at 17:39 -0400, Paul Gortmaker wrote:
-> >> The __netif_subqueue_stopped() just does the following:
-> >>
-> >>         struct netdev_queue *txq = netdev_get_tx_queue(dev, queue_index);
-> >>         return netif_tx_queue_stopped(txq);
-> >>
-> >> and since we already have the txq in scope, we can just call that
-> >> directly in this case.
-> >>
-> >> Suggested-by: Eric Dumazet <eric.dumazet@gmail.com>
-> >> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> >> ---
-> >>  drivers/net/ethernet/freescale/gianfar.c |    2 +-
-> >>  1 files changed, 1 insertions(+), 1 deletions(-)
-> >>
-> >> diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-> >> index 6e66cc3..d9428f0 100644
-> >> --- a/drivers/net/ethernet/freescale/gianfar.c
-> >> +++ b/drivers/net/ethernet/freescale/gianfar.c
-> >> @@ -2565,7 +2565,7 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
-> >>       }
-> >>
-> >>       /* If we freed a buffer, we can restart transmission, if necessary */
-> >> -     if (__netif_subqueue_stopped(dev, tqi) && tx_queue->num_txbdfree)
-> >> +     if (netif_tx_queue_stopped(txq) && tx_queue->num_txbdfree)
-> >>               netif_wake_subqueue(dev, tqi);
-> >>
-> >>       /* Update dirty indicators */
-> >
-> > Please change netif_wake_subqueue() as well ;)
-> 
-> I looked at this earlier when I added patch #4 but I was concerned about
-> the different semantics.
-> 
-> The netif_wake_subqueue() just returns on a netpoll_trap but the other
-> netif_tx_wake_queue() actually calls netif_tx_start_queue() for the same
-> netpoll_trap instance.  Maybe that is OK, but I didn't want to be changing
-> the behaviour of subtleties in stuff where I am clearly still learning.
-> 
 
-I see... commit 7b3d3e4fc68 added a small difference here...
+
+> -----Original Message-----
+> From: linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.org
+> [mailto:linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.or=
+g]
+> On Behalf Of Dmitry Eremin-Solenikov
+> Sent: Sunday, March 18, 2012 1:11 AM
+> To: Kumar Gala
+> Cc: Lan Chunhe-B25806; linuxppc-dev@lists.ozlabs.org list
+> Subject: Re: fsl pci edac patches
+>=20
+> Hello,
+>=20
+> On Sat, Mar 17, 2012 at 1:13 AM, Kumar Gala <galak@kernel.crashing.org>
+> wrote:
+> > Guys,
+> >
+> > I'm not sure what the state of the EDAC patches and latest kernel are..
+> I'm going to mark the ones in patch works as 'dead' and hopefully you guy=
+s
+> will resend if there is still an interest.
+>=20
+> I don't have mpc85xx hardware to test at this point, so probably I
+> don't care about 85xx EDAC binding right now.
+> Strictly speaking I forgot about these patches :(
+I do think the patch are still necessary, but need to update to new kernel =
+base.
+There are some 85xx pcie errata which need to be implemented in the EDAC co=
+de.
+Thanks.
+Roy
