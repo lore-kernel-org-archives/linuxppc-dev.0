@@ -1,23 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4F677304.7020801@freescale.com>
-Date: Mon, 19 Mar 2012 12:55:16 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <B04825@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6C3D6B6FE9
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2012 05:43:42 +1100 (EST)
+Message-ID: <4F677E51.8030905@freescale.com>
+Date: Mon, 19 Mar 2012 13:43:29 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <b04825@freescale.com>
-Subject: Re: [PATCH] Device Tree Bindings for Freescale TDM controller
-References: <1331861451-15427-1-git-send-email-poonam.aggrwal@freescale.com>
- <4F63868D.1030507@freescale.com>
- <ACB6D0C0104CFF42A45A5D82A0DD4F3D09D518@039-SN2MPN1-013.039d.mgd.msft.net>
- <CAOZdJXVU=1bW8_OTMecJHuWaa6_023UnUsfQTX8MGqd3E4SRAg@mail.gmail.com>
- <4F676C9D.2070301@freescale.com> <4F676D9E.6000609@freescale.com>
-In-Reply-To: <4F676D9E.6000609@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
+References: <1322669957-8259-1-git-send-email-timur@freescale.com>
+ <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
+ <4F63A7A4.4000205@freescale.com> <20120319160452.B57D13E05A5@localhost>
+In-Reply-To: <20120319160452.B57D13E05A5@localhost>
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Singh Sandeep-B37400 <B37400@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +29,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/19/2012 12:32 PM, Timur Tabi wrote:
-> Scott Wood wrote:
->>>> Scott, are you suggesting that Poonam put a non-zero number in the DTS
->>>> for clock-frequency?  If so, then I don't think that's a good idea, if
->>>> U-Boot will always override it.
-> 
->> This is a device tree binding document, not U-Boot specific.  It
->> describes what Linux (or another OS) can expect to see, not how it gets
->> there.
-> 
-> That doesn't really answer my question.  We currently have many properties
-> that define a clock frequency, and the DTS sets them all to 0, with the
-> intent of having U-Boot update them.
+Grant Likely wrote:
+> The problem is that you want to create devices for grandchildren
+> nodes when the bus ids passed in don't match any of the child nodes so
+> the of_platform_bus_probe() doesn't iterate down to that level.  This
+> is correct and expected behaviour.
 
-Ideally these trees should be in U-Boot rather than Linux.
+Well, I'm not still not 100% sure on what I'm supposed to do, so I tried this:
 
-> Now maybe these should all be
-> deleted, but it seems that setting them to a non-zero value is wrong,
-> because it might mislead people into thinking that the property is not
-> updated by U-Boot.  When you see something like this:
-> 
-> 	clock-frequency = <0>;
-> 
-> It's pretty obvious that U-boot will fill it in.
+static struct of_device_id __initdata p1022_ds_ids[] = {
+	/* The audio driver probes the SSI DMA channels individually */
+	{ .compatible = "fsl,ssi-dma-channel", },
+	{},
+};
 
-You're assuming that this is a guide for writing dts files.  If you look
-at it as a guide for writing Linux code to interpret the device tree,
-you'd come to the opposite conclusion.
+static int __init p1022_ds_publish_devices(void)
+{
+	struct device_node *np;
+	int ret;
 
-I suggested a comment about common boot software behavior (but otherwise
-show it as Linux would see it) as middle ground.
+	mpc85xx_common_publish_devices();
 
--Scott
+	for_each_compatible_node(np, NULL, "fsl,eloplus-dma") {
+		ret = of_platform_bus_probe(np, p1022_ds_ids, NULL);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
+It works, but it looks clunky.
+
+For the record, this is what the DMA controller node looks like.  It's a
+child of the SOC node.  The SSI driver probes on the "fsl,ssi-dma-channel"
+nodes directly.
+
+dma@c300 {
+        cell-index = <0x1>;
+        ranges = <0x0 0xc100 0x200>;
+        reg = <0xc300 0x4>;
+        compatible = "fsl,eloplus-dma";
+        #size-cells = <0x1>;
+        #address-cells = <0x1>;
+
+        dma-channel@180 {
+                interrupts = <0x4f 0x2 0x0 0x0>;
+                cell-index = <0x3>;
+                reg = <0x180 0x80>;
+                compatible = "fsl,eloplus-dma-channel";
+        };
+
+        dma-channel@100 {
+                interrupts = <0x4e 0x2 0x0 0x0>;
+                cell-index = <0x2>;
+                reg = <0x100 0x80>;
+                compatible = "fsl,eloplus-dma-channel";
+        };
+
+        dma-channel@80 {
+                phandle = <0x4>;
+                linux,phandle = <0x4>;
+                interrupts = <0x4d 0x2 0x0 0x0>;
+                cell-index = <0x1>;
+                reg = <0x80 0x80>;
+                compatible = "fsl,ssi-dma-channel";
+        };
+
+        dma-channel@0 {
+                phandle = <0x3>;
+                linux,phandle = <0x3>;
+                interrupts = <0x4c 0x2 0x0 0x0>;
+                cell-index = <0x0>;
+                reg = <0x0 0x80>;
+                compatible = "fsl,ssi-dma-channel";
+        };
+};
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
