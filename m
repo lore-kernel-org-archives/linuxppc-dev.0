@@ -1,22 +1,25 @@
 Return-Path: <r66093@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A22FEB6EEF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 17:35:37 +1100 (EST)
-Received: from mail143-va3 (localhost [127.0.0.1])	by
- mail143-va3-R.bigfish.com (Postfix) with ESMTP id 720332000FE	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:35:27 +0000 (UTC)
-Received: from VA3EHSMHS021.bigfish.com (unknown [10.7.14.237])	by
- mail143-va3.bigfish.com (Postfix) with ESMTP id 56BA340046	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:35:25 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 6609BB6FBE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 17:35:43 +1100 (EST)
+Received: from mail69-am1 (localhost [127.0.0.1])	by mail69-am1-R.bigfish.com
+ (Postfix) with ESMTP id B9C2232039D	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 20 Mar 2012 06:35:32 +0000 (UTC)
+Received: from AM1EHSMHS002.bigfish.com (unknown [10.3.201.242])	by
+ mail69-am1.bigfish.com (Postfix) with ESMTP id 0DC85E0067	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:35:31 +0000 (UTC)
 From: <Chang-Ming.Huang@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/4 v2] powerpc/85xx: add the P1020MBG-PC DTS support
-Date: Tue, 20 Mar 2012 14:24:44 +0800
-Message-ID: <1332224685-1012-1-git-send-email-Chang-Ming.Huang@freescale.com>
+Subject: [PATCH 4/4 v2] powerpc/85xx: add the P1020UTM-PC DTS support
+Date: Tue, 20 Mar 2012 14:24:45 +0800
+Message-ID: <1332224685-1012-2-git-send-email-Chang-Ming.Huang@freescale.com>
+In-Reply-To: <1332224685-1012-1-git-send-email-Chang-Ming.Huang@freescale.com>
+References: <1332224685-1012-1-git-send-email-Chang-Ming.Huang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>
@@ -37,22 +40,22 @@ changes for v2:
 	- remove the lable "read-only" for DTB and kernel partition
 	- remove the word "RO" or "RW" from the "lable" option
 
- arch/powerpc/boot/dts/p1020mbg-pc.dtsi    |  151 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1020mbg-pc_32b.dts |   89 +++++++++++++++++
- arch/powerpc/boot/dts/p1020mbg-pc_36b.dts |   89 +++++++++++++++++
- 3 files changed, 329 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_36b.dts
+ arch/powerpc/boot/dts/p1020utm-pc.dtsi    |  140 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc_32b.dts |   89 ++++++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc_36b.dts |   89 ++++++++++++++++++
+ 3 files changed, 318 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_36b.dts
 
-diff --git a/arch/powerpc/boot/dts/p1020mbg-pc.dtsi b/arch/powerpc/boot/dts/p1020mbg-pc.dtsi
+diff --git a/arch/powerpc/boot/dts/p1020utm-pc.dtsi b/arch/powerpc/boot/dts/p1020utm-pc.dtsi
 new file mode 100644
-index 0000000..a24699c
+index 0000000..a2d4f5f
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/p1020mbg-pc.dtsi
-@@ -0,0 +1,151 @@
++++ b/arch/powerpc/boot/dts/p1020utm-pc.dtsi
+@@ -0,0 +1,140 @@
 +/*
-+ * P1020 MBG-PC Device Tree Source stub (no addresses or top-level ranges)
++ * P1020 UTM-PC Device Tree Source stub (no addresses or top-level ranges)
 + *
 + * Copyright 2012 Freescale Semiconductor Inc.
 + *
@@ -90,51 +93,36 @@ index 0000000..a24699c
 +		#address-cells = <1>;
 +		#size-cells = <1>;
 +		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x4000000>;
++		reg = <0x0 0x0 0x2000000>;
 +		bank-width = <2>;
 +		device-width = <1>;
 +
 +		partition@0 {
-+			/* 128KB for DTB Image */
-+			reg = <0x0 0x00020000>;
++			/* 256KB for DTB Image */
++			reg = <0x0 0x00040000>;
 +			label = "NOR DTB Image";
 +		};
 +
-+		partition@20000 {
-+			/* 3.875 MB for Linux Kernel Image */
-+			reg = <0x00020000 0x003e0000>;
++		partition@40000 {
++			/* 3.75 MB for Linux Kernel Image */
++			reg = <0x00040000 0x003c0000>;
 +			label = "NOR Linux Kernel Image";
 +		};
 +
 +		partition@400000 {
-+			/* 58MB for Root file System */
-+			reg = <0x00400000 0x03a00000>;
++			/* 27MB for Root file System */
++			reg = <0x00400000 0x01b00000>;
 +			label = "NOR Root File System";
 +		};
 +
-+		partition@3e00000 {
-+			/* This location must not be altered  */
-+			/* 1M for Vitesse 7385 Switch firmware */
-+			reg = <0x3e00000 0x00100000>;
-+			label = "NOR Vitesse-7385 Firmware";
-+			read-only;
-+		};
-+
-+		partition@3f00000 {
++		partition@1f00000 {
 +			/* This location must not be altered  */
 +			/* 512KB for u-boot Bootloader Image */
 +			/* 512KB for u-boot Environment Variables */
-+			reg = <0x03f00000 0x00100000>;
++			reg = <0x01f00000 0x00100000>;
 +			label = "NOR U-Boot Image";
 +			read-only;
 +		};
-+	};
-+
-+	L2switch@2,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "vitesse-7385";
-+		reg = <0x2 0x0 0x20000>;
 +	};
 +};
 +
@@ -155,6 +143,10 @@ index 0000000..a24699c
 +			interrupts = <2 1 0 0>;
 +			reg = <0x1>;
 +		};
++		phy2: ethernet-phy@2 {
++			interrupts = <1 1 0 0>;
++			reg = <0x2>;
++		};
 +	};
 +
 +	mdio@25000 {
@@ -172,7 +164,7 @@ index 0000000..a24699c
 +	};
 +
 +	enet0: ethernet@b0000 {
-+		fixed-link = <1 1 1000 0 0>;
++		phy-handle = <&phy2>;
 +		phy-connection-type = "rgmii-id";
 +	};
 +
@@ -202,14 +194,14 @@ index 0000000..a24699c
 +		phy_type = "ulpi";
 +	};
 +};
-diff --git a/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
+diff --git a/arch/powerpc/boot/dts/p1020utm-pc_32b.dts b/arch/powerpc/boot/dts/p1020utm-pc_32b.dts
 new file mode 100644
-index 0000000..ab8f076
+index 0000000..4bfdd89
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
++++ b/arch/powerpc/boot/dts/p1020utm-pc_32b.dts
 @@ -0,0 +1,89 @@
 +/*
-+ * P1020 MBG-PC Device Tree Source (32-bit address map)
++ * P1020 UTM-PC Device Tree Source (32-bit address map)
 + *
 + * Copyright 2012 Freescale Semiconductor Inc.
 + *
@@ -244,8 +236,8 @@ index 0000000..ab8f076
 +
 +/include/ "fsl/p1020si-pre.dtsi"
 +/ {
-+	model = "fsl,P1020MBG-PC";
-+	compatible = "fsl,P1020MBG-PC";
++	model = "fsl,P1020UTM-PC";
++	compatible = "fsl,P1020UTM-PC";
 +
 +	memory {
 +		device_type = "memory";
@@ -254,8 +246,8 @@ index 0000000..ab8f076
 +	lbc: localbus@ffe05000 {
 +		reg = <0x0 0xffe05000 0x0 0x1000>;
 +
-+		/* NOR and L2 switch */
-+		ranges = <0x0 0x0 0x0 0xec000000 0x04000000
++		/* NOR */
++		ranges = <0x0 0x0 0x0 0xec000000 0x02000000
 +			  0x1 0x0 0x0 0xffa00000 0x00040000
 +			  0x2 0x0 0x0 0xffb00000 0x00020000>;
 +	};
@@ -295,16 +287,16 @@ index 0000000..ab8f076
 +	};
 +};
 +
-+/include/ "p1020mbg-pc.dtsi"
++/include/ "p1020utm-pc.dtsi"
 +/include/ "fsl/p1020si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1020mbg-pc_36b.dts b/arch/powerpc/boot/dts/p1020mbg-pc_36b.dts
+diff --git a/arch/powerpc/boot/dts/p1020utm-pc_36b.dts b/arch/powerpc/boot/dts/p1020utm-pc_36b.dts
 new file mode 100644
-index 0000000..9e9f401
+index 0000000..abec535
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/p1020mbg-pc_36b.dts
++++ b/arch/powerpc/boot/dts/p1020utm-pc_36b.dts
 @@ -0,0 +1,89 @@
 +/*
-+ * P1020 MBG-PC Device Tree Source (36-bit address map)
++ * P1020 UTM-PC Device Tree Source (36-bit address map)
 + *
 + * Copyright 2012 Freescale Semiconductor Inc.
 + *
@@ -339,8 +331,8 @@ index 0000000..9e9f401
 +
 +/include/ "fsl/p1020si-pre.dtsi"
 +/ {
-+	model = "fsl,P1020MBG-PC";
-+	compatible = "fsl,P1020MBG-PC";
++	model = "fsl,P1020UTM-PC";
++	compatible = "fsl,P1020UTM-PC";
 +
 +	memory {
 +		device_type = "memory";
@@ -349,8 +341,8 @@ index 0000000..9e9f401
 +	lbc: localbus@fffe05000 {
 +		reg = <0xf 0xffe05000 0x0 0x1000>;
 +
-+		/* NOR and L2 switch */
-+		ranges = <0x0 0x0 0xf 0xec000000 0x04000000
++		/* NOR */
++		ranges = <0x0 0x0 0xf 0xec000000 0x02000000
 +			  0x1 0x0 0xf 0xffa00000 0x00040000
 +			  0x2 0x0 0xf 0xffb00000 0x00020000>;
 +	};
@@ -390,7 +382,7 @@ index 0000000..9e9f401
 +	};
 +};
 +
-+/include/ "p1020mbg-pc.dtsi"
++/include/ "p1020utm-pc.dtsi"
 +/include/ "fsl/p1020si-post.dtsi"
 -- 
 1.7.5.4
