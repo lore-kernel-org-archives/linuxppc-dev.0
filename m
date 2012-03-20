@@ -1,33 +1,30 @@
-Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14]) by ozlabs.org (Postfix) with ESMTP id 8DC72B6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 18:34:56 +1100 (EST)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN
-Received: from euspt2 ([210.118.77.14]) by mailout4.w1.samsung.com
- (Sun Java(tm) System Messaging Server 6.3-8.04 (built Jul 29 2009; 32bit))
- with ESMTP id <0M1600FYL9XFOL40@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 20 Mar 2012 07:24:51 +0000 (GMT)
-Received: from linux.samsung.com ([106.116.38.10])
- by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
- 2004)) with ESMTPA id <0M16007EE9XAS4@spt2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 20 Mar 2012 07:24:47 +0000 (GMT)
-Date: Tue, 20 Mar 2012 08:24:43 +0100
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [GIT PULL] DMA-mapping framework updates for 3.4
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Message-id: <1332228283-29077-1-git-send-email-m.szyprowski@samsung.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
- linaro-mm-sig@lists.linaro.org, Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- discuss@x86-64.org, linux-kernel@vger.kernel.org,
- FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
- Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <richard.weinberger@gmail.com>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+ [209.85.160.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DB992B6EF4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 00:30:57 +1100 (EST)
+Received: by ghbg19 with SMTP id g19so31592ghb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:30:49 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAFPAmTQs9dOpQTaXU=6Or66YU+my_CnPw33TE4h++YArBNa38g@mail.gmail.com>
+References: <CAFPAmTQs9dOpQTaXU=6Or66YU+my_CnPw33TE4h++YArBNa38g@mail.gmail.com>
+Date: Tue, 20 Mar 2012 14:30:49 +0100
+Message-ID: <CAFLxGvwW2XcYSoidZZ0XF_a-pH3SwONqS+hCnpGUecQ__DLa_g@mail.gmail.com>
+Subject: Re: [PATCH 0/20] mmu: arch/mm: Port OOM changes to arch page fault
+ handlers.
+From: richard -rw- weinberger <richard.weinberger@gmail.com>
+To: Kautuk Consul <consul.kautuk@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-am33-list@redhat.com,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, linux-sh@vger.kernel.org,
+ microblaze-uclinux@itee.uq.edu.au, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linux-m68k@lists.linux-m68k.org, linux@lists.openrisc.net,
+ sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,97 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus,
+On Tue, Mar 20, 2012 at 2:18 PM, Kautuk Consul <consul.kautuk@gmail.com> wrote:
+> Commit d065bd810b6deb67d4897a14bfe21f8eb526ba99
+> (mm: retry page fault when blocking on disk transfer) and
+> commit 37b23e0525d393d48a7d59f870b3bc061a30ccdb
+> (x86,mm: make pagefault killable)
+>
+> The above commits introduced changes into the x86 pagefault handler
+> for making the page fault handler retryable as well as killable.
+>
+> These changes reduce the mmap_sem hold time, which is crucial
+> during OOM killer invocation.
+>
+> I was facing hang and livelock problems on my ARM and MIPS boards when
+> I invoked OOM by running the stress_32k.c test-case attached to this email.
+>
+> Since both the ARM and MIPS porting chainges were accepted, me and my
+> co-worker decided to take the initiative to port these changes to all other
+> MMU based architectures.
+>
+> Please review and do write back if there is any way I need to
+> improve/rewrite any
+> of these patches.
+>
 
-Please pull the dma-mapping framework updates for v3.4 since commit
-c16fa4f2ad19908a47c63d8fa436a1178438c7e7:
+What about arch/um/?
+Does UML not need this change?
 
-  Linux 3.3
-
-with the top-most commit e749a9f707f1102735e02338fa564be86be3bb69
-
-  common: DMA-mapping: add NON-CONSISTENT attribute
-
-from the git repository at:
-
-  git://git.infradead.org/users/kmpark/linux-samsung dma-mapping-next
-
-Those patches introduce a new alloc method (with support for memory
-attributes) in dma_map_ops structure, which will later replace
-dma_alloc_coherent and dma_alloc_writecombine functions.
-
-Thanks!
-
-Best regards
-Marek Szyprowski
-Samsung Poland R&D Center
-
-Patch summary:
-
-Andrzej Pietrasiewicz (9):
-      X86: adapt for dma_map_ops changes
-      MIPS: adapt for dma_map_ops changes
-      PowerPC: adapt for dma_map_ops changes
-      IA64: adapt for dma_map_ops changes
-      SPARC: adapt for dma_map_ops changes
-      Alpha: adapt for dma_map_ops changes
-      SH: adapt for dma_map_ops changes
-      Microblaze: adapt for dma_map_ops changes
-      Unicore32: adapt for dma_map_ops changes
-
-Marek Szyprowski (6):
-      common: dma-mapping: introduce alloc_attrs and free_attrs methods
-      Hexagon: adapt for dma_map_ops changes
-      common: dma-mapping: remove old alloc_coherent and free_coherent methods
-      common: dma-mapping: introduce mmap method
-      common: DMA-mapping: add WRITE_COMBINE attribute
-      common: DMA-mapping: add NON-CONSISTENT attribute
-
- Documentation/DMA-attributes.txt          |   19 +++++++++++++++++++
- arch/alpha/include/asm/dma-mapping.h      |   18 ++++++++++++------
- arch/alpha/kernel/pci-noop.c              |   10 ++++++----
- arch/alpha/kernel/pci_iommu.c             |   10 ++++++----
- arch/hexagon/include/asm/dma-mapping.h    |   18 ++++++++++++------
- arch/hexagon/kernel/dma.c                 |    9 +++++----
- arch/ia64/hp/common/sba_iommu.c           |   11 ++++++-----
- arch/ia64/include/asm/dma-mapping.h       |   18 ++++++++++++------
- arch/ia64/kernel/pci-swiotlb.c            |    9 +++++----
- arch/ia64/sn/pci/pci_dma.c                |    9 +++++----
- arch/microblaze/include/asm/dma-mapping.h |   18 ++++++++++++------
- arch/microblaze/kernel/dma.c              |   10 ++++++----
- arch/mips/cavium-octeon/dma-octeon.c      |   16 ++++++++--------
- arch/mips/include/asm/dma-mapping.h       |   18 ++++++++++++------
- arch/mips/mm/dma-default.c                |    8 ++++----
- arch/powerpc/include/asm/dma-mapping.h    |   24 ++++++++++++++++--------
- arch/powerpc/kernel/dma-iommu.c           |   10 ++++++----
- arch/powerpc/kernel/dma-swiotlb.c         |    4 ++--
- arch/powerpc/kernel/dma.c                 |   10 ++++++----
- arch/powerpc/kernel/ibmebus.c             |   10 ++++++----
- arch/powerpc/kernel/vio.c                 |   14 ++++++++------
- arch/powerpc/platforms/cell/iommu.c       |   16 +++++++++-------
- arch/powerpc/platforms/ps3/system-bus.c   |   13 +++++++------
- arch/sh/include/asm/dma-mapping.h         |   28 ++++++++++++++++++----------
- arch/sh/kernel/dma-nommu.c                |    4 ++--
- arch/sh/mm/consistent.c                   |    6 ++++--
- arch/sparc/include/asm/dma-mapping.h      |   18 ++++++++++++------
- arch/sparc/kernel/iommu.c                 |   10 ++++++----
- arch/sparc/kernel/ioport.c                |   18 ++++++++++--------
- arch/sparc/kernel/pci_sun4v.c             |    9 +++++----
- arch/unicore32/include/asm/dma-mapping.h  |   18 ++++++++++++------
- arch/unicore32/mm/dma-swiotlb.c           |    4 ++--
- arch/x86/include/asm/dma-mapping.h        |   26 ++++++++++++++++----------
- arch/x86/kernel/amd_gart_64.c             |   11 ++++++-----
- arch/x86/kernel/pci-calgary_64.c          |    9 +++++----
- arch/x86/kernel/pci-dma.c                 |    3 ++-
- arch/x86/kernel/pci-nommu.c               |    6 +++---
- arch/x86/kernel/pci-swiotlb.c             |   12 +++++++-----
- arch/x86/xen/pci-swiotlb-xen.c            |    4 ++--
- drivers/iommu/amd_iommu.c                 |   10 ++++++----
- drivers/iommu/intel-iommu.c               |    9 +++++----
- drivers/xen/swiotlb-xen.c                 |    5 +++--
- include/linux/dma-attrs.h                 |    2 ++
- include/linux/dma-mapping.h               |   13 +++++++++----
- include/linux/swiotlb.h                   |    6 ++++--
- include/xen/swiotlb-xen.h                 |    6 ++++--
- lib/swiotlb.c                             |    5 +++--
- 47 files changed, 338 insertions(+), 206 deletions(-)
+-- 
+Thanks,
+//richard
