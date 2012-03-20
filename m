@@ -1,17 +1,19 @@
 Return-Path: <richard.weinberger@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
- [209.85.160.179])
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DB992B6EF4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 00:30:57 +1100 (EST)
-Received: by ghbg19 with SMTP id g19so31592ghb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:30:49 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 259B6B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 00:36:13 +1100 (EST)
+Received: by obbun3 with SMTP id un3so19092obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:36:06 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAFPAmTQs9dOpQTaXU=6Or66YU+my_CnPw33TE4h++YArBNa38g@mail.gmail.com>
+In-Reply-To: <CAFPAmTSzV9mrkbP68p4PA-0i0o2Hz7JiBY=0A0V_myJEzWubjQ@mail.gmail.com>
 References: <CAFPAmTQs9dOpQTaXU=6Or66YU+my_CnPw33TE4h++YArBNa38g@mail.gmail.com>
-Date: Tue, 20 Mar 2012 14:30:49 +0100
-Message-ID: <CAFLxGvwW2XcYSoidZZ0XF_a-pH3SwONqS+hCnpGUecQ__DLa_g@mail.gmail.com>
+ <CAFLxGvwW2XcYSoidZZ0XF_a-pH3SwONqS+hCnpGUecQ__DLa_g@mail.gmail.com>
+ <CAFPAmTSzV9mrkbP68p4PA-0i0o2Hz7JiBY=0A0V_myJEzWubjQ@mail.gmail.com>
+Date: Tue, 20 Mar 2012 14:36:06 +0100
+Message-ID: <CAFLxGvyVbDndbu_2ZbUBwbrJCq+d4rRZW0ROxTpQxAvetRm=0w@mail.gmail.com>
 Subject: Re: [PATCH 0/20] mmu: arch/mm: Port OOM changes to arch page fault
  handlers.
 From: richard -rw- weinberger <richard.weinberger@gmail.com>
@@ -34,32 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2012 at 2:18 PM, Kautuk Consul <consul.kautuk@gmail.com> wrote:
-> Commit d065bd810b6deb67d4897a14bfe21f8eb526ba99
-> (mm: retry page fault when blocking on disk transfer) and
-> commit 37b23e0525d393d48a7d59f870b3bc061a30ccdb
-> (x86,mm: make pagefault killable)
+On Tue, Mar 20, 2012 at 2:34 PM, Kautuk Consul <consul.kautuk@gmail.com> wrote:
+>>
+>> What about arch/um/?
+>> Does UML not need this change?
 >
-> The above commits introduced changes into the x86 pagefault handler
-> for making the page fault handler retryable as well as killable.
->
-> These changes reduce the mmap_sem hold time, which is crucial
-> during OOM killer invocation.
->
-> I was facing hang and livelock problems on my ARM and MIPS boards when
-> I invoked OOM by running the stress_32k.c test-case attached to this email.
->
-> Since both the ARM and MIPS porting chainges were accepted, me and my
-> co-worker decided to take the initiative to port these changes to all other
-> MMU based architectures.
->
-> Please review and do write back if there is any way I need to
-> improve/rewrite any
-> of these patches.
->
+> Oh yes, extremely sorry I accidentally missed that one out.
+> Mind if I send it separately ?
 
-What about arch/um/?
-Does UML not need this change?
+No problem.
+handle_page_fault() is the function you want to patch. :)
 
 -- 
 Thanks,
