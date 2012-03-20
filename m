@@ -1,23 +1,23 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-wi0-f180.google.com (mail-wi0-f180.google.com
- [209.85.212.180])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 506DEB6ED0
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 04:09:48 +1100 (EST)
-Received: by wibhm17 with SMTP id hm17so343260wib.3
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2012 10:09:45 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <B04825@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 30AEFB6ED0
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 04:25:27 +1100 (EST)
+Message-ID: <4F68BD6F.2090008@freescale.com>
+Date: Tue, 20 Mar 2012 12:25:03 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <4F677E51.8030905@freescale.com>
 References: <1322669957-8259-1-git-send-email-timur@freescale.com>
  <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
  <4F63A7A4.4000205@freescale.com> <20120319160452.B57D13E05A5@localhost>
- <4F677E51.8030905@freescale.com>
-Date: Tue, 20 Mar 2012 17:09:42 +0000
-Message-Id: <20120320170942.0C4143E2834@localhost>
+ <4F677E51.8030905@freescale.com> <20120320170942.0C4143E2834@localhost>
+In-Reply-To: <20120320170942.0C4143E2834@localhost>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: Scott Wood <scottwood@freescale.com>,
  Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
  linuxppc-dev list <linuxppc-dev@ozlabs.org>
@@ -30,35 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 19 Mar 2012 13:43:29 -0500, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
-> > The problem is that you want to create devices for grandchildren
-> > nodes when the bus ids passed in don't match any of the child nodes so
-> > the of_platform_bus_probe() doesn't iterate down to that level.  This
-> > is correct and expected behaviour.
-> 
-> Well, I'm not still not 100% sure on what I'm supposed to do, so I tried this:
-> 
-> static struct of_device_id __initdata p1022_ds_ids[] = {
-> 	/* The audio driver probes the SSI DMA channels individually */
-> 	{ .compatible = "fsl,ssi-dma-channel", },
-> 	{},
-> };
-> 
-> static int __init p1022_ds_publish_devices(void)
-> {
-> 	struct device_node *np;
-> 	int ret;
-> 
-> 	mpc85xx_common_publish_devices();
-> 
-> 	for_each_compatible_node(np, NULL, "fsl,eloplus-dma") {
-> 		ret = of_platform_bus_probe(np, p1022_ds_ids, NULL);
-> 		if (ret)
-> 			return ret;
+Grant Likely wrote:
 
-Does a driver bind against "fsl,eloplus-dma"?  If so, then I would
-call of_platform_populate() from within the fsl,eloplus-dma driver's
-probe method.
+> Does a driver bind against "fsl,eloplus-dma"?  If so, then I would
+> call of_platform_populate() from within the fsl,eloplus-dma driver's
+> probe method.
 
-g.
+Well, there are two "DMA" drivers.
+
+The one in drivers/dma binds on fsl,eloplus-dma, and then manually scans
+for children with the "fsl,eloplus-dma-channel" compatible.  This driver
+works today because the fsl,eloplus-dma nodes are children of the SOC
+node, which is already probed.
+
+The other is in sound/soc/fsl and binds on "fsl,ssi-dma-channel".  These
+are also children of the fsl,eloplus-dma node.  This driver does NOT work
+today, because the fsl,eloplus-dma is not probed.
+
+I do not want the two drivers to depend on each other.  They are
+completely separate.  So I don't want to call of_platform_populate() from
+the drivers/dma driver.  I could call it from the sound/soc/fsl driver,
+however.  I will try to see if that works.
+
+They only problem I see with this is that I am thinking about modifying
+the drivers/dma driver to probe on "fsl,eloplus-dma-channel" channels
+directly.  If I do that, then who should call of_platform_populate()?
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
