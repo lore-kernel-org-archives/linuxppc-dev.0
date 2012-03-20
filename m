@@ -1,27 +1,23 @@
 Return-Path: <consul.kautuk@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
- [209.85.213.51])
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2CF40B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 00:18:17 +1100 (EST)
-Received: by yhnn12 with SMTP id n12so20383yhn.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:18:14 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 20 Mar 2012 09:18:14 -0400
-Message-ID: <CAFPAmTQs9dOpQTaXU=6Or66YU+my_CnPw33TE4h++YArBNa38g@mail.gmail.com>
-Subject: [PATCH 0/20] mmu: arch/mm: Port OOM changes to arch page fault
- handlers.
+ by ozlabs.org (Postfix) with ESMTPS id A5957B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 00:20:16 +1100 (EST)
+Received: by dady9 with SMTP id y9so19750dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 06:20:13 -0700 (PDT)
 From: Kautuk Consul <consul.kautuk@gmail.com>
-To: linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux@lists.openrisc.net, linux-am33-list@redhat.com,
- microblaze-uclinux@itee.uq.edu.au, linux-m68k@lists.linux-m68k.org,
- linux-m32r-ja@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-cris-kernel@axis.com,
- linux-sh@vger.kernel.org, linux-parisc@vger.kernel.org,
- sparclinux@vger.kernel.org
-Content-Type: multipart/mixed; boundary=0016368e2a82ddd5fa04bbac811c
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Jimi Xenidis <jimix@pobox.com>,
+ Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Christian Dietrich <christian.dietrich@informatik.uni-erlangen.de>
+Subject: [PATCH 04/20] powerpc/mm/fault.c: Port OOM changes to do_page_fault
+Date: Tue, 20 Mar 2012 09:19:55 -0400
+Message-Id: <1332249595-2678-1-git-send-email-consul.kautuk@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Mohd. Faris" <mohdfarisq2010@gmail.com>,
+ Kautuk Consul <consul.kautuk@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,9 +26,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-
---0016368e2a82ddd5fa04bbac811c
-Content-Type: text/plain; charset=ISO-8859-1
 
 Commit d065bd810b6deb67d4897a14bfe21f8eb526ba99
 (mm: retry page fault when blocking on disk transfer) and
@@ -45,94 +38,105 @@ for making the page fault handler retryable as well as killable.
 These changes reduce the mmap_sem hold time, which is crucial
 during OOM killer invocation.
 
-I was facing hang and livelock problems on my ARM and MIPS boards when
-I invoked OOM by running the stress_32k.c test-case attached to this email.
-
-Since both the ARM and MIPS porting chainges were accepted, me and my
-co-worker decided to take the initiative to port these changes to all other
-MMU based architectures.
-
-Please review and do write back if there is any way I need to
-improve/rewrite any
-of these patches.
+Port these changes to powerpc.
 
 Signed-off-by: Mohd. Faris <mohdfarisq2010@gmail.com>
 Signed-off-by: Kautuk Consul <consul.kautuk@gmail.com>
 ---
+ arch/powerpc/mm/fault.c |   51 +++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 36 insertions(+), 15 deletions(-)
 
---0016368e2a82ddd5fa04bbac811c
-Content-Type: text/x-csrc; charset=US-ASCII; name="stress_32k.c"
-Content-Disposition: attachment; filename="stress_32k.c"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_h00yqhf60
-
-I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0cmluZy5o
-PgojaW5jbHVkZSA8cHRocmVhZC5oPgojaW5jbHVkZSA8dW5pc3RkLmg+CgojZGVmaW5lIEFMTE9D
-X0JZVEUgNTEyKjEwMjQKI2RlZmluZSBDT1VOVCA1MAoKdm9pZCAqYWxsb2NfZnVuY3Rpb25fb25l
-KCB2b2lkICpwdHIgKTsKdm9pZCAqYWxsb2NfZnVuY3Rpb25fdHdvKCB2b2lkICpwdHIgKTsKdm9p
-ZCAqYWxsb2NfZnVuY3Rpb25fdGhyZWUoIHZvaWQgKnB0ciApOwp2b2lkICphbGxvY19mdW5jdGlv
-bl9mb3VyKCB2b2lkICpwdHIgKTsKdm9pZCAqYWxsb2NfZnVuY3Rpb25fZml2ZSggdm9pZCAqcHRy
-ICk7CnZvaWQgKmVuYWJsZV9mdW5jdGlvbiggdm9pZCAqcHRyICk7CgoKaW50IG1haW4oaW50IGFy
-Z2MsIGNoYXIgKmFyZ3ZbXSkKewoJcHRocmVhZF90IHRocmVhZDEsIHRocmVhZDIsIHRocmVhZDMs
-IHRocmVhZDQsIHRocmVhZDU7CgljaGFyICptZXNzYWdlMSA9ICJUaHJlYWQgMSI7CgljaGFyICpt
-ZXNzYWdlMiA9ICJUaHJlYWQgMiI7CgljaGFyICptZXNzYWdlMyA9ICJUaHJlYWQgMyI7CgljaGFy
-ICptZXNzYWdlNCA9ICJUaHJlYWQgNCI7CgljaGFyICptZXNzYWdlNSA9ICJUaHJlYWQgNSI7Cglp
-bnQgaXJldDEgPSAtMTsKCWludCBpcmV0MiA9IC0xOwoJaW50IGlyZXQzID0gLTE7CglpbnQgaXJl
-dDQgPSAtMTsKCWludCBpcmV0NSA9IC0xOwoJZm9yaygpOwoJaXJldDEgPSBwdGhyZWFkX2NyZWF0
-ZSggJnRocmVhZDEsIE5VTEwsIGFsbG9jX2Z1bmN0aW9uX29uZSwgKHZvaWQqKSBtZXNzYWdlMSk7
-CglpcmV0MiA9IHB0aHJlYWRfY3JlYXRlKCAmdGhyZWFkMiwgTlVMTCwgYWxsb2NfZnVuY3Rpb25f
-dHdvLCAodm9pZCopIG1lc3NhZ2UyKTsKCWlyZXQyID0gcHRocmVhZF9jcmVhdGUoICZ0aHJlYWQz
-LCBOVUxMLCBhbGxvY19mdW5jdGlvbl90aHJlZSwgKHZvaWQqKSBtZXNzYWdlMik7CglpcmV0MiA9
-IHB0aHJlYWRfY3JlYXRlKCAmdGhyZWFkNCwgTlVMTCwgYWxsb2NfZnVuY3Rpb25fZm91ciwgKHZv
-aWQqKSBtZXNzYWdlMik7CglpcmV0MiA9IHB0aHJlYWRfY3JlYXRlKCAmdGhyZWFkNSwgTlVMTCwg
-YWxsb2NfZnVuY3Rpb25fZml2ZSwgKHZvaWQqKSBtZXNzYWdlMik7CgoJcHRocmVhZF9qb2luKCB0
-aHJlYWQxLCBOVUxMKTsKCXB0aHJlYWRfam9pbiggdGhyZWFkMiwgTlVMTCk7CglwdGhyZWFkX2pv
-aW4oIHRocmVhZDMsIE5VTEwpOwoJcHRocmVhZF9qb2luKCB0aHJlYWQ0LCBOVUxMKTsKCXB0aHJl
-YWRfam9pbiggdGhyZWFkNSwgTlVMTCk7CgoJcHJpbnRmKCJUaHJlYWQgMSByZXR1cm5zOiAlZFxu
-IixpcmV0MSk7CglwcmludGYoIlRocmVhZCAyIHJldHVybnM6ICVkXG4iLGlyZXQyKTsKCXByaW50
-ZigiVGhyZWFkIDMgcmV0dXJuczogJWRcbiIsaXJldDMpOwoJcHJpbnRmKCJUaHJlYWQgNCByZXR1
-cm5zOiAlZFxuIixpcmV0NCk7CglwcmludGYoIlRocmVhZCA1IHJldHVybnM6ICVkXG4iLGlyZXQ1
-KTsKCWV4aXQoMCk7Cn0KCnZvaWQgKmFsbG9jX2Z1bmN0aW9uX3R3byggdm9pZCAqcHRyICkKewoJ
-Y2hhciAqbWVzc2FnZTsKCW1lc3NhZ2UgPSAoY2hhciAqKSBwdHI7Cgl2b2lkICpteWJsb2NrW0NP
-VU5UXTsKCWludCBpPSAwLGo9MDsKCWludCBmcmVlZD0wOwoJcHJpbnRmKCJtZXNzYWdlX2FsbG9j
-ICBcbiIpOwoJd2hpbGUoMSkKCXsKCQltZW1zZXQobXlibG9jaywwLHNpemVvZihteWJsb2NrKSk7
-CgkJcHJpbnRmKCJtZXNzYWdlX2FsbG9jICVzIFxuIixtZXNzYWdlKTsKCQlmb3IoaT0wO2k8IENP
-VU5UIDtpKyspCgkJewoJCQlteWJsb2NrW2ldID0gKHZvaWQgKikgbWFsbG9jKEFMTE9DX0JZVEUp
-OwoJCQltZW1zZXQobXlibG9ja1tpXSwxLCBBTExPQ19CWVRFKTsKCQl9Cgl9Cn0KCgp2b2lkICph
-bGxvY19mdW5jdGlvbl9vbmUoIHZvaWQgKnB0ciApCnsKCWNoYXIgKm1lc3NhZ2U7CgltZXNzYWdl
-ID0gKGNoYXIgKikgcHRyOwoJdm9pZCAqbXlibG9ja1tDT1VOVF07CglpbnQgaT0gMCxqPTA7Cglp
-bnQgZnJlZWQ9MDsKCXByaW50ZigibWVzc2FnZV9hbGxvYyAgXG4iKTsKCXdoaWxlKDEpCgl7CgkJ
-bWVtc2V0KG15YmxvY2ssMCxzaXplb2YobXlibG9jaykpOwoJCXByaW50ZigibWVzc2FnZV9hbGxv
-YyAlcyBcbiIsbWVzc2FnZSk7CgkJZm9yKGk9MDtpPCBDT1VOVCA7aSsrKQoJCXsKCQkJbXlibG9j
-a1tpXSA9ICh2b2lkICopIG1hbGxvYyhBTExPQ19CWVRFKTsKCQkJbWVtc2V0KG15YmxvY2tbaV0s
-MSwgQUxMT0NfQllURSk7CgkJfQoJfQp9Cgp2b2lkICphbGxvY19mdW5jdGlvbl90aHJlZSggdm9p
-ZCAqcHRyICkKewogICAgICAgY2hhciAqbWVzc2FnZTsKICAgICAgICBtZXNzYWdlID0gKGNoYXIg
-KikgcHRyOwogICAgICAgIHZvaWQgKm15YmxvY2tbQ09VTlRdOwogICAgICAgIGludCBpPSAwLGo9
-MDsKICAgICAgICBpbnQgZnJlZWQ9MDsKICAgICAgICBwcmludGYoIm1lc3NhZ2VfYWxsb2MgIFxu
-Iik7CiAgICAgICAgd2hpbGUoMSkKICAgICAgICB7CiAgICAgICAgICAgICAgICBtZW1zZXQobXli
-bG9jaywwLHNpemVvZihteWJsb2NrKSk7CiAgICAgICAgICAgICAgICBwcmludGYoIm1lc3NhZ2Vf
-YWxsb2MgJXMgXG4iLG1lc3NhZ2UpOwogICAgICAgICAgICAgICAgZm9yKGk9MDtpPCBDT1VOVCA7
-aSsrKQogICAgICAgICAgICAgICAgewogICAgICAgICAgICAgICAgICAgICAgICBteWJsb2NrW2ld
-ID0gKHZvaWQgKikgbWFsbG9jKEFMTE9DX0JZVEUpOwogICAgICAgICAgICAgICAgICAgICAgICBt
-ZW1zZXQobXlibG9ja1tpXSwxLCBBTExPQ19CWVRFKTsKICAgICAgICAgICAgICAgIH0KICAgICAg
-ICB9Cn0Kdm9pZCAqYWxsb2NfZnVuY3Rpb25fZm91ciggdm9pZCAqcHRyICkKewogICAgICAgY2hh
-ciAqbWVzc2FnZTsKICAgICAgICBtZXNzYWdlID0gKGNoYXIgKikgcHRyOwogICAgICAgIHZvaWQg
-Km15YmxvY2tbQ09VTlRdOwogICAgICAgIGludCBpPSAwLGo9MDsKICAgICAgICBpbnQgZnJlZWQ9
-MDsKICAgICAgICBwcmludGYoIm1lc3NhZ2VfYWxsb2MgIFxuIik7CiAgICAgICAgd2hpbGUoMSkK
-ICAgICAgICB7CiAgICAgICAgICAgICAgICBtZW1zZXQobXlibG9jaywwLHNpemVvZihteWJsb2Nr
-KSk7CiAgICAgICAgICAgICAgICBwcmludGYoIm1lc3NhZ2VfYWxsb2MgJXMgXG4iLG1lc3NhZ2Up
-OwogICAgICAgICAgICAgICAgZm9yKGk9MDtpPCBDT1VOVCA7aSsrKQogICAgICAgICAgICAgICAg
-ewogICAgICAgICAgICAgICAgICAgICAgICBteWJsb2NrW2ldID0gKHZvaWQgKikgbWFsbG9jKEFM
-TE9DX0JZVEUpOwogICAgICAgICAgICAgICAgICAgICAgICBtZW1zZXQobXlibG9ja1tpXSwxLCBB
-TExPQ19CWVRFKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICB9Cn0Kdm9pZCAqYWxsb2NfZnVu
-Y3Rpb25fZml2ZSggdm9pZCAqcHRyICkKewogICAgICAgY2hhciAqbWVzc2FnZTsKICAgICAgICBt
-ZXNzYWdlID0gKGNoYXIgKikgcHRyOwogICAgICAgIHZvaWQgKm15YmxvY2tbQ09VTlRdOwogICAg
-ICAgIGludCBpPSAwLGo9MDsKICAgICAgICBpbnQgZnJlZWQ9MDsKICAgICAgICBwcmludGYoIm1l
-c3NhZ2VfYWxsb2MgIFxuIik7CiAgICAgICAgd2hpbGUoMSkKICAgICAgICB7CiAgICAgICAgICAg
-ICAgICBtZW1zZXQobXlibG9jaywwLHNpemVvZihteWJsb2NrKSk7CiAgICAgICAgICAgICAgICBw
-cmludGYoIm1lc3NhZ2VfYWxsb2MgJXMgXG4iLG1lc3NhZ2UpOwogICAgICAgICAgICAgICAgZm9y
-KGk9MDtpPCBDT1VOVCA7aSsrKQogICAgICAgICAgICAgICAgewogICAgICAgICAgICAgICAgICAg
-ICAgICBteWJsb2NrW2ldID0gKHZvaWQgKikgbWFsbG9jKEFMTE9DX0JZVEUpOwogICAgICAgICAg
-ICAgICAgICAgICAgICBtZW1zZXQobXlibG9ja1tpXSwxLCBBTExPQ19CWVRFKTsKICAgICAgICAg
-ICAgICAgIH0KICAgICAgICB9Cn0K
---0016368e2a82ddd5fa04bbac811c--
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 2f0d1b0..a3b1176 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -129,6 +129,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	int is_write = 0, ret;
+ 	int trap = TRAP(regs);
+  	int is_exec = trap == 0x400;
++	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+ 
+ #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+ 	/*
+@@ -212,6 +213,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		if (!user_mode(regs) && !search_exception_tables(regs->nip))
+ 			goto bad_area_nosemaphore;
+ 
++retry:
+ 		down_read(&mm->mmap_sem);
+ 	}
+ 
+@@ -313,6 +315,7 @@ good_area:
+ 	} else if (is_write) {
+ 		if (!(vma->vm_flags & VM_WRITE))
+ 			goto bad_area;
++		flags |= FAULT_FLAG_WRITE;
+ 	/* a read */
+ 	} else {
+ 		/* protection fault */
+@@ -327,7 +330,11 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
+-	ret = handle_mm_fault(mm, vma, address, is_write ? FAULT_FLAG_WRITE : 0);
++	ret = handle_mm_fault(mm, vma, address, flags);
++
++	if ((fault & VM_FAULT_RETRY) && fatal_signal_pending(current))
++		return;
++
+ 	if (unlikely(ret & VM_FAULT_ERROR)) {
+ 		if (ret & VM_FAULT_OOM)
+ 			goto out_of_memory;
+@@ -335,22 +342,36 @@ good_area:
+ 			goto do_sigbus;
+ 		BUG();
+ 	}
+-	if (ret & VM_FAULT_MAJOR) {
+-		current->maj_flt++;
+-		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1,
+-				     regs, address);
+-#ifdef CONFIG_PPC_SMLPAR
+-		if (firmware_has_feature(FW_FEATURE_CMO)) {
+-			preempt_disable();
+-			get_lppaca()->page_ins += (1 << PAGE_FACTOR);
+-			preempt_enable();
++	if (flags & FAULT_FLAG_ALLOW_RETRY) {
++		if (ret & VM_FAULT_MAJOR) {
++			current->maj_flt++;
++			perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1,
++					     regs, address);
++#ifd#ifdef CONFIG_PPC_SMLPAR
++			if (firmware_has_feature(FW_FEATURE_CMO)) {
++				preempt_disable();
++				get_lppaca()->page_ins += (1 << PAGE_FACTOR);
++				preempt_enable();
++			}
++#end#endif
++		} else {
++			current->min_flt++;
++			perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1,
++					     regs, address);
++		}
++		if (fault & VM_FAULT_RETRY) {
++			flags &= ~FAULT_FLAG_ALLOW_RETRY;
++
++			/*
++			 * No need to up_read(&mm->mmap_sem) as we would
++			 * have already released it in __lock_page_or_retry
++			 * in mm/filemap.c.
++			 */
++
++			goto retry;
+ 		}
+-#endif
+-	} else {
+-		current->min_flt++;
+-		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1,
+-				     regs, address);
+ 	}
++
+ 	up_read(&mm->mmap_sem);
+ 	return 0;
+ 
+-- 
+1.7.5.4
