@@ -1,20 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 11483B6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 14:28:19 +1100 (EST)
-Date: Tue, 20 Mar 2012 14:28:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: linux-next: build failure after merge of the pci tree (actually
- powerpc tree related)
-Message-Id: <20120320142808.dbc31fedf291bb3cc8cdecaa@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EC401B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 16:40:30 +1100 (EST)
+Message-ID: <1332222008.2982.13.camel@pasglop>
+Subject: Re: Problem with framebuffer mmap on platforms with large addressing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 20 Mar 2012 16:40:08 +1100
+In-Reply-To: <CALT56yPjkPQOaXW4Eg8c-S4+a4Omou_YYacqrsCoTAYeXO0XkA@mail.gmail.com>
+References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
+ <1332031585.3105.197.camel@pasglop>
+ <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
+ <1332103797.3105.202.camel@pasglop>
+ <CALT56yPjkPQOaXW4Eg8c-S4+a4Omou_YYacqrsCoTAYeXO0XkA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-next@vger.kernel.org,
- Suzuki Poulose <suzuki@in.ibm.com>, linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ Tony Breeds <tbreeds@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,121 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
+> >> That is interesting! Are those patches published or otherwise available
+> >> somewhere? We are also very interested in enabling Canyonlands
+> >> with Radeon KMS!
+> >
+> > You will run into additional problems with 460 due to the fact that it's
+> > not cache coherent for DMA. Tony patches don't address that part of the
+> > problem (they were used on a 476 based platform).
+> 
+> Hmm. Could you please spill a little bit more of details? Also are those patches
+> for 476 merged or present somewhere?
 
-After merging the pci tree, today's linux-next build (powerpc ppc64_defconf=
-ig)
-failed like this:
+Well, DMA on 46x isn't cache coherent. The DRM plays interesting games
+with mapping/unmapping pages for DMA by the chip and I don't think we
+have the right hooks to do the appropriate cache flushing on these guys,
+but Tony might be able to comment, I don't know whether he tried or not.
 
-powerpc64-linux-ld: section .text loaded at [0000000000e00000,0000000000e07=
-21b] overlaps section .kernel:dtb loaded at [0000000000e00000,0000000000e00=
-66f]
+On the other hand 476 has fully cache coherent DMA so the only problem
+there is the >32-bit physical address space.
 
-I have applied this patch for today (thanks to Tony Breeds and David
-Gibson):
+As for the patches, you'll have to wait for Tony to respond (I'll poke
+him locally).
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 20 Mar 2012 14:13:51 +1100
-Subject: [PATCH] powerpc: do not adjust the load address for ps3
-
-Commit c55aef0e5bc6 "powerpc/boot: Change the load address for the wrapper
-to fit the kernel" adjusted the laod address if the uncompressed kernel
-was too large.  Ps3 does not compress the kernel and uses a different
-linker script, so do not adjust the load address in that case.
-
-fixes this build error:
-
-powerpc64-linux-ld: section .text loaded at [0000000000e00000,0000000000e07=
-21b] overlaps section .kernel:dtb loaded at [0000000000e00000,0000000000e00=
-66f]
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/boot/wrapper |   22 +++++++++++++---------
- 1 files changed, 13 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index f090e6d..6761c74 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -144,6 +144,7 @@ tmp=3D$tmpdir/zImage.$$.o
- ksection=3D.kernel:vmlinux.strip
- isection=3D.kernel:initrd
- link_address=3D'0x400000'
-+make_space=3Dy
-=20
- case "$platform" in
- pseries)
-@@ -210,6 +211,7 @@ ps3)
-     ksection=3D.kernel:vmlinux.bin
-     isection=3D.kernel:initrd
-     link_address=3D''
-+    make_space=3Dn
-     pie=3D
-     ;;
- ep88xc|ep405|ep8248e)
-@@ -278,17 +280,19 @@ else
-     rm -f $vmz.$$
- fi
-=20
--# Round the size to next higher MB limit
--round_size=3D$(((strip_size + 0xfffff) & 0xfff00000))
-+if [ "$make_space" =3D "y" ]; then
-+	# Round the size to next higher MB limit
-+	round_size=3D$(((strip_size + 0xfffff) & 0xfff00000))
-=20
--round_size=3D0x$(printf "%x" $round_size)
--link_addr=3D$(printf "%d" $link_address)
-+	round_size=3D0x$(printf "%x" $round_size)
-+	link_addr=3D$(printf "%d" $link_address)
-=20
--if [ $link_addr -lt $strip_size ]; then
--    echo "INFO: Uncompressed kernel (size 0x$(printf "%x\n" $strip_size))"=
- \
--		"overlaps the address of the wrapper($link_address)"
--    echo "INFO: Fixing the link_address of wrapper to ($round_size)"
--    link_address=3D$round_size
-+	if [ $link_addr -lt $strip_size ]; then
-+	    echo "INFO: Uncompressed kernel (size 0x$(printf "%x\n" $strip_size))=
-" \
-+			"overlaps the address of the wrapper($link_address)"
-+	    echo "INFO: Fixing the link_address of wrapper to ($round_size)"
-+	    link_address=3D$round_size
-+	fi
- fi
-=20
- vmz=3D"$vmz$gzip"
---=20
-1.7.9.1
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Ben.
 
---Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPZ/lIAAoJEECxmPOUX5FEhksP/RV7htc5S61w9acxVSFNmNJg
-J1a5QYZqQJg5QmC7EjrKGXomMmW63EQ4om9qC4g/vVbthKH1N72S3VlJAi50IJVH
-3KOQtCVKE3D/2QUeYBh5ZixTsOgDKqsddmbIdqgT6SmjAWjFflNaJxtV+geYhce3
-F4LLCU5k+wBCDgOzf5e7zaWLvwp1n/m+4lTcW6TIW0Hvaxep/JLrj3ApJ75Du7E1
-T5vulllPpMDUm9G5qIAGS4fgSfzjnily0qCbZHX3J+gm4VOHH3KpQLvA65IAw7ti
-eUG///w4JhFjoST4dKh+iURaA63lQYUTssBjqEJOfs1RI/6NBuz0CQLUrtAyRPVX
-WOSBDpPWl8VtnCYTym4Fec/+IdyWKZL1mkb5XHLyg0I829mOKru6yffQjmkkNmV1
-9htpExEYe9gr3H83WefHrGVcpSzCZwBxT8JUTUPQ93H8Iv9t8TLgYcryzWhfOPyR
-m426OCm4oAwb6Mzsr+a7sZGQ7i4jwnG4DM3RqXrZ7OI+/VA+LfwP9BJ3+7EkgkDL
-4Yh7cocWZn7ARJOkpVBMaNpb04VFAPMGGdFooXPwNUXerSUm2wsUOtRTS0kZLPKu
-AIIg7aFarx0crVsM4DmVjw3Lvy4oP5iuUB8CUd35xUb1tSZ0y2BZTvQ0uLkTVptN
-tcsIsTepiBP6Z22YVy2u
-=T6EO
------END PGP SIGNATURE-----
-
---Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV--
+> >> > In fact, we could make the new structure such that it doesn't break
+> >> > userspace compatibility with 64-bit architectures at all, ie, the "new"
+> >> > and "compat" ioctl could remain entirely equivalent on 64-bit.
+> >>
+> >> I remember stuff about compat_ioctl, but I have never used/implemented
+> >> that. Are there any details of requirements for the structures being passed?
+> >
+> > In that specific case, I meant something else. IE. The old ioctl could
+> > remain unchanged, and the new ioctl make the same as the old one on
+> > 64-bit platforms.
+> 
+> I don't think this kind of magic would be good. I'd just stick to the new
+> ioctl.
+> 
+> >
+> > Cheers,
+> > Ben.
+> >
+> >
+> >
+> 
+> 
+> 
