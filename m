@@ -1,13 +1,20 @@
-Return-Path: <b10812@nmglablinux19.freescale.com>
-From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-To: <devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH][v2] Device Tree Bindings for Freescale TDM controller
-Date: Tue, 20 Mar 2012 06:32:49 +0530
-Message-ID: <1332205369-26260-1-git-send-email-poonam.aggrwal@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Sandeep Singh <Sandeep@freescale.com>,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 11483B6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 14:28:19 +1100 (EST)
+Date: Tue, 20 Mar 2012 14:28:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: linux-next: build failure after merge of the pci tree (actually
+ powerpc tree related)
+Message-Id: <20120320142808.dbc31fedf291bb3cc8cdecaa@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-next@vger.kernel.org,
+ Suzuki Poulose <suzuki@in.ibm.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,90 +24,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This TDM controller is available in various Freescale SOCs like MPC8315, P1020,
-P1022, P1010.
+--Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Hi Ben,
+
+After merging the pci tree, today's linux-next build (powerpc ppc64_defconf=
+ig)
+failed like this:
+
+powerpc64-linux-ld: section .text loaded at [0000000000e00000,0000000000e07=
+21b] overlaps section .kernel:dtb loaded at [0000000000e00000,0000000000e00=
+66f]
+
+I have applied this patch for today (thanks to Tony Breeds and David
+Gibson):
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 20 Mar 2012 14:13:51 +1100
+Subject: [PATCH] powerpc: do not adjust the load address for ps3
+
+Commit c55aef0e5bc6 "powerpc/boot: Change the load address for the wrapper
+to fit the kernel" adjusted the laod address if the uncompressed kernel
+was too large.  Ps3 does not compress the kernel and uses a different
+linker script, so do not adjust the load address in that case.
+
+fixes this build error:
+
+powerpc64-linux-ld: section .text loaded at [0000000000e00000,0000000000e07=
+21b] overlaps section .kernel:dtb loaded at [0000000000e00000,0000000000e00=
+66f]
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-Changes in v2:
-	- Incorporated Scott's Review comments
- Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   67 +++++++++++++++++++++
- 1 files changed, 67 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+ arch/powerpc/boot/wrapper |   22 +++++++++++++---------
+ 1 files changed, 13 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-new file mode 100644
-index 0000000..6553dbe
---- /dev/null
-+++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-@@ -0,0 +1,67 @@
-+=====================================================================
-+TDM Device Tree Binding
-+Copyright (C) 2012 Freescale Semiconductor Inc.
-+
-+NOTE: The bindings described in this document are preliminary
-+and subject to change.
-+
-+=====================================================================
-+TDM (Time Division Multiplexing)
-+
-+DESCRIPTION
-+
-+The TDM is full duplex serial port designed to allow various devices including
-+digital signal processors (DSPs) to communicate with a variety of serial devices
-+including industry standard framers, codecs, other DSPs and microprocessors.
-+
-+The below properties describe the device tree bindings for Freescale TDM
-+controller.
-+This TDM controller is available on various Freescale Processors like
-+MPC8315, P1020, P1022 and P1010.
-+
-+PROPERTIES
-+
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: Should contain "fsl,mpc8315-tdm".
-+	  So mpc8315 will have compatible = "fsl,mpc8315-tdm";
-+	  p1010 will have compatible "fsl,p1010-tdm", "fsl,mpc8315-tdm";
-+
-+  - reg
-+      Usage: required
-+      Definition: There are two reg resources. First is for  TDM registers and
-+	  the second for TDM DMAC registers.
-+
-+  - clock-frequency
-+      Usage: optional
-+      Value type: <u32>
-+      Definition: The frequency at which the TDM block is operating.
-+
-+  - interrupts
-+      Usage: required
-+      Definition: This field defines the interrupt specifiers for the two
-+      interrupts. First is for TDM error and second for TDM DMAC.
-+
-+  - phy-handle
-+      Usage: optional
-+      Value type: <phandle>
-+      Definition: Phandle of the line controller node or framer node eg. SLIC,
-+	  E1/T1 etc.
-+
-+  - fsl,max-time-slots
-+      Usage: required
-+      Value type: <u32>
-+      Definition: Maximum number of 8-bit time slots in one TDM frame.
-+	  This is the maximum number which TDM hardware supports.
-+
-+EXAMPLE
-+
-+	tdm@16000 {
-+		compatible = "fsl,p1010-tdm", "fsl,mpc8315-tdm";
-+		reg = <0x16000 0x200 0x2c000 0x2000>;
-+		clock-frequency = <399999999>; /* typically filled by u-boot */
-+		interrupts = <16 8 62 8>;
-+		phy-handle = <&zarlink1>;
-+		fsl-max-time-slots = <128>;
-+	};
--- 
-1.6.5.6
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index f090e6d..6761c74 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -144,6 +144,7 @@ tmp=3D$tmpdir/zImage.$$.o
+ ksection=3D.kernel:vmlinux.strip
+ isection=3D.kernel:initrd
+ link_address=3D'0x400000'
++make_space=3Dy
+=20
+ case "$platform" in
+ pseries)
+@@ -210,6 +211,7 @@ ps3)
+     ksection=3D.kernel:vmlinux.bin
+     isection=3D.kernel:initrd
+     link_address=3D''
++    make_space=3Dn
+     pie=3D
+     ;;
+ ep88xc|ep405|ep8248e)
+@@ -278,17 +280,19 @@ else
+     rm -f $vmz.$$
+ fi
+=20
+-# Round the size to next higher MB limit
+-round_size=3D$(((strip_size + 0xfffff) & 0xfff00000))
++if [ "$make_space" =3D "y" ]; then
++	# Round the size to next higher MB limit
++	round_size=3D$(((strip_size + 0xfffff) & 0xfff00000))
+=20
+-round_size=3D0x$(printf "%x" $round_size)
+-link_addr=3D$(printf "%d" $link_address)
++	round_size=3D0x$(printf "%x" $round_size)
++	link_addr=3D$(printf "%d" $link_address)
+=20
+-if [ $link_addr -lt $strip_size ]; then
+-    echo "INFO: Uncompressed kernel (size 0x$(printf "%x\n" $strip_size))"=
+ \
+-		"overlaps the address of the wrapper($link_address)"
+-    echo "INFO: Fixing the link_address of wrapper to ($round_size)"
+-    link_address=3D$round_size
++	if [ $link_addr -lt $strip_size ]; then
++	    echo "INFO: Uncompressed kernel (size 0x$(printf "%x\n" $strip_size))=
+" \
++			"overlaps the address of the wrapper($link_address)"
++	    echo "INFO: Fixing the link_address of wrapper to ($round_size)"
++	    link_address=3D$round_size
++	fi
+ fi
+=20
+ vmz=3D"$vmz$gzip"
+--=20
+1.7.9.1
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPZ/lIAAoJEECxmPOUX5FEhksP/RV7htc5S61w9acxVSFNmNJg
+J1a5QYZqQJg5QmC7EjrKGXomMmW63EQ4om9qC4g/vVbthKH1N72S3VlJAi50IJVH
+3KOQtCVKE3D/2QUeYBh5ZixTsOgDKqsddmbIdqgT6SmjAWjFflNaJxtV+geYhce3
+F4LLCU5k+wBCDgOzf5e7zaWLvwp1n/m+4lTcW6TIW0Hvaxep/JLrj3ApJ75Du7E1
+T5vulllPpMDUm9G5qIAGS4fgSfzjnily0qCbZHX3J+gm4VOHH3KpQLvA65IAw7ti
+eUG///w4JhFjoST4dKh+iURaA63lQYUTssBjqEJOfs1RI/6NBuz0CQLUrtAyRPVX
+WOSBDpPWl8VtnCYTym4Fec/+IdyWKZL1mkb5XHLyg0I829mOKru6yffQjmkkNmV1
+9htpExEYe9gr3H83WefHrGVcpSzCZwBxT8JUTUPQ93H8Iv9t8TLgYcryzWhfOPyR
+m426OCm4oAwb6Mzsr+a7sZGQ7i4jwnG4DM3RqXrZ7OI+/VA+LfwP9BJ3+7EkgkDL
+4Yh7cocWZn7ARJOkpVBMaNpb04VFAPMGGdFooXPwNUXerSUm2wsUOtRTS0kZLPKu
+AIIg7aFarx0crVsM4DmVjw3Lvy4oP5iuUB8CUd35xUb1tSZ0y2BZTvQ0uLkTVptN
+tcsIsTepiBP6Z22YVy2u
+=T6EO
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__20_Mar_2012_14_28_08_+1100_FnJYFwK0dpcQ69xV--
