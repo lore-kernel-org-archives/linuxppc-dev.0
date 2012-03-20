@@ -1,23 +1,13 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from oproxy7-pub.bluehost.com (oproxy7.bluehost.com
- [IPv6:2605:dc00:100:2::a7])
- by ozlabs.org (Postfix) with SMTP id BA58BB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 11:37:47 +1100 (EST)
-References: <20120309142555.7ec5e0ac@kryten>
- <1331263785.3105.52.camel@pasglop> <20120309144645.5b5997d2@kryten>
- <20120309102846.51f0df89@jbarnes-x220>
- <20120315110516.4112fe49dac537b52d4ddc25@canb.auug.org.au>
-In-Reply-To: <20120315110516.4112fe49dac537b52d4ddc25@canb.auug.org.au>
+Return-Path: <b10812@nmglablinux19.freescale.com>
+From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+To: <devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH][v2] Device Tree Bindings for Freescale TDM controller
+Date: Tue, 20 Mar 2012 06:32:49 +0530
+Message-ID: <1332205369-26260-1-git-send-email-poonam.aggrwal@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8
-Subject: Re: 3.3.0-rc6-next-20120308 boot failure on POWER7 blade
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Mon, 19 Mar 2012 17:37:48 -0700
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Message-ID: <1075f6c8-ed56-45a8-b8ac-fba8fd53a42a@email.android.com>
-Cc: linuxppc-dev@lists.ozlabs.org, yinghai@kernel.org,
- Anton Blanchard <anton@samba.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: Sandeep Singh <Sandeep@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,75 +17,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+This TDM controller is available in various Freescale SOCs like MPC8315, P1020,
+P1022, P1010.
 
->Hi Jesse,
->
->On Fri, 9 Mar=
- 2012 10:28:46 -0800 Jesse Barnes
-><jbarnes@virtuousgeek.org> wrote:
->>
->> =
-On Fri, 9 Mar 2012 14:46:45 +1100
->> Anton Blanchard <anton@samba.org> wrot=
-e:
->> 
->> > > Looks like something that got fixed but the new patches from
-=
->Bjorn
->> > > aren't in next yet. I'll fwd you the patch separately to appl=
-y on
->> > > top of what you have see if that helps (to confirm that's indee=
-d
->the
->> > > issue).
->> > 
->> > Thanks, confirmed that it fixes it. Patch =
-below in case anyone else
->is
->> > hitting it.
->> > 
->> > --
->> > 
->> > On =
-Sat, 2012-03-03 at 08:52 +1100, Benjamin Herrenschmidt wrote:
->> > 
->> > > =
-Or give me a chance to dig :-) I'll have a look next week.
->> > 
->> > This =
-is indeed what bjorn suspected on irc, this patch fixes it:
->> > 
->> > (Bjo=
-rn, please fold it in the original offending patch)
->> 
->> Thanks guys; I'l=
-l push the fixes to -next when I get to a real
->network
->> (at the airport =
-now about to run out of battery with a crappy
->> connection).
->
->Ping?
->
->I=
- am also still carrying the build fix for
->arch/powerpc/kernel/pci-common.c=
+Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+---
+Changes in v2:
+	- Incorporated Scott's Review comments
+ Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   67 +++++++++++++++++++++
+ 1 files changed, 67 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/tdm/fsl-tdm.txt
 
->since Feb 27.
->
->-- 
->Cheers,
->Stephen Rothwell                    sfr@ca=
-nb.auug.org.au
->http://www.canb.auug.org.au/~sfr/
-
-Arg yeah I'll apply the =
-fixups before sending the pull req. This trip has been a nightmare (14+ hou=
-r work days and no connectivity and a week longer than expected) but it's f=
-inally over, and just in time! 
-
-Jesse
+diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+new file mode 100644
+index 0000000..6553dbe
+--- /dev/null
++++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+@@ -0,0 +1,67 @@
++=====================================================================
++TDM Device Tree Binding
++Copyright (C) 2012 Freescale Semiconductor Inc.
++
++NOTE: The bindings described in this document are preliminary
++and subject to change.
++
++=====================================================================
++TDM (Time Division Multiplexing)
++
++DESCRIPTION
++
++The TDM is full duplex serial port designed to allow various devices including
++digital signal processors (DSPs) to communicate with a variety of serial devices
++including industry standard framers, codecs, other DSPs and microprocessors.
++
++The below properties describe the device tree bindings for Freescale TDM
++controller.
++This TDM controller is available on various Freescale Processors like
++MPC8315, P1020, P1022 and P1010.
++
++PROPERTIES
++
++  - compatible
++      Usage: required
++      Value type: <string>
++      Definition: Should contain "fsl,mpc8315-tdm".
++	  So mpc8315 will have compatible = "fsl,mpc8315-tdm";
++	  p1010 will have compatible "fsl,p1010-tdm", "fsl,mpc8315-tdm";
++
++  - reg
++      Usage: required
++      Definition: There are two reg resources. First is for  TDM registers and
++	  the second for TDM DMAC registers.
++
++  - clock-frequency
++      Usage: optional
++      Value type: <u32>
++      Definition: The frequency at which the TDM block is operating.
++
++  - interrupts
++      Usage: required
++      Definition: This field defines the interrupt specifiers for the two
++      interrupts. First is for TDM error and second for TDM DMAC.
++
++  - phy-handle
++      Usage: optional
++      Value type: <phandle>
++      Definition: Phandle of the line controller node or framer node eg. SLIC,
++	  E1/T1 etc.
++
++  - fsl,max-time-slots
++      Usage: required
++      Value type: <u32>
++      Definition: Maximum number of 8-bit time slots in one TDM frame.
++	  This is the maximum number which TDM hardware supports.
++
++EXAMPLE
++
++	tdm@16000 {
++		compatible = "fsl,p1010-tdm", "fsl,mpc8315-tdm";
++		reg = <0x16000 0x200 0x2c000 0x2000>;
++		clock-frequency = <399999999>; /* typically filled by u-boot */
++		interrupts = <16 8 62 8>;
++		phy-handle = <&zarlink1>;
++		fsl-max-time-slots = <128>;
++	};
 -- 
-Jesse Barnes, Intel Open Source =
-Technology Center
+1.6.5.6
