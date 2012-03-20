@@ -1,22 +1,18 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:32:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DA83DB6ED0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 03:28:47 +1100 (EST)
-Date: Tue, 20 Mar 2012 17:28:43 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 4A386B6EF3
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 04:05:00 +1100 (EST)
+Date: Tue, 20 Mar 2012 18:04:50 +0100
 From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mpc52xx: setup port_config and CDM settings
- through DT
-Message-ID: <20120320172843.30d622e6@wker>
-In-Reply-To: <1332147082-4363-1-git-send-email-agust@denx.de>
-References: <1303193045-20111-1-git-send-email-hs@denx.de>
- <1332147082-4363-1-git-send-email-agust@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull 'next' branch of 5xxx tree
+Message-ID: <20120320180450.5f6dffe4@wker>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Heiko Schocher <hs@denx.de>, Grant Likely <glikely@secretlab.ca>,
- Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 19 Mar 2012 09:51:22 +0100
-Anatolij Gustschin <agust@denx.de> wrote:
+Hi Ben,
 
-> From: Heiko Schocher <hs@denx.de>
-> 
-> If firmware does not setup the "GPS Port Configuration Register"
-> and the "CDM 48MHz Fractional Divider Configuration Register",
-> it can be corrected by additional properties in the device tree.
-> Add appropriate code to utility functions and document used
-> bindings.
-> 
-> Signed-off-by: Heiko Schocher <hs@denx.de>
-> cc: devicetree-discuss@lists.ozlabs.org
-> cc: linuxppc-dev@lists.ozlabs.org
-> cc: Grant Likely <glikely@secretlab.ca>
-> cc: Wolfgang Denk <wd@denx.de>
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> ---
->  .../devicetree/bindings/powerpc/fsl/mpc5200.txt    |   17 ++++++++++++
->  arch/powerpc/platforms/52xx/mpc52xx_common.c       |   27 ++++++++++++++++++++
->  2 files changed, 44 insertions(+), 0 deletions(-)
-
-Applied for mpc5xxx next, thanks.
+please pull some mpc5xxx patches for linux-next. Thanks!
 
 Anatolij
+
+The following changes since commit 01e8ec4417d3c484986af0adaa0ae6632e0a59cd:
+
+  powerpc: Fix power4/970 idle code regression with lockdep (2012-03-16 09:28:17 +1100)
+
+are available in the git repository at:
+  git://git.denx.de/linux-2.6-agust.git next
+
+Andrea Gelmini (1):
+      Documentation/powerpc/mpc52xx.txt: Checkpatch cleanup
+
+Grant Likely (1):
+      powerpc/5200: convert mpc5200 to use of_platform_populate()
+
+Heiko Schocher (4):
+      powerpc/mpc5200: update mpc5200_defconfig to fit for charon board
+      powerpc/mpc52xx: setup port_config and CDM settings through DT
+      powerpc/mpc52xx: add a4m072 board support
+      powerpc/mpc5200: add options to mpc5200_defconfig
+
+ .../devicetree/bindings/powerpc/fsl/mpc5200.txt    |   17 ++
+ Documentation/powerpc/mpc52xx.txt                  |   12 +-
+ arch/powerpc/boot/dts/a4m072.dts                   |  168 ++++++++++++++++++++
+ arch/powerpc/configs/mpc5200_defconfig             |   27 ++--
+ arch/powerpc/platforms/52xx/mpc5200_simple.c       |    1 +
+ arch/powerpc/platforms/52xx/mpc52xx_common.c       |   37 ++++-
+ 6 files changed, 236 insertions(+), 26 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/a4m072.dts
