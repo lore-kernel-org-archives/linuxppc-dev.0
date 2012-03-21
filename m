@@ -1,22 +1,21 @@
-Return-Path: <STFD002@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F1C2DB6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 02:33:43 +1100 (EST)
-Message-ID: <4F69F4C5.6090708@freescale.com>
-Date: Wed, 21 Mar 2012 17:33:25 +0200
-From: Diana CRACIUN <diana.craciun@freescale.com>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:32:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 62CCDB6F98
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 03:25:56 +1100 (EST)
+To: Josh Boyer <jwboyer@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/dts: Removed fsl,msi property from dts.
-References: <1328794860-12592-1-git-send-email-diana.craciun@freescale.com>
- <36B1F034-98A1-4571-8B94-A01D345935DF@kernel.crashing.org>
-In-Reply-To: <36B1F034-98A1-4571-8B94-A01D345935DF@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=UTF-8
+In-reply-to: <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+Date: Wed, 21 Mar 2012 17:25:49 +0100
+Message-Id: <20120321162549.8C1D0202A4D@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, robert.karl.berger@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/16/2012 09:33 PM, Kumar Gala wrote:
-> On Feb 9, 2012, at 7:41 AM, Diana Craciun wrote:
+Dear Josh,
+
+In message <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com> you wrote:
 >
->> From: Diana CRACIUN<Diana.Craciun@freescale.com>
->>
->> The association in the decice tree between PCI and MSI
->> using fsl,msi property was an artificial one and it does
->> not reflect the actual hardware.
->>
->> Signed-off-by: Diana CRACIUN<Diana.Craciun@freescale.com>
->> ---
->> arch/powerpc/boot/dts/p2041rdb.dts |    3 ---
->> arch/powerpc/boot/dts/p3041ds.dts  |    4 ----
->> arch/powerpc/boot/dts/p3060qds.dts |    2 --
->> arch/powerpc/boot/dts/p4080ds.dts  |    3 ---
->> arch/powerpc/boot/dts/p5020ds.dts  |    4 ----
->> 5 files changed, 0 insertions(+), 16 deletions(-)
-> Should we not also remove the code associated with this property?
->
-> - k
+> > The problem is that for ppc-linux-gcc (GCC) 4.2.2 (which comes with the
+> > ELDK 4.2) this assembly instruction is not known and the build breaks.
+> 
+> Sigh.  GCC 4.2 is pretty old at this point.
 
-No. The property may be present in the device tree when running under 
-Freescale hypervisor and it is used to skip the MSI nodes which are not 
-mapped in PAMU.
+But still rock-solid ...  We use it a lot, especially as reference for
+more recent (and sometimes more broken) versions of GCC.
 
-The code in kernel handles both situations: when the property is present 
-and in this case it searches only the corresponding MSI device for 
-available interrupts and when the property is not present and in this 
-case it loops over all the MSI devices.
+> All of the stuff in arch/powerpc/boot/ is built regardless of the
+> configured board and stuffed into a wrapper.a archive.  Then the
+> individual board targets are built and the necessary pieces are pulled
+> from the wrapper.a file.
 
-Diana
+This appears to be a pretty inefficient approach.  Why don't we build
+only the files we actually need?  That would save a bit of build time.
+
+> > Please advise.
+> 
+> If upgrading ELDK is an option for you, it will get you the quickest
+> solution.  Otherwise we'll need to figure out how to stub out the
+> instruction in boot/dcr.h and use the asm long trick.  Ew.  I can look
+> at that next week.
+
+Thanks a lot in advance!
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It is wrong always, everywhere and for everyone to  believe  anything
+upon  insufficient  evidence.  - W. K. Clifford, British philosopher,
+circa 1876
