@@ -1,31 +1,30 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 75BEBB6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 08:39:44 +1100 (EST)
+ (Client CN "e32.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3EF2AB6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 08:40:05 +1100 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Wed, 21 Mar 2012 15:39:41 -0600
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 4FD7B3E40036
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 15:39:30 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2LLdJNf192738
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 15:39:20 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2LLdGfA019008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 15:39:18 -0600
-Message-ID: <1332366010.3858.40.camel@key-ThinkPad-W510>
-Subject: [PATCH 09/17] powerpc: crypto: AES-ECB mode routines for nx encryption
+ Wed, 21 Mar 2012 15:40:02 -0600
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 3D317C90052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:39:58 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q2LLdwmV284268
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:39:58 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q2LLdv6a029863
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 18:39:58 -0300
+Message-ID: <1332366052.3858.48.camel@key-ThinkPad-W510>
+Subject: [PATCH 13/17] powerpc: crypto: SHA512 hash routines for nx encryption
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Wed, 21 Mar 2012 16:40:10 -0500
+Date: Wed, 21 Mar 2012 16:40:52 -0500
 In-Reply-To: <1332365297.3858.5.camel@key-ThinkPad-W510>
 References: <1332365297.3858.5.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
@@ -41,23 +40,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These routines add support for AES in ECB mode on the Power7+ CPU's
+These routines add support for SHA-512 hashing on the Power7+ CPU's
 in-Nest accelerator driver.
 
 Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
 ---
- arch/powerpc/crypto/nx/nx-aes-ecb.c |  133 +++++++++++++++++++++++++++++++++++
- 1 files changed, 133 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/crypto/nx/nx-aes-ecb.c
+ arch/powerpc/crypto/nx/nx-sha512.c |  259 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 259 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/crypto/nx/nx-sha512.c
 
-diff --git a/arch/powerpc/crypto/nx/nx-aes-ecb.c b/arch/powerpc/crypto/nx/nx-aes-ecb.c
+diff --git a/arch/powerpc/crypto/nx/nx-sha512.c b/arch/powerpc/crypto/nx/nx-sha512.c
 new file mode 100644
-index 0000000..7ceef65
+index 0000000..4f8a43b
 --- /dev/null
-+++ b/arch/powerpc/crypto/nx/nx-aes-ecb.c
-@@ -0,0 +1,133 @@
++++ b/arch/powerpc/crypto/nx/nx-sha512.c
+@@ -0,0 +1,259 @@
 +/**
-+ * AES ECB routines supporting the Power 7+ Nest Accelerators driver
++ * SHA-512 routines supporting the Power 7+ Nest Accelerators driver
 + *
 + * Copyright (C) 2011-2012 International Business Machines Inc.
 + *
@@ -77,67 +76,83 @@ index 0000000..7ceef65
 + * Author: Kent Yoder <yoder1@us.ibm.com>
 + */
 +
-+#include <crypto/aes.h>
-+#include <crypto/algapi.h>
++#include <crypto/internal/hash.h>
++#include <crypto/sha.h>
 +#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/crypto.h>
 +#include <asm/vio.h>
 +
 +#include "nx_csbcpb.h"
 +#include "nx.h"
 +
 +
-+static int ecb_aes_nx_set_key(struct crypto_tfm *tfm,
-+			      const u8          *in_key,
-+			      unsigned int       key_len)
++static int nx_sha512_init(struct shash_desc *desc)
 +{
-+	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(tfm);
-+	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
++	struct sha512_state *sctx = shash_desc_ctx(desc);
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
++	struct nx_sg *out_sg;
 +
-+	nx_ctx_init(nx_ctx, HCOP_FC_AES);
++	nx_ctx_init(nx_ctx, HCOP_FC_SHA);
 +
-+	switch (key_len) {
-+	case AES_KEYSIZE_128:
-+		csbcpb->cpb.hdr.key_size = NX_KS_AES_128;
-+		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_128];
-+		break;
-+	case AES_KEYSIZE_192:
-+		csbcpb->cpb.hdr.key_size = NX_KS_AES_192;
-+		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_192];
-+		break;
-+	case AES_KEYSIZE_256:
-+		csbcpb->cpb.hdr.key_size = NX_KS_AES_256;
-+		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_256];
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
++	memset(sctx, 0, sizeof *sctx);
 +
-+	csbcpb->cpb.hdr.mode = NX_MODE_AES_ECB;
-+	memcpy(csbcpb->cpb.aes_ecb.key, in_key, key_len);
++	nx_ctx->ap = &nx_ctx->props[NX_PROPS_SHA512];
++
++	nx_ctx->csbcpb->cpb.hdr.digest_size = NX_DS_SHA512;
++	out_sg = nx_build_sg_list(nx_ctx->out_sg, (u8 *)sctx->state,
++				  SHA512_DIGEST_SIZE, nx_ctx->ap->sglen);
++	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
 +
 +	return 0;
 +}
 +
-+static int ecb_aes_nx_crypt(struct blkcipher_desc *desc,
-+			    struct scatterlist    *dst,
-+			    struct scatterlist    *src,
-+			    unsigned int           nbytes,
-+			    int                    enc)
++static int nx_sha512_update(struct shash_desc *desc, const u8 *data,
++			    unsigned int len)
 +{
-+	struct nx_crypto_ctx *nx_ctx = crypto_blkcipher_ctx(desc->tfm);
-+	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
++	struct sha512_state *sctx = shash_desc_ctx(desc);
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
++	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
++	struct nx_sg *in_sg;
++	u64 to_process, leftover, spbc_bits;
 +	int rc;
 +
-+	if (nbytes > nx_ctx->ap->databytelen)
-+		return -EINVAL;
++	if (csbcpb->cpb.hdr.fdm.continuation == 1) {
++		/* we've hit the nx chip previously and we're updating again,
++		 * so copy over the partial digest */
++		memcpy(csbcpb->cpb.sha512.input_partial_digest,
++		       csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
++	}
 +
-+	csbcpb->cpb.hdr.fdm.ende = enc;
++	/* 2 cases for total data len:
++	 *  1: <= SHA512_BLOCK_SIZE: copy into state, return 0
++	 *  2: > SHA512_BLOCK_SIZE: process X blocks, copy in leftover
++	 */
++	if ((u64)len + sctx->count[0] <= SHA512_BLOCK_SIZE) {
++		memcpy(sctx->buf + sctx->count[0], data, len);
++		sctx->count[0] += len;
++		return 0;
++	}
 +
-+	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, NULL);
-+	if (rc)
-+		goto out;
++	/* to_process: the SHA512_BLOCK_SIZE data chunk to process in this
++	 * update */
++	to_process = (sctx->count[0] + len) & ~(SHA512_BLOCK_SIZE - 1);
++	leftover = (sctx->count[0] + len) & (SHA512_BLOCK_SIZE - 1);
++
++	if (sctx->count[0]) {
++		in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *)sctx->buf,
++					 sctx->count[0], nx_ctx->ap->sglen);
++		in_sg = nx_build_sg_list(in_sg, (u8 *)data,
++					 to_process - sctx->count[0],
++					 nx_ctx->ap->sglen);
++		nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) *
++					sizeof(struct nx_sg);
++	} else {
++		in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *)data,
++					 to_process, nx_ctx->ap->sglen);
++		nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) *
++					sizeof(struct nx_sg);
++	}
++
++	csbcpb->cpb.hdr.fdm.intermediate = 1;
 +
 +	if (!nx_ctx->op.inlen || !nx_ctx->op.outlen)
 +		return -EINVAL;
@@ -146,47 +161,157 @@ index 0000000..7ceef65
 +	if (rc)
 +		goto out;
 +
-+	atomic_inc(&(nx_ctx->stats->aes_ops));
-+	atomic64_add(csbcpb->csb.processed_byte_count,
-+		     &(nx_ctx->stats->aes_bytes));
++	atomic_inc(&(nx_ctx->stats->sha512_ops));
++
++	/* copy the leftover back into the state struct */
++	memcpy(sctx->buf, data + len - leftover, leftover);
++	sctx->count[0] = leftover;
++
++	spbc_bits = csbcpb->cpb.sha512.spbc * 8;
++	csbcpb->cpb.sha512.message_bit_length_lo += spbc_bits;
++	if (csbcpb->cpb.sha512.message_bit_length_lo < spbc_bits)
++		csbcpb->cpb.sha512.message_bit_length_hi++;
++
++	/* everything after the first update is continuation */
++	csbcpb->cpb.hdr.fdm.continuation = 1;
 +out:
 +	return rc;
 +}
 +
-+static int ecb_aes_nx_encrypt(struct blkcipher_desc *desc,
-+			      struct scatterlist    *dst,
-+			      struct scatterlist    *src,
-+			      unsigned int           nbytes)
++static int nx_sha512_final(struct shash_desc *desc, u8 *out)
 +{
-+	return ecb_aes_nx_crypt(desc, dst, src, nbytes, 1);
++	struct sha512_state *sctx = shash_desc_ctx(desc);
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
++	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
++	struct nx_sg *in_sg, *out_sg;
++	u64 count0;
++	int rc;
++
++	if (csbcpb->cpb.hdr.fdm.continuation == 1) {
++		/* we've hit the nx chip previously, now we're finalizing,
++		 * so copy over the partial digest */
++		memcpy(csbcpb->cpb.sha512.input_partial_digest,
++		       csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
++	}
++
++	/* final is represented by continuing the operation and indicating that
++	 * this is not an intermediate operation */
++	csbcpb->cpb.hdr.fdm.intermediate = 0;
++
++	count0 = sctx->count[0] * 8;
++
++	csbcpb->cpb.sha512.message_bit_length_lo += count0;
++	if (csbcpb->cpb.sha512.message_bit_length_lo < count0)
++		csbcpb->cpb.sha512.message_bit_length_hi++;
++
++	in_sg = nx_build_sg_list(nx_ctx->in_sg, sctx->buf, sctx->count[0],
++				 nx_ctx->ap->sglen);
++	out_sg = nx_build_sg_list(nx_ctx->out_sg, out, SHA512_DIGEST_SIZE,
++				  nx_ctx->ap->sglen);
++	nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) * sizeof(struct nx_sg);
++	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
++
++	if (!nx_ctx->op.outlen)
++		return -EINVAL;
++
++	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op);
++	if (rc)
++		goto out;
++
++	atomic_inc(&(nx_ctx->stats->sha512_ops));
++	atomic64_add(csbcpb->cpb.sha512.message_bit_length_lo,
++		     &(nx_ctx->stats->sha512_bytes));
++
++	memcpy(out, csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
++out:
++	return rc;
 +}
 +
-+static int ecb_aes_nx_decrypt(struct blkcipher_desc *desc,
-+			      struct scatterlist    *dst,
-+			      struct scatterlist    *src,
-+			      unsigned int           nbytes)
++static int nx_sha512_export(struct shash_desc *desc, void *out)
 +{
-+	return ecb_aes_nx_crypt(desc, dst, src, nbytes, 0);
++	struct sha512_state *sctx = shash_desc_ctx(desc);
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
++	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
++	struct sha512_state *octx = out;
++
++	/* move message_bit_length (128 bits) into count and convert its value
++	 * to bytes */
++	octx->count[0] = csbcpb->cpb.sha512.message_bit_length_lo >> 3 |
++			 ((csbcpb->cpb.sha512.message_bit_length_hi & 7) << 61);
++	octx->count[1] = csbcpb->cpb.sha512.message_bit_length_hi >> 3;
++
++	octx->count[0] += sctx->count[0];
++	if (octx->count[0] < sctx->count[0])
++		octx->count[1]++;
++
++	memcpy(octx->buf, sctx->buf, sizeof(octx->buf));
++
++	/* if no data has been processed yet, we need to export SHA512's
++	 * initial data, in case this context gets imported into a software
++	 * context */
++	if (csbcpb->cpb.sha512.message_bit_length_hi ||
++	    csbcpb->cpb.sha512.message_bit_length_lo)
++		memcpy(octx->state, csbcpb->cpb.sha512.message_digest,
++		       SHA512_DIGEST_SIZE);
++	else {
++		octx->state[0] = SHA512_H0;
++		octx->state[1] = SHA512_H1;
++		octx->state[2] = SHA512_H2;
++		octx->state[3] = SHA512_H3;
++		octx->state[4] = SHA512_H4;
++		octx->state[5] = SHA512_H5;
++		octx->state[6] = SHA512_H6;
++		octx->state[7] = SHA512_H7;
++	}
++
++	return 0;
 +}
 +
-+struct crypto_alg nx_ecb_aes_alg = {
-+	.cra_name        = "ecb(aes)",
-+	.cra_driver_name = "ecb-aes-nx",
-+	.cra_priority    = 300,
-+	.cra_flags       = CRYPTO_ALG_TYPE_BLKCIPHER,
-+	.cra_blocksize   = AES_BLOCK_SIZE,
-+	.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
-+	.cra_type        = &crypto_blkcipher_type,
-+	.cra_module      = THIS_MODULE,
-+	.cra_list        = LIST_HEAD_INIT(nx_ecb_aes_alg.cra_list),
-+	.cra_init        = nx_crypto_ctx_aes_ecb_init,
-+	.cra_exit        = nx_crypto_ctx_exit,
-+	.cra_blkcipher = {
-+		.min_keysize = AES_MIN_KEY_SIZE,
-+		.max_keysize = AES_MAX_KEY_SIZE,
-+		.setkey      = ecb_aes_nx_set_key,
-+		.encrypt     = ecb_aes_nx_encrypt,
-+		.decrypt     = ecb_aes_nx_decrypt,
++static int nx_sha512_import(struct shash_desc *desc, const void *in)
++{
++	struct sha512_state *sctx = shash_desc_ctx(desc);
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
++	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
++	const struct sha512_state *ictx = in;
++
++	memcpy(sctx->buf, ictx->buf, sizeof(ictx->buf));
++	sctx->count[0] = ictx->count[0] & 0x3f;
++	csbcpb->cpb.sha512.message_bit_length_lo = (ictx->count[0] & ~0x3f)
++							<< 3;
++	csbcpb->cpb.sha512.message_bit_length_hi = ictx->count[1] << 3 |
++						   ictx->count[0] >> 61;
++
++	if (csbcpb->cpb.sha512.message_bit_length_hi ||
++	    csbcpb->cpb.sha512.message_bit_length_lo) {
++		memcpy(csbcpb->cpb.sha512.message_digest, ictx->state,
++		       SHA512_DIGEST_SIZE);
++
++		csbcpb->cpb.hdr.fdm.continuation = 1;
++		csbcpb->cpb.hdr.fdm.intermediate = 1;
++	}
++
++	return 0;
++}
++
++struct shash_alg nx_shash_sha512_alg = {
++	.digestsize = SHA512_DIGEST_SIZE,
++	.init       = nx_sha512_init,
++	.update     = nx_sha512_update,
++	.final      = nx_sha512_final,
++	.export     = nx_sha512_export,
++	.import     = nx_sha512_import,
++	.descsize   = sizeof(struct sha512_state),
++	.statesize  = sizeof(struct sha512_state),
++	.base       = {
++		.cra_name        = "sha512",
++		.cra_driver_name = "sha512-nx",
++		.cra_priority    = 300,
++		.cra_flags       = CRYPTO_ALG_TYPE_SHASH,
++		.cra_blocksize   = SHA512_BLOCK_SIZE,
++		.cra_module      = THIS_MODULE,
++		.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
++		.cra_init        = nx_crypto_ctx_sha_init,
++		.cra_exit        = nx_crypto_ctx_exit,
 +	}
 +};
 -- 
