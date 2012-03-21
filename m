@@ -1,19 +1,22 @@
-Return-Path: <robert.karl.berger@gmail.com>
-Received: from mail-ee0-f42.google.com (mail-ee0-f42.google.com [74.125.83.42])
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-yx0-f170.google.com (mail-yx0-f170.google.com
+ [209.85.213.170])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6C057B6F62
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 23:11:08 +1100 (EST)
-Received: by eekb57 with SMTP id b57so377068eek.15
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 05:11:01 -0700 (PDT)
-Message-ID: <4F69C553.6070409@gmail.com>
-Date: Wed, 21 Mar 2012 14:10:59 +0200
-From: Robert Berger <robert.karl.berger@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 09FE2B6EE7
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 00:29:44 +1100 (EST)
+Received: by yenl5 with SMTP id l5so871757yen.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 06:29:42 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+In-Reply-To: <4F69C553.6070409@gmail.com>
+References: <4F69C553.6070409@gmail.com>
+Date: Wed, 21 Mar 2012 09:29:41 -0400
+Message-ID: <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+From: Josh Boyer <jwboyer@gmail.com>
+To: robert.karl.berger@gmail.com
 Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: robert.karl.berger@gmail.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, Mar 21, 2012 at 8:10 AM, Robert Berger
+<robert.karl.berger@gmail.com> wrote:
+> Hi,
+>
+> Up to 3.2.x I was able to compile a mainline kernel for the kilauea
+> board, but...
+>
+> http://git.denx.de/?p=linux-denx.git;a=commitdiff;h=075bcf5879225d0c2a119c23d8046b890e051e81
+>
+> shows, that mfdcrx was introduced in the v3.3 kernel.
+>
+> The problem is that for ppc-linux-gcc (GCC) 4.2.2 (which comes with the
+> ELDK 4.2) this assembly instruction is not known and the build breaks.
 
-Up to 3.2.x I was able to compile a mainline kernel for the kilauea
-board, but...
+Sigh.  GCC 4.2 is pretty old at this point.
 
-http://git.denx.de/?p=linux-denx.git;a=commitdiff;h=075bcf5879225d0c2a119c23d8046b890e051e81
+> There are some obvious workarounds, like using a more recent toolchain
+> (e.g ELDK 5.x) or use make -k to keep on compiling even when there is an
+> error as much as possible;)
 
-shows, that mfdcrx was introduced in the v3.3 kernel.
+That would be the most expedient option, yes.
 
-The problem is that for ppc-linux-gcc (GCC) 4.2.2 (which comes with the
-ELDK 4.2) this assembly instruction is not known and the build breaks.
+> What puzzles me is that also stuff for boards is being compiled which is
+> not really needed like treeboot-currituck.c even when I configure the
+> kernel for a kilauea board.
+>
+> Is this on purpose and if so why?
 
-There are some obvious workarounds, like using a more recent toolchain
-(e.g ELDK 5.x) or use make -k to keep on compiling even when there is an
-error as much as possible;)
+All of the stuff in arch/powerpc/boot/ is built regardless of the
+configured board and stuffed into a wrapper.a archive.  Then the
+individual board targets are built and the necessary pieces are pulled
+from the wrapper.a file.
 
-What puzzles me is that also stuff for boards is being compiled which is
-not really needed like treeboot-currituck.c even when I configure the
-kernel for a kilauea board.
+> Please advise.
 
-Is this on purpose and if so why?
+If upgrading ELDK is an option for you, it will get you the quickest
+solution.  Otherwise we'll need to figure out how to stub out the
+instruction in boot/dcr.h and use the asm long trick.  Ew.  I can look
+at that next week.
 
-Please advise.
-
-Regards,
-
-Robert
-..."But I have a slowly coagulating theory that the size of a project is
-directly proportional to the possibility that significant bugs will crop
-up. Exponentiate for each additional programmer involved." - Steven K.
-Halliburton
-
-My public pgp key is available at:
-http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x90320BF1
+josh
