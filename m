@@ -1,23 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2E56FB6EF4
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 02:09:07 +1100 (EST)
+Return-Path: <B04825@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C4D38B6EEE
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 02:15:56 +1100 (EST)
+Message-ID: <4F69F099.4070409@freescale.com>
+Date: Wed, 21 Mar 2012 10:15:37 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20120319160452.B57D13E05A5@localhost>
-Date: Wed, 21 Mar 2012 10:08:49 -0500
-Message-Id: <50E98FCC-EA02-4215-98EC-7C16671447DF@kernel.crashing.org>
 References: <1322669957-8259-1-git-send-email-timur@freescale.com>
  <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
  <4F63A7A4.4000205@freescale.com> <20120319160452.B57D13E05A5@localhost>
-To: Grant Likely <grant.likely@secretlab.ca>
+ <4F677E51.8030905@freescale.com> <20120320170942.0C4143E2834@localhost>
+ <4F68BD6F.2090008@freescale.com>
+In-Reply-To: <4F68BD6F.2090008@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: Scott Wood <scottwood@freescale.com>,
  Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Timur Tabi <timur@freescale.com>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+ linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Timur Tabi wrote:
+> They only problem I see with this is that I am thinking about modifying
+> the drivers/dma driver to probe on "fsl,eloplus-dma-channel" channels
+> directly.  If I do that, then who should call of_platform_populate()?
 
-On Mar 19, 2012, at 11:04 AM, Grant Likely wrote:
+Grant, could you tell me if there's anything actually work with my patch?
+ All I'm doing is adding a couple more commonly used entries to
+mpc85xx_common_ids[].  After all, they're common IDs, so don't they belong
+into an array called common_ids?
 
-> On Fri, 16 Mar 2012 15:50:44 -0500, Timur Tabi <timur@freescale.com> =
-wrote:
->> Kumar Gala wrote:
->>=20
->>> This seems like paper taping over the real issue.  We should be able =
-to call of_platform_bus_probe() multiple times.
->>=20
->> I tried debugging it, but I couldn't figure it out.  My guess is that =
-the
->> nodes probed by of_platform_bus_probe() are somehow "reserved", so =
-that
->> the second time it's called, they're skipped.  I figured that this =
-was
->> just a side-effect of the way the OF layer works.
->=20
-> The problem is that you want to create devices for grandchildren
-> nodes when the bus ids passed in don't match any of the child nodes so
-> the of_platform_bus_probe() doesn't iterate down to that level.  This
-> is correct and expected behaviour.
->=20
-> g.
+I've been waiting for months for this problem to be fixed, and 3.3 is
+broken without it.  We've already established that you cannot actually
+call of_platform_bus_probe() twice on the same level, so it's not like my
+patch description is wrong or anything.
 
-Does of_platform_populate() handle this?
-
-- k=
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
