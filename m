@@ -1,20 +1,23 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2BFD7B6EF4
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 11:56:35 +1100 (EST)
-Date: Wed, 21 Mar 2012 01:56:31 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: Please pull 'next' branch of 5xxx tree
-Message-ID: <20120321015631.0374755d@wker>
-In-Reply-To: <20120320223017.GB6292@pengutronix.de>
-References: <20120320180450.5f6dffe4@wker>
- <20120320223017.GB6292@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <mla@apm.com>
+Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
+ by ozlabs.org (Postfix) with SMTP id 94C30B6F6E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 13:22:37 +1100 (EST)
+Received: by dadp14 with SMTP id p14so933334dad.32
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 19:22:35 -0700 (PDT)
+From: Mai La <mla@apm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Tirumala R Marri <tmarri@apm.com>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Michael Neuling <mikey@neuling.org>,
+ Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/44x: Support CPM for Maui APM821xxx SoC and Bluestone
+ board
+Date: Wed, 21 Mar 2012 09:21:12 +0700
+Message-Id: <1332296472-24734-1-git-send-email-mla@apm.com>
+Cc: Mai La <mla@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+In this patch:
+- Add CPM node for Maui APM821xxx SoC and Bluestone board in DTS
 
-On Tue, 20 Mar 2012 23:30:17 +0100
-Wolfram Sang <w.sang@pengutronix.de> wrote:
+Signed-off-by: Mai La <mla@apm.com>
+---
+ arch/powerpc/boot/dts/bluestone.dts |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-> Hi,
-> 
-> >       powerpc/mpc52xx: setup port_config and CDM settings through DT
-> 
-> Can we skip this patch for 3.5? Between posting it and pushing it upstream were
-> about 24 hours, so one didn't have much chance of reviewing (and no linux-next
-> exposure).
-
-Pretty much similar patch was posted nearly one year ago, so my
-assumption was that people have had enough time to comment on it :-).
-But I've dropped this patch from the next branch for now.
-
-> I think the bindings leave space for questions, e.g. is it really desirable to
-> have the fractional divide ratios encoded like in the bits in the register? Why
-> not encode it like e.g. <11 11 11 11> (the actual divisor) or so? I could
-> imagine there are examples for setting dividers somewhere. Poking values into
-> registers tends to be suspicious, so I'd vote for giving all this more
-> exposure.
-
-At the end we will be poking values into registers anyway :-),
-but I'm open for suggestions and discussion about them.
-
-Thanks,
-Anatolij
+diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
+index 2a56a0d..15a9516 100644
+--- a/arch/powerpc/boot/dts/bluestone.dts
++++ b/arch/powerpc/boot/dts/bluestone.dts
+@@ -117,6 +117,15 @@
+ 		dcr-reg = <0x00c 0x002>;
+ 	};
+ 
++	CPM0: cpm {
++		compatible = "ibm, cpm-apm821xx", "ibm,cpm";
++		cell-index = <0>;
++		dcr-reg = <0x160 0x003>;
++		er-offset = <0>;
++		idle-doze = <0x02000000>;
++		standby = <0x302570F0>;
++	};
++
+ 	plb {
+ 		compatible = "ibm,plb4";
+ 		#address-cells = <2>;
+-- 
+1.7.3.4
