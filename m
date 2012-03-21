@@ -1,30 +1,33 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AEDB2B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 08:28:41 +1100 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2BE33B6F6E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 08:37:41 +1100 (EST)
 Received: from /spool/local
- by e5.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Wed, 21 Mar 2012 17:28:36 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 82E2038C803A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:27:23 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2LLRN1H313614
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:27:23 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2LLRNdT004165
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 18:27:23 -0300
-Message-ID: <1332365297.3858.5.camel@key-ThinkPad-W510>
-Subject: [PATCH 00/17] Platform Facilities Option and crypto accelerator driver
+ Wed, 21 Mar 2012 15:37:38 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C380DC40004
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 15:37:34 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q2LLbYEc156538
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 15:37:35 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q2LLbYkt030961
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 15:37:34 -0600
+Message-ID: <1332365909.3858.28.camel@key-ThinkPad-W510>
+Subject: [PATCH 03/17] powerpc: Add PFO support to the VIO bus
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Wed, 21 Mar 2012 16:28:17 -0500
+Date: Wed, 21 Mar 2012 16:38:29 -0500
+In-Reply-To: <1332365297.3858.5.camel@key-ThinkPad-W510>
+References: <1332365297.3858.5.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
@@ -38,79 +41,451 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series adds support for a new device type, the Platform
-Facilities Option (PFO).  PFO resources are a set of accelerators that
-share some system resources managed by the VIO bus.  This patchset
-includes the basic support for the devices in the VIO bus code along
-with drivers for the random number generator and the cryptographic
-accelerators.
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-Please cc me on replies.
+Add support for the Platform Facilities Option (PFO) to the VIO bus.
+These devices have a separate root node in OpenFirmware which
+requires additional parsing to map into the existing VIO device
+structure fields.  This adds the interface for PFO device drivers to
+make synchronous hypervisor calls.
 
-Thanks,
-Kent
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/vio.h |   46 +++++++
+ arch/powerpc/kernel/vio.c      |  274 ++++++++++++++++++++++++++++++++++------
+ 2 files changed, 280 insertions(+), 40 deletions(-)
 
-Kent Yoder (12):
-  powerpc: crypto: AES-CBC mode routines for nx encryption
-  powerpc: crypto: AES-CCM mode routines for nx encryption
-  powerpc: crypto: AES-CTR mode routines for nx encryption
-  powerpc: crypto: AES-ECB mode routines for nx encryption
-  powerpc: crypto: AES-GCM mode routines for nx encryption
-  powerpc: crypto: AES-XCBC mode routines for nx encryption
-  powerpc: crypto: SHA256 hash routines for nx encryption
-  powerpc: crypto: SHA512 hash routines for nx encryption
-  powerpc: crypto: nx driver code supporting nx encryption
-  powerpc: crypto: sysfs routines and docs for the nx device driver
-  powerpc: crypto: Build files for the nx device driver
-  powerpc: crypto: enable the PFO-based encryption device
-
-Michael Neuling (1):
-  hwrng: pseries - PFO-based hwrng driver
-
-Robert Jennings (4):
-  powerpc: Add new hvcall constants to support PFO
-  powerpc: Add pseries update notifier for OFDT prop changes
-  powerpc: Add PFO support to the VIO bus
-  pseries: Enabled the PFO-based RNG accelerator
-
- Documentation/powerpc/pfo-nx-crypto.txt     |   52 ++
- arch/powerpc/Makefile                       |    1 +
- arch/powerpc/crypto/nx/Makefile             |   11 +
- arch/powerpc/crypto/nx/nx-aes-cbc.c         |  135 +++++
- arch/powerpc/crypto/nx/nx-aes-ccm.c         |  466 ++++++++++++++++++
- arch/powerpc/crypto/nx/nx-aes-ctr.c         |  175 +++++++
- arch/powerpc/crypto/nx/nx-aes-ecb.c         |  133 +++++
- arch/powerpc/crypto/nx/nx-aes-gcm.c         |  352 +++++++++++++
- arch/powerpc/crypto/nx/nx-aes-xcbc.c        |  230 +++++++++
- arch/powerpc/crypto/nx/nx-sha256.c          |  240 +++++++++
- arch/powerpc/crypto/nx/nx-sha512.c          |  259 ++++++++++
- arch/powerpc/crypto/nx/nx.c                 |  710 +++++++++++++++++++++++++++
- arch/powerpc/crypto/nx/nx.h                 |  190 +++++++
- arch/powerpc/crypto/nx/nx_csbcpb.h          |  246 +++++++++
- arch/powerpc/crypto/nx/nx_sysfs.c           |  194 ++++++++
- arch/powerpc/include/asm/hvcall.h           |   25 +-
- arch/powerpc/include/asm/pSeries_reconfig.h |   12 +
- arch/powerpc/include/asm/vio.h              |   46 ++
- arch/powerpc/kernel/prom_init.c             |   19 +-
- arch/powerpc/kernel/vio.c                   |  274 +++++++++--
- arch/powerpc/platforms/pseries/reconfig.c   |    7 +
- drivers/char/hw_random/Kconfig              |   13 +
- drivers/char/hw_random/Makefile             |    1 +
- drivers/char/hw_random/pseries-rng.c        |   99 ++++
- drivers/crypto/Kconfig                      |   18 +
- 25 files changed, 3865 insertions(+), 43 deletions(-)
- create mode 100644 Documentation/powerpc/pfo-nx-crypto.txt
- create mode 100644 arch/powerpc/crypto/nx/Makefile
- create mode 100644 arch/powerpc/crypto/nx/nx-aes-cbc.c
- create mode 100644 arch/powerpc/crypto/nx/nx-aes-ccm.c
- create mode 100644 arch/powerpc/crypto/nx/nx-aes-ctr.c
- create mode 100644 arch/powerpc/crypto/nx/nx-aes-ecb.c
- create mode 100644 arch/powerpc/crypto/nx/nx-aes-gcm.c
- create mode 100644 arch/powerpc/crypto/nx/nx-aes-xcbc.c
- create mode 100644 arch/powerpc/crypto/nx/nx-sha256.c
- create mode 100644 arch/powerpc/crypto/nx/nx-sha512.c
- create mode 100644 arch/powerpc/crypto/nx/nx.c
- create mode 100644 arch/powerpc/crypto/nx/nx.h
- create mode 100644 arch/powerpc/crypto/nx/nx_csbcpb.h
- create mode 100644 arch/powerpc/crypto/nx/nx_sysfs.c
- create mode 100644 drivers/char/hw_random/pseries-rng.c
+diff --git a/arch/powerpc/include/asm/vio.h b/arch/powerpc/include/asm/vio.h
+index 0a290a1..5e4850b 100644
+--- a/arch/powerpc/include/asm/vio.h
++++ b/arch/powerpc/include/asm/vio.h
+@@ -46,6 +46,48 @@
+ 
+ struct iommu_table;
+ 
++/*
++ * Platform Facilities Option (PFO)-specific data
++ */
++
++/* Starting unit address for PFO devices on the VIO BUS */
++#define VIO_BASE_PFO_UA	0x50000000
++
++/**
++ * vio_pfo_op - PFO operation parameters
++ *
++ * @flags: h_call subfunctions and modifiers
++ * @in: Input data block logical real address
++ * @inlen: If non-negative, the length of the input data block.  If negative,
++ *	the length of the input data descriptor list in bytes.
++ * @out: Output data block logical real address
++ * @outlen: If non-negative, the length of the input data block.  If negative,
++ *	the length of the input data descriptor list in bytes.
++ * @csbcpb: Logical real address of the 4k naturally-aligned storage block
++ *	containing the CSB & optional FC field specific CPB
++ * @timeout: # of milliseconds to retry h_call, 0 for no timeout.
++ * @hcall_err: pointer to return the h_call return value, else NULL
++ */
++struct vio_pfo_op {
++	u64 flags;
++	s64 in;
++	s64 inlen;
++	s64 out;
++	s64 outlen;
++	u64 csbcpb;
++	void *done;
++	unsigned long handle;
++	unsigned int timeout;
++	long hcall_err;
++};
++
++/* End PFO specific data */
++
++enum vio_dev_family {
++	VDEVICE,	/* The OF node is a child of /vdevice */
++	PFO,		/* The OF node is a child of /ibm,platform-facilities */
++};
++
+ /**
+  * vio_dev - This structure is used to describe virtual I/O devices.
+  *
+@@ -58,6 +100,7 @@ struct vio_dev {
+ 	const char *name;
+ 	const char *type;
+ 	uint32_t unit_address;
++	uint32_t resource_id;
+ 	unsigned int irq;
+ 	struct {
+ 		size_t desired;
+@@ -65,6 +108,7 @@ struct vio_dev {
+ 		size_t allocated;
+ 		atomic_t allocs_failed;
+ 	} cmo;
++	enum vio_dev_family family;
+ 	struct device dev;
+ };
+ 
+@@ -87,6 +131,8 @@ extern void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired);
+ 
+ extern void __devinit vio_unregister_device(struct vio_dev *dev);
+ 
++extern int vio_h_cop_sync(struct vio_dev *vdev, struct vio_pfo_op *op);
++
+ struct device_node;
+ 
+ extern struct vio_dev *vio_register_device_node(
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 8b08629..802cc06 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -14,7 +14,9 @@
+  *      2 of the License, or (at your option) any later version.
+  */
+ 
++#include <linux/cpu.h>
+ #include <linux/types.h>
++#include <linux/delay.h>
+ #include <linux/stat.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+@@ -712,13 +714,26 @@ static int vio_cmo_bus_probe(struct vio_dev *viodev)
+ 	struct vio_driver *viodrv = to_vio_driver(dev->driver);
+ 	unsigned long flags;
+ 	size_t size;
++	bool dma_capable = false;
++
++	/* A device requires entitlement if it has a DMA window property */
++	switch (viodev->family) {
++	case VDEVICE:
++		if (of_get_property(viodev->dev.of_node,
++					"ibm,my-dma-window", NULL))
++			dma_capable = true;
++		break;
++	case PFO:
++		dma_capable = false;
++		break;
++	default:
++		dev_warn(dev, "unknown device family: %d\n", viodev->family);
++		BUG();
++		break;
++	}
+ 
+-	/*
+-	 * Check to see that device has a DMA window and configure
+-	 * entitlement for the device.
+-	 */
+-	if (of_get_property(viodev->dev.of_node,
+-	                    "ibm,my-dma-window", NULL)) {
++	/* Configure entitlement for the device. */
++	if (dma_capable) {
+ 		/* Check that the driver is CMO enabled and get desired DMA */
+ 		if (!viodrv->get_desired_dma) {
+ 			dev_err(dev, "%s: device driver does not support CMO\n",
+@@ -1054,6 +1069,94 @@ static void vio_cmo_sysfs_init(void) { }
+ EXPORT_SYMBOL(vio_cmo_entitlement_update);
+ EXPORT_SYMBOL(vio_cmo_set_dev_desired);
+ 
++
++/*
++ * Platform Facilities Option (PFO) support
++ */
++
++/**
++ * vio_h_cop_sync - Perform a synchronous PFO co-processor operation
++ *
++ * @vdev - Pointer to a struct vio_dev for device
++ * @op - Pointer to a struct vio_pfo_op for the operation parameters
++ *
++ * Calls the hypervisor to synchronously perform the PFO operation
++ * described in @op.  In the case of a busy response from the hypervisor,
++ * the operation will be re-submitted indefinitely unless a non-zero timeout
++ * is specified or an error occurs. The timeout places a limit on when to
++ * stop re-submitting a operation, the total time can be exceeded if an
++ * operation is in progress.
++ *
++ * If op->hcall_ret is not NULL, this will be set to the return from the
++ * last h_cop_op call or it will be 0 if an error not involving the h_call
++ * was encountered.
++ *
++ * Returns:
++ *	0 on success,
++ *	-EINVAL if the h_call fails due to an invalid parameter,
++ *	-E2BIG if the h_call can not be performed synchronously,
++ *	-EBUSY if a timeout is specified and has elapsed,
++ *	-EACCES if the memory area for data/status has been rescinded, or
++ *	-EPERM if a hardware fault has been indicated
++ */
++int vio_h_cop_sync(struct vio_dev *vdev, struct vio_pfo_op *op)
++{
++	struct device *dev = &vdev->dev;
++	unsigned long deadline = 0;
++	long hret = 0;
++	int ret = 0;
++
++	if (op->timeout)
++		deadline = jiffies + msecs_to_jiffies(op->timeout);
++
++	while (true) {
++		hret = plpar_hcall_norets(H_COP, op->flags,
++				vdev->resource_id,
++				op->in, op->inlen, op->out,
++				op->outlen, op->csbcpb);
++
++		if (hret == H_SUCCESS ||
++		    (hret != H_NOT_ENOUGH_RESOURCES &&
++		     hret != H_BUSY && hret != H_RESOURCE) ||
++		    (op->timeout && time_after(deadline, jiffies)))
++			break;
++
++		dev_dbg(dev, "%s: hcall ret(%ld), retrying.\n", __func__, hret);
++	}
++
++	switch (hret) {
++	case H_SUCCESS:
++		ret = 0;
++		break;
++	case H_OP_MODE:
++	case H_TOO_BIG:
++		ret = -E2BIG;
++		break;
++	case H_RESCINDED:
++		ret = -EACCES;
++		break;
++	case H_HARDWARE:
++		ret = -EPERM;
++		break;
++	case H_NOT_ENOUGH_RESOURCES:
++	case H_RESOURCE:
++	case H_BUSY:
++		ret = -EBUSY;
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	if (ret)
++		dev_dbg(dev, "%s: Sync h_cop_op failure (ret:%d) (hret:%ld)\n",
++				__func__, ret, hret);
++
++	op->hcall_err = hret;
++	return ret;
++}
++EXPORT_SYMBOL(vio_h_cop_sync);
++
+ static struct iommu_table *vio_build_iommu_table(struct vio_dev *dev)
+ {
+ 	const unsigned char *dma_window;
+@@ -1215,35 +1318,86 @@ static void __devinit vio_dev_release(struct device *dev)
+ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+ {
+ 	struct vio_dev *viodev;
++	struct device_node *parent_node;
+ 	const unsigned int *unit_address;
++	const unsigned int *pfo_resid = NULL;
++	enum vio_dev_family family;
++	const char *of_node_name = of_node->name ? of_node->name : "<unknown>";
+ 
+-	/* we need the 'device_type' property, in order to match with drivers */
+-	if (of_node->type == NULL) {
+-		printk(KERN_WARNING "%s: node %s missing 'device_type'\n",
+-				__func__,
+-				of_node->name ? of_node->name : "<unknown>");
++	/*
++	 * Determine if this node is a under the /vdevice node or under the
++	 * /ibm,platform-facilities node.  This decides the device's family.
++	 */
++	parent_node = of_get_parent(of_node);
++	if (parent_node) {
++		if (!strcmp(parent_node->full_name, "/ibm,platform-facilities"))
++			family = PFO;
++		else if (!strcmp(parent_node->full_name, "/vdevice"))
++			family = VDEVICE;
++		else {
++			pr_warn("%s: parent(%s) of %s not recognized.\n",
++					__func__,
++					parent_node->full_name,
++					of_node_name);
++			of_node_put(parent_node);
++			return NULL;
++		}
++		of_node_put(parent_node);
++	} else {
++		pr_warn("%s: could not determine the parent of node %s.\n",
++				__func__, of_node_name);
+ 		return NULL;
+ 	}
+ 
+-	unit_address = of_get_property(of_node, "reg", NULL);
+-	if (unit_address == NULL) {
+-		printk(KERN_WARNING "%s: node %s missing 'reg'\n",
+-				__func__,
+-				of_node->name ? of_node->name : "<unknown>");
+-		return NULL;
+-	}
++	if (family == PFO)
++		if (of_get_property(of_node, "interrupt-controller", NULL)) {
++			pr_debug("%s: Skipping the interrupt controller %s.\n",
++					__func__, of_node_name);
++			return NULL;
++		}
+ 
+ 	/* allocate a vio_dev for this node */
+ 	viodev = kzalloc(sizeof(struct vio_dev), GFP_KERNEL);
+-	if (viodev == NULL)
++	if (viodev == NULL) {
++		pr_warn("%s: allocation failure for VIO device.\n", __func__);
+ 		return NULL;
++	}
++
++	/* we need the 'device_type' property, in order to match with drivers */
++	viodev->family = family;
++	if (viodev->family == VDEVICE) {
++		if (of_node->type != NULL)
++			viodev->type = of_node->type;
++		else {
++			pr_warn("%s: node %s is missing the 'device_type' "
++					"property.\n", __func__, of_node_name);
++			goto out;
++		}
+ 
+-	viodev->irq = irq_of_parse_and_map(of_node, 0);
++		unit_address = of_get_property(of_node, "reg", NULL);
++		if (unit_address == NULL) {
++			pr_warn("%s: node %s missing 'reg'\n",
++					__func__, of_node_name);
++			goto out;
++		}
++		dev_set_name(&viodev->dev, "%x", *unit_address);
++		viodev->irq = irq_of_parse_and_map(of_node, 0);
++		viodev->unit_address = *unit_address;
++	} else {
++		/* PFO devices need their resource_id for submitting COP_OPs
++		 * This is an optional field for devices, but is required when
++		 * performing synchronous ops */
++		pfo_resid = of_get_property(of_node, "ibm,resource-id", NULL);
++		if (pfo_resid != NULL)
++			viodev->resource_id = *pfo_resid;
++
++		unit_address = NULL;
++		dev_set_name(&viodev->dev, "%s", of_node_name);
++		viodev->type = of_node_name;
++		viodev->irq = 0;
++	}
+ 
+-	dev_set_name(&viodev->dev, "%x", *unit_address);
+ 	viodev->name = of_node->name;
+-	viodev->type = of_node->type;
+-	viodev->unit_address = *unit_address;
+ 	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
+ 		unit_address = of_get_property(of_node,
+ 				"linux,unit_address", NULL);
+@@ -1277,16 +1431,51 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+ 	}
+ 
+ 	return viodev;
++
++out:	/* Use this exit point for any return prior to device_register */
++	kfree(viodev);
++
++	return NULL;
+ }
+ EXPORT_SYMBOL(vio_register_device_node);
+ 
++/*
++ * vio_bus_scan_for_devices - Scan OF and register each child device
++ * @root_name - OF node name for the root of the subtree to search.
++ *		This must be non-NULL
++ *
++ * Starting from the root node provide, register the device node for
++ * each child beneath the root.
++ */
++static void vio_bus_scan_register_devices(char *root_name)
++{
++	struct device_node *node_root, *node_child;
++
++	if (!root_name)
++		return;
++
++	node_root = of_find_node_by_name(NULL, root_name);
++	if (node_root) {
++
++		/*
++		 * Create struct vio_devices for each virtual device in
++		 * the device tree. Drivers will associate with them later.
++		 */
++		node_child = of_get_next_child(node_root, NULL);
++		while (node_child) {
++			vio_register_device_node(node_child);
++			node_child = of_get_next_child(node_root, node_child);
++		}
++		of_node_put(node_root);
++	}
++}
++
+ /**
+  * vio_bus_init: - Initialize the virtual IO bus
+  */
+ static int __init vio_bus_init(void)
+ {
+ 	int err;
+-	struct device_node *node_vroot;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_CMO))
+ 		vio_cmo_sysfs_init();
+@@ -1311,19 +1500,8 @@ static int __init vio_bus_init(void)
+ 	if (firmware_has_feature(FW_FEATURE_CMO))
+ 		vio_cmo_bus_init();
+ 
+-	node_vroot = of_find_node_by_name(NULL, "vdevice");
+-	if (node_vroot) {
+-		struct device_node *of_node;
+-
+-		/*
+-		 * Create struct vio_devices for each virtual device in
+-		 * the device tree. Drivers will associate with them later.
+-		 */
+-		for (of_node = node_vroot->child; of_node != NULL;
+-				of_node = of_node->sibling)
+-			vio_register_device_node(of_node);
+-		of_node_put(node_vroot);
+-	}
++	vio_bus_scan_register_devices("vdevice");
++	vio_bus_scan_register_devices("ibm,platform-facilities");
+ 
+ 	return 0;
+ }
+@@ -1446,12 +1624,28 @@ struct vio_dev *vio_find_node(struct device_node *vnode)
+ {
+ 	const uint32_t *unit_address;
+ 	char kobj_name[20];
++	struct device_node *vnode_parent;
++	const char *dev_type;
++
++	vnode_parent = of_get_parent(vnode);
++	if (!vnode_parent)
++		return NULL;
++
++	dev_type = of_get_property(vnode_parent, "device_type", NULL);
++	of_node_put(vnode_parent);
++	if (!dev_type)
++		return NULL;
+ 
+ 	/* construct the kobject name from the device node */
+-	unit_address = of_get_property(vnode, "reg", NULL);
+-	if (!unit_address)
++	if (!strcmp(dev_type, "vdevice")) {
++		unit_address = of_get_property(vnode, "reg", NULL);
++		if (!unit_address)
++			return NULL;
++		snprintf(kobj_name, sizeof(kobj_name), "%x", *unit_address);
++	} else if (!strcmp(dev_type, "ibm,platform-facilities"))
++		snprintf(kobj_name, sizeof(kobj_name), "%s", vnode->name);
++	else
+ 		return NULL;
+-	snprintf(kobj_name, sizeof(kobj_name), "%x", *unit_address);
+ 
+ 	return vio_find_name(kobj_name);
+ }
+-- 
+1.7.1
