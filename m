@@ -2,26 +2,26 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D8FCB6FEF
+ by ozlabs.org (Postfix) with ESMTPS id 2F411B6FB7
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 11:58:59 +1100 (EST)
 Received: from /spool/local
  by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 22 Mar 2012 06:28:53 +0530
+ Thu, 22 Mar 2012 06:28:56 +0530
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2M0wmEp3280906
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q2M0wmg44124922
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 06:28:48 +0530
 Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2M6TG4L023699
+ q2M6TGYX023700
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 17:29:17 +1100
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH 3/3] powerpc/eeh: Retrieve PHB from global list
-Date: Wed, 21 Mar 2012 15:30:29 +0800
-Message-Id: <1332315029-29688-3-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] powerpc/eeh: remove eeh information from pci_dn
+Date: Wed, 21 Mar 2012 15:30:28 +0800
+Message-Id: <1332315029-29688-2-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1332315029-29688-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1332315029-29688-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: sfr@canb.auug.org.au, shangw@linux.vnet.ibm.com
@@ -34,69 +34,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, the existing PHBs are retrieved from the FDT (Flat
-Device Tree) based on the name of FDT node. Specificly, those
-FDT nodes whose names have prefix "pci" are regarded as PHBs.
-That's inappropriate because some PCI bridges possibilly have
-names leading with "pci". It caused EEH is enabled on same
-PCI devices for towice.
-
-The patch fixes the above issue. Besides, the PHBs are expected
-to be figured out from FDT before enable EEH on them. Therefore,
-it's resonable to retrieve the PHBs from the global linked list
-traced by variable "hose_list" insteading poking them from FDT.
-
-For the EEH implementation on pSeries platform, RTAS is critical
-because all low-level functions are implemented based on RTAS.
-Therefore, we should make sure "/rtas" OF node is available and
-ready before to enable EEH core. However, it actually introduced
-duplicate since the previous pSeries platform dependent initialization
-function already do the check. Besides, we want to make eeh core
-platform independent, so RTAS related staff should be removed there.
-The patch removes the duplicate check on "/rtas" OF node for eeh
-core.
+The patch removes the eeh information from pci_dn since the eeh
+device (struct eeh_dev) already contained those information.
+Also, the pseries IOMMU mapping functions have been changed
+for a little bit to retrieve PE address from eeh device instead
+of pci_dn.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/eeh.c |   19 +++++--------------
- 1 files changed, 5 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h  |    8 --------
+ arch/powerpc/platforms/pseries/iommu.c |   29 +++++++++++++----------------
+ 2 files changed, 13 insertions(+), 24 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 8011088..309d38e 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -984,7 +984,8 @@ int __exit eeh_ops_unregister(const char *name)
-  */
- void __init eeh_init(void)
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 21f99ae..ac39e6a 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -156,14 +156,6 @@ struct pci_dn {
+ 	struct	pci_dev *pcidev;	/* back-pointer to the pci device */
+ #ifdef CONFIG_EEH
+ 	struct eeh_dev *edev;		/* eeh device */
+-	int	class_code;		/* pci device class */
+-	int	eeh_mode;		/* See eeh.h for possible EEH_MODEs */
+-	int	eeh_config_addr;
+-	int	eeh_pe_config_addr; /* new-style partition endpoint address */
+-	int	eeh_check_count;	/* # times driver ignored error */
+-	int	eeh_freeze_count;	/* # times this device froze up. */
+-	int	eeh_false_positives;	/* # times this device reported #ff's */
+-	u32	config_space[16];	/* saved PCI config space */
+ #endif
+ #define IODA_INVALID_PE		(-1)
+ #ifdef CONFIG_PPC_POWERNV
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index c442f2b..0915b1a 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -809,8 +809,7 @@ machine_arch_initcall(pseries, find_existing_ddw_windows);
+ static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+ 			struct ddw_query_response *query)
  {
--	struct device_node *phb, *np;
-+	struct pci_controller *hose, *tmp;
-+	struct device_node *phb;
+-	struct device_node *dn;
+-	struct pci_dn *pcidn;
++	struct eeh_dev *edev;
+ 	u32 cfg_addr;
+ 	u64 buid;
  	int ret;
+@@ -821,12 +820,12 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+ 	 * Retrieve them from the pci device, not the node with the
+ 	 * dma-window property
+ 	 */
+-	dn = pci_device_to_OF_node(dev);
+-	pcidn = PCI_DN(dn);
+-	cfg_addr = pcidn->eeh_config_addr;
+-	if (pcidn->eeh_pe_config_addr)
+-		cfg_addr = pcidn->eeh_pe_config_addr;
+-	buid = pcidn->phb->buid;
++	edev = pci_dev_to_eeh_dev(dev);
++	cfg_addr = edev->config_addr;
++	if (edev->pe_config_addr)
++		cfg_addr = edev->pe_config_addr;
++	buid = edev->phb->buid;
++
+ 	ret = rtas_call(ddw_avail[0], 3, 5, (u32 *)query,
+ 		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
+ 	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
+@@ -839,8 +838,7 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+ 			struct ddw_create_response *create, int page_shift,
+ 			int window_shift)
+ {
+-	struct device_node *dn;
+-	struct pci_dn *pcidn;
++	struct eeh_dev *edev;
+ 	u32 cfg_addr;
+ 	u64 buid;
+ 	int ret;
+@@ -851,12 +849,11 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+ 	 * Retrieve them from the pci device, not the node with the
+ 	 * dma-window property
+ 	 */
+-	dn = pci_device_to_OF_node(dev);
+-	pcidn = PCI_DN(dn);
+-	cfg_addr = pcidn->eeh_config_addr;
+-	if (pcidn->eeh_pe_config_addr)
+-		cfg_addr = pcidn->eeh_pe_config_addr;
+-	buid = pcidn->phb->buid;
++	edev = pci_dev_to_eeh_dev(dev);
++	cfg_addr = edev->config_addr;
++	if (edev->pe_config_addr)
++		cfg_addr = edev->pe_config_addr;
++	buid = edev->phb->buid;
  
- 	/* call platform initialization function */
-@@ -1000,19 +1001,9 @@ void __init eeh_init(void)
- 
- 	raw_spin_lock_init(&confirm_error_lock);
- 
--	np = of_find_node_by_path("/rtas");
--	if (np == NULL)
--		return;
--
--	/* Enable EEH for all adapters.  Note that eeh requires buid's */
--	for (phb = of_find_node_by_name(NULL, "pci"); phb;
--	     phb = of_find_node_by_name(phb, "pci")) {
--		unsigned long buid;
--
--		buid = get_phb_buid(phb);
--		if (buid == 0 || !of_node_to_eeh_dev(phb))
--			continue;
--
-+	/* Enable EEH for all adapters */
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+		phb = hose->dn;
- 		traverse_pci_devices(phb, eeh_early_enable, NULL);
- 	}
- 
+ 	do {
+ 		/* extra outputs are LIOBN and dma-addr (hi, lo) */
 -- 
 1.7.5.4
