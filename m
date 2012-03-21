@@ -1,31 +1,30 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 42571B6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 08:38:28 +1100 (EST)
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 96B90B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 08:38:42 +1100 (EST)
 Received: from /spool/local
- by e5.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Wed, 21 Mar 2012 17:38:22 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 84CA738C8062
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:37:17 -0400 (EDT)
+ Wed, 21 Mar 2012 17:38:39 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 61F8938C8052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:38:36 -0400 (EDT)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2LLbHfs254448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:37:17 -0400
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q2LLcapx333222
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 17:38:36 -0400
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
  by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2LLbHHe018525
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 18:37:17 -0300
-Message-ID: <1332365890.3858.26.camel@key-ThinkPad-W510>
-Subject: [PATCH 02/17] powerpc: Add pseries update notifier for OFDT prop
- changes
+ q2LLcZJo023969
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 18:38:36 -0300
+Message-ID: <1332365968.3858.34.camel@key-ThinkPad-W510>
+Subject: [PATCH 06/17] powerpc: crypto: AES-CBC mode routines for nx encryption
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Wed, 21 Mar 2012 16:38:10 -0500
+Date: Wed, 21 Mar 2012 16:39:28 -0500
 In-Reply-To: <1332365297.3858.5.camel@key-ThinkPad-W510>
 References: <1332365297.3858.5.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
@@ -41,79 +40,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
+These routines add support for AES in CBC mode on the Power7+ CPU's
+in-Nest accelerator driver.
 
-This adds an update notifier mechanism for changes to properties in the
-device tree.  One use of this would be a device driver that needs to act
-on changes to it's properties in the device tree after a live migration
-or a dynamic activation that is triggered by updates to ofdt properties.
-
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pSeries_reconfig.h |   12 ++++++++++++
- arch/powerpc/platforms/pseries/reconfig.c   |    7 +++++++
- 2 files changed, 19 insertions(+), 0 deletions(-)
+ arch/powerpc/crypto/nx/nx-aes-cbc.c |  135 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 135 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/crypto/nx/nx-aes-cbc.c
 
-diff --git a/arch/powerpc/include/asm/pSeries_reconfig.h b/arch/powerpc/include/asm/pSeries_reconfig.h
-index 23cd6cc..c07edfe 100644
---- a/arch/powerpc/include/asm/pSeries_reconfig.h
-+++ b/arch/powerpc/include/asm/pSeries_reconfig.h
-@@ -13,6 +13,18 @@
- #define PSERIES_RECONFIG_REMOVE		0x0002
- #define PSERIES_DRCONF_MEM_ADD		0x0003
- #define PSERIES_DRCONF_MEM_REMOVE	0x0004
-+#define PSERIES_UPDATE_PROPERTY		0x0005
-+
+diff --git a/arch/powerpc/crypto/nx/nx-aes-cbc.c b/arch/powerpc/crypto/nx/nx-aes-cbc.c
+new file mode 100644
+index 0000000..01fa5cb
+--- /dev/null
++++ b/arch/powerpc/crypto/nx/nx-aes-cbc.c
+@@ -0,0 +1,135 @@
 +/**
-+ * pSeries_reconfig_notify - Notifier value structure for OFDT property updates
++ * AES CBC routines supporting the Power 7+ Nest Accelerators driver
 + *
-+ * @node: Device tree node which owns the property being updated
-+ * @property: Updated property
++ * Copyright (C) 2011-2012 International Business Machines Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 only.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ * Author: Kent Yoder <yoder1@us.ibm.com>
 + */
-+struct pSeries_reconfig_prop_update {
-+	struct device_node *node;
-+	struct property *property;
-+};
- 
- #ifdef CONFIG_PPC_PSERIES
- extern int pSeries_reconfig_notifier_register(struct notifier_block *);
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 168651a..7b3bf76 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -103,11 +103,13 @@ int pSeries_reconfig_notifier_register(struct notifier_block *nb)
- {
- 	return blocking_notifier_chain_register(&pSeries_reconfig_chain, nb);
- }
-+EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_register);
- 
- void pSeries_reconfig_notifier_unregister(struct notifier_block *nb)
- {
- 	blocking_notifier_chain_unregister(&pSeries_reconfig_chain, nb);
- }
-+EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_unregister);
- 
- int pSeries_reconfig_notify(unsigned long action, void *p)
- {
-@@ -426,6 +428,7 @@ static int do_remove_property(char *buf, size_t bufsize)
- static int do_update_property(char *buf, size_t bufsize)
- {
- 	struct device_node *np;
-+	struct pSeries_reconfig_prop_update upd_value;
- 	unsigned char *value;
- 	char *name, *end, *next_prop;
- 	int rc, length;
-@@ -454,6 +457,10 @@ static int do_update_property(char *buf, size_t bufsize)
- 		return -ENODEV;
- 	}
- 
-+	upd_value.node = np;
-+	upd_value.property = newprop;
-+	pSeries_reconfig_notify(PSERIES_UPDATE_PROPERTY, &upd_value);
 +
- 	rc = prom_update_property(np, newprop, oldprop);
- 	if (rc)
- 		return rc;
++#include <crypto/aes.h>
++#include <crypto/algapi.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/crypto.h>
++#include <asm/vio.h>
++
++#include "nx_csbcpb.h"
++#include "nx.h"
++
++
++static int cbc_aes_nx_set_key(struct crypto_tfm *tfm,
++			      const u8          *in_key,
++			      unsigned int       key_len)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(tfm);
++	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
++
++	nx_ctx_init(nx_ctx, HCOP_FC_AES);
++
++	switch (key_len) {
++	case AES_KEYSIZE_128:
++		csbcpb->cpb.hdr.key_size = NX_KS_AES_128;
++		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_128];
++		break;
++	case AES_KEYSIZE_192:
++		csbcpb->cpb.hdr.key_size = NX_KS_AES_192;
++		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_192];
++		break;
++	case AES_KEYSIZE_256:
++		csbcpb->cpb.hdr.key_size = NX_KS_AES_256;
++		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_256];
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	csbcpb->cpb.hdr.mode = NX_MODE_AES_CBC;
++	memcpy(csbcpb->cpb.aes_cbc.key, in_key, key_len);
++
++	return 0;
++}
++
++static int cbc_aes_nx_crypt(struct blkcipher_desc *desc,
++			    struct scatterlist    *dst,
++			    struct scatterlist    *src,
++			    unsigned int           nbytes,
++			    int                    enc)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_blkcipher_ctx(desc->tfm);
++	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
++	int rc;
++
++	if (nbytes > nx_ctx->ap->databytelen)
++		return -EINVAL;
++
++	csbcpb->cpb.hdr.fdm.ende = enc;
++
++	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes,
++			       csbcpb->cpb.aes_cbc.iv);
++	if (rc)
++		goto out;
++
++	if (!nx_ctx->op.inlen || !nx_ctx->op.outlen)
++		return -EINVAL;
++
++	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op);
++	if (rc)
++		goto out;
++
++	atomic_inc(&(nx_ctx->stats->aes_ops));
++	atomic64_add(csbcpb->csb.processed_byte_count,
++		     &(nx_ctx->stats->aes_bytes));
++out:
++	return rc;
++}
++
++static int cbc_aes_nx_encrypt(struct blkcipher_desc *desc,
++			      struct scatterlist    *dst,
++			      struct scatterlist    *src,
++			      unsigned int           nbytes)
++{
++	return cbc_aes_nx_crypt(desc, dst, src, nbytes, 1);
++}
++
++static int cbc_aes_nx_decrypt(struct blkcipher_desc *desc,
++			      struct scatterlist    *dst,
++			      struct scatterlist    *src,
++			      unsigned int           nbytes)
++{
++	return cbc_aes_nx_crypt(desc, dst, src, nbytes, 0);
++}
++
++struct crypto_alg nx_cbc_aes_alg = {
++	.cra_name        = "cbc(aes)",
++	.cra_driver_name = "cbc-aes-nx",
++	.cra_priority    = 300,
++	.cra_flags       = CRYPTO_ALG_TYPE_BLKCIPHER,
++	.cra_blocksize   = AES_BLOCK_SIZE,
++	.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
++	.cra_type        = &crypto_blkcipher_type,
++	.cra_module      = THIS_MODULE,
++	.cra_list        = LIST_HEAD_INIT(nx_cbc_aes_alg.cra_list),
++	.cra_init        = nx_crypto_ctx_aes_cbc_init,
++	.cra_exit        = nx_crypto_ctx_exit,
++	.cra_blkcipher = {
++		.min_keysize = AES_MIN_KEY_SIZE,
++		.max_keysize = AES_MAX_KEY_SIZE,
++		.ivsize      = AES_BLOCK_SIZE,
++		.setkey      = cbc_aes_nx_set_key,
++		.encrypt     = cbc_aes_nx_encrypt,
++		.decrypt     = cbc_aes_nx_decrypt,
++	}
++};
 -- 
 1.7.1
