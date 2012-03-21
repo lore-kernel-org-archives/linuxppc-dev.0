@@ -1,23 +1,28 @@
-Return-Path: <mla@apm.com>
-Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
- by ozlabs.org (Postfix) with SMTP id 94C30B6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 13:22:37 +1100 (EST)
-Received: by dadp14 with SMTP id p14so933334dad.32
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 19:22:35 -0700 (PDT)
-From: Mai La <mla@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Matt Porter <mporter@kernel.crashing.org>,
- Tirumala R Marri <tmarri@apm.com>,
- Grant Likely <grant.likely@secretlab.ca>,
- Michael Neuling <mikey@neuling.org>,
- Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/44x: Support CPM for Maui APM821xxx SoC and Bluestone
- board
-Date: Wed, 21 Mar 2012 09:21:12 +0700
-Message-Id: <1332296472-24734-1-git-send-email-mla@apm.com>
-Cc: Mai La <mla@apm.com>
+Return-Path: <consul.kautuk@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+ [209.85.213.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6220CB6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2012 14:27:08 +1100 (EST)
+Received: by yenl1 with SMTP id l1so701037yen.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2012 20:27:05 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1332278973.2982.24.camel@pasglop>
+References: <1332259260-1943-1-git-send-email-consul.kautuk@gmail.com>
+ <1332278936.2982.23.camel@pasglop>
+ <1332278973.2982.24.camel@pasglop>
+Date: Wed, 21 Mar 2012 08:57:05 +0530
+Message-ID: <CAFPAmTQtDnQ-jrc-hqtTshciqnx-iS5wSwCiCN11ZWJUOc-cfg@mail.gmail.com>
+Subject: Re: [PATCH 04/20 v3] powerpc/mm/fault.c: Port OOM changes to
+ do_page_fault
+From: Kautuk Consul <consul.kautuk@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+ Christian Dietrich <christian.dietrich@informatik.uni-erlangen.de>,
+ Paul Mackerras <paulus@samba.org>, "Mohd. Faris" <mohdfarisq2010@gmail.com>,
+ Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In this patch:
-- Add CPM node for Maui APM821xxx SoC and Bluestone board in DTS
+>>
+>> I have done that port already :-) It's in powerpc-next which I will send
+>> to Linus to pull today or tomorrow....
 
-Signed-off-by: Mai La <mla@apm.com>
----
- arch/powerpc/boot/dts/bluestone.dts |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+Oops, sorry I didn't know that as I don't regularly follow the powerpc tree.
+I just did this change for all architectures. :)
 
-diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
-index 2a56a0d..15a9516 100644
---- a/arch/powerpc/boot/dts/bluestone.dts
-+++ b/arch/powerpc/boot/dts/bluestone.dts
-@@ -117,6 +117,15 @@
- 		dcr-reg = <0x00c 0x002>;
- 	};
- 
-+	CPM0: cpm {
-+		compatible = "ibm, cpm-apm821xx", "ibm,cpm";
-+		cell-index = <0>;
-+		dcr-reg = <0x160 0x003>;
-+		er-offset = <0>;
-+		idle-doze = <0x02000000>;
-+		standby = <0x302570F0>;
-+	};
-+
- 	plb {
- 		compatible = "ibm,plb4";
- 		#address-cells = <2>;
--- 
-1.7.3.4
+>
+> BTW. Feel free to review what I've done, it's quite possible that I have
+> screwed something up ...
+
+Okay, I'll take a look at it. Thanks again. :)
+
+>
+> Cheers,
+> Ben.
