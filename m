@@ -1,22 +1,36 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-yx0-f170.google.com (mail-yx0-f170.google.com
- [209.85.213.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 09FE2B6EE7
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 00:29:44 +1100 (EST)
-Received: by yenl5 with SMTP id l5so871757yen.15
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 06:29:42 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4F69C553.6070409@gmail.com>
-References: <4F69C553.6070409@gmail.com>
-Date: Wed, 21 Mar 2012 09:29:41 -0400
-Message-ID: <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
-Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
-From: Josh Boyer <jwboyer@gmail.com>
-To: robert.karl.berger@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <m.szyprowski@samsung.com>
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11]) by ozlabs.org (Postfix) with ESMTP id C7A4BB6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 00:43:54 +1100 (EST)
+Received: from euspt1 (mailout1.w1.samsung.com [210.118.77.11])
+ by mailout1.w1.samsung.com
+ (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+ with ESMTP id <0M1800GEUM4I24@mailout1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 21 Mar 2012 13:43:30 +0000 (GMT)
+Received: from linux.samsung.com ([106.116.38.10])
+ by spt1.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
+ 2004)) with ESMTPA id <0M18008O5M51Q1@spt1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 21 Mar 2012 13:43:50 +0000 (GMT)
+Date: Wed, 21 Mar 2012 14:43:46 +0100
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [GIT PULL] DMA-mapping framework updates for 3.4
+In-reply-to: <1332228283-29077-1-git-send-email-m.szyprowski@samsung.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>,
+ 'Linus Torvalds' <torvalds@linux-foundation.org>
+Message-id: <079801cd0768$a3623d10$ea26b730$%szyprowski@samsung.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <1332228283-29077-1-git-send-email-m.szyprowski@samsung.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, 'Jonathan Corbet' <corbet@lwn.net>, x86@kernel.org,
+ 'Arnd Bergmann' <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+ linaro-mm-sig@lists.linaro.org, Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ 'Thomas Gleixner' <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ discuss@x86-64.org, linux-kernel@vger.kernel.org,
+ 'FUJITA Tomonori' <fujita.tomonori@lab.ntt.co.jp>,
+ 'Kyungmin Park' <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
+ 'Andrew Morton' <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +40,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 21, 2012 at 8:10 AM, Robert Berger
-<robert.karl.berger@gmail.com> wrote:
-> Hi,
->
-> Up to 3.2.x I was able to compile a mainline kernel for the kilauea
-> board, but...
->
-> http://git.denx.de/?p=linux-denx.git;a=commitdiff;h=075bcf5879225d0c2a119c23d8046b890e051e81
->
-> shows, that mfdcrx was introduced in the v3.3 kernel.
->
-> The problem is that for ppc-linux-gcc (GCC) 4.2.2 (which comes with the
-> ELDK 4.2) this assembly instruction is not known and the build breaks.
+Hello,
 
-Sigh.  GCC 4.2 is pretty old at this point.
+On Tuesday, March 20, 2012 8:25 AM Marek Szyprowski wrote:
 
-> There are some obvious workarounds, like using a more recent toolchain
-> (e.g ELDK 5.x) or use make -k to keep on compiling even when there is an
-> error as much as possible;)
+> Hi Linus,
+> 
+> Please pull the dma-mapping framework updates for v3.4 since commit
+> c16fa4f2ad19908a47c63d8fa436a1178438c7e7:
+> 
+>   Linux 3.3
+> 
+> with the top-most commit e749a9f707f1102735e02338fa564be86be3bb69
+> 
+>   common: DMA-mapping: add NON-CONSISTENT attribute
+> 
+> from the git repository at:
+> 
+>   git://git.infradead.org/users/kmpark/linux-samsung dma-mapping-next
+> 
+> Those patches introduce a new alloc method (with support for memory
+> attributes) in dma_map_ops structure, which will later replace
+> dma_alloc_coherent and dma_alloc_writecombine functions.
+ 
+I've been pointed out that this summary is quite short and misses the main
+rationale for the proposed changes.
 
-That would be the most expedient option, yes.
+A few limitations have been identified in the current dma-mapping design and 
+its implementations for various architectures. There exist more than one function
+for allocating and freeing the buffers: currently these 3 are used dma_{alloc,
+free}_coherent, dma_{alloc,free}_writecombine, dma_{alloc,free}_noncoherent.
 
-> What puzzles me is that also stuff for boards is being compiled which is
-> not really needed like treeboot-currituck.c even when I configure the
-> kernel for a kilauea board.
->
-> Is this on purpose and if so why?
+For most of the systems these calls are almost equivalent and can be interchanged.
+For others, especially the truly non-coherent ones (like ARM), the difference can
+be easily noticed in overall driver performance. Sadly not all architectures 
+provide implementations for all of them, so the drivers might need to be adapted 
+and cannot be easily shared between different architectures. The provided patches
+unify all these functions and hide the differences under the already existing
+dma attributes concept. The thread with more references is available here: 
+http://www.spinics.net/lists/linux-sh/msg09777.html
 
-All of the stuff in arch/powerpc/boot/ is built regardless of the
-configured board and stuffed into a wrapper.a archive.  Then the
-individual board targets are built and the necessary pieces are pulled
-from the wrapper.a file.
+These patches are also a prerequisite for unifying DMA-mapping implementation
+on ARM architecture with the common one provided by dma_map_ops structure and 
+extending it with IOMMU support. More information is available in the following 
+thread: http://thread.gmane.org/gmane.linux.kernel.cross-arch/12819
 
-> Please advise.
+More works on dma-mapping framework are planned, especially in the area of buffer
+sharing and managing the shared mappings (together with the recently introduced 
+dma_buf interface: commit d15bd7ee445d0702ad801fdaece348fdb79e6581 "dma-buf: 
+Introduce dma buffer sharing mechanism" ).
 
-If upgrading ELDK is an option for you, it will get you the quickest
-solution.  Otherwise we'll need to figure out how to stub out the
-instruction in boot/dcr.h and use the asm long trick.  Ew.  I can look
-at that next week.
-
-josh
+Best regards
+-- 
+Marek Szyprowski
+Samsung Poland R&D Center
