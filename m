@@ -1,22 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 389D2B6EE7
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 01:08:43 +1100 (EST)
-Date: Thu, 22 Mar 2012 01:08:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: Please pull 'next' branch of 5xxx tree
-Message-Id: <20120322010831.3773462306b0f8a2753d2205@canb.auug.org.au>
-In-Reply-To: <20120321011830.20e20ca0@wker>
-References: <20120320180450.5f6dffe4@wker>
- <20120320223017.GB6292@pengutronix.de>
- <1332286341.2982.26.camel@pasglop> <20120321011830.20e20ca0@wker>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__22_Mar_2012_01_08_31_+1100_AJtklSevmasdzmy5"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2E56FB6EF4
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 02:09:07 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
+Mime-Version: 1.0 (Apple Message framework v1257)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20120319160452.B57D13E05A5@localhost>
+Date: Wed, 21 Mar 2012 10:08:49 -0500
+Message-Id: <50E98FCC-EA02-4215-98EC-7C16671447DF@kernel.crashing.org>
+References: <1322669957-8259-1-git-send-email-timur@freescale.com>
+ <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
+ <4F63A7A4.4000205@freescale.com> <20120319160452.B57D13E05A5@localhost>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Scott Wood <scottwood@freescale.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Timur Tabi <timur@freescale.com>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,76 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__22_Mar_2012_01_08_31_+1100_AJtklSevmasdzmy5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Anatolij,
+On Mar 19, 2012, at 11:04 AM, Grant Likely wrote:
 
-On Wed, 21 Mar 2012 01:18:30 +0100 Anatolij Gustschin <agust@denx.de> wrote:
->
-> Yes. Stephen, could you please change linux-next to pull from my
-> mpc5xxx tree
+> On Fri, 16 Mar 2012 15:50:44 -0500, Timur Tabi <timur@freescale.com> =
+wrote:
+>> Kumar Gala wrote:
+>>=20
+>>> This seems like paper taping over the real issue.  We should be able =
+to call of_platform_bus_probe() multiple times.
+>>=20
+>> I tried debugging it, but I couldn't figure it out.  My guess is that =
+the
+>> nodes probed by of_platform_bus_probe() are somehow "reserved", so =
+that
+>> the second time it's called, they're skipped.  I figured that this =
+was
+>> just a side-effect of the way the OF layer works.
 >=20
->  git://git.denx.de/linux-2.6-agust.git next
+> The problem is that you want to create devices for grandchildren
+> nodes when the bus ids passed in don't match any of the child nodes so
+> the of_platform_bus_probe() doesn't iterate down to that level.  This
+> is correct and expected behaviour.
+>=20
+> g.
 
-I have replaced the 52xx-and-virtex tree with this (and called it simply
-mpc5xxx).  I have also removed the 52xx-and-virtex-current tree.
+Does of_platform_populate() handle this?
 
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
-
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
-
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
-
---=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
-
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
-
---Signature=_Thu__22_Mar_2012_01_08_31_+1100_AJtklSevmasdzmy5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPaeDfAAoJEECxmPOUX5FElbEP/3rp7RWkxkQDB07iBZZXuq46
-wPkCUW0BPY6iNNQZJ2ko1zqMTW+eoRK6KByKdwqEy37GQOwN3F8Tq3sUt6ioKwKn
-5079mtrPMdX6J/wMIEM49L4OqKGXM216ccx5fl0DV0osW8OTgdktcdQpaIV0d1KT
-AuPQsapDc2/n8dsL5G/PpE8b2rjB//mvmCiBX4PpfXnvTQfQSKjlB1AwuK7Tbrxe
-bMq6z0rrVbt87IKJN93ABsBmA+8ll5e+kM5yj7jNVRqInfnbT271Gv43aMXecx9s
-VWRpw9KlYPYAGMgFKvYG20gkPDUaGi25RGqamU++RIad+Vi9CO/hYLnPIkPL7aIk
-MpYXLnRkMZeI2w84DD2BkSWJ8raMwSP2OvWuDfsrMc2YWHCHRHHDW2GzOmAp47tF
-vaHchdX+UA5j/4Rm6jsTR3dFQaaLoVEljY4Ch1X5kAfq9RwD6WV42KBrHggYLv8X
-GpeAB0SOx0PsUpTQP2Qv5wyypG+AokyWHUN7tYcNcdrf25JCKkS+Sn2FikrzEZKN
-/LYq29lK7oiR+w+RBbtwIPtxyEkZXIa0KU10M8dez4NPXY9+4mItSwX64E1bQ8jY
-+hnqAgpEfSdxXx2cBYJ5dnct2AgCCGR4s2m3R9db0OyI1K8MhVz6lRJtHdfNqoLL
-F1G1Htaka+JGn+ArJuoP
-=z9Jb
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_Mar_2012_01_08_31_+1100_AJtklSevmasdzmy5--
+- k=
