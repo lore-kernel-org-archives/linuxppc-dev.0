@@ -1,16 +1,28 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 22 Mar 2012 12:59:04 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 6/6] powerpc/pseries: Cut down on enthusiastic use of
- defines in RAS code
-Message-ID: <20120322125904.0f28b9ee@kryten>
-In-Reply-To: <20120322125803.40bb5e34@kryten>
-References: <20120322124707.3cd3037f@kryten> <20120322125343.63d77e82@kryten>
- <20120322125649.434c6f5e@kryten> <20120322125803.40bb5e34@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <linus971@gmail.com>
+Received: from mail-wi0-f170.google.com (mail-wi0-f170.google.com
+ [209.85.212.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 244CBB6EE7
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2012 13:02:23 +1100 (EST)
+Received: by wibhr17 with SMTP id hr17so174905wib.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2012 19:02:20 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <1332377206.2982.60.camel@pasglop>
+References: <1332377206.2982.60.camel@pasglop>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 21 Mar 2012 19:02:00 -0700
+Message-ID: <CA+55aFz-pyBHa73zkbkub4czwnU+k4_qKzBEaAGvi66MBBUTpQ@mail.gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git next branch
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,56 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Mar 21, 2012 at 5:46 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> Here's the powerpc batch for this merge window. It is going to be a bit
+> more nasty than usual as in touching things outside of arch/powerpc
+> mostly due to the big iSeriesectomy :-) We finally got rid of the bugger
+> (legacy iSeries support) which was a PITA to maintain and that nobody
+> really used anymore.
+>
+> Here are some of the highlights:
 
-So many defines for such a little file. Most of them can go.
+Ok, so this conflicted a bit with the generalized irq-domain stuff
+from Grant Likely, and while I tried to fix it up I can't even
+compile-test the end result, so you really need to verify my merge and
+perhaps send me fixups. Ok?
 
-Also remove the single entry changelog, we have git for that.
+Especially the sysdev/mpic.c resolution needs somebody who knows the
+code to verify. Added Grant and Kyle explicitly to the cc..
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: linux-build/arch/powerpc/platforms/pseries/ras.c
-===================================================================
---- linux-build.orig/arch/powerpc/platforms/pseries/ras.c	2012-03-22 12:44:13.306570733 +1100
-+++ linux-build/arch/powerpc/platforms/pseries/ras.c	2012-03-22 12:44:24.798779279 +1100
-@@ -16,39 +16,15 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
- 
--/* Change Activity:
-- * 2001/09/21 : engebret : Created with minimal EPOW and HW exception support.
-- * End Change Activity
-- */
--
--#include <linux/errno.h>
--#include <linux/threads.h>
--#include <linux/kernel_stat.h>
--#include <linux/signal.h>
- #include <linux/sched.h>
--#include <linux/ioport.h>
- #include <linux/interrupt.h>
--#include <linux/timex.h>
--#include <linux/init.h>
--#include <linux/delay.h>
- #include <linux/irq.h>
--#include <linux/random.h>
--#include <linux/sysrq.h>
--#include <linux/bitops.h>
-+#include <linux/of.h>
- #include <linux/fs.h>
- #include <linux/reboot.h>
- 
--#include <asm/uaccess.h>
--#include <asm/system.h>
--#include <asm/io.h>
--#include <asm/pgtable.h>
--#include <asm/irq.h>
--#include <asm/cache.h>
--#include <asm/prom.h>
--#include <asm/ptrace.h>
- #include <asm/machdep.h>
- #include <asm/rtas.h>
--#include <asm/udbg.h>
- #include <asm/firmware.h>
- 
- #include "pseries.h"
+                      Linus
