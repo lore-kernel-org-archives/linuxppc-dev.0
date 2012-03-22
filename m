@@ -4,14 +4,14 @@ Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "wolverine01.qualcomm.com",
  Issuer "VeriSign Class 3 Secure Server CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 76E71B6EF4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 22:08:09 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 73DF5B6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2012 01:23:04 +1100 (EST)
 From: Ravi Kumar V <kumarrav@codeaurora.org>
 To: Vinod Koul <vinod.koul@intel.com>
-Subject: [PATCH v4 1/2] dmaengine: Add context parameter to prep_dma_sg and
+Subject: [PATCH v5 1/2] dmaengine: Add context parameter to prep_dma_sg and
  prep_interleaved_dma
-Date: Thu, 22 Mar 2012 16:24:52 +0530
-Message-Id: <1332413692-8312-1-git-send-email-kumarrav@codeaurora.org>
+Date: Thu, 22 Mar 2012 19:52:47 +0530
+Message-Id: <1332426167-25213-1-git-send-email-kumarrav@codeaurora.org>
 Cc: tsoni@codeaurora.org, Russell King <linux@arm.linux.org.uk>,
  Ravi Kumar V <kumarrav@codeaurora.org>,
  Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
@@ -35,7 +35,6 @@ per transfer specific private data, using this it enables the
 dma devices which needs to pass the parameters which changes per
 each transfer
 
-Change-Id: Ia9ee19f2c253e68b8e5ff254a57478dcc51014ca
 Signed-off-by: Ravi Kumar V <kumarrav@codeaurora.org>
 ---
  drivers/dma/fsldma.c                    |    2 +-
