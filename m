@@ -1,9 +1,11 @@
 Return-Path: <anton@samba.org>
-Date: Thu, 22 Mar 2012 12:47:07 +1100
+Date: Thu, 22 Mar 2012 12:49:59 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 1/6] powerpc: Make function that parses RTAS error logs global
-Message-ID: <20120322124707.3cd3037f@kryten>
+Subject: [PATCH 2/6] powerpc/pseries: Parse and handle EPOW interrupts
+Message-ID: <20120322124959.32d84480@kryten>
+In-Reply-To: <20120322124707.3cd3037f@kryten>
+References: <20120322124707.3cd3037f@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,200 +19,198 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-The IO event interrupt code has a function that finds specific
-sections in an RTAS error log. We want to use it in the EPOW
-code so make it global.
+We have code to take environmental and power warning (EPOW)
+interrupts but it simply prints a terse error message:
 
-Rename things to make it less cryptic:
+EPOW <0x6240040000000b8 0x0 0x0>
 
-find_xelog_section() -> get_pseries_errorlog()
-struct pseries_elog_section -> struct pseries_errorlog
+which tells us nothing about what happened. Even worse, if we
+don't correctly respond to the interrupt we may get terminated
+by firmware.
+
+Add code to printk some useful information when we get EPOW events.
+We want to make it clear that we have an error, that it was
+reported by firmware and that the RTAS error log will have more
+detailed information. eg:
+
+	Ambient temperature too high reported by firmware.
+	Check RTAS error log for details
+
+Depending on the error encountered, we now issue an immediate or
+an orderly power down.
+
+Move initialization of the EPOW interrupt earlier in boot since we
+want to respond to them as early as possible.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-build/arch/powerpc/include/asm/rtas.h
+Index: linux-build/arch/powerpc/platforms/pseries/ras.c
 ===================================================================
---- linux-build.orig/arch/powerpc/include/asm/rtas.h	2012-03-22 11:46:57.408187770 +1100
-+++ linux-build/arch/powerpc/include/asm/rtas.h	2012-03-22 11:48:25.221771962 +1100
-@@ -204,6 +203,39 @@ struct rtas_ext_event_log_v6 {
- 					/* Variable length.		*/
- };
+--- linux-build.orig/arch/powerpc/platforms/pseries/ras.c	2012-03-22 12:24:24.980892033 +1100
++++ linux-build/arch/powerpc/platforms/pseries/ras.c	2012-03-22 12:25:06.857659239 +1100
+@@ -35,6 +35,8 @@
+ #include <linux/random.h>
+ #include <linux/sysrq.h>
+ #include <linux/bitops.h>
++#include <linux/fs.h>
++#include <linux/reboot.h>
  
-+/* pSeries event log format */
-+
-+/* Two bytes ASCII section IDs */
-+#define PSERIES_ELOG_SECT_ID_PRIV_HDR		(('P' << 8) | 'H')
-+#define PSERIES_ELOG_SECT_ID_USER_HDR		(('U' << 8) | 'H')
-+#define PSERIES_ELOG_SECT_ID_PRIMARY_SRC	(('P' << 8) | 'S')
-+#define PSERIES_ELOG_SECT_ID_EXTENDED_UH	(('E' << 8) | 'H')
-+#define PSERIES_ELOG_SECT_ID_FAILING_MTMS	(('M' << 8) | 'T')
-+#define PSERIES_ELOG_SECT_ID_SECONDARY_SRC	(('S' << 8) | 'S')
-+#define PSERIES_ELOG_SECT_ID_DUMP_LOCATOR	(('D' << 8) | 'H')
-+#define PSERIES_ELOG_SECT_ID_FW_ERROR		(('S' << 8) | 'W')
-+#define PSERIES_ELOG_SECT_ID_IMPACT_PART_ID	(('L' << 8) | 'P')
-+#define PSERIES_ELOG_SECT_ID_LOGIC_RESOURCE_ID	(('L' << 8) | 'R')
-+#define PSERIES_ELOG_SECT_ID_HMC_ID		(('H' << 8) | 'M')
-+#define PSERIES_ELOG_SECT_ID_EPOW		(('E' << 8) | 'P')
-+#define PSERIES_ELOG_SECT_ID_IO_EVENT		(('I' << 8) | 'E')
-+#define PSERIES_ELOG_SECT_ID_MANUFACT_INFO	(('M' << 8) | 'I')
-+#define PSERIES_ELOG_SECT_ID_CALL_HOME		(('C' << 8) | 'H')
-+#define PSERIES_ELOG_SECT_ID_USER_DEF		(('U' << 8) | 'D')
-+
-+/* Vendor specific Platform Event Log Format, Version 6, section header */
-+struct pseries_errorlog {
-+	uint16_t id;			/* 0x00 2-byte ASCII section ID	*/
-+	uint16_t length;		/* 0x02 Section length in bytes	*/
-+	uint8_t version;		/* 0x04 Section version		*/
-+	uint8_t subtype;		/* 0x05 Section subtype		*/
-+	uint16_t creator_component;	/* 0x06 Creator component ID	*/
-+	uint8_t data[];			/* 0x08 Start of section data	*/
-+};
-+
-+struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
-+					      uint16_t section_id);
-+
- /*
-  * This can be set by the rtas_flash module so that it can get called
-  * as the absolutely last thing before the kernel terminates.
-Index: linux-build/arch/powerpc/kernel/rtas.c
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/rtas.c	2012-03-22 11:46:57.424188057 +1100
-+++ linux-build/arch/powerpc/kernel/rtas.c	2012-03-22 11:48:25.221771962 +1100
-@@ -868,6 +868,40 @@ int rtas_ibm_suspend_me(struct rtas_args
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -95,26 +97,127 @@ static int __init init_ras_IRQ(void)
+ 
+ 	return 0;
  }
- #endif
+-__initcall(init_ras_IRQ);
++subsys_initcall(init_ras_IRQ);
  
-+/**
-+ * Find a specific pseries error log in an RTAS extended event log.
-+ * @log: RTAS error/event log
-+ * @section_id: two character section identifier
-+ *
-+ * Returns a pointer to the specified errorlog or NULL if not found.
-+ */
-+struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
-+					      uint16_t section_id)
+-/*
+- * Handle power subsystem events (EPOW).
+- *
+- * Presently we just log the event has occurred.  This should be fixed
+- * to examine the type of power failure and take appropriate action where
+- * the time horizon permits something useful to be done.
+- */
++#define EPOW_SHUTDOWN_NORMAL				1
++#define EPOW_SHUTDOWN_ON_UPS				2
++#define EPOW_SHUTDOWN_LOSS_OF_CRITICAL_FUNCTIONS	3
++#define EPOW_SHUTDOWN_AMBIENT_TEMPERATURE_TOO_HIGH	4
++
++static void handle_system_shutdown(char event_modifier)
 +{
-+	struct rtas_ext_event_log_v6 *ext_log =
-+		(struct rtas_ext_event_log_v6 *)log->buffer;
-+	struct pseries_errorlog *sect;
-+	unsigned char *p, *log_end;
++	switch (event_modifier) {
++	case EPOW_SHUTDOWN_NORMAL:
++		pr_emerg("Firmware initiated power off");
++		orderly_poweroff(1);
++		break;
 +
-+	/* Check that we understand the format */
-+	if (log->extended_log_length < sizeof(struct rtas_ext_event_log_v6) ||
-+	    ext_log->log_format != RTAS_V6EXT_LOG_FORMAT_EVENT_LOG ||
-+	    ext_log->company_id != RTAS_V6EXT_COMPANY_ID_IBM)
-+		return NULL;
++	case EPOW_SHUTDOWN_ON_UPS:
++		pr_emerg("Loss of power reported by firmware, system is "
++			"running on UPS/battery");
++		break;
 +
-+	log_end = log->buffer + log->extended_log_length;
-+	p = ext_log->vendor_log;
++	case EPOW_SHUTDOWN_LOSS_OF_CRITICAL_FUNCTIONS:
++		pr_emerg("Loss of system critical functions reported by "
++			"firmware");
++		pr_emerg("Check RTAS error log for details");
++		orderly_poweroff(1);
++		break;
 +
-+	while (p < log_end) {
-+		sect = (struct pseries_errorlog *)p;
-+		if (sect->id == section_id)
-+			return sect;
-+		p += sect->length;
++	case EPOW_SHUTDOWN_AMBIENT_TEMPERATURE_TOO_HIGH:
++		pr_emerg("Ambient temperature too high reported by firmware");
++		pr_emerg("Check RTAS error log for details");
++		orderly_poweroff(1);
++		break;
++
++	default:
++		pr_err("Unknown power/cooling shutdown event (modifier %d)",
++			event_modifier);
 +	}
-+
-+	return NULL;
 +}
 +
- asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
++struct epow_errorlog {
++	unsigned char sensor_value;
++	unsigned char event_modifier;
++	unsigned char extended_modifier;
++	unsigned char reserved;
++	unsigned char platform_reason;
++};
++
++#define EPOW_RESET			0
++#define EPOW_WARN_COOLING		1
++#define EPOW_WARN_POWER			2
++#define EPOW_SYSTEM_SHUTDOWN		3
++#define EPOW_SYSTEM_HALT		4
++#define EPOW_MAIN_ENCLOSURE		5
++#define EPOW_POWER_OFF			7
++
++void rtas_parse_epow_errlog(struct rtas_error_log *log)
++{
++	struct pseries_errorlog *pseries_log;
++	struct epow_errorlog *epow_log;
++	char action_code;
++	char modifier;
++
++	pseries_log = get_pseries_errorlog(log, PSERIES_ELOG_SECT_ID_EPOW);
++	if (pseries_log == NULL)
++		return;
++
++	epow_log = (struct epow_errorlog *)pseries_log->data;
++	action_code = epow_log->sensor_value & 0xF;	/* bottom 4 bits */
++	modifier = epow_log->event_modifier & 0xF;	/* bottom 4 bits */
++
++	switch (action_code) {
++	case EPOW_RESET:
++		pr_err("Non critical power or cooling issue cleared");
++		break;
++
++	case EPOW_WARN_COOLING:
++		pr_err("Non critical cooling issue reported by firmware");
++		pr_err("Check RTAS error log for details");
++		break;
++
++	case EPOW_WARN_POWER:
++		pr_err("Non critical power issue reported by firmware");
++		pr_err("Check RTAS error log for details");
++		break;
++
++	case EPOW_SYSTEM_SHUTDOWN:
++		handle_system_shutdown(epow_log->event_modifier);
++		break;
++
++	case EPOW_SYSTEM_HALT:
++		pr_emerg("Firmware initiated power off");
++		orderly_poweroff(1);
++		break;
++
++	case EPOW_MAIN_ENCLOSURE:
++	case EPOW_POWER_OFF:
++		pr_emerg("Critical power/cooling issue reported by firmware");
++		pr_emerg("Check RTAS error log for details");
++		pr_emerg("Immediate power off");
++		emergency_sync();
++		kernel_power_off();
++		break;
++
++	default:
++		pr_err("Unknown power/cooling event (action code %d)",
++			action_code);
++	}
++}
++
++/* Handle environmental and power warning (EPOW) interrupts. */
+ static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
  {
- 	struct rtas_args args;
-Index: linux-build/arch/powerpc/platforms/pseries/io_event_irq.c
-===================================================================
---- linux-build.orig/arch/powerpc/platforms/pseries/io_event_irq.c	2012-03-22 11:46:57.444188419 +1100
-+++ linux-build/arch/powerpc/platforms/pseries/io_event_irq.c	2012-03-22 11:48:25.221771962 +1100
-@@ -63,73 +63,9 @@ EXPORT_SYMBOL_GPL(pseries_ioei_notifier_
+-	int status = 0xdeadbeef;
+-	int state = 0;
++	int status;
++	int state;
+ 	int critical;
  
- static int ioei_check_exception_token;
+ 	status = rtas_call(ras_get_sensor_state_token, 2, 2, &state,
+ 			   EPOW_SENSOR_TOKEN, EPOW_SENSOR_INDEX);
  
--/* pSeries event log format */
--
--/* Two bytes ASCII section IDs */
--#define PSERIES_ELOG_SECT_ID_PRIV_HDR		(('P' << 8) | 'H')
--#define PSERIES_ELOG_SECT_ID_USER_HDR		(('U' << 8) | 'H')
--#define PSERIES_ELOG_SECT_ID_PRIMARY_SRC	(('P' << 8) | 'S')
--#define PSERIES_ELOG_SECT_ID_EXTENDED_UH	(('E' << 8) | 'H')
--#define PSERIES_ELOG_SECT_ID_FAILING_MTMS	(('M' << 8) | 'T')
--#define PSERIES_ELOG_SECT_ID_SECONDARY_SRC	(('S' << 8) | 'S')
--#define PSERIES_ELOG_SECT_ID_DUMP_LOCATOR	(('D' << 8) | 'H')
--#define PSERIES_ELOG_SECT_ID_FW_ERROR		(('S' << 8) | 'W')
--#define PSERIES_ELOG_SECT_ID_IMPACT_PART_ID	(('L' << 8) | 'P')
--#define PSERIES_ELOG_SECT_ID_LOGIC_RESOURCE_ID	(('L' << 8) | 'R')
--#define PSERIES_ELOG_SECT_ID_HMC_ID		(('H' << 8) | 'M')
--#define PSERIES_ELOG_SECT_ID_EPOW		(('E' << 8) | 'P')
--#define PSERIES_ELOG_SECT_ID_IO_EVENT		(('I' << 8) | 'E')
--#define PSERIES_ELOG_SECT_ID_MANUFACT_INFO	(('M' << 8) | 'I')
--#define PSERIES_ELOG_SECT_ID_CALL_HOME		(('C' << 8) | 'H')
--#define PSERIES_ELOG_SECT_ID_USER_DEF		(('U' << 8) | 'D')
--
--/* Vendor specific Platform Event Log Format, Version 6, section header */
--struct pseries_elog_section {
--	uint16_t id;			/* 0x00 2-byte ASCII section ID	*/
--	uint16_t length;		/* 0x02 Section length in bytes	*/
--	uint8_t version;		/* 0x04 Section version		*/
--	uint8_t subtype;		/* 0x05 Section subtype		*/
--	uint16_t creator_component;	/* 0x06 Creator component ID	*/
--	uint8_t data[];			/* 0x08 Start of section data	*/
--};
--
- static char ioei_rtas_buf[RTAS_DATA_BUF_SIZE] __cacheline_aligned;
+ 	if (state > 3)
+-		critical = 1;  /* Time Critical */
++		critical = 1;		/* Time Critical */
+ 	else
+ 		critical = 0;
  
- /**
-- * Find data portion of a specific section in RTAS extended event log.
-- * @elog: RTAS error/event log.
-- * @sect_id: secsion ID.
-- *
-- * Return:
-- *	pointer to the section data of the specified section
-- *	NULL if not found
-- */
--static struct pseries_elog_section *find_xelog_section(struct rtas_error_log *elog,
--						       uint16_t sect_id)
--{
--	struct rtas_ext_event_log_v6 *xelog =
--		(struct rtas_ext_event_log_v6 *) elog->buffer;
--	struct pseries_elog_section *sect;
--	unsigned char *p, *log_end;
--
--	/* Check that we understand the format */
--	if (elog->extended_log_length < sizeof(struct rtas_ext_event_log_v6) ||
--	    xelog->log_format != RTAS_V6EXT_LOG_FORMAT_EVENT_LOG ||
--	    xelog->company_id != RTAS_V6EXT_COMPANY_ID_IBM)
--		return NULL;
--
--	log_end = elog->buffer + elog->extended_log_length;
--	p = xelog->vendor_log;
--	while (p < log_end) {
--		sect = (struct pseries_elog_section *)p;
--		if (sect->id == sect_id)
--			return sect;
--		p += sect->length;
--	}
--	return NULL;
--}
--
--/**
-  * Find the data portion of an IO Event section from event log.
-  * @elog: RTAS error/event log.
-  *
-@@ -138,7 +74,7 @@ static struct pseries_elog_section *find
-  */
- static struct pseries_io_event * ioei_find_event(struct rtas_error_log *elog)
- {
--	struct pseries_elog_section *sect;
-+	struct pseries_errorlog *sect;
+@@ -127,14 +230,10 @@ static irqreturn_t ras_epow_interrupt(in
+ 			   critical, __pa(&ras_log_buf),
+ 				rtas_get_error_log_max());
  
- 	/* We should only ever get called for io-event interrupts, but if
- 	 * we do get called for another type then something went wrong so
-@@ -152,7 +88,7 @@ static struct pseries_io_event * ioei_fi
- 		return NULL;
- 	}
+-	udbg_printf("EPOW <0x%lx 0x%x 0x%x>\n",
+-		    *((unsigned long *)&ras_log_buf), status, state);
+-	printk(KERN_WARNING "EPOW <0x%lx 0x%x 0x%x>\n",
+-	       *((unsigned long *)&ras_log_buf), status, state);
+-
+-	/* format and print the extended information */
+ 	log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
  
--	sect = find_xelog_section(elog, PSERIES_ELOG_SECT_ID_IO_EVENT);
-+	sect = get_pseries_errorlog(elog, PSERIES_ELOG_SECT_ID_IO_EVENT);
- 	if (unlikely(!sect)) {
- 		printk_once(KERN_WARNING "io_event_irq: RTAS extended event "
- 			    "log does not contain an IO Event section. "
++	rtas_parse_epow_errlog((struct rtas_error_log *)ras_log_buf);
++
+ 	spin_unlock(&ras_log_buf_lock);
+ 	return IRQ_HANDLED;
+ }
