@@ -1,18 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 34384B6EEF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2012 14:44:02 +1100 (EST)
-Date: Thu, 22 Mar 2012 14:43:52 +1100
+Date: Thu, 22 Mar 2012 15:09:51 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mark Salter <msalter@redhat.com>, Aurelien Jacquiot <a-jacquiot@ti.com>
-Subject: [PATCH] c6x: remove irq_set_virq_count
-Message-Id: <20120322144352.fe7f1840c3958f0496310ec4@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: remove NO_IRQ_IGNORE
+Message-Id: <20120322150951.c72802434bbb9d8a5b5562f2@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__22_Mar_2012_14_43_52_+1100_/Cr6ucafWh7NLH/c"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-c6x-dev@linux-c6x.org
+ boundary="Signature=_Thu__22_Mar_2012_15_09_51_+1100_8BFW=qc6J5igXU1c"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,91 +18,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__22_Mar_2012_14_43_52_+1100_/Cr6ucafWh7NLH/c
+--Signature=_Thu__22_Mar_2012_15_09_51_+1100_8BFW=qc6J5igXU1c
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-This function was copied over from the powerpc architecture but is not
-used at all, so just remove it.
+Now that legacy iSeries is gone, this is no longer used.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/c6x/include/asm/irq.h |   10 ----------
- arch/c6x/kernel/irq.c      |    9 ---------
- 2 files changed, 0 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/irq.h     |    6 ------
+ arch/powerpc/include/asm/machdep.h |    4 +---
+ arch/powerpc/kernel/irq.c          |    4 ++--
+ 3 files changed, 3 insertions(+), 11 deletions(-)
 
-This was found while cleaning up the PowerPC legacy iSeries platform.
-
-diff --git a/arch/c6x/include/asm/irq.h b/arch/c6x/include/asm/irq.h
-index a6ae3c9..7febe9d 100644
---- a/arch/c6x/include/asm/irq.h
-+++ b/arch/c6x/include/asm/irq.h
-@@ -174,16 +174,6 @@ extern void irq_set_default_host(struct irq_host *host=
-);
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index c0e1bc3..22064be 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -26,12 +26,6 @@ extern atomic_t ppc_n_lost_interrupts;
+ /* This number is used when no interrupt has been assigned */
+ #define NO_IRQ			(0)
 =20
-=20
- /**
-- * irq_set_virq_count - Set the maximum number of virt irqs
-- * @count: number of linux virtual irqs, capped with NR_IRQS
-- *
-- * This is mainly for use by platforms like iSeries who want to program
-- * the virtual irq number in the controller to avoid the reverse mapping
+-/* This is a special irq number to return from get_irq() to tell that
+- * no interrupt happened _and_ ignore it (don't count it as bad). Some
+- * platforms like iSeries rely on that.
 - */
--extern void irq_set_virq_count(unsigned int count);
+-#define NO_IRQ_IGNORE		((unsigned int)-1)
 -
--
--/**
-  * irq_create_mapping - Map a hardware interrupt into linux virq space
-  * @host: host owning this hardware interrupt or NULL for default host
-  * @hwirq: hardware irq number in that host space
-diff --git a/arch/c6x/kernel/irq.c b/arch/c6x/kernel/irq.c
-index 0929e4b..e2e4daa 100644
---- a/arch/c6x/kernel/irq.c
-+++ b/arch/c6x/kernel/irq.c
-@@ -279,15 +279,6 @@ void irq_set_default_host(struct irq_host *host)
- 	irq_default_host =3D host;
- }
+ /* Total number of virq in the platform */
+ #define NR_IRQS		CONFIG_NR_IRQS
 =20
--void irq_set_virq_count(unsigned int count)
--{
--	pr_debug("irq: Trying to set virq count to %d\n", count);
--
--	BUG_ON(count < NR_PRIORITY_IRQS);
--	if (count < NR_IRQS)
--		irq_virq_count =3D count;
--}
--
- static int irq_setup_virq(struct irq_host *host, unsigned int virq,
- 			    irq_hw_number_t hwirq)
- {
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/=
+machdep.h
+index bf37931..42ce570 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -99,9 +99,7 @@ struct machdep_calls {
+=20
+ 	void		(*init_IRQ)(void);
+=20
+-	/* Return an irq, or NO_IRQ to indicate there are none pending.
+-	 * If for some reason there is no irq, but the interrupt
+-	 * shouldn't be counted as spurious, return NO_IRQ_IGNORE. */
++	/* Return an irq, or NO_IRQ to indicate there are none pending. */
+ 	unsigned int	(*get_irq)(void);
+=20
+ 	/* PCI stuff */
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 45b367c..4ec471a 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -445,9 +445,9 @@ void do_IRQ(struct pt_regs *regs)
+ 	may_hard_irq_enable();
+=20
+ 	/* And finally process it */
+-	if (irq !=3D NO_IRQ && irq !=3D NO_IRQ_IGNORE)
++	if (irq !=3D NO_IRQ)
+ 		handle_one_irq(irq);
+-	else if (irq !=3D NO_IRQ_IGNORE)
++	else
+ 		__get_cpu_var(irq_stat).spurious_irqs++;
+=20
+ 	irq_exit();
 --=20
 1.7.9.1
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Stephen Rothwell <sfr@canb.auug.org.au>
 
---Signature=_Thu__22_Mar_2012_14_43_52_+1100_/Cr6ucafWh7NLH/c
+--Signature=_Thu__22_Mar_2012_15_09_51_+1100_8BFW=qc6J5igXU1c
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPap/4AAoJEECxmPOUX5FE5yUQAKKDQRxhbsNGSteaEs18PAlA
-6cQWdq8nVE1L22nQqwNBZfRCBCD+A42i7L/bFN4NWPJeygOUFnhFiTrtrQKs/a0q
-CFNJSEemXKQufbMsMrXS98Gfy5x0os9NGqYr76mH1Gw0TgyWXXY1N6tKnpZ5cRoi
-N+MiqM92ceTqF9tBZLr/p+RbNga7TDQVHRjk+LGdH3HCjncwCzaZCEmTuieCCK3J
-ROlI6lx143qV2TI1XpTxFF1O4qSIGQQYdyUggl5nTIsaWkA0v0JstYi1cNCCPW5R
-wmxValUEa2Wp4f5uenIIsVxFTCmqMG9TMpIgb6vHXSU8COkCpHKmwgjqZ2lK9gaC
-MPmiTs4Jo5Ejfa3+XEABny4y9H88BI/dwApKbWaYU42sn5qWyFysLlRKkldLNk1F
-6PUxsH+zKEGRCDP5Os5zXiEID848DpAQky//t5K4LKZOu1QFAT4LZIS/2muv+ezw
-HhZ+tQ1lPqQysXlEptrEC2SvQjchxrV0HK4zcJ3AOwKN5YobrnjsRVdQk92e8cbN
-UpBCip7G9sLeCzya+oiUxsZyj11Y38k+01ZKH2v3S9t+G90Ds0B8ugJqPMemgYp8
-Dn+gE+MKorq7nXizsmv+s4Ya8naMsH4eHCKCOTloBJLtcO8Lz+b/atoXJItYfyui
-SemdgVVPm2LnlH6DkBZq
-=Pj22
+iQIcBAEBCAAGBQJPaqYPAAoJEECxmPOUX5FEjvcP/2MVx5WTaeVTXEh1d2mO72Pd
+ONa01HbaliiXqIeufdLSQh7uUd6Zn94y5/xKIezGE29k7qyGC5g4G13x0Mv2QkCr
+9Fd0KqyctFIKJch9lLRswYNghIMO9+g1pllH/JcqYaaU7QqQVCpitxpaLZa9Ii/y
+O3Q04LcY9IvJCUlchC2B9AJezFDeFScmfe9S2GcJ+YQ0GKPNOd6wdzkPCFudE/Zn
+GkE+xVyBJ/g685SEQauSAvg+65YcsBsZeqeESRDVZ5PtoJC45RN3xUbZoRplVcIe
+g6yZvrOaYzJG5GjxktjfpiNpdUkUs/X2Jx5BM/Wn+U54QKZnKd+/Sv33zKz4u/A4
+FEcY8JjYdGacltWdnZdsjigyg5EjxTLtgmMB+LEYRM/lmIrX3eo8y9M2sp5HV2MN
+jPb1p03p1AzoRuTtGpMvMniWKMzkSYasWX+e0oE+6sKpa2YVJR74+5ztVsRfFbL8
+7SqNVjXlVbS8QHIsFxeFFm/4rkZrqOZHwYkPrCrMSku9h7DFDBUK/67xXIvyrxer
+6B8kMLjIKBM2UTTg2WCfKsUlYp2T6bdoPzswPLcXV8DNEIJs5QQ8QNlSO5LAH9Ax
+v2dXtTC1W7rco7kzD2hwzQdHCxO9SyOjm6BhtwogsL+mV7nqtzG0KY5Gx26URB7G
+YtFwIFNcqR7Az5hUM0ao
+=PVSb
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__22_Mar_2012_14_43_52_+1100_/Cr6ucafWh7NLH/c--
+--Signature=_Thu__22_Mar_2012_15_09_51_+1100_8BFW=qc6J5igXU1c--
