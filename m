@@ -1,23 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2FC75B6EE6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:07:07 +1100 (EST)
-Subject: Re: [PATCH 00/17] Platform Facilities Option and crypto accelerator
- driver
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1332443286.3858.70.camel@key-ThinkPad-W510>
-Date: Fri, 23 Mar 2012 11:06:50 -0500
-Message-Id: <06B7F1E7-951D-4753-BE00-7B0C84BACDAE@kernel.crashing.org>
-References: <1332365297.3858.5.camel@key-ThinkPad-W510>
- <C23F031B-1431-4E98-92DC-3EB7E31D2776@kernel.crashing.org>
- <1332443286.3858.70.camel@key-ThinkPad-W510>
-To: Kent Yoder <key@linux.vnet.ibm.com>
-Cc: rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id BCB1AB6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 06:22:50 +1100 (EST)
+Date: Fri, 23 Mar 2012 12:22:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: Boot failure with next-20120208
+Message-Id: <20120323122244.132198e3.akpm@linux-foundation.org>
+In-Reply-To: <4F396FA9.90606@linux.intel.com>
+References: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
+ <16788.1329102254@neuling.org> <4F391BBA.5020506@linux.intel.com>
+ <20120213120549.eab7e2b9.akpm@linux-foundation.org>
+ <4F396FA9.90606@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Neuling <mikey@neuling.org>, gregkh@linuxfoundation.org,
+ LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+ linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 13 Feb 2012 12:16:41 -0800
+Arjan van de Ven <arjan@linux.intel.com> wrote:
 
-On Mar 22, 2012, at 2:08 PM, Kent Yoder wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> > The bug looks pretty generic, nothing very PPC-specific there.  It 
+> > might affect other architectures - we won't know until we find out
+> > wht caused it.
+> 
+> well one half of the race looks pretty generic...
+> ..... doesn't mean the other half of the race is though....
+> 
+> 
+> > 
+> > Ho hum, I suppose I should pull the patch out of linux-next, to
+> > avoid disrupting other testing.  This means it's going to be hard
+> > to get the bug fixed.
+> 
+> it means losing this one big PPC machine indeed.... until they hit
+> that same race some other way with regular real cpu hotplug ;-(
 
-> Hi Kumar,
->=20
->> Is there a reason this isn't in drivers/crypto/
->=20
->  Other arch-specific dirs have their crypto subdir as well such as
-> arch/s390.  I was just matching that.
->=20
-> Kent
->=20
->> - k
->=20
-
-=46rom what I can tell this isn't ISA level instructions and thus should =
-NOT be in arch/powerpc.  This should be moved into drivers/crypto
-
-- k=
+So we're kinda stuck with this.  As I can't merge it, I guess I'll make
+smp-start-up-non-boot-cpus-asynchronously.patch disappear.
