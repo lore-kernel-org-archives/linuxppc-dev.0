@@ -1,30 +1,28 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C90ABB6FA7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 23:48:45 +1100 (EST)
-Message-ID: <1332593303.16159.28.camel@twins>
-Subject: Re: [PATCH 07/10] um: Should hold tasklist_lock while traversing
- processes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Vorontsov <anton.vorontsov@linaro.org>
-Date: Sat, 24 Mar 2012 13:48:23 +0100
-In-Reply-To: <20120324103030.GG29067@lizard>
-References: <20120324102609.GA28356@lizard> <20120324103030.GG29067@lizard>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Cc: Mike Frysinger <vapier@gentoo.org>,
+Return-Path: <anton.vorontsov@linaro.org>
+Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
+ [209.85.214.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 55181B6EEE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:27:23 +1100 (EST)
+Received: by bkwj10 with SMTP id j10so3225908bkw.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:27:19 -0700 (PDT)
+Date: Sat, 24 Mar 2012 14:26:12 +0400
+From: Anton Vorontsov <anton.vorontsov@linaro.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
+Subject: [PATCH v2 0/10] Fixes for common mistakes w/ for_each_process and
+ task->mm
+Message-ID: <20120324102609.GA28356@lizard>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: Mike Frysinger <vapier@gentoo.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
  user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- Richard Weinberger <richard@nod.at>, linuxppc-dev@lists.ozlabs.org,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>,
- John Stultz <john.stultz@linaro.org>,
+ Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org,
+ uclinux-dist-devel@blackfin.uclinux.org, linux-mm@kvack.org,
+ Paul Mundt <lethal@linux-sh.org>, John Stultz <john.stultz@linaro.org>,
  KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- Russell King <linux@arm.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>,
- uclinux-dist-devel@blackfin.uclinux.org, linux-arm-kernel@lists.infradead.org
+ Russell King <linux@arm.linux.org.uk>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,8 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-03-24 at 14:30 +0400, Anton Vorontsov wrote:
-> Traversing the tasks requires holding tasklist_lock, otherwise it
-> is unsafe.=20
+Hi all,
 
-No it doesn't, it either requires tasklist_lock or rcu_read_lock().
+This is a reincarnation of the task->mm fixes. Several architectures
+were traverse the tasklist in an unsafe manner, plus there are a
+few cases of unsafe access to task->mm.
+
+In v2 I decided to introduce a small helper in cpu.c: most arches
+duplicate the same [buggy] code snippet, so it's better to fix it
+and move the logic into a common function.
+
+Thanks!
+
+-- 
+Anton Vorontsov
+Email: cbouatmailru@gmail.com
