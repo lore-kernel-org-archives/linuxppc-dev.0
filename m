@@ -1,28 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 640DFB6EE6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 09:18:37 +1100 (EST)
-Message-ID: <1332541090.2882.14.camel@pasglop>
-Subject: Re: Boot failure with next-20120208
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 24 Mar 2012 09:18:10 +1100
-In-Reply-To: <4F6CCDDC.5000802@linux.intel.com>
-References: <20120212113805.c7e5d902c95a9d0f4037e12c@canb.auug.org.au>
- <16788.1329102254@neuling.org> <4F391BBA.5020506@linux.intel.com>
- <20120213120549.eab7e2b9.akpm@linux-foundation.org>
- <4F396FA9.90606@linux.intel.com>
- <20120323122244.132198e3.akpm@linux-foundation.org>
- <4F6CCDDC.5000802@linux.intel.com>
+ (Client CN "e34.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7C570B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 19:23:16 +1100 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Sat, 24 Mar 2012 02:23:12 -0600
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 605A1C90052
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 04:23:05 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q2O8N5cc224422
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 04:23:05 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q2O8N4tW003305
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 05:23:05 -0300
+Subject: [PATCH] Disable /dev/port interface on powerpc systems
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1332314613.2982.38.camel@pasglop>
+References: <1332308237.23222.49.camel@hbabu-laptop>
+ <1332314613.2982.38.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 24 Mar 2012 01:23:03 -0700
+Message-ID: <1332577383.19329.5.camel@hbabu-laptop>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, gregkh@linuxfoundation.org,
- LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
- linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +40,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-03-23 at 12:24 -0700, Arjan van de Ven wrote:
-> well yeah, PPC is throwing things in the spanner
-> 
-> we're now working on an x86-only patch with basically the same
-> improvement, but done in a way that does not touch the other
-> architectures
-> 
-> so by all means drop the patch
+Ben, Here it is the updated patch based on your suggestions. Please let
+me know if it has any issues.
 
-Or maybe make an arch flag to enable the behaviour ? I can have a look
-at the problem & maybe even fix it next week (it's been under my radar
-for some reason so far), but I know at least of a few places where we
-have that sort of assumptions about the bringup of boot CPUs.
+Thanks
+Haren
 
-For example, on Apple G5s, we don't support real hotplug, so the hot
-unplug path just puts them in a linux-controlled sleep loop. So the
-early boot time bringup is different from the hotplug path. 
 
-Among others, it needs access to things like i2c to synchronize the time
-bases of the CPUs being brought up and we "release" that resource at the
-end of the bringup.
+Some power systems do not have legacy ISA devices. So, /dev/port is not
+a valid interface on these systems. User level tools such as kbdrate is
+trying to access the device using this interface which is causing the
+system crash. 
 
-So that needs fixing a way or another (and it's non trivial as other
-drivers might try to get a lock on that i2c bus).
+This patch will fix this issue by not creating this interface on these
+powerpc systems. 
 
-I'm sure I have a few other places with similar assumptions. And I
-wouldn't be surprised if other architectures do as well :-)
+Signed-off-by: Haren Myneni <haren@us.ibm.com>
 
-So while your patch is a good / worthwhile idea, I think we need a bit
-more time to sort things out before it can be applied.
-
-(BTW. Arjan, can you send me privately your latest version of that
-patch, for some reason I don't seem to be able to put my hand on it).
-
-Cheers,
-Ben.
+diff -Naurp linux.orig/arch/powerpc/include/asm/io.h
+linux/arch/powerpc/include/asm/io.h
+--- linux.orig/arch/powerpc/include/asm/io.h	2012-03-24
+00:51:21.619999958 -0700
++++ linux/arch/powerpc/include/asm/io.h	2012-03-24 00:52:50.450000543
+-0700
+@@ -20,6 +20,14 @@ extern int check_legacy_ioport(unsigned 
+ #define _PNPWRP		0xa79
+ #define PNPBIOS_BASE	0xf000
+ 
++#ifdef CONFIG_PPC64
++extern struct pci_dev *isa_bridge_pcidev;
++/*
++ * has legacy ISA devices ?
++ */
++#define arch_has_dev_port()	(isa_bridge_pcidev != NULL)
++#endif
++
+ #include <linux/device.h>
+ #include <linux/io.h>
+ 
+diff -Naurp linux.orig/drivers/char/mem.c linux/drivers/char/mem.c
+--- linux.orig/drivers/char/mem.c	2012-03-24 00:50:21.570000660 -0700
++++ linux/drivers/char/mem.c	2012-03-24 00:52:32.080000802 -0700
+@@ -35,6 +35,8 @@
+ # include <linux/efi.h>
+ #endif
+ 
++#define DEVPORT_MINOR	4
++
+ static inline unsigned long size_inside_page(unsigned long start,
+ 					     unsigned long size)
+ {
+@@ -930,6 +932,13 @@ static int __init chr_dev_init(void)
+ 	for (minor = 1; minor < ARRAY_SIZE(devlist); minor++) {
+ 		if (!devlist[minor].name)
+ 			continue;
++
++		/*
++		 * Create /dev/port? 
++		 */
++		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
++			continue;
++
+ 		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
+ 			      NULL, devlist[minor].name);
+ 	}
+diff -Naurp linux.orig/include/linux/io.h linux/include/linux/io.h
+--- linux.orig/include/linux/io.h	2012-03-24 00:54:18.060000449 -0700
++++ linux/include/linux/io.h	2012-03-24 01:12:43.280000840 -0700
+@@ -67,4 +67,13 @@ int check_signature(const volatile void 
+ 			const unsigned char *signature, int length);
+ void devm_ioremap_release(struct device *dev, void *res);
+ 
++/*
++ * Some systems do not have legacy ISA devices.
++ * /dev/port is not a valid interface on these systems.
++ * So for those archs, <asm/io.h> should define the following symbol.
++ */
++#ifndef arch_has_dev_port
++#define arch_has_dev_port()     (1)
++#endif
++
+ #endif /* _LINUX_IO_H */
