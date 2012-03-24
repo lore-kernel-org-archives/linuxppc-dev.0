@@ -1,23 +1,27 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A7A71B703E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 23:53:59 +1100 (EST)
-Message-ID: <1332593574.16159.31.camel@twins>
+Return-Path: <anton.vorontsov@linaro.org>
+Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
+ [209.85.214.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B84B5B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2012 03:23:00 +1100 (EST)
+Received: by bkwj10 with SMTP id j10so3328797bkw.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 09:22:56 -0700 (PDT)
+Date: Sat, 24 Mar 2012 20:21:52 +0400
+From: Anton Vorontsov <anton.vorontsov@linaro.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: [PATCH 10/10] oom: Make find_lock_task_mm() sparse-aware
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Vorontsov <anton.vorontsov@linaro.org>
-Date: Sat, 24 Mar 2012 13:52:54 +0100
-In-Reply-To: <20120324103127.GJ29067@lizard>
+Message-ID: <20120324162151.GA3640@lizard>
 References: <20120324102609.GA28356@lizard> <20120324103127.GJ29067@lizard>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ <1332593574.16159.31.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1332593574.16159.31.camel@twins>
 Cc: Mike Frysinger <vapier@gentoo.org>,
  user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  Richard Weinberger <richard@nod.at>, linuxppc-dev@lists.ozlabs.org,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
  linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>,
  John Stultz <john.stultz@linaro.org>,
  KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
@@ -33,31 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-03-24 at 14:31 +0400, Anton Vorontsov wrote:
-> This is needed so that callers would not get 'context imbalance'
-> warnings from the sparse tool.
->=20
-> As a side effect, this patch fixes the following sparse warnings:
->=20
->   CHECK   mm/oom_kill.c
->   mm/oom_kill.c:201:28: warning: context imbalance in 'oom_badness' -
->   unexpected unlock
->   include/linux/rcupdate.h:249:30: warning: context imbalance in
->   'dump_tasks' - unexpected unlock
->   mm/oom_kill.c:453:9: warning: context imbalance in 'oom_kill_task' -
->   unexpected unlock
->   CHECK   mm/memcontrol.c
->   ...
->   mm/memcontrol.c:1130:17: warning: context imbalance in
->   'task_in_mem_cgroup' - unexpected unlock
->=20
-> p.s. I know Peter Zijlstra detest the __cond_lock() stuff, but untill
->      we have anything better in sparse, let's use it. This particular
->      patch helped me to detect one bug that I myself made during
->      task->mm fixup series. So, it is useful.
+On Sat, Mar 24, 2012 at 01:52:54PM +0100, Peter Zijlstra wrote:
+[...]
+> > p.s. I know Peter Zijlstra detest the __cond_lock() stuff, but untill
+> >      we have anything better in sparse, let's use it. This particular
+> >      patch helped me to detect one bug that I myself made during
+> >      task->mm fixup series. So, it is useful.
+> 
+> Yeah, so Nacked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> Also, why didn't lockdep catch it?
 
-Yeah, so Nacked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Because patch authors test their patches on architectures they own
+(well, sometimes I do check patches on exotic architectures w/ qemu,
+but it is less convenient than just build/sparse-test the patch w/
+a cross compiler).
 
-Also, why didn't lockdep catch it?
+And since lockdep is a runtime checker, it is not very useful.
 
-Fix sparse already instead of smearing ugly all over.
+Sparse is a build-time checker, so it is even better in the sense
+that it is able to catch bugs even in code that is executed rarely.
+
+> Fix sparse already instead of smearing ugly all over.
+
+Just wonder how do you see the feature implemented?
+
+Something like this?
+
+#define __ret_cond_locked(l, c)	__attribute__((ret_cond_locked(l, c)))
+#define __ret_value		__attribute__((ret_value))
+#define __ret_locked_nonnull(l)	__ret_cond_locked(l, __ret_value);
+
+extern struct task_struct *find_lock_task_mm(struct task_struct *p)
+	__ret_locked_nonnull(&__ret_value->alloc_lock);
+
+Thanks,
+
+-- 
+Anton Vorontsov
+Email: cbouatmailru@gmail.com
