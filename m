@@ -3,15 +3,15 @@ Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
  [209.85.214.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4C7ECB6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:32:19 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 22D16B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:32:37 +1100 (EST)
 Received: by mail-bk0-f51.google.com with SMTP id j10so3226820bkw.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:32:19 -0700 (PDT)
-Date: Sat, 24 Mar 2012 14:31:10 +0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:32:37 -0700 (PDT)
+Date: Sat, 24 Mar 2012 14:31:27 +0400
 From: Anton Vorontsov <anton.vorontsov@linaro.org>
 To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH 09/10] um: Properly check all process' threads for a live mm
-Message-ID: <20120324103110.GI29067@lizard>
+Subject: [PATCH 10/10] oom: Make find_lock_task_mm() sparse-aware
+Message-ID: <20120324103127.GJ29067@lizard>
 References: <20120324102609.GA28356@lizard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -33,51 +33,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kill_off_processes() might miss a valid process, this is because
-checking for process->mm is not enough. Process' main thread may
-exit or detach its mm via use_mm(), but other threads may still
-have a valid mm.
+This is needed so that callers would not get 'context imbalance'
+warnings from the sparse tool.
 
-To catch this we use find_lock_task_mm(), which walks up all
-threads and returns an appropriate task (with task lock held).
+As a side effect, this patch fixes the following sparse warnings:
 
-Suggested-by: Oleg Nesterov <oleg@redhat.com>
+  CHECK   mm/oom_kill.c
+  mm/oom_kill.c:201:28: warning: context imbalance in 'oom_badness' -
+  unexpected unlock
+  include/linux/rcupdate.h:249:30: warning: context imbalance in
+  'dump_tasks' - unexpected unlock
+  mm/oom_kill.c:453:9: warning: context imbalance in 'oom_kill_task' -
+  unexpected unlock
+  CHECK   mm/memcontrol.c
+  ...
+  mm/memcontrol.c:1130:17: warning: context imbalance in
+  'task_in_mem_cgroup' - unexpected unlock
+
+p.s. I know Peter Zijlstra detest the __cond_lock() stuff, but untill
+     we have anything better in sparse, let's use it. This particular
+     patch helped me to detect one bug that I myself made during
+     task->mm fixup series. So, it is useful.
+
 Signed-off-by: Anton Vorontsov <anton.vorontsov@linaro.org>
+Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- arch/um/kernel/reboot.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ include/linux/oom.h |   12 +++++++++++-
+ mm/oom_kill.c       |    2 +-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/um/kernel/reboot.c b/arch/um/kernel/reboot.c
-index 1411f4e..3d15243 100644
---- a/arch/um/kernel/reboot.c
-+++ b/arch/um/kernel/reboot.c
-@@ -6,6 +6,7 @@
- #include "linux/sched.h"
- #include "linux/spinlock.h"
- #include "linux/slab.h"
-+#include "linux/oom.h"
- #include "kern_util.h"
- #include "os.h"
- #include "skas.h"
-@@ -25,13 +26,13 @@ static void kill_off_processes(void)
+diff --git a/include/linux/oom.h b/include/linux/oom.h
+index 552fba9..26cf628 100644
+--- a/include/linux/oom.h
++++ b/include/linux/oom.h
+@@ -21,6 +21,7 @@
  
- 		read_lock(&tasklist_lock);
- 		for_each_process(p) {
--			task_lock(p);
--			if (!p->mm) {
--				task_unlock(p);
-+			struct task_struct *t;
+ #ifdef __KERNEL__
+ 
++#include <linux/compiler.h>
+ #include <linux/sched.h>
+ #include <linux/types.h>
+ #include <linux/nodemask.h>
+@@ -65,7 +66,16 @@ static inline void oom_killer_enable(void)
+ 	oom_killer_disabled = false;
+ }
+ 
+-extern struct task_struct *find_lock_task_mm(struct task_struct *p);
++extern struct task_struct *__find_lock_task_mm(struct task_struct *p);
 +
-+			t = find_lock_task_mm(p);
-+			if (!t)
- 				continue;
--			}
--			pid = p->mm->context.id.u.pid;
--			task_unlock(p);
-+			pid = t->mm->context.id.u.pid;
-+			task_unlock(t);
- 			os_kill_ptraced_process(pid, 1);
- 		}
- 		read_unlock(&tasklist_lock);
++static inline struct task_struct *find_lock_task_mm(struct task_struct *p)
++{
++	struct task_struct *ret;
++
++	ret = __find_lock_task_mm(p);
++	(void)__cond_lock(&ret->alloc_lock, ret);
++	return ret;
++}
+ 
+ /* sysctls */
+ extern int sysctl_oom_dump_tasks;
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index 2958fd8..0ebb383 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -136,7 +136,7 @@ static bool has_intersects_mems_allowed(struct task_struct *tsk,
+  * pointer.  Return p, or any of its subthreads with a valid ->mm, with
+  * task_lock() held.
+  */
+-struct task_struct *find_lock_task_mm(struct task_struct *p)
++struct task_struct *__find_lock_task_mm(struct task_struct *p)
+ {
+ 	struct task_struct *t = p;
+ 
 -- 
 1.7.9.2
