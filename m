@@ -1,36 +1,30 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <richard@nod.at>
+Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e34.co.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7C570B6EE6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 19:23:16 +1100 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 24 Mar 2012 02:23:12 -0600
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 605A1C90052
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 04:23:05 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q2O8N5cc224422
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 04:23:05 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q2O8N4tW003305
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 05:23:05 -0300
-Subject: [PATCH] Disable /dev/port interface on powerpc systems
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1332314613.2982.38.camel@pasglop>
-References: <1332308237.23222.49.camel@hbabu-laptop>
- <1332314613.2982.38.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 24 Mar 2012 01:23:03 -0700
-Message-ID: <1332577383.19329.5.camel@hbabu-laptop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
+ (Client CN "radon.swed.at", Issuer "neon.swed.at" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 32C70B6EE8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 22:19:12 +1100 (EST)
+Message-ID: <4F6DAC15.7040702@nod.at>
+Date: Sat, 24 Mar 2012 12:12:21 +0100
+From: Richard Weinberger <richard@nod.at>
+MIME-Version: 1.0
+To: Anton Vorontsov <anton.vorontsov@linaro.org>
+Subject: Re: [PATCH 09/10] um: Properly check all process' threads for a live
+ mm
+References: <20120324102609.GA28356@lizard> <20120324103110.GI29067@lizard>
+In-Reply-To: <20120324103110.GI29067@lizard>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig88EC09FADEB6B6709009C1CF"
+Cc: Mike Frysinger <vapier@gentoo.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>,
+ John Stultz <john.stultz@linaro.org>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ uclinux-dist-devel@blackfin.uclinux.org, Russell King <linux@arm.linux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,84 +34,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben, Here it is the updated patch based on your suggestions. Please let
-me know if it has any issues.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig88EC09FADEB6B6709009C1CF
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
-Haren
+Am 24.03.2012 11:31, schrieb Anton Vorontsov:
+> kill_off_processes() might miss a valid process, this is because
+> checking for process->mm is not enough. Process' main thread may
+> exit or detach its mm via use_mm(), but other threads may still
+> have a valid mm.
+>=20
+> To catch this we use find_lock_task_mm(), which walks up all
+> threads and returns an appropriate task (with task lock held).
+>=20
+> Suggested-by: Oleg Nesterov <oleg@redhat.com>
+> Signed-off-by: Anton Vorontsov <anton.vorontsov@linaro.org>
+
+Acked-by: Richard Weinberger <richard@nod.at>
+
+Thanks,
+//richard
 
 
-Some power systems do not have legacy ISA devices. So, /dev/port is not
-a valid interface on these systems. User level tools such as kbdrate is
-trying to access the device using this interface which is causing the
-system crash. 
+--------------enig88EC09FADEB6B6709009C1CF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-This patch will fix this issue by not creating this interface on these
-powerpc systems. 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.18 (GNU/Linux)
 
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
+iQEcBAEBAgAGBQJPbawWAAoJEN9758yqZn9e/icH/iVN9aQ0/yXa9SJlm4SLtuzl
+ihg243HbKaJpRbPXf+fqsEVutMgRKM+yqkVmeuTdeADDdVSoyoBb750N1fPvq7pU
+yjTzeNfWySr727F6cMgblhtKzilRd6JOq+lI3JD74T/pga6mrlIE8Os8fp6HOyfR
+sIyklQPPtXml4b1CboiWWwc8qlHSX+2I5w2pCcOSUozsFa8rPBdvtxiXVES0OdJJ
+ZFcw2OICs2DbRRJXrq1PCx/qU6e9b3kb5Mj/peSQosjIltksQNafKECm6tonM8TN
+e4ZxUnOXUxaULn9E5C7YnuQdP/0SnmF5jnKYNkNqwNIh+oqDPoVgmKnv7aG49GQ=
+=Ic2C
+-----END PGP SIGNATURE-----
 
-diff -Naurp linux.orig/arch/powerpc/include/asm/io.h
-linux/arch/powerpc/include/asm/io.h
---- linux.orig/arch/powerpc/include/asm/io.h	2012-03-24
-00:51:21.619999958 -0700
-+++ linux/arch/powerpc/include/asm/io.h	2012-03-24 00:52:50.450000543
--0700
-@@ -20,6 +20,14 @@ extern int check_legacy_ioport(unsigned 
- #define _PNPWRP		0xa79
- #define PNPBIOS_BASE	0xf000
- 
-+#ifdef CONFIG_PPC64
-+extern struct pci_dev *isa_bridge_pcidev;
-+/*
-+ * has legacy ISA devices ?
-+ */
-+#define arch_has_dev_port()	(isa_bridge_pcidev != NULL)
-+#endif
-+
- #include <linux/device.h>
- #include <linux/io.h>
- 
-diff -Naurp linux.orig/drivers/char/mem.c linux/drivers/char/mem.c
---- linux.orig/drivers/char/mem.c	2012-03-24 00:50:21.570000660 -0700
-+++ linux/drivers/char/mem.c	2012-03-24 00:52:32.080000802 -0700
-@@ -35,6 +35,8 @@
- # include <linux/efi.h>
- #endif
- 
-+#define DEVPORT_MINOR	4
-+
- static inline unsigned long size_inside_page(unsigned long start,
- 					     unsigned long size)
- {
-@@ -930,6 +932,13 @@ static int __init chr_dev_init(void)
- 	for (minor = 1; minor < ARRAY_SIZE(devlist); minor++) {
- 		if (!devlist[minor].name)
- 			continue;
-+
-+		/*
-+		 * Create /dev/port? 
-+		 */
-+		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
-+			continue;
-+
- 		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
- 			      NULL, devlist[minor].name);
- 	}
-diff -Naurp linux.orig/include/linux/io.h linux/include/linux/io.h
---- linux.orig/include/linux/io.h	2012-03-24 00:54:18.060000449 -0700
-+++ linux/include/linux/io.h	2012-03-24 01:12:43.280000840 -0700
-@@ -67,4 +67,13 @@ int check_signature(const volatile void 
- 			const unsigned char *signature, int length);
- void devm_ioremap_release(struct device *dev, void *res);
- 
-+/*
-+ * Some systems do not have legacy ISA devices.
-+ * /dev/port is not a valid interface on these systems.
-+ * So for those archs, <asm/io.h> should define the following symbol.
-+ */
-+#ifndef arch_has_dev_port
-+#define arch_has_dev_port()     (1)
-+#endif
-+
- #endif /* _LINUX_IO_H */
+--------------enig88EC09FADEB6B6709009C1CF--
