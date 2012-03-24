@@ -3,15 +3,15 @@ Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
  [209.85.214.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ED268B6ED0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:31:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C8847B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:31:58 +1100 (EST)
 Received: by mail-bk0-f51.google.com with SMTP id j10so3226820bkw.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:31:43 -0700 (PDT)
-Date: Sat, 24 Mar 2012 14:30:30 +0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:31:58 -0700 (PDT)
+Date: Sat, 24 Mar 2012 14:30:50 +0400
 From: Anton Vorontsov <anton.vorontsov@linaro.org>
 To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH 07/10] um: Should hold tasklist_lock while traversing processes
-Message-ID: <20120324103030.GG29067@lizard>
+Subject: [PATCH 08/10] um: Fix possible race on task->mm
+Message-ID: <20120324103050.GH29067@lizard>
 References: <20120324102609.GA28356@lizard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -33,45 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Traversing the tasks requires holding tasklist_lock, otherwise it
-is unsafe.
+Checking for task->mm is dangerous as ->mm might disappear (exit_mm()
+assigns NULL under task_lock(), so tasklist lock is not enough).
 
-p.s. However, I'm not sure that calling os_kill_ptraced_process()
-in the atomic context is correct. It seem to work, but please
-take a closer look.
+We can't use get_task_mm()/mmput() pair as mmput() might sleep,
+so let's take the task lock while we care about its mm.
+
+Note that we should also use find_lock_task_mm() to check all process'
+threads for a valid mm, but for uml we'll do it in a separate patch.
 
 Signed-off-by: Anton Vorontsov <anton.vorontsov@linaro.org>
 ---
- arch/um/kernel/reboot.c |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/um/kernel/reboot.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/um/kernel/reboot.c b/arch/um/kernel/reboot.c
-index 4d93dff..66d754c 100644
+index 66d754c..1411f4e 100644
 --- a/arch/um/kernel/reboot.c
 +++ b/arch/um/kernel/reboot.c
-@@ -4,6 +4,7 @@
-  */
+@@ -25,10 +25,13 @@ static void kill_off_processes(void)
  
- #include "linux/sched.h"
-+#include "linux/spinlock.h"
- #include "linux/slab.h"
- #include "kern_util.h"
- #include "os.h"
-@@ -22,6 +23,7 @@ static void kill_off_processes(void)
- 		struct task_struct *p;
- 		int pid;
- 
-+		read_lock(&tasklist_lock);
+ 		read_lock(&tasklist_lock);
  		for_each_process(p) {
- 			if (p->mm == NULL)
+-			if (p->mm == NULL)
++			task_lock(p);
++			if (!p->mm) {
++				task_unlock(p);
  				continue;
-@@ -29,6 +31,7 @@ static void kill_off_processes(void)
+-
++			}
  			pid = p->mm->context.id.u.pid;
++			task_unlock(p);
  			os_kill_ptraced_process(pid, 1);
  		}
-+		read_unlock(&tasklist_lock);
- 	}
- }
- 
+ 		read_unlock(&tasklist_lock);
 -- 
 1.7.9.2
