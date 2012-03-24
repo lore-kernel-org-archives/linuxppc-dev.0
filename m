@@ -3,15 +3,16 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 87E7EB6FA7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 23:44:57 +1100 (EST)
-Message-ID: <1332593021.16159.27.camel@twins>
-Subject: Re: [PATCH 01/10] cpu: Introduce clear_tasks_mm_cpumask() helper
+ by ozlabs.org (Postfix) with ESMTPS id C90ABB6FA7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 23:48:45 +1100 (EST)
+Message-ID: <1332593303.16159.28.camel@twins>
+Subject: Re: [PATCH 07/10] um: Should hold tasklist_lock while traversing
+ processes
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Anton Vorontsov <anton.vorontsov@linaro.org>
-Date: Sat, 24 Mar 2012 13:43:41 +0100
-In-Reply-To: <20120324102751.GA29067@lizard>
-References: <20120324102609.GA28356@lizard> <20120324102751.GA29067@lizard>
+Date: Sat, 24 Mar 2012 13:48:23 +0100
+In-Reply-To: <20120324103030.GG29067@lizard>
+References: <20120324102609.GA28356@lizard> <20120324103030.GG29067@lizard>
 Content-Type: text/plain; charset="ISO-8859-1"
 Mime-Version: 1.0
 Cc: Mike Frysinger <vapier@gentoo.org>,
@@ -33,25 +34,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-03-24 at 14:27 +0400, Anton Vorontsov wrote:
-> +void clear_tasks_mm_cpumask(int cpu)
-> +{
-> +       struct task_struct *p;
-> +
-> +       read_lock(&tasklist_lock);
-> +       for_each_process(p) {
-> +               struct task_struct *t;
-> +
-> +               t =3D find_lock_task_mm(p);
-> +               if (!t)
-> +                       continue;
-> +               cpumask_clear_cpu(cpu, mm_cpumask(t->mm));
-> +               task_unlock(t);
-> +       }
-> +       read_unlock(&tasklist_lock);
-> +}=20
+On Sat, 2012-03-24 at 14:30 +0400, Anton Vorontsov wrote:
+> Traversing the tasks requires holding tasklist_lock, otherwise it
+> is unsafe.=20
 
-Why bother with the tasklist_lock at all anymore, afaict you could use
-rcu_read_lock() here. This all is called after the cpu is taken down and
-marked offline, so its not like new tasks will ever get this cpu set in
-their mm mask.
+No it doesn't, it either requires tasklist_lock or rcu_read_lock().
