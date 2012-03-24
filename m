@@ -1,33 +1,21 @@
-Return-Path: <anton.vorontsov@linaro.org>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D1302B6FBE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2012 03:44:39 +1100 (EST)
-Received: by mail-bk0-f51.google.com with SMTP id j10so3335324bkw.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 09:44:39 -0700 (PDT)
-Date: Sat, 24 Mar 2012 20:43:35 +0400
-From: Anton Vorontsov <anton.vorontsov@linaro.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 07/10] um: Should hold tasklist_lock while traversing
- processes
-Message-ID: <20120324164335.GA4955@lizard>
-References: <20120324102609.GA28356@lizard> <20120324103030.GG29067@lizard>
- <1332593303.16159.28.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1332593303.16159.28.camel@twins>
-Cc: Mike Frysinger <vapier@gentoo.org>,
- user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- Richard Weinberger <richard@nod.at>, linuxppc-dev@lists.ozlabs.org,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>,
- John Stultz <john.stultz@linaro.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- Russell King <linux@arm.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>,
- uclinux-dist-devel@blackfin.uclinux.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 60D2FB6EE7
+ for <linuxppc-dev@ozlabs.org>; Sun, 25 Mar 2012 10:53:52 +1100 (EST)
+Message-ID: <1332633218.2882.16.camel@pasglop>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Date: Sun, 25 Mar 2012 10:53:38 +1100
+In-Reply-To: <20120321162549.8C1D0202A4D@gemini.denx.de>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+ <20120321162549.8C1D0202A4D@gemini.denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, robert.karl.berger@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,15 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 24, 2012 at 01:48:23PM +0100, Peter Zijlstra wrote:
-> On Sat, 2012-03-24 at 14:30 +0400, Anton Vorontsov wrote:
-> > Traversing the tasks requires holding tasklist_lock, otherwise it
-> > is unsafe. 
+On Wed, 2012-03-21 at 17:25 +0100, Wolfgang Denk wrote:
+> > > The problem is that for ppc-linux-gcc (GCC) 4.2.2 (which comes
+> with the
+> > > ELDK 4.2) this assembly instruction is not known and the build
+> breaks.
+> > 
+> > Sigh.  GCC 4.2 is pretty old at this point.
 > 
-> No it doesn't, it either requires tasklist_lock or rcu_read_lock().
+> But still rock-solid ...  We use it a lot, especially as reference for
+> more recent (and sometimes more broken) versions of GCC.
 
-Well, currently the code does neither. :-)
+Isn't this a binutils rather than gcc issue ?
 
--- 
-Anton Vorontsov
-Email: cbouatmailru@gmail.com
+Cheers,
+Ben.
