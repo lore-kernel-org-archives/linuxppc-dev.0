@@ -3,15 +3,15 @@ Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
  [209.85.214.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F2A56B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:31:19 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id ED268B6ED0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:31:43 +1100 (EST)
 Received: by mail-bk0-f51.google.com with SMTP id j10so3226820bkw.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:31:19 -0700 (PDT)
-Date: Sat, 24 Mar 2012 14:30:08 +0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:31:43 -0700 (PDT)
+Date: Sat, 24 Mar 2012 14:30:30 +0400
 From: Anton Vorontsov <anton.vorontsov@linaro.org>
 To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH 06/10] blackfin: Fix possible deadlock in decode_address()
-Message-ID: <20120324103008.GF29067@lizard>
+Subject: [PATCH 07/10] um: Should hold tasklist_lock while traversing processes
+Message-ID: <20120324103030.GG29067@lizard>
 References: <20120324102609.GA28356@lizard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -33,51 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oleg Nesterov found an interesting deadlock possibility:
+Traversing the tasks requires holding tasklist_lock, otherwise it
+is unsafe.
 
-> sysrq_showregs_othercpus() does smp_call_function(showacpu)
-> and showacpu() show_stack()->decode_address(). Now suppose that IPI
-> interrupts the task holding read_lock(tasklist).
+p.s. However, I'm not sure that calling os_kill_ptraced_process()
+in the atomic context is correct. It seem to work, but please
+take a closer look.
 
-To fix this, blackfin should not grab the write_ variant of the
-tasklist lock, read_ one is enough.
-
-Suggested-by: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Anton Vorontsov <anton.vorontsov@linaro.org>
 ---
- arch/blackfin/kernel/trace.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/um/kernel/reboot.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/blackfin/kernel/trace.c b/arch/blackfin/kernel/trace.c
-index 5102cdf..9cc9302 100644
---- a/arch/blackfin/kernel/trace.c
-+++ b/arch/blackfin/kernel/trace.c
-@@ -28,7 +28,7 @@ void decode_address(char *buf, unsigned long address)
- {
- 	struct task_struct *p;
- 	struct mm_struct *mm;
--	unsigned long flags, offset;
-+	unsigned long offset;
- 	struct rb_node *n;
+diff --git a/arch/um/kernel/reboot.c b/arch/um/kernel/reboot.c
+index 4d93dff..66d754c 100644
+--- a/arch/um/kernel/reboot.c
++++ b/arch/um/kernel/reboot.c
+@@ -4,6 +4,7 @@
+  */
  
- #ifdef CONFIG_KALLSYMS
-@@ -112,7 +112,7 @@ void decode_address(char *buf, unsigned long address)
- 	 * mappings of all our processes and see if we can't be a whee
- 	 * bit more specific
- 	 */
--	write_lock_irqsave(&tasklist_lock, flags);
-+	read_lock(&tasklist_lock);
- 	for_each_process(p) {
- 		struct task_struct *t;
+ #include "linux/sched.h"
++#include "linux/spinlock.h"
+ #include "linux/slab.h"
+ #include "kern_util.h"
+ #include "os.h"
+@@ -22,6 +23,7 @@ static void kill_off_processes(void)
+ 		struct task_struct *p;
+ 		int pid;
  
-@@ -185,7 +185,7 @@ __continue:
- 	sprintf(buf, "/* kernel dynamic memory */");
- 
- done:
--	write_unlock_irqrestore(&tasklist_lock, flags);
-+	read_unlock(&tasklist_lock);
++		read_lock(&tasklist_lock);
+ 		for_each_process(p) {
+ 			if (p->mm == NULL)
+ 				continue;
+@@ -29,6 +31,7 @@ static void kill_off_processes(void)
+ 			pid = p->mm->context.id.u.pid;
+ 			os_kill_ptraced_process(pid, 1);
+ 		}
++		read_unlock(&tasklist_lock);
+ 	}
  }
  
- #define EXPAND_LEN ((1 << CONFIG_DEBUG_BFIN_HWTRACE_EXPAND_LEN) * 256 - 1)
 -- 
 1.7.9.2
