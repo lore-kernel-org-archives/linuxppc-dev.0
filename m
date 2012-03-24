@@ -3,15 +3,15 @@ Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
  [209.85.214.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FFDCB6EEE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:29:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id CA258B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 21:29:39 +1100 (EST)
 Received: by mail-bk0-f51.google.com with SMTP id j10so3226350bkw.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:29:16 -0700 (PDT)
-Date: Sat, 24 Mar 2012 14:28:08 +0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2012 03:29:39 -0700 (PDT)
+Date: Sat, 24 Mar 2012 14:28:31 +0400
 From: Anton Vorontsov <anton.vorontsov@linaro.org>
 To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH 02/10] arm: Use clear_tasks_mm_cpumask()
-Message-ID: <20120324102808.GB29067@lizard>
+Subject: [PATCH 03/10] powerpc: Use clear_tasks_mm_cpumask()
+Message-ID: <20120324102831.GC29067@lizard>
 References: <20120324102609.GA28356@lizard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -55,34 +55,37 @@ clear_tasks_mm_cpumask() has all the issues fixed, so let's use it.
 Suggested-by: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Anton Vorontsov <anton.vorontsov@linaro.org>
 ---
- arch/arm/kernel/smp.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ arch/powerpc/mm/mmu_context_nohash.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-index cdeb727..880b93a 100644
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@ -136,7 +136,6 @@ static void percpu_timer_stop(void);
- int __cpu_disable(void)
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index 5b63bd3..e779642 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -333,9 +333,7 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
+ 					    unsigned long action, void *hcpu)
  {
- 	unsigned int cpu = smp_processor_id();
+ 	unsigned int cpu = (unsigned int)(long)hcpu;
+-#ifdef CONFIG_HOTPLUG_CPU
 -	struct task_struct *p;
- 	int ret;
+-#endif
++
+ 	/* We don't touch CPU 0 map, it's allocated at aboot and kept
+ 	 * around forever
+ 	 */
+@@ -358,12 +356,7 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
+ 		stale_map[cpu] = NULL;
  
- 	ret = platform_cpu_disable(cpu);
-@@ -166,12 +165,7 @@ int __cpu_disable(void)
- 	flush_cache_all();
- 	local_flush_tlb_all();
- 
--	read_lock(&tasklist_lock);
--	for_each_process(p) {
--		if (p->mm)
--			cpumask_clear_cpu(cpu, mm_cpumask(p->mm));
--	}
--	read_unlock(&tasklist_lock);
-+	clear_tasks_mm_cpumask(cpu);
- 
- 	return 0;
- }
+ 		/* We also clear the cpu_vm_mask bits of CPUs going away */
+-		read_lock(&tasklist_lock);
+-		for_each_process(p) {
+-			if (p->mm)
+-				cpumask_clear_cpu(cpu, mm_cpumask(p->mm));
+-		}
+-		read_unlock(&tasklist_lock);
++		clear_tasks_mm_cpumask(cpu);
+ 	break;
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 	}
 -- 
 1.7.9.2
