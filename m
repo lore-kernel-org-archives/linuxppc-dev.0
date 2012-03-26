@@ -1,18 +1,21 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 98043B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2012 04:13:26 +1100 (EST)
-Date: Mon, 26 Mar 2012 19:04:43 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2DD36B6EE8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2012 05:01:19 +1100 (EST)
+Message-ID: <1332782624.16159.145.camel@twins>
 Subject: Re: [PATCH v2.1 01/10] cpu: Introduce clear_tasks_mm_cpumask() helper
-Message-ID: <20120326170443.GA25229@redhat.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Date: Mon, 26 Mar 2012 19:23:44 +0200
+In-Reply-To: <20120326170443.GA25229@redhat.com>
 References: <20120324102609.GA28356@lizard> <20120324102751.GA29067@lizard>
  <1332593021.16159.27.camel@twins> <20120324164316.GB3640@lizard>
  <20120325174210.GA23605@redhat.com> <1332748746.16159.62.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1332748746.16159.62.camel@twins>
+ <20120326170443.GA25229@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 Cc: Mike Frysinger <vapier@gentoo.org>,
  user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
  Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org,
@@ -32,20 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/26, Peter Zijlstra wrote:
->
-> On Sun, 2012-03-25 at 19:42 +0200, Oleg Nesterov wrote:
-> > __cpu_disable() is called by __stop_machine(), we know that nobody
-> > can preempt us and other CPUs can do nothing.
->
-> It would be very good to not rely on that though,
+On Mon, 2012-03-26 at 19:04 +0200, Oleg Nesterov wrote:
 
-Yes, yes, perhaps I wasn't clear but I think the patches are fine.
+> Interesting... Why? I mean, why do you dislike stop_machine() in
+> _cpu_down() ? Just curious.
 
-> I would love to get
-> rid of the stop_machine usage in cpu hotplug some day.
+It disturbs all cpus, the -rt people don't like that their FIFO tasks
+don't get to run, the trading people don't like their RDMA poll loops to
+be interrupted.. etc.
 
-Interesting... Why? I mean, why do you dislike stop_machine() in
-_cpu_down() ? Just curious.
+Now arguably, one should simply not do hotplug crap while such things
+are running, and mostly that's a perfectly fine constraint. But it
+doesn't help that people view cpu hotplug as a power savings or resource
+provisioning 'feature' and there's userspace daemons that plug
+on-demand.
 
-Oleg.
+But my ultimate goal is to completely remove synchronization that is
+actively machine wide, since we all know that as long as such stuff
+exists people will want to use it.
+
+Now I don't know we'll ever fully get there -- see the BKL saga -- but
+its worth trying I think. The module unload and esp. the text_poke usage
+of stop_machine are much worse offenders, since both those are
+relatively common and much harder to avoid.
