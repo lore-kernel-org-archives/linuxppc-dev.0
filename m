@@ -1,27 +1,26 @@
-Return-Path: <vinod.koul@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id 5267EB6F98
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2012 18:31:23 +1100 (EST)
-Subject: Re: [PATCH v5 1/2] dmaengine: Add context parameter to prep_dma_sg
- and prep_interleaved_dma
-From: Vinod Koul <vinod.koul@linux.intel.com>
-To: Trilok Soni <tsoni@codeaurora.org>
-In-Reply-To: <4F7012FC.10203@codeaurora.org>
-References: <1332426167-25213-1-git-send-email-kumarrav@codeaurora.org>
- <1332743073.19804.26.camel@vkoul-udesk3>  <4F7012FC.10203@codeaurora.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Mar 2012 12:54:11 +0530
-Message-ID: <1332746651.19804.81.camel@vkoul-udesk3>
-Mime-Version: 1.0
-Cc: Russell King <linux@arm.linux.org.uk>,
- Ravi Kumar V <kumarrav@codeaurora.org>, "Ira W. Snyder" <iws@ovro.caltech.edu>,
- Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
- linux-arm-msm@vger.kernel.or, linux-kernel@vger.kernel.org,
- Zhang Wei <zw@zh-kernel.org>, Bryan Huntsman <bryanh@codeaurora.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Barry Song <baohua.song@csr.com>,
- Daniel Walker <dwalker@fifo99.com>, Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev@lists.ozlabs.org, David Brown <davidb@codeaurora.org>,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-qa0-f49.google.com (mail-qa0-f49.google.com
+ [209.85.216.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3BC9AB6EEC
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2012 00:36:04 +1100 (EST)
+Received: by qafi29 with SMTP id i29so2096065qaf.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 26 Mar 2012 06:36:01 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1332633218.2882.16.camel@pasglop>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+ <20120321162549.8C1D0202A4D@gemini.denx.de>
+ <1332633218.2882.16.camel@pasglop>
+Date: Mon, 26 Mar 2012 09:36:00 -0400
+Message-ID: <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+ robert.karl.berger@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,43 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-03-26 at 12:25 +0530, Trilok Soni wrote:
-> >
-> > You need to
-> > 1) add wrappers over interleaved api which dont expose this
-> additional
-> > parameter
-> > 2) move existing users to use these wrappers
-> 
-> Above two steps would be exactly same as 
-> https://lkml.org/lkml/2012/3/8/401 - [PATCH 1/2 V2]
-> dmaengine/dma_slave: 
-> introduce inline wrappers, right?
-> 
-> > 3) add a new API which has your additional argument (not an opaque
-> > object) and this calls .device_xx callback with additional arg.
-> > 4. Above can be under conditional of your specific subsystem where
-> these
-> > parameters are valid.
-> 
-> Now, this would be different from what Alexandre had submitted, since
-> he 
-> had added "void *context" parameter directly to existing callbacks 
-> dma_slave_sg and and cyclic under struct dma_device.
-In that case the wrappers existed, so he modified them and ensured all
-clients use these and not the .device callbacks
+On Sat, Mar 24, 2012 at 7:53 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2012-03-21 at 17:25 +0100, Wolfgang Denk wrote:
+>> > > The problem is that for ppc-linux-gcc (GCC) 4.2.2 (which comes
+>> with the
+>> > > ELDK 4.2) this assembly instruction is not known and the build
+>> breaks.
+>> >
+>> > Sigh. =A0GCC 4.2 is pretty old at this point.
+>>
+>> But still rock-solid ... =A0We use it a lot, especially as reference for
+>> more recent (and sometimes more broken) versions of GCC.
+>
+> Isn't this a binutils rather than gcc issue ?
 
-So you need to create the new wrappers without any context parameter and
-ensure all clients use these.
-> 
-> And you prefer that we add new callbacks under "struct dma_device"
-> for 
-> our specific requirement with new name and with that extra non-opaque 
-> object. After that add wrappers for these two new callbacks say
-> dmaengine_prep_dma_sg_ext and dmagengine_prep_interleaved_dma_ext
-> (same
-> name goes for callback).
-> 
-> 
--- 
-~Vinod
+Pretty much.
+
+josh
