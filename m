@@ -1,18 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4F721209.5030706@freescale.com>
-Date: Tue, 27 Mar 2012 14:16:25 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+ [209.85.210.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BBB0AB6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 08:20:08 +1100 (EST)
+Received: by iakh37 with SMTP id h37so441478iak.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2012 14:20:05 -0700 (PDT)
 MIME-Version: 1.0
-To: Stuart Yoder <b08248@gmail.com>
-Subject: Re: [PATCH 2/4] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag for
- FSL MPIC.
-References: <1332850557-23557-1-git-send-email-Varun.Sethi@freescale.com>
- <295B3D3A-F038-4176-90EF-423A6BB84F62@kernel.crashing.org>
- <CALRxmdDhHpxDoemWj6u_NUJtOfmAWo9U0YgO0xNzpqOt4EXD9w@mail.gmail.com>
- <4F720A90.1040600@freescale.com>
-In-Reply-To: <4F720A90.1040600@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Varun Sethi <Varun.Sethi@freescale.com>, Linuxppc-dev@lists.ozlabs.org
+Sender: tony.luck@gmail.com
+In-Reply-To: <1324643253-3024-6-git-send-email-m.szyprowski@samsung.com>
+References: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
+ <1324643253-3024-6-git-send-email-m.szyprowski@samsung.com>
+Date: Tue, 27 Mar 2012 14:20:05 -0700
+Message-ID: <CA+8MBbLAafFbVwviFmkjD0DNz5RsCbB_TNLL67wEi2k-hyXkXA@mail.gmail.com>
+Subject: Re: [PATCH 05/14] IA64: adapt for dma_map_ops changes
+From: Tony Luck <tony.luck@intel.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+ linaro-mm-sig@lists.linaro.org, Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ discuss@x86-64.org, linux-kernel@vger.kernel.org,
+ Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/27/2012 01:44 PM, Scott Wood wrote:
-> On 03/27/2012 10:21 AM, Stuart Yoder wrote:
->> On Tue, Mar 27, 2012 at 8:30 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
->>>
->>> On Mar 27, 2012, at 7:15 AM, Varun Sethi wrote:
->>>
->>>> FSL MPIC supports 16 bit vectors so our vector number space isn't
->>>> restricted to 256 vectors. We should use the MPIC_LARG_VECTORS flag
->>>> while intializing the MPIC. This also prevents us from eating in to
->>>> hardware vector number space (MSIs) while setting up internal sources.
->>>
->>> What is driving this change?
->>
->> Whats driving the change is proper handling of error interrupts.   Right
->> now error interrupts (muxed on int 16) are treated as a shared
->> interrupt source.   We want each to be handled as a individual interrupt
->> source...thus the desire to support more than 256 interrupts.
-> 
-> We don't actually need more than 256 interrupts for this (the individual
-> error interrupts are not counted against this).  But unless we change
-> how vectors are allocated, we need vectors >= 256, since we have MSIs
-> close enough to 256 that under the current scheme the IPIs, timers, and
-> such collide with the third MSI bank.
+On Fri, Dec 23, 2011 at 4:27 AM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
+> From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+>
+> Adapt core IA64 architecture code for dma_map_ops changes: replace
+> alloc/free_coherent with generic alloc/free methods.
+>
+> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+> =A0arch/ia64/hp/common/sba_iommu.c =A0 =A0 | =A0 11 ++++++-----
+> =A0arch/ia64/include/asm/dma-mapping.h | =A0 18 ++++++++++++------
+> =A0arch/ia64/kernel/pci-swiotlb.c =A0 =A0 =A0| =A0 =A09 +++++----
+> =A0arch/ia64/sn/pci/pci_dma.c =A0 =A0 =A0 =A0 =A0| =A0 =A09 +++++----
+> =A04 files changed, 28 insertions(+), 19 deletions(-)
 
-Note that this is the case today even without the error interrupt stuff
--- the highest vector used by MSIs on MPIC 4.1 is 0xf7, and we have 13
-special vectors (4 IPIs, 8 timers, and spurious).
+The series breaks bisection from part 2 (when the x86 part changes
+lib/swiotlb.c)
+until part 5 (when ia64 sees the changes to match).  You could either merge=
+ part
+5 into part 2 (to make a combined x86+ia64 piece) ... or try to pull
+the libswiotlb
+changes into their own piece (which would have some of the ia64 and x86 bit=
+s).
+Or at the very least minimize the breakage window by putting ia64
+right after x86
+in the patch sequence.
 
--Scott
+Otherwise seems OK
+
+Acked-by: Tony Luck <tony.luck@intel.com>
