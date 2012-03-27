@@ -1,17 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] powerpc/mpic: Move internal interrupt source vector
- allocation to a separate function.
-Mime-Version: 1.0 (Apple Message framework v1257)
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+ [209.85.213.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 85D03B6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 01:09:31 +1100 (EST)
+Received: by yenl1 with SMTP id l1so4898133yen.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2012 07:09:24 -0700 (PDT)
+Date: Tue, 27 Mar 2012 07:09:20 -0700
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc+sparc/vio: Modernize driver registration
+Message-ID: <20120327140920.GB25109@kroah.com>
+References: <1332824790.2882.51.camel@pasglop>
+ <20120327.015316.1552473998755517441.davem@davemloft.net>
+ <1332831027.2882.55.camel@pasglop>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D0B11BA@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Tue, 27 Mar 2012 09:02:05 -0500
-Message-Id: <BA2352CD-6C54-4D33-86DB-F55DBDBA6E5F@kernel.crashing.org>
-References: <1332850586-23610-1-git-send-email-Varun.Sethi@freescale.com>
- <84A55A49-747D-4C87-9E5C-E5C63C0CEDA7@kernel.crashing.org>
- <C5ECD7A89D1DC44195F34B25E172658D0B11BA@039-SN2MPN1-013.039d.mgd.msft.net>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Cc: "Linuxppc-dev@lists.ozlabs.org" <Linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1332831027.2882.55.camel@pasglop>
+Cc: key@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,42 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Mar 27, 2012 at 05:50:27PM +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2012-03-27 at 01:53 -0400, David Miller wrote:
+> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Date: Tue, 27 Mar 2012 16:06:30 +1100
+> > 
+> > > This makes vio_register_driver() get the module owner & name at compile
+> > > time like PCI drivers do, and adds a name pointer directly in struct
+> > > vio_driver to avoid having to explicitly initialize the embedded
+> > > struct device.
+> > > 
+> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > Acked-by: David S. Miller <davem@davemloft.net>
+> > --
+> 
+> Greg, do you want to carry this or should I ? In the later case, I'd
+> rather send it to Linus now than having it hanging around til the next
+> merge window :-)
 
-On Mar 27, 2012, at 8:52 AM, Sethi Varun-B16395 wrote:
-
->=20
->=20
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Tuesday, March 27, 2012 6:55 PM
->> To: Sethi Varun-B16395
->> Cc: Linuxppc-dev@lists.ozlabs.org
->> Subject: Re: [PATCH 3/4] powerpc/mpic: Move internal interrupt source
->> vector allocation to a separate function.
->>=20
->>=20
->> On Mar 27, 2012, at 7:16 AM, Varun Sethi wrote:
->>=20
->>> Allocate vector numbers for MPIC internal interrupt sources (IPIs =
-and
->>> Timers) in a separate function.
->>>=20
->>=20
->> Explain why you are making this change.
->=20
->=20
-> [Sethi Varun-B16395] With the current code it becomes fairly difficult =
-to
-> add new internal interrupt sources. In my case I had to add 32 =
-additional
-> interrupt sources corresponding to the MPIC error interrupts. It's =
-more
-> convenient doing the internal interrupt source allocation using a =
-loop.
-
-I think that is more due to how you added the MPIC error interrupts and =
-issues w/that code.  If you are treating the MPIC error interrupts as a =
-cascade than they should have a distinct linux IRQ space from the =
-standard MPIC interrupts.  This is how the MSIs work (as an example).
-
-- k=
+Feel free to send it now, it looks good to me:
+	Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
