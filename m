@@ -1,16 +1,39 @@
-Return-Path: <b08248@gmail.com>
+Return-Path: <mattst88@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+ [209.85.213.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A5B1EB6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 02:57:08 +1100 (EST)
+Received: by yenl1 with SMTP id l1so42816yen.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2012 08:57:05 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <295B3D3A-F038-4176-90EF-423A6BB84F62@kernel.crashing.org>
-References: <1332850557-23557-1-git-send-email-Varun.Sethi@freescale.com>
- <295B3D3A-F038-4176-90EF-423A6BB84F62@kernel.crashing.org>
-Date: Tue, 27 Mar 2012 10:21:28 -0500
-Message-ID: <CALRxmdDhHpxDoemWj6u_NUJtOfmAWo9U0YgO0xNzpqOt4EXD9w@mail.gmail.com>
-Subject: Re: [PATCH 2/4] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag for FSL
- MPIC.
-From: Stuart Yoder <b08248@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1332855768-32583-7-git-send-email-m.szyprowski@samsung.com>
+References: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
+ <1332855768-32583-7-git-send-email-m.szyprowski@samsung.com>
+From: Matt Turner <mattst88@gmail.com>
+Date: Tue, 27 Mar 2012 11:56:43 -0400
+Message-ID: <CAEdQ38H6xJsHDZh2LJA4NZOQJ0AEtYLKK2i7w=+98TXCCRxEQw@mail.gmail.com>
+Subject: Re: [PATCHv2 06/14] Alpha: adapt for dma_map_ops changes
+To: Marek Szyprowski <m.szyprowski@samsung.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Varun Sethi <Varun.Sethi@freescale.com>, Linuxppc-dev@lists.ozlabs.org
+Cc: linux-mips@linux-mips.org, Kevin Cernekee <cernekee@gmail.com>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ Dezhong Diao <dediao@cisco.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+ linaro-mm-sig@lists.linaro.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, discuss@x86-64.org,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ linux-kernel@vger.kernel.org, Richard Kuo <rkuo@codeaurora.org>,
+ FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+ Kyungmin Park <kyungmin.park@samsung.com>, Paul Mundt <lethal@linux-sh.org>,
+ linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +43,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2012 at 8:30 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+On Tue, Mar 27, 2012 at 9:42 AM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
+> From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
 >
-> On Mar 27, 2012, at 7:15 AM, Varun Sethi wrote:
+> Adapt core Alpha architecture code for dma_map_ops changes: replace
+> alloc/free_coherent with generic alloc/free methods.
 >
->> FSL MPIC supports 16 bit vectors so our vector number space isn't
->> restricted to 256 vectors. We should use the MPIC_LARG_VECTORS flag
->> while intializing the MPIC. This also prevents us from eating in to
->> hardware vector number space (MSIs) while setting up internal sources.
+> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> =A0arch/alpha/include/asm/dma-mapping.h | =A0 18 ++++++++++++------
+> =A0arch/alpha/kernel/pci-noop.c =A0 =A0 =A0 =A0 | =A0 10 ++++++----
+> =A0arch/alpha/kernel/pci_iommu.c =A0 =A0 =A0 =A0| =A0 10 ++++++----
+> =A03 files changed, 24 insertions(+), 14 deletions(-)
 >
-> What is driving this change?
+> diff --git a/arch/alpha/include/asm/dma-mapping.h b/arch/alpha/include/as=
+m/dma-mapping.h
+> index 4567aca..dfa32f0 100644
+> --- a/arch/alpha/include/asm/dma-mapping.h
+> +++ b/arch/alpha/include/asm/dma-mapping.h
+> @@ -12,16 +12,22 @@ static inline struct dma_map_ops *get_dma_ops(struct =
+device *dev)
+>
+> =A0#include <asm-generic/dma-mapping-common.h>
+>
+> -static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0dma_addr_t *dma_handle, gfp_t gfp)
+> +#define dma_alloc_coherent(d,s,h,f) =A0 =A0dma_alloc_attrs(d,s,h,f,NULL)
+> +
+> +static inline void *dma_alloc_attrs(struct device *dev, size_t size,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dma=
+_addr_t *dma_handle, gfp_t gfp,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 str=
+uct dma_attrs *attrs)
+> =A0{
+> - =A0 =A0 =A0 return get_dma_ops(dev)->alloc_coherent(dev, size, dma_hand=
+le, gfp);
+> + =A0 =A0 =A0 return get_dma_ops(dev)->alloc(dev, size, dma_handle, gfp, =
+attrs);
+> =A0}
+>
+> -static inline void dma_free_coherent(struct device *dev, size_t size,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+void *vaddr, dma_addr_t dma_handle)
+> +#define dma_free_coherent(d,s,c,h) dma_free_attrs(d,s,c,h,NULL)
+> +
+> +static inline void dma_free_attrs(struct device *dev, size_t size,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 void *v=
+addr, dma_addr_t dma_handle,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct =
+dma_attrs *attrs)
+> =A0{
+> - =A0 =A0 =A0 get_dma_ops(dev)->free_coherent(dev, size, vaddr, dma_handl=
+e);
+> + =A0 =A0 =A0 get_dma_ops(dev)->free(dev, size, vaddr, dma_handle, attrs)=
+;
+> =A0}
+>
+> =A0static inline int dma_mapping_error(struct device *dev, dma_addr_t dma=
+_addr)
+> diff --git a/arch/alpha/kernel/pci-noop.c b/arch/alpha/kernel/pci-noop.c
+> index 04eea48..df24b76 100644
+> --- a/arch/alpha/kernel/pci-noop.c
+> +++ b/arch/alpha/kernel/pci-noop.c
+> @@ -108,7 +108,8 @@ sys_pciconfig_write(unsigned long bus, unsigned long =
+dfn,
+> =A0}
+>
+> =A0static void *alpha_noop_alloc_coherent(struct device *dev, size_t size=
+,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0dma_addr_t *dma_handle, gfp_t gfp)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0dma_addr_t *dma_handle, gfp_t gfp,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0struct dma_attrs *attrs)
+> =A0{
+> =A0 =A0 =A0 =A0void *ret;
+>
+> @@ -123,7 +124,8 @@ static void *alpha_noop_alloc_coherent(struct device =
+*dev, size_t size,
+> =A0}
+>
+> =A0static void alpha_noop_free_coherent(struct device *dev, size_t size,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+void *cpu_addr, dma_addr_t dma_addr)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+void *cpu_addr, dma_addr_t dma_addr,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+struct dma_attrs *attrs)
+> =A0{
+> =A0 =A0 =A0 =A0free_pages((unsigned long)cpu_addr, get_order(size));
+> =A0}
+> @@ -174,8 +176,8 @@ static int alpha_noop_set_mask(struct device *dev, u6=
+4 mask)
+> =A0}
+>
+> =A0struct dma_map_ops alpha_noop_ops =3D {
+> - =A0 =A0 =A0 .alloc_coherent =A0 =A0 =A0 =A0 =3D alpha_noop_alloc_cohere=
+nt,
+> - =A0 =A0 =A0 .free_coherent =A0 =A0 =A0 =A0 =A0=3D alpha_noop_free_coher=
+ent,
+> + =A0 =A0 =A0 .alloc =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D alpha_noop_al=
+loc_coherent,
+> + =A0 =A0 =A0 .free =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D alpha_noop_fr=
+ee_coherent,
+> =A0 =A0 =A0 =A0.map_page =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D alpha_noop_map_p=
+age,
+> =A0 =A0 =A0 =A0.map_sg =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D alpha_noop_map=
+_sg,
+> =A0 =A0 =A0 =A0.mapping_error =A0 =A0 =A0 =A0 =A0=3D alpha_noop_mapping_e=
+rror,
+> diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.=
+c
+> index 4361080..cd63479 100644
+> --- a/arch/alpha/kernel/pci_iommu.c
+> +++ b/arch/alpha/kernel/pci_iommu.c
+> @@ -434,7 +434,8 @@ static void alpha_pci_unmap_page(struct device *dev, =
+dma_addr_t dma_addr,
+> =A0 =A0else DMA_ADDRP is undefined. =A0*/
+>
+> =A0static void *alpha_pci_alloc_coherent(struct device *dev, size_t size,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ dma_addr_t *dma_addrp, gfp_t gfp)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ dma_addr_t *dma_addrp, gfp_t gfp,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ struct dma_attrs *attrs)
+> =A0{
+> =A0 =A0 =A0 =A0struct pci_dev *pdev =3D alpha_gendev_to_pci(dev);
+> =A0 =A0 =A0 =A0void *cpu_addr;
+> @@ -478,7 +479,8 @@ try_again:
+> =A0 =A0DMA_ADDR past this call are illegal. =A0*/
+>
+> =A0static void alpha_pci_free_coherent(struct device *dev, size_t size,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 voi=
+d *cpu_addr, dma_addr_t dma_addr)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 voi=
+d *cpu_addr, dma_addr_t dma_addr,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 str=
+uct dma_attrs *attrs)
+> =A0{
+> =A0 =A0 =A0 =A0struct pci_dev *pdev =3D alpha_gendev_to_pci(dev);
+> =A0 =A0 =A0 =A0pci_unmap_single(pdev, dma_addr, size, PCI_DMA_BIDIRECTION=
+AL);
+> @@ -952,8 +954,8 @@ static int alpha_pci_set_mask(struct device *dev, u64=
+ mask)
+> =A0}
+>
+> =A0struct dma_map_ops alpha_pci_ops =3D {
+> - =A0 =A0 =A0 .alloc_coherent =A0 =A0 =A0 =A0 =3D alpha_pci_alloc_coheren=
+t,
+> - =A0 =A0 =A0 .free_coherent =A0 =A0 =A0 =A0 =A0=3D alpha_pci_free_cohere=
+nt,
+> + =A0 =A0 =A0 .alloc =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D alpha_pci_all=
+oc_coherent,
+> + =A0 =A0 =A0 .free =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D alpha_pci_fre=
+e_coherent,
+> =A0 =A0 =A0 =A0.map_page =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D alpha_pci_map_pa=
+ge,
+> =A0 =A0 =A0 =A0.unmap_page =A0 =A0 =A0 =A0 =A0 =A0 =3D alpha_pci_unmap_pa=
+ge,
+> =A0 =A0 =A0 =A0.map_sg =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D alpha_pci_map_=
+sg,
+> --
+> 1.7.1.569.g6f426
+>
 
-Whats driving the change is proper handling of error interrupts.   Right
-now error interrupts (muxed on int 16) are treated as a shared
-interrupt source.   We want each to be handled as a individual interrupt
-source...thus the desire to support more than 256 interrupts.
-
-Stuart
+Acked-by: Matt Turner <mattst88@gmail.com>
