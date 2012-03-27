@@ -1,12 +1,13 @@
 Return-Path: <B16395@freescale.com>
 From: Varun Sethi <Varun.Sethi@freescale.com>
 To: <Linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 0/4] powerpc/mpic: Enhancements for FSL MPIC. 
-Date: Tue, 27 Mar 2012 17:44:58 +0530
-Message-ID: <1332850498-23449-1-git-send-email-Varun.Sethi@freescale.com>
+Subject: [PATCH 1/4] powerpc/mpic: finish supporting timer group B on
+ Freescale chips
+Date: Tue, 27 Mar 2012 17:45:32 +0530
+Message-ID: <1332850532-23505-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Varun Sethi <Varun.Sethi@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,34 +17,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset adds/fixes the following functionality specific to the
-FSL MPIC:
-1. Fix support for timer group B interrupts. Previously these were
-not getting initialized.
+From: Scott Wood <scottwood@freescale.com>
 
-2. Use the MPIC_LARGE_VECTORS flag while intializing FSL MPIC.
-This prevents us from eating in to hardware vector number
-space (MSIs) while setting up internal sources.
+Previously, these interrupts would be mapped, but the offset
+calculation was broken, and only the first group was initialized.
 
-3. Cleanup MPIC internal source vector allocation, by moving it to a
-separate function.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/include/asm/mpic.h |    5 +++
+ arch/powerpc/sysdev/mpic.c      |   58 ++++++++++++++++++++++++++++-----------
+ 2 files changed, 47 insertions(+), 16 deletions(-)
 
-4.Cascaded handling for the MPIC error interrupt. This is possible
-with FSL MPIC version >= 4.1.
-
-The patches are based on "next" branch of Benjamin Herrenschmidt's powerpc
-linux tree.
-
-Varun Sethi (4):
-  Support timer group B on Freescale chip.
-  Use the MPIC_LARGE_VECTORS flag for FSL MPIC.
-  Move internal interrupt source vector allocation to a separate
-  function.
-  Mpic error interrupt support.
-
- arch/powerpc/include/asm/mpic.h |   30 +++++-
- arch/powerpc/sysdev/mpic.c      |  245 ++++++++++++++++++++++++++++++++++-----
- 2 files changed, 241 insertions(+), 34 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index d7e3fec..30e3b29 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -63,6 +63,7 @@
+  */
+ #define MPIC_TIMER_BASE			0x01100
+ #define MPIC_TIMER_STRIDE		0x40
++#define MPIC_TIMER_GROUP_STRIDE		0x1000
+ 
+ #define MPIC_TIMER_CURRENT_CNT		0x00000
+ #define MPIC_TIMER_BASE_CNT		0x00010
+@@ -110,6 +111,9 @@
+ #define 	MPIC_VECPRI_SENSE_MASK			0x00400000
+ #define MPIC_IRQ_DESTINATION		0x00010
+ 
++#define MPIC_FSL_BRR1			0x00000
++#define 	MPIC_FSL_BRR1_VER			0x0000ffff
++
+ #define MPIC_MAX_IRQ_SOURCES	2048
+ #define MPIC_MAX_CPUS		32
+ #define MPIC_MAX_ISU		32
+@@ -299,6 +303,7 @@ struct mpic
+ 	phys_addr_t paddr;
+ 
+ 	/* The various ioremap'ed bases */
++	struct mpic_reg_bank	thiscpuregs;
+ 	struct mpic_reg_bank	gregs;
+ 	struct mpic_reg_bank	tmregs;
+ 	struct mpic_reg_bank	cpuregs[MPIC_MAX_CPUS];
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 16eb743..8be1ea2 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -6,7 +6,7 @@
+  *  with various broken implementations of this HW.
+  *
+  *  Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
+- *  Copyright 2010-2011 Freescale Semiconductor, Inc.
++ *  Copyright 2010-2012 Freescale Semiconductor, Inc.
+  *
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License.  See the file COPYING in the main directory of this archive
+@@ -221,24 +221,24 @@ static inline void _mpic_ipi_write(struct mpic *mpic, unsigned int ipi, u32 valu
+ 	_mpic_write(mpic->reg_type, &mpic->gregs, offset, value);
+ }
+ 
+-static inline u32 _mpic_tm_read(struct mpic *mpic, unsigned int tm)
++static inline unsigned int mpic_tm_offset(struct mpic *mpic, unsigned int tm)
+ {
+-	unsigned int offset = MPIC_INFO(TIMER_VECTOR_PRI) +
+-			      ((tm & 3) * MPIC_INFO(TIMER_STRIDE));
++	return (tm >> 2) * MPIC_TIMER_GROUP_STRIDE +
++	       (tm & 3) * MPIC_INFO(TIMER_STRIDE);
++}
+ 
+-	if (tm >= 4)
+-		offset += 0x1000 / 4;
++static inline u32 _mpic_tm_read(struct mpic *mpic, unsigned int tm)
++{
++	unsigned int offset = mpic_tm_offset(mpic, tm) +
++			      MPIC_INFO(TIMER_VECTOR_PRI);
+ 
+ 	return _mpic_read(mpic->reg_type, &mpic->tmregs, offset);
+ }
+ 
+ static inline void _mpic_tm_write(struct mpic *mpic, unsigned int tm, u32 value)
+ {
+-	unsigned int offset = MPIC_INFO(TIMER_VECTOR_PRI) +
+-			      ((tm & 3) * MPIC_INFO(TIMER_STRIDE));
+-
+-	if (tm >= 4)
+-		offset += 0x1000 / 4;
++	unsigned int offset = mpic_tm_offset(mpic, tm) +
++			      MPIC_INFO(TIMER_VECTOR_PRI);
+ 
+ 	_mpic_write(mpic->reg_type, &mpic->tmregs, offset, value);
+ }
+@@ -1281,6 +1281,16 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	mpic_map(mpic, mpic->paddr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
+ 	mpic_map(mpic, mpic->paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
+ 
++	if (mpic->flags & MPIC_FSL) {
++		/*
++		 * Yes, Freescale really did put global registers in the
++		 * magic per-cpu area -- and they don't even show up in the
++		 * non-magic per-cpu copies that this driver normally uses.
++		 */
++		mpic_map(mpic, mpic->paddr, &mpic->thiscpuregs,
++			 MPIC_CPU_THISBASE, 0x1000);
++	}
++
+ 	/* Reset */
+ 
+ 	/* When using a device-node, reset requests are only honored if the MPIC
+@@ -1428,6 +1438,7 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
+ void __init mpic_init(struct mpic *mpic)
+ {
+ 	int i, cpu;
++	int num_timers = 4;
+ 
+ 	BUG_ON(mpic->num_sources == 0);
+ 
+@@ -1436,15 +1447,30 @@ void __init mpic_init(struct mpic *mpic)
+ 	/* Set current processor priority to max */
+ 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
+ 
++	if (mpic->flags & MPIC_FSL) {
++		u32 brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
++				      MPIC_FSL_BRR1);
++		u32 version = brr1 & MPIC_FSL_BRR1_VER;
++
++		/*
++		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
++		 * mpc8536).  It is not present in MPIC 2.0 (e.g. mpc8544).
++		 * I don't know about the status of intermediate versions (or
++		 * whether they even exist).
++		 */
++		if (version >= 0x0301)
++			num_timers = 8;
++	}
++
+ 	/* Initialize timers to our reserved vectors and mask them for now */
+-	for (i = 0; i < 4; i++) {
++	for (i = 0; i < num_timers; i++) {
++		unsigned int offset = mpic_tm_offset(mpic, i);
++
+ 		mpic_write(mpic->tmregs,
+-			   i * MPIC_INFO(TIMER_STRIDE) +
+-			   MPIC_INFO(TIMER_DESTINATION),
++			   offset + MPIC_INFO(TIMER_DESTINATION),
+ 			   1 << hard_smp_processor_id());
+ 		mpic_write(mpic->tmregs,
+-			   i * MPIC_INFO(TIMER_STRIDE) +
+-			   MPIC_INFO(TIMER_VECTOR_PRI),
++			   offset + MPIC_INFO(TIMER_VECTOR_PRI),
+ 			   MPIC_VECPRI_MASK |
+ 			   (9 << MPIC_VECPRI_PRIORITY_SHIFT) |
+ 			   (mpic->timer_vecs[0] + i));
 -- 
 1.7.2.2
