@@ -1,27 +1,17 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ACFBAB6EEC
- for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2012 05:18:23 +1100 (EST)
-Message-ID: <4F720462.5020400@freescale.com>
-Date: Tue, 27 Mar 2012 13:18:10 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <B07421@freescale.com>
+Message-ID: <4F720A90.1040600@freescale.com>
+Date: Tue, 27 Mar 2012 13:44:32 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
-References: <1322669957-8259-1-git-send-email-timur@freescale.com>
- <F8C3451C-1B14-4C30-A194-B15B6C10B0A7@kernel.crashing.org>
- <4F63A7A4.4000205@freescale.com> <20120319160452.B57D13E05A5@localhost>
- <4F677E51.8030905@freescale.com> <20120320170942.0C4143E2834@localhost>
- <4F68BD6F.2090008@freescale.com> <4F69F099.4070409@freescale.com>
-In-Reply-To: <4F69F099.4070409@freescale.com>
+To: Stuart Yoder <b08248@gmail.com>
+Subject: Re: [PATCH 2/4] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag for
+ FSL MPIC.
+References: <1332850557-23557-1-git-send-email-Varun.Sethi@freescale.com>
+ <295B3D3A-F038-4176-90EF-423A6BB84F62@kernel.crashing.org>
+ <CALRxmdDhHpxDoemWj6u_NUJtOfmAWo9U0YgO0xNzpqOt4EXD9w@mail.gmail.com>
+In-Reply-To: <CALRxmdDhHpxDoemWj6u_NUJtOfmAWo9U0YgO0xNzpqOt4EXD9w@mail.gmail.com>
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Scott Wood <scottwood@freescale.com>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: Varun Sethi <Varun.Sethi@freescale.com>, Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant, do you have a moment to consider my question?  Like I said, I'm
-anxious to get a fix into 3.3.
-
-Timur Tabi wrote:
-> Timur Tabi wrote:
->> They only problem I see with this is that I am thinking about modifying
->> the drivers/dma driver to probe on "fsl,eloplus-dma-channel" channels
->> directly.  If I do that, then who should call of_platform_populate()?
+On 03/27/2012 10:21 AM, Stuart Yoder wrote:
+> On Tue, Mar 27, 2012 at 8:30 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>>
+>> On Mar 27, 2012, at 7:15 AM, Varun Sethi wrote:
+>>
+>>> FSL MPIC supports 16 bit vectors so our vector number space isn't
+>>> restricted to 256 vectors. We should use the MPIC_LARG_VECTORS flag
+>>> while intializing the MPIC. This also prevents us from eating in to
+>>> hardware vector number space (MSIs) while setting up internal sources.
+>>
+>> What is driving this change?
 > 
-> Grant, could you tell me if there's anything actually work with my patch?
->  All I'm doing is adding a couple more commonly used entries to
-> mpc85xx_common_ids[].  After all, they're common IDs, so don't they belong
-> into an array called common_ids?
-> 
-> I've been waiting for months for this problem to be fixed, and 3.3 is
-> broken without it.  We've already established that you cannot actually
-> call of_platform_bus_probe() twice on the same level, so it's not like my
-> patch description is wrong or anything.
-> 
+> Whats driving the change is proper handling of error interrupts.   Right
+> now error interrupts (muxed on int 16) are treated as a shared
+> interrupt source.   We want each to be handled as a individual interrupt
+> source...thus the desire to support more than 256 interrupts.
 
+We don't actually need more than 256 interrupts for this (the individual
+error interrupts are not counted against this).  But unless we change
+how vectors are allocated, we need vectors >= 256, since we have MSIs
+close enough to 256 that under the current scheme the IPIs, timers, and
+such collide with the third MSI bank.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Scott
