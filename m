@@ -1,15 +1,40 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag for FSL
- MPIC.
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1332850557-23557-1-git-send-email-Varun.Sethi@freescale.com>
-Date: Tue, 27 Mar 2012 08:30:50 -0500
-Message-Id: <295B3D3A-F038-4176-90EF-423A6BB84F62@kernel.crashing.org>
-References: <1332850557-23557-1-git-send-email-Varun.Sethi@freescale.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Cc: Linuxppc-dev@lists.ozlabs.org
+Return-Path: <m.szyprowski@samsung.com>
+Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
+ [210.118.77.13]) by ozlabs.org (Postfix) with ESMTP id 00329B6EEF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 00:43:32 +1100 (EST)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN
+Received: from euspt2 ([210.118.77.13]) by mailout3.w1.samsung.com
+ (Sun Java(tm) System Messaging Server 6.3-8.04 (built Jul 29 2009; 32bit))
+ with ESMTP id <0M1J00EXAQ41PD60@mailout3.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:13 +0100 (BST)
+Received: from linux.samsung.com ([106.116.38.10])
+ by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
+ 2004)) with ESMTPA id <0M1J00216Q471V@spt2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:21 +0100 (BST)
+Date: Tue, 27 Mar 2012 15:42:34 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCHv2 00/14] DMA-mapping framework redesign preparation
+To: linux-kernel@vger.kernel.org
+Message-id: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
+Cc: linux-mips@linux-mips.org, Kevin Cernekee <cernekee@gmail.com>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Jonathan Corbet <corbet@lwn.net>,
+ x86@kernel.org, Matt Turner <mattst88@gmail.com>,
+ Dezhong Diao <dediao@cisco.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+ linaro-mm-sig@lists.linaro.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, discuss@x86-64.org,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Richard Kuo <rkuo@codeaurora.org>,
+ FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+ Kyungmin Park <kyungmin.park@samsung.com>, Paul Mundt <lethal@linux-sh.org>,
+ linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,43 +44,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello everyone,
 
-On Mar 27, 2012, at 7:15 AM, Varun Sethi wrote:
+This is an updated version of the DMA-mapping framework redesign
+preparation patches, which resolves issues pointed by Linus:
 
-> FSL MPIC supports 16 bit vectors so our vector number space isn't
-> restricted to 256 vectors. We should use the MPIC_LARG_VECTORS flag
-> while intializing the MPIC. This also prevents us from eating in to=20
-> hardware vector number space (MSIs) while setting up internal sources.
+https://lkml.org/lkml/2012/3/23/305
 
-What is driving this change?  The commit message isn't quite correct as =
-MPIC_LARGE_VECTORS is about the # of IRQs, not the fact that vector =
-field is 16-bits.
+These patches are the first step to clean up a bit dma-mapping api and
+introduce support for architecture specific performance improving hints
+in a generic way.
 
->=20
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
-> arch/powerpc/sysdev/mpic.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 8be1ea2..33520dd 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -1191,7 +1191,7 @@ struct mpic * __init mpic_alloc(struct =
-device_node *node,
-> 	if (of_get_property(node, "single-cpu-affinity", NULL))
-> 		flags |=3D MPIC_SINGLE_DEST_CPU;
-> 	if (of_device_is_compatible(node, "fsl,mpic"))
-> -		flags |=3D MPIC_FSL;
-> +		flags |=3D MPIC_FSL | MPIC_LARGE_VECTORS;
->=20
-> 	mpic =3D kzalloc(sizeof(struct mpic), GFP_KERNEL);
-> 	if (mpic =3D=3D NULL)
-> --=20
-> 1.7.2.2
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+For more information please refer to the thread with the first version
+of the patches:
+
+https://lkml.org/lkml/2011/12/23/97
+
+
+Best regards
+Marek Szyprowski
+Samsung Poland R&D Center
+
+
+Patch summary:
+
+Andrzej Pietrasiewicz (8):
+  X86 & IA64: adapt for dma_map_ops changes
+  MIPS: adapt for dma_map_ops changes
+  PowerPC: adapt for dma_map_ops changes
+  SPARC: adapt for dma_map_ops changes
+  Alpha: adapt for dma_map_ops changes
+  SH: adapt for dma_map_ops changes
+  Microblaze: adapt for dma_map_ops changes
+  Unicore32: adapt for dma_map_ops changes
+
+Marek Szyprowski (6):
+  common: dma-mapping: introduce alloc_attrs and free_attrs methods
+  Hexagon: adapt for dma_map_ops changes
+  common: dma-mapping: remove old alloc_coherent and free_coherent
+    methods
+  common: dma-mapping: introduce mmap method
+  common: DMA-mapping: add WRITE_COMBINE attribute
+  common: DMA-mapping: add NON-CONSISTENT attribute
+
+ Documentation/DMA-attributes.txt          |   19 +++++++++++++++++++
+ arch/alpha/include/asm/dma-mapping.h      |   18 ++++++++++++------
+ arch/alpha/kernel/pci-noop.c              |   10 ++++++----
+ arch/alpha/kernel/pci_iommu.c             |   10 ++++++----
+ arch/hexagon/include/asm/dma-mapping.h    |   18 ++++++++++++------
+ arch/hexagon/kernel/dma.c                 |    9 +++++----
+ arch/ia64/hp/common/sba_iommu.c           |   11 ++++++-----
+ arch/ia64/include/asm/dma-mapping.h       |   18 ++++++++++++------
+ arch/ia64/kernel/pci-swiotlb.c            |   14 +++++++++++---
+ arch/ia64/sn/pci/pci_dma.c                |    9 +++++----
+ arch/microblaze/include/asm/dma-mapping.h |   18 ++++++++++++------
+ arch/microblaze/kernel/dma.c              |   10 ++++++----
+ arch/mips/cavium-octeon/dma-octeon.c      |   12 ++++++------
+ arch/mips/include/asm/dma-mapping.h       |   18 ++++++++++++------
+ arch/mips/mm/dma-default.c                |    8 ++++----
+ arch/powerpc/include/asm/dma-mapping.h    |   24 ++++++++++++++++--------
+ arch/powerpc/kernel/dma-iommu.c           |   10 ++++++----
+ arch/powerpc/kernel/dma-swiotlb.c         |    4 ++--
+ arch/powerpc/kernel/dma.c                 |   10 ++++++----
+ arch/powerpc/kernel/ibmebus.c             |   10 ++++++----
+ arch/powerpc/kernel/vio.c                 |   14 ++++++++------
+ arch/powerpc/platforms/cell/iommu.c       |   16 +++++++++-------
+ arch/powerpc/platforms/ps3/system-bus.c   |   13 +++++++------
+ arch/sh/include/asm/dma-mapping.h         |   28 ++++++++++++++++++----------
+ arch/sh/kernel/dma-nommu.c                |    4 ++--
+ arch/sh/mm/consistent.c                   |    6 ++++--
+ arch/sparc/include/asm/dma-mapping.h      |   18 ++++++++++++------
+ arch/sparc/kernel/iommu.c                 |   10 ++++++----
+ arch/sparc/kernel/ioport.c                |   18 ++++++++++--------
+ arch/sparc/kernel/pci_sun4v.c             |    9 +++++----
+ arch/unicore32/include/asm/dma-mapping.h  |   18 ++++++++++++------
+ arch/unicore32/mm/dma-swiotlb.c           |   18 ++++++++++++++++--
+ arch/x86/include/asm/dma-mapping.h        |   26 ++++++++++++++++----------
+ arch/x86/kernel/amd_gart_64.c             |   11 ++++++-----
+ arch/x86/kernel/pci-calgary_64.c          |    9 +++++----
+ arch/x86/kernel/pci-dma.c                 |    3 ++-
+ arch/x86/kernel/pci-nommu.c               |    6 +++---
+ arch/x86/kernel/pci-swiotlb.c             |   17 +++++++++++++----
+ arch/x86/xen/pci-swiotlb-xen.c            |    4 ++--
+ drivers/iommu/amd_iommu.c                 |   10 ++++++----
+ drivers/iommu/intel-iommu.c               |    9 +++++----
+ drivers/xen/swiotlb-xen.c                 |    5 +++--
+ include/linux/dma-attrs.h                 |    2 ++
+ include/linux/dma-mapping.h               |   13 +++++++++----
+ include/xen/swiotlb-xen.h                 |    6 ++++--
+ 45 files changed, 355 insertions(+), 198 deletions(-)
+
+-- 
+1.7.1.569.g6f426
