@@ -1,22 +1,24 @@
 Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
- [210.118.77.13]) by ozlabs.org (Postfix) with ESMTP id 00329B6EEF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 00:43:32 +1100 (EST)
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14]) by ozlabs.org (Postfix) with ESMTP id F0456B6EEA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 00:43:31 +1100 (EST)
 MIME-version: 1.0
 Content-type: TEXT/PLAIN
-Received: from euspt2 ([210.118.77.13]) by mailout3.w1.samsung.com
+Received: from euspt2 ([210.118.77.14]) by mailout4.w1.samsung.com
  (Sun Java(tm) System Messaging Server 6.3-8.04 (built Jul 29 2009; 32bit))
- with ESMTP id <0M1J00EXAQ41PD60@mailout3.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:13 +0100 (BST)
+ with ESMTP id <0M1J00NXXQ4F2K60@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:27 +0100 (BST)
 Received: from linux.samsung.com ([106.116.38.10])
  by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
- 2004)) with ESMTPA id <0M1J00216Q471V@spt2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:21 +0100 (BST)
-Date: Tue, 27 Mar 2012 15:42:34 +0200
+ 2004)) with ESMTPA id <0M1J0022VQ491V@spt2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:23 +0100 (BST)
+Date: Tue, 27 Mar 2012 15:42:40 +0200
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCHv2 00/14] DMA-mapping framework redesign preparation
+Subject: [PATCHv2 06/14] Alpha: adapt for dma_map_ops changes
+In-reply-to: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
 To: linux-kernel@vger.kernel.org
-Message-id: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
+Message-id: <1332855768-32583-7-git-send-email-m.szyprowski@samsung.com>
+References: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
 Cc: linux-mips@linux-mips.org, Kevin Cernekee <cernekee@gmail.com>,
  linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
  sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
@@ -44,95 +46,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello everyone,
+From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
 
-This is an updated version of the DMA-mapping framework redesign
-preparation patches, which resolves issues pointed by Linus:
+Adapt core Alpha architecture code for dma_map_ops changes: replace
+alloc/free_coherent with generic alloc/free methods.
 
-https://lkml.org/lkml/2012/3/23/305
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/alpha/include/asm/dma-mapping.h |   18 ++++++++++++------
+ arch/alpha/kernel/pci-noop.c         |   10 ++++++----
+ arch/alpha/kernel/pci_iommu.c        |   10 ++++++----
+ 3 files changed, 24 insertions(+), 14 deletions(-)
 
-These patches are the first step to clean up a bit dma-mapping api and
-introduce support for architecture specific performance improving hints
-in a generic way.
-
-For more information please refer to the thread with the first version
-of the patches:
-
-https://lkml.org/lkml/2011/12/23/97
-
-
-Best regards
-Marek Szyprowski
-Samsung Poland R&D Center
-
-
-Patch summary:
-
-Andrzej Pietrasiewicz (8):
-  X86 & IA64: adapt for dma_map_ops changes
-  MIPS: adapt for dma_map_ops changes
-  PowerPC: adapt for dma_map_ops changes
-  SPARC: adapt for dma_map_ops changes
-  Alpha: adapt for dma_map_ops changes
-  SH: adapt for dma_map_ops changes
-  Microblaze: adapt for dma_map_ops changes
-  Unicore32: adapt for dma_map_ops changes
-
-Marek Szyprowski (6):
-  common: dma-mapping: introduce alloc_attrs and free_attrs methods
-  Hexagon: adapt for dma_map_ops changes
-  common: dma-mapping: remove old alloc_coherent and free_coherent
-    methods
-  common: dma-mapping: introduce mmap method
-  common: DMA-mapping: add WRITE_COMBINE attribute
-  common: DMA-mapping: add NON-CONSISTENT attribute
-
- Documentation/DMA-attributes.txt          |   19 +++++++++++++++++++
- arch/alpha/include/asm/dma-mapping.h      |   18 ++++++++++++------
- arch/alpha/kernel/pci-noop.c              |   10 ++++++----
- arch/alpha/kernel/pci_iommu.c             |   10 ++++++----
- arch/hexagon/include/asm/dma-mapping.h    |   18 ++++++++++++------
- arch/hexagon/kernel/dma.c                 |    9 +++++----
- arch/ia64/hp/common/sba_iommu.c           |   11 ++++++-----
- arch/ia64/include/asm/dma-mapping.h       |   18 ++++++++++++------
- arch/ia64/kernel/pci-swiotlb.c            |   14 +++++++++++---
- arch/ia64/sn/pci/pci_dma.c                |    9 +++++----
- arch/microblaze/include/asm/dma-mapping.h |   18 ++++++++++++------
- arch/microblaze/kernel/dma.c              |   10 ++++++----
- arch/mips/cavium-octeon/dma-octeon.c      |   12 ++++++------
- arch/mips/include/asm/dma-mapping.h       |   18 ++++++++++++------
- arch/mips/mm/dma-default.c                |    8 ++++----
- arch/powerpc/include/asm/dma-mapping.h    |   24 ++++++++++++++++--------
- arch/powerpc/kernel/dma-iommu.c           |   10 ++++++----
- arch/powerpc/kernel/dma-swiotlb.c         |    4 ++--
- arch/powerpc/kernel/dma.c                 |   10 ++++++----
- arch/powerpc/kernel/ibmebus.c             |   10 ++++++----
- arch/powerpc/kernel/vio.c                 |   14 ++++++++------
- arch/powerpc/platforms/cell/iommu.c       |   16 +++++++++-------
- arch/powerpc/platforms/ps3/system-bus.c   |   13 +++++++------
- arch/sh/include/asm/dma-mapping.h         |   28 ++++++++++++++++++----------
- arch/sh/kernel/dma-nommu.c                |    4 ++--
- arch/sh/mm/consistent.c                   |    6 ++++--
- arch/sparc/include/asm/dma-mapping.h      |   18 ++++++++++++------
- arch/sparc/kernel/iommu.c                 |   10 ++++++----
- arch/sparc/kernel/ioport.c                |   18 ++++++++++--------
- arch/sparc/kernel/pci_sun4v.c             |    9 +++++----
- arch/unicore32/include/asm/dma-mapping.h  |   18 ++++++++++++------
- arch/unicore32/mm/dma-swiotlb.c           |   18 ++++++++++++++++--
- arch/x86/include/asm/dma-mapping.h        |   26 ++++++++++++++++----------
- arch/x86/kernel/amd_gart_64.c             |   11 ++++++-----
- arch/x86/kernel/pci-calgary_64.c          |    9 +++++----
- arch/x86/kernel/pci-dma.c                 |    3 ++-
- arch/x86/kernel/pci-nommu.c               |    6 +++---
- arch/x86/kernel/pci-swiotlb.c             |   17 +++++++++++++----
- arch/x86/xen/pci-swiotlb-xen.c            |    4 ++--
- drivers/iommu/amd_iommu.c                 |   10 ++++++----
- drivers/iommu/intel-iommu.c               |    9 +++++----
- drivers/xen/swiotlb-xen.c                 |    5 +++--
- include/linux/dma-attrs.h                 |    2 ++
- include/linux/dma-mapping.h               |   13 +++++++++----
- include/xen/swiotlb-xen.h                 |    6 ++++--
- 45 files changed, 355 insertions(+), 198 deletions(-)
-
+diff --git a/arch/alpha/include/asm/dma-mapping.h b/arch/alpha/include/asm/dma-mapping.h
+index 4567aca..dfa32f0 100644
+--- a/arch/alpha/include/asm/dma-mapping.h
++++ b/arch/alpha/include/asm/dma-mapping.h
+@@ -12,16 +12,22 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
+ 
+ #include <asm-generic/dma-mapping-common.h>
+ 
+-static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+-				       dma_addr_t *dma_handle, gfp_t gfp)
++#define dma_alloc_coherent(d,s,h,f)	dma_alloc_attrs(d,s,h,f,NULL)
++
++static inline void *dma_alloc_attrs(struct device *dev, size_t size,
++				    dma_addr_t *dma_handle, gfp_t gfp,
++				    struct dma_attrs *attrs)
+ {
+-	return get_dma_ops(dev)->alloc_coherent(dev, size, dma_handle, gfp);
++	return get_dma_ops(dev)->alloc(dev, size, dma_handle, gfp, attrs);
+ }
+ 
+-static inline void dma_free_coherent(struct device *dev, size_t size,
+-				     void *vaddr, dma_addr_t dma_handle)
++#define dma_free_coherent(d,s,c,h) dma_free_attrs(d,s,c,h,NULL)
++
++static inline void dma_free_attrs(struct device *dev, size_t size,
++				  void *vaddr, dma_addr_t dma_handle,
++				  struct dma_attrs *attrs)
+ {
+-	get_dma_ops(dev)->free_coherent(dev, size, vaddr, dma_handle);
++	get_dma_ops(dev)->free(dev, size, vaddr, dma_handle, attrs);
+ }
+ 
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+diff --git a/arch/alpha/kernel/pci-noop.c b/arch/alpha/kernel/pci-noop.c
+index 04eea48..df24b76 100644
+--- a/arch/alpha/kernel/pci-noop.c
++++ b/arch/alpha/kernel/pci-noop.c
+@@ -108,7 +108,8 @@ sys_pciconfig_write(unsigned long bus, unsigned long dfn,
+ }
+ 
+ static void *alpha_noop_alloc_coherent(struct device *dev, size_t size,
+-				       dma_addr_t *dma_handle, gfp_t gfp)
++				       dma_addr_t *dma_handle, gfp_t gfp,
++				       struct dma_attrs *attrs)
+ {
+ 	void *ret;
+ 
+@@ -123,7 +124,8 @@ static void *alpha_noop_alloc_coherent(struct device *dev, size_t size,
+ }
+ 
+ static void alpha_noop_free_coherent(struct device *dev, size_t size,
+-				     void *cpu_addr, dma_addr_t dma_addr)
++				     void *cpu_addr, dma_addr_t dma_addr,
++				     struct dma_attrs *attrs)
+ {
+ 	free_pages((unsigned long)cpu_addr, get_order(size));
+ }
+@@ -174,8 +176,8 @@ static int alpha_noop_set_mask(struct device *dev, u64 mask)
+ }
+ 
+ struct dma_map_ops alpha_noop_ops = {
+-	.alloc_coherent		= alpha_noop_alloc_coherent,
+-	.free_coherent		= alpha_noop_free_coherent,
++	.alloc			= alpha_noop_alloc_coherent,
++	.free			= alpha_noop_free_coherent,
+ 	.map_page		= alpha_noop_map_page,
+ 	.map_sg			= alpha_noop_map_sg,
+ 	.mapping_error		= alpha_noop_mapping_error,
+diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+index 4361080..cd63479 100644
+--- a/arch/alpha/kernel/pci_iommu.c
++++ b/arch/alpha/kernel/pci_iommu.c
+@@ -434,7 +434,8 @@ static void alpha_pci_unmap_page(struct device *dev, dma_addr_t dma_addr,
+    else DMA_ADDRP is undefined.  */
+ 
+ static void *alpha_pci_alloc_coherent(struct device *dev, size_t size,
+-				      dma_addr_t *dma_addrp, gfp_t gfp)
++				      dma_addr_t *dma_addrp, gfp_t gfp,
++				      struct dma_attrs *attrs)
+ {
+ 	struct pci_dev *pdev = alpha_gendev_to_pci(dev);
+ 	void *cpu_addr;
+@@ -478,7 +479,8 @@ try_again:
+    DMA_ADDR past this call are illegal.  */
+ 
+ static void alpha_pci_free_coherent(struct device *dev, size_t size,
+-				    void *cpu_addr, dma_addr_t dma_addr)
++				    void *cpu_addr, dma_addr_t dma_addr,
++				    struct dma_attrs *attrs)
+ {
+ 	struct pci_dev *pdev = alpha_gendev_to_pci(dev);
+ 	pci_unmap_single(pdev, dma_addr, size, PCI_DMA_BIDIRECTIONAL);
+@@ -952,8 +954,8 @@ static int alpha_pci_set_mask(struct device *dev, u64 mask)
+ }
+ 
+ struct dma_map_ops alpha_pci_ops = {
+-	.alloc_coherent		= alpha_pci_alloc_coherent,
+-	.free_coherent		= alpha_pci_free_coherent,
++	.alloc			= alpha_pci_alloc_coherent,
++	.free			= alpha_pci_free_coherent,
+ 	.map_page		= alpha_pci_map_page,
+ 	.unmap_page		= alpha_pci_unmap_page,
+ 	.map_sg			= alpha_pci_map_sg,
 -- 
 1.7.1.569.g6f426
