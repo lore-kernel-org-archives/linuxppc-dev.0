@@ -1,24 +1,24 @@
 Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
- [210.118.77.13]) by ozlabs.org (Postfix) with ESMTP id AB736B6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 00:43:36 +1100 (EST)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN
-Received: from euspt2 ([210.118.77.13]) by mailout3.w1.samsung.com
- (Sun Java(tm) System Messaging Server 6.3-8.04 (built Jul 29 2009; 32bit))
- with ESMTP id <0M1J00EXAQ41PD60@mailout3.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:13 +0100 (BST)
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11]) by ozlabs.org (Postfix) with ESMTP id 55461B6FA9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 00:43:37 +1100 (EST)
+Received: from euspt1 (mailout1.w1.samsung.com [210.118.77.11])
+ by mailout1.w1.samsung.com
+ (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+ with ESMTP id <0M1J00BL9Q3FK2@mailout1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:42:53 +0100 (BST)
 Received: from linux.samsung.com ([106.116.38.10])
- by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
- 2004)) with ESMTPA id <0M1J00217Q471V@spt2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:21 +0100 (BST)
-Date: Tue, 27 Mar 2012 15:42:35 +0200
+ by spt1.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
+ 2004)) with ESMTPA id <0M1J00794Q4BCW@spt1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 27 Mar 2012 14:43:24 +0100 (BST)
+Date: Tue, 27 Mar 2012 15:42:43 +0200
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCHv2 01/14] common: dma-mapping: introduce alloc_attrs and
- free_attrs methods
+Subject: [PATCHv2 09/14] Unicore32: adapt for dma_map_ops changes
 In-reply-to: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
 To: linux-kernel@vger.kernel.org
-Message-id: <1332855768-32583-2-git-send-email-m.szyprowski@samsung.com>
+Message-id: <1332855768-32583-10-git-send-email-m.szyprowski@samsung.com>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN
 References: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
 Cc: linux-mips@linux-mips.org, Kevin Cernekee <cernekee@gmail.com>,
  linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
@@ -47,40 +47,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce new generic alloc and free methods with attributes argument.
+From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
 
-Existing alloc_coherent and free_coherent can be implemented on top of the
-new calls with NULL attributes argument. Later also dma_alloc_non_coherent
-can be implemented using DMA_ATTR_NONCOHERENT attribute as well as
-dma_alloc_writecombine with separate DMA_ATTR_WRITECOMBINE attribute.
+Adapt core Unicore32 architecture code for dma_map_ops changes: replace
+alloc/free_coherent with generic alloc/free methods.
 
-This way the drivers will get more generic, platform independent way of
-allocating dma buffers with specific parameters.
-
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-Reviewed-by: David Gibson <david@gibson.dropbear.ud.au>
+[added swiotlb_alloc/free_coherent wrappers]
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/linux/dma-mapping.h |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ arch/unicore32/include/asm/dma-mapping.h |   18 ++++++++++++------
+ arch/unicore32/mm/dma-swiotlb.c          |   18 ++++++++++++++++--
+ 2 files changed, 28 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index e13117c..8cc7f95 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -13,6 +13,12 @@ struct dma_map_ops {
- 				dma_addr_t *dma_handle, gfp_t gfp);
- 	void (*free_coherent)(struct device *dev, size_t size,
- 			      void *vaddr, dma_addr_t dma_handle);
-+	void* (*alloc)(struct device *dev, size_t size,
-+				dma_addr_t *dma_handle, gfp_t gfp,
-+				struct dma_attrs *attrs);
-+	void (*free)(struct device *dev, size_t size,
-+			      void *vaddr, dma_addr_t dma_handle,
-+			      struct dma_attrs *attrs);
- 	dma_addr_t (*map_page)(struct device *dev, struct page *page,
- 			       unsigned long offset, size_t size,
- 			       enum dma_data_direction dir,
+diff --git a/arch/unicore32/include/asm/dma-mapping.h b/arch/unicore32/include/asm/dma-mapping.h
+index 9258e59..366460a 100644
+--- a/arch/unicore32/include/asm/dma-mapping.h
++++ b/arch/unicore32/include/asm/dma-mapping.h
+@@ -82,20 +82,26 @@ static inline int dma_set_mask(struct device *dev, u64 dma_mask)
+ 	return 0;
+ }
+ 
+-static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+-				       dma_addr_t *dma_handle, gfp_t flag)
++#define dma_alloc_coherent(d,s,h,f)	dma_alloc_attrs(d,s,h,f,NULL)
++
++static inline void *dma_alloc_attrs(struct device *dev, size_t size,
++				    dma_addr_t *dma_handle, gfp_t flag,
++				    struct dma_attrs *attrs)
+ {
+ 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+ 
+-	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
++	return dma_ops->alloc(dev, size, dma_handle, flag, attrs);
+ }
+ 
+-static inline void dma_free_coherent(struct device *dev, size_t size,
+-				     void *cpu_addr, dma_addr_t dma_handle)
++#define dma_free_coherent(d,s,c,h) dma_free_attrs(d,s,c,h,NULL)
++
++static inline void dma_free_attrs(struct device *dev, size_t size,
++				  void *cpu_addr, dma_addr_t dma_handle,
++				  struct dma_attrs *attrs)
+ {
+ 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+ 
+-	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
++	dma_ops->free(dev, size, cpu_addr, dma_handle, attrs);
+ }
+ 
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+diff --git a/arch/unicore32/mm/dma-swiotlb.c b/arch/unicore32/mm/dma-swiotlb.c
+index bfa9fbb..4cf5f0c 100644
+--- a/arch/unicore32/mm/dma-swiotlb.c
++++ b/arch/unicore32/mm/dma-swiotlb.c
+@@ -17,9 +17,23 @@
+ 
+ #include <asm/dma.h>
+ 
++static void *unicore_swiotlb_alloc_coherent(struct device *dev, size_t size,
++					    dma_addr_t *dma_handle, gfp_t flags,
++					    struct dma_attrs *attrs)
++{
++	return swiotlb_alloc_coherent(dev, size, dma_handle, flags);
++}
++
++static void unicode_swiotlb_free_coherent(struct device *dev, size_t size,
++					  void *vaddr, dma_addr_t dma_addr,
++					  struct dma_attrs *attrs)
++{
++	swiotlb_free_coherent(dev, size, vaddr, dma_addr);
++}
++
+ struct dma_map_ops swiotlb_dma_map_ops = {
+-	.alloc_coherent = swiotlb_alloc_coherent,
+-	.free_coherent = swiotlb_free_coherent,
++	.alloc = unicore_swiotlb_alloc_coherent,
++	.free = unicore_swiotlb_free_coherent,
+ 	.map_sg = swiotlb_map_sg_attrs,
+ 	.unmap_sg = swiotlb_unmap_sg_attrs,
+ 	.dma_supported = swiotlb_dma_supported,
 -- 
 1.7.1.569.g6f426
