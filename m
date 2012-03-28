@@ -1,19 +1,21 @@
-Return-Path: <pozzi.fabio@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail-qa0-f74.google.com (mail-qa0-f74.google.com
+ [209.85.216.74])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 41FB1B6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 03:14:16 +1100 (EST)
-Received: by obbun3 with SMTP id un3so1573622obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 09:14:12 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 564E0B6EE7
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 09:21:01 +1100 (EST)
+Received: by qabg24 with SMTP id g24so209739qab.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2012 15:20:58 -0700 (PDT)
+Subject: [patch 2/2] arch/powerpc/platforms/pseries/eeh_event.c: slightly fix
+ set_current_state() wart
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Wed, 28 Mar 2012 15:20:58 -0700
 MIME-Version: 1.0
-From: Fabio <pozzi.fabio@gmail.com>
-Date: Wed, 28 Mar 2012 18:13:42 +0200
-Message-ID: <CAP-cLV5pF-j_izadBSVD7p4hQte96O_g2udCxi=9tkaPwxEsaw@mail.gmail.com>
-Subject: Help initialize phy-less ethernet in 2.6.38
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ASCII
+Message-Id: <20120328222058.3FA2AA0624@akpm.mtv.corp.google.com>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
-I am a newbie trying to get the FCC1 ethernet interface to work on a
-custom board.
-The hardware used is based on mpc8270 which is connected via FCC1 to a
-phy-less interface linked to another microcontroller.
-FCC1 should be recognized as eth0 by the linux kernel and it should
-receive data when set up in promiscuous mode.
-Currently during the boot it seems that the device initialization goes
-ok but I can't understand why I can't receive data when I put the
-interface in promiscuous mode.
-Going into details I can see that the fs_enet probe function gets called.
-I customized it to setup the fs_platform_info structure using the
-values taken from the old kernel driver for now.
-The only fields I cannot setup are the bus_id,phy_irq,phy_addr because
-they are not part of the fs_platform_info data structure anymore.
-I can't see any errors during the initialization, but I can't receive
-data on the interface.
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: arch/powerpc/platforms/pseries/eeh_event.c: slightly fix set_current_state() wart
 
-I think the problem can be in an interrupt misconfiguration but I
-haven't figured out how to configure the ethernet dts part in the
-right way or how to handle the phy-less situation correctly.
+That set_current_state() won't work very well: the subsequent mutex_lock()
+might flip the task back into TASK_RUNNING.
 
+Attempt to put it somewhere where it might have been meant to be, and
+attempt to describe why it might have been added.
 
---- dts snippet ---
-			eth0: ethernet@11300 {
-				device_type = "network";
-				compatible =  "fsl,cpm2-fcc-enet";
-				reg = <0x11300 0x20 0x8400 0x100 0x11390 0x1>;
-				local-mac-address = [ 00 01 02 03 04 05 ];
-				interrupts = <32 8>;
-				interrupt-parent = <&PIC>;
-				linux,network-index = <0>;
-				fsl,cpm-command = <0x12000300>;
-			};
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
-Thanks in advance,
+ arch/powerpc/platforms/pseries/eeh_event.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
--- 
-Fabio Pozzi
+diff -puN arch/powerpc/platforms/pseries/eeh_event.c~arch-powerpc-platforms-pseries-eeh_eventc-slightly-fix-set_current_state-wart arch/powerpc/platforms/pseries/eeh_event.c
+--- a/arch/powerpc/platforms/pseries/eeh_event.c~arch-powerpc-platforms-pseries-eeh_eventc-slightly-fix-set_current_state-wart
++++ a/arch/powerpc/platforms/pseries/eeh_event.c
+@@ -60,7 +60,6 @@ static int eeh_event_handler(void * dumm
+ 	struct eeh_dev *edev;
+ 
+ 	set_task_comm(current, "eehd");
+-	set_current_state(TASK_INTERRUPTIBLE);
+ 
+ 	spin_lock_irqsave(&eeh_eventlist_lock, flags);
+ 	event = NULL;
+@@ -83,6 +82,7 @@ static int eeh_event_handler(void * dumm
+ 	printk(KERN_INFO "EEH: Detected PCI bus error on device %s\n",
+ 	       eeh_pci_name(edev->pdev));
+ 
++	set_current_state(TASK_INTERRUPTIBLE);	/* Don't add to load average */
+ 	edev = handle_eeh_events(event);
+ 
+ 	eeh_clear_slot(eeh_dev_to_of_node(edev), EEH_MODE_RECOVERING);
+_
