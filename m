@@ -1,46 +1,19 @@
-Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14]) by ozlabs.org (Postfix) with ESMTP id CC84EB6FF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 01:38:49 +1100 (EST)
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Received: from euspt2 ([210.118.77.14]) by mailout4.w1.samsung.com
- (Sun Java(tm) System Messaging Server 6.3-8.04 (built Jul 29 2009; 32bit))
- with ESMTP id <0M1L00IEMNCPQ270@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 28 Mar 2012 15:38:49 +0100 (BST)
-Received: from linux.samsung.com ([106.116.38.10])
- by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
- 2004)) with ESMTPA id <0M1L00KDSNCIKQ@spt2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 28 Mar 2012 15:38:43 +0100 (BST)
-Date: Wed, 28 Mar 2012 16:38:40 +0200
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: RE: [PATCHv2 01/14] common: dma-mapping: introduce alloc_attrs and
- free_attrs methods
-In-reply-to: <4F72F603.2000803@mvista.com>
-To: 'Sergei Shtylyov' <sshtylyov@mvista.com>
-Message-id: <016001cd0cf0$7807bdb0$68173910$%szyprowski@samsung.com>
-References: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
- <1332855768-32583-2-git-send-email-m.szyprowski@samsung.com>
- <4F72F603.2000803@mvista.com>
-Cc: linux-mips@linux-mips.org, 'Kevin Cernekee' <cernekee@gmail.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, 'Guan Xuetao' <gxt@mprc.pku.edu.cn>,
- linux-arch@vger.kernel.org, 'Stephen Rothwell' <sfr@canb.auug.org.au>,
- 'Jonathan Corbet' <corbet@lwn.net>, x86@kernel.org,
- 'Matt Turner' <mattst88@gmail.com>, 'Dezhong Diao' <dediao@cisco.com>,
- 'Fenghua Yu' <fenghua.yu@intel.com>, 'Arnd Bergmann' <arnd@arndb.de>,
- microblaze-uclinux@itee.uq.edu.au, linaro-mm-sig@lists.linaro.org,
- 'Ivan Kokshaysky' <ink@jurassic.park.msu.ru>,
- Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
- 'Thomas Gleixner' <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- 'Richard Henderson' <rth@twiddle.net>, discuss@x86-64.org,
- 'Michal Simek' <monstr@monstr.eu>, 'Tony Luck' <tony.luck@intel.com>,
- linux-kernel@vger.kernel.org, 'Richard Kuo' <rkuo@codeaurora.org>,
- 'FUJITA Tomonori' <fujita.tomonori@lab.ntt.co.jp>,
- 'Kyungmin Park' <kyungmin.park@samsung.com>,
- 'Paul Mundt' <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
- 'Andrew Morton' <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "'David S. Miller'" <davem@davemloft.net>
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag for FSL
+ MPIC.
+Mime-Version: 1.0 (Apple Message framework v1257)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4F721209.5030706@freescale.com>
+Date: Wed, 28 Mar 2012 09:52:20 -0500
+Message-Id: <E5B344BA-0209-4F8D-8C0E-19D5B6AFA411@kernel.crashing.org>
+References: <1332850557-23557-1-git-send-email-Varun.Sethi@freescale.com>
+ <295B3D3A-F038-4176-90EF-423A6BB84F62@kernel.crashing.org>
+ <CALRxmdDhHpxDoemWj6u_NUJtOfmAWo9U0YgO0xNzpqOt4EXD9w@mail.gmail.com>
+ <4F720A90.1040600@freescale.com> <4F721209.5030706@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Varun Sethi <Varun.Sethi@freescale.com>, Linuxppc-dev@lists.ozlabs.org,
+ Stuart Yoder <b08248@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,34 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sergei,
 
-On Wednesday, March 28, 2012 1:29 PM Sergei Shtylyov wrote:
+On Mar 27, 2012, at 2:16 PM, Scott Wood wrote:
 
-> On 27-03-2012 17:42, Marek Szyprowski wrote:
-> 
-> > Introduce new generic alloc and free methods with attributes argument.
-> 
->     The method names don't match the ones in the subject.
+> On 03/27/2012 01:44 PM, Scott Wood wrote:
+>> On 03/27/2012 10:21 AM, Stuart Yoder wrote:
+>>> On Tue, Mar 27, 2012 at 8:30 AM, Kumar Gala =
+<galak@kernel.crashing.org> wrote:
+>>>>=20
+>>>> On Mar 27, 2012, at 7:15 AM, Varun Sethi wrote:
+>>>>=20
+>>>>> FSL MPIC supports 16 bit vectors so our vector number space isn't
+>>>>> restricted to 256 vectors. We should use the MPIC_LARG_VECTORS =
+flag
+>>>>> while intializing the MPIC. This also prevents us from eating in =
+to
+>>>>> hardware vector number space (MSIs) while setting up internal =
+sources.
+>>>>=20
+>>>> What is driving this change?
+>>>=20
+>>> Whats driving the change is proper handling of error interrupts.   =
+Right
+>>> now error interrupts (muxed on int 16) are treated as a shared
+>>> interrupt source.   We want each to be handled as a individual =
+interrupt
+>>> source...thus the desire to support more than 256 interrupts.
+>>=20
+>> We don't actually need more than 256 interrupts for this (the =
+individual
+>> error interrupts are not counted against this).  But unless we change
+>> how vectors are allocated, we need vectors >=3D 256, since we have =
+MSIs
+>> close enough to 256 that under the current scheme the IPIs, timers, =
+and
+>> such collide with the third MSI bank.
+>=20
+> Note that this is the case today even without the error interrupt =
+stuff
+> -- the highest vector used by MSIs on MPIC 4.1 is 0xf7, and we have 13
+> special vectors (4 IPIs, 8 timers, and spurious).
 
-Right, I will reword the subject to "common: dma-mapping: introduce generic alloc()
-and free() methods".
+This all makes sense, what I ask is that the commit message be updated =
+to convey this.
 
-> > Existing alloc_coherent and free_coherent can be implemented on top of the
-> > new calls with NULL attributes argument. Later also dma_alloc_non_coherent
-> > can be implemented using DMA_ATTR_NONCOHERENT attribute as well as
-> > dma_alloc_writecombine with separate DMA_ATTR_WRITECOMBINE attribute.
-> 
-> > This way the drivers will get more generic, platform independent way of
-> > allocating dma buffers with specific parameters.
-> 
-> > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> > Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> > Reviewed-by: David Gibson <david@gibson.dropbear.ud.au>
-> > Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-> 
-
-Best regards
--- 
-Marek Szyprowski
-Samsung Poland R&D Center
+- k=
