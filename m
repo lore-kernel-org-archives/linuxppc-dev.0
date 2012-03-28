@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag for FSL
- MPIC.
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4F721209.5030706@freescale.com>
-Date: Wed, 28 Mar 2012 09:52:20 -0500
-Message-Id: <E5B344BA-0209-4F8D-8C0E-19D5B6AFA411@kernel.crashing.org>
-References: <1332850557-23557-1-git-send-email-Varun.Sethi@freescale.com>
- <295B3D3A-F038-4176-90EF-423A6BB84F62@kernel.crashing.org>
- <CALRxmdDhHpxDoemWj6u_NUJtOfmAWo9U0YgO0xNzpqOt4EXD9w@mail.gmail.com>
- <4F720A90.1040600@freescale.com> <4F721209.5030706@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Varun Sethi <Varun.Sethi@freescale.com>, Linuxppc-dev@lists.ozlabs.org,
- Stuart Yoder <b08248@gmail.com>
+Return-Path: <pozzi.fabio@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 41FB1B6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 03:14:16 +1100 (EST)
+Received: by obbun3 with SMTP id un3so1573622obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 09:14:12 -0700 (PDT)
+MIME-Version: 1.0
+From: Fabio <pozzi.fabio@gmail.com>
+Date: Wed, 28 Mar 2012 18:13:42 +0200
+Message-ID: <CAP-cLV5pF-j_izadBSVD7p4hQte96O_g2udCxi=9tkaPwxEsaw@mail.gmail.com>
+Subject: Help initialize phy-less ethernet in 2.6.38
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
+I am a newbie trying to get the FCC1 ethernet interface to work on a
+custom board.
+The hardware used is based on mpc8270 which is connected via FCC1 to a
+phy-less interface linked to another microcontroller.
+FCC1 should be recognized as eth0 by the linux kernel and it should
+receive data when set up in promiscuous mode.
+Currently during the boot it seems that the device initialization goes
+ok but I can't understand why I can't receive data when I put the
+interface in promiscuous mode.
+Going into details I can see that the fs_enet probe function gets called.
+I customized it to setup the fs_platform_info structure using the
+values taken from the old kernel driver for now.
+The only fields I cannot setup are the bus_id,phy_irq,phy_addr because
+they are not part of the fs_platform_info data structure anymore.
+I can't see any errors during the initialization, but I can't receive
+data on the interface.
 
-On Mar 27, 2012, at 2:16 PM, Scott Wood wrote:
+I think the problem can be in an interrupt misconfiguration but I
+haven't figured out how to configure the ethernet dts part in the
+right way or how to handle the phy-less situation correctly.
 
-> On 03/27/2012 01:44 PM, Scott Wood wrote:
->> On 03/27/2012 10:21 AM, Stuart Yoder wrote:
->>> On Tue, Mar 27, 2012 at 8:30 AM, Kumar Gala =
-<galak@kernel.crashing.org> wrote:
->>>>=20
->>>> On Mar 27, 2012, at 7:15 AM, Varun Sethi wrote:
->>>>=20
->>>>> FSL MPIC supports 16 bit vectors so our vector number space isn't
->>>>> restricted to 256 vectors. We should use the MPIC_LARG_VECTORS =
-flag
->>>>> while intializing the MPIC. This also prevents us from eating in =
-to
->>>>> hardware vector number space (MSIs) while setting up internal =
-sources.
->>>>=20
->>>> What is driving this change?
->>>=20
->>> Whats driving the change is proper handling of error interrupts.   =
-Right
->>> now error interrupts (muxed on int 16) are treated as a shared
->>> interrupt source.   We want each to be handled as a individual =
-interrupt
->>> source...thus the desire to support more than 256 interrupts.
->>=20
->> We don't actually need more than 256 interrupts for this (the =
-individual
->> error interrupts are not counted against this).  But unless we change
->> how vectors are allocated, we need vectors >=3D 256, since we have =
-MSIs
->> close enough to 256 that under the current scheme the IPIs, timers, =
-and
->> such collide with the third MSI bank.
->=20
-> Note that this is the case today even without the error interrupt =
-stuff
-> -- the highest vector used by MSIs on MPIC 4.1 is 0xf7, and we have 13
-> special vectors (4 IPIs, 8 timers, and spurious).
 
-This all makes sense, what I ask is that the commit message be updated =
-to convey this.
+--- dts snippet ---
+			eth0: ethernet@11300 {
+				device_type = "network";
+				compatible =  "fsl,cpm2-fcc-enet";
+				reg = <0x11300 0x20 0x8400 0x100 0x11390 0x1>;
+				local-mac-address = [ 00 01 02 03 04 05 ];
+				interrupts = <32 8>;
+				interrupt-parent = <&PIC>;
+				linux,network-index = <0>;
+				fsl,cpm-command = <0x12000300>;
+			};
+---
 
-- k=
+Thanks in advance,
+
+
+
+-- 
+Fabio Pozzi
