@@ -1,38 +1,30 @@
-Return-Path: <tony.luck@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id 56084B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 09:03:30 +1100 (EST)
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Luck, Tony" <tony.luck@intel.com>, Marek Szyprowski
- <m.szyprowski@samsung.com>
-Subject: RE: [PATCH 05/14] IA64: adapt for dma_map_ops changes
-Date: Tue, 27 Mar 2012 21:53:01 +0000
-Message-ID: <3908561D78D1C84285E8C5FCA982C28F15B724D8@ORSMSX104.amr.corp.intel.com>
-References: <1324643253-3024-1-git-send-email-m.szyprowski@samsung.com>
- <1324643253-3024-6-git-send-email-m.szyprowski@samsung.com>
- <CA+8MBbLAafFbVwviFmkjD0DNz5RsCbB_TNLL67wEi2k-hyXkXA@mail.gmail.com>
-In-Reply-To: <CA+8MBbLAafFbVwviFmkjD0DNz5RsCbB_TNLL67wEi2k-hyXkXA@mail.gmail.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Jonathan Corbet <corbet@lwn.net>,
- "x86@kernel.org" <x86@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
- "linaro-mm-sig@lists.linaro.org" <linaro-mm-sig@lists.linaro.org>,
- Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "discuss@x86-64.org" <discuss@x86-64.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 50410B6FBC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 11:03:04 +1100 (EST)
+Message-ID: <1332892874.2882.66.camel@pasglop>
+Subject: Re: [PATCH v2.1 01/10] cpu: Introduce clear_tasks_mm_cpumask() helper
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Date: Wed, 28 Mar 2012 11:01:14 +1100
+In-Reply-To: <20120325174210.GA23605@redhat.com>
+References: <20120324102609.GA28356@lizard> <20120324102751.GA29067@lizard>
+ <1332593021.16159.27.camel@twins> <20120324164316.GB3640@lizard>
+ <20120325174210.GA23605@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Mike Frysinger <vapier@gentoo.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, linux-mm@kvack.org,
+ Anton Vorontsov <anton.vorontsov@linaro.org>, Paul Mundt <lethal@linux-sh.org>,
+ John Stultz <john.stultz@linaro.org>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ uclinux-dist-devel@blackfin.uclinux.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,12 +34,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> until part 5 (when ia64 sees the changes to match).  You could either mer=
-ge part
-> 5 into part 2 (to make a combined x86+ia64 piece
+On Sun, 2012-03-25 at 19:42 +0200, Oleg Nesterov wrote:
+> > Also, Per Peter Zijlstra's idea, now we don't grab tasklist_lock in
+> > the new helper, instead we take the rcu read lock. We can do this
+> > because the function is called after the cpu is taken down and
+> marked
+> > offline, so no new tasks will get this cpu set in their mm mask.
+> 
+> And only powerpc needs rcu_read_lock() and task_lock().
+> 
+> OTOH, I do not understand why powepc does this on CPU_DEAD...
+> And probably CPU_UP_CANCELED doesn't need to clear mm_cpumask().
+> 
+> That said, personally I think these patches are fine, the common
+> helper makes sense. 
 
-Doh! I see that you already did this in the re-post you did a few hours
-ago (which my mail client had filed away in my linux-arch folder).
+Not strictly speaking a problem with this patch, but I was wondering...
 
--Tony
-=20
+Do we know for sure that the mmu context has been fully flushed out
+before the unplug ? idle_task_exit() will do a context switch but in our
+case that may not be enough.
+
+Once the CPU is offline, tlb flushes won't hit it any more so it can get
+out of sync (in some cases the offlining process is just some kind of
+deep sleep loop that doesn't involve a TLB state loss).
+
+Should we add a flush_tlb_mm of all those bits in that loop ? that would
+be a tad expensive... we don't have a flush_tlb_all() as a generic kind
+of accessors, but we could add something like that as a requirement for
+ppc_md.cpu_die ?
+
+Cheers,
+Ben.
