@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <lethal@linux-sh.org>
+Received: from linux-sh.org (linux-sh.org [111.68.239.195])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3C96FB6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 14:58:28 +1100 (EST)
-Message-ID: <1332907000.2882.74.camel@pasglop>
-Subject: Re: [PATCHv2 04/14] PowerPC: adapt for dma_map_ops changes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 37E18B6EEF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 15:17:04 +1100 (EST)
+Date: Wed, 28 Mar 2012 13:15:03 +0900
+From: Paul Mundt <lethal@linux-sh.org>
 To: Marek Szyprowski <m.szyprowski@samsung.com>
-Date: Wed, 28 Mar 2012 14:56:40 +1100
-In-Reply-To: <1332855768-32583-5-git-send-email-m.szyprowski@samsung.com>
+Subject: Re: [PATCHv2 07/14] SH: adapt for dma_map_ops changes
+Message-ID: <20120328041503.GM26543@linux-sh.org>
 References: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
- <1332855768-32583-5-git-send-email-m.szyprowski@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1332855768-32583-8-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1332855768-32583-8-git-send-email-m.szyprowski@samsung.com>
 Cc: linux-mips@linux-mips.org, Kevin Cernekee <cernekee@gmail.com>,
  linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
  sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
@@ -29,9 +29,9 @@ Cc: linux-mips@linux-mips.org, Kevin Cernekee <cernekee@gmail.com>,
  Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
  linux-kernel@vger.kernel.org, Richard Kuo <rkuo@codeaurora.org>,
  FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
- Kyungmin Park <kyungmin.park@samsung.com>, Paul Mundt <lethal@linux-sh.org>,
- linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+ Kyungmin Park <kyungmin.park@samsung.com>, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,21 +41,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-03-27 at 15:42 +0200, Marek Szyprowski wrote:
+On Tue, Mar 27, 2012 at 03:42:41PM +0200, Marek Szyprowski wrote:
 > From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
 > 
-> Adapt core PowerPC architecture code for dma_map_ops changes: replace
+> Adapt core SH architecture code for dma_map_ops changes: replace
 > alloc/free_coherent with generic alloc/free methods.
 > 
 > Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
-> [added missing changes to arch/powerpc/kernel/vio.c]
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 > Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-> ---
 
-FYI. David and Arnd reviews are good enough for me ppc-side.
-
-Cheers,
-Ben.
+Acked-by: Paul Mundt <lethal@linux-sh.org>
