@@ -2,29 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 50410B6FBC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 11:03:04 +1100 (EST)
-Message-ID: <1332892874.2882.66.camel@pasglop>
-Subject: Re: [PATCH v2.1 01/10] cpu: Introduce clear_tasks_mm_cpumask() helper
+ by ozlabs.org (Postfix) with ESMTPS id 2749EB6EEA
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2012 14:31:32 +1100 (EST)
+Message-ID: <1332905481.2882.70.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git next branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Date: Wed, 28 Mar 2012 11:01:14 +1100
-In-Reply-To: <20120325174210.GA23605@redhat.com>
-References: <20120324102609.GA28356@lizard> <20120324102751.GA29067@lizard>
- <1332593021.16159.27.camel@twins> <20120324164316.GB3640@lizard>
- <20120325174210.GA23605@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 28 Mar 2012 14:31:21 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Mike Frysinger <vapier@gentoo.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, linux-mm@kvack.org,
- Anton Vorontsov <anton.vorontsov@linaro.org>, Paul Mundt <lethal@linux-sh.org>,
- John Stultz <john.stultz@linaro.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- uclinux-dist-devel@blackfin.uclinux.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +23,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-03-25 at 19:42 +0200, Oleg Nesterov wrote:
-> > Also, Per Peter Zijlstra's idea, now we don't grab tasklist_lock in
-> > the new helper, instead we take the rcu read lock. We can do this
-> > because the function is called after the cpu is taken down and
-> marked
-> > offline, so no new tasks will get this cpu set in their mm mask.
-> 
-> And only powerpc needs rcu_read_lock() and task_lock().
-> 
-> OTOH, I do not understand why powepc does this on CPU_DEAD...
-> And probably CPU_UP_CANCELED doesn't need to clear mm_cpumask().
-> 
-> That said, personally I think these patches are fine, the common
-> helper makes sense. 
+Hi Linus !
 
-Not strictly speaking a problem with this patch, but I was wondering...
+Here's a few more things for powerpc this time around:
 
-Do we know for sure that the mmu context has been fully flushed out
-before the unplug ? idle_task_exit() will do a context switch but in our
-case that may not be enough.
+ - Anton's did some recent improvements to EPOW event reporting
+on pSeries (power supply failures and such). The patches are self
+contained enough and replace really nasty code so I felt it should
+still go in
 
-Once the CPU is offline, tlb flushes won't hit it any more so it can get
-out of sync (in some cases the offlining process is just some kind of
-deep sleep loop that doesn't involve a TLB state loss).
+ - I did the vio driver registration change Greg requested, I
+don't see the point of leaving that til the next merge window
 
-Should we add a flush_tlb_mm of all those bits in that loop ? that would
-be a tad expensive... we don't have a flush_tlb_all() as a generic kind
-of accessors, but we could add something like that as a requirement for
-ppc_md.cpu_die ?
+ - The remaining EEH changes I said were still pending to get
+rid of the EEH references from the generic struct device_node
+
+ - A few more iSeries removal bits
+
+ - A perf bug fix on 970
 
 Cheers,
 Ben.
+
+The following changes since commit e22057c8599373e5caef0bc42bdb95d2a361ab0d:
+
+  Merge tag 'stable/for-linus-3.4-tag-two' of git://git.kernel.org/pub/scm/linux/kernel/git/konrad/xen (2012-03-24 12:20:25 -0700)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
+
+for you to fetch changes up to 1ce447b90f3e71c81ae59e0062bc305ef267668b:
+
+  powerpc/perf: Fix instruction address sampling on 970 and Power4 (2012-03-28 11:33:24 +1100)
+
+----------------------------------------------------------------
+Anton Blanchard (6):
+      powerpc: Make function that parses RTAS error logs global
+      powerpc/pseries: Parse and handle EPOW interrupts
+      powerpc/pseries: Use rtas_get_sensor in RAS code
+      powerpc/pseries: Remove RTAS_POWERMGM_EVENTS
+      powerpc/pseries: Clean up ras_error_interrupt code
+      powerpc/pseries: Cut down on enthusiastic use of defines in RAS code
+
+Benjamin Herrenschmidt (2):
+      powerpc+sparc/vio: Modernize driver registration
+      powerpc/perf: Fix instruction address sampling on 970 and Power4
+
+Gavin Shan (3):
+      powerpc/eeh: Remove eeh device from OF node
+      powerpc/eeh: Remove eeh information from pci_dn
+      powerpc/eeh: Retrieve PHB from global list
+
+Stephen Rothwell (2):
+      powerpc: Remove NO_IRQ_IGNORE
+      powerpc: Random little legacy iSeries removal tidy ups
+
+ arch/powerpc/boot/.gitignore                  |    1 -
+ arch/powerpc/include/asm/iommu.h              |    1 -
+ arch/powerpc/include/asm/irq.h                |    6 -
+ arch/powerpc/include/asm/machdep.h            |    4 +-
+ arch/powerpc/include/asm/mmu-hash64.h         |   12 --
+ arch/powerpc/include/asm/pci-bridge.h         |   16 +-
+ arch/powerpc/include/asm/perf_event_server.h  |    2 +
+ arch/powerpc/include/asm/rtas.h               |   34 ++++-
+ arch/powerpc/include/asm/smp.h                |    1 -
+ arch/powerpc/include/asm/udbg.h               |    1 -
+ arch/powerpc/include/asm/vio.h                |   10 +-
+ arch/powerpc/kernel/irq.c                     |    8 +-
+ arch/powerpc/kernel/prom_init.c               |    2 +-
+ arch/powerpc/kernel/rtas.c                    |   34 +++++
+ arch/powerpc/kernel/udbg.c                    |    3 -
+ arch/powerpc/kernel/vdso.c                    |    4 +-
+ arch/powerpc/kernel/vio.c                     |   12 +-
+ arch/powerpc/perf/core-book3s.c               |   46 +++++-
+ arch/powerpc/perf/power4-pmu.c                |    1 +
+ arch/powerpc/perf/ppc970-pmu.c                |    1 +
+ arch/powerpc/platforms/cell/beat_htab.c       |    2 -
+ arch/powerpc/platforms/pseries/eeh.c          |   19 +--
+ arch/powerpc/platforms/pseries/eeh_dev.c      |    2 +-
+ arch/powerpc/platforms/pseries/io_event_irq.c |   68 +---------
+ arch/powerpc/platforms/pseries/iommu.c        |   29 ++--
+ arch/powerpc/platforms/pseries/ras.c          |  195 ++++++++++++++++---------
+ arch/sparc/include/asm/vio.h                  |    9 +-
+ arch/sparc/kernel/ds.c                        |    5 +-
+ arch/sparc/kernel/vio.c                       |    8 +-
+ drivers/block/sunvdc.c                        |    5 +-
+ drivers/net/ethernet/ibm/ibmveth.c            |    7 +-
+ drivers/net/ethernet/sun/sunvnet.c            |    5 +-
+ drivers/scsi/ibmvscsi/ibmvfc.c                |    7 +-
+ drivers/scsi/ibmvscsi/ibmvscsi.c              |    7 +-
+ drivers/scsi/ibmvscsi/ibmvstgt.c              |    5 +-
+ drivers/tty/hvc/hvc_vio.c                     |    7 +-
+ drivers/tty/hvc/hvcs.c                        |    5 +-
+ include/linux/of.h                            |   10 --
+ 38 files changed, 321 insertions(+), 273 deletions(-)
