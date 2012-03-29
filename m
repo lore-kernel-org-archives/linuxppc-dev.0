@@ -1,20 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E78E7B6F6E
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 10:22:52 +1100 (EST)
-Message-ID: <1332976968.3010.0.camel@pasglop>
-Subject: Re: [patch 1/2] powerpc/eeh: remove eeh_event_handler()->daemonize()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: akpm@linux-foundation.org
-Date: Thu, 29 Mar 2012 10:22:48 +1100
-In-Reply-To: <20120328222057.B749EA0363@akpm.mtv.corp.google.com>
-References: <20120328222057.B749EA0363@akpm.mtv.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: tj@kernel.org, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
- matt.fleming@intel.com, oleg@redhat.com
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-lpp01m010-f42.google.com (mail-lpp01m010-f42.google.com
+ [209.85.215.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7C73DB6F9F
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 11:54:59 +1100 (EST)
+Received: by lahl5 with SMTP id l5so1221854lah.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2012 17:54:56 -0700 (PDT)
+MIME-Version: 1.0
+Sender: paul.gortmaker@gmail.com
+Date: Wed, 28 Mar 2012 20:54:56 -0400
+Message-ID: <CAP=VYLqwbjNDQ-TTbs_6cH4X2MMzy=MAFy4=R116zGL8a6qUag@mail.gmail.com>
+Subject: bpf_slow_path: sibling call to `skb_copy_bits' not allowed multiple
+ TOCs (ppc)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-03-28 at 15:20 -0700, akpm@linux-foundation.org wrote:
-> From: Oleg Nesterov <oleg@redhat.com>
-> Subject: powerpc/eeh: remove eeh_event_handler()->daemonize()
-> 
-> daemonize() is only needed when a user-space task does kernel_thread().
-> 
-> eeh_event_handler() thread is created by the worker kthread, and thus it
-> doesn't need the soon-to-be-deprecated daemonize().
+Hi all,
 
-For some reason I thought you were sending that directly to Linus, but
-looking at your CC list that's obviously not the case :-) I'll send
-them myself.
+Wondering if anyone has researched this, before I waste more time on it.
 
-Cheers,
-Ben.
+The linux-next build of powerpc-allyesconfig has for quite some time shown this:
 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-> Acked-by: Linas Vepstas <linasvepstas@gmail.com>
-> Acked-by: Tejun Heo <tj@kernel.org>
-> Acked-by: Matt Fleming <matt.fleming@intel.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/powerpc/platforms/pseries/eeh_event.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -puN arch/powerpc/platforms/pseries/eeh_event.c~powerpc-eeh-remove-eeh_event_handler-daemonize arch/powerpc/platforms/pseries/eeh_event.c
-> --- a/arch/powerpc/platforms/pseries/eeh_event.c~powerpc-eeh-remove-eeh_event_handler-daemonize
-> +++ a/arch/powerpc/platforms/pseries/eeh_event.c
-> @@ -59,7 +59,7 @@ static int eeh_event_handler(void * dumm
->  	struct eeh_event *event;
->  	struct eeh_dev *edev;
->  
-> -	daemonize("eehd");
-> +	set_task_comm(current, "eehd");
->  	set_current_state(TASK_INTERRUPTIBLE);
->  
->  	spin_lock_irqsave(&eeh_eventlist_lock, flags);
-> _
+  LD      .tmp_vmlinux1
+powerpc-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path_word':
+(.text+0x90): sibling call optimization to `skb_copy_bits' does not
+allow automatic
+multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or
+make `skb_copy_bits' extern
+
+We get the same error for s/word/half/ and s/word/byte/ and s/word/msh/
+
+Visually "bisecting" the linux-next builds shows the following:
+
+good: Dec 7th, 2011:  http://kisskb.ellerman.id.au/kisskb/buildresult/5059024/
+bad:   Dec 8th, 2011:  http://kisskb.ellerman.id.au/kisskb/buildresult/5062069/
+
+I wouldn't be surprised if this was some kind of size thing that doesn't matter
+in the real world, as the powerpc-allyesconfig is really only of value for build
+coverage.   Even in the absence of the skb error, it still fails to link with:
+
+    "powerpc-linux-ld: TOC section size exceeds 64k"
+
+i.e. it never links into anything a person could actually try and boot anyway.
+
+So, just knowing "yes that is bogus because you've got a giant kernel
+with multiple TOC" would be useful information here.
+
+Thanks,
+Paul.
