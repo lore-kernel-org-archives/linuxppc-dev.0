@@ -1,22 +1,25 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 16A98B6EF3
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 14:30:51 +1100 (EST)
-Date: Thu, 29 Mar 2012 14:30:40 +1100
+ by ozlabs.org (Postfix) with ESMTP id 20CC6B6F98
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 15:15:59 +1100 (EST)
+Date: Thu, 29 Mar 2012 15:15:44 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: bpf_slow_path: sibling call to `skb_copy_bits' not allowed
- multiple TOCs (ppc)
-Message-Id: <20120329143040.6568ff46a45e6bd10d428473@canb.auug.org.au>
-In-Reply-To: <CAP=VYLqwbjNDQ-TTbs_6cH4X2MMzy=MAFy4=R116zGL8a6qUag@mail.gmail.com>
-References: <CAP=VYLqwbjNDQ-TTbs_6cH4X2MMzy=MAFy4=R116zGL8a6qUag@mail.gmail.com>
+To: Linus <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] Disintegrate and kill asm/system.h
+Message-Id: <20120329151544.ef2117821dfb459e8b52af48@canb.auug.org.au>
+In-Reply-To: <20120329135555.06593144b65bf81cc9191f8a@canb.auug.org.au>
+References: <5599.1332958811@redhat.com> <30702.1332989444@neuling.org>
+ <20120329135555.06593144b65bf81cc9191f8a@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS"
-Cc: netdev <netdev@vger.kernel.org>, linux-next@vger.kernel.org,
- linuxppc-dev@ozlabs.org
+ boundary="Signature=_Thu__29_Mar_2012_15_15_44_+1100_WbAuFOESkuBxVlHq"
+Cc: linux-arch@vger.kernel.org, Michael Neuling <mikey@neuling.org>,
+ arnd@arndb.de, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, paul.gortmaker@windriver.com,
+ hpa@zytor.com, akpm@linux-foundation.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +29,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS
+--Signature=_Thu__29_Mar_2012_15_15_44_+1100_WbAuFOESkuBxVlHq
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Paul,
+Hi all,
 
-On Wed, 28 Mar 2012 20:54:56 -0400 Paul Gortmaker <paul.gortmaker@windriver=
-.com> wrote:
+On Thu, 29 Mar 2012 13:55:55 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
 >
-> coverage.   Even in the absence of the skb error, it still fails to link =
-with:
+> On Thu, 29 Mar 2012 13:50:44 +1100 Michael Neuling <mikey@neuling.org> wr=
+ote:
+> >
+> > > Here are a bunch of patches to disintegrate asm/system.h into a set o=
+f separate
+> > > bits to relieve the problem of circular inclusion dependencies.
+> > >=20
+> > > The following changes since commit 437538267b672f9320833907f1b5acbb26=
+05f4be:
+> > >=20
+> > >   Merge tag 'fbdev-updates-for-3.4' of git://github.com/schandinat/li=
+nux-2.6 (2012-03-22 20:43:40 -0700)
+> > >=20
+> > > are available in the git repository at:
+> > >=20
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-asm_sy=
+stem.git split-asm-system_h
+> >=20
+> > It would have been nice to have this in linux-next for a day or two to
+> > sort out the merge issues,  hence....
 >=20
->     "powerpc-linux-ld: TOC section size exceeds 64k"
->=20
-> i.e. it never links into anything a person could actually try and boot an=
-yway.
->=20
-> So, just knowing "yes that is bogus because you've got a giant kernel
-> with multiple TOC" would be useful information here.
+> Um, what can I say but "yeah, it would have been nice" :-(
 
-This last message has been known for a long time and would require us to
-change the way we link the kernel to fix.  I had a go at it a year or so
-ago, but ran into binutils bugs :-(
+The following patch fixes (as much as possible) a powerpc allyesconfig buil=
+d.
 
-The other message may be a result of the TOC section size problem, but I
-am not sure.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 29 Mar 2012 14:58:10 +1100
+Subject: [PATCH] powerpc: fix fallout from system.h split up
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/fadump.c |    2 ++
+ arch/powerpc/kernel/kgdb.c   |    1 +
+ kernel/irq/irqdomain.c       |    3 +++
+ 3 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index cfe7a38..18bdf74 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -40,6 +40,8 @@
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+ #include <asm/fadump.h>
++#include <asm/debug.h>
++#include <asm/setup.h>
+=20
+ static struct fw_dump fw_dump;
+ static struct fadump_mem_struct fdm;
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 76a6e40..782bd0a 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -24,6 +24,7 @@
+ #include <asm/current.h>
+ #include <asm/processor.h>
+ #include <asm/machdep.h>
++#include <asm/debug.h>
+=20
+ /*
+  * This table contains the mapping between PowerPC hardware trap types, and
+diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
+index af48e59..1f94ddf 100644
+--- a/kernel/irq/irqdomain.c
++++ b/kernel/irq/irqdomain.c
+@@ -12,6 +12,9 @@
+ #include <linux/slab.h>
+ #include <linux/smp.h>
+ #include <linux/fs.h>
++#ifdef CONFIG_VIRQ_DEBUG
++#include <asm/debug.h>
++#endif
+=20
+ #define IRQ_DOMAIN_MAP_LEGACY 0 /* driver allocated fixed range of irqs.
+ 				 * ie. legacy 8259, gets irqs 1..15 */
+--=20
+1.7.9.1
+
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS
+--Signature=_Thu__29_Mar_2012_15_15_44_+1100_WbAuFOESkuBxVlHq
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPc9dgAAoJEECxmPOUX5FEERYQAJzFfKRzt8dpA3LYf3NH3OX7
-0ZP7iugBed2JQvJB6HRFzLnzmqcVZYRV1RQan6X0K6Z0P+HNyhdeHITirtNE7Xuj
-yWOdLxz8+0XUBHrxAgsEMaTAYLHow13wcTxV4pCYWMCNyn11/ZkkHPf4K3apc+N8
-C6GE9nH2PBjJvXnu6YlQmeeb2NGBih6FN9D4f9YCL1m+uYzahnJhLb4LjBvrW4WI
-qJiL/UzGT+qq83Sf25HrhQa3hXUc+Gzo3LAZ1U38yotZCaRHhIpnjzzJVZakrZ3P
-E7t78/goPI+LsUKr/BBfRHC9PR4Wj/IzOV+42O6hpQg15iZtqlK2gHk6ko+TWEiT
-vA/pKBIzOoysrI1ijRH49CqGJEaHd+1hwVTDdtug8xYSFRu4aGQM7cLg4LebXMyU
-qpV3WWzCvUnDDIElE4Vb9MPsyPV7nBckTGRT7BS6wJCmlXE/8qukA5neaaITnJty
-UlBOmQQIXww1l0yRnR9K9zovIDo5IPv7iTih7rlzSW9Qf8gIXb4VHdywvc+EE9Bg
-OiTqGTmGJo1PkqWujNwUc9K+aTilh2KtJRwggbGcBJ+oId2UTbw66LW+pp/RJd25
-cebkJPNMNkmxVYEvhDoyELNxbnV6zFnYbdCJLDNSGxH8kxIiRyVJd9m6WeqWAy7H
-ymp2+d/nt8HBJF/mkuSb
-=R7bv
+iQIcBAEBCAAGBQJPc+HwAAoJEECxmPOUX5FET2oP/2slayQM3wN4DhXAE/v+JeBU
+bEmqlZE5DgrAK6Pu65YrlZlYVvfvOsivTwu/tfQ+FLlJHGiPHbVu7zKv/em+cRtz
+dTMQSuYolSyRzAyk+QBD4lUN+SZ8OFfs9XbVxhyTCBe+1qdUUdyul4ajrvo9vMiw
++0eHw1WlozwGOdWcYy/9BdHXPVUiJGjWksmGmAQz0aTbTY5DVfKjiEsHIRS+lJ0f
+nsrKfWOk5z+4yT2AjteEYcPScxxO2F73VZEr/xBEn5R3siuEgZF6P1n96gTxe/3l
+jdKQG6R2QHfKBpx8kphL3qAom5ehese2YaYkufDn4u+/QXtrDoYE/F2a646I7dc3
+LN2SCiLLiaba11uW06cfdiwpkrlF05nHJR3CnEUt8dSQbS/vEjxlRHa9V3cl7Y9/
+c2rK6z3YQwZXL53LTO4YMv5yaYDathWPKwanGJSocWICq6gbtWl4XevoLRwmkRo1
+TuMAj1jy69mxFdiQQA5LO+JRkQN4POo2+vBUb+0RncNrR/tIpp5xB9np30bwIdNI
++VS0I2IQD4VntQp+CF/O/y8SEfyqo/7BWPpZhneRy6LMKC9aOe1RpSgKDa4ZvWYh
+BW60vTDNnc5CNSjOtfOtW55m+JH/eY2/Hidy/Yt7PjLXGi+6KKy0eY7Kl6G0PuS1
+3/KLLW8Vu3GxBLUWiXZv
+=1Nhy
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS--
+--Signature=_Thu__29_Mar_2012_15_15_44_+1100_WbAuFOESkuBxVlHq--
