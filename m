@@ -1,34 +1,57 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 45EE7B6EEF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 08:15:06 +1100 (EST)
-Received: by obbun3 with SMTP id un3so3455104obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 14:15:03 -0700 (PDT)
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B4E60B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 08:13:10 +1100 (EST)
+Date: Thu, 29 Mar 2012 23:11:31 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 00/17] mark const init data with __initconst instead of
+ __initdata
+Message-ID: <20120329211131.GA31250@pengutronix.de>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1333008684.3010.9.camel@pasglop>
-References: <5599.1332958811@redhat.com> <30702.1332989444@neuling.org>
- <20120329135555.06593144b65bf81cc9191f8a@canb.auug.org.au>
- <20120329151544.ef2117821dfb459e8b52af48@canb.auug.org.au>
- <CA+55aFzn=bsH76hPDUgS-FBP=RVu51gwmRdqjkw5RJO=Q_cRfA@mail.gmail.com>
- <20120329154238.1ce219f7c998da45452af4b2@canb.auug.org.au>
- <CA+55aFzjQ7qb=bPAj_gGoGLPXOGweTaqtmOBZH4mUt8E_KQwsg@mail.gmail.com>
- <1333008684.3010.9.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 29 Mar 2012 15:14:42 -0600
-Message-ID: <CACxGe6v+nMMuEM+bBMdYf_OeuaXb+NsS0qz-+puRtdzHLPH2hA@mail.gmail.com>
-Subject: Re: [GIT PULL] Disintegrate and kill asm/system.h
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, arnd@arndb.de,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, paul.gortmaker@windriver.com,
- hpa@zytor.com, akpm@linux-foundation.org,
- Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Andrew Lunn <andrew@lunn.ch>, Christoph Lameter <cl@linux-foundation.org>,
+ linux-mips@linux-mips.org, Tony Lindgren <tony@atomide.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+ platform-driver-x86@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net,
+ Randy Dunlap <rdunlap@xenotime.net>, linux-mtd@lists.infradead.org,
+ Sekhar Nori <nsekhar@ti.com>, Daniel Walker <dwalker@fifo99.com>,
+ lm-sensors@lm-sensors.org, Klaus Kudielka <klaus.kudielka@ieee.org>,
+ Guenter Roeck <guenter.roeck@ericsson.com>, Kevin Hilman <khilman@ti.com>,
+ linux-ia64@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>,
+ Russell King <linux@arm.linux.org.uk>, Samuel Ortiz <sameo@linux.intel.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Lennert Buytenhek <kernel@wantstofly.org>,
+ Kyungmin Park <kyungmin.park@samsung.com>, David Brown <davidb@codeaurora.org>,
+ Anatolij Gustschin <agust@denx.de>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Alexey Dobriyan <adobriyan@gmail.com>, Joerg Reuter <jreuter@yaina.de>,
+ linux-media@vger.kernel.org, cbe-oss-dev@lists.ozlabs.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Tony Luck <tony.luck@intel.com>,
+ Lucas De Marchi <lucas.demarchi@profusion.mobi>, linux-arm-msm@vger.kernel.org,
+ Andreas Koensgen <ajk@comnets.uni-bremen.de>,
+ Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+ Haojian Zhuang <haojian.zhuang@gmail.com>,
+ Mauro Carvalho Chehab <mchehab@infradead.org>, Tejun Heo <tj@kernel.org>,
+ linux-samsung-soc@vger.kernel.org, linux-mm@kvack.org,
+ Barry Song <baohua.song@csr.com>, linux-hams@vger.kernel.org,
+ linux-omap@vger.kernel.org, Andrew Victor <linux@maxim.org.za>,
+ linux-arm-kernel@lists.infradead.org, David Howells <dhowells@redhat.com>,
+ davinci-linux-open-source@linux.davincidsp.com,
+ Jean-Paul Roubelat <jpr@f6fbb.org>, Eric Miao <eric.y.miao@gmail.com>,
+ Linus Walleij <linus.walleij@stericsson.com>, linux-ide@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Nicolas Pitre <nico@fluxnic.net>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Tomasz Stanislawski <t.stanislaws@samsung.com>,
+ Bryan Huntsman <bryanh@codeaurora.org>, Sascha Hauer <kernel@pengutronix.de>,
+ netdev@vger.kernel.org, Jean Delvare <khali@linux-fr.org>,
+ Paul Mackerras <paulus@samba.org>, Shawn Guo <shawn.guo@linaro.org>,
+ David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,49 +61,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 29, 2012 at 2:11 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2012-03-28 at 22:02 -0700, Linus Torvalds wrote:
->> On Wed, Mar 28, 2012 at 9:42 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->> >
->> > How about this (build tested on powerpc allyesconfig):
->>
->> Looks better.
->>
->> Grant - what's the plan about that CONFIG_VIRQ_DEBUG thing? In theory
->> something like it could be useful as a generic thing, but at least
->> right now it is clearly powerpc-specific (not just that the config
->> option only exists for powerpc: it has that whole
->> 'powerpc_debugfs_root' thing in it)?
->>
->> Stephen's patch very much looks like the right thing, but if there was
->> some plan to actually make this generic ...
->
-> Yes, as I said earlier I think Grant should make it generic, there's
-> no reason to keep that powerpc specific, it's fairly useful and nothing
-> in userspace relies on the existing location of the debugfs file that I
-> know about.
->
-> Another option is to put the mapping information in /proc/interrupts but
-> worry that changing anything in there (like adding a column) will break
-> countless userspace tools.
+Hello,
 
-I posted an RFC patch that does exactly that, but I'm similarly
-nervous for the same reason:
+this series fixes a common error to use __initdata to mark const
+variables. Most of the time this works well enough to go unnoticed
+(though I wonder why the linker doesn't warn about that).
+Just try adding something like
 
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg56368.html
+	int something __initdata;
 
-The rightmost fields of /proc/interrupts are a weird set of
-conditional outputs that don't really have any parsable formatting to
-them.  It may be safe to apply my patch because it adds another field
-in the middle of a section of conditional outputs* anyway so tools
-already won't know what those fields mean.  But, regardless, I'm not
-going to take responsibility for applying that patch unless encouraged
-by several other maintainers to do so.
+to one of the patched files and compile to see the error.
 
-*It's added to the middle instead of the end purely for aesthetic
-reasons.  The rightmost field is a freeform string without a field
-width, so if put at the end they would never line up.  Suggestions for
-a better layout are welcome.
+While touching these annotations I also corrected the position where it
+was wrong to go between the variable name and the =.
 
-g.
+Note this series is not compile tested.
+
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
