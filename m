@@ -1,38 +1,29 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:1c35:abcd:42:0:1])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 12009B6EEF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 00:52:15 +1100 (EST)
-Date: Thu, 29 Mar 2012 15:51:36 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCHv2 02/14] X86 & IA64: adapt for dma_map_ops changes
-In-Reply-To: <1332855768-32583-3-git-send-email-m.szyprowski@samsung.com>
-Message-ID: <alpine.LFD.2.02.1203291545520.2542@ionos>
-References: <1332855768-32583-1-git-send-email-m.szyprowski@samsung.com>
- <1332855768-32583-3-git-send-email-m.szyprowski@samsung.com>
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 92160B6EEC
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2012 02:48:46 +1100 (EST)
+Received: from mail146-ch1 (localhost [127.0.0.1])	by
+ mail146-ch1-R.bigfish.com (Postfix) with ESMTP id 986F42074C	for
+ <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 15:48:42 +0000 (UTC)
+Received: from CH1EHSMHS014.bigfish.com (snatpool3.int.messaging.microsoft.com
+ [10.43.68.227])	by mail146-ch1.bigfish.com (Postfix) with ESMTP id
+ C6E913C0056	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 15:48:40 +0000
+ (UTC)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Huang Changming-R66093 <r66093@freescale.com>
+Subject: Re: why use 'raw_spin_lock_irqsave' inf function
+ 'of_find_node_with_property'
+Date: Thu, 29 Mar 2012 15:48:37 +0000
+Message-ID: <CAOZdJXVRsGQJ5js4uUgQuq0CFY==suYWTXuRPnpV+5QDHUe9DA@mail.gmail.com>
+References: <110EED8CC96DFC488B7E717A2027A27C05F5BA@039-SN1MPN1-003.039d.mgd.msft.net>
+In-Reply-To: <110EED8CC96DFC488B7E717A2027A27C05F5BA@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, Kevin Cernekee <cernekee@gmail.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
- Matt Turner <mattst88@gmail.com>, Dezhong Diao <dediao@cisco.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- microblaze-uclinux@itee.uq.edu.au, linaro-mm-sig@lists.linaro.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- discuss@x86-64.org, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
- Richard Kuo <rkuo@codeaurora.org>,
- FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
- Kyungmin Park <kyungmin.park@samsung.com>, Paul Mundt <lethal@linux-sh.org>,
- linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,27 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 27 Mar 2012, Marek Szyprowski wrote:
-> From: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
-> -static inline void *dma_alloc_coherent(struct device *dev, size_t size,
-> -				       dma_addr_t *daddr, gfp_t gfp)
-> +#define dma_alloc_coherent(d,s,h,f)	dma_alloc_attrs(d,s,h,f,NULL)
+On Thu, Mar 29, 2012 at 5:01 AM, Huang Changming-R66093
+<r66093@freescale.com> wrote:
+> Hi, all
+>
+> In function =93of_find_node_with_property=94, why use =93raw_spin_lock_ir=
+qsave=94 to
+> disable preemption and disable interrupt?
 
-Please make this an inline function.
+Where do you see raw_spin_lock_irqsave?
 
->  
-> +#define dma_alloc_coherent(d,s,h,f)	dma_alloc_attrs(d,s,h,f,NULL)
+struct device_node *of_find_node_with_property(struct device_node *from,
+	const char *prop_name)
+{
+	struct device_node *np;
+	struct property *pp;
 
-Inline please.
+	read_lock(&devtree_lock);
+	np =3D from ? from->allnext : allnodes;
+	for (; np; np =3D np->allnext) {
+		for (pp =3D np->properties; pp !=3D 0; pp =3D pp->next) {
+			if (of_prop_cmp(pp->name, prop_name) =3D=3D 0) {
+				of_node_get(np);
+				goto out;
+			}
+		}
+	}
+out:
+	of_node_put(from);
+	read_unlock(&devtree_lock);
+	return np;
+}
 
-> -static inline void dma_free_coherent(struct device *dev, size_t size,
-> -				     void *vaddr, dma_addr_t bus)
-> +#define dma_free_coherent(d,s,c,h) dma_free_attrs(d,s,c,h,NULL)
+We need a lock so that we don't parse the tree while it's being
+modified.  That would cause the for-loop to fail in strange ways.
 
-Ditto
-
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
-
-Thanks,
-
-	tglx
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
