@@ -1,16 +1,15 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:1c35:abcd:42:0:1])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3F1D1B7025
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 08:48:28 +1100 (EST)
-Date: Thu, 29 Mar 2012 23:48:07 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [GIT PULL] Disintegrate and kill asm/system.h
-In-Reply-To: <CACxGe6v+nMMuEM+bBMdYf_OeuaXb+NsS0qz-+puRtdzHLPH2hA@mail.gmail.com>
-Message-ID: <alpine.LFD.2.02.1203292344140.2542@ionos>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7CEE9B6F6E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 09:17:10 +1100 (EST)
+Received: by obbun3 with SMTP id un3so37737obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 15:17:07 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <alpine.LFD.2.02.1203292344140.2542@ionos>
 References: <5599.1332958811@redhat.com> <30702.1332989444@neuling.org>
  <20120329135555.06593144b65bf81cc9191f8a@canb.auug.org.au>
  <20120329151544.ef2117821dfb459e8b52af48@canb.auug.org.au>
@@ -19,8 +18,13 @@ References: <5599.1332958811@redhat.com> <30702.1332989444@neuling.org>
  <CA+55aFzjQ7qb=bPAj_gGoGLPXOGweTaqtmOBZH4mUt8E_KQwsg@mail.gmail.com>
  <1333008684.3010.9.camel@pasglop>
  <CACxGe6v+nMMuEM+bBMdYf_OeuaXb+NsS0qz-+puRtdzHLPH2hA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ <alpine.LFD.2.02.1203292344140.2542@ionos>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 29 Mar 2012 16:16:46 -0600
+Message-ID: <CACxGe6u_6kYZTVUafRH4acB0SEzqcGOxuxrNNsuMkrvVQaquYg@mail.gmail.com>
+Subject: Re: [GIT PULL] Disintegrate and kill asm/system.h
+To: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
  Michael Neuling <mikey@neuling.org>, arnd@arndb.de,
  ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
@@ -36,19 +40,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 29 Mar 2012, Grant Likely wrote:
-> On Thu, Mar 29, 2012 at 2:11 AM, Benjamin Herrenschmidt
-> The rightmost fields of /proc/interrupts are a weird set of
-> conditional outputs that don't really have any parsable formatting to
-> them.  It may be safe to apply my patch because it adds another field
-> in the middle of a section of conditional outputs* anyway so tools
-> already won't know what those fields mean.  But, regardless, I'm not
-> going to take responsibility for applying that patch unless encouraged
-> by several other maintainers to do so.
+On Thu, Mar 29, 2012 at 3:48 PM, Thomas Gleixner <tglx@linutronix.de> wrote=
+:
+> On Thu, 29 Mar 2012, Grant Likely wrote:
+>> On Thu, Mar 29, 2012 at 2:11 AM, Benjamin Herrenschmidt
+>> The rightmost fields of /proc/interrupts are a weird set of
+>> conditional outputs that don't really have any parsable formatting to
+>> them. =A0It may be safe to apply my patch because it adds another field
+>> in the middle of a section of conditional outputs* anyway so tools
+>> already won't know what those fields mean. =A0But, regardless, I'm not
+>> going to take responsibility for applying that patch unless encouraged
+>> by several other maintainers to do so.
+>
+> Go ahead. We changed that output several times in the last years
+> without causing the end of the universe.
 
-Go ahead. We changed that output several times in the last years
-without causing the end of the universe.
+Okay, RFC patch sent.  I'm okay to wait for v3.5 for this, but it can
+go into v3.4 if anyone really wants it faster.
 
-Thanks,
-
-	tglx
+g.
