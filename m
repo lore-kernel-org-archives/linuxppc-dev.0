@@ -1,17 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C4681B6EE7
- for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2012 07:45:06 +1100 (EST)
-Date: Thu, 29 Mar 2012 15:44:58 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git next branch
-Message-ID: <alpine.LFD.2.02.1203291544170.14273@spiff>
+ by ozlabs.org (Postfix) with ESMTPS id 280AAB6EF4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 08:13:17 +1100 (EST)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 11/17] powerpc: mark const init data with __initconst instead
+ of __initdata
+Date: Thu, 29 Mar 2012 23:12:28 +0200
+Message-Id: <1333055554-31300-11-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20120329211131.GA31250@pengutronix.de>
+References: <20120329211131.GA31250@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ Paul Mackerras <paulus@samba.org>, kernel@pengutronix.de,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,66 +28,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+As long as there is no other non-const variable marked __initdata in the
+same compilation unit it doesn't hurt. If there were one however
+compilation would fail with
 
-A few minor bug fixes and missing dts updates for 3.4.  There got lost in
-the mix.  Sorry for the delay
+	error: $variablename causes a section type conflict
 
-- k
+because a section containing const variables is marked read only and so
+cannot contain non-const variables.
 
-The following changes since commit 1ce447b90f3e71c81ae59e0062bc305ef267668b:
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Josh Boyer <jwboyer@gmail.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anatolij Gustschin <agust@denx.de>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org
+---
+ arch/powerpc/platforms/40x/ppc40x_simple.c    |    2 +-
+ arch/powerpc/platforms/512x/mpc5121_generic.c |    2 +-
+ arch/powerpc/platforms/52xx/lite5200.c        |    2 +-
+ arch/powerpc/platforms/52xx/media5200.c       |    2 +-
+ arch/powerpc/platforms/52xx/mpc5200_simple.c  |    2 +-
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c     |    2 +-
+ arch/powerpc/platforms/83xx/mpc830x_rdb.c     |    2 +-
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c     |    2 +-
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c     |    2 +-
+ arch/powerpc/platforms/85xx/tqm85xx.c         |    2 +-
+ arch/powerpc/platforms/cell/qpace_setup.c     |    2 +-
+ arch/powerpc/platforms/cell/setup.c           |    2 +-
+ 12 files changed, 12 insertions(+), 12 deletions(-)
 
-  powerpc/perf: Fix instruction address sampling on 970 and Power4 (2012-03-28 11:33:24 +1100)
-
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
-
-Dave Liu (1):
-      powerpc/qe: Update the SNUM table for MPC8569 Rev2.0
-
-Diana CRACIUN (1):
-      powerpc/dts: Removed fsl,msi property from dts.
-
-Jerry Huang (2):
-      powerpc/85xx: add the P1020MBG-PC DTS support
-      powerpc/85xx: add the P1020UTM-PC DTS support
-
-Shaveta Leekha (1):
-      powerpc/85xx: Enable I2C_CHARDEV and I2C_MPC options in defconfigs
-
-Timur Tabi (2):
-      powerpc/8xxx: remove 85xx/86xx restrictions from fsl_guts.h
-      powerpc/epapr: add "memory" as a clobber to all hypercalls
-
- arch/powerpc/boot/dts/p1020mbg-pc.dtsi       |  151 ++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1020mbg-pc_32b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p1020mbg-pc_36b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc.dtsi       |  140 ++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc_32b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc_36b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p2041rdb.dts           |    3 -
- arch/powerpc/boot/dts/p3041ds.dts            |    4 -
- arch/powerpc/boot/dts/p3060qds.dts           |    2 -
- arch/powerpc/boot/dts/p4080ds.dts            |    3 -
- arch/powerpc/boot/dts/p5020ds.dts            |    4 -
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    2 +
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- arch/powerpc/include/asm/epapr_hcalls.h      |    7 +-
- arch/powerpc/include/asm/fsl_guts.h          |   26 +----
- arch/powerpc/platforms/85xx/mpc85xx_mds.c    |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c    |    2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c       |    4 +-
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |    2 +-
- arch/powerpc/sysdev/qe_lib/qe.c              |   22 ++++-
- drivers/net/ethernet/freescale/ucc_geth.c    |    6 +-
- sound/soc/fsl/mpc8610_hpcd.c                 |    8 +-
- sound/soc/fsl/p1022_ds.c                     |   10 +-
- 25 files changed, 701 insertions(+), 56 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_36b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_36b.dts
+diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
+index 9761206..2efba25 100644
+--- a/arch/powerpc/platforms/40x/ppc40x_simple.c
++++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
+@@ -50,7 +50,7 @@ machine_device_initcall(ppc40x_simple, ppc40x_device_probe);
+  * Again, if your board needs to do things differently then create a
+  * board.c file for it rather than adding it to this list.
+  */
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"amcc,acadia",
+ 	"amcc,haleakala",
+ 	"amcc,kilauea",
+diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
+index 926731f..b1b558c 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_generic.c
++++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
+@@ -26,7 +26,7 @@
+ /*
+  * list of supported boards
+  */
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"prt,prtlvt",
+ 	NULL
+ };
+diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
+index 01ffa64..86bd6f2 100644
+--- a/arch/powerpc/platforms/52xx/lite5200.c
++++ b/arch/powerpc/platforms/52xx/lite5200.c
+@@ -172,7 +172,7 @@ static void __init lite5200_setup_arch(void)
+ 	mpc52xx_setup_pci();
+ }
+ 
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"fsl,lite5200",
+ 	"fsl,lite5200b",
+ 	NULL,
+diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
+index 17d91b7..df4d53a 100644
+--- a/arch/powerpc/platforms/52xx/media5200.c
++++ b/arch/powerpc/platforms/52xx/media5200.c
+@@ -232,7 +232,7 @@ static void __init media5200_setup_arch(void)
+ }
+ 
+ /* list of the supported boards */
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"fsl,media5200",
+ 	NULL
+ };
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index c0aa040..2622361 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -49,7 +49,7 @@ static void __init mpc5200_simple_setup_arch(void)
+ }
+ 
+ /* list of the supported boards */
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"anonymous,a4m072",
+ 	"anon,charon",
+ 	"intercontrol,digsy-mtc",
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+index bfb11e0..e2d401a 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+@@ -93,7 +93,7 @@ struct mpc52xx_pci {
+ };
+ 
+ /* MPC5200 device tree match tables */
+-const struct of_device_id mpc52xx_pci_ids[] __initdata = {
++const struct of_device_id mpc52xx_pci_ids[] __initconst = {
+ 	{ .type = "pci", .compatible = "fsl,mpc5200-pci", },
+ 	{ .type = "pci", .compatible = "mpc5200-pci", },
+ 	{}
+diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+index 4f2d9fe..3327ab9 100644
+--- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+@@ -34,7 +34,7 @@ static void __init mpc830x_rdb_setup_arch(void)
+ 	mpc831x_usb_cfg();
+ }
+ 
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"MPC8308RDB",
+ 	"fsl,mpc8308rdb",
+ 	"denx,mpc8308_p1m",
+diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+index fa25977..067d3f0 100644
+--- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+@@ -35,7 +35,7 @@ static void __init mpc831x_rdb_setup_arch(void)
+ 	mpc831x_usb_cfg();
+ }
+ 
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"MPC8313ERDB",
+ 	"fsl,mpc8315erdb",
+ 	NULL
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+index 16c9c9c..a9a15bb 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+@@ -60,7 +60,7 @@ static void __init mpc837x_rdb_setup_arch(void)
+ 
+ machine_device_initcall(mpc837x_rdb, mpc83xx_declare_of_platform_devices);
+ 
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"fsl,mpc8377rdb",
+ 	"fsl,mpc8378rdb",
+ 	"fsl,mpc8379rdb",
+diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
+index 4d786c2..c182de0 100644
+--- a/arch/powerpc/platforms/85xx/tqm85xx.c
++++ b/arch/powerpc/platforms/85xx/tqm85xx.c
+@@ -125,7 +125,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_1520,
+ 
+ machine_device_initcall(tqm85xx, mpc85xx_common_publish_devices);
+ 
+-static const char *board[] __initdata = {
++static const char *board[] __initconst = {
+ 	"tqc,tqm8540",
+ 	"tqc,tqm8541",
+ 	"tqc,tqm8548",
+diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
+index 7f9b674..6e3409d 100644
+--- a/arch/powerpc/platforms/cell/qpace_setup.c
++++ b/arch/powerpc/platforms/cell/qpace_setup.c
+@@ -61,7 +61,7 @@ static void qpace_progress(char *s, unsigned short hex)
+ 	printk("*** %04x : %s\n", hex, s ? s : "");
+ }
+ 
+-static const struct of_device_id qpace_bus_ids[] __initdata = {
++static const struct of_device_id qpace_bus_ids[] __initconst = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .type = "spider", },
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index fa3e294..4ab0876 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -140,7 +140,7 @@ static int __devinit cell_setup_phb(struct pci_controller *phb)
+ 	return 0;
+ }
+ 
+-static const struct of_device_id cell_bus_ids[] __initdata = {
++static const struct of_device_id cell_bus_ids[] __initconst = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .type = "spider", },
+-- 
+1.7.9.1
