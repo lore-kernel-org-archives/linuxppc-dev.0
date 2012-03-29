@@ -1,22 +1,22 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-lpp01m010-f42.google.com (mail-lpp01m010-f42.google.com
- [209.85.215.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7C73DB6F9F
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 11:54:59 +1100 (EST)
-Received: by lahl5 with SMTP id l5so1221854lah.15
- for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2012 17:54:56 -0700 (PDT)
-MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-Date: Wed, 28 Mar 2012 20:54:56 -0400
-Message-ID: <CAP=VYLqwbjNDQ-TTbs_6cH4X2MMzy=MAFy4=R116zGL8a6qUag@mail.gmail.com>
-Subject: bpf_slow_path: sibling call to `skb_copy_bits' not allowed multiple
- TOCs (ppc)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: netdev <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 16A98B6EF3
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2012 14:30:51 +1100 (EST)
+Date: Thu, 29 Mar 2012 14:30:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: bpf_slow_path: sibling call to `skb_copy_bits' not allowed
+ multiple TOCs (ppc)
+Message-Id: <20120329143040.6568ff46a45e6bd10d428473@canb.auug.org.au>
+In-Reply-To: <CAP=VYLqwbjNDQ-TTbs_6cH4X2MMzy=MAFy4=R116zGL8a6qUag@mail.gmail.com>
+References: <CAP=VYLqwbjNDQ-TTbs_6cH4X2MMzy=MAFy4=R116zGL8a6qUag@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS"
+Cc: netdev <netdev@vger.kernel.org>, linux-next@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+--Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Wondering if anyone has researched this, before I waste more time on it.
+Hi Paul,
 
-The linux-next build of powerpc-allyesconfig has for quite some time shown this:
+On Wed, 28 Mar 2012 20:54:56 -0400 Paul Gortmaker <paul.gortmaker@windriver=
+.com> wrote:
+>
+> coverage.   Even in the absence of the skb error, it still fails to link =
+with:
+>=20
+>     "powerpc-linux-ld: TOC section size exceeds 64k"
+>=20
+> i.e. it never links into anything a person could actually try and boot an=
+yway.
+>=20
+> So, just knowing "yes that is bogus because you've got a giant kernel
+> with multiple TOC" would be useful information here.
 
-  LD      .tmp_vmlinux1
-powerpc-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path_word':
-(.text+0x90): sibling call optimization to `skb_copy_bits' does not
-allow automatic
-multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or
-make `skb_copy_bits' extern
+This last message has been known for a long time and would require us to
+change the way we link the kernel to fix.  I had a go at it a year or so
+ago, but ran into binutils bugs :-(
 
-We get the same error for s/word/half/ and s/word/byte/ and s/word/msh/
+The other message may be a result of the TOC section size problem, but I
+am not sure.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Visually "bisecting" the linux-next builds shows the following:
+--Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS
+Content-Type: application/pgp-signature
 
-good: Dec 7th, 2011:  http://kisskb.ellerman.id.au/kisskb/buildresult/5059024/
-bad:   Dec 8th, 2011:  http://kisskb.ellerman.id.au/kisskb/buildresult/5062069/
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-I wouldn't be surprised if this was some kind of size thing that doesn't matter
-in the real world, as the powerpc-allyesconfig is really only of value for build
-coverage.   Even in the absence of the skb error, it still fails to link with:
+iQIcBAEBCAAGBQJPc9dgAAoJEECxmPOUX5FEERYQAJzFfKRzt8dpA3LYf3NH3OX7
+0ZP7iugBed2JQvJB6HRFzLnzmqcVZYRV1RQan6X0K6Z0P+HNyhdeHITirtNE7Xuj
+yWOdLxz8+0XUBHrxAgsEMaTAYLHow13wcTxV4pCYWMCNyn11/ZkkHPf4K3apc+N8
+C6GE9nH2PBjJvXnu6YlQmeeb2NGBih6FN9D4f9YCL1m+uYzahnJhLb4LjBvrW4WI
+qJiL/UzGT+qq83Sf25HrhQa3hXUc+Gzo3LAZ1U38yotZCaRHhIpnjzzJVZakrZ3P
+E7t78/goPI+LsUKr/BBfRHC9PR4Wj/IzOV+42O6hpQg15iZtqlK2gHk6ko+TWEiT
+vA/pKBIzOoysrI1ijRH49CqGJEaHd+1hwVTDdtug8xYSFRu4aGQM7cLg4LebXMyU
+qpV3WWzCvUnDDIElE4Vb9MPsyPV7nBckTGRT7BS6wJCmlXE/8qukA5neaaITnJty
+UlBOmQQIXww1l0yRnR9K9zovIDo5IPv7iTih7rlzSW9Qf8gIXb4VHdywvc+EE9Bg
+OiTqGTmGJo1PkqWujNwUc9K+aTilh2KtJRwggbGcBJ+oId2UTbw66LW+pp/RJd25
+cebkJPNMNkmxVYEvhDoyELNxbnV6zFnYbdCJLDNSGxH8kxIiRyVJd9m6WeqWAy7H
+ymp2+d/nt8HBJF/mkuSb
+=R7bv
+-----END PGP SIGNATURE-----
 
-    "powerpc-linux-ld: TOC section size exceeds 64k"
-
-i.e. it never links into anything a person could actually try and boot anyway.
-
-So, just knowing "yes that is bogus because you've got a giant kernel
-with multiple TOC" would be useful information here.
-
-Thanks,
-Paul.
+--Signature=_Thu__29_Mar_2012_14_30_40_+1100_f5hVC7kYy1MacNUS--
