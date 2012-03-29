@@ -1,23 +1,17 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E0CF2B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 07:30:32 +1100 (EST)
-Message-ID: <4F74C65A.2000006@freescale.com>
-Date: Thu, 29 Mar 2012 15:30:18 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C4681B6EE7
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2012 07:45:06 +1100 (EST)
+Date: Thu, 29 Mar 2012 15:44:58 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git next branch
+Message-ID: <alpine.LFD.2.02.1203291544170.14273@spiff>
 MIME-Version: 1.0
-To: Fabio <pozzi.fabio@gmail.com>
-Subject: Re: Help initialize phy-less ethernet in 2.6.38
-References: <CAP-cLV5pF-j_izadBSVD7p4hQte96O_g2udCxi=9tkaPwxEsaw@mail.gmail.com>
- <4F74AB70.7070209@freescale.com>
- <CAP-cLV5hAT8sp7uxy5o3_NOw5xoAvoz-rV04zB4pmULSp3pXcg@mail.gmail.com>
-In-Reply-To: <CAP-cLV5hAT8sp7uxy5o3_NOw5xoAvoz-rV04zB4pmULSp3pXcg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Andy Fleming <afleming@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +21,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/29/2012 02:56 PM, Fabio wrote:
->> Which old kernel driver?  Why do you need to mess with fs_platform_info?
-> I have to port a custom platform driver written for 2.6.10 to support
-> this custom board.
+Ben,
 
-So it's old arch/ppc stuff.  Now fs_platform_info is driver-internal and
-info comes from the device tree.  You shouldn't touch the struct directly.
+A few minor bug fixes and missing dts updates for 3.4.  There got lost in
+the mix.  Sorry for the delay
 
->> Why do you think the interrupt is misconfigured?
-> Because I don't get any error during boot or when I run ifconfig, but
-> I don't see
-> any interrupt if I run 'cat /proc/interrupts':
+- k
 
-That could mean that something else is failing, such that you don't
-have the activity that would cause an interrupt.
+The following changes since commit 1ce447b90f3e71c81ae59e0062bc305ef267668b:
 
->> Looking at the code, though, I'm not sure if this stuff still works --
->> e.g. I don't see where any fields of fixed-link but the ID are used, or
->> what's supposed to happen when of_phy_connect_fixed_link() calls
->> phy_connect().
-> If it isn't so, do you have any suggestion about how to re-add this
-> functionality to the existing code?
+  powerpc/perf: Fix instruction address sampling on 970 and Power4 (2012-03-28 11:33:24 +1100)
 
-Andy, do you know what the state of this stuff is?
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
 
--Scott
+Dave Liu (1):
+      powerpc/qe: Update the SNUM table for MPC8569 Rev2.0
+
+Diana CRACIUN (1):
+      powerpc/dts: Removed fsl,msi property from dts.
+
+Jerry Huang (2):
+      powerpc/85xx: add the P1020MBG-PC DTS support
+      powerpc/85xx: add the P1020UTM-PC DTS support
+
+Shaveta Leekha (1):
+      powerpc/85xx: Enable I2C_CHARDEV and I2C_MPC options in defconfigs
+
+Timur Tabi (2):
+      powerpc/8xxx: remove 85xx/86xx restrictions from fsl_guts.h
+      powerpc/epapr: add "memory" as a clobber to all hypercalls
+
+ arch/powerpc/boot/dts/p1020mbg-pc.dtsi       |  151 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1020mbg-pc_32b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p1020mbg-pc_36b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc.dtsi       |  140 ++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc_32b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc_36b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p2041rdb.dts           |    3 -
+ arch/powerpc/boot/dts/p3041ds.dts            |    4 -
+ arch/powerpc/boot/dts/p3060qds.dts           |    2 -
+ arch/powerpc/boot/dts/p4080ds.dts            |    3 -
+ arch/powerpc/boot/dts/p5020ds.dts            |    4 -
+ arch/powerpc/configs/corenet32_smp_defconfig |    1 +
+ arch/powerpc/configs/corenet64_smp_defconfig |    2 +
+ arch/powerpc/configs/mpc85xx_defconfig       |    1 +
+ arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
+ arch/powerpc/include/asm/epapr_hcalls.h      |    7 +-
+ arch/powerpc/include/asm/fsl_guts.h          |   26 +----
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c    |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c    |    2 +-
+ arch/powerpc/platforms/85xx/p1022_ds.c       |    4 +-
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |    2 +-
+ arch/powerpc/sysdev/qe_lib/qe.c              |   22 ++++-
+ drivers/net/ethernet/freescale/ucc_geth.c    |    6 +-
+ sound/soc/fsl/mpc8610_hpcd.c                 |    8 +-
+ sound/soc/fsl/p1022_ds.c                     |   10 +-
+ 25 files changed, 701 insertions(+), 56 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_36b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_36b.dts
