@@ -1,24 +1,34 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 280AAB6EF4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 08:13:17 +1100 (EST)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 11/17] powerpc: mark const init data with __initconst instead
- of __initdata
-Date: Thu, 29 Mar 2012 23:12:28 +0200
-Message-Id: <1333055554-31300-11-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20120329211131.GA31250@pengutronix.de>
-References: <20120329211131.GA31250@pengutronix.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 45EE7B6EEF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 08:15:06 +1100 (EST)
+Received: by obbun3 with SMTP id un3so3455104obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 14:15:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Paul Mackerras <paulus@samba.org>, kernel@pengutronix.de,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <1333008684.3010.9.camel@pasglop>
+References: <5599.1332958811@redhat.com> <30702.1332989444@neuling.org>
+ <20120329135555.06593144b65bf81cc9191f8a@canb.auug.org.au>
+ <20120329151544.ef2117821dfb459e8b52af48@canb.auug.org.au>
+ <CA+55aFzn=bsH76hPDUgS-FBP=RVu51gwmRdqjkw5RJO=Q_cRfA@mail.gmail.com>
+ <20120329154238.1ce219f7c998da45452af4b2@canb.auug.org.au>
+ <CA+55aFzjQ7qb=bPAj_gGoGLPXOGweTaqtmOBZH4mUt8E_KQwsg@mail.gmail.com>
+ <1333008684.3010.9.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 29 Mar 2012 15:14:42 -0600
+Message-ID: <CACxGe6v+nMMuEM+bBMdYf_OeuaXb+NsS0qz-+puRtdzHLPH2hA@mail.gmail.com>
+Subject: Re: [GIT PULL] Disintegrate and kill asm/system.h
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Neuling <mikey@neuling.org>, arnd@arndb.de,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, paul.gortmaker@windriver.com,
+ hpa@zytor.com, akpm@linux-foundation.org,
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,195 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As long as there is no other non-const variable marked __initdata in the
-same compilation unit it doesn't hurt. If there were one however
-compilation would fail with
+On Thu, Mar 29, 2012 at 2:11 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2012-03-28 at 22:02 -0700, Linus Torvalds wrote:
+>> On Wed, Mar 28, 2012 at 9:42 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>> >
+>> > How about this (build tested on powerpc allyesconfig):
+>>
+>> Looks better.
+>>
+>> Grant - what's the plan about that CONFIG_VIRQ_DEBUG thing? In theory
+>> something like it could be useful as a generic thing, but at least
+>> right now it is clearly powerpc-specific (not just that the config
+>> option only exists for powerpc: it has that whole
+>> 'powerpc_debugfs_root' thing in it)?
+>>
+>> Stephen's patch very much looks like the right thing, but if there was
+>> some plan to actually make this generic ...
+>
+> Yes, as I said earlier I think Grant should make it generic, there's
+> no reason to keep that powerpc specific, it's fairly useful and nothing
+> in userspace relies on the existing location of the debugfs file that I
+> know about.
+>
+> Another option is to put the mapping information in /proc/interrupts but
+> worry that changing anything in there (like adding a column) will break
+> countless userspace tools.
 
-	error: $variablename causes a section type conflict
+I posted an RFC patch that does exactly that, but I'm similarly
+nervous for the same reason:
 
-because a section containing const variables is marked read only and so
-cannot contain non-const variables.
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg56368.html
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Josh Boyer <jwboyer@gmail.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: cbe-oss-dev@lists.ozlabs.org
----
- arch/powerpc/platforms/40x/ppc40x_simple.c    |    2 +-
- arch/powerpc/platforms/512x/mpc5121_generic.c |    2 +-
- arch/powerpc/platforms/52xx/lite5200.c        |    2 +-
- arch/powerpc/platforms/52xx/media5200.c       |    2 +-
- arch/powerpc/platforms/52xx/mpc5200_simple.c  |    2 +-
- arch/powerpc/platforms/52xx/mpc52xx_pci.c     |    2 +-
- arch/powerpc/platforms/83xx/mpc830x_rdb.c     |    2 +-
- arch/powerpc/platforms/83xx/mpc831x_rdb.c     |    2 +-
- arch/powerpc/platforms/83xx/mpc837x_rdb.c     |    2 +-
- arch/powerpc/platforms/85xx/tqm85xx.c         |    2 +-
- arch/powerpc/platforms/cell/qpace_setup.c     |    2 +-
- arch/powerpc/platforms/cell/setup.c           |    2 +-
- 12 files changed, 12 insertions(+), 12 deletions(-)
+The rightmost fields of /proc/interrupts are a weird set of
+conditional outputs that don't really have any parsable formatting to
+them.  It may be safe to apply my patch because it adds another field
+in the middle of a section of conditional outputs* anyway so tools
+already won't know what those fields mean.  But, regardless, I'm not
+going to take responsibility for applying that patch unless encouraged
+by several other maintainers to do so.
 
-diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
-index 9761206..2efba25 100644
---- a/arch/powerpc/platforms/40x/ppc40x_simple.c
-+++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
-@@ -50,7 +50,7 @@ machine_device_initcall(ppc40x_simple, ppc40x_device_probe);
-  * Again, if your board needs to do things differently then create a
-  * board.c file for it rather than adding it to this list.
-  */
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"amcc,acadia",
- 	"amcc,haleakala",
- 	"amcc,kilauea",
-diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
-index 926731f..b1b558c 100644
---- a/arch/powerpc/platforms/512x/mpc5121_generic.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
-@@ -26,7 +26,7 @@
- /*
-  * list of supported boards
-  */
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"prt,prtlvt",
- 	NULL
- };
-diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
-index 01ffa64..86bd6f2 100644
---- a/arch/powerpc/platforms/52xx/lite5200.c
-+++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -172,7 +172,7 @@ static void __init lite5200_setup_arch(void)
- 	mpc52xx_setup_pci();
- }
- 
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"fsl,lite5200",
- 	"fsl,lite5200b",
- 	NULL,
-diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
-index 17d91b7..df4d53a 100644
---- a/arch/powerpc/platforms/52xx/media5200.c
-+++ b/arch/powerpc/platforms/52xx/media5200.c
-@@ -232,7 +232,7 @@ static void __init media5200_setup_arch(void)
- }
- 
- /* list of the supported boards */
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"fsl,media5200",
- 	NULL
- };
-diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index c0aa040..2622361 100644
---- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
-+++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -49,7 +49,7 @@ static void __init mpc5200_simple_setup_arch(void)
- }
- 
- /* list of the supported boards */
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"anonymous,a4m072",
- 	"anon,charon",
- 	"intercontrol,digsy-mtc",
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index bfb11e0..e2d401a 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -93,7 +93,7 @@ struct mpc52xx_pci {
- };
- 
- /* MPC5200 device tree match tables */
--const struct of_device_id mpc52xx_pci_ids[] __initdata = {
-+const struct of_device_id mpc52xx_pci_ids[] __initconst = {
- 	{ .type = "pci", .compatible = "fsl,mpc5200-pci", },
- 	{ .type = "pci", .compatible = "mpc5200-pci", },
- 	{}
-diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-index 4f2d9fe..3327ab9 100644
---- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-@@ -34,7 +34,7 @@ static void __init mpc830x_rdb_setup_arch(void)
- 	mpc831x_usb_cfg();
- }
- 
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"MPC8308RDB",
- 	"fsl,mpc8308rdb",
- 	"denx,mpc8308_p1m",
-diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-index fa25977..067d3f0 100644
---- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-@@ -35,7 +35,7 @@ static void __init mpc831x_rdb_setup_arch(void)
- 	mpc831x_usb_cfg();
- }
- 
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"MPC8313ERDB",
- 	"fsl,mpc8315erdb",
- 	NULL
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-index 16c9c9c..a9a15bb 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-@@ -60,7 +60,7 @@ static void __init mpc837x_rdb_setup_arch(void)
- 
- machine_device_initcall(mpc837x_rdb, mpc83xx_declare_of_platform_devices);
- 
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"fsl,mpc8377rdb",
- 	"fsl,mpc8378rdb",
- 	"fsl,mpc8379rdb",
-diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
-index 4d786c2..c182de0 100644
---- a/arch/powerpc/platforms/85xx/tqm85xx.c
-+++ b/arch/powerpc/platforms/85xx/tqm85xx.c
-@@ -125,7 +125,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_1520,
- 
- machine_device_initcall(tqm85xx, mpc85xx_common_publish_devices);
- 
--static const char *board[] __initdata = {
-+static const char *board[] __initconst = {
- 	"tqc,tqm8540",
- 	"tqc,tqm8541",
- 	"tqc,tqm8548",
-diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
-index 7f9b674..6e3409d 100644
---- a/arch/powerpc/platforms/cell/qpace_setup.c
-+++ b/arch/powerpc/platforms/cell/qpace_setup.c
-@@ -61,7 +61,7 @@ static void qpace_progress(char *s, unsigned short hex)
- 	printk("*** %04x : %s\n", hex, s ? s : "");
- }
- 
--static const struct of_device_id qpace_bus_ids[] __initdata = {
-+static const struct of_device_id qpace_bus_ids[] __initconst = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
- 	{ .type = "spider", },
-diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
-index fa3e294..4ab0876 100644
---- a/arch/powerpc/platforms/cell/setup.c
-+++ b/arch/powerpc/platforms/cell/setup.c
-@@ -140,7 +140,7 @@ static int __devinit cell_setup_phb(struct pci_controller *phb)
- 	return 0;
- }
- 
--static const struct of_device_id cell_bus_ids[] __initdata = {
-+static const struct of_device_id cell_bus_ids[] __initconst = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
- 	{ .type = "spider", },
--- 
-1.7.9.1
+*It's added to the middle instead of the end purely for aesthetic
+reasons.  The rightmost field is a freeform string without a field
+width, so if put at the end they would never line up.  Suggestions for
+a better layout are welcome.
+
+g.
