@@ -1,30 +1,21 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 966A8B6FA2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 16:03:06 +1100 (EST)
-Received: by eeke50 with SMTP id e50so608783eek.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2012 22:03:02 -0700 (PDT)
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:1c35:abcd:42:0:1])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 08893B6EEB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2012 18:26:27 +1100 (EST)
+Message-ID: <4F740E98.50104@linutronix.de>
+Date: Thu, 29 Mar 2012 09:26:16 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20120329154238.1ce219f7c998da45452af4b2@canb.auug.org.au>
-References: <5599.1332958811@redhat.com> <30702.1332989444@neuling.org>
- <20120329135555.06593144b65bf81cc9191f8a@canb.auug.org.au>
- <20120329151544.ef2117821dfb459e8b52af48@canb.auug.org.au>
- <CA+55aFzn=bsH76hPDUgS-FBP=RVu51gwmRdqjkw5RJO=Q_cRfA@mail.gmail.com>
- <20120329154238.1ce219f7c998da45452af4b2@canb.auug.org.au>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 28 Mar 2012 22:02:41 -0700
-Message-ID: <CA+55aFzjQ7qb=bPAj_gGoGLPXOGweTaqtmOBZH4mUt8E_KQwsg@mail.gmail.com>
-Subject: Re: [GIT PULL] Disintegrate and kill asm/system.h
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, Michael Neuling <mikey@neuling.org>,
- arnd@arndb.de, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, paul.gortmaker@windriver.com,
- hpa@zytor.com, akpm@linux-foundation.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/85xx: p2020rdb - move the NAND address.
+References: <E9CCADB024EDCD44A9C1083605680C42B9053302@ES05CO.wgti.net>
+In-Reply-To: <E9CCADB024EDCD44A9C1083605680C42B9053302@ES05CO.wgti.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Bryan Hundven <Bryan.Hundven@watchguard.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2012 at 9:42 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On 03/28/2012 10:30 PM, Bryan Hundven wrote:
+>  > It is not at 0xffa00000. According to current u-boot source the NAND
+>  > controller is always at 0xff800000 and it is either at CS0 or CS1
+>  > depending on NAND or NAND+NOR mode. In 36bit mode it is shifted to
+>  > 0xfff800000 but it has always an eight there and never an A.
+>  >
+>  > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+>  > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 >
-> How about this (build tested on powerpc allyesconfig):
+> I am having a hard time verifying this change. I don't think you are
+> wrong, I'm just having a hard time following.
+>
+> I do not see where this has always been 0xff800000 in u-boot.
 
-Looks better.
+<cut>
 
-Grant - what's the plan about that CONFIG_VIRQ_DEBUG thing? In theory
-something like it could be useful as a generic thing, but at least
-right now it is clearly powerpc-specific (not just that the config
-option only exists for powerpc: it has that whole
-'powerpc_debugfs_root' thing in it)?
+> But while I was checking changes in arch/powerpc/, I found this change
+> and wanted to understand why 0xffa00000 has worked for us for so long?
 
-Stephen's patch very much looks like the right thing, but if there was
-some plan to actually make this generic ...
+Kumar, I wasn't wrong entirely I just missed one detail. U-Boot
+provides two different configs, not just one define like its for
+SPL/SPI/...:
 
-                    Linus
+- include/configs/P1_P2_RDB.h
+
+  #ifndef CONFIG_NAND_SPL
+  #define CONFIG_SYS_NAND_BASE            0xffa00000
+  #ifdef CONFIG_PHYS_64BIT
+  #define CONFIG_SYS_NAND_BASE_PHYS       0xfffa00000ull
+  #else
+  #define CONFIG_SYS_NAND_BASE_PHYS       CONFIG_SYS_NAND_BASE
+  #endif
+  #else
+  #define CONFIG_SYS_NAND_BASE            0xfff00000
+  #ifdef CONFIG_PHYS_64BIT
+  #define CONFIG_SYS_NAND_BASE_PHYS       0xffff00000ull
+  #else
+  #define CONFIG_SYS_NAND_BASE_PHYS       CONFIG_SYS_NAND_BASE
+  #endif
+  #endif
+
+- include/configs/p1_p2_rdb_pc.h
+
+  #ifdef CONFIG_NAND_FSL_ELBC
+  #define CONFIG_SYS_NAND_BASE            0xff800000
+  #ifdef CONFIG_PHYS_64BIT
+  #define CONFIG_SYS_NAND_BASE_PHYS       0xfff800000ull
+  #else
+  #define CONFIG_SYS_NAND_BASE_PHYS       CONFIG_SYS_NAND_BASE
+  #endif
+
+and for kernel they use both the same device tree. So with the change,
+the _pc variant finds its flash. Before that it worked for the non-pc
+variant only if NAND_SPL wasn't used.
+Any suggestion on fixing that? Providing a new dt for _pc would "fix"
+it but the non pc variant won't find it in the case of NAND_SPL.
+
+Since both system have the same SoC and the NAND_SPL is always linked
+against 0xfff00000 I don't see anything wrong to relocate the NAND CS
+later to 0xff800000 (or to 0xffa00000) and having it consistent among
+both configs.
+
+> -Bryan
+
+Sebastian
