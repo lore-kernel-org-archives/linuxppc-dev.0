@@ -1,25 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kenth.eriksson@transmode.com>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D749CB6FA8
- for <linuxppc-dev@ozlabs.org>; Sat, 31 Mar 2012 11:03:17 +1100 (EST)
-Message-ID: <1333152184.30734.3.camel@pasglop>
-Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Frank =?ISO-8859-1?Q?Svendsb=F8e?= <frank.svendsboe@gmail.com>
-Date: Sat, 31 Mar 2012 11:03:04 +1100
-In-Reply-To: <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
-References: <4F69C553.6070409@gmail.com>
- <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
- <20120321162549.8C1D0202A4D@gemini.denx.de>
- <1332633218.2882.16.camel@pasglop>
- <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
- <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
- robert.karl.berger@gmail.com
+ by ozlabs.org (Postfix) with ESMTPS id 5D6F4B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 02:15:14 +1100 (EST)
+From: Kenth Eriksson <kenth.eriksson@transmode.com>
+To: spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ joakim.tjernlund@transmode.com
+Subject: [PATCH] Bug fix in commit 178db7d3 triggered a bug in the SPI driver
+ for MPC83XX (pdata is NULL).
+Date: Fri, 30 Mar 2012 17:05:30 +0200
+Message-Id: <1333119930-21129-1-git-send-email-kenth.eriksson@transmode.com>
+Cc: Kenth Eriksson <kenth.eriksson@transmode.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,20 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-03-31 at 00:53 +0200, Frank Svendsbøe wrote:
+After commit 178db7d3 devices are initialized as children of the bus master, not children of the bus masters parent device. The pdata pointer used in fsl_spi_chipselect must updated to reflect the changed initialization.
 
-> Hi Josh Boyer,
-> 
-> just wanted to add that I'm experiencing the same problem that Robert
-> reported, but on 8xx instead of 4xx. The mpc8xx does not support the
-> mfdcrx instruction, so maybe it's more to it than just a binutils bug?
+Signed-off-by: Kenth Eriksson <kenth.eriksson@transmode.com>
+---
+ drivers/spi/spi-fsl-spi.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-The kernel shouldn't have tried to build that instruction on 8xx, though
-I suppose if it's in arch/powerpc/boot, we are a bit too eager at
-building everything including what's not relevant, we might to be a bit
-more careful at excluding 4xx stuff on a 8xx kernel.
-
-Can you give us the exact error ?
-
-Cheers,
-Ben.
+diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
+index 7d6ca68..dc747a0 100644
+--- a/drivers/spi/spi-fsl-spi.c
++++ b/drivers/spi/spi-fsl-spi.c
+@@ -139,10 +139,12 @@ static void fsl_spi_change_mode(struct spi_device *spi)
+ static void fsl_spi_chipselect(struct spi_device *spi, int value)
+ {
+ 	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
+-	struct fsl_spi_platform_data *pdata = spi->dev.parent->platform_data;
++	struct fsl_spi_platform_data *pdata;
+ 	bool pol = spi->mode & SPI_CS_HIGH;
+ 	struct spi_mpc8xxx_cs	*cs = spi->controller_state;
+ 
++	pdata = spi->dev.parent->parent->platform_data;
++
+ 	if (value == BITBANG_CS_INACTIVE) {
+ 		if (pdata->cs_control)
+ 			pdata->cs_control(spi, !pol);
+-- 
+1.7.3.4
