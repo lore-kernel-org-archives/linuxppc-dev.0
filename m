@@ -1,20 +1,59 @@
-Return-Path: <kaffeemonster@googlemail.com>
-Received: from uhura.skim.hs-owl.de (uhura.skim.hs-owl.de [193.174.118.81])
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
  (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E5AEEB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 04:13:18 +1100 (EST)
-Message-ID: <4F75CA89.4010709@googlemail.com>
-Date: Fri, 30 Mar 2012 17:00:25 +0200
-From: Jan Seiffert <kaffeemonster@googlemail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 11DA8B6FA5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 07:05:15 +1100 (EST)
+Date: Fri, 30 Mar 2012 22:03:58 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 00/15] mark const init data with __initconst instead of
+ __initdata
+Message-ID: <20120330200358.GV15647@pengutronix.de>
+References: <20120329211131.GA31250@pengutronix.de>
 MIME-Version: 1.0
-To: <netdev@vger.kernel.org>
-Subject: [REGRESSION][PATCH V4 0/3] bpf jit drops the ball on negative memory
- references
-Content-Type: text/plain; charset="UTF-8"
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Matt Evans <matt@ozlabs.org>, "David S.
- Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20120329211131.GA31250@pengutronix.de>
+Cc: Andrew Lunn <andrew@lunn.ch>, Christoph Lameter <cl@linux-foundation.org>,
+ linux-mips@linux-mips.org, Tony Lindgren <tony@atomide.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+ platform-driver-x86@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net,
+ Randy Dunlap <rdunlap@xenotime.net>, linux-mtd@lists.infradead.org,
+ Sekhar Nori <nsekhar@ti.com>, Daniel Walker <dwalker@fifo99.com>,
+ lm-sensors@lm-sensors.org, Klaus Kudielka <klaus.kudielka@ieee.org>,
+ Guenter Roeck <guenter.roeck@ericsson.com>, Kevin Hilman <khilman@ti.com>,
+ linux-ia64@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>,
+ Russell King <linux@arm.linux.org.uk>, Samuel Ortiz <sameo@linux.intel.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Lennert Buytenhek <kernel@wantstofly.org>,
+ Kyungmin Park <kyungmin.park@samsung.com>, David Brown <davidb@codeaurora.org>,
+ Anatolij Gustschin <agust@denx.de>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Alexey Dobriyan <adobriyan@gmail.com>, Joerg Reuter <jreuter@yaina.de>,
+ linux-media@vger.kernel.org, cbe-oss-dev@lists.ozlabs.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Tony Luck <tony.luck@intel.com>,
+ Lucas De Marchi <lucas.demarchi@profusion.mobi>, linux-arm-msm@vger.kernel.org,
+ Andreas Koensgen <ajk@comnets.uni-bremen.de>,
+ Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+ Haojian Zhuang <haojian.zhuang@gmail.com>,
+ Mauro Carvalho Chehab <mchehab@infradead.org>, Tejun Heo <tj@kernel.org>,
+ linux-samsung-soc@vger.kernel.org, linux-mm@kvack.org,
+ Barry Song <baohua.song@csr.com>, linux-hams@vger.kernel.org,
+ linux-omap@vger.kernel.org, Andrew Victor <linux@maxim.org.za>,
+ linux-arm-kernel@lists.infradead.org, David Howells <dhowells@redhat.com>,
+ davinci-linux-open-source@linux.davincidsp.com,
+ Jean-Paul Roubelat <jpr@f6fbb.org>, Eric Miao <eric.y.miao@gmail.com>,
+ Linus Walleij <linus.walleij@stericsson.com>, linux-ide@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Nicolas Pitre <nico@fluxnic.net>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Tomasz Stanislawski <t.stanislaws@samsung.com>,
+ Bryan Huntsman <bryanh@codeaurora.org>, Sascha Hauer <kernel@pengutronix.de>,
+ netdev@vger.kernel.org, Jean Delvare <khali@linux-fr.org>,
+ Paul Mackerras <paulus@samba.org>, Shawn Guo <shawn.guo@linaro.org>,
+ David Woodhouse <dwmw2@infradead.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,80 +63,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Consider the following test program:
+Hello,
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <pcap-bpf.h>
+On Thu, Mar 29, 2012 at 11:11:31PM +0200, Uwe Kleine-König wrote:
+> this series fixes a common error to use __initdata to mark const
+> variables. Most of the time this works well enough to go unnoticed
+> (though I wonder why the linker doesn't warn about that).
+> Just try adding something like
+> 
+> 	int something __initdata;
+> 
+> to one of the patched files and compile to see the error.
+> 
+> While touching these annotations I also corrected the position where it
+> was wrong to go between the variable name and the =.
+> 
+> Note this series is not compile tested.
+I now dropped the wrong annotations. So two patches became obsolete
+(mtd and percpu). Note that I also dropped fixing the position of
+__initdata if changing it to __initconst was wrong. (I think if
+__initdata is placed before the variable name it doesn't have any
+effect.)
 
-#define die(x) do {perror(x); return 1;} while (0)
-struct bpf_insn udp_filter[] = {
-	/*   0 */ BPF_STMT(BPF_LDX|BPF_W|BPF_IMM, -1048576+(0)), /* leax	net[0] */
-	/*   1 */ BPF_STMT(BPF_LD|BPF_B|BPF_IND, 0),             /* ldb	[x+0] */
-	/*   2 */ BPF_STMT(BPF_RET|BPF_A, 0),                    /* ret	a */
-};
+I didn't promote the Acks I got because all acked changes changed in v2.
 
-int main(int argc, char *argv[])
-{
-	char buf[512];
-	struct sockaddr_in addr;
-	struct bpf_program prg;
-	socklen_t addr_s;
-	ssize_t res;
-	int fd;
+For the details changed in each patch see the changelogs in the
+respective patch mails that I follow up to this mail.
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(5000);
-	addr.sin_addr.s_addr = 0;
-	addr_s = sizeof(addr);
-	prg.bf_len = sizeof(udp_filter)/sizeof(udp_filter[0]);
-	prg.bf_insns = udp_filter;
-	if(-1 == (fd = socket(AF_INET, SOCK_DGRAM, 0)))
-		die("socket");
-	if(-1 == bind(fd, (struct sockaddr *)&addr, sizeof(addr)))
-		die("bind");
-	if(-1 == setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER, &prg, sizeof(prg)))
-		die("setsockopt");
-	res = recvfrom(fd, buf, sizeof(buf), 0, (struct sockaddr *)&addr, &addr_s);
-	if(res != -1)
-		printf("packet received: %zi bytes\n", res);
-	else
-		die("recvfrom");
-	return 0;
-}
+Thanks
+Uwe
 
-when used with the bpf jit disabled works:
-console 1 $ ./bpf
-console 2 $ echo "hello" | nc -u localhost 5000
-console 1: packet received: 6 bytes
-
-When the bpf jit gets enabled (echo 100 >
-/proc/sys/net/core/bpf_jit_enable) the same program stops working:
-console 1 $ ./bpf
-console 2 $ echo "hello" | nc -u localhost 5000
-console 1:
-
-The reason is that both jits (x86 and powerpc) do not handle negative
-memory references like SKF_NET_OFF or SKF_LL_OFF, only the simple
-ancillary data references are supported (by mapping to special
-instructions).
-In the case of an absolute reference, the jit aborts the translation
-if a negative reference is seen, also a negative k on the indirect
-load aborts the translation, but if X is negative to begin with, only
-the error handler is reached at runtime which drops the whole packet.
-
-Such a setup is useful to say filter bogus source addresses on an UDP
-socket.
-
-I propose the following patch series to fix this situation.
-Patch 1 exports the helper function the interpreter uses.
-Patch 2 incorporates the helper into the x86 jit (so it depends on patch 1).
-Patch 3 incorporates the helper into the powerpc jit (so it depends on patch 1).
-
-Lightly tested on x86, but the powerpc asm part is prop. wrong, could
-need assistance.
-
-
-Signed-of-by: Jan Seiffert <kaffeemonster@googlemail.com>
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
