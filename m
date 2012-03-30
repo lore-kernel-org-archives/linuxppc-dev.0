@@ -1,24 +1,27 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 18EFBB6FA9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 07:05:25 +1100 (EST)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 10/15] powerpc: mark const init data with __initconst
- instead of __initdata
-Date: Fri, 30 Mar 2012 22:05:00 +0200
-Message-Id: <1333137905-13809-10-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20120330200358.GV15647@pengutronix.de>
-References: <20120330200358.GV15647@pengutronix.de>
+Return-Path: <frank.svendsboe@gmail.com>
+Received: from mail-qa0-f49.google.com (mail-qa0-f49.google.com
+ [209.85.216.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3CD5AB6FA3
+ for <linuxppc-dev@ozlabs.org>; Sat, 31 Mar 2012 09:53:35 +1100 (EST)
+Received: by qafi29 with SMTP id i29so733302qaf.15
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2012 15:53:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Paul Mackerras <paulus@samba.org>, kernel@pengutronix.de,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+ <20120321162549.8C1D0202A4D@gemini.denx.de>
+ <1332633218.2882.16.camel@pasglop>
+ <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
+Date: Sat, 31 Mar 2012 00:53:33 +0200
+Message-ID: <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+From: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>
+To: Josh Boyer <jwboyer@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wolfgang Denk <wd@denx.de>, robert.karl.berger@gmail.com,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,81 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As long as there is no other non-const variable marked __initdata in the
-same compilation unit it doesn't hurt. If there were one however
-compilation would fail with
+On Mon, Mar 26, 2012 at 3:36 PM, Josh Boyer <jwboyer@gmail.com> wrote:
+> On Sat, Mar 24, 2012 at 7:53 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+>> On Wed, 2012-03-21 at 17:25 +0100, Wolfgang Denk wrote:
+>>> > > The problem is that for ppc-linux-gcc (GCC) 4.2.2 (which comes
+>>> with the
+>>> > > ELDK 4.2) this assembly instruction is not known and the build
+>>> breaks.
+>>> >
+>>> > Sigh. =A0GCC 4.2 is pretty old at this point.
+>>>
+>>> But still rock-solid ... =A0We use it a lot, especially as reference fo=
+r
+>>> more recent (and sometimes more broken) versions of GCC.
+>>
+>> Isn't this a binutils rather than gcc issue ?
+>
+> Pretty much.
+>
 
-	error: $variablename causes a section type conflict
+Hi Josh Boyer,
 
-because a section containing const variables is marked read only and so
-cannot contain non-const variables.
+just wanted to add that I'm experiencing the same problem that Robert
+reported, but on 8xx instead of 4xx. The mpc8xx does not support the
+mfdcrx instruction, so maybe it's more to it than just a binutils bug?
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Josh Boyer <jwboyer@gmail.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: cbe-oss-dev@lists.ozlabs.org
----
-changes since (implicit) v1:
- - drop wrong changes to several files:
-   - arch/powerpc/platforms/40x/ppc40x_simple.c
-   - arch/powerpc/platforms/512x/mpc5121_generic.c
-   - arch/powerpc/platforms/52xx/lite5200.c
-   - arch/powerpc/platforms/52xx/media5200.c
-   - arch/powerpc/platforms/52xx/mpc5200_simple.c
-   - arch/powerpc/platforms/83xx/mpc830x_rdb.c
-   - arch/powerpc/platforms/83xx/mpc831x_rdb.c
-   - arch/powerpc/platforms/83xx/mpc837x_rdb.c
-   - arch/powerpc/platforms/85xx/tqm85xx.c
-
- arch/powerpc/platforms/52xx/mpc52xx_pci.c |    2 +-
- arch/powerpc/platforms/cell/qpace_setup.c |    2 +-
- arch/powerpc/platforms/cell/setup.c       |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index bfb11e0..e2d401a 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -93,7 +93,7 @@ struct mpc52xx_pci {
- };
- 
- /* MPC5200 device tree match tables */
--const struct of_device_id mpc52xx_pci_ids[] __initdata = {
-+const struct of_device_id mpc52xx_pci_ids[] __initconst = {
- 	{ .type = "pci", .compatible = "fsl,mpc5200-pci", },
- 	{ .type = "pci", .compatible = "mpc5200-pci", },
- 	{}
-diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
-index 7f9b674..6e3409d 100644
---- a/arch/powerpc/platforms/cell/qpace_setup.c
-+++ b/arch/powerpc/platforms/cell/qpace_setup.c
-@@ -61,7 +61,7 @@ static void qpace_progress(char *s, unsigned short hex)
- 	printk("*** %04x : %s\n", hex, s ? s : "");
- }
- 
--static const struct of_device_id qpace_bus_ids[] __initdata = {
-+static const struct of_device_id qpace_bus_ids[] __initconst = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
- 	{ .type = "spider", },
-diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
-index fa3e294..4ab0876 100644
---- a/arch/powerpc/platforms/cell/setup.c
-+++ b/arch/powerpc/platforms/cell/setup.c
-@@ -140,7 +140,7 @@ static int __devinit cell_setup_phb(struct pci_controller *phb)
- 	return 0;
- }
- 
--static const struct of_device_id cell_bus_ids[] __initdata = {
-+static const struct of_device_id cell_bus_ids[] __initconst = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
- 	{ .type = "spider", },
--- 
-1.7.9.5
+Best regards,
+Frank
