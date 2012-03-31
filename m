@@ -1,24 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C8A11B6ED0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 11:34:26 +1100 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id wy12so2859324pbc.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2012 17:34:26 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Bug fix in commit 178db7d3 triggered a bug in the SPI
- driver for MPC83XX (pdata is NULL).
-To: Kenth Eriksson <kenth.eriksson@transmode.com>,
- spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- joakim.tjernlund@transmode.com
-In-Reply-To: <1333119930-21129-1-git-send-email-kenth.eriksson@transmode.com>
-References: <1333119930-21129-1-git-send-email-kenth.eriksson@transmode.com>
-Date: Fri, 30 Mar 2012 16:25:42 -0600
-Message-Id: <20120330222542.E63AB3E0709@localhost>
-Cc: Kenth Eriksson <kenth.eriksson@transmode.com>
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (unknown
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DA4B0B6ED0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 20:26:47 +1100 (EST)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: teach i2c-mpc to selectively ignore !RXAK errors
+From: Anthony Foiani <tkil@scrye.com>
+Date: Sat, 31 Mar 2012 03:19:20 -0600
+Message-ID: <gbondxh47.fsf@dworkin.scrye.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +22,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 30 Mar 2012 17:05:30 +0200, Kenth Eriksson <kenth.eriksson@transmode.com> wrote:
-> After commit 178db7d3 devices are initialized as children of the bus master, not children of the bus masters parent device. The pdata pointer used in fsl_spi_chipselect must updated to reflect the changed initialization.
-> 
-> Signed-off-by: Kenth Eriksson <kenth.eriksson@transmode.com>
 
-Applied; but I have a comments on your commit text.
+On the project I'm working on, the hardware engineers put an I2C
+device behind a unidirectional level translator.  When I tried to
+write to it, I was getting EIO due to the lack of receiver ack.
 
-SHA1 id's are great for looking up commits, but they don't help at all
-for casual readers on the mailing list or doing web searches.  Please
-always include the commit title when referencing an earlier commit.  I
-had to edit the commit text.  Here is what I changed it to:
+This is my hack to support this situation, based off 3.0.6 with a few
+minor additions (none of which impact the I2C bits, SFAICT).
 
-    spi/mpc83xx: fix NULL pdata dereference bug
-    
-    Commit 178db7d3, "spi: Fix device unregistration when unregistering
-    the bus master", changed device initialization to be children of the
-    bus master, not children of the bus masters parent device. The pdata
-    pointer used in fsl_spi_chipselect must updated to reflect the changed
-    initialization.
+There are really two distinct changes here:
 
-g.
+1. Change mpc_read and mpc_write to take a generic "flags" argument,
+   instead of just passing the message index; and
 
-> ---
->  drivers/spi/spi-fsl-spi.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
-> index 7d6ca68..dc747a0 100644
-> --- a/drivers/spi/spi-fsl-spi.c
-> +++ b/drivers/spi/spi-fsl-spi.c
-> @@ -139,10 +139,12 @@ static void fsl_spi_change_mode(struct spi_device *spi)
->  static void fsl_spi_chipselect(struct spi_device *spi, int value)
->  {
->  	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
-> -	struct fsl_spi_platform_data *pdata = spi->dev.parent->platform_data;
-> +	struct fsl_spi_platform_data *pdata;
->  	bool pol = spi->mode & SPI_CS_HIGH;
->  	struct spi_mpc8xxx_cs	*cs = spi->controller_state;
->  
-> +	pdata = spi->dev.parent->parent->platform_data;
-> +
->  	if (value == BITBANG_CS_INACTIVE) {
->  		if (pdata->cs_control)
->  			pdata->cs_control(spi, !pol);
-> -- 
-> 1.7.3.4
-> 
-> 
-> ------------------------------------------------------------------------------
-> This SF email is sponsosred by:
-> Try Windows Azure free for 90 days Click Here 
-> http://p.sf.net/sfu/sfd2d-msazure
-> _______________________________________________
-> spi-devel-general mailing list
-> spi-devel-general@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/spi-devel-general
+2. In the very specific case of performing a write when the user has
+   specified I2C_M_NO_RD_ACK on a message, do not error out on !RXAK
+   condition.
 
+My apologies for not breaking it down, but I don't have the bandwidth
+to respin and track this change.  I'm mostly posting it so that other
+people can find it if they run into the same issue.
+
+The use of I2C_M_NO_RD_ACK is a bit obscure, but it's barely used in
+the kernel, and it makes a certain amount of sense in this context.
+
+Thanks to everyone that's contributed to the PPC Linux stack; it's
+made this project (and my current livelihood!) possible.
+
+Best Regards,
+Anthony Foiani
+
+-----------------------------------------------------------------------
+>From a529752a703bcbb4a751e2e8fef721a65c702c6f Mon Sep 17 00:00:00 2001
+From: Anthony Foiani <anthony.foiani@gmail.com>
+Date: Wed, 28 Mar 2012 20:51:53 -0600
+Subject: [PATCH] Selectively ignore missing RXAK.
+
+Overload the I2C_M_NO_RD_ACK flag to continue with writes even when
+the receiver has not acknowledged.  This was useful when talking to a
+part that was electrically isolated such that it could not drive the
+bus lines back to the CPU.
+
+Signed-Off-By: Anthony Foiani <anthony.foiani@gmail.com>
+---
+ drivers/i2c/busses/i2c-mpc.c |   46 ++++++++++++++++++++++++-----------------
+ 1 files changed, 27 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 107397a..961a0e1 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -48,6 +48,8 @@
+ #define CCR_TXAK 0x08
+ #define CCR_RSTA 0x04
+ 
++#define CCR_MASK 0xff
++
+ #define CSR_MCF  0x80
+ #define CSR_MAAS 0x40
+ #define CSR_MBB  0x20
+@@ -116,7 +118,7 @@ static void mpc_i2c_fixup(struct mpc_i2c *i2c)
+ 	}
+ }
+ 
+-static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
++static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing, u32 flags)
+ {
+ 	unsigned long orig_jiffies = jiffies;
+ 	u32 x;
+@@ -163,10 +165,13 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+ 	}
+ 
+ 	if (writing && (x & CSR_RXAK)) {
+-		dev_dbg(i2c->dev, "No RXAK\n");
+-		/* generate stop */
+-		writeccr(i2c, CCR_MEN);
+-		return -EIO;
++		if (!(flags & I2C_M_NO_RD_ACK)) {
++			dev_dbg(i2c->dev, "No RXAK\n");
++			/* generate stop */
++			writeccr(i2c, CCR_MEN);
++			return -EIO;
++		}
++		dev_dbg(i2c->dev, "suppressed !RXAK\n");
+ 	}
+ 	return 0;
+ }
+@@ -426,18 +431,18 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
+ }
+ 
+ static int mpc_write(struct mpc_i2c *i2c, int target,
+-		     const u8 *data, int length, int restart)
++		     const u8 *data, int length, u32 flags)
+ {
+ 	int i, result;
+ 	unsigned timeout = i2c->adap.timeout;
+-	u32 flags = restart ? CCR_RSTA : 0;
+ 
+ 	/* Start as master */
+-	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
++	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA |
++		      CCR_MTX | (flags & CCR_MASK));
+ 	/* Write target byte */
+ 	writeb((target << 1), i2c->base + MPC_I2C_DR);
+ 
+-	result = i2c_wait(i2c, timeout, 1);
++	result = i2c_wait(i2c, timeout, 1, flags);
+ 	if (result < 0)
+ 		return result;
+ 
+@@ -445,7 +450,7 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
+ 		/* Write data byte */
+ 		writeb(data[i], i2c->base + MPC_I2C_DR);
+ 
+-		result = i2c_wait(i2c, timeout, 1);
++		result = i2c_wait(i2c, timeout, 1, flags);
+ 		if (result < 0)
+ 			return result;
+ 	}
+@@ -454,18 +459,18 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
+ }
+ 
+ static int mpc_read(struct mpc_i2c *i2c, int target,
+-		    u8 *data, int length, int restart)
++		    u8 *data, int length, u32 flags)
+ {
+ 	unsigned timeout = i2c->adap.timeout;
+ 	int i, result;
+-	u32 flags = restart ? CCR_RSTA : 0;
+ 
+ 	/* Switch to read - restart */
+-	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
++	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA |
++		      CCR_MTX | (flags & CCR_MASK));
+ 	/* Write target address byte - this time with the read flag set */
+ 	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
+ 
+-	result = i2c_wait(i2c, timeout, 1);
++	result = i2c_wait(i2c, timeout, 1, flags);
+ 	if (result < 0)
+ 		return result;
+ 
+@@ -479,7 +484,7 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
+ 	}
+ 
+ 	for (i = 0; i < length; i++) {
+-		result = i2c_wait(i2c, timeout, 0);
++		result = i2c_wait(i2c, timeout, 0, flags);
+ 		if (result < 0)
+ 			return result;
+ 
+@@ -502,6 +507,7 @@ static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 	int ret = 0;
+ 	unsigned long orig_jiffies = jiffies;
+ 	struct mpc_i2c *i2c = i2c_get_adapdata(adap);
++	u32 restart;
+ 
+ 	mpc_i2c_start(i2c);
+ 
+@@ -526,6 +532,7 @@ static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 		schedule();
+ 	}
+ 
++	restart = 0;
+ 	for (i = 0; ret >= 0 && i < num; i++) {
+ 		pmsg = &msgs[i];
+ 		dev_dbg(i2c->dev,
+@@ -533,11 +540,12 @@ static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 			pmsg->flags & I2C_M_RD ? "read" : "write",
+ 			pmsg->len, pmsg->addr, i + 1, num);
+ 		if (pmsg->flags & I2C_M_RD)
+-			ret =
+-			    mpc_read(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
++			ret = mpc_read(i2c, pmsg->addr, pmsg->buf, pmsg->len,
++				       restart | (pmsg->flags & ~CCR_MASK));
+ 		else
+-			ret =
+-			    mpc_write(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
++			ret = mpc_write(i2c, pmsg->addr, pmsg->buf, pmsg->len,
++				       restart | (pmsg->flags & ~CCR_MASK));
++		restart = CCR_RSTA;
+ 	}
+ 	mpc_i2c_stop(i2c);
+ 	return (ret < 0) ? ret : num;
 -- 
-Grant Likely, B.Sc, P.Eng.
-Secret Lab Technologies,Ltd.
+1.7.7.6
