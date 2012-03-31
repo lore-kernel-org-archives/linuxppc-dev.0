@@ -1,30 +1,22 @@
-Return-Path: <consul.kautuk@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
- [209.85.213.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B6F3CB6EE6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 23:15:56 +1100 (EST)
-Received: by yenl1 with SMTP id l1so803443yen.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2012 05:15:53 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAFPAmTT19hFymnFftLkV1jQjYmJgyk3y4b-kTXO3VP1YCR-_fQ@mail.gmail.com>
-References: <CAFPAmTQs9dOpQTaXU=6Or66YU+my_CnPw33TE4h++YArBNa38g@mail.gmail.com>
- <CAFPAmTT19hFymnFftLkV1jQjYmJgyk3y4b-kTXO3VP1YCR-_fQ@mail.gmail.com>
-Date: Sat, 31 Mar 2012 08:15:53 -0400
-Message-ID: <CAFPAmTSkDyJUX1dCyAwUht72Kc7pkT1Uh3q9Grynb_fS7oOhAA@mail.gmail.com>
-Subject: Re: [PATCH 0/19 v2] mmu: arch/mm: Port OOM changes to arch page fault
- handlers.
-From: Kautuk Consul <consul.kautuk@gmail.com>
-To: linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux@lists.openrisc.net, linux-am33-list@redhat.com,
- microblaze-uclinux@itee.uq.edu.au, linux-m68k@lists.linux-m68k.org,
- linux-m32r-ja@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-cris-kernel@axis.com,
- linux-sh@vger.kernel.org, linux-parisc@vger.kernel.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org
-Content-Type: multipart/mixed; boundary=20cf30050bf029880304bc88eb62
-Cc: linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C0529B6FB9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2012 01:48:27 +1100 (EST)
+Subject: Re: powerpc/85xx: p2020rdb - move the NAND address.
+Mime-Version: 1.0 (Apple Message framework v1257)
+Content-Type: text/plain; charset=iso-8859-1
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4F75BD6B.30609@linutronix.de>
+Date: Sat, 31 Mar 2012 09:48:18 -0500
+Message-Id: <926BF56B-AA5C-443B-BD52-6844518810DB@kernel.crashing.org>
+References: <E9CCADB024EDCD44A9C1083605680C42B9053302@ES05CO.wgti.net>
+ <4F740E98.50104@linutronix.de>
+ <9460468D-281C-4960-839A-F8435638DE4B@kernel.crashing.org>
+ <4F75BD6B.30609@linutronix.de>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Bryan Hundven <Bryan.Hundven@watchguard.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,86 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---20cf30050bf029880304bc88eb62
-Content-Type: text/plain; charset=ISO-8859-1
 
-Ugh, sorry I forgot to attach the stress_32k.c test-case to this email.
+On Mar 30, 2012, at 9:04 AM, Sebastian Andrzej Siewior wrote:
 
-Please find it attached to this one.
+> On 03/29/2012 03:10 PM, Kumar Gala wrote:
+> 
+>>> - include/configs/P1_P2_RDB.h
+>>> 
+>>> #ifndef CONFIG_NAND_SPL
+>>> #define CONFIG_SYS_NAND_BASE            0xffa00000
+>>> #ifdef CONFIG_PHYS_64BIT
+>>> #define CONFIG_SYS_NAND_BASE_PHYS       0xfffa00000ull
+>>> #else
+>>> #define CONFIG_SYS_NAND_BASE_PHYS       CONFIG_SYS_NAND_BASE
+>>> #endif
+>>> #else
+>>> #define CONFIG_SYS_NAND_BASE            0xfff00000
+>>> #ifdef CONFIG_PHYS_64BIT
+>>> #define CONFIG_SYS_NAND_BASE_PHYS       0xffff00000ull
+>>> #else
+>>> #define CONFIG_SYS_NAND_BASE_PHYS       CONFIG_SYS_NAND_BASE
+>>> #endif
+>>> #endif
+>>> 
+>>> - include/configs/p1_p2_rdb_pc.h
+>>> 
+>>> #ifdef CONFIG_NAND_FSL_ELBC
+>>> #define CONFIG_SYS_NAND_BASE            0xff800000
+>>> #ifdef CONFIG_PHYS_64BIT
+>>> #define CONFIG_SYS_NAND_BASE_PHYS       0xfff800000ull
+>>> #else
+>>> #define CONFIG_SYS_NAND_BASE_PHYS       CONFIG_SYS_NAND_BASE
+>>> #endif
+>>> 
+>> 
+>> There are two (well 3 since rdb-pc has both 32b&  36b) in the tree now:
+>> 
+>> arch/powerpc/boot/dts/p2020rdb.dts
+>> arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+>> arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
+> 
+> Okay. So I assume that one has the proper NAND address and my patch
+> should be reverted then. Do want a patch from me for that?
 
---20cf30050bf029880304bc88eb62
-Content-Type: text/x-csrc; charset=US-ASCII; name="stress_32k.c"
-Content-Disposition: attachment; filename="stress_32k.c"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_h0gmk8do0
+Yes, please do.
 
-I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0cmluZy5o
-PgojaW5jbHVkZSA8cHRocmVhZC5oPgojaW5jbHVkZSA8dW5pc3RkLmg+CgojZGVmaW5lIEFMTE9D
-X0JZVEUgNTEyKjEwMjQKI2RlZmluZSBDT1VOVCA1MAoKdm9pZCAqYWxsb2NfZnVuY3Rpb25fb25l
-KCB2b2lkICpwdHIgKTsKdm9pZCAqYWxsb2NfZnVuY3Rpb25fdHdvKCB2b2lkICpwdHIgKTsKdm9p
-ZCAqYWxsb2NfZnVuY3Rpb25fdGhyZWUoIHZvaWQgKnB0ciApOwp2b2lkICphbGxvY19mdW5jdGlv
-bl9mb3VyKCB2b2lkICpwdHIgKTsKdm9pZCAqYWxsb2NfZnVuY3Rpb25fZml2ZSggdm9pZCAqcHRy
-ICk7CnZvaWQgKmVuYWJsZV9mdW5jdGlvbiggdm9pZCAqcHRyICk7CgoKaW50IG1haW4oaW50IGFy
-Z2MsIGNoYXIgKmFyZ3ZbXSkKewoJcHRocmVhZF90IHRocmVhZDEsIHRocmVhZDIsIHRocmVhZDMs
-IHRocmVhZDQsIHRocmVhZDU7CgljaGFyICptZXNzYWdlMSA9ICJUaHJlYWQgMSI7CgljaGFyICpt
-ZXNzYWdlMiA9ICJUaHJlYWQgMiI7CgljaGFyICptZXNzYWdlMyA9ICJUaHJlYWQgMyI7CgljaGFy
-ICptZXNzYWdlNCA9ICJUaHJlYWQgNCI7CgljaGFyICptZXNzYWdlNSA9ICJUaHJlYWQgNSI7Cglp
-bnQgaXJldDEgPSAtMTsKCWludCBpcmV0MiA9IC0xOwoJaW50IGlyZXQzID0gLTE7CglpbnQgaXJl
-dDQgPSAtMTsKCWludCBpcmV0NSA9IC0xOwoJZm9yaygpOwoJaXJldDEgPSBwdGhyZWFkX2NyZWF0
-ZSggJnRocmVhZDEsIE5VTEwsIGFsbG9jX2Z1bmN0aW9uX29uZSwgKHZvaWQqKSBtZXNzYWdlMSk7
-CglpcmV0MiA9IHB0aHJlYWRfY3JlYXRlKCAmdGhyZWFkMiwgTlVMTCwgYWxsb2NfZnVuY3Rpb25f
-dHdvLCAodm9pZCopIG1lc3NhZ2UyKTsKCWlyZXQyID0gcHRocmVhZF9jcmVhdGUoICZ0aHJlYWQz
-LCBOVUxMLCBhbGxvY19mdW5jdGlvbl90aHJlZSwgKHZvaWQqKSBtZXNzYWdlMik7CglpcmV0MiA9
-IHB0aHJlYWRfY3JlYXRlKCAmdGhyZWFkNCwgTlVMTCwgYWxsb2NfZnVuY3Rpb25fZm91ciwgKHZv
-aWQqKSBtZXNzYWdlMik7CglpcmV0MiA9IHB0aHJlYWRfY3JlYXRlKCAmdGhyZWFkNSwgTlVMTCwg
-YWxsb2NfZnVuY3Rpb25fZml2ZSwgKHZvaWQqKSBtZXNzYWdlMik7CgoJcHRocmVhZF9qb2luKCB0
-aHJlYWQxLCBOVUxMKTsKCXB0aHJlYWRfam9pbiggdGhyZWFkMiwgTlVMTCk7CglwdGhyZWFkX2pv
-aW4oIHRocmVhZDMsIE5VTEwpOwoJcHRocmVhZF9qb2luKCB0aHJlYWQ0LCBOVUxMKTsKCXB0aHJl
-YWRfam9pbiggdGhyZWFkNSwgTlVMTCk7CgoJcHJpbnRmKCJUaHJlYWQgMSByZXR1cm5zOiAlZFxu
-IixpcmV0MSk7CglwcmludGYoIlRocmVhZCAyIHJldHVybnM6ICVkXG4iLGlyZXQyKTsKCXByaW50
-ZigiVGhyZWFkIDMgcmV0dXJuczogJWRcbiIsaXJldDMpOwoJcHJpbnRmKCJUaHJlYWQgNCByZXR1
-cm5zOiAlZFxuIixpcmV0NCk7CglwcmludGYoIlRocmVhZCA1IHJldHVybnM6ICVkXG4iLGlyZXQ1
-KTsKCWV4aXQoMCk7Cn0KCnZvaWQgKmFsbG9jX2Z1bmN0aW9uX3R3byggdm9pZCAqcHRyICkKewoJ
-Y2hhciAqbWVzc2FnZTsKCW1lc3NhZ2UgPSAoY2hhciAqKSBwdHI7Cgl2b2lkICpteWJsb2NrW0NP
-VU5UXTsKCWludCBpPSAwLGo9MDsKCWludCBmcmVlZD0wOwoJcHJpbnRmKCJtZXNzYWdlX2FsbG9j
-ICBcbiIpOwoJd2hpbGUoMSkKCXsKCQltZW1zZXQobXlibG9jaywwLHNpemVvZihteWJsb2NrKSk7
-CgkJcHJpbnRmKCJtZXNzYWdlX2FsbG9jICVzIFxuIixtZXNzYWdlKTsKCQlmb3IoaT0wO2k8IENP
-VU5UIDtpKyspCgkJewoJCQlteWJsb2NrW2ldID0gKHZvaWQgKikgbWFsbG9jKEFMTE9DX0JZVEUp
-OwoJCQltZW1zZXQobXlibG9ja1tpXSwxLCBBTExPQ19CWVRFKTsKCQl9Cgl9Cn0KCgp2b2lkICph
-bGxvY19mdW5jdGlvbl9vbmUoIHZvaWQgKnB0ciApCnsKCWNoYXIgKm1lc3NhZ2U7CgltZXNzYWdl
-ID0gKGNoYXIgKikgcHRyOwoJdm9pZCAqbXlibG9ja1tDT1VOVF07CglpbnQgaT0gMCxqPTA7Cglp
-bnQgZnJlZWQ9MDsKCXByaW50ZigibWVzc2FnZV9hbGxvYyAgXG4iKTsKCXdoaWxlKDEpCgl7CgkJ
-bWVtc2V0KG15YmxvY2ssMCxzaXplb2YobXlibG9jaykpOwoJCXByaW50ZigibWVzc2FnZV9hbGxv
-YyAlcyBcbiIsbWVzc2FnZSk7CgkJZm9yKGk9MDtpPCBDT1VOVCA7aSsrKQoJCXsKCQkJbXlibG9j
-a1tpXSA9ICh2b2lkICopIG1hbGxvYyhBTExPQ19CWVRFKTsKCQkJbWVtc2V0KG15YmxvY2tbaV0s
-MSwgQUxMT0NfQllURSk7CgkJfQoJfQp9Cgp2b2lkICphbGxvY19mdW5jdGlvbl90aHJlZSggdm9p
-ZCAqcHRyICkKewogICAgICAgY2hhciAqbWVzc2FnZTsKICAgICAgICBtZXNzYWdlID0gKGNoYXIg
-KikgcHRyOwogICAgICAgIHZvaWQgKm15YmxvY2tbQ09VTlRdOwogICAgICAgIGludCBpPSAwLGo9
-MDsKICAgICAgICBpbnQgZnJlZWQ9MDsKICAgICAgICBwcmludGYoIm1lc3NhZ2VfYWxsb2MgIFxu
-Iik7CiAgICAgICAgd2hpbGUoMSkKICAgICAgICB7CiAgICAgICAgICAgICAgICBtZW1zZXQobXli
-bG9jaywwLHNpemVvZihteWJsb2NrKSk7CiAgICAgICAgICAgICAgICBwcmludGYoIm1lc3NhZ2Vf
-YWxsb2MgJXMgXG4iLG1lc3NhZ2UpOwogICAgICAgICAgICAgICAgZm9yKGk9MDtpPCBDT1VOVCA7
-aSsrKQogICAgICAgICAgICAgICAgewogICAgICAgICAgICAgICAgICAgICAgICBteWJsb2NrW2ld
-ID0gKHZvaWQgKikgbWFsbG9jKEFMTE9DX0JZVEUpOwogICAgICAgICAgICAgICAgICAgICAgICBt
-ZW1zZXQobXlibG9ja1tpXSwxLCBBTExPQ19CWVRFKTsKICAgICAgICAgICAgICAgIH0KICAgICAg
-ICB9Cn0Kdm9pZCAqYWxsb2NfZnVuY3Rpb25fZm91ciggdm9pZCAqcHRyICkKewogICAgICAgY2hh
-ciAqbWVzc2FnZTsKICAgICAgICBtZXNzYWdlID0gKGNoYXIgKikgcHRyOwogICAgICAgIHZvaWQg
-Km15YmxvY2tbQ09VTlRdOwogICAgICAgIGludCBpPSAwLGo9MDsKICAgICAgICBpbnQgZnJlZWQ9
-MDsKICAgICAgICBwcmludGYoIm1lc3NhZ2VfYWxsb2MgIFxuIik7CiAgICAgICAgd2hpbGUoMSkK
-ICAgICAgICB7CiAgICAgICAgICAgICAgICBtZW1zZXQobXlibG9jaywwLHNpemVvZihteWJsb2Nr
-KSk7CiAgICAgICAgICAgICAgICBwcmludGYoIm1lc3NhZ2VfYWxsb2MgJXMgXG4iLG1lc3NhZ2Up
-OwogICAgICAgICAgICAgICAgZm9yKGk9MDtpPCBDT1VOVCA7aSsrKQogICAgICAgICAgICAgICAg
-ewogICAgICAgICAgICAgICAgICAgICAgICBteWJsb2NrW2ldID0gKHZvaWQgKikgbWFsbG9jKEFM
-TE9DX0JZVEUpOwogICAgICAgICAgICAgICAgICAgICAgICBtZW1zZXQobXlibG9ja1tpXSwxLCBB
-TExPQ19CWVRFKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICB9Cn0Kdm9pZCAqYWxsb2NfZnVu
-Y3Rpb25fZml2ZSggdm9pZCAqcHRyICkKewogICAgICAgY2hhciAqbWVzc2FnZTsKICAgICAgICBt
-ZXNzYWdlID0gKGNoYXIgKikgcHRyOwogICAgICAgIHZvaWQgKm15YmxvY2tbQ09VTlRdOwogICAg
-ICAgIGludCBpPSAwLGo9MDsKICAgICAgICBpbnQgZnJlZWQ9MDsKICAgICAgICBwcmludGYoIm1l
-c3NhZ2VfYWxsb2MgIFxuIik7CiAgICAgICAgd2hpbGUoMSkKICAgICAgICB7CiAgICAgICAgICAg
-ICAgICBtZW1zZXQobXlibG9jaywwLHNpemVvZihteWJsb2NrKSk7CiAgICAgICAgICAgICAgICBw
-cmludGYoIm1lc3NhZ2VfYWxsb2MgJXMgXG4iLG1lc3NhZ2UpOwogICAgICAgICAgICAgICAgZm9y
-KGk9MDtpPCBDT1VOVCA7aSsrKQogICAgICAgICAgICAgICAgewogICAgICAgICAgICAgICAgICAg
-ICAgICBteWJsb2NrW2ldID0gKHZvaWQgKikgbWFsbG9jKEFMTE9DX0JZVEUpOwogICAgICAgICAg
-ICAgICAgICAgICAgICBtZW1zZXQobXlibG9ja1tpXSwxLCBBTExPQ19CWVRFKTsKICAgICAgICAg
-ICAgICAgIH0KICAgICAgICB9Cn0K
---20cf30050bf029880304bc88eb62--
+>>> Since both system have the same SoC and the NAND_SPL is always linked
+>>> against 0xfff00000 I don't see anything wrong to relocate the NAND CS
+>>> later to 0xff800000 (or to 0xffa00000) and having it consistent among
+>>> both configs.
+> 
+> what about this thing? Should leave it as it or move to the same
+> location? Since I have no HW *I* would prefer not to touch it :)
+
+Hmm, that implies a u-boot change, right?
+
+- k
