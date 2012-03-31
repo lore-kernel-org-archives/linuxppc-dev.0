@@ -1,30 +1,29 @@
-Return-Path: <linuxppcemb@lkmail.de>
-Received: from pm1.terions.de (pm1.terions.de [83.137.96.25])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 517BEB6FE8
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2012 08:26:14 +1000 (EST)
-Message-ID: <4F7782ED.7050407@lkmail.de>
-Date: Sun, 01 Apr 2012 00:19:25 +0200
-From: Lorenz Kolb <linuxppcemb@lkmail.de>
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
+ by ozlabs.org (Postfix) with ESMTPS id DB2F4B6FCC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2012 08:33:53 +1000 (EST)
+Date: Sat, 31 Mar 2012 23:32:00 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: [PATCH RFC] Simplify the Linux kernel by reducing its state space
+Message-ID: <20120331223200.GA32482@n2100.arm.linux.org.uk>
 References: <20120331163321.GA15809@linux.vnet.ibm.com>
- <1333227608.2325.4054.camel@edumazet-glaptop>
- <20120331212149.GI2450@linux.vnet.ibm.com>
-In-Reply-To: <20120331212149.GI2450@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120331163321.GA15809@linux.vnet.ibm.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, dhowells@redhat.com,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-am33-list@redhat.com, linux@arm.linux.org.uk,
- Eric Dumazet <eric.dumazet@gmail.com>, linux-hexagon@vger.kernel.org,
- x86@kernel.org, jejb@parisc-linux.org, cmetcalf@tilera.com,
- linux390@de.ibm.com, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- linux-m32r@ml.linux-m32r.org, linux-parisc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
+ linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, x86@kernel.org, jejb@parisc-linux.org,
+ dhowells@redhat.com, linux390@de.ibm.com, linux-am33-list@redhat.com,
+ cmetcalf@tilera.com, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ uclinux-dist-devel@blackfin.uclinux.org, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,68 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With that patchset in mind, I am working on a really huge patch, which 
-will greatly simplify the Linux kernel  for the real problem of having 
-that number of CPUs.
+On Sun, Apr 01, 2012 at 12:33:21AM +0800, Paul E. McKenney wrote:
+> Although there have been numerous complaints about the complexity of
+> parallel programming (especially over the past 5-10 years), the plain
+> truth is that the incremental complexity of parallel programming over
+> that of sequential programming is not as large as is commonly believed.
+> Despite that you might have heard, the mind-numbing complexity of modern
+> computer systems is not due so much to there being multiple CPUs, but
+> rather to there being any CPUs at all.  In short, for the ultimate in
+> computer-system simplicity, the optimal choice is NR_CPUS=0.
+> 
+> This commit therefore limits kernel builds to zero CPUs.  This change
+> has the beneficial side effect of rendering all kernel bugs harmless.
+> Furthermore, this commit enables additional beneficial changes, for
+> example, the removal of those parts of the kernel that are not needed
+> when there are zero CPUs.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 
-That patch will have a lot of changes all over the architectures, so 
-what will be the best way to post it? Should I split it architecture 
-dependend and into one generic part.
+Great work, but I don't think you've gone far enough with this.
 
-Currently it is a large blob of millions of changes, but will greatly 
-simplify the Linux kernel.
+What would really help is if you could consolidate all these NR_CPUS
+definitions into one place so we don't have essentially the same thing
+scattered across all these architectures.  We're already doing this on
+ARM across our platforms, and its about time such an approach was taken
+across the entire kernel tree.
 
-Regards,
+It looks like the MIPS solution would be the best one to pick.
+Could you rework your patch to do this please?
 
-Lorenz Kolb
+While you're at it, you might like to consider that having zero CPUs
+makes all this architecture support redundant, so maybe you've missed
+a trick there - according to my count, we could get rid of almost 3
+million lines of code from arch.  We could replace all that with a
+single standard implementation.
 
-Am 31.03.2012 23:21, schrieb Paul E. McKenney:
-> On Sat, Mar 31, 2012 at 11:00:08PM +0200, Eric Dumazet wrote:
->    
->> On Sun, 2012-04-01 at 00:33 +0800, Paul E. McKenney wrote:
->>      
->>> Although there have been numerous complaints about the complexity of
->>> parallel programming (especially over the past 5-10 years), the plain
->>> truth is that the incremental complexity of parallel programming over
->>> that of sequential programming is not as large as is commonly believed.
->>> Despite that you might have heard, the mind-numbing complexity of modern
->>> computer systems is not due so much to there being multiple CPUs, but
->>> rather to there being any CPUs at all.  In short, for the ultimate in
->>> computer-system simplicity, the optimal choice is NR_CPUS=0.
->>>
->>> This commit therefore limits kernel builds to zero CPUs.  This change
->>> has the beneficial side effect of rendering all kernel bugs harmless.
->>> Furthermore, this commit enables additional beneficial changes, for
->>> example, the removal of those parts of the kernel that are not needed
->>> when there are zero CPUs.
->>>
->>> Signed-off-by: Paul E. McKenney<paulmck@linux.vnet.ibm.com>
->>> Reviewed-by: Thomas Gleixner<tglx@linutronix.de>
->>> ---
->>>        
->> Hmm... I believe you could go one step forward and allow negative values
->> as well. Antimatter was proven to exist after all.
->>
->> Hint : nr_cpu_ids is an "int", not an "unsigned int"
->>
->> Bonus: Existing bugs become "must have" features.
->>      
-> ;-) ;-) ;-)
->
->    
->> Of course there is no hurry and this can wait 365 days.
->>      
-> James Bottomley suggested imaginary numbers of CPUs some time back,
-> and I suppose there is no reason you cannot have fractional numbers of
-> CPUs, and perhaps irrational numbers as well.  Of course, these last two
-> would require use of floating-point arithmetic (or something similar)
-> in the kernel.  So I guess we have at several years worth.  Over to you
-> for the negative numbers.  ;-)
->
-> 							Thanx, Paul
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->    
+Bah, maybe I shouldn't have pushed that bpf_jit code for ARM after all...
