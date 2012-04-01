@@ -1,13 +1,26 @@
-Return-Path: <B38951@freescale.com>
-From: Jia Hongtao <B38951@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [RFC] powerpc/fsl-pci: Document the "fsl,
- has-isa" property for Freescale PCI
-Date: Sun, 1 Apr 2012 14:56:36 +0800
-Message-ID: <1333263396-23932-1-git-send-email-B38951@freescale.com>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by ozlabs.org (Postfix) with ESMTP id 0A4C3B6FE4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2012 20:12:44 +1000 (EST)
+Date: Sun, 1 Apr 2012 12:04:48 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH RFC] Simplify the Linux kernel by reducing its state space
+Message-ID: <20120401100448.GD14848@liondog.tnic>
+References: <20120331163321.GA15809@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree-discuss@lists.ozlabs.org, b38951@freescale.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20120331163321.GA15809@linux.vnet.ibm.com>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, dhowells@redhat.com,
+ sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-am33-list@redhat.com, linux@arm.linux.org.uk,
+ linux-hexagon@vger.kernel.org, x86@kernel.org, jejb@parisc-linux.org,
+ cmetcalf@tilera.com, uclinux-dist-devel@blackfin.uclinux.org,
+ tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ linux-m32r@ml.linux-m32r.org, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,60 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If PCI is primary bus we should set isa_io/mem_base when parsing PCI bridge
-resources from device tree. The previous way to check the primary bus based
-on a hard-coded address named primary_phb_addr. Now we add a property named
-"fsl,has-isa" into device tree. In kernel we use this property to find out
-the bus is primary or not. This way is more flexible.
+On Sun, Apr 01, 2012 at 12:33:21AM +0800, Paul E. McKenney wrote:
+> Although there have been numerous complaints about the complexity of
+> parallel programming (especially over the past 5-10 years), the plain
+> truth is that the incremental complexity of parallel programming over
+> that of sequential programming is not as large as is commonly believed.
+> Despite that you might have heard, the mind-numbing complexity of modern
+> computer systems is not due so much to there being multiple CPUs, but
+> rather to there being any CPUs at all.  In short, for the ultimate in
+> computer-system simplicity, the optimal choice is NR_CPUS=0.
+> 
+> This commit therefore limits kernel builds to zero CPUs.  This change
+> has the beneficial side effect of rendering all kernel bugs harmless.
+> Furthermore, this commit enables additional beneficial changes, for
+> example, the removal of those parts of the kernel that are not needed
+> when there are zero CPUs.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- .../devicetree/bindings/powerpc/fsl/pci.txt        |   36 ++++++++++++++++++++
- 1 files changed, 36 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/pci.txt
+Looks good, thanks for doing that.
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/pci.txt b/Documentation/devicetree/bindings/powerpc/fsl/pci.txt
-new file mode 100644
-index 0000000..7b18090
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/pci.txt
-@@ -0,0 +1,36 @@
-+* Freescale PCI
-+
-+Freescale PCI specific property:
-+- fsl,has-isa : If PCI is primary bus we should set isa_io/mem_base when
-+                parsing PCI bridge resources. This property is an indicator
-+                to inform kernel the PCI is primary.
-+
-+Example (MPC8572DS)
-+	&pci0 {
-+		compatible = "fsl,mpc8548-pcie";
-+		device_type = "pci";
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		bus-range = <0 255>;
-+		clock-frequency = <33333333>;
-+		interrupts = <24 2 0 0>;
-+		fsl,has-isa;
-+
-+		pcie@0 {
-+			reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+			device_type = "pci";
-+			interrupts = <24 2 0 0>;
-+			interrupt-map-mask = <0xf800 0 0 7>;
-+
-+			interrupt-map = <
-+				/* IDSEL 0x0 */
-+				0000 0x0 0x0 0x1 &mpic 0x8 0x1 0x0 0x0
-+				0000 0x0 0x0 0x2 &mpic 0x9 0x1 0x0 0x0
-+				0000 0x0 0x0 0x3 &mpic 0xa 0x1 0x0 0x0
-+				0000 0x0 0x0 0x4 &mpic 0xb 0x1 0x0 0x0
-+				>;
-+		};
-+	};
+Btw, I just got confirmation from hw folk that we can actually give you
+hardware support for that code with an upcoming CPU which has NR_CPUS=0
+cores.
+
+Oh, and additionally, we can disable some of those so getting into the
+negative is also doable from the hw perspective, so feel free to explore
+that side of the problem too.
+
+ACK.
+
 -- 
-1.7.5.1
+Regards/Gruss,
+    Boris.
