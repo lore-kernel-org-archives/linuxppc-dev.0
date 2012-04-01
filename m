@@ -1,19 +1,19 @@
-Return-Path: <geoff@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E023AB6FEE
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2012 13:06:04 +1000 (EST)
-Message-ID: <1333249549.6298.22.camel@clam>
-Subject: [RFC] PS3 updates for the highmem region
-From: Geoff Levand <geoff@infradead.org>
-To: Andre Heider <a.heider@gmail.com>, Hector Martin
- <hector@marcansoft.com>,  Nathan Whitehorn <nwhitehorn@freebsd.org>
-Date: Sat, 31 Mar 2012 20:05:49 -0700
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <B38951@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1E400B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2012 17:08:06 +1000 (EST)
+From: Jia Hongtao <B38951@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 1/4] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Sun, 1 Apr 2012 14:55:28 +0800
+Message-ID: <1333263331-23881-1-git-send-email-B38951@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+We unified the Freescale pci/pcie initialization by changing the fsl_pci
+to a platform driver.
 
-I've rebased and reworked the PS3 highmem patches that Hector and Andre have
-submitted.  They are now against Linux-3.3, and I plan for them to go upstream
-for Linux-3.5.  I'll rebase them again once a few 3.4-rc's are out.
+In previous version pci/pcie initialization is in platform code which
+Initialize pci bridge base on EP/RC or host/agent settings.
 
-This work needs to be tested more, especially needed is testing of the passing of
-data in the highmem region.  Please test and report.
+Signed-off-by: Jia Hongtao <B38951@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c |   59 +++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.h |    1 +
+ 2 files changed, 60 insertions(+), 0 deletions(-)
 
-Nathan, these patches fix the well known node names, so it would be best
-if you could add support to test for pre-allocated highmem regions in
-your FreeBSD port.
-
--Geoff
-
-The following changes since commit c16fa4f2ad19908a47c63d8fa436a1178438c7e7:
-
-  Linux 3.3 (2012-03-18 16:15:34 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-powerpc
-
-for you to fetch changes up to aab56ec9e2989fc9960cae3927534cb81173dff5:
-
-  powerpc/ps3: Refresh ps3_defconfig (2012-03-31 18:25:20 -0700)
-
-----------------------------------------------------------------
-Andre Heider (3):
-      powerpc/ps3: Add highmem repository read routines
-      powerpc/ps3: Use highmem region from repository
-      powerpc/ps3: Remove MEMORY_HOTPLUG requirement
-
-Geoff Levand (5):
-      powerpc/ps3: Correct lv1 repository routine names
-      powerpc/ps3: Add PS3 repository write support
-      powerpc/ps3: Add highmem repository write routines
-      powerpc/ps3: Minor Kconfig cleanup
-      powerpc/ps3: Refresh ps3_defconfig
-
-Hector Martin (1):
-      powerpc/ps3: Add highmem region memory early
-
- arch/powerpc/configs/ps3_defconfig      |    8 +-
- arch/powerpc/include/asm/lv1call.h      |    4 +-
- arch/powerpc/platforms/ps3/Kconfig      |   22 +++-
- arch/powerpc/platforms/ps3/mm.c         |   77 ++++++------
- arch/powerpc/platforms/ps3/platform.h   |   16 +++
- arch/powerpc/platforms/ps3/repository.c |  198 +++++++++++++++++++++++++++++++
- 6 files changed, 277 insertions(+), 48 deletions(-)
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 6073288..e3175b3 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -807,3 +807,62 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
+ 
+ 	return 0;
+ }
++
++static const struct of_device_id pci_ids[] = {
++	{ .compatible = "fsl,mpc8540-pci", },
++	{ .compatible = "fsl,mpc8548-pcie", },
++	{ .compatible = "fsl,mpc8641-pcie", },
++	{ .compatible = "fsl,p1022-pcie", },
++	{ .compatible = "fsl,p1010-pcie", },
++	{ .compatible = "fsl,p1023-pcie", },
++	{ .compatible = "fsl,p4080-pcie", },
++	{ .compatible = "fsl,qoriq-pcie-v2.3", },
++	{ .compatible = "fsl,qoriq-pcie-v2.2", },
++	{},
++};
++
++int primary_phb_addr;
++static int __devinit fsl_pci_probe(struct platform_device *pdev)
++{
++	struct pci_controller *hose;
++	int ret;
++	bool is_primary;
++
++	if (of_match_node(pci_ids, pdev->dev.of_node)) {
++		struct resource rsrc;
++		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
++		is_primary = ((rsrc.start & 0xfffff) == primary_phb_addr);
++		ret = fsl_add_bridge(pdev->dev.of_node, is_primary);
++
++#ifdef CONFIG_SWIOTLB
++		hose = pci_find_hose_for_OF_device(pdev->dev.of_node);
++		/*
++		 * if we couldn't map all of DRAM via the dma windows
++		 * we need SWIOTLB to handle buffers located outside of
++		 * dma capable memory region
++		 */
++		if (memblock_end_of_DRAM() > hose->dma_window_base_cur
++				+ hose->dma_window_size) {
++			ppc_swiotlb_enable = 1;
++			set_pci_dma_ops(&swiotlb_dma_ops);
++			ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
++		}
++#endif
++	}
++
++	return 0;
++}
++
++static struct platform_driver fsl_pci_driver = {
++	.driver = {
++		.name = "fsl-pci",
++		.of_match_table = pci_ids,
++	},
++	.probe = fsl_pci_probe,
++};
++
++static int __init fsl_pci_init(void)
++{
++	return platform_driver_register(&fsl_pci_driver);
++}
++arch_initcall(fsl_pci_init);
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index a39ed5c..df9fc44 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -88,6 +88,7 @@ struct ccsr_pci {
+ 	__be32	pex_err_cap_r3;		/* 0x.e34 - PCIE error capture register 0 */
+ };
+ 
++extern int primary_phb_addr;
+ extern int fsl_add_bridge(struct device_node *dev, int is_primary);
+ extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
+ extern int mpc83xx_add_bridge(struct device_node *dev);
+-- 
+1.7.5.1
