@@ -2,13 +2,13 @@ Return-Path: <jirislaby@gmail.com>
 Received: from smtp.pripojeni.net (mail.pripojeni.net [178.22.112.14])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 15A0BB6FA3
+ by ozlabs.org (Postfix) with ESMTPS id 180C8B6FAA
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 22:02:11 +1000 (EST)
 From: Jiri Slaby <jslaby@suse.cz>
 To: gregkh@linuxfoundation.org
-Subject: [PATCH 42/69] TTY: hvcs, use tty from tty_port
-Date: Mon,  2 Apr 2012 13:54:26 +0200
-Message-Id: <1333367693-3244-43-git-send-email-jslaby@suse.cz>
+Subject: [PATCH 38/69] TTY: HVC, use tty from tty_port
+Date: Mon,  2 Apr 2012 13:54:22 +0200
+Message-Id: <1333367693-3244-39-git-send-email-jslaby@suse.cz>
 In-Reply-To: <1333367693-3244-1-git-send-email-jslaby@suse.cz>
 References: <1333367693-3244-1-git-send-email-jslaby@suse.cz>
 Cc: jirislaby@gmail.com, linuxppc-dev@lists.ozlabs.org,
@@ -22,85 +22,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-No refcounting, just a switch. The locking in the driver prevents
-races, so in fact the refcounting is not needed. But while we have a
-tty in tty_port, don't duplicate that and remove the one from
-hvcs_struct.
+The driver already used refcounting. So we just switch it to tty_port
+helpers. And switch to tty_port->lock for tty.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- drivers/tty/hvc/hvcs.c |   16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+ drivers/tty/hvc/hvc_console.c |   36 +++++++++++++++---------------------
+ drivers/tty/hvc/hvc_console.h |    1 -
+ drivers/tty/hvc/hvsi_lib.c    |    2 +-
+ 3 files changed, 16 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 817f94b..d56788c 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -270,8 +270,6 @@ struct hvcs_struct {
- 	 */
- 	unsigned int index;
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 12a4273..92b7f5d 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -323,11 +323,10 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	} /* else count == 0 */
  
--	struct tty_struct *tty;
+ 	tty->driver_data = hp;
 -
- 	/*
- 	 * Used to tell the driver kernel_thread what operations need to take
- 	 * place upon this hvcs_struct instance.
-@@ -560,7 +558,7 @@ static irqreturn_t hvcs_handle_interrupt(int irq, void *dev_instance)
- static void hvcs_try_write(struct hvcs_struct *hvcsd)
- {
- 	uint32_t unit_address = hvcsd->vdev->unit_address;
--	struct tty_struct *tty = hvcsd->tty;
-+	struct tty_struct *tty = hvcsd->port.tty;
- 	int sent;
+-	hp->tty = tty_kref_get(tty);
+-
+ 	spin_unlock_irqrestore(&hp->lock, flags);
  
- 	if (hvcsd->todo_mask & HVCS_TRY_WRITE) {
-@@ -598,7 +596,7 @@ static int hvcs_io(struct hvcs_struct *hvcsd)
- 	spin_lock_irqsave(&hvcsd->lock, flags);
++	tty_port_tty_set(&hp->port, tty);
++
+ 	if (hp->ops->notifier_add)
+ 		rc = hp->ops->notifier_add(hp, hp->data);
  
- 	unit_address = hvcsd->vdev->unit_address;
--	tty = hvcsd->tty;
-+	tty = hvcsd->port.tty;
+@@ -338,9 +337,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	 * tty fields and return the kref reference.
+ 	 */
+ 	if (rc) {
+-		spin_lock_irqsave(&hp->lock, flags);
+-		hp->tty = NULL;
+-		spin_unlock_irqrestore(&hp->lock, flags);
++		tty_port_tty_set(&hp->port, NULL);
+ 		tty_kref_put(tty);
+ 		tty->driver_data = NULL;
+ 		tty_port_put(&hp->port);
+@@ -373,9 +370,9 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 	spin_lock_irqsave(&hp->lock, flags);
  
- 	hvcs_try_write(hvcsd);
+ 	if (--hp->count == 0) {
+-		/* We are done with the tty pointer now. */
+-		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
++		/* We are done with the tty pointer now. */
++		tty_port_tty_set(&hp->port, NULL);
  
-@@ -850,7 +848,7 @@ static int __devexit hvcs_remove(struct vio_dev *dev)
+ 		if (hp->ops->notifier_del)
+ 			hp->ops->notifier_del(hp, hp->data);
+@@ -427,9 +424,8 @@ static void hvc_hangup(struct tty_struct *tty)
+ 	temp_open_count = hp->count;
+ 	hp->count = 0;
+ 	hp->n_outbuf = 0;
+-	hp->tty = NULL;
+-
+ 	spin_unlock_irqrestore(&hp->lock, flags);
++	tty_port_tty_set(&hp->port, NULL);
  
- 	spin_lock_irqsave(&hvcsd->lock, flags);
+ 	if (hp->ops->notifier_hangup)
+ 		hp->ops->notifier_hangup(hp, hp->data);
+@@ -526,13 +522,12 @@ static void hvc_set_winsz(struct work_struct *work)
  
--	tty = hvcsd->tty;
-+	tty = hvcsd->port.tty;
+ 	hp = container_of(work, struct hvc_struct, tty_resize);
  
- 	spin_unlock_irqrestore(&hvcsd->lock, flags);
+-	spin_lock_irqsave(&hp->lock, hvc_flags);
+-	if (!hp->tty) {
+-		spin_unlock_irqrestore(&hp->lock, hvc_flags);
++	tty = tty_port_tty_get(&hp->port);
++	if (!tty)
+ 		return;
+-	}
+-	ws  = hp->ws;
+-	tty = tty_kref_get(hp->tty);
++
++	spin_lock_irqsave(&hp->lock, hvc_flags);
++	ws = hp->ws;
+ 	spin_unlock_irqrestore(&hp->lock, hvc_flags);
  
-@@ -1137,7 +1135,7 @@ static int hvcs_open(struct tty_struct *tty, struct file *filp)
- 			goto error_release;
+ 	tty_do_resize(tty, &ws);
+@@ -601,7 +596,7 @@ int hvc_poll(struct hvc_struct *hp)
+ 	}
  
- 	hvcsd->port.count = 1;
--	hvcsd->tty = tty;
-+	hvcsd->port.tty = tty;
- 	tty->driver_data = hvcsd;
+ 	/* No tty attached, just skip */
+-	tty = tty_kref_get(hp->tty);
++	tty = tty_port_tty_get(&hp->port);
+ 	if (tty == NULL)
+ 		goto bail;
  
- 	memset(&hvcsd->buffer[0], 0x00, HVCS_BUFF_LEN);
-@@ -1223,7 +1221,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 		 * execute any operations on the TTY even though it is obligated
- 		 * to deliver any pending I/O to the hypervisor.
- 		 */
--		hvcsd->tty = NULL;
-+		hvcsd->port.tty = NULL;
+@@ -681,8 +676,7 @@ int hvc_poll(struct hvc_struct *hp)
  
- 		irq = hvcsd->vdev->irq;
- 		spin_unlock_irqrestore(&hvcsd->lock, flags);
-@@ -1271,8 +1269,8 @@ static void hvcs_hangup(struct tty_struct * tty)
- 	hvcsd->todo_mask = 0;
+ 		tty_flip_buffer_push(tty);
+ 	}
+-	if (tty)
+-		tty_kref_put(tty);
++	tty_kref_put(tty);
  
- 	/* I don't think the tty needs the hvcs_struct pointer after a hangup */
--	hvcsd->tty->driver_data = NULL;
--	hvcsd->tty = NULL;
-+	tty->driver_data = NULL;
-+	hvcsd->port.tty = NULL;
+ 	return poll_mask;
+ }
+@@ -880,9 +874,9 @@ int hvc_remove(struct hvc_struct *hp)
+ 	unsigned long flags;
+ 	struct tty_struct *tty;
  
- 	hvcsd->port.count = 0;
+-	spin_lock_irqsave(&hp->lock, flags);
+-	tty = tty_kref_get(hp->tty);
++	tty = tty_port_tty_get(&hp->port);
+ 
++	spin_lock_irqsave(&hp->lock, flags);
+ 	if (hp->index < MAX_NR_HVC_CONSOLES)
+ 		vtermnos[hp->index] = -1;
+ 
+diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+index 926d9e4..594a28f 100644
+--- a/drivers/tty/hvc/hvc_console.h
++++ b/drivers/tty/hvc/hvc_console.h
+@@ -49,7 +49,6 @@ struct hvc_struct {
+ 	struct tty_port port;
+ 	spinlock_t lock;
+ 	int index;
+-	struct tty_struct *tty;
+ 	int count;
+ 	int do_wakeup;
+ 	char *outbuf;
+diff --git a/drivers/tty/hvc/hvsi_lib.c b/drivers/tty/hvc/hvsi_lib.c
+index 6f4dd83..59c135d 100644
+--- a/drivers/tty/hvc/hvsi_lib.c
++++ b/drivers/tty/hvc/hvsi_lib.c
+@@ -377,7 +377,7 @@ int hvsilib_open(struct hvsi_priv *pv, struct hvc_struct *hp)
+ 	pr_devel("HVSI@%x: open !\n", pv->termno);
+ 
+ 	/* Keep track of the tty data structure */
+-	pv->tty = tty_kref_get(hp->tty);
++	pv->tty = tty_port_tty_get(&hp->port);
+ 
+ 	hvsilib_establish(pv);
  
 -- 
 1.7.9.2
