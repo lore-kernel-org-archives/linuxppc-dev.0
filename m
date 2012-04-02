@@ -1,20 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1333340517.30734.42.camel@pasglop>
-Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
- irq_alloc_desc() instead
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3F273B6EF4
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2012 14:40:02 +1000 (EST)
+Message-ID: <1333341590.30734.47.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Mon, 02 Apr 2012 14:21:57 +1000
-In-Reply-To: <m2iphj3zxr.fsf@igel.home>
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 02 Apr 2012 14:39:50 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-04-01 at 23:27 +0200, Andreas Schwab wrote:
-> Grant Likely <grant.likely@secretlab.ca> writes:
-> 
-> > This patch drops the powerpc-specific irq_map table and replaces it with
-> > directly using the irq_alloc_desc()/irq_free_desc() interfaces for allocating
-> > and freeing irq_desc structures.
-> 
-> This breaks irqs on PowerMac G5.  I see lost irq errors from the sata
-> driver.
-> 
-> Note that the breakage only started after the series was merged into
-> mainline.  But when transplanted upon the parent of the merge this is
-> the commit that was blamed by bisect.  So something changed between
-> v3.3-rc3 and the merge of this series that broke it.
+Hi Linus !
 
-can you tell me more ? (What machine precisely, what .config etc...) ?
-
-I tested here on two G5's:
-
- - PowerMac7,3 aka Dual G5 AGP. This ones has U3 + K2 and
-uses cascaded MPICs
-
- - PowerMac11,2 aka Quad G5. This one has U4 + K2 and uses a single MPIC
-in the northbridge
-
-And both appear to work fine with today upstream (basically -rc1).
+This contains a couple more fixes for the system.h disintegration,
+a trivial section mismatch fix, a couple of patches from akpm that I
+didn't quite get he expected me to pickup, and a few more trivialities
+form Kumar that he appear to have forgotten to send me in the previous
+batch.
 
 Cheers,
 Ben.
+
+The following changes since commit dd775ae2549217d3ae09363e3edb305d0fa19928:
+
+  Linux 3.4-rc1 (2012-03-31 16:24:09 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 9b218f63e50e590fe0c7724a0838d7eaa6dae5ce:
+
+  powerpc/eeh: Fix use of set_current_state() in eeh event handling set_current_state() wart (2012-04-02 14:31:19 +1000)
+
+----------------------------------------------------------------
+Andrew Morton (1):
+      powerpc/eeh: Fix use of set_current_state() in eeh event handling set_current_state() wart
+
+Benjamin Herrenschmidt (2):
+      Merge remote-tracking branch 'kumar/next' into merge
+      powerpc/kvm: Fallout from system.h disintegration
+
+Dave Liu (1):
+      powerpc/qe: Update the SNUM table for MPC8569 Rev2.0
+
+Diana CRACIUN (1):
+      powerpc/dts: Removed fsl,msi property from dts.
+
+Jerry Huang (2):
+      powerpc/85xx: add the P1020MBG-PC DTS support
+      powerpc/85xx: add the P1020UTM-PC DTS support
+
+Oleg Nesterov (1):
+      powerpc/eeh: Remove eeh_event_handler()->daemonize()
+
+Shaveta Leekha (1):
+      powerpc/85xx: Enable I2C_CHARDEV and I2C_MPC options in defconfigs
+
+Stephen Rothwell (1):
+      powerpc: Fix fallout from system.h split up
+
+Timur Tabi (2):
+      powerpc/8xxx: remove 85xx/86xx restrictions from fsl_guts.h
+      powerpc/epapr: add "memory" as a clobber to all hypercalls
+
+Uwe Kleine-König (1):
+      powerpc: Mark const init data with __initconst instead of __initdata
+
+ arch/powerpc/boot/dts/p1020mbg-pc.dtsi       |  151 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1020mbg-pc_32b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p1020mbg-pc_36b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc.dtsi       |  140 ++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc_32b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p1020utm-pc_36b.dts    |   89 +++++++++++++++
+ arch/powerpc/boot/dts/p2041rdb.dts           |    3 -
+ arch/powerpc/boot/dts/p3041ds.dts            |    4 -
+ arch/powerpc/boot/dts/p3060qds.dts           |    2 -
+ arch/powerpc/boot/dts/p4080ds.dts            |    3 -
+ arch/powerpc/boot/dts/p5020ds.dts            |    4 -
+ arch/powerpc/configs/corenet32_smp_defconfig |    1 +
+ arch/powerpc/configs/corenet64_smp_defconfig |    2 +
+ arch/powerpc/configs/mpc85xx_defconfig       |    1 +
+ arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
+ arch/powerpc/include/asm/epapr_hcalls.h      |    7 +-
+ arch/powerpc/include/asm/fsl_guts.h          |   26 +----
+ arch/powerpc/kernel/fadump.c                 |    2 +
+ arch/powerpc/kernel/kgdb.c                   |    1 +
+ arch/powerpc/kvm/book3s_emulate.c            |    1 +
+ arch/powerpc/kvm/book3s_paired_singles.c     |    1 +
+ arch/powerpc/kvm/book3s_pr.c                 |    1 +
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c    |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c    |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c    |    2 +-
+ arch/powerpc/platforms/85xx/p1022_ds.c       |    4 +-
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |    2 +-
+ arch/powerpc/platforms/cell/qpace_setup.c    |    2 +-
+ arch/powerpc/platforms/cell/setup.c          |    2 +-
+ arch/powerpc/platforms/pseries/eeh_event.c   |    4 +-
+ arch/powerpc/sysdev/qe_lib/qe.c              |   22 +++-
+ drivers/net/ethernet/freescale/ucc_geth.c    |    6 +-
+ sound/soc/fsl/mpc8610_hpcd.c                 |    8 +-
+ sound/soc/fsl/p1022_ds.c                     |   10 +-
+ 34 files changed, 712 insertions(+), 61 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_36b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_36b.dts
