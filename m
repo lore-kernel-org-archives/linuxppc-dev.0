@@ -1,22 +1,22 @@
-Return-Path: <kaffeemonster@googlemail.com>
-Received: from uhura.skim.hs-owl.de (uhura.skim.hs-owl.de [193.174.118.81])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 15D45B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 23:03:16 +1000 (EST)
-Message-ID: <4F79A37D.5010605@googlemail.com>
-Date: Mon, 2 Apr 2012 15:02:53 +0200
-From: Jan Seiffert <kaffeemonster@googlemail.com>
+Return-Path: <B04825@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5B166B6EEB
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2012 01:26:14 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git next branch
+Date: Mon, 2 Apr 2012 15:25:53 +0000
+Message-ID: <CAOZdJXW19PFvm7Bb35ZeoaiBpP9jV07YqWhnTn0N-Vu-59WKcw@mail.gmail.com>
+References: <alpine.LFD.2.02.1203291544170.14273@spiff>
+ <CAOZdJXWyfdMX4mxFqeh=gpyorS9E0aFEhXuxzzvZ_uMV5zhc3g@mail.gmail.com>
+In-Reply-To: <CAOZdJXWyfdMX4mxFqeh=gpyorS9E0aFEhXuxzzvZ_uMV5zhc3g@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [REGRESSION][PATCH V4 1/3] bpf jit: Make the
- filter.c::__load_pointer helper non-static  for the jits
-References: <AE90C24D6B3A694183C094C60CF0A2F6026B6ECE@saturn3.aculab.com>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6ECE@saturn3.aculab.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Matt Evans <matt@ozlabs.org>, Eric Dumazet <eric.dumazet@gmail.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Laight schrieb:
->  
->> The function is renamed to make it a little more clear what it does.
->> It is not added to any .h because it is not for general 
->> consumption, only for bpf internal use (and so by the jits).
-> 
-> I'd have thought it better to put in into a bfp_internal.h
-> (or similar) with a big warning there about the asm users.
-> 
+Ping!
 
-Hmmm, OK, where would i put the .h? Right there under ./include/linux/?
+Kumar, you forgot to deal with this patch for 3.3.  The window for 3.4
+is closing rapidly.  There are no objections to my patch.  Could you
+please apply it and get it merged into 3.4?  I'm tired of waiting.
 
-> Possibly even worth adding some other defs that the asm
-> files will need (if there are any).
-> 
+On Thu, Mar 29, 2012 at 4:47 PM, Tabi Timur-B04825 <b04825@freescale.com> w=
+rote:
+> On Thu, Mar 29, 2012 at 3:44 PM, Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>>
+>> A few minor bug fixes and missing dts updates for 3.4. =A0There got lost=
+ in
+>> the mix. =A0Sorry for the delay
+>
+> What about my "don't call of_platform_bus_probe() twice" patch?
+> That's still an important fix for the P1022DS.
+>
+> --
+> Timur Tabi
+> Linux kernel developer at Freescale
 
-There is at least one other define, the lowest negative address range,
-but it would be a copy of the same define in filter.h, or i would have
-to massage filter.h to make it fit for inclusion by assembly.
-So I'm unsure how to proceed.
 
-> 	David
-> 
 
-Greetings
-	Jan
-
--- 
-An IPv4 address space walks into a bar: "A strong CIDR please. I'm
-exhausted."
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
