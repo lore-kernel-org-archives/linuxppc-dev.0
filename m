@@ -1,23 +1,28 @@
-Return-Path: <tglx@linutronix.de>
-Date: Mon, 2 Apr 2012 23:27:42 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1B670B6FDF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2012 07:56:07 +1000 (EST)
+Date: Mon, 2 Apr 2012 22:55:24 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
  irq_alloc_desc() instead
-In-Reply-To: <1333401600.30734.56.camel@pasglop>
-Message-ID: <alpine.LFD.2.02.1204022324140.2542@ionos>
+Message-ID: <20120402215524.GM24211@n2100.arm.linux.org.uk>
 References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
  <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
  <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
- <alpine.LFD.2.02.1204022251420.2542@ionos>
- <1333401600.30734.56.camel@pasglop>
+ <20120402202848.1EB833E02A7@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: devicetree-discuss@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120402202848.1EB833E02A7@localhost>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Milton Miller <miltonm@bga.com>, Andreas Schwab <schwab@linux-m68k.org>,
- Rob Herring <rob.herring@calxeda.com>,
- Russell King <rmk+kernel@arm.linux.org.uk>, linuxppc-dev@lists.ozlabs.org,
- LAK <linux-arm-kernel@lists.infradead.org>
+ Rob Herring <rob.herring@calxeda.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 3 Apr 2012, Benjamin Herrenschmidt wrote:
-
-> On Mon, 2012-04-02 at 22:52 +0200, Thomas Gleixner wrote:
-> > > When I revert a09b659cd68c10ec6a30cb91ebd2c327fcd5bfe5 ("genirq: Fix
-> > > long-term regression in genirq irq_set_irq_type() handling") on top
-> > of
-> > > 3.4-rc1 the sata irq errors disappear, but I see a lot of spurious
+On Mon, Apr 02, 2012 at 02:28:48PM -0600, Grant Likely wrote:
+> On Mon, 02 Apr 2012 18:29:15 +0200, Andreas Schwab <schwab@linux-m68k.org> wrote:
+> > Andreas Schwab <schwab@linux-m68k.org> writes:
 > > 
-> > Hmm. Which irq chip is handling the interrupt for that sata irq ?
+> > > Grant Likely <grant.likely@secretlab.ca> writes:
+> > >
+> > >> This patch drops the powerpc-specific irq_map table and replaces it with
+> > >> directly using the irq_alloc_desc()/irq_free_desc() interfaces for allocating
+> > >> and freeing irq_desc structures.
+> > >
+> > > This breaks irqs on PowerMac G5.  I see lost irq errors from the sata
+> > > driver.
+> > 
+> > When I revert a09b659cd68c10ec6a30cb91ebd2c327fcd5bfe5 ("genirq: Fix
+> > long-term regression in genirq irq_set_irq_type() handling") on top of
+> > 3.4-rc1 the sata irq errors disappear, but I see a lot of spurious
+> > interrupts.  Also the X server is broken somehow, though I don't know
+> > whether that is related or a different bug.
 > 
-> MPIC. The irq is a PCI IRQ, and so should be level-low, it should have
-> been mapped by the PCI code using the of_* calls.
+> That change is:
+> 
+> @@ -61,8 +61,7 @@ int irq_set_irq_type(unsigned int irq, unsigned int type)
+>                 return -EINVAL;
+>  
+>         type &= IRQ_TYPE_SENSE_MASK;
+> -       if (type != IRQ_TYPE_NONE)
+> -               ret = __irq_set_trigger(desc, irq, type);
+> +       ret = __irq_set_trigger(desc, irq, type);
+>         irq_put_desc_busunlock(desc, flags);
+>         return ret;
+> 
+> So presumably irq_set_irq_type() is getting called with type ==
+> IRQ_TYPE_NONE.  From Russell's description, presumably that would mean
+> the G5 sata driver isn't setting the correct type for the interrupt,
+> but I have *no* idea how that intersects with the change removing the
+> powerpc irq map.
 
-So it's covered by this section:
+Well, presumably someone is calling irq_set_irq_type() asking explicitly
+for IRQ_TYPE_NONE.  The code will now (as it always used to before David's
+change) do exactly what you ask this to: it will ask the type to be set
+to none.
 
-mpic_set_irq_type()
-
-        if (flow_type == IRQ_TYPE_NONE)
-                if (mpic->senses && src < mpic->senses_count)
-                        flow_type = mpic->senses[src];
-        if (flow_type == IRQ_TYPE_NONE)
-                flow_type = IRQ_TYPE_LEVEL_LOW;
-
-And with IRQ_TYPE_NONE this is always going to end up with
-IRQ_TYPE_LEVEL_LOW simply because the only function which might set
-mpic->senses is mpic_set_default_senses(). And this function does not
-have a single caller .....
-
-/me scratches head
+If you don't want to set the type to none, don't call the interface asking
+for that to happen.
