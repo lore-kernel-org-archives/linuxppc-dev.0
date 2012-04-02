@@ -2,25 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5BE15B6EE7
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2012 12:02:13 +1000 (EST)
-Message-ID: <1333332115.30734.27.camel@pasglop>
-Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+ by ozlabs.org (Postfix) with ESMTPS id 1F7D1B6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 13:36:02 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q323ZuFG012028
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Apr 2012 22:35:58 -0500
+Message-ID: <1333337753.30734.28.camel@pasglop>
+Subject: powerpc/kvm: Fallout from system.h disintegration
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Frank E." =?ISO-8859-1?Q?Svendsb=F8e?= <frank.svendsboe@gmail.com>
-Date: Mon, 02 Apr 2012 12:01:55 +1000
-In-Reply-To: <20120401221359.GA31730@gnubox>
-References: <4F69C553.6070409@gmail.com>
- <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
- <20120321162549.8C1D0202A4D@gemini.denx.de>
- <1332633218.2882.16.camel@pasglop>
- <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
- <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
- <1333152184.30734.3.camel@pasglop> <20120401221359.GA31730@gnubox>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 02 Apr 2012 13:35:53 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
- robert.karl.berger@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-04-02 at 00:14 +0200, Frank E. Svendsbøe wrote:
-> On Sat, Mar 31, 2012 at 11:03:04AM +1100, Benjamin Herrenschmidt wrote:
-> > On Sat, 2012-03-31 at 00:53 +0200, Frank Svendsbøe wrote:
-> > 
-> > > Hi Josh Boyer,
-> > > 
-> > > just wanted to add that I'm experiencing the same problem that Robert
-> > > reported, but on 8xx instead of 4xx. The mpc8xx does not support the
-> > > mfdcrx instruction, so maybe it's more to it than just a binutils bug?
-> > 
-> > The kernel shouldn't have tried to build that instruction on 8xx, though
-> > I suppose if it's in arch/powerpc/boot, we are a bit too eager at
-> > building everything including what's not relevant, we might to be a bit
-> > more careful at excluding 4xx stuff on a 8xx kernel.
-> >
-> 
-> Yes. I agree on Wolfgangs statement regarding not building code we
-> don't want/need. Please explain to me why src-wlib/src-plat in
-> arch/powerpc/boot/Makefile includes every ppc target...
+Add a missing include to fix build
 
-Ok, I've asked Tony to have a look at splitting the build decision
-in arch/powerpc/boot along the same lines as the CPU families... ie only
-wrappers for platforms potentially supported by the built kernel. That
-should fix it.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kvm/book3s_emulate.c        |    1 +
+ arch/powerpc/kvm/book3s_paired_singles.c |    1 +
+ arch/powerpc/kvm/book3s_pr.c             |    1 +
+ 3 files changed, 3 insertions(+)
 
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index f1950d1..135663a 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -21,6 +21,7 @@
+ #include <asm/disassemble.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/reg.h>
++#include <asm/switch_to.h>
+ 
+ #define OP_19_XOP_RFID		18
+ #define OP_19_XOP_RFI		50
+diff --git a/arch/powerpc/kvm/book3s_paired_singles.c b/arch/powerpc/kvm/book3s_paired_singles.c
+index e70ef2d..a59a25a 100644
+--- a/arch/powerpc/kvm/book3s_paired_singles.c
++++ b/arch/powerpc/kvm/book3s_paired_singles.c
+@@ -24,6 +24,7 @@
+ #include <asm/kvm_fpu.h>
+ #include <asm/reg.h>
+ #include <asm/cacheflush.h>
++#include <asm/switch_to.h>
+ #include <linux/vmalloc.h>
+ 
+ /* #define DEBUG */
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 7340e10..642d885 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -33,6 +33,7 @@
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/mmu_context.h>
++#include <asm/switch_to.h>
+ #include <linux/gfp.h>
+ #include <linux/sched.h>
+ #include <linux/vmalloc.h>
+-- 
+1.7.9.5
