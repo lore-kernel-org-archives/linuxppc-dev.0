@@ -1,18 +1,18 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
- by ozlabs.org (Postfix) with ESMTP id ACE99B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 19:58:06 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 25536B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 20:19:32 +1000 (EST)
 From: Milton Miller <miltonm@bga.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 08/18] PCI, powerpc: Register busn_res for root buses
-Message-Id: <powerpc-pci-domains-by-busnumber@mdm.bga.com>
+Message-Id: <powerpc-pci-domains-by-busnumber-resend@mdm.bga.com>
 In-Reply-To: <1330472496.11728.31.camel@pasglop>
 References: <1330472496.11728.31.camel@pasglop>
  <1330395009-29260-1-git-send-email-yinghai@kernel.org>
  <1330395009-29260-9-git-send-email-yinghai@kernel.org>
  <CAErSpo4bw-V=SM+h5iP4nfv3HaAnHjwvNwu+4Oz8iyQcY_3gOQ@mail.gmail.com>
  <CAErSpo72_JnUkWXrzbNdbX9wiWZtQdX2tuNjEpYrSd+sGzxfzA@mail.gmail.com>
-Date: Mon, 02 Apr 2012 04:58:04 -0500
+Date: Mon, 02 Apr 2012 05:19:31 -0500
 Cc: Tony Luck <tony.luck@intel.com>,
  Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  lkml <linux-kernel@vger.kernel.org>,
@@ -32,6 +32,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 [Apollogies if I left anyone off cc.  I am not subscribed and the archives
 go to great pains to hide the to and cc lists, and then truncate it for size]
+{fix a comma in cc}
 
 On Tue Feb 28 2012 about 18:42:03 EST, Benjamin Herrenschmidt wrote:
 > On Tue, 2012-02-28 at 16:31 -0700, Bjorn Helgaas wrote:
