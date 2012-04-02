@@ -1,30 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-qc0-f170.google.com (mail-qc0-f170.google.com
- [209.85.216.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BD0AFB73D6
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2012 22:10:20 +1000 (EST)
-Received: by qcmt36 with SMTP id t36so1518100qcm.15
- for <linuxppc-dev@ozlabs.org>; Mon, 02 Apr 2012 05:10:15 -0700 (PDT)
+Return-Path: <kaffeemonster@googlemail.com>
+Received: from uhura.skim.hs-owl.de (uhura.skim.hs-owl.de [193.174.118.81])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 15D45B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 23:03:16 +1000 (EST)
+Message-ID: <4F79A37D.5010605@googlemail.com>
+Date: Mon, 2 Apr 2012 15:02:53 +0200
+From: Jan Seiffert <kaffeemonster@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <1333152184.30734.3.camel@pasglop>
-References: <4F69C553.6070409@gmail.com>
- <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
- <20120321162549.8C1D0202A4D@gemini.denx.de>
- <1332633218.2882.16.camel@pasglop>
- <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
- <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
- <1333152184.30734.3.camel@pasglop>
-Date: Mon, 2 Apr 2012 08:10:15 -0400
-Message-ID: <CA+5PVA6jQgme0sS=i8yYX6b_R5179+BtWPh7QXCGNfoLTCt46A@mail.gmail.com>
-Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
-From: Josh Boyer <jwboyer@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>,
- Wolfgang Denk <wd@denx.de>, robert.karl.berger@gmail.com,
- linuxppc-dev@ozlabs.org
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [REGRESSION][PATCH V4 1/3] bpf jit: Make the
+ filter.c::__load_pointer helper non-static  for the jits
+References: <AE90C24D6B3A694183C094C60CF0A2F6026B6ECE@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6ECE@saturn3.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Matt Evans <matt@ozlabs.org>, Eric Dumazet <eric.dumazet@gmail.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,24 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 30, 2012 at 8:03 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Sat, 2012-03-31 at 00:53 +0200, Frank Svendsb=F8e wrote:
->
->> Hi Josh Boyer,
->>
->> just wanted to add that I'm experiencing the same problem that Robert
->> reported, but on 8xx instead of 4xx. The mpc8xx does not support the
->> mfdcrx instruction, so maybe it's more to it than just a binutils bug?
->
-> The kernel shouldn't have tried to build that instruction on 8xx, though
-> I suppose if it's in arch/powerpc/boot, we are a bit too eager at
-> building everything including what's not relevant, we might to be a bit
-> more careful at excluding 4xx stuff on a 8xx kernel.
+David Laight schrieb:
+>  
+>> The function is renamed to make it a little more clear what it does.
+>> It is not added to any .h because it is not for general 
+>> consumption, only for bpf internal use (and so by the jits).
+> 
+> I'd have thought it better to put in into a bfp_internal.h
+> (or similar) with a big warning there about the asm users.
+> 
 
-It's still a binutils issue.  Sounds like the toolchain being used to
-build the 8xx kernel is specifically built for 8xx.  A generally built
-binutils should have worked fine (assuming it was new enough), since
-we pass -mcpu=3D405.
+Hmmm, OK, where would i put the .h? Right there under ./include/linux/?
 
-josh
+> Possibly even worth adding some other defs that the asm
+> files will need (if there are any).
+> 
+
+There is at least one other define, the lowest negative address range,
+but it would be a copy of the same define in filter.h, or i would have
+to massage filter.h to make it fit for inclusion by assembly.
+So I'm unsure how to proceed.
+
+> 	David
+> 
+
+Greetings
+	Jan
+
+-- 
+An IPv4 address space walks into a bar: "A strong CIDR please. I'm
+exhausted."
