@@ -1,19 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3F273B6EF4
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2012 14:40:02 +1000 (EST)
-Message-ID: <1333341590.30734.47.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 02 Apr 2012 14:39:50 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Mon, 2 Apr 2012 16:28:29 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+Message-ID: <20120402062826.GC2129@thor.bakeyournoodle.com>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+ <20120321162549.8C1D0202A4D@gemini.denx.de>
+ <1332633218.2882.16.camel@pasglop>
+ <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
+ <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
+ <1333152184.30734.3.camel@pasglop> <20120401221359.GA31730@gnubox>
+ <1333332115.30734.27.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="QRj9sO5tAVLaXnSD"
+In-Reply-To: <1333332115.30734.27.camel@pasglop>
+Cc: Frank =?utf-8?Q?E=2E_Svendsb=C3=B8e?= <frank.svendsboe@gmail.com>,
+ Wolfgang Denk <wd@denx.de>, robert.karl.berger@gmail.com,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,101 +28,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
 
-This contains a couple more fixes for the system.h disintegration,
-a trivial section mismatch fix, a couple of patches from akpm that I
-didn't quite get he expected me to pickup, and a few more trivialities
-form Kumar that he appear to have forgotten to send me in the previous
-batch.
+--QRj9sO5tAVLaXnSD
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+On Mon, Apr 02, 2012 at 12:01:55PM +1000, Benjamin Herrenschmidt wrote:
 
-The following changes since commit dd775ae2549217d3ae09363e3edb305d0fa19928:
+> Ok, I've asked Tony to have a look at splitting the build decision
+> in arch/powerpc/boot along the same lines as the CPU families... ie only
+> wrappers for platforms potentially supported by the built kernel. That
+> should fix it.
 
-  Linux 3.4-rc1 (2012-03-31 16:24:09 -0700)
+Please try this patch.  Only lightly tested here.  I haven't "split up"
+src-wlib yet as I wanted to verify I'm on the right track.
 
-are available in the git repository at:
+=46rom e0b1ac84bfd539482bc88b943724e577e6b8dfb3 Mon Sep 17 00:00:00 2001
+=46rom: Tony Breeds <tony@bakeyournoodle.com>
+Date: Mon, 2 Apr 2012 16:20:35 +1000
+Subject: [PATCH] powerpc/boot: Only build board support files when required.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+Currently we build all board files regardless of the final zImage
+target.  This is sub-optimal (in terms on compilation) and leads to
+problems in one platform needlessly causing failures for other
+platforms.
 
-for you to fetch changes up to 9b218f63e50e590fe0c7724a0838d7eaa6dae5ce:
+Use the Kconfig variables to selectively construct this board files to
+build.
 
-  powerpc/eeh: Fix use of set_current_state() in eeh event handling set_current_state() wart (2012-04-02 14:31:19 +1000)
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/boot/Makefile |   56 +++++++++++++++++++++++++++++++++-------=
+---
+ 1 files changed, 43 insertions(+), 13 deletions(-)
 
-----------------------------------------------------------------
-Andrew Morton (1):
-      powerpc/eeh: Fix use of set_current_state() in eeh event handling set_current_state() wart
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index e8461cb..a3c4ae0 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -69,19 +69,49 @@ src-wlib :=3D string.S crt0.S crtsavres.S stdio.c main.=
+c \
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+ 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
+ 		fsl-soc.c mpc8xx.c pq2.c ugecon.c
+-src-plat :=3D of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c=
+ holly.c \
+-		cuboot-ebony.c cuboot-hotfoot.c epapr.c treeboot-ebony.c \
+-		prpmc2800.c \
+-		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+-		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
+-		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
+-		fixed-head.S ep88xc.c ep405.c cuboot-c2k.c \
+-		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+-		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+-		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
+-		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c \
+-		gamecube-head.S gamecube.c wii-head.S wii.c treeboot-iss4xx.c \
+-		treeboot-currituck.c
++src-plat :=3D of.c
++ifeq ($(CONFIG_40x),y)
++src-plat +=3D fixed-head.S ep405.c cuboot-hotfoot.c treeboot-walnut.c \
++		cuboot-acadia.c cuboot-kilauea.c \
++		simpleboot.c virtex405-head.S virtex.c
++endif
++ifeq ($(CONFIG_44x),y)
++src-plat  +=3D treeboot-ebony cuboot-ebony treeboot-bamboo cuboot-bamboo \
++		cuboot-sam440ep.c cuboot-sequoia.c cuboot-rainier.c \
++		cuboot-taishan.c cuboot-katmai.c cuboot-warp.c \
++		cuboot-yosemite.c treeboot-iss4xx.c treeboot-currituck.c \
++		simpleboot.c fixed-head.S virtex.c
++endif
++ifeq ($(CONFIG_8xx),y)
++src-plat  +=3D cuboot-8xx.c fixed-head.S ep88xc.c redboot-8xx.c
++endif
++ifeq ($(CONFIG_PPC_MPC52xx),y)
++src-plat  +=3D cuboot-52xx.c
++endif
++ifeq ($(CONFIG_PPC_82xx),y)
++src-plat  +=3D cuboot-pq2.c fixed-head.S ep8248e.c cuboot-824x.c
++endif
++ifeq ($(CONFIG_PPC_82xx),y)
++src-plat  +=3D cuboot-83xx.c fixed-head.S redboot-83xx.c
++endif
++ifeq ($(CONFIG_FSL_SOC_BOOKE),y)
++src-plat  +=3D cuboot-85xx.c cuboot-85xx-cpm2.c
++endif
++ifeq ($(CONFIG_EMBEDDED6xx),y)
++src-plat  +=3D cuboot-pq2.c cuboot-mpc7448hpc2.c cuboot-c2k.c \
++		gamecube-head.S gamecube.c wii-head.S wii.c holly.c \
++		prpmc2800.c
++endif
++ifeq ($(CONFIG_AMIGAONE),y)
++src-plat  +=3D cuboot-amigaone.c
++endif
++ifeq ($(CONFIG_PPC_PS3),y)
++src-plat  +=3D ps3-head.S ps3-hvcall.S ps3.c
++endif
++ifeq ($(CONFIG_EPAPR_BOOT),y)
++src-plat  +=3D epapr.c
++endif
++src-plat  :=3D $(sort $(src-plat))
+ src-boot :=3D $(src-wlib) $(src-plat) empty.c
+=20
+ src-boot :=3D $(addprefix $(obj)/, $(src-boot))
+--=20
+1.7.7.6
 
-Benjamin Herrenschmidt (2):
-      Merge remote-tracking branch 'kumar/next' into merge
-      powerpc/kvm: Fallout from system.h disintegration
+Yours Tony
 
-Dave Liu (1):
-      powerpc/qe: Update the SNUM table for MPC8569 Rev2.0
+--QRj9sO5tAVLaXnSD
+Content-Type: application/pgp-signature
 
-Diana CRACIUN (1):
-      powerpc/dts: Removed fsl,msi property from dts.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Jerry Huang (2):
-      powerpc/85xx: add the P1020MBG-PC DTS support
-      powerpc/85xx: add the P1020UTM-PC DTS support
+iQIcBAEBCAAGBQJPeUcKAAoJEEsCiJRY75GKWFgQAIy8Ps6AB+l88VMKtmX6pJ8D
+4vKQZJq6Hi21chwcqlEDmFKMXzifBCMVqsLDAZ3a7/onbapMFSlYRY2MzFawX5b2
+mbDgLWiUQmUL/IA2SpddBv+vRbnKpLLRLFYU/0GmJuHP1wJLpmS7BOQb1lz7EwCI
+mJjFnoQ/BuLM1Ja/dg9NMzMMjDGvRUUwgrZhwJ3OMUtO5ZhWVJcblKgIUS19xW5v
+865Nm4GaIWMTRCtNAUmbPQxqGY++BPZyIYJBzSV3uV/BZppDqgYKyNk1idV+fkui
+wi44srzP5zeS6hEYXDTKSAp0/O+yZ9fRFe+5i4ncJJOMcfWL7dOons2+fd2bgrsv
+W/LaCcoM4fYTmVWClavZ5NVZzU5oTsVhTdREmG3kujs1EpQuiDWyiyNqzbnPYlSQ
+9y93xgUqmsR4b85b9c7CrWXyV7gj2Fuk4WVTyFw/yEPFZW5jgvHA9TWQiNtGi14z
+kWfIi3mNQ3pz6k/UwdJmp+UqCnnyay+hZzzyajYBgvMdJiyv3QuDqnRJS89fEtSq
+pnz0MDTBUFpaJ4pB6p/sEmo+rKuEmrU5zuajgbCFoHbSsJP3tZU7h3eib1YBzc8F
+VlEECCk9yF11+biaw9Q0sZEGksYPD5PJJNd4acWjp/nHbxiSHIiOy5P8138WXj21
+4noto57CeBkI7CyFNlnq
+=nXRa
+-----END PGP SIGNATURE-----
 
-Oleg Nesterov (1):
-      powerpc/eeh: Remove eeh_event_handler()->daemonize()
-
-Shaveta Leekha (1):
-      powerpc/85xx: Enable I2C_CHARDEV and I2C_MPC options in defconfigs
-
-Stephen Rothwell (1):
-      powerpc: Fix fallout from system.h split up
-
-Timur Tabi (2):
-      powerpc/8xxx: remove 85xx/86xx restrictions from fsl_guts.h
-      powerpc/epapr: add "memory" as a clobber to all hypercalls
-
-Uwe Kleine-König (1):
-      powerpc: Mark const init data with __initconst instead of __initdata
-
- arch/powerpc/boot/dts/p1020mbg-pc.dtsi       |  151 ++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1020mbg-pc_32b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p1020mbg-pc_36b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc.dtsi       |  140 ++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc_32b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p1020utm-pc_36b.dts    |   89 +++++++++++++++
- arch/powerpc/boot/dts/p2041rdb.dts           |    3 -
- arch/powerpc/boot/dts/p3041ds.dts            |    4 -
- arch/powerpc/boot/dts/p3060qds.dts           |    2 -
- arch/powerpc/boot/dts/p4080ds.dts            |    3 -
- arch/powerpc/boot/dts/p5020ds.dts            |    4 -
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    2 +
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- arch/powerpc/include/asm/epapr_hcalls.h      |    7 +-
- arch/powerpc/include/asm/fsl_guts.h          |   26 +----
- arch/powerpc/kernel/fadump.c                 |    2 +
- arch/powerpc/kernel/kgdb.c                   |    1 +
- arch/powerpc/kvm/book3s_emulate.c            |    1 +
- arch/powerpc/kvm/book3s_paired_singles.c     |    1 +
- arch/powerpc/kvm/book3s_pr.c                 |    1 +
- arch/powerpc/platforms/52xx/mpc52xx_pci.c    |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_mds.c    |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c    |    2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c       |    4 +-
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |    2 +-
- arch/powerpc/platforms/cell/qpace_setup.c    |    2 +-
- arch/powerpc/platforms/cell/setup.c          |    2 +-
- arch/powerpc/platforms/pseries/eeh_event.c   |    4 +-
- arch/powerpc/sysdev/qe_lib/qe.c              |   22 +++-
- drivers/net/ethernet/freescale/ucc_geth.c    |    6 +-
- sound/soc/fsl/mpc8610_hpcd.c                 |    8 +-
- sound/soc/fsl/p1022_ds.c                     |   10 +-
- 34 files changed, 712 insertions(+), 61 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020mbg-pc_36b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1020utm-pc_36b.dts
+--QRj9sO5tAVLaXnSD--
