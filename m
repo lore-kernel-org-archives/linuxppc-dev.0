@@ -1,17 +1,30 @@
-Return-Path: <tinamdar@amcc.com>
-From: Tanmay Inamdar <tinamdar@apm.com>
-To: benh@kernel.crashing.org, jwboyer@gmail.com, grant.likely@secretlab.ca,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH 5/5] powerpc: kernel: 16650 UART reg-shift support
-Date: Mon,  2 Apr 2012 12:09:07 +0530
-Message-Id: <1333348747-12713-5-git-send-email-tinamdar@apm.com>
-In-Reply-To: <1333348747-12713-4-git-send-email-tinamdar@apm.com>
-References: <1333348747-12713-1-git-send-email-tinamdar@apm.com>
- <1333348747-12713-2-git-send-email-tinamdar@apm.com>
- <1333348747-12713-3-git-send-email-tinamdar@apm.com>
- <1333348747-12713-4-git-send-email-tinamdar@apm.com>
-Cc: Tanmay Inamdar <tinamdar@apm.com>
+Return-Path: <frank.svendsboe@gmail.com>
+Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
+ [209.85.214.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 57258B6EE6
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2012 18:37:20 +1000 (EST)
+Received: by bkcje9 with SMTP id je9so1976147bkc.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 02 Apr 2012 01:37:17 -0700 (PDT)
+Date: Mon, 2 Apr 2012 10:37:12 +0200
+From: Frank =?iso-8859-1?Q?E=2E_Svendsb=F8e?= <frank.svendsboe@gmail.com>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+Message-ID: <20120402083711.GA17733@gnubox>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+ <20120321162549.8C1D0202A4D@gemini.denx.de>
+ <1332633218.2882.16.camel@pasglop>
+ <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
+ <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
+ <1333152184.30734.3.camel@pasglop> <20120401221359.GA31730@gnubox>
+ <1333332115.30734.27.camel@pasglop>
+ <20120402062826.GC2129@thor.bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120402062826.GC2129@thor.bakeyournoodle.com>
+Cc: Wolfgang Denk <wd@denx.de>, robert.karl.berger@gmail.com,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,241 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In APM8018X SOC, UART register address space has been relocated to 32-bit
-data boundaries for APB bus implementation.
-Current legacy_serial driver ignores the reg-shift property. This patch
-modifies legacy_serial.c and udbg_16550.c to work with above mentioned UARTs.
+On Mon, Apr 02, 2012 at 04:28:29PM +1000, Tony Breeds wrote:
+> On Mon, Apr 02, 2012 at 12:01:55PM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > Ok, I've asked Tony to have a look at splitting the build decision
+> > in arch/powerpc/boot along the same lines as the CPU families... ie only
+> > wrappers for platforms potentially supported by the built kernel. That
+> > should fix it.
+> 
+> Please try this patch.  Only lightly tested here.  I haven't "split up"
+> src-wlib yet as I wanted to verify I'm on the right track.
+>
 
-Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
----
-:100644 100644 8338aef... f5fc106... M	arch/powerpc/include/asm/udbg.h
-:100644 100644 bedd12e... d523b7d... M	arch/powerpc/kernel/legacy_serial.c
-:100644 100644 6837f83... e0cb7dc... M	arch/powerpc/kernel/udbg_16550.c
- arch/powerpc/include/asm/udbg.h     |    2 +-
- arch/powerpc/kernel/legacy_serial.c |   16 +++++---
- arch/powerpc/kernel/udbg_16550.c    |   64 ++++++++++++++++++++++------------
- 3 files changed, 52 insertions(+), 30 deletions(-)
+Thanks. It compiles now (for 8xx), but I still need to resolve a
+vmalloc failure during boot that occurred sometime after 3.2, so I
+haven't been able to test it yet.
 
-diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
-index 8338aef..f5fc106 100644
---- a/arch/powerpc/include/asm/udbg.h
-+++ b/arch/powerpc/include/asm/udbg.h
-@@ -29,7 +29,7 @@ extern void udbg_printf(const char *fmt, ...)
- extern void udbg_progress(char *s, unsigned short hex);
- 
- extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
--			   unsigned int clock);
-+			   unsigned int clock,  unsigned int regshift);
- extern unsigned int udbg_probe_uart_speed(void __iomem *comport,
- 					  unsigned int clock);
- 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index bedd12e..d523b7d 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -33,6 +33,7 @@ static struct legacy_serial_info {
- 	unsigned int			clock;
- 	int				irq_check_parent;
- 	phys_addr_t			taddr;
-+	unsigned int			regshift;
- } legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
- 
- static struct __initdata of_device_id legacy_serial_parents[] = {
-@@ -42,6 +43,7 @@ static struct __initdata of_device_id legacy_serial_parents[] = {
- 	{.compatible = "ibm,opb",},
- 	{.compatible = "simple-bus",},
- 	{.compatible = "wrs,epld-localbus",},
-+	{.compatible = "apm,apb",},
- 	{},
- };
- 
-@@ -163,11 +165,6 @@ static int __init add_legacy_soc_port(struct device_node *np,
- 	if (of_get_property(np, "clock-frequency", NULL) == NULL)
- 		return -1;
- 
--	/* if reg-shift or offset, don't try to use it */
--	if ((of_get_property(np, "reg-shift", NULL) != NULL) ||
--		(of_get_property(np, "reg-offset", NULL) != NULL))
--		return -1;
--
- 	/* if rtas uses this device, don't try to use it as well */
- 	if (of_get_property(np, "used-by-rtas", NULL) != NULL)
- 		return -1;
-@@ -319,7 +316,7 @@ static void __init setup_legacy_serial_console(int console)
- 	if (info->speed == 0)
- 		info->speed = udbg_probe_uart_speed(addr, info->clock);
- 	DBG("default console speed = %d\n", info->speed);
--	udbg_init_uart(addr, info->speed, info->clock);
-+	udbg_init_uart(addr, info->speed, info->clock, info->regshift);
- }
- 
- /*
-@@ -336,6 +333,7 @@ void __init find_legacy_serial_ports(void)
- 	struct device_node *np, *stdout = NULL;
- 	const char *path;
- 	int index;
-+	unsigned int regshift;
- 
- 	DBG(" -> find_legacy_serial_port()\n");
- 
-@@ -359,6 +357,12 @@ void __init find_legacy_serial_ports(void)
- 				index = add_legacy_soc_port(np, np);
- 				if (index >= 0 && np == stdout)
- 					legacy_serial_console = index;
-+				if (of_property_read_u32(np, "reg-shift",
-+							&regshift) == 0) {
-+					legacy_serial_infos
-+					[legacy_serial_console].regshift =
-+								regshift;
-+				}
- 			}
- 		}
- 		of_node_put(parent);
-diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
-index 6837f83..e0cb7dc 100644
---- a/arch/powerpc/kernel/udbg_16550.c
-+++ b/arch/powerpc/kernel/udbg_16550.c
-@@ -47,12 +47,29 @@ struct NS16550 {
- 
- #define LCR_DLAB 0x80
- 
-+static unsigned int reg_shift;
-+#define ns16550_offset(addr) (addr - (unsigned char *)udbg_comport)
-+
- static struct NS16550 __iomem *udbg_comport;
- 
-+static inline u8 serial_read(unsigned char *addr)
-+{
-+	u32 offset = ns16550_offset(addr) << reg_shift;
-+	return readb(udbg_comport + offset);
-+}
-+
-+static inline void serial_write(unsigned char *addr, char val)
-+{
-+	u32 offset = ns16550_offset(addr) << reg_shift;
-+	writeb(val, udbg_comport + offset);
-+}
-+
- static void udbg_550_flush(void)
- {
-+	u32 timeout = 1000;
- 	if (udbg_comport) {
--		while ((in_8(&udbg_comport->lsr) & LSR_THRE) == 0)
-+		while (((serial_read(&udbg_comport->lsr) & LSR_THRE) == 0)
-+							&& --timeout)
- 			/* wait for idle */;
- 	}
- }
-@@ -63,15 +80,15 @@ static void udbg_550_putc(char c)
- 		if (c == '\n')
- 			udbg_550_putc('\r');
- 		udbg_550_flush();
--		out_8(&udbg_comport->thr, c);
-+		serial_write(&udbg_comport->thr, c);
- 	}
- }
- 
- static int udbg_550_getc_poll(void)
- {
- 	if (udbg_comport) {
--		if ((in_8(&udbg_comport->lsr) & LSR_DR) != 0)
--			return in_8(&udbg_comport->rbr);
-+		if ((serial_read(&udbg_comport->lsr) & LSR_DR) != 0)
-+			return serial_read(&udbg_comport->rbr);
- 		else
- 			return -1;
- 	}
-@@ -81,15 +98,15 @@ static int udbg_550_getc_poll(void)
- static int udbg_550_getc(void)
- {
- 	if (udbg_comport) {
--		while ((in_8(&udbg_comport->lsr) & LSR_DR) == 0)
-+		while ((serial_read(&udbg_comport->lsr) & LSR_DR) == 0)
- 			/* wait for char */;
--		return in_8(&udbg_comport->rbr);
-+		return serial_read(&udbg_comport->rbr);
- 	}
- 	return -1;
- }
- 
- void udbg_init_uart(void __iomem *comport, unsigned int speed,
--		    unsigned int clock)
-+		    unsigned int clock, unsigned int regshift)
- {
- 	unsigned int dll, base_bauds;
- 
-@@ -103,22 +120,23 @@ void udbg_init_uart(void __iomem *comport, unsigned int speed,
- 
- 	if (comport) {
- 		udbg_comport = (struct NS16550 __iomem *)comport;
--		out_8(&udbg_comport->lcr, 0x00);
--		out_8(&udbg_comport->ier, 0xff);
--		out_8(&udbg_comport->ier, 0x00);
--		out_8(&udbg_comport->lcr, LCR_DLAB);
--		out_8(&udbg_comport->dll, dll & 0xff);
--		out_8(&udbg_comport->dlm, dll >> 8);
-+		serial_write(&udbg_comport->lcr, 0x00);
-+		serial_write(&udbg_comport->ier, 0xff);
-+		serial_write(&udbg_comport->ier, 0x00);
-+		serial_write(&udbg_comport->lcr, LCR_DLAB);
-+		serial_write(&udbg_comport->dll, dll & 0xff);
-+		serial_write(&udbg_comport->dlm, dll >> 8);
- 		/* 8 data, 1 stop, no parity */
--		out_8(&udbg_comport->lcr, 0x03);
-+		serial_write(&udbg_comport->lcr, 0x03);
- 		/* RTS/DTR */
--		out_8(&udbg_comport->mcr, 0x03);
-+		serial_write(&udbg_comport->mcr, 0x03);
- 		/* Clear & enable FIFOs */
--		out_8(&udbg_comport->fcr ,0x07);
-+		serial_write(&udbg_comport->fcr, 0x07);
- 		udbg_putc = udbg_550_putc;
- 		udbg_flush = udbg_550_flush;
- 		udbg_getc = udbg_550_getc;
- 		udbg_getc_poll = udbg_550_getc_poll;
-+		reg_shift = regshift;
- 	}
- }
- 
-@@ -128,24 +146,24 @@ unsigned int udbg_probe_uart_speed(void __iomem *comport, unsigned int clock)
- 	u8 old_lcr;
- 	struct NS16550 __iomem *port = comport;
- 
--	old_lcr = in_8(&port->lcr);
-+	old_lcr = serial_read(&port->lcr);
- 
- 	/* select divisor latch registers.  */
--	out_8(&port->lcr, LCR_DLAB);
-+	serial_write(&port->lcr, LCR_DLAB);
- 
- 	/* now, read the divisor */
--	dll = in_8(&port->dll);
--	dlm = in_8(&port->dlm);
-+	dll = serial_read(&port->dll);
-+	dlm = serial_read(&port->dlm);
- 	divisor = dlm << 8 | dll;
- 
- 	/* check prescaling */
--	if (in_8(&port->mcr) & 0x80)
-+	if (serial_read(&port->mcr) & 0x80)
- 		prescaler = 4;
- 	else
- 		prescaler = 1;
- 
- 	/* restore the LCR */
--	out_8(&port->lcr, old_lcr);
-+	serial_write(&port->lcr, old_lcr);
- 
- 	/* calculate speed */
- 	speed = (clock / prescaler) / (divisor * 16);
-@@ -341,7 +359,7 @@ void __init udbg_init_wsp(void)
- {
- 	udbg_comport = (struct NS16550 __iomem *)WSP_UART_VIRT;
- 
--	udbg_init_uart(udbg_comport, 57600, 50000000);
-+	udbg_init_uart(udbg_comport, 57600, 50000000, 0);
- 
- 	udbg_putc = udbg_wsp_putc;
- 	udbg_flush = udbg_wsp_flush;
+You're on the right track. Now continue splitting up src-wlib :)
+
+
 -- 
-1.6.1.rc3
+Best regards,
+Frank
