@@ -1,30 +1,25 @@
-Return-Path: <frank.svendsboe@gmail.com>
-Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
- [209.85.214.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 57258B6EE6
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2012 18:37:20 +1000 (EST)
-Received: by bkcje9 with SMTP id je9so1976147bkc.15
- for <linuxppc-dev@ozlabs.org>; Mon, 02 Apr 2012 01:37:17 -0700 (PDT)
-Date: Mon, 2 Apr 2012 10:37:12 +0200
-From: Frank =?iso-8859-1?Q?E=2E_Svendsb=F8e?= <frank.svendsboe@gmail.com>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
-Message-ID: <20120402083711.GA17733@gnubox>
-References: <4F69C553.6070409@gmail.com>
- <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
- <20120321162549.8C1D0202A4D@gemini.denx.de>
- <1332633218.2882.16.camel@pasglop>
- <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
- <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
- <1333152184.30734.3.camel@pasglop> <20120401221359.GA31730@gnubox>
- <1333332115.30734.27.camel@pasglop>
- <20120402062826.GC2129@thor.bakeyournoodle.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id D00E7B6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 19:19:24 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 03113-04 for <linuxppc-dev@lists.ozlabs.org>;
+ Mon,  2 Apr 2012 10:19:20 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120402062826.GC2129@thor.bakeyournoodle.com>
-Cc: Wolfgang Denk <wd@denx.de>, robert.karl.berger@gmail.com,
- linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [REGRESSION][PATCH V4 1/3] bpf jit: Make the
+ filter.c::__load_pointer helper non-static for the jits
+Date: Mon, 2 Apr 2012 10:18:02 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6ECE@saturn3.aculab.com>
+In-Reply-To: <4F75CC63.10405@googlemail.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Jan Seiffert" <kaffeemonster@googlemail.com>,
+	<netdev@vger.kernel.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Matt Evans <matt@ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,25 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 02, 2012 at 04:28:29PM +1000, Tony Breeds wrote:
-> On Mon, Apr 02, 2012 at 12:01:55PM +1000, Benjamin Herrenschmidt wrote:
-> 
-> > Ok, I've asked Tony to have a look at splitting the build decision
-> > in arch/powerpc/boot along the same lines as the CPU families... ie only
-> > wrappers for platforms potentially supported by the built kernel. That
-> > should fix it.
-> 
-> Please try this patch.  Only lightly tested here.  I haven't "split up"
-> src-wlib yet as I wanted to verify I'm on the right track.
->
+=20
+> The function is renamed to make it a little more clear what it does.
+> It is not added to any .h because it is not for general=20
+> consumption, only for bpf internal use (and so by the jits).
 
-Thanks. It compiles now (for 8xx), but I still need to resolve a
-vmalloc failure during boot that occurred sometime after 3.2, so I
-haven't been able to test it yet.
+I'd have thought it better to put in into a bfp_internal.h
+(or similar) with a big warning there about the asm users.
 
-You're on the right track. Now continue splitting up src-wlib :)
+Possibly even worth adding some other defs that the asm
+files will need (if there are any).
 
-
--- 
-Best regards,
-Frank
+	David
