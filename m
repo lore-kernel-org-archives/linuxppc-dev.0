@@ -2,13 +2,13 @@ Return-Path: <jirislaby@gmail.com>
 Received: from smtp.pripojeni.net (mail.pripojeni.net [178.22.112.14])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 10DEDB6FBD
+ by ozlabs.org (Postfix) with ESMTPS id 0E6E9B6FBC
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2012 22:02:13 +1000 (EST)
 From: Jiri Slaby <jslaby@suse.cz>
 To: gregkh@linuxfoundation.org
-Subject: [PATCH 41/69] TTY: hvcs, use kref from tty_port
-Date: Mon,  2 Apr 2012 13:54:25 +0200
-Message-Id: <1333367693-3244-42-git-send-email-jslaby@suse.cz>
+Subject: [PATCH 45/69] TTY: hvsi, sanitize uses of tty
+Date: Mon,  2 Apr 2012 13:54:29 +0200
+Message-Id: <1333367693-3244-46-git-send-email-jslaby@suse.cz>
 In-Reply-To: <1333367693-3244-1-git-send-email-jslaby@suse.cz>
 References: <1333367693-3244-1-git-send-email-jslaby@suse.cz>
 Cc: jirislaby@gmail.com, linuxppc-dev@lists.ozlabs.org,
@@ -22,149 +22,255 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A simple switch. Except we convert destroy_hvcs_struct to be
-tty_port_operations->destruct...
+- use tty, not hp->tty wherever possible
+- pass tty down to some functions and go to step one
+- do not defer tty_hangup calls -- it is as simple as schedule_work,
+  so might be called with hp->lock held
+- do not defer tty buffer flips -- since the driver does not use
+  low_latency (it cannot actually), the flip is a simple tail move
+  plus schedule_work. It will make our life easier in the next patch.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- drivers/tty/hvc/hvcs.c |   34 ++++++++++++++++------------------
- 1 file changed, 16 insertions(+), 18 deletions(-)
+ drivers/tty/hvc/hvsi.c |   88 +++++++++++++++++-------------------------------
+ 1 file changed, 30 insertions(+), 58 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index a049ced..817f94b 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -290,12 +290,11 @@ struct hvcs_struct {
- 	int chars_in_buffer;
- 
- 	/*
--	 * Any variable below the kref is valid before a tty is connected and
-+	 * Any variable below is valid before a tty is connected and
- 	 * stays valid after the tty is disconnected.  These shouldn't be
- 	 * whacked until the kobject refcount reaches zero though some entries
- 	 * may be changed via sysfs initiatives.
- 	 */
--	struct kref kref; /* ref count & hvcs_struct lifetime */
- 	int connected; /* is the vty-server currently connected to a vty? */
- 	uint32_t p_unit_address; /* partner unit address */
- 	uint32_t p_partition_ID; /* partner partition ID */
-@@ -304,9 +303,6 @@ struct hvcs_struct {
- 	struct vio_dev *vdev;
- };
- 
--/* Required to back map a kref to its containing object */
--#define from_kref(k) container_of(k, struct hvcs_struct, kref)
--
- static LIST_HEAD(hvcs_structs);
- static DEFINE_SPINLOCK(hvcs_structs_lock);
- static DEFINE_MUTEX(hvcs_init_mutex);
-@@ -701,10 +697,9 @@ static void hvcs_return_index(int index)
- 		hvcs_index_list[index] = -1;
+diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
+index 113a09a..68b729b 100644
+--- a/drivers/tty/hvc/hvsi.c
++++ b/drivers/tty/hvc/hvsi.c
+@@ -237,7 +237,7 @@ static int hvsi_read(struct hvsi_struct *hp, char *buf, int count)
  }
  
--/* callback when the kref ref count reaches zero */
--static void destroy_hvcs_struct(struct kref *kref)
-+static void hvcs_destruct_port(struct tty_port *p)
+ static void hvsi_recv_control(struct hvsi_struct *hp, uint8_t *packet,
+-	struct tty_struct **to_hangup, struct hvsi_struct **to_handshake)
++	struct tty_struct *tty, struct hvsi_struct **to_handshake)
  {
--	struct hvcs_struct *hvcsd = from_kref(kref);
-+	struct hvcs_struct *hvcsd = container_of(p, struct hvcs_struct, port);
- 	struct vio_dev *vdev;
- 	unsigned long flags;
+ 	struct hvsi_control *header = (struct hvsi_control *)packet;
  
-@@ -741,6 +736,10 @@ static void destroy_hvcs_struct(struct kref *kref)
- 	kfree(hvcsd);
+@@ -247,9 +247,8 @@ static void hvsi_recv_control(struct hvsi_struct *hp, uint8_t *packet,
+ 				/* CD went away; no more connection */
+ 				pr_debug("hvsi%i: CD dropped\n", hp->index);
+ 				hp->mctrl &= TIOCM_CD;
+-				/* If userland hasn't done an open(2) yet, hp->tty is NULL. */
+-				if (hp->tty && !C_CLOCAL(hp->tty))
+-					*to_hangup = hp->tty;
++				if (tty && !C_CLOCAL(tty))
++					tty_hangup(tty);
+ 			}
+ 			break;
+ 		case VSV_CLOSE_PROTOCOL:
+@@ -331,7 +330,8 @@ static void hvsi_recv_query(struct hvsi_struct *hp, uint8_t *packet)
+ 	}
  }
  
-+static const struct tty_port_operations hvcs_port_ops = {
-+	.destruct = hvcs_destruct_port,
-+};
-+
- static int hvcs_get_index(void)
+-static void hvsi_insert_chars(struct hvsi_struct *hp, const char *buf, int len)
++static void hvsi_insert_chars(struct hvsi_struct *hp, struct tty_struct *tty,
++		const char *buf, int len)
  {
  	int i;
-@@ -790,9 +789,8 @@ static int __devinit hvcs_probe(
- 		return -ENODEV;
  
- 	tty_port_init(&hvcsd->port);
-+	hvcsd->port.ops = &hvcs_port_ops;
- 	spin_lock_init(&hvcsd->lock);
--	/* Automatically incs the refcount the first time */
--	kref_init(&hvcsd->kref);
- 
- 	hvcsd->vdev = dev;
- 	dev_set_drvdata(&dev->dev, hvcsd);
-@@ -860,7 +858,7 @@ static int __devexit hvcs_remove(struct vio_dev *dev)
- 	 * Let the last holder of this object cause it to be removed, which
- 	 * would probably be tty_hangup below.
- 	 */
--	kref_put(&hvcsd->kref, destroy_hvcs_struct);
-+	tty_port_put(&hvcsd->port);
- 
- 	/*
- 	 * The hangup is a scheduled function which will auto chain call
-@@ -1094,7 +1092,7 @@ static struct hvcs_struct *hvcs_get_by_index(int index)
- 	list_for_each_entry(hvcsd, &hvcs_structs, next) {
- 		spin_lock_irqsave(&hvcsd->lock, flags);
- 		if (hvcsd->index == index) {
--			kref_get(&hvcsd->kref);
-+			tty_port_get(&hvcsd->port);
- 			spin_unlock_irqrestore(&hvcsd->lock, flags);
- 			spin_unlock(&hvcs_structs_lock);
- 			return hvcsd;
-@@ -1160,7 +1158,7 @@ static int hvcs_open(struct tty_struct *tty, struct file *filp)
- 	 * and will grab the spinlock and free the connection if it fails.
- 	 */
- 	if (((rc = hvcs_enable_device(hvcsd, unit_address, irq, vdev)))) {
--		kref_put(&hvcsd->kref, destroy_hvcs_struct);
-+		tty_port_put(&hvcsd->port);
- 		printk(KERN_WARNING "HVCS: enable device failed.\n");
- 		return rc;
- 	}
-@@ -1171,7 +1169,7 @@ fast_open:
- 	hvcsd = tty->driver_data;
- 
- 	spin_lock_irqsave(&hvcsd->lock, flags);
--	kref_get(&hvcsd->kref);
-+	tty_port_get(&hvcsd->port);
- 	hvcsd->port.count++;
- 	hvcsd->todo_mask |= HVCS_SCHED_READ;
- 	spin_unlock_irqrestore(&hvcsd->lock, flags);
-@@ -1186,7 +1184,7 @@ open_success:
- 
- error_release:
- 	spin_unlock_irqrestore(&hvcsd->lock, flags);
--	kref_put(&hvcsd->kref, destroy_hvcs_struct);
-+	tty_port_put(&hvcsd->port);
- 
- 	printk(KERN_WARNING "HVCS: partner connect failed.\n");
- 	return retval;
-@@ -1240,7 +1238,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 		tty->driver_data = NULL;
- 
- 		free_irq(irq, hvcsd);
--		kref_put(&hvcsd->kref, destroy_hvcs_struct);
-+		tty_port_put(&hvcsd->port);
- 		return;
- 	} else if (hvcsd->port.count < 0) {
- 		printk(KERN_ERR "HVCS: vty-server@%X open_count: %d"
-@@ -1249,7 +1247,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 	}
- 
- 	spin_unlock_irqrestore(&hvcsd->lock, flags);
--	kref_put(&hvcsd->kref, destroy_hvcs_struct);
-+	tty_port_put(&hvcsd->port);
- }
- 
- static void hvcs_hangup(struct tty_struct * tty)
-@@ -1301,7 +1299,7 @@ static void hvcs_hangup(struct tty_struct * tty)
- 		 * NOTE:  If this hangup was signaled from user space then the
- 		 * final put will never happen.
- 		 */
--		kref_put(&hvcsd->kref, destroy_hvcs_struct);
-+		tty_port_put(&hvcsd->port);
+@@ -347,7 +347,7 @@ static void hvsi_insert_chars(struct hvsi_struct *hp, const char *buf, int len)
+ 			continue;
+ 		}
+ #endif /* CONFIG_MAGIC_SYSRQ */
+-		tty_insert_flip_char(hp->tty, c, 0);
++		tty_insert_flip_char(tty, c, 0);
  	}
  }
  
+@@ -360,7 +360,7 @@ static void hvsi_insert_chars(struct hvsi_struct *hp, const char *buf, int len)
+  * revisited.
+  */
+ #define TTY_THRESHOLD_THROTTLE 128
+-static struct tty_struct *hvsi_recv_data(struct hvsi_struct *hp,
++static bool hvsi_recv_data(struct hvsi_struct *hp, struct tty_struct *tty,
+ 		const uint8_t *packet)
+ {
+ 	const struct hvsi_header *header = (const struct hvsi_header *)packet;
+@@ -371,14 +371,14 @@ static struct tty_struct *hvsi_recv_data(struct hvsi_struct *hp,
+ 	pr_debug("queueing %i chars '%.*s'\n", datalen, datalen, data);
+ 
+ 	if (datalen == 0)
+-		return NULL;
++		return false;
+ 
+ 	if (overflow > 0) {
+ 		pr_debug("%s: got >TTY_THRESHOLD_THROTTLE bytes\n", __func__);
+ 		datalen = TTY_THRESHOLD_THROTTLE;
+ 	}
+ 
+-	hvsi_insert_chars(hp, data, datalen);
++	hvsi_insert_chars(hp, tty, data, datalen);
+ 
+ 	if (overflow > 0) {
+ 		/*
+@@ -390,7 +390,7 @@ static struct tty_struct *hvsi_recv_data(struct hvsi_struct *hp,
+ 		hp->n_throttle = overflow;
+ 	}
+ 
+-	return hp->tty;
++	return true;
+ }
+ 
+ /*
+@@ -399,14 +399,13 @@ static struct tty_struct *hvsi_recv_data(struct hvsi_struct *hp,
+  * machine during console handshaking (in which case tty = NULL and we ignore
+  * incoming data).
+  */
+-static int hvsi_load_chunk(struct hvsi_struct *hp, struct tty_struct **flip,
+-		struct tty_struct **hangup, struct hvsi_struct **handshake)
++static int hvsi_load_chunk(struct hvsi_struct *hp, struct tty_struct *tty,
++		struct hvsi_struct **handshake)
+ {
+ 	uint8_t *packet = hp->inbuf;
+ 	int chunklen;
++	bool flip = false;
+ 
+-	*flip = NULL;
+-	*hangup = NULL;
+ 	*handshake = NULL;
+ 
+ 	chunklen = hvsi_read(hp, hp->inbuf_end, HVSI_MAX_READ);
+@@ -440,12 +439,12 @@ static int hvsi_load_chunk(struct hvsi_struct *hp, struct tty_struct **flip,
+ 			case VS_DATA_PACKET_HEADER:
+ 				if (!is_open(hp))
+ 					break;
+-				if (hp->tty == NULL)
++				if (tty == NULL)
+ 					break; /* no tty buffer to put data in */
+-				*flip = hvsi_recv_data(hp, packet);
++				flip = hvsi_recv_data(hp, tty, packet);
+ 				break;
+ 			case VS_CONTROL_PACKET_HEADER:
+-				hvsi_recv_control(hp, packet, hangup, handshake);
++				hvsi_recv_control(hp, packet, tty, handshake);
+ 				break;
+ 			case VS_QUERY_RESPONSE_PACKET_HEADER:
+ 				hvsi_recv_response(hp, packet);
+@@ -462,28 +461,26 @@ static int hvsi_load_chunk(struct hvsi_struct *hp, struct tty_struct **flip,
+ 
+ 		packet += len_packet(packet);
+ 
+-		if (*hangup || *handshake) {
+-			pr_debug("%s: hangup or handshake\n", __func__);
+-			/*
+-			 * we need to send the hangup now before receiving any more data.
+-			 * If we get "data, hangup, data", we can't deliver the second
+-			 * data before the hangup.
+-			 */
++		if (*handshake) {
++			pr_debug("%s: handshake\n", __func__);
+ 			break;
+ 		}
+ 	}
+ 
+ 	compact_inbuf(hp, packet);
+ 
++	if (flip)
++		tty_flip_buffer_push(tty);
++
+ 	return 1;
+ }
+ 
+-static void hvsi_send_overflow(struct hvsi_struct *hp)
++static void hvsi_send_overflow(struct hvsi_struct *hp, struct tty_struct *tty)
+ {
+ 	pr_debug("%s: delivering %i bytes overflow\n", __func__,
+ 			hp->n_throttle);
+ 
+-	hvsi_insert_chars(hp, hp->throttle_buf, hp->n_throttle);
++	hvsi_insert_chars(hp, tty, hp->throttle_buf, hp->n_throttle);
+ 	hp->n_throttle = 0;
+ }
+ 
+@@ -494,8 +491,6 @@ static void hvsi_send_overflow(struct hvsi_struct *hp)
+ static irqreturn_t hvsi_interrupt(int irq, void *arg)
+ {
+ 	struct hvsi_struct *hp = (struct hvsi_struct *)arg;
+-	struct tty_struct *flip;
+-	struct tty_struct *hangup;
+ 	struct hvsi_struct *handshake;
+ 	unsigned long flags;
+ 	int again = 1;
+@@ -504,25 +499,9 @@ static irqreturn_t hvsi_interrupt(int irq, void *arg)
+ 
+ 	while (again) {
+ 		spin_lock_irqsave(&hp->lock, flags);
+-		again = hvsi_load_chunk(hp, &flip, &hangup, &handshake);
++		again = hvsi_load_chunk(hp, hp->tty, &handshake);
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 
+-		/*
+-		 * we have to call tty_flip_buffer_push() and tty_hangup() outside our
+-		 * spinlock. But we also have to keep going until we've read all the
+-		 * available data.
+-		 */
+-
+-		if (flip) {
+-			/* there was data put in the tty flip buffer */
+-			tty_flip_buffer_push(flip);
+-			flip = NULL;
+-		}
+-
+-		if (hangup) {
+-			tty_hangup(hangup);
+-		}
+-
+ 		if (handshake) {
+ 			pr_debug("hvsi%i: attempting re-handshake\n", handshake->index);
+ 			schedule_work(&handshake->handshaker);
+@@ -534,15 +513,11 @@ static irqreturn_t hvsi_interrupt(int irq, void *arg)
+ 			&& (!test_bit(TTY_THROTTLED, &hp->tty->flags))) {
+ 		/* we weren't hung up and we weren't throttled, so we can deliver the
+ 		 * rest now */
+-		flip = hp->tty;
+-		hvsi_send_overflow(hp);
++		hvsi_send_overflow(hp, hp->tty);
++		tty_flip_buffer_push(hp->tty);
+ 	}
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+-	if (flip) {
+-		tty_flip_buffer_push(flip);
+-	}
+-
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -966,8 +941,8 @@ static int hvsi_write(struct tty_struct *tty,
+ 	 * and hvsi_write_worker will be scheduled. subsequent hvsi_write() calls
+ 	 * will see there is no room in outbuf and return.
+ 	 */
+-	while ((count > 0) && (hvsi_write_room(hp->tty) > 0)) {
+-		int chunksize = min(count, hvsi_write_room(hp->tty));
++	while ((count > 0) && (hvsi_write_room(tty) > 0)) {
++		int chunksize = min(count, hvsi_write_room(tty));
+ 
+ 		BUG_ON(hp->n_outbuf < 0);
+ 		memcpy(hp->outbuf + hp->n_outbuf, source, chunksize);
+@@ -1014,19 +989,16 @@ static void hvsi_unthrottle(struct tty_struct *tty)
+ {
+ 	struct hvsi_struct *hp = tty->driver_data;
+ 	unsigned long flags;
+-	int shouldflip = 0;
+ 
+ 	pr_debug("%s\n", __func__);
+ 
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	if (hp->n_throttle) {
+-		hvsi_send_overflow(hp);
+-		shouldflip = 1;
++		hvsi_send_overflow(hp, tty);
++		tty_flip_buffer_push(tty);
+ 	}
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+-	if (shouldflip)
+-		tty_flip_buffer_push(hp->tty);
+ 
+ 	h_vio_signal(hp->vtermno, VIO_IRQ_ENABLE);
+ }
 -- 
 1.7.9.2
