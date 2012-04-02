@@ -1,30 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4EF0AB7038
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2012 07:23:16 +1000 (EST)
-Message-ID: <1333401767.30734.58.camel@pasglop>
-Subject: Re: [PATCH 08/18] PCI, powerpc: Register busn_res for root buses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-Date: Tue, 03 Apr 2012 07:22:47 +1000
-In-Reply-To: <powerpc-pci-domains-by-busnumber-resend@mdm.bga.com>
-References: <1330472496.11728.31.camel@pasglop>
- <1330395009-29260-1-git-send-email-yinghai@kernel.org>
- <1330395009-29260-9-git-send-email-yinghai@kernel.org>
- <CAErSpo4bw-V=SM+h5iP4nfv3HaAnHjwvNwu+4Oz8iyQcY_3gOQ@mail.gmail.com>
- <CAErSpo72_JnUkWXrzbNdbX9wiWZtQdX2tuNjEpYrSd+sGzxfzA@mail.gmail.com>
- <powerpc-pci-domains-by-busnumber-resend@mdm.bga.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Tony Luck <tony.luck@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- lkml <linux-kernel@vger.kernel.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Jesse Barnes <jbarnes@virtuousgeek.org>, Greg Kroah-Hartmann <greg@kroah.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Yinghai Lu <yinghai@kernel.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-qa0-f44.google.com (mail-qa0-f44.google.com
+ [209.85.216.44])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 648D9B6FBB
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2012 07:26:59 +1000 (EST)
+Received: by qadc14 with SMTP id c14so2720767qad.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 02 Apr 2012 14:26:56 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1333400910.30734.54.camel@pasglop>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+ <20120321162549.8C1D0202A4D@gemini.denx.de>
+ <1332633218.2882.16.camel@pasglop>
+ <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
+ <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
+ <1333152184.30734.3.camel@pasglop>
+ <CA+5PVA6jQgme0sS=i8yYX6b_R5179+BtWPh7QXCGNfoLTCt46A@mail.gmail.com>
+ <1333400910.30734.54.camel@pasglop>
+Date: Mon, 2 Apr 2012 17:26:56 -0400
+Message-ID: <CA+5PVA4O7bo4LA3s9j_sBZY+HxN8+q+iZUD=5geCrvEtJK=JKw@mail.gmail.com>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>,
+ Wolfgang Denk <wd@denx.de>, robert.karl.berger@gmail.com,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,23 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-04-02 at 05:19 -0500, Milton Miller wrote:
-> 
-> In the POWER3 era we had several boxes that split the pci bus number
-> space across domains and RTAS used the bus number to find the correct
-> PHB.   This contineed to the first RS64 boxes.  By S80 and RS64-III
-> it was obvious that we didn't have enough numbers to continue this
-> ilusion and we added the presently used RTAS calls that take the pci
-> domain as well as bus, device, and function numbers.
-> 
-> The bus numbers split across pci domains started with the F50
-> F50 chrp 32 bit platforms. 
+On Mon, Apr 2, 2012 at 5:08 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Mon, 2012-04-02 at 08:10 -0400, Josh Boyer wrote:
+>> On Fri, Mar 30, 2012 at 8:03 PM, Benjamin Herrenschmidt
+>> <benh@kernel.crashing.org> wrote:
+>> > On Sat, 2012-03-31 at 00:53 +0200, Frank Svendsb=F8e wrote:
+>> >
+>> >> Hi Josh Boyer,
+>> >>
+>> >> just wanted to add that I'm experiencing the same problem that Robert
+>> >> reported, but on 8xx instead of 4xx. The mpc8xx does not support the
+>> >> mfdcrx instruction, so maybe it's more to it than just a binutils bug=
+?
+>> >
+>> > The kernel shouldn't have tried to build that instruction on 8xx, thou=
+gh
+>> > I suppose if it's in arch/powerpc/boot, we are a bit too eager at
+>> > building everything including what's not relevant, we might to be a bi=
+t
+>> > more careful at excluding 4xx stuff on a 8xx kernel.
+>>
+>> It's still a binutils issue. =A0Sounds like the toolchain being used to
+>> build the 8xx kernel is specifically built for 8xx. =A0A generally built
+>> binutils should have worked fine (assuming it was new enough), since
+>> we pass -mcpu=3D405.
+>
+> Still, it makes sense to limit the building of the wrappers to the CPU
+> family of the kernel...
 
-Ok, so old CHRPs would have a split as well...
+Oh, I'm not really disagreeing with that.  I think I said as much about
+4 years ago, but at the time the prevailing opinion was what we
+currently have.  I never really understood why.
 
-I think the best is to honor the bus-range property of the PHB as min &
-max values, and if we feel a need to allow the kernel to assign busses
-beyond that, we can always quirk the appropriate platform code.
+Out with the old, in with the sane.
 
-Cheers,
-Ben.
+josh
