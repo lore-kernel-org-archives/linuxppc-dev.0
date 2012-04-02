@@ -1,22 +1,21 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B166B6EEB
- for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2012 01:26:14 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git next branch
-Date: Mon, 2 Apr 2012 15:25:53 +0000
-Message-ID: <CAOZdJXW19PFvm7Bb35ZeoaiBpP9jV07YqWhnTn0N-Vu-59WKcw@mail.gmail.com>
-References: <alpine.LFD.2.02.1203291544170.14273@spiff>
- <CAOZdJXWyfdMX4mxFqeh=gpyorS9E0aFEhXuxzzvZ_uMV5zhc3g@mail.gmail.com>
-In-Reply-To: <CAOZdJXWyfdMX4mxFqeh=gpyorS9E0aFEhXuxzzvZ_uMV5zhc3g@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <whitebox@nefkom.net>
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
+ use irq_alloc_desc() instead
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+ <m2iphj3zxr.fsf@igel.home>
+Date: Mon, 02 Apr 2012 18:29:15 +0200
+In-Reply-To: <m2iphj3zxr.fsf@igel.home> (Andreas Schwab's message of "Sun, 01
+ Apr 2012 23:27:44 +0200")
+Message-ID: <m2hax2qeqs.fsf@igel.home>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping!
+Andreas Schwab <schwab@linux-m68k.org> writes:
 
-Kumar, you forgot to deal with this patch for 3.3.  The window for 3.4
-is closing rapidly.  There are no objections to my patch.  Could you
-please apply it and get it merged into 3.4?  I'm tired of waiting.
-
-On Thu, Mar 29, 2012 at 4:47 PM, Tabi Timur-B04825 <b04825@freescale.com> w=
-rote:
-> On Thu, Mar 29, 2012 at 3:44 PM, Kumar Gala <galak@kernel.crashing.org> w=
-rote:
->>
->> A few minor bug fixes and missing dts updates for 3.4. =A0There got lost=
- in
->> the mix. =A0Sorry for the delay
+> Grant Likely <grant.likely@secretlab.ca> writes:
 >
-> What about my "don't call of_platform_bus_probe() twice" patch?
-> That's still an important fix for the P1022DS.
+>> This patch drops the powerpc-specific irq_map table and replaces it with
+>> directly using the irq_alloc_desc()/irq_free_desc() interfaces for allocating
+>> and freeing irq_desc structures.
 >
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
+> This breaks irqs on PowerMac G5.  I see lost irq errors from the sata
+> driver.
 
+When I revert a09b659cd68c10ec6a30cb91ebd2c327fcd5bfe5 ("genirq: Fix
+long-term regression in genirq irq_set_irq_type() handling") on top of
+3.4-rc1 the sata irq errors disappear, but I see a lot of spurious
+interrupts.  Also the X server is broken somehow, though I don't know
+whether that is related or a different bug.
 
+Andreas.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
