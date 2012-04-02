@@ -1,23 +1,22 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 25576B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2012 07:11:19 +1000 (EST)
-Message-ID: <1333401070.30734.55.camel@pasglop>
+Message-ID: <1333401600.30734.56.camel@pasglop>
 Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
  irq_alloc_desc() instead
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Tue, 03 Apr 2012 07:11:10 +1000
-In-Reply-To: <m2r4w6jugo.fsf@linux-m68k.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 03 Apr 2012 07:20:00 +1000
+In-Reply-To: <alpine.LFD.2.02.1204022251420.2542@ionos>
 References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
  <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <1333340517.30734.42.camel@pasglop>
- <m2r4w6jugo.fsf@linux-m68k.org>
+ <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
+ <alpine.LFD.2.02.1204022251420.2542@ionos>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree-discuss@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ Milton Miller <miltonm@bga.com>, Andreas Schwab <schwab@linux-m68k.org>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Russell King <rmk+kernel@arm.linux.org.uk>, linuxppc-dev@lists.ozlabs.org,
+ LAK <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-04-02 at 12:31 +0200, Andreas Schwab wrote:
-> >  - PowerMac7,3 aka Dual G5 AGP. This ones has U3 + K2 and
-> > uses cascaded MPICs
+On Mon, 2012-04-02 at 22:52 +0200, Thomas Gleixner wrote:
+> > When I revert a09b659cd68c10ec6a30cb91ebd2c327fcd5bfe5 ("genirq: Fix
+> > long-term regression in genirq irq_set_irq_type() handling") on top
+> of
+> > 3.4-rc1 the sata irq errors disappear, but I see a lot of spurious
 > 
-> That's the same as mine, config is attached.  I'm currently trying to
-> bisect the commit that actually broke the series. 
+> Hmm. Which irq chip is handling the interrupt for that sata irq ?
 
-Hrm, odd.. I'll dbl check today that I didn't b0rk something in my test
-(like loading the wrong kernel :-) I'll also try with your config.
+MPIC. The irq is a PCI IRQ, and so should be level-low, it should have
+been mapped by the PCI code using the of_* calls.
 
 Cheers,
 Ben.
