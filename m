@@ -1,21 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DBDC0B70B2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 08:05:07 +1000 (EST)
-Date: Tue, 03 Apr 2012 18:03:02 -0400 (EDT)
-Message-Id: <20120403.180302.342779808900865443.davem@davemloft.net>
-To: kaffeemonster@googlemail.com
+ by ozlabs.org (Postfix) with ESMTPS id A9BBEB6FEE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 08:11:52 +1000 (EST)
+Message-ID: <1333491102.3040.12.camel@pasglop>
 Subject: Re: [REGRESSION][PATCH V4 3/3] bpf jit: Let the powerpc jit handle
  negative offsets
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4F75D2A5.7060407@googlemail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Date: Wed, 04 Apr 2012 08:11:42 +1000
+In-Reply-To: <20120403.180302.342779808900865443.davem@davemloft.net>
 References: <4F75CA89.4010709@googlemail.com> <4F75D2A5.7060407@googlemail.com>
+ <20120403.180302.342779808900865443.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, eric.dumazet@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, matt@ozlabs.org
+Cc: kaffeemonster@googlemail.com, eric.dumazet@gmail.com, matt@ozlabs.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jan Seiffert <kaffeemonster@googlemail.com>
-Date: Fri, 30 Mar 2012 17:35:01 +0200
+On Tue, 2012-04-03 at 18:03 -0400, David Miller wrote:
 
-> Now the helper function from filter.c for negative offsets is exported,
-> it can be used it in the jit to handle negative offsets.
+> > Signed-off-by: Jan Seiffert <kaffeemonster@googlemail.com>
+> > 
+> > I have only compile tested this, -ENOHARDWARE.
+> > Can someone with more powerpc kung-fu review and maybe test this?
+> > Esp. powerpc asm is not my strong point. I think i botched the
+> > stack frame in the call setup. Help?
 > 
-> First modify the asm load helper functions to handle:
-> - know positive offsets
-> - know negative offsets
-> - any offset
+> I'm not applying this until a powerpc person tests it.
 > 
-> then the compiler can be modified to explicitly use these helper
-> when appropriate.
-> 
-> This fixes the case of a negative X register and allows to lift
-> the restriction that bpf programs with negative offsets can't
-> be jited.
-> 
-> Signed-off-by: Jan Seiffert <kaffeemonster@googlemail.com>
-> 
-> I have only compile tested this, -ENOHARDWARE.
-> Can someone with more powerpc kung-fu review and maybe test this?
-> Esp. powerpc asm is not my strong point. I think i botched the
-> stack frame in the call setup. Help?
+> Also, we have an ARM JIT in the tree which probably needs to
+> be fixed similarly.
 
-I'm not applying this until a powerpc person tests it.
+Matt's having a look at powerpc
 
-Also, we have an ARM JIT in the tree which probably needs to
-be fixed similarly.
+Cheers,
+Ben.
