@@ -1,23 +1,15 @@
-Return-Path: <mla@apm.com>
-Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
- by ozlabs.org (Postfix) with SMTP id 9A480B6FF0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2012 13:21:18 +1000 (EST)
-Received: by dady13 with SMTP id y13so4131043dad.27
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Apr 2012 20:21:15 -0700 (PDT)
-From: Mai La <mla@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Matt Porter <mporter@kernel.crashing.org>,
- Tirumala R Marri <tmarri@apm.com>,
- Grant Likely <grant.likely@secretlab.ca>,
- Michael Neuling <mikey@neuling.org>,
- Kumar Gala <galak@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [v1] powerpc/44x: Support CPM for Maui APM821xxx SoC and
- Bluestone board
-Date: Tue,  3 Apr 2012 10:20:53 +0700
-Message-Id: <1333423253-12170-1-git-send-email-mla@apm.com>
-Cc: Mai La <mla@apm.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 28EB5B6FE1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2012 17:25:53 +1000 (EST)
+Date: Tue, 3 Apr 2012 00:20:24 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: 3.4.0-rc1: No init found
+Message-ID: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In this patch:
-- Add CPM node for Maui APM821xxx SoC and Bluestone board in DTS
+Going from 3.3-rc7 to 3.4-rc1 (with "make oldconfig" inbetween) did not 
+go well on this PowerBook G4 machine:
 
-Signed-off-by: Mai La <mla@apm.com>
+Apr  2 15:18:23 [   8.318816] EXT4-fs (hda6): mounted filesystem with ordered data mode. Opts: (null)
+Apr  2 15:18:23 [   8.320286] VFS: Mounted root (ext4 filesystem) readonly on device 3:6.
+Apr  2 15:18:23 [   8.341555] devtmpfs: mounted
+Apr  2 15:18:23 [   8.343384] Freeing unused kernel memory: 204k freed
+Apr  2 15:18:23 [   8.457056] Kernel panic - not syncing: No init found.  Try passing init= option to kernel. See Linux Documentation/init.txt for guidance.
+Apr  2 15:18:23 [   8.459936] Rebooting in 180 seconds..
 
----
-v1: 
-Per Grant Likely's comment:
-* Fix typo
+No bootoptions were changed, no disks swapped, no partitions altered 
+whatsoever. Full .config & dmesg:
 
----
- arch/powerpc/boot/dts/bluestone.dts |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ http://nerdbynature.de/bits/3.4.0-rc1/init/
 
-diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
-index 2a56a0d..15a9516 100644
---- a/arch/powerpc/boot/dts/bluestone.dts
-+++ b/arch/powerpc/boot/dts/bluestone.dts
-@@ -117,6 +117,15 @@
- 		dcr-reg = <0x00c 0x002>;
- 	};
- 
-+	CPM0: cpm {
-+		compatible = "ibm,cpm-apm821xx", "ibm,cpm";
-+		cell-index = <0>;
-+		dcr-reg = <0x160 0x003>;
-+		er-offset = <0>;
-+		idle-doze = <0x02000000>;
-+		standby = <0x302570F0>;
-+	};
-+
- 	plb {
- 		compatible = "ibm,plb4";
- 		#address-cells = <2>;
+Thanks,
+Christian.
+
+PS: Unfortunately I cannot boot into the old (3.3-rc7) kernel 
+    right now (which is still installed via "yaboot" and present in
+    /boot), because of this: 
+    http://nerdbynature.de/bits/3.4.0-rc1/init/mac-invalid-memory.JPG
+    Booting into Debian's "squeeze" kernel (2.6.32) which resides in
+    the same /boot directory succeeds.
 -- 
-1.7.3.4
+BOFH excuse #334:
+
+50% of the manual is in .pdf readme files
