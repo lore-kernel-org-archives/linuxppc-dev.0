@@ -1,20 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 89A3DB6FD9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2012 18:08:39 +1000 (EST)
-Message-ID: <1333440522.3040.9.camel@pasglop>
-Subject: Re: 3.4.0-rc1: No init found
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Kujau <lists@nerdbynature.de>
-Date: Tue, 03 Apr 2012 18:08:42 +1000
-In-Reply-To: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
-References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Al Viro <viro@zeniv.linux.org.uk>
+Return-Path: <tglx@linutronix.de>
+Date: Tue, 3 Apr 2012 10:20:58 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
+ irq_alloc_desc() instead
+In-Reply-To: <1333406005.30734.61.camel@pasglop>
+Message-ID: <alpine.LFD.2.02.1204031019320.2542@ionos>
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+ <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
+ <20120402202848.1EB833E02A7@localhost>
+ <20120402215524.GM24211@n2100.arm.linux.org.uk>
+ <1333406005.30734.61.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Andreas Schwab <schwab@linux-m68k.org>,
+ Rob Herring <rob.herring@calxeda.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-04-03 at 00:20 -0700, Christian Kujau wrote:
-> Going from 3.3-rc7 to 3.4-rc1 (with "make oldconfig" inbetween) did not 
-> go well on this PowerBook G4 machine:
+On Tue, 3 Apr 2012, Benjamin Herrenschmidt wrote:
+
+> On Mon, 2012-04-02 at 22:55 +0100, Russell King - ARM Linux wrote:
+> > Well, presumably someone is calling irq_set_irq_type() asking explicitly
+> > for IRQ_TYPE_NONE.  The code will now (as it always used to before David's
+> > change) do exactly what you ask this to: it will ask the type to be set
+> > to none.
+> > 
+> > If you don't want to set the type to none, don't call the interface asking
+> > for that to happen. 
 > 
-> Apr  2 15:18:23 [   8.318816] EXT4-fs (hda6): mounted filesystem with ordered data mode. Opts: (null)
-> Apr  2 15:18:23 [   8.320286] VFS: Mounted root (ext4 filesystem) readonly on device 3:6.
-> Apr  2 15:18:23 [   8.341555] devtmpfs: mounted
-> Apr  2 15:18:23 [   8.343384] Freeing unused kernel memory: 204k freed
-> Apr  2 15:18:23 [   8.457056] Kernel panic - not syncing: No init found.  Try passing init= option to kernel. See Linux Documentation/init.txt for guidance.
-> Apr  2 15:18:23 [   8.459936] Rebooting in 180 seconds..
+> I think part of the idea with NONE is to use it as "reset that interrupt
+> to the "default" setting, whatever that means ...
 
-I have observed this randomly on the G5 ... sometimes, if I try again,
-it works... it's very very odd. There is some kind of race maybe with
-async startup ? Or a problem with the vfs path walking ? It's certainly
-not easily reproducable for me, it goes away from one boot to the next.
+Well, the ship side set_type function could simply leave it alone and
+not touch the thing at all. That's how the core code did until we
+discovered that we broke Russells toys that way.
 
-It also happens sometimes with an initramfs (cpio), it's not specific to
-ext{2,3,4}.
+Thanks,
 
-Cheers,
-Ben.
-
-> No bootoptions were changed, no disks swapped, no partitions altered 
-> whatsoever. Full .config & dmesg:
-> 
->  http://nerdbynature.de/bits/3.4.0-rc1/init/
-> 
-> Thanks,
-> Christian.
-> 
-> PS: Unfortunately I cannot boot into the old (3.3-rc7) kernel 
->     right now (which is still installed via "yaboot" and present in
->     /boot), because of this: 
->     http://nerdbynature.de/bits/3.4.0-rc1/init/mac-invalid-memory.JPG
->     Booting into Debian's "squeeze" kernel (2.6.32) which resides in
->     the same /boot directory succeeds.
-
-Hrm, did it used to boot ? Can you do printenv in OF and tell me what
-your load-base, real-base, virt-base etc... are ?
-
-Might also be worth updating yaboot, debian should have 1.3.16 nowadays.
-
-Cheers,
-Ben.
+	tglx
