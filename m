@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1333489422.3040.11.camel@pasglop>
-Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
- irq_alloc_desc() instead
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Wed, 04 Apr 2012 07:43:42 +1000
-In-Reply-To: <m2y5qdow0v.fsf@igel.home>
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
- <20120402202848.1EB833E02A7@localhost> <m2y5qdow0v.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2E71FB6FCA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 08:04:18 +1000 (EST)
+Date: Tue, 03 Apr 2012 18:02:12 -0400 (EDT)
+Message-Id: <20120403.180212.1644422418766062447.davem@davemloft.net>
+To: kaffeemonster@googlemail.com
+Subject: Re: [REGRESSION][PATCH V4 1/3] bpf jit: Make the
+ filter.c::__load_pointer helper non-static for the jits
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4F75CC63.10405@googlemail.com>
+References: <4F75CA89.4010709@googlemail.com> <4F75CC63.10405@googlemail.com>
 Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, eric.dumazet@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-04-03 at 14:11 +0200, Andreas Schwab wrote:
+From: Jan Seiffert <kaffeemonster@googlemail.com>
+Date: Fri, 30 Mar 2012 17:08:19 +0200
+
+> The function is renamed to make it a little more clear what it does.
+> It is not added to any .h because it is not for general consumption, only for
+> bpf internal use (and so by the jits).
 > 
-> When reconfiguring with NR_IRQS=128 interrupts are working again, but I
-> still see a lot of spurious interrupts, and the X server is still broken
-> (no input works, but I still don't know whether that is an unrelated
-> bug). 
+> Signed-of-by: Jan Seiffert <kaffeemonster@googlemail.com>
 
-I have an idea or two about the spurrious interrupt business, I'll have
-a look later today hopefully. As for the X server, I don't think it's
-related, but of course it's hard to tell. Do you see a relevant
-difference in the X log ?
+Applied but with comment formatting fixed up:
 
-Cheers,
-Ben.
+> +/*
+> + * No hurry in this branch
+> + *
+> + * Exported for the bpf jit load helper.
+> + */
+
+Like this:
+
+> +/* No hurry in this branch
+> + *
+> + * Exported for the bpf jit load helper.
+> + */
