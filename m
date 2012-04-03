@@ -1,17 +1,21 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 3 Apr 2012 11:31:23 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 76011B6FE9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2012 11:41:58 +1000 (EST)
+Date: Tue, 3 Apr 2012 11:41:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
 Subject: Re: [PATCH] powerpc/boot: Only build board support files when
  required.
-Message-ID: <20120403013122.GB9194@thor.bakeyournoodle.com>
+Message-Id: <20120403114150.cbf53c999ed842b25e9932b5@canb.auug.org.au>
+In-Reply-To: <20120403005558.GA9194@thor.bakeyournoodle.com>
 References: <20120403005558.GA9194@thor.bakeyournoodle.com>
- <20120403010002.GE7481@truffala.fritz.box>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="p4qYPpj5QlsIQJ0K"
-In-Reply-To: <20120403010002.GE7481@truffala.fritz.box>
-Cc: Frank =?utf-8?Q?Svendsb=C3=B8e?= <frank.svendsboe@gmail.com>,
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__3_Apr_2012_11_41_50_+1000_TPUDjNaPNt_3xsTS"
+Cc: Frank =?UTF-8?B?U3ZlbmRzYsO4ZQ==?= <frank.svendsboe@gmail.com>,
  Wolfgang Denk <wd@denx.de>, robert.karl.berger@gmail.com,
  LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,51 +27,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---p4qYPpj5QlsIQJ0K
-Content-Type: text/plain; charset=utf-8
+--Signature=_Tue__3_Apr_2012_11_41_50_+1000_TPUDjNaPNt_3xsTS
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 03, 2012 at 11:00:02AM +1000, David Gibson wrote:
-=20
-> Um.. I believe the one platform breaking another is actually working
-> as intended.  I think Paulus did it this way to stop people breaking
-> platforms other than the one they were working on without realising
-> it.
+Hi Tony,
 
-Well that may have been the original intent but in the thread "Re:
-kilauea compilation breaks with v3.3 kernel and ELDK 4.2" we're seeing
-4xx break 8xx as the 8xx binutils (in use) doesn't have a mfdcrx
-instruction.
+On Tue, 3 Apr 2012 10:55:59 +1000 Tony Breeds <tony@bakeyournoodle.com> wro=
+te:
+>
+>  arch/powerpc/boot/Makefile |   69 +++++++++++++++++++++++++++++++++-----=
+------
+>  1 files changed, 52 insertions(+), 17 deletions(-)
+>=20
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index e8461cb..3d4d9ea 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -65,23 +65,58 @@ $(addprefix $(obj)/,$(libfdt) libfdt-wrapper.o simple=
+boot.o epapr.o): \
+>  src-wlib :=3D string.S crt0.S crtsavres.S stdio.c main.c \
+>  		$(libfdt) libfdt-wrapper.c \
+>  		ns16550.c serial.c simple_alloc.c div64.S util.S \
+> -		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+> -		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+> -		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
+> -		fsl-soc.c mpc8xx.c pq2.c ugecon.c
+> -src-plat :=3D of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx=
+.c holly.c \
+> -		cuboot-ebony.c cuboot-hotfoot.c epapr.c treeboot-ebony.c \
+> -		prpmc2800.c \
+> -		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+> -		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
+> -		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
+> -		fixed-head.S ep88xc.c ep405.c cuboot-c2k.c \
+> -		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+> -		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+> -		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
+> -		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c \
+> -		gamecube-head.S gamecube.c wii-head.S wii.c treeboot-iss4xx.c \
+> -		treeboot-currituck.c
+> +		gunzip_util.c elf_util.c $(zlib) devtree.c stdlib.c \
+> +		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
+> +		uartlite.c mpc52xx-psc.c
+> +src-plat :=3D of.c
+> +ifeq ($(CONFIG_40x),y)
+> +src-wlib  +=3D 4xx.c planetcore.c
+> +src-plat +=3D fixed-head.S ep405.c cuboot-hotfoot.c treeboot-walnut.c \
+> +		cuboot-acadia.c cuboot-kilauea.c \
+> +		simpleboot.c virtex405-head.S virtex.c
+> +endif
 
-So by breaking it up we gain a small decrease in compile times, less
-chance of a very targeted build breaking an unrelated board.  We do as
-you point out potentially delay discovery of breakage for some time.
+It is more ususal in the kernel makefiles to do something like:
 
-I don't mind either way but the patch is out there now :)
+src-wlib-$(CONFIG_40x) +=3D 4xx.c planetcore.c
+src-plat-$(CONFIG_40x) +=3D fixed-head.S ep405.c cuboot-hotfoot.c treeboot-=
+walnut.c \
 
-Yours Tony
+...
 
---p4qYPpj5QlsIQJ0K
+and then use $(src-wlib-y) and $(src-plat-y)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__3_Apr_2012_11_41_50_+1000_TPUDjNaPNt_3xsTS
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPelLqAAoJEEsCiJRY75GK3UgP/jT89ejceTksywe6gVoHb0Uq
-WeyIxPcX42z8v2/U0hOsD3fVA7m9isHFGDvSpIYKrZLzrO7Q9/YKD5dbl4ok+uEz
-kcgK9C6rb2o9sOyvBtNyoIF/nGfPzZcnYAgPgcD9FeTFuyLlncKp2IzjZ2FNSyCF
-bITMUZd7HjIWfK2DkUs7gEeTtfHx9g9a/mAVOMHanIITt/oj5O1owq1XBU1x47P5
-uSlQnwhZD9OXTvkULd579LPqlIDgfO3MXny5mRF/SmSk0CORGT/f2r/G5o2JytmU
-BoXBX1yD/S3rLkqW2XyA0S8jL6gHEqb7qJt4s3rl5NvOGE+e0k3k7AZW4vcbi8o5
-nmSKn8P0zl4LT/woRDQclzQda2tRDOsDRprtz0RE9BpeJabmBuG3PFwC5HxgGve5
-bXpINhi3wKUF3n1xByrOFeKRIKZCmvzWM/iSIT2RrMuVxLrj3KZP9N+2VizxCWN7
-EpYonh0hJu8k6A2EHKjmzZtYkAgtflhvn/VVipOwZQer26qFc0jViEH50j8DWvRJ
-1VnywYItzfqbV4ceHvng3w+nkJV26vKhlIIZyLK3TmelDDPiWPgE6DVaEPj0J/HE
-m9+0zp2PZsFh6alvSRaUUJe777uKkKrqKFBbkjrpX22/rY6OdqauW/JunK31LY3d
-itvNKqFEGe80QKvw0N3x
-=8cOm
+iQIcBAEBCAAGBQJPelVeAAoJEECxmPOUX5FEWt8P/2Tk9kZzkh5jds0hWbtfG7ug
+JbHQSz5h55psfIyKm0mdWRq1SP/Wi6YIKpwCoAzEwad/VfX9vS/4CqP3rZWllluP
+owq4JspXHKW70pre2ecc7En/o8lNciX/AksEyFhJuWBftSFZtvK/3aiAdWG92PMv
+ae9QAOhvTkRYlahc6b3Q5UjVj2p1YHCR0B4EGNLLrQ2lRRj9Xb5Q6yAQH2a4DsF4
+JBWxvWtzv6+tLyYhjTShJnw08lTA6nhM+icJMCm1h4VSbXupOAmsHGOQYEbtCFAk
+VTXxrkqtidAcxDruLXtcULVEQx8+1Sx49SJLOZNMeFvzC+vfKJePT6XGurwQV7k0
+BH8Zh0QOcajXIjCuIHDWxJLF0gfxA6LnJpmETuHqg6QPAKHosS4nkLl6Qk3FZqCS
+M3R+p0YlMcRhZJUyAJvmGAsiq1cMLje0MnTatlD5tCrvDDCY+nAQdr2oNsm3rXaD
+fmH2J4I+luGCjMrwVORF3gXT24BRYuxiFvWnxBQEm+Akd8pNHqSKOqjiyqylEaI4
+qAVLhb5AWGB0bdjSiCakFKwqkoPndKACjs11vkULO/GOpzvW/ApfaputvHwrOgMv
+hUKeVk2XOkBk13SV6O1fDoDVlzcgGLzz/pjrmKg8YqcYf2kh+BOdfDDseuO0voxm
+dgG6FRWxTw5zSyCExmiE
+=qluG
 -----END PGP SIGNATURE-----
 
---p4qYPpj5QlsIQJ0K--
+--Signature=_Tue__3_Apr_2012_11_41_50_+1000_TPUDjNaPNt_3xsTS--
