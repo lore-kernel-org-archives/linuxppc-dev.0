@@ -1,22 +1,19 @@
-Return-Path: <whitebox@nefkom.net>
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
- use irq_alloc_desc() instead
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
- <20120402202848.1EB833E02A7@localhost>
-Date: Tue, 03 Apr 2012 14:11:12 +0200
-In-Reply-To: <20120402202848.1EB833E02A7@localhost> (Grant Likely's message of
- "Mon, 02 Apr 2012 14:28:48 -0600")
-Message-ID: <m2y5qdow0v.fsf@igel.home>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 248CAB6FE6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 03:18:50 +1000 (EST)
+Date: Tue, 3 Apr 2012 10:18:46 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.4.0-rc1: No init found
+In-Reply-To: <1333440522.3040.9.camel@pasglop>
+Message-ID: <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
+References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
+ <1333440522.3040.9.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ Al Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,126 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely <grant.likely@secretlab.ca> writes:
+On Tue, 3 Apr 2012 at 18:08, Benjamin Herrenschmidt wrote:
+> I have observed this randomly on the G5 ... sometimes, if I try again,
+> it works... it's very very odd. There is some kind of race maybe with
+> async startup ? Or a problem with the vfs path walking ? It's certainly
+> not easily reproducable for me, it goes away from one boot to the next.
 
-> Can you dump out /debug/powerpc/virq_mapping from both before and
-> after the irq_map patch is applied?
+It's 100% reproducible for me. This PowerBook G4 (1.25Ghz) is not the 
+fastes though, maybe a race triggers more easily here...?
 
-before:
-virq   hwirq    chip name        chip data           host name
-   16  0x00000   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   21  0x00001   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   24  0x00002   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   25  0x00019   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   26  0x0001a   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   27  0x0001b   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   28  0x0001c   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   29  0x0003d   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   30  0x0001e   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   31  0x0003c   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   39  0x00027   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   40  0x00028   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   41  0x00029   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   42  0x0002a   MPIC 2          0xc00000017a011000  /u3@0,f8000000/mpic@f8040000
-   47  0x0002f   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   59  0x000fb   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   60  0x000fc   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   61  0x000fd   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   62  0x000fe   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   63  0x0003f   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
+> > PS: Unfortunately I cannot boot into the old (3.3-rc7) kernel 
+> >     right now (which is still installed via "yaboot" and present in
+> >     /boot), because of this: 
+> >     http://nerdbynature.de/bits/3.4.0-rc1/init/mac-invalid-memory.JPG
+> >     Booting into Debian's "squeeze" kernel (2.6.32) which resides in
+> >     the same /boot directory succeeds.
+> 
+> Hrm, did it used to boot ?
 
-after:
-virq   hwirq    chip name        chip data           host name
-   16  0x00000   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   21  0x00001   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   24  0x00002   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   25  0x00019   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   26  0x0001a   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   27  0x0001b   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   28  0x0001c   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   30  0x0001e   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   39  0x00027   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   40  0x00028   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   41  0x00029   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   42  0x0002a   MPIC 2          0xc00000017a011000  /u3@0,f8000000/mpic@f8040000
-   47  0x0002f   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   59  0x000fb   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   60  0x000fc   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   61  0x000fd   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   62  0x000fe   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   63  0x0003f   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   64  0x0003d   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
-   65  0x0003c   MPIC 1          0xc00000017a010000  /ht@0,f2000000/pci@1/mac-io@7/mpic@40000
+I'm using the "backup" kernel only when the new one has an issue, so I 
+have not tested it for a while, but it used to work, for sure.
 
-But I have NR_IRQS=64.  Bounds checking missing?  Irqs 64/65 are related
-to the sound chip (headphone-detect and line-out-detect).
+> Can you do printenv in OF and tell me what
+> your load-base, real-base, virt-base etc... are ?
 
-When reconfiguring with NR_IRQS=128 interrupts are working again, but I
-still see a lot of spurious interrupts, and the X server is still broken
-(no input works, but I still don't know whether that is an unrelated
-bug).
+load-base is 0x800000, real-base and virt-base is set to "-1", please see
+http://nerdbynature.de/bits/3.4.0-rc1/init/printenv-1.JPG
 
-This is a sample of /proc/interrupts from 3.3 (with NR_IRQS=64):
-           CPU0       CPU1       
- 16:       2039       6070   MPIC 1    Level     sata_svw
- 21:          0          0   MPIC 1    Edge      i2sbus: i2s-a (tx)
- 22:         12         20   MPIC 1    Level   
- 23:         14         18   MPIC 1    Level   
- 24:          0          0   MPIC 1    Edge      i2sbus: i2s-a (rx)
- 25:          3          0   MPIC 1    Level     VIA-PMU
- 26:         16         62   MPIC 1    Level     keywest i2c
- 27:          0          1   MPIC 1    Level     ohci_hcd:usb2
- 28:          0          1   MPIC 1    Level     ohci_hcd:usb3
- 29:          0          0   MPIC 1    Edge      headphone-detect
- 30:          0          0   MPIC 1    Level     i2sbus: i2s-a (control)
- 31:          0          0   MPIC 1    Edge      line-output-detect
- 39:         22         64   MPIC 1    Level     pata-pci-macio
- 40:          0          2   MPIC 1    Level     firewire_ohci
- 41:         52        147   MPIC 1    Level     eth0
- 42:       1732       5053   MPIC 2    Level     keywest i2c
- 47:          0          0   MPIC 1    Level     GPIO1 ADB
- 59:          0          0   MPIC 1    Edge      ipi call function
- 60:       2064       1940   MPIC 1    Edge      ipi reschedule
- 61:       3406        945   MPIC 1    Edge      ipi call function single
- 62:          0          0   MPIC 1    Edge      ipi debugger
- 63:         39         91   MPIC 1    Level     ehci_hcd:usb1, ohci_hcd:usb4, ohci_hcd:usb5
-LOC:       3503       3719   Local timer interrupts
-SPU:          2          0   Spurious interrupts
-CNT:          0          0   Performance monitoring interrupts
-MCE:          0          0   Machine check exceptions
+Not sure if this is related, but at the end of each kernel compilation, 
+the following messages are printed:
 
-This is a sample of /proc/interrupts from 3.4-rc1 (with NR_IRQS=128):
-           CPU0       CPU1       
- 16:       2603       7596   MPIC 1    Level     sata_svw
- 21:          1          0   MPIC 1    Edge      i2sbus: i2s-a (tx)
- 22:         13         19   MPIC 1    Level   
- 23:          8         24   MPIC 1    Level   
- 24:          0          1   MPIC 1    Edge      i2sbus: i2s-a (rx)
- 25:          2          1   MPIC 1    Level     VIA-PMU
- 26:         21         57   MPIC 1    Level     keywest i2c
- 27:          0          1   MPIC 1    Level     ohci_hcd:usb2
- 28:          0          1   MPIC 1    Level     ohci_hcd:usb3
- 30:          0          0   MPIC 1    Level     i2sbus: i2s-a (control)
- 39:         39        131   MPIC 1    Level     pata-pci-macio
- 40:          2          2   MPIC 1    Level     firewire_ohci
- 41:         93        268   MPIC 1    Level     eth0
- 42:       8569      24140   MPIC 2    Level     keywest i2c
- 47:          0          0   MPIC 1    Level     GPIO1 ADB
- 60:          1          0   MPIC 1    Edge      line-output-detect
- 61:          1          0   MPIC 1    Edge      headphone-detect
- 63:        153        502   MPIC 1    Level     ehci_hcd:usb1, ohci_hcd:usb4, ohci_hcd:usb5
-123:          0          0   MPIC 1    Edge      ipi call function
-124:       1978       2349   MPIC 1    Edge      ipi reschedule
-125:       2356       1816   MPIC 1    Edge      ipi call function single
-126:          0          0   MPIC 1    Edge      ipi debugger
-LOC:       4417       7985   Local timer interrupts
-SPU:       9586      25811   Spurious interrupts
-CNT:          0          0   Performance monitoring interrupts
-MCE:          0          0   Machine check exceptions
+------------
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  WRAP    arch/powerpc/boot/zImage.pmac
+INFO: Uncompressed kernel (size 0x6e52f8) overlaps the address of the wrapper(0x400000)
+INFO: Fixing the link_address of wrapper to (0x700000)
+  WRAP    arch/powerpc/boot/zImage.coff
+INFO: Uncompressed kernel (size 0x6e52f8) overlaps the address of the wrapper(0x500000)
+INFO: Fixing the link_address of wrapper to (0x700000)
+  WRAP    arch/powerpc/boot/zImage.miboot
+INFO: Uncompressed kernel (size 0x6d4b80) overlaps the address of the wrapper(0x400000)
+INFO: Fixing the link_address of wrapper to (0x700000)
+  Building modules, stage 2.
+  MODPOST 24 modules
+------------
 
-Andreas.
+I started to see these messages in January (around Linux 3.2.0), but never 
+investigated what it was since the produced kernels continued to boot just 
+fine.
 
+> Might also be worth updating yaboot, debian should have 1.3.16 nowadays.
+
+Debian/stable still has 1.3.13a, I'll try to install 1.3.16 from 
+Debian/testing.
+
+Thanks for your help,
+Christian.
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+BOFH excuse #217:
+
+The MGs ran out of gas.
