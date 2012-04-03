@@ -1,20 +1,21 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id B2027B6FD9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 04:53:39 +1000 (EST)
-Date: Tue, 3 Apr 2012 11:53:34 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.4.0-rc1: No init found
-In-Reply-To: <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
-Message-ID: <alpine.DEB.2.01.1204031150180.4930@trent.utfs.org>
-References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
- <1333440522.3040.9.camel@pasglop>
- <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Al Viro <viro@zeniv.linux.org.uk>
+Return-Path: <benh@kernel.crashing.org>
+Message-ID: <1333489422.3040.11.camel@pasglop>
+Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
+ irq_alloc_desc() instead
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Wed, 04 Apr 2012 07:43:42 +1000
+In-Reply-To: <m2y5qdow0v.fsf@igel.home>
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+ <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
+ <20120402202848.1EB833E02A7@localhost> <m2y5qdow0v.fsf@igel.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,68 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 3 Apr 2012 at 10:18, Christian Kujau wrote:
-> > > PS: Unfortunately I cannot boot into the old (3.3-rc7) kernel 
-> > >     right now (which is still installed via "yaboot" and present in
-> > >     /boot), because of this: 
-> > >     http://nerdbynature.de/bits/3.4.0-rc1/init/mac-invalid-memory.JPG
-> > >     Booting into Debian's "squeeze" kernel (2.6.32) which resides in
-> > >     the same /boot directory succeeds.
-> > 
+On Tue, 2012-04-03 at 14:11 +0200, Andreas Schwab wrote:
+> 
+> When reconfiguring with NR_IRQS=128 interrupts are working again, but I
+> still see a lot of spurious interrupts, and the X server is still broken
+> (no input works, but I still don't know whether that is an unrelated
+> bug). 
 
-FYI, upgrading to yaboot 1.3.16-4 from Debian/testing did the trick, I can 
-now boot the "old" (3.3.0) kernel[0].
+I have an idea or two about the spurrious interrupt business, I'll have
+a look later today hopefully. As for the X server, I don't think it's
+related, but of course it's hard to tell. Do you see a relevant
+difference in the X log ?
 
-The "No init found" problem with 3.4.0-rc1 remains of course :-\
-
-Thanks,
-Christian.
-
-[0] http://nerdbynature.de/bits/3.4.0-rc1/init/yaboot.conf.txt
-    http://nerdbynature.de/bits/3.4.0-rc1/init/ls-boot.txt
-
-> > Hrm, did it used to boot ?
-> 
-> I'm using the "backup" kernel only when the new one has an issue, so I 
-> have not tested it for a while, but it used to work, for sure.
-> 
-> > Can you do printenv in OF and tell me what
-> > your load-base, real-base, virt-base etc... are ?
-> 
-> load-base is 0x800000, real-base and virt-base is set to "-1", please see
-> http://nerdbynature.de/bits/3.4.0-rc1/init/printenv-1.JPG
-> 
-> Not sure if this is related, but at the end of each kernel compilation, 
-> the following messages are printed:
-> 
-> ------------
->   SYSMAP  System.map
->   SYSMAP  .tmp_System.map
->   WRAP    arch/powerpc/boot/zImage.pmac
-> INFO: Uncompressed kernel (size 0x6e52f8) overlaps the address of the wrapper(0x400000)
-> INFO: Fixing the link_address of wrapper to (0x700000)
->   WRAP    arch/powerpc/boot/zImage.coff
-> INFO: Uncompressed kernel (size 0x6e52f8) overlaps the address of the wrapper(0x500000)
-> INFO: Fixing the link_address of wrapper to (0x700000)
->   WRAP    arch/powerpc/boot/zImage.miboot
-> INFO: Uncompressed kernel (size 0x6d4b80) overlaps the address of the wrapper(0x400000)
-> INFO: Fixing the link_address of wrapper to (0x700000)
->   Building modules, stage 2.
->   MODPOST 24 modules
-> ------------
-> 
-> I started to see these messages in January (around Linux 3.2.0), but never 
-> investigated what it was since the produced kernels continued to boot just 
-> fine.
-> 
-> > Might also be worth updating yaboot, debian should have 1.3.16 nowadays.
-> 
-> Debian/stable still has 1.3.13a, I'll try to install 1.3.16 from 
-> Debian/testing.
-> 
-> Thanks for your help,
-> Christian.
--- 
-BOFH excuse #372:
-
-Forced to support NT servers; sysadmins quit.
+Cheers,
+Ben.
