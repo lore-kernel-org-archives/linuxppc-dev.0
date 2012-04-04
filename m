@@ -1,18 +1,35 @@
-Return-Path: <tqnguyen@apm.com>
-Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
- by ozlabs.org (Postfix) with SMTP id 5A056B6FFE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 18:39:08 +1000 (EST)
-Received: by dacx6 with SMTP id x6so16855dac.32
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2012 01:39:06 -0700 (PDT)
-From: "Thang Q. Nguyen" <tqnguyen@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>, Josh Boyer <jwboyer@gmail.com>
-Subject: [PATCH 1/1] dts:bluestone: Add support 2 SATA ports
-Date: Wed,  4 Apr 2012 15:38:56 +0700
-Message-Id: <1333528736-8524-1-git-send-email-tqnguyen@apm.com>
-Cc: linux-kernel@vger.kernel.o, linuxppc-dev@lists.ozlabs.org,
- "Thang Q. Nguyen" <tqnguyen@apm.com>
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 65228B6FD2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 22:36:58 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Wed, 4 Apr 2012 18:06:51 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q34CantE4456456
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2012 18:06:49 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q34I7HB6005242
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2012 04:07:18 +1000
+Message-ID: <4F7C4058.6090405@in.ibm.com>
+Date: Wed, 04 Apr 2012 18:06:40 +0530
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+MIME-Version: 1.0
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: 3.4.0-rc1: No init found
+References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
+ <1333440522.3040.9.camel@pasglop>
+ <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
+In-Reply-To: <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ Al Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +39,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding 2 SATA nodes on Bluestone device tree file.
+On 04/03/2012 10:48 PM, Christian Kujau wrote:
+> On Tue, 3 Apr 2012 at 18:08, Benjamin Herrenschmidt wrote:
+>> I have observed this randomly on the G5 ... sometimes, if I try again,
+>> it works... it's very very odd. There is some kind of race maybe with
+>> async startup ? Or a problem with the vfs path walking ? It's certainly
+>> not easily reproducable for me, it goes away from one boot to the next.
+>
+> It's 100% reproducible for me. This PowerBook G4 (1.25Ghz) is not the
+> fastes though, maybe a race triggers more easily here...?
+>
+>>> PS: Unfortunately I cannot boot into the old (3.3-rc7) kernel
+>>>      right now (which is still installed via "yaboot" and present in
+>>>      /boot), because of this:
+>>>      http://nerdbynature.de/bits/3.4.0-rc1/init/mac-invalid-memory.JPG
+>>>      Booting into Debian's "squeeze" kernel (2.6.32) which resides in
+>>>      the same /boot directory succeeds.
+>>
+>> Hrm, did it used to boot ?
+>
+> I'm using the "backup" kernel only when the new one has an issue, so I
+> have not tested it for a while, but it used to work, for sure.
+>
+>> Can you do printenv in OF and tell me what
+>> your load-base, real-base, virt-base etc... are ?
+>
+> load-base is 0x800000, real-base and virt-base is set to "-1", please see
+> http://nerdbynature.de/bits/3.4.0-rc1/init/printenv-1.JPG
+>
+> Not sure if this is related, but at the end of each kernel compilation,
+> the following messages are printed:
+>
+> ------------
+>    SYSMAP  System.map
+>    SYSMAP  .tmp_System.map
+>    WRAP    arch/powerpc/boot/zImage.pmac
+> INFO: Uncompressed kernel (size 0x6e52f8) overlaps the address of the wrapper(0x400000)
+> INFO: Fixing the link_address of wrapper to (0x700000)
+>    WRAP    arch/powerpc/boot/zImage.coff
+> INFO: Uncompressed kernel (size 0x6e52f8) overlaps the address of the wrapper(0x500000)
+> INFO: Fixing the link_address of wrapper to (0x700000)
+>    WRAP    arch/powerpc/boot/zImage.miboot
+> INFO: Uncompressed kernel (size 0x6d4b80) overlaps the address of the wrapper(0x400000)
+> INFO: Fixing the link_address of wrapper to (0x700000)
+>    Building modules, stage 2.
+>    MODPOST 24 modules
+> ------------
+>
+> I started to see these messages in January (around Linux 3.2.0), but never
+> investigated what it was since the produced kernels continued to boot just
+> fine.
 
-Signed-off-by: Thang Q. Nguyen <tqnguyen@apm.com>
----
- arch/powerpc/boot/dts/bluestone.dts |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
+The above change was added by me. The message is printed when the 
+'wrapper' script finds that decompressed kernel overlaps the 'bootstrap 
+code' which does the decompression. So it shifts the 'address' of the 
+bootstrap code to the next higher MB. As such it is harmless.
 
-diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
-index cfa23bf..803fda6 100644
---- a/arch/powerpc/boot/dts/bluestone.dts
-+++ b/arch/powerpc/boot/dts/bluestone.dts
-@@ -155,6 +155,27 @@
- 					/*RXDE*/  0x5 0x4>;
- 		};
- 
-+		/* SATA DWC devices */
-+		SATA0: sata@bffd1000 {
-+			compatible = "amcc,sata-apm821xx";
-+			reg = <4 0xbffd1000 0x800   /* SATA0 */
-+			       4 0xbffd0800 0x400>; /* AHBDMA */
-+			dma-channel=<0>;
-+			interrupt-parent = <&UIC0>;
-+			interrupts = <26 4    /* SATA0 */
-+			              25 4>;  /* AHBDMA */
-+		};
-+
-+		SATA1: sata@bffd1800 {
-+			compatible = "amcc,sata-apm821xx";
-+			reg = <4 0xbffd1800 0x800   /* SATA1 */
-+			       4 0xbffd0800 0x400>; /* AHBDMA */
-+			dma-channel=<1>;
-+			interrupt-parent = <&UIC0>;
-+			interrupts = <27 4    /* SATA1 */
-+			              25 4>;  /* AHBDMA */
-+		};
-+
- 		POB0: opb {
- 			compatible = "ibm,opb";
- 			#address-cells = <1>;
--- 
-1.7.3.4
 
-CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, 
-is for the sole use of the intended recipient(s) and contains information 
-that is confidential and proprietary to AppliedMicro Corporation or its subsidiaries. 
-It is to be used solely for the purpose of furthering the parties' business relationship. 
-All unauthorized review, use, disclosure or distribution is prohibited. 
-If you are not the intended recipient, please contact the sender by reply e-mail 
-and destroy all copies of the original message.
+Thanks
+Suzuki
