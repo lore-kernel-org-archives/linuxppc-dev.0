@@ -1,23 +1,15 @@
-Return-Path: <whitebox@nefkom.net>
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
- use irq_alloc_desc() instead
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
- <20120402202848.1EB833E02A7@localhost> <m2y5qdow0v.fsf@igel.home>
- <1333489422.3040.11.camel@pasglop>
-Date: Wed, 04 Apr 2012 14:51:32 +0200
-In-Reply-To: <1333489422.3040.11.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Wed, 04 Apr 2012 07:43:42 +1000")
-Message-ID: <m2ehs3vewb.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [RFC] powerpc/fsl-pci: Document the "fsl,
+ has-isa" property for Freescale PCI
+Mime-Version: 1.0 (Apple Message framework v1257)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1333263396-23932-1-git-send-email-B38951@freescale.com>
+Date: Wed, 4 Apr 2012 08:08:39 -0500
+Message-Id: <E3DD739D-1EC3-4BCA-AE26-1EAE7A086A1E@kernel.crashing.org>
+References: <1333263396-23932-1-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Do you see a relevant difference in the X log ?
+On Apr 1, 2012, at 1:56 AM, Jia Hongtao wrote:
 
-Nothing at all.
+> If PCI is primary bus we should set isa_io/mem_base when parsing PCI =
+bridge
+> resources from device tree. The previous way to check the primary bus =
+based
+> on a hard-coded address named primary_phb_addr. Now we add a property =
+named
+> "fsl,has-isa" into device tree. In kernel we use this property to find =
+out
+> the bus is primary or not. This way is more flexible.
+>=20
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> .../devicetree/bindings/powerpc/fsl/pci.txt        |   36 =
+++++++++++++++++++++
+> 1 files changed, 36 insertions(+), 0 deletions(-)
+> create mode 100644 =
+Documentation/devicetree/bindings/powerpc/fsl/pci.txt
 
-Andreas.
+This isn't freescale specific, its linux specific.  If anything the =
+property should be linux,has-isa.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+But in general I dont think this is a good idea.  In truth one could =
+search the device tree for:
+
+	device_type =3D "isa";
+
+to try and set this dynamically.
+
+- k
