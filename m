@@ -1,25 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
- [209.85.210.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 01669B6FBC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2012 09:01:39 +1000 (EST)
-Received: by mail-pz0-f42.google.com with SMTP id g27so245598dan.15
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2012 16:01:39 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 3/5] powerpc: dts: klondike: Add UART nodes
-To: Tanmay Inamdar <tinamdar@apm.com>, benh@kernel.crashing.org,
- jwboyer@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org
-In-Reply-To: <1333348747-12713-3-git-send-email-tinamdar@apm.com>
+Return-Path: <jwboyer@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20120403155703.3B0593E053F@localhost>
 References: <1333348747-12713-1-git-send-email-tinamdar@apm.com>
  <1333348747-12713-2-git-send-email-tinamdar@apm.com>
  <1333348747-12713-3-git-send-email-tinamdar@apm.com>
-Date: Tue, 03 Apr 2012 09:57:03 -0600
-Message-Id: <20120403155703.3B0593E053F@localhost>
-Cc: Tanmay Inamdar <tinamdar@apm.com>
+ <20120403155703.3B0593E053F@localhost>
+Date: Tue, 3 Apr 2012 20:49:40 -0400
+Message-ID: <CA+5PVA4_PJ2T7LGM_N_WemQKY2u6bLg0QFk4wPpd=FGESx7eiQ@mail.gmail.com>
+Subject: Re: [PATCH 3/5] powerpc: dts: klondike: Add UART nodes
+From: Josh Boyer <jwboyer@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ Tanmay Inamdar <tinamdar@apm.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon,  2 Apr 2012 12:09:05 +0530, Tanmay Inamdar <tinamdar@apm.com> wrote:
-> Adding UART nodes in Klondike device tree file.
-> 
-> Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
-> ---
-> :100644 100644 4ff2852... d5bf2e1... M	arch/powerpc/boot/dts/klondike.dts
->  arch/powerpc/boot/dts/klondike.dts |   24 ++++++++++++++++++++++++
->  1 files changed, 24 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/klondike.dts b/arch/powerpc/boot/dts/klondike.dts
-> index 4ff2852..d5bf2e1 100644
-> --- a/arch/powerpc/boot/dts/klondike.dts
-> +++ b/arch/powerpc/boot/dts/klondike.dts
-> @@ -222,6 +222,30 @@
->  				#size-cells = <1>;
->  				ranges;
->  				clock-frequency = <0>;
-> +
-> +				UART0: serial@50001000 {
-> +				       device_type = "serial";
-> +				       compatible = "ns16550";
-> +				       reg = <0x50001000 0x00000100>;
-> +				       virtual-reg = <0x50001000>;
+On Tue, Apr 3, 2012 at 11:57 AM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> On Mon, =A02 Apr 2012 12:09:05 +0530, Tanmay Inamdar <tinamdar@apm.com> w=
+rote:
+>> Adding UART nodes in Klondike device tree file.
+>>
+>> Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
+>> ---
+>> :100644 100644 4ff2852... d5bf2e1... M =A0 =A0 =A0 =A0arch/powerpc/boot/=
+dts/klondike.dts
+>> =A0arch/powerpc/boot/dts/klondike.dts | =A0 24 ++++++++++++++++++++++++
+>> =A01 files changed, 24 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/powerpc/boot/dts/klondike.dts b/arch/powerpc/boot/dts/=
+klondike.dts
+>> index 4ff2852..d5bf2e1 100644
+>> --- a/arch/powerpc/boot/dts/klondike.dts
+>> +++ b/arch/powerpc/boot/dts/klondike.dts
+>> @@ -222,6 +222,30 @@
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =
+=3D <1>;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ranges;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 clock-freque=
+ncy =3D <0>;
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 UART0: serial@=
+50001000 {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0device_type =3D "serial";
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0compatible =3D "ns16550";
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0reg =3D <0x50001000 0x00000100>;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0virtual-reg =3D <0x50001000>;
+>
+> Why do you need virtual-reg? =A0The kernel should handle all iomapping
+> properly without this.
 
-Why do you need virtual-reg?  The kernel should handle all iomapping
-properly without this.
+Right.  It's been used for platforms that actually use the
+zImage/treeImage wrapper for printf support, but this uses u-boot as
+far as I know.  It shouldn't need it.
 
-g.
+josh
