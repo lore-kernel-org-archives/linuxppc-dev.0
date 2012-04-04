@@ -1,20 +1,18 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id 783DBB700F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2012 02:45:53 +1000 (EST)
-Date: Wed, 4 Apr 2012 09:45:49 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: Re: 3.4.0-rc1: No init found
-In-Reply-To: <4F7C4058.6090405@in.ibm.com>
-Message-ID: <alpine.DEB.2.01.1204040944210.4930@trent.utfs.org>
-References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
- <1333440522.3040.9.camel@pasglop>
- <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
- <4F7C4058.6090405@in.ibm.com>
+Return-Path: <B16395@freescale.com>
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH 3/4] powerpc/mpic: Move internal interrupt source vector
+ allocation to a separate function.
+Date: Wed, 4 Apr 2012 19:09:33 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0B77F9@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1332850586-23610-1-git-send-email-Varun.Sethi@freescale.com>
+ <84A55A49-747D-4C87-9E5C-E5C63C0CEDA7@kernel.crashing.org>
+ <C5ECD7A89D1DC44195F34B25E172658D0B11BA@039-SN2MPN1-013.039d.mgd.msft.net>
+ <BA2352CD-6C54-4D33-86DB-F55DBDBA6E5F@kernel.crashing.org>
+In-Reply-To: <BA2352CD-6C54-4D33-86DB-F55DBDBA6E5F@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Cc: "Linuxppc-dev@lists.ozlabs.org" <Linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 4 Apr 2012 at 18:06, Suzuki K. Poulose wrote:
-> > INFO: Uncompressed kernel (size 0x6d4b80) overlaps the address of the
-> > wrapper(0x400000)
-> > INFO: Fixing the link_address of wrapper to (0x700000)
-> >    Building modules, stage 2.
-> >    MODPOST 24 modules
-> > ------------
-> > 
-> > I started to see these messages in January (around Linux 3.2.0), but never
-> > investigated what it was since the produced kernels continued to boot just
-> > fine.
-> 
-> The above change was added by me. The message is printed when the 'wrapper'
-> script finds that decompressed kernel overlaps the 'bootstrap code' which does
-> the decompression. So it shifts the 'address' of the bootstrap code to the
-> next higher MB. As such it is harmless.
 
-OK, good to know that it's harmless. Thanks for the explanation.
 
-Christian.
--- 
-BOFH excuse #256:
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Tuesday, March 27, 2012 7:32 PM
+> To: Sethi Varun-B16395
+> Cc: Linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH 3/4] powerpc/mpic: Move internal interrupt source
+> vector allocation to a separate function.
+>=20
+>=20
+> On Mar 27, 2012, at 8:52 AM, Sethi Varun-B16395 wrote:
+>=20
+> >
+> >
+> >> -----Original Message-----
+> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >> Sent: Tuesday, March 27, 2012 6:55 PM
+> >> To: Sethi Varun-B16395
+> >> Cc: Linuxppc-dev@lists.ozlabs.org
+> >> Subject: Re: [PATCH 3/4] powerpc/mpic: Move internal interrupt source
+> >> vector allocation to a separate function.
+> >>
+> >>
+> >> On Mar 27, 2012, at 7:16 AM, Varun Sethi wrote:
+> >>
+> >>> Allocate vector numbers for MPIC internal interrupt sources (IPIs
+> >>> and
+> >>> Timers) in a separate function.
+> >>>
+> >>
+> >> Explain why you are making this change.
+> >
+> >
+> > [Sethi Varun-B16395] With the current code it becomes fairly difficult
+> > to add new internal interrupt sources. In my case I had to add 32
+> > additional interrupt sources corresponding to the MPIC error
+> > interrupts. It's more convenient doing the internal interrupt source
+> allocation using a loop.
+>=20
+> I think that is more due to how you added the MPIC error interrupts and
+> issues w/that code.  If you are treating the MPIC error interrupts as a
+> cascade than they should have a distinct linux IRQ space from the
+> standard MPIC interrupts.  This is how the MSIs work (as an example).
+In case of error interrupts we are depending on the mpic_host_maps
+for mapping and interrupt specifier translations. There is no separate
+initialization as in case of MSIs. That's the reason I am treating
+error interrupts as mpic internal interrupt sources.
 
-You need to install an RTFM interface.
+-Varun
