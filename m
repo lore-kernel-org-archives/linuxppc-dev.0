@@ -1,30 +1,22 @@
-Return-Path: <wd@denx.de>
+Return-Path: <whitebox@nefkom.net>
 Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
+ [IPv6:2001:a60:0:70:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6B21BB7045
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2012 03:44:13 +1000 (EST)
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+ by ozlabs.org (Postfix) with ESMTPS id E6A6BB706D
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2012 07:38:06 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 03/12] powerpc: Rework runlatch code
+References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
+ <1330680922-6894-4-git-send-email-benh__48089.0872575857$1330681158$gmane$org@kernel.crashing.org>
+Date: Thu, 05 Apr 2012 23:38:01 +0200
+In-Reply-To: <1330680922-6894-4-git-send-email-benh__48089.0872575857$1330681158$gmane$org@kernel.crashing.org>
+ (Benjamin Herrenschmidt's message of "Fri, 2 Mar 2012 20:35:13 +1100")
+Message-ID: <m2vcldamh2.fsf@igel.home>
 MIME-Version: 1.0
-Content-type: text/plain; charset=UTF-8
-In-reply-to: <20120405100228.9ca940aa4739e81540bb2a6f@canb.auug.org.au>
-References: <4F69C553.6070409@gmail.com>
- <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
- <20120321162549.8C1D0202A4D@gemini.denx.de>
- <1332633218.2882.16.camel@pasglop>
- <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
- <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
- <1333152184.30734.3.camel@pasglop>
- <CA+5PVA6jQgme0sS=i8yYX6b_R5179+BtWPh7QXCGNfoLTCt46A@mail.gmail.com>
- <20120404192101.2A558200243@gemini.denx.de>
- <20120405100228.9ca940aa4739e81540bb2a6f@canb.auug.org.au>
-Date: Thu, 05 Apr 2012 19:44:04 +0200
-Message-Id: <20120405174404.A4086200240@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, robert.karl.berger@gmail.com,
- Frank =?UTF-8?B?U3ZlbmRzYsO4ZQ==?= <frank.svendsboe@gmail.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,29 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Stephen Rothwell,
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-In message <20120405100228.9ca940aa4739e81540bb2a6f@canb.auug.org.au> you wrote:
+> This moves the inlines into system.h and changes the runlatch
+> code to use the thread local flags (non-atomic) rather than
+> the TIF flags (atomic) to keep track of the latch state.
 >
-> > ELDK 4.2 is based on gcc version 4.2.2 / binutils version 2.17.50.0.12
-> > 20070128.  This is obviously to old for this code.  I do not see an
-> > actual problem with that - nobody can expect that we support old tol
-> > chain versions forever.
-> 
-> The requirements are documented in Documentation/Changes where we say we
-> need gcc 3.2 and binutils 2.12.  Not that that is very relevant to this
-> discussion. ;-)
+> The code to turn it back on in an asynchronous interrupt is
+> now simplified and partially inlined.
 
-Indeed. I doubt you can build any working PPC kernel with these old
-tools.
+This breaks the X server in that it no longer receives SIGIO signals.
 
-Best regards,
-
-Wolfgang Denk
+Andreas.
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Consistency requires you to be as ignorant today as you were a  year
-ago."                                              - Bernard Berenson
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
