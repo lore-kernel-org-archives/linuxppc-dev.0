@@ -1,9 +1,10 @@
 Return-Path: <anton@samba.org>
-Date: Thu, 5 Apr 2012 14:24:29 +1000
+Date: Thu, 5 Apr 2012 14:25:57 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 2/4] powerpc: No need to save XER in a system call
-Message-ID: <20120405142429.7bb7785c@kryten>
+Subject: [PATCH 3/4] powerpc: Better scheduling of CR save code in system
+ call path
+Message-ID: <20120405142557.398f14d2@kryten>
 In-Reply-To: <20120405142327.6038bbb4@kryten>
 References: <20120405142327.6038bbb4@kryten>
 Mime-Version: 1.0
@@ -19,34 +20,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-The XER is a volatile register so there is no need to save and restore
-it over a system call - zero it out in the exception stack frame
-instead.
+At the moment system call entry looks like:
 
-This should fix a 5 cycle stall of the mfxer/std seen on POWER7.
+crclr	so
+...
+mfcr	r9
+...
+std	r9,_CCR(r1)
+
+commit bd19c8994a82 ([POWERPC] system call micro optimisation) put
+some space between the crclr and mfcr in order to avoid a stall.
+
+There is still a stall seen between the mfcr and std. We can avoid
+the crclr by doing it in a GPR with rlwinm which gives us more room
+to better schedule the sequence.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: linux-build/arch/powerpc/kernel/entry_64.S
 ===================================================================
---- linux-build.orig/arch/powerpc/kernel/entry_64.S	2012-03-22 22:47:04.479314599 +1100
-+++ linux-build/arch/powerpc/kernel/entry_64.S	2012-03-22 22:47:08.379384827 +1100
-@@ -82,6 +82,7 @@ system_call_common:
- 	std	r11,GPR10(r1)
- 	std	r11,GPR11(r1)
+--- linux-build.orig/arch/powerpc/kernel/entry_64.S	2012-03-22 22:47:08.379384827 +1100
++++ linux-build/arch/powerpc/kernel/entry_64.S	2012-03-22 22:47:15.023504471 +1100
+@@ -63,15 +63,9 @@ system_call_common:
+ 	std	r0,GPR0(r1)
+ 	std	r10,GPR1(r1)
+ 	ACCOUNT_CPU_USER_ENTRY(r10, r11)
+-	/*
+-	 * This "crclr so" clears CR0.SO, which is the error indication on
+-	 * return from this system call.  There must be no cmp instruction
+-	 * between it and the "mfcr r9" below, otherwise if XER.SO is set,
+-	 * CR0.SO will get set, causing all system calls to appear to fail.
+-	 */
+-	crclr	so
+ 	std	r2,GPR2(r1)
+ 	std	r3,GPR3(r1)
++	mfcr	r2
+ 	std	r4,GPR4(r1)
+ 	std	r5,GPR5(r1)
+ 	std	r6,GPR6(r1)
+@@ -84,15 +78,19 @@ system_call_common:
  	std	r11,GPR12(r1)
-+	std	r11,_XER(r1)
+ 	std	r11,_XER(r1)
  	std	r9,GPR13(r1)
- 	mfcr	r9
+-	mfcr	r9
  	mflr	r10
-@@ -89,9 +90,7 @@ system_call_common:
- 	std	r9,_CCR(r1)
+ 	li	r11,0xc01
+-	std	r9,_CCR(r1)
++	/*
++	 * This clears CR0.SO, which is the error indication on return
++	 * from this system call.
++	 */
++	rlwinm	r2,r2,0,4,2
  	std	r10,_LINK(r1)
  	std	r11,_TRAP(r1)
--	mfxer	r9
  	mfctr	r10
--	std	r9,_XER(r1)
  	std	r10,_CTR(r1)
  	std	r3,ORIG_GPR3(r1)
++	std	r2,_CCR(r1)
  	ld	r2,PACATOC(r13)
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	ld	r11,exception_marker@toc(r2)
