@@ -1,22 +1,23 @@
 Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E6A6BB706D
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2012 07:38:06 +1000 (EST)
 From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/12] powerpc: Rework runlatch code
-References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
- <1330680922-6894-4-git-send-email-benh__48089.0872575857$1330681158$gmane$org@kernel.crashing.org>
-Date: Thu, 05 Apr 2012 23:38:01 +0200
-In-Reply-To: <1330680922-6894-4-git-send-email-benh__48089.0872575857$1330681158$gmane$org@kernel.crashing.org>
- (Benjamin Herrenschmidt's message of "Fri, 2 Mar 2012 20:35:13 +1100")
-Message-ID: <m2vcldamh2.fsf@igel.home>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
+ use irq_alloc_desc() instead
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+ <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
+ <20120402202848.1EB833E02A7@localhost> <m2y5qdow0v.fsf@igel.home>
+ <20120404154020.40C513E09D5@localhost>
+Date: Fri, 06 Apr 2012 00:10:23 +0200
+In-Reply-To: <20120404154020.40C513E09D5@localhost> (Grant Likely's message of
+ "Wed, 04 Apr 2012 08:40:20 -0700")
+Message-ID: <m2r4w1akz4.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Grant Likely <grant.likely@secretlab.ca> writes:
 
-> This moves the inlines into system.h and changes the runlatch
-> code to use the thread local flags (non-atomic) rather than
-> the TIF flags (atomic) to keep track of the latch state.
->
-> The code to turn it back on in an asynchronous interrupt is
-> now simplified and partially inlined.
+> Can you attach console output logs for each of configs above and also
+> with NR_IRQS=128?  That might give me some clues as to which specific
+> code is causing the issues.
 
-This breaks the X server in that it no longer receives SIGIO signals.
+It really looks like the issue starts when irq_expand_nr_irqs is called
+the first time to make nr_irqs bigger than NR_IRQS.
 
 Andreas.
 
