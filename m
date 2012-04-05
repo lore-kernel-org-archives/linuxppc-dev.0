@@ -1,23 +1,27 @@
 Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1FD47B7047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2012 22:35:11 +1000 (EST)
 From: Andreas Schwab <schwab@linux-m68k.org>
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
  use irq_alloc_desc() instead
 References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
  <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
- <20120402202848.1EB833E02A7@localhost> <m2y5qdow0v.fsf@igel.home>
- <20120404154020.40C513E09D5@localhost>
-Date: Thu, 05 Apr 2012 12:51:27 +0200
-In-Reply-To: <20120404154020.40C513E09D5@localhost> (Grant Likely's message of
- "Wed, 04 Apr 2012 08:40:20 -0700")
-Message-ID: <m21uo2v4cw.fsf@igel.home>
+ <m2iphj3zxr.fsf@igel.home> <1333340517.30734.42.camel@pasglop>
+ <m2r4w6jugo.fsf@linux-m68k.org>
+ <1333401070.30734.55.camel__46349.1482347765$1333401169$gmane$org@pasglop>
+Date: Thu, 05 Apr 2012 14:35:14 +0200
+In-Reply-To: <1333401070.30734.55.camel__46349.1482347765$1333401169$gmane$org@pasglop>
+ (Benjamin Herrenschmidt's message of "Tue, 03 Apr 2012 07:11:10
+ +1000")
+Message-ID: <m2obr61hml.fsf@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Rob Herring <rob.herring@calxeda.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +31,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely <grant.likely@secretlab.ca> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> I bet it is NR_IRQS related.  You have SPARSE_IRQ enabled, which means
-> the maximum number of irq_descs is IRQ_BITMAP_BITS (NR_IRQS + 8192).
+> Hrm, odd.. I'll dbl check today that I didn't b0rk something in my test
+> (like loading the wrong kernel :-) I'll also try with your config.
 
-The actual definition uses NR_IRQS + 8196.  Guess that's a typo.  (Does
-it really make sense to add NR_IRQS here?)
-
-> diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-> index cf417e51..9edf499 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -20,7 +20,7 @@
->  
->  /* Define a way to iterate across irqs. */
->  #define for_each_irq(i) \
-> -       for ((i) = 0; (i) < NR_IRQS; ++(i))
-> +       for ((i) = 0; (i) < nr_irqs; ++(i))
-
-There are exactly two uses of for_each_irq, one is related to cpu
-hotplug, the other to kexec, so that cannot make any difference.
+Do you have anything that triggers loading the sound drivers?  That's
+exactly the point where the irq problems start.
 
 Andreas.
 
