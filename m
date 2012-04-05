@@ -1,26 +1,14 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1FD47B7047
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2012 22:35:11 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
- use irq_alloc_desc() instead
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <1333340517.30734.42.camel@pasglop>
- <m2r4w6jugo.fsf@linux-m68k.org>
- <1333401070.30734.55.camel__46349.1482347765$1333401169$gmane$org@pasglop>
-Date: Thu, 05 Apr 2012 14:35:14 +0200
-In-Reply-To: <1333401070.30734.55.camel__46349.1482347765$1333401169$gmane$org@pasglop>
- (Benjamin Herrenschmidt's message of "Tue, 03 Apr 2012 07:11:10
- +1000")
-Message-ID: <m2obr61hml.fsf@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <anton@samba.org>
+Date: Thu, 5 Apr 2012 23:44:48 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 3/4 v2] powerpc: Better scheduling of CR save code in system
+ call path
+Message-ID: <20120405234448.4d879808@kryten>
+In-Reply-To: <20120405142557.398f14d2@kryten>
+References: <20120405142327.6038bbb4@kryten> <20120405142557.398f14d2@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,17 +19,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Hrm, odd.. I'll dbl check today that I didn't b0rk something in my test
-> (like loading the wrong kernel :-) I'll also try with your config.
+At the moment system call entry looks like:
 
-Do you have anything that triggers loading the sound drivers?  That's
-exactly the point where the irq problems start.
+crclr	so
+...
+mfcr	r9
+...
+std	r9,_CCR(r1)
 
-Andreas.
+commit bd19c8994a82 ([POWERPC] system call micro optimisation) put
+some space between the crclr and mfcr in order to avoid a stall.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+There is still a stall seen between the mfcr and std. We can avoid
+the crclr by doing it in a GPR with rlwinm which gives us more room
+to better schedule the sequence.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+v2:
+
+Milton pointed out that rlwinm copies the low 32bits into the top
+32bits and this might confuse ptracers. We tossed around a few ideas
+but his suggestion of using rldimi sounds good to me.
+
+Index: linux-build/arch/powerpc/kernel/entry_64.S
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/entry_64.S	2012-04-05 14:03:05.123678148 +1000
++++ linux-build/arch/powerpc/kernel/entry_64.S	2012-04-05 23:38:09.182681076 +1000
+@@ -63,15 +63,9 @@ system_call_common:
+ 	std	r0,GPR0(r1)
+ 	std	r10,GPR1(r1)
+ 	ACCOUNT_CPU_USER_ENTRY(r10, r11)
+-	/*
+-	 * This "crclr so" clears CR0.SO, which is the error indication on
+-	 * return from this system call.  There must be no cmp instruction
+-	 * between it and the "mfcr r9" below, otherwise if XER.SO is set,
+-	 * CR0.SO will get set, causing all system calls to appear to fail.
+-	 */
+-	crclr	so
+ 	std	r2,GPR2(r1)
+ 	std	r3,GPR3(r1)
++	mfcr	r2
+ 	std	r4,GPR4(r1)
+ 	std	r5,GPR5(r1)
+ 	std	r6,GPR6(r1)
+@@ -84,15 +78,19 @@ system_call_common:
+ 	std	r11,GPR12(r1)
+ 	std	r11,_XER(r1)
+ 	std	r9,GPR13(r1)
+-	mfcr	r9
+ 	mflr	r10
++	/*
++	 * This clears CR0.SO (bit 28), which is the error indication on
++	 * return from this system call.
++	 */
++	rldimi	r2,r11,28,(63-28)
+ 	li	r11,0xc01
+-	std	r9,_CCR(r1)
+ 	std	r10,_LINK(r1)
+ 	std	r11,_TRAP(r1)
+ 	mfctr	r10
+ 	std	r10,_CTR(r1)
+ 	std	r3,ORIG_GPR3(r1)
++	std	r2,_CCR(r1)
+ 	ld	r2,PACATOC(r13)
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	ld	r11,exception_marker@toc(r2)
