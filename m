@@ -1,23 +1,19 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8F031B7069
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2012 09:05:31 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/12] powerpc: Rework runlatch code
-References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
- <1330680922-6894-4-git-send-email-benh__48089.0872575857$1330681158$gmane$org@kernel.crashing.org>
- <m2vcldamh2.fsf@igel.home> <1333663961.3040.34.camel@pasglop>
-Date: Fri, 06 Apr 2012 01:05:22 +0200
-In-Reply-To: <1333663961.3040.34.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Fri, 06 Apr 2012 08:12:41 +1000")
-Message-ID: <m2mx6paifh.fsf@igel.home>
+Return-Path: <B38951@freescale.com>
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property for
+ Freescale PCI
+Date: Fri, 6 Apr 2012 03:04:50 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D019DBE90@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1333263396-23932-1-git-send-email-B38951@freescale.com>
+ <E3DD739D-1EC3-4BCA-AE26-1EAE7A086A1E@kernel.crashing.org>
+In-Reply-To: <E3DD739D-1EC3-4BCA-AE26-1EAE7A086A1E@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+Cc: "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Have you verified that you can "fix" it with reverting just the above
-> patch ?
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Wednesday, April 04, 2012 9:09 PM
+> To: Jia Hongtao-B38951
+> Cc: linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; devicetree-
+> discuss@lists.ozlabs.org
+> Subject: Re: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property
+> for Freescale PCI
+>=20
+>=20
+> On Apr 1, 2012, at 1:56 AM, Jia Hongtao wrote:
+>=20
+> > If PCI is primary bus we should set isa_io/mem_base when parsing PCI
+> bridge
+> > resources from device tree. The previous way to check the primary bus
+> based
+> > on a hard-coded address named primary_phb_addr. Now we add a property
+> named
+> > "fsl,has-isa" into device tree. In kernel we use this property to find
+> out
+> > the bus is primary or not. This way is more flexible.
+> >
+> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> > .../devicetree/bindings/powerpc/fsl/pci.txt        |   36
+> ++++++++++++++++++++
+> > 1 files changed, 36 insertions(+), 0 deletions(-)
+> > create mode 100644
+> Documentation/devicetree/bindings/powerpc/fsl/pci.txt
+>=20
+> This isn't freescale specific, its linux specific.  If anything the
+> property should be linux,has-isa.
+>=20
+> But in general I dont think this is a good idea.  In truth one could
+> search the device tree for:
+>=20
+> 	device_type =3D "isa";
+>=20
+> to try and set this dynamically.
+>=20
+> - k
+>=20
 
-Yes.
+Yes, it's not Freescale specific, but it's only used by Freescale now in
+the kernel. This is why I named the property as "fsl,has-isa".
 
-(Currently running 3.4-rc1 with fe1952f reverted and irq_set_irq_type
-removed from mpic_host_map.)
+To indicate PCI bus is primary we have three ways to go and we now like
+the 2nd solution:
 
-Andreas.
+1. As this patch said, we add a property to device tree manually.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+2. Set this property dynamically in uboot when scanning PCI bridge.
+Actually we have already done this. The problem is users should update
+uboot and kernel together or it's not work. To support old uboot we decide
+to add this property into device tree too temporarily. We will remove it
+from device tree at an appropriate future.
+
+3. Just as you said we could search the device tree by device_type =3D "isa=
+".
+   There are two problems here:
+	* There is no OF API for searching just in PCI node now. That means
+	  we can't easily find whether there is "isa" bridge or not under
+	  this PCI controller while scanning it.
+	* Boards MPC8541CDS and MPC8555CDS has no "isa" node in device tree
+	  but has ISA bridge under PCI controller.
+
+- Jia Hongtao
