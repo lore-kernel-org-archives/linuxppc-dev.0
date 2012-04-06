@@ -1,26 +1,22 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4A699B7022
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2012 22:12:04 +1000 (EST)
-Received: by bkwj10 with SMTP id j10so2005100bkw.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Apr 2012 05:12:01 -0700 (PDT)
-Message-ID: <4F7EDD35.3070203@mvista.com>
-Date: Fri, 06 Apr 2012 16:10:29 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+Return-Path: <B07421@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 98609B7099
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Apr 2012 05:10:29 +1000 (EST)
+Message-ID: <4F7F3F96.5070905@freescale.com>
+Date: Fri, 6 Apr 2012 14:10:14 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: "Thang Q. Nguyen" <tqnguyen@apm.com>
-Subject: Re: [PATCH 1/1] [v3] Add support 2 SATA ports for Maui and change
- filename from sata_dwc_460ex.c to sata_dwc_4xx.c
-References: <1333690265-27857-1-git-send-email-tqnguyen@apm.com>
-In-Reply-To: <1333690265-27857-1-git-send-email-tqnguyen@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Phong Vo <pvo@apm.com>, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
- linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Jeff Garzik <jgarzik@pobox.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Subject: Re: [PATCH] Use clockevent multiplier and shifter for decrementer
+References: <1333522311-1390-1-git-send-email-bharat.bhushan@freescale.com>
+In-Reply-To: <1333522311-1390-1-git-send-email-bharat.bhushan@freescale.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +26,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
-
-On 06-04-2012 9:31, Thang Q. Nguyen wrote:
-
-> Signed-off-by: Thang Q. Nguyen<tqnguyen@apm.com>
+On 04/04/2012 01:51 AM, Bharat Bhushan wrote:
+> Time for which the hrtimer is started for decrementer emulation is
+> calculated using tb_ticks_per_usec. While hrtimer uses the clockevent
+> for DEC reprogramming (if needed) and which calculate timebase ticks
+> using the multiplier and shifter mechanism implemented within
+> clockevent layer. It was observed that this conversion
+> (timebase->time->timebase) are not correct because the mechanism are
+> not consistent. In our setup it adds 2% jitter.
+>
+> With this patch clockevent multiplier and shifter mechanism are used
+> when starting hrtimer for decrementer emulation. Now the jitter is <
+> 0.5%.
+>
+> Signed-off-by: Bharat Bhushan<bharat.bhushan@freescale.com>
 > ---
-> Changes for v2:
->         - Use git rename feature to change the driver to the newname and for
->           easier review.
+>   arch/powerpc/include/asm/time.h |    2 ++
+>   arch/powerpc/kernel/time.c      |    6 ++++++
+>   arch/powerpc/kvm/emulate.c      |    5 +++--
+>   3 files changed, 11 insertions(+), 2 deletions(-)
 
-> Changes for v3:
-> 	- Remove materials not related to 2 SATA ports support. They will
-> 	 be added in another patches.
+Changes to arch/powerpc outside arch/powerpc/kvm need to
+Cc: linuxppc-dev@lists.ozlabs.org
 
->   drivers/ata/Makefile                             |    2 +-
->   drivers/ata/{sata_dwc_460ex.c =>  sata_dwc_4xx.c} |  820 +++++++++++-----------
->   2 files changed, 430 insertions(+), 392 deletions(-)
->   rename drivers/ata/{sata_dwc_460ex.c =>  sata_dwc_4xx.c} (73%)
+> diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+> index 7eb10fb..6d631b2 100644
+> --- a/arch/powerpc/include/asm/time.h
+> +++ b/arch/powerpc/include/asm/time.h
+> @@ -202,6 +202,8 @@ extern u64 mulhdu(u64, u64);
+>   extern void div128_by_32(u64 dividend_high, u64 dividend_low,
+>   			 unsigned divisor, struct div_result *dr);
+>
+> +extern void get_clockevent_mult(u64 *multi, u64 *shift);
+> +
+>   /* Used to store Processor Utilization register (purr) values */
+>
+>   struct cpu_usage {
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 567dd7c..d229edd 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -910,6 +910,12 @@ static void __init init_decrementer_clockevent(void)
+>   	register_decrementer_clockevent(cpu);
+>   }
+>
+> +void get_clockevent_mult(u64 *multi, u64 *shift)
+> +{
+> +	*multi = decrementer_clockevent.mult;
+> +	*shift = decrementer_clockevent.shift;
+> +}
 
-> diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_4xx.c
-> similarity index 73%
-> rename from drivers/ata/sata_dwc_460ex.c
-> rename to drivers/ata/sata_dwc_4xx.c
-> index 69f7cde..07e9b36 100644
-> --- a/drivers/ata/sata_dwc_460ex.c
-> +++ b/drivers/ata/sata_dwc_4xx.c
-[...]
-> @@ -16,6 +14,15 @@
->    * under  the terms of  the GNU General  Public License as published by the
->    * Free Software Foundation;  either version 2 of the  License, or (at your
->    * option) any later version.
-> + *
-> + * CHANGES:
-> + * - Version 1.4:
-> + *   + Change filename from sata_dwc_460ex.c to sata_dwc_4xx.c
-> + *   + This driver supports more than one SATA port. Each SATA port has its
-> + *     own private attribute. Move sata_dwc_host_priv structure to
-> + *     sata_dwc_device and sata_dwc_device_port structures.
-> + *   + Change to use ata_bmdma_qc_issue and ata_bmdma_error_handler because
-> + *     the ata_sff_qc_issue and ata_sff_error_handler no longer support DMA.
+Maybe just make decrmenter_clockevent non-static?
 
-    This modification looks like a bug fix, and so should be separated and 
-posted before the dual-port patch.
+> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+> index afc9154..4bfcaa1 100644
+> --- a/arch/powerpc/kvm/emulate.c
+> +++ b/arch/powerpc/kvm/emulate.c
+> @@ -76,6 +76,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+>   {
+>   	unsigned long dec_nsec;
+>   	unsigned long long dec_time;
+> +	u64 mult, shift;
+>
+>   	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
+>   	hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
+> @@ -103,9 +104,9 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+>   	 * host ticks.
+>   	 */
+>
+> +	get_clockevent_mult(&mult,&shift);
+>   	dec_time = vcpu->arch.dec;
+> -	dec_time *= 1000;
+> -	do_div(dec_time, tb_ticks_per_usec);
+> +	dec_time = (dec_time<<  shift) / mult;
+>   	dec_nsec = do_div(dec_time, NSEC_PER_SEC);
+>   	hrtimer_start(&vcpu->arch.dec_timer,
+>   		ktime_set(dec_time, dec_nsec), HRTIMER_MODE_REL);
 
-    I'll try to do more deltailed review on the weekend.
-
-MBR, Sergei
+-Scott
