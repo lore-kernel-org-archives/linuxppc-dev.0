@@ -1,15 +1,26 @@
-Return-Path: <jerry_dw@126.com>
-Received: from m15-55.126.com (m15-55.126.com [220.181.15.55])
- by ozlabs.org (Postfix) with ESMTP id CAABFB7001
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Apr 2012 22:56:51 +1000 (EST)
-Date: Sun, 8 Apr 2012 20:56:45 +0800 (CST)
-From: jerry_dw <jerry_dw@126.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Message-ID: <2bd5b078.15165.13692072e57.Coremail.jerry_dw@126.com>
-Subject: kernel3.2.13 cannot boot on my mpc8260 board using u-boot2011.12
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
+ [209.85.214.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 72946B703D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2012 05:37:24 +1000 (EST)
+Received: by bkwj10 with SMTP id j10so2899791bkw.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2012 12:37:20 -0700 (PDT)
+Message-ID: <4F81E887.8000000@mvista.com>
+Date: Sun, 08 Apr 2012 23:35:35 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----=_Part_226910_885657422.1333889805911"
+To: "Thang Q. Nguyen" <tqnguyen@apm.com>
+Subject: Re: [PATCH 1/1] [v3] Add support 2 SATA ports for Maui and change
+ filename from sata_dwc_460ex.c to sata_dwc_4xx.c
+References: <1333690265-27857-1-git-send-email-tqnguyen@apm.com>
+In-Reply-To: <1333690265-27857-1-git-send-email-tqnguyen@apm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Phong Vo <pvo@apm.com>, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
+ linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,182 +30,779 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------=_Part_226910_885657422.1333889805911
-Content-Type: text/plain; charset=GBK
-Content-Transfer-Encoding: 7bit
+Hello.
 
-Hi:
-    My board is a custom MPC8260 board, with 4MB flash,128MB SDRAM.
-I modified pq2fads.dts and pq2fads_defconfig,
-then compile the kernel.The kernel halt after displaying "Booting using OF flat tree.".
- 
-Serial Console:
-U-Boot 2011.12 (Mar 30 2012 - 15:57:39)
-MPC8260 Reset Status: External Soft, External Hard
-MPC8260 Clock Configuration
- - Bus-to-Core Mult 4.5x, VCO Div 2, 60x Bus Freq  22-65 , Core Freq 100-300
- - dfbrg 1, corecnf 0x17, busdf 5, cpmdf 1, plldf 0, pllmf 2, pcidf 3
- - vco_out  399999996, scc_clk   99999999, brg_clk   24999999
- - cpu_clk  299999997, cpm_clk  199999998, bus_clk   66666666
-CPU:   MPC8260 (HiP4 Rev 14, Mask B.1 4K25A) at 300 MHz
-Board: SJ3208 TDM to EtherNet
-SDRAM: 128 MiB
-Top of RAM usable for U-Boot at: 08000000
-Reserving 261k for U-Boot at: 07fbe000
-Reserving 256k for malloc() at: 07f7e000
-Reserving 76 Bytes for Board Info at: 07f7dfb4
-Reserving 108 Bytes for Global Data at: 07f7df48
-Stack Pointer at: 07f7df28
-New Stack Pointer is: 07f7df28
-Now running in RAM - U-Boot at: 07fbe000
-FLASH: flash_protect ON: from 0x20000000 to 0x2003BFFF
-protect on 0
-protect on 1
-protect on 2
-protect on 3
-protect on 4
-protect on 5
-protect on 6
-protect on 7
-protect on 8
-flash_protect ON: from 0x20060000 to 0x2007FFFF
-protect on 10
-4 MiB
-*** Warning - bad CRC, using default environment
-Destroy Hash Table: 07ffcf04 table = (null)
-Create Hash Table: N=91
-INSERT: table 07ffcf04, filled 1/97 rv 07f7e148 ==> name="bootargs" value="console=ttyCPM0,9600 root=/dev/ram0"
-INSERT: table 07ffcf04, filled 2/97 rv 07f7e2bc ==> name="bootcmd" value="bootm 0x20080000 0x20240000"
-INSERT: table 07ffcf04, filled 3/97 rv 07f7e2ec ==> name="bootdelay" value="5"
-INSERT: table 07ffcf04, filled 4/97 rv 07f7e19c ==> name="baudrate" value="9600"
-INSERT: table 07ffcf04, filled 5/97 rv 07f7e574 ==> name="ethaddr" value="00:10:EC:D0:30:88"
-INSERT: table 07ffcf04, filled 6/97 rv 07f7e178 ==> name="ipaddr" value="12.13.38.221"
-INSERT: table 07ffcf04, filled 7/97 rv 07f7e550 ==> name="serverip" value="12.13.38.222"
-INSERT: table 07ffcf04, filled 8/97 rv 07f7e4d8 ==> name="gatewayip" value="12.13.38.254"
-INSERT: table 07ffcf04, filled 9/97 rv 07f7e34c ==> name="netmask" value="255.255.255.0"
-INSERT: free(data = 07f7e008)
-INSERT: done
-In:    serial
-Out:   serial
-Err:   serial
-U-Boot relocated to 07fbe000
-Net:   FCC1
-Reset Ethernet PHY
-### main_loop entered: bootdelay=5
-### main_loop: bootcmd="bootm 0x20080000 0x20240000"
-Hit any key to stop autoboot:  0
-=> bootm 0x20080000 0x20240000 0x203ff000
-## Current stack ends at 0x07f7dd10
-*  kernel: cmdline image address = 0x20080000
-## Booting kernel from Legacy Image at 20080000 ...
-   Image Name:   Linux-3.2.13.Jerry_Test_V1.1
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1527637 Bytes = 1.5 MiB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   kernel data at 0x20080040, len = 0x00174f55 (1527637)
-*  ramdisk: cmdline image address = 0x20240000
-## Loading init Ramdisk from Legacy Image at 20240000 ...
-   Image Name:   SJ3208_Ramdisk_01
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    1730966 Bytes = 1.7 MiB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   ramdisk start = 0x20240040, ramdisk end = 0x203e69d6
-*  fdt: cmdline image address = 0x203ff000
-## Checking for 'FDT'/'FDT Image' at 203ff000
-*  fdt: raw FDT blob
-## Flattened Device Tree blob at 203ff000
-   Booting using the fdt blob at 0x203ff000
-   of_flat_tree at 0x203ff000 size 0x00000fbb
-   Uncompressing Kernel Image ... OK
-   kernel loaded at 0x00000000, end = 0x0030fda0
-## initrd_high = 0xffffffff, copy_to_ram = 1
-   Loading Ramdisk to 07dd6000, end 07f7c996 ... OK
-   ramdisk load start = 0x07dd6000, ramdisk load end = 0x07f7c996
-## device tree at 203ff000 ... 203fffba (len=16315 [0x3FBB])
-   Loading Device Tree to 003fc000, end 003fffba ... OK
-Updating property '/soc@f0000000/cpm@119c0/ethernet@11320/mac-address' =  00 10 ec d0 30 88
-Updating property '/soc@f0000000/cpm@119c0/ethernet@11320/local-mac-address' =  00 10 ec d0 30 88
-Updating property 'clock-frequency' =  01 7d 78 3f
-Updating property 'bus-frequency' =  03 f9 40 aa
-Updating property 'timebase-frequency' =  00 fe 50 2a
-Updating property 'clock-frequency' =  11 e1 a2 fd
-## Transferring control to Linux (at address 00000000) ...
-   Booting using OF flat tree...
+On 06-04-2012 9:31, Thang Q. Nguyen wrote:
 
-And Log_buf as follow:
-20120331:log_buffer as follow
-<6>Using Freescale PQ2FADS machine description.
-<3>Cannot reserve gpages without hugetlb enabled.
-<5>Linux version 3.2.13.Jerry_1.0_Test (jerry@jerry-desktop) (gcc version 4.2.2) #1 Fri Mar 30 1 1:07:35 CST 2012.
-<4>Found initrd at 0xc7dd6000:0xc7f7c996.
-<4>Machine check in kernel mode..
-<4>Caused by (from SRR1=41030): Transfer error ack signal.
-<4>Oops: Machine check, sig: 7 [#1].
-<4>Freescale PQ2FADS.
-<4>NIP: c00175c0 LR: c0328a9c CTR:00002710.
-<4>REGS: c035bed0 TRAP 0200   Not tainted  (3.2.13.Jerry_1.0_Test).
-<4>MSR: 00041030 <ME,IR,DR>  CR: 22022024  XER: 20000000.
-<4>TASK =c0349478[0] 'swapper' THREAD: c035a000.
-<4>GPR00: 00002710 c035bf80 c0349478 80010000 00000000 c037cefc f00095a90000a000 .
-<4>GPR08: 00000008 fdfd19c0 00000000 c0360000 c036339c 02040000 00000000 00000000 .
-<4>GPR16: 07ff0bac 07fe9728 00000000 00000000 00000000 00000000 00000000 00000000 .
-<4>GPR24: 00000000 00000000 40000000 07ffcf88 c0360000 c03613ec  c035e020 00001032 .
-<4>NIP [c00175c0] cpm_command+0x4c/0xb0.
-<4>LR [c0328a9c] pq2fads_setup_arch+0x3c/0x260.
-<4>Call Trace:.
-<4>[c035bf80] [c03613ec] ppc_md+0x0/0xd8 (unreliable).
-<4>[c035bf90] [c0328a9c] pq2fads_setup_arch+0x3c/0x260.
-<4>[c035bfb0] [c0324e58] setup_arch+0x150/0x18c.
-<4>[c035bfc0] [c0320864] start_kernel+0x84/0x2e0.
-<4>[c035bff0] [00003438]  0x3438.
-<4>Instruction dump:.
-<4>3d60c036 64630001 7c632378 812b00f4 7c0004ac 90690000 38002710 7c0903a6 .
-<4>48000008 4240003c 812b00f4 7c0004ac.<80090000> 0c000000 4c00012c 74090001 .
-<4>---[end trace 31fd0ba7d8756001 ]---.
-<0>Kernel panic - not syncing: Attempted to kill the idle task!.
-<4>Call Trace:.
-<4>[c035bdb0] [c0007f08] show_stack+0x4c/0x16c (unreliable).
-<4>[c035bdf0] [c001e714] panic+0xa8/0x1f4.
-<4>[c035be40] [c00227a8] do_exit+0x5a4/0x658.
-<4>[c035be80] [c000ba98] kerne l_bad_stack+0x0/0x4c.
-<4>[c035bea0] [c000bcc0] machine_check_exception+0xe4/0x170
-<4>[c035bec0] [c000f334] ret_from_except_full+0x0/0x4c.
-<4>--- Exception: 200 at cpm_command+0x4c/0xb0.
-<4>    LR = pq2fads_setup_arch+0x3c/0x260
-<4>[c035bf80] [c03613ec] ppc_md+0x0/0xd8 (unreliable).
-<4>[c035bf90] [c0328a9c] pq2fads_setup_arch+0x3c/0x260.
-<4>[c035bfb0] [c0324e58] setup_arch+0x150/0x18c.
-<4>[c035bfc0] [c0320864] start_kernel+0x84/0x2e0.
-<4>[c035bff0] [00003438] 0x3438.
-<0>Rebooting in 180 seconds......
- 
-I have no idea about this,
-u-boot,Flat device tree ,kernel,Ramdisk ,Thatwas wrong??
+> Signed-off-by: Thang Q. Nguyen<tqnguyen@apm.com>
+[...]
 
-Best regards.
-Jerry
+> diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_4xx.c
+> similarity index 73%
+> rename from drivers/ata/sata_dwc_460ex.c
+> rename to drivers/ata/sata_dwc_4xx.c
+> index 69f7cde..07e9b36 100644
+> --- a/drivers/ata/sata_dwc_460ex.c
+> +++ b/drivers/ata/sata_dwc_4xx.c
+[...]
+> @@ -268,22 +276,25 @@ enum {
+>  						 << 16)
+>  struct sata_dwc_device {
+>  	struct device		*dev;		/* generic device struct */
+> -	struct ata_probe_ent	*pe;		/* ptr to probe-ent */
+>  	struct ata_host		*host;
+>  	u8			*reg_base;
+>  	struct sata_dwc_regs	*sata_dwc_regs;	/* DW Synopsys SATA specific */
+>  	int			irq_dma;
+> +	u8			*scr_base;
 
-------=_Part_226910_885657422.1333889805911
-Content-Type: text/html; charset=GBK
-Content-Transfer-Encoding: 7bit
+    Why not 'void __iomem *scr_base'? You have to cast to it anyway everytime. 
+And 'u8 *' is just not the right type.
 
-<div style="line-height:1.7;color:#000000;font-size:14px;font-family:arial"><DIV>Hi:</DIV>
-<DIV>&nbsp;&nbsp;&nbsp; My board is a custom MPC8260 board, with 4MB flash,128MB SDRAM.<BR>I modified pq2fads.dts and pq2fads_defconfig,</DIV>
-<DIV>then compile the kernel.The kernel halt after displaying "Booting using OF flat tree.".</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Serial Console:</DIV>
-<DIV>U-Boot 2011.12 (Mar 30 2012 - 15:57:39)</DIV>
-<DIV>MPC8260 Reset Status: External Soft, External Hard</DIV>
-<DIV>MPC8260 Clock Configuration<BR>&nbsp;- Bus-to-Core Mult 4.5x, VCO Div 2, 60x Bus Freq&nbsp; 22-65 , Core Freq 100-300<BR>&nbsp;- dfbrg 1, corecnf 0x17, busdf 5, cpmdf 1, plldf 0, pllmf 2, pcidf 3<BR>&nbsp;- vco_out&nbsp; 399999996, scc_clk&nbsp;&nbsp; 99999999, brg_clk&nbsp;&nbsp; 24999999<BR>&nbsp;- cpu_clk&nbsp; 299999997, cpm_clk&nbsp; 199999998, bus_clk&nbsp;&nbsp; 66666666</DIV>
-<DIV>CPU:&nbsp;&nbsp; MPC8260 (HiP4 Rev 14, Mask B.1 4K25A) at 300 MHz<BR>Board: SJ3208 TDM to EtherNet <BR>SDRAM: 128 MiB<BR>Top of RAM usable for U-Boot at: 08000000<BR>Reserving 261k for U-Boot at: 07fbe000<BR>Reserving 256k for malloc() at: 07f7e000<BR>Reserving 76 Bytes for Board Info at: 07f7dfb4<BR>Reserving 108 Bytes for Global Data at: 07f7df48<BR>Stack Pointer at: 07f7df28<BR>New Stack Pointer is: 07f7df28<BR>Now running in RAM - U-Boot at: 07fbe000<BR>FLASH: flash_protect ON: from 0x20000000 to 0x2003BFFF<BR>protect on 0<BR>protect on 1<BR>protect on 2<BR>protect on 3<BR>protect on 4<BR>protect on 5<BR>protect on 6<BR>protect on 7<BR>protect on 8<BR>flash_protect ON: from 0x20060000 to 0x2007FFFF<BR>protect on 10<BR>4 MiB<BR>*** Warning - bad CRC, using default environment</DIV>
-<DIV>Destroy Hash Table: 07ffcf04 table = (null)<BR>Create Hash Table: N=91<BR>INSERT: table 07ffcf04, filled 1/97 rv 07f7e148 ==&gt; name="bootargs" value="console=ttyCPM0,9600 root=/dev/ram0"<BR>INSERT: table 07ffcf04, filled 2/97 rv 07f7e2bc ==&gt; name="bootcmd" value="bootm 0x20080000 0x20240000"<BR>INSERT: table 07ffcf04, filled 3/97 rv 07f7e2ec ==&gt; name="bootdelay" value="5"<BR>INSERT: table 07ffcf04, filled 4/97 rv 07f7e19c ==&gt; name="baudrate" value="9600"<BR>INSERT: table 07ffcf04, filled 5/97 rv 07f7e574 ==&gt; name="ethaddr" value="00:10:EC:D0:30:88"<BR>INSERT: table 07ffcf04, filled 6/97 rv 07f7e178 ==&gt; name="ipaddr" value="12.13.38.221"<BR>INSERT: table 07ffcf04, filled 7/97 rv 07f7e550 ==&gt; name="serverip" value="12.13.38.222"<BR>INSERT: table 07ffcf04, filled 8/97 rv 07f7e4d8 ==&gt; name="gatewayip" value="12.13.38.254"<BR>INSERT: table 07ffcf04, filled 9/97 rv 07f7e34c ==&gt; name="netmask" value="255.255.255.0"<BR>INSERT: free(data = 07f7e008)<BR>INSERT: done<BR>In:&nbsp;&nbsp;&nbsp; serial<BR>Out:&nbsp;&nbsp; serial<BR>Err:&nbsp;&nbsp; serial<BR>U-Boot relocated to 07fbe000<BR>Net:&nbsp;&nbsp; FCC1<BR>Reset Ethernet PHY<BR>### main_loop entered: bootdelay=5</DIV>
-<DIV>### main_loop: bootcmd="bootm 0x20080000 0x20240000"<BR>Hit any key to stop autoboot:&nbsp; 0 <BR>=&gt; bootm 0x20080000 0x20240000 0x203ff000<BR>## Current stack ends at 0x07f7dd10<BR>*&nbsp; kernel: cmdline image address = 0x20080000<BR>## Booting kernel from Legacy Image at 20080000 ...<BR>&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Linux-3.2.13.Jerry_Test_V1.1<BR>&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux Kernel Image (gzip compressed)<BR>&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 1527637 Bytes = 1.5 MiB<BR>&nbsp;&nbsp; Load Address: 00000000<BR>&nbsp;&nbsp; Entry Point:&nbsp; 00000000<BR>&nbsp;&nbsp; Verifying Checksum ... OK<BR>&nbsp;&nbsp; kernel data at 0x20080040, len = 0x00174f55 (1527637)<BR>*&nbsp; ramdisk: cmdline image address = 0x20240000<BR>## Loading init Ramdisk from Legacy Image at 20240000 ...<BR>&nbsp;&nbsp; Image Name:&nbsp;&nbsp; SJ3208_Ramdisk_01<BR>&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux RAMDisk Image (gzip compressed)<BR>&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 1730966 Bytes = 1.7 MiB<BR>&nbsp;&nbsp; Load Address: 00000000<BR>&nbsp;&nbsp; Entry Point:&nbsp; 00000000<BR>&nbsp;&nbsp; Verifying Checksum ... OK<BR>&nbsp;&nbsp; ramdisk start = 0x20240040, ramdisk end = 0x203e69d6<BR>*&nbsp; fdt: cmdline image address = 0x203ff000<BR>## Checking for 'FDT'/'FDT Image' at 203ff000<BR>*&nbsp; fdt: raw FDT blob<BR>## Flattened Device Tree blob at 203ff000<BR>&nbsp;&nbsp; Booting using the fdt blob at 0x203ff000<BR>&nbsp;&nbsp; of_flat_tree at 0x203ff000 size 0x00000fbb<BR>&nbsp;&nbsp; Uncompressing Kernel Image ... OK<BR>&nbsp;&nbsp; kernel loaded at 0x00000000, end = 0x0030fda0<BR>## initrd_high = 0xffffffff, copy_to_ram = 1<BR>&nbsp;&nbsp; Loading Ramdisk to 07dd6000, end 07f7c996 ... OK<BR>&nbsp;&nbsp; ramdisk load start = 0x07dd6000, ramdisk load end = 0x07f7c996<BR>## device tree at 203ff000 ... 203fffba (len=16315 [0x3FBB])<BR>&nbsp;&nbsp; Loading Device Tree to 003fc000, end 003fffba ... OK<BR>Updating property <A href="mailto:'/soc@f0000000/cpm@119c0/ethernet@11320/mac-address'">'/soc@f0000000/cpm@119c0/ethernet@11320/mac-address'</A> =&nbsp; 00 10 ec d0 30 88<BR>Updating property <A href="mailto:'/soc@f0000000/cpm@119c0/ethernet@11320/local-mac-address'">'/soc@f0000000/cpm@119c0/ethernet@11320/local-mac-address'</A> =&nbsp; 00 10 ec d0 30 88<BR>Updating property 'clock-frequency' =&nbsp; 01 7d 78 3f<BR>Updating property 'bus-frequency' =&nbsp; 03 f9 40 aa<BR>Updating property 'timebase-frequency' =&nbsp; 00 fe 50 2a<BR>Updating property 'clock-frequency' =&nbsp; 11 e1 a2 fd<BR>## Transferring control to Linux (at address 00000000) ...<BR>&nbsp;&nbsp; Booting using OF flat tree...<BR></DIV>
-<DIV>And Log_buf as follow:</DIV>
-<DIV>20120331:log_buffer as follow <BR>&lt;6&gt;Using Freescale PQ2FADS machine description.<BR>&lt;3&gt;Cannot reserve gpages without hugetlb enabled.<BR>&lt;5&gt;Linux version 3.2.13.Jerry_1.0_Test (<A href="mailto:jerry@jerry-desktop">jerry@jerry-desktop</A>) (gcc version 4.2.2) #1 Fri Mar 30 1 1:07:35 CST 2012.<BR>&lt;4&gt;Found initrd at 0xc7dd6000:0xc7f7c996.<BR>&lt;4&gt;Machine check in kernel mode..<BR>&lt;4&gt;Caused by (from SRR1=41030): Transfer error ack signal.<BR>&lt;4&gt;Oops: Machine check, sig: 7 [#1].<BR>&lt;4&gt;Freescale PQ2FADS.<BR>&lt;4&gt;NIP: c00175c0 LR: c0328a9c CTR:00002710.<BR>&lt;4&gt;REGS: c035bed0 TRAP 0200&nbsp;&nbsp; Not tainted&nbsp; (3.2.13.Jerry_1.0_Test).<BR>&lt;4&gt;MSR: 00041030 &lt;ME,IR,DR&gt;&nbsp; CR: 22022024&nbsp; XER: 20000000.<BR>&lt;4&gt;TASK =c0349478[0] 'swapper' THREAD: c035a000.<BR>&lt;4&gt;GPR00: 00002710 c035bf80 c0349478 80010000 00000000 c037cefc f00095a90000a000 .<BR>&lt;4&gt;GPR08: 00000008 fdfd19c0 00000000 c0360000 c036339c 02040000 00000000 00000000 .<BR>&lt;4&gt;GPR16: 07ff0bac 07fe9728 00000000 00000000 00000000 00000000 00000000 00000000 .<BR>&lt;4&gt;GPR24: 00000000 00000000 40000000 07ffcf88 c0360000 c03613ec&nbsp; c035e020 00001032 .<BR>&lt;4&gt;NIP [c00175c0] cpm_command+0x4c/0xb0.<BR>&lt;4&gt;LR [c0328a9c] pq2fads_setup_arch+0x3c/0x260.<BR>&lt;4&gt;Call Trace:.<BR>&lt;4&gt;[c035bf80] [c03613ec] ppc_md+0x0/0xd8 (unreliable).<BR>&lt;4&gt;[c035bf90] [c0328a9c] pq2fads_setup_arch+0x3c/0x260.<BR>&lt;4&gt;[c035bfb0] [c0324e58] setup_arch+0x150/0x18c.<BR>&lt;4&gt;[c035bfc0] [c0320864] start_kernel+0x84/0x2e0.<BR>&lt;4&gt;[c035bff0] [00003438]&nbsp; 0x3438.<BR>&lt;4&gt;Instruction dump:.<BR>&lt;4&gt;3d60c036 64630001 7c632378 812b00f4 7c0004ac 90690000 38002710 7c0903a6 .<BR>&lt;4&gt;48000008 4240003c 812b00f4 7c0004ac.&lt;80090000&gt; 0c000000 4c00012c 74090001 .<BR>&lt;4&gt;---[end trace 31fd0ba7d8756001 ]---.<BR>&lt;0&gt;Kernel panic - not syncing: Attempted to kill the idle task!.<BR>&lt;4&gt;Call Trace:.<BR>&lt;4&gt;[c035bdb0] [c0007f08] show_stack+0x4c/0x16c (unreliable).<BR>&lt;4&gt;[c035bdf0] [c001e714] panic+0xa8/0x1f4.<BR>&lt;4&gt;[c035be40] [c00227a8] do_exit+0x5a4/0x658.<BR>&lt;4&gt;[c035be80] [c000ba98] kerne l_bad_stack+0x0/0x4c.<BR>&lt;4&gt;[c035bea0] [c000bcc0] machine_check_exception+0xe4/0x170<BR>&lt;4&gt;[c035bec0] [c000f334] ret_from_except_full+0x0/0x4c.<BR>&lt;4&gt;--- Exception: 200 at cpm_command+0x4c/0xb0.<BR>&lt;4&gt;&nbsp;&nbsp;&nbsp; LR = pq2fads_setup_arch+0x3c/0x260<BR>&lt;4&gt;[c035bf80] [c03613ec] ppc_md+0x0/0xd8 (unreliable).<BR>&lt;4&gt;[c035bf90] [c0328a9c] pq2fads_setup_arch+0x3c/0x260.<BR>&lt;4&gt;[c035bfb0] [c0324e58] setup_arch+0x150/0x18c.<BR>&lt;4&gt;[c035bfc0] [c0320864] start_kernel+0x84/0x2e0.<BR>&lt;4&gt;[c035bff0] [00003438] 0x3438.<BR>&lt;0&gt;Rebooting in 180 seconds......</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>I have no idea about this,<BR>u-boot,Flat device tree ,kernel,Ramdisk&nbsp;,<SPAN closure_uid_zdss5b="175" Pc="null">That</SPAN> <SPAN class="hps" closure_uid_zdss5b="176" Pc="null">was wrong</SPAN><SPAN closure_uid_zdss5b="177" Pc="null">?</SPAN>? <BR><BR>Best regards.<BR>Jerry<BR></DIV></div><br><br><span title="neteasefooter"><span id="netease_mail_footer"></span></span>
-------=_Part_226910_885657422.1333889805911--
+> +	int			dma_channel;	/* DWC SATA DMA channel */
+> +	int			hostID;
+>  };
+хюююъ
+> +/* This is used for easier trace back when having DMA channel */
+> +static struct sata_dwc_device *dwc_dev_list[DMA_NUM_CHANS];
+
+    I don't quite understand: isn't this dual channel device? But you declare 
+a device per DMA channel...
+
+> +/*
+> + * As we have only one DMA controller, this will be set static and global
+> + * for easier to access
+
+    "to" not needed here.
+
+> @@ -372,15 +381,15 @@ static const char *get_dma_dir_descript(int dma_dir)
+>   	}
+>   }
+>
+> -static void sata_dwc_tf_dump(struct ata_taskfile *tf)
+> +static void sata_dwc_tf_dump(struct device *dwc_dev, struct ata_taskfile *tf)
+>   {
+> -	dev_vdbg(host_pvt.dwc_dev, "taskfile cmd: 0x%02x protocol: %s flags:"
+> +	dev_vdbg(dwc_dev, "taskfile cmd: 0x%02x protocol: %s flags:"
+
+    Space missing after colon, BTW.
+
+>   		"0x%lx device: %x\n", tf->command,
+>   		get_prot_descript(tf->protocol), tf->flags, tf->device);
+[...]
+
+>  /*
+>   * Function: dma_request_channel
+
+    BTW, it would be good if you changed the function comments to the 
+kernel-doc format (in another patch).
+
+> - * arguments: None
+> + * arguments: ap
+>   * returns channel number if available else -1
+>   * This function assigns the next available DMA channel from the list to the
+>   * requester
+>   */
+> -static int dma_request_channel(void)
+> +static int dma_request_channel(struct ata_port *ap)
+>   {
+> -	int i;
+> +	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+>
+[...]
+> +	/* Check if the channel is not currently in use */
+> +	if (!(in_le32(&(sata_dma_regs->dma_chan_en.low)) &\
+
+    \ not needed. () with & not needed.
+
+> +		DMA_CHANNEL(hsdev->dma_channel)))
+> +		return hsdev->dma_channel;
+> +
+> +	dev_err(ap->dev, "%s Channel %d is currently in use\n", __func__,
+> +		hsdev->dma_channel);
+>   	return -1;
+>   }
+>
+>   /*
+> + * Check if the selected DMA channel is currently enabled.
+> + */
+> +static int sata_dwc_dma_chk_en(int ch)
+> +{
+> +	u32 dma_chan_reg;
+
+    Empty line here please.
+
+> +	/* Read the DMA channel register */
+> +	dma_chan_reg = in_le32(&(sata_dma_regs->dma_chan_en.low));
+
+    () with & not needed.
+
+> +/*
+> + * Handle DMA transfer complete interrupt. This checks and passes the
+> + * processing to the appropriate ATA port.
+> + */
+> +static irqreturn_t dma_dwc_handler(int irq, void *hsdev_instance)
+> +{
+> +	u32 tfr_reg, err_reg;
+> +	int chan;
+> +
+> +	tfr_reg = in_le32(&(sata_dma_regs->interrupt_status.tfr.low));
+> +	err_reg = in_le32(&(sata_dma_regs->interrupt_status.error.low));
+
+    () with & not needed.
+
+> @@ -471,41 +517,25 @@ static irqreturn_t dma_dwc_interrupt(int irq, void *hsdev_instance)
+>   	spin_lock_irqsave(&host->lock, flags);
+>   	ap = host->ports[port];
+>   	hsdevp = HSDEVP_FROM_AP(ap);
+> -	tag = ap->link.active_tag;
+>
+> -	tfr_reg = in_le32(&(host_pvt.sata_dma_regs->interrupt_status.tfr\
+> +	if (ap->link.active_tag != ATA_TAG_POISON)
+> +		tag = ap->link.active_tag;
+> +
+> +	tfr_reg = in_le32(&(sata_dma_regs->interrupt_status.tfr\
+
+     \ not needed. () with & not needed. And the line is too short to break it 
+anyway.
+
+>   			.low));
+> -	err_reg = in_le32(&(host_pvt.sata_dma_regs->interrupt_status.error\
+> +	err_reg = in_le32(&(sata_dma_regs->interrupt_status.error\
+
+    Same coments.
+
+> +			out_le32(&(sata_dma_regs->interrupt_clear.tfr.low),
+
+    () with & not needed.
+
+> @@ -516,11 +546,16 @@ static irqreturn_t dma_dwc_interrupt(int irq, void *hsdev_instance)
+>   				err_reg);
+>
+>   			/* Clear the interrupt. */
+> -			out_le32(&(host_pvt.sata_dma_regs->interrupt_clear\
+> +			out_le32(&(sata_dma_regs->interrupt_clear\
+
+     \ not needed. () with & not needed. And the line is too short to break it 
+anyway.
+
+>   				.error.low),
+[...]
+> @@ -629,14 +667,22 @@ static int map_sg_to_lli(struct scatterlist *sg, int num_elems,
+>   			 * Set DMA addresses and lower half of control register
+>   			 * based on direction.
+>   			 */
+> +			if (hsdevp->hsdev->hostID == APM_821XX_SATA) {
+> +				sms_val = 1+hsdevp->hsdev->dma_channel;
+
+    Spaces around + please.
+
+> +				dms_val = 0;
+> +			} else {
+> +				sms_val = 0;
+> +				dms_val = 1+hsdevp->hsdev->dma_channel;
+
+    Same here.
+
+> @@ -714,70 +766,49 @@ static int map_sg_to_lli(struct scatterlist *sg, int num_elems,
+>   static void dma_dwc_xfer_start(int dma_ch)
+>   {
+>   	/* Enable the DMA channel */
+> -	out_le32(&(host_pvt.sata_dma_regs->dma_chan_en.low),
+> -		 in_le32(&(host_pvt.sata_dma_regs->dma_chan_en.low)) |
+> +	out_le32(&(sata_dma_regs->dma_chan_en.low),
+> +		 in_le32(&(sata_dma_regs->dma_chan_en.low)) |
+
+    () with & not needed.
+
+>   		 DMA_ENABLE_CHAN(dma_ch));
+>   }
+>
+> -static int dma_dwc_xfer_setup(struct scatterlist *sg, int num_elems,
+> -			      struct lli *lli, dma_addr_t dma_lli,
+> -			      void __iomem *addr, int dir)
+> +
+
+    Empty line not needed...
+
+> +static int dma_dwc_xfer_setup(struct ata_port *ap, dma_addr_t dma_lli)
+[...]
+> -	out_le32(&(host_pvt.sata_dma_regs->chan_regs[dma_ch].cfg.high),
+> +	out_le32(&(sata_dma_regs->chan_regs[dma_ch].cfg.high),
+
+    () with & not needed.
+
+> +		 DMA_CFG_HW_HS_SRC(dma_ch) | DMA_CFG_HW_HS_DEST(dma_ch) | \
+>   		 DMA_CFG_PROTCTL | DMA_CFG_FCMOD_REQ);
+> -	out_le32(&(host_pvt.sata_dma_regs->chan_regs[dma_ch].cfg.low), 0);
+> +
+> +	out_le32(&(sata_dma_regs->chan_regs[dma_ch].cfg.low),
+
+    () with & not needed.
+
+> +		DMA_CFG_HW_CH_PRIOR(dma_ch));
+>
+>   	/* Program the address of the linked list */
+> -	out_le32(&(host_pvt.sata_dma_regs->chan_regs[dma_ch].llp.low),
+> +	if (hsdev->hostID == APM_460EX_SATA) {
+> +		out_le32(&(sata_dma_regs->chan_regs[dma_ch].llp.low),
+
+    () with & not needed.
+
+>   		 DMA_LLP_LMS(dma_lli, DMA_LLP_AHBMASTER2));
+
+    Please indent this like more to the right.
+
+> +	} else {
+> +		out_le32(&(sata_dma_regs->chan_regs[dma_ch].llp.low),
+
+    () with & not needed.
+
+> +			DMA_LLP_LMS(dma_lli, DMA_LLP_AHBMASTER1));
+> +	}
+>
+>   	/* Program the CTL register with src enable / dst enable */
+> -	out_le32(&(host_pvt.sata_dma_regs->chan_regs[dma_ch].ctl.low),
+> +	out_le32(&(sata_dma_regs->chan_regs[dma_ch].ctl.low),
+
+    () with & not needed.
+
+> @@ -789,24 +820,18 @@ static int dma_dwc_init(struct sata_dwc_device *hsdev, int irq)
+[...]
+>   	/* Enabe DMA */
+
+    Enable.
+
+> -	out_le32(&(host_pvt.sata_dma_regs->dma_cfg.low), DMA_EN);
+> +	out_le32(&(sata_dma_regs->dma_cfg.low), DMA_EN);
+
+    () with & not needed.
+
+> @@ -838,23 +863,27 @@ static int sata_dwc_scr_write(struct ata_link *link, unsigned int scr, u32 val)
+>   	return 0;
+>   }
+>
+> -static u32 core_scr_read(unsigned int scr)
+> +static u32 core_scr_read(struct ata_port *ap, unsigned int scr)
+>   {
+> -	return in_le32((void __iomem *)(host_pvt.scr_addr_sstatus) +\
+> -			(scr * 4));
+> +	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+> +
+> +	return in_le32((void __iomem *)hsdev->scr_base + (scr * 4));
+
+    () around * not needed.
+
+>   }
+>
+> -static void core_scr_write(unsigned int scr, u32 val)
+> +
+> +static void core_scr_write(struct ata_port *ap, unsigned int scr, u32 val)
+>   {
+> -	out_le32((void __iomem *)(host_pvt.scr_addr_sstatus) + (scr * 4),
+> -		val);
+> +	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+> +
+> +	out_le32((void __iomem *)hsdev->scr_base + (scr * 4), val);
+
+    Same here.
+
+> @@ -869,7 +898,6 @@ static u32 qcmd_tag_to_mask(u8 tag)
+>   	return 0x00000001<<  (tag&  0x1f);
+>   }
+>
+> -/* See ahci.c */
+
+    Don't think this is a legal change in this patch...
+
+>   static void sata_dwc_error_intr(struct ata_port *ap,
+>   				struct sata_dwc_device *hsdev, uint intpr)
+>   {
+> @@ -883,24 +911,23 @@ static void sata_dwc_error_intr(struct ata_port *ap,
+>
+>   	ata_ehi_clear_desc(ehi);
+>
+> -	serror = core_scr_read(SCR_ERROR);
+> +	serror = core_scr_read(ap, SCR_ERROR);
+>   	status = ap->ops->sff_check_status(ap);
+>
+> -	err_reg = in_le32(&(host_pvt.sata_dma_regs->interrupt_status.error.\
+> +	err_reg = in_le32(&(sata_dma_regs->interrupt_status.error.\
+
+    \ not needed. () with & not needed. And the line is too short to be broken.
+
+>   			low));
+>   	tag = ap->link.active_tag;
+>
+>   	dev_err(ap->dev, "%s SCR_ERROR=0x%08x intpr=0x%08x status=0x%08x "
+> -		"dma_intp=%d pending=%d issued=%d dma_err_status=0x%08x\n",
+> -		__func__, serror, intpr, status, host_pvt.dma_interrupt_count,
+> -		hsdevp->dma_pending[tag], hsdevp->cmd_issued[tag], err_reg);
+> +		" pending=%d dma_err_status=0x%08x\n",
+
+    Space not needed before "pending".
+
+> @@ -930,14 +957,14 @@ static irqreturn_t sata_dwc_isr(int irq, void *dev_instance)
+>   	struct sata_dwc_device *hsdev = HSDEV_FROM_HOST(host);
+>   	struct ata_port *ap;
+>   	struct ata_queued_cmd *qc;
+> -	unsigned long flags;
+>   	u8 status, tag;
+> -	int handled, num_processed, port = 0;
+> -	uint intpr, sactive, sactive2, tag_mask;
+> +	int handled, port = 0;
+> +	int num_lli;
+> +	uint intpr, sactive, tag_mask;
+>   	struct sata_dwc_device_port *hsdevp;
+> -	host_pvt.sata_dwc_sactive_issued = 0;
+> +	u32 mask;
+>
+> -	spin_lock_irqsave(&host->lock, flags);
+> +	spin_lock(&host->lock);
+
+    Is this change related?
+
+> +		if (qc) {
+> +			hsdevp->sactive_issued |= mask;
+> +			/* Prevent to issue more commands */
+> +			qc->ap->link.active_tag = tag;
+> +			qc->dev->link->sactive |= (1 << qc->tag);
+
+    () not needed around <<.
+
+> +			num_lli = map_sg_to_lli(ap, qc->sg, qc->n_elem, \
+> +				hsdevp->llit[tag], hsdevp->llit_dma[tag], \
+> +				(void *__iomem)(&hsdev->sata_dwc_regs->dmadr), \
+
+    You don't need \ to break the lines in C, unless this is in macro definition.
+
+> @@ -1012,28 +1051,12 @@ static irqreturn_t sata_dwc_isr(int irq, void *dev_instance)
+>   		dev_dbg(ap->dev, "%s non-NCQ cmd interrupt, protocol: %s\n",
+>   			__func__, get_prot_descript(qc->tf.protocol));
+>   DRVSTILLBUSY:
+> +		/* Do complete action for the current QC */
+>   		if (ata_is_dma(qc->tf.protocol)) {
+[...]
+> +			sata_dwc_qc_complete(ap, qc, 1);
+> +		} else if ((ata_is_pio(qc->tf.protocol)) ||
+> +			(ata_is_nodata(qc->tf.protocol))) {
+
+    () not needed around the operands of ||.
+
+> @@ -1049,23 +1072,18 @@ DRVSTILLBUSY:
+[...]
+> -	if ((tag_mask | (host_pvt.sata_dwc_sactive_issued)) != \
+> -					(host_pvt.sata_dwc_sactive_issued)) {
+> +	if ((tag_mask | hsdevp->sactive_issued) != \
+> +					hsdevp->sactive_issued) {
+>   		dev_warn(ap->dev, "Bad tag mask?  sactive=0x%08x "
+> -			 "(host_pvt.sata_dwc_sactive_issued)=0x%08x  tag_mask"
+> -			 "=0x%08x\n", sactive, host_pvt.sata_dwc_sactive_issued,
+> +			 "sactive_issued=0x%08x  tag_mask"
+
+    There's no need to break the string literal here anymore.
+
+> +			 "=0x%08x\n", sactive, hsdevp->sactive_issued,
+>   			  tag_mask);
+>   	}
+>
+> @@ -1073,70 +1091,21 @@ DRVSTILLBUSY:
+>   	status = ap->ops->sff_check_status(ap);
+>   	dev_dbg(ap->dev, "%s ATA status register=0x%x\n", __func__, status);
+>
+> -	tag = 0;
+> -	num_processed = 0;
+> -	while (tag_mask) {
+> -		num_processed++;
+> -		while (!(tag_mask&  0x00000001)) {
+> -			tag++;
+> -			tag_mask<<= 1;
+> -		}
+> -
+> -		tag_mask&= (~0x00000001);
+> -		qc = ata_qc_from_tag(ap, tag);
+> -
+> -		/* To be picked up by completion functions */
+> -		qc->ap->link.active_tag = tag;
+> -		hsdevp->cmd_issued[tag] = SATA_DWC_CMD_ISSUED_NOT;
+> -
+> -		/* Let libata/scsi layers handle error */
+> -		if (status & ATA_ERR) {
+> -			dev_dbg(ap->dev, "%s ATA_ERR (0x%x)\n", __func__,
+> -				status);
+> +	for (tag = 0; tag<  32; tag++) {
+> +		if (tag_mask&  qcmd_tag_to_mask(tag)) {
+> +			qc = ata_qc_from_tag(ap, tag);
+> +			if (!qc) {
+> +				dev_info(ap->dev, "error: Tag %d is set but " \
+> +					"not available\n", tag);
+> +				continue;
+> +			}
+>   			sata_dwc_qc_complete(ap, qc, 1);
+> -			handled = 1;
+> -			goto DONE;
+>   		}
+> -
+> -		/* Process completed command */
+> -		dev_dbg(ap->dev, "%s NCQ command, protocol: %s\n", __func__,
+> -			get_prot_descript(qc->tf.protocol));
+> -		if (ata_is_dma(qc->tf.protocol)) {
+> -			host_pvt.dma_interrupt_count++;
+> -			if (hsdevp->dma_pending[tag] == \
+> -					SATA_DWC_DMA_PENDING_NONE)
+> -				dev_warn(ap->dev, "%s: DMA not pending?\n",
+> -					__func__);
+> -			if ((host_pvt.dma_interrupt_count % 2) == 0)
+> -				sata_dwc_dma_xfer_complete(ap, 1);
+> -		} else {
+> -			if (unlikely(sata_dwc_qc_complete(ap, qc, 1)))
+> -				goto STILLBUSY;
+> -		}
+> -		continue;
+> -
+> -STILLBUSY:
+> -		ap->stats.idle_irq++;
+> -		dev_warn(ap->dev, "STILL BUSY IRQ ata%d: irq trap\n",
+> -			ap->print_id);
+> -	} /* while tag_mask */
+> -
+> -	/*
+> -	 * Check to see if any commands completed while we were processing our
+> -	 * initial set of completed commands (read status clears interrupts,
+> -	 * so we might miss a completed command interrupt if one came in while
+> -	 * we were processing --we read status as part of processing a completed
+> -	 * command).
+> -	 */
+> -	sactive2 = core_scr_read(SCR_ACTIVE);
+> -	if (sactive2 != sactive) {
+> -		dev_dbg(ap->dev, "More completed - sactive=0x%x sactive2"
+> -			"=0x%x\n", sactive, sactive2);
+
+    You're changing the algorithm of handling command here. Is it necessary to 
+support 2 ports?
+
+> @@ -1167,44 +1136,6 @@ static void sata_dwc_clear_dmacr(struct sata_dwc_device_port *hsdevp, u8 tag)
+>   	}
+>   }
+>
+> -static void sata_dwc_dma_xfer_complete(struct ata_port *ap, u32 check_status)
+> -{
+> -	struct ata_queued_cmd *qc;
+> -	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
+> -	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+> -	u8 tag = 0;
+> -
+> -	tag = ap->link.active_tag;
+> -	qc = ata_qc_from_tag(ap, tag);
+> -	if (!qc) {
+> -		dev_err(ap->dev, "failed to get qc");
+> -		return;
+> -	}
+> -
+> -#ifdef DEBUG_NCQ
+> -	if (tag > 0) {
+> -		dev_info(ap->dev, "%s tag=%u cmd=0x%02x dma dir=%s proto=%s "
+> -			 "dmacr=0x%08x\n", __func__, qc->tag, qc->tf.command,
+> -			 get_dma_dir_descript(qc->dma_dir),
+> -			 get_prot_descript(qc->tf.protocol),
+> -			 in_le32(&(hsdev->sata_dwc_regs->dmacr)));
+> -	}
+> -#endif
+> -
+> -	if (ata_is_dma(qc->tf.protocol)) {
+> -		if (hsdevp->dma_pending[tag] == SATA_DWC_DMA_PENDING_NONE) {
+> -			dev_err(ap->dev, "%s DMA protocol RX and TX DMA not "
+> -				"pending dmacr: 0x%08x\n", __func__,
+> -				in_le32(&(hsdev->sata_dwc_regs->dmacr)));
+> -		}
+> -
+> -		hsdevp->dma_pending[tag] = SATA_DWC_DMA_PENDING_NONE;
+> -		sata_dwc_qc_complete(ap, qc, check_status);
+> -		ap->link.active_tag = ATA_TAG_POISON;
+> -	} else {
+> -		sata_dwc_qc_complete(ap, qc, check_status);
+> -	}
+> -}
+
+    Is this change related to dual port support?
+
+> @@ -1213,24 +1144,39 @@ static int sata_dwc_qc_complete(struct ata_port *ap, struct ata_queued_cmd *qc,
+>   	u32 mask = 0x0;
+>   	u8 tag = qc->tag;
+>   	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
+> -	host_pvt.sata_dwc_sactive_queued = 0;
+> +	int i;
+> +
+>   	dev_dbg(ap->dev, "%s checkstatus? %x\n", __func__, check_status);
+>
+> -	if (hsdevp->dma_pending[tag] == SATA_DWC_DMA_PENDING_TX)
+> -		dev_err(ap->dev, "TX DMA PENDING\n");
+> -	else if (hsdevp->dma_pending[tag] == SATA_DWC_DMA_PENDING_RX)
+> -		dev_err(ap->dev, "RX DMA PENDING\n");
+> +	/* Check main status, clearing INTRQ */
+> +	status = ap->ops->sff_check_status(ap);
+> +
+> +	if (check_status) {
+> +		/* Make sure SATA port is not in BUSY state */
+> +		i = 0;
+> +		while (status & ATA_BUSY) {
+> +			if (++i > 10)
+> +				break;
+> +			status = ap->ops->sff_check_altstatus(ap);
+> +		};
+> +
+> +		if (unlikely(status & ATA_BUSY))
+> +			dev_err(ap->dev, "QC complete cmd=0x%02x STATUS BUSY "
+> +				"(0x%02x) [%d]\n", qc->tf.command, status, i);
+> +	}
+
+    Is this related to dual port support?
+
+> @@ -1437,28 +1377,37 @@ static void sata_dwc_bmdma_start_by_tag(struct ata_queued_cmd *qc, u8 tag)
+>   	struct ata_port *ap = qc->ap;
+>   	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
+>   	int dir = qc->dma_dir;
+> -	dma_chan = hsdevp->dma_chan[tag];
+>
+> -	if (hsdevp->cmd_issued[tag] != SATA_DWC_CMD_ISSUED_NOT) {
+> +	/* Configure DMA before starting data transfer */
+> +	dma_chan = dma_dwc_xfer_setup(ap, hsdevp->llit_dma[tag]);
+> +	if (unlikely(dma_chan < 0)) {
+> +		dev_err(ap->dev, "%s: dma channel unavailable\n", __func__);
+> +		/* Offending this QC as no channel available for transfer */
+> +		qc->err_mask |= AC_ERR_TIMEOUT;
+
+    Hm, is this good error code?
+
+> +		return;
+> +	}
+> +
+> +	/* Check if DMA should be started */
+> +	hsdevp->dma_chan[tag] = dma_chan;
+> +	if (hsdevp->sactive_queued & qcmd_tag_to_mask(tag)) {
+>   		start_dma = 1;
+>   		if (dir == DMA_TO_DEVICE)
+>   			hsdevp->dma_pending[tag] = SATA_DWC_DMA_PENDING_TX;
+>   		else
+>   			hsdevp->dma_pending[tag] = SATA_DWC_DMA_PENDING_RX;
+[...]
+> @@ -1490,6 +1440,49 @@ static void sata_dwc_bmdma_start(struct ata_queued_cmd *qc)
+>   	sata_dwc_bmdma_start_by_tag(qc, tag);
+>   }
+>
+> +static void sata_dwc_bmdma_stop(struct ata_queued_cmd *qc)
+> +{
+> +	struct ata_port *ap = qc->ap;
+> +	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+> +	int dma_ch, enabled;
+> +
+> +	dma_ch = hsdev->dma_channel;
+> +	enabled = sata_dwc_dma_chk_en(dma_ch);
+> +
+> +	if (enabled) {
+> +		dev_dbg(ap->dev,
+> +			"%s terminate DMA on channel=%d (mask=0x%08x) ...",
+> +			__func__, dma_ch, DMA_DISABLE_CHAN(dma_ch));
+> +		/* Disable the selected channel */
+> +		out_le32(&(sata_dma_regs->dma_chan_en.low),
+
+    () with & not needed.
+
+> +			DMA_DISABLE_CHAN(dma_ch));
+> +
+> +		/* Wait for the channel is disabled */
+> +		do {
+> +			enabled = sata_dwc_dma_chk_en(dma_ch);
+> +			ndelay(1000);
+> +		} while (enabled);
+> +		dev_dbg(ap->dev, "done\n");
+> +	}
+> +}
+> +
+
+    Wasn't this function necessary before dual port support?
+
+> +static u8 sata_dwc_bmdma_status(struct ata_port *ap)
+> +{
+> +	u32 status = 0;
+> +	u32 tfr_reg, err_reg;
+> +	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+> +
+> +	/* Check DMA register for status */
+> +	tfr_reg = in_le32(&(sata_dma_regs->interrupt_status.tfr.low));
+> +	err_reg = in_le32(&(sata_dma_regs->interrupt_status.error.low));
+> +
+> +	if (unlikely(err_reg & DMA_CHANNEL(hsdev->dma_channel)))
+> +		status = ATA_DMA_ERR;
+> +	else if (tfr_reg & DMA_CHANNEL(hsdev->dma_channel))
+> +		status = ATA_DMA_INTR;
+> +	return status;
+> +}
+> +
+
+    Is the above really related to dual port support? Wasn't it necessary before?
+
+> @@ -1500,24 +1493,22 @@ static void sata_dwc_qc_prep_by_tag(struct ata_queued_cmd *qc, u8 tag)
+>   {
+>   	struct scatterlist *sg = qc->sg;
+>   	struct ata_port *ap = qc->ap;
+> -	int dma_chan;
+> +	int num_lli;
+>   	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+>   	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
+>
+> +	if ((qc->dma_dir == DMA_NONE) || (qc->tf.protocol == ATA_PROT_PIO))
+
+    () not neecessary around ==.
+
+> +		return;
+
+    Wasn't this check necessary before dual port support?
+
+>   	dev_dbg(ap->dev, "%s: port=%d dma dir=%s n_elem=%d\n",
+>   		__func__, ap->port_no, get_dma_dir_descript(qc->dma_dir),
+>   		 qc->n_elem);
+>
+> -	dma_chan = dma_dwc_xfer_setup(sg, qc->n_elem, hsdevp->llit[tag],
+> -				      hsdevp->llit_dma[tag],
+> -				      (void *__iomem)(&hsdev->sata_dwc_regs->\
+> -				      dmadr), qc->dma_dir);
+> -	if (dma_chan < 0) {
+> -		dev_err(ap->dev, "%s: dma_dwc_xfer_setup returns err %d\n",
+> -			__func__, dma_chan);
+> -		return;
+> +	if (!ata_is_ncq(qc->tf.protocol)) {
+> +		num_lli = map_sg_to_lli(qc->ap, sg, qc->n_elem,
+> +			hsdevp->llit[tag], hsdevp->llit_dma[tag],
+> +			(void *__iomem)(&hsdev->sata_dwc_regs->dmadr),
+> +			qc->dma_dir);
+>   	}
+
+    And what if the protocol is NCQ?
+
+> -	hsdevp->dma_chan[tag] = dma_chan;
+>   }
+>
+>   static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
+> @@ -1541,19 +1532,18 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
+>   	sata_dwc_qc_prep_by_tag(qc, tag);
+>
+>   	if (ata_is_ncq(qc->tf.protocol)) {
+> -		sactive = core_scr_read(SCR_ACTIVE);
+> +		/* Update SActive register for new command */
+> +		sactive = core_scr_read(qc->ap, SCR_ACTIVE);
+>   		sactive |= (0x00000001<<  tag);
+
+    BTW, () not needed here. You can also use BIT() macro.
+
+> -		core_scr_write(SCR_ACTIVE, sactive);
+> -
+> -		dev_dbg(qc->ap->dev, "%s: tag=%d ap->link.sactive = 0x%08x "
+> -			"sactive=0x%08x\n", __func__, tag, qc->ap->link.sactive,
+> -			sactive);
+> +		core_scr_write(qc->ap, SCR_ACTIVE, sactive);
+> +		qc->dev->link->sactive |= 0x00000001<<  tag;
+>
+>   		ap->ops->sff_tf_load(ap,&qc->tf);
+> -		sata_dwc_exec_command_by_tag(ap,&qc->tf, qc->tag,
+> -					     SATA_DWC_CMD_ISSUED_PEND);
+> +		sata_dwc_exec_command_by_tag(ap, &qc->tf, qc->tag);
+>   	} else {
+> -		ata_sff_qc_issue(qc);
+> +		/* As ata_sff_qc_issue is no longer handle DMA transfer,
+> +		 * change to use ata_bmdma_qc_issue instead */
+
+    The preferred style of multi-line comments is this:
+
+/*
+  * bla
+  * bla
+  */
+
+> +		ata_bmdma_qc_issue(qc);
+
+    This is a bug fix, so should be in a prior patch.
+
+>   	}
+>   	return 0;
+>   }
+> @@ -1582,7 +1572,12 @@ static void sata_dwc_qc_prep(struct ata_queued_cmd *qc)
+>   static void sata_dwc_error_handler(struct ata_port *ap)
+>   {
+>   	ap->link.flags |= ATA_LFLAG_NO_HRST;
+> -	ata_sff_error_handler(ap);
+> +	ata_bmdma_error_handler(ap);
+
+    Same about this. I've already noted this on Friday.
+
+> +}
+> +
+> +u8 sata_dwc_check_altstatus(struct ata_port *ap)
+> +{
+> +	return ioread8(ap->ioaddr.altstatus_addr);
+
+    This is the same as the default implementation, why you need to redefine it?
+
+> @@ -1638,13 +1637,38 @@ static int sata_dwc_probe(struct platform_device *ofdev)
+>   	struct ata_host *host;
+>   	struct ata_port_info pi = sata_dwc_port_info[0];
+>   	const struct ata_port_info *ppi[] = {&pi, NULL };
+> +	const unsigned int *dma_chan;
+> +
+> +	/* Check if device is declared in device tree */
+> +	if (!of_device_is_available(ofdev->dev.of_node)) {
+> +		printk(KERN_INFO "%s: Port disabled via device-tree\n",
+> +		ofdev->dev.of_node->full_name);
+> +		return 0;
+> +	}
+
+    This check is not related to dual port support I think.
+
+>
+>   	/* Allocate DWC SATA device */
+>   	hsdev = kzalloc(sizeof(*hsdev), GFP_KERNEL);
+
+    Consider switching to the managed device interface (devm_kzalloc() and 
+friends).
+
+>   	if (hsdev == NULL) {
+>   		dev_err(&ofdev->dev, "kmalloc failed for hsdev\n");
+>   		err = -ENOMEM;
+> -		goto error;
+> +		goto error_out_5;
+> +	}
+[...]
+> +	dma_chan = of_get_property(ofdev->dev.of_node, "dma-channel", NULL);
+
+    I think you should use of_property_read_u32() instead.
+
+> @@ -1653,7 +1677,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
+>   		dev_err(&ofdev->dev, "ioremap failed for SATA register"
+>   			" address\n");
+>   		err = -ENODEV;
+> -		goto error_kmalloc;
+> +		goto error_out_4;
+>   	}
+>   	hsdev->reg_base = base;
+>   	dev_dbg(&ofdev->dev, "ioremap done for SATA register address\n");
+> @@ -1666,7 +1690,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
+>   	if (!host) {
+>   		dev_err(&ofdev->dev, "ata_host_alloc_pinfo failed\n");
+>   		err = -ENOMEM;
+> -		goto error_iomap;
+> +		goto error_out_4;
+
+   Are you sure it's not 'error_out_3' at this point?
+
+> @@ -1688,23 +1712,30 @@ static int sata_dwc_probe(struct platform_device *ofdev)
+>   	if (irq == NO_IRQ) {
+
+    You should get rid of NO_IRQ.
+
+> -	/* Initialize AHB DMAC */
+> -	dma_dwc_init(hsdev, irq);
+> +	/* Init glovbal dev list */
+
+    s/glovbal/global/
+
+WBR, Sergei
