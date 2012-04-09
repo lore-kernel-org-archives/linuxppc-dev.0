@@ -1,28 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7CFA7B700C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 07:38:06 +1000 (EST)
-Message-ID: <1334007463.3040.43.camel@pasglop>
-Subject: Re: Problem with framebuffer mmap on platforms with large addressing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Tue, 10 Apr 2012 07:37:43 +1000
-In-Reply-To: <CALT56yOU2FDTNRnr=aLVFTGHiVsGNKVoqLqAWQ7Q+Xzg6_B8qQ@mail.gmail.com>
-References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
- <1332031585.3105.197.camel@pasglop>
- <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
- <1332103797.3105.202.camel@pasglop>
- <CALT56yPjkPQOaXW4Eg8c-S4+a4Omou_YYacqrsCoTAYeXO0XkA@mail.gmail.com>
- <1332222008.2982.13.camel@pasglop>
- <CALT56yOU2FDTNRnr=aLVFTGHiVsGNKVoqLqAWQ7Q+Xzg6_B8qQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-fbdev@vger.kernel.org,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Tony Breeds <tbreeds@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DB333B7025
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 08:50:26 +1000 (EST)
+Message-ID: <4F8367A6.3020105@freescale.com>
+Date: Mon, 9 Apr 2012 17:50:14 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: dimitar <divanov@nateurope.com>
+Subject: Re: P4080 Device tree
+References: <4F7B056F.8010100@nateurope.com>
+In-Reply-To: <4F7B056F.8010100@nateurope.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-04-09 at 20:18 +0400, Dmitry Eremin-Solenikov wrote:
-> > As for the patches, you'll have to wait for Tony to respond (I'll
-> poke
-> > him locally).
+On 04/03/2012 09:13 AM, dimitar wrote:
+> Hello,
 > 
-> Any news on these patches? A dirty and "not for the upstream yet"
-> version
-> would be sufficient for me for now.
+> I hope I'm posting my question on the right place.
+> Please be gentle to me, since I'm newbie in Linux Kernel.
+> 
+> I'm porting Linux to a custom board based on P4080DS BSP. My problem is
+> that I cannot understand the configuration of th DPA in the device tree
+> including QMAN, BMAN and FMAN.
 
-I'll poke again..
+None of the datapath stuff is in mainline Linux yet -- for BSP support
+you should ask support@freescale.com (or your sales/FAE/etc. contact).
 
-Cheers,
-Ben.
+-Scott
