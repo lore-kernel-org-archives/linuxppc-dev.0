@@ -1,23 +1,30 @@
-Return-Path: <w@1wt.eu>
-Received: from 1wt.eu (1wt.eu [62.212.114.60])
- by ozlabs.org (Postfix) with ESMTP id E9FABB702B
- for <linuxppc-dev@ozlabs.org>; Mon,  9 Apr 2012 23:26:51 +1000 (EST)
-Date: Mon, 9 Apr 2012 15:08:30 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH 00/14] Backport 8xx TLB to 2.4
-Message-ID: <20120409130830.GH15929@1wt.eu>
-References: <1318246220-4839-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <OF6B6562C0.926C4B3C-ONC1257963.005F34B1-C1257963.005F34B2@transmode.se>
- <20111211173346.GC9019@1wt.eu>
- <OF173F1835.8171C985-ONC125799E.002FE8C7-C125799E.0030008A@transmode.se>
- <20120208094426.GC1379@1wt.eu>
- <OFE7D02EF5.C8AA7552-ONC125799E.0037BB62-C125799E.0040126D@transmode.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFE7D02EF5.C8AA7552-ONC125799E.0037BB62-C125799E.0040126D@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Dan Malek <ppc6dev@digitaldans.com>
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
+ [209.85.210.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EF39BB702A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 02:18:29 +1000 (EST)
+Received: by dang27 with SMTP id g27so6281088dan.15
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2012 09:18:26 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1332222008.2982.13.camel@pasglop>
+References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
+ <1332031585.3105.197.camel@pasglop>
+ <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
+ <1332103797.3105.202.camel@pasglop>
+ <CALT56yPjkPQOaXW4Eg8c-S4+a4Omou_YYacqrsCoTAYeXO0XkA@mail.gmail.com>
+ <1332222008.2982.13.camel@pasglop>
+Date: Mon, 9 Apr 2012 20:18:26 +0400
+Message-ID: <CALT56yOU2FDTNRnr=aLVFTGHiVsGNKVoqLqAWQ7Q+Xzg6_B8qQ@mail.gmail.com>
+Subject: Re: Problem with framebuffer mmap on platforms with large addressing
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-fbdev@vger.kernel.org,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ Tony Breeds <tbreeds@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joakim,
+On Tue, Mar 20, 2012 at 9:40 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+>> >> That is interesting! Are those patches published or otherwise available
+>> >> somewhere? We are also very interested in enabling Canyonlands
+>> >> with Radeon KMS!
+>> >
+>> > You will run into additional problems with 460 due to the fact that it's
+>> > not cache coherent for DMA. Tony patches don't address that part of the
+>> > problem (they were used on a 476 based platform).
+>>
+>> Hmm. Could you please spill a little bit more of details? Also are those patches
+>> for 476 merged or present somewhere?
+>
+> Well, DMA on 46x isn't cache coherent. The DRM plays interesting games
+> with mapping/unmapping pages for DMA by the chip and I don't think we
+> have the right hooks to do the appropriate cache flushing on these guys,
+> but Tony might be able to comment, I don't know whether he tried or not.
+>
+> On the other hand 476 has fully cache coherent DMA so the only problem
+> there is the >32-bit physical address space.
+>
+> As for the patches, you'll have to wait for Tony to respond (I'll poke
+> him locally).
 
-On Wed, Feb 08, 2012 at 12:39:50PM +0100, Joakim Tjernlund wrote:
-> I figure, after 2.4.37.12, a public git tree on kernel org which still
-> receives fixes would be enough.
+Any news on these patches? A dirty and "not for the upstream yet" version
+would be sufficient for me for now.
 
-FYI, I've merged your patches and pushed them along with a few pending
-other ones here :
+>
+> Cheers,
+> Ben.
+>
 
-   http://git.kernel.org/?p=linux/kernel/git/wtarreau/linux-2.4.git;a=summary
-
-There will only be git updates from now on. Probably that once in a while I'll
-tag the tree to make things easier to check.
-
-Thanks for taking care of sending fixes for old kernels !
-
-Cheers,
-Willy
+-- 
+With best wishes
+Dmitry
