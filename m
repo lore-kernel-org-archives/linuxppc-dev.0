@@ -1,26 +1,20 @@
-Return-Path: <mla@apm.com>
-Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
- by ozlabs.org (Postfix) with SMTP id 1132AB701F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2012 14:27:43 +1000 (EST)
-Received: by vbjk13 with SMTP id k13so4970285vbj.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2012 21:27:41 -0700 (PDT)
+Return-Path: <B32579@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7D07DB702A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2012 15:25:45 +1000 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-mtd@lists.infradead.org>
+Subject: [PATCH] driver/mtd: IFC NAND: Add support of ONFI NAND flash
+Date: Mon, 9 Apr 2012 10:55:22 +0530
+Message-ID: <1333949122-10401-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1330505263-3718-1-git-send-email-mla@apm.com>
-References: <1330505263-3718-1-git-send-email-mla@apm.com>
-From: Mai La <mla@apm.com>
-Date: Mon, 9 Apr 2012 11:27:21 +0700
-Message-ID: <CAJ0-vugbTFnBF9aFKPt0yzP4+Uvpj0190RvuDhK1X5KWZYPDZg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/44x: Add PCI MSI node for APM821xx SoC and
- Bluestone board in DTS
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Matt Porter <mporter@kernel.crashing.org>,
- Tirumala R Marri <tmarri@apm.com>, Grant Likely <grant.likely@secretlab.ca>,
- Michael Neuling <mikey@neuling.org>, Kumar Gala <galak@kernel.crashing.org>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Content-Type: multipart/alternative; boundary=20cf30780f4a5104dd04bd376dfc
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Prabhakar Kushwaha <prabhakar@freescale.com>,
+ dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,140 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---20cf30780f4a5104dd04bd376dfc
-Content-Type: text/plain; charset=ISO-8859-1
+  - Fix NAND_CMD_READID command for ONFI detect.
+  - Add NAND_CMD_PARAM command to read the ONFI parameter page.
 
-This patch is along with patch [1/2, v4] powerpc/44x: Fix PCI MSI support
-for Maui APM821xx SoC and Bluestone board. Do you have any comment for this
-patch?
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Acked-by: Scott Wood <scottwood@freescale.com>
+---
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git 
+ Branch master
 
-Thank you!
+ drivers/mtd/nand/fsl_ifc_nand.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
 
-On Wed, Feb 29, 2012 at 3:47 PM, Mai La <mla@apm.com> wrote:
-
->
-> Signed-off-by: Mai La <mla@apm.com>
-> ---
->  arch/powerpc/boot/dts/bluestone.dts |   24 ++++++++++++++++++++++++
->  1 files changed, 24 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/bluestone.dts
-> b/arch/powerpc/boot/dts/bluestone.dts
-> index 2a56a0d..8ea6325 100644
-> --- a/arch/powerpc/boot/dts/bluestone.dts
-> +++ b/arch/powerpc/boot/dts/bluestone.dts
-> @@ -250,5 +250,29 @@
->                        };
->                };
->
-> +               MSI: ppc4xx-msi@C10000000 {
-> +                       compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
-> +                       reg = < 0xC 0x10000000 0x100
-> +                               0xC 0x10000000 0x100>;
-> +                       sdr-base = <0x36C>;
-> +                       msi-data = <0x00004440>;
-> +                       msi-mask = <0x0000ffe0>;
-> +                       interrupts =<0 1 2 3 4 5 6 7>;
-> +                       interrupt-parent = <&MSI>;
-> +                       #interrupt-cells = <1>;
-> +                       #address-cells = <0>;
-> +                       #size-cells = <0>;
-> +                       msi-available-ranges = <0x0 0x100>;
-> +                       interrupt-map = <
-> +                               0 &UIC3 0x18 1
-> +                               1 &UIC3 0x19 1
-> +                               2 &UIC3 0x1A 1
-> +                               3 &UIC3 0x1B 1
-> +                               4 &UIC3 0x1C 1
-> +                               5 &UIC3 0x1D 1
-> +                               6 &UIC3 0x1E 1
-> +                               7 &UIC3 0x1F 1
-> +                       >;
-> +               };
->        };
->  };
-> --
-> 1.7.3.4
->
->
-
---20cf30780f4a5104dd04bd376dfc
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-This patch is along with patch [1/2, v4] powerpc/44x: Fix PCI MSI support f=
-or Maui APM821xx SoC and Bluestone board. Do you have any comment for this =
-patch?<br><br>Thank you!<br><br><div class=3D"gmail_quote">On Wed, Feb 29, =
-2012 at 3:47 PM, Mai La <span dir=3D"ltr">&lt;<a href=3D"mailto:mla@apm.com=
-">mla@apm.com</a>&gt;</span> wrote:<br>
-
-<blockquote class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.8ex;border-=
-left:1px solid rgb(204,204,204);padding-left:1ex"><br>
-Signed-off-by: Mai La &lt;<a href=3D"mailto:mla@apm.com">mla@apm.com</a>&gt=
-;<br>
----<br>
-=A0arch/powerpc/boot/dts/bluestone.dts | =A0 24 ++++++++++++++++++++++++<br=
->
-=A01 files changed, 24 insertions(+), 0 deletions(-)<br>
-<br>
-diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bl=
-uestone.dts<br>
-index 2a56a0d..8ea6325 100644<br>
---- a/arch/powerpc/boot/dts/bluestone.dts<br>
-+++ b/arch/powerpc/boot/dts/bluestone.dts<br>
-@@ -250,5 +250,29 @@<br>
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};<br>
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};<br>
-<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 MSI: ppc4xx-msi@C10000000 {<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D &quot;amcc,ppc=
-4xx-msi&quot;, &quot;ppc4xx-msi&quot;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D &lt; 0xC 0x10000000 0=
-x100<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0xC 0x1000000=
-0 0x100&gt;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 sdr-base =3D &lt;0x36C&gt;;<b=
-r>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 msi-data =3D &lt;0x00004440&g=
-t;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 msi-mask =3D &lt;0x0000ffe0&g=
-t;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 interrupts =3D&lt;0 1 2 3 4 5=
- 6 7&gt;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 interrupt-parent =3D &lt;&amp=
-;MSI&gt;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #interrupt-cells =3D &lt;1&gt=
-;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D &lt;0&gt;;=
-<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D &lt;0&gt;;<br=
->
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 msi-available-ranges =3D &lt;=
-0x0 0x100&gt;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 interrupt-map =3D &lt;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 &amp;UIC3 0=
-x18 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 1 &amp;UIC3 0=
-x19 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 2 &amp;UIC3 0=
-x1A 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 3 &amp;UIC3 0=
-x1B 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 4 &amp;UIC3 0=
-x1C 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 5 &amp;UIC3 0=
-x1D 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 6 &amp;UIC3 0=
-x1E 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 7 &amp;UIC3 0=
-x1F 1<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &gt;;<br>
-+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 };<br>
- =A0 =A0 =A0 =A0};<br>
-=A0};<br>
-<span class=3D"HOEnZb"><font color=3D"#888888">--<br>
-1.7.3.4<br>
-<br>
-</font></span></blockquote></div><br>
-
---20cf30780f4a5104dd04bd376dfc--
+diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
+index c30ac7b..4e7f31e 100644
+--- a/drivers/mtd/nand/fsl_ifc_nand.c
++++ b/drivers/mtd/nand/fsl_ifc_nand.c
+@@ -375,21 +375,31 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
+ 
+ 		return;
+ 
+-	/* READID must read all 8 possible bytes */
+ 	case NAND_CMD_READID:
++	case NAND_CMD_PARAM: {
++		int timing = IFC_FIR_OP_RB;
++		if (command == NAND_CMD_PARAM)
++			timing = IFC_FIR_OP_RBCD;
++
+ 		out_be32(&ifc->ifc_nand.nand_fir0,
+ 				(IFC_FIR_OP_CMD0 << IFC_NAND_FIR0_OP0_SHIFT) |
+ 				(IFC_FIR_OP_UA  << IFC_NAND_FIR0_OP1_SHIFT) |
+-				(IFC_FIR_OP_RB << IFC_NAND_FIR0_OP2_SHIFT));
++				(timing << IFC_NAND_FIR0_OP2_SHIFT));
+ 		out_be32(&ifc->ifc_nand.nand_fcr0,
+-				NAND_CMD_READID << IFC_NAND_FCR0_CMD0_SHIFT);
+-		/* 8 bytes for manuf, device and exts */
+-		out_be32(&ifc->ifc_nand.nand_fbcr, 8);
+-		ifc_nand_ctrl->read_bytes = 8;
++				command << IFC_NAND_FCR0_CMD0_SHIFT);
++		out_be32(&ifc->ifc_nand.row3, column);
++
++		/*
++		 * although currently it's 8 bytes for READID, we always read
++		 * the maximum 256 bytes(for PARAM)
++		 */
++		out_be32(&ifc->ifc_nand.nand_fbcr, 256);
++		ifc_nand_ctrl->read_bytes = 256;
+ 
+ 		set_addr(mtd, 0, 0, 0);
+ 		fsl_ifc_run_command(mtd);
+ 		return;
++	}
+ 
+ 	/* ERASE1 stores the block and page address */
+ 	case NAND_CMD_ERASE1:
+-- 
+1.7.5.4
