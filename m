@@ -1,30 +1,34 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C90EEB7017
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:03:25 +1000 (EST)
+ (Client CN "e36.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AF96EB70AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:08:43 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Tue, 10 Apr 2012 11:03:21 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B7C5338C8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:03:18 -0400 (EDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3AF3IOX182536
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:03:18 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3AF37MY011622
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:03:07 -0600
-Message-ID: <1334070249.16827.1.camel@key-ThinkPad-W510>
-Subject: [PATCH v2 00/17] Platform Facilities Option and crypto accelerators
+ Tue, 10 Apr 2012 09:08:37 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id EB5ED3E40058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:07:30 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3AF7GwI263318
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:07:22 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3AF7iS8031003
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:07:44 -0600
+Message-ID: <1334070500.16827.5.camel@key-ThinkPad-W510>
+Subject: [PATCH v2 02/17] powerpc: Add pseries update notifier for OFDT prop
+ changes
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Tue, 10 Apr 2012 10:04:09 -0500
+Date: Tue, 10 Apr 2012 10:08:20 -0500
+In-Reply-To: <1334070249.16827.1.camel@key-ThinkPad-W510>
+References: <1334070249.16827.1.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: key@linux.vnet.ibm.com, rcj@linux.vnet.ibm.com,
@@ -38,77 +42,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ChangeLog for v2:
-- move crypto driver sysfs stuff to debugfs (Greg K-H)
-- Remove CONFIG_ dependencies for the CMO bits (Anton Blanchard)
-- move nx driver code to drivers/crypto (Kumar Gala)
-- Add inline comment for nx_build_sg_list (Rob Jennings)
-- make sure kmalloc'd pointers are aligned (Rob Jennings)
-- get rid of bitfields in nx_csbcpb.h (Rob Jennings)
-- Compile against Ben Herrenschmidt's ppc device naming patch
-- Rebase against latest upstream
+This adds an update notifier mechanism for changes to properties in the
+device tree.  One use of this would be a device driver that needs to act
+on changes to it's properties in the device tree after a live migration
+or a dynamic activation that is triggered by updates to ofdt properties.
 
-Kent Yoder (12):
-  powerpc: crypto: AES-CBC mode routines for nx encryption
-  powerpc: crypto: AES-CCM mode routines for nx encryption
-  powerpc: crypto: AES-CTR mode routines for nx encryption
-  powerpc: crypto: AES-ECB mode routines for nx encryption
-  powerpc: crypto: AES-GCM mode routines for nx encryption
-  powerpc: crypto: AES-XCBC mode routines for nx encryption
-  powerpc: crypto: SHA256 hash routines for nx encryption
-  powerpc: crypto: SHA512 hash routines for nx encryption
-  powerpc: crypto: nx driver code supporting nx encryption
-  powerpc: crypto: debugfs routines and docs for the nx device driver
-  powerpc: crypto: Build files for the nx device driver
-  powerpc: crypto: enable the PFO-based encryption device
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pSeries_reconfig.h |   12 ++++++++++++
+ arch/powerpc/platforms/pseries/reconfig.c   |    7 +++++++
+ 2 files changed, 19 insertions(+), 0 deletions(-)
 
-Michael Neuling (1):
-  hwrng: pseries - PFO-based hwrng driver
-
-Robert Jennings (4):
-  powerpc: Add new hvcall constants to support PFO
-  powerpc: Add pseries update notifier for OFDT prop changes
-  powerpc: Add PFO support to the VIO bus
-  pseries: Enabled the PFO-based RNG accelerator
-
- Documentation/ABI/testing/debugfs-pfo-nx-crypto |   45 ++
- arch/powerpc/Makefile                           |    1 +
- arch/powerpc/include/asm/hvcall.h               |   25 +-
- arch/powerpc/include/asm/pSeries_reconfig.h     |   12 +
- arch/powerpc/include/asm/vio.h                  |   46 ++
- arch/powerpc/kernel/prom_init.c                 |    9 +-
- arch/powerpc/kernel/vio.c                       |  273 ++++++++--
- arch/powerpc/platforms/pseries/reconfig.c       |    7 +
- drivers/char/hw_random/Kconfig                  |   13 +
- drivers/char/hw_random/Makefile                 |    1 +
- drivers/char/hw_random/pseries-rng.c            |   96 +++
- drivers/crypto/Kconfig                          |   17 +
- drivers/crypto/nx/Makefile                      |   11 +
- drivers/crypto/nx/nx-aes-cbc.c                  |  140 +++++
- drivers/crypto/nx/nx-aes-ccm.c                  |  465 +++++++++++++++
- drivers/crypto/nx/nx-aes-ctr.c                  |  177 ++++++
- drivers/crypto/nx/nx-aes-ecb.c                  |  138 +++++
- drivers/crypto/nx/nx-aes-gcm.c                  |  353 +++++++++++
- drivers/crypto/nx/nx-aes-xcbc.c                 |  234 ++++++++
- drivers/crypto/nx/nx-sha256.c                   |  244 ++++++++
- drivers/crypto/nx/nx-sha512.c                   |  263 +++++++++
- drivers/crypto/nx/nx.c                          |  711 +++++++++++++++++++++++
- drivers/crypto/nx/nx.h                          |  192 ++++++
- drivers/crypto/nx/nx_csbcpb.h                   |  205 +++++++
- drivers/crypto/nx/nx_debugfs.c                  |  103 ++++
- 25 files changed, 3739 insertions(+), 42 deletions(-)
- create mode 100644 Documentation/ABI/testing/debugfs-pfo-nx-crypto
- create mode 100644 drivers/char/hw_random/pseries-rng.c
- create mode 100644 drivers/crypto/nx/Makefile
- create mode 100644 drivers/crypto/nx/nx-aes-cbc.c
- create mode 100644 drivers/crypto/nx/nx-aes-ccm.c
- create mode 100644 drivers/crypto/nx/nx-aes-ctr.c
- create mode 100644 drivers/crypto/nx/nx-aes-ecb.c
- create mode 100644 drivers/crypto/nx/nx-aes-gcm.c
- create mode 100644 drivers/crypto/nx/nx-aes-xcbc.c
- create mode 100644 drivers/crypto/nx/nx-sha256.c
- create mode 100644 drivers/crypto/nx/nx-sha512.c
- create mode 100644 drivers/crypto/nx/nx.c
- create mode 100644 drivers/crypto/nx/nx.h
- create mode 100644 drivers/crypto/nx/nx_csbcpb.h
- create mode 100644 drivers/crypto/nx/nx_debugfs.c
+diff --git a/arch/powerpc/include/asm/pSeries_reconfig.h b/arch/powerpc/include/asm/pSeries_reconfig.h
+index 23cd6cc..c07edfe 100644
+--- a/arch/powerpc/include/asm/pSeries_reconfig.h
++++ b/arch/powerpc/include/asm/pSeries_reconfig.h
+@@ -13,6 +13,18 @@
+ #define PSERIES_RECONFIG_REMOVE		0x0002
+ #define PSERIES_DRCONF_MEM_ADD		0x0003
+ #define PSERIES_DRCONF_MEM_REMOVE	0x0004
++#define PSERIES_UPDATE_PROPERTY		0x0005
++
++/**
++ * pSeries_reconfig_notify - Notifier value structure for OFDT property updates
++ *
++ * @node: Device tree node which owns the property being updated
++ * @property: Updated property
++ */
++struct pSeries_reconfig_prop_update {
++	struct device_node *node;
++	struct property *property;
++};
+ 
+ #ifdef CONFIG_PPC_PSERIES
+ extern int pSeries_reconfig_notifier_register(struct notifier_block *);
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 168651a..7b3bf76 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -103,11 +103,13 @@ int pSeries_reconfig_notifier_register(struct notifier_block *nb)
+ {
+ 	return blocking_notifier_chain_register(&pSeries_reconfig_chain, nb);
+ }
++EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_register);
+ 
+ void pSeries_reconfig_notifier_unregister(struct notifier_block *nb)
+ {
+ 	blocking_notifier_chain_unregister(&pSeries_reconfig_chain, nb);
+ }
++EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_unregister);
+ 
+ int pSeries_reconfig_notify(unsigned long action, void *p)
+ {
+@@ -426,6 +428,7 @@ static int do_remove_property(char *buf, size_t bufsize)
+ static int do_update_property(char *buf, size_t bufsize)
+ {
+ 	struct device_node *np;
++	struct pSeries_reconfig_prop_update upd_value;
+ 	unsigned char *value;
+ 	char *name, *end, *next_prop;
+ 	int rc, length;
+@@ -454,6 +457,10 @@ static int do_update_property(char *buf, size_t bufsize)
+ 		return -ENODEV;
+ 	}
+ 
++	upd_value.node = np;
++	upd_value.property = newprop;
++	pSeries_reconfig_notify(PSERIES_UPDATE_PROPERTY, &upd_value);
++
+ 	rc = prom_update_property(np, newprop, oldprop);
+ 	if (rc)
+ 		return rc;
+-- 
+1.7.1
