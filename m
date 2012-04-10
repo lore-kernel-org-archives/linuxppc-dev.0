@@ -1,18 +1,22 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id 71CA4B7011
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 15:47:31 +1000 (EST)
-Date: Mon, 9 Apr 2012 22:47:27 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.4.0-rc1: No init found
-In-Reply-To: <1333440522.3040.9.camel@pasglop>
-Message-ID: <alpine.DEB.2.01.1204092242160.3375@trent.utfs.org>
-References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
- <1333440522.3040.9.camel@pasglop>
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-wg0-f52.google.com (mail-wg0-f52.google.com [74.125.82.52])
+ (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EDF65B7024
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2012 16:36:55 +1000 (EST)
+Received: by wgbgn7 with SMTP id gn7so4136385wgb.21
+ for <linuxppc-dev@ozlabs.org>; Mon, 09 Apr 2012 23:36:52 -0700 (PDT)
+Date: Tue, 10 Apr 2012 08:36:42 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] gianfar: add missing include
+Message-ID: <20120410063641.GA10025@localhost.localdomain>
+References: <25411.1334031527@neuling.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <25411.1334031527@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 3 Apr 2012 at 18:08, Benjamin Herrenschmidt wrote:
-> On Tue, 2012-04-03 at 00:20 -0700, Christian Kujau wrote:
-> > Going from 3.3-rc7 to 3.4-rc1 (with "make oldconfig" inbetween) did not 
-> > go well on this PowerBook G4 machine:
-> > 
-> > Apr  2 15:18:23 [   8.318816] EXT4-fs (hda6): mounted filesystem with ordered data mode. Opts: (null)
-> > Apr  2 15:18:23 [   8.320286] VFS: Mounted root (ext4 filesystem) readonly on device 3:6.
-> > Apr  2 15:18:23 [   8.341555] devtmpfs: mounted
-> > Apr  2 15:18:23 [   8.343384] Freeing unused kernel memory: 204k freed
-> > Apr  2 15:18:23 [   8.457056] Kernel panic - not syncing: No init found.  Try passing init= option to kernel. See Linux Documentation/init.txt for guidance.
-> > Apr  2 15:18:23 [   8.459936] Rebooting in 180 seconds..
+On Tue, Apr 10, 2012 at 02:18:47PM +1000, Michael Neuling wrote:
+> This is because of a missing include file from:
+>   6663628 gianfar: Support the get_ts_info ethtool method.
 > 
-> I have observed this randomly on the G5 ... sometimes, if I try again,
-> it works... it's very very odd. There is some kind of race maybe with
-> async startup ? Or a problem with the vfs path walking ? It's certainly
-> not easily reproducable for me, it goes away from one boot to the next.
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-I tried to sit this one out, but when -rc2 did not magicially fix it I 
-started a git bisect, this is what I got:
+I did a poor job testing the non-x86 stuff in this series.  Thanks for
+the fix.
 
-* a546498f3bf9aac311c66f965186373aee2ca0b0 is the first bad commit
-
-commit a546498f3bf9aac311c66f965186373aee2ca0b0
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Wed Mar 7 16:48:45 2012 +1100
-
-    powerpc: Call do_page_fault() with interrupts off
-
-
-Full bisect-log & more: http://nerdbynature.de/bits/3.4.0-rc1/init/ 
-
-Thanks,
-Christian.
--- 
-BOFH excuse #124:
-
-user to computer ration too low.
+Acked-by: Richard Cochran <richardcochran@gmail.com>
