@@ -1,32 +1,31 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AF96EB70AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:08:43 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7B317B7077
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:08:57 +1000 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Tue, 10 Apr 2012 09:08:37 -0600
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id EB5ED3E40058
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:07:30 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3AF7GwI263318
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:07:22 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3AF7iS8031003
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:07:44 -0600
-Message-ID: <1334070500.16827.5.camel@key-ThinkPad-W510>
-Subject: [PATCH v2 02/17] powerpc: Add pseries update notifier for OFDT prop
- changes
+ Tue, 10 Apr 2012 09:08:54 -0600
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4AB1BC90076
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:08:50 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3AF8lMp246412
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:08:47 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3AF8PRv012959
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:08:25 -0400
+Message-ID: <1334070570.16827.15.camel@key-ThinkPad-W510>
+Subject: [PATCH v2 07/17] powerpc: crypto: AES-CCM mode routines for nx
+ encryption
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Tue, 10 Apr 2012 10:08:20 -0500
+Date: Tue, 10 Apr 2012 10:09:30 -0500
 In-Reply-To: <1334070249.16827.1.camel@key-ThinkPad-W510>
 References: <1334070249.16827.1.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
@@ -42,77 +41,485 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds an update notifier mechanism for changes to properties in the
-device tree.  One use of this would be a device driver that needs to act
-on changes to it's properties in the device tree after a live migration
-or a dynamic activation that is triggered by updates to ofdt properties.
+These routines add support for AES in CCM mode on the Power7+ CPU's
+in-Nest accelerator driver.
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pSeries_reconfig.h |   12 ++++++++++++
- arch/powerpc/platforms/pseries/reconfig.c   |    7 +++++++
- 2 files changed, 19 insertions(+), 0 deletions(-)
+ drivers/crypto/nx/nx-aes-ccm.c |  465 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 465 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/crypto/nx/nx-aes-ccm.c
 
-diff --git a/arch/powerpc/include/asm/pSeries_reconfig.h b/arch/powerpc/include/asm/pSeries_reconfig.h
-index 23cd6cc..c07edfe 100644
---- a/arch/powerpc/include/asm/pSeries_reconfig.h
-+++ b/arch/powerpc/include/asm/pSeries_reconfig.h
-@@ -13,6 +13,18 @@
- #define PSERIES_RECONFIG_REMOVE		0x0002
- #define PSERIES_DRCONF_MEM_ADD		0x0003
- #define PSERIES_DRCONF_MEM_REMOVE	0x0004
-+#define PSERIES_UPDATE_PROPERTY		0x0005
-+
+diff --git a/drivers/crypto/nx/nx-aes-ccm.c b/drivers/crypto/nx/nx-aes-ccm.c
+new file mode 100644
+index 0000000..e418bef
+--- /dev/null
++++ b/drivers/crypto/nx/nx-aes-ccm.c
+@@ -0,0 +1,465 @@
 +/**
-+ * pSeries_reconfig_notify - Notifier value structure for OFDT property updates
++ * AES CCM routines supporting the Power 7+ Nest Accelerators driver
 + *
-+ * @node: Device tree node which owns the property being updated
-+ * @property: Updated property
++ * Copyright (C) 2012 International Business Machines Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 only.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ * Author: Kent Yoder <yoder1@us.ibm.com>
 + */
-+struct pSeries_reconfig_prop_update {
-+	struct device_node *node;
-+	struct property *property;
-+};
- 
- #ifdef CONFIG_PPC_PSERIES
- extern int pSeries_reconfig_notifier_register(struct notifier_block *);
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 168651a..7b3bf76 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -103,11 +103,13 @@ int pSeries_reconfig_notifier_register(struct notifier_block *nb)
- {
- 	return blocking_notifier_chain_register(&pSeries_reconfig_chain, nb);
- }
-+EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_register);
- 
- void pSeries_reconfig_notifier_unregister(struct notifier_block *nb)
- {
- 	blocking_notifier_chain_unregister(&pSeries_reconfig_chain, nb);
- }
-+EXPORT_SYMBOL_GPL(pSeries_reconfig_notifier_unregister);
- 
- int pSeries_reconfig_notify(unsigned long action, void *p)
- {
-@@ -426,6 +428,7 @@ static int do_remove_property(char *buf, size_t bufsize)
- static int do_update_property(char *buf, size_t bufsize)
- {
- 	struct device_node *np;
-+	struct pSeries_reconfig_prop_update upd_value;
- 	unsigned char *value;
- 	char *name, *end, *next_prop;
- 	int rc, length;
-@@ -454,6 +457,10 @@ static int do_update_property(char *buf, size_t bufsize)
- 		return -ENODEV;
- 	}
- 
-+	upd_value.node = np;
-+	upd_value.property = newprop;
-+	pSeries_reconfig_notify(PSERIES_UPDATE_PROPERTY, &upd_value);
 +
- 	rc = prom_update_property(np, newprop, oldprop);
- 	if (rc)
- 		return rc;
++#include <crypto/internal/aead.h>
++#include <crypto/aes.h>
++#include <crypto/algapi.h>
++#include <crypto/scatterwalk.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/crypto.h>
++#include <asm/vio.h>
++
++#include "nx_csbcpb.h"
++#include "nx.h"
++
++
++static int ccm_aes_nx_set_key(struct crypto_aead *tfm,
++			      const u8           *in_key,
++			      unsigned int        key_len)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&tfm->base);
++	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
++	struct nx_csbcpb *csbcpb_aead = nx_ctx->csbcpb_aead;
++
++	nx_ctx_init(nx_ctx, HCOP_FC_AES);
++
++	switch (key_len) {
++	case AES_KEYSIZE_128:
++		NX_CPB_SET_KEY_SIZE(csbcpb, NX_KS_AES_128);
++		NX_CPB_SET_KEY_SIZE(csbcpb_aead, NX_KS_AES_128);
++		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_128];
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	csbcpb->cpb.hdr.mode = NX_MODE_AES_CCM;
++	memcpy(csbcpb->cpb.aes_ccm.key, in_key, key_len);
++
++	csbcpb_aead->cpb.hdr.mode = NX_MODE_AES_CCA;
++	memcpy(csbcpb_aead->cpb.aes_cca.key, in_key, key_len);
++
++	return 0;
++
++}
++
++static int ccm4309_aes_nx_set_key(struct crypto_aead *tfm,
++				  const u8           *in_key,
++				  unsigned int        key_len)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&tfm->base);
++
++	if (key_len < 3)
++		return -EINVAL;
++
++	key_len -= 3;
++
++	memcpy(nx_ctx->priv.ccm.nonce, in_key + key_len, 3);
++
++	return ccm_aes_nx_set_key(tfm, in_key, key_len);
++}
++
++static int ccm_aes_nx_setauthsize(struct crypto_aead *tfm,
++				  unsigned int authsize)
++{
++	switch (authsize) {
++	case 4:
++	case 6:
++	case 8:
++	case 10:
++	case 12:
++	case 14:
++	case 16:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	crypto_aead_crt(tfm)->authsize = authsize;
++
++	return 0;
++}
++
++static int ccm4309_aes_nx_setauthsize(struct crypto_aead *tfm,
++				      unsigned int authsize)
++{
++	switch (authsize) {
++	case 8:
++	case 12:
++	case 16:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	crypto_aead_crt(tfm)->authsize = authsize;
++
++	return 0;
++}
++
++/* taken from crypto/ccm.c */
++static int set_msg_len(u8 *block, unsigned int msglen, int csize)
++{
++	__be32 data;
++
++	memset(block, 0, csize);
++	block += csize;
++
++	if (csize >= 4)
++		csize = 4;
++	else if (msglen > (unsigned int)(1 << (8 * csize)))
++		return -EOVERFLOW;
++
++	data = cpu_to_be32(msglen);
++	memcpy(block - csize, (u8 *)&data + 4 - csize, csize);
++
++	return 0;
++}
++
++/* taken from crypto/ccm.c */
++static inline int crypto_ccm_check_iv(const u8 *iv)
++{
++	/* 2 <= L <= 8, so 1 <= L' <= 7. */
++	if (1 > iv[0] || iv[0] > 7)
++		return -EINVAL;
++
++	return 0;
++}
++
++/* based on code from crypto/ccm.c */
++static int generate_b0(u8 *iv, unsigned int assoclen, unsigned int authsize,
++		       unsigned int cryptlen, u8 *b0)
++{
++	unsigned int l, lp, m = authsize;
++	int rc;
++
++	memcpy(b0, iv, 16);
++
++	lp = b0[0];
++	l = lp + 1;
++
++	/* set m, bits 3-5 */
++	*b0 |= (8 * ((m - 2) / 2));
++
++	/* set adata, bit 6, if associated data is used */
++	if (assoclen)
++		*b0 |= 64;
++
++	rc = set_msg_len(b0 + 16 - l, cryptlen, l);
++
++	return rc;
++}
++
++static int generate_pat(u8                   *iv,
++			struct aead_request  *req,
++			struct nx_crypto_ctx *nx_ctx,
++			unsigned int          authsize,
++			unsigned int          nbytes,
++			u8                   *out)
++{
++	struct nx_sg *nx_insg = nx_ctx->in_sg;
++	struct nx_sg *nx_outsg = nx_ctx->out_sg;
++	unsigned int iauth_len = 0;
++	struct vio_pfo_op *op = NULL;
++	u8 tmp[16], *b1 = NULL, *b0 = NULL, *result = NULL;
++	int rc;
++
++	/* zero the ctr value */
++	memset(iv + 15 - iv[0], 0, iv[0] + 1);
++
++	if (!req->assoclen) {
++		b0 = nx_ctx->csbcpb->cpb.aes_ccm.in_pat_or_b0;
++	} else if (req->assoclen <= 14) {
++		/* if associated data is 14 bytes or less, we do 1 GCM
++		 * operation on 2 AES blocks, B0 (stored in the csbcpb) and B1,
++		 * which is fed in through the source buffers here */
++		b0 = nx_ctx->csbcpb->cpb.aes_ccm.in_pat_or_b0;
++		b1 = nx_ctx->priv.ccm.iauth_tag;
++		iauth_len = req->assoclen;
++
++		nx_insg = nx_build_sg_list(nx_insg, b1, 16, nx_ctx->ap->sglen);
++		nx_outsg = nx_build_sg_list(nx_outsg, tmp, 16,
++					    nx_ctx->ap->sglen);
++
++		/* inlen should be negative, indicating to phyp that its a
++		 * pointer to an sg list */
++		nx_ctx->op.inlen = (nx_ctx->in_sg - nx_insg) *
++					sizeof(struct nx_sg);
++		nx_ctx->op.outlen = (nx_ctx->out_sg - nx_outsg) *
++					sizeof(struct nx_sg);
++
++		NX_CPB_FDM(nx_ctx->csbcpb) |= NX_FDM_ENDE_ENCRYPT;
++		NX_CPB_FDM(nx_ctx->csbcpb) |= NX_FDM_INTERMEDIATE;
++
++		op = &nx_ctx->op;
++		result = nx_ctx->csbcpb->cpb.aes_ccm.out_pat_or_mac;
++	} else if (req->assoclen <= 65280) {
++		/* if associated data is less than (2^16 - 2^8), we construct
++		 * B1 differently and feed in the associated data to a CCA
++		 * operation */
++		b0 = nx_ctx->csbcpb_aead->cpb.aes_cca.b0;
++		b1 = nx_ctx->csbcpb_aead->cpb.aes_cca.b1;
++		iauth_len = 14;
++
++		/* remaining assoc data must have scatterlist built for it */
++		nx_insg = nx_walk_and_build(nx_insg, nx_ctx->ap->sglen,
++					    req->assoc, iauth_len,
++					    req->assoclen - iauth_len);
++		nx_ctx->op_aead.inlen = (nx_ctx->in_sg - nx_insg) *
++						sizeof(struct nx_sg);
++
++		op = &nx_ctx->op_aead;
++		result = nx_ctx->csbcpb_aead->cpb.aes_cca.out_pat_or_b0;
++	} else {
++		/* if associated data is less than (2^32), we construct B1
++		 * differently yet again and feed in the associated data to a
++		 * CCA operation */
++		pr_err("associated data len is %u bytes (returning -EINVAL)\n",
++		       req->assoclen);
++		rc = -EINVAL;
++	}
++
++	rc = generate_b0(iv, req->assoclen, authsize, nbytes, b0);
++	if (rc)
++		goto done;
++
++	if (b1) {
++		memset(b1, 0, 16);
++		*(u16 *)b1 = (u16)req->assoclen;
++
++		scatterwalk_map_and_copy(b1 + 2, req->assoc, 0,
++					 iauth_len, SCATTERWALK_FROM_SG);
++
++		rc = nx_hcall_sync(nx_ctx, op);
++		if (rc)
++			goto done;
++
++		atomic_inc(&(nx_ctx->stats->aes_ops));
++		atomic64_add(req->assoclen, &(nx_ctx->stats->aes_bytes));
++
++		memcpy(out, result, AES_BLOCK_SIZE);
++	}
++done:
++	return rc;
++}
++
++static int ccm_nx_decrypt(struct aead_request   *req,
++			  struct blkcipher_desc *desc)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(req->base.tfm);
++	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
++	unsigned int nbytes = req->cryptlen;
++	unsigned int authsize = crypto_aead_authsize(crypto_aead_reqtfm(req));
++	struct nx_ccm_priv *priv = &nx_ctx->priv.ccm;
++	int rc = -1;
++
++	if (nbytes > nx_ctx->ap->databytelen)
++		return -EINVAL;
++
++	nbytes -= authsize;
++
++	/* copy out the auth tag to compare with later */
++	scatterwalk_map_and_copy(priv->oauth_tag,
++				 req->src, nbytes, authsize,
++				 SCATTERWALK_FROM_SG);
++
++	rc = generate_pat(desc->info, req, nx_ctx, authsize, nbytes,
++			  csbcpb->cpb.aes_ccm.in_pat_or_b0);
++	if (rc)
++		goto out;
++
++	rc = nx_build_sg_lists(nx_ctx, desc, req->dst, req->src, nbytes,
++			       csbcpb->cpb.aes_ccm.iv_or_ctr);
++	if (rc)
++		goto out;
++
++	NX_CPB_FDM(nx_ctx->csbcpb) &= ~NX_FDM_ENDE_ENCRYPT;
++	NX_CPB_FDM(nx_ctx->csbcpb) &= ~NX_FDM_INTERMEDIATE;
++
++	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op);
++	if (rc)
++		goto out;
++
++	atomic_inc(&(nx_ctx->stats->aes_ops));
++	atomic64_add(csbcpb->csb.processed_byte_count,
++		     &(nx_ctx->stats->aes_bytes));
++
++	rc = memcmp(csbcpb->cpb.aes_ccm.out_pat_or_mac, priv->oauth_tag,
++		    authsize) ? -EBADMSG : 0;
++out:
++	return rc;
++}
++
++static int ccm_nx_encrypt(struct aead_request   *req,
++			  struct blkcipher_desc *desc)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(req->base.tfm);
++	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
++	unsigned int nbytes = req->cryptlen;
++	unsigned int authsize = crypto_aead_authsize(crypto_aead_reqtfm(req));
++	int rc = -1;
++
++	if (nbytes > nx_ctx->ap->databytelen)
++		return -EINVAL;
++
++	rc = generate_pat(desc->info, req, nx_ctx, authsize, nbytes,
++			  csbcpb->cpb.aes_ccm.in_pat_or_b0);
++	if (rc)
++		goto out;
++
++	rc = nx_build_sg_lists(nx_ctx, desc, req->dst, req->src, nbytes,
++			       csbcpb->cpb.aes_ccm.iv_or_ctr);
++	if (rc)
++		goto out;
++
++	NX_CPB_FDM(csbcpb) |= NX_FDM_ENDE_ENCRYPT;
++	NX_CPB_FDM(csbcpb) &= ~NX_FDM_INTERMEDIATE;
++
++	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op);
++	if (rc)
++		goto out;
++
++	atomic_inc(&(nx_ctx->stats->aes_ops));
++	atomic64_add(csbcpb->csb.processed_byte_count,
++		     &(nx_ctx->stats->aes_bytes));
++
++	/* copy out the auth tag */
++	scatterwalk_map_and_copy(csbcpb->cpb.aes_ccm.out_pat_or_mac,
++				 req->dst, nbytes, authsize,
++				 SCATTERWALK_TO_SG);
++out:
++	return rc;
++}
++
++static int ccm4309_aes_nx_encrypt(struct aead_request *req)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(req->base.tfm);
++	struct blkcipher_desc desc;
++	u8 *iv = nx_ctx->priv.ccm.iv;
++
++	iv[0] = 3;
++	memcpy(iv + 1, nx_ctx->priv.ccm.nonce, 3);
++	memcpy(iv + 4, req->iv, 8);
++
++	desc.info = iv;
++	desc.tfm = (struct crypto_blkcipher *)req->base.tfm;
++
++	return ccm_nx_encrypt(req, &desc);
++}
++
++static int ccm_aes_nx_encrypt(struct aead_request *req)
++{
++	struct blkcipher_desc desc;
++	int rc;
++
++	desc.info = req->iv;
++	desc.tfm = (struct crypto_blkcipher *)req->base.tfm;
++
++	rc = crypto_ccm_check_iv(desc.info);
++	if (rc)
++		return rc;
++
++	return ccm_nx_encrypt(req, &desc);
++}
++
++static int ccm4309_aes_nx_decrypt(struct aead_request *req)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(req->base.tfm);
++	struct blkcipher_desc desc;
++	u8 *iv = nx_ctx->priv.ccm.iv;
++
++	iv[0] = 3;
++	memcpy(iv + 1, nx_ctx->priv.ccm.nonce, 3);
++	memcpy(iv + 4, req->iv, 8);
++
++	desc.info = iv;
++	desc.tfm = (struct crypto_blkcipher *)req->base.tfm;
++
++	return ccm_nx_decrypt(req, &desc);
++}
++
++static int ccm_aes_nx_decrypt(struct aead_request *req)
++{
++	struct blkcipher_desc desc;
++	int rc;
++
++	desc.info = req->iv;
++	desc.tfm = (struct crypto_blkcipher *)req->base.tfm;
++
++	rc = crypto_ccm_check_iv(desc.info);
++	if (rc)
++		return rc;
++
++	return ccm_nx_decrypt(req, &desc);
++}
++
++/* tell the block cipher walk routines that this is a stream cipher by
++ * setting cra_blocksize to 1. Even using blkcipher_walk_virt_block
++ * during encrypt/decrypt doesn't solve this problem, because it calls
++ * blkcipher_walk_done under the covers, which doesn't use walk->blocksize,
++ * but instead uses this tfm->blocksize. */
++struct crypto_alg nx_ccm_aes_alg = {
++	.cra_name        = "ccm(aes)",
++	.cra_driver_name = "ccm-aes-nx",
++	.cra_priority    = 300,
++	.cra_flags       = CRYPTO_ALG_TYPE_AEAD |
++			   CRYPTO_ALG_NEED_FALLBACK,
++	.cra_blocksize   = 1,
++	.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
++	.cra_type        = &crypto_aead_type,
++	.cra_module      = THIS_MODULE,
++	.cra_list        = LIST_HEAD_INIT(nx_ccm_aes_alg.cra_list),
++	.cra_init        = nx_crypto_ctx_aes_ccm_init,
++	.cra_exit        = nx_crypto_ctx_exit,
++	.cra_aead = {
++		.ivsize      = AES_BLOCK_SIZE,
++		.maxauthsize = AES_BLOCK_SIZE,
++		.setkey      = ccm_aes_nx_set_key,
++		.setauthsize = ccm_aes_nx_setauthsize,
++		.encrypt     = ccm_aes_nx_encrypt,
++		.decrypt     = ccm_aes_nx_decrypt,
++	}
++};
++
++struct crypto_alg nx_ccm4309_aes_alg = {
++	.cra_name        = "rfc4309(ccm(aes))",
++	.cra_driver_name = "rfc4309-ccm-aes-nx",
++	.cra_priority    = 300,
++	.cra_flags       = CRYPTO_ALG_TYPE_AEAD |
++			   CRYPTO_ALG_NEED_FALLBACK,
++	.cra_blocksize   = 1,
++	.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
++	.cra_type        = &crypto_nivaead_type,
++	.cra_module      = THIS_MODULE,
++	.cra_list        = LIST_HEAD_INIT(nx_ccm4309_aes_alg.cra_list),
++	.cra_init        = nx_crypto_ctx_aes_ccm_init,
++	.cra_exit        = nx_crypto_ctx_exit,
++	.cra_aead = {
++		.ivsize      = 8,
++		.maxauthsize = AES_BLOCK_SIZE,
++		.setkey      = ccm4309_aes_nx_set_key,
++		.setauthsize = ccm4309_aes_nx_setauthsize,
++		.encrypt     = ccm4309_aes_nx_encrypt,
++		.decrypt     = ccm4309_aes_nx_decrypt,
++		.geniv       = "seqiv",
++	}
++};
 -- 
 1.7.1
