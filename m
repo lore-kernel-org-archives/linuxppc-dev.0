@@ -1,24 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 85212B7024
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 17:24:06 +1000 (EST)
-Message-ID: <1334042632.3040.54.camel@pasglop>
-Subject: Re: 3.4.0-rc1: No init found
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Kujau <lists@nerdbynature.de>
-Date: Tue, 10 Apr 2012 17:23:52 +1000
-In-Reply-To: <alpine.DEB.2.01.1204040944210.4930@trent.utfs.org>
-References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
- <1333440522.3040.9.camel@pasglop>
- <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
- <4F7C4058.6090405@in.ibm.com>
- <alpine.DEB.2.01.1204040944210.4930@trent.utfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>
+Return-Path: <B38951@freescale.com>
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property for
+ Freescale PCI
+Date: Tue, 10 Apr 2012 09:17:25 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D019DEA96@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1333263396-23932-1-git-send-email-B38951@freescale.com>
+ <E3DD739D-1EC3-4BCA-AE26-1EAE7A086A1E@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D019DBE90@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D019DBE90@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,130 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-04-04 at 09:45 -0700, Christian Kujau wrote:
-> On Wed, 4 Apr 2012 at 18:06, Suzuki K. Poulose wrote:
-> > > INFO: Uncompressed kernel (size 0x6d4b80) overlaps the address of the
-> > > wrapper(0x400000)
-> > > INFO: Fixing the link_address of wrapper to (0x700000)
-> > >    Building modules, stage 2.
-> > >    MODPOST 24 modules
-> > > ------------
-> > > 
-> > > I started to see these messages in January (around Linux 3.2.0), but never
-> > > investigated what it was since the produced kernels continued to boot just
-> > > fine.
-> > 
-> > The above change was added by me. The message is printed when the 'wrapper'
-> > script finds that decompressed kernel overlaps the 'bootstrap code' which does
-> > the decompression. So it shifts the 'address' of the bootstrap code to the
-> > next higher MB. As such it is harmless.
-> 
-> OK, good to know that it's harmless. Thanks for the explanation.
 
-I think I found it :-)
+> -----Original Message-----
+> From: linuxppc-dev-bounces+b38951=3Dfreescale.com@lists.ozlabs.org
+> [mailto:linuxppc-dev-bounces+b38951=3Dfreescale.com@lists.ozlabs.org] On
+> Behalf Of Jia Hongtao-B38951
+> Sent: Friday, April 06, 2012 11:05 AM
+> To: Kumar Gala
+> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org;
+> Li Yang-R58472
+> Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property
+> for Freescale PCI
+>=20
+>=20
+> > -----Original Message-----
+> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> > Sent: Wednesday, April 04, 2012 9:09 PM
+> > To: Jia Hongtao-B38951
+> > Cc: linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; devicetree-
+> > discuss@lists.ozlabs.org
+> > Subject: Re: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property
+> > for Freescale PCI
+> >
+> >
+> > On Apr 1, 2012, at 1:56 AM, Jia Hongtao wrote:
+> >
+> > > If PCI is primary bus we should set isa_io/mem_base when parsing PCI
+> > bridge
+> > > resources from device tree. The previous way to check the primary bus
+> > based
+> > > on a hard-coded address named primary_phb_addr. Now we add a property
+> > named
+> > > "fsl,has-isa" into device tree. In kernel we use this property to
+> find
+> > out
+> > > the bus is primary or not. This way is more flexible.
+> > >
+> > > Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > ---
+> > > .../devicetree/bindings/powerpc/fsl/pci.txt        |   36
+> > ++++++++++++++++++++
+> > > 1 files changed, 36 insertions(+), 0 deletions(-)
+> > > create mode 100644
+> > Documentation/devicetree/bindings/powerpc/fsl/pci.txt
+> >
+> > This isn't freescale specific, its linux specific.  If anything the
+> > property should be linux,has-isa.
+> >
+> > But in general I dont think this is a good idea.  In truth one could
+> > search the device tree for:
+> >
+> > 	device_type =3D "isa";
+> >
+> > to try and set this dynamically.
+> >
+> > - k
+> >
+>=20
+> Yes, it's not Freescale specific, but it's only used by Freescale now in
+> the kernel. This is why I named the property as "fsl,has-isa".
+>=20
+> To indicate PCI bus is primary we have three ways to go and we now like
+> the 2nd solution:
+>=20
+> 1. As this patch said, we add a property to device tree manually.
+>=20
+> 2. Set this property dynamically in uboot when scanning PCI bridge.
+> Actually we have already done this. The problem is users should update
+> uboot and kernel together or it's not work. To support old uboot we
+> decide
+> to add this property into device tree too temporarily. We will remove it
+> from device tree at an appropriate future.
+>=20
+> 3. Just as you said we could search the device tree by device_type =3D
+> "isa".
+>    There are two problems here:
+> 	* There is no OF API for searching just in PCI node now. That means
+> 	  we can't easily find whether there is "isa" bridge or not under
+> 	  this PCI controller while scanning it.
+> 	* Boards MPC8541CDS and MPC8555CDS has no "isa" node in device tree
+> 	  but has ISA bridge under PCI controller.
+>=20
+> - Jia Hongtao
+>=20
 
-can you test the patch below ?
+Hi Kumar,
 
->From 08f1ec8a594c60bf3856e3c45b6d15fd691d90bb Mon Sep 17 00:00:00 2001
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 10 Apr 2012 17:21:35 +1000
-Subject: [PATCH] powerpc: Fix page fault with lockdep regression
+I agree with the name change from "fsl,has-isa" to "linux,has-isa".
+If this is ok I will update this patch and send the patches based on this
+new property.
 
-commit a546498f3bf9aac311c66f965186373aee2ca0b0
-introduced a regression on 32-bit when irq tracing
-is enabled by exposing an old bug in our irq tracing
-code for exception entry.
+Also, I have a question about "isa" node in dts. Is this node being used
+by kernel? If not we can remove it from all boards and check the primary
+bus by uboot. If "isa" is useful why MPC8541CDS and MPC8555CDS has no
+"isa" node in device tree but has ISA bridge under PCI controller?
 
-The code would save and restore some GPRs around the
-calls to the C lockdep code, however, it tries to be
-too smart for its own good and restores some of the
-GPRs from the exception frame (as saved there on
-exception entry).
-
-However, for page faults, we do replace those GPRs with
-arguments to do_page_fault before we call transfer_to_handler
-and so restoring from the exception frame is plain wrong in
-this case.
-
-This was fine as long as we didn't touch the interrupt state
-when taking page fault, but when I started doing it, it would
-trigger the lockdep calls and the bug.
-
-This fixes it by cleaning up that code a bit. It did create
-a small stack frame for the sake of backtraces, so let's
-make it a bit bigger and use it to save and restore the
-stuff we care about.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/entry_32.S |   39 +++++++++++++++++++++------------------
- 1 file changed, 21 insertions(+), 18 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 3e57a00..ba3aeb4 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -206,40 +206,43 @@ reenable_mmu:				/* re-enable mmu so we can */
- 	andi.	r10,r10,MSR_EE		/* Did EE change? */
- 	beq	1f
- 
--	/* Save handler and return address into the 2 unused words
--	 * of the STACK_FRAME_OVERHEAD (sneak sneak sneak). Everything
--	 * else can be recovered from the pt_regs except r3 which for
--	 * normal interrupts has been set to pt_regs and for syscalls
--	 * is an argument, so we temporarily use ORIG_GPR3 to save it
--	 */
--	stw	r9,8(r1)
--	stw	r11,12(r1)
--	stw	r3,ORIG_GPR3(r1)
- 	/*
- 	 * The trace_hardirqs_off will use CALLER_ADDR0 and CALLER_ADDR1.
- 	 * If from user mode there is only one stack frame on the stack, and
- 	 * accessing CALLER_ADDR1 will cause oops. So we need create a dummy
- 	 * stack frame to make trace_hardirqs_off happy.
-+	 *
-+	 * This is handy because we also need to save a bunch of GPRs,
-+	 * r3 can be different from GPR3(r1) at this point, r9 and r11
-+	 * contains the old MSR and handler address respectively,
-+	 * r4 & r5 can contain page fault arguments that need to be passed
-+	 * along as well. r12, CCR, CTR, XER etc... are left clobbered as
-+	 * they aren't useful past this point (aren't syscall arguments),
-+	 * the rest is restored from the exception frame.
- 	 */
-+	stwu	r1,-32(r1)
-+	stw	r9,8(r1)
-+	stw	r11,12(r1)
-+	stw	r3,16(r1)
-+	stw	r4,20(r1)
-+	stw	r5,24(r1)
- 	andi.	r12,r12,MSR_PR
--	beq	11f
--	stwu	r1,-16(r1)
-+	b	11f
- 	bl	trace_hardirqs_off
--	addi	r1,r1,16
- 	b	12f
--
- 11:
- 	bl	trace_hardirqs_off
- 12:
-+	lwz	r5,24(r1)
-+	lwz	r4,20(r1)
-+	lwz	r3,16(r1)
-+	lwz	r11,12(r1)
-+	lwz	r9,8(r1)
-+	addi	r1,r1,32
- 	lwz	r0,GPR0(r1)
--	lwz	r3,ORIG_GPR3(r1)
--	lwz	r4,GPR4(r1)
--	lwz	r5,GPR5(r1)
- 	lwz	r6,GPR6(r1)
- 	lwz	r7,GPR7(r1)
- 	lwz	r8,GPR8(r1)
--	lwz	r9,8(r1)
--	lwz	r11,12(r1)
- 1:	mtctr	r11
- 	mtlr	r9
- 	bctr				/* jump to handler */
--- 
-1.7.9.5
+Thanks.
+- Jia Hongtao
