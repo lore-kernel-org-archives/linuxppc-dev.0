@@ -1,24 +1,12 @@
-Return-Path: <tqnguyen@apm.com>
-Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
- by ozlabs.org (Postfix) with SMTP id 0FE7DB7029
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 13:46:26 +1000 (EST)
-Received: by pbcun15 with SMTP id un15so5756034pbc.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2012 20:46:23 -0700 (PDT)
-From: Thang Nguyen <tqnguyen@apm.com>
-References: <1333447938-16461-1-git-send-email-tqnguyen@apm.com>
- <4F82B61D.8010502@mvista.com>
-In-Reply-To: <4F82B61D.8010502@mvista.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: "David S. Miller" <davem@davemloft.net>,
+ Richard Cochran <richardcochran@gmail.com>
 MIME-Version: 1.0
-Date: Tue, 10 Apr 2012 10:46:22 +0700
-Message-ID: <8a0ea5bd221ddeb9eded16e180aa8fbb@mail.gmail.com>
-Subject: RE: [PATCH 1/1] Add support 2 SATA ports for Maui and change filename
- from sata_dwc_460ex.c to sata_dwc_4xx.c
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, linux-ide@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Jeff Garzik <jgarzik@pobox.com>,
- linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] gianfar: add missing include
+Date: Tue, 10 Apr 2012 14:18:47 +1000
+Message-ID: <25411.1334031527@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,79 +16,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sergei,
-Thanks for your review.
-On Maui, there are 2 separate SATA controllers but they share the same
-AHBDMA controller. Each SATA controller is assigned a fixed DMA channel on
-the AHBDMA (channel 0 is assigned to SATA controller 0 and channel 1 is
-assigned to SATA controller 1).
-For the 460EX, there is only 1 SATA controller and it uses channel 0 for
-transferring data.
+next-20120405 compiled with mpc85xx_defconfig gives the following:
 
-In my opinion, in the case of Maui, we can use the same DMA information in
-2 device nodes as they use the same DMA controller. And in another CPU, if
-they use different DMA controller, the corresponding information will also
-be different.
+  CC      drivers/net/ethernet/freescale/gianfar_ethtool.o
+drivers/net/ethernet/freescale/gianfar_ethtool.c: In function 'gfar_get_ts_info':
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1751:4: error: 'SOF_TIMESTAMPING_RX_SOFTWARE' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1751:4: note: each undeclared identifier is reported only once for each function it appears in
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1752:4: error: 'SOF_TIMESTAMPING_SOFTWARE' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1757:3: error: 'SOF_TIMESTAMPING_TX_HARDWARE' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1758:3: error: 'SOF_TIMESTAMPING_RX_HARDWARE' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1759:3: error: 'SOF_TIMESTAMPING_RAW_HARDWARE' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1762:9: error: 'HWTSTAMP_TX_OFF' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1763:9: error: 'HWTSTAMP_TX_ON' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1765:9: error: 'HWTSTAMP_FILTER_NONE' undeclared (first use in this function)
+drivers/net/ethernet/freescale/gianfar_ethtool.c:1766:9: error: 'HWTSTAMP_FILTER_ALL' undeclared (first use in this function)
 
-Regards,
-Thang Nguyen -
------Original Message-----
-From: Sergei Shtylyov [mailto:sshtylyov@mvista.com]
-Sent: Monday, April 09, 2012 5:13 PM
-To: Thang Q. Nguyen
-Cc: Benjamin Herrenschmidt; Paul Mackerras; Jeff Garzik; Grant Likely; Rob
-Herring; linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-linux-ide@vger.kernel.org; devicetree-discuss@lists.ozlabs.org
-Subject: Re: [PATCH 1/1] Add support 2 SATA ports for Maui and change
-filename from sata_dwc_460ex.c to sata_dwc_4xx.c
+This is because of a missing include file from:
+  6663628 gianfar: Support the get_ts_info ethtool method.
 
-Hello.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+CC: Richard Cochran <richardcochran@gmail.com>
+CC: David S. Miller <davem@davemloft.net>
 
-On 03-04-2012 14:12, Thang Q. Nguyen wrote:
-
-> Signed-off-by: Thang Q. Nguyen<tqnguyen@apm.com>
-[...]
-
-> diff --git a/arch/powerpc/boot/dts/bluestone.dts
-b/arch/powerpc/boot/dts/bluestone.dts
-> index cfa23bf..803fda6 100644
-> --- a/arch/powerpc/boot/dts/bluestone.dts
-> +++ b/arch/powerpc/boot/dts/bluestone.dts
-> @@ -155,6 +155,27 @@
->   					/*RXDE*/  0x5 0x4>;
->   		};
->
-> +		/* SATA DWC devices */
-> +		SATA0: sata@bffd1000 {
-> +			compatible = "amcc,sata-apm821xx";
-> +			reg =<4 0xbffd1000 0x800   /* SATA0 */
-> +			       4 0xbffd0800 0x400>; /* AHBDMA */
-> +			dma-channel=<0>;
-> +			interrupt-parent =<&UIC0>;
-> +			interrupts =<26 4    /* SATA0 */
-> +			              25 4>;  /* AHBDMA */
-> +		};
-> +
-> +		SATA1: sata@bffd1800 {
-> +			compatible = "amcc,sata-apm821xx";
-> +			reg =<4 0xbffd1800 0x800   /* SATA1 */
-> +			       4 0xbffd0800 0x400>; /* AHBDMA */
-> +			dma-channel=<1>;
-> +			interrupt-parent =<&UIC0>;
-> +			interrupts =<27 4    /* SATA1 */
-> +			              25 4>;  /* AHBDMA */
-> +		};
-> +
-
-    So, this is dual SATA controller, not dual port SATA controller?
-BTW, it's wrong to have the same AHBDMA resource in two device nodes I
-think.
-
-MBR, Sergei
-CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, 
-is for the sole use of the intended recipient(s) and contains information 
-that is confidential and proprietary to AppliedMicro Corporation or its subsidiaries. 
-It is to be used solely for the purpose of furthering the parties' business relationship. 
-All unauthorized review, use, disclosure or distribution is prohibited. 
-If you are not the intended recipient, please contact the sender by reply e-mail 
-and destroy all copies of the original message.
+diff --git a/drivers/net/ethernet/freescale/gianfar_ethtool.c b/drivers/net/ethernet/freescale/gianfar_ethtool.c
+index 27f49c7..3c34b32b 100644
+--- a/drivers/net/ethernet/freescale/gianfar_ethtool.c
++++ b/drivers/net/ethernet/freescale/gianfar_ethtool.c
+@@ -29,6 +29,7 @@
+ #include <linux/skbuff.h>
+ #include <linux/spinlock.h>
+ #include <linux/mm.h>
++#include <linux/net_tstamp.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
