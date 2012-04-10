@@ -1,28 +1,34 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D7B0B7021
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 21:23:46 +1000 (EST)
-Received: by bkwj10 with SMTP id j10so4037502bkw.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 04:23:42 -0700 (PDT)
-Message-ID: <4F8417DB.3040502@mvista.com>
-Date: Tue, 10 Apr 2012 15:22:03 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-MIME-Version: 1.0
-To: Thang Nguyen <tqnguyen@apm.com>
-Subject: Re: [PATCH 1/1] Add support 2 SATA ports for Maui and change filename
- from sata_dwc_460ex.c to sata_dwc_4xx.c
-References: <1333447938-16461-1-git-send-email-tqnguyen@apm.com>
- <4F82B61D.8010502@mvista.com>
- <8a0ea5bd221ddeb9eded16e180aa8fbb@mail.gmail.com>
-In-Reply-To: <8a0ea5bd221ddeb9eded16e180aa8fbb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, linux-ide@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Jeff Garzik <jgarzik@pobox.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <key@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C90EEB7017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:03:25 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
+ Tue, 10 Apr 2012 11:03:21 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B7C5338C8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:03:18 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3AF3IOX182536
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:03:18 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3AF37MY011622
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:03:07 -0600
+Message-ID: <1334070249.16827.1.camel@key-ThinkPad-W510>
+Subject: [PATCH v2 00/17] Platform Facilities Option and crypto accelerators
+From: Kent Yoder <key@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Date: Tue, 10 Apr 2012 10:04:09 -0500
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: key@linux.vnet.ibm.com, rcj@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,95 +38,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+ChangeLog for v2:
+- move crypto driver sysfs stuff to debugfs (Greg K-H)
+- Remove CONFIG_ dependencies for the CMO bits (Anton Blanchard)
+- move nx driver code to drivers/crypto (Kumar Gala)
+- Add inline comment for nx_build_sg_list (Rob Jennings)
+- make sure kmalloc'd pointers are aligned (Rob Jennings)
+- get rid of bitfields in nx_csbcpb.h (Rob Jennings)
+- Compile against Ben Herrenschmidt's ppc device naming patch
+- Rebase against latest upstream
 
-On 10-04-2012 7:46, Thang Nguyen wrote:
+Kent Yoder (12):
+  powerpc: crypto: AES-CBC mode routines for nx encryption
+  powerpc: crypto: AES-CCM mode routines for nx encryption
+  powerpc: crypto: AES-CTR mode routines for nx encryption
+  powerpc: crypto: AES-ECB mode routines for nx encryption
+  powerpc: crypto: AES-GCM mode routines for nx encryption
+  powerpc: crypto: AES-XCBC mode routines for nx encryption
+  powerpc: crypto: SHA256 hash routines for nx encryption
+  powerpc: crypto: SHA512 hash routines for nx encryption
+  powerpc: crypto: nx driver code supporting nx encryption
+  powerpc: crypto: debugfs routines and docs for the nx device driver
+  powerpc: crypto: Build files for the nx device driver
+  powerpc: crypto: enable the PFO-based encryption device
 
-> Hi Sergei,
-> Thanks for your review.
+Michael Neuling (1):
+  hwrng: pseries - PFO-based hwrng driver
 
-> On Maui, there are 2 separate SATA controllers but they share the same
-> AHBDMA controller. Each SATA controller is assigned a fixed DMA channel on
-> the AHBDMA (channel 0 is assigned to SATA controller 0 and channel 1 is
-> assigned to SATA controller 1).
-> For the 460EX, there is only 1 SATA controller and it uses channel 0 for
-> transferring data.
+Robert Jennings (4):
+  powerpc: Add new hvcall constants to support PFO
+  powerpc: Add pseries update notifier for OFDT prop changes
+  powerpc: Add PFO support to the VIO bus
+  pseries: Enabled the PFO-based RNG accelerator
 
-> In my opinion, in the case of Maui, we can use the same DMA information in
-> 2 device nodes as they use the same DMA controller. And in another CPU, if
-> they use different DMA controller, the corresponding information will also
-> be different.
-
-    No, either the DMA controller should be a separate device node, or both 
-ports and DMA controller should be packed into the single device node. The way 
-you're doing it is incorrect because it creates memory resource conflict 
-between devices when they are instantiated as platfrom devices.
-
-> Regards,
-> Thang Nguyen -
-> -----Original Message-----
-> From: Sergei Shtylyov [mailto:sshtylyov@mvista.com]
-> Sent: Monday, April 09, 2012 5:13 PM
-> To: Thang Q. Nguyen
-> Cc: Benjamin Herrenschmidt; Paul Mackerras; Jeff Garzik; Grant Likely; Rob
-> Herring; linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-> linux-ide@vger.kernel.org; devicetree-discuss@lists.ozlabs.org
-> Subject: Re: [PATCH 1/1] Add support 2 SATA ports for Maui and change
-> filename from sata_dwc_460ex.c to sata_dwc_4xx.c
-
-> Hello.
-
-> On 03-04-2012 14:12, Thang Q. Nguyen wrote:
-
->> Signed-off-by: Thang Q. Nguyen<tqnguyen@apm.com>
-> [...]
-
->> diff --git a/arch/powerpc/boot/dts/bluestone.dts
-> b/arch/powerpc/boot/dts/bluestone.dts
->> index cfa23bf..803fda6 100644
->> --- a/arch/powerpc/boot/dts/bluestone.dts
->> +++ b/arch/powerpc/boot/dts/bluestone.dts
->> @@ -155,6 +155,27 @@
->>    					/*RXDE*/  0x5 0x4>;
->>    		};
->>
->> +		/* SATA DWC devices */
->> +		SATA0: sata@bffd1000 {
->> +			compatible = "amcc,sata-apm821xx";
->> +			reg =<4 0xbffd1000 0x800   /* SATA0 */
->> +			       4 0xbffd0800 0x400>; /* AHBDMA */
->> +			dma-channel=<0>;
->> +			interrupt-parent =<&UIC0>;
->> +			interrupts =<26 4    /* SATA0 */
->> +			              25 4>;  /* AHBDMA */
->> +		};
->> +
->> +		SATA1: sata@bffd1800 {
->> +			compatible = "amcc,sata-apm821xx";
->> +			reg =<4 0xbffd1800 0x800   /* SATA1 */
->> +			       4 0xbffd0800 0x400>; /* AHBDMA */
->> +			dma-channel=<1>;
->> +			interrupt-parent =<&UIC0>;
->> +			interrupts =<27 4    /* SATA1 */
->> +			              25 4>;  /* AHBDMA */
->> +		};
->> +
-
->      So, this is dual SATA controller, not dual port SATA controller?
-> BTW, it's wrong to have the same AHBDMA resource in two device nodes I
-> think.
-
-> MBR, Sergei
-
-    Can you get rid of the following? It looks stupid when you post to the 
-maliing list.
-
-> CONFIDENTIALITY NOTICE: This e-mail message, including any attachments,
-> is for the sole use of the intended recipient(s) and contains information
-> that is confidential and proprietary to AppliedMicro Corporation or its subsidiaries.
-> It is to be used solely for the purpose of furthering the parties' business relationship.
-> All unauthorized review, use, disclosure or distribution is prohibited.
-> If you are not the intended recipient, please contact the sender by reply e-mail
-> and destroy all copies of the original message.
-
-WBR, Sergei
+ Documentation/ABI/testing/debugfs-pfo-nx-crypto |   45 ++
+ arch/powerpc/Makefile                           |    1 +
+ arch/powerpc/include/asm/hvcall.h               |   25 +-
+ arch/powerpc/include/asm/pSeries_reconfig.h     |   12 +
+ arch/powerpc/include/asm/vio.h                  |   46 ++
+ arch/powerpc/kernel/prom_init.c                 |    9 +-
+ arch/powerpc/kernel/vio.c                       |  273 ++++++++--
+ arch/powerpc/platforms/pseries/reconfig.c       |    7 +
+ drivers/char/hw_random/Kconfig                  |   13 +
+ drivers/char/hw_random/Makefile                 |    1 +
+ drivers/char/hw_random/pseries-rng.c            |   96 +++
+ drivers/crypto/Kconfig                          |   17 +
+ drivers/crypto/nx/Makefile                      |   11 +
+ drivers/crypto/nx/nx-aes-cbc.c                  |  140 +++++
+ drivers/crypto/nx/nx-aes-ccm.c                  |  465 +++++++++++++++
+ drivers/crypto/nx/nx-aes-ctr.c                  |  177 ++++++
+ drivers/crypto/nx/nx-aes-ecb.c                  |  138 +++++
+ drivers/crypto/nx/nx-aes-gcm.c                  |  353 +++++++++++
+ drivers/crypto/nx/nx-aes-xcbc.c                 |  234 ++++++++
+ drivers/crypto/nx/nx-sha256.c                   |  244 ++++++++
+ drivers/crypto/nx/nx-sha512.c                   |  263 +++++++++
+ drivers/crypto/nx/nx.c                          |  711 +++++++++++++++++++++++
+ drivers/crypto/nx/nx.h                          |  192 ++++++
+ drivers/crypto/nx/nx_csbcpb.h                   |  205 +++++++
+ drivers/crypto/nx/nx_debugfs.c                  |  103 ++++
+ 25 files changed, 3739 insertions(+), 42 deletions(-)
+ create mode 100644 Documentation/ABI/testing/debugfs-pfo-nx-crypto
+ create mode 100644 drivers/char/hw_random/pseries-rng.c
+ create mode 100644 drivers/crypto/nx/Makefile
+ create mode 100644 drivers/crypto/nx/nx-aes-cbc.c
+ create mode 100644 drivers/crypto/nx/nx-aes-ccm.c
+ create mode 100644 drivers/crypto/nx/nx-aes-ctr.c
+ create mode 100644 drivers/crypto/nx/nx-aes-ecb.c
+ create mode 100644 drivers/crypto/nx/nx-aes-gcm.c
+ create mode 100644 drivers/crypto/nx/nx-aes-xcbc.c
+ create mode 100644 drivers/crypto/nx/nx-sha256.c
+ create mode 100644 drivers/crypto/nx/nx-sha512.c
+ create mode 100644 drivers/crypto/nx/nx.c
+ create mode 100644 drivers/crypto/nx/nx.h
+ create mode 100644 drivers/crypto/nx/nx_csbcpb.h
+ create mode 100644 drivers/crypto/nx/nx_debugfs.c
