@@ -1,12 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: "David S. Miller" <davem@davemloft.net>,
- Richard Cochran <richardcochran@gmail.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 71CA4B7011
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 15:47:31 +1000 (EST)
+Date: Mon, 9 Apr 2012 22:47:27 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.4.0-rc1: No init found
+In-Reply-To: <1333440522.3040.9.camel@pasglop>
+Message-ID: <alpine.DEB.2.01.1204092242160.3375@trent.utfs.org>
+References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
+ <1333440522.3040.9.camel@pasglop>
 MIME-Version: 1.0
-Subject: [PATCH] gianfar: add missing include
-Date: Tue, 10 Apr 2012 14:18:47 +1000
-Message-ID: <25411.1334031527@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,37 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-next-20120405 compiled with mpc85xx_defconfig gives the following:
+On Tue, 3 Apr 2012 at 18:08, Benjamin Herrenschmidt wrote:
+> On Tue, 2012-04-03 at 00:20 -0700, Christian Kujau wrote:
+> > Going from 3.3-rc7 to 3.4-rc1 (with "make oldconfig" inbetween) did not 
+> > go well on this PowerBook G4 machine:
+> > 
+> > Apr  2 15:18:23 [   8.318816] EXT4-fs (hda6): mounted filesystem with ordered data mode. Opts: (null)
+> > Apr  2 15:18:23 [   8.320286] VFS: Mounted root (ext4 filesystem) readonly on device 3:6.
+> > Apr  2 15:18:23 [   8.341555] devtmpfs: mounted
+> > Apr  2 15:18:23 [   8.343384] Freeing unused kernel memory: 204k freed
+> > Apr  2 15:18:23 [   8.457056] Kernel panic - not syncing: No init found.  Try passing init= option to kernel. See Linux Documentation/init.txt for guidance.
+> > Apr  2 15:18:23 [   8.459936] Rebooting in 180 seconds..
+> 
+> I have observed this randomly on the G5 ... sometimes, if I try again,
+> it works... it's very very odd. There is some kind of race maybe with
+> async startup ? Or a problem with the vfs path walking ? It's certainly
+> not easily reproducable for me, it goes away from one boot to the next.
 
-  CC      drivers/net/ethernet/freescale/gianfar_ethtool.o
-drivers/net/ethernet/freescale/gianfar_ethtool.c: In function 'gfar_get_ts_info':
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1751:4: error: 'SOF_TIMESTAMPING_RX_SOFTWARE' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1751:4: note: each undeclared identifier is reported only once for each function it appears in
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1752:4: error: 'SOF_TIMESTAMPING_SOFTWARE' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1757:3: error: 'SOF_TIMESTAMPING_TX_HARDWARE' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1758:3: error: 'SOF_TIMESTAMPING_RX_HARDWARE' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1759:3: error: 'SOF_TIMESTAMPING_RAW_HARDWARE' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1762:9: error: 'HWTSTAMP_TX_OFF' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1763:9: error: 'HWTSTAMP_TX_ON' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1765:9: error: 'HWTSTAMP_FILTER_NONE' undeclared (first use in this function)
-drivers/net/ethernet/freescale/gianfar_ethtool.c:1766:9: error: 'HWTSTAMP_FILTER_ALL' undeclared (first use in this function)
+I tried to sit this one out, but when -rc2 did not magicially fix it I 
+started a git bisect, this is what I got:
 
-This is because of a missing include file from:
-  6663628 gianfar: Support the get_ts_info ethtool method.
+* a546498f3bf9aac311c66f965186373aee2ca0b0 is the first bad commit
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-CC: Richard Cochran <richardcochran@gmail.com>
-CC: David S. Miller <davem@davemloft.net>
+commit a546498f3bf9aac311c66f965186373aee2ca0b0
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Wed Mar 7 16:48:45 2012 +1100
 
-diff --git a/drivers/net/ethernet/freescale/gianfar_ethtool.c b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-index 27f49c7..3c34b32b 100644
---- a/drivers/net/ethernet/freescale/gianfar_ethtool.c
-+++ b/drivers/net/ethernet/freescale/gianfar_ethtool.c
-@@ -29,6 +29,7 @@
- #include <linux/skbuff.h>
- #include <linux/spinlock.h>
- #include <linux/mm.h>
-+#include <linux/net_tstamp.h>
- 
- #include <asm/io.h>
- #include <asm/irq.h>
+    powerpc: Call do_page_fault() with interrupts off
+
+
+Full bisect-log & more: http://nerdbynature.de/bits/3.4.0-rc1/init/ 
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #124:
+
+user to computer ration too low.
