@@ -1,31 +1,32 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E2E5AB731A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:10:46 +1000 (EST)
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 54ADFB7034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:11:16 +1000 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Tue, 10 Apr 2012 11:10:43 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B514638C8081
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:10:39 -0400 (EDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3AFAcVR338968
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:10:38 -0400
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3AFB2c6016385
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:11:03 -0600
-Message-ID: <1334070699.16827.35.camel@key-ThinkPad-W510>
-Subject: [PATCH v2 17/17] powerpc: crypto: enable the PFO-based encryption
- device
+ Tue, 10 Apr 2012 09:11:13 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 953E31FF004F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:10:01 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3AF9oJH130464
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:09:51 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3AF9A19027546
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:09:11 -0600
+Message-ID: <1334070611.16827.19.camel@key-ThinkPad-W510>
+Subject: [PATCH v2 09/17] powerpc: crypto: AES-ECB mode routines for nx
+ encryption
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Tue, 10 Apr 2012 10:11:39 -0500
+Date: Tue, 10 Apr 2012 10:10:11 -0500
 In-Reply-To: <1334070249.16827.1.camel@key-ThinkPad-W510>
 References: <1334070249.16827.1.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
@@ -41,35 +42,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the cas bits to advertise support for the Platform
-Facilities Option (PFO) based encryption accelerator device. The nx
-device driver provides support for this hardware feature.
+These routines add support for AES in ECB mode on the Power7+ CPU's
+in-Nest accelerator driver.
 
 Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/prom_init.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/crypto/nx/nx-aes-ecb.c |  138 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 138 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/crypto/nx/nx-aes-ecb.c
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 26f6317..604b4c4 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -702,6 +702,7 @@ static void __init early_cmdline_parse(void)
- #endif
- #define OV5_TYPE1_AFFINITY	0x80	/* Type 1 NUMA affinity */
- #define OV5_PFO_HW_RNG		0x80	/* PFO Random Number Generator */
-+#define OV5_PFO_HW_ENCR		0x20	/* PFO Encryption Accelerator */
- 
- /* Option Vector 6: IBM PAPR hints */
- #define OV6_LINUX		0x02	/* Linux is our OS */
-@@ -769,7 +770,7 @@ static unsigned char ibm_architecture_vec[] = {
- 	0,
- 	0,
- 	0,
--	OV5_PFO_HW_RNG,
-+	OV5_PFO_HW_RNG | OV5_PFO_HW_ENCR,
- 
- 	/* option vector 6: IBM PAPR hints */
- 	4 - 2,				/* length */
+diff --git a/drivers/crypto/nx/nx-aes-ecb.c b/drivers/crypto/nx/nx-aes-ecb.c
+new file mode 100644
+index 0000000..6db5a71
+--- /dev/null
++++ b/drivers/crypto/nx/nx-aes-ecb.c
+@@ -0,0 +1,138 @@
++/**
++ * AES ECB routines supporting the Power 7+ Nest Accelerators driver
++ *
++ * Copyright (C) 2011-2012 International Business Machines Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 only.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ * Author: Kent Yoder <yoder1@us.ibm.com>
++ */
++
++#include <crypto/aes.h>
++#include <crypto/algapi.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/crypto.h>
++#include <asm/vio.h>
++
++#include "nx_csbcpb.h"
++#include "nx.h"
++
++
++static int ecb_aes_nx_set_key(struct crypto_tfm *tfm,
++			      const u8          *in_key,
++			      unsigned int       key_len)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(tfm);
++	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
++
++	nx_ctx_init(nx_ctx, HCOP_FC_AES);
++
++	switch (key_len) {
++	case AES_KEYSIZE_128:
++		NX_CPB_SET_KEY_SIZE(csbcpb, NX_KS_AES_128);
++		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_128];
++		break;
++	case AES_KEYSIZE_192:
++		NX_CPB_SET_KEY_SIZE(csbcpb, NX_KS_AES_192);
++		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_192];
++		break;
++	case AES_KEYSIZE_256:
++		NX_CPB_SET_KEY_SIZE(csbcpb, NX_KS_AES_256);
++		nx_ctx->ap = &nx_ctx->props[NX_PROPS_AES_256];
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	csbcpb->cpb.hdr.mode = NX_MODE_AES_ECB;
++	memcpy(csbcpb->cpb.aes_ecb.key, in_key, key_len);
++
++	return 0;
++}
++
++static int ecb_aes_nx_crypt(struct blkcipher_desc *desc,
++			    struct scatterlist    *dst,
++			    struct scatterlist    *src,
++			    unsigned int           nbytes,
++			    int                    enc)
++{
++	struct nx_crypto_ctx *nx_ctx = crypto_blkcipher_ctx(desc->tfm);
++	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
++	int rc;
++
++	if (nbytes > nx_ctx->ap->databytelen)
++		return -EINVAL;
++
++	if (enc)
++		NX_CPB_FDM(csbcpb) |= NX_FDM_ENDE_ENCRYPT;
++	else
++		NX_CPB_FDM(csbcpb) &= ~NX_FDM_ENDE_ENCRYPT;
++
++	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, NULL);
++	if (rc)
++		goto out;
++
++	if (!nx_ctx->op.inlen || !nx_ctx->op.outlen) {
++		rc = -EINVAL;
++		goto out;
++	}
++
++	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op);
++	if (rc)
++		goto out;
++
++	atomic_inc(&(nx_ctx->stats->aes_ops));
++	atomic64_add(csbcpb->csb.processed_byte_count,
++		     &(nx_ctx->stats->aes_bytes));
++out:
++	return rc;
++}
++
++static int ecb_aes_nx_encrypt(struct blkcipher_desc *desc,
++			      struct scatterlist    *dst,
++			      struct scatterlist    *src,
++			      unsigned int           nbytes)
++{
++	return ecb_aes_nx_crypt(desc, dst, src, nbytes, 1);
++}
++
++static int ecb_aes_nx_decrypt(struct blkcipher_desc *desc,
++			      struct scatterlist    *dst,
++			      struct scatterlist    *src,
++			      unsigned int           nbytes)
++{
++	return ecb_aes_nx_crypt(desc, dst, src, nbytes, 0);
++}
++
++struct crypto_alg nx_ecb_aes_alg = {
++	.cra_name        = "ecb(aes)",
++	.cra_driver_name = "ecb-aes-nx",
++	.cra_priority    = 300,
++	.cra_flags       = CRYPTO_ALG_TYPE_BLKCIPHER,
++	.cra_blocksize   = AES_BLOCK_SIZE,
++	.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
++	.cra_type        = &crypto_blkcipher_type,
++	.cra_module      = THIS_MODULE,
++	.cra_list        = LIST_HEAD_INIT(nx_ecb_aes_alg.cra_list),
++	.cra_init        = nx_crypto_ctx_aes_ecb_init,
++	.cra_exit        = nx_crypto_ctx_exit,
++	.cra_blkcipher = {
++		.min_keysize = AES_MIN_KEY_SIZE,
++		.max_keysize = AES_MAX_KEY_SIZE,
++		.setkey      = ecb_aes_nx_set_key,
++		.encrypt     = ecb_aes_nx_encrypt,
++		.decrypt     = ecb_aes_nx_decrypt,
++	}
++};
 -- 
 1.7.1
