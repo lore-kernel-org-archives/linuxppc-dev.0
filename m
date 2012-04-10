@@ -1,36 +1,23 @@
-Return-Path: <key@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A485B6FDE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 01:42:47 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Tue, 10 Apr 2012 11:42:44 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D52C138C8086
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:42:41 -0400 (EDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3AFQ92U199232
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 11:42:41 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3AF74vI016009
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 09:07:04 -0600
-Message-ID: <1334070489.16827.3.camel@key-ThinkPad-W510>
-Subject: [PATCH v2 01/17] powerpc: Add new hvcall constants to support PFO
-From: Kent Yoder <key@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Date: Tue, 10 Apr 2012 10:08:09 -0500
-In-Reply-To: <1334070249.16827.1.camel@key-ThinkPad-W510>
-References: <1334070249.16827.1.camel@key-ThinkPad-W510>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: key@linux.vnet.ibm.com, rcj@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id D32E8B7075
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 02:56:12 +1000 (EST)
+Date: Tue, 10 Apr 2012 09:56:07 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.4.0-rc1: No init found
+In-Reply-To: <1334042632.3040.54.camel@pasglop>
+Message-ID: <alpine.DEB.2.01.1204100953400.3375@trent.utfs.org>
+References: <alpine.DEB.2.01.1204030008080.4930@trent.utfs.org>
+ <1333440522.3040.9.camel@pasglop>
+ <alpine.DEB.2.01.1204030953320.4930@trent.utfs.org>
+ <4F7C4058.6090405@in.ibm.com>
+ <alpine.DEB.2.01.1204040944210.4930@trent.utfs.org>
+ <1334042632.3040.54.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,57 +27,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Platform Facilities Option (PFO) adds several new h_calls and
-more return codes.
+On Tue, 10 Apr 2012 at 17:23, Benjamin Herrenschmidt wrote:
+> can you test the patch below ?
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hvcall.h |   25 +++++++++++++++++++++++--
- 1 files changed, 23 insertions(+), 2 deletions(-)
+When applied to 3.4-rc2, Linux boots again, yay! :-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 1c324ff..6122523 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -77,8 +77,27 @@
- #define H_MR_CONDITION  -43
- #define H_NOT_ENOUGH_RESOURCES -44
- #define H_R_STATE       -45
--#define H_RESCINDEND    -46
--#define H_MULTI_THREADS_ACTIVE -9005
-+#define H_RESCINDED     -46
-+#define H_P2		-55
-+#define H_P3		-56
-+#define H_P4		-57
-+#define H_P5		-58
-+#define H_P6		-59
-+#define H_P7		-60
-+#define H_P8		-61
-+#define H_P9		-62
-+#define H_TOO_BIG	-64
-+#define H_OVERLAP	-68
-+#define H_INTERRUPT	-69
-+#define H_BAD_DATA	-70
-+#define H_NOT_ACTIVE	-71
-+#define H_SG_LIST	-72
-+#define H_OP_MODE	-73
-+#define H_COP_HW	-74
-+#define H_UNSUPPORTED_FLAG_START	-256
-+#define H_UNSUPPORTED_FLAG_END		-511
-+#define H_MULTI_THREADS_ACTIVE	-9005
-+#define H_OUTSTANDING_COP_OPS	-9006
- 
+   Tested-by: Christian Kujau <lists@nerdbynature.de>
 
- /* Long Busy is a condition that can be returned by the firmware
-@@ -240,6 +259,8 @@
- #define H_GET_MPP		0x2D4
- #define H_HOME_NODE_ASSOCIATIVITY 0x2EC
- #define H_BEST_ENERGY		0x2F4
-+#define H_RANDOM		0x300
-+#define H_COP			0x304
- #define H_GET_MPP_X		0x314
- #define MAX_HCALL_OPCODE	H_GET_MPP_X
- 
+Thanks!
+Christian.
+
+> From 08f1ec8a594c60bf3856e3c45b6d15fd691d90bb Mon Sep 17 00:00:00 2001
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Tue, 10 Apr 2012 17:21:35 +1000
+> Subject: [PATCH] powerpc: Fix page fault with lockdep regression
+> 
+> commit a546498f3bf9aac311c66f965186373aee2ca0b0
+> introduced a regression on 32-bit when irq tracing
+> is enabled by exposing an old bug in our irq tracing
+> code for exception entry.
+> 
+> The code would save and restore some GPRs around the
+> calls to the C lockdep code, however, it tries to be
+> too smart for its own good and restores some of the
+> GPRs from the exception frame (as saved there on
+> exception entry).
+> 
+> However, for page faults, we do replace those GPRs with
+> arguments to do_page_fault before we call transfer_to_handler
+> and so restoring from the exception frame is plain wrong in
+> this case.
+> 
+> This was fine as long as we didn't touch the interrupt state
+> when taking page fault, but when I started doing it, it would
+> trigger the lockdep calls and the bug.
+> 
+> This fixes it by cleaning up that code a bit. It did create
+> a small stack frame for the sake of backtraces, so let's
+> make it a bit bigger and use it to save and restore the
+> stuff we care about.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/kernel/entry_32.S |   39 +++++++++++++++++++++------------------
+>  1 file changed, 21 insertions(+), 18 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 3e57a00..ba3aeb4 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -206,40 +206,43 @@ reenable_mmu:				/* re-enable mmu so we can */
+>  	andi.	r10,r10,MSR_EE		/* Did EE change? */
+>  	beq	1f
+>  
+> -	/* Save handler and return address into the 2 unused words
+> -	 * of the STACK_FRAME_OVERHEAD (sneak sneak sneak). Everything
+> -	 * else can be recovered from the pt_regs except r3 which for
+> -	 * normal interrupts has been set to pt_regs and for syscalls
+> -	 * is an argument, so we temporarily use ORIG_GPR3 to save it
+> -	 */
+> -	stw	r9,8(r1)
+> -	stw	r11,12(r1)
+> -	stw	r3,ORIG_GPR3(r1)
+>  	/*
+>  	 * The trace_hardirqs_off will use CALLER_ADDR0 and CALLER_ADDR1.
+>  	 * If from user mode there is only one stack frame on the stack, and
+>  	 * accessing CALLER_ADDR1 will cause oops. So we need create a dummy
+>  	 * stack frame to make trace_hardirqs_off happy.
+> +	 *
+> +	 * This is handy because we also need to save a bunch of GPRs,
+> +	 * r3 can be different from GPR3(r1) at this point, r9 and r11
+> +	 * contains the old MSR and handler address respectively,
+> +	 * r4 & r5 can contain page fault arguments that need to be passed
+> +	 * along as well. r12, CCR, CTR, XER etc... are left clobbered as
+> +	 * they aren't useful past this point (aren't syscall arguments),
+> +	 * the rest is restored from the exception frame.
+>  	 */
+> +	stwu	r1,-32(r1)
+> +	stw	r9,8(r1)
+> +	stw	r11,12(r1)
+> +	stw	r3,16(r1)
+> +	stw	r4,20(r1)
+> +	stw	r5,24(r1)
+>  	andi.	r12,r12,MSR_PR
+> -	beq	11f
+> -	stwu	r1,-16(r1)
+> +	b	11f
+>  	bl	trace_hardirqs_off
+> -	addi	r1,r1,16
+>  	b	12f
+> -
+>  11:
+>  	bl	trace_hardirqs_off
+>  12:
+> +	lwz	r5,24(r1)
+> +	lwz	r4,20(r1)
+> +	lwz	r3,16(r1)
+> +	lwz	r11,12(r1)
+> +	lwz	r9,8(r1)
+> +	addi	r1,r1,32
+>  	lwz	r0,GPR0(r1)
+> -	lwz	r3,ORIG_GPR3(r1)
+> -	lwz	r4,GPR4(r1)
+> -	lwz	r5,GPR5(r1)
+>  	lwz	r6,GPR6(r1)
+>  	lwz	r7,GPR7(r1)
+>  	lwz	r8,GPR8(r1)
+> -	lwz	r9,8(r1)
+> -	lwz	r11,12(r1)
+>  1:	mtctr	r11
+>  	mtlr	r9
+>  	bctr				/* jump to handler */
+> -- 
+> 1.7.9.5
+> 
 -- 
-1.7.1
+BOFH excuse #292:
+
+We ran out of dial tone and we're and waiting for the phone company to deliver another bottle.
