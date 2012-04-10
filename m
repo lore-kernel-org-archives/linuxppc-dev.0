@@ -1,21 +1,28 @@
-Return-Path: <B38951@freescale.com>
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property for
- Freescale PCI
-Date: Tue, 10 Apr 2012 09:17:25 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D019DEA96@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1333263396-23932-1-git-send-email-B38951@freescale.com>
- <E3DD739D-1EC3-4BCA-AE26-1EAE7A086A1E@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D019DBE90@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D019DBE90@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
+ [209.85.214.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D7B0B7021
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 21:23:46 +1000 (EST)
+Received: by bkwj10 with SMTP id j10so4037502bkw.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2012 04:23:42 -0700 (PDT)
+Message-ID: <4F8417DB.3040502@mvista.com>
+Date: Tue, 10 Apr 2012 15:22:03 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Cc: "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+To: Thang Nguyen <tqnguyen@apm.com>
+Subject: Re: [PATCH 1/1] Add support 2 SATA ports for Maui and change filename
+ from sata_dwc_460ex.c to sata_dwc_4xx.c
+References: <1333447938-16461-1-git-send-email-tqnguyen@apm.com>
+ <4F82B61D.8010502@mvista.com>
+ <8a0ea5bd221ddeb9eded16e180aa8fbb@mail.gmail.com>
+In-Reply-To: <8a0ea5bd221ddeb9eded16e180aa8fbb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, linux-ide@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Jeff Garzik <jgarzik@pobox.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,101 +32,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello.
 
+On 10-04-2012 7:46, Thang Nguyen wrote:
+
+> Hi Sergei,
+> Thanks for your review.
+
+> On Maui, there are 2 separate SATA controllers but they share the same
+> AHBDMA controller. Each SATA controller is assigned a fixed DMA channel on
+> the AHBDMA (channel 0 is assigned to SATA controller 0 and channel 1 is
+> assigned to SATA controller 1).
+> For the 460EX, there is only 1 SATA controller and it uses channel 0 for
+> transferring data.
+
+> In my opinion, in the case of Maui, we can use the same DMA information in
+> 2 device nodes as they use the same DMA controller. And in another CPU, if
+> they use different DMA controller, the corresponding information will also
+> be different.
+
+    No, either the DMA controller should be a separate device node, or both 
+ports and DMA controller should be packed into the single device node. The way 
+you're doing it is incorrect because it creates memory resource conflict 
+between devices when they are instantiated as platfrom devices.
+
+> Regards,
+> Thang Nguyen -
 > -----Original Message-----
-> From: linuxppc-dev-bounces+b38951=3Dfreescale.com@lists.ozlabs.org
-> [mailto:linuxppc-dev-bounces+b38951=3Dfreescale.com@lists.ozlabs.org] On
-> Behalf Of Jia Hongtao-B38951
-> Sent: Friday, April 06, 2012 11:05 AM
-> To: Kumar Gala
-> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org;
-> Li Yang-R58472
-> Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property
-> for Freescale PCI
->=20
->=20
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > Sent: Wednesday, April 04, 2012 9:09 PM
-> > To: Jia Hongtao-B38951
-> > Cc: linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; devicetree-
-> > discuss@lists.ozlabs.org
-> > Subject: Re: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property
-> > for Freescale PCI
-> >
-> >
-> > On Apr 1, 2012, at 1:56 AM, Jia Hongtao wrote:
-> >
-> > > If PCI is primary bus we should set isa_io/mem_base when parsing PCI
-> > bridge
-> > > resources from device tree. The previous way to check the primary bus
-> > based
-> > > on a hard-coded address named primary_phb_addr. Now we add a property
-> > named
-> > > "fsl,has-isa" into device tree. In kernel we use this property to
-> find
-> > out
-> > > the bus is primary or not. This way is more flexible.
-> > >
-> > > Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> > > Signed-off-by: Li Yang <leoli@freescale.com>
-> > > ---
-> > > .../devicetree/bindings/powerpc/fsl/pci.txt        |   36
-> > ++++++++++++++++++++
-> > > 1 files changed, 36 insertions(+), 0 deletions(-)
-> > > create mode 100644
-> > Documentation/devicetree/bindings/powerpc/fsl/pci.txt
-> >
-> > This isn't freescale specific, its linux specific.  If anything the
-> > property should be linux,has-isa.
-> >
-> > But in general I dont think this is a good idea.  In truth one could
-> > search the device tree for:
-> >
-> > 	device_type =3D "isa";
-> >
-> > to try and set this dynamically.
-> >
-> > - k
-> >
->=20
-> Yes, it's not Freescale specific, but it's only used by Freescale now in
-> the kernel. This is why I named the property as "fsl,has-isa".
->=20
-> To indicate PCI bus is primary we have three ways to go and we now like
-> the 2nd solution:
->=20
-> 1. As this patch said, we add a property to device tree manually.
->=20
-> 2. Set this property dynamically in uboot when scanning PCI bridge.
-> Actually we have already done this. The problem is users should update
-> uboot and kernel together or it's not work. To support old uboot we
-> decide
-> to add this property into device tree too temporarily. We will remove it
-> from device tree at an appropriate future.
->=20
-> 3. Just as you said we could search the device tree by device_type =3D
-> "isa".
->    There are two problems here:
-> 	* There is no OF API for searching just in PCI node now. That means
-> 	  we can't easily find whether there is "isa" bridge or not under
-> 	  this PCI controller while scanning it.
-> 	* Boards MPC8541CDS and MPC8555CDS has no "isa" node in device tree
-> 	  but has ISA bridge under PCI controller.
->=20
-> - Jia Hongtao
->=20
+> From: Sergei Shtylyov [mailto:sshtylyov@mvista.com]
+> Sent: Monday, April 09, 2012 5:13 PM
+> To: Thang Q. Nguyen
+> Cc: Benjamin Herrenschmidt; Paul Mackerras; Jeff Garzik; Grant Likely; Rob
+> Herring; linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
+> linux-ide@vger.kernel.org; devicetree-discuss@lists.ozlabs.org
+> Subject: Re: [PATCH 1/1] Add support 2 SATA ports for Maui and change
+> filename from sata_dwc_460ex.c to sata_dwc_4xx.c
 
-Hi Kumar,
+> Hello.
 
-I agree with the name change from "fsl,has-isa" to "linux,has-isa".
-If this is ok I will update this patch and send the patches based on this
-new property.
+> On 03-04-2012 14:12, Thang Q. Nguyen wrote:
 
-Also, I have a question about "isa" node in dts. Is this node being used
-by kernel? If not we can remove it from all boards and check the primary
-bus by uboot. If "isa" is useful why MPC8541CDS and MPC8555CDS has no
-"isa" node in device tree but has ISA bridge under PCI controller?
+>> Signed-off-by: Thang Q. Nguyen<tqnguyen@apm.com>
+> [...]
 
-Thanks.
-- Jia Hongtao
+>> diff --git a/arch/powerpc/boot/dts/bluestone.dts
+> b/arch/powerpc/boot/dts/bluestone.dts
+>> index cfa23bf..803fda6 100644
+>> --- a/arch/powerpc/boot/dts/bluestone.dts
+>> +++ b/arch/powerpc/boot/dts/bluestone.dts
+>> @@ -155,6 +155,27 @@
+>>    					/*RXDE*/  0x5 0x4>;
+>>    		};
+>>
+>> +		/* SATA DWC devices */
+>> +		SATA0: sata@bffd1000 {
+>> +			compatible = "amcc,sata-apm821xx";
+>> +			reg =<4 0xbffd1000 0x800   /* SATA0 */
+>> +			       4 0xbffd0800 0x400>; /* AHBDMA */
+>> +			dma-channel=<0>;
+>> +			interrupt-parent =<&UIC0>;
+>> +			interrupts =<26 4    /* SATA0 */
+>> +			              25 4>;  /* AHBDMA */
+>> +		};
+>> +
+>> +		SATA1: sata@bffd1800 {
+>> +			compatible = "amcc,sata-apm821xx";
+>> +			reg =<4 0xbffd1800 0x800   /* SATA1 */
+>> +			       4 0xbffd0800 0x400>; /* AHBDMA */
+>> +			dma-channel=<1>;
+>> +			interrupt-parent =<&UIC0>;
+>> +			interrupts =<27 4    /* SATA1 */
+>> +			              25 4>;  /* AHBDMA */
+>> +		};
+>> +
+
+>      So, this is dual SATA controller, not dual port SATA controller?
+> BTW, it's wrong to have the same AHBDMA resource in two device nodes I
+> think.
+
+> MBR, Sergei
+
+    Can you get rid of the following? It looks stupid when you post to the 
+maliing list.
+
+> CONFIDENTIALITY NOTICE: This e-mail message, including any attachments,
+> is for the sole use of the intended recipient(s) and contains information
+> that is confidential and proprietary to AppliedMicro Corporation or its subsidiaries.
+> It is to be used solely for the purpose of furthering the parties' business relationship.
+> All unauthorized review, use, disclosure or distribution is prohibited.
+> If you are not the intended recipient, please contact the sender by reply e-mail
+> and destroy all copies of the original message.
+
+WBR, Sergei
