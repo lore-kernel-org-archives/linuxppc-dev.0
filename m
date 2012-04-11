@@ -1,14 +1,28 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 11 Apr 2012 12:22:53 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, sfr@canb.auug.org.au
-Subject: [PATCH 3/3] powerpc: Reformat lppaca.h
-Message-ID: <20120411122253.16764ec6@kryten>
-In-Reply-To: <20120411122054.6297f2fb@kryten>
-References: <20120411122054.6297f2fb@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Message-ID: <1334122182.2984.33.camel@pasglop>
+Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
+ irq_alloc_desc() instead
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Wed, 11 Apr 2012 15:29:42 +1000
+In-Reply-To: <1334107996.2984.20.camel@pasglop>
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+ <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
+ <20120402202848.1EB833E02A7@localhost>
+ <20120402215524.GM24211@n2100.arm.linux.org.uk>
+ <1333406005.30734.61.camel@pasglop>
+ <20120402225223.GN24211@n2100.arm.linux.org.uk>
+ <1333409927.30734.62.camel@pasglop> <m24nsx9iz1.fsf@igel.home>
+ <1333755470.3040.38.camel@pasglop> <m2aa2n7mmw.fsf@igel.home>
+ <1334106834.2984.17.camel@pasglop> <1334107996.2984.20.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,182 +32,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2012-04-11 at 11:33 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2012-04-11 at 11:13 +1000, Benjamin Herrenschmidt wrote:
+> > On Sat, 2012-04-07 at 14:27 +0200, Andreas Schwab wrote:
+> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> > > 
+> > > > It's arguable that this irq_set_irq_type(,NONE) shouln't be there but
+> > > > still ... it's been around for ever and things worked :-) So something
+> > > > -else- is causing the problem and I'd like to understand what exactly.
+> > > 
+> > > AFAICS before a09b659cd68c10ec6a30cb91ebd2c327fcd5bfe5
+> > > irq_set_irq_type(,NONE) was actually a no-op.
+> > 
+> > So I'm still a bit baffled... ie, I understand some of what's happening
+> > but not why it breaks things, I haven't yet managed to reproduce but I
+> > haven't tried too hard just yet (was away from the HW) :
+> 
+> Allright, I have a repro-case, I'll dig.
 
-Reformat lppaca.h to match Linux coding standards.
+Ok, so it's Grant's fault :-)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+So basically, it's quite subtle and I'm only 99% sure of the details but
+I believe what happens is:
 
-Index: linux-build/arch/powerpc/include/asm/lppaca.h
-===================================================================
---- linux-build.orig/arch/powerpc/include/asm/lppaca.h	2012-04-11 12:07:53.000000000 +1000
-+++ linux-build/arch/powerpc/include/asm/lppaca.h	2012-04-11 12:08:25.794532160 +1000
-@@ -20,18 +20,16 @@
- #define _ASM_POWERPC_LPPACA_H
- #ifdef __KERNEL__
- 
--/* These definitions relate to hypervisors that only exist when using
-+/*
-+ * These definitions relate to hypervisors that only exist when using
-  * a server type processor
-  */
- #ifdef CONFIG_PPC_BOOK3S
- 
--//=============================================================================
--//
--//	This control block contains the data that is shared between the
--//	hypervisor and the OS.
--//
--//
--//----------------------------------------------------------------------------
-+/*
-+ * This control block contains the data that is shared between the
-+ * hypervisor and the OS.
-+ */
- #include <linux/cache.h>
- #include <linux/threads.h>
- #include <asm/types.h>
-@@ -43,67 +41,65 @@
-  */
- #define NR_LPPACAS	1
- 
--
--/* The Hypervisor barfs if the lppaca crosses a page boundary.  A 1k
-- * alignment is sufficient to prevent this */
-+/*
-+ * The Hypervisor barfs if the lppaca crosses a page boundary.  A 1k
-+ * alignment is sufficient to prevent this
-+ */
- struct lppaca {
--//=============================================================================
--// CACHE_LINE_1 0x0000 - 0x007F Contains read-only data
--//=============================================================================
--	u32	desc;			// Eye catcher 0xD397D781	x00-x03
--	u16	size;			// Size of this struct		x04-x05
--	u16	reserved1;		// Reserved			x06-x07
--	u16	reserved2:14;		// Reserved			x08-x09
--	u8	shared_proc:1;		// Shared processor indicator	...
--	u8	secondary_thread:1;	// Secondary thread indicator	...
--	u8	reserved3[14];		//				x0A-x17
--	volatile u32 dyn_hw_node_id;	// Dynamic Hardware Node id	x18-x1B
--	volatile u32 dyn_hw_proc_id;	// Dynamic Hardware Proc Id	x1C-x1F
--	u8	reserved4[56];		// Reserved			x20-x57
--	volatile u8 vphn_assoc_counts[8]; // Virtual processor home node
--					// associativity change counters x58-x5F
--	u8	reserved5[32];		// Reserved			x60-x7F
--
--//=============================================================================
--// CACHE_LINE_2 0x0080 - 0x00FF Contains local read-write data
--//=============================================================================
--
--	u8	reserved6[48];		//				x00-x2f
--	u8	cede_latency_hint;	/*				x30 */
--	u8	reserved7[7];		/*			    x31-x37 */
--	u8	dtl_enable_mask;	// Dispatch Trace Log mask	x38-x38
--	u8	donate_dedicated_cpu;	// Donate dedicated CPU cycles  x39-x39
--	u8	fpregs_in_use;		// FP regs in use               x3A-x3A
--	u8	pmcregs_in_use;		// PMC regs in use              x3B-x3B
--	u8	reserved8[28];		//				x3C-x57
--	u64	wait_state_cycles;	// Wait cycles for this proc    x58-x5F
--	u8	reserved9[28];		//				x60-x7B
--	u16	slb_count;		// # of SLBs to maintain        x7C-x7D
--	u8	idle;			// Indicate OS is idle          x7E
--	u8	vmxregs_in_use;		// VMX registers in use         x7F
--
--//=============================================================================
--// CACHE_LINE_3 0x0100 - 0x017F: This line is shared with other processors
--//=============================================================================
--	// This is the yield_count.  An "odd" value (low bit on) means that
--	// the processor is yielded (either because of an OS yield or a PLIC
--	// preempt).  An even value implies that the processor is currently
--	// executing.
--	// NOTE: This value will ALWAYS be zero for dedicated processors and
--	// will NEVER be zero for shared processors (ie, initialized to a 1).
--	volatile u32 yield_count;	// PLIC increments each dispatchx00-x03
--	volatile u32 dispersion_count;	// dispatch changed phys cpu    x04-x07
--	volatile u64 cmo_faults;	// CMO page fault count         x08-x0F
--	volatile u64 cmo_fault_time;	// CMO page fault time          x10-x17
--	u8	reserved10[104];		// Reserved                     x18-x7F
--
--//=============================================================================
--// CACHE_LINE_4-5 0x0180 - 0x027F Contains PMC interrupt data
--//=============================================================================
--	u32	page_ins;		// CMO Hint - # page ins by OS  x00-x03
--	u8	reserved11[148];		// Reserved                     x04-x97
--	volatile u64 dtl_idx;		// Dispatch Trace Log head idx	x98-x9F
--	u8	reserved12[96];		// Reserved                     xA0-xFF
-+	/* cacheline 1 contains read-only data */
-+
-+	u32	desc;			/* Eye catcher 0xD397D781 */
-+	u16	size;			/* Size of this struct */
-+	u16	reserved1;
-+	u16	reserved2:14;
-+	u8	shared_proc:1;		/* Shared processor indicator */
-+	u8	secondary_thread:1;	/* Secondary thread indicator */
-+	u8	reserved3[14];
-+	volatile u32 dyn_hw_node_id;	/* Dynamic hardware node id */
-+	volatile u32 dyn_hw_proc_id;	/* Dynamic hardware proc id */
-+	u8	reserved4[56];
-+	volatile u8 vphn_assoc_counts[8]; /* Virtual processor home node */
-+					  /* associativity change counters */
-+	u8	reserved5[32];
-+
-+	/* cacheline 2 contains local read-write data */
-+
-+	u8	reserved6[48];
-+	u8	cede_latency_hint;
-+	u8	reserved7[7];
-+	u8	dtl_enable_mask;	/* Dispatch Trace Log mask */
-+	u8	donate_dedicated_cpu;	/* Donate dedicated CPU cycles */
-+	u8	fpregs_in_use;
-+	u8	pmcregs_in_use;
-+	u8	reserved8[28];
-+	u64	wait_state_cycles;	/* Wait cycles for this proc */
-+	u8	reserved9[28];
-+	u16	slb_count;		/* # of SLBs to maintain */
-+	u8	idle;			/* Indicate OS is idle */
-+	u8	vmxregs_in_use;
-+
-+	/* cacheline 3 is shared with other processors */
-+
-+	/*
-+	 * This is the yield_count.  An "odd" value (low bit on) means that
-+	 * the processor is yielded (either because of an OS yield or a
-+	 * hypervisor preempt).  An even value implies that the processor is
-+	 * currently executing.
-+	 * NOTE: This value will ALWAYS be zero for dedicated processors and
-+	 * will NEVER be zero for shared processors (ie, initialized to a 1).
-+	 */
-+	volatile u32 yield_count;
-+	volatile u32 dispersion_count;	/* dispatch changed physical cpu */
-+	volatile u64 cmo_faults;	/* CMO page fault count */
-+	volatile u64 cmo_fault_time;	/* CMO page fault time */
-+	u8	reserved10[104];
-+
-+	/* cacheline 4-5 */
-+
-+	u32	page_ins;		/* CMO Hint - # page ins by OS */
-+	u8	reserved11[148];
-+	volatile u64 dtl_idx;		/* Dispatch Trace Log head index */
-+	u8	reserved12[96];
- } __attribute__((__aligned__(0x400)));
- 
- extern struct lppaca lppaca[];
-@@ -116,13 +112,13 @@ extern struct lppaca lppaca[];
-  * ESID is stored in the lower 64bits, then the VSID.
-  */
- struct slb_shadow {
--	u32	persistent;		// Number of persistent SLBs	x00-x03
--	u32	buffer_length;		// Total shadow buffer length	x04-x07
--	u64	reserved;		// Alignment			x08-x0f
-+	u32	persistent;		/* Number of persistent SLBs */
-+	u32	buffer_length;		/* Total shadow buffer length */
-+	u64	reserved;
- 	struct	{
- 		u64     esid;
- 		u64	vsid;
--	} save_area[SLB_NUM_BOLTED];	//				x10-x40
-+	} save_area[SLB_NUM_BOLTED];
- } ____cacheline_aligned;
- 
- extern struct slb_shadow slb_shadow[];
+ - The audio interrupts get virq 64 and 65 (so above NR_IRQS)
+
+ - The reverse map isn't pre-filled at map time (we should probably do
+it nowadays), we do it lazily so ...
+
+ - The audio interrupt happens, it tries to pre-fill the reverse map
+and ... fails (see below)
+
+ - This cause irq_linear_revmap() to returns 0
+
+ - This hits another bug in mpic where when that happens it doesn't EOI
+the interrupt, which means the priority remains stuck high and we don't
+get any other interrupt.
+
+There's thus two bugs here:
+
+ - We don't properly establish the reverse mapping for 64 and 65 (well,
+not always, again see below)
+
+ - We don't EOI an interrupt we can't reverse map (we should warn & EOI,
+I'll send a patch for that).
+
+The second problem is a bug we shouldn't hit if the first one didn't
+happen, the first one comes from way irq_find_mapping() works. Basically
+when the revmap entry is 0, we call it to find the mapping & populate
+the revmap... and that fails.
+
+That fails because it will only search up to irq_virq_count which is
+statically initialized to NR_IRQS, which in our case is 64 so it won't
+find our interrupts 64 and 65... 
+
+The reason it works if you don't do the set_type(NONE) is a fluke, it
+will crash as soon as you actually do audio:
+
+The set_type(NONE) has the effect in mpic to configure the interrupt to
+level low (default). This is also the idle state of the audio interrupt
+(which is positive edge), and the MPIC appears to be latching it (yeah
+odd, it does seem to latch level interrupts).
+
+So as soon as the audio driver enables it, it fires, triggering the bug.
+Without the set_type(NONE) the occurence of the bug is delayed to the
+fist time you get a real audio interrupt.
+
+Now what is the solution ? Well, there's several things I think we need
+to do:
+
+ - MPIC should properly EOI interrupts it can't revmap (I'll fix that)
+
+ - MPIC should probably not do the set_type(NONE) on map, it's not
+useful
+
+ - However, we do have a risk of discrepency between the default trigger
+type in the irq_desc vs. the default HW value at startup/map time, so we
+do need to do something to reconcile them (that was the intend of NONE I
+think)... without that, we risk having irq_create_of_mapping() not
+setting the trigger because it thinks it thinks it's right... What do
+you think is best here ? We can probably read the HW config and sync the
+irq desc appropriately ...
+
+ - The whole business with irq_virq_count needs fixing. Basically the
+default value shouldn't be NR_IRQ. I suggest making it 0 and have all
+the use sites do something like:
+
+	max = irq_virq_count ? irq_virq_count : nr_irqs;
+
+(Grant, can you take care of that ?)
+
+ - We still need to clear up all the NR_IRQS occurences in arch/powerpc
+
+Cheers,
+Ben.
