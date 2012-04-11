@@ -1,9 +1,9 @@
 Return-Path: <gary@mlbassoc.com>
 Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
- by ozlabs.org (Postfix) with ESMTP id BB71EB6FEF
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2012 02:14:32 +1000 (EST)
-Message-ID: <4F85ADE7.5020800@mlbassoc.com>
-Date: Wed, 11 Apr 2012 10:14:31 -0600
+ by ozlabs.org (Postfix) with ESMTP id 6777AB701F
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2012 02:18:20 +1000 (EST)
+Message-ID: <4F85ACAA.6080603@mlbassoc.com>
+Date: Wed, 11 Apr 2012 10:09:14 -0600
 From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
@@ -18,10 +18,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-n.b. sorry if you receive this twice - ThunderBird seems very crashy lately!
-
-I'm trying to update my MPC8379 board from 3.0 to 3.3.  I have
+I'm trying to port my MPC8379 board from 3.0 to 3.3.  In 3.0, I have
 this setup in my device tree:
 
 		mdio@24520 {
