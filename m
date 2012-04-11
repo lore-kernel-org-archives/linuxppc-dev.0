@@ -1,21 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E168CB704B
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2012 10:46:52 +1000 (EST)
-Message-ID: <1334105211.2984.5.camel@pasglop>
-Subject: Re: [PATCH 03/12] powerpc: Rework runlatch code
+Message-ID: <1334106834.2984.17.camel@pasglop>
+Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
+ irq_alloc_desc() instead
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Wed, 11 Apr 2012 10:46:51 +1000
-In-Reply-To: <m2vcldamh2.fsf@igel.home>
-References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
- <1330680922-6894-4-git-send-email-benh__48089.0872575857$1330681158$gmane$org@kernel.crashing.org>
- <m2vcldamh2.fsf@igel.home>
+Date: Wed, 11 Apr 2012 11:13:54 +1000
+In-Reply-To: <m2aa2n7mmw.fsf@igel.home>
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+ <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
+ <20120402202848.1EB833E02A7@localhost>
+ <20120402215524.GM24211@n2100.arm.linux.org.uk>
+ <1333406005.30734.61.camel@pasglop>
+ <20120402225223.GN24211@n2100.arm.linux.org.uk>
+ <1333409927.30734.62.camel@pasglop> <m24nsx9iz1.fsf@igel.home>
+ <1333755470.3040.38.camel@pasglop> <m2aa2n7mmw.fsf@igel.home>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,61 +31,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-04-05 at 23:38 +0200, Andreas Schwab wrote:
+On Sat, 2012-04-07 at 14:27 +0200, Andreas Schwab wrote:
 > Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 > 
-> > This moves the inlines into system.h and changes the runlatch
-> > code to use the thread local flags (non-atomic) rather than
-> > the TIF flags (atomic) to keep track of the latch state.
-> >
-> > The code to turn it back on in an asynchronous interrupt is
-> > now simplified and partially inlined.
+> > It's arguable that this irq_set_irq_type(,NONE) shouln't be there but
+> > still ... it's been around for ever and things worked :-) So something
+> > -else- is causing the problem and I'd like to understand what exactly.
 > 
-> This breaks the X server in that it no longer receives SIGIO signals.
+> AFAICS before a09b659cd68c10ec6a30cb91ebd2c327fcd5bfe5
+> irq_set_irq_type(,NONE) was actually a no-op.
 
-I think I found my st00pid bug, can you try this patch ?
+So I'm still a bit baffled... ie, I understand some of what's happening
+but not why it breaks things, I haven't yet managed to reproduce but I
+haven't tried too hard just yet (was away from the HW) :
 
->From fae2e0fb24c61ca68c98d854a34732549ebc1854 Mon Sep 17 00:00:00 2001
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 11 Apr 2012 10:42:15 +1000
-Subject: [PATCH] powerpc: Fix typo in runlatch code
+Basically, we end up setting the mpic to IRQ_TYPE_LEVEL_LOW as a result
+of a request to set it to IRQ_TYPE_NONE, ie, we apply a "default"
+setting instead of just setting it to "none" (in part because we don't
+have a way in HW to disable the trigger completely. We then write that
+into the irq_desc with irqd_set_trigger_type().
 
-Commit fe1952fc0afb9a2e4c79f103c08aef5d13db1873
-"powerpc: Rework runlatch code" has a nasty typo
-where it uses "TLF_RUNLATCH" instead of "_TLF_RUNLATCH"
-(bit number instead of bit mask), causing some flags to
-be potentially lost such as _TLF_RESTORE_SIGMASK
+Then we return IRQ_SET_MASK_OK_NOCOPY, which means that the generic
+__irq_set_trigger() code will read back what we've set in the desc and
+adjust things accordingly, rather than writing the original value in,
+ie, our descriptor ends up being effectively set to IRQ_TYPE_LEVEL_LOW
+rather than IRQ_TYPE_NONE.
 
-(Brown paper bag for me ! We should be able to make
-that break at compile time with a bit of magic, any
-volunteer ?)
+Later, when we actually try to set it to IRQ_TYPE_LEVEL_LOW as a result
+of parsing the device-tree, we then hit the code
+irq_create_of_mapping(), at the bottom, which will skip the call to
+irq_set_irq_type() if we are trying to set it to the same type that it's
+already set to....
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/process.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+But I don't see why that breaks anything, ie we -have- set things to
+LEVEL_LOW as a result of IRQ_TYPE_NONE, which is the right setting, so
+things should work despite the fact that we skip the second call.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index f88698c..4937c96 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1235,7 +1235,7 @@ void __ppc64_runlatch_on(void)
- 	ctrl |= CTRL_RUNLATCH;
- 	mtspr(SPRN_CTRLT, ctrl);
- 
--	ti->local_flags |= TLF_RUNLATCH;
-+	ti->local_flags |= _TLF_RUNLATCH;
- }
- 
- /* Called with hard IRQs off */
-@@ -1244,7 +1244,7 @@ void __ppc64_runlatch_off(void)
- 	struct thread_info *ti = current_thread_info();
- 	unsigned long ctrl;
- 
--	ti->local_flags &= ~TLF_RUNLATCH;
-+	ti->local_flags &= ~_TLF_RUNLATCH;
- 
- 	ctrl = mfspr(SPRN_CTRLF);
- 	ctrl &= ~CTRL_RUNLATCH;
--- 
-1.7.9.5
+Out of curiosity, can you try removing the check in irqdomain and always
+apply the setting regardless of the previous value (ie, remove the check
+of type against irqd_get_trigger at the end of irq_create_of_mapping),
+see if that makes a difference ?
+
+Cheers,
+Ben.
