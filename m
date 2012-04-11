@@ -1,23 +1,14 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CDFDFB7466
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2012 19:09:53 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/12] powerpc: Rework runlatch code
-References: <1330680922-6894-1-git-send-email-benh@kernel.crashing.org>
- <1330680922-6894-4-git-send-email-benh__48089.0872575857$1330681158$gmane$org@kernel.crashing.org>
- <m2vcldamh2.fsf@igel.home> <1334105211.2984.5.camel@pasglop>
-Date: Wed, 11 Apr 2012 11:09:45 +0200
-In-Reply-To: <1334105211.2984.5.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Wed, 11 Apr 2012 10:46:51 +1000")
-Message-ID: <m262d6ocrq.fsf@igel.home>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+ by ozlabs.org (Postfix) with ESMTP id BB71EB6FEF
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2012 02:14:32 +1000 (EST)
+Message-ID: <4F85ADE7.5020800@mlbassoc.com>
+Date: Wed, 11 Apr 2012 10:14:31 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: Network problem with 3.3
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +18,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Subject: [PATCH] powerpc: Fix typo in runlatch code
+n.b. sorry if you receive this twice - ThunderBird seems very crashy lately!
 
-Thanks, this works for me. :-)
+I'm trying to update my MPC8379 board from 3.0 to 3.3.  I have
+this setup in my device tree:
 
-Andreas.
+		mdio@24520 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "fsl,gianfar-mdio";
+			reg = <0x24520 0x20>;
+
+			phy0: ethernet-phy@0 {
+				interrupt-parent = <&ipic>;
+				interrupts = <17 0x8>;
+				reg = <0x01>;
+				device_type = "ethernet-phy";
+			};
+			phy1: ethernet-phy@1 {
+				interrupt-parent = <&ipic>;
+				interrupts = <18 0x8>;
+				reg = <0x00>;
+				device_type = "ethernet-phy";
+			};
+		};
+
+		enet0: ethernet@24000 {
+			cell-index = <0>;
+			device_type = "network";
+			model = "TSEC";
+			compatible = "gianfar";
+			reg = <0x24000 0x1000>;
+			local-mac-address = [ 00 08 e5 11 32 33 ];
+			interrupts = <32 0x8 33 0x8 34 0x8>;
+			interrupt-parent = <&ipic>;
+			phy-handle = <&phy0>;
+			linux,network-index = <0>;
+		};
+
+		enet1: ethernet@25000 {
+			cell-index = <1>;
+			device_type = "network";
+			model = "TSEC";
+			compatible = "gianfar";
+			reg = <0x25000 0x1000>;
+			local-mac-address = [ 00 08 e5 11 32 34 ];
+			interrupts = <35 0x8 36 0x8 37 0x8>;
+			interrupt-parent = <&ipic>;
+			phy-handle = <&phy1>;
+			linux,network-index = <1>;
+		};
+
+On 3.0, this works just fine.  When I boot the same setup on 3.3,
+I get this error:
+   fsl-pq_mdio: probe of ff024520.mdio failed with error -16
+
+Is there something I need to change in my DTS file to make this work?
+Something else I might be missing?
+
+Thanks
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
