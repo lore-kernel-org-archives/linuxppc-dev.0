@@ -1,28 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1334122182.2984.33.camel@pasglop>
-Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map; use
- irq_alloc_desc() instead
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Wed, 11 Apr 2012 15:29:42 +1000
-In-Reply-To: <1334107996.2984.20.camel@pasglop>
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
- <20120402202848.1EB833E02A7@localhost>
- <20120402215524.GM24211@n2100.arm.linux.org.uk>
- <1333406005.30734.61.camel@pasglop>
- <20120402225223.GN24211@n2100.arm.linux.org.uk>
- <1333409927.30734.62.camel@pasglop> <m24nsx9iz1.fsf@igel.home>
- <1333755470.3040.38.camel@pasglop> <m2aa2n7mmw.fsf@igel.home>
- <1334106834.2984.17.camel@pasglop> <1334107996.2984.20.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 4294EB700D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 16:58:53 +1000 (EST)
+Date: Wed, 11 Apr 2012 16:58:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: boot failures with next-20120411
+Message-Id: <20120411165835.415e546374a54ea94669b0c6@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Milton Miller <miltonm@bga.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__11_Apr_2012_16_58_35_+1000_FMrZCuNAtGIJ1=BC"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,97 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-04-11 at 11:33 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2012-04-11 at 11:13 +1000, Benjamin Herrenschmidt wrote:
-> > On Sat, 2012-04-07 at 14:27 +0200, Andreas Schwab wrote:
-> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> > > 
-> > > > It's arguable that this irq_set_irq_type(,NONE) shouln't be there but
-> > > > still ... it's been around for ever and things worked :-) So something
-> > > > -else- is causing the problem and I'd like to understand what exactly.
-> > > 
-> > > AFAICS before a09b659cd68c10ec6a30cb91ebd2c327fcd5bfe5
-> > > irq_set_irq_type(,NONE) was actually a no-op.
-> > 
-> > So I'm still a bit baffled... ie, I understand some of what's happening
-> > but not why it breaks things, I haven't yet managed to reproduce but I
-> > haven't tried too hard just yet (was away from the HW) :
-> 
-> Allright, I have a repro-case, I'll dig.
+--Signature=_Wed__11_Apr_2012_16_58_35_+1000_FMrZCuNAtGIJ1=BC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, so it's Grant's fault :-)
+Hi all,
 
-So basically, it's quite subtle and I'm only 99% sure of the details but
-I believe what happens is:
+Some (not all) of my PowerPC boot tests have failed like this after
+getting into user mode (this one was just after udev started, but others
+are after other processes getting going):
 
- - The audio interrupts get virq 64 and 65 (so above NR_IRQS)
+Unable to handle kernel paging request for data at address 0xc0000003f9d550
+Faulting instruction address: 0xc0000000001b7f40
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=3D32 NUMA pSeries
+Modules linked in: ehea
+NIP: c0000000001b7f40 LR: c0000000001b7f14 CTR: c0000000000e04f0
+REGS: c0000003f68bf6b0 TRAP: 0300   Not tainted  (3.4.0-rc2-autokern1)
+MSR: 800000000280b032 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI>  CR: 24422424  XER: 20=
+000001
+SOFTE: 1
+CFAR: 000000000000562c
+DAR: 00c0000003f9d550, DSISR: 40000000
+TASK =3D c0000003f8818000[3192] 'kdump' THREAD: c0000003f68bc000 CPU: 5
+GPR00: 0000000000000000 c0000003f68bf930 c000000000ce1d40 c0000003fe00ec00=
+=20
+GPR04: 00000000000002d0 0000000000000038 c0000003f8f935e8 c000000000e55280=
+=20
+GPR08: 0000000000000011 c000000000bcb280 c000000000bcb1e8 000000000028a000=
+=20
+GPR12: 0000000024422424 c00000000f33bc80 00000fffdd90a770 0000000000081000=
+=20
+GPR16: c0000003f846c000 000000000de4f7a0 f00000000de4f7a0 0000000000000000=
+=20
+GPR20: c0000003f8365408 c0000003f8365480 c0000003f8e5d110 0000000000000000=
+=20
+GPR24: 0000000000000100 c0000003f8365400 c0000000001e5424 00000000000002d0=
+=20
+GPR28: 0000000000000800 00c0000003f9d550 c000000000c5b718 c0000003fe00ec00=
+=20
+NIP [c0000000001b7f40] .__kmalloc+0x70/0x230
+LR [c0000000001b7f14] .__kmalloc+0x44/0x230
+Call Trace:
+[c0000003f68bf930] [c0000003f68bf9b0] 0xc0000003f68bf9b0 (unreliable)
+[c0000003f68bf9e0] [c0000000001e5424] .alloc_fdmem+0x24/0x70
+[c0000003f68bfa60] [c0000000001e54f8] .alloc_fdtable+0x88/0x130
+[c0000003f68bfaf0] [c0000000001e5924] .dup_fd+0x384/0x450
+[c0000003f68bfbd0] [c00000000009a310] .copy_process+0x880/0x11d0
+[c0000003f68bfcd0] [c00000000009aee0] .do_fork+0x70/0x400
+[c0000003f68bfdc0] [c0000000000141c4] .sys_clone+0x54/0x70
+[c0000003f68bfe30] [c000000000009aa0] .ppc_clone+0x8/0xc
+Instruction dump:
+4bff9281 2ba30010 7c7f1b78 40dd00f4 e96d0040 e93f0000 7ce95a14 e9070008=20
+7fa9582a 2fbd0000 41de0054 e81f0022 <7f3d002a> 38000000 886d01f2 980d01f2=20
+---[ end trace 366fe6c7ced3bfb0 ]---
 
- - The reverse map isn't pre-filled at map time (we should probably do
-it nowadays), we do it lazily so ...
+This did not happen yesterday.  Just wondering if anyone can think of
+anything obvious.  Full console log at
+http://ozlabs.org/~sfr/next-20120411.log.bz2
 
- - The audio interrupt happens, it tries to pre-fill the reverse map
-and ... fails (see below)
-
- - This cause irq_linear_revmap() to returns 0
-
- - This hits another bug in mpic where when that happens it doesn't EOI
-the interrupt, which means the priority remains stuck high and we don't
-get any other interrupt.
-
-There's thus two bugs here:
-
- - We don't properly establish the reverse mapping for 64 and 65 (well,
-not always, again see below)
-
- - We don't EOI an interrupt we can't reverse map (we should warn & EOI,
-I'll send a patch for that).
-
-The second problem is a bug we shouldn't hit if the first one didn't
-happen, the first one comes from way irq_find_mapping() works. Basically
-when the revmap entry is 0, we call it to find the mapping & populate
-the revmap... and that fails.
-
-That fails because it will only search up to irq_virq_count which is
-statically initialized to NR_IRQS, which in our case is 64 so it won't
-find our interrupts 64 and 65... 
-
-The reason it works if you don't do the set_type(NONE) is a fluke, it
-will crash as soon as you actually do audio:
-
-The set_type(NONE) has the effect in mpic to configure the interrupt to
-level low (default). This is also the idle state of the audio interrupt
-(which is positive edge), and the MPIC appears to be latching it (yeah
-odd, it does seem to latch level interrupts).
-
-So as soon as the audio driver enables it, it fires, triggering the bug.
-Without the set_type(NONE) the occurence of the bug is delayed to the
-fist time you get a real audio interrupt.
-
-Now what is the solution ? Well, there's several things I think we need
-to do:
-
- - MPIC should properly EOI interrupts it can't revmap (I'll fix that)
-
- - MPIC should probably not do the set_type(NONE) on map, it's not
-useful
-
- - However, we do have a risk of discrepency between the default trigger
-type in the irq_desc vs. the default HW value at startup/map time, so we
-do need to do something to reconcile them (that was the intend of NONE I
-think)... without that, we risk having irq_create_of_mapping() not
-setting the trigger because it thinks it thinks it's right... What do
-you think is best here ? We can probably read the HW config and sync the
-irq desc appropriately ...
-
- - The whole business with irq_virq_count needs fixing. Basically the
-default value shouldn't be NR_IRQ. I suggest making it 0 and have all
-the use sites do something like:
-
-	max = irq_virq_count ? irq_virq_count : nr_irqs;
-
-(Grant, can you take care of that ?)
-
- - We still need to clear up all the NR_IRQS occurences in arch/powerpc
-
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__11_Apr_2012_16_58_35_+1000_FMrZCuNAtGIJ1=BC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPhSubAAoJEECxmPOUX5FEotAQAJt32DqlOGbYmFdtdK5zg7zk
+Vu/nFo1UtySV8VkspybiENkhh60m+PU/oxhBGztnDfs6K/k5kI6qIWg+8VmT946B
+VExR7WPUFgKBaCURti92+r9YA9QsLwwhkC2xaL/AL75Q0dtRhTtKZmY+HzQwkoJN
+85QCTX01MxQ4K7lAy25erHsd4b5IKacRB+SL1VuGdCvAT7pfKk/EAr2gtz07KWaF
+gQw4aovBGTwnebhZ1fGTiil0DruR+XDnz/8wGiMIBahJLp3OKazhQmKL1tQNF+ON
+MKSSZeiqLJwZX4Etqu9MvaPy4qzXDomlCKKH4E1a9bri7gNCRUUGWoPYi35TGHu/
++w7kDvT56F09rYP/9/GIC7n9CScxjsyb3AhBBRLOyeg/BINOYiSCmmmAE/OSyl0J
+ZqF2OC2i5lwYQlX0I8L47Xk/OvEy6mO2CG6YM8Nhlft5TY4Ry7JyHHj3X1ch3Z4i
+T7Y3QS/2DoGK5S11UQBOxx63gepjk+uvrLKnNWhkW7erPnB3OENKL9Lz93rYQZ7K
+1skCe5iBMb6Y18tXvd9hnZRin1sckeiBi6rcS/3jXFwpk0OwxmaGu2Tw4EMwn/GZ
+Zn9Zu2JM/xRsD+4oU+cEAwQEyzq74vhQBTu7qRaeCrm7p2KTni4n38Pc1dVDJumm
+qR4oP9T33qyZ9ltaQ+RL
+=w3a3
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__11_Apr_2012_16_58_35_+1000_FMrZCuNAtGIJ1=BC--
