@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EA695B7040
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2012 13:38:38 +1000 (EST)
-Message-ID: <1334201907.2984.70.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 12 Apr 2012 13:38:27 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE6B7B702D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 16:43:28 +1000 (EST)
+Received: by obbef5 with SMTP id ef5so2429643obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2012 23:43:25 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 12 Apr 2012 00:43:04 -0600
+Message-ID: <CACxGe6uNFv3djyvZCKsPG4Ret=FWPKQ2QivZbUVYM9g6vLvg2A@mail.gmail.com>
+Subject: [GIT PULL] irq_domain bug fixes against v3.4-rc2
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Hi Linus,
 
-Here are fixes for two nasty regression affecting powerpc in 3.4.
+Here are the irq_domain bug fixes that need to be merged into v3.4.
+This branch fixes PowerPC and MIPS boot failures.  Please pull.
 
-Please apply,
+g.
 
-Cheers,
-Ben.
+The following changes since commit 0034102808e0dbbf3a2394b82b1bb40b5778de9e:
 
-The following changes since commit b1a808ff436343956a6ae63178ea1810c5e5a3a1:
-
-  Merge branch 'for-next' of git://gitorious.org/kernel-hsi/kernel-hsi (2012-04-02 09:50:40 -0700)
+  Linux 3.4-rc2 (2012-04-07 18:30:41 -0700)
 
 are available in the git repository at:
 
+  git://git.secretlab.ca/git/linux-2.6 tags/irqdomain-for-linus
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+for you to fetch changes up to 6fa6c8e25e95bdc73e92e4c96b8e3299169b616e:
 
-for you to fetch changes up to fae2e0fb24c61ca68c98d854a34732549ebc1854:
-
-  powerpc: Fix typo in runlatch code (2012-04-11 10:42:15 +1000)
+  irq_domain: Move irq_virq_count into NOMAP revmap (2012-04-12 00:37:48 -0600)
 
 ----------------------------------------------------------------
-Benjamin Herrenschmidt (2):
-      powerpc: Fix page fault with lockdep regression
-      powerpc: Fix typo in runlatch code
+irqdomain bug fixes for v3.4-rc3
 
- arch/powerpc/kernel/entry_32.S |   39 +++++++++++++++++++++------------------
- arch/powerpc/kernel/process.c  |    4 ++--
- 2 files changed, 23 insertions(+), 20 deletions(-)
+This branch fixes a bug in irq_create_mapping() where an error return
+from irq_alloc_desc_from() gets ignored.  It also removes irq_virq_count
+to fix a bug on powerpc where the irqdomain code does not find irqs
+allocated above the CONFIG_NR_IRQS boundary.  The remaining patches get
+rid of an completely pointless export and fix some minor bugs in the
+irqdomain debug output.
+
+----------------------------------------------------------------
+David Daney (1):
+      irq/irq_domain: Quit ignoring error returns from irq_alloc_desc_from().
+
+Grant Likely (3):
+      irq: Kill pointless irqd_to_hw export
+      irqdomain: Fix debugfs formatting
+      irq_domain: Move irq_virq_count into NOMAP revmap
+
+Mika Westerberg (1):
+      irq_domain: correct the debugfs file name
+
+ arch/c6x/include/asm/irq.h                   |    4 --
+ arch/c6x/kernel/irq.c                        |   13 -------
+ arch/powerpc/include/asm/irq.h               |    2 -
+ arch/powerpc/kernel/irq.c                    |    6 ---
+ arch/powerpc/platforms/cell/axon_msi.c       |    2 +-
+ arch/powerpc/platforms/cell/beat_interrupt.c |    2 +-
+ arch/powerpc/platforms/powermac/smp.c        |    2 +-
+ arch/powerpc/platforms/ps3/interrupt.c       |    3 +-
+ include/linux/irq.h                          |    5 +++
+ include/linux/irqdomain.h                    |   12 ++----
+ include/linux/types.h                        |    6 +++
+ kernel/irq/Kconfig                           |    2 +-
+ kernel/irq/irqdomain.c                       |   46 +++++++++-----------------
+ 13 files changed, 36 insertions(+), 69 deletions(-)
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
