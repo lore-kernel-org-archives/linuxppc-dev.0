@@ -1,31 +1,32 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B0A72B7FE6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 01:40:19 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A052C100C7E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 01:42:08 +1000 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Thu, 12 Apr 2012 09:40:15 -0600
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C9220C9006C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 11:39:11 -0400 (EDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3CFdAX3216980
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 11:39:11 -0400
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3CFcCUF013935
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:38:13 -0600
-Message-ID: <1334245134.18090.36.camel@key-ThinkPad-W510>
-Subject: [PATCH v3 15/17] powerpc: crypto: debugfs routines and docs for the
- nx device driver
+ Thu, 12 Apr 2012 09:42:06 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1C1681FF0049
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:42:03 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3CFfhSm197938
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:41:44 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3CFfew4029139
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:41:41 -0600
+Message-ID: <1334245175.18090.40.camel@key-ThinkPad-W510>
+Subject: [PATCH v3 17/17] powerpc: crypto: enable the PFO-based encryption
+ device
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Thu, 12 Apr 2012 10:38:54 -0500
+Date: Thu, 12 Apr 2012 10:39:35 -0500
 In-Reply-To: <1334242825.18090.4.camel@key-ThinkPad-W510>
 References: <1334242825.18090.4.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
@@ -41,176 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These routines add debugfs files supporting the Power7+ in-Nest encryption
-accelerator driver.
+This patch adds the cas bits to advertise support for the Platform
+Facilities Option (PFO) based encryption accelerator device. The nx
+device driver provides support for this hardware feature.
 
 Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
 ---
- Documentation/ABI/testing/debugfs-pfo-nx-crypto |   45 ++++++++++
- drivers/crypto/nx/nx_debugfs.c                  |  103 +++++++++++++++++++++++
- 2 files changed, 148 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/debugfs-pfo-nx-crypto
- create mode 100644 drivers/crypto/nx/nx_debugfs.c
+ arch/powerpc/kernel/prom_init.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/ABI/testing/debugfs-pfo-nx-crypto b/Documentation/ABI/testing/debugfs-pfo-nx-crypto
-new file mode 100644
-index 0000000..685d5a4
---- /dev/null
-+++ b/Documentation/ABI/testing/debugfs-pfo-nx-crypto
-@@ -0,0 +1,45 @@
-+What:		/sys/kernel/debug/nx-crypto/*
-+Date:		March 2012
-+KernelVersion:	3.4
-+Contact:	Kent Yoder <key@linux.vnet.ibm.com>
-+Description:
-+
-+  These debugfs interfaces are built by the nx-crypto driver, built in
-+arch/powerpc/crypto/nx.
-+
-+Error Detection
-+===============
-+
-+errors:
-+- A u32 providing a total count of errors since the driver was loaded. The
-+only errors counted here are those returned from the hcall, H_COP_OP.
-+
-+last_error:
-+- The most recent non-zero return code from the H_COP_OP hcall. -EBUSY is not
-+recorded here (the hcall will retry until -EBUSY goes away).
-+
-+last_error_pid:
-+- The process ID of the process who received the most recent error from the
-+hcall.
-+
-+Device Use
-+==========
-+
-+aes_bytes:
-+- The total number of bytes encrypted using AES in any of the driver's
-+supported modes.
-+
-+aes_ops:
-+- The total number of AES operations submitted to the hardware.
-+
-+sha256_bytes:
-+- The total number of bytes hashed by the hardware using SHA-256.
-+
-+sha256_ops:
-+- The total number of SHA-256 operations submitted to the hardware.
-+
-+sha512_bytes:
-+- The total number of bytes hashed by the hardware using SHA-512.
-+
-+sha512_ops:
-+- The total number of SHA-512 operations submitted to the hardware.
-diff --git a/drivers/crypto/nx/nx_debugfs.c b/drivers/crypto/nx/nx_debugfs.c
-new file mode 100644
-index 0000000..7ab2e8d
---- /dev/null
-+++ b/drivers/crypto/nx/nx_debugfs.c
-@@ -0,0 +1,103 @@
-+/**
-+ * debugfs routines supporting the Power 7+ Nest Accelerators driver
-+ *
-+ * Copyright (C) 2011-2012 International Business Machines Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 only.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ * Author: Kent Yoder <yoder1@us.ibm.com>
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/kobject.h>
-+#include <linux/string.h>
-+#include <linux/debugfs.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/crypto.h>
-+#include <crypto/hash.h>
-+#include <asm/vio.h>
-+
-+#include "nx_csbcpb.h"
-+#include "nx.h"
-+
-+#ifdef CONFIG_DEBUG_FS
-+
-+/*
-+ * debugfs
-+ *
-+ * For documentation on these attributes, please see:
-+ *
-+ * Documentation/ABI/testing/debugfs-pfo-nx-crypto
-+ */
-+
-+int nx_debugfs_init(struct nx_crypto_driver *drv)
-+{
-+	struct nx_debugfs *dfs = &drv->dfs;
-+
-+	dfs->dfs_root = debugfs_create_dir(NX_NAME, NULL);
-+
-+	dfs->dfs_aes_ops =
-+		debugfs_create_u32("aes_ops",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root, (u32 *)&drv->stats.aes_ops);
-+	dfs->dfs_sha256_ops =
-+		debugfs_create_u32("sha256_ops",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root,
-+				   (u32 *)&drv->stats.sha256_ops);
-+	dfs->dfs_sha512_ops =
-+		debugfs_create_u32("sha512_ops",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root,
-+				   (u32 *)&drv->stats.sha512_ops);
-+	dfs->dfs_aes_bytes =
-+		debugfs_create_u64("aes_bytes",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root,
-+				   (u64 *)&drv->stats.aes_bytes);
-+	dfs->dfs_sha256_bytes =
-+		debugfs_create_u64("sha256_bytes",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root,
-+				   (u64 *)&drv->stats.sha256_bytes);
-+	dfs->dfs_sha512_bytes =
-+		debugfs_create_u64("sha512_bytes",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root,
-+				   (u64 *)&drv->stats.sha512_bytes);
-+	dfs->dfs_errors =
-+		debugfs_create_u32("errors",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root, (u32 *)&drv->stats.errors);
-+	dfs->dfs_last_error =
-+		debugfs_create_u32("last_error",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root,
-+				   (u32 *)&drv->stats.last_error);
-+	dfs->dfs_last_error_pid =
-+		debugfs_create_u32("last_error_pid",
-+				   S_IRUSR | S_IRGRP | S_IROTH,
-+				   dfs->dfs_root,
-+				   (u32 *)&drv->stats.last_error_pid);
-+	return 0;
-+}
-+
-+void
-+nx_debugfs_fini(struct nx_crypto_driver *drv)
-+{
-+	debugfs_remove_recursive(drv->dfs.dfs_root);
-+}
-+
-+#endif
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 26f6317..604b4c4 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -702,6 +702,7 @@ static void __init early_cmdline_parse(void)
+ #endif
+ #define OV5_TYPE1_AFFINITY	0x80	/* Type 1 NUMA affinity */
+ #define OV5_PFO_HW_RNG		0x80	/* PFO Random Number Generator */
++#define OV5_PFO_HW_ENCR		0x20	/* PFO Encryption Accelerator */
+ 
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+@@ -769,7 +770,7 @@ static unsigned char ibm_architecture_vec[] = {
+ 	0,
+ 	0,
+ 	0,
+-	OV5_PFO_HW_RNG,
++	OV5_PFO_HW_RNG | OV5_PFO_HW_ENCR,
+ 
+ 	/* option vector 6: IBM PAPR hints */
+ 	4 - 2,				/* length */
 -- 
 1.7.1
