@@ -1,32 +1,31 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 67454B7015
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 01:33:04 +1000 (EST)
+ (Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7FF8B1008A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 01:33:11 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Thu, 12 Apr 2012 09:33:01 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C6B75C40009
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:32:55 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3CFWDKc162992
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:32:17 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3CFW59W006569
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:32:06 -0600
-Message-ID: <1334244714.18090.25.camel@key-ThinkPad-W510>
-Subject: [PATCH v3 10/17] powerpc: crypto: AES-ECB mode routines for nx
+ Thu, 12 Apr 2012 11:33:03 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9106838C822B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 11:28:13 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3CFSAlE314510
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 11:28:10 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3CFRRMm008381
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 12:27:28 -0300
+Message-ID: <1334244274.18090.19.camel@key-ThinkPad-W510>
+Subject: [PATCH v3 07/17] powerpc: crypto: AES-CBC mode routines for nx
  encryption
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Thu, 12 Apr 2012 10:31:54 -0500
+Date: Thu, 12 Apr 2012 10:24:34 -0500
 In-Reply-To: <1334242825.18090.4.camel@key-ThinkPad-W510>
 References: <1334242825.18090.4.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
@@ -42,23 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These routines add support for AES in ECB mode on the Power7+ CPU's
+These routines add support for AES in CBC mode on the Power7+ CPU's
 in-Nest accelerator driver.
 
 Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
 ---
- drivers/crypto/nx/nx-aes-ecb.c |  138 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 138 insertions(+), 0 deletions(-)
- create mode 100644 drivers/crypto/nx/nx-aes-ecb.c
+ drivers/crypto/nx/nx-aes-cbc.c |  140 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 140 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/crypto/nx/nx-aes-cbc.c
 
-diff --git a/drivers/crypto/nx/nx-aes-ecb.c b/drivers/crypto/nx/nx-aes-ecb.c
+diff --git a/drivers/crypto/nx/nx-aes-cbc.c b/drivers/crypto/nx/nx-aes-cbc.c
 new file mode 100644
-index 0000000..6db5a71
+index 0000000..dc3ea12
 --- /dev/null
-+++ b/drivers/crypto/nx/nx-aes-ecb.c
-@@ -0,0 +1,138 @@
++++ b/drivers/crypto/nx/nx-aes-cbc.c
+@@ -0,0 +1,140 @@
 +/**
-+ * AES ECB routines supporting the Power 7+ Nest Accelerators driver
++ * AES CBC routines supporting the Power 7+ Nest Accelerators driver
 + *
 + * Copyright (C) 2011-2012 International Business Machines Inc.
 + *
@@ -89,12 +88,12 @@ index 0000000..6db5a71
 +#include "nx.h"
 +
 +
-+static int ecb_aes_nx_set_key(struct crypto_tfm *tfm,
++static int cbc_aes_nx_set_key(struct crypto_tfm *tfm,
 +			      const u8          *in_key,
 +			      unsigned int       key_len)
 +{
 +	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(tfm);
-+	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
++	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
 +
 +	nx_ctx_init(nx_ctx, HCOP_FC_AES);
 +
@@ -115,13 +114,13 @@ index 0000000..6db5a71
 +		return -EINVAL;
 +	}
 +
-+	csbcpb->cpb.hdr.mode = NX_MODE_AES_ECB;
-+	memcpy(csbcpb->cpb.aes_ecb.key, in_key, key_len);
++	csbcpb->cpb.hdr.mode = NX_MODE_AES_CBC;
++	memcpy(csbcpb->cpb.aes_cbc.key, in_key, key_len);
 +
 +	return 0;
 +}
 +
-+static int ecb_aes_nx_crypt(struct blkcipher_desc *desc,
++static int cbc_aes_nx_crypt(struct blkcipher_desc *desc,
 +			    struct scatterlist    *dst,
 +			    struct scatterlist    *src,
 +			    unsigned int           nbytes,
@@ -139,7 +138,8 @@ index 0000000..6db5a71
 +	else
 +		NX_CPB_FDM(csbcpb) &= ~NX_FDM_ENDE_ENCRYPT;
 +
-+	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, NULL);
++	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes,
++			       csbcpb->cpb.aes_cbc.iv);
 +	if (rc)
 +		goto out;
 +
@@ -159,40 +159,41 @@ index 0000000..6db5a71
 +	return rc;
 +}
 +
-+static int ecb_aes_nx_encrypt(struct blkcipher_desc *desc,
++static int cbc_aes_nx_encrypt(struct blkcipher_desc *desc,
 +			      struct scatterlist    *dst,
 +			      struct scatterlist    *src,
 +			      unsigned int           nbytes)
 +{
-+	return ecb_aes_nx_crypt(desc, dst, src, nbytes, 1);
++	return cbc_aes_nx_crypt(desc, dst, src, nbytes, 1);
 +}
 +
-+static int ecb_aes_nx_decrypt(struct blkcipher_desc *desc,
++static int cbc_aes_nx_decrypt(struct blkcipher_desc *desc,
 +			      struct scatterlist    *dst,
 +			      struct scatterlist    *src,
 +			      unsigned int           nbytes)
 +{
-+	return ecb_aes_nx_crypt(desc, dst, src, nbytes, 0);
++	return cbc_aes_nx_crypt(desc, dst, src, nbytes, 0);
 +}
 +
-+struct crypto_alg nx_ecb_aes_alg = {
-+	.cra_name        = "ecb(aes)",
-+	.cra_driver_name = "ecb-aes-nx",
++struct crypto_alg nx_cbc_aes_alg = {
++	.cra_name        = "cbc(aes)",
++	.cra_driver_name = "cbc-aes-nx",
 +	.cra_priority    = 300,
 +	.cra_flags       = CRYPTO_ALG_TYPE_BLKCIPHER,
 +	.cra_blocksize   = AES_BLOCK_SIZE,
 +	.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
 +	.cra_type        = &crypto_blkcipher_type,
 +	.cra_module      = THIS_MODULE,
-+	.cra_list        = LIST_HEAD_INIT(nx_ecb_aes_alg.cra_list),
-+	.cra_init        = nx_crypto_ctx_aes_ecb_init,
++	.cra_list        = LIST_HEAD_INIT(nx_cbc_aes_alg.cra_list),
++	.cra_init        = nx_crypto_ctx_aes_cbc_init,
 +	.cra_exit        = nx_crypto_ctx_exit,
 +	.cra_blkcipher = {
 +		.min_keysize = AES_MIN_KEY_SIZE,
 +		.max_keysize = AES_MAX_KEY_SIZE,
-+		.setkey      = ecb_aes_nx_set_key,
-+		.encrypt     = ecb_aes_nx_encrypt,
-+		.decrypt     = ecb_aes_nx_decrypt,
++		.ivsize      = AES_BLOCK_SIZE,
++		.setkey      = cbc_aes_nx_set_key,
++		.encrypt     = cbc_aes_nx_encrypt,
++		.decrypt     = cbc_aes_nx_decrypt,
 +	}
 +};
 -- 
