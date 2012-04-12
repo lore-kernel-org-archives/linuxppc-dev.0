@@ -1,32 +1,31 @@
 Return-Path: <key@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 38564B7F4B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 01:39:38 +1000 (EST)
+ (Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8EDBAB7FB8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 01:39:52 +1000 (EST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Thu, 12 Apr 2012 09:39:35 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C34E019D8050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:37:58 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3CFbnr7091330
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:37:52 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3CFboQs000396
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:37:50 -0600
-Message-ID: <1334245107.18090.32.camel@key-ThinkPad-W510>
-Subject: [PATCH v3 13/17] powerpc: crypto: SHA256 hash routines for nx
+ Thu, 12 Apr 2012 11:39:48 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3887D38C806C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 11:38:08 -0400 (EDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3CFc59U033538
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 11:38:06 -0400
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3CFc1Er028805
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2012 09:38:02 -0600
+Message-ID: <1334245116.18090.34.camel@key-ThinkPad-W510>
+Subject: [PATCH v3 14/17] powerpc: crypto: SHA512 hash routines for nx
  encryption
 From: Kent Yoder <key@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Thu, 12 Apr 2012 10:38:27 -0500
+Date: Thu, 12 Apr 2012 10:38:36 -0500
 In-Reply-To: <1334242825.18090.4.camel@key-ThinkPad-W510>
 References: <1334242825.18090.4.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
@@ -42,23 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These routines add support for SHA-256 hashing on the Power7+ CPU's
+These routines add support for SHA-512 hashing on the Power7+ CPU's
 in-Nest accelerator driver.
 
 Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
 ---
- drivers/crypto/nx/nx-sha256.c |  244 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 244 insertions(+), 0 deletions(-)
- create mode 100644 drivers/crypto/nx/nx-sha256.c
+ drivers/crypto/nx/nx-sha512.c |  263 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 263 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/crypto/nx/nx-sha512.c
 
-diff --git a/drivers/crypto/nx/nx-sha256.c b/drivers/crypto/nx/nx-sha256.c
+diff --git a/drivers/crypto/nx/nx-sha512.c b/drivers/crypto/nx/nx-sha512.c
 new file mode 100644
-index 0000000..239cc3b
+index 0000000..2de839a
 --- /dev/null
-+++ b/drivers/crypto/nx/nx-sha256.c
-@@ -0,0 +1,244 @@
++++ b/drivers/crypto/nx/nx-sha512.c
+@@ -0,0 +1,263 @@
 +/**
-+ * SHA-256 routines supporting the Power 7+ Nest Accelerators driver
++ * SHA-512 routines supporting the Power 7+ Nest Accelerators driver
 + *
 + * Copyright (C) 2011-2012 International Business Machines Inc.
 + *
@@ -87,9 +86,9 @@ index 0000000..239cc3b
 +#include "nx.h"
 +
 +
-+static int nx_sha256_init(struct shash_desc *desc)
++static int nx_sha512_init(struct shash_desc *desc)
 +{
-+	struct sha256_state *sctx = shash_desc_ctx(desc);
++	struct sha512_state *sctx = shash_desc_ctx(desc);
 +	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
 +	struct nx_sg *out_sg;
 +
@@ -97,53 +96,53 @@ index 0000000..239cc3b
 +
 +	memset(sctx, 0, sizeof *sctx);
 +
-+	nx_ctx->ap = &nx_ctx->props[NX_PROPS_SHA256];
++	nx_ctx->ap = &nx_ctx->props[NX_PROPS_SHA512];
 +
-+	NX_CPB_SET_DIGEST_SIZE(nx_ctx->csbcpb, NX_DS_SHA256);
++	NX_CPB_SET_DIGEST_SIZE(nx_ctx->csbcpb, NX_DS_SHA512);
 +	out_sg = nx_build_sg_list(nx_ctx->out_sg, (u8 *)sctx->state,
-+				  SHA256_DIGEST_SIZE, nx_ctx->ap->sglen);
++				  SHA512_DIGEST_SIZE, nx_ctx->ap->sglen);
 +	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
 +
 +	return 0;
 +}
 +
-+static int nx_sha256_update(struct shash_desc *desc, const u8 *data,
++static int nx_sha512_update(struct shash_desc *desc, const u8 *data,
 +			    unsigned int len)
 +{
-+	struct sha256_state *sctx = shash_desc_ctx(desc);
++	struct sha512_state *sctx = shash_desc_ctx(desc);
 +	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
 +	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
 +	struct nx_sg *in_sg;
-+	u64 to_process, leftover;
++	u64 to_process, leftover, spbc_bits;
 +	int rc = 0;
 +
 +	if (NX_CPB_FDM(csbcpb) & NX_FDM_CONTINUATION) {
 +		/* we've hit the nx chip previously and we're updating again,
 +		 * so copy over the partial digest */
-+		memcpy(csbcpb->cpb.sha256.input_partial_digest,
-+		       csbcpb->cpb.sha256.message_digest, SHA256_DIGEST_SIZE);
++		memcpy(csbcpb->cpb.sha512.input_partial_digest,
++		       csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
 +	}
 +
 +	/* 2 cases for total data len:
-+	 *  1: <= SHA256_BLOCK_SIZE: copy into state, return 0
-+	 *  2: > SHA256_BLOCK_SIZE: process X blocks, copy in leftover
++	 *  1: <= SHA512_BLOCK_SIZE: copy into state, return 0
++	 *  2: > SHA512_BLOCK_SIZE: process X blocks, copy in leftover
 +	 */
-+	if (len + sctx->count <= SHA256_BLOCK_SIZE) {
-+		memcpy(sctx->buf + sctx->count, data, len);
-+		sctx->count += len;
++	if ((u64)len + sctx->count[0] <= SHA512_BLOCK_SIZE) {
++		memcpy(sctx->buf + sctx->count[0], data, len);
++		sctx->count[0] += len;
 +		goto out;
 +	}
 +
-+	/* to_process: the SHA256_BLOCK_SIZE data chunk to process in this
++	/* to_process: the SHA512_BLOCK_SIZE data chunk to process in this
 +	 * update */
-+	to_process = (sctx->count + len) & ~(SHA256_BLOCK_SIZE - 1);
-+	leftover = (sctx->count + len) & (SHA256_BLOCK_SIZE - 1);
++	to_process = (sctx->count[0] + len) & ~(SHA512_BLOCK_SIZE - 1);
++	leftover = (sctx->count[0] + len) & (SHA512_BLOCK_SIZE - 1);
 +
-+	if (sctx->count) {
++	if (sctx->count[0]) {
 +		in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *)sctx->buf,
-+					 sctx->count, nx_ctx->ap->sglen);
++					 sctx->count[0], nx_ctx->ap->sglen);
 +		in_sg = nx_build_sg_list(in_sg, (u8 *)data,
-+					 to_process - sctx->count,
++					 to_process - sctx->count[0],
 +					 nx_ctx->ap->sglen);
 +		nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) *
 +					sizeof(struct nx_sg);
@@ -165,14 +164,16 @@ index 0000000..239cc3b
 +	if (rc)
 +		goto out;
 +
-+	atomic_inc(&(nx_ctx->stats->sha256_ops));
++	atomic_inc(&(nx_ctx->stats->sha512_ops));
 +
 +	/* copy the leftover back into the state struct */
 +	memcpy(sctx->buf, data + len - leftover, leftover);
-+	sctx->count = leftover;
++	sctx->count[0] = leftover;
 +
-+	csbcpb->cpb.sha256.message_bit_length += (u64)
-+		(csbcpb->cpb.sha256.spbc * 8);
++	spbc_bits = csbcpb->cpb.sha512.spbc * 8;
++	csbcpb->cpb.sha512.message_bit_length_lo += spbc_bits;
++	if (csbcpb->cpb.sha512.message_bit_length_lo < spbc_bits)
++		csbcpb->cpb.sha512.message_bit_length_hi++;
 +
 +	/* everything after the first update is continuation */
 +	NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
@@ -180,30 +181,35 @@ index 0000000..239cc3b
 +	return rc;
 +}
 +
-+static int nx_sha256_final(struct shash_desc *desc, u8 *out)
++static int nx_sha512_final(struct shash_desc *desc, u8 *out)
 +{
-+	struct sha256_state *sctx = shash_desc_ctx(desc);
++	struct sha512_state *sctx = shash_desc_ctx(desc);
 +	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
 +	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
 +	struct nx_sg *in_sg, *out_sg;
++	u64 count0;
 +	int rc;
 +
 +	if (NX_CPB_FDM(csbcpb) & NX_FDM_CONTINUATION) {
 +		/* we've hit the nx chip previously, now we're finalizing,
 +		 * so copy over the partial digest */
-+		memcpy(csbcpb->cpb.sha256.input_partial_digest,
-+		       csbcpb->cpb.sha256.message_digest, SHA256_DIGEST_SIZE);
++		memcpy(csbcpb->cpb.sha512.input_partial_digest,
++		       csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
 +	}
 +
 +	/* final is represented by continuing the operation and indicating that
 +	 * this is not an intermediate operation */
 +	NX_CPB_FDM(csbcpb) &= ~NX_FDM_INTERMEDIATE;
 +
-+	csbcpb->cpb.sha256.message_bit_length += (u64)(sctx->count * 8);
++	count0 = sctx->count[0] * 8;
 +
-+	in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *)sctx->buf,
-+				 sctx->count, nx_ctx->ap->sglen);
-+	out_sg = nx_build_sg_list(nx_ctx->out_sg, out, SHA256_DIGEST_SIZE,
++	csbcpb->cpb.sha512.message_bit_length_lo += count0;
++	if (csbcpb->cpb.sha512.message_bit_length_lo < count0)
++		csbcpb->cpb.sha512.message_bit_length_hi++;
++
++	in_sg = nx_build_sg_list(nx_ctx->in_sg, sctx->buf, sctx->count[0],
++				 nx_ctx->ap->sglen);
++	out_sg = nx_build_sg_list(nx_ctx->out_sg, out, SHA512_DIGEST_SIZE,
 +				  nx_ctx->ap->sglen);
 +	nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) * sizeof(struct nx_sg);
 +	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
@@ -217,61 +223,73 @@ index 0000000..239cc3b
 +	if (rc)
 +		goto out;
 +
-+	atomic_inc(&(nx_ctx->stats->sha256_ops));
++	atomic_inc(&(nx_ctx->stats->sha512_ops));
++	atomic64_add(csbcpb->cpb.sha512.message_bit_length_lo,
++		     &(nx_ctx->stats->sha512_bytes));
 +
-+	atomic64_add(csbcpb->cpb.sha256.message_bit_length,
-+		     &(nx_ctx->stats->sha256_bytes));
-+	memcpy(out, csbcpb->cpb.sha256.message_digest, SHA256_DIGEST_SIZE);
++	memcpy(out, csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
 +out:
 +	return rc;
 +}
 +
-+static int nx_sha256_export(struct shash_desc *desc, void *out)
++static int nx_sha512_export(struct shash_desc *desc, void *out)
 +{
-+	struct sha256_state *sctx = shash_desc_ctx(desc);
++	struct sha512_state *sctx = shash_desc_ctx(desc);
 +	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
 +	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
-+	struct sha256_state *octx = out;
++	struct sha512_state *octx = out;
 +
-+	octx->count = sctx->count +
-+		      (csbcpb->cpb.sha256.message_bit_length / 8);
++	/* move message_bit_length (128 bits) into count and convert its value
++	 * to bytes */
++	octx->count[0] = csbcpb->cpb.sha512.message_bit_length_lo >> 3 |
++			 ((csbcpb->cpb.sha512.message_bit_length_hi & 7) << 61);
++	octx->count[1] = csbcpb->cpb.sha512.message_bit_length_hi >> 3;
++
++	octx->count[0] += sctx->count[0];
++	if (octx->count[0] < sctx->count[0])
++		octx->count[1]++;
++
 +	memcpy(octx->buf, sctx->buf, sizeof(octx->buf));
 +
-+	/* if no data has been processed yet, we need to export SHA256's
++	/* if no data has been processed yet, we need to export SHA512's
 +	 * initial data, in case this context gets imported into a software
 +	 * context */
-+	if (csbcpb->cpb.sha256.message_bit_length)
-+		memcpy(octx->state, csbcpb->cpb.sha256.message_digest,
-+		       SHA256_DIGEST_SIZE);
++	if (csbcpb->cpb.sha512.message_bit_length_hi ||
++	    csbcpb->cpb.sha512.message_bit_length_lo)
++		memcpy(octx->state, csbcpb->cpb.sha512.message_digest,
++		       SHA512_DIGEST_SIZE);
 +	else {
-+		octx->state[0] = SHA256_H0;
-+		octx->state[1] = SHA256_H1;
-+		octx->state[2] = SHA256_H2;
-+		octx->state[3] = SHA256_H3;
-+		octx->state[4] = SHA256_H4;
-+		octx->state[5] = SHA256_H5;
-+		octx->state[6] = SHA256_H6;
-+		octx->state[7] = SHA256_H7;
++		octx->state[0] = SHA512_H0;
++		octx->state[1] = SHA512_H1;
++		octx->state[2] = SHA512_H2;
++		octx->state[3] = SHA512_H3;
++		octx->state[4] = SHA512_H4;
++		octx->state[5] = SHA512_H5;
++		octx->state[6] = SHA512_H6;
++		octx->state[7] = SHA512_H7;
 +	}
 +
 +	return 0;
 +}
 +
-+static int nx_sha256_import(struct shash_desc *desc, const void *in)
++static int nx_sha512_import(struct shash_desc *desc, const void *in)
 +{
-+	struct sha256_state *sctx = shash_desc_ctx(desc);
++	struct sha512_state *sctx = shash_desc_ctx(desc);
 +	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
 +	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
-+	const struct sha256_state *ictx = in;
++	const struct sha512_state *ictx = in;
 +
 +	memcpy(sctx->buf, ictx->buf, sizeof(ictx->buf));
++	sctx->count[0] = ictx->count[0] & 0x3f;
++	csbcpb->cpb.sha512.message_bit_length_lo = (ictx->count[0] & ~0x3f)
++							<< 3;
++	csbcpb->cpb.sha512.message_bit_length_hi = ictx->count[1] << 3 |
++						   ictx->count[0] >> 61;
 +
-+	sctx->count = ictx->count & 0x3f;
-+	csbcpb->cpb.sha256.message_bit_length = (ictx->count & ~0x3f) * 8;
-+
-+	if (csbcpb->cpb.sha256.message_bit_length) {
-+		memcpy(csbcpb->cpb.sha256.message_digest, ictx->state,
-+		       SHA256_DIGEST_SIZE);
++	if (csbcpb->cpb.sha512.message_bit_length_hi ||
++	    csbcpb->cpb.sha512.message_bit_length_lo) {
++		memcpy(csbcpb->cpb.sha512.message_digest, ictx->state,
++		       SHA512_DIGEST_SIZE);
 +
 +		NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
 +		NX_CPB_FDM(csbcpb) |= NX_FDM_INTERMEDIATE;
@@ -280,21 +298,21 @@ index 0000000..239cc3b
 +	return 0;
 +}
 +
-+struct shash_alg nx_shash_sha256_alg = {
-+	.digestsize = SHA256_DIGEST_SIZE,
-+	.init       = nx_sha256_init,
-+	.update     = nx_sha256_update,
-+	.final      = nx_sha256_final,
-+	.export     = nx_sha256_export,
-+	.import     = nx_sha256_import,
-+	.descsize   = sizeof(struct sha256_state),
-+	.statesize  = sizeof(struct sha256_state),
++struct shash_alg nx_shash_sha512_alg = {
++	.digestsize = SHA512_DIGEST_SIZE,
++	.init       = nx_sha512_init,
++	.update     = nx_sha512_update,
++	.final      = nx_sha512_final,
++	.export     = nx_sha512_export,
++	.import     = nx_sha512_import,
++	.descsize   = sizeof(struct sha512_state),
++	.statesize  = sizeof(struct sha512_state),
 +	.base       = {
-+		.cra_name        = "sha256",
-+		.cra_driver_name = "sha256-nx",
++		.cra_name        = "sha512",
++		.cra_driver_name = "sha512-nx",
 +		.cra_priority    = 300,
 +		.cra_flags       = CRYPTO_ALG_TYPE_SHASH,
-+		.cra_blocksize   = SHA256_BLOCK_SIZE,
++		.cra_blocksize   = SHA512_BLOCK_SIZE,
 +		.cra_module      = THIS_MODULE,
 +		.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
 +		.cra_init        = nx_crypto_ctx_sha_init,
