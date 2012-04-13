@@ -1,15 +1,14 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 13 Apr 2012 12:03:46 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 00/21] EEH reorganization
-Message-ID: <20120413120346.42e01402@kryten>
-In-Reply-To: <20120413073931.0c36169b@kryten>
-References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
- <20120413073931.0c36169b@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Jiri Slaby <jslaby@suse.cz>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: linux-next: boot failures with next-20120411
+In-reply-to: <20120411165835.415e546374a54ea94669b0c6@canb.auug.org.au>
+References: <20120411165835.415e546374a54ea94669b0c6@canb.auug.org.au>
+Date: Fri, 13 Apr 2012 12:30:11 +1000
+Message-ID: <16710.1334284211@neuling.org>
+Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,57 +18,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Hi,
+> Hi all,
+> 
+> Some (not all) of my PowerPC boot tests have failed like this after
+> getting into user mode (this one was just after udev started, but others
+> are after other processes getting going):
+> 
+> Unable to handle kernel paging request for data at address 0xc0000003f9d550
+> Faulting instruction address: 0xc0000000001b7f40
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=32 NUMA pSeries
+> Modules linked in: ehea
+> NIP: c0000000001b7f40 LR: c0000000001b7f14 CTR: c0000000000e04f0
+> REGS: c0000003f68bf6b0 TRAP: 0300   Not tainted  (3.4.0-rc2-autokern1)
+> MSR: 800000000280b032 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI>  CR: 24422424  XER: 20000001
+> SOFTE: 1
+> CFAR: 000000000000562c
+> DAR: 00c0000003f9d550, DSISR: 40000000
+> TASK = c0000003f8818000[3192] 'kdump' THREAD: c0000003f68bc000 CPU: 5
+> GPR00: 0000000000000000 c0000003f68bf930 c000000000ce1d40 c0000003fe00ec00 
+> GPR04: 00000000000002d0 0000000000000038 c0000003f8f935e8 c000000000e55280 
+> GPR08: 0000000000000011 c000000000bcb280 c000000000bcb1e8 000000000028a000 
+> GPR12: 0000000024422424 c00000000f33bc80 00000fffdd90a770 0000000000081000 
+> GPR16: c0000003f846c000 000000000de4f7a0 f00000000de4f7a0 0000000000000000 
+> GPR20: c0000003f8365408 c0000003f8365480 c0000003f8e5d110 0000000000000000 
+> GPR24: 0000000000000100 c0000003f8365400 c0000000001e5424 00000000000002d0 
+> GPR28: 0000000000000800 00c0000003f9d550 c000000000c5b718 c0000003fe00ec00 
+> NIP [c0000000001b7f40] .__kmalloc+0x70/0x230
+> LR [c0000000001b7f14] .__kmalloc+0x44/0x230
+> Call Trace:
+> [c0000003f68bf930] [c0000003f68bf9b0] 0xc0000003f68bf9b0 (unreliable)
+> [c0000003f68bf9e0] [c0000000001e5424] .alloc_fdmem+0x24/0x70
+> [c0000003f68bfa60] [c0000000001e54f8] .alloc_fdtable+0x88/0x130
+> [c0000003f68bfaf0] [c0000000001e5924] .dup_fd+0x384/0x450
+> [c0000003f68bfbd0] [c00000000009a310] .copy_process+0x880/0x11d0
+> [c0000003f68bfcd0] [c00000000009aee0] .do_fork+0x70/0x400
+> [c0000003f68bfdc0] [c0000000000141c4] .sys_clone+0x54/0x70
+> [c0000003f68bfe30] [c000000000009aa0] .ppc_clone+0x8/0xc
+> Instruction dump:
+> 4bff9281 2ba30010 7c7f1b78 40dd00f4 e96d0040 e93f0000 7ce95a14 e9070008 
+> 7fa9582a 2fbd0000 41de0054 e81f0022 <7f3d002a> 38000000 886d01f2 980d01f2 
+> ---[ end trace 366fe6c7ced3bfb0 ]---
+> 
+> This did not happen yesterday.  Just wondering if anyone can think of
+> anything obvious.  Full console log at
+> http://ozlabs.org/~sfr/next-20120411.log.bz2
 
-> I just hit this on mainline from today (3.4.0-rc2-00065-gf549e08).
-> Haven't had a chance to narrow it down yet.
+I managed to bisect this down using pseries_defconfig with next-20120412
+to this patch:
 
-Looking closer, it was caused by an EEH error at boot. It looks like
-the Mellanox infiniband card gets an error when probed by their
-firmware tool (mstmread), but only if the kernel driver is not loaded.
-I see this EEH error back on 3.0, so it's not new.
+  commit 85bbc003b24335e253a392f6a9874103b77abb36
+  Author: Jiri Slaby <jslaby@suse.cz>
+  Date:   Mon Apr 2 13:54:22 2012 +0200
 
-The question now is why we oops in the EEH code on mainline.
+      TTY: HVC, use tty from tty_port
 
-Anton
+      The driver already used refcounting. So we just switch it to tty_port
+      helpers. And switch to tty_port->lock for tty.
 
-------------[ cut here ]------------
-WARNING: at arch/powerpc/platforms/pseries/eeh.c:492
-Modules linked in:
-NIP: c000000000056cc4 LR: c000000000056cc0 CTR: c00000000051dd60
-REGS: c000001f3953f6a0 TRAP: 0700   Not tainted  (3.4.0-rc2-00065-gf549e08-dirty)
-MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 28004482  XER: 0000000f
-SOFTE: 0
-CFAR: c00000000074ea30
-TASK = c000001f39685040[19058] 'mstmread' THREAD: c000001f3953c000 CPU: 38
-GPR00: c000000000056cc0 c000001f3953f920 c000000000bd3a28 0000000000000021 
-GPR04: 0000000000000000 ffffffffffffffff 00000000000323f7 0000000000000000 
-GPR08: 000000006365203c c000000000b10a20 0000000000020000 c000000000a74cc0 
-GPR12: 0000000024004422 c00000000eda8500 000000003a58582e 00000000583a5858 
-GPR16: 000000002f585858 0000000069636573 000000002f646576 0000000010003b48 
-GPR20: 00000fffc7a3d17c 0000000000000058 0000000000000004 c000001f3953fb90 
-GPR24: 0000000000000000 0000000000000000 c000000000c77088 c000003e6fffeee8 
-GPR28: c000000000d82680 0000000000000000 c000000000c770d0 0000000000000000 
-NIP [c000000000056cc4] .eeh_dn_check_failure+0x304/0x320
-LR [c000000000056cc0] .eeh_dn_check_failure+0x300/0x320
-Call Trace:
-[c000001f3953f920] [c000000000056cc0] .eeh_dn_check_failure+0x300/0x320 (unreliable)
-[c000001f3953f9d0] [c00000000002717c] .rtas_read_config+0x13c/0x1b0
-[c000001f3953fa70] [c0000000003d543c] .pci_user_read_config_dword+0xcc/0x150
-[c000001f3953fb20] [c0000000003e19d8] .pci_read_config+0xe8/0x2a0
-[c000001f3953fc00] [c00000000022d330] .read+0x130/0x210
-[c000001f3953fce0] [c0000000001a723c] .vfs_read+0xec/0x1e0
-[c000001f3953fd80] [c0000000001a73ec] .SyS_pread64+0xbc/0xd0
-[c000001f3953fe30] [c000000000009780] syscall_exit+0x0/0x7c
-Instruction dump:
-7f83e378 48001909 60000000 2fbf0000 419e002c e89f00d8 2fa40000 409e0008 
-e89f0098 e8629fb8 486f7d39 60000000 <0fe00000> 3b200001 4bfffdb4 e8829fa8 
----[ end trace a6e6d788c9869e00 ]---
-EEH: Detected PCI bus error on device 0006:01:00.0
-EEH: This PCI device has failed 1 times in the last hour:
-EEH: Bus location=U78AB.001.WZSGRFL-P1-C4-T1 driver= pci addr=0006:01:00.0
-EEH: Device location=U78AB.001.WZSGRFL-P1-C4-T1 driver= pci addr=0006:01:00.0
-EEH: of node=/pci@800000020000203/pci1014,415@0
-EEH: PCI device/vendor: 673c15b3
-EEH: PCI cmd/status register: 00100140
+      Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+      Cc: linuxppc-dev@lists.ozlabs.org
+      Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+Reverting this commit (and 0146b6939074ebe14ece3604fd00e7be128a3812
+otherwise git barfs) fixes the problem on next-20120412.  
+
+I'm assuming we got the ref count changes wrong somewhere in the patch
+but the tty code is beyond me.  Jiri, can you take a look?
+
+Mikey
