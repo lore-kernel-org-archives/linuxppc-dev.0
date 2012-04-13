@@ -1,14 +1,39 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 13 Apr 2012 07:39:31 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 00/21] EEH reorganization
-Message-ID: <20120413073931.0c36169b@kryten>
-In-Reply-To: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <matsumoto.hiroo@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 677FCB70AB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 10:02:24 +1000 (EST)
+Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id E96DE3EE0AE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 09:02:20 +0900 (JST)
+Received: from smail (m2 [127.0.0.1])
+ by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id CFBDE45DE4E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 09:02:20 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
+ by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id BAA1945DE4D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 09:02:20 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id AEEA11DB8038
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 09:02:20 +0900 (JST)
+Received: from m005.s.css.fujitsu.com (m005.s.css.fujitsu.com [10.23.4.35])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 6EE031DB803A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 09:02:20 +0900 (JST)
+Received: from m005.css.fujitsu.com (m005 [127.0.0.1])
+ by m005.s.css.fujitsu.com (Postfix) with ESMTP id 4CBA550EC41
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 09:02:20 +0900 (JST)
+Received: from [127.0.0.1] (ubi135.utsfd.cs.fujitsu.co.jp [10.24.19.135])
+ by m005.s.css.fujitsu.com (Postfix) with ESMTP id 1C22650EC42
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 09:02:20 +0900 (JST)
+Message-ID: <4F876D63.4060103@jp.fujitsu.com>
+Date: Fri, 13 Apr 2012 09:03:47 +0900
+From: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC] powerpc: set_dma_ops for pci hotplug
+References: <4F867083.2090200@jp.fujitsu.com>
+In-Reply-To: <4F867083.2090200@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,47 +43,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi
 
-Hi Gavin,
 
-> This series of patches is going to reorganize EEH so that it could
-> support multiple platforms in future. The requirements were raised
-> from the aspects.
+I'm so sorry, but there is a better way than this way with
+pcibios_enable_device() for issue.
+I will write another code soon, so please wait.
 
-I just hit this on mainline from today (3.4.0-rc2-00065-gf549e08).
-Haven't had a chance to narrow it down yet.
 
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=1024 NUMA pSeries
-Modules linked in:
-NIP: c000000000055af8 LR: c000000000033204 CTR: 0000000000000000
-REGS: c000001f42fb7990 TRAP: 0300   Tainted: G        W     (3.4.0-rc2-00065-gf549e08-dirty)
-MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 24008084  XER: 00000000
-SOFTE: 1
-CFAR: 00000000000049b8
-DAR: 0000000000000070, DSISR: 40000000
-TASK = c000001f6c7dfc40[19010] 'eehd' THREAD: c000001f42fb4000 CPU: 6
-GPR00: 0000000000000001 c000001f42fb7c10 c000000000bd3a28 c000001f80ab0800 
-GPR04: c000001f7c57d418 0000000000000380 c000001f7c57e070 c000000000ed5360 
-GPR08: 0000000000000000 c000000000c77088 0000000000000000 0000000000000001 
-GPR12: 0000000044008088 c00000000eda1500 00000000019ffa78 0000000000a70000 
-GPR16: 00000000000000bb c000000000a9f754 c000000000963230 000000000000005e 
-GPR20: 0000000001b37e80 00000000000000bb 0000000000000000 c000000000b0ad90 
-GPR24: 0000000000000000 c000000000b10588 0000000000000001 c000001f80ab0800 
-GPR28: 0000000000000000 c000001f80ab0828 0000000000000000 c000001f7ee10000 
-NIP [c000000000055af8] .eeh_add_device_tree_late+0x58/0xf0
-LR [c000000000033204] .pcibios_finish_adding_to_bus+0x34/0x50
-Call Trace:
-[c000001f42fb7c10] [00000000fdffffff] 0xfdffffff (unreliable)
-[c000001f42fb7ca0] [c000000000033204] .pcibios_finish_adding_to_bus+0x34/0x50
-[c000001f42fb7d20] [c000000000059a5c] .pcibios_add_pci_devices+0x7c/0x190
-[c000001f42fb7db0] [c000000000057a6c] .eeh_reset_device+0xfc/0x1a0
-[c000001f42fb7e50] [c000000000057e18] .handle_eeh_events+0x308/0x480
-[c000001f42fb7f00] [c0000000000584dc] .eeh_event_handler+0x13c/0x1d0
-[c000001f42fb7f90] [c00000000002099c] .kernel_thread+0x54/0x70
-Instruction dump:
-480000a8 60000000 ebff0000 7fbfe800 419e0098 2fbf0000 419e005c e9229eb0 
-80090008 2f800000 419e004c ebdf01d0 <e81e0070> 7fbf0000 3160ffff
-7d2b0110 
+Regards.
 
-Anton
+Hiroo MATSUMOTO
+
+> Hi
+> 
+> 
+> I'm trying to use PCI Express Hot Plug on powerpc platform.
+> But PCI driver returns error when hotplug.
+> Error log is as below.
+> http://www.spinics.net/lists/linux-pci/msg14534.html
+> 
+> Some of PCI driver needs dma_ops.
+> On x86 platform, dma_ops is getting from external variable.
+> On powerpc platform, dma_ops is getting from archdata.dma_ops in struct
+> device.
+> There is a problem that archdata.dma_ops is set only when boot with
+> pcibios_setup_bus_devices but not set when hotplug.
+> So when hotplug, PCI driver's probe will return error.
+> 
+> I add code of checking and setting dma_ops in pcibios_enable_device.
+> It is called from pci_enable_device_xxx in PCI driver's probe before
+> checking dma_ops.
+> And PCI driver works good when hotplug.
+> 
+> 
+> Regards.
+> 
+> Hiroo MATSUMOTO
+> 
