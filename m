@@ -1,19 +1,15 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from smtp.pripojeni.net (mail.pripojeni.net [178.22.112.14])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 16730B6FE3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 18:31:51 +1000 (EST)
-From: Jiri Slaby <jslaby@suse.cz>
-To: gregkh@linuxfoundation.org
-Subject: [PATCH 1/1] TTY: hvc, fix TTY refcounting
-Date: Fri, 13 Apr 2012 10:31:32 +0200
-Message-Id: <1334305892-30187-1-git-send-email-jslaby@suse.cz>
-In-Reply-To: <5050.1334304567@neuling.org>
-References: <5050.1334304567@neuling.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- jirislaby@gmail.com
+Return-Path: <sumeshkkn@hotmail.com>
+Received: from blu0-omc3-s30.blu0.hotmail.com (blu0-omc3-s30.blu0.hotmail.com
+ [65.55.116.105]) by ozlabs.org (Postfix) with ESMTP id 3B336B6FFE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2012 19:57:22 +1000 (EST)
+Message-ID: <BLU124-W23D62A308B2F33EC51A3D2B43B0@phx.gbl>
+Content-Type: multipart/alternative;
+ boundary="_208f0d81-f16b-4589-82a2-8cb91206387d_"
+From: Sumesh Kaana <sumeshkkn@hotmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: userspace o/p to kernel buffer
+Date: Fri, 13 Apr 2012 09:52:08 +0000
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,75 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A -next commit "TTY: HVC, use tty from tty_port" switched the driver
-to use tty_port helper for tty refcounting. But it omitted to remove
-manual tty refcounting from open, close and hangup. So now we are
-getting random crashes caused by use-after-free:
-Unable to handle kernel paging request for data at address 0xc0000003f9d550
-Faulting instruction address: 0xc0000000001b7f40
-Oops: Kernel access of bad area, sig: 11 [#1]
-...
-NIP: c0000000001b7f40 LR: c0000000001b7f14 CTR: c0000000000e04f0
-...
-NIP [c0000000001b7f40] .__kmalloc+0x70/0x230
-LR [c0000000001b7f14] .__kmalloc+0x44/0x230
-Call Trace:
-[c0000003f68bf930] [c0000003f68bf9b0] 0xc0000003f68bf9b0 (unreliable)
-[c0000003f68bf9e0] [c0000000001e5424] .alloc_fdmem+0x24/0x70
-[c0000003f68bfa60] [c0000000001e54f8] .alloc_fdtable+0x88/0x130
-[c0000003f68bfaf0] [c0000000001e5924] .dup_fd+0x384/0x450
-[c0000003f68bfbd0] [c00000000009a310] .copy_process+0x880/0x11d0
-[c0000003f68bfcd0] [c00000000009aee0] .do_fork+0x70/0x400
-[c0000003f68bfdc0] [c0000000000141c4] .sys_clone+0x54/0x70
-[c0000003f68bfe30] [c000000000009aa0] .ppc_clone+0x8/0xc
+--_208f0d81-f16b-4589-82a2-8cb91206387d_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Fix that by complete removal of tty_kref_get/put in open/close/hangup
-paths.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Reported-and-tested-by: Michael Neuling <mikey@neuling.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
----
- drivers/tty/hvc/hvc_console.c |    5 -----
- 1 file changed, 5 deletions(-)
+Hi=2C
+How do I capture all the output of user-space programs into a kernel buffer=
+ so that I can later read it using debugger ?  My board doesn't have a cons=
+ole (no serial=2C no network). Any direction would be of great help.
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 6c45cbf..2d691eb 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -317,8 +317,6 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	/* Check and then increment for fast path open. */
- 	if (hp->port.count++ > 0) {
- 		spin_unlock_irqrestore(&hp->port.lock, flags);
--		/* FIXME why taking a reference here? */
--		tty_kref_get(tty);
- 		hvc_kick();
- 		return 0;
- 	} /* else count == 0 */
-@@ -338,7 +336,6 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	 */
- 	if (rc) {
- 		tty_port_tty_set(&hp->port, NULL);
--		tty_kref_put(tty);
- 		tty->driver_data = NULL;
- 		tty_port_put(&hp->port);
- 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
-@@ -393,7 +390,6 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		spin_unlock_irqrestore(&hp->port.lock, flags);
- 	}
- 
--	tty_kref_put(tty);
- 	tty_port_put(&hp->port);
- }
- 
-@@ -433,7 +429,6 @@ static void hvc_hangup(struct tty_struct *tty)
- 
- 	while(temp_open_count) {
- 		--temp_open_count;
--		tty_kref_put(tty);
- 		tty_port_put(&hp->port);
- 	}
- }
--- 
-1.7.9.2
+
+sumesh. 		 	   		  =
+
+--_208f0d81-f16b-4589-82a2-8cb91206387d_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style></head>
+<body class=3D'hmmessage'><div dir=3D'ltr'>
+Hi=2C<div><br></div><div>How do I capture all the output of user-space prog=
+rams into a kernel buffer so that I can later read it using debugger ? &nbs=
+p=3BMy board doesn't have a console (no serial=2C no network). Any directio=
+n would be of great help.</div><div><br></div><div><br></div><div><br></div=
+><div>sumesh.</div> 		 	   		  </div></body>
+</html>=
+
+--_208f0d81-f16b-4589-82a2-8cb91206387d_--
