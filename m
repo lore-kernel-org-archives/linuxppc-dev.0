@@ -1,18 +1,13 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1AFA9B7001
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 15:04:48 +1000 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: fix system.h fallout in sysdev/scom.c
- [chroma_defconfig]
-Date: Mon, 16 Apr 2012 01:04:34 -0400
-Message-Id: <1334552674-24107-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: David Howells <dhowells@redhat.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Mon, 16 Apr 2012 16:54:59 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 1/2] powerpc: Remove empty giveup_altivec function on book3e
+ CPUs
+Message-ID: <20120416165459.6da18f9c@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +17,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following shows up in chroma_defconfig:
 
- CC      arch/powerpc/sysdev/scom.o
-arch/powerpc/sysdev/scom.c: In function 'scom_debug_init':
-arch/powerpc/sysdev/scom.c:182:36: error: 'powerpc_debugfs_root' undeclared (first use in this function)
-arch/powerpc/sysdev/scom.c:182:36: note: each undeclared identifier is reported only once for each function it appears in
-make[2]: *** [arch/powerpc/sysdev/scom.o] Error 1
-make[1]: *** [arch/powerpc/sysdev/scom.o] Error 2
+Use an empty inline instead of an empty function to implement
+giveup_altivec on book3e CPUs, similar to flush_altivec_to_thread.
 
-A bisect leads to commit 9ffc93f203c18a70623f21950f1dd473c9ec48cd
-
-    "Remove all #inclusions of asm/system.h"
-
-Add the debug header which contains powerpc_debugfs_root.
-
-Cc: David Howells <dhowells@redhat.com>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-[Ben, let me know if you want to take this or have me keep it.]
-
-diff --git a/arch/powerpc/sysdev/scom.c b/arch/powerpc/sysdev/scom.c
-index 49a3ece..702256a 100644
---- a/arch/powerpc/sysdev/scom.c
-+++ b/arch/powerpc/sysdev/scom.c
-@@ -22,6 +22,7 @@
- #include <linux/debugfs.h>
- #include <linux/slab.h>
- #include <linux/export.h>
-+#include <asm/debug.h>
- #include <asm/prom.h>
- #include <asm/scom.h>
+Index: linux-build/arch/powerpc/include/asm/switch_to.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/switch_to.h	2012-04-16 12:56:11.000000000 +1000
++++ linux-build/arch/powerpc/include/asm/switch_to.h	2012-04-16 12:56:45.149313158 +1000
+@@ -21,7 +21,6 @@ extern void disable_kernel_fp(void);
+ extern void enable_kernel_fp(void);
+ extern void flush_fp_to_thread(struct task_struct *);
+ extern void enable_kernel_altivec(void);
+-extern void giveup_altivec(struct task_struct *);
+ extern void load_up_altivec(struct task_struct *);
+ extern int emulate_altivec(struct pt_regs *);
+ extern void __giveup_vsx(struct task_struct *);
+@@ -40,10 +39,14 @@ static inline void discard_lazy_cpu_stat
  
--- 
-1.7.9.1
+ #ifdef CONFIG_ALTIVEC
+ extern void flush_altivec_to_thread(struct task_struct *);
++extern void giveup_altivec(struct task_struct *);
+ #else
+ static inline void flush_altivec_to_thread(struct task_struct *t)
+ {
+ }
++static inline void giveup_altivec(struct task_struct *t)
++{
++}
+ #endif
+ 
+ #ifdef CONFIG_VSX
+Index: linux-build/arch/powerpc/kernel/head_44x.S
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/head_44x.S	2012-04-16 12:56:11.976708702 +1000
++++ linux-build/arch/powerpc/kernel/head_44x.S	2012-04-16 12:56:45.153313231 +1000
+@@ -778,14 +778,6 @@ _GLOBAL(__fixup_440A_mcheck)
+ 	blr
+ 
+ /*
+- * extern void giveup_altivec(struct task_struct *prev)
+- *
+- * The 44x core does not have an AltiVec unit.
+- */
+-_GLOBAL(giveup_altivec)
+-	blr
+-
+-/*
+  * extern void giveup_fpu(struct task_struct *prev)
+  *
+  * The 44x core does not have an FPU.
+Index: linux-build/arch/powerpc/kernel/head_fsl_booke.S
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/head_fsl_booke.S	2012-04-16 12:56:11.940708046 +1000
++++ linux-build/arch/powerpc/kernel/head_fsl_booke.S	2012-04-16 12:56:45.153313231 +1000
+@@ -874,14 +874,6 @@ _GLOBAL(__setup_e500mc_ivors)
+ 	sync
+ 	blr
+ 
+-/*
+- * extern void giveup_altivec(struct task_struct *prev)
+- *
+- * The e500 core does not have an AltiVec unit.
+- */
+-_GLOBAL(giveup_altivec)
+-	blr
+-
+ #ifdef CONFIG_SPE
+ /*
+  * extern void giveup_spe(struct task_struct *prev)
