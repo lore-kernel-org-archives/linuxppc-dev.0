@@ -1,21 +1,35 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 87813B7028
+Return-Path: <mchehab@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 4A2AFB7025
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 06:13:24 +1000 (EST)
-Received: by pbcwy12 with SMTP id wy12so9803501pbc.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 13:13:22 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] irqdomain/powerpc: Fix broken NR_IRQ references
-Date: Mon, 16 Apr 2012 14:13:18 -0600
-Message-Id: <1334607198-18694-2-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1334607198-18694-1-git-send-email-grant.likely@secretlab.ca>
-References: <1334607198-18694-1-git-send-email-grant.likely@secretlab.ca>
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: 
+Subject: [EDAC PATCH v13 7/7] edac: Change internal representation to work
+ with layers
+Date: Mon, 16 Apr 2012 17:12:13 -0300
+Message-Id: <1334607133-30039-8-git-send-email-mchehab@redhat.com>
+In-Reply-To: <1334607133-30039-1-git-send-email-mchehab@redhat.com>
+References: <1333039546-5590-1-git-send-email-mchehab@redhat.com>
+ <1334607133-30039-1-git-send-email-mchehab@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Sender: Mauro Carvalho Chehab <mchehab@pedra>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
+ Hitoshi Mitake <h.mitake@gmail.com>, Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Mark Gross <mark.gross@intel.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Egor Martovetsky <egor@pasemi.com>,
+ =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ericsson.com>,
+ Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
+ Borislav Petkov <borislav.petkov@amd.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Olof Johansson <olof@lixom.net>, Doug Thompson <norsk5@yahoo.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,200 +39,1118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The switch from using irq_map to irq_alloc_desc*() for managing irq
-number allocations introduced new bugs in some of the powerpc
-interrupt code.  Several functions rely on the value of NR_IRQS to
-determine the maximum irq number that could get allocated.  However,
-with sparse_irq and using irq_alloc_desc*() the maximum possible irq
-number is now specified with 'nr_irqs' which may be a number larger
-than NR_IRQS.  This has caused breakage on powermac when
-CONFIG_NR_IRQS is set to 32.
+Change the EDAC internal representation to work with non-csrow
+based memory controllers.
 
-This patch removes most of the direct references to NR_IRQS in the
-powerpc code and replaces them with either a nr_irqs reference or by
-using the common for_each_irq_desc() macro.  The powerpc-specific
-for_each_irq() macro is removed at the same time.
+There are lots of those memory controllers nowadays, and more
+are coming. So, the EDAC internal representation needs to be
+changed, in order to work with those memory controllers, while
+preserving backward compatibility with the old ones.
 
-Also, the Cell axon_msi driver is refactored to remove the global
-build assumption on the size of NR_IRQS and instead add a limit to the
-maximum irq number when calling irq_domain_add_nomap().
+The edac core were written with the idea that memory controllers
+are able to directly access csrows, and that the channels are
+used inside a csrows select.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+This is not true for FB-DIMM and RAMBUS memory controllers.
+
+Also, some recent advanced memory controllers don't present a per-csrows
+view. Instead, they view memories as DIMM's, instead of ranks, accessed
+via csrow/channel.
+
+So, change the allocation and error report routines to allow
+them to work with all types of architectures.
+
+This will allow the removal of several hacks on FB-DIMM and RAMBUS
+memory controllers on the next patches.
+
+Also, several tests were done on different platforms using different
+x86 drivers.
+
+TODO: a multi-rank DIMM's are currently represented by multiple DIMM
+entries at struct dimm_info. That means that changing a label for one
+rank won't change the same label for the other ranks at the same dimm.
+Such bug is there since the beginning of the EDAC, so it is not a big
+deal. However, on several drivers, it is possible to fix this issue, but
+it should be a per-driver fix, as the csrow => DIMM arrangement may not
+be equal for all. So, don't try to fix it here yet.
+
+PS.: I tried to make this patch as short as possible, preceding it with
+several other patches that simplified the logic here. Yet, as the
+internal API changes, all drivers need changes. The changes are
+generally bigger on the drivers for FB-DIMM's.
+
+FIXME: while the FB-DIMMs are not converted to use the new
+design, uncorrected errors will show just one channel. In
+the past, all changes were on a big patch with about 150K.
+As it needed to be split, in order to be accepted by the
+EDAC ML at vger, we've opted to have this small drawback.
+As an advantage, it is now easier to review the patch series.
+
+Cc: Aristeu Rozanski <arozansk@redhat.com>
+Cc: Doug Thompson <norsk5@yahoo.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Mark Gross <mark.gross@intel.com>
+Cc: Jason Uhlenkott <juhlenko@akamai.com>
+Cc: Tim Small <tim@buttersideup.com>
+Cc: Ranganathan Desikan <ravi@jetztechnologies.com>
+Cc: "Arvind R." <arvino55@gmail.com>
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Egor Martovetsky <egor@pasemi.com>
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: Michal Marek <mmarek@suse.cz>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Cc: Joe Perches <joe@perches.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hitoshi Mitake <h.mitake@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Niklas Söderlund" <niklas.soderlund@ericsson.com>
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 ---
- arch/powerpc/include/asm/irq.h               |    4 ----
- arch/powerpc/kernel/irq.c                    |    6 +-----
- arch/powerpc/kernel/machine_kexec.c          |    7 ++-----
- arch/powerpc/platforms/cell/axon_msi.c       |    7 ++-----
- arch/powerpc/platforms/cell/beat_interrupt.c |    2 +-
- arch/powerpc/platforms/powermac/pic.c        |    6 +++---
- arch/powerpc/sysdev/cpm2_pic.c               |    3 +--
- arch/powerpc/sysdev/xics/xics-common.c       |    7 +++----
- 8 files changed, 13 insertions(+), 29 deletions(-)
+ drivers/edac/edac_core.h |   92 ++++++-
+ drivers/edac/edac_mc.c   |  682 ++++++++++++++++++++++++++++------------------
+ include/linux/edac.h     |   40 ++-
+ 3 files changed, 526 insertions(+), 288 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index e648af9..0e40843 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -18,10 +18,6 @@
- #include <linux/atomic.h>
+diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
+index e48ab31..7201bb1 100644
+--- a/drivers/edac/edac_core.h
++++ b/drivers/edac/edac_core.h
+@@ -447,8 +447,13 @@ static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
  
+ #endif				/* CONFIG_PCI */
  
--/* Define a way to iterate across irqs. */
--#define for_each_irq(i) \
--	for ((i) = 0; (i) < NR_IRQS; ++(i))
--
- extern atomic_t ppc_n_lost_interrupts;
+-extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+-					  unsigned nr_chans, int edac_index);
++struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
++				   unsigned nr_chans, int edac_index);
++struct mem_ctl_info *new_edac_mc_alloc(unsigned edac_index,
++				   unsigned n_layers,
++				   struct edac_mc_layer *layers,
++				   bool rev_order,
++				   unsigned sz_pvt);
+ extern int edac_mc_add_mc(struct mem_ctl_info *mci);
+ extern void edac_mc_free(struct mem_ctl_info *mci);
+ extern struct mem_ctl_info *edac_mc_find(int idx);
+@@ -467,24 +472,80 @@ extern int edac_mc_find_csrow_by_page(struct mem_ctl_info *mci,
+  * reporting logic and function interface - reduces conditional
+  * statement clutter and extra function arguments.
+  */
+-extern void edac_mc_handle_ce(struct mem_ctl_info *mci,
++
++void edac_mc_handle_error(const enum hw_event_mc_err_type type,
++			  struct mem_ctl_info *mci,
++			  const unsigned long page_frame_number,
++			  const unsigned long offset_in_page,
++			  const unsigned long syndrome,
++			  const int layer0,
++			  const int layer1,
++			  const int layer2,
++			  const char *msg,
++			  const char *other_detail,
++			  const void *mcelog);
++
++static inline void edac_mc_handle_ce(struct mem_ctl_info *mci,
+ 			      unsigned long page_frame_number,
+ 			      unsigned long offset_in_page,
+ 			      unsigned long syndrome, int row, int channel,
+-			      const char *msg);
+-extern void edac_mc_handle_ce_no_info(struct mem_ctl_info *mci,
+-				      const char *msg);
+-extern void edac_mc_handle_ue(struct mem_ctl_info *mci,
++			      const char *msg)
++{
++	 edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
++			      page_frame_number, offset_in_page, syndrome,
++		              row, channel, -1, msg, NULL, NULL);
++}
++
++static inline void edac_mc_handle_ce_no_info(struct mem_ctl_info *mci,
++				      const char *msg)
++{
++	 edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
++			      0, 0, 0, -1, -1, -1, msg, NULL, NULL);
++}
++
++static inline void edac_mc_handle_ue(struct mem_ctl_info *mci,
+ 			      unsigned long page_frame_number,
+ 			      unsigned long offset_in_page, int row,
+-			      const char *msg);
+-extern void edac_mc_handle_ue_no_info(struct mem_ctl_info *mci,
+-				      const char *msg);
+-extern void edac_mc_handle_fbd_ue(struct mem_ctl_info *mci, unsigned int csrow,
+-				  unsigned int channel0, unsigned int channel1,
+-				  char *msg);
+-extern void edac_mc_handle_fbd_ce(struct mem_ctl_info *mci, unsigned int csrow,
+-				  unsigned int channel, char *msg);
++			      const char *msg)
++{
++	 edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
++			      page_frame_number, offset_in_page, 0,
++		              row, -1, -1, msg, NULL, NULL);
++}
++
++static inline void edac_mc_handle_ue_no_info(struct mem_ctl_info *mci,
++				      const char *msg)
++{
++	 edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
++			      0, 0, 0, -1, -1, -1, msg, NULL, NULL);
++}
++
++static inline void edac_mc_handle_fbd_ue(struct mem_ctl_info *mci,
++					 unsigned int csrow,
++					 unsigned int channel0,
++					 unsigned int channel1,
++					 char *msg)
++{
++	/*
++	 *FIXME: The error can also be at channel1 (e. g. at the second
++	 *	  channel of the same branch). The fix is to push
++	 *	  edac_mc_handle_error() call into each driver
++	 */
++	 edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
++			      0, 0, 0,
++		              csrow, channel0, -1, msg, NULL, NULL);
++}
++
++static inline void edac_mc_handle_fbd_ce(struct mem_ctl_info *mci,
++					 unsigned int csrow,
++					 unsigned int channel, char *msg)
++{
++	 edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
++			      0, 0, 0,
++		              csrow, channel, -1, msg, NULL, NULL);
++}
++
++
  
- /* This number is used when no interrupt has been assigned */
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 5ec1b23..43eb74f 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -330,14 +330,10 @@ void migrate_irqs(void)
+ /*
+  * edac_device APIs
+@@ -496,6 +557,7 @@ extern void edac_device_handle_ue(struct edac_device_ctl_info *edac_dev,
+ extern void edac_device_handle_ce(struct edac_device_ctl_info *edac_dev,
+ 				int inst_nr, int block_nr, const char *msg);
+ extern int edac_device_alloc_index(void);
++extern const char *edac_layer_name[];
  
- 	alloc_cpumask_var(&mask, GFP_KERNEL);
- 
--	for_each_irq(irq) {
-+	for_each_irq_desc(irq, desc) {
- 		struct irq_data *data;
- 		struct irq_chip *chip;
- 
--		desc = irq_to_desc(irq);
--		if (!desc)
--			continue;
--
- 		data = irq_desc_get_irq_data(desc);
- 		if (irqd_is_per_cpu(data))
- 			continue;
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index c957b12..5df7777 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -23,14 +23,11 @@
- 
- void machine_kexec_mask_interrupts(void) {
- 	unsigned int i;
-+	struct irq_desc *desc;
- 
--	for_each_irq(i) {
--		struct irq_desc *desc = irq_to_desc(i);
-+	for_each_irq_desc(i, desc) {
- 		struct irq_chip *chip;
- 
--		if (!desc)
--			continue;
--
- 		chip = irq_desc_get_chip(desc);
- 		if (!chip)
- 			continue;
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index d09f3e8..fc9df1a 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -114,7 +114,7 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 		pr_devel("axon_msi: woff %x roff %x msi %x\n",
- 			  write_offset, msic->read_offset, msi);
- 
--		if (msi < NR_IRQS && irq_get_chip_data(msi) == msic) {
-+		if (msi < nr_irqs && irq_get_chip_data(msi) == msic) {
- 			generic_handle_irq(msi);
- 			msic->fifo_virt[idx] = cpu_to_le32(0xffffffff);
- 		} else {
-@@ -276,9 +276,6 @@ static int axon_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- 	if (rc)
- 		return rc;
- 
--	/* We rely on being able to stash a virq in a u16 */
--	BUILD_BUG_ON(NR_IRQS > 65536);
--
- 	list_for_each_entry(entry, &dev->msi_list, list) {
- 		virq = irq_create_direct_mapping(msic->irq_domain);
- 		if (virq == NO_IRQ) {
-@@ -392,7 +389,7 @@ static int axon_msi_probe(struct platform_device *device)
- 	}
- 	memset(msic->fifo_virt, 0xff, MSIC_FIFO_SIZE_BYTES);
- 
--	msic->irq_domain = irq_domain_add_nomap(dn, 0, &msic_host_ops, msic);
-+	msic->irq_domain = irq_domain_add_nomap(dn, 65536, &msic_host_ops, msic);
- 	if (!msic->irq_domain) {
- 		printk(KERN_ERR "axon_msi: couldn't allocate irq_domain for %s\n",
- 		       dn->full_name);
-diff --git a/arch/powerpc/platforms/cell/beat_interrupt.c b/arch/powerpc/platforms/cell/beat_interrupt.c
-index f9a48af..8c6dc42 100644
---- a/arch/powerpc/platforms/cell/beat_interrupt.c
-+++ b/arch/powerpc/platforms/cell/beat_interrupt.c
-@@ -248,6 +248,6 @@ void beatic_deinit_IRQ(void)
- {
- 	int	i;
- 
--	for (i = 1; i < NR_IRQS; i++)
-+	for (i = 1; i < nr_irqs; i++)
- 		beat_destruct_irq_plug(i);
+ /*
+  * edac_pci APIs
+diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
+index 98de5d1..f231c54 100644
+--- a/drivers/edac/edac_mc.c
++++ b/drivers/edac/edac_mc.c
+@@ -44,9 +44,25 @@ static void edac_mc_dump_channel(struct rank_info *chan)
+ 	debugf4("\tchannel = %p\n", chan);
+ 	debugf4("\tchannel->chan_idx = %d\n", chan->chan_idx);
+ 	debugf4("\tchannel->csrow = %p\n\n", chan->csrow);
+-	debugf4("\tdimm->ce_count = %d\n", chan->dimm->ce_count);
+-	debugf4("\tdimm->label = '%s'\n", chan->dimm->label);
+-	debugf4("\tdimm->nr_pages = 0x%x\n", chan->dimm->nr_pages);
++	debugf4("\tchannel->dimm = %p\n", chan->dimm);
++}
++
++static void edac_mc_dump_dimm(struct dimm_info *dimm)
++{
++	int i;
++
++	debugf4("\tdimm = %p\n", dimm);
++	debugf4("\tdimm->label = '%s'\n", dimm->label);
++	debugf4("\tdimm->nr_pages = 0x%x\n", dimm->nr_pages);
++	debugf4("\tdimm location ");
++	for (i = 0; i < dimm->mci->n_layers; i++) {
++		printk(KERN_CONT "%d", dimm->location[i]);
++		if (i < dimm->mci->n_layers - 1)
++			printk(KERN_CONT ".");
++	}
++	printk(KERN_CONT "\n");
++	debugf4("\tdimm->grain = %d\n", dimm->grain);
++	debugf4("\tdimm->nr_pages = 0x%x\n", dimm->nr_pages);
  }
-diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
-index 66ad93d..c4e6305 100644
---- a/arch/powerpc/platforms/powermac/pic.c
-+++ b/arch/powerpc/platforms/powermac/pic.c
-@@ -57,9 +57,9 @@ static int max_real_irqs;
  
- static DEFINE_RAW_SPINLOCK(pmac_pic_lock);
+ static void edac_mc_dump_csrow(struct csrow_info *csrow)
+@@ -70,6 +86,8 @@ static void edac_mc_dump_mci(struct mem_ctl_info *mci)
+ 	debugf4("\tmci->edac_check = %p\n", mci->edac_check);
+ 	debugf3("\tmci->nr_csrows = %d, csrows = %p\n",
+ 		mci->nr_csrows, mci->csrows);
++	debugf3("\tmci->nr_dimms = %d, dimns = %p\n",
++		mci->tot_dimms, mci->dimms);
+ 	debugf3("\tdev = %p\n", mci->dev);
+ 	debugf3("\tmod_name:ctl_name = %s:%s\n", mci->mod_name, mci->ctl_name);
+ 	debugf3("\tpvt_info = %p\n\n", mci->pvt_info);
+@@ -141,10 +159,25 @@ void *edac_align_ptr(void **p, unsigned size, int quant)
+ }
  
--#define NR_MASK_WORDS	((NR_IRQS + 31) / 32)
--static unsigned long ppc_lost_interrupts[NR_MASK_WORDS];
--static unsigned long ppc_cached_irq_mask[NR_MASK_WORDS];
-+/* The max irq number this driver deals with is 128; see max_irqs */
-+static DECLARE_BITMAP(ppc_lost_interrupts, 128);
-+static DECLARE_BITMAP(ppc_cached_irq_mask, 128);
- static int pmac_irq_cascade = -1;
- static struct irq_domain *pmac_pic_host;
- 
-diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
-index d3be961..10386b6 100644
---- a/arch/powerpc/sysdev/cpm2_pic.c
-+++ b/arch/powerpc/sysdev/cpm2_pic.c
-@@ -51,8 +51,7 @@
- static intctl_cpm2_t __iomem *cpm2_intctl;
- 
- static struct irq_domain *cpm2_pic_host;
--#define NR_MASK_WORDS   ((NR_IRQS + 31) / 32)
--static unsigned long ppc_cached_irq_mask[NR_MASK_WORDS];
-+static unsigned long ppc_cached_irq_mask[2]; /* 2 32-bit registers */
- 
- static const u_char irq_to_siureg[] = {
- 	1, 1, 1, 1, 1, 1, 1, 1,
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index 1d7067d..9049d9f 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -188,6 +188,7 @@ void xics_migrate_irqs_away(void)
+ /**
+- * edac_mc_alloc: Allocate a struct mem_ctl_info structure
+- * @size_pvt:	size of private storage needed
+- * @nr_csrows:	Number of CWROWS needed for this MC
+- * @nr_chans:	Number of channels for the MC
++ * edac_mc_alloc: Allocate and partially fills a struct mem_ctl_info structure
++ * @edac_index:		Memory controller number
++ * @n_layers:		Number of layers at the MC hierarchy
++ * layers:		Describes each layer as seen by the Memory Controller
++ * @rev_order:		Fills csrows/cs channels at the reverse order
++ * @size_pvt:		size of private storage needed
++ *
++ *
++ * FIXME: drivers handle multi-rank memories on different ways: on some
++ * drivers, one multi-rank memory is mapped as one DIMM, while, on others,
++ * a single multi-rank DIMM would be mapped into several "dimms".
++ *
++ * Non-csrow based drivers (like FB-DIMM and RAMBUS ones) will likely report
++ * such DIMMS properly, but the CSROWS-based ones will likely do the wrong
++ * thing, as two chip select values are used for dual-rank memories (and 4, for
++ * quad-rank ones). I suspect that this issue could be solved inside the EDAC
++ * core for SDRAM memories, but it requires further study at JEDEC JESD 21C.
++ *
++ * In summary, solving this issue is not easy, as it requires a lot of testing.
+  *
+  * Everything is kmalloc'ed as one big chunk - more efficient.
+  * Only can be used if all structures have the same lifetime - otherwise
+@@ -156,18 +189,41 @@ void *edac_align_ptr(void **p, unsigned size, int quant)
+  *	NULL allocation failed
+  *	struct mem_ctl_info pointer
+  */
+-struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+-				unsigned nr_chans, int edac_index)
++struct mem_ctl_info *new_edac_mc_alloc(unsigned edac_index,
++				   unsigned n_layers,
++				   struct edac_mc_layer *layers,
++				   bool rev_order,
++				   unsigned sz_pvt)
  {
- 	int cpu = smp_processor_id(), hw_cpu = hard_smp_processor_id();
- 	unsigned int irq, virq;
-+	struct irq_desc *desc;
+ 	void *ptr;
+ 	struct mem_ctl_info *mci;
+-	struct csrow_info *csi, *csrow;
++	struct edac_mc_layer *lay;
++	struct csrow_info *csi, *csr;
+ 	struct rank_info *chi, *chp, *chan;
+ 	struct dimm_info *dimm;
++	u32 *ce_per_layer[EDAC_MAX_LAYERS], *ue_per_layer[EDAC_MAX_LAYERS];
+ 	void *pvt;
+-	unsigned size;
+-	int row, chn;
++	unsigned size, tot_dimms, count, pos[EDAC_MAX_LAYERS];
++	unsigned tot_csrows, tot_cschannels;
++	int i, j;
+ 	int err;
++	int row, chn;
++
++	BUG_ON(n_layers > EDAC_MAX_LAYERS);
++	/*
++	 * Calculate the total amount of dimms and csrows/cschannels while
++	 * in the old API emulation mode
++	 */
++	tot_dimms = 1;
++	tot_cschannels = 1;
++	tot_csrows = 1;
++	for (i = 0; i < n_layers; i++) {
++		tot_dimms *= layers[i].size;
++		if (layers[i].is_csrow)
++			tot_csrows *= layers[i].size;
++		else
++			tot_cschannels *= layers[i].size;
++	}
  
- 	/* If we used to be the default server, move to the new "boot_cpuid" */
- 	if (hw_cpu == xics_default_server)
-@@ -202,8 +203,7 @@ void xics_migrate_irqs_away(void)
- 	/* Allow IPIs again... */
- 	icp_ops->set_priority(DEFAULT_PRIORITY);
+ 	/* Figure out the offsets of the various items from the start of an mc
+ 	 * structure.  We want the alignment of each item to be at least as
+@@ -176,12 +232,21 @@ struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+ 	 */
+ 	ptr = 0;
+ 	mci = edac_align_ptr(&ptr, sizeof(*mci), 1);
+-	csi = edac_align_ptr(&ptr, sizeof(*csi), nr_csrows);
+-	chi = edac_align_ptr(&ptr, sizeof(*chi), nr_csrows * nr_chans);
+-	dimm = edac_align_ptr(ptr, sizeof(*dimm), nr_csrows * nr_chans);
++	lay = edac_align_ptr(&ptr, sizeof(*lay), n_layers);
++	csi = edac_align_ptr(&ptr, sizeof(*csi), tot_csrows);
++	chi = edac_align_ptr(&ptr, sizeof(*chi), tot_csrows * tot_cschannels);
++	dimm = edac_align_ptr(&ptr, sizeof(*dimm), tot_dimms);
++	count = 1;
++	for (i = 0; i < n_layers; i++) {
++		count *= layers[i].size;
++		ce_per_layer[i] = edac_align_ptr(&ptr, sizeof(u32), count);
++		ue_per_layer[i] = edac_align_ptr(&ptr, sizeof(u32), count);
++	}
+ 	pvt = edac_align_ptr(&ptr, sz_pvt, 1);
+ 	size = ((unsigned long)pvt) + sz_pvt;
  
--	for_each_irq(virq) {
--		struct irq_desc *desc;
-+	for_each_irq_desc(virq, desc) {
- 		struct irq_chip *chip;
- 		long server;
- 		unsigned long flags;
-@@ -212,9 +212,8 @@ void xics_migrate_irqs_away(void)
- 		/* We can't set affinity on ISA interrupts */
- 		if (virq < NUM_ISA_INTERRUPTS)
- 			continue;
--		desc = irq_to_desc(virq);
- 		/* We only need to migrate enabled IRQS */
--		if (!desc || !desc->action)
-+		if (!desc->action)
- 			continue;
- 		if (desc->irq_data.domain != xics_host)
- 			continue;
++	debugf1("%s(): allocating %u bytes for mci data (%d dimms, %d csrows/channels)\n",
++		__func__, size, tot_dimms, tot_csrows * tot_cschannels);
+ 	mci = kzalloc(size, GFP_KERNEL);
+ 	if (mci == NULL)
+ 		return NULL;
+@@ -189,42 +254,99 @@ struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+ 	/* Adjust pointers so they point within the memory we just allocated
+ 	 * rather than an imaginary chunk of memory located at address 0.
+ 	 */
++	lay = (struct edac_mc_layer *)(((char *)mci) + ((unsigned long)lay));
+ 	csi = (struct csrow_info *)(((char *)mci) + ((unsigned long)csi));
+ 	chi = (struct rank_info *)(((char *)mci) + ((unsigned long)chi));
+ 	dimm = (struct dimm_info *)(((char *)mci) + ((unsigned long)dimm));
++	for (i = 0; i < n_layers; i++) {
++		mci->ce_per_layer[i] = (u32 *)((char *)mci + ((unsigned long)ce_per_layer[i]));
++		mci->ue_per_layer[i] = (u32 *)((char *)mci + ((unsigned long)ue_per_layer[i]));
++	}
+ 	pvt = sz_pvt ? (((char *)mci) + ((unsigned long)pvt)) : NULL;
+ 
+ 	/* setup index and various internal pointers */
+ 	mci->mc_idx = edac_index;
+ 	mci->csrows = csi;
+ 	mci->dimms  = dimm;
++	mci->tot_dimms = tot_dimms;
+ 	mci->pvt_info = pvt;
+-	mci->nr_csrows = nr_csrows;
++	mci->n_layers = n_layers;
++	mci->layers = lay;
++	memcpy(mci->layers, layers, sizeof(*lay) * n_layers);
++	mci->nr_csrows = tot_csrows;
++	mci->num_cschannel = tot_cschannels;
+ 
+ 	/*
+-	 * For now, assumes that a per-csrow arrangement for dimms.
+-	 * This will be latter changed.
++	 * Fills the csrow struct
+ 	 */
+-	dimm = mci->dimms;
+-
+-	for (row = 0; row < nr_csrows; row++) {
+-		csrow = &csi[row];
+-		csrow->csrow_idx = row;
+-		csrow->mci = mci;
+-		csrow->nr_channels = nr_chans;
+-		chp = &chi[row * nr_chans];
+-		csrow->channels = chp;
+-
+-		for (chn = 0; chn < nr_chans; chn++) {
++	for (row = 0; row < tot_csrows; row++) {
++		csr = &csi[row];
++		csr->csrow_idx = row;
++		csr->mci = mci;
++		csr->nr_channels = tot_cschannels;
++		chp = &chi[row * tot_cschannels];
++		csr->channels = chp;
++
++		for (chn = 0; chn < tot_cschannels; chn++) {
+ 			chan = &chp[chn];
+ 			chan->chan_idx = chn;
+-			chan->csrow = csrow;
++			chan->csrow = csr;
++		}
++	}
+ 
+-			mci->csrows[row].channels[chn].dimm = dimm;
+-			dimm->csrow = row;
+-			dimm->csrow_channel = chn;
+-			dimm++;
+-			mci->nr_dimms++;
++	/*
++	 * Fills the dimm struct
++	 */
++	memset(&pos, 0, sizeof(pos));
++	row = 0;
++	chn = 0;
++	debugf4("%s: initializing %d dimms\n", __func__, tot_dimms);
++	for (i = 0; i < tot_dimms; i++) {
++		chan = &csi[row].channels[chn];
++		dimm = GET_POS(lay, mci->dimms, n_layers,
++			       pos[0], pos[1], pos[2]);
++		dimm->mci = mci;
++
++		debugf2("%s: %d: dimm%zd (%d:%d:%d): row %d, chan %d\n", __func__,
++			i, (dimm - mci->dimms),
++			pos[0], pos[1], pos[2], row, chn);
++
++		/* Copy DIMM location */
++		for (j = 0; j < n_layers; j++)
++			dimm->location[j] = pos[j];
++
++		/* Link it to the csrows old API data */
++		chan->dimm = dimm;
++		dimm->csrow = row;
++		dimm->cschannel = chn;
++
++		/* Increment csrow location */
++		if (!rev_order) {
++			for (j = n_layers - 1; j >= 0; j--)
++				if (!layers[j].is_csrow)
++					break;
++			chn++;
++			if (chn == tot_cschannels) {
++				chn = 0;
++				row++;
++			}
++		} else {
++			for (j = n_layers - 1; j >= 0; j--)
++				if (layers[j].is_csrow)
++					break;
++			row++;
++			if (row == tot_csrows) {
++				row = 0;
++				chn++;
++			}
++		}
++
++		/* Increment dimm location */
++		for (j = n_layers - 1; j >= 0; j--) {
++			pos[j]++;
++			if (pos[j] < layers[j].size)
++				break;
++			pos[j] = 0;
+ 		}
+ 	}
+ 
+@@ -248,6 +370,57 @@ struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+ 	 */
+ 	return mci;
+ }
++EXPORT_SYMBOL_GPL(new_edac_mc_alloc);
++
++/**
++ * edac_mc_alloc: Allocate and partially fills a struct mem_ctl_info structure
++ * @edac_index:		Memory controller number
++ * @n_layers:		Nu
++mber of layers at the MC hierarchy
++ * layers:		Describes each layer as seen by the Memory Controller
++ * @rev_order:		Fills csrows/cs channels at the reverse order
++ * @size_pvt:		size of private storage needed
++ *
++ *
++ * FIXME: drivers handle multi-rank memories on different ways: on some
++ * drivers, one multi-rank memory is mapped as one DIMM, while, on others,
++ * a single multi-rank DIMM would be mapped into several "dimms".
++ *
++ * Non-csrow based drivers (like FB-DIMM and RAMBUS ones) will likely report
++ * such DIMMS properly, but the CSROWS-based ones will likely do the wrong
++ * thing, as two chip select values are used for dual-rank memories (and 4, for
++ * quad-rank ones). I suspect that this issue could be solved inside the EDAC
++ * core for SDRAM memories, but it requires further study at JEDEC JESD 21C.
++ *
++ * In summary, solving this issue is not easy, as it requires a lot of testing.
++ *
++ * Everything is kmalloc'ed as one big chunk - more efficient.
++ * Only can be used if all structures have the same lifetime - otherwise
++ * you have to allocate and initialize your own structures.
++ *
++ * Use edac_mc_free() to free mc structures allocated by this function.
++ *
++ * Returns:
++ *	NULL allocation failed
++ *	struct mem_ctl_info pointer
++ */
++
++struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
++				   unsigned nr_chans, int edac_index)
++{
++	unsigned n_layers = 2;
++	struct edac_mc_layer layers[n_layers];
++
++	layers[0].type = EDAC_MC_LAYER_CHIP_SELECT;
++	layers[0].size = nr_csrows;
++	layers[0].is_csrow = true;
++	layers[1].type = EDAC_MC_LAYER_CHANNEL;
++	layers[1].size = nr_chans;
++	layers[1].is_csrow = false;
++
++	return new_edac_mc_alloc(edac_index, ARRAY_SIZE(layers), layers,
++			  false, sz_pvt);
++}
+ EXPORT_SYMBOL_GPL(edac_mc_alloc);
+ 
+ /**
+@@ -513,7 +686,6 @@ EXPORT_SYMBOL(edac_mc_find);
+  * edac_mc_add_mc: Insert the 'mci' structure into the mci global list and
+  *                 create sysfs entries associated with mci structure
+  * @mci: pointer to the mci structure to be added to the list
+- * @mc_idx: A unique numeric identifier to be assigned to the 'mci' structure.
+  *
+  * Return:
+  *	0	Success
+@@ -540,6 +712,8 @@ int edac_mc_add_mc(struct mem_ctl_info *mci)
+ 				edac_mc_dump_channel(&mci->csrows[i].
+ 						channels[j]);
+ 		}
++		for (i = 0; i < mci->tot_dimms; i++)
++			edac_mc_dump_dimm(&mci->dimms[i]);
+ 	}
+ #endif
+ 	mutex_lock(&mem_ctls_mutex);
+@@ -697,261 +871,249 @@ int edac_mc_find_csrow_by_page(struct mem_ctl_info *mci, unsigned long page)
+ }
+ EXPORT_SYMBOL_GPL(edac_mc_find_csrow_by_page);
+ 
+-/* FIXME - setable log (warning/emerg) levels */
+-/* FIXME - integrate with evlog: http://evlog.sourceforge.net/ */
+-void edac_mc_handle_ce(struct mem_ctl_info *mci,
+-		unsigned long page_frame_number,
+-		unsigned long offset_in_page, unsigned long syndrome,
+-		int row, int channel, const char *msg)
++const char *edac_layer_name[] = {
++	[EDAC_MC_LAYER_BRANCH] = "branch",
++	[EDAC_MC_LAYER_CHANNEL] = "channel",
++	[EDAC_MC_LAYER_SLOT] = "slot",
++	[EDAC_MC_LAYER_CHIP_SELECT] = "csrow",
++};
++EXPORT_SYMBOL_GPL(edac_layer_name);
++
++static void edac_increment_ce_error(struct mem_ctl_info *mci,
++				    bool enable_filter,
++				    unsigned pos[EDAC_MAX_LAYERS])
+ {
+-	unsigned long remapped_page;
+-	char *label = NULL;
+-	u32 grain;
++	int i, index = 0;
+ 
+-	debugf3("MC%d: %s()\n", mci->mc_idx, __func__);
++	mci->ce_mc++;
+ 
+-	/* FIXME - maybe make panic on INTERNAL ERROR an option */
+-	if (row >= mci->nr_csrows || row < 0) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: row out of range "
+-			"(%d >= %d)\n", row, mci->nr_csrows);
+-		edac_mc_handle_ce_no_info(mci, "INTERNAL ERROR");
++	if (!enable_filter) {
++		mci->ce_noinfo_count++;
+ 		return;
+ 	}
+ 
+-	if (channel >= mci->csrows[row].nr_channels || channel < 0) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: channel out of range "
+-			"(%d >= %d)\n", channel,
+-			mci->csrows[row].nr_channels);
+-		edac_mc_handle_ce_no_info(mci, "INTERNAL ERROR");
+-		return;
+-	}
+-
+-	label = mci->csrows[row].channels[channel].dimm->label;
+-	grain = mci->csrows[row].channels[channel].dimm->grain;
++	for (i = 0; i < mci->n_layers; i++) {
++		if (pos[i] < 0)
++			break;
++		index += pos[i];
++		mci->ce_per_layer[i][index]++;
+ 
+-	if (edac_mc_get_log_ce())
+-		/* FIXME - put in DIMM location */
+-		edac_mc_printk(mci, KERN_WARNING,
+-			"CE page 0x%lx, offset 0x%lx, grain %d, syndrome "
+-			"0x%lx, row %d, channel %d, label \"%s\": %s\n",
+-			page_frame_number, offset_in_page,
+-			grain, syndrome, row, channel,
+-			label, msg);
++		if (i < mci->n_layers - 1)
++			index *= mci->layers[i + 1].size;
++	}
++}
+ 
+-	mci->ce_count++;
+-	mci->csrows[row].ce_count++;
+-	mci->csrows[row].channels[channel].dimm->ce_count++;
+-	mci->csrows[row].channels[channel].ce_count++;
++static void edac_increment_ue_error(struct mem_ctl_info *mci,
++				    bool enable_filter,
++				    unsigned pos[EDAC_MAX_LAYERS])
++{
++	int i, index = 0;
+ 
+-	if (mci->scrub_mode & SCRUB_SW_SRC) {
+-		/*
+-		 * Some MC's can remap memory so that it is still available
+-		 * at a different address when PCI devices map into memory.
+-		 * MC's that can't do this lose the memory where PCI devices
+-		 * are mapped.  This mapping is MC dependent and so we call
+-		 * back into the MC driver for it to map the MC page to
+-		 * a physical (CPU) page which can then be mapped to a virtual
+-		 * page - which can then be scrubbed.
+-		 */
+-		remapped_page = mci->ctl_page_to_phys ?
+-			mci->ctl_page_to_phys(mci, page_frame_number) :
+-			page_frame_number;
++	mci->ue_mc++;
+ 
+-		edac_mc_scrub_block(remapped_page, offset_in_page, grain);
++	if (!enable_filter) {
++		mci->ce_noinfo_count++;
++		return;
+ 	}
+-}
+-EXPORT_SYMBOL_GPL(edac_mc_handle_ce);
+ 
+-void edac_mc_handle_ce_no_info(struct mem_ctl_info *mci, const char *msg)
+-{
+-	if (edac_mc_get_log_ce())
+-		edac_mc_printk(mci, KERN_WARNING,
+-			"CE - no information available: %s\n", msg);
++	for (i = 0; i < mci->n_layers; i++) {
++		if (pos[i] < 0)
++			break;
++		index += pos[i];
++		mci->ue_per_layer[i][index]++;
+ 
+-	mci->ce_noinfo_count++;
+-	mci->ce_count++;
++		if (i < mci->n_layers - 1)
++			index *= mci->layers[i + 1].size;
++	}
+ }
+-EXPORT_SYMBOL_GPL(edac_mc_handle_ce_no_info);
+ 
+-void edac_mc_handle_ue(struct mem_ctl_info *mci,
+-		unsigned long page_frame_number,
+-		unsigned long offset_in_page, int row, const char *msg)
++#define OTHER_LABEL " or "
++void edac_mc_handle_error(const enum hw_event_mc_err_type type,
++			  struct mem_ctl_info *mci,
++			  const unsigned long page_frame_number,
++			  const unsigned long offset_in_page,
++			  const unsigned long syndrome,
++			  const int layer0,
++			  const int layer1,
++			  const int layer2,
++			  const char *msg,
++			  const char *other_detail,
++			  const void *mcelog)
+ {
+-	int len = EDAC_MC_LABEL_LEN * 4;
+-	char labels[len + 1];
+-	char *pos = labels;
+-	int chan;
+-	int chars;
+-	char *label = NULL;
++	unsigned long remapped_page;
++	/* FIXME: too much for stack: move it to some pre-alocated area */
++	char detail[80], location[80];
++	char label[(EDAC_MC_LABEL_LEN + 1 + sizeof(OTHER_LABEL)) * mci->tot_dimms];
++	char *p;
++	int row = -1, chan = -1;
++	int pos[EDAC_MAX_LAYERS] = { layer0, layer1, layer2 };
++	int i;
+ 	u32 grain;
++	bool enable_filter = false;
+ 
+ 	debugf3("MC%d: %s()\n", mci->mc_idx, __func__);
+ 
+-	/* FIXME - maybe make panic on INTERNAL ERROR an option */
+-	if (row >= mci->nr_csrows || row < 0) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: row out of range "
+-			"(%d >= %d)\n", row, mci->nr_csrows);
+-		edac_mc_handle_ue_no_info(mci, "INTERNAL ERROR");
+-		return;
+-	}
+-
+-	grain = mci->csrows[row].channels[0].dimm->grain;
+-	label = mci->csrows[row].channels[0].dimm->label;
+-	chars = snprintf(pos, len + 1, "%s", label);
+-	len -= chars;
+-	pos += chars;
+-
+-	for (chan = 1; (chan < mci->csrows[row].nr_channels) && (len > 0);
+-		chan++) {
+-		label = mci->csrows[row].channels[chan].dimm->label;
+-		chars = snprintf(pos, len + 1, ":%s", label);
+-		len -= chars;
+-		pos += chars;
++	/* Check if the event report is consistent */
++	for (i = 0; i < mci->n_layers; i++) {
++		if (pos[i] >= (int)mci->layers[i].size) {
++			if (type == HW_EVENT_ERR_CORRECTED) {
++				p = "CE";
++				mci->ce_mc++;
++			} else {
++				p = "UE";
++				mci->ue_mc++;
++			}
++			edac_mc_printk(mci, KERN_ERR,
++				       "INTERNAL ERROR: %s value is out of range (%d >= %d)\n",
++				       edac_layer_name[mci->layers[i].type],
++				       pos[i], mci->layers[i].size);
++			/*
++			 * Instead of just returning it, let's use what's
++			 * known about the error. The increment routines and
++			 * the DIMM filter logic will do the right thing by
++			 * pointing the likely damaged DIMMs.
++			 */
++			pos[i] = -1;
++		}
++		if (pos[i] >= 0)
++			enable_filter = true;
+ 	}
+ 
+-	if (edac_mc_get_log_ue())
+-		edac_mc_printk(mci, KERN_EMERG,
+-			"UE page 0x%lx, offset 0x%lx, grain %d, row %d, "
+-			"labels \"%s\": %s\n", page_frame_number,
+-			offset_in_page, grain, row, labels, msg);
+-
+-	if (edac_mc_get_panic_on_ue())
+-		panic("EDAC MC%d: UE page 0x%lx, offset 0x%lx, grain %d, "
+-			"row %d, labels \"%s\": %s\n", mci->mc_idx,
+-			page_frame_number, offset_in_page,
+-			grain, row, labels, msg);
+-
+-	mci->ue_count++;
+-	mci->csrows[row].ue_count++;
+-}
+-EXPORT_SYMBOL_GPL(edac_mc_handle_ue);
++	/*
++	 * Get the dimm label/grain that applies to the match criteria.
++	 * As the error algorithm may not be able to point to just one memory,
++	 * the logic here will get all possible labels that could pottentially
++	 * be affected by the error.
++	 * On FB-DIMM memory controllers, for uncorrected errors, it is common
++	 * to have only the MC channel and the MC dimm (also called as "rank")
++	 * but the channel is not known, as the memory is arranged in pairs,
++	 * where each memory belongs to a separate channel within the same
++	 * branch.
++	 * It will also get the max grain, over the error match range
++	 */
++	grain = 0;
++	p = label;
++	*p = '\0';
++	for (i = 0; i < mci->tot_dimms; i++) {
++		struct dimm_info *dimm = &mci->dimms[i];
+ 
+-void edac_mc_handle_ue_no_info(struct mem_ctl_info *mci, const char *msg)
+-{
+-	if (edac_mc_get_panic_on_ue())
+-		panic("EDAC MC%d: Uncorrected Error", mci->mc_idx);
++		if (layer0 >= 0 && layer0 != dimm->location[0])
++			continue;
++		if (layer1 >= 0 && layer1 != dimm->location[1])
++			continue;
++		if (layer2 >= 0 && layer2 != dimm->location[2])
++			continue;
+ 
+-	if (edac_mc_get_log_ue())
+-		edac_mc_printk(mci, KERN_WARNING,
+-			"UE - no information available: %s\n", msg);
+-	mci->ue_noinfo_count++;
+-	mci->ue_count++;
+-}
+-EXPORT_SYMBOL_GPL(edac_mc_handle_ue_no_info);
++		if (dimm->grain > grain)
++			grain = dimm->grain;
+ 
+-/*************************************************************
+- * On Fully Buffered DIMM modules, this help function is
+- * called to process UE events
+- */
+-void edac_mc_handle_fbd_ue(struct mem_ctl_info *mci,
+-			unsigned int csrow,
+-			unsigned int channela,
+-			unsigned int channelb, char *msg)
+-{
+-	int len = EDAC_MC_LABEL_LEN * 4;
+-	char labels[len + 1];
+-	char *pos = labels;
+-	int chars;
+-	char *label;
+-
+-	if (csrow >= mci->nr_csrows) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: row out of range (%d >= %d)\n",
+-			csrow, mci->nr_csrows);
+-		edac_mc_handle_ue_no_info(mci, "INTERNAL ERROR");
+-		return;
++		/*
++		 * If the error is memory-controller wide, there's no sense
++		 * on seeking for the affected DIMMs, as everything may be
++		 * affected. Also, don't show errors for non-filled dimm's.
++		 */
++		if (enable_filter && dimm->nr_pages) {
++			if (p != label) {
++				strcpy(p, OTHER_LABEL);
++				p += strlen(OTHER_LABEL);
++			}
++			strcpy(p, dimm->label);
++			p += strlen(p);
++			*p = '\0';
++
++			/*
++			 * get csrow/channel of the dimm, in order to allow
++			 * incrementing the compat API counters
++			 */
++			debugf4("%s: dimm csrows (%d,%d)\n",
++				__func__, dimm->csrow, dimm->cschannel);
++			if (row == -1)
++				row = dimm->csrow;
++			else if (row >= 0 && row != dimm->csrow)
++				row = -2;
++			if (chan == -1)
++				chan = dimm->cschannel;
++			else if (chan >= 0 && chan != dimm->cschannel)
++				chan = -2;
++		}
+ 	}
+-
+-	if (channela >= mci->csrows[csrow].nr_channels) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: channel-a out of range "
+-			"(%d >= %d)\n",
+-			channela, mci->csrows[csrow].nr_channels);
+-		edac_mc_handle_ue_no_info(mci, "INTERNAL ERROR");
+-		return;
++	if (!enable_filter) {
++		strcpy(label, "any memory");
++	} else {
++		debugf4("%s: csrow/channel to increment: (%d,%d)\n",
++			__func__, row, chan);
++		if (p == label)
++			strcpy(label, "unknown memory");
++		if (type == HW_EVENT_ERR_CORRECTED) {
++			if (row >= 0) {
++				mci->csrows[row].ce_count++;
++				if (chan >= 0)
++					mci->csrows[row].channels[chan].ce_count++;
++			}
++		} else
++			if (row >= 0)
++				mci->csrows[row].ue_count++;
+ 	}
+ 
+-	if (channelb >= mci->csrows[csrow].nr_channels) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: channel-b out of range "
+-			"(%d >= %d)\n",
+-			channelb, mci->csrows[csrow].nr_channels);
+-		edac_mc_handle_ue_no_info(mci, "INTERNAL ERROR");
+-		return;
++	/* Fill the RAM location data */
++	p = location;
++	for (i = 0; i < mci->n_layers; i++) {
++		if (pos[i] < 0)
++			continue;
++		p += sprintf(p, "%s %d ",
++			     edac_layer_name[mci->layers[i].type],
++			     pos[i]);
+ 	}
+ 
+-	mci->ue_count++;
+-	mci->csrows[csrow].ue_count++;
+-
+-	/* Generate the DIMM labels from the specified channels */
+-	label = mci->csrows[csrow].channels[channela].dimm->label;
+-	chars = snprintf(pos, len + 1, "%s", label);
+-	len -= chars;
+-	pos += chars;
+-
+-	chars = snprintf(pos, len + 1, "-%s",
+-			mci->csrows[csrow].channels[channelb].dimm->label);
+-
+-	if (edac_mc_get_log_ue())
+-		edac_mc_printk(mci, KERN_EMERG,
+-			"UE row %d, channel-a= %d channel-b= %d "
+-			"labels \"%s\": %s\n", csrow, channela, channelb,
+-			labels, msg);
+-
+-	if (edac_mc_get_panic_on_ue())
+-		panic("UE row %d, channel-a= %d channel-b= %d "
+-			"labels \"%s\": %s\n", csrow, channela,
+-			channelb, labels, msg);
+-}
+-EXPORT_SYMBOL(edac_mc_handle_fbd_ue);
++	/* Memory type dependent details about the error */
++	if (type == HW_EVENT_ERR_CORRECTED)
++		snprintf(detail, sizeof(detail),
++			"page 0x%lx offset 0x%lx grain %d syndrome 0x%lx",
++			page_frame_number, offset_in_page,
++			grain, syndrome);
++	else
++		snprintf(detail, sizeof(detail),
++			"page 0x%lx offset 0x%lx grain %d",
++			page_frame_number, offset_in_page, grain);
++
++	if (type == HW_EVENT_ERR_CORRECTED) {
++		if (edac_mc_get_log_ce())
++			edac_mc_printk(mci, KERN_WARNING,
++				       "CE %s on %s (%s%s %s)\n",
++				       msg, label, location,
++				       detail, other_detail);
++		edac_increment_ce_error(mci, enable_filter, pos);
++
++		if (mci->scrub_mode & SCRUB_SW_SRC) {
++			/*
++			 * Some MC's can remap memory so that it is still
++			 * available at a different address when PCI devices
++			 * map into memory.
++			 * MC's that can't do this lose the memory where PCI
++			 * devices are mapped. This mapping is MC dependent
++			 * and so we call back into the MC driver for it to
++			 * map the MC page to a physical (CPU) page which can
++			 * then be mapped to a virtual page - which can then
++			 * be scrubbed.
++			 */
++			remapped_page = mci->ctl_page_to_phys ?
++				mci->ctl_page_to_phys(mci, page_frame_number) :
++				page_frame_number;
++
++			edac_mc_scrub_block(remapped_page,
++					    offset_in_page, grain);
++		}
++	} else {
++		if (edac_mc_get_log_ue())
++			edac_mc_printk(mci, KERN_WARNING,
++				"UE %s on %s (%s%s %s)\n",
++				msg, label, location, detail, other_detail);
+ 
+-/*************************************************************
+- * On Fully Buffered DIMM modules, this help function is
+- * called to process CE events
+- */
+-void edac_mc_handle_fbd_ce(struct mem_ctl_info *mci,
+-			unsigned int csrow, unsigned int channel, char *msg)
+-{
+-	char *label = NULL;
++		if (edac_mc_get_panic_on_ue())
++			panic("UE %s on %s (%s%s %s)\n",
++			      msg, label, location, detail, other_detail);
+ 
+-	/* Ensure boundary values */
+-	if (csrow >= mci->nr_csrows) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: row out of range (%d >= %d)\n",
+-			csrow, mci->nr_csrows);
+-		edac_mc_handle_ce_no_info(mci, "INTERNAL ERROR");
+-		return;
++		edac_increment_ue_error(mci, enable_filter, pos);
+ 	}
+-	if (channel >= mci->csrows[csrow].nr_channels) {
+-		/* something is wrong */
+-		edac_mc_printk(mci, KERN_ERR,
+-			"INTERNAL ERROR: channel out of range (%d >= %d)\n",
+-			channel, mci->csrows[csrow].nr_channels);
+-		edac_mc_handle_ce_no_info(mci, "INTERNAL ERROR");
+-		return;
+-	}
+-
+-	label = mci->csrows[csrow].channels[channel].dimm->label;
+-
+-	if (edac_mc_get_log_ce())
+-		/* FIXME - put in DIMM location */
+-		edac_mc_printk(mci, KERN_WARNING,
+-			"CE row %d, channel %d, label \"%s\": %s\n",
+-			csrow, channel, label, msg);
+-
+-	mci->ce_count++;
+-	mci->csrows[csrow].ce_count++;
+-	mci->csrows[csrow].channels[channel].dimm->ce_count++;
+-	mci->csrows[csrow].channels[channel].ce_count++;
+ }
+-EXPORT_SYMBOL(edac_mc_handle_fbd_ce);
++EXPORT_SYMBOL_GPL(edac_mc_handle_error);
+diff --git a/include/linux/edac.h b/include/linux/edac.h
+index 0fdf6ba..1439670 100644
+--- a/include/linux/edac.h
++++ b/include/linux/edac.h
+@@ -392,18 +392,20 @@ struct edac_mc_layer {
+ /* FIXME: add the proper per-location error counts */
+ struct dimm_info {
+ 	char label[EDAC_MC_LABEL_LEN + 1];	/* DIMM label on motherboard */
+-	unsigned memory_controller;
+-	unsigned csrow;
+-	unsigned csrow_channel;
++
++	/* Memory location data */
++	unsigned location[EDAC_MAX_LAYERS];
++
++	struct mem_ctl_info *mci;	/* the parent */
+ 
+ 	u32 grain;		/* granularity of reported error in bytes */
+ 	enum dev_type dtype;	/* memory device type */
+ 	enum mem_type mtype;	/* memory dimm type */
+ 	enum edac_type edac_mode;	/* EDAC mode for this dimm */
+ 
+-	u32 nr_pages;			/* number of pages in csrow */
++	u32 nr_pages;			/* number of pages on this dimm */
+ 
+-	u32 ce_count;		/* Correctable Errors for this dimm */
++	unsigned csrow, cschannel;	/* Points to the old API data */
+ };
+ 
+ /**
+@@ -423,9 +425,10 @@ struct dimm_info {
+  */
+ struct rank_info {
+ 	int chan_idx;
+-	u32 ce_count;
+ 	struct csrow_info *csrow;
+ 	struct dimm_info *dimm;
++
++	u32 ce_count;		/* Correctable Errors for this csrow */
+ };
+ 
+ struct csrow_info {
+@@ -477,6 +480,11 @@ struct mcidev_sysfs_attribute {
+         ssize_t (*store)(struct mem_ctl_info *, const char *,size_t);
+ };
+ 
++struct edac_hierarchy {
++	char		*name;
++	unsigned	nr;
++};
++
+ /* MEMORY controller information structure
+  */
+ struct mem_ctl_info {
+@@ -521,13 +529,16 @@ struct mem_ctl_info {
+ 	unsigned long (*ctl_page_to_phys) (struct mem_ctl_info * mci,
+ 					   unsigned long page);
+ 	int mc_idx;
+-	int nr_csrows;
+ 	struct csrow_info *csrows;
++	unsigned nr_csrows, num_cschannel;
+ 
++	/* Memory Controller hierarchy */
++	unsigned n_layers;
++	struct edac_mc_layer *layers;
+ 	/*
+ 	 * DIMM info. Will eventually remove the entire csrows_info some day
+ 	 */
+-	unsigned nr_dimms;
++	unsigned tot_dimms;
+ 	struct dimm_info *dimms;
+ 
+ 	/*
+@@ -542,12 +553,15 @@ struct mem_ctl_info {
+ 	const char *dev_name;
+ 	char proc_name[MC_PROC_NAME_MAX_LEN + 1];
+ 	void *pvt_info;
+-	u32 ue_noinfo_count;	/* Uncorrectable Errors w/o info */
+-	u32 ce_noinfo_count;	/* Correctable Errors w/o info */
+-	u32 ue_count;		/* Total Uncorrectable Errors for this MC */
+-	u32 ce_count;		/* Total Correctable Errors for this MC */
++	u32 ue_count;           /* Total Uncorrectable Errors for this MC */
++	u32 ce_count;           /* Total Correctable Errors for this MC */
+ 	unsigned long start_time;	/* mci load start time (in jiffies) */
+ 
++	/* drivers shouldn't access this struct directly */
++	unsigned ce_noinfo_count, ue_noinfo_count;
++	unsigned ce_mc, ue_mc;
++	u32 *ce_per_layer[EDAC_MAX_LAYERS], *ue_per_layer[EDAC_MAX_LAYERS];
++
+ 	struct completion complete;
+ 
+ 	/* edac sysfs device control */
+@@ -560,7 +574,7 @@ struct mem_ctl_info {
+ 	 * by the low level driver.
+ 	 *
+ 	 * Set by the low level driver to provide attributes at the
+-	 * controller level, same level as 'ue_count' and 'ce_count' above.
++	 * controller level.
+ 	 * An array of structures, NULL terminated
+ 	 *
+ 	 * If attributes are desired, then set to array of attributes
 -- 
-1.7.9.5
+1.7.8
