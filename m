@@ -1,31 +1,17 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9D063B7036
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:27:50 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Mon, 16 Apr 2012 08:23:16 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3G8LGPu733284
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:21:16 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3G8Rmtr020309
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:27:48 +1000
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH 2/2] [47x] Enable CRASH_DUMP
-To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 16 Apr 2012 13:57:35 +0530
-Message-ID: <20120416082723.27331.96471.stgit@suzukikp.in.ibm.com>
-In-Reply-To: <20120416082449.27331.12488.stgit@suzukikp.in.ibm.com>
-References: <20120416082449.27331.12488.stgit@suzukikp.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 8E703B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:37:40 +1000 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1334552674-24107-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1334552674-24107-1-git-send-email-paul.gortmaker@windriver.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] powerpc: fix system.h fallout in sysdev/scom.c
+ [chroma_defconfig]
+Date: Mon, 16 Apr 2012 09:37:33 +0100
+Message-ID: <8886.1334565453@redhat.com>
+Sender: dhowells@redhat.com
+Cc: dhowells@redhat.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,25 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have KEXEC and relocatable kernel working on 47x (!SMP)
-enable CRASH_DUMP.
+Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
 
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
----
+> The following shows up in chroma_defconfig:
+> 
+>  CC      arch/powerpc/sysdev/scom.o
+> arch/powerpc/sysdev/scom.c: In function 'scom_debug_init':
+> arch/powerpc/sysdev/scom.c:182:36: error: 'powerpc_debugfs_root' undeclared (first use in this function)
+> arch/powerpc/sysdev/scom.c:182:36: note: each undeclared identifier is reported only once for each function it appears in
+> make[2]: *** [arch/powerpc/sysdev/scom.o] Error 1
+> make[1]: *** [arch/powerpc/sysdev/scom.o] Error 2
+> 
+> A bisect leads to commit 9ffc93f203c18a70623f21950f1dd473c9ec48cd
+> 
+>     "Remove all #inclusions of asm/system.h"
+> 
+> Add the debug header which contains powerpc_debugfs_root.
+> 
+> Cc: David Howells <dhowells@redhat.com>
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
- arch/powerpc/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4f64860..629543a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -368,7 +368,7 @@ config KEXEC
- 
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
--	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP && !PPC_47x)
-+	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
- 	select RELOCATABLE if PPC64 || 44x
- 	select DYNAMIC_MEMSTART if FSL_BOOKE
- 	help
+Acked-by: David Howells <dhowells@redhat.com>
