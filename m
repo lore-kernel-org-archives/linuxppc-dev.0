@@ -1,30 +1,24 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 800F6B7003
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 17:49:00 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Mon, 16 Apr 2012 07:41:02 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3G7mcfP19792050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 17:48:38 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3G7mbjV001030
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 17:48:37 +1000
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH] [44x][KEXEC] Fix/Initialize PID to kernel PID before the TLB
- search
-To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 16 Apr 2012 13:18:21 +0530
-Message-ID: <20120416074720.1517.90935.stgit@suzukikp.in.ibm.com>
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource.wolfsonmicro.com (opensource.wolfsonmicro.com
+ [80.75.67.52]) by ozlabs.org (Postfix) with ESMTP id 6E5E7B6FDF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:21:07 +1000 (EST)
+Date: Mon, 16 Apr 2012 09:15:32 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] gpiolib/arches: Centralise bolierplate asm/gpio.h
+Message-ID: <20120416081532.GA3238@opensource.wolfsonmicro.com>
+References: <1334483574-3997-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
+In-Reply-To: <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
+Cc: linux-arch@vger.kernel.org, Grant Likely <grant@secretlab.ca>,
+ linux-ia64@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
+ Chris Zankel <chris@zankel.net>, microblaze-uclinux@itee.uq.edu.au,
+ linux@lists.openrisc.net, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,41 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Initialize the PID register with kernel pid (0) before we start
-setting the TLB mapping for KEXEC. Also set the MMUCR[TID] to kernel
-PID.
 
-This was spotted while testing the kexec on ISS for 47x. ISS  doesn't
-return a successful tlbsx for a kernel address with PID set to a user PID.
-Though the hardware/qemu/simics work fine.
+--SLDf9lqlvOQaIe6s
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-This patch is harmless and initializes the PID to 0 (kernel PID) which
-is usually the case during a normal kernel boot. This would fix the kexec
-on ISS for 440. I have tested this patch on sequoia board.
+On Mon, Apr 16, 2012 at 09:21:58AM +0200, Linus Walleij wrote:
 
-Signed-off-by: Suzuki K Poulose <suzuki@in.ibm.com>
-Cc:	Josh Boyer <jwboyer@us.ibm.com>
----
+> This looks good but I think we need to page the alpha, ia64, m68k, microblaze,
+> openrisc etc subarch maintainers on this patch so they have their say.
 
- arch/powerpc/kernel/misc_32.S |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+That's why I CCed linux-arch, to get all the architecture maintainers
+included.  vger would get upset if I CCed everyone individually.
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 7cd07b4..d7e05d2 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -761,8 +761,12 @@ relocate_new_kernel:
- 	mr	r30, r4
- 	mr	r31, r5
- 
--	/* Load our MSR_IS and TID to MMUCR for TLB search */
--	mfspr	r3,SPRN_PID
-+	/* 
-+	 * Load the PID with kernel PID (0).
-+	 * Also load our MSR_IS and TID to MMUCR for TLB search.
-+	 */
-+	li	r3, 0
-+	mtspr	SPRN_PID, r3
- 	mfmsr	r4
- 	andi.	r4,r4,MSR_IS@l
- 	beq	wmmucr
+--SLDf9lqlvOQaIe6s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBAgAGBQJPi9UcAAoJEBus8iNuMP3dwnAP/2dv6D/vCKCnVow62FY69z5M
+6VwwMtgSOYJ68+/oGt/n45g/bTZoF2+eZAgN9Tljjdn/aVWj7YxWSvrNMnSIk3sP
+Lr0QYsbTaD+TNA1I39DUrENH/hA0sm4XDIxlE1swMs3stcqt+SrNT8i9bcZTG9bV
+71Y2Dsrwg4uyU2Sq0szL6S0fTgSe5c8bz9LlVInrSpiSoqkUB+D0UAyRQBHTlYnl
+GqmpyVmh938NjZT8tDeCtQ9VhTabsxtzP359JsshSbXpSYrsV/epKY83b1OzTPFw
+tG8gPANoy2N6CSNvdC60y6ZXF+WtIZsooQXDWK/rd2pDQgShQxkXknDHYvnZC2L6
+W2a4abHw99U9kT7pUzpWSKhkcFYbwEhbWD54beMN5UwEao1YhLmL0OOxs9hU3n7X
+96xZL6Pk/4Gv8qFtuJndHEwY0kt0VAujFLiz01ZUbrzZp8Ea30yQnF2ZoZTCVsWx
+GvG99k6EIfke/Jx+/iwU1xuTZUXqas/2jZ8gHpbvD9Njd6FqToJzm8lE2FDxfUip
++KnOSqrkPf4X5v/ycWmJpzcYJ1RgwXfRAG5UbcpWQqGEwTyaXmzqkmIoe4vMbidl
+yHSF9Va4ptGrMrETzdNAe2NEB1GTJAdrIpzxAPV0a2xBMN/E9vje2BjCkfp3iMqf
+JWhB4suNDfmlpLGNPLm4
+=BiWD
+-----END PGP SIGNATURE-----
+
+--SLDf9lqlvOQaIe6s--
