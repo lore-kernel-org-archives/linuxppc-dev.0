@@ -2,22 +2,20 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D3FAB6FDB
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2012 23:01:45 +1000 (EST)
-Subject: Re: [PATCH 13/17] KVM: PPC: Allow book3s_hv guests to use SMT
- processor modes
+ by ozlabs.org (Postfix) with ESMTPS id 79529B7020
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 23:22:10 +1000 (EST)
+Subject: Re: [PATCH v2] KVM: PPC: Use clockevent multiplier and shifter for
+ decrementer
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20120416121315.GA26814@bloggs.ozlabs.ibm.com>
-Date: Mon, 16 Apr 2012 15:01:40 +0200
-Message-Id: <08398386-4467-4A80-8606-2C9CAA44AB10@suse.de>
-References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
- <20110629102307.GN25406@bloggs.ozlabs.ibm.com>
- <056AF183-5218-457B-9501-B0FF5ED455E9@suse.de>
- <20120416121315.GA26814@bloggs.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+In-Reply-To: <1333946027-20674-1-git-send-email-bharat.bhushan@freescale.com>
+Date: Mon, 16 Apr 2012 15:22:05 +0200
+Message-Id: <C97BA032-96CE-4A02-862A-AB77C84D53A8@suse.de>
+References: <1333946027-20674-1-git-send-email-bharat.bhushan@freescale.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,47 +26,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 16.04.2012, at 14:13, Paul Mackerras wrote:
+On 09.04.2012, at 06:33, Bharat Bhushan wrote:
 
-> On Mon, Apr 16, 2012 at 11:45:44AM +0200, Alexander Graf wrote:
+> Time for which the hrtimer is started for decrementer emulation is =
+calculated using tb_ticks_per_usec. While hrtimer uses the clockevent =
+for DEC reprogramming (if needed) and which calculate timebase ticks =
+using the multiplier and shifter mechanism implemented within clockevent =
+layer. It was observed that this conversion (timebase->time->timebase) =
+are not correct because the mechanism are not consistent. In our setup =
+it adds 2% jitter.
 >=20
->> While trying to trace down why some BookE systems were only able to
->> do as many guest vcpus as there were host cpus available, we
->> stumbled over this one. Is there any limitation on book3s_hv that
->> would limit the available vcpus to configured host vcpus? Or could
->> we just make this a static define like on x86?
+> With this patch clockevent multiplier and shifter mechanism are used =
+when starting hrtimer for decrementer emulation. Now the jitter is < =
+0.5%.
 >=20
-> There is no limitation.  I did it like that so that we would be able
-> to have a large number of vcpus on kernels configured for large
-> systems, while not using up large amounts of memory if the kernel is
-> configured for a small system.  The memory consumption is 8 bytes per
-> vcore in each struct kvm if book3s_hv is configured.
+> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> ---
+> v2:
+> - decrementer_clockevent is made non-static rather than a seprate API =
+to get mult/shift
+>=20
+> arch/powerpc/include/asm/time.h |    1 +
+> arch/powerpc/kernel/time.c      |    2 +-
+> arch/powerpc/kvm/emulate.c      |    5 +++--
+> 3 files changed, 5 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/time.h =
+b/arch/powerpc/include/asm/time.h
+> index 7eb10fb..b3c7959 100644
+> --- a/arch/powerpc/include/asm/time.h
+> +++ b/arch/powerpc/include/asm/time.h
+> @@ -28,6 +28,7 @@
+> extern unsigned long tb_ticks_per_jiffy;
+> extern unsigned long tb_ticks_per_usec;
+> extern unsigned long tb_ticks_per_sec;
+> +extern struct clock_event_device decrementer_clockevent;
+>=20
+> struct rtc_time;
+> extern void to_tm(int tim, struct rtc_time * tm);
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 567dd7c..e237225 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -105,7 +105,7 @@ static int decrementer_set_next_event(unsigned =
+long evt,
+> static void decrementer_set_mode(enum clock_event_mode mode,
+> 				 struct clock_event_device *dev);
+>=20
+> -static struct clock_event_device decrementer_clockevent =3D {
+> +struct clock_event_device decrementer_clockevent =3D {
 
-8 * 256 =3D 2048. So for a limit similar to that of x86 we'd waste 2kb =
-per VM. Doesn't sound all too horrible to me.
+This one also needs a EXPORT_SYMBOL ...
 
-> We can make it a fixed constant if you like, but then the question is
-> how do you choose that constant so as to allow us to have many vcpus
-> on large systems but still not waste too much memory on small systems.
-> Or it could be max(N, NR_CPUS) for a suitable N (e.g. 16 or 32).
+> 	.name           =3D "decrementer",
+> 	.rating         =3D 200,
+> 	.irq            =3D 0,
+> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+> index afc9154..c8b5206 100644
+> --- a/arch/powerpc/kvm/emulate.c
+> +++ b/arch/powerpc/kvm/emulate.c
+> @@ -23,6 +23,7 @@
+> #include <linux/types.h>
+> #include <linux/string.h>
+> #include <linux/kvm_host.h>
+> +#include <linux/clockchips.h>
+>=20
+> #include <asm/reg.h>
+> #include <asm/time.h>
+> @@ -104,8 +105,8 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+> 	 */
+>=20
+> 	dec_time =3D vcpu->arch.dec;
+> -	dec_time *=3D 1000;
+> -	do_div(dec_time, tb_ticks_per_usec);
+> +	dec_time =3D dec_time << decrementer_clockevent.shift;
+> +	do_div(dec_time, decrementer_clockevent.mult);
 
-Hrm. Usually we have 2 machine types:
+... because emulate.c can be built as a module.
 
-  1) Small system with very low NR_CPUS. These systems should be able to =
-do some overcommit at least. I'd go with a static number here, like 16 =
-or 64.
-  2) Big systems with very high NR_CPUS. Here going larger than NR_CPUS =
-doesn't make all that much sense anymore. I'd use NR_CPUS as limit.
-
-So how about something like
-
-#if NR_CPUS > 64
-#define KVM_MAX_VCPUS NR_CPUS
-#else
-#define KVM_MAX_VCPUS 64
-#endif
-
-
-That way everyone should be happy and we have a reasonable limit.
 
 Alex
