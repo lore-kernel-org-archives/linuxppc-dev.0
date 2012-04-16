@@ -1,27 +1,30 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
- [209.85.160.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1133B7008
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 17:22:01 +1000 (EST)
-Received: by ghbg19 with SMTP id g19so2393453ghb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 00:21:59 -0700 (PDT)
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 800F6B7003
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 17:49:00 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Mon, 16 Apr 2012 07:41:02 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3G7mcfP19792050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 17:48:38 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3G7mbjV001030
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 17:48:37 +1000
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [PATCH] [44x][KEXEC] Fix/Initialize PID to kernel PID before the TLB
+ search
+To: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 16 Apr 2012 13:18:21 +0530
+Message-ID: <20120416074720.1517.90935.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1334483574-3997-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1334483574-3997-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Date: Mon, 16 Apr 2012 09:21:58 +0200
-Message-ID: <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
-Subject: Re: [PATCH] gpiolib/arches: Centralise bolierplate asm/gpio.h
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, Grant Likely <grant@secretlab.ca>,
- linux-ia64@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
- Chris Zankel <chris@zankel.net>, microblaze-uclinux@itee.uq.edu.au,
- linux@lists.openrisc.net, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 15, 2012 at 11:52 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
+Initialize the PID register with kernel pid (0) before we start
+setting the TLB mapping for KEXEC. Also set the MMUCR[TID] to kernel
+PID.
 
-> Rather than requiring architectures that use gpiolib but don't have any
-> need to define anything custom to copy an asm/gpio.h provide a Kconfig
-> symbol which architectures must select in order to include gpio.h and
-> for other architectures just provide the trivial implementation directly.
->
-> This makes it much easier to do gpiolib updates and is also a step toward=
-s
-> making gpiolib APIs available on every architecture.
->
-> For architectures with existing boilerplate code leave a stub header in
-> place which warns on direct inclusion of asm/gpio.h and includes
-> linux/gpio.h to catch code that's doing this. =A0Direct inclusion of
-> asm/gpio.h has long been deprecated.
->
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
-> =A0arch/alpha/include/asm/gpio.h =A0 =A0 =A0| =A0 59 ++------------------=
-----------
-> =A0arch/arm/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A01 +
-> =A0arch/avr32/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A01 +
-> =A0arch/blackfin/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A01 +
-> =A0arch/ia64/include/asm/gpio.h =A0 =A0 =A0 | =A0 59 ++------------------=
-----------
-> =A0arch/m68k/Kconfig.cpu =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A01 +
-> =A0arch/microblaze/include/asm/gpio.h | =A0 57 ++------------------------=
+This was spotted while testing the kexec on ISS for 47x. ISS  doesn't
+return a successful tlbsx for a kernel address with PID set to a user PID.
+Though the hardware/qemu/simics work fine.
+
+This patch is harmless and initializes the PID to 0 (kernel PID) which
+is usually the case during a normal kernel boot. This would fix the kexec
+on ISS for 440. I have tested this patch on sequoia board.
+
+Signed-off-by: Suzuki K Poulose <suzuki@in.ibm.com>
+Cc:	Josh Boyer <jwboyer@us.ibm.com>
 ---
-> =A0arch/mips/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A01 +
-> =A0arch/openrisc/include/asm/gpio.h =A0 | =A0 69 ++----------------------=
------------
-> =A0arch/powerpc/include/asm/gpio.h =A0 =A0| =A0 57 ++--------------------=
--------
-> =A0arch/sh/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A01 +
-> =A0arch/sparc/include/asm/gpio.h =A0 =A0 =A0| =A0 40 ++------------------=
--
-> =A0arch/unicore32/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A01 +
-> =A0arch/x86/include/asm/gpio.h =A0 =A0 =A0 =A0| =A0 57 ++----------------=
------------
-> =A0arch/xtensa/include/asm/gpio.h =A0 =A0 | =A0 60 ++--------------------=
----------
-> =A0drivers/gpio/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A08 ++++
-> =A0include/linux/gpio.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 34 ++++++++++++=
-+++++
-> =A017 files changed, 81 insertions(+), 426 deletions(-)
 
-This looks good but I think we need to page the alpha, ia64, m68k, microbla=
-ze,
-openrisc etc subarch maintainers on this patch so they have their say.
+ arch/powerpc/kernel/misc_32.S |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-Yours,
-Linus Walleij
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 7cd07b4..d7e05d2 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -761,8 +761,12 @@ relocate_new_kernel:
+ 	mr	r30, r4
+ 	mr	r31, r5
+ 
+-	/* Load our MSR_IS and TID to MMUCR for TLB search */
+-	mfspr	r3,SPRN_PID
++	/* 
++	 * Load the PID with kernel PID (0).
++	 * Also load our MSR_IS and TID to MMUCR for TLB search.
++	 */
++	li	r3, 0
++	mtspr	SPRN_PID, r3
+ 	mfmsr	r4
+ 	andi.	r4,r4,MSR_IS@l
+ 	beq	wmmucr
