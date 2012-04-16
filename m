@@ -1,29 +1,29 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
- [209.85.161.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A2955B6FDF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:26:05 +1000 (EST)
-Received: by ggni2 with SMTP id i2so2413587ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 01:26:02 -0700 (PDT)
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 60B44B7032
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:27:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Mon, 16 Apr 2012 08:22:13 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3G8R6O414745768
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:27:06 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3G8R5P3017255
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:27:06 +1000
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [PATCH 0/2] Kdump support for 47x
+To: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 16 Apr 2012 13:56:52 +0530
+Message-ID: <20120416082449.27331.12488.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20120416081532.GA3238@opensource.wolfsonmicro.com>
-References: <1334483574-3997-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
- <20120416081532.GA3238@opensource.wolfsonmicro.com>
-Date: Mon, 16 Apr 2012 10:26:02 +0200
-Message-ID: <CACRpkdb8q4bKSBctBV0V5KrbS-r-P_b_+N75UV58ryxK+jz+8A@mail.gmail.com>
-Subject: Re: [PATCH] gpiolib/arches: Centralise bolierplate asm/gpio.h
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, Grant Likely <grant@secretlab.ca>,
- linux-ia64@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
- Chris Zankel <chris@zankel.net>, microblaze-uclinux@itee.uq.edu.au,
- linux@lists.openrisc.net, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,19 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 16, 2012 at 10:15 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Mon, Apr 16, 2012 at 09:21:58AM +0200, Linus Walleij wrote:
->
->> This looks good but I think we need to page the alpha, ia64, m68k, micro=
-blaze,
->> openrisc etc subarch maintainers on this patch so they have their say.
->
-> That's why I CCed linux-arch, to get all the architecture maintainers
-> included. =A0vger would get upset if I CCed everyone individually.
+The following series implements Kexec/Kdump support for
+PPC_47x based platforms. Doesn't support SMP yet.
 
-Oh I missed it. I looped in a few maintainers and arch lists anyway.
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+I have tested these patches on the following simulators:
+        1) simics
+        2) IBM ISS for ppc476.
 
-Thanks!
-Linus Walleij
+Changes since V1:
+ * Initialize the SPRN_PID to kernel pid (0) before the TLB operations in
+   setup_map_47x
+
+
+---
+
+Suzuki K. Poulose (2):
+      [47x] Enable CRASH_DUMP
+      [47x] Kernel support for KEXEC
+
+
+ arch/powerpc/Kconfig          |    4 -
+ arch/powerpc/kernel/misc_32.S |  195 ++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 191 insertions(+), 8 deletions(-)
+
+-- 
+Suzuki K. Poulose
