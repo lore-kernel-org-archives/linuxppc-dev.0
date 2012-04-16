@@ -1,21 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EBA10B700F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 05:53:37 +1000 (EST)
-Message-ID: <4F8C78B3.1070002@freescale.com>
-Date: Mon, 16 Apr 2012 14:53:23 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v4 1/4] powerpc/85xx: add HOTPLUG_CPU support
-References: <1331889732-25240-1-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1331889732-25240-1-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
+ [209.85.210.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A98EEB7025
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 06:13:23 +1000 (EST)
+Received: by dang27 with SMTP id g27so8266190dan.15
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 13:13:21 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+To: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/8xx: Fix NR_IRQ bugs and refactor 8xx interrupt
+ controller
+Date: Mon, 16 Apr 2012 14:13:17 -0600
+Message-Id: <1334607198-18694-1-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,119 +24,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/16/2012 04:22 AM, Zhao Chenhui wrote:
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 4eecaaa..3d4c497 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -219,7 +219,8 @@ config ARCH_HIBERNATION_POSSIBLE
->  config ARCH_SUSPEND_POSSIBLE
->  	def_bool y
->  	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
-> -		   (PPC_85xx && !SMP) || PPC_86xx || PPC_PSERIES || 44x || 40x
-> +		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
-> +		   || 44x || 40x
->  
->  config PPC_DCR_NATIVE
->  	bool
-> @@ -330,7 +331,8 @@ config SWIOTLB
->  
->  config HOTPLUG_CPU
->  	bool "Support for enabling/disabling CPUs"
-> -	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC || PPC_POWERNV)
-> +	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || \
-> +	PPC_PMAC || PPC_POWERNV || PPC_85xx)
+The mpc8xx driver uses a reference to NR_IRQS that is buggy.  It uses
+NR_IRQs for the array size of the ppc_cached_irq_mask bitmap, but
+NR_IRQs could be smaller than the number of hardware irqs that
+ppc_cached_irq_mask tracks.
 
-No e500mc exclusion on HOTPLUG_CPU?  I don't see where this depends on
-ARCH_SUSPEND_POSSIBLE.
+Also, while fixing that problem, it became apparent that the interrupt
+controller only supports 32 interrupt numbers, but it is written as if
+it supports multiple register banks which is more complicated.
 
->  	---help---
->  	  Say Y here to be able to disable and re-enable individual
->  	  CPUs at runtime on SMP machines.
-> diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-> index ab9e402..57b5dd7 100644
-> --- a/arch/powerpc/include/asm/cacheflush.h
-> +++ b/arch/powerpc/include/asm/cacheflush.h
-> @@ -30,6 +30,12 @@ extern void flush_dcache_page(struct page *page);
->  #define flush_dcache_mmap_lock(mapping)		do { } while (0)
->  #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
->  
-> +#ifdef CONFIG_FSL_BOOKE
-> +extern void flush_disable_L1(void);
-> +#else
-> +#define flush_disable_L1()		do { } while (0)
-> +#endif
+This patch pulls out the buggy reference to NR_IRQs and fixes the size
+of the ppc_cached_irq_mask to match the number of HW irqs.  It also
+drops the now-unnecessary code since ppc_cached_irq_mask is no longer
+an array.
 
-When would we want this to be a no-op?  Shouldn't you get an error if
-you try to do this without an implementation, rather than silently
-corrupt your cache?
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/mpc8xx_pic.c |   61 +++++++++++++-------------------------
+ 1 file changed, 21 insertions(+), 40 deletions(-)
 
-There's an existing __flush_disable_L1() for 6xx.  Let's not introduce a
-different spelling of the same thing for no good reason -- even if those
-leading underscores are annoying and pointless. :-)
-
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +	/* Corresponding to generic_set_cpu_dead() */
-> +	generic_set_cpu_up(nr);
-> +
-> +	if (system_state == SYSTEM_RUNNING) {
-> +		out_be32(&spin_table->addr_l, 0);
-> +
-> +		/*
-> +		 * We don't set the BPTR register here upon it points
-> +		 * to the boot page properly.
-> +		 */
-> +		mpic_reset_core(hw_cpu);
-
-What if we don't have an MPIC?  What if MPIC support isn't present in
-the kernel, even if we never run this code?
-
-Also, can you limit the hard core reset to cases that really need it?
-
->  struct smp_ops_t smp_85xx_ops = {
->  	.kick_cpu = smp_85xx_kick_cpu,
-> -#ifdef CONFIG_KEXEC
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +	.cpu_disable	= generic_cpu_disable,
-> +	.cpu_die	= generic_cpu_die,
-> +#endif
->  	.give_timebase	= smp_generic_give_timebase,
->  	.take_timebase	= smp_generic_take_timebase,
-> -#endif
->  };
-
-We need to stop using smp_generic_give/take_timebase, not expand its
-use.  This stuff breaks under hypervisors where timebase can't be
-written.  It wasn't too bad before since we generally didn't enable
-CONFIG_KEXEC, but we're more likely to want CONFIG_HOTPLUG_CPU.
-
-Do the timebase sync the way U-Boot does -- if you find the appropriate
-guts node in the device tree.
-
->  
->  #ifdef CONFIG_KEXEC
-> @@ -218,8 +283,7 @@ static void mpc85xx_smp_machine_kexec(struct kimage *image)
->  }
->  #endif /* CONFIG_KEXEC */
->  
-> -static void __init
-> -smp_85xx_setup_cpu(int cpu_nr)
-> +static void __cpuinit smp_85xx_setup_cpu(int cpu_nr)
->  {
->  	if (smp_85xx_ops.probe == smp_mpic_probe)
->  		mpic_setup_this_cpu();
-> @@ -249,6 +313,10 @@ void __init mpc85xx_smp_init(void)
->  		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
->  	}
->  
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +	ppc_md.cpu_die		= smp_85xx_mach_cpu_die;
-> +#endif
-
-Do not set this unconditionally without checking that you're on
-e500v1/e500v2 (or at least that you have the NAP cputable flag, and an
-MPIC if you're going to rely on that).
-
-The kconfig exclusion is at best a temporary hack.
-
--Scott
+diff --git a/arch/powerpc/sysdev/mpc8xx_pic.c b/arch/powerpc/sysdev/mpc8xx_pic.c
+index d5f5416..91cade8 100644
+--- a/arch/powerpc/sysdev/mpc8xx_pic.c
++++ b/arch/powerpc/sysdev/mpc8xx_pic.c
+@@ -18,69 +18,47 @@
+ extern int cpm_get_irq(struct pt_regs *regs);
+ 
+ static struct irq_domain *mpc8xx_pic_host;
+-#define NR_MASK_WORDS   ((NR_IRQS + 31) / 32)
+-static unsigned long ppc_cached_irq_mask[NR_MASK_WORDS];
++static unsigned long ppc_cached_irq_mask;
+ static sysconf8xx_t __iomem *siu_reg;
+ 
+ int cpm_get_irq(struct pt_regs *regs);
+ 
+-static void mpc8xx_unmask_irq(struct irq_data *d)
++static inline unsigned long mpc8xx_irqd_to_bit(struct irq_data *d)
+ {
+-	int	bit, word;
+-	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
+-
+-	bit = irq_nr & 0x1f;
+-	word = irq_nr >> 5;
++	return 0x80000000 >> irqd_to_hwirq(d);
++}
+ 
+-	ppc_cached_irq_mask[word] |= (1 << (31-bit));
+-	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask[word]);
++static void mpc8xx_unmask_irq(struct irq_data *d)
++{
++	ppc_cached_irq_mask |= mpc8xx_irqd_to_bit(d);
++	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask);
+ }
+ 
+ static void mpc8xx_mask_irq(struct irq_data *d)
+ {
+-	int	bit, word;
+-	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
+-
+-	bit = irq_nr & 0x1f;
+-	word = irq_nr >> 5;
+-
+-	ppc_cached_irq_mask[word] &= ~(1 << (31-bit));
+-	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask[word]);
++	ppc_cached_irq_mask &= ~mpc8xx_irqd_to_bit(d);
++	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask);
+ }
+ 
+ static void mpc8xx_ack(struct irq_data *d)
+ {
+-	int	bit;
+-	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
+-
+-	bit = irq_nr & 0x1f;
+-	out_be32(&siu_reg->sc_sipend, 1 << (31-bit));
++	out_be32(&siu_reg->sc_sipend, mpc8xx_irqd_to_bit(d));
+ }
+ 
+ static void mpc8xx_end_irq(struct irq_data *d)
+ {
+-	int bit, word;
+-	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
+-
+-	bit = irq_nr & 0x1f;
+-	word = irq_nr >> 5;
+-
+-	ppc_cached_irq_mask[word] |= (1 << (31-bit));
+-	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask[word]);
++	ppc_cached_irq_mask |= mpc8xx_irqd_to_bit(d);
++	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask);
+ }
+ 
+ static int mpc8xx_set_irq_type(struct irq_data *d, unsigned int flow_type)
+ {
+-	if (flow_type & IRQ_TYPE_EDGE_FALLING) {
+-		irq_hw_number_t hw = (unsigned int)irqd_to_hwirq(d);
++	/* only external IRQ senses are programmable */
++	if ((flow_type & IRQ_TYPE_EDGE_FALLING) && !(irqd_to_hwirq(d) & 1)) {
+ 		unsigned int siel = in_be32(&siu_reg->sc_siel);
+-
+-		/* only external IRQ senses are programmable */
+-		if ((hw & 1) == 0) {
+-			siel |= (0x80000000 >> hw);
+-			out_be32(&siu_reg->sc_siel, siel);
+-			__irq_set_handler_locked(d->irq, handle_edge_irq);
+-		}
++		siel |= mpc8xx_irqd_to_bit(d);
++		out_be32(&siu_reg->sc_siel, siel);
++		__irq_set_handler_locked(d->irq, handle_edge_irq);
+ 	}
+ 	return 0;
+ }
+@@ -132,6 +110,9 @@ static int mpc8xx_pic_host_xlate(struct irq_domain *h, struct device_node *ct,
+ 		IRQ_TYPE_EDGE_FALLING,
+ 	};
+ 
++	if (intspec[0] > 0x1f)
++		return 0;
++
+ 	*out_hwirq = intspec[0];
+ 	if (intsize > 1 && intspec[1] < 4)
+ 		*out_flags = map_pic_senses[intspec[1]];
+-- 
+1.7.9.5
