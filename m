@@ -1,21 +1,25 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C6216B7016
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2012 19:45:49 +1000 (EST)
-Subject: Re: [PATCH 13/17] KVM: PPC: Allow book3s_hv guests to use SMT
- processor modes
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20110629102307.GN25406@bloggs.ozlabs.ibm.com>
-Date: Mon, 16 Apr 2012 11:45:44 +0200
-Message-Id: <056AF183-5218-457B-9501-B0FF5ED455E9@suse.de>
-References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
- <20110629102307.GN25406@bloggs.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Return-Path: <jonas@southpole.se>
+Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
+ by ozlabs.org (Postfix) with ESMTP id A55F4B6FD3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2012 18:15:02 +1000 (EST)
+Message-ID: <1334562822.2953.45.camel@crucifix>
+Subject: Re: [ORLinux] [PATCH] gpiolib/arches: Centralise bolierplate
+ asm/gpio.h
+From: Jonas Bonn <jonas@southpole.se>
+To: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 16 Apr 2012 09:53:42 +0200
+In-Reply-To: <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
+References: <1334483574-3997-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, Grant Likely <grant@secretlab.ca>,
+ linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Linus Walleij <linus.walleij@stericsson.com>, Chris Zankel <chris@zankel.net>,
+ microblaze-uclinux@itee.uq.edu.au,
+ Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org,
+ linux@lists.openrisc.net, sparclinux@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,98 +30,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 29.06.2011, at 12:23, Paul Mackerras wrote:
+Acked-by: Jonas Bonn <jonas@southpole.se> (for OpenRISC)
 
-> This lifts the restriction that book3s_hv guests can only run one
-> hardware thread per core, and allows them to use up to 4 threads
-> per core on POWER7.  The host still has to run single-threaded.
->=20
-> This capability is advertised to qemu through a new KVM_CAP_PPC_SMT
-> capability.  The return value of the ioctl querying this capability
-> is the number of vcpus per virtual CPU core (vcore), currently 4.
->=20
-> To use this, the host kernel should be booted with all threads
-> active, and then all the secondary threads should be offlined.
-> This will put the secondary threads into nap mode.  KVM will then
-> wake them from nap mode and use them for running guest code (while
-> they are still offline).  To wake the secondary threads, we send
-> them an IPI using a new xics_wake_cpu() function, implemented in
-> arch/powerpc/sysdev/xics/icp-native.c.  In other words, at this stage
-> we assume that the platform has a XICS interrupt controller and
-> we are using icp-native.c to drive it.  Since the woken thread will
-> need to acknowledge and clear the IPI, we also export the base
-> physical address of the XICS registers using kvmppc_set_xics_phys()
-> for use in the low-level KVM book3s code.
->=20
-> When a vcpu is created, it is assigned to a virtual CPU core.
-> The vcore number is obtained by dividing the vcpu number by the
-> number of threads per core in the host.  This number is exported
-> to userspace via the KVM_CAP_PPC_SMT capability.  If qemu wishes
-> to run the guest in single-threaded mode, it should make all vcpu
-> numbers be multiples of the number of threads per core.
->=20
-> We distinguish three states of a vcpu: runnable (i.e., ready to =
-execute
-> the guest), blocked (that is, idle), and busy in host.  We currently
-> implement a policy that the vcore can run only when all its threads
-> are runnable or blocked.  This way, if a vcpu needs to execute =
-elsewhere
-> in the kernel or in qemu, it can do so without being starved of CPU
-> by the other vcpus.
->=20
-> When a vcore starts to run, it executes in the context of one of the
-> vcpu threads.  The other vcpu threads all go to sleep and stay asleep
-> until something happens requiring the vcpu thread to return to qemu,
-> or to wake up to run the vcore (this can happen when another vcpu
-> thread goes from busy in host state to blocked).
->=20
-> It can happen that a vcpu goes from blocked to runnable state (e.g.
-> because of an interrupt), and the vcore it belongs to is already
-> running.  In that case it can start to run immediately as long as
-> the none of the vcpus in the vcore have started to exit the guest.
-> We send the next free thread in the vcore an IPI to get it to start
-> to execute the guest.  It synchronizes with the other threads via
-> the vcore->entry_exit_count field to make sure that it doesn't go
-> into the guest if the other vcpus are exiting by the time that it
-> is ready to actually enter the guest.
->=20
-> Note that there is no fixed relationship between the hardware thread
-> number and the vcpu number.  Hardware threads are assigned to vcpus
-> as they become runnable, so we will always use the lower-numbered
-> hardware threads in preference to higher-numbered threads if not all
-> the vcpus in the vcore are runnable, regardless of which vcpus are
-> runnable.
->=20
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-[...]
-
-> diff --git a/arch/powerpc/include/asm/kvm_host.h =
-b/arch/powerpc/include/asm/kvm_host.h
-> index 5616e39..0d6d569 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -25,10 +25,14 @@
-> #include <linux/interrupt.h>
-> #include <linux/types.h>
-> #include <linux/kvm_types.h>
-> +#include <linux/threads.h>
-> +#include <linux/spinlock.h>
-> #include <linux/kvm_para.h>
-> #include <asm/kvm_asm.h>
-> +#include <asm/processor.h>
->=20
-> -#define KVM_MAX_VCPUS 1
-> +#define KVM_MAX_VCPUS		NR_CPUS
-> +#define KVM_MAX_VCORES		NR_CPUS
-
-Hey Paul,
-
-While trying to trace down why some BookE systems were only able to do =
-as many guest vcpus as there were host cpus available, we stumbled over =
-this one. Is there any limitation on book3s_hv that would limit the =
-available vcpus to configured host vcpus? Or could we just make this a =
-static define like on x86?
-
-
-Alex
+On Mon, 2012-04-16 at 09:21 +0200, Linus Walleij wrote:
+> On Sun, Apr 15, 2012 at 11:52 AM, Mark Brown
+> <broonie@opensource.wolfsonmicro.com> wrote:
+> 
+> > Rather than requiring architectures that use gpiolib but don't have any
+> > need to define anything custom to copy an asm/gpio.h provide a Kconfig
+> > symbol which architectures must select in order to include gpio.h and
+> > for other architectures just provide the trivial implementation directly.
+> >
+> > This makes it much easier to do gpiolib updates and is also a step towards
+> > making gpiolib APIs available on every architecture.
+> >
+> > For architectures with existing boilerplate code leave a stub header in
+> > place which warns on direct inclusion of asm/gpio.h and includes
+> > linux/gpio.h to catch code that's doing this.  Direct inclusion of
+> > asm/gpio.h has long been deprecated.
+> >
+> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > ---
+> >  arch/alpha/include/asm/gpio.h      |   59 ++----------------------------
+> >  arch/arm/Kconfig                   |    1 +
+> >  arch/avr32/Kconfig                 |    1 +
+> >  arch/blackfin/Kconfig              |    1 +
+> >  arch/ia64/include/asm/gpio.h       |   59 ++----------------------------
+> >  arch/m68k/Kconfig.cpu              |    1 +
+> >  arch/microblaze/include/asm/gpio.h |   57 ++---------------------------
+> >  arch/mips/Kconfig                  |    1 +
+> >  arch/openrisc/include/asm/gpio.h   |   69 ++---------------------------------
+> >  arch/powerpc/include/asm/gpio.h    |   57 ++---------------------------
+> >  arch/sh/Kconfig                    |    1 +
+> >  arch/sparc/include/asm/gpio.h      |   40 ++-------------------
+> >  arch/unicore32/Kconfig             |    1 +
+> >  arch/x86/include/asm/gpio.h        |   57 ++---------------------------
+> >  arch/xtensa/include/asm/gpio.h     |   60 ++-----------------------------
+> >  drivers/gpio/Kconfig               |    8 ++++
+> >  include/linux/gpio.h               |   34 +++++++++++++++++
+> >  17 files changed, 81 insertions(+), 426 deletions(-)
+> 
+> This looks good but I think we need to page the alpha, ia64, m68k, microblaze,
+> openrisc etc subarch maintainers on this patch so they have their say.
+> 
+> Yours,
+> Linus Walleij
+> _______________________________________________
+> Linux mailing list
+> Linux@lists.openrisc.net
+> http://lists.openrisc.net/listinfo/linux
