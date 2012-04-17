@@ -1,14 +1,33 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 18 Apr 2012 11:16:00 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/eeh: crash caused by null eeh_dev
-Message-ID: <20120418111600.1b0a38c6@kryten>
-In-Reply-To: <1334642139-25447-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1334642139-25447-1-git-send-email-shangw@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bp@amd64.org>
+Received: from mail.x86-64.org (s15943758.onlinehome-server.info
+ [217.160.130.188]) by ozlabs.org (Postfix) with ESMTP id CBA14B7018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 04:58:04 +1000 (EST)
+Date: Tue, 17 Apr 2012 20:48:08 +0200
+From: Borislav Petkov <bp@amd64.org>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [EDAC PATCH v13 4/7] edac: move nr_pages to dimm struct
+Message-ID: <20120417184808.GD13989@aftab>
+References: <1333039546-5590-1-git-send-email-mchehab@redhat.com>
+ <1334607133-30039-1-git-send-email-mchehab@redhat.com>
+ <1334607133-30039-5-git-send-email-mchehab@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1334607133-30039-5-git-send-email-mchehab@redhat.com>
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>, Hitoshi Mitake <h.mitake@gmail.com>,
+ Mark Gross <mark.gross@intel.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Egor Martovetsky <egor@pasemi.com>,
+ Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
+ Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Olof Johansson <olof@lixom.net>,
+ Doug Thompson <norsk5@yahoo.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,50 +37,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Gavin,
-
-> The problem was reported by Anton Blanchard. While EEH error
-> happened to the PCI device without the corresponding device
-> driver, kernel crash was seen. Eventually, I successfully
-> reproduced the problem on Firebird-L machine with utility
-> "errinjct". Initially, the device driver for Emulex ethernet
-> MAC has been disabled from .config and force data parity on
-> the Emulex ethernet MAC with help of "errinjct". Eventually,
-> I saw the kernel crash after issueing couple of "lspci -v"
-> command.
+On Mon, Apr 16, 2012 at 05:12:10PM -0300, Mauro Carvalho Chehab wrote:
+> The number of pages is a dimm property. Move it to the dimm struct.
 > 
-> The root cause behind is that the PCI device, including the
-> reference to the corresponding eeh device, will be removed
-> from the system while EEH does recovery. Afterwards, the
-> PCI device will be probed again and added into the system
-> accordingly. So it's not safe to retrieve the eeh device from
-> the corresponding PCI device after the PCI device has been removed
-> and not added again.
+> After this change, it is possible to add sysfs nodes for the DIMM's that
+
+Minor nitpick:
+
+                                                               DIMMs
+
+Please go over the rest of the commit messages because they have similar
+typos.
+
+> will properly represent the DIMM stick properties, including its size.
 > 
-> The patch fixes the issue and retrieve the eeh device from OF node
-> instead of PCI device after the PCI device has been removed.
-
-Thanks, this does fix the oops I see.
-
-Tested-by: Anton Blanchard <anton@samba.org>
-
-Anton
-
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> A TODO fix here is to properly represent dual-rank/quad-rank DIMMs when
+> the memory controller represents the memory via chip select rows.
+> 
+> Reviewed-by: Aristeu Rozanski <arozansk@redhat.com>
+> Cc: Doug Thompson <norsk5@yahoo.com>
+> Cc: Borislav Petkov <borislav.petkov@amd.com>
+> Cc: Mark Gross <mark.gross@intel.com>
+> Cc: Jason Uhlenkott <juhlenko@akamai.com>
+> Cc: Tim Small <tim@buttersideup.com>
+> Cc: Ranganathan Desikan <ravi@jetztechnologies.com>
+> Cc: "Arvind R." <arvino55@gmail.com>
+> Cc: Olof Johansson <olof@lixom.net>
+> Cc: Egor Martovetsky <egor@pasemi.com>
+> Cc: Chris Metcalf <cmetcalf@tilera.com>
+> Cc: Michal Marek <mmarek@suse.cz>
+> Cc: Jiri Kosina <jkosina@suse.cz>
+> Cc: Joe Perches <joe@perches.com>
+> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Hitoshi Mitake <h.mitake@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: "Niklas Söderlund" <niklas.soderlund@ericsson.com>
+> Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+> Cc: Josh Boyer <jwboyer@gmail.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 > ---
->  arch/powerpc/platforms/pseries/eeh.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  drivers/edac/amd64_edac.c      |   12 +++------
+>  drivers/edac/amd76x_edac.c     |    6 ++--
+>  drivers/edac/cell_edac.c       |    8 ++++--
+>  drivers/edac/cpc925_edac.c     |    8 ++++--
+>  drivers/edac/e752x_edac.c      |    6 +++-
+>  drivers/edac/e7xxx_edac.c      |    5 ++-
+>  drivers/edac/edac_mc.c         |   16 ++++++++-----
+>  drivers/edac/edac_mc_sysfs.c   |   47 ++++++++++++++++++++++++++++------------
+>  drivers/edac/i3000_edac.c      |    6 +++-
+>  drivers/edac/i3200_edac.c      |    3 +-
+>  drivers/edac/i5000_edac.c      |   14 ++++++-----
+>  drivers/edac/i5100_edac.c      |   22 +++++++++++-------
+>  drivers/edac/i5400_edac.c      |    9 ++-----
+>  drivers/edac/i7300_edac.c      |   22 +++++-------------
+>  drivers/edac/i7core_edac.c     |   10 ++------
+>  drivers/edac/i82443bxgx_edac.c |    2 +-
+>  drivers/edac/i82860_edac.c     |    2 +-
+>  drivers/edac/i82875p_edac.c    |    5 ++-
+>  drivers/edac/i82975x_edac.c    |   11 ++++++--
+>  drivers/edac/mpc85xx_edac.c    |    3 +-
+>  drivers/edac/mv64x60_edac.c    |    3 +-
+>  drivers/edac/pasemi_edac.c     |   14 ++++++------
+>  drivers/edac/ppc4xx_edac.c     |    5 ++-
+>  drivers/edac/r82600_edac.c     |    3 +-
+>  drivers/edac/sb_edac.c         |    8 +-----
+>  drivers/edac/tile_edac.c       |    2 +-
+>  drivers/edac/x38_edac.c        |    4 +-
+>  include/linux/edac.h           |    8 ++++--
+>  28 files changed, 144 insertions(+), 120 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/eeh.c
-> b/arch/powerpc/platforms/pseries/eeh.c index 309d38e..a75e37d 100644
-> --- a/arch/powerpc/platforms/pseries/eeh.c
-> +++ b/arch/powerpc/platforms/pseries/eeh.c
-> @@ -1076,7 +1076,7 @@ static void eeh_add_device_late(struct pci_dev
-> *dev) pr_debug("EEH: Adding device %s\n", pci_name(dev));
+> diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+> index 0be3f29..8804ac8 100644
+> --- a/drivers/edac/amd64_edac.c
+> +++ b/drivers/edac/amd64_edac.c
+> @@ -2126,12 +2126,6 @@ static u32 amd64_csrow_nr_pages(struct amd64_pvt *pvt, u8 dct, int csrow_nr)
 >  
->  	dn = pci_device_to_OF_node(dev);
-> -	edev = pci_dev_to_eeh_dev(dev);
-> +	edev = of_node_to_eeh_dev(dn);
->  	if (edev->pdev == dev) {
->  		pr_debug("EEH: Already referenced !\n");
->  		return;
+>  	nr_pages = pvt->ops->dbam_to_cs(pvt, dct, cs_mode) << (20 - PAGE_SHIFT);
+>  
+> -	/*
+> -	 * If dual channel then double the memory size of single channel.
+> -	 * Channel count is 1 or 2
+> -	 */
+> -	nr_pages <<= (pvt->channel_count - 1);
+
+This changes DEBUG output from:
+
+EDAC DEBUG: init_csrows: ----CSROW 0 VALID for MC node 0
+EDAC DEBUG: amd64_csrow_nr_pages:   (csrow=0) DBAM map index= 8
+EDAC DEBUG: amd64_csrow_nr_pages:     nr_pages= 1048576  channel-count = 2
+EDAC amd64: CS0: Registered DDR3 RAM
+EDAC DEBUG: init_csrows:   for MC node 0 csrow 0:
+EDAC DEBUG: init_csrows:     nr_pages: 1048576
+
+to
+
+EDAC DEBUG: init_csrows: ----CSROW 0 VALID for MC node 0
+EDAC DEBUG: amd64_csrow_nr_pages:   (csrow=0) DBAM map index= 8
+EDAC DEBUG: amd64_csrow_nr_pages:     nr_pages= 524288  channel-count = 2
+
+which is only half the pages.
+
+> -
+>  	debugf0("  (csrow=%d) DBAM map index= %d\n", csrow_nr, cs_mode);
+>  	debugf0("    nr_pages= %u  channel-count = %d\n",
+>  		nr_pages, pvt->channel_count);
+> @@ -2152,6 +2146,7 @@ static int init_csrows(struct mem_ctl_info *mci)
+>  	int i, j, empty = 1;
+>  	enum mem_type mtype;
+>  	enum edac_type edac_mode;
+> +	int nr_pages;
+>  
+>  	amd64_read_pci_cfg(pvt->F3, NBCFG, &val);
+>  
+> @@ -2174,14 +2169,14 @@ static int init_csrows(struct mem_ctl_info *mci)
+>  			i, pvt->mc_node_id);
+>  
+>  		empty = 0;
+> -		csrow->nr_pages = amd64_csrow_nr_pages(pvt, 0, i);
+> +		nr_pages = amd64_csrow_nr_pages(pvt, 0, i);
+>  		get_cs_base_and_mask(pvt, i, 0, &base, &mask);
+>  		/* 8 bytes of resolution */
+>  
+>  		mtype = amd64_determine_memory_type(pvt, i);
+>  
+>  		debugf1("  for MC node %d csrow %d:\n", pvt->mc_node_id, i);
+> -		debugf1("    nr_pages: %u\n", csrow->nr_pages);
+> +		debugf1("    nr_pages: %u\n", nr_pages);
+>  
+>  		/*
+>  		 * determine whether CHIPKILL or JUST ECC or NO ECC is operating
+> @@ -2195,6 +2190,7 @@ static int init_csrows(struct mem_ctl_info *mci)
+>  		for (j = 0; j < pvt->channel_count; j++) {
+>  			csrow->channels[j].dimm->mtype = mtype;
+>  			csrow->channels[j].dimm->edac_mode = edac_mode;
+> +			csrow->channels[j].dimm->nr_pages = nr_pages;
+
+I'm guessing you want to accumulate the nr_pages for all channels here
+and dump it properly?
+
+-- 
+Regards/Gruss,
+Boris.
+
+Advanced Micro Devices GmbH
+Einsteinring 24, 85609 Dornach
+GM: Alberto Bozzo
+Reg: Dornach, Landkreis Muenchen
+HRB Nr. 43632 WEEE Registernr: 129 19551
