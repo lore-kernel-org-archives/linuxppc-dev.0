@@ -1,28 +1,20 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D274FB704A
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 15:55:54 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 17 Apr 2012 11:25:52 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3H5tgcN3260570
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 11:25:42 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3HBOu0K004295
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 21:24:57 +1000
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/eeh: crash caused by null eeh_dev
-Date: Tue, 17 Apr 2012 13:55:39 +0800
-Message-Id: <1334642139-25447-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: anton@samba.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <tqnguyen@apm.com>
+Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
+ by ozlabs.org (Postfix) with SMTP id 00D7DB705E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 18:45:57 +1000 (EST)
+Received: by dadp12 with SMTP id p12so7280428dad.35
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 01:45:55 -0700 (PDT)
+From: "Thang Q. Nguyen" <tqnguyen@apm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Jeff Garzik <jgarzik@pobox.com>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Rob Herring <rob.herring@calxeda.com>
+Subject: [PATCH 1/7] Add support hardreset
+Date: Tue, 17 Apr 2012 15:43:13 +0700
+Message-Id: <1334652193-10487-1-git-send-email-tqnguyen@apm.com>
+Cc: Phong Vo <pvo@apm.com>, devicetree-discuss@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+ "Thang Q. Nguyen" <tqnguyen@apm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The problem was reported by Anton Blanchard. While EEH error
-happened to the PCI device without the corresponding device
-driver, kernel crash was seen. Eventually, I successfully
-reproduced the problem on Firebird-L machine with utility
-"errinjct". Initially, the device driver for Emulex ethernet
-MAC has been disabled from .config and force data parity on
-the Emulex ethernet MAC with help of "errinjct". Eventually,
-I saw the kernel crash after issueing couple of "lspci -v"
-command.
+ The hardreset operation is currently not supported. This causes sometime the SATA driver does cause kernel crash because of none-determined state.a This patch will fix the issue.
 
-The root cause behind is that the PCI device, including the
-reference to the corresponding eeh device, will be removed
-from the system while EEH does recovery. Afterwards, the
-PCI device will be probed again and added into the system
-accordingly. So it's not safe to retrieve the eeh device from
-the corresponding PCI device after the PCI device has been removed
-and not added again.
-
-The patch fixes the issue and retrieve the eeh device from OF node
-instead of PCI device after the PCI device has been removed.
-
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Signed-off-by: Thang Q. Nguyen <tqnguyen@apm.com>
 ---
- arch/powerpc/platforms/pseries/eeh.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/ata/sata_dwc_460ex.c |   24 +++++++++++++++++++++++-
+ 1 files changed, 23 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 309d38e..a75e37d 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -1076,7 +1076,7 @@ static void eeh_add_device_late(struct pci_dev *dev)
- 	pr_debug("EEH: Adding device %s\n", pci_name(dev));
+diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
+index 69f7cde..ae13ef1 100644
+--- a/drivers/ata/sata_dwc_460ex.c
++++ b/drivers/ata/sata_dwc_460ex.c
+@@ -1581,10 +1581,31 @@ static void sata_dwc_qc_prep(struct ata_queued_cmd *qc)
  
- 	dn = pci_device_to_OF_node(dev);
--	edev = pci_dev_to_eeh_dev(dev);
-+	edev = of_node_to_eeh_dev(dn);
- 	if (edev->pdev == dev) {
- 		pr_debug("EEH: Already referenced !\n");
- 		return;
+ static void sata_dwc_error_handler(struct ata_port *ap)
+ {
+-	ap->link.flags |= ATA_LFLAG_NO_HRST;
+ 	ata_sff_error_handler(ap);
+ }
+ 
++int sata_dwc_hardreset(struct ata_link *link, unsigned int *class,
++			unsigned long deadline)
++{
++	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(link->ap);
++	int ret;
++
++	ret = sata_sff_hardreset(link, class, deadline);
++
++	sata_dwc_enable_interrupts(hsdev);
++
++	/* Reconfigure the DMA control register */
++	out_le32(&hsdev->sata_dwc_regs->dmacr,
++		 SATA_DWC_DMACR_TXRXCH_CLEAR);
++
++	/* Reconfigure the DMA Burst Transaction Size register */
++	out_le32(&hsdev->sata_dwc_regs->dbtsr,
++		 SATA_DWC_DBTSR_MWR(AHB_DMA_BRST_DFLT) |
++		 SATA_DWC_DBTSR_MRD(AHB_DMA_BRST_DFLT));
++
++	return ret;
++}
++
+ /*
+  * scsi mid-layer and libata interface structures
+  */
+@@ -1604,6 +1625,7 @@ static struct ata_port_operations sata_dwc_ops = {
+ 	.inherits		= &ata_sff_port_ops,
+ 
+ 	.error_handler		= sata_dwc_error_handler,
++	.hardreset		= sata_dwc_hardreset,
+ 
+ 	.qc_prep		= sata_dwc_qc_prep,
+ 	.qc_issue		= sata_dwc_qc_issue,
 -- 
-1.7.5.4
+1.7.3.4
