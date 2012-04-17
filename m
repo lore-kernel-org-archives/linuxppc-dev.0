@@ -1,34 +1,33 @@
-Return-Path: <mchehab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 9C321B705E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 05:29:45 +1000 (EST)
-Message-ID: <4F8DC471.3050809@redhat.com>
-Date: Tue, 17 Apr 2012 16:28:49 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-MIME-Version: 1.0
-To: Borislav Petkov <bp@amd64.org>
-Subject: Re: [EDAC PATCH v13 4/7] edac: move nr_pages to dimm struct
-References: <1333039546-5590-1-git-send-email-mchehab@redhat.com>
- <1334607133-30039-1-git-send-email-mchehab@redhat.com>
- <1334607133-30039-5-git-send-email-mchehab@redhat.com>
- <20120417184808.GD13989@aftab>
-In-Reply-To: <20120417184808.GD13989@aftab>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
- Jason Uhlenkott <juhlenko@akamai.com>, Hitoshi Mitake <h.mitake@gmail.com>,
- Mark Gross <mark.gross@intel.com>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Ranganathan Desikan <ravi@jetztechnologies.com>,
- Egor Martovetsky <egor@pasemi.com>,
- =?ISO-8859-1?Q?Niklas_S=F6d?= =?ISO-8859-1?Q?erlund?=
- <niklas.soderlund@ericsson.com>, Tim Small <tim@buttersideup.com>,
- "Arvind R." <arvino55@gmail.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Olof Johansson <olof@lixom.net>, Doug Thompson <norsk5@yahoo.com>,
- Linux Edac Mailing List <linux-edac@vger.kernel.org>,
- Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <wad@chromium.org>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+ [209.85.161.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 45D8DB70A7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 05:50:24 +1000 (EST)
+Received: by ggni2 with SMTP id i2so3525396ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 12:50:21 -0700 (PDT)
+From: Will Drewry <wad@chromium.org>
+To: jmorris@namei.org
+Subject: [PATCH 1/2] seccomp: ignore secure_computing return values
+Date: Tue, 17 Apr 2012 14:48:57 -0500
+Message-Id: <1334692161-6834-1-git-send-email-wad@chromium.org>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Kees Cook <keescook@chromium.org>,
+ sfr@canb.auug.org.au, Richard Weinberger <richard@nod.at>,
+ Avi Kivity <avi@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+ Ingo Molnar <mingo@elte.hu>, Serge Hallyn <serge.hallyn@canonical.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-s390@vger.kernel.org,
+ microblaze-uclinux@itee.uq.edu.au, James Morris <james.l.morris@oracle.com>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Will Drewry <wad@chromium.org>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-security-module@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,183 +37,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em 17-04-2012 15:48, Borislav Petkov escreveu:
-> On Mon, Apr 16, 2012 at 05:12:10PM -0300, Mauro Carvalho Chehab wrote:
->> The number of pages is a dimm property. Move it to the dimm struct.
->>
->> After this change, it is possible to add sysfs nodes for the DIMM's that
-> 
-> Minor nitpick:
-> 
->                                                                DIMMs
-> 
-> Please go over the rest of the commit messages because they have similar
-> typos.
-> 
->> will properly represent the DIMM stick properties, including its size.
->>
->> A TODO fix here is to properly represent dual-rank/quad-rank DIMMs when
->> the memory controller represents the memory via chip select rows.
->>
->> Reviewed-by: Aristeu Rozanski <arozansk@redhat.com>
->> Cc: Doug Thompson <norsk5@yahoo.com>
->> Cc: Borislav Petkov <borislav.petkov@amd.com>
->> Cc: Mark Gross <mark.gross@intel.com>
->> Cc: Jason Uhlenkott <juhlenko@akamai.com>
->> Cc: Tim Small <tim@buttersideup.com>
->> Cc: Ranganathan Desikan <ravi@jetztechnologies.com>
->> Cc: "Arvind R." <arvino55@gmail.com>
->> Cc: Olof Johansson <olof@lixom.net>
->> Cc: Egor Martovetsky <egor@pasemi.com>
->> Cc: Chris Metcalf <cmetcalf@tilera.com>
->> Cc: Michal Marek <mmarek@suse.cz>
->> Cc: Jiri Kosina <jkosina@suse.cz>
->> Cc: Joe Perches <joe@perches.com>
->> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Hitoshi Mitake <h.mitake@gmail.com>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: "Niklas Söderlund" <niklas.soderlund@ericsson.com>
->> Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
->> Cc: Josh Boyer <jwboyer@gmail.com>
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
->> ---
->>  drivers/edac/amd64_edac.c      |   12 +++------
->>  drivers/edac/amd76x_edac.c     |    6 ++--
->>  drivers/edac/cell_edac.c       |    8 ++++--
->>  drivers/edac/cpc925_edac.c     |    8 ++++--
->>  drivers/edac/e752x_edac.c      |    6 +++-
->>  drivers/edac/e7xxx_edac.c      |    5 ++-
->>  drivers/edac/edac_mc.c         |   16 ++++++++-----
->>  drivers/edac/edac_mc_sysfs.c   |   47 ++++++++++++++++++++++++++++------------
->>  drivers/edac/i3000_edac.c      |    6 +++-
->>  drivers/edac/i3200_edac.c      |    3 +-
->>  drivers/edac/i5000_edac.c      |   14 ++++++-----
->>  drivers/edac/i5100_edac.c      |   22 +++++++++++-------
->>  drivers/edac/i5400_edac.c      |    9 ++-----
->>  drivers/edac/i7300_edac.c      |   22 +++++-------------
->>  drivers/edac/i7core_edac.c     |   10 ++------
->>  drivers/edac/i82443bxgx_edac.c |    2 +-
->>  drivers/edac/i82860_edac.c     |    2 +-
->>  drivers/edac/i82875p_edac.c    |    5 ++-
->>  drivers/edac/i82975x_edac.c    |   11 ++++++--
->>  drivers/edac/mpc85xx_edac.c    |    3 +-
->>  drivers/edac/mv64x60_edac.c    |    3 +-
->>  drivers/edac/pasemi_edac.c     |   14 ++++++------
->>  drivers/edac/ppc4xx_edac.c     |    5 ++-
->>  drivers/edac/r82600_edac.c     |    3 +-
->>  drivers/edac/sb_edac.c         |    8 +-----
->>  drivers/edac/tile_edac.c       |    2 +-
->>  drivers/edac/x38_edac.c        |    4 +-
->>  include/linux/edac.h           |    8 ++++--
->>  28 files changed, 144 insertions(+), 120 deletions(-)
->>
->> diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
->> index 0be3f29..8804ac8 100644
->> --- a/drivers/edac/amd64_edac.c
->> +++ b/drivers/edac/amd64_edac.c
->> @@ -2126,12 +2126,6 @@ static u32 amd64_csrow_nr_pages(struct amd64_pvt *pvt, u8 dct, int csrow_nr)
->>  
->>  	nr_pages = pvt->ops->dbam_to_cs(pvt, dct, cs_mode) << (20 - PAGE_SHIFT);
->>  
->> -	/*
->> -	 * If dual channel then double the memory size of single channel.
->> -	 * Channel count is 1 or 2
->> -	 */
->> -	nr_pages <<= (pvt->channel_count - 1);
-> 
-> This changes DEBUG output from:
-> 
-> EDAC DEBUG: init_csrows: ----CSROW 0 VALID for MC node 0
-> EDAC DEBUG: amd64_csrow_nr_pages:   (csrow=0) DBAM map index= 8
-> EDAC DEBUG: amd64_csrow_nr_pages:     nr_pages= 1048576  channel-count = 2
-> EDAC amd64: CS0: Registered DDR3 RAM
-> EDAC DEBUG: init_csrows:   for MC node 0 csrow 0:
-> EDAC DEBUG: init_csrows:     nr_pages: 1048576
-> 
-> to
-> 
-> EDAC DEBUG: init_csrows: ----CSROW 0 VALID for MC node 0
-> EDAC DEBUG: amd64_csrow_nr_pages:   (csrow=0) DBAM map index= 8
-> EDAC DEBUG: amd64_csrow_nr_pages:     nr_pages= 524288  channel-count = 2
-> 
-> which is only half the pages.
-> 
->> -
->>  	debugf0("  (csrow=%d) DBAM map index= %d\n", csrow_nr, cs_mode);
->>  	debugf0("    nr_pages= %u  channel-count = %d\n",
->>  		nr_pages, pvt->channel_count);
+This change is inspired by
+  https://lkml.org/lkml/2012/4/16/14
+which fixes the build warnings for arches that don't support
+CONFIG_HAVE_ARCH_SECCOMP_FILTER.
 
+In particular, there is no requirement for the return value of
+secure_computing() to be checked unless the architecture supports
+seccomp filter.  Instead of silencing the warnings with (void)
+a new static inline is added to encode the expected behavior
+in a compiler and human friendly way.
 
-Ok. well, we can either multiply nr_pages by channel_count or to let it
-clear that this is per channel. I prefer the last option (see the enclosed
-patch).
+v2: - cleans things up with a static inline
+    - removes sfr's signed-off-by since it is a different approach
+v1: - matches sfr's original change
 
->> @@ -2152,6 +2146,7 @@ static int init_csrows(struct mem_ctl_info *mci)
->>  	int i, j, empty = 1;
->>  	enum mem_type mtype;
->>  	enum edac_type edac_mode;
->> +	int nr_pages;
->>  
->>  	amd64_read_pci_cfg(pvt->F3, NBCFG, &val);
->>  
->> @@ -2174,14 +2169,14 @@ static int init_csrows(struct mem_ctl_info *mci)
->>  			i, pvt->mc_node_id);
->>  
->>  		empty = 0;
->> -		csrow->nr_pages = amd64_csrow_nr_pages(pvt, 0, i);
->> +		nr_pages = amd64_csrow_nr_pages(pvt, 0, i);
->>  		get_cs_base_and_mask(pvt, i, 0, &base, &mask);
->>  		/* 8 bytes of resolution */
->>  
->>  		mtype = amd64_determine_memory_type(pvt, i);
->>  
->>  		debugf1("  for MC node %d csrow %d:\n", pvt->mc_node_id, i);
->> -		debugf1("    nr_pages: %u\n", csrow->nr_pages);
->> +		debugf1("    nr_pages: %u\n", nr_pages);
->>  
->>  		/*
->>  		 * determine whether CHIPKILL or JUST ECC or NO ECC is operating
->> @@ -2195,6 +2190,7 @@ static int init_csrows(struct mem_ctl_info *mci)
->>  		for (j = 0; j < pvt->channel_count; j++) {
->>  			csrow->channels[j].dimm->mtype = mtype;
->>  			csrow->channels[j].dimm->edac_mode = edac_mode;
->> +			csrow->channels[j].dimm->nr_pages = nr_pages;
-> 
-> I'm guessing you want to accumulate the nr_pages for all channels here
-> and dump it properly?
-> 
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Will Drewry <wad@chromium.org>
+Acked-by: Kees Cook <keescook@chromium.org>
+---
+ arch/microblaze/kernel/ptrace.c |    2 +-
+ arch/mips/kernel/ptrace.c       |    2 +-
+ arch/powerpc/kernel/ptrace.c    |    2 +-
+ arch/s390/kernel/ptrace.c       |    2 +-
+ arch/sh/kernel/ptrace_32.c      |    2 +-
+ arch/sh/kernel/ptrace_64.c      |    2 +-
+ arch/sparc/kernel/ptrace_64.c   |    2 +-
+ include/linux/seccomp.h         |    7 +++++++
+ 8 files changed, 14 insertions(+), 7 deletions(-)
 
-As you've requested to not move the debugf0() to be after the loop, it is
-easier to just multiply it at the printk. As an advantage, when the kernel
-is compiled without debug, no code will be produced.
-
-IMO, the best way to solve it is with this small patch. If you're ok, I'll
-fold it with this one and add your ack.
-
-Regards,
-Mauro
-
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 8804ac8..6d6ec68 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2127,7 +2127,7 @@ static u32 amd64_csrow_nr_pages(struct amd64_pvt *pvt, u8 dct, int csrow_nr)
- 	nr_pages = pvt->ops->dbam_to_cs(pvt, dct, cs_mode) << (20 - PAGE_SHIFT);
+diff --git a/arch/microblaze/kernel/ptrace.c b/arch/microblaze/kernel/ptrace.c
+index 6eb2aa9..ab1b9db 100644
+--- a/arch/microblaze/kernel/ptrace.c
++++ b/arch/microblaze/kernel/ptrace.c
+@@ -136,7 +136,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+ {
+ 	long ret = 0;
  
- 	debugf0("  (csrow=%d) DBAM map index= %d\n", csrow_nr, cs_mode);
--	debugf0("    nr_pages= %u  channel-count = %d\n",
-+	debugf0("    nr_pages/channel= %u  channel-count = %d\n",
- 		nr_pages, pvt->channel_count);
+-	secure_computing(regs->r12);
++	secure_computing_strict(regs->r12);
  
- 	return nr_pages;
-@@ -2176,7 +2176,7 @@ static int init_csrows(struct mem_ctl_info *mci)
- 		mtype = amd64_determine_memory_type(pvt, i);
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+ 	    tracehook_report_syscall_entry(regs))
+diff --git a/arch/mips/kernel/ptrace.c b/arch/mips/kernel/ptrace.c
+index 7c24c29..4812c6d 100644
+--- a/arch/mips/kernel/ptrace.c
++++ b/arch/mips/kernel/ptrace.c
+@@ -535,7 +535,7 @@ static inline int audit_arch(void)
+ asmlinkage void syscall_trace_enter(struct pt_regs *regs)
+ {
+ 	/* do the secure computing check first */
+-	secure_computing(regs->regs[2]);
++	secure_computing_strict(regs->regs[2]);
  
- 		debugf1("  for MC node %d csrow %d:\n", pvt->mc_node_id, i);
--		debugf1("    nr_pages: %u\n", nr_pages);
-+		debugf1("    nr_pages: %u\n", nr_pages * pvt->channel_count);
+ 	if (!(current->ptrace & PT_PTRACED))
+ 		goto out;
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 8d8e028..dd5e214 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1710,7 +1710,7 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ {
+ 	long ret = 0;
  
- 		/*
- 		 * determine whether CHIPKILL or JUST ECC or NO ECC is operating
+-	secure_computing(regs->gpr[0]);
++	secure_computing_strict(regs->gpr[0]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+ 	    tracehook_report_syscall_entry(regs))
+diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
+index 02f300f..4993e68 100644
+--- a/arch/s390/kernel/ptrace.c
++++ b/arch/s390/kernel/ptrace.c
+@@ -719,7 +719,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+ 	long ret = 0;
+ 
+ 	/* Do the secure computing check first. */
+-	secure_computing(regs->gprs[2]);
++	secure_computing_strict(regs->gprs[2]);
+ 
+ 	/*
+ 	 * The sysc_tracesys code in entry.S stored the system
+diff --git a/arch/sh/kernel/ptrace_32.c b/arch/sh/kernel/ptrace_32.c
+index 9698671..81f999a 100644
+--- a/arch/sh/kernel/ptrace_32.c
++++ b/arch/sh/kernel/ptrace_32.c
+@@ -503,7 +503,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+ {
+ 	long ret = 0;
+ 
+-	secure_computing(regs->regs[0]);
++	secure_computing_strict(regs->regs[0]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+ 	    tracehook_report_syscall_entry(regs))
+diff --git a/arch/sh/kernel/ptrace_64.c b/arch/sh/kernel/ptrace_64.c
+index bc81e07..af90339 100644
+--- a/arch/sh/kernel/ptrace_64.c
++++ b/arch/sh/kernel/ptrace_64.c
+@@ -522,7 +522,7 @@ asmlinkage long long do_syscall_trace_enter(struct pt_regs *regs)
+ {
+ 	long long ret = 0;
+ 
+-	secure_computing(regs->regs[9]);
++	secure_computing_strict(regs->regs[9]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+ 	    tracehook_report_syscall_entry(regs))
+diff --git a/arch/sparc/kernel/ptrace_64.c b/arch/sparc/kernel/ptrace_64.c
+index 6f97c07..484daba 100644
+--- a/arch/sparc/kernel/ptrace_64.c
++++ b/arch/sparc/kernel/ptrace_64.c
+@@ -1062,7 +1062,7 @@ asmlinkage int syscall_trace_enter(struct pt_regs *regs)
+ 	int ret = 0;
+ 
+ 	/* do the secure computing check first */
+-	secure_computing(regs->u_regs[UREG_G1]);
++	secure_computing_strict(regs->u_regs[UREG_G1]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE))
+ 		ret = tracehook_report_syscall_entry(regs);
+diff --git a/include/linux/seccomp.h b/include/linux/seccomp.h
+index 60f2b35..84f6320d 100644
+--- a/include/linux/seccomp.h
++++ b/include/linux/seccomp.h
+@@ -75,6 +75,12 @@ static inline int secure_computing(int this_syscall)
+ 	return 0;
+ }
+ 
++/* A wrapper for architectures supporting only SECCOMP_MODE_STRICT. */
++static inline void secure_computing_strict(int this_syscall)
++{
++	BUG_ON(secure_computing(this_syscall) != 0);
++}
++
+ extern long prctl_get_seccomp(void);
+ extern long prctl_set_seccomp(unsigned long, char __user *);
+ 
+@@ -91,6 +97,7 @@ struct seccomp { };
+ struct seccomp_filter { };
+ 
+ static inline int secure_computing(int this_syscall) { return 0; }
++static inline void secure_computing_strict(int this_syscall) { return; }
+ 
+ static inline long prctl_get_seccomp(void)
+ {
+-- 
+1.7.5.4
