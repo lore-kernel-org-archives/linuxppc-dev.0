@@ -1,23 +1,32 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1742CB704D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 02:23:54 +1000 (EST)
-Message-ID: <4F8EEA92.3020509@freescale.com>
-Date: Wed, 18 Apr 2012 11:23:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/85xx: Add back condition for smp
-References: <1334698746-11529-1-git-send-email-yorksun@freescale.com>
- <4F8DEC0E.4060700@freescale.com>
- <15110B63-4B9B-4457-B127-65C82C377D3E@kernel.crashing.org>
-In-Reply-To: <15110B63-4B9B-4457-B127-65C82C377D3E@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: PPC list <linuxppc-dev@lists.ozlabs.org>, York Sun <yorksun@freescale.com>
+Return-Path: <joe@perches.com>
+Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
+ (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EDD0BB6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 03:17:49 +1000 (EST)
+Message-ID: <1334697467.3920.5.camel@joe2Laptop>
+Subject: Re: [EDAC ABI v13 24/25] edac: change the mem allocation scheme to
+ make Documentation/kobject.txt happy
+From: Joe Perches <joe@perches.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+In-Reply-To: <1334608729-30803-25-git-send-email-mchehab@redhat.com>
+References: <1334608729-30803-1-git-send-email-mchehab@redhat.com>
+ <1334608729-30803-25-git-send-email-mchehab@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 17 Apr 2012 15:17:47 -0600
+Mime-Version: 1.0
+Cc: "Arvind R." <arvino55@gmail.com>, Michal Marek <mmarek@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, Mark Gross <mark.gross@intel.com>,
+ Shaohui Xie <Shaohui.Xie@freescale.com>, Jason Uhlenkott <juhlenko@akamai.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Borislav Petkov <borislav.petkov@amd.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Egor Martovetsky <egor@pasemi.com>, Aristeu Rozanski <arozansk@redhat.com>,
+ Olof Johansson <olof@lixom.net>, Doug Thompson <norsk5@yahoo.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Tim Small <tim@buttersideup.com>,
+ Hitoshi Mitake <h.mitake@gmail.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/18/2012 09:15 AM, Kumar Gala wrote:
+On Mon, 2012-04-16 at 17:38 -0300, Mauro Carvalho Chehab wrote:
+> Kernel kobjects have rigid rules: each container object should be
+> dynamically allocated, and can't be allocated into a single kmalloc.
 > 
-> On Apr 17, 2012, at 5:17 PM, Scott Wood wrote:
+> EDAC never obeyed this rule: it has a single malloc function that
+> allocates all needed data into a single kzalloc.
 > 
->> On 04/17/2012 04:39 PM, York Sun wrote:
->>> The timebase synchronization is only necessary if we need to reset a
->>> separate core.  Currently only KEXEC and CPU hotplug require resetting
->>> a single core. The following code should be in the condition of
->>> CONFIG_KEXEC or CONFIG_HOTPLUG_CPU
->>>
->>>        .give_timebase  = smp_generic_give_timebase,
->>>        .take_timebase  = smp_generic_take_timebase,
->>>
->>> Signed-off-by: York Sun <yorksun@freescale.com>
->>> Acked-by: Li Yang <leoli@freescale.com>
->>> ---
->>> arch/powerpc/platforms/85xx/smp.c |    2 ++
->>> 1 files changed, 2 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
->>> index 56942af..868c6d7 100644
->>> --- a/arch/powerpc/platforms/85xx/smp.c
->>> +++ b/arch/powerpc/platforms/85xx/smp.c
->>> @@ -192,8 +192,10 @@ struct smp_ops_t smp_85xx_ops = {
->>> 	.cpu_disable	= generic_cpu_disable,
->>> 	.cpu_die	= generic_cpu_die,
->>> #endif
->>> +#if defined(CONFIG_KEXEC) || defined(CONFIG_HOTPLUG_CPU)
->>> 	.give_timebase	= smp_generic_give_timebase,
->>> 	.take_timebase	= smp_generic_take_timebase,
->>> +#endif
->>> };
->>>
->>> #ifdef CONFIG_KEXEC
->>
->> Note that this is only a temporary fix, that assumes the environments
->> where tbsync is problematic[1] (virtualization and simulation) do not
->> enable CONFIG_KEXEC or CONFIG_HOTPLUG_CPU.  Eventually the sync should
->> be done via CCSR like in U-Boot, and the decision on whether to do it
->> should be runtime.
-> 
-> Is the thinking with the CCSR like u-boot sync after boot would resync to some non-zero TB value?
+> As this is not accepted anymore, change the allocation schema of the
+> EDAC *_info structs to enforce this Kernel standard.
+[]
+> diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+[]
+> @@ -2228,9 +2228,9 @@ static int init_csrows(struct mem_ctl_info *mci)
+>  			edac_mode = EDAC_NONE;
+>  
+>  		for (j = 0; j < pvt->channel_count; j++) {
+> -			csrow->channels[j].dimm->mtype = mtype;
+> -			csrow->channels[j].dimm->edac_mode = edac_mode;
+> -			csrow->channels[j].dimm->nr_pages = nr_pages;
+> +			csrow->channels[j]->dimm->mtype = mtype;
+> +			csrow->channels[j]->dimm->edac_mode = edac_mode;
+> +			csrow->channels[j]->dimm->nr_pages = nr_pages;
 
-Yes, while all timebases are stopped, the core coming out of reset will
-be set to the timebase value of the other cores.
+It might be better to use an automatic for
+	typeof foo dimm = csrow->channels[j]->dimm;
+	dimm->mtype = mtype;
+	etc...
+[]
+> @@ -293,39 +286,56 @@ struct mem_ctl_info *edac_mc_alloc(unsigned edac_index,
+>  	mci->mem_is_per_rank = per_rank;
+>  
+>  	/*
+> -	 * Fills the csrow struct
+> +	 * Alocate and fill the csrow/channels structs
+>  	 */
+> +	mci->csrows = kzalloc(sizeof(*mci->csrows) * tot_csrows, GFP_KERNEL);
 
-> I'm guessing the idea is doing such a rsync w/TB stopped in the
-> system is quick enough that the freezing of it will not be noticed.
+kcalloc
 
-Quick enough is relative, but remember that the context is things like
-kexec and deep sleep, which are already quite timing-intrusive.
+[]
+> +		csr->channels = kzalloc(sizeof(*csr->channels) * tot_cschannels,
+> +					GFP_KERNEL);
 
-> One should measure this and see what it looks like in core cycles and
-> how it scales based on # of cores.  (could use alternate TB as a
-> counter to measure).
+here too
 
-I have a hard time imagining it being slower than the generic tbsync,
-but in any case it's really the only sane option we have in cases where
-we must reset individual cores -- I'm not sure how relevant such
-benchmarking would be, other than "nice to know".
+> @@ -391,7 +401,31 @@ struct mem_ctl_info *edac_mc_alloc(unsigned edac_index,
+>  
+>  	trace_hw_event_init("edac", (unsigned)edac_index);
+>  
+> +	debugf1("EDAC MCI allocated\n");
+>  	return mci;
+> +
+> +error:
+> +	debugf1("Failed to allocate one or more EDAC MCI structs\n");
 
--Scott
+Generally, it's not necessary to have specific "OOM" messages
+as allocations without GFP_NOWARN do dump_stack()s
