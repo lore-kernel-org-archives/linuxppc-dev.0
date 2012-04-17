@@ -1,24 +1,28 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 36501B6FD6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 15:33:13 +1000 (EST)
-In-Reply-To: <1334624440.25353.18.camel@pasglop>
-References: <1334607198-18694-1-git-send-email-grant.likely@secretlab.ca>	
- <CACxGe6u7EUYqyZ_8tC8PFRHwS+xq7u9+fCJk+UFbrtrV-YJFvQ@mail.gmail.com>
- <1334617419.25353.15.camel@pasglop>	
- <OFAAF4BF26.BF8400B2-ONC12579E2.008226AC-C12579E3.00005051@transmode.se>
- <1334624440.25353.18.camel@pasglop>
-Subject: Re: [PATCH 1/2] powerpc/8xx: Fix NR_IRQ bugs and refactor 8xx
- interrupt controller
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OFE9765BBA.C01624AC-ONC12579E3.001E58A0-C12579E3.001E7F8B@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 17 Apr 2012 07:33:07 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D274FB704A
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 15:55:54 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 17 Apr 2012 11:25:52 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3H5tgcN3260570
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 11:25:42 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3HBOu0K004295
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 21:24:57 +1000
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/eeh: crash caused by null eeh_dev
+Date: Tue, 17 Apr 2012 13:55:39 +0800
+Message-Id: <1334642139-25447-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: anton@samba.org, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 2012/04/17 03:00:40:
->
-> On Tue, 2012-04-17 at 02:03 +0200, Joakim Tjernlund wrote:
-> >
-> > If you are going to test 8xx, could you revert
-> > e0908085fc2391c85b85fb814ae1df377c8e0dcb,
-> > powerpc/8xx: Fix regression introduced by cache coherency rewrite ?
-> >
-> > It should not be needed after I fixed up the 8xx TLB code and added a
-> > workaround
-> > for buggy dcbX instructions.
->
-> Have you actually verified that things still work after reverting it ?
+The problem was reported by Anton Blanchard. While EEH error
+happened to the PCI device without the corresponding device
+driver, kernel crash was seen. Eventually, I successfully
+reproduced the problem on Firebird-L machine with utility
+"errinjct". Initially, the device driver for Emulex ethernet
+MAC has been disabled from .config and force data parity on
+the Emulex ethernet MAC with help of "errinjct". Eventually,
+I saw the kernel crash after issueing couple of "lspci -v"
+command.
 
-Nope, I haven't moved our 8xx to 3.x. We are still on
-2.4 and it works there.
+The root cause behind is that the PCI device, including the
+reference to the corresponding eeh device, will be removed
+from the system while EEH does recovery. Afterwards, the
+PCI device will be probed again and added into the system
+accordingly. So it's not safe to retrieve the eeh device from
+the corresponding PCI device after the PCI device has been removed
+and not added again.
 
- Jocke
+The patch fixes the issue and retrieve the eeh device from OF node
+instead of PCI device after the PCI device has been removed.
+
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/eeh.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 309d38e..a75e37d 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -1076,7 +1076,7 @@ static void eeh_add_device_late(struct pci_dev *dev)
+ 	pr_debug("EEH: Adding device %s\n", pci_name(dev));
+ 
+ 	dn = pci_device_to_OF_node(dev);
+-	edev = pci_dev_to_eeh_dev(dev);
++	edev = of_node_to_eeh_dev(dn);
+ 	if (edev->pdev == dev) {
+ 		pr_debug("EEH: Already referenced !\n");
+ 		return;
+-- 
+1.7.5.4
