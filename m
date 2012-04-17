@@ -1,11 +1,26 @@
-Return-Path: <valentin.ilie@gmail.com>
-From: Valentin Ilie <valentin.ilie@gmail.com>
-To: geoff@infradead.org
-Subject: [PATCH] Drivers: ps3: ps3av.c: fixed checkpatch warnings
-Date: Tue, 17 Apr 2012 14:16:01 +0300
-Message-Id: <1334661361-3699-1-git-send-email-valentin.ilie@gmail.com>
-Cc: cbe-oss-dev@lists.ozlabs.org, Valentin Ilie <valentin.ilie@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D69CCB7033
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 02:25:20 +1000 (EST)
+Message-ID: <4F8D995C.9030300@freescale.com>
+Date: Tue, 17 Apr 2012 11:25:00 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: [PATCH v4 1/4] powerpc/85xx: add HOTPLUG_CPU support
+References: <1331889732-25240-1-git-send-email-chenhui.zhao@freescale.com>
+ <4F8C78B3.1070002@freescale.com>
+ <94F013E7935FF44C83EBE7784D62AD3F092D1098@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F092D1098@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,89 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixed some indenting problems.
+On 04/17/2012 04:51 AM, Li Yang-R58472 wrote:
+>>>  struct smp_ops_t smp_85xx_ops = {
+>>>  	.kick_cpu = smp_85xx_kick_cpu,
+>>> -#ifdef CONFIG_KEXEC
+>>> +#ifdef CONFIG_HOTPLUG_CPU
+>>> +	.cpu_disable	= generic_cpu_disable,
+>>> +	.cpu_die	= generic_cpu_die,
+>>> +#endif
+>>>  	.give_timebase	= smp_generic_give_timebase,
+>>>  	.take_timebase	= smp_generic_take_timebase,
+>>> -#endif
+>>>  };
+>>
+>> We need to stop using smp_generic_give/take_timebase, not expand its use.
+>> This stuff breaks under hypervisors where timebase can't be written.  It
+>> wasn't too bad before since we generally didn't enable CONFIG_KEXEC, but
+>> we're more likely to want CONFIG_HOTPLUG_CPU.
+> 
+> I understand that the guest OS shouldn't change the real timebase.  
 
-Signed-off-by: Valentin Ilie <valentin.ilie@gmail.com>
----
- drivers/ps3/ps3av.c |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+Cannot change it, and we've seen the tbsync code loop forever when it
+tries (since the changes aren't taking effect).
 
-diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
-index a409fa0..46136b0 100644
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -25,8 +25,8 @@
- #include <linux/ioctl.h>
- #include <linux/fb.h>
- #include <linux/slab.h>
-+#include <linux/firmware.h>
- 
--#include <asm/firmware.h>
- #include <asm/ps3av.h>
- #include <asm/ps3.h>
- 
-@@ -338,7 +338,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, size_t usr_buf_size,
- 	mutex_unlock(&ps3av->mutex);
- 	return 0;
- 
--      err:
-+err:
- 	mutex_unlock(&ps3av->mutex);
- 	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __func__, cid, res);
- 	return res;
-@@ -477,7 +477,6 @@ int ps3av_set_audio_mode(u32 ch, u32 fs, u32 word_bits, u32 format, u32 source)
- 
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_set_audio_mode);
- 
- static int ps3av_set_videomode(void)
-@@ -870,21 +869,18 @@ int ps3av_set_video_mode(int id)
- 
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_set_video_mode);
- 
- int ps3av_get_auto_mode(void)
- {
- 	return ps3av_auto_videomode(&ps3av->av_hw_conf);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_get_auto_mode);
- 
- int ps3av_get_mode(void)
- {
- 	return ps3av ? ps3av->ps3av_mode : 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_get_mode);
- 
- /* get resolution by video_mode */
-@@ -902,7 +898,6 @@ int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
- 	*yres = video_mode_table[id].y;
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_video_mode2res);
- 
- /* mute */
-@@ -911,7 +906,6 @@ int ps3av_video_mute(int mute)
- 	return ps3av_set_av_video_mute(mute ? PS3AV_CMD_MUTE_ON
- 					    : PS3AV_CMD_MUTE_OFF);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_video_mute);
- 
- /* mute analog output only */
-@@ -935,7 +929,6 @@ int ps3av_audio_mute(int mute)
- 	return ps3av_set_audio_mute(mute ? PS3AV_CMD_MUTE_ON
- 					 : PS3AV_CMD_MUTE_OFF);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_audio_mute);
- 
- static int __devinit ps3av_probe(struct ps3_system_bus_device *dev)
--- 
-1.7.9.5
+> But no matter what timebase syncing method we are using, the timebase need to be changed anyway for certain features.
+
+That's why I said to do it the way U-Boot does it.
+
+> I think the better way should be trapping timebase modification in the hypervisor.
+
+It does trap.  Currently we treat it as a no-op.  The only reasonable
+alternative is to give the guest an exception.  It is simply not allowed
+for a guest to modify the timebase -- we are not going to break the
+host's timebase sync.  See the virtualized implementation note in
+section 9.2.1 of book III-E of Power ISA 2.06B: "In virtualized
+implementations, TBU and TBL are read-only."
+
+>> Do the timebase sync the way U-Boot does -- if you find the appropriate
+>> guts node in the device tree.
+> 
+> That involves stopping timebase for a short time on all cores including the cores that are still online.  Won't this be a potential issue?
+
+I don't think it's a big deal in the contexts where you'd be doing
+this -- at least not worse than the current situation.  Just make sure
+that you don't reset the timebase to zero or otherwise make a core see
+the timebase go backward.
+
+-Scott
