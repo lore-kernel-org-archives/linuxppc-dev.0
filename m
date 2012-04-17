@@ -1,21 +1,34 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A1E1B7043
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 04:10:07 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Huang Changming-R66093 <r66093@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc/mpc85xx: support the MTD for p1022ds flash
-Date: Tue, 17 Apr 2012 18:09:35 +0000
-Message-ID: <CAOZdJXVBb-CHa=PPa5446aVdQ323aBdv-9UTXx1SbkY2ArT14Q@mail.gmail.com>
-References: <1334654129-1044-1-git-send-email-Chang-Ming.Huang@freescale.com>
-In-Reply-To: <1334654129-1044-1-git-send-email-Chang-Ming.Huang@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <mchehab@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 9C321B705E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 05:29:45 +1000 (EST)
+Message-ID: <4F8DC471.3050809@redhat.com>
+Date: Tue, 17 Apr 2012 16:28:49 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Borislav Petkov <bp@amd64.org>
+Subject: Re: [EDAC PATCH v13 4/7] edac: move nr_pages to dimm struct
+References: <1333039546-5590-1-git-send-email-mchehab@redhat.com>
+ <1334607133-30039-1-git-send-email-mchehab@redhat.com>
+ <1334607133-30039-5-git-send-email-mchehab@redhat.com>
+ <20120417184808.GD13989@aftab>
+In-Reply-To: <20120417184808.GD13989@aftab>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>, Hitoshi Mitake <h.mitake@gmail.com>,
+ Mark Gross <mark.gross@intel.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Egor Martovetsky <egor@pasemi.com>,
+ =?ISO-8859-1?Q?Niklas_S=F6d?= =?ISO-8859-1?Q?erlund?=
+ <niklas.soderlund@ericsson.com>, Tim Small <tim@buttersideup.com>,
+ "Arvind R." <arvino55@gmail.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Olof Johansson <olof@lixom.net>, Doug Thompson <norsk5@yahoo.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +38,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 17, 2012 at 4:15 AM,  <Chang-Ming.Huang@freescale.com> wrote:
+Em 17-04-2012 15:48, Borislav Petkov escreveu:
+> On Mon, Apr 16, 2012 at 05:12:10PM -0300, Mauro Carvalho Chehab wrote:
+>> The number of pages is a dimm property. Move it to the dimm struct.
+>>
+>> After this change, it is possible to add sysfs nodes for the DIMM's that
+> 
+> Minor nitpick:
+> 
+>                                                                DIMMs
+> 
+> Please go over the rest of the commit messages because they have similar
+> typos.
+> 
+>> will properly represent the DIMM stick properties, including its size.
+>>
+>> A TODO fix here is to properly represent dual-rank/quad-rank DIMMs when
+>> the memory controller represents the memory via chip select rows.
+>>
+>> Reviewed-by: Aristeu Rozanski <arozansk@redhat.com>
+>> Cc: Doug Thompson <norsk5@yahoo.com>
+>> Cc: Borislav Petkov <borislav.petkov@amd.com>
+>> Cc: Mark Gross <mark.gross@intel.com>
+>> Cc: Jason Uhlenkott <juhlenko@akamai.com>
+>> Cc: Tim Small <tim@buttersideup.com>
+>> Cc: Ranganathan Desikan <ravi@jetztechnologies.com>
+>> Cc: "Arvind R." <arvino55@gmail.com>
+>> Cc: Olof Johansson <olof@lixom.net>
+>> Cc: Egor Martovetsky <egor@pasemi.com>
+>> Cc: Chris Metcalf <cmetcalf@tilera.com>
+>> Cc: Michal Marek <mmarek@suse.cz>
+>> Cc: Jiri Kosina <jkosina@suse.cz>
+>> Cc: Joe Perches <joe@perches.com>
+>> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Hitoshi Mitake <h.mitake@gmail.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: "Niklas Söderlund" <niklas.soderlund@ericsson.com>
+>> Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+>> Cc: Josh Boyer <jwboyer@gmail.com>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+>> ---
+>>  drivers/edac/amd64_edac.c      |   12 +++------
+>>  drivers/edac/amd76x_edac.c     |    6 ++--
+>>  drivers/edac/cell_edac.c       |    8 ++++--
+>>  drivers/edac/cpc925_edac.c     |    8 ++++--
+>>  drivers/edac/e752x_edac.c      |    6 +++-
+>>  drivers/edac/e7xxx_edac.c      |    5 ++-
+>>  drivers/edac/edac_mc.c         |   16 ++++++++-----
+>>  drivers/edac/edac_mc_sysfs.c   |   47 ++++++++++++++++++++++++++++------------
+>>  drivers/edac/i3000_edac.c      |    6 +++-
+>>  drivers/edac/i3200_edac.c      |    3 +-
+>>  drivers/edac/i5000_edac.c      |   14 ++++++-----
+>>  drivers/edac/i5100_edac.c      |   22 +++++++++++-------
+>>  drivers/edac/i5400_edac.c      |    9 ++-----
+>>  drivers/edac/i7300_edac.c      |   22 +++++-------------
+>>  drivers/edac/i7core_edac.c     |   10 ++------
+>>  drivers/edac/i82443bxgx_edac.c |    2 +-
+>>  drivers/edac/i82860_edac.c     |    2 +-
+>>  drivers/edac/i82875p_edac.c    |    5 ++-
+>>  drivers/edac/i82975x_edac.c    |   11 ++++++--
+>>  drivers/edac/mpc85xx_edac.c    |    3 +-
+>>  drivers/edac/mv64x60_edac.c    |    3 +-
+>>  drivers/edac/pasemi_edac.c     |   14 ++++++------
+>>  drivers/edac/ppc4xx_edac.c     |    5 ++-
+>>  drivers/edac/r82600_edac.c     |    3 +-
+>>  drivers/edac/sb_edac.c         |    8 +-----
+>>  drivers/edac/tile_edac.c       |    2 +-
+>>  drivers/edac/x38_edac.c        |    4 +-
+>>  include/linux/edac.h           |    8 ++++--
+>>  28 files changed, 144 insertions(+), 120 deletions(-)
+>>
+>> diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+>> index 0be3f29..8804ac8 100644
+>> --- a/drivers/edac/amd64_edac.c
+>> +++ b/drivers/edac/amd64_edac.c
+>> @@ -2126,12 +2126,6 @@ static u32 amd64_csrow_nr_pages(struct amd64_pvt *pvt, u8 dct, int csrow_nr)
+>>  
+>>  	nr_pages = pvt->ops->dbam_to_cs(pvt, dct, cs_mode) << (20 - PAGE_SHIFT);
+>>  
+>> -	/*
+>> -	 * If dual channel then double the memory size of single channel.
+>> -	 * Channel count is 1 or 2
+>> -	 */
+>> -	nr_pages <<= (pvt->channel_count - 1);
+> 
+> This changes DEBUG output from:
+> 
+> EDAC DEBUG: init_csrows: ----CSROW 0 VALID for MC node 0
+> EDAC DEBUG: amd64_csrow_nr_pages:   (csrow=0) DBAM map index= 8
+> EDAC DEBUG: amd64_csrow_nr_pages:     nr_pages= 1048576  channel-count = 2
+> EDAC amd64: CS0: Registered DDR3 RAM
+> EDAC DEBUG: init_csrows:   for MC node 0 csrow 0:
+> EDAC DEBUG: init_csrows:     nr_pages: 1048576
+> 
+> to
+> 
+> EDAC DEBUG: init_csrows: ----CSROW 0 VALID for MC node 0
+> EDAC DEBUG: amd64_csrow_nr_pages:   (csrow=0) DBAM map index= 8
+> EDAC DEBUG: amd64_csrow_nr_pages:     nr_pages= 524288  channel-count = 2
+> 
+> which is only half the pages.
+> 
+>> -
+>>  	debugf0("  (csrow=%d) DBAM map index= %d\n", csrow_nr, cs_mode);
+>>  	debugf0("    nr_pages= %u  channel-count = %d\n",
+>>  		nr_pages, pvt->channel_count);
 
-> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platfo=
-rms/85xx/p1022_ds.c
-> index e74b7cd..0db3a7e 100644
-> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
-> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-> @@ -463,6 +463,7 @@ static void __init p1022_ds_setup_arch(void)
-> =A0static struct of_device_id __initdata p1022_ds_ids[] =3D {
-> =A0 =A0 =A0 =A0/* So that the DMA channel nodes can be probed individuall=
-y: */
-> =A0 =A0 =A0 =A0{ .compatible =3D "fsl,eloplus-dma", },
-> + =A0 =A0 =A0 { .compatible =3D "fsl,p1022-elbc", },
-> =A0 =A0 =A0 =A0{},
-> =A0};
 
+Ok. well, we can either multiply nr_pages by channel_count or to let it
+clear that this is per channel. I prefer the last option (see the enclosed
+patch).
 
-Have you actually tested this with an upstream kernel?  p1022_ds_ids[]
-is broken upstream, so adding a new line won't work.
+>> @@ -2152,6 +2146,7 @@ static int init_csrows(struct mem_ctl_info *mci)
+>>  	int i, j, empty = 1;
+>>  	enum mem_type mtype;
+>>  	enum edac_type edac_mode;
+>> +	int nr_pages;
+>>  
+>>  	amd64_read_pci_cfg(pvt->F3, NBCFG, &val);
+>>  
+>> @@ -2174,14 +2169,14 @@ static int init_csrows(struct mem_ctl_info *mci)
+>>  			i, pvt->mc_node_id);
+>>  
+>>  		empty = 0;
+>> -		csrow->nr_pages = amd64_csrow_nr_pages(pvt, 0, i);
+>> +		nr_pages = amd64_csrow_nr_pages(pvt, 0, i);
+>>  		get_cs_base_and_mask(pvt, i, 0, &base, &mask);
+>>  		/* 8 bytes of resolution */
+>>  
+>>  		mtype = amd64_determine_memory_type(pvt, i);
+>>  
+>>  		debugf1("  for MC node %d csrow %d:\n", pvt->mc_node_id, i);
+>> -		debugf1("    nr_pages: %u\n", csrow->nr_pages);
+>> +		debugf1("    nr_pages: %u\n", nr_pages);
+>>  
+>>  		/*
+>>  		 * determine whether CHIPKILL or JUST ECC or NO ECC is operating
+>> @@ -2195,6 +2190,7 @@ static int init_csrows(struct mem_ctl_info *mci)
+>>  		for (j = 0; j < pvt->channel_count; j++) {
+>>  			csrow->channels[j].dimm->mtype = mtype;
+>>  			csrow->channels[j].dimm->edac_mode = edac_mode;
+>> +			csrow->channels[j].dimm->nr_pages = nr_pages;
+> 
+> I'm guessing you want to accumulate the nr_pages for all channels here
+> and dump it properly?
+> 
 
-Take a look at http://patchwork.ozlabs.org/patch/128533/
+As you've requested to not move the debugf0() to be after the loop, it is
+easier to just multiply it at the printk. As an advantage, when the kernel
+is compiled without debug, no code will be produced.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+IMO, the best way to solve it is with this small patch. If you're ok, I'll
+fold it with this one and add your ack.
+
+Regards,
+Mauro
+
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index 8804ac8..6d6ec68 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2127,7 +2127,7 @@ static u32 amd64_csrow_nr_pages(struct amd64_pvt *pvt, u8 dct, int csrow_nr)
+ 	nr_pages = pvt->ops->dbam_to_cs(pvt, dct, cs_mode) << (20 - PAGE_SHIFT);
+ 
+ 	debugf0("  (csrow=%d) DBAM map index= %d\n", csrow_nr, cs_mode);
+-	debugf0("    nr_pages= %u  channel-count = %d\n",
++	debugf0("    nr_pages/channel= %u  channel-count = %d\n",
+ 		nr_pages, pvt->channel_count);
+ 
+ 	return nr_pages;
+@@ -2176,7 +2176,7 @@ static int init_csrows(struct mem_ctl_info *mci)
+ 		mtype = amd64_determine_memory_type(pvt, i);
+ 
+ 		debugf1("  for MC node %d csrow %d:\n", pvt->mc_node_id, i);
+-		debugf1("    nr_pages: %u\n", nr_pages);
++		debugf1("    nr_pages: %u\n", nr_pages * pvt->channel_count);
+ 
+ 		/*
+ 		 * determine whether CHIPKILL or JUST ECC or NO ECC is operating
