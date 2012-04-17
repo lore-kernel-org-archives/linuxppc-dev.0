@@ -1,33 +1,24 @@
-Return-Path: <wad@chromium.org>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
- [209.85.161.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 45D8DB70A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 05:50:24 +1000 (EST)
-Received: by ggni2 with SMTP id i2so3525396ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 12:50:21 -0700 (PDT)
-From: Will Drewry <wad@chromium.org>
-To: jmorris@namei.org
-Subject: [PATCH 1/2] seccomp: ignore secure_computing return values
-Date: Tue, 17 Apr 2012 14:48:57 -0500
-Message-Id: <1334692161-6834-1-git-send-email-wad@chromium.org>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Kees Cook <keescook@chromium.org>,
- sfr@canb.auug.org.au, Richard Weinberger <richard@nod.at>,
- Avi Kivity <avi@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
- Ingo Molnar <mingo@elte.hu>, Serge Hallyn <serge.hallyn@canonical.com>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-s390@vger.kernel.org,
- microblaze-uclinux@itee.uq.edu.au, James Morris <james.l.morris@oracle.com>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- Will Drewry <wad@chromium.org>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linux-security-module@vger.kernel.org,
- Paul Mundt <lethal@linux-sh.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Return-Path: <R58495@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 75FEDB7095
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2012 07:39:19 +1000 (EST)
+Received: from mail97-db3 (localhost [127.0.0.1])	by mail97-db3-R.bigfish.com
+ (Postfix) with ESMTP id AF73B4A016C	for <linuxppc-dev@ozlabs.org>;
+ Tue, 17 Apr 2012 21:39:15 +0000 (UTC)
+Received: from DB3EHSMHS009.bigfish.com (unknown [10.3.81.227])	by
+ mail97-db3.bigfish.com (Postfix) with ESMTP id 7C0571E0048	for
+ <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 21:39:12 +0000 (UTC)
+From: York Sun <yorksun@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: Add back condition for smp
+Date: Tue, 17 Apr 2012 14:39:06 -0700
+Message-ID: <1334698746-11529-1-git-send-email-yorksun@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,150 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This change is inspired by
-  https://lkml.org/lkml/2012/4/16/14
-which fixes the build warnings for arches that don't support
-CONFIG_HAVE_ARCH_SECCOMP_FILTER.
+The timebase synchronization is only necessary if we need to reset a
+separate core.  Currently only KEXEC and CPU hotplug require resetting
+a single core. The following code should be in the condition of
+CONFIG_KEXEC or CONFIG_HOTPLUG_CPU
 
-In particular, there is no requirement for the return value of
-secure_computing() to be checked unless the architecture supports
-seccomp filter.  Instead of silencing the warnings with (void)
-a new static inline is added to encode the expected behavior
-in a compiler and human friendly way.
+        .give_timebase  = smp_generic_give_timebase,
+        .take_timebase  = smp_generic_take_timebase,
 
-v2: - cleans things up with a static inline
-    - removes sfr's signed-off-by since it is a different approach
-v1: - matches sfr's original change
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Will Drewry <wad@chromium.org>
-Acked-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: York Sun <yorksun@freescale.com>
+Acked-by: Li Yang <leoli@freescale.com>
 ---
- arch/microblaze/kernel/ptrace.c |    2 +-
- arch/mips/kernel/ptrace.c       |    2 +-
- arch/powerpc/kernel/ptrace.c    |    2 +-
- arch/s390/kernel/ptrace.c       |    2 +-
- arch/sh/kernel/ptrace_32.c      |    2 +-
- arch/sh/kernel/ptrace_64.c      |    2 +-
- arch/sparc/kernel/ptrace_64.c   |    2 +-
- include/linux/seccomp.h         |    7 +++++++
- 8 files changed, 14 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/85xx/smp.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/microblaze/kernel/ptrace.c b/arch/microblaze/kernel/ptrace.c
-index 6eb2aa9..ab1b9db 100644
---- a/arch/microblaze/kernel/ptrace.c
-+++ b/arch/microblaze/kernel/ptrace.c
-@@ -136,7 +136,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
- {
- 	long ret = 0;
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 56942af..868c6d7 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -192,8 +192,10 @@ struct smp_ops_t smp_85xx_ops = {
+ 	.cpu_disable	= generic_cpu_disable,
+ 	.cpu_die	= generic_cpu_die,
+ #endif
++#if defined(CONFIG_KEXEC) || defined(CONFIG_HOTPLUG_CPU)
+ 	.give_timebase	= smp_generic_give_timebase,
+ 	.take_timebase	= smp_generic_take_timebase,
++#endif
+ };
  
--	secure_computing(regs->r12);
-+	secure_computing_strict(regs->r12);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
- 	    tracehook_report_syscall_entry(regs))
-diff --git a/arch/mips/kernel/ptrace.c b/arch/mips/kernel/ptrace.c
-index 7c24c29..4812c6d 100644
---- a/arch/mips/kernel/ptrace.c
-+++ b/arch/mips/kernel/ptrace.c
-@@ -535,7 +535,7 @@ static inline int audit_arch(void)
- asmlinkage void syscall_trace_enter(struct pt_regs *regs)
- {
- 	/* do the secure computing check first */
--	secure_computing(regs->regs[2]);
-+	secure_computing_strict(regs->regs[2]);
- 
- 	if (!(current->ptrace & PT_PTRACED))
- 		goto out;
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 8d8e028..dd5e214 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1710,7 +1710,7 @@ long do_syscall_trace_enter(struct pt_regs *regs)
- {
- 	long ret = 0;
- 
--	secure_computing(regs->gpr[0]);
-+	secure_computing_strict(regs->gpr[0]);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
- 	    tracehook_report_syscall_entry(regs))
-diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
-index 02f300f..4993e68 100644
---- a/arch/s390/kernel/ptrace.c
-+++ b/arch/s390/kernel/ptrace.c
-@@ -719,7 +719,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
- 	long ret = 0;
- 
- 	/* Do the secure computing check first. */
--	secure_computing(regs->gprs[2]);
-+	secure_computing_strict(regs->gprs[2]);
- 
- 	/*
- 	 * The sysc_tracesys code in entry.S stored the system
-diff --git a/arch/sh/kernel/ptrace_32.c b/arch/sh/kernel/ptrace_32.c
-index 9698671..81f999a 100644
---- a/arch/sh/kernel/ptrace_32.c
-+++ b/arch/sh/kernel/ptrace_32.c
-@@ -503,7 +503,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
- {
- 	long ret = 0;
- 
--	secure_computing(regs->regs[0]);
-+	secure_computing_strict(regs->regs[0]);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
- 	    tracehook_report_syscall_entry(regs))
-diff --git a/arch/sh/kernel/ptrace_64.c b/arch/sh/kernel/ptrace_64.c
-index bc81e07..af90339 100644
---- a/arch/sh/kernel/ptrace_64.c
-+++ b/arch/sh/kernel/ptrace_64.c
-@@ -522,7 +522,7 @@ asmlinkage long long do_syscall_trace_enter(struct pt_regs *regs)
- {
- 	long long ret = 0;
- 
--	secure_computing(regs->regs[9]);
-+	secure_computing_strict(regs->regs[9]);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
- 	    tracehook_report_syscall_entry(regs))
-diff --git a/arch/sparc/kernel/ptrace_64.c b/arch/sparc/kernel/ptrace_64.c
-index 6f97c07..484daba 100644
---- a/arch/sparc/kernel/ptrace_64.c
-+++ b/arch/sparc/kernel/ptrace_64.c
-@@ -1062,7 +1062,7 @@ asmlinkage int syscall_trace_enter(struct pt_regs *regs)
- 	int ret = 0;
- 
- 	/* do the secure computing check first */
--	secure_computing(regs->u_regs[UREG_G1]);
-+	secure_computing_strict(regs->u_regs[UREG_G1]);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE))
- 		ret = tracehook_report_syscall_entry(regs);
-diff --git a/include/linux/seccomp.h b/include/linux/seccomp.h
-index 60f2b35..84f6320d 100644
---- a/include/linux/seccomp.h
-+++ b/include/linux/seccomp.h
-@@ -75,6 +75,12 @@ static inline int secure_computing(int this_syscall)
- 	return 0;
- }
- 
-+/* A wrapper for architectures supporting only SECCOMP_MODE_STRICT. */
-+static inline void secure_computing_strict(int this_syscall)
-+{
-+	BUG_ON(secure_computing(this_syscall) != 0);
-+}
-+
- extern long prctl_get_seccomp(void);
- extern long prctl_set_seccomp(unsigned long, char __user *);
- 
-@@ -91,6 +97,7 @@ struct seccomp { };
- struct seccomp_filter { };
- 
- static inline int secure_computing(int this_syscall) { return 0; }
-+static inline void secure_computing_strict(int this_syscall) { return; }
- 
- static inline long prctl_get_seccomp(void)
- {
+ #ifdef CONFIG_KEXEC
 -- 
-1.7.5.4
+1.7.0.4
