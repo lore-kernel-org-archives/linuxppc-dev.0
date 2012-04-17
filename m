@@ -1,34 +1,21 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 72371B7072
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 11:58:36 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 17 Apr 2012 01:53:29 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3H1pJsu618748
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 11:51:19 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3H1vqb4019159
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2012 11:57:53 +1000
-Message-ID: <1334627871.25353.26.camel@pasglop>
-Subject: Re: [PATCH v5 00/21] EEH reorganization
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Date: Tue, 17 Apr 2012 11:57:51 +1000
-In-Reply-To: <20120417113738.0f091da4@kryten>
-References: <1330409051-8941-1-git-send-email-shangw@linux.vnet.ibm.com>
- <20120413073931.0c36169b@kryten> <20120413120346.42e01402@kryten>
- <20120417012915.GA3806@shangw> <20120417113738.0f091da4@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Return-Path: <R65777@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 27B3FB700D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 13:42:35 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <kvm-ppc@vger.kernel.org>,
+ <kvm@vger.kernel.org>, <bharatb.yadav@gmail.com>
+Subject: [PATCH v3]KVM: PPC: Use clockevent multiplier and shifter for
+ decrementer
+Date: Tue, 17 Apr 2012 09:25:09 +0530
+Message-ID: <1334634909-9066-1-git-send-email-bharat.bhushan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,71 +25,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-04-17 at 11:37 +1000, Anton Blanchard wrote:
-> 
-> No. I replaced that backtrace in eeh_dn_check_failure with a WARN_ON()
-> because the backtrace doesn't give us enough info. I'm submitting a
-> patch for that today.
-> 
-> Bottom line is mstmread has been causing an EEH error since at least
-> 3.0, but in 3.4 we now oops instead of recovering. The signs all point
-> to the EEH rework in 3.4.
+Time for which the hrtimer is started for decrementer emulation is calculated using tb_ticks_per_usec. While hrtimer uses the clockevent for DEC reprogramming (if needed) and which calculate timebase ticks using the multiplier and shifter mechanism implemented within clockevent layer. It was observed that this conversion (timebase->time->timebase) are not correct because the mechanism are not consistent. In our setup it adds 2% jitter.
 
-More precisely, the original oops reported by Anton decodes as such:
+With this patch clockevent multiplier and shifter mechanism are used when starting hrtimer for decrementer emulation. Now the jitter is < 0.5%.
 
->Oops: Kernel access of bad area, sig: 11 [#1]
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
+v3:
+ - decrementer_clockevent symbol exported.
 
-This is typically a bad memory access..
+ arch/powerpc/include/asm/time.h |    1 +
+ arch/powerpc/kernel/time.c      |    3 ++-
+ arch/powerpc/kvm/emulate.c      |    5 +++--
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
->SMP NR_CPUS=1024 NUMA pSeries
->Modules linked in:
->NIP: c000000000055af8 LR: c000000000033204 CTR: 0000000000000000
->REGS: c000001f42fb7990 TRAP: 0300   Tainted: G        W     (3.4.0-rc2-00065-gf549e08-dirty)
-
-TRAP: 300 means that it's the result of a data access interrupts, ie,
-load or store to a bad address
-
->MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 24008084  XER: 00000000
->SOFTE: 1
->CFAR: 00000000000049b8
->DAR: 0000000000000070, DSISR: 40000000
-
-Here the DAR tells us what address was accessed. 0x70 is a strong indication
-that this was an access to a NULL pointer (at offset 0x70 from that pointer).
-
-It -might- be something else (such as a NULL passed to a list head or such)
-but the idea that there's a NULL floating around is a good hint.
-
->TASK = c000001f6c7dfc40[19010] 'eehd' THREAD: c000001f42fb4000 CPU: 6
->GPR00: 0000000000000001 c000001f42fb7c10 c000000000bd3a28 c000001f80ab0800 
->GPR04: c000001f7c57d418 0000000000000380 c000001f7c57e070 c000000000ed5360 
->GPR08: 0000000000000000 c000000000c77088 0000000000000000 0000000000000001 
->GPR12: 0000000044008088 c00000000eda1500 00000000019ffa78 0000000000a70000 
->GPR16: 00000000000000bb c000000000a9f754 c000000000963230 000000000000005e 
->GPR20: 0000000001b37e80 00000000000000bb 0000000000000000 c000000000b0ad90 
->GPR24: 0000000000000000 c000000000b10588 0000000000000001 c000001f80ab0800 
->GPR28: 0000000000000000 c000001f80ab0828 0000000000000000 c000001f7ee10000 
->NIP [c000000000055af8] .eeh_add_device_tree_late+0x58/0xf0
-
-This is the function where it happened (eeh_add_device_tree_late)
-
->LR [c000000000033204] .pcibios_finish_adding_to_bus+0x34/0x50
->Call Trace:
->[c000001f42fb7c10] [00000000fdffffff] 0xfdffffff (unreliable)
->[c000001f42fb7ca0] [c000000000033204] .pcibios_finish_adding_to_bus+0x34/0x50
->[c000001f42fb7d20] [c000000000059a5c] .pcibios_add_pci_devices+0x7c/0x190
->[c000001f42fb7db0] [c000000000057a6c] .eeh_reset_device+0xfc/0x1a0
->[c000001f42fb7e50] [c000000000057e18] .handle_eeh_events+0x308/0x480
->[c000001f42fb7f00] [c0000000000584dc] .eeh_event_handler+0x13c/0x1d0
->[c000001f42fb7f90] [c00000000002099c] .kernel_thread+0x54/0x70
-
-And your backtrace. You can see that you got an eeh event, which triggered an
-eeh reset, which triggered a pcibios_add_pci_devices() etc...
-
->Instruction dump:
->480000a8 60000000 ebff0000 7fbfe800 419e0098 2fbf0000 419e005c e9229eb0 
->80090008 2f800000 419e004c ebdf01d0 <e81e0070> 7fbf0000 3160ffff
->7d2b0110 
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 7eb10fb..b3c7959 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -28,6 +28,7 @@
+ extern unsigned long tb_ticks_per_jiffy;
+ extern unsigned long tb_ticks_per_usec;
+ extern unsigned long tb_ticks_per_sec;
++extern struct clock_event_device decrementer_clockevent;
+ 
+ struct rtc_time;
+ extern void to_tm(int tim, struct rtc_time * tm);
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 567dd7c..4f7a285 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -105,7 +105,7 @@ static int decrementer_set_next_event(unsigned long evt,
+ static void decrementer_set_mode(enum clock_event_mode mode,
+ 				 struct clock_event_device *dev);
+ 
+-static struct clock_event_device decrementer_clockevent = {
++struct clock_event_device decrementer_clockevent = {
+ 	.name           = "decrementer",
+ 	.rating         = 200,
+ 	.irq            = 0,
+@@ -113,6 +113,7 @@ static struct clock_event_device decrementer_clockevent = {
+ 	.set_mode       = decrementer_set_mode,
+ 	.features       = CLOCK_EVT_FEAT_ONESHOT,
+ };
++EXPORT_SYMBOL(decrementer_clockevent);
+ 
+ DEFINE_PER_CPU(u64, decrementers_next_tb);
+ static DEFINE_PER_CPU(struct clock_event_device, decrementers);
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index afc9154..c8b5206 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -23,6 +23,7 @@
+ #include <linux/types.h>
+ #include <linux/string.h>
+ #include <linux/kvm_host.h>
++#include <linux/clockchips.h>
+ 
+ #include <asm/reg.h>
+ #include <asm/time.h>
+@@ -104,8 +105,8 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	 */
+ 
+ 	dec_time = vcpu->arch.dec;
+-	dec_time *= 1000;
+-	do_div(dec_time, tb_ticks_per_usec);
++	dec_time = dec_time << decrementer_clockevent.shift;
++	do_div(dec_time, decrementer_clockevent.mult);
+ 	dec_nsec = do_div(dec_time, NSEC_PER_SEC);
+ 	hrtimer_start(&vcpu->arch.dec_timer,
+ 		ktime_set(dec_time, dec_nsec), HRTIMER_MODE_REL);
+-- 
+1.7.0.4
