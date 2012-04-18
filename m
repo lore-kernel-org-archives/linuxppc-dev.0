@@ -1,21 +1,23 @@
-Return-Path: <R65777@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CD25AB6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 01:48:51 +1000 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <kvm-ppc@vger.kernel.org>,
- <kvm@vger.kernel.org>, <agraf@suse.de>, <bharatb.yadav@gmail.com>
-Subject: [PATCH v4] KVM: PPC Use clockevent multiplier and shifter for
- decrementer
-Date: Wed, 18 Apr 2012 21:31:19 +0530
-Message-ID: <1334764879-18020-1-git-send-email-bharat.bhushan@freescale.com>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.23])
+ by ozlabs.org (Postfix) with SMTP id D65A2B6EEB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 01:55:57 +1000 (EST)
+Content-Type: text/plain; charset="utf-8"
+Date: Wed, 18 Apr 2012 17:49:16 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1334761280.5989.332.camel@thor.local>
+Message-ID: <20120418154916.128350@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
+ <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
+ <m2liltbhkp.fsf@igel.home> <1334736133.5989.278.camel@thor.local>
+ <m24nshb7l9.fsf@igel.home> <1334756287.5989.326.camel@thor.local>
+ <m2bomp9krb.fsf@igel.home> <1334759498.5989.328.camel@thor.local>
+ <m27gxd9jie.fsf@igel.home> <1334761280.5989.332.camel@thor.local>
+Subject: Re: PowerPC radeon KMS - is it possible?
+To: =?iso-8859-1?Q?=22Michel_D=E4nzer=22?= <michel@daenzer.net>
+Cc: schwab@linux-m68k.org, ojordan12345@hotmail.co.uk,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,79 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Time for which the hrtimer is started for decrementer emulation is calculated using tb_ticks_per_usec. While hrtimer uses the clockevent for DEC reprogramming (if needed) and which calculate timebase ticks using the multiplier and shifter mechanism implemented within clockevent layer. It was observed that this conversion (timebase->time->timebase) are not correct because the mechanism are not consistent. In our setup it adds 2% jitter.
 
-With this patch clockevent multiplier and shifter mechanism are used when starting hrtimer for decrementer emulation. Now the jitter is < 0.5%.
+-------- Original-Nachricht --------
+> Datum: Wed, 18 Apr 2012 17:01:20 +0200
+> Von: "Michel Dänzer" <michel@daenzer.net>
+> An: Andreas Schwab <schwab@linux-m68k.org>
+> CC: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
+> Betreff: Re: PowerPC radeon KMS - is it possible?
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
-v4:
- -  Added comment in emulate.c
+> On Mit, 2012-04-18 at 16:55 +0200, Andreas Schwab wrote: 
+> > Michel Dänzer <michel@daenzer.net> writes:
+> > 
+> > > On Mit, 2012-04-18 at 16:28 +0200, Andreas Schwab wrote: 
+> > >> Michel Dänzer <michel@daenzer.net> writes:
+> > >> 
+> > >> > Have you tried smaller aperture sizes (uninorth_agp.aperture)
+> > >> > and/or radeon.test=1? (See commit
+> > >> > 52f072cb084bbb460d3a4ae09f0b6efc3e7e8a8c)
+> > >> 
+> > >> Neither changes anything.
+> > >
+> > > How small aperture sizes have you tried?
+> > 
+> > 32M. With the old UMS driver 3D once worked fine ...
+> 
+> That doesn't necessarily mean much per se, as with UMS memory is only
+> statically mapped into the AGP GART once (so most of those 32M are
+> wasted at least most of the time), whereas with KMS it's dynamically
+> (un)mapped on demand.
+That may be a stupid question, but is it allowed (for a DRM client or
+whatever does the mapping) to change the content of a page mapped into
+the AGP GART or is it necessary to explicitly unmap the page, change its
+content and map it again?
+I would say it's necessary to unmap the page first (sounds more like
+the pci_[un]map_page() approach) - at least when it should work with
+non-coherent architectures, too.
 
- arch/powerpc/include/asm/time.h |    1 +
- arch/powerpc/kernel/time.c      |    3 ++-
- arch/powerpc/kvm/emulate.c      |    9 +++++++--
- 3 files changed, 10 insertions(+), 3 deletions(-)
+Gerhard
 
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 7eb10fb..b3c7959 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -28,6 +28,7 @@
- extern unsigned long tb_ticks_per_jiffy;
- extern unsigned long tb_ticks_per_usec;
- extern unsigned long tb_ticks_per_sec;
-+extern struct clock_event_device decrementer_clockevent;
- 
- struct rtc_time;
- extern void to_tm(int tim, struct rtc_time * tm);
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 567dd7c..4f7a285 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -105,7 +105,7 @@ static int decrementer_set_next_event(unsigned long evt,
- static void decrementer_set_mode(enum clock_event_mode mode,
- 				 struct clock_event_device *dev);
- 
--static struct clock_event_device decrementer_clockevent = {
-+struct clock_event_device decrementer_clockevent = {
- 	.name           = "decrementer",
- 	.rating         = 200,
- 	.irq            = 0,
-@@ -113,6 +113,7 @@ static struct clock_event_device decrementer_clockevent = {
- 	.set_mode       = decrementer_set_mode,
- 	.features       = CLOCK_EVT_FEAT_ONESHOT,
- };
-+EXPORT_SYMBOL(decrementer_clockevent);
- 
- DEFINE_PER_CPU(u64, decrementers_next_tb);
- static DEFINE_PER_CPU(struct clock_event_device, decrementers);
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index afc9154..550a058 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -23,6 +23,7 @@
- #include <linux/types.h>
- #include <linux/string.h>
- #include <linux/kvm_host.h>
-+#include <linux/clockchips.h>
- 
- #include <asm/reg.h>
- #include <asm/time.h>
-@@ -104,8 +105,12 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
- 	 */
- 
- 	dec_time = vcpu->arch.dec;
--	dec_time *= 1000;
--	do_div(dec_time, tb_ticks_per_usec);
-+	/* 
-+	 * Guest timebase ticks at the same frequency as host decrementer.
-+	 * So use the host decrementer calculations for decrementer emulation.
-+	 */
-+	dec_time = dec_time << decrementer_clockevent.shift;
-+	do_div(dec_time, decrementer_clockevent.mult);
- 	dec_nsec = do_div(dec_time, NSEC_PER_SEC);
- 	hrtimer_start(&vcpu->arch.dec_timer,
- 		ktime_set(dec_time, dec_nsec), HRTIMER_MODE_REL);
+PS: Sorry for hijacking the thread. :-)
 -- 
-1.7.0.4
+Empfehlen Sie GMX DSL Ihren Freunden und Bekannten und wir
+belohnen Sie mit bis zu 50,- Euro! https://freundschaftswerbung.gmx.de
