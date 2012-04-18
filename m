@@ -1,21 +1,23 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id EC5B4B6ED0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 01:01:37 +1000 (EST)
-Message-ID: <1334761280.5989.332.camel@thor.local>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:32:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8F5EEB6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 01:39:45 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>
 Subject: Re: PowerPC radeon KMS - is it possible?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Wed, 18 Apr 2012 17:01:20 +0200
-In-Reply-To: <m27gxd9jie.fsf@igel.home>
 References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
  <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
  <m2liltbhkp.fsf@igel.home> <1334736133.5989.278.camel@thor.local>
- <m24nshb7l9.fsf@igel.home> <1334756287.5989.326.camel@thor.local>
- <m2bomp9krb.fsf@igel.home> <1334759498.5989.328.camel@thor.local>
- <m27gxd9jie.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Date: Wed, 18 Apr 2012 17:39:39 +0200
+In-Reply-To: <1334736133.5989.278.camel@thor.local> ("Michel =?utf-8?Q?D?=
+ =?utf-8?Q?=C3=A4nzer=22's?= message
+ of "Wed, 18 Apr 2012 10:02:13 +0200")
+Message-ID: <m239819hhg.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain
 Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,41 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mit, 2012-04-18 at 16:55 +0200, Andreas Schwab wrote:=20
-> Michel D=C3=A4nzer <michel@daenzer.net> writes:
->=20
-> > On Mit, 2012-04-18 at 16:28 +0200, Andreas Schwab wrote:=20
-> >> Michel D=C3=A4nzer <michel@daenzer.net> writes:
-> >>=20
-> >> > Have you tried smaller aperture sizes (uninorth_agp.aperture) and/or
-> >> > radeon.test=3D1? (See commit 52f072cb084bbb460d3a4ae09f0b6efc3e7e8a8=
-c)
-> >>=20
-> >> Neither changes anything.
-> >
-> > How small aperture sizes have you tried?
->=20
-> 32M. With the old UMS driver 3D once worked fine ...
+FWIW, I just got a GPU lockup also in PCI mode, but at least it isn't as
+fatal (system still up apart from the unusable X display).
 
-That doesn't necessarily mean much per se, as with UMS memory is only
-statically mapped into the AGP GART once (so most of those 32M are
-wasted at least most of the time), whereas with KMS it's dynamically
-(un)mapped on demand.
+radeon 0000:00:10.0: GPU lockup CP stall for more than 10000msec
+GPU lockup (waiting for 0x00000C3C last fence id 0x00000C34)
+Failed to wait GUI idle while programming pipes. Bad things might happen.
+radeon 0000:00:10.0: (r300_asic_reset:414) RBBM_STATUS=0x84110140
+radeon 0000:00:10.0: (r300_asic_reset:433) RBBM_STATUS=0x80010140
+radeon 0000:00:10.0: (r300_asic_reset:445) RBBM_STATUS=0x00000140
+radeon 0000:00:10.0: GPU reset succeed
+radeon 0000:00:10.0: GPU reset succeed
+[drm] radeon: 1 quad pipes, 1 Z pipes initialized.
+[drm] PCIE GART of 512M enabled (table at 0x0000000002C00000).
+radeon 0000:00:10.0: WB enabled
+[drm] fence driver on ring 0 use gpu addr 0x78000000 and cpu addr 0xefac7000
+[drm] radeon: ring at 0x0000000078001000
+[drm:r100_ring_test] *ERROR* radeon: ring test failed (scratch(0x15E4)=0xCAFEDEA
+[drm:r100_cp_init] *ERROR* radeon: cp isn't working (-22).
+radeon 0000:00:10.0: failed initializing CP (-22).
 
+Andreas.
 
-> > The purpose of radeon.test=3D1 isn't to change anything but to catch
-> > problems transferring data between system memory bound via AGP GART and
-> > video RAM. Does it pass for the whole AGP aperture?
->=20
-> AFAICT yes.  For the default 256M it printed "[drm] Tested GTT->VRAM and
-> VRAM->GTT copy for GTT offset" for every other offset from 0x201000
-> to 0xfe01000.
-
-Okay, so apparently there's at least no obvious problem with 256M on
-your UniNorth revision either.
-
-
---=20
-Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
