@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D4EE3B6FC4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 16:59:13 +1000 (EST)
-Message-ID: <1334732346.1159.5.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 7952DB6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 17:43:00 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>
 Subject: Re: PowerPC radeon KMS - is it possible?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: o jordan <ojordan12345@hotmail.co.uk>
-Date: Wed, 18 Apr 2012 16:59:06 +1000
-In-Reply-To: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
 References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
+Date: Wed, 18 Apr 2012 09:42:52 +0200
+In-Reply-To: <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
+ ("Michel =?utf-8?Q?D=C3=A4nzer=22's?= message of "Wed, 18 Apr 2012 08:35:15
+ +0200")
+Message-ID: <m2ty0hbi4j.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-04-17 at 20:49 +0100, o jordan wrote:
-> Hi list,
-> 
-> 
-> Firstly let me say thanks for the great work you do!!!
-> 
-> 
-> I've been trying to get Kernel Mode Setting working on my iBook with
-> Ubuntu 12.04.  I can only get it working by forcing PCI mode
-> (agpmode=-1).  Setting agpmode=1 or a higher number just results in
-> freezing and a flashing screen.  Does anybody know how to get it
-> working fully with agp?
-> 
+Michel Dänzer <michel@daenzer.net> writes:
 
-Note also that KMS doesn't afaik have the power management code that
-radeonfb has for those old Mac chipsets, so suspend/resume won't work.
+> Not sure it's a good idea to set both of these =y: It will prevent the
+> radeon driver from initializing at all by default if radeonfb is active.
 
-Cheers,
-Ben.
+You can say video=radeonfb:off.
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
