@@ -1,21 +1,21 @@
 Return-Path: <michel@daenzer.net>
 Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id 343A3B6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 20:44:31 +1000 (EST)
-Message-ID: <1334745854.5989.295.camel@thor.local>
+ by ozlabs.org (Postfix) with ESMTP id 0D467B6F6E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 20:54:24 +1000 (EST)
+Message-ID: <1334746446.5989.300.camel@thor.local>
 Subject: Re: PowerPC radeon KMS - is it possible?
 From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 18 Apr 2012 12:44:14 +0200
-In-Reply-To: <1334745292.5989.291.camel@thor.local>
+Date: Wed, 18 Apr 2012 12:54:06 +0200
+In-Reply-To: <1334745439.3143.5.camel@pasglop>
 References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
- <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
- <m2liltbhkp.fsf@igel.home> <1334736133.5989.278.camel@thor.local>
- <1334744414.3143.2.camel@pasglop> <1334745292.5989.291.camel@thor.local>
+ <1334732346.1159.5.camel__22339.9641145535$1334732429$gmane$org@pasglop>
+ <m2pqb5bhyo.fsf@igel.home> <1334745338.3143.3.camel@pasglop>
+ <1334745439.3143.5.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Andreas Schwab <schwab@linux-m68k.org>,
- o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, o jordan <ojordan12345@hotmail.co.uk>,
+ Andreas Schwab <schwab@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mit, 2012-04-18 at 12:34 +0200, Michel D=C3=A4nzer wrote:=20
-> On Mit, 2012-04-18 at 20:20 +1000, Benjamin Herrenschmidt wrote:=20
+On Mit, 2012-04-18 at 20:37 +1000, Benjamin Herrenschmidt wrote:=20
+> On Wed, 2012-04-18 at 20:35 +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2012-04-18 at 09:46 +0200, Andreas Schwab wrote:
+> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> > >=20
+> > > > Note also that KMS doesn't afaik have the power management code tha=
+t
+> > > > radeonfb has for those old Mac chipsets, so suspend/resume won't wo=
+rk.
+> > >=20
+> > > How hard would it be to add it?
 > >=20
-> > I suspect there's a fundamental design issue with apple bridge in that
-> > the CPU to memory path isn't coherent at all with the GPU to memory pat=
-h
-> > ie. even vs. cache flush instructions (ie buffers in the memory
-> > controllers can still be out of sync).
+> > The code itself is relatively self contained, but the KMS power
+> > management side is a bit ... messy :-)
+
+That's an interesting way to put it, given the hacks to make it work
+between radeonfb and uninorth_agp. :) (Which are complicating making at
+least hibernation work with KMS on uninorth_agp)
+
+In contrast, radeon KMS uses the standard Linux device suspend/resume
+hooks.
+
+> > So the real deal is to figure out how best to "hook it up" there.
 > >=20
-> > Darwin does some gross hacks to work around that, some of them visible
-> > in the AGP drivers, some burried in the Apple driver, I don't know for
-> > sure. It's possible that they end up mapping all AGP memory as cache
-> > inhibited, but we can't do that because of our linear mapping.
+> > There's some duplication=20
 >=20
-> We are doing that though...
+> Argh... bloody x220 touchpad...
+>=20
+> So I was saying, there's also some duplication in the area of dynamic
+> clocks configuration. Some of this could be an issue as afaik, to work
+> reliably, the suspend/resume code really wants the stuff to be setup
+> exactly the way the code in radeon_pm does....
 
-This reminded me, I've been running with the patch below, but I'm not
-sure it makes any difference. Maybe Andreas or Jordan can try it.
+Are you referring to radeon_pm in radeonfb or radeon KMS?
 
-
-diff --git a/arch/powerpc/include/asm/agp.h b/arch/powerpc/include/asm/agp.=
-h
-index 416e12c..eb34fa5 100644
---- a/arch/powerpc/include/asm/agp.h
-+++ b/arch/powerpc/include/asm/agp.h
-@@ -2,9 +2,12 @@
- #define _ASM_POWERPC_AGP_H
- #ifdef __KERNEL__
-=20
-+#include <asm/cacheflush.h>
- #include <asm/io.h>
-=20
--#define map_page_into_agp(page)
-+#define map_page_into_agp(page)	\
-+	flush_dcache_range((unsigned long)page_address(page), \
-+			   (unsigned long)page_address(page) + PAGE_SIZE)
- #define unmap_page_from_agp(page)
- #define flush_agp_cache() mb()
-=20
+Most of the latter isn't used on PPC laptops because it relies on an x86
+video BIOS.
 
 
 --=20
