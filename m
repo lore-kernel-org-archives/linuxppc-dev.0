@@ -1,19 +1,31 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id 1893CB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 18:02:31 +1000 (EST)
-Message-ID: <1334736133.5989.278.camel@thor.local>
-Subject: Re: PowerPC radeon KMS - is it possible?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Wed, 18 Apr 2012 10:02:13 +0200
-In-Reply-To: <m2liltbhkp.fsf@igel.home>
-References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
- <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
- <m2liltbhkp.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <r66093@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 00D27B70AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 18:03:52 +1000 (EST)
+Received: from mail97-am1 (localhost [127.0.0.1])	by mail97-am1-R.bigfish.com
+ (Postfix) with ESMTP id 4271CE0490	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 18 Apr 2012 08:03:47 +0000 (UTC)
+Received: from AM1EHSMHS011.bigfish.com (unknown [10.3.201.241])	by
+ mail97-am1.bigfish.com (Postfix) with ESMTP id 223731A0045	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 08:03:45 +0000 (UTC)
+From: Huang Changming-R66093 <r66093@freescale.com>
+To: Huang Changming-R66093 <r66093@freescale.com>, Tabi Timur-B04825
+ <B04825@freescale.com>
+Subject: RE: [PATCH v2 1/2] powerpc/mpc85xx: support the MTD for p1022ds flash
+Date: Wed, 18 Apr 2012 08:02:45 +0000
+Message-ID: <110EED8CC96DFC488B7E717A2027A27C079DD8@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1334654129-1044-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <CAOZdJXVBb-CHa=PPa5446aVdQ323aBdv-9UTXx1SbkY2ArT14Q@mail.gmail.com>
+ <110EED8CC96DFC488B7E717A2027A27C079D0B@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <110EED8CC96DFC488B7E717A2027A27C079D0B@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +35,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mit, 2012-04-18 at 09:54 +0200, Andreas Schwab wrote:=20
-> Michel D=C3=A4nzer <michel@daenzer.net> writes:
+But, I observed the Call Trace, but the partition can be parsed correctly.
+Maybe your patch can fix this Call Trace.
+
+Best Regards
+Jerry Huang
+
+
+> -----Original Message-----
+> From: linuxppc-dev-bounces+r66093=3Dfreescale.com@lists.ozlabs.org
+> [mailto:linuxppc-dev-bounces+r66093=3Dfreescale.com@lists.ozlabs.org] On
+> Behalf Of Huang Changming-R66093
+> Sent: Wednesday, April 18, 2012 3:47 PM
+> To: Tabi Timur-B04825
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: RE: [PATCH v2 1/2] powerpc/mpc85xx: support the MTD for p1022ds
+> flash
 >=20
-> > Probably not (AGP is flaky in general, but in particular with older
-> > UniNorth bridges), but it might be interesting to see some kernel outpu=
-t
-> > from booting without agpmode=3D-1. If you can't get it via ssh, maybe y=
-ou
-> > can via netconsole or so.
+> Yes, I tested with the latest Linux kernel, with my patch, the NOR and
+> NAND MTD can work well.
 >=20
-> While logging into KDE:
+> Best Regards
+> Jerry Huang
 >=20
-> radeon 0000:00:10.0: GPU lockup CP stall for more than 10064msec
-> GPU lockup (waiting for 0x000003EE last fence id 0x000003ED)
-> radeon: wait for empty RBBM fifo failed ! Bad things might happen.
-> Failed to wait GUI idle while programming pipes. Bad things might happen.
-> radeon 0000:00:10.0: (r300_asic_reset:414) RBBM_STATUS=3D0x8802C137
-> radeon 0000:00:10.0: (r300_asic_reset:433) RBBM_STATUS=3D0x8802C137
-> radeon 0000:00:10.0: (r300_asic_reset:445) RBBM_STATUS=3D0x8802C137
-> radeon 0000:00:10.0: GPU reset succeed
-> radeon 0000:00:10.0: GPU reset succeed
-> radeon 0000:00:10.0: (r300_asic_reset:414) RBBM_STATUS=3D0x8802C137
-> radeon 0000:00:10.0: (r300_asic_reset:433) RBBM_STATUS=3D0x8802C137
-> radeon 0000:00:10.0: (r300_asic_reset:445) RBBM_STATUS=3D0x8802C137
-> radeon 0000:00:10.0: GPU reset succeed
-> radeon: wait for empty RBBM fifo failed ! Bad things might happen.
-> Failed to wait GUI idle while programming pipes. Bad things might happen.
-
-That's even with agpmode=3D1?
-
-Note that I'm interested in seeing the full dmesg or at least all
-agp/drm/radeon related messages.
-
-
-> After that is is dead.
-
-The whole machine? That's probably due to something going wrong (e.g. an
-MCE) while trying to reset the GPU. I fixed one such problem recently,
-but it's still not as reliable as on x86 unfortunately.
-
-> GPU lockup appears to be a common problem with the radeon driver.
-
-It's what happens when anything goes wrong with the GPU. If it doesn't
-happen with agpmode=3D-1, it's probably an AGP related coherency issue.
-
-
---=20
-Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+>=20
+> > -----Original Message-----
+> > From: Tabi Timur-B04825
+> > Sent: Wednesday, April 18, 2012 2:10 AM
+> > To: Huang Changming-R66093
+> > Cc: linuxppc-dev@lists.ozlabs.org; Kumar Gala
+> > Subject: Re: [PATCH v2 1/2] powerpc/mpc85xx: support the MTD for
+> > p1022ds flash
+> >
+> > On Tue, Apr 17, 2012 at 4:15 AM,  <Chang-Ming.Huang@freescale.com>
+> wrote:
+> >
+> > > diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c
+> > > b/arch/powerpc/platforms/85xx/p1022_ds.c
+> > > index e74b7cd..0db3a7e 100644
+> > > --- a/arch/powerpc/platforms/85xx/p1022_ds.c
+> > > +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+> > > @@ -463,6 +463,7 @@ static void __init p1022_ds_setup_arch(void)
+> > > =A0static struct of_device_id __initdata p1022_ds_ids[] =3D {
+> > > =A0 =A0 =A0 =A0/* So that the DMA channel nodes can be probed individ=
+ually:
+> > > */
+> > > =A0 =A0 =A0 =A0{ .compatible =3D "fsl,eloplus-dma", },
+> > > + =A0 =A0 =A0 { .compatible =3D "fsl,p1022-elbc", },
+> > > =A0 =A0 =A0 =A0{},
+> > > =A0};
+> >
+> >
+> > Have you actually tested this with an upstream kernel?  p1022_ds_ids[]
+> > is broken upstream, so adding a new line won't work.
+> >
+> > Take a look at http://patchwork.ozlabs.org/patch/128533/
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
