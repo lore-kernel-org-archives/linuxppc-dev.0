@@ -1,28 +1,14 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E2BEB6FE5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 08:17:59 +1000 (EST)
-Received: from mail106-ch1 (localhost [127.0.0.1])	by
- mail106-ch1-R.bigfish.com (Postfix) with ESMTP id 22ADA18046F	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 22:17:54 +0000 (UTC)
-Received: from CH1EHSMHS022.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.253])	by mail106-ch1.bigfish.com (Postfix) with ESMTP id
- DFEC6E0743
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2012 22:17:52 +0000 (UTC)
-Message-ID: <4F8DEC0E.4060700@freescale.com>
-Date: Tue, 17 Apr 2012 17:17:50 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: York Sun <yorksun@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: Add back condition for smp
-References: <1334698746-11529-1-git-send-email-yorksun@freescale.com>
-In-Reply-To: <1334698746-11529-1-git-send-email-yorksun@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: PPC list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <anton@samba.org>
+Date: Wed, 18 Apr 2012 11:16:00 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/eeh: crash caused by null eeh_dev
+Message-ID: <20120418111600.1b0a38c6@kryten>
+In-Reply-To: <1334642139-25447-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1334642139-25447-1-git-send-email-shangw@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +18,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/17/2012 04:39 PM, York Sun wrote:
-> The timebase synchronization is only necessary if we need to reset a
-> separate core.  Currently only KEXEC and CPU hotplug require resetting
-> a single core. The following code should be in the condition of
-> CONFIG_KEXEC or CONFIG_HOTPLUG_CPU
+Hi Gavin,
+
+> The problem was reported by Anton Blanchard. While EEH error
+> happened to the PCI device without the corresponding device
+> driver, kernel crash was seen. Eventually, I successfully
+> reproduced the problem on Firebird-L machine with utility
+> "errinjct". Initially, the device driver for Emulex ethernet
+> MAC has been disabled from .config and force data parity on
+> the Emulex ethernet MAC with help of "errinjct". Eventually,
+> I saw the kernel crash after issueing couple of "lspci -v"
+> command.
 > 
->         .give_timebase  = smp_generic_give_timebase,
->         .take_timebase  = smp_generic_take_timebase,
+> The root cause behind is that the PCI device, including the
+> reference to the corresponding eeh device, will be removed
+> from the system while EEH does recovery. Afterwards, the
+> PCI device will be probed again and added into the system
+> accordingly. So it's not safe to retrieve the eeh device from
+> the corresponding PCI device after the PCI device has been removed
+> and not added again.
 > 
-> Signed-off-by: York Sun <yorksun@freescale.com>
-> Acked-by: Li Yang <leoli@freescale.com>
+> The patch fixes the issue and retrieve the eeh device from OF node
+> instead of PCI device after the PCI device has been removed.
+
+Thanks, this does fix the oops I see.
+
+Tested-by: Anton Blanchard <anton@samba.org>
+
+Anton
+
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/platforms/85xx/smp.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+>  arch/powerpc/platforms/pseries/eeh.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-> index 56942af..868c6d7 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -192,8 +192,10 @@ struct smp_ops_t smp_85xx_ops = {
->  	.cpu_disable	= generic_cpu_disable,
->  	.cpu_die	= generic_cpu_die,
->  #endif
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_HOTPLUG_CPU)
->  	.give_timebase	= smp_generic_give_timebase,
->  	.take_timebase	= smp_generic_take_timebase,
-> +#endif
->  };
+> diff --git a/arch/powerpc/platforms/pseries/eeh.c
+> b/arch/powerpc/platforms/pseries/eeh.c index 309d38e..a75e37d 100644
+> --- a/arch/powerpc/platforms/pseries/eeh.c
+> +++ b/arch/powerpc/platforms/pseries/eeh.c
+> @@ -1076,7 +1076,7 @@ static void eeh_add_device_late(struct pci_dev
+> *dev) pr_debug("EEH: Adding device %s\n", pci_name(dev));
 >  
->  #ifdef CONFIG_KEXEC
-
-Note that this is only a temporary fix, that assumes the environments
-where tbsync is problematic[1] (virtualization and simulation) do not
-enable CONFIG_KEXEC or CONFIG_HOTPLUG_CPU.  Eventually the sync should
-be done via CCSR like in U-Boot, and the decision on whether to do it
-should be runtime.
-
--Scott
-
-[1] More so than usual.
+>  	dn = pci_device_to_OF_node(dev);
+> -	edev = pci_dev_to_eeh_dev(dev);
+> +	edev = of_node_to_eeh_dev(dn);
+>  	if (edev->pdev == dev) {
+>  		pr_debug("EEH: Already referenced !\n");
+>  		return;
