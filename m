@@ -1,23 +1,20 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 126DCB6FC4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 23:22:19 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+ by ozlabs.org (Postfix) with ESMTP id A6D87B6FD6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 23:25:29 +1000 (EST)
+Message-ID: <1334755511.5989.318.camel@thor.local>
 Subject: Re: PowerPC radeon KMS - is it possible?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Wed, 18 Apr 2012 15:25:11 +0200
+In-Reply-To: <m2k41d9nup.fsf@igel.home>
 References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
  <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
  <m2ty0hbi4j.fsf@igel.home> <1334735555.5989.272.camel@thor.local>
  <m28vhtb7tc.fsf@igel.home> <1334754160.5989.305.camel@thor.local>
-Date: Wed, 18 Apr 2012 15:22:06 +0200
-In-Reply-To: <1334754160.5989.305.camel@thor.local> ("Michel =?utf-8?Q?D?=
- =?utf-8?Q?=C3=A4nzer=22's?= message
- of "Wed, 18 Apr 2012 15:02:40 +0200")
-Message-ID: <m2k41d9nup.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ <m2k41d9nup.fsf@igel.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,17 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michel Dänzer <michel@daenzer.net> writes:
+On Mit, 2012-04-18 at 15:22 +0200, Andreas Schwab wrote:=20
+> Michel D=C3=A4nzer <michel@daenzer.net> writes:
+>=20
+> > You do understand that 'prevent the radeon driver from initializing at
+> > all' means direct rendering won't work at all, even with older Mesa
+> > drivers?
+>=20
+> Until radeondrmfb has suspend support, this is what I want.
 
-> You do understand that 'prevent the radeon driver from initializing at
-> all' means direct rendering won't work at all, even with older Mesa
-> drivers?
+Then you could disable CONFIG_DRM_RADEON, or prevent the radeon module
+from loading. *shrug*
 
-Until radeondrmfb has suspend support, this is what I want.
 
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+--=20
+Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
