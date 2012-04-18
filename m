@@ -1,24 +1,21 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8F5EEB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 01:39:45 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>
-Subject: Re: PowerPC radeon KMS - is it possible?
-References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
- <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
- <m2liltbhkp.fsf@igel.home> <1334736133.5989.278.camel@thor.local>
-Date: Wed, 18 Apr 2012 17:39:39 +0200
-In-Reply-To: <1334736133.5989.278.camel@thor.local> ("Michel =?utf-8?Q?D?=
- =?utf-8?Q?=C3=A4nzer=22's?= message
- of "Wed, 18 Apr 2012 10:02:13 +0200")
-Message-ID: <m239819hhg.fsf@igel.home>
+Return-Path: <R65777@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CD25AB6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 01:48:51 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <kvm-ppc@vger.kernel.org>,
+ <kvm@vger.kernel.org>, <agraf@suse.de>, <bharatb.yadav@gmail.com>
+Subject: [PATCH v4] KVM: PPC Use clockevent multiplier and shifter for
+ decrementer
+Date: Wed, 18 Apr 2012 21:31:19 +0530
+Message-ID: <1334764879-18020-1-git-send-email-bharat.bhushan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-FWIW, I just got a GPU lockup also in PCI mode, but at least it isn't as
-fatal (system still up apart from the unusable X display).
+Time for which the hrtimer is started for decrementer emulation is calculated using tb_ticks_per_usec. While hrtimer uses the clockevent for DEC reprogramming (if needed) and which calculate timebase ticks using the multiplier and shifter mechanism implemented within clockevent layer. It was observed that this conversion (timebase->time->timebase) are not correct because the mechanism are not consistent. In our setup it adds 2% jitter.
 
-radeon 0000:00:10.0: GPU lockup CP stall for more than 10000msec
-GPU lockup (waiting for 0x00000C3C last fence id 0x00000C34)
-Failed to wait GUI idle while programming pipes. Bad things might happen.
-radeon 0000:00:10.0: (r300_asic_reset:414) RBBM_STATUS=0x84110140
-radeon 0000:00:10.0: (r300_asic_reset:433) RBBM_STATUS=0x80010140
-radeon 0000:00:10.0: (r300_asic_reset:445) RBBM_STATUS=0x00000140
-radeon 0000:00:10.0: GPU reset succeed
-radeon 0000:00:10.0: GPU reset succeed
-[drm] radeon: 1 quad pipes, 1 Z pipes initialized.
-[drm] PCIE GART of 512M enabled (table at 0x0000000002C00000).
-radeon 0000:00:10.0: WB enabled
-[drm] fence driver on ring 0 use gpu addr 0x78000000 and cpu addr 0xefac7000
-[drm] radeon: ring at 0x0000000078001000
-[drm:r100_ring_test] *ERROR* radeon: ring test failed (scratch(0x15E4)=0xCAFEDEA
-[drm:r100_cp_init] *ERROR* radeon: cp isn't working (-22).
-radeon 0000:00:10.0: failed initializing CP (-22).
+With this patch clockevent multiplier and shifter mechanism are used when starting hrtimer for decrementer emulation. Now the jitter is < 0.5%.
 
-Andreas.
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
+v4:
+ -  Added comment in emulate.c
 
+ arch/powerpc/include/asm/time.h |    1 +
+ arch/powerpc/kernel/time.c      |    3 ++-
+ arch/powerpc/kvm/emulate.c      |    9 +++++++--
+ 3 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 7eb10fb..b3c7959 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -28,6 +28,7 @@
+ extern unsigned long tb_ticks_per_jiffy;
+ extern unsigned long tb_ticks_per_usec;
+ extern unsigned long tb_ticks_per_sec;
++extern struct clock_event_device decrementer_clockevent;
+ 
+ struct rtc_time;
+ extern void to_tm(int tim, struct rtc_time * tm);
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 567dd7c..4f7a285 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -105,7 +105,7 @@ static int decrementer_set_next_event(unsigned long evt,
+ static void decrementer_set_mode(enum clock_event_mode mode,
+ 				 struct clock_event_device *dev);
+ 
+-static struct clock_event_device decrementer_clockevent = {
++struct clock_event_device decrementer_clockevent = {
+ 	.name           = "decrementer",
+ 	.rating         = 200,
+ 	.irq            = 0,
+@@ -113,6 +113,7 @@ static struct clock_event_device decrementer_clockevent = {
+ 	.set_mode       = decrementer_set_mode,
+ 	.features       = CLOCK_EVT_FEAT_ONESHOT,
+ };
++EXPORT_SYMBOL(decrementer_clockevent);
+ 
+ DEFINE_PER_CPU(u64, decrementers_next_tb);
+ static DEFINE_PER_CPU(struct clock_event_device, decrementers);
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index afc9154..550a058 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -23,6 +23,7 @@
+ #include <linux/types.h>
+ #include <linux/string.h>
+ #include <linux/kvm_host.h>
++#include <linux/clockchips.h>
+ 
+ #include <asm/reg.h>
+ #include <asm/time.h>
+@@ -104,8 +105,12 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	 */
+ 
+ 	dec_time = vcpu->arch.dec;
+-	dec_time *= 1000;
+-	do_div(dec_time, tb_ticks_per_usec);
++	/* 
++	 * Guest timebase ticks at the same frequency as host decrementer.
++	 * So use the host decrementer calculations for decrementer emulation.
++	 */
++	dec_time = dec_time << decrementer_clockevent.shift;
++	do_div(dec_time, decrementer_clockevent.mult);
+ 	dec_nsec = do_div(dec_time, NSEC_PER_SEC);
+ 	hrtimer_start(&vcpu->arch.dec_timer,
+ 		ktime_set(dec_time, dec_nsec), HRTIMER_MODE_REL);
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.7.0.4
