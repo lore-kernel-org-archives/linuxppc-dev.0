@@ -1,23 +1,16 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ED600B6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 21:30:29 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>
-Subject: Re: PowerPC radeon KMS - is it possible?
-References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
- <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
- <m2liltbhkp.fsf@igel.home> <1334736133.5989.278.camel@thor.local>
-Date: Wed, 18 Apr 2012 13:30:26 +0200
-In-Reply-To: <1334736133.5989.278.camel@thor.local> ("Michel =?utf-8?Q?D?=
- =?utf-8?Q?=C3=A4nzer=22's?= message
- of "Wed, 18 Apr 2012 10:02:13 +0200")
-Message-ID: <m24nshb7l9.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Wed, 18 Apr 2012 22:21:52 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 4/4] powerpc: Remove CONFIG_POWER4_ONLY
+Message-ID: <20120418222152.70fbee35@kryten>
+In-Reply-To: <1334732224.1159.4.camel@pasglop>
+References: <20120418144254.3286ce94@kryten> <20120418144629.3f02e897@kryten>
+ <1334731564.1159.2.camel@pasglop> <20120418165116.4bdcbbfe@kryten>
+ <1334732224.1159.4.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,98 +20,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michel Dänzer <michel@daenzer.net> writes:
 
-> On Mit, 2012-04-18 at 09:54 +0200, Andreas Schwab wrote: 
->> Michel Dänzer <michel@daenzer.net> writes:
->> 
->> > Probably not (AGP is flaky in general, but in particular with older
->> > UniNorth bridges), but it might be interesting to see some kernel output
->> > from booting without agpmode=-1. If you can't get it via ssh, maybe you
->> > can via netconsole or so.
->> 
->> While logging into KDE:
->> 
->> radeon 0000:00:10.0: GPU lockup CP stall for more than 10064msec
->> GPU lockup (waiting for 0x000003EE last fence id 0x000003ED)
->> radeon: wait for empty RBBM fifo failed ! Bad things might happen.
->> Failed to wait GUI idle while programming pipes. Bad things might happen.
->> radeon 0000:00:10.0: (r300_asic_reset:414) RBBM_STATUS=0x8802C137
->> radeon 0000:00:10.0: (r300_asic_reset:433) RBBM_STATUS=0x8802C137
->> radeon 0000:00:10.0: (r300_asic_reset:445) RBBM_STATUS=0x8802C137
->> radeon 0000:00:10.0: GPU reset succeed
->> radeon 0000:00:10.0: GPU reset succeed
->> radeon 0000:00:10.0: (r300_asic_reset:414) RBBM_STATUS=0x8802C137
->> radeon 0000:00:10.0: (r300_asic_reset:433) RBBM_STATUS=0x8802C137
->> radeon 0000:00:10.0: (r300_asic_reset:445) RBBM_STATUS=0x8802C137
->> radeon 0000:00:10.0: GPU reset succeed
->> radeon: wait for empty RBBM fifo failed ! Bad things might happen.
->> Failed to wait GUI idle while programming pipes. Bad things might happen.
->
-> That's even with agpmode=1?
+Remove CONFIG_POWER4_ONLY, the option is badly named and only does two
+things:
 
-Yes.  Note that I get pretty far into the login process until the lockup
-happens.
+- It wraps the MMU segment table code. With feature fixups there is
+  little downside to compiling this in.
 
-> Note that I'm interested in seeing the full dmesg or at least all
-> agp/drm/radeon related messages.
+- It uses the newer mtocrf instruction in various assembly functions.
+  Instead of making this a compile option just do it at runtime via
+  a feature fixup.
 
-This was a test with agpmode=1:
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Linux agpgart interface v0.103
-agpgart-uninorth 0000:00:0b.0: Apple UniNorth 2 chipset
-agpgart-uninorth 0000:00:0b.0: configuring for size idx: 64
-agpgart-uninorth 0000:00:0b.0: AGP aperture is 256M @ 0x0
-[drm] Initialized drm 1.1.0 20060810
-[drm] radeon kernel modesetting enabled.
-radeon 0000:00:10.0: enabling device (0006 -> 0007)
-[drm] initializing kernel modesetting (RV350 0x1002:0x4E56 0x1002:0x4E56).
-[drm] register mmio base: 0x90000000
-[drm] register mmio size: 65536
-radeon 0000:00:10.0: Invalid ROM contents
-radeon 0000:00:10.0: Invalid ROM contents
-[drm:radeon_get_bios] *ERROR* Unable to locate a BIOS ROM
-[drm] Using device-tree clock info
-[drm] AGP mode requested: 1
-agpgart-uninorth 0000:00:0b.0: putting AGP V2 device into 1x mode
-radeon 0000:00:10.0: putting AGP V2 device into 1x mode
-radeon 0000:00:10.0: GTT: 256M 0x00000000 - 0x0FFFFFFF
-[drm] Generation 2 PCI interface, using max accessible memory
-radeon 0000:00:10.0: VRAM: 128M 0x0000000098000000 - 0x000000009FFFFFFF (32M used)
-[drm] Supports vblank timestamp caching Rev 1 (10.10.2010).
-[drm] Driver supports precise vblank timestamp query.
-[drm] radeon: irq initialized.
-[drm] Detected VRAM RAM=128M, BAR=128M
-[drm] RAM width 64bits DDR
-[TTM] Zone  kernel: Available graphics memory: 384080 kiB
-[TTM] Zone highmem: Available graphics memory: 515152 kiB
-[TTM] Initializing pool allocator
-[drm] radeon: 32M of VRAM memory ready
-[drm] radeon: 256M of GTT memory ready.
-[drm] radeon: ib pool ready.
-[drm] radeon: 1 quad pipes, 1 Z pipes initialized.
-radeon 0000:00:10.0: WB disabled
-[drm] fence driver on ring 0 use gpu addr 0x00000000 and cpu addr 0xf1086000
-[drm] Loading R300 Microcode
-[drm] radeon: ring at 0x0000000000001000
-[drm] ring test succeeded in 2 usecs
-[drm] ib test succeeded in 0 usecs
-[drm] Connector Table: 2 (ibook)
-[drm] No panel info found in BIOS
-[drm] Panel info derived from registers
-[drm] Panel Size 1024x768
-[drm] radeon legacy LVDS backlight initialized
-[drm] No TV DAC info found in BIOS
+v2: Use CPU_FTR_NOEXECUTE to select the newer mtocrf
 
->> After that is is dead.
-
-> The whole machine?
-
-No pings any more.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Index: linux-build/arch/powerpc/configs/g5_defconfig
+===================================================================
+--- linux-build.orig/arch/powerpc/configs/g5_defconfig	2012-04-18 22:12:59.292790202 +1000
++++ linux-build/arch/powerpc/configs/g5_defconfig	2012-04-18 22:13:13.029035714 +1000
+@@ -1,5 +1,4 @@
+ CONFIG_PPC64=y
+-CONFIG_POWER4_ONLY=y
+ CONFIG_ALTIVEC=y
+ CONFIG_SMP=y
+ CONFIG_NR_CPUS=4
+Index: linux-build/arch/powerpc/configs/maple_defconfig
+===================================================================
+--- linux-build.orig/arch/powerpc/configs/maple_defconfig	2012-04-18 22:12:59.264789702 +1000
++++ linux-build/arch/powerpc/configs/maple_defconfig	2012-04-18 22:13:13.029035714 +1000
+@@ -1,5 +1,4 @@
+ CONFIG_PPC64=y
+-CONFIG_POWER4_ONLY=y
+ CONFIG_SMP=y
+ CONFIG_NR_CPUS=4
+ CONFIG_EXPERIMENTAL=y
+Index: linux-build/arch/powerpc/configs/pasemi_defconfig
+===================================================================
+--- linux-build.orig/arch/powerpc/configs/pasemi_defconfig	2012-04-18 22:12:59.280789988 +1000
++++ linux-build/arch/powerpc/configs/pasemi_defconfig	2012-04-18 22:13:13.029035714 +1000
+@@ -1,5 +1,4 @@
+ CONFIG_PPC64=y
+-CONFIG_POWER4_ONLY=y
+ CONFIG_ALTIVEC=y
+ # CONFIG_VIRT_CPU_ACCOUNTING is not set
+ CONFIG_SMP=y
+Index: linux-build/arch/powerpc/kernel/exceptions-64s.S
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/exceptions-64s.S	2012-04-18 22:12:59.252789487 +1000
++++ linux-build/arch/powerpc/kernel/exceptions-64s.S	2012-04-18 22:13:13.029035714 +1000
+@@ -94,12 +94,10 @@ machine_check_pSeries_1:
+ data_access_pSeries:
+ 	HMT_MEDIUM
+ 	SET_SCRATCH0(r13)
+-#ifndef CONFIG_POWER4_ONLY
+ BEGIN_FTR_SECTION
+ 	b	data_access_check_stab
+ data_access_not_stab:
+ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_SLB)
+-#endif
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, data_access_common, EXC_STD,
+ 				 KVMTEST, 0x300)
+ 
+@@ -301,7 +299,6 @@ machine_check_fwnmi:
+ 				 EXC_STD, KVMTEST, 0x200)
+ 	KVM_HANDLER_SKIP(PACA_EXMC, EXC_STD, 0x200)
+ 
+-#ifndef CONFIG_POWER4_ONLY
+ 	/* moved from 0x300 */
+ data_access_check_stab:
+ 	GET_PACA(r13)
+@@ -328,7 +325,6 @@ do_stab_bolted_pSeries:
+ 	GET_SCRATCH0(r10)
+ 	std	r10,PACA_EXSLB+EX_R13(r13)
+ 	EXCEPTION_PROLOG_PSERIES_1(.do_stab_bolted, EXC_STD)
+-#endif /* CONFIG_POWER4_ONLY */
+ 
+ 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_STD, 0x300)
+ 	KVM_HANDLER_SKIP(PACA_EXSLB, EXC_STD, 0x380)
+Index: linux-build/arch/powerpc/platforms/Kconfig.cputype
+===================================================================
+--- linux-build.orig/arch/powerpc/platforms/Kconfig.cputype	2012-04-18 22:12:59.312790560 +1000
++++ linux-build/arch/powerpc/platforms/Kconfig.cputype	2012-04-18 22:13:13.029035714 +1000
+@@ -116,15 +116,6 @@ config PPC_BOOK3E
+ 	def_bool y
+ 	depends on PPC_BOOK3E_64
+ 
+-config POWER4_ONLY
+-	bool "Optimize for POWER4"
+-	depends on PPC64 && PPC_BOOK3S
+-	default n
+-	---help---
+-	  Cause the compiler to optimize for POWER4/POWER5/PPC970 processors.
+-	  The resulting binary will not work on POWER3 or RS64 processors
+-	  when compiled with binutils 2.15 or later.
+-
+ config 6xx
+ 	def_bool y
+ 	depends on PPC32 && PPC_BOOK3S
+Index: linux-build/arch/powerpc/include/asm/asm-compat.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/asm-compat.h	2012-04-18 22:12:59.236789201 +1000
++++ linux-build/arch/powerpc/include/asm/asm-compat.h	2012-04-18 22:13:13.033035785 +1000
+@@ -29,18 +29,9 @@
+ #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
+ #define PPC_STLCX	stringify_in_c(stdcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzd)
++#define PPC_MTOCRF(FXM, RS) MTOCRF((FXM), (RS))
+ #define PPC_LR_STKOFF	16
+ #define PPC_MIN_STKFRM	112
+-
+-/* Move to CR, single-entry optimized version. Only available
+- * on POWER4 and later.
+- */
+-#ifdef CONFIG_POWER4_ONLY
+-#define PPC_MTOCRF	stringify_in_c(mtocrf)
+-#else
+-#define PPC_MTOCRF	stringify_in_c(mtcrf)
+-#endif
+-
+ #else /* 32-bit */
+ 
+ /* operations for longs and pointers */
+Index: linux-build/arch/powerpc/lib/copyuser_64.S
+===================================================================
+--- linux-build.orig/arch/powerpc/lib/copyuser_64.S	2012-04-18 22:12:59.180788200 +1000
++++ linux-build/arch/powerpc/lib/copyuser_64.S	2012-04-18 22:13:13.033035785 +1000
+@@ -30,7 +30,7 @@ _GLOBAL(__copy_tofrom_user_base)
+ 	dcbt	0,r4
+ 	beq	.Lcopy_page_4K
+ 	andi.	r6,r6,7
+-	PPC_MTOCRF	0x01,r5
++	PPC_MTOCRF(0x01,r5)
+ 	blt	cr1,.Lshort_copy
+ /* Below we want to nop out the bne if we're on a CPU that has the
+  * CPU_FTR_UNALIGNED_LD_STD bit set and the CPU_FTR_CP_USE_DCBTZ bit
+@@ -186,7 +186,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 	blr
+ 
+ .Ldst_unaligned:
+-	PPC_MTOCRF	0x01,r6		/* put #bytes to 8B bdry into cr7 */
++	PPC_MTOCRF(0x01,r6)		/* put #bytes to 8B bdry into cr7 */
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	cr1,r5,16
+@@ -201,7 +201,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 2:	bf	cr7*4+1,3f
+ 37:	lwzx	r0,r7,r4
+ 83:	stwx	r0,r7,r3
+-3:	PPC_MTOCRF	0x01,r5
++3:	PPC_MTOCRF(0x01,r5)
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
+Index: linux-build/arch/powerpc/lib/memcpy_64.S
+===================================================================
+--- linux-build.orig/arch/powerpc/lib/memcpy_64.S	2012-04-18 22:12:59.208788700 +1000
++++ linux-build/arch/powerpc/lib/memcpy_64.S	2012-04-18 22:13:13.033035785 +1000
+@@ -12,7 +12,7 @@
+ 	.align	7
+ _GLOBAL(memcpy)
+ 	std	r3,48(r1)	/* save destination pointer for return value */
+-	PPC_MTOCRF	0x01,r5
++	PPC_MTOCRF(0x01,r5)
+ 	cmpldi	cr1,r5,16
+ 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
+ 	andi.	r6,r6,7
+@@ -154,7 +154,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 	blr
+ 
+ .Ldst_unaligned:
+-	PPC_MTOCRF	0x01,r6		# put #bytes to 8B bdry into cr7
++	PPC_MTOCRF(0x01,r6)		# put #bytes to 8B bdry into cr7
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	cr1,r5,16
+@@ -169,7 +169,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 2:	bf	cr7*4+1,3f
+ 	lwzx	r0,r7,r4
+ 	stwx	r0,r7,r3
+-3:	PPC_MTOCRF	0x01,r5
++3:	PPC_MTOCRF(0x01,r5)
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
+Index: linux-build/arch/powerpc/lib/mem_64.S
+===================================================================
+--- linux-build.orig/arch/powerpc/lib/mem_64.S	2012-04-18 22:12:59.192788415 +1000
++++ linux-build/arch/powerpc/lib/mem_64.S	2012-04-18 22:13:13.033035785 +1000
+@@ -19,7 +19,7 @@ _GLOBAL(memset)
+ 	rlwimi	r4,r4,16,0,15
+ 	cmplw	cr1,r5,r0		/* do we get that far? */
+ 	rldimi	r4,r4,32,0
+-	PPC_MTOCRF	1,r0
++	PPC_MTOCRF(1,r0)
+ 	mr	r6,r3
+ 	blt	cr1,8f
+ 	beq+	3f			/* if already 8-byte aligned */
+@@ -49,7 +49,7 @@ _GLOBAL(memset)
+ 	bdnz	4b
+ 5:	srwi.	r0,r5,3
+ 	clrlwi	r5,r5,29
+-	PPC_MTOCRF	1,r0
++	PPC_MTOCRF(1,r0)
+ 	beq	8f
+ 	bf	29,6f
+ 	std	r4,0(r6)
+@@ -65,7 +65,7 @@ _GLOBAL(memset)
+ 	std	r4,0(r6)
+ 	addi	r6,r6,8
+ 8:	cmpwi	r5,0
+-	PPC_MTOCRF	1,r5
++	PPC_MTOCRF(1,r5)
+ 	beqlr+
+ 	bf	29,9f
+ 	stw	r4,0(r6)
+Index: linux-build/arch/powerpc/include/asm/ppc_asm.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/ppc_asm.h	2012-04-18 22:12:59.220788915 +1000
++++ linux-build/arch/powerpc/include/asm/ppc_asm.h	2012-04-18 22:13:13.033035785 +1000
+@@ -369,7 +369,15 @@ BEGIN_FTR_SECTION			\
+ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #endif
+ 
+-	
++#ifdef CONFIG_PPC64
++#define MTOCRF(FXM, RS)			\
++	BEGIN_FTR_SECTION_NESTED(848);	\
++	mtcrf	(FXM), (RS);		\
++	FTR_SECTION_ELSE_NESTED(848);	\
++	mtocrf (FXM), (RS);		\
++	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_NOEXECUTE, 848)
++#endif
++
+ /*
+  * This instruction is not implemented on the PPC 603 or 601; however, on
+  * the 403GCX and 405GP tlbia IS defined and tlbie is not.
