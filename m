@@ -1,11 +1,22 @@
-Return-Path: <valentin.ilie@gmail.com>
-From: Valentin Ilie <valentin.ilie@gmail.com>
-To: geoff@infradead.org
-Subject: [PATCH] Drivers: ps3: ps3av.c: fixed checkpatch warnings
-Date: Wed, 18 Apr 2012 12:33:31 +0300
-Message-Id: <1334741611-3296-1-git-send-email-valentin.ilie@gmail.com>
-Cc: cbe-oss-dev@lists.ozlabs.org, Valentin Ilie <valentin.ilie@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8EB1BB6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 20:20:29 +1000 (EST)
+Message-ID: <1334744414.3143.2.camel@pasglop>
+Subject: Re: PowerPC radeon KMS - is it possible?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Wed, 18 Apr 2012 20:20:14 +1000
+In-Reply-To: <1334736133.5989.278.camel@thor.local>
+References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
+ <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
+ <m2liltbhkp.fsf@igel.home> <1334736133.5989.278.camel@thor.local>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, o jordan <ojordan12345@hotmail.co.uk>,
+ Andreas Schwab <schwab@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,80 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixed some checkpatch warnings. (review)
-Last patch didn't compile.
+On Wed, 2012-04-18 at 10:02 +0200, Michel Dänzer wrote:
+> 
+> > GPU lockup appears to be a common problem with the radeon driver.
+> 
+> It's what happens when anything goes wrong with the GPU. If it doesn't
+> happen with agpmode=-1, it's probably an AGP related coherency issue. 
 
-Signed-off-by: Valentin Ilie <valentin.ilie@gmail.com>
----
- drivers/ps3/ps3av.c |    9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+I had some success hacking the DRM to do an in_le32 from the ring head
+after writing it. Just a gross hack but it seemed to help on a G5.
 
-diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
-index a409fa0..636e618 100644
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -338,7 +338,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, size_t usr_buf_size,
- 	mutex_unlock(&ps3av->mutex);
- 	return 0;
- 
--      err:
-+err:
- 	mutex_unlock(&ps3av->mutex);
- 	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __func__, cid, res);
- 	return res;
-@@ -477,7 +477,6 @@ int ps3av_set_audio_mode(u32 ch, u32 fs, u32 word_bits, u32 format, u32 source)
- 
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_set_audio_mode);
- 
- static int ps3av_set_videomode(void)
-@@ -870,21 +869,18 @@ int ps3av_set_video_mode(int id)
- 
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_set_video_mode);
- 
- int ps3av_get_auto_mode(void)
- {
- 	return ps3av_auto_videomode(&ps3av->av_hw_conf);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_get_auto_mode);
- 
- int ps3av_get_mode(void)
- {
- 	return ps3av ? ps3av->ps3av_mode : 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_get_mode);
- 
- /* get resolution by video_mode */
-@@ -902,7 +898,6 @@ int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
- 	*yres = video_mode_table[id].y;
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_video_mode2res);
- 
- /* mute */
-@@ -911,7 +906,6 @@ int ps3av_video_mute(int mute)
- 	return ps3av_set_av_video_mute(mute ? PS3AV_CMD_MUTE_ON
- 					    : PS3AV_CMD_MUTE_OFF);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_video_mute);
- 
- /* mute analog output only */
-@@ -935,7 +929,6 @@ int ps3av_audio_mute(int mute)
- 	return ps3av_set_audio_mute(mute ? PS3AV_CMD_MUTE_ON
- 					 : PS3AV_CMD_MUTE_OFF);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_audio_mute);
- 
- static int __devinit ps3av_probe(struct ps3_system_bus_device *dev)
--- 
-1.7.9.5
+I suspect there's a fundamental design issue with apple bridge in that
+the CPU to memory path isn't coherent at all with the GPU to memory path
+ie. even vs. cache flush instructions (ie buffers in the memory
+controllers can still be out of sync).
+
+Darwin does some gross hacks to work around that, some of them visible
+in the AGP drivers, some burried in the Apple driver, I don't know for
+sure. It's possible that they end up mapping all AGP memory as cache
+inhibited, but we can't do that because of our linear mapping.
+
+Cheers,
+Ben.
