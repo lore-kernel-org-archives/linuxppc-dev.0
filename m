@@ -1,21 +1,22 @@
 Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7952DB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 17:43:00 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 05407B6FD8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 17:46:29 +1000 (EST)
 From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: PowerPC radeon KMS - is it possible?
 References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
- <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
-Date: Wed, 18 Apr 2012 09:42:52 +0200
-In-Reply-To: <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
- ("Michel =?utf-8?Q?D=C3=A4nzer=22's?= message of "Wed, 18 Apr 2012 08:35:15
- +0200")
-Message-ID: <m2ty0hbi4j.fsf@igel.home>
+ <1334732346.1159.5.camel__22339.9641145535$1334732429$gmane$org@pasglop>
+Date: Wed, 18 Apr 2012 09:46:23 +0200
+In-Reply-To: <1334732346.1159.5.camel__22339.9641145535$1334732429$gmane$org@pasglop>
+ (Benjamin Herrenschmidt's message of "Wed, 18 Apr 2012 16:59:06
+ +1000")
+Message-ID: <m2pqb5bhyo.fsf@igel.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,12 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michel Dänzer <michel@daenzer.net> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Not sure it's a good idea to set both of these =y: It will prevent the
-> radeon driver from initializing at all by default if radeonfb is active.
+> Note also that KMS doesn't afaik have the power management code that
+> radeonfb has for those old Mac chipsets, so suspend/resume won't work.
 
-You can say video=radeonfb:off.
+How hard would it be to add it?
 
 Andreas.
 
