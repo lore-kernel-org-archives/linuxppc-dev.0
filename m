@@ -1,20 +1,22 @@
 Return-Path: <michel@daenzer.net>
 Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id DDB21B6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 23:03:01 +1000 (EST)
-Message-ID: <1334754160.5989.305.camel@thor.local>
+ by ozlabs.org (Postfix) with ESMTP id CA522B6EEB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2012 23:07:26 +1000 (EST)
+Message-ID: <1334754428.5989.308.camel@thor.local>
 Subject: Re: PowerPC radeon KMS - is it possible?
 From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Wed, 18 Apr 2012 15:02:40 +0200
-In-Reply-To: <m28vhtb7tc.fsf@igel.home>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 18 Apr 2012 15:07:08 +0200
+In-Reply-To: <1334748206.3143.17.camel@pasglop>
 References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
- <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
- <m2ty0hbi4j.fsf@igel.home> <1334735555.5989.272.camel@thor.local>
- <m28vhtb7tc.fsf@igel.home>
+ <1334732346.1159.5.camel__22339.9641145535$1334732429$gmane$org@pasglop>
+ <m2pqb5bhyo.fsf@igel.home> <1334745338.3143.3.camel@pasglop>
+ <1334745439.3143.5.camel@pasglop> <1334746446.5989.300.camel@thor.local>
+ <1334748206.3143.17.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, o jordan <ojordan12345@hotmail.co.uk>,
+ Andreas Schwab <schwab@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mit, 2012-04-18 at 13:25 +0200, Andreas Schwab wrote:=20
-> Michel D=C3=A4nzer <michel@daenzer.net> writes:
+On Mit, 2012-04-18 at 21:23 +1000, Benjamin Herrenschmidt wrote:=20
 >=20
-> > On Mit, 2012-04-18 at 09:42 +0200, Andreas Schwab wrote:=20
-> >> Michel D=C3=A4nzer <michel@daenzer.net> writes:
-> >>=20
-> >> > Not sure it's a good idea to set both of these =3Dy: It will prevent=
- the
-> >> > radeon driver from initializing at all by default if radeonfb is act=
-ive.
-> >>=20
-> >> You can say video=3Dradeonfb:off.
-> >
-> > I know, I'm referring to the default behaviour without any relevant
-> > kernel command line options.
->=20
-> Which is exactly the right behaviour for me.
+> Right, we might be able to easily port my old code over by simply making
+> it ppc specific. In radeonfb, it's also used for some thinkpads among
+> others but KMS does that with the BIOS on these no ? (ie. D2 state).
 
-You do understand that 'prevent the radeon driver from initializing at
-all' means direct rendering won't work at all, even with older Mesa
-drivers?
+KMS doesn't have any non-BIOS suspend/resume code yet, so it's either
+that or no suspend/resume. :)
 
 
 --=20
