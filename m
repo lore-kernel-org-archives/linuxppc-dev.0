@@ -1,19 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:70:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 55F20B6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 00:34:14 +1000 (EST)
-Subject: Re: [PATCH 3/4] powerpc: Add 64-bit CPU targets for gcc
-Mime-Version: 1.0 (Apple Message framework v1257)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20120418144528.65b70fbb@kryten>
-Date: Wed, 18 Apr 2012 09:33:53 -0500
-Message-Id: <7A78BE77-1D97-4E8D-B8F3-026E2B3B2EEA@kernel.crashing.org>
-References: <20120418144254.3286ce94@kryten> <20120418144528.65b70fbb@kryten>
-To: Anton Blanchard <anton@samba.org>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 9DCE5B6ED0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 00:56:00 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>
+Subject: Re: PowerPC radeon KMS - is it possible?
+References: <BAY163-W54EBB2437ED2068EF5AF5D03F0@phx.gbl>
+ <1334730915.5989.265.camel__41553.0639271767$1334731329$gmane$org@thor.local>
+ <m2liltbhkp.fsf@igel.home> <1334736133.5989.278.camel@thor.local>
+ <m24nshb7l9.fsf@igel.home> <1334756287.5989.326.camel@thor.local>
+ <m2bomp9krb.fsf@igel.home> <1334759498.5989.328.camel@thor.local>
+Date: Wed, 18 Apr 2012 16:55:53 +0200
+In-Reply-To: <1334759498.5989.328.camel@thor.local> ("Michel =?utf-8?Q?D?=
+ =?utf-8?Q?=C3=A4nzer=22's?= message
+ of "Wed, 18 Apr 2012 16:31:38 +0200")
+Message-ID: <m27gxd9jie.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: o jordan <ojordan12345@hotmail.co.uk>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,123 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michel Dänzer <michel@daenzer.net> writes:
 
-On Apr 17, 2012, at 11:45 PM, Anton Blanchard wrote:
+> On Mit, 2012-04-18 at 16:28 +0200, Andreas Schwab wrote: 
+>> Michel Dänzer <michel@daenzer.net> writes:
+>> 
+>> > Have you tried smaller aperture sizes (uninorth_agp.aperture) and/or
+>> > radeon.test=1? (See commit 52f072cb084bbb460d3a4ae09f0b6efc3e7e8a8c)
+>> 
+>> Neither changes anything.
+>
+> How small aperture sizes have you tried?
 
->=20
-> Add a menu to select various 64-bit CPU targets for gcc. We
-> default to -mtune=3Dpower7 and if gcc doesn't understand that we
-> fallback to -mtune=3Dpower4.
->=20
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
+32M. With the old UMS driver 3D once worked fine ...
 
-Can you add a target for e5500 cpu.
+> The purpose of radeon.test=1 isn't to change anything but to catch
+> problems transferring data between system memory bound via AGP GART and
+> video RAM. Does it pass for the whole AGP aperture?
 
-- k
+AFAICT yes.  For the default 256M it printed "[drm] Tested GTT->VRAM and
+VRAM->GTT copy for GTT offset" for every other offset from 0x201000
+to 0xfe01000.
 
->=20
-> Index: linux-build/arch/powerpc/Makefile
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-build.orig/arch/powerpc/Makefile	2012-04-18 =
-14:31:31.614666419 +1000
-> +++ linux-build/arch/powerpc/Makefile	2012-04-18 14:37:08.680708678 =
-+1000
-> @@ -69,6 +69,16 @@ LDFLAGS_vmlinux	:=3D $(LDFLAGS_vmlinux-y)
->=20
-> CFLAGS-$(CONFIG_PPC64)	:=3D -mminimal-toc -mtraceback=3Dno =
--mcall-aixdesc
-> CFLAGS-$(CONFIG_PPC32)	:=3D -ffixed-r2 -mmultiple
-> +
-> +CFLAGS-$(CONFIG_GENERIC_CPU) +=3D $(call =
-cc-option,-mtune=3Dpower7,-mtune=3Dpower4)
-> +CFLAGS-$(CONFIG_CELL_CPU) +=3D $(call cc-option,-mcpu=3Dcell)
-> +CFLAGS-$(CONFIG_POWER4_CPU) +=3D $(call cc-option,-mcpu=3Dpower4)
-> +CFLAGS-$(CONFIG_POWER5_CPU) +=3D $(call cc-option,-mcpu=3Dpower5)
-> +CFLAGS-$(CONFIG_POWER6_CPU) +=3D $(call cc-option,-mcpu=3Dpower6)
-> +CFLAGS-$(CONFIG_POWER7_CPU) +=3D $(call cc-option,-mcpu=3Dpower7)
-> +
-> +CFLAGS-$(CONFIG_TUNE_CELL) +=3D $(call cc-option,-mtune=3Dcell)
-> +
-> KBUILD_CPPFLAGS	+=3D -Iarch/$(ARCH)
-> KBUILD_AFLAGS	+=3D -Iarch/$(ARCH)
-> KBUILD_CFLAGS	+=3D -msoft-float -pipe -Iarch/$(ARCH) $(CFLAGS-y)
-> @@ -76,22 +86,11 @@ CPP		=3D $(CC) -E $(KBUILD_CFLAGS)
->=20
-> CHECKFLAGS	+=3D -m$(CONFIG_WORD_SIZE) -D__powerpc__ =
--D__powerpc$(CONFIG_WORD_SIZE)__
->=20
-> -ifeq ($(CONFIG_PPC64),y)
-> -ifeq ($(CONFIG_POWER4_ONLY),y)
-> -	KBUILD_CFLAGS +=3D $(call cc-option,-mcpu=3Dpower4)
-> -else
-> -	KBUILD_CFLAGS +=3D $(call cc-option,-mtune=3Dpower4)
-> -endif
-> -endif
-> -
-> KBUILD_LDFLAGS_MODULE +=3D arch/powerpc/lib/crtsavres.o
->=20
-> -ifeq ($(CONFIG_TUNE_CELL),y)
-> -	KBUILD_CFLAGS +=3D $(call cc-option,-mtune=3Dcell)
-> -endif
-> -
-> -# No AltiVec instruction when building kernel
-> +# No AltiVec or VSX instructions when building kernel
-> KBUILD_CFLAGS +=3D $(call cc-option,-mno-altivec)
-> +KBUILD_CFLAGS +=3D $(call cc-option,-mno-vsx)
->=20
-> # No SPE instruction when building kernel
-> # (We use all available options to help semi-broken compilers)
-> Index: linux-build/arch/powerpc/platforms/Kconfig.cputype
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-build.orig/arch/powerpc/platforms/Kconfig.cputype	=
-2012-04-18 14:31:25.134549903 +1000
-> +++ linux-build/arch/powerpc/platforms/Kconfig.cputype	=
-2012-04-18 14:36:40.576207829 +1000
-> @@ -78,6 +78,36 @@ config PPC_BOOK3E_64
->=20
-> endchoice
->=20
-> +choice
-> +	prompt "CPU selection"
-> +	depends on PPC64
-> +	default GENERIC_CPU
-> +	help
-> +	  This will create a kernel which is optimised for a particular =
-CPU.
-> +	  The resulting kernel may not run on other CPUs, so use this =
-with care.
-> +
-> +	  If unsure, select Generic.
-> +
-> +config GENERIC_CPU
-> +	bool "Generic"
-> +
-> +config CELL_CPU
-> +	bool "Cell Broadband Engine"
-> +
-> +config POWER4_CPU
-> +	bool "POWER4"
-> +
-> +config POWER5_CPU
-> +	bool "POWER5"
-> +
-> +config POWER6_CPU
-> +	bool "POWER6"
-> +
-> +config POWER7_CPU
-> +	bool "POWER7"
-> +
-> +endchoice
-> +
-> config PPC_BOOK3S
-> 	def_bool y
-> 	depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
