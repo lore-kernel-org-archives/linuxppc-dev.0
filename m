@@ -1,15 +1,30 @@
-Return-Path: <baruch@tkos.co.il>
-Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
+Return-Path: <benh@kernel.crashing.org>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DCA03B6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 17:16:47 +1000 (EST)
-From: Baruch Siach <baruch@tkos.co.il>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: fix build when CONFIG_BOOKE_WDT is enabled
-Date: Thu, 19 Apr 2012 09:32:06 +0300
-Message-Id: <4c2709df9123c32681503972be3707026c9dab74.1334816894.git.baruch@tkos.co.il>
-Cc: David Howells <dhowells@redhat.com>, Baruch Siach <baruch@tkos.co.il>
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E0B38B6F62
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:20:22 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
+ Thu, 19 Apr 2012 08:10:53 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3J8DDgn1888272
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:13:13 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3J8JnPp004485
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:19:50 +1000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 09/15] powerpc/windfarm: Improve display of fan speeds in sysfs
+Date: Thu, 19 Apr 2012 18:16:50 +1000
+Message-Id: <1334823416-9138-10-git-send-email-benh@kernel.crashing.org>
+In-Reply-To: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
+References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
+Cc: khali@linux-fr.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,55 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit ae3a197e (Disintegrate asm/system.h for PowerPC) broke build of
-assembly files when CONFIG_BOOKE_WDT is enabled as follows:
+Controls registered as RPM and PWM fans are now displayed
+with the "RPM" or "%" suffix respectively to make it
+clearer to the user what the value actually means since
+the fan type isn't otherwise obvious.
 
-  AS      arch/powerpc/lib/string.o
-/home/baruch/git/stable/arch/powerpc/include/asm/reg_booke.h: Assembler messages:
-/home/baruch/git/stable/arch/powerpc/include/asm/reg_booke.h:19: Error: Unrecognized opcode: `extern'
-/home/baruch/git/stable/arch/powerpc/include/asm/reg_booke.h:20: Error: Unrecognized opcode: `extern'
-
-Since setup_32.c is the only user of the booke_wdt configuration variables, move
-the declarations there.
-
-Cc: David Howells <dhowells@redhat.com>
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/reg_booke.h |    5 -----
- arch/powerpc/kernel/setup_32.c       |    5 +++++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/macintosh/windfarm_core.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index b86faa9..8a97aa7 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -15,11 +15,6 @@
- #ifndef __ASM_POWERPC_REG_BOOKE_H__
- #define __ASM_POWERPC_REG_BOOKE_H__
+diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+index ce88979..ebafc25 100644
+--- a/drivers/macintosh/windfarm_core.c
++++ b/drivers/macintosh/windfarm_core.c
+@@ -164,13 +164,24 @@ static ssize_t wf_show_control(struct device *dev,
+ 			       struct device_attribute *attr, char *buf)
+ {
+ 	struct wf_control *ctrl = container_of(attr, struct wf_control, attr);
++	const char *typestr;
+ 	s32 val = 0;
+ 	int err;
  
--#ifdef CONFIG_BOOKE_WDT
--extern u32 booke_wdt_enabled;
--extern u32 booke_wdt_period;
--#endif /* CONFIG_BOOKE_WDT */
--
- /* Machine State Register (MSR) Fields */
- #define MSR_GS		(1<<28) /* Guest state */
- #define MSR_UCLE	(1<<26)	/* User-mode cache lock enable */
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 9825f29..a9b8be5 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -61,6 +61,11 @@ unsigned long vgacon_remap_base;
- EXPORT_SYMBOL(vgacon_remap_base);
- #endif
+ 	err = ctrl->ops->get_value(ctrl, &val);
+ 	if (err < 0)
+ 		return err;
+-	return sprintf(buf, "%d\n", val);
++	switch(ctrl->type) {
++	case WF_CONTROL_RPM_FAN:
++		typestr = " RPM";
++		break;
++	case WF_CONTROL_PWM_FAN:
++		typestr = " %";
++		break;
++	default:
++		typestr = "";
++	}
++	return sprintf(buf, "%d%s\n", val, typestr);
+ }
  
-+#ifdef CONFIG_BOOKE_WDT
-+extern u32 booke_wdt_enabled;
-+extern u32 booke_wdt_period;
-+#endif /* CONFIG_BOOKE_WDT */
-+
- /*
-  * These are used in binfmt_elf.c to put aux entries on the stack
-  * for each elf executable being started.
+ /* This is really only for debugging... */
 -- 
 1.7.9.5
