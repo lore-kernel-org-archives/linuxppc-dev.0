@@ -1,23 +1,37 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
- [209.85.210.42])
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A9314B707C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 04:22:38 +1000 (EST)
-Received: by dang27 with SMTP id g27so12993784dan.15
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 11:22:36 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 9F218B6FE8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 04:42:44 +1000 (EST)
+Received: by pbcwy12 with SMTP id wy12so133332pbc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 11:42:42 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] powerpc/8xx: Fix NR_IRQ bugs and refactor 8xx
- interrupt controller
+Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
+ use irq_alloc_desc() instead
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1334617382.25353.14.camel@pasglop>
-References: <1334607198-18694-1-git-send-email-grant.likely@secretlab.ca>
- <1334617382.25353.14.camel@pasglop>
-Date: Thu, 19 Apr 2012 12:22:34 -0600
-Message-Id: <20120419182234.352973E0700@localhost>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1334180248.2984.39.camel@pasglop>
+References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
+ <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
+ <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
+ <20120402202848.1EB833E02A7@localhost>
+ <20120402215524.GM24211@n2100.arm.linux.org.uk>
+ <1333406005.30734.61.camel@pasglop>
+ <20120402225223.GN24211@n2100.arm.linux.org.uk>
+ <1333409927.30734.62.camel@pasglop> <m24nsx9iz1.fsf@igel.home>
+ <1333755470.3040.38.camel@pasglop> <m2aa2n7mmw.fsf@igel.home>
+ <1334106834.2984.17.camel@pasglop> <1334107996.2984.20.camel@pasglop>
+ <1334122182.2984.33.camel@pasglop> <20120411205707.68AC13E08B6@localhost>
+ <1334180248.2984.39.camel@pasglop>
+Date: Thu, 19 Apr 2012 12:42:38 -0600
+Message-Id: <20120419184238.4A6973E0700@localhost>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Andreas Schwab <schwab@linux-m68k.org>,
+ Milton Miller <miltonm@bga.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +41,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 17 Apr 2012 09:03:02 +1000, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Mon, 2012-04-16 at 14:13 -0600, Grant Likely wrote:
-> > The mpc8xx driver uses a reference to NR_IRQS that is buggy.  It uses
-> > NR_IRQs for the array size of the ppc_cached_irq_mask bitmap, but
-> > NR_IRQs could be smaller than the number of hardware irqs that
-> > ppc_cached_irq_mask tracks.
+On Thu, 12 Apr 2012 07:37:28 +1000, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Wed, 2012-04-11 at 14:57 -0600, Grant Likely wrote:
 > > 
-> > Also, while fixing that problem, it became apparent that the interrupt
-> > controller only supports 32 interrupt numbers, but it is written as if
-> > it supports multiple register banks which is more complicated.
+> > Yeah, I've got a different way to fix it though.  There is exactly one
+> > user of irq_virq_count in-tree right now: PS3.  Also, irq_virq_count
+> > is only useful for the NOMAP mapping.  So, instead of having a single
+> > global irq_virq_count values, I've dropped it entirely and added a
+> > max_irq argument to irq_domain_add_nomap().  That makes it a property
+> > of an individual nomap irq domain instead of a global system settting.
 > > 
-> > This patch pulls out the buggy reference to NR_IRQs and fixes the size
-> > of the ppc_cached_irq_mask to match the number of HW irqs.  It also
-> > drops the now-unnecessary code since ppc_cached_irq_mask is no longer
-> > an array.
+> > Hopefully I'll have a draft patch ready today. 
 > 
-> Can you rename ppc_cached_irq_mask while at it ? I think it was written
-> that way because it was all copy/pasted from powermac/pic.c which -does-
-> need it to be an array (and has the same bugs btw) :-) 
+> That works for me. I'll send patches for cleanup MPIC as well.
 
-Done; and I think I fixed the pic.c bugs in patch 2.
+Okay, I'll wait on these.  The MPIC fixes will need to be applied
+before I can apply the automatic revmapping and hint removal patches.
+Those patches will also need testing before I apply to linux-next.
 
 g.
