@@ -1,28 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B530DB6FDC
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:53:44 +1000 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 949F4B6FE3
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:55:30 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
- Thu, 19 Apr 2012 09:10:49 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3J8DD2M2187294
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:13:13 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3J8JnAG014210
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:19:50 +1000
+ Thu, 19 Apr 2012 08:02:55 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3J8JnXQ33292430
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:19:49 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3J8Jn5m008337
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:19:49 +1000
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/15] powerpc/pmac: Convert windfarm_smu_sat to new i2c
- probing
-Date: Thu, 19 Apr 2012 18:16:46 +1000
-Message-Id: <1334823416-9138-6-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 12/15] powerpc/windfarm: Add lm87 sensor
+Date: Thu, 19 Apr 2012 18:16:53 +1000
+Message-Id: <1334823416-9138-13-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
 References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
 Cc: khali@linux-fr.org
@@ -35,264 +34,220 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This simplifies the driver to stop using the deprecated attach interface.
-
-While at it we also implement teardown properly and fix the refcounting
-by using a kref.
+For use by the upcoming windfarm_rm31
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/macintosh/windfarm_smu_sat.c |  126 +++++++++++++---------------------
- 1 file changed, 47 insertions(+), 79 deletions(-)
+ drivers/macintosh/windfarm_lm87_sensor.c |  201 ++++++++++++++++++++++++++++++
+ 1 file changed, 201 insertions(+)
+ create mode 100644 drivers/macintosh/windfarm_lm87_sensor.c
 
-diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
-index 65a8ff3..72dfe19 100644
---- a/drivers/macintosh/windfarm_smu_sat.c
-+++ b/drivers/macintosh/windfarm_smu_sat.c
-@@ -20,7 +20,7 @@
- 
- #include "windfarm.h"
- 
--#define VERSION "0.2"
-+#define VERSION "1.0"
- 
- #define DEBUG
- 
-@@ -34,11 +34,12 @@
- #define MAX_AGE		msecs_to_jiffies(800)
- 
- struct wf_sat {
-+	struct kref		ref;
- 	int			nr;
--	atomic_t		refcnt;
- 	struct mutex		mutex;
- 	unsigned long		last_read; /* jiffies when cache last updated */
- 	u8			cache[16];
-+	struct list_head	sensors;
- 	struct i2c_client	*i2c;
- 	struct device_node	*node;
- };
-@@ -46,11 +47,12 @@ struct wf_sat {
- static struct wf_sat *sats[2];
- 
- struct wf_sat_sensor {
--	int		index;
--	int		index2;		/* used for power sensors */
--	int		shift;
--	struct wf_sat	*sat;
--	struct wf_sensor sens;
-+	struct list_head	link;
-+	int			index;
-+	int			index2;		/* used for power sensors */
-+	int			shift;
-+	struct wf_sat		*sat;
-+	struct wf_sensor 	sens;
- };
- 
- #define wf_to_sat(c)	container_of(c, struct wf_sat_sensor, sens)
-@@ -142,7 +144,7 @@ static int wf_sat_read_cache(struct wf_sat *sat)
- 	return 0;
- }
- 
--static int wf_sat_get(struct wf_sensor *sr, s32 *value)
-+static int wf_sat_sensor_get(struct wf_sensor *sr, s32 *value)
- {
- 	struct wf_sat_sensor *sens = wf_to_sat(sr);
- 	struct wf_sat *sat = sens->sat;
-@@ -175,58 +177,30 @@ static int wf_sat_get(struct wf_sensor *sr, s32 *value)
- 	return err;
- }
- 
--static void wf_sat_release(struct wf_sensor *sr)
-+static void wf_sat_release(struct kref *ref)
-+{
-+	struct wf_sat *sat = container_of(ref, struct wf_sat, ref);
+diff --git a/drivers/macintosh/windfarm_lm87_sensor.c b/drivers/macintosh/windfarm_lm87_sensor.c
+new file mode 100644
+index 0000000..c071aab
+--- /dev/null
++++ b/drivers/macintosh/windfarm_lm87_sensor.c
+@@ -0,0 +1,201 @@
++/*
++ * Windfarm PowerMac thermal control. LM87 sensor
++ *
++ * Copyright 2012 Benjamin Herrenschmidt, IBM Corp.
++ *
++ * Released under the term of the GNU GPL v2.
++ *
++ */
 +
-+	if (sat->nr >= 0)
-+		sats[sat->nr] = NULL;
-+	kfree(sat);
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/wait.h>
++#include <linux/i2c.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/io.h>
++#include <asm/sections.h>
++#include <asm/pmac_low_i2c.h>
++
++#include "windfarm.h"
++
++#define VERSION "1.0"
++
++#undef DEBUG
++
++#ifdef DEBUG
++#define DBG(args...)	printk(args)
++#else
++#define DBG(args...)	do { } while(0)
++#endif
++
++struct wf_lm87_sensor {
++	struct i2c_client	*i2c;
++	struct wf_sensor	sens;
++};
++#define wf_to_lm87(c) container_of(c, struct wf_lm87_sensor, sens)
++
++
++static int wf_lm87_read_reg(struct i2c_client *chip, int reg)
++{
++	int rc, tries = 0;
++	u8 buf;
++
++	for (;;) {
++		/* Set address */
++		buf = (u8)reg;
++		rc = i2c_master_send(chip, &buf, 1);
++		if (rc <= 0)
++			goto error;
++		rc = i2c_master_recv(chip, &buf, 1);
++		if (rc <= 0)
++			goto error;
++		return (int)buf;
++	error:
++		DBG("wf_lm87: Error reading LM87, retrying...\n");
++		if (++tries > 10) {
++			printk(KERN_ERR "wf_lm87: Error reading LM87 !\n");
++			return -EIO;
++		}
++		msleep(10);
++	}
 +}
 +
-+static void wf_sat_sensor_release(struct wf_sensor *sr)
- {
- 	struct wf_sat_sensor *sens = wf_to_sat(sr);
- 	struct wf_sat *sat = sens->sat;
- 
--	if (atomic_dec_and_test(&sat->refcnt)) {
--		if (sat->nr >= 0)
--			sats[sat->nr] = NULL;
--		kfree(sat);
--	}
- 	kfree(sens);
-+	kref_put(&sat->ref, wf_sat_release);
- }
- 
- static struct wf_sensor_ops wf_sat_ops = {
--	.get_value	= wf_sat_get,
--	.release	= wf_sat_release,
-+	.get_value	= wf_sat_sensor_get,
-+	.release	= wf_sat_sensor_release,
- 	.owner		= THIS_MODULE,
- };
- 
--static struct i2c_driver wf_sat_driver;
--
--static void wf_sat_create(struct i2c_adapter *adapter, struct device_node *dev)
--{
--	struct i2c_board_info info;
--	struct i2c_client *client;
--	const u32 *reg;
--	u8 addr;
--
--	reg = of_get_property(dev, "reg", NULL);
--	if (reg == NULL)
--		return;
--	addr = *reg;
--	DBG(KERN_DEBUG "wf_sat: creating sat at address %x\n", addr);
--
--	memset(&info, 0, sizeof(struct i2c_board_info));
--	info.addr = (addr >> 1) & 0x7f;
--	info.platform_data = dev;
--	strlcpy(info.type, "wf_sat", I2C_NAME_SIZE);
--
--	client = i2c_new_device(adapter, &info);
--	if (client == NULL) {
--		printk(KERN_ERR "windfarm: failed to attach smu-sat to i2c\n");
--		return;
--	}
--
--	/*
--	 * Let i2c-core delete that device on driver removal.
--	 * This is safe because i2c-core holds the core_lock mutex for us.
--	 */
--	list_add_tail(&client->detected, &wf_sat_driver.clients);
--}
--
- static int wf_sat_probe(struct i2c_client *client,
- 			const struct i2c_device_id *id)
- {
-@@ -246,9 +220,10 @@ static int wf_sat_probe(struct i2c_client *client,
- 		return -ENOMEM;
- 	sat->nr = -1;
- 	sat->node = of_node_get(dev);
--	atomic_set(&sat->refcnt, 0);
-+	kref_init(&sat->ref);
- 	mutex_init(&sat->mutex);
- 	sat->i2c = client;
-+	INIT_LIST_HEAD(&sat->sensors);
- 	i2c_set_clientdata(client, sat);
- 
- 	vsens[0] = vsens[1] = -1;
-@@ -310,14 +285,15 @@ static int wf_sat_probe(struct i2c_client *client,
- 		sens->index2 = -1;
- 		sens->shift = shift;
- 		sens->sat = sat;
--		atomic_inc(&sat->refcnt);
- 		sens->sens.ops = &wf_sat_ops;
- 		sens->sens.name = (char *) (sens + 1);
- 		snprintf(sens->sens.name, 16, "%s-%d", name, cpu);
- 
--		if (wf_register_sensor(&sens->sens)) {
--			atomic_dec(&sat->refcnt);
-+		if (wf_register_sensor(&sens->sens))
- 			kfree(sens);
-+		else {
-+			list_add(&sens->link, &sat->sensors);
-+			kref_get(&sat->ref);
- 		}
- 	}
- 
-@@ -336,14 +312,15 @@ static int wf_sat_probe(struct i2c_client *client,
- 		sens->index2 = isens[core];
- 		sens->shift = 0;
- 		sens->sat = sat;
--		atomic_inc(&sat->refcnt);
- 		sens->sens.ops = &wf_sat_ops;
- 		sens->sens.name = (char *) (sens + 1);
- 		snprintf(sens->sens.name, 16, "cpu-power-%d", cpu);
- 
--		if (wf_register_sensor(&sens->sens)) {
--			atomic_dec(&sat->refcnt);
-+		if (wf_register_sensor(&sens->sens))
- 			kfree(sens);
-+		else {
-+			list_add(&sens->link, &sat->sensors);
-+			kref_get(&sat->ref);
- 		}
- 	}
- 
-@@ -353,42 +330,35 @@ static int wf_sat_probe(struct i2c_client *client,
- 	return 0;
- }
- 
--static int wf_sat_attach(struct i2c_adapter *adapter)
--{
--	struct device_node *busnode, *dev = NULL;
--	struct pmac_i2c_bus *bus;
--
--	bus = pmac_i2c_adapter_to_bus(adapter);
--	if (bus == NULL)
--		return -ENODEV;
--	busnode = pmac_i2c_get_bus_node(bus);
--
--	while ((dev = of_get_next_child(busnode, dev)) != NULL)
--		if (of_device_is_compatible(dev, "smu-sat"))
--			wf_sat_create(adapter, dev);
--	return 0;
--}
--
- static int wf_sat_remove(struct i2c_client *client)
- {
- 	struct wf_sat *sat = i2c_get_clientdata(client);
-+	struct wf_sat_sensor *sens;
- 
--	/* XXX TODO */
--
-+	/* release sensors */
-+	while(!list_empty(&sat->sensors)) {
-+		sens = list_first_entry(&sat->sensors,
-+					struct wf_sat_sensor, link);
-+		list_del(&sens->link);
-+		wf_unregister_sensor(&sens->sens);
-+	}
- 	sat->i2c = NULL;
-+	i2c_set_clientdata(client, NULL);
-+	kref_put(&sat->ref, wf_sat_release);
++static int wf_lm87_get(struct wf_sensor *sr, s32 *value)
++{
++	struct wf_lm87_sensor *lm = sr->priv;
++	s32 temp;
 +
- 	return 0;
- }
- 
- static const struct i2c_device_id wf_sat_id[] = {
--	{ "wf_sat", 0 },
-+	{ "MAC,smu-sat", 0 },
- 	{ }
- };
-+MODULE_DEVICE_TABLE(i2c, wf_sat_id);
- 
- static struct i2c_driver wf_sat_driver = {
- 	.driver = {
- 		.name		= "wf_smu_sat",
- 	},
--	.attach_adapter	= wf_sat_attach,
- 	.probe		= wf_sat_probe,
- 	.remove		= wf_sat_remove,
- 	.id_table	= wf_sat_id,
-@@ -399,15 +369,13 @@ static int __init sat_sensors_init(void)
- 	return i2c_add_driver(&wf_sat_driver);
- }
- 
--#if 0	/* uncomment when module_exit() below is uncommented */
- static void __exit sat_sensors_exit(void)
- {
- 	i2c_del_driver(&wf_sat_driver);
- }
--#endif
- 
- module_init(sat_sensors_init);
--/*module_exit(sat_sensors_exit); Uncomment when cleanup is implemented */
-+module_exit(sat_sensors_exit);
- 
- MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
- MODULE_DESCRIPTION("SMU satellite sensors for PowerMac thermal control");
++	if (lm->i2c == NULL)
++		return -ENODEV;
++
++#define LM87_INT_TEMP		0x27
++
++	/* Read temperature register */
++	temp = wf_lm87_read_reg(lm->i2c, LM87_INT_TEMP);
++	if (temp < 0)
++		return temp;
++	*value = temp << 16;
++
++	return 0;
++}
++
++static void wf_lm87_release(struct wf_sensor *sr)
++{
++	struct wf_lm87_sensor *lm = wf_to_lm87(sr);
++
++	kfree(lm);
++}
++
++static struct wf_sensor_ops wf_lm87_ops = {
++	.get_value	= wf_lm87_get,
++	.release	= wf_lm87_release,
++	.owner		= THIS_MODULE,
++};
++
++static int wf_lm87_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
++{	
++	struct wf_lm87_sensor *lm;
++	const char *name = NULL, *loc;
++	struct device_node *np = NULL;
++	int rc;
++
++	/*
++	 * The lm87 contains a whole pile of sensors, additionally,
++	 * the Xserve G5 has several lm87's. However, for now we only
++	 * care about the internal temperature sensor
++	 */
++	while ((np = of_get_next_child(client->dev.of_node, np)) != NULL) {
++		if (strcmp(np->name, "int-temp"))
++			continue;
++		loc = of_get_property(np, "location", NULL);
++		if (!loc)
++			continue;
++		if (strstr(loc, "DIMM"))
++			name = "dimms-temp";
++		else if (strstr(loc, "Processors"))
++			name = "between-cpus-temp";
++		if (name) {
++			of_node_put(np);
++			break;
++		}
++	}
++	if (!name) {
++		pr_warning("wf_lm87: Unsupported sensor %s\n",
++			   client->dev.of_node->full_name);
++		return -ENODEV;
++	}
++
++	lm = kzalloc(sizeof(struct wf_lm87_sensor), GFP_KERNEL);
++	if (lm == NULL)
++		return -ENODEV;
++
++	lm->i2c = client;
++	lm->sens.name = name;
++	lm->sens.ops = &wf_lm87_ops;
++	lm->sens.priv = lm;
++	i2c_set_clientdata(client, lm);
++
++	rc = wf_register_sensor(&lm->sens);
++	if (rc)
++		kfree(lm);
++	return rc;
++}
++
++static int wf_lm87_remove(struct i2c_client *client)
++{
++	struct wf_lm87_sensor *lm = i2c_get_clientdata(client);
++
++	DBG("wf_lm87: i2c detatch called for %s\n", lm->sens.name);
++
++	/* Mark client detached */
++	lm->i2c = NULL;
++
++	/* release sensor */
++	wf_unregister_sensor(&lm->sens);
++
++	return 0;
++}
++
++static const struct i2c_device_id wf_lm87_id[] = {
++	{ "MAC,lm87cimt", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, wf_lm87_id);
++
++static struct i2c_driver wf_lm87_driver = {
++	.driver = {
++		.name	= "wf_lm87",
++	},
++	.probe		= wf_lm87_probe,
++	.remove		= wf_lm87_remove,
++	.id_table	= wf_lm87_id,
++};
++
++static int __init wf_lm87_sensor_init(void)
++{
++	/* We only support this on the Xserve */
++	if (!of_machine_is_compatible("RackMac3,1"))
++		return -ENODEV;
++
++	return i2c_add_driver(&wf_lm87_driver);
++}
++
++static void __exit wf_lm87_sensor_exit(void)
++{
++	i2c_del_driver(&wf_lm87_driver);
++}
++
++
++module_init(wf_lm87_sensor_init);
++module_exit(wf_lm87_sensor_exit);
++
++MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
++MODULE_DESCRIPTION("LM87 sensor objects for PowerMacs thermal control");
++MODULE_LICENSE("GPL");
++
 -- 
 1.7.9.5
