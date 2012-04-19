@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D5477B6FCA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 06:15:24 +1000 (EST)
-Subject: Re: [PATCH] powerpc: fix build when CONFIG_BOOKE_WDT is enabled
+ by ozlabs.org (Postfix) with ESMTPS id 1C781B7014
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2012 06:15:31 +1000 (EST)
+Subject: Re: [PATCH 1/4] powerpc/mpic_msgr: fix compile error when SMP disabled
 Mime-Version: 1.0 (Apple Message framework v1257)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4c2709df9123c32681503972be3707026c9dab74.1334816894.git.baruch@tkos.co.il>
-Date: Thu, 19 Apr 2012 15:15:25 -0500
-Message-Id: <E58B01B5-BE5C-4857-A31C-58CBB0AD5937@kernel.crashing.org>
-References: <4c2709df9123c32681503972be3707026c9dab74.1334816894.git.baruch@tkos.co.il>
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: David Howells <dhowells@redhat.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1334541908-19331-1-git-send-email-Mingkai.hu@freescale.com>
+Date: Thu, 19 Apr 2012 15:15:32 -0500
+Message-Id: <F0561787-724C-42BB-8B18-34F62F635DBF@kernel.crashing.org>
+References: <1334541908-19331-1-git-send-email-Mingkai.hu@freescale.com>
+To: Mingkai Hu <Mingkai.hu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +24,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 19, 2012, at 1:32 AM, Baruch Siach wrote:
+On Apr 15, 2012, at 9:05 PM, Mingkai Hu wrote:
 
-> Commit ae3a197e (Disintegrate asm/system.h for PowerPC) broke build of
-> assembly files when CONFIG_BOOKE_WDT is enabled as follows:
+> In file included from arch/powerpc/sysdev/mpic_msgr.c:20:0:
+> ~/arch/powerpc/include/asm/mpic_msgr.h: In function =
+'mpic_msgr_set_destination':
+> ~/arch/powerpc/include/asm/mpic_msgr.h:117:2:
+> error: implicit declaration of function 'get_hard_smp_processor_id'
+> make[1]: *** [arch/powerpc/sysdev/mpic_msgr.o] Error 1
 >=20
->  AS      arch/powerpc/lib/string.o
-> /home/baruch/git/stable/arch/powerpc/include/asm/reg_booke.h: =
-Assembler messages:
-> /home/baruch/git/stable/arch/powerpc/include/asm/reg_booke.h:19: =
-Error: Unrecognized opcode: `extern'
-> /home/baruch/git/stable/arch/powerpc/include/asm/reg_booke.h:20: =
-Error: Unrecognized opcode: `extern'
->=20
-> Since setup_32.c is the only user of the booke_wdt configuration =
-variables, move
-> the declarations there.
->=20
-> Cc: David Howells <dhowells@redhat.com>
-> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+> Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
 > ---
-> arch/powerpc/include/asm/reg_booke.h |    5 -----
-> arch/powerpc/kernel/setup_32.c       |    5 +++++
-> 2 files changed, 5 insertions(+), 5 deletions(-)
+> arch/powerpc/include/asm/mpic_msgr.h |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
-applied to merge, minor moving of the externs to be in same ifdef in =
-setup_32.c
+applied to merge
 
 - k=
