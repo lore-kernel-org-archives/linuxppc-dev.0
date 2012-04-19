@@ -1,27 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1AFA4B7045
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:55:38 +1000 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E770EB6FC8
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 19:03:36 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <benh@kernel.crashing.org>;
- Thu, 19 Apr 2012 08:02:55 +1000
+ Thu, 19 Apr 2012 08:14:48 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q3J8DCjp1556482
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:13:12 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3J8Jnlq21299244
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:19:49 +1000
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q3J8Jn18008381
+ q3J8JnXK008309
  for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 18:19:49 +1000
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 14/15] powerpc/windfarm: Add Fan Control Unit controls for G5s
-Date: Thu, 19 Apr 2012 18:16:55 +1000
-Message-Id: <1334823416-9138-15-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 11/15] powerpc/windfarm: Add ad7417 sensor
+Date: Thu, 19 Apr 2012 18:16:52 +1000
+Message-Id: <1334823416-9138-12-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
 References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
 Cc: khali@linux-fr.org
@@ -34,29 +34,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The FCU operates the fans on the earlier generation G5 machines,
-this module will be used by upcoming windfarm drivers.
+For user by the upcoming windfarm_pm72 and windfarm_rm31
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/macintosh/windfarm_fcu_controls.c |  617 +++++++++++++++++++++++++++++
- 1 file changed, 617 insertions(+)
- create mode 100644 drivers/macintosh/windfarm_fcu_controls.c
+ drivers/macintosh/windfarm_ad7417_sensor.c |  347 ++++++++++++++++++++++++++++
+ 1 file changed, 347 insertions(+)
+ create mode 100644 drivers/macintosh/windfarm_ad7417_sensor.c
 
-diff --git a/drivers/macintosh/windfarm_fcu_controls.c b/drivers/macintosh/windfarm_fcu_controls.c
+diff --git a/drivers/macintosh/windfarm_ad7417_sensor.c b/drivers/macintosh/windfarm_ad7417_sensor.c
 new file mode 100644
-index 0000000..871f8b4
+index 0000000..ac3f243
 --- /dev/null
-+++ b/drivers/macintosh/windfarm_fcu_controls.c
-@@ -0,0 +1,617 @@
++++ b/drivers/macintosh/windfarm_ad7417_sensor.c
+@@ -0,0 +1,347 @@
 +/*
-+ * Windfarm PowerMac thermal control. FCU fan control
++ * Windfarm PowerMac thermal control. AD7417 sensors
 + *
 + * Copyright 2012 Benjamin Herrenschmidt, IBM Corp.
 + *
 + * Released under the term of the GNU GPL v2.
 + */
-+#undef DEBUG
 +
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -76,594 +74,325 @@ index 0000000..871f8b4
 +
 +#define VERSION "1.0"
 +
-+#ifdef DEBUG
-+#define DBG(args...)	printk(args)
-+#else
-+#define DBG(args...)	do { } while(0)
-+#endif
-+
-+/*
-+ * This option is "weird" :) Basically, if you define this to 1
-+ * the control loop for the RPMs fans (not PWMs) will apply the
-+ * correction factor obtained from the PID to the actual RPM
-+ * speed read from the FCU.
-+ *
-+ * If you define the below constant to 0, then it will be
-+ * applied to the setpoint RPM speed, that is basically the
-+ * speed we proviously "asked" for.
-+ *
-+ * I'm not sure which of these Apple's algorithm is supposed
-+ * to use
-+ */
-+#define RPM_PID_USE_ACTUAL_SPEED	1
-+
-+/* Default min/max for pumps */
-+#define CPU_PUMP_OUTPUT_MAX		3200
-+#define CPU_PUMP_OUTPUT_MIN		1250
-+
-+#define FCU_FAN_RPM		0
-+#define FCU_FAN_PWM		1
-+
-+struct wf_fcu_priv {
++struct wf_ad7417_priv {
 +	struct kref		ref;
 +	struct i2c_client	*i2c;
++	u8			config;
++	u8			cpu;
++	const struct mpu_data	*mpu;
++	struct wf_sensor	sensors[5];
 +	struct mutex		lock;
-+	struct list_head	fan_list;
-+	int			rpm_shift;
 +};
 +
-+struct wf_fcu_fan {
-+	struct list_head	link;
-+	int			id;
-+	s32			min, max, target;
-+	struct wf_fcu_priv	*fcu_priv;
-+	struct wf_control	ctrl;
-+};
-+
-+static void wf_fcu_release(struct kref *ref)
++static int wf_ad7417_temp_get(struct wf_sensor *sr, s32 *value)
 +{
-+	struct wf_fcu_priv *pv = container_of(ref, struct wf_fcu_priv, ref);
++	struct wf_ad7417_priv *pv = sr->priv;
++	u8 buf[2];
++	s16 raw;
++	int rc;
 +
++	*value = 0;
++	mutex_lock(&pv->lock);
++
++	/* Read temp register */
++	buf[0] = 0;
++	rc = i2c_master_send(pv->i2c, buf, 1);
++	if (rc < 0)
++		goto error;
++	rc = i2c_master_recv(pv->i2c, buf, 2);
++	if (rc < 0)
++		goto error;
++
++	/* Read a a 16-bit signed value */
++	raw = be16_to_cpup((__le16 *)buf);
++
++	/* Convert 8.8-bit to 16.16 fixed point */
++	*value = ((s32)raw) << 8;
++
++	mutex_unlock(&pv->lock);
++	return 0;
++
++error:
++	mutex_unlock(&pv->lock);
++	return -1;
++}
++
++/*
++ * Scaling factors for the AD7417 ADC converters (except
++ * for the CPU diode which is obtained from the EEPROM).
++ * Those values are obtained from the property list of
++ * the darwin driver
++ */
++#define ADC_12V_CURRENT_SCALE	0x0320	/* _AD2 */
++#define ADC_CPU_VOLTAGE_SCALE	0x00a0	/* _AD3 */
++#define ADC_CPU_CURRENT_SCALE	0x1f40	/* _AD4 */
++
++static void wf_ad7417_adc_convert(struct wf_ad7417_priv *pv,
++				  int chan, s32 raw, s32 *value)
++{
++	switch(chan) {
++	case 1: /* Diode */
++		*value = (raw * (s32)pv->mpu->mdiode +
++			((s32)pv->mpu->bdiode << 12)) >> 2;
++		break;
++	case 2: /* 12v current */
++		*value = raw * ADC_12V_CURRENT_SCALE;
++		break;
++	case 3: /* core voltage */
++		*value = raw * ADC_CPU_VOLTAGE_SCALE;
++		break;
++	case 4: /* core current */
++		*value = raw * ADC_CPU_CURRENT_SCALE;
++		break;
++	}
++}
++
++static int wf_ad7417_adc_get(struct wf_sensor *sr, s32 *value)
++{
++	struct wf_ad7417_priv *pv = sr->priv;
++	int chan = sr - pv->sensors;
++	int i, rc;
++	u8 buf[2];
++	u16 raw;
++
++	*value = 0;
++	mutex_lock(&pv->lock);
++	for (i = 0; i < 10; i++) {
++		/* Set channel */
++		buf[0] = 1;
++		buf[1] = (pv->config & 0x1f) | (chan << 5);
++		rc = i2c_master_send(pv->i2c, buf, 2);
++		if (rc < 0)
++			goto error;
++
++		/* Wait for conversion */
++		msleep(1);
++
++		/* Switch to data register */
++		buf[0] = 4;
++		rc = i2c_master_send(pv->i2c, buf, 1);
++		if (rc < 0)
++			goto error;
++
++		/* Read result */
++		rc = i2c_master_recv(pv->i2c, buf, 2);
++		if (rc < 0)
++			goto error;
++
++		/* Read a a 16-bit signed value */
++		raw = be16_to_cpup((__le16 *)buf) >> 6;
++		wf_ad7417_adc_convert(pv, chan, raw, value);
++
++		dev_vdbg(&pv->i2c->dev, "ADC chan %d [%s]"
++			 " raw value: 0x%x, conv to: 0x%08x\n",
++			 chan, sr->name, raw, *value);
++
++		mutex_unlock(&pv->lock);
++		return 0;
++
++	error:
++		dev_dbg(&pv->i2c->dev,
++			  "Error reading ADC, try %d...\n", i);
++		if (i < 9)
++			msleep(10);
++	}
++	mutex_unlock(&pv->lock);
++	return -1;
++}
++
++static void wf_ad7417_release(struct kref *ref)
++{
++	struct wf_ad7417_priv *pv = container_of(ref,
++						 struct wf_ad7417_priv, ref);
 +	kfree(pv);
 +}
 +
-+static void wf_fcu_fan_release(struct wf_control *ct)
++static void wf_ad7417_sensor_release(struct wf_sensor *sr)
 +{
-+	struct wf_fcu_fan *fan = ct->priv;
++	struct wf_ad7417_priv *pv = sr->priv;
 +
-+	kref_put(&fan->fcu_priv->ref, wf_fcu_release);
-+	kfree(fan);
++	kfree(sr->name);
++	kref_put(&pv->ref, wf_ad7417_release);
 +}
 +
-+static int wf_fcu_read_reg(struct wf_fcu_priv *pv, int reg,
-+			   unsigned char *buf, int nb)
-+{
-+	int tries, nr, nw;
-+
-+	mutex_lock(&pv->lock);
-+
-+	buf[0] = reg;
-+	tries = 0;
-+	for (;;) {
-+		nw = i2c_master_send(pv->i2c, buf, 1);
-+		if (nw > 0 || (nw < 0 && nw != -EIO) || tries >= 100)
-+			break;
-+		msleep(10);
-+		++tries;
-+	}
-+	if (nw <= 0) {
-+		pr_err("Failure writing address to FCU: %d", nw);
-+		nr = nw;
-+		goto bail;
-+	}
-+	tries = 0;
-+	for (;;) {
-+		nr = i2c_master_recv(pv->i2c, buf, nb);
-+		if (nr > 0 || (nr < 0 && nr != -ENODEV) || tries >= 100)
-+			break;
-+		msleep(10);
-+		++tries;
-+	}
-+	if (nr <= 0)
-+		pr_err("wf_fcu: Failure reading data from FCU: %d", nw);
-+ bail:
-+	mutex_unlock(&pv->lock);
-+	return nr;
-+}
-+
-+static int wf_fcu_write_reg(struct wf_fcu_priv *pv, int reg,
-+			    const unsigned char *ptr, int nb)
-+{
-+	int tries, nw;
-+	unsigned char buf[16];
-+
-+	buf[0] = reg;
-+	memcpy(buf+1, ptr, nb);
-+	++nb;
-+	tries = 0;
-+	for (;;) {
-+		nw = i2c_master_send(pv->i2c, buf, nb);
-+		if (nw > 0 || (nw < 0 && nw != -EIO) || tries >= 100)
-+			break;
-+		msleep(10);
-+		++tries;
-+	}
-+	if (nw < 0)
-+		pr_err("wf_fcu: Failure writing to FCU: %d", nw);
-+	return nw;
-+}
-+
-+static int wf_fcu_fan_set_rpm(struct wf_control *ct, s32 value)
-+{
-+	struct wf_fcu_fan *fan = ct->priv;
-+	struct wf_fcu_priv *pv = fan->fcu_priv;
-+	int rc, shift = pv->rpm_shift;
-+	unsigned char buf[2];
-+
-+	if (value < fan->min)
-+		value = fan->min;
-+	if (value > fan->max)
-+		value = fan->max;
-+
-+	if (fan->target && fan->target == value)
-+		return 0;
-+	fan->target = value;
-+
-+	buf[0] = value >> (8 - shift);
-+	buf[1] = value << shift;
-+	rc = wf_fcu_write_reg(pv, 0x10 + (fan->id * 2), buf, 2);
-+	if (rc < 0)
-+		return -EIO;
-+	return 0;
-+}
-+
-+static int wf_fcu_fan_get_rpm(struct wf_control *ct, s32 *value)
-+{
-+	struct wf_fcu_fan *fan = ct->priv;
-+	struct wf_fcu_priv *pv = fan->fcu_priv;
-+	int rc, reg_base, shift = pv->rpm_shift;
-+	unsigned char failure;
-+	unsigned char active;
-+	unsigned char buf[2];
-+
-+	rc = wf_fcu_read_reg(pv, 0xb, &failure, 1);
-+	if (rc != 1)
-+		return -EIO;
-+	if ((failure & (1 << fan->id)) != 0)
-+		return -EFAULT;
-+	rc = wf_fcu_read_reg(pv, 0xd, &active, 1);
-+	if (rc != 1)
-+		return -EIO;
-+	if ((active & (1 << fan->id)) == 0)
-+		return -ENXIO;
-+
-+	/* Programmed value or real current speed */
-+#if RPM_PID_USE_ACTUAL_SPEED
-+	reg_base = 0x11;
-+#else
-+	reg_base = 0x10;
-+#endif
-+	rc = wf_fcu_read_reg(pv, reg_base + (fan->id * 2), buf, 2);
-+	if (rc != 2)
-+		return -EIO;
-+
-+	*value = (buf[0] << (8 - shift)) | buf[1] >> shift;
-+
-+	return 0;
-+}
-+
-+static int wf_fcu_fan_set_pwm(struct wf_control *ct, s32 value)
-+{
-+	struct wf_fcu_fan *fan = ct->priv;
-+	struct wf_fcu_priv *pv = fan->fcu_priv;
-+	unsigned char buf[2];
-+	int rc;
-+
-+	if (value < fan->min)
-+		value = fan->min;
-+	if (value > fan->max)
-+		value = fan->max;
-+
-+	if (fan->target && fan->target == value)
-+		return 0;
-+	fan->target = value;
-+
-+	value = (value * 2559) / 1000;
-+	buf[0] = value;
-+	rc = wf_fcu_write_reg(pv, 0x30 + (fan->id * 2), buf, 1);
-+	if (rc < 0)
-+		return -EIO;
-+	return 0;
-+}
-+
-+static int wf_fcu_fan_get_pwm(struct wf_control *ct, s32 *value)
-+{
-+	struct wf_fcu_fan *fan = ct->priv;
-+	struct wf_fcu_priv *pv = fan->fcu_priv;
-+	unsigned char failure;
-+	unsigned char active;
-+	unsigned char buf[2];
-+	int rc;
-+
-+	rc = wf_fcu_read_reg(pv, 0x2b, &failure, 1);
-+	if (rc != 1)
-+		return -EIO;
-+	if ((failure & (1 << fan->id)) != 0)
-+		return -EFAULT;
-+	rc = wf_fcu_read_reg(pv, 0x2d, &active, 1);
-+	if (rc != 1)
-+		return -EIO;
-+	if ((active & (1 << fan->id)) == 0)
-+		return -ENXIO;
-+
-+	rc = wf_fcu_read_reg(pv, 0x30 + (fan->id * 2), buf, 1);
-+	if (rc != 1)
-+		return -EIO;
-+
-+	*value = (((s32)buf[0]) * 1000) / 2559;
-+
-+	return 0;
-+}
-+
-+static s32 wf_fcu_fan_min(struct wf_control *ct)
-+{
-+	struct wf_fcu_fan *fan = ct->priv;
-+
-+	return fan->min;
-+}
-+
-+static s32 wf_fcu_fan_max(struct wf_control *ct)
-+{
-+	struct wf_fcu_fan *fan = ct->priv;
-+
-+	return fan->max;
-+}
-+
-+static const struct wf_control_ops wf_fcu_fan_rpm_ops = {
-+	.set_value	= wf_fcu_fan_set_rpm,
-+	.get_value	= wf_fcu_fan_get_rpm,
-+	.get_min	= wf_fcu_fan_min,
-+	.get_max	= wf_fcu_fan_max,
-+	.release	= wf_fcu_fan_release,
++static const struct wf_sensor_ops wf_ad7417_temp_ops = {
++	.get_value	= wf_ad7417_temp_get,
++	.release	= wf_ad7417_sensor_release,
 +	.owner		= THIS_MODULE,
 +};
 +
-+static const struct wf_control_ops wf_fcu_fan_pwm_ops = {
-+	.set_value	= wf_fcu_fan_set_pwm,
-+	.get_value	= wf_fcu_fan_get_pwm,
-+	.get_min	= wf_fcu_fan_min,
-+	.get_max	= wf_fcu_fan_max,
-+	.release	= wf_fcu_fan_release,
++static const struct wf_sensor_ops wf_ad7417_adc_ops = {
++	.get_value	= wf_ad7417_adc_get,
++	.release	= wf_ad7417_sensor_release,
 +	.owner		= THIS_MODULE,
 +};
 +
-+static void __devinit wf_fcu_get_pump_minmax(struct wf_fcu_fan *fan)
++static void __devinit wf_ad7417_add_sensor(struct wf_ad7417_priv *pv,
++					   int index, const char *name,
++					   const struct wf_sensor_ops *ops)
 +{
-+	const struct mpu_data *mpu = wf_get_mpu(0);
-+	u16 pump_min = 0, pump_max = 0xffff;
-+	u16 tmp[4];
-+
-+	/* Try to fetch pumps min/max infos from eeprom */
-+	if (mpu) {
-+		memcpy(&tmp, mpu->processor_part_num, 8);
-+		if (tmp[0] != 0xffff && tmp[1] != 0xffff) {
-+			pump_min = max(pump_min, tmp[0]);
-+			pump_max = min(pump_max, tmp[1]);
-+		}
-+		if (tmp[2] != 0xffff && tmp[3] != 0xffff) {
-+			pump_min = max(pump_min, tmp[2]);
-+			pump_max = min(pump_max, tmp[3]);
-+		}
-+	}
-+
-+	/* Double check the values, this _IS_ needed as the EEPROM on
-+	 * some dual 2.5Ghz G5s seem, at least, to have both min & max
-+	 * same to the same value ... (grrrr)
-+	 */
-+	if (pump_min == pump_max || pump_min == 0 || pump_max == 0xffff) {
-+		pump_min = CPU_PUMP_OUTPUT_MIN;
-+		pump_max = CPU_PUMP_OUTPUT_MAX;
-+	}
-+
-+	fan->min = pump_min;
-+	fan->max = pump_max;
-+
-+	DBG("wf_fcu: pump min/max for %s set to: [%d..%d] RPM\n",
-+	    fan->ctrl.name, pump_min, pump_max);
++	pv->sensors[index].name = kasprintf(GFP_KERNEL, "%s-%d", name, pv->cpu);
++	pv->sensors[index].priv = pv;
++	pv->sensors[index].ops = ops;
++	if (!wf_register_sensor(&pv->sensors[index]))
++		kref_get(&pv->ref);
 +}
 +
-+static void __devinit wf_fcu_get_rpmfan_minmax(struct wf_fcu_fan *fan)
++static void __devinit wf_ad7417_init_chip(struct wf_ad7417_priv *pv)
 +{
-+	struct wf_fcu_priv *pv = fan->fcu_priv;
-+	const struct mpu_data *mpu0 = wf_get_mpu(0);
-+	const struct mpu_data *mpu1 = wf_get_mpu(1);
-+
-+	/* Default */
-+	fan->min = 2400 >> pv->rpm_shift;
-+	fan->max = 56000 >> pv->rpm_shift;
-+
-+	/* CPU fans have min/max in MPU */
-+	if (mpu0 && !strcmp(fan->ctrl.name, "cpu-front-fan-0")) {
-+		fan->min = max(fan->min, (s32)mpu0->rminn_intake_fan);
-+		fan->max = min(fan->max, (s32)mpu0->rmaxn_intake_fan);
-+		goto bail;
-+	}
-+	if (mpu1 && !strcmp(fan->ctrl.name, "cpu-front-fan-1")) {
-+		fan->min = max(fan->min, (s32)mpu1->rminn_intake_fan);
-+		fan->max = min(fan->max, (s32)mpu1->rmaxn_intake_fan);
-+		goto bail;
-+	}
-+	if (mpu0 && !strcmp(fan->ctrl.name, "cpu-rear-fan-0")) {
-+		fan->min = max(fan->min, (s32)mpu0->rminn_exhaust_fan);
-+		fan->max = min(fan->max, (s32)mpu0->rmaxn_exhaust_fan);
-+		goto bail;
-+	}
-+	if (mpu1 && !strcmp(fan->ctrl.name, "cpu-rear-fan-1")) {
-+		fan->min = max(fan->min, (s32)mpu1->rminn_exhaust_fan);
-+		fan->max = min(fan->max, (s32)mpu1->rmaxn_exhaust_fan);
-+		goto bail;
-+	}
-+	/* Rackmac variants, we just use mpu0 intake */
-+	if (!strncmp(fan->ctrl.name, "cpu-fan", 7)) {
-+		fan->min = max(fan->min, (s32)mpu0->rminn_intake_fan);
-+		fan->max = min(fan->max, (s32)mpu0->rmaxn_intake_fan);
-+		goto bail;
-+	}
-+ bail:
-+	DBG("wf_fcu: fan min/max for %s set to: [%d..%d] RPM\n",
-+	    fan->ctrl.name, fan->min, fan->max);
-+}
-+
-+static void __devinit wf_fcu_add_fan(struct wf_fcu_priv *pv,
-+				     const char *name,
-+				     int type, int id)
-+{
-+	struct wf_fcu_fan *fan;
-+
-+	fan = kzalloc(sizeof(*fan), GFP_KERNEL);
-+	if (!fan)
-+		return;
-+	fan->fcu_priv = pv;
-+	fan->id = id;
-+	fan->ctrl.name = name;
-+	fan->ctrl.priv = fan;
-+
-+	/* min/max is oddball but the code comes from
-+	 * therm_pm72 which seems to work so ...
-+	 */
-+	if (type == FCU_FAN_RPM) {
-+		if (!strncmp(name, "cpu-pump", strlen("cpu-pump")))
-+			wf_fcu_get_pump_minmax(fan);
-+		else
-+			wf_fcu_get_rpmfan_minmax(fan);
-+		fan->ctrl.type = WF_CONTROL_RPM_FAN;
-+		fan->ctrl.ops = &wf_fcu_fan_rpm_ops;
-+	} else {
-+		fan->min = 10;
-+		fan->max = 100;
-+		fan->ctrl.type = WF_CONTROL_PWM_FAN;
-+		fan->ctrl.ops = &wf_fcu_fan_pwm_ops;
-+	}
-+
-+	if (wf_register_control(&fan->ctrl)) {
-+		pr_err("wf_fcu: Failed to register fan %s\n", name);
-+		kfree(fan);
-+		return;
-+	}
-+	list_add(&fan->link, &pv->fan_list);
-+	kref_get(&pv->ref);
-+}
-+
-+static void __devinit wf_fcu_lookup_fans(struct wf_fcu_priv *pv)
-+{
-+	/* Translation of device-tree location properties to
-+	 * windfarm fan names
-+	 */
-+	static const struct {
-+		const char *dt_name;	/* Device-tree name */
-+		const char *ct_name;	/* Control name */
-+	} loc_trans[] = {
-+		{ "BACKSIDE",		"backside-fan",		},
-+		{ "SYS CTRLR FAN",	"backside-fan",		},
-+		{ "DRIVE BAY",		"drive-bay-fan",	},
-+		{ "SLOT",		"slots-fan",		},
-+		{ "PCI FAN",		"slots-fan",		},
-+		{ "CPU A INTAKE",	"cpu-front-fan-0",	},
-+		{ "CPU A EXHAUST",	"cpu-rear-fan-0",	},
-+		{ "CPU B INTAKE",	"cpu-front-fan-1",	},
-+		{ "CPU B EXHAUST",	"cpu-rear-fan-1",	},
-+		{ "CPU A PUMP",		"cpu-pump-0",		},
-+		{ "CPU B PUMP",		"cpu-pump-1",		},
-+		{ "CPU A 1",		"cpu-fan-a-0",		},
-+		{ "CPU A 2",		"cpu-fan-b-0",		},
-+		{ "CPU A 3",		"cpu-fan-c-0",		},
-+		{ "CPU B 1",		"cpu-fan-a-1",		},
-+		{ "CPU B 2",		"cpu-fan-b-1",		},
-+		{ "CPU B 3",		"cpu-fan-c-1",		},
-+	};
-+	struct device_node *np = NULL, *fcu = pv->i2c->dev.of_node;
-+	int i;
-+
-+	DBG("Looking up FCU controls in device-tree...\n");
-+
-+	while ((np = of_get_next_child(fcu, np)) != NULL) {
-+		int id, type = -1;
-+		const char *loc;
-+		const char *name;
-+		const u32 *reg;
-+
-+		DBG(" control: %s, type: %s\n", np->name, np->type);
-+
-+		/* Detect control type */
-+		if (!strcmp(np->type, "fan-rpm-control") ||
-+		    !strcmp(np->type, "fan-rpm"))
-+			type = FCU_FAN_RPM;
-+		if (!strcmp(np->type, "fan-pwm-control") ||
-+		    !strcmp(np->type, "fan-pwm"))
-+			type = FCU_FAN_PWM;
-+		/* Only care about fans for now */
-+		if (type == -1)
-+			continue;
-+
-+		/* Lookup for a matching location */
-+		loc = of_get_property(np, "location", NULL);
-+		reg = of_get_property(np, "reg", NULL);
-+		if (loc == NULL || reg == NULL)
-+			continue;
-+		DBG(" matching location: %s, reg: 0x%08x\n", loc, *reg);
-+
-+		for (i = 0; i < ARRAY_SIZE(loc_trans); i++) {
-+			if (strncmp(loc, loc_trans[i].dt_name,
-+				    strlen(loc_trans[i].dt_name)))
-+				continue;
-+			name = loc_trans[i].ct_name;
-+
-+			DBG(" location match, name: %s\n", name);
-+
-+			if (type == FCU_FAN_RPM)
-+				id = ((*reg) - 0x10) / 2;
-+			else
-+				id = ((*reg) - 0x30) / 2;
-+			if (id > 7) {
-+				pr_warning("wf_fcu: Can't parse "
-+				       "fan ID in device-tree for %s\n",
-+					   np->full_name);
-+				break;
-+			}
-+			wf_fcu_add_fan(pv, name, type, id);
-+			break;
-+		}
-+	}
-+}
-+
-+static void __devinit wf_fcu_default_fans(struct wf_fcu_priv *pv)
-+{
-+	/* We only support the default fans for PowerMac7,2 */
-+	if (!of_machine_is_compatible("PowerMac7,2"))
-+		return;
-+
-+	wf_fcu_add_fan(pv, "backside-fan",	FCU_FAN_PWM, 1);
-+	wf_fcu_add_fan(pv, "drive-bay-fan",	FCU_FAN_RPM, 2);
-+	wf_fcu_add_fan(pv, "slots-fan",		FCU_FAN_PWM, 2);
-+	wf_fcu_add_fan(pv, "cpu-front-fan-0",	FCU_FAN_RPM, 3);
-+	wf_fcu_add_fan(pv, "cpu-rear-fan-0",	FCU_FAN_RPM, 4);
-+	wf_fcu_add_fan(pv, "cpu-front-fan-1",	FCU_FAN_RPM, 5);
-+	wf_fcu_add_fan(pv, "cpu-rear-fan-1",	FCU_FAN_RPM, 6);
-+}
-+
-+static int __devinit wf_fcu_init_chip(struct wf_fcu_priv *pv)
-+{
-+	unsigned char buf = 0xff;
 +	int rc;
++	u8 buf[2];
++	u8 config = 0;
 +
-+	rc = wf_fcu_write_reg(pv, 0xe, &buf, 1);
-+	if (rc < 0)
-+		return -EIO;
-+	rc = wf_fcu_write_reg(pv, 0x2e, &buf, 1);
-+	if (rc < 0)
-+		return -EIO;
-+	rc = wf_fcu_read_reg(pv, 0, &buf, 1);
-+	if (rc < 0)
-+		return -EIO;
-+	pv->rpm_shift = (buf == 1) ? 2 : 3;
++	/*
++	 * Read ADC the configuration register and cache it. We
++	 * also make sure Config2 contains proper values, I've seen
++	 * cases where we got stale grabage in there, thus preventing
++	 * proper reading of conv. values
++	 */
 +
-+	pr_debug("wf_fcu: FCU Initialized, RPM fan shift is %d\n",
-+		 pv->rpm_shift);
++	/* Clear Config2 */
++	buf[0] = 5;
++	buf[1] = 0;
++	i2c_master_send(pv->i2c, buf, 2);
 +
-+	return 0;
++	/* Read & cache Config1 */
++	buf[0] = 1;
++	rc = i2c_master_send(pv->i2c, buf, 1);
++	if (rc > 0) {
++		rc = i2c_master_recv(pv->i2c, buf, 1);
++		if (rc > 0) {
++			config = buf[0];
++
++			dev_dbg(&pv->i2c->dev, "ADC config reg: %02x\n",
++				config);
++
++			/* Disable shutdown mode */
++			config &= 0xfe;
++			buf[0] = 1;
++			buf[1] = config;
++			rc = i2c_master_send(pv->i2c, buf, 2);
++		}
++	}
++	if (rc <= 0)
++		dev_err(&pv->i2c->dev, "Error reading ADC config\n");
++
++	pv->config = config;
 +}
 +
-+static int __devinit wf_fcu_probe(struct i2c_client *client,
-+				  const struct i2c_device_id *id)
++static int __devinit wf_ad7417_probe(struct i2c_client *client,
++				     const struct i2c_device_id *id)
 +{
-+	struct wf_fcu_priv *pv;
++	struct wf_ad7417_priv *pv;
++	const struct mpu_data *mpu;
++	const char *loc;
++	int cpu_nr;
 +
-+	pv = kzalloc(sizeof(*pv), GFP_KERNEL);
-+	if (!pv)
-+		return -ENOMEM;
++	loc = of_get_property(client->dev.of_node, "hwsensor-location", NULL);
++	if (!loc) {
++		dev_warn(&client->dev, "Missing hwsensor-location property!\n");
++		return -ENXIO;
++	}
++
++	/*
++	 * Identify which CPU we belong to by looking at the first entry
++	 * in the hwsensor-location list
++	 */
++	if (!strncmp(loc, "CPU A", 5))
++		cpu_nr = 0;
++	else if (!strncmp(loc, "CPU B", 5))
++		cpu_nr = 1;
++	else {
++		pr_err("wf_ad7417: Can't identify location %s\n", loc);
++		return -ENXIO;
++	}
++	mpu = wf_get_mpu(cpu_nr);
++	if (!mpu) {
++		dev_err(&client->dev, "Failed to retrieve MPU data\n");
++		return -ENXIO;
++	}
++
++	pv = kzalloc(sizeof(struct wf_ad7417_priv), GFP_KERNEL);
++	if (pv == NULL)
++		return -ENODEV;
 +
 +	kref_init(&pv->ref);
 +	mutex_init(&pv->lock);
-+	INIT_LIST_HEAD(&pv->fan_list);
 +	pv->i2c = client;
-+
-+	/*
-+	 * First we must start the FCU which will query the
-+	 * shift value to apply to RPMs
-+	 */
-+	if (wf_fcu_init_chip(pv)) {
-+		pr_err("wf_fcu: Initialization failed !\n");
-+		kfree(pv);
-+		return -ENXIO;
-+	}
-+
-+	/* First lookup fans in the device-tree */
-+	wf_fcu_lookup_fans(pv);
-+
-+	/*
-+	 * Older machines don't have the device-tree entries
-+	 * we are looking for, just hard code the list
-+	 */
-+	if (list_empty(&pv->fan_list))
-+		wf_fcu_default_fans(pv);
-+
-+	/* Still no fans ? FAIL */
-+	if (list_empty(&pv->fan_list)) {
-+		pr_err("wf_fcu: Failed to find fans for your machine\n");
-+		kfree(pv);
-+		return -ENODEV;
-+	}
-+
++	pv->cpu = cpu_nr;
++	pv->mpu = mpu;
 +	dev_set_drvdata(&client->dev, pv);
 +
++	/* Initialize the chip */
++	wf_ad7417_init_chip(pv);
++
++	/*
++	 * We cannot rely on Apple device-tree giving us child
++	 * node with the names of the individual sensors so we
++	 * just hard code what we know about them
++	 */
++	wf_ad7417_add_sensor(pv, 0, "cpu-amb-temp", &wf_ad7417_temp_ops);
++	wf_ad7417_add_sensor(pv, 1, "cpu-diode-temp", &wf_ad7417_adc_ops);
++	wf_ad7417_add_sensor(pv, 2, "cpu-12v-current", &wf_ad7417_adc_ops);
++	wf_ad7417_add_sensor(pv, 3, "cpu-voltage", &wf_ad7417_adc_ops);
++	wf_ad7417_add_sensor(pv, 4, "cpu-current", &wf_ad7417_adc_ops);
++
 +	return 0;
 +}
 +
-+static int __devexit wf_fcu_remove(struct i2c_client *client)
++static int __devexit wf_ad7417_remove(struct i2c_client *client)
 +{
-+	struct wf_fcu_priv *pv = dev_get_drvdata(&client->dev);
-+	struct wf_fcu_fan *fan;
++	struct wf_ad7417_priv *pv = dev_get_drvdata(&client->dev);
++	int i;
 +
-+	while (!list_empty(&pv->fan_list)) {
-+		fan = list_first_entry(&pv->fan_list, struct wf_fcu_fan, link);
-+		list_del(&fan->link);
-+		wf_unregister_control(&fan->ctrl);
-+	}
-+	kref_put(&pv->ref, wf_fcu_release);
++	/* Mark client detached */
++	pv->i2c = NULL;
++
++	/* Release sensor */
++	for (i = 0; i < 5; i++)
++		wf_unregister_sensor(&pv->sensors[i]);
++
++	kref_put(&pv->ref, wf_ad7417_release);
++
 +	return 0;
 +}
 +
-+static const struct i2c_device_id wf_fcu_id[] = {
-+	{ "MAC,fcu", 0 },
++static const struct i2c_device_id wf_ad7417_id[] = {
++	{ "MAC,ad7417", 0 },
 +	{ }
 +};
-+MODULE_DEVICE_TABLE(i2c, wf_fcu_id);
++MODULE_DEVICE_TABLE(i2c, wf_ad7417_id);
 +
-+static struct i2c_driver wf_fcu_driver = {
++static struct i2c_driver wf_ad7417_driver = {
 +	.driver = {
-+		.name	= "wf_fcu",
++		.name	= "wf_ad7417",
 +	},
-+	.probe		= wf_fcu_probe,
-+	.remove		= wf_fcu_remove,
-+	.id_table	= wf_fcu_id,
++	.probe		= wf_ad7417_probe,
++	.remove		= wf_ad7417_remove,
++	.id_table	= wf_ad7417_id,
 +};
 +
-+static int __init wf_fcu_init(void)
++static int __devinit wf_ad7417_init(void)
 +{
-+	return i2c_add_driver(&wf_fcu_driver);
++	/* This is only supported on these machines */
++	if (!of_machine_is_compatible("PowerMac7,2") &&
++	    !of_machine_is_compatible("PowerMac7,3") &&
++	    !of_machine_is_compatible("RackMac3,1"))
++		return -ENODEV;
++
++	return i2c_add_driver(&wf_ad7417_driver);
 +}
 +
-+static void __exit wf_fcu_exit(void)
++static void __devexit wf_ad7417_exit(void)
 +{
-+	i2c_del_driver(&wf_fcu_driver);
++	i2c_del_driver(&wf_ad7417_driver);
 +}
 +
-+
-+module_init(wf_fcu_init);
-+module_exit(wf_fcu_exit);
++module_init(wf_ad7417_init);
++module_exit(wf_ad7417_exit);
 +
 +MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
-+MODULE_DESCRIPTION("FCU control objects for PowerMacs thermal control");
++MODULE_DESCRIPTION("ad7417 sensor driver for PowerMacs");
 +MODULE_LICENSE("GPL");
 +
 -- 
