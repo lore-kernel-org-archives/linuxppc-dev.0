@@ -1,37 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F218B6FE8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 04:42:44 +1000 (EST)
-Received: by pbcwy12 with SMTP id wy12so133332pbc.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2012 11:42:42 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v5 06/27] irq_domain/powerpc: eliminate irq_map;
- use irq_alloc_desc() instead
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1334180248.2984.39.camel@pasglop>
-References: <1329383368-12122-1-git-send-email-grant.likely@secretlab.ca>
- <1329383368-12122-7-git-send-email-grant.likely@secretlab.ca>
- <m2iphj3zxr.fsf@igel.home> <m2hax2qeqs.fsf@igel.home>
- <20120402202848.1EB833E02A7@localhost>
- <20120402215524.GM24211@n2100.arm.linux.org.uk>
- <1333406005.30734.61.camel@pasglop>
- <20120402225223.GN24211@n2100.arm.linux.org.uk>
- <1333409927.30734.62.camel@pasglop> <m24nsx9iz1.fsf@igel.home>
- <1333755470.3040.38.camel@pasglop> <m2aa2n7mmw.fsf@igel.home>
- <1334106834.2984.17.camel@pasglop> <1334107996.2984.20.camel@pasglop>
- <1334122182.2984.33.camel@pasglop> <20120411205707.68AC13E08B6@localhost>
- <1334180248.2984.39.camel@pasglop>
-Date: Thu, 19 Apr 2012 12:42:38 -0600
-Message-Id: <20120419184238.4A6973E0700@localhost>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Andreas Schwab <schwab@linux-m68k.org>,
- Milton Miller <miltonm@bga.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EE41DB6FC3
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2012 06:15:16 +1000 (EST)
+Subject: Re: [PATCH] powerpc/85xx: don't call of_platform_bus_probe() twice
+Mime-Version: 1.0 (Apple Message framework v1257)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1322669957-8259-1-git-send-email-timur@freescale.com>
+Date: Thu, 19 Apr 2012 15:15:02 -0500
+Message-Id: <E497D6ED-7447-493A-800D-F7CD5BEEFEAA@kernel.crashing.org>
+References: <1322669957-8259-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: scottwood@freescale.com, dbaryshkov@gmail.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,22 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 12 Apr 2012 07:37:28 +1000, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Wed, 2012-04-11 at 14:57 -0600, Grant Likely wrote:
-> > 
-> > Yeah, I've got a different way to fix it though.  There is exactly one
-> > user of irq_virq_count in-tree right now: PS3.  Also, irq_virq_count
-> > is only useful for the NOMAP mapping.  So, instead of having a single
-> > global irq_virq_count values, I've dropped it entirely and added a
-> > max_irq argument to irq_domain_add_nomap().  That makes it a property
-> > of an individual nomap irq domain instead of a global system settting.
-> > 
-> > Hopefully I'll have a draft patch ready today. 
+
+On Nov 30, 2011, at 10:19 AM, Timur Tabi wrote:
+
+> Commit 46d026ac ("powerpc/85xx: consolidate of_platform_bus_probe calls")
+> replaced platform-specific of_device_id tables with a single function
+> that probes the most of the busses in 85xx device trees.  If a specific
+> platform needed additional busses probed, then it could call
+> of_platform_bus_probe() again.  Typically, the additional platform-specific
+> busses are children of existing busses that have already been probed.
+> of_platform_bus_probe() does not handle those child busses automatically.
 > 
-> That works for me. I'll send patches for cleanup MPIC as well.
+> Unfortunately, this doesn't actually work.  The second (platform-specific)
+> call to of_platform_bus_probe() never finds any of the busses it's asked
+> to find.
+> 
+> To remedy this, the platform-specific of_device_id tables are eliminated,
+> and their entries are merged into mpc85xx_common_ids[], so that all busses
+> are probed at once.
+> 
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> arch/powerpc/platforms/85xx/common.c      |    6 ++++++
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c |   11 +----------
+> arch/powerpc/platforms/85xx/p1022_ds.c    |   13 +------------
+> 3 files changed, 8 insertions(+), 22 deletions(-)
 
-Okay, I'll wait on these.  The MPIC fixes will need to be applied
-before I can apply the automatic revmapping and hint removal patches.
-Those patches will also need testing before I apply to linux-next.
+applied to merge
 
-g.
+- k
