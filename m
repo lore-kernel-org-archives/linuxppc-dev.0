@@ -1,20 +1,20 @@
 Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CFE7EB7032
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 20:14:22 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 584FBB6FEB
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2012 20:20:01 +1000 (EST)
 From: Andreas Schwab <schwab@linux-m68k.org>
 To: Jean Delvare <khali@linux-fr.org>
 Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
 References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
  <20120419113723.03a24d46__2279.25503063506$1334829915$gmane$org@endymion.delvare>
  <m27gxc2fqq.fsf__16075.0973890119$1334830355$gmane$org@igel.home>
-Date: Thu, 19 Apr 2012 12:14:19 +0200
-In-Reply-To: <m27gxc2fqq.fsf__16075.0973890119$1334830355$gmane$org@igel.home>
- (Andreas Schwab's message of "Thu, 19 Apr 2012 12:11:25 +0200")
-Message-ID: <m239802flw.fsf@igel.home>
+ <m239802flw.fsf__48316.0902433612$1334830569$gmane$org@igel.home>
+Date: Thu, 19 Apr 2012 12:19:57 +0200
+In-Reply-To: <m239802flw.fsf__48316.0902433612$1334830569$gmane$org@igel.home>
+ (Andreas Schwab's message of "Thu, 19 Apr 2012 12:14:19 +0200")
+Message-ID: <m2y5ps10s2.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org
@@ -29,14 +29,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Andreas Schwab <schwab@linux-m68k.org> writes:
 
-> Jean Delvare <khali@linux-fr.org> writes:
+> Andreas Schwab <schwab@linux-m68k.org> writes:
 >
->> These drivers were the last ones blocking the removal of the legacy
->> binding model in i2c-core.
+>> Jean Delvare <khali@linux-fr.org> writes:
+>>
+>>> These drivers were the last ones blocking the removal of the legacy
+>>> binding model in i2c-core.
+>>
+>> There are also still some uses in snd-aoa.
 >
-> There are also still some uses in snd-aoa.
+> Never mind, I just found the commit in tiwai/sound.git.
 
-Never mind, I just found the commit in tiwai/sound.git.
+Confused.... this was some old one which has nothing to do with the
+legacy binding model conversion.
 
 Andreas.
 
