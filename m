@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9B893B7029
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 13:28:15 +1000 (EST)
-Message-ID: <1334892488.3143.60.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 5D282B7030
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 13:29:39 +1000 (EST)
+Message-ID: <1334892574.31646.0.camel@pasglop>
 Subject: [PATCH 1/3] powerpc/mpic: Fix confusion between hw_irq and virq
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 20 Apr 2012 13:28:08 +1000
+Date: Fri, 20 Apr 2012 13:29:34 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
