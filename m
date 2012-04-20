@@ -1,17 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A5DF2B70DC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 13:31:04 +1000 (EST)
-Message-ID: <1334892657.31646.2.camel@pasglop>
-Subject: [PATCH 3/3] powerpc/mpic: Properly set default triggers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 20 Apr 2012 13:30:57 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <B06378@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1EC48B703E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 19:10:25 +1000 (EST)
+From: Jiajun Wu <b06378@freescale.com>
+To: <netdev@vger.kernel.org>, <davem@davemloft.net>
+Subject: [PATCH] gianfar: add GRO support
+Date: Fri, 20 Apr 2012 16:54:35 +0800
+Message-ID: <1334912075-27073-1-git-send-email-b06378@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Jiajun Wu <b06378@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,129 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This gets rid of the unused default senses array, and replaces the
-incorrect use of IRQ_TYPE_NONE with the new IRQ_TYPE_DEFAULT for
-the initial set_trigger() call when mapping an interrupt.
+Replace netif_receive_skb with napi_gro_receive.
 
-This in turn makes us read the HW state and update the irq desc
-accordingly.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Jiajun Wu <b06378@freescale.com>
 ---
- arch/powerpc/include/asm/mpic.h |   18 -----------------
- arch/powerpc/sysdev/mpic.c      |   42 ++++++++++++++++++++++++++++-----------
- 2 files changed, 30 insertions(+), 30 deletions(-)
+ drivers/net/ethernet/freescale/gianfar.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index c65b929..c9f698a 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -275,9 +275,6 @@ struct mpic
- 	unsigned int		isu_mask;
- 	/* Number of sources */
- 	unsigned int		num_sources;
--	/* default senses array */
--	unsigned char		*senses;
--	unsigned int		senses_count;
- 
- 	/* vector numbers used for internal sources (ipi/timers) */
- 	unsigned int		ipi_vecs[4];
-@@ -415,21 +412,6 @@ extern struct mpic *mpic_alloc(struct device_node *node,
- extern void mpic_assign_isu(struct mpic *mpic, unsigned int isu_num,
- 			    phys_addr_t phys_addr);
- 
--/* Set default sense codes
-- *
-- * @mpic:	controller
-- * @senses:	array of sense codes
-- * @count:	size of above array
-- *
-- * Optionally provide an array (indexed on hardware interrupt numbers
-- * for this MPIC) of default sense codes for the chip. Those are linux
-- * sense codes IRQ_TYPE_*
-- *
-- * The driver gets ownership of the pointer, don't dispose of it or
-- * anything like that. __init only.
-- */
--extern void mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count);
--
- 
- /* Initialize the controller. After this has been called, none of the above
-  * should be called again for this mpic
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 665b0f8..395af13 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -872,21 +872,45 @@ int mpic_set_irq_type(struct irq_data *d, unsigned int flow_type)
- 	if (src >= mpic->num_sources)
- 		return -EINVAL;
- 
-+	vold = mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI));
-+
-+	/* We don't support "none" type */
- 	if (flow_type == IRQ_TYPE_NONE)
--		if (mpic->senses && src < mpic->senses_count)
--			flow_type = mpic->senses[src];
--	if (flow_type == IRQ_TYPE_NONE)
--		flow_type = IRQ_TYPE_LEVEL_LOW;
-+		flow_type = IRQ_TYPE_DEFAULT;
-+
-+	/* Default: read HW settings */
-+	if (flow_type == IRQ_TYPE_DEFAULT) {
-+		switch(vold & (MPIC_INFO(VECPRI_POLARITY_MASK) |
-+			       MPIC_INFO(VECPRI_SENSE_MASK))) {
-+			case MPIC_INFO(VECPRI_SENSE_EDGE) |
-+			     MPIC_INFO(VECPRI_POLARITY_POSITIVE):
-+				flow_type = IRQ_TYPE_EDGE_RISING;
-+				break;
-+			case MPIC_INFO(VECPRI_SENSE_EDGE) |
-+			     MPIC_INFO(VECPRI_POLARITY_NEGATIVE):
-+				flow_type = IRQ_TYPE_EDGE_FALLING;
-+				break;
-+			case MPIC_INFO(VECPRI_SENSE_LEVEL) |
-+			     MPIC_INFO(VECPRI_POLARITY_POSITIVE):
-+				flow_type = IRQ_TYPE_LEVEL_HIGH;
-+				break;
-+			case MPIC_INFO(VECPRI_SENSE_LEVEL) |
-+			     MPIC_INFO(VECPRI_POLARITY_NEGATIVE):
-+				flow_type = IRQ_TYPE_LEVEL_LOW;
-+				break;
-+		}
-+	}
- 
-+	/* Apply to irq desc */
- 	irqd_set_trigger_type(d, flow_type);
- 
-+	/* Apply to HW */
- 	if (mpic_is_ht_interrupt(mpic, src))
- 		vecpri = MPIC_VECPRI_POLARITY_POSITIVE |
- 			MPIC_VECPRI_SENSE_EDGE;
- 	else
- 		vecpri = mpic_type_to_vecpri(mpic, flow_type);
- 
--	vold = mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI));
- 	vnew = vold & ~(MPIC_INFO(VECPRI_POLARITY_MASK) |
- 			MPIC_INFO(VECPRI_SENSE_MASK));
- 	vnew |= vecpri;
-@@ -1022,7 +1046,7 @@ static int mpic_host_map(struct irq_domain *h, unsigned int virq,
- 	irq_set_chip_and_handler(virq, chip, handle_fasteoi_irq);
- 
- 	/* Set default irq type */
--	irq_set_irq_type(virq, IRQ_TYPE_NONE);
-+	irq_set_irq_type(virq, IRQ_TYPE_DEFAULT);
- 
- 	/* If the MPIC was reset, then all vectors have already been
- 	 * initialized.  Otherwise, a per source lazy initialization
-@@ -1413,12 +1437,6 @@ void __init mpic_assign_isu(struct mpic *mpic, unsigned int isu_num,
- 		mpic->num_sources = isu_first + mpic->isu_size;
- }
- 
--void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
--{
--	mpic->senses = senses;
--	mpic->senses_count = count;
--}
--
- void __init mpic_init(struct mpic *mpic)
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index e7bed53..1adb024 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -136,7 +136,7 @@ static void gfar_netpoll(struct net_device *dev);
+ int gfar_clean_rx_ring(struct gfar_priv_rx_q *rx_queue, int rx_work_limit);
+ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue);
+ static int gfar_process_frame(struct net_device *dev, struct sk_buff *skb,
+-			      int amount_pull);
++			      int amount_pull, struct napi_struct *napi);
+ void gfar_halt(struct net_device *dev);
+ static void gfar_halt_nodisable(struct net_device *dev);
+ void gfar_start(struct net_device *dev);
+@@ -2675,12 +2675,12 @@ static inline void gfar_rx_checksum(struct sk_buff *skb, struct rxfcb *fcb)
+ /* gfar_process_frame() -- handle one incoming packet if skb
+  * isn't NULL.  */
+ static int gfar_process_frame(struct net_device *dev, struct sk_buff *skb,
+-			      int amount_pull)
++			      int amount_pull, struct napi_struct *napi)
  {
- 	int i, cpu;
+ 	struct gfar_private *priv = netdev_priv(dev);
+ 	struct rxfcb *fcb = NULL;
+ 
+-	int ret;
++	gro_result_t ret;
+ 
+ 	/* fcb is at the beginning if exists */
+ 	fcb = (struct rxfcb *)skb->data;
+@@ -2719,9 +2719,9 @@ static int gfar_process_frame(struct net_device *dev, struct sk_buff *skb,
+ 		__vlan_hwaccel_put_tag(skb, fcb->vlctl);
+ 
+ 	/* Send the packet up the stack */
+-	ret = netif_receive_skb(skb);
++	ret = napi_gro_receive(napi, skb);
+ 
+-	if (NET_RX_DROP == ret)
++	if (GRO_DROP == ret)
+ 		priv->extra_stats.kernel_dropped++;
+ 
+ 	return 0;
+@@ -2783,7 +2783,8 @@ int gfar_clean_rx_ring(struct gfar_priv_rx_q *rx_queue, int rx_work_limit)
+ 				skb_put(skb, pkt_len);
+ 				rx_queue->stats.rx_bytes += pkt_len;
+ 				skb_record_rx_queue(skb, rx_queue->qindex);
+-				gfar_process_frame(dev, skb, amount_pull);
++				gfar_process_frame(dev, skb, amount_pull,
++						&rx_queue->grp->napi);
+ 
+ 			} else {
+ 				netif_warn(priv, rx_err, dev, "Missing skb!\n");
+-- 
+1.5.6.5
