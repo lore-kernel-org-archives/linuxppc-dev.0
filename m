@@ -1,17 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0AF82B701F
- for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2012 10:05:23 +1000 (EST)
-Date: Thu, 19 Apr 2012 19:05:17 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Message-ID: <alpine.LFD.2.02.1204191904290.11272@spiff>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 9B893B7029
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2012 13:28:15 +1000 (EST)
+Message-ID: <1334892488.3143.60.camel@pasglop>
+Subject: [PATCH 1/3] powerpc/mpic: Fix confusion between hw_irq and virq
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 20 Apr 2012 13:28:08 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,39 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+mpic_is_ipi() takes a virq and immediately converts it to a hw_irq.
 
-Some bug fix patches for v3.4.
+However, one of the two call sites calls it with a ... hw_irq. The
+other call site also happens to have the hw_irq at hand, so let's
+change it to just take that as an argument. Also change mpic_is_tm()
+for consistency.
 
-- k
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/mpic.c |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-The following changes since commit fae2e0fb24c61ca68c98d854a34732549ebc1854:
-
-  powerpc: Fix typo in runlatch code (2012-04-11 10:42:15 +1000)
-
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
-
-Baruch Siach (1):
-      powerpc: fix build when CONFIG_BOOKE_WDT is enabled
-
-Mingkai Hu (4):
-      powerpc/mpic_msgr: fix compile error when SMP disabled
-      powerpc/mpic_msgr: add lock for MPIC message global variable
-      powerpc/mpic_msgr: fix offset error when setting mer register
-      powerpc/mpc85xx: add MPIC message dts node
-
-Timur Tabi (1):
-      powerpc/85xx: don't call of_platform_bus_probe() twice
-
- arch/powerpc/boot/dts/fsl/pq3-mpic-message-B.dtsi |   43 +++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi           |   10 +++++
- arch/powerpc/include/asm/mpic_msgr.h              |    1 +
- arch/powerpc/include/asm/reg_booke.h              |    5 --
- arch/powerpc/kernel/setup_32.c                    |    3 +
- arch/powerpc/platforms/85xx/common.c              |    6 +++
- arch/powerpc/platforms/85xx/mpc85xx_mds.c         |   11 +-----
- arch/powerpc/platforms/85xx/p1022_ds.c            |   13 +------
- arch/powerpc/sysdev/mpic_msgr.c                   |   12 +++---
- 9 files changed, 71 insertions(+), 33 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/pq3-mpic-message-B.dtsi
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 9ac71eb..665b0f8 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -604,18 +604,14 @@ static struct mpic *mpic_find(unsigned int irq)
+ }
+ 
+ /* Determine if the linux irq is an IPI */
+-static unsigned int mpic_is_ipi(struct mpic *mpic, unsigned int irq)
++static unsigned int mpic_is_ipi(struct mpic *mpic, unsigned int src)
+ {
+-	unsigned int src = virq_to_hw(irq);
+-
+ 	return (src >= mpic->ipi_vecs[0] && src <= mpic->ipi_vecs[3]);
+ }
+ 
+ /* Determine if the linux irq is a timer */
+-static unsigned int mpic_is_tm(struct mpic *mpic, unsigned int irq)
++static unsigned int mpic_is_tm(struct mpic *mpic, unsigned int src)
+ {
+-	unsigned int src = virq_to_hw(irq);
+-
+ 	return (src >= mpic->timer_vecs[0] && src <= mpic->timer_vecs[7]);
+ }
+ 
+@@ -1555,12 +1551,12 @@ void mpic_irq_set_priority(unsigned int irq, unsigned int pri)
+ 		return;
+ 
+ 	raw_spin_lock_irqsave(&mpic_lock, flags);
+-	if (mpic_is_ipi(mpic, irq)) {
++	if (mpic_is_ipi(mpic, src)) {
+ 		reg = mpic_ipi_read(src - mpic->ipi_vecs[0]) &
+ 			~MPIC_VECPRI_PRIORITY_MASK;
+ 		mpic_ipi_write(src - mpic->ipi_vecs[0],
+ 			       reg | (pri << MPIC_VECPRI_PRIORITY_SHIFT));
+-	} else if (mpic_is_tm(mpic, irq)) {
++	} else if (mpic_is_tm(mpic, src)) {
+ 		reg = mpic_tm_read(src - mpic->timer_vecs[0]) &
+ 			~MPIC_VECPRI_PRIORITY_MASK;
+ 		mpic_tm_write(src - mpic->timer_vecs[0],
