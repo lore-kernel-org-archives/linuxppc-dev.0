@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 59627B7004
- for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2012 07:00:03 +1000 (EST)
-Message-ID: <1334869188.3143.29.camel@pasglop>
-Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-Date: Fri, 20 Apr 2012 06:59:48 +1000
-In-Reply-To: <20120419113723.03a24d46@endymion.delvare>
-References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
- <20120419113723.03a24d46@endymion.delvare>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 0AF82B701F
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2012 10:05:23 +1000 (EST)
+Date: Thu, 19 Apr 2012 19:05:17 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Message-ID: <alpine.LFD.2.02.1204191904290.11272@spiff>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-04-19 at 11:37 +0200, Jean Delvare wrote:
+Ben,
 
-> Benjamin, thanks a lot for doing this! These drivers were the last ones
-> blocking the removal of the legacy binding model in i2c-core.
+Some bug fix patches for v3.4.
 
-There's a couple left :-) I haven't done therm_windtunnel.c (here too, I
-need testers when I'm done) and our sound drivers are still using the
-old API afaik, that's next on my list.
+- k
 
->  Testers
-> are very welcome. The earliest we can get these changes upstream, the
-> better.
-> 
-> Christian, can you please test this series? I'm sure Benjamin can send
-> the patches to you directly if needed.
+The following changes since commit fae2e0fb24c61ca68c98d854a34732549ebc1854:
 
-The main problem is that I don't have a Xserve G5 anymore to test,
-that's one driver that largely rewritten and totally untested...
+  powerpc: Fix typo in runlatch code (2012-04-11 10:42:15 +1000)
 
-Cheers,
-Ben.
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+
+Baruch Siach (1):
+      powerpc: fix build when CONFIG_BOOKE_WDT is enabled
+
+Mingkai Hu (4):
+      powerpc/mpic_msgr: fix compile error when SMP disabled
+      powerpc/mpic_msgr: add lock for MPIC message global variable
+      powerpc/mpic_msgr: fix offset error when setting mer register
+      powerpc/mpc85xx: add MPIC message dts node
+
+Timur Tabi (1):
+      powerpc/85xx: don't call of_platform_bus_probe() twice
+
+ arch/powerpc/boot/dts/fsl/pq3-mpic-message-B.dtsi |   43 +++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi           |   10 +++++
+ arch/powerpc/include/asm/mpic_msgr.h              |    1 +
+ arch/powerpc/include/asm/reg_booke.h              |    5 --
+ arch/powerpc/kernel/setup_32.c                    |    3 +
+ arch/powerpc/platforms/85xx/common.c              |    6 +++
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c         |   11 +-----
+ arch/powerpc/platforms/85xx/p1022_ds.c            |   13 +------
+ arch/powerpc/sysdev/mpic_msgr.c                   |   12 +++---
+ 9 files changed, 71 insertions(+), 33 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-mpic-message-B.dtsi
