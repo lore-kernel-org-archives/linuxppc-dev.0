@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6C400B6FBC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Apr 2012 07:11:46 +1000 (EST)
-Message-ID: <1334956286.3197.16.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id A5C79B6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Apr 2012 07:19:20 +1000 (EST)
+Message-ID: <1334956749.3197.23.camel@pasglop>
 Subject: Re: pci node question
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Sat, 21 Apr 2012 07:11:26 +1000
-In-Reply-To: <D04C6167-5286-4675-A6D8-32BA63305424@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Sat, 21 Apr 2012 07:19:09 +1000
+In-Reply-To: <4F91B335.4010501@freescale.com>
 References: <9F6FE96B71CF29479FF1CDC8046E1503346013@039-SN1MPN1-002.039d.mgd.msft.net>
  <D04C6167-5286-4675-A6D8-32BA63305424@kernel.crashing.org>
+ <4F91B335.4010501@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -24,70 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-04-20 at 13:53 -0500, Kumar Gala wrote:
-> On Apr 20, 2012, at 1:37 PM, Yoder Stuart-B08248 wrote:
-> 
-> > There was refactoring change a while back that moved 
-> > the interrupt map down into the virtual pci bridge.
+On Fri, 2012-04-20 at 14:04 -0500, Scott Wood wrote:
+
+> That's not supposed to be how device tree bindings are determined.
+
+Ugh ? This is nothing to do with Linux, I think Kumar is confused :-)
+This has to do with PCI bindings.
+
+If you put the interrupt-map in the parent, then crossing the virtual
+p2p will cause a swizzling which is not what you want. As long as the
+device has a device number (in devfn) of 0 that's fine but that may not
+always be the case.
+
+> It's causing us problems with virtualization device assignment, because
+> if we just assign the parent bus we don't get the interrupt map, but if
+> we assign the child we need to deal with what it means to assign an
+> individual PCI device (e.g. on our internal KVM stuff we get an error on
+> that reg property).
+
+I'm not sure what you are doing with device-assignement in KVM, we are
+doing something different for server I suppose since the existing
+assignment code in qemu-kvm is a dead end... But you should probably
+synthetize an interrupt-map for the guest.
+
+> What does this node represent in the first place?  Is there really a
+> PCI-to-PCI bridge?  Are all other PCI devices underneath it?
+
+Yes, PCIe 101 :-) It's the root complex, it's "virtual" in that it's a
+construct of the host bridge, there's no physical "bridge" in the
+system, but yes, PCIe always has a virtual P2P at the top to represent
+the root complex.
+
+This was done to fix the long standing problem that there wasn't a
+proper way to represent host bridges as parent of their devices in PCI
+land.
+
+It allows PCIe to guarantee that a device always has a bridge above
+itself, with the corresponding link control registers etc... which is
+useful for point to point links :-)
+
+That's also why for example PCIe switches look like stacks of bridges,
+for example, a 2 fork switch looks like:
+
+    |
+   P2P
+   / \
+ P2P P2P
+  |   |
+
+That way each downstream device gets its own parent P2P with the
+corresponding PCIe link control registers etc...
+ 
+> >> Do we really need the error interrupt specified twice?
 > > 
-> > example: 
-> > 42 /* controller at 0x200000 */
-> > 43 &pci0 {
-> > 44         compatible = "fsl,p2041-pcie", "fsl,qoriq-pcie-v2.2";
-> > 45         device_type = "pci";
-> > 46         #size-cells = <2>;
-> > 47         #address-cells = <3>;
-> > 48         bus-range = <0x0 0xff>;
-> > 49         clock-frequency = <33333333>;
-> > 50         interrupts = <16 2 1 15>;
-> > 51         pcie@0 {
-> > 52                 reg = <0 0 0 0 0>;
-> > 53                 #interrupt-cells = <1>;
-> > 54                 #size-cells = <2>;
-> > 55                 #address-cells = <3>;
-> > 56                 device_type = "pci";
-> > 57                 interrupts = <16 2 1 15>;
-> > 58                 interrupt-map-mask = <0xf800 0 0 7>;
-> > 59                 interrupt-map = <
-> > 60                         /* IDSEL 0x0 */
-> > 61                         0000 0 0 1 &mpic 40 1 0 0
-> > 62                         0000 0 0 2 &mpic 1 1 0 0
-> > 63                         0000 0 0 3 &mpic 2 1 0 0
-> > 64                         0000 0 0 4 &mpic 3 1 0 0
-> > 65                         >;
-> > 66         };
-> > 67 };
+> > I put it twice because it has multiple purposes, one has to do with interrupts defined by the PCI spec vs ones defined via FSL controller.
+> 
+> There are PCI-defined error condition s that cause a host controller
+> interrupt.  What does this have to do with the bridge node?
+> 
+> >> Why is there a zeroed out reg property: reg = <0 0 0 0 0> ??
 > > 
-> > Why was the interrupt-map moved here?
+> > scratching my head, what happens if you remove it?
 > 
-> Its been a while, but I think i moved it down because of which node is used for interrupt handling in linux.
+> Sigh.
 
-Yeah, it would swizzle if going accross the virtual P2P bridge. On the
-other hand, if it's PCIe, the children of the vP2P should always be at
-device 0 and thus the swizzling should be a NOP no ? So we -could- leave
-it in the PHB unless I'm mistaken...
+As I said earlier, this is not some black magic, it's a proper reg value
+for the root complex virtual bridge. It has bus 0, devfn 0, so the reg
+property for the config space has a value of 0.
 
-On the other hand, we probably want to fix the mapping code to handle
-things like SR-IOV PFs with different device numbers... do those get
-swizzled ? In that case we might want to keep things down the virtual
-bridge.
-
-> > Do we really need the error interrupt specified twice?
-> 
-> I put it twice because it has multiple purposes, one has to do with interrupts defined by the PCI spec vs ones defined via FSL controller.
-> 
-> > Why is there a zeroed out reg property: reg = <0 0 0 0 0> ??
-> 
-> scratching my head, what happens if you remove it?
-
-If you remove it, the kernel will fail to match the vP2P with the
-corresponding struct pci_dev.... It's not "zeroed out". It contains a
-valid bus/dev/fn ... of 0,0,0 :-)
+Without it, the kernel won't properly match it to the corresponding
+pci_dev.
 
 Cheers,
 Ben.
 
-> - k
+> -Scott
 > 
 > _______________________________________________
 > Linuxppc-dev mailing list
