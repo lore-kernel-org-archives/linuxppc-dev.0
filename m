@@ -1,18 +1,19 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
- by ozlabs.org (Postfix) with SMTP id 1A890B6F13
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Apr 2012 02:14:11 +1000 (EST)
-Content-Type: text/plain; charset="utf-8"
-Date: Fri, 20 Apr 2012 18:14:07 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1334927896.5989.463.camel@thor.local>
-Message-ID: <20120420161407.190300@gmx.net>
+Return-Path: <B08248@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4BCB7B6FBC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Apr 2012 04:37:40 +1000 (EST)
+From: Yoder Stuart-B08248 <B08248@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: pci node question
+Date: Fri, 20 Apr 2012 18:37:28 +0000
+Message-ID: <9F6FE96B71CF29479FF1CDC8046E1503346013@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-References: <20120420111527.190290@gmx.net>
- <1334927896.5989.463.camel@thor.local>
-Subject: Re: PowerPC radeon KMS - is it possible?
-To: =?iso-8859-1?Q?=22Michel_D=E4nzer=22?= <michel@daenzer.net>
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,86 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There was refactoring change a while back that moved=20
+the interrupt map down into the virtual pci bridge.
 
--------- Original-Nachricht --------
-> Datum: Fri, 20 Apr 2012 15:18:16 +0200
-> Von: "Michel Dänzer" <michel@daenzer.net>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@lists.ozlabs.org
-> Betreff: Re: PowerPC radeon KMS - is it possible?
+example:=20
+42 /* controller at 0x200000 */
+43 &pci0 {
+44         compatible =3D "fsl,p2041-pcie", "fsl,qoriq-pcie-v2.2";
+45         device_type =3D "pci";
+46         #size-cells =3D <2>;
+47         #address-cells =3D <3>;
+48         bus-range =3D <0x0 0xff>;
+49         clock-frequency =3D <33333333>;
+50         interrupts =3D <16 2 1 15>;
+51         pcie@0 {
+52                 reg =3D <0 0 0 0 0>;
+53                 #interrupt-cells =3D <1>;
+54                 #size-cells =3D <2>;
+55                 #address-cells =3D <3>;
+56                 device_type =3D "pci";
+57                 interrupts =3D <16 2 1 15>;
+58                 interrupt-map-mask =3D <0xf800 0 0 7>;
+59                 interrupt-map =3D <
+60                         /* IDSEL 0x0 */
+61                         0000 0 0 1 &mpic 40 1 0 0
+62                         0000 0 0 2 &mpic 1 1 0 0
+63                         0000 0 0 3 &mpic 2 1 0 0
+64                         0000 0 0 4 &mpic 3 1 0 0
+65                         >;
+66         };
+67 };
 
-> On Fre, 2012-04-20 at 13:15 +0200, Gerhard Pircher wrote: 
-> > > Von: "Michel Dänzer" <michel@daenzer.net>
-> > > On Don, 2012-04-19 at 13:48 +0200, Gerhard Pircher wrote: 
-> > > > 
-> > > > The "former case" is an explanation, why I see data corruption
-> > > > with my< AGPGART driver (more or less a copy of the uninorth
-> > > > driver) on my non-coherent platform. There are no cache flushes
-> > > > done for writes to already mapped pages.
-> > > 
-> > > As I said, the radeon driver always maps AGP memory uncacheable for
-> > > the CPU, so no such CPU cache flushes should be necessary.
-> > I know. We also discussed this topic over two years ago. :-)
-> > 
-> > What I didn't understand yet is how this uncacheable memory is
-> > allocated (well, I never took the time to look at this again). The
-> > functions in ttm_page_alloc.c seem to allocate normal cacheable
-> > memory and try to set the page flags with set_pages_array_uc(),
-> > which is more or less a no-op on powerpc. ttm_page_alloc_dma.c on
-> > the other side is only used with SWIOTLB!?
-> [...] 
-> > Could it be that the memory is finally mapped uncacheable by
-> radeon_bo_kmap()/
-> > ttm_bo_kmap()/..some other TTM functions../vmap()?
-> 
-> Yeah, AFAICT, basically ttm_io_prot() defines the mapping attributes,
-> and vmap() is used to enforce them for kernel mappings.
-Okay, that sounds like the approach used by arch/powerpc/mm/dma-
-noncoherent.c in my ("green") ears. What about the PCIGART mode?
-Is the driver free to use cached memory in this mode?
+Why was the interrupt-map moved here?
 
-> > Here is an excerpt of the 2.6.39 kernel log. IIRC the testing code
-> > changed in the meantime so I guess it would make sense to repeat it
-> > with a newer kernel version.
-> 
-> I was going to suggest that. :)
-As expected. :-)
+Do we really need the error interrupt specified twice?
 
-> > [    5.490569] [drm:radeon_test_moves] *ERROR* Incorrect GTT->VRAM copy 0: Got 0xf13268c0, expected 0xf1326160 (GTT map 0xf1326000-0xf1426000)
-> > [    5.503397] [drm:radeon_test_moves] *ERROR* Incorrect GTT->VRAM copy 0: Got 0xf13268c4, expected 0xf1326164 (GTT map 0xf1326000-0xf1426000)
-> > [    5.516202] [drm:radeon_test_moves] *ERROR* Incorrect GTT->VRAM copy 0: Got 0xf13268c0, expected 0xf1326168 (GTT map 0xf1326000-0xf1426000)
-> > [    5.528993] [drm:radeon_test_moves] *ERROR* Incorrect GTT->VRAM copy 0: Got 0xf13268c4, expected 0xf132616c (GTT map 0xf1326000-0xf1426000)
-> [...] 
-> > [    5.878809] [drm:radeon_test_moves] *ERROR* Incorrect VRAM->GTT copy 0: Got 0xf1416ec0, expected 0xf1570ec0 (VRAM map 0xf1480000-0xf1580000)
-> 
-> > For the GTT->VRAM copy it looks like the AGPGART driver at least
-> > gets the graphics aperture translation table right, as both the
-> > returned and expected values are within a page. But the page offset
-> > of the returned values (0x8c0, 0x8c4) makes me wonder whether I'm
-> > fooled by a hardware bug or a cache coherency problem.
-> 
-> Hard to say... at least it managed to transfer the first 352 bytes
-> correctly. ;)
-Better than nothing! :-)
+Why is there a zeroed out reg property: reg =3D <0 0 0 0 0> ??
 
-> > The VRAM->GTT copy totally puzzles me, as it returns a wrong page
-> > address, but the offset is fine!?
-> 
-> Maybe it's still the values from the GTT->VRAM test, i.e. either the GPU
-> writes didn't make it to the memory mapped into the AGP GART (some AGP
-Good point. Maybe I should explicitly clear the gtt_map before the
-VRAM->GTT copy test is executed.
-
-> bridges are known to have issues with that) or the CPU doesn't see it.
-What is the workaround for such an AGP bridge? If there is one at all...
-
-> BTW, does your driver set cant_use_aperture, or is the linear aperture
-> accessible by the CPU?
-The driver sets cant_use_aperture. I couldn't get it working at all
-without it.
-
-regards,
-Gerhard
--- 
-Empfehlen Sie GMX DSL Ihren Freunden und Bekannten und wir
-belohnen Sie mit bis zu 50,- Euro! https://freundschaftswerbung.gmx.de
+Thanks,
+Stuart
