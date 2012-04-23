@@ -1,33 +1,24 @@
-Return-Path: <anton.vorontsov@linaro.org>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
- [209.85.213.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 26208B6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 01:41:48 +1000 (EST)
-Received: by yhnn12 with SMTP id n12so6560797yhn.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 08:41:45 -0700 (PDT)
-Date: Mon, 23 Apr 2012 08:40:27 -0700
-From: Anton Vorontsov <anton.vorontsov@linaro.org>
-To: Richard Weinberger <richard@nod.at>
-Subject: Re: [PATCH 7/9] um: Should hold tasklist_lock while traversing
- processes
-Message-ID: <20120423154027.GA23066@lizard>
-References: <20120423070641.GA27702@lizard> <20120423070925.GG30752@lizard>
- <4F956DF2.7020408@nod.at>
+Return-Path: <B08248@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CCC10B6EEB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 01:48:54 +1000 (EST)
+From: Yoder Stuart-B08248 <B08248@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: pci node question
+Date: Mon, 23 Apr 2012 15:48:37 +0000
+Message-ID: <9F6FE96B71CF29479FF1CDC8046E150334747D@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <9F6FE96B71CF29479FF1CDC8046E1503346013@039-SN1MPN1-002.039d.mgd.msft.net>
+ <D04C6167-5286-4675-A6D8-32BA63305424@kernel.crashing.org>
+ <1334956286.3197.16.camel@pasglop>
+In-Reply-To: <1334956286.3197.16.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4F956DF2.7020408@nod.at>
-Cc: linaro-kernel@lists.linaro.org, Mike Frysinger <vapier@gentoo.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- patches@linaro.org, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mundt <lethal@linux-sh.org>, John Stultz <john.stultz@linaro.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- uclinux-dist-devel@blackfin.uclinux.org, Russell King <linux@arm.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,23 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 23, 2012 at 04:57:54PM +0200, Richard Weinberger wrote:
-> On 23.04.2012 09:09, Anton Vorontsov wrote:
-> >Traversing the tasks requires holding tasklist_lock, otherwise it
-> >is unsafe.
-> >
-> >p.s. However, I'm not sure that calling os_kill_ptraced_process()
-> >in the atomic context is correct. It seem to work, but please
-> >take a closer look.
-> >
-> >Signed-off-by: Anton Vorontsov<anton.vorontsov@linaro.org>
-> >---
-> 
-> You forgot my Ack and I've already explained why
-> os_kill_ptraced_process() is fine.
-
-Ouch, sorry!
-
--- 
-Anton Vorontsov
-Email: cbouatmailru@gmail.com
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogRnJpZGF5
+LCBBcHJpbCAyMCwgMjAxMiA0OjExIFBNDQo+IFRvOiBLdW1hciBHYWxhDQo+IENjOiBZb2RlciBT
+dHVhcnQtQjA4MjQ4OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBS
+ZTogcGNpIG5vZGUgcXVlc3Rpb24NCj4gDQo+IE9uIEZyaSwgMjAxMi0wNC0yMCBhdCAxMzo1MyAt
+MDUwMCwgS3VtYXIgR2FsYSB3cm90ZToNCj4gPiBPbiBBcHIgMjAsIDIwMTIsIGF0IDE6MzcgUE0s
+IFlvZGVyIFN0dWFydC1CMDgyNDggd3JvdGU6DQo+ID4NCj4gPiA+IFRoZXJlIHdhcyByZWZhY3Rv
+cmluZyBjaGFuZ2UgYSB3aGlsZSBiYWNrIHRoYXQgbW92ZWQNCj4gPiA+IHRoZSBpbnRlcnJ1cHQg
+bWFwIGRvd24gaW50byB0aGUgdmlydHVhbCBwY2kgYnJpZGdlLg0KPiA+ID4NCj4gPiA+IGV4YW1w
+bGU6DQo+ID4gPiA0MiAvKiBjb250cm9sbGVyIGF0IDB4MjAwMDAwICovDQo+ID4gPiA0MyAmcGNp
+MCB7DQo+ID4gPiA0NCAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLHAyMDQxLXBjaWUiLCAiZnNs
+LHFvcmlxLXBjaWUtdjIuMiI7DQo+ID4gPiA0NSAgICAgICAgIGRldmljZV90eXBlID0gInBjaSI7
+DQo+ID4gPiA0NiAgICAgICAgICNzaXplLWNlbGxzID0gPDI+Ow0KPiA+ID4gNDcgICAgICAgICAj
+YWRkcmVzcy1jZWxscyA9IDwzPjsNCj4gPiA+IDQ4ICAgICAgICAgYnVzLXJhbmdlID0gPDB4MCAw
+eGZmPjsNCj4gPiA+IDQ5ICAgICAgICAgY2xvY2stZnJlcXVlbmN5ID0gPDMzMzMzMzMzPjsNCj4g
+PiA+IDUwICAgICAgICAgaW50ZXJydXB0cyA9IDwxNiAyIDEgMTU+Ow0KPiA+ID4gNTEgICAgICAg
+ICBwY2llQDAgew0KPiA+ID4gNTIgICAgICAgICAgICAgICAgIHJlZyA9IDwwIDAgMCAwIDA+Ow0K
+PiA+ID4gNTMgICAgICAgICAgICAgICAgICNpbnRlcnJ1cHQtY2VsbHMgPSA8MT47DQo+ID4gPiA1
+NCAgICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8Mj47DQo+ID4gPiA1NSAgICAgICAgICAg
+ICAgICAgI2FkZHJlc3MtY2VsbHMgPSA8Mz47DQo+ID4gPiA1NiAgICAgICAgICAgICAgICAgZGV2
+aWNlX3R5cGUgPSAicGNpIjsNCj4gPiA+IDU3ICAgICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0g
+PDE2IDIgMSAxNT47DQo+ID4gPiA1OCAgICAgICAgICAgICAgICAgaW50ZXJydXB0LW1hcC1tYXNr
+ID0gPDB4ZjgwMCAwIDAgNz47DQo+ID4gPiA1OSAgICAgICAgICAgICAgICAgaW50ZXJydXB0LW1h
+cCA9IDwNCj4gPiA+IDYwICAgICAgICAgICAgICAgICAgICAgICAgIC8qIElEU0VMIDB4MCAqLw0K
+PiA+ID4gNjEgICAgICAgICAgICAgICAgICAgICAgICAgMDAwMCAwIDAgMSAmbXBpYyA0MCAxIDAg
+MA0KPiA+ID4gNjIgICAgICAgICAgICAgICAgICAgICAgICAgMDAwMCAwIDAgMiAmbXBpYyAxIDEg
+MCAwDQo+ID4gPiA2MyAgICAgICAgICAgICAgICAgICAgICAgICAwMDAwIDAgMCAzICZtcGljIDIg
+MSAwIDANCj4gPiA+IDY0ICAgICAgICAgICAgICAgICAgICAgICAgIDAwMDAgMCAwIDQgJm1waWMg
+MyAxIDAgMA0KPiA+ID4gNjUgICAgICAgICAgICAgICAgICAgICAgICAgPjsNCj4gPiA+IDY2ICAg
+ICAgICAgfTsNCj4gPiA+IDY3IH07DQo+ID4gPg0KPiA+ID4gV2h5IHdhcyB0aGUgaW50ZXJydXB0
+LW1hcCBtb3ZlZCBoZXJlPw0KPiA+DQo+ID4gSXRzIGJlZW4gYSB3aGlsZSwgYnV0IEkgdGhpbmsg
+aSBtb3ZlZCBpdCBkb3duIGJlY2F1c2Ugb2Ygd2hpY2ggbm9kZSBpcyB1c2VkIGZvciBpbnRlcnJ1
+cHQgaGFuZGxpbmcgaW4NCj4gbGludXguDQo+IA0KPiBZZWFoLCBpdCB3b3VsZCBzd2l6emxlIGlm
+IGdvaW5nIGFjY3Jvc3MgdGhlIHZpcnR1YWwgUDJQIGJyaWRnZS4gT24gdGhlDQo+IG90aGVyIGhh
+bmQsIGlmIGl0J3MgUENJZSwgdGhlIGNoaWxkcmVuIG9mIHRoZSB2UDJQIHNob3VsZCBhbHdheXMg
+YmUgYXQNCj4gZGV2aWNlIDAgYW5kIHRodXMgdGhlIHN3aXp6bGluZyBzaG91bGQgYmUgYSBOT1Ag
+bm8gPyBTbyB3ZSAtY291bGQtIGxlYXZlDQo+IGl0IGluIHRoZSBQSEIgdW5sZXNzIEknbSBtaXN0
+YWtlbi4uLg0KPiANCj4gT24gdGhlIG90aGVyIGhhbmQsIHdlIHByb2JhYmx5IHdhbnQgdG8gZml4
+IHRoZSBtYXBwaW5nIGNvZGUgdG8gaGFuZGxlDQo+IHRoaW5ncyBsaWtlIFNSLUlPViBQRnMgd2l0
+aCBkaWZmZXJlbnQgZGV2aWNlIG51bWJlcnMuLi4gZG8gdGhvc2UgZ2V0DQo+IHN3aXp6bGVkID8g
+SW4gdGhhdCBjYXNlIHdlIG1pZ2h0IHdhbnQgdG8ga2VlcCB0aGluZ3MgZG93biB0aGUgdmlydHVh
+bA0KPiBicmlkZ2UuDQo+IA0KPiA+ID4gRG8gd2UgcmVhbGx5IG5lZWQgdGhlIGVycm9yIGludGVy
+cnVwdCBzcGVjaWZpZWQgdHdpY2U/DQo+ID4NCj4gPiBJIHB1dCBpdCB0d2ljZSBiZWNhdXNlIGl0
+IGhhcyBtdWx0aXBsZSBwdXJwb3Nlcywgb25lIGhhcyB0byBkbyB3aXRoIGludGVycnVwdHMgZGVm
+aW5lZCBieSB0aGUgUENJIHNwZWMNCj4gdnMgb25lcyBkZWZpbmVkIHZpYSBGU0wgY29udHJvbGxl
+ci4NCj4gPg0KPiA+ID4gV2h5IGlzIHRoZXJlIGEgemVyb2VkIG91dCByZWcgcHJvcGVydHk6IHJl
+ZyA9IDwwIDAgMCAwIDA+ID8/DQo+ID4NCj4gPiBzY3JhdGNoaW5nIG15IGhlYWQsIHdoYXQgaGFw
+cGVucyBpZiB5b3UgcmVtb3ZlIGl0Pw0KPiANCj4gSWYgeW91IHJlbW92ZSBpdCwgdGhlIGtlcm5l
+bCB3aWxsIGZhaWwgdG8gbWF0Y2ggdGhlIHZQMlAgd2l0aCB0aGUNCj4gY29ycmVzcG9uZGluZyBz
+dHJ1Y3QgcGNpX2Rldi4uLi4gSXQncyBub3QgInplcm9lZCBvdXQiLiBJdCBjb250YWlucyBhDQo+
+IHZhbGlkIGJ1cy9kZXYvZm4gLi4uIG9mIDAsMCwwIDotKQ0KDQpIbW1tLi4uIEkgdmFndWVseSB1
+bmRlcnN0YW5kIHdoYXQgeW91IGFyZSBzYXlpbmcuICAgQnV0IHdoeSBpcyB0aGUNCmxlbmd0aCB6
+ZXJvLCB0aGF0IGlzIHdoYXQgZG9lc24ndCBtYWtlIHNlbnNlIG9uIHRoZSBzdXJmYWNlPw0KDQpX
+ZSByZWFsbHkgc2hvdWxkIHB1dCBhIGNvbW1lbnQgb24gdGhhdCByZWcgcHJvcGVydHktLSBjYW4g
+eW91IHN1Z2dlc3QNCmEgc2hvcnQgY29tbWVudCB0aGF0IHdvdWxkIGNhcHR1cmUgd2hhdCB0aGUg
+cmVnIHdpdGggYWxsIHplcm9zIA0KaXMgZm9yPyAgLi4uSSdsbCBzdWJtaXQgYSBwYXRjaC4NCg0K
+VGhhbmtzLA0KU3R1YXJ0DQo=
