@@ -3,19 +3,18 @@ Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
  [209.85.210.42])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E8C14B6FBB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 08:30:08 +1000 (EST)
-Received: by dang27 with SMTP id g27so65630dan.15
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 15:30:06 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5F396B6FC4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 08:30:09 +1000 (EST)
+Received: by dang27 with SMTP id g27so65646dan.15
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 15:30:07 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: [PATCH v2 1/2] powerpc/8xx: Fix NR_IRQ bugs and refactor 8xx
- interrupt controller
-Date: Mon, 23 Apr 2012 16:30:01 -0600
-Message-Id: <1335220202-32533-2-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH v2 2/2] irqdomain/powerpc: Fix broken NR_IRQ references
+Date: Mon, 23 Apr 2012 16:30:02 -0600
+Message-Id: <1335220202-32533-3-git-send-email-grant.likely@secretlab.ca>
 In-Reply-To: <1335220202-32533-1-git-send-email-grant.likely@secretlab.ca>
 References: <1335220202-32533-1-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,129 +26,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mpc8xx driver uses a reference to NR_IRQS that is buggy.  It uses
-NR_IRQs for the array size of the ppc_cached_irq_mask bitmap, but
-NR_IRQs could be smaller than the number of hardware irqs that
-ppc_cached_irq_mask tracks.
+The switch from using irq_map to irq_alloc_desc*() for managing irq
+number allocations introduced new bugs in some of the powerpc
+interrupt code.  Several functions rely on the value of NR_IRQS to
+determine the maximum irq number that could get allocated.  However,
+with sparse_irq and using irq_alloc_desc*() the maximum possible irq
+number is now specified with 'nr_irqs' which may be a number larger
+than NR_IRQS.  This has caused breakage on powermac when
+CONFIG_NR_IRQS is set to 32.
 
-Also, while fixing that problem, it became apparent that the interrupt
-controller only supports 32 interrupt numbers, but it is written as if
-it supports multiple register banks which is more complicated.
+This patch removes most of the direct references to NR_IRQS in the
+powerpc code and replaces them with either a nr_irqs reference or by
+using the common for_each_irq_desc() macro.  The powerpc-specific
+for_each_irq() macro is removed at the same time.
 
-This patch pulls out the buggy reference to NR_IRQs and fixes the size
-of the ppc_cached_irq_mask to match the number of HW irqs.  It also
-drops the now-unnecessary code since ppc_cached_irq_mask is no longer
-an array.
+Also, the Cell axon_msi driver is refactored to remove the global
+build assumption on the size of NR_IRQS and instead add a limit to the
+maximum irq number when calling irq_domain_add_nomap().
 
-v2: - Rename ppc_cached_irq_mask to mpc8xx_cached_irq_mask
-    - Drop duplicate forward declaration
+v2: Reinstate comment on 65536 irq limit deleted in v1.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/mpc8xx_pic.c |   61 +++++++++++++-------------------------
- 1 file changed, 20 insertions(+), 41 deletions(-)
+ arch/powerpc/include/asm/irq.h               |    4 ----
+ arch/powerpc/kernel/irq.c                    |    6 +-----
+ arch/powerpc/kernel/machine_kexec.c          |    7 ++-----
+ arch/powerpc/platforms/cell/axon_msi.c       |    8 +++-----
+ arch/powerpc/platforms/cell/beat_interrupt.c |    2 +-
+ arch/powerpc/platforms/powermac/pic.c        |    6 +++---
+ arch/powerpc/sysdev/cpm2_pic.c               |    3 +--
+ arch/powerpc/sysdev/xics/xics-common.c       |    7 +++----
+ 8 files changed, 14 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mpc8xx_pic.c b/arch/powerpc/sysdev/mpc8xx_pic.c
-index d5f5416..b724622 100644
---- a/arch/powerpc/sysdev/mpc8xx_pic.c
-+++ b/arch/powerpc/sysdev/mpc8xx_pic.c
-@@ -18,69 +18,45 @@
- extern int cpm_get_irq(struct pt_regs *regs);
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index e648af9..0e40843 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -18,10 +18,6 @@
+ #include <linux/atomic.h>
  
- static struct irq_domain *mpc8xx_pic_host;
+ 
+-/* Define a way to iterate across irqs. */
+-#define for_each_irq(i) \
+-	for ((i) = 0; (i) < NR_IRQS; ++(i))
+-
+ extern atomic_t ppc_n_lost_interrupts;
+ 
+ /* This number is used when no interrupt has been assigned */
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 5ec1b23..43eb74f 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -330,14 +330,10 @@ void migrate_irqs(void)
+ 
+ 	alloc_cpumask_var(&mask, GFP_KERNEL);
+ 
+-	for_each_irq(irq) {
++	for_each_irq_desc(irq, desc) {
+ 		struct irq_data *data;
+ 		struct irq_chip *chip;
+ 
+-		desc = irq_to_desc(irq);
+-		if (!desc)
+-			continue;
+-
+ 		data = irq_desc_get_irq_data(desc);
+ 		if (irqd_is_per_cpu(data))
+ 			continue;
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index c957b12..5df7777 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -23,14 +23,11 @@
+ 
+ void machine_kexec_mask_interrupts(void) {
+ 	unsigned int i;
++	struct irq_desc *desc;
+ 
+-	for_each_irq(i) {
+-		struct irq_desc *desc = irq_to_desc(i);
++	for_each_irq_desc(i, desc) {
+ 		struct irq_chip *chip;
+ 
+-		if (!desc)
+-			continue;
+-
+ 		chip = irq_desc_get_chip(desc);
+ 		if (!chip)
+ 			continue;
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index d09f3e8..85825b5 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -114,7 +114,7 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 		pr_devel("axon_msi: woff %x roff %x msi %x\n",
+ 			  write_offset, msic->read_offset, msi);
+ 
+-		if (msi < NR_IRQS && irq_get_chip_data(msi) == msic) {
++		if (msi < nr_irqs && irq_get_chip_data(msi) == msic) {
+ 			generic_handle_irq(msi);
+ 			msic->fifo_virt[idx] = cpu_to_le32(0xffffffff);
+ 		} else {
+@@ -276,9 +276,6 @@ static int axon_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 	if (rc)
+ 		return rc;
+ 
+-	/* We rely on being able to stash a virq in a u16 */
+-	BUILD_BUG_ON(NR_IRQS > 65536);
+-
+ 	list_for_each_entry(entry, &dev->msi_list, list) {
+ 		virq = irq_create_direct_mapping(msic->irq_domain);
+ 		if (virq == NO_IRQ) {
+@@ -392,7 +389,8 @@ static int axon_msi_probe(struct platform_device *device)
+ 	}
+ 	memset(msic->fifo_virt, 0xff, MSIC_FIFO_SIZE_BYTES);
+ 
+-	msic->irq_domain = irq_domain_add_nomap(dn, 0, &msic_host_ops, msic);
++	/* We rely on being able to stash a virq in a u16, so limit irqs to < 65536 */
++	msic->irq_domain = irq_domain_add_nomap(dn, 65536, &msic_host_ops, msic);
+ 	if (!msic->irq_domain) {
+ 		printk(KERN_ERR "axon_msi: couldn't allocate irq_domain for %s\n",
+ 		       dn->full_name);
+diff --git a/arch/powerpc/platforms/cell/beat_interrupt.c b/arch/powerpc/platforms/cell/beat_interrupt.c
+index f9a48af..8c6dc42 100644
+--- a/arch/powerpc/platforms/cell/beat_interrupt.c
++++ b/arch/powerpc/platforms/cell/beat_interrupt.c
+@@ -248,6 +248,6 @@ void beatic_deinit_IRQ(void)
+ {
+ 	int	i;
+ 
+-	for (i = 1; i < NR_IRQS; i++)
++	for (i = 1; i < nr_irqs; i++)
+ 		beat_destruct_irq_plug(i);
+ }
+diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+index 66ad93d..c4e6305 100644
+--- a/arch/powerpc/platforms/powermac/pic.c
++++ b/arch/powerpc/platforms/powermac/pic.c
+@@ -57,9 +57,9 @@ static int max_real_irqs;
+ 
+ static DEFINE_RAW_SPINLOCK(pmac_pic_lock);
+ 
+-#define NR_MASK_WORDS	((NR_IRQS + 31) / 32)
+-static unsigned long ppc_lost_interrupts[NR_MASK_WORDS];
+-static unsigned long ppc_cached_irq_mask[NR_MASK_WORDS];
++/* The max irq number this driver deals with is 128; see max_irqs */
++static DECLARE_BITMAP(ppc_lost_interrupts, 128);
++static DECLARE_BITMAP(ppc_cached_irq_mask, 128);
+ static int pmac_irq_cascade = -1;
+ static struct irq_domain *pmac_pic_host;
+ 
+diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
+index d3be961..10386b6 100644
+--- a/arch/powerpc/sysdev/cpm2_pic.c
++++ b/arch/powerpc/sysdev/cpm2_pic.c
+@@ -51,8 +51,7 @@
+ static intctl_cpm2_t __iomem *cpm2_intctl;
+ 
+ static struct irq_domain *cpm2_pic_host;
 -#define NR_MASK_WORDS   ((NR_IRQS + 31) / 32)
 -static unsigned long ppc_cached_irq_mask[NR_MASK_WORDS];
-+static unsigned long mpc8xx_cached_irq_mask;
- static sysconf8xx_t __iomem *siu_reg;
++static unsigned long ppc_cached_irq_mask[2]; /* 2 32-bit registers */
  
--int cpm_get_irq(struct pt_regs *regs);
-+static inline unsigned long mpc8xx_irqd_to_bit(struct irq_data *d)
-+{
-+	return 0x80000000 >> irqd_to_hwirq(d);
-+}
- 
- static void mpc8xx_unmask_irq(struct irq_data *d)
+ static const u_char irq_to_siureg[] = {
+ 	1, 1, 1, 1, 1, 1, 1, 1,
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index ea5e204..cd1d18d 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -188,6 +188,7 @@ void xics_migrate_irqs_away(void)
  {
--	int	bit, word;
--	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
--
--	bit = irq_nr & 0x1f;
--	word = irq_nr >> 5;
--
--	ppc_cached_irq_mask[word] |= (1 << (31-bit));
--	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask[word]);
-+	mpc8xx_cached_irq_mask |= mpc8xx_irqd_to_bit(d);
-+	out_be32(&siu_reg->sc_simask, mpc8xx_cached_irq_mask);
- }
+ 	int cpu = smp_processor_id(), hw_cpu = hard_smp_processor_id();
+ 	unsigned int irq, virq;
++	struct irq_desc *desc;
  
- static void mpc8xx_mask_irq(struct irq_data *d)
- {
--	int	bit, word;
--	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
--
--	bit = irq_nr & 0x1f;
--	word = irq_nr >> 5;
--
--	ppc_cached_irq_mask[word] &= ~(1 << (31-bit));
--	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask[word]);
-+	mpc8xx_cached_irq_mask &= ~mpc8xx_irqd_to_bit(d);
-+	out_be32(&siu_reg->sc_simask, mpc8xx_cached_irq_mask);
- }
+ 	/* If we used to be the default server, move to the new "boot_cpuid" */
+ 	if (hw_cpu == xics_default_server)
+@@ -202,8 +203,7 @@ void xics_migrate_irqs_away(void)
+ 	/* Allow IPIs again... */
+ 	icp_ops->set_priority(DEFAULT_PRIORITY);
  
- static void mpc8xx_ack(struct irq_data *d)
- {
--	int	bit;
--	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
--
--	bit = irq_nr & 0x1f;
--	out_be32(&siu_reg->sc_sipend, 1 << (31-bit));
-+	out_be32(&siu_reg->sc_sipend, mpc8xx_irqd_to_bit(d));
- }
- 
- static void mpc8xx_end_irq(struct irq_data *d)
- {
--	int bit, word;
--	unsigned int irq_nr = (unsigned int)irqd_to_hwirq(d);
--
--	bit = irq_nr & 0x1f;
--	word = irq_nr >> 5;
--
--	ppc_cached_irq_mask[word] |= (1 << (31-bit));
--	out_be32(&siu_reg->sc_simask, ppc_cached_irq_mask[word]);
-+	mpc8xx_cached_irq_mask |= mpc8xx_irqd_to_bit(d);
-+	out_be32(&siu_reg->sc_simask, mpc8xx_cached_irq_mask);
- }
- 
- static int mpc8xx_set_irq_type(struct irq_data *d, unsigned int flow_type)
- {
--	if (flow_type & IRQ_TYPE_EDGE_FALLING) {
--		irq_hw_number_t hw = (unsigned int)irqd_to_hwirq(d);
-+	/* only external IRQ senses are programmable */
-+	if ((flow_type & IRQ_TYPE_EDGE_FALLING) && !(irqd_to_hwirq(d) & 1)) {
- 		unsigned int siel = in_be32(&siu_reg->sc_siel);
--
--		/* only external IRQ senses are programmable */
--		if ((hw & 1) == 0) {
--			siel |= (0x80000000 >> hw);
--			out_be32(&siu_reg->sc_siel, siel);
--			__irq_set_handler_locked(d->irq, handle_edge_irq);
--		}
-+		siel |= mpc8xx_irqd_to_bit(d);
-+		out_be32(&siu_reg->sc_siel, siel);
-+		__irq_set_handler_locked(d->irq, handle_edge_irq);
- 	}
- 	return 0;
- }
-@@ -132,6 +108,9 @@ static int mpc8xx_pic_host_xlate(struct irq_domain *h, struct device_node *ct,
- 		IRQ_TYPE_EDGE_FALLING,
- 	};
- 
-+	if (intspec[0] > 0x1f)
-+		return 0;
-+
- 	*out_hwirq = intspec[0];
- 	if (intsize > 1 && intspec[1] < 4)
- 		*out_flags = map_pic_senses[intspec[1]];
+-	for_each_irq(virq) {
+-		struct irq_desc *desc;
++	for_each_irq_desc(virq, desc) {
+ 		struct irq_chip *chip;
+ 		long server;
+ 		unsigned long flags;
+@@ -212,9 +212,8 @@ void xics_migrate_irqs_away(void)
+ 		/* We can't set affinity on ISA interrupts */
+ 		if (virq < NUM_ISA_INTERRUPTS)
+ 			continue;
+-		desc = irq_to_desc(virq);
+ 		/* We only need to migrate enabled IRQS */
+-		if (!desc || !desc->action)
++		if (!desc->action)
+ 			continue;
+ 		if (desc->irq_data.domain != xics_host)
+ 			continue;
 -- 
 1.7.9.5
